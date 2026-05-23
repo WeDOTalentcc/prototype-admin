@@ -100,6 +100,7 @@ class TwilioWhatsAppService(WhatsAppProvider):
     
     def _format_whatsapp_number(self, phone: str) -> str:
         """Format phone number for Twilio WhatsApp API (whatsapp:+...)."""
+        # ORCHESTRATOR-GHOST-EXEMPT: format_phone_number defined in WhatsAppProvider base
         cleaned = self.format_phone_number(phone)
         if not cleaned.startswith("+"):
             cleaned = "+" + cleaned

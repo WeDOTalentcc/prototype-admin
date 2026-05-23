@@ -128,6 +128,7 @@ class JDTemplateCacheService:
                     logger.debug(f"JD cache miss for key: {cache_key}")
                     return None
             else:
+                # ORCHESTRATOR-GHOST-EXEMPT: _memory_cache lazy-init in _init_redis() called from __init__ (guarded by hasattr above)
                 if hasattr(self, '_memory_cache') and cache_key in self._memory_cache:
                     self._hits += 1
                     result = self._memory_cache[cache_key].copy()

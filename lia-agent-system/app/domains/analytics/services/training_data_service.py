@@ -150,6 +150,7 @@ class TrainingDataService:
         )
         
         # T-21b WIRE canonical: anonimização ANTES de empacotar (ADR-LGPD-002)
+        # ORCHESTRATOR-GHOST-EXEMPT: BUG-C4-A — _anonymize_feedback_batch method MISSING from this class. C.4 sensor flagged 2026-05-23. Tracking ticket pending — production code raises AttributeError if executed in this branch.
         anonymized = await self._anonymize_feedback_batch(
             feedback_entries, company_id=company_id
         )

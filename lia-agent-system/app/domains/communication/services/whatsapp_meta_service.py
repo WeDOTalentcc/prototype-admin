@@ -103,6 +103,7 @@ class MetaWhatsAppService(WhatsAppProvider):
         Returns:
             SendResult with message ID
         """
+        # ORCHESTRATOR-GHOST-EXEMPT: format_phone_number defined in WhatsAppProvider base
         formatted_to = self.format_phone_number(to)
         
         if self.is_development or not self.is_configured:

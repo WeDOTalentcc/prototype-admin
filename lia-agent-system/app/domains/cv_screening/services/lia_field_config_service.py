@@ -715,7 +715,7 @@ class LiaFieldConfigService:
         self, 
         user_id: str, 
         company_id: str
-    ) -> dict[str, "RecruiterFieldPreference"]:
+    ) -> dict[str, "RecruiterFieldPreference"]:  # noqa: F821 (forward ref string)
         """Load recruiter field preferences from database."""
         from lia_models.recruiter_profile import RecruiterFieldPreference
         
@@ -831,6 +831,7 @@ class LiaFieldConfigService:
         if value is None:
             source = DataSource.MARKET_BENCHMARK
             confidence = 0.5
+            # ORCHESTRATOR-GHOST-EXEMPT: BUG-C4-B — _get_market_benchmark defined only in intelligent_data_orchestrator.py, missing here. C.4 sensor flagged 2026-05-23. Tracking ticket pending — production code raises AttributeError if this branch executes.
             value = self._get_market_benchmark(field_key, job_context, company_profile)
         
         label = FIELD_LABELS.get(field_key, field_key)

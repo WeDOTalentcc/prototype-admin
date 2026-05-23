@@ -49,7 +49,19 @@ REPO_ROOT = pathlib.Path(__file__).resolve().parent.parent
 SCAN_ROOTS = [
     REPO_ROOT / "app" / "domains",
 ]
-ORCHESTRATOR_GLOB = "*orchestrator*.py"
+# C.4 (Workstream C ticket 4, 2026-05-23): expanded scope to include
+# `*service*.py` so we catch F-12 class of bugs (gemini_voice_service.py
+# had self._llm_service ghost — same root cause as F-01 orchestrator,
+# different filename). Keep `*orchestrator*.py` as a first-class glob too
+# so legacy single-glob behaviour is preserved.
+ORCHESTRATOR_GLOBS = [
+    "*orchestrator*.py",
+    "*service*.py",
+]
+# Backward-compat alias (some callers / tests may still reference the
+# scalar constant). Points to the legacy glob so behavior matches old
+# default when accessed by mistake.
+ORCHESTRATOR_GLOB = ORCHESTRATOR_GLOBS[0]
 EXEMPT_MARKER = "# ORCHESTRATOR-GHOST-EXEMPT"
 
 
@@ -216,12 +228,21 @@ def collect_violations(path: pathlib.Path) -> list[tuple[str, str, int]]:
 
 
 def iter_orchestrator_files() -> list[pathlib.Path]:
+    """C.4: walk SCAN_ROOTS once per glob pattern; dedupe in case a file
+    matches both (e.g. `voice_screening_orchestrator_service.py`).
+    """
+    seen: set[pathlib.Path] = set()
     files: list[pathlib.Path] = []
     for root in SCAN_ROOTS:
         if not root.exists():
             continue
-        for path in root.rglob(ORCHESTRATOR_GLOB):
-            if path.is_file() and path.suffix == ".py":
+        for pattern in ORCHESTRATOR_GLOBS:
+            for path in root.rglob(pattern):
+                if not path.is_file() or path.suffix != ".py":
+                    continue
+                if path in seen:
+                    continue
+                seen.add(path)
                 files.append(path)
     return files
 

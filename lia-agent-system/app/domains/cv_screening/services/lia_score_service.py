@@ -934,6 +934,7 @@ class LIAScoreService:
 
         # Source 2: search feedback (like/dislike history)
         if candidate_id and hasattr(self, "_search_feedback_cache"):
+            # ORCHESTRATOR-GHOST-EXEMPT: _search_feedback_cache lazy-init by load_search_feedback_for_ranking (guarded by hasattr above)
             fb = self._search_feedback_cache.get(candidate_id)
             if fb:
                 # like = +2.5 boost, dislike = -2.5 penalty (configurable via weight)
