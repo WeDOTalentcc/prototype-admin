@@ -40,13 +40,22 @@ def _make_runtime(company_id: str = "company-uuid-1") -> CustomAgentRuntime:
 # ----------------------------------------------------------------------------
 
 class TestExecuteSignature:
-    def test_channel_param_keyword_only_default_chat(self):
+    def test_channel_param_keyword_only_default_in_app(self):
+        """W-Channels-A (2026-05-23): canonical default mudou de "chat" para "in_app".
+
+        Backward compat coberta em test_channel_coherence_4_channels.py
+        ::TestChatAliasBackwardCompat — channel="chat" continua aceito como
+        alias com DeprecationWarning.
+        """
         import inspect
         sig = inspect.signature(CustomAgentRuntime.execute)
         assert "channel" in sig.parameters
         p = sig.parameters["channel"]
         assert p.kind.name == "KEYWORD_ONLY"
-        assert p.default == "chat"
+        assert p.default == "in_app", (
+            "Default canonical é 'in_app' desde W-Channels-A. "
+            "Se mudou para outro valor, revisar testes de backward compat."
+        )
 
     def test_audio_chunk_and_voice_session_id_accepted(self):
         import inspect

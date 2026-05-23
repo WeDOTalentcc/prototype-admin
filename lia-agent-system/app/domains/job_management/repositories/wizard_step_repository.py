@@ -2,9 +2,8 @@
 WizardStep Repository — data access for wizard step service (job draft +
 company-context lookups).
 
-Per ADR-001 extracted from
-app/domains/job_management/services/wizard_step_service.py and
-app/domains/job_management/services/wizard_step_service/service.py.
+Per ADR-001 extracted from app/domains/job_management/services/wizard_step_service/service.py
+(the legacy .py module foi substituído pelo pacote — vide T-08 services consolidation).
 
 NOTE on imports: original services use mixed import paths
 (app.models.company / lia_models.company). This repo lazy-imports inside

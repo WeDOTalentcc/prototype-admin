@@ -1,7 +1,20 @@
 "use client"
 
 import React from "react"
-import { Bot, Play, Pause, MoreVertical, Link2, TestTube2, Copy, Phone, PhoneCall, MessageCircle } from "lucide-react"
+import {
+  Bot,
+  Play,
+  Pause,
+  MoreVertical,
+  Link2,
+  TestTube2,
+  Copy,
+  Phone,
+  PhoneCall,
+  MessageCircle,
+  MessageSquare,
+  Mic,
+} from "lucide-react"
 import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
 import { cardStyles, badgeStyles, textStyles } from "@/lib/design-tokens"
@@ -17,6 +30,7 @@ import { BetaBadge } from "@/components/ui/beta-badge"
 import { Switch } from "@/components/ui/switch"
 import { useToggleAgentVoice, useInitiateVoiceCall } from "@/hooks/agent-studio/use-agent-voice"
 import { useToggleAgentWhatsApp } from "@/hooks/agent-studio/use-agent-whatsapp"
+import { useToggleAgentChannel } from "@/hooks/agent-studio/use-agent-channel"
 import type { CustomAgent } from "./types"
 import { safeCategoryKey } from "./types"
 
@@ -29,15 +43,72 @@ interface AgentCardProps {
   onClone?: (agent: CustomAgent) => void
 }
 
+/**
+ * W-Channels-A (2026-05-23) — channel row renderer.
+ *
+ * Cada um dos 4 canais (in_app / whatsapp / voice / voip) é renderizado por
+ * este sub-componente para garantir consistência visual + ARIA. Os toggles
+ * são INDEPENDENTES — não há regra de exclusão mútua, cliente combina como
+ * preferir (mental model Paulo, decisão Opção B 2026-05-23).
+ */
+function ChannelToggleRow({
+  icon: Icon,
+  label,
+  enabled,
+  disabled,
+  onToggle,
+  ariaOn,
+  ariaOff,
+  testId,
+  trailing,
+}: {
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>
+  label: string
+  enabled: boolean
+  disabled: boolean
+  onToggle: (next: boolean) => void
+  ariaOn: string
+  ariaOff: string
+  testId: string
+  trailing?: React.ReactNode
+}) {
+  return (
+    <div className="flex items-center justify-between gap-2 pt-2 border-t border-lia-border-subtle">
+      <div className="flex items-center gap-2 text-xs">
+        <Icon className="w-3.5 h-3.5 text-lia-text-disabled" aria-hidden="true" />
+        <span className="text-lia-text-secondary">{label}</span>
+      </div>
+      <div className="flex items-center gap-2">
+        {trailing}
+        <Switch
+          checked={enabled}
+          disabled={disabled}
+          onCheckedChange={(next) => onToggle(next)}
+          aria-label={enabled ? ariaOff : ariaOn}
+          data-testid={testId}
+        />
+      </div>
+    </div>
+  )
+}
+
 export function AgentCard({ agent, onTest, onDeploy, onToggleStatus, onClone }: AgentCardProps) {
   const t = useTranslations('agents.card')
-  // Sprint 3.7 W4-1: per-agent voice toggle + initiate hooks
-  const toggleVoice = useToggleAgentVoice(agent.id)
-  const initiateVoice = useInitiateVoiceCall(agent.id)
-  const voiceEnabled = Boolean(agent.voice_enabled)
-  // T5a UX Transformação 5: per-agent WhatsApp toggle (initiate é triggered no flow do candidato)
+  // W-Channels-A (2026-05-23): 4 canais canonical independentes (in_app / whatsapp / voice / voip).
+  // voice agora = PSTN only; voip = browser/Gemini Live. Hooks legados (voice/whatsapp) preservados;
+  // novos (in_app/voip) usam o hook unificado useToggleAgentChannel.
+  const toggleInApp = useToggleAgentChannel(agent.id, 'in_app')
   const toggleWhatsApp = useToggleAgentWhatsApp(agent.id)
+  const toggleVoice = useToggleAgentVoice(agent.id)
+  const toggleVoip = useToggleAgentChannel(agent.id, 'voip')
+  const initiateVoice = useInitiateVoiceCall(agent.id)
+
+  // Backward compat: default in_app=true (DB default); voip=false; voice=false; whatsapp=false.
+  const inAppEnabled = agent.in_app_enabled !== false
   const whatsappEnabled = Boolean(agent.whatsapp_enabled)
+  const voiceEnabled = Boolean(agent.voice_enabled)
+  const voipEnabled = Boolean(agent.voip_enabled)
+
   const tStatus = useTranslations('agents.status')
   const tCat = useTranslations('agents.customAgents')
 
@@ -113,13 +184,42 @@ export function AgentCard({ agent, onTest, onDeploy, onToggleStatus, onClone }: 
         )}
       </div>
 
-      {/* Sprint 3.7 W4-1: Voice toggle + Iniciar chamada */}
-      <div className="flex items-center justify-between gap-2 pt-2 border-t border-lia-border-subtle">
-        <div className="flex items-center gap-2 text-xs">
-          <Phone className="w-3.5 h-3.5 text-lia-text-disabled" aria-hidden="true" />
-          <span className="text-lia-text-secondary">{t('voice')}</span>
-        </div>
-        <div className="flex items-center gap-2">
+      {/* W-Channels-A: 4 canais canonical (in_app / whatsapp / voice / voip) */}
+      {/* 1. Chat lateral interno */}
+      <ChannelToggleRow
+        icon={MessageSquare}
+        label={t('inApp') || 'Chat lateral'}
+        enabled={inAppEnabled}
+        disabled={toggleInApp.isMutating}
+        onToggle={(next) => toggleInApp.trigger(next)}
+        ariaOn={t('enableInApp', { name: agent.name }) || `Habilitar chat lateral no agente ${agent.name}`}
+        ariaOff={t('disableInApp', { name: agent.name }) || `Desabilitar chat lateral no agente ${agent.name}`}
+        testId="agent-card-in-app-toggle"
+      />
+
+      {/* 2. WhatsApp */}
+      <ChannelToggleRow
+        icon={MessageCircle}
+        label={t('whatsapp') || 'WhatsApp'}
+        enabled={whatsappEnabled}
+        disabled={toggleWhatsApp.isMutating}
+        onToggle={(next) => toggleWhatsApp.trigger(next)}
+        ariaOn={t('enableWhatsapp', { name: agent.name }) || `Habilitar WhatsApp no agente ${agent.name}`}
+        ariaOff={t('disableWhatsapp', { name: agent.name }) || `Desabilitar WhatsApp no agente ${agent.name}`}
+        testId="agent-card-whatsapp-toggle"
+      />
+
+      {/* 3. Voz PSTN (ligação telefônica) — trailing = botão Iniciar chamada */}
+      <ChannelToggleRow
+        icon={Phone}
+        label={t('voice') || 'Ligação telefônica'}
+        enabled={voiceEnabled}
+        disabled={toggleVoice.isMutating}
+        onToggle={(next) => toggleVoice.trigger(next)}
+        ariaOn={t('enableVoice', { name: agent.name }) || `Habilitar voz no agente ${agent.name}`}
+        ariaOff={t('disableVoice', { name: agent.name }) || `Desabilitar voz no agente ${agent.name}`}
+        testId="agent-card-voice-toggle"
+        trailing={
           <button
             type="button"
             onClick={() => {
@@ -134,32 +234,20 @@ export function AgentCard({ agent, onTest, onDeploy, onToggleStatus, onClone }: 
             <PhoneCall className="w-3.5 h-3.5" aria-hidden="true" />
             {t('startCall')}
           </button>
-          <Switch
-            checked={voiceEnabled}
-            disabled={toggleVoice.isMutating}
-            onCheckedChange={(next) => toggleVoice.trigger(next)}
-            aria-label={voiceEnabled ? t('disableVoice', { name: agent.name }) : t('enableVoice', { name: agent.name })}
-            data-testid="agent-card-voice-toggle"
-          />
-        </div>
-      </div>
+        }
+      />
 
-      {/* T5a UX Transformação 5: WhatsApp toggle (initiate via fluxo do candidato/pipeline) */}
-      <div className="flex items-center justify-between gap-2 pt-2 border-t border-lia-border-subtle">
-        <div className="flex items-center gap-2 text-xs">
-          <MessageCircle className="w-3.5 h-3.5 text-lia-text-disabled" aria-hidden="true" />
-          <span className="text-lia-text-secondary">{t('whatsapp') || 'WhatsApp'}</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <Switch
-            checked={whatsappEnabled}
-            disabled={toggleWhatsApp.isMutating}
-            onCheckedChange={(next) => toggleWhatsApp.trigger(next)}
-            aria-label={whatsappEnabled ? (t('disableWhatsapp') || 'Desabilitar WhatsApp no agente ' + agent.name) : (t('enableWhatsapp') || 'Habilitar WhatsApp no agente ' + agent.name)}
-            data-testid="agent-card-whatsapp-toggle"
-          />
-        </div>
-      </div>
+      {/* 4. Voz no navegador (VoIP) */}
+      <ChannelToggleRow
+        icon={Mic}
+        label={t('voip') || 'Voz no navegador (VoIP)'}
+        enabled={voipEnabled}
+        disabled={toggleVoip.isMutating}
+        onToggle={(next) => toggleVoip.trigger(next)}
+        ariaOn={t('enableVoip', { name: agent.name }) || `Habilitar voz no navegador (VoIP) no agente ${agent.name}`}
+        ariaOff={t('disableVoip', { name: agent.name }) || `Desabilitar voz no navegador (VoIP) no agente ${agent.name}`}
+        testId="agent-card-voip-toggle"
+      />
 
       {/* Actions */}
       <div className="flex items-center gap-2 pt-1 border-t border-lia-border-subtle">

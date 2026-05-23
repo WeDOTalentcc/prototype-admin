@@ -1831,6 +1831,15 @@
           "step3Desc": "O modelo identifica os critérios implícitos por trás das decisões.",
           "step4Title": "Use como segunda opinião",
           "step4Desc": "Aplique o twin em novos candidatos para validar a triagem."
+        },
+        "competitiveBanner": {
+          "regionLabel": "Diferencial competitivo Gêmeos Digitais",
+          "dismissLabel": "Dispensar banner",
+          "eyebrow": "Diferencial WeDOTalent",
+          "badge": "Único no mercado HR-tech",
+          "heading": "Clone o raciocínio do seu melhor entrevistador",
+          "paragraph1": "Diferente do <bold>Eightfold Andromeda</bold> (que clona funcionários para career planning) ou de assistentes generalistas, o Digital Twin da WeDOTalent cria uma <bold>cópia comportamental do seu decisor humano de hiring</bold> — o entrevistador top que você confia mais. A IA aprende o padrão específico de avaliação dele e oferece <bold>segunda opinião automática</bold> em novos candidatos, no estilo dele.",
+          "paragraph2": "Combinado com PT-BR nativo + LGPD compliance built-in (Art. 18 erasure via FK SET NULL), é um pacote diferenciador único globalmente."
         }
       },
       "search": {
@@ -1920,7 +1929,13 @@
       "voiceDisabled": "Voz desabilitada neste agente",
       "startCall": "Iniciar chamada",
       "disableVoice": "Desabilitar voz no agente {name}",
-      "enableVoice": "Habilitar voz no agente {name}"
+      "enableVoice": "Habilitar voz no agente {name}",
+      "inApp": "Chat lateral",
+      "voip": "Voz no navegador (VoIP)",
+      "enableInApp": "Habilitar chat lateral no agente {name}",
+      "disableInApp": "Desabilitar chat lateral no agente {name}",
+      "enableVoip": "Habilitar voz no navegador (VoIP) no agente {name}",
+      "disableVoip": "Desabilitar voz no navegador (VoIP) no agente {name}"
     },
     "createModal": {
       "titleWithTemplate": "Criar Agente — {template}",
@@ -2115,35 +2130,6 @@
       "matchGood": "Boa Correspondencia",
       "matchPartial": "Correspondencia Parcial",
       "matchNo": "Sem Correspondencia"
-    },
-    "twins": {
-      "title": "Gêmeos Digitais",
-      "heading": "Clone o raciocínio dos seus melhores avaliadores",
-      "description": "Capture como um especialista da equipe avalia candidatos. O Digital Twin aprende os critérios e funciona como uma \"segunda opinião\" automática na triagem.",
-      "active": "Ativo",
-      "inactive": "Inativo",
-      "decisionsIndexed": "Decisões indexadas",
-      "accuracy": "Precisão",
-      "evaluateCandidate": "Avaliar candidato",
-      "manage": "Gerenciar",
-      "evaluationTitle": "Avaliação Digital Twin",
-      "evaluationDescription": "Resultado da avaliação do candidato pelo Digital Twin",
-      "analyzingHistory": "Analisando com base no histórico do especialista...",
-      "searchingSimilar": "Buscando decisões similares e gerando avaliação",
-      "twinDecision": "Decisão do Twin",
-      "confidenceLabel": "Confiança",
-      "reasoning": "Raciocínio",
-      "supportingDecisions": "Decisões que embasaram",
-      "similarity": "Similaridade",
-      "errorEvaluating": "Erro ao avaliar. Tente novamente.",
-      "reevaluate": "Reavaliar",
-      "loadingTwins": "Carregando twins...",
-      "noTwinsCreated": "Nenhum Digital Twin criado",
-      "noTwinsHint": "Capture o raciocínio de um especialista para criar um twin.",
-      "decisionApproved": "Aprovado",
-      "decisionRejected": "Rejeitado",
-      "decisionMaybe": "Talvez",
-      "close": "Fechar"
     },
     "search": {
       "title": "Busca Multi-Estratégia",
@@ -2594,45 +2580,13 @@
       "similarity": "Similaridade",
       "close": "Fechar",
       "loadingTwins": "Carregando twins...",
-      "noTwinsCreated": "Nenhum Digital Twin criado",
-      "captureExpertReasoning": "Capture o raciocínio de um especialista para criar um twin.",
       "indexedDecisions": "Decisões indexadas",
       "evaluateCandidate": "Avaliar candidato",
       "manage": "Gerenciar",
       "digitalTwinEvaluation": "Avaliação Digital Twin",
       "reevaluate": "Reavaliar",
       "createNew": "Novo Gêmeo Digital",
-      "twinCount": "{count, plural, =0 {Nenhum gêmeo} =1 {1 gêmeo} other {# gêmeos}}",
-      "cancel": "Cancelar",
-      "create": "Criar",
-      "createFirst": "Criar o primeiro",
-      "creating": "Criando…",
-      "decisionsFormats": "CSV, JSON ou XLSX (até 5 MB)",
-      "decisionsHelp": "Decisões anteriores ajudam a calibrar o clone",
-      "decisionsLabel": "Histórico de decisões",
-      "decisionsUploadCta": "Enviar histórico",
-      "descHelp": "Texto descritivo do agente",
-      "descLabel": "Descrição",
-      "descPlaceholder": "Descreva aqui…",
-      "description": "Descrição",
-      "errorDesc": "Tente novamente em alguns instantes",
-      "errorTitle": "Ocorreu um erro",
-      "fileTooLargeDesc": "O arquivo excede o limite permitido",
-      "fileTooLargeTitle": "Arquivo muito grande",
-      "headerDesc": "Configure um clone digital do seu recrutador",
-      "headerTitle": "Digital Twin",
-      "label": "Rótulo",
-      "nameHelp": "Nome único do agente",
-      "nameLabel": "Nome",
-      "namePlaceholder": "Ex: Triagem técnica…",
-      "noExperience": "Sem experiência prévia",
-      "specialtyHelp": "Área de atuação principal",
-      "specialtyLabel": "Especialidade",
-      "specialtyPlaceholder": "Ex: Backend, Dados…",
-      "subtitle": "Subtítulo",
-      "successDesc": "Operação realizada com sucesso",
-      "successTitle": "Sucesso!",
-      "title": "Título"
+      "twinCount": "{count, plural, =0 {Nenhum gêmeo} =1 {1 gêmeo} other {# gêmeos}}"
     },
     "candidateOrigin": {
       "origins": {
@@ -4955,7 +4909,26 @@
         "statusInProgress": "Em progresso",
         "statusWaiting": "Aguardando dados"
       },
-      "alertPreferences": "Alert Preferences"
+      "alertPreferences": {
+        "title": "Preferências de alertas",
+        "subtitle": "Configure como e quando você quer ser notificado por cada tipo de alerta.",
+        "loading": "Carregando preferências...",
+        "empty": "Nenhuma preferência configurada ainda.",
+        "saved": "Preferências salvas",
+        "toggleAria": "Ativar ou desativar alerta {type}",
+        "thresholdAria": "Limite do alerta {type}",
+        "cooldownAria": "Intervalo mínimo entre alertas {type} em horas",
+        "unit": {
+          "count": "ocorrências",
+          "hours": "horas",
+          "days": "dias",
+          "percent": "%"
+        },
+        "channelEmail": "Email",
+        "channelInApp": "No app",
+        "channelTeams": "Teams",
+        "channelWhatsapp": "WhatsApp"
+      }
     },
     "integrations": {
       "tabs": {

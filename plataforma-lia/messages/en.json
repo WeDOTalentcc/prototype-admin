@@ -1831,6 +1831,15 @@
           "step3Desc": "The model identifies the implicit criteria behind the decisions.",
           "step4Title": "Use as a second opinion",
           "step4Desc": "Apply the twin to new candidates to validate the screening."
+        },
+        "competitiveBanner": {
+          "regionLabel": "Digital Twins competitive differentiator",
+          "dismissLabel": "Dismiss banner",
+          "eyebrow": "WeDOTalent differentiator",
+          "badge": "Only HR-tech with this on the market",
+          "heading": "Clone the reasoning of your best interviewer",
+          "paragraph1": "Unlike <bold>Eightfold Andromeda</bold> (which clones employees for career planning) or generalist assistants, WeDOTalent's Digital Twin creates a <bold>behavioral copy of your human hiring decision-maker</bold> — the top interviewer you trust most. The AI learns their specific evaluation pattern and offers an <bold>automatic second opinion</bold> on new candidates, in their style.",
+          "paragraph2": "Combined with native PT-BR + built-in LGPD compliance (Art. 18 erasure via FK SET NULL), it's a globally unique differentiator package."
         }
       },
       "search": {
@@ -1920,7 +1929,13 @@
       "voiceDisabled": "Voice disabled for this agent",
       "startCall": "Start call",
       "disableVoice": "Disable voice for agent {name}",
-      "enableVoice": "Enable voice for agent {name}"
+      "enableVoice": "Enable voice for agent {name}",
+      "inApp": "Side chat",
+      "voip": "Browser voice (VoIP)",
+      "enableInApp": "Enable side chat on agent {name}",
+      "disableInApp": "Disable side chat on agent {name}",
+      "enableVoip": "Enable browser voice (VoIP) on agent {name}",
+      "disableVoip": "Disable browser voice (VoIP) on agent {name}"
     },
     "createModal": {
       "titleWithTemplate": "Create Agent — {template}",
@@ -2115,35 +2130,6 @@
       "matchGood": "Good Match",
       "matchPartial": "Partial Match",
       "matchNo": "No Match"
-    },
-    "twins": {
-      "title": "Digital Twins",
-      "heading": "Clone the reasoning of your best evaluators",
-      "description": "Capture how a team specialist evaluates candidates. The Digital Twin learns the criteria and works as an automatic \"second opinion\" in screening.",
-      "active": "Active",
-      "inactive": "Inactive",
-      "decisionsIndexed": "Decisions indexed",
-      "accuracy": "Accuracy",
-      "evaluateCandidate": "Evaluate candidate",
-      "manage": "Manage",
-      "evaluationTitle": "Digital Twin Evaluation",
-      "evaluationDescription": "Candidate evaluation result by Digital Twin",
-      "analyzingHistory": "Analyzing based on the specialist's history...",
-      "searchingSimilar": "Searching similar decisions and generating evaluation",
-      "twinDecision": "Twin's Decision",
-      "confidenceLabel": "Confidence",
-      "reasoning": "Reasoning",
-      "supportingDecisions": "Supporting decisions",
-      "similarity": "Similarity",
-      "errorEvaluating": "Error evaluating. Try again.",
-      "reevaluate": "Reevaluate",
-      "loadingTwins": "Loading twins...",
-      "noTwinsCreated": "No Digital Twin created",
-      "noTwinsHint": "Capture the reasoning of a specialist to create a twin.",
-      "decisionApproved": "Approved",
-      "decisionRejected": "Rejected",
-      "decisionMaybe": "Maybe",
-      "close": "Close"
     },
     "search": {
       "title": "Multi-Strategy Search",
@@ -2594,45 +2580,13 @@
       "similarity": "Similarity",
       "close": "Close",
       "loadingTwins": "Loading twins...",
-      "noTwinsCreated": "No Digital Twin created",
-      "captureExpertReasoning": "Capture an expert's reasoning to create a twin.",
       "indexedDecisions": "Indexed decisions",
       "evaluateCandidate": "Evaluate candidate",
       "manage": "Manage",
       "digitalTwinEvaluation": "Digital Twin Evaluation",
       "reevaluate": "Re-evaluate",
       "createNew": "New Digital Twin",
-      "twinCount": "{count, plural, =0 {No twins} =1 {1 twin} other {# twins}}",
-      "cancel": "Cancel",
-      "create": "Create",
-      "createFirst": "Create first",
-      "creating": "Creating…",
-      "decisionsFormats": "CSV, JSON or XLSX (up to 5 MB)",
-      "decisionsHelp": "Past decisions help calibrate the clone",
-      "decisionsLabel": "Decision history",
-      "decisionsUploadCta": "Upload history",
-      "descHelp": "Agent description text",
-      "descLabel": "Description",
-      "descPlaceholder": "Type description here…",
-      "description": "Description",
-      "errorDesc": "Please try again in a moment",
-      "errorTitle": "An error occurred",
-      "fileTooLargeDesc": "File exceeds the allowed size",
-      "fileTooLargeTitle": "File too large",
-      "headerDesc": "Configure a digital clone of your recruiter",
-      "headerTitle": "Digital Twin",
-      "label": "Label",
-      "nameHelp": "Unique agent name",
-      "nameLabel": "Name",
-      "namePlaceholder": "E.g. Technical screening…",
-      "noExperience": "No previous experience",
-      "specialtyHelp": "Main area of expertise",
-      "specialtyLabel": "Specialty",
-      "specialtyPlaceholder": "E.g. Backend, Data…",
-      "subtitle": "Subtitle",
-      "successDesc": "Operation completed successfully",
-      "successTitle": "Success!",
-      "title": "Title"
+      "twinCount": "{count, plural, =0 {No twins} =1 {1 twin} other {# twins}}"
     },
     "candidateOrigin": {
       "origins": {
@@ -4955,7 +4909,26 @@
         "statusInProgress": "In progress",
         "statusWaiting": "Awaiting data"
       },
-      "alertPreferences": "Alert Preferences"
+      "alertPreferences": {
+        "title": "Alert preferences",
+        "subtitle": "Choose how and when to be notified for each alert type.",
+        "loading": "Loading preferences...",
+        "empty": "No preferences configured yet.",
+        "saved": "Preferences saved",
+        "toggleAria": "Enable or disable {type} alert",
+        "thresholdAria": "{type} alert threshold",
+        "cooldownAria": "Minimum cooldown between {type} alerts in hours",
+        "unit": {
+          "count": "occurrences",
+          "hours": "hours",
+          "days": "days",
+          "percent": "%"
+        },
+        "channelEmail": "Email",
+        "channelInApp": "In-app",
+        "channelTeams": "Teams",
+        "channelWhatsapp": "WhatsApp"
+      }
     },
     "integrations": {
       "tabs": {
