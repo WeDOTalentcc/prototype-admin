@@ -78,7 +78,14 @@ def test_thumbs_with_text_persists_to_correction_field(monkeypatch):
         category="inaccurate",
     )
 
-    ack = asyncio.run(lia_feedback.submit_thumbs(body, current_user=user, db=fake_db))
+    ack = asyncio.run(
+        lia_feedback.submit_thumbs(
+            body,
+            current_user=user,
+            company_id=user.company_id,
+            db=fake_db,
+        )
+    )
 
     assert ack.status == "recorded"
     # Critical assertion — text went to `correction`, not `feedback_text`.
@@ -95,6 +102,11 @@ def test_regenerate_rejects_cross_company_message(monkeypatch):
     not belong to the caller's company must 404. This is what stops a
     tenant from poking another tenant's conversation history through
     the regenerate handshake.
+
+    Recovery 2026-05-23 update: assinatura agora separa ``company_id``
+    como parâmetro próprio (canonical ``Depends(require_company_id)``
+    do ``app.shared.security``). Passamos explícito aqui já que estamos
+    chamando a função direto, fora do FastAPI dependency injection.
     """
     user = _user()
     body = lia_feedback.RegenerateRequest(
@@ -110,23 +122,48 @@ def test_regenerate_rejects_cross_company_message(monkeypatch):
 
     with pytest.raises(HTTPException) as exc_info:
         asyncio.run(
-            lia_feedback.regenerate_response(body, current_user=user, db=fake_db)
+            lia_feedback.regenerate_response(
+                body,
+                current_user=user,
+                company_id=user.company_id,
+                db=fake_db,
+            )
         )
     assert exc_info.value.status_code == 404
     assert "not found" in exc_info.value.detail.lower()
 
 
-def test_regenerate_requires_company_context():
-    """User without company_id cannot use the learning loop at all."""
+def test_regenerate_rejects_invalid_company_id():
+    """
+    Recovery 2026-05-23 — substitui o test legacy
+    ``test_regenerate_requires_company_context``. Antes o helper local
+    ``_require_company_id`` retornava 400 quando user.company_id == None.
+
+    Com o canonical ``require_company_id`` do ``app.shared.security``, esse
+    cenário é interceptado upstream (no FastAPI dependency, com Prometheus
+    counter ``lia_endpoint_require_company_id_total{outcome=invalid}``).
+    Tests do helper canonical já cobrem esse caminho.
+
+    O que ainda faz sentido testar aqui: o endpoint ``regenerate_response``
+    rejeita company_id sintaticamente inválido (NÃO-UUID) com 400. Esse é
+    o guard do `_UUID(company_id)` parse, que protege contra payload
+    manualmente forjado mesmo se o canonical gate passar.
+    """
+    user = _user()
     body = lia_feedback.RegenerateRequest(
         session_id="sess-x",
         message_id=str(uuid.uuid4()),
     )
-    user = SimpleNamespace(id=uuid.uuid4(), company_id=None)
     fake_db = MagicMock()
 
     with pytest.raises(HTTPException) as exc_info:
         asyncio.run(
-            lia_feedback.regenerate_response(body, current_user=user, db=fake_db)
+            lia_feedback.regenerate_response(
+                body,
+                current_user=user,
+                company_id="not-a-uuid",  # forçar ValueError no _UUID parse
+                db=fake_db,
+            )
         )
     assert exc_info.value.status_code == 400
+    assert "invalid" in exc_info.value.detail.lower()
