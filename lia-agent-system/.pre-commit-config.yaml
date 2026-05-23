@@ -399,3 +399,57 @@ repos:
         entry: python3 scripts/check_no_client_id_query_bypass.py
         files: ^app/api/.*\.py$
         pass_filenames: false
+
+      # ────────────────────────────────────────────────────────────────────
+      # Wave 1 sensors (2026-05-22) · canonical harness wiring
+      # Pre-audit: ~/Documents/Python/replit_lia_audit/sprint_logs/
+      # ────────────────────────────────────────────────────────────────────
+
+      - id: c3b-wires-injection-guard
+        name: "W1-005: c3b_layer chama PromptInjectionGuard antes do LLM (BLOCKING, baseline=0)"
+        language: system
+        entry: python3 scripts/check_c3b_wires_injection_guard.py
+        files: ^app/shared/(compliance|robustness)/.*\.py$
+        pass_filenames: false
+
+      - id: hate-speech-guard-wired
+        name: "W1-007: c3b_layer.pre_compliance chama HateSpeechGuard ANTES de PII strip (BLOCKING)"
+        language: system
+        entry: python3 scripts/check_hate_speech_guard_wired.py
+        files: ^app/shared/compliance/.*\.py$
+        pass_filenames: false
+
+      - id: no-legacy-base-agent
+        name: "W1-002: nenhum import de app.agents.base_agent fora do shim (BLOCKING)"
+        language: system
+        entry: python3 scripts/check_no_legacy_base_agent.py
+        files: ^(app|libs|tests)/.*\.py$
+        pass_filenames: false
+
+      - id: yaml-decorator-coherence
+        name: "W1-001: agents_registry.yaml × @register_agent decorator coherence (BLOCKING)"
+        language: system
+        entry: python3 scripts/check_yaml_decorator_coherence.py
+        files: ^(app/agents_registry\.yaml|app/(domains|shared/agents)/.*\.py)$
+        pass_filenames: false
+
+      - id: agents-registry-paths
+        name: "W1-001 (R-004): cada class_path em agents_registry.yaml resolve (BLOCKING)"
+        language: system
+        entry: python3 scripts/check_agents_registry_paths.py
+        files: ^(app/agents_registry\.yaml|app/domains/.*/agents/.*\.py)$
+        pass_filenames: false
+
+      - id: audit-hash-chain-exists
+        name: "W1-006: audit_execution_metadata tem hash chain SHA-256 + trigger (BLOCKING static, DB check optional)"
+        language: system
+        entry: python3 scripts/check_audit_hash_chain_exists.py --skip-db
+        files: ^alembic/versions/176_audit_hash_chain\.py$
+        pass_filenames: false
+
+      - id: governance-executor-wired
+        name: "W1-004: ToolExecutor wirou Step 2 (company_id) + Step 7 (audit) + Step 8 (metrics) (BLOCKING)"
+        language: system
+        entry: python3 scripts/check_governance_executor_wired.py
+        files: ^app/tools/executor\.py$
+        pass_filenames: false
