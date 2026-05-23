@@ -68,7 +68,7 @@ TOOL_REGISTRY_BACKLOG = frozenset({
     "app/domains/cv_screening/agents/pipeline_tool_registry.py",
     # policy_tool_registry.py — removed 2026-05-23: no select(Model) violations; text() migrated/EXEMPT
     # wizard_tool_registry.py — removed 2026-05-23: MIGRATE 1 to JobVacancyCrudRepository.get_by_id_strict_company
-    "app/domains/pipeline/agents/pipeline_tool_registry.py",
+    # pipeline_tool_registry.py — removed 2026-05-23 Wave C-2 Agent F: 8 SQL blocks migrated to repos + 4 EXEMPT markers; 0 select(Model) violations found
     # diversity_tool_registry.py — removed 2026-05-23: no select() violations; was pre-emptive
     # passive_pipeline_tool_registry.py — removed 2026-05-23 W1-004-D: no select(Model) violations found; text() 1 MIGRATE + 2 EXEMPT
     # sourcing_tool_registry.py — removed 2026-05-23: no select() violations; was pre-emptive

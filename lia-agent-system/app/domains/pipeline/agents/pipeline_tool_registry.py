@@ -16,6 +16,10 @@ from lia_agents_core.tool_adapter import ToolOutput
 from sqlalchemy import text
 
 from app.core.database import AsyncSessionLocal
+from app.domains.pipeline.repositories.candidate_pipeline_repository import CandidatePipelineRepository
+from app.domains.pipeline.repositories.lia_opinion_repository import LiaOpinionRepository
+from app.domains.pipeline.repositories.stage_repository import StageRepository
+from app.domains.pipeline.repositories.recruiter_preferences_repository import RecruiterPreferencesRepository
 from app.shared.compliance.fairness_guard import FairnessGuard
 from app.shared.tool_handler import tool_handler
 
@@ -32,69 +36,29 @@ async def _wrap_get_candidate_profile(**kwargs: Any) -> dict[str, Any]:
         return {"success": False, "error": "candidate_id é obrigatório"}
 
     async with AsyncSessionLocal() as db:
-        result = await db.execute(
-            text("""
-                SELECT c.id, c.name, c.email, c.phone, c.linkedin_url,
-                       c.current_title, c.current_company,
-                       c.technical_skills, c.soft_skills,
-                       c.location_city, c.location_state,
-                       c.salary_expectation_clt, c.salary_expectation_pj,
-                       c.work_model_preference, c.is_remote,
-                       c.source, c.resume_url
-                FROM candidates c
-                WHERE c.id = :cid
-                  AND (c.company_id IS NULL OR c.company_id = :company_id)
-                LIMIT 1
-            """),
-            {"cid": candidate_id, "company_id": company_id},
-        )
-        row = result.mappings().first()
-        if not row:
-            return {"success": False, "error": "Candidato não encontrado"}
+        repo = CandidatePipelineRepository(db)
+        profile = await repo.get_profile(candidate_id, company_id)
 
-        profile = dict(row)
-        for k, v in profile.items():
-            if isinstance(v, (datetime,)):
-                profile[k] = v.isoformat()
+    if not profile:
+        return {"success": False, "error": "Candidato não encontrado"}
 
-        return {"success": True, "profile": profile}
+    return {"success": True, "profile": profile}
 
 
 @tool_handler("pipeline")
 async def _wrap_get_candidate_wsi_scores(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "")
     job_id = kwargs.get("job_id", "")
+    company_id = kwargs.get("company_id", "")
 
     async with AsyncSessionLocal() as db:
-        query = """
-            SELECT lo.id, lo.score, lo.wsi_score, lo.opinion_type, lo.source,
-                   lo.recommendation, lo.technical_analysis, lo.behavioral_analysis,
-                   lo.strengths, lo.concerns, lo.gaps,
-                   lo.created_at
-            FROM lia_opinions lo
-            WHERE lo.candidate_id = :cid
-        """
-        params: dict[str, Any] = {"cid": candidate_id}
-        if job_id:
-            query += " AND lo.job_vacancy_id = :jid"
-            params["jid"] = job_id
-        query += " ORDER BY lo.created_at DESC LIMIT 5"
+        repo = LiaOpinionRepository(db)
+        scores = await repo.get_by_candidate(candidate_id, company_id, job_id=job_id or None)
 
-        result = await db.execute(text(query), params)
-        rows = result.mappings().all()
+    if not scores:
+        return {"success": True, "scores": [], "message": "Nenhum score WSI encontrado para este candidato"}
 
-        if not rows:
-            return {"success": True, "scores": [], "message": "Nenhum score WSI encontrado para este candidato"}
-
-        scores = []
-        for row in rows:
-            score_data = dict(row)
-            for k, v in score_data.items():
-                if isinstance(v, (datetime,)):
-                    score_data[k] = v.isoformat()
-            scores.append(score_data)
-
-        return {"success": True, "scores": scores}
+    return {"success": True, "scores": scores}
 
 
 @tool_handler("pipeline")
@@ -103,6 +67,10 @@ async def _wrap_get_candidate_screening_results(**kwargs: Any) -> dict[str, Any]
     job_id = kwargs.get("job_id", "")
 
     async with AsyncSessionLocal() as db:
+        # ADR-001-EXEMPT: screening_tasks table has no company_id column — tenant isolated
+        # via FK chain screening_tasks.candidate_id → candidates.company_id.
+        # Dedicated ScreeningTaskRepository lives in cv_screening domain; cross-domain
+        # import would violate domain boundaries more than the SQL inline here.
         query = """
             SELECT st.id, st.status, st.channel, st.screening_type,
                    st.responses, st.lia_analysis, st.score,
@@ -140,23 +108,13 @@ async def _wrap_get_candidate_salary_info(**kwargs: Any) -> dict[str, Any]:
     company_id = kwargs.get("company_id", "")  # P0.A canonical: salary PII leak gate
 
     async with AsyncSessionLocal() as db:
-        result = await db.execute(
-            text("""
-                SELECT c.salary_expectation_clt, c.salary_expectation_pj,
-                       c.current_title, c.current_company
-                FROM candidates c
-                WHERE c.id = :cid
-                  AND (c.company_id IS NULL OR c.company_id = :company_id)
-                LIMIT 1
-            """),
-            {"cid": candidate_id, "company_id": company_id},
-        )
-        row = result.mappings().first()
-        if not row:
-            return {"success": False, "error": "Candidato não encontrado"}
+        repo = CandidatePipelineRepository(db)
+        salary_info = await repo.get_salary_info(candidate_id, company_id)
 
-        salary_info = dict(row)
-        return {"success": True, "salary_info": salary_info}
+    if not salary_info:
+        return {"success": False, "error": "Candidato não encontrado"}
+
+    return {"success": True, "salary_info": salary_info}
 
 
 @tool_handler("pipeline")
@@ -188,6 +146,9 @@ async def _wrap_update_candidate_field(**kwargs: Any) -> dict[str, Any]:
 
     try:
         async with AsyncSessionLocal() as db:
+            # ADR-001-EXEMPT: _ALLOWED_FIELDS frozenset + _SAFE_COL_RE regex — dynamic field
+            # update with double sanitization (allowlist + regex). 13 individual repo methods
+            # would not add security beyond what the allowlist already provides.
             await db.execute(
                 text(f"UPDATE candidates SET {field_name} = :val, updated_at = NOW() WHERE id = :cid"),
                 {"val": field_value, "cid": candidate_id},
@@ -245,40 +206,22 @@ async def _wrap_get_stage_sub_statuses(**kwargs: Any) -> dict[str, Any]:
     company_id = kwargs.get("company_id", "")
 
     async with AsyncSessionLocal() as db:
-        result = await db.execute(
-            text("""
-                SELECT rs.name AS stage_name,
-                       ss.name AS sub_status_name,
-                       ss.display_name,
-                       ss.is_default,
-                       ss.is_waiting,
-                       ss.waiting_for,
-                       ss.color,
-                       ss.description
-                FROM recruitment_stages rs
-                JOIN recruitment_sub_statuses ss ON ss.stage_id = rs.id
-                WHERE rs.name = :stage_name
-                  AND rs.company_id = :company_id
-                  AND ss.is_active = TRUE
-                ORDER BY ss.sub_status_order
-            """),
-            {"stage_name": to_stage, "company_id": company_id},
-        )
-        rows = result.mappings().all()
+        repo = StageRepository(db)
+        rows = await repo.get_sub_statuses_for_stage(to_stage, company_id)
 
-        if not rows:
-            logger.debug("[pipeline_tools] get_stage_sub_statuses: no active sub-statuses for stage=%s company=%s", to_stage, company_id)
-            return {
-                "success": True,
-                "sub_statuses": [],
-                "message": "Nenhum sub-status ativo encontrado para esta etapa.",
-            }
-
-        logger.debug("[pipeline_tools] get_stage_sub_statuses: found %d sub-statuses for stage=%s", len(rows), to_stage)
+    if not rows:
+        logger.debug("[pipeline_tools] get_stage_sub_statuses: no active sub-statuses for stage=%s company=%s", to_stage, company_id)
         return {
             "success": True,
-            "sub_statuses": [dict(r) for r in rows],
+            "sub_statuses": [],
+            "message": "Nenhum sub-status ativo encontrado para esta etapa.",
         }
+
+    logger.debug("[pipeline_tools] get_stage_sub_statuses: found %d sub-statuses for stage=%s", len(rows), to_stage)
+    return {
+        "success": True,
+        "sub_statuses": rows,
+    }
 
 
 @tool_handler("pipeline")
@@ -291,20 +234,8 @@ async def _wrap_suggest_sub_status(**kwargs: Any) -> dict[str, Any]:
     if to_stage and company_id:
         try:
             async with AsyncSessionLocal() as db:
-                result = await db.execute(
-                    text("""
-                        SELECT ss.name, ss.display_name
-                        FROM recruitment_stages rs
-                        JOIN recruitment_sub_statuses ss ON ss.stage_id = rs.id
-                        WHERE rs.name = :stage_name
-                          AND rs.company_id = :company_id
-                          AND ss.is_active = TRUE
-                          AND ss.is_default = TRUE
-                        LIMIT 1
-                    """),
-                    {"stage_name": to_stage, "company_id": company_id},
-                )
-                row = result.mappings().first()
+                repo = StageRepository(db)
+                row = await repo.get_default_sub_status(to_stage, company_id)
                 if row:
                     logger.debug("[pipeline_tools] suggest_sub_status: DB default found for stage=%s: %s", to_stage, row["name"])
                     return {
@@ -453,6 +384,11 @@ async def _wrap_get_job_context(**kwargs: Any) -> dict[str, Any]:
         return {"success": False, "error": "job_id é obrigatório"}
 
     async with AsyncSessionLocal() as db:
+        # ADR-001-EXEMPT: job_vacancies is Rails-owned table (schema managed by ats_api/);
+        # JobVacancyCrudRepository in job_creation domain reads CRUD fields. This tool
+        # needs pipeline_config + screening_config fields not yet in that repo. Adding
+        # cross-domain repo import would couple pipeline → job_creation; inline text()
+        # is the lesser coupling here.
         result = await db.execute(
             text("""
                 SELECT jv.id, jv.title, jv.department, jv.description,
@@ -582,37 +518,20 @@ async def _wrap_check_candidate_availability(**kwargs: Any) -> dict[str, Any]:
 async def _wrap_get_recruiter_preferences(**kwargs: Any) -> dict[str, Any]:
     recruiter_id = kwargs.get("recruiter_id", "")
     action_behavior = kwargs.get("action_behavior", "")
+    company_id = kwargs.get("company_id", "")
 
     if not recruiter_id:
         return {"success": True, "preferences": [], "message": "Sem preferências salvas"}
 
     try:
         async with AsyncSessionLocal() as db:
-            result = await db.execute(
-                text("""
-                    SELECT preference_key, preference_value, frequency, context, last_used
-                    FROM recruiter_preferences
-                    WHERE recruiter_id = :rid
-                      AND (context->>'action_behavior' = :behavior OR context->>'action_behavior' IS NULL)
-                    ORDER BY frequency DESC, last_used DESC
-                    LIMIT 10
-                """),
-                {"rid": recruiter_id, "behavior": action_behavior},
-            )
-            rows = result.mappings().all()
+            repo = RecruiterPreferencesRepository(db)
+            prefs = await repo.get_preferences(recruiter_id, company_id, action_behavior=action_behavior)
 
-            if not rows:
-                return {"success": True, "preferences": [], "message": "Sem preferências salvas para este contexto"}
+        if not prefs:
+            return {"success": True, "preferences": [], "message": "Sem preferências salvas para este contexto"}
 
-            prefs = []
-            for row in rows:
-                p = dict(row)
-                for k, v in p.items():
-                    if isinstance(v, (datetime,)):
-                        p[k] = v.isoformat()
-                prefs.append(p)
-
-            return {"success": True, "preferences": prefs}
+        return {"success": True, "preferences": prefs}
     except Exception as e:
         # P1 audit 2026-05-20: graceful degradation legitima (tabela em rollout).
         # Adicionada flag fallback_used canonical.
@@ -627,6 +546,7 @@ async def _wrap_save_recruiter_preference(**kwargs: Any) -> dict[str, Any]:
     preference_key = kwargs.get("preference_key", "")
     preference_value = kwargs.get("preference_value", "")
     context = kwargs.get("context", {})
+    company_id = kwargs.get("company_id", "")
 
     BLOCKED_KEYS = {"rejection_reason", "candidate_personal_data", "salary_data"}
     if preference_key in BLOCKED_KEYS:
@@ -637,57 +557,14 @@ async def _wrap_save_recruiter_preference(**kwargs: Any) -> dict[str, Any]:
 
     try:
         async with AsyncSessionLocal() as db:
-            existing = await db.execute(
-                text("""
-                    SELECT id, frequency FROM recruiter_preferences
-                    WHERE recruiter_id = :rid AND preference_key = :pkey
-                    LIMIT 1
-                """),
-                {"rid": recruiter_id, "pkey": preference_key},
-            )
-            row = existing.mappings().first()
+            repo = RecruiterPreferencesRepository(db)
+            await repo.upsert_preference(recruiter_id, company_id, preference_key, preference_value, context)
 
-            if row:
-                await db.execute(
-                    text("""
-                        UPDATE recruiter_preferences
-                        SET preference_value = :pval,
-                            frequency = :freq,
-                            last_used = NOW(),
-                            context = :ctx
-                        WHERE id = :pid
-                    """),
-                    {
-                        "pval": preference_value,
-                        "freq": (row["frequency"] or 0) + 1,
-                        "ctx": json.dumps(context) if isinstance(context, dict) else context,
-                        "pid": str(row["id"]),
-                    },
-                )
-            else:
-                await db.execute(
-                    text("""
-                        INSERT INTO recruiter_preferences (recruiter_id, preference_key, preference_value, frequency, context, last_used)
-                        VALUES (:rid, :pkey, :pval, 1, :ctx, NOW())
-                    """),
-                    {
-                        "rid": recruiter_id,
-                        "pkey": preference_key,
-                        "pval": preference_value,
-                        "ctx": json.dumps(context) if isinstance(context, dict) else context,
-                    },
-                )
-
-            await db.commit()
-            return {
-                "success": True,
-                "message": f"Preferência '{preference_key}' salva com sucesso",
-            }
+        return {
+            "success": True,
+            "message": f"Preferência '{preference_key}' salva com sucesso",
+        }
     except Exception as e:
-        try:
-            await db.rollback()
-        except Exception:
-            pass
         # P1 audit 2026-05-20: REGRA 4 CLAUDE.md — fail-loud quando save NAO
         # persistiu. Anteriormente dizia "Preferência registrada" sem registrar.
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
@@ -718,28 +595,16 @@ async def _get_candidate_phone(
     """
     try:
         async with AsyncSessionLocal() as db:
-            if candidate_email:
-                result = await db.execute(
-                    text("SELECT phone FROM candidates WHERE email = :email AND (company_id IS NULL OR company_id = :company_id) LIMIT 1"),
-                    {"email": candidate_email, "company_id": company_id},
-                )
-                row = result.mappings().first()
-                if row and row.get("phone"):
-                    return row["phone"]
+            repo = CandidatePipelineRepository(db)
+            if candidate_email and company_id:
+                phone = await repo.get_phone_by_email(candidate_email, company_id)
+                if phone:
+                    return phone
 
-            result = await db.execute(
-                text("""
-                    SELECT c.phone FROM candidates c
-                    JOIN interviews i ON i.candidate_id = c.id
-                    WHERE i.id::text = :iid
-                      AND (c.company_id IS NULL OR c.company_id = :company_id)
-                    LIMIT 1
-                """),
-                {"iid": interview_id, "company_id": company_id},
-            )
-            row = result.mappings().first()
-            if row and row.get("phone"):
-                return row["phone"]
+            if company_id:
+                phone = await repo.get_phone_by_interview(interview_id, company_id)
+                if phone:
+                    return phone
     except Exception as e:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.debug(f"[pipeline_tools] _get_candidate_phone failed: {e}")
@@ -754,6 +619,11 @@ async def _wrap_get_interview_details(**kwargs: Any) -> dict[str, Any]:
         return {"success": False, "error": "candidate_id é obrigatório"}
 
     async with AsyncSessionLocal() as db:
+        # ADR-001-EXEMPT: interviews table has no company_id column — tenant isolated
+        # via FK chain vacancy_candidates.company_id → candidates.company_id.
+        # InterviewRepository in interview_scheduling domain manages interview CRUD;
+        # cross-domain import for a read-only lookup here would couple pipeline →
+        # interview_scheduling unnecessarily.
         result = await db.execute(
             text("""
                 SELECT
@@ -819,6 +689,10 @@ async def _wrap_cancel_interview(**kwargs: Any) -> dict[str, Any]:
 
     try:
         async with AsyncSessionLocal() as db:
+            # ADR-001-EXEMPT: multi-step orchestration with external side-effects
+            # (DB write + Graph API cancel + email/WhatsApp notification + audit log).
+            # Not a pure query — is a workflow. Extracting to repo would not improve
+            # cohesion and would force repo to depend on CalendarService + comm_dispatcher.
             result = await db.execute(
                 text("""
                     SELECT id::text, candidate_email, candidate_name,
@@ -912,6 +786,7 @@ async def _wrap_cancel_interview(**kwargs: Any) -> dict[str, Any]:
                     logger.warning(f"[pipeline_tools] WhatsApp cancel notification failed: {wa_err}")
                     notifications_sent.append({"channel": "whatsapp", "status": "failed"})
 
+        # ADR-001-EXEMPT: part of interview workflow — audit notification INSERT; see EXEMPT marker on main async-with block above
         try:
             async with AsyncSessionLocal() as db:
                 await db.execute(
@@ -981,6 +856,10 @@ async def _wrap_reschedule_interview(**kwargs: Any) -> dict[str, Any]:
             }
 
         async with AsyncSessionLocal() as db:
+            # ADR-001-EXEMPT: multi-step orchestration with external side-effects
+            # (DB write + Graph API reschedule + email/WhatsApp notification + audit log).
+            # Not a pure query — is a workflow. Extracting to repo would not improve
+            # cohesion and would force repo to depend on CalendarService + comm_dispatcher.
             result = await db.execute(
                 text("""
                     SELECT id::text, candidate_email, candidate_name,
@@ -1069,6 +948,7 @@ async def _wrap_reschedule_interview(**kwargs: Any) -> dict[str, Any]:
                     logger.warning(f"[pipeline_tools] WhatsApp reschedule notification failed: {wa_err}")
                     notifications_sent.append({"channel": "whatsapp", "status": "failed"})
 
+        # ADR-001-EXEMPT: part of interview workflow — audit notification INSERT; see EXEMPT marker on main async-with block above
         try:
             async with AsyncSessionLocal() as db:
                 await db.execute(
@@ -1360,7 +1240,7 @@ ALL_TOOLS: list[ToolDefinition] = [
             "properties": {
                 "recruiter_id": {"type": "string", "description": "UUID do recrutador"},
                 "preference_key": {"type": "string", "description": "Chave da preferência (ex: preferred_platform, preferred_time_slot, preferred_format)"},
-                "preference_value": {"type": "string", "description": "Valor da preferência (ex: Google Meet, tarde, remoto)"},
+                "preference_value": {"type": "string", "description": "Novo valor da preferência (ex: Google Meet, tarde, remoto)"},
                 "context": {"type": "object", "description": "Contexto adicional: action_behavior, job_type, etc."},
             },
             "required": ["recruiter_id", "preference_key", "preference_value"],

@@ -62,7 +62,7 @@ TOOL_REGISTRY_BACKLOG = frozenset({
     "app/domains/cv_screening/agents/pipeline_tool_registry.py",
     # policy_tool_registry.py — removed 2026-05-23: MIGRATE 1+2 to HiringPolicyRepository + EXEMPT markers
     # wizard_tool_registry.py — removed 2026-05-23: MIGRATE 1 to JobVacancyCrudRepository + EXEMPT markers
-    "app/domains/pipeline/agents/pipeline_tool_registry.py",
+    # pipeline_tool_registry.py — removed 2026-05-23 Wave C-2 Agent F: 8 MIGRATE to 4 repos (CandidatePipelineRepository, LiaOpinionRepository, StageRepository, RecruiterPreferencesRepository) + 4 EXEMPT markers
     # passive_pipeline_tool_registry.py — removed 2026-05-23 W1-004-D: 1 MIGRATE to PassiveCandidateRepository + 2 EXEMPT markers
     # talent_pool_tool_registry.py — removed W1-004-E: 6 MIGRATE to TalentPoolRepository + TalentPoolCandidateRepository + 1 EXEMPT marker (move_candidates_to_vacancy)
 })
