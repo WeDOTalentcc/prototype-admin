@@ -108,7 +108,6 @@ export interface CustomAgent {
   /** W-Channels-A (2026-05-23): per-agent VoIP (browser, Twilio VoIP + Gemini Live) — default OFF. */
   voip_enabled?: boolean
   /** W-Channels-A (2026-05-23): per-agent chat lateral interno — default ON (backward compat). */
-  in_app_enabled?: boolean
   /** T5a UX Transformação 5: per-agent WhatsApp flag (default OFF). Cliente toggles via UI. */
   whatsapp_enabled?: boolean
   total_executions: number

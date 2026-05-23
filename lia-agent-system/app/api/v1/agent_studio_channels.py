@@ -1,11 +1,14 @@
 """
 Agent Studio Channel Toggles — W-Channels-A (2026-05-23).
 
-REST canonical para os 2 canais novos do mental model Paulo
-(Opção B, decisão 2026-05-23):
+REST canonical para o canal voip novo do mental model Paulo
+(Opção B revisada 2026-05-23):
 
 - ``voip_enabled``    — voz no navegador (Twilio VoIP SDK + Gemini Live)
-- ``in_app_enabled``  — chat lateral interno da plataforma
+
+Nota: ``in_app_enabled`` foi REVERTIDO (gap conceitual — audit
+AUDIT_CANDIDATE_CHAT_PUBLIC_2026-05-23.md). Chat candidato público
+canonical é /api/v1/triagem/ (handler dedicado).
 
 Os outros dois canais já têm endpoints próprios:
 - ``voice_enabled``   → app/api/v1/agent_studio_voice.py (PATCH /voice/enabled)
@@ -67,17 +70,6 @@ class VoipEnableRequest(WeDoBaseModel):
 class VoipEnableResponse(WeDoBaseModel):
     agent_id: str
     voip_enabled: bool
-
-
-class InAppEnableRequest(WeDoBaseModel):
-    """Toggle ``in_app_enabled`` flag on a custom agent."""
-
-    in_app_enabled: bool
-
-
-class InAppEnableResponse(WeDoBaseModel):
-    agent_id: str
-    in_app_enabled: bool
 
 
 # ───────────────────────── Helpers ───────────────────────────────────────────
@@ -191,44 +183,3 @@ async def set_agent_voip_enabled(
     )
 
 
-@router.patch(
-    "/{agent_id}/in_app/enabled",
-    response_model=InAppEnableResponse,
-    summary="Habilitar/desabilitar chat lateral interno (in_app) num custom agent",
-)
-async def set_agent_in_app_enabled(
-    agent_id: str,
-    payload: InAppEnableRequest,
-    current_user=Depends(get_current_user),
-    db: AsyncSession = Depends(get_tenant_db),
-    company_id: str = Depends(require_company_id),
-) -> InAppEnableResponse:
-    """Toggle ``in_app_enabled`` on a custom agent.
-
-    Default DB é TRUE (backward compat: agentes existentes seguem disponíveis
-    no chat lateral). Toggle off remove o agente do menu de chat lateral mas
-    mantém invocações via voz/WhatsApp/marketplace.
-    """
-    agent = await _load_agent_for_company(db, agent_id=agent_id, company_id=company_id)
-
-    previous_value = bool(getattr(agent, "in_app_enabled", True))
-    new_value = bool(payload.in_app_enabled)
-
-    if previous_value != new_value:
-        agent.in_app_enabled = new_value
-        await db.commit()
-        await db.refresh(agent)
-
-    await _audit_channel_toggle(
-        company_id=company_id,
-        agent_id=agent_id,
-        channel="in_app",
-        previous_value=previous_value,
-        new_value=new_value,
-        actor_user_id=str(current_user.id) if current_user else None,
-    )
-
-    return InAppEnableResponse(
-        agent_id=str(agent.id),
-        in_app_enabled=new_value,
-    )

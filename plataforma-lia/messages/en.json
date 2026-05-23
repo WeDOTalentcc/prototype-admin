@@ -1930,10 +1930,7 @@
       "startCall": "Start call",
       "disableVoice": "Disable voice for agent {name}",
       "enableVoice": "Enable voice for agent {name}",
-      "inApp": "Side chat",
       "voip": "Browser voice (VoIP)",
-      "enableInApp": "Enable side chat on agent {name}",
-      "disableInApp": "Disable side chat on agent {name}",
       "enableVoip": "Enable browser voice (VoIP) on agent {name}",
       "disableVoip": "Disable browser voice (VoIP) on agent {name}"
     },

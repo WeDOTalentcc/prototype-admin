@@ -37,7 +37,6 @@ def _require_company_id(company_id: Any) -> None:
 _CHANNEL_COLUMN_MAP = {
     "voice": "voice_enabled",
     "voip": "voip_enabled",
-    "in_app": "in_app_enabled",
     "whatsapp": "whatsapp_enabled",
 }
 
@@ -78,7 +77,7 @@ class CustomAgentRepository:
         """Toggle one canonical channel flag on a CustomAgent row.
 
         Args:
-            channel: One of {voice, voip, in_app, whatsapp}.
+            channel: One of {voice, voip, whatsapp}.
         """
         _require_company_id(company_id)
         if channel not in _CHANNEL_COLUMN_MAP:

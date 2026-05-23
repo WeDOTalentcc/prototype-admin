@@ -1,20 +1,22 @@
 /**
- * W-Channels-A (2026-05-23) — Agent Studio channel hooks (SWR canonical)
+ * W-Channels-A revisão (2026-05-23) — Agent Studio channel hooks (SWR canonical)
  *
- * Hook unificado canonical para os 4 canais do mental model Paulo
- * (Opção B, decisão 2026-05-23):
+ * Hook unificado canonical para os 3 canais canonical pós-revert:
  *
- *   - in_app    : chat lateral interno (default ligado)
  *   - whatsapp  : WhatsApp
  *   - voice     : ligação telefônica (PSTN, Twilio outbound)
  *   - voip      : voz no navegador (Twilio VoIP SDK + Gemini Live)
+ *
+ * NOTA: o canal "in_app" foi REVERTIDO em 2026-05-23 (audit
+ * AUDIT_CANDIDATE_CHAT_PUBLIC_2026-05-23.md). "Chat web" entre os 4 canais
+ * que Paulo quer = chat candidato público (vive em /api/v1/triagem/),
+ * NÃO chat lateral recrutador interno.
  *
  * Cada um é independente — cliente pode habilitar/desabilitar em qualquer
  * combinação. Multi-tenancy canonical: company_id NUNCA enviado no payload,
  * vem do JWT via headers do Next.js proxy.
  *
  * Endpoints backend correspondentes (lia-agent-system):
- *   PATCH /api/v1/agent-studio/agents/{id}/in_app/enabled
  *   PATCH /api/v1/agent-studio/agents/{id}/whatsapp/enabled
  *   PATCH /api/v1/agent-studio/agents/{id}/voice/enabled
  *   PATCH /api/v1/agent-studio/agents/{id}/voip/enabled
@@ -30,15 +32,14 @@ import useSWRMutation from 'swr/mutation'
 
 // ───────────────────────────── tipos canonical ─────────────────────────────
 
-export type AgentChannel = 'in_app' | 'whatsapp' | 'voice' | 'voip'
+export type AgentChannel = 'whatsapp' | 'voice' | 'voip'
 
 export interface ChannelEnableResponse {
   agent_id: string
   // Backend retorna SEMPRE o flag específico do canal (voice_enabled, voip_enabled, etc).
-  // O hook expõe a chave canonical e tolera as 4 formas — TS união discriminada.
+  // O hook expõe a chave canonical e tolera as 3 formas — TS união discriminada.
   voice_enabled?: boolean
   voip_enabled?: boolean
-  in_app_enabled?: boolean
   whatsapp_enabled?: boolean
 }
 
@@ -74,15 +75,15 @@ async function mutationFetcher<TBody, TResponse>(
 // ───────────────────────────── hook canonical ──────────────────────────────
 
 /**
- * Toggle qualquer um dos 4 canais per-agent. Invalida cache de custom-agents
+ * Toggle qualquer um dos 3 canais per-agent. Invalida cache de custom-agents
  * para refletir o novo estado na UI.
  *
  * @param agentId UUID do custom agent
- * @param channel 'in_app' | 'whatsapp' | 'voice' | 'voip'
+ * @param channel 'whatsapp' | 'voice' | 'voip'
  *
  * @example
- *   const toggleInApp = useToggleAgentChannel(agent.id, 'in_app')
- *   toggleInApp.trigger(true)  // → habilita chat lateral
+ *   const toggleVoip = useToggleAgentChannel(agent.id, 'voip')
+ *   toggleVoip.trigger(true)  // → habilita voz no navegador
  */
 export function useToggleAgentChannel(agentId: string, channel: AgentChannel) {
   const url = `/api/backend-proxy/agent-studio/agents/${encodeURIComponent(agentId)}/${channel}/enabled`

@@ -441,7 +441,7 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
         session_id: str = "",
         context: Optional[dict[str, Any]] = None,
         *,
-        channel: Literal["in_app", "chat", "voice", "voip", "whatsapp"] = "in_app",
+        channel: Literal["text", "voice", "voip", "whatsapp"] = "text",
         audio_chunk: bytes | None = None,
         voice_session_id: str | None = None,
         sender_phone: str | None = None,
@@ -450,8 +450,11 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
     ) -> AgentOutput:
         """Execute custom agent against a single user message.
 
-        Sprint 3.5 W4-1 V2 — channel routing:
-        - channel="chat" (default): text-only conversation; existing behaviour preserved.
+        Sprint 3.5 W4-1 V2 — channel routing (revisão 2026-05-23):
+        - channel="text" (default): text-only langgraph conversation.
+          Aliases legacy "chat" e "in_app" são aceitos via DeprecationWarning
+          (audit AUDIT_CANDIDATE_CHAT_PUBLIC_2026-05-23.md — "in_app" era gap
+          conceitual; chat candidato público vive em /api/v1/triagem/).
         - channel="voice": delegates to _invoke_voice, gated by feature flag
           voice_screening_v2_enabled (per-tenant). Audio in/out via VoiceCoreOrchestrator.
         - channel="whatsapp": T5a UX Transformação 5 — delegates to
@@ -461,16 +464,21 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
         Keyword-only after context= to preserve backward compat with positional callers
         from Sprint <=3.4. process() callers route through here unchanged.
         """
-        # W-Channels-A canonical (2026-05-23): aceita alias legacy "chat" → "in_app"
-        # com DeprecationWarning. Manter compat com callers Sprint 3.5 anteriores.
-        if channel == "chat":
+        # Revert in_app_enabled (2026-05-23): aliases legacy "chat" e "in_app" são
+        # mapeados pra "text" (langgraph default) com DeprecationWarning. "in_app"
+        # como 4o canal canonical foi gap conceitual (audit
+        # AUDIT_CANDIDATE_CHAT_PUBLIC_2026-05-23.md). Chat candidato público canonical
+        # vive em /api/v1/triagem/ (handler dedicado, fora deste runtime).
+        if channel in ("chat", "in_app"):
             import warnings
             warnings.warn(
-                "channel='chat' is deprecated; use channel='in_app' (W-Channels-A 2026-05-23)",
+                f"channel={channel!r} is deprecated; use channel='text' "
+                "(revert 2026-05-23). Candidate-facing chat lives at "
+                "/api/v1/triagem/ (separate handler).",
                 DeprecationWarning,
                 stacklevel=2,
             )
-            channel = "in_app"
+            channel = "text"
 
         # W-Channels-A: voice agora significa PSTN. voip = VoIP browser/Gemini Live.
         # Ambos resolvem para o mesmo _invoke_voice handler que faz routing interno

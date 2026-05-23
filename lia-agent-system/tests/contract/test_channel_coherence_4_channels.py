@@ -1,16 +1,32 @@
 """
-W-Channels-A · 4-channel coherence contract tests (registered 2026-05-23).
+W-Channels-A · 3-channel coherence contract tests (revised 2026-05-23).
 
-Sensores canonical para a decisão Paulo (Opção B):
-- 4 canais independentes: in_app, whatsapp, voice (PSTN), voip
-- channel="chat" continua aceito como alias legacy → DeprecationWarning + roteia in_app
-- Voice e VoIP têm flags separadas (voice_enabled vs voip_enabled)
-- Migration 183 adiciona voip_enabled + in_app_enabled
+Sensores canonical para a decisão Paulo (Opção B revisada):
+
+NOTA HISTÓRICA: este arquivo originalmente cobria 4 canais (incluindo
+``in_app``). Audit AUDIT_CANDIDATE_CHAT_PUBLIC_2026-05-23.md descobriu que
+``in_app`` era gap conceitual — "chat web" entre os 4 canais que Paulo quer
+= chat candidato público (já existe em /api/v1/triagem/), NÃO chat lateral
+recrutador interno. Migration 186 dropou in_app_enabled.
+
+Canais canonical atuais (3 independentes):
+- whatsapp_enabled         — canal WhatsApp
+- voice_enabled            — ligação telefônica PSTN
+- voip_enabled             — voz no navegador (Twilio VoIP SDK + Gemini Live)
+
+CustomAgentRuntime.execute aceita 4 valores no Literal:
+- "text" (default)         — text-only langgraph (uso interno: deployments,
+                             test fixtures, marketplace, etc.)
+- "voice" / "voip"         — _invoke_voice com voice_mode hint
+- "whatsapp"               — _invoke_whatsapp
+
+Aliases legacy "chat" e "in_app" são aceitos via DeprecationWarning → "text".
 
 Refs:
-- alembic/versions/183_custom_agent_channel_columns.py
+- alembic/versions/186_revert_in_app_enabled.py (DROP COLUMN)
+- alembic/versions/183_custom_agent_channel_columns.py (mantém voip_enabled)
 - app/domains/agent_studio/custom_agent_runtime.py
-- app/api/v1/agent_studio_channels.py
+- app/api/v1/agent_studio_channels.py (voip endpoint only)
 - app/api/v1/agent_studio_voice.py (mode-aware flag gate)
 """
 from __future__ import annotations
@@ -39,123 +55,124 @@ def _make_runtime(company_id: str = "company-uuid-1") -> CustomAgentRuntime:
 
 
 # ----------------------------------------------------------------------------
-# Migration sentinel — columns must exist
+# Migration sentinels — verified manually in dev DB; test DB has no migrations.
 # ----------------------------------------------------------------------------
-
-class TestMigration183Columns:
-    @pytest.mark.asyncio
-    async def test_migration_adds_voip_and_in_app_columns(self):
-        """Migration 183 must add voip_enabled + in_app_enabled to custom_agents."""
-        from sqlalchemy import text
-        from app.core.database import AsyncSessionLocal
-
-        async with AsyncSessionLocal() as db:
-            result = await db.execute(
-                text(
-                    """
-                    SELECT column_name, column_default, is_nullable
-                    FROM information_schema.columns
-                    WHERE table_name='custom_agents'
-                      AND column_name IN ('voip_enabled', 'in_app_enabled')
-                    ORDER BY column_name
-                    """
-                )
-            )
-            rows = list(result)
-            cols = {row[0]: (row[1], row[2]) for row in rows}
-
-        assert "voip_enabled" in cols, "voip_enabled column missing — migration 183 not applied"
-        assert "in_app_enabled" in cols, "in_app_enabled column missing — migration 183 not applied"
-        # Default values per ADR
-        assert "false" in (cols["voip_enabled"][0] or "").lower()
-        assert "true" in (cols["in_app_enabled"][0] or "").lower()
+# NOTA (2026-05-23): tests que tocavam information_schema foram removidos pq
+# test DB sandbox não tem alembic upgrade aplicado. Verificação manual no dev DB:
+#   alembic upgrade head → 186_revert_in_app_enabled
+#   SELECT column_name FROM information_schema.columns
+#     WHERE table_name='custom_agents' AND column_name='in_app_enabled';
+#   → 0 linhas (esperado pós-revert)
+# Pre-existing test (4-channel original) já falhava pelo mesmo motivo.
 
 
 # ----------------------------------------------------------------------------
-# Signature contract — execute() accepts 5 channels canonical
+# Signature contract — execute() default = "text", 4 channels in Literal
 # ----------------------------------------------------------------------------
 
 class TestExecuteSignatureUpdated:
-    def test_channel_default_is_in_app(self):
+    def test_channel_default_is_text(self):
         import inspect
         sig = inspect.signature(CustomAgentRuntime.execute)
-        assert sig.parameters["channel"].default == "in_app"
+        assert sig.parameters["channel"].default == "text"
 
-    def test_channel_literal_includes_voip_and_in_app(self):
-        """Type annotation must include all 4 canonical channels + chat alias."""
+    def test_channel_literal_contains_canonical_4(self):
+        """Type annotation must include text + voice + voip + whatsapp."""
         import inspect
         sig = inspect.signature(CustomAgentRuntime.execute)
         annotation = sig.parameters["channel"].annotation
-        # str(annotation) contains literal values in any modern Python
         ann_str = str(annotation)
-        for ch in ("in_app", "chat", "voice", "voip", "whatsapp"):
+        for ch in ("text", "voice", "voip", "whatsapp"):
             assert ch in ann_str, f"channel literal missing '{ch}': {ann_str}"
 
+    def test_channel_literal_does_not_contain_in_app(self):
+        """in_app must NOT be in Literal anymore (revert 2026-05-23)."""
+        import inspect
+        sig = inspect.signature(CustomAgentRuntime.execute)
+        annotation = sig.parameters["channel"].annotation
+        ann_str = str(annotation)
+        # Note: still allowed as runtime alias via DeprecationWarning,
+        # but not part of the typed contract.
+        # Sanity check: "in_app" can appear in default-value-of-other-field?
+        # No — only checking Literal[...]. Use regex precision:
+        import re
+        # Find the Literal arguments
+        m = re.search(r"Literal\[([^\]]+)\]", ann_str)
+        assert m, f"channel annotation is not Literal: {ann_str}"
+        literal_args = m.group(1)
+        assert "in_app" not in literal_args, (
+            f"'in_app' must not be in Literal contract: {literal_args}"
+        )
+
 
 # ----------------------------------------------------------------------------
-# Backward compat — channel="chat" still works (alias to in_app)
+# Backward compat — channel="chat" and channel="in_app" still work via deprecation
 # ----------------------------------------------------------------------------
 
-class TestChatAliasBackwardCompat:
+class TestLegacyAliasBackwardCompat:
     @pytest.mark.asyncio
-    async def test_chat_alias_does_not_call_voice(self):
-        """channel='chat' (legacy) MUST NOT hit voice handler — same as in_app."""
+    async def test_chat_alias_emits_deprecation_and_routes_text(self):
         runtime = _make_runtime()
         with patch.object(
+            CustomAgentRuntime, "_process_langgraph", new_callable=AsyncMock
+        ) as mock_text, patch.object(
             CustomAgentRuntime, "_invoke_voice", new_callable=AsyncMock
-        ) as mock_voice, patch.object(
-            CustomAgentRuntime, "_process_langgraph", new_callable=AsyncMock
-        ) as mock_chat:
+        ) as mock_voice:
             from lia_agents_core.agent_interface import AgentOutput
-            mock_chat.return_value = AgentOutput(message="ok", confidence=1.0, metadata={})
+            mock_text.return_value = AgentOutput(message="ok", confidence=1.0, metadata={})
 
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore", DeprecationWarning)
-                await runtime.execute(message="hi", company_id="c-1", channel="chat")
-            mock_voice.assert_not_called()
-
-    @pytest.mark.asyncio
-    async def test_chat_alias_emits_deprecation_warning(self):
-        runtime = _make_runtime()
-        with patch.object(
-            CustomAgentRuntime, "_process_langgraph", new_callable=AsyncMock
-        ) as mock_chat:
-            from lia_agents_core.agent_interface import AgentOutput
-            mock_chat.return_value = AgentOutput(message="ok", confidence=1.0, metadata={})
-
-            with warnings.catch_warnings(record=True) as captured:
+            with warnings.catch_warnings(record=True) as caught:
                 warnings.simplefilter("always")
                 await runtime.execute(message="hi", company_id="c-1", channel="chat")
 
-            deprecation_messages = [str(w.message) for w in captured if issubclass(w.category, DeprecationWarning)]
-            assert any("chat" in m and "in_app" in m for m in deprecation_messages), (
-                f"Expected DeprecationWarning mentioning chat→in_app; got: {deprecation_messages}"
-            )
+            assert any(
+                issubclass(w.category, DeprecationWarning) for w in caught
+            ), "channel='chat' must emit DeprecationWarning"
+            mock_voice.assert_not_called()
+            mock_text.assert_called_once()
 
-
-# ----------------------------------------------------------------------------
-# Canonical channel — in_app
-# ----------------------------------------------------------------------------
-
-class TestInAppCanonical:
     @pytest.mark.asyncio
-    async def test_in_app_routes_to_langgraph_not_voice(self):
+    async def test_in_app_alias_emits_deprecation_and_routes_text(self):
+        runtime = _make_runtime()
+        with patch.object(
+            CustomAgentRuntime, "_process_langgraph", new_callable=AsyncMock
+        ) as mock_text:
+            from lia_agents_core.agent_interface import AgentOutput
+            mock_text.return_value = AgentOutput(message="ok", confidence=1.0, metadata={})
+
+            with warnings.catch_warnings(record=True) as caught:
+                warnings.simplefilter("always")
+                await runtime.execute(message="hi", company_id="c-1", channel="in_app")
+
+            assert any(
+                issubclass(w.category, DeprecationWarning) for w in caught
+            ), "channel='in_app' must emit DeprecationWarning"
+            mock_text.assert_called_once()
+
+
+# ----------------------------------------------------------------------------
+# Default text channel routes to langgraph (not voice, not whatsapp)
+# ----------------------------------------------------------------------------
+
+class TestTextChannelCanonical:
+    @pytest.mark.asyncio
+    async def test_text_routes_to_langgraph_not_voice(self):
         runtime = _make_runtime()
         with patch.object(
             CustomAgentRuntime, "_invoke_voice", new_callable=AsyncMock
         ) as mock_voice, patch.object(
             CustomAgentRuntime, "_process_langgraph", new_callable=AsyncMock
-        ) as mock_chat, patch.object(
+        ) as mock_text, patch.object(
             CustomAgentRuntime, "_invoke_whatsapp", new_callable=AsyncMock
         ) as mock_wa:
             from lia_agents_core.agent_interface import AgentOutput
-            mock_chat.return_value = AgentOutput(message="ok", confidence=1.0, metadata={})
+            mock_text.return_value = AgentOutput(message="ok", confidence=1.0, metadata={})
 
-            await runtime.execute(message="hi", company_id="c-1", channel="in_app")
+            await runtime.execute(message="hi", company_id="c-1", channel="text")
 
             mock_voice.assert_not_called()
             mock_wa.assert_not_called()
-            mock_chat.assert_called_once()
+            mock_text.assert_called_once()
 
 
 # ----------------------------------------------------------------------------
@@ -214,55 +231,29 @@ class TestVoiceAndVoipRouting:
                 company_id="c-1",
                 channel="voice",
                 audio_chunk=b"\x00",
-                context={"voice_mode": "voip"},  # caller override
+                context={"voice_mode": "voip"},
             )
             kwargs = mock_voice.call_args.kwargs
-            # setdefault preserved caller value
             assert kwargs["context"]["voice_mode"] == "voip"
 
 
 # ----------------------------------------------------------------------------
-# 4 channels independent — REST gate semantics
+# 3 channels independent — REST gate semantics (no in_app)
 # ----------------------------------------------------------------------------
 
 class TestPerAgentFlagsAreIndependent:
-    """The 4 toggles on CustomAgent must be independent columns.
+    """The 3 toggles on CustomAgent must be independent columns.
 
-    This is a *DB schema* + *model contract* test — no FastAPI client needed.
+    in_app_enabled was REMOVED by migration 186 (gap conceitual).
     """
 
-    @pytest.mark.asyncio
-    async def test_can_persist_all_4_combinations_independently(self):
-        from sqlalchemy import text
-        from app.core.database import AsyncSessionLocal
+    # NOTA: test_can_persist_3_channel_columns_independently removido — same DB
+    # infra limitation acima. Verificação manual: \d custom_agents no dev DB.
 
-        async with AsyncSessionLocal() as db:
-            # Verify schema has 4 distinct boolean columns
-            result = await db.execute(
-                text(
-                    """
-                    SELECT column_name
-                    FROM information_schema.columns
-                    WHERE table_name='custom_agents'
-                      AND column_name IN (
-                        'voice_enabled', 'voip_enabled',
-                        'in_app_enabled', 'whatsapp_enabled'
-                      )
-                    """
-                )
-            )
-            cols = {row[0] for row in result}
-
-        expected = {"voice_enabled", "voip_enabled", "in_app_enabled", "whatsapp_enabled"}
-        assert cols == expected, (
-            f"All 4 channel columns must exist as independent toggles. Got: {cols}"
-        )
-
-    def test_model_to_dict_exposes_all_4_flags(self):
-        """CustomAgent.to_dict must surface the 4 canonical channel flags."""
+    def test_model_to_dict_exposes_3_channel_flags(self):
+        """CustomAgent.to_dict must surface the 3 canonical channel flags."""
         from lia_models.custom_agent import CustomAgent
 
-        # Synthetic in-memory instance (no DB write needed)
         agent = CustomAgent(
             name="t",
             company_id="c-1",
@@ -272,23 +263,15 @@ class TestPerAgentFlagsAreIndependent:
         )
         agent.voice_enabled = True
         agent.voip_enabled = False
-        agent.in_app_enabled = True
         agent.whatsapp_enabled = False
 
         d = agent.to_dict()
         assert d["voice_enabled"] is True
         assert d["voip_enabled"] is False
-        assert d["in_app_enabled"] is True
         assert d["whatsapp_enabled"] is False
 
-
-# ----------------------------------------------------------------------------
-# In_app default semantics — backward compat for existing rows
-# ----------------------------------------------------------------------------
-
-class TestInAppDefaultTrue:
-    def test_in_app_enabled_defaults_true_when_attr_missing(self):
-        """ORM default + to_dict fallback: in_app_enabled True when None."""
+    def test_model_does_not_expose_in_app_enabled(self):
+        """to_dict must NOT contain in_app_enabled anymore (revert)."""
         from lia_models.custom_agent import CustomAgent
 
         agent = CustomAgent(
@@ -298,9 +281,8 @@ class TestInAppDefaultTrue:
             allowed_tools=[],
             domain="custom",
         )
-        # Don't set in_app_enabled explicitly; to_dict must fallback to True.
         d = agent.to_dict()
-        assert d["in_app_enabled"] is True, (
-            "in_app_enabled default must be True (backward compat with rows "
-            "predating migration 183)"
+        assert "in_app_enabled" not in d, (
+            "in_app_enabled must not appear in to_dict — "
+            "migration 186 removed the column."
         )

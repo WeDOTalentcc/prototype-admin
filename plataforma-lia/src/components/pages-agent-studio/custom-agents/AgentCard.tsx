@@ -12,7 +12,6 @@ import {
   Phone,
   PhoneCall,
   MessageCircle,
-  MessageSquare,
   Mic,
 } from "lucide-react"
 import { useTranslations } from "next-intl"
@@ -46,7 +45,7 @@ interface AgentCardProps {
 /**
  * W-Channels-A (2026-05-23) — channel row renderer.
  *
- * Cada um dos 4 canais (in_app / whatsapp / voice / voip) é renderizado por
+ * Cada um dos 3 canais (whatsapp / voice / voip) é renderizado por
  * este sub-componente para garantir consistência visual + ARIA. Os toggles
  * são INDEPENDENTES — não há regra de exclusão mútua, cliente combina como
  * preferir (mental model Paulo, decisão Opção B 2026-05-23).
@@ -94,17 +93,15 @@ function ChannelToggleRow({
 
 export function AgentCard({ agent, onTest, onDeploy, onToggleStatus, onClone }: AgentCardProps) {
   const t = useTranslations('agents.card')
-  // W-Channels-A (2026-05-23): 4 canais canonical independentes (in_app / whatsapp / voice / voip).
-  // voice agora = PSTN only; voip = browser/Gemini Live. Hooks legados (voice/whatsapp) preservados;
-  // novos (in_app/voip) usam o hook unificado useToggleAgentChannel.
-  const toggleInApp = useToggleAgentChannel(agent.id, 'in_app')
+  // W-Channels-A revisão (2026-05-23): 3 canais canonical independentes
+  // (whatsapp / voice / voip). in_app revertido — gap conceitual; chat candidato
+  // público vive em /api/v1/triagem/. voice = PSTN, voip = browser/Gemini Live.
   const toggleWhatsApp = useToggleAgentWhatsApp(agent.id)
   const toggleVoice = useToggleAgentVoice(agent.id)
   const toggleVoip = useToggleAgentChannel(agent.id, 'voip')
   const initiateVoice = useInitiateVoiceCall(agent.id)
 
-  // Backward compat: default in_app=true (DB default); voip=false; voice=false; whatsapp=false.
-  const inAppEnabled = agent.in_app_enabled !== false
+  // Backward compat: voip=false; voice=false; whatsapp=false.
   const whatsappEnabled = Boolean(agent.whatsapp_enabled)
   const voiceEnabled = Boolean(agent.voice_enabled)
   const voipEnabled = Boolean(agent.voip_enabled)
@@ -184,20 +181,9 @@ export function AgentCard({ agent, onTest, onDeploy, onToggleStatus, onClone }: 
         )}
       </div>
 
-      {/* W-Channels-A: 4 canais canonical (in_app / whatsapp / voice / voip) */}
-      {/* 1. Chat lateral interno */}
-      <ChannelToggleRow
-        icon={MessageSquare}
-        label={t('inApp') || 'Chat lateral'}
-        enabled={inAppEnabled}
-        disabled={toggleInApp.isMutating}
-        onToggle={(next) => toggleInApp.trigger(next)}
-        ariaOn={t('enableInApp', { name: agent.name }) || `Habilitar chat lateral no agente ${agent.name}`}
-        ariaOff={t('disableInApp', { name: agent.name }) || `Desabilitar chat lateral no agente ${agent.name}`}
-        testId="agent-card-in-app-toggle"
-      />
-
-      {/* 2. WhatsApp */}
+      {/* W-Channels-A revisão 2026-05-23: 3 canais canonical (whatsapp / voice / voip) */}
+      {/* in_app revertido — gap conceitual; chat candidato público = /api/v1/triagem/ */}
+      {/* 1. WhatsApp */}
       <ChannelToggleRow
         icon={MessageCircle}
         label={t('whatsapp') || 'WhatsApp'}
@@ -209,7 +195,7 @@ export function AgentCard({ agent, onTest, onDeploy, onToggleStatus, onClone }: 
         testId="agent-card-whatsapp-toggle"
       />
 
-      {/* 3. Voz PSTN (ligação telefônica) — trailing = botão Iniciar chamada */}
+      {/* 2. Voz PSTN (ligação telefônica) — trailing = botão Iniciar chamada */}
       <ChannelToggleRow
         icon={Phone}
         label={t('voice') || 'Ligação telefônica'}
@@ -237,7 +223,7 @@ export function AgentCard({ agent, onTest, onDeploy, onToggleStatus, onClone }: 
         }
       />
 
-      {/* 4. Voz no navegador (VoIP) */}
+      {/* 3. Voz no navegador (VoIP) */}
       <ChannelToggleRow
         icon={Mic}
         label={t('voip') || 'Voz no navegador (VoIP)'}

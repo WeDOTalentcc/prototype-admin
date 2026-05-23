@@ -69,10 +69,6 @@ class CustomAgent(Base):
     # Independente de voice_enabled. Default OFF; cliente controla via UI.
     voip_enabled = Column(Boolean, nullable=False, default=False, server_default="false")
 
-    # W-Channels-A (2026-05-23): per-agent in-app chat flag — chat lateral interno na plataforma.
-    # Default TRUE (backward compat: agentes existentes seguem disponíveis no chat web).
-    in_app_enabled = Column(Boolean, nullable=False, default=True, server_default="true")
-
     # T5a UX Transformação 5: per-agent WhatsApp flag (default OFF; client controls via Settings UI)
     whatsapp_enabled = Column(Boolean, nullable=False, default=False, server_default="false")
 
@@ -130,7 +126,6 @@ class CustomAgent(Base):
             "excluded_tools": self.excluded_tools or [],
             "voice_enabled": bool(self.voice_enabled) if self.voice_enabled is not None else False,
             "voip_enabled": bool(self.voip_enabled) if getattr(self, "voip_enabled", None) is not None else False,
-            "in_app_enabled": bool(self.in_app_enabled) if getattr(self, "in_app_enabled", None) is not None else True,
             "whatsapp_enabled": bool(self.whatsapp_enabled) if self.whatsapp_enabled is not None else False,
             "total_executions": self.total_executions,
             "avg_confidence": self.avg_confidence,
