@@ -226,6 +226,24 @@ ACTIONABLE_INTENTS: dict[str, dict[str, Any]] = {
             "job_id": "Qual vaga você quer reabrir?",
         },
     },
+    # Recovery #5 (2026-05-23) — 2 intents pt-BR restaurados após merge incident
+    # 02361f41c. Sem essas entries, LLM não despacha "sugere salário" / "gera JD".
+    "sugerir_salario": {
+        "domain_id": "job_management",
+        "action_id": "suggest_salary",
+        "required_params": ["job_title"],
+        "optional_params": ["location", "seniority", "years_experience"],
+        "risk_level": "read",
+        "requires_confirmation": False,
+    },
+    "gerar_jd": {
+        "domain_id": "job_management",
+        "action_id": "generate_jd_direct",
+        "required_params": ["job_title"],
+        "optional_params": ["skills", "requirements", "seniority"],
+        "risk_level": "read",
+        "requires_confirmation": False,
+    },
     "atualizar_campo_candidato": {
         "domain_id": "pipeline_transition",
         "action_id": "update_candidate_field",

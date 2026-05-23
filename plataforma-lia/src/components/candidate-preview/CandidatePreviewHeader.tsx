@@ -1,17 +1,175 @@
 "use client"
 
+import { useState } from "react"
 import { textStyles, previewChipVariants } from '@/lib/design-tokens'
 import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { CandidateAvatar } from"@/components/candidate-profile/CandidateAvatar"
 import {
-  X, Calendar, MessageSquare, Clock, Brain, CheckCircle, AlertCircle, Expand
+  X, Calendar, MessageSquare, Clock, Brain, CheckCircle, AlertCircle, Expand,
+  Mail, Phone, Pencil, Loader2,
 } from"lucide-react"
 import { Tooltip, TooltipContent, TooltipTrigger } from"@/components/ui/tooltip"
+import { toast } from "sonner"
 import dynamic from"next/dynamic"
 import type { CandidateData } from"./ProfileTabTypes"
 
 const LiaAnalysisModal = dynamic(() => import("@/components/modals/lia-analysis-modal").then(m => ({ default: m.LiaAnalysisModal })), { ssr: false })
+
+type ContactFieldKind = "email" | "phone"
+
+interface ContactFieldProps {
+  kind: ContactFieldKind
+  value: string | undefined
+  candidateId: string | undefined
+  onSaved: (next: string) => void
+}
+
+/**
+ * Inline contact field exibido no header do preview.
+ * - Empty: chip "Adicionar email/telefone" + lápis
+ * - Filled: ícone + valor + lápis on hover/focus
+ * - Edit: Popover ancorado no lápis, com input pré-preenchido e Salvar/Cancelar
+ *
+ * PUT canonical: /api/backend-proxy/rh/candidates/:id (Rails). Field name segue
+ * o schema Rails (`email`, `phone`). Optimistic update local; rollback no erro.
+ */
+function ContactField({ kind, value, candidateId, onSaved }: ContactFieldProps) {
+  const [open, setOpen] = useState(false)
+  const [draft, setDraft] = useState(value ?? "")
+  const [saving, setSaving] = useState(false)
+
+  const Icon = kind === "email" ? Mail : Phone
+  const label = kind === "email" ? "Email" : "Telefone"
+  const inputType = kind === "email" ? "email" : "tel"
+  const placeholder = kind === "email" ? "exemplo@empresa.com" : "+55 11 9XXXX-XXXX"
+  const fieldName = kind === "email" ? "email" : "phone"
+  const linkAction = kind === "email"
+    ? (v: string) => `mailto:${v}`
+    : (v: string) => `https://wa.me/${v.replace(/\D/g, "")}`
+
+  const handleOpenChange = (next: boolean) => {
+    if (next) setDraft(value ?? "")
+    setOpen(next)
+  }
+
+  const handleSave = async () => {
+    if (!candidateId) {
+      toast.error("ID do candidato indisponível")
+      return
+    }
+    const trimmed = draft.trim()
+    if (trimmed === (value ?? "")) {
+      setOpen(false)
+      return
+    }
+    if (kind === "email" && trimmed && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+      toast.error("Email inválido")
+      return
+    }
+    setSaving(true)
+    try {
+      const res = await fetch(`/api/backend-proxy/rh/candidates/${candidateId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ candidate: { [fieldName]: trimmed || null } }),
+      })
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}))
+        const msg = body?.errors?.[0]?.detail || body?.error || `Falha ao salvar (${res.status})`
+        toast.error(msg)
+        return
+      }
+      onSaved(trimmed)
+      toast.success(`${label} atualizado`)
+      setOpen(false)
+    } catch {
+      toast.error("Erro de rede ao salvar")
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const hasValue = !!value && value.length > 0
+
+  return (
+    <div className="flex items-center gap-1 min-w-0 group">
+      <Icon className="w-3 h-3 text-lia-text-tertiary flex-shrink-0" aria-hidden="true" />
+      {hasValue ? (
+        <a
+          href={linkAction(value!)}
+          target={kind === "phone" ? "_blank" : undefined}
+          rel={kind === "phone" ? "noopener noreferrer" : undefined}
+          className="text-micro text-lia-text-secondary hover:text-lia-text-primary hover:underline truncate"
+          onClick={(e) => e.stopPropagation()}
+          title={value}
+        >
+          {value}
+        </a>
+      ) : (
+        <span className="text-micro text-lia-text-tertiary italic">
+          Adicionar {label.toLowerCase()}
+        </span>
+      )}
+      <Popover open={open} onOpenChange={handleOpenChange}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-4 w-4 p-0 opacity-60 hover:opacity-100 flex-shrink-0"
+            aria-label={`Editar ${label.toLowerCase()}`}
+          >
+            <Pencil className="w-2.5 h-2.5 text-lia-text-tertiary" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent side="bottom" align="start" className="w-72 p-3 space-y-2">
+          <label className="text-xs font-medium text-lia-text-primary block">
+            {label}
+          </label>
+          <Input
+            type={inputType}
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            placeholder={placeholder}
+            autoFocus
+            disabled={saving}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault()
+                handleSave()
+              } else if (e.key === "Escape") {
+                e.preventDefault()
+                setOpen(false)
+              }
+            }}
+          />
+          <div className="flex items-center justify-end gap-2 pt-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setOpen(false)}
+              disabled={saving}
+              className="h-7 text-xs"
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={handleSave}
+              disabled={saving}
+              className="h-7 text-xs"
+            >
+              {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : "Salvar"}
+            </Button>
+          </div>
+        </PopoverContent>
+      </Popover>
+    </div>
+  )
+}
 
 interface CandidatePreviewHeaderProps {
   c: CandidateData
@@ -47,6 +205,13 @@ export function CandidatePreviewHeader({
   const lastContactedAt = c.last_contacted_at || c.lastContactedAt
   const updatedAt = c.updated_at || c.updatedAt
   const createdAt = c.created_at || c.createdAt
+
+  const candidateRailsId =
+    (c.id as string | undefined) ||
+    (c.candidateId as string | undefined)
+
+  const [emailLocal, setEmailLocal] = useState<string | undefined>(c.email)
+  const [phoneLocal, setPhoneLocal] = useState<string | undefined>(c.phone)
 
   return (
     <>
@@ -123,6 +288,21 @@ export function CandidatePreviewHeader({
                 </p>
               </>
             )}
+          </div>
+
+          <div className="flex items-center gap-3 mt-0.5 flex-wrap">
+            <ContactField
+              kind="email"
+              value={emailLocal}
+              candidateId={candidateRailsId}
+              onSaved={setEmailLocal}
+            />
+            <ContactField
+              kind="phone"
+              value={phoneLocal}
+              candidateId={candidateRailsId}
+              onSaved={setPhoneLocal}
+            />
           </div>
         </div>
 
