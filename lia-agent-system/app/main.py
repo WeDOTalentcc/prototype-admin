@@ -28,6 +28,7 @@ from app.domains.automation.services.automation_handlers import register_all_han
 from app.domains.automation.services.automation_scheduler import automation_scheduler
 from app.middleware.auth_enforcement import AuthEnforcementMiddleware
 from app.middleware.rate_limiter import RateLimitMiddleware
+from app.middleware.idempotency import IdempotencyMiddleware
 from app.middleware.request_id import RequestIdMiddleware
 from app.middleware.response_envelope import ResponseEnvelopeMiddleware
 from app.shared.services.embedding_cache_service import embedding_cache
@@ -732,6 +733,12 @@ app.add_middleware(ResponseEnvelopeMiddleware)
 
 # Rate limiting middleware
 app.add_middleware(RateLimitMiddleware)
+
+# W2-009-B (2026-05-23): Idempotency-Key Stripe-style cache para mutations
+# (POST/PUT/PATCH/DELETE). Header opcional; passthrough quando ausente.
+# Wired DEPOIS de RateLimit (mais externo) e ANTES de Auth (mais interno)
+# pra que cache só seja consultado após company_id estar resolvido.
+app.add_middleware(IdempotencyMiddleware)
 
 # CORS must be added AFTER RateLimitMiddleware so it executes BEFORE it
 # (FastAPI processes add_middleware in reverse order).

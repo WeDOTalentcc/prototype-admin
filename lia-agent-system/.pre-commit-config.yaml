@@ -454,6 +454,13 @@ repos:
         files: ^alembic/versions/180_audit_append_only_triggers\.py$
         pass_filenames: false
 
+      - id: idempotency-middleware-wired
+        name: "W2-009-B: Idempotency-Key middleware Stripe-style wired (migration 181 + middleware + main.py) (BLOCKING)"
+        language: system
+        entry: python3 scripts/check_idempotency_middleware_wired.py
+        files: ^(alembic/versions/181_idempotency_keys\.py|app/middleware/idempotency\.py|app/main\.py)$
+        pass_filenames: false
+
       - id: governance-executor-wired
         name: "W1-004: ToolExecutor wirou Step 2 (company_id) + Step 7 (audit) + Step 8 (metrics) (BLOCKING)"
         language: system
