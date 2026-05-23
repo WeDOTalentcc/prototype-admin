@@ -131,6 +131,12 @@ class VoiceScreeningSession:
     job_context: dict[str, Any] | None = None
     presentation_done: bool = False
     voice_provider: str = "twilio"
+    # P1 ticket #1 (2026-05-23): canonical Gemini LLM token tracking.
+    # Acumulado por turn em generate_lia_response a partir do
+    # response.usage_metadata. Lido em _record_voice_billing para
+    # compute_voice_credits — antes era hardcoded 0 (billing ghost).
+    llm_tokens_input: int = 0
+    llm_tokens_output: int = 0
 
 
 class VoiceScreeningOrchestratorError(Exception):
@@ -405,6 +411,10 @@ class VoiceCoreOrchestrator:
             "job_context": session.job_context,
             "presentation_done": session.presentation_done,
             "voice_provider": session.voice_provider,
+            # P1 ticket #1: canonical Gemini LLM token tracking persisted
+            # in Redis for cross-process billing read in finalize_screening.
+            "llm_tokens_input": session.llm_tokens_input,
+            "llm_tokens_output": session.llm_tokens_output,
         }
 
     def _state_to_session(self, state: dict[str, Any]) -> "VoiceScreeningSession":
@@ -436,6 +446,10 @@ class VoiceCoreOrchestrator:
             job_context=state.get("job_context"),
             presentation_done=state.get("presentation_done", False),
             voice_provider=state.get("voice_provider", "twilio"),
+            # P1 ticket #1: backward-compat defaults 0 for legacy sessions
+            # in Redis that pre-date token tracking.
+            llm_tokens_input=int(state.get("llm_tokens_input", 0) or 0),
+            llm_tokens_output=int(state.get("llm_tokens_output", 0) or 0),
         )
 
     async def persist_session_state(self, session: "VoiceScreeningSession", db) -> None:
@@ -1662,6 +1676,24 @@ class VoiceCoreOrchestrator:
                 ),
             )
 
+            # P1 ticket #1 (2026-05-23): canonical Gemini LLM token tracking
+            # for billing. Best-effort: ausencia de usage_metadata (mock,
+            # streaming partial) NAO bloqueia path principal — defaults 0.
+            try:
+                usage = getattr(response, "usage_metadata", None)
+                if usage is not None:
+                    prompt_count = getattr(usage, "prompt_token_count", 0) or 0
+                    candidates_count = getattr(usage, "candidates_token_count", 0) or 0
+                    session.llm_tokens_input += int(prompt_count)
+                    session.llm_tokens_output += int(candidates_count)
+            except Exception as token_err:  # noqa: BLE001
+                logger.debug(
+                    "[VOICE SCREENING] token accumulation failed session=%s "
+                    "(non-blocking): %s",
+                    session_id,
+                    token_err,
+                )
+
             lia_text = response.text.strip() if response.text else ""
 
             if lia_text:
@@ -2156,9 +2188,11 @@ class VoiceCoreOrchestrator:
         Best-effort: nunca propaga exception (billing failure NUNCA bloqueia
         finalize). Log warning para observability.
 
-        NOTA: tokens_input/output sao 0 por enquanto — voice nao traqueia
-        Gemini LLM token metadata ainda. Audio seconds sao capturados
-        canonicalmente. Sprint futura: estender session.llm_tokens_*.
+        P1 ticket #1 (2026-05-23): tokens canonical lidos de
+        session.llm_tokens_input/llm_tokens_output (acumulado em
+        generate_lia_response via usage_metadata). Antes era hardcoded 0
+        (billing ghost). Backward-compat: legacy sessions sem tracking
+        defaults 0, billing por audio+twilio inalterado.
         """
         if duration_seconds is None or duration_seconds <= 0:
             return  # Nada para cobrar
@@ -2172,8 +2206,9 @@ class VoiceCoreOrchestrator:
 
             credits = compute_voice_credits(
                 total_audio_seconds=duration_seconds,
-                tokens_input=0,  # TODO sprint futura: traquear Gemini LLM tokens
-                tokens_output=0,
+                # P1 ticket #1: canonical Gemini LLM tokens (was hardcoded 0)
+                tokens_input=int(getattr(session, "llm_tokens_input", 0) or 0),
+                tokens_output=int(getattr(session, "llm_tokens_output", 0) or 0),
                 tier=pricing_tier,
             )
 

@@ -198,6 +198,10 @@ class StudioVoicePlugin(VoiceCorePlugin):
 
             credits_consumed = compute_voice_credits(
                 total_audio_seconds=duration_seconds,
+                # P1 ticket #1 (2026-05-23): canonical Gemini LLM tokens.
+                # Antes hardcoded default 0 — agora le do session canonical.
+                tokens_input=int(getattr(session, "llm_tokens_input", 0) or 0),
+                tokens_output=int(getattr(session, "llm_tokens_output", 0) or 0),
                 tier=self.config.get("pricing_tier", "pro"),
             )
         except Exception as e:
