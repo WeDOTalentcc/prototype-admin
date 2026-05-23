@@ -617,6 +617,7 @@ async def update_candidate_experiences(
     matching array index.
     """
     try:
+        from app.core.database import AsyncSessionLocal
         candidate = await candidate_repo.get_by_id_str(candidate_id)
         if not candidate:
             raise HTTPException(status_code=404, detail="Candidate not found")
@@ -670,6 +671,7 @@ async def update_candidate_education(
     Multi-tenant via _assert_tenant_scope. Replace-all semantics.
     """
     try:
+        from app.core.database import AsyncSessionLocal
         candidate = await candidate_repo.get_by_id_str(candidate_id)
         if not candidate:
             raise HTTPException(status_code=404, detail="Candidate not found")
