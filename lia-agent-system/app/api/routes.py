@@ -56,6 +56,7 @@ from app.api.v1 import (
     big_five,
     billing,
     briefing,
+    upgrade_requests,
     bulk_actions,
     cache,
     calendar,
@@ -238,6 +239,7 @@ from app.api.v1.custom_agents import router as custom_agents_router
 from app.api.v1.agent_studio_voice import router as agent_studio_voice_router
 from app.api.v1.agent_studio_whatsapp import router as agent_studio_whatsapp_router
 from app.api.v1.agent_studio_channels import router as agent_studio_channels_router
+from app.api.v1.agent_studio_triagem_invite import router as agent_studio_triagem_invite_router
 from app.api.v1.agent_deployments import router as agent_deployments_router
 from app.api.v1.agent_deployments import target_router as agent_deployments_target_router
 from app.api.v1.agent_approvals import agent_router as agent_approvals_agent_router
@@ -595,6 +597,7 @@ def register_all_routes(app: FastAPI) -> None:
 
     # ── Billing, Modules & SaaS ──────────────────────────────────────────────
     app.include_router(billing.router, prefix="/api/v1", tags=["billing"])
+    app.include_router(upgrade_requests.router, prefix="/api/v1", tags=["billing"])
     app.include_router(modules.router, prefix="/api/v1", tags=["modules"])
     app.include_router(ai_consumption.router, prefix="/api/v1", tags=["ai-consumption"])
     app.include_router(ai_consumption.ai_usage_router, prefix="/api/v1", tags=["ai-usage"])
@@ -644,6 +647,7 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(agent_studio_voice_router, prefix="/api/v1", tags=["agent-studio-voice"])
     app.include_router(agent_studio_whatsapp_router, prefix="/api/v1", tags=["agent-studio-whatsapp"])
     app.include_router(agent_studio_channels_router, prefix="/api/v1", tags=["agent-studio-channels"])
+    app.include_router(agent_studio_triagem_invite_router, prefix="/api/v1", tags=["agent-studio-triagem-invite"])
     app.include_router(agent_deployments_router, prefix="/api/v1")
     app.include_router(agent_deployments_target_router, prefix="/api/v1")
     app.include_router(agent_approvals_agent_router, prefix="/api/v1")

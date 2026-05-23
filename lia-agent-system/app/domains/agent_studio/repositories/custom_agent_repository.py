@@ -38,6 +38,9 @@ _CHANNEL_COLUMN_MAP = {
     "voice": "voice_enabled",
     "voip": "voip_enabled",
     "whatsapp": "whatsapp_enabled",
+    # Workstream A 2026-05-23: 4o toggle — capability "convite triagem candidato".
+    # Diferente dos 3 canais diretos, este e capability (cria token + URL publica).
+    "triagem_invite": "triagem_invite_enabled",
 }
 
 
@@ -77,7 +80,7 @@ class CustomAgentRepository:
         """Toggle one canonical channel flag on a CustomAgent row.
 
         Args:
-            channel: One of {voice, voip, whatsapp}.
+            channel: One of {voice, voip, whatsapp, triagem_invite}.
         """
         _require_company_id(company_id)
         if channel not in _CHANNEL_COLUMN_MAP:

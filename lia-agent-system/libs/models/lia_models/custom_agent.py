@@ -72,6 +72,12 @@ class CustomAgent(Base):
     # T5a UX Transformação 5: per-agent WhatsApp flag (default OFF; client controls via Settings UI)
     whatsapp_enabled = Column(Boolean, nullable=False, default=False, server_default="false")
 
+    # Workstream A 2026-05-23: per-agent triagem_invite CAPABILITY (default OFF).
+    # Diferente dos canais diretos (voice/voip/whatsapp), triagem_invite habilita
+    # o agente a CRIAR convites de triagem (token único + URL pública /triagem/{token})
+    # entregues ao candidato via email/WhatsApp. Cliente controla via UI.
+    triagem_invite_enabled = Column(Boolean, nullable=False, default=False, server_default="false")
+
     total_executions = Column(Integer, default=0)
     avg_confidence = Column(Float, default=0.0)
     last_executed_at = Column(DateTime, nullable=True)
@@ -127,6 +133,7 @@ class CustomAgent(Base):
             "voice_enabled": bool(self.voice_enabled) if self.voice_enabled is not None else False,
             "voip_enabled": bool(self.voip_enabled) if getattr(self, "voip_enabled", None) is not None else False,
             "whatsapp_enabled": bool(self.whatsapp_enabled) if self.whatsapp_enabled is not None else False,
+            "triagem_invite_enabled": bool(self.triagem_invite_enabled) if getattr(self, "triagem_invite_enabled", None) is not None else False,
             "total_executions": self.total_executions,
             "avg_confidence": self.avg_confidence,
             "last_executed_at": self.last_executed_at.isoformat() if self.last_executed_at else None,
