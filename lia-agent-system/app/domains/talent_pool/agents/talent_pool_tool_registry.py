@@ -10,6 +10,11 @@ Guide computacional (harness-engineering):
   - FairnessGuard: sourcing operations tagged as fairness_action_type="sourcing".
   - High-impact actions (move_pool_to_job, create_job_from_pool) require
     confirmation=True — HITL gate applied by the ReAct base class.
+
+ADR-001: todos os selects movidos para repositórios canonical.
+  - TalentPoolRepository: list_pools, get_by_id
+  - TalentPoolCandidateRepository: list_by_pool, get_by_candidate_and_pool,
+    move_candidates_to_vacancy
 """
 import logging
 import uuid
@@ -18,6 +23,8 @@ from typing import Any
 from lia_agents_core.tool_adapter import ToolDefinition, ToolOutput
 
 from app.shared.tool_handler import tool_handler
+from app.domains.talent_pool.repositories.talent_pool_repository import TalentPoolRepository
+from app.domains.talent_pool.repositories.talent_pool_candidate_repository import TalentPoolCandidateRepository
 
 logger = logging.getLogger(__name__)
 
@@ -32,16 +39,11 @@ async def _wrap_list_talent_pools(**kwargs: Any) -> dict[str, Any]:
 
     try:
         from lia_config.database import AsyncSessionLocal
-        from lia_models.talent_pool import TalentPool
-        from sqlalchemy import select
 
         async with AsyncSessionLocal() as session:
-            stmt = select(TalentPool).where(TalentPool.company_id == company_id)
-            if status:
-                stmt = stmt.where(TalentPool.status == status)
-            stmt = stmt.order_by(TalentPool.created_at.desc())
-            result = await session.execute(stmt)
-            pools = [p.to_dict() for p in result.scalars().all()]
+            repo = TalentPoolRepository(session)
+            effective_status = status if status != "all" else None
+            pools = [p.to_dict() for p in await repo.list_pools(company_id, effective_status)]
 
         if not pools:
             return {
@@ -79,30 +81,20 @@ async def _wrap_get_pool_candidates(**kwargs: Any) -> dict[str, Any]:
 
     try:
         from lia_config.database import AsyncSessionLocal
-        from lia_models.talent_pool import TalentPool, TalentPoolCandidate
-        from sqlalchemy import select
 
         async with AsyncSessionLocal() as session:
+            tp_repo = TalentPoolRepository(session)
+            tc_repo = TalentPoolCandidateRepository(session)
+
             # Verify pool belongs to company (multi-tenant guard)
-            pool_result = await session.execute(
-                select(TalentPool).where(
-                    TalentPool.id == pool_id,
-                    TalentPool.company_id == company_id,
-                )
-            )
-            pool = pool_result.scalars().first()
+            pool = await tp_repo.get_by_id(pool_id, company_id)
             if not pool:
                 return {"success": False, "error": "Pool not found or access denied"}
 
-            stmt = (
-                select(TalentPoolCandidate)
-                .where(TalentPoolCandidate.pool_id == pool_id)
-                .limit(limit)
-            )
-            if stage:
-                stmt = stmt.where(TalentPoolCandidate.stage == stage)
-            result = await session.execute(stmt)
-            candidates = [c.to_dict() for c in result.scalars().all()]
+            candidates = [
+                c.to_dict()
+                for c in await tc_repo.list_by_pool(pool_id, company_id, stage, limit)
+            ]
 
         return {
             "success": True,
@@ -177,18 +169,13 @@ async def _wrap_add_candidate_to_pool(**kwargs: Any) -> dict[str, Any]:
 
     try:
         from lia_config.database import AsyncSessionLocal
-        from lia_models.talent_pool import TalentPool, TalentPoolCandidate
-        from sqlalchemy import select
+        from lia_models.talent_pool import TalentPoolCandidate
 
         async with AsyncSessionLocal() as session:
+            repo = TalentPoolRepository(session)
+
             # Multi-tenant guard
-            pool_result = await session.execute(
-                select(TalentPool).where(
-                    TalentPool.id == pool_id,
-                    TalentPool.company_id == company_id,
-                )
-            )
-            pool = pool_result.scalars().first()
+            pool = await repo.get_by_id(pool_id, company_id)
             if not pool:
                 return {"success": False, "error": "Pool not found or access denied"}
 
@@ -196,7 +183,7 @@ async def _wrap_add_candidate_to_pool(**kwargs: Any) -> dict[str, Any]:
             for cid in candidate_ids:
                 entry = TalentPoolCandidate(
                     id=uuid.uuid4(),
-                    pool_id=pool_id,
+                    talent_pool_id=pool_id,
                     candidate_id=cid,
                     stage="discovered",
                     origin=origin,
@@ -237,54 +224,23 @@ async def _wrap_move_pool_to_job(**kwargs: Any) -> dict[str, Any]:
 
     try:
         from lia_config.database import AsyncSessionLocal
-        from lia_models.talent_pool import TalentPool, TalentPoolCandidate
-        from sqlalchemy import select, text
 
         async with AsyncSessionLocal() as session:
+            tp_repo = TalentPoolRepository(session)
+            tc_repo = TalentPoolCandidateRepository(session)
+
             # Multi-tenant guard on pool
-            pool_result = await session.execute(
-                select(TalentPool).where(
-                    TalentPool.id == pool_id,
-                    TalentPool.company_id == company_id,
-                )
-            )
-            pool = pool_result.scalars().first()
+            pool = await tp_repo.get_by_id(pool_id, company_id)
             if not pool:
                 return {"success": False, "error": "Pool not found or access denied"}
 
-            moved = 0
-            for cid in candidate_ids:
-                # Insert into vacancy_candidates preserving screening_data
-                await session.execute(
-                    text("""
-                        INSERT INTO vacancy_candidates
-                            (id, vacancy_id, candidate_id, stage, source, company_id, screening_data)
-                        SELECT
-                            gen_random_uuid(),
-                            :job_id,
-                            :candidate_id,
-                            :target_stage,
-                            'talent_pool',
-                            :company_id,
-                            COALESCE(
-                                (SELECT screening_data FROM talent_pool_candidates
-                                 WHERE pool_id = :pool_id AND candidate_id = :candidate_id
-                                 LIMIT 1),
-                                '{}'::jsonb
-                            )
-                        ON CONFLICT (vacancy_id, candidate_id) DO NOTHING
-                    """),
-                    {
-                        "job_id": job_id,
-                        "candidate_id": cid,
-                        "target_stage": target_stage,
-                        "company_id": company_id,
-                        "pool_id": pool_id,
-                    },
-                )
-                moved += 1
-
-            await session.commit()
+            moved = await tc_repo.move_candidates_to_vacancy(
+                candidate_ids=candidate_ids,
+                job_id=job_id,
+                company_id=company_id,
+                source_pool_id=pool_id,
+                target_stage=target_stage,
+            )
 
         return {
             "success": True,
@@ -321,17 +277,10 @@ async def _wrap_create_job_from_pool(**kwargs: Any) -> dict[str, Any]:
 
     try:
         from lia_config.database import AsyncSessionLocal
-        from lia_models.talent_pool import TalentPool
-        from sqlalchemy import select
 
         async with AsyncSessionLocal() as session:
-            pool_result = await session.execute(
-                select(TalentPool).where(
-                    TalentPool.id == pool_id,
-                    TalentPool.company_id == company_id,
-                )
-            )
-            pool = pool_result.scalars().first()
+            repo = TalentPoolRepository(session)
+            pool = await repo.get_by_id(pool_id, company_id)
             if not pool:
                 return {"success": False, "error": "Pool not found or access denied"}
 

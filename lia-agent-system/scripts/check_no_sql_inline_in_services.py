@@ -64,7 +64,7 @@ TOOL_REGISTRY_BACKLOG = frozenset({
     # wizard_tool_registry.py — removed 2026-05-23: MIGRATE 1 to JobVacancyCrudRepository + EXEMPT markers
     "app/domains/pipeline/agents/pipeline_tool_registry.py",
     # passive_pipeline_tool_registry.py — removed 2026-05-23 W1-004-D: 1 MIGRATE to PassiveCandidateRepository + 2 EXEMPT markers
-    "app/domains/talent_pool/agents/talent_pool_tool_registry.py",
+    # talent_pool_tool_registry.py — removed W1-004-E: 6 MIGRATE to TalentPoolRepository + TalentPoolCandidateRepository + 1 EXEMPT marker (move_candidates_to_vacancy)
 })
 
 # Services/ violations resolved in W1-004-C (2026-05-23):
