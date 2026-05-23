@@ -69,3 +69,7 @@ alembic/versions/*.pyc
 
 # Eval results (auto-generated, not to be committed)
 eval/eval_results_*.json
+
+# W4-033 (2026-05-23): impedir tracking de backups de audit/refactor scripts
+*.bak.*
+*.bak

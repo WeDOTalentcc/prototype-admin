@@ -495,3 +495,10 @@ repos:
         entry: python3 scripts/check_grafana_counter_names.py
         files: ^(observability/grafana/.*\.json|app/.*\.py|libs/.*\.py)$
         pass_filenames: false
+
+      - id: no-bak-files
+        name: "W4-033: Zero .bak.* files tracked no git (BLOCKING, anti scar tissue)"
+        language: system
+        entry: python3 scripts/check_no_bak_files.py
+        files: ^.*\.bak\..*$
+        pass_filenames: false
