@@ -1,36 +1,44 @@
 """
 GET /lia/suggestions — Dynamic homepage suggestion cards.
+
+P1-6 (Fase B 2026-05-23): refatorado pra usar repos canonical (ADR-001).
+Antes tinha 2 SQL queries inline. Agora:
+- JobVacancyCRUDRepository.list_active_for_company (active jobs)
+- VacancyCandidateRepository.count_created_since (recent candidates)
+Multi-tenancy fail-closed: company_id vem do JWT via require_company_id.
 """
 from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
 from app.core.database import get_db
-from app.models import JobVacancy
-from app.models.candidate import VacancyCandidate
+from app.domains.candidates.repositories.vacancy_candidate_repository import (
+    VacancyCandidateRepository,
+)
+from app.domains.job_management.repositories.job_vacancy_crud_repository import (
+    JobVacancyCRUDRepository,
+)
+from app.shared.security.require_company_id import require_company_id
 
 from ._shared import (
     SuggestionCard,
     SuggestionsResponse,
     logger,
 )
-from app.shared.security.require_company_id import require_company_id
 
 router = APIRouter()
 
 
 @router.get("/suggestions", response_model=SuggestionsResponse)
-# TODO(phase2): extract to repository — LIA assistant suggestion storage
 async def get_dynamic_suggestions(
     limit: int = Query(default=6, ge=1, le=12),
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user_or_demo), 
-company_id: str = Depends(require_company_id)):
-    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
+    current_user: User = Depends(get_current_user_or_demo),
+    company_id: str = Depends(require_company_id),
+):
     """
     Generate dynamic suggestion cards for the homepage based on real data.
 
@@ -40,20 +48,19 @@ company_id: str = Depends(require_company_id)):
     - Stalled pipelines
     - Interview scheduling needs
     - Report opportunities
+
+    Multi-tenancy canonical: ``company_id`` vem do JWT (``require_company_id``),
+    nunca do payload. ``current_user.company_id`` foi removido por defense-in-depth
+    — JWT é a fonte autoritativa unica.
     """
-    company_id = current_user.company_id
-    str(current_user.id)
     suggestions = []
 
     try:
-        jobs_query = select(JobVacancy).where(
-            and_(
-                JobVacancy.company_id == company_id,
-                JobVacancy.status.in_(["open", "active", "Open", "Active", "Em Andamento"])
-            )
-        )
-        result = await db.execute(jobs_query)
-        active_jobs = result.scalars().all()
+        job_repo = JobVacancyCRUDRepository(db)
+        candidate_repo = VacancyCandidateRepository(db)
+
+        # P1-6: lista vagas ativas via repo (era SQL inline).
+        active_jobs = await job_repo.list_active_for_company(company_id)
 
         job_ids = [str(job.id) for job in active_jobs]
 
@@ -104,14 +111,11 @@ company_id: str = Depends(require_company_id)):
                 metadata={"total_jobs": len(active_jobs)}
             ))
 
-        recent_candidates_query = select(func.count(VacancyCandidate.candidate_id)).where(
-            and_(
-                VacancyCandidate.company_id == company_id,
-                VacancyCandidate.created_at >= datetime.utcnow() - timedelta(days=7)
-            )
+        # P1-6: count recent candidates via repo (era SQL inline).
+        since_dt = datetime.utcnow() - timedelta(days=7)
+        recent_candidates = await candidate_repo.count_created_since(
+            company_id, since_dt
         )
-        recent_result = await db.execute(recent_candidates_query)
-        recent_candidates = recent_result.scalar() or 0
 
         if recent_candidates > 0:
             suggestions.append(SuggestionCard(

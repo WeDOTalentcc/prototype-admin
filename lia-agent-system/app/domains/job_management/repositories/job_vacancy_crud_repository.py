@@ -278,6 +278,37 @@ class JobVacancyCRUDRepository:
         return list(result.scalars().all())
 
 
+    async def list_active_for_company(
+        self,
+        company_id: str,
+        *,
+        statuses: list[str] | None = None,
+    ) -> list:
+        """List active vacancies for a company.
+
+        P1-6 (Fase B 2026-05-23): canonical method consumed by
+        ``/lia/suggestions`` endpoint. Antes este SQL vivia inline no endpoint
+        (violando ADR-001). Statuses canonical (mistura legacy PT/EN porque
+        DB convive com ambos): open, active, Open, Active, Em Andamento.
+
+        Multi-tenancy: filtro mandatorio por company_id (NUNCA trust payload).
+        """
+        from sqlalchemy import and_ as _and_
+
+        if statuses is None:
+            statuses = ["open", "active", "Open", "Active", "Em Andamento"]
+
+        result = await self.db.execute(
+            select(JobVacancy).where(
+                _and_(
+                    JobVacancy.company_id == company_id,
+                    JobVacancy.status.in_(statuses),
+                )
+            )
+        )
+        return list(result.scalars().all())
+
+
     async def list_indeed_published_active(self, company_id):
         """Used by job_board_service Indeed XML feed export."""
         from sqlalchemy import and_ as _and_

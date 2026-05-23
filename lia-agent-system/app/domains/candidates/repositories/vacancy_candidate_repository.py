@@ -171,6 +171,32 @@ class VacancyCandidateRepository:
         result = await self.db.execute(query)
         return list(result.scalars().all())
 
+    async def count_created_since(
+        self,
+        company_id: str,
+        since_dt,
+    ) -> int:
+        """Count candidates created since ``since_dt`` for a company.
+
+        P1-6 (Fase B 2026-05-23): canonical method consumed por
+        ``/lia/suggestions`` para detectar fluxo recente de candidatos novos.
+        Antes era inline ``select(func.count(...))`` no endpoint (viola ADR-001).
+
+        Multi-tenancy: filtro mandatorio por company_id.
+        """
+        from sqlalchemy import and_ as _and_, func
+
+        result = await self.db.execute(
+            select(func.count(VacancyCandidate.candidate_id)).where(
+                _and_(
+                    VacancyCandidate.company_id == company_id,
+                    VacancyCandidate.created_at >= since_dt,
+                )
+            )
+        )
+        return result.scalar() or 0
+
+
     async def list_stale_for_company(
         self,
         company_id: str,
