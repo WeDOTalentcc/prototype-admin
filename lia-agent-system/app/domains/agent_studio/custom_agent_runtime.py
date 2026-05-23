@@ -847,6 +847,17 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
                     "orchestrator_ready": True,
                     "plugin_name": plugin.plugin_name,
                     "user_id": user_id,
+                    # C.3 ticket (2026-05-23): surface the bootstrap greeting
+                    # cached in session.metadata by VoiceCoreOrchestrator
+                    # _on_session_initiated so frontend can render "agent
+                    # talks first" UX without an extra round-trip.
+                    "initial_greeting": (
+                        (getattr(session, "metadata", None) or {}).get(
+                            "initial_greeting"
+                        )
+                        if session is not None
+                        else None
+                    ),
                 },
             )
         except Exception as exc:

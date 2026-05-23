@@ -2416,7 +2416,18 @@ class VoiceCoreOrchestrator:
         session: "VoiceScreeningSession",
         db: Any,
     ) -> None:
-        """Fan out to all plugins' on_session_initiated hook (best-effort)."""
+        """Fan out to all plugins' on_session_initiated hook (best-effort).
+
+        C.3 (2026-05-23): also pre-computes the bootstrap initial_greeting via
+        ``_plugin_next_question`` and caches it in
+        ``session.metadata["initial_greeting"]``. Downstream consumers
+        (Studio runtime, frontend /voice/initiate response, Twilio TwiML
+        callback) can render the "agent talks first" UX without making an
+        extra round-trip.
+
+        Only inserts the key when a plugin actually returns a non-empty
+        greeting — avoids surfacing noise when running without plugins.
+        """
         for plugin in self._plugins:
             try:
                 await plugin.on_session_initiated(session, db)
@@ -2428,6 +2439,23 @@ class VoiceCoreOrchestrator:
                     session.session_id,
                     plugin_err,
                 )
+
+        # C.3 ticket: surface bootstrap greeting via session.metadata.
+        try:
+            if self._plugins:
+                greeting = await self._plugin_next_question(session, db)
+                if isinstance(greeting, str) and greeting.strip():
+                    # Ensure metadata is a dict (canonical field as of C.2).
+                    if not isinstance(getattr(session, "metadata", None), dict):
+                        session.metadata = {}
+                    session.metadata["initial_greeting"] = greeting.strip()
+        except Exception as greet_err:  # noqa: BLE001 — best-effort
+            logger.warning(
+                "[VOICE CORE] C.3 initial_greeting cache failed (non-blocking) "
+                "session=%s: %s",
+                session.session_id,
+                greet_err,
+            )
 
     async def _plugin_next_question(
         self,

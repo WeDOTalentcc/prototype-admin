@@ -114,9 +114,19 @@ class TestVoiceCoreOrchestratorWithPlugin:
     async def test_on_session_initiated_dispatches_to_plugin(
         self, session, recording_plugin
     ):
+        """Lifecycle hook dispatch contract.
+
+        C.3 (2026-05-23): after fanning out on_session_initiated, the
+        orchestrator also queries _plugin_next_question to cache the
+        bootstrap initial_greeting into session.metadata. A plugin that
+        implements both hooks will record TWO calls: initiated + next_q.
+        """
         core = VoiceCoreOrchestrator(plugins=[recording_plugin])
         await core._on_session_initiated(session, db=None)
-        assert recording_plugin.calls == [f"initiated:{session.session_id}"]
+        assert recording_plugin.calls == [
+            f"initiated:{session.session_id}",
+            f"next_q:{session.session_id}",
+        ]
 
     @pytest.mark.asyncio
     async def test_next_question_returns_plugin_value(self, session, recording_plugin):
