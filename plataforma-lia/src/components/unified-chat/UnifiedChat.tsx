@@ -29,6 +29,7 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import type React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { requestRegeneration } from "@/services/lia-api/feedback-api";
 import { deleteChatConversation } from "./deleteChatConversation";
 import { UnifiedChatEmptyState } from "./UnifiedChatEmptyState";
 import { UnifiedChatHeader } from "./UnifiedChatHeader";
@@ -496,6 +497,36 @@ export function UnifiedChat({
     [sendChatMessage],
   );
 
+  // P1-7 (Fase B 2026-05-23): regenerate button wiring.
+  // UnifiedMessageList chama `onRegenerate(messageId)` quando recruiter clica
+  // no botao "Gerar novamente" numa mensagem LIA. Pipeline:
+  //   1. POST /lia/feedback/regenerate { session_id, message_id }
+  //      → backend valida ownership e devolve { user_message, regenerate_of }
+  //   2. Re-dispara o mesmo user_message via sendChatMessage com metadata
+  //      `regenerateOf` pra analytics distinguir turno regenerado de organico.
+  // Error path: toast vermelho. Sem retry silencioso (anti-pattern REGRA 4).
+  const handleRegenerate = useCallback(
+    async (messageId: string) => {
+      if (!chatSessionId) {
+        toast.error("Nao foi possivel regenerar — sessao indisponivel");
+        return;
+      }
+      try {
+        const result = await requestRegeneration(chatSessionId, messageId);
+        sendChatMessage(
+          result.user_message,
+          undefined,
+          undefined,
+          { regenerateOf: result.regenerate_of } as Record<string, unknown>,
+        );
+      } catch (err) {
+        const detail = err instanceof Error ? err.message : "erro desconhecido";
+        toast.error("Nao foi possivel gerar novamente", { description: detail });
+      }
+    },
+    [chatSessionId, sendChatMessage],
+  );
+
   // Task #1128 — shared low-level reset: DELETE the canonical wizard
   // checkpointer for the current session. Used by BOTH "Nova conversa"
   // (which then also switches conversation) and "Cancelar wizard"
@@ -905,6 +936,7 @@ export function UnifiedChat({
             thinkingSteps={chatThinkingSteps}
             userName={userName}
             onChipClick={(value) => sendChatMessage(value)}
+            onRegenerate={handleRegenerate}
           />
         ) : (
           <UnifiedChatEmptyState
