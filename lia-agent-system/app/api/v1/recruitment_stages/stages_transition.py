@@ -1,6 +1,6 @@
 """
-Candidate transition endpoints:
-- POST /transition          - simple stage move
+Recruitment stages — candidate transitions API.
+
 - GET  /candidate/{id}/info
 - GET  /candidate/{id}/history
 - POST /transition/interpret-context
@@ -316,11 +316,22 @@ company_id: str = Depends(require_company_id)):
 
         stmt = (
             sa_update(VacancyCandidate)
-            .where(VacancyCandidate.id == request.vacancy_candidate_id)
+            # Onda 4.2b-P0-3 (2026-05-23): filtro company_id obrigatorio — cross-
+            # tenant write em candidato = LGPD critical.
+            .where(
+                VacancyCandidate.id == request.vacancy_candidate_id,
+                VacancyCandidate.company_id == company_id,
+            )
             .values(**values)
         )
-        await stage_repo.db.execute(stmt)
+        result = await stage_repo.db.execute(stmt)
         await stage_repo.db.commit()
+
+        if result.rowcount == 0:
+            raise HTTPException(
+                status_code=404,
+                detail="Candidate not found in this tenant",
+            )
 
         try:
             from app.domains.automation.services.stage_automation_engine import (
@@ -345,7 +356,9 @@ company_id: str = Depends(require_company_id)):
                 trigger_type=TriggerType.STAGE_CHANGED,
                 candidate_id=request.vacancy_candidate_id,
                 vacancy_id=request.vacancy_id or "",
-                company_id=getattr(current_user, 'company_id', '') or 'admin_company',
+                # Onda 4.2b-P0-4 (2026-05-23): removido 'admin_company' fallback.
+                # JWT e fonte autoritativa unica (REGRA 6).
+                company_id=company_id,
                 payload=automation_payload,
             )
             engine = StageAutomationEngine()
@@ -362,8 +375,13 @@ company_id: str = Depends(require_company_id)):
                 from sqlalchemy import select as sa_select
 
                 from app.models.recruitment_stages import RecruitmentStage as _RS
+                # Onda 4.2b-P0-5 (2026-05-23): stage lookup com company_id filter.
+                # Antes resolvia stage de qualquer empresa que tivesse nome igual.
                 stage_result = await stage_repo.db.execute(
-                    sa_select(_RS).where(_RS.name == request.to_stage)
+                    sa_select(_RS).where(
+                        _RS.name == request.to_stage,
+                        _RS.company_id == company_id,
+                    )
                 )
                 dest_stage = stage_result.scalar_one_or_none()
                 if dest_stage:
@@ -377,7 +395,8 @@ company_id: str = Depends(require_company_id)):
                 from app.domains.communication.services.transition_dispatch_service import TransitionDispatchService
                 dispatch_service = TransitionDispatchService(stage_repo.db)
 
-                company_id = getattr(current_user, 'company_id', None) or 'admin_company'
+                # Onda 4.2b-P0-4 (2026-05-23): removido fallback 'admin_company'.
+                # company_id ja vem do Depends(require_company_id) — usar direto.
                 triggered_by = getattr(current_user, 'id', None) or 'system'
 
                 personalized_content = None
