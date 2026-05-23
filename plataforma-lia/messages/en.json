@@ -1911,7 +1911,10 @@
       "link": "Link",
       "activate": "Activate",
       "clone": "Clone",
-      "moreActions": "More actions"
+      "moreActions": "More actions",
+      "whatsapp": "WhatsApp",
+      "disableWhatsapp": "Disable WhatsApp on this agent",
+      "enableWhatsapp": "Enable WhatsApp on this agent"
     },
     "createModal": {
       "titleWithTemplate": "Create Agent — {template}",
@@ -2556,7 +2559,15 @@
       "memoryLabel": "Memory enabled",
       "memoryYes": "Yes",
       "memoryNo": "No",
-      "cloneAndCustomize": "Clone and customize"
+      "cloneAndCustomize": "Clone and customize",
+      "verticalAll": "All",
+      "verticalTech": "Tech",
+      "verticalHealth": "Health",
+      "verticalEducation": "Education",
+      "verticalRetail": "Retail",
+      "verticalGeneric": "Generic",
+      "verticalFilterAriaLabel": "Filter templates by industry vertical",
+      "verticalLabel": "Vertical"
     },
     "digitalTwin": {
       "active": "Active",

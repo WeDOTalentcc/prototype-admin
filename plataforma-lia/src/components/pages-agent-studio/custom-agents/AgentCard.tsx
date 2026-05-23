@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react"
-import { Bot, Play, Pause, MoreVertical, Link2, TestTube2, Copy, Phone, PhoneCall } from "lucide-react"
+import { Bot, Play, Pause, MoreVertical, Link2, TestTube2, Copy, Phone, PhoneCall, MessageCircle } from "lucide-react"
 import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
 import { cardStyles, badgeStyles, textStyles } from "@/lib/design-tokens"
@@ -16,6 +16,7 @@ import { getCustomAgentStatusConfig } from "@/lib/agent-studio/status-config"
 import { BetaBadge } from "@/components/ui/beta-badge"
 import { Switch } from "@/components/ui/switch"
 import { useToggleAgentVoice, useInitiateVoiceCall } from "@/hooks/agent-studio/use-agent-voice"
+import { useToggleAgentWhatsApp } from "@/hooks/agent-studio/use-agent-whatsapp"
 import type { CustomAgent } from "./types"
 import { safeCategoryKey } from "./types"
 
@@ -34,6 +35,9 @@ export function AgentCard({ agent, onTest, onDeploy, onToggleStatus, onClone }: 
   const toggleVoice = useToggleAgentVoice(agent.id)
   const initiateVoice = useInitiateVoiceCall(agent.id)
   const voiceEnabled = Boolean(agent.voice_enabled)
+  // T5a UX Transformação 5: per-agent WhatsApp toggle (initiate é triggered no flow do candidato)
+  const toggleWhatsApp = useToggleAgentWhatsApp(agent.id)
+  const whatsappEnabled = Boolean(agent.whatsapp_enabled)
   const tStatus = useTranslations('agents.status')
   const tCat = useTranslations('agents.customAgents')
 
@@ -136,6 +140,23 @@ export function AgentCard({ agent, onTest, onDeploy, onToggleStatus, onClone }: 
             onCheckedChange={(next) => toggleVoice.trigger(next)}
             aria-label={voiceEnabled ? (t('disableVoice') || 'Desabilitar voz no agente ' + agent.name) : (t('enableVoice') || 'Habilitar voz no agente ' + agent.name)}
             data-testid="agent-card-voice-toggle"
+          />
+        </div>
+      </div>
+
+      {/* T5a UX Transformação 5: WhatsApp toggle (initiate via fluxo do candidato/pipeline) */}
+      <div className="flex items-center justify-between gap-2 pt-2 border-t border-lia-border-subtle">
+        <div className="flex items-center gap-2 text-xs">
+          <MessageCircle className="w-3.5 h-3.5 text-lia-text-disabled" aria-hidden="true" />
+          <span className="text-lia-text-secondary">{t('whatsapp') || 'WhatsApp'}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <Switch
+            checked={whatsappEnabled}
+            disabled={toggleWhatsApp.isMutating}
+            onCheckedChange={(next) => toggleWhatsApp.trigger(next)}
+            aria-label={whatsappEnabled ? (t('disableWhatsapp') || 'Desabilitar WhatsApp no agente ' + agent.name) : (t('enableWhatsapp') || 'Habilitar WhatsApp no agente ' + agent.name)}
+            data-testid="agent-card-whatsapp-toggle"
           />
         </div>
       </div>

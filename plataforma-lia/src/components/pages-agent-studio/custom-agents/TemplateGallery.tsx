@@ -8,7 +8,32 @@ import { buttonStyles, textStyles } from "@/lib/design-tokens"
 import { AGENT_TEMPLATES, TEMPLATE_CATEGORIES } from "@/lib/agent-templates-data"
 import { useAgentStudioStore } from "@/stores/agent-studio-store"
 import { TemplateCard } from "./TemplateCard"
-import type { AgentTemplate, AgentCategory } from "./types"
+import type { AgentTemplate, AgentCategory, AgentVertical } from "./types"
+
+// T5b UX Transformação 5: filtros verticais canonical.
+// Tipo intermediário para o filtro ("all" = todos, ou um vertical específico
+// ou "generic" = templates sem vertical).
+type VerticalFilter = "all" | "tech" | "health" | "education" | "retail" | "generic"
+
+const VERTICAL_FILTERS: ReadonlyArray<{ id: VerticalFilter; labelKey: string; icon: string }> = [
+  { id: "all", labelKey: "verticalAll", icon: "Layers" },
+  { id: "tech", labelKey: "verticalTech", icon: "Code2" },
+  { id: "health", labelKey: "verticalHealth", icon: "HeartPulse" },
+  { id: "education", labelKey: "verticalEducation", icon: "GraduationCap" },
+  { id: "retail", labelKey: "verticalRetail", icon: "ShoppingBag" },
+  { id: "generic", labelKey: "verticalGeneric", icon: "LayoutGrid" },
+]
+
+function matchesVerticalFilter(
+  templateVertical: AgentVertical | undefined,
+  filter: VerticalFilter,
+): boolean {
+  if (filter === "all") return true
+  if (filter === "generic") {
+    return templateVertical === null || templateVertical === undefined
+  }
+  return templateVertical === filter
+}
 
 interface TemplateGalleryProps {
   onTemplateSelect: (template: AgentTemplate) => void
@@ -20,16 +45,19 @@ export function TemplateGallery({ onTemplateSelect, onCreateManual }: TemplateGa
   const { activeCategory, setActiveCategory } = useAgentStudioStore()
   // UX-Sprint-A QW#20 Batch 5 (audit 2026-05-21): free-text search local
   const [searchQuery, setSearchQuery] = React.useState("")
+  // T5b UX Transformação 5: vertical industry filter local (não persistido em store)
+  const [verticalFilter, setVerticalFilter] = React.useState<VerticalFilter>("all")
 
-  // UX-Sprint-A QW#20: filter combinado category + search
+  // UX-Sprint-A QW#20: filter combinado category + search + vertical (T5b)
   const filtered = AGENT_TEMPLATES.filter((tmpl) => {
     const matchesCategory = activeCategory === "all" || tmpl.category === activeCategory
+    const matchesVertical = matchesVerticalFilter(tmpl.vertical, verticalFilter)
     const q = searchQuery.trim().toLowerCase()
     const matchesSearch = !q ||
       tmpl.name.toLowerCase().includes(q) ||
-      
+
       (tmpl.description || "").toLowerCase().includes(q)
-    return matchesCategory && matchesSearch
+    return matchesCategory && matchesVertical && matchesSearch
   })
 
   return (
@@ -85,6 +113,38 @@ export function TemplateGallery({ onTemplateSelect, onCreateManual }: TemplateGa
             >
               <CatIcon className="w-3.5 h-3.5" />
               {cat.label}
+            </button>
+          )
+        })}
+      </div>
+
+      {/* T5b UX Transformação 5: Vertical Industry Filters */}
+      <div
+        className="flex flex-wrap gap-1.5"
+        role="group"
+        aria-label={t('verticalFilterAriaLabel') || 'Filtrar templates por vertical de mercado'}
+        data-testid="template-vertical-filter"
+      >
+        {VERTICAL_FILTERS.map((vf) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const VfIcon = ((Icons as any)[vf.icon] || Icons.Layers) as React.ComponentType<{ className?: string }>
+          const isActive = verticalFilter === vf.id
+          return (
+            <button
+              key={vf.id}
+              type="button"
+              onClick={() => setVerticalFilter(vf.id)}
+              aria-pressed={isActive}
+              className={cn(
+                "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors",
+                isActive
+                  ? "bg-wedo-cyan/15 text-wedo-cyan-dark border border-wedo-cyan/40"
+                  : "bg-lia-bg-primary text-lia-text-secondary border border-lia-border-subtle hover:bg-lia-bg-tertiary"
+              )}
+              data-testid={`vertical-filter-${vf.id}`}
+            >
+              <VfIcon className="w-3.5 h-3.5" />
+              {t(vf.labelKey) || vf.id}
             </button>
           )
         })}

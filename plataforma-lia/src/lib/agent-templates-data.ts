@@ -21,6 +21,10 @@ export const AGENT_TEMPLATES: AgentTemplate[] = [
     enable_memory: true,
     excluded_tools: [],
     tags: ["popular", "tech", "triagem"],
+    vertical: "tech",
+    vertical_prompts: {
+      tech: "Voce e um agente de triagem tecnica especializado em tecnologia. Analise stack tecnologico (linguagens, frameworks, cloud), system design, anos de experiencia em projetos relevantes, contribuicoes open source e senioridade. Considere fit cultural com cultura DevOps/agile. Classifique de 1-10 com justificativa tecnica detalhada.",
+    },
   },
   {
     id: "tpl-triagem-volume",
@@ -37,6 +41,10 @@ export const AGENT_TEMPLATES: AgentTemplate[] = [
     enable_memory: false,
     excluded_tools: [],
     tags: ["volume", "rapido", "operacional"],
+    vertical: "retail",
+    vertical_prompts: {
+      retail: "Voce e um agente de triagem de alto volume para vagas operacionais de varejo, FMCG e e-commerce. Avalie em segundos: disponibilidade de horarios, mobilidade (proximidade da unidade), experiencia em atendimento ao cliente, capacidade de aprendizado rapido. Foque no minimo viavel — sem viés sobre idade ou origem.",
+    },
   },
   {
     id: "tpl-screening-cultural",
@@ -53,6 +61,7 @@ export const AGENT_TEMPLATES: AgentTemplate[] = [
     enable_memory: true,
     excluded_tools: [],
     tags: ["cultura", "soft-skills", "valores"],
+    vertical: null,
   },
   {
     id: "tpl-sourcing-passivo",
@@ -69,6 +78,7 @@ export const AGENT_TEMPLATES: AgentTemplate[] = [
     enable_memory: true,
     excluded_tools: [],
     tags: ["sourcing", "passivo", "headhunting"],
+    vertical: null,
   },
   {
     id: "tpl-sourcing-diversidade",
@@ -85,6 +95,7 @@ export const AGENT_TEMPLATES: AgentTemplate[] = [
     enable_memory: true,
     excluded_tools: [],
     tags: ["diversidade", "inclusao", "dei"],
+    vertical: null,
   },
   {
     id: "tpl-agendamento",
@@ -101,6 +112,7 @@ export const AGENT_TEMPLATES: AgentTemplate[] = [
     enable_memory: false,
     excluded_tools: [],
     tags: ["agenda", "entrevista", "scheduling"],
+    vertical: null,
   },
   {
     id: "tpl-followup",
@@ -117,6 +129,7 @@ export const AGENT_TEMPLATES: AgentTemplate[] = [
     enable_memory: true,
     excluded_tools: [],
     tags: ["follow-up", "engajamento", "comunicacao"],
+    vertical: null,
   },
   {
     id: "tpl-analise-pipeline",
@@ -133,6 +146,7 @@ export const AGENT_TEMPLATES: AgentTemplate[] = [
     enable_memory: false,
     excluded_tools: [],
     tags: ["pipeline", "metricas", "gargalos"],
+    vertical: null,
   },
   {
     id: "tpl-comparacao",
@@ -149,6 +163,7 @@ export const AGENT_TEMPLATES: AgentTemplate[] = [
     enable_memory: true,
     excluded_tools: [],
     tags: ["comparacao", "ranking", "finalistas"],
+    vertical: null,
   },
   {
     id: "tpl-assistente-vaga",
@@ -165,6 +180,7 @@ export const AGENT_TEMPLATES: AgentTemplate[] = [
     enable_memory: true,
     excluded_tools: [],
     tags: ["vaga", "job-description", "otimizacao"],
+    vertical: null,
   },
   {
     id: "tpl-onboarding-prep",
@@ -181,6 +197,10 @@ export const AGENT_TEMPLATES: AgentTemplate[] = [
     enable_memory: true,
     excluded_tools: [],
     tags: ["onboarding", "integracao", "novo-colaborador"],
+    vertical: "health",
+    vertical_prompts: {
+      health: "Voce e um agente de preparacao de onboarding especializado em saude e hospitalar. Verifique documentacao obrigatoria (CRM/COREN/CRP ativo, vacinas, exames admissionais, NR-32 compliance). Prepare checklist personalizado por categoria profissional (enfermagem, medicina, tecnico, administrativo). Atente a treinamentos regulatorios (LGPD em saude, codigos de etica).",
+    },
   },
   {
     id: "tpl-salary-benchmark",
@@ -197,6 +217,7 @@ export const AGENT_TEMPLATES: AgentTemplate[] = [
     enable_memory: false,
     excluded_tools: [],
     tags: ["salario", "benchmark", "remuneracao"],
+    vertical: null,
   },
   {
     id: "tpl-feedback-collector",
@@ -213,6 +234,7 @@ export const AGENT_TEMPLATES: AgentTemplate[] = [
     enable_memory: true,
     excluded_tools: [],
     tags: ["feedback", "entrevistadores", "avaliacao"],
+    vertical: null,
   },
   {
     id: "tpl-talent-pool-curator",
@@ -229,6 +251,7 @@ export const AGENT_TEMPLATES: AgentTemplate[] = [
     enable_memory: true,
     excluded_tools: [],
     tags: ["talent-pool", "curadoria", "organizacao"],
+    vertical: null,
   },
   {
     id: "tpl-compliance-check",
@@ -245,6 +268,10 @@ export const AGENT_TEMPLATES: AgentTemplate[] = [
     enable_memory: false,
     excluded_tools: [],
     tags: ["compliance", "lgpd", "legal"],
+    vertical: "education",
+    vertical_prompts: {
+      education: "Voce e um agente de compliance especializado em educacao (universidades, EdTech, escolas). Valide: titulacao academica (graduacao/mestrado/doutorado conforme exigencia da vaga docente), Curriculo Lattes atualizado, experiencia em pesquisa/extensao, registros profissionais especificos (Pedagogo, Psicologo Educacional). Atente LGPD para dados de alunos quando a vaga envolve contato com menores.",
+    },
   }]
 
 export const TEMPLATE_CATEGORIES = [

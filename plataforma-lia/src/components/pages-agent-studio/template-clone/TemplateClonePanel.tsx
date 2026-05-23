@@ -172,6 +172,17 @@ export function TemplateClonePanel({
                 <span className="font-medium">{t("categoryLabel") || "Categoria"}:</span>{" "}
                 {template.category}
               </p>
+              {template.vertical && (
+                <p
+                  className="mt-0.5 text-sm text-lia-text-primary"
+                  data-testid="template-clone-vertical"
+                >
+                  <span className="font-medium">{t("verticalLabel") || "Vertical"}:</span>{" "}
+                  <span className="inline-flex items-center gap-1 rounded-full bg-wedo-cyan/10 px-2 py-0.5 text-xs font-medium text-wedo-cyan-dark">
+                    {t(`vertical${template.vertical.charAt(0).toUpperCase()}${template.vertical.slice(1)}`) || template.vertical}
+                  </span>
+                </p>
+              )}
             </section>
 
             <Separator />

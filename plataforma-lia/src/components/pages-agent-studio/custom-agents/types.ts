@@ -5,6 +5,12 @@
 
 export type AgentCategory = "screening" | "sourcing" | "communication" | "analytics" | "job_management" | "automation" | "general"
 
+/**
+ * T5b UX Transformação 5 — vertical industry for template specialization.
+ * `null` means generic template (no industry specialization).
+ */
+export type AgentVertical = "tech" | "health" | "education" | "retail" | null
+
 export type ContextLevel = "full" | "standard" | "minimal"
 
 export type AgentStatus = "draft" | "pending_approval" | "active" | "paused" | "archived"
@@ -65,6 +71,18 @@ export interface AgentTemplate {
   enable_memory: boolean
   excluded_tools: string[]
   tags: string[]
+  /** T5b UX Transformação 5: vertical industry specialization (null = generic). */
+  vertical?: AgentVertical
+  /**
+   * T5b: optional industry-specific sub-prompts. Wizard pode usar como sugestão
+   * de override do system_prompt quando o cliente escolhe vertical.
+   */
+  vertical_prompts?: {
+    tech?: string
+    health?: string
+    education?: string
+    retail?: string
+  }
 }
 
 export interface CustomAgent {
@@ -87,6 +105,8 @@ export interface CustomAgent {
   excluded_tools: string[]
   /** Sprint 3.7 W4-1: per-agent voice flag (default OFF). Cliente toggles via UI. */
   voice_enabled?: boolean
+  /** T5a UX Transformação 5: per-agent WhatsApp flag (default OFF). Cliente toggles via UI. */
+  whatsapp_enabled?: boolean
   total_executions: number
   avg_confidence: number
   last_executed_at: string | null
