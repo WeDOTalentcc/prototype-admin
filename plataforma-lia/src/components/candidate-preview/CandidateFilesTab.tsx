@@ -180,7 +180,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                               {formatRelativeTime(file.created_at)}
                             </span>
                             <Chip variant="neutral" muted
-                              className="text-xs px-1 py-0 h-3.5"
+                              className="text-micro px-1.5 py-0 h-4"
                               style={{backgroundColor: colors.bg, color: colors.text}}
                             >
                               <Tag className="w-2.5 h-2.5 mr-0.5" />
