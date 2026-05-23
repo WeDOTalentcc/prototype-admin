@@ -75,7 +75,7 @@ class VoiceInitiateResponse(WeDoBaseModel):
         ...,
         description=(
             "Um de: session_initiated | feature_not_enabled | agent_voice_disabled | "
-            "session_resumed | feature_check_failed | error"
+            "agent_voip_disabled | session_resumed | feature_check_failed | error"
         ),
     )
     agent_id: str
@@ -165,13 +165,17 @@ async def initiate_voice_session(
     """
     agent = await _load_agent_for_company(db, agent_id=agent_id, company_id=company_id)
 
-    # Layer 2: per-agent toggle. Defense-in-depth com feature flag global.
-    if not bool(getattr(agent, "voice_enabled", False)):
+    # Layer 2: per-agent toggle — mode-aware (W-Channels-A 2026-05-23).
+    # candidate_phone presente → modo PSTN (gate voice_enabled).
+    # candidate_phone ausente → modo VoIP (gate voip_enabled).
+    _intended_voip = not bool(payload.candidate_phone)
+    _required_flag = "voip_enabled" if _intended_voip else "voice_enabled"
+    if not bool(getattr(agent, _required_flag, False)):
         return VoiceInitiateResponse(
             session_id="",
             call_sid=None,
-            is_voip=False,
-            status="agent_voice_disabled",
+            is_voip=_intended_voip,
+            status="agent_voip_disabled" if _intended_voip else "agent_voice_disabled",
             agent_id=str(agent.id),
             agent_name=agent.name,
             plugin_name=None,
@@ -218,7 +222,7 @@ async def initiate_voice_session(
             company_id=company_id,
             session_id="",
             context=runtime_context,
-            channel="voice",
+            channel="voip" if _intended_voip else "voice",
         )
     except Exception as exc:  # pragma: no cover — safety net
         logger.error(
