@@ -488,3 +488,10 @@ repos:
         entry: python3 scripts/check_outbox_worker_wired.py
         files: ^app/(main\.py|shared/observability/ai_consumption_outbox_worker\.py)$
         pass_filenames: false
+
+      - id: grafana-counter-names
+        name: "W3-029: Grafana counter names declarados em código (BLOCKING, anti-drift)"
+        language: system
+        entry: python3 scripts/check_grafana_counter_names.py
+        files: ^(observability/grafana/.*\.json|app/.*\.py|libs/.*\.py)$
+        pass_filenames: false

@@ -14,12 +14,18 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class ToolDefinition:
-    """Definition of a tool that can be called by LLM agents."""
+    """Definition of a tool that can be called by LLM agents.
+
+    W3-026 (2026-05-23): `version` field accepted via DI ou
+    `tool_registry_metadata.yaml`. Default = "1.0". Phase A = field
+    aceito + log na registration. Phase B (enforcement) defer.
+    """
     name: str
     description: str
     parameters_schema: dict[str, Any]
     handler: Callable[..., Awaitable[dict[str, Any]]]
     allowed_agents: list[str] = field(default_factory=list)
+    version: str = "1.0"  # W3-026 (2026-05-23): semver canonical do tool
     
     def to_claude_schema(self) -> dict[str, Any]:
         """Convert to Claude's tool format."""
@@ -56,6 +62,9 @@ class ToolRegistry:
         
         Args:
             tool: The tool definition to register
+
+        W3-026 (2026-05-23): logs tool.version pra observability + futuro
+        enforcement runtime (Phase B).
         """
         if tool.name in self._tools:
             # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
