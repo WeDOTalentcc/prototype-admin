@@ -1,11 +1,15 @@
 """
 Authentication dependencies for FastAPI.
 """
+import logging
 import os
 from typing import Any
 from uuid import UUID
 
 from fastapi import Depends, HTTPException, status
+
+logger = logging.getLogger(__name__)
+
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jwt.exceptions import InvalidTokenError as JWTError
 from sqlalchemy import select

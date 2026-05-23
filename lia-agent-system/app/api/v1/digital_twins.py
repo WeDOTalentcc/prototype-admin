@@ -5,6 +5,7 @@ Apply to: lia-agent-system/app/api/v1/digital_twins.py
 Register: app.include_router(digital_twins_router)
 """
 
+import logging
 import uuid
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -14,6 +15,8 @@ from pydantic import BaseModel, Field
 from typing import Optional
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/digital-twins", tags=["Digital Twins"])
 
@@ -54,7 +57,11 @@ company_id: str = Depends(require_company_id)):
     from lia_models.digital_twin import DigitalTwin
     from app.services.quota_enforcement import enforce_quota
 
-    company_id = current_user.get("company_id", "unknown")
+    # Multi-tenancy canonical (CLAUDE.md REGRA 6): company_id vem do JWT via
+    # Depends(require_company_id). NUNCA fazer overwrite com current_user.get(...)
+    # — current_user é dict cujo company_id NÃO passa por get_verified_company_id
+    # e tem fallback literal "unknown" que vaza cross-tenant ou viola FK.
+    # Fix harness audit 2026-05-23 — anti-pattern detectado em audit deep.
     await enforce_quota("digital_twins", company_id, db)
 
     twin = DigitalTwin(
@@ -136,7 +143,10 @@ company_id: str = Depends(require_company_id)):
     from lia_models.digital_twin import DigitalTwin
     from sqlalchemy import select
 
-    company_id = current_user.get("company_id", "unknown")
+    # Multi-tenancy canonical (CLAUDE.md REGRA 6): company_id vem do JWT via
+    # Depends(require_company_id). Audit harness 2026-05-23 fixou create_twin;
+    # list_twins tinha mesmo bug — read endpoint vulnerável a leak cross-tenant
+    # se current_user dict tiver company_id diferente do JWT-canonical.
     result = await db.execute(
         select(DigitalTwin)
         .where(DigitalTwin.company_id == company_id)

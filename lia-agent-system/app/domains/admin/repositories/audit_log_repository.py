@@ -3,7 +3,7 @@ AuditLog Repository — data access layer for SOX audit logs and retention polic
 Extracted from app/api/v1/audit_logs.py as part of Phase 2 refactor.
 """
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from uuid import UUID
 
 from sqlalchemy import and_, desc, func, select

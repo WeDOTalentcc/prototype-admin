@@ -5,6 +5,8 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi.responses import StreamingResponse
+from app.domains.analytics.services.job_report_service import job_report_service
 
 from ._shared import (  # noqa: F401
     get_current_active_user,

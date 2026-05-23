@@ -5,6 +5,7 @@ Also includes router_public for candidate application flow.
 from datetime import datetime
 from uuid import UUID
 
+import secrets
 import uuid as uuid_lib
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Path, UploadFile
