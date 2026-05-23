@@ -1,6 +1,3 @@
-"""
-Company Approvers API endpoints — CRUD for job-approval workflow approvers.
-"""
 import logging
 import uuid
 from datetime import datetime
@@ -92,10 +89,13 @@ async def update_approver(
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Update an approver."""
+    # Onda 4.2a-P0.2 (2026-05-23): company_id passa ao repo pra cross-tenant guard.
     try:
         update_data = data.model_dump(exclude_unset=True)
         update_data["updated_at"] = datetime.utcnow()
-        approver = await approver_repo.update(approver_id, update_data)
+        approver = await approver_repo.update(
+            approver_id, update_data, company_id=company_id,
+        )
         if not approver:
             raise HTTPException(status_code=404, detail="Approver not found")
         return approver
@@ -103,7 +103,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error updating approver: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.delete("/approvers/{approver_id}", response_model=None)
@@ -111,10 +111,10 @@ async def delete_approver(
     approver_id: uuid.UUID,
     approver_repo: ApproverRepository = Depends(get_approver_repo),
 company_id: str = Depends(require_company_id)):
-    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
+    # Onda 4.2a-P0.2 (2026-05-23): cross-tenant guard via company_id.
     """Soft delete an approver."""
     try:
-        deleted = await approver_repo.delete(approver_id)
+        deleted = await approver_repo.delete(approver_id, company_id=company_id)
         if not deleted:
             raise HTTPException(status_code=404, detail="Approver not found")
         return {"success": True, "message": "Approver deleted"}
@@ -122,4 +122,4 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error deleting approver: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")

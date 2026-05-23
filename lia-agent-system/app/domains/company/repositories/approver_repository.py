@@ -1,4 +1,3 @@
-"""ApproverRepository - session-in-constructor pattern."""
 import logging
 from decimal import Decimal
 from uuid import UUID
@@ -45,8 +44,17 @@ class ApproverRepository:
         await self.db.refresh(approver)
         return approver
 
-    async def update(self, approver_id: UUID, data: dict) -> Approver | None:
-        approver = await self.get_by_id(approver_id)
+    async def update(
+        self,
+        approver_id: UUID,
+        data: dict,
+        company_id: UUID | str | None = None,
+    ) -> Approver | None:
+        """Update approver. Onda 4.2a-P0.2 (2026-05-23): adicionado
+        company_id pra defense-in-depth multi-tenancy. Cross-tenant write
+        em approval workflow = LGPD critical (afeta offer flow).
+        """
+        approver = await self.get_by_id(approver_id, company_id=company_id)
         if not approver:
             return None
         for key, value in data.items():
@@ -111,8 +119,15 @@ class ApproverRepository:
             or a.can_approve_above_amount <= amount
         ]
 
-    async def delete(self, approver_id: UUID) -> bool:
-        approver = await self.get_by_id(approver_id)
+    async def delete(
+        self,
+        approver_id: UUID,
+        company_id: UUID | str | None = None,
+    ) -> bool:
+        """Soft delete approver. Onda 4.2a-P0.2 (2026-05-23): cross-tenant
+        delete guard via company_id (LGPD critical — approval workflow).
+        """
+        approver = await self.get_by_id(approver_id, company_id=company_id)
         if not approver:
             return False
         approver.is_active = False
