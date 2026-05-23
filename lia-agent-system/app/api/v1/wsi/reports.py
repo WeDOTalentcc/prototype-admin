@@ -37,6 +37,14 @@ from ._shared import (
     WSI_CLASSIFICATION_MAP,
 )
 from app.shared.security.require_company_id import require_company_id
+# Recovery #3 (2026-05-23) — imports restored para get_wsi_audit_trail
+# (endpoint compliance EU AI Act Art. 12 / LGPD Art. 20 perdido no merge 02361f41c).
+from app.auth.dependencies import (
+    get_current_user_strict,
+    require_role,
+    validate_company_access,
+)
+from app.auth.models import User, UserRole
 
 logger = logging.getLogger(__name__)
 
@@ -826,3 +834,139 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         logger.error(f"F11-6 candidate ranking failed for {candidate_id}/{job_vacancy_id}: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ---------------------------------------------------------------------------
+# Recovery #3 (2026-05-23) — get_wsi_audit_trail restored.
+#
+# Endpoint perdido no merge commit 02361f41c em 2026-05-01. Implementação
+# original Task #511 (round 3 fix com deny-by-default em sessions sem company).
+#
+# Compliance crítico: EU AI Act Art. 12 (record-keeping de IA high-risk) e
+# LGPD Art. 20 (direito de explicação de decisão automatizada). Retorna a
+# trilha imutável de respostas WSI + hashes SHA-256 + análise correlata.
+#
+# Acesso: admin (cross-tenant) ou dpo (escopado via validate_company_access).
+# Deny-by-default quando session_company_id resolve None (job_vacancy órfão).
+# ---------------------------------------------------------------------------
+@router.get(
+    "/reports/audit/{session_id}",
+    summary="Audit trail WSI — EU AI Act Art. 12 / LGPD Art. 20",
+    response_model=None,
+    dependencies=[Depends(require_role([UserRole.admin, UserRole.wedotalent_admin]))],
+)
+async def get_wsi_audit_trail(
+    session_id: str,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user_strict),
+):
+    """Retorna a trilha de auditoria imutável das respostas WSI da sessão.
+
+    Acesso: ``admin`` (tenant admin — escopado à própria company via
+    ``validate_company_access``) ou ``wedotalent_admin`` (staff WeDOTalent —
+    cross-tenant). Recovery #3 (2026-05-23) substituiu o role legacy ``dpo``
+    (deprecated no enum atual) por ``wedotalent_admin`` que tem mesmo papel
+    de compliance cross-tenant.
+
+    Inclui:
+      - lista de respostas brutas + hash SHA-256 + timestamps (``wsi_responses``)
+      - hashes correlatos da análise (``wsi_response_analyses.response_hash``)
+      - metadados da sessão para correlação
+
+    O hash permite verificar integridade sem reprocessar o texto e detectar
+    duplicatas / adulterações posteriores.
+    """
+    # 1) Sessão existe? (join com job_vacancies para obter company_id)
+    sess_row = (await db.execute(text(
+        "SELECT s.id, s.status, s.candidate_id, s.job_vacancy_id, "
+        "       s.created_at, s.completed_at, jv.company_id "
+        "FROM wsi_sessions s "
+        "LEFT JOIN job_vacancies jv ON jv.id = s.job_vacancy_id "
+        "WHERE s.id = :sid"
+    ), {"sid": session_id})).fetchone()
+    if not sess_row:
+        raise HTTPException(status_code=404, detail="WSI session not found")
+
+    # 2) Tenant scoping (Task #511 round 3) — bloqueia IDOR cross-tenant.
+    # - ``wedotalent_admin`` tem acesso cross-tenant explícito (staff WeDOTalent
+    #   responde regulador europeu/ANPD).
+    # - ``admin`` (tenant) só vê dados da própria company via
+    #   ``validate_company_access`` (que usa ``user.can_access_company``).
+    #
+    # TODO follow-up cross-cutting: ``User.can_access_company`` em app/auth/models.py
+    # ainda não reconhece ``wedotalent_admin`` como cross-tenant. Quando atualizar
+    # (afeta vários endpoints), simplificar este path pra um único
+    # ``validate_company_access`` call sem skip explícito.
+    #
+    # Round 3 fix (deny-by-default): se a sessão não resolve company
+    # (job_vacancy ausente/órfão, dado legado, sessão sem job), apenas roles
+    # cross-tenant (admin OR wedotalent_admin) podem acessar — sem company
+    # resolvível não há como provar pertencimento ao tenant.
+    session_company_id = sess_row[6]
+    cross_tenant_roles = {UserRole.admin, UserRole.wedotalent_admin}
+    if session_company_id is not None:
+        if current_user.role != UserRole.wedotalent_admin:
+            validate_company_access(current_user, str(session_company_id))
+    else:
+        if current_user.role not in cross_tenant_roles:
+            logger.warning(
+                "[WSI-AUDIT] deny: company unresolved for session=%s "
+                "(role=%s, user=%s)",
+                session_id, current_user.role, current_user.id,
+            )
+            raise HTTPException(
+                status_code=403,
+                detail="Cannot resolve session tenant; access denied",
+            )
+
+    responses_rows = (await db.execute(text(
+        "SELECT id, question_id, raw_text, response_hash, candidate_id, created_at "
+        "FROM wsi_responses WHERE session_id = :sid ORDER BY created_at ASC"
+    ), {"sid": session_id})).fetchall()
+
+    analyses_rows = (await db.execute(text(
+        "SELECT question_id, competency, response_hash, final_score "
+        "FROM wsi_response_analyses WHERE session_id = :sid"
+    ), {"sid": session_id})).fetchall()
+
+    logger.info(
+        "[WSI-AUDIT] session=%s requested_by=%s role=%s items=%d",
+        session_id, current_user.id, current_user.role, len(responses_rows),
+    )
+
+    return {
+        "session_id": session_id,
+        "session": {
+            "status": sess_row[1],
+            "candidate_id": sess_row[2],
+            "job_vacancy_id": sess_row[3],
+            "created_at": sess_row[4].isoformat() if sess_row[4] else None,
+            "completed_at": sess_row[5].isoformat() if sess_row[5] else None,
+        },
+        "responses": [
+            {
+                "id": str(r[0]),
+                "question_id": r[1],
+                "raw_text": r[2],
+                "response_hash": r[3],
+                "candidate_id": r[4],
+                "created_at": r[5].isoformat() if r[5] else None,
+            }
+            for r in responses_rows
+        ],
+        "analyses_hashes": [
+            {
+                "question_id": a[0],
+                "competency": a[1],
+                "response_hash": a[2],
+                "final_score": float(a[3]) if a[3] is not None else None,
+            }
+            for a in analyses_rows
+        ],
+        "compliance": {
+            "framework": "EU AI Act Art. 12 / LGPD Art. 20",
+            "hash_algorithm": "SHA-256",
+            "accessed_by": str(current_user.id),
+            "accessed_at": datetime.utcnow().isoformat() + "Z",
+        },
+    }
