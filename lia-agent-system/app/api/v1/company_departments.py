@@ -1,4 +1,4 @@
-"""
+"""Company departments API endpoints (CRUD + Excel/CSV bulk import)."""
 import csv
 import io
 import logging
