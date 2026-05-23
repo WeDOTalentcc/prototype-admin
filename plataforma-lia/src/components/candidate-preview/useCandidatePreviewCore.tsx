@@ -431,6 +431,7 @@ const candidateId = candidate?.id as string | undefined
       textToCopy += `Vaga: ${opinion.job_vacancy_title}\n`
     }
     if (displayScore !== null && displayScore !== undefined) {
+      // @canonical-allow-100 fallback for non-WSI legacy opinion in copy-to-clipboard text
       textToCopy += `Nota: ${isWsiOpinion ? `${(displayScore as number).toFixed(1)}/10` : `${Math.round(displayScore as number)}/100`}\n`
     }
     textToCopy += `\n`

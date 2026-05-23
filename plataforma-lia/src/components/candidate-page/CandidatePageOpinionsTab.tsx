@@ -220,6 +220,7 @@ export function CandidatePageOpinionsTab({
                             <div className="flex items-center gap-2 mt-0.5">
                               {displayScore !== null && displayScore !== undefined && (
                                 <span className={`text-micro font-semibold ${getOpinionScoreColor(displayScore, isWsiOpinion)}`}>
+                                  {/* @canonical-allow-100 fallback display for non-WSI legacy opinion (Surface 2 mock — F3 absorption removes) */}
                                   {isWsiOpinion ? `WSI: ${(displayScore as number).toFixed(1)}/10` : `Nota: ${Math.round(displayScore as number)}/100`}
                                 </span>
                               )}

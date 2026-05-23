@@ -112,7 +112,7 @@ export function CandidatePageProfileTab({
                   <div className="flex items-center gap-1.5">
                     <span className="text-micro font-medium text-lia-text-primary uppercase tracking-wider">Parecer LIA</span>
                     <span className="text-micro font-semibold text-status-success">
-                      Nota: {opinionsHistory[0]?.score || liaScore}/100
+                      Nota: {(() => { const s = (opinionsHistory[0]?.score as number | undefined) ?? liaScore; const n = typeof s === 'number' ? s : 0; return (n > 10 ? n / 10 : n).toFixed(1); })()}/10
                     </span>
                   </div>
                   <div className="flex items-center gap-1.5 mt-0.5">

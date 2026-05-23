@@ -54,6 +54,7 @@ def scan_file(path: Path) -> list[tuple[int, str]]:
         return violations
 
     in_block_comment = False
+    prev_line = ""
     for lineno, raw in enumerate(text.splitlines(), start=1):
         line = raw.rstrip()
         stripped = line.strip()
@@ -62,18 +63,24 @@ def scan_file(path: Path) -> list[tuple[int, str]]:
         if in_block_comment:
             if "*/" in stripped:
                 in_block_comment = False
+            prev_line = line
             continue
         if stripped.startswith("/*"):
             if "*/" not in stripped:
                 in_block_comment = True
+            prev_line = line
             continue
 
         if SKIP_LINE.match(line):
+            prev_line = line
             continue
-        if ALLOW_MARKER in line:
+        # Marker can be inline OR on the preceding non-empty line (lookback)
+        if ALLOW_MARKER in line or ALLOW_MARKER in prev_line:
+            prev_line = line
             continue
         if PATTERN_100.search(line):
             violations.append((lineno, stripped))
+        prev_line = line
     return violations
 
 

@@ -111,6 +111,7 @@ export function useCandidatePageCore(candidate: Record<string, unknown> | null) 
       status: 'completed',
       statusLabel: 'Concluído',
       score: 88,
+      // @canonical-allow-100 mock string deletado em F3 (Surface 2 absorption)
       summary: 'Case de design system concluído com nota 88/100.',
       details: {
         testType: 'Design System Case',
@@ -328,7 +329,7 @@ export function useCandidatePageCore(candidate: Record<string, unknown> | null) 
       'general': 'Parecer Geral',
       'wsi': 'Parecer WSI'
     }
-    const header = `PARECER LIA - ${candidateName}\nTipo: ${analysisLabels[type] || type}\n${opinion.job_vacancy_title ? `Vaga: ${opinion.job_vacancy_title}\n` : ''}Nota: ${opinion.score || opinion.wsi_score || 'N/A'}/100\nData: ${opinion.created_at ? new Date(String(opinion.created_at)).toLocaleDateString('pt-BR') : 'N/A'}\n\n`
+    const header = `PARECER LIA - ${candidateName}\nTipo: ${analysisLabels[type] || type}\n${opinion.job_vacancy_title ? `Vaga: ${opinion.job_vacancy_title}\n` : ''}Nota: ${(() => { const raw = (opinion.score ?? opinion.wsi_score); if (raw == null) return 'N/A'; const n = typeof raw === 'number' ? raw : Number(raw); const norm = isFinite(n) ? (n > 10 ? n / 10 : n) : 0; return norm.toFixed(1) + '/10'; })()}\nData: ${opinion.created_at ? new Date(String(opinion.created_at)).toLocaleDateString('pt-BR') : 'N/A'}\n\n`
     const content = cleanTextForCopy(String(opinion.summary || opinion.content || ''))
     await navigator.clipboard.writeText(header + content)
     setCopiedItemId(`opinion-${opinion.id}`)

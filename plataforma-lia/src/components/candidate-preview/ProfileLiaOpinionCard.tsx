@@ -108,6 +108,7 @@ export function ProfileLiaOpinionCard({
           <div className="flex items-center gap-2 flex-wrap">
             {displayScore !== null && displayScore !== undefined && (
               <span className={`${textStyles.label} ${getScoreColor(displayScore, isWsiOpinion)}`}>
+                {/* @canonical-allow-100 fallback display for non-WSI legacy opinion (canonical Surface 1) */}
                 {isWsiOpinion ? `WSI: ${displayScore.toFixed(1)}/10` : `Nota: ${Math.round(displayScore)}/100`}
               </span>
             )}

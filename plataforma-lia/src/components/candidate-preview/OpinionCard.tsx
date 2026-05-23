@@ -110,6 +110,7 @@ export function OpinionCard({ opinion, isExpanded, onToggle, type, copiedItemId,
             <div className="flex items-center gap-2 mt-0.5">
               {displayScore !== null && displayScore !== undefined && (
                 <span className={`text-micro font-semibold ${getScoreColor(displayScore, isWsiOpinion)}`}>
+                  {/* @canonical-allow-100 fallback display for non-WSI legacy opinion (canonical Surface 1) */}
                   {isWsiOpinion ? `WSI: ${displayScore.toFixed(1)}/10` : `Nota: ${Math.round(displayScore)}/100`}
                 </span>
               )}
