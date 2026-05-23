@@ -11,10 +11,12 @@ import logging
 
 from app.domains.sourcing.agents.stackoverflow_tool_registry import get_stackoverflow_tools
 from app.domains.sourcing.agents.sourcing_react_agent import SourcingReActAgent
+from app.shared.agents.agent_registry import register_agent
 
 logger = logging.getLogger(__name__)
 
 
+@register_agent("sourcing_stackoverflow")  # W1-001 (2026-05-22)
 class StackOverflowSourcingAgent(SourcingReActAgent):
     """
     Sub-agente de sourcing via StackOverflow.

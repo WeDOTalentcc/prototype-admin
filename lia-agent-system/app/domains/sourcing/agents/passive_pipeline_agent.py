@@ -15,10 +15,12 @@ import logging
 
 from app.domains.sourcing.agents.passive_pipeline_tool_registry import get_passive_pipeline_tools
 from app.domains.sourcing.agents.sourcing_react_agent import SourcingReActAgent
+from app.shared.agents.agent_registry import register_agent
 
 logger = logging.getLogger(__name__)
 
 
+@register_agent("sourcing_passive_pipeline")  # W1-001 (2026-05-22)
 class PassivePipelineAgent(SourcingReActAgent):
     """
     Sub-agente de pipeline passivo — reativa candidatos frios.

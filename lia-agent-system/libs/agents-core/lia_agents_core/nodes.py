@@ -32,7 +32,7 @@ from app.domains.ai.services.llm import llm_service, LLMService
 from app.tools.executor import tool_executor, ToolExecutor
 from app.tools.registry import tool_registry, ToolRegistry
 from app.domains.recruiter_assistant.services.memory_service import memory_service, MemoryService
-from app.shared.services.feedback_service import feedback_service, FeedbackService
+from app.domains.analytics.services.feedback_service import feedback_service, FeedbackService
 from app.models.structured_responses import (
     OrchestrationDecision,
     IntentClassification,

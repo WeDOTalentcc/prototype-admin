@@ -23,10 +23,12 @@ import logging
 
 from app.domains.sourcing.agents.nurture_sequence_tool_registry import get_nurture_sequence_tools
 from app.domains.sourcing.agents.sourcing_react_agent import SourcingReActAgent
+from app.shared.agents.agent_registry import register_agent
 
 logger = logging.getLogger(__name__)
 
 
+@register_agent("sourcing_nurture_sequence")  # W1-001 (2026-05-22)
 class NurtureSequenceAgent(SourcingReActAgent):
     """
     Sub-agente de sequências de nurture multi-touch.
