@@ -1,7 +1,7 @@
 """
-Voice Screening API — endpoints for managing voice interview sessions.
+Voice Screening API — Talent Pool only.
 
-Context: Talent Pool only. In jobs, the existing screening agent handles triagem.
+In jobs, the existing screening agent handles triagem.
 
 Apply to: lia-agent-system/app/api/v1/voice_screening.py
 Register: app.include_router(voice_screening_router)
@@ -55,11 +55,14 @@ company_id: str = Depends(require_company_id)):
 
     Loads screening questions from the pool's WSI compact config.
     Returns the initial greeting + first question.
-    """
-    company_id = current_user.get("company_id", "unknown")
 
-    # Load pool's screening questions
-    screening_questions = await _load_pool_questions(body.talent_pool_id)
+    Onda 4.2c-P0-12 (2026-05-23): removido `company_id = current_user.get(...)`
+    com fallback 'unknown' — bypass de tenant isolation. company_id JA vem
+    injetado via Depends(require_company_id) (REGRA 6 CLAUDE.md).
+    """
+    # Onda 4.2c-P0-10 (2026-05-23): _load_pool_questions agora recebe company_id
+    # pra cross-tenant guard.
+    screening_questions = await _load_pool_questions(body.talent_pool_id, company_id)
     if not screening_questions:
         raise HTTPException(400, "Pool não tem perguntas de triagem configuradas")
 
@@ -173,17 +176,24 @@ async def get_session_status(session_id: str, company_id: str = Depends(require_
 
 # ---------- Helpers ----------
 
-async def _load_pool_questions(talent_pool_id: str) -> list[dict]:
-    """Load screening questions from talent pool."""
+async def _load_pool_questions(talent_pool_id: str, company_id: str) -> list[dict]:
+    """Load screening questions from talent pool.
+
+    Onda 4.2c-P0-10 (2026-05-23): adicionado company_id obrigatorio.
+    Antes user empresa A podia iniciar voice session usando talent_pool_id
+    da empresa B e obter screening_questions configuradas (cross-tenant read).
+    """
     try:
-        # Try loading from DB
         from app.core.database import get_db_session
         from sqlalchemy import text
 
         async with get_db_session() as db:
             result = await db.execute(
-                text("SELECT screening_questions FROM talent_pools WHERE id = :id"),
-                {"id": talent_pool_id},
+                text(
+                    "SELECT screening_questions FROM talent_pools "
+                    "WHERE id = :id AND company_id = :company_id"
+                ),
+                {"id": talent_pool_id, "company_id": company_id},
             )
             row = result.fetchone()
             if row and row[0]:
@@ -211,7 +221,8 @@ async def _persist_results(session) -> None:
         }
 
         async with get_db_session() as db:
-            # Update talent_pool_candidate with screening results
+            # Onda 4.2c-P0-11 (2026-05-23): adicionado company_id filter no UPDATE.
+            # session.company_id ja foi gravado em create_voice_session via JWT.
             await db.execute(
                 text("""
                     UPDATE talent_pool_candidates
@@ -221,12 +232,14 @@ async def _persist_results(session) -> None:
                         updated_at = NOW()
                     WHERE talent_pool_id = :pool_id
                       AND candidate_id = :candidate_id
+                      AND company_id = :company_id
                 """),
                 {
                     "data": json.dumps(screening_data),
                     "score": session.final_score,
                     "pool_id": session.talent_pool_id,
                     "candidate_id": session.candidate_id,
+                    "company_id": session.company_id,
                 },
             )
             await db.commit()

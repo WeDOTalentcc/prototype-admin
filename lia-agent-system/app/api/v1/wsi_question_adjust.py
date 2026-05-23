@@ -1,7 +1,5 @@
 """
-WSI Question Adjust API
-Endpoints for adjusting WSI questions via conversational prompts, evaluating JD quality,
-and persisting screening questions per job vacancy.
+WSI Question Adjust API — adjusting and persisting screening questions per job vacancy.
 """
 import logging
 from datetime import datetime
@@ -18,7 +16,9 @@ from app.shared.types import WeDoBaseModel
 router = APIRouter(prefix="/wsi", tags=["WSI Question Adjust"])
 logger = logging.getLogger(__name__)
 
-_saved_questions: dict[str, dict[str, Any]] = {}
+# Onda 4.2c-P0-13 (2026-05-23): key composta (company_id, job_id) — cross-tenant safe.
+# TODO migrar pra DB persistente (audit gap G5 — in-memory perde restart).
+_saved_questions: dict[tuple[str, str], dict[str, Any]] = {}
 
 
 class QuestionItem(BaseModel):
@@ -130,7 +130,12 @@ async def save_questions(request: SaveQuestionsRequest, company_id: str = Depend
     try:
         saved_at = datetime.utcnow().isoformat() + "Z"
 
-        _saved_questions[request.job_id] = {
+        # Onda 4.2c-P0-13 (2026-05-23): key inclui company_id pra evitar
+        # cross-tenant read/write entre jobs com mesmo UUID em tenants
+        # diferentes (defesa em profundidade — UUIDs sao unicos mas key
+        # composta torna explicito).
+        # TODO follow-up: migrar pra DB persistente (vide audit gap G5).
+        _saved_questions[(company_id, request.job_id)] = {
             "questions": [q.dict() for q in request.questions],
             "source": request.source,
             "saved_at": saved_at,
@@ -173,7 +178,8 @@ async def get_questions(job_id: str, company_id: str = Depends(require_company_i
     """
     Retrieve saved screening questions for a job vacancy.
     """
-    stored = _saved_questions.get(job_id)
+    # Onda 4.2c-P0-13 (2026-05-23): lookup com tuple key (company_id, job_id).
+    stored = _saved_questions.get((company_id, job_id))
 
     if not stored:
         return GetQuestionsResponse(
