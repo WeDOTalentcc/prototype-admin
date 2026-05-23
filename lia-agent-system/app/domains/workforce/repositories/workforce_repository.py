@@ -1,6 +1,8 @@
-"""
-WorkforceRepository — all DB operations for the workforce domain.
-Controllers call methods here; zero SQLAlchemy in controllers.
+"""WorkforceRepository — multi-tenant safe.
+
+Onda 4.2a-P0.3 (2026-05-23): get_hiring_plan/get_hiring_plan_with_details/
+get_headcount aceitam company_id opcional pra cross-tenant guard
+(audit Hub Minha Empresa LGPD).
 """
 from datetime import datetime
 from typing import Any
@@ -50,8 +52,15 @@ class WorkforceRepository:
         await self.db.refresh(plan)
         return plan
 
-    async def get_hiring_plan_with_details(self, plan_id) -> HiringPlan | None:
-        result = await self.db.execute(
+    async def get_hiring_plan_with_details(
+        self,
+        plan_id,
+        company_id=None,
+    ) -> HiringPlan | None:
+        """Onda 4.2a-P0.3 (2026-05-23): adicionado company_id pra cross-tenant
+        guard. Quando passado, filtra por HiringPlan.company_id == company_id.
+        """
+        query = (
             select(HiringPlan)
             .options(
                 selectinload(HiringPlan.planned_headcounts),
@@ -59,12 +68,23 @@ class WorkforceRepository:
             )
             .where(HiringPlan.id == plan_id)
         )
+        if company_id:
+            query = query.where(HiringPlan.company_id == company_id)
+        result = await self.db.execute(query)
         return result.scalar_one_or_none()
 
-    async def get_hiring_plan(self, plan_id) -> HiringPlan | None:
-        result = await self.db.execute(
-            select(HiringPlan).where(HiringPlan.id == plan_id)
-        )
+    async def get_hiring_plan(
+        self,
+        plan_id,
+        company_id=None,
+    ) -> HiringPlan | None:
+        """Onda 4.2a-P0.3 (2026-05-23): adicionado company_id pra cross-tenant
+        guard. Quando passado, filtra por HiringPlan.company_id.
+        """
+        query = select(HiringPlan).where(HiringPlan.id == plan_id)
+        if company_id:
+            query = query.where(HiringPlan.company_id == company_id)
+        result = await self.db.execute(query)
         return result.scalar_one_or_none()
 
     async def update_hiring_plan(self, plan: HiringPlan, update_data: dict) -> HiringPlan:
@@ -144,10 +164,21 @@ class WorkforceRepository:
             await self.db.refresh(hc)
         return created
 
-    async def get_headcount(self, headcount_id) -> PlannedHeadcount | None:
-        result = await self.db.execute(
-            select(PlannedHeadcount).where(PlannedHeadcount.id == headcount_id)
-        )
+    async def get_headcount(
+        self,
+        headcount_id,
+        company_id=None,
+    ) -> PlannedHeadcount | None:
+        """Onda 4.2a-P0.3 (2026-05-23): adicionado company_id pra cross-tenant
+        guard. PlannedHeadcount não tem company_id direto — JOIN com HiringPlan
+        e filtra por HiringPlan.company_id == company_id.
+        """
+        query = select(PlannedHeadcount).where(PlannedHeadcount.id == headcount_id)
+        if company_id:
+            query = query.join(HiringPlan, HiringPlan.id == PlannedHeadcount.hiring_plan_id).where(
+                HiringPlan.company_id == company_id
+            )
+        result = await self.db.execute(query)
         return result.scalar_one_or_none()
 
     async def update_headcount(

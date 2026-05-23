@@ -1,6 +1,7 @@
-"""
-Workforce Planning API endpoints.
-Manages hiring plans, planned headcounts, and import functionality.
+"""Workforce planning API — hiring plans + planned headcounts.
+
+Onda 4.2a-P0.3 (2026-05-23): cross-tenant guard via company_id passado
+ao repo em todos os get_hiring_plan/get_headcount calls.
 """
 import csv
 import io
@@ -94,7 +95,7 @@ company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get a hiring plan with all details including headcounts and import jobs."""
     try:
-        plan = await repo.get_hiring_plan_with_details(plan_id)
+        plan = await repo.get_hiring_plan_with_details(plan_id, company_id=company_id)
 
         if not plan:
             raise HTTPException(status_code=404, detail="Hiring plan not found")
@@ -122,7 +123,7 @@ company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Update an existing hiring plan."""
     try:
-        plan = await repo.get_hiring_plan(plan_id)
+        plan = await repo.get_hiring_plan(plan_id, company_id=company_id)
 
         if not plan:
             raise HTTPException(status_code=404, detail="Hiring plan not found")
@@ -147,7 +148,7 @@ company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Soft delete a hiring plan."""
     try:
-        plan = await repo.get_hiring_plan(plan_id)
+        plan = await repo.get_hiring_plan(plan_id, company_id=company_id)
 
         if not plan:
             raise HTTPException(status_code=404, detail="Hiring plan not found")
@@ -178,7 +179,7 @@ company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """List all headcounts for a hiring plan."""
     try:
-        plan = await repo.get_hiring_plan(plan_id)
+        plan = await repo.get_hiring_plan(plan_id, company_id=company_id)
         if not plan:
             raise HTTPException(status_code=404, detail="Hiring plan not found")
 
@@ -209,7 +210,7 @@ company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Create a new planned headcount."""
     try:
-        plan = await repo.get_hiring_plan(plan_id)
+        plan = await repo.get_hiring_plan(plan_id, company_id=company_id)
         if not plan:
             raise HTTPException(status_code=404, detail="Hiring plan not found")
 
@@ -236,7 +237,7 @@ company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get a specific headcount by ID."""
     try:
-        headcount = await repo.get_headcount(headcount_id)
+        headcount = await repo.get_headcount(headcount_id, company_id=company_id)
 
         if not headcount:
             raise HTTPException(status_code=404, detail="Headcount not found")
@@ -258,7 +259,7 @@ company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Update an existing headcount."""
     try:
-        headcount = await repo.get_headcount(headcount_id)
+        headcount = await repo.get_headcount(headcount_id, company_id=company_id)
 
         if not headcount:
             raise HTTPException(status_code=404, detail="Headcount not found")
@@ -283,7 +284,7 @@ company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Soft delete a headcount."""
     try:
-        headcount = await repo.get_headcount(headcount_id)
+        headcount = await repo.get_headcount(headcount_id, company_id=company_id)
 
         if not headcount:
             raise HTTPException(status_code=404, detail="Headcount not found")
@@ -307,7 +308,7 @@ company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Create multiple headcounts at once."""
     try:
-        plan = await repo.get_hiring_plan(plan_id)
+        plan = await repo.get_hiring_plan(plan_id, company_id=company_id)
         if not plan:
             raise HTTPException(status_code=404, detail="Hiring plan not found")
 
@@ -338,7 +339,7 @@ company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Upload a file for import (Excel or CSV)."""
     try:
-        plan = await repo.get_hiring_plan(plan_id)
+        plan = await repo.get_hiring_plan(plan_id, company_id=company_id)
         if not plan:
             raise HTTPException(status_code=404, detail="Hiring plan not found")
 
