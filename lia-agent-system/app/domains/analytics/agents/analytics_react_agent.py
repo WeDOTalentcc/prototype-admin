@@ -32,6 +32,16 @@ from app.shared.prompts.prompt_composer import PromptComposer
 
 @register_agent("analytics")
 class AnalyticsReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgentMixin):
+    # W4-032 (2026-05-23): exports + sharing trazem risco de data leak.
+    # Read-only queries continuam sem gate (passthrough action_type).
+    _HITL_ACTION_TYPES = frozenset({
+        "export_report",
+        "share_dashboard",
+        "send_report_email",
+        "export_candidates_csv",
+        "schedule_recurring_export",
+    })
+
     DOMAIN_INSTRUCTIONS = PromptComposer.for_domain(
         agent_type="analytics",
         domain_specific=ANALYTICS_DOMAIN_SPECIFIC,
@@ -167,6 +177,21 @@ class AnalyticsReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAge
         return await super()._process_langgraph(input)
 
     async def process(self, input: AgentInput) -> AgentOutput:
+        # W4-032 (2026-05-23): HITL gate antes de export / share de dados
+        from app.shared.hitl.agent_gate import maybe_request_hitl_approval
+        _hitl_response = await maybe_request_hitl_approval(
+            agent_input=input,
+            domain=self.domain_name,
+            action_types=self._HITL_ACTION_TYPES,
+            agent_name="analytics_react_agent",
+            description_template=(
+                "Confirmar **{action_type}** de dados analytics. "
+                "Export/share carrega risco de data leak (LGPD Art 7)."
+            ),
+        )
+        if _hitl_response is not None:
+            return _hitl_response
+
         try:
             return await self._process_langgraph(input)
         except Exception as exc:

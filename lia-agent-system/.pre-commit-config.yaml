@@ -482,6 +482,13 @@ repos:
         files: ^app/prompts/(domains/|tenants/.*/domains/).*\.yaml$
         pass_filenames: false
 
+      - id: agent-hitl-gates
+        name: "W4-032: HITL gate canonical em 9 agents (Option A inline chat) (BLOCKING)"
+        language: system
+        entry: python3 scripts/check_agent_hitl_gates.py --blocking
+        files: ^app/(shared/hitl/.*\.py|domains/.*/agents/.*react_agent\.py)$
+        pass_filenames: false
+
       - id: governance-executor-wired
         name: "W1-004: ToolExecutor wirou Step 2 (company_id) + Step 7 (audit) + Step 8 (metrics) (BLOCKING)"
         language: system

@@ -210,7 +210,7 @@ company_id: str = Depends(require_company_id)):
             raise HTTPException(status_code=404, detail="Hiring plan not found")
 
         headcount_data = data.model_dump()
-        headcount_data[hiring_plan_id] = plan_id
+        headcount_data["hiring_plan_id"] = plan_id
 
         headcount = await repo.create_headcount(headcount_data, plan)
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
@@ -310,7 +310,7 @@ company_id: str = Depends(require_company_id)):
         headcounts_data = []
         for data in headcounts:
             hc_data = data.model_dump()
-            hc_data[hiring_plan_id] = plan_id
+            hc_data["hiring_plan_id"] = plan_id
             headcounts_data.append(hc_data)
 
         created = await repo.create_headcounts_bulk(headcounts_data, plan)
@@ -407,7 +407,7 @@ company_id: str = Depends(require_company_id)):
             error_rows=import_job.error_rows,
             detected_columns=expected_columns,
             column_mapping=import_job.column_mapping or {},
-            ai_suggested_mapping=import_job.ai_suggestions.get(column_mapping) if import_job.ai_suggestions else None,
+            ai_suggested_mapping=import_job.ai_suggestions.get("column_mapping") if import_job.ai_suggestions else None,
             sample_data=[],
             row_validations=sample_validations,
             can_proceed=import_job.error_rows == 0 or import_job.total_rows > import_job.error_rows,
@@ -528,10 +528,10 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         headcounts = await repo.get_active_headcounts_for_plan(plan.id)
 
         total_planned = sum(h.headcount or 1 for h in headcounts)
-        total_filled = sum(h.headcount or 1 for h in headcounts if h.status == filled)
-        total_in_progress = sum(h.headcount or 1 for h in headcounts if h.status == in_progress)
+        total_filled = sum(h.headcount or 1 for h in headcounts if h.status == "filled")
+        total_in_progress = sum(h.headcount or 1 for h in headcounts if h.status == "in_progress")
         total_pending = sum(h.headcount or 1 for h in headcounts if h.status in ["planned", "pending"])
-        total_cancelled = sum(h.headcount or 1 for h in headcounts if h.status == cancelled)
+        total_cancelled = sum(h.headcount or 1 for h in headcounts if h.status == "cancelled")
 
         fill_rate = (total_filled / total_planned * 100) if total_planned > 0 else 0.0
 
@@ -548,13 +548,13 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
             priority = h.priority or "medium"
             by_priority[priority] = by_priority.get(priority, 0) + (h.headcount or 1)
 
-            level = h.level or not_specified
+            level = h.level or "not_specified"
             by_level[level] = by_level.get(level, 0) + (h.headcount or 1)
 
-            contract = h.contract_type or not_specified
+            contract = h.contract_type or "not_specified"
             by_contract_type[contract] = by_contract_type.get(contract, 0) + (h.headcount or 1)
 
-            dept_id = str(h.department_id) if h.department_id else no_department
+            dept_id = str(h.department_id) if h.department_id else "no_department"
             by_department[dept_id] = by_department.get(dept_id, 0) + (h.headcount or 1)
 
         monthly_data: dict = {}
@@ -723,15 +723,15 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
                 })
 
         alerts.sort(key=lambda x: (
-            0 if x[severity] == critical else (1 if x[severity] == high else 2),
-            x.get(days_overdue, 0) if x[type] == overdue else -x.get(days_remaining, 0),
+            0 if x["severity"] == "critical" else (1 if x["severity"] == "high" else 2),
+            x.get("days_overdue", 0) if x["type"] == "overdue" else -x.get("days_remaining", 0),
         ))
 
         summary = {
             "total_alerts": len(alerts),
-            "critical": len([a for a in alerts if a[severity] == critical]),
-            "high": len([a for a in alerts if a[severity] == high]),
-            "medium": len([a for a in alerts if a[severity] == medium]),
+            "critical": len([a for a in alerts if a["severity"] == "critical"]),
+            "high": len([a for a in alerts if a["severity"] == "high"]),
+            "medium": len([a for a in alerts if a["severity"] == "medium"]),
         }
 
         return {

@@ -36,6 +36,16 @@ from app.shared.prompts.prompt_composer import PromptComposer
 
 @register_agent("company_settings")
 class CompanySettingsReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgentMixin):
+    # W4-032 (2026-05-23): toggles, policies, fairness configs requerem HITL.
+    # Even RBAC-gated, segunda camada de aprovação reduz risco.
+    _HITL_ACTION_TYPES = frozenset({
+        "update_company_policy",
+        "toggle_lia_field",
+        "update_culture_profile",
+        "update_hiring_policy",
+        "delete_company_data",
+    })
+
     DOMAIN_INSTRUCTIONS = PromptComposer.for_domain(
         agent_type="company_settings",
         domain_specific=COMPANY_DOMAIN_SPECIFIC,
@@ -204,6 +214,21 @@ class CompanySettingsReActAgent(TenantAwareAgentMixin, LangGraphReActBase, Enhan
         return await super()._process_langgraph(input)
 
     async def process(self, input: AgentInput) -> AgentOutput:
+        # W4-032 (2026-05-23): HITL gate em mudanças de policy / config
+        from app.shared.hitl.agent_gate import maybe_request_hitl_approval
+        _hitl_response = await maybe_request_hitl_approval(
+            agent_input=input,
+            domain=self.domain_name,
+            action_types=self._HITL_ACTION_TYPES,
+            agent_name="company_react_agent",
+            description_template=(
+                "Confirmar **{action_type}** nas configurações da empresa. "
+                "Mudanças de policy afetam todas as operações downstream."
+            ),
+        )
+        if _hitl_response is not None:
+            return _hitl_response
+
         return await self._process_langgraph(input)
 
     async def process_legacy_format(

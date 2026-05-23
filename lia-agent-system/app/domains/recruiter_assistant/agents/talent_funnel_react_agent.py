@@ -41,6 +41,15 @@ from app.shared.prompts.prompt_composer import PromptComposer
 
 @register_agent("talent_funnel", aliases=["talent"])  # talent alias for legacy callers (test_context_type_routing_contracts)
 class TalentFunnelReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgentMixin):
+    # W4-032 (2026-05-23): bulk shortlist + sourcing outbound requerem HITL.
+    _HITL_ACTION_TYPES = frozenset({
+        "bulk_shortlist",
+        "bulk_sourcing_outreach",
+        "import_external_candidates",
+        "talent_pool_assignment",
+        "auto_reject_funnel",
+    })
+
     DOMAIN_INSTRUCTIONS = PromptComposer.for_domain(
         agent_type="talent",
         domain_specific=TALENT_DOMAIN_SPECIFIC,
@@ -180,6 +189,22 @@ class TalentFunnelReActAgent(TenantAwareAgentMixin, LangGraphReActBase, Enhanced
                 confidence=1.0,
                 metadata={"source": "fairness_guard", "domain": self.domain_name},
             )
+
+        # W4-032 (2026-05-23): HITL gate antes de bulk shortlist / sourcing
+        from app.shared.hitl.agent_gate import maybe_request_hitl_approval
+        _hitl_response = await maybe_request_hitl_approval(
+            agent_input=input,
+            domain=self.domain_name,
+            action_types=self._HITL_ACTION_TYPES,
+            agent_name="talent_funnel_react_agent",
+            description_template=(
+                "Confirmar **{action_type}** no talent pool. "
+                "Ações em lote afetam múltiplos candidatos."
+            ),
+        )
+        if _hitl_response is not None:
+            return _hitl_response
+
         return await self._process_langgraph(input)
 
     async def get_status(self) -> dict:
