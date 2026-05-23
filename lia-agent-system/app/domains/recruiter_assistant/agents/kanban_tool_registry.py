@@ -504,6 +504,8 @@ async def _wrap_list_stage_candidates(**kwargs: Any) -> dict[str, Any]:
     logger.info(f"[kanban_tools] list_stage_candidates called: stage={stage} vacancy={vacancy_id or 'all'}")
     candidates = []
     total = 0
+    if not company_id:
+        return {"error": "company_id is required", "success": False}
     try:
         async with AsyncSessionLocal() as session:
             rows = await session.execute(
@@ -516,7 +518,7 @@ async def _wrap_list_stage_candidates(**kwargs: Any) -> dict[str, Any]:
                     JOIN candidates c ON c.id = vc.candidate_id
                     WHERE vc.stage ILIKE :stage_val
                       AND (:vid = '' OR vc.vacancy_id::text = :vid)
-                      AND (:cid = '' OR vc.company_id = :cid)
+                      AND vc.company_id = :cid
                     ORDER BY vc.lia_score DESC NULLS LAST
                     LIMIT :lim
                 """),
@@ -658,6 +660,8 @@ async def _wrap_get_candidate_aging(**kwargs: Any) -> dict[str, Any]:
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[kanban_tools] get_candidate_aging called: stage={stage or 'all'} threshold={days_threshold}d")
     aging_candidates = []
+    if not company_id:
+        return {"error": "company_id is required", "success": False}
     try:
         async with AsyncSessionLocal() as session:
             rows = await session.execute(
@@ -671,7 +675,7 @@ async def _wrap_get_candidate_aging(**kwargs: Any) -> dict[str, Any]:
                       AND vc.status NOT IN ('rejected', 'hired')
                       AND (:stage = '' OR vc.stage ILIKE :stage_val)
                       AND (:vid = '' OR vc.vacancy_id::text = :vid)
-                      AND (:cid = '' OR vc.company_id = :cid)
+                      AND vc.company_id = :cid
                     ORDER BY days_stuck DESC
                     LIMIT 50
                 """),
@@ -735,6 +739,8 @@ async def _wrap_suggest_movements(**kwargs: Any) -> dict[str, Any]:
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[kanban_tools] suggest_movements called: stage={stage} vacancy={vacancy_id or 'all'}")
     suggestions = []
+    if not company_id:
+        return {"error": "company_id is required", "success": False}
     try:
         async with AsyncSessionLocal() as session:
             rows = await session.execute(
@@ -747,7 +753,7 @@ async def _wrap_suggest_movements(**kwargs: Any) -> dict[str, Any]:
                     WHERE vc.status NOT IN ('rejected', 'hired')
                       AND (:stage = '' OR vc.stage ILIKE :stage_val)
                       AND (:vid = '' OR vc.vacancy_id::text = :vid)
-                      AND (:cid = '' OR vc.company_id = :cid)
+                      AND vc.company_id = :cid
                     ORDER BY vc.lia_score DESC NULLS LAST
                     LIMIT 30
                 """),

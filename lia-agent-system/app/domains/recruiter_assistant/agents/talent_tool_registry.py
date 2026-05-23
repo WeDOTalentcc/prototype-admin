@@ -303,11 +303,11 @@ async def _wrap_rank_candidates(**kwargs: Any) -> dict[str, Any]:
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[talent_tools] rank_candidates called: vacancy={vacancy_id} criteria={criteria}")
 
-    order_col = "vc.match_percentage" if criteria == "skills" else "vc.lia_score"
+    order_by = "match" if criteria == "skills" else "score"
     ranking = []
     async with AsyncSessionLocal() as session:
         rows = await session.execute(
-            text(f"""
+            text("""
                 SELECT vc.candidate_id, vc.status, vc.stage,
                        vc.lia_score, vc.match_percentage,
                        c.name, c.current_title, c.technical_skills
@@ -315,10 +315,15 @@ async def _wrap_rank_candidates(**kwargs: Any) -> dict[str, Any]:
                 JOIN candidates c ON c.id = vc.candidate_id
                 WHERE vc.vacancy_id::text = :vid
                   AND vc.status != 'rejected'
-                ORDER BY {order_col} DESC NULLS LAST
+                ORDER BY
+                  CASE
+                    WHEN :order_by = 'match' THEN vc.match_percentage
+                    WHEN :order_by = 'score' THEN vc.lia_score
+                    ELSE vc.lia_score
+                  END DESC NULLS LAST
                 LIMIT 50
             """),
-            {"vid": vacancy_id},
+            {"vid": vacancy_id, "order_by": order_by},
         )
         for position, row in enumerate(rows.mappings(), start=1):
             ranking.append({

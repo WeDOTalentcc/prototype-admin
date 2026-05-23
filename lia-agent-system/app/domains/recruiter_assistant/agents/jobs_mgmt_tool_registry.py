@@ -533,8 +533,8 @@ async def _wrap_update_priority(**kwargs: Any) -> dict[str, Any]:
         if not prev_row:
             return {"success": False, "data": {}, "message": f"Vaga {job_id} nao encontrada."}
         await session.execute(
-            text("UPDATE job_vacancies SET priority = :p, updated_at = NOW() WHERE id = :jid"),
-            {"p": priority_pt, "jid": job_id},
+            text("UPDATE job_vacancies SET priority = :p, updated_at = NOW() WHERE id = :jid AND company_id = :cid"),
+            {"p": priority_pt, "jid": job_id, "cid": company_id},
         )
         await session.commit()
     return {"success": True,
