@@ -467,3 +467,10 @@ repos:
         entry: python3 scripts/check_anthropic_prompt_caching.py
         files: ^app/shared/providers/llm_claude\.py$
         pass_filenames: false
+
+      - id: idempotency-key-rails-clients
+        name: "W2-009: Idempotency-Key header em mutations Rails (BLOCKING, dedup retry)"
+        language: system
+        entry: python3 scripts/check_idempotency_key_in_rails_clients.py
+        files: ^(app/domains/(ats_integration|job_creation)/.*\.py|app/shared/rails_client\.py)$
+        pass_filenames: false

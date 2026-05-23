@@ -14,6 +14,7 @@ from dataclasses import dataclass, field
 from typing import Dict, Any, List, Optional
 
 import httpx
+import uuid
 
 from app.core.config import settings  # LIA-D01: Fix import path (was app.config.settings)
 from app.services.ott_service import get_ott_service
@@ -105,24 +106,34 @@ class JobCreationAPIClient:
         path: str,
         params: Optional[Dict[str, Any]] = None,
         json_body: Optional[Dict[str, Any]] = None,
+        idempotency_key: Optional[str] = None,
     ) -> APIResponse:
         url = f"{self.base_url}{path}"
         start = time.time()
+
+        # W2-009 (2026-05-22): Idempotency-Key em mutations Rails.
+        request_headers = dict(self._get_headers())
+        if method.upper() in {"POST", "PUT", "PATCH", "DELETE"}:
+            request_headers["Idempotency-Key"] = idempotency_key or str(uuid.uuid4())
 
         try:
             with httpx.Client(timeout=self.timeout) as client:
                 response = client.request(
                     method, url,
-                    headers=self._get_headers(),
+                    headers=request_headers,
                     params=params,
                     json=json_body,
                 )
 
                 if response.status_code == 401:
                     self._ott_service.invalidate()
+                    # 401 retry: rebuild headers (OTT token refreshed) but keep same Idempotency-Key
+                    request_headers = dict(self._get_headers())
+                    if method.upper() in {"POST", "PUT", "PATCH", "DELETE"}:
+                        request_headers["Idempotency-Key"] = idempotency_key or request_headers.get("Idempotency-Key") or str(uuid.uuid4())
                     response = client.request(
                         method, url,
-                        headers=self._get_headers(),
+                        headers=request_headers,
                         params=params,
                         json=json_body,
                     )

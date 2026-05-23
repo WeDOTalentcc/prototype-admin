@@ -37,6 +37,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 import httpx
+import uuid
 
 from app.domains.ats_integration.services.ats_clients.base import (
     ATSCandidate,
@@ -117,6 +118,7 @@ class WeDOTalentATSClient:
         params: dict | None = None,
         json_body: dict | None = None,
         retry: int = 3,
+        idempotency_key: str | None = None,
     ) -> RailsAPIResponse:
         """Make HTTP request with retry, exponential backoff, and JSONAPI parsing."""
         from app.shared.resilience.circuit_breaker import RAILS_CIRCUIT, CircuitBreakerError
@@ -131,6 +133,14 @@ class WeDOTalentATSClient:
             client = await self._get_client()
             last_error: Exception | None = None
 
+            # W2-009 (2026-05-22): Idempotency-Key em mutations Rails.
+            # Mesmo key persiste entre retries → Rails-side cache dedup
+            # (ver: REPLIT_LIA_REMEDIATION_BACKLOG W2-009).
+            mutation_method = method.upper() in {"POST", "PUT", "PATCH", "DELETE"}
+            request_headers: dict[str, str] = {}
+            if mutation_method:
+                request_headers["Idempotency-Key"] = idempotency_key or str(uuid.uuid4())
+
             for attempt in range(retry):
                 try:
                     response = await client.request(
@@ -138,6 +148,7 @@ class WeDOTalentATSClient:
                         url=path,
                         params=params,
                         json=json_body,
+                        headers=request_headers or None,
                     )
 
                     # 401 — auth problem: non-retryable, not a Rails service fault
@@ -223,14 +234,14 @@ class WeDOTalentATSClient:
     async def get(self, path: str, params: dict | None = None) -> RailsAPIResponse:
         return await self._request("GET", path, params=params)
 
-    async def post(self, path: str, json_body: dict | None = None) -> RailsAPIResponse:
-        return await self._request("POST", path, json_body=json_body)
+    async def post(self, path: str, json_body: dict | None = None, idempotency_key: str | None = None) -> RailsAPIResponse:
+        return await self._request("POST", path, json_body=json_body, idempotency_key=idempotency_key)
 
-    async def put(self, path: str, json_body: dict | None = None) -> RailsAPIResponse:
-        return await self._request("PUT", path, json_body=json_body)
+    async def put(self, path: str, json_body: dict | None = None, idempotency_key: str | None = None) -> RailsAPIResponse:
+        return await self._request("PUT", path, json_body=json_body, idempotency_key=idempotency_key)
 
-    async def delete(self, path: str) -> RailsAPIResponse:
-        return await self._request("DELETE", path)
+    async def delete(self, path: str, idempotency_key: str | None = None) -> RailsAPIResponse:
+        return await self._request("DELETE", path, idempotency_key=idempotency_key)
 
     # ------------------------------------------------------------------
     # Auth
