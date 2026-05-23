@@ -379,7 +379,7 @@ class RailsAdapter:
 
     async def _get_rails_client(self):
         if self._rails_client is None and RAILS_ENABLED:
-            from app.domains.ats_integration.services.ats_clients.wedotalent_rails import WeDOTalentATSClient
+            from app.shared.integration.rails_client import WeDOTalentATSClient  # W2-010-B canonical
             self._rails_client = WeDOTalentATSClient(token=self._rails_token)
         return self._rails_client
 

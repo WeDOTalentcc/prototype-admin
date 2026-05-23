@@ -25,7 +25,7 @@ import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-RAILS_CLIENT = REPO_ROOT / "app/domains/ats_integration/services/ats_clients/wedotalent_rails.py"
+RAILS_CLIENT = REPO_ROOT / "app/shared/integration/rails_client.py"
 JOB_API_CLIENT = REPO_ROOT / "app/domains/job_creation/api_client.py"
 
 

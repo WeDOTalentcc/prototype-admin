@@ -24,7 +24,7 @@ class TestWeDOTalentATSClientIdempotencyKey:
 
     @pytest.mark.asyncio
     async def test_post_includes_idempotency_key(self) -> None:
-        from app.domains.ats_integration.services.ats_clients.wedotalent_rails import (
+        from app.shared.integration.rails_client import (
             WeDOTalentATSClient,
         )
 
@@ -51,7 +51,7 @@ class TestWeDOTalentATSClientIdempotencyKey:
     @pytest.mark.asyncio
     async def test_get_does_not_include_idempotency_key(self) -> None:
         """GET é read-only — NUNCA deve ter Idempotency-Key."""
-        from app.domains.ats_integration.services.ats_clients.wedotalent_rails import (
+        from app.shared.integration.rails_client import (
             WeDOTalentATSClient,
         )
 
@@ -74,7 +74,7 @@ class TestWeDOTalentATSClientIdempotencyKey:
 
     @pytest.mark.asyncio
     async def test_put_patch_delete_all_include_idempotency_key(self) -> None:
-        from app.domains.ats_integration.services.ats_clients.wedotalent_rails import (
+        from app.shared.integration.rails_client import (
             WeDOTalentATSClient,
         )
 
@@ -98,7 +98,7 @@ class TestWeDOTalentATSClientIdempotencyKey:
     @pytest.mark.asyncio
     async def test_explicit_idempotency_key_preserved(self) -> None:
         """Caller passa key explícito → server-cache hit em retry."""
-        from app.domains.ats_integration.services.ats_clients.wedotalent_rails import (
+        from app.shared.integration.rails_client import (
             WeDOTalentATSClient,
         )
 
@@ -121,7 +121,7 @@ class TestWeDOTalentATSClientIdempotencyKey:
     @pytest.mark.asyncio
     async def test_each_call_gets_unique_key_by_default(self) -> None:
         """Default behavior: cada call sem explicit key → UUID4 fresh."""
-        from app.domains.ats_integration.services.ats_clients.wedotalent_rails import (
+        from app.shared.integration.rails_client import (
             WeDOTalentATSClient,
         )
 
