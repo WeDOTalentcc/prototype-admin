@@ -26,6 +26,32 @@ logger = logging.getLogger(__name__)
 
 _MIN_TRANSCRIPT_CHARS = 50
 
+# REGRA 4 fail-loud sensor: Prometheus counter para WSI persistence failures.
+# Antes deste fix, _persist_wsi_result tinha try/except mudo (logger.error apenas)
+# que escondia o gap "voice_wsi_results table missing" — webhook OpenMic respondia
+# 200 OK enquanto scores eram silenciosamente perdidos em produção.
+# Canary metric: alarm quando rate > 5% por 5min indica regressão.
+try:
+    from prometheus_client import REGISTRY as _PROM_REGISTRY
+    from prometheus_client import Counter as _PromCounter
+
+    _PERSIST_METRIC_NAME = "lia_voice_wsi_persist_total"
+    _existing_persist = getattr(_PROM_REGISTRY, "_names_to_collectors", {}).get(
+        _PERSIST_METRIC_NAME
+    )
+    if _existing_persist is not None:
+        _WSI_PERSIST_COUNTER = _existing_persist
+    else:
+        _WSI_PERSIST_COUNTER = _PromCounter(
+            _PERSIST_METRIC_NAME,
+            "WSI voice result persistence outcomes (P0 fix 2026-05-23).",
+            labelnames=("outcome",),  # success | failure
+        )
+    _WSI_PERSIST_METRICS_AVAILABLE = True
+except (ImportError, ValueError):  # pragma: no cover
+    _WSI_PERSIST_COUNTER = None
+    _WSI_PERSIST_METRICS_AVAILABLE = False
+
 
 async def _fetch_audio_safe(audio_url: str) -> bytes | None:
     """
@@ -133,11 +159,21 @@ async def _persist_wsi_result(
     Upsert WSI result into the `voice_wsi_results` table.
 
     ON CONFLICT (call_id) updates score and classification.
-    Non-blocking: logs error and continues on DB failure.
+
+    REGRA 4 fail-loud (canonical, fix 2026-05-23): raises on persistence
+    failure instead of swallowing silently. Caller `run_voice_wsi_pipeline`
+    catches and surfaces flag `persist_failed: True` no payload de retorno
+    para que o Celery task / webhook handler logue de forma estruturada e
+    o Prometheus counter ``lia_voice_wsi_persist_total{outcome="failure"}``
+    permita observability + alarmas.
+
+    Antes deste fix, except mudo escondia o gap "voice_wsi_results table
+    missing" (audit 2026-05-23) — scores WSI perdidos em produção.
     """
+    from sqlalchemy import text
+
+    from app.core.database import AsyncSessionLocal
     try:
-        from app.core.database import AsyncSessionLocal
-        from sqlalchemy import text
         async with AsyncSessionLocal() as db:
             await db.execute(
                 text("""
@@ -173,8 +209,30 @@ async def _persist_wsi_result(
                 call_id,
                 mask_pii(candidate_id),
             )
+            # REGRA 4 sensor: success counter
+            if _WSI_PERSIST_METRICS_AVAILABLE and _WSI_PERSIST_COUNTER is not None:
+                try:
+                    _WSI_PERSIST_COUNTER.labels(outcome="success").inc()
+                except Exception:  # pragma: no cover — metric SDK must never break hot path
+                    pass
     except Exception as exc:
-        logger.error("[WSI Pipeline] DB persistence failed (non-blocking) — call_id=%s error=%s", call_id, exc)
+        # REGRA 4 fail-loud: log estruturado + metric + raise (NÃO swallow)
+        logger.error(
+            "[WSI Pipeline] persist FAILED — score perdido se nao re-tentar. "
+            "call_id=%s candidate_id=%s job_id=%s company_id=%s error=%s",
+            call_id,
+            mask_pii(candidate_id),
+            job_id,
+            company_id,
+            exc,
+            exc_info=True,
+        )
+        if _WSI_PERSIST_METRICS_AVAILABLE and _WSI_PERSIST_COUNTER is not None:
+            try:
+                _WSI_PERSIST_COUNTER.labels(outcome="failure").inc()
+            except Exception:  # pragma: no cover
+                pass
+        raise
 
 
 async def _notify_recruiter(
@@ -262,7 +320,15 @@ async def run_voice_wsi_pipeline(task_data: dict[str, Any]) -> dict[str, Any]:
         wsi_result["classification"],
     )
 
-    # Step 3: Persist to DB (non-blocking)
+    # Step 3: Persist to DB
+    # REGRA 4 (canonical, fix 2026-05-23): persist failures NÃO são mais silent.
+    # _persist_wsi_result raises; aqui capturamos para enriquecer payload de retorno
+    # com flag `persist_failed: True` + `needs_manual_review: True`. Celery task
+    # decide via flag se DLQ/retry (status code do task continua sucesso porque
+    # scoring rodou — só a persistência falhou). Prometheus counter
+    # `lia_voice_wsi_persist_total{outcome="failure"}` registra para alarme.
+    persist_failed = False
+    persist_error: str | None = None
     try:
         await _persist_wsi_result(
             wsi_result=wsi_result,
@@ -273,7 +339,17 @@ async def run_voice_wsi_pipeline(task_data: dict[str, Any]) -> dict[str, Any]:
             transcript_length=len(transcript),
         )
     except Exception as exc:
-        logger.error("[WSI Pipeline] DB persistence failed (non-blocking) — call_id=%s: %s", call_id, exc)
+        # Já loggado + counter incrementado em _persist_wsi_result; aqui só captura
+        # para propagar o flag pro caller. NÃO re-raise (scoring foi feito; perder
+        # persist é grave mas não justifica perder a notificação do recruiter).
+        persist_failed = True
+        persist_error = f"{type(exc).__name__}: {exc}"
+        logger.error(
+            "[WSI Pipeline] persist FAILED — surfacing flag persist_failed=True "
+            "call_id=%s candidate_id=%s",
+            call_id,
+            mask_pii(candidate_id),
+        )
 
     # Step 4: Notify recruiter (non-blocking)
     try:
@@ -281,7 +357,7 @@ async def run_voice_wsi_pipeline(task_data: dict[str, Any]) -> dict[str, Any]:
     except Exception as exc:
         logger.warning("[WSI Pipeline] Recruiter notification failed (non-blocking): %s", exc)
 
-    return {
+    result: dict[str, Any] = {
         "status": "completed",
         "call_id": call_id,
         "candidate_id": candidate_id,
@@ -289,3 +365,10 @@ async def run_voice_wsi_pipeline(task_data: dict[str, Any]) -> dict[str, Any]:
         "wsi_score": wsi_result["final_score"],
         "classification": wsi_result["classification"],
     }
+    # REGRA 4 fail-loud flag: caller (Celery task / webhook) inspeciona para
+    # decidir manual review / DLQ. Não escondido em log apenas.
+    if persist_failed:
+        result["persist_failed"] = True
+        result["needs_manual_review"] = True
+        result["persist_error"] = persist_error
+    return result
