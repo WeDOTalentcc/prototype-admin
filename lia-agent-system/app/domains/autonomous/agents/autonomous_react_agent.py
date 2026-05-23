@@ -69,6 +69,15 @@ def _get_circuit_breaker() -> Any:
 
 @register_agent("autonomous")
 class AutonomousReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgentMixin):
+    # W4-032 (2026-05-23): Tier 6 cross-domain agent. ANY action via
+    # this agent triggers HITL gate (highest risk surface).
+    _HITL_ACTION_TYPES = frozenset({
+        "autonomous_delegate",
+        "autonomous_action",
+        "cross_domain_action",
+        "tier6_fallback_action",
+    })
+
     """
     Agente ReAct autônomo cross-domain — Tier 6 do CascadedRouter.
 
@@ -359,6 +368,21 @@ class AutonomousReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAg
             _soft_warnings = list(getattr(_fg_result, "soft_warnings", None) or [])
         except Exception as _fg_exc:
             logger.debug("[AutonomousReActAgent] FairnessGuard skipped: %s", _fg_exc)
+
+        # ── W4-032 (2026-05-23) HITL gate cross-domain Tier 6 ──────────────
+        from app.shared.hitl.agent_gate import maybe_request_hitl_approval
+        _hitl_response = await maybe_request_hitl_approval(
+            agent_input=input,
+            domain=self.domain_name,
+            action_types=self._HITL_ACTION_TYPES,
+            agent_name="autonomous_react_agent",
+            description_template=(
+                "Confirmar **{action_type}** via agent autônomo (Tier 6). "
+                "Maior superfície de ação cross-domain — exige revisão humana."
+            ),
+        )
+        if _hitl_response is not None:
+            return _hitl_response
 
         # ── Set tenant context variable so tools auto-inject company_id ─────
         # ADR-029-EXEMPT (audit Wave 2 2026-05-21): runtime-scope ContextVar set por

@@ -41,6 +41,16 @@ from app.shared.prompts.prompt_composer import PromptComposer
 
 @register_agent("kanban")
 class KanbanReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgentMixin):
+    # W4-032 (2026-05-23): bulk operations + reject candidato exigem HITL.
+    # Most-used recruiter surface, single point of side-effect concentration.
+    _HITL_ACTION_TYPES = frozenset({
+        "move_candidate",
+        "bulk_move",
+        "bulk_reject",
+        "bulk_advance",
+        "reject_candidate",
+    })
+
     """Autonomous agent for strategic pipeline analysis via LangGraph nativo."""
 
     # Static class-attr (legacy backward compat — empty placeholders).
@@ -202,6 +212,21 @@ class KanbanReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgentM
         return await super()._process_langgraph(input)
 
     async def process(self, input: AgentInput) -> AgentOutput:
+        # W4-032 (2026-05-23): HITL gate antes de mover/rejeitar candidato
+        from app.shared.hitl.agent_gate import maybe_request_hitl_approval
+        hitl_response = await maybe_request_hitl_approval(
+            agent_input=input,
+            domain=self.domain_name,
+            action_types=self._HITL_ACTION_TYPES,
+            agent_name="kanban_react_agent",
+            description_template=(
+                "Confirmar **{action_type}** no kanban. "
+                "Bulk operations afetam múltiplos candidatos."
+            ),
+        )
+        if hitl_response is not None:
+            return hitl_response
+
         _blocked_msg = await self._fairness_pre_check(input.message or "")
         if _blocked_msg:
             return AgentOutput(

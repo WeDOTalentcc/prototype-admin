@@ -34,6 +34,16 @@ from app.shared.prompts.prompt_composer import PromptComposer
 
 @register_agent("ats_integration", aliases=['ats'])
 class ATSIntegrationReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgentMixin):
+    # W4-032 (2026-05-23): ações com side-effect EXTERNO (write para Workday/
+    # Greenhouse/etc) requerem aprovação humana inline via HITL.
+    _HITL_ACTION_TYPES = frozenset({
+        "sync_to_ats",
+        "webhook_trigger",
+        "ats_create_application",
+        "ats_update_application",
+        "ats_reject_application",
+    })
+
     DOMAIN_INSTRUCTIONS = PromptComposer.for_domain(
         agent_type="ats_integration",
         domain_specific=ATS_INTEGRATION_DOMAIN_SPECIFIC,
@@ -207,6 +217,20 @@ class ATSIntegrationReActAgent(TenantAwareAgentMixin, LangGraphReActBase, Enhanc
         return output
 
     async def process(self, input: AgentInput) -> AgentOutput:
+        # W4-032 (2026-05-23): HITL gate antes de side-effect externo ATS
+        from app.shared.hitl.agent_gate import maybe_request_hitl_approval
+        hitl_response = await maybe_request_hitl_approval(
+            agent_input=input,
+            domain=self.domain_name,
+            action_types=self._HITL_ACTION_TYPES,
+            agent_name="ats_integration_react_agent",
+            description_template=(
+                "Confirmar **{action_type}** no ATS externo. Write irreversível em sistema de terceiros."
+            ),
+        )
+        if hitl_response is not None:
+            return hitl_response
+
         try:
             return await self._process_langgraph(input)
         except Exception as exc:
