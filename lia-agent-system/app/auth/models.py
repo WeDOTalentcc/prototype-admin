@@ -146,8 +146,29 @@ class User(EncryptedFieldMixin, Base):
         return val
 
     def can_access_company(self, company_id: str) -> bool:
-        """Check if user can access the given company."""
-        if self.role == UserRole.admin:
+        """Check if user can access the given company.
+
+        Cross-tenant access rules:
+        - ``wedotalent_admin`` (WeDOTalent staff) → True for any company_id.
+          Operate platform across ALL tenants (per UserRole docstring).
+        - ``admin`` (tenant admin) → CURRENTLY also returns True for any
+          company_id. This is a TRANSITIONAL behavior: historically ``admin``
+          was the only WeDOTalent-staff role; ``wedotalent_admin`` was
+          introduced later but staff users were not migrated. Flipping ``admin``
+          now would lock WeDOTalent staff out of legit cross-tenant ops.
+
+        Onda 1.1 fix (2026-05-23): adicionado branch ``wedotalent_admin`` —
+        antes ele caia no ``self.company_id == company_id`` e era negado
+        em endpoints cross-tenant (Recovery #3 wsi/reports.py descobriu).
+
+        TODO follow-up (Onda 1.x ou separado): migrar usuarios WeDOTalent-staff
+        de role ``admin`` → ``wedotalent_admin`` no banco, depois remover o
+        branch ``admin`` desta funcao. Sem essa migracao, tenant admins (admin
+        de Acme Corp) tem acesso cross-tenant indevido. ``assert_resource_
+        ownership`` ja loga warning quando ``admin`` cruza tenant (defense-in-
+        depth temporario).
+        """
+        if self.role in (UserRole.admin, UserRole.wedotalent_admin):
             return True
         return self.company_id == company_id
     
