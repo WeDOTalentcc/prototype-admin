@@ -11,6 +11,8 @@ import {
 import { Github } from"lucide-react"
 import { CandidateAvatar } from"@/components/candidate-profile/CandidateAvatar"
 import { CandidateScoreBadge } from"@/components/candidate-profile/CandidateScoreBadge"
+import { EditableField } from "@/components/candidate-profile/EditableField"
+import { useCandidateEdit } from "@/components/candidate-profile/CandidateEditContext"
 
 type CandidateRecord = {
   name: string
@@ -66,6 +68,11 @@ export function CandidatePageHeader({
   onSendFeedback,
   candidate,
 }: CandidatePageHeaderProps) {
+  const { editable, updateField, isSaving } = useCandidateEdit()
+  const handleSave = (fieldName: string) => async (value: string) => {
+    if (!updateField) return { success: false, error: "Edit indisponivel" }
+    return await updateField(fieldName, value)
+  }
   return (
     <TooltipProvider delayDuration={200}>
       <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary dark:border-lia-border-subtle px-6 py-3">
@@ -78,17 +85,50 @@ export function CandidatePageHeader({
             />
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-base font-semibold text-lia-text-primary">{_candidate.name as string}</h1>
+                {editable ? (
+                  <EditableField
+                    value={_candidate.name as string}
+                    onSave={handleSave("name")}
+                    label="nome"
+                    placeholder="Nome do candidato"
+                    saving={isSaving?.("name") ?? false}
+                    className="text-base font-semibold"
+                  />
+                ) : (
+                  <h1 className="text-base font-semibold text-lia-text-primary">{_candidate.name as string}</h1>
+                )}
                 <Chip density="relaxed" variant="neutral" className="px-1.5 py-0">
                   {_candidate.candidateId || _candidate.id}
                 </Chip>
                 <CandidateScoreBadge score={liaScore} format="percent" />
               </div>
               <div className="flex items-center gap-2 text-xs text-lia-text-secondary">
-                <span>{_candidate.position as string | undefined}</span>
+                {editable ? (
+                  <EditableField
+                    value={_candidate.position as string | undefined}
+                    onSave={handleSave("current_title")}
+                    label="cargo atual"
+                    placeholder="Cargo / posição"
+                    saving={isSaving?.("current_title") ?? false}
+                    emptyDisplay="Adicionar cargo"
+                  />
+                ) : (
+                  <span>{_candidate.position as string | undefined}</span>
+                )}
                 <span className="lia-text-secondary">•</span>
-                <MapPin className="w-3 h-3" />
-                <span>{_candidate.location as string | undefined}</span>
+                <MapPin className="w-3 h-3" aria-hidden="true" />
+                {editable ? (
+                  <EditableField
+                    value={_candidate.location as string | undefined}
+                    onSave={handleSave("location_city")}
+                    label="localização"
+                    placeholder="Cidade, Estado"
+                    saving={isSaving?.("location_city") ?? false}
+                    emptyDisplay="Adicionar localização"
+                  />
+                ) : (
+                  <span>{_candidate.location as string | undefined}</span>
+                )}
               </div>
             </div>
           </div>
