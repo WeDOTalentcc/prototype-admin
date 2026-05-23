@@ -24,6 +24,7 @@ from app.shared.compliance.fairness_recursive import (
     validate_fairness_recursive,
 )
 from app.shared.tool_handler import tool_handler
+from app.domains.company_settings.repositories.company_profile_repository import CompanyProfileRepository
 from types import SimpleNamespace
 
 from app.domains.cv_screening.services.confidence_policy_service import (
@@ -294,37 +295,12 @@ def _fairness_violation_response(
 async def _wrap_get_company_profile(**kwargs: Any) -> dict[str, Any]:
     company_id = kwargs.get("company_id", "")
     async with AsyncSessionLocal() as session:
-        profile = await session.execute(
-            text("""
-                SELECT id, name, trading_name, cnpj, website, hr_email, hr_phone,
-                       address, industry, company_size, employee_count, founded_year,
-                       linkedin_url, logo_url, additional_data
-                FROM company_profiles
-                WHERE id::text = :company_id
-                LIMIT 1
-            """),
-            {"company_id": company_id},
-        )
-        profile_row = profile.mappings().first()
+        repo = CompanyProfileRepository(db=session)
+        full_profile = await repo.get_full_profile(company_id)
 
-        culture = await session.execute(
-            text("""
-                SELECT mission, vision, values, core_competencies, evp_bullets,
-                       work_model, hybrid_days_onsite, employment_types,
-                       growth_opportunities, team_dynamics, leadership_style,
-                       dei_initiatives, sustainability, social_impact,
-                       tech_stack, engineering_culture, default_languages,
-                       seniority_levels, default_behavioral_competencies,
-                       default_salary_ranges, locations, headquarters
-                FROM company_culture_profiles
-                WHERE company_id = :company_id
-                LIMIT 1
-            """),
-            {"company_id": company_id},
-        )
-        culture_row = culture.mappings().first()
-
-        benefits = await session.execute(
+        benefits_result = await session.execute(
+            # ADR-001-EXEMPT: company_benefits cross-table read with ORDER BY — BenefitsRepository pending W1-004-E
+            # (ADR-001 Wave C-2 Agent D)
             text("""
                 SELECT id, name, category, description, is_active
                 FROM company_benefits
@@ -333,64 +309,85 @@ async def _wrap_get_company_profile(**kwargs: Any) -> dict[str, Any]:
             """),
             {"company_id": company_id},
         )
-        benefits_rows = benefits.mappings().all()
+        benefits_rows = benefits_result.mappings().all()
 
-        if not profile_row:
-            # M5 (PR8 / Task #1008 — code review #2): também substitui o
-            # literal `20` mágico no branch "perfil inexistente" pelo
-            # cardinal real da união de whitelists `_PROFILE_FIELDS ∪
-            # _CULTURE_FIELDS`. Mantém o denominador consistente com o
-            # branch principal abaixo (filled = profile_data + culture_data).
-            _empty_total = len(_PROFILE_FIELDS) + len(_CULTURE_FIELDS)
-            return {
-                "success": True,
-                "data": {
-                    "exists": False,
-                    "profile": {},
-                    "culture": {},
-                    "benefits": [],
-                    "completion": {
-                        "filled": 0,
-                        "total": _empty_total,
-                        "percentage": 0,
-                    },
-                },
-                "message": "Nenhum perfil encontrado. Vamos comecar do zero!",
-            }
-
-        profile_data = dict(profile_row)
-        culture_data = dict(culture_row) if culture_row else {}
-        benefits_data = [dict(b) for b in benefits_rows]
-
-        filled = sum(1 for v in profile_data.values() if v not in (None, "", [], {}))
-        filled += sum(1 for v in culture_data.values() if v not in (None, "", [], {}))
-        # M5 (PR8 / Task #1008) — substitui o `+ 20` mágico (audit M5) pelo
-        # cardinal real da whitelist `_CULTURE_FIELDS`. Quando `culture_row`
-        # é vazio, o denominador da % de completude reflete os campos
-        # canônicos esperados (mesma lista que dirige _build_culture_queries
-        # e o whitelist do save_company_field), não um chute fixo de 20.
-        _expected_culture_count = len(_CULTURE_FIELDS)
-        total = (
-            len(profile_data) + len(culture_data)
-            if culture_data
-            else len(profile_data) + _expected_culture_count
-        )
-
+    if full_profile is None:
+        profile_row = None
+        culture_row = None
+    else:
+        # Split the combined row back into profile vs culture fields
+        _profile_keys = {
+            "id", "name", "trading_name", "cnpj", "website", "hr_email", "hr_phone",
+            "address", "industry", "company_size", "employee_count", "founded_year",
+            "linkedin_url", "logo_url", "additional_data",
+        }
+        _culture_keys = {
+            "mission", "vision", "values", "core_competencies", "evp_bullets",
+            "work_model", "hybrid_days_onsite", "employment_types", "growth_opportunities",
+            "team_dynamics", "leadership_style", "dei_initiatives", "sustainability",
+            "social_impact", "tech_stack", "engineering_culture", "default_languages",
+            "seniority_levels", "default_behavioral_competencies", "default_salary_ranges",
+            "locations", "headquarters", "lia_field_toggles", "lia_instructions", "ai_persona",
+        }
+        profile_row = {k: v for k, v in full_profile.items() if k in _profile_keys}
+        _culture_raw = {k: v for k, v in full_profile.items() if k in _culture_keys}
+        culture_row = _culture_raw if any(v is not None for v in _culture_raw.values()) else None
+    if not profile_row:
+        # M5 (PR8 / Task #1008 — code review #2): também substitui o
+        # literal `20` mágico no branch "perfil inexistente" pelo
+        # cardinal real da união de whitelists `_PROFILE_FIELDS ∪
+        # _CULTURE_FIELDS`. Mantém o denominador consistente com o
+        # branch principal abaixo (filled = profile_data + culture_data).
+        _empty_total = len(_PROFILE_FIELDS) + len(_CULTURE_FIELDS)
         return {
             "success": True,
             "data": {
-                "exists": True,
-                "profile": profile_data,
-                "culture": culture_data,
-                "benefits": benefits_data,
+                "exists": False,
+                "profile": {},
+                "culture": {},
+                "benefits": [],
                 "completion": {
-                    "filled": filled,
-                    "total": total,
-                    "percentage": int(filled / total * 100) if total > 0 else 0,
+                    "filled": 0,
+                    "total": _empty_total,
+                    "percentage": 0,
                 },
             },
-            "message": f"Perfil carregado: {filled}/{total} campos preenchidos ({int(filled/total*100) if total > 0 else 0}%).",
+            "message": "Nenhum perfil encontrado. Vamos comecar do zero!",
         }
+
+    profile_data = dict(profile_row)
+    culture_data = dict(culture_row) if culture_row else {}
+    benefits_data = [dict(b) for b in benefits_rows]
+
+    filled = sum(1 for v in profile_data.values() if v not in (None, "", [], {}))
+    filled += sum(1 for v in culture_data.values() if v not in (None, "", [], {}))
+    # M5 (PR8 / Task #1008) — substitui o `+ 20` mágico (audit M5) pelo
+    # cardinal real da whitelist `_CULTURE_FIELDS`. Quando `culture_row`
+    # é vazio, o denominador da % de completude reflete os campos
+    # canônicos esperados (mesma lista que dirige _build_culture_queries
+    # e o whitelist do save_company_field), não um chute fixo de 20.
+    _expected_culture_count = len(_CULTURE_FIELDS)
+    total = (
+        len(profile_data) + len(culture_data)
+        if culture_data
+        else len(profile_data) + _expected_culture_count
+    )
+
+    return {
+        "success": True,
+        "data": {
+            "exists": True,
+            "profile": profile_data,
+            "culture": culture_data,
+            "benefits": benefits_data,
+            "completion": {
+                "filled": filled,
+                "total": total,
+                "percentage": int(filled / total * 100) if total > 0 else 0,
+            },
+        },
+        "message": f"Perfil carregado: {filled}/{total} campos preenchidos ({int(filled/total*100) if total > 0 else 0}%).",
+    }
 
 
 @tool_handler("company_settings")
@@ -455,7 +452,11 @@ async def _save_company_field_impl(
 
     A1 (PR5 / Task #1005) — queries pré-compostas em
     ``_PROFILE_FIELD_QUERIES`` / ``_CULTURE_FIELD_QUERIES`` (no topo do
-    módulo). Lookup por whitelist; ZERO f-string em runtime."""
+    módulo). Lookup por whitelist; ZERO f-string em runtime.
+
+    ADR-001-EXEMPT: pre-composed queries at import time via _build_profile_queries()
+    — field names never interpolated at runtime; equivalent security to typed repo
+    method per _PROFILE_FIELDS frozenset whitelist (ADR-001 Wave C-2 Agent D)."""
     if section == "profile":
         queries = _PROFILE_FIELD_QUERIES.get(field)
         if queries is None:
@@ -805,47 +806,13 @@ async def _import_workforce_plan_impl(
     departments = list(set(item.get("department", "N/A") for item in plan_data if isinstance(item, dict)))
 
     # PR4: usa session injetada; captura `before` (plano anterior) para
-    # payload canônico SOX.
-    existing = await session.execute(
-        text(
-            "SELECT id, COALESCE(additional_data->'workforce_plan', 'null'::jsonb) AS prev_plan "
-            "FROM company_culture_profiles WHERE company_id = :company_id LIMIT 1"
-        ),
-        {"company_id": company_id},
-    )
-    prev_row = existing.mappings().first()
-    before_plan: Any = None
-    if prev_row:
-        try:
-            raw = prev_row.get("prev_plan")
-            before_plan = json.loads(raw) if isinstance(raw, str) else raw
-        except (json.JSONDecodeError, TypeError):
-            before_plan = None
+    # payload canônico SOX. Migrado para repo (ADR-001 Wave C-2 Agent D).
+    repo = CompanyProfileRepository(db=session)
+    _wf = await repo.get_workforce_plan(company_id)
+    before_plan: Any = _wf["workforce_plan"] if _wf else None
 
     plan_json = json.dumps(plan_data, ensure_ascii=False)
-
-    if prev_row:
-        await session.execute(
-            text("""
-                UPDATE company_culture_profiles
-                SET additional_data = jsonb_set(
-                    COALESCE(additional_data, '{}'::jsonb),
-                    '{workforce_plan}',
-                    :plan_data::jsonb
-                ),
-                updated_at = NOW()
-                WHERE company_id = :company_id
-            """),
-            {"plan_data": plan_json, "company_id": company_id},
-        )
-    else:
-        await session.execute(
-            text("""
-                INSERT INTO company_culture_profiles (company_id, additional_data, created_at, updated_at)
-                VALUES (:company_id, jsonb_build_object('workforce_plan', :plan_data::jsonb), NOW(), NOW())
-            """),
-            {"company_id": company_id, "plan_data": plan_json},
-        )
+    await repo.upsert_workforce_plan(company_id, plan_json, session=session)
 
     return {
         "success": True,

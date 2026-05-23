@@ -58,12 +58,12 @@ MIGRATED_TOOL_REGISTRIES = frozenset({
 # W1-004-C Agent-B (2026-05-23): hiring_policy/policy_tool_registry + job_management/wizard_tool_registry
 # removed — MIGRATE 1+2 to repos + EXEMPT markers on remaining analytics SQL.
 TOOL_REGISTRY_BACKLOG = frozenset({
-    "app/domains/company_settings/agents/company_tool_registry.py",
+    # company_tool_registry.py — removed 2026-05-23 W1-004-D: 3 MIGRATE to CompanyProfileRepository + 1 EXEMPT marker
     "app/domains/cv_screening/agents/pipeline_tool_registry.py",
     # policy_tool_registry.py — removed 2026-05-23: MIGRATE 1+2 to HiringPolicyRepository + EXEMPT markers
     # wizard_tool_registry.py — removed 2026-05-23: MIGRATE 1 to JobVacancyCrudRepository + EXEMPT markers
     "app/domains/pipeline/agents/pipeline_tool_registry.py",
-    "app/domains/sourcing/agents/passive_pipeline_tool_registry.py",
+    # passive_pipeline_tool_registry.py — removed 2026-05-23 W1-004-D: 1 MIGRATE to PassiveCandidateRepository + 2 EXEMPT markers
     "app/domains/talent_pool/agents/talent_pool_tool_registry.py",
 })
 

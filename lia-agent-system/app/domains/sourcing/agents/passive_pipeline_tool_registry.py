@@ -16,6 +16,7 @@ from lia_agents_core.tool_adapter import ToolDefinition
 from lia_agents_core.tool_adapter import ToolOutput
 
 from app.shared.tool_handler import tool_handler
+from app.domains.sourcing.repositories.passive_candidate_repository import PassiveCandidateRepository
 
 logger = logging.getLogger(__name__)
 
@@ -99,6 +100,9 @@ async def _wrap_passive_search_archived(**kwargs: Any) -> dict[str, Any]:
     """
     count_query = f"SELECT COUNT(*) FROM candidates WHERE {where_clause}"
 
+    # ADR-001-EXEMPT: LGPD TTL mandatory filter + dynamic skills array match (&&) + role ILIKE
+    # — dynamic conditions array prevents migration to typed repo method without losing LGPD gate;
+    # refactor pending compliance review (ADR-001 Wave C-2 Agent D)
     async with AsyncSessionLocal() as session:
         count_result = await session.execute(text(count_query), params)
         total = count_result.scalar() or 0
@@ -216,6 +220,9 @@ async def _wrap_passive_calculate_fit_score(**kwargs: Any) -> dict[str, Any]:
     if not vacancy_id:
         return {"success": False, "data": {}, "message": "Parâmetro 'vacancy_id' é obrigatório."}
 
+    # ADR-001-EXEMPT: cross-domain read (candidates + job_vacancies) for fit score computation
+    # — ContextAggregatorService pattern; complex cross-repo join pending LGPD-aware refactor sprint
+    # (ADR-001 Wave C-2 Agent D)
     async with AsyncSessionLocal() as session:
         c_res = await session.execute(
             text("""
@@ -229,6 +236,8 @@ async def _wrap_passive_calculate_fit_score(**kwargs: Any) -> dict[str, Any]:
         )
         candidate = c_res.mappings().first()
 
+        # ADR-001-EXEMPT: cross-domain read (candidates + job_vacancies) for fit score computation
+        # — ContextAggregatorService pattern; complex cross-repo join pending LGPD-aware refactor sprint
         v_res = await session.execute(
             text("""
                 SELECT id, title, requirements, seniority_level
@@ -342,12 +351,10 @@ async def _wrap_passive_check_lgpd_ttl(**kwargs: Any) -> dict[str, Any]:
     if not candidate_id:
         return {"success": False, "data": {}, "message": "Parâmetro 'candidate_id' é obrigatório."}
 
+    _lgpd_cutoff_date = (datetime.utcnow() - timedelta(days=LGPD_TTL_DAYS)).date()
     async with AsyncSessionLocal() as session:
-        result = await session.execute(
-            text("SELECT id, name, status, updated_at, created_at FROM candidates WHERE id = :cid AND (company_id IS NULL OR company_id = :company_id)"),
-            {"cid": candidate_id, "company_id": company_id},
-        )
-        candidate = result.mappings().first()
+        repo = PassiveCandidateRepository(db=session)
+        candidate = await repo.get_with_lgpd_check(candidate_id, company_id, _lgpd_cutoff_date)
 
     if not candidate:
         return {"success": False, "data": {}, "message": f"Candidato '{candidate_id}' não encontrado."}
