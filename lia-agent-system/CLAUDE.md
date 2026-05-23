@@ -786,3 +786,77 @@ sessao e o primeiro commit local).
 
 **Regra:** confirmar HEAD movimento eh disciplina barata (~1s). Garante
 que o trabalho assinado foi de fato registrado no historico do Replit.
+
+---
+
+## Race-condition harness — commits multi-agent (registrado 2026-05-23)
+
+**Problema observado (3x em sessao 2026-05-22+23):** multiplos agents
+Claude rodando em paralelo no Replit absorvem files uns dos outros via
+`git add .` ou commit timing race.
+
+**Casos historicos:**
+- Sprint 3.3 (WSI plugin absorvido em commit "react-keys")
+- T4 (TemplateClonePanel absorvido em "Sprint X.A batch 6")
+- Workstream A T5 commit absorption
+
+### Pattern obrigatorio
+
+Use `scripts/safe_commit.sh` em vez de `git commit -m` direto:
+
+```bash
+./scripts/safe_commit.sh \
+    --message "feat(xxx): subject
+
+body com contexto..." \
+    --files "app/foo.py tests/test_foo.py"
+```
+
+O script:
+- Verifica HEAD antes/depois (detect absorption)
+- Stage SO files declarados (no `git add .`)
+- Detecta pre-existing rogue staging (outro agent staged antes) → exit 3
+- Verifica staged = declared apos staging (detect rogue mid-flight) → exit 3
+- Verifica commit message bate com input (detect message capture) → exit 6
+- Verifica commit contem files declarados (detect drop) → exit 7
+- Exit non-zero em qualquer guard fail
+
+### Exit codes
+
+| Code | Meaning |
+|------|---------|
+| 0 | OK — commit registrado e validado |
+| 2 | Args invalidos OU empty staging sem --allow-empty |
+| 3 | Stage mismatch — rogue file detectado (pre ou pos staging) |
+| 4 | `git commit` falhou (hook rejeitou, etc.) |
+| 5 | HEAD nao avancou apos commit (no-op ou absorvido) |
+| 6 | Commit message diverge (capture por outro agent) |
+| 7 | File declarado sumiu do commit final |
+
+### Sub-agents (SSH ao Replit)
+
+Sub-agents que rodam SSH ao Replit **DEVEM** usar `safe_commit.sh` — nao
+`git commit -m` direto. Briefings devem mencionar explicitamente:
+
+> "Para qualquer commit no workspace, use ./scripts/safe_commit.sh
+>  --message ... --files ... — NUNCA git commit -m direto."
+
+### Testes
+
+`tests/contract/test_safe_commit_guard.sh` — 7 cases (happy path, stage
+mismatch, empty staging, missing args, dry run, multi-file). Rodar quando
+modificar `scripts/safe_commit.sh`.
+
+### Quando NAO usar
+
+- Merge commits (precisam de `--no-edit` ou interativo)
+- Amends (manual + REGRA ZERO)
+- Commits criados pelo Replit IDE (Paulo via UI) — esses sao manuais e
+  proprios do workflow Replit
+
+### Refs
+
+- `scripts/safe_commit.sh` — implementacao
+- `tests/contract/test_safe_commit_guard.sh` — testes
+- `~/.claude/CLAUDE.md` "REGRA ZERO" — nao push, nao remoto
+- Section anterior "Replit canonical produção" — workflow geral
