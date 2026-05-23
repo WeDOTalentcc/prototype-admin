@@ -19,17 +19,42 @@ import re
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
-# Patterns PII para scrubbing
+# W3-013 (2026-05-23): Patterns PII para scrubbing — REUSA canonical de
+# `app.shared.pii_masking._LLM_PROMPT_PII_PATTERNS` (8 patterns: CPF, email,
+# phone, RG, CNPJ, graduation year, age, address) + ADICIONA 4 patterns de
+# segurança (password/api_key/bearer_token/credit_card).
+#
+# Antes: 3 patterns (email, CPF, phone BR).
+# Depois: 8 canonical + 4 security = 12 patterns.
 # ---------------------------------------------------------------------------
 
-_PII_PATTERNS = [
-    # E-mail
-    (re.compile(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'), '[EMAIL]'),
-    # CPF (com ou sem pontuação)
-    (re.compile(r'\b\d{3}\.?\d{3}\.?\d{3}-?\d{2}\b'), '[CPF]'),
-    # Telefone brasileiro (fixo e celular, com ou sem +55/DDD)
-    (re.compile(r'\b(?:\+55\s?)?(?:\(?\d{2}\)?\s?)?(?:9\s?)?\d{4}[-\s]?\d{4}\b'), '[PHONE]'),
+_SECURITY_PII_PATTERNS = [
+    # password=xxx, password: xxx (case-insensitive)
+    (re.compile(r'(?i)(password|passwd|pwd|senha)\s*[:=]\s*[^\s"\\\',;]+'), r'\1=[REDACTED]'),
+    # api_key=xxx, api-key: xxx, apikey: xxx
+    (re.compile(r'(?i)(api[-_]?key|apikey|x-api-key)\s*[:=]\s*[^\s"\\\',;]+'), r'\1=[REDACTED]'),
+    # Bearer / Authorization tokens (truncated)
+    (re.compile(r'(?i)(bearer|authorization:\s*bearer)\s+[A-Za-z0-9._\-]+'), r'\1 [TOKEN]'),
+    # Credit card numbers (12-19 digits, optional dashes/spaces)
+    (re.compile(r'\b(?:\d[ -]*?){12,19}\d\b'), '[CARD]'),
 ]
+
+
+def _get_pii_patterns():
+    """Lazy-load canonical patterns (avoid circular imports + import-time cost)."""
+    try:
+        from app.shared.pii_masking import _LLM_PROMPT_PII_PATTERNS
+        return list(_LLM_PROMPT_PII_PATTERNS) + _SECURITY_PII_PATTERNS
+    except ImportError:
+        # Fallback: 3 BR-specific patterns + 4 security (minimum viable scrubbing)
+        return [
+            (re.compile(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'), '[EMAIL]'),
+            (re.compile(r'\b\d{3}\.?\d{3}\.?\d{3}-?\d{2}\b'), '[CPF]'),
+            (re.compile(r'\b(?:\+55\s?)?(?:\(?\d{2}\)?\s?)?(?:9\s?)?\d{4}[-\s]?\d{4}\b'), '[PHONE]'),
+        ] + _SECURITY_PII_PATTERNS
+
+
+_PII_PATTERNS = _get_pii_patterns()
 
 
 def _scrub_pii(text: str) -> str:

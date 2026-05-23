@@ -35,7 +35,19 @@ from app.domains.ai.services.llm import LLMService
 from app.tools import initialize_tools
 
 # Configure LangSmith tracing BEFORE logging
-configure_langsmith()
+# W3-028 (2026-05-23): production fail-fast — LangSmith não-configurado
+# em prod/staging é gap observability (sem traces LLM = audit cego).
+# Em dev, continua sendo warn-only.
+_LANGSMITH_OK = configure_langsmith()
+if not _LANGSMITH_OK:
+    import os as _os_w3028
+    _env_w3028 = _os_w3028.environ.get("APP_ENV", "development")
+    if _env_w3028 in ("production", "prod", "staging"):
+        raise RuntimeError(
+            f"[W3-028] LangSmith NÃO configurado em ambiente {_env_w3028!r}. "
+            "Set LANGSMITH_API_KEY (ou LANGCHAIN_API_KEY) em Replit Secrets. "
+            "Em dev, warn-only."
+        )
 
 from app.core.logging_config import configure_logging
 from app.shared.pii_masking import install_global_pii_masking
