@@ -475,6 +475,13 @@ repos:
         files: ^(app/shared/governance/feature_flag_service\.py|app/orchestrator/cascaded_router\.py|app/shared/observability/canary_metrics\.py)$
         pass_filenames: false
 
+      - id: few-shot-yaml-schema
+        name: "W4-038: few_shot_examples YAML schema canonical (warn-only baseline)"
+        language: system
+        entry: python3 scripts/check_few_shot_yaml_schema.py
+        files: ^app/prompts/(domains/|tenants/.*/domains/).*\.yaml$
+        pass_filenames: false
+
       - id: governance-executor-wired
         name: "W1-004: ToolExecutor wirou Step 2 (company_id) + Step 7 (audit) + Step 8 (metrics) (BLOCKING)"
         language: system

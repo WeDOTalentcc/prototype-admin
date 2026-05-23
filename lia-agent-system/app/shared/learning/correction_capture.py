@@ -67,11 +67,41 @@ class CorrectionCaptureService:
     async def record_correction(self, signal: LearningSignal) -> None:
         """Record a user correction as a learning signal.
 
-        Currently logs and returns; persistence is deferred (TODO above).
-        Does NOT raise — callers should treat this as fire-and-forget.
+        W3-021 (2026-05-23): Persiste via LearningSignalRepository (canonical
+        infra criada por migration 184). FewShotEvolutionService consome via
+        `list_unconsumed_by_domain()` no daily job.
+
+        Fail-open: erros de persist são logged mas NÃO raise (fire-and-forget).
+        Caller (Onda UI/chat handler) não deve quebrar por falha de logging.
         """
-        # TODO: Persist via LearningSignalRepository (company_id already present)  # R-048: needs owner + ticket
-        # TODO: Route to FewShotEvolutionService when correction_count > 3 for intent  # R-048: needs owner + ticket
+        # W3-021: persistência canonical
+        try:
+            from app.core.database import AsyncSessionLocal
+            from app.domains.analytics.repositories.learning_signal_repository import (
+                LearningSignalRepository,
+            )
+
+            async with AsyncSessionLocal() as session:
+                repo = LearningSignalRepository(session)
+                await repo.insert(
+                    company_id=signal.company_id,
+                    user_id=signal.user_id,
+                    conversation_id=signal.conversation_id,
+                    domain=signal.metadata.get("domain") if signal.metadata else None,
+                    original_response=signal.original_response,
+                    corrected_response=signal.corrected_response,
+                    feedback_type=signal.feedback_type,
+                    confidence_at_generation=signal.confidence_at_generation,
+                    metadata=signal.metadata or {},
+                )
+        except Exception as e:
+            # Fail-open: log mas não raise
+            logger.error(
+                "[LearningLoop] Failed to persist correction (signal logged but not stored): %s",
+                e,
+                exc_info=True,
+            )
+
         logger.info(
             "[LearningLoop] Correction recorded: company=%s user=%s type=%s confidence=%.2f",
             signal.company_id,
