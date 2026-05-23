@@ -10,6 +10,8 @@ import { CandidateFilesTab } from "@/components/candidate-preview/CandidateFiles
 import { CandidateOpinionsTab } from "@/components/candidate-preview/CandidateOpinionsTab"
 import { CandidatePreviewModals } from "@/components/candidate-preview/CandidatePreviewModals"
 import { useCandidatePreviewCore } from "@/components/candidate-preview/useCandidatePreviewCore"
+import { CandidateEditProvider } from "@/components/candidate-profile/CandidateEditContext"
+import { useCandidateFieldUpdate } from "@/hooks/candidates/use-candidate-field-update"
 import { UserCheck, Activity, FileText, Brain } from "lucide-react"
 
 export type CandidatePageMode = "modal" | "page"
@@ -80,6 +82,11 @@ export function CandidatePage({
   onOpenTriagemDetails,
 }: CandidatePageProps) {
   const core = useCandidatePreviewCore(candidate)
+  const candidateId = (candidate?.id ?? candidate?.candidateId ?? candidate?.candidate_id) as string | undefined
+  const editHook = useCandidateFieldUpdate(candidateId)
+  // Edit pattern (D7): enabled by default in 'page' mode; drawer ('modal' default) stays read-only.
+  // Behind feature flag ff_candidate_edit (env or runtime). For now: gate via mode only.
+  const editableInline = mode === "page"
 
   if (mode === "modal" && !isOpen) return null
   if (!candidate) return null
@@ -98,6 +105,12 @@ export function CandidatePage({
       : "min-h-screen bg-lia-bg-primary dark:bg-lia-bg-primary flex flex-col"
 
   return (
+    <CandidateEditProvider
+      editable={editableInline}
+      candidateId={candidateId}
+      updateField={editHook.updateField}
+      isSaving={editHook.isSaving}
+    >
     <TooltipProvider>
       <div className={containerClass}>
         <CandidatePageHeader
@@ -254,5 +267,6 @@ export function CandidatePage({
         />
       </div>
     </TooltipProvider>
+    </CandidateEditProvider>
   )
 }
