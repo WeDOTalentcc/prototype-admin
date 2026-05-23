@@ -964,7 +964,7 @@ class VoiceCoreOrchestrator:
         await self.verify_consent(candidate_id, company_id, db)
 
         session = VoiceScreeningSession(
-            session_id=f"system:{uuid4()}",
+            session_id=str(uuid4()),  # Bug #102 fix (phone test 2026-05-23): plain UUID required by wsi_sessions.id UUID column
             candidate_id=candidate_id,
             candidate_name=candidate_name,
             job_title=job_title,
