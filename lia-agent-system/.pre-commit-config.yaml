@@ -460,3 +460,10 @@ repos:
         entry: python3 scripts/check_lgpd_region_pinning.py
         files: ^(app/shared/providers/llm_(claude|openai|gemini)\.py|libs/models/lia_models/tenant_llm_config\.py)$
         pass_filenames: false
+
+      - id: anthropic-prompt-caching
+        name: "W2-008: Anthropic prompt caching wired em 4 methods (BLOCKING, 50-80% ROI)"
+        language: system
+        entry: python3 scripts/check_anthropic_prompt_caching.py
+        files: ^app/shared/providers/llm_claude\.py$
+        pass_filenames: false

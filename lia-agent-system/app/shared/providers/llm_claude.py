@@ -21,6 +21,67 @@ except ImportError:
 
 _METRICS_AVAILABLE = False
 
+# W2-008 (2026-05-22): Anthropic prompt caching · 50-80% economia em
+# sessions longas. Beta header GA desde Nov/2024 mas mantido por compat.
+# Cache breakpoint mínimo Anthropic: 1024 tokens (Sonnet) / 2048 (Haiku).
+# Abaixo do threshold, cache_control é ignorado silenciosamente (no-op).
+ANTHROPIC_PROMPT_CACHE_BETA = "prompt-caching-2024-07-31"
+ANTHROPIC_CACHE_HEADERS = {"anthropic-beta": ANTHROPIC_PROMPT_CACHE_BETA}
+
+
+def _system_with_cache_control(system_prompt: str | None):
+    """Convert system string → cacheable blocks list (W2-008).
+
+    Anthropic API aceita system como str OU list de blocks. Para
+    prompt caching, precisa ser list com `cache_control: ephemeral`.
+    Strings curtas (<1024 tokens) são cacheadas como no-op (Anthropic
+    ignora cache breakpoints abaixo do threshold).
+    """
+    if not system_prompt:
+        return system_prompt
+    return [
+        {
+            "type": "text",
+            "text": system_prompt,
+            "cache_control": {"type": "ephemeral"},
+        }
+    ]
+
+
+def _build_usage_with_cache(response) -> dict:
+    """Extract usage incluindo cache metrics (W2-008).
+
+    Anthropic response.usage tem 4 campos relevantes pra cache:
+      - input_tokens · prompt tokens não-cacheados
+      - cache_creation_input_tokens · prompt tokens escritos no cache (1ª vez)
+      - cache_read_input_tokens · prompt tokens lidos do cache (hits)
+      - output_tokens · completion tokens
+    """
+    usage = response.usage
+    return {
+        "input_tokens": getattr(usage, "input_tokens", 0),
+        "output_tokens": getattr(usage, "output_tokens", 0),
+        "cache_creation_input_tokens": getattr(
+            usage, "cache_creation_input_tokens", 0
+        ),
+        "cache_read_input_tokens": getattr(
+            usage, "cache_read_input_tokens", 0
+        ),
+    }
+
+
+def _log_cache_metrics(method_name: str, usage_dict: dict) -> None:
+    """Log canary cache hit rate per-call (W2-008 observability)."""
+    created = usage_dict.get("cache_creation_input_tokens", 0)
+    read = usage_dict.get("cache_read_input_tokens", 0)
+    total_cacheable = created + read
+    if total_cacheable > 0:
+        hit_rate = read / total_cacheable
+        logger.info(
+            "[anthropic_cache] method=%s created=%d read=%d hit_rate=%.2f",
+            method_name, created, read, hit_rate,
+        )
+
 
 class ClaudeLLMProvider(LLMProviderABC):
     """Claude/Anthropic LLM provider implementation."""
@@ -74,13 +135,16 @@ class ClaudeLLMProvider(LLMProviderABC):
                 max_tokens=max_tokens,
                 temperature=temperature,
                 messages=[{"role": "user", "content": prompt}],
+                extra_headers=ANTHROPIC_CACHE_HEADERS,
             )
             text = response.content[0].text if response.content else ""
+            usage_dict = _build_usage_with_cache(response)
+            _log_cache_metrics("generate", usage_dict)
             return LLMResponse(
                 text=text,
                 provider=self._provider_name,
                 model=model or self._default_model,
-                usage={"input_tokens": response.usage.input_tokens, "output_tokens": response.usage.output_tokens},
+                usage=usage_dict,
                 raw_response=response,
             )
         except Exception:
@@ -102,15 +166,18 @@ class ClaudeLLMProvider(LLMProviderABC):
                 model=model or self._default_model,
                 max_tokens=max_tokens,
                 temperature=temperature,
-                system=system_prompt,
+                system=_system_with_cache_control(system_prompt),
                 messages=[{"role": "user", "content": user_message}],
+                extra_headers=ANTHROPIC_CACHE_HEADERS,
             )
             text = response.content[0].text if response.content else ""
+            usage_dict = _build_usage_with_cache(response)
+            _log_cache_metrics("generate_with_system", usage_dict)
             return LLMResponse(
                 text=text,
                 provider=self._provider_name,
                 model=model or self._default_model,
-                usage={"input_tokens": response.usage.input_tokens, "output_tokens": response.usage.output_tokens},
+                usage=usage_dict,
                 raw_response=response,
             )
         except Exception:
@@ -128,12 +195,18 @@ class ClaudeLLMProvider(LLMProviderABC):
         t_start = time.time()
         status = "success"
         try:
-            request_kwargs = {"model": self._default_model, "max_tokens": max_tokens, "messages": messages}
+            request_kwargs = {
+                "model": self._default_model,
+                "max_tokens": max_tokens,
+                "messages": messages,
+                "extra_headers": ANTHROPIC_CACHE_HEADERS,  # W2-008
+            }
             if tools:
                 request_kwargs["tools"] = tools
             if system_prompt:
-                request_kwargs["system"] = system_prompt
+                request_kwargs["system"] = _system_with_cache_control(system_prompt)
             response = client.messages.create(**request_kwargs)
+            _log_cache_metrics("generate_with_tools", _build_usage_with_cache(response))
             tool_calls = []
             text_parts = []
             for block in response.content:
@@ -179,8 +252,10 @@ class ClaudeLLMProvider(LLMProviderABC):
                 messages=messages,
                 tools=[tool],
                 tool_choice={"type": "tool", "name": "respond"},
-                system=enhanced_system.strip(),
+                system=_system_with_cache_control(enhanced_system.strip()),
+                extra_headers=ANTHROPIC_CACHE_HEADERS,  # W2-008
             )
+            _log_cache_metrics("generate_structured", _build_usage_with_cache(response))
             for block in response.content:
                 if hasattr(block, "type") and block.type == "tool_use" and block.name == "respond":
                     return block.input if isinstance(block.input, dict) else {}
