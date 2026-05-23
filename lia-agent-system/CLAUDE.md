@@ -745,3 +745,44 @@ nightly silently becomes a green no-op.
   `/api/v1/sourcing/react-orchestrate` (different routers, different domains)
   remain untouched. Sensor `tests/sensors/test_react_orchestrate_removed.py`
   enforces both source-level and FastAPI-route-level absence.
+
+
+
+## Harness guard — verificar git log antes/depois de commit (registrado 2026-05-23)
+
+Quando trabalhar em workspace com multiplos agentes paralelos (Replit
+sandbox), commits podem ser absorvidos por outros agentes simultaneos
+quando dois agentes tocam arquivos do mesmo diff window.
+
+**Historico:** Sprint 3.3 (WSIVoicePlugin absorvido em commit
+react-keys), T4 (TemplateClonePanel absorvido em Sprint X.A batch 6),
+C5/D1 (HEAD avancou de ff7b2ee1b para 22ea094b4 entre o inicio da
+sessao e o primeiro commit local).
+
+**Pattern obrigatorio** para qualquer commit no Replit:
+
+1. ANTES de `git commit`:
+   ```bash
+   git log --oneline -1
+   ```
+   Memorize o hash de HEAD atual.
+
+2. Faca o commit normal:
+   ```bash
+   git add <files-explicit>
+   git commit -m "..."
+   ```
+
+3. APOS commit:
+   ```bash
+   git log --oneline -1
+   ```
+   Verifique que o novo HEAD eh seu commit (mensagem + hash batem).
+
+4. Se HEAD novo NAO eh seu commit OU sua mensagem foi capturada por
+   outro agente: NAO faca rebase/reset/amend (REGRA ZERO). Reporte
+   como ticket de harness pro Paulo e siga adiante com novo commit
+   suplementar se necessario.
+
+**Regra:** confirmar HEAD movimento eh disciplina barata (~1s). Garante
+que o trabalho assinado foi de fato registrado no historico do Replit.
