@@ -1914,7 +1914,13 @@
       "moreActions": "More actions",
       "whatsapp": "WhatsApp",
       "disableWhatsapp": "Disable WhatsApp on this agent",
-      "enableWhatsapp": "Enable WhatsApp on this agent"
+      "enableWhatsapp": "Enable WhatsApp on this agent",
+      "voice": "Voice",
+      "startVoiceCall": "Start voice call",
+      "voiceDisabled": "Voice disabled for this agent",
+      "startCall": "Start call",
+      "disableVoice": "Disable voice for agent {name}",
+      "enableVoice": "Enable voice for agent {name}"
     },
     "createModal": {
       "titleWithTemplate": "Create Agent — {template}",

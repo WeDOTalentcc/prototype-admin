@@ -117,7 +117,7 @@ export function AgentCard({ agent, onTest, onDeploy, onToggleStatus, onClone }: 
       <div className="flex items-center justify-between gap-2 pt-2 border-t border-lia-border-subtle">
         <div className="flex items-center gap-2 text-xs">
           <Phone className="w-3.5 h-3.5 text-lia-text-disabled" aria-hidden="true" />
-          <span className="text-lia-text-secondary">{t('voice') || 'Voz'}</span>
+          <span className="text-lia-text-secondary">{t('voice')}</span>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -128,17 +128,17 @@ export function AgentCard({ agent, onTest, onDeploy, onToggleStatus, onClone }: 
             }}
             disabled={!voiceEnabled || initiateVoice.isMutating}
             className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium text-wedo-cyan-dark hover:bg-wedo-cyan/10 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-            aria-label={voiceEnabled ? (t('startVoiceCall') || 'Iniciar chamada de voz') : (t('voiceDisabled') || 'Voz desabilitada neste agente')}
+            aria-label={voiceEnabled ? t('startVoiceCall') : t('voiceDisabled')}
             data-testid="agent-card-initiate-voice"
           >
             <PhoneCall className="w-3.5 h-3.5" aria-hidden="true" />
-            {t('startCall') || 'Iniciar chamada'}
+            {t('startCall')}
           </button>
           <Switch
             checked={voiceEnabled}
             disabled={toggleVoice.isMutating}
             onCheckedChange={(next) => toggleVoice.trigger(next)}
-            aria-label={voiceEnabled ? (t('disableVoice') || 'Desabilitar voz no agente ' + agent.name) : (t('enableVoice') || 'Habilitar voz no agente ' + agent.name)}
+            aria-label={voiceEnabled ? t('disableVoice', { name: agent.name }) : t('enableVoice', { name: agent.name })}
             data-testid="agent-card-voice-toggle"
           />
         </div>

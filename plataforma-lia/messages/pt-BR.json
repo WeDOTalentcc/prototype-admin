@@ -1914,7 +1914,13 @@
       "moreActions": "Mais ações",
       "whatsapp": "WhatsApp",
       "disableWhatsapp": "Desabilitar WhatsApp neste agente",
-      "enableWhatsapp": "Habilitar WhatsApp neste agente"
+      "enableWhatsapp": "Habilitar WhatsApp neste agente",
+      "voice": "Voz",
+      "startVoiceCall": "Iniciar chamada de voz",
+      "voiceDisabled": "Voz desabilitada neste agente",
+      "startCall": "Iniciar chamada",
+      "disableVoice": "Desabilitar voz no agente {name}",
+      "enableVoice": "Habilitar voz no agente {name}"
     },
     "createModal": {
       "titleWithTemplate": "Criar Agente — {template}",
