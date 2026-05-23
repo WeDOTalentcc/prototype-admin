@@ -14,6 +14,10 @@ Audit ref: F-05 (AUDIT_VOICE_SCREENING_ORCHESTRATOR_2026-05-22.md)
 Idempotent: re-running the task is safe — NULL columns stay NULL, rows already
 deleted are no-ops. Aggregate stats logged per run for LGPD Art. 20 trail.
 
+P1 ticket #2 (2026-05-23): each phase emits canonical AuditService.log_decision
+row with phase_name + records_purged count. Best-effort: audit failure NUNCA
+bloqueia o purge (LGPD Art. 16 compliance is primary; audit is secondary).
+
 Cron: daily 03:15 UTC (00:15 Brasília) via beat schedule `voice-retention-daily`.
 """
 from __future__ import annotations
@@ -42,6 +46,56 @@ _log = logging.getLogger(__name__)
 AUDIO_RETENTION_DAYS = 60
 TRANSCRIPT_RETENTION_DAYS = 180
 WSI_SCORE_RETENTION_DAYS = 365
+
+
+async def _emit_phase_audit(
+    *,
+    phase: str,
+    action: str,
+    records_purged: int,
+    cutoff: datetime,
+) -> None:
+    """P1 ticket #2: emit canonical audit row per retention phase.
+
+    Best-effort — never raises. LGPD Art. 16 purge is primary; audit
+    failure (e.g., audit DB down, RLS misconfig) MUST NOT abort retention.
+
+    `company_id="*"` because retention is a global cron task that scans
+    cross-tenant by date. Per-company aggregate stats are out of scope
+    for this phase (would require GROUP BY company_id at query level —
+    deferred to Sprint 4+).
+    """
+    try:
+        # Lazy import: AuditService pulls in DB / sentry / etc. Avoid hard
+        # dependency at module load time (cron task may run in minimal env).
+        from app.shared.compliance.audit_service import AuditService
+
+        audit = AuditService()
+        await audit.log_decision(
+            company_id="*",  # cross-tenant retention cron — meta-audit row
+            agent_name="voice_retention_cron",
+            decision_type="lgpd_art16_purge_executed",
+            action=action,
+            decision="completed",
+            reasoning=[
+                f"records_purged={records_purged}",
+                f"cutoff_date={cutoff.isoformat()}",
+                f"phase={phase}",
+            ],
+            criteria_used=[
+                "lgpd_art_16_minimization",
+                "retention_canonical_paulo_2026_05_22",
+            ],
+            criteria_ignored=[],
+            human_review_required=False,
+        )
+    except Exception as audit_err:  # noqa: BLE001
+        logger.warning(
+            "[voice.retention] audit emission failed for phase=%s "
+            "(non-blocking, LGPD purge already completed): %s",
+            phase,
+            audit_err,
+        )
 
 
 async def _run_voice_retention(dry_run: bool = False) -> dict:
@@ -93,6 +147,13 @@ async def _run_voice_retention(dry_run: bool = False) -> dict:
                 )
                 stats["audio_purged"] = res.rowcount or 0
                 await db.commit()
+                # P1 #2: canonical audit trail per phase (LGPD Art. 20)
+                await _emit_phase_audit(
+                    phase="audio",
+                    action="audio_purge_60d",
+                    records_purged=stats["audio_purged"],
+                    cutoff=audio_cutoff,
+                )
         except Exception as exc:  # noqa: BLE001
             stats["errors"].append(f"audio_phase:{type(exc).__name__}:{exc}")
             logger.warning("[voice.retention] audio phase failed (continuing): %s", exc)
@@ -133,6 +194,13 @@ async def _run_voice_retention(dry_run: bool = False) -> dict:
                 )
                 stats["transcript_purged"] += res2.rowcount or 0
                 await db.commit()
+                # P1 #2: canonical audit trail per phase (LGPD Art. 20)
+                await _emit_phase_audit(
+                    phase="transcript",
+                    action="transcript_purge_180d",
+                    records_purged=stats["transcript_purged"],
+                    cutoff=transcript_cutoff,
+                )
         except Exception as exc:  # noqa: BLE001
             stats["errors"].append(f"transcript_phase:{type(exc).__name__}:{exc}")
             logger.warning("[voice.retention] transcript phase failed (continuing): %s", exc)
@@ -169,6 +237,15 @@ async def _run_voice_retention(dry_run: bool = False) -> dict:
                 )
                 stats["wsi_analysis_purged"] = res2.rowcount or 0
                 await db.commit()
+                # P1 #2: canonical audit trail per phase (LGPD Art. 20).
+                # Aggregate both wsi_score + wsi_analysis purges into single
+                # audit row (same retention window, semantically same phase).
+                await _emit_phase_audit(
+                    phase="wsi_score",
+                    action="wsi_purge_365d",
+                    records_purged=stats["wsi_score_purged"] + stats["wsi_analysis_purged"],
+                    cutoff=wsi_cutoff,
+                )
         except Exception as exc:  # noqa: BLE001
             stats["errors"].append(f"wsi_score_phase:{type(exc).__name__}:{exc}")
             logger.warning("[voice.retention] wsi_score phase failed (continuing): %s", exc)
