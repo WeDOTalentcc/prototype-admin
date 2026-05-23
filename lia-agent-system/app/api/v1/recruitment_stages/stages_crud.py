@@ -1,7 +1,4 @@
-"""
-Stage CRUD endpoints: list, create, update, delete, config, catalog,
-inline-edit, remove, reorder.
-"""
+"""Recruitment stages CRUD endpoints — multi-tenant."""
 import uuid
 import logging
 
@@ -280,6 +277,11 @@ company_id: str = Depends(require_company_id)):
         if not stage:
             raise HTTPException(status_code=404, detail="Stage not found")
 
+        # Onda 4.2b-P0-6 (2026-05-23): cross-tenant ownership check.
+        # Antes user empresa A podia editar stage da empresa B.
+        if str(getattr(stage, 'company_id', '')) != str(company_id):
+            raise HTTPException(status_code=404, detail="Stage not found")
+
         is_system = bool(stage.is_initial or stage.is_final)  # type: ignore[truthy-bool]
         stage_category = getattr(stage, 'stage_category', 'custom') or 'custom'  # type: ignore[truthy-bool]
 
@@ -313,7 +315,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error inline editing stage: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.delete("/stages/{stage_id}/remove", response_model=None)
@@ -326,6 +328,11 @@ company_id: str = Depends(require_company_id)):
     try:
         stage = await stage_repo.get_by_id_str(stage_id)
         if not stage:
+            raise HTTPException(status_code=404, detail="Stage not found")
+
+        # Onda 4.2b-P0-7 (2026-05-23): cross-tenant ownership check.
+        # Antes user empresa A podia DELETAR (hard) stage da empresa B.
+        if str(getattr(stage, 'company_id', '')) != str(company_id):
             raise HTTPException(status_code=404, detail="Stage not found")
 
         is_system = bool(stage.is_initial or stage.is_final)  # type: ignore[truthy-bool]
@@ -344,7 +351,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error removing stage: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/stages/reorder", response_model=None)
@@ -355,6 +362,21 @@ async def reorder_stages(
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
+        # Onda 4.2b-P0-8 (2026-05-23): pre-validar que todos os stage_ids
+        # pertencem a empresa do user antes de reordenar. Antes user empresa A
+        # podia reordenar stages da empresa B passando os UUIDs.
+        company_stages = await stage_repo.list_for_company(company_id)
+        company_stage_ids = {str(s.id) for s in company_stages}
+        rogue_ids = [
+            item.stage_id for item in payload.stages
+            if str(item.stage_id) not in company_stage_ids
+        ]
+        if rogue_ids:
+            raise HTTPException(
+                status_code=403,
+                detail=f"Stage IDs not in your tenant: {rogue_ids[:3]}",
+            )
+
         items = [{"stage_id": item.stage_id, "new_order": item.new_order} for item in payload.stages]
         await stage_repo.reorder(items)
         return {"success": True, "reordered": len(payload.stages)}
