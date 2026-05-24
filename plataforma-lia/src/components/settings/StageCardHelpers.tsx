@@ -40,6 +40,10 @@ const ACTION_BEHAVIOR_SHORT: Record<string, string> = {
   conclusion_rejected: "Reprov.", conclusion_declined: "Recusada",
 }
 
+// TODO P2-W1-02: action_behavior é string field (não enum tipado). Os valores canonicos
+// (passive, screening, scheduling, evaluation, offer, etc.) estao espalhados pelo código.
+// Próximo passo: consumir via GET /stage-catalog que retorna action_behavior por stage.
+// Centralizar enum em recruitment-types.ts e importar aqui.
 export function getActionBehaviorLabel(behavior?: string): string | null {
   return behavior ? (ACTION_BEHAVIOR_LABELS[behavior] || null) : null
 }

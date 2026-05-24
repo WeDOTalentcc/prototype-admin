@@ -32,6 +32,9 @@ logger = logging.getLogger(__name__)
 # Default questions data
 # ---------------------------------------------------------------------------
 
+# TODO P2-W1-03: DEFAULT_SCREENING_QUESTIONS é single source of truth no backend.
+# Frontend NÃO tem cópia local — consome via GET /api/v1/company/screening-questions?default=true
+# (endpoint existe em screening_questions.py). Validar periodicamente que listas estão sincronizadas.
 DEFAULT_SCREENING_QUESTIONS = [
     {"id": "1", "question": "Você tem interesse real nesta vaga?", "question_type": "yes_no", "is_required": True, "order": 1, "is_default": True, "options": []},
     {"id": "2", "question": "Qual sua disponibilidade para início?", "question_type": "text", "is_required": True, "order": 2, "is_default": True, "options": []},

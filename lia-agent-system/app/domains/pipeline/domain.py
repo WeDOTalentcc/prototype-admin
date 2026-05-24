@@ -266,7 +266,8 @@ async def _handle_move_candidate(params: dict[str, Any], context: dict[str, Any]
         }
 
         import os
-        base_url = os.environ.get("LIA_BACKEND_URL", "http://localhost:8000")
+        # P2-W1-10: porta canonica FastAPI = 8001 no Replit. Configurar LIA_BACKEND_URL=http://localhost:8001
+        base_url = os.environ.get("LIA_BACKEND_URL", "http://localhost:8001")
         async with httpx.AsyncClient(base_url=base_url) as client:
             headers = {}
             if context and context.get("auth_token"):
@@ -324,7 +325,8 @@ async def _handle_predict_sub_status(params: dict[str, Any], context: dict[str, 
             "to_stage": params["to_stage"],
         }
 
-        base_url = os.environ.get("LIA_BACKEND_URL", "http://localhost:8000")
+        # P2-W1-10: porta canonica FastAPI = 8001 no Replit. Configurar LIA_BACKEND_URL=http://localhost:8001
+        base_url = os.environ.get("LIA_BACKEND_URL", "http://localhost:8001")
         async with httpx.AsyncClient(base_url=base_url, timeout=10.0) as client:
             headers = {}
             if context and context.get("auth_token"):

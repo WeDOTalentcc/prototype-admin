@@ -36,7 +36,10 @@ class EventDispatcher:
     """
     
     def __init__(self):
-        internal_api_url = os.getenv("INTERNAL_API_URL", "http://127.0.0.1:8000")
+        # P2-W1-10: FastAPI roda na porta 8001 no Replit. Default 8000 é fallback local.
+        # Configurar INTERNAL_API_URL=http://127.0.0.1:8001 em .env se evento-dispatcher
+        # falhar silenciosamente em dev. Front-end proxies ja usam 8001 (process.env.BACKEND_URL).
+        internal_api_url = os.getenv("INTERNAL_API_URL", "http://127.0.0.1:8001")
         self.base_url = f"{internal_api_url}/api/v1/automation"
         self._client: httpx.AsyncClient | None = None
         self._enabled = True

@@ -78,7 +78,7 @@ export function FairnessComplianceHub({ activeSubsection }: FairnessComplianceHu
       try {
         const [summaryRes, logsRes] = await Promise.all([
           apiFetch(`/api/backend-proxy/fairness-report/summary?days=${period}`),
-          apiFetch(`/api/backend-proxy/fairness/audit/logs?days=${period}`),
+          apiFetch(`/api/backend-proxy/fairness/audit/logs?days=${period}`),  // P2-W1-09: proxy exists at fairness/audit/logs/route.ts; duplicate at fairness-audit/logs serves BiasAuditPanel
         ])
         if (!summaryRes.ok || !logsRes.ok) throw new Error(t("errorLoadingData"))
         const summaryData = await summaryRes.json()

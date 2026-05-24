@@ -32,6 +32,7 @@ from app.domains.job_creation.compliance import (
     mask_pii_for_llm,
 )
 from app.shared.types import WeDoBaseModel
+from app.shared.llm_models import CANONICAL_HAIKU_MODEL
 
 logger = logging.getLogger(__name__)
 
@@ -618,7 +619,7 @@ class IntakeExtractor:
         # Anthropic-style client
         if hasattr(llm, "messages") and hasattr(llm.messages, "create"):
             resp = llm.messages.create(
-                model=getattr(llm, "model", "claude-haiku-4-5-20251001"),
+                model=getattr(llm, "model", CANONICAL_HAIKU_MODEL),
                 max_tokens=1024,
                 system=_SYSTEM_PROMPT,
                 messages=[{"role": "user", "content": prompt_user}],

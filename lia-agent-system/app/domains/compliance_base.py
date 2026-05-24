@@ -414,10 +414,18 @@ class ComplianceDomainPrompt(DomainPrompt):
                 )
 
         except Exception as exc:
-            # Fail-open: erro no guard não bloqueia o fluxo, mas é logado
+            # P2-W1-08: Fail-closed — se não conseguimos verificar fairness, bloqueamos.
+            # FairnessGuard é segurança crítica (LGPD/DEI); deixar passar silenciosamente
+            # viola princípio "falhar alto, nunca silenciosamente" (CLAUDE.md REGRA #0).
+            # Se o guard não está disponível (ImportError), retorna None (abaixo).
             logger.error(
-                "[Compliance][%s] FairnessGuard falhou (fail-open): %s",
+                "[Compliance][%s] FairnessGuard falhou (fail-closed): %s",
                 self.domain_id, exc, exc_info=True,
+            )
+            from fastapi import HTTPException
+            raise HTTPException(
+                status_code=503,
+                detail="Fairness check service unavailable — request blocked for safety",
             )
 
         return None

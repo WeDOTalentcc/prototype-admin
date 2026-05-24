@@ -57,7 +57,7 @@ company_id: str = Depends(require_company_id)):
             try:
                 from app.models.screening_question import CompanyScreeningQuestion
 
-                stmt = select(CompanyScreeningQuestion).where(
+                stmt = select(CompanyScreeningQuestion).where(  # ADR-001-EXEMPT: endpoint vive no api/v1 layer (não service), select é inline proposital — CompanyScreeningQuestionRepository não existia quando endpoint foi criado. Migrar para repo em sprint futura.
                     CompanyScreeningQuestion.company_id == company_id,
                     CompanyScreeningQuestion.is_active,
                 ).order_by(CompanyScreeningQuestion.order)

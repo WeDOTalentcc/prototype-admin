@@ -64,7 +64,8 @@ async def _fetch_job_snapshot(
 ) -> dict[str, Any]:
     import os
     import httpx
-    base_url = os.environ.get("LIA_BACKEND_URL", "http://localhost:8000")
+    # P2-W1-10: porta canonica FastAPI = 8001 no Replit. Configurar LIA_BACKEND_URL=http://localhost:8001
+    base_url = os.environ.get("LIA_BACKEND_URL", "http://localhost:8001")
     auth_token = context.metadata.get("auth_token", "")
     try:
         async with httpx.AsyncClient(base_url=base_url, timeout=5.0) as client:
@@ -95,7 +96,8 @@ async def _fetch_candidate_snapshot(
 ) -> dict[str, Any]:
     import os
     import httpx
-    base_url = os.environ.get("LIA_BACKEND_URL", "http://localhost:8000")
+    # P2-W1-10: porta canonica FastAPI = 8001 no Replit. Configurar LIA_BACKEND_URL=http://localhost:8001
+    base_url = os.environ.get("LIA_BACKEND_URL", "http://localhost:8001")
     auth_token = context.metadata.get("auth_token", "")
     try:
         async with httpx.AsyncClient(base_url=base_url, timeout=5.0) as client:

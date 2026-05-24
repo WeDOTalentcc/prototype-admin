@@ -13,6 +13,7 @@ import re
 import unicodedata
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Optional
+from app.shared.llm_models import CANONICAL_HAIKU_MODEL
 
 
 if TYPE_CHECKING:
@@ -862,7 +863,7 @@ class FairnessGuard:
             semantic_result = await self.check_semantic(
                 text,
                 context=context or "",
-                model="claude-haiku-4-5-20251001",
+                model=CANONICAL_HAIKU_MODEL,
             )
             # Cache resultado por 1h
             try:

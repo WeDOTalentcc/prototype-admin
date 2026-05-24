@@ -48,6 +48,10 @@ interface CatalogStage {
 // a locale-specific label from `settings.recruitment.journey.defaultStageNames.<name>`
 // at render time via `getStageDisplayName()`, so users see translated stage
 // names in both pt-BR and EN.
+// TODO P2-W1-01: DEFAULT_STAGES (15 itens) serve como fallback quando GET /stage-catalog falha.
+// Se empresa nova nunca configurou pipeline, este array é legítimo como ponto de partida.
+// Considerar reduzir para ~5 etapas essenciais (sourcing, screening, interview, offer, hired)
+// e adicionar as demais via catalogo. Single source of truth: backend /api/v1/stage-catalog.
 export const DEFAULT_STAGES: RecruitmentStage[] = [
   { id: "1",  name: "sourcing",            display_name: "Sourcing",           order: 1,  isActive: true, notes: "", sla: 0, type: "system",  color: "var(--lia-text-secondary)", icon: "search",      action_behavior: "intake",               default_channel: "email",         stage_category: "system"  },
   { id: "2",  name: "screening",           display_name: "Screening",          order: 2,  isActive: true, notes: "", sla: 0, type: "system",  color: "var(--wedo-purple)", icon: "file-text",   action_behavior: "screening",            default_channel: "email",         stage_category: "system"  },
