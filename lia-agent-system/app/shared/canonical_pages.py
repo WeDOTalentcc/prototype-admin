@@ -214,3 +214,155 @@ def describe_page(page: CanonicalPage | str | None) -> str | None:
     if canonical == CanonicalPage.GENERAL:
         return None
     return PAGE_DESCRIPTIONS_PT_BR.get(canonical)
+
+
+
+# ---------------------------------------------------------------------------
+# Sprint 14.4 (2026-05-24): page-aware dynamic suggested prompts.
+# ---------------------------------------------------------------------------
+# Antes: backend retornava `suggested_prompts` mas mostly hardcoded e
+# repetitivo ("Como estão as vagas?" em tudo). Sprint 14.4 introduz um
+# dict canonical mapeando CanonicalPage → 3-4 prompts altamente relevantes
+# para aquela página.
+#
+# Uso: MainOrchestrator chama `suggested_prompts_for_page(context_page)`
+# quando `ChatResponse.suggested_prompts` está vazio. Surfaces (chat float,
+# unified-chat, kanban) já renderizam suggested_prompts como bubbles.
+#
+# Princípio: prompts são QUERIES que o user provavelmente faria DAQUELA
+# página — não comandos genéricos. Variam por contexto.
+
+PAGE_SUGGESTED_PROMPTS_PT_BR: dict[CanonicalPage, list[str]] = {
+    CanonicalPage.HOME: [
+        "O que preciso resolver hoje?",
+        "Quais vagas precisam de atenção?",
+        "Mostra meus indicadores principais",
+    ],
+    CanonicalPage.VAGAS: [
+        "Quais vagas estão paradas há mais de 7 dias?",
+        "Criar nova vaga",
+        "Filtrar por departamento",
+        "Comparar performance por vaga",
+    ],
+    CanonicalPage.VAGA_DETALHE: [
+        "Ver pipeline desta vaga",
+        "Quem são os top 3 candidatos?",
+        "Status da triagem",
+        "Editar requisitos",
+    ],
+    CanonicalPage.RECRUTAR: [
+        "Continuar criação da vaga",
+        "Gerar JD com IA",
+        "Definir critérios de calibração",
+        "Configurar triagem WSI",
+    ],
+    CanonicalPage.FUNIL_TALENTOS: [
+        "Quais candidatos estão na etapa de entrevista?",
+        "Mover candidatos por critério",
+        "Buscar candidatos com perfil similar",
+        "Ver gargalos do funil",
+    ],
+    CanonicalPage.CANDIDATO_DETALHE: [
+        "Analisar match com vaga atual",
+        "Resumir histórico do candidato",
+        "Próxima etapa sugerida",
+        "Enviar comunicação",
+    ],
+    CanonicalPage.PIPELINE_KANBAN: [
+        "Mover candidato",
+        "Quais estão prontos pra próxima etapa?",
+        "Estatísticas do pipeline",
+        "Filtrar por status",
+    ],
+    CanonicalPage.DASHBOARD: [
+        "Como está o tempo médio de contratação?",
+        "Comparar performance mês anterior",
+        "Onde estão os gargalos?",
+        "Exportar relatório",
+    ],
+    CanonicalPage.CONFIGURACOES: [
+        "Atualizar perfil da empresa",
+        "Configurar políticas de recrutamento",
+        "Adicionar benefícios",
+        "Conectar integração",
+    ],
+    CanonicalPage.AGENT_STUDIO: [
+        "Criar novo agente",
+        "Configurar deploy em vaga",
+        "Ver agentes ativos",
+        "Análise de uso",
+    ],
+    CanonicalPage.AJUDA: [
+        "Como criar uma vaga?",
+        "Como funciona a triagem WSI?",
+        "Como configurar minha empresa?",
+        "Contatar suporte",
+    ],
+    CanonicalPage.BANCOS_TALENTOS: [
+        "Buscar candidatos no banco",
+        "Criar novo banco de talentos",
+        "Adicionar candidatos manualmente",
+        "Comparar bancos por perfil",
+    ],
+    CanonicalPage.BIBLIOTECA: [
+        "Templates de email",
+        "Modelos de descrição de vaga",
+        "Critérios de avaliação salvos",
+        "Importar template",
+    ],
+    CanonicalPage.CENTRAL_COMUNICACAO: [
+        "Enviar comunicação em massa",
+        "Ver histórico de comunicações",
+        "Templates aprovados",
+        "Configurar canais ativos",
+    ],
+    CanonicalPage.TASKS: [
+        "Quais tarefas urgentes?",
+        "O que delegar hoje?",
+        "Histórico de decisões",
+        "Configurar lembretes",
+    ],
+    CanonicalPage.CHAT: [
+        "Mostrar histórico desta conversa",
+        "Limpar contexto",
+        "Configurações da LIA",
+    ],
+    CanonicalPage.TRUST: [
+        "Status de conformidade LGPD",
+        "Auditoria recente",
+        "Configurar política de retenção",
+        "Solicitações pendentes",
+    ],
+    # GENERAL intencionalmente AUSENTE — função retorna [] quando page=GENERAL
+    # para evitar prompts genéricos sem contexto útil.
+}
+
+
+def suggested_prompts_for_page(
+    page: CanonicalPage | str | None,
+    limit: int = 3,
+) -> list[str]:
+    """Retorna prompts canonical sugeridos para uma página.
+
+    Args:
+        page: CanonicalPage enum, raw string (ex: "vagas") ou None.
+        limit: máximo de prompts a retornar (default 3, máximo 4 disponíveis).
+
+    Returns:
+        Lista de prompts em PT-BR (até `limit`). Vazia quando page=GENERAL,
+        unknown, ou None — sinaliza ao caller que não deve mostrar bubble
+        de sugestões pra essa página.
+
+    Uso canonical em MainOrchestrator: chamar quando ChatResponse.suggested_prompts
+    está vazio e ctx.context_page é conhecido — populate dinâmicamente.
+    """
+    canonical = (
+        page if isinstance(page, CanonicalPage)
+        else normalize_page(page)
+    )
+    if canonical == CanonicalPage.GENERAL:
+        return []
+    prompts = PAGE_SUGGESTED_PROMPTS_PT_BR.get(canonical, [])
+    if limit > 0:
+        return prompts[:limit]
+    return list(prompts)

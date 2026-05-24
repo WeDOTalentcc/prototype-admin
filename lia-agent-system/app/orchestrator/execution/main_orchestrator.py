@@ -774,6 +774,8 @@ class MainOrchestrator:
                         )
                         if _soft_warnings:
                             _resp.fairness_warnings = _soft_warnings
+                        # Sprint 14.4: enrich suggested_prompts when empty + page known
+                        _enrich_suggested_prompts(_resp, ctx)
                         return _resp
                 except Exception as exc:
                     logger.debug("[LIA-A04] Agentic loop skipped: %s", exc)
@@ -837,6 +839,8 @@ class MainOrchestrator:
                 _elapsed_ms, _domain, _phase2_response.intent_detected,
                 getattr(_phase2_response, 'from_cache', False), ctx.user_id,
             )
+            # Sprint 14.4: enrich suggested_prompts when empty + page known
+            _enrich_suggested_prompts(_phase2_response, ctx)
             return _phase2_response
 
         except Exception as exc:
@@ -2061,6 +2065,44 @@ def _is_fallback_react_enabled() -> bool:
 
     val = os.getenv("LIA_V2_USE_FALLBACK_REACT", "").lower().strip()
     return val in {"1", "true", "yes", "on"}
+
+
+# ---------------------------------------------------------------------------
+# Sprint 14.4 (2026-05-24) — page-aware suggested_prompts enrichment
+# ---------------------------------------------------------------------------
+
+def _enrich_suggested_prompts(response: "ChatResponse", ctx: Any) -> None:
+    """Populate ChatResponse.suggested_prompts based on ctx.context_page.
+
+    Sprint 14.4 — quando o orchestrator/agentic loop não retorna prompts
+    explícitos, derivamos do canonical_pages.suggested_prompts_for_page
+    para que o usuário sempre veja 3 sugestões relevantes à página atual.
+
+    Non-destructive: só popula quando `response.suggested_prompts` está
+    vazio. Endpoints como orchestrated_jobs_management que setam manual
+    continuam ganhando.
+
+    Args:
+        response: ChatResponse a ser enriquecida (mutação in-place).
+        ctx: UniversalContext com context_page string ("vagas",
+            "configuracoes", etc.) ou None.
+    """
+    try:
+        if response.suggested_prompts:
+            return  # respeita sugestões já presentes
+        _page = getattr(ctx, "context_page", None)
+        if not _page or _page == "general":
+            return
+        from app.shared.canonical_pages import suggested_prompts_for_page
+        _suggestions = suggested_prompts_for_page(_page, limit=3)
+        if _suggestions:
+            response.suggested_prompts = _suggestions
+    except Exception as _enrich_exc:
+        # fail-open: enrichment é melhoria opcional, nunca quebra response
+        logger.debug(
+            "[MainOrchestrator] suggested_prompts enrichment skipped: %s",
+            _enrich_exc,
+        )
 
 
 # ---------------------------------------------------------------------------
