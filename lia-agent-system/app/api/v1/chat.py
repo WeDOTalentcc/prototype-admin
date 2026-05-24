@@ -55,6 +55,8 @@ from app.schemas.chat import (
     MessageResponse,
 )
 from app.shared.security.require_company_id import require_company_id
+# Sprint 13.2 — canonical observability
+from app.shared.observability.tracing import trace_span
 from app.core.database import commit_keeping_tenant
 from app.shared.types import WeDoBaseModel
 

@@ -29,6 +29,8 @@ from app.shared.tenant_llm_context import get_current_llm_tenant
 
 T = TypeVar("T", bound=BaseModel)
 
+from app.shared.observability.tracing import trace_span
+
 logger = logging.getLogger(__name__)
 
 # === Audit 2026-05-24 P1: LLM token streaming opt-in via ContextVar ===

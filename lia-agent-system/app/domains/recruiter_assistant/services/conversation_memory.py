@@ -25,6 +25,8 @@ from sqlalchemy.orm import selectinload
 
 from lia_models.conversation import Conversation, ConversationSummary, Message
 
+from app.shared.observability.tracing import trace_span
+
 logger = logging.getLogger(__name__)
 
 SUMMARY_TRIGGER_COUNT = 10
@@ -266,6 +268,7 @@ class ConversationMemory:
         
         return list(reversed(messages))
     
+    @trace_span("memory.get_context_for_llm", attributes={"component": "conversation_memory"})
     async def get_context_for_llm(
         self,
         db: AsyncSession,

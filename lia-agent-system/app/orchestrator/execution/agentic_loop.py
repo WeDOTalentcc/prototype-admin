@@ -21,6 +21,8 @@ from app.shared.compliance.c3b_layer import (  # W3-014 (2026-05-23)
     ComplianceContext as _C3bCtx,
 )
 
+from app.shared.observability.tracing import trace_span
+
 logger = logging.getLogger(__name__)
 
 
@@ -79,6 +81,7 @@ class AgenticLoop:
     # Main loop
     # ------------------------------------------------------------------
 
+    @trace_span("orchestrator.phase_1_5_agentic_loop", attributes={"phase": "1.5"})
     async def run(
         self,
         user_message: str,

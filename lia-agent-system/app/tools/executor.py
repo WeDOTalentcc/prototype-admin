@@ -48,6 +48,7 @@ except (ImportError, ValueError) as _w3025_exc:  # pragma: no cover
     _TOOL_EXEC_AVAILABLE = False
 
 logger = logging.getLogger(__name__)
+from app.shared.observability.tracing import trace_span
 
 
 class ToolExecutionContext(BaseModel):

@@ -27,6 +27,7 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
+from app.shared.observability.tracing import trace_span
 from app.shared.chat_types import StructuredDataAdapter
 from app.orchestrator.action_executor import (
     ACTIONABLE_INTENTS,
@@ -856,6 +857,7 @@ class MainOrchestrator:
     # Phase 0 — PendingAction
     # ------------------------------------------------------------------
 
+    @trace_span("orchestrator.phase_0_pending_action", attributes={"phase": "0"})
     async def _handle_pending_action(
         self, ctx: UniversalContext, conv_id: str
     ) -> ChatResponse | None:
@@ -1015,6 +1017,7 @@ class MainOrchestrator:
     # Phase 1 — ActionExecutor
     # ------------------------------------------------------------------
 
+    @trace_span("orchestrator.phase_1_action_executor", attributes={"phase": "1"})
     async def _try_action_executor(
         self, ctx: UniversalContext, conv_id: str
     ) -> ChatResponse | None:
@@ -1424,6 +1427,7 @@ class MainOrchestrator:
     # Phase 2 — Pipeline consolidado (sem delegação intermediária)
     # ------------------------------------------------------------------
 
+    @trace_span("orchestrator.phase_2_v1_fallback", attributes={"phase": "2", "canary": "phase_2_hit"})
     async def _process_via_orchestrator(
         self,
         ctx: UniversalContext,
