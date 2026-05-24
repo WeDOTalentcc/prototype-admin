@@ -113,10 +113,14 @@ async def verify_client_exists(client_id: str, repo: ClientUserRepository):
 async def accept_invitation(
     data: AcceptInvitationRequest,
     repo: ClientUserRepository = Depends(get_client_user_repo),
-company_id: str = Depends(require_company_id)):
+):
     """
     Accept an invitation using the token from the email link.
     This endpoint is unauthenticated - only requires a valid token.
+
+    Onda 4.2f-B3 (2026-05-24): removido require_company_id que BLOQUEAVA
+    fluxo. Invitee chega via email link SEM sessão — token É a autenticação.
+    Antes flow estava completamente quebrado (401 em todo POST /accept).
     """
     try:
         user = await repo.get_by_invitation_token(data.token)
@@ -177,9 +181,10 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await repo.rollback()
         logger.error(f"Error accepting invitation: {str(e)}", exc_info=True)
+        # Onda 4.2f-B3: REGRA 5 — sem str(e) em response (OWASP A09 info disclosure)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to accept invitation: {str(e)}",
+            detail="Failed to accept invitation. Please contact support.",
         )
 
 
@@ -187,10 +192,13 @@ company_id: str = Depends(require_company_id)):
 async def validate_invitation(
     token: str = Query(..., description="Invitation token to validate"),
     repo: ClientUserRepository = Depends(get_client_user_repo),
-company_id: str = Depends(require_company_id)):
+):
     """
     Validate an invitation token without accepting it.
     Returns basic info about the invitation if valid.
+
+    Onda 4.2f-B3 (2026-05-24): removido require_company_id (mesmo motivo
+    de accept_invitation — invitee não tem sessão; token É a autenticação).
     """
     try:
         user = await repo.get_by_invitation_token(token)

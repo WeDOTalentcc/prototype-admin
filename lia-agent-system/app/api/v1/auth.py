@@ -1,5 +1,9 @@
 """
 Authentication API endpoints.
+
+Onda 4.2f-B4 (2026-05-24): rate limit canonical em forgot-password
+para mitigar email flood + enumeration timing attack.
+Pattern: data_subject_requests.py via rate_limiter._redis_sliding_window.
 """
 import os
 from datetime import datetime, timedelta
@@ -379,16 +383,66 @@ async def public_register(
     )
 
 
+async def _forgot_password_rate_limit(request: Request, email: str) -> None:
+    """Per-IP + per-email rate limit.
+
+    Onda 4.2f-B4 (2026-05-24): mitiga email flood + enumeration timing.
+    Limit: 5/15min por IP, 3/hora por email. Fail-open em erro de infra.
+    """
+    try:
+        from app.shared.encryption.encrypted_field_mixin import _sha256_hash
+        from app.middleware.rate_limiter import rate_limiter
+
+        client_ip = request.client.host if request.client else "unknown"
+        email_hash = _sha256_hash(email.lower().strip())[:16]
+
+        redis_client = await rate_limiter._get_redis()
+        if redis_client is None:
+            # Fail-open: infra down não bloqueia password reset legítimo
+            return
+
+        allowed_ip, _ = await rate_limiter._redis_sliding_window(
+            redis_client, key=f"forgot_pw:ip:{client_ip}", window_seconds=900, limit=5,
+        )
+        if not allowed_ip:
+            logger.warning(f"forgot-password rate limit hit (IP): {client_ip}")
+            raise HTTPException(
+                status_code=429,
+                detail="Muitas solicitações. Tente novamente em alguns minutos.",
+            )
+
+        allowed_email, _ = await rate_limiter._redis_sliding_window(
+            redis_client, key=f"forgot_pw:email:{email_hash}", window_seconds=3600, limit=3,
+        )
+        if not allowed_email:
+            logger.warning(f"forgot-password rate limit hit (email_hash): {email_hash}")
+            raise HTTPException(
+                status_code=429,
+                detail="Muitas solicitações para este email. Tente novamente em 1 hora.",
+            )
+    except HTTPException:
+        raise
+    except Exception as e:
+        # Fail-open · rate limit erro não bloqueia reset legítimo
+        logger.warning(f"forgot-password rate limit check failed (fail-open): {e}")
+
+
 @router.post("/forgot-password", response_model=None)
 async def forgot_password(
     request_data: PasswordResetRequest,
+    request: Request,
     repo: UserRepository = Depends(get_user_repo),
     email_svc: EmailService = Depends(get_email_service),
 ):
     """
     Request a password reset email.
     Always returns success to prevent email enumeration.
+
+    Onda 4.2f-B4 (2026-05-24): rate limit 5/15min por IP + 3/hora por email
+    para mitigar email flood e enumeration timing attack.
     """
+    await _forgot_password_rate_limit(request, request_data.email)
+
     user = await repo.get_by_email(request_data.email)
 
     if user:
