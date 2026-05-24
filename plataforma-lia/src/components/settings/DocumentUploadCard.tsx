@@ -11,6 +11,7 @@ import {
 import { textStyles } from "@/lib/design-tokens"
 import { useLiaFloat } from "@/contexts/lia-float-context"
 import { useAuth } from "@/contexts/auth-context"
+import { useCompanyId } from "@/hooks/company/useCompanyId"
 import type { LucideIcon } from "lucide-react"
 import { apiFetch } from "@/lib/api/api-fetch"
 import { notifyChatOfSettingsUpdate } from "@/lib/api/settings-notify"
@@ -50,9 +51,13 @@ interface UploadedDoc {
 
 const STORAGE_KEY_PREFIX = "lia_uploaded_documents"
 
-function getStorageKey(userEmail: string | undefined): string {
-  const scope = userEmail || "anonymous"
-  return `${STORAGE_KEY_PREFIX}_${scope}`
+// P2-W2-09: chave inclui companyId para isolar dados por tenant.
+// Sem companyId, dois users de empresas diferentes com mesmo email
+// compartilhariam o mesmo slot de localStorage — data leak cross-tenant.
+function getStorageKey(companyId: string | null | undefined, userEmail: string | undefined): string {
+  const tenantScope = companyId || "no-company"
+  const userScope = userEmail || "anonymous"
+  return `${STORAGE_KEY_PREFIX}_${tenantScope}_${userScope}`
 }
 
 function loadUploadedDocs(storageKey: string): UploadedDoc[] {
@@ -78,7 +83,8 @@ export function DocumentUploadCard() {
   const t = useTranslations("settings.documentUpload")
   const locale = useLocale()
   const { user } = useAuth()
-  const storageKey = getStorageKey(user?.email ?? undefined)
+  const { companyId } = useCompanyId()
+  const storageKey = getStorageKey(companyId, user?.email ?? undefined)
   const [uploadState, setUploadState] = useState<UploadState>("idle")
   const [activeDocType, setActiveDocType] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)

@@ -120,6 +120,14 @@ class AiCreditsBalance(Base):
         return f"<AiCreditsBalance {self.id} - company {self.company_id}>"
     
     def to_dict(self):
+        # ADR-030 (P2-AI-3): usage_percentage usa self.current_usage em vez de SELECT SUM.
+        # CONTRATO: o caller DEVE atribuir balance.current_usage = <valor frescos do SELECT SUM>
+        # antes de chamar to_dict() — caso contrario retorna valor stale do banco.
+        # Exemplo canonical: GET /balance em ai_consumption.py:
+        #   result = await db.execute(usage_query)
+        #   current_usage = int(result.scalar() or 0)
+        #   balance.current_usage = current_usage   ← obrigatorio
+        #   return BalanceResponse(**balance.to_dict())
         return {
             "id": str(self.id),
             "company_id": str(self.company_id),

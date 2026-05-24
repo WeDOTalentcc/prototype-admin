@@ -11,6 +11,7 @@ import {
 } from "@/hooks/settings/department-types";
 import { useCompanyId } from "@/hooks/company/useCompanyId";
 import { notifyChatOfSettingsUpdate } from "@/lib/api/settings-notify";
+import { toast } from "@/lib/toast";
 
 export interface UseDepartmentManagementState {
   departments: Department[];
@@ -156,6 +157,8 @@ export function useDepartmentManagement({
         }
       }
     } catch (err) {
+      console.error("[Departments] loadDepartments failed:", err)
+      toast.error("Falha ao carregar departamentos. Tente novamente.")
     }
   };
 
@@ -221,6 +224,8 @@ export function useDepartmentManagement({
         field: id,
       });
     } catch (err) {
+      console.error("[Departments] deleteDepartmentFromAPI failed:", err)
+      throw err
     }
   };
 
@@ -388,6 +393,8 @@ export function useDepartmentManagement({
         await loadDepartmentMembers(editingDepartment.id);
       }
     } catch (err) {
+      console.error("[Departments] handleDeleteMember failed:", err)
+      toast.error("Falha ao remover membro. Tente novamente.")
     }
   };
 
@@ -466,6 +473,8 @@ export function useDepartmentManagement({
         field: id,
       });
     } catch (err) {
+      console.error("[Departments] deleteApproverFromAPI failed:", err)
+      throw err
     }
   };
 

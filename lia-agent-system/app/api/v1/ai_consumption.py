@@ -7,6 +7,11 @@ Provides endpoints for:
 - Managing credit limits (admin)
 - Analytics by agent, model, and day
 """
+# SISTEMA: Tokens LLM (consumption tracking) — ADR-030
+# Ver: docs/adr/ADR-030-ai-credits-two-systems.md
+# NAO confundir com billing.py (creditos de plano) — sistemas distintos intencionalmente.
+# Este arquivo trata de metering tecnico: tokens por modelo, rate limiting, overage.
+# Para verificar limite de plano ou emitir fatura, usar billing.py.
 import logging
 from datetime import datetime, timedelta
 from typing import Any, cast

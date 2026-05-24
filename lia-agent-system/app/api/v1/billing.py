@@ -6,6 +6,11 @@ payment methods, and webhook integrations with Iugu/Vindi.
 
 SECURITY: All endpoints enforce multi-tenant isolation via X-Company-ID header.
 """
+# SISTEMA: Creditos de Plano (plan credits) — ADR-030
+# Ver: docs/adr/ADR-030-ai-credits-two-systems.md
+# NAO confundir com ai_consumption.py (tokens LLM) — sistemas distintos intencionalmente.
+# Este arquivo trata do envelope comercial: assinaturas, faturas, limites de plano.
+# Para logar consumo de LLM ou verificar saldo de tokens, usar ai_consumption.py.
 import logging
 import uuid as uuid_module
 from datetime import datetime

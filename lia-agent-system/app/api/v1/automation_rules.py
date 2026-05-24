@@ -16,6 +16,12 @@ Pattern P3.2:
 
 Para novas features, prefira `/api/v1/communication-automations` (canonical).
 """
+# ESCOPO: Company-level Stage Automation Rules — ADR-031 (Sistema 1 de 2)
+# Ver: docs/adr/ADR-031-automation-rules-disambiguation.md
+# Este arquivo = regras de stage por empresa (tabela stage_automation_rules).
+# NAO confundir com:
+#   - company_hiring_policies.automation_rules (JSONB) — comportamento da LIA (Sistema 2)
+#   - /api/v1/communication-automations — canonical futuro (para onde migrar)
 import logging
 
 from fastapi import APIRouter, Depends, HTTPException
