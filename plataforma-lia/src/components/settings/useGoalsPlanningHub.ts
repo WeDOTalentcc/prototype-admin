@@ -29,7 +29,7 @@ export function useGoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection
   const [briefingFrequency, setBriefingFrequency] = useState<'twice_daily' | 'daily' | 'weekly' | 'monthly'>('daily')
   const [selectedYear, setSelectedYear] = useState(2024)
 
-  const { companyId } = useCompanyId()
+  const { companyId, tenantInfo } = useCompanyId()
   const { instructions: liaInstructions, toggles: liaToggles, refetch: refetchLiaConfig } = useCompanyLiaInstructions()
 
   const [departments, setDepartments] = useState<DepartmentData[]>([...INITIAL_DEPARTMENTS])
@@ -43,6 +43,7 @@ export function useGoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection
   const [departmentsLoaded, setDepartmentsLoaded] = useState(false)
   const [isEditingWorkforce, setIsEditingWorkforce] = useState(false)
   const [isEditingAlerts, setIsEditingAlerts] = useState(false)
+  const [currentPlanId, setCurrentPlanId] = useState<string | null>(null)
 
   const fetchDepartmentsFromBackend = useCallback(async () => {
     try {
@@ -229,6 +230,88 @@ export function useGoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection
     }
   }
 
+  const saveDepartmentPositions = async () => {
+    try {
+      setSaving(true)
+      const apiCid = tenantInfo?.clientAccountId || companyId || ''
+
+      // 1. Garantir que há um plano de contratações para o ano (criar se não existir)
+      let planId = currentPlanId
+      if (!planId) {
+        const plansRes = await apiFetch(`/api/backend-proxy/workforce/plans?fiscal_year=${selectedYear}`)
+        if (plansRes.ok) {
+          const plans = await plansRes.json()
+          if (Array.isArray(plans) && plans.length > 0) {
+            planId = plans[0].id as string
+            setCurrentPlanId(planId)
+          }
+        }
+        if (!planId) {
+          const createRes = await apiFetch('/api/backend-proxy/workforce/plans', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              company_id: apiCid,
+              name: `Plano de Contratações ${selectedYear}`,
+              fiscal_year: selectedYear,
+              status: 'active',
+            })
+          })
+          if (!createRes.ok) throw new Error('Falha ao criar plano de contratações')
+          const plan = await createRes.json()
+          planId = plan.id as string
+          setCurrentPlanId(planId)
+        }
+      }
+
+      // 2. Serializar departments → PlannedHeadcountCreate[]
+      const MONTH_KEYS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
+      const headcounts: object[] = []
+      for (const dept of departments) {
+        for (const pos of dept.positions) {
+          for (const [monthKey, count] of Object.entries(pos.monthlyPlanned)) {
+            if ((count as number) > 0) {
+              const monthIndex = MONTH_KEYS.indexOf(monthKey) + 1
+              headcounts.push({
+                hiring_plan_id: planId,
+                department_id: dept.id.startsWith('temp-') ? undefined : dept.id,
+                title: pos.name || 'Posição',
+                target_month: monthIndex,
+                target_year: selectedYear,
+                headcount: count,
+                salary_min: pos.salary_min ?? null,
+                salary_max: pos.salary_max ?? null,
+                salary_currency: 'BRL',
+                status: 'planned',
+              })
+            }
+          }
+        }
+      }
+
+      if (headcounts.length === 0) {
+        setSuccessMessage('Nenhuma posição planejada para salvar.')
+        setTimeout(() => setSuccessMessage(null), 3000)
+        return
+      }
+
+      // 3. Enviar via bulk endpoint
+      const bulkRes = await apiFetch(`/api/backend-proxy/workforce/plans/${planId}/headcounts/bulk`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(headcounts)
+      })
+      if (!bulkRes.ok) throw new Error('Falha ao salvar posições planejadas')
+      setSuccessMessage(`${headcounts.length} posição(ões) salvas com sucesso!`)
+      setTimeout(() => setSuccessMessage(null), 3000)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao salvar posições')
+      setTimeout(() => setError(null), 5000)
+    } finally {
+      setSaving(false)
+    }
+  }
+
   const getCompanyId = async (): Promise<string> => {
     if (companyId) return companyId
     try {
@@ -381,7 +464,7 @@ export function useGoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection
     isEditingWorkforce, setIsEditingWorkforce,
     isEditingAlerts, setIsEditingAlerts,
     fetchGoals, fetchWorkforceData,
-    saveAlertsConfig, saveWorkforceData,
+    saveAlertsConfig, saveWorkforceData, saveDepartmentPositions,
     handleLiaToggleChange, handleLiaInstructionSave,
     handleToggleAlert, handleChangeChannel,
     workforceStats, toggleDepartmentExpand,

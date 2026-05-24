@@ -29,7 +29,7 @@ export function WorkforceSection({ hub }: WorkforceSectionProps) {
     departments, departmentsLoaded,
     saving,
     isEditingWorkforce, setIsEditingWorkforce,
-    fetchWorkforceData, saveWorkforceData,
+    fetchWorkforceData, saveWorkforceData, saveDepartmentPositions,
     handleLiaToggleChange, handleLiaInstructionSave,
     workforceStats, toggleDepartmentExpand,
     addDepartment, addPositionToDepartment,
@@ -111,7 +111,7 @@ export function WorkforceSection({ hub }: WorkforceSectionProps) {
                   </button>
                   <button
                     onClick={async () => {
-                      await saveWorkforceData()
+                      await saveDepartmentPositions()
                       setIsEditingWorkforce(false)
                     }}
                     disabled={saving}
