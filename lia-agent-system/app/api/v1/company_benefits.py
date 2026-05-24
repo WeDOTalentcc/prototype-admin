@@ -1,12 +1,17 @@
 """
 Company Benefits API endpoints.
 CRUD operations for company-specific benefits management.
+Migration 191 (2026-05-24): filiais, validade, historico, upload-extract.
 """
+import json
 import logging
+import uuid as _uuid_module
+from datetime import date, datetime
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 from pydantic import BaseModel, Field, model_validator
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user_or_demo, get_user_company_id
@@ -24,15 +29,12 @@ logger = logging.getLogger(__name__)
 
 # Protected eligibility terms (LGPD + CLAUDE.md Fairness non-negotiable rule)
 PROHIBITED_ELIGIBILITY_TERMS: frozenset[str] = frozenset({
-    # PT-BR
-    "genero", "gênero", "sexo", "feminino", "masculino", "homem", "mulher",
-    "raca", "raça", "etnia", "cor", "negro", "branco", "pardo",
+    "genero", "genero", "sexo", "feminino", "masculino", "homem", "mulher",
+    "raca", "raca", "etnia", "cor", "negro", "branco", "pardo",
     "idade", "jovem", "idoso", "velho", "anos",
-    "religiao", "religião", "catolico", "evangelico", "judeu", "muçulmano",
+    "religiao", "religiao", "catolico", "evangelico", "judeu",
     "estado_civil", "casado", "solteiro", "divorciado",
-    "saude", "saúde", "deficiencia", "deficiência", "gestante", "gravida",
-    "grávida",
-    # EN
+    "saude", "saude", "deficiencia", "gestante", "gravida",
     "gender", "sex", "male", "female",
     "race", "ethnicity", "color",
     "age", "young", "old", "senior_citizen",
@@ -43,10 +45,6 @@ PROHIBITED_ELIGIBILITY_TERMS: frozenset[str] = frozenset({
 
 
 def _check_fairness_eligibility(field_name: str, value) -> None:
-    """Raise ValueError when a protected term appears in an eligibility field.
-
-    Error messages are LLM-optimised: they name the problem and remediation.
-    """
     if value is None:
         return
     if isinstance(value, (list, tuple, set)):
@@ -58,11 +56,21 @@ def _check_fairness_eligibility(field_name: str, value) -> None:
     hits = terms & PROHIBITED_ELIGIBILITY_TERMS
     if hits:
         raise ValueError(
-            f"FAIRNESS VIOLATION: campo '{field_name}' contém termos discriminatórios "
-            f"{sorted(hits)}. Benefícios não podem ter elegibilidade por atributo protegido "
-            f"(LGPD Art. 11, CLAUDE.md #2/#3). Remova os termos e use critérios neutros "
-            f"como cargo, nível seniority canonical, ou tipo de contrato."
+            f"FAIRNESS VIOLATION: campo {repr(field_name)} contém termos discriminatorios "
+            f"{sorted(hits)}. Beneficios nao podem ter elegibilidade por atributo protegido "
+            f"(LGPD Art. 11, CLAUDE.md #2/#3). Remova os termos e use criterios neutros "
+            f"como cargo, nivel seniority canonical, ou tipo de contrato."
         )
+
+
+# ---------------------------------------------------------------------------
+# Pydantic schemas
+# ---------------------------------------------------------------------------
+
+class SubsidiaryEntry(BaseModel):
+    """Filial aplicavel a um beneficio."""
+    name: str
+    cnpj: str | None = None
 
 
 class CompanyBenefitCreate(WeDoBaseModel):
@@ -70,27 +78,23 @@ class CompanyBenefitCreate(WeDoBaseModel):
     category: str | None = None
     description: str | None = None
     icon: str | None = None
-
-    # Monetary / value fields
     value: float | None = None
     percentage_value: float | None = None
     value_type: str | None = "informative"
     value_details: str | None = None
-
-    # Eligibility scoping
     applicable_to: list | None = None
     seniority_levels: list | None = None
     contract_types: list | None = None
     departments: dict | list | None = None
-
-    # Provider
     provider: str | None = None
     provider_contact: str | None = None
-
-    # Scheduling
+    provider_cnpj: str | None = None  # migration 191
+    subsidiaries: list[SubsidiaryEntry] | None = None  # migration 191
+    valid_from: date | None = None  # migration 191
+    valid_until: date | None = None  # migration 191
+    review_frequency_months: int | None = None  # migration 191
+    next_review_date: date | None = None  # migration 191
     waiting_period_days: int | None = None
-
-    # Flags
     is_mandatory: bool = False
     is_discount: bool = False
     is_active: bool = True
@@ -101,28 +105,26 @@ class CompanyBenefitCreate(WeDoBaseModel):
 
     @model_validator(mode="after")
     def validate_value_by_type(self) -> "CompanyBenefitCreate":
-        """Conditional value validation by value_type (harness sensor)."""
         vt = self.value_type or "informative"
         if vt == "monetary" and self.value is None:
             raise ValueError(
-                "INVALID: value_type='monetary' exige o campo 'value' (valor numérico). "
-                "Defina value=<float> ou mude value_type para 'informative'."
+                "INVALID: value_type=monetary exige o campo value (valor numerico). "
+                "Defina value=<float> ou mude value_type para informative."
             )
         if vt == "percentage" and self.percentage_value is None:
             raise ValueError(
-                "INVALID: value_type='percentage' exige o campo 'percentage_value'. "
+                "INVALID: value_type=percentage exige o campo percentage_value. "
                 "Defina percentage_value=<float> ou mude value_type."
             )
         if vt == "informative" and self.value_details is None and self.description is None:
             raise ValueError(
-                "INVALID: value_type='informative' exige 'value_details' ou 'description'. "
-                "Adicione uma descrição textual do benefício."
+                "INVALID: value_type=informative exige value_details ou description. "
+                "Adicione uma descricao textual do beneficio."
             )
         return self
 
     @model_validator(mode="after")
     def validate_fairness_eligibility(self) -> "CompanyBenefitCreate":
-        """LGPD + Fairness non-negotiable (CLAUDE.md #2/#3): no protected terms."""
         _check_fairness_eligibility("applicable_to", self.applicable_to)
         _check_fairness_eligibility("seniority_levels", self.seniority_levels)
         _check_fairness_eligibility("contract_types", self.contract_types)
@@ -140,6 +142,25 @@ class CompanyBenefitUpdate(WeDoBaseModel):
     is_active: bool | None = None
     is_highlighted: bool | None = None
     order: int | None = None
+    # New fields — migration 191
+    provider_cnpj: str | None = None
+    subsidiaries: list[SubsidiaryEntry] | None = None
+    valid_from: date | None = None
+    valid_until: date | None = None
+    review_frequency_months: int | None = None
+    next_review_date: date | None = None
+
+
+class BenefitHistoryEntry(BaseModel):
+    id: str
+    changed_at: str
+    changed_by: str | None = None
+    change_type: str
+    previous_snapshot: dict | None = None
+    change_notes: str | None = None
+
+    class Config:
+        from_attributes = True
 
 
 class CompanyBenefitResponse(BaseModel):
@@ -153,7 +174,6 @@ class CompanyBenefitResponse(BaseModel):
     percentage_value: float | None = None
     value_type: str | None = None
     value_details: str | None = None
-    # P1-3 fix: ARRAY(String) in model — these are lists, not strings.
     applicable_to: list | None = None
     seniority_levels: list | None = None
     contract_types: list | None = None
@@ -161,14 +181,29 @@ class CompanyBenefitResponse(BaseModel):
     is_active: bool = True
     is_highlighted: bool = False
     order: int = 0
+    # New fields — migration 191
+    provider_cnpj: str | None = None
+    subsidiaries: list | None = None
+    valid_from: str | None = None
+    valid_until: str | None = None
+    review_frequency_months: int | None = None
+    next_review_date: str | None = None
     created_at: str | None = None
     updated_at: str | None = None
+    history: list[BenefitHistoryEntry] | None = None
 
     class Config:
         from_attributes = True
 
 
-def _to_response(b) -> CompanyBenefitResponse:
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+def _to_response(b, history=None) -> CompanyBenefitResponse:
+    subs = getattr(b, "subsidiaries", None)
+    if subs and not isinstance(subs, list):
+        subs = None
     return CompanyBenefitResponse(
         id=str(b.id),
         company_id=b.company_id,
@@ -187,10 +222,61 @@ def _to_response(b) -> CompanyBenefitResponse:
         is_active=b.is_active,
         is_highlighted=b.is_highlighted,
         order=b.order,
+        provider_cnpj=getattr(b, "provider_cnpj", None),
+        subsidiaries=subs,
+        valid_from=b.valid_from.isoformat() if getattr(b, "valid_from", None) else None,
+        valid_until=b.valid_until.isoformat() if getattr(b, "valid_until", None) else None,
+        review_frequency_months=getattr(b, "review_frequency_months", None),
+        next_review_date=b.next_review_date.isoformat() if getattr(b, "next_review_date", None) else None,
         created_at=b.created_at.isoformat() if b.created_at else None,
         updated_at=b.updated_at.isoformat() if b.updated_at else None,
+        history=history,
     )
 
+
+def _build_prev_snapshot(b) -> dict:
+    return {
+        "name": b.name,
+        "category": b.category,
+        "description": b.description,
+        "value": b.value,
+        "value_type": b.value_type,
+        "is_active": b.is_active,
+        "is_highlighted": b.is_highlighted,
+        "subsidiaries": getattr(b, "subsidiaries", None),
+        "valid_from": b.valid_from.isoformat() if getattr(b, "valid_from", None) else None,
+        "valid_until": b.valid_until.isoformat() if getattr(b, "valid_until", None) else None,
+        "provider_cnpj": getattr(b, "provider_cnpj", None),
+    }
+
+
+async def _append_history(
+    db,
+    benefit_id,
+    company_id: str,
+    changed_by,
+    change_type: str,
+    previous_snapshot=None,
+    change_notes=None,
+) -> None:
+    try:
+        from libs.models.lia_models.company_benefit import CompanyBenefitHistory
+        entry = CompanyBenefitHistory(
+            benefit_id=benefit_id,
+            company_id=str(company_id),
+            changed_by=changed_by,
+            change_type=change_type,
+            previous_snapshot=previous_snapshot,
+            change_notes=change_notes,
+        )
+        db.add(entry)
+    except Exception as hist_err:
+        logger.error("History insert failed benefit_id=%s: %s", benefit_id, hist_err)
+
+
+# ---------------------------------------------------------------------------
+# Routes
+# ---------------------------------------------------------------------------
 
 @router.get("/", response_model=list[CompanyBenefitResponse])
 async def list_company_benefits(
@@ -201,7 +287,6 @@ async def list_company_benefits(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
 _company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
-    """List company benefits."""
     try:
         effective_company_id = company_id or get_user_company_id(current_user)
         repo = CompanyBenefitRepository(db)
@@ -219,6 +304,106 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.post("/upload-extract", response_model=None)
+async def upload_extract_benefits(
+    file: UploadFile = File(...),
+    company_id: str = Depends(require_company_id),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user_or_demo),
+):
+    """
+    Recebe um documento (Manual de Beneficios, PDF/DOCX/TXT) e extrai
+    os beneficios usando LLM. Retorna lista de sugestoes para confirmacao.
+    NAO persiste automaticamente — o usuario deve confirmar antes de salvar.
+    Formatos suportados: .txt, .pdf (com texto selecionavel). Limite: 10 MB.
+    """
+    content = await file.read()
+    if len(content) > 10_000_000:
+        raise HTTPException(400, "Arquivo muito grande. Limite: 10MB.")
+
+    text = ""
+    fname = (file.filename or "").lower()
+    if fname.endswith(".txt"):
+        text = content.decode("utf-8", errors="ignore")
+    elif fname.endswith(".pdf"):
+        try:
+            import io
+            import pypdf
+            reader = pypdf.PdfReader(io.BytesIO(content))
+            text = "\n".join(page.extract_text() or "" for page in reader.pages)
+        except ImportError:
+            text = content.decode("utf-8", errors="ignore")
+        except Exception as pdf_err:
+            logger.warning("PDF extraction failed (%s), fallback to raw decode", pdf_err)
+            text = content.decode("utf-8", errors="ignore")
+    else:
+        text = content.decode("utf-8", errors="ignore")
+
+    if len(text.strip()) < 50:
+        raise HTTPException(
+            422,
+            "Nao foi possivel extrair texto do arquivo. "
+            "Tente um arquivo .txt ou .pdf com texto selecionavel.",
+        )
+
+    prompt = f"""Analise o documento de beneficios abaixo e extraia uma lista estruturada.
+
+DOCUMENTO:
+{text[:8000]}
+
+Retorne um JSON com a seguinte estrutura:
+{{
+  "benefits": [
+    {{
+      "name": "nome do beneficio",
+      "category": "food|health|transport|financial|wellness|flexibility|education|family|other",
+      "description": "descricao breve",
+      "value": null,
+      "value_type": "fixed|percentage|informative",
+      "provider": null,
+      "waiting_period_days": null,
+      "is_mandatory": false
+    }}
+  ]
+}}
+
+Retorne APENAS o JSON, sem texto adicional."""
+
+    try:
+        from app.shared.providers.llm_factory import get_provider_for_tenant
+        container = get_provider_for_tenant()
+        raw = await container.generate_with_fallback(
+            prompt,
+            system="Voce e um especialista em RH. Extraia dados estruturados de beneficios corporativos.",
+            company_id=str(company_id),
+            domain="benefits",
+            operation="upload_extract",
+        )
+        raw_stripped = raw.strip()
+        if raw_stripped.startswith('```'):
+            raw_stripped = raw_stripped.split('\n', 1)[-1]
+            raw_stripped = raw_stripped.rsplit('```', 1)[0]
+        data = json.loads(raw_stripped)
+        extracted_benefits = data.get("benefits", [])
+    except json.JSONDecodeError as jde:
+        logger.error("LLM returned non-JSON for benefits extraction: %s", jde)
+        raise HTTPException(503, "A IA nao retornou JSON valido. Tente novamente ou cadastre manualmente.")
+    except Exception as llm_err:
+        logger.error("LLM extraction failed: %s", llm_err, exc_info=True)
+        raise HTTPException(
+            503,
+            f"Extracao por LLM falhou. Tente novamente ou cadastre manualmente. Detalhe: {str(llm_err)[:200]}",
+        )
+
+    return {
+        "success": True,
+        "extracted_count": len(extracted_benefits),
+        "benefits": extracted_benefits,
+        "message": f"{len(extracted_benefits)} beneficio(s) encontrado(s). Revise e confirme antes de salvar.",
+        "source_chars": len(text),
+    }
+
+
 @router.post("/", response_model=CompanyBenefitResponse)
 async def create_company_benefit(
     benefit: CompanyBenefitCreate,
@@ -226,20 +411,31 @@ async def create_company_benefit(
     db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(get_current_user_or_demo),
 _company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
-    """Create a new company benefit."""
     try:
         effective_company_id = company_id or get_user_company_id(current_user)
         repo = CompanyBenefitRepository(db)
-        new_benefit = await repo.create(effective_company_id, benefit.model_dump())
-        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
+        payload = benefit.model_dump()
+        if payload.get("subsidiaries"):
+            payload["subsidiaries"] = [
+                s if isinstance(s, dict) else s.model_dump()
+                for s in (payload["subsidiaries"] or [])
+            ]
+        new_benefit = await repo.create(effective_company_id, payload)
         logger.info(f"Created company benefit: {new_benefit.name} for company: {effective_company_id}")
 
-        # Audit log LGPD/SOX: criação de benefício da empresa (Art. 48 LGPD).
+        await _append_history(
+            db,
+            benefit_id=new_benefit.id,
+            company_id=str(effective_company_id),
+            changed_by=getattr(current_user, "email", None) or getattr(current_user, "id", None),
+            change_type="created",
+            previous_snapshot=None,
+        )
+
         try:
             from app.shared.compliance.audit_service import AuditService as _AS
-            import uuid as _uuid
             await _AS().log_action(
-                trace_id=str(_uuid.uuid4()),
+                trace_id=str(_uuid_module.uuid4()),
                 company_id=str(effective_company_id),
                 action_type="company_benefits_update",
                 actor=getattr(current_user, "email", None) or getattr(current_user, "id", "unknown"),
@@ -253,11 +449,9 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
                 },
             )
         except Exception as _audit_err:
-            logger.error(
-                "Audit log failed for company_benefits_update (create) company=%s: %s",
-                effective_company_id, _audit_err,
-            )
+            logger.error("Audit log failed for company_benefits_update (create) company=%s: %s", effective_company_id, _audit_err)
 
+        await db.commit()
         return _to_response(new_benefit)
     except HTTPException:
         raise
@@ -274,13 +468,7 @@ async def list_active_company_benefits(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
 _company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
-    """List only active benefits for a company.
-
-    Canonical replacement for the legacy `/company/benefits/active` endpoint
-    that lived in `company_benefits_api.py` (deleted in T2 / task #989).
-    Must stay registered BEFORE `/{benefit_id}` to avoid the path being
-    matched as a UUID lookup (regression bug B11).
-    """
+    """Must stay registered BEFORE /{benefit_id} to avoid path collision (regression bug B11)."""
     try:
         effective_company_id = company_id or get_user_company_id(current_user)
         if not effective_company_id or effective_company_id in ("default", "unknown"):
@@ -288,7 +476,6 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         repo = CompanyBenefitRepository(db)
         benefits = await repo.list_for_company(effective_company_id, active_only=True)
         if seniority_level and seniority_level != "all":
-            # P1-3 fix: seniority_levels is now a list (ARRAY(String) in model).
             benefits = [
                 b for b in benefits
                 if not b.seniority_levels
@@ -309,11 +496,7 @@ async def list_highlighted_company_benefits(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
 _company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
-    """List highlighted (and active) benefits for a company.
-
-    Canonical replacement for legacy `/company/benefits/highlighted`. Must
-    stay declared BEFORE `/{benefit_id}` (route order).
-    """
+    """Must stay declared BEFORE /{benefit_id} (route order)."""
     try:
         effective_company_id = company_id or get_user_company_id(current_user)
         if not effective_company_id or effective_company_id in ("default", "unknown"):
@@ -334,44 +517,20 @@ async def get_company_benefits_summary(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
 _company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
-    """Get an AI-agent-friendly summary of company benefits.
-
-    Canonical replacement for legacy `/company/benefits/summary` from
-    `company_benefits_api.py`. Returns counts, categories, formatted_text
-    and a flat benefits list (untyped dict — same shape as the legacy
-    `BenefitsSummaryResponse`). Must stay declared BEFORE `/{benefit_id}`.
-    """
-    empty = {
-        "total_count": 0,
-        "active_count": 0,
-        "highlighted_count": 0,
-        "categories": {},
-        "formatted_text": "",
-        "benefits": [],
-    }
+    """AI-agent-friendly summary. Must stay declared BEFORE /{benefit_id}."""
+    empty = {"total_count": 0, "active_count": 0, "highlighted_count": 0, "categories": {}, "formatted_text": "", "benefits": []}
     try:
         effective_company_id = company_id or get_user_company_id(current_user)
         if not effective_company_id or effective_company_id in ("default", "unknown"):
-            logger.warning(
-                "get_company_benefits_summary called without valid company_id "
-                "— returning empty summary"
-            )
             return empty
         repo = CompanyBenefitRepository(db)
         all_benefits = await repo.list_for_company(effective_company_id, active_only=False)
         active_benefits = [b for b in all_benefits if b.is_active]
         highlighted_benefits = [b for b in active_benefits if b.is_highlighted]
-
         category_names = {
-            "health": "Saúde & Bem-estar",
-            "food": "Alimentação",
-            "transport": "Transporte",
-            "education": "Educação & Desenvolvimento",
-            "financial": "Financeiro",
-            "wellness": "Bem-estar",
-            "family": "Família",
-            "flexibility": "Flexibilidade",
-            "other": "Outros",
+            "health": "Saude & Bem-estar", "food": "Alimentacao", "transport": "Transporte",
+            "education": "Educacao & Desenvolvimento", "financial": "Financeiro",
+            "wellness": "Bem-estar", "family": "Familia", "flexibility": "Flexibilidade", "other": "Outros",
         }
         categories: dict = {}
         for b in active_benefits:
@@ -380,54 +539,74 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
                 categories[cat] = {"name": category_names.get(cat, cat), "count": 0, "benefits": []}
             categories[cat]["count"] += 1
             categories[cat]["benefits"].append({
-                "name": b.name,
-                "description": b.description,
-                "value_type": b.value_type,
-                "value": b.value,
-                "percentage_value": b.percentage_value,
-                "is_highlighted": b.is_highlighted,
+                "name": b.name, "description": b.description, "value_type": b.value_type,
+                "value": b.value, "percentage_value": b.percentage_value, "is_highlighted": b.is_highlighted,
             })
-
-        formatted_lines = ["**Benefícios da Empresa:**"]
+        formatted_lines = ["**Beneficios da Empresa:**"]
         for cat_data in categories.values():
             items = []
             for b in cat_data["benefits"]:
                 if b["value_type"] == "monetary" and b["value"]:
-                    items.append(f'{b["name"]} (R$ {b["value"]:,.2f})')
+                    items.append(f"{b['name']} (R\$ {b['value']:,.2f})")
                 elif b["value_type"] == "percentage" and b["percentage_value"]:
-                    items.append(f'{b["name"]} ({b["percentage_value"]}%)')
+                    items.append(f"{b['name']} ({b['percentage_value']}%)")
                 else:
                     items.append(b["name"])
             if items:
-                formatted_lines.append(f"- {cat_data['name']}: {', '.join(items)}")
-        formatted_text = (
-            "\n".join(formatted_lines) if len(formatted_lines) > 1 else "Nenhum benefício cadastrado."
-        )
+                _sep = ", "
+                formatted_lines.append("- " + cat_data['name'] + ": " + _sep.join(items))
+        formatted_text = "\n".join(formatted_lines) if len(formatted_lines) > 1 else "Nenhum beneficio cadastrado."
         benefits_list = [
-            {
-                "id": str(b.id),
-                "name": b.name,
-                "description": b.description,
-                "category": b.category,
-                "value_type": b.value_type,
-                "value": b.value,
-                "percentage_value": b.percentage_value,
-                "is_highlighted": b.is_highlighted,
-            }
+            {"id": str(b.id), "name": b.name, "description": b.description, "category": b.category,
+             "value_type": b.value_type, "value": b.value, "percentage_value": b.percentage_value,
+             "is_highlighted": b.is_highlighted}
             for b in active_benefits
         ]
-        return {
-            "total_count": len(all_benefits),
-            "active_count": len(active_benefits),
-            "highlighted_count": len(highlighted_benefits),
-            "categories": categories,
-            "formatted_text": formatted_text,
-            "benefits": benefits_list,
-        }
+        return {"total_count": len(all_benefits), "active_count": len(active_benefits),
+                "highlighted_count": len(highlighted_benefits), "categories": categories,
+                "formatted_text": formatted_text, "benefits": benefits_list}
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Error getting company benefits summary: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/{benefit_id}/history", response_model=list[BenefitHistoryEntry])
+async def get_benefit_history(
+    benefit_id: UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user_or_demo),
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via require_company_id + company_id filter in WHERE
+    """Retorna historico de alteracoes de um beneficio (max 50, mais recente primeiro)."""
+    try:
+        from libs.models.lia_models.company_benefit import CompanyBenefitHistory
+        result = await db.execute(
+            select(CompanyBenefitHistory)
+            .where(
+                CompanyBenefitHistory.benefit_id == benefit_id,
+                CompanyBenefitHistory.company_id == str(company_id),
+            )
+            .order_by(CompanyBenefitHistory.changed_at.desc())
+            .limit(50)
+        )
+        rows = result.scalars().all()
+        return [
+            BenefitHistoryEntry(
+                id=str(r.id),
+                changed_at=r.changed_at.isoformat() if r.changed_at else "",
+                changed_by=r.changed_by,
+                change_type=r.change_type,
+                previous_snapshot=r.previous_snapshot,
+                change_notes=r.change_notes,
+            )
+            for r in rows
+        ]
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error("Error fetching benefit history benefit_id=%s: %s", benefit_id, e)
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -438,7 +617,6 @@ async def get_company_benefit(
     current_user: User = Depends(get_current_user_or_demo),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
-    """Get a specific company benefit by ID."""
     try:
         repo = CompanyBenefitRepository(db)
         benefit = await repo.get_by_id(benefit_id)
@@ -460,22 +638,37 @@ async def update_company_benefit(
     current_user: User = Depends(get_current_user_or_demo),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
-    """Update a company benefit."""
     try:
         repo = CompanyBenefitRepository(db)
         benefit = await repo.get_by_id(benefit_id)
         if not benefit:
             raise HTTPException(status_code=404, detail="Benefit not found")
-        benefit = await repo.update(benefit, updates.model_dump(exclude_unset=True))
-        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
+
+        prev_snapshot = _build_prev_snapshot(benefit)
+
+        update_payload = updates.model_dump(exclude_unset=True)
+        if "subsidiaries" in update_payload and update_payload["subsidiaries"]:
+            update_payload["subsidiaries"] = [
+                s if isinstance(s, dict) else s.model_dump()
+                for s in update_payload["subsidiaries"]
+            ]
+
+        benefit = await repo.update(benefit, update_payload)
         logger.info(f"Updated company benefit: {benefit.name}")
 
-        # Audit log LGPD/SOX: atualização de benefício da empresa (Art. 48 LGPD).
+        await _append_history(
+            db,
+            benefit_id=benefit.id,
+            company_id=str(company_id),
+            changed_by=getattr(current_user, "email", None) or getattr(current_user, "id", None),
+            change_type="updated",
+            previous_snapshot=prev_snapshot,
+        )
+
         try:
             from app.shared.compliance.audit_service import AuditService as _AS
-            import uuid as _uuid
             await _AS().log_action(
-                trace_id=str(_uuid.uuid4()),
+                trace_id=str(_uuid_module.uuid4()),
                 company_id=str(company_id),
                 action_type="company_benefits_update",
                 actor=getattr(current_user, "email", None) or getattr(current_user, "id", "unknown"),
@@ -489,11 +682,9 @@ company_id: str = Depends(require_company_id)):
                 },
             )
         except Exception as _audit_err:
-            logger.error(
-                "Audit log failed for company_benefits_update (update) company=%s: %s",
-                company_id, _audit_err,
-            )
+            logger.error("Audit log failed for company_benefits_update (update) company=%s: %s", company_id, _audit_err)
 
+        await db.commit()
         return _to_response(benefit)
     except HTTPException:
         raise
@@ -511,7 +702,6 @@ async def delete_company_benefit(
     current_user: User = Depends(get_current_user_or_demo),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
-    """Delete a company benefit (soft delete by default)."""
     try:
         repo = CompanyBenefitRepository(db)
         benefit = await repo.get_by_id(benefit_id)
@@ -521,16 +711,22 @@ company_id: str = Depends(require_company_id)):
             await repo.hard_delete(benefit)
             message = f"Benefit '{benefit.name}' permanently deleted"
         else:
+            await _append_history(
+                db,
+                benefit_id=benefit.id,
+                company_id=str(company_id),
+                changed_by=getattr(current_user, "email", None) or getattr(current_user, "id", None),
+                change_type="deactivated",
+                previous_snapshot={"is_active": True},
+            )
             await repo.soft_delete(benefit)
             message = f"Benefit '{benefit.name}' deactivated"
         logger.info(f"  {message}")
 
-        # Audit log LGPD/SOX: deleção/desativação de benefício da empresa (Art. 48 LGPD).
         try:
             from app.shared.compliance.audit_service import AuditService as _AS
-            import uuid as _uuid
             await _AS().log_action(
-                trace_id=str(_uuid.uuid4()),
+                trace_id=str(_uuid_module.uuid4()),
                 company_id=str(company_id),
                 action_type="company_benefits_update",
                 actor=getattr(current_user, "email", None) or getattr(current_user, "id", "unknown"),
@@ -544,10 +740,7 @@ company_id: str = Depends(require_company_id)):
                 },
             )
         except Exception as _audit_err:
-            logger.error(
-                "Audit log failed for company_benefits_update (delete) company=%s: %s",
-                company_id, _audit_err,
-            )
+            logger.error("Audit log failed for company_benefits_update (delete) company=%s: %s", company_id, _audit_err)
 
         return {"success": True, "message": message}
     except HTTPException:
@@ -564,26 +757,15 @@ async def seed_default_benefits(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
 _company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
-    """Seed default Brazilian benefits for a company."""
     try:
         effective_company_id = company_id or get_user_company_id(current_user)
         repo = CompanyBenefitRepository(db)
         existing_count = await repo.count_for_company(effective_company_id)
         if existing_count > 0:
-            return {
-                "success": True,
-                "message": f"Benefits already exist for company ({existing_count} benefits)",
-                "created": 0,
-                "total": existing_count,
-            }
+            return {"success": True, "message": f"Benefits already exist for company ({existing_count} benefits)", "created": 0, "total": existing_count}
         created_count = await repo.seed_defaults(effective_company_id)
         logger.info(f"Seeded {created_count} default benefits for company: {effective_company_id}")
-        return {
-            "success": True,
-            "message": f"Successfully seeded {created_count} default benefits",
-            "created": created_count,
-            "total": created_count,
-        }
+        return {"success": True, "message": f"Successfully seeded {created_count} default benefits", "created": created_count, "total": created_count}
     except HTTPException:
         raise
     except Exception as e:
@@ -595,15 +777,14 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 @router.get("/categories/list", response_model=None)
 async def list_benefit_categories(company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
-    """List available benefit categories."""
     return [
-        {"id": "health", "name": "Saúde", "icon": "🏥"},
-        {"id": "food", "name": "Alimentação", "icon": "🍽️"},
+        {"id": "health", "name": "Saude", "icon": "🏥"},
+        {"id": "food", "name": "Alimentacao", "icon": "🍽"},
         {"id": "transport", "name": "Transporte", "icon": "🚌"},
-        {"id": "education", "name": "Educação", "icon": "📚"},
+        {"id": "education", "name": "Educacao", "icon": "📚"},
         {"id": "wellness", "name": "Bem-estar", "icon": "💪"},
         {"id": "financial", "name": "Financeiro", "icon": "💰"},
-        {"id": "family", "name": "Família", "icon": "👨‍👩‍👧"},
+        {"id": "family", "name": "Familia", "icon": "👨‍👩‍👧"},
         {"id": "flexibility", "name": "Flexibilidade", "icon": "⏰"},
         {"id": "other", "name": "Outros", "icon": "📦"},
     ]

@@ -1,10 +1,10 @@
 """
 Company Benefits model for multi-tenant benefits management.
 """
-from datetime import datetime
-from sqlalchemy import Column, String, Integer, DateTime, Text, Boolean, Float, ARRAY
-from sqlalchemy.dialects.postgresql import UUID
 import uuid
+from datetime import datetime, date
+from sqlalchemy import Column, String, Integer, DateTime, Text, Boolean, Float, ARRAY, Date, ForeignKey
+from sqlalchemy.dialects.postgresql import UUID, JSONB
 
 from lia_config.database import Base
 
@@ -16,15 +16,15 @@ class CompanyBenefit(Base):
     """
     __tablename__ = "company_benefits"
     __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
-    
+
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     company_id = Column(String(255), nullable=False, index=True)
-    
+
     name = Column(String(255), nullable=False)
     category = Column(String(100), nullable=True)
     description = Column(Text, nullable=True)
     icon = Column(String(100), nullable=True)
-    
+
     value = Column(Float, nullable=True)
     percentage_value = Column(Float, nullable=True)
     value_type = Column(String(50), default="informative")
@@ -32,7 +32,7 @@ class CompanyBenefit(Base):
 
     # Eligibility scoping (Rails canonical)
     # NOTE: DB columns are TEXT[] (Postgres native arrays). Using ARRAY(String)
-    # ensures SQLAlchemy serializes lists correctly — avoids Python repr "['all']" bug.
+    # ensures SQLAlchemy serializes lists correctly — avoids Python repr "[all]" bug.
     applicable_to = Column(ARRAY(String), nullable=True, default=list)
     seniority_levels = Column(ARRAY(String), nullable=True, default=list)
     contract_types = Column(ARRAY(String), nullable=True, default=list)
@@ -41,6 +41,17 @@ class CompanyBenefit(Base):
     # Provider info
     provider = Column(String(255), nullable=True)
     provider_contact = Column(String(255), nullable=True)
+    provider_cnpj = Column(String(20), nullable=True)  # migration 191
+
+    # Filiais aplicáveis: [{"name": "Filial SP", "cnpj": "12345678000190"}, ...]
+    # migration 191
+    subsidiaries = Column(JSONB, nullable=True, default=list)
+
+    # Validade do contrato com fornecedor — migration 191
+    valid_from = Column(Date, nullable=True)
+    valid_until = Column(Date, nullable=True)
+    review_frequency_months = Column(Integer, nullable=True)
+    next_review_date = Column(Date, nullable=True)
 
     # Scheduling
     waiting_period_days = Column(Integer, nullable=True)
@@ -51,12 +62,40 @@ class CompanyBenefit(Base):
     is_active = Column(Boolean, default=True)
     is_highlighted = Column(Boolean, default=False)
     order = Column(Integer, default=0)
-    
+
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
+
     def __repr__(self):
         return f"<CompanyBenefit {self.id} - {self.name}>"
+
+
+class CompanyBenefitHistory(Base):
+    """Histórico de alterações em benefícios. Append-only.
+
+    Toda operação de criação, atualização e desativação de CompanyBenefit
+    grava uma entrada aqui. Multi-tenant via company_id (mirrored do benefit).
+    """
+    __tablename__ = "company_benefit_history"
+    __table_args__ = {"extend_existing": True}
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    benefit_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("company_benefits.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    company_id = Column(String(255), nullable=False, index=True)
+    changed_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    changed_by = Column(String(255), nullable=True)
+    # created / updated / deactivated / reactivated
+    change_type = Column(String(50), nullable=False)
+    previous_snapshot = Column(JSONB, nullable=True)
+    change_notes = Column(Text, nullable=True)
+
+    def __repr__(self):
+        return f"<CompanyBenefitHistory {self.id} - {self.change_type}@{self.changed_at}>"
 
 
 DEFAULT_BRAZILIAN_BENEFITS = [
