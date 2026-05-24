@@ -35,7 +35,7 @@ class WebhookRegistration(Base):
     
     event_types = Column(JSON, default=list)
     
-    secret_key = Column(String(255), nullable=True)
+    secret_key = Column(String(255), nullable=False, default=lambda: WebhookRegistration.generate_secret_key())  # P1-W3-11
     
     headers = Column(JSON, default=dict)
     
@@ -59,7 +59,7 @@ class WebhookRegistration(Base):
     
     __table_args__ = (
         Index('idx_webhook_reg_company_active', 'company_id', 'is_active'),
-    )
+    {"extend_existing": True}, )
     
     def __repr__(self):
         return f"<WebhookRegistration {self.id} - {self.name} - {self.url}>"
@@ -168,7 +168,7 @@ class WebhookDeliveryLog(Base):
     __table_args__ = (
         Index('idx_webhook_delivery_webhook', 'webhook_id', 'triggered_at'),
         Index('idx_webhook_delivery_company', 'company_id', 'triggered_at'),
-    )
+    {"extend_existing": True}, )
     
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary."""
