@@ -223,7 +223,11 @@ export function useChatPageCore({ initialConversationId }: { initialConversation
   const handleGenerateEmail = useCallback(() => handleSendMessage("gerar email de follow-up"), [handleSendMessage])
   const handleSendWhatsApp = useCallback(() => handleSendMessage("enviar mensagem whatsapp"), [handleSendMessage])
   const handleCompareProfiles = useCallback(() => handleSendMessage("comparar perfis de candidatos"), [handleSendMessage])
-  const handleViewAnalytics = useCallback(() => { window.location.href = '/indicadores' }, [])
+  // Onda 4-P0-Fase7 (2026-05-24): trocado '/indicadores' (rota inexistente,
+  // bug padrão Task #712 descoberto via check_no_broken_window_location.py)
+  // pra '/teams-tab/dashboard' (rota canonical que existe + é mapeada como
+  // DASHBOARD em src/lib/canonical-pages.ts:71).
+  const handleViewAnalytics = useCallback(() => { window.location.href = '/teams-tab/dashboard' }, [])
 
   // ── Candidate search handlers ─────────────────────────────────────────────
   const handleSelectCandidate = useCallback((candidate: CandidateResult) => {

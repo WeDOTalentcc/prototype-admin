@@ -122,12 +122,15 @@ export function LiaChatMessageList({
 
 export function pageToUrl(page: string | null): string | null {
   if (!page) return null
+  // Onda 4-P0-Fase7 (2026-05-24): "Indicadores" trocado de '/indicadores'
+  // (rota inexistente — bug padrão Task #712) pra '/teams-tab/dashboard'
+  // (rota canonical DASHBOARD). Descoberto via check_no_broken_window_location.
   const map: Record<string, string> = {
     "Vagas": "/jobs",
     "Funil de Talentos": "/funil-de-talentos",
     "Decidir": "/tasks",
     "Configurações": "/configuracoes",
-    "Indicadores": "/indicadores",
+    "Indicadores": "/teams-tab/dashboard",
   }
   return map[page] ?? null
 }
