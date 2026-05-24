@@ -1,8 +1,13 @@
 """
-Client Users API Endpoints.
+Client Users API.
 
 Provides CRUD operations for managing users within a client company.
 Multi-tenant user management with roles and permissions.
+
+Onda 4.2f-P0.1 (2026-05-23): substituido X-User-Role/X-User-ID headers
+em get_user_from_headers que eram FORJAVEIS = backdoor catastrofico
+(privilege escalation cross-tenant via 1 header). Pattern canonical do
+fix policies.py commit 1b487565: JWT-only via current_user.
 """
 import logging
 import os
@@ -10,8 +15,10 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 
+from app.auth.dependencies import get_current_active_user
+from app.auth.models import User, UserRole
 from app.core.database import get_db
 from app.domains.client_users.dependencies import get_client_user_repo
 from app.domains.client_users.repositories.client_user_repository import ClientUserRepository
@@ -47,16 +54,25 @@ invitation_router = APIRouter(prefix="/invitations", tags=["invitations"])
 # ---------------------------------------------------------------------------
 
 def get_user_from_headers(
+    current_user: User = Depends(get_current_active_user),
     company_id: str = Depends(require_company_id),
-    x_user_id: str | None = Header(None, alias="X-User-ID"),
-    x_user_role: str | None = Header(None, alias="X-User-Role"),
 ) -> dict[str, Any]:
-    """Get user context. company_id sourced from JWT via require_company_id (canonical)."""
+    """Get user context from JWT (NO header).
+
+    Onda 4.2f-P0.1 (2026-05-23): substituido X-User-Role/X-User-ID headers
+    que eram FORJAVEIS = backdoor catastrofico (privilege escalation
+    cross-tenant via 1 header `-H "X-User-Role: admin"`).
+
+    Platform admin = role wedotalent_admin APENAS (staff WeDOTalent).
+    Tenant admin (UserRole.admin) administra apenas a propria company.
+    Nome `get_user_from_headers` mantido pra zero impacto callers.
+    """
     return {
         "company_id": company_id,
-        "user_id": x_user_id or "system",
-        "role": x_user_role or "user",
-        "is_admin": x_user_role == "admin",
+        "user_id": str(current_user.id),
+        "role": current_user.role.value if hasattr(current_user.role, "value") else str(current_user.role),
+        # Onda 4.2f-P0.1: is_admin = wedotalent_admin APENAS.
+        "is_admin": current_user.role == UserRole.wedotalent_admin,
     }
 
 
