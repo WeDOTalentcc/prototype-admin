@@ -319,6 +319,10 @@ company_id: str = Depends(require_company_id)):
 
         await stage_repo.update_fields(stage_id, updates)
 
+        try:
+            await AuditService().log_action(trace_id=str(uuid.uuid4()), company_id=str(company_id), action_type="pipeline_stage_updated", actor=str(getattr(current_user, "id", "system")), target_id=stage_id, target_type="recruitment_stage", metadata={"inline_edit": True, "updates": list(updates.keys())})  # P1-W1-05
+        except Exception as _ae:
+            logger.warning(f"Audit log failed (non-blocking): {_ae}")
         return {
             "success": True,
             "stage_id": stage_id,
@@ -359,6 +363,10 @@ company_id: str = Depends(require_company_id)):
 
         await stage_repo.hard_delete_by_id_str(stage_id)
 
+        try:
+            await AuditService().log_action(trace_id=str(uuid.uuid4()), company_id=str(company_id), action_type="pipeline_stage_deleted", actor=str(getattr(current_user, "id", "system")), target_id=stage_id, target_type="recruitment_stage", metadata={"hard_delete": True, "custom_remove": True})  # P1-W1-05
+        except Exception as _ae:
+            logger.warning(f"Audit log failed (non-blocking): {_ae}")
         return {"success": True, "stage_id": stage_id, "removed": True}
     except HTTPException:
         raise
