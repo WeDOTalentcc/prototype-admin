@@ -953,7 +953,118 @@ async def _wrap_save_hiring_policy_global(**kwargs):
     return await save_hiring_policy(_context=ctx, **kwargs)
 
 
+
+# ───────────────────────────────────────────────────────────────────
+# Bug 5 extension (2026-05-24): promove tools de Minha Empresa pra
+# tool_registry global. Permite recruiter_assistant + orchestrator
+# chamarem save_company_field/section + analyze_company_website
+# diretamente em /configuracoes, sem depender de roteamento exato pro
+# CompanySettingsReActAgent local. Defense-in-depth contra IA
+# hallucinations "não tenho capacidade".
+# ───────────────────────────────────────────────────────────────────
+
+async def _wrap_save_company_field_global(**kwargs) -> dict[str, Any]:
+    """Lazy import to avoid circular dep with agents/company_tool_registry.py."""
+    from app.domains.company_settings.agents.company_tool_registry import (
+        _wrap_save_company_field as _local_wrap,
+    )
+    return await _local_wrap(**kwargs)
+
+
+async def _wrap_save_company_section_global(**kwargs) -> dict[str, Any]:
+    from app.domains.company_settings.agents.company_tool_registry import (
+        _wrap_save_company_section as _local_wrap,
+    )
+    return await _local_wrap(**kwargs)
+
+
+async def _wrap_analyze_company_website_global(**kwargs) -> dict[str, Any]:
+    from app.domains.company_settings.agents.company_tool_registry import (
+        _wrap_analyze_company_website as _local_wrap,
+    )
+    return await _local_wrap(**kwargs)
+
+
 def register_company_settings_tools() -> None:
+    tool_registry.register(ToolDefinition(
+        name="save_company_field",
+        description=(
+            "Salva UM campo do perfil da empresa (mission, vision, values, "
+            "industry, company_size, employee_count, hr_email, etc) ou da "
+            "cultura (work_model, dei_initiatives, sustainability, "
+            "engineering_culture, default_languages, etc). Use quando o usuário "
+            "pedir explicitamente para cadastrar/atualizar UM campo específico. "
+            "Para múltiplos campos de uma vez, prefira save_company_section."
+        ),
+        parameters_schema={
+            "type": "object",
+            "properties": {
+                "section": {
+                    "type": "string",
+                    "enum": ["profile", "culture"],
+                    "description": "profile = dados básicos da empresa; culture = mission/vision/values/EVP"
+                },
+                "field": {"type": "string", "description": "Nome do campo (ex: mission, vision, values)"},
+                "value": {"description": "Valor a salvar — string para campos textuais, list para arrays como values"},
+            },
+            "required": ["section", "field", "value"],
+        },
+        handler=_wrap_save_company_field_global,
+        allowed_agents=[
+            "recruiter_assistant", "company_settings", "orchestrator",
+        ],
+    ))
+
+    tool_registry.register(ToolDefinition(
+        name="save_company_section",
+        description=(
+            "Salva MÚLTIPLOS campos de uma seção do perfil ou cultura em uma "
+            "única chamada. Use quando o usuário fornecer várias informações "
+            "de uma vez (ex: 'missão é X, visão é Y, valores são Z')."
+        ),
+        parameters_schema={
+            "type": "object",
+            "properties": {
+                "section": {
+                    "type": "string",
+                    "enum": ["profile", "culture"],
+                    "description": "profile ou culture"
+                },
+                "data": {
+                    "type": "object",
+                    "description": "Dicionário {nome_campo: valor} com campos a salvar. Ex: {\"mission\": \"...\", \"vision\": \"...\", \"values\": [\"...\"]}"
+                },
+            },
+            "required": ["section", "data"],
+        },
+        handler=_wrap_save_company_section_global,
+        allowed_agents=[
+            "recruiter_assistant", "company_settings", "orchestrator",
+        ],
+    ))
+
+    tool_registry.register(ToolDefinition(
+        name="analyze_company_website",
+        description=(
+            "Analisa o website da empresa para extrair automaticamente missão, "
+            "valores, cultura, tech stack e benefícios. Use quando o usuário "
+            "pedir 'analise nosso site' ou similar. Retorna campos extraídos para "
+            "revisão antes de gravar (via save_company_section)."
+        ),
+        parameters_schema={
+            "type": "object",
+            "properties": {
+                "website_url": {"type": "string", "description": "URL do website (ex: https://wedotalent.cc)"},
+                "linkedin_url": {"type": "string", "description": "URL do LinkedIn (opcional)"},
+            },
+            "required": ["website_url"],
+        },
+        handler=_wrap_analyze_company_website_global,
+        allowed_agents=[
+            "recruiter_assistant", "company_settings", "orchestrator",
+        ],
+    ))
+
     tool_registry.register(ToolDefinition(
         name="check_company_completeness",
         description=(
