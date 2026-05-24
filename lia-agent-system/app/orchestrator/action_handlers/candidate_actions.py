@@ -409,7 +409,7 @@ async def _start_screening(params: dict[str, Any], context: dict[str, Any]):
             job_row = await db.execute(
                 text("""
                     SELECT title FROM job_vacancies
-                    WHERE id = CAST(:jid AS uuid) AND company_id = CAST(:co AS uuid)
+                    WHERE id = CAST(:jid AS uuid) AND company_id = :co
                     LIMIT 1
                 """),
                 {"jid": str(job_vacancy_id), "co": str(company_id)},
@@ -440,7 +440,7 @@ async def _start_screening(params: dict[str, Any], context: dict[str, Any]):
                         FROM candidates c
                         JOIN vacancy_candidates vc ON vc.candidate_id = c.id
                         WHERE c.id = CAST(:cid AS uuid)
-                          AND vc.company_id = CAST(:co AS uuid)
+                          AND vc.company_id = :co
                           AND vc.job_vacancy_id = CAST(:jid AS uuid)
                         LIMIT 1
                     """),
@@ -458,7 +458,7 @@ async def _start_screening(params: dict[str, Any], context: dict[str, Any]):
                         SET stage = 'Triagem', status = 'screening', updated_at = NOW()
                         WHERE candidate_id = CAST(:cid AS uuid)
                           AND job_vacancy_id = CAST(:jid AS uuid)
-                          AND company_id = CAST(:co AS uuid)
+                          AND company_id = :co
                     """),
                     {"cid": cid_str, "jid": str(job_vacancy_id), "co": str(company_id)},
                 )
@@ -718,7 +718,7 @@ async def _batch_move_candidates(params: dict[str, Any], context: dict[str, Any]
                 """
                 bind: dict[str, Any] = {"to_stage": to_stage, "cid": str(cid)}
                 if company_id:
-                    update_sql += " AND company_id = CAST(:co AS uuid)"
+                    update_sql += " AND company_id = :co"
                     bind["co"] = str(company_id)
                 result = await db.execute(text(update_sql), bind)
                 moved += result.rowcount
