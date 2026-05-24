@@ -115,7 +115,7 @@ class PipelineService:
             tenant_filter = (
                 [Candidate.company_id == company_id] if company_id else []
             )
-            query = select(Candidate).where(
+            query = select(Candidate).where(  # ADR-001-EXEMPT: R-048 Sprint 6 — complex stale-candidate filter; move to CandidatePipelineRepository.get_stale_candidates()
                 and_(
                     *tenant_filter,
                     Candidate.is_active,
@@ -139,7 +139,7 @@ class PipelineService:
             jobs_tenant_filter = (
                 [JobVacancy.company_id == company_id] if company_id else []
             )
-            jobs_query = select(JobVacancy).where(
+            jobs_query = select(JobVacancy).where(  # ADR-001-EXEMPT: R-048 Sprint 6 — active-jobs filter co-located with stale-candidate logic; move to CandidatePipelineRepository
                 *jobs_tenant_filter,
                 JobVacancy.status.in_(["Ativa", "Publicada", "open", "active"]),
             )
@@ -295,7 +295,7 @@ class PipelineService:
             import uuid as uuid_module
             # Onda 4.2b-P0-1: filtro company_id obrigatorio.
             result = await db.execute(
-                select(Candidate).where(
+                select(Candidate).where(  # ADR-001-EXEMPT: R-048 Sprint 6 — single-record lookup; move to CandidateRepository.get_by_id_and_company()
                     Candidate.id == uuid_module.UUID(candidate_id),
                     Candidate.company_id == company_id,
                 )

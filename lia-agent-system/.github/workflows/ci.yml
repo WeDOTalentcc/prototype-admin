@@ -434,6 +434,18 @@ jobs:
 
       - name: "G-GOV: tool governance contracts (PII/decision/delete)"
         run: python scripts/check_tool_governance.py
+
+      # ADR-001 — Repository Pattern enforcement (BLOCKING — promoted 2026-05-25)
+      # Sensor 1: raw SQL inline in services — baseline 0 since Sprint 8.
+      # Fix: move sql to repositories/, or add # ADR-001-EXEMPT: <reason> on the line.
+      - name: "G-ADR001-SQL: no raw SQL inline in services (BLOCKING)"
+        run: python scripts/check_no_sql_inline_in_services.py
+
+      # ADR-001 — Sensor 2: direct select(Model) in services — baseline 0 since Sprint 8.
+      # Fix: move select() to repositories/, or add # ADR-001-EXEMPT: <reason> on the line.
+      # Known warn-only exception: app/services/ agent layer (38 violations, deferred to Sprint 10).
+      - name: "G-ADR001-SELECT: no direct select(Model) in services (BLOCKING)"
+        run: python scripts/check_no_select_in_services.py
       # R-017 — ADR-002 model completeness: every *.py in lia_models/ must appear in __init__.py.
       # Prevents silent ImportError when new model files are added but not re-exported.
       # Fix: add `from lia_models.<module> import ...` to libs/models/lia_models/__init__.py.

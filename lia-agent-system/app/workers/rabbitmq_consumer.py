@@ -1,6 +1,12 @@
 """
-RabbitMQ Consumer — NOT YET WIRED
+RabbitMQ Consumer — NOT YET WIRED (R-046: intentional stub)
 ====================================
+
+R-046 EVALUATION (2026-05-25): KEEP — serves a different purpose than
+app/shared/messaging/rabbitmq_consumer.py (which handles WS response routing
+and IS live in production). THIS file is a placeholder for the future
+Rails → lia-agent-system async channel via AMQP. The two files are NOT
+duplicates. Activation checklist below.
 TODO(RABBITMQ-INT): Implementar este módulo para ativar o canal Rails → lia-agent-system.
 
 ## Por que existe agora (mas não roda)
