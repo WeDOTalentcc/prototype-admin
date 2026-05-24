@@ -298,14 +298,26 @@ async def resend_invitation(
     user_id: str,
     user_repo: UserRepository = Depends(get_user_repo),
     email_svc: EmailService = Depends(get_email_service),
-company_id: str = Depends(require_company_id)):
+    current_user=Depends(get_current_user_or_demo),
+    company_id: str = Depends(require_company_id)):
     # multi-tenancy: defense-in-depth — company_id JWT + tenant-scoped get_by_id
+    # P1-W2-05 fix (2026-05-24): adicionado current_user dep para autenticacao explicita.
+    # Ownership check: get_by_id(uuid, company_id=company_id) garante que user_id
+    # pertence ao tenant do requester — retorna None (404) se pertencer a outra empresa.
+    # AuditService actor corrigido de "system" para actor real do requester.
     """Resend invitation email to a user who hasn't activated their account yet.
+
+    P1-W2-05 fix (2026-05-24): adicionado current_user dependency para autenticacao
+    explicita. Ownership enforced via get_by_id com company_id do JWT — retorna None
+    se o user_id pertencer a outra empresa, resultando em 404 (evita enumeration).
+    Actor no audit log agora reflete o usuario real que fez o request.
 
     Audit Wave 3 (2026-05-21) — P0.C: get_by_id passes company_id (defense-in-depth).
     """
     try:
         user_uuid = uuid.UUID(user_id)
+        # Ownership check: get_by_id filtra por company_id do JWT.
+        # Se user_id pertencer a outra empresa retorna None -> 404 (sem info disclosure).
         user = await user_repo.get_by_id(user_uuid, company_id=company_id)
 
         if not user:
@@ -328,8 +340,9 @@ company_id: str = Depends(require_company_id)):
             variables={"user_name": user.name, "invitation_link": invitation_link},
         )
 
-        logger.info(f"Resent invitation to user: {user.id}")
-        await AuditService().log_action(trace_id=str(uuid.uuid4()), company_id=company_id, action_type="user_invitation_resend", actor="system", target_id=str(user.id), target_type="user")  # P1-W2-06
+        actor_id = str(getattr(current_user, "id", "system"))
+        logger.info(f"Resent invitation to user: {user.id} by actor: {actor_id}")
+        await AuditService().log_action(trace_id=str(uuid.uuid4()), company_id=company_id, action_type="user_invitation_resend", actor=actor_id, target_id=str(user.id), target_type="user")  # P1-W2-05+W2-06
         return {"success": True, "message": "Invitation email resent successfully"}
     except HTTPException:
         raise

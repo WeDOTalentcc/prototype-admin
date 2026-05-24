@@ -18,7 +18,7 @@ from app.auth.dependencies import get_current_user
 from app.core.database import get_db
 from app.domains.analytics.repositories.fairness_report_repository import FairnessReportRepository
 from app.schemas.envelope import ResponseEnvelope, ok_envelope
-from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.security.require_company_id import require_company_id
 
 router = APIRouter(prefix="/fairness", tags=["fairness-reports"])
 
@@ -53,25 +53,23 @@ class FairnessTrendResponse(BaseModel):
 @router.get("/reports/summary", response_model=ResponseEnvelope[FairnessSummaryResponse])
 # TODO(phase2): extract to repository — complex fairness aggregation
 async def get_fairness_summary(
-    company_id: str | None = Query(None, description="Filter by company UUID"),
     days: int = Query(30, ge=1, le=365, description="Look-back period in days"),
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user),
-_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
-    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
+    company_id: str = Depends(require_company_id)):
+    # multi-tenancy: company_id JWT-only via Depends(require_company_id) — P1-W1-03 fix
     """
     Summary of FairnessGuard events grouped by bias category.
 
     Returns total blocks and warnings per category for the specified period.
     Useful for recruiter coaching and compliance dashboards.
 
-    Onda 4.2h-C3 (2026-05-24): company_id agora fail-closed = JWT quando
-    query param ausente. Antes None passava direto pro repo e retornava
-    dados de TODAS empresas (cross-tenant leak P0).
+    P1-W1-03 fix (2026-05-24): company_id agora exclusivamente do JWT via
+    require_company_id. Removido Query(None) que permitia cross-tenant:
+    qualquer usuario podia passar company_id de outra empresa como query
+    param e obter relatorio alheio. require_company_id_strict_match era gate
+    parcial — canonical eh remover o Query param inteiramente (CLAUDE.md REGRA 2).
     """
-    # Onda 4.2h-C3: fallback JWT — strict_match já validou que query == JWT se presente
-    if company_id is None:
-        company_id = _company_gate
     since = datetime.now(UTC) - timedelta(days=days)
     repo = FairnessReportRepository(db)
     rows = await repo.get_summary_by_category(since, company_id)
@@ -101,23 +99,19 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 
 @router.get("/reports/trend", response_model=FairnessTrendResponse)
 async def get_fairness_trend(
-    company_id: str | None = Query(None, description="Filter by company UUID"),
     days: int = Query(90, ge=7, le=365, description="Look-back period in days"),
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user),
-_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
-    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
+    company_id: str = Depends(require_company_id)):
+    # multi-tenancy: company_id JWT-only via Depends(require_company_id) — P1-W1-03 fix
     """
     Daily trend of FairnessGuard events over time.
 
     Returns a time-series suitable for charting bias detection trends.
     Useful for identifying if training/coaching is reducing discrimination attempts.
 
-    Onda 4.2h-C3 (2026-05-24): company_id fail-closed = JWT quando ausente.
+    P1-W1-03 fix (2026-05-24): company_id do JWT somente. Query param removido.
     """
-    # Onda 4.2h-C3: fallback JWT
-    if company_id is None:
-        company_id = _company_gate
     since = datetime.now(UTC) - timedelta(days=days)
     repo = FairnessReportRepository(db)
     rows = await repo.get_daily_trend(since, company_id)
@@ -160,7 +154,6 @@ class FairnessAuditLogsResponse(BaseModel):
 
 @router.get("/audit/logs", response_model=FairnessAuditLogsResponse)
 async def get_fairness_audit_logs(
-    company_id: str | None = Query(None, description="Filter by company UUID"),
     category: str | None = Query(None, description="Filter by bias category"),
     blocked_only: bool = Query(False, description="Return only blocked events"),
     days: int = Query(30, ge=1, le=365, description="Look-back period in days"),
@@ -168,19 +161,16 @@ async def get_fairness_audit_logs(
     offset: int = Query(0, ge=0),
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user),
-_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
-    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
+    company_id: str = Depends(require_company_id)):
+    # multi-tenancy: company_id JWT-only via Depends(require_company_id) — P1-W1-03 fix
     """
     Paginado audit trail do FairnessGuard — EU AI Act / LGPD compliance.
 
     Retorna eventos de bloqueio e soft-warning com metadados de contexto.
     Queries originais NÃO são expostas (apenas query_hash SHA-256).
 
-    Onda 4.2h-C3 (2026-05-24): company_id fail-closed = JWT quando ausente.
+    P1-W1-03 fix (2026-05-24): company_id do JWT somente. Query param removido.
     """
-    # Onda 4.2h-C3: fallback JWT
-    if company_id is None:
-        company_id = _company_gate
     since = datetime.now(UTC) - timedelta(days=days)
     repo = FairnessReportRepository(db)
     total, rows = await repo.get_audit_logs_paginated(
@@ -218,29 +208,25 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 
 @router.get("/reports/export", response_model=None)
 async def export_fairness_report(
-    company_id: str | None = Query(None),
     days: int = Query(30, ge=1, le=365),
     format: str = Query("csv", regex="^(csv|json)$"),
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user),
-_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
-    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
+    company_id: str = Depends(require_company_id)):
+    # multi-tenancy: company_id JWT-only via Depends(require_company_id) — P1-W1-03 fix
     """
     Export FairnessGuard report as CSV or JSON (EU AI Act compliance).
 
     CSV format: category,total_blocks,total_warnings,last_occurrence
     JSON format: FairnessSummaryResponse schema
 
-    Onda 4.2h-C3 (2026-05-24): company_id fail-closed = JWT quando ausente.
+    P1-W1-03 fix (2026-05-24): company_id do JWT somente. Query param removido.
     """
     import csv
     import io
 
     from fastapi.responses import JSONResponse, StreamingResponse
 
-    # Onda 4.2h-C3: fallback JWT
-    if company_id is None:
-        company_id = _company_gate
     # Reuse summary logic via repository
     since = datetime.now(UTC) - timedelta(days=days)
     repo = FairnessReportRepository(db)

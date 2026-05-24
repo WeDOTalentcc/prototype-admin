@@ -48,13 +48,25 @@ def verify_merge_signature(payload: bytes, signature: str) -> bool:
 async def handle_merge_webhook(
     request: Request,
     background_tasks: BackgroundTasks,
-    x_merge_signature: str | None = Header(None, alias="X-Merge-Signature"), 
+    x_merge_signature: str | None = Header(None, alias="X-Merge-Signature"),
 ):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Receive webhooks from Merge.dev when data changes.
     Events: Candidate.created, Candidate.updated, Application.changed_stage, etc.
     """
+    # P1-W3-01 fix: HMAC obrigatório — rejeitar early se header ausente ANTES de qualquer
+    # processamento de payload. Impede DoS de parsing + desambigua "sem assinatura" de
+    # "assinatura inválida" nos logs de auditoria. verify_webhook_owner abaixo já é
+    # fail-closed, mas o early-reject elimina processamento desnecessário de payloads
+    # não-autenticados (ataques de volume, fuzzers).
+    if not x_merge_signature:
+        logger.warning("[MERGE] P1-W3-01: X-Merge-Signature header ausente — rejeitando (401)")
+        raise HTTPException(
+            status_code=401,
+            detail="X-Merge-Signature header is required",
+        )
+
     body = await request.body()
 
     # Legacy `verify_merge_signature` was the only gate before Task #1146.

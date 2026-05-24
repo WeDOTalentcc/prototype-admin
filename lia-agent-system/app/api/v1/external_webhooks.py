@@ -9,6 +9,7 @@ import hashlib
 import hmac
 import logging
 import os
+import secrets
 import uuid
 from typing import Any
 
@@ -28,6 +29,48 @@ from app.shared.security.require_company_id import require_company_id
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/external-webhooks", tags=["external-webhooks"])
+
+# P1-W3-02: Bearer token estático para webhooks interview/test/document.
+# Configurar EXTERNAL_WEBHOOK_SECRET_TOKEN com valor opaco ≥ 32 chars.
+# TODO Task #1147: migrar pra verify_webhook_owner canonical com per-tenant HMAC
+# quando os provedores (calendly, testgorilla, etc.) tiverem webhook secrets configuráveis.
+# TODO Task #1148: IP allowlist (cloudflare / provider CIDR) seria a defesa ideal
+# para providers com IP fixo, mas não está implementada — bearer token é o gate atual.
+_EXTERNAL_WEBHOOK_SECRET_TOKEN = os.getenv("EXTERNAL_WEBHOOK_SECRET_TOKEN", "")
+
+
+def _verify_external_webhook_bearer(authorization: str | None, provider: str) -> None:
+    """Verify EXTERNAL_WEBHOOK_SECRET_TOKEN bearer token.
+
+    P1-W3-02: gate obrigatório para interview/test/document webhooks enquanto
+    a migração para verify_webhook_owner canonical (Task #1147) não é concluída.
+    Fail-loud: 401 se token ausente/inválido. Fail-loud: 500 se env var não configurada
+    (impede deploy silencioso sem proteção).
+    """
+    if not _EXTERNAL_WEBHOOK_SECRET_TOKEN:
+        logger.error(
+            "[WEBHOOK] P1-W3-02: EXTERNAL_WEBHOOK_SECRET_TOKEN não configurado — "
+            "provider=%s rejeitado. Configure a env var para habilitar este endpoint.",
+            provider,
+        )
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                "Webhook endpoint temporariamente indisponível: "
+                "EXTERNAL_WEBHOOK_SECRET_TOKEN não configurado no servidor. "
+                "Contate o administrador."
+            ),
+        )
+    token = (authorization or "").removeprefix("Bearer ").strip()
+    if not token or not secrets.compare_digest(token, _EXTERNAL_WEBHOOK_SECRET_TOKEN):
+        logger.warning(
+            "[WEBHOOK] P1-W3-02: bearer token inválido ou ausente — provider=%s 401",
+            provider,
+        )
+        raise HTTPException(
+            status_code=401,
+            detail="Unauthorized: Authorization: Bearer <token> inválido ou ausente",
+        )
 
 
 def is_webhook_adapter_enabled(provider: str) -> bool:
@@ -394,15 +437,20 @@ async def handle_interview_webhook(
     provider: str,
     request: Request,
     background_tasks: BackgroundTasks,
+    authorization: str | None = Header(None, alias="Authorization"),
     company_id: str = Depends(require_company_id),
 ):
     """Receive webhook from interview scheduling tools (calendly, custom).
 
-    Onda 4.2e-P0-9 (2026-05-23): adicionado require_company_id — antes
-    era endpoint TOTALMENTE ABERTO (sem signature, sem auth) que aceitava
-    payload spoofado de qualquer atacante para trigger workflow + LGPD
-    leak. TODO: migrar pra verify_webhook_owner canonical (Task #1146).
+    Onda 4.2e-P0-9 (2026-05-23): adicionado require_company_id.
+    P1-W3-02 (2026-05-24): adicionado bearer token gate via
+    EXTERNAL_WEBHOOK_SECRET_TOKEN. Antes era endpoint com apenas JWT
+    (qualquer usuário autenticado podia spoofar eventos de entrevista).
+    TODO Task #1147: migrar pra verify_webhook_owner canonical (per-tenant HMAC).
+    TODO Task #1148: IP allowlist para providers com IP fixo (defesa ideal).
     """
+    _verify_external_webhook_bearer(authorization, provider=f"interview/{provider}")
+
     if not is_webhook_adapter_enabled(f"interview_{provider}"):
         return {"status": "disabled", "provider": provider}
 
@@ -423,15 +471,20 @@ async def handle_test_webhook(
     provider: str,
     request: Request,
     background_tasks: BackgroundTasks,
+    authorization: str | None = Header(None, alias="Authorization"),
     company_id: str = Depends(require_company_id),
 ):
     """Receive webhook from assessment/test platforms (testgorilla, codility, custom).
 
-    Onda 4.2e-P0-10 (2026-05-23): adicionado require_company_id — antes
-    era endpoint aberto, atacante injetava resultados de teste falsos
-    em candidatos arbitrarios (promove candidate sem ter feito teste).
-    TODO: migrar pra verify_webhook_owner canonical.
+    Onda 4.2e-P0-10 (2026-05-23): adicionado require_company_id.
+    P1-W3-02 (2026-05-24): adicionado bearer token gate via
+    EXTERNAL_WEBHOOK_SECRET_TOKEN. Antes era endpoint com apenas JWT
+    (atacante com JWT válido injetava resultados de teste falsos).
+    TODO Task #1147: migrar pra verify_webhook_owner canonical.
+    TODO Task #1148: IP allowlist para providers com IP fixo.
     """
+    _verify_external_webhook_bearer(authorization, provider=f"test/{provider}")
+
     if not is_webhook_adapter_enabled(f"test_{provider}"):
         return {"status": "disabled", "provider": provider}
 
@@ -452,14 +505,20 @@ async def handle_document_webhook(
     provider: str,
     request: Request,
     background_tasks: BackgroundTasks,
+    authorization: str | None = Header(None, alias="Authorization"),
     company_id: str = Depends(require_company_id),
 ):
     """Receive webhook from document collection services.
 
-    Onda 4.2e-P0-11 (2026-05-23): adicionado require_company_id — antes
-    atacante registrava "documento submetido" para qualquer candidato.
-    LGPD Art. 38 (uso indevido de declaracao de documentacao).
+    Onda 4.2e-P0-11 (2026-05-23): adicionado require_company_id.
+    P1-W3-02 (2026-05-24): adicionado bearer token gate via
+    EXTERNAL_WEBHOOK_SECRET_TOKEN. LGPD Art. 38 (uso indevido de
+    declaracao de documentacao).
+    TODO Task #1147: migrar pra verify_webhook_owner canonical.
+    TODO Task #1148: IP allowlist para providers com IP fixo.
     """
+    _verify_external_webhook_bearer(authorization, provider=f"document/{provider}")
+
     if not is_webhook_adapter_enabled(f"document_{provider}"):
         return {"status": "disabled", "provider": provider}
 

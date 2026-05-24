@@ -65,7 +65,12 @@ def _get_fernet() -> Fernet:
             )
             key = legacy
 
-    is_production = os.getenv("ENVIRONMENT", "").lower() == "production"
+    env = os.getenv("ENVIRONMENT", "").lower()
+    is_production = env == "production"
+    # P1-W3-06 fix: staging também exige key persistente — ephemeral em staging
+    # causa falhas de decrypt entre restarts (webhook secrets, tenant API keys, etc.)
+    # criados num processo não decriptam no próximo. Antes apenas "production" bloqueava.
+    is_staging = env in ("staging", "homologation", "homolog")
     is_dev = os.getenv("IS_DEVELOPMENT", "").lower() in ("true", "1", "yes")
 
     if not key:
@@ -75,18 +80,31 @@ def _get_fernet() -> Fernet:
                 "Generate with: python3 -c \"from cryptography.fernet import "
                 "Fernet; print(Fernet.generate_key().decode())\""
             )
+        if is_staging:
+            raise RuntimeError(
+                "FIELD_ENCRYPTION_KEY must be set in staging/homologation. "
+                "Ephemeral keys cause decrypt failures across restarts — "
+                "encrypted data (webhook secrets, LLM API keys) becomes "
+                "unreadable after each process restart. "
+                "Set FIELD_ENCRYPTION_KEY in the staging environment. "
+                "Generate with: python3 -c \"from cryptography.fernet import "
+                "Fernet; print(Fernet.generate_key().decode())\""
+            )
         if not is_dev:
             raise RuntimeError(
                 "FIELD_ENCRYPTION_KEY not set and IS_DEVELOPMENT not 'true'. "
                 "Refusing to use ephemeral key — set FIELD_ENCRYPTION_KEY or "
                 "set IS_DEVELOPMENT=true to acknowledge dev mode."
             )
-        key = Fernet.generate_key().decode()
+        generated = Fernet.generate_key().decode()
         logger.warning(
             "FIELD_ENCRYPTION_KEY not set, IS_DEVELOPMENT=true — generated "
             "EPHEMERAL key. Encrypted values WILL NOT survive process "
-            "restart. For persistent dev encryption, set FIELD_ENCRYPTION_KEY."
+            "restart. For persistent dev encryption, add to .env: "
+            "FIELD_ENCRYPTION_KEY=%s",
+            generated,
         )
+        key = generated
 
     _fernet_instance = Fernet(key.encode() if isinstance(key, str) else key)
     return _fernet_instance
