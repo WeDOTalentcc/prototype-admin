@@ -61,6 +61,7 @@ import { useWizardFlow } from "./wizard/useWizardFlow";
 import { useWizardIntegration } from "./wizard/useWizardIntegration";
 import { formatWizardSavedLabel } from "./wizard/wizard-saved-label";
 import { STAGE_PILL_LABELS, type WizardStage } from "./wizard/wizard-types";
+import { getPersisted, setPersisted } from "@/lib/lia-persistence";
 
 const DEFINIR_REGEX = /^\/(?:definir|glossario|glossário)(?:\s+(.+))?$/i;
 
@@ -77,20 +78,20 @@ const DEFAULT_WIDTH = 380;
 const MIN_WIDTH = 300;
 const MAX_WIDTH = 600;
 
+// Onda 4-P2-6 (2026-05-24): getStoredMode/getStoredWidth migrados pra
+// liaPersistence helper canonical (TTL "long" = 90 dias). Backwards-compat
+// via getPersisted (legacy raw values são auto-removidos no primeiro read).
 function getStoredMode(): ChatMode {
-  if (typeof window === "undefined") return "sidebar";
-  const stored = localStorage.getItem(MODE_STORAGE_KEY);
+  const stored = getPersisted<string>(MODE_STORAGE_KEY, "sidebar");
   if (stored === "sidebar" || stored === "floating" || stored === "fullscreen")
     return stored;
   return "sidebar";
 }
 
 function getStoredWidth(): number {
-  if (typeof window === "undefined") return DEFAULT_WIDTH;
-  const stored = localStorage.getItem(WIDTH_STORAGE_KEY);
-  if (stored) {
-    const n = Number.parseInt(stored, 10);
-    if (!isNaN(n) && n >= MIN_WIDTH && n <= MAX_WIDTH) return n;
+  const stored = getPersisted<number | null>(WIDTH_STORAGE_KEY, null);
+  if (typeof stored === "number" && stored >= MIN_WIDTH && stored <= MAX_WIDTH) {
+    return stored;
   }
   return DEFAULT_WIDTH;
 }
@@ -137,7 +138,8 @@ export function UnifiedChat({
     };
     const handleMouseUp = () => {
       setIsResizing(false);
-      localStorage.setItem(WIDTH_STORAGE_KEY, String(widthRef.current));
+      // Onda 4-P2-6: canonical persistence com TTL "long" (90 dias)
+      setPersisted(WIDTH_STORAGE_KEY, widthRef.current);
     };
     document.body.style.cursor = "ew-resize";
     document.body.style.userSelect = "none";
@@ -365,9 +367,9 @@ export function UnifiedChat({
     },
   });
 
-  // Persist mode preference
+  // Persist mode preference (Onda 4-P2-6: canonical TTL 90 dias)
   useEffect(() => {
-    localStorage.setItem(MODE_STORAGE_KEY, mode);
+    setPersisted(MODE_STORAGE_KEY, mode);
   }, [mode]);
 
   const handleSend = useCallback(() => {
@@ -707,7 +709,8 @@ export function UnifiedChat({
         return;
       }
       setMode(newMode);
-      localStorage.setItem(MODE_STORAGE_KEY, newMode);
+      // Onda 4-P2-6: canonical TTL persistence
+      setPersisted(MODE_STORAGE_KEY, newMode);
       window.dispatchEvent(
         new CustomEvent("lia:chat-mode-changed", {
           detail: { mode: newMode, prevMode },
