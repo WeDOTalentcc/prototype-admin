@@ -347,17 +347,22 @@ export const badgeStyles = {
  *
  * Para variantes semânticas com cor + borda inclusas, ver `previewChipVariants`.
  */
-export const previewChipClasses = 'text-micro px-1.5 py-0 h-4' as const
+// F11 Bug 3 (2026-05-24): adicionado `flex items-center` para alinhar baseline
+// idêntica ao chip LGPD canonical (`text-micro px-1.5 py-0 h-4 flex items-center
+// gap-0.5`). Sem flex explícito, o Chip baseline `inline-flex` cria differential
+// vertical alignment quando outras classes (h-4 + py-0) competem com line-height,
+// resultando em chips visualmente ~4px mais altos que o LGPD nos screenshots.
+export const previewChipClasses = 'text-micro px-1.5 py-0 h-4 flex items-center' as const
 
 export const previewChipVariants = {
   neutral:
-    'text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-secondary dark:bg-lia-bg-secondary dark:text-lia-text-secondary',
+    'text-micro px-1.5 py-0 h-4 flex items-center bg-lia-bg-tertiary text-lia-text-secondary dark:bg-lia-bg-secondary dark:text-lia-text-secondary',
   success:
-    'text-micro px-1.5 py-0 h-4 bg-status-success/10 text-status-success dark:bg-status-success/30 dark:text-status-success',
+    'text-micro px-1.5 py-0 h-4 flex items-center bg-status-success/10 text-status-success dark:bg-status-success/30 dark:text-status-success',
   warning:
-    'text-micro px-1.5 py-0 h-4 bg-status-warning/10 text-status-warning dark:bg-status-warning/30 dark:text-status-warning',
+    'text-micro px-1.5 py-0 h-4 flex items-center bg-status-warning/10 text-status-warning dark:bg-status-warning/30 dark:text-status-warning',
   error:
-    'text-micro px-1.5 py-0 h-4 bg-status-error/10 text-status-error dark:bg-status-error/30 dark:text-status-error',
+    'text-micro px-1.5 py-0 h-4 flex items-center bg-status-error/10 text-status-error dark:bg-status-error/30 dark:text-status-error',
 } as const
 
 /**

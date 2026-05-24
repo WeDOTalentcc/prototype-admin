@@ -287,7 +287,7 @@ export function CandidatePreviewHeader({
                     ? { label: 'Local', cls: 'bg-stone-400/15 text-stone-500 border-stone-400/30' }
                     : { label: String(c.enrichment_source), cls: 'bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-default' }
               return (
-                <Chip variant="neutral" muted className={`text-micro px-1.5 py-0 h-4 ${config.cls}`}>
+                <Chip variant="neutral" muted className={`text-micro px-1.5 py-0 h-4 flex items-center ${config.cls}`}>
                   {config.label}
                 </Chip>
               )

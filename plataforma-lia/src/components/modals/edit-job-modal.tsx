@@ -443,7 +443,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                     <div className="flex items-center gap-2 mb-4">
                       <Users className="w-4 h-4 text-lia-text-disabled" />
                       <h3 className="text-xs font-semibold text-lia-text-tertiary">Informações do Registro</h3>
-                      <Chip variant="neutral" className="text-micro px-1.5 py-0 h-4 bg-lia-bg-secondary text-lia-text-disabled border-lia-border-subtle">
+                      <Chip variant="neutral" className="text-micro px-1.5 py-0 h-4 flex items-center bg-lia-bg-secondary text-lia-text-disabled border-lia-border-subtle">
                         Somente leitura
                       </Chip>
                     </div>

@@ -54,11 +54,11 @@ function QuestionCard({ question, showDelete, onToggle }: { question: UnifiedScr
         <div className="flex-1 space-y-2">
           <div className="flex items-start justify-between gap-2">
             <div className="flex items-center gap-1">
-              <Chip variant="neutral" className={cn("text-micro px-1.5 py-0 h-4 border", badge.color)}>
+              <Chip variant="neutral" className={cn("text-micro px-1.5 py-0 h-4 flex items-center border", badge.color)}>
                 {badge.label}
               </Chip>
               {isAffirmativeQuestion && (
-                <Chip variant="success" className="text-micro px-1.5 py-0 h-4">
+                <Chip variant="success" className="text-micro px-1.5 py-0 h-4 flex items-center">
                   Não eliminatória
                 </Chip>
               )}
@@ -130,7 +130,7 @@ export function ScreeningBlockSection({
             <div className="flex items-center gap-1.5">
               <span className="text-xs font-medium text-lia-text-primary">{block.name}</span>
               {block.id === 2 && isAffirmative && (
-                <Chip variant="neutral" className="text-micro px-1.5 py-0 h-4 border  border-wedo-purple/30">
+                <Chip variant="neutral" className="text-micro px-1.5 py-0 h-4 flex items-center border  border-wedo-purple/30">
                   Vaga Afirmativa
                 </Chip>
               )}
@@ -260,7 +260,7 @@ export function SuggestionCard({ question, onAdd }: { question: UnifiedScreening
           </p>
           <div className="flex flex-wrap gap-1">
             {badges.map((badge, idx) => (
-              <Chip key={idx} variant="neutral" className={cn("text-micro px-1.5 py-0 h-4 border", badge.color)}>
+              <Chip key={idx} variant="neutral" className={cn("text-micro px-1.5 py-0 h-4 flex items-center border", badge.color)}>
                 {badge.label as React.ReactNode}
               </Chip>
             ))}

@@ -52,7 +52,7 @@ export function JobFiltersPanel({
             <h3 className="text-xs font-semibold text-lia-text-primary">Filtros de Vagas</h3>
           </div>
           {getActiveJobFiltersCount() > 0 && (
-            <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4">
+            <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 flex items-center">
               {getActiveJobFiltersCount()}
             </Chip>
           )}

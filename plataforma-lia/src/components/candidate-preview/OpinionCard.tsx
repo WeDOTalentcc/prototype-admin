@@ -92,17 +92,17 @@ export function OpinionCard({ opinion, isExpanded, onToggle, type, copiedItemId,
                 {isWsiOpinion ? 'Parecer WSI' : (opinion.job_vacancy_id ? 'Parecer de Vaga' : 'Parecer Geral')}
               </span>
               {opinion.job_vacancy_id && opinion.job_vacancy_title ? (
-                <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-subtle flex items-center gap-1">
+                <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 flex items-center bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-subtle flex items-center gap-1">
                   <Briefcase className="w-2.5 h-2.5" />
                   #{String(opinion.job_vacancy_id).slice(0, 6)} - {String(opinion.job_vacancy_title)}
                 </Chip>
               ) : opinion.job_vacancy_title ? (
-                <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-subtle flex items-center gap-1">
+                <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 flex items-center bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-subtle flex items-center gap-1">
                   <Briefcase className="w-2.5 h-2.5" />
                   {String(opinion.job_vacancy_title)}
                 </Chip>
               ) : !opinion.job_vacancy_id ? (
-                <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-subtle">
+                <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 flex items-center bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-subtle">
                   Sem vaga vinculada
                 </Chip>
               ) : null}

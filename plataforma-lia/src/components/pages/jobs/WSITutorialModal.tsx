@@ -78,7 +78,7 @@ export function WSITutorialModal({ open, onClose }: WSITutorialModalProps) {
             <div className="grid grid-cols-2 gap-3">
               <div className="p-3 bg-lia-bg-primary rounded-xl border border-lia-border-subtle">
                 <div className="flex items-center gap-2 mb-1">
-                  <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 bg-lia-bg-secondary text-lia-text-secondary">CBI</Chip>
+                  <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 flex items-center bg-lia-bg-secondary text-lia-text-secondary">CBI</Chip>
                   <span className="text-micro text-lia-text-secondary">McClelland, 1973</span>
                 </div>
                 <p className="text-micro text-lia-text-primary">
@@ -87,7 +87,7 @@ export function WSITutorialModal({ open, onClose }: WSITutorialModalProps) {
               </div>
               <div className="p-3 bg-lia-bg-primary rounded-xl border border-lia-border-subtle">
                 <div className="flex items-center gap-2 mb-1">
-                  <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4">Bloom</Chip>
+                  <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 flex items-center">Bloom</Chip>
                   <span className="text-micro text-lia-text-secondary">Anderson et al., 2001</span>
                 </div>
                 <p className="text-micro text-lia-text-primary">
@@ -96,7 +96,7 @@ export function WSITutorialModal({ open, onClose }: WSITutorialModalProps) {
               </div>
               <div className="p-3 bg-lia-bg-primary rounded-xl border border-lia-border-subtle">
                 <div className="flex items-center gap-2 mb-1">
-                  <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4">Dreyfus</Chip>
+                  <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 flex items-center">Dreyfus</Chip>
                   <span className="text-micro text-lia-text-secondary">1980</span>
                 </div>
                 <p className="text-micro text-lia-text-primary">
@@ -105,7 +105,7 @@ export function WSITutorialModal({ open, onClose }: WSITutorialModalProps) {
               </div>
               <div className="p-3 bg-lia-bg-primary rounded-xl border border-lia-border-subtle">
                 <div className="flex items-center gap-2 mb-1">
-                  <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4">Big Five</Chip>
+                  <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 flex items-center">Big Five</Chip>
                   <span className="text-micro text-lia-text-secondary">1992</span>
                 </div>
                 <p className="text-micro text-lia-text-primary">
@@ -134,7 +134,7 @@ export function WSITutorialModal({ open, onClose }: WSITutorialModalProps) {
                 <tbody className="bg-lia-bg-primary divide-y divide-lia-border-subtle">
                   <tr>
                     <td className="p-2">
-                      <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-secondary">WSI Compact</Chip>
+                      <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 flex items-center bg-lia-bg-tertiary text-lia-text-secondary">WSI Compact</Chip>
                     </td>
                     <td className="p-2 text-center text-lia-text-primary">6-8</td>
                     <td className="p-2 text-center text-lia-text-primary">5-7 min</td>
@@ -142,7 +142,7 @@ export function WSITutorialModal({ open, onClose }: WSITutorialModalProps) {
                   </tr>
                   <tr>
                     <td className="p-2">
-                      <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4">WSI Compact+</Chip>
+                      <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 flex items-center">WSI Compact+</Chip>
                     </td>
                     <td className="p-2 text-center text-lia-text-primary">8-10</td>
                     <td className="p-2 text-center text-lia-text-primary">7-9 min</td>
@@ -176,10 +176,10 @@ export function WSITutorialModal({ open, onClose }: WSITutorialModalProps) {
                   <div className="flex-1">
                     <span className="text-xs font-medium text-lia-text-primary">{block.name}</span>
                   </div>
-                  <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 bg-lia-bg-secondary text-lia-text-secondary border border-lia-border-subtle">
+                  <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 flex items-center bg-lia-bg-secondary text-lia-text-secondary border border-lia-border-subtle">
                     {block.time}
                   </Chip>
-                  <Chip variant="neutral" muted className={`text-micro px-1.5 py-0 h-4 ${block.color}`}>
+                  <Chip variant="neutral" muted className={`text-micro px-1.5 py-0 h-4 flex items-center ${block.color}`}>
                     {block.type}
                   </Chip>
                 </div>

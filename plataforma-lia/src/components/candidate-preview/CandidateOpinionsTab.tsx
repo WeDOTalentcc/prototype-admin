@@ -59,7 +59,7 @@ opinionsSubTab === 'pareceres'
           <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
           Pareceres da LIA
           {opinionsHistory.length > 0 && (
-            <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 ml-1 bg-wedo-cyan/15">
+            <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 flex items-center ml-1 bg-wedo-cyan/15">
               {opinionsHistory.length}
             </Chip>
           )}
@@ -75,7 +75,7 @@ opinionsSubTab === 'analises'
           <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
           Análises
           {savedAnalyses && savedAnalyses.total_analyses > 0 && (
-            <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 ml-1">
+            <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 flex items-center ml-1">
               {savedAnalyses.total_analyses}
             </Chip>
           )}
@@ -125,7 +125,7 @@ opinionsSubTab === 'analises'
               {opinionsHistory.map((opinion: Record<string, any>) => (
                 <div key={opinion.id as string} className="relative">
                   {!opinion.is_current && (
-                    <Chip variant="neutral" muted className="absolute top-2 right-2 text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-tertiary z-10">
+                    <Chip variant="neutral" muted className="absolute top-2 right-2 text-micro px-1.5 py-0 h-4 flex items-center bg-lia-bg-tertiary text-lia-text-tertiary z-10">
                       v{(opinion.version as React.ReactNode)} - Histórico
                     </Chip>
                   )}
@@ -212,7 +212,7 @@ opinionsSubTab === 'analises'
                           <div className="flex items-center gap-2">
                             <span className={`${textStyles.bodySmall} font-medium`}>Análise LIA</span>
                             <Chip variant="neutral" muted
-                              className="text-micro px-1.5 py-0 h-4"
+                              className="text-micro px-1.5 py-0 h-4 flex items-center"
                              
                             >
                               {(analysisLabels[analysis.analysis_type as string] || analysis.analysis_type as React.ReactNode)}

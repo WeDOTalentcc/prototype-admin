@@ -200,12 +200,12 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
                   {lang.language}
                 </span>
                 {lang.level && (
-                  <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-primary">
+                  <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 flex items-center bg-lia-bg-tertiary text-lia-text-primary">
                     {lang.level}
                   </Chip>
                 )}
                 {lang.required && (
-                  <Chip variant="danger" muted className="text-micro px-1.5 py-0 h-4">
+                  <Chip variant="danger" muted className="text-micro px-1.5 py-0 h-4 flex items-center">
                     Obrigatorio
                   </Chip>
                 )}
@@ -318,7 +318,7 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
             {job.affirmativeType && (
               <div className="flex items-center gap-1.5 mb-1">
                 <span className="text-micro text-lia-text-secondary">Tipo:</span>
-                <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4  border border-wedo-purple/30">
+                <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 flex items-center  border border-wedo-purple/30">
                   {job.affirmativeType}
                 </Chip>
               </div>
@@ -347,7 +347,7 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
           <ClipboardList className="w-3.5 h-3.5 text-lia-text-secondary" />
           Fluxo de Triagem WSI
           <Chip variant="neutral" muted
-            className={`text-micro px-1.5 py-0 h-4 text-lia-text-primary ${screeningEnabled ?"bg-wedo-green-pastel" :"bg-lia-interactive-active"}`}
+            className={`text-micro px-1.5 py-0 h-4 flex items-center text-lia-text-primary ${screeningEnabled ?"bg-wedo-green-pastel" :"bg-lia-interactive-active"}`}
           >
             {screeningEnabled ?"Ativo" :"Pausado"}
           </Chip>
@@ -372,7 +372,7 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
           <CalendarCheck className="w-3.5 h-3.5 text-lia-text-secondary" />
           Agendamento
           <Chip variant="neutral" muted
-            className={`text-micro px-1.5 py-0 h-4 text-lia-text-primary ${schedulingEnabled ?"bg-wedo-green-pastel" :"bg-lia-interactive-active"}`}
+            className={`text-micro px-1.5 py-0 h-4 flex items-center text-lia-text-primary ${schedulingEnabled ?"bg-wedo-green-pastel" :"bg-lia-interactive-active"}`}
           >
             {schedulingEnabled ?"Ativo" :"Inativo"}
           </Chip>
@@ -405,7 +405,7 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
         {channels.length > 0 ? (
           <div className="flex flex-wrap gap-1.5 mb-2">
             {channels.map((ch, idx) => (
-              <Chip variant="neutral" muted key={`ch-${idx}`} className="text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-primary">
+              <Chip variant="neutral" muted key={`ch-${idx}`} className="text-micro px-1.5 py-0 h-4 flex items-center bg-lia-bg-tertiary text-lia-text-primary">
                 {ch}
               </Chip>
             ))}

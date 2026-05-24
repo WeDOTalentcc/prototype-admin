@@ -34,13 +34,13 @@ export function QuestionDiffView({
   const getActionBadge = (action: string) => {
     switch (action) {
       case"modified":
-        return { label:"Modificada", className:"text-micro px-1.5 py-0 h-4 border bg-wedo-cyan/10 border-wedo-cyan/30" , style: {} }
+        return { label:"Modificada", className:"text-micro px-1.5 py-0 h-4 flex items-center border bg-wedo-cyan/10 border-wedo-cyan/30" , style: {} }
       case"added":
-        return { label:"Nova", className:"text-micro px-1.5 py-0 h-4  border border-status-success/30" , style: {} }
+        return { label:"Nova", className:"text-micro px-1.5 py-0 h-4 flex items-center  border border-status-success/30" , style: {} }
       case"removed":
-        return { label:"Removida", className:"text-micro px-1.5 py-0 h-4  border border-status-error/30", style: {} }
+        return { label:"Removida", className:"text-micro px-1.5 py-0 h-4 flex items-center  border border-status-error/30", style: {} }
       default:
-        return { label: action, className:"text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-secondary border border-lia-border-subtle", style: {} }
+        return { label: action, className:"text-micro px-1.5 py-0 h-4 flex items-center bg-lia-bg-tertiary text-lia-text-secondary border border-lia-border-subtle", style: {} }
     }
   }
 
@@ -49,7 +49,7 @@ export function QuestionDiffView({
       <div className="flex items-center gap-1.5">
         <ArrowRight className="h-3.5 w-3.5 text-lia-text-secondary" />
         <span className="text-xs font-semibold text-lia-text-primary">Antes / Depois</span>
-        <Chip variant="neutral" className="text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-subtle">
+        <Chip variant="neutral" className="text-micro px-1.5 py-0 h-4 flex items-center bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-subtle">
           {diffs.length} alteração(ões)
         </Chip>
       </div>

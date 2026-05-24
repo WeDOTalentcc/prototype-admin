@@ -85,7 +85,7 @@ export function ProfileSkillsMapCard({ candidate }: ProfileSkillsMapCardProps) {
           <CardTitle className="text-xs font-semibold text-lia-text-primary">
             Mapa de Skills
           </CardTitle>
-          <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 bg-lia-interactive-active text-lia-text-primary">
+          <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 flex items-center bg-lia-interactive-active text-lia-text-primary">
             {totalItems} itens
           </Chip>
           <Tooltip>
@@ -123,7 +123,7 @@ export function ProfileSkillsMapCard({ candidate }: ProfileSkillsMapCardProps) {
               {category.skills.map((skill: string, skillIdx: number) => (
                 <Chip variant="neutral" muted
                   key={`${key}-${skill}-${skillIdx}`}
-                  className="text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-primary border-0"
+                  className="text-micro px-1.5 py-0 h-4 flex items-center bg-lia-bg-tertiary text-lia-text-primary border-0"
                 >
                   {skill}
                 </Chip>
@@ -150,7 +150,7 @@ export function ProfileSkillsMapCard({ candidate }: ProfileSkillsMapCardProps) {
               {softSkillsList.map((skill: string) => (
                 <Chip variant="neutral" muted 
                   key={skill} 
-                  className="text-micro px-1.5 py-0 h-4 border-0 bg-wedo-cyan/15 text-lia-text-primary"
+                  className="text-micro px-1.5 py-0 h-4 flex items-center border-0 bg-wedo-cyan/15 text-lia-text-primary"
                 >
                   {skill}
                 </Chip>
@@ -177,7 +177,7 @@ export function ProfileSkillsMapCard({ candidate }: ProfileSkillsMapCardProps) {
               {expertiseList.map((item: string) => (
                 <Chip variant="neutral" muted
                   key={item}
-                  className="text-micro px-1.5 py-0 h-4 border-0 bg-lia-interactive-active/30 text-lia-text-primary"
+                  className="text-micro px-1.5 py-0 h-4 flex items-center border-0 bg-lia-interactive-active/30 text-lia-text-primary"
                 >
                   {item}
                 </Chip>
@@ -204,7 +204,7 @@ export function ProfileSkillsMapCard({ candidate }: ProfileSkillsMapCardProps) {
               {interests.map((interest: string) => (
                 <Chip variant="neutral" muted 
                   key={interest} 
-                  className="text-micro px-1.5 py-0 h-4 bg-wedo-magenta/10 text-wedo-magenta border-0"
+                  className="text-micro px-1.5 py-0 h-4 flex items-center bg-wedo-magenta/10 text-wedo-magenta border-0"
                 >
                   {interest}
                 </Chip>
@@ -231,7 +231,7 @@ export function ProfileSkillsMapCard({ candidate }: ProfileSkillsMapCardProps) {
               {tags.map((tag: string) => (
                 <Chip variant="neutral" muted
                   key={tag}
-                  className="text-micro px-1.5 py-0 h-4 border-0 bg-lia-interactive-active/30 text-lia-text-primary"
+                  className="text-micro px-1.5 py-0 h-4 flex items-center border-0 bg-lia-interactive-active/30 text-lia-text-primary"
                 >
                   {tag}
                 </Chip>

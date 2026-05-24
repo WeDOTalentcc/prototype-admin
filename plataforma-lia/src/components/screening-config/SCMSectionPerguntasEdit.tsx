@@ -399,7 +399,7 @@ export function SCMSectionPerguntasEdit({
                       <span className={`text-xs font-semibold ${block.editable ? 'text-lia-text-primary' : 'text-lia-text-primary'}`}>{block.name}</span>
                       <span className="text-micro text-lia-text-secondary ml-2">({block.duration})</span>
                     </div>
-                    {!block.editable && <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 bg-lia-interactive-active text-lia-text-secondary ml-1">Automático</Chip>}
+                    {!block.editable && <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 flex items-center bg-lia-interactive-active text-lia-text-secondary ml-1">Automático</Chip>}
                   </div>
                   <div className="flex items-center gap-2">
                     {block.editable && blockQuestions.length > 0 && (

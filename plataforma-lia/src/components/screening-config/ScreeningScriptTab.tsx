@@ -86,7 +86,7 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
           <ClipboardList className="w-4 h-4 text-lia-text-secondary" />
           <h4 className="text-xs font-semibold text-lia-text-primary">Roteiro de Triagem Automática</h4>
           <Chip variant="neutral" muted 
-            className={`text-micro px-1.5 py-0 h-4 text-lia-text-primary ${(previewJob.screeningConfig?.status?.enabled ?? true) ? 'bg-wedo-green-pastel' : 'bg-lia-interactive-active'}`}
+            className={`text-micro px-1.5 py-0 h-4 flex items-center text-lia-text-primary ${(previewJob.screeningConfig?.status?.enabled ?? true) ? 'bg-wedo-green-pastel' : 'bg-lia-interactive-active'}`}
           >
             {(previewJob.screeningConfig?.status?.enabled ?? true) ? 'Ativo' : 'Pausado'}
           </Chip>
@@ -194,7 +194,7 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
           <h5 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5">
             <Layers3 className="w-3.5 h-3.5 text-lia-text-secondary" />
             Fluxo de Triagem WSI
-            <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 bg-lia-interactive-active text-lia-text-primary">
+            <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 flex items-center bg-lia-interactive-active text-lia-text-primary">
               6 Blocos
             </Chip>
           </h5>
@@ -354,7 +354,7 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
                               <div className="flex items-start gap-2">
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center gap-1.5 mb-1 flex-wrap">
-                                    <Chip variant="neutral" muted className={`text-micro px-1.5 py-0 h-4 ${
+                                    <Chip variant="neutral" muted className={`text-micro px-1.5 py-0 h-4 flex items-center ${
  item.category === 'behavioral' || item.category === 'Comportamental'
                                         ? ' border border-wedo-purple/30'
                                         : item.category === 'technical' || item.category === 'Técnica'
@@ -367,7 +367,7 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
                                         : item.category || 'Geral'}
                                     </Chip>
                                     {(item.type === 'eliminatory' || item.required) && (
-                                      <Chip variant="danger" muted className="text-micro px-1.5 py-0 h-4">
+                                      <Chip variant="danger" muted className="text-micro px-1.5 py-0 h-4 flex items-center">
                                         Eliminatória
                                       </Chip>
                                     )}
@@ -423,19 +423,19 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
         <div className="grid grid-cols-2 gap-2">
           <div className="flex items-center justify-between">
             <span className="text-micro text-lia-text-secondary">Score Mínimo</span>
-            <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4">{previewJob.screeningConfig?.settings?.min_score ?? 70}%</Chip>
+            <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 flex items-center">{previewJob.screeningConfig?.settings?.min_score ?? 70}%</Chip>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-micro text-lia-text-secondary">Timeout Resposta</span>
-            <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-primary">{previewJob.screeningConfig?.settings?.response_timeout_hours ?? 48}h</Chip>
+            <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 flex items-center bg-lia-bg-tertiary text-lia-text-primary">{previewJob.screeningConfig?.settings?.response_timeout_hours ?? 48}h</Chip>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-micro text-lia-text-secondary">Re-tentativas</span>
-            <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-primary">{previewJob.screeningConfig?.settings?.max_retries ?? 2}x</Chip>
+            <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 flex items-center bg-lia-bg-tertiary text-lia-text-primary">{previewJob.screeningConfig?.settings?.max_retries ?? 2}x</Chip>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-micro text-lia-text-secondary">Fallback</span>
-            <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4">Revisão Manual</Chip>
+            <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 flex items-center">Revisão Manual</Chip>
           </div>
         </div>
 
@@ -460,7 +460,7 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
             <CalendarCheck className="w-3.5 h-3.5 text-lia-text-secondary" />
             <h5 className="text-xs font-semibold text-lia-text-primary">Agendamento Automático</h5>
           </div>
-          <Chip variant={(previewJob.screeningConfig?.scheduling?.auto_enabled ?? true) ? "success" : "neutral"} muted={!(previewJob.screeningConfig?.scheduling?.auto_enabled ?? true)} className="text-micro px-1.5 py-0 h-4">
+          <Chip variant={(previewJob.screeningConfig?.scheduling?.auto_enabled ?? true) ? "success" : "neutral"} muted={!(previewJob.screeningConfig?.scheduling?.auto_enabled ?? true)} className="text-micro px-1.5 py-0 h-4 flex items-center">
             {(previewJob.screeningConfig?.scheduling?.auto_enabled ?? true) ? 'Ativo' : 'Inativo'}
           </Chip>
         </div>

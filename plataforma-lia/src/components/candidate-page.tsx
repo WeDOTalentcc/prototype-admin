@@ -150,7 +150,7 @@ export function CandidatePage({
                 <tab.icon className="w-3 h-3" aria-hidden="true" />
                 {tab.label}
                 {tab.id === "opinions" && core.opinionsHistory.length > 0 && (
-                  <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 ml-1 bg-wedo-cyan/15">
+                  <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 flex items-center ml-1 bg-wedo-cyan/15">
                     {core.opinionsHistory.length}
                   </Chip>
                 )}
