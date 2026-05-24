@@ -115,7 +115,28 @@ class ExperienceHighlightRepository:
         generated_at: datetime,
         expires_at: datetime,
     ) -> tuple:
-        """Insert or update a highlight. Returns the stored row."""
+        """Insert or update a highlight. Returns the stored row.
+
+        N1 canonical fix (2026-05-24): re-inject tenant context atomically
+        before the INSERT. set_tenant_context uses set_config(is_local=true)
+        which is transaction-scoped; any operation between the consumer's
+        re-inject and this method (DDL ensure_table, failed get_valid_highlight,
+        observability span) may rollback and drop the GUC, causing RLS
+        violation. Doing it here makes the re-inject atomic with the write.
+
+        Idempotent — safe to call even when the consumer already set it.
+        Per ADR-001 §3 (multi-tenancy fail-closed at producer).
+        """
+        if not company_id:
+            raise ValueError(
+                "company_id is required for upsert_highlight (multi-tenancy "
+                "fail-closed). candidate_experience_highlights has RLS policy."
+            )
+        # Atomic re-inject right before INSERT — see method docstring.
+        await self.db.execute(
+            text("SELECT set_config(\'app.company_id\', :cid, true)"),
+            {"cid": str(company_id)},
+        )
         result = await self.db.execute(
             text("""
                 INSERT INTO candidate_experience_highlights
