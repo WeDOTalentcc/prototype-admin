@@ -33,10 +33,18 @@ import pytest
 # ── 1. D2 — Canonical default toggle ────────────────────────────────────────
 
 
-def test_bigfive_department_history_default_is_on():
-    """Sprint B Phase 3, decision D2: bigfive_department_history default is
-    True (was False; flipped after Paulo confirmed comfort with homogeneity-
-    bias risk vs disclosure-UI sequencing).
+def test_bigfive_department_history_default_is_off_for_lgpd():
+    """ADR-LGPD-001 (reaffirmed 2026-05-24): bigfive_department_history
+    default is False (opt-in via UI disclosure modal).
+
+    History: D2 (2026-05-10) flipped default to True invocando aggregate-not-PII
+    analysis. F2.1 audit 2026-05-24 reverteu para False ao descobrir que:
+      - Frontend UI canonical (LearningLoopsPanel) já mostra requiresDisclosure
+      - Helper canonical docstring sempre documentou default False
+      - Quatro fontes paralelas (constant, helper docstring, UI, consumer literal)
+        divergiam silenciosamente
+    Conservative defaults preservam ADR-LGPD-001 (opt-in explícito) + ANPD Art.
+    12 §1: empresa nova começa OFF, ativa via consentimento via modal canonical.
 
     If this fails: edit
     libs/models/lia_models/company_hiring_policy.py
@@ -45,9 +53,10 @@ def test_bigfive_department_history_default_is_on():
     from app.models.company_hiring_policy import AUTOMATION_RULES_DEFAULTS
 
     loops = AUTOMATION_RULES_DEFAULTS["learning_loops"]
-    assert loops["bigfive_department_history"] is True, (
+    assert loops["bigfive_department_history"] is False, (
         "AUTOMATION_RULES_DEFAULTS.learning_loops.bigfive_department_history "
-        "should default to True per Sprint B Phase 3 decision D2."
+        "deve default False (ADR-LGPD-001 conservative + opt-in via UI canonical "
+        "disclosure modal). F2.1 audit 2026-05-24 reverteu D2 (2026-05-10)."
     )
 
 

@@ -21,6 +21,22 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 
 
+@pytest.fixture
+def _restore_hiring_policy_repo():
+    """Cleanup fixture — preserva module-level HiringPolicyRepository entre
+    testes. Sem isso, o rebind ``repo_mod.HiringPolicyRepository = MagicMock(...)``
+    em testes desta suite vazava para outros testes que mockam o repo no
+    caminho canonical (e.g. tests/unit/test_handle_job_published_record_jd.py).
+    Adicionado 2026-05-24 junto com F2 fixes.
+    """
+    import app.domains.hiring_policy.repositories.hiring_policy_repository as repo_mod
+    original = repo_mod.HiringPolicyRepository
+    try:
+        yield repo_mod
+    finally:
+        repo_mod.HiringPolicyRepository = original
+
+
 @pytest.mark.asyncio
 async def test_helper_returns_defaults_for_empty_company_id():
     from app.shared.services.learning_loops_toggles import (
@@ -33,7 +49,7 @@ async def test_helper_returns_defaults_for_empty_company_id():
 
 
 @pytest.mark.asyncio
-async def test_helper_returns_defaults_on_db_error():
+async def test_helper_returns_defaults_on_db_error(_restore_hiring_policy_repo):
     """Fail-soft: any DB error from the repository returns canonical
     defaults. Callers can rely on the helper to never raise."""
     from app.shared.services.learning_loops_toggles import (
@@ -42,18 +58,17 @@ async def test_helper_returns_defaults_on_db_error():
     from lia_models.company_hiring_policy import AUTOMATION_RULES_DEFAULTS
 
     db = MagicMock()
-    # Patch repo to raise.
-    import app.domains.hiring_policy.repositories.hiring_policy_repository as repo_mod
+    # Patch repo to raise. Fixture restaura ao final do teste.
     failing_repo = MagicMock()
     failing_repo.get_by_company = AsyncMock(side_effect=RuntimeError("db down"))
-    repo_mod.HiringPolicyRepository = MagicMock(return_value=failing_repo)
+    _restore_hiring_policy_repo.HiringPolicyRepository = MagicMock(return_value=failing_repo)
 
     out = await load_learning_loops_toggles("co-1", db)
     assert out == AUTOMATION_RULES_DEFAULTS["learning_loops"]
 
 
 @pytest.mark.asyncio
-async def test_helper_returns_policy_learning_loops_when_set():
+async def test_helper_returns_policy_learning_loops_when_set(_restore_hiring_policy_repo):
     from app.shared.services.learning_loops_toggles import (
         load_learning_loops_toggles,
     )
@@ -68,8 +83,8 @@ async def test_helper_returns_policy_learning_loops_when_set():
     }
     repo = MagicMock()
     repo.get_by_company = AsyncMock(return_value=policy)
-    import app.domains.hiring_policy.repositories.hiring_policy_repository as repo_mod
-    repo_mod.HiringPolicyRepository = MagicMock(return_value=repo)
+    # Fixture restaura HiringPolicyRepository ao final.
+    _restore_hiring_policy_repo.HiringPolicyRepository = MagicMock(return_value=repo)
 
     out = await load_learning_loops_toggles("co-1", MagicMock())
     assert out.get("wsi_question_effectiveness") is True

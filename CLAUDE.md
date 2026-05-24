@@ -261,3 +261,33 @@ Bypass intencional (apenas em urgência): `git commit --no-verify`.
 ---
 
 **Fonte de verdade para IA = o código.** Os instructions são a sinalização; a referência canônica está em `ats_api/app/`, `lia-agent-system/app/` e `plataforma-lia/src/`.
+
+---
+
+### Learning Loops toggles canonical consumption (registrado 2026-05-24)
+
+Todo consumer de toggles `learning_loops` (Sprint B P3 D2 — gate de aprendizado
+contínuo) em `app/domains/**` DEVE usar `load_learning_loops_toggles(company_id, db)`
+do canonical helper `app/shared/services/learning_loops_toggles.py`.
+
+**Padrão proibido:**
+- `select(CompanyHiringPolicy).where(...)` direto em services para ler `automation_rules.learning_loops` (duplicação de produtor).
+- `toggles.get("<key>", <literal>)` com default literal — helper canonical já garante presença de TODAS as 5 chaves canonical com tipo bool, default literal só causa drift (F2.1 audit 2026-05-24).
+
+**Pattern canonical:**
+
+```python
+from app.shared.services.learning_loops_toggles import load_learning_loops_toggles
+
+toggles = await load_learning_loops_toggles(company_id, self.db)
+if not toggles.get("enabled"):
+    return  # master switch off
+if not toggles.get("wsi_question_effectiveness"):
+    return  # specific loop off
+```
+
+**Decisão LGPD 2026-05-24 (F2.1 fix):** `bigfive_department_history` default = `False` (era `True` desde D2 2026-05-10). ADR-LGPD-001 conservative defaults preserva opt-in canonical via UI disclosure modal. Frontend `LearningLoopsPanel.tsx` já mostra `requiresDisclosure: true`; backend agora alinhado.
+
+**Sensor canonical:** `lia-agent-system/scripts/check_learning_loops_canonical_helper.py` (AST + grep checker). Baseline 2026-05-24: **0 violations** em 3 consumers (`bigfive_service.py`, `jd_similar_service.py`, `transition_dispatch_service.py`). `EXEMPT_FILES` documentadas inline (helper + model + endpoint REST).
+
+**Migration policy:** ao adicionar consumer novo de `learning_loops` em `app/domains/**`, (a) usar o helper, (b) adicionar caminho a `CONSUMERS_PATHS` do sensor, (c) escrever contract test em `tests/contract/test_learning_loops_defaults.py`.

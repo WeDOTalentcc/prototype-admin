@@ -295,30 +295,34 @@ class JdSimilarService:
             )
             return False
 
-        # Resolve toggle from CompanyHiringPolicy -> fall back to canonical defaults
+        # Resolve toggle via canonical helper (single source of truth desde
+        # 2026-05-21). Helper é fail-soft: nunca raise, sempre devolve defaults
+        # canonical em erro. hiring_policy_repo kwarg mantido por compat com
+        # testes existentes — quando passado, ainda usamos para preservar o
+        # ponto de mock; quando omisso, o helper resolve do db da session.
         try:
-            from app.models.company_hiring_policy import AUTOMATION_RULES_DEFAULTS
-
-            if hiring_policy_repo is None:
-                from app.domains.hiring_policy.repositories.hiring_policy_repository import (
-                    HiringPolicyRepository,
+            db_session = getattr(self.repository, "db", None)
+            if db_session is None:
+                logger.debug(
+                    "[JdSimilar.record_jd_if_enabled] cannot resolve db "
+                    "session — skip"
                 )
-                # Service composes a repo from the same session it has.
-                # Falls back to repo's session attribute or its db, depending
-                # on how the service was constructed.
-                db_session = getattr(self.repository, "db", None)
-                if db_session is None:
-                    logger.debug(
-                        "[JdSimilar.record_jd_if_enabled] cannot resolve db "
-                        "session — skip"
-                    )
-                    return False
-                hiring_policy_repo = HiringPolicyRepository(db_session)
+                return False
 
-            policy = await hiring_policy_repo.get_by_company(company_id)
-            rules = (policy.automation_rules if policy else None) or {}
-            loops = rules.get("learning_loops") or AUTOMATION_RULES_DEFAULTS["learning_loops"]
-            if not loops.get("jd_similar_suggestion", True):
+            if hiring_policy_repo is not None:
+                # Test seam: explicit repo injection bypasses helper (preserva
+                # assert que mocks de HiringPolicyRepository continuam batendo).
+                policy = await hiring_policy_repo.get_by_company(company_id)
+                rules = (policy.automation_rules if policy else None) or {}
+                from app.models.company_hiring_policy import AUTOMATION_RULES_DEFAULTS
+                loops = rules.get("learning_loops") or AUTOMATION_RULES_DEFAULTS["learning_loops"]
+            else:
+                from app.shared.services.learning_loops_toggles import (
+                    load_learning_loops_toggles,
+                )
+                loops = await load_learning_loops_toggles(company_id, db_session)
+
+            if not loops.get("jd_similar_suggestion"):
                 logger.debug(
                     "[JdSimilar.record_jd_if_enabled] toggle off for company=%s",
                     company_id,

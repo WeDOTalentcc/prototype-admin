@@ -1093,8 +1093,8 @@ class TransitionDispatchService:
         if not company_id or not vacancy_candidate_id:
             return
         toggles = await self._load_learning_loops_toggles(company_id)
-        master_on = toggles.get("enabled", True)
-        wsi_on = toggles.get("wsi_question_effectiveness", False)
+        master_on = toggles.get("enabled")
+        wsi_on = toggles.get("wsi_question_effectiveness")
         if not master_on or not wsi_on:
             logger.info(
                 "[ConclusionHired] WSI effectiveness write SKIPPED — "

@@ -56,7 +56,7 @@ AUTOMATION_RULES_DEFAULTS = {
     "learning_loops": {
         "enabled": True,                       # master switch
         "bigfive_company_culture": True,       # Phase 2 — DNA cultural estatico, default ON
-        "bigfive_department_history": True,    # Phase 2 — Sprint B P3 D2 (2026-05-10): default ON; ADR-LGPD-001 (aggregate-not-PII analysis)
+        "bigfive_department_history": False,   # Phase 2 — 2026-05-24: alinhado com UI requiresDisclosure=true. Opt-in LGPD via disclosure modal canonical (reverte D2 2026-05-10).
         "wsi_question_effectiveness": False,   # Phase 3 — opt-in
         "jd_similar_suggestion": True,         # Phase 1 — baixo risco, default ON
     },
@@ -104,7 +104,7 @@ class CompanyHiringPolicy(Base):
 
     __table_args__ = (
         Index('idx_chp_company_id', 'company_id'),
-    )
+    {"extend_existing": True}, )
 
     def __repr__(self):
         return f"<CompanyHiringPolicy company={self.company_id} progress={self.setup_progress}%>"

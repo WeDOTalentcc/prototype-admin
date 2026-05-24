@@ -197,15 +197,15 @@ class BigFiveDepartmentService:
             raise ValueError("company_id is required (multi-tenancy)")
 
         toggles = await self._get_toggles(company_id)
-        master_on = toggles.get("enabled", True)
+        master_on = toggles.get("enabled")
 
         culture = None
         dept = None
 
-        if master_on and toggles.get("bigfive_company_culture", True):
+        if master_on and toggles.get("bigfive_company_culture"):
             culture = await self._get_culture_profile(company_id)
 
-        if master_on and toggles.get("bigfive_department_history", False):
+        if master_on and toggles.get("bigfive_department_history"):
             dept = await self._get_dept_profile(company_id, department, seniority_level)
             if dept is not None and (dept.sample_count or 0) < MIN_DEPT_SAMPLES:
                 logger.debug(
