@@ -191,20 +191,24 @@ async def scenario_04_navigation_request(client) -> Result:
         return Result("04 navigation G3", False, f"HTTP {code}", duration_ms=dur)
     content = lia_content(data)
     meta = msg_meta(data)
-    # The marker may already have been stripped by chat_adapter (G3 fix); the
-    # ui_action should be populated in message_metadata.
-    ui_action = meta.get("ui_action") or {}
-    # Accept either: ui_action.type == "navigate_to" / ui_action set / content
-    # mentions navigating (LLM acknowledges).
-    has_ui_action = ui_action.get("type") == "navigate_to" or "navigate_to" in str(ui_action)
+    # Sprint 7.1 (NS-1 fix): ui_action is a STRING ("navigate_to"),
+    # ui_action_params is the dict with {"page": "..."}.
+    ui_action = meta.get("ui_action")
+    ui_action_params = meta.get("ui_action_params") or {}
+    has_ui_action = (
+        ui_action == "navigate_to"
+        and bool(ui_action_params.get("page"))
+    )
     mentions_nav = any(
         kw in content.lower()
         for kw in ["levando", "abrindo", "indo para", "te levo", "vamos para"]
     )
     if has_ui_action or mentions_nav:
-        return Result("04 navigation G3", True,
-                      f"ui_action={ui_action} | mentions_nav={mentions_nav}",
-                      response_preview=content[:200], duration_ms=dur)
+        return Result(
+            "04 navigation G3", True,
+            f"ui_action={ui_action} params={ui_action_params} mentions_nav={mentions_nav}",
+            response_preview=content[:200], duration_ms=dur,
+        )
     return Result("04 navigation G3", False,
                   f"no ui_action AND no nav mention | content={content[:200]!r}",
                   response_preview=content[:200], duration_ms=dur)

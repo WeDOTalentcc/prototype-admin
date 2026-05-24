@@ -264,15 +264,28 @@ class ToolExecutor:
             )
             self._emit_governance_signals(tool_name, parameters, result, context, agent_type, conversation_id)
             return result
-        
         try:
+            # Sprint 8.2 (NS-2 root cause fix, 2026-05-24):
+            # NEVER mutate the caller's `parameters` dict. Build a fresh
+            # dict for the handler call.
+            #
+            # Previous code did `parameters["_context"] = context` which
+            # mutated the caller's reference. tool.handler(**parameters)
+            # unpacks into a NEW kwargs in the handler — pop("_context")
+            # in the handler does not propagate back. Result: `tc.parameters`
+            # in agentic_loop STILL contains a ToolExecutionContext (not
+            # JSON serializable) → next LLM iteration's json.dumps fails
+            # silently, agentic loop dies after 1 successful tool call,
+            # falls through to Phase 2 V1 that mis-classifies query intents
+            # as create_job (NS-2 bug).
+            handler_kwargs = dict(parameters)  # shallow copy — never mutate
             if context:
-                parameters["_context"] = context
+                handler_kwargs["_context"] = context
                 # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 self.logger.debug(f"Tool {tool_name} executing with tenant context: company_id={context.company_id}")
-            
+
             handler_result = await asyncio.wait_for(
-                tool.handler(**parameters),
+                tool.handler(**handler_kwargs),
                 timeout=timeout
             )
             
