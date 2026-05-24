@@ -57,7 +57,7 @@ class ManagerApprovalRequiredError(OfferPolicyGateError):
     """Raised when an offer transition requires manager approval per company policy.
 
     Closes P0-2 (2026-05-21 audit): the toggle
-    ``CompanyHiringPolicy.screening_rules.manager_approval_for_offer`` was
+    ``CompanyHiringPolicy.pipeline_rules.manager_approval_for_offer`` was
     visible in Configurações → Políticas de Recrutamento but ignored by every
     write path in ``app/domains/offer/``. Recruiter set ON, offers still went
     out without approval.
@@ -514,7 +514,7 @@ class OfferService:
         company hiring policy refuses this send.
 
         Two gates today, both subclassing :class:`OfferPolicyGateError`:
-        - **manager approval** (P0-2): ``screening_rules.manager_approval_for_offer``
+        - **manager approval** (P0-2): ``pipeline_rules.manager_approval_for_offer``
           requires a draft to carry ``approval_request_id`` before send.
         - **min interviews** (P1-9): ``pipeline_rules.min_interviews_before_offer``
           requires the candidate to have at least N completed interviews
@@ -711,7 +711,7 @@ class OfferService:
     async def _requires_manager_approval(self, company_id: str) -> bool:
         """Return True iff the company policy gates outbound offers on manager approval.
 
-        Reads ``CompanyHiringPolicy.screening_rules.manager_approval_for_offer``
+        Reads ``CompanyHiringPolicy.pipeline_rules.manager_approval_for_offer``
         via the canonical repository (ADR-001). Returns ``False`` when no policy
         row exists yet (cold-start tenants do not impose a gate they have not
         configured) — explicit opt-in semantics.
@@ -722,9 +722,9 @@ class OfferService:
         """
         policy_repo = HiringPolicyRepository(self._db)
         policy = await policy_repo.get_by_company(company_id)
-        if not policy or not policy.screening_rules:
+        if not policy or not policy.pipeline_rules:
             return False
-        return bool(policy.screening_rules.get(_OFFER_APPROVAL_TOGGLE, False))
+        return bool(policy.pipeline_rules.get(_OFFER_APPROVAL_TOGGLE, False))
 
     async def _has_active_approvers(self, company_id: str) -> bool:
         """Return True iff the company has at least one active Approver row.

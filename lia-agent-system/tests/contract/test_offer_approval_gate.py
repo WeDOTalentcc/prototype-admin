@@ -4,7 +4,7 @@ must intercept ``OfferService.check_can_send`` AND ``OfferService.mark_sent``.
 
 Gate family under test (all subclass :class:`OfferPolicyGateError`):
 - :class:`ManagerApprovalRequiredError` (P0-2) — toggle
-  ``screening_rules.manager_approval_for_offer``.
+  ``pipeline_rules.manager_approval_for_offer``.
 - :class:`MinInterviewsNotMetError` (P1-9) — field
   ``pipeline_rules.min_interviews_before_offer`` vs. count of completed
   interviews for the candidate.
@@ -70,8 +70,9 @@ def _make_service_with(
     offer_repo.update = AsyncMock(return_value=proposal)
 
     policy = MagicMock()
-    policy.screening_rules = {"manager_approval_for_offer": approval_required}
+    policy.screening_rules = {}  # manager_approval_for_offer moved to pipeline_rules (fix 2026-05-24)
     policy.pipeline_rules = {
+        "manager_approval_for_offer": approval_required,
         "min_interviews_before_offer": min_interviews_before_offer,
     }
 
@@ -455,4 +456,40 @@ async def test_no_approver_configured_caught_by_parent_class():
     with pytest.raises(OfferPolicyGateError) as exc_info:
         await svc.check_can_send(uuid.uuid4(), "co-1")
     assert exc_info.value.reason == "no_approver_configured"
+
+# ----------------------------------------------------------------------------
+# KEY PATH REGRESSION SENSOR — pin que pipeline_rules e nao screening_rules
+# (fix 2026-05-24: _requires_manager_approval lia de pipeline_rules)
+# ----------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_manager_approval_reads_from_pipeline_rules_not_screening_rules():
+    """Regression pin (2026-05-24): _requires_manager_approval MUST read from
+    pipeline_rules.manager_approval_for_offer, NOT screening_rules.
+
+    This test verifies the exact key path by constructing a policy where:
+    - pipeline_rules.manager_approval_for_offer = True  (correct location)
+    - screening_rules.manager_approval_for_offer = False (old wrong location)
+
+    If the service reads from the wrong dict (screening_rules), the gate does
+    NOT fire and the assertion fails — detecting the regression immediately.
+    """
+    import uuid as _uuid
+    import app.domains.offer.services.offer_service as _mod
+
+    svc, _ = _make_service_with(
+        approval_required=True,   # placed in pipeline_rules by the fixture
+        proposal_approval_request_id=None,
+        approvers_configured=1,
+    )
+    # Sabotage screening_rules so that if the service reads from it, it sees
+    # False (no approval required) and the gate would silently pass — the
+    # pytest.raises block would then fail, catching the regression.
+    policy_mock = _mod.HiringPolicyRepository.return_value.get_by_company.return_value
+    policy_mock.screening_rules = {"manager_approval_for_offer": False}
+    # pipeline_rules.manager_approval_for_offer remains True (set by fixture)
+
+    with pytest.raises(ManagerApprovalRequiredError):
+        await svc.check_can_send(_uuid.uuid4(), "co-1")
 
