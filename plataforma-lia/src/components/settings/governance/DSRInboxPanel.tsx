@@ -50,7 +50,7 @@ const statusVariant: Record<string, "neutral" | "info" | "warning" | "success" |
 function escapeCsv(value: unknown): string {
   if (value == null) return ""
   const s = String(value)
-  if (/[",\n]/.test(s)) return `"${s.replace(/"/g, '""')}"`
+  if (/[",\n]/.test(s)) return 
   return s
 }
 
@@ -74,7 +74,7 @@ function exportCsv(rows: DSR[]) {
   const url = URL.createObjectURL(blob)
   const a = document.createElement("a")
   a.href = url
-  a.download = `dsr_inbox_${new Date().toISOString().split("T")[0]}.csv`
+  a.download = 
   document.body.appendChild(a)
   a.click()
   document.body.removeChild(a)
@@ -90,10 +90,22 @@ export function DSRInboxPanel({ defaultRequestType }: { defaultRequestType?: str
   const [error, setError] = useState<string | null>(null)
   const [statusFilter, setStatusFilter] = useState<string>("all")
   // WT-2022 P1.B: filter por request_type default (usado quando hub passa defaultRequestType)
-  const [requestTypeFilter] = useState<string | undefined>(defaultRequestType)
+  const [requestTypeFilter, setRequestTypeFilter] = useState<string | undefined>(defaultRequestType)
+  // WT-2022 P1-W4-02: sync stale state — useState initializer only runs on mount;
+  // useEffect keeps requestTypeFilter in sync if defaultRequestType prop changes after mount.
+  useEffect(() => {
+    setRequestTypeFilter(defaultRequestType)
+  }, [defaultRequestType])
   // WT-2022 P2.2: state pra controle de actions (assign/verify-identity/process/complete/reject)
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null)
   const [refetchSignal, setRefetchSignal] = useState<number>(0)
+  // WT-2022 P1-W4-01: modal inline para ações DSR (substitui window.prompt/alert)
+  const [actionModal, setActionModal] = useState<{
+    type: "assign" | "verify" | "process" | "complete" | "reject" | null
+    requestId: string | null
+    value: string
+    errorMsg: string | null
+  }>({ type: null, requestId: null, value: "", errorMsg: null })
 
   useEffect(() => {
     if (!companyId) return
@@ -103,18 +115,18 @@ export function DSRInboxPanel({ defaultRequestType }: { defaultRequestType?: str
       setLoading(true)
       setError(null)
       try {
-        let qs = statusFilter !== "all" ? `?status=${statusFilter}` : ""
+        let qs = statusFilter !== "all" ?  : ""
         if (requestTypeFilter) {
-          qs += (qs ? "&" : "?") + `request_type=${requestTypeFilter}`
+          qs += (qs ? "&" : "?") + 
         }
         // CLAUDE.md REGRA 6: nao enviar X-Company-ID header — JWT canonical
         // (via apiFetch + proxy auth-headers) ja carrega company_id. Header
         // adicional risca cross-tenant divergence em get_verified_company_id.
         const [listRes, statsRes] = await Promise.all([
-          apiFetch(`/api/backend-proxy/data-subject-requests${qs}`),
+          apiFetch(),
           apiFetch("/api/backend-proxy/data-subject-requests/stats"),
         ])
-        if (!listRes.ok) throw new Error(`HTTP ${listRes.status}`)
+        if (!listRes.ok) throw new Error()
         const listData = await listRes.json()
         const statsData = statsRes.ok ? await statsRes.json() : null
         if (cancelled) return
@@ -136,40 +148,33 @@ export function DSRInboxPanel({ defaultRequestType }: { defaultRequestType?: str
     }
   }, [companyId, t, statusFilter, refetchSignal])
 
-  // WT-2022 P2.2: handler para 5 actions (assign/verify-identity/process/complete/reject)
-  const handleDsrAction = async (
+  // WT-2022 P1-W4-01: handlers que recebem value do modal inline (antes usavam window.prompt)
+  const handleAssign = async (dsrId: string, assigneeEmail: string) => {
+    await executeDsrAction(dsrId, "assign", "POST", { assignee_email: assigneeEmail })
+  }
+  const handleVerifyIdentity = async (dsrId: string, verificationMethod: string) => {
+    await executeDsrAction(dsrId, "verify-identity", "POST", { verification_method: verificationMethod })
+  }
+  const handleProcess = async (dsrId: string, _value: string) => {
+    await executeDsrAction(dsrId, "process", "PUT", {})
+  }
+  const handleComplete = async (dsrId: string, response: string) => {
+    await executeDsrAction(dsrId, "complete", "PUT", { response })
+  }
+  const handleReject = async (dsrId: string, rejectionReason: string) => {
+    await executeDsrAction(dsrId, "reject", "PUT", { rejection_reason: rejectionReason })
+  }
+
+  const executeDsrAction = async (
     dsrId: string,
-    action: "assign" | "verify-identity" | "process" | "complete" | "reject",
+    action: string,
+    method: "POST" | "PUT",
+    body: Record<string, unknown>,
   ) => {
     if (!dsrId) return
     setActionLoadingId(dsrId)
     try {
-      let body: Record<string, unknown> = {}
-      let method: "POST" | "PUT" = "POST"
-
-      if (action === "assign") {
-        const assignee = window.prompt("Email do responsavel:")
-        if (!assignee) return
-        body = { assignee_email: assignee }
-      } else if (action === "verify-identity") {
-        const method_used = window.prompt("Metodo de verificacao (ex: email_confirmation, gov_id):")
-        if (!method_used) return
-        body = { verification_method: method_used }
-      } else if (action === "process") {
-        method = "PUT"
-      } else if (action === "complete") {
-        const response = window.prompt("Resposta ao titular (sera registrada no audit trail):")
-        if (!response) return
-        method = "PUT"
-        body = { response }
-      } else if (action === "reject") {
-        const reason = window.prompt("Motivo da rejeicao:")
-        if (!reason) return
-        method = "PUT"
-        body = { rejection_reason: reason }
-      }
-
-      const url = `/api/backend-proxy/data-subject-requests/${dsrId}/${action}`
+      const url = 
       const resp = await apiFetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
@@ -177,16 +182,35 @@ export function DSRInboxPanel({ defaultRequestType }: { defaultRequestType?: str
       })
       if (!resp.ok) {
         const errText = await resp.text().catch(() => "")
-        window.alert(`Erro ${resp.status}: ${errText.slice(0, 500)}`)
+        setActionModal(prev => ({ ...prev, errorMsg:  }))
         return
       }
-      // Refetch list
       setRefetchSignal((n) => n + 1)
     } catch (err) {
-      window.alert(`Erro de rede: ${err instanceof Error ? err.message : String(err)}`)
+      setActionModal(prev => ({ ...prev, errorMsg:  }))
     } finally {
       setActionLoadingId(null)
     }
+  }
+
+  // WT-2022 P2.2: handler para 5 actions — agora abre modal em vez de window.prompt
+  const handleDsrAction = (
+    id: string,
+    action: "assign" | "verify-identity" | "process" | "complete" | "reject",
+  ) => {
+    const modalType = action === "verify-identity" ? "verify" : action as "assign" | "process" | "complete" | "reject"
+    setActionModal({ type: modalType, requestId: id, value: "", errorMsg: null })
+  }
+
+  const confirmModalAction = async () => {
+    const { type, requestId, value } = actionModal
+    setActionModal({ type: null, requestId: null, value: "", errorMsg: null })
+    if (!requestId || !type) return
+    if (type === "assign") await handleAssign(requestId, value)
+    else if (type === "verify") await handleVerifyIdentity(requestId, value)
+    else if (type === "process") await handleProcess(requestId, value)
+    else if (type === "complete") await handleComplete(requestId, value)
+    else if (type === "reject") await handleReject(requestId, value)
   }
 
   if (loading) return <Loading variant="spinner" text={t("loading")} />
@@ -279,7 +303,7 @@ export function DSRInboxPanel({ defaultRequestType }: { defaultRequestType?: str
               const id = dsr.id ?? dsr.request_id ?? ""
               const status = (dsr.status ?? "").toLowerCase()
               return (
-                <tr key={id} className="border-t border-lia-border-subtle" data-testid={`dsr-row-${id}`}>
+                <tr key={id} className="border-t border-lia-border-subtle" data-testid={}>
                   <td className="px-3 py-2 font-mono text-[11px]">{id.slice(0, 8) || "-"}</td>
                   <td className="px-3 py-2">{dsr.request_type ?? dsr.type ?? "-"}</td>
                   <td className="px-3 py-2">{dsr.subject_email ?? dsr.email ?? "-"}</td>
@@ -311,7 +335,7 @@ export function DSRInboxPanel({ defaultRequestType }: { defaultRequestType?: str
                               onClick={() => handleDsrAction(id, "assign")}
                               className="h-6 px-2 text-[10px]"
                               title="Atribuir DSR"
-                              data-testid={`dsr-action-assign-${id}`}
+                              data-testid={}
                             >
                               Atribuir
                             </Button>
@@ -323,7 +347,7 @@ export function DSRInboxPanel({ defaultRequestType }: { defaultRequestType?: str
                               onClick={() => handleDsrAction(id, "verify-identity")}
                               className="h-6 px-2 text-[10px]"
                               title="Verificar identidade"
-                              data-testid={`dsr-action-verify-${id}`}
+                              data-testid={}
                             >
                               Verificar
                             </Button>
@@ -338,7 +362,7 @@ export function DSRInboxPanel({ defaultRequestType }: { defaultRequestType?: str
                             onClick={() => handleDsrAction(id, "process")}
                             className="h-6 px-2 text-[10px]"
                             title="Mover para Processing"
-                            data-testid={`dsr-action-process-${id}`}
+                            data-testid={}
                           >
                             Processar
                           </Button>
@@ -353,7 +377,7 @@ export function DSRInboxPanel({ defaultRequestType }: { defaultRequestType?: str
                               onClick={() => handleDsrAction(id, "complete")}
                               className="h-6 px-2 text-[10px]"
                               title="Concluir DSR (executa side-effect real)"
-                              data-testid={`dsr-action-complete-${id}`}
+                              data-testid={}
                             >
                               Concluir
                             </Button>
@@ -365,7 +389,7 @@ export function DSRInboxPanel({ defaultRequestType }: { defaultRequestType?: str
                               onClick={() => handleDsrAction(id, "reject")}
                               className="h-6 px-2 text-[10px]"
                               title="Rejeitar"
-                              data-testid={`dsr-action-reject-${id}`}
+                              data-testid={}
                             >
                               Rejeitar
                             </Button>
@@ -380,6 +404,56 @@ export function DSRInboxPanel({ defaultRequestType }: { defaultRequestType?: str
           </tbody>
         </table>
       </div>
+
+      {/* WT-2022 P1-W4-01: modal inline para ações DSR (substitui window.prompt/alert nativo) */}
+      {actionModal.type && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-96 max-w-full mx-4 shadow-xl">
+            <h3 className="font-semibold text-lg mb-4">
+              {actionModal.type === "assign" && "Atribuir Responsável"}
+              {actionModal.type === "verify" && "Verificar Identidade"}
+              {actionModal.type === "process" && "Processar Solicitação"}
+              {actionModal.type === "complete" && "Concluir Solicitação"}
+              {actionModal.type === "reject" && "Rejeitar Solicitação"}
+            </h3>
+            {actionModal.errorMsg && (
+              <p className="text-xs text-status-error mb-3 rounded bg-status-error/10 p-2">
+                {actionModal.errorMsg}
+              </p>
+            )}
+            <input
+              type="text"
+              className="w-full border rounded px-3 py-2 mb-4 text-sm"
+              placeholder={
+                actionModal.type === "assign" ? "Email do responsável" :
+                actionModal.type === "verify" ? "Método de verificação (ex: email_confirmation, gov_id)" :
+                actionModal.type === "reject" ? "Motivo da rejeição" :
+                "Observações (opcional)"
+              }
+              value={actionModal.value}
+              onChange={e => setActionModal(prev => ({ ...prev, value: e.target.value }))}
+              // eslint-disable-next-line jsx-a11y/no-autofocus
+              autoFocus
+            />
+            <div className="flex gap-2 justify-end">
+              <button
+                type="button"
+                className="px-4 py-2 text-sm border rounded hover:bg-gray-50"
+                onClick={() => setActionModal({ type: null, requestId: null, value: "", errorMsg: null })}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                className="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
+                onClick={confirmModalAction}
+              >
+                Confirmar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

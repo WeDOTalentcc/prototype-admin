@@ -35,10 +35,11 @@ export function StudioComplianceView() {
       setLoading(true)
       setError(null)
       try {
-        const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null
-        const res = await apiFetch(`/api/backend-proxy/custom-agents/studio-compliance-summary?period_days=${period}`,
-          { headers: token ? { Authorization: `Bearer ${token}` } : {} },
-        )
+        // P1-W4-03: removed localStorage.getItem("auth_token") anti-pattern.
+        // apiFetch already handles auth via JWT/session cookies (CLAUDE.md REGRA 6 canonical).
+        // Passing a manually extracted token as Bearer header is redundant and creates
+        // cross-tenant risk if the stored token differs from the active session JWT.
+        const res = await apiFetch()
         if (!res.ok) throw new Error(t("loadError"))
         const json = await res.json()
         setData(json)

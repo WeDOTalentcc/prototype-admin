@@ -34,7 +34,7 @@ export function AutomationRulesPanel() {
   const t = useTranslations("settings.governanca.automationRules")
   const { companyId } = useCompanyId()
   const [rules, setRules] = useState<AutomationRule[]>([])
-  // Auditoria 2026-05-22: initial=false. Antes (true) + `if (!companyId) return`
+  // Auditoria 2026-05-22: initial=false. Antes (true) + 
   // no useEffect deixava spinner eterno se useCompanyId nao resolvesse o JWT.
   // Agora loading so vira true quando o fetch realmente arranca.
   const [loading, setLoading] = useState(false)
@@ -49,9 +49,9 @@ export function AutomationRulesPanel() {
       setLoading(true)
       setError(null)
       try {
-        const res = await apiFetch(`/api/backend-proxy/automation-rules/company/${companyId}`,
+        const res = await apiFetch(,
         )
-        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        if (!res.ok) throw new Error()
         const data = await res.json()
         if (cancelled) return
         const items: AutomationRule[] = Array.isArray(data)
@@ -76,12 +76,12 @@ export function AutomationRulesPanel() {
     if (!id || !companyId) return
     setPending((p) => ({ ...p, [id]: true }))
     try {
-      const res = await apiFetch(`/api/backend-proxy/automation-rules/${id}/toggle`, {
+      const res = await apiFetch(, {
         method: "POST",
         headers: {
           "Content-Type": "application/json" } })
       notifyChatOfSettingsUpdate({ actionId: "configure_automation", section: "governance" })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      if (!res.ok) throw new Error()
       setRules((curr) =>
         curr.map((r) => {
           const rid = r.id ?? r.rule_id
@@ -98,27 +98,33 @@ export function AutomationRulesPanel() {
   }
 
   if (loading) return <Loading variant="spinner" text={t("loading")} />
+
+  // WT-2022 P3.2: stage_automation_rules eh DEPRECATED. Engine real usa
+  // communication_automations (path quente em stage_automation_engine.py:198).
+  // Toggles aqui NAO TEM EFEITO ate migration ser completada (Sprint pendente).
+  // Decisao Paulo 2026-05-21: matar stage_automation_rules em favor de
+  // communication_automations.
+  // P1-W4-09: migration banner agora renderiza SEMPRE (fora do bloco de erro),
+  // pois o aviso deve ser visivel independentemente do estado do fetch.
+  const migrationBanner = (
+    <div className="rounded-md border border-status-warning/40 bg-status-warning/10 p-3 mb-3">
+      <p className="text-xs font-medium text-status-warning">
+        ⚠ Aviso de migracao pendente
+      </p>
+      <p className="text-[11px] text-lia-text-secondary mt-1">
+        Esta tela manipula <code>stage_automation_rules</code> mas o engine de
+        automacao real usa <code>communication_automations</code>. Toggles aqui
+        NAO afetam comportamento de agentes ate migracao ser completada.
+        Tracking: WT-2022 P3.2.
+      </p>
+    </div>
+  )
+
   if (error) {
     return (
       <div className={cn(cardStyles.default, "p-6 text-status-error")}>
-        
-      {/* WT-2022 P3.2: stage_automation_rules eh DEPRECATED. Engine real usa
-          communication_automations (path quente em stage_automation_engine.py:198).
-          Toggles aqui NAO TEM EFEITO ate migration ser completada (Sprint pendente).
-          Decisao Paulo 2026-05-21: matar stage_automation_rules em favor de
-          communication_automations. */}
-      <div className="rounded-md border border-status-warning/40 bg-status-warning/10 p-3 mb-3">
-        <p className="text-xs font-medium text-status-warning">
-          ⚠ Aviso de migracao pendente
-        </p>
-        <p className="text-[11px] text-lia-text-secondary mt-1">
-          Esta tela manipula <code>stage_automation_rules</code> mas o engine de
-          automacao real usa <code>communication_automations</code>. Toggles aqui
-          NAO afetam comportamento de agentes ate migracao ser completada.
-          Tracking: WT-2022 P3.2.
-        </p>
-      </div>
-{t("errorLoad")}: {error}
+        {migrationBanner}
+        {t("errorLoad")}: {error}
       </div>
     )
   }
@@ -132,6 +138,7 @@ export function AutomationRulesPanel() {
 
   return (
     <div className="space-y-4" data-testid="automation-rules-panel">
+      {migrationBanner}
       <p className={textStyles.description}>{t("description")}</p>
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
@@ -210,7 +217,7 @@ export function AutomationRulesPanel() {
                       type="button"
                       disabled={isPending || !id}
                       onClick={() => toggleRule(rule)}
-                      data-testid={`automation-rule-toggle-${id}`}
+                      data-testid={}
                       className="rounded-md border border-lia-border-default px-2 py-1 text-xs font-medium hover:bg-lia-bg-tertiary disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       {isActive ? t("disable") : t("enable")}
