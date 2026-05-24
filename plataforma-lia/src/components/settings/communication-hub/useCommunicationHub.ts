@@ -169,7 +169,7 @@ export function useCommunicationHub(activeSubsection?: string) {
           name: t.name,
           category: t.category || 'followup',
           subject: t.subject || '',
-          body: t.body || t.body_text || (t.body_html ? (t.body_html as string).replace(/<[^>]*>/g, '') : ''),
+          body: (t.content as string) || t.body || t.body_text || (t.body_html ? (t.body_html as string).replace(/<[^>]*>/g, '') : ''),  // P0-W2-06: Rails returns content field
           variables: t.variables || [],
           isActive: t.is_active ?? true,
           lastUpdated: t.updated_at || t.last_updated || new Date().toISOString().split('T')[0],

@@ -35,8 +35,7 @@ async function resolveTenantFromBackend(workosOrgId: string): Promise<string | n
 }
 
 export async function resolveCompanyId(request: NextRequest): Promise<string | null> {
-  const fromQuery = request.nextUrl.searchParams.get('company_id')
-  if (fromQuery && fromQuery.trim()) return fromQuery.trim()
+  // P0-W3-08: company_id from query string removed -- cookie/session only
 
   try {
     const cookieStore = await cookies()
