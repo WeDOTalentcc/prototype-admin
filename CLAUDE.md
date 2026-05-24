@@ -160,6 +160,24 @@ trava a presença das flags no `.replit`.
 - **Idioma:** Português em toda comunicação e copy. Código pode ser em inglês; comentários quando existirem, em qualquer dos dois.
 - **Marca:** sempre **WeDOTalent** (nunca "Wedo Talent", "WeDo Talent" etc).
 
+## Endpoints + RLS canonical (F11, 2026-05-24)
+
+**REGRA:** endpoints que escrevem em tabelas RLS-protected (150 tabelas Postgres com `rowsecurity=true` + `forcerowsecurity=true`) DEVEM usar `Depends(get_tenant_db)`, NÃO `Depends(get_db)`.
+
+**Por quê:** RLS policies declaram `WITH CHECK (company_id)::text = app_current_company_id()`. A função `app_current_company_id()` retorna `NULLIF(current_setting('app.company_id', true), '')`. Quando o GUC não está setado, retorna NULL → bloqueio silencioso ("new row violates row-level security policy"). `get_db` NÃO seta o GUC; `get_tenant_db` faz via `set_tenant_context` que executa `SELECT set_config('app.company_id', :cid, true)`.
+
+**Tabelas afetadas (lista canônica):** ver `lia-agent-system/scripts/check_get_db_rls_safety.py:RLS_TABLES` — `candidates`, `vacancy_candidates`, `job_vacancies`, `interviews`, `candidate_*`, `communication_*`, `agent_*`, `audit_logs`, `ai_consumption`, etc.
+
+**Pitfalls operacionais:**
+1. **Rollback transactional drop GUC.** `set_config('app.company_id', x, true)` é `is_local=true` (transaction-scoped). Qualquer `db.rollback()` ou `db.commit()` ends the transaction → GUC drops. Helpers canonical: `commit_keeping_tenant(db)` (em `app/core/database.py`) re-injeta após commit. Se chamar `db.rollback()` manualmente (ex: dentro de `ensure_table` defensive), DEVE re-chamar `set_tenant_context(db, company_id)` após.
+2. **AsyncSessionLocal() local não herda GUC.** Abrir nova session local com `async with AsyncSessionLocal() as db` NUNCA herda o GUC da request. Use a session injetada (`Depends(get_tenant_db)`) ou chame `set_tenant_context` manualmente.
+3. **`ensure_table()` defensive antiquado.** Tables hoje são alembic-managed. `CREATE TABLE IF NOT EXISTS` sob role `lia_app` raise `InsufficientPrivilegeError` → rollback → drop GUC → INSERT subsequente falha. Remova `ensure_table()` calls.
+
+**Sensores canonical:**
+- `lia-agent-system/scripts/check_get_db_rls_safety.py` — AST detecta `Depends(get_db)` em handlers que escrevem em RLS tables. Modes: `--blocking` (CI), default warn.
+- `lia-agent-system/scripts/check_no_duplicate_routes.py` — sensor FastAPI dup routes.
+- `lia-agent-system/scripts/check_no_company_id_uuid_cast.py` — sensor `CAST(:co AS uuid)` em tables varchar.
+
 ## Observabilidade (ADR-017) — `lia-agent-system/`
 
 Tracing, structured logging, LLM callbacks, agent monitoring, drift detection (modelo + alertas), token tracking, token budget, WSI observability e configuração do LangSmith vivem **exclusivamente** em `lia-agent-system/app/shared/observability/`.
