@@ -1,6 +1,3 @@
-"""Company departments API endpoints (CRUD + Excel/CSV bulk import)."""
-import csv
-import io
 import logging
 import uuid
 from datetime import datetime
@@ -144,7 +141,7 @@ company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """List all members of a department."""
     try:
-        department = await dept_repo.get_by_id(department_id)
+        department = await dept_repo.get_by_id(department_id, company_id=uuid.UUID(company_id))
         if not department:
             raise HTTPException(status_code=404, detail="Department not found")
 
@@ -170,7 +167,7 @@ company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Create a new member in a department."""
     try:
-        department = await dept_repo.get_by_id(department_id)
+        department = await dept_repo.get_by_id(department_id, company_id=uuid.UUID(company_id))
         if not department:
             raise HTTPException(status_code=404, detail="Department not found")
 
