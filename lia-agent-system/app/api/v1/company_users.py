@@ -242,7 +242,7 @@ company_id: str = Depends(require_company_id)):
             update_data['permissions'] = user.permissions
         update_data['updated_at'] = datetime.utcnow()
 
-        user = await user_repo.update(user_uuid, update_data)
+        user = await user_repo.update(user_uuid, update_data, company_id=company_id)
         logger.info(f"Updated user: {user.id} with permissions: {user.permissions}")
         return user
     except HTTPException:
@@ -272,7 +272,7 @@ company_id: str = Depends(require_company_id)):
             raise HTTPException(status_code=404, detail="User not found")
 
         email = user.email
-        await user_repo.delete(user_uuid)
+        await user_repo.delete(user_uuid, company_id=company_id)
         # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
         logger.info(f"Deleted user: {email}")
         return None
@@ -310,7 +310,7 @@ company_id: str = Depends(require_company_id)):
         user = await user_repo.update(user_uuid, {
             "invitation_token": invitation_token,
             "invitation_sent_at": datetime.utcnow(),
-        })
+        }, company_id=company_id)
 
         invitation_link = f"{FRONTEND_URL}/aceitar-convite?token={invitation_token}"
         await email_svc.send_user_notification(

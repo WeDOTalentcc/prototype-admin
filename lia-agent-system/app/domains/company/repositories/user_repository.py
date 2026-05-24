@@ -73,8 +73,17 @@ class UserRepository:
         await self.db.refresh(user)
         return user
 
-    async def update(self, user_id: UUID, data: dict) -> User | None:
-        user = await self.get_by_id(user_id)
+    async def update(self, user_id: UUID, data: dict, company_id: str | None = None) -> User | None:
+        """Update user by id.
+
+        Onda 4.2f-B2 (2026-05-24): company_id parametro pra tenant scoping
+        defense-in-depth. Antes update aceitava qualquer user_id sem checar
+        ownership — atacante company A com user_id de company B updatava user
+        cross-tenant. LGPD Art. 33 (cross-tenant write).
+
+        Caller DEVE passar company_id; backwards-compat mantido pra legacy.
+        """
+        user = await self.get_by_id(user_id, company_id=company_id)
         if not user:
             return None
         for key, value in data.items():
@@ -84,8 +93,17 @@ class UserRepository:
         await self.db.refresh(user)
         return user
 
-    async def delete(self, user_id: UUID) -> bool:
-        user = await self.get_by_id(user_id)
+    async def delete(self, user_id: UUID, company_id: str | None = None) -> bool:
+        """Delete user by id.
+
+        Onda 4.2f-B2 (2026-05-24): company_id parametro pra tenant scoping
+        defense-in-depth. Antes delete aceitava qualquer user_id sem checar
+        ownership — atacante company A com user_id de company B deletava user
+        cross-tenant (DoS + LGPD Art. 33).
+
+        Caller DEVE passar company_id; backwards-compat mantido pra legacy.
+        """
+        user = await self.get_by_id(user_id, company_id=company_id)
         if not user:
             return False
         await self.db.delete(user)
