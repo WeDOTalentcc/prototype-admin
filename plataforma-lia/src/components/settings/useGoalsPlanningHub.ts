@@ -315,6 +315,19 @@ export function useGoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection
         body: JSON.stringify(headcounts)
       })
       if (!bulkRes.ok) throw new Error('Falha ao salvar posições planejadas')
+      // Bug 6.C dispatch: notify LIA chat after bulk headcounts save
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('lia:settings-updated', {
+          detail: {
+            actionId: 'configure_workforce_headcounts',
+            section: 'workforce',
+            field: `headcounts_${selectedYear}`,
+            value: headcounts.length,
+            source: 'ui',
+            ts: Date.now(),
+          },
+        }))
+      }
       setSuccessMessage(`${headcounts.length} posição(ões) salvas com sucesso!`)
       setTimeout(() => setSuccessMessage(null), 3000)
     } catch (err) {
