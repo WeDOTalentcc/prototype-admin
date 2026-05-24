@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useCallback } from "react"
+import { createPortal } from "react-dom"
 import { X, Plus, Trash2, Info, Lock, ChevronDown, ChevronUp } from "lucide-react"
 import type {
   CompensationPolicyRecord,
@@ -550,7 +551,7 @@ export function CompensationPolicyFormModal({
 
   const isEdit = Boolean(initialData?.id)
 
-  return (
+  const modalContent = (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="relative flex flex-col w-full max-w-3xl max-h-[90vh] rounded-xl border border-lia-border bg-lia-surface shadow-2xl overflow-hidden">
         {/* Header */}
@@ -723,4 +724,7 @@ export function CompensationPolicyFormModal({
       </div>
     </div>
   )
+
+  if (typeof document === "undefined") return null
+  return createPortal(modalContent, document.body)
 }
