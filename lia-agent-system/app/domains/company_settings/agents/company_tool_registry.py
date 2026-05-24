@@ -746,7 +746,7 @@ async def _wrap_process_uploaded_document(**kwargs: Any) -> dict[str, Any]:
             "autonomy_level",
         ],
         "org_chart": ["departments", "hierarchy", "headcount"],
-        "compensation": ["seniority_levels", "salary_ranges", "benefits", "variable_compensation"],
+        "compensation": ["seniority_levels", "salary_ranges", "benefits"],  # P0-W2-10 (2026-05-24): removed variable_compensation -- field not in DB
         "tech_doc": ["tech_stack", "engineering_culture", "tools"],
         "general": ["mission", "vision", "values", "tech_stack", "benefits"],
     }
