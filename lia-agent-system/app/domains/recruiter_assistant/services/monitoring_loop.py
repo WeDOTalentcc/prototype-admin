@@ -212,6 +212,26 @@ class MonitoringLoop:
                 await self.run_checks(tenant_id)
             except Exception as exc:
                 logger.error("MonitoringLoop check failed for tenant %s: %s", tenant_id, exc)
+            # G9 canonical fix (2026-05-24): also trigger
+            # ProactiveDetectorService so hints reach proactive_actions
+            # table + WS broadcast + chat surface. Without this piggyback
+            # path, the celery beat task `proactive.detect_hints_hourly`
+            # is the only producer — and no celery worker runs on the
+            # Replit dev environment, so the pipeline was effectively
+            # dead. The detector is idempotent (dedup by PENDING status),
+            # so this remains safe when celery is eventually deployed.
+            try:
+                from app.shared.services.proactive_detector_service import (
+                    proactive_detector_service,
+                )
+                from lia_config.database import AsyncSessionLocal
+                async with AsyncSessionLocal() as _det_db:
+                    await proactive_detector_service.run_for_company(_det_db, tenant_id)
+            except Exception as exc:
+                logger.warning(
+                    "[G9 piggyback] ProactiveDetectorService failed for tenant %s: %s",
+                    tenant_id, exc,
+                )
         return True
 
     async def run_checks(self, company_id: str) -> list[ProactiveAlert]:
