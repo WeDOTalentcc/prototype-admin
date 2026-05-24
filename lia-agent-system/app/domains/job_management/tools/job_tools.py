@@ -70,9 +70,23 @@ async def create_job(
     Returns:
         Result with job creation details
     """
+    # Sprint 2.5-B-extra (2026-05-24): fail-loud canonical.
+    # Prefer _context (Phase 1.5 path), fallback to explicit kwarg (legacy
+    # callers), raise loud if NEITHER provides company_id (REGRA 4 +
+    # ADR-001 multi-tenancy fail-closed).
     context = _extract_context(kwargs)
-    effective_company_id = context.company_id if context else company_id
-    user_id = context.user_id if context else (recruiter_id or "system")
+    if context and getattr(context, "company_id", None):
+        effective_company_id = str(context.company_id)
+        user_id = context.user_id or recruiter_id or "system"
+    elif company_id:
+        effective_company_id = company_id
+        user_id = recruiter_id or "system"
+    else:
+        raise ToolContextMissingError(
+            "Tool 'create_job_vacancy' invoked without company_id "
+            "(neither in _context nor as explicit kwarg). "
+            "Multi-tenancy fail-closed per CLAUDE.md REGRA 4 + ADR-001."
+        )
     
     logger.info(f"📋 Creating job vacancy: {title} (company: {effective_company_id})")
     
