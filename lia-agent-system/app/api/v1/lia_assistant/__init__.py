@@ -25,6 +25,7 @@ from .conversational import router as _conversational_router
 from .insights import router as _insights_router
 
 # --- This package's sub-routers ---
+from .suggestion_click import router as _suggestion_click_router
 from .suggestions import router as _suggestions_router
 from .wizard import router as _wizard_router
 from .wizard_session import router as _wizard_session_router
@@ -49,6 +50,9 @@ router.include_router(_wizard_router)
 router.include_router(_wizard_session_router)
 router.include_router(_insights_router)
 router.include_router(_conversational_router)
+
+# Onda 4-Fase8 P1-3 Fase 2 (2026-05-24): canonical click logging
+router.include_router(_suggestion_click_router)
 
 __all__ = [
     "router",

@@ -370,6 +370,10 @@ from lia_models.feedback import (
     InteractionFeedback,
     LearningPattern,
 )
+from lia_models.suggestion_click_event import (
+    SuggestionClickEvent,
+    SUGGESTION_SOURCES,
+)
 from lia_models.background_jobs import (
     BackgroundJob,
     ProactiveAction,

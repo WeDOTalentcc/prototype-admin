@@ -66,6 +66,16 @@ repos:
         pass_filenames: false
         always_run: false
 
+      # Onda 4-Fase8 (2026-05-24): promovido pra BLOCKING após baseline 0
+      # conquistado em Fase 7 (3 P0 latentes corrigidos). Anti-regressão Task #712.
+      - id: no-broken-window-location
+        name: "Task #712: window.location/router.push pra rota inexistente (BLOCKING)"
+        language: system
+        entry: python3 scripts/check_no_broken_window_location.py
+        files: ^plataforma-lia/src/.*\.(ts|tsx)$
+        pass_filenames: false
+        always_run: false
+
       - id: no-devmode-in-prod-env
         name: "G-DEVMODE: block LIA_DEV_MODE active in .env.staging/.env.production (BLOCKING)"
         language: system

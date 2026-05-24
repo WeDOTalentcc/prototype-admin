@@ -99,6 +99,15 @@ jobs:
         working-directory: plataforma-lia
         run: npm run lint:candidate-axis:blocking
 
+      - name: No broken window.location refs BLOCKING (Task #712 anti-regressão)
+        # Onda 4-Fase8 (2026-05-24): promovido BLOCKING após baseline 0.
+        # Sensor descobriu 3 P0 latentes na Fase 6 (acesso-negado, indicadores,
+        # integracoes-ats) — todos corrigidos na Fase 7 (commit 6fe1b8e18).
+        # Pattern: window.location.href / router.push pra rota inexistente em
+        # src/app/**. Qualquer regressão tipo Task #712 (35 dias quebrado em
+        # produção) bloqueia merge automaticamente.
+        run: python3 lia-agent-system/scripts/check_no_broken_window_location.py
+
       - name: Unit & Component tests
         run: npx vitest run --reporter=verbose
 

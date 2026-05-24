@@ -98,7 +98,43 @@ export function ChatSuggestionsPanel({
     setActiveCategory(null)
   }
 
-  const handleSelectQuery = (query: string) => {
+  /**
+   * Onda 4-Fase8 P1-3 Fase 2 (2026-05-24): canonical click logging.
+   * Fire-and-forget POST /lia/suggestions/click — NÃO bloqueia UX em caso
+   * de erro de rede/backend. Pipeline de aprendizado consome esses eventos
+   * para ranqueamento personalizado (Fase 3, próxima sprint).
+   */
+  const logSuggestionClick = (
+    suggestionId: string,
+    suggestionText: string,
+    source: "panel_static" | "panel_dynamic",
+  ) => {
+    // Fire-and-forget: erro de rede NÃO crasha UX
+    fetch("/api/backend-proxy/lia/suggestions/click", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        suggestion_id: suggestionId,
+        suggestion_text: suggestionText.slice(0, 500),
+        suggestion_source: source,
+        page_context: typeof window !== "undefined" ? window.location.pathname : null,
+        chat_mode: null, // ChatSuggestionsPanel não conhece mode; UnifiedChat propaga
+        click_metadata: {},
+      }),
+    }).catch(() => {
+      // Silent fail-open per REGRA harness — logging não deve degradar UX.
+      // Backend já logou via REGRA 4 fail-loud server-side.
+    })
+  }
+
+  const handleSelectQuery = (
+    query: string,
+    opts?: { suggestionId?: string; source?: "panel_static" | "panel_dynamic" },
+  ) => {
+    // Onda 4-Fase8: log click antes de dispatch (fire-and-forget)
+    if (opts?.suggestionId) {
+      logSuggestionClick(opts.suggestionId, query, opts.source ?? "panel_static")
+    }
     onSelectQuery(query)
     resetState()
     onClose()
@@ -206,7 +242,7 @@ export function ChatSuggestionsPanel({
                 return (
                   <button
                     key={`dyn-${card.id}`}
-                    onClick={() => handleSelectQuery(card.title)}
+                    onClick={() => handleSelectQuery(card.title, { suggestionId: card.id, source: "panel_dynamic" })}
                     className="w-full px-2.5 py-2 text-left transition-colors motion-reduce:transition-none rounded-md group flex items-center gap-2 hover:bg-lia-bg-secondary border border-transparent hover:border-wedo-cyan/30"
                   >
                     <div
@@ -246,7 +282,7 @@ export function ChatSuggestionsPanel({
           {filteredQueries.map((query) => (
             <button
               key={query.id}
-              onClick={() => handleSelectQuery(query.question)}
+              onClick={() => handleSelectQuery(query.question, { suggestionId: query.id, source: "panel_static" })}
               className="w-full px-2.5 py-2 text-left transition-colors motion-reduce:transition-none rounded-md group flex items-center gap-2 hover:bg-lia-bg-secondary border border-transparent hover:border-lia-border-subtle"
             >
               <div className="p-1 rounded-md flex-shrink-0 bg-lia-bg-tertiary">
