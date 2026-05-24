@@ -23,17 +23,34 @@ logger = logging.getLogger(__name__)
 
 ALERT_THRESHOLDS = [80, 100]
 
+# P2-W3-AI-2: TOKEN_PRICES — precos per-1000-tokens (USD).
+# Ultima atualizacao: 2026-05-24. Atualizar quando Anthropic/Google/OpenAI
+# anunciarem mudancas em https://www.anthropic.com/pricing (Claude),
+# https://ai.google.dev/pricing (Gemini), https://openai.com/pricing (GPT).
+# Aliases legados (claude-3-*) mantidos para backward compat com registros historicos.
 TOKEN_PRICES = {
+    # --- Claude (Anthropic) --- versoes ativas 2026-05 ---
+    "claude-sonnet-4-6": {"input": 0.003, "output": 0.015},
+    "claude-haiku-4": {"input": 0.00025, "output": 0.00125},
+    "claude-opus-4": {"input": 0.015, "output": 0.075},
+    "claude-sonnet-4-5": {"input": 0.003, "output": 0.015},
+    "claude-3.5-sonnet": {"input": 0.003, "output": 0.015},
+    "claude-3.5-haiku": {"input": 0.0008, "output": 0.004},
+    # Aliases legados (backward compat com registros historicos) ---
     "claude-3-sonnet": {"input": 0.003, "output": 0.015},
     "claude-3-haiku": {"input": 0.00025, "output": 0.00125},
     "claude-3-opus": {"input": 0.015, "output": 0.075},
-    "claude-3.5-sonnet": {"input": 0.003, "output": 0.015},
+    # --- GPT (OpenAI) ---
     "gpt-4o": {"input": 0.005, "output": 0.015},
     "gpt-4o-mini": {"input": 0.00015, "output": 0.0006},
     "gpt-4-turbo": {"input": 0.01, "output": 0.03},
     "gpt-3.5-turbo": {"input": 0.0005, "output": 0.0015},
+    # --- Gemini (Google) ---
+    "gemini-2.0-flash": {"input": 0.0001, "output": 0.0004},
+    "gemini-2.5-pro": {"input": 0.00125, "output": 0.01},
     "gemini-1.5-pro": {"input": 0.00125, "output": 0.005},
     "gemini-1.5-flash": {"input": 0.000075, "output": 0.0003},
+    "gemini-flash": {"input": 0.000075, "output": 0.0003},
 }
 
 DEFAULT_LIMITS = {

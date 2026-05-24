@@ -144,6 +144,7 @@ async def whatsapp_message_webhook(request: Request, ):
     message_body = params.get("Body", "")
     message_sid = params.get("MessageSid", "")
 
+    # pii-logs ok: from_number mascarado em runtime via PIIMaskingFilter instalado em main.py (LGPD Art.46 + ADR-006 defesa em profundidade)
     logger.info(f"[WhatsApp] Incoming from {from_number}: {message_body[:50]}...")
 
     if not from_number or not message_body:

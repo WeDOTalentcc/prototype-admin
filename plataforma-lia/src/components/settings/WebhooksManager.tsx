@@ -48,6 +48,11 @@ export function WebhooksManager() {
 
   const handleCreate = async () => {
     if (!newName.trim() || !newUrl.trim() || newEvents.length === 0) return
+    // P2-W3-INT-5: validacao HTTPS no frontend — feedback imediato antes de hit no backend
+    if (!newUrl.trim().startsWith("https://")) {
+      toast.error(t("urlMustBeHttps") || "A URL deve comecar com https://")
+      return
+    }
     setSubmitting(true)
     try {
       const token = localStorage.getItem("auth_token")

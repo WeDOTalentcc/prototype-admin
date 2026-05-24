@@ -99,7 +99,21 @@ def deliver_webhook_task(
                     wh.last_error = error_msg if not success else None
                     await db.commit()
 
-        asyncio.run(_update_stats())
+        # P2-W3-WHK-5: asyncio.run() pode conflitar com gevent/eventlet pool do Celery.
+        # Usar get_event_loop() com fallback para new_event_loop() — safe em workers sync.
+        try:
+            loop = asyncio.get_event_loop()
+            if loop.is_running():
+                # Celery gevent/eventlet: loop ja esta rodando — criar novo loop isolado
+                import concurrent.futures
+                with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+                    future = executor.submit(asyncio.run, _update_stats())
+                    future.result(timeout=5)
+            else:
+                loop.run_until_complete(_update_stats())
+        except RuntimeError:
+            # Fallback: novo event loop (Celery prefork — sem loop ativo)
+            asyncio.run(_update_stats())
     except Exception as stats_exc:
         logger.warning("[Webhook] stats update failed: %s", stats_exc)
 

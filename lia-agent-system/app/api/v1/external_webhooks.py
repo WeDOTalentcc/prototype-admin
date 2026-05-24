@@ -294,13 +294,20 @@ async def process_ats_stage_changed(platform: str, payload: dict[str, Any]):
 
 
 async def process_ats_candidate_created(platform: str, payload: dict[str, Any]):
-    """Handle new candidate created in ATS."""
+    """Handle new candidate created in ATS.
+
+    P2-W3-INT-1: esta funcao era dead code — linha payload.get() sem efeito + apenas log.
+    TODO: implementar importacao real de candidato via ATS sync service (veja process_ats_stage_changed
+    como modelo). Ate la, o evento e recebido mas descartado com log estruturado.
+    Ticket: WT-backlog ATS candidate sync.
+    """
     try:
-        logger.info(f"[ATS SYNC] New candidate from {platform}")
-        
-        payload.get("candidate_data") or payload.get("data", {})
-        
-        logger.info("[ATS SYNC] Candidate created event received - may need to import to LIA")
+        candidate_data = payload.get("candidate_data") or payload.get("data", {})
+        logger.info(
+            "[ATS SYNC] candidate_created recebido de %s — importacao pendente (P2-W3-INT-1 TODO)",
+            platform,
+            extra={"platform": platform, "candidate_keys": list(candidate_data.keys()) if candidate_data else []},
+        )
     except Exception as e:
         logger.error(f"❌ Error processing ATS candidate created: {e}", exc_info=True)
 

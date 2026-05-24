@@ -73,13 +73,8 @@ class WebhookService:
         created_by: str,
         data: dict,
     ) -> Webhook:
+        # P2-W3-WHK-4: removido existing_count (dead code — nunca usado, sobrescrito por count).
         # Check max per company
-        existing_count = await db.scalar(
-            select(Webhook).where(Webhook.company_id == company_id).with_only_columns(
-                Webhook.id
-            )
-        )
-        # Use count via subquery for accuracy
         from sqlalchemy import func as _func
         count = await db.scalar(
             select(_func.count(Webhook.id)).where(Webhook.company_id == company_id)

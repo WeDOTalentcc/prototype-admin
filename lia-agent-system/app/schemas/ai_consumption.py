@@ -32,8 +32,12 @@ class ModelEnum(StrEnum):
     GPT4_TURBO = "gpt-4-turbo"
 
 
-class AiConsumptionRecord(BaseModel):
-    """Schema for recording AI consumption."""
+class AiConsumptionRecord(WeDoBaseModel):
+    """Schema for recording AI consumption.
+
+    P2-W3-AI-4: herda WeDoBaseModel (extra='forbid') — impede fields fantasma
+    no endpoint POST /api/v1/ai-consumption/record (Pydantic Convention R1).
+    """
     agent_type: str = Field(..., description="Type of AI agent")
     operation: str = Field(..., description="Operation performed")
     model: str = Field(..., description="AI model used")
