@@ -89,6 +89,7 @@ class AgenticLoop:
         conversation_history: list | None = None,
         company_id: str | None = None,
         user_id: str | None = None,
+        session_id: str | None = None,
         provider: str = "claude",
         max_iterations: int | None = None,
     ) -> dict:
@@ -228,8 +229,10 @@ class AgenticLoop:
                     _c3b_ctx = _C3bCtx(
                         company_id=company_id or "unknown",
                         user_id=user_id or "unknown",
+                        session_id=session_id or "unknown",
                         domain="agentic_loop",
                         agent_id="agentic_loop",
+                        original_message=user_message,
                     )
                     _final_response = await _c3b_post(_final_response, _c3b_ctx)
                 except Exception as _c3b_exc:

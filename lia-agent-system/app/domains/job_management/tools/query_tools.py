@@ -18,6 +18,7 @@ from uuid import UUID
 
 
 from app.tools.registry import ToolDefinition, tool_registry
+from app.tools.context_helpers import normalize_wrapper_kwargs
 
 if TYPE_CHECKING:
     from app.tools.executor import ToolExecutionContext
@@ -750,71 +751,61 @@ async def get_job_benchmark(
 
 
 async def _wrap_search_jobs(**kwargs):
-    """Sensor 2 wrapper (2026-05-24): inject _context from kwargs before delegating to search_jobs.
+    """Canonical wrapper (2026-05-24-v3 normalize_wrapper_kwargs).
 
-    Mirrors _wrap_save_hiring_policy pattern. Without this, ToolExecutor global
-    dispatch raises ToolContextMissingError because executor does NOT inject _context.
+    Delegates via ``normalize_wrapper_kwargs`` to handle both dispatch paths:
+    (A) Global ToolExecutor injects ``_context``; (B) tool_handler decorator
+    injects ``company_id``/``user_id``. See app/tools/context_helpers.py.
     """
-    company_id = kwargs.pop("company_id", "")
-    user_id = kwargs.pop("user_id", "")
-    ctx = SimpleNamespace(company_id=company_id, user_id=user_id)
-    return await search_jobs(_context=ctx, **kwargs)
+    return await search_jobs(**normalize_wrapper_kwargs(kwargs))
 
 
 
 
 async def _wrap_get_job_details(**kwargs):
-    """Sensor 2 wrapper (2026-05-24): inject _context from kwargs before delegating to get_job_details.
+    """Canonical wrapper (2026-05-24-v3 normalize_wrapper_kwargs).
 
-    Mirrors _wrap_save_hiring_policy pattern. Without this, ToolExecutor global
-    dispatch raises ToolContextMissingError because executor does NOT inject _context.
+    Delegates via ``normalize_wrapper_kwargs`` to handle both dispatch paths:
+    (A) Global ToolExecutor injects ``_context``; (B) tool_handler decorator
+    injects ``company_id``/``user_id``. See app/tools/context_helpers.py.
     """
-    company_id = kwargs.pop("company_id", "")
-    user_id = kwargs.pop("user_id", "")
-    ctx = SimpleNamespace(company_id=company_id, user_id=user_id)
-    return await get_job_details(_context=ctx, **kwargs)
+    return await get_job_details(**normalize_wrapper_kwargs(kwargs))
 
 
 
 
 async def _wrap_get_job_velocity(**kwargs):
-    """Sensor 2 wrapper (2026-05-24): inject _context from kwargs before delegating to get_job_velocity.
+    """Canonical wrapper (2026-05-24-v3 normalize_wrapper_kwargs).
 
-    Mirrors _wrap_save_hiring_policy pattern. Without this, ToolExecutor global
-    dispatch raises ToolContextMissingError because executor does NOT inject _context.
+    Delegates via ``normalize_wrapper_kwargs`` to handle both dispatch paths:
+    (A) Global ToolExecutor injects ``_context``; (B) tool_handler decorator
+    injects ``company_id``/``user_id``. See app/tools/context_helpers.py.
     """
-    company_id = kwargs.pop("company_id", "")
-    user_id = kwargs.pop("user_id", "")
-    ctx = SimpleNamespace(company_id=company_id, user_id=user_id)
-    return await get_job_velocity(_context=ctx, **kwargs)
+    return await get_job_velocity(**normalize_wrapper_kwargs(kwargs))
 
 
 
 
 async def _wrap_get_job_quality_metrics(**kwargs):
-    """Sensor 2 wrapper (2026-05-24): inject _context from kwargs before delegating to get_job_quality_metrics.
+    """Canonical wrapper (2026-05-24-v3 normalize_wrapper_kwargs).
 
-    Mirrors _wrap_save_hiring_policy pattern. Without this, ToolExecutor global
-    dispatch raises ToolContextMissingError because executor does NOT inject _context.
+    Delegates via ``normalize_wrapper_kwargs`` to handle both dispatch paths:
+    (A) Global ToolExecutor injects ``_context``; (B) tool_handler decorator
+    injects ``company_id``/``user_id``. See app/tools/context_helpers.py.
     """
-    company_id = kwargs.pop("company_id", "")
-    user_id = kwargs.pop("user_id", "")
-    ctx = SimpleNamespace(company_id=company_id, user_id=user_id)
-    return await get_job_quality_metrics(_context=ctx, **kwargs)
+    return await get_job_quality_metrics(**normalize_wrapper_kwargs(kwargs))
 
 
 
 
 async def _wrap_get_job_benchmark(**kwargs):
-    """Sensor 2 wrapper (2026-05-24): inject _context from kwargs before delegating to get_job_benchmark.
+    """Canonical wrapper (2026-05-24-v3 normalize_wrapper_kwargs).
 
-    Mirrors _wrap_save_hiring_policy pattern. Without this, ToolExecutor global
-    dispatch raises ToolContextMissingError because executor does NOT inject _context.
+    Delegates via ``normalize_wrapper_kwargs`` to handle both dispatch paths:
+    (A) Global ToolExecutor injects ``_context``; (B) tool_handler decorator
+    injects ``company_id``/``user_id``. See app/tools/context_helpers.py.
     """
-    company_id = kwargs.pop("company_id", "")
-    user_id = kwargs.pop("user_id", "")
-    ctx = SimpleNamespace(company_id=company_id, user_id=user_id)
-    return await get_job_benchmark(_context=ctx, **kwargs)
+    return await get_job_benchmark(**normalize_wrapper_kwargs(kwargs))
 
 
 def register_job_management_query_tools() -> None:

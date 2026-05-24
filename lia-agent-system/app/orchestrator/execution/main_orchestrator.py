@@ -892,6 +892,7 @@ class MainOrchestrator:
                         conversation_history=ctx.extra.get("conversation_history", []),
                         company_id=_loop_company_id,
                         user_id=getattr(ctx, "user_id", None),
+                        session_id=conv_id,
                         provider=_agentic_provider,
                     )
 

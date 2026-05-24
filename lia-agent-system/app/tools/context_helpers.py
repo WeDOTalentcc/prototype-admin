@@ -100,3 +100,43 @@ def require_company_id_from_obj(context: Any, tool_name: str) -> str:
         )
     return str(cid)
 
+
+
+def normalize_wrapper_kwargs(kwargs: dict[str, Any]) -> dict[str, Any]:
+    """Normalize tool wrapper kwargs to canonical `_context`-in-kwargs form.
+
+    Converges TWO dispatch paths into a single canonical kwargs shape so that
+    downstream tool handlers can rely on `kwargs["_context"]`:
+
+    - Path A (Global ToolExecutor): `app/tools/executor.py:281` (Sprint 8
+      NS-2, commit 06b199d4, 2026-05-24) injects
+      ``handler_kwargs["_context"] = ToolExecutionContext(...)`` before
+      dispatching. The wrapper just needs to forward.
+
+    - Path B (Domain ReAct agents via `tool_handler` decorator): the
+      decorator extracts company_id/user_id from the
+      `_current_company_id` / `_current_user_id` ContextVars and injects
+      them as regular kwargs (NOT _context). The wrapper must build
+      `_context` from those before forwarding.
+
+    Defensive contract:
+    - If Path A already supplied a non-empty `_context`, keep it.
+    - Otherwise, pop `company_id`/`user_id` and synthesize a SimpleNamespace.
+    - Never silently drop tenant: empty company_id passes through so the
+      canonical handler can fail-loud via require_company_id_from_context.
+
+    Sensor 3 (registered 2026-05-24, see scripts/check_wrappers_prefer_context.py)
+    blocks wrapper code that pops company_id without delegating to this helper.
+    """
+    from types import SimpleNamespace
+
+    existing = kwargs.get("_context")
+    if existing is not None and getattr(existing, "company_id", ""):
+        # Path A — executor already injected valid context. Forward as-is.
+        return kwargs
+
+    # Path B — build _context from explicit kwargs (tool_handler ContextVar pattern).
+    company_id = kwargs.pop("company_id", "") or ""
+    user_id = kwargs.pop("user_id", "") or ""
+    kwargs["_context"] = SimpleNamespace(company_id=company_id, user_id=user_id)
+    return kwargs

@@ -22,7 +22,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import AsyncSessionLocal
 from app.tools.registry import ToolDefinition, tool_registry
-from app.tools.context_helpers import context_or_raise, require_company_id_from_context, require_company_id_from_obj
+from app.tools.context_helpers import context_or_raise, require_company_id_from_context, require_company_id_from_obj, normalize_wrapper_kwargs
 
 if TYPE_CHECKING:
     from app.tools.executor import ToolExecutionContext
@@ -259,29 +259,25 @@ async def enrich_candidate_linkedin(
 
 
 async def _wrap_check_candidate_completeness(**kwargs):
-    """Sensor 2 wrapper (2026-05-24): inject _context from kwargs before delegating to check_candidate_completeness.
+    """Canonical wrapper (2026-05-24-v3 normalize_wrapper_kwargs).
 
-    Mirrors _wrap_save_hiring_policy pattern. Without this, ToolExecutor global
-    dispatch raises ToolContextMissingError because executor does NOT inject _context.
+    Delegates via ``normalize_wrapper_kwargs`` to handle both dispatch paths:
+    (A) Global ToolExecutor injects ``_context``; (B) tool_handler decorator
+    injects ``company_id``/``user_id``. See app/tools/context_helpers.py.
     """
-    company_id = kwargs.pop("company_id", "")
-    user_id = kwargs.pop("user_id", "")
-    ctx = SimpleNamespace(company_id=company_id, user_id=user_id)
-    return await check_candidate_completeness(_context=ctx, **kwargs)
+    return await check_candidate_completeness(**normalize_wrapper_kwargs(kwargs))
 
 
 
 
 async def _wrap_enrich_candidate_linkedin(**kwargs):
-    """Sensor 2 wrapper (2026-05-24): inject _context from kwargs before delegating to enrich_candidate_linkedin.
+    """Canonical wrapper (2026-05-24-v3 normalize_wrapper_kwargs).
 
-    Mirrors _wrap_save_hiring_policy pattern. Without this, ToolExecutor global
-    dispatch raises ToolContextMissingError because executor does NOT inject _context.
+    Delegates via ``normalize_wrapper_kwargs`` to handle both dispatch paths:
+    (A) Global ToolExecutor injects ``_context``; (B) tool_handler decorator
+    injects ``company_id``/``user_id``. See app/tools/context_helpers.py.
     """
-    company_id = kwargs.pop("company_id", "")
-    user_id = kwargs.pop("user_id", "")
-    ctx = SimpleNamespace(company_id=company_id, user_id=user_id)
-    return await enrich_candidate_linkedin(_context=ctx, **kwargs)
+    return await enrich_candidate_linkedin(**normalize_wrapper_kwargs(kwargs))
 
 
 def register_enrichment_tools() -> None:

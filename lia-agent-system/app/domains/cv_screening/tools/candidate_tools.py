@@ -18,6 +18,7 @@ from uuid import UUID
 from app.tools.registry import ToolDefinition, tool_registry
 from app.tools.context_helpers import (
     context_or_raise,
+    normalize_wrapper_kwargs,
     require_company_id_from_context,
     require_company_id_from_obj,
 )
@@ -1281,71 +1282,61 @@ HIDE_CANDIDATE_SCHEMA = {
 
 
 async def _wrap_update_candidate_stage(**kwargs):
-    """Sensor 2 wrapper (2026-05-24): inject _context from kwargs before delegating to update_candidate_stage.
+    """Canonical wrapper (2026-05-24-v3 normalize_wrapper_kwargs).
 
-    Mirrors _wrap_save_hiring_policy pattern. Without this, ToolExecutor global
-    dispatch raises ToolContextMissingError because executor does NOT inject _context.
+    Delegates via ``normalize_wrapper_kwargs`` to handle both dispatch paths:
+    (A) Global ToolExecutor injects ``_context``; (B) tool_handler decorator
+    injects ``company_id``/``user_id``. See app/tools/context_helpers.py.
     """
-    company_id = kwargs.pop("company_id", "")
-    user_id = kwargs.pop("user_id", "")
-    ctx = SimpleNamespace(company_id=company_id, user_id=user_id)
-    return await update_candidate_stage(_context=ctx, **kwargs)
+    return await update_candidate_stage(**normalize_wrapper_kwargs(kwargs))
 
 
 
 
 async def _wrap_add_candidate_to_vacancy(**kwargs):
-    """Sensor 2 wrapper (2026-05-24): inject _context from kwargs before delegating to add_candidate_to_vacancy.
+    """Canonical wrapper (2026-05-24-v3 normalize_wrapper_kwargs).
 
-    Mirrors _wrap_save_hiring_policy pattern. Without this, ToolExecutor global
-    dispatch raises ToolContextMissingError because executor does NOT inject _context.
+    Delegates via ``normalize_wrapper_kwargs`` to handle both dispatch paths:
+    (A) Global ToolExecutor injects ``_context``; (B) tool_handler decorator
+    injects ``company_id``/``user_id``. See app/tools/context_helpers.py.
     """
-    company_id = kwargs.pop("company_id", "")
-    user_id = kwargs.pop("user_id", "")
-    ctx = SimpleNamespace(company_id=company_id, user_id=user_id)
-    return await add_candidate_to_vacancy(_context=ctx, **kwargs)
+    return await add_candidate_to_vacancy(**normalize_wrapper_kwargs(kwargs))
 
 
 
 
 async def _wrap_add_to_list(**kwargs):
-    """Sensor 2 wrapper (2026-05-24): inject _context from kwargs before delegating to add_to_list.
+    """Canonical wrapper (2026-05-24-v3 normalize_wrapper_kwargs).
 
-    Mirrors _wrap_save_hiring_policy pattern. Without this, ToolExecutor global
-    dispatch raises ToolContextMissingError because executor does NOT inject _context.
+    Delegates via ``normalize_wrapper_kwargs`` to handle both dispatch paths:
+    (A) Global ToolExecutor injects ``_context``; (B) tool_handler decorator
+    injects ``company_id``/``user_id``. See app/tools/context_helpers.py.
     """
-    company_id = kwargs.pop("company_id", "")
-    user_id = kwargs.pop("user_id", "")
-    ctx = SimpleNamespace(company_id=company_id, user_id=user_id)
-    return await add_to_list(_context=ctx, **kwargs)
+    return await add_to_list(**normalize_wrapper_kwargs(kwargs))
 
 
 
 
 async def _wrap_wsi_screening(**kwargs):
-    """Sensor 2 wrapper (2026-05-24): inject _context from kwargs before delegating to wsi_screening.
+    """Canonical wrapper (2026-05-24-v3 normalize_wrapper_kwargs).
 
-    Mirrors _wrap_save_hiring_policy pattern. Without this, ToolExecutor global
-    dispatch raises ToolContextMissingError because executor does NOT inject _context.
+    Delegates via ``normalize_wrapper_kwargs`` to handle both dispatch paths:
+    (A) Global ToolExecutor injects ``_context``; (B) tool_handler decorator
+    injects ``company_id``/``user_id``. See app/tools/context_helpers.py.
     """
-    company_id = kwargs.pop("company_id", "")
-    user_id = kwargs.pop("user_id", "")
-    ctx = SimpleNamespace(company_id=company_id, user_id=user_id)
-    return await wsi_screening(_context=ctx, **kwargs)
+    return await wsi_screening(**normalize_wrapper_kwargs(kwargs))
 
 
 
 
 async def _wrap_hide_candidate(**kwargs):
-    """Sensor 2 wrapper (2026-05-24): inject _context from kwargs before delegating to hide_candidate.
+    """Canonical wrapper (2026-05-24-v3 normalize_wrapper_kwargs).
 
-    Mirrors _wrap_save_hiring_policy pattern. Without this, ToolExecutor global
-    dispatch raises ToolContextMissingError because executor does NOT inject _context.
+    Delegates via ``normalize_wrapper_kwargs`` to handle both dispatch paths:
+    (A) Global ToolExecutor injects ``_context``; (B) tool_handler decorator
+    injects ``company_id``/``user_id``. See app/tools/context_helpers.py.
     """
-    company_id = kwargs.pop("company_id", "")
-    user_id = kwargs.pop("user_id", "")
-    ctx = SimpleNamespace(company_id=company_id, user_id=user_id)
-    return await hide_candidate(_context=ctx, **kwargs)
+    return await hide_candidate(**normalize_wrapper_kwargs(kwargs))
 
 
 def register_candidate_tools() -> None:

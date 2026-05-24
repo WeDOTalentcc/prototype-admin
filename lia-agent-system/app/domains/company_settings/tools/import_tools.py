@@ -13,7 +13,7 @@ discriminatory policies.
 """
 from __future__ import annotations
 
-from app.tools.context_helpers import context_or_raise, require_company_id_from_context, require_company_id_from_obj
+from app.tools.context_helpers import context_or_raise, require_company_id_from_context, require_company_id_from_obj, normalize_wrapper_kwargs
 
 from types import SimpleNamespace
 import asyncio
@@ -905,52 +905,47 @@ async def _import_benefits_from_data_impl(
 # don't need this wrapper.
 
 async def _wrap_check_company_completeness_global(**kwargs: Any) -> dict[str, Any]:
-    """Bug 3 wrapper — inject _context from kwargs.company_id/user_id."""
-    company_id = kwargs.get("company_id", "")
-    user_id = kwargs.get("user_id", "")
-    ctx = SimpleNamespace(company_id=company_id, user_id=user_id)
-    return await check_company_completeness(_context=ctx)
+    """Canonical wrapper (2026-05-24-v3 normalize_wrapper_kwargs).
+
+    Delegates via ``normalize_wrapper_kwargs`` to handle both dispatch paths:
+    (A) Global ToolExecutor injects ``_context``; (B) tool_handler decorator
+    injects ``company_id``/``user_id``. See app/tools/context_helpers.py.
+    """
+    return await check_company_completeness(**normalize_wrapper_kwargs(kwargs))
 
 
 
 
 async def _wrap_suggest_recruiting_policy(**kwargs):
-    """Sensor 2 wrapper (2026-05-24): inject _context from kwargs before delegating to suggest_recruiting_policy.
+    """Canonical wrapper (2026-05-24-v3 normalize_wrapper_kwargs).
 
-    Mirrors _wrap_save_hiring_policy pattern. Without this, ToolExecutor global
-    dispatch raises ToolContextMissingError because executor does NOT inject _context.
+    Delegates via ``normalize_wrapper_kwargs`` to handle both dispatch paths:
+    (A) Global ToolExecutor injects ``_context``; (B) tool_handler decorator
+    injects ``company_id``/``user_id``. See app/tools/context_helpers.py.
     """
-    company_id = kwargs.pop("company_id", "")
-    user_id = kwargs.pop("user_id", "")
-    ctx = SimpleNamespace(company_id=company_id, user_id=user_id)
-    return await suggest_recruiting_policy(_context=ctx, **kwargs)
+    return await suggest_recruiting_policy(**normalize_wrapper_kwargs(kwargs))
 
 
 
 
 async def _wrap_import_benefits_from_data(**kwargs):
-    """Sensor 2 wrapper (2026-05-24): inject _context from kwargs before delegating to import_benefits_from_data.
+    """Canonical wrapper (2026-05-24-v3 normalize_wrapper_kwargs).
 
-    Mirrors _wrap_save_hiring_policy pattern. Without this, ToolExecutor global
-    dispatch raises ToolContextMissingError because executor does NOT inject _context.
+    Delegates via ``normalize_wrapper_kwargs`` to handle both dispatch paths:
+    (A) Global ToolExecutor injects ``_context``; (B) tool_handler decorator
+    injects ``company_id``/``user_id``. See app/tools/context_helpers.py.
     """
-    company_id = kwargs.pop("company_id", "")
-    user_id = kwargs.pop("user_id", "")
-    ctx = SimpleNamespace(company_id=company_id, user_id=user_id)
-    return await import_benefits_from_data(_context=ctx, **kwargs)
+    return await import_benefits_from_data(**normalize_wrapper_kwargs(kwargs))
 
 
 async def _wrap_save_hiring_policy_global(**kwargs):
-    """Sensor 2 wrapper (2026-05-24): inject _context for global tool_registry dispatch.
+    """Canonical wrapper (2026-05-24-v3 normalize_wrapper_kwargs).
 
-    The local CompanySettingsReActAgent toolset has its own _wrap_save_hiring_policy
-    in agents/company_tool_registry.py. This one is for the global tool_registry
-    where recruiter_assistant / orchestrator can call save_hiring_policy directly.
+    Delegates via ``normalize_wrapper_kwargs`` to handle both dispatch paths:
+    (A) Global ToolExecutor injects ``_context``; (B) tool_handler decorator
+    injects ``company_id``/``user_id``. See app/tools/context_helpers.py.
     """
-    company_id = kwargs.pop("company_id", "")
-    user_id = kwargs.pop("user_id", "")
-    ctx = SimpleNamespace(company_id=company_id, user_id=user_id)
-    return await save_hiring_policy(_context=ctx, **kwargs)
+    return await save_hiring_policy(**normalize_wrapper_kwargs(kwargs))
 
 
 

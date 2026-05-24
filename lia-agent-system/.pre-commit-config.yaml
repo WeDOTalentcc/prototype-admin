@@ -575,3 +575,17 @@ repos:
         entry: bash -c "python3 scripts/check_no_new_hardcoded_persona.py 2>&1; exit 0"
         files: ^app/.*\.py$
         pass_filenames: false
+
+      - id: wrappers-prefer-normalize-context
+        name: "Sensor 3 (2026-05-24): _wrap_* em tools/ deve usar normalize_wrapper_kwargs (BLOCKING, baseline 0)"
+        language: system
+        entry: python3 scripts/check_wrappers_prefer_context.py --blocking
+        files: ^app/domains/.*/tools/.*\.py$
+        pass_filenames: false
+
+      - id: compliance-context-complete
+        name: "Sensor 4 (2026-05-24): ComplianceContext(...) com todos os 6 args required (BLOCKING, baseline 0)"
+        language: system
+        entry: python3 scripts/check_compliance_context_complete.py --blocking
+        files: ^app/.*\.py$
+        pass_filenames: false

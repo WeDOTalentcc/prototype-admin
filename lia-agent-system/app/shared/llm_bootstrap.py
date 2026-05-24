@@ -1005,7 +1005,7 @@ async def reconcile_credits(
     try:
         from lia_config.database import AsyncSessionLocal
         from sqlalchemy import select
-        from app.models.observability import AiCreditsBalance
+        from app.models.ai_consumption import AiCreditsBalance
 
         async with AsyncSessionLocal() as db:
             res = await db.execute(
