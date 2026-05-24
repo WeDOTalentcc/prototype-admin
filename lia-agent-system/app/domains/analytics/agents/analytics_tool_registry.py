@@ -151,6 +151,30 @@ async def _wrap_generate_candidate_report(**kwargs: Any) -> dict[str, Any]:
 
     svc = CandidateReportService()
     reports = []
+    # P0-W4-08: consent gate analytics — filtrar candidatos que revogaram (LGPD Art. 7 §III)
+    from app.domains.lgpd.services.granular_consent_consumers import check_analytics as _check_analytics
+    company_id_ctx: str = kwargs.get("company_id", "") or ""
+    if not company_id_ctx:
+        from app.middleware.auth_enforcement import _current_company_id as _CCI
+        company_id_ctx = _CCI.get("")
+    async with AsyncSessionLocal() as db:
+        consented_ids: list[int] = []
+        for cid in candidate_ids:
+            try:
+                allowed = await _check_analytics(
+                    candidate_id=str(cid), company_id=company_id_ctx, db=db
+                )
+                if allowed:
+                    consented_ids.append(cid)
+                else:
+                    logger.info(
+                        "[ConsentGate] analytics bloqueado para candidato %s", cid
+                    )
+                    reports.append({"candidate_id": cid, "error": "consent_revoked_analytics"})
+            except Exception as _ce:
+                logger.warning("[ConsentGate] analytics check failed for %s (fail-closed): %s", cid, _ce)
+                reports.append({"candidate_id": cid, "error": "consent_check_failed"})
+        candidate_ids = consented_ids
     async with AsyncSessionLocal() as db:
         for cid in candidate_ids:
             try:

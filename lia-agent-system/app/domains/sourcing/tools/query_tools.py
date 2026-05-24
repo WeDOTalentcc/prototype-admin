@@ -1408,6 +1408,37 @@ async def compare_candidates(
     if not candidate_ids:
         return {"success": False, "error": "no_candidate_ids", "candidates": []}
 
+    # P0-W4-07: consent gate ai_comparison — verificar por cada candidato (fail-closed, LGPD Art. 7 §III)
+    try:
+        from app.core.database import AsyncSessionLocal as _CSL_compare
+        from app.domains.lgpd.services.granular_consent_consumers import check_ai_comparison
+
+        blocked_ids: list[str] = []
+        async with _CSL_compare() as _consent_db:
+            for _cid in candidate_ids:
+                if not await check_ai_comparison(
+                    candidate_id=str(_cid),
+                    company_id=tenant_company_id,
+                    db=_consent_db,
+                ):
+                    blocked_ids.append(str(_cid))
+        if blocked_ids:
+            logger.info(
+                "[ConsentGate] ai_comparison bloqueado para candidatos %s (company=%s)",
+                blocked_ids, tenant_company_id,
+            )
+            candidate_ids = [c for c in candidate_ids if str(c) not in blocked_ids]
+        if not candidate_ids:
+            return {
+                "success": False,
+                "error": "consent_revoked_ai_comparison",
+                "candidates": [],
+                "blocked_candidate_count": len(blocked_ids),
+            }
+    except Exception as _ce:
+        logger.warning("[ConsentGate] ai_comparison check failed (fail-closed): %s", _ce)
+        return {"success": False, "error": "consent_check_failed", "candidates": []}
+
     try:
         from sqlalchemy import text as sa_text
         from app.core.database import AsyncSessionLocal

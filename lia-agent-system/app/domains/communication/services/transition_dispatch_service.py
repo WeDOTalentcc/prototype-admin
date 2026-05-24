@@ -209,6 +209,45 @@ class TransitionDispatchService:
 
             # N3 — Filtrar canais pelas preferências do candidato
             candidate_id_str = candidate_data.get("candidate_id")
+            # P0-W4-08: consent gate marketing — nao enviar se candidato revogou (LGPD Art. 7 §III + Art. 15)
+            if candidate_id_str and company_id:
+                try:
+                    from app.domains.lgpd.services.granular_consent_consumers import check_marketing_granular
+                    marketing_allowed = await check_marketing_granular(
+                        candidate_id=candidate_id_str,
+                        company_id=company_id,
+                        db=self.db,
+                    )
+                    if not marketing_allowed:
+                        logger.info(
+                            "[ConsentGate] marketing bloqueado para candidato %s (company=%s)",
+                            candidate_id_str, company_id,
+                        )
+                        return {
+                            "success": False,
+                            "channel": channel,
+                            "message_id": None,
+                            "template_name": None,
+                            "recipient": candidate_data.get("email"),
+                            "mock": False,
+                            "error": "consent_revoked_marketing",
+                            "consent_blocked": True,
+                        }
+                except Exception as _mce:
+                    logger.warning(
+                        "[ConsentGate] marketing check failed for %s (fail-closed): %s",
+                        candidate_id_str, _mce,
+                    )
+                    return {
+                        "success": False,
+                        "channel": channel,
+                        "message_id": None,
+                        "template_name": None,
+                        "recipient": candidate_data.get("email"),
+                        "mock": False,
+                        "error": "consent_check_failed",
+                        "consent_blocked": True,
+                    }
             if candidate_id_str and effective_channels:
                 try:
                     channel_selector = CandidateChannelSelector(self.db)

@@ -289,5 +289,12 @@ class GranularConsentService:
                 return False
             return bool(record.consent_given) and not bool(record.revoked_at)
         except Exception as exc:
-            logger.warning("[GranularConsent] check_purpose error (fail-open): %s", exc)
+            # P0-W4-09: fail-closed para BLOCKING purposes — exception nao permite processamento sob incerteza
+            if purpose in BLOCKING_PURPOSES:
+                logger.error(
+                    "[GranularConsent] check_purpose error -- purpose=%s is BLOCKING: fail-closed (LGPD Art. 7). %s",
+                    purpose, exc,
+                )
+                return False
+            logger.warning("[GranularConsent] check_purpose error (fail-open for non-blocking): %s", exc)
             return True
