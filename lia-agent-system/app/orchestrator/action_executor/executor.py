@@ -87,6 +87,61 @@ class ActionExecutorService:
         if not self.is_actionable(intent):
             return ActionResult(status="not_actionable")
 
+        # Sprint 12.5-B4-extra (2026-05-24): intent-specific policy gate.
+        # Phase 0.6 (MainOrchestrator) já gate com intent="general_chat"
+        # (SAFE_INTENTS fast-path). Aqui repetimos com intent específico
+        # resolvido (criar_vaga, pausar_vaga, mover_candidato, etc.) ANTES
+        # de qualquer side effect do action dispatch.
+        #
+        # Lazy import singleton. Fail-open se ausente (Phase 0.6 já validou
+        # gates user-level + tenant-level).
+        try:
+            from app.orchestrator.services.policy_gate_service import (
+                policy_gate_service,
+            )
+            from app.shared.governance.policy_engine_service import (
+                PolicyEngineService,
+            )
+            _intent_gate = policy_gate_service if policy_gate_service else None
+            if _intent_gate is None:
+                # Try construct on-demand (init pattern do MainOrchestrator linha 287)
+                try:
+                    from app.orchestrator.services.policy_gate_service import (
+                        PolicyGateService,
+                    )
+                    _intent_gate = PolicyGateService(
+                        policy_engine=PolicyEngineService()
+                    )
+                except Exception:
+                    _intent_gate = None
+            if _intent_gate is not None:
+                _policy_result = await _intent_gate.validate(
+                    intent=intent,
+                    user_id=(context or {}).get("user_id") or "anon",
+                    context={
+                        "company_id": (context or {}).get("company_id"),
+                        "user_id": (context or {}).get("user_id"),
+                    },
+                )
+                if not _policy_result.allowed:
+                    return ActionResult(
+                        status="denied",
+                        message=(
+                            _policy_result.reason
+                            or f"Acao '{intent}' negada por politica do tenant."
+                        ),
+                        action_type=intent,
+                        data={
+                            "policy_denied": True,
+                            "reason": _policy_result.reason,
+                            "constraints": _policy_result.constraints,
+                        },
+                    )
+        except Exception as _gate_exc:
+            # Fail-open: gate exception nao bloqueia (defense-in-depth,
+            # Phase 0.6 ja eh primary gate).
+            pass
+
         config = ACTIONABLE_INTENTS[intent]
         params = dict(config.get("default_params", {}))
 
