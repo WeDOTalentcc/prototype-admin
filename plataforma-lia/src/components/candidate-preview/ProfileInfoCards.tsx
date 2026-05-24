@@ -1,14 +1,20 @@
 "use client"
 
+import { useState } from "react"
 import { textStyles, previewChipClasses, previewChipVariants } from '@/lib/design-tokens'
 import { cn } from '@/lib/utils'
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
 import { Chip } from "@/components/ui/chip"
+import { Button } from "@/components/ui/button"
 import {
   GraduationCap, Award, Languages, DollarSign,
-  User, Home, MapPin
+  User, Home, MapPin, FileText, Pencil, Trash2
 } from"lucide-react"
 import type { LanguageEntry } from './ProfileTabTypes'
+import { useCandidateEdit } from "@/components/candidate-profile/CandidateEditContext"
+import { EditableField } from "@/components/candidate-profile/EditableField"
+import { EditArrayItemModal } from "@/components/candidate-profile/EditArrayItemModal"
+import { useCandidateArrayUpdate } from "@/hooks/candidates/use-candidate-array-update"
 
 interface ProfileInfoCardsProps {
   candidate: Record<string, unknown>
@@ -17,6 +23,43 @@ interface ProfileInfoCardsProps {
   hasSalaryData: () => boolean
   hasAddressData: () => boolean
   getAddressString: () => string
+}
+
+function ProfileNarrativeCard({ candidate }: { candidate: Record<string, unknown> }) {
+  const { editable, updateField, isSaving } = useCandidateEdit()
+  const selfIntro = (candidate.self_introduction as string | undefined) ?? ""
+  if (!editable && !selfIntro) return null
+  return (
+    <Card className="border-lia-border-subtle col-span-2" data-testid="profile-narrative-card">
+      <CardHeader className="py-1.5 px-2.5 bg-lia-bg-primary">
+        <div className="flex items-center gap-1.5">
+          <FileText className="w-3.5 h-3.5 text-lia-text-primary" />
+          <CardTitle className="text-xs font-semibold text-lia-text-primary">
+            Resumo Profissional
+          </CardTitle>
+        </div>
+      </CardHeader>
+      <CardContent className="p-2.5">
+        {editable && updateField ? (
+          <EditableField
+            value={selfIntro}
+            onSave={async (value) => await updateField("self_introduction", value)}
+            label="resumo profissional"
+            placeholder="Resumo profissional do candidato"
+            saving={isSaving?.("self_introduction") ?? false}
+            emptyDisplay="Adicionar resumo profissional"
+            type="textarea"
+            showPencilWhenEmpty
+            className="text-xs text-lia-text-primary leading-relaxed"
+          />
+        ) : (
+          <p className="text-xs text-lia-text-primary leading-relaxed whitespace-pre-line">
+            {selfIntro || "—"}
+          </p>
+        )}
+      </CardContent>
+    </Card>
+  )
 }
 
 function ProfileEducationCard({ candidate }: { candidate: Record<string, unknown> }) {
@@ -55,25 +98,62 @@ function ProfileEducationCard({ candidate }: { candidate: Record<string, unknown
   )
 }
 
+type CertEntry = string | { name?: string; title?: string; issuer?: string; organization?: string; date?: string; year?: string }
+
+function normalizeCertToString(cert: CertEntry): string {
+  if (typeof cert === "string") return cert
+  return (cert.name || cert.title || "").toString().trim()
+}
+
 function ProfileCertificationsCard({ candidate }: { candidate: Record<string, unknown> }) {
+  const { editable, candidateId } = useCandidateEdit()
+  const rawCerts = (candidate.certifications as CertEntry[] | undefined) ?? []
+  const certStrings = rawCerts.map(normalizeCertToString).filter((s) => !!s)
+  const { addItem, updateItem, removeItem, saving } = useCandidateArrayUpdate<string>(
+    candidateId,
+    "certifications",
+    certStrings,
+  )
+  const [editIdx, setEditIdx] = useState<number | null>(null)
+  const [adding, setAdding] = useState(false)
+
+  const fields = [
+    { name: "name", label: "Certificação", type: "text" as const, required: true, placeholder: "Ex: AWS Certified Solutions Architect – Associate" },
+  ]
+
   return (
-    <Card className="border-lia-border-subtle">
+    <Card className="border-lia-border-subtle" data-testid="profile-certifications-card">
       <CardHeader className="py-1.5 px-2.5 bg-lia-bg-primary">
-        <div className="flex items-center gap-1.5">
-          <Award className="w-3.5 h-3.5 text-lia-text-primary" />
-          <CardTitle className="text-xs font-semibold text-lia-text-primary">
-            Cursos e Certificações
-          </CardTitle>
+        <div className="flex items-center justify-between gap-1.5">
+          <div className="flex items-center gap-1.5">
+            <Award className="w-3.5 h-3.5 text-lia-text-primary" />
+            <CardTitle className="text-xs font-semibold text-lia-text-primary">
+              Cursos e Certificações
+            </CardTitle>
+          </div>
+          {editable && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 w-6 p-0"
+              onClick={() => setAdding(true)}
+              disabled={saving}
+              aria-label="Adicionar certificação"
+              data-testid="cert-add-btn"
+            >
+              <Pencil className="w-3 h-3" aria-hidden="true" />
+            </Button>
+          )}
         </div>
       </CardHeader>
       <CardContent className="p-2.5 space-y-2">
-        {candidate.certifications && (candidate.certifications as Record<string, unknown>[]).length > 0 ? (
-          (candidate.certifications as (string | Record<string, unknown>)[]).map((cert: string | Record<string, unknown>, index: number) => {
-            const certName = typeof cert === 'string' ? cert : ((cert.name || cert.title || 'Certificação') as string)
+        {rawCerts.length > 0 ? (
+          rawCerts.map((cert, index) => {
+            const certName = normalizeCertToString(cert) || "Certificação"
             const certIssuer = typeof cert === 'object' ? ((cert.issuer || cert.organization || '') as string) : ''
             const certDate = typeof cert === 'object' ? ((cert.date || cert.year || '') as string) : ''
             return (
-              <div key={`cert-${index}-${certName || certIssuer}`} className="flex items-start justify-between gap-2">
+              <div key={`cert-${index}-${certName || certIssuer}`} className="flex items-start justify-between gap-2 group">
                 <div className="min-w-0 flex-1">
                   <h5 className={`${textStyles.label} truncate`}>
                     {certName}
@@ -81,11 +161,65 @@ function ProfileCertificationsCard({ candidate }: { candidate: Record<string, un
                   {certIssuer && <p className={textStyles.bodySmall}>{certIssuer}</p>}
                 </div>
                 {certDate && <span className="text-xs text-lia-text-primary flex-shrink-0">{certDate}</span>}
+                {editable && (
+                  <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-0.5 shrink-0">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-5 w-5 p-0"
+                      onClick={() => setEditIdx(index)}
+                      disabled={saving}
+                      aria-label="Editar certificação"
+                      data-testid={`cert-edit-btn-${index}`}
+                    >
+                      <Pencil className="w-2.5 h-2.5" aria-hidden="true" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-5 w-5 p-0 hover:text-status-error"
+                      onClick={async () => { await removeItem(index) }}
+                      disabled={saving}
+                      aria-label="Remover certificação"
+                      data-testid={`cert-remove-btn-${index}`}
+                    >
+                      <Trash2 className="w-2.5 h-2.5" aria-hidden="true" />
+                    </Button>
+                  </div>
+                )}
               </div>
             )
           })
         ) : (
           <p className={`${textStyles.description} italic`}>Não informado</p>
+        )}
+        {editable && adding && (
+          <EditArrayItemModal<{ name: string }>
+            open={adding}
+            onClose={() => setAdding(false)}
+            onSave={async (values) => {
+              const result = await addItem(values.name)
+              if (result.success) setAdding(false)
+              return result
+            }}
+            title="Adicionar Certificação"
+            fields={fields}
+            initialItem={null}
+          />
+        )}
+        {editable && editIdx !== null && (
+          <EditArrayItemModal<{ name: string }>
+            open={editIdx !== null}
+            onClose={() => setEditIdx(null)}
+            onSave={async (values) => {
+              const result = await updateItem(editIdx, values.name)
+              if (result.success) setEditIdx(null)
+              return result
+            }}
+            title="Editar Certificação"
+            fields={fields}
+            initialItem={{ name: certStrings[editIdx] || "" }}
+          />
         )}
       </CardContent>
     </Card>
@@ -297,6 +431,7 @@ export function ProfileInfoCards({
 }: ProfileInfoCardsProps) {
   return (
     <>
+      <ProfileNarrativeCard candidate={candidate} />
       <ProfileEducationCard candidate={candidate} />
       <ProfileCertificationsCard candidate={candidate} />
       <ProfileLanguagesCard languagesData={languagesData} />
