@@ -2,18 +2,8 @@ export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from "next/server"
 import { getAuthHeaders } from "@/lib/api/auth-headers"
 
+import { resolveCompanyId } from "@/lib/api/resolve-company-id"
 const BACKEND_URL = process.env.BACKEND_URL || "http://127.0.0.1:8001"
-
-async function resolveCompanyId(request: NextRequest): Promise<string | null> {
-  try {
-    const res = await fetch(`${BACKEND_URL}/api/v1/auth/me`, { headers: getAuthHeaders(request) })
-    if (res.ok) {
-      const user = await res.json()
-      if (user.company_id) return user.company_id
-    }
-  } catch {}
-  return null
-}
 
 export async function GET(request: NextRequest) {
   try {

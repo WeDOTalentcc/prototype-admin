@@ -90,9 +90,12 @@ const PANEL_TYPE_TO_DOMAIN_HINT: Partial<Record<DynamicPanelType, string>> = {
  * Drift cai graceful no roteamento normal.
  */
 const CONTEXT_TYPE_TO_DOMAIN_HINT: Partial<Record<ChatContextType, string>> = {
-  // general: undefined,  // default routing
-  // job_chat, talent_chat, kanban_chat, candidates_chat, agent_studio:
-  // mantidos no router normal por enquanto (sem regressão).
+  // general: undefined  // default routing (CascadedRouter decide)
+  job_chat: "job_management",
+  talent_chat: "talent_pool",
+  kanban_chat: "pipeline_transition",
+  candidates_chat: "cv_screening",
+  agent_studio: "agent_studio",
   settings_config: "company_settings",
 };
 
