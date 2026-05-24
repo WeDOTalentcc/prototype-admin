@@ -48,6 +48,21 @@ function mockGetConversation(messages: Array<{ id: string; role: string; content
   })
 }
 
+/**
+ * Onda 4-P2-6 (2026-05-24): use-float-conversation.ts migrado para
+ * canonical liaPersistence helper (TTL wrapper {value, expiresAt}).
+ * parseRecentItems desempacota o wrapper pros asserts dos testes.
+ */
+function parseRecentItems(): Array<{ id: string; type: string; title: string; timestamp: number; meta?: unknown }> {
+  const raw = localStorageMock.getItem("lia-recent-items")
+  if (raw === null) throw new Error("lia-recent-items key missing in localStorage")
+  const wrapper = JSON.parse(raw)
+  if (typeof wrapper !== "object" || wrapper === null || !("value" in wrapper) || !("expiresAt" in wrapper)) {
+    throw new Error(`lia-recent-items not in canonical wrapper format: ${raw}`)
+  }
+  return wrapper.value as Array<{ id: string; type: string; title: string; timestamp: number; meta?: unknown }>
+}
+
 // ────────────────────────────────────────────────────────────────────────────
 
 describe("useFloatConversation", () => {
@@ -95,9 +110,7 @@ describe("useFloatConversation", () => {
       await result.current.initConversation("Buscar candidato")
     })
 
-    const raw = localStorageMock.getItem("lia-recent-items")
-    expect(raw).not.toBeNull()
-    const items = JSON.parse(raw!)
+    const items = parseRecentItems()
     expect(items[0].type).toBe("chat")
     expect(items[0].id).toBe("conv-xyz")
   })
@@ -110,8 +123,7 @@ describe("useFloatConversation", () => {
       await result.current.initConversation("Candidato 123.456.789-00 tem score alto")
     })
 
-    const raw = localStorageMock.getItem("lia-recent-items")
-    const items = JSON.parse(raw!)
+    const items = parseRecentItems()
     expect(items[0].title).not.toContain("123.456.789-00")
     expect(items[0].title).toContain("[CPF]")
   })
@@ -124,8 +136,7 @@ describe("useFloatConversation", () => {
       await result.current.initConversation("Contato ana@empresa.com.br para vaga")
     })
 
-    const raw = localStorageMock.getItem("lia-recent-items")
-    const items = JSON.parse(raw!)
+    const items = parseRecentItems()
     expect(items[0].title).toContain("[email]")
     expect(items[0].title).not.toContain("ana@empresa.com.br")
   })
@@ -241,8 +252,7 @@ describe("useFloatConversation", () => {
       await result.current.initConversation(longText)
     })
 
-    const raw = localStorageMock.getItem("lia-recent-items")
-    const items = JSON.parse(raw!)
+    const items = parseRecentItems()
     expect(items[0].title.length).toBeLessThanOrEqual(51) // 47 + "…"
     expect(items[0].title.endsWith("…")).toBe(true)
   })

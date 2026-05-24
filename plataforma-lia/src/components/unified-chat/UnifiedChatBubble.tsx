@@ -11,6 +11,7 @@ import {
   BUBBLE_RESET_EVENT,
   getUserScopedKey,
 } from "./floating-position"
+import { getPersisted, setPersisted, removePersisted } from "@/lib/lia-persistence"
 
 const RESET_EVENT = BUBBLE_RESET_EVENT
 const DRAG_THRESHOLD = 4
@@ -28,17 +29,16 @@ function clampPosition(p: { x: number; y: number }) {
   return { x, y }
 }
 
+// Onda 4-P2-6 (2026-05-24): readBubblePosition migrado pra canonical
+// liaPersistence helper (TTL long = 90 dias). Backwards-compat: legacy raw
+// {x,y} é auto-removido pelo getPersisted; user vê posição default no
+// primeiro load pós-migration (equivalente a "reset").
 function readBubblePosition(key: string): { x: number; y: number } | null {
   if (typeof window === "undefined") return null
-  try {
-    const stored = localStorage.getItem(key)
-    if (stored) {
-      const parsed = JSON.parse(stored)
-      if (typeof parsed.x === "number" && typeof parsed.y === "number") {
-        return clampPosition(parsed)
-      }
-    }
-  } catch {}
+  const parsed = getPersisted<{ x?: number; y?: number } | null>(key, null)
+  if (parsed && typeof parsed.x === "number" && typeof parsed.y === "number") {
+    return clampPosition({ x: parsed.x, y: parsed.y })
+  }
   return null
 }
 
@@ -77,15 +77,16 @@ export function UnifiedChatBubble({ onOpen }: Props) {
   }, [userId])
 
   useEffect(() => {
+    // Onda 4-P2-6: canonical persistence com TTL long (90 dias)
     const key = getUserScopedKey(BUBBLE_POSITION_STORAGE_KEY, userId)
     if (position) {
-      localStorage.setItem(key, JSON.stringify(position))
+      setPersisted(key, position)
     } else {
-      localStorage.removeItem(key)
+      removePersisted(key)
     }
     // Always drop the legacy unscoped key so resets are durable for users
     // who had been migrated from the old global key.
-    localStorage.removeItem(BUBBLE_POSITION_STORAGE_KEY)
+    removePersisted(BUBBLE_POSITION_STORAGE_KEY)
   }, [position, userId])
 
   // Robust Esc cancel during pointer drag (works even if focus has moved)

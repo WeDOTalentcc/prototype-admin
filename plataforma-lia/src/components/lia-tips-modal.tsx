@@ -169,12 +169,25 @@ export function LIATipsModal({ isOpen, onClose, currentPage = "Decidir", onNavig
   const currentContextTips = contextualTips[currentPage as keyof typeof contextualTips] || contextualTips["Decidir"]
 
   // Funções para ações das dicas
+  // ── sessionStorage keys handoff (Onda 4-N2 — documentação canonical) ──
+  // Este componente é o ÚNICO PRODUTOR das 4 chaves sessionStorage abaixo.
+  // Consumers identificados via grep (2026-05-24):
+  //   - 'lia-selected-command' → consumido em src/components/lia-library/*
+  //     (LiaLibraryPage lê no mount via useEffect pra pré-selecionar template)
+  //   - 'lia-chat-prefill' → consumido em src/components/unified-chat/UnifiedChat.tsx
+  //     (useEffect que pré-preenche inputText e dispara handleSend)
+  //   - 'lia-filter-suggestion' + 'lia-filter-page' → consumido em
+  //     src/components/funil-de-talentos/* (page lê ambas pra aplicar filtro
+  //     contextual quando user veio do tips-modal)
+  // sessionStorage (não localStorage) é intencional — handoff cross-page
+  // dentro da MESMA sessão de browser; chave morre quando aba fecha (sem TTL).
   const handleCopyTip = (tip: string) => {
     navigator.clipboard.writeText(tip)
     // Poderia adicionar um toast de confirmação aqui
   }
 
   const handleUseInLibrary = (tip: string) => {
+    // Onda 4-N2: handoff pra LiaLibraryPage via sessionStorage canonical
     sessionStorage.setItem('lia-selected-command', tip)
     if (onNavigateToLibrary) {
       onNavigateToLibrary()
@@ -183,6 +196,7 @@ export function LIATipsModal({ isOpen, onClose, currentPage = "Decidir", onNavig
   }
 
   const handleTestInChat = (tip: string) => {
+    // Onda 4-N2: handoff pra UnifiedChat via sessionStorage canonical
     sessionStorage.setItem('lia-chat-prefill', tip)
     if (onNavigateToChat) {
       onNavigateToChat()
@@ -191,6 +205,9 @@ export function LIATipsModal({ isOpen, onClose, currentPage = "Decidir", onNavig
   }
 
   const handleApplyFilter = (tip: string) => {
+    // Onda 4-N2: handoff pra funil-de-talentos via sessionStorage canonical
+    // (par filter-suggestion + filter-page lido no mount pra aplicar filtro
+    // contextual baseado em qual página estava ativa quando user clicou)
     sessionStorage.setItem('lia-filter-suggestion', tip)
     sessionStorage.setItem('lia-filter-page', currentPage)
     onClose()

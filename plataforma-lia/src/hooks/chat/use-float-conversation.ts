@@ -2,6 +2,13 @@
 
 import { useState, useCallback, useRef } from "react"
 import { useRecentItemsStore } from "@/stores/recent-items-store"
+import { getPersisted, setPersisted } from "@/lib/lia-persistence"
+
+// Onda 4-P2-6 (2026-05-24): chave canonical com TTL medium (30 dias).
+// Antes era localStorage raw sem TTL — conversation IDs viravam lixo (stale
+// referências de conversas deletadas há meses se usuário usa mesmo browser).
+const RECENT_ITEMS_KEY = "lia-recent-items"
+const RECENT_ITEMS_LIMIT = 15
 
 export interface FloatMessage {
   id: string
@@ -70,11 +77,10 @@ export function useFloatConversation(
           meta: { conversationId: id },
         }
         recentItemsStore.addItem(newItem)
-        try {
-          const existing = JSON.parse(localStorage.getItem("lia-recent-items") ?? "[]") as typeof newItem[]
-          const filtered = existing.filter(i => !(i.id === id && i.type === "chat"))
-          localStorage.setItem("lia-recent-items", JSON.stringify([newItem, ...filtered].slice(0, 15)))
-        } catch {}
+        // Onda 4-P2-6: canonical persistence com TTL medium (30 dias)
+        const existing = getPersisted<typeof newItem[]>(RECENT_ITEMS_KEY, [])
+        const filtered = existing.filter(i => !(i.id === id && i.type === "chat"))
+        setPersisted(RECENT_ITEMS_KEY, [newItem, ...filtered].slice(0, RECENT_ITEMS_LIMIT), "medium")
       }
       return id
     } catch {
