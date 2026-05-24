@@ -55,6 +55,7 @@ from app.schemas.chat import (
     MessageResponse,
 )
 from app.shared.security.require_company_id import require_company_id
+from app.core.database import set_tenant_context
 from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
@@ -258,6 +259,11 @@ company_id: str = Depends(require_company_id)):
 
     # M2: Commit conversation so MainOrchestrator can find it in the same DB
     await repo.db.commit()
+    # RLS: set_config(..., is_local=true) é transação-local. commit() acima
+    # encerra a tx, então a nova tx perde app.company_id e o SELECT do refresh
+    # cai na policy `company_id = app_current_company_id()` → NULL bloqueia.
+    # Re-injetar antes de qualquer leitura subsequente.
+    await set_tenant_context(repo.db, company_id)
     await repo.db.refresh(conversation)
 
     page_context = message_data.context or {}
