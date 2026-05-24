@@ -62,9 +62,12 @@ async def search_jobs(
     Returns:
         List of matching jobs with their details
     """
-    context = _extract_context(kwargs)
-    company_id = context.company_id if context else None
-    
+    # G2 canonical fix (2026-05-24): fail-loud via require_company_id_from_context.
+    # The previous antipattern caused silent 0-rows when _context was missing.
+    # Per CLAUDE.md REGRA 4 multi-tenancy fail-closed.
+    from app.tools.context_helpers import require_company_id_from_context
+    company_id = require_company_id_from_context(kwargs, "search_jobs")
+
     logger.info(f"🔍 Searching jobs with filters (company: {company_id})")
     
     try:
