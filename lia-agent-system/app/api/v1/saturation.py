@@ -2,7 +2,7 @@ import logging
 from datetime import datetime, timedelta
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 from sqlalchemy import and_, func, not_, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -11,7 +11,7 @@ from app.core.database import get_db
 from app.models.candidate import VacancyCandidate
 from app.models.company import CompanyProfile
 from app.models.job_vacancy import JobVacancy
-from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
 
 
@@ -140,11 +140,10 @@ async def _find_company(db: AsyncSession, company_id: str):
 
 @router.get("/settings/saturation", response_model=SaturationSettingsResponse, tags=["saturation"])
 async def get_saturation_settings(
-    company_id: str = Query(...),
     db: AsyncSession = Depends(get_db),
-    _company_gate: str = Depends(require_company_id_strict_match("query.company_id")),
+    company_id: str = Depends(require_company_id),
 ):
-    # multi-tenancy: company_id (Query) must match JWT (require_company_id_strict_match)
+    # multi-tenancy: company_id from JWT via require_company_id (canonical)
     company = await _find_company(db, company_id)
     defaults = _get_company_saturation_defaults(company)
 
@@ -161,11 +160,10 @@ async def get_saturation_settings(
 @router.put("/settings/saturation", response_model=SaturationSettingsResponse, tags=["saturation"])
 async def update_saturation_settings(
     request: SaturationSettingsRequest,
-    company_id: str = Query(...),
     db: AsyncSession = Depends(get_db),
-    _company_gate: str = Depends(require_company_id_strict_match("query.company_id")),
+    company_id: str = Depends(require_company_id),
 ):
-    # multi-tenancy: company_id (Query) must match JWT (require_company_id_strict_match)
+    # multi-tenancy: company_id from JWT via require_company_id (canonical)
     company = await _find_company(db, company_id)
 
     if not company:

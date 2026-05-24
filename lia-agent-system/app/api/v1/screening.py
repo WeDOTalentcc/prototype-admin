@@ -361,9 +361,13 @@ company_id: str = Depends(require_company_id)):
 @router.post("/auto-trigger", status_code=202, response_model=None)
 async def auto_trigger_screening(
     request: AutoScreeningRequest,
+    current_user: User = Depends(get_current_active_user),
     repo: ScreeningRepository = Depends(get_screening_repo),
-company_id: str = Depends(require_company_id)):
-    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
+    company_id: str = Depends(require_company_id),
+):
+    # multi-tenancy: company_id from JWT via require_company_id (canonical)
+    # current_user ensures the caller is authenticated and active
+    _ = get_user_company_id(current_user)  # defense-in-depth: validate user has company
     if request.source != "website":
         raise HTTPException(
             status_code=400,
