@@ -1,3 +1,4 @@
+from typing import Literal
 """
 Company Benefits API endpoints.
 CRUD operations for company-specific benefits management.
@@ -22,6 +23,24 @@ from app.domains.company.repositories.company_benefit_repository import (
 )
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 from app.shared.types import WeDoBaseModel
+
+# ============================================================================
+# TAXONOMY LITERALS — single source of truth: benefits_service canonical v2
+# ============================================================================
+# Aceita 14 categorias canonical + 2 legacy aliases (quality_life, security)
+# para backward-compat com dados antigos. resolve_benefit_category() normaliza
+# no read path; aqui no write path apenas validamos contra o set conhecido.
+BenefitCategoryLiteral = Literal[
+    "health", "wellness", "food", "transport", "education",
+    "financial", "retirement", "family", "parental", "flexibility",
+    "equipment", "culture", "recognition", "other",
+    # Legacy aliases (mantidos para backward-compat)
+    "quality_life", "security",
+]
+
+BenefitValueTypeLiteral = Literal[
+    "monetary", "percentage", "match", "reimbursement", "coverage", "informative",
+]
 
 router = APIRouter(prefix="/company/benefits", tags=["company-benefits"])
 logger = logging.getLogger(__name__)
@@ -75,7 +94,7 @@ class SubsidiaryEntry(BaseModel):
 
 class CompanyBenefitCreate(WeDoBaseModel):
     name: str = Field(..., min_length=1, max_length=255)
-    category: str | None = None
+    category: BenefitCategoryLiteral | None = None
     description: str | None = None
     icon: str | None = None
     value: float | None = None
@@ -134,11 +153,11 @@ class CompanyBenefitCreate(WeDoBaseModel):
 
 class CompanyBenefitUpdate(WeDoBaseModel):
     name: str | None = None
-    category: str | None = None
+    category: BenefitCategoryLiteral | None = None
     description: str | None = None
     icon: str | None = None
     value: float | None = None
-    value_type: str | None = None
+    value_type: BenefitValueTypeLiteral | None = None
     is_active: bool | None = None
     is_highlighted: bool | None = None
     order: int | None = None
@@ -167,12 +186,12 @@ class CompanyBenefitResponse(BaseModel):
     id: str
     company_id: str
     name: str
-    category: str | None = None
+    category: BenefitCategoryLiteral | None = None
     description: str | None = None
     icon: str | None = None
     value: float | None = None
     percentage_value: float | None = None
-    value_type: str | None = None
+    value_type: BenefitValueTypeLiteral | None = None
     value_details: str | None = None
     applicable_to: list | None = None
     seniority_levels: list | None = None
@@ -777,15 +796,24 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 
 @router.get("/categories/list", response_model=None)
 async def list_benefit_categories(company_id: str = Depends(require_company_id)):
-    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
-    return [
-        {"id": "health", "name": "Saude", "icon": "🏥"},
-        {"id": "food", "name": "Alimentacao", "icon": "🍽"},
-        {"id": "transport", "name": "Transporte", "icon": "🚌"},
-        {"id": "education", "name": "Educacao", "icon": "📚"},
-        {"id": "wellness", "name": "Bem-estar", "icon": "💪"},
-        {"id": "financial", "name": "Financeiro", "icon": "💰"},
-        {"id": "family", "name": "Familia", "icon": "👨‍👩‍👧"},
-        {"id": "flexibility", "name": "Flexibilidade", "icon": "⏰"},
-        {"id": "other", "name": "Outros", "icon": "📦"},
-    ]
+    """Taxonomy canonical v2 (14 categorias). Delegado a benefits_service canonical.
+
+    multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143).
+    canonical-fix: single source of truth em benefits_service.BENEFIT_CATEGORIES.
+    """
+    from app.domains.company.services.benefits_service import build_categories_response
+    return build_categories_response()
+
+
+@router.get("/value-types/list", response_model=None)
+async def list_benefit_value_types(company_id: str = Depends(require_company_id)):
+    """Tipos de valor canonical v2 (6 tipos: monetary, percentage, match, reimbursement, coverage, informative)."""
+    from app.domains.company.services.benefits_service import build_value_types_response
+    return build_value_types_response()
+
+
+@router.get("/waiting-periods/list", response_model=None)
+async def list_benefit_waiting_periods(company_id: str = Depends(require_company_id)):
+    """Periodos de carencia canonical v2 (9 opcoes: 0/exp/30/60/90/180/365/540/730 dias)."""
+    from app.domains.company.services.benefits_service import build_waiting_periods_response
+    return build_waiting_periods_response()

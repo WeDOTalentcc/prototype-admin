@@ -26,16 +26,128 @@ from lia_models.company import Benefit
 logger = logging.getLogger(__name__)
 
 
+# ============================================================================
+# TAXONOMIA CANONICAL v2 (2026-05-24)
+# ============================================================================
+# Single source of truth para categorias / tipos de valor / carencias.
+# Consumidores: endpoint /v1/company_benefits/categories/list,
+#               frontend useBenefitTaxonomy hook,
+#               LIA wizard prompt formatter,
+#               JD publication grouping.
+#
+# REGRA canonical-fix: NUNCA hardcodar uma segunda lista em outro lugar.
+# Adicione/modifique APENAS aqui — endpoint e frontend herdam via API.
+# ----------------------------------------------------------------------------
+
 BENEFIT_CATEGORIES: dict[str, str] = {
-    "health": "Saúde & Bem-estar",
-    "food": "Alimentação",
-    "transport": "Transporte",
-    "education": "Educação & Desenvolvimento",
-    "financial": "Financeiro",
-    "quality_life": "Qualidade de Vida",
-    "family": "Família",
-    "security": "Segurança",
+    "health":      "Saúde",
+    "wellness":    "Bem-estar",
+    "food":        "Alimentação",
+    "transport":   "Transporte",
+    "education":   "Educação & Desenvolvimento",
+    "financial":   "Financeiro",
+    "retirement":  "Previdência",
+    "family":      "Família",
+    "parental":    "Parental estendido",
+    "flexibility": "Flexibilidade & Tempo",
+    "equipment":   "Equipamento & Home Office",
+    "culture":     "Cultura & Lazer",
+    "recognition": "Reconhecimento",
+    "other":       "Outros",
 }
+
+BENEFIT_CATEGORY_ICONS: dict[str, str] = {
+    "health":      "🏥",  # hospital
+    "wellness":    "💪",  # flex bicep
+    "food":        "🍽️",  # plate with utensils
+    "transport":   "🚌",  # bus
+    "education":   "📚",  # books
+    "financial":   "💰",  # money bag
+    "retirement":  "🏛️",  # classical building
+    "family":      "👪",  # family
+    "parental":    "🤱",  # breast-feeding
+    "flexibility": "⏰",      # alarm clock
+    "equipment":   "💻",  # laptop
+    "culture":     "🎭",  # performing arts
+    "recognition": "🏆",  # trophy
+    "other":       "📦",  # package
+}
+
+# Legacy aliases — categorias v1 absorvidas pela v2.
+# Mantidos para backward-compat com dados antigos no banco.
+# Sensor: nenhuma nova insercao deve usar essas chaves; o helper
+# resolve_benefit_category() normaliza no read path.
+BENEFIT_CATEGORY_LEGACY_ALIASES: dict[str, str] = {
+    "quality_life": "flexibility",  # absorvido por flexibility + wellness
+    "security":     "financial",    # seguro de vida, assist. funeral cabem em financial
+}
+
+BENEFIT_VALUE_TYPES: dict[str, str] = {
+    "monetary":      "Valor fixo (R$)",
+    "percentage":    "Percentual do salário",
+    "match":         "Contrapartida da empresa",
+    "reimbursement": "Reembolso até limite",
+    "coverage":      "Cobertura/franquia",
+    "informative":   "Apenas descrição",
+}
+
+BENEFIT_VALUE_TYPE_ICONS: dict[str, str] = {
+    "monetary":      "DollarSign",
+    "percentage":    "Percent",
+    "match":         "Repeat",
+    "reimbursement": "Receipt",
+    "coverage":      "Shield",
+    "informative":   "Info",
+}
+
+BENEFIT_WAITING_PERIODS: list[dict] = [
+    {"id": 0,   "label": "Imediato"},
+    {"id": -1,  "label": "Após período de experiência (90 dias)"},
+    {"id": 30,  "label": "30 dias"},
+    {"id": 60,  "label": "60 dias"},
+    {"id": 90,  "label": "90 dias"},
+    {"id": 180, "label": "180 dias (6 meses)"},
+    {"id": 365, "label": "365 dias (1 ano)"},
+    {"id": 540, "label": "540 dias (18 meses)"},
+    {"id": 730, "label": "730 dias (2 anos)"},
+]
+
+
+def resolve_benefit_category(category: str | None) -> str:
+    """Normaliza categoria: resolve aliases legados, retorna 'other' pra desconhecidos.
+
+    Use no read path para garantir que LIA/UI/JD nunca veem string crua de drift.
+    """
+    if not category:
+        return "other"
+    if category in BENEFIT_CATEGORIES:
+        return category
+    if category in BENEFIT_CATEGORY_LEGACY_ALIASES:
+        return BENEFIT_CATEGORY_LEGACY_ALIASES[category]
+    return "other"
+
+
+def build_categories_response() -> list[dict]:
+    """Resposta canonical do endpoint /categories/list. Single source of truth."""
+    return [
+        {"id": k, "name": v, "icon": BENEFIT_CATEGORY_ICONS[k]}
+        for k, v in BENEFIT_CATEGORIES.items()
+    ]
+
+
+def build_value_types_response() -> list[dict]:
+    """Resposta canonical do endpoint /value-types/list."""
+    return [
+        {"id": k, "name": v, "icon": BENEFIT_VALUE_TYPE_ICONS[k]}
+        for k, v in BENEFIT_VALUE_TYPES.items()
+    ]
+
+
+def build_waiting_periods_response() -> list[dict]:
+    """Resposta canonical do endpoint /waiting-periods/list."""
+    return list(BENEFIT_WAITING_PERIODS)
+
+
 
 
 class CacheEntry:
