@@ -181,6 +181,12 @@ class ChatAdapter:
                 result["blocked"] = True
                 result["block_reason"] = intent
 
+        # G7 canonical fix (2026-05-24): mandatory humanizer gate.
+        # Single point that every chat response passes through — strips
+        # technical artifacts, role-prefix leaks, and stale markers.
+        # Idempotent over already-humanized content.
+        result["response"] = _humanize_content(result.get("response", ""))
+
         return result
 
     # ──────────────────────────────────────────────────────────────────
@@ -228,3 +234,89 @@ def _extract_navigate_marker(text: str):
     canonical = normalize_page(match.group(1))
     clean = (text[: match.start()] + text[match.end():]).strip()
     return clean, canonical.value
+
+
+# ───────────────────────────────────────────────────────────────────────
+# G7 canonical fix (2026-05-24) — humanizer gate
+# ───────────────────────────────────────────────────────────────────────
+
+# Patterns identifying content that is FUNDAMENTALLY technical and
+# should never reach the user as-is. When the entire content matches
+# one of these, the gate replaces it with a neutral fallback.
+_TECHNICAL_ONLY_PATTERNS: list[str] = [
+    # Bare dict/JSON dump (single root-level brace pair, no prose)
+    r"^\s*\{[\s\S]*\}\s*$",
+    # Bare list / array dump
+    r"^\s*\[[\s\S]*\]\s*$",
+    # Code block only, no prose
+    r"^\s*```[\s\S]+?```\s*$",
+    # Bare Python tuple / set
+    r"^\s*\([\s\S]*\)\s*$",
+]
+
+# Markers that occasionally leak from internal layers and must be
+# silently stripped from user-facing content. Defense-in-depth — G3
+# and G5 already strip these at their source, but if a regression
+# slips through, the gate is the last line of defense.
+_INLINE_LEAK_PATTERNS: list[tuple[str, str]] = [
+    # G3 navigation marker (already stripped by _extract_navigate_marker
+    # but kept here as defense-in-depth for ws / sse paths that may not
+    # go through that helper)
+    (r"\[NAVIGATE:[^\]]*\]", ""),
+    # G5 settings proactive note (already stripped by frontend filter
+    # but defense-in-depth for any backend leak)
+    (r"\[contexto\][^\n]*", ""),
+    # Generic SYSTEM-ROLE prefix leaks (LLM occasionally echoes
+    # "assistant: " or "LIA: " at the start)
+    (r"^\s*(?:assistant|lia|system|model)\s*:\s*", ""),
+]
+
+# Neutral fallback when content is 100% technical. The fallback is
+# generic PT-BR and does not promise specific actions — the structured
+# data still rides in ChatResponse.structured_data for UI consumption.
+_TECHNICAL_FALLBACK = (
+    "Pronto! Consegui o que você pediu. "
+    "Quer que eu te ajude com mais alguma coisa?"
+)
+
+
+def _humanize_content(content: str) -> str:
+    """G7 canonical fix — strip technical artifacts from user-facing text.
+
+    Args:
+        content: raw content as emitted by an upstream layer (LLM,
+            tool result, action_executor, etc.).
+
+    Returns:
+        Cleaned content safe to render in the chat. Empty input is
+        returned unchanged.
+
+    Behavior:
+        1. Empty / whitespace-only → passthrough.
+        2. Inline leaks (NAVIGATE, contexto, role-prefix) stripped.
+        3. If the remaining content is 100% technical (matches one of
+           _TECHNICAL_ONLY_PATTERNS), returns _TECHNICAL_FALLBACK.
+        4. Otherwise returns the cleaned content (trimmed).
+
+    Idempotent: humanize(humanize(x)) == humanize(x).
+    Defense-in-depth: also runs over content already humanized by
+    _interpret_action_result — should be a no-op there.
+    """
+    import re
+
+    if not content or not content.strip():
+        return content
+
+    cleaned = content
+    for pattern, replacement in _INLINE_LEAK_PATTERNS:
+        cleaned = re.sub(pattern, replacement, cleaned, flags=re.IGNORECASE | re.MULTILINE)
+    cleaned = cleaned.strip()
+
+    if not cleaned:
+        return _TECHNICAL_FALLBACK
+
+    for pattern in _TECHNICAL_ONLY_PATTERNS:
+        if re.match(pattern, cleaned, flags=re.MULTILINE):
+            return _TECHNICAL_FALLBACK
+
+    return cleaned
