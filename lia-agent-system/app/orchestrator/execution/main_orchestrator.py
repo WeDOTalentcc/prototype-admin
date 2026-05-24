@@ -836,6 +836,56 @@ class MainOrchestrator:
                         "ao usuário pra repetir — proponha 2-3 alternativas concretas."
                     )
 
+                    # Sprint 12.3-C conservative (2026-05-24): STRUCTURED_INTENT_ADDENDA.
+                    # Contexto-específico guidance pra Phase 1.5 resolver mais
+                    # casos antes de fall-through V1. Reduz canary metric
+                    # phase_2_v1_invocations_total (Sprint 12.3-A).
+                    # V1 permanece como fallback secundário (kill-switch ativo).
+                    _ctx_page = (getattr(ctx, "context_page", "") or "").lower()
+                    _ctx_entity = (getattr(ctx, "entity_type", "") or "").lower()
+                    _addenda_lines = []
+                    if _ctx_entity in ("candidate", "candidato") or _ctx_page == "candidato_detalhe":
+                        _addenda_lines.append(
+                            "- Há um candidato em contexto. Para análise de match "
+                            "com vaga, use `analyze_cv_match`. Para detalhes do "
+                            "perfil, use `get_candidate_details`."
+                        )
+                    if _ctx_entity in ("job", "job_vacancy") or _ctx_page == "vaga_detalhe":
+                        _addenda_lines.append(
+                            "- Há uma vaga em contexto. Para detalhes, use "
+                            "`get_job_details`. Para listar candidatos no pipeline, "
+                            "use `get_pipeline_summary` ou `search_candidates` "
+                            "com `in_vacancy_id`."
+                        )
+                    if _ctx_page == "funil_talentos":
+                        _addenda_lines.append(
+                            "- User está no Funil de Talentos. Para buscar "
+                            "candidatos, use `search_candidates` com filtros "
+                            "(skills, seniority, location). Para mover candidato "
+                            "entre etapas, use `update_candidate_stage`."
+                        )
+                    if _ctx_page == "configuracoes":
+                        _addenda_lines.append(
+                            "- User está em Configurações. Para mudanças de perfil "
+                            "da empresa, use tools de company_settings. Para "
+                            "configurar políticas, use save_hiring_policy."
+                        )
+                    if _ctx_page == "vagas":
+                        _addenda_lines.append(
+                            "- User está em Vagas. Para listar/filtrar, use "
+                            "`list_jobs`. Para criar nova, sinalize "
+                            "`[NAVIGATE:recrutar]` (wizard) ou `create_job` direto."
+                        )
+                    if _addenda_lines:
+                        _phase15_system_prompt += (
+                            "\n\n### Tools sugeridas para este contexto\n"
+                            + "\n".join(_addenda_lines)
+                            + "\n\n"
+                            "Use essas tools como **primeira opção**. Se a query "
+                            "não casar com nenhuma, prossiga normalmente ou "
+                            "pergunte clarificação (regra anterior)."
+                        )
+
                     _agentic_result = await agentic_loop.run(
                         user_message=ctx.message,
                         system_prompt=_phase15_system_prompt,
