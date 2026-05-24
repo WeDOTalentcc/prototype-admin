@@ -143,6 +143,54 @@ export function CandidatePageHeader({
                   <span>{_candidate.location as string | undefined}</span>
                 )}
               </div>
+              {editable && (
+                <div
+                  className="flex items-center gap-3 text-xs text-lia-text-secondary mt-1 flex-wrap"
+                  data-testid="header-editable-details-row"
+                >
+                  <span className="flex items-center gap-1">
+                    <span className="text-micro text-lia-text-tertiary">Anos exp:</span>
+                    <EditableField
+                      value={_candidate.years_of_experience as number | undefined}
+                      onSave={handleSave("years_of_experience")}
+                      type="number"
+                      label="anos de experiência"
+                      placeholder="0"
+                      saving={isSaving?.("years_of_experience") ?? false}
+                      emptyDisplay="—"
+                      showPencilWhenEmpty
+                    />
+                  </span>
+                  <span className="lia-text-secondary">•</span>
+                  <span className="flex items-center gap-1">
+                    <Github className="w-3 h-3" aria-hidden="true" />
+                    <EditableField
+                      value={(_candidate.github_url as string | undefined) ?? ""}
+                      onSave={handleSave("github_url")}
+                      type="url"
+                      label="GitHub"
+                      placeholder="https://github.com/usuario"
+                      saving={isSaving?.("github_url") ?? false}
+                      emptyDisplay="Adicionar GitHub"
+                      showPencilWhenEmpty
+                    />
+                  </span>
+                  <span className="lia-text-secondary">•</span>
+                  <span className="flex items-center gap-1">
+                    <Globe className="w-3 h-3" aria-hidden="true" />
+                    <EditableField
+                      value={(_candidate.portfolio_url as string | undefined) ?? ""}
+                      onSave={handleSave("portfolio_url")}
+                      type="url"
+                      label="Portfolio"
+                      placeholder="https://exemplo.com"
+                      saving={isSaving?.("portfolio_url") ?? false}
+                      emptyDisplay="Adicionar Portfolio"
+                      showPencilWhenEmpty
+                    />
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 
