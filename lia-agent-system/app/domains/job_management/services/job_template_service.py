@@ -400,7 +400,7 @@ Para description, escreva 2-3 parágrafos descrevendo a vaga.
         from app.shared.providers.llm_factory import get_provider_for_tenant
 
         container = get_provider_for_tenant()
-        content = await container.generate_with_fallback(prompt)
+        content = await container.generate_with_fallback(prompt, agent_type="JobTemplateAgent")
         import json
         
         start = content.find("{")

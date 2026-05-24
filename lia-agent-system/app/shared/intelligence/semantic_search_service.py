@@ -346,7 +346,7 @@ class SemanticSearchService:
             )
 
             container = get_provider_for_tenant()
-            text = await container.generate_with_fallback(formatted_prompt)
+            text = await container.generate_with_fallback(formatted_prompt, agent_type="SemanticSearchAgent")
             text = text.strip()
             if text.startswith("```"):
                 text = text.split("```")[1]

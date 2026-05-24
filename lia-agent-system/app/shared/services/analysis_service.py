@@ -138,7 +138,7 @@ class AnalysisService:
         
         try:
             container = get_provider_for_tenant()
-            response_text = await container.generate_with_fallback(prompt)
+            response_text = await container.generate_with_fallback(prompt, agent_type="AnalysisServiceAgent")
             
             json_start = response_text.find('{')
             json_end = response_text.rfind('}') + 1
@@ -317,7 +317,7 @@ Avalie o potencial geral do candidato, identificando seu arquétipo, pontos fort
 
         try:
             container = get_provider_for_tenant()
-            response_text = await container.generate_with_fallback(prompt)
+            response_text = await container.generate_with_fallback(prompt, agent_type="AnalysisServiceAgent")
             json_start = response_text.find("{")
             json_end = response_text.rfind("}") + 1
             if json_start != -1 and json_end > json_start:

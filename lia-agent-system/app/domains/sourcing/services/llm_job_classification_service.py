@@ -151,7 +151,7 @@ class LLMJobClassificationService:
             )
 
             container = get_provider_for_tenant()
-            text = await container.generate_with_fallback(prompt)
+            text = await container.generate_with_fallback(prompt, agent_type="JobClassificationAgent")
             text = text.strip()
             if text.startswith("```"):
                 text = text.split("```")[1]

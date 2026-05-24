@@ -562,8 +562,9 @@ class SearchAnalyticsService:
                 "Assistente de recrutamento da WeDOTalent. "
                 "Em 2-3 frases, descreva de forma natural e objetiva os resultados desta busca de candidatos. "
                 "Seja direta, profissional e destaque os pontos mais relevantes para o recrutador.\n\n"
-                f"Dados da busca: {context}"
-            )
+                f"Dados da busca: {context}",
+                    agent_type="SearchAnalyticsAgent",
+                )
             return result.strip()
         except Exception as e:
             logger.warning(f"LLM narrative failed, using rule-based fallback: {e}")

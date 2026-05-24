@@ -160,6 +160,23 @@ AGENT_TYPE_REQUEST_OVERRIDES: dict[str, float] = {
     "ArchetypeGenerationAgent": 3.0,
     "WSIReportAgent": 3.5,
     "ExperienceHighlightAgent": 2.5,
+    # Internal services (F11 Phase 6, 2026-05-24)
+    "InternalLLMAgent": 3.5,
+    "WSIAgent": 3.5,
+    "JobClassificationAgent": 2.5,
+    "SearchAnalyticsAgent": 2.5,
+    "JobQualificationAgent": 2.5,
+    "JobTemplateAgent": 3.0,
+    "WSIQuestionAdjusterAgent": 3.0,
+    "InterviewSchedulingAgent": 2.5,
+    "StageTransitionAgent": 3.0,
+    "RecruiterAssistantAgent": 3.5,
+    "KanbanAssistantAgent": 3.0,
+    "LLMServiceAgent": 3.5,
+    "SemanticSearchAgent": 2.5,
+    "VoiceCompositeAgent": 3.0,
+    "LLMClientAgent": 3.0,
+    "AnalysisServiceAgent": 3.5,
 }
 
 # TTL da chave Redis: 25h para cobrir edge case de meia-noite

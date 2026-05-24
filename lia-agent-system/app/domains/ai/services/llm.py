@@ -4,6 +4,8 @@ Uses Replit AI Integrations for LLM access.
 Supports function calling (tool use) for agent systems.
 Supports structured outputs with Pydantic models.
 """
+import hashlib
+import json
 import logging
 import os
 import time as _time
@@ -28,6 +30,76 @@ from app.shared.tenant_llm_context import get_current_llm_tenant
 T = TypeVar("T", bound=BaseModel)
 
 logger = logging.getLogger(__name__)
+
+# === Audit 2026-05-24 P1: LLM token streaming opt-in via ContextVar ===
+# Caller (SSE handler) seta callback antes de agent.process().
+# _generate_with_tools_claude detecta callback presente → usa client.messages.stream()
+# emitindo text deltas progressivos. Callback ausente → caminho blocking original.
+# Backward compat: zero impacto em callers non-SSE (workers, jobs, tests).
+from contextvars import ContextVar
+from typing import Awaitable, Callable
+
+_llm_streaming_callback: ContextVar = ContextVar(
+    "_llm_streaming_callback", default=None
+)
+"""
+Type: Optional[Callable[[dict], Awaitable[None]]]
+When set, _generate_with_tools_claude streams text deltas via callback({"type": "token", "content": delta}).
+"""
+
+# === Audit 2026-05-24 (P1 fix): cache em chamadas LLM tool-calling idempotentes ===
+# Reduz top-15 latencies de 5-13s para ~ms em cache hits. Safety: só cacheia
+# responses text-only (sem tool_calls — esses têm side effects e devem rodar
+# fresh). Multi-tenancy via company_id no key (LGPD isolation).
+from app.domains.ai.services.response_cache_service import response_cache_service
+
+_LLM_CACHE_TTL_SECONDS = 300  # 5 min — short o suficiente pra refletir mudanças
+
+
+def _build_llm_tool_cache_key(
+    provider: str,
+    messages: list[dict],
+    tools: list[dict],
+    system_prompt: str | None,
+    company_id: str,
+) -> str:
+    """Builds deterministic cache key for generate_with_tools.
+
+    Includes:
+      - provider (claude/gemini/...): different providers = different responses
+      - canonical messages (content + role only): ignores raw_response noise
+      - tool NAMES (sorted set): ignores tool schema ordering
+      - system_prompt: changes => different response
+      - company_id: multi-tenancy isolation
+
+    Returns: lia:llm_tools:{provider}:{sha256[:32]}
+    """
+    canonical_messages = [
+        {"role": m.get("role"), "content": m.get("content")}
+        for m in messages or []
+    ]
+    tool_names = sorted({t.get("name", "") for t in (tools or []) if t.get("name")})
+    payload = {
+        "provider": provider,
+        "system": system_prompt or "",
+        "messages": canonical_messages,
+        "tools": tool_names,
+        "company_id": company_id or "",
+    }
+    blob = json.dumps(payload, sort_keys=True, ensure_ascii=False)
+    digest = hashlib.sha256(blob.encode("utf-8")).hexdigest()[:32]
+    return f"lia:llm_tools:{provider}:{digest}"
+
+
+def _resolve_company_id_for_cache() -> str:
+    """Get company_id via canonical RuntimeContext (fail-safe to empty)."""
+    try:
+        from app.shared.runtime_context import RuntimeContext
+        ctx = RuntimeContext.from_contextvars()
+        return ctx.company_id or ""
+    except Exception:
+        return ""
+
 
 LLMProvider = Literal["claude", "openai", "gemini", "deepseek"]
 
@@ -458,16 +530,66 @@ class LLMService:
             if isinstance(_msg.get("content"), str):
                 _msg["content"] = strip_pii_for_llm_prompt(_msg["content"])
 
+        # === Audit 2026-05-24 P1: cache lookup (idempotent intents) ===
+        # Lookup ANTES do dispatch — hit = ~ms vs ~5-13s miss.
+        # Safety: cache only stores is_tool_call=False (text-only responses).
+        # Multi-tenancy: key includes company_id from RuntimeContext (LGPD).
+        _company_id = _resolve_company_id_for_cache()
+        _cache_key = _build_llm_tool_cache_key(
+            provider=provider,
+            messages=messages,
+            tools=tools,
+            system_prompt=system_prompt,
+            company_id=_company_id,
+        )
+        try:
+            _cached = await response_cache_service.get_cached_response(_cache_key)
+        except Exception as _cache_err:
+            logger.warning(f"[LLM-CACHE] lookup error (bypassing): {_cache_err}")
+            _cached = None
+
+        if _cached and _cached.get("_cache_safe") is True:
+            # Reconstrói ToolCallResponse text-only (sem tool_calls/raw_response —
+            # those são contextuais e não cacheable).
+            logger.info(
+                f"[LLM-CACHE] HIT provider={provider} key=...{_cache_key[-12:]} "
+                f"text_len={len(_cached.get('text_response', '') or '')}"
+            )
+            return ToolCallResponse(
+                text_response=_cached.get("text_response"),
+                tool_calls=[],
+                is_tool_call=False,
+                raw_response=None,
+            )
+
+        # Cache miss → call provider real
         if provider == "claude":
-            return await self._generate_with_tools_claude(
+            _result = await self._generate_with_tools_claude(
                 messages, tools, system_prompt, max_tokens
             )
         elif provider == "gemini":
-            return await self._generate_with_tools_gemini(
+            _result = await self._generate_with_tools_gemini(
                 messages, tools, system_prompt, max_tokens
             )
         else:
             raise ValueError(f"Provider {provider} does not support tool calling")
+
+        # Cache só se text-only (tool_calls têm side effects, never cache)
+        if not _result.is_tool_call and _result.text_response:
+            try:
+                await response_cache_service.cache_response(
+                    _cache_key,
+                    {
+                        "text_response": _result.text_response,
+                        "_cache_safe": True,  # marker — only present on text-only writes
+                    },
+                    ttl=_LLM_CACHE_TTL_SECONDS,
+                    intent="llm_tools_text",
+                )
+            except Exception as _cache_err:
+                logger.warning(f"[LLM-CACHE] store error (non-fatal): {_cache_err}")
+
+        return _result
     
     async def _generate_with_tools_claude(
         self,
@@ -498,12 +620,33 @@ class LLMService:
                 request_kwargs["system"] = system_prompt
             
             logger.info(f"Calling Claude with {len(tools)} tools, {len(messages)} messages")
-            
-            response = await client.messages.create(**request_kwargs)
-            
+
+            # === Audit 2026-05-24 P1: streaming opt-in ===
+            _stream_cb = _llm_streaming_callback.get(None)
+            if _stream_cb is not None:
+                # Streaming path: emit text deltas via callback durante geracao
+                logger.info(f"[LLM-STREAM] Streaming mode (callback presente)")
+                async with client.messages.stream(**request_kwargs) as stream:
+                    async for text_delta in stream.text_stream:
+                        if text_delta:
+                            try:
+                                await _stream_cb({"type": "token", "content": text_delta})
+                            except Exception as _cb_err:
+                                logger.warning(f"[LLM-STREAM] callback error (continuing): {_cb_err}")
+                    final_message = await stream.get_final_message()
+                # Notifica fim
+                try:
+                    await _stream_cb({"type": "token_done"})
+                except Exception:
+                    pass
+                response = final_message
+            else:
+                # Caminho original — blocking
+                response = await client.messages.create(**request_kwargs)
+
             tool_calls = []
             text_parts = []
-            
+
             for block in response.content:
                 if hasattr(block, 'type'):
                     if block.type == "text":
@@ -943,4 +1086,4 @@ async def get_claude_response(
     from app.shared.providers.llm_factory import get_provider_for_tenant
 
     container = get_provider_for_tenant()
-    return await container.generate_with_fallback(user_message, system=system_prompt)
+    return await container.generate_with_fallback(user_message, system=system_prompt, agent_type="LLMServiceAgent")

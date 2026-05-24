@@ -376,7 +376,7 @@ async def _run_anthropic_sync(client, model: str, max_tokens: int, messages: lis
     try:
         prompt = "\n".join(m.get("content", "") for m in messages if m.get("role") == "user")
         text = await asyncio.wait_for(
-            client.generate_with_fallback(prompt),
+            client.generate_with_fallback(prompt, agent_type="WSIAgent"),
             timeout=timeout,
         )
         return _FakeResponse(text)

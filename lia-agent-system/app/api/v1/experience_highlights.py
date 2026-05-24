@@ -114,7 +114,7 @@ async def generate_highlight_with_ai(data: GenerateHighlightRequest) -> str:
         from app.shared.providers.llm_factory import get_provider_for_tenant
 
         container = get_provider_for_tenant()
-        highlight_text = await container.generate_with_fallback(generate_highlight_prompt(data, agent_type="ExperienceHighlightAgent"))
+        highlight_text = await container.generate_with_fallback(generate_highlight_prompt(data), agent_type="ExperienceHighlightAgent")
         highlight_text = highlight_text.strip()
 
         if highlight_text.startswith('"') and highlight_text.endswith('"'):

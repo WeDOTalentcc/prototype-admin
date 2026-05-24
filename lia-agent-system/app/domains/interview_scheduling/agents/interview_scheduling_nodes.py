@@ -219,7 +219,7 @@ async def interview_details_collector(state: dict[str, Any]) -> dict[str, Any]:
     try:
         from app.shared.providers.llm_factory import get_provider_for_tenant  # lazy
         container = get_provider_for_tenant()
-        extracted_json = await container.generate_with_fallback(extraction_prompt)
+        extracted_json = await container.generate_with_fallback(extraction_prompt, agent_type="InterviewSchedulingAgent")
         # Clean JSON
         if "```json" in extracted_json:
             extracted_json = extracted_json.split("```json")[1].split("```")[0]

@@ -71,7 +71,8 @@ class JobsManagementAssistantService:
                 )
                 user_content = history_text + "\n\nUSER: " + user_content
             response_text = await container.generate_with_fallback(
-                user_content, system=system_prompt
+                user_content, system=system_prompt,
+                agent_type="RecruiterAssistantAgent",
             )
             structured_data = self._parse_json_response(response_text)
             content = self._extract_content(response_text, structured_data)

@@ -542,6 +542,12 @@ jobs:
       - name: "T-RATCHET: tenant filter ratchet (BLOCKING)"
         run: python3 scripts/check_query_has_tenant_filter.py --blocking --baseline-file scripts/baselines/tenant_filter.txt --quiet
 
+      - name: G-RLS-WRITE -- RLS write endpoints use get_tenant_db (BLOCKING)
+        run: python3 scripts/check_get_db_rls_safety.py --blocking
+
+      - name: G-LLM-ATYPE -- LLM calls have agent_type kwarg (BLOCKING)
+        run: python3 scripts/check_llm_calls_agent_type.py --blocking
+
   # ──────────────────────────────────────────────────────────────────────
   # E2E persistence smoke (Configurações > Minha Empresa / Learning Loops /
   # Schedule). Gap original Paulo 2026-05-21 — round-trip browser-level

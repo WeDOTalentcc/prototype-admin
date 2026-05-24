@@ -346,7 +346,7 @@ REGRAS DO QUE NÃO FAZER:
 
 Responda em JSON com os campos: {'"subject" (para email), ' if channel == 'email' else ''}"body" (texto da mensagem)."""
             
-            response_text = await container.generate_with_fallback(prompt)
+            response_text = await container.generate_with_fallback(prompt, agent_type="StageTransitionAgent")
             
             import json
             import re
@@ -504,7 +504,7 @@ REGRAS:
 
 Responda APENAS com a mensagem ajustada, sem explicações."""
 
-            adjusted_body = await container.generate_with_fallback(prompt)
+            adjusted_body = await container.generate_with_fallback(prompt, agent_type="StageTransitionAgent")
             adjusted_body = adjusted_body.strip()
             
             return {
@@ -591,7 +591,7 @@ Sub-statuses válidos: {', '.join(valid_options)}
 Responda APENAS com JSON válido:
 {{"predicted_substatus": "<um dos válidos>", "confidence": <0.0-1.0>, "reasoning": "<explicação breve>"}}"""
 
-            result_text = await container.generate_with_fallback(prompt)
+            result_text = await container.generate_with_fallback(prompt, agent_type="StageTransitionAgent")
             result_text = result_text.strip()
             if '{' in result_text:
                 json_str = result_text[result_text.index('{'):result_text.rindex('}') + 1]

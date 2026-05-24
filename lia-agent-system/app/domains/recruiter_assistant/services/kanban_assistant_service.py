@@ -102,7 +102,8 @@ class KanbanAssistantService:
         try:
             container = get_provider_for_tenant()
             response_text = await container.generate_with_fallback(
-                full_prompt, system=get_system_prompt()
+                full_prompt, system=get_system_prompt(),
+                agent_type="KanbanAssistantAgent",
             )
             
             structured_data = self._parse_json_response(response_text)

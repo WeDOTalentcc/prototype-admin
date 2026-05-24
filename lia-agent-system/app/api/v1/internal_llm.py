@@ -39,5 +39,5 @@ async def generate(body: GenerateRequest, request: Request, company_id: str = De
     from app.shared.providers.llm_factory import get_provider_for_tenant
 
     container = get_provider_for_tenant()
-    text = await container.generate_with_fallback(body.prompt, system=body.system)
+    text = await container.generate_with_fallback(body.prompt, system=body.system, agent_type="InternalLLMAgent")
     return GenerateResponse(text=text)

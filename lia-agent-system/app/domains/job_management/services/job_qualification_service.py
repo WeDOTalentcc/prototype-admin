@@ -113,7 +113,7 @@ class JobQualificationService:
         
         try:
             container = get_provider_for_tenant()
-            text = await container.generate_with_fallback(prompt)
+            text = await container.generate_with_fallback(prompt, agent_type="JobQualificationAgent")
             text = text.strip()
             
             if text.startswith("```"):

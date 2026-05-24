@@ -47,7 +47,7 @@ async def llm_complete(
     try:
         from app.shared.providers.llm_factory import get_provider_for_tenant
         container = get_provider_for_tenant()
-        return await container.generate_with_fallback(prompt, system=system)
+        return await container.generate_with_fallback(prompt, system=system, agent_type="LLMClientAgent")
     except Exception as e:
         logger.error(f"[LLM] Completion failed: {e}")
         return None

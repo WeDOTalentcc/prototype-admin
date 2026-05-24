@@ -137,6 +137,7 @@ class CompositeVoiceProvider(VoiceStreamProviderABC):
         result = await container.generate_with_fallback(
             prompt=full_prompt,
             system=system_prompt,
+            agent_type="VoiceCompositeAgent",
         )
 
         session.conversation_history.append({"role": "assistant", "content": result})

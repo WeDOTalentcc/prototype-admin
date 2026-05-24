@@ -133,7 +133,8 @@ Responda APENAS com JSON válido, sem markdown."""
 
             container = get_provider_for_tenant()
             response_text = await container.generate_with_fallback(
-                system_prompt + "\n\n" + user_prompt
+                system_prompt + "\n\n" + user_prompt,
+                agent_type="WSIQuestionAdjusterAgent",
             )
             response_text = response_text.strip()
             if response_text.startswith("```"):

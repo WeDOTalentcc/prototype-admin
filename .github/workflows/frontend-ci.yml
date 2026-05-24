@@ -111,5 +111,8 @@ jobs:
       - name: Unit & Component tests
         run: npx vitest run --reporter=verbose
 
+      - name: G-CANDIDATE-FIELDS -- canonical snake_case candidate fields (BLOCKING)
+        run: python3 scripts/check_canonical_candidate_fields.py --blocking
+
       - name: Build
         run: npm run build
