@@ -9,7 +9,7 @@ Endpoints:
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.auth.dependencies import require_admin
+from app.auth.dependencies import require_admin, require_wedotalent_admin
 from app.core.database import get_db
 from app.shared.security.require_company_id import require_company_id
 
@@ -19,14 +19,18 @@ router = APIRouter(prefix="/admin/lgpd", tags=["Admin - LGPD"])
 @router.post("/run-cleanup", response_model=None)
 async def trigger_lgpd_cleanup(
     dry_run: bool = Query(True, description="Simular sem deletar (default: True para segurança)"),
-    _user=Depends(require_admin),
+    _user=Depends(require_wedotalent_admin),
 company_id: str = Depends(require_company_id)):
-    # multi-tenancy: admin/platform-level (admin_) — role-based access required
+    # multi-tenancy: PLATFORM-LEVEL — exige wedotalent_admin (staff WeDOTalent)
     """
-    Dispara cleanup LGPD manual via Celery.
+    Dispara cleanup LGPD manual via Celery (PLATFORM-WIDE).
 
     - dry_run=true (padrão): apenas simula, retorna contagem sem deletar
     - dry_run=false: executa deleção real (requer confirmação explícita)
+
+    Onda 4.2h-C7 (2026-05-24): role gate elevado para wedotalent_admin —
+    cleanup é PLATFORM-WIDE (afeta TODAS empresas via run_lgpd_cleanup_task).
+    Tenant admin não pode disparar cleanup global (LGPD Art. 41 + governance).
     """
     from app.jobs.celery_tasks import run_lgpd_cleanup_task
     task = run_lgpd_cleanup_task.delay(dry_run=dry_run)

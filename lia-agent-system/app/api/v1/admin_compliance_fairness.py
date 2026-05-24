@@ -450,6 +450,14 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
     """
     start_dt, end_dt = _parse_period(period, start_date, end_date)
 
+    # Onda 4.2h-C4 (2026-05-24): company_id fail-closed = JWT quando query
+    # param ausente. Antes None passava direto pro _build_report e retornava
+    # BiasAuditSnapshots de TODAS empresas (cross-tenant leak P0). LGPD Art.
+    # 33 + EU AI Act Art. 9-13. wedotalent_admin que precise cross-tenant
+    # deve passar explicit ?company_id=<uuid>.
+    if company_id is None:
+        company_id = _company_gate
+
     report = await _build_report(db, start_dt, end_dt, company_id)
 
     if format == "json":

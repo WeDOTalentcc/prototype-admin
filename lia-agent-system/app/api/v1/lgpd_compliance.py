@@ -90,9 +90,17 @@ async def list_dpo_entries(
     lgpd_repo: LGPDRepository = Depends(get_lgpd_repo),
 _company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
-    """List all DPO registry entries (admin view)."""
+    """List DPO registry entries scoped to caller's company.
+
+    Onda 4.2h-C5 (2026-05-24): tenant guard — antes listava DPOs de
+    TODAS empresas (vazava DPO name/email/phone cross-tenant). LGPD Art. 41
+    (DPO contact é dado nominativo do encarregado, requer scope).
+    """
     try:
-        dpos, total = await lgpd_repo.list_dpos(is_active, limit, offset)
+        # Onda 4.2h-C5: scope canonical ao tenant do caller
+        dpos, total = await lgpd_repo.list_dpos(
+            is_active, limit, offset, company_id=UUID(company_id),
+        )
         return DPORegistryListResponse(
             dpos=[DPORegistryResponse(**d.to_dict()) for d in dpos],
             total=total,
@@ -113,9 +121,20 @@ async def get_dpo_for_company(
     lgpd_repo: LGPDRepository = Depends(get_lgpd_repo),
 _company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
-    """Get DPO registry entry for a specific company."""
+    """Get DPO registry entry for a specific company.
+
+    Onda 4.2h-C5 (2026-05-24): tenant guard fail-closed — caller só pode
+    consultar DPO da própria company (cross-tenant DPO contact = LGPD
+    Art. 41 violation). 404 sem leak de existence.
+    """
     try:
         target_uuid = UUID(target_company_id)
+        # Onda 4.2h-C5: pré-check tenant — caller != target = 404 (sem enumeration)
+        if str(target_uuid) != str(company_id):
+            logger.warning(
+                f"Cross-tenant DPO lookup blocked: caller={company_id} target={target_company_id}"
+            )
+            raise HTTPException(status_code=404, detail="DPO not registered for this company")
         dpo = await lgpd_repo.get_dpo_by_company(target_uuid)
         if not dpo:
             raise HTTPException(status_code=404, detail="DPO not registered for this company")
@@ -606,6 +625,18 @@ _company_gate: str = Depends(require_company_id)):
             status_code=400,
             detail=f"Invalid reason. Must be one of: {', '.join(valid_reasons)}",
         )
+
+    # Onda 4.2h-C6 (2026-05-24): tenant guard — antes qualquer candidate_id
+    # podia ser agendado pra deleção cross-tenant (DoS + LGPD Art. 18-VI
+    # rights violation pra company alheia).
+    from app.models.candidate import Candidate
+    candidate_row = await lgpd_repo.db.get(Candidate, UUID(data.candidate_id))
+    if not candidate_row or str(candidate_row.company_id) != str(company_id):
+        logger.warning(
+            f"Cross-tenant schedule-deletion blocked: caller={company_id} "
+            f"candidate={data.candidate_id}"
+        )
+        raise HTTPException(status_code=404, detail="Candidate not found")
 
     days = data.retention_days or RETENTION_DAYS[data.reason]
     deletion_at = await schedule_deletion_for_candidate(lgpd_repo.db, data.candidate_id, data.reason, days)

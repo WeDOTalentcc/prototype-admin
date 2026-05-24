@@ -35,14 +35,21 @@ class LGPDRepository:
         is_active: bool | None,
         limit: int,
         offset: int,
+        company_id: uuid.UUID | None = None,
     ) -> tuple[list[DPORegistry], int]:
+        """List DPO registry entries, optionally scoped to a tenant.
+
+        Onda 4.2h-C5 (2026-05-24): company_id parameter pra evitar cross-tenant
+        leak de DPO contact (name/email/phone — LGPD Art. 41 protected). Antes
+        endpoint /dpo retornava DPOs de TODAS empresas. Marker TENANT-EXEMPT
+        removido — agora é tenant-scoped por default (None só pra wedotalent_admin).
+        """
         conditions = []
         if is_active is not None:
             conditions.append(DPORegistry.is_active == is_active)
+        if company_id is not None:
+            conditions.append(DPORegistry.company_id == company_id)
 
-        # TENANT-EXEMPT: DPORegistry é tabela de compliance admin-level — endpoint /dpo
-        # é admin view cross-tenant para DPO/compliance overseer; sensor não distingue admin scope.
-        # Audit 2026-05-22 tail sprint.
         query = select(DPORegistry)
         if conditions:
             query = query.where(and_(*conditions))

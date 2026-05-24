@@ -64,7 +64,14 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 
     Returns total blocks and warnings per category for the specified period.
     Useful for recruiter coaching and compliance dashboards.
+
+    Onda 4.2h-C3 (2026-05-24): company_id agora fail-closed = JWT quando
+    query param ausente. Antes None passava direto pro repo e retornava
+    dados de TODAS empresas (cross-tenant leak P0).
     """
+    # Onda 4.2h-C3: fallback JWT — strict_match já validou que query == JWT se presente
+    if company_id is None:
+        company_id = _company_gate
     since = datetime.now(UTC) - timedelta(days=days)
     repo = FairnessReportRepository(db)
     rows = await repo.get_summary_by_category(since, company_id)
@@ -105,7 +112,12 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 
     Returns a time-series suitable for charting bias detection trends.
     Useful for identifying if training/coaching is reducing discrimination attempts.
+
+    Onda 4.2h-C3 (2026-05-24): company_id fail-closed = JWT quando ausente.
     """
+    # Onda 4.2h-C3: fallback JWT
+    if company_id is None:
+        company_id = _company_gate
     since = datetime.now(UTC) - timedelta(days=days)
     repo = FairnessReportRepository(db)
     rows = await repo.get_daily_trend(since, company_id)
@@ -163,7 +175,12 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 
     Retorna eventos de bloqueio e soft-warning com metadados de contexto.
     Queries originais NÃO são expostas (apenas query_hash SHA-256).
+
+    Onda 4.2h-C3 (2026-05-24): company_id fail-closed = JWT quando ausente.
     """
+    # Onda 4.2h-C3: fallback JWT
+    if company_id is None:
+        company_id = _company_gate
     since = datetime.now(UTC) - timedelta(days=days)
     repo = FairnessReportRepository(db)
     total, rows = await repo.get_audit_logs_paginated(
@@ -213,12 +230,17 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 
     CSV format: category,total_blocks,total_warnings,last_occurrence
     JSON format: FairnessSummaryResponse schema
+
+    Onda 4.2h-C3 (2026-05-24): company_id fail-closed = JWT quando ausente.
     """
     import csv
     import io
 
     from fastapi.responses import JSONResponse, StreamingResponse
 
+    # Onda 4.2h-C3: fallback JWT
+    if company_id is None:
+        company_id = _company_gate
     # Reuse summary logic via repository
     since = datetime.now(UTC) - timedelta(days=days)
     repo = FairnessReportRepository(db)
