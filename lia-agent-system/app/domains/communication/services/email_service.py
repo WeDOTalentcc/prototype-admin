@@ -217,6 +217,13 @@ class EmailService:
         all_missing = list(set(subject_missing + html_missing))
         if all_missing:
             logger.warning(f"Missing variables in email: {all_missing}")
+            # P1-W2-02: never send {{placeholder}} literals to candidates
+            if send_immediately:
+                raise ValueError(
+                    f"Email has {len(all_missing)} unresolved variable(s): {all_missing}. "
+                    "Provide values for all template {{placeholders}} before sending. "
+                    "Callers: catch ValueError and surface missing_variables to the user."
+                )
 
         # Wave 3 P0.SIG2: append tenant signature canonical (was ghost setting — wired here).
         # Tenant comes from ContextVar (auth middleware); silent skip if unauthenticated context.

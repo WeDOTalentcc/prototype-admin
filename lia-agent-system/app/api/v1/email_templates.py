@@ -41,6 +41,7 @@ from app.schemas.email_template import (
     TemplatePreviewByIdResponse,
 )
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.compliance.fairness_guard_middleware import check_fairness_async  # P1-W2-04
 
 logger = logging.getLogger(__name__)
 
@@ -265,6 +266,25 @@ company_id: str = Depends(require_company_id)):
             updated_at=datetime.utcnow(),
         )
 
+        # P1-W2-04: FairnessGuard — emails reach candidates directly
+        _fg_texts = {k: v for k, v in {
+            "body_html": template_data.body_html,
+            "subject": template_data.subject or "",
+        }.items() if v}
+        if _fg_texts:
+            _fg_result = await check_fairness_async(
+                texts=_fg_texts, context="email_template_create", company_id=company_id
+            )
+            if _fg_result.is_blocked:
+                raise HTTPException(
+                    status_code=422,
+                    detail={
+                        "code": "fairness_violation",
+                        "blocked_field": _fg_result.blocked_field,
+                        "message": "O template contém conteúdo não permitido pelas regras de equidade.",
+                    },
+                )
+
         template = await repo.create(template)
 
         logger.info(f"Email template created: {template.id}")
@@ -338,6 +358,25 @@ company_id: str = Depends(require_company_id)):
             template.variables = list(set(detected_vars))  # type: ignore[assignment]
 
         template.updated_at = datetime.utcnow()  # type: ignore[assignment]
+
+        # P1-W2-04: FairnessGuard — emails reach candidates directly
+        _fg_texts = {k: v for k, v in {
+            "body_html": cast(str, template.body_html) if template.body_html else "",
+            "subject": cast(str | None, template.subject) or "",
+        }.items() if v}
+        if _fg_texts:
+            _fg_result = await check_fairness_async(
+                texts=_fg_texts, context="email_template_update", company_id=company_id
+            )
+            if _fg_result.is_blocked:
+                raise HTTPException(
+                    status_code=422,
+                    detail={
+                        "code": "fairness_violation",
+                        "blocked_field": _fg_result.blocked_field,
+                        "message": "O template contém conteúdo não permitido pelas regras de equidade.",
+                    },
+                )
 
         template = await repo.update(template)
 
