@@ -177,6 +177,7 @@ AGENT_TYPE_REQUEST_OVERRIDES: dict[str, float] = {
     "VoiceCompositeAgent": 3.0,
     "LLMClientAgent": 3.0,
     "AnalysisServiceAgent": 3.5,
+    "CompanyBenefitsAgent": 2.5,
 }
 
 # TTL da chave Redis: 25h para cobrir edge case de meia-noite

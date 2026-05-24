@@ -378,6 +378,7 @@ Retorne APENAS o JSON, sem texto adicional."""
             company_id=str(company_id),
             domain="benefits",
             operation="upload_extract",
+            agent_type="CompanyBenefitsAgent",
         )
         raw_stripped = raw.strip()
         if raw_stripped.startswith('```'):
