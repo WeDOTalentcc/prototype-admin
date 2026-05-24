@@ -510,7 +510,31 @@ _company_gate: str = Depends(require_company_id)):
         total_tokens = record.total_tokens
         if total_tokens is None:
             total_tokens = record.input_tokens + record.output_tokens
-        
+
+        # P1-W3-08: Overage enforcement — block when limit exceeded + overage_allowed=False
+        _balance = await get_or_create_balance(db, company_uuid)
+        if _balance.monthly_limit and _balance.monthly_limit > 0 and not _balance.overage_allowed:
+            _period_usage_result = await db.execute(
+                select(func.sum(AiConsumption.total_tokens)).where(
+                    and_(
+                        AiConsumption.company_id == company_uuid,
+                        AiConsumption.created_at >= datetime.combine(_balance.period_start, datetime.min.time()),
+                        AiConsumption.created_at <= datetime.combine(_balance.period_end, datetime.max.time()),
+                    )
+                )
+            )
+            _current = int(_period_usage_result.scalar() or 0)
+            if _current >= _balance.monthly_limit:
+                raise HTTPException(
+                    status_code=402,
+                    detail={
+                        "code": "monthly_limit_exceeded",
+                        "current_usage": _current,
+                        "monthly_limit": _balance.monthly_limit,
+                        "message": "Limite mensal de tokens atingido. Contate o administrador para aumentar o limite.",
+                    },
+                )
+
         repo = AiConsumptionRepository(db)
         consumption = await repo.create({
             "company_id": company_uuid,
