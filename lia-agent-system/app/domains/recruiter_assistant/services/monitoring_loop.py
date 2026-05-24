@@ -675,8 +675,22 @@ class MonitoringLoop:
                     task_name, result,
                 )
 
-        # Sprint 11.3 Batch 3+ will append more here (feedback safety net,
-        # memory.compress per-tenant, event-driven refactors).
+        # ─── Feedback pending safety net (every 2h) — Sprint 11.3 Batch 2.5+ ───
+        task_name = "feedback.process_pending_sends"
+        if self._should_run_with_period(task_name, 7200):  # 2h
+            async def _coro():
+                from app.jobs.tasks.feedback import feedback_process_pending_sends_canonical
+                return await feedback_process_pending_sends_canonical()
+            ok, result = await self._retry_with_backoff(task_name, _coro)
+            if ok:
+                self._mark_period_run(task_name)
+                logger.info(
+                    "[MonitoringLoop healthz] period_task=%s result=%s",
+                    task_name, result,
+                )
+
+        # Sprint 11.3 Batch 3+ will append more here (memory.compress
+        # per-tenant, event-driven refactors).
 
     async def _check_stale_candidates(self, company_id: str) -> list[ProactiveAlert]:
         from lia_config.database import AsyncSessionLocal
