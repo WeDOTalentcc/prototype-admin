@@ -343,8 +343,12 @@ export function useCompanySettingsCards() {
             )
           }
         } catch { /* non-JSON 404 — caller still gets null */ }
+      } else {
+        console.error("[useCompanySettingsCards] fetchCompanyProfile HTTP", res.status, await res.text().catch(() => ""))
       }
-    } catch { /* handled by caller */ }
+    } catch (err) {
+      console.error("[useCompanySettingsCards] fetchCompanyProfile network error:", err)
+    }
     return null
   }, [])
 
@@ -352,7 +356,13 @@ export function useCompanySettingsCards() {
     try {
       const res = await fetch(`/api/backend-proxy/company/culture-profile/${encodeURIComponent(cid)}`)
       if (res.ok) return await res.json()
-    } catch { /* handled by caller */ }
+      // 404 is normal (profile not created yet); other statuses are real failures.
+      if (res.status !== 404) {
+        console.error("[useCompanySettingsCards] fetchCultureProfile HTTP", res.status, await res.text().catch(() => ""))
+      }
+    } catch (err) {
+      console.error("[useCompanySettingsCards] fetchCultureProfile network error:", err)
+    }
     return null
   }, [])
 
@@ -363,7 +373,10 @@ export function useCompanySettingsCards() {
         const data = await res.json()
         return Array.isArray(data) ? data : data.items || []
       }
-    } catch { /* handled by caller */ }
+      console.error("[useCompanySettingsCards] fetchBenefits HTTP", res.status, await res.text().catch(() => ""))
+    } catch (err) {
+      console.error("[useCompanySettingsCards] fetchBenefits network error:", err)
+    }
     return []
   }, [apiCompanyId])
 
@@ -371,7 +384,12 @@ export function useCompanySettingsCards() {
     try {
       const res = await fetch("/api/backend-proxy/hiring-policy")
       if (res.ok) return await res.json()
-    } catch { /* handled by caller */ }
+      if (res.status !== 404) {
+        console.error("[useCompanySettingsCards] fetchHiringPolicy HTTP", res.status, await res.text().catch(() => ""))
+      }
+    } catch (err) {
+      console.error("[useCompanySettingsCards] fetchHiringPolicy network error:", err)
+    }
     return null
   }, [])
 
@@ -381,8 +399,12 @@ export function useCompanySettingsCards() {
       if (res.ok) {
         const data = await res.json()
         setOverallProgress(data.overall ?? 0)
+        return
       }
-    } catch { /* handled by caller */ }
+      console.error("[useCompanySettingsCards] fetchProgress HTTP", res.status, await res.text().catch(() => ""))
+    } catch (err) {
+      console.error("[useCompanySettingsCards] fetchProgress network error:", err)
+    }
   }, [])
 
   const loadAll = useCallback(async () => {

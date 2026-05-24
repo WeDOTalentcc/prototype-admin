@@ -170,7 +170,7 @@ export function RecruitmentScreeningTab() {
                   </p>
                   <div className="flex items-center gap-2 mt-1">
                     <Chip variant="neutral" className={`text-micro py-0 px-1.5 ${!isEditingQuestions ? 'opacity-60' : ''}`}>
-                      {q.type === 'text' ? t("recruitment.screening.typeText") : q.type === 'yesno' ? t("recruitment.screening.typeYesNo") : t("recruitment.screening.typeScale")}
+                      {q.type === 'text' ? t("recruitment.screening.typeText") : q.type === 'yes_no' ? t("recruitment.screening.typeYesNo") : t("recruitment.screening.typeScale")}
                     </Chip>
                     {q.required && (
                       <Chip variant="neutral" className={`text-micro py-0 px-1.5 ${!isEditingQuestions ? 'opacity-60' : ''}`}>{t("recruitment.screening.required")}</Chip>
@@ -286,7 +286,7 @@ function QuestionBankSection({
                           <p className={textStyles.bodySmall}>{q.question}</p>
                           <div className="flex items-center gap-1.5 mt-1">
                             <Chip variant="neutral" className="text-micro py-0 px-1">
-                              {q.type === 'text' ? t("recruitment.screening.typeText") : q.type === 'yesno' ? t("recruitment.screening.typeYesNo") : q.type === 'scale' ? t("recruitment.screening.typeScale") : t("recruitment.screening.typeMultiple")}
+                              {q.type === 'text' ? t("recruitment.screening.typeText") : q.type === 'yes_no' ? t("recruitment.screening.typeYesNo") : q.type === 'scale' ? t("recruitment.screening.typeScale") : t("recruitment.screening.typeMultiple")}
                             </Chip>
                             <span className={textStyles.caption}>{q.contextHint}</span>
                             {isAdded && (
@@ -352,14 +352,14 @@ function QuestionFormSection({ newQuestion, setNewQuestion, onAdd, onCancel }: Q
             <select
               id="screening-question-type"
               value={newQuestion.type}
-              onChange={(e) => setNewQuestion(prev => ({ ...prev, type: e.target.value as 'text' | 'yesno' | 'scale' | 'multiple' }))}
+              onChange={(e) => setNewQuestion(prev => ({ ...prev, type: e.target.value as 'text' | 'yes_no' | 'scale' | 'multiple' }))}
               data-field="question_type"
               data-testid="screening-question-type-select"
               aria-label="Tipo de pergunta"
               className={`w-full px-2 py-1.5 border border-lia-border-subtle rounded-md bg-lia-bg-primary ${textStyles.body}`}
             >
               <option value="text">{t("recruitment.screening.freeText")}</option>
-              <option value="yesno">{t("recruitment.screening.yesNo")}</option>
+              <option value="yes_no">{t("recruitment.screening.yesNo")}</option>
               <option value="scale">{t("recruitment.screening.scale15")}</option>
             </select>
           </div>
@@ -374,7 +374,7 @@ function QuestionFormSection({ newQuestion, setNewQuestion, onAdd, onCancel }: Q
             </label>
           </div>
         </div>
-        {newQuestion.is_eliminatory && newQuestion.type === 'yesno' && (
+        {newQuestion.is_eliminatory && newQuestion.type === 'yes_no' && (
           <div className="p-3 bg-status-error/10 border border-status-error/30 rounded-xl">
             <label className={`block mb-1.5 ${textStyles.labelSmall} text-status-error`}>
               {t("recruitment.screening.expectedAnswer")}

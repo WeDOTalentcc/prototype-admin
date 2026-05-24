@@ -173,6 +173,14 @@ jobs:
         run: |
           python3 scripts/check_es_search_has_tenant_filter.py
 
+      - name: "G-CANONICAL: webhook endpoints autenticados (BLOCKING)"
+        # Baseline 0 — sensors/check_webhook_auth.py (registrado Round 3, 2026-05-24).
+        # Detecta webhook handlers sem verificacao de assinatura (HMAC/token).
+        # Bug class: SSRF/replay attack em webhooks publicos sem auth canonical.
+        working-directory: lia-agent-system
+        run: |
+          python3 scripts/check_webhook_auth.py --blocking
+
   harness-ratchet:
     name: Harness Sensors (RATCHET warn-only — baseline > 0)
     runs-on: ubuntu-latest

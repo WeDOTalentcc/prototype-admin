@@ -20,7 +20,7 @@
 
 import { useCallback, useEffect, useState } from "react"
 
-export type QuestionType = "text" | "yesno" | "scale" | "multiple"
+export type QuestionType = "text" | "yes_no" | "scale" | "multiple"
 
 export type QuestionCategory =
   | "general"

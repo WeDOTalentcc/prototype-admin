@@ -37,7 +37,7 @@ export interface RawScreeningQuestion {
 export interface ScreeningQuestion {
   id: string
   question: string
-  type: 'text' | 'yesno' | 'scale' | 'multiple'
+  type: 'text' | 'yes_no' | 'scale' | 'multiple'
   required: boolean
   order: number
   isDefault: boolean
@@ -50,7 +50,7 @@ export interface ScreeningQuestion {
 
 export interface NewQuestionForm {
   question: string
-  type: 'text' | 'yesno' | 'scale' | 'multiple'
+  type: 'text' | 'yes_no' | 'scale' | 'multiple'
   required: boolean
   is_eliminatory: boolean
   expected_answer: string
@@ -86,9 +86,9 @@ export function mapRawPipelineStage(
 export function mapRawScreeningQuestion(
   q: RawScreeningQuestion
 ): ScreeningQuestion {
-  const rawType = q.question_type === 'yes_no' ? 'yesno' : q.question_type || 'text'
+  const rawType = q.question_type || 'text'
   const safeType: ScreeningQuestion['type'] =
-    rawType === 'text' || rawType === 'yesno' || rawType === 'scale' || rawType === 'multiple'
+    rawType === 'text' || rawType === 'yes_no' || rawType === 'scale' || rawType === 'multiple'
       ? rawType
       : 'text'
   return {

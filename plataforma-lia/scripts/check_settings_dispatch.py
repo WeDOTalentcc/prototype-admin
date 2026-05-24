@@ -24,11 +24,43 @@ TARGETS = [
     ROOT / "src" / "hooks" / "settings",
 ]
 
-# Detect mutation: apiFetch/fetch with method !== 'GET'
-MUTATION_RE = re.compile(
-    r"(apiFetch|fetch)\s*\([^)]*\bmethod:\s*['\"](POST|PUT|PATCH|DELETE)['\"]",
-    re.DOTALL,
+# Detect mutation: apiFetch/fetch/axios with method !== 'GET'
+# Refined 2026-05-24: original regex had false negatives when body spans
+# multiple lines (LogoUploadField, DSRInboxPanel, AITransparencyPanel,
+# AIPerformancePanel escaped). New regex looks for the method literal
+# directly, AND ensures the file uses apiFetch/fetch/axios at least once.
+_HAS_FETCH_RE = re.compile(r"\b(apiFetch|fetch|axios)\b")
+_METHOD_MUTATION_RE = re.compile(
+    r"\bmethod\s*:\s*['\"](POST|PUT|PATCH|DELETE)['\"]"
 )
+_AXIOS_DIRECT_RE = re.compile(
+    r"\baxios\.(post|put|patch|delete)\s*\("
+)
+
+
+def _find_mutations(src: str):
+    """Return list of (lineno, method_literal) for each mutation site."""
+    sites = []
+    if _HAS_FETCH_RE.search(src):
+        for m in _METHOD_MUTATION_RE.finditer(src):
+            lineno = src.count("\n", 0, m.start()) + 1
+            sites.append((lineno, m.group(1)))
+    for m in _AXIOS_DIRECT_RE.finditer(src):
+        lineno = src.count("\n", 0, m.start()) + 1
+        sites.append((lineno, m.group(1).upper()))
+    return sites
+
+
+# Kept for backward compat in test imports — now wraps the new logic.
+class _CompatRe:
+    @staticmethod
+    def finditer(text):
+        for lineno, method in _find_mutations(text):
+            # Yield a dummy match-like object via re module (we use a regex hit on file)
+            yield from _METHOD_MUTATION_RE.finditer(text)
+            break
+
+MUTATION_RE = _CompatRe()
 # Detect dispatch in the same file
 # Accept either inline dispatch OR canonical helper notifyChatOfSettingsUpdate
 DISPATCH_RE = re.compile(
@@ -53,19 +85,17 @@ def scan() -> list[tuple[Path, int, str, str]]:
                 src = ts.read_text(encoding="utf-8")
             except Exception:
                 continue
-            mutations = list(MUTATION_RE.finditer(src))
+            mutations = _find_mutations(src)
             if not mutations:
                 continue
             has_dispatch = bool(DISPATCH_RE.search(src))
             if has_dispatch:
                 continue
             # Report each mutation site
-            for m in mutations:
-                lineno = src.count("\n", 0, m.start()) + 1
-                method = m.group(2)
+            for lineno, method in mutations:
                 violations.append((
                     ts, lineno,
-                    f"Mutation {method} via {m.group(1)} sem dispatch lia:settings-updated subsequente",
+                    f"Mutation {method} sem dispatch lia:settings-updated subsequente",
                     "Adicione após save bem-sucedido: "
                     "`window.dispatchEvent(new CustomEvent('lia:settings-updated', "
                     "{ detail: { actionId, section, field?, value?, source: 'ui', ts: Date.now() } }))`. "

@@ -39,7 +39,7 @@ export function StudioComplianceView() {
         // apiFetch already handles auth via JWT/session cookies (CLAUDE.md REGRA 6 canonical).
         // Passing a manually extracted token as Bearer header is redundant and creates
         // cross-tenant risk if the stored token differs from the active session JWT.
-        const res = await apiFetch()
+        const res = await apiFetch(`/api/backend-proxy/custom-agents/studio-compliance-summary?period_days=${period}`)
         if (!res.ok) throw new Error(t("loadError"))
         const json = await res.json()
         setData(json)

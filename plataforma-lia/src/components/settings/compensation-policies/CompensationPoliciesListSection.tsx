@@ -91,9 +91,9 @@ export function CompensationPoliciesListSection() {
         </div>
       ) : (
         <div className="space-y-3">
-          {policies.map((policy) => (
+          {policies.map((policy, idx) => (
             <CompensationPolicyItemCard
-              key={policy.id}
+              key={policy.id ?? `policy-${idx}`}
               policy={policy}
               onEdit={openEdit}
               onDeactivate={deactivatePolicy}

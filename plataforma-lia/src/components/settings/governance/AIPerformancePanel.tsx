@@ -18,6 +18,7 @@ import { Chip } from "@/components/ui/chip"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { apiFetch } from "@/lib/api/api-fetch"
+import { notifyChatOfSettingsUpdate } from "@/lib/api/settings-notify"
 
 // ---------------------------------------------------------------------------
 // Types
@@ -238,6 +239,11 @@ export function AIPerformancePanel(): React.ReactElement {
       )
       const body: PromoteResult = await res.json()
       setPromoteResult(body)
+      notifyChatOfSettingsUpdate({
+        actionId: "promote_ab_test_winner",
+        section: "governance",
+        field: testName,
+      })
     } catch (err) {
       setPromoteResult({
         promoted: false,
@@ -268,6 +274,11 @@ export function AIPerformancePanel(): React.ReactElement {
       )
       const body: EarlyStopDecision = await res.json()
       setEarlyStopResult(body)
+      notifyChatOfSettingsUpdate({
+        actionId: "ab_test_early_stop_check",
+        section: "governance",
+        field: selectedExperiment,
+      })
     } catch {
       setEarlyStopResult({ action: "continue", reason: "request_failed" })
     } finally {

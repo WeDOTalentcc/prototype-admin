@@ -49,9 +49,9 @@ export function AutomationRulesPanel() {
       setLoading(true)
       setError(null)
       try {
-        const res = await apiFetch(,
+        const res = await apiFetch(`/api/backend-proxy/automation-rules/company/${companyId}`,
         )
-        if (!res.ok) throw new Error()
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
         const data = await res.json()
         if (cancelled) return
         const items: AutomationRule[] = Array.isArray(data)
@@ -76,12 +76,12 @@ export function AutomationRulesPanel() {
     if (!id || !companyId) return
     setPending((p) => ({ ...p, [id]: true }))
     try {
-      const res = await apiFetch(, {
+      const res = await apiFetch(`/api/backend-proxy/automation-rules/${id}/toggle`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json" } })
       notifyChatOfSettingsUpdate({ actionId: "configure_automation", section: "governance" })
-      if (!res.ok) throw new Error()
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
       setRules((curr) =>
         curr.map((r) => {
           const rid = r.id ?? r.rule_id
@@ -217,7 +217,7 @@ export function AutomationRulesPanel() {
                       type="button"
                       disabled={isPending || !id}
                       onClick={() => toggleRule(rule)}
-                      data-testid={}
+                      data-testid={`automation-rule-toggle-${id}`}
                       className="rounded-md border border-lia-border-default px-2 py-1 text-xs font-medium hover:bg-lia-bg-tertiary disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       {isActive ? t("disable") : t("enable")}

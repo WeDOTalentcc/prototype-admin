@@ -13,6 +13,7 @@
  */
 
 import React, { useState, useRef, useEffect, useCallback } from "react"
+import { notifyChatOfSettingsUpdate } from "@/lib/api/settings-notify"
 import { Upload, Image as ImageIcon, Loader2, AlertCircle, Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
@@ -86,6 +87,12 @@ export function LogoUploadField({
         const data = await res.json()
         if (data.logo_url) {
           onUploadSuccess(data.logo_url)
+          notifyChatOfSettingsUpdate({
+            actionId: "upload_company_logo",
+            section: "profile",
+            field: "logo_url",
+            value: data.logo_url,
+          })
           setSuccessFlash(true)
           setTimeout(() => setSuccessFlash(false), 2000)
         }

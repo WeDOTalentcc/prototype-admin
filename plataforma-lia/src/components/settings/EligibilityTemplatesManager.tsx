@@ -59,7 +59,7 @@ interface FormState {
 
 const EMPTY_FORM: FormState = {
   question: "",
-  type: "yesno",
+  type: "yes_no",
   category: "general",
   contextHint: "",
   options: "",
@@ -115,7 +115,7 @@ export function EligibilityTemplatesManager({
     setEditingId(template.id)
     setForm({
       question: flat.question || "",
-      type: flat.type || "yesno",
+      type: flat.type || "yes_no",
       category: flat.category || "general",
       contextHint: flat.contextHint || "",
       options: (flat.options || []).join(", "),
@@ -283,7 +283,7 @@ export function EligibilityTemplatesManager({
                 <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v as QuestionType })}>
                   <SelectTrigger><SelectValue placeholder="Tipo" /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="yesno">Sim/Não</SelectItem>
+                    <SelectItem value="yes_no">Sim/Não</SelectItem>
                     <SelectItem value="text">Texto livre</SelectItem>
                     <SelectItem value="scale">Escala</SelectItem>
                     <SelectItem value="multiple">Múltipla escolha</SelectItem>

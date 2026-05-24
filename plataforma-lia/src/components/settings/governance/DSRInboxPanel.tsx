@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { cn } from "@/lib/utils"
 import { apiFetch } from "@/lib/api/api-fetch"
+import { notifyChatOfSettingsUpdate } from "@/lib/api/settings-notify"
 
 interface DSR {
   id: string
@@ -50,7 +51,7 @@ const statusVariant: Record<string, "neutral" | "info" | "warning" | "success" |
 function escapeCsv(value: unknown): string {
   if (value == null) return ""
   const s = String(value)
-  if (/[",\n]/.test(s)) return 
+  if (/[",\n]/.test(s)) return `"${s.replace(/"/g, '""')}"`
   return s
 }
 
@@ -74,7 +75,7 @@ function exportCsv(rows: DSR[]) {
   const url = URL.createObjectURL(blob)
   const a = document.createElement("a")
   a.href = url
-  a.download = 
+  a.download = `dsr_inbox_${new Date().toISOString().split("T")[0]}.csv`
   document.body.appendChild(a)
   a.click()
   document.body.removeChild(a)
@@ -115,18 +116,18 @@ export function DSRInboxPanel({ defaultRequestType }: { defaultRequestType?: str
       setLoading(true)
       setError(null)
       try {
-        let qs = statusFilter !== "all" ?  : ""
+        let qs = statusFilter !== "all" ? `?status=${statusFilter}` : ""
         if (requestTypeFilter) {
-          qs += (qs ? "&" : "?") + 
+          qs += (qs ? "&" : "?") + `request_type=${requestTypeFilter}`
         }
         // CLAUDE.md REGRA 6: nao enviar X-Company-ID header — JWT canonical
         // (via apiFetch + proxy auth-headers) ja carrega company_id. Header
         // adicional risca cross-tenant divergence em get_verified_company_id.
         const [listRes, statsRes] = await Promise.all([
-          apiFetch(),
+          apiFetch(`/api/backend-proxy/data-subject-requests${qs}`),
           apiFetch("/api/backend-proxy/data-subject-requests/stats"),
         ])
-        if (!listRes.ok) throw new Error()
+        if (!listRes.ok) throw new Error(`HTTP ${listRes.status}`)
         const listData = await listRes.json()
         const statsData = statsRes.ok ? await statsRes.json() : null
         if (cancelled) return
@@ -174,7 +175,7 @@ export function DSRInboxPanel({ defaultRequestType }: { defaultRequestType?: str
     if (!dsrId) return
     setActionLoadingId(dsrId)
     try {
-      const url = 
+      const url = `/api/backend-proxy/data-subject-requests/${dsrId}/${action}`
       const resp = await apiFetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
@@ -182,12 +183,17 @@ export function DSRInboxPanel({ defaultRequestType }: { defaultRequestType?: str
       })
       if (!resp.ok) {
         const errText = await resp.text().catch(() => "")
-        setActionModal(prev => ({ ...prev, errorMsg:  }))
+        setActionModal(prev => ({ ...prev, errorMsg: `Erro ${resp.status}: ${errText.slice(0, 500)}` }))
         return
       }
+      notifyChatOfSettingsUpdate({
+        actionId: `dsr_${action}`,
+        section: "governance",
+        field: dsrId,
+      })
       setRefetchSignal((n) => n + 1)
     } catch (err) {
-      setActionModal(prev => ({ ...prev, errorMsg:  }))
+      setActionModal(prev => ({ ...prev, errorMsg: `Erro de rede: ${err instanceof Error ? err.message : String(err)}` }))
     } finally {
       setActionLoadingId(null)
     }
@@ -303,7 +309,7 @@ export function DSRInboxPanel({ defaultRequestType }: { defaultRequestType?: str
               const id = dsr.id ?? dsr.request_id ?? ""
               const status = (dsr.status ?? "").toLowerCase()
               return (
-                <tr key={id} className="border-t border-lia-border-subtle" data-testid={}>
+                <tr key={id} className="border-t border-lia-border-subtle" data-testid={`dsr-row-${id}`}>
                   <td className="px-3 py-2 font-mono text-[11px]">{id.slice(0, 8) || "-"}</td>
                   <td className="px-3 py-2">{dsr.request_type ?? dsr.type ?? "-"}</td>
                   <td className="px-3 py-2">{dsr.subject_email ?? dsr.email ?? "-"}</td>
@@ -335,7 +341,7 @@ export function DSRInboxPanel({ defaultRequestType }: { defaultRequestType?: str
                               onClick={() => handleDsrAction(id, "assign")}
                               className="h-6 px-2 text-[10px]"
                               title="Atribuir DSR"
-                              data-testid={}
+                              data-testid={`dsr-action-assign-${id}`}
                             >
                               Atribuir
                             </Button>
@@ -347,7 +353,7 @@ export function DSRInboxPanel({ defaultRequestType }: { defaultRequestType?: str
                               onClick={() => handleDsrAction(id, "verify-identity")}
                               className="h-6 px-2 text-[10px]"
                               title="Verificar identidade"
-                              data-testid={}
+                              data-testid={`dsr-action-verify-${id}`}
                             >
                               Verificar
                             </Button>
@@ -362,7 +368,7 @@ export function DSRInboxPanel({ defaultRequestType }: { defaultRequestType?: str
                             onClick={() => handleDsrAction(id, "process")}
                             className="h-6 px-2 text-[10px]"
                             title="Mover para Processing"
-                            data-testid={}
+                            data-testid={`dsr-action-process-${id}`}
                           >
                             Processar
                           </Button>
@@ -377,7 +383,7 @@ export function DSRInboxPanel({ defaultRequestType }: { defaultRequestType?: str
                               onClick={() => handleDsrAction(id, "complete")}
                               className="h-6 px-2 text-[10px]"
                               title="Concluir DSR (executa side-effect real)"
-                              data-testid={}
+                              data-testid={`dsr-action-complete-${id}`}
                             >
                               Concluir
                             </Button>
@@ -389,7 +395,7 @@ export function DSRInboxPanel({ defaultRequestType }: { defaultRequestType?: str
                               onClick={() => handleDsrAction(id, "reject")}
                               className="h-6 px-2 text-[10px]"
                               title="Rejeitar"
-                              data-testid={}
+                              data-testid={`dsr-action-reject-${id}`}
                             >
                               Rejeitar
                             </Button>

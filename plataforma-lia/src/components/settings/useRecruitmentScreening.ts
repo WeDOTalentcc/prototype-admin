@@ -94,7 +94,7 @@ export function useRecruitmentScreening({
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             question_text: q.question,
-            question_type: q.type === 'yesno' ? 'yes_no' : q.type,
+            question_type: q.type,
             is_required: q.required,
             order: q.order,
             options: q.options,
@@ -143,7 +143,7 @@ export function useRecruitmentScreening({
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             question_text: q.question,
-            question_type: q.type === 'yesno' ? 'yes_no' : q.type,
+            question_type: q.type,
             is_required: q.required,
             is_eliminatory: q.is_eliminatory || false,
             expected_answer: q.expected_answer || null,

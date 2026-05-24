@@ -30,6 +30,7 @@ import { Loading } from "@/components/ui/loading"
 import { Chip } from "@/components/ui/chip"
 import { cn } from "@/lib/utils"
 import { apiFetch } from "@/lib/api/api-fetch"
+import { notifyChatOfSettingsUpdate } from "@/lib/api/settings-notify"
 
 type TabId = "explainability" | "decisions" | "oversight" | "technical"
 
@@ -203,6 +204,11 @@ export function AITransparencyPanel() {
       )
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       // Refresh decisions list (overridden flag now true)
+      notifyChatOfSettingsUpdate({
+        actionId: "override_ai_decision",
+        section: "governance",
+        field: overrideTarget.id,
+      })
       setOverrideTarget(null)
       setOverrideReason("")
       await loadDecisions()
