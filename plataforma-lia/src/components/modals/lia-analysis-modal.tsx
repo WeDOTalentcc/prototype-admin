@@ -62,16 +62,23 @@ const generateAnalysis = useCallback(async (type: AnalysisType) => {
         body: JSON.stringify({
           candidate_id: candidate.id,
           analysis_type: type,
+          // F11 Bug B fix (2026-05-24): backend canonical fields are snake_case
+          // (current_title, years_of_experience, technical_skills, work_history,
+          // self_introduction). Frontend was sending camelCase legacy names
+          // (currentRole, yearsOfExperience, etc.) that mostly resolved to
+          // undefined, causing `format_candidate_info` to return <20 chars
+          // and HTTP 400 "Insufficient candidate data". Each field tries
+          // canonical snake_case → camelCase legacy → PT-BR legacy.
           candidate_data: {
             name: candidate.name || candidate.nome,
-            current_role: candidate.currentRole || candidate.cargo_atual,
-            current_company: candidate.currentCompany || candidate.empresa_atual,
-            location: candidate.location || candidate.localizacao,
-            experience_years: candidate.yearsOfExperience || candidate.anos_experiencia,
-            skills: candidate.skills || [],
+            current_role: candidate.current_title || candidate.currentRole || candidate.cargo_atual,
+            current_company: candidate.current_company || candidate.currentCompany || candidate.empresa_atual,
+            location: candidate.location_city || candidate.location || candidate.localizacao,
+            experience_years: candidate.years_of_experience || candidate.yearsOfExperience || candidate.anos_experiencia,
+            skills: candidate.technical_skills || candidate.skills || [],
             education: candidate.education || candidate.formacao || [],
-            experiences: candidate.experiences || candidate.experiencias || [],
-            summary: candidate.summary || candidate.resumo,
+            experiences: candidate.work_history || candidate.experiences || candidate.experiencias || [],
+            summary: candidate.self_introduction || candidate.headline || candidate.summary || candidate.resumo,
           }
         })
       })

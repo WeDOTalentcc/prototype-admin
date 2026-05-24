@@ -154,9 +154,15 @@ async def generate_profile_analysis(request: ProfileAnalysisRequest, company_id:
         from app.shared.providers.llm_factory import get_provider_for_tenant
 
         container = get_provider_for_tenant()
+        # F11 Bug B fix (2026-05-24): pass agent_type="ProfileAnalysisAgent" so
+        # the token budget guard applies the 2.5x multiplier (5000 cap instead
+        # of 2000 default). System prompt + full candidate data + expected LLM
+        # output for "Análise Detalhada" routinely exceeds 4K tokens — was
+        # being silently blocked with HTTP 500 "Request excede ceiling".
         analysis_text = await container.generate_with_fallback(
             f"Generate a {request.analysis_type.replace('_', ' ')} profile summary for this candidate:\n\n{candidate_info}",
             system=get_system_prompt(request.analysis_type),
+            agent_type="ProfileAnalysisAgent",
         )
         analysis_text = analysis_text.strip()
         

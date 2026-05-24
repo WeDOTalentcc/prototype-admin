@@ -147,6 +147,11 @@ AGENT_TYPE_REQUEST_OVERRIDES: dict[str, float] = {
     "RAGAgent": 1.5,
     "ReportGeneratorAgent": 2.0,
     "ScreeningAgent": 1.5,
+    # F11 Bug B (2026-05-24): candidate profile analysis (Pontos-chave/Análise
+    # Detalhada/Resumo modal). System prompt + candidate data + LLM expected
+    # output excede ceiling base — observado 5,913 tokens com candidate completo
+    # + 8 skills + summary. Aumentado para 3.5x (7K ceiling) com margem.
+    "ProfileAnalysisAgent": 3.5,
 }
 
 # TTL da chave Redis: 25h para cobrir edge case de meia-noite
