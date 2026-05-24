@@ -6,7 +6,7 @@
  * Refactor canonical 2026-05-24:
  * - DialogContent (era DraggableDialogContent: drag handle de 48px bloqueava clicks)
  * - useBenefitTaxonomy hook (era 3 arrays hardcoded: BENEFIT_CATEGORIES, VALUE_TYPES, WAITING_PERIODS)
- * - Tokens DS v4.2.2: rounded-md (era rounded-full), border-lia-border-subtle (era border-neutral-100)
+ * - Tokens DS v4.2.2: rounded-md (era rounded-full), border-lia-border-subtle (substitui cores hardcoded fora do DS)
  * - Secoes reagrupadas: Basico → Quem recebe → Como funciona → Vigencia → Fornecedor → Historico
  * - 4 switches em lista vertical (era grid 2x2 confuso)
  * - <BenefitFormSection> extraido para DRY
