@@ -284,7 +284,31 @@ company_id: str = Depends(require_company_id)) -> AddSkillResponse:
         logger.info(
             f"Added skill '{request.skill_name}' to company {company_id} catalog"
         )
-        
+
+        # Audit log LGPD/SOX: escrita em catálogo de skills da empresa (Art. 48 LGPD).
+        try:
+            from app.shared.compliance.audit_service import AuditService as _AS
+            import uuid as _uuid
+            await _AS().log_action(
+                trace_id=str(_uuid.uuid4()),
+                company_id=str(company_id),
+                action_type="company_tech_stack_update",
+                actor=getattr(current_user, "email", None) or getattr(current_user, "id", "unknown"),
+                target_id=str(company_id),
+                target_type="company_skills_catalog",
+                metadata={
+                    "source": "rest_post_add_skill",
+                    "fields_updated": ["skill_name", "category"],
+                    "skill_name": request.skill_name,
+                    "category": request.category,
+                },
+            )
+        except Exception as _audit_err:
+            logger.error(
+                "Audit log failed for company_tech_stack_update company=%s: %s",
+                company_id, _audit_err,
+            )
+
         return AddSkillResponse(**result)
         
     except HTTPException:
@@ -325,7 +349,33 @@ company_id: str = Depends(require_company_id)) -> SyncTechStackResponse:
             f"Synced tech stack for company {company_id}: "
             f"added={result['added']}, updated={result['updated']}, skipped={result['skipped']}"
         )
-        
+
+        # Audit log LGPD/SOX: sync de tech stack (escrita em massa no catálogo da empresa).
+        try:
+            from app.shared.compliance.audit_service import AuditService as _AS
+            import uuid as _uuid
+            await _AS().log_action(
+                trace_id=str(_uuid.uuid4()),
+                company_id=str(company_id),
+                action_type="company_tech_stack_update",
+                actor=getattr(current_user, "email", None) or getattr(current_user, "id", "unknown"),
+                target_id=str(company_id),
+                target_type="company_skills_catalog",
+                metadata={
+                    "source": "rest_post_sync_tech_stack",
+                    "fields_updated": ["tech_stack"],
+                    "added": result.get("added", 0),
+                    "updated": result.get("updated", 0),
+                    "skipped": result.get("skipped", 0),
+                    "total_techs": len(request.tech_stack),
+                },
+            )
+        except Exception as _audit_err:
+            logger.error(
+                "Audit log failed for company_tech_stack_update (sync) company=%s: %s",
+                company_id, _audit_err,
+            )
+
         return SyncTechStackResponse(**result)
         
     except HTTPException:

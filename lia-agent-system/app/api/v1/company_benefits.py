@@ -232,6 +232,31 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         new_benefit = await repo.create(effective_company_id, benefit.model_dump())
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Created company benefit: {new_benefit.name} for company: {effective_company_id}")
+
+        # Audit log LGPD/SOX: criação de benefício da empresa (Art. 48 LGPD).
+        try:
+            from app.shared.compliance.audit_service import AuditService as _AS
+            import uuid as _uuid
+            await _AS().log_action(
+                trace_id=str(_uuid.uuid4()),
+                company_id=str(effective_company_id),
+                action_type="company_benefits_update",
+                actor=getattr(current_user, "email", None) or getattr(current_user, "id", "unknown"),
+                target_id=str(new_benefit.id),
+                target_type="company_benefit",
+                metadata={
+                    "source": "rest_post_create_benefit",
+                    "fields_updated": list(benefit.model_fields_set) if hasattr(benefit, "model_fields_set") else [],
+                    "benefit_name": new_benefit.name,
+                    "operation": "create",
+                },
+            )
+        except Exception as _audit_err:
+            logger.error(
+                "Audit log failed for company_benefits_update (create) company=%s: %s",
+                effective_company_id, _audit_err,
+            )
+
         return _to_response(new_benefit)
     except HTTPException:
         raise
@@ -442,6 +467,31 @@ company_id: str = Depends(require_company_id)):
         benefit = await repo.update(benefit, updates.model_dump(exclude_unset=True))
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Updated company benefit: {benefit.name}")
+
+        # Audit log LGPD/SOX: atualização de benefício da empresa (Art. 48 LGPD).
+        try:
+            from app.shared.compliance.audit_service import AuditService as _AS
+            import uuid as _uuid
+            await _AS().log_action(
+                trace_id=str(_uuid.uuid4()),
+                company_id=str(company_id),
+                action_type="company_benefits_update",
+                actor=getattr(current_user, "email", None) or getattr(current_user, "id", "unknown"),
+                target_id=str(benefit_id),
+                target_type="company_benefit",
+                metadata={
+                    "source": "rest_put_inline_edit",
+                    "fields_updated": list(updates.model_fields_set) if hasattr(updates, "model_fields_set") else [],
+                    "benefit_name": benefit.name,
+                    "operation": "update",
+                },
+            )
+        except Exception as _audit_err:
+            logger.error(
+                "Audit log failed for company_benefits_update (update) company=%s: %s",
+                company_id, _audit_err,
+            )
+
         return _to_response(benefit)
     except HTTPException:
         raise
@@ -472,6 +522,31 @@ company_id: str = Depends(require_company_id)):
             await repo.soft_delete(benefit)
             message = f"Benefit '{benefit.name}' deactivated"
         logger.info(f"  {message}")
+
+        # Audit log LGPD/SOX: deleção/desativação de benefício da empresa (Art. 48 LGPD).
+        try:
+            from app.shared.compliance.audit_service import AuditService as _AS
+            import uuid as _uuid
+            await _AS().log_action(
+                trace_id=str(_uuid.uuid4()),
+                company_id=str(company_id),
+                action_type="company_benefits_update",
+                actor=getattr(current_user, "email", None) or getattr(current_user, "id", "unknown"),
+                target_id=str(benefit_id),
+                target_type="company_benefit",
+                metadata={
+                    "source": "rest_delete_benefit",
+                    "fields_updated": ["is_active"],
+                    "operation": "hard_delete" if hard_delete else "soft_delete",
+                    "message": message,
+                },
+            )
+        except Exception as _audit_err:
+            logger.error(
+                "Audit log failed for company_benefits_update (delete) company=%s: %s",
+                company_id, _audit_err,
+            )
+
         return {"success": True, "message": message}
     except HTTPException:
         raise
