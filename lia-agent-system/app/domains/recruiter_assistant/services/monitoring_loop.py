@@ -392,7 +392,7 @@ class MonitoringLoop:
         async with AsyncSessionLocal() as session:
             try:
                 result = await session.execute(text(
-                    "SELECT DISTINCT id FROM companies WHERE status = 'active' LIMIT 100"
+                    "SELECT DISTINCT id FROM companies WHERE is_active = true LIMIT 100"
                 ))
                 rows = result.fetchall()
                 tenant_ids = [str(r[0]) for r in rows]

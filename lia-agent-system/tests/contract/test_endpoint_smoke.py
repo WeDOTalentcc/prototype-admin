@@ -54,6 +54,12 @@ SAMPLE_PAYLOADS: dict[tuple[str, str], dict[str, Any]] = {
         "job_title": "Test Job (smoke)",
         "company_id": "00000000-0000-4000-a000-000000000001",
     },
+    # Bug A fix (2026-05-24): endpoint requer `identifier` no body.
+    # Smoke test estava enviando {} → 422 falso positivo. Endpoint deprecated
+    # (rails-migration 7.1) mas ainda no canonical até migração completar.
+    ("/api/v1/job-vacancies/find-by-identifier", "POST"): {
+        "identifier": "V0001",  # short-ID válido (PLACEHOLDER); endpoint retornará 404 se não existir
+    },
     # Adicionar mais payloads conforme falsos positivos aparecem.
 }
 

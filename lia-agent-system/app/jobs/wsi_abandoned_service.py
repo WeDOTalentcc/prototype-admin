@@ -30,9 +30,14 @@ async def check_abandoned_sessions(db: AsyncSession) -> dict[str, int]:
     """
     first_reminders = second_reminders = consultant_alerts = errors = 0
     now = datetime.now(UTC)
+    # 2026-05-24 fix Bug D residual: DB column wsi_sessions.updated_at is
+    # `timestamp without time zone`. Strip tzinfo for cutoff sent to asyncpg
+    # to avoid "can't subtract offset-naive and offset-aware" DataError.
+    # Sensor 6 blocks regression.
+    now_naive = now.replace(tzinfo=None)
 
     try:
-        cutoff_first = now - timedelta(hours=FIRST_REMINDER_HOURS)
+        cutoff_first = now_naive - timedelta(hours=FIRST_REMINDER_HOURS)
         result = await db.execute(text("""
             SELECT
                 s.id              AS session_id,

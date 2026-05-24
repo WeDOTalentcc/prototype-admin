@@ -589,3 +589,24 @@ repos:
         entry: python3 scripts/check_compliance_context_complete.py --blocking
         files: ^app/.*\.py$
         pass_filenames: false
+
+      - id: lgpd-legacy-tables
+        name: "Sensor 5 (2026-05-24): for-loop sobre tabelas LGPD legacy never-existed (BLOCKING, baseline 0)"
+        language: system
+        entry: python3 scripts/check_lgpd_legacy_tables.py --blocking
+        files: ^app/(domains/lgpd|jobs)/.*\.py$
+        pass_filenames: false
+
+      - id: tz-aware-cutoff-in-queries
+        name: "Sensor 6 (2026-05-24): datetime tz-aware passado a db.execute em colunas naive (BLOCKING, baseline 0)"
+        language: system
+        entry: python3 scripts/check_tz_aware_cutoff_in_queries.py --blocking
+        files: ^app/jobs/.*\.py$
+        pass_filenames: false
+
+      - id: companies-status-column
+        name: "Sensor 7 (2026-05-24): companies.status (não existe, use is_active) (BLOCKING, baseline 0)"
+        language: system
+        entry: python3 scripts/check_company_status_column.py --blocking
+        files: ^app/.*\.py$
+        pass_filenames: false

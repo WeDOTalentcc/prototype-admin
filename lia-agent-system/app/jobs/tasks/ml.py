@@ -193,8 +193,11 @@ async def recompute_routing_adjustments_all_tenants_canonical() -> dict:
 
     async with AsyncSessionLocal() as session:
         try:
+            # 2026-05-24 fix Bug E: column `status` does not exist on companies
+            # (canonical is `is_active boolean`). Query returned UndefinedColumnError.
+            # Sensor 7 (check_company_tenant_query_columns.py) blocks regression.
             result = await session.execute(text(
-                "SELECT DISTINCT id FROM companies WHERE status = 'active' LIMIT 1000"
+                "SELECT DISTINCT id FROM companies WHERE is_active = true LIMIT 1000"
             ))
             tenant_ids = [str(r[0]) for r in result.fetchall()]
         except Exception as exc:

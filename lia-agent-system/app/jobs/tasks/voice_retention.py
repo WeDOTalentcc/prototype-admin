@@ -109,7 +109,12 @@ async def _run_voice_retention(dry_run: bool = False) -> dict:
     """
     from app.core.database import AsyncSessionLocal
 
-    now = datetime.now(timezone.utc)
+    # 2026-05-24 fix Bug C: DB columns are `timestamp without time zone`
+    # (wsi_response_analyses.created_at, voice_wsi_results.created_at).
+    # Passing tz-aware datetime causes asyncpg DataError "can't subtract
+    # offset-naive and offset-aware". Use tz-naive UTC consistently.
+    # Sensor 6 (check_tz_aware_cutoff_in_queries.py) blocks regression.
+    now = datetime.utcnow()
     audio_cutoff = now - timedelta(days=AUDIO_RETENTION_DAYS)
     transcript_cutoff = now - timedelta(days=TRANSCRIPT_RETENTION_DAYS)
     wsi_cutoff = now - timedelta(days=WSI_SCORE_RETENTION_DAYS)

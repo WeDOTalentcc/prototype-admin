@@ -176,7 +176,7 @@ async def run_cleanup(dry_run: bool = True) -> dict:
       - Candidates (scheduled_deletion_at)
       - VacancyCandidate (scheduled_deletion_at)
       - AiConsumption (scheduled_deletion_at)
-      - conversation_messages / chat_messages (created_at TTL — 90 days)
+      - messages (created_at TTL — 90 days, LGPD Art. 18)
       - interview_notes (created_at TTL — 180 days)
       - screening_tasks (created_at TTL — 365 days)
       - fairness_audit_log (created_at TTL — 365 days, AI Act)
@@ -353,11 +353,12 @@ async def run_cleanup(dry_run: bool = True) -> dict:
             summary["errors"].append(f"ai_consumption: {exc}")
 
         # 4. Chat / conversation messages — 90 days TTL (LGPD Art. 18)
-        # Tables covered:
-        #   "messages"              — primary chat table (lia_models/conversation.py)
-        #   "conversation_messages" — legacy/alternate name
-        #   "chat_messages"         — legacy/alternate name
-        for table in ("messages", "conversation_messages", "chat_messages"):
+        # Canonical table is "messages" (lia_models/conversation.py).
+        # 2026-05-24 fix: removidos aliases legacy "conversation_messages" e
+        # "chat_messages" — nunca existiram neste schema, causavam
+        # UndefinedTableError → InFailedSQLTransactionError nas TTLs subsequentes.
+        # Sensor 5 (check_lgpd_ttl_tables_exist.py) bloqueia regressão.
+        for table in ("messages",):
             try:
                 count = await _cleanup_by_created_at(
                     db,
@@ -367,6 +368,12 @@ async def run_cleanup(dry_run: bool = True) -> dict:
                 )
                 summary["chat_messages_deleted"] += count
             except Exception as exc:
+                # Rollback transaction to allow subsequent TTL phases to run
+                # (InFailedSQLTransactionError cascade prevention).
+                try:
+                    await db.rollback()
+                except Exception:
+                    pass
                 logger.warning("LGPD TTL: table %s not found or error: %s", table, exc)
 
         # 5. Interview notes — 180 days TTL
@@ -380,6 +387,10 @@ async def run_cleanup(dry_run: bool = True) -> dict:
                 )
                 summary["interview_notes_deleted"] += count
             except Exception as exc:
+                try:
+                    await db.rollback()
+                except Exception:
+                    pass
                 logger.warning("LGPD TTL: table %s not found or error: %s", table, exc)
 
         # 6. Screening task logs — 365 days TTL
@@ -393,6 +404,10 @@ async def run_cleanup(dry_run: bool = True) -> dict:
                 )
                 summary["screening_logs_deleted"] += count
             except Exception as exc:
+                try:
+                    await db.rollback()
+                except Exception:
+                    pass
                 logger.warning("LGPD TTL: table %s not found or error: %s", table, exc)
 
         # 7. Fairness audit logs (AI decision logs) — 365 days TTL
@@ -406,6 +421,10 @@ async def run_cleanup(dry_run: bool = True) -> dict:
                 )
                 summary["ai_decision_logs_deleted"] += count
             except Exception as exc:
+                try:
+                    await db.rollback()
+                except Exception:
+                    pass
                 logger.warning("LGPD TTL: table %s not found or error: %s", table, exc)
 
         # 8. Propagate deletion to secondary stores for deleted candidate IDs
@@ -680,12 +699,13 @@ async def run_conversation_ttl_cleanup(dry_run: bool = False) -> dict:
         "errors": [],
     }
 
+    # 2026-05-24 fix Bug B: removidos aliases legacy `conversation_messages` e
+    # `chat_messages` — nunca existiram neste schema, causavam UndefinedTableError
+    # → InFailedSQLTransactionError cascata para tabelas subsequentes.
+    # Sensor 5 (check_lgpd_ttl_tables_exist.py) bloqueia regressão.
     ttl_config: list[tuple[str, int]] = [
         # Primary chat table (lia_models/conversation.py → Message.__tablename__ = "messages")
         ("messages", RETENTION_DAYS["chat_messages"]),
-        # Legacy / alternate chat table names (handled gracefully if absent)
-        ("conversation_messages", RETENTION_DAYS["chat_messages"]),
-        ("chat_messages", RETENTION_DAYS["chat_messages"]),
         ("interview_notes", RETENTION_DAYS["interview_data"]),
         ("screening_tasks", RETENTION_DAYS["screening_logs"]),
         ("fairness_audit_log", RETENTION_DAYS["ai_decision_logs"]),
@@ -698,6 +718,12 @@ async def run_conversation_ttl_cleanup(dry_run: bool = False) -> dict:
                 summary["tables"][table_name] = {"deleted": count, "retention_days": retention_days}
                 summary["total_deleted"] += count
             except Exception as exc:
+                # Rollback transaction so subsequent TTL phases can run
+                # (InFailedSQLTransactionError cascade prevention).
+                try:
+                    await db.rollback()
+                except Exception:
+                    pass
                 logger.warning("conversation_ttl_cleanup: error on %s: %s", table_name, exc)
                 summary["errors"].append(f"{table_name}: {exc}")
 
