@@ -40,6 +40,8 @@ from app.shared.services.token_tracking_service import (
 )
 from app.domains.credits.services.token_budget_service import get_plan_limit
 from app.shared.tenant_guard import get_verified_company_id
+from app.auth.dependencies import get_current_active_user
+from app.auth.models import User, UserRole
 from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
@@ -198,11 +200,20 @@ _company_gate: str = Depends(require_company_id)):
 async def get_client_usage(
     client_id: str,
     company_id: str = Depends(get_verified_company_id),
+    current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db), 
 _company_gate: str = Depends(require_company_id)):
-    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
-    """Get AI usage summary for a specific client (admin endpoint)."""
+    # multi-tenancy: ownership check added (P0-W3-04 fix 2026-05-24)
+    """Get AI usage summary for a specific client.
+
+    Regular users can only view their own company's usage.
+    WeDOTalent admins and tenant admins can view any company.
+    """
     try:
+        # P0-W3-04: enforce ownership — user must be accessing own tenant OR be admin
+        if (str(current_user.company_id) != str(client_id)
+                and current_user.role not in (UserRole.admin, UserRole.wedotalent_admin)):
+            raise HTTPException(status_code=403, detail="Access denied")
         client_uuid = UUID(client_id)
         balance = await get_or_create_balance(db, client_uuid)
         
@@ -536,11 +547,22 @@ async def update_limits(
     client_id: str,
     request: UpdateLimitsRequest,
     company_id: str = Depends(get_verified_company_id),
+    current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db), 
 _company_gate: str = Depends(require_company_id)):
-    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
-    """Update AI limits for a client (admin endpoint)."""
+    # multi-tenancy: role + ownership check added (P0-W3-04 fix 2026-05-24)
+    """Update AI limits for a client.
+
+    Requires: admin or wedotalent_admin role AND (own company OR wedotalent_admin).
+    Regular users and non-admin tenant users cannot modify limits for any company.
+    """
     try:
+        # P0-W3-04: only admins can update limits; wedotalent_admin can update any tenant
+        if current_user.role not in (UserRole.admin, UserRole.wedotalent_admin):
+            raise HTTPException(status_code=403, detail="Admin access required to update limits")
+        if (current_user.role == UserRole.admin
+                and str(current_user.company_id) != str(client_id)):
+            raise HTTPException(status_code=403, detail="Access denied: can only update own company limits")
         client_uuid = UUID(client_id)
         balance = await get_or_create_balance(db, client_uuid)
         

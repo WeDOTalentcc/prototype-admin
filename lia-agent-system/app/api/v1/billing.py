@@ -35,6 +35,8 @@ from app.schemas.billing import (
 from app.services.billing_providers.base import WebhookSignatureError
 from app.domains.billing.services.billing_service import BillingService
 from app.shared.security.require_company_id import require_company_id
+from app.auth.dependencies import get_current_active_user
+from app.auth.models import User, UserRole
 from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
@@ -44,15 +46,20 @@ router = APIRouter(prefix="/billing", tags=["billing"])
 
 def get_user_from_headers(
     company_id: str = Depends(require_company_id),
+    current_user: User = Depends(get_current_active_user),
     x_user_id: str | None = Header(None, alias="X-User-ID"),
-    x_user_role: str | None = Header(None, alias="X-User-Role"),
 ) -> dict[str, Any]:
-    """Get user context. company_id sourced from JWT via require_company_id (canonical)."""
+    """Get user context. company_id and role sourced from JWT (canonical).
+
+    SECURITY (P0-W3-05 fix 2026-05-24): is_admin derived from JWT-authenticated
+    User.role, NOT from X-User-Role request header. Previously any caller
+    could pass X-User-Role: admin to bypass admin gates on billing mutations.
+    """
     return {
         "company_id": company_id,
-        "user_id": x_user_id or "system",
-        "role": x_user_role or "user",
-        "is_admin": x_user_role == "admin",
+        "user_id": x_user_id or str(current_user.id),
+        "role": current_user.role,
+        "is_admin": current_user.role in (UserRole.admin, UserRole.wedotalent_admin),
     }
 
 
