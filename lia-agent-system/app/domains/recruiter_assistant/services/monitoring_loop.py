@@ -628,8 +628,55 @@ class MonitoringLoop:
                     task_name, result,
                 )
 
-        # Sprint 11.3 Batch 3+ will append more here (followup, wsi, health,
-        # memory.compress per-tenant — require canonical async fn extraction).
+        # ─── Followup pending (every 1h) — Sprint 11.3 Batch 2.5 ───
+        task_name = "followup.process_pending"
+        if self._should_run_with_period(task_name, 3600):  # 1h
+            async def _coro():
+                from app.core.database import AsyncSessionLocal
+                from app.jobs.followup_service import process_email_followups
+                async with AsyncSessionLocal() as db:
+                    return await process_email_followups(db)
+            ok, result = await self._retry_with_backoff(task_name, _coro)
+            if ok:
+                self._mark_period_run(task_name)
+                logger.info(
+                    "[MonitoringLoop healthz] period_task=%s result=%s",
+                    task_name, result,
+                )
+
+        # ─── WSI abandoned check (every 4h) — Sprint 11.3 Batch 2.5 ───
+        task_name = "wsi.check_abandoned"
+        if self._should_run_with_period(task_name, 14400):  # 4h
+            async def _coro():
+                from app.core.database import AsyncSessionLocal
+                from app.jobs.wsi_abandoned_service import check_abandoned_sessions
+                async with AsyncSessionLocal() as db:
+                    return await check_abandoned_sessions(db)
+            ok, result = await self._retry_with_backoff(task_name, _coro)
+            if ok:
+                self._mark_period_run(task_name)
+                logger.info(
+                    "[MonitoringLoop healthz] period_task=%s result=%s",
+                    task_name, result,
+                )
+
+        # ─── DLQ health check (every 1h) — Sprint 11.3 Batch 2.5 ───
+        task_name = "health.check_dlq_health"
+        if self._should_run_with_period(task_name, 3600):  # 1h
+            async def _coro():
+                from app.shared.resilience.dlq_service import DLQService
+                dlq = DLQService()
+                return await dlq.summary()
+            ok, result = await self._retry_with_backoff(task_name, _coro)
+            if ok:
+                self._mark_period_run(task_name)
+                logger.info(
+                    "[MonitoringLoop healthz] period_task=%s result=%s",
+                    task_name, result,
+                )
+
+        # Sprint 11.3 Batch 3+ will append more here (feedback safety net,
+        # memory.compress per-tenant, event-driven refactors).
 
     async def _check_stale_candidates(self, company_id: str) -> list[ProactiveAlert]:
         from lia_config.database import AsyncSessionLocal
