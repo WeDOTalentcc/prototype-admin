@@ -1,5 +1,5 @@
 """
-Data Subject Requests API (Portal do Titular LGPD).
+Data Subject Requests API — LGPD Art. 18 compliance.
 
 Provides endpoints for data subjects to exercise their rights under LGPD Art. 18:
 - Access to personal data
@@ -188,13 +188,20 @@ company_id: str = Depends(require_company_id)):
     await _dsr_rate_limit_check(request)
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
-    Create a new data subject request (public endpoint - no authentication required).
+    Create a new data subject request (LGPD Art. 18).
 
-    LGPD Art. 18 rights: access, correction, deletion, portability, objection, restriction, explanation.
-    SLA: 15 business days.
+    Onda 4.2d-P0-18 (2026-05-23): contradicao docstring vs deps RESOLVIDA.
+    Endpoint require JWT (`require_company_id`). company_id usado vem do
+    JWT, NAO do payload `data.company_id` (era cross-tenant create — user
+    A criava DSR em company B mudando payload). Payload field IGNORADO
+    (mantido no schema pra zero breaking change clientes).
+
+    Rights: access, correction, deletion, portability, objection,
+    restriction, explanation. SLA: 15 business days.
     """
     try:
-        company_uuid = UUID(data.company_id)
+        # Onda 4.2d-P0-18: company_id vem do JWT, payload e IGNORADO.
+        company_uuid = UUID(company_id)
 
         now = datetime.utcnow()
         sla_deadline = calculate_sla_deadline(now)

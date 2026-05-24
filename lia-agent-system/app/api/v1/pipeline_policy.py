@@ -1,5 +1,5 @@
 """
-Pipeline Policy API — Validates transitions and provides template resolution.
+Pipeline Policy API.
 
 Endpoints:
 - GET /pipeline-policy/{company_id}/validate-transition — Check if transition is allowed
@@ -49,12 +49,16 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
     if is_offer_stage:
         min_interviews = pipeline_rules.get("min_interviews_before_offer", 2)
         
+        # Onda 4.2d-P0-17 (2026-05-23): cross-tenant guard — filter por company_id.
+        # Antes vazava interview_count de candidatos de outras empresas
+        # (info disclosure: indica estagio do pipeline).
         interview_count = 0
         try:
             from app.models.interview import Interview
             result = await db.execute(
                 select(func.count(Interview.id)).where(
                     Interview.candidate_id == candidate_id,
+                    Interview.company_id == company_id,
                     Interview.status.in_(["completed", "done", "realizada"]),
                 )
             )
@@ -66,6 +70,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
                 result = await db.execute(
                     select(func.count(DomainInterview.id)).where(
                         DomainInterview.candidate_id == candidate_id,
+                        DomainInterview.company_id == company_id,
                         DomainInterview.status.in_(["completed", "done", "realizada"]),
                     )
                 )

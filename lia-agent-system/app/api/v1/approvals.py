@@ -1,7 +1,4 @@
-"""
-Approvals API endpoints for managing approval workflow requests.
-Handles creation, listing, approval, and rejection of approval requests.
-"""
+"""Approvals API — workflow de aprovacao com identidade JWT-only (Onda 4.2d-P0-15)."""
 import hashlib
 import uuid
 from datetime import datetime
@@ -19,6 +16,8 @@ def _hash(value: Any) -> str:
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 
+from app.auth.dependencies import get_current_active_user
+from app.auth.models import User
 from app.domains.approvals.dependencies import get_approvals_repo
 from app.domains.approvals.repositories.approvals_repository import ApprovalsRepository
 from app.domains.communication.services.email_service import EmailService, get_email_service
@@ -260,13 +259,21 @@ async def approve_request(
     approval_id: str,
     update: ApprovalRequestUpdate,
     company_id: str = Query(..., description="Company ID"),
-    approved_by: str = Query(..., description="Email of the approver"),
+    current_user: User = Depends(get_current_active_user),
     repo: ApprovalsRepository = Depends(get_approvals_repo),
     audit_svc: AuditService = Depends(get_audit_service),
     email_svc: EmailService = Depends(get_email_service),
-_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
-    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
-    """Approve an approval request."""
+    _company_gate: str = Depends(require_company_id_strict_match("query.company_id")),
+):
+    """Approve an approval request.
+
+    Onda 4.2d-P0-15 (2026-05-23): identidade do aprovador agora vem do JWT
+    (current_user.email), nao mais do query param `approved_by` (era
+    spoofable trivialmente — qualquer user com acesso a UI ja sabia o email
+    do approver visivel no list).
+    """
+    # Onda 4.2d-P0-15: approved_by derivado do JWT, NAO query param.
+    approved_by = current_user.email
     try:
         approval = await repo.get_by_id(UUID(approval_id))
 
@@ -344,13 +351,18 @@ async def reject_request(
     approval_id: str,
     update: ApprovalRequestUpdate,
     company_id: str = Query(..., description="Company ID"),
-    rejected_by: str = Query(..., description="Email of the rejector"),
+    current_user: User = Depends(get_current_active_user),
     repo: ApprovalsRepository = Depends(get_approvals_repo),
     audit_svc: AuditService = Depends(get_audit_service),
     email_svc: EmailService = Depends(get_email_service),
-_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
-    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
-    """Reject an approval request."""
+    _company_gate: str = Depends(require_company_id_strict_match("query.company_id")),
+):
+    """Reject an approval request.
+
+    Onda 4.2d-P0-15 (2026-05-23): identidade do rejector vem do JWT.
+    """
+    # Onda 4.2d-P0-15: rejected_by derivado do JWT.
+    rejected_by = current_user.email
     try:
         approval = await repo.get_by_id(UUID(approval_id))
 

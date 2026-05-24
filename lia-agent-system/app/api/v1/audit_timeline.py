@@ -1,5 +1,5 @@
 """
-Audit Timeline — endpoint de reconstrução de raciocínio de agentes.
+Audit Timeline API.
 
 GET /api/v1/audit/executions/{execution_id}/timeline
   → Reconstrói passo a passo o que o agente fez e por quê.
@@ -90,20 +90,27 @@ company_id: str = Depends(require_company_id)):
     """
     from sqlalchemy import text
 
-    # 1. Buscar metadados no PostgreSQL
+    # 1. Buscar metadados no PostgreSQL com filtro tenant.
+    # Onda 4.2d-P0-14 (2026-05-23): SQL inline agora inclui company_id filter.
+    # Antes bypass `if user_company and ...` skipava check quando JWT sem
+    # company_id = vazamento cross-tenant de audit trail interno.
+    user_company = current_user.get("company_id") or current_user.get("organization_id")
+    if not user_company:
+        # Fail-closed: sem company_id no JWT, nega acesso (REGRA 6 CLAUDE.md).
+        raise HTTPException(status_code=401, detail="company_id required")
+
     row = await db.execute(
-        text("SELECT * FROM audit_execution_metadata WHERE execution_id = :eid"),
-        {"eid": execution_id},
+        text(
+            "SELECT * FROM audit_execution_metadata "
+            "WHERE execution_id = :eid AND company_id = :company_id"
+        ),
+        {"eid": execution_id, "company_id": str(user_company)},
     )
     meta = row.mappings().first()
 
     if not meta:
+        # 404 (no enumeration leak — inexistente OU cross-tenant).
         raise HTTPException(status_code=404, detail="Execução não encontrada")
-
-    # 2. Validar multi-tenancy
-    user_company = current_user.get("company_id") or current_user.get("organization_id")
-    if user_company and str(meta["company_id"]) != str(user_company):
-        raise HTTPException(status_code=403, detail="Acesso negado")
 
     # 3. Carregar payload completo do storage
     steps: list[TimelineStep] = []

@@ -1,5 +1,5 @@
 """
-HITL API — Human-in-the-Loop endpoints (André P9).
+HITL (Human-In-The-Loop) API.
 
 Permite que o frontend aprove ou rejeite ações pendentes de agentes.
 
@@ -66,6 +66,23 @@ company_id: str = Depends(require_company_id)):
     O agente que está pausado aguardando aprovação será retomado após esta chamada.
     """
     try:
+        # Onda 4.2d-P0-16 (2026-05-23): tenant guard via DB pre-check.
+        # Antes user empresa A podia aprovar HITL pending de empresa B
+        # (workflow IA continua execucao com aprovacao forjada — EU AI Act Art.14).
+        from sqlalchemy import text as _text
+        tenant_check = await db.execute(
+            _text(
+                "SELECT 1 FROM hitl_pending_actions "
+                "WHERE pending_id = :pid AND company_id = :cid"
+            ),
+            {"pid": body.pending_id, "cid": company_id},
+        )
+        if not tenant_check.scalar():
+            raise HTTPException(
+                status_code=404,
+                detail="HITL pending action not found",
+            )
+
         await hitl_service.receive_approval(
             thread_id=thread_id,
             pending_id=body.pending_id,
