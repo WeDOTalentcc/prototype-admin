@@ -11,6 +11,7 @@ Provides function calling capabilities for:
 All tools support tenant scoping via ToolExecutionContext for multi-tenancy security.
 """
 import logging
+from types import SimpleNamespace
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, Optional
 from uuid import UUID
@@ -179,7 +180,6 @@ async def get_job_details(
     Returns:
         Detailed job information with metrics
     """
-    context = _extract_context(kwargs)
     company_id = require_company_id_from_context(kwargs, "get_job_details")
     
     logger.info(f"📋 Getting job details: {job_id} (company: {company_id})")
@@ -295,7 +295,6 @@ async def get_job_velocity(
         Velocity metrics including days_since_opened, estimated_days_to_close,
         velocity_score, on_track status
     """
-    context = _extract_context(kwargs)
     company_id = require_company_id_from_context(kwargs, "get_job_velocity")
     
     logger.info(f"🚀 Getting job velocity: {job_id} (company: {company_id})")
@@ -436,7 +435,6 @@ async def get_job_quality_metrics(
         Quality metrics including average_candidate_score, requirement_fit_percentage,
         top_candidates_count, quality_trend
     """
-    context = _extract_context(kwargs)
     company_id = require_company_id_from_context(kwargs, "get_job_quality_metrics")
     
     logger.info(f"⭐ Getting job quality metrics: {job_id} (company: {company_id})")
@@ -591,7 +589,6 @@ async def get_job_benchmark(
     Returns:
         Benchmark comparison including percentile ranking and key differences
     """
-    context = _extract_context(kwargs)
     company_id = require_company_id_from_context(kwargs, "get_job_benchmark")
     
     logger.info(f"📊 Getting job benchmark for {job_id} (company: {company_id})")
@@ -750,6 +747,76 @@ async def get_job_benchmark(
         }
 
 
+
+
+async def _wrap_search_jobs(**kwargs):
+    """Sensor 2 wrapper (2026-05-24): inject _context from kwargs before delegating to search_jobs.
+
+    Mirrors _wrap_save_hiring_policy pattern. Without this, ToolExecutor global
+    dispatch raises ToolContextMissingError because executor does NOT inject _context.
+    """
+    company_id = kwargs.pop("company_id", "")
+    user_id = kwargs.pop("user_id", "")
+    ctx = SimpleNamespace(company_id=company_id, user_id=user_id)
+    return await search_jobs(_context=ctx, **kwargs)
+
+
+
+
+async def _wrap_get_job_details(**kwargs):
+    """Sensor 2 wrapper (2026-05-24): inject _context from kwargs before delegating to get_job_details.
+
+    Mirrors _wrap_save_hiring_policy pattern. Without this, ToolExecutor global
+    dispatch raises ToolContextMissingError because executor does NOT inject _context.
+    """
+    company_id = kwargs.pop("company_id", "")
+    user_id = kwargs.pop("user_id", "")
+    ctx = SimpleNamespace(company_id=company_id, user_id=user_id)
+    return await get_job_details(_context=ctx, **kwargs)
+
+
+
+
+async def _wrap_get_job_velocity(**kwargs):
+    """Sensor 2 wrapper (2026-05-24): inject _context from kwargs before delegating to get_job_velocity.
+
+    Mirrors _wrap_save_hiring_policy pattern. Without this, ToolExecutor global
+    dispatch raises ToolContextMissingError because executor does NOT inject _context.
+    """
+    company_id = kwargs.pop("company_id", "")
+    user_id = kwargs.pop("user_id", "")
+    ctx = SimpleNamespace(company_id=company_id, user_id=user_id)
+    return await get_job_velocity(_context=ctx, **kwargs)
+
+
+
+
+async def _wrap_get_job_quality_metrics(**kwargs):
+    """Sensor 2 wrapper (2026-05-24): inject _context from kwargs before delegating to get_job_quality_metrics.
+
+    Mirrors _wrap_save_hiring_policy pattern. Without this, ToolExecutor global
+    dispatch raises ToolContextMissingError because executor does NOT inject _context.
+    """
+    company_id = kwargs.pop("company_id", "")
+    user_id = kwargs.pop("user_id", "")
+    ctx = SimpleNamespace(company_id=company_id, user_id=user_id)
+    return await get_job_quality_metrics(_context=ctx, **kwargs)
+
+
+
+
+async def _wrap_get_job_benchmark(**kwargs):
+    """Sensor 2 wrapper (2026-05-24): inject _context from kwargs before delegating to get_job_benchmark.
+
+    Mirrors _wrap_save_hiring_policy pattern. Without this, ToolExecutor global
+    dispatch raises ToolContextMissingError because executor does NOT inject _context.
+    """
+    company_id = kwargs.pop("company_id", "")
+    user_id = kwargs.pop("user_id", "")
+    ctx = SimpleNamespace(company_id=company_id, user_id=user_id)
+    return await get_job_benchmark(_context=ctx, **kwargs)
+
+
 def register_job_management_query_tools() -> None:
     """Register job-management-domain query tools in the tool registry."""
     
@@ -770,7 +837,7 @@ def register_job_management_query_tools() -> None:
                 "limit": {"type": "integer", "default": 20, "description": "Número máximo de resultados"}
             }
         },
-        handler=search_jobs,
+        handler=_wrap_search_jobs,
         allowed_agents=["recruiter_assistant", "job_planner", "analyst_feedback", "orchestrator"]
     ))
     
@@ -786,7 +853,7 @@ def register_job_management_query_tools() -> None:
             },
             "required": ["job_id"]
         },
-        handler=get_job_details,
+        handler=_wrap_get_job_details,
         allowed_agents=["recruiter_assistant", "job_planner", "analyst_feedback", "orchestrator"]
     ))
     
@@ -800,7 +867,7 @@ def register_job_management_query_tools() -> None:
             },
             "required": ["job_id"]
         },
-        handler=get_job_velocity,
+        handler=_wrap_get_job_velocity,
         allowed_agents=["recruiter_assistant", "analyst_feedback", "orchestrator"]
     ))
     
@@ -814,7 +881,7 @@ def register_job_management_query_tools() -> None:
             },
             "required": ["job_id"]
         },
-        handler=get_job_quality_metrics,
+        handler=_wrap_get_job_quality_metrics,
         allowed_agents=["recruiter_assistant", "analyst_feedback", "wsi_evaluator", "orchestrator"]
     ))
     
@@ -828,7 +895,7 @@ def register_job_management_query_tools() -> None:
             },
             "required": ["job_id"]
         },
-        handler=get_job_benchmark,
+        handler=_wrap_get_job_benchmark,
         allowed_agents=["recruiter_assistant", "analyst_feedback", "orchestrator"]
     ))
     

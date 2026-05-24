@@ -10,6 +10,7 @@ Provides function calling capabilities for:
 All tools support tenant scoping via ToolExecutionContext for multi-tenancy security.
 """
 import logging
+from types import SimpleNamespace
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Any, Optional
 from uuid import UUID
@@ -62,7 +63,6 @@ async def search_candidates(
     Returns:
         List of matching candidates with their details
     """
-    context = _extract_context(kwargs)
     company_id = require_company_id_from_context(kwargs, "search_candidates")
     
     logger.info(f"🔍 Searching candidates with filters (company: {company_id})")
@@ -204,7 +204,6 @@ async def rank_candidates(
     Returns:
         Ranked list of candidates with WRF scores
     """
-    context = _extract_context(kwargs)
     company_id = require_company_id_from_context(kwargs, "rank_candidates")
 
     logger.info(f"🏆 Ranking candidates with WRF (company: {company_id}, level: {qualification_level})")
@@ -356,7 +355,6 @@ async def get_candidate_details(
     Returns:
         Detailed candidate information
     """
-    context = _extract_context(kwargs)
     company_id = require_company_id_from_context(kwargs, "get_candidate_details")
     
     logger.info(f"📋 Getting candidate details: {candidate_id} (company: {company_id})")
@@ -457,7 +455,6 @@ async def get_candidate_stats(
     Returns:
         Candidate statistics including quality metrics, distribution
     """
-    context = _extract_context(kwargs)
     company_id = require_company_id_from_context(kwargs, "get_candidate_stats")
     
     logger.info(f"📊 Getting candidate stats (company: {company_id})")
@@ -561,7 +558,6 @@ async def get_candidate_history(
     Returns:
         History metrics including reapplication rates and process counts
     """
-    context = _extract_context(kwargs)
     company_id = require_company_id_from_context(kwargs, "get_candidate_history")
     
     logger.info(f"📜 Getting candidate history (company: {company_id})")
@@ -690,7 +686,6 @@ async def get_talent_quality(
         Quality metrics including average_lia_score, average_wsi_score, 
         high_fit_percentage, and score_distribution
     """
-    context = _extract_context(kwargs)
     company_id = require_company_id_from_context(kwargs, "get_talent_quality")
     
     logger.info(f"📊 Getting talent quality metrics (company: {company_id}, period: {period})")
@@ -800,7 +795,6 @@ async def get_talent_engagement(
         Engagement metrics including response_rate, average_response_time_hours,
         contacted_count, responded_count
     """
-    context = _extract_context(kwargs)
     company_id = require_company_id_from_context(kwargs, "get_talent_engagement")
     
     logger.info(f"📬 Getting talent engagement metrics (company: {company_id}, period: {period})")
@@ -886,7 +880,6 @@ async def get_talent_availability(
         Availability metrics including immediately_available_percentage,
         average_salary_expectation, availability_by_seniority
     """
-    context = _extract_context(kwargs)
     company_id = require_company_id_from_context(kwargs, "get_talent_availability")
     
     logger.info(f"📅 Getting talent availability metrics (company: {company_id})")
@@ -992,7 +985,6 @@ async def get_diversity_metrics(
     Returns:
         Diversity metrics including gender, ethnicity, PCD, and age distributions
     """
-    context = _extract_context(kwargs)
     company_id = require_company_id_from_context(kwargs, "get_diversity_metrics")
     
     logger.info(f"🌈 Getting diversity metrics (company: {company_id}, period: {period})")
@@ -1112,7 +1104,6 @@ async def get_market_benchmarks(
     Returns:
         Market comparison data including salary competitiveness and time-to-fill comparison
     """
-    context = _extract_context(kwargs)
     company_id = require_company_id_from_context(kwargs, "get_market_benchmarks")
     
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
@@ -1231,6 +1222,132 @@ async def get_market_benchmarks(
         }
 
 
+
+
+async def _wrap_search_candidates(**kwargs):
+    """Sensor 2 wrapper (2026-05-24): inject _context from kwargs before delegating to search_candidates.
+
+    Mirrors _wrap_save_hiring_policy pattern. Without this, ToolExecutor global
+    dispatch raises ToolContextMissingError because executor does NOT inject _context.
+    """
+    company_id = kwargs.pop("company_id", "")
+    user_id = kwargs.pop("user_id", "")
+    ctx = SimpleNamespace(company_id=company_id, user_id=user_id)
+    return await search_candidates(_context=ctx, **kwargs)
+
+
+
+
+async def _wrap_get_candidate_details(**kwargs):
+    """Sensor 2 wrapper (2026-05-24): inject _context from kwargs before delegating to get_candidate_details.
+
+    Mirrors _wrap_save_hiring_policy pattern. Without this, ToolExecutor global
+    dispatch raises ToolContextMissingError because executor does NOT inject _context.
+    """
+    company_id = kwargs.pop("company_id", "")
+    user_id = kwargs.pop("user_id", "")
+    ctx = SimpleNamespace(company_id=company_id, user_id=user_id)
+    return await get_candidate_details(_context=ctx, **kwargs)
+
+
+
+
+async def _wrap_get_candidate_stats(**kwargs):
+    """Sensor 2 wrapper (2026-05-24): inject _context from kwargs before delegating to get_candidate_stats.
+
+    Mirrors _wrap_save_hiring_policy pattern. Without this, ToolExecutor global
+    dispatch raises ToolContextMissingError because executor does NOT inject _context.
+    """
+    company_id = kwargs.pop("company_id", "")
+    user_id = kwargs.pop("user_id", "")
+    ctx = SimpleNamespace(company_id=company_id, user_id=user_id)
+    return await get_candidate_stats(_context=ctx, **kwargs)
+
+
+
+
+async def _wrap_get_candidate_history(**kwargs):
+    """Sensor 2 wrapper (2026-05-24): inject _context from kwargs before delegating to get_candidate_history.
+
+    Mirrors _wrap_save_hiring_policy pattern. Without this, ToolExecutor global
+    dispatch raises ToolContextMissingError because executor does NOT inject _context.
+    """
+    company_id = kwargs.pop("company_id", "")
+    user_id = kwargs.pop("user_id", "")
+    ctx = SimpleNamespace(company_id=company_id, user_id=user_id)
+    return await get_candidate_history(_context=ctx, **kwargs)
+
+
+
+
+async def _wrap_get_talent_quality(**kwargs):
+    """Sensor 2 wrapper (2026-05-24): inject _context from kwargs before delegating to get_talent_quality.
+
+    Mirrors _wrap_save_hiring_policy pattern. Without this, ToolExecutor global
+    dispatch raises ToolContextMissingError because executor does NOT inject _context.
+    """
+    company_id = kwargs.pop("company_id", "")
+    user_id = kwargs.pop("user_id", "")
+    ctx = SimpleNamespace(company_id=company_id, user_id=user_id)
+    return await get_talent_quality(_context=ctx, **kwargs)
+
+
+
+
+async def _wrap_get_talent_engagement(**kwargs):
+    """Sensor 2 wrapper (2026-05-24): inject _context from kwargs before delegating to get_talent_engagement.
+
+    Mirrors _wrap_save_hiring_policy pattern. Without this, ToolExecutor global
+    dispatch raises ToolContextMissingError because executor does NOT inject _context.
+    """
+    company_id = kwargs.pop("company_id", "")
+    user_id = kwargs.pop("user_id", "")
+    ctx = SimpleNamespace(company_id=company_id, user_id=user_id)
+    return await get_talent_engagement(_context=ctx, **kwargs)
+
+
+
+
+async def _wrap_get_talent_availability(**kwargs):
+    """Sensor 2 wrapper (2026-05-24): inject _context from kwargs before delegating to get_talent_availability.
+
+    Mirrors _wrap_save_hiring_policy pattern. Without this, ToolExecutor global
+    dispatch raises ToolContextMissingError because executor does NOT inject _context.
+    """
+    company_id = kwargs.pop("company_id", "")
+    user_id = kwargs.pop("user_id", "")
+    ctx = SimpleNamespace(company_id=company_id, user_id=user_id)
+    return await get_talent_availability(_context=ctx, **kwargs)
+
+
+
+
+async def _wrap_get_diversity_metrics(**kwargs):
+    """Sensor 2 wrapper (2026-05-24): inject _context from kwargs before delegating to get_diversity_metrics.
+
+    Mirrors _wrap_save_hiring_policy pattern. Without this, ToolExecutor global
+    dispatch raises ToolContextMissingError because executor does NOT inject _context.
+    """
+    company_id = kwargs.pop("company_id", "")
+    user_id = kwargs.pop("user_id", "")
+    ctx = SimpleNamespace(company_id=company_id, user_id=user_id)
+    return await get_diversity_metrics(_context=ctx, **kwargs)
+
+
+
+
+async def _wrap_get_market_benchmarks(**kwargs):
+    """Sensor 2 wrapper (2026-05-24): inject _context from kwargs before delegating to get_market_benchmarks.
+
+    Mirrors _wrap_save_hiring_policy pattern. Without this, ToolExecutor global
+    dispatch raises ToolContextMissingError because executor does NOT inject _context.
+    """
+    company_id = kwargs.pop("company_id", "")
+    user_id = kwargs.pop("user_id", "")
+    ctx = SimpleNamespace(company_id=company_id, user_id=user_id)
+    return await get_market_benchmarks(_context=ctx, **kwargs)
+
+
 def register_sourcing_query_tools() -> None:
     """Register sourcing-domain query tools in the tool registry."""
     
@@ -1251,7 +1368,7 @@ def register_sourcing_query_tools() -> None:
                 "limit": {"type": "integer", "default": 20, "description": "Número máximo de resultados"}
             }
         },
-        handler=search_candidates,
+        handler=_wrap_search_candidates,
         allowed_agents=["recruiter_assistant", "sourcing", "cv_screening", "orchestrator"]
     ))
     
@@ -1267,7 +1384,7 @@ def register_sourcing_query_tools() -> None:
             },
             "required": ["candidate_id"]
         },
-        handler=get_candidate_details,
+        handler=_wrap_get_candidate_details,
         allowed_agents=["recruiter_assistant", "sourcing", "cv_screening", "wsi_evaluator", "orchestrator"]
     ))
     
@@ -1281,7 +1398,7 @@ def register_sourcing_query_tools() -> None:
                 "period": {"type": "string", "enum": ["week", "month", "quarter"], "default": "month", "description": "Período de análise"}
             }
         },
-        handler=get_candidate_stats,
+        handler=_wrap_get_candidate_stats,
         allowed_agents=["recruiter_assistant", "sourcing", "analyst_feedback", "orchestrator"]
     ))
     
@@ -1295,7 +1412,7 @@ def register_sourcing_query_tools() -> None:
                 "job_id": {"type": "string", "description": "UUID da vaga para analisar histórico dos candidatos dessa vaga (opcional)"}
             }
         },
-        handler=get_candidate_history,
+        handler=_wrap_get_candidate_history,
         allowed_agents=["recruiter_assistant", "analyst_feedback", "sourcing", "orchestrator"]
     ))
     
@@ -1309,7 +1426,7 @@ def register_sourcing_query_tools() -> None:
                 "min_score": {"type": "number", "description": "Score mínimo para filtrar candidatos"}
             }
         },
-        handler=get_talent_quality,
+        handler=_wrap_get_talent_quality,
         allowed_agents=["recruiter_assistant", "analyst_feedback", "orchestrator"]
     ))
     
@@ -1322,7 +1439,7 @@ def register_sourcing_query_tools() -> None:
                 "period": {"type": "string", "enum": ["week", "month", "quarter"], "default": "month", "description": "Período de análise"}
             }
         },
-        handler=get_talent_engagement,
+        handler=_wrap_get_talent_engagement,
         allowed_agents=["recruiter_assistant", "analyst_feedback", "orchestrator"]
     ))
     
@@ -1333,7 +1450,7 @@ def register_sourcing_query_tools() -> None:
             "type": "object",
             "properties": {}
         },
-        handler=get_talent_availability,
+        handler=_wrap_get_talent_availability,
         allowed_agents=["recruiter_assistant", "analyst_feedback", "sourcing", "orchestrator"]
     ))
     
@@ -1347,7 +1464,7 @@ def register_sourcing_query_tools() -> None:
                 "period": {"type": "string", "enum": ["month", "quarter", "year"], "default": "month", "description": "Período de análise"}
             }
         },
-        handler=get_diversity_metrics,
+        handler=_wrap_get_diversity_metrics,
         allowed_agents=["recruiter_assistant", "analyst_feedback", "orchestrator"]
     ))
     
@@ -1362,7 +1479,7 @@ def register_sourcing_query_tools() -> None:
                 "region": {"type": "string", "description": "Região geográfica (opcional)"}
             }
         },
-        handler=get_market_benchmarks,
+        handler=_wrap_get_market_benchmarks,
         allowed_agents=["recruiter_assistant", "analyst_feedback", "orchestrator"]
     ))
     
