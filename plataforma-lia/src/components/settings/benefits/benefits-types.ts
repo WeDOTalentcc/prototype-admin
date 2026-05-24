@@ -111,7 +111,7 @@ export interface BenefitHistoryEntry {
   id: string
   changed_at: string
   changed_by: string | null
-  change_type: created | updated | deactivated | reactivated | string
+  change_type: "created" | "updated" | "deactivated" | "reactivated" | string
   previous_snapshot: Record<string, unknown> | null
   change_notes: string | null
 }

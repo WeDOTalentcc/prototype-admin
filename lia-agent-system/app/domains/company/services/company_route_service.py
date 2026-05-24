@@ -12,6 +12,10 @@ from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domains.company.repositories.benefit_repository import BenefitRepository
+from app.domains.company.services.benefits_service import (
+    BENEFIT_CATEGORIES,
+    resolve_benefit_category,
+)
 from app.domains.company.repositories.company_profile_repository import (
     CompanyProfileRepository,
 )
@@ -773,23 +777,14 @@ REGRAS:
         active_benefits = [b for b in all_benefits if b.is_active]
         highlighted_benefits = [b for b in active_benefits if b.is_highlighted]
 
-        CATEGORY_NAMES = {
-            "health": "Saúde & Bem-estar",
-            "food": "Alimentação",
-            "transport": "Transporte",
-            "education": "Educação & Desenvolvimento",
-            "financial": "Financeiro",
-            "quality_life": "Qualidade de Vida",
-            "family": "Família",
-            "security": "Segurança",
-        }
+        # Canonical labels from benefits_service SSOT (v2, 14 categories)
 
         categories: dict[str, Any] = {}
         for benefit in active_benefits:
             cat = benefit.category or "other"
             if cat not in categories:
                 categories[cat] = {
-                    "name": CATEGORY_NAMES.get(cat, cat),
+                    "name": BENEFIT_CATEGORIES.get(resolve_benefit_category(cat), cat),
                     "count": 0,
                     "benefits": [],
                 }

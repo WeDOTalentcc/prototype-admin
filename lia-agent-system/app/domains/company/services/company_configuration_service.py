@@ -28,6 +28,11 @@ from app.domains.communication.repositories.communication_settings_repository im
     CommunicationSettingsRepository,
 )
 from app.domains.company.repositories.benefit_repository import BenefitRepository
+from app.domains.company.services.benefits_service import (
+    BENEFIT_CATEGORIES,
+    BENEFIT_CATEGORY_ICONS,
+    resolve_benefit_category,
+)
 from app.domains.company.repositories.company_profile_repository import (
     CompanyProfileRepository,
 )
@@ -478,20 +483,13 @@ class CompanyConfigurationService:
                 categories[cat] = []
             categories[cat].append(b)
         
-        category_names = {
-            'health': '🏥 Saúde & Bem-estar',
-            'food': '🍽️ Alimentação',
-            'transport': '🚗 Transporte',
-            'education': '📚 Educação & Desenvolvimento',
-            'financial': '💰 Financeiro',
-            'quality_life': '⚖️ Qualidade de Vida',
-            'family': '👨‍👩‍👧 Família',
-            'security': '🔒 Segurança',
-            'outros': '📦 Outros'
-        }
+        # Canonical labels from benefits_service SSOT (v2, 14 categories)
         
         for cat, cat_benefits in categories.items():
-            cat_name = category_names.get(cat, cat.capitalize())
+            _canonical = resolve_benefit_category(cat)
+            _icon = BENEFIT_CATEGORY_ICONS.get(_canonical, '📦')
+            _label = BENEFIT_CATEGORIES.get(_canonical, cat.capitalize())
+            cat_name = f'{_icon} {_label}'
             lines.append(f"\n### {cat_name}")
             for b in cat_benefits:
                 star = "⭐ " if b.get('is_highlighted') else ""

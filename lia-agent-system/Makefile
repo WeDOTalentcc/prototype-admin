@@ -7,7 +7,7 @@
 #   - Pré-commit local: `make check-pydantic` (<1s)
 #   - Antes de push: `make check-all` (~35s)
 
-.PHONY: help check-pydantic smoke check-all sensors smoke-quick lint
+.PHONY: help check-pydantic smoke check-all sensors smoke-quick lint check-imports check-benefit-taxonomy
 
 help:	## Lista todos os targets disponíveis
 	@awk 'BEGIN {FS = ":.*##"} /^[a-zA-Z_-]+:.*##/ {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -24,7 +24,7 @@ smoke:	## Contract smoke test em 1798 endpoints (~34s, requires uvicorn:8001)
 smoke-quick:	## Smoke test em subset GETs apenas (~10s, faster iteration)
 	python3 -m pytest tests/contract/test_endpoint_smoke.py --no-header -q --tb=line -k "GET"
 
-check-all: check-pydantic smoke	## Roda todos os sensors canonical em sequência (~35s total)
+check-all: check-pydantic check-imports check-benefit-taxonomy smoke	## Roda todos os sensors canonical em sequência (~35s total)
 	@echo "✅ All sensors passed"
 
 sensors: check-all	## Alias para check-all
@@ -32,6 +32,15 @@ sensors: check-all	## Alias para check-all
 lint:	## Roda ruff + ruff-format check (pre-commit equivalent)
 	ruff check app/ scripts/ tests/
 	ruff format --check app/ scripts/ tests/
+
+
+check-imports:	## Sensor canonical import paths (no libs.models.lia_models drift)
+	@echo "▶ Canonical Import Paths sensor — auditoria 2026-05-24"
+	python3 scripts/check_canonical_import_paths.py --blocking
+
+check-benefit-taxonomy:	## AST sensor taxonomia canonical benefícios (baseline 0 — 2026-05-24)
+	@echo "▶ Benefit Taxonomy drift sensor — BLOCKING (baseline=0)"
+	python3 scripts/check_no_duplicate_benefit_taxonomy.py --blocking
 
 # ─── Quick reference ──────────────────────────────────────────────────────────
 # Pre-commit hook (auto-roda em git commit):

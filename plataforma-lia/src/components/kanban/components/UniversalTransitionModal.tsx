@@ -273,7 +273,7 @@ export function UniversalTransitionModal(props: UniversalTransitionModalProps) {
               <SelectTrigger className="w-[220px] h-8 rounded-xl text-xs bg-lia-bg-primary dark:bg-lia-bg-secondary">
                 <SelectValue placeholder="Selecione..." />
               </SelectTrigger>
-              <SelectContent className="z-modal" position="popper" sideOffset={4} side="top">
+              <SelectContent position="popper" sideOffset={4} side="top">
                 {renderSubStatusOptions(currentSubStatusOptions, 'text-xs', rejectionCategoryLabels)}
               </SelectContent>
             </Select>

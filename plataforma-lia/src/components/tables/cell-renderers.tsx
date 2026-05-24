@@ -646,7 +646,7 @@ export function InteractiveStageCell({
                 <SelectTrigger className="text-xs">
                   <SelectValue placeholder="Selecione a etapa" />
                 </SelectTrigger>
-                <SelectContent className="max-h-60 z-modal">
+                <SelectContent className="max-h-60">
                   <div className="px-2 py-1 text-xs font-semibold text-lia-text-secondary">Etapas Ativas</div>
                   {activeStages.map(stage => (
                     <SelectItem key={stage.name} value={stage.name} disabled={stage.name === currentStage}>

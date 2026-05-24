@@ -547,16 +547,12 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         all_benefits = await repo.list_for_company(effective_company_id, active_only=False)
         active_benefits = [b for b in all_benefits if b.is_active]
         highlighted_benefits = [b for b in active_benefits if b.is_highlighted]
-        category_names = {
-            "health": "Saude & Bem-estar", "food": "Alimentacao", "transport": "Transporte",
-            "education": "Educacao & Desenvolvimento", "financial": "Financeiro",
-            "wellness": "Bem-estar", "family": "Familia", "flexibility": "Flexibilidade", "other": "Outros",
-        }
+        # Canonical labels from benefits_service SSOT (v2, 14 categories)
         categories: dict = {}
         for b in active_benefits:
             cat = b.category or "other"
             if cat not in categories:
-                categories[cat] = {"name": category_names.get(cat, cat), "count": 0, "benefits": []}
+                categories[cat] = {"name": BENEFIT_CATEGORIES.get(resolve_benefit_category(cat), cat), "count": 0, "benefits": []}
             categories[cat]["count"] += 1
             categories[cat]["benefits"].append({
                 "name": b.name, "description": b.description, "value_type": b.value_type,
