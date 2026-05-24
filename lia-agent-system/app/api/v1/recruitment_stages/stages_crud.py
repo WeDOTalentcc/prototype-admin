@@ -412,5 +412,8 @@ company_id: str = Depends(require_company_id)):
 
         return result
     except Exception as e:
-        logger.error(f"Error inferring behavior: {e}", exc_info=True)
-        return {"suggested_behavior": "passive", "confidence": 0.5, "alternatives": [], "method": "error_fallback"}
+        logger.error(f"Error inferring behavior for stage \"{request.stage_name}\": {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail="Falha ao inferir comportamento do estágio. Tente novamente ou selecione manualmente."
+        )

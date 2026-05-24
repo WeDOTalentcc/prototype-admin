@@ -115,7 +115,7 @@ class StageUpdate(WeDoBaseModel):
     action_behavior: str | None = None
 
 
-class InlineStageEdit(BaseModel):
+class InlineStageEdit(WeDoBaseModel):
     display_name: str | None = Field(None, min_length=1, max_length=100)
     is_active: bool | None = None
     sla_hours: int | None = Field(None, ge=0)
@@ -170,7 +170,7 @@ class ATSMappingCreate(WeDoBaseModel):
 # Pydantic models — Pipeline
 # ---------------------------------------------------------------------------
 
-class CompanyPipelineStageItem(BaseModel):
+class CompanyPipelineStageItem(WeDoBaseModel):
     id: str | None = None
     catalog_id: str | None = None
     name: str | None = None
@@ -188,7 +188,7 @@ class CompanyPipelineUpdate(WeDoBaseModel):
     stages: list[CompanyPipelineStageItem]
 
 
-class JobPipelineStageItem(BaseModel):
+class JobPipelineStageItem(WeDoBaseModel):
     stage_name: str
     stage_order: int
     is_active: bool = True

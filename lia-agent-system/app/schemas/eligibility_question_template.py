@@ -16,7 +16,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from app.shared.types import WeDoBaseModel
 
 
-QuestionType = Literal["text", "yesno", "scale", "multiple"]
+QuestionType = Literal["text", "yes_no", "scale", "multiple"]
 QuestionCategory = Literal[
     "general",
     "eligibility",

@@ -32,12 +32,12 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 DEFAULT_SCREENING_QUESTIONS = [
-    {"id": "1", "question": "Você tem interesse real nesta vaga?", "question_type": "yesno", "is_required": True, "order": 1, "is_default": True, "options": []},
+    {"id": "1", "question": "Você tem interesse real nesta vaga?", "question_type": "yes_no", "is_required": True, "order": 1, "is_default": True, "options": []},
     {"id": "2", "question": "Qual sua disponibilidade para início?", "question_type": "text", "is_required": True, "order": 2, "is_default": True, "options": []},
     {"id": "3", "question": "Qual sua pretensão salarial?", "question_type": "text", "is_required": True, "order": 3, "is_default": True, "options": []},
     {"id": "4", "question": "Quantos anos de experiência você tem na área?", "question_type": "text", "is_required": True, "order": 4, "is_default": True, "options": []},
-    {"id": "5", "question": "Você aceita trabalhar no modelo híbrido/presencial?", "question_type": "yesno", "is_required": True, "order": 5, "is_default": True, "options": []},
-    {"id": "6", "question": "Você está em algum outro processo seletivo?", "question_type": "yesno", "is_required": False, "order": 6, "is_default": True, "options": []}
+    {"id": "5", "question": "Você aceita trabalhar no modelo híbrido/presencial?", "question_type": "yes_no", "is_required": True, "order": 5, "is_default": True, "options": []},
+    {"id": "6", "question": "Você está em algum outro processo seletivo?", "question_type": "yes_no", "is_required": False, "order": 6, "is_default": True, "options": []}
 ]
 
 

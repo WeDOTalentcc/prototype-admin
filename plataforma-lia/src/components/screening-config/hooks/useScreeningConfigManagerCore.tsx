@@ -263,8 +263,10 @@ export function useScreeningConfigManagerCore({ job, onJobUpdate, onFormUpdate, 
         body: JSON.stringify({ disabled_eligibility_question_ids: [...newDisabled] }),
       })
       onJobUpdate?.({ ...job, disabled_eligibility_question_ids: [...newDisabled] })
-    } catch {
-      // silent — local state already updated optimistically
+    } catch (error) {
+      console.error("[ScreeningConfigManager] Toggle company default failed:", error)
+      // Revert optimistic update — restore previous state
+      setDisabledCompanyQIds(disabledCompanyQIds)
     }
   }
 

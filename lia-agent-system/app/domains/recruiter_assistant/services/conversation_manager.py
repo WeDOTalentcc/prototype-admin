@@ -1157,7 +1157,7 @@ class ConversationManager:
         - is_eliminatory: bool
         - expected_answer: Optional[str]
         - category: Optional[str]
-        - type: str (text, yesno, multiple, scale)
+        - type: str (text, yes_no, multiple, scale)
         """
         default_questions = [
             {"question": "Qual sua pretensão salarial para esta posição?", "is_eliminatory": False, "type": "text"},

@@ -1051,7 +1051,7 @@ async def _wrap_create_custom_eligibility_template(**kwargs):
     company_id = kwargs.get("company_id")
     user_id = kwargs.get("user_id")
     question = (kwargs.get("question") or "").strip()
-    question_type = kwargs.get("type") or "yesno"
+    question_type = kwargs.get("type") or "yes_no"
     category = kwargs.get("category") or "general"
 
     if not question or len(question) < 3:
@@ -1157,7 +1157,7 @@ TOOL_DEFINITIONS.append(
             "type": "object",
             "properties": {
                 "question": {"type": "string", "description": "Texto da pergunta (min 3 chars)"},
-                "type": {"type": "string", "enum": ["text", "yesno", "scale", "multiple"]},
+                "type": {"type": "string", "enum": ["text", "yes_no", "scale", "multiple"]},
                 "category": {"type": "string", "description": "Categoria canonical"},
                 "contextHint": {"type": "string"},
                 "eliminatory": {"type": "boolean"},
