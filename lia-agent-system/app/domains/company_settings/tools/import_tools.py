@@ -912,6 +912,47 @@ async def _wrap_check_company_completeness_global(**kwargs: Any) -> dict[str, An
     return await check_company_completeness(_context=ctx)
 
 
+
+
+async def _wrap_suggest_recruiting_policy(**kwargs):
+    """Sensor 2 wrapper (2026-05-24): inject _context from kwargs before delegating to suggest_recruiting_policy.
+
+    Mirrors _wrap_save_hiring_policy pattern. Without this, ToolExecutor global
+    dispatch raises ToolContextMissingError because executor does NOT inject _context.
+    """
+    company_id = kwargs.pop("company_id", "")
+    user_id = kwargs.pop("user_id", "")
+    ctx = SimpleNamespace(company_id=company_id, user_id=user_id)
+    return await suggest_recruiting_policy(_context=ctx, **kwargs)
+
+
+
+
+async def _wrap_import_benefits_from_data(**kwargs):
+    """Sensor 2 wrapper (2026-05-24): inject _context from kwargs before delegating to import_benefits_from_data.
+
+    Mirrors _wrap_save_hiring_policy pattern. Without this, ToolExecutor global
+    dispatch raises ToolContextMissingError because executor does NOT inject _context.
+    """
+    company_id = kwargs.pop("company_id", "")
+    user_id = kwargs.pop("user_id", "")
+    ctx = SimpleNamespace(company_id=company_id, user_id=user_id)
+    return await import_benefits_from_data(_context=ctx, **kwargs)
+
+
+async def _wrap_save_hiring_policy_global(**kwargs):
+    """Sensor 2 wrapper (2026-05-24): inject _context for global tool_registry dispatch.
+
+    The local CompanySettingsReActAgent toolset has its own _wrap_save_hiring_policy
+    in agents/company_tool_registry.py. This one is for the global tool_registry
+    where recruiter_assistant / orchestrator can call save_hiring_policy directly.
+    """
+    company_id = kwargs.pop("company_id", "")
+    user_id = kwargs.pop("user_id", "")
+    ctx = SimpleNamespace(company_id=company_id, user_id=user_id)
+    return await save_hiring_policy(_context=ctx, **kwargs)
+
+
 def register_company_settings_tools() -> None:
     tool_registry.register(ToolDefinition(
         name="check_company_completeness",
@@ -949,7 +990,7 @@ def register_company_settings_tools() -> None:
                 },
             },
         },
-        handler=suggest_recruiting_policy,
+        handler=_wrap_suggest_recruiting_policy,
         allowed_agents=[
             "recruiter_assistant", "company_settings", "job_planner", "orchestrator",
         ],
@@ -991,7 +1032,7 @@ def register_company_settings_tools() -> None:
             },
             "required": ["benefits"],
         },
-        handler=import_benefits_from_data,
+        handler=_wrap_import_benefits_from_data,
         allowed_agents=[
             "recruiter_assistant", "company_settings", "orchestrator",
         ],
@@ -1025,7 +1066,7 @@ def register_company_settings_tools() -> None:
             },
             "required": ["rules"],
         },
-        handler=save_hiring_policy,
+        handler=_wrap_save_hiring_policy_global,
         allowed_agents=[
             "recruiter_assistant", "company_settings", "orchestrator",
         ],

@@ -12,6 +12,7 @@ Apify calls automatically track consumption via ConsumptionTrackingService
 from __future__ import annotations
 
 import logging
+from types import SimpleNamespace
 from app.domains.sourcing.services.consent_cache import has_valid_consent, record_consent
 from typing import TYPE_CHECKING, Any, Optional
 from uuid import UUID
@@ -255,6 +256,34 @@ async def enrich_candidate_linkedin(
 # Registration
 # ───────────────────────────────────────────────────────────────────
 
+
+
+async def _wrap_check_candidate_completeness(**kwargs):
+    """Sensor 2 wrapper (2026-05-24): inject _context from kwargs before delegating to check_candidate_completeness.
+
+    Mirrors _wrap_save_hiring_policy pattern. Without this, ToolExecutor global
+    dispatch raises ToolContextMissingError because executor does NOT inject _context.
+    """
+    company_id = kwargs.pop("company_id", "")
+    user_id = kwargs.pop("user_id", "")
+    ctx = SimpleNamespace(company_id=company_id, user_id=user_id)
+    return await check_candidate_completeness(_context=ctx, **kwargs)
+
+
+
+
+async def _wrap_enrich_candidate_linkedin(**kwargs):
+    """Sensor 2 wrapper (2026-05-24): inject _context from kwargs before delegating to enrich_candidate_linkedin.
+
+    Mirrors _wrap_save_hiring_policy pattern. Without this, ToolExecutor global
+    dispatch raises ToolContextMissingError because executor does NOT inject _context.
+    """
+    company_id = kwargs.pop("company_id", "")
+    user_id = kwargs.pop("user_id", "")
+    ctx = SimpleNamespace(company_id=company_id, user_id=user_id)
+    return await enrich_candidate_linkedin(_context=ctx, **kwargs)
+
+
 def register_enrichment_tools() -> None:
     tool_registry.register(ToolDefinition(
         name="check_candidate_completeness",
@@ -273,7 +302,7 @@ def register_enrichment_tools() -> None:
             },
             "required": ["candidate_id"],
         },
-        handler=check_candidate_completeness,
+        handler=_wrap_check_candidate_completeness,
         allowed_agents=[
             "sourcing", "recruiter_assistant", "cv_screening", "orchestrator",
         ],
@@ -316,7 +345,7 @@ def register_enrichment_tools() -> None:
             },
             "required": ["candidate_id"],
         },
-        handler=enrich_candidate_linkedin,
+        handler=_wrap_enrich_candidate_linkedin,
         allowed_agents=[
             "sourcing", "recruiter_assistant", "cv_screening", "orchestrator",
         ],
