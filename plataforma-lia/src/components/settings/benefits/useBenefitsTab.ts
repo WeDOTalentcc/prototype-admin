@@ -65,7 +65,9 @@ const normalizeBenefit = (benefit: Record<string, unknown>): BenefitTabRecord =>
 }
 
 export function useBenefitsTab() {
-  const { companyId } = useCompanyId()
+  const { companyId, tenantInfo } = useCompanyId()
+  // clientAccountId é o que o JWT conhece — usar em todos os query params de benefits
+  const apiCompanyId = tenantInfo?.clientAccountId || companyId || ''
   const [benefits, setBenefits] = useState<BenefitTabRecord[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
@@ -166,8 +168,7 @@ export function useBenefitsTab() {
   const loadBenefits = useCallback(async () => {
     setIsLoading(true)
     try {
-      const cid = companyId || ''
-      const response = await apiFetch(`/api/backend-proxy/company/benefits/?company_id=${encodeURIComponent(cid)}`
+      const response = await apiFetch(`/api/backend-proxy/company/benefits/?company_id=${encodeURIComponent(apiCompanyId)}`
       )
       if (response.ok) {
         const data = await response.json()
@@ -229,7 +230,7 @@ export function useBenefitsTab() {
       is_highlighted: template.is_popular,
     }
     try {
-      const response = await apiFetch(`/api/backend-proxy/company/benefits/?company_id=${encodeURIComponent(companyId || '')}`,
+      const response = await apiFetch(`/api/backend-proxy/company/benefits/?company_id=${encodeURIComponent(apiCompanyId)}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -269,7 +270,7 @@ export function useBenefitsTab() {
     setIsSaving(true)
     setError(null)
     try {
-      const cid = encodeURIComponent(companyId || '')
+      const cid = encodeURIComponent(apiCompanyId)
       const url = benefit.id
         ? `/api/backend-proxy/company/benefits/${benefit.id}?company_id=${cid}`
         : `/api/backend-proxy/company/benefits/?company_id=${cid}`
@@ -301,7 +302,7 @@ export function useBenefitsTab() {
     if (typeof window !== 'undefined' && !window.confirm("Tem certeza que deseja excluir este benefício?"))
       return
     try {
-      const response = await apiFetch(`/api/backend-proxy/company/benefits/${benefitId}?company_id=${encodeURIComponent(companyId || '')}`,
+      const response = await apiFetch(`/api/backend-proxy/company/benefits/${benefitId}?company_id=${encodeURIComponent(apiCompanyId)}`,
         { method: 'DELETE' }
       )
       if (response.ok) {
@@ -345,7 +346,7 @@ export function useBenefitsTab() {
     setIsSaving(true)
     setError(null)
     try {
-      const cid = encodeURIComponent(companyId || '')
+      const cid = encodeURIComponent(apiCompanyId)
       const savePromises = Array.from(pendingChanges.values()).map(benefit =>
         apiFetch(`/api/backend-proxy/company/benefits/${benefit.id}?company_id=${cid}`,
           {

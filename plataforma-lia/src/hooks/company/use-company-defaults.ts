@@ -45,7 +45,8 @@ export function useCompanyDefaults(): UseCompanyDefaultsResult {
 
       if (profileRes.ok) {
         const profile = await profileRes.json()
-        companyId = profile?.id || null
+        // Prefer clientAccountId (what JWT knows) over company_profile_id for benefits API
+        companyId = profile?.client_account_id || profile?.id || null
       }
 
       const fetches: Promise<Response>[] = []

@@ -29,6 +29,7 @@ import {
   type CompanyBenefit,
 } from "@/types/benefits"
 import { apiFetch } from "@/lib/api/api-fetch"
+import { useCompanyId } from "@/hooks/company/useCompanyId"
 
 const CATEGORY_ICONS: Record<BenefitCategory, LucideIcon> = {
   health: Stethoscope,
@@ -99,6 +100,9 @@ export function BenefitsListSection({
   onChanged,
 }: BenefitsListSectionProps) {
   const t = useTranslations("settings.benefits")
+  const { tenantInfo } = useCompanyId()
+  // clientAccountId é o que o JWT conhece — usar em todos os query params de benefits
+  const apiCompanyId = tenantInfo?.clientAccountId || companyId || ""
   const [showModal, setShowModal] = useState(false)
   const [editingBenefit, setEditingBenefit] = useState<CompanyBenefit | null>(null)
   const [isSaving, setIsSaving] = useState(false)
@@ -165,7 +169,7 @@ export function BenefitsListSection({
       setIsSaving(true)
       setError(null)
       try {
-        const cid = encodeURIComponent(companyId)
+        const cid = encodeURIComponent(apiCompanyId)
         const url = benefit.id
           ? `/api/backend-proxy/company/benefits/${benefit.id}?company_id=${cid}`
           : `/api/backend-proxy/company/benefits/?company_id=${cid}`
@@ -221,7 +225,7 @@ export function BenefitsListSection({
       setBusyId(benefit.id)
       setError(null)
       try {
-        const res = await apiFetch(`/api/backend-proxy/company/benefits/${benefit.id}?company_id=${encodeURIComponent(companyId)}`,
+        const res = await apiFetch(`/api/backend-proxy/company/benefits/${benefit.id}?company_id=${encodeURIComponent(apiCompanyId)}`,
           {
             method: "PUT",
             headers: { "Content-Type": "application/json" },

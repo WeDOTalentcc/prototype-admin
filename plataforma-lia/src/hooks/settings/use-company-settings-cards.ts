@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react"
 import { useLiaChatContext } from "@/contexts/lia-float-context"
 import { useLoadingWatchdog } from "@/hooks/shared/use-loading-watchdog"
+import { useCompanyId } from "@/hooks/company/useCompanyId"
 import type { CompanyData } from "@/hooks/settings/department-types"
 import type { CompanyBenefit } from "@/types/benefits"
 
@@ -302,6 +303,9 @@ export function useCompanySettingsCards() {
   const [editingField, setEditingField] = useState<{ block: string; field: string } | null>(null)
   const [isSavingField, setIsSavingField] = useState(false)
   const [companyId, setCompanyId] = useState<string | null>(null)
+  const { tenantInfo } = useCompanyId()
+  // clientAccountId é o que o JWT conhece — usar em query params de benefits
+  const apiCompanyId = tenantInfo?.clientAccountId || companyId || ""
 
   const { switchChatContext } = useLiaChatContext()
   const prevFieldSnapshotRef = useRef<Map<string, string>>(new Map())
@@ -352,16 +356,16 @@ export function useCompanySettingsCards() {
     return null
   }, [])
 
-  const fetchBenefits = useCallback(async (cid: string) => {
+  const fetchBenefits = useCallback(async (_cidUnused: string) => {
     try {
-      const res = await fetch(`/api/backend-proxy/company/benefits/?company_id=${encodeURIComponent(cid)}`)
+      const res = await fetch(`/api/backend-proxy/company/benefits/?company_id=${encodeURIComponent(apiCompanyId)}`)
       if (res.ok) {
         const data = await res.json()
         return Array.isArray(data) ? data : data.items || []
       }
     } catch { /* handled by caller */ }
     return []
-  }, [])
+  }, [apiCompanyId])
 
   const fetchHiringPolicy = useCallback(async () => {
     try {

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useCompanyId } from '@/hooks/company/useCompanyId'
 import type { CompanyBenefit } from '@/types/benefits'
 
 export type Benefit = CompanyBenefit
@@ -36,14 +37,17 @@ export function useCompanyBenefits({
   autoFetch = true,
   cacheTime = 60000
 }: UseCompanyBenefitsOptions = {}): UseCompanyBenefitsReturn {
+  const { tenantInfo } = useCompanyId()
+  // clientAccountId é o que o JWT conhece — preferir sobre company_profile_id
+  const apiCompanyId = tenantInfo?.clientAccountId || companyId
   const [benefits, setBenefits] = useState<Benefit[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [lastFetched, setLastFetched] = useState<Date | null>(null)
 
   const cacheKey = useMemo(() => 
-    `benefits_${companyId}_${seniorityLevel || 'all'}_${activeOnly}`,
-    [companyId, seniorityLevel, activeOnly]
+    `benefits_${apiCompanyId}_${seniorityLevel || 'all'}_${activeOnly}`,
+    [apiCompanyId, seniorityLevel, activeOnly]
   )
 
   const fetchBenefits = useCallback(async () => {
@@ -59,8 +63,8 @@ export function useCompanyBenefits({
 
     try {
       const endpoint = activeOnly 
-        ? `/api/backend-proxy/company/benefits/active?company_id=${companyId}`
-        : `/api/backend-proxy/company/benefits/?company_id=${companyId}`
+        ? `/api/backend-proxy/company/benefits/active?company_id=${apiCompanyId}`
+        : `/api/backend-proxy/company/benefits/?company_id=${apiCompanyId}`
       
       const response = await fetch(endpoint)
       
@@ -86,7 +90,7 @@ export function useCompanyBenefits({
     } finally {
       setIsLoading(false)
     }
-  }, [cacheKey, cacheTime, companyId, activeOnly, seniorityLevel])
+  }, [cacheKey, cacheTime, apiCompanyId, activeOnly, seniorityLevel])
 
   useEffect(() => {
     if (autoFetch) {
