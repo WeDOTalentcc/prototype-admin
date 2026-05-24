@@ -81,9 +81,10 @@ const normalizeBenefit = (benefit: Record<string, unknown>): BenefitTabRecord =>
 }
 
 export function useBenefitsTab() {
-  const { companyId, tenantInfo } = useCompanyId()
-  // clientAccountId é o que o JWT conhece — usar em todos os query params de benefits
-  const apiCompanyId = tenantInfo?.clientAccountId || companyId || ''
+  const { companyId } = useCompanyId()
+  // company_id é resolvido pelo backend a partir do JWT (REGRA 2 canonical).
+  // Não enviamos company_id em query nem em body — backend usa get_user_company_id(current_user)
+  // como fallback quando query.company_id é None/empty.
   const [benefits, setBenefits] = useState<BenefitTabRecord[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
@@ -184,10 +185,13 @@ export function useBenefitsTab() {
   )
 
   const loadBenefits = useCallback(async () => {
+    if (!companyId) {
+      // Guard rail: não chamar API antes do tenantInfo carregar
+      return
+    }
     setIsLoading(true)
     try {
-      const response = await apiFetch(`/api/backend-proxy/company/benefits/?company_id=${encodeURIComponent(apiCompanyId)}`
-      )
+      const response = await apiFetch(`/api/backend-proxy/company/benefits/`)
       if (response.ok) {
         const data = await response.json()
         const rawBenefits = Array.isArray(data) ? data : data.items || []
@@ -248,7 +252,7 @@ export function useBenefitsTab() {
       is_highlighted: template.is_popular,
     }
     try {
-      const response = await apiFetch(`/api/backend-proxy/company/benefits/?company_id=${encodeURIComponent(apiCompanyId)}`,
+      const response = await apiFetch(`/api/backend-proxy/company/benefits/`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -288,14 +292,18 @@ export function useBenefitsTab() {
     setIsSaving(true)
     setError(null)
     try {
-      const cid = encodeURIComponent(apiCompanyId)
       const url = benefit.id
-        ? `/api/backend-proxy/company/benefits/${benefit.id}?company_id=${cid}`
-        : `/api/backend-proxy/company/benefits/?company_id=${cid}`
+        ? `/api/backend-proxy/company/benefits/${benefit.id}`
+        : `/api/backend-proxy/company/benefits/`
+      // REGRA 2 canonical: NUNCA enviar company_id no body — backend rejeita.
+      // Backend resolve via JWT (get_user_company_id).
+      const { company_id: _strip, ...benefitWithoutCompanyId } =
+        benefit as BenefitTabRecord & { company_id?: string }
+      void _strip
       const response = await apiFetch(url, {
         method: benefit.id ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(benefit),
+        body: JSON.stringify(benefitWithoutCompanyId),
       })
       if (response.ok) {
         await loadBenefits()
@@ -320,7 +328,7 @@ export function useBenefitsTab() {
     if (typeof window !== 'undefined' && !window.confirm("Tem certeza que deseja excluir este benefício?"))
       return
     try {
-      const response = await apiFetch(`/api/backend-proxy/company/benefits/${benefitId}?company_id=${encodeURIComponent(apiCompanyId)}`,
+      const response = await apiFetch(`/api/backend-proxy/company/benefits/${benefitId}`,
         { method: 'DELETE' }
       )
       if (response.ok) {
@@ -364,16 +372,19 @@ export function useBenefitsTab() {
     setIsSaving(true)
     setError(null)
     try {
-      const cid = encodeURIComponent(apiCompanyId)
-      const savePromises = Array.from(pendingChanges.values()).map(benefit =>
-        apiFetch(`/api/backend-proxy/company/benefits/${benefit.id}?company_id=${cid}`,
+      const savePromises = Array.from(pendingChanges.values()).map(benefit => {
+        // REGRA 2 canonical: strip company_id do body se presente
+        const { company_id: _strip, ...benefitWithoutCompanyId } =
+          benefit as BenefitTabRecord & { company_id?: string }
+        void _strip
+        return apiFetch(`/api/backend-proxy/company/benefits/${benefit.id}`,
           {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(benefit),
+            body: JSON.stringify(benefitWithoutCompanyId),
           }
         )
-      )
+      })
       const results = await Promise.all(savePromises)
       const allSuccess = results.every(r => r.ok)
       if (allSuccess) {

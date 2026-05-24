@@ -29,7 +29,6 @@ import {
   type CompanyBenefit,
 } from "@/types/benefits"
 import { apiFetch } from "@/lib/api/api-fetch"
-import { useCompanyId } from "@/hooks/company/useCompanyId"
 
 const CATEGORY_ICONS: Record<BenefitCategory, LucideIcon> = {
   health: Stethoscope,
@@ -100,9 +99,8 @@ export function BenefitsListSection({
   onChanged,
 }: BenefitsListSectionProps) {
   const t = useTranslations("settings.benefits")
-  const { tenantInfo } = useCompanyId()
-  // clientAccountId é o que o JWT conhece — usar em todos os query params de benefits
-  const apiCompanyId = tenantInfo?.clientAccountId || companyId || ""
+  // company_id é resolvido pelo backend via JWT (REGRA 2 canonical).
+  // companyId é mantido como guard rail (não chamar API antes de carregar) + para invalidar cache.
   const [showModal, setShowModal] = useState(false)
   const [editingBenefit, setEditingBenefit] = useState<CompanyBenefit | null>(null)
   const [isSaving, setIsSaving] = useState(false)
@@ -212,14 +210,17 @@ export function BenefitsListSection({
       setIsSaving(true)
       setError(null)
       try {
-        const cid = encodeURIComponent(apiCompanyId)
         const url = benefit.id
-          ? `/api/backend-proxy/company/benefits/${benefit.id}?company_id=${cid}`
-          : `/api/backend-proxy/company/benefits/?company_id=${cid}`
+          ? `/api/backend-proxy/company/benefits/${benefit.id}`
+          : `/api/backend-proxy/company/benefits/`
+        // REGRA 2 canonical: strip company_id do body se presente — backend rejeita.
+        const { company_id: _strip, ...benefitWithoutCompanyId } =
+          benefit as CompanyBenefit & { company_id?: string }
+        void _strip
         const res = await apiFetch(url, {
           method: benefit.id ? "PUT" : "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(benefit),
+          body: JSON.stringify(benefitWithoutCompanyId),
         })
         if (!res.ok) {
           const text = await res.text().catch(() => "")
@@ -268,7 +269,7 @@ export function BenefitsListSection({
       setBusyId(benefit.id)
       setError(null)
       try {
-        const res = await apiFetch(`/api/backend-proxy/company/benefits/${benefit.id}?company_id=${encodeURIComponent(apiCompanyId)}`,
+        const res = await apiFetch(`/api/backend-proxy/company/benefits/${benefit.id}`,
           {
             method: "PUT",
             headers: { "Content-Type": "application/json" },

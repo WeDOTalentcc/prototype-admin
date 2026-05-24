@@ -51,6 +51,7 @@ import {
   type SubsidiaryEntry,
   type BenefitHistoryEntry,
 } from "./benefits-types"
+import { useDepartmentsList } from "@/hooks/settings/useDepartmentsList"
 
 interface Benefit {
   id?: string
@@ -65,7 +66,7 @@ interface Benefit {
   applicable_to: string[]
   seniority_levels: string[]
   contract_types: string[]
-  departments: Record<string, unknown>
+  departments: Record<string, unknown> | string[] | null
   waiting_period_days: number
   is_mandatory: boolean
   is_active: boolean
@@ -146,85 +147,6 @@ function ChipMultiSelect({
   )
 }
 
-/**
- * Editor de departamentos (jsonb): chips com adicao livre.
- * Persiste como Record<string, true>; UI mostra chave (nome do departamento).
- */
-function DepartmentChips({
-  value,
-  onChange,
-}: {
-  value: Record<string, unknown>
-  onChange: (next: Record<string, unknown>) => void
-}) {
-  const [draft, setDraft] = React.useState("")
-  const keys = Object.keys(value || {})
-  const add = () => {
-    const k = draft.trim()
-    if (!k) return
-    if (keys.includes(k)) {
-      setDraft("")
-      return
-    }
-    onChange({ ...(value || {}), [k]: true })
-    setDraft("")
-  }
-  const remove = (k: string) => {
-    const next = { ...(value || {}) }
-    delete next[k]
-    onChange(next)
-  }
-  return (
-    <div className="space-y-1.5 mt-1">
-      <div className="flex flex-wrap gap-1.5">
-        {keys.length === 0 && (
-          <span className="text-xs text-lia-text-tertiary italic">
-            Nenhum departamento selecionado (aplica a todos)
-          </span>
-        )}
-        {keys.map((k) => (
-          <span
-            key={k}
-            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-lia-bg-tertiary border border-lia-border-subtle text-lia-text-primary"
-          >
-            {k}
-            <button
-              type="button"
-              onClick={() => remove(k)}
-              className="hover:text-status-error"
-              aria-label={`Remover ${k}`}
-            >
-              <X className="w-3 h-3" />
-            </button>
-          </span>
-        ))}
-      </div>
-      <div className="flex gap-1.5">
-        <Input
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault()
-              add()
-            }
-          }}
-          placeholder="Ex: Engenharia, Comercial..."
-          className="rounded-full text-xs py-1.5 px-2"
-        />
-        <Button
-          variant="outline"
-          onClick={add}
-          className="rounded-md text-xs px-2"
-          type="button"
-        >
-          <Plus className="w-3 h-3" />
-        </Button>
-      </div>
-    </div>
-  )
-}
-
 export function BenefitFormModal({
   open,
   onOpenChange,
@@ -236,6 +158,25 @@ export function BenefitFormModal({
   historyLoading,
 }: BenefitFormModalProps) {
   const t = useTranslations("settings.benefits")
+  const { departments: companyDepartments, loading: deptsLoading } = useDepartmentsList()
+
+  // Normaliza selectedDepartmentIds — `departments` pode ser dict legado, array novo ou null.
+  // Backend aceita dict | list | None (CompanyBenefitCreate.departments).
+  const selectedDepartmentIds: string[] = (() => {
+    const v = editingBenefit?.departments
+    if (!v) return []
+    if (Array.isArray(v)) return v.filter((x): x is string => typeof x === "string")
+    if (typeof v === "object") return Object.keys(v as Record<string, unknown>)
+    return []
+  })()
+
+  const toggleDepartment = (deptId: string) => {
+    if (!editingBenefit) return
+    const next = selectedDepartmentIds.includes(deptId)
+      ? selectedDepartmentIds.filter((id) => id !== deptId)
+      : [...selectedDepartmentIds, deptId]
+    setEditingBenefit({ ...editingBenefit, departments: next })
+  }
 
   const BENEFIT_CATEGORIES = [
     { id: "health", name: t("categoryHealth"), icon: Stethoscope, color: "text-status-error" },
@@ -436,7 +377,7 @@ export function BenefitFormModal({
                 )}
               </div>
               {validationError && (
-                <p className="text-xs text-status-error mt-1" role="alert">
+                <p className="text-xs text-amber-600 mt-1" role="alert">
                   {validationError}
                 </p>
               )}
@@ -478,10 +419,43 @@ export function BenefitFormModal({
 
               <div>
                 <Label className={textStyles.label}>Departamentos específicos (opcional)</Label>
-                <DepartmentChips
-                  value={editingBenefit.departments || {}}
-                  onChange={(next) => setEditingBenefit({ ...editingBenefit, departments: next })}
-                />
+                <p className="text-xs text-lia-text-secondary mb-2">
+                  {selectedDepartmentIds.length === 0
+                    ? "Nenhum departamento selecionado (aplica a todos)"
+                    : `${selectedDepartmentIds.length} selecionado(s)`}
+                </p>
+                {deptsLoading ? (
+                  <div className="flex items-center gap-2 text-xs text-lia-text-tertiary">
+                    <Loader2 size={14} className="animate-spin motion-reduce:animate-none" />
+                    Carregando departamentos...
+                  </div>
+                ) : companyDepartments.length === 0 ? (
+                  <p className="text-xs text-lia-text-tertiary italic">
+                    Nenhum departamento cadastrado. Cadastre em Configurações → Departamentos primeiro.
+                  </p>
+                ) : (
+                  <div className="flex flex-wrap gap-1.5" role="group" aria-label="Departamentos específicos">
+                    {companyDepartments.map((dept) => {
+                      const isSel = selectedDepartmentIds.includes(dept.id)
+                      return (
+                        <button
+                          key={dept.id}
+                          type="button"
+                          onClick={() => toggleDepartment(dept.id)}
+                          aria-pressed={isSel}
+                          className={[
+                            "px-2.5 py-1 rounded-full text-xs border transition-colors motion-reduce:transition-none",
+                            isSel
+                              ? "bg-lia-bg-tertiary border-lia-btn-primary-bg text-lia-text-primary"
+                              : "bg-lia-bg-secondary border-lia-border-subtle text-lia-text-secondary hover:bg-lia-interactive-hover hover:text-lia-text-primary",
+                          ].join(" ")}
+                        >
+                          {dept.name}
+                        </button>
+                      )
+                    })}
+                  </div>
+                )}
               </div>
             </div>
 

@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
     // Forward multipart form directly — do NOT call request.json(), preserve FormData boundary
     const formData = await request.formData()
 
-    const response = await fetch(`${BACKEND_URL}/api/v1/company-benefits/upload-extract`, {
+    const response = await fetch(`${BACKEND_URL}/api/v1/company/benefits/upload-extract`, {
       method: "POST",
       headers,
       body: formData,
