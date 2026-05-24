@@ -4604,7 +4604,9 @@
         "auto_reengageDesc": "Contact candidates inactive for more than 30 days",
         "auto_reengageTrigger": "30 days of inactivity",
         "automationStatusActive": "active",
-        "automationStatusPaused": "paused"
+        "automationStatusPaused": "paused",
+        "comingSoon": "Coming soon",
+        "notificationsComingSoonText": "Notification channel configuration will be available soon. Preferences below are not yet persisted."
       },
       "npsTab": {
         "title": "NPS System Settings",
@@ -6197,7 +6199,9 @@
       "required": "Required",
       "liaCollects": "LIA collects",
       "helpText": "Check 'LIA collects' so the assistant requests the data during the conversation in this stage.",
-      "enableField": "Enable field {name}"
+      "enableField": "Enable field {name}",
+      "comingSoon": "Coming soon",
+      "comingSoonText": "Stage-level data collection configuration will be available soon. Selections below are not yet saved."
     },
     "stageHelpers": {
       "typeSystem": "System",

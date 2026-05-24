@@ -185,6 +185,17 @@ export function CommunicationTab({ onSettingsChange }: { onSettingsChange: (chan
 
   const renderNotifications = () => (
     <div className="space-y-6">
+      {/* P0-W1-13: Ghost-setting banner — notification channel config is pure local state, not persisted */}
+      <div className="rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-900/50 dark:bg-amber-900/20 px-4 py-3">
+        <div className="flex items-start gap-3">
+          <span className="inline-flex items-center rounded-full bg-amber-100 dark:bg-amber-800/60 px-2.5 py-0.5 text-xs font-semibold text-amber-700 dark:text-amber-300 flex-shrink-0 mt-0.5">
+            {t('comingSoon')}
+          </span>
+          <p className="text-sm text-amber-700 dark:text-amber-300">
+            {t('notificationsComingSoonText')}
+          </p>
+        </div>
+      </div>
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -194,22 +205,22 @@ export function CommunicationTab({ onSettingsChange }: { onSettingsChange: (chan
         </CardHeader>
         <CardContent className="space-y-4">
           {notificationItems.map((notification) => (
-            <div key={notification.key} className="flex items-center justify-between p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
+            <div key={notification.key} className="flex items-center justify-between p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl opacity-60 pointer-events-none select-none">
               <div>
                 <div className="text-sm font-medium text-lia-text-primary">{t(`notif_${notification.key}_label` as never)}</div>
                 <div className="text-xs text-lia-text-primary">{t(`notif_${notification.key}_desc` as never)}</div>
               </div>
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-2">
-                  <input type="checkbox" defaultChecked className="text-lia-text-secondary" onChange={() => onSettingsChange(true)} />
+                  <input type="checkbox" defaultChecked disabled className="text-lia-text-secondary cursor-not-allowed" />
                   <span className="text-xs text-lia-text-primary">{t('email')}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <input type="checkbox" className="text-lia-text-secondary" onChange={() => onSettingsChange(true)} />
+                  <input type="checkbox" disabled className="text-lia-text-secondary cursor-not-allowed" />
                   <span className="text-xs text-lia-text-primary">{t('push')}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <input type="checkbox" className="text-lia-text-secondary" onChange={() => onSettingsChange(true)} />
+                  <input type="checkbox" disabled className="text-lia-text-secondary cursor-not-allowed" />
                   <span className="text-xs text-lia-text-primary">{t('whatsappBusiness')}</span>
                 </div>
               </div>

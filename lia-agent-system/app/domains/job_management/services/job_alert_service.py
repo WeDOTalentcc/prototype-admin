@@ -13,6 +13,7 @@ from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.domains.communication.repositories.communication_settings_repository import CommunicationSettingsRepository
 from app.domains.job_management.repositories.job_alert_repository import JobAlertRepository
 from lia_models.alert import Alert, AlertSeverity, AlertStatus, AlertType
 
@@ -29,7 +30,11 @@ class JobAlertService:
     MIN_CANDIDATES_THRESHOLD = 5
     FEEDBACK_OVERDUE_DAYS = 3
     
-    async def check_all_alerts(self, db: AsyncSession) -> list[Alert]:
+    async def check_all_alerts(
+        self,
+        db: AsyncSession,
+        company_id: str | None = None,
+    ) -> list[Alert]:
         """
         Run all alert checks and create alerts as needed.
         
@@ -39,6 +44,16 @@ class JobAlertService:
         Returns:
             List of newly created alerts
         """
+        # Ghost-setting consumer: respect tenant opt-out (P0-W1-06)
+        if company_id is not None:
+            settings = await CommunicationSettingsRepository(db).get_by_company_id(company_id)
+            if settings is not None and not settings.alerts_enabled:
+                logger.info(
+                    "alert_check_skipped_by_tenant_toggle",
+                    extra={"company_id": company_id, "alerts_enabled": False},
+                )
+                return []
+
         alerts = []
         
         alerts.extend(await self.check_critical_jobs(db))

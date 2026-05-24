@@ -23,6 +23,7 @@ class CommunicationSettings(Base):
     - Default channel preferences
     """
     __tablename__ = "communication_settings"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     company_id = Column(String(255), nullable=False, unique=True, index=True)
@@ -49,6 +50,9 @@ class CommunicationSettings(Base):
     
     mailgun_enabled = Column("mailgun_enabled", Boolean, default=True)
     twilio_enabled = Column(Boolean, default=False)
+    # P0-W1-06: Ghost-setting fix — tenant opt-out toggle for job alert generation.
+    # Default True (alerts enabled). When False, check_all_alerts() is a no-op for this tenant.
+    alerts_enabled = Column(Boolean, default=True, nullable=False)
     
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -78,6 +82,7 @@ class CommunicationSettings(Base):
             "default_reply_to": self.default_reply_to,
             "mailgun_enabled": self.mailgun_enabled,
             "twilio_enabled": self.twilio_enabled,
+            "alerts_enabled": self.alerts_enabled,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }
@@ -120,7 +125,7 @@ class LGPDConsent(Base):
         Index('idx_lgpd_consent_type', 'company_id', 'consent_type'),
         Index('idx_lgpd_consent_given', 'company_id', 'consent_given'),
         UniqueConstraint('company_id', 'candidate_id', 'consent_type', name='uq_lgpd_consent_unique'),
-    )
+    {"extend_existing": True}, )
     
     def __repr__(self):
         return f"<LGPDConsent {self.id} - {self.consent_type} - given: {self.consent_given}>"

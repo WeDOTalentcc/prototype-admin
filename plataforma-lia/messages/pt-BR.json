@@ -4604,7 +4604,9 @@
         "auto_reengageDesc": "Contatar candidatos inativos há mais de 30 dias",
         "auto_reengageTrigger": "30 dias de inatividade",
         "automationStatusActive": "ativo",
-        "automationStatusPaused": "pausado"
+        "automationStatusPaused": "pausado",
+        "comingSoon": "Em breve",
+        "notificationsComingSoonText": "A configuração de canais de notificação estará disponível em breve. As preferências abaixo ainda não são persistidas."
       },
       "npsTab": {
         "title": "NPS System Settings",
@@ -6197,7 +6199,9 @@
       "required": "Obrigatório",
       "liaCollects": "LIA coleta",
       "helpText": "Marque 'LIA coleta' para que a assistente solicite o dado durante a conversa nesta etapa.",
-      "enableField": "Ativar campo {name}"
+      "enableField": "Ativar campo {name}",
+      "comingSoon": "Em breve",
+      "comingSoonText": "A configuração de campos de coleta por etapa estará disponível em breve. As seleções abaixo ainda não são salvas."
     },
     "stageHelpers": {
       "typeSystem": "Sistema",

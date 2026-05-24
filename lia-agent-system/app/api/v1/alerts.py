@@ -124,7 +124,8 @@ async def run_alert_checks(
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Manually trigger alert checks."""
-    alerts = await job_alert_service.check_all_alerts(db=db)
+    # P0-W1-06: pass company_id so check_all_alerts respects alerts_enabled toggle
+    alerts = await job_alert_service.check_all_alerts(db=db, company_id=company_id)
     return {
         "status": "completed",
         "alerts_created": len(alerts),

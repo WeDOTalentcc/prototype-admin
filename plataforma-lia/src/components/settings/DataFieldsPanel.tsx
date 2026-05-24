@@ -69,6 +69,17 @@ export function DataFieldsPanel({ stage, isEditMode, onUpdate }: DataFieldsPanel
 
       {expanded && (
         <div className="mt-2 space-y-3">
+          {/* P0-W1-12: Ghost-setting banner — controls are not yet persisted */}
+          <div className="rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-900/50 dark:bg-amber-900/20 px-3 py-2.5 mb-2">
+            <div className="flex items-start gap-2">
+              <span className="inline-flex items-center rounded-full bg-amber-100 dark:bg-amber-800/60 px-2 py-0.5 text-micro font-semibold text-amber-700 dark:text-amber-300 flex-shrink-0 mt-0.5">
+                {t("comingSoon")}
+              </span>
+              <p className="text-xs text-amber-700 dark:text-amber-300">
+                {t("comingSoonText")}
+              </p>
+            </div>
+          </div>
           {Object.entries(byCategory).map(([category, fields]) => (
             <div key={category}>
               <p className="text-micro font-semibold text-lia-text-tertiary uppercase tracking-wide mb-1.5 px-1">
