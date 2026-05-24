@@ -237,6 +237,14 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
             "succeeded but engine may not see defaults until reconciliation.",
             company_id, e,
         )
+        # P1-W4-10: fail-visible — retorna flag para caller diagnosticar
+        return {
+            "success": True,
+            "rules_created": len(created),
+            "trigger_types": created,
+            "mirror_failed": True,
+            "mirror_error": str(e)[:200],
+        }
     return {"success": True, "rules_created": len(created), "trigger_types": created}
 
 

@@ -111,3 +111,7 @@ opentelemetry-api>=1.41.0,<2.0
 # Env vars necessárias: DD_SITE, DD_API_KEY, DD_LLMOBS_ENABLED=1,
 # DD_LLMOBS_ML_APP, DD_SERVICE, DD_ENV.
 ddtrace>=4.8.0,<5.0
+
+# PDF export for compliance reports (admin_compliance_fairness.py)
+# Requires Cairo/Pango system libs; lazy-imported to avoid crash if missing
+weasyprint>=60.0

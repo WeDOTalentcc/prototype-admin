@@ -1448,6 +1448,9 @@ STAGE_TOOLS: dict[str, list[str]] = {
         "get_company_profile",
         "configure_screening_questions",
     ],
+    # P1-W4-04: stages read-only/observability sem tools de escrita
+    "studio": [],            # Agent Studio Compliance
+    "ai-transparency": [],   # AI Transparency - read-only
 }
 
 

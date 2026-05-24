@@ -48,7 +48,8 @@ class AuditLogRepository:
     async def get_log_by_id(self, log_id: UUID, company_id: str | None) -> SOXAuditLog | None:
         # TENANT-EXEMPT: SOX audit logs are cross-tenant (system-wide compliance trail); LGPD Art. 7º IX legítimo interesse (immutable compliance trail, NOT aggregate); T-RATCHET tenant_filter
         query = select(SOXAuditLog).where(SOXAuditLog.id == log_id)
-        if company_id and company_id != "platform":
+        # P1-W4-07: branch "platform" removida — toda consulta verifica tenant
+        if company_id:
             query = query.where(SOXAuditLog.client_id == company_id)
         result = await self.db.execute(query)
         return result.scalar_one_or_none()

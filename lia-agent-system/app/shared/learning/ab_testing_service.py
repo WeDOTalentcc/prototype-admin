@@ -101,11 +101,18 @@ class ABTestingService:
         self,
         test_name: str,
         db: AsyncSession,
+        company_id: str | None = None,  # P1-W4-15: tenant scoping
     ) -> dict[str, Any]:
         try:
+            _conditions = [ABTestResult.test_name == test_name]
+            if company_id:
+                _conditions.append(ABTestResult.company_id == company_id)  # P1-W4-15
+            else:
+                import logging as _log; _log.getLogger(__name__).warning(
+                    "[AB-TEST] get_test_results called without company_id — cross-tenant query (deprecated)")
             result = await db.execute(
                 select(ABTestResult).where(
-                    ABTestResult.test_name == test_name,
+                    *_conditions,
                 ).order_by(ABTestResult.created_at)
             )
             all_results = result.scalars().all()
