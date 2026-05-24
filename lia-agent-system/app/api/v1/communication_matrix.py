@@ -1,11 +1,15 @@
 """
-Communication Matrix API Endpoints.
+Communication Matrix API — multi-tenant safe.
 
 Provides endpoints for:
 - Listing all matrix entries (with module filter)
 - Listing available modules
 - Getting a specific entry
 - Updating entry configuration
+
+Onda 4.2e-P0-1+P0-2 (2026-05-23): removido `current_user.company_id` override
+do JWT (4 sites) + `get_by_id(uuid_id)` agora passa company_id (2 sites).
+REGRA 6 CLAUDE.md.
 - Resetting to platform defaults (seed data)
 """
 import logging
@@ -57,7 +61,7 @@ async def list_matrix_entries(
     current_user: User = Depends(get_current_user_or_demo), 
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
-    company_id = current_user.company_id
+    # Onda 4.2e-P0-1 (2026-05-23): override JWT removido — REGRA 6 CLAUDE.md
     """
     List all communication matrix entries.
     """
@@ -158,7 +162,7 @@ company_id: str = Depends(require_company_id)):
             )
 
         repo = CommunicationMatrixRepository(db)
-        entry = await repo.get_by_id(uuid_id)
+        entry = await repo.get_by_id(uuid_id, company_id=company_id)
 
         if not entry:
             raise HTTPException(
@@ -202,7 +206,7 @@ company_id: str = Depends(require_company_id)):
             )
 
         repo = CommunicationMatrixRepository(db)
-        entry = await repo.get_by_id(uuid_id)
+        entry = await repo.get_by_id(uuid_id, company_id=company_id)
 
         if not entry:
             raise HTTPException(
@@ -253,7 +257,7 @@ async def reset_matrix_to_defaults(
     current_user: User = Depends(get_current_user_or_demo), 
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
-    company_id = current_user.company_id
+    # Onda 4.2e-P0-1 (2026-05-23): override JWT removido — REGRA 6 CLAUDE.md
     """
     Reset the communication matrix to platform defaults.
     """
@@ -313,7 +317,7 @@ async def seed_matrix_entries(
     current_user: User = Depends(get_current_user_or_demo), 
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
-    company_id = current_user.company_id
+    # Onda 4.2e-P0-1 (2026-05-23): override JWT removido — REGRA 6 CLAUDE.md
     """
     Seed the communication matrix with default entries if it's empty.
     """
@@ -375,7 +379,7 @@ async def copy_defaults_to_company(
     current_user: User = Depends(get_current_user_or_demo), 
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
-    company_id = current_user.company_id
+    # Onda 4.2e-P0-1 (2026-05-23): override JWT removido — REGRA 6 CLAUDE.md
     """
     Copy platform default matrix entries to a specific company.
     """
