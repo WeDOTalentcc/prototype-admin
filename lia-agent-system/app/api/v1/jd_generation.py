@@ -120,6 +120,10 @@ class GenerateJDRequest(WeDoBaseModel):
     company_industry: str | None = None
     benefits: list[str] = []
     interview_stages: list[str] = []
+    # Cultura & EVP --- opcionais, injetados no prompt quando presentes
+    mission: str | None = None
+    vision: str | None = None
+    evp_bullets: list[str] | None = None
 
 
 def _build_tags(request: GenerateJDRequest) -> list[str]:
@@ -214,6 +218,16 @@ company_id: str = Depends(require_company_id)):
             "benefits": request.benefits,
             "interview_stages": request.interview_stages,
         }
+        # Cultura & EVP --- montar contexto se algum campo foi fornecido
+        _culture_parts = []
+        if request.mission:
+            _culture_parts.append("Missao: " + request.mission)
+        if request.vision:
+            _culture_parts.append("Visao: " + request.vision)
+        if request.evp_bullets:
+            _culture_parts.append("EVP/Proposta de Valor: " + "; ".join(request.evp_bullets))
+        if _culture_parts:
+            job_data["company_culture"] = "\n".join(_culture_parts)
         result = await jd_generator_service.generate_full_description(
             job_data=job_data,
             company_id=company_id,
