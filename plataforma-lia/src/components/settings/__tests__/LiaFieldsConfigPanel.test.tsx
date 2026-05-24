@@ -25,6 +25,12 @@ vi.mock("@/lib/api/api-fetch", () => ({
   apiFetch: (...args: unknown[]) => mockApiFetch(...args),
 }))
 
+// E1 audit (2026-05-21) added useAuth() for canSeeRawYaml role gate.
+// Default mock returns wedotalent_admin so the tenant-override tab renders.
+vi.mock("@/contexts/auth-context", () => ({
+  useAuth: () => ({ user: { role: "wedotalent_admin" } }),
+}))
+
 vi.mock("@/components/settings/LiaFieldToggle", () => ({
   LiaFieldToggle: ({ fieldKey }: { fieldKey: string }) => (
     <div data-testid={`lia-toggle-${fieldKey}`} />
@@ -75,14 +81,19 @@ describe("LiaFieldsConfigPanel — Wave 2 Agent B / T-13", () => {
       companyId: "test-company-uuid",
       isLoading: false,
     })
-    // Default mock: culture-profile GET returns empty config
+    // Default mock: field-toggles GET returns empty canonical config
     mockApiFetch.mockImplementation((url: string) => {
-      if (url.includes("culture-profile")) {
+      if (url.includes("/field-toggles")) {
         return Promise.resolve({
           ok: true,
           status: 200,
           json: () =>
-            Promise.resolve({ lia_field_toggles: {}, lia_instructions: {} }),
+            Promise.resolve({
+              company_id: "test-company-uuid",
+              toggles: {},
+              comments: {},
+              details: [],
+            }),
         })
       }
       if (url.endsWith("/admin/prompts/tenant-overrides")) {
@@ -159,12 +170,17 @@ describe("LiaFieldsConfigPanel — Wave 2 Agent B / T-13", () => {
     const user = userEvent.setup()
     // Override mock: PUT returns success
     mockApiFetch.mockImplementation((url: string, options?: RequestInit) => {
-      if (url.includes("culture-profile")) {
+      if (url.includes("/field-toggles")) {
         return Promise.resolve({
           ok: true,
           status: 200,
           json: () =>
-            Promise.resolve({ lia_field_toggles: {}, lia_instructions: {} }),
+            Promise.resolve({
+              company_id: "test-company-uuid",
+              toggles: {},
+              comments: {},
+              details: [],
+            }),
         })
       }
       if (url.endsWith("/admin/prompts/tenant-overrides")) {

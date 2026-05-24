@@ -13,7 +13,8 @@
  * Backward compat 100%: tab "fields" preserva comportamento original.
  *
  * Multi-tenancy: company_id via useCompanyId() (JWT) — nunca user input.
- * Persistência fields: PUT /api/backend-proxy/company/culture-profile/{companyId}
+ * Persistência toggles: PUT /api/backend-proxy/company/{companyId}/field-toggles
+ *   (body: { toggles, comments }) — schema canonical FieldTogglesUpdate
  * Persistência overrides: PUT /api/backend-proxy/admin/prompts/tenant-overrides/{path}
  */
 
@@ -107,7 +108,7 @@ export function LiaFieldsConfigPanel() {
     setError(null)
     try {
       const res = await apiFetch(
-        `/api/backend-proxy/company/culture-profile/${encodeURIComponent(companyId)}`,
+        `/api/backend-proxy/company/${encodeURIComponent(companyId)}/field-toggles`,
       )
       if (!res.ok) {
         if (res.status === 404 || res.status === 422) {
@@ -117,9 +118,15 @@ export function LiaFieldsConfigPanel() {
         throw new Error(`Failed to fetch config: ${res.status}`)
       }
       const data = await res.json()
+      // Backend canonical: data.toggles (Record<string,bool>) + data.comments (Record<string,str|null>)
+      // Filter null comments — schema FieldToggleResponse permite comment=null
+      const instructions: Record<string, string> = {}
+      for (const [k, v] of Object.entries(data.comments || {})) {
+        if (typeof v === "string" && v.trim()) instructions[k] = v
+      }
       setConfig({
-        lia_field_toggles: data.lia_field_toggles || {},
-        lia_instructions: data.lia_instructions || {},
+        lia_field_toggles: data.toggles || {},
+        lia_instructions: instructions,
       })
     } catch (err) {
       setError(err instanceof Error ? err.message : "Falha ao carregar configurações LIA")
@@ -144,13 +151,13 @@ export function LiaFieldsConfigPanel() {
       setSavingFields((prev) => new Set(prev).add(fieldKey))
       try {
         const res = await apiFetch(
-          `/api/backend-proxy/company/culture-profile/${encodeURIComponent(companyId)}`,
+          `/api/backend-proxy/company/${encodeURIComponent(companyId)}/field-toggles`,
           {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              lia_field_toggles: next.lia_field_toggles,
-              lia_instructions: next.lia_instructions,
+              toggles: next.lia_field_toggles,
+              comments: next.lia_instructions,
             }),
           },
         )
