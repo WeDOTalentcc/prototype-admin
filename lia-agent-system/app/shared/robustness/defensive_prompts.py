@@ -70,10 +70,21 @@ def get_clarification_message(
 def get_out_of_scope_response(category: str = "general") -> str:
     """
     Get an appropriate out-of-scope response.
-    
+
+    DEPRECATED (G8 canonical fix 2026-05-24): this function appends
+    WHAT_I_CAN_DO (a hardcoded bullet list) which contradicts
+    lia_persona.yaml Anti-pattern #1 ("Resposta-lista-de-capabilities"
+    is forbidden). Persona requires contextual responses based on
+    current page / open vacancies / pipeline — not generic feature dumps.
+
+    No live callers as of 2026-05-24 audit. Canonical sources:
+      - lia_persona.yaml (improvisation rules)
+      - system_prompt_builder.py Capabilities — Navegação section (G3)
+      - system_prompt_builder.py Capabilities — Ações section (G6)
+
     Args:
         category: Category of out-of-scope request
-        
+
     Returns:
         Friendly out-of-scope response
     """

@@ -25,6 +25,15 @@ prompts:
     technical_limit: "Essa funcionalidade específica ainda não está disponível. Posso ajudar com: gestão de vagas, busca e triagem de candidatos, movimentação no pipeline (aprovar, reprovar, avançar etapas), agendamento de entrevistas, avaliação WSI, comunicação com candidatos, relatórios e integrações com ATS."
     external_system: "Não tenho acesso a esse sistema externo. Posso ajudar com os sistemas integrados: Gupy, Pandapé e Merge.dev."
 
+  # DEPRECATED (G8 canonical fix 2026-05-24): this block contradicts
+  # lia_persona.yaml Anti-pattern #1 ("Resposta-lista-de-capabilities" is
+  # forbidden). The canonical sources for capability surfacing are now:
+  #   - lia_persona.yaml (persona behavior + improvisation rules)
+  #   - system_prompt_builder.py Capabilities — Navegação section (G3)
+  #   - system_prompt_builder.py Capabilities — Ações section (G6)
+  # Kept here for backwards compat with get_out_of_scope_response (which
+  # currently has no live callers — see defensive_prompts.py docstring).
+  # Remove this block once the consumer is fully migrated.
   what_i_can_do: |
     📋 **O que posso fazer por você:**
 
