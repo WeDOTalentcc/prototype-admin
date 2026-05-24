@@ -132,36 +132,117 @@ def rebuild_domain_index_task(domain: str, company_id: str):
         logger.warning("[Celery] rag.rebuild_domain_index failed: %s", exc)
         return 0
 
-@celery_app.task(base=TenantAwareTask, name="routing.recompute_adjustments")
-def recompute_routing_adjustments(company_id: str) -> dict:
-    """Recompute adaptive routing adjustments for a company.
+async def recompute_routing_adjustments_canonical(
+    company_id: str, db=None,
+) -> dict:
+    """Sprint 15.3-A canonical (2026-05-24): module-level async fn extracted
+    from Celery task `routing.recompute_adjustments` for MonitoringLoop wire.
+
+    Pattern Sprint 11: same as `check_dsr_overdue_canonical`,
+    `lgpd.run_cleanup_canonical`, etc. — MonitoringLoop calls direct;
+    Celery task delegates here (kept for legacy infra compat).
 
     Computes per-domain error rates from RoutingFeedback (last 30 days) and
-    caches the resulting confidence-adjustment factors to Redis (TTL=24h).
+    caches confidence-adjustment factors (0.8-1.2) to Redis (TTL=24h).
 
     Args:
         company_id: ID da empresa (ou "global" para ajuste global).
+        db: optional AsyncSession; opens AsyncSessionLocal if not passed.
 
     Returns:
-        Dict mapping domain → adjustment factor (0.8–1.2).
+        Dict mapping domain → adjustment factor.
+        Empty dict when no signal data (RoutingFeedback table empty for
+        this company in lookback window — _MIN_SAMPLES=10 gate).
+
+    Note: producer (record_correction) is currently NOT WIRED in prod.
+    This aggregator is ready to compute when producer starts emitting.
+    See: SIGNALS_INVENTORY.md (Sprint 15.1 audit).
     """
-    async def _run():
-        from lia_config.database import AsyncSessionLocal
+    from lia_config.database import AsyncSessionLocal
+    from app.shared.services.routing_learning_service import routing_learning_service
 
-        from app.shared.services.routing_learning_service import routing_learning_service
-
-        async with AsyncSessionLocal() as db:
+    if db is None:
+        async with AsyncSessionLocal() as _db:
             adj = await routing_learning_service.compute_domain_confidence_adjustments(
-                company_id, db
+                company_id, _db
             )
             await routing_learning_service.cache_adjustments(company_id, adj)
             return adj
+    adj = await routing_learning_service.compute_domain_confidence_adjustments(
+        company_id, db
+    )
+    await routing_learning_service.cache_adjustments(company_id, adj)
+    return adj
 
+
+async def recompute_routing_adjustments_all_tenants_canonical() -> dict:
+    """Sprint 15.3-A — iterate all active tenants + recompute per-tenant.
+
+    Called daily by MonitoringLoop. Returns aggregated stats:
+        {tenants_processed: int, tenants_with_adjustments: int, errors: int}
+
+    Per-tenant failure is logged but doesn't block other tenants (Sprint 11
+    fail-open pattern).
+    """
+    from lia_config.database import AsyncSessionLocal
+    from sqlalchemy import text
+
+    tenants_processed = 0
+    tenants_with_adjustments = 0
+    errors = 0
+
+    async with AsyncSessionLocal() as session:
+        try:
+            result = await session.execute(text(
+                "SELECT DISTINCT id FROM companies WHERE status = 'active' LIMIT 1000"
+            ))
+            tenant_ids = [str(r[0]) for r in result.fetchall()]
+        except Exception as exc:
+            logger.warning(
+                "[routing.recompute_adjustments] tenant list query failed: %s", exc,
+            )
+            return {"tenants_processed": 0, "tenants_with_adjustments": 0, "errors": 1}
+
+    for tenant_id in tenant_ids:
+        try:
+            adj = await recompute_routing_adjustments_canonical(tenant_id)
+            tenants_processed += 1
+            if adj:
+                tenants_with_adjustments += 1
+        except Exception as exc:
+            errors += 1
+            logger.warning(
+                "[routing.recompute_adjustments] tenant=%s failed: %s", tenant_id, exc,
+            )
+
+    # Also compute global (cross-tenant) adjustment
+    try:
+        adj = await recompute_routing_adjustments_canonical("global")
+        if adj:
+            tenants_with_adjustments += 1
+    except Exception as exc:
+        errors += 1
+        logger.warning("[routing.recompute_adjustments] global failed: %s", exc)
+
+    return {
+        "tenants_processed": tenants_processed,
+        "tenants_with_adjustments": tenants_with_adjustments,
+        "errors": errors,
+    }
+
+
+@celery_app.task(base=TenantAwareTask, name="routing.recompute_adjustments")
+def recompute_routing_adjustments(company_id: str) -> dict:
+    """Celery task wrapper — delegates to canonical async fn.
+
+    Sprint 15.3-A: behavior preserved. Caller can still invoke via Celery
+    (.delay/.apply_async) but canonical async fn é fonte de verdade.
+    """
     span = _celery_span("celery.task_start", "routing.recompute_adjustments")
     span.set_attribute("company_id", company_id)
 
     try:
-        result = asyncio.run(_run())
+        result = asyncio.run(recompute_routing_adjustments_canonical(company_id))
         _finish_celery_success(span, "routing.recompute_adjustments")
         return result
     except Exception as exc:

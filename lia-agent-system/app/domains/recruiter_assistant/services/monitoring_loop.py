@@ -562,6 +562,28 @@ class MonitoringLoop:
                     task_name, result,
                 )
 
+        # ─── Routing learning adjustments (Sprint 15.3-A Loop A POC) ───
+        # Migrated from Celery task routing.recompute_adjustments.
+        # Aggregator-side wire. Producer (record_correction) still pending —
+        # this loop computes adjustments per active tenant + caches Redis.
+        # When producer is wired (future), the loop has data immediately.
+        # Ref: SIGNALS_INVENTORY.md (Sprint 15.1 audit).
+        task_name = "routing.recompute_adjustments"
+        if self._should_run_daily(task_name):
+            async def _coro():
+                from app.jobs.tasks.ml import (
+                    recompute_routing_adjustments_all_tenants_canonical,
+                )
+                return await recompute_routing_adjustments_all_tenants_canonical()
+            ok, result = await self._retry_with_backoff(task_name, _coro)
+            if ok:
+                self._mark_daily_run(task_name)
+                logger.info(
+                    "[MonitoringLoop healthz] daily_task=%s result=%s",
+                    task_name, result,
+                )
+
+
         # ─── Voice retention purge (LGPD voice recordings) ───
         # Sprint 11.3 Batch 1 — migrated voice_retention.purge_daily
         task_name = "voice_retention.purge_daily"
