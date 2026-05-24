@@ -39,6 +39,14 @@ from app.auth.dependencies import get_current_active_user
 from app.auth.models import User
 from app.core.database import get_db, get_tenant_db
 from app.domains.persona.services import ai_persona_service
+from app.domains.persona.services.ai_persona_validator import (
+    CANONICAL_AI_TONES,
+    NAME_MAX_LEN,
+    NAME_MIN_LEN,
+    RESERVED_BRAND_TOKENS,
+    TONE_INSTRUCTIONS,
+    TONE_UI_METADATA,
+)
 from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
@@ -74,6 +82,54 @@ class AiPersonaUpdateRequest(BaseModel):
                              description="Novo nome (2-20 chars). Omita para não alterar.")
     tone: str | None = Field(default=None, max_length=32,
                              description="Tone canonical. Omita para não alterar.")
+
+
+class ToneOption(BaseModel):
+    """Catálogo de tom canonical para renderização da UI.
+
+    Tudo PT-BR — frontend renderiza direto sem mapping adicional. Audit
+    2026-05-24 F3.2: substituiu TONE_OPTIONS hardcoded em AiPersonaPanel.
+    Adicionar campo novo aqui exige sync com TONE_UI_METADATA no validator.
+    """
+    model_config = ConfigDict(extra="forbid")
+
+    value: str = Field(..., description="Enum canonical PT-BR (CANONICAL_AI_TONES)")
+    label_pt: str = Field(..., description="Rótulo curto pro cartão de seleção")
+    short_pt: str = Field(..., description="Subtítulo de 1 linha")
+    instruction: str = Field(..., description="Texto da instrução completa que vai pro system prompt")
+    preview_message_pt: str = Field(..., description="Exemplo do que a IA escreveria PARA o candidato")
+    preview_chat_pt: str = Field(..., description="Exemplo do que a IA escreveria no chat lateral")
+
+
+class NameConstraints(BaseModel):
+    """Constraints de nome que o frontend usa para validar inline antes
+    de submeter. Backend re-valida no PUT (defense-in-depth)."""
+    model_config = ConfigDict(extra="forbid")
+
+    min_length: int = Field(..., description="Comprimento mínimo (após strip)")
+    max_length: int = Field(..., description="Comprimento máximo (após strip)")
+    blocked_brand_tokens: list[str] = Field(
+        ...,
+        description=(
+            "Substrings case-insensitive bloqueadas (Claude, GPT, etc.). "
+            "Frontend usa para warning inline antes do submit; backend "
+            "rejeita com 422 se algum entrar."
+        ),
+    )
+
+
+class AiPersonaOptionsResponse(BaseModel):
+    """Catálogo completo retornado por GET /options.
+
+    Single source of truth para o frontend renderizar a UI da tab
+    "Personalidade da IA". Adicionar tom novo no validator (CANONICAL_AI_TONES
+    + TONE_INSTRUCTIONS + TONE_UI_METADATA + TONE_PT_TO_EN_LEGACY) propaga
+    automaticamente — zero deploy frontend.
+    """
+    model_config = ConfigDict(extra="forbid")
+
+    tones: list[ToneOption]
+    name_constraints: NameConstraints
 
 
 # ---------------------------------------------------------------------------
@@ -144,3 +200,44 @@ async def update_company_ai_persona(
             detail="Erro interno ao atualizar persona. Tente novamente.",
         ) from exc
     return AiPersonaResponse(**result)
+
+
+@router.get(
+    "/options",
+    response_model=AiPersonaOptionsResponse,
+    summary="Catálogo canonical de tons + constraints de nome (UI)",
+)
+async def get_ai_persona_options(
+    company_id: str = Depends(require_company_id),
+    _user: User = Depends(get_current_active_user),
+) -> AiPersonaOptionsResponse:
+    """Catálogo completo para a UI da tab "Personalidade da IA".
+
+    NÃO é per-tenant — é catálogo WeDOTalent-wide. Mas exige JWT válido
+    (require_company_id) para consistência com o resto do recurso e para
+    evitar exposição não-autenticada de blocklist + instruções textuais.
+
+    Audit 2026-05-24 F3.2: criado para eliminar drift backend↔frontend
+    causado por TONE_OPTIONS hardcoded em AiPersonaPanel.tsx.
+    """
+    tones = [
+        ToneOption(
+            value=tone,
+            label_pt=TONE_UI_METADATA[tone]["label_pt"],
+            short_pt=TONE_UI_METADATA[tone]["short_pt"],
+            instruction=TONE_INSTRUCTIONS[tone],
+            preview_message_pt=TONE_UI_METADATA[tone]["preview_message_pt"],
+            preview_chat_pt=TONE_UI_METADATA[tone]["preview_chat_pt"],
+        )
+        # Ordem canonical (mesma de CANONICAL_AI_TONES, não alfabética),
+        # para preservar a ordem visual atual dos cards no frontend.
+        for tone in CANONICAL_AI_TONES
+    ]
+    return AiPersonaOptionsResponse(
+        tones=tones,
+        name_constraints=NameConstraints(
+            min_length=NAME_MIN_LEN,
+            max_length=NAME_MAX_LEN,
+            blocked_brand_tokens=sorted(RESERVED_BRAND_TOKENS),
+        ),
+    )

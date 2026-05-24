@@ -24,6 +24,13 @@ export type AiPersonaTone =
   | "formal_amigavel"
   | "empatico"
 
+/**
+ * @deprecated F3.2 audit 2026-05-24 — use `useAiPersonaOptions()` para
+ * obter o catálogo canonical do backend. Esta constante existia como
+ * espelho local de CANONICAL_AI_TONES (backend) e criava drift garantido.
+ * Mantida temporariamente para não quebrar consumidores que ainda não
+ * migraram. Próxima sprint: remover quando 0 imports remanescentes.
+ */
 export const CANONICAL_TONES: AiPersonaTone[] = [
   "profissional",
   "amigavel",
@@ -32,6 +39,95 @@ export const CANONICAL_TONES: AiPersonaTone[] = [
   "formal_amigavel",
   "empatico",
 ]
+
+// ---------------------------------------------------------------------------
+// useAiPersonaOptions — catálogo canonical (tons + name constraints)
+// ---------------------------------------------------------------------------
+
+/**
+ * Single tone canonical retornado pelo backend.
+ * Schema espelha `ToneOption` em `lia-agent-system/app/api/v1/company_ai_persona.py`.
+ */
+export interface ToneOption {
+  value: string
+  label_pt: string
+  short_pt: string
+  instruction: string
+  preview_message_pt: string
+  preview_chat_pt: string
+}
+
+/**
+ * Constraints de nome (min/max length + blocklist de marcas IA terceiras).
+ * Backend é defense-in-depth: re-valida no PUT. Frontend usa para warning inline.
+ */
+export interface NameConstraints {
+  min_length: number
+  max_length: number
+  blocked_brand_tokens: string[]
+}
+
+export interface AiPersonaOptions {
+  tones: ToneOption[]
+  name_constraints: NameConstraints
+}
+
+interface UseAiPersonaOptionsResult {
+  options: AiPersonaOptions | null
+  isLoading: boolean
+  error: string | null
+}
+
+/**
+ * Carrega o catálogo canonical (tons + name constraints) do backend.
+ *
+ * Fail-loud (REGRA 4 anti-silent-fallback): se o fetch falhar, `options`
+ * fica `null` e `error` traz a mensagem. UI consumidora DEVE mostrar
+ * estado de erro e bloquear interação — nunca renderizar lista vazia
+ * silenciosamente.
+ */
+export function useAiPersonaOptions(): UseAiPersonaOptionsResult {
+  const [options, setOptions] = useState<AiPersonaOptions | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    const fetchOptions = async () => {
+      setIsLoading(true)
+      setError(null)
+      try {
+        const res = await apiFetch(
+          "/api/backend-proxy/company-ai-persona/options",
+        )
+        if (!res.ok) {
+          throw new Error(
+            `Falha ao carregar catálogo de tons (HTTP ${res.status})`,
+          )
+        }
+        const data = (await res.json()) as AiPersonaOptions
+        if (!cancelled) setOptions(data)
+      } catch (err) {
+        if (!cancelled) {
+          setError(
+            err instanceof Error
+              ? err.message
+              : "Falha ao carregar catálogo de tons",
+          )
+          setOptions(null)
+        }
+      } finally {
+        if (!cancelled) setIsLoading(false)
+      }
+    }
+    void fetchOptions()
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  return { options, isLoading, error }
+}
 
 export interface AiPersonaValidationError {
   code: string

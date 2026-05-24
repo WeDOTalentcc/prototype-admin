@@ -98,6 +98,103 @@ TONE_INSTRUCTIONS: dict[str, str] = {
 
 
 # ---------------------------------------------------------------------------
+# UI metadata canonical (labels/shorts/preview PT-BR)
+# ---------------------------------------------------------------------------
+
+# Source of truth para labels/shorts/preview consumidos pela UI. Audit
+# 2026-05-24 (F3.2): antes desse bloco, TONE_OPTIONS estava hardcoded em
+# plataforma-lia/src/components/settings/AiPersonaPanel.tsx criando drift
+# garantido — adicionar tom novo no backend exigia commit coordenado no
+# frontend e ninguém lembrava. Agora frontend consome via
+# GET /api/v1/company-ai-persona/options e a propagação é automática.
+#
+# label_pt: rótulo curto pro cartão de seleção (UI mostra como título)
+# short_pt: subtítulo de 1 linha (descrição curta do tom)
+# preview_message_pt: exemplo do que a IA escreveria PARA o candidato
+#   (e-mail/WhatsApp outbound). Use "LIA" como placeholder do nome — o
+#   frontend substitui dinamicamente pelo nome customizado.
+# preview_chat_pt: exemplo do que a IA escreveria PARA o recrutador no
+#   chat lateral. Não inclui o nome.
+TONE_UI_METADATA: dict[str, dict[str, str]] = {
+    "profissional": {
+        "label_pt": "Profissional",
+        "short_pt": "Cordial, direto, focado em resultados.",
+        "preview_message_pt": (
+            "Olá! Identificamos seu perfil para a vaga de Desenvolvedor. "
+            "Podemos agendar uma conversa para esta semana?"
+        ),
+        "preview_chat_pt": (
+            "Encontrei 12 candidatos compatíveis com a vaga. Quer que eu "
+            "priorize por experiência ou faixa salarial?"
+        ),
+    },
+    "amigavel": {
+        "label_pt": "Amigável",
+        "short_pt": "Caloroso, acessível, com leveza.",
+        "preview_message_pt": (
+            "Oi! Que bom encontrar seu perfil para a vaga de Desenvolvedor. "
+            "Você teria um tempinho essa semana pra gente conversar?"
+        ),
+        "preview_chat_pt": (
+            "Boa! Achei 12 candidatos legais pra essa vaga — quer que eu "
+            "te mostre os mais alinhados primeiro?"
+        ),
+    },
+    "formal": {
+        "label_pt": "Formal",
+        "short_pt": "Rigor protocolar, sem contrações, estrutura completa.",
+        "preview_message_pt": (
+            "Prezado(a) candidato(a), tenho o prazer de convidá-lo(a) para "
+            "conversarmos sobre a oportunidade de Desenvolvedor. Aguardo "
+            "seu retorno."
+        ),
+        "preview_chat_pt": (
+            "Foram identificados 12 candidatos compatíveis. Solicito sua "
+            "orientação quanto ao critério de priorização."
+        ),
+    },
+    "casual": {
+        "label_pt": "Casual",
+        "short_pt": "Descontraído, próximo, como conversa de WhatsApp.",
+        "preview_message_pt": (
+            "Ei! Vi que seu perfil bate com a vaga de Dev. Tem um tempinho "
+            "pra gente bater um papo essa semana?"
+        ),
+        "preview_chat_pt": (
+            "Achei uns 12 candidatos pra essa vaga. Qual ordem você prefere? "
+            "Por experiência ou por fit cultural?"
+        ),
+    },
+    "formal_amigavel": {
+        "label_pt": "Formal-amigável",
+        "short_pt": "Equilibra rigor profissional com calor humano.",
+        "preview_message_pt": (
+            "Olá! Foi um prazer encontrar seu perfil. Gostaria de convidar "
+            "você para conversarmos sobre a vaga de Desenvolvedor — quando "
+            "seria um bom momento?"
+        ),
+        "preview_chat_pt": (
+            "Encontrei 12 candidatos com boa aderência. Posso te mostrar "
+            "agrupados por senioridade, se ajudar?"
+        ),
+    },
+    "empatico": {
+        "label_pt": "Empático",
+        "short_pt": "Escuta, reconhecimento, acolhimento.",
+        "preview_message_pt": (
+            "Olá! Entendo que processos seletivos podem ser intensos. "
+            "Adoraria conversar com você sobre a vaga de Desenvolvedor — "
+            "escolha um horário que funcione bem pra você."
+        ),
+        "preview_chat_pt": (
+            "Sei que escolher entre vários candidatos não é fácil. Encontrei "
+            "12 perfis — quer que eu te ajude a pensar critério a critério?"
+        ),
+    },
+}
+
+
+# ---------------------------------------------------------------------------
 # Legacy dispatcher mapping (PT-BR → EN)
 # ---------------------------------------------------------------------------
 
@@ -143,6 +240,12 @@ DEFAULT_AI_TONE: str = "profissional"
 _NAME_MIN_LEN = 2
 _NAME_MAX_LEN = 20
 
+# Public aliases (audit 2026-05-24 F3.2): expostos pelo endpoint /options
+# para o frontend renderizar constraints inline. Mantemos os underscored
+# como privados pra não quebrar imports legacy desse módulo.
+NAME_MIN_LEN: int = _NAME_MIN_LEN
+NAME_MAX_LEN: int = _NAME_MAX_LEN
+
 # Alfanumérico (incluindo acentos PT-BR comuns) + espaço.
 # - Aceita: "LIA", "Sofia", "Ana Beatriz", "João", "Lia2025"
 # - Rejeita: "Sofia@Acme", "Sofia<script>", "Lia/Bot", emojis, símbolos
@@ -154,7 +257,7 @@ _NAME_PATTERN = re.compile(
 # — bloqueia "MyClaude", "GPT-4 Pro", "claudia" (esta é falsa coincidência
 # infeliz mas o trade-off é defender contra acidente). Se um nome legítimo
 # entrar no blocklist por falsa coincidência, ajustar aqui.
-_RESERVED_BRAND_TOKENS: tuple[str, ...] = (
+RESERVED_BRAND_TOKENS: tuple[str, ...] = (
     "claude",
     "anthropic",
     "chatgpt",
@@ -167,6 +270,10 @@ _RESERVED_BRAND_TOKENS: tuple[str, ...] = (
     "llama",
     "mistral",
 )
+
+# Private alias mantido para compat com validate_name (que ainda referencia
+# _RESERVED_BRAND_TOKENS internamente). Audit 2026-05-24 F3.2.
+_RESERVED_BRAND_TOKENS = RESERVED_BRAND_TOKENS
 
 
 # ---------------------------------------------------------------------------
@@ -345,7 +452,11 @@ def validate_persona(
 __all__ = [
     "CANONICAL_AI_TONES",
     "TONE_INSTRUCTIONS",
+    "TONE_UI_METADATA",
     "TONE_PT_TO_EN_LEGACY",
+    "NAME_MIN_LEN",
+    "NAME_MAX_LEN",
+    "RESERVED_BRAND_TOKENS",
     "DEFAULT_AI_NAME",
     "DEFAULT_AI_TONE",
     "ValidationResult",

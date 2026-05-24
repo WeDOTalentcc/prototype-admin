@@ -979,3 +979,94 @@ para um tenant:
   (`_append_ai_persona_override` linhas 75-148)
 - Audit fix commit: 2026-05-24 (canonical-fix + harness-engineering cascade)
 
+## Ai Persona /options canonical endpoint (registrado 2026-05-24 — F3.2)
+
+`GET /api/v1/company-ai-persona/options` é o single source of truth para
+a UI da tab "Personalidade da IA" em Minha Empresa renderizar tons + name
+constraints.
+
+### O que motivou
+
+Auditoria 2026-05-24 descobriu duplicação dos canonical tones em **3 lugares**:
+
+1. Backend (canonical): `ai_persona_validator.CANONICAL_AI_TONES` +
+   `TONE_INSTRUCTIONS` + `_RESERVED_BRAND_TOKENS`
+2. Frontend hook: `CANONICAL_TONES: AiPersonaTone[]` em `use-ai-persona.ts`
+3. Frontend panel: `TONE_OPTIONS` array com 6 entries x 5 fields em
+   `AiPersonaPanel.tsx`
+
+Adicionar tom novo exigia commit coordenado em 3 lugares — drift garantido.
+
+### Arquitetura canonical
+
+```
+ai_persona_validator.py (SINGLE SOURCE OF TRUTH)
+├── CANONICAL_AI_TONES        (tuple — ordem visual canonical)
+├── TONE_INSTRUCTIONS          (dict — texto pra system prompt)
+├── TONE_UI_METADATA           (dict — labels/shorts/previews PT-BR pra UI)  ← novo F3.2
+├── TONE_PT_TO_EN_LEGACY       (dict — boundary translator pro dispatcher)
+├── NAME_MIN_LEN / NAME_MAX_LEN (constraints expostos publicamente)         ← novo F3.2
+└── RESERVED_BRAND_TOKENS      (tuple — blocklist público)                  ← novo F3.2
+                  │
+                  ▼
+   GET /api/v1/company-ai-persona/options                                   ← novo F3.2
+   {tones: [{value, label_pt, short_pt, instruction,
+             preview_message_pt, preview_chat_pt}],
+    name_constraints: {min_length, max_length, blocked_brand_tokens}}
+                  │
+                  ▼
+   useAiPersonaOptions() hook canonical (use-ai-persona.ts)                 ← novo F3.2
+                  │
+                  ▼
+   AiPersonaPanel.tsx renderiza cards do `options.tones` (zero hardcoded)
+```
+
+### Regras canonical
+
+1. **NÃO redeclarar** `TONE_OPTIONS` ou `CANONICAL_TONES` literal em
+   qualquer arquivo frontend. Hook `useAiPersonaOptions()` é a única
+   forma de obter o catálogo. Sensor `check_ai_persona_options_no_frontend_drift.py`
+   barra reintrodução.
+
+2. **Adicionar tom novo** — workflow canonical (4 lugares no validator,
+   zero deploy frontend):
+   - `CANONICAL_AI_TONES` (tuple)
+   - `TONE_INSTRUCTIONS` (dict)
+   - `TONE_UI_METADATA` (dict — label_pt + short_pt + preview_message_pt +
+     preview_chat_pt)
+   - `TONE_PT_TO_EN_LEGACY` (dict — bucket EN para o dispatcher legacy)
+
+3. **Frontend propaga automaticamente** no próximo mount. Sem coordenação
+   inter-deploy.
+
+4. **Endpoint é read-only** (GET) e WeDOTalent-wide (catálogo não muda
+   per-tenant). Mas exige JWT válido (`Depends(require_company_id)`) pra
+   evitar expor blocklist + instruções textuais a anônimos.
+
+### Schemas
+
+- `ToneOption` (em `company_ai_persona.py`) — value + label_pt + short_pt
+  + instruction + preview_message_pt + preview_chat_pt. `extra="forbid"`.
+- `NameConstraints` — min_length + max_length + blocked_brand_tokens.
+- `AiPersonaOptionsResponse` — `{tones: [ToneOption], name_constraints: NameConstraints}`.
+
+### Sensores
+
+- `tests/contract/test_ai_persona_options_endpoint.py` — 8 sensors:
+  router registration, auth dependency, canonical coverage (tones match
+  `CANONICAL_AI_TONES`), schema integrity (labels/instructions match
+  validator), constraints match, schema `extra="forbid"`, order canonical
+  preservada.
+- `scripts/check_ai_persona_options_no_frontend_drift.py` — barra
+  reintrodução de `TONE_OPTIONS` em AiPersonaPanel e exige
+  `useAiPersonaOptions()` + JSDoc `@deprecated F3.2` no hook canonical.
+
+### Refs
+
+- Backend: `app/api/v1/company_ai_persona.py:get_ai_persona_options`
+- Validator: `app/domains/persona/services/ai_persona_validator.py:TONE_UI_METADATA`
+- Proxy: `plataforma-lia/src/app/api/backend-proxy/company-ai-persona/options/route.ts`
+- Hook: `plataforma-lia/src/hooks/company/use-ai-persona.ts:useAiPersonaOptions`
+- Panel: `plataforma-lia/src/components/settings/AiPersonaPanel.tsx`
+- Audit: 2026-05-24 F3.2 (canonical-fix + harness-engineering + lia-testing cascade)
+

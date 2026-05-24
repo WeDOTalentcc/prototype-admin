@@ -24,74 +24,10 @@ import { AlertCircle, CheckCircle2, Sparkles, ShieldCheck } from "lucide-react"
 import { textStyles } from "@/lib/design-tokens"
 import {
   useAiPersona,
-  CANONICAL_TONES,
+  useAiPersonaOptions,
   type AiPersonaTone,
+  type ToneOption,
 } from "@/hooks/company/use-ai-persona"
-
-interface ToneOption {
-  value: AiPersonaTone
-  label: string
-  short: string
-  previewMessage: string
-  previewChat: string
-}
-
-const TONE_OPTIONS: ToneOption[] = [
-  {
-    value: "profissional",
-    label: "Profissional",
-    short: "Cordial, direto, focado em resultados.",
-    previewMessage:
-      "Olá! Identificamos seu perfil para a vaga de Desenvolvedor. Podemos agendar uma conversa para esta semana?",
-    previewChat:
-      "Encontrei 12 candidatos compatíveis com a vaga. Quer que eu priorize por experiência ou faixa salarial?",
-  },
-  {
-    value: "amigavel",
-    label: "Amigável",
-    short: "Caloroso, acessível, com leveza.",
-    previewMessage:
-      "Oi! Que bom encontrar seu perfil para a vaga de Desenvolvedor. Você teria um tempinho essa semana pra gente conversar?",
-    previewChat:
-      "Boa! Achei 12 candidatos legais pra essa vaga — quer que eu te mostre os mais alinhados primeiro?",
-  },
-  {
-    value: "formal",
-    label: "Formal",
-    short: "Rigor protocolar, sem contrações, estrutura completa.",
-    previewMessage:
-      "Prezado(a) candidato(a), tenho o prazer de convidá-lo(a) para conversarmos sobre a oportunidade de Desenvolvedor. Aguardo seu retorno.",
-    previewChat:
-      "Foram identificados 12 candidatos compatíveis. Solicito sua orientação quanto ao critério de priorização.",
-  },
-  {
-    value: "casual",
-    label: "Casual",
-    short: "Descontraído, próximo, como conversa de WhatsApp.",
-    previewMessage:
-      "Ei! Vi que seu perfil bate com a vaga de Dev. Tem um tempinho pra gente bater um papo essa semana?",
-    previewChat:
-      "Achei uns 12 candidatos pra essa vaga. Qual ordem você prefere? Por experiência ou por fit cultural?",
-  },
-  {
-    value: "formal_amigavel",
-    label: "Formal-amigável",
-    short: "Equilibra rigor profissional com calor humano.",
-    previewMessage:
-      "Olá! Foi um prazer encontrar seu perfil. Gostaria de convidar você para conversarmos sobre a vaga de Desenvolvedor — quando seria um bom momento?",
-    previewChat:
-      "Encontrei 12 candidatos com boa aderência. Posso te mostrar agrupados por senioridade, se ajudar?",
-  },
-  {
-    value: "empatico",
-    label: "Empático",
-    short: "Escuta, reconhecimento, acolhimento.",
-    previewMessage:
-      "Olá! Entendo que processos seletivos podem ser intensos. Adoraria conversar com você sobre a vaga de Desenvolvedor — escolha um horário que funcione bem pra você.",
-    previewChat:
-      "Sei que escolher entre vários candidatos não é fácil. Encontrei 12 perfis — quer que eu te ajude a pensar critério a critério?",
-  },
-]
 
 export function AiPersonaPanel() {
   const {
@@ -102,6 +38,11 @@ export function AiPersonaPanel() {
     validationErrors,
     update,
   } = useAiPersona()
+  const {
+    options,
+    isLoading: optionsLoading,
+    error: optionsError,
+  } = useAiPersonaOptions()
 
   const [draftName, setDraftName] = useState<string>("")
   const [draftTone, setDraftTone] = useState<AiPersonaTone>("profissional")
@@ -115,8 +56,9 @@ export function AiPersonaPanel() {
     }
   }, [persona, draftName])
 
+  const toneOptions: ToneOption[] = options?.tones ?? []
   const previewedTone =
-    TONE_OPTIONS.find((opt) => opt.value === draftTone) ?? TONE_OPTIONS[0]
+    toneOptions.find((opt) => opt.value === draftTone) ?? toneOptions[0] ?? null
 
   const handleSave = async () => {
     setSavedFeedback(null)
@@ -199,33 +141,55 @@ export function AiPersonaPanel() {
       {/* Tom */}
       <div className="space-y-2">
         <Label className="text-sm font-medium">Tom de Voz</Label>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {TONE_OPTIONS.map((opt) => {
-            const isSelected = draftTone === opt.value
-            return (
-              <button
-                key={opt.value}
-                type="button"
-                onClick={() => setDraftTone(opt.value)}
-                disabled={isLoading || isSaving}
-                data-testid={`ai-persona-tone-${opt.value}`}
-                className={`text-left rounded-2xl border p-4 transition-all ${
-                  isSelected
-                    ? "border-lia-accent-default bg-lia-accent-soft ring-2 ring-lia-accent-default"
-                    : "border-lia-border-default bg-lia-bg-primary hover:border-lia-border-strong"
-                }`}
-              >
-                <div className="flex items-center justify-between mb-1">
-                  <span className="font-medium text-sm">{opt.label}</span>
-                  {isSelected && (
-                    <CheckCircle2 className="w-4 h-4 text-lia-accent-default" />
-                  )}
-                </div>
-                <p className="text-xs text-lia-text-secondary">{opt.short}</p>
-              </button>
-            )
-          })}
-        </div>
+        {optionsLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {[0, 1, 2, 3, 4, 5].map((idx) => (
+              <div
+                key={idx}
+                className="rounded-2xl border border-lia-border-default bg-lia-bg-primary p-4 h-[78px] animate-pulse"
+                aria-hidden="true"
+              />
+            ))}
+          </div>
+        ) : optionsError || !options ? (
+          <div className="rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 p-3 flex items-start gap-2">
+            <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
+            <p className="text-sm text-red-700 dark:text-red-300">
+              Não foi possível carregar as opções de tom. Recarregue a página
+              para tentar novamente.
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {toneOptions.map((opt) => {
+              const isSelected = draftTone === opt.value
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setDraftTone(opt.value as AiPersonaTone)}
+                  disabled={isLoading || isSaving}
+                  data-testid={`ai-persona-tone-${opt.value}`}
+                  className={`text-left rounded-2xl border p-4 transition-all ${
+                    isSelected
+                      ? "border-lia-accent-default bg-lia-accent-soft ring-2 ring-lia-accent-default"
+                      : "border-lia-border-default bg-lia-bg-primary hover:border-lia-border-strong"
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="font-medium text-sm">{opt.label_pt}</span>
+                    {isSelected && (
+                      <CheckCircle2 className="w-4 h-4 text-lia-accent-default" />
+                    )}
+                  </div>
+                  <p className="text-xs text-lia-text-secondary">
+                    {opt.short_pt}
+                  </p>
+                </button>
+              )
+            })}
+          </div>
+        )}
         {toneErr && (
           <div className="rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900 p-2 text-xs text-amber-700 dark:text-amber-300">
             <strong>{toneErr.message}</strong>
@@ -235,29 +199,34 @@ export function AiPersonaPanel() {
       </div>
 
       {/* Preview */}
-      <Card>
-        <CardContent className="p-5 space-y-3">
-          <Label className="text-sm font-medium">Preview</Label>
-          <div className="space-y-3 text-sm">
-            <div className="p-3 rounded-xl bg-lia-bg-primary border border-lia-border-default">
-              <p className="text-xs font-medium text-lia-text-tertiary mb-1">
-                {draftName || "LIA"} → candidato (e-mail / WhatsApp)
-              </p>
-              <p className="text-lia-text-primary">
-                {previewedTone.previewMessage.replace(/\bLIA\b/g, draftName || "LIA")}
-              </p>
+      {previewedTone && (
+        <Card>
+          <CardContent className="p-5 space-y-3">
+            <Label className="text-sm font-medium">Preview</Label>
+            <div className="space-y-3 text-sm">
+              <div className="p-3 rounded-xl bg-lia-bg-primary border border-lia-border-default">
+                <p className="text-xs font-medium text-lia-text-tertiary mb-1">
+                  {draftName || "LIA"} → candidato (e-mail / WhatsApp)
+                </p>
+                <p className="text-lia-text-primary">
+                  {previewedTone.preview_message_pt.replace(
+                    /\bLIA\b/g,
+                    draftName || "LIA",
+                  )}
+                </p>
+              </div>
+              <div className="p-3 rounded-xl bg-lia-bg-primary border border-lia-border-default">
+                <p className="text-xs font-medium text-lia-text-tertiary mb-1">
+                  {draftName || "LIA"} → você (chat lateral)
+                </p>
+                <p className="text-lia-text-primary">
+                  {previewedTone.preview_chat_pt}
+                </p>
+              </div>
             </div>
-            <div className="p-3 rounded-xl bg-lia-bg-primary border border-lia-border-default">
-              <p className="text-xs font-medium text-lia-text-tertiary mb-1">
-                {draftName || "LIA"} → você (chat lateral)
-              </p>
-              <p className="text-lia-text-primary">
-                {previewedTone.previewChat}
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Compliance imutável */}
       <div className="rounded-2xl bg-lia-bg-tertiary border border-lia-border-default p-4 flex items-start gap-3">
