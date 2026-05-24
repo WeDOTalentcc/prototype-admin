@@ -1,5 +1,5 @@
 """
-External Webhook Endpoints - Inbound webhooks from external services.
+External Webhooks API.
 
 Receives events from:
 - ATS platforms (Gupy, Pandapé, Merge)
@@ -291,6 +291,11 @@ async def process_ats_candidate_hired(platform: str, payload: dict[str, Any]):
         # T-10 Fase 5 WIRE canonical (ADR-032): HIRED_EXTERNAL outcome learning loop.
         # Fail-soft via helper canonical (wire_feedback_outcome nunca raises).
         # Resolves company_id + job_id best-effort from payload — skip se ausentes.
+        # Onda 4.2e-P0-12 (2026-05-23): payload company_id documentado como
+        # untrusted (vem do webhook ATS externo). Idealmente derivar via
+        # mapeamento secret→tenant (Task #1146 verify_webhook_owner pattern).
+        # Por enquanto mantido como best-effort fail-soft (skip se ausente
+        # OU se inconsistente com config local — TODO sensor).
         _company_id = payload.get("company_id") or payload.get("tenant_id")
         _job_id = (
             payload.get("vacancy_id")
@@ -345,6 +350,11 @@ async def process_ats_candidate_rejected(platform: str, payload: dict[str, Any])
         logger.info(f"[ATS SYNC] Candidate rejected in {platform}: {candidate_id}")
 
         # T-10 Fase 5 WIRE canonical: REJECTED outcome via ats_integration domain.
+        # Onda 4.2e-P0-12 (2026-05-23): payload company_id documentado como
+        # untrusted (vem do webhook ATS externo). Idealmente derivar via
+        # mapeamento secret→tenant (Task #1146 verify_webhook_owner pattern).
+        # Por enquanto mantido como best-effort fail-soft (skip se ausente
+        # OU se inconsistente com config local — TODO sensor).
         _company_id = payload.get("company_id") or payload.get("tenant_id")
         _job_id = (
             payload.get("vacancy_id")
@@ -384,11 +394,14 @@ async def handle_interview_webhook(
     provider: str,
     request: Request,
     background_tasks: BackgroundTasks,
+    company_id: str = Depends(require_company_id),
 ):
-    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
-    """
-    Receive webhook from interview scheduling tools.
-    Supported providers: calendly, custom
+    """Receive webhook from interview scheduling tools (calendly, custom).
+
+    Onda 4.2e-P0-9 (2026-05-23): adicionado require_company_id — antes
+    era endpoint TOTALMENTE ABERTO (sem signature, sem auth) que aceitava
+    payload spoofado de qualquer atacante para trigger workflow + LGPD
+    leak. TODO: migrar pra verify_webhook_owner canonical (Task #1146).
     """
     if not is_webhook_adapter_enabled(f"interview_{provider}"):
         return {"status": "disabled", "provider": provider}
@@ -410,11 +423,14 @@ async def handle_test_webhook(
     provider: str,
     request: Request,
     background_tasks: BackgroundTasks,
+    company_id: str = Depends(require_company_id),
 ):
-    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
-    """
-    Receive webhook from assessment/test platforms.
-    Supported providers: testgorilla, codility, custom
+    """Receive webhook from assessment/test platforms (testgorilla, codility, custom).
+
+    Onda 4.2e-P0-10 (2026-05-23): adicionado require_company_id — antes
+    era endpoint aberto, atacante injetava resultados de teste falsos
+    em candidatos arbitrarios (promove candidate sem ter feito teste).
+    TODO: migrar pra verify_webhook_owner canonical.
     """
     if not is_webhook_adapter_enabled(f"test_{provider}"):
         return {"status": "disabled", "provider": provider}
@@ -436,10 +452,13 @@ async def handle_document_webhook(
     provider: str,
     request: Request,
     background_tasks: BackgroundTasks,
+    company_id: str = Depends(require_company_id),
 ):
-    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
-    """
-    Receive webhook from document collection services.
+    """Receive webhook from document collection services.
+
+    Onda 4.2e-P0-11 (2026-05-23): adicionado require_company_id — antes
+    atacante registrava "documento submetido" para qualquer candidato.
+    LGPD Art. 38 (uso indevido de declaracao de documentacao).
     """
     if not is_webhook_adapter_enabled(f"document_{provider}"):
         return {"status": "disabled", "provider": provider}
