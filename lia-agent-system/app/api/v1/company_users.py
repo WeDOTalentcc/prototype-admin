@@ -34,7 +34,7 @@ from app.schemas.company import (
     SmartWizardGreetingResponse,
 )
 from app.domains.company.services.company_configuration_service import company_config_service
-from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.security.require_company_id import require_company_id
 from app.shared.compliance.audit_service import AuditService  # P1-W2-06
 
 FRONTEND_URL = os.getenv("FRONTEND_URL", "https://plataforma-lia.replit.app")
@@ -46,15 +46,11 @@ router = APIRouter(prefix="/company", tags=["company"])
 
 @router.get("/global-search-settings", response_model=GlobalSearchSettingsResponse)
 async def get_global_search_settings(
-    company_id: str | None = Query(None, description="Company ID for multi-tenant isolation"),
-    gs_repo: GlobalSettingsRepository = Depends(get_global_settings_repo),
-_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
-    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
+    company_id: str = Depends(require_company_id),
+    gs_repo: GlobalSettingsRepository = Depends(get_global_settings_repo)):
+    # multi-tenancy: company_id JWT-only via Depends(require_company_id)
     """Get global search settings for a specific company (multi-tenant isolated)."""
     try:
-        if not company_id:
-            raise HTTPException(status_code=400, detail="company_id is required")
-
         settings = await gs_repo.get_for_company(company_id)
         if not settings:
             settings = await gs_repo.create_or_update(company_id, {
@@ -80,15 +76,11 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 @router.put("/global-search-settings", response_model=GlobalSearchSettingsResponse)
 async def update_global_search_settings(
     data: GlobalSearchSettingsUpdate,
-    company_id: str | None = Query(None, description="Company ID for multi-tenant isolation"),
-    gs_repo: GlobalSettingsRepository = Depends(get_global_settings_repo),
-_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
-    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
+    company_id: str = Depends(require_company_id),
+    gs_repo: GlobalSettingsRepository = Depends(get_global_settings_repo)):
+    # multi-tenancy: company_id JWT-only via Depends(require_company_id)
     """Update global search settings for a specific company (multi-tenant isolated)."""
     try:
-        if not company_id:
-            raise HTTPException(status_code=400, detail="company_id is required")
-
         update_data = data.model_dump(exclude_unset=True)
         update_data["updated_at"] = datetime.utcnow()
         settings = await gs_repo.create_or_update(company_id, update_data)
@@ -107,19 +99,15 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 
 @router.get("/users", response_model=list[UserManagementResponse])
 async def list_users(
-    company_id: str = Query(..., description="Company ID (required for tenant isolation)"),
-    user_repo: UserRepository = Depends(get_user_repo),
-_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
-    # multi-tenancy: query.company_id é validado vs JWT via require_company_id_strict_match
+    company_id: str = Depends(require_company_id),
+    user_repo: UserRepository = Depends(get_user_repo)):
+    # multi-tenancy: company_id JWT-only via Depends(require_company_id)
     """List all users for a company.
 
     Audit Wave 3 (2026-05-21) — P1.A cleanup: removido dead-code branch
     de cross-tenant recovery. require_company_id_strict_match já enforça
     query=JWT antes do handler executar (HTTP 403 retornado pelo gate).
     """
-    if not company_id or company_id in ("default", "unknown"):
-        raise HTTPException(status_code=400, detail="Valid company_id is required")
-
     try:
         return await user_repo.list_for_company(company_id, is_active=None)
     except HTTPException:
@@ -132,12 +120,11 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 @router.post("/users", response_model=UserManagementResponse, status_code=201)
 async def create_user(
     data: UserManagementCreate,
-    company_id: str = Query(..., description="Company ID (JWT-validated)"),
+    company_id: str = Depends(require_company_id),
     user_repo: UserRepository = Depends(get_user_repo),
     email_svc: EmailService = Depends(get_email_service),
-    current_user=Depends(get_current_user_or_demo),
-_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
-    # multi-tenancy: query.company_id validado vs JWT via require_company_id_strict_match
+    current_user=Depends(get_current_user_or_demo)):
+    # multi-tenancy: company_id JWT-only via Depends(require_company_id)
     """Create a new user with invitation token.
 
     Audit Wave 3 (2026-05-21) — P0.B + P0.A:
