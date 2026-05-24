@@ -1,18 +1,28 @@
 """
-Policy Engine API Endpoints.
+Policy Engine API.
 
 Provides endpoints for:
-- Listing and managing business rules
-- Listing and managing rate limit rules
-- Listing and managing escalation rules
+- Listing and managing business rules (tenant-scoped via JWT)
+- Listing and managing rate limit/escalation rules
 - Evaluating policies
-- Seeding default rules
+- Seeding default rules (wedotalent_admin ONLY — Onda 4.2d-P0-13)
+
+Onda 4.2d-P0-8 a P0-13 (2026-05-23): regulatory hardening:
+- Business/rate-limit/escalation rules: company_id 100% JWT (payload nao
+  pode sobrescrever — fechou P0-8, P0-11).
+- Mutation endpoints (update/delete/resolve) pre-check
+  `rule.company_id == company_id` (fechou P0-9, P0-10).
+- Sector defaults: strict_match path.company_id (fechou P0-12).
+- Seed: wedotalent_admin gate (fechou P0-13).
+- user_id agora vem do JWT, nao X-User-ID header forjavel.
 """
 import logging
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 
+from app.auth.dependencies import get_current_active_user
+from app.auth.models import User, UserRole
 from app.domains.policy.dependencies import get_policy_repo
 from app.domains.policy.repositories.policy_repository import PolicyRepository
 from app.domains.policy.services.policy_engine_service import PolicyEngineService, get_policy_engine_service
@@ -47,17 +57,29 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/policy-engine", tags=["policy-engine"])
 
 
+def require_wedotalent_admin(
+    current_user: User = Depends(get_current_active_user),
+) -> User:
+    """Onda 4.2d-P0-13 (2026-05-23): gate pra seed/sector defaults.
+
+    Apenas staff WeDOTalent pode mutar config platform-wide.
+    """
+    if current_user.role != UserRole.wedotalent_admin:
+        raise HTTPException(
+            status_code=403,
+            detail="Only WeDOTalent staff can seed default policies.",
+        )
+    return current_user
+
+
 def get_user_id_from_header(
-    x_user_id: str | None = Header(None, alias="X-User-ID")
-) -> str | None:
-    """Extract user ID from header if present."""
-    if x_user_id:
-        try:
-            UUID(x_user_id)
-            return x_user_id
-        except ValueError:
-            pass
-    return None
+    current_user: User = Depends(get_current_active_user),
+) -> str:
+    """Get user ID from JWT (NO header).
+
+    Onda 4.2d (2026-05-23): antes lia X-User-ID forjavel. Agora JWT-only.
+    """
+    return str(current_user.id)
 
 
 @router.get("", response_model=PolicyListResponse, summary="List all policies")
@@ -133,13 +155,19 @@ _company_gate: str = Depends(require_company_id)):
 async def get_business_rule(
     rule_id: str,
     repo: PolicyRepository = Depends(get_policy_repo),
-company_id: str = Depends(require_company_id)):
-    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
-    """Get a specific business rule."""
+    company_id: str = Depends(require_company_id),
+):
+    """Get a specific business rule.
+
+    Onda 4.2d-P0-9 (2026-05-23): cross-tenant guard via pre-check
+    `rule.company_id == company_id`. Antes user empresa A podia ler
+    business rule da empresa B passando o UUID.
+    """
     try:
         rule_uuid = UUID(rule_id)
         rule = await repo.get_business_rule(rule_uuid)
-        if not rule:
+        if not rule or str(rule.company_id) != str(company_id):
+            # 404 (no enumeration leak)
             raise HTTPException(status_code=404, detail="Business rule not found")
         return BusinessRuleResponse(**rule.to_dict())
     except ValueError:
@@ -148,7 +176,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting business rule: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.put("/business-rules/{rule_id}", response_model=BusinessRuleResponse, summary="Update business rule")
@@ -156,13 +184,16 @@ async def update_business_rule(
     rule_id: str,
     data: BusinessRuleUpdate,
     repo: PolicyRepository = Depends(get_policy_repo),
-company_id: str = Depends(require_company_id)):
-    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
-    """Update a business rule."""
+    company_id: str = Depends(require_company_id),
+):
+    """Update a business rule.
+
+    Onda 4.2d-P0-9 (2026-05-23): cross-tenant guard.
+    """
     try:
         rule_uuid = UUID(rule_id)
         rule = await repo.get_business_rule(rule_uuid)
-        if not rule:
+        if not rule or str(rule.company_id) != str(company_id):
             raise HTTPException(status_code=404, detail="Business rule not found")
         update_data = data.model_dump(exclude_unset=True)
         rule = await repo.update_business_rule(rule, update_data)
@@ -173,20 +204,23 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error updating business rule: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.delete("/business-rules/{rule_id}", summary="Delete business rule", response_model=None)
 async def delete_business_rule(
     rule_id: str,
     repo: PolicyRepository = Depends(get_policy_repo),
-company_id: str = Depends(require_company_id)):
-    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
-    """Delete a business rule."""
+    company_id: str = Depends(require_company_id),
+):
+    """Delete a business rule.
+
+    Onda 4.2d-P0-9 (2026-05-23): cross-tenant guard.
+    """
     try:
         rule_uuid = UUID(rule_id)
         rule = await repo.get_business_rule(rule_uuid)
-        if not rule:
+        if not rule or str(rule.company_id) != str(company_id):
             raise HTTPException(status_code=404, detail="Business rule not found")
         await repo.delete_business_rule(rule)
         return {"message": "Business rule deleted successfully"}
@@ -196,7 +230,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error deleting business rule: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/rate-limit-rules", response_model=RateLimitRuleResponse, summary="Create rate limit rule")
@@ -234,13 +268,16 @@ async def update_rate_limit_rule(
     rule_id: str,
     data: RateLimitRuleUpdate,
     repo: PolicyRepository = Depends(get_policy_repo),
-company_id: str = Depends(require_company_id)):
-    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
-    """Update a rate limit rule."""
+    company_id: str = Depends(require_company_id),
+):
+    """Update a rate limit rule.
+
+    Onda 4.2d-P0-10 (2026-05-23): cross-tenant guard.
+    """
     try:
         rule_uuid = UUID(rule_id)
         rule = await repo.get_rate_limit_rule(rule_uuid)
-        if not rule:
+        if not rule or str(rule.company_id) != str(company_id):
             raise HTTPException(status_code=404, detail="Rate limit rule not found")
         update_data = data.model_dump(exclude_unset=True)
         rule = await repo.update_rate_limit_rule(rule, update_data)
@@ -251,7 +288,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error updating rate limit rule: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/escalation-rules", response_model=EscalationRuleResponse, summary="Create escalation rule")
@@ -290,13 +327,16 @@ async def update_escalation_rule(
     rule_id: str,
     data: EscalationRuleUpdate,
     repo: PolicyRepository = Depends(get_policy_repo),
-company_id: str = Depends(require_company_id)):
-    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
-    """Update an escalation rule."""
+    company_id: str = Depends(require_company_id),
+):
+    """Update an escalation rule.
+
+    Onda 4.2d-P0-10 (2026-05-23): cross-tenant guard.
+    """
     try:
         rule_uuid = UUID(rule_id)
         rule = await repo.get_escalation_rule(rule_uuid)
-        if not rule:
+        if not rule or str(rule.company_id) != str(company_id):
             raise HTTPException(status_code=404, detail="Escalation rule not found")
         update_data = data.model_dump(exclude_unset=True)
         rule = await repo.update_escalation_rule(rule, update_data)
@@ -444,9 +484,11 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
 @router.post("/seed", response_model=PolicySeedResponse, summary="Seed default policies")
 async def seed_default_policies(
     service: PolicyEngineService = Depends(get_policy_engine_service),
-company_id: str = Depends(require_company_id)):
-    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
-    """Seed the database with default policy rules."""
+    # Onda 4.2d-P0-13 (2026-05-23): wedotalent_admin gate.
+    _staff: User = Depends(require_wedotalent_admin),
+    company_id: str = Depends(require_company_id),
+):
+    """Seed the database with default policy rules (staff-only)."""
     try:
         stats = await service.load_default_rules()
 
