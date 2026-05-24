@@ -23,6 +23,23 @@ from app.shared.compliance.c3b_layer import (  # W3-014 (2026-05-23)
 
 logger = logging.getLogger(__name__)
 
+
+# Sprint 9.2 (NS-5 latency fix, 2026-05-24): agentic LLM timeout configurable.
+# Default 60s (was 30s — too tight for Claude API with full tool schema in
+# slow-network periods). Env override LIA_AGENTIC_LLM_TIMEOUT_SECONDS for
+# ops tuning. Cap at 120s to avoid infinite hang.
+def _resolve_agentic_llm_timeout() -> float:
+    import os
+    raw = os.environ.get("LIA_AGENTIC_LLM_TIMEOUT_SECONDS", "60")
+    try:
+        v = float(raw)
+    except (TypeError, ValueError):
+        v = 60.0
+    return max(5.0, min(120.0, v))
+
+
+_AGENTIC_LLM_TIMEOUT_SECONDS = _resolve_agentic_llm_timeout()
+
 MAX_TOOL_ITERATIONS = int(os.getenv("LIA_MAX_TOOL_ITERATIONS", "3"))
 
 
@@ -176,6 +193,7 @@ class AgenticLoop:
         for iteration in range(max_iter):
             # --- Call LLM with tool schemas ---
             try:
+                _t_llm_start = asyncio.get_event_loop().time()
                 llm_response = await asyncio.wait_for(
                     self._llm_service.generate_with_tools(
                         messages=messages,
@@ -183,10 +201,16 @@ class AgenticLoop:
                         provider=provider,
                         system_prompt=system_prompt or None,
                     ),
-                    timeout=30.0,
+                    timeout=_AGENTIC_LLM_TIMEOUT_SECONDS,
                 )
             except asyncio.TimeoutError:
-                logger.warning("[LIA-A04] LLM tool-call timed out (iter %d)", iteration)
+                _t_elapsed = asyncio.get_event_loop().time() - _t_llm_start
+                logger.warning(
+                    "[LIA-A04] LLM tool-call timed out (iter %d, provider=%s, "
+                    "elapsed=%.1fs, limit=%.1fs). Falling through to Phase 2 V1 — "
+                    "if frequent, bump LIA_AGENTIC_LLM_TIMEOUT_SECONDS env.",
+                    iteration, provider, _t_elapsed, _AGENTIC_LLM_TIMEOUT_SECONDS,
+                )
                 break
             except Exception as exc:
                 logger.warning("[LIA-A04] LLM tool-call failed: %s", exc)
