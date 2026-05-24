@@ -549,6 +549,59 @@ class MainOrchestrator:
                     pending_response.fairness_warnings = _soft_warnings
                 return pending_response
 
+            # ── Phase 0.6: Policy Gate (Sprint 12.5-B4) ─────────────────────
+            # Validate against tenant policies BEFORE action dispatch.
+            # Mirror of V1 legacy policy_gate.validate call (legacy/orchestrator.py:181).
+            #
+            # Pre-action gate with intent="general_chat" (SAFE_INTENTS fast-path):
+            # - Per-user rate limits still applied
+            # - Blocked-user check still applied
+            # - Tenant-level guardrails (e.g. global "agent disabled") still applied
+            #
+            # Intent-specific gates (e.g. delete_candidate, publish_job) would
+            # chain in action_executor with the resolved intent. Deferred to
+            # Sprint 12.5-B4-extra.
+            #
+            # Fail-open canonical: PolicyGate itself fail-safe (returns
+            # PolicyResult with allowed=True+engine_unavailable=True on engine
+            # error). Wrap in try/except for defense-in-depth.
+            if self._policy_gate_service is not None:
+                try:
+                    _policy_result = await self._policy_gate_service.validate(
+                        intent="general_chat",
+                        user_id=ctx.user_id or "anon",
+                        context={
+                            "company_id": str(ctx.company_id) if ctx.company_id else None,
+                            "user_id": ctx.user_id,
+                            "channel": ctx.channel,
+                        },
+                    )
+                    if not _policy_result.allowed:
+                        logger.warning(
+                            "[MainOrchestrator] Phase 0.6 policy gate DENIED: "
+                            "user=%s company=%s reason=%s",
+                            ctx.user_id, ctx.company_id, _policy_result.reason,
+                        )
+                        return ChatResponse(
+                            success=False,
+                            content=(
+                                _policy_result.reason
+                                or "Acesso negado por política do tenant. "
+                                   "Entre em contato com seu administrador."
+                            ),
+                            agent_used="policy_gate",
+                            confidence=1.0,
+                            intent_detected="blocked_policy",
+                            conversation_id=conv_id,
+                            error_code="POLICY_DENIED",
+                            error_category="policy_gate",
+                        )
+                except Exception as _policy_exc:
+                    logger.debug(
+                        "[MainOrchestrator] Phase 0.6 policy gate skipped (fail-open): %s",
+                        _policy_exc,
+                    )
+
             # ── Phase 1: ActionExecutor ────────────────────────────────────
             action_response = await self._try_action_executor(ctx, conv_id)
             if action_response is not None:
