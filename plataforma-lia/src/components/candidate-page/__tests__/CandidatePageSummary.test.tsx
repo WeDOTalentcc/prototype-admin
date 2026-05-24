@@ -109,4 +109,50 @@ describe("CandidatePageSummary", () => {
     render(<CandidatePageSummary candidate={c} liaScore={0} />)
     expect(screen.getByText("—")).toBeInTheDocument()
   })
+
+  it("renders 'Contratado' global-state chip when is_hired=true and no kanban stage", () => {
+    const hired = {
+      id: "h1",
+      name: "Hired Candidate",
+      is_hired: true,
+      hired_job_title: "Senior Backend",
+    }
+    render(<CandidatePageSummary candidate={hired} liaScore={70} />)
+    const chip = screen.getByTestId("summary-global-state-chip")
+    expect(chip).toHaveTextContent("Contratado · Senior Backend")
+  })
+
+  it("renders 'Bloqueado' global-state chip when is_blacklisted=true (precedence over hired)", () => {
+    const blocked = {
+      id: "b1",
+      name: "Blocked Candidate",
+      is_hired: true,
+      is_blacklisted: true,
+    }
+    render(<CandidatePageSummary candidate={blocked} liaScore={50} />)
+    expect(screen.getByText("Bloqueado")).toBeInTheDocument()
+    expect(screen.queryByText(/Contratado/)).not.toBeInTheDocument()
+  })
+
+  it("does NOT render global-state chip when kanban stage is present (drawer wins)", () => {
+    const drawerCtx = {
+      id: "d1",
+      name: "Drawer Candidate",
+      pipeline_stage: "Triagem",
+      is_hired: true,
+    }
+    render(<CandidatePageSummary candidate={drawerCtx} liaScore={70} />)
+    expect(screen.getByTestId("summary-stage-chip")).toHaveTextContent("Triagem")
+    expect(screen.queryByTestId("summary-global-state-chip")).not.toBeInTheDocument()
+  })
+
+  it("renders no chip for active candidates (raw 'active' status is noise)", () => {
+    const active = {
+      id: "a1",
+      name: "Active Candidate",
+    }
+    render(<CandidatePageSummary candidate={active} liaScore={70} />)
+    expect(screen.queryByTestId("summary-stage-chip")).not.toBeInTheDocument()
+    expect(screen.queryByTestId("summary-global-state-chip")).not.toBeInTheDocument()
+  })
 })

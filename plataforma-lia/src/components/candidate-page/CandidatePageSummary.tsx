@@ -36,6 +36,9 @@ type CandidateRecord = {
   kanban_stage?: string
   current_stage?: string
   stage?: string
+  is_hired?: boolean
+  hired_job_title?: string | null
+  is_blacklisted?: boolean
   liaAnalysis?: { score?: number; fitScore?: number }
   [key: string]: unknown
 }
@@ -53,8 +56,11 @@ interface CandidatePageSummaryProps {
  * keeps essential context visible while users scroll long tabs (profile,
  * activities, opinions).
  *
- * Pipeline stage is rendered only when the candidate object carries one
- * (kanban context). The route loader does not populate it.
+ * Pipeline stage chip rendering precedence:
+ *   1. Drawer/kanban context: `pipeline_stage` / `kanban_stage` / `stage`
+ *   2. Standalone route (global talent pool view): `is_hired` → "Contratado",
+ *      `is_blacklisted` → "Bloqueado". Active candidates show no chip
+ *      (raw "active" status is noise — recruiter already knows).
  */
 export function CandidatePageSummary({
   candidate,
@@ -81,6 +87,18 @@ export function CandidatePageSummary({
     (candidate.kanban_stage as string | undefined) ??
     (candidate.current_stage as string | undefined) ??
     (candidate.stage as string | undefined)
+  const isHired = candidate.is_hired === true
+  const hiredJobTitle = candidate.hired_job_title as string | null | undefined
+  const isBlacklisted = candidate.is_blacklisted === true
+  // Compose global-state chip when no kanban stage is present.
+  // hired and blacklisted are not mutually exclusive in the DB schema but
+  // blacklisted wins display (signals attention needed).
+  const globalStateChip: { label: string; tone: "success" | "danger" } | null =
+    isBlacklisted
+      ? { label: "Bloqueado", tone: "danger" }
+      : isHired
+        ? { label: hiredJobTitle ? `Contratado · ${hiredJobTitle}` : "Contratado", tone: "success" }
+        : null
   const candidateRef = (candidate.candidateId as string | undefined) ??
     (candidate.id as string | undefined)
 
@@ -126,8 +144,19 @@ export function CandidatePageSummary({
               variant="neutral"
               density="relaxed"
               className="px-2 py-0.5 text-micro"
+              data-testid="summary-stage-chip"
             >
               {stage}
+            </Chip>
+          )}
+          {!stage && globalStateChip && (
+            <Chip
+              variant={globalStateChip.tone === "success" ? "success" : "danger"}
+              density="relaxed"
+              className="px-2 py-0.5 text-micro"
+              data-testid="summary-global-state-chip"
+            >
+              {globalStateChip.label}
             </Chip>
           )}
         </div>
