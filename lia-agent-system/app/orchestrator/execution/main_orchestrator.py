@@ -811,6 +811,31 @@ class MainOrchestrator:
                             exc_info=True,
                         )
 
+                    # Sprint 12.5-TF (2026-05-24): clarification instruction.
+                    # Encourage LIA to ASK when query is ambiguous instead of
+                    # guessing tools or returning generic responses. Reduces
+                    # tool failures (e.g. search_candidates without filters)
+                    # and improves UX (recruiter gets actionable response).
+                    _phase15_system_prompt += (
+                        "\n\n### Clarificação canonical\n"
+                        "Se a query do usuário for ambígua (múltiplas interpretações "
+                        "válidas) ou você não souber qual ferramenta usar, **PERGUNTE "
+                        "de volta** ao usuário ao invés de chutar uma ferramenta ou "
+                        "tentar inferir parâmetros. A pergunta deve ser direta, curta, "
+                        "com 2-3 opções concretas quando aplicável.\n\n"
+                        "Exemplos:\n"
+                        "- User: \"me ajuda com candidato João\" → Você: \"João Silva "
+                        "(Dev) ou João Souza (UX)? Pode confirmar qual?\"\n"
+                        "- User: \"como tá indo?\" → Você: \"Quer um resumo de vagas, "
+                        "candidatos ou indicadores?\"\n"
+                        "- User: \"fecha\" → Você: \"Fechar qual vaga? Pode me dizer "
+                        "o título ou ID?\"\n"
+                        "- User: \"tudo\" → Você: \"Sobre o que especificamente? "
+                        "Vagas, candidatos, indicadores?\"\n\n"
+                        "NÃO chute uma ferramenta quando a query for vaga. NÃO peça "
+                        "ao usuário pra repetir — proponha 2-3 alternativas concretas."
+                    )
+
                     _agentic_result = await agentic_loop.run(
                         user_message=ctx.message,
                         system_prompt=_phase15_system_prompt,
