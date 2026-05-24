@@ -5,6 +5,7 @@ Provides CRUD operations for pipeline stage email templates.
 import logging
 import uuid as uuid_module
 from datetime import datetime
+from app.shared.compliance.audit_service import AuditService  # P1-W2-03
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
@@ -286,6 +287,10 @@ company_id: str = Depends(require_company_id)):
         update_fields["version"] = (template.version or 1) + 1
 
         updated = await repo.update(template, update_fields)
+        try:
+            await AuditService().log_action(trace_id=str(uuid_module.uuid4()), company_id=company_id, action_type="communication_template_updated", actor="system", target_id=template_id, target_type="email_template", metadata={"fields_updated": list(update_fields.keys())})  # P1-W2-03
+        except Exception as _ae:
+            logger.warning(f"Audit log failed (non-blocking): {_ae}")
         return template_to_response(updated)
     except HTTPException:
         raise
@@ -449,6 +454,10 @@ company_id: str = Depends(require_company_id)):
 
         await repo.delete(template)
 
+        try:
+            await AuditService().log_action(trace_id=str(uuid_module.uuid4()), company_id=company_id, action_type="communication_template_deleted", actor="system", target_id=template_id, target_type="email_template")  # P1-W2-03
+        except Exception as _ae:
+            logger.warning(f"Audit log failed (non-blocking): {_ae}")
         return {"message": "Template deleted successfully", "id": template_id}
     except HTTPException:
         raise

@@ -14,6 +14,8 @@ from app.domains.integrations_hub.repositories.integrations_hub_repository impor
 from app.models.integration_hub import IntegrationCategory
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 from app.shared.types import WeDoBaseModel
+import uuid as _uuid_mod
+from app.shared.compliance.audit_service import AuditService  # P1-W3-05
 
 logger = logging.getLogger(__name__)
 
@@ -244,6 +246,10 @@ company_id: str = Depends(require_company_id)):
 
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Created integration connection: {connection.id} for provider {provider.name}")
+        try:
+            await AuditService().log_action(trace_id=str(_uuid_mod.uuid4()), company_id=company_id, action_type="integration_connection_created", actor="system", target_id=str(connection.id), target_type="integration_connection", metadata={"provider_id": request.provider_id, "auth_type": request.auth_type, "sync_enabled": request.sync_enabled})  # P1-W3-05
+        except Exception as _ae:
+            logger.warning(f"Audit log failed (non-blocking): {_ae}")
         return _connection_to_response(connection, provider)
 
     except HTTPException:
@@ -281,6 +287,10 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
             credentials=request.credentials,
         )
 
+        try:
+            await AuditService().log_action(trace_id=str(_uuid_mod.uuid4()), company_id=company_id, action_type="integration_connection_updated", actor="system", target_id=connection_id, target_type="integration_connection", metadata={"sync_enabled": request.sync_enabled})  # P1-W3-05
+        except Exception as _ae:
+            logger.warning(f"Audit log failed (non-blocking): {_ae}")
         return _connection_to_response(connection, provider)
 
     except HTTPException:
@@ -306,6 +316,10 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         await repo.delete_connection(connection)
 
         logger.info(f"Deleted integration connection: {connection_id}")
+        try:
+            await AuditService().log_action(trace_id=str(_uuid_mod.uuid4()), company_id=company_id, action_type="integration_connection_deleted", actor="system", target_id=connection_id, target_type="integration_connection")  # P1-W3-05
+        except Exception as _ae:
+            logger.warning(f"Audit log failed (non-blocking): {_ae}")
         return {"success": True, "message": "Connection deleted successfully"}
 
     except HTTPException:

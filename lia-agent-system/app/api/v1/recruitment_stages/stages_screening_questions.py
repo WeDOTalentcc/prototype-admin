@@ -24,6 +24,7 @@ from ._shared import (
 from pydantic import BaseModel, Field
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+from app.shared.compliance.audit_service import AuditService  # P1-W1-08
 
 logger = logging.getLogger(__name__)
 
@@ -151,6 +152,11 @@ company_id: str = Depends(require_company_id)):
         })
 
         logger.info(f"Created screening question: {question.question[:50]} for company {effective_company_id}")
+        try:
+            import uuid as _uuid
+            await AuditService().log_action(trace_id=str(_uuid.uuid4()), company_id=effective_company_id, action_type="screening_question_created", actor=str(getattr(current_user, "id", "system")), target_id=str(new_question.id), target_type="screening_question", metadata={"question_type": question.question_type})  # P1-W1-08
+        except Exception as _ae:
+            logger.warning(f"Audit log failed (non-blocking): {_ae}")
         return {
             "success": True,
             "message": "Screening question created",
@@ -231,6 +237,11 @@ company_id: str = Depends(require_company_id)):
             await sq_repo.refresh(q)
 
         logger.info(f"Updated {len(questions)} screening questions for company {effective_company_id}")
+        try:
+            import uuid as _uuid
+            await AuditService().log_action(trace_id=str(_uuid.uuid4()), company_id=effective_company_id, action_type="screening_question_bulk_updated", actor=str(getattr(current_user, "id", "system")), target_type="screening_question", metadata={"count": len(questions)})  # P1-W1-08
+        except Exception as _ae:
+            logger.warning(f"Audit log failed (non-blocking): {_ae}")
         return {
             "success": True,
             "message": "Screening questions updated",
@@ -271,6 +282,11 @@ company_id: str = Depends(require_company_id)):
         update_data = question.model_dump(exclude_unset=True)
         updated = await sq_repo.update(q_uuid, update_data)
 
+        try:
+            import uuid as _uuid
+            await AuditService().log_action(trace_id=str(_uuid.uuid4()), company_id=effective_company_id, action_type="screening_question_updated", actor=str(getattr(current_user, "id", "system")), target_id=question_id, target_type="screening_question")  # P1-W1-08
+        except Exception as _ae:
+            logger.warning(f"Audit log failed (non-blocking): {_ae}")
         return {
             "success": True,
             "message": "Screening question updated",
@@ -310,6 +326,11 @@ company_id: str = Depends(require_company_id)):
         await sq_repo.soft_delete(q_uuid)
 
         logger.info(f"Deleted screening question: {question_id}")
+        try:
+            import uuid as _uuid
+            await AuditService().log_action(trace_id=str(_uuid.uuid4()), company_id=effective_company_id, action_type="screening_question_deleted", actor=str(getattr(current_user, "id", "system")), target_id=question_id, target_type="screening_question")  # P1-W1-08
+        except Exception as _ae:
+            logger.warning(f"Audit log failed (non-blocking): {_ae}")
         return {
             "success": True,
             "message": "Screening question deleted",

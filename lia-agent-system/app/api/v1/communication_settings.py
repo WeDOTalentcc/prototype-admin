@@ -17,6 +17,8 @@ from app.models.communication_settings import DEFAULT_COMMUNICATION_SETTINGS
 from app.domains.communication.repositories.communication_settings_repository import CommunicationSettingsRepository
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+import uuid as _uuid_mod
+from app.shared.compliance.audit_service import AuditService  # P1-W2-03
 
 logger = logging.getLogger(__name__)
 
@@ -139,6 +141,12 @@ async def update_communication_settings(
         update_data = data.model_dump(exclude_unset=True)
         settings = await repo.upsert(company_id, update_data)
         logger.info(f"Upserted communication settings for company {company_id}")
+        try:
+            updated_fields = data.model_dump(exclude_unset=True)
+            action = "communication_signature_updated" if "signature" in updated_fields or "signature_html" in updated_fields else "communication_settings_updated"
+            await AuditService().log_action(trace_id=str(_uuid_mod.uuid4()), company_id=company_id, action_type=action, actor="system", target_type="communication_settings", metadata={"fields_updated": list(updated_fields.keys())})  # P1-W2-03
+        except Exception as _ae:
+            logger.warning(f"Audit log failed (non-blocking): {_ae}")
         
         return CommunicationSettingsResponse(
             id=str(settings.id),

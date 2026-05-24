@@ -24,6 +24,7 @@ from ._shared import (
     User,
 )
 from app.shared.security.require_company_id import require_company_id
+from app.shared.compliance.audit_service import AuditService  # P1-W1-05
 
 logger = logging.getLogger(__name__)
 
@@ -93,6 +94,10 @@ company_id: str = Depends(require_company_id)):
 
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Created stage: {stage.name} for company {effective_company_id}")
+        try:
+            await AuditService().log_action(trace_id=str(uuid.uuid4()), company_id=effective_company_id, action_type="pipeline_stage_created", actor=str(getattr(current_user, "id", "system")), target_id=str(new_stage.id), target_type="recruitment_stage", metadata={"stage_name": stage.name, "action_behavior": stage.action_behavior})  # P1-W1-05
+        except Exception as _ae:
+            logger.warning(f"Audit log failed (non-blocking): {_ae}")
         return new_stage.to_dict()
     except HTTPException:
         raise
@@ -126,6 +131,10 @@ company_id: str = Depends(require_company_id)):
         update_data = stage.model_dump(exclude_unset=True)
         updated = await stage_repo.update(uuid.UUID(stage_id), update_data)
 
+        try:
+            await AuditService().log_action(trace_id=str(uuid.uuid4()), company_id=str(getattr(current_user, "company_id", "")), action_type="pipeline_stage_updated", actor=str(getattr(current_user, "id", "system")), target_id=stage_id, target_type="recruitment_stage", metadata={"updates": list(update_data.keys())})  # P1-W1-05
+        except Exception as _ae:
+            logger.warning(f"Audit log failed (non-blocking): {_ae}")
         return updated.to_dict()
     except HTTPException:
         raise
@@ -161,6 +170,10 @@ company_id: str = Depends(require_company_id)):
         else:
             await stage_repo.soft_delete(uuid.UUID(stage_id))
 
+        try:
+            await AuditService().log_action(trace_id=str(uuid.uuid4()), company_id=str(getattr(current_user, "company_id", "")), action_type="pipeline_stage_deleted", actor=str(getattr(current_user, "id", "system")), target_id=stage_id, target_type="recruitment_stage", metadata={"hard_delete": hard_delete})  # P1-W1-05
+        except Exception as _ae:
+            logger.warning(f"Audit log failed (non-blocking): {_ae}")
         return {"success": True, "deleted": stage_id}
     except HTTPException:
         raise
@@ -379,6 +392,10 @@ company_id: str = Depends(require_company_id)):
 
         items = [{"stage_id": item.stage_id, "new_order": item.new_order} for item in payload.stages]
         await stage_repo.reorder(items)
+        try:
+            await AuditService().log_action(trace_id=str(uuid.uuid4()), company_id=str(company_id), action_type="pipeline_stages_reordered", actor=str(getattr(current_user, "id", "system")), target_type="recruitment_stage", metadata={"reordered_count": len(payload.stages)})  # P1-W1-05
+        except Exception as _ae:
+            logger.warning(f"Audit log failed (non-blocking): {_ae}")
         return {"success": True, "reordered": len(payload.stages)}
     except HTTPException:
         raise
