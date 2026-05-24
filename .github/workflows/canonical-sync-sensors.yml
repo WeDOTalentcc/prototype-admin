@@ -1,0 +1,49 @@
+name: CI — Canonical FE/BE sync sensors
+
+on:
+  push:
+    branches: [main, develop, feat/*]
+    paths:
+      - 'lia-agent-system/app/shared/canonical_pages.py'
+      - 'lia-agent-system/app/shared/websocket/ws_message_schemas.py'
+      - 'plataforma-lia/src/lib/canonical-pages.ts'
+      - 'plataforma-lia/src/types/ui-action.ts'
+      - 'lia-agent-system/scripts/check_canonical_pages_sync.py'
+      - 'lia-agent-system/scripts/check_ui_action_sync.py'
+      - '.github/workflows/canonical-sync-sensors.yml'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'lia-agent-system/app/shared/canonical_pages.py'
+      - 'lia-agent-system/app/shared/websocket/ws_message_schemas.py'
+      - 'plataforma-lia/src/lib/canonical-pages.ts'
+      - 'plataforma-lia/src/types/ui-action.ts'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  canonical-sync:
+    name: TS ↔ Python parity (canonical_pages + ui_action)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # Sprint 14.1 — canonical pages enum sync (TS ≡ Python).
+      # 18 pages com mesmas keys/values. Drift = LLM ignora page_type.
+      - name: Canonical pages sync sensor
+        working-directory: lia-agent-system
+        run: python3 scripts/check_canonical_pages_sync.py
+
+      # Sprint 14.2 — ui_action GLOBAL types sync (TS ≡ Python).
+      # 7 global types validados via Pydantic. Drift = action silenciada.
+      - name: ui_action GLOBAL types sync sensor
+        working-directory: lia-agent-system
+        run: python3 scripts/check_ui_action_sync.py
