@@ -289,6 +289,82 @@ class SystemPromptBuilder:
             "funil_talentos, configuracoes — NÃO traduza)."
         )
 
+        # G6 canonical fix (2026-05-24): grant the LLM raw path explicit
+        # awareness of the 29+ action tools registered in tool_registry.
+        # Without this section, the LLM persona defaults to "I'm just
+        # text, I can't execute actions" when intent classifier misses
+        # an utterance and the request falls through to the LLM.
+        #
+        # When the LLM is invoked via agentic_loop (Phase 1.5), the actual
+        # tools are passed as tool_schemas and the LLM emits tool_use
+        # blocks natively. This prompt section is the DESCRIPTIVE
+        # counterpart that ensures the LLM does not refuse on the OTHER
+        # paths (Phase 1.3 plan service, Phase 2 orchestrator fallback)
+        # where tool schemas are not directly bound.
+        context_parts.append(
+            "### Capabilities — Ações\n"
+            "Você TEM ferramentas para executar AÇÕES CONCRETAS na "
+            "plataforma. NUNCA recuse uma ação alegando \"sou apenas um "
+            "assistente de texto\" sem verificar primeiro a lista abaixo.\n\n"
+            "**VAGAS**: criar, publicar, pausar, fechar, atualizar, buscar; "
+            "gerar descrição enriquecida; sugerir salário e skills "
+            "(create_job, publish_job, pause_job, close_job, update_job, "
+            "search_jobs, generate_enriched_jd, get_intelligent_salary, "
+            "get_intelligent_skills, save_job_draft).\n\n"
+            "**CANDIDATOS**: buscar, comparar, analisar CV vs vaga; "
+            "mover entre etapas (incluindo bulk); aprovar / reprovar / "
+            "favoritar / ocultar; criar e triar (search_candidates, "
+            "compare_candidates, analyze_cv_match, update_candidate_stage, "
+            "bulk_update_candidates_stage, shortlist_candidate, "
+            "reject_candidate, hide_candidate, add_candidate_to_vacancy, "
+            "create_and_screen_candidate).\n\n"
+            "**COMUNICAÇÃO**: enviar email individual ou em massa, "
+            "WhatsApp, feedback; criar sequências de nurture "
+            "(send_email, send_bulk_email, send_whatsapp, send_feedback, "
+            "create_nurture_sequence).\n\n"
+            "**AGENDAMENTO**: agendar entrevistas (schedule_interview).\n\n"
+            "**EMPRESA / CONFIG**: verificar completude do perfil, "
+            "sugerir política de recrutamento, importar benefícios, "
+            "salvar política de contratação (check_company_completeness, "
+            "suggest_recruiting_policy, import_benefits_from_data, "
+            "save_hiring_policy).\n\n"
+            "**ANALYTICS / RELATÓRIOS**: gerar relatório, exportar "
+            "candidatos / vagas; métricas de pipeline, recrutador, "
+            "qualidade, velocidade, custo; predições ML, forecast de "
+            "contratação; alertas inteligentes; diversidade "
+            "(generate_report, export_candidates, export_job_analytics, "
+            "get_pipeline_stats, get_vacancy_funnel, get_recruiter_metrics, "
+            "get_velocity_metrics, get_efficiency_metrics, get_cost_metrics, "
+            "get_quality_metrics, get_ml_predictions, forecast_hiring_needs, "
+            "get_smart_alerts, get_diversity_metrics).\n\n"
+            "**TALENT INTEL**: bancos de talentos, skills adjacency, "
+            "skill gaps, reengajamento (suggest_reengagement, "
+            "get_engagement_metrics, infer_related_skills, "
+            "analyze_skill_gaps, get_market_intelligence).\n\n"
+            "**ENTREVISTAS (IA)**: analisar gravação, detectar viés, "
+            "gerar parecer, comparar performance (analyze_interview_"
+            "recording, detect_interview_bias, generate_interview_opinion, "
+            "compare_interview_performance).\n\n"
+            "**TRIAGEM WSI**: voice screening completo (wsi_screening).\n\n"
+            "EXEMPLO de mapeamento NL → ação:\n"
+            "- \"rejeite o candidato João\" → reject_candidate\n"
+            "- \"mova maria pra próxima etapa\" → update_candidate_stage\n"
+            "- \"mande um email pro candidato X\" → send_email\n"
+            "- \"fecha a vaga de Dev Backend\" → close_job\n"
+            "- \"agenda entrevista com fulano amanhã 14h\" → schedule_interview\n"
+            "- \"como está o funil dessa vaga?\" → get_vacancy_funnel\n\n"
+            "REGRAS:\n"
+            "1. Quando o usuário pedir uma ação que mapeia para a lista "
+            "acima, EXECUTE (não responda apenas com texto descritivo).\n"
+            "2. Se a ação exigir parâmetros (qual candidato, qual etapa, "
+            "qual vaga), pergunte naturalmente em PT-BR coloquial.\n"
+            "3. Se a ação não estiver na lista, seja transparente: "
+            "\"essa ação específica eu ainda não consigo executar, mas "
+            "posso te ajudar com X, Y, Z\".\n"
+            "4. SEMPRE confirme antes de ações destrutivas "
+            "(close_job, reject_candidate, bulk operations)."
+        )
+
         if conversation_summary:
             context_parts.append(f"### Resumo da Conversa Anterior\n{conversation_summary}")
 
