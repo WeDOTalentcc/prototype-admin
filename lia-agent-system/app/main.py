@@ -43,10 +43,16 @@ _LANGSMITH_OK = configure_langsmith()
 if not _LANGSMITH_OK:
     import os as _os_w3028
     _env_w3028 = _os_w3028.environ.get("APP_ENV", "development")
-    if _env_w3028 in ("production", "prod", "staging"):
+    # W3-028 fix (2026-05-24): Datadog LLM Obs (Sprint 13.6 migration) eh
+    # alternative canonical pra LLM observability. Se ativo, satisfaz W3-028
+    # requirement sem precisar de LangSmith.
+    _dd_llmobs = _os_w3028.environ.get("DD_LLMOBS_ENABLED") in ("1", "true", "True")
+    _dd_key = bool(_os_w3028.environ.get("DD_API_KEY"))
+    _alt_obs = _dd_llmobs and _dd_key
+    if _env_w3028 in ("production", "prod", "staging") and not _alt_obs:
         raise RuntimeError(
-            f"[W3-028] LangSmith NÃO configurado em ambiente {_env_w3028!r}. "
-            "Set LANGSMITH_API_KEY (ou LANGCHAIN_API_KEY) em Replit Secrets. "
+            f"[W3-028] LLM Observability NAO configurado em ambiente {_env_w3028!r}. "
+            "Set LANGSMITH_API_KEY OR (DD_LLMOBS_ENABLED=1 + DD_API_KEY) em Replit Secrets. "
             "Em dev, warn-only."
         )
 
