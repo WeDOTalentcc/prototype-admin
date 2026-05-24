@@ -619,6 +619,15 @@ company_id: str = Depends(require_company_id)):
         if not profile:
             raise HTTPException(status_code=404, detail="Company profile not found")
 
+        # P1-7 IDOR guard — verify profile belongs to authenticated tenant.
+        # CompanyProfile uses client_account_id (FK -> client_accounts), not company_id.
+        # Same canonical pattern as upload_company_logo and GET /profile cross-tenant check.
+        if profile.client_account_id and str(profile.client_account_id) != str(company_id):
+            raise HTTPException(
+                status_code=403,
+                detail="Tenant mismatch: profile does not belong to authenticated tenant.",
+            )
+
         if not profile.client_account_id and current_user and hasattr(current_user, 'company_id') and current_user.company_id:
             try:
                 uuid.UUID(str(current_user.company_id))
@@ -719,8 +728,11 @@ async def upload_company_logo(
         raise HTTPException(status_code=404, detail="Company profile not found")
 
     # WT-2022 P0.LOGO fix: verify ownership (era cross-tenant write — qualquer recruiter
-    # podia sobrescrever logo de OUTRA company só passando profile_id alheio)
-    if str(profile.company_id) != str(company_id):
+    # podia sobrescrever logo de OUTRA company só passando profile_id alheio).
+    # CompanyProfile usa client_account_id (FK -> client_accounts), não company_id
+    # (que é coluna apenas em models filhos como Department/Benefit). Mesmo pattern
+    # canonical da linha 556 (GET /profile cross-tenant check).
+    if profile.client_account_id and str(profile.client_account_id) != str(company_id):
         raise HTTPException(
             status_code=403,
             detail="Profile não pertence ao tenant autenticado",
