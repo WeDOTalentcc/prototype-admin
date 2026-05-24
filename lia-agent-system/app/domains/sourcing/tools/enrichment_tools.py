@@ -63,7 +63,6 @@ async def check_candidate_completeness(
             "recommendation": str,
         }
     """
-    context = _extract_context(kwargs)
     company_id = require_company_id_from_context(kwargs, "check_candidate_completeness")
 
     if not company_id:
@@ -189,7 +188,6 @@ async def enrich_candidate_linkedin(
             "error": str | None,
         }
     """
-    context = _extract_context(kwargs)
     context = context_or_raise(kwargs, "enrich_candidate_linkedin")
     company_id = require_company_id_from_obj(context, "enrich_candidate_linkedin")
     user_id = context.user_id

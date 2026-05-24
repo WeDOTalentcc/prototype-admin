@@ -168,7 +168,6 @@ async def check_company_completeness(**kwargs) -> dict[str, Any]:
             "has_website": bool,  # enables auto-scrape suggestion
         }
     """
-    context = _extract_context(kwargs)
     context = context_or_raise(kwargs, "check_company_completeness")
     company_id = require_company_id_from_obj(context, "check_company_completeness")
     user_id = context.user_id
@@ -373,7 +372,6 @@ async def suggest_recruiting_policy(
             "customization_notes": [str],
         }
     """
-    context = _extract_context(kwargs)
     company_id = require_company_id_from_context(kwargs, "suggest_recruiting_policy")
 
     if not company_id:
@@ -501,7 +499,6 @@ async def save_hiring_policy(
     if gate is not None:
         return gate
 
-    context = _extract_context(kwargs)
     context = context_or_raise(kwargs, "save_hiring_policy")
     company_id = require_company_id_from_obj(context, "save_hiring_policy")
     user_id = context.user_id
@@ -723,7 +720,6 @@ async def import_benefits_from_data(
     Returns:
         {success, inserted_count, skipped_count, errors}
     """
-    context = _extract_context(kwargs)
     context = context_or_raise(kwargs, "import_benefits_from_data")
     company_id = require_company_id_from_obj(context, "import_benefits_from_data")
     user_id = context.user_id

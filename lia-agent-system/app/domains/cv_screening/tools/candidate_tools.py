@@ -10,12 +10,17 @@ Provides function calling capabilities for:
 All tools support tenant scoping via ToolExecutionContext for multi-tenancy security.
 """
 import logging
+from types import SimpleNamespace
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, Optional
 from uuid import UUID
 
 from app.tools.registry import ToolDefinition, tool_registry
-from app.tools.context_helpers import require_company_id_from_context
+from app.tools.context_helpers import (
+    context_or_raise,
+    require_company_id_from_context,
+    require_company_id_from_obj,
+)
 
 if TYPE_CHECKING:
     from app.tools.executor import ToolExecutionContext
@@ -49,9 +54,11 @@ async def update_candidate_stage(
     Returns:
         Result with success status and message
     """
-    context = _extract_context(kwargs)
-    company_id = require_company_id_from_context(kwargs, "update_candidate_stage")
-    user_id = context.user_id if context else "system"
+    context = context_or_raise(kwargs, "update_candidate_stage")
+
+    company_id = require_company_id_from_obj(context, "update_candidate_stage")
+
+    user_id = context.user_id
     
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"🔄 Moving candidate {candidate_id} to stage: {target_stage} (company: {company_id})")
@@ -182,9 +189,11 @@ async def add_candidate_to_vacancy(
     Returns:
         Result with success status and message
     """
-    context = _extract_context(kwargs)
-    company_id = require_company_id_from_context(kwargs, "add_candidate_to_vacancy")
-    user_id = context.user_id if context else "system"
+    context = context_or_raise(kwargs, "add_candidate_to_vacancy")
+
+    company_id = require_company_id_from_obj(context, "add_candidate_to_vacancy")
+
+    user_id = context.user_id
     
     logger.info(f"➕ Adding candidate {candidate_id} to job {job_id} (company: {company_id})")
     
@@ -696,9 +705,11 @@ async def add_to_list(
     Returns:
         Result with success status and message
     """
-    context = _extract_context(kwargs)
-    company_id = require_company_id_from_context(kwargs, "add_to_list")
-    user_id = context.user_id if context else "system"
+    context = context_or_raise(kwargs, "add_to_list")
+
+    company_id = require_company_id_from_obj(context, "add_to_list")
+
+    user_id = context.user_id
     
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"📋 Adding candidate {candidate_id} to list {list_id} (company: {company_id})")
@@ -778,9 +789,11 @@ async def wsi_screening(
     Returns:
         Result with success status and screening session details
     """
-    context = _extract_context(kwargs)
-    company_id = require_company_id_from_context(kwargs, "wsi_screening")
-    user_id = context.user_id if context else "system"
+    context = context_or_raise(kwargs, "wsi_screening")
+
+    company_id = require_company_id_from_obj(context, "wsi_screening")
+
+    user_id = context.user_id
     
     logger.info(f"🎯 Triggering WSI screening for candidate {candidate_id} on job {job_id} (company: {company_id})")
     
@@ -910,9 +923,11 @@ async def hide_candidate(
     Returns:
         Result with success status and message
     """
-    context = _extract_context(kwargs)
-    company_id = require_company_id_from_context(kwargs, "hide_candidate")
-    user_id = context.user_id if context else "system"
+    context = context_or_raise(kwargs, "hide_candidate")
+
+    company_id = require_company_id_from_obj(context, "hide_candidate")
+
+    user_id = context.user_id
     
     logger.info(f"🙈 Hiding candidate {candidate_id} (global={hide_globally}, job={job_id}, company={company_id})")
     
@@ -1263,6 +1278,76 @@ HIDE_CANDIDATE_SCHEMA = {
 }
 
 
+
+
+async def _wrap_update_candidate_stage(**kwargs):
+    """Sensor 2 wrapper (2026-05-24): inject _context from kwargs before delegating to update_candidate_stage.
+
+    Mirrors _wrap_save_hiring_policy pattern. Without this, ToolExecutor global
+    dispatch raises ToolContextMissingError because executor does NOT inject _context.
+    """
+    company_id = kwargs.pop("company_id", "")
+    user_id = kwargs.pop("user_id", "")
+    ctx = SimpleNamespace(company_id=company_id, user_id=user_id)
+    return await update_candidate_stage(_context=ctx, **kwargs)
+
+
+
+
+async def _wrap_add_candidate_to_vacancy(**kwargs):
+    """Sensor 2 wrapper (2026-05-24): inject _context from kwargs before delegating to add_candidate_to_vacancy.
+
+    Mirrors _wrap_save_hiring_policy pattern. Without this, ToolExecutor global
+    dispatch raises ToolContextMissingError because executor does NOT inject _context.
+    """
+    company_id = kwargs.pop("company_id", "")
+    user_id = kwargs.pop("user_id", "")
+    ctx = SimpleNamespace(company_id=company_id, user_id=user_id)
+    return await add_candidate_to_vacancy(_context=ctx, **kwargs)
+
+
+
+
+async def _wrap_add_to_list(**kwargs):
+    """Sensor 2 wrapper (2026-05-24): inject _context from kwargs before delegating to add_to_list.
+
+    Mirrors _wrap_save_hiring_policy pattern. Without this, ToolExecutor global
+    dispatch raises ToolContextMissingError because executor does NOT inject _context.
+    """
+    company_id = kwargs.pop("company_id", "")
+    user_id = kwargs.pop("user_id", "")
+    ctx = SimpleNamespace(company_id=company_id, user_id=user_id)
+    return await add_to_list(_context=ctx, **kwargs)
+
+
+
+
+async def _wrap_wsi_screening(**kwargs):
+    """Sensor 2 wrapper (2026-05-24): inject _context from kwargs before delegating to wsi_screening.
+
+    Mirrors _wrap_save_hiring_policy pattern. Without this, ToolExecutor global
+    dispatch raises ToolContextMissingError because executor does NOT inject _context.
+    """
+    company_id = kwargs.pop("company_id", "")
+    user_id = kwargs.pop("user_id", "")
+    ctx = SimpleNamespace(company_id=company_id, user_id=user_id)
+    return await wsi_screening(_context=ctx, **kwargs)
+
+
+
+
+async def _wrap_hide_candidate(**kwargs):
+    """Sensor 2 wrapper (2026-05-24): inject _context from kwargs before delegating to hide_candidate.
+
+    Mirrors _wrap_save_hiring_policy pattern. Without this, ToolExecutor global
+    dispatch raises ToolContextMissingError because executor does NOT inject _context.
+    """
+    company_id = kwargs.pop("company_id", "")
+    user_id = kwargs.pop("user_id", "")
+    ctx = SimpleNamespace(company_id=company_id, user_id=user_id)
+    return await hide_candidate(_context=ctx, **kwargs)
+
+
 def register_candidate_tools() -> None:
     """Register all candidate tools in the registry."""
     
@@ -1270,7 +1355,7 @@ def register_candidate_tools() -> None:
         name="update_candidate_stage",
         description="Move um candidato para uma etapa diferente no pipeline de recrutamento. Use para mover candidatos entre etapas como Triagem, Entrevistas, Oferta, Contratado.",
         parameters_schema=UPDATE_CANDIDATE_STAGE_SCHEMA,
-        handler=update_candidate_stage,
+        handler=_wrap_update_candidate_stage,
         allowed_agents=["orchestrator", "recruiter_assistant", "screening", "analyst_feedback"]
     ))
     
@@ -1278,7 +1363,7 @@ def register_candidate_tools() -> None:
         name="add_candidate_to_vacancy",
         description="Adiciona um candidato a uma vaga de emprego, iniciando-o no pipeline de recrutamento.",
         parameters_schema=ADD_CANDIDATE_TO_VACANCY_SCHEMA,
-        handler=add_candidate_to_vacancy,
+        handler=_wrap_add_candidate_to_vacancy,
         allowed_agents=["orchestrator", "recruiter_assistant", "sourcing"]
     ))
     
@@ -1310,7 +1395,7 @@ def register_candidate_tools() -> None:
         name="add_to_list",
         description="Adiciona um candidato a uma lista salva ou shortlist. Use para organizar candidatos em listas personalizadas.",
         parameters_schema=ADD_TO_LIST_SCHEMA,
-        handler=add_to_list,
+        handler=_wrap_add_to_list,
         allowed_agents=["orchestrator", "recruiter_assistant", "sourcing"]
     ))
     
@@ -1318,7 +1403,7 @@ def register_candidate_tools() -> None:
         name="wsi_screening",
         description="Inicia triagem WSI (Work Style Interview) para um candidato. A triagem WSI combina Taxonomia de Bloom, modelo Dreyfus e Big Five para avaliação científica.",
         parameters_schema=WSI_SCREENING_SCHEMA,
-        handler=wsi_screening,
+        handler=_wrap_wsi_screening,
         allowed_agents=["orchestrator", "recruiter_assistant", "screening", "interviewer"]
     ))
     
@@ -1326,7 +1411,7 @@ def register_candidate_tools() -> None:
         name="hide_candidate",
         description="Oculta/arquiva um candidato do pipeline. Pode ocultar de uma vaga específica ou globalmente de todos os pipelines.",
         parameters_schema=HIDE_CANDIDATE_SCHEMA,
-        handler=hide_candidate,
+        handler=_wrap_hide_candidate,
         allowed_agents=["orchestrator", "recruiter_assistant"]
     ))
     
