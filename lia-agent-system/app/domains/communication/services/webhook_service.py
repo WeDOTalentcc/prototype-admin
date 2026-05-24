@@ -8,6 +8,10 @@ This service handles:
 - Logging webhook delivery attempts
 """
 import hashlib
+from app.shared.constants.webhook_constants import (
+    WEBHOOK_SIGNATURE_HEADER,
+    WEBHOOK_SIGNATURE_HEADER_LEGACY,
+)  # P1-W3-13
 import hmac
 import json
 import logging
@@ -486,7 +490,8 @@ class WebhookService:
                 payload_json.encode(),
                 hashlib.sha256
             ).hexdigest()
-            headers["X-Webhook-Signature"] = f"sha256={signature}"
+            headers[WEBHOOK_SIGNATURE_HEADER] = f"sha256={signature}"  # canonical
+            headers[WEBHOOK_SIGNATURE_HEADER_LEGACY] = f"sha256={signature}"  # backward compat (P1-W3-13)
         
         try:
             async with httpx.AsyncClient(timeout=webhook.timeout_seconds) as client:

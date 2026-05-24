@@ -291,7 +291,8 @@ class JobStatusWebhookService:
         
         if webhook.secret_key:
             signature = WebhookRegistration.generate_signature(payload_json, webhook.secret_key)
-            headers["X-Webhook-Signature"] = signature
+            headers[WEBHOOK_SIGNATURE_HEADER] = signature  # canonical
+            headers[WEBHOOK_SIGNATURE_HEADER_LEGACY] = signature  # backward compat (P1-W3-13)
         
         try:
             async with httpx.AsyncClient(timeout=webhook.timeout_seconds) as client:
