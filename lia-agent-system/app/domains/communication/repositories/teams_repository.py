@@ -89,6 +89,7 @@ class TeamsRepository:
             existing.last_message_at = last_message_at
             existing.conversation_reference = conversation_reference
             return existing
+        # RLS-EXEMPT: TeamsConversation: RLS policy on teams_conversations accepts NULL company_id (legacy-relaxed, pre-migration 097). Wiring company_id via this code path requires propagating from the Teams bot framework — tracked as separate hardening item.
         conv = TeamsConversation(
             conversation_id=conversation_id,
             service_url=service_url,

@@ -248,6 +248,7 @@ company_id: str = Depends(require_company_id)):
         conversation = await conversation_memory.get_or_create_conversation(
             db=db,
             user_id=effective_user_id,
+            company_id=company_id,
             context_type=request.context_type,
             context_id=request.context_id,
             title=request.title,

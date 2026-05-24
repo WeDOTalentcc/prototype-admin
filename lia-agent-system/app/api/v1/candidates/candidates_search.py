@@ -50,6 +50,7 @@ company_id: str = Depends(require_company_id)):
         candidates = [CandidateResponse.model_validate(c) for c in candidates_db]
 
         search_duration_ms = int((datetime.utcnow() - start_time).total_seconds() * 1000)
+        # RLS-EXEMPT: candidate_searches has no company_id column and no RLS policy (per-user saved-search metadata, not tenant-scoped row data)
         search_record = CandidateSearch(
             id=uuid.uuid4(),
             user_id=str(current_user.id),

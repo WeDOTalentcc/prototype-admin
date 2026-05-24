@@ -544,6 +544,7 @@ class CandidateRepository:
             await self.db.refresh(existing)
             return existing, False
         else:
+            # RLS-EXEMPT: viewed_candidates has no company_id column and no RLS policy (per-user UX state — which cards the recruiter has opened)
             viewed = ViewedCandidate(
                 id=uuid.uuid4(),
                 candidate_id=candidate_id,

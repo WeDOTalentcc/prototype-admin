@@ -209,9 +209,13 @@ Solicitação: {request.message}"""
 
         if not resolved_conversation_id:
             try:
+                _auto_company_id = (
+                    str(current_user.company_id) if current_user.company_id else ""
+                )
                 auto_conv = await _conversation_memory.get_or_create_conversation(
                     db=db,
                     user_id=user_id,
+                    company_id=_auto_company_id,
                     context_type="lia_chat",
                     title="Conversa com LIA",
                 )

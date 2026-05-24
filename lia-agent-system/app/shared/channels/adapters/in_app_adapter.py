@@ -41,6 +41,7 @@ class InAppChannelAdapter(ChannelAdapter):
             from app.services.notification_service import Notification
 
             async with AsyncSessionLocal() as db:
+                # RLS-EXEMPT: Notification here is the in-app message envelope (this Notification shadow is a non-ORM message DTO consumed by the in-app channel adapter; the ORM model is NotificationPolicy).
                 notification = Notification(
                     id=message_id,
                     user_id=message.recipient_contact,

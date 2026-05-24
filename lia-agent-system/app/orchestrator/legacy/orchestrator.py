@@ -336,15 +336,19 @@ class Orchestrator:
                                           conversation_id: str | None = None,
                                           context_type: str = "general",
                                           context_id: str | None = None,
-                                          context: dict[str, Any] | None = None) -> dict[str, Any]:
+                                          context: dict[str, Any] | None = None,
+                                          company_id: str = "") -> dict[str, Any]:
+        # Multi-tenancy: legacy orchestrator path (replaced by main_orchestrator).
+        # If revived, callers MUST pass company_id from the request scope —
+        # default "" triggers fail-closed raise in conversation_memory.
         try:
             if conversation_id:
                 conv = await self.conversation_memory.get_conversation(db=db, conversation_id=conversation_id, include_messages=True)
                 if not conv:
-                    conv = await self.conversation_memory.get_or_create_conversation(db=db, user_id=user_id, context_type=context_type, context_id=context_id)
+                    conv = await self.conversation_memory.get_or_create_conversation(db=db, user_id=user_id, company_id=company_id, context_type=context_type, context_id=context_id)
                     conversation_id = str(conv.id)
             else:
-                conv = await self.conversation_memory.get_or_create_conversation(db=db, user_id=user_id, context_type=context_type, context_id=context_id)
+                conv = await self.conversation_memory.get_or_create_conversation(db=db, user_id=user_id, company_id=company_id, context_type=context_type, context_id=context_id)
                 conversation_id = str(conv.id)
             await self.conversation_memory.add_message(db=db, conversation_id=conversation_id, role="user", content=message)
             llm_ctx = await self.conversation_memory.get_context_for_llm(db=db, conversation_id=conversation_id, max_messages=20)

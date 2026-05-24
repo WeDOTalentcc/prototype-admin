@@ -198,8 +198,10 @@ def main() -> int:
                         help="paths to scan (relative to repo root)")
     parser.add_argument("--json", action="store_true",
                         help="emit machine-readable JSON")
-    parser.add_argument("--max-violations", type=int, default=None,
-                        help="exit 1 if violations > N (default: warn-only)")
+    parser.add_argument("--max-violations", type=int, default=0,
+                        help="exit 1 if violations > N (default: 0, blocking)")
+    parser.add_argument("--warn-only", action="store_true",
+                        help="never exit non-zero (opt-out of blocking mode)")
     args = parser.parse_args()
 
     roots = [REPO_ROOT / p for p in args.paths]
@@ -246,9 +248,10 @@ def main() -> int:
             print("    # RLS-EXEMPT: <table is genuinely tenant-less>")
             print("    obj = Model(user_id=..., ...)")
 
-    if args.max_violations is not None:
-        if len(all_violations) > args.max_violations:
-            return 1
+    if args.warn_only:
+        return 0
+    if len(all_violations) > args.max_violations:
+        return 1
     return 0
 
 

@@ -1375,12 +1375,20 @@ class MainOrchestrator:
                 conv = await conversation_memory.get_conversation(db=db, conversation_id=conv_id, include_messages=True)
                 if not conv:
                     conv = await conversation_memory.get_or_create_conversation(
-                        db=db, user_id=ctx.user_id, context_type=ctx.context_type, context_id=ctx.entity_id,
+                        db=db,
+                        user_id=ctx.user_id,
+                        company_id=str(ctx.company_id) if ctx.company_id else "",
+                        context_type=ctx.context_type,
+                        context_id=ctx.entity_id,
                     )
                     conv_id = str(conv.id)
             else:
                 conv = await conversation_memory.get_or_create_conversation(
-                    db=db, user_id=ctx.user_id, context_type=ctx.context_type, context_id=ctx.entity_id,
+                    db=db,
+                    user_id=ctx.user_id,
+                    company_id=str(ctx.company_id) if ctx.company_id else "",
+                    context_type=ctx.context_type,
+                    context_id=ctx.entity_id,
                 )
                 conv_id = str(conv.id)
 

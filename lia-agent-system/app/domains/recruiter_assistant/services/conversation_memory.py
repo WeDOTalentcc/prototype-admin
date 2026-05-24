@@ -64,6 +64,7 @@ class ConversationMemory:
         self,
         db: AsyncSession,
         user_id: str,
+        company_id: str,
         context_type: str = "general",
         context_id: str | None = None,
         session_id: str | None = None,
@@ -87,12 +88,20 @@ class ConversationMemory:
             
         Returns:
             Conversation object
+
+        Raises:
+            ValueError: if company_id is empty (multi-tenancy fail-closed).
         """
+        if not company_id:
+            raise ValueError(
+                "company_id is required (multi-tenancy fail-closed). "
+                "conversations table has RLS policy — INSERT without "
+                "company_id raises InsufficientPrivilegeError at runtime."
+            )
         if context_id:
-            # TENANT-EXEMPT: conversation_memory queries user-scoped messages (user_id authoritative), not company-scoped row data
-            # TENANT-EXEMPT: conversation_memory queries user-scoped messages (user_id authoritative), not company-scoped row data
             query = select(Conversation).where(
                 and_(
+                    Conversation.company_id == company_id,
                     Conversation.user_id == user_id,
                     Conversation.context_type == context_type,
                     Conversation.context_id == context_id,
@@ -109,6 +118,7 @@ class ConversationMemory:
         
         conversation = Conversation(
             user_id=user_id,
+            company_id=company_id,
             context_type=context_type,
             context_id=context_id,
             session_id=session_id,
