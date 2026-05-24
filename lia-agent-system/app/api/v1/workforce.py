@@ -794,7 +794,16 @@ async def get_workforce_entries(
     repo: WorkforceRepository = Depends(get_workforce_repo),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
-    """Get simple workforce entries for admin panel."""
+    """Get simple workforce entries for admin panel.
+
+    DEPRECATED: Use /workforce/plans/{plan_id}/headcounts/bulk (Sistema B canonical).
+    workforce_entries sera removido em Sprint 2027-Q1.
+    """
+    logger.warning(
+        "[DEPRECATED] workforce_entries GET endpoint called by company %s. "
+        "Migrate to /workforce/plans/{plan_id}/headcounts/bulk.",
+        company_id,
+    )
     try:
         current_year = year or datetime.now().year
         # WT-2022 P0.WORK fix: pass company_id (cross-tenant prevention)
@@ -815,7 +824,16 @@ async def save_workforce_entries(
     repo: WorkforceRepository = Depends(get_workforce_repo),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
-    """Save simple workforce entries for admin panel."""
+    """Save simple workforce entries for admin panel.
+
+    DEPRECATED: Use /workforce/plans/{plan_id}/headcounts/bulk (Sistema B canonical).
+    workforce_entries sera removido em Sprint 2027-Q1.
+    """
+    logger.warning(
+        "[DEPRECATED] workforce_entries PUT endpoint called by company %s. "
+        "Migrate to /workforce/plans/{plan_id}/headcounts/bulk.",
+        company_id,
+    )
     try:
         entries_data = [
             {
