@@ -262,12 +262,22 @@ class ChatRepository:
     async def check_candidate_ownership(
         self, candidate_id: str, company_id: str
     ) -> bool:
-        """Returns True if candidate belongs to company, False otherwise."""
+        """Returns True if candidate belongs to company, False otherwise.
+
+        F10 FU-2 fix (2026-05-24): `vacancy_candidates.company_id` is
+        `character varying` (not uuid). The CAST(:co AS uuid) raised
+        `operator does not exist: character varying = uuid`, falling
+        into the broad except in chat.py:1093 which returned 403
+        "Unable to verify candidate ownership" for ALL candidate-field
+        updates via chat-action (every editable field except `name`,
+        which uses the dedicated `/identity` endpoint). Pass `company_id`
+        as string to match the actual column type.
+        """
         result = await self.db.execute(
             text(
                 "SELECT 1 FROM vacancy_candidates "
                 "WHERE candidate_id = CAST(:cid AS uuid) "
-                "AND company_id = CAST(:co AS uuid) LIMIT 1"
+                "AND company_id = :co LIMIT 1"
             ),
             {"cid": candidate_id, "co": str(company_id)},
         )

@@ -890,11 +890,10 @@ async def update_candidate_identity(
     for header name field.
     """
     try:
-        from app.core.database import AsyncSessionLocal
         from app.models.candidate import Candidate as CandidateModel
         import uuid as _uuid
 
-        # First validate tenant scope (cheap repo lookup)
+        # First validate tenant scope (cheap repo lookup via request-scoped session)
         candidate_check = await candidate_repo.get_by_id_str(candidate_id)
         if not candidate_check:
             raise HTTPException(status_code=404, detail="Candidate not found")
@@ -910,20 +909,29 @@ async def update_candidate_identity(
         else:
             raise HTTPException(status_code=400, detail="No supported fields in payload (expected: name)")
 
-        # Use local session for ORM update (triggers encryption hybrid_property setter)
-        async with AsyncSessionLocal() as db:
-            try:
-                cand_uuid = _uuid.UUID(str(candidate_check.id))
-            except (ValueError, TypeError):
-                raise HTTPException(status_code=400, detail="Invalid candidate id")
-            cand = await db.get(CandidateModel, cand_uuid)
-            if not cand:
-                raise HTTPException(status_code=404, detail="Candidate not found in session")
-            if "name" in payload:
-                cand.name = new_name  # hybrid_property setter -> _name_encrypted
-            await db.commit()
-            await db.refresh(cand)
-            final_name = cand.name
+        # FU-2 fix (2026-05-24): use the request-scoped session injected via
+        # candidate_repo.db. Opening AsyncSessionLocal() locally breaks
+        # multi-tenancy because the new session does NOT inherit the
+        # Postgres RLS `app.current_company_id` setting from the request
+        # context (same class of bug as the chat RLS saga). The hybrid_property
+        # setter for `name` is ORM-level and works on any session — the local
+        # session was unnecessary and actively harmful.
+        try:
+            cand_uuid = _uuid.UUID(str(candidate_check.id))
+        except (ValueError, TypeError):
+            raise HTTPException(status_code=400, detail="Invalid candidate id")
+        db = candidate_repo.db
+        cand = await db.get(CandidateModel, cand_uuid)
+        if not cand:
+            raise HTTPException(status_code=404, detail="Candidate not found in session")
+        if "name" in payload:
+            cand.name = new_name  # hybrid_property setter -> _name_encrypted
+        # Capture final value BEFORE commit (db.refresh on shared session breaks
+        # in some pool configs — observed FU-2 smoke 2026-05-24 returning
+        # InvalidRequestError "Could not refresh instance"). The hybrid_property
+        # already reflects the new value in-memory.
+        final_name = cand.name
+        await db.commit()
 
         logger.info(f"Updated identity fields {updated_fields} for candidate {candidate_id}")
         return {

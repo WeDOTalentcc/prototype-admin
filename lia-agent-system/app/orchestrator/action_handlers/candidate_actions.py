@@ -234,8 +234,24 @@ async def _update_candidate_field(params: dict[str, Any], context: dict[str, Any
 
         async with AsyncSessionLocal() as db:
             if company_id and candidate_id:
+                # F10 FU-2 fix (2026-05-24) — TWO bugs in this code path:
+                #
+                # (1) vacancy_candidates.company_id is `character varying`,
+                #     not uuid. Previous CAST(:co AS uuid) raised
+                #     UndefinedFunctionError "operator does not exist:
+                #     character varying = uuid".
+                #
+                # (2) AsyncSessionLocal() opens a fresh session that does NOT
+                #     inherit `app.company_id` from the request middleware
+                #     (SET LOCAL is transaction-scoped). RLS policies then
+                #     block SELECT on vacancy_candidates because
+                #     app_current_company_id() returns NULL. Manually inject
+                #     via set_tenant_context (canonical helper from
+                #     app.core.database).
+                from app.core.database import set_tenant_context as _set_tenant
+                await _set_tenant(db, str(company_id))
                 authz = await db.execute(
-                    text("SELECT 1 FROM vacancy_candidates WHERE candidate_id = CAST(:cid AS uuid) AND company_id = CAST(:co AS uuid) LIMIT 1"),
+                    text("SELECT 1 FROM vacancy_candidates WHERE candidate_id = CAST(:cid AS uuid) AND company_id = :co LIMIT 1"),
                     {"cid": candidate_id, "co": str(company_id)},
                 )
                 if authz.fetchone() is None:
@@ -257,6 +273,32 @@ async def _update_candidate_field(params: dict[str, Any], context: dict[str, Any
                     {"key": resolved_field, "val": field_value, "cid": candidate_id},
                 )
             else:
+                # F10 FU-2 (2026-05-24): coerce value to the column's native
+                # type. JSON deserialization gives us native types (int, float,
+                # bool, str) but asyncpg sometimes binds them as str
+                # representations for `text(...)` parameterized queries —
+                # `years_of_experience = '12'` fails on integer columns with
+                # "str object cannot be interpreted as an integer".
+                if resolved_field == "years_of_experience" and field_value is not None:
+                    try:
+                        field_value = int(field_value)
+                    except (ValueError, TypeError):
+                        return ActionResult(
+                            status="error",
+                            message=f"'{field_value}' não é um número válido para anos de experiência.",
+                            error_detail=f"Cannot coerce {field_value!r} to int",
+                            action_type="update_candidate_field",
+                        )
+                elif resolved_field in {"salary_expectation_clt", "salary_expectation_pj"} and field_value is not None:
+                    try:
+                        field_value = float(field_value)
+                    except (ValueError, TypeError):
+                        return ActionResult(
+                            status="error",
+                            message=f"'{field_value}' não é um valor monetário válido.",
+                            error_detail=f"Cannot coerce {field_value!r} to float",
+                            action_type="update_candidate_field",
+                        )
                 safe_col = _safe_identifier(resolved_field, ALLOWED_DIRECT_FIELDS)
                 result = await db.execute(
                     text(f"UPDATE candidates SET {safe_col} = :val, updated_at = NOW() WHERE id = CAST(:cid AS uuid)"),
