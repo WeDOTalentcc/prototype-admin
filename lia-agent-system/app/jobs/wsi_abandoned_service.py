@@ -39,7 +39,7 @@ async def check_abandoned_sessions(db: AsyncSession) -> dict[str, int]:
                 s.candidate_id    AS candidate_id,
                 s.job_vacancy_id  AS job_vacancy_id,
                 COALESCE(s.updated_at, s.created_at) AS last_activity,
-                COALESCE(s.metadata->>'reminder_count', '0')::int AS reminder_count
+                COALESCE(s.voice_session_state->>'reminder_count', '0')::int AS reminder_count
             FROM wsi_sessions s
             WHERE s.status = 'in_progress'
               AND COALESCE(s.updated_at, s.created_at) < :cutoff_first
@@ -243,8 +243,8 @@ async def _increment_reminder_count(
     try:
         await db.execute(text("""
             UPDATE wsi_sessions
-            SET metadata = jsonb_set(
-                COALESCE(metadata, '{}'),
+            SET voice_session_state = jsonb_set(
+                COALESCE(voice_session_state, '{}'),
                 '{reminder_count}',
                 :count::text::jsonb
             )

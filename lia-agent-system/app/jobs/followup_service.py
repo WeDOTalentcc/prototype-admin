@@ -34,7 +34,12 @@ async def process_email_followups(db: AsyncSession) -> dict[str, int]:
     sent = skipped = errors = marked_no_response = 0
 
     try:
-        cutoff = datetime.now(UTC) - timedelta(hours=FOLLOWUP_INTERVAL_HOURS)
+        # Bug D fix (2026-05-24): strip tzinfo for asyncpg compat.
+        # notifications.created_at é `timestamp without time zone` (naive).
+        # `cutoff` precisa ser naive para evitar:
+        #   "can't subtract offset-naive and offset-aware datetimes"
+        # Mantém UTC semantics (server roda UTC).
+        cutoff = (datetime.now(UTC) - timedelta(hours=FOLLOWUP_INTERVAL_HOURS)).replace(tzinfo=None)
         result = await db.execute(text("""
             SELECT
                 n.id           AS notification_id,
