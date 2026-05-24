@@ -527,9 +527,11 @@ _company_gate: str = Depends(require_company_id)):
             "extra_data": record.metadata or {},
         })
         
-        balance = await get_or_create_balance(db, company_uuid)
-        balance.current_usage = (balance.current_usage or 0) + total_tokens
-        
+        # P1-W3-07+W3-09: balance.current_usage update removed.
+        # Updating was (a) un-committed — no db.commit() after assignment, and
+        # (b) race-prone — get_or_create_balance has no WITH FOR UPDATE.
+        # GET /balance recalculates current_usage via SELECT SUM(total_tokens)
+        # on every call so the displayed value is always correct without this field.
         logger.info(f"Recorded AI consumption: {consumption.agent_type}/{consumption.operation} - {total_tokens} tokens")
         
         return AiConsumptionResponse(**consumption.to_dict())

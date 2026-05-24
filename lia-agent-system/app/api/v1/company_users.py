@@ -35,6 +35,7 @@ from app.schemas.company import (
 )
 from app.domains.company.services.company_configuration_service import company_config_service
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.compliance.audit_service import AuditService  # P1-W2-06
 
 FRONTEND_URL = os.getenv("FRONTEND_URL", "https://plataforma-lia.replit.app")
 
@@ -186,6 +187,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         )
 
         logger.info(f"Created user with invitation: {user.id} for company {company_id}")
+        await AuditService().log_action(trace_id=str(uuid.uuid4()), company_id=company_id, action_type="user_invite", actor=str(getattr(current_user, "id", "system")), target_id=str(user.id), target_type="user")  # P1-W2-06
         return user
     except HTTPException:
         raise
@@ -258,6 +260,7 @@ company_id: str = Depends(require_company_id)):
 
         user = await user_repo.update(user_uuid, update_data, company_id=company_id)
         logger.info(f"Updated user: {user.id} with permissions: {user.permissions}")
+        await AuditService().log_action(trace_id=str(uuid.uuid4()), company_id=company_id, action_type="user_update", actor=str(getattr(current_user, "id", "system")), target_id=str(user.id), target_type="user")  # P1-W2-06
         return user
     except HTTPException:
         raise
@@ -292,6 +295,7 @@ company_id: str = Depends(require_company_id)):
         await user_repo.delete(user_uuid, company_id=company_id)
         # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
         logger.info(f"Deleted user: {email}")
+        await AuditService().log_action(trace_id=str(uuid.uuid4()), company_id=company_id, action_type="user_delete", actor=str(getattr(current_user, "id", "system")), target_id=str(user_uuid), target_type="user")  # P1-W2-06
         return None
     except HTTPException:
         raise
@@ -338,6 +342,7 @@ company_id: str = Depends(require_company_id)):
         )
 
         logger.info(f"Resent invitation to user: {user.id}")
+        await AuditService().log_action(trace_id=str(uuid.uuid4()), company_id=company_id, action_type="user_invitation_resend", actor="system", target_id=str(user.id), target_type="user")  # P1-W2-06
         return {"success": True, "message": "Invitation email resent successfully"}
     except HTTPException:
         raise
