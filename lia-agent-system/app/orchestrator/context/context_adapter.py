@@ -15,6 +15,12 @@ logger = logging.getLogger(__name__)
 
 ChannelType = Literal["rest", "ws", "rabbitmq", "cli"]
 
+# G1 canonical fix (2026-05-24): PAGE_TO_CONTEXT_TYPE kept for backwards
+# compatibility with callers that still consume context_type as a coarse
+# bucket (talent_funnel, pipeline, job_management, analytics, general).
+# New canonical lookup uses app.shared.canonical_pages.normalize_page +
+# CanonicalPage enum. Keys here are LEGACY ALIASES (will be cleaned up
+# once all callers migrate to CanonicalPage).
 PAGE_TO_CONTEXT_TYPE: dict[str, str] = {
     "sourcing": "talent_funnel",
     "talent": "talent_funnel",
@@ -27,6 +33,24 @@ PAGE_TO_CONTEXT_TYPE: dict[str, str] = {
     "analytics": "analytics",
     "global": "general",
     "general": "general",
+    # Canonical values mapped to legacy buckets:
+    "vagas": "job_management",
+    "vaga_detalhe": "job_management",
+    "recrutar": "job_management",
+    "funil_talentos": "talent_funnel",
+    "candidato_detalhe": "talent_funnel",
+    "pipeline_kanban": "pipeline",
+    "dashboard": "analytics",
+    "configuracoes": "general",
+    "agent_studio": "general",
+    "ajuda": "general",
+    "bancos_talentos": "talent_funnel",
+    "biblioteca": "general",
+    "central_comunicacao": "general",
+    "tasks": "general",
+    "chat": "general",
+    "trust": "general",
+    "home": "general",
 }
 
 

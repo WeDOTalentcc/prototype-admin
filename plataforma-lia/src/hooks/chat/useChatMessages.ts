@@ -17,6 +17,7 @@ import type {
 import { formatMessageTime, maskPII } from "./lia-chat-connection-types";
 
 import type { TransportMode } from "./lia-chat-connection-types";
+import { routeToCanonicalPage, CANONICAL_PAGES } from "@/lib/canonical-pages";
 
 export interface UseChatMessagesOptions {
   sessionId: string;
@@ -116,21 +117,13 @@ export function useChatMessages({
         ctx.candidate_id = candidateMatch[1];
       }
 
-      if (path.includes("/kanban") || path.includes("/pipeline")) {
-        ctx.page_type = "kanban";
-      } else if (path.includes("/candidat")) {
-        ctx.page_type = "candidates";
-      } else if (path.includes("/dashboard")) {
-        ctx.page_type = "dashboard";
-      } else if (path.includes("/agent-studio")) {
-        ctx.page_type = "agent_studio";
-      } else if (
-        path.includes("/minha-empresa") ||
-        path.includes("/company-settings")
-      ) {
-        ctx.page_type = "settings_config";
-      } else if (path.includes("/job")) {
-        ctx.page_type = "job_detail";
+      // G1 canonical fix (2026-05-24): use shared canonical route matcher.
+      // Replaces ad-hoc if-else that only covered EN routes and missed
+      // /configuracoes, /funil-de-talentos, /recrutar, /agent-studio, etc.
+      // The mapper handles PT-BR + EN + Teams-tab + locale prefix stripping.
+      const canonicalPage = routeToCanonicalPage(path);
+      if (canonicalPage !== CANONICAL_PAGES.GENERAL) {
+        ctx.page_type = canonicalPage;
       }
 
       const jobContextEl = document.querySelector("[data-job-context]");

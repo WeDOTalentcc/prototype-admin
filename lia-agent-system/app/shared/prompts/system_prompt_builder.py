@@ -232,20 +232,16 @@ class SystemPromptBuilder:
             user_desc += "."
             context_parts.append(f"### Usuário\n{user_desc}")
 
-        if context_page and context_page != "general":
-            page_descriptions = {
-                "sourcing": "O usuário está na página de sourcing/busca de candidatos.",
-                "talent": "O usuário está visualizando o funil de talentos.",
-                "pipeline": "O usuário está gerenciando o pipeline de candidatos.",
-                "kanban": "O usuário está no kanban de pipeline.",
-                "job": "O usuário está visualizando uma vaga específica.",
-                "jobs": "O usuário está na lista de vagas.",
-                "vacancies": "O usuário está na página de vagas.",
-                "wizard": "O usuário está criando/editando uma vaga pelo wizard.",
-                "analytics": "O usuário está na página de relatórios e analytics.",
-            }
-            page_desc = page_descriptions.get(context_page, f"O usuário está na página: {context_page}.")
-            context_parts.append(f"### Localização\n{page_desc}")
+        # G1 canonical fix (2026-05-24): use canonical_pages.describe_page
+        # instead of hardcoded dict. Single source of truth, full coverage
+        # of PT-BR routes (configuracoes, funil_talentos, recrutar,
+        # agent_studio, ajuda, ...). Legacy aliases (sourcing, kanban,
+        # vacancies, ...) still normalize correctly via LEGACY_PAGE_ALIASES.
+        from app.shared.canonical_pages import describe_page
+        if context_page:
+            page_desc = describe_page(context_page)
+            if page_desc:
+                context_parts.append(f"### Localização\n{page_desc}")
 
         if conversation_summary:
             context_parts.append(f"### Resumo da Conversa Anterior\n{conversation_summary}")

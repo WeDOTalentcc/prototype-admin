@@ -83,12 +83,18 @@ class ChatAdapter:
         entity_id = pc.get("job_vacancy_id") or pc.get("job_id")
         entity_type = "job" if entity_id else None
 
+        # G1 canonical fix (2026-05-24): normalize incoming page_type via
+        # canonical_pages so legacy frontend vocabularies (kanban,
+        # candidates, settings_config) and missing-page (None) all map to
+        # a known CanonicalPage value.
+        from app.shared.canonical_pages import normalize_page
+
         ctx = ContextAdapter.from_rest(
             message=user_message,
             user_id=user_id,
             company_id=str(company_id) if company_id else "",
             conversation_id=conversation_id,
-            context_page=pc.get("page_type", "general"),
+            context_page=normalize_page(pc.get("page_type")).value,
             entity_id=str(entity_id) if entity_id else None,
             entity_type=entity_type,
             selected_candidate_ids=pc.get("candidate_ids"),
