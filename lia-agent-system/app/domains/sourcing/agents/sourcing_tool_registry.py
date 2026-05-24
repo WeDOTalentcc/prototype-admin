@@ -569,6 +569,7 @@ async def _wrap_add_to_shortlist(**kwargs: Any) -> dict[str, Any]:
                 }
 
             await session.execute(
+                # RLS-EXEMPT: candidate_list_members — transitive via candidate_list (which has company_id)
                 text("""
                     INSERT INTO candidate_list_members (list_id, candidate_id, added_by, notes, source)
                     VALUES (:lid, :cid, :added_by, :notes, 'sourcing_agent')
@@ -758,14 +759,21 @@ async def _wrap_send_outreach(**kwargs: Any) -> dict[str, Any]:
             return {"success": False, "data": {}, "message": f"Candidato '{candidate_id}' nao encontrado."}
 
         log_id = str(uuid.uuid4())
+        if not company_id:
+            raise ValueError(
+                "company_id required for communication_logs INSERT "
+                "(multi-tenancy fail-closed per ADR-001)"
+            )
         await session.execute(
             text("""
                 INSERT INTO communication_logs
                     (id, candidate_id, candidate_email, candidate_phone, channel,
-                     message_type, subject, body, status, sent_by, created_at, updated_at)
+                     message_type, subject, body, status, sent_by,
+                     company_id, created_at, updated_at)
                 VALUES
                     (:id, :cid, :email, :phone, :channel,
-                     'outreach', 'Outreach', :body, 'sent', 'lia-agent', NOW(), NOW())
+                     'outreach', 'Outreach', :body, 'sent', 'lia-agent',
+                     :company_id, NOW(), NOW())
             """),
             {
                 "id": log_id,
@@ -773,6 +781,7 @@ async def _wrap_send_outreach(**kwargs: Any) -> dict[str, Any]:
                 "email": candidate["email"],
                 "phone": candidate["phone"],
                 "channel": channel,
+                "company_id": str(company_id),
                 "body": message_template,
             },
         )

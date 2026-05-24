@@ -187,6 +187,7 @@ class WSIVoiceOrchestrator:
 
                 logger.info(f"📝 {len(questions)} WSI questions ready for session {session_id}")
 
+                # RLS-EXEMPT: wsi_sessions — transitive via job_vacancy_id (migration 118)
                 await session.execute(text("""
                     INSERT INTO wsi_sessions (
                         id, candidate_id, job_vacancy_id, screening_type, mode, status, question_set_version, question_set_id
@@ -204,6 +205,7 @@ class WSIVoiceOrchestrator:
                 })
                 
                 for idx, question in enumerate(questions):
+                    # RLS-EXEMPT: wsi_questions — transitive via session
                     await session.execute(text("""
                         INSERT INTO wsi_questions (
                             id, session_id, competency, framework, question_type,
@@ -479,6 +481,7 @@ class WSIVoiceOrchestrator:
                     weights[question.competency] = question.weight
                     
                     analysis_id = str(uuid.uuid4())
+                    # RLS-EXEMPT: wsi_response_analyses — transitive via session
                     await session.execute(text("""
                         INSERT INTO wsi_response_analyses (
                             id, session_id, question_id, competency, response_text,
@@ -541,6 +544,7 @@ class WSIVoiceOrchestrator:
                        f"Behavioral: {wsi_result.behavioral_wsi}, Overall: {wsi_result.overall_wsi}")
             
             result_id = str(uuid.uuid4())
+            # RLS-EXEMPT: wsi_results — transitive via session
             await session.execute(text("""
                 INSERT INTO wsi_results (
                     id, session_id, candidate_id, job_vacancy_id,

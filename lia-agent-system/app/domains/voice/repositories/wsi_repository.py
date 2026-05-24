@@ -51,6 +51,7 @@ class WsiRepository:
         question_set_id: Any = None,
     ) -> None:
         """Insert a new WSI session; silently skip if session_id already exists."""
+        # RLS-EXEMPT: wsi_sessions — transitive isolation via job_vacancy_id join (migration 118 design decision)
         await self.db.execute(text("""
             INSERT INTO wsi_sessions (
                 id, candidate_id, job_vacancy_id, screening_type, mode, status,
@@ -109,6 +110,7 @@ class WsiRepository:
         is_critical: bool = False,
     ) -> None:
         """Persist a single WSI question for a session."""
+        # RLS-EXEMPT: wsi_questions — transitive via wsi_sessions.job_vacancy_id
         await self.db.execute(text("""
             INSERT INTO wsi_questions (
                 id, session_id, competency, framework, question_type,
@@ -166,6 +168,7 @@ class WsiRepository:
         justification: str,
     ) -> None:
         """Persist a response analysis record."""
+        # RLS-EXEMPT: wsi_response_analyses — transitive via session
         await self.db.execute(text("""
             INSERT INTO wsi_response_analyses (
                 id, session_id, question_id, candidate_id, job_vacancy_id,
@@ -248,6 +251,7 @@ class WsiRepository:
         percentile: int | None,
     ) -> None:
         """Persist final WSI scores."""
+        # RLS-EXEMPT: wsi_results — transitive via session
         await self.db.execute(text("""
             INSERT INTO wsi_results (
                 id, session_id, candidate_id, job_vacancy_id,
@@ -455,6 +459,7 @@ class WsiRepository:
         justification: str,
     ) -> None:
         """Persist a simplified response-analysis record (ON CONFLICT DO NOTHING)."""
+        # RLS-EXEMPT: wsi_response_analyses — transitive via session
         await self.db.execute(text("""
             INSERT INTO wsi_response_analyses (
                 id, session_id, question_id, candidate_id, job_vacancy_id,
@@ -493,6 +498,7 @@ class WsiRepository:
         classification: str,
     ) -> None:
         """Insert WSI result, silently skip if id already exists (ON CONFLICT DO NOTHING)."""
+        # RLS-EXEMPT: wsi_results — transitive via session
         await self.db.execute(text("""
             INSERT INTO wsi_results (
                 id, session_id, candidate_id, job_vacancy_id,
@@ -526,6 +532,7 @@ class WsiRepository:
         sequence_order: int,
     ) -> None:
         """Insert or ignore a WSI question record (ON CONFLICT DO NOTHING)."""
+        # RLS-EXEMPT: wsi_questions — transitive via wsi_sessions.job_vacancy_id
         await self.db.execute(text("""
             INSERT INTO wsi_questions (
                 id, session_id, competency, framework, question_type,
@@ -569,6 +576,7 @@ class WsiRepository:
         source: str,
     ) -> None:
         """Insert or update a job_screening_questions record."""
+        # RLS-EXEMPT: job_screening_questions — transitive via job_vacancies
         await self.db.execute(text("""
             INSERT INTO job_screening_questions (
                 id, job_vacancy_id, question_text, category, question_type,
@@ -738,6 +746,7 @@ class WsiRepository:
         (not the multi-step lifecycle from voice/twilio).
         """
         await self.db.execute(
+            # RLS-EXEMPT: wsi_sessions — transitive isolation via job_vacancy_id join (migration 118 design decision)
             text(
                 "INSERT INTO wsi_sessions "
                 "    (id, candidate_id, job_vacancy_id, screening_type, mode, status, "
@@ -773,6 +782,7 @@ class WsiRepository:
     ) -> None:
         """Insert wsi_questions row (triagem chat path — `weight` + `sequence_order`)."""
         await self.db.execute(
+            # RLS-EXEMPT: wsi_questions — transitive via wsi_sessions.job_vacancy_id
             text(
                 "INSERT INTO wsi_questions "
                 "    (id, session_id, competency, framework, question_type, question_text, "
@@ -813,6 +823,7 @@ class WsiRepository:
     ) -> None:
         """Insert wsi_response_analyses row with full analysis fields."""
         await self.db.execute(
+            # RLS-EXEMPT: wsi_response_analyses — transitive via session
             text(
                 "INSERT INTO wsi_response_analyses "
                 "    (id, session_id, question_id, competency, response_text, "
@@ -857,6 +868,7 @@ class WsiRepository:
     ) -> None:
         """Insert wsi_results row with all 5 score dimensions."""
         await self.db.execute(
+            # RLS-EXEMPT: wsi_results — transitive via session
             text(
                 "INSERT INTO wsi_results "
                 "    (id, session_id, candidate_id, job_vacancy_id, "
@@ -947,6 +959,7 @@ class WsiRepository:
         because voice flow registers a row with minimal fields; the call_id
         + status are mutable.
         """
+        # RLS-EXEMPT: wsi_sessions — transitive isolation via job_vacancy_id join (migration 118 design decision)
         await self.db.execute(text("""
             INSERT INTO wsi_sessions (
                 id, candidate_id, job_vacancy_id, mode, call_id, status,
@@ -988,6 +1001,7 @@ class WsiRepository:
         metadata at insert time — analytics are appended later by
         wsi_orchestrator hooks.
         """
+        # RLS-EXEMPT: wsi_questions — transitive via wsi_sessions.job_vacancy_id
         await self.db.execute(text("""
             INSERT INTO wsi_questions (
                 id, session_id, competency, framework, question_type,

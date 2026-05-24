@@ -266,14 +266,21 @@ async def _wrap_schedule_interview(**kwargs: Any) -> dict[str, Any]:
         vacancy_id = str(vc_row["vacancy_id"]) if vc_row else None
 
         interview_id = str(uuid.uuid4())
+        if not company_id:
+            raise ValueError(
+                "company_id required for interviews INSERT "
+                "(multi-tenancy fail-closed per ADR-001)"
+            )
         await session.execute(
             text("""
                 INSERT INTO interviews (id, title, interview_type, interview_mode,
                     candidate_id, candidate_name, candidate_email,
-                    start_time, status, job_vacancy_id, job_title, created_at, updated_at)
+                    start_time, status, job_vacancy_id, job_title,
+                    company_id, created_at, updated_at)
                 VALUES (:id, :title, :interview_type, :interview_mode,
                     :candidate_id, :candidate_name, :candidate_email,
-                    :start_time, 'scheduled', :job_vacancy_id, :job_title, NOW(), NOW())
+                    :start_time, 'scheduled', :job_vacancy_id, :job_title,
+                    :company_id, NOW(), NOW())
             """),
             {
                 "id": interview_id,
@@ -286,6 +293,7 @@ async def _wrap_schedule_interview(**kwargs: Any) -> dict[str, Any]:
                 "start_time": interview_datetime or None,
                 "job_vacancy_id": vacancy_id,
                 "job_title": job_title,
+                "company_id": str(company_id),
             },
         )
         await session.commit()

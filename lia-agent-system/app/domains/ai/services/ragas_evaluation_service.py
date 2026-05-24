@@ -261,6 +261,7 @@ class RAGASEvaluationService:
             from sqlalchemy import text
             # ADR-001-EXEMPT: direct SQL — ragas eval is a non-tenant time-series table, no company_id filter needed at eval layer
             await db.execute(
+                # RLS-EXEMPT: agent_ragas_evaluations — system observability table, not tenant-scoped
                 text(
                     """
                     INSERT INTO agent_ragas_evaluations

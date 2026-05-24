@@ -120,6 +120,7 @@ class RecruiterPreferencesRepository:
             )
         else:
             await self.db.execute(
+                # RLS-EXEMPT: recruiter_preferences — user-scoped via user_id (recruiter_profiles join)
                 text("""
                     INSERT INTO recruiter_preferences
                         (recruiter_id, preference_key, preference_value, frequency, context, last_used)

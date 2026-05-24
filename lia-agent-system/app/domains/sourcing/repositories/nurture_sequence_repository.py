@@ -155,6 +155,7 @@ class NurtureSequenceRepository:
         appr_id = approval_id or str(_uuid.uuid4())
         now = _dt.utcnow()
         await self.db.execute(
+            # RLS-EXEMPT: nurture_step_approvals — transitive via nurture_sequence
             text("""
                 INSERT INTO nurture_step_approvals (
                     approval_id, sequence_id, step_number,

@@ -157,6 +157,7 @@ class HiringPolicyRepository:
                         "session_id": session_id,
                     },
                 )
+            # RLS-EXEMPT: messages — transitive via conversation (migration 118)
             insert_msg = text("""
                 INSERT INTO messages (id, conversation_id, role, content, created_at)
                 VALUES (:id, :conv_id, :role, :content, NOW())

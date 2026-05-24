@@ -790,6 +790,7 @@ async def _wrap_cancel_interview(**kwargs: Any) -> dict[str, Any]:
         try:
             async with AsyncSessionLocal() as db:
                 await db.execute(
+                    # RLS-EXEMPT: notifications — user-scoped via user_id, no direct company_id column
                     text("""
                         INSERT INTO notifications (id, user_id, title, message, notification_type, category, priority, source_agent, source_trigger, created_at)
                         VALUES (:nid, :uid, :title, :msg, 'info', 'interview', 'normal', 'pipeline_transition_agent', 'cancel_interview', NOW())
@@ -952,6 +953,7 @@ async def _wrap_reschedule_interview(**kwargs: Any) -> dict[str, Any]:
         try:
             async with AsyncSessionLocal() as db:
                 await db.execute(
+                    # RLS-EXEMPT: notifications — user-scoped via user_id, no direct company_id column
                     text("""
                         INSERT INTO notifications (id, user_id, title, message, notification_type, category, priority, source_agent, source_trigger, created_at)
                         VALUES (:nid, :uid, :title, :msg, 'info', 'interview', 'normal', 'pipeline_transition_agent', 'reschedule_interview', NOW())

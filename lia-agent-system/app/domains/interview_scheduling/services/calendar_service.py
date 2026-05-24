@@ -633,6 +633,7 @@ class CalendarService:
 
         async with AsyncSessionLocal() as db:
             await db.execute(
+                # RLS-EXEMPT: calendar_events — user-scoped via organizer_id
                 text("""
                     INSERT INTO calendar_events
                         (id, title, description, location, start_time,

@@ -166,15 +166,23 @@ async def _schedule_interview(params: dict[str, Any], context: dict[str, Any]):
                 candidate_name = candidate_row.name
 
             interview_id = str(uuid_mod.uuid4())
+            if not company_id:
+                raise ValueError(
+                    "company_id required for interviews INSERT "
+                    "(multi-tenancy fail-closed per ADR-001)"
+                )
             await db.execute(text("""
-                INSERT INTO interviews (id, candidate_id, interviewer_name, start_time, status, created_at, updated_at)
-                VALUES (:id, CAST(:candidate_id AS uuid), :interviewer, :start_time, 'scheduled', NOW(), NOW())
+                INSERT INTO interviews (id, candidate_id, interviewer_name, start_time, status,
+                    company_id, created_at, updated_at)
+                VALUES (:id, CAST(:candidate_id AS uuid), :interviewer, :start_time, 'scheduled',
+                    :company_id, NOW(), NOW())
                 ON CONFLICT DO NOTHING
             """), {
                 "id": interview_id,
                 "candidate_id": str(candidate_id),
                 "start_time": dt,
                 "interviewer": interviewer,
+                "company_id": str(company_id),
             })
             await db.commit()
 

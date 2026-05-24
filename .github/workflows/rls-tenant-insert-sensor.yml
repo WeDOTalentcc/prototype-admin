@@ -31,7 +31,7 @@ concurrency:
 
 jobs:
   rls-tenant-insert:
-    name: RLS Tenant INSERT Sensor (ratchet @ 33)
+    name: RLS Tenant INSERT Sensor (BLOCKING, baseline 0)
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -49,8 +49,8 @@ jobs:
           # INSERT INTO via text("...") in addition to Model(...) constructors.
           # Baseline 33 violations descobertas (todas em raw-SQL).
           # Ratchet preserva baseline atual; novo offender é bloqueado.
-          # Fix dos 33 é Sprint 5+ work (RLS_RAW_SQL_FOLLOWUP.md).
-          python3 scripts/check_rls_table_inserts_have_company_id.py --max-violations 33
+          # Sprint 5 fixou 4 reais + 29 EXEMPT markers.
+          python3 scripts/check_rls_table_inserts_have_company_id.py --max-violations 0
 
       - name: Human-readable report (always)
         if: always()

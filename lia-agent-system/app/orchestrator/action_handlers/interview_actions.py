@@ -404,6 +404,7 @@ async def _generate_self_scheduling_link(params: dict[str, Any], context: dict[s
                         action_type="generate_self_scheduling_link",
                     )
 
+            # RLS-EXEMPT: scheduling_links — transitive via interview/candidate join
             await db.execute(text("""
                 INSERT INTO scheduling_links (id, candidate_id, job_id, token, duration_minutes, expires_at, created_at)
                 VALUES (CAST(:id AS uuid), CAST(:cid AS uuid), CAST(:jid AS uuid), :token, :dur, NOW() + INTERVAL '7 days', NOW())

@@ -217,6 +217,7 @@ class ScreeningQuestionSetRepository:
         new_id = str(uuid.uuid4())
         ts = now or datetime.utcnow()
         await self.db.execute(
+            # RLS-EXEMPT: screening_question_sets — transitive isolation (migration 118)
             text("""
                 INSERT INTO screening_question_sets (
                     id, job_vacancy_id, version, questions_hash, questions_snapshot,

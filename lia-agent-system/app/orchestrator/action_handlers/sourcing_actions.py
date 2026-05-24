@@ -445,12 +445,20 @@ async def _add_candidate(params: dict[str, Any], context: dict[str, Any]):
                     action_type="add_candidate",
                 )
 
+            if not company_id:
+                raise ValueError(
+                    "company_id required for candidates INSERT "
+                    "(multi-tenancy fail-closed per ADR-001)"
+                )
             await db.execute(text("""
-                INSERT INTO candidates (id, name, email, phone, current_title, current_company, created_at, updated_at)
-                VALUES (CAST(:id AS uuid), :name, :email, :phone, :title, :company, NOW(), NOW())
+                INSERT INTO candidates (id, name, email, phone, current_title, current_company,
+                    company_id, created_at, updated_at)
+                VALUES (CAST(:id AS uuid), :name, :email, :phone, :title, :company,
+                    CAST(:company_id AS uuid), NOW(), NOW())
             """), {
                 "id": candidate_id, "name": name, "email": email,
                 "phone": phone, "title": current_title, "company": current_company,
+                "company_id": str(company_id),
             })
 
             if job_id and company_id:

@@ -334,6 +334,7 @@ company_id: str = Depends(require_company_id)):
             """))
             for q in request.questions:
                 q_id = q.get("id", f"q_{uuid.uuid4().hex[:12]}")
+                # RLS-EXEMPT: job_screening_questions — transitive via job_vacancies
                 await db.execute(text("""
                     INSERT INTO job_screening_questions (id, job_vacancy_id, question_text, category, question_type, weight, skill_targeted, block_id, source, is_active)
                     VALUES (:id, :job_id, :text, :category, :type, :weight, :skill_targeted, :block_id, :source, true)
