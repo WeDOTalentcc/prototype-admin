@@ -902,6 +902,35 @@ class MainOrchestrator:
             except Exception as _canary_exc:
                 logger.debug("[MainOrchestrator] Phase 2 V1 canary increment failed: %s", _canary_exc)
 
+            # Sprint 15.3-B (2026-05-24): Loop A producer wire.
+            # Phase 2 V1 hit = routing was suboptimal (Phase 1.5 didn't resolve).
+            # Record correction signal so daily aggregator (MonitoringLoop)
+            # computes per-domain adjustment factors for CascadedRouter.
+            # Pragmatic proxy (Sprint 15.1 SIGNALS_INVENTORY.md Opt 1) — when
+            # 12.3-C absorption removes V1, migrate to a different signal source.
+            if _phase2_enabled and ctx.company_id:
+                try:
+                    from app.shared.services.routing_learning_service import (
+                        routing_learning_service,
+                    )
+                    from lia_config.database import AsyncSessionLocal
+                    _routed_proxy = getattr(ctx, "context_page", "general") or "general"
+                    async with AsyncSessionLocal() as _signal_db:
+                        await routing_learning_service.record_correction(
+                            session_id=conv_id or "no-conv",
+                            routed_domain=_routed_proxy,
+                            actual_domain="fallback_v1",
+                            company_id=str(ctx.company_id),
+                            db=_signal_db,
+                            message=ctx.message or "",
+                        )
+                except Exception as _learn_exc:
+                    # Fail-open: signal capture exception não bloqueia request
+                    logger.debug(
+                        "[MainOrchestrator] Loop A producer skipped: %s",
+                        _learn_exc,
+                    )
+
             if not _phase2_enabled:
                 # Sprint 12 cutover kill-switch active: return canonical fail-loud
                 # response (Sprint 9 timeout pattern). LIA_PHASE_2_V1_ENABLED=false
