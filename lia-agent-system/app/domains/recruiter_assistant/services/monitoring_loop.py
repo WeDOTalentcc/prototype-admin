@@ -154,7 +154,45 @@ class MonitoringLoop:
             "check_interval_seconds": self._check_interval,
             "is_stale": is_stale,
             "now": now.isoformat(),
+            "last_daily_task_runs": {
+                k: v.isoformat() for k, v in self._last_daily_task_runs.items()
+            },
+            "last_hourly_task_runs": {
+                k: v.isoformat() for k, v in self._last_hourly_task_runs.items()
+            },
         }
+
+    def _should_run_daily(self, task_name: str) -> bool:
+        """Sprint 11.0 — return True if task hasn\'t run in >24h.
+
+        Used to gate daily Celery-migrated tasks in the MonitoringLoop
+        iteration (loop runs hourly; daily flag prevents 24× execution).
+        """
+        last = self._last_daily_task_runs.get(task_name)
+        if last is None:
+            return True
+        elapsed = datetime.now(timezone.utc) - last
+        return elapsed.total_seconds() >= 86400  # 24h
+
+    def _should_run_hourly(self, task_name: str) -> bool:
+        """Sprint 11.0 — return True if task hasn\'t run in >1h.
+
+        Used for hourly Celery-migrated tasks (since loop default = 3600s,
+        usually fires every iteration unless drift).
+        """
+        last = self._last_hourly_task_runs.get(task_name)
+        if last is None:
+            return True
+        elapsed = datetime.now(timezone.utc) - last
+        return elapsed.total_seconds() >= 3600
+
+    def _mark_daily_run(self, task_name: str) -> None:
+        """Sprint 11.0 — record successful daily task run."""
+        self._last_daily_task_runs[task_name] = datetime.now(timezone.utc)
+
+    def _mark_hourly_run(self, task_name: str) -> None:
+        """Sprint 11.0 — record successful hourly task run."""
+        self._last_hourly_task_runs[task_name] = datetime.now(timezone.utc)
 
     def __init__(self, check_interval: int | None = None):
         self._running = False
@@ -176,6 +214,14 @@ class MonitoringLoop:
         self._iteration_count: int = 0
         self._consecutive_failures: int = 0
         self._last_error: str | None = None
+
+        # Sprint 11.0 (2026-05-24) — Celery migration canonical pattern.
+        # Daily task tracking: each migrated Celery beat task has an entry
+        # here. `_should_run_daily(task_name)` returns True if last run was
+        # >24h ago OR never. Used to gate daily LGPD compliance jobs,
+        # weekly digests, etc. without requiring Celery beat scheduler.
+        self._last_daily_task_runs: dict[str, datetime] = {}
+        self._last_hourly_task_runs: dict[str, datetime] = {}
 
     @property
     def is_running(self) -> bool:
@@ -216,6 +262,15 @@ class MonitoringLoop:
             iteration_did_work = False
             try:
                 iteration_did_work = await self._run_all_tenants()
+                # Sprint 11.0 (2026-05-24) — execute global daily tasks
+                # (Celery migration). Daily flags inside ensure 24h interval.
+                try:
+                    await self._run_daily_global_tasks()
+                except Exception as _daily_exc:
+                    logger.error(
+                        "[MonitoringLoop] daily global tasks failed: %s",
+                        _daily_exc, exc_info=True,
+                    )
                 # Sprint 4.3 (M) — successful iteration. Update health snapshot.
                 self._last_iteration_at = datetime.now(timezone.utc)
                 self._iteration_count += 1
@@ -345,6 +400,45 @@ class MonitoringLoop:
             "by_category": by_category,
             "last_run": self._last_run.get(company_id, "never"),
         }
+
+
+
+    async def _run_daily_global_tasks(self) -> None:
+        """Sprint 11.0 (2026-05-24) — execute daily-scheduled global tasks
+        migrated from Celery beat.
+
+        Currently migrated:
+          - dsr.check_overdue_daily (LGPD Art. 20 — was orphan post-Sprint 4.4
+            Celery deploy audit; this is the canonical wire-in)
+
+        Sprint 11.3 batches will add more (lgpd.run_cleanup_daily, audit
+        lifecycle, voice_retention, etc.)
+
+        Pattern: each task wrapped in try/except so one failure doesn\'t
+        block the others. Each tracks its own last_run via _mark_daily_run.
+        """
+        from lia_config.database import AsyncSessionLocal
+
+        # ─── DSR overdue check (LGPD Art. 20) ───
+        task_name = "dsr.check_overdue_daily"
+        if self._should_run_daily(task_name):
+            try:
+                from app.jobs.tasks.compliance import check_dsr_overdue_canonical
+                async with AsyncSessionLocal() as db:
+                    result = await check_dsr_overdue_canonical(db)
+                self._mark_daily_run(task_name)
+                logger.info(
+                    "[MonitoringLoop healthz] daily_task=%s result=%s",
+                    task_name, result,
+                )
+            except Exception as exc:
+                logger.error(
+                    "[MonitoringLoop healthz] daily_task=%s FAILED: %s",
+                    task_name, exc, exc_info=True,
+                )
+                # Don\'t mark as run — try again next iteration.
+
+        # Sprint 11.3 batches will append more here.
 
     async def _check_stale_candidates(self, company_id: str) -> list[ProactiveAlert]:
         from lia_config.database import AsyncSessionLocal

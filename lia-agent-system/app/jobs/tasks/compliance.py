@@ -909,3 +909,128 @@ def pii_backfill_encrypt_interview_offer_existing_task(
                 "pii.backfill_encrypt_interview_offer_existing", exc,
             )
         raise self.retry(exc=exc, countdown=600)
+
+# Sprint 11.0 (2026-05-24) — canonical async function extracted from
+# `check_dsr_overdue_daily` Celery task body, callable by MonitoringLoop.
+#
+# Why: Celery NOT deployed on Replit; this task was orphan. LGPD Art. 20
+# requires 15-day SLA response — without this, alerts not raised, team
+# misses non-conformance windows. Sprint 11.0 wires this into the
+# MonitoringLoop singleton via `_check_daily_dsr_overdue()` (see
+# `app/domains/recruiter_assistant/services/monitoring_loop.py`).
+#
+# Canonical pattern (re-used Sprint 11.3 batches):
+#   1. async def <task_canonical>(db) -> dict — does the actual work
+#   2. Celery decorator task wraps with asyncio.run() + observability
+#   3. MonitoringLoop calls async function directly with shared db
+async def check_dsr_overdue_canonical(db) -> dict:
+    """Check DataSubjectRequest overdue per LGPD Art. 20 + create Alerts.
+
+    Canonical async function — same body as the Celery task's inner `_run`,
+    extracted so MonitoringLoop can call directly without asyncio.run.
+
+    Multi-tenancy: query crosses tenants (DSR overdue is a system-wide
+    signal). RLS enforced per row via app_current_company_id() helper.
+
+    Args:
+        db: AsyncSession (caller provides — usually MonitoringLoop's
+            shared session per iteration).
+
+    Returns:
+        dict with {ran_at, checked, overdue_found, alerts_created,
+        alerts_skipped_duplicate, errors}
+    """
+    from datetime import datetime
+    from sqlalchemy import and_, select
+    from app.models.observability import DataSubjectRequest
+    from lia_models.alert import Alert, AlertSeverity, AlertStatus, AlertType
+
+    now = datetime.utcnow()
+    summary = {
+        "ran_at": now.isoformat(),
+        "checked": 0,
+        "overdue_found": 0,
+        "alerts_created": 0,
+        "alerts_skipped_duplicate": 0,
+        "errors": [],
+    }
+
+    # Query DSRs overdue
+    stmt = select(DataSubjectRequest).where(
+        and_(
+            DataSubjectRequest.sla_deadline < now,
+            DataSubjectRequest.status.in_(["pending", "processing", "in_review"]),
+        )
+    )
+    result = await db.execute(stmt)
+    overdue_dsrs = list(result.scalars().all())
+    summary["overdue_found"] = len(overdue_dsrs)
+    summary["checked"] = len(overdue_dsrs)
+
+    for dsr in overdue_dsrs:
+        try:
+            # Check existing active alert for this DSR
+            existing_q = select(Alert).where(
+                and_(
+                    Alert.alert_type == AlertType.DEADLINE_APPROACHING,
+                    Alert.status == AlertStatus.ACTIVE,
+                    Alert.context["dsr_id"].astext == str(dsr.id),
+                )
+            )
+            existing = (await db.execute(existing_q)).scalar_one_or_none()
+            if existing is not None:
+                summary["alerts_skipped_duplicate"] += 1
+                continue
+
+            # Create alert
+            days_over = (now - dsr.sla_deadline).days
+            alert = Alert(
+                alert_type=AlertType.DEADLINE_APPROACHING,
+                severity=AlertSeverity.HIGH,
+                status=AlertStatus.ACTIVE,
+                title=f"DSR LGPD prazo vencido ({days_over}d)",
+                message=(
+                    f"DSR {dsr.id} tipo \'{dsr.request_type}\' status \'{dsr.status}\' "
+                    f"vencido em {days_over} dias (LGPD Art. 20 — 15 dias úteis). "
+                    "Requer ação imediata para evitar não-conformidade ANPD."
+                ),
+                context={
+                    "dsr_id": str(dsr.id),
+                    "request_type": dsr.request_type,
+                    "status": dsr.status,
+                    "sla_deadline": dsr.sla_deadline.isoformat(),
+                    "days_overdue": days_over,
+                    "company_id": str(dsr.company_id),
+                    "source": "Sprint 11.0 MonitoringLoop migration (was WT-2022 P5.3 cron)",
+                },
+            )
+            db.add(alert)
+            summary["alerts_created"] += 1
+
+            # Hardening C.4 -- canary signal SLA worker LGPD.
+            try:
+                from app.shared.observability.canary_metrics import (
+                    dsr_overdue_created_total,
+                )
+                if dsr_overdue_created_total is not None:
+                    dsr_overdue_created_total.inc()
+            except Exception as _metric_exc:  # pragma: no cover -- fail-open
+                logger.debug(
+                    "[dsr.check_overdue] canary metric inc failed (fail-open): %s",
+                    _metric_exc,
+                )
+
+        except Exception as exc:
+            summary["errors"].append({
+                "dsr_id": str(dsr.id),
+                "error": str(exc)[:200],
+            })
+            logger.error(
+                "[dsr.check_overdue] Failed to create alert for DSR %s: %s",
+                dsr.id, exc, exc_info=True,
+            )
+
+    await db.commit()
+
+    return summary
+
