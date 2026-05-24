@@ -16,7 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
-from app.core.database import get_db
+from app.core.database import get_tenant_db
 from app.domains.cv_screening.repositories.experience_highlight_repository import ExperienceHighlightRepository
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
@@ -157,7 +157,7 @@ def generate_fallback_highlight(data: GenerateHighlightRequest) -> str:
 @router.get("/{candidate_id}", response_model=None)
 async def get_experience_highlight(
     candidate_id: str,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(get_current_user_or_demo), 
 company_id: str = Depends(require_company_id)) -> ExperienceHighlightResponse:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
@@ -167,7 +167,12 @@ company_id: str = Depends(require_company_id)) -> ExperienceHighlightResponse:
     Returns 404 if no cached highlight exists.
     """
     repo = ExperienceHighlightRepository(db)
-    await repo.ensure_table()
+    # F11 fix (2026-05-24): ensure_table() removed — table is alembic-managed
+    # (migration 138). Calling CREATE TABLE IF NOT EXISTS raises
+    # InsufficientPrivilegeError under lia_app role, which forces a rollback
+    # that drops the transaction-scoped `app.company_id` GUC from get_tenant_db,
+    # making subsequent INSERTs into RLS-protected tables fail with
+    # "new row violates row-level security policy".
 
     row = await repo.get_valid_highlight(candidate_id, company_id)
 
@@ -188,7 +193,7 @@ company_id: str = Depends(require_company_id)) -> ExperienceHighlightResponse:
 @router.post("/generate", response_model=None)
 async def generate_experience_highlight(
     request: GenerateHighlightRequest,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(get_current_user_or_demo), 
 company_id: str = Depends(require_company_id)) -> ExperienceHighlightResponse:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
@@ -196,8 +201,16 @@ company_id: str = Depends(require_company_id)) -> ExperienceHighlightResponse:
     """
     Generate or retrieve cached experience highlight for a candidate.
     """
+    # F11 fix (2026-05-24): manually set RLS tenant context on the session
+    # BEFORE the INSERT. get_tenant_db sets it at session setup, but the LLM
+    # call (generate_highlight_with_ai) doesn't touch the DB and may not
+    # explicitly hold the transaction — and ensure_table() rollback used to
+    # drop the GUC. Re-setting here is idempotent and defense-in-depth against
+    # RLS "new row violates row-level security policy" on candidate_experience_highlights.
+    from app.core.database import set_tenant_context as _set_tenant
+    if company_id:
+        await _set_tenant(db, str(company_id))
     repo = ExperienceHighlightRepository(db)
-    await repo.ensure_table()
 
     if not request.force_regenerate:
         row = await repo.get_valid_highlight(request.candidate_id, company_id)
@@ -217,6 +230,13 @@ company_id: str = Depends(require_company_id)) -> ExperienceHighlightResponse:
     now = datetime.utcnow()
     expires_at = now + timedelta(days=CACHE_TTL_DAYS)
     highlight_id = str(uuid4())
+
+    # F11 fix: re-inject tenant context right before INSERT — defense-in-depth.
+    # LLM call above may take 5-30s. RLS GUC is transaction-scoped and could
+    # have been dropped by any implicit commit/rollback in unrelated code paths
+    # (rate-limiter, logging middleware, observability spans).
+    if company_id:
+        await _set_tenant(db, str(company_id))
 
     row = await repo.upsert_highlight(
         highlight_id=highlight_id,
@@ -242,14 +262,19 @@ company_id: str = Depends(require_company_id)) -> ExperienceHighlightResponse:
 @router.delete("/{candidate_id}", response_model=None)
 async def delete_experience_highlight(
     candidate_id: str,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(get_current_user_or_demo), 
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     company_id = current_user.company_id
     """Delete cached highlight for a candidate (admin use)."""
     repo = ExperienceHighlightRepository(db)
-    await repo.ensure_table()
+    # F11 fix (2026-05-24): ensure_table() removed — table is alembic-managed
+    # (migration 138). Calling CREATE TABLE IF NOT EXISTS raises
+    # InsufficientPrivilegeError under lia_app role, which forces a rollback
+    # that drops the transaction-scoped `app.company_id` GUC from get_tenant_db,
+    # making subsequent INSERTs into RLS-protected tables fail with
+    # "new row violates row-level security policy".
 
     deleted = await repo.delete_highlight(candidate_id, company_id)
     return {"deleted": deleted > 0, "candidate_id": candidate_id}
@@ -258,7 +283,7 @@ company_id: str = Depends(require_company_id)):
 @router.post("/batch-generate", response_model=None)
 async def batch_generate_highlights(
     candidates: list[GenerateHighlightRequest],
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(get_current_user_or_demo), 
 company_id: str = Depends(require_company_id)) -> list[ExperienceHighlightResponse]:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)

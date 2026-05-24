@@ -71,15 +71,31 @@ function ContactField({ kind, value, candidateId, onSaved }: ContactFieldProps) 
     }
     setSaving(true)
     try {
-      const res = await fetch(`/api/backend-proxy/candidates/${candidateId}`, {
-        method: "PUT",
+      // F11 fix (2026-05-24): previous code hit Rails proxy
+      // `/api/backend-proxy/candidates/{id}` which is offline in Replit dev
+      // (Rails not running). Route via the canonical FastAPI chat-action
+      // endpoint other inline edits use (header pencil, profile cards).
+      // Backend honors ALLOWED_DIRECT_FIELDS allow-list (email + phone are in).
+      const res = await fetch("/api/backend-proxy/chat/actions/candidate-field-update", {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ [fieldName]: trimmed || null }),
+        body: JSON.stringify({
+          candidate_id: candidateId,
+          fields: { [fieldName]: trimmed || null },
+        }),
       })
       if (!res.ok) {
         const body = await res.json().catch(() => ({}))
         const msg = body?.errors?.[0]?.detail || body?.error || `Falha ao salvar (${res.status})`
         toast.error(msg)
+        return
+      }
+      const data = await res.json().catch(() => ({})) as {
+        data?: { results?: Array<{ status?: string; error?: string | null; message?: string }> }
+      }
+      const result = data?.data?.results?.[0]
+      if (result && result.status !== "executed") {
+        toast.error(result.message || result.error || `Falha ao salvar ${label.toLowerCase()}`)
         return
       }
       onSaved(trimmed)

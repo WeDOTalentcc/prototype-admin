@@ -64,6 +64,22 @@ class ExperienceHighlightRepository:
                     await self.db.rollback()
                 except Exception:
                     pass  # rollback errors are non-fatal here
+                # F11 fix (2026-05-24): rollback above ends the transaction,
+                # which DROPS the `SET LOCAL app.company_id` set by get_tenant_db.
+                # Re-inject from session.info["company_id"] (persisted by
+                # set_tenant_context for exactly this scenario) so subsequent
+                # INSERTs into RLS-protected tables don't fail with
+                # "new row violates row-level security policy".
+                stored_cid = self.db.info.get("company_id") if hasattr(self.db, "info") else None
+                if stored_cid:
+                    try:
+                        from app.core.database import set_tenant_context as _re_set_tenant
+                        await _re_set_tenant(self.db, stored_cid)
+                    except Exception as re_exc:
+                        _logger.warning(
+                            "[F11] Failed to re-inject company_id after ensure_table rollback: %s",
+                            re_exc,
+                        )
                 _logger.debug(
                     "ExperienceHighlightRepository.ensure_table skipped (lia_app no CREATE on public — table is alembic-managed): %s",
                     exc,
