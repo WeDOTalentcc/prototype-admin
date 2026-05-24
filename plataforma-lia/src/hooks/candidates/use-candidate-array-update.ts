@@ -50,6 +50,7 @@ export function useCandidateArrayUpdate<T>(
           fieldName === "work_history" ? `/api/backend-proxy/candidates/${candidateId}/experiences` :
           fieldName === "education" ? `/api/backend-proxy/candidates/${candidateId}/education` :
           fieldName === "technical_skills" ? `/api/backend-proxy/candidates/${candidateId}/skills` :
+          fieldName === "certifications" ? `/api/backend-proxy/candidates/${candidateId}/certifications` :
           null
         )
         const response = dedicatedEndpoint

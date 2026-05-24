@@ -805,19 +805,22 @@ async def update_candidate_skills(
         raise HTTPException(status_code=500, detail="Falha ao atualizar skills do candidato.")
 
 
-@router.put("/{candidate_id}/skills", response_model=None)
-async def update_candidate_skills(
+@router.put("/{candidate_id}/certifications", response_model=None)
+async def update_candidate_certifications(
     candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     payload: list[str],
     request: Request = None,  # type: ignore[assignment]
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
     current_user: User = Depends(get_current_user_or_demo),
 ):
-    """Replace candidate's technical_skills array with the provided list.
+    """Replace candidate's certifications array with the provided list.
 
-    Used by F5 D7 edit pattern via EditArrayItemModal in CandidateSkillsList.
+    F9 caveats resolution (2026-05-24): mirror of /skills endpoint.
     Multi-tenant via _assert_tenant_scope. Replace-all semantics.
-    Validates each skill is a non-empty string max 100 chars.
+    Validates each cert is a non-empty string max 200 chars (longer than
+    skills because cert names tend to be descriptive — e.g. "AWS Certified
+    Solutions Architect – Associate"). Dedupe case-insensitive preserving
+    insertion order.
     """
     try:
         from app.core.database import AsyncSessionLocal
@@ -826,41 +829,41 @@ async def update_candidate_skills(
             raise HTTPException(status_code=404, detail="Candidate not found")
         _assert_tenant_scope(candidate, current_user)
 
-        # Validate and normalize skills
-        normalized_skills = []
-        for skill in (payload or []):
-            if not isinstance(skill, str):
+        # Validate and normalize certs
+        normalized: list[str] = []
+        for cert in (payload or []):
+            if not isinstance(cert, str):
                 continue
-            s = skill.strip()
+            s = cert.strip()
             if not s:
                 continue
-            normalized_skills.append(s[:100])
-        # Dedupe preserving order
-        seen = set()
-        deduped = []
-        for s in normalized_skills:
-            if s.lower() not in seen:
-                seen.add(s.lower())
+            normalized.append(s[:200])
+        seen: set[str] = set()
+        deduped: list[str] = []
+        for s in normalized:
+            key = s.lower()
+            if key not in seen:
+                seen.add(key)
                 deduped.append(s)
 
         async with AsyncSessionLocal() as db:
             await db.execute(
-                text("UPDATE candidates SET technical_skills = :skills, updated_at = NOW() WHERE id = CAST(:cid AS uuid)"),
-                {"skills": deduped, "cid": str(candidate.id)},
+                text("UPDATE candidates SET certifications = :certs, updated_at = NOW() WHERE id = CAST(:cid AS uuid)"),
+                {"certs": deduped, "cid": str(candidate.id)},
             )
             await db.commit()
 
-        logger.info(f"Updated {len(deduped)} skills for candidate {candidate_id}")
-        return {"success": True, "count": len(deduped), "message": "Skills updated successfully", "skills": deduped}
+        logger.info(f"Updated {len(deduped)} certifications for candidate {candidate_id}")
+        return {"success": True, "count": len(deduped), "message": "Certifications updated successfully", "certifications": deduped}
     except HTTPException:
         raise
     except Exception:
         _rid = getattr(request.state, "request_id", "unknown") if request else "unknown"
         logger.exception(
-            "[update_candidate_skills] failed request_id=%s candidate_id=%s",
+            "[update_candidate_certifications] failed request_id=%s candidate_id=%s",
             _rid, candidate_id,
         )
-        raise HTTPException(status_code=500, detail="Falha ao atualizar skills do candidato.")
+        raise HTTPException(status_code=500, detail="Falha ao atualizar certificações do candidato.")
 
 
 @router.put("/{candidate_id}/identity", response_model=None)
