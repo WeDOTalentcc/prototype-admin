@@ -1059,7 +1059,32 @@ class SkillsCatalogDBService:
                     added += 1
             
             await self.db.commit()
-            
+
+            # Bug 4 fix (2026-05-24): dual-write to culture_profile.tech_stack so
+            # the frontend (useCompanySettingsCards.fetchCultureProfile) sees the
+            # new stack immediately. Without this, write store (CompanySkillsCatalog)
+            # and read store (CompanyCultureProfile.tech_stack) diverge — Paulo's
+            # bug 4. Lazy import to avoid circular deps at module load.
+            try:
+                from app.domains.company_culture.repositories.company_culture_repository import (
+                    CompanyCultureRepository,
+                )
+                import uuid as _uuid
+                _cid = _uuid.UUID(str(company_id)) if not isinstance(company_id, _uuid.UUID) else company_id
+                _culture_repo = CompanyCultureRepository(self.db)
+                await _culture_repo.upsert_profile_fields(
+                    _cid,
+                    {"tech_stack": [t.strip() for t in tech_stack if t and t.strip()]},
+                )
+                await self.db.commit()
+            except Exception as _dw_err:
+                # Dual-write failure should NOT roll back the primary skills_catalog
+                # commit above. Surface via logger; sensor can pick this up later.
+                self.logger.warning(
+                    "[sync_from_tech_stack] culture_profile dual-write failed for "
+                    "company=%s: %s", company_id, _dw_err,
+                )
+
             self.logger.info(
                 f"Synced tech stack for company {company_id}: "
                 f"added={added}, updated={updated}, skipped={skipped}"

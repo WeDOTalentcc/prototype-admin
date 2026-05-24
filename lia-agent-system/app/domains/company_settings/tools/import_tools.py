@@ -15,6 +15,7 @@ from __future__ import annotations
 
 from app.tools.context_helpers import context_or_raise, require_company_id_from_context, require_company_id_from_obj
 
+from types import SimpleNamespace
 import asyncio
 import json
 import logging
@@ -891,6 +892,30 @@ async def _import_benefits_from_data_impl(
 # Registration
 # ───────────────────────────────────────────────────────────────────
 
+# ───────────────────────────────────────────────────────────────────
+# Global toolset wrappers (Bug 3 fix 2026-05-24)
+# ───────────────────────────────────────────────────────────────────
+# When the global ToolExecutor dispatches `check_company_completeness`
+# (called by recruiter_assistant / orchestrator agents), it does NOT
+# inject `_context` into kwargs — only company_id/user_id pop out of the
+# agent's RuntimeContext. The handler canonical uses `context_or_raise`
+# which fails loud if _context is missing → ToolContextMissingError →
+# every D10 proactivity call crashes.
+#
+# This wrapper reconstructs `_context` from kwargs (mirroring the pattern
+# in `_wrap_save_hiring_policy` in agents/company_tool_registry.py) and
+# delegates to the canonical handler. Tools dispatched via the local
+# CompanySettingsReActAgent toolset already get _context wired — those
+# don't need this wrapper.
+
+async def _wrap_check_company_completeness_global(**kwargs: Any) -> dict[str, Any]:
+    """Bug 3 wrapper — inject _context from kwargs.company_id/user_id."""
+    company_id = kwargs.get("company_id", "")
+    user_id = kwargs.get("user_id", "")
+    ctx = SimpleNamespace(company_id=company_id, user_id=user_id)
+    return await check_company_completeness(_context=ctx)
+
+
 def register_company_settings_tools() -> None:
     tool_registry.register(ToolDefinition(
         name="check_company_completeness",
@@ -900,7 +925,7 @@ def register_company_settings_tools() -> None:
             "Retorna missing_fields, overall_pct, has_website e recomendação."
         ),
         parameters_schema={"type": "object", "properties": {}},
-        handler=check_company_completeness,
+        handler=_wrap_check_company_completeness_global,
         allowed_agents=[
             "recruiter_assistant", "company_settings", "orchestrator",
         ],
