@@ -626,7 +626,8 @@ class TestRemainingZeroCoverageImports:
         _try_import("app.shared.observability.langsmith")
 
     def test_callbacks(self):
-        _try_import("app.shared.observability.callbacks")
+        # R-054: canonical is app.shared.llm.callbacks; observability/callbacks.py deleted (zero callers)
+        _try_import("app.shared.llm.callbacks")
 
     def test_template_learning_service(self):
         _try_import("app.shared.intelligence.template_learning.template_learning_service")

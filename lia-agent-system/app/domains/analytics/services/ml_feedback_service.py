@@ -101,7 +101,7 @@ class MLFeedbackService:
         infraestrutura existente. Fail-open: retorna False em caso de erro.
         """
         try:
-            from app.shared.services.calibration_service import CalibrationService
+            from app.domains.analytics.services.calibration_service import CalibrationService  # R-055
             cal = CalibrationService(db)
 
             # Deriva divergência: score do recrutador vs. score LIA

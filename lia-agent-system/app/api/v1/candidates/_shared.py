@@ -38,7 +38,7 @@ from app.schemas.candidate import (
     CandidateUpdate,
 )
 from app.domains.analytics.services.activity_service import ActivityService, get_activity_service
-from app.shared.services.calibration_service import CalibrationService
+from app.domains.analytics.services.calibration_service import CalibrationService  # R-055: direct canonical (shim deleted)
 from app.shared.services.consent_checker_service import ConsentCheckerService
 from app.shared.compliance.audit_service import AuditService, get_audit_service
 from app.shared.compliance.fairness_guard_middleware import check_rejection_reason

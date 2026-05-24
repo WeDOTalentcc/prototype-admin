@@ -14,7 +14,7 @@ from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.shared.services.calibration_service import CalibrationService
+from app.domains.analytics.services.calibration_service import CalibrationService  # R-055: direct canonical (shim deleted)
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
 
