@@ -1334,12 +1334,19 @@ class MainOrchestrator:
             try:
                 from app.domains.recruiter_assistant.services.conversation_memory import conversation_memory
                 llm_ctx = await conversation_memory.get_context_for_llm(db=db, conversation_id=conv_id, max_messages=20)
+                # G4 canonical fix (2026-05-24): same dual-population as
+                # _setup_conversation_memory. ctx.extra is read by
+                # Phase 1.5 agentic_loop.
+                _history = llm_ctx.get("messages", [])
+                _summary = llm_ctx.get("summary")
                 orchestrator_context.update({
-                    "conversation_history": llm_ctx.get("messages", []),
-                    "conversation_summary": llm_ctx.get("summary"),
+                    "conversation_history": _history,
+                    "conversation_summary": _summary,
                     "context_type": ctx.context_type,
                     "context_id": ctx.entity_id,
                 })
+                ctx.extra["conversation_history"] = _history
+                ctx.extra["conversation_summary"] = _summary
             except Exception as _enrich_exc:
                 logger.debug("[LIA-M01] Context enrichment skipped: %s", _enrich_exc)
 
@@ -1441,12 +1448,22 @@ class MainOrchestrator:
 
             await conversation_memory.add_message(db=db, conversation_id=conv_id, role="user", content=ctx.message)
             llm_ctx = await conversation_memory.get_context_for_llm(db=db, conversation_id=conv_id, max_messages=20)
+            # G4 canonical fix (2026-05-24): single source for history.
+            # Populate BOTH orchestrator_context (legacy Phase 2 path) AND
+            # ctx.extra (Phase 1.5 agentic_loop path) — same data, two
+            # consumers. Without ctx.extra population, agentic_loop got an
+            # empty history list and the LLM treated every turn as a fresh
+            # session ("sua mensagem ficou incompleta — recebi apenas 'sim'").
+            _history = llm_ctx.get("messages", [])
+            _summary = llm_ctx.get("summary")
             orchestrator_context.update({
-                "conversation_history": llm_ctx.get("messages", []),
-                "conversation_summary": llm_ctx.get("summary"),
+                "conversation_history": _history,
+                "conversation_summary": _summary,
                 "context_type": ctx.context_type,
                 "context_id": ctx.entity_id,
             })
+            ctx.extra["conversation_history"] = _history
+            ctx.extra["conversation_summary"] = _summary
             return conv, conv_id
         except Exception as _mem_exc:
             logger.debug("[MainOrchestrator] ConversationMemory setup skipped: %s", _mem_exc)
