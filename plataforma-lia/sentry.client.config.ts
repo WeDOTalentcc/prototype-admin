@@ -11,7 +11,7 @@ if (SENTRY_DSN) {
     replaysOnErrorSampleRate: 1.0,
     replaysSessionSampleRate: 0.05,
     environment: process.env.NODE_ENV,
-    enabled: process.env.NODE_ENV === 'production',
+    enabled: !!SENTRY_DSN,  // Sprint Sentry (2026-05-24): ativa se DSN presente (Replit dev = prod)
     debug: false,
   })
 }

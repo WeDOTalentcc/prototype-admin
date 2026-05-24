@@ -9,6 +9,6 @@ if (SENTRY_DSN) {
       process.env.NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE ?? '0.1'
     ),
     environment: process.env.NODE_ENV,
-    enabled: process.env.NODE_ENV === 'production',
+    enabled: !!SENTRY_DSN,  // Sprint Sentry (2026-05-24): ativa se DSN presente (Replit dev = prod)
   })
 }
