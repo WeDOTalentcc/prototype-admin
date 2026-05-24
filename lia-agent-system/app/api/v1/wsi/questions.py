@@ -18,7 +18,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
+from app.core.database import get_db, get_tenant_db
 from app.domains.voice.repositories.wsi_repository import WsiRepository
 from app.domains.cv_screening.dependencies import WSIService, get_wsi_service
 from app.domains.cv_screening.services.screening_question_set_service import (
@@ -66,7 +66,7 @@ _FRAMEWORK_CATEGORY_MAP = {
 @router.post("/generate-questions", response_model=GenerateQuestionsResponse)
 async def generate_questions(
     request: GenerateQuestionsRequest,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     sqs_svc: ScreeningQuestionSetService = Depends(get_screening_question_set_service),
     wsi_svc: WSIService = Depends(get_wsi_service),
 company_id: str = Depends(require_company_id)):
@@ -279,7 +279,7 @@ Retorne APENAS JSON válido:
 @router.post("/questions/save", response_model=None)
 async def save_questions(
     request: SaveQuestionsRequest,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     sqs_svc: ScreeningQuestionSetService = Depends(get_screening_question_set_service),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)

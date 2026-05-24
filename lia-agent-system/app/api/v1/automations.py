@@ -16,7 +16,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
+from app.core.database import get_db, get_tenant_db
 from app.domains.automation.services.automation_service import AutomationService, automation_service, get_automation_service
 from app.models.automation import ActionType, TriggerType
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
@@ -119,7 +119,7 @@ async def create_automation(
     data: CreateAutomationRequest,
     company_id: str = Query(..., description="Company ID (required)"),
     user_id: str | None = Query(None, description="User creating the automation"),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     auto_svc: AutomationService = Depends(get_automation_service),
 _company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
@@ -228,7 +228,7 @@ async def update_automation(
     data: UpdateAutomationRequest,
     company_id: str = Query(..., description="Company ID (required)"),
     user_id: str | None = Query(None, description="User updating the automation"),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     auto_svc: AutomationService = Depends(get_automation_service),
 _company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
@@ -293,7 +293,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 async def delete_automation(
     automation_id: str,
     company_id: str = Query(..., description="Company ID (required)"),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     auto_svc: AutomationService = Depends(get_automation_service),
 _company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)

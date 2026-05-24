@@ -12,7 +12,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
+from app.core.database import get_db, get_tenant_db
 from app.domains.cv_screening.services.wsi_async_session_service import WSIAsyncSessionService, get_wsi_async_session_service
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
@@ -34,7 +34,7 @@ class AnswerRequest(WeDoBaseModel):
 @router.post("/invite", response_model=None)
 async def create_async_invite(
     payload: InviteRequest,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     svc: WSIAsyncSessionService = Depends(get_wsi_async_session_service),
 company_id: str = Depends(require_company_id)) -> dict:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
@@ -135,7 +135,7 @@ company_id: str = Depends(require_company_id)) -> dict:
 @router.get("/{token}/complete", response_model=None)
 async def complete_session(
     token: str,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     svc: WSIAsyncSessionService = Depends(get_wsi_async_session_service),
 company_id: str = Depends(require_company_id)) -> dict:
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)

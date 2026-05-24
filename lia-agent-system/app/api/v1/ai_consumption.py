@@ -16,7 +16,7 @@ from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
 from sqlalchemy import Date, and_, cast, desc, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
+from app.core.database import get_db, get_tenant_db
 from app.domains.ai.repositories.ai_consumption_repository import AiConsumptionRepository
 from app.models.ai_consumption import AiConsumption, AiCreditsBalance
 from app.schemas.ai_consumption import (
@@ -354,7 +354,7 @@ _company_gate: str = Depends(require_company_id)):
 async def get_agent_daily_trend(
     days: int = Query(30, ge=1, le=365, description="Number of days to include"),
     company_id: str = Depends(get_verified_company_id),
-    db: AsyncSession = Depends(get_db), 
+    db: AsyncSession = Depends(get_tenant_db), 
 _company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get AI usage grouped by day and agent type for trend charts."""
@@ -489,7 +489,7 @@ _company_gate: str = Depends(require_company_id)):
 async def record_consumption(
     record: AiConsumptionRecord,
     company_id: str = Depends(get_verified_company_id),
-    db: AsyncSession = Depends(get_db), 
+    db: AsyncSession = Depends(get_tenant_db), 
 _company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Record a new AI consumption entry (internal use)."""

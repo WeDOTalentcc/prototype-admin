@@ -57,7 +57,7 @@ company_id: str = Depends(require_company_id)):
 @router.post("", response_model=None)
 async def create_test(
     body: TestCreate,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     variants_data = [v.model_dump() for v in body.variants]

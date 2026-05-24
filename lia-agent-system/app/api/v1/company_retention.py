@@ -20,7 +20,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user
-from app.core.database import get_db
+from app.core.database import get_db, get_tenant_db
 from app.domains.company.repositories.company_retention_repository import CompanyRetentionRepository
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
@@ -57,7 +57,7 @@ class RetentionPolicyResponse(BaseModel):
 async def update_retention_policy(
     body: RetentionPolicyRequest,
     current_user=Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """

@@ -13,7 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import require_admin
 from app.auth.models import User
-from app.core.database import get_db
+from app.core.database import get_db, get_tenant_db
 from app.domains.admin.repositories.admin_template_repository import (
     AdminTemplateRepository,
 )
@@ -119,7 +119,7 @@ company_id: str = Depends(require_company_id)):
 @router.post("", response_model=SystemTemplateResponse, status_code=201)
 async def create_system_template(
     template_data: SystemTemplateCreate,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     _admin: User = Depends(require_admin),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: admin/platform-level (admin_) — role-based access required
@@ -180,7 +180,7 @@ company_id: str = Depends(require_company_id)):
 async def update_system_template(
     template_id: str,
     template_data: SystemTemplateUpdate,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     _admin: User = Depends(require_admin),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: admin/platform-level (admin_) — role-based access required
@@ -218,7 +218,7 @@ company_id: str = Depends(require_company_id)):
 async def delete_system_template(
     template_id: str,
     hard_delete: bool = Query(False),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     _admin: User = Depends(require_admin),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: admin/platform-level (admin_) — role-based access required
@@ -245,7 +245,7 @@ company_id: str = Depends(require_company_id)):
 async def publish_template_to_companies(
     template_id: str,
     company_ids: list[str] | None = Query(None),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     _admin: User = Depends(require_admin),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: admin/platform-level (admin_) — role-based access required

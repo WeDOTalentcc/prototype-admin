@@ -14,7 +14,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
+from app.core.database import get_db, get_tenant_db
 from app.domains.voice.repositories.wsi_repository import WsiRepository
 from app.shared.services.interview_session_store import interview_session_store
 from app.shared.security.require_company_id import require_company_id
@@ -146,7 +146,7 @@ class InterviewGraphRespondRequest(WeDoBaseModel):
 @router.post("/interview-graph/sessions", summary="Inicia sessão de entrevista WSI síncrona", response_model=None)
 async def start_interview_graph_session(
     request: InterviewGraphStartRequest,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Cria uma nova sessão de entrevista WSI usando o WSIInterviewGraph.

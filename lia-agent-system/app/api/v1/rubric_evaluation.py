@@ -10,7 +10,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
+from app.core.database import get_db, get_tenant_db
 from app.domains.cv_screening.repositories.screening_repository import ScreeningRepository
 from app.domains.cv_screening.services.rubric_evaluation_service import RubricEvaluationService, get_rubric_evaluation_service
 from app.models.rubric import JobRequirement, RubricEvaluation
@@ -60,7 +60,7 @@ router = APIRouter()
 @router.post("/evaluate", response_model=RubricEvaluationResponse)
 async def evaluate_candidate(
     request: EvaluateCandidateRequest,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     audit_svc: AuditService = Depends(get_audit_service),
     rubric_svc: RubricEvaluationService = Depends(get_rubric_evaluation_service),
     repo: ScreeningRepository = Depends(get_screening_repo),
@@ -229,7 +229,7 @@ async def evaluate_candidate(
 @router.post("/batch-evaluate", response_model=BatchEvaluateResponse)
 async def batch_evaluate_candidates(
     request: BatchEvaluateRequest,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     rubric_svc: RubricEvaluationService = Depends(get_rubric_evaluation_service),
     repo: ScreeningRepository = Depends(get_screening_repo),
 company_id: str = Depends(require_company_id)):

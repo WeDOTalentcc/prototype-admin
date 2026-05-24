@@ -17,7 +17,7 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
+from app.core.database import get_db, get_tenant_db
 from app.domains.hiring_policy.agents.policy_react_agent import PolicyReActAgent
 from app.domains.hiring_policy.repositories.hiring_policy_repository import (
     HiringPolicyRepository,
@@ -116,7 +116,7 @@ async def upsert_policy(
     company_id: str,
     payload: CompanyHiringPolicyUpdate,
     user_id: str | None = Query(None),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Create or update full hiring policy for a company."""
@@ -145,7 +145,7 @@ async def update_policy_partial(
     company_id: str,
     payload: CompanyHiringPolicyUpdate,
     user_id: str | None = Query(None),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Partially update hiring policy — merges provided blocks."""
@@ -183,7 +183,7 @@ async def update_policy_block(
     company_id: str,
     payload: CompanyHiringPolicyBlockUpdate,
     user_id: str | None = Query(None),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Update a single block of the hiring policy."""
@@ -244,7 +244,7 @@ async def get_policy_progress(company_id: str, db: AsyncSession = Depends(get_db
 async def policy_chat(
     company_id: str,
     payload: PolicyChatMessage,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Conversational endpoint for hiring policy configuration."""

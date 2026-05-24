@@ -20,7 +20,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
+from app.core.database import get_db, get_tenant_db
 from app.domains.candidates.repositories.short_list_repository import ShortListRepository
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 from app.shared.types import WeDoBaseModel
@@ -110,7 +110,7 @@ async def create_short_list(
     body: ShortListCreate,
     company_id: str = Query(..., description="Company ID (multi-tenant)"),
     user_id: str = Query("system"),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 _company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Cria uma short list para uma vaga."""
@@ -158,7 +158,7 @@ async def add_candidate(
     list_id: UUID,
     body: ShortListCandidateAdd,
     company_id: str = Query(...),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 _company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Adiciona um candidato à short list."""

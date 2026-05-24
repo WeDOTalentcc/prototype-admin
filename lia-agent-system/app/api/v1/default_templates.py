@@ -11,7 +11,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
+from app.core.database import get_db, get_tenant_db
 from app.domains.email_templates.repositories.default_template_repository import (
     DefaultTemplateRepository,
 )
@@ -131,7 +131,7 @@ company_id: str = Depends(require_company_id)) -> DefaultTemplateResponse:
 async def create_default_template(
     data: DefaultTemplateCreate,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 company_id: str = Depends(require_company_id)) -> DefaultTemplateResponse:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Create a new default template. Admin access required."""
@@ -163,7 +163,7 @@ async def update_default_template(
     template_id: UUID,
     data: DefaultTemplateUpdate,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 company_id: str = Depends(require_company_id)) -> DefaultTemplateResponse:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Update an existing default template. Admin access required."""
@@ -204,7 +204,7 @@ company_id: str = Depends(require_company_id)) -> DefaultTemplateResponse:
 async def delete_default_template(
     template_id: UUID,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 company_id: str = Depends(require_company_id)) -> dict[str, Any]:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Delete a default template. Admin access required."""

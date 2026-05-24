@@ -13,7 +13,7 @@ from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
+from app.core.database import get_db, get_tenant_db
 from app.models.communication_settings import DEFAULT_COMMUNICATION_SETTINGS, CommunicationSettings
 from app.domains.communication.repositories.communication_settings_repository import CommunicationSettingsRepository
 from app.shared.security.require_company_id import require_company_id
@@ -134,7 +134,7 @@ async def get_communication_settings(
 async def update_communication_settings(
     data: CommunicationSettingsUpdate,
     company_id: str = Depends(get_company_id),
-    db: AsyncSession = Depends(get_db)):
+    db: AsyncSession = Depends(get_tenant_db)):
     """
     Update communication settings for a company.
     

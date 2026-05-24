@@ -7,6 +7,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
+# F11 Phase 1 fix (2026-05-24): get_tenant_db for RLS-protected writes
+from app.core.database import get_tenant_db
+
 from ._shared import (
     CandidateSearchResultDTO,
     JobRequirement,
@@ -120,7 +123,7 @@ from app.shared.security.require_company_id import require_company_id
 @router.post("/calibration/feedback", response_model=CalibrationFeedbackResponse)
 async def submit_calibration_feedback(
     request: CalibrationFeedbackRequest,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     repo: ScreeningRepository = Depends(get_screening_repo),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
@@ -234,7 +237,7 @@ company_id: str = Depends(require_company_id)):
 @router.post("/calibration/start", response_model=CalibrationStartResponse)
 async def start_calibration_session(
     request: CalibrationStartRequest,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     repo: ScreeningRepository = Depends(get_screening_repo),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
@@ -450,7 +453,7 @@ class AddCandidatesToVacancyResponse(BaseModel):
 async def add_candidates_to_vacancy(
     vacancy_id: str,
     request: AddCandidatesToVacancyRequest,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     rubric_svc: RubricEvaluationService = Depends(get_rubric_evaluation_service),
     repo: ScreeningRepository = Depends(get_screening_repo),
 company_id: str = Depends(require_company_id)):

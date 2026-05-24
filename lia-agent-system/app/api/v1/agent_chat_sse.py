@@ -482,6 +482,12 @@ company_id: str = Depends(require_company_id)):
 
         context["streaming_callback"] = _streaming_callback
 
+        # === Audit 2026-05-24 P1: propagar streaming_callback ate _generate_with_tools_claude ===
+        # ContextVar canonical (sibling de _current_company_id). Set antes de agent.process,
+        # reset depois (mesmo padrao do RuntimeContext).
+        from app.domains.ai.services.llm import _llm_streaming_callback
+        _llm_stream_token = _llm_streaming_callback.set(_streaming_callback)
+
         agent_input = _build_agent_input(
             content=content,
             context=context,
@@ -505,6 +511,14 @@ company_id: str = Depends(require_company_id)):
                 await sse_queue.put({"_done": True, "_error": str(exc)})
 
         agent_task = asyncio.create_task(_run_agent())
+
+        # Garantir reset do ContextVar quando task encerrar (success/error/cancel)
+        def _cleanup_stream_ctx(_t):
+            try:
+                _llm_streaming_callback.reset(_llm_stream_token)
+            except Exception:
+                pass
+        agent_task.add_done_callback(_cleanup_stream_ctx)
 
         try:
             while True:

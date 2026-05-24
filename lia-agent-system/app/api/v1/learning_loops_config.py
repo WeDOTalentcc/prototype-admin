@@ -24,7 +24,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 from app.auth.dependencies import get_current_user, get_user_company_id
-from app.core.database import get_db
+from app.core.database import get_db, get_tenant_db
 from app.auth.models import User
 from lia_models.company_hiring_policy import (
     AUTOMATION_RULES_DEFAULTS,
@@ -152,7 +152,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
 async def patch_config(
     company_id: str,
     body: LearningLoopsConfigPatch,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(get_current_user),
 _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))) -> LearningLoopsConfigResponse:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)

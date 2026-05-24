@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
+from app.core.database import get_db, get_tenant_db
 from app.shared.services.affirmative_service import AffirmativeService
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 from app.shared.types import WeDoBaseModel
@@ -114,7 +114,7 @@ async def request_document(
     vacancy_id: str,
     company_id: str,
     criteria_type: str,
-    db: AsyncSession = Depends(get_db), 
+    db: AsyncSession = Depends(get_tenant_db), 
 _company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Create a document upload request with 24h deadline."""

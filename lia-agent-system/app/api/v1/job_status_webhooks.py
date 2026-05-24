@@ -15,7 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_active_user, get_user_company_id
 from app.auth.models import User
-from app.core.database import get_db
+from app.core.database import get_db, get_tenant_db
 from app.domains.job_management.repositories.webhook_repository import WebhookRepository
 from app.domains.job_management.services.job_status_webhook_service import job_status_webhook_service
 from app.models.webhook_registration import JOB_STATUS_WEBHOOK_EVENTS, WebhookDeliveryLog, WebhookRegistration
@@ -130,7 +130,7 @@ class WebhookEventResponse(BaseModel):
 @router.post("/register", response_model=WebhookRegisterResponse)
 async def register_webhook(
     request: WebhookRegisterRequest,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(get_current_active_user)
 ):
     """
@@ -293,7 +293,7 @@ async def get_webhook(
 async def update_webhook(
     webhook_id: UUID,
     request: WebhookUpdateRequest,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(get_current_active_user)
 ):
     """
@@ -354,7 +354,7 @@ async def update_webhook(
 @router.delete("/{webhook_id}", response_model=None)
 async def delete_webhook(
     webhook_id: UUID,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(get_current_active_user)
 ):
     """

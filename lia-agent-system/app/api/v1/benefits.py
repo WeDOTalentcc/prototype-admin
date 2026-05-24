@@ -13,7 +13,7 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
+from app.core.database import get_db, get_tenant_db
 from app.domains.company.repositories.benefit_template_repository import BenefitTemplateRepository
 from app.domains.company.repositories.benefit_repository import BenefitRepository
 from app.models.company import Benefit, BenefitTemplate
@@ -164,7 +164,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.post("/seed-templates", response_model=None)
 async def seed_benefit_templates(
-    db: AsyncSession = Depends(get_db), 
+    db: AsyncSession = Depends(get_tenant_db), 
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
@@ -374,7 +374,7 @@ async def download_benefits_import_template(company_id: str = Depends(require_co
 async def import_benefits(
     file: UploadFile = File(...),
     company_id: UUID = Query(..., description="Company ID to associate benefits with"),
-    db: AsyncSession = Depends(get_db), 
+    db: AsyncSession = Depends(get_tenant_db), 
 _company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """

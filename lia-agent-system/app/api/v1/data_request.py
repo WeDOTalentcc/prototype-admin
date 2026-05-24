@@ -21,7 +21,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
+from app.core.database import get_db, get_tenant_db
 from app.domains.lgpd.repositories.data_request_repository import DataRequestRepository
 from app.domains.communication.services.data_request_service import data_request_service
 from app.domains.communication.services.data_request_whatsapp_service import data_request_whatsapp_service
@@ -352,7 +352,7 @@ company_id: str = Depends(require_company_id)):
 @router.post("", response_model=DataRequestResponse, status_code=201)
 async def create_data_request(
     request: CreateDataRequestRequest,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
@@ -428,7 +428,7 @@ company_id: str = Depends(require_company_id)):
 @router.put("/config", response_model=ConfigResponse)
 async def update_config(
     request: UpdateConfigRequest,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
@@ -456,7 +456,7 @@ company_id: str = Depends(require_company_id)):
 @router.post("/config/collection-settings", response_model=CollectionSettingsResponse)
 async def update_collection_settings(
     request: CollectionSettingsRequest,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
@@ -578,7 +578,7 @@ company_id: str = Depends(require_company_id)):
 @router.post("/templates", response_model=TemplateResponse, status_code=201)
 async def create_template(
     request: CreateTemplateRequest,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
@@ -638,7 +638,7 @@ company_id: str = Depends(require_company_id)):
 async def update_template(
     template_id: UUID,
     request: UpdateTemplateRequest,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
@@ -688,7 +688,7 @@ company_id: str = Depends(require_company_id)):
 @router.delete("/templates/{template_id}", status_code=204, response_model=None)
 async def delete_template(
     template_id: UUID,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
@@ -734,7 +734,7 @@ company_id: str = Depends(require_company_id)):
 @router.post("/fields", response_model=FieldResponse, status_code=201)
 async def create_field(
     request: CreateFieldRequest,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
@@ -875,7 +875,7 @@ company_id: str = Depends(require_company_id)):
 async def update_vacancy_triggers(
     vacancy_id: UUID,
     request: UpdateVacancyTriggersRequest,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """

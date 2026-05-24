@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user, require_role
 from app.auth.models import UserRole
-from app.core.database import get_db
+from app.core.database import get_db, get_tenant_db
 from app.schemas.webhook import (
     ALLOWED_EVENTS,
     CreateWebhookRequest,
@@ -35,7 +35,7 @@ async def list_allowed_events(company_id: str = Depends(require_company_id)):
 async def create_webhook(
     body: CreateWebhookRequest,
     current_user=Depends(require_role([UserRole.admin])),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Create a new webhook subscription. Returns secret ONCE on creation."""
@@ -79,7 +79,7 @@ async def update_webhook(
     webhook_id: str,
     body: UpdateWebhookRequest,
     current_user=Depends(require_role([UserRole.admin])),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Update webhook (URL, events, active state)."""
@@ -99,7 +99,7 @@ company_id: str = Depends(require_company_id)):
 async def delete_webhook(
     webhook_id: str,
     current_user=Depends(require_role([UserRole.admin])),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Delete a webhook subscription."""

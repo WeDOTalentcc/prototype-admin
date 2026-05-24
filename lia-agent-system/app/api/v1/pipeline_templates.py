@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
-from app.core.database import get_db
+from app.core.database import get_db, get_tenant_db
 from app.domains.pipeline.repositories.pipeline_template_repository import (
     PipelineTemplateRepository,
 )
@@ -117,7 +117,7 @@ company_id: str = Depends(require_company_id)):
 @router.post("/", response_model=PipelineTemplateResponse)
 async def create_pipeline_template(
     data: PipelineTemplateCreate,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(get_current_user_or_demo),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
@@ -169,7 +169,7 @@ company_id: str = Depends(require_company_id)):
 async def update_pipeline_template(
     template_id: str,
     data: PipelineTemplateUpdate,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(get_current_user_or_demo),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)

@@ -9,7 +9,7 @@ from pydantic import BaseModel, ConfigDict
 # sqlalchemy ORM imports moved to ProfileAnalysisRepository
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
+from app.core.database import get_db, get_tenant_db
 from app.domains.cv_screening.repositories.profile_analysis_repository import ProfileAnalysisRepository
 from app.models.lia_profile_analysis import LiaProfileAnalysis
 from app.schemas.lia_profile_analysis import (
@@ -183,7 +183,7 @@ async def generate_profile_analysis(request: ProfileAnalysisRequest, company_id:
 async def save_profile_analysis(
     request: LiaProfileAnalysisCreate,
     company_id: str = Query(..., description="Company ID for multi-tenancy"),
-    db: AsyncSession = Depends(get_db), 
+    db: AsyncSession = Depends(get_tenant_db), 
 _company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Save a generated profile analysis to the database."""

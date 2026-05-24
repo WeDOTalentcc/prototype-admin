@@ -23,7 +23,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_user_company_id, require_admin
 from app.auth.models import User
-from app.core.database import get_db
+from app.core.database import get_db, get_tenant_db
 from app.models.guardrail import Guardrail
 from app.shared.compliance.guardrail_repository import GuardrailCreate, GuardrailRepository
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
@@ -109,7 +109,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 @router.post("", response_model=GuardrailResponse, status_code=201)
 async def create_guardrail(
     data: GuardrailCreate,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(require_admin),
 company_id: str = Depends(require_company_id)):
     """Cria um novo guardrail. Requer role admin."""
@@ -286,7 +286,7 @@ class SeedDefaultsResponse(BaseModel):
 @router.post("/seed-defaults", response_model=SeedDefaultsResponse, status_code=200)
 async def seed_default_guardrails(
     company_id: str | None = Query(None, description="Tenant específico. None = global"),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(require_admin),
 _company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     """

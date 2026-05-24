@@ -12,7 +12,7 @@ from fastapi.responses import HTMLResponse
 from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
+from app.core.database import get_db, get_tenant_db
 from app.domains.communication.repositories.optout_repository import OptoutRepository
 from app.shared.security.require_company_id import require_company_id
 
@@ -203,7 +203,7 @@ async def unsubscribe_page(token: str, request: Request, db: AsyncSession = Depe
 
 
 @router.post("/unsubscribe/{token}", response_class=HTMLResponse, response_model=None)
-async def process_unsubscribe(token: str, request: Request, db: AsyncSession = Depends(get_db), company_id: str = Depends(require_company_id)):
+async def process_unsubscribe(token: str, request: Request, db: AsyncSession = Depends(get_tenant_db), company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     ConsentEvent = _get_consent_event_model()
     email, company_id = verify_signed_token(token)

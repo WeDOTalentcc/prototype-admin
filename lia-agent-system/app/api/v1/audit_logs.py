@@ -19,7 +19,7 @@ from fastapi.responses import StreamingResponse
 from sqlalchemy import and_
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
+from app.core.database import get_db, get_tenant_db
 from app.domains.admin.repositories.audit_log_repository import AuditLogRepository
 from app.models.audit_logs import SOXAuditLog
 from app.schemas.audit_logs import (
@@ -201,7 +201,7 @@ async def seed_retention_policies(db: AsyncSession = Depends(get_db), company_id
 @router.post("/retention-policies", response_model=AuditRetentionPolicyResponse)
 async def create_retention_policy(
     data: AuditRetentionPolicyCreate,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Create a new audit retention policy."""
@@ -294,7 +294,7 @@ _company_gate: str = Depends(require_company_id)):
 @router.post("", response_model=AuditLogResponse)
 async def create_audit_log(
     data: AuditLogCreate,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Create a new audit log entry (internal use)."""

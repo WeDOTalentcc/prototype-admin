@@ -13,6 +13,8 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
 from lia_config.database import get_db
+# F11 Phase 1 fix (2026-05-24): get_tenant_db for RLS-protected writes
+from app.core.database import get_tenant_db
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -156,7 +158,7 @@ company_id: str = Depends(require_company_id)):
 async def update_llm_config(
     request: LLMConfigRequest,
     current_user: User = Depends(get_current_user_or_demo),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Update LLM configuration for the tenant.

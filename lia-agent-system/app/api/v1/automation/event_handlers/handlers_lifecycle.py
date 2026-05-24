@@ -14,7 +14,7 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
+from app.core.database import get_db, get_tenant_db
 from app.domains.analytics.services.activity_service import ActivityService, get_activity_service as get_activity_service_canonical
 from app.shared.compliance.audit_service import AuditService, get_audit_service
 from app.domains.recruiter_assistant.services.pipeline_stage_service import get_pipeline_stage_service, PipelineStageService
@@ -52,7 +52,7 @@ router = APIRouter()
 @router.post("/handle-trigger/candidate-inactive", response_model=CandidateInactiveResponse)
 async def handle_candidate_inactive(
     request: CandidateInactiveRequest,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     audit_svc: AuditService = Depends(get_audit_service),
     activity_svc: ActivityService = Depends(get_activity_service_canonical),
 company_id: str = Depends(require_company_id)):
@@ -356,7 +356,7 @@ company_id: str = Depends(require_company_id)):
 @router.post("/handle-trigger/candidate-no-show", response_model=CandidateNoShowResponse)
 async def handle_candidate_no_show(
     request: CandidateNoShowRequest,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     audit_svc: AuditService = Depends(get_audit_service),
     activity_svc: ActivityService = Depends(get_activity_service_canonical),
 company_id: str = Depends(require_company_id)):
@@ -715,7 +715,7 @@ company_id: str = Depends(require_company_id)):
 @router.post("/handle-trigger/offer-sent", response_model=OfferSentResponse)
 async def handle_offer_sent(
     request: OfferSentPayload,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     audit_svc: AuditService = Depends(get_audit_service),
     activity_svc: ActivityService = Depends(get_activity_service_canonical),
 company_id: str = Depends(require_company_id)):
@@ -881,7 +881,7 @@ company_id: str = Depends(require_company_id)):
 @router.post("/handle-trigger/candidate-hired", response_model=CandidateHiredResponse)
 async def handle_candidate_hired(
     request: CandidateHiredPayload,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     audit_svc: AuditService = Depends(get_audit_service),
     activity_svc: ActivityService = Depends(get_activity_service_canonical),
     pipeline_service: PipelineStageService = Depends(get_pipeline_stage_service),
@@ -1078,7 +1078,7 @@ company_id: str = Depends(require_company_id)):
 @router.post("/handle-trigger/candidate-rejected", response_model=CandidateRejectedResponse)
 async def handle_candidate_rejected(
     request: CandidateRejectedPayload,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     audit_svc: AuditService = Depends(get_audit_service),
     activity_svc: ActivityService = Depends(get_activity_service_canonical),
     pipeline_service: PipelineStageService = Depends(get_pipeline_stage_service),

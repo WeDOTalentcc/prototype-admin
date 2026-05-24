@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user_or_demo, get_user_company_id
 from app.auth.models import User
-from app.core.database import get_db
+from app.core.database import get_db, get_tenant_db
 from app.domains.company.repositories.company_benefit_repository import (
     CompanyBenefitRepository,
 )
@@ -223,7 +223,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 async def create_company_benefit(
     benefit: CompanyBenefitCreate,
     company_id: str | None = Query(None),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(get_current_user_or_demo),
 _company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     """Create a new company benefit."""
@@ -456,7 +456,7 @@ company_id: str = Depends(require_company_id)):
 async def update_company_benefit(
     benefit_id: UUID,
     updates: CompanyBenefitUpdate,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(get_current_user_or_demo),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)

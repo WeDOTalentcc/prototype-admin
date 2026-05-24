@@ -14,7 +14,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
+from app.core.database import get_db, get_tenant_db
 from app.domains.job_management.services.job_template_service import (
     WSI_QUALITY_GATES,
     JobTemplateService,
@@ -375,7 +375,7 @@ async def create_template(
     request: CreateTemplateRequest,
     company_id: str = Query(...),
     enrich_with_ai: bool = Query(False, description="Use AI to enrich missing fields"),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 _company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Create a new company-specific template."""
@@ -411,7 +411,7 @@ company_id: str = Depends(require_company_id)):
 @router.post("/seed/brazilian-market", response_model=None)
 async def seed_brazilian_market_templates(
     company_id: str = Query(...),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 _company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """

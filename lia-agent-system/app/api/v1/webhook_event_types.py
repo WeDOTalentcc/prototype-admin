@@ -26,7 +26,7 @@ from app.auth.dependencies import (
     require_admin_or_recruiter,
 )
 from app.auth.models import User
-from app.core.database import get_db
+from app.core.database import get_db, get_tenant_db
 from app.domains.automation.repositories.webhook_event_type_repository import (
     WebhookEventTypeRepository,
 )
@@ -109,7 +109,7 @@ async def get_event_type(
 )
 async def create_event_type(
     payload: WebhookEventTypeCreate,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(require_admin_or_recruiter),
     company_id: str = Depends(require_company_id),
 ):
@@ -145,7 +145,7 @@ async def create_event_type(
 async def update_event_type(
     event_type_id: uuid.UUID,
     payload: WebhookEventTypeUpdate,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(require_admin_or_recruiter),
     company_id: str = Depends(require_company_id),
 ):

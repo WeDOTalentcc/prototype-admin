@@ -21,7 +21,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
-from app.core.database import get_db
+from app.core.database import get_db, get_tenant_db
 from app.domains.communication.repositories.communication_matrix_repository import CommunicationMatrixRepository
 from app.models.communication_matrix import (
     DEFAULT_MATRIX_ENTRIES,
@@ -189,7 +189,7 @@ company_id: str = Depends(require_company_id)):
 async def update_matrix_entry(
     entry_id: str,
     data: UpdateMatrixEntryRequest,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(get_current_user_or_demo), 
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
@@ -253,7 +253,7 @@ company_id: str = Depends(require_company_id)):
 @router.post("/reset", summary="Reset matrix to platform defaults", response_model=None)
 async def reset_matrix_to_defaults(
     data: ResetMatrixRequest,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(get_current_user_or_demo), 
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
@@ -313,7 +313,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.post("/seed", summary="Seed default matrix entries (if empty)", response_model=None)
 async def seed_matrix_entries(
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(get_current_user_or_demo), 
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
@@ -375,7 +375,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.post("/copy-to-company", summary="Copy platform defaults to a company", response_model=None)
 async def copy_defaults_to_company(
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(get_current_user_or_demo), 
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)

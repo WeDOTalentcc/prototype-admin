@@ -18,7 +18,7 @@ from app.auth.models import User
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
+from app.core.database import get_db, get_tenant_db
 from app.domains.automation.agents.automation_react_agent import AutomationReActAgent
 from app.domains.automation.services.planned_task_service import CycleDetectedError, planned_task_service
 from app.models.planned_task import PlannedTaskPriority, PlannedTaskStatus
@@ -117,7 +117,7 @@ company_id: str = Depends(require_company_id)):
 @router.post("/tasks", response_model=None)
 async def create_planned_task(
     request: CreatePlannedTaskRequest,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(get_current_user_or_demo),
 company_id: str = Depends(require_company_id)):
     """Create a new planned task."""
@@ -168,7 +168,7 @@ company_id: str = Depends(require_company_id)):
 async def update_task_status(
     task_id: str,
     request: UpdateTaskStatusRequest,
-    db: AsyncSession = Depends(get_db), 
+    db: AsyncSession = Depends(get_tenant_db), 
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Update the status of a planned task."""
@@ -303,7 +303,7 @@ company_id: str = Depends(require_company_id)):
 @router.post("/execution-plans", response_model=None)
 async def create_execution_plan(
     request: CreateExecutionPlanRequest,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(get_current_user_or_demo),
 company_id: str = Depends(require_company_id)):
     """
@@ -396,7 +396,7 @@ async def add_chain_of_thought(
     task_id: str,
     thought: str = Body(..., embed=True),
     thought_type: str = Body("reasoning", embed=True),
-    db: AsyncSession = Depends(get_db), 
+    db: AsyncSession = Depends(get_tenant_db), 
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Add a chain-of-thought entry to a task for logging decisions."""

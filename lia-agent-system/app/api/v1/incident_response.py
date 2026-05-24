@@ -15,7 +15,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import require_admin
-from app.core.database import get_db
+from app.core.database import get_db, get_tenant_db
 from lia_models.incident import IncidentSeverity, IncidentStatus
 from app.domains.lgpd.services.incident_response_service import IncidentResponseService
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
@@ -79,7 +79,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 async def update_incident_status(
     incident_id: str,
     new_status: IncidentStatus,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     _user=Depends(require_admin),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)

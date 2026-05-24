@@ -22,7 +22,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
+from app.core.database import get_db, get_tenant_db
 from app.domains.automation.repositories.automation_rule_repository import (
     AutomationRuleRepository,
 )
@@ -115,7 +115,7 @@ async def get_rule(company_id: str, rule_id: str, db: AsyncSession = Depends(get
 async def create_rule(
     company_id: str,
     rule: AutomationRuleCreate,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Create a new automation rule for a company.
@@ -139,7 +139,7 @@ async def update_rule(
     company_id: str,
     rule_id: str,
     updates: AutomationRuleUpdate,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Update an automation rule.
@@ -163,7 +163,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
 
 
 @router.delete("/company/{company_id}/{rule_id}", response_model=None)
-async def delete_rule(company_id: str, rule_id: str, db: AsyncSession = Depends(get_db), _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
+async def delete_rule(company_id: str, rule_id: str, db: AsyncSession = Depends(get_tenant_db), _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Delete an automation rule.
 
@@ -182,7 +182,7 @@ async def delete_rule(company_id: str, rule_id: str, db: AsyncSession = Depends(
 
 
 @router.post("/company/{company_id}/toggle/{rule_id}", response_model=None)
-async def toggle_rule(company_id: str, rule_id: str, db: AsyncSession = Depends(get_db), _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
+async def toggle_rule(company_id: str, rule_id: str, db: AsyncSession = Depends(get_tenant_db), _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Toggle the active status of an automation rule.
 
@@ -205,7 +205,7 @@ async def toggle_rule(company_id: str, rule_id: str, db: AsyncSession = Depends(
 async def seed_default_rules(
     company_id: str,
     force: bool = False,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Seed default automation rules for a new company.

@@ -10,7 +10,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
+from app.core.database import get_db, get_tenant_db
 from app.domains.communication.repositories.recruitment_email_template_repository import RecruitmentEmailTemplateRepository
 from app.domains.job_management.services.recruitment_email_templates import (
     SAMPLE_DATA,
@@ -386,7 +386,7 @@ async def preview_stage_template(
     preview_request: TemplatePreviewRequest,
     template_type: str = Query("candidate"),
     company_id: str | None = Query(None),
-    db: AsyncSession = Depends(get_db), 
+    db: AsyncSession = Depends(get_tenant_db), 
 _company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """

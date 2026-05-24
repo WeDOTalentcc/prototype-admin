@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user
-from app.core.database import get_db
+from app.core.database import get_db, get_tenant_db
 from app.schemas.agent_deployment import (
     CreateDeploymentRequest,
     DeploymentListResponse,
@@ -30,7 +30,7 @@ async def create_deployment(
     agent_id: str,
     body: CreateDeploymentRequest,
     current_user=Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Bind an agent to a target (job, talent pool, pipeline stage, candidate list)."""
@@ -142,7 +142,7 @@ async def update_deployment(
     deployment_id: str,
     body: UpdateDeploymentRequest,
     current_user=Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 company_id: str = Depends(require_company_id)):
     """Update a deployment (change trigger, pause/resume, override config)."""
     deployment = await agent_deployment_service.update_deployment(
@@ -161,7 +161,7 @@ company_id: str = Depends(require_company_id)):
 async def delete_deployment(
     deployment_id: str,
     current_user=Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 company_id: str = Depends(require_company_id)):
     """Remove a deployment binding."""
     deleted = await agent_deployment_service.delete_deployment(

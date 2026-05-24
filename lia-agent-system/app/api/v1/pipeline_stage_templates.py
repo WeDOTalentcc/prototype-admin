@@ -24,7 +24,7 @@ from app.auth.dependencies import (
     require_admin_or_recruiter,
 )
 from app.auth.models import User
-from app.core.database import get_db
+from app.core.database import get_db, get_tenant_db
 from app.domains.pipeline.repositories.pipeline_stage_template_repository import (
     PipelineStageTemplateRepository,
 )
@@ -103,7 +103,7 @@ async def get_template(
 )
 async def create_template(
     payload: PipelineStageTemplateCreate,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(require_admin_or_recruiter),
     company_id: str = Depends(require_company_id),
 ):
@@ -139,7 +139,7 @@ async def create_template(
 async def update_template(
     template_id: uuid.UUID,
     payload: PipelineStageTemplateUpdate,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(require_admin_or_recruiter),
     company_id: str = Depends(require_company_id),
 ):

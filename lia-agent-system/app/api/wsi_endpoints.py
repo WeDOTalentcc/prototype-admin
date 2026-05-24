@@ -25,7 +25,7 @@ from app.shared.types import WeDoBaseModel
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
+from app.core.database import get_db, get_tenant_db
 from app.domains.cv_screening.services.screening_question_set_service import (
     ScreeningQuestionSetService,
     get_screening_question_set_service,
@@ -253,7 +253,7 @@ def _convert_snapshot_to_wsi_questions(snapshot: list) -> list:
 @router.post("/generate-questions", response_model=GenerateQuestionsResponse)
 async def generate_questions(
     request: GenerateQuestionsRequest,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     sqs_svc: ScreeningQuestionSetService = Depends(get_screening_question_set_service),
     wsi_svc: WSIService = Depends(get_wsi_service),
     company_id: str = Depends(require_company_id),
@@ -387,7 +387,7 @@ async def generate_questions(
 @router.post("/analyze-response", response_model=AnalyzeResponseResponse)
 async def analyze_response(
     request: AnalyzeResponseRequest,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_tenant_db)
 ):
     """
     Analyze a candidate response and assign scores.
@@ -456,7 +456,7 @@ async def analyze_response(
 @router.post("/calculate-wsi", response_model=CalculateWSIResponse)
 async def calculate_wsi(
     request: CalculateWSIRequest,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     wsi_svc: WSIService = Depends(get_wsi_service),
 ):
     """

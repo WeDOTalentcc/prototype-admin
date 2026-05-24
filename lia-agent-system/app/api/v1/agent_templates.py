@@ -21,7 +21,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user
-from app.core.database import get_db
+from app.core.database import get_db, get_tenant_db
 from lia_models.agent_template import AgentTemplate, AgentTemplateStatus
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
@@ -123,7 +123,7 @@ company_id: str = Depends(require_company_id)):
 async def create_template(
     body: AgentTemplateCreate,
     current_user=Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Cria novo template de agente para a empresa. Status inicial: draft."""
@@ -168,7 +168,7 @@ async def update_template(
     template_id: str,
     body: AgentTemplateCreate,
     current_user=Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
@@ -220,7 +220,7 @@ company_id: str = Depends(require_company_id)):
 async def publish_template(
     template_id: str,
     current_user=Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
@@ -253,7 +253,7 @@ company_id: str = Depends(require_company_id)):
 async def archive_template(
     template_id: str,
     current_user=Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Arquiva um template (soft delete — dados preservados para auditoria)."""

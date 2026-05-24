@@ -18,7 +18,7 @@ from app.auth.dependencies import (
     get_user_company_id,
 )
 from app.auth.models import User
-from app.core.database import get_db
+from app.core.database import get_db, get_tenant_db
 from app.domains.recruitment.repositories.company_screening_question_repository import CompanyScreeningQuestionRepository
 from app.models.screening_question import (
     DEFAULT_SCREENING_QUESTIONS,
@@ -150,7 +150,7 @@ company_id: str = Depends(require_company_id)):
 @router.post("/company/screening-questions", response_model=ScreeningQuestionResponse)
 async def create_screening_question(
     request: ScreeningQuestionCreate,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(get_current_active_user), 
 company_id: str = Depends(require_company_id)):
     """
@@ -206,7 +206,7 @@ company_id: str = Depends(require_company_id)):
 async def update_screening_question(
     question_id: str,
     request: ScreeningQuestionUpdate,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(get_current_active_user), 
 company_id: str = Depends(require_company_id)):
     """
@@ -253,7 +253,7 @@ company_id: str = Depends(require_company_id)):
 @router.delete("/company/screening-questions/{question_id}", response_model=None)
 async def delete_screening_question(
     question_id: str,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(get_current_active_user), 
 company_id: str = Depends(require_company_id)):
     """

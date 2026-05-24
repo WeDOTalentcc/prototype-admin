@@ -22,7 +22,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_active_user
 from app.auth.models import User, UserRole
-from app.core.database import get_db
+from app.core.database import get_db, get_tenant_db
 from app.domains.policy.repositories.global_policy_repository import GlobalPolicyRepository
 from app.models.global_policies import PlatformPolicy
 from app.schemas.global_policies import (
@@ -162,7 +162,7 @@ async def update_policy(
     policy_id: str,
     data: PolicyUpdate,
     user_id: str = Depends(get_user_id_from_header),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     # Onda 4.2d-P0-5 (2026-05-23): wedotalent_admin gate. Antes qualquer
     # tenant admin podia editar policy platform-global afetando TODAS empresas.
     _staff: User = Depends(require_wedotalent_admin),

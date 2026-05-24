@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy import delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
+from app.core.database import get_db, get_tenant_db
 from app.models.activity_feed import ActivityFeed
 from app.domains.analytics.services.activity_service import ActivityService, get_activity_service
 from app.shared.security.require_company_id import require_company_id
@@ -19,7 +19,7 @@ router = APIRouter(prefix="/test", tags=["Testing"])
 @router.post("/populate-activities", response_model=None)
 # TODO(phase2): extract to repository — test activity logging
 async def populate_activities(
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     activity_svc: ActivityService = Depends(get_activity_service),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)

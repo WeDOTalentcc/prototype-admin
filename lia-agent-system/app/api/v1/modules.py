@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
+from app.core.database import get_db, get_tenant_db
 from app.domains.modules.services.module_service import get_module_service, ModuleService
 from lia_models.billing import AVAILABLE_MODULES, MODULE_STATUS_OPTIONS, ModuleStatus, ModuleTier
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
@@ -167,7 +167,7 @@ async def update_module(
     module_name: str,
     body: ModuleUpdateRequest,
     request: Request,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     svc: ModuleService = Depends(get_module_service),
 _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
@@ -220,7 +220,7 @@ async def update_module_by_id(
     module_id: str,
     body: ModuleUpdateRequest,
     request: Request,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     svc: ModuleService = Depends(get_module_service),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)

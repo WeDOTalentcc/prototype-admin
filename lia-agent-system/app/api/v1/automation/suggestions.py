@@ -18,7 +18,7 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
+from app.core.database import get_db, get_tenant_db
 from app.domains.automation.repositories.ai_suggestion_repository import AISuggestionRepository
 
 from ._shared import (
@@ -76,7 +76,7 @@ async def approve_suggestion(
     suggestion_id: str,
     company_id: str = Query(..., description="Company ID for validation"),
     reviewer_id: str | None = Query(None, description="ID of the reviewer"),
-    db: AsyncSession = Depends(get_db), 
+    db: AsyncSession = Depends(get_tenant_db), 
 _company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
@@ -130,7 +130,7 @@ async def reject_suggestion(
     company_id: str = Query(..., description="Company ID for validation"),
     reviewer_id: str | None = Query(None, description="ID of the reviewer"),
     reason: str | None = Query(None, description="Reason for rejection"),
-    db: AsyncSession = Depends(get_db), 
+    db: AsyncSession = Depends(get_tenant_db), 
 _company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
@@ -183,7 +183,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 @router.post("/bulk-approve-suggestions", response_model=None)
 async def bulk_approve_suggestions(
     request: BulkSuggestionRequest,
-    db: AsyncSession = Depends(get_db), 
+    db: AsyncSession = Depends(get_tenant_db), 
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
@@ -234,7 +234,7 @@ company_id: str = Depends(require_company_id)):
 @router.post("/bulk-reject-suggestions", response_model=None)
 async def bulk_reject_suggestions(
     request: BulkSuggestionRequest,
-    db: AsyncSession = Depends(get_db), 
+    db: AsyncSession = Depends(get_tenant_db), 
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
@@ -339,7 +339,7 @@ company_id: str = Depends(require_company_id)):
 @router.post("/ai-suggestions/{suggestion_id}/approve", response_model=None)
 async def approve_ai_suggestion(
     suggestion_id: str,
-    db: AsyncSession = Depends(get_db), 
+    db: AsyncSession = Depends(get_tenant_db), 
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
@@ -382,7 +382,7 @@ company_id: str = Depends(require_company_id)):
 async def reject_ai_suggestion(
     suggestion_id: str,
     request: RejectSuggestionRequest,
-    db: AsyncSession = Depends(get_db), 
+    db: AsyncSession = Depends(get_tenant_db), 
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """

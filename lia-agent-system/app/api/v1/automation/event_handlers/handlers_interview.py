@@ -11,7 +11,7 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
+from app.core.database import get_db, get_tenant_db
 from app.domains.analytics.services.activity_service import ActivityService, get_activity_service as get_activity_service_canonical
 
 from .._shared import (
@@ -283,7 +283,7 @@ company_id: str = Depends(require_company_id)):
 @router.post("/handle-trigger/interview-completed", response_model=InterviewCompletedResponse)
 async def handle_interview_completed(
     request: InterviewCompletedRequest,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     activity_svc: ActivityService = Depends(get_activity_service_canonical),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)

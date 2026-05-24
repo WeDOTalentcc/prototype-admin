@@ -14,7 +14,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
+from app.core.database import get_db, get_tenant_db
 from app.domains.voice.repositories.wsi_repository import WsiRepository
 from app.domains.opinions.repositories.opinions_repository import OpinionsRepository
 
@@ -283,7 +283,7 @@ async def evaluate_jd(request: JDEvaluateRequest, company_id: str = Depends(requ
 @router.post("/analyze-response", response_model=AnalyzeResponseOutput)
 async def analyze_response(
     request: AnalyzeResponseRequest,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     company_id: str = Depends(require_company_id),
 ):
     """Analyze a single candidate response using Claude AI.
@@ -451,7 +451,7 @@ Return ONLY valid JSON:
 @router.post("/complete-screening", response_model=CompleteScreeningResponse)
 async def complete_screening(
     request: CompleteScreeningRequest,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     company_id: str = Depends(require_company_id),
 ):
     """Complete WSI screening by analyzing all responses and generating final report.

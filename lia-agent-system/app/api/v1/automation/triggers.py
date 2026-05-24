@@ -19,7 +19,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
+from app.core.database import get_db, get_tenant_db
 from app.domains.analytics.services.activity_service import ActivityService
 
 from ._shared import (
@@ -254,7 +254,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 @router.post("/execute-action", response_model=ExecuteActionResponse)
 async def execute_action(
     request: ExecuteActionRequest,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     activity_svc: ActivityService = Depends(get_activity_service),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
@@ -551,7 +551,7 @@ company_id: str = Depends(require_company_id)):
 @router.post("/trigger-event", response_model=TriggerEventResponse)
 async def trigger_automation_event(
     request: TriggerEventRequest,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     activity_svc: ActivityService = Depends(get_activity_service),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)

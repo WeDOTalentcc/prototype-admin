@@ -37,7 +37,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_active_user
 from app.auth.models import User
-from app.core.database import get_db
+from app.core.database import get_db, get_tenant_db
 from app.domains.persona.services import ai_persona_service
 from app.shared.security.require_company_id import require_company_id
 
@@ -106,7 +106,7 @@ async def update_company_ai_persona(
     payload: AiPersonaUpdateRequest,
     company_id: str = Depends(require_company_id),
     current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 ) -> AiPersonaResponse:
     """Valida + persiste + audita atomicamente.
 

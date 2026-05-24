@@ -21,7 +21,7 @@ from fastapi import APIRouter, Depends, Header, HTTPException, Request
 from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
+from app.core.database import get_db, get_tenant_db
 from app.domains.shared_searches.repositories.shared_search_repository import SharedSearchRepository
 from app.middleware.rate_limiter import rate_limiter as _otp_rate_limiter
 from app.models.shared_search import (
@@ -401,7 +401,7 @@ async def verify_otp(
 async def submit_feedback(
     token: str,
     request_data: SubmitFeedbackRequest,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     session: dict = Depends(require_session)
 ) -> FeedbackResponse:
     """

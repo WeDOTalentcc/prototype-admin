@@ -17,7 +17,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_active_user
 from app.auth.models import User, UserRole
-from app.core.database import get_db
+from app.core.database import get_db, get_tenant_db
 from app.domains.policy.repositories.global_policy_repository import GlobalPolicyRepository
 from app.models.global_policy import POLICY_TYPES, GlobalPolicy, PolicyScope, PolicyType
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
@@ -195,7 +195,7 @@ company_id: str = Depends(require_company_id)):
 async def create_policy(
     data: PolicyCreate,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db), 
+    db: AsyncSession = Depends(get_tenant_db), 
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
@@ -269,7 +269,7 @@ async def update_policy(
     policy_id: str,
     data: PolicyUpdate,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db), 
+    db: AsyncSession = Depends(get_tenant_db), 
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
@@ -359,7 +359,7 @@ company_id: str = Depends(require_company_id)):
 async def delete_policy(
     policy_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db), 
+    db: AsyncSession = Depends(get_tenant_db), 
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """

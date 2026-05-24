@@ -17,7 +17,7 @@ from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
+from app.core.database import get_db, get_tenant_db
 from app.shared.services.user_agent_preference_service import UserAgentPreferenceService
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 from app.shared.types import WeDoBaseModel
@@ -91,7 +91,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 @router.post("", response_model=PreferenceResponse)
 async def upsert_preference(
     data: PreferenceUpsertRequest,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Cria ou atualiza preferência de auto_confirm."""

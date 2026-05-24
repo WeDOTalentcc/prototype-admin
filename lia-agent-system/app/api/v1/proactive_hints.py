@@ -103,7 +103,7 @@ async def list_active_hints(
 ) -> HintListResponse:
     """Lista hints PENDING (scheduler-driven) para a company autenticada."""
     from app.core.database import AsyncSessionLocal
-    from libs.models.lia_models.background_jobs import (
+    from lia_models.background_jobs import (
         ActionStatus,
         ProactiveAction,
     )
@@ -148,7 +148,7 @@ async def dismiss_hint(
     from datetime import datetime
 
     from app.core.database import AsyncSessionLocal
-    from libs.models.lia_models.background_jobs import (
+    from lia_models.background_jobs import (
         ActionStatus,
         ProactiveAction,
     )

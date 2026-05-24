@@ -14,7 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.shared.prompts.system_prompt_builder import SystemPromptBuilder
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
-from app.core.database import get_db
+from app.core.database import get_db, get_tenant_db
 from app.dependencies.token_budget import require_token_budget
 from app.models.job_vacancy import JobVacancy
 from app.domains.ai.services.llm import LLMService, get_llm_service
@@ -280,7 +280,7 @@ async def _handle_jobs_management_query(
 @router.post("/expanded-prompt", response_model=ExpandedPromptResponse)
 async def process_expanded_prompt(
     request: ExpandedPromptRequest,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(get_current_user_or_demo),
     _budget: None = Depends(require_token_budget),
     llm_svc: LLMService = Depends(get_llm_service),

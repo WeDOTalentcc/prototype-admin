@@ -14,7 +14,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user_or_demo
-from app.core.database import get_db
+from app.core.database import get_db, get_tenant_db
 from app.models.lia_field_toggles import DEFAULT_FIELD_TOGGLES, FIELD_FALLBACK_CONFIG, LiaFieldToggle
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 from app.shared.types import WeDoBaseModel
@@ -148,7 +148,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
 async def update_field_toggles(
     company_id: str,
     update_data: FieldTogglesUpdate,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     current_user: dict = Depends(get_current_user_or_demo), 
 _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
@@ -327,7 +327,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
 @router.post("/{company_id}/field-toggles/seed", response_model=None)
 async def seed_default_toggles(
     company_id: str,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     current_user: dict = Depends(get_current_user_or_demo), 
 _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
@@ -569,7 +569,7 @@ async def update_empty_field_preference(
     company_id: str,
     field_key: str,
     update: ReminderPreferenceUpdate,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     current_user = Depends(get_current_user_or_demo), 
 _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)

@@ -19,7 +19,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, R
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
+from app.core.database import get_db, get_tenant_db
 from app.domains.communication.services.teams_recording_service import teams_recording_service
 from app.domains.interview_scheduling.repositories.interview_analysis_repository import InterviewAnalysisRepository
 from app.domains.interview_scheduling.services.interview_transcript_analysis_service import (
@@ -262,7 +262,7 @@ async def analyze_interview(
     interview_id: str,
     force_refresh: bool = Query(False, description="Force fetch new transcript from Teams"),
     company_id: str = Query(..., description="Company ID for tenant scoping"),
-    db: AsyncSession = Depends(get_db), 
+    db: AsyncSession = Depends(get_tenant_db), 
 _company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """

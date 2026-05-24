@@ -31,7 +31,7 @@ from app.auth.dependencies import (
     validate_company_access,
 )
 from app.auth.models import User
-from app.core.database import get_db
+from app.core.database import get_db, get_tenant_db
 from app.domains.company.repositories.compensation_policy_repository import (
     CompensationPolicyRepository,
 )
@@ -266,7 +266,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 async def create_policy(
     policy: CompensationPolicyCreate,
     company_id: str | None = Query(None),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(get_current_user_or_demo),
 _company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     """Create a new PRV policy."""
@@ -322,7 +322,7 @@ company_id: str = Depends(require_company_id)):
 async def update_policy(
     policy_id: UUID,
     updates: CompensationPolicyUpdate,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(get_current_user_or_demo),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)

@@ -24,7 +24,7 @@ from app.auth.dependencies import (
     require_admin_or_recruiter,
 )
 from app.auth.models import User
-from app.core.database import get_db
+from app.core.database import get_db, get_tenant_db
 from app.domains.ats_integration.repositories.integration_catalog_entry_repository import (
     IntegrationCatalogEntryRepository,
 )
@@ -105,7 +105,7 @@ async def get_entry(
 )
 async def create_entry(
     payload: IntegrationCatalogEntryCreate,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(require_admin_or_recruiter),
     company_id: str = Depends(require_company_id),
 ):
@@ -141,7 +141,7 @@ async def create_entry(
 async def update_entry(
     entry_id: uuid.UUID,
     payload: IntegrationCatalogEntryUpdate,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(require_admin_or_recruiter),
     company_id: str = Depends(require_company_id),
 ):

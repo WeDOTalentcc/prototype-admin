@@ -14,7 +14,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
+from app.core.database import get_db, get_tenant_db
 from app.domains.recruiter_assistant.services.conversation_memory import conversation_memory
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
@@ -282,7 +282,7 @@ company_id: str = Depends(require_company_id)):
 async def add_message(
     conversation_id: str,
     request: AddMessageRequest,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
@@ -324,7 +324,7 @@ company_id: str = Depends(require_company_id)):
 async def update_summary(
     conversation_id: str,
     request: UpdateSummaryRequest = UpdateSummaryRequest(),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
@@ -386,7 +386,7 @@ company_id: str = Depends(require_company_id)):
 @router.delete("/{conversation_id}", response_model=None)
 async def delete_conversation(
     conversation_id: str,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
