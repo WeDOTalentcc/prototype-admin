@@ -244,17 +244,23 @@ export function CandidatePreviewHeader({
             <h3 className={`${textStyles.title} truncate`}>
               {c.name as string}
             </h3>
-            <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 flex-shrink-0 bg-lia-bg-tertiary text-lia-text-secondary border border-lia-border-default">
+            {/* F11 Bug 3 (2026-05-24): header chips agora compartilham EXATAMENTE
+                a mesma classe do LGPD chip (text-micro px-1.5 py-0 h-4 flex
+                items-center). Removido `border border-lia-border-default` do ID
+                chip (que adicionava 2px box-sizing) e previewChipVariants
+                substituído por classe inline igual ao LGPD pattern. Cores
+                preservadas via variant + bg override. */}
+            <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 flex items-center flex-shrink-0 bg-lia-bg-tertiary text-lia-text-secondary">
               {generateShortId(c.name as string, (c.id as string | undefined) || (c.candidateId as string | undefined) || (c.pearch_id as string | undefined))}
             </Chip>
             {(c.seniority_level || c.seniorityLevel) && (
-              <Chip variant="warning" muted className={previewChipVariants.warning}>
+              <Chip variant="warning" muted className="text-micro px-1.5 py-0 h-4 flex items-center flex-shrink-0 bg-status-warning/10 text-status-warning">
                 {(c.seniority_level as string | undefined) || (c.seniorityLevel as string | undefined)}
               </Chip>
             )}
             {(c.years_of_experience !== undefined && c.years_of_experience !== null) ||
              (c.yearsOfExperience !== undefined && c.yearsOfExperience !== null) ? (
-              <Chip variant="neutral" muted className={previewChipVariants.neutral}>
+              <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 flex items-center flex-shrink-0 bg-lia-bg-tertiary text-lia-text-secondary">
                 {typeof (c.years_of_experience || c.yearsOfExperience) === 'number'
                   ? `${((c.years_of_experience as number | undefined) || (c.yearsOfExperience as number | undefined) || 0).toFixed(1)} anos`
                   : `${c.years_of_experience || c.yearsOfExperience} anos`}
