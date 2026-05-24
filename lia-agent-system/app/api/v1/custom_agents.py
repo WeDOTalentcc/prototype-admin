@@ -554,6 +554,24 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await db.rollback()
         logger.error("Error executing custom agent: %s", e, exc_info=True)
+        # P1-W3-10: dispatch agent.execution.failed (was ghost event)
+        try:
+            _agent_for_wh = locals().get('agent')
+            if _agent_for_wh and current_user:
+                from app.services.webhook_dispatcher import webhook_service
+                await webhook_service.dispatch(
+                    db=db,
+                    company_id=current_user.company_id,
+                    event="agent.execution.failed",
+                    payload={
+                        "agent_id": str(_agent_for_wh.id),
+                        "agent_name": _agent_for_wh.name,
+                        "error": str(e),
+                        "user_id": str(current_user.id),
+                    },
+                )
+        except Exception as _wh_err:
+            logger.warning("[Webhook] execution.failed dispatch error: %s", _wh_err)
         raise HTTPException(status_code=500, detail=f"Execution failed: {e}")
 
 

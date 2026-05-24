@@ -154,6 +154,26 @@ company_id: str = Depends(require_company_id)):
     if not deployment:
         raise HTTPException(status_code=404, detail="Deployment not found")
     await db.commit()
+
+    # P1-W3-10: dispatch agent.deployment.paused when is_active set to False (was ghost event)
+    if body.is_active is False:
+        try:
+            from app.services.webhook_dispatcher import webhook_service
+            await webhook_service.dispatch(
+                db=db,
+                company_id=current_user.company_id,
+                event="agent.deployment.paused",
+                payload={
+                    "deployment_id": str(deployment.id),
+                    "agent_id": str(deployment.agent_id),
+                    "target_type": deployment.target_type,
+                    "target_id": str(deployment.target_id),
+                    "user_id": str(current_user.id),
+                },
+            )
+        except Exception as _wh_err:
+            logger.warning("[Webhook] deployment.paused dispatch error: %s", _wh_err)
+
     return DeploymentResponse(**deployment.to_dict())
 
 
