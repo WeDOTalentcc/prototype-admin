@@ -15,6 +15,7 @@ from typing import TYPE_CHECKING, Any, Optional
 from uuid import UUID
 
 from app.tools.registry import ToolDefinition, tool_registry
+from app.tools.context_helpers import require_company_id_from_context
 
 if TYPE_CHECKING:
     from app.tools.executor import ToolExecutionContext
@@ -49,7 +50,7 @@ async def update_candidate_stage(
         Result with success status and message
     """
     context = _extract_context(kwargs)
-    company_id = context.company_id if context else None
+    company_id = require_company_id_from_context(kwargs, "update_candidate_stage")
     user_id = context.user_id if context else "system"
     
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
@@ -182,7 +183,7 @@ async def add_candidate_to_vacancy(
         Result with success status and message
     """
     context = _extract_context(kwargs)
-    company_id = context.company_id if context else None
+    company_id = require_company_id_from_context(kwargs, "add_candidate_to_vacancy")
     user_id = context.user_id if context else "system"
     
     logger.info(f"➕ Adding candidate {candidate_id} to job {job_id} (company: {company_id})")
@@ -696,7 +697,7 @@ async def add_to_list(
         Result with success status and message
     """
     context = _extract_context(kwargs)
-    company_id = context.company_id if context else None
+    company_id = require_company_id_from_context(kwargs, "add_to_list")
     user_id = context.user_id if context else "system"
     
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
@@ -778,7 +779,7 @@ async def wsi_screening(
         Result with success status and screening session details
     """
     context = _extract_context(kwargs)
-    company_id = context.company_id if context else None
+    company_id = require_company_id_from_context(kwargs, "wsi_screening")
     user_id = context.user_id if context else "system"
     
     logger.info(f"🎯 Triggering WSI screening for candidate {candidate_id} on job {job_id} (company: {company_id})")
@@ -910,7 +911,7 @@ async def hide_candidate(
         Result with success status and message
     """
     context = _extract_context(kwargs)
-    company_id = context.company_id if context else None
+    company_id = require_company_id_from_context(kwargs, "hide_candidate")
     user_id = context.user_id if context else "system"
     
     logger.info(f"🙈 Hiding candidate {candidate_id} (global={hide_globally}, job={job_id}, company={company_id})")

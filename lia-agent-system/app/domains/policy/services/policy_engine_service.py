@@ -1056,6 +1056,7 @@ def require_policy_check(action: str, context_extractor=None):
                 except Exception as e:
                     logger.warning(f"Error extracting context: {e}")
             
+            # TENANT-FALLBACK-OK: self.company_id set in PolicyEngineService ctor from RLS-validated context
             company_id = getattr(self, 'company_id', None)
             if not company_id:
                 company_id = kwargs.get('company_id')

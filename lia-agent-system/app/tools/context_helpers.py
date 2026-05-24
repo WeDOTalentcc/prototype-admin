@@ -50,6 +50,9 @@ def require_company_id_from_context(kwargs: dict[str, Any], tool_name: str) -> s
             f"return all-zero or cross-tenant rows."
         )
     # TENANT-FALLBACK-OK: this is the canonical helper itself — the if-not-cid raise below converts the None into a loud failure.
+    # TENANT-FALLBACK-OK: this is the canonical helper itself — the
+    # if-not-cid raise below converts None into a loud failure.
+    # TENANT-FALLBACK-OK: canonical helper itself — `if not cid` raise below converts None to loud failure
     cid = getattr(context, "company_id", None)
     if not cid:
         raise ToolContextMissingError(
@@ -70,3 +73,30 @@ def context_or_raise(kwargs: dict[str, Any], tool_name: str):
             f"require_company_id_from_context docstring."
         )
     return context
+
+
+def require_company_id_from_obj(context: Any, tool_name: str) -> str:
+    """Validate company_id on an already-extracted context object.
+
+    Sprint 2 (G2 batch migration): tools that need BOTH company_id AND user_id
+    use `context_or_raise` to get the context, then this helper to validate
+    company_id. Avoids popping `_context` twice from kwargs.
+
+    Raises:
+        ToolContextMissingError: when company_id is empty.
+
+    Usage:
+        context = context_or_raise(kwargs, "tool_name")
+        company_id = require_company_id_from_obj(context, "tool_name")
+        user_id = context.user_id
+    """
+    # TENANT-FALLBACK-OK: canonical helper itself — `if not cid` raise below converts None to loud failure
+    cid = getattr(context, "company_id", None)
+    if not cid:
+        raise ToolContextMissingError(
+            f"Tool '{tool_name}' received ToolExecutionContext with empty "
+            f"company_id (user_id={getattr(context, 'user_id', '?')}). "
+            f"Multi-tenancy fail-closed per CLAUDE.md REGRA 4 + ADR-001."
+        )
+    return str(cid)
+

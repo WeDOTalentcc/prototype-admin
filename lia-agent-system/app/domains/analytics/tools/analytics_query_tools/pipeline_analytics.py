@@ -5,6 +5,7 @@ from typing import Any
 from uuid import UUID
 
 from ._base import analytics_db, error_response, extract_context, success_response
+from app.tools.context_helpers import require_company_id_from_context
 
 logger = logging.getLogger(__name__)
 
@@ -26,8 +27,7 @@ async def get_pipeline_stats(
     Returns:
         Pipeline statistics including conversion rates, volume metrics
     """
-    context = extract_context(kwargs)
-    company_id = context.company_id if context else None
+    company_id = require_company_id_from_context(kwargs, "get_pipeline_stats")
     effective_recruiter = recruiter_id or (context.user_id if context else None)
 
     logger.info(f"📊 Getting pipeline stats (company: {company_id}, period: {period})")
@@ -140,8 +140,7 @@ async def get_vacancy_funnel(
     Returns:
         Funnel metrics with conversion rates and stalled candidates
     """
-    context = extract_context(kwargs)
-    company_id = context.company_id if context else None
+    company_id = require_company_id_from_context(kwargs, "get_vacancy_funnel")
 
     logger.info(f"📊 Getting vacancy funnel: {job_id} (company: {company_id})")
 
@@ -253,8 +252,7 @@ async def compare_candidates(
     Returns:
         Side-by-side comparison of candidates
     """
-    context = extract_context(kwargs)
-    company_id = context.company_id if context else None
+    company_id = require_company_id_from_context(kwargs, "compare_candidates")
 
     logger.info(f"🔄 Comparing {len(candidate_ids)} candidates (company: {company_id})")
 

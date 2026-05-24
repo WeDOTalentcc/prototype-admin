@@ -88,6 +88,7 @@ class TranscriptionService:
         if not self._client:
             # === Tenant-aware Gemini client (LGPD compliance) ===
             from app.shared.tenant_llm_context import get_gemini_client_for_tenant
+            # TENANT-FALLBACK-OK: self._company_id is set by service ctor from RLS-validated context
             company_id = getattr(self, "_company_id", None)
             self._client = get_gemini_client_for_tenant(company_id)
         return self._client
@@ -293,6 +294,7 @@ class TranscriptionService:
             await db.commit()
 
             # T-1157 audit (transcrição é PII sensível; LGPD Art.46 + retention)
+            # TENANT-FALLBACK-OK: interview loaded via repo.get_by_id which enforces RLS company_id filter
             _company_id = getattr(interview, "company_id", None)
             if _company_id:
                 try:

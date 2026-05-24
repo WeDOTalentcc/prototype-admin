@@ -5,6 +5,7 @@ from typing import Any
 from uuid import UUID
 
 from ._base import analytics_db, error_response, extract_context, success_response
+from app.tools.context_helpers import require_company_id_from_context
 
 logger = logging.getLogger(__name__)
 
@@ -24,8 +25,7 @@ async def get_cost_metrics(
     Returns:
         Cost metrics including cost per hire, sourcing investment, and ROI
     """
-    context = extract_context(kwargs)
-    company_id = context.company_id if context else None
+    company_id = require_company_id_from_context(kwargs, "get_cost_metrics")
 
     logger.info(f"💰 Getting cost metrics (company: {company_id}, period: {period})")
 
@@ -144,8 +144,7 @@ async def get_trends(
     Returns:
         Trend data including monthly values, direction, growth percentage, and seasonality
     """
-    context = extract_context(kwargs)
-    company_id = context.company_id if context else None
+    company_id = require_company_id_from_context(kwargs, "get_trends")
 
     logger.info(f"📈 Getting trends for {metric_type} (company: {company_id}, period: {period})")
 

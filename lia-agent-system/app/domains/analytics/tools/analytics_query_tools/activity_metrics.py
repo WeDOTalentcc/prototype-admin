@@ -5,6 +5,7 @@ from typing import Any
 from uuid import UUID
 
 from ._base import analytics_db, error_response, extract_context, success_response
+from app.tools.context_helpers import require_company_id_from_context
 
 logger = logging.getLogger(__name__)
 
@@ -28,8 +29,7 @@ async def get_activity_summary(
     Returns:
         Activity summary with counts and details
     """
-    context = extract_context(kwargs)
-    company_id = context.company_id if context else None
+    company_id = require_company_id_from_context(kwargs, "get_activity_summary")
 
     logger.info(f"📊 Getting activity summary (company: {company_id}, period: {period})")
 
@@ -141,8 +141,7 @@ async def get_pending_actions(
     Returns:
         List of pending actions requiring attention
     """
-    context = extract_context(kwargs)
-    company_id = context.company_id if context else None
+    company_id = require_company_id_from_context(kwargs, "get_pending_actions")
 
     logger.info(f"📋 Getting pending actions (company: {company_id})")
 

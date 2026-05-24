@@ -5,6 +5,7 @@ from typing import Any
 from uuid import UUID
 
 from ._base import analytics_db, error_response, extract_context, success_response
+from app.tools.context_helpers import require_company_id_from_context
 
 logger = logging.getLogger(__name__)
 
@@ -24,8 +25,7 @@ async def get_ml_predictions(
     Returns:
         ML predictions including acceptance probability, retention risk, and performance prediction
     """
-    context = extract_context(kwargs)
-    company_id = context.company_id if context else None
+    company_id = require_company_id_from_context(kwargs, "get_ml_predictions")
 
     logger.info(f"🤖 Getting ML predictions (company: {company_id}, candidate: {candidate_id}, job: {job_id})")
 
@@ -180,8 +180,7 @@ async def get_conversion_patterns(
     Returns:
         Conversion patterns including top converting profiles, efficient sources, and funnel data
     """
-    context = extract_context(kwargs)
-    company_id = context.company_id if context else None
+    company_id = require_company_id_from_context(kwargs, "get_conversion_patterns")
 
     logger.info(f"🔄 Getting conversion patterns (company: {company_id}, period: {period})")
 
@@ -312,8 +311,7 @@ async def get_smart_alerts(
     Returns:
         Smart alerts including SLA risks, cooling candidates, and bottleneck warnings
     """
-    context = extract_context(kwargs)
-    company_id = context.company_id if context else None
+    company_id = require_company_id_from_context(kwargs, "get_smart_alerts")
 
     logger.info(f"🚨 Getting smart alerts (company: {company_id}, severity: {severity})")
 

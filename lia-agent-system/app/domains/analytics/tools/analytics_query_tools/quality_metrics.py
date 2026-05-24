@@ -5,6 +5,7 @@ from typing import Any
 from uuid import UUID
 
 from ._base import analytics_db, error_response, extract_context, success_response
+from app.tools.context_helpers import require_company_id_from_context
 
 logger = logging.getLogger(__name__)
 
@@ -25,8 +26,7 @@ async def get_stakeholder_metrics(
         Stakeholder metrics including pending_approvals, average_manager_response_days,
         delayed_decisions, stakeholder_bottlenecks
     """
-    context = extract_context(kwargs)
-    company_id = context.company_id if context else None
+    company_id = require_company_id_from_context(kwargs, "get_stakeholder_metrics")
 
     logger.info(f"👥 Getting stakeholder metrics (company: {company_id}, job: {job_id})")
 
@@ -173,8 +173,7 @@ async def get_hiring_quality(
     Returns:
         Quality metrics including retention, satisfaction, and performance
     """
-    context = extract_context(kwargs)
-    company_id = context.company_id if context else None
+    company_id = require_company_id_from_context(kwargs, "get_hiring_quality")
 
     logger.info(f"⭐ Getting hiring quality metrics (company: {company_id}, period: {period})")
 
@@ -247,8 +246,7 @@ async def get_prediction_metrics(
     Returns:
         Predictions including success probability, estimated close date, and risk factors
     """
-    context = extract_context(kwargs)
-    company_id = context.company_id if context else None
+    company_id = require_company_id_from_context(kwargs, "get_prediction_metrics")
 
     logger.info(f"🔮 Getting prediction metrics for job {job_id} (company: {company_id})")
 

@@ -13,6 +13,8 @@ discriminatory policies.
 """
 from __future__ import annotations
 
+from app.tools.context_helpers import context_or_raise, require_company_id_from_context, require_company_id_from_obj
+
 import asyncio
 import json
 import logging
@@ -166,8 +168,9 @@ async def check_company_completeness(**kwargs) -> dict[str, Any]:
         }
     """
     context = _extract_context(kwargs)
-    company_id = context.company_id if context else None
-    user_id = context.user_id if context else None
+    context = context_or_raise(kwargs, "check_company_completeness")
+    company_id = require_company_id_from_obj(context, "check_company_completeness")
+    user_id = context.user_id
 
     if not company_id:
         return {
@@ -370,7 +373,7 @@ async def suggest_recruiting_policy(
         }
     """
     context = _extract_context(kwargs)
-    company_id = context.company_id if context else None
+    company_id = require_company_id_from_context(kwargs, "suggest_recruiting_policy")
 
     if not company_id:
         return {
@@ -498,8 +501,9 @@ async def save_hiring_policy(
         return gate
 
     context = _extract_context(kwargs)
-    company_id = context.company_id if context else None
-    user_id = context.user_id if context else None
+    context = context_or_raise(kwargs, "save_hiring_policy")
+    company_id = require_company_id_from_obj(context, "save_hiring_policy")
+    user_id = context.user_id
 
     if not company_id:
         return {
@@ -719,8 +723,9 @@ async def import_benefits_from_data(
         {success, inserted_count, skipped_count, errors}
     """
     context = _extract_context(kwargs)
-    company_id = context.company_id if context else None
-    user_id = context.user_id if context else None
+    context = context_or_raise(kwargs, "import_benefits_from_data")
+    company_id = require_company_id_from_obj(context, "import_benefits_from_data")
+    user_id = context.user_id
 
     if not company_id:
         return {

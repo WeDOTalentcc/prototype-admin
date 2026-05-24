@@ -5,6 +5,7 @@ from typing import Any
 from uuid import UUID
 
 from ._base import analytics_db, error_response, extract_context, success_response
+from app.tools.context_helpers import require_company_id_from_context
 
 logger = logging.getLogger(__name__)
 
@@ -25,8 +26,7 @@ async def get_workload_distribution(
         Workload metrics including total_active_jobs, jobs_per_recruiter,
         overloaded_recruiters, underloaded_recruiters
     """
-    context = extract_context(kwargs)
-    company_id = context.company_id if context else None
+    company_id = require_company_id_from_context(kwargs, "get_workload_distribution")
 
     logger.info(f"📊 Getting workload distribution (company: {company_id}, team: {team_id})")
 
@@ -117,8 +117,7 @@ async def get_bottleneck_analysis(
         Bottleneck analysis including highest_rejection_stage, average_time_per_stage,
         slowest_stage, and recommendations
     """
-    context = extract_context(kwargs)
-    company_id = context.company_id if context else None
+    company_id = require_company_id_from_context(kwargs, "get_bottleneck_analysis")
 
     logger.info(f"🔍 Analyzing bottlenecks for job: {job_id} (company: {company_id})")
 

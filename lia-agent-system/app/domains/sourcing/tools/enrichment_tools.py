@@ -21,6 +21,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import AsyncSessionLocal
 from app.tools.registry import ToolDefinition, tool_registry
+from app.tools.context_helpers import context_or_raise, require_company_id_from_context, require_company_id_from_obj
 
 if TYPE_CHECKING:
     from app.tools.executor import ToolExecutionContext
@@ -63,7 +64,7 @@ async def check_candidate_completeness(
         }
     """
     context = _extract_context(kwargs)
-    company_id = context.company_id if context else None
+    company_id = require_company_id_from_context(kwargs, "check_candidate_completeness")
 
     if not company_id:
         return {
@@ -189,8 +190,9 @@ async def enrich_candidate_linkedin(
         }
     """
     context = _extract_context(kwargs)
-    company_id = context.company_id if context else None
-    user_id = context.user_id if context else None
+    context = context_or_raise(kwargs, "enrich_candidate_linkedin")
+    company_id = require_company_id_from_obj(context, "enrich_candidate_linkedin")
+    user_id = context.user_id
 
     if not company_id:
         return {

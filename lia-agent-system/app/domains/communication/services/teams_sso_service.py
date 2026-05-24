@@ -157,6 +157,7 @@ class TeamsSSOService:
                         pass  # Column may not exist yet
 
                 # Fallback: use company from stored conv reference
+                # TENANT-FALLBACK-OK: conv is TeamsConversation from upstream RLS-validated auth gate
                 company_id = getattr(conv, "company_id", None)
                 if company_id:
                     return {

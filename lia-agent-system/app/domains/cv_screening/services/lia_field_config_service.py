@@ -212,6 +212,7 @@ class LiaFieldConfigService:
             
             toggle = toggles.get(field_key)
             is_active = toggle.is_active if toggle else default_active
+            # TENANT-FALLBACK-OK: sensor false-positive — `comment` is toggle metadata, not company_id
             comment = toggle.comment if toggle else None
             
             fallback_strategies = FIELD_FALLBACK_CONFIG.get(field_key, ["skip"])

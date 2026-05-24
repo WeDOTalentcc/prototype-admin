@@ -5,6 +5,7 @@ from typing import Any
 from uuid import UUID
 
 from ._base import analytics_db, error_response, extract_context, success_response
+from app.tools.context_helpers import require_company_id_from_context
 
 logger = logging.getLogger(__name__)
 
@@ -26,8 +27,7 @@ async def get_recruiter_metrics(
     Returns:
         Recruiter metrics including jobs closed, time-to-fill, efficiency
     """
-    context = extract_context(kwargs)
-    company_id = context.company_id if context else None
+    company_id = require_company_id_from_context(kwargs, "get_recruiter_metrics")
     effective_recruiter = recruiter_id or (context.user_id if context else None)
 
     logger.info(f"📊 Getting recruiter metrics for {effective_recruiter} (company: {company_id})")
@@ -135,8 +135,7 @@ async def get_velocity_metrics(
         Velocity metrics including average_time_to_fill_days, sla_compliance_rate,
         jobs_within_sla, jobs_outside_sla
     """
-    context = extract_context(kwargs)
-    company_id = context.company_id if context else None
+    company_id = require_company_id_from_context(kwargs, "get_velocity_metrics")
     effective_recruiter = recruiter_id or (context.user_id if context else None)
 
     logger.info(f"⏱️ Getting velocity metrics (company: {company_id}, period: {period})")
@@ -219,8 +218,7 @@ async def get_efficiency_metrics(
         Efficiency metrics including candidates_per_hire, interviews_per_hire,
         screening_to_offer_ratio
     """
-    context = extract_context(kwargs)
-    company_id = context.company_id if context else None
+    company_id = require_company_id_from_context(kwargs, "get_efficiency_metrics")
 
     logger.info(f"📈 Getting efficiency metrics (company: {company_id}, period: {period})")
 
@@ -319,8 +317,7 @@ async def get_comparative_metrics(
     Returns:
         Comparative metrics including my_metrics, comparison_metrics, difference_percentage
     """
-    context = extract_context(kwargs)
-    company_id = context.company_id if context else None
+    company_id = require_company_id_from_context(kwargs, "get_comparative_metrics")
     effective_recruiter = recruiter_id or (context.user_id if context else None)
 
     logger.info(f"📊 Getting comparative metrics (company: {company_id}, type: {comparison_type})")

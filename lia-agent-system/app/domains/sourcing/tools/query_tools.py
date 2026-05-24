@@ -16,6 +16,7 @@ from uuid import UUID
 
 
 from app.tools.registry import ToolDefinition, tool_registry
+from app.tools.context_helpers import require_company_id_from_context
 
 if TYPE_CHECKING:
     from app.tools.executor import ToolExecutionContext
@@ -62,7 +63,7 @@ async def search_candidates(
         List of matching candidates with their details
     """
     context = _extract_context(kwargs)
-    company_id = context.company_id if context else None
+    company_id = require_company_id_from_context(kwargs, "search_candidates")
     
     logger.info(f"🔍 Searching candidates with filters (company: {company_id})")
     
@@ -204,7 +205,7 @@ async def rank_candidates(
         Ranked list of candidates with WRF scores
     """
     context = _extract_context(kwargs)
-    company_id = context.company_id if context else None
+    company_id = require_company_id_from_context(kwargs, "rank_candidates")
 
     logger.info(f"🏆 Ranking candidates with WRF (company: {company_id}, level: {qualification_level})")
 
@@ -356,7 +357,7 @@ async def get_candidate_details(
         Detailed candidate information
     """
     context = _extract_context(kwargs)
-    company_id = context.company_id if context else None
+    company_id = require_company_id_from_context(kwargs, "get_candidate_details")
     
     logger.info(f"📋 Getting candidate details: {candidate_id} (company: {company_id})")
     
@@ -457,7 +458,7 @@ async def get_candidate_stats(
         Candidate statistics including quality metrics, distribution
     """
     context = _extract_context(kwargs)
-    company_id = context.company_id if context else None
+    company_id = require_company_id_from_context(kwargs, "get_candidate_stats")
     
     logger.info(f"📊 Getting candidate stats (company: {company_id})")
     
@@ -561,7 +562,7 @@ async def get_candidate_history(
         History metrics including reapplication rates and process counts
     """
     context = _extract_context(kwargs)
-    company_id = context.company_id if context else None
+    company_id = require_company_id_from_context(kwargs, "get_candidate_history")
     
     logger.info(f"📜 Getting candidate history (company: {company_id})")
     
@@ -690,7 +691,7 @@ async def get_talent_quality(
         high_fit_percentage, and score_distribution
     """
     context = _extract_context(kwargs)
-    company_id = context.company_id if context else None
+    company_id = require_company_id_from_context(kwargs, "get_talent_quality")
     
     logger.info(f"📊 Getting talent quality metrics (company: {company_id}, period: {period})")
     
@@ -800,7 +801,7 @@ async def get_talent_engagement(
         contacted_count, responded_count
     """
     context = _extract_context(kwargs)
-    company_id = context.company_id if context else None
+    company_id = require_company_id_from_context(kwargs, "get_talent_engagement")
     
     logger.info(f"📬 Getting talent engagement metrics (company: {company_id}, period: {period})")
     
@@ -886,7 +887,7 @@ async def get_talent_availability(
         average_salary_expectation, availability_by_seniority
     """
     context = _extract_context(kwargs)
-    company_id = context.company_id if context else None
+    company_id = require_company_id_from_context(kwargs, "get_talent_availability")
     
     logger.info(f"📅 Getting talent availability metrics (company: {company_id})")
     
@@ -992,7 +993,7 @@ async def get_diversity_metrics(
         Diversity metrics including gender, ethnicity, PCD, and age distributions
     """
     context = _extract_context(kwargs)
-    company_id = context.company_id if context else None
+    company_id = require_company_id_from_context(kwargs, "get_diversity_metrics")
     
     logger.info(f"🌈 Getting diversity metrics (company: {company_id}, period: {period})")
     
@@ -1112,7 +1113,7 @@ async def get_market_benchmarks(
         Market comparison data including salary competitiveness and time-to-fill comparison
     """
     context = _extract_context(kwargs)
-    company_id = context.company_id if context else None
+    company_id = require_company_id_from_context(kwargs, "get_market_benchmarks")
     
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"🏆 Getting market benchmarks (company: {company_id}, title: {job_title})")

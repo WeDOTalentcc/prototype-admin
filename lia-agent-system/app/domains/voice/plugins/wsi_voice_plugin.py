@@ -247,6 +247,7 @@ class WSIVoicePlugin(VoiceCorePlugin):
                     # porque voice call e fire-and-forget critico — nao bloquear
                     # ligacao por audit gap.
                     try:
+                        # TENANT-FALLBACK-OK: session is WSI voice session from upstream RLS-validated API gate
                         company_id = getattr(session, "company_id", None)
                         if company_id:
                             await log_automated_decision(
