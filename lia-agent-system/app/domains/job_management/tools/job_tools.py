@@ -9,6 +9,7 @@ Provides function calling capabilities for:
 All tools support tenant scoping via ToolExecutionContext for multi-tenancy security.
 """
 import logging
+from types import SimpleNamespace
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, Optional
 from uuid import UUID
@@ -746,6 +747,62 @@ PUBLISH_JOB_SCHEMA = {
 }
 
 
+
+
+async def _wrap_update_job(**kwargs):
+    """Sensor 2 wrapper (2026-05-24): inject _context from kwargs before delegating to update_job.
+
+    Mirrors _wrap_save_hiring_policy pattern. Without this, ToolExecutor global
+    dispatch raises ToolContextMissingError because executor does NOT inject _context.
+    """
+    company_id = kwargs.pop("company_id", "")
+    user_id = kwargs.pop("user_id", "")
+    ctx = SimpleNamespace(company_id=company_id, user_id=user_id)
+    return await update_job(_context=ctx, **kwargs)
+
+
+
+
+async def _wrap_pause_job(**kwargs):
+    """Sensor 2 wrapper (2026-05-24): inject _context from kwargs before delegating to pause_job.
+
+    Mirrors _wrap_save_hiring_policy pattern. Without this, ToolExecutor global
+    dispatch raises ToolContextMissingError because executor does NOT inject _context.
+    """
+    company_id = kwargs.pop("company_id", "")
+    user_id = kwargs.pop("user_id", "")
+    ctx = SimpleNamespace(company_id=company_id, user_id=user_id)
+    return await pause_job(_context=ctx, **kwargs)
+
+
+
+
+async def _wrap_close_job(**kwargs):
+    """Sensor 2 wrapper (2026-05-24): inject _context from kwargs before delegating to close_job.
+
+    Mirrors _wrap_save_hiring_policy pattern. Without this, ToolExecutor global
+    dispatch raises ToolContextMissingError because executor does NOT inject _context.
+    """
+    company_id = kwargs.pop("company_id", "")
+    user_id = kwargs.pop("user_id", "")
+    ctx = SimpleNamespace(company_id=company_id, user_id=user_id)
+    return await close_job(_context=ctx, **kwargs)
+
+
+
+
+async def _wrap_publish_job(**kwargs):
+    """Sensor 2 wrapper (2026-05-24): inject _context from kwargs before delegating to publish_job.
+
+    Mirrors _wrap_save_hiring_policy pattern. Without this, ToolExecutor global
+    dispatch raises ToolContextMissingError because executor does NOT inject _context.
+    """
+    company_id = kwargs.pop("company_id", "")
+    user_id = kwargs.pop("user_id", "")
+    ctx = SimpleNamespace(company_id=company_id, user_id=user_id)
+    return await publish_job(_context=ctx, **kwargs)
+
+
 def register_job_tools() -> None:
     """Register all job tools in the registry."""
     
@@ -761,7 +818,7 @@ def register_job_tools() -> None:
         name="update_job",
         description="Atualiza uma vaga existente com novos dados.",
         parameters_schema=UPDATE_JOB_SCHEMA,
-        handler=update_job,
+        handler=_wrap_update_job,
         allowed_agents=["orchestrator", "recruiter_assistant", "job_planner", "job_intake"]
     ))
     
@@ -769,7 +826,7 @@ def register_job_tools() -> None:
         name="pause_job",
         description="Pausa uma vaga temporariamente, deixando-a invisível para candidatos.",
         parameters_schema=PAUSE_JOB_SCHEMA,
-        handler=pause_job,
+        handler=_wrap_pause_job,
         allowed_agents=["orchestrator", "recruiter_assistant", "job_planner"]
     ))
     
@@ -777,7 +834,7 @@ def register_job_tools() -> None:
         name="close_job",
         description="Encerra uma vaga definitivamente. Pode notificar candidatos em processo. Ação sensível que requer confirmação.",
         parameters_schema=CLOSE_JOB_SCHEMA,
-        handler=close_job,
+        handler=_wrap_close_job,
         allowed_agents=["orchestrator", "recruiter_assistant", "job_planner"]
     ))
     
@@ -785,7 +842,7 @@ def register_job_tools() -> None:
         name="publish_job",
         description="Publica uma vaga que está em rascunho, tornando-a visível para candidatos.",
         parameters_schema=PUBLISH_JOB_SCHEMA,
-        handler=publish_job,
+        handler=_wrap_publish_job,
         allowed_agents=["orchestrator", "recruiter_assistant", "job_planner", "job_intake"]
     ))
     
