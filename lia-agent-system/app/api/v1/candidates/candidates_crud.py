@@ -747,6 +747,122 @@ async def update_candidate_education(
         raise HTTPException(status_code=500, detail="Falha ao atualizar formacao do candidato.")
 
 
+@router.put("/{candidate_id}/skills", response_model=None)
+async def update_candidate_skills(
+    candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
+    payload: list[str],
+    request: Request = None,  # type: ignore[assignment]
+    candidate_repo: CandidateRepository = Depends(get_candidate_repo),
+    current_user: User = Depends(get_current_user_or_demo),
+):
+    """Replace candidate's technical_skills array with the provided list.
+
+    Used by F5 D7 edit pattern via EditArrayItemModal in CandidateSkillsList.
+    Multi-tenant via _assert_tenant_scope. Replace-all semantics.
+    Validates each skill is a non-empty string max 100 chars.
+    """
+    try:
+        from app.core.database import AsyncSessionLocal
+        candidate = await candidate_repo.get_by_id_str(candidate_id)
+        if not candidate:
+            raise HTTPException(status_code=404, detail="Candidate not found")
+        _assert_tenant_scope(candidate, current_user)
+
+        # Validate and normalize skills
+        normalized_skills = []
+        for skill in (payload or []):
+            if not isinstance(skill, str):
+                continue
+            s = skill.strip()
+            if not s:
+                continue
+            normalized_skills.append(s[:100])
+        # Dedupe preserving order
+        seen = set()
+        deduped = []
+        for s in normalized_skills:
+            if s.lower() not in seen:
+                seen.add(s.lower())
+                deduped.append(s)
+
+        async with AsyncSessionLocal() as db:
+            await db.execute(
+                text("UPDATE candidates SET technical_skills = :skills, updated_at = NOW() WHERE id = CAST(:cid AS uuid)"),
+                {"skills": deduped, "cid": str(candidate.id)},
+            )
+            await db.commit()
+
+        logger.info(f"Updated {len(deduped)} skills for candidate {candidate_id}")
+        return {"success": True, "count": len(deduped), "message": "Skills updated successfully", "skills": deduped}
+    except HTTPException:
+        raise
+    except Exception:
+        _rid = getattr(request.state, "request_id", "unknown") if request else "unknown"
+        logger.exception(
+            "[update_candidate_skills] failed request_id=%s candidate_id=%s",
+            _rid, candidate_id,
+        )
+        raise HTTPException(status_code=500, detail="Falha ao atualizar skills do candidato.")
+
+
+@router.put("/{candidate_id}/skills", response_model=None)
+async def update_candidate_skills(
+    candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
+    payload: list[str],
+    request: Request = None,  # type: ignore[assignment]
+    candidate_repo: CandidateRepository = Depends(get_candidate_repo),
+    current_user: User = Depends(get_current_user_or_demo),
+):
+    """Replace candidate's technical_skills array with the provided list.
+
+    Used by F5 D7 edit pattern via EditArrayItemModal in CandidateSkillsList.
+    Multi-tenant via _assert_tenant_scope. Replace-all semantics.
+    Validates each skill is a non-empty string max 100 chars.
+    """
+    try:
+        from app.core.database import AsyncSessionLocal
+        candidate = await candidate_repo.get_by_id_str(candidate_id)
+        if not candidate:
+            raise HTTPException(status_code=404, detail="Candidate not found")
+        _assert_tenant_scope(candidate, current_user)
+
+        # Validate and normalize skills
+        normalized_skills = []
+        for skill in (payload or []):
+            if not isinstance(skill, str):
+                continue
+            s = skill.strip()
+            if not s:
+                continue
+            normalized_skills.append(s[:100])
+        # Dedupe preserving order
+        seen = set()
+        deduped = []
+        for s in normalized_skills:
+            if s.lower() not in seen:
+                seen.add(s.lower())
+                deduped.append(s)
+
+        async with AsyncSessionLocal() as db:
+            await db.execute(
+                text("UPDATE candidates SET technical_skills = :skills, updated_at = NOW() WHERE id = CAST(:cid AS uuid)"),
+                {"skills": deduped, "cid": str(candidate.id)},
+            )
+            await db.commit()
+
+        logger.info(f"Updated {len(deduped)} skills for candidate {candidate_id}")
+        return {"success": True, "count": len(deduped), "message": "Skills updated successfully", "skills": deduped}
+    except HTTPException:
+        raise
+    except Exception:
+        _rid = getattr(request.state, "request_id", "unknown") if request else "unknown"
+        logger.exception(
+            "[update_candidate_skills] failed request_id=%s candidate_id=%s",
+            _rid, candidate_id,
+        )
+        raise HTTPException(status_code=500, detail="Falha ao atualizar skills do candidato.")
+
+
 @router.delete("/{candidate_id}", response_model=None)
 async def delete_candidate(
     candidate_id: str,
