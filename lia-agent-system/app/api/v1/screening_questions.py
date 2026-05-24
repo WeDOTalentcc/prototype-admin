@@ -28,6 +28,8 @@ from app.models.screening_question import (
 )
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+import uuid as _uuid_mod
+from app.shared.compliance.audit_service import AuditService  # P1-W1-08
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -159,6 +161,30 @@ company_id: str = Depends(require_company_id)):
     try:
         company_id = get_user_company_id(current_user)
         
+        # FairnessGuard — CLT Art. 373-A + LGPD: detectar viés discriminatório em perguntas eliminatórias
+        if request.is_eliminatory:
+            try:
+                from app.shared.compliance.fairness_guard import FairnessGuard as _FG
+                _guard = _FG()
+                _fg_result = _guard.check(request.question_text)
+                if _fg_result.is_blocked:
+                    raise HTTPException(
+                        status_code=422,
+                        detail={
+                            "error": "fairness_violation",
+                            "message": "Pergunta eliminatória contém critério discriminatório (CLT Art. 373-A).",
+                            "category": _fg_result.category,
+                            "violations": _fg_result.blocked_terms,
+                            "suggestion": _fg_result.educational_message,
+                            "compliance": ["CLT Art. 373-A", "Lei 9.029/95", "LGPD"],
+                        },
+                    )
+            except HTTPException:
+                raise
+            except Exception as _fg_err:
+                # Non-blocking: falha do guard não impede salvamento — logar e continuar
+                logger.warning("FairnessGuard check falhou em pergunta eliminatória: %s", _fg_err)
+
         repo = CompanyScreeningQuestionRepository(db)
         max_order = await repo.get_max_order(company_id)
         
@@ -177,6 +203,10 @@ company_id: str = Depends(require_company_id)):
         })
         
         logger.info(f"Created screening question: {question.id} for company: {company_id}")
+        try:
+            await AuditService().log_action(trace_id=str(_uuid_mod.uuid4()), company_id=company_id, action_type="screening_question_created", actor=str(getattr(current_user, "id", "system")), target_id=str(question.id), target_type="screening_question", metadata={"question_type": request.question_type})  # P1-W1-08
+        except Exception as _ae:
+            logger.warning(f"Audit log failed (non-blocking): {_ae}")
         
         return ScreeningQuestionResponse(
             id=str(question.id),
@@ -222,9 +252,39 @@ company_id: str = Depends(require_company_id)):
             raise HTTPException(status_code=404, detail="Screening question not found")
         
         update_data = request.model_dump(exclude_unset=True)
+
+        # FairnessGuard — ao atualizar texto ou flag eliminatória, re-validar viés discriminatório
+        _q_text = update_data.get("question_text", question.question_text)
+        _is_elim = update_data.get("is_eliminatory", question.is_eliminatory)
+        if _is_elim and _q_text:
+            try:
+                from app.shared.compliance.fairness_guard import FairnessGuard as _FG
+                _guard = _FG()
+                _fg_result = _guard.check(_q_text)
+                if _fg_result.is_blocked:
+                    raise HTTPException(
+                        status_code=422,
+                        detail={
+                            "error": "fairness_violation",
+                            "message": "Pergunta eliminatória contém critério discriminatório (CLT Art. 373-A).",
+                            "category": _fg_result.category,
+                            "violations": _fg_result.blocked_terms,
+                            "suggestion": _fg_result.educational_message,
+                            "compliance": ["CLT Art. 373-A", "Lei 9.029/95", "LGPD"],
+                        },
+                    )
+            except HTTPException:
+                raise
+            except Exception as _fg_err:
+                logger.warning("FairnessGuard check falhou em update de pergunta eliminatória: %s", _fg_err)
+
         question = await repo.update(question, update_data)
         
         logger.info(f"Updated screening question: {question.id}")
+        try:
+            await AuditService().log_action(trace_id=str(_uuid_mod.uuid4()), company_id=company_id, action_type="screening_question_updated", actor=str(getattr(current_user, "id", "system")), target_id=question_id, target_type="screening_question")  # P1-W1-08
+        except Exception as _ae:
+            logger.warning(f"Audit log failed (non-blocking): {_ae}")
         
         return ScreeningQuestionResponse(
             id=str(question.id),
@@ -271,6 +331,10 @@ company_id: str = Depends(require_company_id)):
         await repo.delete(question)
         
         logger.info(f"Deleted screening question: {question_id}")
+        try:
+            await AuditService().log_action(trace_id=str(_uuid_mod.uuid4()), company_id=company_id, action_type="screening_question_deleted", actor=str(getattr(current_user, "id", "system")), target_id=question_id, target_type="screening_question")  # P1-W1-08
+        except Exception as _ae:
+            logger.warning(f"Audit log failed (non-blocking): {_ae}")
         
         return {"success": True, "message": "Screening question deleted"}
         

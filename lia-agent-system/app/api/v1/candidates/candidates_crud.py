@@ -425,6 +425,7 @@ company_id: str = Depends(require_company_id)):
 async def update_candidate_stage(
     candidate_id: str,
     stage_data: CandidateStageUpdate,
+    background_tasks: BackgroundTasks,
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
     vc_repo: VacancyCandidateRepository = Depends(get_vacancy_candidate_repo),
     audit_svc: AuditService = Depends(get_audit_service),
@@ -516,6 +517,39 @@ company_id: str = Depends(require_company_id)):
             f"Candidate {candidate_id} stage updated for vacancy {vacancy_candidate.vacancy_id}: "
             f"{previous_stage} -> {stage_data.stage}"
         )
+
+        # LGPD Art. 18 II — se candidato rejeitado tem consent revocation pendente, disparar erasure
+        if is_rejection:
+            try:
+                from app.domains.lgpd.services.granular_consent_service import GranularConsentService as _ConsentSvc
+                from app.domains.lgpd.services.lgpd_cleanup_service import schedule_deletion_for_candidate as _sched_del
+                _consent_svc = _ConsentSvc(candidate_repo.db)
+                # Verifica se candidato revogou consentimento de ai_screening
+                _has_revocation = not await _consent_svc.check_purpose(
+                    candidate_id=candidate_id,
+                    company_id=company_id,
+                    purpose="ai_screening",
+                )
+                if _has_revocation:
+                    # Disparar schedule_deletion imediata (retention_days=0) via BackgroundTasks
+                    background_tasks.add_task(
+                        _sched_del,
+                        candidate_repo.db,
+                        candidate_id,
+                        "consent_revocation_on_rejection",
+                        0,  # retention_days=0 → deletion imediata (LGPD Art. 18 II)
+                    )
+                    logger.info(
+                        "LGPD Art. 18 II: agendado erasure imediato ao rejeitar candidato "
+                        "com revocação de ai_screening",
+                        extra={"candidate_id": candidate_id, "company_id": company_id},
+                    )
+            except Exception as _lgpd_err:
+                # Non-blocking: rejeição prossegue mesmo se check LGPD falhar
+                logger.warning(
+                    "LGPD erasure check falhou para candidato %s na rejeição: %s",
+                    candidate_id, _lgpd_err,
+                )
 
         feedback_action = determine_feedback_action(previous_stage, stage_data.stage)
         if feedback_action != "neutral":
