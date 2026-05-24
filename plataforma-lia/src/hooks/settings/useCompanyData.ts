@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
-import {
 import { notifyChatOfSettingsUpdate } from "@/lib/api/settings-notify"
+import {
   type CompanyData,
   type Department,
   type Approver,
@@ -306,6 +306,10 @@ export function useCompanyData(): UseCompanyDataResult {
         agreeableness_score: companyData.agreeableness_score,
         stability_score: companyData.stability_score,
       });
+      notifyChatOfSettingsUpdate({
+        actionId: "update_company_culture",
+        section: "company_data",
+      });
       setSuccessMessage("Dados culturais salvos com sucesso!");
       setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err) {
@@ -354,6 +358,10 @@ export function useCompanyData(): UseCompanyDataResult {
         throw new Error("Falha ao salvar dados da empresa");
       }
 
+      notifyChatOfSettingsUpdate({
+        actionId: "update_company_data",
+        section: "company_data",
+      });
       setSuccessMessage("Dados salvos com sucesso!");
       setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err) {
@@ -501,7 +509,6 @@ export function useCompanyData(): UseCompanyDataResult {
         "/api/backend-proxy/company/culture-profile/analyze-direct",
         {
           method: "POST",
-      notifyChatOfSettingsUpdate({ actionId: "update_company", section: "company_data" })
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             website_url: normalizedWebsiteUrl,
