@@ -99,6 +99,7 @@ export function useRecruitmentScreening({
             options: q.options,
             is_eliminatory: q.is_eliminatory || false,
             expected_answer: q.expected_answer || null,
+            category: q.category || null,
           }),
         })
         if (res.ok) {
@@ -119,6 +120,36 @@ export function useRecruitmentScreening({
         })
       }
 
+      // P0-W1-07: PUT edições em perguntas existentes
+      const originalMap = new Map(originalQuestions.map(q => [q.id, q]))
+      const toUpdate = updatedQuestions.filter(q => {
+        if (isTempId(q.id)) return false
+        const orig = originalMap.get(q.id)
+        if (!orig) return false
+        return (
+          q.question !== orig.question ||
+          q.type !== orig.type ||
+          q.required !== orig.required ||
+          q.is_eliminatory !== orig.is_eliminatory ||
+          q.expected_answer !== orig.expected_answer ||
+          q.category !== orig.category
+        )
+      })
+      for (const q of toUpdate) {
+        await apiFetch(`/api/backend-proxy/company/screening-questions/${q.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            question_text: q.question,
+            question_type: q.type === 'yesno' ? 'yes_no' : q.type,
+            is_required: q.required,
+            is_eliminatory: q.is_eliminatory || false,
+            expected_answer: q.expected_answer || null,
+            category: q.category || null,
+          }),
+        })
+      }
+
       const persisted = updatedQuestions
         .filter(q => !isTempId(q.id))
         .concat(savedNew)
@@ -126,7 +157,9 @@ export function useRecruitmentScreening({
       setOriginalQuestions(persisted)
 
       onSuccess('Perguntas salvas com sucesso!')
-    } catch {
+    } catch (err) {
+      // P0-W1-07: falhar alto, nunca silenciosamente (REGRA 4 canonical)
+      console.error('[saveQuestionsToAPI] failed:', err)
       onError('Erro ao salvar perguntas. Tente novamente.')
     } finally {
       setSaving(false)
@@ -205,6 +238,8 @@ export function useRecruitmentScreening({
       options: q.options,
       is_eliminatory: q.eliminatory ?? false,
       expected_answer: q.eliminatoryAnswer?.toString(),
+      // P0-W1-09: preservar categoria do template de eligibility para serialização correta
+      category: q.category || undefined,
     }))
     setQuestions(prev => [...prev, ...newQuestions])
     setSelectedBankQuestions(new Set())

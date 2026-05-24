@@ -31,6 +31,7 @@ export interface RawScreeningQuestion {
   options?: string[]
   is_eliminatory?: boolean
   expected_answer?: string
+  category?: string
 }
 
 export interface ScreeningQuestion {
@@ -43,6 +44,8 @@ export interface ScreeningQuestion {
   options?: string[]
   is_eliminatory?: boolean
   expected_answer?: string
+  /** P0-W1-09: categoria canonical do backend */
+  category?: string
 }
 
 export interface NewQuestionForm {
@@ -98,5 +101,6 @@ export function mapRawScreeningQuestion(
     options: q.options || [],
     is_eliminatory: q.is_eliminatory ?? false,
     expected_answer: q.expected_answer || undefined,
+    category: q.category || undefined,
   }
 }

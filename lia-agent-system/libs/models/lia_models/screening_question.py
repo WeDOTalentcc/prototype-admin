@@ -16,6 +16,7 @@ class CompanyScreeningQuestion(Base):
     These questions can be imported into job vacancies.
     """
     __tablename__ = "company_screening_questions"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     company_id = Column(String(255), nullable=False, index=True)
@@ -120,6 +121,7 @@ DEFAULT_SCREENING_QUESTIONS = [
 
 
 QUESTION_CATEGORIES = {
+    # Categorias existentes (backend canonical)
     "availability": "Disponibilidade",
     "salary": "Pretensão Salarial",
     "work_model": "Modelo de Trabalho",
@@ -127,7 +129,15 @@ QUESTION_CATEGORIES = {
     "legal": "Documentação/Legal",
     "experience": "Experiência",
     "language": "Idiomas",
-    "custom": "Personalizada"
+    "custom": "Personalizada",
+    # P0-W1-10: Categorias do frontend (use-eligibility-templates.ts QuestionCategory)
+    "general": "Gerais",
+    "eligibility": "Elegibilidade e Requisitos Legais",
+    "education": "Formação e Certificações",
+    "compensation": "Remuneração e Contrato",
+    "compliance": "Compliance e Conflito de Interesses",
+    "languages": "Idiomas (múltiplos)",  # alias frontend: 'languages' (com s) vs 'language'
+    "system_default": "Perguntas Padrão do Sistema",
 }
 
 
