@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useCompanyCulture } from "@/hooks/company/use-company-culture"
 import { FALLBACK_TECH_SKILLS, FALLBACK_BEHAV_COMPETENCIES } from "./jdFallbackConstants"
 import {
   mapJDGenerateErrorMessage,
@@ -92,6 +93,9 @@ export function useJDEvaluation(props: {
   onUpdateJobDescription?: JDEvaluationPanelProps['onUpdateJobDescription']
 }) {
   const { jobTitle, responsibilities, technicalSkills, behavioralCompetencies, seniority, department, description, hasQuestions, enrichedJd, companyId, companyName, companyDescription, companyIndustry, benefits = [], interviewStages = [], onSaveJDInline, onSaveEnrichedJD, onUpdateOfficialJD, onUpdateJobDescription } = props
+
+  // Cultura & EVP --- carrega dados da empresa para enriquecer o JD gerado
+  const { culture } = useCompanyCulture()
 
   const [isExpanded, setIsExpanded] = useState(true)
   const [evaluation, setEvaluation] = useState<JDEvaluationData | null>(null)
@@ -217,7 +221,8 @@ export function useJDEvaluation(props: {
       setJdDynamicMessage('Gerando descrição com base na metodologia WSI...')
       const response = await fetch("/api/backend-proxy/jd/generate", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ job_title: jobTitle, department: department || undefined, seniority: seniority || undefined, description: editDescription || undefined, responsibilities: editResponsibilities, technical_skills: editTechSkills, behavioral_competencies: editBehavCompetencies, company_id: companyId || "", company_name: companyName || undefined, company_description: companyDescription || undefined, company_industry: companyIndustry || undefined, benefits: benefits.length > 0 ? benefits : undefined, interview_stages: interviewStages.length > 0 ? interviewStages : undefined })
+        body: JSON.stringify({ job_title: jobTitle, department: department || undefined, seniority: seniority || undefined, description: editDescription || undefined, responsibilities: editResponsibilities, technical_skills: editTechSkills, behavioral_competencies: editBehavCompetencies, company_id: companyId || "", company_name: companyName || undefined, company_description: companyDescription || undefined, company_industry: companyIndustry || undefined, benefits: benefits.length > 0 ? benefits : undefined, interview_stages: interviewStages.length > 0 ? interviewStages : undefined, // Cultura & EVP --- injetados quando disponíveis, campos opcionais no backend
+        mission: culture?.mission || undefined, vision: culture?.vision || undefined, evp_bullets: culture?.evpBullets && culture.evpBullets.length > 0 ? culture.evpBullets : undefined })
       })
       if (!response.ok) {
         // Bug B (Task #1165 canonical-fix): preserva mensagem real do backend
