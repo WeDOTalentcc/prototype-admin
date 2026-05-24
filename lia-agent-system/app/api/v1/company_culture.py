@@ -56,7 +56,10 @@ from app.schemas.company_culture import (
     CultureAnalysisResult,
 )
 from app.shared.services.culture_analyzer_service import culture_analyzer_service
-from app.shared.security.require_company_id import require_company_id
+from app.shared.security.require_company_id import (
+    require_company_id,
+    require_company_id_strict_match,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -510,18 +513,19 @@ async def update_culture_profile(
     data: CompanyCultureProfileUpdate,
     repo: CompanyCultureRepository = Depends(get_company_culture_repo),
     current_user: User = Depends(get_current_user_or_demo),
-_company_gate: str = Depends(require_company_id)):
+    _company_gate: str = Depends(require_company_id_strict_match("path.company_id")),
+):
     """
-    Phase H — multi-tenancy: company_id from URL MUST match JWT (404 on mismatch).
-    
-    Update culture profile with recruiter adjustments.
-    Changes the source to 'manual' to indicate human modifications.
+    Phase H — multi-tenancy: company_id from URL MUST match JWT.
+
+    Uses canonical ``require_company_id_strict_match`` gate which accepts
+    both ``client_account.id`` (JWT canonical) and ``company_profiles.id``
+    (HR domain) as long as the FK relationship exists. Cross-tenant access
+    is rejected at the gate (403). Per ADR multi-tenancy (CLAUDE.md REGRA #0).
+
+    Update culture profile with recruiter adjustments. Changes the source
+    to 'manual' to indicate human modifications.
     """
-    jwt_company_id = get_user_company_id(current_user)
-    if not jwt_company_id:
-        raise HTTPException(status_code=403, detail="company_id missing from token")
-    if str(company_id) != str(jwt_company_id):
-        raise HTTPException(status_code=404, detail="Company not found")
     try:
         update_data = data.model_dump(exclude_unset=True)
 

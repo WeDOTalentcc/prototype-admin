@@ -222,6 +222,48 @@ def require_company_id_strict_match(
             ) from exc
 
         if parsed != jwt_company:
+            # Architectural drift tolerance 2026-05-24: the platform has TWO
+            # tenancy entities — ``client_accounts`` (billing/auth, what JWT
+            # carries) and ``company_profiles`` (HR/recruiting child). Many
+            # endpoints receive the company_profile.id in the payload while
+            # the JWT carries the parent client_account.id. Strict literal
+            # comparison would reject every such request as cross-tenant.
+            #
+            # Safe fuzzy match: if ``parsed`` is a company_profiles row whose
+            # ``client_account_id == jwt_company``, the payload references the
+            # same logical tenant — accept. Otherwise reject as before.
+            try:
+                from app.core.database import get_db
+                from app.domains.company.repositories.company_profile_repository import (
+                    CompanyProfileRepository,
+                )
+
+                async for db in get_db():
+                    repo = CompanyProfileRepository(db)
+                    if await repo.belongs_to_client_account(parsed, jwt_company):
+                        logger.info(
+                            "[require_company_id_strict_match] resolved "
+                            "company_profile_id=%s to client_account_id=%s "
+                            "(endpoint=%s) — payload uses company_profile.id "
+                            "while JWT carries parent client_account.id; "
+                            "auto-resolved via FK lookup.",
+                            parsed,
+                            jwt_company,
+                            endpoint,
+                        )
+                        _emit(endpoint, "ok")
+                        return jwt_company
+                    break
+            except Exception as resolve_err:  # pragma: no cover
+                logger.warning(
+                    "[require_company_id_strict_match] FK lookup failed "
+                    "jwt=%s payload=%s endpoint=%s err=%s",
+                    jwt_company,
+                    parsed,
+                    endpoint,
+                    resolve_err,
+                )
+
             _emit(endpoint, "mismatch")
             logger.warning(
                 "[require_company_id_strict_match] CROSS-TENANT ATTEMPT "

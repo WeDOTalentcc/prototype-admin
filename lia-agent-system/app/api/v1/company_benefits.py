@@ -223,6 +223,16 @@ def _to_response(b, history=None) -> CompanyBenefitResponse:
     subs = getattr(b, "subsidiaries", None)
     if subs and not isinstance(subs, list):
         subs = None
+    # Schema drift tolerance 2026-05-24: coluna `departments` foi alterada
+    # de Text para jsonb em algum momento (seeders gravaram {} dict), mas o
+    # response schema mantem str | None. Sem este normalize, GET /benefits/
+    # devolve HTTP 500 em todo tenant que tem benefits seedados.
+    # Migration canonical p/ normalizar a coluna fica como debito.
+    deps_raw = getattr(b, "departments", None)
+    if isinstance(deps_raw, (dict, list)):
+        deps_resp = json.dumps(deps_raw) if deps_raw else None
+    else:
+        deps_resp = deps_raw
     return CompanyBenefitResponse(
         id=str(b.id),
         company_id=b.company_id,
@@ -237,7 +247,7 @@ def _to_response(b, history=None) -> CompanyBenefitResponse:
         applicable_to=getattr(b, "applicable_to", None),
         seniority_levels=getattr(b, "seniority_levels", None),
         contract_types=getattr(b, "contract_types", None),
-        departments=getattr(b, "departments", None),
+        departments=deps_resp,
         is_active=b.is_active,
         is_highlighted=b.is_highlighted,
         order=b.order,

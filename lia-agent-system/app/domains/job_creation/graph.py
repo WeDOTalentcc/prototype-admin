@@ -5068,9 +5068,22 @@ def get_job_creation_graph() -> JobCreationGraph:
     return JobCreationGraph()
 
 
-# Module-level singleton alias used by graph_runner and tests via monkeypatch.
-# Tests call: monkeypatch.setattr(jc_graph, "job_creation_graph", stub, raising=True)
-job_creation_graph: JobCreationGraph = get_job_creation_graph()
+# 2026-05-24 fix Bug Checkpointer: módulo costumava ter eager init
+# `job_creation_graph: JobCreationGraph = get_job_creation_graph()` que
+# chamava `__new__` → `get_checkpointer()` ANTES do FastAPI lifespan rodar
+# `initialize_checkpointer_async()`. Em dev caía em MemorySaver fallback,
+# mas em APP_ENV=production levantava RuntimeError fatal.
+#
+# Fix canonical: lazy access via `__getattr__` module-level. Acessos
+# `from graph import job_creation_graph` ou `graph_module.job_creation_graph`
+# continuam funcionando — só são resolvidos no primeiro uso (sempre depois
+# do lifespan). Tests com `monkeypatch.setattr(..., "job_creation_graph", ...)`
+# também funcionam porque monkeypatch escreve em __dict__ que faz shadow
+# do __getattr__, e raising=True passa porque hasattr(__getattr__)→True.
+def __getattr__(name: str):
+    if name == "job_creation_graph":
+        return get_job_creation_graph()
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 
 def get_intake_extractor():

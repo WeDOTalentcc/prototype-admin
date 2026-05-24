@@ -30,6 +30,32 @@ class CompanyProfileRepository:
         )
         return result.scalars().first()
 
+    async def belongs_to_client_account(
+        self, profile_id: UUID | str, client_account_id: str
+    ) -> bool:
+        """
+        Verify that ``profile_id`` is a company_profiles row whose
+        ``client_account_id`` matches ``client_account_id``.
+
+        Used by ``require_company_id_strict_match`` to allow fuzzy match
+        when the payload carries a ``company_profile.id`` while the JWT
+        carries the parent ``client_account.id``. Safe: does NOT permit
+        any cross-tenant access — verifies the FK relationship exists.
+
+        Returns True iff one row exists with both columns matching.
+        """
+        try:
+            pid = UUID(str(profile_id))
+        except (ValueError, TypeError):
+            return False
+        result = await self.db.execute(
+            select(CompanyProfile.id).where(
+                CompanyProfile.id == pid,
+                CompanyProfile.client_account_id == client_account_id,
+            )
+        )
+        return result.scalar_one_or_none() is not None
+
     async def get_default(self) -> CompanyProfile | None:
         result = await self.db.execute(
             select(CompanyProfile)
