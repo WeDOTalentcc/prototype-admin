@@ -383,3 +383,18 @@ tier6_invocations_total = _make_counter(
     "Count of Tier 6 (AutonomousReActAgent) gate evaluations in CascadedRouter.",
     ("company_id_hash", "flag_state"),
 )
+
+
+# Sprint 12.3-A (2026-05-24): Phase 2 V1 fallback canary observability.
+# Tracks invocations of legacy Orchestrator.process_request (Phase 2 V1 fallback).
+# Goal: drive count to near-zero post Sprint 12 refactor (Phase 1.5 absorption).
+# Flag state semantics:
+#   - "enabled" = LIA_PHASE_2_V1_ENABLED=true (or unset = default-on backward compat)
+#   - "disabled" = LIA_PHASE_2_V1_ENABLED=false (kill-switch, returns canonical fail-loud)
+# Spike em flag_state=disabled = users hitting kill-switch (Sprint 12 cutover signal).
+# Spike em flag_state=enabled with high latency = V1 still hot path (refactor pending).
+phase_2_v1_invocations_total = _make_counter(
+    "phase_2_v1_invocations_total",
+    "Count of Phase 2 V1 fallback (legacy Orchestrator.process_request) invocations.",
+    ("company_id_hash", "flag_state"),
+)

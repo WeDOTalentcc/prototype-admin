@@ -778,8 +778,52 @@ class MainOrchestrator:
                 except Exception as exc:
                     logger.debug("[LIA-A04] Agentic loop skipped: %s", exc)
 
-            # ── Phase 2: Orchestrator completo ─────────────────────────────
-            _phase2_response = await self._process_via_orchestrator(ctx, conv_id, db, streaming_callback, conv=conv)
+            # ── Phase 2: Orchestrator completo (V1 fallback) ────────────────
+            # Sprint 12.3-A (2026-05-24): kill-switch + canary observability.
+            # Default behavior preserved (enabled=True when env unset).
+            # See: PHASE_2_V1_ARCHITECTURE_AUDIT.md, canary_metrics.phase_2_v1_invocations_total.
+            _phase2_enabled = _is_phase_2_v1_enabled()
+            try:
+                import hashlib as _hashlib
+                from app.shared.observability.canary_metrics import phase_2_v1_invocations_total
+                if phase_2_v1_invocations_total is not None:
+                    _cid_hash = _hashlib.sha256(
+                        (str(ctx.company_id) if ctx.company_id else "anon").encode()
+                    ).hexdigest()[:12]
+                    phase_2_v1_invocations_total.labels(
+                        company_id_hash=_cid_hash,
+                        flag_state="enabled" if _phase2_enabled else "disabled",
+                    ).inc()
+            except Exception as _canary_exc:
+                logger.debug("[MainOrchestrator] Phase 2 V1 canary increment failed: %s", _canary_exc)
+
+            if not _phase2_enabled:
+                # Sprint 12 cutover kill-switch active: return canonical fail-loud
+                # response (Sprint 9 timeout pattern). LIA_PHASE_2_V1_ENABLED=false
+                # gates the legacy Orchestrator.process_request — refactor pending.
+                logger.warning(
+                    "[MainOrchestrator] Phase 2 V1 fallback DISABLED via LIA_PHASE_2_V1_ENABLED — "
+                    "returning canonical fail-loud (user=%s company=%s).",
+                    ctx.user_id, ctx.company_id,
+                )
+                _phase2_response = ChatResponse(
+                    success=False,
+                    content=(
+                        "Estou processando sua solicitação. "
+                        "Pode tentar novamente em alguns segundos? "
+                        "Se persistir, reformule a pergunta com mais detalhes."
+                    ),
+                    agent_used="phase_2_v1_disabled",
+                    confidence=0.0,
+                    intent_detected="fallback_disabled",
+                    conversation_id=conv_id,
+                    error_code="PHASE_2_V1_DISABLED",
+                    error_category="kill_switch",
+                )
+            else:
+                _phase2_response = await self._process_via_orchestrator(
+                    ctx, conv_id, db, streaming_callback, conv=conv
+                )
             if _soft_warnings and not _phase2_response.fairness_warnings:
                 _phase2_response.fairness_warnings = _soft_warnings
 
@@ -2017,3 +2061,32 @@ def _is_fallback_react_enabled() -> bool:
 
     val = os.getenv("LIA_V2_USE_FALLBACK_REACT", "").lower().strip()
     return val in {"1", "true", "yes", "on"}
+
+
+# ---------------------------------------------------------------------------
+# Sprint 12.3-A — _is_phase_2_v1_enabled — kill-switch for Phase 2 V1 fallback
+# ---------------------------------------------------------------------------
+
+def _is_phase_2_v1_enabled() -> bool:
+    """Sprint 12.3-A (2026-05-24): Phase 2 V1 fallback kill-switch.
+
+    Reads ``LIA_PHASE_2_V1_ENABLED`` env var. Default-ON (backward compat):
+    when env is unset, empty, or any non-falsy value, returns True so
+    existing behavior is preserved until Sprint 12.6 cutover.
+
+    Falsy values that DISABLE Phase 2 V1: ``{"0", "false", "no", "off"}``.
+
+    When disabled, MainOrchestrator returns a canonical fail-loud response
+    (REGRA 4 anti-silent-fallback) instead of invoking legacy
+    Orchestrator.process_request. Canary counter
+    ``phase_2_v1_invocations_total`` labels ``flag_state=disabled``
+    on every gated call so we can correlate UX impact in Grafana.
+
+    Returns:
+        True (default) when env unset OR set to anything not in the falsy
+        set. False ONLY when explicitly disabled via the falsy values.
+    """
+    import os
+
+    val = os.getenv("LIA_PHASE_2_V1_ENABLED", "").lower().strip()
+    return val not in {"0", "false", "no", "off"}
