@@ -19,6 +19,25 @@ ATS B2B multi-tenant com IA. Empresa: **WeDOTalent** (sempre escrito assim). Idi
 
 ---
 
+> ## 🚫 RECRUITER_AGENT_V5 — FORA DE ESCOPO (reforçado 2026-05-24)
+>
+> **Decisão Paulo 2026-05-24 (literal):** _"recruiter agent v5 nao é foco nosso. somente replit. anotar isso claude.md. esquecer recruiter agent v5"_
+>
+> **Tradução operacional:**
+> - 🚫 **NÃO citar** `recruiter_agent_v5` como destino, ground truth, ou referência em nenhuma análise, plano, ADR, PR ou commit
+> - 🚫 **NÃO auditar** arquivos em `~/Documents/Python/recruiter_agent_v5/` (mesmo que o clone exista)
+> - 🚫 **NÃO sugerir** migração de qualquer feature pro v5
+> - 🚫 **NÃO comparar** implementação Replit com v5 ("o v5 faz assim...") — irrelevante
+> - 🚫 **NÃO propor** sincronização ou bridge entre lia-agent-system e v5
+> - ✅ **Foco único:** Replit (`/home/runner/workspace/` — `lia-agent-system/` + `plataforma-lia/` + qualquer outro subdir)
+> - ✅ Se docs antigos (CLAUDE.md do monorepo GitHub, memory files antigos) mencionarem v5 como canonical: tratar como **outdated** e ignorar
+>
+> **Por quê (contexto):** v5 existe no GitHub (Anderson + equipe), mas Paulo não itera nele, não testa lá, não decide sobre ele. Citá-lo introduz ruído arquitetural e dispersa foco. O canonical do Paulo é Replit, ponto.
+>
+> **Refs:** memory `feedback_no_recruiter_agent_v5.md` (reforçado 2026-05-24).
+
+---
+
 
 ## Arquitetura
 
