@@ -92,6 +92,8 @@ export const ApproverSection = React.memo(function ApproverSection({
                   email: "",
                   role: "",
                   level: approvers.length + 1,
+                  departmentId: null,
+                  canApproveAboveAmount: null,
                 });
                 setShowApproverForm(true);
               }}

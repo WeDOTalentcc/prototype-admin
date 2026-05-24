@@ -274,6 +274,19 @@ export function useGoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection
           const plan = await createRes.json()
           planId = plan.id as string
           setCurrentPlanId(planId)
+          // Bug 6.C edge case: dispatch após criar plano novo
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('lia:settings-updated', {
+              detail: {
+                actionId: 'create_workforce_plan',
+                section: 'workforce',
+                field: `plan_${selectedYear}`,
+                value: plan.name,
+                source: 'ui',
+                ts: Date.now(),
+              },
+            }))
+          }
         }
       }
 

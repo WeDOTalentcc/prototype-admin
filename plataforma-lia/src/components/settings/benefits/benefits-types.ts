@@ -31,7 +31,7 @@ export interface BenefitTabRecord {
   applicable_to: string[]
   seniority_levels: string[]
   contract_types: string[]
-  departments: Record<string, unknown>
+  departments: Record<string, unknown> | string[]
 
   // Regras operacionais
   waiting_period_days: number

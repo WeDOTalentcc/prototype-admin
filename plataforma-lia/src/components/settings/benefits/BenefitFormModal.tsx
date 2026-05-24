@@ -60,6 +60,7 @@ import {
   SENIORITY_OPTIONS,
   type SubsidiaryEntry,
   type BenefitHistoryEntry,
+  type BenefitTabRecord,
 } from "./benefits-types"
 import { useDepartmentsList } from "@/hooks/settings/useDepartmentsList"
 import { useBenefitTaxonomy } from "@/hooks/settings/useBenefitTaxonomy"
@@ -68,35 +69,9 @@ import { useBenefitTaxonomy } from "@/hooks/settings/useBenefitTaxonomy"
 // Types
 // ---------------------------------------------------------------------------
 
-interface Benefit {
-  id?: string
-  name: string
-  description: string
-  category: string
-  icon?: string
-  value_type: string
-  value?: number
-  percentage_value?: number
-  value_details?: string
-  applicable_to: string[]
-  seniority_levels: string[]
-  contract_types: string[]
-  departments: Record<string, unknown> | string[] | null
-  waiting_period_days: number
-  is_mandatory: boolean
-  is_active: boolean
-  is_highlighted: boolean
-  is_discount: boolean
-  order: number
-  provider?: string
-  provider_contact?: string
-  subsidiaries?: SubsidiaryEntry[]
-  valid_from?: string | null
-  valid_until?: string | null
-  review_frequency_months?: number | null
-  next_review_date?: string | null
-  provider_cnpj?: string | null
-}
+// Canonical: alias para BenefitTabRecord — pattern matches BenefitItemCard.tsx:23.
+// Removed local interface duplication (TS2322 fix: BenefitsTab.tsx:165/167).
+type Benefit = BenefitTabRecord
 
 interface BenefitFormModalProps {
   context?: "settings" | "job"
