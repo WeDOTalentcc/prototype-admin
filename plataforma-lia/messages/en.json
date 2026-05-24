@@ -465,12 +465,6 @@
       }
     },
     "greeting": "How can I help today?",
-    "greetingFull": "How can I help you today?",
-    "greetingMorning": "Good morning",
-    "greetingAfternoon": "Good afternoon",
-    "greetingEvening": "Good evening",
-    "iAmLia": "I'm LIA.",
-    "helpHint": "Type /help to see all features",
     "emptyState": {
       "settings": {
         "heading": "Set up your company",
@@ -654,34 +648,6 @@
         "command": "Manage email templates"
       }
     },
-    "smartSuggestions": {
-      "createJob": "Create new job",
-      "enrichJD": "Enrich JD",
-      "generateWSI": "Generate WSI questions",
-      "searchCandidates": "Search candidates",
-      "talentPool": "Talent pool",
-      "autoSourcing": "Auto sourcing",
-      "weeklyReport": "Weekly report",
-      "funnelHealth": "Funnel Health",
-      "jobAnalytics": "Job analytics",
-      "candidateFeedback": "Candidate feedback",
-      "scheduleInterview": "Schedule interview",
-      "whatCanIDo": "What can I do?"
-    },
-    "smartPrompts": {
-      "createJob": "Create a Senior Product Manager position",
-      "enrichJD": "I have a JD that needs improvement",
-      "generateWSI": "Generate screening questions for the job",
-      "searchCandidates": "Search senior Python developers in Sao Paulo",
-      "talentPool": "Show active talent pools",
-      "autoSourcing": "Start automatic sourcing for open positions",
-      "weeklyReport": "Generate weekly recruitment report",
-      "funnelHealth": "How is the pipeline health?",
-      "jobAnalytics": "Analytics for open positions",
-      "candidateFeedback": "Send feedback to rejected candidates",
-      "scheduleInterview": "Schedule technical interview",
-      "whatCanIDo": "/help"
-    },
     "header": {
       "newConversation": "New conversation",
       "connected": "Connected",
@@ -801,8 +767,7 @@
     "bubble": {
       "openLia": "Open LIA ({shortcut}) — click to open, drag to move",
       "openLiaLabel": "Open chat with LIA. Click to open, drag to move, use arrow keys to reposition."
-    },
-    "helpResponse": "**What LIA can do:**\n\n**Create jobs**\n- Create jobs with automatic JD enrichment\n- Generate WSI screening questions (CBI/Bloom/Dreyfus)\n- Configure eligibility and publish\n\n**Find candidates**\n- Automatic sourcing (local/global/hybrid)\n- Search by skills, experience, location\n- Talent pools and lists\n\n**Analyze**\n- Pipeline health and bottlenecks\n- Job analytics (funnel, speed, quality)\n- Weekly/monthly reports\n\n**Communicate**\n- Schedule interviews (direct or self-scheduling)\n- Send feedback (approval/rejection)\n- Email and WhatsApp\n\n**Shortcuts**\n- @name — mention candidate or job\n- /criar vaga (or /nova vaga, /job) — start wizard\n- /buscar (or /talent) — search candidates\n- /pipeline — view pipeline\n- /relatorio (or /relatório) — generate report\n- /feedback @name — send feedback\n- /agendar @name — schedule interview\n- Drag PDF — auto-detects CV or JD"
+    }
   },
   "jobs": {
     "campaignBadge": {

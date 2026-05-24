@@ -465,12 +465,6 @@
       }
     },
     "greeting": "Como posso ajudar hoje?",
-    "greetingFull": "Como posso ajudar você hoje?",
-    "greetingMorning": "Bom dia",
-    "greetingAfternoon": "Boa tarde",
-    "greetingEvening": "Boa noite",
-    "iAmLia": "Sou a LIA.",
-    "helpHint": "Digite /ajuda para ver todas as funcionalidades",
     "emptyState": {
       "settings": {
         "heading": "Configure sua empresa",
@@ -654,34 +648,6 @@
         "command": "Gerenciar templates de email"
       }
     },
-    "smartSuggestions": {
-      "createJob": "Criar nova vaga",
-      "enrichJD": "Enriquecer JD",
-      "generateWSI": "Gerar perguntas WSI",
-      "searchCandidates": "Buscar candidatos",
-      "talentPool": "Banco de talentos",
-      "autoSourcing": "Sourcing automático",
-      "weeklyReport": "Relatório semanal",
-      "funnelHealth": "Saúde do Funil",
-      "jobAnalytics": "Analytics de vagas",
-      "candidateFeedback": "Feedback candidatos",
-      "scheduleInterview": "Agendar entrevista",
-      "whatCanIDo": "O que posso fazer?"
-    },
-    "smartPrompts": {
-      "createJob": "Criar uma vaga de Product Manager Senior",
-      "enrichJD": "Tenho um JD que precisa ser melhorado",
-      "generateWSI": "Gerar perguntas de triagem para a vaga",
-      "searchCandidates": "Buscar desenvolvedores Python senior em Sao Paulo",
-      "talentPool": "Mostrar talent pools ativos",
-      "autoSourcing": "Iniciar sourcing automatico para vagas abertas",
-      "weeklyReport": "Gerar relatorio semanal de recrutamento",
-      "funnelHealth": "Como esta a saude do funil?",
-      "jobAnalytics": "Analytics das vagas abertas",
-      "candidateFeedback": "Enviar feedback para candidatos rejeitados",
-      "scheduleInterview": "Agendar entrevista tecnica",
-      "whatCanIDo": "/ajuda"
-    },
     "header": {
       "newConversation": "Nova conversa",
       "connected": "Conectado",
@@ -801,8 +767,7 @@
     "bubble": {
       "openLia": "Abrir LIA ({shortcut}) — clique para abrir, arraste para mover",
       "openLiaLabel": "Abrir chat com a LIA. Clique para abrir, arraste para mover, use as setas para reposicionar."
-    },
-    "helpResponse": "**O que a LIA pode fazer:**\n\n**Criar vagas**\n- Criar vaga com enriquecimento automático do JD\n- Gerar perguntas de triagem WSI (CBI/Bloom/Dreyfus)\n- Configurar elegibilidade e publicar\n\n**Buscar candidatos**\n- Sourcing automático (local/global/híbrido)\n- Busca por skills, experiência, localização\n- Talent pools e listas\n\n**Analisar**\n- Pipeline health e gargalos\n- Analytics por vaga (funil, velocidade, qualidade)\n- Relatórios semanais/mensais\n\n**Comunicar**\n- Agendar entrevistas (direto ou self-scheduling)\n- Enviar feedback (aprovação/rejeição)\n- Email e WhatsApp\n\n**Atalhos**\n- @nome — mencionar candidato ou vaga\n- /criar vaga (ou /nova vaga, /job) — iniciar wizard\n- /buscar (ou /talent) — buscar candidatos\n- /pipeline — ver pipeline\n- /relatório (ou /relatorio) — gerar relatório\n- /feedback @nome — enviar feedback\n- /agendar @nome — agendar entrevista\n- Arrastar PDF — auto-detecta CV ou JD"
+    }
   },
   "jobs": {
     "campaignBadge": {
