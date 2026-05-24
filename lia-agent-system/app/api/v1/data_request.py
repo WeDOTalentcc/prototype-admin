@@ -1,12 +1,16 @@
 """
-Data Request API Endpoints
+Data Request API — LGPD Art. 18 compliance.
 
 API for managing data requests to candidates, including:
 - Creating and managing data requests
 - Templates and fields management
 - Company configuration
 
-Part of LIA Data Collection System
+Part of LIA Data Collection System.
+
+Onda 4.2d-P0-4 (2026-05-23): removido `_get_company_id()` placeholder UUID
+hardcoded — toda DSR LGPD era misturada num tenant ficticio. Handlers agora
+usam company_id JWT canonical via require_company_id.
 """
 import logging
 from datetime import datetime
@@ -311,7 +315,7 @@ company_id: str = Depends(require_company_id)):
     - status: Filter by request status (pending, partially_filled, completed, expired, cancelled)
     """
     try:
-        company_id = _get_company_id()
+        # Onda 4.2d-P0-4 (2026-05-23): override removido (era placeholder UUID hardcoded) — usar company_id JWT injetado
         
         status_enum = None
         if status:
@@ -359,7 +363,7 @@ company_id: str = Depends(require_company_id)):
     Optionally sends notification via email and/or WhatsApp.
     """
     try:
-        company_id = _get_company_id()
+        # Onda 4.2d-P0-4 (2026-05-23): override removido (era placeholder UUID hardcoded) — usar company_id JWT injetado
         
         try:
             trigger_type = TriggerType(request.trigger_type)
@@ -412,7 +416,7 @@ company_id: str = Depends(require_company_id)):
     including branding, notification settings, and OTP configuration.
     """
     try:
-        company_id = _get_company_id()
+        # Onda 4.2d-P0-4 (2026-05-23): override removido (era placeholder UUID hardcoded) — usar company_id JWT injetado
         config = await data_request_service.get_or_create_config(db, company_id)
         return config
     except HTTPException:
@@ -439,7 +443,7 @@ company_id: str = Depends(require_company_id)):
     - Legal links (privacy policy, terms)
     """
     try:
-        company_id = _get_company_id()
+        # Onda 4.2d-P0-4 (2026-05-23): override removido (era placeholder UUID hardcoded) — usar company_id JWT injetado
         updates = request.model_dump(exclude_unset=True)
         config = await data_request_service.update_config(db, company_id, updates)
         return config
@@ -465,7 +469,7 @@ company_id: str = Depends(require_company_id)):
     - lgpd: LGPD compliance settings (consent, retention, data deletion)
     """
     try:
-        company_id = _get_company_id()
+        # Onda 4.2d-P0-4 (2026-05-23): override removido (era placeholder UUID hardcoded) — usar company_id JWT injetado
         
         updates = {
             "collection_mode": request.collection_mode,
@@ -508,7 +512,7 @@ company_id: str = Depends(require_company_id)):
     Get current collection settings including LGPD and WhatsApp configuration.
     """
     try:
-        company_id = _get_company_id()
+        # Onda 4.2d-P0-4 (2026-05-23): override removido (era placeholder UUID hardcoded) — usar company_id JWT injetado
         config = await data_request_service.get_or_create_config(db, company_id)
         
         return CollectionSettingsResponse(
@@ -542,7 +546,7 @@ company_id: str = Depends(require_company_id)):
     and can be associated with specific recruitment stages.
     """
     try:
-        company_id = _get_company_id()
+        # Onda 4.2d-P0-4 (2026-05-23): override removido (era placeholder UUID hardcoded) — usar company_id JWT injetado
         templates = await data_request_service.list_templates(
             db, company_id, active_only=not include_inactive
         )
@@ -588,7 +592,7 @@ company_id: str = Depends(require_company_id)):
     - Expiration settings
     """
     try:
-        company_id = _get_company_id()
+        # Onda 4.2d-P0-4 (2026-05-23): override removido (era placeholder UUID hardcoded) — usar company_id JWT injetado
         
         try:
             trigger_type = TriggerType(request.trigger_type)
@@ -718,7 +722,7 @@ company_id: str = Depends(require_company_id)):
     and custom fields created by the company.
     """
     try:
-        company_id = _get_company_id()
+        # Onda 4.2d-P0-4 (2026-05-23): override removido (era placeholder UUID hardcoded) — usar company_id JWT injetado
         fields = await data_request_service.list_fields(db, company_id, include_defaults)
         return [FieldResponse(**f) for f in fields]
     except HTTPException:
@@ -741,7 +745,7 @@ company_id: str = Depends(require_company_id)):
     company-specific information from candidates.
     """
     try:
-        company_id = _get_company_id()
+        # Onda 4.2d-P0-4 (2026-05-23): override removido (era placeholder UUID hardcoded) — usar company_id JWT injetado
         
         try:
             field_type = DataFieldType(request.field_type)
@@ -852,7 +856,7 @@ company_id: str = Depends(require_company_id)):
     3. Default stage-field mappings (for reference, not auto-triggered)
     """
     try:
-        company_id = _get_company_id()
+        # Onda 4.2d-P0-4 (2026-05-23): override removido (era placeholder UUID hardcoded) — usar company_id JWT injetado
         
         config = await data_request_service.get_vacancy_trigger_config(
             db=db,
@@ -922,7 +926,7 @@ company_id: str = Depends(require_company_id)):
     enters this stage, and whether it would block progression.
     """
     try:
-        company_id = _get_company_id()
+        # Onda 4.2d-P0-4 (2026-05-23): override removido (era placeholder UUID hardcoded) — usar company_id JWT injetado
         
         trigger_config = await data_request_service.get_trigger_fields_for_stage(
             db=db,
