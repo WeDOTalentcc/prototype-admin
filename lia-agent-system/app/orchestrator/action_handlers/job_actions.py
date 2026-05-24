@@ -55,7 +55,7 @@ async def _pause_job(params: dict[str, Any], context: dict[str, Any]):
             """
             bind: dict[str, Any] = {"job_id": job_id}
             if company_id:
-                sql += " AND company_id = CAST(:co AS uuid)"
+                sql += " AND company_id = :co"
                 bind["co"] = str(company_id)
             result = await db.execute(text(sql), bind)
             if result.rowcount == 0:
@@ -111,7 +111,7 @@ async def _close_job(params: dict[str, Any], context: dict[str, Any]):
             """
             bind: dict[str, Any] = {"job_id": job_id}
             if company_id:
-                sql += " AND company_id = CAST(:co AS uuid)"
+                sql += " AND company_id = :co"
                 bind["co"] = str(company_id)
             result = await db.execute(text(sql), bind)
             if result.rowcount == 0:
@@ -173,7 +173,7 @@ async def _duplicate_job(params: dict[str, Any], context: dict[str, Any]):
             """
             select_bind: dict[str, Any] = {"job_id": job_id}
             if company_id:
-                select_sql += " AND company_id = CAST(:co AS uuid)"
+                select_sql += " AND company_id = :co"
                 select_bind["co"] = str(company_id)
             original = await db.execute(text(select_sql), select_bind)
             row = original.fetchone()
@@ -262,7 +262,7 @@ async def _reopen_job(params: dict[str, Any], context: dict[str, Any]):
             """
             bind: dict[str, Any] = {"job_id": job_id}
             if company_id:
-                sql += " AND company_id = CAST(:co AS uuid)"
+                sql += " AND company_id = :co"
                 bind["co"] = str(company_id)
             result = await db.execute(text(sql), bind)
             if result.rowcount == 0:
@@ -327,7 +327,7 @@ async def _set_job_urgent(params: dict[str, Any], context: dict[str, Any]):
             """
             update_bind: dict[str, Any] = {"job_id": str(job_id)}
             if company_id:
-                update_sql += " AND company_id = CAST(:co AS uuid)"
+                update_sql += " AND company_id = :co"
                 update_bind["co"] = str(company_id)
             result = await db.execute(text(update_sql), update_bind)
             if result.rowcount == 0:

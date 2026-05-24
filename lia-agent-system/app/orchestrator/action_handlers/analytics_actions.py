@@ -56,7 +56,7 @@ async def _generate_kpi_report(params: dict[str, Any], context: dict[str, Any]):
                     COUNT(*) FILTER (WHERE status = 'Fechada') as closed_jobs,
                     COUNT(*) as total_jobs
                 FROM job_vacancies
-                WHERE company_id = CAST(:co AS uuid)
+                WHERE company_id = :co
             """), {"co": str(company_id)})
             jobs = jobs_result.fetchone()
 
@@ -71,7 +71,7 @@ async def _generate_kpi_report(params: dict[str, Any], context: dict[str, Any]):
                     COUNT(*) FILTER (WHERE stage IN ('Rejeitado', 'Reprovado')) as stage_rejected,
                     AVG(EXTRACT(EPOCH FROM (updated_at - created_at)) / 86400)::int as avg_days_in_pipeline
                 FROM vacancy_candidates
-                WHERE company_id = CAST(:co AS uuid)
+                WHERE company_id = :co
             """), {"co": str(company_id)})
             cands = cands_result.fetchone()
 
@@ -205,7 +205,7 @@ async def _job_health_check(params: dict[str, Any], context: dict[str, Any]):
             """
             job_bind: dict[str, Any] = {"jid": str(job_id)}
             if company_id:
-                job_sql += " AND company_id = CAST(:co AS uuid)"
+                job_sql += " AND company_id = :co"
                 job_bind["co"] = str(company_id)
             job_result = await db.execute(text(job_sql), job_bind)
             job = job_result.fetchone()
@@ -303,7 +303,7 @@ async def _analyze_funnel(params: dict[str, Any], context: dict[str, Any]):
                 """
                 funnel_bind: dict[str, Any] = {"jid": str(job_id)}
                 if company_id:
-                    funnel_sql += " AND company_id = CAST(:co AS uuid)"
+                    funnel_sql += " AND company_id = :co"
                     funnel_bind["co"] = str(company_id)
                 funnel_sql += " GROUP BY stage"
                 result = await db.execute(text(funnel_sql), funnel_bind)
@@ -311,7 +311,7 @@ async def _analyze_funnel(params: dict[str, Any], context: dict[str, Any]):
                 job_sql = "SELECT title FROM job_vacancies WHERE id = CAST(:jid AS uuid)"
                 jb: dict[str, Any] = {"jid": str(job_id)}
                 if company_id:
-                    job_sql += " AND company_id = CAST(:co2 AS uuid)"
+                    job_sql += " AND company_id = :co2"
                     jb["co2"] = str(company_id)
                 job_result = await db.execute(text(job_sql), jb)
                 job = job_result.fetchone()
@@ -321,7 +321,7 @@ async def _analyze_funnel(params: dict[str, Any], context: dict[str, Any]):
                     SELECT stage, COUNT(*) as cnt,
                            COUNT(*) FILTER (WHERE status = 'active') as active_cnt
                     FROM vacancy_candidates
-                    WHERE company_id = CAST(:co AS uuid)
+                    WHERE company_id = :co
                     GROUP BY stage
                 """), {"co": str(company_id)})
                 scope_label = "geral da empresa"
@@ -545,7 +545,7 @@ async def _list_candidates_by_stage(params: dict[str, Any], context: dict[str, A
                     if stage:
                         bind["stage"] = stage
                     if company_id:
-                        sql += " AND vc.company_id = CAST(:co AS uuid)"
+                        sql += " AND vc.company_id = :co"
                         bind["co"] = str(company_id)
                     sql += " ORDER BY COALESCE(vc.lia_score, vc.score, 0) DESC LIMIT 50"
 

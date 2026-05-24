@@ -73,7 +73,7 @@ async def _reschedule_interview(params: dict[str, Any], context: dict[str, Any])
                 bind = {"cid": str(candidate_id), "new_dt": new_datetime}
 
             if company_id:
-                where_clause += " AND EXISTS (SELECT 1 FROM vacancy_candidates vc WHERE vc.candidate_id = i.candidate_id AND vc.company_id = CAST(:co AS uuid))"
+                where_clause += " AND EXISTS (SELECT 1 FROM vacancy_candidates vc WHERE vc.candidate_id = i.candidate_id AND vc.company_id = :co)"
                 bind["co"] = str(company_id)
 
             result = await db.execute(text(f"""
@@ -159,7 +159,7 @@ async def _cancel_interview(params: dict[str, Any], context: dict[str, Any]):
                 bind = {"cid": str(candidate_id)}
 
             if company_id:
-                where_clause += " AND EXISTS (SELECT 1 FROM vacancy_candidates vc WHERE vc.candidate_id = i.candidate_id AND vc.company_id = CAST(:co AS uuid))"
+                where_clause += " AND EXISTS (SELECT 1 FROM vacancy_candidates vc WHERE vc.candidate_id = i.candidate_id AND vc.company_id = :co)"
                 bind["co"] = str(company_id)
 
             result = await db.execute(text(f"""
@@ -232,7 +232,7 @@ async def _send_interview_reminder(params: dict[str, Any], context: dict[str, An
             """
             bind: dict[str, Any] = {"cid": str(candidate_id)}
             if company_id:
-                sql += " AND EXISTS (SELECT 1 FROM vacancy_candidates vc WHERE vc.candidate_id = i.candidate_id AND vc.company_id = CAST(:co AS uuid))"
+                sql += " AND EXISTS (SELECT 1 FROM vacancy_candidates vc WHERE vc.candidate_id = i.candidate_id AND vc.company_id = :co)"
                 bind["co"] = str(company_id)
             sql += " ORDER BY i.start_time ASC LIMIT 1"
             result = await db.execute(text(sql), bind)
@@ -309,7 +309,7 @@ async def _list_today_interviews(params: dict[str, Any], context: dict[str, Any]
             """
             bind: dict[str, Any] = {}
             if company_id:
-                sql += " AND EXISTS (SELECT 1 FROM vacancy_candidates vc WHERE vc.candidate_id = i.candidate_id AND vc.company_id = CAST(:co AS uuid))"
+                sql += " AND EXISTS (SELECT 1 FROM vacancy_candidates vc WHERE vc.candidate_id = i.candidate_id AND vc.company_id = :co)"
                 bind["co"] = str(company_id)
             sql += " ORDER BY i.start_time ASC LIMIT 20"
             result = await db.execute(text(sql), bind)
@@ -394,7 +394,7 @@ async def _generate_self_scheduling_link(params: dict[str, Any], context: dict[s
         async with AsyncSessionLocal() as db:
             if company_id:
                 authz = await db.execute(text(
-                    "SELECT 1 FROM vacancy_candidates WHERE candidate_id = CAST(:cid AS uuid) AND company_id = CAST(:co AS uuid) LIMIT 1"
+                    "SELECT 1 FROM vacancy_candidates WHERE candidate_id = CAST(:cid AS uuid) AND company_id = :co LIMIT 1"
                 ), {"cid": str(candidate_id), "co": str(company_id)})
                 if authz.fetchone() is None:
                     return ActionResult(

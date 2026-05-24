@@ -353,7 +353,7 @@ async def _create_automation(params: dict[str, Any], context: dict[str, Any]):
             await db.execute(text("""
                 INSERT INTO automation_rules (id, company_id, trigger_type, action_type,
                     job_id, stage, conditions, created_by, is_active, created_at, updated_at)
-                VALUES (CAST(:id AS uuid), CAST(:co AS uuid), :trigger, :action,
+                VALUES (CAST(:id AS uuid), :co, :trigger, :action,
                     CAST(:jid AS uuid), :stage, :conditions::jsonb, :user_id, true, NOW(), NOW())
                 ON CONFLICT DO NOTHING
             """), {
@@ -415,7 +415,7 @@ async def _check_proactive_alerts(params: dict[str, Any], context: dict[str, Any
             stale = await db.execute(text("""
                 SELECT COUNT(*) as cnt
                 FROM vacancy_candidates vc
-                WHERE vc.company_id = CAST(:co AS uuid)
+                WHERE vc.company_id = :co
                   AND vc.status = 'active'
                   AND vc.updated_at < NOW() - INTERVAL '7 days'
             """), {"co": str(company_id)})
@@ -447,7 +447,7 @@ async def _check_proactive_alerts(params: dict[str, Any], context: dict[str, Any
             empty_jobs = await db.execute(text("""
                 SELECT COUNT(*) as cnt
                 FROM job_vacancies jv
-                WHERE jv.company_id = CAST(:co AS uuid)
+                WHERE jv.company_id = :co
                   AND jv.status = 'Ativa'
                   AND NOT EXISTS (
                     SELECT 1 FROM vacancy_candidates vc

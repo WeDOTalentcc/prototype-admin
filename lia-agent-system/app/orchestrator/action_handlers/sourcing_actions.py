@@ -59,7 +59,7 @@ async def _tag_candidates(params: dict[str, Any], context: dict[str, Any]):
             for cid in candidate_ids:
                 if company_id:
                     authz = await db.execute(text(
-                        "SELECT 1 FROM vacancy_candidates WHERE candidate_id = CAST(:cid AS uuid) AND company_id = CAST(:co AS uuid) LIMIT 1"
+                        "SELECT 1 FROM vacancy_candidates WHERE candidate_id = CAST(:cid AS uuid) AND company_id = :co LIMIT 1"
                     ), {"cid": str(cid), "co": str(company_id)})
                     if authz.fetchone() is None:
                         continue
@@ -132,7 +132,7 @@ async def _rank_candidates(params: dict[str, Any], context: dict[str, Any]):
             """
             bind: dict[str, Any] = {"job_id": str(job_id), "lim": limit}
             if company_id:
-                sql += " AND vc.company_id = CAST(:co AS uuid)"
+                sql += " AND vc.company_id = :co"
                 bind["co"] = str(company_id)
             sql += " ORDER BY COALESCE(vc.lia_score, vc.score, 0) DESC LIMIT :lim"
             result = await db.execute(text(sql), bind)
@@ -201,7 +201,7 @@ async def _compare_candidates(params: dict[str, Any], context: dict[str, Any]):
                 WHERE c.id IN ({placeholders})
             """
             if company_id:
-                sql += " AND EXISTS (SELECT 1 FROM vacancy_candidates vc WHERE vc.candidate_id = c.id AND vc.company_id = CAST(:co AS uuid))"
+                sql += " AND EXISTS (SELECT 1 FROM vacancy_candidates vc WHERE vc.candidate_id = c.id AND vc.company_id = :co)"
                 bind_params["co"] = str(company_id)
             result = await db.execute(text(sql), bind_params)
             rows = result.fetchall()
@@ -284,7 +284,7 @@ async def _search_candidates(params: dict[str, Any], context: dict[str, Any]):
             """
             bind = {"q": search_term, "raw_q": query}
             if company_id:
-                sql += " AND vc.company_id = CAST(:co AS uuid)"
+                sql += " AND vc.company_id = :co"
                 bind["co"] = str(company_id)
             sql += " ORDER BY c.name LIMIT :lim"
             bind["lim"] = limit
@@ -349,7 +349,7 @@ async def _suggest_candidates(params: dict[str, Any], context: dict[str, Any]):
             job_sql = "SELECT title, requirements, seniority_level, tags FROM job_vacancies WHERE id = CAST(:jid AS uuid)"
             job_bind: dict[str, Any] = {"jid": str(job_id)}
             if company_id:
-                job_sql += " AND company_id = CAST(:co AS uuid)"
+                job_sql += " AND company_id = :co"
                 job_bind["co"] = str(company_id)
             job_row = await db.execute(text(job_sql), job_bind)
             job = job_row.fetchone()
@@ -457,7 +457,7 @@ async def _add_candidate(params: dict[str, Any], context: dict[str, Any]):
                 vc_id = str(uuid_mod.uuid4())
                 await db.execute(text("""
                     INSERT INTO vacancy_candidates (id, vacancy_id, candidate_id, company_id, stage, status, created_at, updated_at)
-                    VALUES (CAST(:id AS uuid), CAST(:vid AS uuid), CAST(:cid AS uuid), CAST(:co AS uuid), 'Novos', 'active', NOW(), NOW())
+                    VALUES (CAST(:id AS uuid), CAST(:vid AS uuid), CAST(:cid AS uuid), :co, 'Novos', 'active', NOW(), NOW())
                 """), {"id": vc_id, "vid": str(job_id), "cid": candidate_id, "co": str(company_id)})
 
             await db.commit()
@@ -509,7 +509,7 @@ async def _export_candidates(params: dict[str, Any], context: dict[str, Any]):
                 """
                 export_bind: dict[str, Any] = {"jid": str(job_id)}
                 if company_id:
-                    export_sql += " AND vc.company_id = CAST(:co AS uuid)"
+                    export_sql += " AND vc.company_id = :co"
                     export_bind["co"] = str(company_id)
                 export_sql += " ORDER BY c.name"
                 result = await db.execute(text(export_sql), export_bind)
@@ -519,7 +519,7 @@ async def _export_candidates(params: dict[str, Any], context: dict[str, Any]):
                            vc.stage, vc.score, vc.lia_score
                     FROM vacancy_candidates vc
                     JOIN candidates c ON c.id = vc.candidate_id
-                    WHERE vc.company_id = CAST(:co AS uuid)
+                    WHERE vc.company_id = :co
                     ORDER BY c.name
                     LIMIT 100
                 """), {"co": str(company_id)})
@@ -596,7 +596,7 @@ async def _favorite_candidate(params: dict[str, Any], context: dict[str, Any]):
         async with AsyncSessionLocal() as db:
             if company_id:
                 authz = await db.execute(text(
-                    "SELECT 1 FROM vacancy_candidates WHERE candidate_id = CAST(:cid AS uuid) AND company_id = CAST(:co AS uuid) LIMIT 1"
+                    "SELECT 1 FROM vacancy_candidates WHERE candidate_id = CAST(:cid AS uuid) AND company_id = :co LIMIT 1"
                 ), {"cid": candidate_id, "co": str(company_id)})
                 if authz.fetchone() is None:
                     return ActionResult(
