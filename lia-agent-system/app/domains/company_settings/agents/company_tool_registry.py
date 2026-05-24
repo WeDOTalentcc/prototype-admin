@@ -722,7 +722,27 @@ async def _wrap_process_uploaded_document(**kwargs: Any) -> dict[str, Any]:
         anonymization_applied = check.soft_warnings
 
     extraction_hints = {
-        "handbook": ["mission", "vision", "values", "benefits", "work_model", "dei_initiatives"],
+        # P1-4 fix: handbook is a "Políticas de Recrutamento" document — extract hiring policy
+        # fields, NOT company culture fields (mission/vision/values).
+        "handbook": [
+            "min_interviews_before_offer",
+            "manager_approval_for_offer",
+            "max_days_in_stage",
+            "allowed_days",
+            "allowed_hours",
+            "default_duration_minutes",
+            "self_scheduling_enabled",
+            "auto_rejection_feedback",
+            "rejection_feedback_deadline_hours",
+            "preferred_channel",
+            "lia_tone",
+            "salary_expectation_filter",
+            "salary_tolerance_percent",
+            "experience_policy",
+            "auto_screening",
+            "auto_stage_advance",
+            "autonomy_level",
+        ],
         "org_chart": ["departments", "hierarchy", "headcount"],
         "compensation": ["seniority_levels", "salary_ranges", "benefits", "variable_compensation"],
         "tech_doc": ["tech_stack", "engineering_culture", "tools"],
