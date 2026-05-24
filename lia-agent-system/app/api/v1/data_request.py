@@ -265,10 +265,9 @@ class FieldResponse(BaseModel):
     is_default: bool = False
 
 
-# TODO(phase2): extract to repository — data subject request handling
-def _get_company_id() -> UUID:
-    """Get company ID from context. Placeholder for auth integration."""
-    return UUID("00000000-0000-0000-0000-000000000001")
+# Onda 4.2h-C1 (2026-05-24): _get_company_id() placeholder removido
+# (era hardcoded UUID 00000000-0000-0000-0000-000000000001 = cross-tenant
+# silent data corruption). Canonical = Depends(require_company_id) JWT.
 
 
 def _data_request_to_response(dr) -> DataRequestResponse:
@@ -889,8 +888,9 @@ company_id: str = Depends(require_company_id)):
     or provide custom stage_configs for vacancy-specific configuration.
     """
     try:
-        _get_company_id()
-
+        # Onda 4.2h-C1 (2026-05-24): removido _get_company_id() placeholder
+        # orphan (continuation do Onda 4.2d-P0-4). Canonical company_id já vem
+        # do JWT via Depends(require_company_id).
         repo = DataRequestRepository(db)
         await repo.upsert_vacancy_trigger_config(
             vacancy_id=vacancy_id,

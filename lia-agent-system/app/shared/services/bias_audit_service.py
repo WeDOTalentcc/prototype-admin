@@ -332,14 +332,36 @@ class BiasAuditService:
         Args:
             db: AsyncSession de banco de dados.
             job_id: UUID da vaga (job_vacancy_id).
+            company_id: UUID da company (LGPD multi-tenancy guard).
+                Onda 4.2h-C2 (2026-05-24): obrigatório para evitar cross-tenant
+                bias-audit data leak. Antes, qualquer job_id retornava bias
+                report (incluindo gênero/idade/PCD/região = sensitive PII).
+                LGPD Art. 33 + EU AI Act Art. 9-13.
 
         Returns:
-            BiasAuditReport com stats agregadas (sem PII).
+            BiasAuditReport com stats agregadas (sem PII individual).
         """
+        # Onda 4.2h-C2: tenant guard fail-closed — Candidate.company_id é scope canonical
+        if company_id is None:
+            logger.warning(
+                "get_adverse_impact_by_job called without company_id — "
+                "returning empty report (multi-tenancy fail-closed)"
+            )
+            return BiasAuditReport(
+                job_id=str(job_id),
+                evaluated_at=datetime.utcnow(),
+                total_candidates=0,
+                dimensions=[],
+                has_alerts=False,
+            )
+
         result = await db.execute(
             select(RubricEvaluation, Candidate)
             .join(Candidate, RubricEvaluation.candidate_id == Candidate.id)
-            .where(RubricEvaluation.job_vacancy_id == job_id)
+            .where(
+                RubricEvaluation.job_vacancy_id == job_id,
+                Candidate.company_id == company_id,
+            )
         )
         rows = result.all()
         records = [(row[0], row[1]) for row in rows]
