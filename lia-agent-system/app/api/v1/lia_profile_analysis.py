@@ -92,11 +92,21 @@ def format_candidate_info(data: CandidateData) -> str:
     return "\n".join(info_parts)
 
 
-def get_system_prompt(analysis_type: str) -> str:
-    """Get the system prompt based on analysis type."""
-    
-    from app.shared.prompts.system_prompt_builder import SystemPromptBuilder
-    base = SystemPromptBuilder.build(agent_type="cv_screening", extra_instructions="Gere um resumo profissional do candidato. Seja conciso, preciso e destaque os pontos fortes. NÃO inclua o nome do candidato no início - ele será adicionado separadamente.")
+async def get_system_prompt(analysis_type: str, *, company_id: str, db) -> str:
+    """Get the system prompt based on analysis type.
+
+    Now async + tenant-aware (ghost setting fix 2026-05-24): persona name+tone
+    custom da UI "Personalidade da IA" agora chega ao CV screening.
+    """
+    from app.shared.prompts.persona_aware_prompt import (
+        build_system_prompt_with_persona,
+    )
+    base = await build_system_prompt_with_persona(
+        company_id=company_id,
+        db=db,
+        agent_type="cv_screening",
+        extra_instructions="Gere um resumo profissional do candidato. Seja conciso, preciso e destaque os pontos fortes. NÃO inclua o nome do candidato no início - ele será adicionado separadamente.",
+    )
     
     if analysis_type == 'bullet_points':
         return base + """
@@ -137,7 +147,11 @@ Use hífen (-) para bullet points. Seja abrangente mas conciso."""
 
 
 @router.post("", response_model=ProfileAnalysisResponse)
-async def generate_profile_analysis(request: ProfileAnalysisRequest, company_id: str = Depends(require_company_id)):
+async def generate_profile_analysis(
+    request: ProfileAnalysisRequest,
+    db: AsyncSession = Depends(get_db),
+    company_id: str = Depends(require_company_id),
+):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Generate an AI-powered profile analysis for a candidate."""
     
@@ -161,7 +175,7 @@ async def generate_profile_analysis(request: ProfileAnalysisRequest, company_id:
         # being silently blocked with HTTP 500 "Request excede ceiling".
         analysis_text = await container.generate_with_fallback(
             f"Generate a {request.analysis_type.replace('_', ' ')} profile summary for this candidate:\n\n{candidate_info}",
-            system=get_system_prompt(request.analysis_type),
+            system=await get_system_prompt(request.analysis_type, company_id=company_id, db=db),
             agent_type="ProfileAnalysisAgent",
         )
         analysis_text = analysis_text.strip()

@@ -535,9 +535,13 @@ company_id: str = Depends(require_company_id)) -> GenerateQuestionsResponse:
                     missing_list = previous_opinion.missing_skills if isinstance(previous_opinion.missing_skills, list) else []
                     screening_context += f"\n### Skills faltantes (VALIDAR NA ENTREVISTA):\n{', '.join(missing_list[:5])}\n"
         
-        # Build the complete prompt with REAL data
-        from app.shared.prompts.system_prompt_builder import SystemPromptBuilder
-        _persona = SystemPromptBuilder.build(
+        # Build the complete prompt with REAL data (canonical helper)
+        from app.shared.prompts.persona_aware_prompt import (
+            build_system_prompt_with_persona,
+        )
+        _persona = await build_system_prompt_with_persona(
+            company_id=company_id,
+            db=db,
             agent_type="orchestrator",
             extra_instructions="Você está gerando perguntas de entrevista PERSONALIZADAS. Seja analítica e precisa.",
         )
@@ -944,7 +948,8 @@ company_id: str = Depends(require_company_id)) -> WSIScore:
 @router.post("/generate-parecer", response_model=GenerateParecerResponse)
 async def generate_interview_parecer(
     request: GenerateParecerRequest,
-    current_user: User = Depends(get_current_active_user), 
+    current_user: User = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_db),
 company_id: str = Depends(require_company_id)) -> GenerateParecerResponse:
     """
     Generate interview parecer (evaluation report) based on answers.
@@ -968,8 +973,12 @@ company_id: str = Depends(require_company_id)) -> GenerateParecerResponse:
             for q in request.questions
         ])
         
-        from app.shared.prompts.system_prompt_builder import SystemPromptBuilder
-        _persona = SystemPromptBuilder.build(
+        from app.shared.prompts.persona_aware_prompt import (
+            build_system_prompt_with_persona,
+        )
+        _persona = await build_system_prompt_with_persona(
+            company_id=company_id,
+            db=db,
             agent_type="orchestrator",
             extra_instructions="Você está gerando um parecer profissional de entrevista. Seja analítica, objetiva e fundamentada.",
         )

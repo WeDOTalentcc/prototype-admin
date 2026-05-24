@@ -289,7 +289,11 @@ class EnhancePromptResponse(BaseModel):
 
 
 @router.post("/enhance-prompt", response_model=EnhancePromptResponse)
-async def enhance_search_prompt(request: EnhancePromptRequest, company_id: str = Depends(require_company_id)):
+async def enhance_search_prompt(
+    request: EnhancePromptRequest,
+    db: AsyncSession = Depends(get_db),
+    company_id: str = Depends(require_company_id),
+):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Analisa e aprimora um prompt de busca de candidatos.
@@ -307,8 +311,15 @@ async def enhance_search_prompt(request: EnhancePromptRequest, company_id: str =
     from app.domains.ai.services.llm import llm_service
     
     try:
-        from app.shared.prompts.system_prompt_builder import SystemPromptBuilder
-        _persona = SystemPromptBuilder.build(agent_type="sourcing", extra_instructions="Otimize a busca de candidatos com critérios completos.")
+        from app.shared.prompts.persona_aware_prompt import (
+            build_system_prompt_with_persona,
+        )
+        _persona = await build_system_prompt_with_persona(
+            company_id=company_id,
+            db=db,
+            agent_type="sourcing",
+            extra_instructions="Otimize a busca de candidatos com critérios completos.",
+        )
         prompt = f"""{_persona}
 
 Otimize a busca de candidatos para recrutamento.

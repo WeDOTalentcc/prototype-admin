@@ -784,10 +784,28 @@ async def handle_time_to_fill_question(
     return "\n".join(response_parts)
 
 
-async def handle_process_question(user_input: str, llm_svc: LLMService) -> str:
-    """Handle process/methodology questions using LLM."""
-    from app.shared.prompts.system_prompt_builder import SystemPromptBuilder
-    _persona = SystemPromptBuilder.build(agent_type="job_planner", context_page="wizard", extra_instructions="Responda perguntas sobre processo de recrutamento.")
+async def handle_process_question(
+    user_input: str,
+    llm_svc: LLMService,
+    *,
+    company_id: str,
+    db,
+) -> str:
+    """Handle process/methodology questions using LLM.
+
+    company_id/db added 2026-05-24 (ghost setting fix) — required to inject
+    per-tenant ai_persona via canonical helper.
+    """
+    from app.shared.prompts.persona_aware_prompt import (
+        build_system_prompt_with_persona,
+    )
+    _persona = await build_system_prompt_with_persona(
+        company_id=company_id,
+        db=db,
+        agent_type="job_planner",
+        context_page="wizard",
+        extra_instructions="Responda perguntas sobre processo de recrutamento.",
+    )
     prompt = f"""{_persona}
 O usuário está no wizard de criação de vaga e tem uma pergunta sobre processo.
 

@@ -873,3 +873,109 @@ modificar `scripts/safe_commit.sh`.
 - `tests/contract/test_safe_commit_guard.sh` — testes
 - `~/.claude/CLAUDE.md` "REGRA ZERO" — nao push, nao remoto
 - Section anterior "Replit canonical produção" — workflow geral
+
+## Per-tenant AI persona canonical wiring (registrado 2026-05-24)
+
+> **Princípio:** todo caller de produção que constrói system prompt da LIA com
+> dados do tenant DEVE usar `build_system_prompt_with_persona()` em vez de
+> `SystemPromptBuilder.build()` direto. Helper canonical em
+> `app/shared/prompts/persona_aware_prompt.py`.
+
+### Razão
+
+Auditoria 2026-05-24 da UI "Personalidade da IA" (Minha Empresa) detectou
+ghost setting: backend canonical pronto (endpoint REST + schema `extra='forbid'`
++ FairnessGuard + audit log via `log_decision` + validator com 67+ sensores),
+MAS o kwarg `ai_persona=` de `SystemPromptBuilder.build` só era passado por
+2 callers em produção (Agent Studio + voice). Os 7 callers principais
+chamavam `build()` direto sem o kwarg, e a customização (nome "LIA → Sofia",
+tom amigável, etc.) não chegava ao prompt:
+
+- `app/api/v1/chat.py:781` (chat lateral SSE — o principal)
+- `app/api/v1/lia_assistant/conversational.py:49`
+- `app/api/v1/lia_assistant/insights.py` (3 sites: 258, 268, 431)
+- `app/api/v1/lia_assistant/_shared.py:790` (`handle_process_question`)
+- `app/api/v1/interview_notes.py` (2 sites: 540, 972)
+- `app/api/v1/lia_profile_analysis.py:99`
+- `app/api/v1/candidate_search/misc_search.py:311`
+
+Cliente trocava nome "LIA → Sofia", confirmava no preview ao vivo, salvava
+(200 OK + audit log gravado), abria o chat lateral — IA continuava se
+apresentando como "LIA" e mantendo o tom default. Quebra implícita do
+contrato de UI = perda de confiança.
+
+### Pattern canonical
+
+```python
+from app.shared.prompts.persona_aware_prompt import (
+    build_system_prompt_with_persona,
+)
+
+system_prompt = await build_system_prompt_with_persona(
+    company_id=company_id,         # do JWT, NUNCA do payload
+    db=db,                          # AsyncSession ativa (geralmente Depends(get_db))
+    agent_type="orchestrator",      # ou "cv_screening", "sourcing", "job_planner", etc.
+    extra_instructions=...,
+    # demais kwargs do SystemPromptBuilder.build (tenant_context_snippet,
+    # user_name, user_role, conversation_history, context_page, etc.)
+)
+```
+
+O helper:
+1. Carrega persona via `get_ai_persona(company_id, db)` do canonical service.
+2. Passa como kwarg `ai_persona=` ao `SystemPromptBuilder.build`.
+3. Em caso de erro de load, LOGA com `exc_info=True` (REGRA 4 anti-silent-fallback)
+   e prossegue com `ai_persona=None` (default — sem override). Falha aqui
+   NUNCA bloqueia o chat/screening/sourcing.
+4. `ValueError` fail-closed quando `company_id` vazio (multi-tenancy).
+
+### Sensor canonical
+
+`scripts/check_persona_aware_prompt_usage.py` — AST checker. Lista
+`CANONICAL_CALLERS` (7 arquivos) — cada uma DEVE só chamar `SystemPromptBuilder.build`
+com `ai_persona=` no kwarg, OU usar o helper canonical. `EXEMPT_CALLERS`
+documenta as 2 exceções pattern-próprio (Agent Studio `custom_agent_runtime.py`,
+voice `voice_system_prompt.py`). Baseline 2026-05-24: **0 violations** em 7
+callers canonical.
+
+Rodar: `python scripts/check_persona_aware_prompt_usage.py` (exit 0/1).
+Adicionar a `pre-commit` + CI workflow `backend-ci.yml` em sprint próxima.
+
+### Tests canonical
+
+`tests/contract/test_persona_aware_prompt.py` — 4 contract tests:
+1. Helper carrega persona e passa ao builder
+2. Falha do load não bloqueia (`ai_persona=None`, build continua)
+3. Kwargs propagados intactos
+4. `company_id` vazio = `ValueError`
+
+Baseline 2026-05-24: 4/4 verde.
+
+### Exemptions documentadas
+
+- `app/domains/agents/services/custom_agent_runtime.py` (Agent Studio): já
+  passa `ai_persona=` em 3 sites via load próprio. Pattern canonical
+  pre-helper, mantido por contexto de runtime de agente customizado.
+- `app/shared/prompts/voice_system_prompt.py` (voz): pattern próprio de
+  persona injection para streaming TTS (mesma feature E2.3, wiring diferente
+  por contexto).
+
+### Quando adicionar caller novo
+
+Se você criar um endpoint/service novo que constrói system prompt da LIA
+para um tenant:
+1. **USE** `build_system_prompt_with_persona` (não `SystemPromptBuilder.build` direto).
+2. Adicione o caminho do arquivo a `CANONICAL_CALLERS` em
+   `scripts/check_persona_aware_prompt_usage.py` (defesa em profundidade —
+   sensor bloqueia regressão futura).
+3. NÃO crie load duplicado de persona — DRY: 1 helper canonical, N callers.
+
+### Refs
+
+- Helper: `app/shared/prompts/persona_aware_prompt.py`
+- Service load: `app/domains/persona/services/ai_persona_service.py:get_ai_persona`
+- Validator: `app/domains/persona/services/ai_persona_validator.py`
+- Builder canonical: `app/shared/prompts/system_prompt_builder.py`
+  (`_append_ai_persona_override` linhas 75-148)
+- Audit fix commit: 2026-05-24 (canonical-fix + harness-engineering cascade)
+

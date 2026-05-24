@@ -255,7 +255,12 @@ async def _handle_jobs_management_query(
             "Se pedir lista, formate como tabela. Se pedir análise, analise SLA e gargalos.\n"
             "Destaque alertas de SLA. Sugira ações concretas."
         )
-        prompt = SystemPromptBuilder.build(
+        from app.shared.prompts.persona_aware_prompt import (
+            build_system_prompt_with_persona,
+        )
+        prompt = await build_system_prompt_with_persona(
+            company_id=company_id,
+            db=db,
             agent_type="orchestrator",
             context_page="jobs",
             extra_instructions=f"{_extra}\n\n{_jobs_data}",
@@ -265,7 +270,12 @@ async def _handle_jobs_management_query(
 
     except Exception as exc:
         logger.warning("[expanded-prompt/jobs] Erro ao buscar vagas: %s", exc)
-        prompt = SystemPromptBuilder.build(
+        from app.shared.prompts.persona_aware_prompt import (
+            build_system_prompt_with_persona,
+        )
+        prompt = await build_system_prompt_with_persona(
+            company_id=company_id,
+            db=db,
             agent_type="orchestrator",
             context_page="jobs",
             extra_instructions=(
@@ -356,7 +366,10 @@ company_id: str = Depends(require_company_id)):
                     follow_up_suggestions=["Quer ver as etapas que mais demoram?", "Posso sugerir ações para acelerar o processo."],
                 )
             elif question_type == QuestionType.PROCESS:
-                response_text = await handle_process_question(request.message, llm_svc)
+                response_text = await handle_process_question(
+                    request.message, llm_svc,
+                    company_id=company_id, db=db,
+                )
                 return ExpandedPromptResponse(
                     response=response_text,
                     agent_used="process_explainer",
@@ -428,7 +441,12 @@ company_id: str = Depends(require_company_id)):
 
         except Exception as orch_err:
             logger.warning(f"[expanded-prompt] Orchestrator error, falling back to LLM: {orch_err}")
-            prompt = SystemPromptBuilder.build(
+            from app.shared.prompts.persona_aware_prompt import (
+                build_system_prompt_with_persona,
+            )
+            prompt = await build_system_prompt_with_persona(
+                company_id=company_id,
+                db=db,
                 agent_type="orchestrator",
                 context_page=request.context_type or "general",
                 extra_instructions=(

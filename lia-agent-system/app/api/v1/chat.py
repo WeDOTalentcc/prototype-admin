@@ -341,6 +341,18 @@ company_id: str = Depends(require_company_id)):
             "entities": detected_entities,
         }
 
+        # Sprint 7.1 (NS-1) — propagate ui_action from chat_adapter to FE.
+        # chat_adapter._extract_navigate_marker populates orch_result["ui_action"]
+        # + ["ui_action_params"] when LLM emits [NAVIGATE:<page>] marker.
+        # Without this block, the FE never receives the navigation signal —
+        # LLM says "te levando" in text but nothing happens (NS-1 smoke fail).
+        _ui_action = orch_result.get("ui_action")
+        if _ui_action:
+            msg_metadata["ui_action"] = _ui_action
+            _ui_action_params = orch_result.get("ui_action_params")
+            if _ui_action_params:
+                msg_metadata["ui_action_params"] = _ui_action_params
+
         # Item 2: action_metadata removed — MainOrchestrator handles actions
 
         # M2: MainOrchestrator._persist_response already committed via same db session
@@ -776,9 +788,16 @@ async def _sse_event_generator(
 
     full_response = ""
 
-    from app.shared.prompts.system_prompt_builder import SystemPromptBuilder
+    # Canonical helper carrega ai_persona do tenant (name+tone custom da UI
+    # "Personalidade da IA") e injeta no SystemPromptBuilder. Ghost setting
+    # fix 2026-05-24 — antes a customização não chegava ao chat lateral SSE.
+    from app.shared.prompts.persona_aware_prompt import (
+        build_system_prompt_with_persona,
+    )
 
-    _system_prompt = SystemPromptBuilder.build(
+    _system_prompt = await build_system_prompt_with_persona(
+        company_id=company_id,
+        db=repo.db,
         agent_type="orchestrator",
         tenant_context_snippet=tenant_context_snippet,
         user_name=user_name,

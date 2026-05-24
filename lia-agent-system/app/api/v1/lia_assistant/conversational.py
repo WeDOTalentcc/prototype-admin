@@ -39,14 +39,21 @@ router = APIRouter()
 
 _conversation_memory = ConversationMemory()
 
-def _build_conversational_prompt(
+async def _build_conversational_prompt(
     message: str,
     conversation_context: str,
+    company_id: str,
+    db,
     user_name: str = "",
     tenant_context_snippet: str = "",
 ) -> str:
-    from app.shared.prompts.system_prompt_builder import SystemPromptBuilder
-    system = SystemPromptBuilder.build(
+    # Canonical helper injeta ai_persona per-tenant (ghost setting fix 2026-05-24).
+    from app.shared.prompts.persona_aware_prompt import (
+        build_system_prompt_with_persona,
+    )
+    system = await build_system_prompt_with_persona(
+        company_id=company_id,
+        db=db,
         agent_type="orchestrator",
         user_name=user_name,
         tenant_context_snippet=tenant_context_snippet,
@@ -280,9 +287,11 @@ Solicitação: {request.message}"""
             agent_name="lia_assistant_conversational",
             company_id_raw=_company_id,
         )
-        prompt = _build_conversational_prompt(
+        prompt = await _build_conversational_prompt(
             message=request.message,
             conversation_context=conversation_context_text,
+            company_id=str(_company_id) if _company_id else "",
+            db=db,
             user_name=_conv_user_name or "",
             tenant_context_snippet=_conv_tenant_snippet,
         )
