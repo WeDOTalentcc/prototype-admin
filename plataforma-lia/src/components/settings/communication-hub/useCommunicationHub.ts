@@ -263,7 +263,7 @@ export function useCommunicationHub(activeSubsection?: string) {
           name: template.name,
           category: template.category,
           subject: template.subject,
-          body: template.body,
+          body_html: template.body,  // P0-W2-06 save-side: EmailTemplateUpdate expects body_html (WeDoBaseModel extra='forbid')
           variables: template.variables,
           is_active: template.isActive
         })
