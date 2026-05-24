@@ -1,37 +1,7 @@
-export const dynamic = "force-dynamic"
-import { NextRequest, NextResponse } from 'next/server'
-import { getAuthHeaders } from '@/lib/api/auth-headers'
+// P1-W3-14: migrated from hardcoded 127.0.0.1:8001 to canonical createProxyHandlers
+import { createProxyHandlers } from "@/lib/api/proxy-handler"
 
-const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8001'
-
-export async function GET(request: NextRequest) {
-  try {
-    const headers = getAuthHeaders(request, true)
-
-    const backendUrl = `${BACKEND_URL}/api/v1/webhooks/events`
-
-    const response = await fetch(backendUrl, {
-      method: 'GET',
-      headers,
-    })
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}))
-      return NextResponse.json(
-        { error: 'Erro ao buscar eventos disponíveis', details: errorData },
-        { status: response.status }
-      )
-    }
-
-    const data = await response.json()
-    return NextResponse.json(data)
-  } catch (error) {
-    if (error instanceof Error && error.message.includes('Authentication required')) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-    return NextResponse.json(
-      { error: 'Erro ao conectar com o backend' },
-      { status: 500 }
-    )
-  }
-}
+export const { dynamic, GET } = createProxyHandlers({
+  backendPath: "/api/v1/webhooks/events",
+  methods: ["GET"],
+})

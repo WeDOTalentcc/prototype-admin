@@ -460,6 +460,8 @@ _SECONDARY_PII_TABLES: list[tuple[str, str]] = [
     # this row is deleted via cascade when voice_screening_calls is removed; no direct
     # DELETE here. Listed for visibility/regression-guard against silent FK removal.
     ("voice_screening_analyses", "_cascade_via_fk"),
+    # P1-W2-10: email_logs contain recipient_email + body sent to candidate (LGPD Art. 18 VI)
+    ("email_logs", "candidate_id"),
 ]
 
 # Tables safe for parameterized deletion (extends _ALLOWED_TTL_TABLES)
@@ -471,6 +473,7 @@ _ALLOWED_PROPAGATION_TABLES = frozenset([
     "voice_wsi_results",
     "wsi_response_analyses",
     "voice_screening_analyses",  # cascaded via FK voice_screening_calls (see note above)
+    "email_logs",  # P1-W2-10: candidate_id FK — erasure clears sent email history
 ])
 
 

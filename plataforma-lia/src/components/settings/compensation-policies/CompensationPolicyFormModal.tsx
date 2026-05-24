@@ -602,6 +602,8 @@ export function CompensationPolicyFormModal({
               <option value="BRL">BRL — Real Brasileiro</option>
               <option value="USD">USD — Dólar</option>
               <option value="EUR">EUR — Euro</option>
+              <option value="GBP">GBP — Libra Esterlina</option>  {/* P1-W2-09 */}
+              <option value="AUD">AUD — Dólar Australiano</option>  {/* P1-W2-09 */}
             </select>
           </div>
           <div className="col-span-2">
