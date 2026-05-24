@@ -524,7 +524,7 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(agent_studio_quality.router, prefix="/api/v1", tags=["agent-studio-quality"])
     app.include_router(agent_quality_router, prefix="/api/v1", tags=["agent-quality"])
     app.include_router(agent_quality_dashboard_router, prefix="/api/v1", tags=["agent-quality-dashboard"])
-    app.include_router(ml_predictions_router, prefix="/api/v1", tags=["ml-predictions"])
+    # ml_predictions_router DELETED 2026-05-24 F10 — duplicate of ml_predictions.router included at L449
     app.include_router(calibration_dashboard_v2_router, prefix="/api/v1", tags=["calibration-dashboard"])
     app.include_router(agent_chat_ws_router)
     app.include_router(agent_chat_sse_router, prefix="/api/v1")
@@ -652,7 +652,7 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(agent_deployments_target_router, prefix="/api/v1")
     app.include_router(agent_approvals_agent_router, prefix="/api/v1")
     app.include_router(agent_approvals_approvals_router, prefix="/api/v1")
-    app.include_router(webhooks_router, prefix="/api/v1")
+    # webhooks_router DELETED 2026-05-24 F10 — duplicate of webhooks.router included at L569
     app.include_router(agent_marketplace_router, prefix="/api/v1", tags=["agent-marketplace"])
     app.include_router(admin_marketplace_router, prefix="/api/v1", tags=["admin-marketplace"])
     app.include_router(multi_strategy_router, prefix="/api/v1", tags=["multi-strategy"])
