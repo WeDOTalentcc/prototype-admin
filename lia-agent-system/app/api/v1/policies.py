@@ -1,16 +1,22 @@
 """
-Global Policies API Endpoints.
+Policies API — CRUD operations for global and company-level policy management.
 
-Provides CRUD operations for global and company-level policy management.
+Onda 4.2d-P0-1 (2026-05-23): substituido `get_user_from_headers` que confiava
+em X-User-Role/X-User-ID headers (= backdoor catastrofico — atacante virava
+platform admin com 1 header HTTP `-H "X-User-Role: admin"`). Agora usa JWT
+canonical (current_user + require_company_id). Platform admin = role
+wedotalent_admin (staff WeDOTalent) APENAS.
 """
 import logging
 from typing import Any
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.auth.dependencies import get_current_active_user
+from app.auth.models import User, UserRole
 from app.core.database import get_db
 from app.domains.policy.repositories.global_policy_repository import GlobalPolicyRepository
 from app.models.global_policy import POLICY_TYPES, GlobalPolicy, PolicyScope, PolicyType
@@ -23,22 +29,25 @@ router = APIRouter(prefix="/policies", tags=["policies"])
 
 
 def get_user_from_headers(
+    current_user: User = Depends(get_current_active_user),
     company_id: str = Depends(require_company_id),
-    x_user_id: str | None = Header(None, alias="X-User-ID"),
-    x_user_role: str | None = Header(None, alias="X-User-Role")
 ) -> dict[str, Any]:
-    """
-    Get user context combining JWT (company_id) with optional request headers
-    (user_id, role).
+    """Get user context from JWT (canonical) — ZERO headers.
 
-    Multi-tenancy canonical: company_id comes from JWT via require_company_id —
-    NEVER from X-Company-ID header (cross-tenant anti-pattern).
+    Onda 4.2d-P0-1 (2026-05-23): nome mantido pra zero impacto callers,
+    mas body trocado pra source-of-truth = JWT.
+
+    Platform admin = role wedotalent_admin APENAS (staff WeDOTalent).
+    Tenant admin (UserRole.admin) NAO e platform admin — administra
+    apenas a propria company.
     """
     return {
         "company_id": company_id,
-        "user_id": x_user_id or "system",
-        "role": x_user_role or "user",
-        "is_admin": x_user_role == "admin"
+        "user_id": str(current_user.id),
+        "role": current_user.role.value if hasattr(current_user.role, "value") else str(current_user.role),
+        # Onda 4.2d-P0-1: is_admin agora requer wedotalent_admin (platform staff),
+        # nao mais x_user_role header. Backdoor fechado.
+        "is_admin": current_user.role == UserRole.wedotalent_admin,
     }
 
 
