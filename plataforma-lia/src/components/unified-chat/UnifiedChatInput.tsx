@@ -378,10 +378,9 @@ export function UnifiedChatInput({
           </div>
 
           <div className="flex items-center gap-1">
-            {/* Auto label (like Notion) */}
-            <span className="text-xs text-lia-text-disabled mr-1">
-              {t('auto')}
-            </span>
+            {/* Onda 4-P2-1 (2026-05-24): Auto label decorativo removido (era
+                placeholder sem onClick/state; routing já é determinístico via
+                domain_hint/intent_hint no orchestrator). */}
 
             {/* Voice */}
             <AudioRecordButton

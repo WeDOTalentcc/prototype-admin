@@ -687,68 +687,12 @@ export function UnifiedChat({
     }
   }, [dynamicPanel?.stage, mode, renderMode]);
 
-  // Workflow Rail integration — emit lifecycle events as wizard stage changes
-  const prevStageRef = useRef<string | null>(null);
-  const wizardWorkflowIdRef = useRef<string | null>(null);
-
-  useEffect(() => {
-    const stage = dynamicPanel?.stage ?? null;
-    const prevStage = prevStageRef.current;
-    if (stage === prevStage) return;
-    prevStageRef.current = stage;
-
-    if (stage === "intake" && !prevStage) {
-      wizardWorkflowIdRef.current = `wizard-${Date.now()}`;
-      window.dispatchEvent(
-        new CustomEvent("workflow:started", {
-          detail: {
-            id: wizardWorkflowIdRef.current,
-            type: "campaign",
-            label: "Criando vaga",
-            stage: "intake",
-          },
-        }),
-      );
-    } else if (stage && wizardWorkflowIdRef.current) {
-      if (stage === "done") {
-        window.dispatchEvent(
-          new CustomEvent("workflow:completed", {
-            detail: { id: wizardWorkflowIdRef.current, outcome: "success" },
-          }),
-        );
-        wizardWorkflowIdRef.current = null;
-      } else {
-        window.dispatchEvent(
-          new CustomEvent("workflow:updated", {
-            detail: {
-              id: wizardWorkflowIdRef.current,
-              stage,
-              label: WIZARD_STAGE_LABELS[stage] ?? stage,
-            },
-          }),
-        );
-      }
-    } else if (!stage && prevStage && wizardWorkflowIdRef.current) {
-      window.dispatchEvent(
-        new CustomEvent("workflow:failed", {
-          detail: {
-            id: wizardWorkflowIdRef.current,
-            error: "Fluxo interrompido",
-          },
-        }),
-      );
-      wizardWorkflowIdRef.current = null;
-    }
-  }, [dynamicPanel?.stage]);
-
-  useEffect(() => {
-    if (!wizardWorkflowIdRef.current) return;
-    window.dispatchEvent(
-      new CustomEvent("workflow:thinking", {
-        detail: { id: wizardWorkflowIdRef.current, isThinking: chatIsThinking },
-      }),
-    );
-  }, [chatIsThinking]);
+  // Onda 4-P2-4 (2026-05-24): removidas 5 emissões workflow:* (started,
+  // updated, completed, failed, thinking) que eram DEAD EMISSIONS. Audit
+  // exaustivo confirmou ZERO addEventListener('workflow:*') em todo src/.
+  // Eram 5 CustomEvents emitidos sem consumer = ruído + ciclos CPU.
+  // Backlog separado: se quisermos UI progress bar do wizard quando chat
+  // fechado, criar consumer dedicated em sprint própria.
 
   const handleModeChange = useCallback(
     (newMode: ChatMode) => {
