@@ -108,7 +108,7 @@ class DomainTaskManager:
         callback: str | None = None,
         metadata: dict[str, Any] | None = None,
     ) -> str:
-        # RLS-EXEMPT: AsyncTask is an in-memory @dataclass, not an ORM Base — no DB row written here. Sensor false positive (user_id kwarg on a DTO).
+        # RLS-EXEMPT: AsyncTask is an in-memory @dataclass, not an ORM Base — no DB row written here. Sensor false positive (user_id kwarg on a DTO).  WT-LEGACY-RLS-EXEMPT exp:2026-11-30
         task = AsyncTask(
             task_id=str(uuid.uuid4())[:12],
             domain_id=domain_id,

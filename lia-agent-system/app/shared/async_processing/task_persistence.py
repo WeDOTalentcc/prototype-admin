@@ -37,7 +37,7 @@ class TaskPersistenceService:
     ) -> TaskRecord:
         async with AsyncSessionLocal() as session:
             try:
-                # RLS-EXEMPT: task_records has no company_id column and no RLS policy (global async-job persistence, not tenant-scoped data).
+                # RLS-EXEMPT: task_records has no company_id column and no RLS policy (global async-job persistence, not tenant-scoped data).  WT-LEGACY-RLS-EXEMPT exp:2026-11-30
                 record = TaskRecord(
                     id=task_id,
                     domain_id=domain_id,

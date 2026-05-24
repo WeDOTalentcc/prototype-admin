@@ -544,7 +544,7 @@ class CandidateRepository:
             await self.db.refresh(existing)
             return existing, False
         else:
-            # RLS-EXEMPT: viewed_candidates has no company_id column and no RLS policy (per-user UX state — which cards the recruiter has opened)
+            # RLS-EXEMPT: viewed_candidates has no company_id column and no RLS policy (per-user UX state — which cards the recruiter has opened)  WT-LEGACY-RLS-EXEMPT exp:2026-11-30
             viewed = ViewedCandidate(
                 id=uuid.uuid4(),
                 candidate_id=candidate_id,

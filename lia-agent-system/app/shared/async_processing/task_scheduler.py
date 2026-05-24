@@ -186,7 +186,7 @@ class TaskScheduler:
 
         async with AsyncSessionLocal() as session:
             try:
-                # RLS-EXEMPT: task_schedules has no company_id column and no RLS policy (global cron-like scheduler state, not tenant-scoped data).
+                # RLS-EXEMPT: task_schedules has no company_id column and no RLS policy (global cron-like scheduler state, not tenant-scoped data).  WT-LEGACY-RLS-EXEMPT exp:2026-11-30
                 record = TaskSchedule(
                     id=schedule_id,
                     name=name,

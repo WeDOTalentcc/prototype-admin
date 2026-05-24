@@ -240,7 +240,7 @@ class EnhancedTaskManager(DomainTaskManager):
                     }
                     priority = priority_map.get(record.priority, TaskPriority.NORMAL)
 
-                    # RLS-EXEMPT: AsyncTask is an in-memory @dataclass (app/shared/async_processing/task_queue.py), NOT an ORM Base — no DB row written here, no RLS surface. Sensor false positive (user_id kwarg on a DTO).
+                    # RLS-EXEMPT: AsyncTask is an in-memory @dataclass (app/shared/async_processing/task_queue.py), NOT an ORM Base — no DB row written here, no RLS surface. Sensor false positive (user_id kwarg on a DTO).  WT-LEGACY-RLS-EXEMPT exp:2026-11-30
                     task = AsyncTask(
                         task_id=record.id,
                         domain_id=record.domain_id,

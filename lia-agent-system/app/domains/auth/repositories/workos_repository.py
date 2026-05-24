@@ -202,7 +202,7 @@ class WorkOSRepository:
         return result.scalar_one_or_none()
 
     async def add_membership(self, group_id: UUID, user_id: UUID, added_by: str) -> WorkOSGroupMembership:
-        # RLS-EXEMPT: workos_group_memberships has no company_id column (WorkOS IdP sync is per-user across SSO groups; tenant scope lives in the parent WorkOSGroup record)
+        # RLS-EXEMPT: workos_group_memberships has no company_id column (WorkOS IdP sync is per-user across SSO groups; tenant scope lives in the parent WorkOSGroup record)  WT-LEGACY-RLS-EXEMPT exp:2026-11-30
         membership = WorkOSGroupMembership(
             group_id=group_id,
             user_id=user_id,
