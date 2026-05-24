@@ -1,6 +1,3 @@
-"""
-ATS Integration API endpoints (Gupy, Pandapé, Merge).
-"""
 import hashlib
 import hmac
 import logging
@@ -580,7 +577,7 @@ company_id: str = Depends(require_company_id)):
     List ATS synchronization jobs.
     """
     try:
-        jobs = await repo.list_sync_jobs(
+        jobs = await repo.list_sync_jobs(company_id=company_id, 
             connection_id=connection_id,
             status=status,
             limit=limit,
@@ -624,7 +621,7 @@ company_id: str = Depends(require_company_id)):
     List candidates imported from ATS platforms.
     """
     try:
-        candidates = await repo.list_candidates(
+        candidates = await repo.list_candidates(company_id=company_id, 
             provider=provider,
             connection_id=connection_id,
             limit=limit,
@@ -1086,7 +1083,7 @@ company_id: str = Depends(require_company_id)):
     List webhook logs from ATS platforms.
     """
     try:
-        logs = await repo.list_webhook_logs(
+        logs = await repo.list_webhook_logs(company_id=company_id, 
             provider=provider,
             processed=processed,
             limit=limit,

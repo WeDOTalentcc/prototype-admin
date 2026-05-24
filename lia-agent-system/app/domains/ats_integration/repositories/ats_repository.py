@@ -1,6 +1,3 @@
-"""
-ATS Integration Repository — all SQLAlchemy queries for the ATS domain.
-"""
 from datetime import datetime, timezone
 
 from sqlalchemy import and_, desc, select
@@ -80,11 +77,23 @@ class ATSRepository:
 
     async def list_sync_jobs(
         self,
+        company_id: str,
         connection_id: str | None = None,
         status: str | None = None,
         limit: int = 20,
     ) -> list[ATSSyncJob]:
-        query = select(ATSSyncJob)
+        """List ATS sync jobs scoped to company.
+
+        Onda 4.2g-P0-2 (2026-05-23): company_id obrigatorio — antes vazava
+        sync logs (timings, error_message) de TODOS tenants quando
+        connection_id omitido. LGPD Art. 6 violado.
+        """
+        # JOIN com ATSConnection pra filtrar tenant.
+        query = (
+            select(ATSSyncJob)
+            .join(ATSConnection, ATSConnection.id == ATSSyncJob.connection_id)
+            .where(ATSConnection.company_id == company_id)
+        )
         filters = []
         if connection_id:
             filters.append(ATSSyncJob.connection_id == connection_id)
@@ -108,21 +117,29 @@ class ATSRepository:
 
     async def list_candidates(
         self,
+        company_id: str,
         provider: str | None = None,
         connection_id: str | None = None,
         limit: int = 50,
     ) -> list[ATSCandidate]:
-        filters = [ATSCandidate.is_active]
-        if provider:
-            filters.append(ATSCandidate.provider == ATSProvider[provider.upper()])
-        if connection_id:
-            filters.append(ATSCandidate.connection_id == connection_id)
+        """List ATS candidates scoped to company.
+
+        Onda 4.2g-P0-1 (2026-05-23): company_id obrigatorio — antes vazava
+        PII (name+email+phone) de candidatos de TODOS tenants quando
+        connection_id omitido. LGPD Art. 33 incident risk.
+        """
+        # JOIN com ATSConnection pra filtrar tenant.
         query = (
             select(ATSCandidate)
-            .where(and_(*filters))
-            .order_by(desc(ATSCandidate.last_synced_at))
-            .limit(limit)
+            .join(ATSConnection, ATSConnection.id == ATSCandidate.connection_id)
+            .where(ATSConnection.company_id == company_id)
+            .where(ATSCandidate.is_active)
         )
+        if provider:
+            query = query.where(ATSCandidate.provider == ATSProvider[provider.upper()])
+        if connection_id:
+            query = query.where(ATSCandidate.connection_id == connection_id)
+        query = query.order_by(desc(ATSCandidate.last_synced_at)).limit(limit)
         result = await self.db.execute(query)
         return list(result.scalars().all())
 
@@ -172,18 +189,27 @@ class ATSRepository:
 
     async def list_webhook_logs(
         self,
+        company_id: str,
         provider: str | None = None,
         processed: bool | None = None,
         limit: int = 50,
     ) -> list[ATSWebhookLog]:
-        filters = []
+        """List ATS webhook logs scoped to company.
+
+        Onda 4.2g-P0-3 (2026-05-23): company_id obrigatorio — antes vazava
+        payloads completos (event_type, IDs externos, PII conforme provider)
+        de TODOS tenants quando provider omitido. LGPD Art. 33 incident risk.
+        """
+        # JOIN com ATSConnection pra filtrar tenant.
+        query = (
+            select(ATSWebhookLog)
+            .join(ATSConnection, ATSConnection.id == ATSWebhookLog.connection_id)
+            .where(ATSConnection.company_id == company_id)
+        )
         if provider:
-            filters.append(ATSWebhookLog.provider == ATSProvider[provider.upper()])
+            query = query.where(ATSWebhookLog.provider == ATSProvider[provider.upper()])
         if processed is not None:
-            filters.append(ATSWebhookLog.processed == processed)
-        query = select(ATSWebhookLog)
-        if filters:
-            query = query.where(and_(*filters))
+            query = query.where(ATSWebhookLog.processed == processed)
         query = query.order_by(desc(ATSWebhookLog.received_at)).limit(limit)
         result = await self.db.execute(query)
         return list(result.scalars().all())
