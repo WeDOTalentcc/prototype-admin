@@ -119,40 +119,41 @@ class JobStatusWebhookService:
                 "job_title": job_title
             }
             
-            results = []
+            # P1-W3-15: enqueue via Celery (non-blocking) — mirrors Studio webhook_tasks pattern.
+            # _deliver_with_retry (blocking async with asyncio.sleep) is kept for test-webhook path.
+            queued = 0
             for webhook in webhooks:
-                result = await self._deliver_with_retry(
-                    webhook=webhook,
-                    payload=payload,
-                    event_type="job.status_changed",
-                    db=db
-                )
-                results.append({
-                    "webhook_id": str(webhook.id),
-                    "webhook_name": webhook.name,
-                    **result
-                })
-                
-                await self._log_to_audit_trail(
-                    company_id=company_id,
-                    job_id=job_id,
-                    webhook_id=str(webhook.id),
-                    event_type="job.status_changed",
-                    success=result.get("success", False),
-                    error=result.get("error"),
-                    db=db
-                )
+                try:
+                    from app.jobs.webhook_tasks import deliver_webhook_task
+                    deliver_webhook_task.delay(
+                        webhook_id=str(webhook.id),
+                        url=webhook.url,
+                        secret=webhook.secret_key or "",
+                        event="job.status_changed",
+                        payload=payload,
+                    )
+                    queued += 1
+                    await self._log_to_audit_trail(
+                        company_id=company_id,
+                        job_id=job_id,
+                        webhook_id=str(webhook.id),
+                        event_type="job.status_changed",
+                        success=True,  # enqueued — actual delivery result logged by Celery
+                        error=None,
+                        db=db
+                    )
+                except Exception as _enq_err:
+                    logger.warning("[JobWebhook] Celery enqueue failed for webhook %s: %s", webhook.id, _enq_err)
+            results = [{"queued": queued, "total": len(webhooks)}]
             
-            success_count = sum(1 for r in results if r.get("success"))
-            
-            logger.info(f"[WEBHOOK] Dispatched job.status_changed for job {job_id}: {success_count}/{len(webhooks)} successful")
-            
+            logger.info("[WEBHOOK] Enqueued job.status_changed for job %s: %d/%d via Celery", job_id, queued, len(webhooks))
+
             return {
                 "success": True,
                 "triggered": len(webhooks),
-                "successful": success_count,
-                "failed": len(webhooks) - success_count,
-                "results": results
+                "queued": queued,
+                "failed": len(webhooks) - queued,
+                "delivery": "async_celery"
             }
             
         except Exception as e:
