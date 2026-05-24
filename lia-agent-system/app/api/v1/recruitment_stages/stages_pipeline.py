@@ -395,12 +395,18 @@ async def get_pipeline_inheritance_status(
     current_user: User = Depends(get_current_active_user),
     stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
 company_id: str = Depends(require_company_id)):
-    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
-    """Check if a job's pipeline is customized or inherited from company default."""
+    """Check if a job's pipeline is customized or inherited from company default.
+
+    P0-W1-02 fix (2026-05-24): after fetching the job, verify that
+    job.company_id matches the authenticated user's company_id (JWT).
+    Cross-tenant read attempts raise 403 before any data is returned.
+    """
     try:
         from sqlalchemy import select as sa_select
 
         from app.models.job_vacancy import JobVacancy
+
+        effective_company_id = get_user_company_id(current_user)
 
         result = await stage_repo.db.execute(
             sa_select(JobVacancy).where(JobVacancy.id == job_id)
@@ -408,6 +414,10 @@ company_id: str = Depends(require_company_id)):
         job = result.scalars().first()
         if not job:
             raise HTTPException(status_code=404, detail="Job not found")
+
+        # P0-W1-02: ownership check — prevent cross-tenant info disclosure
+        if str(job.company_id) != str(effective_company_id):
+            raise HTTPException(status_code=403, detail="Access denied")
 
         return {
             "job_id": str(job.id),
