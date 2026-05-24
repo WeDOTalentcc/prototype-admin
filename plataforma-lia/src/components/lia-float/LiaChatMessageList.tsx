@@ -87,9 +87,14 @@ export function LiaChatMessageList({
         <EmptyState scope={currentScope} contextPage={contextPage} onChipClick={handleChipSend} />
       ) : (
         <>
-          {messages.map(msg => (
-            <MessageBubble key={msg.id} msg={msg} conversationId={conversationId} />
-          ))}
+          {messages
+            // G5 canonical (2026-05-24): system messages are backstage hints
+            // for LIA, never user-facing. Filter before map so MessageBubble
+            // only sees msg.sender of type "lia" | "user".
+            .filter((msg): msg is FloatMessage & { sender: "lia" | "user" } => msg.sender !== "system")
+            .map(msg => (
+              <MessageBubble key={msg.id} msg={msg} conversationId={conversationId} />
+            ))}
           {hitlPending && (
             <ChatBubbleBase
               sender="lia"
@@ -252,7 +257,7 @@ function StreamingBubble({ content }: { content: string }) {
   )
 }
 
-function MessageBubble({ msg, conversationId }: { msg: FloatMessage; conversationId: string | null }) {
+function MessageBubble({ msg, conversationId }: { msg: FloatMessage & { sender: "lia" | "user" }; conversationId: string | null }) {
   const authUser = useAuthStore((s) => s.user)
   const userDisplayName = authUser?.name || authUser?.email || "Usuário"
   const isUser = msg.sender === "user"

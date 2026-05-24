@@ -28,12 +28,16 @@ export function useChatMessages({
 
   const [messages, setMessages] = useState<Message[]>(() => {
     if (unifiedMessages.length > 0) {
-      return unifiedMessages.map((m, idx) => ({
-        id: idx + 1,
-        sender: m.sender,
-        content: m.content,
-        timestamp: m.timestamp,
-      }))
+      // G5 canonical (2026-05-24): drop system messages — backstage hints,
+      // not user-facing. Message type here only accepts "lia" | "user".
+      return unifiedMessages
+        .filter((m): m is typeof m & { sender: "lia" | "user" } => m.sender !== "system")
+        .map((m, idx) => ({
+          id: idx + 1,
+          sender: m.sender,
+          content: m.content,
+          timestamp: m.timestamp,
+        }))
     }
     return initialMessages
   })
@@ -90,13 +94,16 @@ export function useChatMessages({
 
   useEffect(() => {
     setMessages(
-      unifiedMessages.map((m, idx) => ({
-        id: idx + 1,
-        sender: m.sender,
-        content: m.content,
-        timestamp: m.timestamp,
-        metadata: m.metadata,
-      }))
+      unifiedMessages
+        // G5 canonical (2026-05-24): drop system messages — see initial state above.
+        .filter((m): m is typeof m & { sender: "lia" | "user" } => m.sender !== "system")
+        .map((m, idx) => ({
+          id: idx + 1,
+          sender: m.sender,
+          content: m.content,
+          timestamp: m.timestamp,
+          metadata: m.metadata,
+        }))
     )
   }, [unifiedMessages])
 

@@ -456,9 +456,16 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
       const fieldClause = detail.field
         ? ` · campo "${detail.field}"${valueText ? ` = ${valueText}` : ""}`
         : "";
+      // G5 canonical fix (2026-05-24): sender "system" (not "lia") so the
+      // renderer skips this note. The content is a backstage hint for LIA,
+      // not a user-facing reply. The original sender:"lia" + metadata.silent:true
+      // combination did not work because the renderer ignored the silent flag.
+      // TODO(G9 follow-up): POST this note to backend as proactive context
+      // so LIA can react with a real natural-language suggestion on the next
+      // user turn. Today it is only kept in client state (no backend wire).
       const note: LiaChatMessage = {
         id: `sys-settings-${detail.ts || Date.now()}`,
-        sender: "lia",
+        sender: "system",
         content: `[contexto] Recrutador editou via UI: ${sectionLabel}${fieldClause}. Considere reagir proativamente (sugerir complementos, validar consistência, ou continuar silencioso se não houver follow-up útil).`,
         timestamp: formatMessageTime(),
         metadata: {
@@ -467,8 +474,6 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
           actionId: detail.actionId,
           section: detail.section,
           field: detail.field,
-          // value intentionally NOT placed in metadata to avoid double-storage;
-          // it already lives inside `content` for the LLM to consume.
           silent: true,
         },
       };

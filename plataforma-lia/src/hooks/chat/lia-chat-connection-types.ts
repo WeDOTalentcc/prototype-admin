@@ -11,7 +11,7 @@ export interface LiaChatClarificationOption {
 
 export interface LiaChatMessage {
   id: string;
-  sender: "lia" | "user";
+  sender: "lia" | "user" | "system";
   content: string;
   timestamp: string;
   executionPlan?: Record<string, unknown>;

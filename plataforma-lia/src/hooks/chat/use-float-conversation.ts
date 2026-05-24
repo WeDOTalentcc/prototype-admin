@@ -5,7 +5,7 @@ import { useRecentItemsStore } from "@/stores/recent-items-store"
 
 export interface FloatMessage {
   id: string
-  sender: "lia" | "user"
+  sender: "lia" | "user" | "system"
   content: string
   timestamp: string
   executionPlan?: Record<string, unknown>
