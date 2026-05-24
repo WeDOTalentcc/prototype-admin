@@ -154,6 +154,7 @@ def _serialize_candidate(c, *, full: bool = False) -> dict:
         "completed_register": c.completed_register,
         "accept_terms": c.accept_terms,
         "work_history": c.work_history or [],
+        "education": (getattr(c, "education_snapshot", None) or []),
         **extract_company_info_from_work_history(c.work_history or []),
         "tags": c.tags or [],
         "notes": c.notes,
@@ -628,20 +629,39 @@ async def update_candidate_experiences(
                 text("DELETE FROM candidate_experiences WHERE candidate_id = CAST(:cid AS uuid)"),
                 {"cid": str(candidate.id)},
             )
+            import json as _json
+            normalized_experiences = []
             for idx, exp in enumerate(payload or []):
                 if not isinstance(exp, dict):
                     continue
+                row = {
+                    "title": exp.get("title"),
+                    "company": exp.get("company") or exp.get("company_name"),
+                    "company_name": exp.get("company") or exp.get("company_name"),
+                    "start_date": exp.get("start_date") or exp.get("startDate"),
+                    "end_date": exp.get("end_date") or exp.get("endDate"),
+                    "description": exp.get("description"),
+                    "location": exp.get("location"),
+                    "is_current": bool(exp.get("is_current") or exp.get("isCurrent")),
+                    "sequence_order": idx,
+                }
+                normalized_experiences.append(row)
                 db.add(CandidateExperience(
                     candidate_id=candidate.id,
-                    company_name=str(exp.get("company") or exp.get("company_name") or "Empresa"),
-                    title=str(exp.get("title") or "")[:255] if exp.get("title") else None,
-                    start_date=str(exp.get("start_date") or exp.get("startDate") or "")[:50] or None,
-                    end_date=str(exp.get("end_date") or exp.get("endDate") or "")[:50] or None,
-                    description=exp.get("description"),
-                    location=str(exp.get("location") or "")[:255] or None,
-                    is_current=bool(exp.get("is_current") or exp.get("isCurrent")),
+                    company_name=str(row["company_name"] or "Empresa"),
+                    title=str(row["title"] or "")[:255] if row["title"] else None,
+                    start_date=str(row["start_date"] or "")[:50] or None,
+                    end_date=str(row["end_date"] or "")[:50] or None,
+                    description=row["description"],
+                    location=str(row["location"] or "")[:255] or None,
+                    is_current=row["is_current"],
                     sequence_order=idx,
                 ))
+            # F8 dual-write: sync candidates.work_history JSON column for serializer
+            await db.execute(
+                text("UPDATE candidates SET work_history = CAST(:wh AS jsonb), updated_at = NOW() WHERE id = CAST(:cid AS uuid)"),
+                {"wh": _json.dumps(normalized_experiences), "cid": str(candidate.id)},
+            )
             await db.commit()
 
         logger.info(f"Updated {len(payload or [])} experiences for candidate {candidate_id}")
@@ -682,19 +702,36 @@ async def update_candidate_education(
                 text("DELETE FROM candidate_education WHERE candidate_id = CAST(:cid AS uuid)"),
                 {"cid": str(candidate.id)},
             )
+            import json as _json
+            normalized_education = []
             for idx, edu in enumerate(payload or []):
                 if not isinstance(edu, dict):
                     continue
+                row = {
+                    "institution": edu.get("institution") or edu.get("school"),
+                    "degree": edu.get("degree"),
+                    "field_of_study": edu.get("field_of_study") or edu.get("fieldOfStudy"),
+                    "start_date": edu.get("start_date") or edu.get("startDate"),
+                    "end_date": edu.get("end_date") or edu.get("endDate"),
+                    "description": edu.get("description"),
+                    "sequence_order": idx,
+                }
+                normalized_education.append(row)
                 db.add(CandidateEducation(
                     candidate_id=candidate.id,
-                    institution=str(edu.get("institution") or edu.get("school") or "Instituição"),
-                    degree=str(edu.get("degree") or "")[:100] or None,
-                    field_of_study=str(edu.get("field_of_study") or edu.get("fieldOfStudy") or "")[:255] or None,
-                    start_date=str(edu.get("start_date") or edu.get("startDate") or "")[:50] or None,
-                    end_date=str(edu.get("end_date") or edu.get("endDate") or "")[:50] or None,
-                    description=edu.get("description"),
+                    institution=str(row["institution"] or "Instituição"),
+                    degree=str(row["degree"] or "")[:100] or None,
+                    field_of_study=str(row["field_of_study"] or "")[:255] or None,
+                    start_date=str(row["start_date"] or "")[:50] or None,
+                    end_date=str(row["end_date"] or "")[:50] or None,
+                    description=row["description"],
                     sequence_order=idx,
                 ))
+            # F8 dual-write: sync candidates.education_snapshot JSON column for serializer
+            await db.execute(
+                text("UPDATE candidates SET education_snapshot = CAST(:edu AS jsonb), updated_at = NOW() WHERE id = CAST(:cid AS uuid)"),
+                {"edu": _json.dumps(normalized_education), "cid": str(candidate.id)},
+            )
             await db.commit()
 
         logger.info(f"Updated {len(payload or [])} education entries for candidate {candidate_id}")
