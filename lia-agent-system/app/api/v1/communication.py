@@ -340,7 +340,7 @@ company_id: str = Depends(get_verified_company_id)):
         logger.info(f"Sending screening invite via {channel} for company {company_id}, candidate_id={request.candidate_id}")
 
         if request.vacancy_id and not request.override_saturation:
-            sat_status = await repo.check_vacancy_saturation(request.vacancy_id)
+            sat_status = await repo.check_vacancy_saturation(request.vacancy_id, company_id=company_id)
             if sat_status.get("is_saturated"):
                 detail_parts = []
                 if sat_status.get("organic_saturated"):

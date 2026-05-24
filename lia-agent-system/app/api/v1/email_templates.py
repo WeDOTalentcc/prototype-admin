@@ -1,6 +1,3 @@
-"""
-Email Templates API endpoints for managing email communications.
-"""
 import html
 import logging
 import re
@@ -84,9 +81,15 @@ async def check_email_rate_limit(repo: EmailTemplatesRepository, user_id: uuid_m
     return recent_count < RATE_LIMIT_EMAILS_PER_MINUTE
 
 
-async def validate_recipient_is_known_candidate(repo: EmailTemplatesRepository, email: str) -> bool:
-    """Validate that the recipient email belongs to a known candidate."""
-    return await repo.candidate_email_exists(email)
+async def validate_recipient_is_known_candidate(
+    repo: EmailTemplatesRepository, email: str, company_id: str | None = None,
+) -> bool:
+    """Validate that the recipient email belongs to a known candidate.
+
+    Onda 4.2e-P0-8 (2026-05-23): company_id scope — atacante empresa A
+    nao envia mais email pra candidato empresa B.
+    """
+    return await repo.candidate_email_exists(email, company_id=company_id)
 
 
 @router.get("", response_model=EmailTemplateListResponse)
@@ -458,7 +461,9 @@ company_id: str = Depends(require_company_id)):
     with the provided values.
     """
     try:
-        template = await repo.get_by_id_str(template_id)
+        # Onda 4.2e-P0-6 (2026-05-23): tenant guard — antes vazava template
+        # (subject+body proprietario com branding) cross-tenant.
+        template = await repo.get_by_id_for_company(template_id, company_id)
 
         if not template:
             raise HTTPException(status_code=404, detail="Email template not found")
@@ -523,7 +528,19 @@ company_id: str = Depends(require_company_id)):
                 detail=f"Rate limit exceeded. Maximum {RATE_LIMIT_EMAILS_PER_MINUTE} emails per minute allowed.",
             )
 
-        is_known_candidate = await validate_recipient_is_known_candidate(repo, request.recipient_email)
+        # Onda 4.2e-P0-7+P0-8 (2026-05-23): template ownership + recipient
+        # tenant-scoped. Antes atacante A enviava email com template B pra
+        # candidato B (LGPD Art. 33).
+        template_check = await repo.get_by_id_for_company(template_id, company_id)
+        if not template_check:
+            raise HTTPException(
+                status_code=404,
+                detail="Email template not found",
+            )
+
+        is_known_candidate = await validate_recipient_is_known_candidate(
+            repo, request.recipient_email, company_id=company_id,
+        )
         if not is_known_candidate:
             raise HTTPException(
                 status_code=400,

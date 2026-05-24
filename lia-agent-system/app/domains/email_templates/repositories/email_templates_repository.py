@@ -1,7 +1,4 @@
-"""
-EmailTemplatesRepository — session-in-constructor pattern.
-Covers all DB operations needed by app/api/v1/email_templates.py.
-"""
+"""EmailTemplatesRepository — multi-tenant safe."""
 import logging
 import uuid as uuid_module
 from datetime import datetime, timedelta
@@ -246,17 +243,26 @@ class EmailTemplatesRepository:
         )
         return result.scalar() or 0
 
-    async def candidate_email_exists(self, email: str) -> bool:
+    async def candidate_email_exists(
+        self, email: str, company_id: str | None = None,
+    ) -> bool:
+        """Check if email belongs to a known active candidate.
+
+        Onda 4.2e-P0-8 (2026-05-23): company_id filter — antes atacante A
+        enviava email pra candidato empresa B via template empresa B
+        (cross-tenant + branding hijack). LGPD Art. 33.
+        """
         from app.shared.encryption.encrypted_field_mixin import _sha256_hash
         from sqlalchemy import or_
         email_hash = _sha256_hash(email)
-        result = await self.db.execute(
-            select(Candidate.id).where(
-                or_(
-                    Candidate.email_hash == email_hash,
-                    Candidate._email_raw == email,
-                ),
-                Candidate.is_active,
-            )
+        query = select(Candidate.id).where(
+            or_(
+                Candidate.email_hash == email_hash,
+                Candidate._email_raw == email,
+            ),
+            Candidate.is_active,
         )
+        if company_id:
+            query = query.where(Candidate.company_id == company_id)
+        result = await self.db.execute(query)
         return result.scalar_one_or_none() is not None
