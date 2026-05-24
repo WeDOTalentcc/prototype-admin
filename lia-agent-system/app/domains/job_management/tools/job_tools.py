@@ -16,7 +16,11 @@ from uuid import UUID
 
 
 from app.tools.registry import ToolDefinition, tool_registry
-from app.tools.context_helpers import require_company_id_from_context
+from app.tools.context_helpers import (
+    context_or_raise,
+    require_company_id_from_context,
+    require_company_id_from_obj,
+)
 
 if TYPE_CHECKING:
     from app.tools.executor import ToolExecutionContext
@@ -170,9 +174,11 @@ async def update_job(
     Returns:
         Result with update details
     """
-    context = _extract_context(kwargs)
-    company_id = require_company_id_from_context(kwargs, "update_job")
-    user_id = context.user_id if context else "system"
+    context = context_or_raise(kwargs, "update_job")
+
+    company_id = require_company_id_from_obj(context, "update_job")
+
+    user_id = context.user_id
     
     logger.info(f"🔄 Updating job vacancy: {job_id} (company: {company_id})")
     
@@ -267,7 +273,6 @@ async def pause_job(
     Returns:
         Result with pause details
     """
-    context = _extract_context(kwargs)
     company_id = require_company_id_from_context(kwargs, "pause_job")
 
     logger.info(f"⏸️ Pausing job vacancy: {job_id} (company: {company_id})")
@@ -379,7 +384,6 @@ async def close_job(
     Returns:
         Result with close details
     """
-    context = _extract_context(kwargs)
     company_id = require_company_id_from_context(kwargs, "close_job")
 
     logger.info(f"🔒 Closing job vacancy: {job_id}, reason: {reason} (company: {company_id})")
@@ -516,7 +520,6 @@ async def publish_job(
     Returns:
         Result with publication details
     """
-    context = _extract_context(kwargs)
     company_id = require_company_id_from_context(kwargs, "publish_job")
 
     logger.info(f"🚀 Publishing job vacancy: {job_id} (company: {company_id})")

@@ -1,0 +1,36 @@
+name: CI — anti-double-pop _context sensor
+
+on:
+  push:
+    branches: [main, develop, feat/*]
+    paths:
+      - 'lia-agent-system/app/domains/**/*tool*.py'
+      - 'lia-agent-system/app/tools/**/*.py'
+      - 'lia-agent-system/scripts/check_no_double_pop_context.py'
+      - '.github/workflows/anti-double-pop-sensor.yml'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'lia-agent-system/app/domains/**/*tool*.py'
+      - 'lia-agent-system/app/tools/**/*.py'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  anti-double-pop:
+    name: Anti double-pop _context sensor (Sprint 2.5-C blocking baseline 0)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: lia-agent-system
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run anti-double-pop sensor
+        run: python3 scripts/check_no_double_pop_context.py
+        # Baseline = 0 violations (Sprint 2.5-A + 2.5-B + 2.5-B-extra closure).
+        # Any regression blocks merge.
