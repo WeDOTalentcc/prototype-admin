@@ -79,6 +79,23 @@ const PANEL_TYPE_TO_DOMAIN_HINT: Partial<Record<DynamicPanelType, string>> = {
   // profile: "candidate_profile",
 };
 
+/**
+ * Bug 5 fix (2026-05-24): mapeia ChatContextType (FE state) para
+ * Rail A domain_hint (BE roteamento). Usado como FALLBACK quando não
+ * há dynamicPanel ativo. Sem isso, chat lateral em /configuracoes
+ * caía no roteador default e era atribuído a recruiter_assistant
+ * (que não tem analyze_company_website / save_company_field / etc).
+ *
+ * Domínios DEVEM estar registrados em DomainRegistry backend (@register_domain).
+ * Drift cai graceful no roteamento normal.
+ */
+const CONTEXT_TYPE_TO_DOMAIN_HINT: Partial<Record<ChatContextType, string>> = {
+  // general: undefined,  // default routing
+  // job_chat, talent_chat, kanban_chat, candidates_chat, agent_studio:
+  // mantidos no router normal por enquanto (sem regressão).
+  settings_config: "company_settings",
+};
+
 export type ChatContextType =
   | "general"
   | "job_chat"
@@ -548,16 +565,23 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
       // PANEL_TYPE_TO_DOMAIN_HINT above for the mapping rationale. Caller
       // can override by passing explicit metadata.domain_hint.
       const activePanelType = state.dynamicPanel?.panelType;
-      const hintDomain = activePanelType
-        ? PANEL_TYPE_TO_DOMAIN_HINT[activePanelType]
-        : undefined;
+      // Resolution chain: dynamicPanel → chatContextType → undefined (default routing).
+      // panelType wins because it's a more specific signal (active wizard panel etc).
+      const hintDomain =
+        (activePanelType && PANEL_TYPE_TO_DOMAIN_HINT[activePanelType]) ||
+        CONTEXT_TYPE_TO_DOMAIN_HINT[chatContextType] ||
+        undefined;
 
       const enrichedMetadata =
         hintDomain && !metadata?.domain_hint
           ? {
               ...(metadata ?? {}),
               source: metadata?.source ?? "rail_a",
-              card_id: metadata?.card_id ?? `panel_active:${activePanelType}`,
+              card_id:
+                metadata?.card_id ??
+                (activePanelType
+                  ? `panel_active:${activePanelType}`
+                  : `context:${chatContextType}`),
               domain_hint: hintDomain,
             }
           : metadata;
