@@ -35,7 +35,8 @@ interface RetentionPolicy {
   id?: string
   category?: string
   event_type?: string
-  retention_days?: number
+  retention_months?: number  // P2-GOV-008: canonical backend field (AuditRetentionPolicy.to_dict)
+  retention_days?: number    // kept for legacy fallback
   description?: string
 }
 
@@ -138,6 +139,11 @@ export function AuditLogsPanel() {
     if (severityFilter === "all") return logs
     return logs.filter((l) => (l.severity ?? "").toLowerCase() === severityFilter)
   }, [logs, severityFilter])
+  // P2-GOV-009: severityFilter is client-side (filters current page only, not full DB).
+  // Display limit prevents heavy renders while server-side pagination is not implemented.
+  const DISPLAY_LIMIT = 100
+  const displayedFiltered = filtered.slice(0, DISPLAY_LIMIT)
+  const hasMoreFiltered = filtered.length > DISPLAY_LIMIT
 
   if (loading && logs.length === 0) return <Loading variant="spinner" text={t("loading")} />
   if (error) {
@@ -226,14 +232,14 @@ export function AuditLogsPanel() {
             </tr>
           </thead>
           <tbody>
-            {filtered.length === 0 && (
+            {displayedFiltered.length === 0 && (
               <tr>
                 <td colSpan={6} className="px-3 py-6 text-center text-lia-text-secondary">
                   {t("empty")}
                 </td>
               </tr>
             )}
-            {filtered.map((log) => {
+            {displayedFiltered.map((log) => {
               const ts = log.timestamp ?? log.created_at
               const sev = (log.severity ?? "low").toLowerCase()
               return (
@@ -261,6 +267,12 @@ export function AuditLogsPanel() {
         </table>
       </div>
 
+      {hasMoreFiltered && (
+        <div className="px-3 py-2 text-xs text-lia-text-secondary bg-lia-bg-secondary border border-lia-border-subtle rounded-md" data-testid="audit-logs-display-limit">
+          {/* P2-GOV-009: severityFilter client-side. Showing first {DISPLAY_LIMIT} of {filtered.length} filtered. */}
+          Mostrando {DISPLAY_LIMIT} de {filtered.length} resultados filtrados. Use &ldquo;Exportar CSV&rdquo; para o conjunto completo.
+        </div>
+      )}
       <div className="flex items-center justify-between text-xs text-lia-text-secondary">
         <span data-testid="audit-logs-page-info">
           {t("pageInfo", { page: page + 1, count: logs.length })}
@@ -296,7 +308,7 @@ export function AuditLogsPanel() {
             {retention.slice(0, 8).map((p, i) => (
               <li key={p.id ?? `${p.category}-${i}`} className="flex justify-between gap-3">
                 <span className="font-mono">{p.category ?? p.event_type ?? "-"}</span>
-                <span className="font-mono">{p.retention_days ?? "-"}d</span>
+                <span className="font-mono">{p.retention_months != null ? p.retention_months + "m" : (p.retention_days != null ? p.retention_days + "d" : "-")}</span>
               </li>
             ))}
           </ul>

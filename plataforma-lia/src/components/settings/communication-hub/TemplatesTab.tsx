@@ -388,7 +388,7 @@ export function TemplatesTab({
                 )}
 
                 {aiResultModal?.show && (
-                  <div className="fixed inset-0 bg-lia-overlay flex items-center justify-center z-50 p-4">
+                  <div className="fixed inset-0 bg-lia-overlay flex items-center justify-center z-[9999] p-4">
                     <Card className="w-full max-w-2xl max-h-[90vh] overflow-hidden rounded-xl bg-lia-bg-primary">
                       <CardHeader className="dark:border-lia-border-subtle pb-4">
                         <div className="flex items-center justify-between">

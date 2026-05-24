@@ -24,6 +24,7 @@ Multi-tenancy: canonical via `Depends(require_company_id)` + JWT.
 Audit log: cada operação gera entrada com `demographic_proxies={}` explicit.
 """
 from __future__ import annotations
+import os
 
 import logging
 from datetime import datetime, UTC
@@ -493,7 +494,7 @@ async def get_technical_documentation(
             description="Sistema multi-modelo IA com fallback canonical.",
             details={
                 "providers": ["anthropic", "openai", "google"],
-                "primary_model": "claude-opus-4-7",
+                "primary_model": os.getenv("LLM_PRIMARY_MODEL", "claude-opus-4-7"),  # P2-W4: reads from env var
                 "fallback_chain": ["claude-sonnet-4", "gpt-5", "gemini-pro"],
                 "fine_tuning": "none (instruction-tuned via prompt engineering)",
             },

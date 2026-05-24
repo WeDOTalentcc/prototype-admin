@@ -61,6 +61,10 @@ class BiasAuditReportResponse(BaseModel):
     dimensions: list[DemographicAuditResultResponse]
     has_alerts: bool
 
+# P2-W4 DUPLICATE_OF_INTENT backward-compat alias
+# (see app/schemas/observability.py:491 for the canonical DB-backed version)
+BiasAuditSummaryResponse = BiasAuditReportResponse
+
 
 def _to_response(report: BiasAuditReport) -> BiasAuditReportResponse:
     return BiasAuditReportResponse(

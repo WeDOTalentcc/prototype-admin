@@ -6,6 +6,8 @@ export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from "next/server"
 import { getAuthHeaders } from "@/lib/api/auth-headers"
 
+// P2-W2: manual proxy implementation (uses BACKEND_URL env var correctly).
+// TODO: migrate to createProxyHandlers({backendTarget:"fastapi"}) to align with other proxy patterns.
 const BACKEND_URL = process.env.BACKEND_URL || "http://127.0.0.1:8001"
 
 const DEFAULT_COMMUNICATION_SETTINGS = {
