@@ -4,6 +4,7 @@ import { useState } from "react"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { Chip } from "@/components/ui/chip"
 import { CandidatePageHeader } from "@/components/candidate-page/CandidatePageHeader"
+import { CandidatePageSummary } from "@/components/candidate-page/CandidatePageSummary"
 import { CandidatePreviewProfileTab } from "@/components/candidate-preview/CandidatePreviewProfileTab"
 import { CandidateActivitiesTab } from "@/components/candidate-preview/CandidateActivitiesTab"
 import { CandidateFilesTab } from "@/components/candidate-preview/CandidateFilesTab"
@@ -159,8 +160,20 @@ export function CandidatePage({
         </div>
 
         <div className="flex-1 overflow-y-auto bg-lia-bg-primary dark:bg-lia-bg-primary">
-          {/* F6 Item 4: max-width responsivo. modal mode=full-width (kanban overlay); page mode=max-w-4xl centered (better leitura em viewport grande). */}
-          <div className={mode === "page" ? "max-w-4xl mx-auto p-6" : "max-w-7xl mx-auto p-6"}>
+          {/*
+            F9 Item 3 (2-col polish): em mode="page" + viewport >= lg, exibe grid
+            5-col (3/2) com aside sticky no rail direito. Em viewport menor ou
+            mode="modal", mantém layout single-column existente.
+          */}
+          <div className="max-w-7xl mx-auto p-6">
+            <div
+              className={
+                mode === "page"
+                  ? "grid grid-cols-1 lg:grid-cols-5 gap-6"
+                  : ""
+              }
+            >
+              <div className={mode === "page" ? "lg:col-span-3 min-w-0" : ""}>
             {core.activeTab === "profile" && (
               <CandidatePreviewProfileTab
                 candidate={candidate}
@@ -221,6 +234,16 @@ export function CandidatePage({
                 cleanTextForCopy={core.cleanTextForCopy}
               />
             )}
+              </div>
+              {mode === "page" && (
+                <aside className="lg:col-span-2 lg:sticky lg:top-4 lg:self-start min-w-0">
+                  <CandidatePageSummary
+                    candidate={candidate as Parameters<typeof CandidatePageSummary>[0]["candidate"]}
+                    liaScore={liaScore}
+                  />
+                </aside>
+              )}
+            </div>
           </div>
         </div>
 
