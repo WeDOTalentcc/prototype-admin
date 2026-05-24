@@ -199,31 +199,50 @@ class CommunicationService:
         except Exception:
             return False
 
-    def _get_next_sending_window(self) -> datetime:
-        """Get the next valid sending window."""
-        brazil_now = self._get_brazil_now()
-        
-        if brazil_now.weekday() >= 5:
+    def _get_next_sending_window(self, settings: dict | None = None) -> datetime:
+        """Get the next valid sending window.
+
+        P0-W1-04 fix: aceita settings do tenant para usar sending_hours_start/end
+        configurados, em vez das constantes hardcoded SENDING_START_HOUR/END_HOUR.
+        LGPD Art. 7: limites configurados pelo responsavel devem ser respeitados.
+
+        Backward-compat: settings=None usa defaults canonical (UTC-3 hardcoded, 8h-20h).
+        """
+        s = settings or {}
+        start_hour = int(s.get("sending_hours_start", self.SENDING_START_HOUR))
+        end_hour = int(s.get("sending_hours_end", self.SENDING_END_HOUR))
+        respect_weekends = bool(s.get("respect_weekends", True))
+
+        if settings:
+            from app.shared.services.communication_settings_consumer import get_tenant_now
+            brazil_now = get_tenant_now(settings)
+        else:
+            brazil_now = self._get_brazil_now()
+
+        if respect_weekends and brazil_now.weekday() >= 5:
             days_until_monday = 7 - brazil_now.weekday()
             next_window = brazil_now.replace(
-                hour=self.SENDING_START_HOUR, minute=0, second=0, microsecond=0
+                hour=start_hour, minute=0, second=0, microsecond=0
             ) + timedelta(days=days_until_monday)
-        elif brazil_now.hour >= self.SENDING_END_HOUR:
-            if brazil_now.weekday() == 4:
+        elif brazil_now.hour >= end_hour:
+            if respect_weekends and brazil_now.weekday() == 4:
                 next_window = brazil_now.replace(
-                    hour=self.SENDING_START_HOUR, minute=0, second=0, microsecond=0
+                    hour=start_hour, minute=0, second=0, microsecond=0
                 ) + timedelta(days=3)
             else:
                 next_window = brazil_now.replace(
-                    hour=self.SENDING_START_HOUR, minute=0, second=0, microsecond=0
+                    hour=start_hour, minute=0, second=0, microsecond=0
                 ) + timedelta(days=1)
-        elif brazil_now.hour < self.SENDING_START_HOUR:
+        elif brazil_now.hour < start_hour:
             next_window = brazil_now.replace(
-                hour=self.SENDING_START_HOUR, minute=0, second=0, microsecond=0
+                hour=start_hour, minute=0, second=0, microsecond=0
             )
         else:
             next_window = brazil_now
-        
+
+        if settings:
+            # get_tenant_now ja retorna hora local -- nao tem offset UTC para desfazer
+            return next_window
         return next_window - timedelta(hours=BRAZIL_TZ_OFFSET_HOURS)
     
     async def _check_rate_limit(
@@ -417,10 +436,15 @@ class CommunicationService:
                     inc_communication_skip("holiday")
                 else:
                     inc_communication_skip("outside_hours")
-                next_window = self._get_next_sending_window()
+                next_window = self._get_next_sending_window(settings)
+                # P0-W1-04: mostrar janela real do tenant, nao hardcoded 8h-20h.
+                _start = int(settings.get("sending_hours_start", self.SENDING_START_HOUR)) if settings else self.SENDING_START_HOUR
+                _end = int(settings.get("sending_hours_end", self.SENDING_END_HOUR)) if settings else self.SENDING_END_HOUR
+                _resp_wknd = bool(settings.get("respect_weekends", True)) if settings else True
+                _window_desc = f"{_start}h-{_end}h {'dias uteis' if _resp_wknd else 'qualquer dia'}"
                 result["warnings"].append({
                     "type": "outside_hours",
-                    "message": "Fora do horário de envio (8h-20h dias úteis)",
+                    "message": f"Fora do horario de envio ({_window_desc})",
                     "next_window": next_window.isoformat(),
                     "will_queue": True
                 })
@@ -800,7 +824,7 @@ class CommunicationService:
                 )
                 settings = await get_company_communication_settings(db, company_id)
                 if not self._is_within_sending_hours(settings):
-                    next_window = self._get_next_sending_window()
+                    next_window = self._get_next_sending_window(settings)
                     log.status = CommunicationStatus.QUEUED.value
                     log.next_retry_at = next_window
                     await db.commit()
