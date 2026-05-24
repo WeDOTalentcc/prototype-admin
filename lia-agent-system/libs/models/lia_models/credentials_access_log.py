@@ -103,6 +103,7 @@ class CredentialsAccessLog(Base):
             "company_id",
             "accessed_at",
         ),
+        {"extend_existing": True},
     )
 
     def __repr__(self) -> str:

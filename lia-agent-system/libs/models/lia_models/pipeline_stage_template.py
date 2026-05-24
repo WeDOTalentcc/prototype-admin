@@ -89,6 +89,7 @@ class PipelineStageTemplate(Base):
             "deleted_at",
             "is_master_template",
         ),
+        {"extend_existing": True},
     )
 
     def __repr__(self) -> str:

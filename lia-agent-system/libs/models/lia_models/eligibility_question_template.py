@@ -77,6 +77,10 @@ class EligibilityQuestionTemplate(Base):
         backref="customizations",
     )
 
+    # Onda 4-Fase8 (2026-05-24): fix indentação do {"extend_existing": True}
+    # que estava desalinhada (codemod paralelo). Bloqueava alembic upgrade head
+    # + qualquer import de lia_models/__init__.py via Python loader (SQLAlchemy
+    # tentava parsear o dict como argumento posicional dos Index).
     __table_args__ = (
         Index(
             "ix_elig_templates_company_master",
@@ -88,6 +92,7 @@ class EligibilityQuestionTemplate(Base):
             "deleted_at",
             "is_master_template",
         ),
+        {"extend_existing": True},
     )
 
     def __repr__(self) -> str:
