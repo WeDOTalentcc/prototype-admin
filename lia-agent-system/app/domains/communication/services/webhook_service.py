@@ -79,7 +79,7 @@ class WebhookService:
             should_close = True
         
         try:
-            valid_events = [e["event"] for e in WEBHOOK_EVENTS]
+            valid_events = list(WEBHOOK_EVENTS)  # P1-W3-12: WEBHOOK_EVENTS is list[str] from enum, not list[dict]
             for event in events:
                 if event not in valid_events:
                     return {
