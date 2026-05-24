@@ -212,10 +212,24 @@ company_id: str = Depends(require_company_id)):
       wedotalent_admin via update.
     """
     try:
-        # P0.A — role escalation gate (CLAUDE.md E1)
-        if data.role == UserRole.wedotalent_admin:
+        # P0.A + P0-W2-05 — role escalation gate (CLAUDE.md E1)
+        # ANY role change requires admin or wedotalent_admin.
+        # Recruiters/viewers cannot self-promote even to tenant-level admin (OWASP A01).
+        if data.role is not None:
             current_role = getattr(current_user, "role", None) if current_user else None
-            if current_role != UserRole.wedotalent_admin:
+            is_admin_or_staff = current_role in (UserRole.admin, UserRole.wedotalent_admin)
+            if not is_admin_or_staff:
+                logger.warning(
+                    f"Role escalation blocked: user={getattr(current_user, 'id', 'unknown')} "
+                    f"role={current_role!r} tried to set role={data.role!r} "
+                    f"for user {user_id} in company={company_id}"
+                )
+                raise HTTPException(
+                    status_code=403,
+                    detail="Apenas administradores podem alterar roles de usuários",
+                )
+            # Extra guard: only wedotalent_admin can assign wedotalent_admin
+            if data.role == UserRole.wedotalent_admin and current_role != UserRole.wedotalent_admin:
                 logger.warning(
                     f"Role escalation blocked: user={getattr(current_user, 'id', 'unknown')} "
                     f"tried to escalate user {user_id} to wedotalent_admin in company={company_id}"
@@ -258,10 +272,13 @@ company_id: str = Depends(require_company_id)):
 async def delete_user(
     user_id: str,
     user_repo: UserRepository = Depends(get_user_repo),
+    current_user: User = Depends(get_current_user_or_demo),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: defense-in-depth — company_id JWT + tenant-scoped get_by_id
     """Delete a user.
 
+    P0-W2-01 fix (2026-05-24): current_user adicionado para garantir
+    autenticação explícita (defense-in-depth sobre require_company_id).
     Audit Wave 3 (2026-05-21) — P0.C: get_by_id passes company_id (defense-in-depth).
     """
     try:
