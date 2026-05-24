@@ -1,20 +1,27 @@
 """
-Global Policies API Endpoints.
+Global Policies API — platform-wide policy management.
 
 Provides endpoints for:
-- Listing and filtering global policies
+- Listing and filtering global policies (all authenticated users)
 - Retrieving individual policies with audit history
-- Updating policy values
+- Updating policy values (wedotalent_admin ONLY — Onda 4.2d-P0-5)
 - Viewing audit history
 - Listing categories with counts
-- Seeding default policies
+- Seeding default policies (wedotalent_admin ONLY — Onda 4.2d-P0-7)
+
+Onda 4.2d-P0-5,6,7 (2026-05-23): regulatory hardening:
+- Mutations (PUT/SEED) gated por wedotalent_admin (staff WeDOTalent apenas).
+- user_id agora vem do JWT, nao mais X-User-ID header forjavel
+  (fechou SOX non-repudiation gap em platform_policy_audit_logs).
 """
 import logging
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.auth.dependencies import get_current_active_user
+from app.auth.models import User, UserRole
 from app.core.database import get_db
 from app.domains.policy.repositories.global_policy_repository import GlobalPolicyRepository
 from app.models.global_policies import PlatformPolicy
@@ -36,16 +43,34 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/global-policies", tags=["global-policies"])
 
 
+def require_wedotalent_admin(
+    current_user: User = Depends(get_current_active_user),
+) -> User:
+    """Onda 4.2d-P0-5 (2026-05-23): gate pra mutacoes em platform globals.
+
+    Tenant admin nao pode mutar platform globals — apenas staff WeDOTalent.
+    """
+    if current_user.role != UserRole.wedotalent_admin:
+        raise HTTPException(
+            status_code=403,
+            detail=(
+                "Only WeDOTalent staff can modify platform-global policies. "
+                "Contact WeDOTalent support to request changes."
+            ),
+        )
+    return current_user
+
+
 def get_user_id_from_header(
-    x_user_id: str | None = Header(None, alias="X-User-ID"),
-) -> str | None:
-    if x_user_id:
-        try:
-            UUID(x_user_id)
-            return x_user_id
-        except ValueError:
-            pass
-    return None
+    current_user: User = Depends(get_current_active_user),
+) -> str:
+    """Get user ID from JWT (NO header).
+
+    Onda 4.2d-P0-6 (2026-05-23): antes lia X-User-ID header forjavel,
+    gravava no audit_log = quebrava SOX non-repudiation. Agora JWT-only.
+    Nome mantido pra zero impacto callers.
+    """
+    return str(current_user.id)
 
 
 @router.get("", response_model=PolicyListResponse)
@@ -136,11 +161,14 @@ company_id: str = Depends(require_company_id)):
 async def update_policy(
     policy_id: str,
     data: PolicyUpdate,
-    user_id: str | None = Depends(get_user_id_from_header),
+    user_id: str = Depends(get_user_id_from_header),
     db: AsyncSession = Depends(get_db),
-company_id: str = Depends(require_company_id)):
-    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
-    """Update a policy value and create an audit log entry."""
+    # Onda 4.2d-P0-5 (2026-05-23): wedotalent_admin gate. Antes qualquer
+    # tenant admin podia editar policy platform-global afetando TODAS empresas.
+    _staff: User = Depends(require_wedotalent_admin),
+    company_id: str = Depends(require_company_id),
+):
+    """Update a policy value and create an audit log entry (staff-only)."""
     try:
         policy_uuid = UUID(policy_id)
         repo = GlobalPolicyRepository(db)
@@ -207,9 +235,14 @@ company_id: str = Depends(require_company_id)):
 
 
 @router.post("/seed", response_model=SeedPoliciesResponse)
-async def seed_default_policies(db: AsyncSession = Depends(get_db), company_id: str = Depends(require_company_id)):
-    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
-    """Seed the database with default policies. Skips existing policies."""
+async def seed_default_policies(
+    db: AsyncSession = Depends(get_db),
+    # Onda 4.2d-P0-7 (2026-05-23): wedotalent_admin gate. Antes qualquer
+    # autenticado podia rodar seed, vandalizar policies platform-wide.
+    _staff: User = Depends(require_wedotalent_admin),
+    company_id: str = Depends(require_company_id),
+):
+    """Seed the database with default policies. Skips existing policies (staff-only)."""
     try:
         repo = GlobalPolicyRepository(db)
         created, skipped = await repo.seed_defaults()
