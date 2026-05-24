@@ -8,7 +8,7 @@ Hierarquia de resolução (custo crescente):
   Tier 3: VectorSemanticCache   — pgvector, cosine similarity >= 0.85
   Tier 4: FastRouter            — regex/keyword (O(n) patterns)
   Tier 5: LLM Cascade           — Haiku→Sonnet→Opus (caro)
-  Tier 6: AutonomousReActAgent  — agente cross-domain, fallback final antes de clarification
+  Tier 6: REMOVED Sprint 12.3-B (was AutonomousReActAgent cross-domain fallback; env never set in prod)
   Fallback: clarification_needed — pergunta ao usuário quando tudo falha
 """
 import hashlib
@@ -544,7 +544,7 @@ class CascadedRouter:
             logger.debug("[A/B] CascadeRouter variant selection skipped: %s", _ab_exc)
 
         # Threshold: only accept Tier 5 result when confidence is sufficient;
-        # low-confidence Tier 5 falls through to Tier 6 (AutonomousReActAgent).
+        # low-confidence Tier 5 falls through to Tier 7 (Studio Agent) then clarification — Tier 6 removed Sprint 12.3-B.
         import os as _os_t5
         _TIER5_MIN_CONFIDENCE = float(_os_t5.getenv("ROUTER_LLM_CASCADE_MIN_CONFIDENCE", "0.5"))
         async with _tracer.start_span("router.tier5_llm_cascade", attributes={
@@ -625,72 +625,14 @@ class CascadedRouter:
                 _t5_span.set_attribute("error_detail", str(e))
                 logger.error("CascadedRouter: LLM cascade failed: %s", e)
 
-        # Tier 6 — AutonomousReActAgent (cross-domain fallback antes de clarification)
-        # W4-041 (2026-05-23): canary gate per-tenant feature flag.
-        # AUTONOMOUS_REACT_ENABLED env var = global toggle (legacy infra).
-        # tier6_canary_enabled flag = per-tenant rollout (rollout_percentage no DB).
-        # AMBOS precisam ser true. Quando off OR fora do canary %, pula direto pra clarification.
-        import os as _os
-        _tier6_env_enabled = _os.getenv("AUTONOMOUS_REACT_ENABLED", "false").lower() == "true"
-        _tier6_flag_enabled = False
-        if _tier6_env_enabled:
-            try:
-                from app.core.feature_flags import is_enabled as _ff_is_enabled
-                _tier6_tenant = (context or {}).get("company_id") if context else None
-                _tier6_flag_enabled = _ff_is_enabled("tier6_canary_enabled", company_id=_tier6_tenant)
-            except Exception as _ff_exc:
-                logger.warning("CascadedRouter Tier 6 flag check failed: %s", _ff_exc)
-                _tier6_flag_enabled = False
-
-            # Canary metric: invocation tracking (gate ON = entered Tier 6 path)
-            try:
-                from app.shared.observability.canary_metrics import tier6_invocations_total
-                if tier6_invocations_total is not None:
-                    import hashlib
-                    _tier6_cid_hash = (
-                        hashlib.sha256((_tier6_tenant or "anon").encode()).hexdigest()[:12]
-                    )
-                    tier6_invocations_total.labels(
-                        company_id_hash=_tier6_cid_hash,
-                        flag_state="on" if _tier6_flag_enabled else "off",
-                    ).inc()
-            except Exception:
-                pass  # fail-open metrics
-
-        if _tier6_env_enabled and _tier6_flag_enabled:
-            async with _tracer.start_span("router.tier6_autonomous_react", attributes={
-                "tier_name": "tier6_autonomous_react", "service": "cascaded_router", "match_type": "autonomous_agent",
-            }) as _t6_span:
-                try:
-                    _t0 = time.perf_counter()
-                    autonomous_result = await self._route_via_autonomous_agent(message, context, session_id)
-                    if autonomous_result:
-                        _elapsed_ms = (time.perf_counter() - _t0) * 1000
-                        self._stats["autonomous_hits"] += 1
-                        if _hit_counter:
-                            _hit_counter.labels(tier="autonomous_react").inc()
-                        if _latency_hist:
-                            _latency_hist.labels(tier="autonomous_react").observe(_elapsed_ms)
-                        if _conf_hist:
-                            _conf_hist.labels(model="autonomous_react").observe(autonomous_result.confidence)
-                        _t6_span.set_attribute("hit", "true")
-                        _t6_span.set_attribute("confidence_score", str(autonomous_result.confidence))
-                        _t6_span.set_attribute("domain_id", autonomous_result.domain_id)
-                        _t6_span.set_attribute("latency_ms", f"{_elapsed_ms:.2f}")
-                        logger.info(
-                            "CascadedRouter: Tier 6 (autonomous) resolved '%s...' in %.0fms",
-                            message[:40], _elapsed_ms,
-                        )
-                        return autonomous_result
-                    _t6_span.set_attribute("hit", "false")
-                    _t6_span.set_attribute("confidence_score", "0.0")
-                    _t6_span.set_attribute("latency_ms", f"{(time.perf_counter() - _t0) * 1000:.2f}")
-                except Exception as _auto_exc:
-                    _t6_span.set_attribute("hit", "false")
-                    _t6_span.set_attribute("confidence_score", "0.0")
-                    _t6_span.set_attribute("latency_ms", f"{(time.perf_counter() - _t0) * 1000:.2f}")
-                    _t6_span.set_attribute("error_detail", str(_auto_exc))
-                    logger.error("CascadedRouter: Tier 6 (autonomous) failed: %s", _auto_exc)
+        # Tier 6 — REMOVED in Sprint 12.3-B (2026-05-24).
+        # Histórico: Tier 6 invocava AutonomousReActAgent (cross-domain ReAct fallback)
+        # via env AUTONOMOUS_REACT_ENABLED + flag per-tenant tier6_canary_enabled.
+        # Em prod env nunca foi SET (default false) -- Tier 6 invocations = 0 nos canary metrics.
+        # Decisão: estrutura removida do hot path (low-risk, env-gated already-off).
+        # autonomous_react_agent.py file mantido (5 test files + agent_chat_ws.py import
+        # via @register_agent decorator dependem dele importável). Cleanup em Sprint 12.6.
+        # Refs: PHASE_2_V1_ARCHITECTURE_AUDIT.md (decisão Batch 1), W4-041 (canary doc).
 
         # Tier 7 — Studio Agent Matcher (custom agents bound to current context)
         _ctx = context or {}
@@ -864,61 +806,11 @@ class CascadedRouter:
             )
         return route_result
 
-    async def _route_via_autonomous_agent(
-        self,
-        message: str,
-        context: dict[str, Any] | None = None,
-        session_id: str | None = None,
-    ) -> RouteResult | None:
-        """
-        Tier 6: invoca o AutonomousReActAgent para queries cross-domain.
-
-        O agente processa a query e retorna uma resposta completa.
-        Quando bem-sucedido, roteia para o domínio 'autonomous' com confiança >= 0.5.
-        Budget controlado por AUTONOMOUS_REACT_MAX_STEPS (env var, padrão 10).
-        """
-        try:
-            # Tier 6 ReAct fallback canonical — _route_via_autonomous_agent é a implementação real
-            # do Tier 6 do CascadedRouter (sem substituto em recruiter_assistant/agent_studio).
-            from app.domains.autonomous.agents.autonomous_react_agent import get_autonomous_react_agent
-            from lia_agents_core.agent_interface import AgentInput
-
-            agent = get_autonomous_react_agent()
-            agent_input = AgentInput(
-                message=message,
-                session_id=session_id or "cascaded_router",
-                user_id=(context or {}).get("user_id", ""),
-                company_id=(context or {}).get("company_id", ""),
-                context=context or {},
-                conversation_history=(context or {}).get("conversation_history", []),
-            )
-            output = await agent.process(agent_input)
-
-            if output.confidence >= 0.5:
-                return RouteResult(
-                    domain_id="autonomous",
-                    confidence=output.confidence,
-                    source="autonomous_react:tier6",
-                    intent_details=OrchestratorIntentResult(
-                        intent_id="autonomous",
-                        confidence=output.confidence,
-                        source="autonomous_react",
-                        routing_metadata={
-                            "response": output.message,
-                            "tool_calls": len(output.actions or []),
-                            "tier": 6,
-                            "metadata": output.metadata or {},
-                        },
-                    ),
-                )
-            logger.debug(
-                "[CascadedRouter][Tier6] Autonomous confidence %.2f < 0.5 — skipping",
-                output.confidence,
-            )
-            return None
-        except Exception as exc:
-            logger.debug("[CascadedRouter][Tier6] autonomous agent error: %s", exc)
-            return None
+    # _route_via_autonomous_agent — REMOVED in Sprint 12.3-B (2026-05-24).
+    # Helper invocava AutonomousReActAgent via Tier 6 do hot path do router.
+    # Tier 6 removido (env never set in prod). Helper era dead code.
+    # autonomous_react_agent.py module mantido para tests + agent_chat_ws.py
+    # imports — cleanup completo em Sprint 12.6.
 
     async def _route_via_llm_cascade(
         self,
