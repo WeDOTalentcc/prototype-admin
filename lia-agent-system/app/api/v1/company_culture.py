@@ -524,6 +524,44 @@ _company_gate: str = Depends(require_company_id)):
         raise HTTPException(status_code=404, detail="Company not found")
     try:
         update_data = data.model_dump(exclude_unset=True)
+
+        # P0-5 FairnessGuard: mesmo gate do tool path LIA (save_company_field).
+        # O recrutador pode editar texto de Missao/DEI/Valores via lapis inline
+        # sem passar pelo agente -- este guard garante que a mesma verificacao
+        # antidiscriminatoria ocorre independente do caminho de escrita.
+        # Falha rapida: FairnessGuard regression nunca bloqueia o save (padrao
+        # canonico de _shared.py JD), mas conteudo discriminatorio levanta 422.
+        try:
+            from app.shared.compliance.fairness_guard import FairnessGuard as _FG
+            _guard = _FG()
+            _text_to_check = " ".join(
+                str(v) for v in update_data.values()
+                if isinstance(v, str) and v.strip()
+            )
+            if _text_to_check:
+                _fg_result = _guard.check(_text_to_check)
+                if _fg_result.is_blocked:
+                    raise HTTPException(
+                        status_code=422,
+                        detail={
+                            "code": "fairness_blocked",
+                            "category": _fg_result.category,
+                            "message": (
+                                _fg_result.educational_message
+                                or "Conteudo discriminatorio detectado."
+                            ),
+                            "blocked_terms": _fg_result.blocked_terms,
+                        },
+                    )
+        except HTTPException:
+            raise
+        except Exception as _fg_exc:
+            # FairnessGuard regression nunca bloqueia save (padrao canonico).
+            logger.warning(
+                "FairnessGuard check skipped in update_culture_profile: %s",
+                _fg_exc,
+            )
+
         # Bug fix 2026-05-21: was update_profile_fields() which returned None
         # when the row did not exist yet, surfacing as HTTP 404 on every
         # manual save before /analyze had ever run. upsert_profile_fields
@@ -532,6 +570,33 @@ _company_gate: str = Depends(require_company_id)):
         # Multi-tenancy gate above is preserved — only the JWT-bound
         # company_id is ever written.
         profile = await repo.upsert_profile_fields(company_id, update_data)
+
+        # P0-6 Audit log LGPD/SOX: toda escrita em dados de empresa deve
+        # ter trail rastreavel (principio de responsabilizacao Art. 48 LGPD).
+        # Usa log_action (facade unificada) em vez de log_decision (para IA).
+        # Audit nunca e ponto de falha do save.
+        try:
+            from app.shared.compliance.audit_service import AuditService as _AS
+            import uuid as _uuid
+            _trace_id = str(_uuid.uuid4())
+            _actor = getattr(current_user, "email", None) or getattr(current_user, "id", "unknown")
+            await _AS().log_action(
+                trace_id=_trace_id,
+                company_id=str(company_id),
+                action_type="company_culture_update",
+                actor=_actor,
+                target_id=str(company_id),
+                target_type="company_culture_profile",
+                metadata={
+                    "fields_updated": list(update_data.keys()),
+                    "source": "rest_put_inline_edit",
+                },
+            )
+        except Exception as _audit_exc:
+            logger.error(
+                "Audit log failed for company_culture_update company=%s: %s",
+                company_id, _audit_exc,
+            )
 
         logger.info(f"Updated culture profile for company {company_id}")
         return profile
