@@ -50,7 +50,7 @@ export interface Integration {
   /**
    * AI provider only. True when the platform is using a global system env var
    * for this provider because the tenant has no entry in `tenant_llm_configs`.
-   * Surfaced as a "Chave do sistema" badge so users know they share quota and
+   * Surfaced as a "Cota compartilhada" badge (P2.3-INT: renamed from Chave do sistema) so users know they share quota and
    * can configure their own key for isolation.
    */
   usingSystemKey?: boolean

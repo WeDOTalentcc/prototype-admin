@@ -363,10 +363,9 @@ company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """List users belonging to the same company as the current user."""
     try:
-        if not current_user.company_id:
-            raise HTTPException(status_code=400, detail="User has no company_id assigned")
-        company_id = current_user.company_id
-
+        # P2-W2-06 fix: usar company_id do JWT (require_company_id Depends) em vez de
+        # current_user.company_id que era redundante e podia divergir do JWT canonical.
+        # company_id ja vem do Depends(require_company_id) na assinatura do handler.
         users = await user_repo.list_for_company(str(company_id), role=role, is_active=is_active)
         user_emails = [u.email for u in users]
         jobs_by_email = await user_repo.count_active_jobs_by_email(user_emails)

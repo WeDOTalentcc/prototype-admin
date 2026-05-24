@@ -577,6 +577,26 @@ async def resend_verification(
     return {"message": "Se o email existir e não estiver verificado, você receberá um novo link de verificação."}
 
 
+# ---------------------------------------------------------------------------
+# DEPRECATED P2-W2-07: sistema legado de invite para entidade User (auth)
+# ---------------------------------------------------------------------------
+# Este bloco (/invitation-info + /accept-invitation) gerencia convites para
+# a entidade User (recrutadores internos WeDOTalent), que usa:
+#   - invitation_token (campo no User model)
+#   - invitation_sent_at + INVITATION_EXPIRE_HOURS (logica app, sem coluna expires_at)
+#
+# O sistema CANONICAL de convites para clientes/tenants usa:
+#   - ClientUser model (tabela client_users)
+#   - invitation_expires_at como coluna dedicada (migration 193)
+#   - Endpoints: POST /api/v1/client-users/invitations/accept
+#                GET  /api/v1/client-users/invitations/validate
+#     (client_users.py - invitation_router)
+#
+# TODO P2-W2-07: avaliar migracao da expiracao de convite User para coluna
+#   invitation_expires_at (igual ao pattern ClientUser) em vez de
+#   invitation_sent_at + timedelta. Enquanto isso: manter os dois sistemas
+#   pois servem entidades distintas (User != ClientUser).
+# ---------------------------------------------------------------------------
 @router.get("/invitation-info/{token}", response_model=InvitationInfo)
 async def get_invitation_info(
     token: str,

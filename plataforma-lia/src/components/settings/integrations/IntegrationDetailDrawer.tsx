@@ -245,7 +245,7 @@ export function IntegrationDetailDrawer({
                 {isAiProvider && !isUsingOwnKey && (
                   <Chip variant="neutral" className="text-[10px] gap-1 px-2 py-0.5 text-lia-text-tertiary">
                     <ShieldCheck className="w-3 h-3" />
-                    Chave do sistema
+                    Cota compartilhada
                   </Chip>
                 )}
               </div>
