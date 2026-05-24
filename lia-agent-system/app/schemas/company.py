@@ -1,12 +1,13 @@
 """
 Pydantic schemas for Company Setup endpoints.
 """
+import re
 from decimal import Decimal
 from datetime import datetime
 from typing import Any
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, field_validator
+from pydantic import BaseModel, ConfigDict, EmailStr, field_validator
 from app.shared.types import WeDoBaseModel
 
 
@@ -199,7 +200,46 @@ class CultureValueResponse(CultureValueBase):
         from_attributes = True
 
 
-class CompanyProfileBase(BaseModel):
+
+def _validate_cnpj_mod11(cnpj: str) -> bool:
+    """Valida CNPJ pelo algoritmo mod11. cnpj deve ter exatamente 14 digitos."""
+    weights1 = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
+    total = sum(int(cnpj[i]) * weights1[i] for i in range(12))
+    remainder = total % 11
+    digit1 = 0 if remainder < 2 else 11 - remainder
+    if int(cnpj[12]) != digit1:
+        return False
+    weights2 = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
+    total = sum(int(cnpj[i]) * weights2[i] for i in range(13))
+    remainder = total % 11
+    digit2 = 0 if remainder < 2 else 11 - remainder
+    return int(cnpj[13]) == digit2
+
+
+class CnpjMixin:
+    """Mixin que fornece validacao mod11 de CNPJ para schemas Pydantic."""
+
+    @field_validator("cnpj", mode="before")
+    @classmethod
+    def validate_cnpj(cls, v):
+        if v is None:
+            return None
+        # Remove formatacao: pontos, barras, hifens
+        digits = re.sub(r"[.\-/]", "", str(v))
+        if len(digits) != 14:
+            raise ValueError(
+                f"CNPJ deve ter 14 digitos numericos (recebido: {len(digits)})"
+            )
+        if not digits.isdigit():
+            raise ValueError("CNPJ deve conter apenas digitos numericos")
+        if len(set(digits)) == 1:
+            raise ValueError("CNPJ invalido: sequencia de digitos repetidos")
+        if not _validate_cnpj_mod11(digits):
+            raise ValueError("CNPJ invalido: digitos verificadores incorretos (mod11)")
+        return digits
+
+
+class CompanyProfileBase(CnpjMixin, BaseModel):
     name: str
     trading_name: str | None = None
     website: str | None = None
@@ -217,8 +257,8 @@ class CompanyProfileBase(BaseModel):
     address: str | None = None
     main_phone: str | None = None
     hr_phone: str | None = None
-    main_email: str | None = None
-    hr_email: str | None = None
+    main_email: EmailStr | None = None
+    hr_email: EmailStr | None = None
     linkedin_url: str | None = None
     glassdoor_url: str | None = None
     employee_count: int | None = None
@@ -229,7 +269,7 @@ class CompanyProfileCreate(CompanyProfileBase):
     pass
 
 
-class CompanyProfileUpdate(WeDoBaseModel):
+class CompanyProfileUpdate(CnpjMixin, WeDoBaseModel):
     name: str | None = None
     trading_name: str | None = None
     website: str | None = None
@@ -247,8 +287,8 @@ class CompanyProfileUpdate(WeDoBaseModel):
     address: str | None = None
     main_phone: str | None = None
     hr_phone: str | None = None
-    main_email: str | None = None
-    hr_email: str | None = None
+    main_email: EmailStr | None = None
+    hr_email: EmailStr | None = None
     linkedin_url: str | None = None
     glassdoor_url: str | None = None
     employee_count: int | None = None
