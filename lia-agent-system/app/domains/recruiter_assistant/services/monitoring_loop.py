@@ -194,6 +194,58 @@ class MonitoringLoop:
         """Sprint 11.0 — record successful hourly task run."""
         self._last_hourly_task_runs[task_name] = datetime.now(timezone.utc)
 
+    async def _retry_with_backoff(
+        self,
+        task_name: str,
+        coro_factory,
+        max_attempts: int = 3,
+        backoff_base: float = 60.0,
+    ) -> "tuple[bool, Any]":
+        """Sprint 11.2 — canonical retry wrapper for migrated Celery tasks.
+
+        Args:
+            task_name: name for logging
+            coro_factory: callable returning awaitable (called fresh each attempt)
+            max_attempts: total attempts (default 3 = initial + 2 retries)
+            backoff_base: seconds between attempts, doubled each retry
+                          (default: 60s, 120s, 240s = ~7min total worst case)
+
+        Returns:
+            tuple[success: bool, result_or_exception]
+            - success=True, result=task_return_value
+            - success=False, result=last_exception (after exhaust)
+
+        Pattern canonical Sprint 11.3: every migrated task wraps with this.
+        Failure does NOT mark _last_daily_task_runs → next iteration retries fresh.
+        """
+        import asyncio
+        last_exc = None
+        for attempt in range(max_attempts):
+            try:
+                result = await coro_factory()
+                if attempt > 0:
+                    logger.info(
+                        "[MonitoringLoop retry] task=%s recovered at attempt %d/%d",
+                        task_name, attempt + 1, max_attempts,
+                    )
+                return True, result
+            except Exception as exc:
+                last_exc = exc
+                if attempt < max_attempts - 1:
+                    backoff = backoff_base * (2 ** attempt)
+                    logger.warning(
+                        "[MonitoringLoop retry] task=%s attempt %d/%d FAILED: %s. "
+                        "Retrying in %.0fs",
+                        task_name, attempt + 1, max_attempts, exc, backoff,
+                    )
+                    await asyncio.sleep(backoff)
+                else:
+                    logger.error(
+                        "[MonitoringLoop retry] task=%s EXHAUSTED %d attempts: %s",
+                        task_name, max_attempts, exc, exc_info=True,
+                    )
+        return False, last_exc
+
     def __init__(self, check_interval: int | None = None):
         self._running = False
         self._task: asyncio.Task | None = None
@@ -420,25 +472,85 @@ class MonitoringLoop:
         from lia_config.database import AsyncSessionLocal
 
         # ─── DSR overdue check (LGPD Art. 20) ───
+        # Sprint 11.0 hotfix — migrated Celery task dsr.check_overdue_daily
         task_name = "dsr.check_overdue_daily"
         if self._should_run_daily(task_name):
-            try:
+            async def _coro():
                 from app.jobs.tasks.compliance import check_dsr_overdue_canonical
                 async with AsyncSessionLocal() as db:
-                    result = await check_dsr_overdue_canonical(db)
+                    return await check_dsr_overdue_canonical(db)
+            ok, result = await self._retry_with_backoff(task_name, _coro)
+            if ok:
                 self._mark_daily_run(task_name)
                 logger.info(
                     "[MonitoringLoop healthz] daily_task=%s result=%s",
                     task_name, result,
                 )
-            except Exception as exc:
-                logger.error(
-                    "[MonitoringLoop healthz] daily_task=%s FAILED: %s",
-                    task_name, exc, exc_info=True,
-                )
-                # Don\'t mark as run — try again next iteration.
 
-        # Sprint 11.3 batches will append more here.
+        # ─── LGPD cleanup (Art. 16 retenção 90d/180d/365d) ───
+        # Sprint 11.3 Batch 1 — migrated lgpd.run_cleanup_daily
+        task_name = "lgpd.run_cleanup_daily"
+        if self._should_run_daily(task_name):
+            async def _coro():
+                from app.shared.services.lgpd_cleanup_service import run_cleanup
+                return await run_cleanup(dry_run=False)
+            ok, result = await self._retry_with_backoff(task_name, _coro)
+            if ok:
+                self._mark_daily_run(task_name)
+                logger.info(
+                    "[MonitoringLoop healthz] daily_task=%s result=%s",
+                    task_name, result,
+                )
+
+        # ─── Audit S3 lifecycle policy ───
+        # Sprint 11.3 Batch 1 — migrated audit.apply_lifecycle_policy
+        task_name = "audit.apply_lifecycle_policy"
+        if self._should_run_daily(task_name):
+            async def _coro():
+                from lia_audit.audit_storage import get_audit_storage
+                storage = get_audit_storage()
+                return await storage.apply_lifecycle_policy()
+            ok, result = await self._retry_with_backoff(task_name, _coro)
+            if ok:
+                self._mark_daily_run(task_name)
+                logger.info(
+                    "[MonitoringLoop healthz] daily_task=%s result=%s",
+                    task_name, result,
+                )
+
+        # ─── Conversation TTL cleanup (Art. 18 minimização) ───
+        # Sprint 11.3 Batch 1 — migrated conversation.ttl_cleanup
+        task_name = "conversation.ttl_cleanup"
+        if self._should_run_daily(task_name):
+            async def _coro():
+                from app.shared.services.lgpd_cleanup_service import (
+                    run_conversation_ttl_cleanup,
+                )
+                return await run_conversation_ttl_cleanup(dry_run=False)
+            ok, result = await self._retry_with_backoff(task_name, _coro)
+            if ok:
+                self._mark_daily_run(task_name)
+                logger.info(
+                    "[MonitoringLoop healthz] daily_task=%s result=%s",
+                    task_name, result,
+                )
+
+        # ─── Voice retention purge (LGPD voice recordings) ───
+        # Sprint 11.3 Batch 1 — migrated voice_retention.purge_daily
+        task_name = "voice_retention.purge_daily"
+        if self._should_run_daily(task_name):
+            async def _coro():
+                from app.jobs.tasks.voice_retention import _run_voice_retention
+                return await _run_voice_retention(dry_run=False)
+            ok, result = await self._retry_with_backoff(task_name, _coro)
+            if ok:
+                self._mark_daily_run(task_name)
+                logger.info(
+                    "[MonitoringLoop healthz] daily_task=%s result=%s",
+                    task_name, result,
+                )
+
+        # Sprint 11.3 Batch 2+ will append more here.
 
     async def _check_stale_candidates(self, company_id: str) -> list[ProactiveAlert]:
         from lia_config.database import AsyncSessionLocal
