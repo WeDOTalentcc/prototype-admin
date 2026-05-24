@@ -27,13 +27,76 @@ logger = logging.getLogger(__name__)
 
 
 async def set_tenant_context(db: AsyncSession, company_id: str) -> None:
-    """Injeta company_id na sessão PostgreSQL para RLS."""
+    """Inject company_id into the PostgreSQL session for RLS policies.
+
+    Behavior:
+        - Issues `SET LOCAL app.company_id = :cid` via set_config(is_local=true).
+        - Records company_id in db.info["company_id"] so commit_keeping_tenant
+          can re-inject after explicit commit() calls (since is_local=true is
+          transaction-scoped).
+
+    Canonical contract:
+        - Called once at session setup by get_tenant_db.
+        - Called again by commit_keeping_tenant after each commit().
+        - Direct callers (rare) should prefer commit_keeping_tenant.
+
+    See ADR-RLS-002 (pending) + commit 996f50d9 (V4 anti-pattern) +
+    V5 commit (this canonical fix).
+    """
     try:
-        await db.execute(sa.text("SELECT set_config('app.company_id', :cid, true)"), {"cid": str(company_id)})
+        await db.execute(
+            sa.text("SELECT set_config('app.company_id', :cid, true)"),
+            {"cid": str(company_id)},
+        )
+        # Persist for after-commit re-injection.
+        db.info["company_id"] = str(company_id)
     except Exception as exc:
         logger.warning("[RLS] Falha ao definir company_id na sessão: %s", exc)
 
 
+async def commit_keeping_tenant(db: AsyncSession) -> None:
+    """Canonical commit helper for handlers that read after commit.
+
+    Problem this solves:
+        set_config('app.company_id', :cid, true) is TRANSACTION-scoped
+        (is_local=true). An explicit `await db.commit()` in a handler ends
+        the current transaction. The next implicit transaction loses
+        app.company_id, so app_current_company_id() returns NULL, and the
+        RLS SELECT policy `company_id = app_current_company_id()` blocks
+        any subsequent read on the same session. SQLAlchemy surfaces this
+        as `InvalidRequestError: Could not refresh instance` — the row
+        exists but is invisible to the now-tenant-less session.
+
+    Canonical usage:
+        # ❌ ANTI-PATTERN (commit 996f50d9 surfaced this):
+        await db.commit()
+        await db.refresh(obj)  # may fail: row invisible to new tx
+
+        # ✅ CANONICAL (this V5 commit):
+        from app.core.database import commit_keeping_tenant
+        await commit_keeping_tenant(db)
+        await db.refresh(obj)  # safe: tenant context restored
+
+    Requires:
+        set_tenant_context was called earlier on the same session
+        (populates db.info["company_id"]). If not, this helper degrades
+        gracefully to a plain commit() — no-op for sessions that don't
+        carry tenant context (e.g., system tables, admin scripts).
+
+    See ADR-RLS-002 (pending) for the full architectural rationale.
+    """
+    await db.commit()
+    cid = db.info.get("company_id")
+    if cid:
+        try:
+            await db.execute(
+                sa.text("SELECT set_config('app.company_id', :cid, true)"),
+                {"cid": str(cid)},
+            )
+        except Exception as exc:
+            logger.warning(
+                "[RLS] Falha ao re-injetar company_id após commit: %s", exc,
+            )
 
 
 async def get_tenant_db(request: "Request") -> AsyncGenerator[AsyncSession, None]:
