@@ -8,13 +8,12 @@ LGPD sending hours, message limits, and channel preferences.
 import logging
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db, get_tenant_db
-from app.models.communication_settings import DEFAULT_COMMUNICATION_SETTINGS, CommunicationSettings
+from app.models.communication_settings import DEFAULT_COMMUNICATION_SETTINGS
 from app.domains.communication.repositories.communication_settings_repository import CommunicationSettingsRepository
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
@@ -68,15 +67,9 @@ class CommunicationSettingsResponse(BaseModel):
     updated_at: str | None = None
 
 
-# TODO(phase2): extract to repository — communication settings
-def get_company_id(company_id: str = Depends(require_company_id)) -> str:
-    """Canonical: company_id sourced from JWT via require_company_id (never user-supplied)."""
-    return company_id
-
-
 @router.get("/communication-settings", response_model=CommunicationSettingsResponse)
 async def get_communication_settings(
-    company_id: str = Depends(get_company_id),
+    company_id: str = Depends(require_company_id),
     db: AsyncSession = Depends(get_db)):
     """
     Get communication settings for a company.
@@ -133,7 +126,7 @@ async def get_communication_settings(
 @router.put("/communication-settings", response_model=CommunicationSettingsResponse)
 async def update_communication_settings(
     data: CommunicationSettingsUpdate,
-    company_id: str = Depends(get_company_id),
+    company_id: str = Depends(require_company_id),
     db: AsyncSession = Depends(get_tenant_db)):
     """
     Update communication settings for a company.

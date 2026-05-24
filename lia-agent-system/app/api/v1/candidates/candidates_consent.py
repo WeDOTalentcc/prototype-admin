@@ -4,7 +4,7 @@ LGPD consent and communication preferences endpoints.
 import uuid
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, Header, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
 from ._shared import (
