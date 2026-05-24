@@ -627,7 +627,7 @@ export function useCompanySettingsCards() {
         return fetch("/api/backend-proxy/skills-catalog/company/skills-catalog/sync", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ company_id: companyId, skills }),
+          body: JSON.stringify({ tech_stack: skills }),
         })
       }
 

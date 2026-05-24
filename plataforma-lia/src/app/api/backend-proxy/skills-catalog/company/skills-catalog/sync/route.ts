@@ -1,14 +1,13 @@
 export const dynamic = "force-dynamic"
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from "next/server"
 import { getAuthHeaders } from "@/lib/api/auth-headers"
-import { validateBody } from '@/lib/api/validate'
-import { z } from 'zod'
+import { validateBody } from "@/lib/api/validate"
+import { z } from "zod"
 
-const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8001'
+const BACKEND_URL = process.env.BACKEND_URL || "http://127.0.0.1:8001"
 
 const _bodySchema = z.object({
-  company_id: z.string().min(1),
-  skills: z.array(z.string()),
+  tech_stack: z.array(z.string()),
 })
 
 export async function POST(request: NextRequest) {
@@ -20,7 +19,7 @@ export async function POST(request: NextRequest) {
     const response = await fetch(
       `${BACKEND_URL}/api/v1/skills-catalog/company/skills-catalog/sync`,
       {
-        method: 'POST',
+        method: "POST",
         headers: getAuthHeaders(request),
         body: JSON.stringify(body),
       },
@@ -29,7 +28,7 @@ export async function POST(request: NextRequest) {
     const text = await response.text()
     if (!response.ok) {
       return NextResponse.json(
-        { success: false, error: text || 'Failed to sync skills catalog' },
+        { success: false, error: text || "Failed to sync skills catalog" },
         { status: response.status },
       )
     }
@@ -40,7 +39,7 @@ export async function POST(request: NextRequest) {
     }
   } catch {
     return NextResponse.json(
-      { success: false, error: 'Proxy connection error' },
+      { success: false, error: "Proxy connection error" },
       { status: 500 },
     )
   }
