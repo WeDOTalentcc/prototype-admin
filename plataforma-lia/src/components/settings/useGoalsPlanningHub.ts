@@ -221,6 +221,19 @@ export function useGoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection
         })
       })
       if (!response.ok) throw new Error('Falha ao salvar planejamento')
+      // Bug 6 dispatch: notify LIA chat that workforce was updated via UI
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('lia:settings-updated', {
+          detail: {
+            actionId: 'configure_workforce',
+            section: 'workforce',
+            field: `planejamento_${selectedYear}`,
+            value: workforce.length,
+            source: 'ui',
+            ts: Date.now(),
+          },
+        }))
+      }
       setSuccessMessage('Planejamento salvo com sucesso!')
       setTimeout(() => setSuccessMessage(null), 3000)
     } catch (err) {

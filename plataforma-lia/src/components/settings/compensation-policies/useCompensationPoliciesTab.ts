@@ -125,6 +125,19 @@ export function useCompensationPoliciesTab() {
           setPolicies((prev) => [...prev, normalized])
           setSuccessMessage(`Política "${normalized.name}" criada`)
         }
+        // Bug 6 dispatch: notify LIA chat of compensation policy change
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('lia:settings-updated', {
+            detail: {
+              actionId: isEdit ? 'update_compensation_policy' : 'create_compensation_policy',
+              section: 'compensation_policies',
+              field: normalized.name,
+              value: normalized.policy_type,
+              source: 'ui',
+              ts: Date.now(),
+            },
+          }))
+        }
         closeModal()
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : "Erro ao salvar política"
@@ -151,6 +164,19 @@ export function useCompensationPoliciesTab() {
           )
         )
         setSuccessMessage(`Política "${policy.name}" desativada`)
+        // Bug 6 dispatch
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('lia:settings-updated', {
+            detail: {
+              actionId: 'deactivate_compensation_policy',
+              section: 'compensation_policies',
+              field: policy.name,
+              value: 'inactive',
+              source: 'ui',
+              ts: Date.now(),
+            },
+          }))
+        }
         setTimeout(() => setSuccessMessage(null), 3000)
       } catch (err) {
         console.error("Error deactivating policy:", err)
@@ -169,6 +195,17 @@ export function useCompensationPoliciesTab() {
         { method: "POST" }
       )
       await fetchPolicies()
+      // Bug 6 dispatch
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('lia:settings-updated', {
+          detail: {
+            actionId: 'seed_default_compensation_policies',
+            section: 'compensation_policies',
+            source: 'ui',
+            ts: Date.now(),
+          },
+        }))
+      }
       setSuccessMessage("Políticas padrão criadas com sucesso")
       setTimeout(() => setSuccessMessage(null), 4000)
     } catch (err) {
