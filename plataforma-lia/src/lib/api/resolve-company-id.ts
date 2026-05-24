@@ -3,7 +3,10 @@ import { cookies } from 'next/headers'
 import { verifyAndDecodeSession } from '@/lib/session-crypto'
 
 const IS_DEVELOPMENT = process.env.NODE_ENV === 'development'
-const DEV_FALLBACK_COMPANY = process.env.DEV_FALLBACK_COMPANY_ID || 'dev_company'
+// Canonical Demo UUID — matches lia-agent-system/scripts/seeds/demo_company.py:CANONICAL_DEMO_UUID.
+// Bug 1 fix (2026-05-24): was 'dev_company' (string) which fails backend's UUID-strict
+// require_company_id_strict_match (CROSS-TENANT ATTEMPT in logs).
+const DEV_FALLBACK_COMPANY = process.env.DEV_FALLBACK_COMPANY_ID || '00000000-0000-4000-a000-000000000001'
 const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8001'
 
 const TENANT_CACHE_TTL_MS = 5 * 60 * 1000
