@@ -10,6 +10,7 @@ import {
   DEFAULT_NEW_MEMBER,
 } from "@/hooks/settings/department-types";
 import { useCompanyId } from "@/hooks/company/useCompanyId";
+import { notifyChatOfSettingsUpdate } from "@/lib/api/settings-notify";
 
 export interface UseDepartmentManagementState {
   departments: Department[];
@@ -214,6 +215,11 @@ export function useDepartmentManagement({
       if (!response.ok) {
         throw new Error("Falha ao remover departamento");
       }
+      notifyChatOfSettingsUpdate({
+        actionId: "delete_department",
+        section: "departments",
+        field: id,
+      });
     } catch (err) {
     }
   };
@@ -373,6 +379,11 @@ export function useDepartmentManagement({
       await fetch(`/api/backend-proxy/company/members/${memberId}`, {
         method: "DELETE",
       });
+      notifyChatOfSettingsUpdate({
+        actionId: "delete_department_member",
+        section: "departments",
+        field: memberId,
+      });
       if (editingDepartment) {
         await loadDepartmentMembers(editingDepartment.id);
       }
@@ -449,6 +460,11 @@ export function useDepartmentManagement({
       if (!response.ok) {
         throw new Error("Falha ao remover aprovador");
       }
+      notifyChatOfSettingsUpdate({
+        actionId: "delete_approver",
+        section: "departments",
+        field: id,
+      });
     } catch (err) {
     }
   };

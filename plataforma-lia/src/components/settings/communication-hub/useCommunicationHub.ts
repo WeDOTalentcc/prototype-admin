@@ -2,6 +2,7 @@ import { useState, useMemo, useRef, useEffect } from "react"
 import type { EmailTemplate, AiResultModal } from './CommunicationHub.types'
 import { TEMPLATE_GROUPS } from './CommunicationHub.constants'
 import { apiFetch } from '@/lib/api/api-fetch'
+import { notifyChatOfSettingsUpdate } from '@/lib/api/settings-notify'
 
 export function useCommunicationHub(activeSubsection?: string) {
   const [activeTab, setActiveTab] = useState(activeSubsection || 'templates')
@@ -63,6 +64,12 @@ export function useCommunicationHub(activeSubsection?: string) {
       })
       if (res.ok) {
         setWeeklyDigestEnabled(newValue)
+        notifyChatOfSettingsUpdate({
+          actionId: "toggle_weekly_digest",
+          section: "communication",
+          field: "weekly_digest",
+          value: newValue,
+        })
         setSuccessMessage(newValue ? "Resumo semanal ativado" : "Resumo semanal desativado")
         setTimeout(() => { if (isMountedRef.current) setSuccessMessage(null) }, 3000)
       }
@@ -243,6 +250,12 @@ export function useCommunicationHub(activeSubsection?: string) {
         throw new Error('Falha ao salvar configurações')
       }
 
+      notifyChatOfSettingsUpdate({
+        actionId: "configure_communication_settings",
+        section: "communication",
+        field: "settings",
+        value: { sendingHoursStart: sendingHours.start, sendingHoursEnd: sendingHours.end, maxPerDay: maxMessagesPerDay },
+      })
       setSuccessMessage('Configurações salvas com sucesso!')
       { const _t = setTimeout(() => { if (isMountedRef.current) setSuccessMessage(null); }, 3000); }
     } catch (err) {
@@ -273,6 +286,12 @@ export function useCommunicationHub(activeSubsection?: string) {
         throw new Error('Falha ao salvar template')
       }
 
+      notifyChatOfSettingsUpdate({
+        actionId: "update_email_template",
+        section: "communication",
+        field: template.name,
+        value: template.category,
+      })
       setSuccessMessage('Template salvo com sucesso!')
       { const _t = setTimeout(() => { if (isMountedRef.current) setSuccessMessage(null); }, 3000); }
     } catch (err) {

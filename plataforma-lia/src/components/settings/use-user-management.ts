@@ -7,6 +7,7 @@ import { useCurrentCompany } from '@/hooks/company/use-current-company'
 import { badgeStyles } from '@/lib/design-tokens'
 import type { UserData } from './user-management-types'
 import { apiFetch } from '@/lib/api/api-fetch'
+import { notifyChatOfSettingsUpdate } from '@/lib/api/settings-notify'
 
 function mapRoleToApi(role?: string): string {
   if (!role) return 'viewer'
@@ -164,6 +165,12 @@ export function useUserManagement() {
           throw new Error(error.detail || error.details?.detail || 'Failed to create user')
         }
         await fetchUsers()
+        notifyChatOfSettingsUpdate({
+          actionId: 'create_user',
+          section: 'user_management',
+          field: formData.email,
+          value: formData.role,
+        })
         setSuccessMessage(t('users.userCreatedSuccess', { email: formData.email || '' }))
         setTimeout(() => setSuccessMessage(null), 8000)
       } else if (selectedUser) {
@@ -179,6 +186,12 @@ export function useUserManagement() {
         })
         if (!response.ok) throw new Error('Failed to update user')
         await fetchUsers()
+        notifyChatOfSettingsUpdate({
+          actionId: 'update_user',
+          section: 'user_management',
+          field: selectedUser.email,
+          value: formData.role,
+        })
       }
       setIsCreating(false)
       setIsEditing(false)
@@ -203,6 +216,11 @@ export function useUserManagement() {
         const error = await response.json()
         throw new Error(error.detail || error.details?.detail || 'Failed to resend invitation')
       }
+      notifyChatOfSettingsUpdate({
+        actionId: 'resend_user_invitation',
+        section: 'user_management',
+        field: userEmail,
+      })
       setSuccessMessage(t('users.inviteResentSuccess', { email: userEmail }))
       setTimeout(() => setSuccessMessage(null), 5000)
     } catch (err: unknown) {
@@ -224,6 +242,11 @@ export function useUserManagement() {
         })
         if (!response.ok) throw new Error('Failed to delete user')
         await fetchUsers()
+        notifyChatOfSettingsUpdate({
+          actionId: 'delete_user',
+          section: 'user_management',
+          field: userId,
+        })
       } catch {
         alert(t('users.errorDeleteUser'))
       }

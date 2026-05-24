@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react"
 import { useTranslations } from "next-intl"
 import { FlaskConical, Plus, BarChart3, Loader2, AlertCircle, CheckCircle2, ChevronDown, ChevronUp } from "lucide-react"
 import { apiFetch } from "@/lib/api/api-fetch"
+import { notifyChatOfSettingsUpdate } from "@/lib/api/settings-notify"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
@@ -153,6 +154,12 @@ export function ABTestingTab() {
       }
 
       setCreateSuccess(t("experimentCreated", { name: form.test_name }))
+      notifyChatOfSettingsUpdate({
+        actionId: "create_ab_test",
+        section: "communication",
+        field: form.test_name,
+        value: form.variants.length,
+      })
       setForm(EMPTY_FORM)
       setShowCreateForm(false)
       fetchTests()

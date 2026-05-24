@@ -6,6 +6,7 @@ import { useCompanyLiaInstructions } from "@/hooks/company/use-company-lia-instr
 import type { BenefitTabRecord, BenefitTemplate, BenefitHistoryEntry } from "./benefits-types"
 import { defaultBenefit } from "./benefits-types"
 import { apiFetch } from "@/lib/api/api-fetch"
+import { notifyChatOfSettingsUpdate } from "@/lib/api/settings-notify"
 
 const toStringArray = (raw: unknown, fallback: string[]): string[] => {
   if (Array.isArray(raw)) return raw.map((x) => String(x))
@@ -227,6 +228,10 @@ export function useBenefitsTab() {
     try {
       await apiFetch('/api/backend-proxy/benefits/templates', { method: 'POST' })
       await loadTemplates()
+      notifyChatOfSettingsUpdate({
+        actionId: "seed_benefit_templates",
+        section: "benefits",
+      })
     } catch {
       // silent
     }
@@ -261,6 +266,12 @@ export function useBenefitsTab() {
       )
       if (response.ok) {
         await loadBenefits()
+        notifyChatOfSettingsUpdate({
+          actionId: "add_benefit_from_template",
+          section: "benefits",
+          field: template.name,
+          value: template.category,
+        })
         flashSuccess(`Benefício"${template.name}" adicionado com sucesso!`)
       } else {
         throw new Error('Falha ao adicionar benefício')
@@ -333,6 +344,11 @@ export function useBenefitsTab() {
       )
       if (response.ok) {
         await loadBenefits()
+        notifyChatOfSettingsUpdate({
+          actionId: "delete_benefit",
+          section: "benefits",
+          field: benefitId,
+        })
         flashSuccess('Benefício excluído com sucesso!')
       }
     } catch {
@@ -389,6 +405,12 @@ export function useBenefitsTab() {
       const allSuccess = results.every(r => r.ok)
       if (allSuccess) {
         await loadBenefits()
+        notifyChatOfSettingsUpdate({
+          actionId: "bulk_update_benefits",
+          section: "benefits",
+          field: "bulk",
+          value: results.length,
+        })
         flashSuccess('Alterações salvas com sucesso!')
       } else {
         throw new Error('Algumas alterações não puderam ser salvas')

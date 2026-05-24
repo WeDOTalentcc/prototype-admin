@@ -16,6 +16,7 @@ import { useWebhooks } from "@/hooks/agents"
 import { type Webhook } from "@/components/pages-agent-studio/custom-agents/webhook-types"
 import { useWebhookEventTypes, flattenEventTypes, type FlatWebhookEvent } from "@/hooks/webhooks/use-webhook-event-types"
 import { apiFetch } from "@/lib/api/api-fetch"
+import { notifyChatOfSettingsUpdate } from "@/lib/api/settings-notify"
 
 export function WebhooksManager() {
   const t = useTranslations("settings.webhooks")
@@ -72,6 +73,12 @@ export function WebhooksManager() {
       setNewUrl("")
       setNewEvents([])
       mutate()
+      notifyChatOfSettingsUpdate({
+        actionId: "create_webhook",
+        section: "webhooks",
+        field: newName,
+        value: newEvents.length,
+      })
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : t("createError"))
     } finally {
@@ -90,6 +97,11 @@ export function WebhooksManager() {
       if (!res.ok && res.status !== 204) throw new Error(t("createGenericError"))
       toast.success(t("deletedToast"))
       mutate()
+      notifyChatOfSettingsUpdate({
+        actionId: "delete_webhook",
+        section: "webhooks",
+        field: name,
+      })
     } catch {
       toast.error(t("deleteError"))
     }
@@ -106,6 +118,11 @@ export function WebhooksManager() {
       if (!res.ok) throw new Error(t("createGenericError"))
       toast.success(t("testSentToast"), t("testSentDesc"))
       setTimeout(() => mutate(), 3000)
+      notifyChatOfSettingsUpdate({
+        actionId: "test_webhook",
+        section: "webhooks",
+        field: id,
+      })
     } catch {
       toast.error(t("testError"))
     } finally {
