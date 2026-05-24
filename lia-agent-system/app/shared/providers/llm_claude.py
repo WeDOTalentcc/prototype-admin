@@ -124,6 +124,7 @@ class ClaudeLLMProvider(LLMProviderABC):
 
     def __init__(self, api_key: str | None = None, region: str | None = None):
         self._client = None
+        self._async_client = None
         self._custom_api_key = api_key
         # W2-012 (2026-05-22): LGPD Art 33 per-tenant region pinning.
         # None = sem region constraint (default global do provider).
@@ -156,14 +157,45 @@ class ClaudeLLMProvider(LLMProviderABC):
             self._client = Anthropic(**kwargs)
         return self._client
 
+    def _get_async_client(self):
+        """Return AsyncAnthropic client for async methods.
+
+        Bug C canonical fix (2026-05-24): async methods in this provider
+        MUST use AsyncAnthropic + `await client.messages.create(...)`.
+        Calling the sync Anthropic client from a running event loop
+        triggers _enforce_credit_gate_sync's loud-fail RuntimeError
+        ("called from running event loop") because is_local=true
+        transaction-scoped gate cannot run inside an existing loop.
+
+        LGPD Art 7 §II + Art 33 headers preserved (anthropic-no-train).
+        """
+        if not self._async_client:
+            from anthropic import AsyncAnthropic
+            api_key = (
+                self._custom_api_key
+                or os.environ.get("AI_INTEGRATIONS_ANTHROPIC_API_KEY")
+                or os.environ.get("ANTHROPIC_API_KEY")
+            )
+            base_url = os.environ.get("AI_INTEGRATIONS_ANTHROPIC_BASE_URL")
+            if not api_key:
+                raise ValueError("No Claude API key configured")
+            kwargs = {
+                "api_key": api_key,
+                "default_headers": {"anthropic-no-train": "true"},
+            }
+            if base_url:
+                kwargs["base_url"] = base_url
+            self._async_client = AsyncAnthropic(**kwargs)
+        return self._async_client
+
     @circuit_breaker_decorator(ANTHROPIC_CIRCUIT)
     @_traceable(name="Claude Generate", run_type="llm")
     async def generate(self, prompt, model=None, temperature=0.7, max_tokens=4096, **kwargs):
-        client = self._get_client()
+        client = self._get_async_client()
         t_start = time.time()
         status = "success"
         try:
-            response = client.messages.create(
+            response = await client.messages.create(
                 model=model or self._default_model,
                 max_tokens=max_tokens,
                 temperature=temperature,
@@ -192,11 +224,11 @@ class ClaudeLLMProvider(LLMProviderABC):
     @circuit_breaker_decorator(ANTHROPIC_CIRCUIT)
     @_traceable(name="Claude GenerateWithSystem", run_type="llm")
     async def generate_with_system(self, system_prompt, user_message, model=None, temperature=0.7, max_tokens=4096, **kwargs):
-        client = self._get_client()
+        client = self._get_async_client()
         t_start = time.time()
         status = "success"
         try:
-            response = client.messages.create(
+            response = await client.messages.create(
                 model=model or self._default_model,
                 max_tokens=max_tokens,
                 temperature=temperature,
@@ -226,7 +258,7 @@ class ClaudeLLMProvider(LLMProviderABC):
     @circuit_breaker_decorator(ANTHROPIC_CIRCUIT)
     @_traceable(name="Claude GenerateWithTools", run_type="llm")
     async def generate_with_tools(self, messages, tools, system_prompt=None, max_tokens=4096, **kwargs):
-        client = self._get_client()
+        client = self._get_async_client()
         t_start = time.time()
         status = "success"
         try:
@@ -240,7 +272,7 @@ class ClaudeLLMProvider(LLMProviderABC):
                 request_kwargs["tools"] = tools
             if system_prompt:
                 request_kwargs["system"] = _system_with_cache_control(system_prompt)
-            response = client.messages.create(**request_kwargs)
+            response = await client.messages.create(**request_kwargs)
             _log_cache_metrics("generate_with_tools", _build_usage_with_cache(response))
             tool_calls = []
             text_parts = []
@@ -277,12 +309,12 @@ class ClaudeLLMProvider(LLMProviderABC):
     @_traceable(name="Claude GenerateStructured", run_type="llm")
     async def generate_structured(self, messages, output_schema, system_prompt=None, max_tokens=4096, **kwargs):
         tool = {"name": "respond", "description": "Respond with structured output", "input_schema": output_schema}
-        client = self._get_client()
+        client = self._get_async_client()
         t_start = time.time()
         status = "success"
         try:
             enhanced_system = (system_prompt or "") + "\n\nYou MUST use the 'respond' tool to provide your response."
-            response = client.messages.create(
+            response = await client.messages.create(
                 model=self._default_model,
                 max_tokens=max_tokens,
                 messages=messages,

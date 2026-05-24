@@ -185,6 +185,12 @@ class ChatResponse(BaseModel):
     pending_action_id: str | None = None
     fairness_warnings: list[str] = Field(default_factory=list)
     from_cache: bool = False
+    # CLAUDE.md REGRA 4 (anti-silent-fallback) canonical fields.
+    # When success=False, these populate to expose the real error to
+    # observability while the UX-facing `content` can remain friendly.
+    error_code: str | None = None
+    error_category: str | None = None
+    request_id: str | None = None
 
     @classmethod
     def from_orchestrator_result(cls, result: dict[str, Any], conv_id: str) -> ChatResponse:
@@ -745,11 +751,49 @@ class MainOrchestrator:
             return _phase2_response
 
         except Exception as exc:
+            # CLAUDE.md REGRA 4 — anti-silent-fallback canonical handling:
+            # the friendly content remains for UX, but error_code +
+            # error_category + request_id propagate the real failure to
+            # the response envelope AND the structured log.
+            import uuid as _uuid
+            _req_id = str(_uuid.uuid4())
+            _exc_type = type(exc).__name__
+            _exc_msg = str(exc)[:300]
+            # Classify the error into stable buckets so observability /
+            # alerts can route. Order matters — first match wins.
+            _category = "unknown"
+            _code = _exc_type
+            if "process_request" in _exc_msg and "no attribute" in _exc_msg:
+                _category = "orchestrator_interface"
+                _code = "orchestrator_attribute_missing"
+            elif "_enforce_credit_gate_sync" in _exc_msg:
+                _category = "llm_provider"
+                _code = "credit_gate_async_violation"
+            elif "row-level security" in _exc_msg.lower() or "insufficientprivilege" in _exc_msg.lower():
+                _category = "tenant_context"
+                _code = "rls_violation"
+            elif "could not refresh instance" in _exc_msg.lower():
+                _category = "tenant_context"
+                _code = "rls_select_blocked_post_commit"
+            elif _exc_type == "RecursionError":
+                _category = "orchestrator_interface"
+                _code = "factory_infinite_recursion"
+            elif _exc_type == "TimeoutError" or "timed out" in _exc_msg.lower():
+                _category = "llm_provider"
+                _code = "llm_timeout"
+            elif _exc_type == "AICreditExhausted":
+                _category = "credit_gate"
+                _code = "credit_exhausted"
+
             logger.error(
-                f"[MainOrchestrator] Unhandled error for user={ctx.user_id} "
-                f"company={ctx.company_id} channel={ctx.channel}: {exc}",
+                "[MainOrchestrator] Unhandled error request_id=%s "
+                "user=%s company=%s channel=%s category=%s code=%s "
+                "exc_type=%s exc=%s",
+                _req_id, ctx.user_id, ctx.company_id, ctx.channel,
+                _category, _code, _exc_type, _exc_msg,
                 exc_info=True,
             )
+
             from app.shared.prompts.system_prompt_builder import SystemPromptBuilder
             _error_msg = SystemPromptBuilder.build_error_response(
                 user_name=getattr(ctx, "user_name", ""),
@@ -759,6 +803,9 @@ class MainOrchestrator:
                 content=_error_msg,
                 intent_detected="error",
                 conversation_id=conv_id,
+                error_code=_code,
+                error_category=_category,
+                request_id=_req_id,
             )
 
     # ------------------------------------------------------------------
@@ -1782,11 +1829,26 @@ _main_orchestrator_instance: MainOrchestrator | None = None
 
 
 def get_main_orchestrator(orchestrator: Any = None) -> MainOrchestrator:
+    """Singleton factory.
+
+    Bug B canonical fix (2026-05-24): fallback path now reads the legacy
+    Orchestrator instance DIRECTLY from the registry, not via the
+    get_orchestrator() route helper. The route helper returns MainOrchestrator
+    (already a wrapper), which would cause MainOrchestrator(MainOrchestrator(legacy))
+    double-wrap and AttributeError 'process_request' under load. If legacy
+    is not registered, fail loud — do not silently degrade.
+    """
     global _main_orchestrator_instance
     if _main_orchestrator_instance is None:
         if orchestrator is None:
-            from app.api.orchestrator_routes import get_orchestrator
-            orchestrator = get_orchestrator()
+            from app.orchestrator.execution.registry import get_orchestrator_instance
+            orchestrator = get_orchestrator_instance()
+            if orchestrator is None:
+                raise RuntimeError(
+                    "Legacy Orchestrator not registered. Did "
+                    "initialize_orchestrator() run during lifespan startup? "
+                    "Check app/main.py and app/api/orchestrator_routes.py:initialize_orchestrator."
+                )
         _main_orchestrator_instance = MainOrchestrator(orchestrator)
     return _main_orchestrator_instance
 

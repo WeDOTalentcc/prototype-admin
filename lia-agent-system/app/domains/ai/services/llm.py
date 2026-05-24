@@ -479,7 +479,10 @@ class LLMService:
         """Generate with Claude's tool_use via anthropic SDK."""
         from app.shared.providers.llm_factory import get_provider_for_tenant
         _claude_provider = get_provider_for_tenant().get("claude")
-        client = _claude_provider._get_client()
+        # Bug C canonical fix (2026-05-24): use async client + await in
+        # _generate_with_tools_claude (async def). Sync client from async
+        # context → _enforce_credit_gate_sync RuntimeError.
+        client = _claude_provider._get_async_client()
 
         try:
             request_kwargs = {
@@ -496,7 +499,7 @@ class LLMService:
             
             logger.info(f"Calling Claude with {len(tools)} tools, {len(messages)} messages")
             
-            response = client.messages.create(**request_kwargs)
+            response = await client.messages.create(**request_kwargs)
             
             tool_calls = []
             text_parts = []
