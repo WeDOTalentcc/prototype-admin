@@ -11,6 +11,8 @@ import logging
 import re
 from datetime import datetime
 from typing import Any
+
+from app.schemas.job_management import SearchCriteriaResult  # R-026
 from uuid import UUID
 
 from pydantic import BaseModel
@@ -80,7 +82,7 @@ Se nenhum ajuste for mencionado, retorne null para todos os campos."""
     def __init__(self):
         self._llm_service = llm_service
 
-    async def extract_search_criteria(self, message: str) -> dict[str, Any]:
+    async def extract_search_criteria(self, message: str) -> SearchCriteriaResult:
         """
         Extract search criteria from a natural language message using LLM.
         
@@ -116,7 +118,7 @@ Se nenhum ajuste for mencionado, retorne null para todos os campos."""
             logger.error(f"Error extracting search criteria: {e}")
             return self._extract_criteria_fallback(message)
 
-    def _extract_criteria_fallback(self, message: str) -> dict[str, Any]:
+    def _extract_criteria_fallback(self, message: str) -> SearchCriteriaResult:
         """Fallback regex-based criteria extraction."""
         criteria = {}
         message_lower = message.lower()

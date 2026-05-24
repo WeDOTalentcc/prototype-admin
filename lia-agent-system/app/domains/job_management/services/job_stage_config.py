@@ -6,6 +6,8 @@ without triggering the DeprecationWarning on the legacy agent module.
 """
 from typing import Any
 
+from app.schemas.job_management import StageConfig  # R-026
+
 JOB_CREATION_STAGES: list[dict[str, Any]] = [
     {
         "stage": 1,
@@ -78,7 +80,7 @@ JOB_CREATION_STAGES: list[dict[str, Any]] = [
 ]
 
 
-def get_stage_config(stage_number: int) -> dict[str, Any]:
+def get_stage_config(stage_number: int) -> StageConfig:
     """Return the stage configuration dict for *stage_number*, or {} if not found."""
     for stage in JOB_CREATION_STAGES:
         if stage["stage"] == stage_number:

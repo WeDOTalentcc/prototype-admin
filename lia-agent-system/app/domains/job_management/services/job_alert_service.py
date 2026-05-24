@@ -11,6 +11,8 @@ import logging
 from datetime import datetime, timedelta
 from typing import Any
 
+from app.schemas.job_management import AlertSummary  # R-026
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domains.communication.repositories.communication_settings_repository import CommunicationSettingsRepository
@@ -320,7 +322,7 @@ class JobAlertService:
         
         return alert
     
-    async def get_alert_summary(self, db: AsyncSession) -> dict[str, Any]:
+    async def get_alert_summary(self, db: AsyncSession) -> AlertSummary:
         """Get summary of active alerts."""
         counts = await JobAlertRepository(db).severity_counts()
         
