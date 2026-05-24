@@ -1,8 +1,11 @@
 """
-Communications API Endpoints
+Communications API — multi-tenant safe.
 
 Handles communication history for candidates - emails, WhatsApp, screening invites, etc.
 Also provides direct email and WhatsApp sending via Mailgun and Twilio integrations.
+
+Onda 4.2e-A2 (2026-05-23): get_communication_by_id + update_communication_status
+agora passam company_id pra tenant guard (P0-3+P0-4 do audit Comunicacao).
 """
 
 import hashlib
@@ -183,8 +186,11 @@ async def get_communication(communication_id: str, company_id: str = Depends(req
     Returns full communication details or 404 if not found.
     """
     try:
-        communication = await communication_history_service.get_communication_by_id(communication_id)
-        
+        # Onda 4.2e-P0-3 (2026-05-23): tenant guard via company_id.
+        communication = await communication_history_service.get_communication_by_id(
+            communication_id, company_id=company_id,
+        )
+
         if not communication:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -226,10 +232,12 @@ company_id: str = Depends(require_company_id)):
                 detail=f"Invalid status. Must be one of: {', '.join(valid_statuses)}"
             )
         
+        # Onda 4.2e-P0-4 (2026-05-23): tenant guard via company_id.
         communication = await communication_history_service.update_communication_status(
             communication_id=communication_id,
             new_status=data.status,
             error_message=data.error_message,
+            company_id=company_id,
         )
         
         if not communication:

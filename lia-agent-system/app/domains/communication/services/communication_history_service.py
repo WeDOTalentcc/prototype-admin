@@ -1,5 +1,5 @@
 """
-Communication History Service
+Communication History Service — multi-tenant safe.
 
 Manages communication history records for tracking all candidate communications
 including emails, WhatsApp messages, screening invites, and feedback.
@@ -113,13 +113,23 @@ class CommunicationHistoryService:
     async def get_communication_by_id(
         self,
         communication_id: str,
+        company_id: str | None = None,
     ) -> CommunicationHistory | None:
-        """Get a single communication record by ID."""
+        """Get a single communication record by ID.
+
+        Onda 4.2e-P0-3 (2026-05-23): company_id pre-check — antes vazava
+        outbound message (subject/body/email/phone) cross-tenant.
+        """
         async with AsyncSessionLocal() as session:
             repo = CommunicationHistoryRepository(session)
             communication = await repo.get_by_id(communication_id)
+            # Onda 4.2e-P0-3: tenant guard.
+            if communication and company_id and str(communication.company_id) != str(company_id):
+                logger.warning(
+                    f"Cross-tenant access blocked: communication {communication_id}"
+                )
+                return None
             if communication:
-                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.info(f"Retrieved communication: {communication.id}")
             else:
                 logger.warning(f"Communication not found: {communication_id}")
@@ -130,14 +140,24 @@ class CommunicationHistoryService:
         communication_id: str,
         new_status: str,
         error_message: str | None = None,
+        company_id: str | None = None,
     ) -> CommunicationHistory | None:
-        """Update communication status with appropriate timestamps."""
+        """Update communication status with appropriate timestamps.
+
+        Onda 4.2e-P0-4 (2026-05-23): company_id pre-check.
+        """
         async with AsyncSessionLocal() as session:
             repo = CommunicationHistoryRepository(session)
             communication = await repo.get_by_id(communication_id)
             if not communication:
                 logger.warning(
                     f"Communication not found for status update: {communication_id}"
+                )
+                return None
+            # Onda 4.2e-P0-4: tenant guard.
+            if company_id and str(communication.company_id) != str(company_id):
+                logger.warning(
+                    f"Cross-tenant update blocked: communication {communication_id}"
                 )
                 return None
 
