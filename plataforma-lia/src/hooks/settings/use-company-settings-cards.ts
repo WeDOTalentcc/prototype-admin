@@ -217,7 +217,7 @@ function buildBlocks(
     { key: "salary_tolerance_percent", label: "Tolerancia Salarial (%)", value: scr?.salary_tolerance_percent ?? null, type: "number", editable: true, block: "policy" },
     { key: "experience_policy", label: "Politica de Experiencia", value: scr?.experience_policy ?? null, type: "text", editable: true, block: "policy" },
     { key: "auto_screening", label: "Triagem Automatica", value: ar?.auto_screening ?? null, type: "boolean", editable: true, block: "policy" },
-    { key: "auto_scheduling", label: "Agendamento Automatico", value: ar?.auto_scheduling ?? null, type: "boolean", editable: true, block: "policy" },
+    { key: "auto_scheduling", label: "Agendamento Automatico (Em breve)", value: ar?.auto_scheduling ?? null, type: "boolean", editable: false, block: "policy" },
     { key: "auto_stage_advance", label: "Avanco Automatico Etapas", value: ar?.auto_stage_advance ?? null, type: "boolean", editable: true, block: "policy" },
     { key: "autonomy_level", label: "Nivel de Autonomia LIA", value: ar?.autonomy_level ?? null, type: "text", editable: true, block: "policy" },
     { key: "setup_progress", label: "Progresso Configuracao", value: hiringPolicy?.setup_progress ? `${hiringPolicy.setup_progress}%` : null, type: "text", editable: false, block: "policy" },
