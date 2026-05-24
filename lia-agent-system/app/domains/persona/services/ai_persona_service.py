@@ -7,9 +7,11 @@ IA" em Minha Empresa, audit 2026-05-21 E2.2).
 - **Read:** retorna ``{name, tone}`` consolidado, com defaults canonical
   quando policy/tenant ainda não customizou.
 - **Update:** valida via :mod:`ai_persona_validator`, persiste em
-  ``CompanyHiringPolicy.communication_rules.ai_persona``, mantém
-  ``communication_rules.lia_tone`` sincronizado (mesmo valor canonical
-  pra outbound + chat), emite audit log canonical.
+  ``CompanyHiringPolicy.communication_rules.ai_persona`` (PT-BR canonical),
+  mantém ``communication_rules.lia_tone`` sincronizado em EN legacy
+  via :data:`TONE_PT_TO_EN_LEGACY` (1 controle UI = 2 escritas
+  backend coerentes — translator at the boundary), emite audit
+  log canonical.
 
 ## Multi-tenancy
 
@@ -27,6 +29,17 @@ Sincronizar evita "tela mostra amigável mas e-mail sai formal".
 Histórico: ``lia_tone`` é legacy do communication_dispatcher; ``ai_persona``
 é o canonical novo do SystemPromptBuilder. Sprint futura pode unificar
 totalmente.
+
+## Translator at the boundary (audit 2026-05-24 F3.1)
+
+``ai_persona.tone`` é PT-BR canonical (UX + validator + SystemPromptBuilder
+via ``TONE_INSTRUCTIONS``). ``lia_tone`` legacy é EN porque o
+``communication_dispatcher._apply_tone`` é pré-existente à feature
+Ai Persona e espera "professional" / "friendly" / "formal".
+
+Mapping canonical: :data:`TONE_PT_TO_EN_LEGACY`. Translation acontece
+neste service ANTES de gravar — single source. Approach B (migrar
+dispatcher pra consumir ai_persona.tone direto) fica em backlog técnico.
 
 ## Audit canonical
 
@@ -46,6 +59,7 @@ from app.domains.hiring_policy.repositories.hiring_policy_repository import (
 from app.domains.persona.services.ai_persona_validator import (
     DEFAULT_AI_NAME,
     DEFAULT_AI_TONE,
+    TONE_PT_TO_EN_LEGACY,
     validate_persona,
 )
 from app.shared.compliance.audit_service import AuditService
@@ -117,8 +131,15 @@ async def update_ai_persona(
         next_persona["name"] = name.strip()
     if tone is not None:
         next_persona["tone"] = tone
-        # Sync legacy lia_tone field used by communication_dispatcher
-        rules["lia_tone"] = tone
+        # Sync legacy lia_tone field used by communication_dispatcher.
+        # Translator at the boundary: ai_persona.tone is PT-BR canonical,
+        # but the legacy dispatcher (_apply_tone in communication_dispatcher)
+        # speaks EN ("professional" / "friendly" / "formal"). Translate here
+        # so outbound matches the recruiter's choice. Graceful passthrough:
+        # if a caller already provides an EN value (legacy code path),
+        # `.get(tone, tone)` keeps it as-is rather than double-translating.
+        # See ai_persona_validator.TONE_PT_TO_EN_LEGACY for the mapping.
+        rules["lia_tone"] = TONE_PT_TO_EN_LEGACY.get(tone, tone)
     # Preserve defaults for any missing key after merge — ensures the dict
     # returned to the caller is always fully populated, never partial.
     next_persona.setdefault("name", DEFAULT_AI_NAME)

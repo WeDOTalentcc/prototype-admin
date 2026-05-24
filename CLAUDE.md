@@ -291,3 +291,48 @@ if not toggles.get("wsi_question_effectiveness"):
 **Sensor canonical:** `lia-agent-system/scripts/check_learning_loops_canonical_helper.py` (AST + grep checker). Baseline 2026-05-24: **0 violations** em 3 consumers (`bigfive_service.py`, `jd_similar_service.py`, `transition_dispatch_service.py`). `EXEMPT_FILES` documentadas inline (helper + model + endpoint REST).
 
 **Migration policy:** ao adicionar consumer novo de `learning_loops` em `app/domains/**`, (a) usar o helper, (b) adicionar caminho a `CONSUMERS_PATHS` do sensor, (c) escrever contract test em `tests/contract/test_learning_loops_defaults.py`.
+
+---
+
+### lia_tone PT-BR → EN translator at the boundary (registrado 2026-05-24 — F3.1)
+
+Tab "Personalidade da IA" (`Configurações → Minha Empresa`) deixa o recrutador
+escolher 1 dos 6 tons canonical PT-BR: `profissional`, `amigavel`, `formal`,
+`casual`, `formal_amigavel`, `empatico`. Esses valores são gravados em:
+
+- `communication_rules.ai_persona.tone` — **PT-BR canonical** (consumido pelo
+  `SystemPromptBuilder` via `TONE_INSTRUCTIONS` no chat da LIA).
+- `communication_rules.lia_tone` — **EN legacy** (consumido pelo
+  `communication_dispatcher._apply_tone` em outbound email/WhatsApp).
+
+**Audit 2026-05-24:** descoberto que service gravava PT-BR direto em ambas
+as keys, mas dispatcher só reconhece `"friendly"` e `"formal"` em case explícito
+(default `"professional"`). Recrutador escolhia "Empático" → backend gravava
+`lia_tone="empatico"` → dispatcher caía no greeting default. **Outbound
+silenciosamente ignorava a config.**
+
+**Approach canonical (A):** translator no boundary — `ai_persona_service.update_ai_persona`
+traduz PT-BR → EN via `TONE_PT_TO_EN_LEGACY` (em `ai_persona_validator.py`) ANTES
+de gravar `lia_tone`. `ai_persona.tone` permanece PT-BR.
+
+**Mapping:**
+
+| PT-BR canonical | EN legacy (dispatcher) | Justificativa |
+|---|---|---|
+| `profissional` | `professional` | default safe fallthrough |
+| `amigavel` | `friendly` | reconhecido pelo dispatcher |
+| `formal` | `formal` | reconhecido pelo dispatcher |
+| `casual` | `friendly` | closest match — bucket informal |
+| `formal_amigavel` | `formal` | closest match — bucket formal |
+| `empatico` | `friendly` | closest match — bucket caloroso |
+
+**Sensor:** `lia-agent-system/scripts/check_lia_tone_mapping_complete.py` (CANONICAL_AI_TONES ⊆ TONE_PT_TO_EN_LEGACY). Baseline 2026-05-24: **0 violations**.
+
+**Contract tests:** `tests/contract/test_lia_tone_pt_en_mapping.py` (4 testes — 1 cobertura, 1 valores safe pro dispatcher, 1 passthrough graceful, 1 parametrizado per-tone validando o write integrado).
+
+**Approach B (backlog técnico):** migrar `_apply_tone` para consumir
+`ai_persona.tone` PT-BR + `TONE_INSTRUCTIONS` direto. Mais limpo a longo prazo
+mas dispatcher pode ter outros callers — preferir Approach A enquanto não há
+necessidade clara.
+
+**Single UI control = 2 backend writes coerentes** (pattern canonical reforçado).

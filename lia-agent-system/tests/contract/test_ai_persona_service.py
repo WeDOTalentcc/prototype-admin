@@ -126,7 +126,12 @@ async def test_update_ai_persona_persists_name_only():
 @pytest.mark.asyncio
 async def test_update_ai_persona_persists_tone_only_and_syncs_lia_tone():
     """Quando tone é enviado, lia_tone legacy é mantido sincronizado.
-    Pin: um controle de UI = duas escritas backend coerentes."""
+    Pin: um controle de UI = duas escritas backend coerentes.
+
+    F3.1 audit 2026-05-24: ai_persona.tone permanece PT-BR canonical;
+    lia_tone legacy fica em EN (translator at the boundary). Mapping
+    em ai_persona_validator.TONE_PT_TO_EN_LEGACY.
+    """
     policy = _make_policy({
         "ai_persona": {"name": "Sofia", "tone": "formal"},
         "lia_tone": "formal",
@@ -138,9 +143,10 @@ async def test_update_ai_persona_persists_tone_only_and_syncs_lia_tone():
         actor_user_id="user-1",
     )
     assert result["name"] == "Sofia"
+    # ai_persona.tone permanece PT-BR canonical
     assert result["tone"] == "amigavel"
-    # lia_tone DEVE ter sido sincronizado para o novo valor canonical
-    assert policy.communication_rules["lia_tone"] == "amigavel"
+    # lia_tone legacy é traduzido pra EN reconhecido pelo dispatcher
+    assert policy.communication_rules["lia_tone"] == "friendly"
 
 
 @pytest.mark.asyncio

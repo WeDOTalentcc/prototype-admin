@@ -98,6 +98,42 @@ TONE_INSTRUCTIONS: dict[str, str] = {
 
 
 # ---------------------------------------------------------------------------
+# Legacy dispatcher mapping (PT-BR → EN)
+# ---------------------------------------------------------------------------
+
+# Translator at the boundary: dispatcher legacy (_apply_tone em
+# communication_dispatcher.py) espera enum EN. Mantemos PT-BR como
+# canonical da feature Ai Persona (UX, validator, SystemPromptBuilder
+# via TONE_INSTRUCTIONS) e mapeamos no service antes de gravar em
+# `communication_rules.lia_tone` (legacy outbound key).
+#
+# Audit 2026-05-24 (F3.1): descoberto drift. Service gravava enum PT-BR
+# em `lia_tone`; dispatcher só reconhece "friendly" e "formal" (resto
+# cai no default "professional"). Recrutador escolhia "empatico" e o
+# outbound saía com tom default silenciosamente.
+#
+# Approach A escolhido per CLAUDE.md "lia_tone canonical precedence" —
+# manter 2 representações coerentes: ai_persona.tone (PT-BR canonical)
+# + communication_rules.lia_tone (EN para o dispatcher legacy).
+#
+# Sobre os mappings de tons sem equivalente direto no dispatcher:
+#   - dispatcher só tem 2 buckets reais ("friendly", "formal") + default.
+#   - "casual" → "friendly" (greeting informal "Oi, X!" é o mais próximo)
+#   - "formal_amigavel" → "formal" (mantém tratamento formal "Prezado(a)")
+#   - "empatico" → "friendly" (greeting caloroso é mais alinhado que formal)
+# Approach B (migrar dispatcher pra usar `ai_persona.tone` + `TONE_INSTRUCTIONS`)
+# fica em backlog técnico — risco baixo + reescrita do dispatcher.
+TONE_PT_TO_EN_LEGACY: dict[str, str] = {
+    "profissional": "professional",      # default fallthrough no dispatcher
+    "amigavel": "friendly",              # reconhecido pelo dispatcher
+    "formal": "formal",                  # reconhecido pelo dispatcher
+    "casual": "friendly",                # closest match — bucket informal
+    "formal_amigavel": "formal",         # closest match — bucket formal
+    "empatico": "friendly",              # closest match — bucket caloroso
+}
+
+
+# ---------------------------------------------------------------------------
 # Name constraints
 # ---------------------------------------------------------------------------
 
@@ -309,6 +345,7 @@ def validate_persona(
 __all__ = [
     "CANONICAL_AI_TONES",
     "TONE_INSTRUCTIONS",
+    "TONE_PT_TO_EN_LEGACY",
     "DEFAULT_AI_NAME",
     "DEFAULT_AI_TONE",
     "ValidationResult",
