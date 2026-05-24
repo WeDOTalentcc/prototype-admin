@@ -160,6 +160,9 @@ class MonitoringLoop:
             "last_hourly_task_runs": {
                 k: v.isoformat() for k, v in self._last_hourly_task_runs.items()
             },
+            "last_period_task_runs": {
+                k: v.isoformat() for k, v in self._last_period_task_runs.items()
+            },
         }
 
     def _should_run_daily(self, task_name: str) -> bool:
@@ -193,6 +196,28 @@ class MonitoringLoop:
     def _mark_hourly_run(self, task_name: str) -> None:
         """Sprint 11.0 — record successful hourly task run."""
         self._last_hourly_task_runs[task_name] = datetime.now(timezone.utc)
+
+    def _should_run_with_period(
+        self, task_name: str, period_seconds: float,
+    ) -> bool:
+        """Sprint 11.3 Batch 2 — generic period check.
+
+        Single source of truth for all periodic task gating beyond
+        daily/hourly. Used for: 2h safety nets, weekly/monthly briefings.
+
+        Args:
+            task_name: identity for tracking in _last_period_task_runs
+            period_seconds: target period (7200=2h, 604800=1week, 2592000=30d)
+        """
+        last = self._last_period_task_runs.get(task_name)
+        if last is None:
+            return True
+        elapsed = datetime.now(timezone.utc) - last
+        return elapsed.total_seconds() >= period_seconds
+
+    def _mark_period_run(self, task_name: str) -> None:
+        """Sprint 11.3 Batch 2 — record successful periodic task run."""
+        self._last_period_task_runs[task_name] = datetime.now(timezone.utc)
 
     async def _retry_with_backoff(
         self,
@@ -274,6 +299,8 @@ class MonitoringLoop:
         # weekly digests, etc. without requiring Celery beat scheduler.
         self._last_daily_task_runs: dict[str, datetime] = {}
         self._last_hourly_task_runs: dict[str, datetime] = {}
+        # Sprint 11.3 Batch 2 — generic period tracking (2h, weekly, monthly).
+        self._last_period_task_runs: dict[str, datetime] = {}
 
     @property
     def is_running(self) -> bool:
@@ -550,7 +577,59 @@ class MonitoringLoop:
                     task_name, result,
                 )
 
-        # Sprint 11.3 Batch 2+ will append more here.
+        # ─── Briefing daily dispatch — Sprint 11.3 Batch 2 ───
+        task_name = "briefing.dispatch_daily"
+        if self._should_run_daily(task_name):
+            async def _coro():
+                from app.jobs.tasks.briefing_dispatch import _dispatch_for_frequency_async
+                return await _dispatch_for_frequency_async(
+                    frequencies=["daily", "twice_daily"],
+                    task_name="briefing.dispatch_daily",
+                )
+            ok, result = await self._retry_with_backoff(task_name, _coro)
+            if ok:
+                self._mark_daily_run(task_name)
+                logger.info(
+                    "[MonitoringLoop healthz] daily_task=%s result=%s",
+                    task_name, result,
+                )
+
+        # ─── Briefing weekly dispatch — Sprint 11.3 Batch 2 ───
+        task_name = "briefing.dispatch_weekly"
+        if self._should_run_with_period(task_name, 604800):  # 7 days
+            async def _coro():
+                from app.jobs.tasks.briefing_dispatch import _dispatch_for_frequency_async
+                return await _dispatch_for_frequency_async(
+                    frequencies=["weekly"],
+                    task_name="briefing.dispatch_weekly",
+                )
+            ok, result = await self._retry_with_backoff(task_name, _coro)
+            if ok:
+                self._mark_period_run(task_name)
+                logger.info(
+                    "[MonitoringLoop healthz] period_task=%s result=%s",
+                    task_name, result,
+                )
+
+        # ─── Briefing monthly dispatch — Sprint 11.3 Batch 2 ───
+        task_name = "briefing.dispatch_monthly"
+        if self._should_run_with_period(task_name, 2592000):  # 30 days
+            async def _coro():
+                from app.jobs.tasks.briefing_dispatch import _dispatch_for_frequency_async
+                return await _dispatch_for_frequency_async(
+                    frequencies=["monthly"],
+                    task_name="briefing.dispatch_monthly",
+                )
+            ok, result = await self._retry_with_backoff(task_name, _coro)
+            if ok:
+                self._mark_period_run(task_name)
+                logger.info(
+                    "[MonitoringLoop healthz] period_task=%s result=%s",
+                    task_name, result,
+                )
+
+        # Sprint 11.3 Batch 3+ will append more here (followup, wsi, health,
+        # memory.compress per-tenant — require canonical async fn extraction).
 
     async def _check_stale_candidates(self, company_id: str) -> list[ProactiveAlert]:
         from lia_config.database import AsyncSessionLocal
