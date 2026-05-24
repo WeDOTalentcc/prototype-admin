@@ -1,17 +1,14 @@
 "use client"
 
-import React, { useCallback, useEffect, useState } from "react"
+import React, { useEffect, useState } from "react"
 import { useTranslations } from "next-intl"
-import { Copy, ExternalLink, FileDown, Loader2 } from "lucide-react"
 import { useCompanyId } from "@/hooks/company/useCompanyId"
 import { cardStyles, textStyles } from "@/lib/design-tokens"
 import { Loading } from "@/components/ui/loading"
 import { Chip } from "@/components/ui/chip"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Switch } from "@/components/ui/switch"
 import { cn } from "@/lib/utils"
 import { apiFetch } from "@/lib/api/api-fetch"
-import { notifyChatOfSettingsUpdate } from "@/lib/api/settings-notify"
 
 interface FairnessLog {
   id?: string
@@ -42,23 +39,6 @@ interface BiasAuditReport {
   has_alerts: boolean
 }
 
-// T-17 NYC LL144 Annual Bias Audit Report (canonical)
-interface AnnualReportSummary {
-  report_id: string
-  year: number
-  status: "draft" | "generated" | "published"
-  dimensions_count: number
-  four_fifths_pass: boolean
-  generated_at?: string | null
-  published_at?: string | null
-  is_public?: boolean
-  public_slug?: string | null
-  chi2_p_value?: number | null
-  eeoc_compliant?: boolean
-}
-
-const TRUST_PORTAL_HOST = "trust.wedotalent.cc"
-
 export function BiasAuditPanel() {
   const t = useTranslations("settings.governanca.biasAudit")
   const { companyId } = useCompanyId()
@@ -74,13 +54,6 @@ export function BiasAuditPanel() {
   const [drillLoading, setDrillLoading] = useState(false)
   const [drillError, setDrillError] = useState<string | null>(null)
 
-  // T-17 Annual Report state
-  const [annualReports, setAnnualReports] = useState<AnnualReportSummary[]>([])
-  const [annualLoading, setAnnualLoading] = useState(false)
-  const [annualError, setAnnualError] = useState<string | null>(null)
-  const [generating, setGenerating] = useState(false)
-  const [publishingId, setPublishingId] = useState<string | null>(null)
-  const [copiedSlug, setCopiedSlug] = useState<string | null>(null)
 
   useEffect(() => {
     if (!companyId) return
@@ -129,95 +102,6 @@ export function BiasAuditPanel() {
     }
   }
 
-  // T-17 — Fetch existing annual reports
-  const loadAnnualReports = useCallback(async () => {
-    if (!companyId) return
-    setAnnualLoading(true)
-    setAnnualError(null)
-    try {
-      const res = await apiFetch("/api/backend-proxy/bias-audit/annual")
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const data = await res.json()
-      const items: AnnualReportSummary[] = Array.isArray(data)
-        ? data
-        : data.reports ?? data.items ?? data.data ?? []
-      setAnnualReports(items)
-    } catch (err) {
-      setAnnualError(err instanceof Error ? err.message : t("annualErrorLoad"))
-    } finally {
-      setAnnualLoading(false)
-    }
-  }, [companyId, t])
-
-  // T-17 — Eager load on mount (annual reports are small + canonical UX for both Annual + Trust tabs)
-  useEffect(() => {
-    if (!companyId) return
-    loadAnnualReports()
-  }, [companyId, loadAnnualReports])
-
-  // T-17 — Generate annual report for current year
-  const generateAnnualReport = async () => {
-    if (!companyId || generating) return
-    setGenerating(true)
-    setAnnualError(null)
-    try {
-      const year = new Date().getFullYear()
-      const res = await apiFetch("/api/backend-proxy/bias-audit/annual/generate", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json" },
-        body: JSON.stringify({ year }) })
-      notifyChatOfSettingsUpdate({ actionId: "manage_bias_audit", section: "governance" })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      await loadAnnualReports()
-    } catch (err) {
-      setAnnualError(err instanceof Error ? err.message : t("annualErrorGenerate"))
-    } finally {
-      setGenerating(false)
-    }
-  }
-
-  // T-17 Trust Portal — Toggle public publication
-  const togglePublish = async (report: AnnualReportSummary, makePublic: boolean) => {
-    if (!companyId || publishingId) return
-    setPublishingId(report.report_id)
-    setAnnualError(null)
-    try {
-      const res = await apiFetch(
-        `/api/backend-proxy/bias-audit/annual/${encodeURIComponent(report.report_id)}/publish`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json" },
-          body: JSON.stringify({ is_public: makePublic }) },
-      )
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      await loadAnnualReports()
-    } catch (err) {
-      setAnnualError(err instanceof Error ? err.message : t("annualErrorPublish"))
-    } finally {
-      setPublishingId(null)
-    }
-  }
-
-  const exportPdf = (reportId: string) => {
-    if (!companyId) return
-    const url = `/api/backend-proxy/bias-audit/annual/${encodeURIComponent(reportId)}/export?format=pdf`
-    window.open(url, "_blank", "noopener,noreferrer")
-  }
-
-  const copyPublicUrl = async (slug: string) => {
-    const publicUrl = `https://${TRUST_PORTAL_HOST}/${slug}`
-    try {
-      if (typeof navigator !== "undefined" && navigator.clipboard) {
-        await navigator.clipboard.writeText(publicUrl)
-      }
-      setCopiedSlug(slug)
-      setTimeout(() => setCopiedSlug((s) => (s === slug ? null : s)), 2000)
-    } catch {
-      // silencioso — UX nao critica
-    }
-  }
 
   if (loading) return <Loading variant="spinner" text={t("loading")} />
   if (error) {
@@ -231,10 +115,6 @@ export function BiasAuditPanel() {
   const total = logs.length
   const blocked = logs.filter((l) => l.is_blocked).length
   const warnings = total - blocked
-
-  // Find the most recent published report for trust portal preview
-  const latestPublished = annualReports.find((r) => r.is_public && r.public_slug)
-  const latestReport = annualReports[0]
 
   return (
     <div className="space-y-4" data-testid="bias-audit-panel">
