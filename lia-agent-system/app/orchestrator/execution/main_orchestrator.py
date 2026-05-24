@@ -406,6 +406,31 @@ class MainOrchestrator:
                 except Exception as _aic_exc:
                     logger.debug("[MainOrchestrator] ai_credit_gate skipped (fail-safe): %s", _aic_exc)
 
+            # ── P1-W4-11: PolicyGate soft-enforcement ─────────────────────
+            # Soft gate: valida intent contra policies do tenant. Log violations,
+            # nunca bloqueia fluxo (hard gate em sprint futuro quando policies
+            # estiverem validadas em produção). Posicionado após credit gate,
+            # antes de qualquer enrichment/LLM call.
+            if self._policy_gate_service and ctx.company_id:
+                try:
+                    _policy_result = await self._policy_gate_service.validate(
+                        intent=str(ctx.extra.get("intent_hint", "general") if ctx.extra else "general"),
+                        user_id=str(ctx.user_id or ""),
+                        context={"company_id": str(ctx.company_id)},
+                    )
+                    if not _policy_result.allowed:
+                        logger.warning(
+                            "[PolicyGate] P1-W4-11 soft-enforcement: intent=%s blocked "
+                            "by policy reason=%s company=%s user=%s — "
+                            "logging violation, not blocking (hard gate em sprint futuro)",
+                            _policy_result.intent, _policy_result.reason,
+                            ctx.company_id, ctx.user_id,
+                        )
+                        # TODO P1-W4-11: converter em hard block (return ChatResponse blocked)
+                        # quando policies estiverem validadas em produção.
+                except Exception as _pg_err:
+                    logger.debug("[PolicyGate] P1-W4-11 evaluate error (non-blocking): %s", _pg_err)
+
             # Enriquecer contexto com informações do tenant
             # R4 (Task T-F): idempotente + paridade com agent_chat_sse.py.
             # Se um caller upstream (SSE/WS handler) já injetou o snippet,

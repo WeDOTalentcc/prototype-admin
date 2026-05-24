@@ -111,6 +111,34 @@ class TrainingDataService:
         quality_feedback = []
         for feedback in all_feedback:
             if require_correction or self._is_quality_response(feedback):
+                # P1-W4-13: per-candidate training_data consent gate (LGPD Art. 7).
+                # Company-level already gated in FeedbackRepository (CompanyTrainingConsent).
+                # Here we apply AND: company-level=true AND per-candidate=true.
+                # Fail-closed: if consent check raises, skip candidate.
+                _candidate_id = str(getattr(feedback, "candidate_id", None) or "")
+                if _candidate_id:
+                    try:
+                        from app.domains.lgpd.services.granular_consent_consumers import (
+                            check_training_data_granular,
+                        )
+                        _td_consent = await check_training_data_granular(
+                            candidate_id=_candidate_id,
+                            company_id=company_id,
+                            db=self.db,
+                        )
+                        if not _td_consent:
+                            self.logger.debug(
+                                "[P1-W4-13] training_data consent blocked: "
+                                "candidate_id=%s company_id=%s",
+                                _candidate_id, company_id,
+                            )
+                            continue
+                    except Exception as _consent_err:
+                        self.logger.warning(
+                            "[P1-W4-13] consent check error (fail-closed, skip): %s",
+                            _consent_err,
+                        )
+                        continue
                 quality_feedback.append(feedback)
                 if len(quality_feedback) >= limit:
                     break

@@ -352,6 +352,37 @@ class DataSubjectRepository:
                 "Audit trail shows status=completed but processing change "
                 "requires manual admin application (LGPD compliance gap)."
             )
+            # P1-W4-12: Log urgente para rastreabilidade admin.
+            # Dado pode persistir incorreto/irrestrito ate intervencao manual
+            # (LGPD Art. 18 III correcao / Art. 18 IV bloqueio / Art. 18 V portabilidade).
+            try:
+                from app.shared.compliance.audit_service import AuditService
+                _dsr_audit_svc = AuditService()
+                _sla_str = str(request.sla_deadline) if request.sla_deadline else "nao definido"
+                await _dsr_audit_svc.log_decision(
+                    company_id=str(request.company_id),
+                    agent_name="data_subject_repository",
+                    decision_type="dsr_manual_followup_required",
+                    action=f"dsr_{rt}_completed_needs_admin",
+                    decision="admin_followup_required",
+                    reasoning=[
+                        f"DSR type={rt} marcado completed sem executor automatico.",
+                        "Dado pode persistir incorreto/irrestrito ate acao manual do admin.",
+                        "LGPD Art. 18 III/IV/V: intervencao humana obrigatoria.",
+                        f"SLA deadline: {_sla_str}",
+                    ],
+                    criteria_used=["lgpd_art_18_iii_iv", "dsr_manual_followup", "admin_required"],
+                    human_review_required=True,
+                )
+                logger.info(
+                    "[DSR] P1-W4-12 audit log criado: request_id=%s type=%s company=%s",
+                    request.id, rt, request.company_id,
+                )
+            except Exception as _dsr_audit_err:
+                logger.warning(
+                    "[DSR] P1-W4-12 audit log falhou (non-blocking): %s",
+                    _dsr_audit_err,
+                )
 
         else:
             side_effect["action"] = "unknown_request_type"
