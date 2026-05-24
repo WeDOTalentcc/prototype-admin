@@ -48,6 +48,7 @@ import json
 import sys
 from dataclasses import dataclass, asdict
 from pathlib import Path
+import re
 from typing import Iterable
 
 
@@ -122,6 +123,89 @@ def _model_name_of(node: ast.Call) -> str | None:
     return name
 
 
+
+
+# Sprint 4.1 (H) — raw-SQL INSERT INTO detection.
+# Pattern: text("INSERT INTO <table> (col1, col2, ...) VALUES (...)")
+# Flag if the SQL string has INSERT INTO but lacks ANY reference to
+# company_id (column name OR :company_id bind OR app.company_id GUC).
+
+_INSERT_INTO_RE = re.compile(r"\bINSERT\s+INTO\s+(\w+)", re.IGNORECASE)
+
+
+def _sql_string_from_text_call(node: ast.Call) -> str | None:
+    """If node is text("...") or sa.text("..."), return the SQL string;
+    None otherwise.
+    """
+    func = node.func
+    if isinstance(func, ast.Name):
+        if func.id != "text":
+            return None
+    elif isinstance(func, ast.Attribute):
+        if func.attr != "text":
+            return None
+    else:
+        return None
+    if not node.args:
+        return None
+    first = node.args[0]
+    if isinstance(first, ast.Constant) and isinstance(first.value, str):
+        return first.value
+    # Multi-line strings sometimes appear as JoinedStr or concatenation.
+    # For our heuristic we ignore those (would require constant-folding).
+    return None
+
+
+def _sql_has_company_id(sql: str) -> bool:
+    """Return True if the raw SQL references company_id in any canonical form:
+    - column name `company_id`
+    - bind param `:company_id`
+    - GUC reference `app.company_id`
+    """
+    s = sql.lower()
+    return "company_id" in s
+
+
+def _scan_raw_sql_inserts(tree: ast.AST, src_lines: list[str], path: Path) -> list[Violation]:
+    out: list[Violation] = []
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call):
+            continue
+        sql = _sql_string_from_text_call(node)
+        if not sql:
+            continue
+        m = _INSERT_INTO_RE.search(sql)
+        if not m:
+            continue
+        table = m.group(1)
+        if _sql_has_company_id(sql):
+            continue
+        if _line_has_exempt(src_lines, node.lineno):
+            continue
+        out.append(
+            Violation(
+                file=str(path.relative_to(REPO_ROOT)),
+                line=node.lineno,
+                col=node.col_offset,
+                model=f"text('INSERT INTO {table} ...')",
+                has_user_id=False,
+                has_company_id=False,
+                suggestion=(
+                    f"Raw SQL INSERT INTO `{table}` does not reference "
+                    f"`company_id` anywhere. If this table has an RLS "
+                    f"policy, the INSERT will be rejected at runtime "
+                    f"(asyncpg.InsufficientPrivilegeError). Canonical "
+                    f"fix: add `company_id` to both the column list "
+                    f"AND the VALUES clause, sourced from the repo "
+                    f"method's required company_id parameter. If the "
+                    f"table is genuinely tenant-less, add `# RLS-EXEMPT: "
+                    f"<reason>` on the line above."
+                ),
+            )
+        )
+    return out
+
+
 class Walker(ast.NodeVisitor):
     def __init__(self, src_lines: list[str], path: Path):
         self.src_lines = src_lines
@@ -173,9 +257,12 @@ def scan_file(path: Path) -> list[Violation]:
     except SyntaxError as e:
         print(f"warn: syntax error parsing {path}: {e}", file=sys.stderr)
         return []
-    walker = Walker(src.splitlines(), path)
+    src_lines = src.splitlines()
+    walker = Walker(src_lines, path)
     walker.visit(tree)
-    return walker.violations
+    # Sprint 4.1 (H) — append raw-SQL INSERT INTO violations
+    raw_sql_violations = _scan_raw_sql_inserts(tree, src_lines, path)
+    return walker.violations + raw_sql_violations
 
 
 def iter_py_files(roots: Iterable[Path]) -> Iterable[Path]:

@@ -121,6 +121,41 @@ class MonitoringLoop:
             cls._instance = cls()
         return cls._instance
 
+    def get_loop_health(self) -> dict[str, "Any"]:
+        """Sprint 4.3 (M) — canonical health snapshot for ops/sensor.
+
+        External monitor (Replit cron, scripts/check_monitoring_loop_alive.py,
+        admin endpoint) reads this to detect a stalled or never-started loop.
+
+        Returns:
+            dict with:
+              running: bool — loop is currently running
+              iteration_count: int — total iterations completed
+              last_iteration_at: ISO timestamp or None
+              consecutive_failures: int — failure streak (resets on success)
+              last_error: str | None — last exception message
+              check_interval_seconds: int
+              is_stale: bool — True if last_iteration_at older than 2×interval
+        """
+        now = datetime.now(timezone.utc)
+        is_stale = True
+        last_iso: str | None = None
+        if self._last_iteration_at is not None:
+            last_iso = self._last_iteration_at.isoformat()
+            stale_threshold = self._check_interval * 2
+            age_seconds = (now - self._last_iteration_at).total_seconds()
+            is_stale = age_seconds > stale_threshold
+        return {
+            "running": self._running,
+            "iteration_count": self._iteration_count,
+            "last_iteration_at": last_iso,
+            "consecutive_failures": self._consecutive_failures,
+            "last_error": self._last_error,
+            "check_interval_seconds": self._check_interval,
+            "is_stale": is_stale,
+            "now": now.isoformat(),
+        }
+
     def __init__(self, check_interval: int | None = None):
         self._running = False
         self._task: asyncio.Task | None = None
@@ -133,6 +168,14 @@ class MonitoringLoop:
         self._idle_backoff_count = 0
         self._alert_store: dict[str, list[ProactiveAlert]] = {}
         self._last_run: dict[str, datetime] = {}
+        # Sprint 4.3 (M) — observability fields. External monitor reads
+        # these via get_loop_health() to detect a stalled or never-started
+        # loop. Without this, ops only knew the loop was broken when
+        # proactive alerts stopped showing up (silent failure).
+        self._last_iteration_at: datetime | None = None
+        self._iteration_count: int = 0
+        self._consecutive_failures: int = 0
+        self._last_error: str | None = None
 
     @property
     def is_running(self) -> bool:
@@ -173,10 +216,28 @@ class MonitoringLoop:
             iteration_did_work = False
             try:
                 iteration_did_work = await self._run_all_tenants()
+                # Sprint 4.3 (M) — successful iteration. Update health snapshot.
+                self._last_iteration_at = datetime.now(timezone.utc)
+                self._iteration_count += 1
+                self._consecutive_failures = 0
+                self._last_error = None
+                logger.info(
+                    "[MonitoringLoop healthz] iteration=%d did_work=%s "
+                    "at=%s interval=%ds",
+                    self._iteration_count, iteration_did_work,
+                    self._last_iteration_at.isoformat(),
+                    self._check_interval,
+                )
             except asyncio.CancelledError:
                 break
             except Exception as exc:
-                logger.error("MonitoringLoop iteration failed: %s", exc, exc_info=True)
+                # Sprint 4.3 (M) — track failure streak for external monitor.
+                self._consecutive_failures += 1
+                self._last_error = f"{type(exc).__name__}: {exc}"
+                logger.error(
+                    "[MonitoringLoop healthz] iteration FAILED consec=%d: %s",
+                    self._consecutive_failures, exc, exc_info=True,
+                )
             if iteration_did_work:
                 self._idle_backoff_count = 0
             else:
