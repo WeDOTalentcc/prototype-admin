@@ -1,5 +1,10 @@
 import type { LucideIcon } from "lucide-react"
 
+export interface SubsidiaryEntry {
+  name: string
+  cnpj?: string | null
+}
+
 /**
  * Schema-alvo: 1:1 com Rails canonical (ats-api-copia/db/migrate/20250715000005_create_benefits.rb).
  * Backend FastAPI espelha em libs/models/lia_models/company_benefit.py + Pydantic
@@ -41,6 +46,13 @@ export interface BenefitTabRecord {
   // Provider (PII em provider_contact — backend mascara em logs/JD publicada)
   provider?: string
   provider_contact?: string
+  // Novos campos (P2 Benefits Expansion 2026-05-24)
+  subsidiaries?: SubsidiaryEntry[]
+  valid_from?: string | null       // ISO date "YYYY-MM-DD"
+  valid_until?: string | null      // ISO date "YYYY-MM-DD"
+  review_frequency_months?: number | null
+  next_review_date?: string | null
+  provider_cnpj?: string | null
 }
 
 export interface BenefitTemplate {
@@ -86,6 +98,22 @@ export const defaultBenefit: BenefitTabRecord = {
   order: 0,
   provider: "",
   provider_contact: "",
+  subsidiaries: [],
+  valid_from: null,
+  valid_until: null,
+  review_frequency_months: null,
+  next_review_date: null,
+  provider_cnpj: null,
+}
+
+
+export interface BenefitHistoryEntry {
+  id: string
+  changed_at: string
+  changed_by: string | null
+  change_type: created | updated | deactivated | reactivated | string
+  previous_snapshot: Record<string, unknown> | null
+  change_notes: string | null
 }
 
 // ---------------------------------------------------------------------------

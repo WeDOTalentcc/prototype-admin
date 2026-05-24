@@ -108,6 +108,8 @@ export function BenefitsListSection({
   const [isSaving, setIsSaving] = useState(false)
   const [busyId, setBusyId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [uploadExtracting, setUploadExtracting] = useState(false)
+  const [extractedBenefits, setExtractedBenefits] = useState<unknown[] | null>(null)
 
   const groups = useMemo(() => {
     const byCategory = new Map<BenefitCategory, LooseBenefit[]>()
@@ -155,6 +157,47 @@ export function BenefitsListSection({
     setEditingBenefit({ ...b })
     setShowModal(true)
   }, [])
+
+
+  const handleBenefitUpload = async (file: File) => {
+    setUploadExtracting(true)
+    setError(null)
+    try {
+      const formData = new FormData()
+      formData.append("file", file)
+
+      const response = await apiFetch("/api/backend-proxy/company/benefits/upload-extract", {
+        method: "POST",
+        body: formData,
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error((data as { error?: string; detail?: string }).error || (data as { detail?: string }).detail || "Falha na extração")
+      }
+
+      const extracted = (data as { benefits?: unknown[]; extracted_count?: number }).benefits
+      const count = (data as { extracted_count?: number }).extracted_count ?? (Array.isArray(extracted) ? extracted.length : 0)
+
+      if (extracted && Array.isArray(extracted) && extracted.length > 0) {
+        setExtractedBenefits(extracted)
+        // TODO: modal de confirmação em lote — próxima iteração
+        if (typeof window !== "undefined") {
+          window.alert(`${count} benefício(s) extraído(s). Funcionalidade de confirmação em lote em desenvolvimento.`)
+        }
+      } else {
+        if (typeof window !== "undefined") {
+          window.alert("Nenhum benefício encontrado no documento. Verifique se é um manual de benefícios válido.")
+        }
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Tente novamente"
+      setError(`Erro na extração: ${msg}`)
+    } finally {
+      setUploadExtracting(false)
+    }
+  }
 
   const handleSave = useCallback(
     async (benefit: CompanyBenefit) => {
@@ -249,16 +292,46 @@ export function BenefitsListSection({
         <p className={textStyles.description}>
           {t("manageItemByItem")}
         </p>
-        <Button
-          type="button"
-          size="sm"
-          onClick={openCreate}
-          data-testid="add-benefit-cta"
-          className="inline-flex items-center gap-1.5"
-        >
-          <Plus className="w-3.5 h-3.5" />
-          {t("addBenefitBtn")}
-        </Button>
+        <div className="flex items-center gap-2">
+          <label
+            htmlFor="benefit-upload-input"
+            className={[
+              "inline-flex items-center gap-1.5 cursor-pointer px-3 py-1.5 rounded-md text-xs font-medium border border-lia-border-subtle bg-lia-bg-secondary text-lia-text-secondary hover:bg-lia-interactive-hover hover:text-lia-text-primary transition-colors",
+              uploadExtracting ? "opacity-60 pointer-events-none" : "",
+            ].join(" ")}
+            title="Importar benefícios de documento PDF/Word"
+          >
+            {uploadExtracting ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            )}
+            {uploadExtracting ? "Extraindo..." : "Importar"}
+          </label>
+          <input
+            id="benefit-upload-input"
+            type="file"
+            accept=".pdf,.doc,.docx,.txt"
+            className="sr-only"
+            onChange={(e) => {
+              const file = e.target.files?.[0]
+              if (file) {
+                handleBenefitUpload(file)
+                e.target.value = ""
+              }
+            }}
+          />
+          <Button
+            type="button"
+            size="sm"
+            onClick={openCreate}
+            data-testid="add-benefit-cta"
+            className="inline-flex items-center gap-1.5"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            {t("addBenefitBtn")}
+          </Button>
+        </div>
       </div>
 
       {error && (

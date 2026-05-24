@@ -48,6 +48,8 @@ import {
   APPLICABLE_TO_OPTIONS,
   CONTRACT_TYPE_OPTIONS,
   SENIORITY_OPTIONS,
+  type SubsidiaryEntry,
+  type BenefitHistoryEntry,
 } from "./benefits-types"
 
 interface Benefit {
@@ -72,6 +74,12 @@ interface Benefit {
   order: number
   provider?: string
   provider_contact?: string
+  subsidiaries?: SubsidiaryEntry[]
+  valid_from?: string | null
+  valid_until?: string | null
+  review_frequency_months?: number | null
+  next_review_date?: string | null
+  provider_cnpj?: string | null
 }
 
 interface BenefitFormModalProps {
@@ -82,6 +90,8 @@ interface BenefitFormModalProps {
   setEditingBenefit: (b: Benefit | null) => void
   isSaving: boolean
   onSave: (benefit: Benefit) => void
+  history?: BenefitHistoryEntry[]
+  historyLoading?: boolean
 }
 
 /**
@@ -222,6 +232,8 @@ export function BenefitFormModal({
   setEditingBenefit,
   isSaving,
   onSave,
+  history,
+  historyLoading,
 }: BenefitFormModalProps) {
   const t = useTranslations("settings.benefits")
 
@@ -590,6 +602,133 @@ export function BenefitFormModal({
                 </div>
               </div>
             </div>
+            {/* ============ Cobertura e Vigência ============ */}
+            <div className="border-t border-neutral-100 pt-5 mt-5">
+              <h3 className="text-sm font-semibold text-neutral-700 mb-4">Cobertura e Vigência</h3>
+
+              {/* provider_cnpj */}
+              <div className="mb-4">
+                <Label className={textStyles.label}>CNPJ do Fornecedor</Label>
+                <Input
+                  value={editingBenefit.provider_cnpj || ""}
+                  onChange={(e) => setEditingBenefit({ ...editingBenefit, provider_cnpj: e.target.value })}
+                  placeholder="XX.XXX.XXX/XXXX-XX"
+                  maxLength={18}
+                />
+              </div>
+
+              {/* Datas de vigência */}
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                <div>
+                  <Label className={textStyles.label}>Início do contrato</Label>
+                  <Input
+                    type="date"
+                    value={editingBenefit.valid_from || ""}
+                    onChange={(e) => setEditingBenefit({ ...editingBenefit, valid_from: e.target.value || null })}
+                  />
+                </div>
+                <div>
+                  <Label className={textStyles.label}>Fim do contrato</Label>
+                  <Input
+                    type="date"
+                    value={editingBenefit.valid_until || ""}
+                    onChange={(e) => setEditingBenefit({ ...editingBenefit, valid_until: e.target.value || null })}
+                  />
+                </div>
+              </div>
+
+              {/* Subsidiárias */}
+              <div>
+                <Label className={textStyles.label}>Filiais aplicáveis</Label>
+                <p className="text-xs text-neutral-500 mb-2">Deixe em branco para aplicar a todas as entidades da empresa</p>
+                <div className="space-y-2">
+                  {(editingBenefit.subsidiaries || []).map((sub, idx) => (
+                    <div key={idx} className="flex gap-2 items-center">
+                      <Input
+                        value={sub.name}
+                        onChange={(e) => {
+                          const next = [...(editingBenefit.subsidiaries || [])]
+                          next[idx] = { ...next[idx], name: e.target.value }
+                          setEditingBenefit({ ...editingBenefit, subsidiaries: next })
+                        }}
+                        placeholder="Nome da filial"
+                        className="flex-1"
+                      />
+                      <Input
+                        value={sub.cnpj || ""}
+                        onChange={(e) => {
+                          const next = [...(editingBenefit.subsidiaries || [])]
+                          next[idx] = { ...next[idx], cnpj: e.target.value || null }
+                          setEditingBenefit({ ...editingBenefit, subsidiaries: next })
+                        }}
+                        placeholder="CNPJ"
+                        maxLength={18}
+                        className="w-40"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const next = (editingBenefit.subsidiaries || []).filter((_, i) => i !== idx)
+                          setEditingBenefit({ ...editingBenefit, subsidiaries: next })
+                        }}
+                        className="text-neutral-400 hover:text-red-500 transition-colors"
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
+                  ))}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const next = [...(editingBenefit.subsidiaries || []), { name: "", cnpj: null }]
+                      setEditingBenefit({ ...editingBenefit, subsidiaries: next })
+                    }}
+                  >
+                    <Plus size={14} className="mr-1" /> Adicionar filial
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            {/* ============ Histórico de Alterações ============ */}
+            {editingBenefit.id && (
+              <div className="border-t border-neutral-100 pt-5 mt-5">
+                <h3 className="text-sm font-semibold text-neutral-700 mb-3">Histórico de Alterações</h3>
+                {historyLoading ? (
+                  <div className="flex items-center gap-2 text-xs text-neutral-500">
+                    <Loader2 size={14} className="animate-spin" /> Carregando...
+                  </div>
+                ) : !history || history.length === 0 ? (
+                  <p className="text-xs text-neutral-400 italic">Nenhuma alteração registrada ainda.</p>
+                ) : (
+                  <div className="space-y-2 max-h-48 overflow-y-auto">
+                    {history.map((entry) => (
+                      <div key={entry.id} className="flex gap-3 text-xs border-l-2 border-neutral-200 pl-3 py-1">
+                        <div className="flex-1">
+                          <span className="font-medium text-neutral-700">
+                            {entry.change_type === "created" ? "Criado" :
+                             entry.change_type === "updated" ? "Atualizado" :
+                             entry.change_type === "deactivated" ? "Desativado" : entry.change_type}
+                          </span>
+                          {entry.changed_by && (
+                            <span className="text-neutral-500 ml-1">por {entry.changed_by}</span>
+                          )}
+                          {entry.change_notes && (
+                            <p className="text-neutral-500 mt-0.5">{entry.change_notes}</p>
+                          )}
+                        </div>
+                        <span className="text-neutral-400 shrink-0">
+                          {new Date(entry.changed_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "2-digit", hour: "2-digit", minute: "2-digit" })}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
           </div>
         )}
 

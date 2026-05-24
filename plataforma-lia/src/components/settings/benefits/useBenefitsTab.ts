@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react"
 import { useCompanyId } from "@/hooks/company/useCompanyId"
 import { useCompanyLiaInstructions } from "@/hooks/company/use-company-lia-instructions"
-import type { BenefitTabRecord, BenefitTemplate } from "./benefits-types"
+import type { BenefitTabRecord, BenefitTemplate, BenefitHistoryEntry } from "./benefits-types"
 import { defaultBenefit } from "./benefits-types"
 import { apiFetch } from "@/lib/api/api-fetch"
 
@@ -21,6 +21,7 @@ const toRecord = (raw: unknown): Record<string, unknown> => {
 }
 
 const normalizeBenefit = (benefit: Record<string, unknown>): BenefitTabRecord => {
+
   return {
     id: typeof benefit.id === "string" ? benefit.id : undefined,
     name: String(benefit.name || ""),
@@ -61,6 +62,21 @@ const normalizeBenefit = (benefit: Record<string, unknown>): BenefitTabRecord =>
     provider: typeof benefit.provider === "string" ? benefit.provider : "",
     provider_contact:
       typeof benefit.provider_contact === "string" ? benefit.provider_contact : "",
+
+    // Novos campos (P2 Benefits Expansion 2026-05-24)
+    subsidiaries: Array.isArray(benefit.subsidiaries)
+      ? (benefit.subsidiaries as Array<{ name: string; cnpj?: string | null }>)
+      : [],
+    valid_from: typeof benefit.valid_from === "string" ? benefit.valid_from : null,
+    valid_until: typeof benefit.valid_until === "string" ? benefit.valid_until : null,
+    review_frequency_months:
+      typeof benefit.review_frequency_months === "number"
+        ? benefit.review_frequency_months
+        : null,
+    next_review_date:
+      typeof benefit.next_review_date === "string" ? benefit.next_review_date : null,
+    provider_cnpj:
+      typeof benefit.provider_cnpj === "string" ? benefit.provider_cnpj : null,
   }
 }
 
@@ -71,6 +87,8 @@ export function useBenefitsTab() {
   const [benefits, setBenefits] = useState<BenefitTabRecord[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
+  const [benefitHistory, setBenefitHistory] = useState<BenefitHistoryEntry[]>([])
+  const [historyLoading, setHistoryLoading] = useState(false)
   const [showBenefitModal, setShowBenefitModal] = useState(false)
   const [editingBenefit, setEditingBenefit] = useState<BenefitTabRecord | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
@@ -373,6 +391,26 @@ export function useBenefitsTab() {
     }
   }
 
+  const loadBenefitHistory = useCallback(async (benefitId: string) => {
+    setHistoryLoading(true)
+    setBenefitHistory([])
+    try {
+      const response = await apiFetch(
+        `/api/backend-proxy/company/benefits/${benefitId}/history`,
+        { headers: { "Content-Type": "application/json" } }
+      )
+      if (response.ok) {
+        const data = await response.json()
+        setBenefitHistory(Array.isArray(data) ? data : [])
+      }
+    } catch (err) {
+      console.error("[benefitHistory]", err)
+    } finally {
+      setHistoryLoading(false)
+    }
+  }, [])
+
+
   return {
     // data
     benefits,
@@ -406,6 +444,10 @@ export function useBenefitsTab() {
     handleToggleBenefitStatus,
     handleSelectTemplate,
     isTemplateAlreadyAdded,
+    // history
+    benefitHistory,
+    historyLoading,
+    loadBenefitHistory,
     // LIA
     liaToggles,
     liaInstructions,

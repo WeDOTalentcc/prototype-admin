@@ -149,6 +149,7 @@ export function BenefitsTab() {
         onEditBenefit={(b) => {
           hub.setEditingBenefit(b)
           hub.setShowBenefitModal(true)
+          if (b.id) hub.loadBenefitHistory(b.id)
         }}
         onCreateBenefitInCategory={(categoryId) => {
           hub.setEditingBenefit({ ...defaultBenefit, category: categoryId })
@@ -164,6 +165,8 @@ export function BenefitsTab() {
         setEditingBenefit={hub.setEditingBenefit}
         isSaving={hub.isSaving}
         onSave={hub.handleSaveBenefit}
+        history={hub.benefitHistory}
+        historyLoading={hub.historyLoading}
       />
 
       <BenefitTemplateModal
