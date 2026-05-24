@@ -9,9 +9,12 @@ export async function POST(
   { params }: { params: Promise<{ ruleId: string }> },
 ) {
   const { ruleId } = await params
-  const companyId = request.headers.get("X-Company-ID") || "platform"
-  const headers = getAuthHeaders(request) as Record<string, string>
-  headers["X-Company-ID"] = companyId
+  const authHeaders = getAuthHeaders(request) as Record<string, string>
+  const companyId = authHeaders["X-Company-ID"] ?? request.headers.get("X-Company-ID")
+  if (!companyId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+  const headers = authHeaders
   const url = `${BACKEND_URL}/api/v1/automation-rules/company/${encodeURIComponent(companyId)}/toggle/${encodeURIComponent(ruleId)}`
   const r = await fetch(url, { method: "POST", headers })
   const data = await r.json().catch(() => ({}))

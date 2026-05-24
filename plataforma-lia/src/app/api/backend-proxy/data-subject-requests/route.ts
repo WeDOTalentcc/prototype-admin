@@ -48,6 +48,7 @@ export async function POST(request: NextRequest) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        ...getAuthHeaders(request),
       },
       body: JSON.stringify(body)
     })

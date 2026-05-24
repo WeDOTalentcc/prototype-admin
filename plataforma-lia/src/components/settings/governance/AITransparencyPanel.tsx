@@ -117,7 +117,7 @@ export function AITransparencyPanel() {
     try {
       const res = await apiFetch(
         "/api/backend-proxy/ai-transparency/explainability-statement",
-        { headers: { "X-Company-ID": companyId } },
+        {},
       )
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const data: ExplainabilityStatement = await res.json()
@@ -136,7 +136,7 @@ export function AITransparencyPanel() {
     try {
       const res = await apiFetch(
         "/api/backend-proxy/ai-transparency/automated-decisions?limit=50",
-        { headers: { "X-Company-ID": companyId } },
+        {},
       )
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const data: AutomatedDecisionsResponse = await res.json()
@@ -156,7 +156,7 @@ export function AITransparencyPanel() {
     try {
       const res = await apiFetch(
         "/api/backend-proxy/ai-transparency/technical-documentation",
-        { headers: { "X-Company-ID": companyId } },
+        {},
       )
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const data: TechnicalDocumentation = await res.json()
@@ -194,9 +194,11 @@ export function AITransparencyPanel() {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "X-Company-ID": companyId,
           },
-          body: JSON.stringify({ reason: overrideReason.trim() }),
+          body: JSON.stringify({
+            override_reason: overrideReason.trim(),
+            new_decision: "human_reviewed",
+          }),
         },
       )
       if (!res.ok) throw new Error(`HTTP ${res.status}`)

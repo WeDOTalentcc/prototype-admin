@@ -131,7 +131,7 @@ class HumanOversightOverrideRequest(WeDoBaseModel):
 
     override_reason: str = Field(..., min_length=10, max_length=2000)
     new_decision: str = Field(..., min_length=1, max_length=255)
-    reviewer_user_id: str = Field(..., min_length=1, max_length=255)
+    reviewer_user_id: str | None = Field(None, description="Derived from JWT when omitted")
 
 
 class HumanOversightOverrideResponse(WeDoBaseModel):
@@ -422,8 +422,9 @@ async def override_automated_decision(
     decision.human_review_requested = True
     decision.human_review_completed_at = now
     decision.human_review_decision = payload.new_decision
+    effective_reviewer_id = payload.reviewer_user_id or str(current_user.id)
     try:
-        decision.human_reviewer_id = _UUID(payload.reviewer_user_id)
+        decision.human_reviewer_id = _UUID(effective_reviewer_id)
     except (ValueError, TypeError):
         # reviewer_user_id pode ser string não-UUID em workspaces legados
         decision.human_reviewer_id = None
@@ -450,7 +451,7 @@ async def override_automated_decision(
             job_vacancy_id=str(decision.vacancy_id) if decision.vacancy_id else None,
             human_review_required=False,
             criteria_ignored=PROTECTED_CRITERIA_PT,
-            actor_user_id=payload.reviewer_user_id,
+            actor_user_id=effective_reviewer_id,
         )
         audit_entry_id = str(audit_log.id) if audit_log else None
     except Exception as exc:
