@@ -153,9 +153,10 @@ class CompanyBenefitResponse(BaseModel):
     percentage_value: float | None = None
     value_type: str | None = None
     value_details: str | None = None
-    applicable_to: str | None = None
-    seniority_levels: str | None = None
-    contract_types: str | None = None
+    # P1-3 fix: ARRAY(String) in model — these are lists, not strings.
+    applicable_to: list | None = None
+    seniority_levels: list | None = None
+    contract_types: list | None = None
     departments: str | None = None
     is_active: bool = True
     is_highlighted: bool = False
@@ -287,11 +288,12 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         repo = CompanyBenefitRepository(db)
         benefits = await repo.list_for_company(effective_company_id, active_only=True)
         if seniority_level and seniority_level != "all":
+            # P1-3 fix: seniority_levels is now a list (ARRAY(String) in model).
             benefits = [
                 b for b in benefits
                 if not b.seniority_levels
-                or "all" in (b.seniority_levels or "")
-                or seniority_level in (b.seniority_levels or "")
+                or "all" in (b.seniority_levels or [])
+                or seniority_level in (b.seniority_levels or [])
             ]
         return [_to_response(b) for b in benefits]
     except HTTPException:

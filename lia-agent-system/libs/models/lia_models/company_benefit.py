@@ -2,7 +2,7 @@
 Company Benefits model for multi-tenant benefits management.
 """
 from datetime import datetime
-from sqlalchemy import Column, String, Integer, DateTime, Text, Boolean, Float
+from sqlalchemy import Column, String, Integer, DateTime, Text, Boolean, Float, ARRAY
 from sqlalchemy.dialects.postgresql import UUID
 import uuid
 
@@ -15,6 +15,7 @@ class CompanyBenefit(Base):
     Multi-tenant model with company_id scoping.
     """
     __tablename__ = "company_benefits"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     company_id = Column(String(255), nullable=False, index=True)
@@ -30,9 +31,11 @@ class CompanyBenefit(Base):
     value_details = Column(Text, nullable=True)
 
     # Eligibility scoping (Rails canonical)
-    applicable_to = Column(Text, nullable=True)
-    seniority_levels = Column(Text, nullable=True)
-    contract_types = Column(Text, nullable=True)
+    # NOTE: DB columns are TEXT[] (Postgres native arrays). Using ARRAY(String)
+    # ensures SQLAlchemy serializes lists correctly — avoids Python repr "['all']" bug.
+    applicable_to = Column(ARRAY(String), nullable=True, default=list)
+    seniority_levels = Column(ARRAY(String), nullable=True, default=list)
+    contract_types = Column(ARRAY(String), nullable=True, default=list)
     departments = Column(Text, nullable=True)
 
     # Provider info
