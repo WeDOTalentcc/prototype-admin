@@ -136,6 +136,21 @@ class ChatAdapter:
             "from_cache": getattr(orch_response, "from_cache", False),
         }
 
+        # G3 canonical fix (2026-05-24): extract [NAVIGATE:<page>] marker
+        # from LLM raw output and promote to ui_action shape (same contract
+        # ACTIONABLE_INTENTS / Rail A use). Strips marker from response text
+        # so user only sees natural-language content.
+        _extracted = _extract_navigate_marker(result["response"])
+        if _extracted is not None:
+            _clean_text, _canonical_page = _extracted
+            result["response"] = _clean_text
+            # Only emit ui_action when canonical_page is a known page.
+            # Unknown pages resolve to general — strip the marker but
+            # do not trigger frontend navigation.
+            if _canonical_page != "general":
+                result["ui_action"] = "navigate_to"
+                result["ui_action_params"] = {"page": _canonical_page}
+
         # ── Structured data → workflow_data ──
         structured = getattr(orch_response, "structured_data", None)
         if structured:
@@ -182,3 +197,34 @@ class ChatAdapter:
             "prompt_version": "chat_adapter_error",
             "error": error_msg,
         }
+
+
+# ───────────────────────────────────────────────────────────────────────
+# G3 canonical fix (2026-05-24) — navigation marker post-processor
+# ───────────────────────────────────────────────────────────────────────
+
+def _extract_navigate_marker(text: str):
+    """Extract [NAVIGATE:<page>] marker from LLM raw response.
+
+    Returns:
+        (clean_text, canonical_page_id) when marker present (canonical_page_id
+        is always a valid CanonicalPage value string — unknown pages
+        resolve to 'general').
+        None when no marker is found in text.
+
+    Single marker per response (first match wins). Marker stripped from
+    returned text. canonical_page_id is normalized via canonical_pages
+    so legacy aliases (kanban → pipeline_kanban, candidates →
+    candidato_detalhe, settings_config → configuracoes) resolve correctly.
+
+    Contract documented in system_prompt_builder.py Navegação section.
+    """
+    import re
+    from app.shared.canonical_pages import normalize_page
+
+    match = re.search(r"\[NAVIGATE:\s*([a-z][a-z0-9_-]*)\s*\]", text, re.IGNORECASE)
+    if not match:
+        return None
+    canonical = normalize_page(match.group(1))
+    clean = (text[: match.start()] + text[match.end():]).strip()
+    return clean, canonical.value

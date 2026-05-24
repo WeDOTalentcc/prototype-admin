@@ -243,6 +243,52 @@ class SystemPromptBuilder:
             if page_desc:
                 context_parts.append(f"### Localização\n{page_desc}")
 
+        # G3 canonical fix (2026-05-24): grant LLM raw path the same
+        # navigation capability that ACTIONABLE_INTENTS / Rail A paths
+        # already have. Without this, the LLM persona base prompt makes
+        # it refuse ("não consigo navegar") when intent classifier MISSES
+        # an utterance and the request falls through to the LLM.
+        #
+        # Convention: LLM emits "[NAVIGATE:<canonical_page>]" inline in
+        # the response content. The chat_adapter post-processor extracts
+        # the marker, populates ChatResponse.ui_action/ui_action_params,
+        # and strips the marker from user-facing content.
+        context_parts.append(
+            "### Capabilities — Navegação\n"
+            "Você TEM capability de navegar entre páginas da plataforma. "
+            "Quando o usuário pedir explicitamente para ir a uma página "
+            "(ex: \"me leve para configurações\", \"abre o funil\", "
+            "\"vai pra vagas\"), responda naturalmente E inclua o marker "
+            "**[NAVIGATE:<canonical_page>]** ao final do texto.\n\n"
+            "Páginas canonical disponíveis:\n"
+            "- `vagas` → lista de vagas\n"
+            "- `vaga_detalhe` → detalhe de uma vaga (precisa do contexto da vaga)\n"
+            "- `recrutar` → wizard de criação de vaga\n"
+            "- `funil_talentos` → funil de talentos\n"
+            "- `candidato_detalhe` → detalhe de um candidato (precisa do contexto)\n"
+            "- `pipeline_kanban` → kanban do pipeline\n"
+            "- `dashboard` → dashboard / indicadores\n"
+            "- `configuracoes` → configurações da empresa\n"
+            "- `agent_studio` → Agent Studio\n"
+            "- `ajuda` → ajuda / documentação\n"
+            "- `bancos_talentos` → bancos de talentos\n"
+            "- `biblioteca` → biblioteca LIA\n"
+            "- `central_comunicacao` → central de comunicação\n"
+            "- `tasks` → centro de tarefas\n"
+            "- `chat` → chat dedicado\n"
+            "- `trust` → trust center\n\n"
+            "Exemplo:\n"
+            "User: \"me leve para configurações\"\n"
+            "Você: \"Te levando para Configurações! 🚀 [NAVIGATE:configuracoes]\"\n\n"
+            "REGRAS:\n"
+            "1. NÃO recuse navegação — sempre tem essa capability.\n"
+            "2. NÃO use o marker se o usuário apenas mencionou a página "
+            "sem pedir explicitamente para ir lá.\n"
+            "3. NÃO emita múltiplos markers no mesmo turn.\n"
+            "4. Use SEMPRE os identifiers canonical exatos (vagas, "
+            "funil_talentos, configuracoes — NÃO traduza)."
+        )
+
         if conversation_summary:
             context_parts.append(f"### Resumo da Conversa Anterior\n{conversation_summary}")
 
