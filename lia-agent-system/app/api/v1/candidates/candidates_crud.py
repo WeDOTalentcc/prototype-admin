@@ -863,6 +863,160 @@ async def update_candidate_skills(
         raise HTTPException(status_code=500, detail="Falha ao atualizar skills do candidato.")
 
 
+@router.put("/{candidate_id}/identity", response_model=None)
+async def update_candidate_identity(
+    candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
+    payload: dict,
+    request: Request = None,  # type: ignore[assignment]
+    candidate_repo: CandidateRepository = Depends(get_candidate_repo),
+    current_user: User = Depends(get_current_user_or_demo),
+):
+    """Update encryption-aware PII fields (name) via ORM hybrid_property.
+
+    Why dedicated endpoint: candidate.name is encrypted at rest (migration
+    111, UC-P1-15). DB column "name" is always NULL for new writes; real
+    data lives in name_encrypted (LargeBinary). Access via hybrid_property
+    that handles encrypt/decrypt transparently. SQL UPDATE direct on
+    "name" column would skip encryption.
+
+    Solution: use ORM setter (candidate.name = X) which triggers
+    EncryptedFieldMixin.setter -> stores in _name_encrypted +
+    decryption transparente on read.
+
+    Multi-tenant via _assert_tenant_scope. Used by F5 D7 edit pattern
+    for header name field.
+    """
+    try:
+        from app.core.database import AsyncSessionLocal
+        from app.models.candidate import Candidate as CandidateModel
+        import uuid as _uuid
+
+        # First validate tenant scope (cheap repo lookup)
+        candidate_check = await candidate_repo.get_by_id_str(candidate_id)
+        if not candidate_check:
+            raise HTTPException(status_code=404, detail="Candidate not found")
+        _assert_tenant_scope(candidate_check, current_user)
+
+        updated_fields = []
+        if "name" in payload:
+            name_val = payload.get("name")
+            if not isinstance(name_val, str) or not name_val.strip():
+                raise HTTPException(status_code=400, detail="name must be non-empty string")
+            new_name = name_val.strip()[:255]
+            updated_fields.append("name")
+        else:
+            raise HTTPException(status_code=400, detail="No supported fields in payload (expected: name)")
+
+        # Use local session for ORM update (triggers encryption hybrid_property setter)
+        async with AsyncSessionLocal() as db:
+            try:
+                cand_uuid = _uuid.UUID(str(candidate_check.id))
+            except (ValueError, TypeError):
+                raise HTTPException(status_code=400, detail="Invalid candidate id")
+            cand = await db.get(CandidateModel, cand_uuid)
+            if not cand:
+                raise HTTPException(status_code=404, detail="Candidate not found in session")
+            if "name" in payload:
+                cand.name = new_name  # hybrid_property setter -> _name_encrypted
+            await db.commit()
+            await db.refresh(cand)
+            final_name = cand.name
+
+        logger.info(f"Updated identity fields {updated_fields} for candidate {candidate_id}")
+        return {
+            "success": True,
+            "updated_fields": updated_fields,
+            "name": final_name,
+            "message": "Identity updated successfully",
+        }
+    except HTTPException:
+        raise
+    except Exception:
+        _rid = getattr(request.state, "request_id", "unknown") if request else "unknown"
+        logger.exception(
+            "[update_candidate_identity] failed request_id=%s candidate_id=%s",
+            _rid, candidate_id,
+        )
+        raise HTTPException(status_code=500, detail="Falha ao atualizar identidade do candidato.")
+
+
+@router.put("/{candidate_id}/identity", response_model=None)
+async def update_candidate_identity(
+    candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
+    payload: dict,
+    request: Request = None,  # type: ignore[assignment]
+    candidate_repo: CandidateRepository = Depends(get_candidate_repo),
+    current_user: User = Depends(get_current_user_or_demo),
+):
+    """Update encryption-aware PII fields (name) via ORM hybrid_property.
+
+    Why dedicated endpoint: candidate.name is encrypted at rest (migration
+    111, UC-P1-15). DB column "name" is always NULL for new writes; real
+    data lives in name_encrypted (LargeBinary). Access via hybrid_property
+    that handles encrypt/decrypt transparently. SQL UPDATE direct on
+    "name" column would skip encryption.
+
+    Solution: use ORM setter (candidate.name = X) which triggers
+    EncryptedFieldMixin.setter -> stores in _name_encrypted +
+    decryption transparente on read.
+
+    Multi-tenant via _assert_tenant_scope. Used by F5 D7 edit pattern
+    for header name field.
+    """
+    try:
+        from app.core.database import AsyncSessionLocal
+        from app.models.candidate import Candidate as CandidateModel
+        import uuid as _uuid
+
+        # First validate tenant scope (cheap repo lookup)
+        candidate_check = await candidate_repo.get_by_id_str(candidate_id)
+        if not candidate_check:
+            raise HTTPException(status_code=404, detail="Candidate not found")
+        _assert_tenant_scope(candidate_check, current_user)
+
+        updated_fields = []
+        if "name" in payload:
+            name_val = payload.get("name")
+            if not isinstance(name_val, str) or not name_val.strip():
+                raise HTTPException(status_code=400, detail="name must be non-empty string")
+            new_name = name_val.strip()[:255]
+            updated_fields.append("name")
+        else:
+            raise HTTPException(status_code=400, detail="No supported fields in payload (expected: name)")
+
+        # Use local session for ORM update (triggers encryption hybrid_property setter)
+        async with AsyncSessionLocal() as db:
+            try:
+                cand_uuid = _uuid.UUID(str(candidate_check.id))
+            except (ValueError, TypeError):
+                raise HTTPException(status_code=400, detail="Invalid candidate id")
+            cand = await db.get(CandidateModel, cand_uuid)
+            if not cand:
+                raise HTTPException(status_code=404, detail="Candidate not found in session")
+            if "name" in payload:
+                cand.name = new_name  # hybrid_property setter -> _name_encrypted
+            await db.commit()
+            await db.refresh(cand)
+            final_name = cand.name
+
+        logger.info(f"Updated identity fields {updated_fields} for candidate {candidate_id}")
+        return {
+            "success": True,
+            "updated_fields": updated_fields,
+            "name": final_name,
+            "message": "Identity updated successfully",
+        }
+    except HTTPException:
+        raise
+    except Exception:
+        _rid = getattr(request.state, "request_id", "unknown") if request else "unknown"
+        logger.exception(
+            "[update_candidate_identity] failed request_id=%s candidate_id=%s",
+            _rid, candidate_id,
+        )
+        raise HTTPException(status_code=500, detail="Falha ao atualizar identidade do candidato.")
+
+
 @router.delete("/{candidate_id}", response_model=None)
 async def delete_candidate(
     candidate_id: str,

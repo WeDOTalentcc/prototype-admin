@@ -56,14 +56,24 @@ export function useCandidateFieldUpdate(candidateId: string | undefined) {
 
       setSaving((s) => ({ ...s, [fieldName]: true }))
       try {
-        const response = await fetch("/api/backend-proxy/chat/actions/candidate-field-update", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            candidate_id: candidateId,
-            fields: { [fieldName]: fieldValue },
-          }),
-        })
+        // F9 Item 1: name field uses dedicated /identity endpoint (encryption-aware via ORM)
+        const dedicatedEndpoint = fieldName === "name"
+          ? `/api/backend-proxy/candidates/${candidateId}/identity`
+          : null
+        const response = dedicatedEndpoint
+          ? await fetch(dedicatedEndpoint, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ [fieldName]: fieldValue }),
+            })
+          : await fetch("/api/backend-proxy/chat/actions/candidate-field-update", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                candidate_id: candidateId,
+                fields: { [fieldName]: fieldValue },
+              }),
+            })
 
         if (!response.ok) {
           const errBody = await response.json().catch(() => ({}))
