@@ -688,9 +688,53 @@ class MainOrchestrator:
                             )
                             # Fail-open: use claude default
 
+                    # Sprint 1.4 (G) — canonical: build system_prompt via SystemPromptBuilder
+                    # so Phase 1.5 reads the same persona/anti-patterns/capabilities/
+                    # context_page that Phase 2 (fallback_react, legacy) reads.
+                    # Without this, the most common chat path bypasses persona Rule 4 +
+                    # Anti-pattern #7 + G3/G6 capabilities + G1 page_context.
+                    _phase15_system_prompt = ""
+                    try:
+                        from app.shared.prompts.system_prompt_builder import (
+                            SystemPromptBuilder,
+                        )
+                        from app.shared.agents.tenant_aware_agent import (
+                            resolve_tenant_snippet_for_non_react,
+                        )
+                        _phase15_octx = ctx.to_orchestrator_context()
+                        _phase15_tenant_snippet = resolve_tenant_snippet_for_non_react(
+                            _phase15_octx,
+                            agent_name="phase15_agentic_loop",
+                            company_id_raw=_loop_company_id,
+                        )
+                        _phase15_system_prompt = SystemPromptBuilder.build(
+                            agent_type="orchestrator",
+                            tenant_context_snippet=_phase15_tenant_snippet,
+                            user_name=getattr(ctx, "user_name", "") or "",
+                            user_role=getattr(ctx, "user_role", "") or "",
+                            conversation_summary=ctx.extra.get(
+                                "conversation_summary", ""
+                            ) or "",
+                            conversation_history=ctx.extra.get(
+                                "conversation_history"
+                            ),
+                            context_page=getattr(ctx, "context_page", "general")
+                            or "general",
+                            entity_type=getattr(ctx, "entity_type", None),
+                        )
+                    except Exception as _sp_exc:
+                        # Fail-loud in log; agentic loop continues with empty prompt
+                        # (no worse than pre-Sprint-1.4 behaviour).
+                        logger.error(
+                            "[Sprint 1.4 G] Failed to build Phase 1.5 system_prompt — "
+                            "falling back to empty (persona will NOT be applied): %s",
+                            _sp_exc,
+                            exc_info=True,
+                        )
+
                     _agentic_result = await agentic_loop.run(
                         user_message=ctx.message,
-                        system_prompt="",
+                        system_prompt=_phase15_system_prompt,
                         conversation_history=ctx.extra.get("conversation_history", []),
                         company_id=_loop_company_id,
                         user_id=getattr(ctx, "user_id", None),
@@ -836,9 +880,14 @@ class MainOrchestrator:
                 # LIA-A01: Interpret Phase 0 confirmation action results
                 if exec_result and exec_result.status == "executed":
                     try:
+                        # Sprint 1.1 (B) — thread conversation history so the humanizer
+                        # can interpret short replies ("sim", "ok") in context.
+                        # Closes N4 root cause; persona Anti-pattern #7 is defense.
                         _phase0_ctx = {
                             "user_name": getattr(ctx, "user_name", "") or "",
                             "user_role": getattr(ctx, "user_role", "") or "",
+                            "conversation_history": ctx.extra.get("conversation_history", []),
+                            "conversation_summary": ctx.extra.get("conversation_summary"),
                         }
                         _interpreted = await self._interpret_action_result(ctx, exec_result, _phase0_ctx)
                         if _interpreted:
@@ -919,9 +968,12 @@ class MainOrchestrator:
                             # LIA-A01: Interpret Phase 0 param-complete action results
                             if exec_result and exec_result.status == "executed":
                                 try:
+                                    # Sprint 1.1 (B) — same fix as Phase 0 confirmation.
                                     _phase0_ctx = {
                                         "user_name": getattr(ctx, "user_name", "") or "",
                                         "user_role": getattr(ctx, "user_role", "") or "",
+                                        "conversation_history": ctx.extra.get("conversation_history", []),
+                                        "conversation_summary": ctx.extra.get("conversation_summary"),
                                     }
                                     _interpreted = await self._interpret_action_result(ctx, exec_result, _phase0_ctx)
                                     if _interpreted:
@@ -989,8 +1041,48 @@ class MainOrchestrator:
             return None
 
         if action_result.status in ("needs_params", "needs_confirmation"):
-            if action_result.pending_action_id:
-                pass  # PendingActionStore já foi atualizado pelo ActionExecutor
+            # Sprint 1.2 (F) — canonical producer fix.
+            # The executor returns needs_params/needs_confirmation but does NOT
+            # persist to pending_action_store. Without this save, Phase 0 misses
+            # the next user reply ("sim"/"não"/param) → duplicate confirmation
+            # (N5) or "mensagem incompleta" (N4 collateral).
+            try:
+                from app.orchestrator.action_executor.intents_config import (
+                    ACTIONABLE_INTENTS,
+                )
+                from app.orchestrator.execution.pending_action import (
+                    PendingActionState,
+                )
+                _data = action_result.data or {}
+                _intent = _data.get("intent") or action_result.action_type or ""
+                _config = ACTIONABLE_INTENTS.get(_intent, {})
+                _missing = list(getattr(action_result, "missing_params", None) or [])
+                _summary = getattr(action_result, "confirmation_summary", None)
+                _pending = PendingActionState(
+                    pending_id=action_result.pending_action_id
+                    or "pending-" + (_intent or "unknown"),
+                    intent=_intent,
+                    action_id=_config.get("action_id", _intent or "unknown"),
+                    domain_id=_config.get("domain_id", "unknown"),
+                    collected_params=dict(_data.get("collected_params") or {}),
+                    missing_params=_missing,
+                    conversation_id=conv_id,
+                    company_id=getattr(ctx, "company_id", None),
+                    awaiting_confirmation=(
+                        action_result.status == "needs_confirmation"
+                    ),
+                    confirmation_summary=_summary,
+                )
+                pending_action_store.save(conv_id, _pending)
+            except Exception as _persist_exc:
+                # Fail-loud in logs but keep the response flowing. If we fail to
+                # persist, the user will hit the dup-confirmation path on the next
+                # turn — same behaviour as before this fix, never worse.
+                logger.error(
+                    "[F] failed to persist pending_action: %s",
+                    _persist_exc,
+                    exc_info=True,
+                )
             return ChatResponse.from_action_result(
                 action_result,
                 intent=action_result.action_type or "action",
@@ -1003,10 +1095,14 @@ class MainOrchestrator:
             try:
                 # FIX-2: Build minimal context for interpretation (full orchestrator_context
                 # is only available in Phase 2; here we extract what we can from ctx)
+                # Sprint 1.1 (B): include conversation_history so the humanizer can
+                # interpret short user replies in context — closes N4 at the producer.
                 _phase1_context = {
                     "user_name": getattr(ctx, "user_name", "") or "",
                     "user_role": getattr(ctx, "user_role", "") or "",
                     "tenant_id": getattr(ctx, "company_id", "") or "",
+                    "conversation_history": ctx.extra.get("conversation_history", []),
+                    "conversation_summary": ctx.extra.get("conversation_summary"),
                 }
                 _interpreted = await self._interpret_action_result(ctx, action_result, _phase1_context)
                 if _interpreted:
@@ -1055,9 +1151,36 @@ class MainOrchestrator:
             user_name = orchestrator_context.get("user_name", "") or getattr(ctx, "user_name", "") or ""
             greeting = f"O usuario {user_name}" if user_name else "O usuario"
 
+            # Sprint 1.1 (B) — inject conversation history + summary BEFORE the action
+            # block so the LLM can disambiguate short replies ("sim", "ok", "vamos").
+            # Without this, the LLM defaults to its pretrained "incomplete message"
+            # shape (N4 root cause). Persona Anti-pattern #7 is the secondary defense.
             interpretation_prompt = (
                 "Voce e a LIA, assistente inteligente da WeDOTalent.\n"
                 f"{greeting} pediu: {ctx.message}\n\n"
+            )
+
+            _hist_summary = orchestrator_context.get("conversation_summary")
+            if _hist_summary:
+                interpretation_prompt += (
+                    f"### Resumo da conversa anterior\n{_hist_summary}\n\n"
+                )
+
+            _hist = orchestrator_context.get("conversation_history") or []
+            if _hist:
+                # Last 6 turns is enough for context disambiguation; full history
+                # would bloat the prompt for the lightweight Phase 0/1 humanizer.
+                _recent = _hist[-6:]
+                _lines = []
+                for _m in _recent:
+                    _role = _m.get("role", "?") if isinstance(_m, dict) else "?"
+                    _content = str(_m.get("content", "")) if isinstance(_m, dict) else ""
+                    _lines.append(f"- {_role}: {_content[:300]}")
+                interpretation_prompt += (
+                    "### Historico recente\n" + "\n".join(_lines) + "\n\n"
+                )
+
+            interpretation_prompt += (
                 f"A acao '{action_result.action_type}' foi executada com sucesso.\n"
                 f"Resultado: {action_result.message}\n"
             )

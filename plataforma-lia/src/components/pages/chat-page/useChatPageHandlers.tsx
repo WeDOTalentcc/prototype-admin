@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback } from "react"
+import { useCallback, useRef } from "react"
 import { liaApi } from "@/services/lia-api"
 import type { ParsedEntities, SearchMode, SearchMetadata } from "@/components/search/smart-search-input"
 import type { SearchFilters } from "@/components/search/advanced-filters-modal"
@@ -63,6 +63,12 @@ export function useChatPageHandlers(ctx: ChatPageHandlersContext) {
     selectedCandidateForScheduling, setSelectedCandidateForScheduling, setIsSchedulingModalOpen,
     chatConversationId, setChatConversationId, addChatMessage, scrollToBottom,
   } = ctx
+
+  // Sprint 1.3 (N) — synchronous double-submit guard. React state
+  // (isLoading) is batched, so two near-simultaneous clicks both see
+  // isLoading=false. A ref reads/writes synchronously and blocks the
+  // second call before any side effect runs.
+  const isSendingRef = useRef(false)
 
   const handleSmartSearchSubmit = useCallback(async (query: string, entities: ParsedEntities, mode?: SearchMode, metadata?: SearchMetadata) => {
     setIsSmartSearchMode(false)
@@ -211,6 +217,10 @@ export function useChatPageHandlers(ctx: ChatPageHandlersContext) {
   const handleSendMessage = useCallback(async (customContent?: string) => {
     const userMessageContent = customContent || input
     if (!userMessageContent.trim() || isLoading) return
+    // Sprint 1.3 (N) — synchronous lock acquired BEFORE any state mutation,
+    // closing the double-submit window that isLoading (batched state) leaves open.
+    if (isSendingRef.current) return
+    isSendingRef.current = true
     
     const normalizedContent = userMessageContent.toLowerCase().trim()
     
@@ -262,6 +272,7 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
       setIsSmartSearchMode(true)
       setSmartSearchQuery("")
       setChatTitle('Busca de Candidatos')
+      isSendingRef.current = false  // Sprint 1.3 (N) — release before early return
       return
     }
     
@@ -559,6 +570,9 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
         return newMessages
       })
     } finally {
+      // Sprint 1.3 (N) — release the synchronous send lock. Must run
+      // regardless of WS streaming state, so the user can submit again.
+      isSendingRef.current = false
       // Skip resetting isLoading when WS streaming mode is active —
       // the useEffect watching wsIsStreaming will reset it when streaming ends.
       if (!wsStreamingModeRef.current) {
