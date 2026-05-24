@@ -74,6 +74,8 @@ export function useRecruitmentPipeline({
         icon: s.icon,
         sla_hours: s.sla ? s.sla * 24 : null,
         is_active: s.isActive,
+        // P1-W1-06: notes eh mapeado de/para description no backend (mapRawPipelineStage usa s.description)
+        description: s.notes || '',
         action_behavior: s.action_behavior || 'passive',
         default_channel: s.default_channel || 'email',
       }))

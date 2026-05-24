@@ -25,11 +25,14 @@ export function useRecruitmentHub(activeSubsection?: string) {
   const pipeline = useRecruitmentPipeline({ persistence, onSuccess, onError })
   const screening = useRecruitmentScreening({ persistence, onSuccess, onError })
 
+  // P1-W1-04: merge fetchError from persistence into the hub error channel
+  const effectiveError = error || persistence.fetchError
+
   return {
     activeTab,
     setActiveTab,
     loading: persistence.loading,
-    error,
+    error: effectiveError,
     successMessage,
     saving: screening.saving,
 

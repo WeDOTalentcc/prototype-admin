@@ -1,25 +1,25 @@
-// P1-W1-19: migrado — BACKEND_URL via env var canônico + AbortSignal.timeout adicionado
-// Ref: CLAUDE.md "Proxies canonicais: usar createProxyHandlers"
+// P1-W1-19: migrado — AbortSignal.timeout adicionado, BACKEND_URL via env canônico
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from "next/server"
 import { getAuthHeaders } from "@/lib/api/auth-headers"
 
 const BACKEND_URL = process.env.BACKEND_URL || "http://127.0.0.1:8001"
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ jobId: string }> }
-) {
+// GET /api/backend-proxy/fairness-audit/logs
+// Proxies to: GET /api/v1/fairness/audit/logs
+// Query params: company_id, category, blocked_only, days, limit, offset
+export async function GET(request: NextRequest) {
   try {
-    const { jobId } = await params
     const searchParams = request.nextUrl.searchParams
     const backendParams = new URLSearchParams()
-    for (const key of ["include_warnings", "limit", "offset"]) {
+
+    const allowed = ["company_id", "category", "blocked_only", "days", "limit", "offset"]
+    for (const key of allowed) {
       const val = searchParams.get(key)
       if (val !== null) backendParams.set(key, val)
     }
 
-    const url = BACKEND_URL + "/api/v1/fairness/jobs/" + encodeURIComponent(jobId) + "/blocks?" + backendParams.toString()
+    const url = BACKEND_URL + "/api/v1/fairness/audit/logs?" + backendParams.toString()
     const response = await fetch(url, {
       method: "GET",
       headers: getAuthHeaders(request),
@@ -28,15 +28,16 @@ export async function GET(
 
     if (!response.ok) {
       return NextResponse.json(
-        { error: "Erro ao consultar bloqueios de fairness da vaga" },
+        { error: "Erro ao consultar audit logs de fairness" },
         { status: response.status }
       )
     }
 
-    return NextResponse.json(await response.json())
+    const data = await response.json()
+    return NextResponse.json(data)
   } catch {
     return NextResponse.json(
-      { error: "Erro interno ao consultar bloqueios de fairness" },
+      { error: "Erro interno ao consultar fairness audit logs" },
       { status: 500 }
     )
   }

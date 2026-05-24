@@ -1,3 +1,4 @@
+// P1-W1-19: migrado — AbortSignal.timeout adicionado, BACKEND_URL via env canônico
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from "next/server"
 import { getAuthHeaders } from "@/lib/api/auth-headers"
@@ -19,6 +20,7 @@ export async function GET(request: NextRequest) {
     const response = await fetch(url, {
       method: "GET",
       headers: getAuthHeaders(request),
+      signal: AbortSignal.timeout(30000),
     })
 
     if (!response.ok) {
