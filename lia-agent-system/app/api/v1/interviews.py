@@ -618,7 +618,7 @@ REQUISITOS:
 Retorne APENAS o corpo do email (sem assunto), formatado em HTML simples.
 """
 
-        email_body = await container.generate_with_fallback(prompt)
+        email_body = await container.generate_with_fallback(prompt, agent_type="InterviewAgent")
 
         # Generate subject
         subject = f"Convite para Entrevista {request.interview_type.capitalize()} - {request.job_title}"
@@ -682,7 +682,7 @@ IMPORTANTE: Retorne APENAS o JSON válido sem texto adicional.
 }}
 """
 
-        extracted_text = await container.generate_with_fallback(parse_prompt)
+        extracted_text = await container.generate_with_fallback(parse_prompt, agent_type="InterviewAgent")
 
         # Clean JSON
         if "```json" in extracted_text:

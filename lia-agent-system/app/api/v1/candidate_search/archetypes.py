@@ -1140,7 +1140,7 @@ Gere um arquétipo de busca no formato JSON com:
 
 Responda APENAS com o JSON, sem explicações adicionais."""
 
-        response_text = await container.generate_with_fallback(prompt)
+        response_text = await container.generate_with_fallback(prompt, agent_type="ArchetypeGenerationAgent")
         response_text = response_text.strip()
         if response_text.startswith("```"):
             response_text = response_text.split("```")[1]
@@ -1251,7 +1251,7 @@ Gere um arquétipo de busca no formato JSON com:
 
 Responda APENAS com o JSON, sem explicações adicionais."""
 
-        response_text = await container.generate_with_fallback(prompt)
+        response_text = await container.generate_with_fallback(prompt, agent_type="ArchetypeGenerationAgent")
         response_text = response_text.strip()
         if response_text.startswith("```"):
             response_text = response_text.split("```")[1]

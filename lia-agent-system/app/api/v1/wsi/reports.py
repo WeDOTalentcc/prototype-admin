@@ -316,8 +316,9 @@ Retorne JSON:
     for attempt in range(1, 4):
         try:
             raw = await container.generate_with_fallback(
-                system_prompt + "\n\n" + user_prompt
-            )
+                system_prompt + "\n\n" + user_prompt,
+                    agent_type="WSIReportAgent",
+                )
             raw = raw.strip()
             if raw.startswith("```"):
                 raw = raw.split("```")[1]

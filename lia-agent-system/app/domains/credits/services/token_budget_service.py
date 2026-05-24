@@ -152,6 +152,14 @@ AGENT_TYPE_REQUEST_OVERRIDES: dict[str, float] = {
     # output excede ceiling base — observado 5,913 tokens com candidate completo
     # + 8 skills + summary. Aumentado para 3.5x (7K ceiling) com margem.
     "ProfileAnalysisAgent": 3.5,
+    # F11 Phase 5 (2026-05-24): bulk overrides para endpoints user-facing
+    # que default 2K era cap muito baixo (auditoria sensor
+    # check_llm_calls_agent_type detectou 27 sites).
+    "EmailTemplateAgent": 3.0,
+    "InterviewAgent": 3.0,
+    "ArchetypeGenerationAgent": 3.0,
+    "WSIReportAgent": 3.5,
+    "ExperienceHighlightAgent": 2.5,
 }
 
 # TTL da chave Redis: 25h para cobrir edge case de meia-noite

@@ -833,7 +833,7 @@ Gere um template de email para recrutamento com as seguintes características:
 Responda APENAS com o JSON, sem texto adicional."""
 
         container = get_provider_for_tenant()
-        response_text = await container.generate_with_fallback(prompt)
+        response_text = await container.generate_with_fallback(prompt, agent_type="EmailTemplateAgent")
         response_text = response_text.strip()
 
         if response_text.startswith("```json"):
@@ -923,7 +923,7 @@ Corpo:
 Responda APENAS com o JSON, sem texto adicional."""
 
         container = get_provider_for_tenant()
-        response_text = await container.generate_with_fallback(prompt)
+        response_text = await container.generate_with_fallback(prompt, agent_type="EmailTemplateAgent")
         response_text = response_text.strip()
 
         if response_text.startswith("```json"):
