@@ -23,14 +23,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 import logging
 logger = logging.getLogger(__name__)
 
-from app.auth.dependencies import get_current_user, get_user_company_id
 from app.core.database import get_db, get_tenant_db
-from app.auth.models import User
 from lia_models.company_hiring_policy import (
     AUTOMATION_RULES_DEFAULTS,
     CompanyHiringPolicy,
 )
-from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.security.require_company_id import require_company_id_strict_match
 
 router = APIRouter(
     prefix="/companies",
@@ -38,21 +36,13 @@ router = APIRouter(
 )
 
 
-def _enforce_tenant(path_company_id: str, current_user: User) -> str:
-    """UC-P0-08: path company_id MUST match the authenticated user's tenant.
-
-    Restored as part of import #963 hardening: imported endpoints accepted
-    company_id from the URL path without checking it against the JWT context.
-    Rejects cross-tenant access fail-closed.
-    """
-    jwt_company = get_user_company_id(current_user)
-    if not path_company_id or str(path_company_id) != str(jwt_company):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="company_id does not match authenticated tenant",
-        )
-    return str(jwt_company)
-
+# Boy-Scout (audit 2026-05-24 P2-G): _enforce_tenant helper local foi
+# removido como redundante. Defense-in-depth canonical agora é o single
+# gate `Depends(require_company_id_strict_match("path.company_id"))` em
+# cada endpoint — esse já valida JWT vs path com HTTP 403 ANTES do body
+# do handler rodar (vide app/shared/security/require_company_id.py).
+# Manter dois enforcers paralelos criava drift potencial: se a regra
+# mudasse num lugar e não no outro, a defesa virava ilusória.
 
 
 # ── Schemas ─────────────────────────────────────────────────────────────────
@@ -122,14 +112,20 @@ async def _get_policy_or_404(
 async def get_config(
     company_id: str,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-_company_gate: str = Depends(require_company_id_strict_match("path.company_id"))) -> LearningLoopsConfigResponse:
-    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
+    _company_gate: str = Depends(
+        require_company_id_strict_match("path.company_id")
+    ),
+) -> LearningLoopsConfigResponse:
+    # multi-tenancy: enforced by `require_company_id_strict_match("path.company_id")` Depends gate above (JWT vs path)
     """Retorna config dos learning loops da empresa.
+
+    Multi-tenancy: ``require_company_id_strict_match`` valida que o
+    ``company_id`` do path bate com o do JWT antes desta função rodar.
+    Se houver mismatch, 403 é levantado pelo Depends — chegamos aqui
+    apenas com tenant consistente.
 
     Se nao houver CompanyHiringPolicy, retorna defaults (source='default').
     """
-    company_id = _enforce_tenant(company_id, current_user)
     policy = await _get_policy_or_404(db, company_id)
     if policy is None:
         return LearningLoopsConfigResponse(
@@ -153,17 +149,29 @@ async def patch_config(
     company_id: str,
     body: LearningLoopsConfigPatch,
     db: AsyncSession = Depends(get_tenant_db),
-    current_user: User = Depends(get_current_user),
-_company_gate: str = Depends(require_company_id_strict_match("path.company_id"))) -> LearningLoopsConfigResponse:
-    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
-    company_id = _enforce_tenant(company_id, current_user)
+    _company_gate: str = Depends(
+        require_company_id_strict_match("path.company_id")
+    ),
+) -> LearningLoopsConfigResponse:
+    # multi-tenancy: enforced by `require_company_id_strict_match("path.company_id")` Depends gate above (JWT vs path)
     """Update partial dos toggles.
+
+    Multi-tenancy: ``require_company_id_strict_match`` valida JWT vs path
+    fail-closed antes do handler rodar.
 
     Se nao existir CompanyHiringPolicy, cria com defaults aplicando o patch.
     Audit log: cada toggle mudado deveria gerar entrada (TODO: instrumentar).
     """
     policy = await _get_policy_or_404(db, company_id)
     patch = body.model_dump(exclude_none=True)
+
+    # Boy-Scout (audit 2026-05-24 P2-D): snapshot prev ANTES da mutação,
+    # para o audit log poder anexar diff prev/next per ADR-LGPD-001.
+    if policy is None:
+        old_loops: dict[str, bool] = dict(_DEFAULT_LOOPS)
+    else:
+        _existing = (policy.automation_rules or {}).get("learning_loops") or {}
+        old_loops = {k: bool(_existing.get(k, d)) for k, d in _DEFAULT_LOOPS.items()}
 
     if policy is None:
         # Cria nova policy com defaults + patch aplicado em learning_loops
@@ -184,6 +192,8 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
 
     await db.commit()
 
+    final_loops = _extract_loops(policy.automation_rules or {})
+
     # Sprint B audit log: toggle changes are LGPD-critical (especially
     # bigfive_dept). P1-7 (post-Sprint-B audit): consolidate action_type
     # to canonical 'feature_flag_change' so forensic queries don't need
@@ -192,6 +202,10 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
     # endpoint all emit the same action_type — single source of truth.
     # The flag_namespace field tells the consumer this row is a
     # learning_loops change specifically.
+    #
+    # Boy-Scout (audit 2026-05-24 P2-D): metadata agora carrega prev/next
+    # snapshot per ADR-LGPD-001 — forensic queries conseguem reconstruir
+    # o estado completo antes da mudança sem precisar derivar de outras rows.
     try:
         from app.shared.compliance.audit_service import get_audit_service
         import uuid as _uuid
@@ -204,14 +218,25 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
             target_type="company",
             metadata={
                 "changes": patch,
+                "prev": old_loops,
+                "next": final_loops,
                 "source": "learning_loops_config",
                 "flag_namespace": "learning_loops",
             },
         )
     except Exception as _audit_exc:
-        logger.warning("[learning_loops] audit log failed: %s", str(_audit_exc)[:100])
+        # Boy-Scout (audit 2026-05-24 P2-C): exc_info=True per REGRA 4
+        # anti-silent-fallback. Audit log é LGPD-critical — sem stack
+        # trace fica impossível diagnosticar a falha em prod.
+        logger.error(
+            "[learning_loops] audit log failed",
+            exc_info=True,
+            extra={
+                "company_id": str(company_id),
+                "changes_keys": list(patch.keys()),
+            },
+        )
 
-    final_loops = _extract_loops(policy.automation_rules or {})
     return LearningLoopsConfigResponse(
         company_id=company_id,
         config=LearningLoopsConfig(**final_loops),

@@ -48,13 +48,19 @@ export function AiPersonaPanel() {
   const [draftTone, setDraftTone] = useState<AiPersonaTone>("profissional")
   const [savedFeedback, setSavedFeedback] = useState<string | null>(null)
 
-  // Sync draft com persona carregada (uma vez quando chega do servidor).
+  // Boy-Scout (audit 2026-05-24 P2-E): ressincroniza draft com server-side
+  // sempre que persona muda. Antes, o guard `draftName === ""` evitava
+  // sobrescrita só no primeiro mount, mas se outra aba editasse persona o
+  // refresh trazia novo valor e o draft local ficava stale (CLAUDE.md
+  // Onda 2 lição 6: `useState(propX)` é stale state em rerender async).
+  // Dependência granular em campos para evitar disparar quando o objeto
+  // muda de referência mas valores são iguais.
   useEffect(() => {
-    if (persona && draftName === "") {
+    if (persona) {
       setDraftName(persona.name)
       setDraftTone(persona.tone)
     }
-  }, [persona, draftName])
+  }, [persona?.name, persona?.tone])
 
   const toneOptions: ToneOption[] = options?.tones ?? []
   const previewedTone =

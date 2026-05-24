@@ -218,6 +218,12 @@ export function LearningLoopsPanel() {
   const [isLoading, setIsLoading] = useState(false)
   const [isFetching, setIsFetching] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  // Boy-Scout (audit 2026-05-24 P2-F): sinaliza explicitamente quando o
+  // proxy retornou defaults porque o backend não respondeu. Antes o panel
+  // caía silenciosamente em DEFAULT_CONFIG — recrutador editava toggles
+  // achando que estava salvando, mas o backend nunca devolveu o estado real.
+  // REGRA 4 CLAUDE.md (anti-silent-fallback): falhar visível.
+  const [backendUnavailable, setBackendUnavailable] = useState(false)
   const [pendingToggle, setPendingToggle] = useState<{
     key: keyof LearningLoopsConfig
     value: boolean
@@ -230,9 +236,18 @@ export function LearningLoopsPanel() {
     fetch(`/api/backend-proxy/companies/${companyId}/learning-loops-config`)
       .then((r) => r.json())
       .then((data) => {
+        // Proxy retorna 200 OK com source='default' + message='backend
+        // unavailable' quando o FastAPI está fora — preserva UX ao mesmo
+        // tempo que o panel sinaliza ao usuário que não há config salva.
+        const isBackendDown =
+          data?.source === "default" && data?.message === "backend unavailable"
+        setBackendUnavailable(isBackendDown)
         if (data?.config) setConfig({ ...DEFAULT_CONFIG, ...data.config })
       })
-      .catch(() => setError("Falha ao carregar configurações"))
+      .catch(() => {
+        setError("Falha ao carregar configurações")
+        setBackendUnavailable(true)
+      })
       .finally(() => setIsFetching(false))
   }, [companyId])
 
@@ -257,6 +272,8 @@ export function LearningLoopsPanel() {
         } else {
           const data = await resp.json()
           if (data?.config) setConfig({ ...DEFAULT_CONFIG, ...data.config })
+          // Boy-Scout P2-F: PATCH bem-sucedido implica backend de volta.
+          setBackendUnavailable(false)
         }
       } catch {
         setConfig((prev) => ({ ...prev, [key]: !value }))
@@ -327,6 +344,20 @@ export function LearningLoopsPanel() {
             onClick={() => handleToggle(MASTER_DEF.key, !config.enabled)}
           />
         </div>
+
+        {backendUnavailable && (
+          <div
+            className="flex items-start gap-2 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl"
+            role="status"
+            aria-live="polite"
+            data-testid="learning-loops-backend-unavailable"
+          >
+            <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+            <p className="text-sm text-amber-700 dark:text-amber-300">
+              Não foi possível carregar configurações salvas. Exibindo defaults da plataforma — recarregue em alguns instantes.
+            </p>
+          </div>
+        )}
 
         {error && (
           <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">

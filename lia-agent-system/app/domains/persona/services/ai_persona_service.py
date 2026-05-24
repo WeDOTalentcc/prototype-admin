@@ -124,7 +124,20 @@ async def update_ai_persona(
     repo = HiringPolicyRepository(db)
     policy = await repo.create_if_missing(company_id, actor_user_id)
     rules = dict(policy.communication_rules or {})
-    prev = dict(rules.get("ai_persona") or {})
+    # Boy-Scout (audit 2026-05-24 P2-B): defensive read da legacy JSONB.
+    # `communication_rules.ai_persona` deveria ser dict-or-absent, mas
+    # nada na schema impede um caller antigo / migration manual ter gravado
+    # string / list. Tolerância forte: logamos warning e tratamos como
+    # vazio em vez de crashar com TypeError no `dict(...)`.
+    _existing_persona = rules.get("ai_persona")
+    if not isinstance(_existing_persona, (dict, type(None))):
+        logger.warning(
+            "[ai_persona] Legacy ai_persona value is not dict (got %s) — "
+            "treating as empty for safe update",
+            type(_existing_persona).__name__,
+        )
+        _existing_persona = None
+    prev = dict(_existing_persona or {})
 
     next_persona = dict(prev)
     if name is not None:
