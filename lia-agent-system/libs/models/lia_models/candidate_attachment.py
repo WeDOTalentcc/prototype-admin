@@ -76,7 +76,7 @@ class CandidateAttachment(Base):
         Index('idx_attach_candidate_type', 'candidate_id', 'file_type'),
         Index('idx_attach_company_created', 'company_id', 'created_at'),
         Index('idx_attach_related_entity', 'related_entity_type', 'related_entity_id'),
-    )
+    {"extend_existing": True}, )
     
     def __repr__(self):
         return f"<CandidateAttachment {self.id} - {self.file_name} ({self.file_type})>"

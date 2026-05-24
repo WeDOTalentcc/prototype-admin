@@ -104,7 +104,7 @@ class CustomAgent(Base):
         Index("idx_custom_agents_company", "company_id"),
         Index("idx_custom_agents_status", "status"),
         Index("idx_custom_agents_domain", "domain"),
-    )
+    {"extend_existing": True}, )
 
     def __repr__(self):
         return f"<CustomAgent id={self.id} name='{self.name}' company={self.company_id} status={self.status}>"
@@ -188,7 +188,7 @@ class AgentMarketplaceListing(Base):
         Index("idx_marketplace_status", "status"),
         Index("idx_marketplace_category", "category"),
         Index("idx_marketplace_publisher", "publisher_company_id"),
-    )
+    {"extend_existing": True}, )
 
     def __repr__(self):
         return f"<MarketplaceListing id={self.id} title='{self.title}' status={self.status}>"
@@ -260,7 +260,7 @@ class AgentInstallation(Base):
         Index("idx_installation_company", "installer_company_id"),
         Index("idx_installation_source", "source_agent_id"),
         Index("idx_installation_status", "status"),
-    )
+    {"extend_existing": True}, )
 
     def __repr__(self):
         return f"<AgentInstallation id={self.id} company={self.installer_company_id} agent={self.source_agent_id}>"

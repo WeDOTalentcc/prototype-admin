@@ -93,7 +93,7 @@ class CompanyTrainingConsent(Base):
             "consent_given",
             "revoked_at",
         ),
-    )
+    {"extend_existing": True}, )
 
     def __repr__(self):
         state = "granted" if self.consent_given and not self.revoked_at else "denied"

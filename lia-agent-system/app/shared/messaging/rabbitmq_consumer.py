@@ -50,7 +50,14 @@ class RabbitMQConsumer:
     async def _connect(self) -> None:
         """Cria conexão + canal. Levanta exceção em falha."""
         import aio_pika
-        rabbitmq_url = getattr(settings, "RABBITMQ_URL", None)
+        import os
+        # Auditoria 2026-05-24 (P2 fix): usa os.getenv direto sem cair no default
+        # canonical de settings.RABBITMQ_URL="amqp://guest:guest@localhost:5672/"
+        # que em dev sem RabbitMQ rodando causava retry-loop exponential infinito
+        # (log warning a cada 5-300s + stack trace de 40 linhas).
+        rabbitmq_url = os.getenv("RABBITMQ_URL")
+        if not rabbitmq_url:
+            raise RuntimeError("RABBITMQ_URL não configurado (env var ausente)")
         self._connection = await aio_pika.connect_robust(rabbitmq_url)
         self._channel = await self._connection.channel()
         await self._channel.set_qos(prefetch_count=50)
@@ -62,7 +69,9 @@ class RabbitMQConsumer:
 
         Em falha: agenda `_reconnect_loop` com exponential backoff.
         """
-        rabbitmq_url = getattr(settings, "RABBITMQ_URL", None)
+        import os
+        # Auditoria 2026-05-24 (P2 fix): vide _connect — usar os.getenv direto.
+        rabbitmq_url = os.getenv("RABBITMQ_URL")
         if not rabbitmq_url:
             logger.info("[RabbitMQConsumer] RABBITMQ_URL não configurado — consumer inativo")
             return

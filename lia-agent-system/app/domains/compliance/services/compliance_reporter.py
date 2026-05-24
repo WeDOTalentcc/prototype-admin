@@ -52,7 +52,7 @@ class ComplianceReporter:
             if self._db is None:
                 return {"violations": 0, "source": "no_db"}
             from sqlalchemy import select, func
-            from libs.models.lia_models.audit_logs import SOXAuditLog
+            from lia_models.audit_logs import SOXAuditLog
             result = await self._db.execute(
                 select(func.count()).select_from(SOXAuditLog)
                 .where(SOXAuditLog.client_id == company_id)
@@ -71,7 +71,7 @@ class ComplianceReporter:
             if self._db is None:
                 return 0
             from sqlalchemy import select, func
-            from libs.models.lia_models.audit_logs import SOXAuditLog
+            from lia_models.audit_logs import SOXAuditLog
             result = await self._db.execute(
                 select(func.count()).select_from(SOXAuditLog)
                 .where(SOXAuditLog.client_id == company_id)
@@ -88,7 +88,7 @@ class ComplianceReporter:
             if self._db is None:
                 return {"active": 0, "revoked": 0}
             from sqlalchemy import select, func
-            from libs.models.lia_models.observability import ConsentVersion
+            from lia_models.observability import ConsentVersion
             result = await self._db.execute(
                 select(func.count()).select_from(ConsentVersion)
             )
@@ -103,7 +103,7 @@ class ComplianceReporter:
             if self._db is None:
                 return {"pending_deletion": 0}
             from sqlalchemy import select, func
-            from libs.models.lia_models.candidate import Candidate
+            from lia_models.candidate import Candidate
             result = await self._db.execute(
                 select(func.count()).select_from(Candidate)
                 .where(Candidate.scheduled_deletion_at.isnot(None))

@@ -59,7 +59,7 @@ class CacheEntry(Base):
         Index('ix_cache_entries_namespace_company', 'namespace', 'company_id'),
         Index('ix_cache_entries_expires', 'expires_at'),
         Index('ix_cache_entries_tags', 'tags', postgresql_using='gin'),
-    )
+    {"extend_existing": True}, )
 
 
 class QueryEmbedding(Base):
@@ -96,7 +96,7 @@ class QueryEmbedding(Base):
     
     __table_args__ = (
         Index('ix_query_embeddings_namespace_company', 'namespace', 'company_id'),
-    )
+    {"extend_existing": True}, )
 
 
 class LearningPattern(Base):
@@ -200,7 +200,7 @@ class FeedbackEvent(Base):
         Index('ix_feedback_events_outcome', 'company_id', 'outcome'),
         Index('ix_feedback_events_unprocessed', 'company_id', 'processed_for_learning'),
         Index('ix_feedback_events_role', 'company_id', 'role'),
-    )
+    {"extend_existing": True}, )
 
 
 class TokenUsageLog(Base):
@@ -238,4 +238,4 @@ class TokenUsageLog(Base):
     __table_args__ = (
         Index('ix_token_usage_company_op', 'company_id', 'operation'),
         Index('ix_token_usage_date', 'created_at'),
-    )
+    {"extend_existing": True}, )

@@ -88,7 +88,7 @@ class ClientSaasMetrics(Base):
     __table_args__ = (
         Index('idx_saas_metrics_client', 'client_id'),
         Index('idx_saas_metrics_plan', 'plan_name'),
-    )
+    {"extend_existing": True}, )
     
     def __repr__(self):
         return f"<ClientSaasMetrics {self.id} - Client: {self.client_id}>"
@@ -149,7 +149,7 @@ class ClientUsageMetrics(Base):
     __table_args__ = (
         Index('idx_usage_metrics_client', 'client_id'),
         Index('idx_usage_metrics_period', 'period_start', 'period_end'),
-    )
+    {"extend_existing": True}, )
     
     def __repr__(self):
         return f"<ClientUsageMetrics {self.id} - Client: {self.client_id}>"
@@ -229,7 +229,7 @@ class ClientHealthMetrics(Base):
         Index('idx_health_metrics_client', 'client_id'),
         Index('idx_health_metrics_churn_risk', 'churn_risk'),
         Index('idx_health_metrics_health_score', 'health_score'),
-    )
+    {"extend_existing": True}, )
     
     def __repr__(self):
         return f"<ClientHealthMetrics {self.id} - Client: {self.client_id}>"
@@ -295,7 +295,7 @@ class PaymentHistory(Base):
         Index('idx_payment_history_date', 'date'),
         Index('idx_payment_history_status', 'status'),
         Index('idx_payment_history_client_date', 'client_id', 'date'),
-    )
+    {"extend_existing": True}, )
     
     def __repr__(self):
         return f"<PaymentHistory {self.id} - Client: {self.client_id} - {self.amount}>"

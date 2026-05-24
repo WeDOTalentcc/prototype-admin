@@ -96,7 +96,7 @@ class ComplianceHealthCheckItem(Base):
         Index('idx_health_check_framework_status', 'framework', 'status'),
         Index('idx_health_check_framework_category', 'framework', 'category'),
         Index('idx_health_check_next_review', 'next_review_date'),
-    )
+    {"extend_existing": True}, )
     
     def __repr__(self):
         return f"<ComplianceHealthCheckItem {self.req_id} - {self.framework}>"
@@ -135,6 +135,7 @@ class ComplianceHealthCheckHistory(Base):
     Maintains audit trail of all status modifications with user attribution.
     """
     __tablename__ = "compliance_health_check_history"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     item_id = Column(UUID(as_uuid=True), ForeignKey("compliance_health_check_items.id", ondelete="CASCADE"), nullable=False, index=True)

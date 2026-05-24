@@ -50,7 +50,7 @@ class HITLPendingAction(Base):
         Index("ix_hitl_pending_thread_id", "thread_id"),
         Index("ix_hitl_pending_status", "status"),
         Index("ix_hitl_pending_expires_at", "expires_at"),
-    )
+    {"extend_existing": True}, )
 
     def to_dict(self) -> dict:
         return {
@@ -97,7 +97,7 @@ class HITLAuditTrail(Base):
         Index("ix_hitl_audit_thread_id", "thread_id"),
         Index("ix_hitl_audit_pending_id", "pending_id"),
         Index("ix_hitl_audit_resolved_at", "resolved_at"),
-    )
+    {"extend_existing": True}, )
 
     def to_dict(self) -> dict:
         return {

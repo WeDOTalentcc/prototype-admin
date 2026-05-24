@@ -3,6 +3,7 @@
 import { useCallback, useRef, useState } from "react"
 import type { ImportState, PreviewData } from "./smart-import-types"
 import { apiFetch } from "@/lib/api/api-fetch"
+import { notifyChatOfSettingsUpdate } from "@/lib/api/settings-notify"
 
 const VALID_EXTENSIONS = ['.xlsx', '.xls', '.csv']
 const VALID_MIME_TYPES = [
@@ -72,6 +73,7 @@ export function useSmartImport({
           method: 'POST',
           body: formData,
         })
+        notifyChatOfSettingsUpdate({ actionId: "smart_import", section: "data_import" })
         if (!response.ok) throw new Error('Falha ao analisar o arquivo')
         const data = await response.json()
         const headers: string[] = data.headers || data.columns || []

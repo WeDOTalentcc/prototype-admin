@@ -94,7 +94,7 @@ class SOXAuditLog(Base):
         Index('idx_sox_audit_user_timestamp', 'user_id', 'timestamp'),
         Index('idx_sox_audit_status_timestamp', 'status', 'timestamp'),
         Index('idx_sox_audit_company_timestamp', 'company_id', 'timestamp'),
-    )
+    {"extend_existing": True}, )
     
     def __repr__(self):
         return f"<SOXAuditLog {self.id} - {self.action} by {self.user_email or 'system'}>"
@@ -133,6 +133,7 @@ class AuditRetentionPolicy(Base):
     based on regulatory requirements (SOX, LGPD, GDPR).
     """
     __tablename__ = "audit_retention_policies"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     

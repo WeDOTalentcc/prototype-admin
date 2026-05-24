@@ -17,6 +17,7 @@ class HiringPlan(Base):
     Contains the overall plan for hiring in a fiscal year.
     """
     __tablename__ = "hiring_plans"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     company_id = Column(UUID(as_uuid=True), ForeignKey("company_profiles.id"), nullable=False)
@@ -52,6 +53,7 @@ class PlannedHeadcount(Base):
     Represents individual positions to be filled.
     """
     __tablename__ = "planned_headcounts"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     hiring_plan_id = Column(UUID(as_uuid=True), ForeignKey("hiring_plans.id"), nullable=False)
@@ -104,6 +106,7 @@ class ImportJob(Base):
     Tracks the status and results of spreadsheet imports.
     """
     __tablename__ = "import_jobs"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     hiring_plan_id = Column(UUID(as_uuid=True), ForeignKey("hiring_plans.id"), nullable=False)
@@ -134,6 +137,7 @@ class WorkforceEntry(Base):
     Used for the admin panel workforce planning UI.
     """
     __tablename__ = "workforce_entries"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
 

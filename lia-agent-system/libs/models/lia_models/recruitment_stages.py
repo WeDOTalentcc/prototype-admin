@@ -82,7 +82,7 @@ class RecruitmentStage(Base):
     __table_args__ = (
         UniqueConstraint('company_id', 'name', name='uq_company_stage_name'),
         Index('ix_recruitment_stages_company_order', 'company_id', 'stage_order'),
-    )
+    {"extend_existing": True}, )
     
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -160,7 +160,7 @@ class RecruitmentSubStatus(Base):
     __table_args__ = (
         UniqueConstraint('stage_id', 'name', name='uq_stage_substatus_name'),
         Index('ix_sub_status_stage_order', 'stage_id', 'sub_status_order'),
-    )
+    {"extend_existing": True}, )
     
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -242,7 +242,7 @@ class ATSStageMapping(Base):
         UniqueConstraint('company_id', 'ats_type', 'ats_stage_name', name='uq_company_ats_stage'),
         Index('ix_ats_mapping_company_ats', 'company_id', 'ats_type'),
         Index('ix_ats_mapping_wedotalent_stage', 'wedotalent_stage_id'),
-    )
+    {"extend_existing": True}, )
     
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -288,7 +288,7 @@ class ScreeningQuestion(Base):
     
     __table_args__ = (
         Index('ix_screening_questions_company_order', 'company_id', 'order'),
-    )
+    {"extend_existing": True}, )
     
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -365,7 +365,7 @@ class CandidateStageHistory(Base):
         Index('ix_stage_history_vacancy_candidate', 'vacancy_candidate_id', 'created_at'),
         Index('ix_stage_history_vacancy', 'vacancy_id', 'created_at'),
         Index('ix_stage_history_candidate', 'candidate_id', 'created_at'),
-    )
+    {"extend_existing": True}, )
     
     def to_dict(self) -> Dict[str, Any]:
         return {

@@ -31,7 +31,7 @@ class TaskRecord(Base):
         Index("idx_task_records_domain_state", "domain_id", "state"),
         Index("idx_task_records_tenant_state", "tenant_id", "state"),
         Index("idx_task_records_scheduled", "state", "scheduled_at"),
-    )
+    {"extend_existing": True}, )
 
     def to_dict(self) -> dict:
         return {
@@ -58,6 +58,7 @@ class TaskRecord(Base):
 
 class TaskSchedule(Base):
     __tablename__ = "task_schedules"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
 
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     name = Column(String(255), nullable=False, unique=True)
@@ -101,6 +102,7 @@ class TaskSchedule(Base):
 
 class DeadLetterRecord(Base):
     __tablename__ = "dead_letter_queue"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
 
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     original_task_id = Column(String(255), nullable=False, index=True)

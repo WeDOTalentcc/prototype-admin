@@ -29,6 +29,7 @@ from lia_config.database import Base
 class TalentPool(Base):
     """A curated pool of candidates managed by a company."""
     __tablename__ = "talent_pools"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     company_id = Column(String, nullable=False, index=True)
@@ -99,7 +100,7 @@ class TalentPoolCandidate(Base):
 
     __table_args__ = (
         UniqueConstraint("talent_pool_id", "candidate_id", name="uq_talent_pool_candidate"),
-    )
+    {"extend_existing": True}, )
 
     def to_dict(self):
         """Convert to dictionary."""

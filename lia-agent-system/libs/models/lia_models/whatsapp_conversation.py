@@ -62,6 +62,7 @@ class WhatsAppConversation(Base):
     provides information and answers questions.
     """
     __tablename__ = "whatsapp_conversations"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     
@@ -166,6 +167,7 @@ class WhatsAppMessage(Base):
     Used for audit, debugging, and conversation history.
     """
     __tablename__ = "whatsapp_messages"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     

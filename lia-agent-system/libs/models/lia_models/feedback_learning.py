@@ -41,6 +41,7 @@ class SuggestionFeedback(Base):
         - This feedback is stored for future suggestions
     """
     __tablename__ = "suggestion_feedback"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     
@@ -72,6 +73,7 @@ class WizardFeedback(Base):
         - This feedback is stored for future suggestions
     """
     __tablename__ = "wizard_feedback"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     
@@ -110,6 +112,7 @@ class JobOutcome(Base):
     This data is used to identify success patterns and improve future suggestions.
     """
     __tablename__ = "job_outcomes"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     

@@ -78,7 +78,7 @@ class JobPattern(Base):
     __table_args__ = (
         Index('idx_job_pattern_lookup', 'company_id', 'pattern_type', 'pattern_key'),
         Index('idx_job_pattern_title', 'company_id', 'job_title_normalized'),
-    )
+    {"extend_existing": True}, )
     
     def to_dict(self) -> dict:
         """Convert to dictionary."""
@@ -178,7 +178,7 @@ class SalaryBenchmark(Base):
     
     __table_args__ = (
         Index('idx_salary_benchmark_lookup', 'company_id', 'job_title_normalized', 'seniority'),
-    )
+    {"extend_existing": True}, )
     
     def to_dict(self) -> dict:
         """Convert to dictionary."""
@@ -219,6 +219,7 @@ class SkillCluster(Base):
     - Skill synergy detection
     """
     __tablename__ = "skill_clusters"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
     company_id = Column(UUID(as_uuid=True), nullable=False, index=True)
@@ -305,7 +306,7 @@ class JobEmbedding(Base):
     __table_args__ = (
         Index('idx_job_embedding_company', 'company_id', 'is_active'),
         Index('idx_job_embedding_title', 'company_id', 'job_title_normalized'),
-    )
+    {"extend_existing": True}, )
     
     def to_dict(self) -> dict:
         """Convert to dictionary."""

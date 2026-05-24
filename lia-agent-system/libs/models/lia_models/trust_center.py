@@ -55,6 +55,7 @@ class TrustCenterSettings(Base):
     public-facing security and compliance portal.
     """
     __tablename__ = "trust_center_settings"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     company_id = Column(UUID(as_uuid=True), nullable=False, unique=True, index=True)
@@ -115,6 +116,7 @@ class Subprocessor(Base):
     including cloud providers, analytics tools, payment processors, etc.
     """
     __tablename__ = "trust_center_subprocessors"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     company_id = Column(UUID(as_uuid=True), nullable=False, index=True)
@@ -154,6 +156,7 @@ class TrustCenterResource(Base):
     documents that can be shared publicly or with NDA.
     """
     __tablename__ = "trust_center_resources"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     company_id = Column(UUID(as_uuid=True), nullable=False, index=True)
@@ -196,6 +199,7 @@ class TrustCenterUpdate(Base):
     policy changes, and other compliance-related news.
     """
     __tablename__ = "trust_center_updates"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     company_id = Column(UUID(as_uuid=True), nullable=False, index=True)

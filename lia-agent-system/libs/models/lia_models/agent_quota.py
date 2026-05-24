@@ -43,7 +43,7 @@ class AgentQuota(Base):
 
     __table_args__ = (
         Index("idx_agent_quota_company", "company_id"),
-    )
+    {"extend_existing": True}, )
 
     def __repr__(self):
         return f"<AgentQuota company={self.company_id} plan={self.plan_code}>"

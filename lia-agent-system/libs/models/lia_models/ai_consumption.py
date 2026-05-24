@@ -8,7 +8,7 @@ This module provides models for:
 """
 from datetime import datetime, date, timedelta
 from sqlalchemy import Column, String, Integer, DateTime, Date, Text, JSON, Boolean
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.sql import func
 from lia_config.database import Base
 import uuid
@@ -27,6 +27,9 @@ class AiConsumption(Base):
     - Associated candidate/vacancy for context
     """
     __tablename__ = "ai_consumption"
+    # Boy scout 2026-05-24: defense-in-depth contra Table already defined.
+    # Sibling classes neste arquivo já tinham extend_existing.
+    __table_args__ = {"extend_existing": True}
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     company_id = Column(UUID(as_uuid=True), nullable=False, index=True)
@@ -86,6 +89,9 @@ class AiCreditsBalance(Base):
     - Overage settings
     """
     __tablename__ = "ai_credits_balance"
+    # Boy scout 2026-05-24: defense-in-depth contra Table already defined.
+    # Sibling classes neste arquivo já tinham extend_existing.
+    __table_args__ = {"extend_existing": True}
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     company_id = Column(UUID(as_uuid=True), unique=True, nullable=False, index=True)
@@ -130,3 +136,32 @@ class AiCreditsBalance(Base):
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
             "created_at": self.created_at.isoformat() if self.created_at else None,
         }
+
+
+class AiConsumptionOutbox(Base):
+    """Audit task #544 - outbox duravel para AiConsumption (W3-030).
+
+    Fila duravel de payloads pendentes de tracking de IA. Drenada pelo
+    OutboxDrainerWorker (lifespan-tied em app/main.py). Restart preserva
+    linhas nao-entregues. Compliance EU AI Act 12.
+
+    Schema: alembic/versions/095_create_ai_consumption_outbox.py
+    """
+    __tablename__ = "ai_consumption_outbox"
+    __table_args__ = {"extend_existing": True}
+
+    id = Column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        server_default=func.gen_random_uuid(),
+    )
+    payload = Column(JSONB, nullable=False)
+    created_at = Column(DateTime, nullable=False, server_default=func.now())
+    delivered_at = Column(DateTime, nullable=True)
+    attempts = Column(Integer, nullable=False, default=0, server_default="0")
+    last_error = Column(Text, nullable=True)
+
+    def __repr__(self):
+        return f"<AiConsumptionOutbox {self.id} attempts={self.attempts} delivered={self.delivered_at is not None}>"
+

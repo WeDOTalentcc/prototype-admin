@@ -92,7 +92,7 @@ class Subscription(Base):
     __table_args__ = (
         Index('idx_subscription_client_status', 'client_id', 'status'),
         Index('idx_subscription_provider_external', 'provider', 'external_id'),
-    )
+    {"extend_existing": True}, )
     
     def __repr__(self):
         return f"<Subscription {self.id} - {self.plan_code} ({self.status})>"
@@ -184,7 +184,7 @@ class Invoice(Base):
         Index('idx_invoice_client_status', 'client_id', 'status'),
         Index('idx_invoice_due_date_status', 'due_date', 'status'),
         Index('idx_invoice_provider_external', 'provider', 'external_id'),
-    )
+    {"extend_existing": True}, )
     
     def __repr__(self):
         return f"<Invoice {self.id} - R${self.total_cents/100:.2f} ({self.status})>"
@@ -281,7 +281,7 @@ class PaymentMethod(Base):
     __table_args__ = (
         Index('idx_payment_method_client', 'client_id', 'is_active'),
         Index('idx_payment_method_subscription', 'subscription_id', 'is_default'),
-    )
+    {"extend_existing": True}, )
     
     def __repr__(self):
         return f"<PaymentMethod {self.id} - {self.type}>"
@@ -371,7 +371,7 @@ class CreditAccount(Base):
     __tablename__ = "credit_accounts"
     __table_args__ = (
         Index("ix_credit_accounts_company", "company_id", unique=True),
-    )
+    {"extend_existing": True}, )
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     company_id = Column(String(100), nullable=False, unique=True, index=True)
@@ -406,7 +406,7 @@ class CreditTransaction(Base):
     __tablename__ = "credit_transactions"
     __table_args__ = (
         Index("ix_credit_tx_company_created", "company_id", "created_at"),
-    )
+    {"extend_existing": True}, )
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     company_id = Column(String(100), nullable=False, index=True)
@@ -502,7 +502,7 @@ class CompanyModule(Base):
     __table_args__ = (
         Index("ix_company_modules_company", "company_id"),
         Index("ix_company_modules_company_module", "company_id", "module_name", unique=True),
-    )
+    {"extend_existing": True}, )
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     company_id = Column(String(100), ForeignKey("credit_accounts.company_id"), nullable=False)

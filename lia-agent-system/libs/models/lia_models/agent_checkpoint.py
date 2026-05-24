@@ -43,7 +43,7 @@ class AgentCheckpoint(Base):
 
     __table_args__ = (
         Index("idx_agent_checkpoints_session_type", "session_id", "agent_type", unique=True),
-    )
+    {"extend_existing": True}, )
 
     def __repr__(self):
         return f"<AgentCheckpoint session={self.session_id} agent={self.agent_type}>"

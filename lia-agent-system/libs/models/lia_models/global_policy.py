@@ -66,7 +66,7 @@ class GlobalPolicy(Base):
         Index('idx_policy_company_type', 'company_id', 'policy_type'),
         Index('idx_policy_scope_active', 'scope', 'is_active'),
         Index('idx_policy_type_scope', 'policy_type', 'scope'),
-    )
+    {"extend_existing": True}, )
     
     def __repr__(self):
         return f"<GlobalPolicy {self.id} - {self.name} - {self.policy_type}>"

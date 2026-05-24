@@ -8,6 +8,7 @@ import { InteractiveSurface } from "@/components/ui/interactive-surface"
 import { ChevronDown, ChevronRight, Loader2, Gauge } from "lucide-react"
 import type { RecruitmentStage } from "./recruitment-journey.types"
 import { apiFetch } from "@/lib/api/api-fetch"
+import { notifyChatOfSettingsUpdate } from "@/lib/api/settings-notify"
 
 interface SaturationSettings {
   threshold_web: number
@@ -70,7 +71,13 @@ export function SaturationControlPanel({ stage, isEditMode }: { stage: Recruitme
       body: JSON.stringify(settings),
     })
       .then(r => {
-        if (r.ok) setDirty(false)
+        if (r.ok) {
+          setDirty(false)
+          notifyChatOfSettingsUpdate({
+            actionId: "configure_saturation",
+            section: "saturation",
+          })
+        }
       })
       .catch((err) => { console.warn('[SaturationControlPanel] settings save failed', err) })
       .finally(() => setSaving(false))

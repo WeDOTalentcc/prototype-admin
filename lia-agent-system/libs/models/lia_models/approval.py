@@ -38,6 +38,7 @@ class ApprovalRequest(Base):
     Tracks the full lifecycle of approval requests with email notifications.
     """
     __tablename__ = "approval_requests"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     company_id = Column(UUID(as_uuid=True), nullable=False, index=True)

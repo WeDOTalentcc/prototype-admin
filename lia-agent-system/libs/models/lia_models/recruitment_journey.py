@@ -62,7 +62,7 @@ class RecruitmentTemplate(Base):
     __table_args__ = (
         Index('ix_recruitment_templates_company', 'company_id'),
         Index('ix_recruitment_templates_type', 'template_type'),
-    )
+    {"extend_existing": True}, )
     
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -121,7 +121,7 @@ class RecruitmentSLA(Base):
     __table_args__ = (
         Index('ix_recruitment_slas_company', 'company_id'),
         Index('ix_recruitment_slas_stage', 'stage_id'),
-    )
+    {"extend_existing": True}, )
     
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -174,7 +174,7 @@ class RecruitmentAutomation(Base):
         Index('ix_recruitment_automations_company', 'company_id'),
         Index('ix_recruitment_automations_type', 'automation_type'),
         Index('ix_recruitment_automations_trigger', 'trigger_event'),
-    )
+    {"extend_existing": True}, )
     
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -224,7 +224,7 @@ class SLAViolation(Base):
         Index('ix_sla_violations_job', 'job_id'),
         Index('ix_sla_violations_company', 'company_id'),
         Index('ix_sla_violations_resolved', 'resolved'),
-    )
+    {"extend_existing": True}, )
     
     def to_dict(self) -> Dict[str, Any]:
         return {

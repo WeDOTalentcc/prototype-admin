@@ -34,6 +34,7 @@ class ATSConnection(Base):
     Each company can have multiple ATS connections.
     """
     __tablename__ = "ats_connections"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     
@@ -95,6 +96,7 @@ class ATSSyncJob(Base):
     Track synchronization jobs between LIA and ATS platforms.
     """
     __tablename__ = "ats_sync_jobs"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     
@@ -143,6 +145,7 @@ class ATSCandidate(Base):
     Maps ATS candidate data to LIA internal candidate records.
     """
     __tablename__ = "ats_candidates"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     
@@ -196,6 +199,7 @@ class ATSWebhookLog(Base):
     Log all webhook events received from ATS platforms.
     """
     __tablename__ = "ats_webhook_logs"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     
@@ -234,6 +238,7 @@ class ATSJobMapping(Base):
     Map ATS job postings to LIA internal job vacancies.
     """
     __tablename__ = "ats_job_mappings"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     

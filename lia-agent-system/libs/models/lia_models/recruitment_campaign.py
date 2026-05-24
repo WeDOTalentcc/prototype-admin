@@ -61,7 +61,7 @@ class RecruitmentCampaign(Base):
         Index("idx_campaign_company", "company_id"),
         Index("idx_campaign_status", "status"),
         Index("idx_campaign_job", "job_id"),
-    )
+    {"extend_existing": True}, )
 
     def __repr__(self):
         return f"<RecruitmentCampaign id={self.id} name='{self.name}' status={self.status}>"

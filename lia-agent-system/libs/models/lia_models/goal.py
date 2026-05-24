@@ -36,6 +36,7 @@ class Goal(Base):
     Represents a goal or target for a user.
     """
     __tablename__ = "goals"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_id = Column(String(255), nullable=False, index=True)
@@ -101,6 +102,7 @@ class GoalTemplate(Base):
     Predefined goal templates that can be applied to users.
     """
     __tablename__ = "goal_templates"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     # TENANT-EXEMPT: GoalTemplate com company_id NULL = template global compartilhado entre tenants

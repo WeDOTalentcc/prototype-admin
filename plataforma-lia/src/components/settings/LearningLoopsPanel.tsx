@@ -12,6 +12,7 @@ import React, { useState, useEffect, useCallback } from "react"
 import { Brain, BookOpen, BarChart2, FileText, AlertCircle, X, Loader2 } from "lucide-react"
 import { textStyles } from "@/lib/design-tokens"
 import useCompanyId from "@/hooks/company/useCompanyId"
+import { notifyChatOfSettingsUpdate } from "@/lib/api/settings-notify"
 
 interface LearningLoopsConfig {
   enabled: boolean
@@ -272,6 +273,12 @@ export function LearningLoopsPanel() {
         } else {
           const data = await resp.json()
           if (data?.config) setConfig({ ...DEFAULT_CONFIG, ...data.config })
+          notifyChatOfSettingsUpdate({
+            actionId: "configure_learning_loop",
+            section: "learning_loops",
+            field: String(key),
+            value: value,
+          })
           // Boy-Scout P2-F: PATCH bem-sucedido implica backend de volta.
           setBackendUnavailable(false)
         }

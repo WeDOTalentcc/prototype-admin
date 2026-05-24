@@ -27,7 +27,7 @@ class ConversationMemory(Base):
     __table_args__ = (
         Index('ix_conversation_memories_company_session', 'company_id', 'session_id'),
         Index('ix_conversation_memories_user_created', 'user_id', 'created_at'),
-    )
+    {"extend_existing": True}, )
     
     def to_dict(self):
         return {
@@ -61,7 +61,7 @@ class KnowledgeBase(Base):
     
     __table_args__ = (
         Index('ix_knowledge_base_company_type', 'company_id', 'document_type'),
-    )
+    {"extend_existing": True}, )
     
     def to_dict(self):
         return {

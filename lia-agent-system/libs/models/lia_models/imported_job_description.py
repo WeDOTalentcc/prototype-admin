@@ -145,7 +145,7 @@ class ImportedJobDescription(Base):
         Index('idx_imported_jd_company_source', 'company_id', 'source'),
         Index('idx_imported_jd_batch', 'import_batch_id'),
         Index('idx_imported_jd_learning', 'company_id', 'is_used_for_learning'),
-    )
+    {"extend_existing": True}, )
     
     def to_dict(self) -> dict:
         """Convert to dictionary."""
@@ -246,7 +246,7 @@ class ImportBatch(Base):
     
     __table_args__ = (
         Index('idx_import_batch_company', 'company_id', 'status'),
-    )
+    {"extend_existing": True}, )
     
     def to_dict(self) -> dict:
         """Convert to dictionary."""
@@ -309,7 +309,7 @@ class ClientSkillCatalog(Base):
     __table_args__ = (
         Index('idx_client_skill_lookup', 'company_id', 'skill_name_normalized'),
         Index('idx_client_skill_type', 'company_id', 'skill_type', 'is_active'),
-    )
+    {"extend_existing": True}, )
     
     def to_dict(self) -> dict:
         """Convert to dictionary."""

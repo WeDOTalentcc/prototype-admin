@@ -18,6 +18,7 @@ class CandidateExperience(Base):
     Stores rich company data including industries for sector-based search.
     """
     __tablename__ = "candidate_experiences"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     candidate_id = Column(UUID(as_uuid=True), ForeignKey("candidates.id", ondelete="CASCADE"), nullable=False, index=True)
@@ -61,6 +62,7 @@ class CandidateExperience(Base):
 class CandidateEducation(Base):
     """Educational background for a candidate."""
     __tablename__ = "candidate_education"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     candidate_id = Column(UUID(as_uuid=True), ForeignKey("candidates.id", ondelete="CASCADE"), nullable=False, index=True)
@@ -111,6 +113,7 @@ class Candidate(EncryptedFieldMixin, Base):
       - Lookups: OR(email_hash == hash, email == plaintext) during transition period.
     """
     __tablename__ = "candidates"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
 
     # _pii_encrypt_fields: (raw_attr, enc_attr, hash_attr)
     # raw_attr  = Python attribute of the underlying DB column (nullable=True; NULL for new writes)
@@ -350,6 +353,7 @@ class CandidateSearch(Base):
     Used to understand search patterns and improve matching algorithms.
     """
     __tablename__ = "candidate_searches"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_id = Column(String(255), nullable=False, index=True)
@@ -387,6 +391,7 @@ class CreditsUsage(Base):
     Used for billing and usage analytics.
     """
     __tablename__ = "credits_usage"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     company_id = Column(String(255), nullable=False, index=True)  # Organization/company identifier
@@ -429,7 +434,7 @@ class ViewedCandidate(Base):
     
     __table_args__ = (
         UniqueConstraint('candidate_id', 'user_id', name='uq_viewed_candidate_user'),
-    )
+    {"extend_existing": True}, )
     
     def __repr__(self):
         return f"<ViewedCandidate {self.id} - user:{self.user_id} candidate:{self.candidate_id}>"
@@ -478,7 +483,7 @@ class VacancyCandidate(Base):
 
     __table_args__ = (
         UniqueConstraint('vacancy_id', 'candidate_id', name='uq_vacancy_candidate'),
-    )
+    {"extend_existing": True}, )
 
     @validates('status')
     def validate_status(self, key, value):
@@ -511,7 +516,7 @@ class CandidateFavorite(Base):
     
     __table_args__ = (
         UniqueConstraint('candidate_id', 'user_id', name='uq_favorite_candidate_user'),
-    )
+    {"extend_existing": True}, )
     
     def __repr__(self):
         return f"<CandidateFavorite {self.id} - user:{self.user_id} candidate:{self.candidate_id}>"
@@ -536,7 +541,7 @@ class CandidateHidden(Base):
     
     __table_args__ = (
         UniqueConstraint('candidate_id', 'user_id', name='uq_hidden_candidate_user'),
-    )
+    {"extend_existing": True}, )
     
     def __repr__(self):
         return f"<CandidateHidden {self.id} - user:{self.user_id} candidate:{self.candidate_id}>"
@@ -635,7 +640,7 @@ class ExternalCandidateProfile(Base):
     
     __table_args__ = (
         UniqueConstraint('source', 'source_profile_id', 'company_id', name='uq_external_source_profile'),
-    )
+    {"extend_existing": True}, )
     
     def __repr__(self):
         return f"<ExternalCandidateProfile {self.id} - {self.name} ({self.source})>"
@@ -671,7 +676,7 @@ class CandidateSource(Base):
     __table_args__ = (
         UniqueConstraint('source', 'source_profile_id', name='uq_candidate_source_profile'),
         UniqueConstraint('candidate_id', 'source', name='uq_candidate_per_source'),
-    )
+    {"extend_existing": True}, )
     
     def __repr__(self):
         return f"<CandidateSource candidate:{self.candidate_id} source:{self.source}>"
@@ -685,6 +690,7 @@ class CandidateMergeAudit(Base):
     Used for transparency and to allow reverting incorrect merges.
     """
     __tablename__ = "candidate_merge_audit"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     

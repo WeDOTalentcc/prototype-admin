@@ -81,7 +81,7 @@ class ClientAccount(Base):
         Index('idx_client_plan', 'plan_id'),
         Index('idx_client_cnpj', 'cnpj'),
         Index('idx_client_not_deleted', 'is_deleted'),
-    )
+    {"extend_existing": True}, )
     
     def __repr__(self):
         return f"<ClientAccount {self.id} - {self.name}>"

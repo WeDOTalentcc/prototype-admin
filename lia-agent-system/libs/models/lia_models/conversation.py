@@ -33,6 +33,7 @@ class Conversation(Base):
     Enhanced with context types for persistent memory across sessions.
     """
     __tablename__ = "conversations"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_id = Column(String(255), nullable=False, index=True)
@@ -95,6 +96,7 @@ class Message(Base):
     Enhanced with intent and tool_calls for agent memory.
     """
     __tablename__ = "messages"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     conversation_id = Column(UUID(as_uuid=True), ForeignKey("conversations.id"), nullable=False, index=True)
@@ -150,6 +152,7 @@ class ConversationSummary(Base):
     Summaries are generated periodically to compress long conversations.
     """
     __tablename__ = "conversation_summaries"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     conversation_id = Column(UUID(as_uuid=True), ForeignKey("conversations.id"), nullable=False, index=True)

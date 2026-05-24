@@ -444,7 +444,7 @@ class PearchService:
         Returns:
             PearchSearchResponse com candidatos encontrados.
         """
-        from libs.models.lia_models.pearch import PearchSearchRequest, SearchType
+        from lia_models.pearch import PearchSearchRequest, SearchType
 
         request = PearchSearchRequest(
             query=(job_description or "")[:2000],

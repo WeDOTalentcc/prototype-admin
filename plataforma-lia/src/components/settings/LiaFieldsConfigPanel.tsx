@@ -33,6 +33,7 @@ import {
 } from "lucide-react"
 import { textStyles } from "@/lib/design-tokens"
 import { apiFetch } from "@/lib/api/api-fetch"
+import { notifyChatOfSettingsUpdate } from "@/lib/api/settings-notify"
 import useCompanyId from "@/hooks/company/useCompanyId"
 import { LiaFieldToggle } from "@/components/settings/LiaFieldToggle"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -423,6 +424,11 @@ function TenantOverrideYamlEditor() {
       setOriginalContent(yamlContent)
       setSavedAt(data.last_updated_at || new Date().toISOString())
       setWarnings(data.validation_warnings || [])
+      notifyChatOfSettingsUpdate({
+        actionId: "save_lia_field_override",
+        section: "lia_fields",
+        field: selectedPath,
+      })
       await fetchOverrides()
     } catch (err) {
       setEditorError(err instanceof Error ? err.message : "Erro ao salvar override")

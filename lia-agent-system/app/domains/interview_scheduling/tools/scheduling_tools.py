@@ -151,7 +151,7 @@ async def reschedule_interview(
         from lia_models.interview import Interview  # type: ignore[import]
     except ImportError:
         try:
-            from libs.models.lia_models.interview import Interview  # type: ignore[import]
+            from lia_models.interview import Interview  # type: ignore[import]
         except ImportError:
             Interview = None
 

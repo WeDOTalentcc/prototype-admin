@@ -32,7 +32,7 @@ class ExternalApiConsumption(Base):
         Index("ix_extapi_company_created", "company_id", "created_at"),
         Index("ix_extapi_company_provider", "company_id", "provider"),
         Index("ix_extapi_pipeline", "pipeline_id"),
-    )
+    {"extend_existing": True}, )
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     company_id = Column(String(100), nullable=False, index=True)

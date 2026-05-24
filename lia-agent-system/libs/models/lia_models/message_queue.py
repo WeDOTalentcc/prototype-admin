@@ -114,7 +114,7 @@ class MessageQueue(Base):
         Index('idx_mq_retry', 'status', 'next_retry_at'),
         Index('idx_mq_bulk', 'bulk_id', 'bulk_sequence'),
         Index('idx_mq_scheduled', 'status', 'scheduled_at'),
-    )
+    {"extend_existing": True}, )
     
     def __repr__(self):
         return f"<MessageQueue {self.id} - {self.channel} to {self.candidate_name} ({self.status})>"

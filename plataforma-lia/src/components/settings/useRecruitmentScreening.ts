@@ -10,6 +10,7 @@ import {
 import type { NewQuestionForm, ScreeningQuestion } from "./recruitment-types"
 import type { RecruitmentPersistenceState } from "./useRecruitmentPersistence"
 import { apiFetch } from "@/lib/api/api-fetch"
+import { notifyChatOfSettingsUpdate } from "@/lib/api/settings-notify"
 
 export interface RecruitmentScreeningState {
   questions: ScreeningQuestion[]
@@ -103,6 +104,7 @@ export function useRecruitmentScreening({
           }),
         })
         if (res.ok) {
+          notifyChatOfSettingsUpdate({ actionId: "configure_screening", section: "screening_rules" })
           const data = await res.json()
           savedNew.push({ ...q, id: data.id || q.id })
         }

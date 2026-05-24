@@ -43,6 +43,7 @@ class SharedSearch(Base):
     is stored to ensure consistent viewing even if the underlying data changes.
     """
     __tablename__ = "shared_searches"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     company_id = Column(UUID(as_uuid=True), nullable=False, index=True)
@@ -103,7 +104,7 @@ class SharedSearchAccess(Base):
     
     __table_args__ = (
         UniqueConstraint('shared_search_id', 'email', name='uq_shared_search_access_email'),
-    )
+    {"extend_existing": True}, )
     
     def __repr__(self):
         return f"<SharedSearchAccess {self.id} - {self.email} ({self.role})>"
@@ -134,7 +135,7 @@ class SharedSearchFeedback(Base):
     
     __table_args__ = (
         UniqueConstraint('shared_search_id', 'candidate_id', 'reviewer_email', name='uq_shared_search_feedback_candidate_reviewer'),
-    )
+    {"extend_existing": True}, )
     
     def __repr__(self):
         return f"<SharedSearchFeedback {self.id} - {self.reviewer_email}: {self.decision.value}>"

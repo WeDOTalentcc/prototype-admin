@@ -15,6 +15,7 @@ from lia_config.database import Base
 
 class SourcingAgent(Base):
     __tablename__ = "sourcing_agents"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     company_id = Column(String(64), nullable=False, index=True)
@@ -46,6 +47,7 @@ class SourcingAgent(Base):
 
 class SourcingAgentSignal(Base):
     __tablename__ = "sourcing_agent_signals"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     agent_id = Column(UUID(as_uuid=True), ForeignKey("sourcing_agents.id", ondelete="CASCADE"), nullable=False)

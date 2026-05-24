@@ -36,4 +36,4 @@ class DomainEvent(Base):
         Index('ix_domain_events_aggregate', 'aggregate_type', 'aggregate_id', 'created_at'),
         Index('ix_domain_events_company', 'company_id', 'created_at'),
         Index('ix_domain_events_event_type', 'event_type'),
-    )
+    {"extend_existing": True}, )

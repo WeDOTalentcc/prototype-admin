@@ -16,6 +16,7 @@ class PipelineTemplate(Base):
     Templates define the stages of a recruitment process that can be applied to job vacancies.
     """
     __tablename__ = "pipeline_templates"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     company_id = Column(String(255), nullable=False, index=True)

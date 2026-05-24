@@ -35,7 +35,7 @@ class DefaultTemplate(Base):
     __tablename__ = "default_templates"
     __table_args__ = (
         Index('ix_default_templates_category_status', 'category', 'status'),
-    )
+    {"extend_existing": True}, )
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name = Column(String(255), nullable=False, index=True)

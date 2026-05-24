@@ -14,6 +14,7 @@ class TeamsConversation(Base):
     """Teams conversation tracking."""
     
     __tablename__ = "teams_conversations"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     
@@ -52,6 +53,7 @@ class TeamsMessage(Base):
     """Teams message log."""
     
     __tablename__ = "teams_messages"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     
@@ -81,6 +83,7 @@ class TeamsNotification(Base):
     """Scheduled/sent notifications via Teams."""
     
     __tablename__ = "teams_notifications"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     
@@ -117,6 +120,7 @@ class TeamsActionAuditLog(Base):
     """Audit log for Teams Adaptive Card actions."""
     
     __tablename__ = "teams_action_audit_logs"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(String(255), primary_key=True)
     

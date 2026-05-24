@@ -19,7 +19,7 @@ class EmailTemplate(Base):
     __tablename__ = "email_templates"
     __table_args__ = (
         Index('ix_email_templates_company_channel', 'company_id', 'channel'),
-    )
+    {"extend_existing": True}, )
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name = Column(String(255), nullable=False, index=True)
@@ -56,6 +56,7 @@ class EmailLog(Base):
     Used for auditing and debugging email delivery.
     """
     __tablename__ = "email_logs"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     template_id = Column(UUID(as_uuid=True), ForeignKey("email_templates.id"), nullable=True, index=True)

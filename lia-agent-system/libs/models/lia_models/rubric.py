@@ -53,6 +53,7 @@ class JobRequirement(Base):
     Job requirement with priority for rubric evaluation.
     """
     __tablename__ = "job_requirements"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     job_vacancy_id = Column(UUID(as_uuid=True), ForeignKey("job_vacancies.id", ondelete="CASCADE"), nullable=False, index=True)
@@ -74,6 +75,7 @@ class RubricEvaluation(Base):
     Stores rubric evaluation results for a candidate-job pair.
     """
     __tablename__ = "rubric_evaluations"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     candidate_id = Column(UUID(as_uuid=True), ForeignKey("candidates.id", ondelete="CASCADE"), nullable=False, index=True)

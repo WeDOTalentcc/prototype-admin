@@ -166,6 +166,7 @@ DEFAULT_ROLES = [
 class AdminRole(Base):
     """Admin roles with permissions."""
     __tablename__ = "admin_roles"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     company_id = Column(UUID(as_uuid=True), ForeignKey("company_profiles.id"), nullable=False)
@@ -198,6 +199,7 @@ class AdminRole(Base):
 class AdminUserRole(Base):
     """User-Role assignments."""
     __tablename__ = "admin_user_roles"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_id = Column(UUID(as_uuid=True), nullable=False)
@@ -224,6 +226,7 @@ class AdminUserRole(Base):
 class NotificationPolicy(Base):
     """Notification policies for different events."""
     __tablename__ = "notification_policies"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     company_id = Column(UUID(as_uuid=True), ForeignKey("company_profiles.id"), nullable=False)
@@ -285,6 +288,7 @@ NOTIFICATION_EVENT_TYPES = [
 class SecuritySetting(Base):
     """Security configurations."""
     __tablename__ = "security_settings"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     company_id = Column(UUID(as_uuid=True), ForeignKey("company_profiles.id"), nullable=False, unique=True)
@@ -337,6 +341,7 @@ class SecuritySetting(Base):
 class AdminAuditLog(Base):
     """Audit logs for admin actions."""
     __tablename__ = "admin_audit_logs"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     company_id = Column(UUID(as_uuid=True), nullable=False)

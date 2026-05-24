@@ -47,7 +47,7 @@ class OfferProposal(EncryptedFieldMixin, Base):
             "status IN ('draft','sent','accepted','declined','expired','cancelled')",
             name="chk_offer_status",
         ),
-    )
+    {"extend_existing": True}, )
 
     # P0.B (audit 2026-05-21, migration 160): candidate_email encrypted at rest
     # via EncryptedFieldMixin canonical. Caller-side: zero mudanca.

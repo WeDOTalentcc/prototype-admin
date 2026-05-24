@@ -17,6 +17,7 @@ class JobVacancy(Base):
     Supports both traditional fields and new conversational creation features.
     """
     __tablename__ = "job_vacancies"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     # Primary key
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -273,6 +274,7 @@ class JobVacancyInterviewStage(Base):
     Separated table for better normalization and querying.
     """
     __tablename__ = "job_vacancy_interview_stages"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     job_vacancy_id = Column(UUID(as_uuid=True), ForeignKey("job_vacancies.id"), nullable=False, index=True)
@@ -304,6 +306,7 @@ class JobVacancyTemplate(Base):
     Allows clients to configure standard recruitment journeys.
     """
     __tablename__ = "job_vacancy_templates"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     

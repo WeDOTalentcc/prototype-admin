@@ -53,7 +53,7 @@ def proactive_detect_hints_hourly(self) -> dict:
         from app.shared.services.proactive_detector_service import (
             proactive_detector_service,
         )
-        from libs.models.lia_models.company import Company
+        from lia_models.company import Company
 
         summary: dict = {
             "companies_checked": 0,

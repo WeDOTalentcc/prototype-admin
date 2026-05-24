@@ -47,6 +47,7 @@ class PlannedTask(Base):
     - Agent assignment for execution
     """
     __tablename__ = "planned_tasks"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     
@@ -152,6 +153,7 @@ class ExecutionPlan(Base):
     execution levels for parallel processing.
     """
     __tablename__ = "execution_plans"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     

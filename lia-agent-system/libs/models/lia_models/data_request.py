@@ -59,6 +59,7 @@ class DataRequestTemplate(Base):
     Define quais campos solicitar em cada etapa do processo.
     """
     __tablename__ = "data_request_templates"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     company_id = Column(UUID(as_uuid=True), nullable=False, index=True)
@@ -92,6 +93,7 @@ class DataRequestField(Base):
     Reutilizável em múltiplos templates.
     """
     __tablename__ = "data_request_fields"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     company_id = Column(UUID(as_uuid=True), nullable=False, index=True)
@@ -132,6 +134,7 @@ class DataRequest(Base):
     Contém link único com token para acesso ao portal público.
     """
     __tablename__ = "data_requests"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     
@@ -223,6 +226,7 @@ class DataRequestResponse(Base):
     Armazena histórico de alterações para auditoria.
     """
     __tablename__ = "data_request_responses"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     
@@ -259,6 +263,7 @@ class DataRequestConfig(Base):
     Define padrões, branding e comportamento do portal.
     """
     __tablename__ = "data_request_configs"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     company_id = Column(UUID(as_uuid=True), unique=True, nullable=False, index=True)
@@ -306,6 +311,7 @@ class VacancyDataRequestConfig(Base):
     Permite sobrescrever configurações padrão da empresa.
     """
     __tablename__ = "vacancy_data_request_configs"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     vacancy_id = Column(UUID(as_uuid=True), ForeignKey("job_vacancies.id", ondelete="CASCADE"), unique=True, nullable=False, index=True)

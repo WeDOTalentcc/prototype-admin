@@ -49,6 +49,7 @@ class AuditLog(Base):
     Critical for AI governance, LGPD compliance, and candidate transparency.
     """
     __tablename__ = "audit_logs"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(String(255), primary_key=True, default=lambda: str(uuid.uuid4()))
     company_id = Column(String(255), nullable=False, index=True)

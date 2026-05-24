@@ -167,6 +167,11 @@ class ProactiveAction(Base):
     - Priority levels and expiration
     """
     __tablename__ = "proactive_actions"
+    # QW1 followup 2026-05-24: bug-gemeo do commit dc835da20 (BackgroundJob ja
+    # tinha extend_existing=True, ProactiveAction nao). Mesmo arquivo, mesma
+    # classe de bug "Table is already defined for this MetaData instance"
+    # ao reimportar via paths diferentes (from lia_models.X vs from libs.models.lia_models.X).
+    __table_args__ = {"extend_existing": True}
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
     company_id = Column(UUID(as_uuid=True), nullable=False, index=True)

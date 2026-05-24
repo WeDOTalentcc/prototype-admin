@@ -25,6 +25,7 @@ class CandidateFeedback(Base):
     - Audit trail for communication
     """
     __tablename__ = "candidate_feedbacks"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     

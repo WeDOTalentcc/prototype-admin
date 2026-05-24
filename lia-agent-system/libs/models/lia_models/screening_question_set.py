@@ -26,7 +26,7 @@ class ScreeningQuestionSet(Base):
     __table_args__ = (
         Index('idx_job_vacancy_version', 'job_vacancy_id', 'version'),
         Index('idx_job_vacancy_is_active', 'job_vacancy_id', 'is_active'),
-    )
+    {"extend_existing": True}, )
 
     def __repr__(self):
         return f"<ScreeningQuestionSet {self.id} - job_vacancy_id: {self.job_vacancy_id}, version: {self.version}>"

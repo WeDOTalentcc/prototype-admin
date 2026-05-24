@@ -47,6 +47,7 @@ class Task(Base):
     Task model for tracking agent and user tasks.
     """
     __tablename__ = "tasks"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     
@@ -141,6 +142,7 @@ class TaskTemplate(Base):
     Task template for common recurring tasks.
     """
     __tablename__ = "task_templates"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     

@@ -26,6 +26,7 @@ class InteractionFeedback(Base):
     - Free-form feedback text
     """
     __tablename__ = "interaction_feedback"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
     session_id = Column(String(100), nullable=False, index=True)
@@ -90,6 +91,7 @@ class LearningPattern(Base):
     - Trigger phrases that indicate specific user needs
     """
     __tablename__ = "learning_patterns"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
     company_id = Column(UUID(as_uuid=True), nullable=False, index=True)

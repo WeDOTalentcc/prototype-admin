@@ -58,7 +58,7 @@ class FairnessAuditLog(Base):
 
     __table_args__ = (
         Index("ix_fairness_company_date", "company_id", "created_at"),
-    )
+    {"extend_existing": True}, )
 
     def __repr__(self) -> str:
         return (

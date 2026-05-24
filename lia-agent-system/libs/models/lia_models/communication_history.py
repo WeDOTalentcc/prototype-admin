@@ -104,7 +104,7 @@ class CommunicationHistory(Base):
         Index('idx_comm_vacancy_type', 'vacancy_id', 'communication_type'),
         Index('idx_comm_company_created', 'company_id', 'created_at'),
         Index('idx_comm_status_created', 'status', 'created_at'),
-    )
+    {"extend_existing": True}, )
     
     def __repr__(self):
         return f"<CommunicationHistory {self.id} - {self.communication_type} via {self.channel} - {self.status}>"

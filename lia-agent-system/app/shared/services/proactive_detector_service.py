@@ -292,7 +292,7 @@ class CompanyProfileCompletionDetector(BaseDetector):
         try:
             from sqlalchemy import select
 
-            from libs.models.lia_models.company import CompanyProfile
+            from lia_models.company import CompanyProfile
         except Exception as exc:
             logger.warning("CompanyProfileCompletionDetector import failed: %s", exc)
             return []
@@ -370,7 +370,7 @@ class DSROverdueDetector(BaseDetector):
         try:
             from sqlalchemy import and_, or_, select
 
-            from libs.models.lia_models.observability import (
+            from lia_models.observability import (
                 DataSubjectRequest,
                 DataSubjectRequestStatusEnum,
             )
@@ -727,7 +727,7 @@ class PipelineStuckDetector(BaseDetector):
         try:
             from sqlalchemy import select
 
-            from libs.models.lia_models.job_vacancy import JobVacancy
+            from lia_models.job_vacancy import JobVacancy
         except Exception as exc:
             logger.warning("PipelineStuckDetector import failed: %s", exc)
             return []
@@ -993,7 +993,7 @@ class ProactiveDetectorService:
         try:
             from sqlalchemy import and_, select
 
-            from libs.models.lia_models.background_jobs import (
+            from lia_models.background_jobs import (
                 ActionStatus,
                 ActionType,
                 ProactiveAction,

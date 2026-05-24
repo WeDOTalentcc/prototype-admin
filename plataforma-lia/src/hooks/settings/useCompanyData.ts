@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import {
+import { notifyChatOfSettingsUpdate } from "@/lib/api/settings-notify"
   type CompanyData,
   type Department,
   type Approver,
@@ -500,6 +501,7 @@ export function useCompanyData(): UseCompanyDataResult {
         "/api/backend-proxy/company/culture-profile/analyze-direct",
         {
           method: "POST",
+      notifyChatOfSettingsUpdate({ actionId: "update_company", section: "company_data" })
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             website_url: normalizedWebsiteUrl,

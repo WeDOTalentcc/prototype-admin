@@ -38,6 +38,7 @@ class Interview(EncryptedFieldMixin, Base):
       - graph_organizer_email → encrypted at rest (no hash; Graph API path)
     """
     __tablename__ = "interviews"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
 
     # _pii_encrypt_fields: (raw_attr, enc_attr, hash_attr)
     # Pattern canonical alinhado com Candidate (libs/models/lia_models/candidate.py).
@@ -162,6 +163,7 @@ class InterviewFeedback(EncryptedFieldMixin, Base):
     EncryptedFieldMixin canonical. Caller-side: nenhuma mudança.
     """
     __tablename__ = "interview_feedbacks"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
 
     _pii_encrypt_fields = [
         ("_interviewer_email_raw", "_interviewer_email_encrypted", "interviewer_email_hash"),
@@ -210,6 +212,7 @@ class InterviewNote(Base):
     Replaces the in-memory dict previously used in interview_notes.py.
     """
     __tablename__ = "interview_notes"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
 
@@ -273,6 +276,7 @@ class CalendarAvailability(Base):
     Track interviewer availability for smart scheduling.
     """
     __tablename__ = "calendar_availability"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     

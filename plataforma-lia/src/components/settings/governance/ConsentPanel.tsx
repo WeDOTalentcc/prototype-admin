@@ -9,6 +9,7 @@ import { Chip } from "@/components/ui/chip"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { cn } from "@/lib/utils"
 import { apiFetch } from "@/lib/api/api-fetch"
+import { notifyChatOfSettingsUpdate } from "@/lib/api/settings-notify"
 
 interface ConsentRecord {
   purpose: string
@@ -127,6 +128,11 @@ function CandidateGranularConsentTab() {
             source: "governanca-admin" }) },
       )
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      notifyChatOfSettingsUpdate({
+        actionId: "revoke_granular_consent",
+        section: "governance",
+        field: purpose,
+      })
       await load(summary.candidate_id)
     } catch (err) {
       setError(err instanceof Error ? err.message : t("errorRevoke"))

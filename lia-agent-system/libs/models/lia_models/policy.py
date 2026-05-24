@@ -67,6 +67,7 @@ class BusinessRule(Base):
     or require approval. Evaluated by priority order (lower = higher priority).
     """
     __tablename__ = "business_rules"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     # TENANT-EXEMPT: BusinessRule com company_id NULL = regra global do sistema (default cross-tenant)
@@ -122,6 +123,7 @@ class RateLimitRule(Base):
     Uses sliding window algorithm for accurate rate limiting.
     """
     __tablename__ = "rate_limit_rules"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     # TENANT-EXEMPT: RateLimitRule com company_id NULL = rate limit global do sistema
@@ -177,6 +179,7 @@ class RateLimitCounter(Base):
     Each counter tracks a specific target's usage within a time window.
     """
     __tablename__ = "rate_limit_counters"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     rule_id = Column(UUID(as_uuid=True), ForeignKey("rate_limit_rules.id", ondelete="CASCADE"), nullable=False, index=True)
@@ -213,6 +216,7 @@ class EscalationRule(Base):
     Defines triggers and actions for escalating issues to managers or admins.
     """
     __tablename__ = "escalation_rules"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     # TENANT-EXEMPT: EscalationRule com company_id NULL = escalation policy global do sistema
@@ -271,6 +275,7 @@ class PolicyEvaluationLog(Base):
     Tracks every policy evaluation for transparency and debugging.
     """
     __tablename__ = "policy_evaluation_logs"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     # TENANT-EXEMPT: PolicyEvaluationLog cross-tenant analytics (auditor WeDOTalent)
@@ -328,6 +333,7 @@ class EscalationLog(Base):
     Log of triggered escalations.
     """
     __tablename__ = "escalation_logs"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     # TENANT-EXEMPT: EscalationLog cross-tenant compliance (auditor WeDOTalent)

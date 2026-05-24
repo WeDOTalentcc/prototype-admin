@@ -72,7 +72,7 @@ class BanditPosterior(Base):
     )
 
     __table_args__ = (
-        # Composite UNIQUE: 1 posterior per (test, arm, company)
+        # Composite UNIQUE: 1 posterior per (test, arm, company    {"extend_existing": True},)
         UniqueConstraint(
             "test_name", "arm", "company_id",
             name="uq_bandit_posteriors_test_arm_company",
@@ -81,7 +81,7 @@ class BanditPosterior(Base):
             "idx_bandit_posteriors_test_lookup",
             "test_name", "company_id",
         ),
-    )
+    {"extend_existing": True}, )
 
     def __repr__(self):
         return (

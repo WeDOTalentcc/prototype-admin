@@ -15,6 +15,7 @@ class AffirmativeAuditLog(Base):
     Used for LGPD compliance and internal auditing.
     """
     __tablename__ = "affirmative_audit_logs"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     
@@ -46,6 +47,7 @@ class CandidateAffirmativeDocument(Base):
     Tracks upload, verification status, and 24h deadline.
     """
     __tablename__ = "candidate_affirmative_documents"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     

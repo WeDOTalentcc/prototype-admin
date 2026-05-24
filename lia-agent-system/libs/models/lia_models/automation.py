@@ -81,7 +81,7 @@ class CommunicationAutomation(Base):
     __table_args__ = (
         Index('idx_automation_company_active', 'company_id', 'is_active'),
         Index('idx_automation_trigger_type', 'company_id', 'trigger_type'),
-    )
+    {"extend_existing": True}, )
     
     def __repr__(self):
         return f"<CommunicationAutomation {self.id} - {self.name} - {self.trigger_type}>"
@@ -139,7 +139,7 @@ class AutomationExecutionLog(Base):
     __table_args__ = (
         Index('idx_exec_log_automation', 'automation_id', 'executed_at'),
         Index('idx_exec_log_company', 'company_id', 'executed_at'),
-    )
+    {"extend_existing": True}, )
     
     def to_dict(self):
         """Convert to dictionary."""
@@ -209,7 +209,7 @@ class AISuggestion(Base):
     __table_args__ = (
         Index('idx_suggestion_company_status', 'company_id', 'status'),
         Index('idx_suggestion_candidate', 'candidate_id', 'status'),
-    )
+    {"extend_existing": True}, )
     
     def __repr__(self):
         return f"<AISuggestion {self.id} - {self.suggestion_type} - {self.status}>"
@@ -274,7 +274,7 @@ class StageAutomationRule(Base):
     __table_args__ = (
         Index('idx_stage_rule_company_active', 'company_id', 'is_active'),
         Index('idx_stage_rule_trigger', 'company_id', 'trigger_type'),
-    )
+    {"extend_existing": True}, )
     
     def __repr__(self):
         return f"<StageAutomationRule {self.id} - {self.name} - {self.trigger_type}>"

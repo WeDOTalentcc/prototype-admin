@@ -22,6 +22,7 @@ class SearchArchetype(Base):
     - Seniority/industry targeting
     """
     __tablename__ = "search_archetypes"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(String(50), primary_key=True)
     name = Column(String(100), nullable=False, index=True)

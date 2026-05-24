@@ -297,14 +297,11 @@ class TestApplySectorEndpoint:
         except Exception:
             pytest.skip("App nao disponivel em ambiente de teste unitario")
 
-    @pytest.mark.skip(
-        reason="WT-2022 Phase 2: V1 SECTOR_DEFAULTS classvar deprecated. "
-        "Pos-deletion V1 (Q3 2026), validar setores via constante canonical "
-        "internalizada em PolicyEngineService ou lia_models.policy."
-    )
     def test_valid_sectors_list(self):
-        """Verifica que os 6 setores Alpha 1 estao definidos."""
-        # TODO(WT-2022 Phase 2): substituir por:
-        #   from lia_models.policy import VALID_SECTORS
-        #   assert {"tech","varejo","logistica","financeiro","saude","rpo"} == set(VALID_SECTORS)
-        pass
+        """WT-2022 P3.1 Phase 3 (2026-05-21): valida 6 setores canonical Alpha 1
+        em CANONICAL_SECTOR_DEFAULTS post V1 deletion."""
+        from lia_models.policy import CANONICAL_SECTOR_DEFAULTS, VALID_SECTORS
+
+        expected = {"tech", "varejo", "logistica", "financeiro", "saude", "rpo"}
+        assert set(CANONICAL_SECTOR_DEFAULTS.keys()) == expected
+        assert set(VALID_SECTORS) == expected

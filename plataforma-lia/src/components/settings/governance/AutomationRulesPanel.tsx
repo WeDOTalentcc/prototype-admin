@@ -8,6 +8,7 @@ import { Loading } from "@/components/ui/loading"
 import { Chip } from "@/components/ui/chip"
 import { cn } from "@/lib/utils"
 import { apiFetch } from "@/lib/api/api-fetch"
+import { notifyChatOfSettingsUpdate } from "@/lib/api/settings-notify"
 
 interface AutomationRule {
   id: string
@@ -79,6 +80,7 @@ export function AutomationRulesPanel() {
         method: "POST",
         headers: {
           "Content-Type": "application/json" } })
+      notifyChatOfSettingsUpdate({ actionId: "configure_automation", section: "governance" })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       setRules((curr) =>
         curr.map((r) => {

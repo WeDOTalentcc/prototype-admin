@@ -78,7 +78,7 @@ class IntelligenceInsight(Base):
     __table_args__ = (
         Index('ix_insights_company_type', 'company_id', 'insight_type'),
         Index('ix_insights_company_field', 'company_id', 'field'),
-    )
+    {"extend_existing": True}, )
 
 
 class PatternCache(Base):
@@ -118,7 +118,7 @@ class PatternCache(Base):
     __table_args__ = (
         Index('ix_pattern_cache_lookup', 'company_id', 'pattern_type', 'pattern_key'),
         Index('ix_pattern_cache_expiry', 'expires_at'),
-    )
+    {"extend_existing": True}, )
 
 
 class CorrectionPattern(Base):
@@ -159,7 +159,7 @@ class CorrectionPattern(Base):
     
     __table_args__ = (
         Index('ix_correction_pattern_lookup', 'company_id', 'field', 'seniority'),
-    )
+    {"extend_existing": True}, )
 
 
 class SuccessProfile(Base):
@@ -197,7 +197,7 @@ class SuccessProfile(Base):
     
     __table_args__ = (
         Index('ix_success_profile_lookup', 'company_id', 'role_family', 'seniority'),
-    )
+    {"extend_existing": True}, )
 
 
 class OutcomeCorrelation(Base):
@@ -243,4 +243,4 @@ class OutcomeCorrelation(Base):
     
     __table_args__ = (
         Index('ix_correlation_lookup', 'company_id', 'factor', 'outcome_metric'),
-    )
+    {"extend_existing": True}, )

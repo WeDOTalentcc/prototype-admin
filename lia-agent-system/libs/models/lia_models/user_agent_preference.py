@@ -35,4 +35,4 @@ class UserAgentPreference(Base):
         UniqueConstraint("user_id", "company_id", "domain", "action_type",
                          name="uq_user_agent_pref"),
         Index("ix_uap_user_company", "user_id", "company_id"),
-    )
+    {"extend_existing": True}, )

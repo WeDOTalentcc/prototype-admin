@@ -15,6 +15,7 @@ import {
   Trash2,
 } from "lucide-react"
 import { apiFetch } from "@/lib/api/api-fetch"
+import { notifyChatOfSettingsUpdate } from "@/lib/api/settings-notify"
 
 interface ApiKeyConfigFormProps {
   providerId: string
@@ -66,6 +67,11 @@ export function ApiKeyConfigForm({
         return
       }
 
+      notifyChatOfSettingsUpdate({
+        actionId: "test_api_key",
+        section: "integrations",
+        field: providerId,
+      })
       setStatus("saving")
       setMessage("Salvando configuração...")
 

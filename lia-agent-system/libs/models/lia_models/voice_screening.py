@@ -16,6 +16,7 @@ class VoiceScreeningCall(Base):
     Stores call metadata, transcript, and candidate information.
     """
     __tablename__ = "voice_screening_calls"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     
@@ -81,6 +82,7 @@ class VoiceScreeningAnalysis(Base):
     Stores both basic keyword analysis and deep LIA AI analysis.
     """
     __tablename__ = "voice_screening_analyses"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     

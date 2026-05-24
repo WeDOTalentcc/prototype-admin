@@ -74,7 +74,7 @@ class WsiQuestionEffectiveness(Base):
             unique=True,
         ),
         Index("ix_wsi_eff_parent_lookup", "company_id", "parent_id"),
-    )
+    {"extend_existing": True}, )
 
     def __repr__(self):
         return (

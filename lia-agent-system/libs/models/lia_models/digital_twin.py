@@ -16,6 +16,7 @@ from lia_config.database import Base
 
 class DigitalTwin(Base):
     __tablename__ = "digital_twins"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     company_id = Column(String(64), nullable=False, index=True)
@@ -42,6 +43,7 @@ class DigitalTwin(Base):
 
 class TwinDecision(Base):
     __tablename__ = "twin_decisions"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     twin_id = Column(UUID(as_uuid=True), ForeignKey("digital_twins.id", ondelete="CASCADE"), nullable=False)

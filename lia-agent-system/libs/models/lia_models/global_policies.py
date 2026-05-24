@@ -42,6 +42,7 @@ class PlatformPolicy(Base):
     - Compliance requirements
     """
     __tablename__ = "platform_global_policies"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name = Column(String(100), nullable=False, unique=True, index=True)
@@ -93,6 +94,7 @@ class PlatformPolicyAuditLog(Base):
     - Reason for the change
     """
     __tablename__ = "platform_policy_audit_logs"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     policy_id = Column(UUID(as_uuid=True), ForeignKey("platform_global_policies.id", ondelete="CASCADE"), nullable=False, index=True)

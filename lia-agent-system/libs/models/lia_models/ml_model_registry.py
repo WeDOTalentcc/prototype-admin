@@ -67,4 +67,4 @@ class MLModelRegistryRecord(Base):
         Index("ix_mlreg_name_default", "name", "is_default"),
         Index("ix_mlreg_company", "company_id"),
         Index("ix_mlreg_status", "status"),
-    )
+    {"extend_existing": True}, )

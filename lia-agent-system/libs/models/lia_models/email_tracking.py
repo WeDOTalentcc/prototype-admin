@@ -29,4 +29,4 @@ class EmailTrackingEvent(Base):
 
     __table_args__ = (
         Index("ix_email_tracking_notification_type", "notification_id", "event_type"),
-    )
+    {"extend_existing": True}, )

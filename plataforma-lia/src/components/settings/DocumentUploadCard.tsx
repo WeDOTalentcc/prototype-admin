@@ -13,6 +13,7 @@ import { useLiaFloat } from "@/contexts/lia-float-context"
 import { useAuth } from "@/contexts/auth-context"
 import type { LucideIcon } from "lucide-react"
 import { apiFetch } from "@/lib/api/api-fetch"
+import { notifyChatOfSettingsUpdate } from "@/lib/api/settings-notify"
 
 type UploadState = "idle" | "uploading" | "extracting" | "sending" | "done" | "error"
 
@@ -165,6 +166,7 @@ export function DocumentUploadCard() {
         body: formData,
       })
 
+      notifyChatOfSettingsUpdate({ actionId: "upload_document", section: "documents" })
       if (!response.ok) {
         const errData = await response.json().catch(() => ({}))
         throw new Error(errData.error || t("errors.processFailed"))

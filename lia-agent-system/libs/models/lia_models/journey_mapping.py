@@ -32,6 +32,7 @@ class IntegrationType(str, enum.Enum):
 class JourneyBlueprint(Base):
     """Main recruitment journey blueprint for a company."""
     __tablename__ = "journey_blueprints"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     company_id = Column(UUID(as_uuid=True), ForeignKey("company_profiles.id"), nullable=False)
@@ -62,6 +63,7 @@ class JourneyBlueprint(Base):
 class JourneyStep(Base):
     """Individual step in the recruitment journey."""
     __tablename__ = "journey_steps"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     blueprint_id = Column(UUID(as_uuid=True), ForeignKey("journey_blueprints.id"), nullable=False)
@@ -93,6 +95,7 @@ class JourneyStep(Base):
 class JourneyIntegration(Base):
     """Integration point in the journey."""
     __tablename__ = "journey_integrations"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     blueprint_id = Column(UUID(as_uuid=True), ForeignKey("journey_blueprints.id"), nullable=False)

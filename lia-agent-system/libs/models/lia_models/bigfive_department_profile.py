@@ -61,7 +61,7 @@ class BigFiveDepartmentProfile(Base):
             "seniority_level",
             unique=True,
         ),
-    )
+    {"extend_existing": True}, )
 
     def __repr__(self):
         return (

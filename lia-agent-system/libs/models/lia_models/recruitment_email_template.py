@@ -44,7 +44,7 @@ class RecruitmentEmailTemplate(Base):
         Index('ix_recruitment_email_templates_company_type', 'company_id', 'template_type'),
         Index('ix_recruitment_email_templates_active', 'is_active'),
         Index('ix_recruitment_email_templates_default', 'is_default'),
-    )
+    {"extend_existing": True}, )
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     # WT-2022 P0.TENANT: TENANT-EXEMPT - templates podem ser global default (company_id NULL = template padrao WeDOTalent compartilhado entre tenants)

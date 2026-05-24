@@ -16,6 +16,7 @@ from lia_config.database import Base
 class CalibrationFeedback(Base):
     """Feedback de calibração do recrutador para candidatos."""
     __tablename__ = "calibration_feedback"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     vacancy_id = Column(String, nullable=True)
@@ -54,6 +55,7 @@ class CalibrationSessionStatus(str, enum.Enum):
 class CalibrationSession(Base):
     """Sessão de calibração para uma vaga ou busca."""
     __tablename__ = "calibration_sessions"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     vacancy_id = Column(String, nullable=True)
@@ -117,6 +119,7 @@ class CalibrationEvent(Base):
     Calibration event model for tracking recruiter feedback on LIA's evaluations.
     """
     __tablename__ = "calibration_events"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
 
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
 
@@ -184,6 +187,7 @@ class CalibrationWeight(Base):
     Calibration weight model for storing learned scoring weights.
     """
     __tablename__ = "calibration_weights"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
 
@@ -233,6 +237,7 @@ class CalibrationSuggestion(Base):
     Model for storing calibration suggestions that need recruiter approval.
     """
     __tablename__ = "calibration_suggestions"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     

@@ -56,7 +56,7 @@ class CompanySkillsCatalog(Base):
         Index('idx_skills_catalog_category', 'company_id', 'category'),
         Index('idx_skills_catalog_active', 'company_id', 'is_active'),
         Index('idx_skills_catalog_usage', 'company_id', 'usage_count'),
-    )
+    {"extend_existing": True}, )
 
 
 class BehavioralCompetencyCatalog(Base):
@@ -95,7 +95,7 @@ class BehavioralCompetencyCatalog(Base):
     __table_args__ = (
         Index('idx_behavioral_catalog_company_name', 'company_id', 'name', unique=True),
         Index('idx_behavioral_catalog_active', 'company_id', 'is_active'),
-    )
+    {"extend_existing": True}, )
 
 
 class SkillUsageAnalytics(Base):
@@ -142,7 +142,7 @@ class SkillUsageAnalytics(Base):
         Index('idx_skill_usage_outcome', 'company_id', 'outcome'),
         Index('idx_skill_usage_job', 'job_vacancy_id'),
         Index('idx_skill_usage_date', 'created_at'),
-    )
+    {"extend_existing": True}, )
 
 
 class SkillSuggestionPattern(Base):
@@ -185,7 +185,7 @@ class SkillSuggestionPattern(Base):
         Index('idx_skill_pattern_context', 'company_id', 'context_key'),
         Index('idx_skill_pattern_confidence', 'company_id', 'confidence_score'),
         Index('idx_skill_pattern_promoted', 'company_id', 'is_promoted'),
-    )
+    {"extend_existing": True}, )
 
 
 SKILL_CATEGORIES = {

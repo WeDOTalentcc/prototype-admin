@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { cn } from "@/lib/utils"
 import { apiFetch } from "@/lib/api/api-fetch"
+import { notifyChatOfSettingsUpdate } from "@/lib/api/settings-notify"
 
 interface Policy {
   id?: string
@@ -127,6 +128,7 @@ export function PolicyEnginePanel() {
       const res = await apiFetch(url, {
         method: "POST",
       })
+      notifyChatOfSettingsUpdate({ actionId: "manage_policy", section: "governance" })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       setApplyMsg(t("applySuccess"))
     } catch (err) {

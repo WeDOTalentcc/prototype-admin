@@ -16,6 +16,7 @@ class SelfSchedulingLink(Base):
     Self-scheduling links allow candidates to choose their preferred interview time.
     """
     __tablename__ = "self_scheduling_links"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     token = Column(String(64), unique=True, nullable=False, index=True)
@@ -100,6 +101,7 @@ class RescheduleHistory(Base):
     Track interview rescheduling history for limits and auditing.
     """
     __tablename__ = "reschedule_history"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     
@@ -140,6 +142,7 @@ class InterviewReminder(Base):
     Scheduled interview reminders for candidates and interviewers.
     """
     __tablename__ = "interview_reminders"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     

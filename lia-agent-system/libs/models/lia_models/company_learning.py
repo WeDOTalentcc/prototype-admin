@@ -69,7 +69,7 @@ class CompanySkill(Base):
         UniqueConstraint('company_id', 'skill_name', name='uq_company_skill'),
         Index('ix_company_skills_company_type', 'company_id', 'skill_type'),
         Index('ix_company_skills_promoted', 'company_id', 'is_promoted'),
-    )
+    {"extend_existing": True}, )
 
 
 class CompanyResponsibility(Base):
@@ -111,7 +111,7 @@ class CompanyResponsibility(Base):
         UniqueConstraint('company_id', 'description_hash', name='uq_company_responsibility'),
         Index('ix_company_resp_company_category', 'company_id', 'category'),
         Index('ix_company_resp_promoted', 'company_id', 'is_promoted'),
-    )
+    {"extend_existing": True}, )
 
 
 class AgentFeedback(Base):
@@ -125,6 +125,7 @@ class AgentFeedback(Base):
     a unified learning loop across all system components.
     """
     __tablename__ = "agent_feedback"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     
@@ -159,6 +160,7 @@ class CompanyPattern(Base):
     - "Tech roles filled 2x faster than Sales"
     """
     __tablename__ = "company_patterns"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     company_id = Column(String(255), nullable=False, index=True)
@@ -216,7 +218,7 @@ class FeatureFlag(Base):
             unique=True,
             postgresql_where=text('company_id IS NULL')
         ),
-    )
+    {"extend_existing": True}, )
 
 
 class StageFeedback(Base):
@@ -255,7 +257,7 @@ class StageFeedback(Base):
     __table_args__ = (
         Index('ix_stage_feedback_company_stage', 'company_id', 'stage_number'),
         Index('ix_stage_feedback_field', 'company_id', 'field_name'),
-    )
+    {"extend_existing": True}, )
 
 
 class LearningAnalytics(Base):
@@ -284,4 +286,4 @@ class LearningAnalytics(Base):
     
     __table_args__ = (
         Index('ix_learning_analytics_company_type', 'company_id', 'metric_type'),
-    )
+    {"extend_existing": True}, )

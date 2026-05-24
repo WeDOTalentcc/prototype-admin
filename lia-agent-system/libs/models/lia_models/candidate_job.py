@@ -40,7 +40,7 @@ class CandidateJob(Base):
 
     __table_args__ = (
         Index("idx_candidate_job_cand_vac", "candidate_id", "job_vacancy_id"),
-    )
+    {"extend_existing": True}, )
 
     def __repr__(self):
         return f"<CandidateJob candidate:{self.candidate_id} vacancy:{self.job_vacancy_id} status:{self.status}>"

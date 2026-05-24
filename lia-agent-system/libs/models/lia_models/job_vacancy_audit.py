@@ -49,7 +49,7 @@ class JobVacancyAuditLog(Base):
     __table_args__ = (
         Index('ix_job_vacancy_audit_company_job', 'company_id', 'job_vacancy_id'),
         Index('ix_job_vacancy_audit_changed_at_desc', 'changed_at'),
-    )
+    {"extend_existing": True}, )
 
     def __repr__(self):
         return f"<JobVacancyAuditLog {self.id} - {self.action} by {self.changed_by}>"

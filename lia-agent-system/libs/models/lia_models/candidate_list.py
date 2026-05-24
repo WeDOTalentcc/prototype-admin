@@ -34,7 +34,7 @@ class CandidateList(Base):
     
     __table_args__ = (
         Index('idx_candidate_lists_company_name', 'company_id', 'name'),
-    )
+    {"extend_existing": True}, )
     
     def to_dict(self):
         return {
@@ -71,7 +71,7 @@ class CandidateListMember(Base):
     __table_args__ = (
         UniqueConstraint('list_id', 'candidate_id', name='uq_list_candidate'),
         Index('idx_list_members_list_candidate', 'list_id', 'candidate_id'),
-    )
+    {"extend_existing": True}, )
     
     def to_dict(self):
         return {

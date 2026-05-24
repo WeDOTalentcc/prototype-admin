@@ -173,6 +173,7 @@ class AIInferenceLog(Base):
     - Human override tracking
     """
     __tablename__ = "ai_inference_logs"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     company_id = Column(UUID(as_uuid=True), nullable=False, index=True)
@@ -233,6 +234,7 @@ class DataAccessLog(Base):
     - What PII fields were involved
     """
     __tablename__ = "data_access_logs"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     company_id = Column(UUID(as_uuid=True), nullable=False, index=True)
@@ -280,6 +282,7 @@ class ConsentRecord(Base):
     - Source and legal basis
     """
     __tablename__ = "consent_records"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     company_id = Column(UUID(as_uuid=True), nullable=False, index=True)
@@ -332,6 +335,7 @@ class IncidentReport(Base):
     - Notification tracking
     """
     __tablename__ = "incident_reports"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     # WT-2022 P0.TENANT: TENANT-EXEMPT TENANT-NULLABLE-DELIBERATE - incident_reports aggregated cross-tenant for system health metrics (no PII per row, NULL=platform-wide incident)
@@ -391,6 +395,7 @@ class ModelEvaluation(Base):
     - Sample sizes for statistical validity
     """
     __tablename__ = "model_evaluations"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     # WT-2022 P0.TENANT: TENANT-EXEMPT TENANT-NULLABLE-DELIBERATE - model_evaluations aggregated cross-tenant for global ML model quality metrics (ADR-LGPD-001 anonymization, NULL=platform-wide eval)
@@ -447,6 +452,7 @@ class ComplianceControl(Base):
     - Ownership
     """
     __tablename__ = "compliance_controls"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     # WT-2022 P0.TENANT: TENANT-EXEMPT TENANT-NULLABLE-DELIBERATE - compliance_controls global framework definitions (NULL=platform-wide control like LGPD/SOX baseline, UUID=per-company override)
@@ -508,6 +514,7 @@ class BiasAuditReport(Base):
     Supports compliance frameworks: NYC_LL144, CO_SB205, EU_AI_ACT, CA_FEHA, LGPD_BRAZIL
     """
     __tablename__ = "bias_audit_reports"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     company_id = Column(UUID(as_uuid=True), nullable=False, index=True)
@@ -605,6 +612,7 @@ class DPORegistry(Base):
     - Public contact URL for data subjects
     """
     __tablename__ = "dpo_registry"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     company_id = Column(UUID(as_uuid=True), nullable=False, index=True, unique=True)
@@ -651,6 +659,7 @@ class BreachNotification(Base):
     - Remediation actions and resolution
     """
     __tablename__ = "breach_notifications"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     company_id = Column(UUID(as_uuid=True), nullable=False, index=True)
@@ -732,6 +741,7 @@ class AutomatedDecisionExplanation(Base):
     - Human review request and resolution
     """
     __tablename__ = "automated_decision_explanations"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     company_id = Column(UUID(as_uuid=True), nullable=False, index=True)
@@ -846,6 +856,7 @@ class ComplianceControlLibrary(Base):
     Companies implement these controls through CompanyComplianceControl.
     """
     __tablename__ = "compliance_control_library"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     framework = Column(String(50), nullable=False, index=True)
@@ -888,6 +899,7 @@ class CompanyComplianceControl(Base):
     implementation status, evidence, and review dates.
     """
     __tablename__ = "company_compliance_controls"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     company_id = Column(UUID(as_uuid=True), nullable=False, index=True)
@@ -935,6 +947,7 @@ class ComplianceAudit(Base):
     Records audit details including scope, findings, and results.
     """
     __tablename__ = "compliance_audits"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     company_id = Column(UUID(as_uuid=True), nullable=False, index=True)
@@ -990,6 +1003,7 @@ class SOXControl(Base):
     Tracks SOX Section 302, 404, 409, 802 controls with testing and remediation.
     """
     __tablename__ = "sox_controls"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     company_id = Column(UUID(as_uuid=True), nullable=False, index=True)
@@ -1075,6 +1089,7 @@ class DataSubjectRequest(Base):
     SLA: 15 days legal deadline per LGPD.
     """
     __tablename__ = "data_subject_requests"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     company_id = Column(UUID(as_uuid=True), nullable=False, index=True)
@@ -1188,6 +1203,7 @@ class ConsentVersion(Base):
     Reuses ConsentType enum for consent categorization.
     """
     __tablename__ = "consent_versions"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     company_id = Column(UUID(as_uuid=True), nullable=False, index=True)
@@ -1251,6 +1267,7 @@ class ConsentEvent(Base):
     Compatible with existing ConsentRecord model.
     """
     __tablename__ = "consent_events"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     company_id = Column(UUID(as_uuid=True), nullable=False, index=True)
@@ -1372,6 +1389,7 @@ class InsurancePolicy(Base):
     Multi-tenant: company_id identifies the financial institution (tenant).
     """
     __tablename__ = "insurance_policies"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     company_id = Column(UUID(as_uuid=True), nullable=False, index=True)
@@ -1459,6 +1477,7 @@ class InsuranceCoverage(Base):
     References InsurancePolicy via policy_id.
     """
     __tablename__ = "insurance_coverages"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     policy_id = Column(UUID(as_uuid=True), nullable=False, index=True)
@@ -1508,6 +1527,7 @@ class InsuranceDocument(Base):
     References InsurancePolicy via policy_id.
     """
     __tablename__ = "insurance_documents"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     policy_id = Column(UUID(as_uuid=True), nullable=False, index=True)
@@ -1552,6 +1572,7 @@ class InsuranceClaim(Base):
     Optionally references IncidentReport via related_incident_id.
     """
     __tablename__ = "insurance_claims"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     policy_id = Column(UUID(as_uuid=True), nullable=False, index=True)
@@ -1661,6 +1682,7 @@ class RiskEntry(Base):
     Multi-tenant: company_id identifies the organization (tenant).
     """
     __tablename__ = "risk_entries"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     company_id = Column(UUID(as_uuid=True), nullable=False, index=True)
@@ -1745,6 +1767,7 @@ class RiskTreatment(Base):
     References RiskEntry via risk_id.
     """
     __tablename__ = "risk_treatments"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     risk_id = Column(UUID(as_uuid=True), nullable=False, index=True)
@@ -1807,6 +1830,7 @@ class SoDRole(Base):
     Multi-tenant: company_id identifies the organization (tenant).
     """
     __tablename__ = "sod_roles"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     company_id = Column(UUID(as_uuid=True), nullable=False, index=True)
@@ -1850,6 +1874,7 @@ class SoDConflict(Base):
     References SoDRole via role_a_id and role_b_id.
     """
     __tablename__ = "sod_conflicts"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     company_id = Column(UUID(as_uuid=True), nullable=False, index=True)
@@ -1911,6 +1936,7 @@ class SoDViolation(Base):
     References SoDConflict via conflict_id.
     """
     __tablename__ = "sod_violations"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     conflict_id = Column(UUID(as_uuid=True), nullable=False, index=True)
@@ -1995,6 +2021,7 @@ class BusinessProcess(Base):
     Multi-tenant: company_id identifies the organization (tenant).
     """
     __tablename__ = "business_processes"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     company_id = Column(UUID(as_uuid=True), nullable=False, index=True)
@@ -2063,6 +2090,7 @@ class DisasterRecoveryPlan(Base):
     Multi-tenant: company_id identifies the organization (tenant).
     """
     __tablename__ = "disaster_recovery_plans"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     company_id = Column(UUID(as_uuid=True), nullable=False, index=True)
@@ -2121,6 +2149,7 @@ class ContinuityTest(Base):
     Optionally references DisasterRecoveryPlan via plan_id.
     """
     __tablename__ = "continuity_tests"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     company_id = Column(UUID(as_uuid=True), nullable=False, index=True)

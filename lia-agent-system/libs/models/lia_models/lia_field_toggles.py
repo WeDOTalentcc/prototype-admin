@@ -43,7 +43,7 @@ class LiaFieldToggle(Base):
     
     __table_args__ = (
         UniqueConstraint('company_id', 'field_key', name='uq_company_field_toggle'),
-    )
+    {"extend_existing": True}, )
 
 
 FALLBACK_STRATEGIES = {

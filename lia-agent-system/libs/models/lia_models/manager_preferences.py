@@ -69,7 +69,7 @@ class ManagerPreferences(Base):
 
     __table_args__ = (
         UniqueConstraint("company_id", "manager_email", name="uq_manager_prefs_company_email"),
-    )
+    {"extend_existing": True}, )
 
     def __repr__(self) -> str:
         return (

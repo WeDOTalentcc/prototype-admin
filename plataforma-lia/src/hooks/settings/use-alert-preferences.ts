@@ -18,6 +18,7 @@
 import { useCallback } from "react"
 import useSWR from "swr"
 import { apiFetch } from "@/lib/api/api-fetch"
+import { notifyChatOfSettingsUpdate } from "@/lib/api/settings-notify"
 import { useJWTAuth } from "@/contexts/auth-context"
 
 export type AlertPreferenceChannel = "email" | "bell" | "teams" | "whatsapp"
@@ -132,6 +133,7 @@ export function useAlertPreferences() {
               body: JSON.stringify(payload),
             }
           )
+          notifyChatOfSettingsUpdate({ actionId: "configure_alert", section: "alerts" })
           if (!response.ok) {
             // REGRA 4: fail-loud — UI vai mostrar banner explícito.
             const text = await response.text().catch(() => "")

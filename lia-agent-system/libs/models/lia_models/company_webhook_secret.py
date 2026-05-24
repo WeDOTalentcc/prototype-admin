@@ -54,7 +54,7 @@ class CompanyWebhookSecret(Base):
             name="ck_company_webhook_secrets_status",
         ),
         Index("idx_company_webhook_secrets_provider_status", "provider", "status"),
-    )
+    {"extend_existing": True}, )
 
     def __repr__(self) -> str:  # pragma: no cover
         return (

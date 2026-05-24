@@ -34,6 +34,7 @@ class IntegrationStatus(str, enum.Enum):
 class IntegrationProvider(Base):
     """Available integration providers catalog."""
     __tablename__ = "integration_providers"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     
@@ -62,6 +63,7 @@ class IntegrationProvider(Base):
 class IntegrationConnection(Base):
     """Active integration connections for a company."""
     __tablename__ = "integration_connections"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     company_id = Column(UUID(as_uuid=True), ForeignKey("company_profiles.id"), nullable=False)
@@ -102,6 +104,7 @@ class IntegrationConnection(Base):
 class IntegrationSyncLog(Base):
     """Log of integration sync operations."""
     __tablename__ = "integration_sync_logs"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     connection_id = Column(UUID(as_uuid=True), ForeignKey("integration_connections.id"), nullable=False)
@@ -129,6 +132,7 @@ class IntegrationSyncLog(Base):
 class IntegrationWebhook(Base):
     """Webhook configurations for integrations."""
     __tablename__ = "integration_webhooks"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     connection_id = Column(UUID(as_uuid=True), ForeignKey("integration_connections.id"), nullable=False)

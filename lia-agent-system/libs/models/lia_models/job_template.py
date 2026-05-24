@@ -87,7 +87,7 @@ class JobTemplate(Base):
         Index('idx_template_system', 'is_system', 'is_active', 'category'),
         Index('idx_template_popularity', 'popularity_score'),
         Index('idx_template_title_search', 'title_normalized', 'is_active'),
-    )
+    {"extend_existing": True}, )
     
     def to_dict(self) -> dict:
         """Convert to dictionary."""
@@ -251,7 +251,7 @@ class TemplateCategory(Base):
     __table_args__ = (
         Index('idx_category_parent', 'parent_id'),
         Index('idx_category_sort', 'sort_order'),
-    )
+    {"extend_existing": True}, )
     
     def to_dict(self) -> dict:
         """Convert to dictionary."""
@@ -305,7 +305,7 @@ class TemplateUsageLog(Base):
     __table_args__ = (
         Index('idx_usage_template_company', 'template_id', 'company_id'),
         Index('idx_usage_created', 'created_at'),
-    )
+    {"extend_existing": True}, )
     
     def to_dict(self) -> dict:
         """Convert to dictionary."""

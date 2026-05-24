@@ -26,7 +26,7 @@ class RoutingFeedback(Base):
     __table_args__ = (
         Index('ix_routing_feedback_company_domain', 'company_id', 'routed_domain'),
         Index('ix_routing_feedback_corrected_at', 'corrected_at'),
-    )
+    {"extend_existing": True}, )
 
     @staticmethod
     def hash_message(message: str) -> str:

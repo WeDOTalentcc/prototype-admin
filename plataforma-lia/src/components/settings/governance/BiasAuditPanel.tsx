@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Switch } from "@/components/ui/switch"
 import { cn } from "@/lib/utils"
 import { apiFetch } from "@/lib/api/api-fetch"
+import { notifyChatOfSettingsUpdate } from "@/lib/api/settings-notify"
 
 interface FairnessLog {
   id?: string
@@ -166,6 +167,7 @@ export function BiasAuditPanel() {
         headers: {
           "Content-Type": "application/json" },
         body: JSON.stringify({ year }) })
+      notifyChatOfSettingsUpdate({ actionId: "manage_bias_audit", section: "governance" })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       await loadAnnualReports()
     } catch (err) {

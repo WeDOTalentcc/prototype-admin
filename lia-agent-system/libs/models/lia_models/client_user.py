@@ -89,7 +89,7 @@ class ClientUser(EncryptedFieldMixin, Base):
         # Retained during dual-write phase; dropped in migration 063 (Phase 4).
         Index('idx_client_user_company_email', 'company_id', 'email', unique=True),
         Index('idx_client_user_invitation_token', 'invitation_token'),
-    )
+    {"extend_existing": True}, )
     
     def __repr__(self):
         return f"<ClientUser {self.id} - {self.email} ({self.role})>"

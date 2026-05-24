@@ -92,7 +92,7 @@ class CommunicationMatrixEntry(Base):
     __table_args__ = (
         Index('idx_matrix_company_module', 'company_id', 'module'),
         Index('idx_matrix_trigger', 'company_id', 'trigger_name'),
-    )
+    {"extend_existing": True}, )
     
     def __repr__(self):
         return f"<CommunicationMatrixEntry {self.module}:{self.trigger_name}>"

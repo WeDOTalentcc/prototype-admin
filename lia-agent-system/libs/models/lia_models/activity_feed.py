@@ -69,7 +69,7 @@ class ActivityFeed(Base):
     __table_args__ = (
         Index('idx_activity_candidate', 'target_id', 'activity_type', 'created_at'),
         Index('idx_activity_priority_date', 'priority', 'created_at'),
-    )
+    {"extend_existing": True}, )
     
     def __repr__(self):
         return f"<ActivityFeed {self.activity_type} - {self.title}>"

@@ -37,6 +37,7 @@ interface ProviderConfigData {
   is_active?: boolean
 }
 import { apiFetch } from "@/lib/api/api-fetch"
+import { notifyChatOfSettingsUpdate } from "@/lib/api/settings-notify"
 
 interface LLMConfigData {
   company_id: string
@@ -90,6 +91,7 @@ export function IntegrationDetailDrawer({
           region: newRegion,
         }),
       })
+      notifyChatOfSettingsUpdate({ actionId: "configure_integration", section: "integrations" })
       if (!res.ok) return { success: false, message:"Erro ao salvar região" }
       onConfigSaved?.()
       return { success: true, message:"Região atualizada" }

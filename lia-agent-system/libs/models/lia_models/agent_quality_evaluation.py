@@ -35,4 +35,4 @@ class AgentQualityEvaluation(Base):
     __table_args__ = (
         Index("ix_aqe_company_agent", "company_id", "agent_id"),
         Index("ix_aqe_evaluated_at", "evaluated_at"),
-    )
+    {"extend_existing": True}, )

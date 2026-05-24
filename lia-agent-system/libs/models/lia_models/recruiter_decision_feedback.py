@@ -40,4 +40,4 @@ class RecruiterDecisionFeedback(Base):
     __table_args__ = (
         Index("ix_rdf_company_job", "company_id", "job_id"),
         Index("ix_rdf_decision_at", "company_id", "decision_at"),
-    )
+    {"extend_existing": True}, )

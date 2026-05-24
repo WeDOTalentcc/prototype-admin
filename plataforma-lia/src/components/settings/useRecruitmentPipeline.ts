@@ -5,6 +5,7 @@ import { RecruitmentStage } from "@/components/settings/RecruitmentJourneyConfig
 import { mapRawPipelineStage, RawPipelineStage } from "./recruitment-types"
 import type { RecruitmentPersistenceState } from "./useRecruitmentPersistence"
 import { apiFetch } from "@/lib/api/api-fetch"
+import { notifyChatOfSettingsUpdate } from "@/lib/api/settings-notify"
 
 export interface RecruitmentPipelineState {
   recruitmentStages: RecruitmentStage[]
@@ -84,6 +85,7 @@ export function useRecruitmentPipeline({
       })
 
       if (response.ok) {
+        notifyChatOfSettingsUpdate({ actionId: "configure_pipeline", section: "pipeline_rules" })
         const data = await response.json()
         if (data.pipeline) {
           const updatedStages = (data.pipeline as RawPipelineStage[]).map(

@@ -80,7 +80,7 @@ class RecruiterProfile(Base):
     
     __table_args__ = (
         Index('ix_recruiter_profile_company', 'company_id'),
-    )
+    {"extend_existing": True}, )
     
     @property
     def prefers_quick_flow(self) -> bool:
@@ -150,7 +150,7 @@ class RecruiterFieldPreference(Base):
     __table_args__ = (
         Index('ix_field_pref_recruiter_field', 'recruiter_id', 'field_name', unique=True),
         Index('ix_field_pref_company', 'company_id'),
-    )
+    {"extend_existing": True}, )
 
 
 class PersonalizationSettings(Base):
@@ -164,6 +164,7 @@ class PersonalizationSettings(Base):
     - Transparency preferences
     """
     __tablename__ = "personalization_settings"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     
@@ -195,6 +196,7 @@ class ProfileCalculationLog(Base):
     This provides transparency and debugging information.
     """
     __tablename__ = "profile_calculation_logs"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     

@@ -49,6 +49,7 @@ class Alert(Base):
     Alert model for tracking system and job alerts.
     """
     __tablename__ = "alerts"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     
@@ -111,6 +112,7 @@ class AlertRule(Base):
     Alert rule model for configuring automatic alerts.
     """
     __tablename__ = "alert_rules"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     
@@ -158,6 +160,7 @@ class AlertConfig(Base):
     Stores the user's alert preferences and briefing settings.
     """
     __tablename__ = "alert_configs"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     
@@ -216,6 +219,7 @@ class AlertPreference(Base):
     Controls which alerts are enabled, thresholds, and notification channels.
     """
     __tablename__ = "alert_preferences"
+    __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
     
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     

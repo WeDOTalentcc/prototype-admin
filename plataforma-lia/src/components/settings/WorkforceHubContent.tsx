@@ -8,6 +8,7 @@ import { useGoalsPlanningHub } from "./useGoalsPlanningHub"
 import { useSettingsConversational } from "@/hooks/settings/use-settings-conversational"
 import { textStyles, cardStyles } from "@/lib/design-tokens"
 import { apiFetch } from "@/lib/api/api-fetch"
+import { notifyChatOfSettingsUpdate } from "@/lib/api/settings-notify"
 
 /**
  * Rich content for the Workforce card inside the "Minha Empresa" hub.
@@ -48,6 +49,7 @@ export function WorkforceHubContent() {
         method: "POST",
         body: formData,
       })
+      notifyChatOfSettingsUpdate({ actionId: "upload_workforce_doc", section: "workforce" })
       if (!res.ok) {
         const msg = await res.text().catch(() => "")
         throw new Error(msg || t("uploadFailed"))

@@ -30,6 +30,17 @@ repos:
         language: system
         pass_filenames: false
         verbose: true
+      - id: canonical-imports-warn
+        name: Canonical Import Paths (lia_models short path)
+        description: |
+          Auditoria 2026-05-24: bloqueia `from libs.models.lia_models.X` (drift)
+          vs canonical `from lia_models.X` (727:13 majority). Mistura causa
+          re-import duplo (vide bug proactive_actions 2026-05-24).
+        entry: python3 lia-agent-system/scripts/check_canonical_import_paths.py
+        args: [--blocking, --root, lia-agent-system/app]
+        language: system
+        pass_filenames: false
+        verbose: true
       - id: lia-agent-respects-toggles
         name: Agent respeita lia_field_toggles
         description: |

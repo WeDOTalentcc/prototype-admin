@@ -142,6 +142,9 @@ class ClientTestConfig(Base):
     including custom time limits, passing scores, and instructions.
     """
     __tablename__ = "client_test_configs"
+    # Boy scout 2026-05-24: defense-in-depth contra Table already defined.
+    # Sibling classes neste arquivo já tinham extend_existing.
+    __table_args__ = {"extend_existing": True}
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     
@@ -195,6 +198,9 @@ class TestResult(Base):
     Stores the result of a candidate taking a test.
     """
     __tablename__ = "test_results"
+    # Boy scout 2026-05-24: defense-in-depth contra Table already defined.
+    # Sibling classes neste arquivo já tinham extend_existing.
+    __table_args__ = {"extend_existing": True}
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     

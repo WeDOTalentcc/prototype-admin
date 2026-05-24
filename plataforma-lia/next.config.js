@@ -9,6 +9,12 @@ const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8001';
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Audit 2026-05-24 P1: tree-shake automatico de packages com barrel imports
+  // (565 imports `from "lucide-react"` no codebase). Next 16 transforma em
+  // `lucide-react/dist/esm/icons/X` em build/dev — zero edits em call sites.
+  experimental: {
+    optimizePackageImports: ['lucide-react', 'date-fns', '@radix-ui/react-icons'],
+  },
   typescript: {
     ignoreBuildErrors: true,
   },
