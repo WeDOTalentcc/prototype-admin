@@ -26,6 +26,10 @@ class ToolDefinition:
     handler: Callable[..., Awaitable[dict[str, Any]]]
     allowed_agents: list[str] = field(default_factory=list)
     version: str = "1.0"  # W3-026 (2026-05-23): semver canonical do tool
+    # Sprint 3 (2026-05-24): canonical category for capability discovery.
+    # Auto-populated by ToolRegistry.register() via TOOL_TO_CATEGORY map.
+    # Default OTHER → sensor J flags any new tool that hasn't been mapped.
+    category: str = "OTHER"
     
     def to_claude_schema(self) -> dict[str, Any]:
         """Convert to Claude's tool format."""
@@ -79,10 +83,43 @@ class ToolRegistry:
             # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             self.logger.warning(f"Tool '{tool.name}' already registered, overwriting")
         
+        # Sprint 3 (2026-05-24): populate canonical category at register time.
+        # Source of truth: app/tools/categories.TOOL_TO_CATEGORY.
+        # Defaults to "OTHER" if name unmapped — sensor J blocks PRs that add
+        # new tools to OTHER without updating the canonical map.
+        if tool.category == "OTHER":
+            try:
+                from app.tools.categories import category_for_tool
+                tool.category = category_for_tool(tool.name)
+            except Exception as _cat_exc:
+                # Fail-loud in log; tool remains in OTHER which sensor J catches
+                self.logger.warning(
+                    "[ToolRegistry] failed to resolve category for %s: %s",
+                    tool.name, _cat_exc,
+                )
         self._tools[tool.name] = tool
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
-        self.logger.info(f"Registered tool: {tool.name}")
+        self.logger.info(f"Registered tool: {tool.name} (category={tool.category})")
     
+    def get_tools_by_category(self) -> dict[str, list[ToolDefinition]]:
+        """Sprint 3 (2026-05-24): group all registered tools by canonical category.
+
+        Used by SystemPromptBuilder._build_capabilities_section to render the
+        G6 capabilities prompt dynamically — replaces the previous hardcoded
+        list. Single source of truth: app/tools/categories.TOOL_TO_CATEGORY.
+
+        Returns:
+            dict mapping category name (str) → list of ToolDefinition,
+            sorted by tool name within each category for deterministic output.
+        """
+        from collections import defaultdict
+        groups: dict[str, list[ToolDefinition]] = defaultdict(list)
+        for tool in self._tools.values():
+            groups[tool.category].append(tool)
+        for cat in groups:
+            groups[cat].sort(key=lambda t: t.name)
+        return dict(groups)
+
     def get_tool(self, name: str) -> ToolDefinition | None:
         """
         Get a tool by name.

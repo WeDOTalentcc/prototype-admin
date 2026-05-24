@@ -126,6 +126,31 @@ PAGE_DESCRIPTIONS_PT_BR: dict[CanonicalPage, str] = {
 }
 
 
+# Short labels for compact navigation lists in chat prompts (G3).
+# Distinct from PAGE_DESCRIPTIONS_PT_BR which is contextual sentence form.
+# Sprint 3 (2026-05-24): canonical for SystemPromptBuilder G3 navigation list.
+PAGE_SHORT_LABELS_PT_BR: dict[CanonicalPage, str] = {
+    CanonicalPage.HOME: "dashboard / página inicial",
+    CanonicalPage.VAGAS: "lista de vagas",
+    CanonicalPage.VAGA_DETALHE: "detalhe de uma vaga (precisa do contexto da vaga)",
+    CanonicalPage.RECRUTAR: "wizard de criação de vaga",
+    CanonicalPage.FUNIL_TALENTOS: "funil de talentos",
+    CanonicalPage.CANDIDATO_DETALHE: "detalhe de um candidato (precisa do contexto)",
+    CanonicalPage.PIPELINE_KANBAN: "kanban do pipeline",
+    CanonicalPage.DASHBOARD: "dashboard / indicadores",
+    CanonicalPage.CONFIGURACOES: "configurações da empresa",
+    CanonicalPage.AGENT_STUDIO: "Agent Studio",
+    CanonicalPage.AJUDA: "ajuda / documentação",
+    CanonicalPage.BANCOS_TALENTOS: "bancos de talentos",
+    CanonicalPage.BIBLIOTECA: "biblioteca LIA",
+    CanonicalPage.CENTRAL_COMUNICACAO: "central de comunicação",
+    CanonicalPage.TASKS: "centro de tarefas",
+    CanonicalPage.CHAT: "chat dedicado",
+    CanonicalPage.TRUST: "trust center",
+}
+
+
+
 # Legacy aliases — incoming page_type strings from older frontend code
 # or third-party callers. Maps to canonical enum. Add new aliases here
 # only when migrating a producer; do NOT introduce NEW vocabularies.

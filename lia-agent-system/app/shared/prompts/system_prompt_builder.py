@@ -253,41 +253,52 @@ class SystemPromptBuilder:
         # the response content. The chat_adapter post-processor extracts
         # the marker, populates ChatResponse.ui_action/ui_action_params,
         # and strips the marker from user-facing content.
-        context_parts.append(
-            "### Capabilities — Navegação\n"
-            "Você TEM capability de navegar entre páginas da plataforma. "
-            "Quando o usuário pedir explicitamente para ir a uma página "
-            "(ex: \"me leve para configurações\", \"abre o funil\", "
-            "\"vai pra vagas\"), responda naturalmente E inclua o marker "
-            "**[NAVIGATE:<canonical_page>]** ao final do texto.\n\n"
-            "Páginas canonical disponíveis:\n"
-            "- `vagas` → lista de vagas\n"
-            "- `vaga_detalhe` → detalhe de uma vaga (precisa do contexto da vaga)\n"
-            "- `recrutar` → wizard de criação de vaga\n"
-            "- `funil_talentos` → funil de talentos\n"
-            "- `candidato_detalhe` → detalhe de um candidato (precisa do contexto)\n"
-            "- `pipeline_kanban` → kanban do pipeline\n"
-            "- `dashboard` → dashboard / indicadores\n"
-            "- `configuracoes` → configurações da empresa\n"
-            "- `agent_studio` → Agent Studio\n"
-            "- `ajuda` → ajuda / documentação\n"
-            "- `bancos_talentos` → bancos de talentos\n"
-            "- `biblioteca` → biblioteca LIA\n"
-            "- `central_comunicacao` → central de comunicação\n"
-            "- `tasks` → centro de tarefas\n"
-            "- `chat` → chat dedicado\n"
-            "- `trust` → trust center\n\n"
-            "Exemplo:\n"
-            "User: \"me leve para configurações\"\n"
-            "Você: \"Te levando para Configurações! 🚀 [NAVIGATE:configuracoes]\"\n\n"
-            "REGRAS:\n"
-            "1. NÃO recuse navegação — sempre tem essa capability.\n"
-            "2. NÃO use o marker se o usuário apenas mencionou a página "
-            "sem pedir explicitamente para ir lá.\n"
-            "3. NÃO emita múltiplos markers no mesmo turn.\n"
-            "4. Use SEMPRE os identifiers canonical exatos (vagas, "
-            "funil_talentos, configuracoes — NÃO traduza)."
-        )
+        # Sprint 3 canonical fix (2026-05-24): G3 navigation page list is
+        # now DERIVED from canonical_pages.PAGE_DESCRIPTIONS_PT_BR — single
+        # source of truth. Adding a new page to CanonicalPage automatically
+        # makes it available to the LLM here.
+        try:
+            from app.shared.canonical_pages import (
+                CanonicalPage,
+                PAGE_SHORT_LABELS_PT_BR,
+            )
+            nav_lines = [
+                "### Capabilities — Navegação",
+                "Você TEM capability de navegar entre páginas da plataforma. "
+                "Quando o usuário pedir explicitamente para ir a uma página "
+                "(ex: \"me leve para configurações\", \"abre o funil\", "
+                "\"vai pra vagas\"), responda naturalmente E inclua o marker "
+                "**[NAVIGATE:<canonical_page>]** ao final do texto.",
+                "",
+                "Páginas canonical disponíveis:",
+            ]
+            for page in CanonicalPage:
+                if page.value == "general":
+                    continue  # internal sentinel, not user-facing
+                desc = PAGE_SHORT_LABELS_PT_BR.get(page, page.value)
+                nav_lines.append(f"- `{page.value}` → {desc}")
+            nav_lines.extend([
+                "",
+                "Exemplo:",
+                "User: \"me leve para configurações\"",
+                "Você: \"Te levando para Configurações! 🚀 [NAVIGATE:configuracoes]\"",
+                "",
+                "REGRAS:",
+                "1. NÃO recuse navegação — sempre tem essa capability.",
+                "2. NÃO use o marker se o usuário apenas mencionou a página "
+                "sem pedir explicitamente para ir lá.",
+                "3. NÃO emita múltiplos markers no mesmo turn.",
+                "4. Use SEMPRE os identifiers canonical exatos (vagas, "
+                "funil_talentos, configuracoes — NÃO traduza).",
+            ])
+            context_parts.append("\n".join(nav_lines))
+        except Exception as _nav_exc:
+            import logging as _log
+            _log.getLogger(__name__).error(
+                "[Sprint 3 G3] failed to derive navigation pages from canonical_pages: %s",
+                _nav_exc,
+                exc_info=True,
+            )
 
         # G6 canonical fix (2026-05-24): grant the LLM raw path explicit
         # awareness of the 29+ action tools registered in tool_registry.
@@ -301,69 +312,78 @@ class SystemPromptBuilder:
         # counterpart that ensures the LLM does not refuse on the OTHER
         # paths (Phase 1.3 plan service, Phase 2 orchestrator fallback)
         # where tool schemas are not directly bound.
-        context_parts.append(
-            "### Capabilities — Ações\n"
-            "Você TEM ferramentas para executar AÇÕES CONCRETAS na "
-            "plataforma. NUNCA recuse uma ação alegando \"sou apenas um "
-            "assistente de texto\" sem verificar primeiro a lista abaixo.\n\n"
-            "**VAGAS**: criar, publicar, pausar, fechar, atualizar, buscar; "
-            "gerar descrição enriquecida; sugerir salário e skills "
-            "(create_job, publish_job, pause_job, close_job, update_job, "
-            "search_jobs, generate_enriched_jd, get_intelligent_salary, "
-            "get_intelligent_skills, save_job_draft).\n\n"
-            "**CANDIDATOS**: buscar, comparar, analisar CV vs vaga; "
-            "mover entre etapas (incluindo bulk); aprovar / reprovar / "
-            "favoritar / ocultar; criar e triar (search_candidates, "
-            "compare_candidates, analyze_cv_match, update_candidate_stage, "
-            "bulk_update_candidates_stage, shortlist_candidate, "
-            "reject_candidate, hide_candidate, add_candidate_to_vacancy, "
-            "create_and_screen_candidate).\n\n"
-            "**COMUNICAÇÃO**: enviar email individual ou em massa, "
-            "WhatsApp, feedback; criar sequências de nurture "
-            "(send_email, send_bulk_email, send_whatsapp, send_feedback, "
-            "create_nurture_sequence).\n\n"
-            "**AGENDAMENTO**: agendar entrevistas (schedule_interview).\n\n"
-            "**EMPRESA / CONFIG**: verificar completude do perfil, "
-            "sugerir política de recrutamento, importar benefícios, "
-            "salvar política de contratação (check_company_completeness, "
-            "suggest_recruiting_policy, import_benefits_from_data, "
-            "save_hiring_policy).\n\n"
-            "**ANALYTICS / RELATÓRIOS**: gerar relatório, exportar "
-            "candidatos / vagas; métricas de pipeline, recrutador, "
-            "qualidade, velocidade, custo; predições ML, forecast de "
-            "contratação; alertas inteligentes; diversidade "
-            "(generate_report, export_candidates, export_job_analytics, "
-            "get_pipeline_stats, get_vacancy_funnel, get_recruiter_metrics, "
-            "get_velocity_metrics, get_efficiency_metrics, get_cost_metrics, "
-            "get_quality_metrics, get_ml_predictions, forecast_hiring_needs, "
-            "get_smart_alerts, get_diversity_metrics).\n\n"
-            "**TALENT INTEL**: bancos de talentos, skills adjacency, "
-            "skill gaps, reengajamento (suggest_reengagement, "
-            "get_engagement_metrics, infer_related_skills, "
-            "analyze_skill_gaps, get_market_intelligence).\n\n"
-            "**ENTREVISTAS (IA)**: analisar gravação, detectar viés, "
-            "gerar parecer, comparar performance (analyze_interview_"
-            "recording, detect_interview_bias, generate_interview_opinion, "
-            "compare_interview_performance).\n\n"
-            "**TRIAGEM WSI**: voice screening completo (wsi_screening).\n\n"
-            "EXEMPLO de mapeamento NL → ação:\n"
-            "- \"rejeite o candidato João\" → reject_candidate\n"
-            "- \"mova maria pra próxima etapa\" → update_candidate_stage\n"
-            "- \"mande um email pro candidato X\" → send_email\n"
-            "- \"fecha a vaga de Dev Backend\" → close_job\n"
-            "- \"agenda entrevista com fulano amanhã 14h\" → schedule_interview\n"
-            "- \"como está o funil dessa vaga?\" → get_vacancy_funnel\n\n"
-            "REGRAS:\n"
-            "1. Quando o usuário pedir uma ação que mapeia para a lista "
-            "acima, EXECUTE (não responda apenas com texto descritivo).\n"
-            "2. Se a ação exigir parâmetros (qual candidato, qual etapa, "
-            "qual vaga), pergunte naturalmente em PT-BR coloquial.\n"
-            "3. Se a ação não estiver na lista, seja transparente: "
-            "\"essa ação específica eu ainda não consigo executar, mas "
-            "posso te ajudar com X, Y, Z\".\n"
-            "4. SEMPRE confirme antes de ações destrutivas "
-            "(close_job, reject_candidate, bulk operations)."
-        )
+        # Sprint 3 canonical fix (2026-05-24): G6 capabilities section is
+        # now DERIVED from tool_registry. Categories + tool→category mapping
+        # live in app/tools/categories.py — single source of truth. New tools
+        # added to the registry appear automatically here; new tools without
+        # a category mapping land in OTHER and the sensor J flags them.
+        try:
+            from app.tools.registry import tool_registry
+            from app.tools.categories import (
+                CATEGORY_TAGLINES,
+                DISPLAY_ORDER,
+            )
+            grouped = tool_registry.get_tools_by_category()
+            capability_lines = [
+                "### Capabilities — Ações",
+                "Você TEM ferramentas para executar AÇÕES CONCRETAS na "
+                "plataforma. NUNCA recuse uma ação alegando \"sou apenas um "
+                "assistente de texto\" sem verificar primeiro a lista abaixo.",
+                "",
+            ]
+            for cat_name in DISPLAY_ORDER:
+                tools = grouped.get(cat_name, [])
+                if not tools:
+                    continue
+                tagline = CATEGORY_TAGLINES.get(cat_name, "")
+                tool_names = ", ".join(t.name for t in tools)
+                if tagline:
+                    capability_lines.append(
+                        f"**{cat_name}**: {tagline} ({tool_names})."
+                    )
+                else:
+                    capability_lines.append(f"**{cat_name}**: {tool_names}.")
+                capability_lines.append("")
+            # OTHER bucket: any unmapped tool. Surfaced so the LLM at least
+            # knows the name exists; sensor J flags the mapping gap.
+            other_tools = grouped.get("OTHER", [])
+            if other_tools:
+                tool_names = ", ".join(t.name for t in other_tools)
+                capability_lines.append(
+                    f"**OUTROS** (sem categoria canonical, ver app/tools/categories.py): "
+                    f"{tool_names}."
+                )
+                capability_lines.append("")
+            capability_lines.extend([
+                "EXEMPLO de mapeamento NL → ação:",
+                "- \"rejeite o candidato João\" → reject_candidate",
+                "- \"mova maria pra próxima etapa\" → update_candidate_stage",
+                "- \"mande um email pro candidato X\" → send_email",
+                "- \"fecha a vaga de Dev Backend\" → close_job",
+                "- \"agenda entrevista com fulano amanhã 14h\" → schedule_interview",
+                "- \"como está o funil dessa vaga?\" → get_vacancy_funnel",
+                "",
+                "REGRAS:",
+                "1. Quando o usuário pedir uma ação que mapeia para a lista "
+                "acima, EXECUTE (não responda apenas com texto descritivo).",
+                "2. Se a ação exigir parâmetros (qual candidato, qual etapa, "
+                "qual vaga), pergunte naturalmente em PT-BR coloquial.",
+                "3. Se a ação não estiver na lista, seja transparente: "
+                "\"essa ação específica eu ainda não consigo executar, mas "
+                "posso te ajudar com X, Y, Z\".",
+                "4. SEMPRE confirme antes de ações destrutivas "
+                "(close_job, reject_candidate, bulk operations).",
+            ])
+            context_parts.append("\n".join(capability_lines))
+        except Exception as _cap_exc:
+            # Fail-open: if registry unavailable for any reason, the LLM
+            # still gets the persona base prompt. Log loud for ops.
+            import logging as _log
+            _log.getLogger(__name__).error(
+                "[Sprint 3 G6] failed to derive capabilities from registry: %s",
+                _cap_exc,
+                exc_info=True,
+            )
 
         if conversation_summary:
             context_parts.append(f"### Resumo da Conversa Anterior\n{conversation_summary}")
