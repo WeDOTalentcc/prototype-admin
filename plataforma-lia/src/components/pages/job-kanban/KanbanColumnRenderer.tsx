@@ -297,7 +297,7 @@ export function KanbanColumnRenderer({
         candidate.role?.toLowerCase().includes(query) ||
         candidate.company?.toLowerCase().includes(query) ||
         candidate.location?.toLowerCase().includes(query) ||
-        candidate.currentCompany?.toLowerCase().includes(query)
+        candidate.current_company?.toLowerCase().includes(query)
       if (!matchesSearch) return false
     }
 
@@ -615,7 +615,7 @@ export function KanbanColumnRenderer({
                 </div>
                 <div className="flex items-center gap-1 text-xs text-lia-text-secondary">
                   <Building className="w-2.5 h-2.5 flex-shrink-0" />
-                  <span className="truncate">{candidate.currentCompany || t('notAvailable')}</span>
+                  <span className="truncate">{candidate.current_company || t('notAvailable')}</span>
                 </div>
                 {candidate.location ? (
                   <div className="flex items-center gap-1 text-xs text-lia-text-secondary">

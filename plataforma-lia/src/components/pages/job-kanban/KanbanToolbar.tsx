@@ -71,7 +71,7 @@ export function KanbanToolbar({
             (candidate.role as string | undefined)?.toLowerCase().includes(query) ||
             (candidate.company as string | undefined)?.toLowerCase().includes(query) ||
             (candidate.location as string | undefined)?.toLowerCase().includes(query) ||
-            (candidate.currentCompany as string | undefined)?.toLowerCase().includes(query)
+            (candidate.current_company as string | undefined)?.toLowerCase().includes(query)
           if (!matchesSearch) return false
         }
         if (kanbanScoreMin > 0 && candidate.score && (candidate.score as number) < kanbanScoreMin) return false

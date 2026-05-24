@@ -77,7 +77,7 @@ export function CandidatePageSummary({
   const phone = candidate.phone as string | undefined
   const linkedin =
     (candidate.linkedin_url as string | undefined) ??
-    (candidate.linkedinUrl as string | undefined)
+    (candidate.linkedin_url as string | undefined)
   const github = candidate.github_url as string | undefined
   const portfolio =
     (candidate.portfolio_url as string | undefined) ??

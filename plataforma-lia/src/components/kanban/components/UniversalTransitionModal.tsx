@@ -163,9 +163,9 @@ export function UniversalTransitionModal(props: UniversalTransitionModalProps) {
                     <p className="text-xs font-medium text-lia-text-primary truncate leading-tight">
                       {candidate.name}
                     </p>
-                    {(candidate.role || candidate.currentTitle || candidate.currentCompany) && (
+                    {(candidate.role || candidate.current_title || candidate.current_company) && (
                       <p className="text-micro text-lia-text-secondary truncate leading-tight mt-0.5">
-                        {candidate.role || candidate.currentTitle}{(candidate.role || candidate.currentTitle) && candidate.currentCompany ? ' • ' : ''}{candidate.currentCompany}
+                        {candidate.role || candidate.current_title}{(candidate.role || candidate.current_title) && candidate.current_company ? ' • ' : ''}{candidate.current_company}
                       </p>
                     )}
                   </div>

@@ -164,7 +164,7 @@ export function LocationCell({ candidate }: { candidate: TableCandidate }) {
 }
 
 export function CompanyCell({ candidate }: { candidate: TableCandidate }) {
-  const company = candidate.current_company || candidate.workHistory?.[0]?.company
+  const company = candidate.current_company || candidate.work_history?.[0]?.company
 
   if (!company) return null
 

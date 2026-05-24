@@ -193,7 +193,7 @@ export function useUniversalTransitionModal({
       phone: c.phone,
       avatar: c.avatar,
       current_title: c.role ?? undefined,
-      current_company: c.currentCompany || c.company,
+      current_company: c.current_company || c.company,
     }))
   }, [isRejectedBatch, candidates])
 

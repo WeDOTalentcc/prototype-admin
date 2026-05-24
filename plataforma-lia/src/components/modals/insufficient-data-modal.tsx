@@ -183,7 +183,7 @@ export function validateCandidateDataForOpinion(candidate: Record<string, unknow
 } {
   const hasExperiences = (
     (Array.isArray(candidate.experiences) && candidate.experiences.length > 0) ||
-    (Array.isArray(candidate.workHistory) && candidate.workHistory.length > 0) ||
+    (Array.isArray(candidate.work_history) && candidate.work_history.length > 0) ||
     (Array.isArray(candidate.work_history) && candidate.work_history.length > 0)
   )
   
@@ -207,7 +207,7 @@ export function validateCandidateDataForOpinion(candidate: Record<string, unknow
   
   const hasCurrentPosition = !!(
     candidate.current_title || 
-    candidate.currentTitle || 
+    candidate.current_title || 
     candidate.position
   )
   

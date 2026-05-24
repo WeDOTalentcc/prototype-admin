@@ -254,6 +254,7 @@ export function MinhaEmpresaHub({ activeSubsection }: MinhaEmpresaHubProps = {})
             benefits={benefits}
             companyId={companyId}
             onBenefitsChanged={refreshAll}
+            onLogoUploaded={refreshAll}
             onToggle={() => toggleBlock(block.key)}
             onStartEditing={startEditing}
             onCancelEditing={cancelEditing}

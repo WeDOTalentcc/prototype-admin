@@ -239,7 +239,7 @@ const candidateId = candidate?.id as string | undefined
         name: c.name || 'Candidato',
         position: c.currentPosition || c.position || c.headline || '',
         location: c.location || c.city || '',
-        company: c.currentCompany || c.company || '',
+        company: c.current_company || c.company || '',
         cv_text: c.cv_text || c.cvText || c.resumeText || '',
         skills: c.skills || [],
         experience_years: c.experienceYears || c.experience_years || null,

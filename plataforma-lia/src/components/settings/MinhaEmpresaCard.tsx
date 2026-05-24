@@ -184,6 +184,7 @@ interface MinhaEmpresaCardProps {
   benefits?: Array<Partial<CompanyBenefit> & { id?: string; name?: string }>
   companyId?: string | null
   onBenefitsChanged?: () => Promise<void> | void
+  onLogoUploaded?: () => Promise<void> | void
   onToggle: () => void
   onStartEditing: (block: string, field: string) => void
   onCancelEditing: () => void
@@ -200,6 +201,7 @@ export function MinhaEmpresaCard({
   benefits = [],
   companyId = null,
   onBenefitsChanged,
+  onLogoUploaded,
   onToggle,
   onStartEditing,
   onCancelEditing,
@@ -355,7 +357,12 @@ export function MinhaEmpresaCard({
                     </span>
                     <LogoUploadField
                       currentValue={field.value as string | null}
-                      onUploadSuccess={(newUrl) => onSaveField(block.key, field.key, newUrl)}
+                      onUploadSuccess={() => {
+                        // Backend já persistiu via POST /logo. Só refetch profile
+                        // pra UI mostrar o novo valor (saveField/PUT tem fieldMap
+                        // sem mapping pra "logo" → payload era ignorado).
+                        void onLogoUploaded?.()
+                      }}
                     />
                   </div>
                 )

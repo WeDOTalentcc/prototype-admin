@@ -185,7 +185,7 @@ export function createKanbanCellRenderer(props: KanbanTableCellRendererProps) {
       case 'currentCompany':
         return (
           <div className="text-xs text-lia-text-primary">
-            {((candidate.currentCompany as string | undefined) || ((candidate.source as string | undefined) === 'LinkedIn' ? 'TechCorp' : 'Digital Agency'))}
+            {((candidate.current_company as string | undefined) || ((candidate.source as string | undefined) === 'LinkedIn' ? 'TechCorp' : 'Digital Agency'))}
           </div>
         )
 

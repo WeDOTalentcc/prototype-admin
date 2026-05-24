@@ -259,7 +259,7 @@ export function CandidatePreviewHeader({
               </Chip>
             )}
             {(c.years_of_experience !== undefined && c.years_of_experience !== null) ||
-             (c.yearsOfExperience !== undefined && c.yearsOfExperience !== null) ? (
+             (c.years_of_experience !== undefined && c.years_of_experience !== null) ? (
               <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 flex items-center flex-shrink-0 bg-lia-bg-tertiary text-lia-text-secondary">
                 {typeof (c.years_of_experience || c.yearsOfExperience) === 'number'
                   ? `${((c.years_of_experience as number | undefined) || (c.yearsOfExperience as number | undefined) || 0).toFixed(1)} anos`
@@ -300,13 +300,13 @@ export function CandidatePreviewHeader({
             </p>
             <span className={`${textStyles.bodySmall} text-lia-text-secondary`}>•</span>
             <p className={`${textStyles.bodySmall} truncate`}>
-              {(c.workHistory?.[0] as Record<string, unknown> | undefined)?.company as React.ReactNode || c.current_company as React.ReactNode || c.company as React.ReactNode || 'Empresa'}
+              {(c.work_history?.[0] as Record<string, unknown> | undefined)?.company as React.ReactNode || c.current_company as React.ReactNode || c.company as React.ReactNode || 'Empresa'}
             </p>
-            {((c.workHistory?.[0] as Record<string, unknown> | undefined)?.industry || (c.workHistory?.[0] as Record<string, unknown> | undefined)?.segment || c.company_segment || c.industry) && (
+            {((c.work_history?.[0] as Record<string, unknown> | undefined)?.industry || (c.work_history?.[0] as Record<string, unknown> | undefined)?.segment || c.company_segment || c.industry) && (
               <>
                 <span className={`${textStyles.description} text-lia-text-secondary`}>•</span>
                 <p className={`${textStyles.description} truncate`}>
-                  {((c.workHistory?.[0] as Record<string, unknown> | undefined)?.industry || (c.workHistory?.[0] as Record<string, unknown> | undefined)?.segment || c.company_segment || c.industry) as React.ReactNode}
+                  {((c.work_history?.[0] as Record<string, unknown> | undefined)?.industry || (c.work_history?.[0] as Record<string, unknown> | undefined)?.segment || c.company_segment || c.industry) as React.ReactNode}
                 </p>
               </>
             )}

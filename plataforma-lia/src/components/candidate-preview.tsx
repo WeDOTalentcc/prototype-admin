@@ -128,7 +128,7 @@ export function CandidatePreview({
   candidate = {
     ...candidate,
     education: Array.isArray(candidate.education) ? candidate.education : (candidate.education ? [candidate.education] : []),
-    workHistory: Array.isArray(candidate.workHistory) ? candidate.workHistory : (candidate.workHistory ? [candidate.workHistory] : []),
+    workHistory: Array.isArray(candidate.work_history) ? candidate.work_history : (candidate.work_history ? [candidate.work_history] : []),
     skills: Array.isArray(candidate.skills) ? candidate.skills : (candidate.skills ? [candidate.skills] : []),
     certifications: Array.isArray(candidate.certifications) ? candidate.certifications : (candidate.certifications ? [candidate.certifications] : []),
     projects: Array.isArray(candidate.projects) ? candidate.projects : (candidate.projects ? [candidate.projects] : []),

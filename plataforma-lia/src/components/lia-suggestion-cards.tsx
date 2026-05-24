@@ -129,7 +129,7 @@ export function LiaSuggestionCards({
                     </h5>
                     <Chip 
                       variant="neutral" 
-                      className="text-micro px-1.5 py-0 h-4 shrink-0"
+                      className="text-micro px-1.5 py-0 h-4 flex items-center shrink-0"
                     >
                       {typeInfo.label}
                     </Chip>
@@ -140,7 +140,7 @@ export function LiaSuggestionCards({
                   <div className="flex items-center gap-2 mt-2">
                     <Chip 
                       variant="neutral" muted 
-                      className="text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-secondary"
+                      className="text-micro px-1.5 py-0 h-4 flex items-center bg-lia-bg-tertiary text-lia-text-secondary"
                     >
                       {suggestion.category}
                     </Chip>
