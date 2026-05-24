@@ -30,7 +30,11 @@ MUTATION_RE = re.compile(
     re.DOTALL,
 )
 # Detect dispatch in the same file
-DISPATCH_RE = re.compile(r"dispatchEvent\s*\(\s*new\s+CustomEvent\s*\(\s*['\"]lia:settings-updated['\"]")
+# Accept either inline dispatch OR canonical helper notifyChatOfSettingsUpdate
+DISPATCH_RE = re.compile(
+    r"dispatchEvent\s*\(\s*new\s+CustomEvent\s*\(\s*['\"]lia:settings-updated['\"]"
+    r"|notifyChatOfSettingsUpdate\s*\("
+)
 # Skip files that are pure types/constants
 SKIP_SUFFIXES = ("-types.ts", "Constants.ts", "constants.ts", ".test.ts", ".test.tsx")
 
