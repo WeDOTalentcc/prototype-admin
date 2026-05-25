@@ -490,6 +490,23 @@ company_id: str = Depends(require_company_id)):
             setattr(user, field, value)
         user.updated_at = datetime.utcnow()
 
+        # Sprint 2 RBAC (2026-05-25): SYNC client_users.department_id → users.department_id (auth table).
+        # Filter logic em app/api/v1/job_vacancies/crud.py:list_job_vacancies usa users.department_id.
+        # Sem sync, popular dept via UI cliente fica isolado e filter nunca ativa.
+        # Plan canonical: ~/.claude/plans/jolly-roaming-moler.md
+        if "department_id" in update_data and user.user_id:
+            from sqlalchemy import text
+            try:
+                await repo.db.execute(
+                    text("UPDATE users SET department_id = :dept_id WHERE id = :uid"),
+                    {"dept_id": update_data["department_id"], "uid": str(user.user_id)},
+                )
+            except Exception as sync_exc:
+                # Non-blocking: sync failure não bloqueia client_user update.
+                logger.warning(
+                    "[client_users] dept sync to users failed (non-blocking): %s", sync_exc
+                )
+
         await repo.log_audit(
             company_id=client_id,
             action="user_updated",

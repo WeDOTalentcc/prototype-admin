@@ -771,6 +771,74 @@ class AuditService:
         except Exception as exc:
             logger.debug("[AuditService] log_action failed (non-blocking): %s", exc)
 
+    async def log_data_access(
+        self,
+        *,
+        company_id: str,
+        user_id: str | None,
+        user_email: str | None,
+        resource_type: str,
+        resource_id: str,
+        action: str = "view",
+        ip_address: str | None = None,
+        user_agent: str | None = None,
+        request_id: str | None = None,
+        details: dict | None = None,
+    ) -> None:
+        """Log a PII data access event (LGPD Art. 37 V — registro de operações de tratamento).
+
+        Sprint 3 RBAC (2026-05-25, plan canonical: ~/.claude/plans/jolly-roaming-moler.md).
+
+        Persiste em SOXAuditLog com category=DATA_ACCESS. 7-year retention SOX.
+        Non-blocking — exceções são logadas mas NÃO propagam (não bloqueia request).
+
+        Args:
+            company_id: tenant ID (multi-tenancy mandatory)
+            user_id: user UUID (quem acessou)
+            user_email: email do user (denormalized for query speed)
+            resource_type: 'candidate' | 'job_vacancy' | 'audit_log' | ...
+            resource_id: ID do recurso acessado (UUID ou int as string)
+            action: 'view' (default) | 'view_pii' | 'export'
+            ip_address: from request.client.host
+            user_agent: from request.headers
+            request_id: trace correlation
+            details: optional extra context (e.g., {"is_confidential": True})
+
+        Consumer: app/api/v1/observability.py:list_data_access_logs (DPO view).
+        Reused: SOXAuditLog table + observability_repository (already canonical).
+        """
+        try:
+            from libs.models.lia_models.audit_logs import (
+                ActionCategory,
+                AuditStatus,
+                SOXAuditLog,
+            )
+            async with AsyncSessionLocal() as session:
+                await _bind_tenant(session, company_id)
+                log = SOXAuditLog(
+                    id=uuid.uuid4(),
+                    company_id=company_id,
+                    user_id=user_id,
+                    user_email=user_email,
+                    action=action,
+                    action_category=ActionCategory.DATA_ACCESS.value,
+                    resource_type=resource_type,
+                    resource_id=resource_id,
+                    ip_address=ip_address,
+                    user_agent=(user_agent[:500] if user_agent else None),
+                    status=AuditStatus.SUCCESS.value,
+                    details=details or {},
+                    retention_years=7,
+                    retention_until=datetime.utcnow() + timedelta(days=365 * 7),
+                    request_id=request_id,
+                )
+                session.add(log)
+                await session.commit()
+        except Exception as exc:
+            # Non-blocking — falha de audit log NUNCA quebra request principal.
+            # Sprint 3 RBAC: aceita perda eventual de log row vs bloquear UX.
+            logger.debug("[AuditService] log_data_access failed (non-blocking): %s", exc)
+
     async def log_compliance(
         self,
         *,

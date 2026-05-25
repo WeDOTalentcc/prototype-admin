@@ -29,6 +29,9 @@ class JobVacancy(Base):
     job_id = Column(String(50), nullable=True, index=True)  # WDT-2025-001
     title = Column(String(255), nullable=False, index=True)
     department = Column(String(100), nullable=True)
+    # RBAC Sprint 2 (2026-05-25): FK to Department (coexiste com 'department' string display).
+    # NULL = legacy (no scope filter). Plan canonical: ~/.claude/plans/jolly-roaming-moler.md
+    department_id = Column(UUID(as_uuid=True), ForeignKey("departments.id", ondelete="SET NULL"), nullable=True, index=True)
     location = Column(String(255), nullable=True)
     work_model = Column(String(50), nullable=True)  # presencial, híbrido, remoto
     employment_type = Column(String(50), nullable=True)  # CLT, PJ, Temporary

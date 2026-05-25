@@ -571,8 +571,28 @@ company_id: str = Depends(require_company_id)):
                 continue
             jv_visibility = jv.visibility or "public"
 
+            # RBAC Sprint 2 (2026-05-25): department scope SOFT LAUNCH.
+            # Enforce SÓ se ambos user.department_id E jv.department_id setados.
+            # NULL em qualquer lado → legacy (não filtra). Plan: ~/.claude/plans/jolly-roaming-moler.md
+            user_dept_id = getattr(current_user, "department_id", None)
+            jv_dept_id = getattr(jv, "department_id", None)
+            dept_scope_enforced = (
+                not is_admin
+                and user_dept_id is not None
+                and jv_dept_id is not None
+                and str(user_dept_id) != str(jv_dept_id)
+            )
+
             if jv_visibility in ["public", "internal"]:
-                job_vacancies.append(jv)
+                if not dept_scope_enforced:
+                    job_vacancies.append(jv)
+                    continue
+                # Dept mismatch → só libera se user em hiring_team (owner ou access_list)
+                jv_created_by = (jv.created_by or "").lower()
+                jv_recruiter_email = (jv.recruiter_email or "").lower()
+                jv_access_list = [x.lower() for x in (jv.access_list or [])]
+                if user_email in (jv_created_by, jv_recruiter_email) or user_email in jv_access_list:
+                    job_vacancies.append(jv)
                 continue
 
             if is_admin:

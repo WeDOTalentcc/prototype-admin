@@ -30,6 +30,7 @@ from app.middleware.auth_enforcement import AuthEnforcementMiddleware
 from app.middleware.rate_limiter import RateLimitMiddleware
 from app.middleware.idempotency import IdempotencyMiddleware
 from app.middleware.request_id import RequestIdMiddleware
+from app.middleware.audit_access_middleware import AuditAccessMiddleware
 from app.middleware.response_envelope import ResponseEnvelopeMiddleware
 from app.shared.services.embedding_cache_service import embedding_cache
 from app.domains.ai.services.llm import LLMService
@@ -730,6 +731,14 @@ Authorization: Bearer <token>
 
 # Auth enforcement — validates JWT and injects company_id (multi-tenancy)
 app.add_middleware(AuthEnforcementMiddleware)
+
+# Sprint 3 RBAC (2026-05-25, plan canonical: ~/.claude/plans/jolly-roaming-moler.md):
+# LGPD Art. 37 V — registro de operações de tratamento (leitura de PII).
+# Auto-loga GET em candidates/{id}, job-vacancies/{id}, audit-logs/{id}.
+# Fire-and-forget, falha non-blocking. Persiste em SOXAuditLog DATA_ACCESS.
+# Wired DEPOIS de AuthEnforcement (FastAPI ordem reversa) para que
+# request.state.company_id/user_id já estejam populados quando logamos.
+app.add_middleware(AuditAccessMiddleware)
 
 # Response envelope — auto-wraps 2xx JSON into {"ok": true, "data": ...}
 app.add_middleware(ResponseEnvelopeMiddleware)

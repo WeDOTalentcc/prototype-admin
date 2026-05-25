@@ -63,6 +63,9 @@ class ClientUser(EncryptedFieldMixin, Base):
     email_hash = Column(String(64), nullable=True, index=True)
     name = Column(String(255), nullable=False)
     role = Column(String(50), nullable=False, default=ClientUserRole.VIEWER.value)
+    # RBAC Sprint 2 (2026-05-25): department + manager FK. Plan: ~/.claude/plans/jolly-roaming-moler.md
+    department_id = Column(UUID(as_uuid=True), ForeignKey("departments.id", ondelete="SET NULL"), nullable=True, index=True)
+    manager_id = Column(UUID(as_uuid=True), ForeignKey("client_users.id", ondelete="SET NULL"), nullable=True, index=True)
     permissions = Column(JSON, nullable=True, default=list)
     status = Column(String(20), default=ClientUserStatus.PENDING.value, index=True)
     

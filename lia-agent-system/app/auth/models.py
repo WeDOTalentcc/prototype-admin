@@ -5,7 +5,7 @@ import uuid
 from datetime import datetime
 from enum import Enum as PyEnum, StrEnum
 
-from sqlalchemy import Boolean, Column, DateTime, Enum, LargeBinary, String
+from sqlalchemy import Boolean, Column, DateTime, Enum, LargeBinary, String, ForeignKey
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB, UUID
 from sqlalchemy.orm import validates
 
@@ -34,6 +34,7 @@ class UserRole(StrEnum):
       admin2.wedotalent.cc — NEVER assign to a customer-end user.
     """
     admin = "admin"
+    manager = "manager"  # RBAC Sprint 0 (2026-05-25): consolida ClientUserRole.MANAGER (tenant-level) com canonical UserRole.
     recruiter = "recruiter"
     viewer = "viewer"
     wedotalent_admin = "wedotalent_admin"
@@ -70,6 +71,12 @@ class User(EncryptedFieldMixin, Base):
     name = Column(String(255), nullable=False)
     role = Column(Enum(UserRole), default=UserRole.viewer, nullable=False)
     company_id = Column(String(255), nullable=True, index=True, default=None)
+
+    # RBAC Sprint 2 (2026-05-25): department + manager FK for scope filter.
+    # Backward compat soft launch: NULL = legacy/tenant-wide (no filter enforcement).
+    # Plan canonical: ~/.claude/plans/jolly-roaming-moler.md
+    department_id = Column(UUID(as_uuid=True), ForeignKey("departments.id", ondelete="SET NULL"), nullable=True, index=True)
+    manager_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
 
     @validates("company_id")
     def _validate_company_id(self, _key: str, value):  # noqa: ANN001

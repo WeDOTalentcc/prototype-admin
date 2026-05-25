@@ -25,6 +25,18 @@ class ClientUserUpdate(WeDoBaseModel):
     permissions: list[str] | None = None
     status: str | None = Field(None, description="Status: active, inactive, pending")
     resend_invitation: bool | None = Field(None, description="Set to true to resend invitation email")
+    # RBAC Sprint 2 (2026-05-25): department + manager FKs.
+    # Plan canonical: ~/.claude/plans/jolly-roaming-moler.md
+    # NB: backend endpoint deve sync client_users.department_id → users.department_id
+    # quando client_users.user_id matches (filter logic em crud.py lê users.department_id).
+    department_id: str | None = Field(None, description="Department UUID (FK to departments.id)")
+    manager_id: str | None = Field(None, description="Manager UUID (FK to client_users.id) — reserved for approval chains")
+    # RBAC Sprint 2 (2026-05-25): department + manager FKs.
+    # Plan canonical: ~/.claude/plans/jolly-roaming-moler.md
+    # NB: backend endpoint deve sync client_users.department_id → users.department_id
+    # quando client_users.user_id matches (filter logic em crud.py lê users.department_id).
+    department_id: str | None = Field(None, description="Department UUID (FK to departments.id)")
+    manager_id: str | None = Field(None, description="Manager UUID (FK to client_users.id) — reserved for approval chains")
 
 
 class AcceptInvitationRequest(WeDoBaseModel):

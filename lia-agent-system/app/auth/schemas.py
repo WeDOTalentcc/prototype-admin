@@ -9,12 +9,10 @@ from pydantic import BaseModel, EmailStr, Field
 from app.shared.types import WeDoBaseModel
 
 
-class UserRole(StrEnum):
-    """User role enumeration."""
-    admin = "admin"
-    recruiter = "recruiter"
-    viewer = "viewer"
-
+# RBAC Sprint 0 (2026-05-25): UserRole legacy DELETADO daqui (0 consumers grep-verified).
+# Canonical UserRole vive em app/auth/models.py com 5 valores incluindo 'manager' e 'wedotalent_admin'.
+# Imports devem usar: from app.auth.models import UserRole
+from app.auth.models import UserRole  # noqa: F401 — re-export for UserResponse below
 
 class UserCreate(WeDoBaseModel):
     """Schema for user registration."""
