@@ -47,8 +47,9 @@ class HiringPolicyRepository:
                 if key in valid_blocks:
                     existing = getattr(policy, key) or {}
                     if isinstance(existing, dict) and isinstance(value, dict):
-                        existing.update(value)
-                        setattr(policy, key, existing)
+                        # T-1169: criar NOVO dict — Column(JSON) puro não rastreia
+                        # mutação in-place. setattr com mesma ref não vira UPDATE.
+                        setattr(policy, key, {**existing, **value})
                     else:
                         setattr(policy, key, value)
             policy.updated_by = user_id

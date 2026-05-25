@@ -163,8 +163,8 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
         if key in VALID_BLOCKS:
             existing = getattr(policy, key) or {}
             if isinstance(existing, dict) and isinstance(value, dict):
-                existing.update(value)
-                setattr(policy, key, existing)
+                # T-1169: NOVO dict — Column(JSON) puro não rastreia mutação in-place.
+                setattr(policy, key, {**existing, **value})
             else:
                 setattr(policy, key, value)
 
@@ -207,8 +207,8 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
 
     existing = getattr(policy, payload.block) or {}
     if isinstance(existing, dict) and isinstance(payload.data, dict):
-        existing.update(payload.data)
-        setattr(policy, payload.block, existing)
+        # T-1169: NOVO dict — Column(JSON) puro não rastreia mutação in-place.
+        setattr(policy, payload.block, {**existing, **payload.data})
     else:
         setattr(policy, payload.block, payload.data)
 
