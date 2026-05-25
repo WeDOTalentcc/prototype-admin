@@ -1165,13 +1165,11 @@ def register_job_wizard_tools() -> None:
         handler=capture_wizard_feedback,
         allowed_agents=["job_planner", "job_intake", "orchestrator", "job_wizard"]
     ))
-    
-    tool_registry.register(ToolDefinition(
-        name="generate_enriched_jd",
-        description="Generate enriched job description with suggestions for responsibilities, technical skills, behavioral competencies, and compensation. Each suggestion includes rich justifications with market percentages, company history data, impact metrics, and WSI quality notes. Use this after initial input collection to present the recruiter with a complete, enhanced JD before salary confirmation.",
-        parameters_schema=GENERATE_ENRICHED_JD_SCHEMA,
-        handler=generate_enriched_jd,
-        allowed_agents=["job_planner", "job_intake", "orchestrator", "job_wizard"]
-    ))
-    
-    logger.info("Registered 9 job wizard tools")
+
+    # T-1168 (Bug 4): generate_enriched_jd é registrada canonicamente em
+    # `app/domains/job_management/agents/wizard_tool_registry.py:710` via
+    # `_wrap_generate_enriched_jd` (com tratamento de erro). Registrar aqui
+    # também causava o warning "tool 'generate_enriched_jd' already registered,
+    # overwriting" no startup do uvicorn. Source-of-truth = wizard_tool_registry.
+
+    logger.info("Registered 8 job wizard tools")
