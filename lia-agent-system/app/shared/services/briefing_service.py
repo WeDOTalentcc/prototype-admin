@@ -166,7 +166,7 @@ class BriefingService:
                     "action_type": "complete_task"
                 })
         except Exception as e:
-            logger.warning(f"Error fetching overdue tasks: {e}")
+            logger.warning(f"Error fetching overdue tasks: {e}", exc_info=True)
         
         try:
             feedback_pending = await db.execute(
@@ -194,7 +194,7 @@ class BriefingService:
                     "action_type": "provide_feedback"
                 })
         except Exception as e:
-            logger.warning(f"Error fetching feedback tasks: {e}")
+            logger.warning(f"Error fetching feedback tasks: {e}", exc_info=True)
         
         try:
             critical_alerts = await db.execute(
@@ -220,7 +220,7 @@ class BriefingService:
                     "action_type": "acknowledge_alert"
                 })
         except Exception as e:
-            logger.warning(f"Error fetching alerts: {e}")
+            logger.warning(f"Error fetching alerts: {e}", exc_info=True)
         
         urgent_items.sort(key=lambda x: {"critical": 0, "high": 1, "medium": 2}.get(x.get("priority", "medium"), 3))
         
@@ -271,7 +271,7 @@ class BriefingService:
                 "offers_pending": stages.get("offer", 0),
             }
         except Exception as e:
-            logger.warning(f"Error getting pipeline summary: {e}")
+            logger.warning(f"Error getting pipeline summary: {e}", exc_info=True)
             return {
                 "active_jobs": 0,
                 "total_candidates": 0,
@@ -280,6 +280,8 @@ class BriefingService:
                 "candidates_to_contact": 0,
                 "awaiting_feedback": 0,
                 "offers_pending": 0,
+                "degraded": True,
+                "degraded_reason": type(e).__name__,
             }
     
     async def _get_today_schedule(
@@ -318,7 +320,7 @@ class BriefingService:
                     "action_label": "Ver Detalhes",
                 })
         except Exception as e:
-            logger.warning(f"Error fetching interviews: {e}")
+            logger.warning(f"Error fetching interviews: {e}", exc_info=True)
         
         try:
             scheduled_tasks = await db.execute(
@@ -344,7 +346,7 @@ class BriefingService:
                     "action_label": "Iniciar",
                 })
         except Exception as e:
-            logger.warning(f"Error fetching scheduled tasks: {e}")
+            logger.warning(f"Error fetching scheduled tasks: {e}", exc_info=True)
         
         try:
             from sqlalchemy import text as sql_text
@@ -379,7 +381,7 @@ class BriefingService:
                     "action_label": "Ver Compromisso",
                 })
         except Exception as e:
-            logger.warning(f"Error fetching calendar events for briefing: {e}")
+            logger.warning(f"Error fetching calendar events for briefing: {e}", exc_info=True)
 
         schedule.sort(key=lambda x: x.get("datetime") or "")
         
@@ -425,7 +427,7 @@ class BriefingService:
                         "is_automated": task.is_automated,
                     })
             except Exception as e:
-                logger.warning(f"Error fetching pending tasks via TasksRepository: {e}")
+                logger.warning(f"Error fetching pending tasks via TasksRepository: {e}", exc_info=True)
             return tasks
 
         # Legacy path (caller nao propagou company_id - cross-tenant gap)
@@ -467,7 +469,7 @@ class BriefingService:
                     "is_automated": task.is_automated,
                 })
         except Exception as e:
-            logger.warning(f"Error fetching pending tasks: {e}")
+            logger.warning(f"Error fetching pending tasks: {e}", exc_info=True)
 
         return tasks
     
@@ -507,7 +509,7 @@ class BriefingService:
                     "resolved": alert.resolved_at is not None,
                 })
         except Exception as e:
-            logger.warning(f"Error fetching alerts: {e}")
+            logger.warning(f"Error fetching alerts: {e}", exc_info=True)
         
         return alerts
     
@@ -547,10 +549,11 @@ class BriefingService:
             summary["_company_id"] = company_id  # interno — usado pelo _get_recruiter_benchmark
             return summary
         except Exception as e:
-            logger.warning(f"_get_recruiter_metrics failed silently: {e}")
+            logger.warning(f"_get_recruiter_metrics failed silently: {e}", exc_info=True)
             return {"backlog_count": 0, "critical_count": 0, "most_urgent": None,
                     "avg_response_time_days": None, "candidates_advanced_this_week": 0,
-                    "offers_pending": 0, "_company_id": None}
+                    "offers_pending": 0, "_company_id": None,
+                    "degraded": True, "degraded_reason": type(e).__name__}
 
     async def _get_recruiter_benchmark(
         self,
@@ -572,8 +575,8 @@ class BriefingService:
                 db=db,
             )
         except Exception as e:
-            logger.warning(f"_get_recruiter_benchmark failed silently: {e}")
-            return {"benchmark_available": False}
+            logger.warning(f"_get_recruiter_benchmark failed silently: {e}", exc_info=True)
+            return {"benchmark_available": False, "degraded": True, "degraded_reason": type(e).__name__}
 
     async def _get_pipeline_prediction(
         self,
@@ -603,8 +606,8 @@ class BriefingService:
                 "near_closure_count": len(near_close),
             }
         except Exception as e:
-            logger.warning(f"_get_pipeline_prediction failed silently: {e}")
-            return {"available": False, "vacancies": []}
+            logger.warning(f"_get_pipeline_prediction failed silently: {e}", exc_info=True)
+            return {"available": False, "vacancies": [], "degraded": True, "degraded_reason": type(e).__name__}
 
     async def _generate_insights(
         self,
