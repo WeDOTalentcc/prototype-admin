@@ -22,9 +22,9 @@ export const CandidateProfileColumn: React.FC<CandidateProfileColumnProps> = ({ 
             <h2 className="text-xl font-semibold text-lia-text-primary">
               {candidate.name}
             </h2>
-            {candidate.linkedin_url && (
+            {candidate.linkedinUrl && (
               <a 
-                href={candidate.linkedin_url}
+                href={candidate.linkedinUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-lia-text-secondary hover:text-lia-text-secondary transition-colors motion-reduce:transition-none"
@@ -33,12 +33,12 @@ export const CandidateProfileColumn: React.FC<CandidateProfileColumnProps> = ({ 
               </a>
             )}
           </div>
-          {candidate.linkedin_url && (
+          {candidate.linkedinUrl && (
             <Button
               variant="outline"
               size="sm"
               className="text-xs"
-              onClick={() => window.open(candidate.linkedin_url, '_blank')}
+              onClick={() => window.open(candidate.linkedinUrl, '_blank')}
             >
               Full Profile
               <ExternalLink className="w-3 h-3 ml-1" />
@@ -57,7 +57,7 @@ export const CandidateProfileColumn: React.FC<CandidateProfileColumnProps> = ({ 
           ) : (
             <Briefcase className="w-4 h-4 text-lia-text-secondary" />
           )}
-          <span>{candidate.current_title} at {candidate.current_company}</span>
+          <span>{candidate.currentTitle} at {candidate.currentCompany}</span>
         </div>
 
         {candidate.education && (

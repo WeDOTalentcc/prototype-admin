@@ -114,9 +114,9 @@ export function BatchRejectionSection({
                     <p className="font-sans text-xs font-medium text-lia-text-primary truncate">
                       {c.name}
                     </p>
-                    {(c.role || c.current_company) && (
+                    {(c.role || c.currentCompany) && (
                       <p className="font-sans text-xs text-lia-text-secondary truncate">
-                        {c.role}{c.role && c.current_company ? ' @ ' : ''}{c.current_company}
+                        {c.role}{c.role && c.currentCompany ? ' @ ' : ''}{c.currentCompany}
                       </p>
                     )}
                   </div>

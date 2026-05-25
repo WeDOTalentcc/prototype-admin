@@ -6,12 +6,13 @@ const FASTAPI_BASE = process.env.FASTAPI_URL || process.env.BACKEND_URL || 'http
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { requestId: string } }
+  { params }: { params: Promise<{ requestId: string }> }
 ) {
+  const { requestId } = await params  // Next.js 15/16: params are async
   const authHeaders = getAuthHeaders(req)
   try {
     const res = await fetch(
-      `${FASTAPI_BASE}/api/v1/rh/lgpd-requests/${params.requestId}/respond`,
+      `${FASTAPI_BASE}/api/v1/rh/lgpd-requests/${requestId}/respond`,
       {
         method: 'PATCH',
         headers: { ...authHeaders },

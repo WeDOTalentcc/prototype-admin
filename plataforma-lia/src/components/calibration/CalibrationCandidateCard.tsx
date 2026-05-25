@@ -77,7 +77,7 @@ export function CalibrationCandidateCard({
         {/* Header */}
         <div className="flex items-center gap-3 mb-4">
           <Avatar className="w-12 h-12">
-            <AvatarImage src={candidate.avatar_url} />
+            <AvatarImage src={candidate.avatarUrl} />
             <AvatarFallback className="bg-lia-bg-inverse text-white text-sm font-semibold">
               {candidate.name
                 .split("")
@@ -97,7 +97,7 @@ export function CalibrationCandidateCard({
         {/* Current role */}
         <div className="mb-4">
           <p className="text-sm font-medium text-lia-text-primary">
-            {candidate.current_title} at {candidate.current_company}
+            {candidate.currentTitle} at {candidate.currentCompany}
           </p>
         </div>
 

@@ -192,8 +192,8 @@ export function useUniversalTransitionModal({
       email: c.email,
       phone: c.phone,
       avatar: c.avatar,
-      current_title: c.role ?? undefined,
-      current_company: c.current_company || c.company,
+      currentTitle: c.role ?? undefined,
+      currentCompany: c.currentCompany || c.company,
     }))
   }, [isRejectedBatch, candidates])
 

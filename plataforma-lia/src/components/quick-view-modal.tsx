@@ -259,11 +259,11 @@ export function QuickViewModal({
 
           {activeTab === 'experience' && (
             <div className="space-y-6">
-              {candidate.work_history && candidate.work_history.length > 0 ? (
+              {candidate.workHistory && candidate.workHistory.length > 0 ? (
                 <div>
                   <h3 className="text-xs font-medium text-lia-text-primary mb-4">Histórico Profissional</h3>
                   <div className="space-y-4">
-                    {candidate.work_history.map((job, index) => (
+                    {candidate.workHistory.map((job, index) => (
                       <div key={`job-${index}-${job.company || (job as any).title}`} className="border-l-2 border-lia-border-subtle pl-4 pb-4">
                         <div className="flex items-center gap-2 mb-2">
                           <h4 className="font-medium text-lia-text-primary text-xs">{job.position}</h4>

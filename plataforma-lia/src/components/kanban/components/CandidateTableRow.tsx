@@ -314,7 +314,7 @@ const CandidateTableRowComponent = memo(function CandidateTableRow({
 
       <td className="px-4 py-2">
         <div className="text-xs text-lia-text-primary">
-          {candidate.current_company || (candidate.source === 'LinkedIn' ? 'TechCorp' : 'Digital Agency')}
+          {candidate.currentCompany || (candidate.source === 'LinkedIn' ? 'TechCorp' : 'Digital Agency')}
         </div>
       </td>
 

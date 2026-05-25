@@ -16,7 +16,7 @@ const nextConfig = {
     optimizePackageImports: ['lucide-react', 'date-fns', '@radix-ui/react-icons'],
   },
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,  // R-020: TS errors fixed, gate now active
   },
   productionBrowserSourceMaps: false,
   logging: process.env.NODE_ENV === 'production'

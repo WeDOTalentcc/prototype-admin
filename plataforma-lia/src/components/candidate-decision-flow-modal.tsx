@@ -330,7 +330,7 @@ Equipe de Recrutamento`
             <div>
               <p className="text-base-ui font-medium text-lia-text-primary">{candidate.name}</p>
               <p className="text-xs text-lia-text-tertiary">
-                {candidate.role} {candidate.current_company && `• ${candidate.current_company}`}
+                {candidate.role} {candidate.currentCompany && `• ${candidate.currentCompany}`}
               </p>
             </div>
           </div>

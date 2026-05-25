@@ -291,7 +291,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
       case "current_company":
         return (
           <span className="text-xs text-lia-text-primary truncate">
-            {candidate.current_company || candidate.work_history?.[0]?.company || ""}
+            {candidate.current_company || candidate.workHistory?.[0]?.company || ""}
           </span>
         )
       case "seniority_level":
