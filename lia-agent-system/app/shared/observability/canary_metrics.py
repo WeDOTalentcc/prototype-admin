@@ -390,7 +390,7 @@ briefing_generated_total = _make_counter(
     "briefing_generated_total",
     "Count of daily briefing generation attempts, by outcome. "
     "Task 3.A observability sensor (2026-05-25).",
-    ("company_id_hash", "outcome"),   # outcome: success | error | empty_user
+    ("company_id_hash", "outcome"),   # outcome: success | error | empty_user | timeout
 )
 
 # Buckets in seconds: sub-second to 60s (briefing is DB-heavy + optional LLM).
@@ -411,7 +411,7 @@ def inc_briefing_generated(company_id: str, outcome: str) -> None:
 
     Args:
         company_id: tenant ID para hash (nunca raw como label).
-        outcome: success | error | empty_user
+        outcome: success | error | empty_user | timeout
     """
     if briefing_generated_total is None:
         return
