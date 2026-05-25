@@ -20,7 +20,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
-from app.core.database import get_db
+from app.core.database import get_db, get_tenant_db
 from app.shared.services.skills_catalog_service import (
     get_skills_catalog_db_service,
     get_skills_catalog_service,
@@ -257,7 +257,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 async def add_skill_to_catalog(
     request: AddSkillRequest,
     current_user: User = Depends(get_current_user_or_demo),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 company_id: str = Depends(require_company_id)) -> AddSkillResponse:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
@@ -325,7 +325,7 @@ company_id: str = Depends(require_company_id)) -> AddSkillResponse:
 async def sync_tech_stack_to_catalog(
     request: SyncTechStackRequest,
     current_user: User = Depends(get_current_user_or_demo),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 company_id: str = Depends(require_company_id)) -> SyncTechStackResponse:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
@@ -483,7 +483,7 @@ company_id: str = Depends(require_company_id)) -> SuggestSkillsResponse:
 async def record_skill_usage(
     request: RecordSkillUsageRequest,
     current_user: User = Depends(get_current_user_or_demo),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 company_id: str = Depends(require_company_id)) -> RecordSkillUsageResponse:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """

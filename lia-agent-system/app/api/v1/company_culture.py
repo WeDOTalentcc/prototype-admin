@@ -513,7 +513,7 @@ async def update_culture_profile(
     data: CompanyCultureProfileUpdate,
     repo: CompanyCultureRepository = Depends(get_company_culture_repo),
     current_user: User = Depends(get_current_user_or_demo),
-    _company_gate: str = Depends(require_company_id_strict_match("path.company_id")),
+    tenant_company_id: str = Depends(require_company_id_strict_match("path.company_id")),
 ):
     """
     Phase H — multi-tenancy: company_id from URL MUST match JWT.
@@ -573,7 +573,20 @@ async def update_culture_profile(
         # Minha Empresa work without forcing the user to upload a doc first.
         # Multi-tenancy gate above is preserved — only the JWT-bound
         # company_id is ever written.
-        profile = await repo.upsert_profile_fields(company_id, update_data)
+        #
+        # Bug fix 2026-05-25 (RLS WITH CHECK violation): the URL path param
+        # may carry company_profiles.id (HR child) while the JWT (and RLS
+        # session var app.company_id, set by get_tenant_db) carry the parent
+        # client_accounts.id. Writing the URL value into company_culture_profiles
+        # (company_id column) trips `WITH CHECK (company_id = app_current_company_id())`
+        # because the row's company_id and the session's app.company_id disagree.
+        # The strict_match gate (above) ALREADY resolves the URL value via FK
+        # lookup to the JWT-canonical id; use that resolved value for the write
+        # so the INSERT/UPDATE satisfies RLS and stores under the same tenant
+        # the rest of the platform uses. (Read endpoints keep using URL param
+        # for the 404-on-mismatch check at line 489.)
+        effective_company_id = uuid.UUID(tenant_company_id)
+        profile = await repo.upsert_profile_fields(effective_company_id, update_data)
 
         # P0-6 Audit log LGPD/SOX: toda escrita em dados de empresa deve
         # ter trail rastreavel (principio de responsabilizacao Art. 48 LGPD).
@@ -586,10 +599,10 @@ async def update_culture_profile(
             _actor = getattr(current_user, "email", None) or getattr(current_user, "id", "unknown")
             await _AS().log_action(
                 trace_id=_trace_id,
-                company_id=str(company_id),
+                company_id=str(effective_company_id),
                 action_type="company_culture_update",
                 actor=_actor,
-                target_id=str(company_id),
+                target_id=str(effective_company_id),
                 target_type="company_culture_profile",
                 metadata={
                     "fields_updated": list(update_data.keys()),
@@ -618,19 +631,19 @@ async def delete_culture_profile(
     company_id: uuid.UUID,
     repo: CompanyCultureRepository = Depends(get_company_culture_repo),
     current_user: User = Depends(get_current_user_or_demo),
-_company_gate: str = Depends(require_company_id)):
+    tenant_company_id: str = Depends(require_company_id_strict_match("path.company_id")),
+):
     """
-    Phase H — multi-tenancy: company_id from URL MUST match JWT (404 on mismatch).
-    
-    Delete a company's culture profile.
+    Phase H — multi-tenancy: company_id from URL MUST match JWT (auto-resolves
+    company_profile.id → client_account.id via FK).
+
+    Delete a company's culture profile. Bug fix 2026-05-25 (RLS): uses the
+    resolved JWT-canonical id (matches app.company_id set by get_tenant_db),
+    not the raw URL param — same root cause as update_culture_profile.
     """
-    jwt_company_id = get_user_company_id(current_user)
-    if not jwt_company_id:
-        raise HTTPException(status_code=403, detail="company_id missing from token")
-    if str(company_id) != str(jwt_company_id):
-        raise HTTPException(status_code=404, detail="Company not found")
     try:
-        deleted = await repo.delete_profile(company_id)
+        effective_company_id = uuid.UUID(tenant_company_id)
+        deleted = await repo.delete_profile(effective_company_id)
 
         if not deleted:
             raise HTTPException(status_code=404, detail="Culture profile not found")
