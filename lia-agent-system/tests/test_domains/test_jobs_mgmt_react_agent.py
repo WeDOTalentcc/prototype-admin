@@ -119,7 +119,7 @@ class TestShouldSkipStage:
 class TestJobServicesExtracted:
 
     def test_jd_parser_service_importable(self):
-        from app.shared.services.jd_parser_service import JDParserService, jd_parser_service
+        from app.domains.ai.services.jd_parser_service import JDParserService, jd_parser_service
         assert callable(jd_parser_service.to_requirement_creates)
 
     def test_job_requirements_service_importable(self):

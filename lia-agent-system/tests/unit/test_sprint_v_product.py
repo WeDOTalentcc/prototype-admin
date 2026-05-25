@@ -63,11 +63,11 @@ class TestFairnessGuardLayer3:
 
 class TestRecruiterProfileService:
     def test_module_importable(self):
-        from app.shared.services.recruiter_profile_service import RecruiterProfileService, RecruiterProfile
+        from app.domains.analytics.services.recruiter_profile_service import RecruiterProfileService, RecruiterProfile
         assert RecruiterProfileService is not None
 
     def test_profile_to_prompt_snippet_empty_below_threshold(self):
-        from app.shared.services.recruiter_profile_service import RecruiterProfile, TonePreference, DetailLevel
+        from app.domains.analytics.services.recruiter_profile_service import RecruiterProfile, TonePreference, DetailLevel
         profile = RecruiterProfile(
             user_id="u1", company_id="c1",
             interaction_count=2,  # abaixo do threshold de 5
@@ -76,7 +76,7 @@ class TestRecruiterProfileService:
         assert snippet == ""
 
     def test_profile_to_prompt_snippet_with_direct_tone(self):
-        from app.shared.services.recruiter_profile_service import RecruiterProfile, TonePreference, DetailLevel
+        from app.domains.analytics.services.recruiter_profile_service import RecruiterProfile, TonePreference, DetailLevel
         profile = RecruiterProfile(
             user_id="u1", company_id="c1",
             tone=TonePreference.DIRECT,
@@ -86,21 +86,21 @@ class TestRecruiterProfileService:
         assert "direto" in snippet.lower() or "conciso" in snippet.lower()
 
     def test_profile_update_increments_count(self):
-        from app.shared.services.recruiter_profile_service import RecruiterProfile
+        from app.domains.analytics.services.recruiter_profile_service import RecruiterProfile
         profile = RecruiterProfile(user_id="u1", company_id="c1")
         assert profile.interaction_count == 0
         profile.update_from_interaction("search")
         assert profile.interaction_count == 1
 
     def test_profile_last_actions_capped_at_20(self):
-        from app.shared.services.recruiter_profile_service import RecruiterProfile
+        from app.domains.analytics.services.recruiter_profile_service import RecruiterProfile
         profile = RecruiterProfile(user_id="u1", company_id="c1")
         for i in range(25):
             profile.update_from_interaction(f"action_{i}")
         assert len(profile.last_actions) <= 20
 
     def test_profile_consultive_tone_snippet(self):
-        from app.shared.services.recruiter_profile_service import RecruiterProfile, TonePreference
+        from app.domains.analytics.services.recruiter_profile_service import RecruiterProfile, TonePreference
         profile = RecruiterProfile(
             user_id="u1", company_id="c1",
             tone=TonePreference.CONSULTIVE,
@@ -110,7 +110,7 @@ class TestRecruiterProfileService:
         assert "contexto" in snippet.lower() or "proativamente" in snippet.lower()
 
     def test_profile_balanced_tone_no_extra_instruction(self):
-        from app.shared.services.recruiter_profile_service import RecruiterProfile, TonePreference, DetailLevel
+        from app.domains.analytics.services.recruiter_profile_service import RecruiterProfile, TonePreference, DetailLevel
         profile = RecruiterProfile(
             user_id="u1", company_id="c1",
             tone=TonePreference.BALANCED,
@@ -123,7 +123,7 @@ class TestRecruiterProfileService:
 
     @pytest.mark.asyncio
     async def test_get_profile_returns_new_profile_when_redis_unavailable(self):
-        from app.shared.services.recruiter_profile_service import RecruiterProfileService
+        from app.domains.analytics.services.recruiter_profile_service import RecruiterProfileService
         svc = RecruiterProfileService()
         with patch("redis.from_url", side_effect=Exception("no redis")):
             profile = await svc.get_profile("user_123", "company_abc")
@@ -132,7 +132,7 @@ class TestRecruiterProfileService:
 
     @pytest.mark.asyncio
     async def test_save_profile_fail_safe_on_redis_error(self):
-        from app.shared.services.recruiter_profile_service import RecruiterProfileService, RecruiterProfile
+        from app.domains.analytics.services.recruiter_profile_service import RecruiterProfileService, RecruiterProfile
         svc = RecruiterProfileService()
         profile = RecruiterProfile(user_id="u1", company_id="c1")
         # Deve não levantar exceção mesmo com Redis indisponível
@@ -142,17 +142,17 @@ class TestRecruiterProfileService:
 
 class TestWSIAsyncSessionService:
     def test_module_importable(self):
-        from app.shared.services.wsi_async_session_service import WSIAsyncSessionService, WSIAsyncSessionStatus
+        from app.domains.cv_screening.services.wsi_async_session_service import WSIAsyncSessionService, WSIAsyncSessionStatus
         assert WSIAsyncSessionService is not None
         assert WSIAsyncSessionStatus.PENDING is not None
 
     def test_session_timeout_configured(self):
-        from app.shared.services.wsi_async_session_service import WSI_SESSION_TIMEOUT_HOURS
+        from app.domains.cv_screening.services.wsi_async_session_service import WSI_SESSION_TIMEOUT_HOURS
         assert WSI_SESSION_TIMEOUT_HOURS == 48
 
     @pytest.mark.asyncio
     async def test_get_session_returns_none_when_not_found(self):
-        from app.shared.services.wsi_async_session_service import WSIAsyncSessionService
+        from app.domains.cv_screening.services.wsi_async_session_service import WSIAsyncSessionService
         svc = WSIAsyncSessionService()
         with patch("redis.from_url") as mock_redis:
             mock_redis.return_value.get.return_value = None
@@ -160,7 +160,7 @@ class TestWSIAsyncSessionService:
             assert result is None
 
     def test_session_status_values(self):
-        from app.shared.services.wsi_async_session_service import WSIAsyncSessionStatus
+        from app.domains.cv_screening.services.wsi_async_session_service import WSIAsyncSessionStatus
         assert WSIAsyncSessionStatus.PENDING.value == "pending"
         assert WSIAsyncSessionStatus.IN_PROGRESS.value == "in_progress"
         assert WSIAsyncSessionStatus.COMPLETED.value == "completed"
@@ -168,12 +168,12 @@ class TestWSIAsyncSessionService:
         assert WSIAsyncSessionStatus.ABANDONED.value == "abandoned"
 
     def test_session_ttl_constant(self):
-        from app.shared.services.wsi_async_session_service import WSI_SESSION_TTL_SECONDS, WSI_SESSION_TIMEOUT_HOURS
+        from app.domains.cv_screening.services.wsi_async_session_service import WSI_SESSION_TTL_SECONDS, WSI_SESSION_TIMEOUT_HOURS
         assert WSI_SESSION_TTL_SECONDS == WSI_SESSION_TIMEOUT_HOURS * 3600
 
     @pytest.mark.asyncio
     async def test_get_session_returns_none_on_redis_error(self):
-        from app.shared.services.wsi_async_session_service import WSIAsyncSessionService
+        from app.domains.cv_screening.services.wsi_async_session_service import WSIAsyncSessionService
         svc = WSIAsyncSessionService()
         with patch("redis.from_url", side_effect=Exception("connection refused")):
             result = await svc.get_session("any-session-id")
@@ -181,14 +181,14 @@ class TestWSIAsyncSessionService:
 
     @pytest.mark.asyncio
     async def test_submit_response_returns_false_when_session_not_found(self):
-        from app.shared.services.wsi_async_session_service import WSIAsyncSessionService
+        from app.domains.cv_screening.services.wsi_async_session_service import WSIAsyncSessionService
         svc = WSIAsyncSessionService()
         with patch.object(svc, "get_session", new=AsyncMock(return_value=None)):
             result = await svc.submit_response("missing-id", block=1, question_id="q1", response_text="teste")
             assert result is False
 
     def test_singleton_instance_exists(self):
-        from app.shared.services.wsi_async_session_service import wsi_async_session_service, WSIAsyncSessionService
+        from app.domains.cv_screening.services.wsi_async_session_service import wsi_async_session_service, WSIAsyncSessionService
         assert isinstance(wsi_async_session_service, WSIAsyncSessionService)
 
 

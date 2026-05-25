@@ -14,7 +14,7 @@ Cobertura:
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from app.shared.services.hybrid_search_service import (
+from app.domains.ai.services.hybrid_search_service import (
     HybridSearchService,
     _normalize_scores,
     _merge_results,

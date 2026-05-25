@@ -17,7 +17,7 @@ Cobertura (Camada 2 — Unitário):
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch, call
 
-from app.shared.services.search_service import (
+from app.domains.ai.services.search_service import (
     SearchBackend,
     SearchResult,
     PostgresSearchBackend,

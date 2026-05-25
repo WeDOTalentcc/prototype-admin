@@ -19,7 +19,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 
 def _make_evaluator():
-    from app.shared.services.agent_quality_evaluator import AgentQualityEvaluator
+    from app.domains.ai.services.agent_quality_evaluator import AgentQualityEvaluator
     return AgentQualityEvaluator()
 
 
@@ -38,7 +38,7 @@ class TestSamplingRate:
     @pytest.mark.asyncio
     async def test_evaluated_when_sampled(self):
         svc = _make_evaluator()
-        from app.shared.services.agent_quality_evaluator import EvaluationResult
+        from app.domains.ai.services.agent_quality_evaluator import EvaluationResult
         with patch("random.random", return_value=0.01):
             with patch.object(svc, "evaluate_response", new_callable=AsyncMock) as m:
                 m.return_value = EvaluationResult(
@@ -79,7 +79,7 @@ class TestEvaluateResponse:
 
     @pytest.mark.asyncio
     async def test_five_metrics_present(self):
-        from app.shared.services.agent_quality_evaluator import EVAL_METRICS
+        from app.domains.ai.services.agent_quality_evaluator import EVAL_METRICS
         svc = _make_evaluator()
         with patch.object(svc, "_judge", return_value=0.7):
             with patch.object(svc, "_persist", new_callable=AsyncMock):

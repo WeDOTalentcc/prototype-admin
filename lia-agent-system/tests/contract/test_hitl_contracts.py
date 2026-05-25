@@ -191,19 +191,19 @@ class TestWSApprovalResponseContract:
 class TestHybridSearchServiceContract:
 
     def test_has_search_jobs_method(self):
-        from app.shared.services.hybrid_search_service import HybridSearchService
+        from app.domains.ai.services.hybrid_search_service import HybridSearchService
         assert hasattr(HybridSearchService, "search_jobs")
 
     def test_has_search_candidates_method(self):
-        from app.shared.services.hybrid_search_service import HybridSearchService
+        from app.domains.ai.services.hybrid_search_service import HybridSearchService
         assert hasattr(HybridSearchService, "search_candidates")
 
     def test_has_benchmark_method(self):
-        from app.shared.services.hybrid_search_service import HybridSearchService
+        from app.domains.ai.services.hybrid_search_service import HybridSearchService
         assert hasattr(HybridSearchService, "benchmark")
 
     def test_search_jobs_signature(self):
-        from app.shared.services.hybrid_search_service import HybridSearchService
+        from app.domains.ai.services.hybrid_search_service import HybridSearchService
         sig = inspect.signature(HybridSearchService.search_jobs)
         params = list(sig.parameters.keys())
         assert "query" in params
@@ -212,10 +212,10 @@ class TestHybridSearchServiceContract:
         assert "embedding" in params
 
     def test_singleton_exists(self):
-        from app.shared.services.hybrid_search_service import hybrid_search_service, HybridSearchService
+        from app.domains.ai.services.hybrid_search_service import hybrid_search_service, HybridSearchService
         assert isinstance(hybrid_search_service, HybridSearchService)
 
     def test_alpha_configurable(self):
-        from app.shared.services.hybrid_search_service import HybridSearchService
+        from app.domains.ai.services.hybrid_search_service import HybridSearchService
         svc = HybridSearchService(alpha=0.3)
         assert svc.alpha == 0.3

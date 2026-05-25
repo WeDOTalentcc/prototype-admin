@@ -218,21 +218,21 @@ class TestSectorBenchmarkServiceGetContext:
 
 class TestAgentQualityEvaluatorImport:
     def test_import_module(self):
-        from app.shared.services.agent_quality_evaluator import agent_quality_evaluator, AgentQualityEvaluator
+        from app.domains.ai.services.agent_quality_evaluator import agent_quality_evaluator, AgentQualityEvaluator
         assert agent_quality_evaluator is not None
 
     def test_sampling_rate_constant(self):
-        from app.shared.services.agent_quality_evaluator import QUALITY_EVAL_SAMPLING_RATE
+        from app.domains.ai.services.agent_quality_evaluator import QUALITY_EVAL_SAMPLING_RATE
         assert 0.0 <= QUALITY_EVAL_SAMPLING_RATE <= 1.0
 
     def test_eval_metrics_have_5_entries(self):
-        from app.shared.services.agent_quality_evaluator import EVAL_METRICS
+        from app.domains.ai.services.agent_quality_evaluator import EVAL_METRICS
         assert len(EVAL_METRICS) == 5
         assert "task_completion" in EVAL_METRICS
         assert "fairness" in EVAL_METRICS
 
     def test_evaluation_result_dataclass(self):
-        from app.shared.services.agent_quality_evaluator import EvaluationResult
+        from app.domains.ai.services.agent_quality_evaluator import EvaluationResult
         from datetime import datetime
         result = EvaluationResult(
             agent_id="wizard",
@@ -248,7 +248,7 @@ class TestAgentQualityEvaluatorImport:
 class TestAgentQualityEvaluatorSampling:
     @pytest.mark.asyncio
     async def test_evaluate_if_sampled_returns_none_when_not_sampled(self):
-        from app.shared.services.agent_quality_evaluator import AgentQualityEvaluator
+        from app.domains.ai.services.agent_quality_evaluator import AgentQualityEvaluator
         evaluator = AgentQualityEvaluator()
         # patch random.random to return 0.99 (above any sampling rate)
         with patch("app.services.agent_quality_evaluator.random.random", return_value=0.99):
@@ -263,7 +263,7 @@ class TestAgentQualityEvaluatorSampling:
 
     @pytest.mark.asyncio
     async def test_evaluate_if_sampled_catches_exception_returns_none(self):
-        from app.shared.services.agent_quality_evaluator import AgentQualityEvaluator
+        from app.domains.ai.services.agent_quality_evaluator import AgentQualityEvaluator
         evaluator = AgentQualityEvaluator()
         # Sample (random returns 0.0) but evaluate_response raises
         with patch("app.services.agent_quality_evaluator.random.random", return_value=0.0):
@@ -279,7 +279,7 @@ class TestAgentQualityEvaluatorSampling:
 
     @pytest.mark.asyncio
     async def test_evaluate_if_sampled_returns_result_when_sampled(self):
-        from app.shared.services.agent_quality_evaluator import AgentQualityEvaluator, EvaluationResult
+        from app.domains.ai.services.agent_quality_evaluator import AgentQualityEvaluator, EvaluationResult
         evaluator = AgentQualityEvaluator()
         mock_result = EvaluationResult(
             agent_id="wizard", company_id="c-1", session_id=None,
@@ -300,7 +300,7 @@ class TestAgentQualityEvaluatorSampling:
 class TestAgentQualityEvaluatorJudge:
     @pytest.mark.asyncio
     async def test_judge_returns_05_on_anthropic_exception(self):
-        from app.shared.services.agent_quality_evaluator import AgentQualityEvaluator
+        from app.domains.ai.services.agent_quality_evaluator import AgentQualityEvaluator
         evaluator = AgentQualityEvaluator()
         # anthropic is imported inside the function; patch it in anthropic namespace
         with patch("anthropic.AsyncAnthropic", side_effect=RuntimeError("no api")):
@@ -309,7 +309,7 @@ class TestAgentQualityEvaluatorJudge:
 
     @pytest.mark.asyncio
     async def test_judge_returns_05_on_runtime_error(self):
-        from app.shared.services.agent_quality_evaluator import AgentQualityEvaluator
+        from app.domains.ai.services.agent_quality_evaluator import AgentQualityEvaluator
         evaluator = AgentQualityEvaluator()
         mock_client = MagicMock()
         mock_client.messages.create = AsyncMock(side_effect=RuntimeError("api error"))
@@ -319,7 +319,7 @@ class TestAgentQualityEvaluatorJudge:
 
     @pytest.mark.asyncio
     async def test_judge_clamps_score_above_1(self):
-        from app.shared.services.agent_quality_evaluator import AgentQualityEvaluator
+        from app.domains.ai.services.agent_quality_evaluator import AgentQualityEvaluator
         evaluator = AgentQualityEvaluator()
         mock_message = MagicMock()
         mock_message.content = [MagicMock(text="1.5")]
@@ -331,7 +331,7 @@ class TestAgentQualityEvaluatorJudge:
 
     @pytest.mark.asyncio
     async def test_judge_clamps_score_below_0(self):
-        from app.shared.services.agent_quality_evaluator import AgentQualityEvaluator
+        from app.domains.ai.services.agent_quality_evaluator import AgentQualityEvaluator
         evaluator = AgentQualityEvaluator()
         mock_message = MagicMock()
         mock_message.content = [MagicMock(text="-0.5")]
@@ -343,7 +343,7 @@ class TestAgentQualityEvaluatorJudge:
 
     @pytest.mark.asyncio
     async def test_send_to_langsmith_silent_without_api_key(self):
-        from app.shared.services.agent_quality_evaluator import AgentQualityEvaluator, EvaluationResult
+        from app.domains.ai.services.agent_quality_evaluator import AgentQualityEvaluator, EvaluationResult
         evaluator = AgentQualityEvaluator()
         result = EvaluationResult(
             agent_id="test", company_id="c-1", session_id=None,
@@ -358,7 +358,7 @@ class TestAgentQualityEvaluatorJudge:
 
     @pytest.mark.asyncio
     async def test_evaluate_response_computes_overall_correctly(self):
-        from app.shared.services.agent_quality_evaluator import AgentQualityEvaluator, EVAL_METRICS
+        from app.domains.ai.services.agent_quality_evaluator import AgentQualityEvaluator, EVAL_METRICS
         evaluator = AgentQualityEvaluator()
         # All judges return 0.8
         with patch.object(evaluator, "_judge", return_value=0.8):
@@ -375,7 +375,7 @@ class TestAgentQualityEvaluatorJudge:
 
     @pytest.mark.asyncio
     async def test_evaluate_response_persists_when_db_provided(self):
-        from app.shared.services.agent_quality_evaluator import AgentQualityEvaluator
+        from app.domains.ai.services.agent_quality_evaluator import AgentQualityEvaluator
         evaluator = AgentQualityEvaluator()
         mock_db = MagicMock()
         with patch.object(evaluator, "_judge", return_value=0.7):

@@ -226,7 +226,7 @@ BYPASSING_SERVICES = [
     ("app.domains.job_creation.services.wsi_question_generator", "messages.create"),
     ("app.domains.job_creation.services.wizard_supervisor_classifier", "messages.create"),
     ("app.services.agent_quality_evaluator", "messages.create"),
-    ("app.shared.services.agent_quality_evaluator", "messages.create"),
+    ("app.domains.ai.services.agent_quality_evaluator", "messages.create"),
 ]
 
 
