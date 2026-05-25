@@ -132,7 +132,10 @@ class Orchestrator:
     def _initialize_tools(self) -> None:
         try:
             initialize_tools()
-            logger.info(f"Initialized {len(tool_registry.list_tools())} tools")
+            # T-1170 (Bug 4): initialize_tools() já loga "Initialized N tools" no
+            # caller canônico (app.tools.__init__). Legacy duplicava a linha → 2x
+            # no startup. Mantemos como debug para diagnóstico sem poluir INFO.
+            logger.debug(f"Tool registry size after init: {len(tool_registry.list_tools())}")
         except Exception as e:
             logger.warning(f"Tool initialization warning: {e}")
 
