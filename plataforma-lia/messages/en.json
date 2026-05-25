@@ -2549,8 +2549,6 @@
     "tableView": "Table",
     "deselectAll": "Deselect All",
     "selectAllCount": "Select All ({count})",
-    "degradedOnlyToggle": "Degraded only",
-    "degradedOnlyToggleTooltip": "Show only candidates whose screening was computed in degraded mode",
     "filters": "Filters",
     "configureTableColumns": "Configure table columns",
     "columns": "Columns",

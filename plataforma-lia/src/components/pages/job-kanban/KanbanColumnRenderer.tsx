@@ -155,7 +155,6 @@ interface KanbanColumnRendererProps {
   kanbanStatusFilter: string[]
   kanbanWorkModelFilter: string[]
   kanbanOriginFilter: string[]
-  kanbanShowDegradedOnly: boolean
   currentJob: CurrentJob
   _jobIdForSL: string | undefined
 
@@ -227,7 +226,6 @@ export function KanbanColumnRenderer({
   kanbanStatusFilter,
   kanbanWorkModelFilter,
   kanbanOriginFilter,
-  kanbanShowDegradedOnly,
   currentJob,
   _jobIdForSL,
   getColumnStyle,
@@ -318,10 +316,6 @@ export function KanbanColumnRenderer({
     if (kanbanOriginFilter.length > 0) {
       const candidateOrigin = (candidate.origin || "").toLowerCase()
       if (!candidateOrigin || !kanbanOriginFilter.includes(candidateOrigin)) return false
-    }
-
-    if (kanbanShowDegradedOnly && (candidate as { triagemDegraded?: boolean }).triagemDegraded !== true) {
-      return false
     }
 
     return true

@@ -2549,8 +2549,6 @@
     "tableView": "Tabela",
     "deselectAll": "Desmarcar Todos",
     "selectAllCount": "Selecionar Todos ({count})",
-    "degradedOnlyToggle": "Apenas modo degradado",
-    "degradedOnlyToggleTooltip": "Mostrar apenas candidatos cuja triagem foi calculada em modo degradado",
     "filters": "Filtros",
     "configureTableColumns": "Configurar colunas da tabela",
     "columns": "Colunas",

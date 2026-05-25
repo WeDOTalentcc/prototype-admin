@@ -4,7 +4,7 @@ import React from "react"
 import { useTranslations } from "next-intl"
 import {
   Layers3, ListChecks, Search,
-  Target, X, ChevronsLeftRight, CheckCircle, XCircle, AlertTriangle
+  Target, X, ChevronsLeftRight, CheckCircle, XCircle
 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { ViewToggle } from "@/components/ui/view-toggle"
@@ -31,8 +31,6 @@ interface KanbanToolbarProps {
   kanbanStatusFilter: string[]
   kanbanWorkModelFilter: string[]
   kanbanOriginFilter: string[]
-  kanbanShowDegradedOnly: boolean
-  setKanbanShowDegradedOnly: (v: boolean) => void
 }
 
 export function KanbanToolbar({
@@ -56,8 +54,6 @@ export function KanbanToolbar({
   kanbanStatusFilter,
   kanbanWorkModelFilter,
   kanbanOriginFilter,
-  kanbanShowDegradedOnly,
-  setKanbanShowDegradedOnly,
 }: KanbanToolbarProps) {
   const t = useTranslations('kanban')
   const getVisibleCandidates = () => {
@@ -87,7 +83,6 @@ export function KanbanToolbar({
           const candidateOrigin = ((candidate.origin as string | undefined) || '').toLowerCase()
           if (!candidateOrigin || !kanbanOriginFilter.includes(candidateOrigin)) return false
         }
-        if (kanbanShowDegradedOnly && candidate.triagemDegraded !== true) return false
         return true
       })
     } else {
@@ -105,7 +100,6 @@ export function KanbanToolbar({
             candidatesData.offer_declined?.includes(c) ? 'offer_declined' : ''
           if (!tableStageFilter.includes(stage)) return false
         }
-        if (kanbanShowDegradedOnly && c.triagemDegraded !== true) return false
         return true
       })
     }
@@ -123,7 +117,6 @@ export function KanbanToolbar({
 
   const visibleCandidates = getVisibleCandidates()
   const allSelected = selectedCandidates.size === visibleCandidates.length && visibleCandidates.length > 0
-  const degradedCount = allTableCandidates.filter(c => c.triagemDegraded === true).length
 
   return (
     <div className="flex-shrink-0 bg-lia-bg-primary dark:bg-lia-bg-secondary px-4 py-2">
@@ -177,28 +170,6 @@ export function KanbanToolbar({
             }
           >
             {allSelected ? t('deselectAll') : t('selectAllCount', { count: visibleCandidates.length })}
-          </ToolbarButton>
-
-          {/* Toggle: somente candidatos com triagem em modo degradado */}
-          <ToolbarButton
-            size="md"
-            active={kanbanShowDegradedOnly}
-            disabled={degradedCount === 0 && !kanbanShowDegradedOnly}
-            onClick={() => setKanbanShowDegradedOnly(!kanbanShowDegradedOnly)}
-            title={t('degradedOnlyToggleTooltip')}
-            icon={<AlertTriangle className="text-status-warning" />}
-            trailing={
-              <span
-                className={`text-xs font-medium ${kanbanShowDegradedOnly ? 'text-lia-text-disabled' : 'text-lia-text-tertiary'}`}
-                aria-live="polite"
-                aria-atomic="true"
-              >
-                {degradedCount}
-              </span>
-            }
-            data-testid="kanban-degraded-only-toggle"
-          >
-            {t('degradedOnlyToggle')}
           </ToolbarButton>
 
           {/* Botão Filtros */}

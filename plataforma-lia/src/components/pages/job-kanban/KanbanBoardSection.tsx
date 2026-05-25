@@ -28,7 +28,6 @@ export function KanbanBoardSection({ state }: KanbanBoardSectionProps) {
     viewedCandidateIds, favoriteCandidates,
     shortListedCandidateIds, aiSuggestions,
     kanbanScoreMin, kanbanStatusFilter, kanbanWorkModelFilter, kanbanOriginFilter,
-    kanbanShowDegradedOnly,
     currentJob, _jobIdForSL, getColumnStyle, getStageCategory,
     calculateNotaLiaGeral, getDataRequestForCandidate,
     setTransitionInitialPrompt, setTransitionInterviewAlert,
@@ -76,7 +75,6 @@ export function KanbanBoardSection({ state }: KanbanBoardSectionProps) {
       kanbanStatusFilter={kanbanStatusFilter}
       kanbanWorkModelFilter={kanbanWorkModelFilter}
       kanbanOriginFilter={kanbanOriginFilter}
-      kanbanShowDegradedOnly={kanbanShowDegradedOnly}
       currentJob={currentJob}
       _jobIdForSL={_jobIdForSL}
       getColumnStyle={getColumnStyle}
