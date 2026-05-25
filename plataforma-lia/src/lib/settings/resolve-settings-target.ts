@@ -12,20 +12,28 @@
 
 export const SETTINGS_SECTION_IDS = [
   'minha-empresa',
-  'pipeline',
-  'screening',
-  'templates-assinatura',
+  // Consolidações P1 (2026-05-25): 'pipeline', 'screening', 'templates-assinatura' absorvidos.
+  // Plan canonical: ~/.claude/plans/jolly-roaming-moler.md
+  'recrutamento-lia',
   'comunicacao-alertas',
   'usuarios-departamentos',
   'integrations',
-  'webhooks',
+  // Webhooks DEFER (2026-05-25): removido do menu cliente — audit Wave 1+. Reativação quando 1º cliente pedir.
   'fairness-compliance',
 ] as const
 
 export type SettingsSectionId = (typeof SETTINGS_SECTION_IDS)[number]
 
 export const SETTINGS_SUBSECTIONS: Record<string, string[]> = {
-  'fairness-compliance': ['fairness', 'lgpd-candidatos', 'studio'],
+  // PR 2/3 (2026-05-25): 'fairness' (dashboard) e 'ai-transparency' movidos para /wedo-admin/ (staff).
+  // 'consent' e 'audit-summary' adicionados — vindos de Governança dissolvida.
+  'fairness-compliance': ['lgpd-candidatos', 'consent', 'audit-summary', 'studio'],
+  // Consolidações P1 (2026-05-25): hub recrutamento-lia consolida pipeline+screening+instrucoes-lia.
+  'recrutamento-lia': ['pipeline', 'screening', 'instrucoes-lia'],
+  // Consolidações P1 (2026-05-25): hub comunicacao-alertas absorveu templates-assinatura (5 tabs canonical).
+  'comunicacao-alertas': ['templates', 'signature', 'schedule', 'alerts'],
+  // minha-empresa: 'instrucoes-lia' subsection removida — agora vive em recrutamento-lia.
+  'minha-empresa': ['learning-loops'],
 }
 
 export const SETTINGS_SECTION_ALIASES: Record<string, SettingsSectionId> = {

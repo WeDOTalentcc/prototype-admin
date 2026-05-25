@@ -21,7 +21,7 @@ vi.mock("@/hooks/company/useCompanyId", () => ({
   useCompanyId: () => ({ companyId: "co-1" }),
 }))
 
-import { AITransparencyPanel } from "@/components/settings/governance/AITransparencyPanel"
+import { AITransparencyPanel } from "@/components/_wedo_internal/governanca/AITransparencyPanel"
 
 const STATEMENT_FIXTURE = {
   version: "1.0.0",

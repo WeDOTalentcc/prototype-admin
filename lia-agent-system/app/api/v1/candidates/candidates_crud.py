@@ -171,6 +171,77 @@ def _serialize_candidate(c, *, full: bool = False) -> dict:
 
 
 # ---------------------------------------------------------------------------
+# Phase 4 RBAC — Department scope filter for candidates (soft-launch)
+# ---------------------------------------------------------------------------
+async def _filter_candidates_by_dept_scope(
+    candidates: list,
+    current_user,
+) -> list:
+    """Soft-launch dept scope filter for candidates.
+
+    Sprint 2 Phase 4 RBAC canonical. Mirrors job_vacancies/crud.py:577-595 logic.
+    A candidate is visible if:
+      - user has NO department_id (legacy, no enforcement), OR
+      - user is admin, OR
+      - candidate has 0 vacancy associations (talent pool), OR
+      - at least one of candidate vacancies has dept matching user dept OR NULL (legacy vacancy)
+
+    NULL = legacy soft-launch posture. Zero breakage migration path.
+    """
+    if not candidates:
+        return candidates
+
+    user_dept_id = getattr(current_user, "department_id", None)
+    if user_dept_id is None:
+        return candidates  # legacy user, no enforcement
+
+    from app.auth.models import UserRole
+    is_admin = (
+        getattr(current_user, "role", None) == UserRole.admin
+        if hasattr(current_user, "role") else False
+    )
+    if is_admin:
+        return candidates  # admin sees all
+
+    user_dept_str = str(user_dept_id)
+    candidate_ids = [str(c.id) for c in candidates]
+
+    # Batch fetch: candidate_id → set of dept_ids (from associated vacancies)
+    from app.core.database import AsyncSessionLocal
+    cand_to_depts: dict[str, set[str | None]] = {cid: set() for cid in candidate_ids}
+    async with AsyncSessionLocal() as db:
+        result = await db.execute(
+            text("""
+                SELECT vc.candidate_id::text AS cid,
+                       jv.department_id::text AS dept
+                FROM vacancy_candidates vc
+                JOIN job_vacancies jv ON jv.id = vc.vacancy_id
+                WHERE vc.candidate_id = ANY(:ids)
+            """),
+            {"ids": candidate_ids},
+        )
+        for row in result.fetchall():
+            cid = row.cid
+            dept = row.dept  # may be None for legacy vacancies
+            if cid in cand_to_depts:
+                cand_to_depts[cid].add(dept)
+
+    visible = []
+    for c in candidates:
+        cid = str(c.id)
+        depts = cand_to_depts.get(cid, set())
+        if not depts:
+            # Talent pool: no vacancy associations → visible to all
+            visible.append(c)
+            continue
+        # Visible if at least one vacancy is legacy (dept=None) or matches user dept
+        if None in depts or user_dept_str in depts:
+            visible.append(c)
+        # Else: all vacancies are scoped to a different dept → filtered out
+    return visible
+
+
+# ---------------------------------------------------------------------------
 # Endpoints
 # ---------------------------------------------------------------------------
 

@@ -212,7 +212,10 @@ function buildBlocks(
     { key: "auto_rejection_feedback", label: "Feedback Auto Rejeicao", value: cr?.auto_rejection_feedback ?? null, type: "boolean", editable: true, block: "policy" },
     { key: "rejection_feedback_deadline_hours", label: "Prazo Feedback Rejeicao (h)", value: cr?.rejection_feedback_deadline_hours ?? null, type: "number", editable: true, block: "policy" },
     { key: "preferred_channel", label: "Canal Preferido", value: cr?.preferred_channel ?? null, type: "text", editable: true, block: "policy" },
-    { key: "lia_tone", label: "Tom da LIA", value: cr?.lia_tone ?? null, type: "text", editable: true, block: "policy" },
+    // PR Quick Wins P0 (2026-05-25): "Tom da LIA" REMOVIDO daqui — conflito #1 da auditoria.
+    // Usuário edita tom da LIA apenas via Minha Empresa → Persona IA (AiPersonaPanel, canonical E2 2026-05-21).
+    // O campo communication_rules.lia_tone era OUTBOUND-only (mensagens enviadas) e ficou em 
+    // duplicação confusa com ai_persona.tone (chat lateral). Plan canonical: ~/.claude/plans/jolly-roaming-moler.md
     { key: "salary_expectation_filter", label: "Filtro Pretensao Salarial", value: scr?.salary_expectation_filter ?? null, type: "boolean", editable: true, block: "policy" },
     { key: "salary_tolerance_percent", label: "Tolerancia Salarial (%)", value: scr?.salary_tolerance_percent ?? null, type: "number", editable: true, block: "policy" },
     { key: "experience_policy", label: "Politica de Experiencia", value: scr?.experience_policy ?? null, type: "text", editable: true, block: "policy" },

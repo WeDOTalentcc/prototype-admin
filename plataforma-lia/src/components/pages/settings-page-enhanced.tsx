@@ -30,7 +30,6 @@ const SECTION_ICON_COLORS: Record<string, string> = {
   'integrations': 'text-emerald-500',
   'webhooks': 'text-wedo-cyan',
   'fairness-compliance': 'text-violet-400',
-  'governanca': 'text-amber-500',
 }
 
 
@@ -54,7 +53,7 @@ const IntegrationsHub = dynamic(() => import("@/components/settings/Integrations
 const UsuariosDepartamentosHub = dynamic(() => import("@/components/settings/UsuariosDepartamentosHub").then(m => ({ default: m.UsuariosDepartamentosHub })), { ssr: false, loading: () => <I18nLoadingFallback tKey="users" /> })
 const FairnessComplianceHub = dynamic(() => import("@/components/settings/FairnessComplianceHub").then(m => ({ default: m.FairnessComplianceHub })), { ssr: false, loading: () => <I18nLoadingFallback tKey="compliance" /> })
 const WebhooksManager = dynamic(() => import("@/components/settings/WebhooksManager").then(m => ({ default: m.WebhooksManager })), { ssr: false, loading: () => <I18nLoadingFallback tKey="webhooks" /> })
-const GovernancaHub = dynamic(() => import("@/components/settings/governance/GovernancaHub").then(m => ({ default: m.GovernancaHub })), { ssr: false, loading: () => <I18nLoadingFallback tKey="governanca" /> })
+// PR 3 (2026-05-25): GovernancaHub removido — panels movidos para /wedo-admin/governanca/ (staff) e Consent/DSR/AuditSummary integrados em FairnessComplianceHub.
 
 import { textStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
 import { useHoverDebounce } from '@/lib/sidebar/useHoverDebounce'
@@ -114,52 +113,50 @@ const getDefaultSections = (): SettingsSection[] => [
     category: 'basic',
     estimatedTime: 15,
     subsections: [
+      // Consolidações P1 (2026-05-25): 'instrucoes-lia' movido para hub 'recrutamento-lia'
+      // (consolidação Pipeline+Screening+Instruções LIA). Plan canonical: ~/.claude/plans/jolly-roaming-moler.md
       { id: 'learning-loops', title: 'Learning Loops', description: 'Aprendizado contínuo: Big5 cultura, JD similar, WSI effectiveness (Sprint B Phase 2)', fields: [] },
-      { id: 'instrucoes-lia', title: 'Instruções LIA', description: 'Configure toggles e instruções por campo (34 campos canonical — audit 2026-05-20 Tema D)', fields: [] },
     ],
   },
+  // Consolidações P1 (2026-05-25): hub 'pipeline' absorvido em 'recrutamento-lia' como subsection.
   {
-    id: 'pipeline',
-    title: 'Pipeline',
-    description: 'Etapas do processo seletivo',
+    id: 'recrutamento-lia',
+    title: 'Recrutamento & LIA',
+    description: 'Pipeline, screening e instruções da LIA — políticas operacionais',
     icon: Workflow,
     status: 'pending',
     priority: 'high',
     category: 'advanced',
-    estimatedTime: 10,
+    estimatedTime: 20,
     dependencies: ['minha-empresa'],
+    // Consolidações P1 (2026-05-25): hub NOVO absorve pipeline + screening (ex-standalone)
+    // + instrucoes-lia (ex-subsection de minha-empresa, contém AiPersonaPanel + LiaFieldsConfigPanel).
+    // Plan canonical: ~/.claude/plans/jolly-roaming-moler.md
+    subsections: [
+      { id: 'pipeline', title: 'Pipeline', description: 'Etapas do processo seletivo (kanban, SLA, automation)', fields: [] },
+      { id: 'screening', title: 'Screening', description: 'Perguntas de elegibilidade via WhatsApp', fields: [] },
+      { id: 'instrucoes-lia', title: 'Instruções LIA & Persona', description: 'Configure toggles, instruções por campo (34 canonical) e persona da LIA', fields: [] },
+    ],
   },
-  {
-    id: 'screening',
-    title: 'Screening',
-    description: 'Perguntas de elegibilidade via WhatsApp',
-    icon: MessageSquare,
-    status: 'pending',
-    priority: 'high',
-    category: 'advanced',
-    estimatedTime: 10,
-    dependencies: ['minha-empresa'],
-  },
-  {
-    id: 'templates-assinatura',
-    title: 'Templates & Assinatura',
-    description: 'Modelos de comunicação e assinatura de email',
-    icon: FileText,
-    status: 'incomplete',
-    priority: 'medium',
-    category: 'advanced',
-    estimatedTime: 10,
-  },
+  // Consolidações P1 (2026-05-25): hub 'templates-assinatura' absorvido em 'comunicacao-alertas' (renomeado 'Comunicação').
   {
     id: 'comunicacao-alertas',
-    title: 'Comunicação & Alertas',
-    description: 'Horários LGPD, alertas e notificações da LIA',
+    title: 'Comunicação',
+    description: 'Templates, assinatura, horários LGPD, alertas e notificações da LIA',
     icon: Bell,
     status: 'incomplete',
     priority: 'medium',
     category: 'advanced',
-    estimatedTime: 10,
+    estimatedTime: 15,
     dependencies: ['minha-empresa'],
+    // Consolidações P1 (2026-05-25): renamed (era "Comunicação & Alertas") + absorveu templates-assinatura.
+    // CommunicationHub agora expõe TODAS as tabs canonicas (templates/signature/schedule/alerts/abtesting).
+    subsections: [
+      { id: 'templates', title: 'Templates', description: 'Modelos de mensagens para candidatos', fields: [] },
+      { id: 'signature', title: 'Assinatura', description: 'Assinatura padrão dos emails', fields: [] },
+      { id: 'schedule', title: 'Horários', description: 'Janelas de envio e LGPD compliance', fields: [] },
+      { id: 'alerts', title: 'Alertas', description: 'Alertas operacionais e SLA', fields: [] },
+    ],
   },
   {
     id: 'usuarios-departamentos',
@@ -191,49 +188,28 @@ const getDefaultSections = (): SettingsSection[] => [
     category: 'advanced',
     estimatedTime: 5,
   },
-  {
-    id: 'webhooks',
-    title: 'Webhooks',
-    description: 'Eventos do Agent Studio para sistemas externos',
-    icon: Webhook,
-    status: 'incomplete',
-    priority: 'medium',
-    category: 'integrations',
-    estimatedTime: 5,
-  },
+  // Webhooks DEFER (2026-05-25): hub removido do menu cliente — audit recomendou Wave 1+
+  // (0 clientes usando, 0 deliveries lifetime, 0 dispatcher call sites no produto).
+  // WebhooksManager.tsx preservado pra reativação futura quando 1º cliente pedir integração.
+  // Plan canonical: ~/.claude/plans/jolly-roaming-moler.md
   {
     id: 'fairness-compliance',
-    title: 'Fairness & LGPD',
-    description: 'Equidade da IA e pedidos LGPD de candidatos',
+    title: 'Compliance & LGPD',
+    description: 'LGPD, consent, audit log e compliance da IA',
     icon: Shield,
     status: 'incomplete',
     priority: 'low',
     category: 'advanced',
     estimatedTime: 0,
     subsections: [
-      // PR 2 (2026-05-25): subsection 'fairness' removida — dashboard movido para /wedo-admin/fairness/ (staff only).
+      // PR 2 (2026-05-25): 'fairness' removida — dashboard movido para /wedo-admin/fairness/ (staff).
+      // PR 3 (2026-05-25): 'ai-transparency' removida — movido para /wedo-admin/governanca/ai-transparency/ (staff).
+      // PR 3 (2026-05-25): 'consent' + 'audit-summary' adicionados — vindos de Governança dissolvida.
       // Plan canonical: ~/.claude/plans/jolly-roaming-moler.md
       { id: 'lgpd-candidatos', title: 'LGPD Candidatos', description: 'Pedidos Art. 20 de candidatos (prazo 15 dias úteis)', fields: [] },
+      { id: 'consent', title: 'Consent', description: 'Tipos de consentimento e revogação (LGPD Art. 8)', fields: [] },
+      { id: 'audit-summary', title: 'Audit Summary', description: 'Resumo de eventos LGPD dos últimos 30 dias (read-only)', fields: [] },
       { id: 'studio', title: 'Agent Studio', description: 'Compliance do Agent Studio', fields: [] },
-      { id: 'ai-transparency', title: 'AI Transparency', description: 'EU AI Act Art. 13/14 + Annex III (T-18)', fields: [] },
-    ],
-  },
-  {
-    id: 'governanca',
-    title: 'Governança',
-    description: 'Audit logs, bias audit, automation rules, policy engine, DSR e consent',
-    icon: Shield,
-    status: 'incomplete',
-    priority: 'low',
-    category: 'advanced',
-    estimatedTime: 0,
-    subsections: [
-      { id: 'audit-logs', title: 'Audit Logs', description: 'Eventos de auditoria do sistema', fields: [] },
-      { id: 'automation-rules', title: 'Automation Rules', description: 'Regras de automação por gatilho', fields: [] },
-      { id: 'policy-engine', title: 'Policy Engine', description: 'Políticas de compliance por setor', fields: [] },
-      { id: 'dsr', title: 'DSR / LGPD', description: 'Data Subject Requests', fields: [] },
-      { id: 'consent', title: 'Consent', description: 'Tipos de consentimento e métricas', fields: [] },
-      { id: 'ai-performance', title: 'AI Performance', description: 'A/B testing canonical (Thompson + Bonferroni + Sequential + FairnessGate) — T-19', fields: [] },
     ],
   },
 ]
@@ -494,28 +470,41 @@ export default function SettingsPageEnhanced() {
             <AiCreditsPage />
           </ErrorBoundarySection>
         )
-      case 'pipeline':
+      // Consolidações P1 (2026-05-25): cases pipeline/screening/templates-assinatura removidos.
+      // Plan canonical: ~/.claude/plans/jolly-roaming-moler.md
+      case 'recrutamento-lia':
+        // 3 subsections: pipeline | screening | instrucoes-lia
+        if (activeSubsection === 'screening') {
+          return (
+            <ErrorBoundarySection>
+              <RecruitmentScreeningTab />
+            </ErrorBoundarySection>
+          )
+        }
+        if (activeSubsection === 'instrucoes-lia') {
+          // Reusa MinhaEmpresaHub passando subsection — renderiza LiaFieldsConfigPanel
+          // (que inclui AiPersonaPanel como tab interna canonical).
+          return (
+            <ErrorBoundarySection>
+              <MinhaEmpresaHub activeSubsection="instrucoes-lia" />
+            </ErrorBoundarySection>
+          )
+        }
+        // default → pipeline (mais comum)
         return (
           <ErrorBoundarySection>
             <RecruitmentPipelineTab />
           </ErrorBoundarySection>
         )
-      case 'screening':
-        return (
-          <ErrorBoundarySection>
-            <RecruitmentScreeningTab />
-          </ErrorBoundarySection>
-        )
-      case 'templates-assinatura':
-        return (
-          <ErrorBoundarySection>
-            <CommunicationHub visibleTabs={['templates', 'signature']} stacked />
-          </ErrorBoundarySection>
-        )
       case 'comunicacao-alertas':
+        // Consolidações P1: agora exibe TODAS as 5 tabs (templates+signature+schedule+alerts+abtesting).
+        // Default subsection = 'alerts' (matching comportamento histórico).
         return (
           <ErrorBoundarySection>
-            <CommunicationHub activeSubsection="alerts" visibleTabs={['schedule', 'alerts', 'abtesting']} />
+            <CommunicationHub
+              activeSubsection={activeSubsection || 'alerts'}
+              visibleTabs={['templates', 'signature', 'schedule', 'alerts', 'abtesting']}
+            />
           </ErrorBoundarySection>
         )
       case 'usuarios-departamentos':
@@ -530,47 +519,15 @@ export default function SettingsPageEnhanced() {
             <IntegrationsHub activeSubsection={activeSubsection} />
           </ErrorBoundarySection>
         )
-      case 'webhooks':
-        return (
-          <ErrorBoundarySection>
-            <WebhooksManager />
-          </ErrorBoundarySection>
-        )
+      // Webhooks DEFER (2026-05-25): case removido — hub não está mais no menu cliente.
+      // WebhooksManager.tsx ainda existe — reativação futura.
       case 'fairness-compliance':
         return (
           <ErrorBoundarySection>
             <FairnessComplianceHub activeSubsection={activeSubsection || 'lgpd-candidatos'} />
           </ErrorBoundarySection>
         )
-      case 'governanca':
-        return (
-          <ErrorBoundarySection>
-            <GovernancaHub activeSubsection={(activeSubsection || 'audit-logs') as 'audit-logs'} />
-          </ErrorBoundarySection>
-        )
-      case 'catalogs-management':
-        return (
-          // P0.G (audit 2026-05-21): 4 Manager UIs canonical (Pipeline,
-          // Alert, Integration, Webhook). Categoria Admin no sidebar.
-          <ErrorBoundarySection>
-            <CatalogsManagementSection />
-          </ErrorBoundarySection>
-        )
-      default:
-        return (
-          <div className="text-center py-12">
-            <div className="w-16 h-16 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-xl flex items-center justify-center mx-auto mb-4">
-              <Settings className="w-8 h-8 text-lia-text-primary" />
-            </div>
-            <h3 className={`${textStyles.subtitle} mb-2`}>
-              Selecione uma seção
-            </h3>
-            <p className={`${textStyles.description}`}>
-              Escolha uma das opções no menu lateral
-            </p>
-          </div>
-        )
-    }
+          }
   }
 
   const shouldShowContent = !isCollapsed || isLocked

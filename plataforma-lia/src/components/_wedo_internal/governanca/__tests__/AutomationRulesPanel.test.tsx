@@ -19,7 +19,7 @@ vi.mock("@/hooks/company/useCompanyId", () => ({
   useCompanyId: () => ({ companyId: "co-1" }),
 }))
 
-import { AutomationRulesPanel } from "@/components/settings/governance/AutomationRulesPanel"
+import { AutomationRulesPanel } from "@/components/_wedo_internal/governanca/AutomationRulesPanel"
 
 const fetchMock = vi.fn()
 

@@ -8,6 +8,7 @@ import {
 import { textStyles } from '@/lib/design-tokens'
 import { useUserManagement } from './use-user-management'
 import { UserForm } from './user-form'
+import { useDepartmentsList } from "@/hooks/settings/useDepartmentsList"  // Sprint 2 RBAC Phase 2.5: canonical departments fetcher (id+name)
 import { UserList } from './user-list'
 import type { UserManagementProps } from './user-management-types'
 import { useTranslations } from "next-intl"
@@ -47,6 +48,15 @@ export function UserManagement(_props: UserManagementProps) {
     getStatusColor,
   } = useUserManagement()
 
+  // Sprint 2 RBAC Phase 2.5 (2026-05-25): departments canonical (id+name) para user-form select + inline create modal.
+  // O hook useUserManagement só expõe departments como string Set (derivado de users.department), insuficiente.
+  // Plan canonical: ~/.claude/plans/jolly-roaming-moler.md
+  const { departments: deptList, refetch: refetchDepartments } = useDepartmentsList()
+
+  // Sprint 2 RBAC Phase 2.5 (2026-05-25): departments canonical (id+name) para user-form select + inline create modal.
+  // O hook useUserManagement só expõe departments como string Set (derivado de users.department), insuficiente.
+  // Plan canonical: ~/.claude/plans/jolly-roaming-moler.md
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-6">
@@ -72,6 +82,8 @@ export function UserManagement(_props: UserManagementProps) {
         setFormData={setFormData}
         onSave={handleSaveUser}
         onCancel={handleCancelForm}
+        departments={deptList}
+        onDepartmentCreated={refetchDepartments}
       />
     )
   }

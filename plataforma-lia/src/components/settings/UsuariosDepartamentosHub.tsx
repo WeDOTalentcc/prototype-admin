@@ -6,6 +6,8 @@ import { useTranslations } from "next-intl"
 import { tabStyles } from "@/lib/design-tokens"
 import { UserManagement } from "./user-management"
 import { DepartmentsTab } from "./DepartmentsTab"
+import { DepartmentScopeBanner } from "./DepartmentScopeBanner"  // Sprint 2 RBAC Phase 3 (2026-05-25): nudge banner para popular dept_id
+import { useCompanyId } from "@/hooks/company/useCompanyId"
 import { useCompanyData } from "@/hooks/settings/useCompanyData"
 import { useDepartmentManagement } from "@/hooks/settings/useDepartmentManagement"
 
@@ -51,6 +53,7 @@ export function UsuariosDepartamentosHub() {
   }, [])
 
   const { state: companyState, actions: companyActions, initialDepartments, initialApprovers } = useCompanyData()
+  const { companyId } = useCompanyId()  // Sprint 2 RBAC Phase 3 — companyId pro banner localStorage key isolation
 
   const { state: deptState, actions: deptActions } = useDepartmentManagement({
     initialDepartments,
@@ -132,6 +135,14 @@ export function UsuariosDepartamentosHub() {
 
   return (
     <div className="space-y-3" data-testid="usuarios-departamentos-hub">
+      {/* Sprint 2 RBAC Phase 3 (2026-05-25): banner educacional sobre dept scope soft launch.
+          Plan canonical: ~/.claude/plans/jolly-roaming-moler.md */}
+      <DepartmentScopeBanner
+        departmentsCount={deptState.departments?.length ?? 0}
+        companyId={typeof companyId === "string" ? companyId : null}
+        onSwitchToDepartmentsTab={() => setActiveTab("departments")}
+      />
+
       <div className={tabStyles.pillContainer}>
         {tabs.map((tab) => (
           <button

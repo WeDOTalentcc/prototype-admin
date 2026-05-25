@@ -18,7 +18,7 @@ vi.mock("@/hooks/company/useCompanyId", () => ({
   useCompanyId: () => ({ companyId: "co-1" }),
 }))
 
-import { PolicyEnginePanel } from "@/components/settings/governance/PolicyEnginePanel"
+import { PolicyEnginePanel } from "@/components/_wedo_internal/governanca/PolicyEnginePanel"
 
 const fetchMock = vi.fn()
 

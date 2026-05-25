@@ -1,14 +1,19 @@
 "use client"
 
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { X, Save, User, Briefcase, Shield } from "lucide-react"
 import { textStyles } from '@/lib/design-tokens'
 import type { UserData } from './user-management-types'
 import { useTranslations } from "next-intl"
+import { InlineDepartmentCreateModal, type CreatedDepartment } from "./InlineDepartmentCreateModal"
+import { useCompanyId } from "@/hooks/company/useCompanyId"
 
 interface UserFormProps {
   departments?: Array<{ id?: string; name: string }>
+  /** Sprint 2 RBAC Phase 2.5: callback para parent refresh departments após inline create. */
+  onDepartmentCreated?: () => void
   isCreating: boolean
   formData: Partial<UserData>
   setFormData: React.Dispatch<React.SetStateAction<Partial<UserData>>>
@@ -16,12 +21,19 @@ interface UserFormProps {
   onCancel: () => void
 }
 
-export function UserForm({ isCreating, formData, setFormData, onSave, onCancel, departments }: UserFormProps) {
+export function UserForm({ isCreating, formData, setFormData, onSave, onCancel, departments, onDepartmentCreated }: UserFormProps) {
   const t = useTranslations('settings.users')
   const inputClass = "w-full py-1.5 px-2 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-elevated text-lia-text-primary focus:ring-1 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg"
 
+  // Sprint 2 RBAC Phase 2.5 (2026-05-25): inline modal para criar departamento sem trocar de tab.
+  // Plan canonical: ~/.claude/plans/jolly-roaming-moler.md
+  const { companyId } = useCompanyId()
+  const [isCreateDeptOpen, setIsCreateDeptOpen] = useState(false)
+  const [prevDeptIdBeforeCreate, setPrevDeptIdBeforeCreate] = useState<string | null>(null)
+
   return (
-    <div className="space-y-4" data-testid={isCreating ? 'user-create-form' : 'user-edit-form'}>
+    <>
+      <div className="space-y-4" data-testid={isCreating ? 'user-create-form' : 'user-edit-form'}>
       <div className="flex items-center justify-between">
         <div>
           <h3 className={textStyles.title}>
@@ -133,34 +145,57 @@ export function UserForm({ isCreating, formData, setFormData, onSave, onCancel, 
 
               <div>
                 <label className={textStyles.label + " block mb-1.5"}>{t('department')}</label>
-                {/* WT-2022 P0.RBAC3 fix: department dropdown agora puxa dinamicamente de /company/departments.
-                    Antes: 4 opcoes hardcoded (Talent Acquisition/RH/Operacoes/Tecnologia) + valor nem persistido.
-                    departments prop deve ser passada pelo parent (UsuariosDepartamentosHub).
+                {/* Sprint 2 RBAC (2026-05-25): select agora salva department_id (UUID FK) + department (name display).
+                    Plan canonical: ~/.claude/plans/jolly-roaming-moler.md
+                    Backend filter (crud.py:list_job_vacancies) usa users.department_id para soft-launch dept scope.
+                    Backward compat: department (string) preservado para legacy consumers.
+
+                    Histórico (WT-2022 P0.RBAC3): dropdown puxa dinamicamente de /company/departments.
+                    Antes era hardcoded (Talent Acquisition/RH/Operacoes/Tecnologia).
                 */}
                 <select
                   data-field="department"
                   data-testid="user-field-department"
-                  value={formData.department || ''}
-                  onChange={(e) => setFormData(prev => ({ ...prev, department: e.target.value }))}
+                  value={(formData.department_id as string) || ''}
+                  onChange={(e) => {
+                    const deptId = e.target.value
+                    // Sprint 2 RBAC Phase 2.5: sentinel "__CREATE_NEW__" abre modal inline
+                    if (deptId === "__CREATE_NEW__") {
+                      setPrevDeptIdBeforeCreate((formData.department_id as string) || null)
+                      setIsCreateDeptOpen(true)
+                      return  // não muda formData; modal cancelar reseta select; modal sucesso popula novo dept
+                    }
+                    // Selected dept object para extrair nome canonical (display label)
+                    const dept = departments?.find((d) => d.id === deptId)
+                    setFormData(prev => ({
+                      ...prev,
+                      department_id: deptId || null,
+                      department: dept?.name || '',  // sync legacy field display
+                    }))
+                  }}
                   className={inputClass}
                 >
                   <option value="">{t('departmentSelect')}</option>
                   {(departments && departments.length > 0) ? (
                     departments.map((dept) => (
-                      <option key={dept.id || dept.name} value={dept.name}>
+                      <option key={dept.id} value={dept.id}>
                         {dept.name}
                       </option>
                     ))
                   ) : (
-                    /* Fallback transitional ate parent passar departments prop */
-                    <>
-                      <option value="Talent Acquisition">{t('departmentTA')}</option>
-                      <option value="RH">{t('departmentHR')}</option>
-                      <option value="Operações">{t('departmentOps')}</option>
-                      <option value="Tecnologia">{t('departmentTech')}</option>
-                    </>
+                    /* Fallback transitional — sem departments cadastrados ainda */
+                    <option value="" disabled>{t('departmentSelect')}</option>
                   )}
+                  {/* Sprint 2 RBAC Phase 2.5 (2026-05-25): inline create option canonical */}
+                  <option value="__CREATE_NEW__" data-testid="user-field-department-create-new">
+                    + Criar novo departamento
+                  </option>
                 </select>
+                {(!departments || departments.length === 0) && (
+                  <p className="text-xs text-lia-text-tertiary mt-1.5">
+                    Configure departamentos em "Departamentos" para granularidade de acesso (Sprint 2 RBAC).
+                  </p>
+                )}
               </div>
 
               <div>
@@ -257,5 +292,31 @@ export function UserForm({ isCreating, formData, setFormData, onSave, onCancel, 
         </CardContent>
       </Card>
     </div>
+
+      {/* Sprint 2 RBAC Phase 2.5 (2026-05-25): inline modal canonical */}
+      <InlineDepartmentCreateModal
+        open={isCreateDeptOpen}
+        onOpenChange={(open) => {
+          setIsCreateDeptOpen(open)
+          // Cancel sem create: select fica no valor prev (estava antes do "__CREATE_NEW__")
+          // formData.department_id não mudou, então select já volta natural
+          if (!open) {
+            void prevDeptIdBeforeCreate  // explicit no-op para preservar intenção
+          }
+        }}
+        companyId={companyId}
+        existingDepartments={departments}
+        onCreated={(newDept: CreatedDepartment) => {
+          // Auto-select new dept no form
+          setFormData(prev => ({
+            ...prev,
+            department_id: newDept.id,
+            department: newDept.name,
+          }))
+          // Notify parent para refresh canonical list
+          onDepartmentCreated?.()
+        }}
+      />
+    </>
   )
 }

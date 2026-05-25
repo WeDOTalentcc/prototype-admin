@@ -50,7 +50,7 @@ const severityChipVariant: Record<string, "neutral" | "info" | "warning" | "dang
   high: "danger",
   critical: "danger" }
 
-export function AuditLogsPanel() {
+export function AuditLogsDrillDownPanel() {
   const t = useTranslations("settings.governanca.auditLogs")
   const { companyId } = useCompanyId()
   const [logs, setLogs] = useState<AuditLog[]>([])

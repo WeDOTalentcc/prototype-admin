@@ -169,8 +169,9 @@ export function AiCreditsPage({ companyId }: Props) {
     custo: +(d.total_cost_cents / 100).toFixed(2),
   }))
 
-  const totalAgentTokens = byAgent.reduce((sum, a) => sum + a.total_tokens, 0)
-  const agentChartData: AgentChartEntry[] = [...byAgent]
+  // Defensive 2026-05-25: backend pode retornar shape inesperado; Array.isArray protege contra TypeError runtime
+  const totalAgentTokens = Array.isArray(byAgent) ? byAgent.reduce((sum, a) => sum + a.total_tokens, 0) : 0
+  const agentChartData: AgentChartEntry[] = (Array.isArray(byAgent) ? [...byAgent] : [])
     .sort((a, b) => b.total_tokens - a.total_tokens)
     .map((agent) => ({
       name: getAgentLabel(agent.agent_type),

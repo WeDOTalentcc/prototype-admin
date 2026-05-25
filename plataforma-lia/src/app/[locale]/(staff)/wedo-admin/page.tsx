@@ -1,17 +1,15 @@
 "use client"
 
 import { useTranslations } from "next-intl"
-import { Shield, BarChart3, FileSearch, Sliders, Activity } from "lucide-react"
+import { Shield, BarChart3, FileSearch, Sliders, Activity, LineChart } from "lucide-react"
 import Link from "next/link"
 
 /**
  * Landing page do `/wedo-admin/` — área provisória interna.
  *
- * Cards habilitados:
- * - fairness (PR 2 2026-05-25)
- *
- * Cards pendentes (PR 3):
- * - auditLogs, aiTransparency, policyEngine, automationRules
+ * Cards habilitados (PR 3 2026-05-25):
+ * - fairness (PR 2)
+ * - auditLogs, aiTransparency, policyEngine, automationRules, aiPerformance (PR 3)
  *
  * Plan: ~/.claude/plans/jolly-roaming-moler.md (seção "PLANO DE EXECUÇÃO")
  */
@@ -19,16 +17,17 @@ import Link from "next/link"
 interface SectionLink {
   id: string
   href: string
-  iconKey: "fairness" | "audit" | "ai" | "policy" | "automation"
+  iconKey: "fairness" | "audit" | "ai" | "policy" | "automation" | "performance"
   available: boolean
 }
 
 const SECTIONS: SectionLink[] = [
   { id: "fairness", href: "/wedo-admin/fairness", iconKey: "fairness", available: true },
-  { id: "auditLogs", href: "/wedo-admin/governanca/audit-logs", iconKey: "audit", available: false },
-  { id: "aiTransparency", href: "/wedo-admin/governanca/ai-transparency", iconKey: "ai", available: false },
-  { id: "policyEngine", href: "/wedo-admin/governanca/policy-engine", iconKey: "policy", available: false },
-  { id: "automationRules", href: "/wedo-admin/governanca/automation-rules", iconKey: "automation", available: false },
+  { id: "auditLogs", href: "/wedo-admin/governanca/audit-logs", iconKey: "audit", available: true },
+  { id: "aiTransparency", href: "/wedo-admin/governanca/ai-transparency", iconKey: "ai", available: true },
+  { id: "policyEngine", href: "/wedo-admin/governanca/policy-engine", iconKey: "policy", available: true },
+  { id: "automationRules", href: "/wedo-admin/governanca/automation-rules", iconKey: "automation", available: true },
+  { id: "aiPerformance", href: "/wedo-admin/governanca/ai-performance", iconKey: "performance", available: true },
 ]
 
 const ICONS = {
@@ -37,6 +36,7 @@ const ICONS = {
   ai: BarChart3,
   policy: Sliders,
   automation: Activity,
+  performance: LineChart,
 } as const
 
 export default function WedoAdminLanding() {

@@ -24,6 +24,7 @@ import { ScreeningBadge } from "./ScreeningBadge"
 import { LiaEditor } from "@/components/ui/lia-editor"
 import { sanitizeHtml } from "@/lib/sanitize"
 import { RemoteCombobox, type RemoteComboboxOption } from "@/components/ui/remote-combobox"
+import { AccessListEditor } from "./AccessListEditor"
 import {
   useJobStatuses, useJobPriorities, useJobUrgencyLevels,
   useJobWorkplaceTypes, useJobEmploymentTypes, useJobSeniorities,
@@ -515,24 +516,66 @@ export function JobInfoGeralSection({
         <Card className="border border-lia-border-subtle">
           <CardContent className="p-4">
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className={labelClass}>Visibilidade</label>
-                  <select value={(jobEditForm.visibility as string) || ""} onChange={(e) => updateField("visibility", e.target.value)} disabled={!isEditing} className={selectClass(!isEditing)}>
-                    <option value="">Selecione...</option>
-                    <option value="Pública">Pública</option>
-                    <option value="Interna">Interna</option>
-                    <option value="Confidencial">Confidencial</option>
-                  </select>
-                </div>
-                <div className="flex items-center gap-3 pt-6">
-                  <Switch checked={!!jobEditForm.isConfidential} onCheckedChange={(val: boolean) => updateField("isConfidential", val)} disabled={!isEditing} />
-                  <label className={textStyles.label}>Vaga Confidencial</label>
-                </div>
+              {/* Sprint 1 RBAC (2026-05-25): Single source of truth = visibility (canonical lowercase).
+                  Removido Switch isConfidential legacy — visibility="confidential" é canonical.
+                  Backend: app/api/v1/job_vacancies/crud.py:list_job_vacancies + get_job_vacancy
+                  filtram por visibility === "confidential" + access_list/created_by/recruiter_email.
+                  Plan canonical: ~/.claude/plans/jolly-roaming-moler.md */}
+              <div>
+                <label className={labelClass}>Visibilidade da vaga</label>
+                <select
+                  value={(jobEditForm.visibility as string) || "public"}
+                  onChange={(e) => {
+                    const v = e.target.value
+                    updateField("visibility", v)
+                    // Sync legacy is_confidential (backend bool) com visibility canonical
+                    updateField("isConfidential", v === "confidential")
+                  }}
+                  disabled={!isEditing}
+                  className={selectClass(!isEditing)}
+                  data-testid="job-visibility-select"
+                >
+                  <option value="public">Pública — todos recrutadores da empresa veem</option>
+                  <option value="internal">Interna — só equipe interna, não publica em job boards</option>
+                  <option value="confidential">Confidencial — só owner + equipe de acesso + admin</option>
+                </select>
+                <p className="text-xs text-lia-text-tertiary mt-1.5">
+                  Vagas confidenciais (C-level, M&A, substituições internas) ficam visíveis apenas para owner, equipe de acesso e admin do tenant.
+                </p>
               </div>
+
+              {/* Sprint 1 RBAC (2026-05-25): Hiring Team UI — acesso editável quando confidencial.
+                  Backend persiste em access_list (ARRAY[String]). Quem entra aqui vê a vaga
+                  no Kanban e pode interagir. created_by + recruiter_email sempre têm acesso (auto). */}
+              {jobEditForm.visibility === "confidential" && (
+                <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 space-y-3" data-testid="job-access-list-section">
+                  <div className="flex items-start gap-2">
+                    <div className="text-amber-600 mt-0.5">🔒</div>
+                    <div className="flex-1">
+                      <label className={labelClass}>Equipe com acesso à vaga confidencial</label>
+                      <p className="text-xs text-lia-text-secondary mt-0.5">
+                        Adicione emails de recrutadores ou hiring managers que precisam ver esta vaga. Owner ({(job?.recruiter_email as string) || "você"}) já tem acesso automático.
+                      </p>
+                    </div>
+                  </div>
+
+                  <AccessListEditor
+                    accessList={(jobEditForm.accessList as string[]) || (jobEditForm.access_list as string[]) || []}
+                    onChange={(newList) => {
+                      updateField("accessList", newList)
+                      updateField("access_list", newList)
+                    }}
+                    disabled={!isEditing}
+                  />
+                </div>
+              )}
+
               <div>
                 <label className={labelClass}>Nome da Empresa (mascarado)</label>
                 <input type="text" className={inputClass(!isEditing)} value={(jobEditForm.maskedCompanyName as string) || ""} onChange={(e) => updateField("maskedCompanyName", e.target.value)} disabled={!isEditing} placeholder="Ex: Empresa do segmento de tecnologia" />
+                <p className="text-xs text-lia-text-tertiary mt-1.5">
+                  Nome alternativo exibido em job boards públicos quando a vaga é confidencial.
+                </p>
               </div>
             </div>
           </CardContent>

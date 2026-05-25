@@ -21,7 +21,7 @@ vi.mock("@/hooks/company/useCompanyId", () => ({
   useCompanyId: () => ({ companyId: "co-1" }),
 }))
 
-import { AIPerformancePanel } from "@/components/settings/governance/AIPerformancePanel"
+import { AIPerformancePanel } from "@/components/_wedo_internal/governanca/AIPerformancePanel"
 
 const fetchMock = vi.fn()
 

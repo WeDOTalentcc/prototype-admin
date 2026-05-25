@@ -12,8 +12,11 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const queryString = searchParams.toString()
     
+    // FIX 2026-05-25: trailing slash obrigatório — FastAPI router list endpoint
+    // tem prefix "/data-subject-requests" + route "/" → full path "/data-subject-requests/".
+    // Sem slash, FastAPI retorna 404 ao chamar collection list (caso DSRInboxPanel).
     const response = await fetch(
-      `${BACKEND_URL}/api/v1/data-subject-requests${queryString ? `?${queryString}` : ''}`,
+      `${BACKEND_URL}/api/v1/data-subject-requests/${queryString ? `?${queryString}` : ''}`,
       {
         headers: getAuthHeaders(request)
       }
@@ -44,7 +47,7 @@ export async function POST(request: NextRequest) {
 
     const body = bodyResult.data
     
-    const response = await fetch(`${BACKEND_URL}/api/v1/data-subject-requests`, {
+    const response = await fetch(`${BACKEND_URL}/api/v1/data-subject-requests/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

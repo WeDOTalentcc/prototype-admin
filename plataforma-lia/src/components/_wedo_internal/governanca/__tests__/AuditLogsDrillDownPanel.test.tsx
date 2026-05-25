@@ -1,5 +1,5 @@
 /**
- * AuditLogsPanel — smoke test (Task #904 — code review fix)
+ * AuditLogsDrillDownPanel — smoke test (Task #904 — code review fix)
  *
  * Verifica:
  *  - chamadas para os 3 endpoints (logs, stats, retention-policies)
@@ -20,7 +20,7 @@ vi.mock("@/hooks/company/useCompanyId", () => ({
   useCompanyId: () => ({ companyId: "co-1" }),
 }))
 
-import { AuditLogsPanel } from "@/components/settings/governance/AuditLogsPanel"
+import { AuditLogsDrillDownPanel } from "@/components/_wedo_internal/governanca/AuditLogsDrillDownPanel"
 
 const fetchMock = vi.fn()
 
@@ -70,9 +70,9 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
-describe("AuditLogsPanel", () => {
+describe("AuditLogsDrillDownPanel", () => {
   it("calls 3 endpoints, renders rows, filters and pagination", async () => {
-    render(<AuditLogsPanel />)
+    render(<AuditLogsDrillDownPanel />)
     await screen.findByTestId("audit-logs-panel")
 
     await waitFor(() => {
