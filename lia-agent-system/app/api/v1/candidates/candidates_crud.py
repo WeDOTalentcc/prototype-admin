@@ -171,6 +171,66 @@ def _serialize_candidate(c, *, full: bool = False) -> dict:
 
 
 # ---------------------------------------------------------------------------
+# Sprint 5 RBAC — Financial PII redaction (LGPD Art. 6 III minimização)
+# ---------------------------------------------------------------------------
+_SALARY_FIELDS = (
+    "current_salary",
+    "desired_salary_min",
+    "desired_salary_max",
+    "salary_expectation_clt",
+    "salary_expectation_pj",
+    "salary_expectation_freelance",
+)
+
+
+def _redact_salary_for_user(candidate_dict: dict, current_user) -> dict:
+    """Redact salary fields when user lacks can_view_salary grant.
+
+    Sprint 5 RBAC (2026-05-25, plan canonical: jolly-roaming-moler.md).
+    LGPD Art. 6 III minimização: financial PII restricted to explicit grant.
+
+    Mutates dict in place AND returns it. Adds flag `salary_masked: true` so UI
+    can render "restrito" label instead of zero values.
+
+    NOTE: salary_currency stays visible (not PII per LGPD, contextual only).
+    """
+    can_view = bool(getattr(current_user, "can_view_salary", False))
+    if can_view:
+        candidate_dict["salary_masked"] = False
+        return candidate_dict
+
+    for field in _SALARY_FIELDS:
+        if field in candidate_dict:
+            candidate_dict[field] = None
+    candidate_dict["salary_masked"] = True
+    return candidate_dict
+
+
+async def _audit_pii_access(current_user, candidate_id: str, company_id: str) -> None:
+    """Log SOXAuditLog when privileged user accesses unmasked salary (LGPD Art. 37 V).
+
+    Only fires for users WITH can_view_salary grant. Default-redacted users
+    don't trigger audit (no PII actually viewed).
+    """
+    if not bool(getattr(current_user, "can_view_salary", False)):
+        return  # default-redacted users don't see PII, no audit needed
+    try:
+        from app.shared.compliance.audit_service import AuditService
+        svc = AuditService()
+        await svc.log_data_access(
+            company_id=company_id,
+            user_id=str(current_user.id) if getattr(current_user, "id", None) else None,
+            user_email=getattr(current_user, "email", None),
+            resource_type="candidate",
+            resource_id=candidate_id,
+            action="view_pii",
+            details={"pii_class": "financial_salary"},
+        )
+    except Exception as exc:  # noqa: BLE001
+        logger.debug("[Sprint5] _audit_pii_access failed (non-blocking): %s", exc)
+
+
+# ---------------------------------------------------------------------------
 # Phase 4 RBAC — Department scope filter for candidates (soft-launch)
 # ---------------------------------------------------------------------------
 async def _filter_candidates_by_dept_scope(
@@ -315,12 +375,14 @@ async def list_candidates(
         )
         # Sprint 2 Phase 4 RBAC: dept scope filter (soft-launch). No-op when user has no dept_id.
         candidates = await _filter_candidates_by_dept_scope(candidates, current_user)
+        # Sprint 5 RBAC: redact salary fields when user lacks can_view_salary grant.
+        items = [_redact_salary_for_user(_serialize_candidate(c), current_user) for c in candidates]
         return {
             "total": total,
             "skip": effective_skip,
             "limit": limit,
             "source": "local",
-            "items": [_serialize_candidate(c) for c in candidates],
+            "items": items,
         }
     except HTTPException:
         raise
@@ -362,7 +424,12 @@ async def get_candidate(
         visible = await _filter_candidates_by_dept_scope([candidate], current_user)
         if not visible:
             raise HTTPException(status_code=404, detail="Candidate not found")
-        return ok_envelope(_serialize_candidate(candidate, full=True), meta={"source": "local"})
+        # Sprint 5 RBAC: redact salary + audit privileged PII access (LGPD Art. 6 III + Art. 37 V).
+        serialized = _redact_salary_for_user(
+            _serialize_candidate(candidate, full=True), current_user,
+        )
+        await _audit_pii_access(current_user, candidate_id, company_id)
+        return ok_envelope(serialized, meta={"source": "local"})
     except HTTPException:
         raise
     except Exception as e:

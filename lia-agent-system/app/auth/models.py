@@ -5,7 +5,7 @@ import uuid
 from datetime import datetime
 from enum import Enum as PyEnum, StrEnum
 
-from sqlalchemy import Boolean, Column, DateTime, Enum, LargeBinary, String, ForeignKey
+from sqlalchemy import Boolean, Column, DateTime, Enum, LargeBinary, String, ForeignKey, text
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB, UUID
 from sqlalchemy.orm import validates
 
@@ -77,6 +77,11 @@ class User(EncryptedFieldMixin, Base):
     # Plan canonical: ~/.claude/plans/jolly-roaming-moler.md
     department_id = Column(UUID(as_uuid=True), ForeignKey("departments.id", ondelete="SET NULL"), nullable=True, index=True)
     manager_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
+
+    # RBAC Sprint 5 (2026-05-25): financial PII privilege grant — LGPD Art. 6 III minimização.
+    # Default False (no one sees salary). Admin grants explicit per-user via UI.
+    # Bootstrap: migration 204 backfilled True for role='admin'.
+    can_view_salary = Column(Boolean, default=False, nullable=False, server_default=text("false"))
 
     @validates("company_id")
     def _validate_company_id(self, _key: str, value):  # noqa: ANN001
