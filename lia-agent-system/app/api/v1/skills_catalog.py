@@ -216,22 +216,31 @@ async def get_company_catalog(
     include_inactive: bool = Query(False, description="Include inactive skills"),
     category: str | None = Query(None, description="Filter by category"),
     current_user: User = Depends(get_current_user_or_demo),
-    db: AsyncSession = Depends(get_db),
-_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))) -> CompanyCatalogResponse:
+    db: AsyncSession = Depends(get_tenant_db),
+    tenant_company_id: str = Depends(require_company_id_strict_match("query.company_id")),
+) -> CompanyCatalogResponse:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Get the complete company-specific skills catalog.
-    
+
     Combines company-configured skills from the database with
     the static global catalog.
-    
+
     Returns all skills organized by category with behavioral competencies.
+
+    Bug fix 2026-05-25 (read/write consistency): the query param may carry
+    company_profiles.id while writes (POST /sync) persist rows under
+    client_accounts.id. Read uses the resolved JWT-canonical id so the
+    catalog is visible right after a sync, otherwise the UI shows empty
+    Tech Stack despite a successful save. Also switched to get_tenant_db
+    for RLS read consistency.
     """
     try:
+        effective_company_id = tenant_company_id
         db_service = get_skills_catalog_db_service(db)
-        
+
         catalog = await db_service.get_company_catalog(
-            company_id=company_id,
+            company_id=effective_company_id,
             include_inactive=include_inactive,
             category=category
         )

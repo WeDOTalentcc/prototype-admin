@@ -477,19 +477,27 @@ async def get_culture_profile(
     company_id: uuid.UUID,
     repo: CompanyCultureRepository = Depends(get_company_culture_repo),
     current_user: User = Depends(get_current_user_or_demo),
-_company_gate: str = Depends(require_company_id)):
+    tenant_company_id: str = Depends(require_company_id_strict_match("path.company_id")),
+):
     """
-    Phase H — multi-tenancy: company_id from URL MUST match JWT (404 on mismatch).
-    
+    Phase H — multi-tenancy: company_id from URL MUST match JWT (auto-resolves
+    company_profile.id → client_account.id via FK lookup, 403 on cross-tenant).
+
     Get the culture profile for a company.
+
+    Bug fix 2026-05-25 (read/write consistency): the URL may carry
+    company_profiles.id (HR child) while writes persist under
+    client_accounts.id (matching app.company_id under RLS — see
+    update_culture_profile). Read must use the same resolved id, otherwise
+    GET returns 404 for rows the same caller just successfully saved.
+    Symptom before this fix: PUT 200 + toast "Salvo com sucesso", but on
+    page reload every field shows "Não definido" because GET queried
+    company_id=<company_profiles.id> while the row lived under
+    company_id=<client_accounts.id>.
     """
-    jwt_company_id = get_user_company_id(current_user)
-    if not jwt_company_id:
-        raise HTTPException(status_code=403, detail="company_id missing from token")
-    if str(company_id) != str(jwt_company_id):
-        raise HTTPException(status_code=404, detail="Company not found")
     try:
-        profile = await repo.get_profile_by_company(company_id)
+        effective_company_id = uuid.UUID(tenant_company_id)
+        profile = await repo.get_profile_by_company(effective_company_id)
 
         if not profile:
             raise HTTPException(
@@ -694,28 +702,24 @@ async def calculate_culture_match(
     candidate_profile: dict,
     repo: CompanyCultureRepository = Depends(get_company_culture_repo),
     current_user: User = Depends(get_current_user_or_demo),
-_company_gate: str = Depends(require_company_id)):
+    tenant_company_id: str = Depends(require_company_id_strict_match("path.company_id")),
+):
     """
-    Phase H — multi-tenancy: company_id from URL MUST match JWT (404 on mismatch).
-    
-    Calculate culture fit match between a company and a candidate's Big Five profile.
+    Phase H — multi-tenancy: auto-resolves company_profile.id → client_account.id.
+
+    Calculate culture fit match between a company and a candidate's Big Five
+    profile. Bug fix 2026-05-25: uses resolved JWT-canonical id to align with
+    how update_culture_profile persists rows (see that handler's docstring).
 
     Expected candidate_profile format:
     {
-        "openness": 0-100,
-        "conscientiousness": 0-100,
-        "extraversion": 0-100,
-        "agreeableness": 0-100,
-        "stability": 0-100
+        "openness": 0-100, "conscientiousness": 0-100, "extraversion": 0-100,
+        "agreeableness": 0-100, "stability": 0-100
     }
     """
-    jwt_company_id = get_user_company_id(current_user)
-    if not jwt_company_id:
-        raise HTTPException(status_code=403, detail="company_id missing from token")
-    if str(company_id) != str(jwt_company_id):
-        raise HTTPException(status_code=404, detail="Company not found")
     try:
-        profile = await repo.get_profile_by_company(company_id)
+        effective_company_id = uuid.UUID(tenant_company_id)
+        profile = await repo.get_profile_by_company(effective_company_id)
 
         if not profile:
             raise HTTPException(status_code=404, detail="Culture profile not found")
