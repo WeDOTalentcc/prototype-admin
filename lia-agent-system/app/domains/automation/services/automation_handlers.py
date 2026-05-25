@@ -57,6 +57,38 @@ async def _create_automation_task(
         return None
 
 
+async def _fetch_names(
+    *,
+    db,
+    candidate_id: str | None = None,
+    vacancy_id: str | None = None,
+) -> tuple[str, str]:
+    """Fail-open helper: fetch readable candidate name and job title for task titles.
+
+    Returns ("Candidato", "") if any lookup fails.
+    Task 5.A (2026-05-25).
+    """
+    candidate_name = "Candidato"
+    job_title = ""
+    try:
+        if candidate_id:
+            from app.domains.candidates.repositories.candidate_repository import CandidateRepository
+            candidate = await CandidateRepository(db).get_by_id_str(candidate_id)
+            if candidate and candidate.name:
+                candidate_name = candidate.name
+    except Exception as _e:
+        pass
+    try:
+        if vacancy_id:
+            from app.domains.job_management.repositories.job_vacancy_crud_repository import JobVacancyCRUDRepository
+            vacancy = await JobVacancyCRUDRepository(db).get_vacancy_by_id(vacancy_id)
+            if vacancy and getattr(vacancy, "title", None):
+                job_title = vacancy.title
+    except Exception as _e:
+        pass
+    return candidate_name, job_title
+
+
 async def validate_multi_tenancy(
     db: AsyncSession,
     candidate_id: str,
@@ -184,15 +216,17 @@ async def handle_screening_completed(
         logger.error(f"[CASCADE] Error sending screening feedback: {e}")
         result["cascade_errors"].append(f"feedback: {e}")
 
+    _cname, _jtitle = await _fetch_names(db=db, candidate_id=candidate_id, vacancy_id=vacancy_id)
     result["task_id"] = await _create_automation_task(
         db=db,
         company_id=company_id,
         task_type="cv_review",
         priority="high" if not passed else "medium",
-        title=f"Revisar triagem: candidato {candidate_id}",
+        title=f"Revisar triagem: {_cname}",
         description=f"Candidato {'aprovado' if passed else 'reprovado'} na triagem WSI. Revisar scores e confirmar.",
         related_job_id=vacancy_id,
         related_candidate_id=candidate_id,
+        context={"candidate_name": _cname, "job_title": _jtitle},
     )
     return result
 
@@ -236,15 +270,17 @@ async def handle_interview_scheduled(
             category="automation"
         )
 
+        _cname, _jtitle = await _fetch_names(db=db, candidate_id=candidate_id, vacancy_id=vacancy_id)
         await _create_automation_task(
             db=db,
             company_id=company_id,
             task_type="interview_schedule",
             priority="high",
-            title=f"Preparar entrevista: candidato {candidate_id}",
+            title=f"Preparar entrevista: {_cname}",
             description=f"Entrevista {interview_type} agendada para {interview_datetime or 'data a confirmar'}.",
             related_job_id=vacancy_id,
             related_candidate_id=candidate_id,
+            context={"candidate_name": _cname, "job_title": _jtitle},
         )
         return {
             "action": "interview_scheduled",
@@ -296,15 +332,17 @@ async def handle_interview_completed(
             category="automation"
         )
 
+        _cname, _jtitle = await _fetch_names(db=db, candidate_id=candidate_id, vacancy_id=vacancy_id)
         await _create_automation_task(
             db=db,
             company_id=company_id,
             task_type="feedback_pending",
             priority="high",
-            title=f"Fornecer feedback: candidato {candidate_id}",
+            title=f"Fornecer feedback: {_cname}",
             description=f"Entrevista concluída. Resultado: {outcome or 'Pendente avaliação'}. Registrar parecer.",
             related_job_id=vacancy_id,
             related_candidate_id=candidate_id,
+            context={"candidate_name": _cname, "job_title": _jtitle},
         )
         return {
             "action": "interview_completed",
@@ -354,15 +392,17 @@ async def handle_candidate_inactive(
             category="automation"
         )
 
+        _cname, _jtitle = await _fetch_names(db=db, candidate_id=candidate_id, vacancy_id=vacancy_id)
         await _create_automation_task(
             db=db,
             company_id=company_id,
             task_type="follow_up",
             priority="medium",
-            title=f"Acompanhar candidato inativo: {candidate_id}",
+            title=f"Acompanhar candidato inativo: {_cname}",
             description=f"Sem atividade há {days_inactive} dias. Última ação: {last_activity or 'N/A'}.",
             related_job_id=vacancy_id,
             related_candidate_id=candidate_id,
+            context={"candidate_name": _cname, "job_title": _jtitle},
         )
         return {
             "action": "candidate_inactive",
@@ -410,15 +450,17 @@ async def handle_candidate_no_show(
             category="automation"
         )
 
+        _cname, _jtitle = await _fetch_names(db=db, candidate_id=candidate_id, vacancy_id=vacancy_id)
         await _create_automation_task(
             db=db,
             company_id=company_id,
             task_type="follow_up",
             priority="high",
-            title=f"Reagendar ou encerrar: candidato no-show {candidate_id}",
+            title=f"Reagendar ou encerrar: {_cname} (no-show)",
             description="Candidato não compareceu à entrevista. Decidir: reagendar ou reprovar.",
             related_job_id=vacancy_id,
             related_candidate_id=candidate_id,
+            context={"candidate_name": _cname, "job_title": _jtitle},
         )
         return {
             "action": "candidate_no_show",
@@ -483,15 +525,17 @@ async def handle_offer_sent(
         except Exception as _e:
             logger.warning("[HANDLER] Failed to publish offer.sent event: %s", _e)
 
+        _cname, _jtitle = await _fetch_names(db=db, candidate_id=candidate_id, vacancy_id=vacancy_id)
         await _create_automation_task(
             db=db,
             company_id=company_id,
             task_type="general",
             priority="medium",
-            title=f"Acompanhar proposta: candidato {candidate_id}",
+            title=f"Acompanhar proposta: {_cname}",
             description="Proposta enviada. Monitorar resposta do candidato.",
             related_job_id=vacancy_id,
             related_candidate_id=candidate_id,
+            context={"candidate_name": _cname, "job_title": _jtitle},
         )
         return {
             "action": "offer_sent",
@@ -538,15 +582,17 @@ async def handle_candidate_hired(
             category="automation"
         )
 
+        _cname, _jtitle = await _fetch_names(db=db, candidate_id=candidate_id, vacancy_id=vacancy_id)
         await _create_automation_task(
             db=db,
             company_id=company_id,
             task_type="send_report",
             priority="medium",
-            title=f"Encerrar processo seletivo: candidato contratado {candidate_id}",
+            title=f"Encerrar processo: {_cname} contratado",
             description=f"Candidato contratado. Início previsto: {start_date or 'A definir'}. Fechar vaga e gerar relatório.",
             related_job_id=vacancy_id,
             related_candidate_id=candidate_id,
+            context={"candidate_name": _cname, "job_title": _jtitle},
         )
         return {
             "action": "candidate_hired",
@@ -918,9 +964,10 @@ async def handle_job_published(
         company_id=company_id,
         task_type="sourcing",
         priority="medium",
-        title=f"Acompanhar sourcing: vaga {job_id}",
+        title=f"Acompanhar sourcing: {job_title or job_id}",
         description=f"Vaga '{job_title or job_id}' publicada. Sourcing ativado. Revisar candidatos encontrados.",
         related_job_id=job_id,
+        context={"job_title": job_title or ""},
     )
     return result
 
@@ -1021,9 +1068,10 @@ async def handle_candidates_sourced(
         company_id=company_id,
         task_type="cv_review",
         priority="medium",
-        title=f"Revisar candidatos encontrados: vaga {job_id}",
+        title=f"Revisar candidatos encontrados: {job_title or job_id}",
         description=f"{candidates_added} candidatos adicionados à vaga '{job_title or job_id}'. Triagem iniciada.",
         related_job_id=job_id,
+        context={"job_title": job_title or ""},
     )
     return result
 
