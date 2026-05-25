@@ -184,7 +184,45 @@
         "creating": "Criando...",
         "createAndCalibrate": "Criar e Calibrar"
       },
-      "refresh": "Refresh"
+      "refresh": "Refresh",
+      "quotaMeter": {
+        "loading": "Carregando...",
+        "regionLabel": "Uso de recursos do agente",
+        "title": "Limite do Plano",
+        "plan": "Plano {plan}",
+        "unlimited": "Ilimitado",
+        "warning": "Você está próximo do limite. Considere fazer upgrade do seu plano.",
+        "contactAm": "Falar com gerente de conta",
+        "resources": {
+          "custom_agents": "Agentes Personalizados",
+          "sourcing_agents": "Agentes de Sourcing",
+          "digital_twins": "Gêmeos Digitais",
+          "campaigns": "Campanhas"
+        }
+      },
+      "upgradeRequest": {
+        "successTitle": "Solicitação enviada",
+        "successDesc": "Você receberá uma resposta em até {hours}h.",
+        "errorTitle": "Erro ao enviar",
+        "errorDesc": "Tente novamente em alguns instantes.",
+        "title": "Solicitar Upgrade de Plano",
+        "description": "Sua solicitação será encaminhada ao time WeDO. Resposta em até {hours}h úteis.",
+        "requestedPlanLabel": "Plano desejado",
+        "requestedPlanPlaceholder": "Selecione um plano",
+        "requestedPlanHelp": "Nosso time entrará em contato para personalizar sua proposta.",
+        "currentSuffix": "atual",
+        "notesLabel": "Observações (opcional)",
+        "notesPlaceholder": "Contexto adicional sobre sua necessidade...",
+        "disclosure": "Ao enviar, você autoriza o contato da WeDOTalent sobre este upgrade.",
+        "cancel": "Cancelar",
+        "submit": "Solicitar Upgrade",
+        "plans": {
+          "starter": "Starter",
+          "pro": "Pro",
+          "business": "Business",
+          "enterprise": "Enterprise"
+        }
+      }
     },
     "status": {
       "active": "Ativo",
@@ -6300,7 +6338,8 @@
         "agent_deployment_paused": "Vínculo pausado",
         "agent_approval_requested": "Aprovação solicitada",
         "agent_approval_reviewed": "Aprovação revisada"
-      }
+      },
+      "urlMustBeHttps": "A URL deve começar com https://"
     },
     "liaFields": {
       "title": "Instruções LIA por Campo",
@@ -6443,6 +6482,27 @@
         "placeholderCategory": "Categoria",
         "placeholderDescription": "Descrição (opcional)",
         "labelDeprecated": "Deprecated (não recomendado para novos webhooks)"
+      }
+    },
+    "fairnessCompliance": {
+      "auditSummary": {
+        "title": "Resumo de Auditoria (últimos 30 dias)",
+        "description": "Visão high-level de eventos LGPD nos últimos 30 dias. Para drill-down completo, entre em contato com compliance@wedotalent.cc.",
+        "errorLoad": "Erro ao carregar resumo",
+        "criticalEvents": "Eventos críticos",
+        "consentsRevoked": "Consentimentos revogados",
+        "erasuresHandled": "Erasures atendidas (Art. 18)",
+        "aiOverrides": "Overrides IA (Art. 20)",
+        "totalEventsTitle": "Total de eventos no período",
+        "totalEventsHint": "Inclui todas as severidades. Drill-down disponível apenas para staff WeDOTalent.",
+        "needDeepDiveTitle": "Precisa de mais detalhes?",
+        "needDeepDiveBody": "Entre em contato com nossa equipe de compliance para acessar o audit log completo com filtros, drill-down por evento e exports CSV/JSON.",
+        "contactCompliance": "Contatar Compliance WeDOTalent",
+        "dpoEmailSubject": "Solicitação DPO — drill-down audit log"
+      },
+      "fairnessGuardStatus": {
+        "title": "FairnessGuard ativo",
+        "subtitle": "Bloqueio automático de viés algorítmico (LGPD Art. 20 + EU AI Act). Sempre ativo, não configurável."
       }
     }
   },
@@ -6706,6 +6766,10 @@
         "automationRules": {
           "title": "Automation Rules",
           "description": "Regras de automação por gatilho (pipeline, comunicação, alertas)."
+        },
+        "aiPerformance": {
+          "title": "AI Performance",
+          "description": "A/B testing canonical (Thompson + Bonferroni + Sequential + FairnessGate) — T-19."
         }
       }
     },

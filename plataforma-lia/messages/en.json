@@ -184,7 +184,45 @@
         "creating": "Creating...",
         "createAndCalibrate": "Create and Calibrate"
       },
-      "refresh": "Refresh"
+      "refresh": "Refresh",
+      "quotaMeter": {
+        "loading": "Loading...",
+        "regionLabel": "Agent resource usage",
+        "title": "Plan Limit",
+        "plan": "Plan {plan}",
+        "unlimited": "Unlimited",
+        "warning": "You are approaching your limit. Consider upgrading your plan.",
+        "contactAm": "Contact account manager",
+        "resources": {
+          "custom_agents": "Custom Agents",
+          "sourcing_agents": "Sourcing Agents",
+          "digital_twins": "Digital Twins",
+          "campaigns": "Campaigns"
+        }
+      },
+      "upgradeRequest": {
+        "successTitle": "Request sent",
+        "successDesc": "You'll receive a response within {hours}h.",
+        "errorTitle": "Error sending request",
+        "errorDesc": "Please try again in a moment.",
+        "title": "Request Plan Upgrade",
+        "description": "Your request will be forwarded to the WeDO team. Response within {hours} business hours.",
+        "requestedPlanLabel": "Desired plan",
+        "requestedPlanPlaceholder": "Select a plan",
+        "requestedPlanHelp": "Our team will contact you to customize your proposal.",
+        "currentSuffix": "current",
+        "notesLabel": "Notes (optional)",
+        "notesPlaceholder": "Additional context about your needs...",
+        "disclosure": "By submitting, you authorize WeDOTalent to contact you regarding this upgrade.",
+        "cancel": "Cancel",
+        "submit": "Request Upgrade",
+        "plans": {
+          "starter": "Starter",
+          "pro": "Pro",
+          "business": "Business",
+          "enterprise": "Enterprise"
+        }
+      }
     },
     "status": {
       "active": "Active",
@@ -6300,7 +6338,8 @@
         "agent_deployment_paused": "Deployment paused",
         "agent_approval_requested": "Approval requested",
         "agent_approval_reviewed": "Approval reviewed"
-      }
+      },
+      "urlMustBeHttps": "The URL must start with https://"
     },
     "liaFields": {
       "title": "LIA Field Instructions",
@@ -6443,6 +6482,27 @@
         "placeholderCategory": "Category",
         "placeholderDescription": "Description (optional)",
         "labelDeprecated": "Deprecated (not recommended for new webhooks)"
+      }
+    },
+    "fairnessCompliance": {
+      "auditSummary": {
+        "title": "Audit Summary (last 30 days)",
+        "description": "High-level view of LGPD events in the last 30 days. For full drill-down, contact compliance@wedotalent.cc.",
+        "errorLoad": "Failed to load summary",
+        "criticalEvents": "Critical events",
+        "consentsRevoked": "Consents revoked",
+        "erasuresHandled": "Erasures handled (Art. 18)",
+        "aiOverrides": "AI overrides (Art. 20)",
+        "totalEventsTitle": "Total events in period",
+        "totalEventsHint": "Includes all severities. Drill-down available only to WeDOTalent staff.",
+        "needDeepDiveTitle": "Need more detail?",
+        "needDeepDiveBody": "Contact our compliance team to access the full audit log with filters, per-event drill-down and CSV/JSON exports.",
+        "contactCompliance": "Contact WeDOTalent Compliance",
+        "dpoEmailSubject": "DPO request — audit log drill-down"
+      },
+      "fairnessGuardStatus": {
+        "title": "FairnessGuard active",
+        "subtitle": "Automatic algorithmic bias blocking (LGPD Art. 20 + EU AI Act). Always on, not configurable."
       }
     }
   },
@@ -6706,6 +6766,10 @@
         "automationRules": {
           "title": "Automation Rules",
           "description": "Trigger-based automation rules (pipeline, communication, alerts)."
+        },
+        "aiPerformance": {
+          "title": "AI Performance",
+          "description": "Canonical A/B testing (Thompson + Bonferroni + Sequential + FairnessGate) — T-19."
         }
       }
     },
