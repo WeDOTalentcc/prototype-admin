@@ -213,15 +213,20 @@ def test_jobvacancy_post_preserves_all_schema_fields(access_token: str):
     else:
         drops_get.append(f"  GET retornou {get_response.status_code}: {get_response.text[:300]}")
 
-    # Cleanup best-effort (nao falha o test se cleanup falhar)
+    # Cleanup best-effort: nao falha o test se cleanup falhar, mas loga aviso
     try:
         httpx.delete(
             f"{BACKEND_URL}/api/v1/job-vacancies/{job_id}",
             headers=headers,
             timeout=10,
         )
-    except Exception:
-        pass
+    except Exception as _cleanup_exc:
+        import warnings
+        warnings.warn(
+            f"[cleanup] DELETE job_vacancy {job_id} falhou: {_cleanup_exc}. "
+            "Row pode ter ficado orfao no DB — verificar manualmente.",
+            stacklevel=2,
+        )
 
     messages = []
     if drops_post:
