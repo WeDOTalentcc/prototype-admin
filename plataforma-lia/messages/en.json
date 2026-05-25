@@ -63,7 +63,7 @@
       "createFirstAgent": "Create first agent",
       "myAgentsCustom": "My Agents",
       "noCustomAgentsYet": "No agents created yet",
-      "noCustomAgentsHint": "Choose a template below or describe to LIA what you need",
+      "noCustomAgentsHint": "Choose a template below or describe to {aiAssistant} what you need",
       "advancedForm": "Advanced form (technical mode)",
       "status": {
         "active": "Active",
@@ -72,7 +72,7 @@
       },
       "loading": "Loading agents...",
       "chooseTemplateAbove": "Choose a template above to create your first sourcing agent",
-      "chooseTemplateOrDescribe": "Choose a template below or describe to LIA what you need",
+      "chooseTemplateOrDescribe": "Choose a template below or describe to {aiAssistant} what you need",
       "twins": {
         "cloneReasoning": "Clone the reasoning of your best evaluators",
         "cloneDesc": "Capture how a team specialist evaluates candidates. The Digital Twin learns the criteria and works as an automatic 'second opinion' in screening.",
@@ -83,7 +83,7 @@
           "title": "You don't have any Digital Twin yet",
           "description": "Create your first Digital Twin to clone the evaluation reasoning of a team specialist and get an automatic second opinion during screening.",
           "createFirst": "Create my first Digital Twin",
-          "noExperience": "No technical background? No problem — LIA walks you through it step by step."
+          "noExperience": "No technical background? No problem — {aiAssistant} walks you through it step by step."
         },
         "createModal": {
           "title": "Create Digital Twin",
@@ -117,7 +117,7 @@
           "step1Desc": "Pick a recruiter or hiring manager who makes good decisions.",
           "step2Title": "Import past decisions",
           "step2Desc": "Upload historical approvals/rejections with rationale.",
-          "step3Title": "LIA learns the pattern",
+          "step3Title": "{aiAssistant} learns the pattern",
           "step3Desc": "The model identifies the implicit criteria behind the decisions.",
           "step4Title": "Use as a second opinion",
           "step4Desc": "Apply the twin to new candidates to validate the screening."

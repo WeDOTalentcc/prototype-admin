@@ -25,8 +25,8 @@ export function AgentChatCard({ agent, deploymentCount = 0, onViewDetails }: Age
     <div className={cn(cardStyles.default, "p-3 space-y-2 max-w-md")}>
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-md bg-wedo-cyan/10 flex items-center justify-center">
-            <Bot className="w-4 h-4 text-wedo-cyan-dark" />
+          <div className="w-8 h-8 rounded-md bg-powder flex items-center justify-center">
+            <Bot className="w-4 h-4 text-graphite" />
           </div>
           <div>
             <p className="text-sm font-semibold text-lia-text-primary">{agent.name}</p>
@@ -67,7 +67,7 @@ export function AgentChatCard({ agent, deploymentCount = 0, onViewDetails }: Age
         <button
           type="button"
           onClick={onViewDetails}
-          className="w-full text-[11px] text-wedo-cyan-dark hover:underline text-left pt-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lia-btn-primary-bg/30"
+          className="w-full text-[11px] text-graphite hover:underline text-left pt-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lia-btn-primary-bg/30"
         >
           {t('viewDetails')}
         </button>
@@ -100,7 +100,7 @@ export function MetricsSummaryCard({
   return (
     <div className={cn(cardStyles.default, "p-3 space-y-3 max-w-md")}>
       <div className="flex items-center gap-2">
-        <Activity className="w-4 h-4 text-wedo-cyan-dark" />
+        <Activity className="w-4 h-4 text-graphite" />
         <p className="text-sm font-semibold text-lia-text-primary">{t('metricsTitle', { days: period_days })}</p>
         <BetaBadge size="sm" />
       </div>

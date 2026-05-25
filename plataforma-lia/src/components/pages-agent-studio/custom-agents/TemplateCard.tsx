@@ -27,8 +27,8 @@ export function TemplateCard({ template, onSelect }: TemplateCardProps) {
       )}
     >
       <div className="flex items-start justify-between">
-        <div className="w-9 h-9 rounded-md bg-wedo-cyan/10 flex items-center justify-center shrink-0">
-          <IconComponent className="w-4 h-4 text-wedo-cyan-dark" />
+        <div className="w-9 h-9 rounded-md bg-powder flex items-center justify-center shrink-0">
+          <IconComponent className="w-4 h-4 text-graphite" />
         </div>
         {template.tags.includes("popular") && (
           <span className={badgeStyles.cyan}>{t('popular')}</span>

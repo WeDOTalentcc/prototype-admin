@@ -103,7 +103,7 @@ export function DeployDialog({ agent, open, onClose, onDeployed }: DeployDialogP
                   )}
                 >
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-wedo-cyan-dark">{opt.icon}</span>
+                    <span className="text-graphite">{opt.icon}</span>
                     <span className="text-xs font-semibold text-lia-text-primary">
                       {t('targets.' + opt.type)}
                     </span>

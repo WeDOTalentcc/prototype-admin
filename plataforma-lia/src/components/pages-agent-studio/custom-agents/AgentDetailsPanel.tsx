@@ -62,7 +62,7 @@ export function AgentDetailsPanel({ agent, open, onClose, onDeploy, onTest }: Ag
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className={cn(textStyles.title, "flex items-center gap-2")}>
-            <Bot className="w-5 h-5 text-wedo-cyan-dark" />
+            <Bot className="w-5 h-5 text-graphite" />
             {agent.name}
             <BetaBadge size="sm" />
           </DialogTitle>
@@ -120,7 +120,7 @@ export function AgentDetailsPanel({ agent, open, onClose, onDeploy, onTest }: Ag
               <button
                 type="button"
                 onClick={() => onDeploy(agent)}
-                className="text-[10px] font-medium text-wedo-cyan-dark hover:underline"
+                className="text-[10px] font-medium text-graphite hover:underline"
               >
                 {t('addLink')}
               </button>
@@ -183,7 +183,7 @@ export function AgentDetailsPanel({ agent, open, onClose, onDeploy, onTest }: Ag
             <button
               type="button"
               onClick={() => onDeploy(agent)}
-              className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-xs font-medium bg-wedo-cyan/10 text-wedo-cyan-dark hover:bg-wedo-cyan/20 transition-colors"
+              className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-xs font-medium bg-powder text-graphite hover:bg-mist transition-colors"
             >
               {t('linkBtn')}
             </button>

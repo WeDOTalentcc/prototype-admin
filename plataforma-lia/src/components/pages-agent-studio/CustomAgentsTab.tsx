@@ -2,11 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from "react"
 import { useTranslations } from "next-intl"
-import {
-  Bot, Plus, Play, Pause, Trash2, Edit3, TestTube2,
-  Loader2, Settings, Wand2, Copy, ExternalLink,
-  ChevronRight, MoreVertical, Store
-} from "lucide-react"
+import { Bot, ChevronRight, Copy, Edit3, ExternalLink, Loader2, MoreVertical, Pause, Play, Plus, Settings, Store, TestTube2, Trash2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ConfirmAlertDialog } from "@/components/agent-studio/confirm-alert-dialog"
 import { getCustomAgentStatusConfig } from "@/lib/agent-studio/status-config"
@@ -138,7 +134,7 @@ export default function CustomAgentsTab() {
       {agents.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12 rounded-md border border-dashed border-lia-border-subtle bg-lia-bg-secondary/50">
           <div className="w-14 h-14 rounded-2xl bg-lia-bg-tertiary flex items-center justify-center mb-3">
-            <Wand2 className="w-7 h-7 text-lia-text-disabled" />
+            <Bot className="w-7 h-7 text-lia-text-disabled" />
           </div>
           <p className="text-sm font-medium text-lia-text-secondary">{t('noCustomAgents')}</p>
           <p className="text-xs text-lia-text-disabled mt-1 mb-4">
@@ -372,7 +368,7 @@ function CreateCustomAgentModal({
       <DialogContent className="max-w-2xl bg-lia-bg-primary border-lia-border-subtle max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-base font-semibold text-lia-text-primary flex items-center gap-2">
-            <Wand2 className="w-4 h-4 text-wedo-cyan" />
+            <Bot className="w-4 h-4 text-graphite" />
             {isEditing ? t('editCustomAgent') : t('createCustomAgent')}
           </DialogTitle>
           <DialogDescription className="sr-only">{t('configureAgent')}</DialogDescription>
@@ -385,7 +381,7 @@ function CreateCustomAgentModal({
               <input
                 type="text" value={name} onChange={e => setName(e.target.value)}
                 placeholder={t('namePlaceholder')}
-                className="w-full border border-lia-border-subtle rounded-lg px-3 py-2 text-sm bg-lia-bg-secondary text-lia-text-primary placeholder:text-lia-text-disabled focus:outline-none focus:ring-2 focus:ring-wedo-cyan/30"
+                className="w-full border border-lia-border-subtle rounded-lg px-3 py-2 text-sm bg-lia-bg-secondary text-lia-text-primary placeholder:text-lia-text-disabled focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/30"
               />
             </div>
             <div>
@@ -393,7 +389,7 @@ function CreateCustomAgentModal({
               <input
                 type="text" value={role} onChange={e => setRole(e.target.value)}
                 placeholder={t('rolePlaceholder')}
-                className="w-full border border-lia-border-subtle rounded-lg px-3 py-2 text-sm bg-lia-bg-secondary text-lia-text-primary placeholder:text-lia-text-disabled focus:outline-none focus:ring-2 focus:ring-wedo-cyan/30"
+                className="w-full border border-lia-border-subtle rounded-lg px-3 py-2 text-sm bg-lia-bg-secondary text-lia-text-primary placeholder:text-lia-text-disabled focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/30"
               />
             </div>
           </div>
@@ -403,7 +399,7 @@ function CreateCustomAgentModal({
             <input
               type="text" value={description} onChange={e => setDescription(e.target.value)}
               placeholder={t('descriptionPlaceholder')}
-              className="w-full border border-lia-border-subtle rounded-lg px-3 py-2 text-sm bg-lia-bg-secondary text-lia-text-primary placeholder:text-lia-text-disabled focus:outline-none focus:ring-2 focus:ring-wedo-cyan/30"
+              className="w-full border border-lia-border-subtle rounded-lg px-3 py-2 text-sm bg-lia-bg-secondary text-lia-text-primary placeholder:text-lia-text-disabled focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/30"
             />
           </div>
 
@@ -413,7 +409,7 @@ function CreateCustomAgentModal({
               value={systemPrompt} onChange={e => setSystemPrompt(e.target.value)}
               rows={6}
               placeholder={t('systemPromptPlaceholder') as string}
-              className="w-full border border-lia-border-subtle rounded-lg px-3 py-2 text-sm bg-lia-bg-secondary text-lia-text-primary placeholder:text-lia-text-disabled focus:outline-none focus:ring-2 focus:ring-wedo-cyan/30 resize-none font-mono"
+              className="w-full border border-lia-border-subtle rounded-lg px-3 py-2 text-sm bg-lia-bg-secondary text-lia-text-primary placeholder:text-lia-text-disabled focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/30 resize-none font-mono"
             />
           </div>
 
@@ -427,7 +423,7 @@ function CreateCustomAgentModal({
             <input
               type="text" value={toolsInput} onChange={e => setToolsInput(e.target.value)}
               placeholder="search_candidates, list_jobs, get_candidate_details"
-              className="w-full border border-lia-border-subtle rounded-lg px-3 py-2 text-sm bg-lia-bg-secondary text-lia-text-primary placeholder:text-lia-text-disabled focus:outline-none focus:ring-2 focus:ring-wedo-cyan/30"
+              className="w-full border border-lia-border-subtle rounded-lg px-3 py-2 text-sm bg-lia-bg-secondary text-lia-text-primary placeholder:text-lia-text-disabled focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/30"
             />
             {availableTools.length > 0 && (
               <div className="flex flex-wrap gap-1 mt-2">
@@ -455,7 +451,7 @@ function CreateCustomAgentModal({
               <label className="text-xs font-semibold text-lia-text-primary mb-1 block">{t('domainLabel')}</label>
               <select
                 value={domain} onChange={e => setDomain(e.target.value)}
-                className="w-full border border-lia-border-subtle rounded-lg px-3 py-2 text-sm bg-lia-bg-secondary text-lia-text-primary focus:outline-none focus:ring-2 focus:ring-wedo-cyan/30"
+                className="w-full border border-lia-border-subtle rounded-lg px-3 py-2 text-sm bg-lia-bg-secondary text-lia-text-primary focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/30"
               >
                 <option value="general">{t('domainGeneral')}</option>
                 <option value="sourcing">{t('domainSourcing')}</option>
@@ -470,7 +466,7 @@ function CreateCustomAgentModal({
               <input
                 type="number" value={maxSteps} onChange={e => setMaxSteps(Number(e.target.value))}
                 min={1} max={20}
-                className="w-full border border-lia-border-subtle rounded-lg px-3 py-2 text-sm bg-lia-bg-secondary text-lia-text-primary focus:outline-none focus:ring-2 focus:ring-wedo-cyan/30"
+                className="w-full border border-lia-border-subtle rounded-lg px-3 py-2 text-sm bg-lia-bg-secondary text-lia-text-primary focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/30"
               />
             </div>
             <div>
@@ -478,7 +474,7 @@ function CreateCustomAgentModal({
               <input
                 type="number" value={temperature} onChange={e => setTemperature(Number(e.target.value))}
                 min={0} max={2} step={0.1}
-                className="w-full border border-lia-border-subtle rounded-lg px-3 py-2 text-sm bg-lia-bg-secondary text-lia-text-primary focus:outline-none focus:ring-2 focus:ring-wedo-cyan/30"
+                className="w-full border border-lia-border-subtle rounded-lg px-3 py-2 text-sm bg-lia-bg-secondary text-lia-text-primary focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/30"
               />
             </div>
           </div>
@@ -540,7 +536,7 @@ function TestAgentModal({ agent, onClose }: { agent: CustomAgent; onClose: () =>
       <DialogContent className="max-w-xl bg-lia-bg-primary border-lia-border-subtle">
         <DialogHeader>
           <DialogTitle className="text-base font-semibold text-lia-text-primary flex items-center gap-2">
-            <TestTube2 className="w-4 h-4 text-wedo-cyan" />
+            <TestTube2 className="w-4 h-4 text-graphite" />
             {t('testAgent')}: {agent.name}
           </DialogTitle>
           <DialogDescription className="sr-only">{t('testAgent')}</DialogDescription>
@@ -553,7 +549,7 @@ function TestAgentModal({ agent, onClose }: { agent: CustomAgent; onClose: () =>
               value={message} onChange={e => setMessage(e.target.value)}
               rows={3}
               placeholder={t('typeMessage') as string}
-              className="w-full border border-lia-border-subtle rounded-lg px-3 py-2 text-sm bg-lia-bg-secondary text-lia-text-primary placeholder:text-lia-text-disabled focus:outline-none focus:ring-2 focus:ring-wedo-cyan/30 resize-none"
+              className="w-full border border-lia-border-subtle rounded-lg px-3 py-2 text-sm bg-lia-bg-secondary text-lia-text-primary placeholder:text-lia-text-disabled focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/30 resize-none"
               onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleTest() } }}
             />
           </div>
@@ -570,7 +566,7 @@ function TestAgentModal({ agent, onClose }: { agent: CustomAgent; onClose: () =>
           {response && (
             <div className="rounded-lg border border-lia-border-subtle bg-lia-bg-secondary p-4">
               <div className="flex items-center gap-1.5 mb-2">
-                <Bot className="w-3.5 h-3.5 text-wedo-cyan" />
+                <Bot className="w-3.5 h-3.5 text-graphite" />
                 <span className="text-[10px] font-semibold text-lia-text-secondary uppercase">{t('agentResponse')}</span>
               </div>
               <p className="text-sm text-lia-text-primary whitespace-pre-wrap">{response}</p>

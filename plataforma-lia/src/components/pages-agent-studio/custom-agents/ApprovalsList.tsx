@@ -92,7 +92,7 @@ export function ApprovalsList({ onReviewed }: ApprovalsListProps) {
               onChange={(e) => setNotes({ ...notes, [approval.id]: e.target.value })}
               placeholder={t('reviewNotes')}
               rows={2}
-              className="w-full text-xs border border-lia-border-subtle rounded-md px-2 py-1.5 bg-lia-bg-secondary text-lia-text-primary placeholder:text-lia-text-disabled focus:outline-none focus:ring-2 focus:ring-wedo-cyan/30 resize-none"
+              className="w-full text-xs border border-lia-border-subtle rounded-md px-2 py-1.5 bg-lia-bg-secondary text-lia-text-primary placeholder:text-lia-text-disabled focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/30 resize-none"
               disabled={isReviewing}
             />
 

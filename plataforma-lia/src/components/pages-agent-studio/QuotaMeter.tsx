@@ -17,7 +17,7 @@
  * full mode opcional pra páginas dedicadas.
  */
 import React, { useState } from "react"
-import { Bot, Search, Brain, Megaphone, Sparkles } from "lucide-react"
+import { Bot, Brain, Megaphone, Search, Zap } from "lucide-react"
 import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
 import { useStudioQuota, type QuotaResource, type QuotaResourceStatus } from "@/hooks/agent-studio/use-studio-quota"
@@ -183,7 +183,7 @@ export function QuotaMeter({ compact = true, className }: QuotaMeterProps) {
             data-testid="quota-meter-contact-am"
           >
             {t("contactAm")}
-            <Sparkles className="w-2.5 h-2.5" aria-hidden="true" />
+            <Zap className="w-2.5 h-2.5" aria-hidden="true" />
           </button>
         </div>
       )}

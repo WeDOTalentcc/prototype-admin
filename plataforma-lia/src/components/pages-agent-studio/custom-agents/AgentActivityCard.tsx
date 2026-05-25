@@ -31,7 +31,7 @@ export function AgentActivityCard({
     <div className={cn(cardStyles.compact, "space-y-2")}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
-          <Bot className="w-3.5 h-3.5 text-wedo-cyan-dark" />
+          <Bot className="w-3.5 h-3.5 text-graphite" />
           <span className="text-xs font-semibold text-lia-text-primary">{agentName}</span>
         </div>
         <div className="flex items-center gap-1">
@@ -49,7 +49,7 @@ export function AgentActivityCard({
       {/* Progress bar */}
       <div className="w-full bg-lia-bg-tertiary rounded-full h-1.5">
         <div
-          className="bg-wedo-cyan h-1.5 rounded-full transition-colors duration-500"
+          className="bg-graphite h-1.5 rounded-full transition-colors duration-500"
           style={{ width: `${progress}%` }}
         />
       </div>
@@ -59,7 +59,7 @@ export function AgentActivityCard({
           <button
             type="button"
             onClick={onViewDetails}
-            className="text-[10px] text-wedo-cyan-dark hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lia-btn-primary-bg/30"
+            className="text-[10px] text-graphite hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lia-btn-primary-bg/30"
           >
             {t('viewDetailsShort')}
           </button>

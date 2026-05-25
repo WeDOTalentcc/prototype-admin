@@ -53,7 +53,7 @@ export function ContextLevelSelect({ value, onChange }: ContextLevelSelectProps)
             )}
           >
             <div className="flex items-center gap-1.5 mb-1">
-              <span className={value === level.value ? "text-wedo-cyan-dark" : "text-lia-text-disabled"}>
+              <span className={value === level.value ? "text-graphite" : "text-lia-text-disabled"}>
                 {level.icon}
               </span>
               <span className="text-xs font-semibold text-lia-text-primary">{level.label}</span>

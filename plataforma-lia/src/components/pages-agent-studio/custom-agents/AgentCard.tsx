@@ -152,8 +152,8 @@ export function AgentCard({ agent, onTest, onDeploy, onToggleStatus, onClone }: 
           </div>
         )}
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-md bg-wedo-cyan/10 flex items-center justify-center">
-            <Bot className="w-4 h-4 text-wedo-cyan-dark" />
+          <div className="w-8 h-8 rounded-md bg-powder flex items-center justify-center">
+            <Bot className="w-4 h-4 text-graphite" />
           </div>
           <div>
             <h4 className={cn(textStyles.subtitle, "text-sm font-semibold leading-tight")}>
@@ -219,7 +219,7 @@ export function AgentCard({ agent, onTest, onDeploy, onToggleStatus, onClone }: 
               initiateVoice.trigger({ candidate_id: "" })
             }}
             disabled={!voiceEnabled || initiateVoice.isMutating}
-            className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium text-wedo-cyan-dark hover:bg-wedo-cyan/10 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium text-graphite hover:bg-powder transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             aria-label={voiceEnabled ? t('startVoiceCall') : t('voiceDisabled')}
             data-testid="agent-card-initiate-voice"
           >
@@ -260,7 +260,7 @@ export function AgentCard({ agent, onTest, onDeploy, onToggleStatus, onClone }: 
               initiateTriagemInvite.trigger({ candidate_id: "", job_id: "" })
             }}
             disabled={!triagemInviteEnabled || initiateTriagemInvite.isMutating}
-            className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium text-wedo-cyan-dark hover:bg-wedo-cyan/10 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium text-graphite hover:bg-powder transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             aria-label={triagemInviteEnabled ? (t('sendTriagemInvite') || 'Enviar convite triagem') : (t('triagemInviteDisabled') || 'Convite triagem desabilitado')}
             data-testid="agent-card-initiate-triagem-invite"
           >
@@ -282,7 +282,7 @@ export function AgentCard({ agent, onTest, onDeploy, onToggleStatus, onClone }: 
         <button
           type="button"
           onClick={() => onDeploy(agent)}
-          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium text-wedo-cyan-dark hover:bg-wedo-cyan/10 transition-colors"
+          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium text-graphite hover:bg-powder transition-colors"
         >
           <Link2 className="w-3.5 h-3.5" /> {t('link')}
         </button>

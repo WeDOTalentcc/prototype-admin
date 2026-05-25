@@ -71,15 +71,15 @@ export function GoalStep({ goal, onSelect }: GoalStepProps) {
             }
           }}
           className={cn(
-            "cursor-pointer transition-shadow duration-200 hover:shadow-lia-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan/40",
-            goal === id && "border-wedo-cyan ring-2 ring-wedo-cyan/30",
+            "cursor-pointer transition-shadow duration-200 hover:shadow-lia-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lia-btn-primary-bg/30",
+            goal === id && "border-pebble ring-2 ring-graphite/20",
           )}
         >
           <CardContent className="flex items-start gap-3 p-4">
             <div
               className={cn(
                 "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg",
-                goal === id ? "bg-wedo-cyan/15 text-wedo-cyan" : "bg-lia-bg-tertiary text-lia-text-secondary",
+                goal === id ? "bg-powder text-graphite" : "bg-lia-bg-tertiary text-lia-text-secondary",
               )}
               aria-hidden="true"
             >

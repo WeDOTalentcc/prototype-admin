@@ -77,7 +77,7 @@ export function TemplateClonePanel({
         <SheetHeader className="px-6 pt-6 pb-4 border-b border-lia-border-subtle">
           <div className="flex items-start gap-3">
             <div
-              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-wedo-cyan/10 text-wedo-cyan"
+              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-powder text-graphite"
               aria-hidden="true"
             >
               <IconComp className="h-6 w-6" />
@@ -178,7 +178,7 @@ export function TemplateClonePanel({
                   data-testid="template-clone-vertical"
                 >
                   <span className="font-medium">{t("verticalLabel") || "Vertical"}:</span>{" "}
-                  <span className="inline-flex items-center gap-1 rounded-full bg-wedo-cyan/10 px-2 py-0.5 text-micro font-medium text-wedo-cyan-dark">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-powder px-2 py-0.5 text-micro font-medium text-graphite">
                     {t(`vertical${template.vertical.charAt(0).toUpperCase()}${template.vertical.slice(1)}`) || template.vertical}
                   </span>
                 </p>

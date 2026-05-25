@@ -138,7 +138,7 @@ export function TemplateGallery({ onTemplateSelect, onCreateManual }: TemplateGa
               className={cn(
                 "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors",
                 isActive
-                  ? "bg-wedo-cyan/15 text-wedo-cyan-dark border border-wedo-cyan/40"
+                  ? "bg-powder text-graphite border border-pebble"
                   : "bg-lia-bg-primary text-lia-text-secondary border border-lia-border-subtle hover:bg-lia-bg-tertiary"
               )}
               data-testid={`vertical-filter-${vf.id}`}

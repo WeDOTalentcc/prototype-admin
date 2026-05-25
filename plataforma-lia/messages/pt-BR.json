@@ -63,7 +63,7 @@
       "createFirstAgent": "Criar primeiro agente",
       "myAgentsCustom": "Meus Agentes",
       "noCustomAgentsYet": "Nenhum agente criado ainda",
-      "noCustomAgentsHint": "Escolha um template abaixo ou descreva para a LIA o que voce precisa",
+      "noCustomAgentsHint": "Escolha um template abaixo ou descreva para {aiAssistant} o que você precisa",
       "advancedForm": "Formulário avançado (modo técnico)",
       "status": {
         "active": "Ativo",
@@ -72,7 +72,7 @@
       },
       "loading": "Carregando agentes...",
       "chooseTemplateAbove": "Escolha um template acima para criar seu primeiro agente de sourcing",
-      "chooseTemplateOrDescribe": "Escolha um template abaixo ou descreva para a LIA o que você precisa",
+      "chooseTemplateOrDescribe": "Escolha um template abaixo ou descreva para {aiAssistant} o que você precisa",
       "twins": {
         "cloneReasoning": "Clone o raciocínio dos seus melhores avaliadores",
         "cloneDesc": "Capture como um especialista da equipe avalia candidatos. O Digital Twin aprende os critérios e funciona como uma \"segunda opinião\" automática na triagem.",
@@ -83,7 +83,7 @@
           "title": "Você ainda não tem nenhum Gêmeo Digital",
           "description": "Crie seu primeiro Digital Twin para clonar o raciocínio de avaliação de um especialista da equipe e receber uma segunda opinião automática na triagem.",
           "createFirst": "Criar meu primeiro Gêmeo Digital",
-          "noExperience": "Sem experiência técnica? Tudo bem — a LIA te guia passo a passo."
+          "noExperience": "Sem experiência técnica? Tudo bem — {aiAssistant} te guia passo a passo."
         },
         "createModal": {
           "title": "Criar Gêmeo Digital",
@@ -117,7 +117,7 @@
           "step1Desc": "Escolha um recrutador ou hiring manager que toma boas decisões.",
           "step2Title": "Importe decisões passadas",
           "step2Desc": "Faça upload de aprovações/rejeições históricas com a justificativa.",
-          "step3Title": "LIA aprende o padrão",
+          "step3Title": "{aiAssistant} aprende o padrão",
           "step3Desc": "O modelo identifica os critérios implícitos por trás das decisões.",
           "step4Title": "Use como segunda opinião",
           "step4Desc": "Aplique o twin em novos candidatos para validar a triagem."

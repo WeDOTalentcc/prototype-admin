@@ -40,7 +40,7 @@ export function ToolSelector({ selectedTools, onChange, label }: ToolSelectorPro
               className={cn(
                 "flex items-center gap-2 px-2 py-1.5 rounded-md text-xs cursor-pointer transition-colors",
                 checked
-                  ? "bg-wedo-cyan/10 text-wedo-cyan-dark"
+                  ? "bg-powder text-graphite"
                   : "text-lia-text-secondary hover:bg-lia-bg-tertiary"
               )}
             >
@@ -48,7 +48,7 @@ export function ToolSelector({ selectedTools, onChange, label }: ToolSelectorPro
                 type="checkbox"
                 checked={checked}
                 onChange={() => toggle(tool)}
-                className="w-3.5 h-3.5 rounded border-lia-border-default text-wedo-cyan focus:ring-wedo-cyan/30"
+                className="w-3.5 h-3.5 rounded border-lia-border-default text-graphite focus:ring-lia-btn-primary-bg/30"
               />
               {t('tools.' + tool) || tool}
             </label>

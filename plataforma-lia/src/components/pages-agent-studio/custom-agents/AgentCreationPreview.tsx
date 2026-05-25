@@ -1,8 +1,9 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
-import { Wand2, Check, X, Loader2, ChevronDown, ChevronUp } from "lucide-react"
+import { Bot, Check, ChevronDown, ChevronUp, Loader2, X } from "lucide-react"
 import { useTranslations } from "next-intl"
+import { useAiPersona } from "@/hooks/company/use-ai-persona"
 import { cn } from "@/lib/utils"
 import { cardStyles, badgeStyles, textStyles, buttonStyles } from "@/lib/design-tokens"
 import { BetaBadge } from "@/components/ui/beta-badge"
@@ -28,6 +29,8 @@ interface AgentCreationPreviewProps {
 }
 
 export function AgentCreationPreview({ description, onClose, onCreated }: AgentCreationPreviewProps) {
+  const { persona: aiPersona } = useAiPersona()
+  const aiAssistantName = aiPersona?.name ?? "assistente"
   const t = useTranslations('agents.customAgents')
   const tToast = useTranslations('agents.toast')
   const [config, setConfig] = useState<GeneratedConfig | null>(null)
@@ -107,7 +110,7 @@ export function AgentCreationPreview({ description, onClose, onCreated }: AgentC
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-lia-border-subtle">
         <div className="flex items-center gap-2">
-          <Wand2 className="w-4 h-4 text-wedo-cyan-dark" />
+          <Bot className="w-4 h-4 text-graphite" />
           <h3 className={cn(textStyles.subtitle, "text-sm font-semibold")}>{t('newAgent')}</h3>
           <BetaBadge size="sm" />
         </div>
@@ -125,7 +128,7 @@ export function AgentCreationPreview({ description, onClose, onCreated }: AgentC
 
         {isGenerating && (
           <div className="flex items-center gap-2 py-8 justify-center">
-            <Loader2 className="w-4 h-4 animate-spin text-wedo-cyan-dark" />
+            <Loader2 className="w-4 h-4 animate-spin text-graphite" />
             <span className="text-xs text-lia-text-secondary">{t('liaConfiguring')}</span>
           </div>
         )}
@@ -165,8 +168,8 @@ export function AgentCreationPreview({ description, onClose, onCreated }: AgentC
               </div>
 
               {config.reasoning && (
-                <p className="text-[11px] text-wedo-cyan-dark italic pt-1">
-                  LIA: {config.reasoning}
+                <p className="text-[11px] text-graphite italic pt-1">
+                  {aiAssistantName}: {config.reasoning}
                 </p>
               )}
 

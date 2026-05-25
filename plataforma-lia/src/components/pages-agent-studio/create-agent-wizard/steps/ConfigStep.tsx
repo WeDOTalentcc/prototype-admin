@@ -1,7 +1,9 @@
 "use client"
 
-import { Loader2, Sparkles } from "lucide-react"
+import { Loader2, Zap } from "lucide-react"
 import * as Icons from "lucide-react"
+
+import { useAiPersona } from "@/hooks/company/use-ai-persona"
 
 import { Button } from "@/components/ui/button"
 import { Chip } from "@/components/ui/chip"
@@ -31,12 +33,14 @@ export function ConfigStep({
   aiError,
   onGenerateAI,
 }: ConfigStepProps) {
+  const { persona: aiPersona } = useAiPersona()
+  const aiAssistantName = aiPersona?.name ?? "assistente"
   if (approach === "ai") {
     return (
       <div className="space-y-4" data-testid="config-step-ai">
         <div className="rounded-lg border border-lia-border-subtle bg-lia-bg-secondary p-4">
           <div className="flex items-center gap-2 mb-2">
-            <Sparkles className="h-4 w-4 text-wedo-cyan" aria-hidden="true" />
+            <Zap className="h-4 w-4 text-graphite" aria-hidden="true" />
             <span className="text-sm font-semibold text-lia-text-primary">Sua descricao</span>
           </div>
           <p className="text-xs text-lia-text-secondary italic">"{config.aiDescription}"</p>
@@ -45,7 +49,7 @@ export function ConfigStep({
         {!aiPreview && !isGeneratingAI && (
           <div className="flex flex-col items-center gap-3 py-6 text-center">
             <p className="text-sm text-lia-text-secondary">
-              A LIA vai analisar sua descricao e gerar a configuracao do agente.
+              {aiAssistantName} vai analisar sua descrição e gerar a configuração do agente.
             </p>
             <Button
               type="button"
@@ -54,8 +58,8 @@ export function ConfigStep({
               data-testid="ai-generate-button"
               className="gap-2"
             >
-              <Sparkles className="h-4 w-4" aria-hidden="true" />
-              Gerar configuracao com a LIA
+              <Zap className="h-4 w-4" aria-hidden="true" />
+              Gerar configuração com {aiAssistantName}
             </Button>
             <p className="text-[11px] text-lia-text-disabled">
               Minimo 10 caracteres. Quanto mais detalhe, melhor o resultado.
@@ -65,8 +69,8 @@ export function ConfigStep({
 
         {isGeneratingAI && (
           <div className="flex flex-col items-center gap-3 py-8 text-center" data-testid="ai-loading">
-            <Loader2 className="h-6 w-6 animate-spin text-wedo-cyan" aria-hidden="true" />
-            <p className="text-sm text-lia-text-secondary">LIA esta configurando o agente...</p>
+            <Loader2 className="h-6 w-6 animate-spin text-graphite" aria-hidden="true" />
+            <p className="text-sm text-lia-text-secondary">{aiAssistantName} está configurando o agente...</p>
           </div>
         )}
 
@@ -93,7 +97,7 @@ export function ConfigStep({
                   type="text"
                   value={config.name}
                   onChange={(e) => setConfig({ ...config, name: e.target.value })}
-                  className="w-full rounded-lg border border-lia-border-subtle bg-lia-bg-primary px-3 py-2 text-sm text-lia-text-primary focus:outline-none focus:ring-2 focus:ring-wedo-cyan/30"
+                  className="w-full rounded-lg border border-lia-border-subtle bg-lia-bg-primary px-3 py-2 text-sm text-lia-text-primary focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/30"
                   data-testid="wizard-ai-name-input"
                 />
               </div>
@@ -116,8 +120,8 @@ export function ConfigStep({
               </div>
 
               {aiPreview.reasoning && (
-                <p className="text-[11px] italic text-wedo-cyan-dark border-t border-lia-border-subtle pt-2">
-                  LIA: {aiPreview.reasoning}
+                <p className="text-[11px] italic text-graphite border-t border-lia-border-subtle pt-2">
+                  {aiAssistantName}: {aiPreview.reasoning}
                 </p>
               )}
             </div>
@@ -130,7 +134,7 @@ export function ConfigStep({
               className="text-xs gap-1"
               data-testid="ai-regenerate-button"
             >
-              <Sparkles className="h-3 w-3" aria-hidden="true" />
+              <Zap className="h-3 w-3" aria-hidden="true" />
               Gerar novamente
             </Button>
           </div>
@@ -153,7 +157,7 @@ export function ConfigStep({
       <div className="space-y-4" data-testid="config-step-template">
         <div className="flex items-start gap-3 rounded-lg border border-lia-border-subtle bg-lia-bg-secondary p-4">
           <div
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-wedo-cyan/10 text-wedo-cyan"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-powder text-graphite"
             aria-hidden="true"
           >
             <TmplIcon className="h-5 w-5" />
@@ -174,7 +178,7 @@ export function ConfigStep({
             value={config.name}
             onChange={(e) => setConfig({ ...config, name: e.target.value })}
             placeholder="Ex: Triagem Tech - Vagas Eng"
-            className="w-full rounded-lg border border-lia-border-subtle bg-lia-bg-primary px-3 py-2 text-sm text-lia-text-primary focus:outline-none focus:ring-2 focus:ring-wedo-cyan/30"
+            className="w-full rounded-lg border border-lia-border-subtle bg-lia-bg-primary px-3 py-2 text-sm text-lia-text-primary focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/30"
             data-testid="wizard-template-name-input"
           />
         </div>
@@ -212,7 +216,7 @@ export function ConfigStep({
           value={config.name}
           onChange={(e) => setConfig({ ...config, name: e.target.value })}
           placeholder="Ex: Agente de Triagem"
-          className="w-full rounded-lg border border-lia-border-subtle bg-lia-bg-primary px-3 py-2 text-sm text-lia-text-primary focus:outline-none focus:ring-2 focus:ring-wedo-cyan/30"
+          className="w-full rounded-lg border border-lia-border-subtle bg-lia-bg-primary px-3 py-2 text-sm text-lia-text-primary focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/30"
           data-testid="wizard-manual-name-input"
         />
       </div>

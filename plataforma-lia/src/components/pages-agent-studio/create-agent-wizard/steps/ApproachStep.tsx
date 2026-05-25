@@ -1,7 +1,9 @@
 "use client"
 
-import { Sparkles, FileText, Settings2 } from "lucide-react"
+import { FileText, Settings2, Zap } from "lucide-react"
 import * as Icons from "lucide-react"
+
+import { useAiPersona } from "@/hooks/company/use-ai-persona"
 
 import { Card, CardContent } from "@/components/ui/card"
 import { Chip } from "@/components/ui/chip"
@@ -20,6 +22,8 @@ interface ApproachStepProps {
 }
 
 export function ApproachStep({ goal, approach, config, onSelect, setConfig }: ApproachStepProps) {
+  const { persona: aiPersona } = useAiPersona()
+  const aiAssistantName = aiPersona?.name ?? "assistente"
   const relevantTemplates = filterTemplatesByGoal(AGENT_TEMPLATES, goal).slice(0, 4)
 
   return (
@@ -38,13 +42,13 @@ export function ApproachStep({ goal, approach, config, onSelect, setConfig }: Ap
           }
         }}
         className={cn(
-          "cursor-pointer border-wedo-cyan/30 bg-gradient-to-br from-cyan-500/5 to-violet-500/5 transition-shadow duration-200 hover:shadow-lia-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan/40",
-          approach === "ai" && "border-wedo-cyan ring-2 ring-wedo-cyan/30",
+          "cursor-pointer border-lia-border-default bg-lia-bg-secondary transition-shadow duration-200 hover:shadow-lia-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lia-btn-primary-bg/30",
+          approach === "ai" && "border-pebble ring-2 ring-graphite/20",
         )}
       >
         <CardContent className="space-y-3 p-5">
           <div className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-wedo-cyan" aria-hidden="true" />
+            <Zap className="h-5 w-5 text-graphite" aria-hidden="true" />
             {/* Nao usamos <TabSectionHeader> aqui (sentinela Task #1050) porque o
                 titulo eh interno a um card de option do wizard, nao header de tab.
                 Usamos <p> com role="heading" + aria-level pra manter semantica. */}
@@ -60,7 +64,7 @@ export function ApproachStep({ goal, approach, config, onSelect, setConfig }: Ap
             </Chip>
           </div>
           <p className="text-xs text-lia-text-secondary">
-            Descreva o que precisa em linguagem natural e a LIA configura o agente automaticamente:
+            Descreva o que precisa em linguagem natural e {aiAssistantName} configura o agente automaticamente:
             nome, prompt, ferramentas, contexto e temperatura.
           </p>
           {approach === "ai" && (
@@ -113,13 +117,13 @@ export function ApproachStep({ goal, approach, config, onSelect, setConfig }: Ap
                     }
                   }}
                   className={cn(
-                    "cursor-pointer transition-shadow duration-200 hover:shadow-lia-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan/40",
-                    isSelected && "border-wedo-cyan ring-2 ring-wedo-cyan/30",
+                    "cursor-pointer transition-shadow duration-200 hover:shadow-lia-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lia-btn-primary-bg/30",
+                    isSelected && "border-pebble ring-2 ring-graphite/20",
                   )}
                 >
                   <CardContent className="flex items-start gap-3 p-4">
                     <div
-                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-wedo-cyan/10 text-wedo-cyan"
+                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-powder text-graphite"
                       aria-hidden="true"
                     >
                       <TmplIcon className="h-4 w-4" />
@@ -160,8 +164,8 @@ export function ApproachStep({ goal, approach, config, onSelect, setConfig }: Ap
           }
         }}
         className={cn(
-          "cursor-pointer transition-shadow duration-200 hover:shadow-lia-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan/40",
-          approach === "manual" && "border-wedo-cyan ring-2 ring-wedo-cyan/30",
+          "cursor-pointer transition-shadow duration-200 hover:shadow-lia-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lia-btn-primary-bg/30",
+          approach === "manual" && "border-pebble ring-2 ring-graphite/20",
         )}
       >
         <CardContent className="flex items-start gap-3 p-4">

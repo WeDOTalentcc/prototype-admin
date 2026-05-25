@@ -14,7 +14,7 @@
  *   - HUBSPOT_ACCESS_TOKEN no Replit Secrets (opcional — fallback funciona sem)
  */
 import React, { useState } from "react"
-import { Loader2, Sparkles } from "lucide-react"
+import { Loader2, Zap } from "lucide-react"
 import { useTranslations } from "next-intl"
 import {
   Dialog,
@@ -98,7 +98,7 @@ export function UpgradeRequestModal({ isOpen, onClose, context }: UpgradeRequest
       <DialogContent className="sm:max-w-md" data-testid="upgrade-request-modal">
         <DialogHeader>
           <div className="flex items-center gap-2 mb-1">
-            <Sparkles className="w-4 h-4 text-wedo-cyan" aria-hidden="true" />
+            <Zap className="w-4 h-4 text-graphite" aria-hidden="true" />
             <DialogTitle>{t("title")}</DialogTitle>
           </div>
           <DialogDescription>

@@ -218,7 +218,7 @@ export function CreateAgentWizard({
         setConfig({ ...config, name: data.suggested_name })
       }
     } catch (e) {
-      const msg = e instanceof Error ? e.message : "Erro ao gerar configuracao com a LIA"
+      const msg = e instanceof Error ? e.message : "Erro ao gerar configuração"
       setAiError(msg)
     } finally {
       setIsGeneratingAI(false)
@@ -356,7 +356,7 @@ export function CreateAgentWizard({
               key={s}
               className={cn(
                 "h-1 flex-1 rounded-full transition-colors duration-200",
-                s <= step ? "bg-wedo-cyan" : "bg-lia-bg-tertiary",
+                s <= step ? "bg-graphite" : "bg-lia-bg-tertiary",
               )}
               aria-hidden="true"
             />

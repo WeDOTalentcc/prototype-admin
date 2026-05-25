@@ -1,8 +1,9 @@
 "use client"
 
 import React, { useState } from "react"
-import { Wand2, Loader2, Check, ChevronDown, ChevronUp } from "lucide-react"
+import { Bot, Check, ChevronDown, ChevronUp, Loader2 } from "lucide-react"
 import { useTranslations } from "next-intl"
+import { useAiPersona } from "@/hooks/company/use-ai-persona"
 import { cn } from "@/lib/utils"
 import { cardStyles, buttonStyles, textStyles, inputStyles, badgeStyles } from "@/lib/design-tokens"
 import { toast } from "@/lib/toast"
@@ -38,6 +39,8 @@ interface ConversationalCreatorProps {
 }
 
 export function ConversationalCreator({ onAgentCreated }: ConversationalCreatorProps) {
+  const { persona: aiPersona } = useAiPersona()
+  const aiAssistantName = aiPersona?.name ?? "assistente"
   const t = useTranslations('agents.customAgents')
   const tToast = useTranslations('agents.toast')
   const [description, setDescription] = useState("")
@@ -140,7 +143,7 @@ export function ConversationalCreator({ onAgentCreated }: ConversationalCreatorP
   return (
     <div className={cn(cardStyles.default, "p-5")}>
       <div className="flex items-center gap-2 mb-3">
-        <Wand2 className="w-4 h-4 text-wedo-cyan-dark" />
+        <Bot className="w-4 h-4 text-graphite" />
         <h3 className={cn(textStyles.subtitle, "text-sm font-semibold")}>{t('createWithAI')}</h3>
         <BetaBadge size="sm" />
       </div>
@@ -202,8 +205,8 @@ export function ConversationalCreator({ onAgentCreated }: ConversationalCreatorP
             </div>
 
             {config.reasoning && (
-              <p className="text-[11px] text-wedo-cyan-dark italic pt-1">
-                LIA: {config.reasoning}
+              <p className="text-[11px] text-graphite italic pt-1">
+                {aiAssistantName}: {config.reasoning}
               </p>
             )}
 

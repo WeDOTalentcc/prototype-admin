@@ -58,7 +58,7 @@ export function PreviewStep({ goal, approach, config, aiPreview }: PreviewStepPr
 
       <div className="rounded-xl border border-lia-border-subtle bg-lia-bg-secondary p-5 space-y-3">
         <div className="flex items-center gap-3 pb-3 border-b border-lia-border-subtle">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-wedo-cyan/10 text-wedo-cyan" aria-hidden="true">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-powder text-graphite" aria-hidden="true">
             {TmplIcon ? <TmplIcon className="h-5 w-5" /> : <Bot className="h-5 w-5" />}
           </div>
           <div className="min-w-0 flex-1">

@@ -2,11 +2,8 @@
 
 import React, { useState, useEffect } from "react"
 import { useTranslations } from "next-intl"
-import {
-  Brain, Upload, Plus, Star, Users,
-  ThumbsUp, ThumbsDown, HelpCircle, ChevronRight, X,
-  UserCheck, BookOpen, Lightbulb,
-  FileText, ArrowRight, Info, Loader2, AlertCircle, Sparkles} from "lucide-react"
+import { useAiPersona } from "@/hooks/company/use-ai-persona"
+import { AlertCircle, ArrowRight, BookOpen, Brain, ChevronRight, FileText, HelpCircle, Info, Lightbulb, Loader2, Plus, Star, ThumbsDown, ThumbsUp, Upload, UserCheck, Users, X, Zap } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Chip } from "@/components/ui/chip"
 import { Button } from "@/components/ui/button"
@@ -78,7 +75,7 @@ export function TwinCompetitiveBanner() {
 
   return (
     <div
-      className="relative rounded-xl border border-wedo-cyan/30 bg-gradient-to-br from-wedo-cyan/5 to-wedo-purple/5 dark:from-wedo-cyan/10 dark:to-wedo-purple/10 p-4"
+      className="relative rounded-xl border border-lia-border-default bg-lia-bg-secondary p-4"
       role="region"
       aria-label="Diferencial competitivo Gemeos Digitais"
     >
@@ -91,12 +88,12 @@ export function TwinCompetitiveBanner() {
         <X className="w-3.5 h-3.5" aria-hidden="true" />
       </button>
       <div className="flex items-start gap-3 pr-8">
-        <div className="rounded-lg bg-wedo-cyan/15 p-2 flex-shrink-0">
-          <Sparkles className="w-5 h-5 text-wedo-cyan-dark" aria-hidden="true" />
+        <div className="rounded-lg bg-powder p-2 flex-shrink-0">
+          <Zap className="w-5 h-5 text-graphite" aria-hidden="true" />
         </div>
         <div className="space-y-1.5">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xs font-semibold text-wedo-cyan-dark uppercase tracking-wide">
+            <span className="text-xs font-semibold text-graphite uppercase tracking-wide">
               Diferencial WeDOTalent
             </span>
             <span className={cn(badgeStyles.default, "text-[10px] font-semibold")}>
@@ -128,11 +125,13 @@ export function TwinCompetitiveBanner() {
 export function DigitalTwinOnboarding() {
   const t = useTranslations("agents.studio.twins")
   const tOnboarding = useTranslations("agents.studio.twins.onboarding")
+  const { persona: aiPersona } = useAiPersona()
+  const aiAssistantName = aiPersona?.name ?? "assistente"
 
   const steps = [
     { icon: HOW_IT_WORKS_ICONS[0], title: tOnboarding("step1Title"), desc: tOnboarding("step1Desc") },
     { icon: HOW_IT_WORKS_ICONS[1], title: tOnboarding("step2Title"), desc: tOnboarding("step2Desc") },
-    { icon: HOW_IT_WORKS_ICONS[2], title: tOnboarding("step3Title"), desc: tOnboarding("step3Desc") },
+    { icon: HOW_IT_WORKS_ICONS[2], title: tOnboarding("step3Title", { aiAssistant: aiAssistantName }), desc: tOnboarding("step3Desc") },
     { icon: HOW_IT_WORKS_ICONS[3], title: tOnboarding("step4Title"), desc: tOnboarding("step4Desc") },
   ]
 
@@ -141,8 +140,8 @@ export function DigitalTwinOnboarding() {
       <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-cyan-500/5 to-transparent rounded-full -translate-y-1/2 translate-x-1/4" />
       <div className="relative">
         <div className="flex items-center gap-2 mb-1">
-          <Users className="w-4 h-4 text-wedo-cyan" />
-          <span className="text-xs font-semibold uppercase tracking-wider text-wedo-cyan">
+          <Users className="w-4 h-4 text-graphite" />
+          <span className="text-xs font-semibold uppercase tracking-wider text-graphite">
             {t("label")}
           </span>
         </div>
@@ -159,7 +158,7 @@ export function DigitalTwinOnboarding() {
             return (
               <div key={i} className="flex items-start gap-3 min-w-0">
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-cyan-50 dark:bg-cyan-950/30">
-                  <Icon className="w-5 h-5 text-wedo-cyan" />
+                  <Icon className="w-5 h-5 text-graphite" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1.5 mb-0.5">
@@ -186,11 +185,13 @@ interface DigitalTwinEmptyStateProps {
 
 export function DigitalTwinEmptyState({ onCreateTwin }: DigitalTwinEmptyStateProps) {
   const t = useTranslations("agents.studio.twins.emptyState")
+  const { persona: aiPersona } = useAiPersona()
+  const aiAssistantName = aiPersona?.name ?? "assistente"
 
   return (
     <div className="flex flex-col items-center py-12 px-6">
       <div className="flex items-center justify-center w-12 h-12 rounded-md bg-cyan-50 dark:bg-cyan-950/30 mb-4">
-        <Brain className="w-6 h-6 text-wedo-cyan" />
+        <Brain className="w-6 h-6 text-graphite" />
       </div>
       <h3 className={`${textStyles.h3} text-center mb-1`}>{t("title")}</h3>
       <p className={`${textStyles.description} text-center max-w-md mb-6`}>
@@ -200,7 +201,7 @@ export function DigitalTwinEmptyState({ onCreateTwin }: DigitalTwinEmptyStatePro
         <Plus className="w-4 h-4 mr-1.5" />
         {t("createFirst")}
       </Button>
-      <p className={`${textStyles.caption} mt-2 text-center`}>{t("noExperience")}</p>
+      <p className={`${textStyles.caption} mt-2 text-center`}>{t("noExperience", { aiAssistant: aiAssistantName })}</p>
     </div>
   )
 }
@@ -298,7 +299,7 @@ export function CreateDigitalTwinModal({ isOpen, onClose, onCreated }: CreateDig
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className={textStyles.h3}>
-            <Brain className="w-5 h-5 inline mr-2 text-wedo-cyan" />
+            <Brain className="w-5 h-5 inline mr-2 text-graphite" />
             {t("title")}
           </DialogTitle>
           <DialogDescription className="text-sm text-lia-text-secondary">
@@ -318,7 +319,7 @@ export function CreateDigitalTwinModal({ isOpen, onClose, onCreated }: CreateDig
                   </h4>
                   <p className="text-sm text-amber-800 dark:text-amber-200 leading-relaxed">
                     Esta funcionalidade indexa decisões históricas (aprovações,
-                    rejeições, raciocínios) do avaliador escolhido para que a LIA
+                    rejeições, raciocínios) do avaliador escolhido para que a IA
                     aprenda o padrão e ofereça segunda opinião automática.
                   </p>
                   <p className="text-sm text-amber-800 dark:text-amber-200 leading-relaxed">
@@ -403,7 +404,7 @@ export function CreateDigitalTwinModal({ isOpen, onClose, onCreated }: CreateDig
           <div className={formStyles.fieldGroup}>
             <label className={formStyles.label}>{t("decisionsLabel")}</label>
             <div
-              className="relative rounded-lg border-2 border-dashed border-lia-border-default hover:border-wedo-cyan/40 transition-colors p-4 cursor-pointer bg-lia-bg-secondary"
+              className="relative rounded-lg border-2 border-dashed border-lia-border-default hover:border-pebble transition-colors p-4 cursor-pointer bg-lia-bg-secondary"
               onClick={() => fileInputRef.current?.click()}
             >
               <input
@@ -416,7 +417,7 @@ export function CreateDigitalTwinModal({ isOpen, onClose, onCreated }: CreateDig
               {decisionsFile ? (
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 min-w-0">
-                    <FileText className="w-4 h-4 text-wedo-cyan shrink-0" />
+                    <FileText className="w-4 h-4 text-graphite shrink-0" />
                     <span className={`${textStyles.bodySmall} truncate`}>{decisionsFile.name}</span>
                     <span className={textStyles.caption}>
                       ({(decisionsFile.size / 1024).toFixed(1)} KB)
@@ -432,7 +433,7 @@ export function CreateDigitalTwinModal({ isOpen, onClose, onCreated }: CreateDig
                 </div>
               ) : (
                 <div className="flex flex-col items-center gap-1.5 py-1">
-                  <Upload className="w-5 h-5 text-wedo-cyan/60" />
+                  <Upload className="w-5 h-5 text-slate" />
                   <p className={textStyles.bodySmall}>{t("decisionsUploadCta")}</p>
                   <p className={textStyles.caption}>{t("decisionsFormats")}</p>
                 </div>
@@ -493,7 +494,7 @@ export function TwinCard({ twin, onEvaluate, onManageTwin }: TwinCardProps) {
       <CardContent className="p-4">
         <div className="flex items-start gap-3">
           <Avatar className="w-10 h-10 bg-cyan-50 dark:bg-cyan-950/30">
-            <AvatarFallback className="bg-cyan-50 dark:bg-cyan-950/30 text-wedo-cyan text-sm font-medium">
+            <AvatarFallback className="bg-cyan-50 dark:bg-cyan-950/30 text-graphite text-sm font-medium">
               {initials}
             </AvatarFallback>
           </Avatar>
@@ -507,7 +508,7 @@ export function TwinCard({ twin, onEvaluate, onManageTwin }: TwinCardProps) {
             {twin.specialties.length > 0 && (
               <div className="flex gap-1 mt-1 flex-wrap">
                 {twin.specialties.slice(0, 4).map((s) => (
-                  <Chip density="relaxed" variant="neutral" muted key={s} className="bg-cyan-50 dark:bg-cyan-950/30 text-wedo-cyan">
+                  <Chip density="relaxed" variant="neutral" muted key={s} className="bg-cyan-50 dark:bg-cyan-950/30 text-graphite">
                     {s}
                   </Chip>
                 ))}
@@ -603,10 +604,10 @@ export function EvaluateWithTwinModal({
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle className={cn(textStyles.h3, "flex items-center gap-2 flex-wrap")}>
-            <Brain className="w-5 h-5 text-wedo-cyan" aria-hidden="true" />
+            <Brain className="w-5 h-5 text-graphite" aria-hidden="true" />
             {t("digitalTwinEvaluation")}
             <span className={cn(badgeStyles.default, "text-[10px] font-semibold ml-1")}>
-              <Sparkles className="w-3 h-3 inline mr-0.5" aria-hidden="true" />
+              <Zap className="w-3 h-3 inline mr-0.5" aria-hidden="true" />
               Diferencial unico
             </span>
           </DialogTitle>
@@ -615,7 +616,7 @@ export function EvaluateWithTwinModal({
 
         {isLoading ? (
           <div className="flex flex-col items-center py-8">
-            <Brain className="w-10 h-10 text-cyan-300 animate-pulse mb-3" />
+            <Brain className="w-10 h-10 text-slate animate-pulse motion-reduce:animate-none mb-3" />
             <p className={textStyles.body}>{t("analyzingHistory")}</p>
             <p className={textStyles.caption}>{t("searchingSimilarDecisions")}</p>
           </div>
@@ -623,7 +624,7 @@ export function EvaluateWithTwinModal({
           <div className="space-y-4 py-4">
             <div className="flex items-center gap-2">
               <Avatar className="w-8 h-8 bg-cyan-50 dark:bg-cyan-950/30">
-                <AvatarFallback className="bg-cyan-50 dark:bg-cyan-950/30 text-wedo-cyan text-xs">
+                <AvatarFallback className="bg-cyan-50 dark:bg-cyan-950/30 text-graphite text-xs">
                   {evaluation.twin_name
                     .split(" ")
                     .map((w) => w[0])

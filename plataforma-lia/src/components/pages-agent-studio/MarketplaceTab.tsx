@@ -155,7 +155,7 @@ function BrowseMarketplace() {
           <input
             type="text" value={search} onChange={e => setSearch(e.target.value)}
             placeholder={t('searchPlaceholder') as string}
-            className="w-full pl-10 pr-3 py-2 border border-lia-border-subtle rounded-lg text-sm bg-lia-bg-secondary text-lia-text-primary placeholder:text-lia-text-disabled focus:outline-none focus:ring-2 focus:ring-wedo-cyan/30"
+            className="w-full pl-10 pr-3 py-2 border border-lia-border-subtle rounded-lg text-sm bg-lia-bg-secondary text-lia-text-primary placeholder:text-lia-text-disabled focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/30"
           />
         </div>
         <div className="flex gap-1">

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { Loader2, Sparkles, Wrench, Brain } from "lucide-react"
+import { Bot, Loader2, Wrench, Zap } from "lucide-react"
 import { useTranslations } from "next-intl"
 import { textStyles, badgeStyles, inputStyles, formStyles } from "@/lib/design-tokens"
 import { cn } from "@/lib/utils"
@@ -57,7 +57,7 @@ export function TemplatePreviewModal({
       <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className={cn(textStyles.h3, "flex items-center gap-2")}>
-            <Sparkles className="w-5 h-5 text-wedo-cyan" aria-hidden="true" />
+            <Zap className="w-5 h-5 text-graphite" aria-hidden="true" />
             {t("templatePreviewTitle") || "Confirmar criação do agente"}
           </DialogTitle>
           <DialogDescription className="text-sm text-lia-text-secondary">
@@ -98,7 +98,7 @@ export function TemplatePreviewModal({
           {/* System Prompt preview */}
           <div className="rounded-lg border border-lia-border-subtle p-3">
             <div className="flex items-center gap-2 mb-2">
-              <Brain className="w-3.5 h-3.5 text-wedo-cyan" aria-hidden="true" />
+              <Bot className="w-3.5 h-3.5 text-graphite" aria-hidden="true" />
               <p className="text-xs font-semibold text-lia-text-secondary uppercase">
                 {t("systemPromptLabel") || "Instruções do agente (LLM)"}
               </p>
@@ -160,7 +160,7 @@ export function TemplatePreviewModal({
               </>
             ) : (
               <>
-                <Sparkles className="w-4 h-4 mr-2" aria-hidden="true" />
+                <Zap className="w-4 h-4 mr-2" aria-hidden="true" />
                 {t("createAgent") || "Criar agente"}
               </>
             )}
