@@ -62,6 +62,14 @@ DEFAULT_PATHS = [
 EXEMPT_MARKER = "RLS-EXEMPT:"
 LEGACY_EXEMPT_MARKERS = ("TENANT-EXEMPT:", "ADR-001-EXEMPT")
 
+# Models that ALWAYS require company_id= regardless of other kwargs.
+# Extend this list when a new table gains RLS. Covers models whose
+# tenant-signal kwarg differs from the canonical "user_id=" pattern
+# (e.g. Task uses assigned_to_user_id, not user_id).
+REQUIRED_COMPANY_ID_MODELS: frozenset[str] = frozenset({
+    "Task",  # tasks table — RLS added migration 196 (2026-05-25)
+})
+
 
 @dataclass
 class Violation:
@@ -218,7 +226,8 @@ class Walker(ast.NodeVisitor):
             kwargs = _extract_call_kwargs(node)
             has_uid = "user_id" in kwargs
             has_cid = "company_id" in kwargs
-            if has_uid and not has_cid:
+            always_required = model in REQUIRED_COMPANY_ID_MODELS
+            if (has_uid or always_required) and not has_cid:
                 if not _line_has_exempt(self.src_lines, node.lineno):
                     self.violations.append(
                         Violation(
@@ -226,7 +235,7 @@ class Walker(ast.NodeVisitor):
                             line=node.lineno,
                             col=node.col_offset,
                             model=model,
-                            has_user_id=True,
+                            has_user_id=has_uid,
                             has_company_id=False,
                             suggestion=(
                                 f"Add company_id= kwarg to the {model}(...) "

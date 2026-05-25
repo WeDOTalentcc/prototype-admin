@@ -598,6 +598,7 @@ class AutomationService:
             priority=priority,
             created_by_agent="automation_service",
             is_automated=True,
+            company_id=company_id,
             related_job_id=trigger_data.get("vacancy_id"),
             related_candidate_id=trigger_data.get("candidate_id"),
             context={"automation_trigger": trigger_data}

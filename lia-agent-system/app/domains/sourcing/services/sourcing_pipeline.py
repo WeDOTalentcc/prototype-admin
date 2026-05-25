@@ -797,6 +797,7 @@ class SourcingPipelineService:
             task_type=TaskType.SOURCING,
             priority=TaskPriority.HIGH if current_count < 5 else TaskPriority.MEDIUM,
             assigned_to_agent="sourcing",
+            company_id=str(job.company_id),
             related_job_id=str(job.id),
             due_date=datetime.utcnow() + timedelta(days=3),
             context={

@@ -458,6 +458,7 @@ class AutomationTriggerService:
             priority=priority,
             created_by_agent="automation_engine",
             is_automated=True,
+            company_id=str(getattr(item, "company_id", "") or ""),
             related_job_id=related_job_id,
             related_candidate_id=related_candidate_id,
             context={"trigger_id": trigger["id"], "trigger_type": trigger["type"].value}
