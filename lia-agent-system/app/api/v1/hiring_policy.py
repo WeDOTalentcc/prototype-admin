@@ -131,13 +131,19 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
     await repo.flush()
     invalidate_policy_cache(company_id)
 
+    # T-1169: capturar dict ANTES do sync_policy_to_models — esse helper executa
+    # db.execute(update())+flush() que expira attributes do `policy`. Acessar
+    # `policy.<attr>` depois disso dispara lazy-load num contexto async perdido
+    # → sqlalchemy.exc.MissingGreenlet 500. Capturar uma vez e reusar.
+    response_dict = policy.to_dict()
+
     try:
-        await sync_policy_to_models(company_id, policy.to_dict(), db)
+        await sync_policy_to_models(company_id, response_dict, db)
     except Exception as e:
         logger.warning(f"Policy sync failed for {company_id}: {e}")
 
     logger.info(f"Policy upserted for company {company_id}, progress={policy.setup_progress}%")
-    return policy.to_dict()
+    return response_dict
 
 
 @router.patch("/{company_id}", response_model=CompanyHiringPolicyResponse)
@@ -170,12 +176,15 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
     await repo.flush()
     invalidate_policy_cache(company_id)
 
+    # T-1169: ver comentário em upsert_policy.
+    response_dict = policy.to_dict()
+
     try:
-        await sync_policy_to_models(company_id, policy.to_dict(), db)
+        await sync_policy_to_models(company_id, response_dict, db)
     except Exception as e:
         logger.warning(f"Policy sync failed for {company_id}: {e}")
 
-    return policy.to_dict()
+    return response_dict
 
 
 @router.patch("/{company_id}/block", response_model=CompanyHiringPolicyResponse)
@@ -211,12 +220,15 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
     await repo.flush()
     invalidate_policy_cache(company_id)
 
+    # T-1169: ver comentário em upsert_policy.
+    response_dict = policy.to_dict()
+
     try:
-        await sync_policy_to_models(company_id, policy.to_dict(), db)
+        await sync_policy_to_models(company_id, response_dict, db)
     except Exception as e:
         logger.warning(f"Policy sync failed for {company_id}: {e}")
 
-    return policy.to_dict()
+    return response_dict
 
 
 @router.get("/{company_id}/progress", response_model=PolicyProgressResponse)
