@@ -129,6 +129,11 @@ class CompanyCultureRepository:
             # CREATE: cold start — no analyze run yet, recruiter is filling
             # in fields manually via Minha Empresa. Source must be 'manual'
             # so downstream agents know not to overwrite from auto runs.
+            # website_url is NOT NULL without server_default (bug fix 2026-05-25):
+            # provide empty-string fallback so manual-only saves don't trip the
+            # constraint. The real URL is set by /analyze when the recruiter
+            # runs a full culture scan.
+            filtered.setdefault("website_url", "")
             profile = CompanyCultureProfile(
                 company_id=company_id,
                 source="manual",
