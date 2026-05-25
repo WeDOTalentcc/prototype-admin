@@ -36,7 +36,12 @@ export async function PATCH(request: NextRequest) {
     }
 
     const data = await response.json()
-    return NextResponse.json(data)
+    // T-1171: backend retorna envelope canônico {ok, data, meta} — unwrap
+    // para que o frontend receba a row atualizada (mesmo shape do GET).
+    const unwrapped = data && typeof data === 'object' && data.ok === true && 'data' in data
+      ? data.data
+      : data
+    return NextResponse.json(unwrapped)
   } catch {
     return NextResponse.json(
       { error: 'Erro ao conectar com o backend' },

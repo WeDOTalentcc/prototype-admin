@@ -21,7 +21,9 @@ export async function POST(request: NextRequest) {
     const contentType = response.headers.get("content-type") || ""
     if (contentType.includes("application/json")) {
       const data = await response.json()
-      return NextResponse.json(data, { status: response.status })
+      // T-1171: unwrap envelope canonico {ok, data, meta} do FastAPI
+      const unwrapped = data && typeof data === "object" && "ok" in data && "data" in data ? (data as Record<string, unknown>).data : data
+      return NextResponse.json(unwrapped, { status: response.status })
     }
     const text = await response.text()
     return new NextResponse(text, {

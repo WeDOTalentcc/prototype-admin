@@ -28,7 +28,13 @@ export async function GET(request: NextRequest) {
     }
 
     const data = await response.json()
-    return NextResponse.json(data)
+    // T-1171: backend retorna envelope canônico {ok, data, meta} — unwrap
+    // para o frontend que espera o objeto raw. Sem isso, hiringPolicy.pipeline_rules
+    // fica undefined e a UI renderiza "Não definido" em todos os campos.
+    const unwrapped = data && typeof data === 'object' && data.ok === true && 'data' in data
+      ? data.data
+      : data
+    return NextResponse.json(unwrapped)
   } catch {
     return NextResponse.json(
       { error: 'Erro ao conectar com o backend' },
@@ -67,7 +73,9 @@ export async function PUT(request: NextRequest) {
     }
 
     const data = await response.json()
-    return NextResponse.json(data)
+    // T-1171: unwrap envelope canonico {ok, data, meta} do FastAPI
+    const unwrapped = data && typeof data === "object" && "ok" in data && "data" in data ? (data as Record<string, unknown>).data : data
+    return NextResponse.json(unwrapped)
   } catch {
     return NextResponse.json(
       { error: 'Erro ao conectar com o backend' },
