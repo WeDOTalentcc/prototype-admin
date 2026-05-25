@@ -223,6 +223,21 @@ class WorkOSRepository:
 
     # ── WorkOSGroupRoleMapping ───────────────────────────────────────────────
 
+    async def list_groups_for_user(self, user_id) -> list[WorkOSGroup]:
+        """List all WorkOS groups a user belongs to (via membership).
+
+        Sprint 4 RBAC (2026-05-25): canonical lookup for re-computing user.role
+        when SCIM group membership changes (dsync.group.user_added/removed).
+        """
+        from app.auth.workos_models import WorkOSGroupMembership
+        result = await self.db.execute(
+            select(WorkOSGroup).join(
+                WorkOSGroupMembership,
+                WorkOSGroupMembership.group_id == WorkOSGroup.id,
+            ).where(WorkOSGroupMembership.user_id == user_id)
+        )
+        return list(result.scalars().all())
+
     async def list_role_mappings(self, company_id: str) -> list[WorkOSGroupRoleMapping]:
         result = await self.db.execute(
             select(WorkOSGroupRoleMapping).where(

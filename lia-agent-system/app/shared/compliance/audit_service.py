@@ -839,6 +839,75 @@ class AuditService:
             # Sprint 3 RBAC: aceita perda eventual de log row vs bloquear UX.
             logger.debug("[AuditService] log_data_access failed (non-blocking): %s", exc)
 
+    async def log_user_provisioning(
+        self,
+        *,
+        company_id: str,
+        actor: str,
+        action: str,
+        target_user_id: str | None,
+        target_user_email: str | None,
+        details: dict | None = None,
+        status: str = "success",
+        request_id: str | None = None,
+    ) -> None:
+        """Log a user provisioning event (LGPD Art. 37 V + SOX Section 802).
+
+        Sprint 4 RBAC (2026-05-25, plan canonical: ~/.claude/plans/jolly-roaming-moler.md).
+        Used by SCIM webhook handlers (dsync.user.created/updated/deleted,
+        dsync.group.user_added/removed) and any other automated user lifecycle.
+
+        Persists in SOXAuditLog with category=USER_MANAGEMENT. 7-year retention.
+        Non-blocking — exceptions logged but NOT propagated.
+
+        Args:
+            company_id: tenant ID (multi-tenancy mandatory)
+            actor: who performed the action (scim_webhook, user_id, etc.)
+            action: provision_user | update_user | deactivate_user | role_change | group_add | group_remove
+            target_user_id: affected user UUID
+            target_user_email: denormalized for query speed
+            details: extra context (e.g., {"workos_id": "...", "role_old": "viewer", "role_new": "admin", "groups": [...]})
+            status: success | failed | partial
+            request_id: trace correlation
+        """
+        try:
+            from libs.models.lia_models.audit_logs import (
+                ActionCategory,
+                AuditStatus,
+                SOXAuditLog,
+            )
+            async with AsyncSessionLocal() as session:
+                await _bind_tenant(session, company_id)
+                log = SOXAuditLog(
+                    id=uuid.uuid4(),
+                    company_id=company_id,
+                    user_id=None,  # actor is system (scim_webhook), not authenticated user
+                    user_email=actor,
+                    action=action,
+                    action_category=ActionCategory.USER_MANAGEMENT.value,
+                    resource_type="user",
+                    resource_id=target_user_id or "",
+                    ip_address=None,
+                    user_agent=None,
+                    status=(
+                        AuditStatus.SUCCESS.value if status == "success"
+                        else AuditStatus.FAILED.value if status == "failed"
+                        else AuditStatus.SUCCESS.value
+                    ),
+                    details={
+                        **(details or {}),
+                        "target_user_email": target_user_email,
+                        "actor": actor,
+                    },
+                    retention_years=7,
+                    retention_until=datetime.utcnow() + timedelta(days=365 * 7),
+                    request_id=request_id,
+                )
+                session.add(log)
+                await session.commit()
+        except Exception as exc:
+            logger.debug("[AuditService] log_user_provisioning failed (non-blocking): %s", exc)
+
     async def log_compliance(
         self,
         *,

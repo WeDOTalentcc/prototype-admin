@@ -36,6 +36,7 @@ from app.domains.auth.dependencies import get_user_repo, get_workos_repo
 from app.domains.auth.repositories.user_repository import UserRepository
 from app.domains.auth.repositories.workos_repository import WorkOSRepository
 from app.shared.resilience.circuit_breaker import WORKOS_CIRCUIT, circuit_breaker_decorator
+from app.shared.compliance.audit_service import AuditService
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 from app.shared.types import WeDoBaseModel
 
@@ -1073,6 +1074,71 @@ async def _get_company_id_from_directory(directory_id: str, workos_repo: WorkOSR
     return config.company_id if config else None
 
 
+
+# ---------------------------------------------------------------------------
+# Sprint 4 RBAC canonical — role mapping & audit helpers
+# ---------------------------------------------------------------------------
+_ROLE_HIERARCHY = {
+    "admin": 4,
+    "manager": 3,
+    "recruiter": 2,
+    "viewer": 1,
+}
+
+
+async def _recompute_user_role_from_groups(
+    user,
+    company_id: str,
+    user_repo: UserRepository,
+    workos_repo: WorkOSRepository,
+) -> tuple[str, str | None]:
+    """Re-compute user.role based on highest privileged WorkOS group mapping.
+
+    Sprint 4 RBAC (2026-05-25, plan canonical: jolly-roaming-moler.md). Called
+    after dsync.group.user_added/removed events.
+
+    Logic:
+      - List user's WorkOS groups
+      - For each group, lookup WorkOSGroupRoleMapping (admin WeDOTalent configures)
+      - Pick HIGHEST role per _ROLE_HIERARCHY (admin > manager > recruiter > viewer)
+      - If no group has mapping → default viewer
+      - Update users.role + commit
+
+    Returns (new_role, old_role) — old_role can be None if no change applied.
+    """
+    groups = await workos_repo.list_groups_for_user(user.id)
+    candidate_role = "viewer"
+    best_rank = 0
+    for g in groups:
+        mapping = await workos_repo.get_role_mapping(company_id, g.id)
+        if not mapping:
+            continue
+        rank = _ROLE_HIERARCHY.get(mapping.role, 0)
+        if rank > best_rank:
+            best_rank = rank
+            candidate_role = mapping.role
+
+    old_role = getattr(user, "role", None)
+    old_role_str = old_role.value if hasattr(old_role, "value") else str(old_role) if old_role else None
+    if old_role_str == candidate_role:
+        return candidate_role, None  # no change
+
+    # Need UserRole enum to assign
+    from app.auth.models import UserRole
+    try:
+        new_role_enum = UserRole(candidate_role)
+    except ValueError:
+        # Defensive: invalid mapping role → fallback viewer
+        new_role_enum = UserRole.viewer
+        candidate_role = "viewer"
+
+    await user_repo.update_by_instance(user, {"role": new_role_enum})
+    return candidate_role, old_role_str
+
+
+_audit_service = AuditService()
+
+
 async def _handle_dsync_user_created(
     data: dict[str, Any],
     directory_id: str,
@@ -1127,6 +1193,21 @@ async def _handle_dsync_user_created(
 
     # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
     logger.info(f"SCIM provisioned new user: {email}")
+    # Sprint 4 RBAC audit: user provisioning event, 7-year SOX/LGPD retention
+    await _audit_service.log_user_provisioning(
+        company_id=company_id,
+        actor="scim_webhook",
+        action="provision_user",
+        target_user_id=str(user.id),
+        target_user_email=email,
+        details={
+            "workos_id": workos_id,
+            "directory_id": directory_id,
+            "event_id": event_id,
+            "initial_role": "viewer",
+            "is_scim_managed": True,
+        },
+    )
     return {"success": True, "message": "User provisioned successfully", "user_id": str(user.id)}
 
 
@@ -1166,6 +1247,19 @@ async def _handle_dsync_user_updated(
     await user_repo.update_by_instance(user, update_data)
 
     logger.info(f"SCIM updated user: {workos_id}")
+    await _audit_service.log_user_provisioning(
+        company_id=company_id,
+        actor="scim_webhook",
+        action="update_user",
+        target_user_id=str(user.id),
+        target_user_email=getattr(user, "email", None),
+        details={
+            "workos_id": workos_id,
+            "directory_id": directory_id,
+            "event_id": event_id,
+            "fields_updated": list(update_data.keys()),
+        },
+    )
     return {"success": True, "message": "User updated successfully", "user_id": str(user.id)}
 
 
@@ -1191,6 +1285,18 @@ async def _handle_dsync_user_deleted(
     })
 
     logger.info(f"SCIM deactivated user: {workos_id}")
+    await _audit_service.log_user_provisioning(
+        company_id=company_id,
+        actor="scim_webhook",
+        action="deactivate_user",
+        target_user_id=str(user.id),
+        target_user_email=getattr(user, "email", None),
+        details={
+            "workos_id": workos_id,
+            "directory_id": directory_id,
+            "event_id": event_id,
+        },
+    )
     return {"success": True, "message": "User deactivated successfully", "user_id": str(user.id)}
 
 
@@ -1301,6 +1407,30 @@ async def _handle_dsync_group_user_added(
 
     membership = await workos_repo.add_membership(group.id, user.id, added_by="scim_webhook")
     logger.info(f"SCIM added user {user_workos_id} to group {group_workos_id}")
+
+    # Sprint 4 RBAC: recompute user.role from group mappings (admin WeDOTalent configures)
+    new_role, old_role = await _recompute_user_role_from_groups(
+        user, company_id, user_repo, workos_repo,
+    )
+    role_changed = old_role is not None and old_role != new_role
+
+    # Sprint 4 audit: USER_MANAGEMENT event, 7-year retention (LGPD Art. 37 V + SOX 802)
+    await _audit_service.log_user_provisioning(
+        company_id=company_id,
+        actor="scim_webhook",
+        action="group_add" if not role_changed else "role_change",
+        target_user_id=str(user.id),
+        target_user_email=getattr(user, "email", None),
+        details={
+            "workos_id": user_workos_id,
+            "group_workos_id": group_workos_id,
+            "group_name": getattr(group, "name", None),
+            "role_old": old_role,
+            "role_new": new_role,
+            "directory_id": directory_id,
+            "event_id": event_id,
+        },
+    )
     return {"success": True, "message": "User added to group", "membership_id": str(membership.id)}
 
 
@@ -1331,6 +1461,27 @@ async def _handle_dsync_group_user_removed(
     removed = await workos_repo.remove_membership(group.id, user.id)
     if removed:
         logger.info(f"SCIM removed user {user_workos_id} from group {group_workos_id}")
+        # Sprint 4 RBAC: recompute user.role (might downgrade if highest-priv group was removed)
+        new_role, old_role = await _recompute_user_role_from_groups(
+            user, company_id, user_repo, workos_repo,
+        )
+        role_changed = old_role is not None and old_role != new_role
+        await _audit_service.log_user_provisioning(
+            company_id=company_id,
+            actor="scim_webhook",
+            action="group_remove" if not role_changed else "role_change",
+            target_user_id=str(user.id),
+            target_user_email=getattr(user, "email", None),
+            details={
+                "workos_id": user_workos_id,
+                "group_workos_id": group_workos_id,
+                "group_name": getattr(group, "name", None),
+                "role_old": old_role,
+                "role_new": new_role,
+                "directory_id": directory_id,
+                "event_id": event_id,
+            },
+        )
         return {"success": True, "message": "User removed from group"}
     else:
         logger.info(f"SCIM membership not found: user={user_workos_id} group={group_workos_id}")
