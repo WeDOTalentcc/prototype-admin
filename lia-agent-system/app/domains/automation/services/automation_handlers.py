@@ -12,6 +12,50 @@ from app.shared.messaging.rails_event_publisher import publish_rails_event
 
 logger = logging.getLogger(__name__)
 
+async def _create_automation_task(
+    *,
+    db: AsyncSession,
+    company_id: str,
+    task_type: str,
+    priority: str,
+    title: str,
+    description: str | None = None,
+    related_job_id: str | None = None,
+    related_candidate_id: str | None = None,
+    context: dict | None = None,
+) -> str | None:
+    """Cria task de automacao fail-open. Nunca deixa o handler falhar.
+
+    Returns task.id ou None em caso de erro.
+    Task 2.A (2026-05-25): preenche tasks table para Decidir page.
+    """
+    try:
+        from app.domains.tasks.repositories.tasks_repository import TasksRepository
+        from app.models.task import TaskPriority as _TP, TaskType as _TT
+        repo = TasksRepository(db)
+        task = await repo.create_task(
+            company_id=company_id,
+            title=title,
+            description=description,
+            task_type=_TT(task_type),
+            priority=_TP(priority),
+            created_by_agent="automation_handler",
+            related_job_id=related_job_id,
+            related_candidate_id=related_candidate_id,
+            context=context or {},
+            is_automated=True,
+        )
+        logger.info(
+            "[TASK] Created %s task %s for company %s",
+            task_type, task.id, company_id,
+        )
+        return task.id
+    except Exception as e:
+        logger.warning(
+            "[TASK] Failed to create automation task (fail-open): %s", e, exc_info=True
+        )
+        return None
+
 
 async def validate_multi_tenancy(
     db: AsyncSession,
@@ -140,6 +184,16 @@ async def handle_screening_completed(
         logger.error(f"[CASCADE] Error sending screening feedback: {e}")
         result["cascade_errors"].append(f"feedback: {e}")
 
+    result["task_id"] = await _create_automation_task(
+        db=db,
+        company_id=company_id,
+        task_type="cv_review",
+        priority="high" if not passed else "medium",
+        title=f"Revisar triagem: candidato {candidate_id}",
+        description=f"Candidato {'aprovado' if passed else 'reprovado'} na triagem WSI. Revisar scores e confirmar.",
+        related_job_id=vacancy_id,
+        related_candidate_id=candidate_id,
+    )
     return result
 
 
@@ -182,6 +236,16 @@ async def handle_interview_scheduled(
             category="automation"
         )
 
+        await _create_automation_task(
+            db=db,
+            company_id=company_id,
+            task_type="interview_schedule",
+            priority="high",
+            title=f"Preparar entrevista: candidato {candidate_id}",
+            description=f"Entrevista {interview_type} agendada para {interview_datetime or 'data a confirmar'}.",
+            related_job_id=vacancy_id,
+            related_candidate_id=candidate_id,
+        )
         return {
             "action": "interview_scheduled",
             "candidate_id": candidate_id,
@@ -232,6 +296,16 @@ async def handle_interview_completed(
             category="automation"
         )
 
+        await _create_automation_task(
+            db=db,
+            company_id=company_id,
+            task_type="feedback_pending",
+            priority="high",
+            title=f"Fornecer feedback: candidato {candidate_id}",
+            description=f"Entrevista concluída. Resultado: {outcome or 'Pendente avaliação'}. Registrar parecer.",
+            related_job_id=vacancy_id,
+            related_candidate_id=candidate_id,
+        )
         return {
             "action": "interview_completed",
             "candidate_id": candidate_id,
@@ -280,6 +354,16 @@ async def handle_candidate_inactive(
             category="automation"
         )
 
+        await _create_automation_task(
+            db=db,
+            company_id=company_id,
+            task_type="follow_up",
+            priority="medium",
+            title=f"Acompanhar candidato inativo: {candidate_id}",
+            description=f"Sem atividade há {days_inactive} dias. Última ação: {last_activity or 'N/A'}.",
+            related_job_id=vacancy_id,
+            related_candidate_id=candidate_id,
+        )
         return {
             "action": "candidate_inactive",
             "candidate_id": candidate_id,
@@ -326,6 +410,16 @@ async def handle_candidate_no_show(
             category="automation"
         )
 
+        await _create_automation_task(
+            db=db,
+            company_id=company_id,
+            task_type="follow_up",
+            priority="high",
+            title=f"Reagendar ou encerrar: candidato no-show {candidate_id}",
+            description="Candidato não compareceu à entrevista. Decidir: reagendar ou reprovar.",
+            related_job_id=vacancy_id,
+            related_candidate_id=candidate_id,
+        )
         return {
             "action": "candidate_no_show",
             "candidate_id": candidate_id,
@@ -389,6 +483,16 @@ async def handle_offer_sent(
         except Exception as _e:
             logger.warning("[HANDLER] Failed to publish offer.sent event: %s", _e)
 
+        await _create_automation_task(
+            db=db,
+            company_id=company_id,
+            task_type="general",
+            priority="medium",
+            title=f"Acompanhar proposta: candidato {candidate_id}",
+            description="Proposta enviada. Monitorar resposta do candidato.",
+            related_job_id=vacancy_id,
+            related_candidate_id=candidate_id,
+        )
         return {
             "action": "offer_sent",
             "candidate_id": candidate_id,
@@ -434,6 +538,16 @@ async def handle_candidate_hired(
             category="automation"
         )
 
+        await _create_automation_task(
+            db=db,
+            company_id=company_id,
+            task_type="send_report",
+            priority="medium",
+            title=f"Encerrar processo seletivo: candidato contratado {candidate_id}",
+            description=f"Candidato contratado. Início previsto: {start_date or 'A definir'}. Fechar vaga e gerar relatório.",
+            related_job_id=vacancy_id,
+            related_candidate_id=candidate_id,
+        )
         return {
             "action": "candidate_hired",
             "candidate_id": candidate_id,
@@ -799,6 +913,15 @@ async def handle_job_published(
         logger.error(f"[CASCADE] Error activating sourcing for job {job_id}: {e}")
         result["cascade_errors"].append(f"sourcing_activation: {e}")
 
+    result["task_id"] = await _create_automation_task(
+        db=db,
+        company_id=company_id,
+        task_type="sourcing",
+        priority="medium",
+        title=f"Acompanhar sourcing: vaga {job_id}",
+        description=f"Vaga '{job_title or job_id}' publicada. Sourcing ativado. Revisar candidatos encontrados.",
+        related_job_id=job_id,
+    )
     return result
 
 
@@ -893,6 +1016,15 @@ async def handle_candidates_sourced(
             logger.error(f"[CASCADE] Error triggering screening pipeline: {e}")
             result["cascade_errors"].append(f"screening_pipeline: {e}")
 
+    result["task_id"] = await _create_automation_task(
+        db=db,
+        company_id=company_id,
+        task_type="cv_review",
+        priority="medium",
+        title=f"Revisar candidatos encontrados: vaga {job_id}",
+        description=f"{candidates_added} candidatos adicionados à vaga '{job_title or job_id}'. Triagem iniciada.",
+        related_job_id=job_id,
+    )
     return result
 
 
