@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button"
 import { ChevronDown, Loader2 } from "lucide-react"
 import { useTranslations } from "next-intl"
+import { LOAD_MORE_STEP } from "@/stores/candidates-store"
 
 interface CandidatesLoadMoreFooterProps {
   showSearchResults: boolean
@@ -37,7 +38,7 @@ export function CandidatesLoadMoreFooter({
               ) : (
                 <ChevronDown className="w-4 h-4" />
               )}
-              {isLoadingMore ? t('loadMore.loading') : t('loadMore.loadMoreCandidates')}
+              {isLoadingMore ? t('loadMore.loading') : t('loadMore.loadMoreCandidates', { count: LOAD_MORE_STEP })}
             </Button>
             <span className="text-xs text-lia-text-tertiary" aria-live="polite" aria-atomic="true">
               {t('loadMore.showingOf', { displayed: Math.min(displayedResultsCount, sortedCandidatesLength), total: sortedCandidatesLength })}

@@ -10,6 +10,7 @@ import { useNavigationStore } from "@/stores/navigation-store"
 import type { Candidate } from "@/components/pages/candidates/types"
 import type { ParsedEntities } from "@/components/search/smart-search-input"
 import type { TableFilters } from "@/hooks/candidates/use-candidate-filters"
+import { getInitialDisplayedResultsCount } from '@/stores/candidates-store'
 
 interface UseCandidatesNavigationParams {
   // View state setters
@@ -85,7 +86,7 @@ export function useCandidatesNavigation({
   useEffect(() => {
     if (expandedSearchParam === 'true') {
       setShowSearchResults(true)
-      setDisplayedResultsCount(10)
+      setDisplayedResultsCount(getInitialDisplayedResultsCount())
       setActiveTab('search')
     }
   }, [expandedSearchParam, setShowSearchResults, setDisplayedResultsCount, setActiveTab])

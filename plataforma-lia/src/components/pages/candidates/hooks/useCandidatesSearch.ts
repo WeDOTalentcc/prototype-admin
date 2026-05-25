@@ -10,6 +10,7 @@ import type { ParsedEntities, SearchMode, SearchMetadata } from "@/components/se
 import type { SearchFilters } from "@/components/search/advanced-filters-modal"
 import type { SearchAnalytics } from "@/components/proactive-insight-card"
 import { toast } from "sonner"
+import { LOAD_MORE_STEP } from '@/stores/candidates-store'
 
 export type PendingSearchRequest = {
   query: string
@@ -276,7 +277,7 @@ export function useCandidatesSearch(ctx: CandidatesSearchContext) {
   const handleLoadMore = async () => {
     setIsLoadingMore(true)
     await new Promise(resolve => setTimeout(resolve, 300))
-    setDisplayedResultsCount(prev => prev + 10)
+    setDisplayedResultsCount(prev => prev + LOAD_MORE_STEP)
     setIsLoadingMore(false)
   }
 

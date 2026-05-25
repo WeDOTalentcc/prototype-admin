@@ -11,6 +11,7 @@ import { isGlobalSource } from "@/lib/utils/source-detection"
 import type { Candidate } from "@/components/pages/candidates/types"
 import type { ParsedEntities, SearchMode, SearchMetadata } from "@/components/search/smart-search-input"
 import type { ChatMessage } from "./candidates-core"
+import { getInitialDisplayedResultsCount } from '@/stores/candidates-store'
 
 export type SearchSource = 'local' | 'global' | 'hybrid'
 
@@ -331,7 +332,7 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
       setPearchResultsCount(Math.max(0, (pearchCount > 0 ? pearchCount : globalCandidates.length) - hiddenGlobalCount))
       setCreditsUsedInSearch(creditsUsed || 0)
       setShowSearchResults(true)
-      setDisplayedResultsCount(10)
+      setDisplayedResultsCount(getInitialDisplayedResultsCount())
 
       setSearchResults(prev => ({
         ...prev,

@@ -4,6 +4,7 @@ import type React from "react"
 import type { Candidate } from "../types"
 import { toast } from "sonner"
 import type { ChatMessage } from "./candidates-core"
+import { getInitialDisplayedResultsCount } from '@/stores/candidates-store'
 
 export interface CandidatesCVHandlersContext {
   setCandidates: (v: Candidate[]) => void
@@ -110,7 +111,7 @@ export function useCandidatesCVHandlers(ctx: CandidatesCVHandlersContext) {
         setHasSearchResults(true)
         setSearchResultsCount(mappedCandidates.length)
         setShowSearchResults(true)
-        setDisplayedResultsCount(10)
+        setDisplayedResultsCount(getInitialDisplayedResultsCount())
 
         toast.info("CV analisado", { description: `Encontrados ${mappedCandidates.length} candidatos similares` })
       }

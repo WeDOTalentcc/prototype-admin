@@ -211,7 +211,8 @@ const getDefaultSections = (): SettingsSection[] => [
     category: 'advanced',
     estimatedTime: 0,
     subsections: [
-      { id: 'fairness', title: 'Fairness & Compliance', description: 'Eventos de equidade e auditoria da IA', fields: [] },
+      // PR 2 (2026-05-25): subsection 'fairness' removida — dashboard movido para /wedo-admin/fairness/ (staff only).
+      // Plan canonical: ~/.claude/plans/jolly-roaming-moler.md
       { id: 'lgpd-candidatos', title: 'LGPD Candidatos', description: 'Pedidos Art. 20 de candidatos (prazo 15 dias úteis)', fields: [] },
       { id: 'studio', title: 'Agent Studio', description: 'Compliance do Agent Studio', fields: [] },
       { id: 'ai-transparency', title: 'AI Transparency', description: 'EU AI Act Art. 13/14 + Annex III (T-18)', fields: [] },
@@ -228,7 +229,6 @@ const getDefaultSections = (): SettingsSection[] => [
     estimatedTime: 0,
     subsections: [
       { id: 'audit-logs', title: 'Audit Logs', description: 'Eventos de auditoria do sistema', fields: [] },
-      { id: 'bias-audit', title: 'Bias Audit', description: 'Auditorias de viés (Four-Fifths Rule)', fields: [] },
       { id: 'automation-rules', title: 'Automation Rules', description: 'Regras de automação por gatilho', fields: [] },
       { id: 'policy-engine', title: 'Policy Engine', description: 'Políticas de compliance por setor', fields: [] },
       { id: 'dsr', title: 'DSR / LGPD', description: 'Data Subject Requests', fields: [] },
@@ -539,7 +539,7 @@ export default function SettingsPageEnhanced() {
       case 'fairness-compliance':
         return (
           <ErrorBoundarySection>
-            <FairnessComplianceHub activeSubsection={activeSubsection || 'fairness'} />
+            <FairnessComplianceHub activeSubsection={activeSubsection || 'lgpd-candidatos'} />
           </ErrorBoundarySection>
         )
       case 'governanca':
