@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react"
 import { TwinsList, EvaluateWithTwinModal, CreateDigitalTwinModal } from "@/components/pages-agent-studio/DigitalTwinComponents"
-import MultiStrategySearchPanel from "@/components/pages-agent-studio/MultiStrategySearchPanel"
 import CustomAgentsTab from "@/components/pages-agent-studio/CustomAgentsTab"
 import { TemplateGallery, AgentCard as CustomAgentCard, AgentCardSkeleton, AgentDetailsPanel, DeployDialog, ConversationalCreator, TestDebugPanel, ApprovalsList } from "@/components/pages-agent-studio/custom-agents"
 // UX_AUDIT T4 (2026-05-21): TemplateClonePanel substitui TemplatePreviewModal como
@@ -20,7 +19,7 @@ import {
   Factory, HeartPulse, ShoppingCart, Code, Truck, Brain,
   ChevronRight, Zap, Target, ArrowRight,
   Activity, Eye, ThumbsUp, ThumbsDown, RefreshCw,
-  Loader2, Users, Wand2, Search, Store,
+  Loader2, Users, Wand2, Store,
   GraduationCap, BarChart3, Clock
 } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -132,11 +131,15 @@ export default function AgentStudioPage({
   const { agents: customAgents, mutate: mutateCustomAgents } = useCustomAgents()
   const { selectTemplate } = useAgentStudioStore()
   const [selectedTemplate, setSelectedTemplate] = useState<SectorTemplate | null>(null)
-  // UX_AUDIT_ESTUDIO_AGENTES_2026-05-21 T2: 5 tabs -> 3 tabs canonical.
+  // UX_AUDIT_ESTUDIO_AGENTES_2026-05-21 T2 + Sprint 4 v3 (2026-05-25):
+  // 5 tabs -> 3 tabs -> 2 tabs canonical.
   // - "my-agents" consolida Captacao + Personalizados + Gemeos via sub-tabs.
-  // - "marketplace" e "search" (renomeado de "smart search") permanecem top-level.
+  // - "marketplace" permanece top-level.
+  // - Sprint 4 v3: tab "search" (Busca de Talentos) migrou pra sub-tab
+  //   "Captação" do TalentPoolPage. Coexiste com agente automatico via
+  //   origin tag (search=manual, agent=auto) no mesmo banco.
   // Default sub-section = "personalizados" (mais usado, per audit doc).
-  type MainTab = "my-agents" | "marketplace" | "search"
+  type MainTab = "my-agents" | "marketplace"
   type MySubTab = "captacao" | "personalizados" | "gemeos"
   const [activeTab, setActiveTab] = useState<MainTab>("my-agents")
   const [mySubTab, setMySubTab] = useState<MySubTab>("personalizados")
@@ -163,8 +166,8 @@ export default function AgentStudioPage({
       "twins": { mainTab: "my-agents", subTab: "gemeos" },
       "gemeos": { mainTab: "my-agents", subTab: "gemeos" },
       "marketplace": { mainTab: "marketplace" },
-      "search": { mainTab: "search" },
-      "busca": { mainTab: "search" },
+      // Sprint 4 v3 (2026-05-25): legacy ?tab=search / ?tab=busca caem no default
+      // myAgents — a sub-tab Sourcing canonical agora vive em TalentPoolPage.
       // current canonical ids (no-op but accepted)
       "my-agents": { mainTab: "my-agents" },
     }
@@ -368,7 +371,6 @@ export default function AgentStudioPage({
               count: agents.length + customAgents.length,
             },
             { id: "marketplace", label: t("studio.tabs.marketplace"), icon: Store },
-            { id: "search", label: t("studio.tabs.talentSearch"), icon: Search },
           ]}
           activeTab={activeTab}
           onTabChange={(id) => setActiveTab(id as MainTab)}
@@ -739,15 +741,6 @@ export default function AgentStudioPage({
           </div>
         )}
 
-        {activeTab === "search" && (
-          <div className="space-y-6">
-            <TabSectionHeader
-              title={t("studio.search.fourStrategies")}
-              subtitle={t("studio.search.searchDesc")}
-            />
-            <MultiStrategySearchPanel />
-          </div>
-        )}
       </div>
 
       {/* UX_AUDIT T4 (2026-05-21): TemplateClonePanel substitui TemplatePreviewModal

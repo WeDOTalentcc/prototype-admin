@@ -114,6 +114,12 @@ jobs:
         # Canonical: backend agent_template_catalog + adapter.
         working-directory: plataforma-lia
         run: python3 scripts/check_no_hardcoded_templates_import.py
+      - name: Sourcing panel canonical import sensor (Sprint 4 v3 — BLOCKING)
+        # Sensor #4 harness 2026-05-25: bloqueia dual-mount do panel de
+        # sourcing. Canonical: sub-tab Sourcing do TalentPoolPage. Import fora
+        # desse path = regressão (era exatamente o bug que Sprint 4 v3 corrigiu).
+        working-directory: plataforma-lia
+        run: python3 scripts/check_no_dup_search_panel_import.py
 
       - name: Unit & Component tests
         run: npx vitest run --reporter=verbose

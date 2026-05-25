@@ -173,6 +173,29 @@ _company_gate: str = Depends(require_company_id)):
         raise HTTPException(status_code=500, detail="internal error") from e
 
 
+@router.get("/ideal-profiles/{profile_id}", response_model=IdealProfileResponse)
+async def get_ideal_profile(
+    profile_id: uuid.UUID,
+    ip_repo: IdealProfileRepository = Depends(get_ideal_profile_repo),
+    company_id: str = Depends(require_company_id),
+):
+    # Sprint 4 v3 (2026-05-25): canonical endpoint para o SourcingTab
+    # do TalentPoolPage pre-popular inputs a partir do arquetipo vinculado ao pool.
+    # Multi-tenancy: 404 quando profile pertence a outro tenant (nao 403,
+    # para nao vazar existencia cross-tenant).
+    try:
+        profile = await ip_repo.get_by_id(profile_id)
+        if not profile:
+            raise HTTPException(status_code=404, detail="Ideal profile not found")
+        if str(profile.company_id) != str(company_id):
+            raise HTTPException(status_code=404, detail="Ideal profile not found")
+        return profile
+    except HTTPException:
+        raise
+    except Exception:
+        logger.exception("Error fetching ideal profile")
+        raise HTTPException(status_code=500, detail="internal error") from None
+
 @router.put("/ideal-profiles/{profile_id}", response_model=IdealProfileResponse)
 async def update_ideal_profile(
     profile_id: uuid.UUID,

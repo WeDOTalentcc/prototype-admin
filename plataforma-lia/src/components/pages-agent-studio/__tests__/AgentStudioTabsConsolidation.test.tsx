@@ -95,21 +95,22 @@ function setUrl(qs: string) {
 }
 
 describe("Agent Studio — T2 consolidation (5 tabs -> 3 tabs)", () => {
-  it("renderiza exatamente 3 main tabs top-level", async () => {
+  it("renderiza exatamente 2 main tabs top-level (Sprint 4 v3: talentSearch movido pra TalentPoolPage)", async () => {
     render(<AgentStudioPage />)
     await waitFor(() => {
       // Tab navigation usa role="tablist" via PageTabNavigation. Dois tablists
-      // aparecem quando "Meus Agentes" esta ativo (top-level + sub-tabs). O top
-      // tablist eh o PRIMEIRO no DOM e contem os 3 main tabs canonical.
+      // aparecem quando "Meus Agentes" esta ativo (top-level + sub-tabs).
+      // Sprint 4 v3 (2026-05-25): tab "Busca de Talentos" migrou pra sub-tab
+      // "Captação" do TalentPoolPage. Studio agora tem 2 main tabs.
       const tablists = screen.getAllByRole("tablist", { name: /tabs/i })
       expect(tablists.length).toBeGreaterThanOrEqual(1)
       const top = tablists[0]
       const directTabs = top.querySelectorAll(":scope > button[role='tab']")
-      expect(directTabs.length).toBe(3)
+      expect(directTabs.length).toBe(2)
       const labels = Array.from(directTabs).map((b) => b.textContent ?? "")
       expect(labels.join("|")).toContain("studio.tabs.myAgents")
       expect(labels.join("|")).toContain("studio.tabs.marketplace")
-      expect(labels.join("|")).toContain("studio.tabs.talentSearch")
+      expect(labels.join("|")).not.toContain("studio.tabs.talentSearch")
     })
   })
 
@@ -147,15 +148,6 @@ describe("Agent Studio — T2 consolidation (5 tabs -> 3 tabs)", () => {
       fireEvent.click(mkTab)
     })
     expect(screen.getByTestId("stub-marketplace")).toBeTruthy()
-  })
-
-  it("clicar em Busca de Talentos mostra MultiStrategySearchPanel", async () => {
-    render(<AgentStudioPage />)
-    const searchTab = await screen.findByRole("tab", { name: /studio\.tabs\.talentSearch/i })
-    await act(async () => {
-      fireEvent.click(searchTab)
-    })
-    expect(screen.getByTestId("stub-multi-strategy")).toBeTruthy()
   })
 
   it("clicar em sub-tab Gemeos alterna o conteudo para TwinsList", async () => {
@@ -212,22 +204,23 @@ describe("Agent Studio — T2 consolidation (5 tabs -> 3 tabs)", () => {
     expect(screen.getByTestId("stub-marketplace")).toBeTruthy()
   })
 
-  it("URL ?tab=search (legacy) ativa Busca de Talentos", async () => {
+  it("URL ?tab=search (legacy de Sprint 4 v3) cai no default myAgents — tab removida", async () => {
+    // Sprint 4 v3 (2026-05-25): tab 'search' migrou pra TalentPoolPage sub-tab Captação.
+    // URL legacy ?tab=search nao tem mais correspondencia no Studio — cai no default.
     setUrl("?tab=search")
     render(<AgentStudioPage />)
     await waitFor(() => {
-      const searchTab = screen.getByRole("tab", { name: /studio\.tabs\.talentSearch/i })
-      expect(searchTab.getAttribute("aria-selected")).toBe("true")
+      const myAgentsTab = screen.getByRole("tab", { name: /studio\.tabs\.myAgents/i })
+      expect(myAgentsTab.getAttribute("aria-selected")).toBe("true")
     })
-    expect(screen.getByTestId("stub-multi-strategy")).toBeTruthy()
   })
 
-  it("URL ?tab=busca tambem mapeia pra Busca de Talentos", async () => {
+  it("URL ?tab=busca (legacy de Sprint 4 v3) cai no default myAgents — tab removida", async () => {
     setUrl("?tab=busca")
     render(<AgentStudioPage />)
     await waitFor(() => {
-      const searchTab = screen.getByRole("tab", { name: /studio\.tabs\.talentSearch/i })
-      expect(searchTab.getAttribute("aria-selected")).toBe("true")
+      const myAgentsTab = screen.getByRole("tab", { name: /studio\.tabs\.myAgents/i })
+      expect(myAgentsTab.getAttribute("aria-selected")).toBe("true")
     })
   })
 

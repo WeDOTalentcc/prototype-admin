@@ -18,6 +18,7 @@ import {
 } from"@/lib/design-tokens"
 import CandidateOriginBadge from"@/components/pages-agent-studio/CandidateOriginBadge"
 import VoiceScreeningButton from"@/components/pages-agent-studio/VoiceScreeningButton"
+import SourcingTab from "./sub-tabs/sourcing-tab"
 
 // ---------- Types ----------
 
@@ -81,6 +82,7 @@ const ORIGIN_ICONS: Record<string, { icon: string; label: string }> = {
 
 const TABS = [
   { id:"candidates", label:"Candidatos", icon: Users },
+  { id:"sourcing", label:"Captação", icon: Search },
   { id:"agents", label:"Agentes", icon: Bot },
   { id:"config", label:"Configurações", icon: Settings },
 ] as const
@@ -296,6 +298,14 @@ export default function TalentPoolPage({
             isLoading={isLoading}
             onOpenCandidate={onOpenCandidate}
             onMoveToJob={() => setShowMoveModal(true)}
+          />
+        )}
+
+        {activeTab ==="sourcing" && (
+          <SourcingTab
+            poolId={poolId}
+            idealProfileId={pool.ideal_profile_id}
+            onAddToPool={() => { loadCandidates(); loadPool() }}
           />
         )}
 

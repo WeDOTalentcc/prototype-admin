@@ -20,7 +20,13 @@ import {
   DigitalTwinOnboarding,
   TwinsList,
 } from "../DigitalTwinComponents"
-import MultiStrategySearchPanel from "../MultiStrategySearchPanel"
+import SourcingTab from "@/components/pages-talent-pools/sub-tabs/sourcing-tab"
+
+// Sprint 4 v3 (2026-05-25): SourcingTab requires poolId. Mock useIdealProfile to avoid SWR fetch.
+import { vi as _viCanonical } from "vitest"
+_viCanonical.mock("@/hooks/talent-pools/use-ideal-profile", () => ({
+  useIdealProfile: () => ({ data: null, isLoading: false, error: null }),
+}))
 
 describe("Agent Studio — harmonização visual (Task #1044)", () => {
   it("DigitalTwinHeader renderiza header curto (h2 text-sm) sem hero/gradient", () => {
@@ -42,8 +48,8 @@ describe("Agent Studio — harmonização visual (Task #1044)", () => {
     expect(steps.length).toBe(4)
   })
 
-  it("MultiStrategySearchPanel: inputs usam rounded-md e focus ring tokenizado", () => {
-    const { container } = render(<MultiStrategySearchPanel />)
+  it("SourcingTab: inputs usam rounded-md e focus ring tokenizado", () => {
+    const { container } = render(<SourcingTab poolId="pool-test" />)
     const inputs = container.querySelectorAll("input[type='text']")
     expect(inputs.length).toBe(3)
     inputs.forEach((input) => {
@@ -57,8 +63,8 @@ describe("Agent Studio — harmonização visual (Task #1044)", () => {
     })
   })
 
-  it("MultiStrategySearchPanel: container externo usa space-y-6 (alinhado ao trio)", () => {
-    const { container } = render(<MultiStrategySearchPanel />)
+  it("SourcingTab: container externo usa space-y-6 (alinhado ao trio)", () => {
+    const { container } = render(<SourcingTab poolId="pool-test" />)
     const root = container.firstElementChild
     expect(root?.className).toContain("space-y-6")
   })
