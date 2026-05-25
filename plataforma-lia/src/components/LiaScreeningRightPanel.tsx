@@ -118,7 +118,7 @@ export function LiaScreeningRightPanel({ currentStep, screeningData, jobData }: 
                   {
                     category:"Experiência Técnica",
                     questions: [
-                      `Experiência com ${(jobData as Record<string, unknown>)?.requirements?.[0] || 'tecnologias'}`,"Projeto desafiador recente"
+                      `Experiência com ${((jobData as Record<string, unknown>)?.requirements as unknown[])?.[0] || 'tecnologias'}`,"Projeto desafiador recente"
                     ]
                   },
                   {

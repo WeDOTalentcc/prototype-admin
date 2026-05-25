@@ -384,7 +384,7 @@ export function SCMSectionPerguntasEdit({
               if (block.id === 4) return isBlock4(q)
               return false
             })
-            const blockGenerated = generatedQuestions[block.id] || []
+            const blockGenerated = generatedQuestions[block.id as number] || []
             const acceptedCountForBlock = blockGenerated.filter((q: ScreeningQuestionItem) => acceptedQuestions.has(q.id)).length
             const eliminatoryCount = blockQuestions.filter((q: ScreeningQuestionItem) => q.type === 'eliminatory' || q.required).length
             const informativeCount = blockQuestions.length - eliminatoryCount
@@ -421,16 +421,16 @@ export function SCMSectionPerguntasEdit({
                 {isExpanded && (
                   <div className={`p-3 space-y-2 ${!block.editable ? 'bg-lia-bg-secondary/30' : ''}`}>
                     {!block.editable ? (
-                      WSI_AUTOMATIC_MESSAGES[block.id] ? (
+                      WSI_AUTOMATIC_MESSAGES[block.id as number] ? (
                         <div className="rounded-xl border border-lia-border-default bg-lia-bg-secondary/50 overflow-hidden">
                           <div className="px-3 py-2 bg-lia-bg-tertiary">
-                            <p className="text-xs font-medium text-lia-text-primary">{WSI_AUTOMATIC_MESSAGES[block.id].title}</p>
+                            <p className="text-xs font-medium text-lia-text-primary">{WSI_AUTOMATIC_MESSAGES[block.id as number].title}</p>
                           </div>
                           <div className="p-3">
-                            <div className="text-xs text-lia-text-primary leading-relaxed whitespace-pre-line">{formatMessageWithVariables(WSI_AUTOMATIC_MESSAGES[block.id].message)}</div>
+                            <div className="text-xs text-lia-text-primary leading-relaxed whitespace-pre-line">{formatMessageWithVariables(WSI_AUTOMATIC_MESSAGES[block.id as number].message)}</div>
                           </div>
                           <div className="px-3 py-2 border-t border-lia-border-subtle bg-lia-bg-secondary/50">
-                            <p className="text-micro text-lia-text-secondary italic">{WSI_AUTOMATIC_MESSAGES[block.id].note}</p>
+                            <p className="text-micro text-lia-text-secondary italic">{WSI_AUTOMATIC_MESSAGES[block.id as number].note}</p>
                           </div>
                         </div>
                       ) : (
@@ -528,13 +528,13 @@ export function SCMSectionPerguntasEdit({
                                         <button className="border border-lia-border-subtle text-lia-text-secondary text-micro px-2 py-1 rounded-full hover:bg-status-error/10 transition-colors motion-reduce:transition-none" onClick={() => {
                                           if (confirm('Remover pergunta aceita?')) {
                                             setAcceptedQuestions(prev => { const next = new Set(prev); next.delete(item.id); return next })
-                                            setGeneratedQuestions(prev => ({ ...prev, [block.id]: (prev[block.id] || []).filter((q: ScreeningQuestionItem) => q.id !== item.id) }))
+                                            setGeneratedQuestions(prev => ({ ...prev, [block.id]: (prev[block.id as number] || []).filter((q: ScreeningQuestionItem) => q.id !== item.id) }))
                                           }
                                         }}>Remover</button>
                                       ) : (
                                         <>
                                           <button className="bg-lia-btn-primary-bg text-lia-btn-primary-text text-micro px-2 py-1 rounded-full hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none" onClick={() => setAcceptedQuestions(prev => new Set(prev).add(item.id))}>Aceitar</button>
-                                          <button className="border border-lia-border-subtle text-lia-text-secondary text-micro px-2 py-1 rounded-full hover:bg-status-error/10 transition-colors motion-reduce:transition-none" onClick={() => setGeneratedQuestions(prev => ({ ...prev, [block.id]: (prev[block.id] || []).filter((q: ScreeningQuestionItem) => q.id !== item.id) }))}>Descartar</button>
+                                          <button className="border border-lia-border-subtle text-lia-text-secondary text-micro px-2 py-1 rounded-full hover:bg-status-error/10 transition-colors motion-reduce:transition-none" onClick={() => setGeneratedQuestions(prev => ({ ...prev, [block.id]: (prev[block.id as number] || []).filter((q: ScreeningQuestionItem) => q.id !== item.id) }))}>Descartar</button>
                                         </>
                                       )}
                                     </div>

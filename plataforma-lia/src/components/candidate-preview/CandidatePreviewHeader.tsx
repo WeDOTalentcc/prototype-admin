@@ -300,13 +300,13 @@ export function CandidatePreviewHeader({
             </p>
             <span className={`${textStyles.bodySmall} text-lia-text-secondary`}>•</span>
             <p className={`${textStyles.bodySmall} truncate`}>
-              {(c.work_history?.[0] as Record<string, unknown> | undefined)?.company as React.ReactNode || c.current_company as React.ReactNode || c.company as React.ReactNode || 'Empresa'}
+              {(c.work_history as Array<Record<string, unknown>> | undefined)?.[0]?.company as React.ReactNode || c.current_company as React.ReactNode || c.company as React.ReactNode || 'Empresa'}
             </p>
-            {((c.work_history?.[0] as Record<string, unknown> | undefined)?.industry || (c.work_history?.[0] as Record<string, unknown> | undefined)?.segment || c.company_segment || c.industry) && (
+            {((c.work_history as Array<Record<string, unknown>> | undefined)?.[0]?.industry || (c.work_history as Array<Record<string, unknown>> | undefined)?.[0]?.segment || c.company_segment || c.industry) && (
               <>
                 <span className={`${textStyles.description} text-lia-text-secondary`}>•</span>
                 <p className={`${textStyles.description} truncate`}>
-                  {((c.work_history?.[0] as Record<string, unknown> | undefined)?.industry || (c.work_history?.[0] as Record<string, unknown> | undefined)?.segment || c.company_segment || c.industry) as React.ReactNode}
+                  {((c.work_history as Array<Record<string, unknown>> | undefined)?.[0]?.industry || (c.work_history as Array<Record<string, unknown>> | undefined)?.[0]?.segment || c.company_segment || c.industry) as React.ReactNode}
                 </p>
               </>
             )}

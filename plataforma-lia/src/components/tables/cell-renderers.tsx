@@ -164,7 +164,7 @@ export function LocationCell({ candidate }: { candidate: TableCandidate }) {
 }
 
 export function CompanyCell({ candidate }: { candidate: TableCandidate }) {
-  const company = candidate.current_company || candidate.work_history?.[0]?.company
+  const company = (candidate.current_company || (candidate.work_history as Array<Record<string, unknown>> | undefined)?.[0]?.company) as string | null | undefined
 
   if (!company) return null
 

@@ -485,7 +485,7 @@ const RecentItemRow = React.memo(({
   onRemove: (id: string, type: RecentItem['type']) => void
 }) => {
   const t = useTranslations('sidebar')
-  const config = RECENT_TYPE_CONFIG[item.type]
+  const config = RECENT_TYPE_CONFIG[item.type as keyof typeof RECENT_TYPE_CONFIG]
   const Icon = config.icon
 
   return (

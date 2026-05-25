@@ -560,7 +560,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                     </Button>
                   </div>
                   <div className="flex flex-wrap gap-1.5">
-                    {(formData.languages || []).map((lang, idx) => (
+                    {(formData.languages as { language: string; level: string; required?: boolean }[] || []).map((lang, idx) => (
                       <Chip density="relaxed" key={idx} variant="neutral" muted className="py-1 px-2 border border-wedo-purple/30">
                         {lang.language} ({lang.level})
                         <button

@@ -94,7 +94,7 @@ export function PipelineDecisionBar({
     }
 
     const position = (candidate.position || candidate.title || "") as string
-    const company = ((candidate.work_history?.[0] as Record<string, unknown>)?.company || candidate.current_company || candidate.company || "") as string
+    const company = (((candidate.work_history as Array<Record<string, unknown>> | undefined)?.[0])?.company || candidate.current_company || candidate.company || "") as string
     const years = (candidate.years_of_experience || candidate.yearsOfExperience) as number | undefined
     const seniority = (candidate.seniority_level || candidate.seniorityLevel || "") as string
 

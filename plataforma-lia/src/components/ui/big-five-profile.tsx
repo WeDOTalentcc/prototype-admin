@@ -214,7 +214,7 @@ export function BigFiveProfile({ scores: rawScores, compact = false, showInsight
         {/* Layout compacto e criativo em duas colunas */}
         <div className="grid grid-cols-2 gap-2">
           {dimensions.map((dimension) => {
-            const score = scores[dimension.key]
+            const score = scores[dimension.key as keyof typeof scores]
             const interpretation = getScoreInterpretation(score)
             const isHigh = score >= 60
             const relevantTraits = isHigh ? dimension.traits.high : dimension.traits.low

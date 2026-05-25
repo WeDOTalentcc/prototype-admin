@@ -139,7 +139,7 @@ export function AgentDetailsPanel({ agent, open, onClose, onDeploy, onTest }: Ag
               </div>
             ) : (
               <div className="space-y-1.5">
-                {deployments.map((dep) => (
+                {deployments.map((dep: { id: string; trigger_mode: string; target_name?: string | null; target_type?: string | null; execution_count?: number; is_active?: boolean }) => (
                   <div key={dep.id} className={cn(cardStyles.compact, "flex items-center justify-between")}>
                     <div className="flex items-center gap-2">
                       {TRIGGER_ICONS[dep.trigger_mode] || <Zap className="w-3 h-3" />}
