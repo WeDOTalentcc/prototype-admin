@@ -259,8 +259,11 @@ async def list_candidates(
     sort_order: str | None = None,
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
     rails_adapter: RailsAdapter = Depends(get_rails_adapter),
-company_id: str = Depends(require_company_id)):
+    current_user: User = Depends(get_current_user_or_demo),
+    company_id: str = Depends(require_company_id),
+):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
+    # Sprint 2 Phase 4 RBAC: dept scope filter via current_user.department_id (soft-launch).
     """List candidates. When RAILS_API_URL is configured, tries Rails first then falls back to local DB."""
     # Only call Rails when explicitly enabled — avoids adapter's own DB fallback
     # bypassing endpoint-level filters and authorization.
@@ -310,6 +313,8 @@ company_id: str = Depends(require_company_id)):
             search=search, status=status, source=source, seniority=seniority, ids=id_list,
             skip=effective_skip, limit=limit, sort_by=sort_by, sort_order=sort_order,
         )
+        # Sprint 2 Phase 4 RBAC: dept scope filter (soft-launch). No-op when user has no dept_id.
+        candidates = await _filter_candidates_by_dept_scope(candidates, current_user)
         return {
             "total": total,
             "skip": effective_skip,
@@ -329,7 +334,9 @@ async def get_candidate(
     candidate_id: str,
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
     rails_adapter: RailsAdapter = Depends(get_rails_adapter),
-company_id: str = Depends(require_company_id)):
+    current_user: User = Depends(get_current_user_or_demo),
+    company_id: str = Depends(require_company_id),
+):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get a candidate by ID. When RAILS_API_URL is configured, tries Rails first then falls back to local DB."""
     # Only call Rails when explicitly enabled — avoids adapter's own DB fallback
@@ -350,6 +357,10 @@ company_id: str = Depends(require_company_id)):
             raise HTTPException(status_code=404, detail="Candidate not found")
         candidate = await candidate_repo.get_by_id_str(candidate_id)
         if not candidate:
+            raise HTTPException(status_code=404, detail="Candidate not found")
+        # Sprint 2 Phase 4 RBAC: dept scope check (soft-launch). 404 (not 403) to avoid existence leak.
+        visible = await _filter_candidates_by_dept_scope([candidate], current_user)
+        if not visible:
             raise HTTPException(status_code=404, detail="Candidate not found")
         return ok_envelope(_serialize_candidate(candidate, full=True), meta={"source": "local"})
     except HTTPException:
