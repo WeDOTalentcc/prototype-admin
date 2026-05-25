@@ -17,6 +17,7 @@ interface BackendTask {
   due_date: string | null
   created_at: string | null
   related_job_id: string | null
+  related_candidate_id: string | null
   assigned_to_user_id: string | null
   created_by_agent: string | null
   is_automated: boolean
@@ -96,6 +97,9 @@ export interface PendingTask {
   priority: 'high' | 'medium' | 'low'
   dueDate: Date
   relatedJob?: string
+  relatedJobId?: string
+  relatedCandidateId?: string
+  rawTaskType?: string
   candidateName?: string
   createdAt: Date
 }
@@ -391,6 +395,9 @@ export function useTasksCore(onNavigate?: (page: string) => void) {
           priority: mapPriority(t.priority),
           dueDate: t.due_date ? new Date(t.due_date) : new Date(),
           relatedJob: t.related_job_id || undefined,
+          relatedJobId: t.related_job_id || undefined,
+          relatedCandidateId: t.related_candidate_id || t.context?.candidate_id as string | undefined || undefined,
+          rawTaskType: t.task_type || undefined,
           candidateName: t.context?.candidate_name || undefined,
           createdAt: t.created_at ? new Date(t.created_at) : new Date(),
         }))

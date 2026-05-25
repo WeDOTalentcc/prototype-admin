@@ -1,12 +1,13 @@
 "use client"
 
 import React from"react"
+import { useRouter } from "next/navigation"
 import { Button } from"@/components/ui/button"
 import { Chip } from "@/components/ui/chip"
 import {
   CheckCircle, XCircle,
   MessageSquare, Calendar, Search, FileText, Users,
-  Play, User, Briefcase
+  User, Briefcase, ExternalLink
 } from"lucide-react"
 import { getTaskPriorityStyle, getPriorityLabel, getTaskTypeIcon } from"../task-helpers"
 
@@ -19,6 +20,9 @@ interface Task {
   dueDate: Date
   candidateName?: string
   relatedJob?: string
+  relatedJobId?: string
+  relatedCandidateId?: string
+  rawTaskType?: string
 }
 
 interface TaskCardProps {
@@ -27,7 +31,56 @@ interface TaskCardProps {
   onReject: (task: Task) => void
 }
 
+interface CTA {
+  label: string
+  icon: React.ComponentType<{ className?: string }>
+  href: string
+  variant?: "outline" | "secondary"
+}
+
+function getTaskCTAs(rawTaskType: string | undefined, jobId?: string, candidateId?: string): CTA[] {
+  const candidateHref = candidateId ? `/funil-de-talentos/candidato/${candidateId}` : null
+  const jobHref = jobId ? `/jobs/${jobId}` : null
+
+  switch (rawTaskType) {
+    case 'cv_review':
+      return [
+        ...(candidateHref ? [{ label: 'Ver CV', icon: FileText, href: candidateHref }] : []),
+        ...(jobHref ? [{ label: 'Ver Vaga', icon: Briefcase, href: jobHref, variant: 'outline' as const }] : []),
+      ]
+    case 'feedback_pending':
+      return [
+        ...(candidateHref ? [{ label: 'Dar Feedback', icon: MessageSquare, href: candidateHref }] : []),
+        ...(jobHref ? [{ label: 'Ver Vaga', icon: Briefcase, href: jobHref, variant: 'outline' as const }] : []),
+      ]
+    case 'interview_schedule':
+    case 'interview_prep':
+      return [
+        ...(candidateHref ? [{ label: 'Ver Candidato', icon: User, href: candidateHref }] : []),
+        ...(jobHref ? [{ label: 'Ver Vaga', icon: Calendar, href: jobHref, variant: 'outline' as const }] : []),
+      ]
+    case 'follow_up':
+      return [
+        ...(candidateHref ? [{ label: 'Ver Candidato', icon: User, href: candidateHref }] : []),
+        ...(jobHref ? [{ label: 'Ver Vaga', icon: Briefcase, href: jobHref, variant: 'outline' as const }] : []),
+      ]
+    case 'sourcing':
+    case 'candidate_outreach':
+      return jobHref
+        ? [{ label: 'Ver Vaga', icon: Search, href: jobHref }]
+        : [{ label: 'Recrutar', icon: Users, href: '/recrutar' }]
+    case 'send_report':
+      return jobHref ? [{ label: 'Ver Relatório', icon: ExternalLink, href: jobHref }] : []
+    case 'general':
+    default:
+      return jobHref ? [{ label: 'Ver Vaga', icon: Briefcase, href: jobHref, variant: 'outline' as const }] : []
+  }
+}
+
 export const TaskCard = React.memo(function TaskCard({ task, onConfirm, onReject }: TaskCardProps) {
+  const router = useRouter()
+  const ctas = getTaskCTAs(task.rawTaskType, task.relatedJobId, task.relatedCandidateId)
+
   return (
     <div data-testid={`task-card-${task.id}`} className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-lg p-2.5 hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none bg-lia-bg-primary dark:bg-lia-bg-primary">
       <div className="flex items-start justify-between gap-2">
@@ -70,55 +123,23 @@ export const TaskCard = React.memo(function TaskCard({ task, onConfirm, onReject
         </div>
 
         <div className="flex flex-col gap-1 flex-shrink-0">
-          {task.type === 'feedback' && (
+          {ctas.length > 0 && (
             <div className="flex items-center gap-1">
-              <Button
-                size="sm"
-                onClick={() => onConfirm(task)}
-                className="h-5 px-2 text-xs gap-1 border-0"
-               
-              >
-                <MessageSquare className="w-2.5 h-2.5" />
-                Avaliar
-              </Button>
-              <Button size="sm" variant="outline" className="h-5 px-2 text-xs gap-1">
-                <FileText className="w-2.5 h-2.5" />
-                Ver CV
-              </Button>
-            </div>
-          )}
-          {task.type === 'entrevista' && (
-            <div className="flex items-center gap-1">
-              <Button
-                size="sm"
-                onClick={() => onConfirm(task)}
-                className="h-5 px-2 text-xs gap-1 border-0"
-               
-              >
-                <Play className="w-2.5 h-2.5" />
-                Iniciar
-              </Button>
-              <Button size="sm" variant="outline" className="h-5 px-2 text-xs gap-1">
-                <FileText className="w-2.5 h-2.5" />
-                Ver CV
-              </Button>
-            </div>
-          )}
-          {task.type === 'sourcing' && (
-            <div className="flex items-center gap-1">
-              <Button
-                size="sm"
-                onClick={() => onConfirm(task)}
-                className="h-5 px-2 text-xs gap-1 border-0"
-               
-              >
-                <Search className="w-2.5 h-2.5" />
-                Buscar
-              </Button>
-              <Button size="sm" variant="outline" className="h-5 px-2 text-xs gap-1">
-                <Users className="w-2.5 h-2.5" />
-                Ver Perfis
-              </Button>
+              {ctas.map((cta) => {
+                const Icon = cta.icon
+                return (
+                  <Button
+                    key={cta.href}
+                    size="sm"
+                    {...(cta.variant ? { variant: cta.variant } : {})}
+                    onClick={() => router.push(cta.href)}
+                    className="h-5 px-2 text-xs gap-1 border-0"
+                  >
+                    <Icon className="w-2.5 h-2.5" />
+                    {cta.label}
+                  </Button>
+                )
+              })}
             </div>
           )}
           <div className="flex items-center gap-1">
