@@ -87,6 +87,19 @@ export default {
         'lia-text-tertiary':        'var(--lia-text-tertiary)',
         'lia-text-disabled':        'var(--lia-text-disabled)',
         'lia-text-inverse':         'var(--lia-text-inverse)',
+        // ──────────────────────────────────────────────
+        // LEGACY ALIASES — canonical-fix 2026-05-25
+        // 4 tokens não-canonical herdados (Replit Agent / cherry-pick) usados em
+        // ~695 sites do codebase. Sintoma mais visível: modal "Nova Política de
+        // Remuneração" renderizando transparente porque `bg-lia-surface` não
+        // existia. Aliases mapeiam pro token canonical equivalente — fix no
+        // produtor resolve todos os consumidores em 1 commit.
+        // NÃO USAR em código novo. Preferir o token canonical à direita.
+        // ──────────────────────────────────────────────
+        'lia-surface':              'var(--lia-bg-elevated)',     // → preferir 'lia-bg-elevated' (modal/card) ou 'lia-bg-primary' (page)
+        'lia-border':               'var(--lia-border-default)',  // → preferir 'lia-border-default' ou 'lia-border-subtle'
+        'lia-primary':              '#60BED1',                    // → preferir 'wedo-cyan' (acento IA canonical)
+        'lia-muted':                'var(--lia-bg-tertiary)',     // → preferir 'lia-bg-tertiary' (hover) ou 'lia-interactive-hover'
         'lia-interactive-hover':    'var(--lia-interactive-hover)',
         'lia-interactive-active':   'var(--lia-interactive-active)',
         'lia-interactive-focus':    'var(--lia-interactive-focus)',
