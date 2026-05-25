@@ -63,14 +63,27 @@ export interface UseStudioQuotaResult {
   refetch: () => Promise<void>
 }
 
-function computeStatus(active: number, limit: number, resource: QuotaResource): QuotaResourceStatus {
-  if (limit === -1) {
-    return { resource, active, limit, percent: 0, isUnlimited: true, tier: "green" }
+function computeStatus(
+  active: number | null | undefined,
+  limit: number | null | undefined,
+  resource: QuotaResource,
+): QuotaResourceStatus {
+  // canonical defensive coalescing per backend contract
+  // (lia-agent-system/app/api/v1/custom_agents.py:860-895 +
+  //  libs/models/lia_models/agent_quota.py:to_dict).
+  // Schema garante Integer non-null no DB, mas fallback path
+  // (quota row ausente) ou drift de tipo pode entregar null/undefined.
+  // null/undefined em active → 0 (sem consumo); null/undefined em limit → 0
+  // (mostra 0/0 100% em vez de undefined/undefined NaN%).
+  const safeActive = active ?? 0
+  const safeLimit = limit ?? 0
+  if (safeLimit === -1) {
+    return { resource, active: safeActive, limit: safeLimit, percent: 0, isUnlimited: true, tier: "green" }
   }
-  const percent = limit === 0 ? 100 : Math.min(100, Math.round((active / limit) * 100))
+  const percent = safeLimit === 0 ? 100 : Math.min(100, Math.round((safeActive / safeLimit) * 100))
   const tier: QuotaResourceStatus["tier"] =
     percent >= 100 ? "red" : percent >= 80 ? "yellow" : "green"
-  return { resource, active, limit, percent, isUnlimited: false, tier }
+  return { resource, active: safeActive, limit: safeLimit, percent, isUnlimited: false, tier }
 }
 
 export function useStudioQuota(): UseStudioQuotaResult {
