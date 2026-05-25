@@ -11,6 +11,7 @@ import { useSettingsConversational } from "@/hooks/settings/use-settings-convers
 import { MinhaEmpresaCard } from "@/components/settings/MinhaEmpresaCard"
 import { LearningLoopsPanel } from "@/components/settings/LearningLoopsPanel"
 import { LiaFieldsConfigPanel } from "@/components/settings/LiaFieldsConfigPanel"
+import { AnalyzeWebsiteModal } from "@/components/settings/AnalyzeWebsiteModal"
 import { textStyles } from "@/lib/design-tokens"
 import { Globe } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
@@ -98,22 +99,51 @@ export function MinhaEmpresaHub({ activeSubsection }: MinhaEmpresaHubProps = {})
     }, 60)
   }, [expandedBlocks, toggleBlock])
 
-  const websiteUrl = React.useMemo(() => {
-    const basicBlock = blocks.find((b) => b.key === "basic")
-    return basicBlock?.fields.find((f) => f.key === "website")?.value as string | undefined
-  }, [blocks])
+  const basicBlock = React.useMemo(
+    () => blocks.find((b) => b.key === "basic"),
+    [blocks],
+  )
+  const getBasicField = React.useCallback(
+    (key: string) =>
+      basicBlock?.fields.find((f) => f.key === key)?.value as string | undefined,
+    [basicBlock],
+  )
+  const websiteUrl = getBasicField("website")
 
+  // Task #1180 — botão "Analisar nosso site" agora abre o modal pré-análise
+  // (nome + website + linkedin + checkbox "atualizar existentes"), em vez de
+  // disparar um prompt para o chat. Mantemos `triggerAction(analyze_website)`
+  // como notificação ao onboarding orchestrator quando o modal aplica o save.
+  const [analyzeModalOpen, setAnalyzeModalOpen] = React.useState(false)
   const handleAnalyzeWebsite = React.useCallback(() => {
-    const urlTag = websiteUrl ? `\n[website_url:${websiteUrl}]` : ""
-    triggerAction("analyze_website", {
-      section: "minha-empresa",
-      prompt:
-        "[ACTION:analyze_website]" + urlTag + "\n\n" +
-        t("analyzeWebsitePrompt"),
-      source: "ui",
-      autoSend: true,
-    })
-  }, [triggerAction, websiteUrl, t])
+    setAnalyzeModalOpen(true)
+  }, [])
+
+  const handleAnalyzeApplied = React.useCallback(() => {
+    // Dispatch para o OnboardingActionOrchestrator marcar o step como done.
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(
+        new CustomEvent("lia:settings-success", { detail: { actionId: "analyze_website" } }),
+      )
+    }
+    refreshAll()
+  }, [refreshAll])
+
+  const existingBasic = React.useMemo(
+    () => ({
+      industry: getBasicField("industry"),
+      employee_count: getBasicField("employee_count"),
+      company_size: getBasicField("company_size"),
+      headquarters_city: getBasicField("headquarters_city"),
+      headquarters_state: getBasicField("headquarters_state"),
+      founded_year: getBasicField("founded_year"),
+      work_model: getBasicField("work_model"),
+      linkedin_url: getBasicField("linkedin_url"),
+      logo_url: getBasicField("logo_url"),
+    }),
+    [getBasicField],
+  )
+  const companyName = getBasicField("name") ?? ""
 
   if (loading) {
     return (
@@ -262,6 +292,19 @@ export function MinhaEmpresaHub({ activeSubsection }: MinhaEmpresaHubProps = {})
           />
         ))}
       </div>
+
+      <AnalyzeWebsiteModal
+        open={analyzeModalOpen}
+        onClose={() => setAnalyzeModalOpen(false)}
+        initial={{
+          companyName,
+          websiteUrl,
+          linkedinUrl: existingBasic.linkedin_url,
+          companyId: companyId ?? undefined,
+          existingBasic,
+        }}
+        onApplied={handleAnalyzeApplied}
+      />
     </div>
   )
 }

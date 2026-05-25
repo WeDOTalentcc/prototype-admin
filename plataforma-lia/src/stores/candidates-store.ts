@@ -3,6 +3,31 @@ import { devtools } from 'zustand/middleware'
 import { registerStoreReset } from './auth-store'
 import type { ParsedEntities, SearchMetadata } from '@/components/search/smart-search-input'
 
+/**
+ * Pagination canonical (Quiet Operator — page size adapta ao viewport).
+ *
+ * ROW_HEIGHT: altura aproximada do <tr> em UnifiedCandidateTable com padding canonical.
+ * CHROME: header + controles + filtros + footer + safety margin do recrutador desktop.
+ * MIN/MAX: clamp pra evitar payloads absurdos.
+ *
+ * Single source of truth — todos os call sites (store init, search reset, navigation
+ * reset, CV upload reset, execute search reset) leem daqui. Load-more incrementa por
+ * LOAD_MORE_STEP. Trocar o número aqui propaga sozinho.
+ */
+const PAGINATION_ROW_HEIGHT = 56
+const PAGINATION_CHROME = 280
+const PAGINATION_MIN = 10
+const PAGINATION_MAX = 40
+
+export const LOAD_MORE_STEP = 10
+
+export function getInitialDisplayedResultsCount(): number {
+  if (typeof window === "undefined") return PAGINATION_MIN
+  const fit = Math.floor((window.innerHeight - PAGINATION_CHROME) / PAGINATION_ROW_HEIGHT)
+  return Math.min(PAGINATION_MAX, Math.max(PAGINATION_MIN, fit))
+}
+
+
 type SearchSource = 'local' | 'global' | 'hybrid'
 type ActiveTab = 'search' | 'favorites' | 'lists' | 'history' | 'saved-searches' | 'agents'
 
@@ -198,7 +223,7 @@ const initialState: CandidatesFullState = {
   searchExecutionId: 0,
   searchSortBy: 'relevance',
   searchFeedbacks: {},
-  displayedResultsCount: 10,
+  displayedResultsCount: getInitialDisplayedResultsCount(),
   isLoadingMore: false,
   showOnlyNew: false,
   isDroppingCV: false,

@@ -5,6 +5,7 @@ import {
   useSettingsConversational,
   type SettingsActionId,
 } from "@/hooks/settings/use-settings-conversational"
+import { AnalyzeWebsiteModal } from "@/components/settings/AnalyzeWebsiteModal"
 
 /**
  * OnboardingActionOrchestrator — Task #712
@@ -151,6 +152,9 @@ async function pushProgress(stepKey: string, status: StepStatus) {
 export function OnboardingActionOrchestrator() {
   const [state, setState] = useState<ProgressState>(() => loadLocal())
   const { triggerAction, sendChatPrompt } = useSettingsConversational()
+  // Task #1180 — passo "website" abre o modal pré-análise em vez de
+  // disparar prompt para o chat.
+  const [analyzeModalOpen, setAnalyzeModalOpen] = useState(false)
 
   useEffect(() => {
     saveLocal(state)
@@ -204,6 +208,12 @@ export function OnboardingActionOrchestrator() {
         pushProgress(step.key, "in_progress")
         return { current: idx, status }
       })
+      // Task #1180 — passo `website` agora abre o modal pré-análise, não
+      // dispara prompt no chat. Os demais passos seguem o fluxo conversacional.
+      if (step.key === "website") {
+        setAnalyzeModalOpen(true)
+        return
+      }
       // triggerAction ja despacha `lia:prefill-message` quando recebe `prompt`,
       // entao nao chamamos sendChatPrompt aqui — evita prefill duplicado no chat.
       triggerAction(step.actionId, {
@@ -320,6 +330,22 @@ export function OnboardingActionOrchestrator() {
           )
         })}
       </ol>
+
+      <AnalyzeWebsiteModal
+        open={analyzeModalOpen}
+        onClose={() => setAnalyzeModalOpen(false)}
+        initial={{}}
+        onApplied={() => {
+          // Marca o step `website` como done via mesmo evento canônico.
+          if (typeof window !== "undefined") {
+            window.dispatchEvent(
+              new CustomEvent("lia:settings-success", {
+                detail: { actionId: "analyze_website" },
+              }),
+            )
+          }
+        }}
+      />
 
       {allDone && (
         <div

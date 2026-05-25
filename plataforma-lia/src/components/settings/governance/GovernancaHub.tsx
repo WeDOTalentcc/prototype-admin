@@ -2,20 +2,35 @@
 
 import React, { useState } from "react"
 import { useTranslations } from "next-intl"
-import { ScrollText, ShieldAlert, Workflow, FileCheck2, UserCog, ShieldCheck, Activity } from "lucide-react"
+import { ScrollText, Workflow, FileCheck2, UserCog, ShieldCheck, Activity } from "lucide-react"
 import { tabStyles, textStyles } from "@/lib/design-tokens"
 import { cn } from "@/lib/utils"
 import { AuditLogsPanel } from "./AuditLogsPanel"
-import { BiasAuditPanel } from "./BiasAuditPanel"
 import { AutomationRulesPanel } from "./AutomationRulesPanel"
 import { PolicyEnginePanel } from "./PolicyEnginePanel"
 import { DSRInboxPanel } from "./DSRInboxPanel"
 import { ConsentPanel } from "./ConsentPanel"
 import { AIPerformancePanel } from "./AIPerformancePanel"
 
+/**
+ * GovernancaHub — tab-based router.
+ *
+ * Histórico: tab `bias-audit` removida em 2026-05-25 (PR 2 plan canonical
+ * ~/.claude/plans/jolly-roaming-moler.md). O BiasAuditPanel foi movido
+ * para `_wedo_internal/fairness/BiasAuditPanel.tsx` e exposto via
+ * `/wedo-admin/fairness/bias-audit/`.
+ *
+ * Tabs movidas em PR 3 (próxima): audit-logs (drill-down), automation-rules,
+ * policy-engine, ai-performance, ai-transparency (em fairness hub).
+ *
+ * Tabs que ficam cliente após PR 3 (decisão Paulo 2026-05-25):
+ * - dsr (Erasure Art. 18) → migra para Hub 4 Conta & Conformidade
+ * - consent (consent viewer/revoke) → migra para Hub 4
+ * - audit-logs (summary read-only últimos 30d) → migra para Hub 4
+ */
+
 export type GovernancaSubsection =
   | "audit-logs"
-  | "bias-audit"
   | "automation-rules"
   | "policy-engine"
   | "dsr"
@@ -34,7 +49,6 @@ export function GovernancaHub({ activeSubsection }: GovernancaHubProps) {
 
   const tabs: Array<{ id: GovernancaSubsection; label: string; icon: React.ElementType }> = [
     { id: "audit-logs", label: t("tabs.auditLogs"), icon: ScrollText },
-    { id: "bias-audit", label: t("tabs.biasAudit"), icon: ShieldAlert },
     { id: "automation-rules", label: t("tabs.automationRules"), icon: Workflow },
     { id: "policy-engine", label: t("tabs.policyEngine"), icon: FileCheck2 },
     { id: "dsr", label: t("tabs.dsr"), icon: UserCog },
@@ -82,7 +96,6 @@ export function GovernancaHub({ activeSubsection }: GovernancaHubProps) {
         data-testid={`governanca-panel-${active}`}
       >
         {active === "audit-logs" && <AuditLogsPanel />}
-        {active === "bias-audit" && <BiasAuditPanel />}
         {active === "automation-rules" && <AutomationRulesPanel />}
         {active === "policy-engine" && <PolicyEnginePanel />}
         {active === "dsr" && <DSRInboxPanel />}

@@ -1009,7 +1009,7 @@
     },
     "loadMore": {
       "loading": "Carregando...",
-      "loadMoreCandidates": "Carregar mais 10 candidatos",
+      "loadMoreCandidates": "Carregar mais {count} candidatos",
       "showingOf": "{displayed} de {total} candidatos",
       "allLoaded": "Todos os {total} candidatos carregados"
     },
