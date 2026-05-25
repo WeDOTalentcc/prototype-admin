@@ -120,6 +120,12 @@ jobs:
         # desse path = regressão (era exatamente o bug que Sprint 4 v3 corrigiu).
         working-directory: plataforma-lia
         run: python3 scripts/check_no_dup_search_panel_import.py
+      - name: AgentStudioPage no showCreateModal sensor (Sprint 5 — BLOCKING)
+        # Sensor #5 harness 2026-05-25: bloqueia reintroducao do state legado
+        # showCreateModal em AgentStudioPage.tsx. CreateAgentModal antigo foi
+        # decommissioned na Sprint 5; sector tile click abre o wizard canonical.
+        working-directory: plataforma-lia
+        run: python3 scripts/check_no_showCreateModal.py
 
       - name: Unit & Component tests
         run: npx vitest run --reporter=verbose

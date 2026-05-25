@@ -63,6 +63,15 @@ export interface CreateAgentInitialConfig {
   name?: string
   description?: string
   aiDescription?: string
+  /**
+   * Sprint 5 (2026-05-25) — decommission do CreateAgentModal (path #3 sector tile).
+   * Sector id canonical (factory | heart_pulse | shopping_cart | code | truck)
+   * vindo do FastAPI agent-templates/sectors. Quando setado, sinaliza que a
+   * entrada veio de um sector tile e o wizard pode usar isso pra naming/tracking
+   * (a criação em si vai por /custom-agents — sectors endpoint nao é mais
+   * chamado, dropado junto com o modal legado).
+   */
+  prefilledSector?: string
 }
 
 export interface CreateAgentWizardProps {

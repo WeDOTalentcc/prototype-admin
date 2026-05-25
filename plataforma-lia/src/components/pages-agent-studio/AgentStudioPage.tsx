@@ -28,7 +28,7 @@ import { toast } from "@/lib/toast"
 import { extractErrorMessage } from "@/lib/api/extract-error-message"
 import { Button } from "@/components/ui/button"
 import { BetaBadge } from "@/components/ui/beta-badge"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { PageTabNavigation } from "@/components/ui/page-tab-navigation"
 import { TabSectionHeader } from "@/components/pages-agent-studio/TabSectionHeader"
 import { CreateAgentWizard, inferGoalFromTemplate } from "@/components/pages-agent-studio/create-agent-wizard"
@@ -105,7 +105,6 @@ export default function AgentStudioPage({
   const [agents, setAgents] = useState<SourcingAgent[]>([])
   const [templates, setTemplates] = useState<SectorTemplate[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [showCreateModal, setShowCreateModal] = useState(false)
   // UX_AUDIT_ESTUDIO_AGENTES_2026-05-21 T1+T3+T4: wizard goal-first unico
   // (substitui as ~9 CTAs "Criar Agente" espalhadas pelas tabs).
   // T4: aceita initialConfig (template_id + goal) para clone-first do TemplateClonePanel.
@@ -130,7 +129,6 @@ export default function AgentStudioPage({
   const [detailsAgent, setDetailsAgent] = useState<CustomAgent | null>(null)
   const { agents: customAgents, mutate: mutateCustomAgents } = useCustomAgents()
   const { selectTemplate } = useAgentStudioStore()
-  const [selectedTemplate, setSelectedTemplate] = useState<SectorTemplate | null>(null)
   // UX_AUDIT_ESTUDIO_AGENTES_2026-05-21 T2 + Sprint 4 v3 (2026-05-25):
   // 5 tabs -> 3 tabs -> 2 tabs canonical.
   // - "my-agents" consolida Captacao + Personalizados + Gemeos via sub-tabs.
@@ -491,7 +489,7 @@ export default function AgentStudioPage({
                   return (
                     <button
                       key={t.id}
-                      onClick={() => { setSelectedTemplate(t); setShowCreateModal(true) }}
+                      onClick={() => openWizard("outro", { prefilledSector: t.id, name: t.display_name, description: t.description })}
                       className={cn(
                         "group relative flex flex-col items-center gap-2.5 p-5 rounded-xl border border-lia-border-subtle",
                         "bg-lia-bg-secondary hover:border-lia-border-medium transition-colors duration-200",
@@ -771,19 +769,6 @@ export default function AgentStudioPage({
         onCreated={() => { setShowCreateTwinModal(false); setTwinsRefreshKey((k) => k + 1) }}
       />
 
-      {showCreateModal && (
-        <CreateAgentModal
-          initialTemplate={selectedTemplate}
-          onClose={() => { setShowCreateModal(false); setSelectedTemplate(null) }}
-          onCreated={(agentId) => {
-            setShowCreateModal(false)
-            setSelectedTemplate(null)
-            loadData()
-            onStartCalibration?.(agentId)
-          }}
-        />
-      )}
-
       {/* UX_AUDIT_ESTUDIO_AGENTES_2026-05-21 T1+T3: wizard goal-first unico.
           Mounted conditionally (open=wizardOpen) — segue regra "conditional
           mount" do CLAUDE.md de defense-in-depth contra Rules of Hooks. */}
@@ -833,7 +818,7 @@ function AgentCard({
         {/* Header */}
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500/10 to-violet-500/10 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-powder flex items-center justify-center">
               <Bot className="w-5 h-5 text-wedo-cyan" />
             </div>
             <div>
@@ -946,221 +931,5 @@ function AgentCard({
         </div>
       </div>
     </div>
-  )
-}
-
-function CreateAgentModal({ initialTemplate, onClose, onCreated }: {
-  initialTemplate: SectorTemplate | null
-  onClose: () => void
-  onCreated: (agentId: string) => void
-}) {
-  const t = useTranslations("agents")
-  const [agentName, setAgentName] = useState(initialTemplate ? `${initialTemplate.display_name}` : "")
-  const [linkType, setLinkType] = useState<"job" | "pool" | "none">("none")
-  const [linkId, setLinkId] = useState("")
-  const [candidatesPerDay, setCandidatesPerDay] = useState(20)
-  const [notifyFrequency, setNotifyFrequency] = useState("daily")
-  const [isCreating, setIsCreating] = useState(false)
-  const sectorId = initialTemplate?.id || ""
-
-  const [createError, setCreateError] = useState("")
-
-  const handleCreate = async () => {
-    setIsCreating(true)
-    setCreateError("")
-    try {
-      let templateId: string | undefined
-      if (sectorId) {
-        try {
-          const templateRes = await fetch(`/api/backend-proxy/agent-templates/sectors/${sectorId}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ agent_name: agentName }),
-          })
-          if (templateRes.ok) {
-            const templateData = await templateRes.json()
-            templateId = templateData?.template_id
-          }
-        } catch {
-          // template application is optional
-        }
-      }
-
-      const res = await fetch("/api/backend-proxy/sourcing-agents", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          agent_name: agentName,
-          job_id: linkType === "job" ? linkId : null,
-          talent_pool_id: linkType === "pool" ? linkId : null,
-          agent_template_id: templateId || null,
-          preferences: {
-            candidates_per_day: candidatesPerDay,
-            notify_frequency: notifyFrequency,
-            channels: ["internal", "linkedin"],
-          },
-        }),
-      })
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}))
-        throw new Error(extractErrorMessage(errData, res.status))
-      }
-      const data = await res.json()
-      if (data?.agent_id) onCreated(data.agent_id)
-      else onCreated(data?.id || "")
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : t("studio.toast.errorCreating")
-      setCreateError(msg)
-      console.error("Failed to create agent:", err)
-    } finally {
-      setIsCreating(false)
-    }
-  }
-
-  return (
-    <Dialog open onOpenChange={onClose}>
-      <DialogContent className="max-w-lg bg-lia-bg-primary border-lia-border-subtle">
-        <DialogHeader>
-          <DialogTitle className="text-base font-semibold text-lia-text-primary flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500/10 to-violet-500/10 flex items-center justify-center">
-              <Bot className="w-4 h-4 text-wedo-cyan" />
-            </div>
-            {initialTemplate ? t("studio.modal.createTitleWithTemplate", { name: initialTemplate.display_name }) : t("studio.modal.createTitle")}
-          </DialogTitle>
-          <DialogDescription className="sr-only">{t("studio.modal.configureDesc")}</DialogDescription>
-        </DialogHeader>
-
-        <div className="space-y-5 py-4">
-          <div>
-            <label className="text-xs font-semibold text-lia-text-primary mb-1.5 block">{t("studio.modal.agentName")}</label>
-            <input
-              type="text"
-              value={agentName}
-              onChange={e => setAgentName(e.target.value)}
-              placeholder={t("studio.modal.agentNamePlaceholder")}
-              className="w-full border border-lia-border-subtle rounded-lg px-3 py-2.5 text-sm bg-lia-bg-secondary text-lia-text-primary placeholder:text-lia-text-disabled focus:outline-none focus:ring-2 focus:ring-wedo-cyan/30 focus:border-wedo-cyan/50"
-            />
-          </div>
-
-          <div>
-            <label className="text-xs font-semibold text-lia-text-primary mb-1.5 block">{t("studio.modal.linkTo")}</label>
-            <div className="flex gap-2">
-              {[
-                { id: "none" as const, label: t("studio.modal.none"), icon: Brain },
-                { id: "job" as const, label: t("studio.modal.job"), icon: Briefcase },
-                { id: "pool" as const, label: t("studio.modal.talentPool"), icon: Database },
-              ].map(opt => (
-                <button
-                  key={opt.id}
-                  onClick={() => setLinkType(opt.id)}
-                  className={cn(
-                    "flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium border transition-colors",
-                    linkType === opt.id
-                      ? "border-lia-text-primary bg-lia-bg-tertiary text-lia-text-primary"
-                      : "border-lia-border-subtle text-lia-text-secondary hover:bg-lia-bg-secondary"
-                  )}
-                >
-                  <opt.icon className="w-3.5 h-3.5" />
-                  {opt.label}
-                </button>
-              ))}
-            </div>
-            {linkType === "none" && (
-              <div className="mt-2 px-3 py-2 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800">
-                <p className="text-xs text-amber-700 dark:text-amber-400">
-                  {t("studio.modal.noLinkWarning")}
-                </p>
-              </div>
-            )}
-            {linkType !== "none" && (
-              <input
-                type="text"
-                value={linkId}
-                onChange={e => setLinkId(e.target.value)}
-                placeholder={linkType === "job" ? t("studio.modal.jobIdPlaceholder") : t("studio.modal.poolIdPlaceholder")}
-                className="mt-2 w-full border border-lia-border-subtle rounded-lg px-3 py-2 text-sm bg-lia-bg-secondary text-lia-text-primary placeholder:text-lia-text-disabled focus:outline-none focus:ring-2 focus:ring-wedo-cyan/30"
-              />
-            )}
-          </div>
-
-          <div>
-            <label className="text-xs font-semibold text-lia-text-primary mb-1.5 block">{t("studio.modal.candidatesPerDay")}</label>
-            <div className="flex gap-2">
-              {[10, 20, 30, 50].map(n => (
-                <button
-                  key={n}
-                  onClick={() => setCandidatesPerDay(n)}
-                  className={cn(
-                    "px-4 py-2 rounded-lg text-xs font-medium border transition-colors",
-                    candidatesPerDay === n
-                      ? "border-lia-text-primary bg-lia-bg-tertiary text-lia-text-primary"
-                      : "border-lia-border-subtle text-lia-text-secondary hover:bg-lia-bg-secondary"
-                  )}
-                >
-                  {n}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <label className="text-xs font-semibold text-lia-text-primary mb-1.5 block">{t("studio.modal.notificationFrequency")}</label>
-            <div className="flex gap-2">
-              {[
-                { id: "realtime", label: t("studio.modal.perCandidate") },
-                { id: "daily", label: t("studio.modal.dailySummary") },
-                { id: "weekly", label: t("studio.modal.weeklySummary") },
-              ].map(opt => (
-                <button
-                  key={opt.id}
-                  onClick={() => setNotifyFrequency(opt.id)}
-                  className={cn(
-                    "px-3 py-2 rounded-lg text-xs font-medium border transition-colors",
-                    notifyFrequency === opt.id
-                      ? "border-lia-text-primary bg-lia-bg-tertiary text-lia-text-primary"
-                      : "border-lia-border-subtle text-lia-text-secondary hover:bg-lia-bg-secondary"
-                  )}
-                >
-                  {opt.label}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {createError && (
-          <div className="mx-6 mb-2 px-3 py-2 rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800">
-            <p className="text-xs text-red-700 dark:text-red-400">{createError}</p>
-          </div>
-        )}
-
-        <DialogFooter className="gap-2">
-          <Button
-            variant="outline"
-            onClick={onClose}
-            className="border-lia-border-subtle text-lia-text-secondary hover:bg-lia-bg-secondary"
-          >
-            {t("studio.modal.cancel")}
-          </Button>
-          <Button
-            onClick={handleCreate}
-            disabled={!agentName.trim() || isCreating}
-            className="gap-2 bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover"
-          >
-            {isCreating ? (
-              <>
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                {t("studio.modal.creating")}
-              </>
-            ) : (
-              <>
-                <Zap className="w-3.5 h-3.5" />
-                {t("studio.modal.createAndCalibrate")}
-              </>
-            )}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
   )
 }
