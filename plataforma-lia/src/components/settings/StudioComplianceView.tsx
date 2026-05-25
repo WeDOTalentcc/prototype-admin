@@ -99,7 +99,7 @@ export function StudioComplianceView() {
               <Activity className="w-4 h-4 text-lia-text-secondary" />
               <span className="text-xs text-lia-text-secondary">{t("executions")}</span>
             </div>
-            <p className="text-2xl font-bold font-inter text-lia-text-primary">{data.total_executions}</p>
+            <p className="text-2xl font-bold font-sans text-lia-text-primary">{data.total_executions}</p>
           </CardContent>
         </Card>
 
@@ -109,7 +109,7 @@ export function StudioComplianceView() {
               <ShieldCheck className="w-4 h-4 text-emerald-500" />
               <span className="text-xs text-lia-text-secondary">{t("approved")}</span>
             </div>
-            <p className="text-2xl font-bold font-inter text-emerald-600">
+            <p className="text-2xl font-bold font-sans text-emerald-600">
               {Math.max(0, (data.total_executions ?? 0) - (data.blocked_executions ?? 0))}
             </p>
           </CardContent>
@@ -121,7 +121,7 @@ export function StudioComplianceView() {
               <AlertTriangle className="w-4 h-4 text-status-warning" />
               <span className="text-xs text-lia-text-secondary">{t("blocked")}</span>
             </div>
-            <p className="text-2xl font-bold font-inter text-status-warning">{data.blocked_executions}</p>
+            <p className="text-2xl font-bold font-sans text-status-warning">{data.blocked_executions}</p>
             <p className="text-[10px] text-lia-text-disabled mt-0.5">{t("blockedPctOfTotal", { pct: data.block_rate_pct })}</p>
           </CardContent>
         </Card>
@@ -132,7 +132,7 @@ export function StudioComplianceView() {
               <Bot className="w-4 h-4 text-wedo-cyan-dark" />
               <span className="text-xs text-lia-text-secondary">{t("activeAgents")}</span>
             </div>
-            <p className="text-2xl font-bold font-inter text-lia-text-primary">{data.active_agents}</p>
+            <p className="text-2xl font-bold font-sans text-lia-text-primary">{data.active_agents}</p>
             <p className="text-[10px] text-lia-text-disabled mt-0.5">
               {t("avgConfidence", { pct: (data.avg_confidence * 100).toFixed(0) })}
             </p>
@@ -175,7 +175,7 @@ export function StudioComplianceView() {
               {data.top_blocked_agents.map((a, i) => (
                 <div key={a.agent_id} className="flex items-center justify-between text-sm">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-lia-text-disabled font-inter">{i + 1}.</span>
+                    <span className="text-xs text-lia-text-disabled font-sans">{i + 1}.</span>
                     <span className="text-lia-text-primary">{a.agent_name}</span>
                   </div>
                   <Chip density="relaxed" variant="neutral" muted className="bg-status-warning/15 text-status-warning">

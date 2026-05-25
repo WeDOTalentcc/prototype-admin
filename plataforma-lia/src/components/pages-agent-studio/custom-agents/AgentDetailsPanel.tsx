@@ -96,17 +96,17 @@ export function AgentDetailsPanel({ agent, open, onClose, onDeploy, onTest }: Ag
           {/* Metrics */}
           <div className={cn(cardStyles.flat, "p-3 flex items-center gap-6")}>
             <div className="text-center">
-              <p className="text-lg font-bold font-inter text-lia-text-primary">{agent.total_executions}</p>
+              <p className="text-lg font-bold font-sans text-lia-text-primary">{agent.total_executions}</p>
               <p className="text-xs text-lia-text-secondary">{t('execLabel')}</p>
             </div>
             <div className="text-center">
-              <p className="text-lg font-bold font-inter text-lia-text-primary">
+              <p className="text-lg font-bold font-sans text-lia-text-primary">
                 {agent.avg_confidence > 0 ? `${(agent.avg_confidence * 100).toFixed(0)}%` : "-"}
               </p>
               <p className="text-xs text-lia-text-secondary">{t('confidence')}</p>
             </div>
             <div className="text-center">
-              <p className="text-lg font-bold font-inter text-lia-text-primary">{deployments.length}</p>
+              <p className="text-lg font-bold font-sans text-lia-text-primary">{deployments.length}</p>
               <p className="text-xs text-lia-text-secondary">{t('links')}</p>
             </div>
           </div>

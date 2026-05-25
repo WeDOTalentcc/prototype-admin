@@ -176,12 +176,12 @@ export function AgentCard({ agent, onTest, onDeploy, onToggleStatus, onClone }: 
       {/* Metrics */}
       <div className="flex items-center gap-4 text-xs">
         <div>
-          <span className="font-bold text-lia-text-primary font-inter">{agent.total_executions}</span>
+          <span className="font-bold text-lia-text-primary font-sans">{agent.total_executions}</span>
           <span className="text-lia-text-disabled ml-1">{t('executions')}</span>
         </div>
         {agent.avg_confidence > 0 && (
           <div>
-            <span className="font-bold text-lia-text-primary font-inter">{(agent.avg_confidence * 100).toFixed(0)}%</span>
+            <span className="font-bold text-lia-text-primary font-sans">{(agent.avg_confidence * 100).toFixed(0)}%</span>
             <span className="text-lia-text-disabled ml-1">{t('confidence')}</span>
           </div>
         )}

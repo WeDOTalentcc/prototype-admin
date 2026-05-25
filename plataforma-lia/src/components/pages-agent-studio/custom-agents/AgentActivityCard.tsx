@@ -41,9 +41,9 @@ export function AgentActivityCard({
       </div>
 
       <p className="text-[10px] text-lia-text-secondary">
-        {t('screened')} <span className="font-bold font-inter">{candidatesProcessed}</span> {t('cvs')}
+        {t('screened')} <span className="font-bold font-sans">{candidatesProcessed}</span> {t('cvs')}
         {" · "}
-        <span className="font-bold font-inter text-emerald-600">{candidatesFit}</span> {t('fit')}
+        <span className="font-bold font-sans text-emerald-600">{candidatesFit}</span> {t('fit')}
       </p>
 
       {/* Progress bar */}

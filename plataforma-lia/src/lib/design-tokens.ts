@@ -233,9 +233,9 @@ export const textStyles = {
   labelSmall: "font-sans text-micro font-medium text-lia-text-primary dark:text-lia-text-primary",
   
   // v4: Métricas com Inter
-  metric: "font-inter text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary tabular-nums",
-  metricLarge: "font-inter text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary tabular-nums",
-  metricSmall: "font-inter text-xs font-medium text-lia-text-primary dark:text-lia-text-primary tabular-nums",
+  metric: "font-sans text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary tabular-nums",
+  metricLarge: "font-sans text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary tabular-nums",
+  metricSmall: "font-sans text-xs font-medium text-lia-text-primary dark:text-lia-text-primary tabular-nums",
   
   // DS v4.1: Sidebar com Open Sans (Source Serif 4 removido)
   sidebarTitle: "font-sans text-base-ui font-semibold text-lia-text-primary dark:text-lia-text-primary",

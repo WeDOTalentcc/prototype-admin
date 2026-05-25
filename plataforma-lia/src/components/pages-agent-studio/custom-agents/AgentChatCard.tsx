@@ -46,17 +46,17 @@ export function AgentChatCard({ agent, deploymentCount = 0, onViewDetails }: Age
       <div className="grid grid-cols-3 gap-2 text-xs">
         <div className="flex items-center gap-1">
           <Activity className="w-3 h-3 text-lia-text-disabled" />
-          <span className="font-bold font-inter text-lia-text-primary">{agent.total_executions}</span>
+          <span className="font-bold font-sans text-lia-text-primary">{agent.total_executions}</span>
           <span className="text-xs text-lia-text-secondary">{t('execLabel')}</span>
         </div>
         <div className="flex items-center gap-1">
           <Zap className="w-3 h-3 text-lia-text-disabled" />
-          <span className="font-bold font-inter text-lia-text-primary">{deploymentCount}</span>
+          <span className="font-bold font-sans text-lia-text-primary">{deploymentCount}</span>
           <span className="text-xs text-lia-text-secondary">{t('vinc')}</span>
         </div>
         <div className="flex items-center gap-1">
           <Clock className="w-3 h-3 text-lia-text-disabled" />
-          <span className="font-bold font-inter text-lia-text-primary">
+          <span className="font-bold font-sans text-lia-text-primary">
             {agent.avg_confidence > 0 ? `${(agent.avg_confidence * 100).toFixed(0)}%` : "-"}
           </span>
           <span className="text-xs text-lia-text-secondary">{t('conf')}</span>
@@ -108,19 +108,19 @@ export function MetricsSummaryCard({
       <div className="grid grid-cols-2 gap-2">
         <div className={cn(cardStyles.flat, "p-2")}>
           <p className="text-xs text-lia-text-secondary uppercase">{t('executionsMetric')}</p>
-          <p className="text-lg font-bold font-inter text-lia-text-primary">{total_executions}</p>
+          <p className="text-lg font-bold font-sans text-lia-text-primary">{total_executions}</p>
         </div>
         <div className={cn(cardStyles.flat, "p-2")}>
           <p className="text-xs text-lia-text-secondary uppercase">{t('activeAgentsMetric')}</p>
-          <p className="text-lg font-bold font-inter text-lia-text-primary">{active_agents}</p>
+          <p className="text-lg font-bold font-sans text-lia-text-primary">{active_agents}</p>
         </div>
         <div className={cn(cardStyles.flat, "p-2")}>
           <p className="text-xs text-lia-text-secondary uppercase">{t('tokensMetric')}</p>
-          <p className="text-lg font-bold font-inter text-lia-text-primary">{total_tokens.toLocaleString()}</p>
+          <p className="text-lg font-bold font-sans text-lia-text-primary">{total_tokens.toLocaleString()}</p>
         </div>
         <div className={cn(cardStyles.flat, "p-2")}>
           <p className="text-xs text-lia-text-secondary uppercase">{t('estimatedCost')}</p>
-          <p className="text-lg font-bold font-inter text-lia-text-primary">R${estimated_cost_brl.toFixed(4)}</p>
+          <p className="text-lg font-bold font-sans text-lia-text-primary">R${estimated_cost_brl.toFixed(4)}</p>
         </div>
       </div>
 

@@ -137,7 +137,6 @@ export function DigitalTwinOnboarding() {
 
   return (
     <section className="relative overflow-hidden rounded-xl border border-lia-border-subtle bg-gradient-to-br from-lia-bg-secondary to-lia-bg-primary p-6">
-      <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-cyan-500/5 to-transparent rounded-full -translate-y-1/2 translate-x-1/4" />
       <div className="relative">
         <div className="flex items-center gap-2 mb-1">
           <Users className="w-4 h-4 text-graphite" />

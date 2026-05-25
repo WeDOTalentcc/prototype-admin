@@ -160,7 +160,7 @@ export function RecruitmentScreeningTab() {
                 }`}
               >
                 <div
-                  className={`flex items-center justify-center w-6 h-6 shrink-0 rounded-full bg-lia-btn-primary-bg font-inter text-micro font-semibold tabular-nums text-lia-btn-primary-text transition-opacity motion-reduce:transition-none ${!isEditingQuestions ? 'opacity-70' : ''}`}
+                  className={`flex items-center justify-center w-6 h-6 shrink-0 rounded-full bg-lia-btn-primary-bg font-sans text-micro font-semibold tabular-nums text-lia-btn-primary-text transition-opacity motion-reduce:transition-none ${!isEditingQuestions ? 'opacity-70' : ''}`}
                 >
                   {index + 1}
                 </div>

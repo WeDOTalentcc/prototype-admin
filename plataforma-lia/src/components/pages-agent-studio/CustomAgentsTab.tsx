@@ -164,7 +164,7 @@ export default function CustomAgentsTab() {
                 <div className="p-4">
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500/10 to-cyan-500/10 flex items-center justify-center text-lg">
+                      <div className="w-10 h-10 rounded-xl bg-powder border border-mist flex items-center justify-center text-lg">
                         {agent.icon || "🤖"}
                       </div>
                       <div>

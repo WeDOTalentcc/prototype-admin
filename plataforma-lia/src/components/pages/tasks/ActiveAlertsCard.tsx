@@ -36,7 +36,7 @@ export const ActiveAlertsCard = React.memo(function ActiveAlertsCard({
           <div className="flex items-center gap-2">
             <Bell className="w-3.5 h-3.5 text-amber-500" />
             <CardTitle className={`${textStyles.label} font-semibold text-lia-text-primary`}>Alertas Ativos</CardTitle>
-            <Chip density="relaxed" variant="neutral" className="font-inter">
+            <Chip density="relaxed" variant="neutral" className="font-sans">
               {activeAlerts.length}
             </Chip>
           </div>
@@ -81,7 +81,7 @@ export const ActiveAlertsCard = React.memo(function ActiveAlertsCard({
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
-                      <h4 className="text-xs font-inter font-semibold text-lia-text-primary">
+                      <h4 className="text-xs font-sans font-semibold text-lia-text-primary">
                         {alert.title}
                       </h4>
                       <Chip variant="neutral" muted

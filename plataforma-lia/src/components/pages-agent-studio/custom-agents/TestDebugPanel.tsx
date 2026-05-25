@@ -161,19 +161,19 @@ export function TestDebugPanel({ agent, open, onClose }: TestDebugPanelProps) {
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <div>
                   <span className="text-lia-text-disabled">{t('tokensIn')}</span>
-                  <p className="font-bold font-inter text-lia-text-primary">{lastResult?.tokens_input || 0}</p>
+                  <p className="font-bold font-sans text-lia-text-primary">{lastResult?.tokens_input || 0}</p>
                 </div>
                 <div>
                   <span className="text-lia-text-disabled">{t('tokensOut')}</span>
-                  <p className="font-bold font-inter text-lia-text-primary">{lastResult?.tokens_output || 0}</p>
+                  <p className="font-bold font-sans text-lia-text-primary">{lastResult?.tokens_output || 0}</p>
                 </div>
                 <div>
                   <span className="text-lia-text-disabled">{t('latency')}</span>
-                  <p className="font-bold font-inter text-lia-text-primary">{lastResult?.execution_time_ms || 0}ms</p>
+                  <p className="font-bold font-sans text-lia-text-primary">{lastResult?.execution_time_ms || 0}ms</p>
                 </div>
                 <div>
                   <span className="text-lia-text-disabled">{t('confidenceMetric')}</span>
-                  <p className="font-bold font-inter text-lia-text-primary">{lastResult ? (lastResult.confidence * 100).toFixed(0) + "%" : "-"}</p>
+                  <p className="font-bold font-sans text-lia-text-primary">{lastResult ? (lastResult.confidence * 100).toFixed(0) + "%" : "-"}</p>
                 </div>
               </div>
               {lastResult?.model_used && (
@@ -190,19 +190,19 @@ export function TestDebugPanel({ agent, open, onClose }: TestDebugPanelProps) {
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <div>
                   <span className="text-lia-text-disabled">{t('totalTokens')}</span>
-                  <p className="font-bold font-inter text-lia-text-primary">{totalTokens}</p>
+                  <p className="font-bold font-sans text-lia-text-primary">{totalTokens}</p>
                 </div>
                 <div>
                   <span className="text-lia-text-disabled">{t('estimatedCost')}</span>
-                  <p className="font-bold font-inter text-lia-text-primary">~R${estimatedCost}</p>
+                  <p className="font-bold font-sans text-lia-text-primary">~R${estimatedCost}</p>
                 </div>
                 <div>
                   <span className="text-lia-text-disabled">{t('totalLatency')}</span>
-                  <p className="font-bold font-inter text-lia-text-primary">{(totalLatency / 1000).toFixed(1)}s</p>
+                  <p className="font-bold font-sans text-lia-text-primary">{(totalLatency / 1000).toFixed(1)}s</p>
                 </div>
                 <div>
                   <span className="text-lia-text-disabled">{t('interactions')}</span>
-                  <p className="font-bold font-inter text-lia-text-primary">{results.length}</p>
+                  <p className="font-bold font-sans text-lia-text-primary">{results.length}</p>
                 </div>
               </div>
             </div>

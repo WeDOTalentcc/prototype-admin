@@ -126,6 +126,16 @@ jobs:
         # decommissioned na Sprint 5; sector tile click abre o wizard canonical.
         working-directory: plataforma-lia
         run: python3 scripts/check_no_showCreateModal.py
+      - name: Studio font-inter sensor (Sprint 6 — BLOCKING)
+        # Sensor #6 harness 2026-05-25: bana classe Tailwind font-inter
+        # (DESIGN.md mandate Open Sans canonical via font-sans).
+        working-directory: plataforma-lia
+        run: python3 scripts/check_no_font_inter.py
+      - name: Studio decorative gradient sensor (Sprint 6 — BLOCKING)
+        # Sensor #7 harness 2026-05-25: bana gradient cyan/violet decorativo
+        # em pages-agent-studio (DESIGN.md Quiet Operator 90/10 Rule).
+        working-directory: plataforma-lia
+        run: python3 scripts/check_no_studio_decorative_gradient.py
 
       - name: Unit & Component tests
         run: npx vitest run --reporter=verbose

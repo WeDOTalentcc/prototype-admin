@@ -90,10 +90,10 @@ export const TaskCard = React.memo(function TaskCard({ task, onConfirm, onReject
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
-              <span className="text-xs font-inter font-medium text-lia-text-primary">
+              <span className="text-xs font-sans font-medium text-lia-text-primary">
                 {task.dueDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
               </span>
-              <h4 className="text-xs font-inter font-semibold text-lia-text-primary">
+              <h4 className="text-xs font-sans font-semibold text-lia-text-primary">
                 {task.title}
               </h4>
               <Chip variant="neutral" muted

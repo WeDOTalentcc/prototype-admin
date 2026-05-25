@@ -56,7 +56,7 @@ export function ActiveJobsCard({
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm font-open-sans font-semibold text-lia-text-primary">Minhas Vagas Ativas</CardTitle>
           <div className="flex items-center gap-2">
-            <Chip density="relaxed" variant="neutral" className="font-inter">
+            <Chip density="relaxed" variant="neutral" className="font-sans">
               {filteredAndSortedJobs.length} vaga{filteredAndSortedJobs.length !== 1 ? 's' : ''}
             </Chip>
           </div>
