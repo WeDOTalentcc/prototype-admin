@@ -233,6 +233,7 @@ from app.api.v1.agent_quality_dashboard import router as agent_quality_dashboard
 from app.api.v1.ml_predictions_dashboard import router as ml_predictions_router
 from app.api.v1.calibration_dashboard_v2 import router as calibration_dashboard_v2_router
 from app.api.v1.agent_templates import router as agent_templates_router
+from app.api.v1.agent_template_catalog import router as agent_template_catalog_router
 from app.api.v1.sector_templates import router as sector_templates_router
 from app.api.v1.sourcing_agents import router as sourcing_agents_router
 from app.api.v1.custom_agents import router as custom_agents_router
@@ -641,6 +642,7 @@ def register_all_routes(app: FastAPI) -> None:
     # como template_id e devolve 404. FastAPI resolve rotas na ordem de registro.
     app.include_router(sector_templates_router, prefix="/api/v1", tags=["sector-templates"])
     app.include_router(agent_templates_router, prefix="/api/v1", tags=["agent-templates"])
+    app.include_router(agent_template_catalog_router, prefix="/api/v1", tags=["agent-template-catalog"])
     # — Phase 6: Agent Studio, Sourcing, Digital Twins, Voice Screening
     app.include_router(sourcing_agents_router, prefix="/api/v1", tags=["sourcing-agents"])
     app.include_router(custom_agents_router, prefix="/api/v1", tags=["custom-agents"])

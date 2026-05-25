@@ -722,6 +722,7 @@ from lia_models.agent_deployment import AgentDeployment, DeploymentTargetType, D
 from lia_models.agent_execution_log import AgentExecutionLog
 from lia_models.agent_quality_evaluation import AgentQualityEvaluation
 from lia_models.agent_template import AgentTemplate, AgentTemplateStatus
+from lia_models.agent_template_catalog import AgentTemplateCatalog, AgentCategory, AgentSector
 from lia_models.agent_version_snapshot import AgentVersionSnapshot
 from lia_models.ai_consumption import AiConsumption, AiCreditsBalance
 from lia_models.bias_audit_snapshot import BiasAuditSnapshot
