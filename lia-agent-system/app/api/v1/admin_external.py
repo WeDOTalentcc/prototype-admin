@@ -37,7 +37,8 @@ from app.models.client_account import ClientAccount
 from app.models.custom_agent import CustomAgent
 from app.models.digital_twin import DigitalTwin
 from app.models.recruitment_campaign import RecruitmentCampaign
-from app.models.sourcing_agent import SourcingAgent
+# Sub-sprint 7B-3a (2026-05-25): SourcingAgent legacy import removed,
+# sourcing counts/lists now read CustomAgent.where(category=sourcing).
 from app.services.quota_enforcement import (
     DEFAULT_QUOTAS,
     PLAN_AGENT_QUOTAS,
@@ -205,8 +206,12 @@ company_id: str = Depends(require_company_id)):
             )
             active_agents = (await db.execute(agent_count_q)).scalar() or 0
 
-            sourcing_count_q = select(func.count(SourcingAgent.id)).where(
-                SourcingAgent.company_id == str(cid)
+            sourcing_count_q = select(func.count(CustomAgent.id)).where(
+                and_(
+                    CustomAgent.company_id == str(cid),
+                    CustomAgent.category == "sourcing",
+                    CustomAgent.status != "archived",
+                )
             )
             active_sourcing = (await db.execute(sourcing_count_q)).scalar() or 0
 
@@ -315,8 +320,12 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
 
     sourcing_count = (
         await db.execute(
-            select(func.count(SourcingAgent.id)).where(
-                SourcingAgent.company_id == cid_str
+            select(func.count(CustomAgent.id)).where(
+                and_(
+                    CustomAgent.company_id == cid_str,
+                    CustomAgent.category == "sourcing",
+                    CustomAgent.status != "archived",
+                )
             )
         )
     ).scalar() or 0
@@ -400,29 +409,37 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
         for a in custom_result.scalars().all()
     ]
 
+    # Sub-sprint 7B-3a (2026-05-25): list canonical via CustomAgent category=sourcing.
+    # runtime_metrics dict carrega profiles_viewed/approved/rejected/emails_sent/calibration_v
+    # (migration 203 moveu legacy cols pra esse JSONB).
     sourcing_result = await db.execute(
-        select(SourcingAgent)
-        .where(SourcingAgent.company_id == cid)
-        .order_by(SourcingAgent.created_at.desc())
+        select(CustomAgent)
+        .where(
+            and_(
+                CustomAgent.company_id == cid,
+                CustomAgent.category == "sourcing",
+            )
+        )
+        .order_by(CustomAgent.created_at.desc())
     )
-    sourcing_agents = [
-        StudioAgentItem(
+    sourcing_agents = []
+    for a in sourcing_result.scalars().all():
+        m = a.runtime_metrics or {}
+        sourcing_agents.append(StudioAgentItem(
             id=str(a.id),
-            name=a.agent_name,
-            agent_type="sourcing_agent",
+            name=a.name,
+            agent_type="sourcing_agent",  # back-compat label
             status=a.status or "active",
-            total_executions=a.profiles_viewed or 0,
+            total_executions=int(m.get("profiles_viewed") or 0),
             created_at=a.created_at.isoformat() if a.created_at else None,
             extra={
-                "profiles_viewed": a.profiles_viewed,
-                "profiles_approved": a.profiles_approved,
-                "profiles_rejected": a.profiles_rejected,
-                "emails_sent": a.emails_sent,
-                "calibration_v": a.calibration_v,
+                "profiles_viewed": m.get("profiles_viewed"),
+                "profiles_approved": m.get("profiles_approved"),
+                "profiles_rejected": m.get("profiles_rejected"),
+                "emails_sent": m.get("emails_sent"),
+                "calibration_v": m.get("calibration_v"),
             },
-        )
-        for a in sourcing_result.scalars().all()
-    ]
+        ))
 
     twin_result = await db.execute(
         select(DigitalTwin)

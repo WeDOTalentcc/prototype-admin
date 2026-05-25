@@ -21,6 +21,7 @@ BANNED_NAMES = {"SourcingAgent", "SourcingAgentSignal"}
 BANNED_MODULES = {
     "lia_models.sourcing_agent",
     "libs.models.lia_models.sourcing_agent",
+    "app.models.sourcing_agent",  # shim path 2026-05-25 7B-3a
 }
 EXEMPT_MARKER = "SOURCING-LEGACY-EXEMPT"
 

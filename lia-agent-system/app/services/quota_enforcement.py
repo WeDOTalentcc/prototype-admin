@@ -11,7 +11,8 @@ from app.models.billing import Subscription
 from app.models.custom_agent import CustomAgent
 from app.models.digital_twin import DigitalTwin
 from app.models.recruitment_campaign import RecruitmentCampaign
-from app.models.sourcing_agent import SourcingAgent
+# Sub-sprint 7B-3a (2026-05-25): SourcingAgent legacy import removed,
+# sourcing count now reads CustomAgent.where(category=sourcing).
 
 logger = logging.getLogger(__name__)
 
@@ -98,8 +99,14 @@ async def get_current_count(
             )
         )
     elif resource_key == "sourcing_agents":
-        q = select(func.count(SourcingAgent.id)).where(
-            SourcingAgent.company_id == cid_str
+        # 7B-3a canonical: count from CustomAgent filter category=sourcing.
+        # Resource key string mantida pra back-compat pricing (decisão 7B-3b).
+        q = select(func.count(CustomAgent.id)).where(
+            and_(
+                CustomAgent.company_id == cid_str,
+                CustomAgent.category == "sourcing",
+                CustomAgent.status != "archived",
+            )
         )
     elif resource_key == "digital_twins":
         q = select(func.count(DigitalTwin.id)).where(

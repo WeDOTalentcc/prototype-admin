@@ -84,10 +84,15 @@ class TalentPoolCandidateListResponse(BaseModel):
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _jsonapi_pool(pool: TalentPool) -> dict:
-    """Format a TalentPool as a JSONAPI resource object."""
+def _jsonapi_pool(pool: TalentPool, assignments_count: int = 0) -> dict:
+    """Format a TalentPool as a JSONAPI resource object.
+
+    Sub-sprint 7B-3a (2026-05-25): inclui assignments_count para TalentPoolsTab badge.
+    Count vem de pool_agent_assignments (M2M canonical Sprint 7A).
+    """
     d = pool.to_dict()
     pool_id = d.pop("id")
+    d["assignments_count"] = assignments_count
     return {"id": pool_id, "type": "talent_pool", "attributes": d}
 
 
@@ -170,7 +175,29 @@ company_id: str = Depends(require_company_id)):
         stmt = stmt.where(TalentPool.status == status)
     result = await db.execute(stmt)
     pools = result.scalars().all()
-    return {"data": [_jsonapi_pool(p) for p in pools]}
+
+    # Sub-sprint 7B-3a (2026-05-25): assignments_count canonical per pool.
+    # Lê de pool_agent_assignments (M2M Sprint 7A canonical) status=active.
+    from lia_models.pool_agent_assignment import PoolAgentAssignment
+    pool_ids = [p.id for p in pools]
+    counts_map: dict = {}
+    if pool_ids:
+        counts_stmt = (
+            select(
+                PoolAgentAssignment.talent_pool_id,
+                func.count(PoolAgentAssignment.id),
+            )
+            .where(
+                PoolAgentAssignment.talent_pool_id.in_(pool_ids),
+                PoolAgentAssignment.company_id == str(company_id),
+                PoolAgentAssignment.status == "active",
+            )
+            .group_by(PoolAgentAssignment.talent_pool_id)
+        )
+        rows = (await db.execute(counts_stmt)).all()
+        counts_map = {row[0]: row[1] for row in rows}
+
+    return {"data": [_jsonapi_pool(p, counts_map.get(p.id, 0)) for p in pools]}
 
 
 @router.post("", status_code=201, response_model=TalentPoolResponse)
