@@ -36,7 +36,12 @@ class CompanyBenefit(Base):
     applicable_to = Column(ARRAY(String), nullable=True, default=list)
     seniority_levels = Column(ARRAY(String), nullable=True, default=list)
     contract_types = Column(ARRAY(String), nullable=True, default=list)
-    departments = Column(Text, nullable=True)
+    # DB column was migrated to JSONB (seeders write dicts/lists). Mismatch with
+    # the previous Text mapping made INSERT crash with DatatypeMismatchError
+    # ('column "departments" is of type jsonb but expression is of type character varying').
+    # Response normalization in app/api/v1/company_benefits.py::_to_response keeps
+    # backwards-compat for the str|None response schema.
+    departments = Column(JSONB, nullable=True, default=list)
 
     # Provider info
     provider = Column(String(255), nullable=True)
