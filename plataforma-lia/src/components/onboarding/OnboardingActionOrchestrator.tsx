@@ -6,6 +6,9 @@ import {
   type SettingsActionId,
 } from "@/hooks/settings/use-settings-conversational"
 import { AnalyzeWebsiteModal } from "@/components/settings/AnalyzeWebsiteModal"
+import { useLiaChatContext } from "@/contexts/lia-float-context"
+import type { ProposedSaves } from "@/lib/website-proposal-mapper"
+import { buildWebsiteProposalMessage } from "@/components/unified-chat/website-proposal-injector"
 
 /**
  * OnboardingActionOrchestrator — Task #712
@@ -155,6 +158,7 @@ export function OnboardingActionOrchestrator() {
   // Task #1180 — passo "website" abre o modal pré-análise em vez de
   // disparar prompt para o chat.
   const [analyzeModalOpen, setAnalyzeModalOpen] = useState(false)
+  const { setChatMessages } = useLiaChatContext()
 
   useEffect(() => {
     saveLocal(state)
@@ -335,15 +339,11 @@ export function OnboardingActionOrchestrator() {
         open={analyzeModalOpen}
         onClose={() => setAnalyzeModalOpen(false)}
         initial={{}}
-        onApplied={() => {
-          // Marca o step `website` como done via mesmo evento canônico.
-          if (typeof window !== "undefined") {
-            window.dispatchEvent(
-              new CustomEvent("lia:settings-success", {
-                detail: { actionId: "analyze_website" },
-              }),
-            )
-          }
+        onProposed={({ proposed, companyId: cid }: { proposed: ProposedSaves; companyId: string }) => {
+          setChatMessages((prev) => [
+            ...prev,
+            buildWebsiteProposalMessage(proposed, cid),
+          ])
         }}
       />
 

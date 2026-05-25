@@ -7,8 +7,11 @@ import Link from "next/link"
 /**
  * Landing page do `/wedo-admin/` — área provisória interna.
  *
- * Lista as seções disponíveis (placeholders por enquanto; serão
- * preenchidas em PR 2 e PR 3 conforme plan canonical).
+ * Cards habilitados:
+ * - fairness (PR 2 2026-05-25)
+ *
+ * Cards pendentes (PR 3):
+ * - auditLogs, aiTransparency, policyEngine, automationRules
  *
  * Plan: ~/.claude/plans/jolly-roaming-moler.md (seção "PLANO DE EXECUÇÃO")
  */
@@ -21,7 +24,7 @@ interface SectionLink {
 }
 
 const SECTIONS: SectionLink[] = [
-  { id: "fairness", href: "/wedo-admin/fairness", iconKey: "fairness", available: false },
+  { id: "fairness", href: "/wedo-admin/fairness", iconKey: "fairness", available: true },
   { id: "auditLogs", href: "/wedo-admin/governanca/audit-logs", iconKey: "audit", available: false },
   { id: "aiTransparency", href: "/wedo-admin/governanca/ai-transparency", iconKey: "ai", available: false },
   { id: "policyEngine", href: "/wedo-admin/governanca/policy-engine", iconKey: "policy", available: false },

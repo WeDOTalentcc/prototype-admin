@@ -10,6 +10,7 @@ import { ThinkingStepsCard } from "./ThinkingStepsCard"
 import { OutreachCard } from "./OutreachCard"
 import { WizardPublishedJobCard } from "./wizard/WizardPublishedJobCard"
 import { WizardPipelineTemplateCard } from "./wizard/WizardPipelineTemplateCard"
+import { WebsiteProposalCard } from "./WebsiteProposalCard"
 import type { PipelineTemplateCardData, PipelineTemplateOption, WizardPublishedJobCardData } from "./wizard/wizard-plan-card"
 import { renderMarkdown } from "@/lib/render-markdown"
 import { submitThumbsFeedback } from "@/services/lia-api/feedback-api"
@@ -298,6 +299,8 @@ export function UnifiedMessageList({
           meta?.type === "wizard_published_job" && meta?.publishedJob != null
         const hasTemplateCard =
           meta?.type === "wizard_template_select" && meta?.templateCard != null
+        const hasWebsiteProposal =
+          meta?.type === "website_proposal" && meta?.websiteProposal != null
 
         return (
           <div
@@ -388,6 +391,16 @@ export function UnifiedMessageList({
                         | undefined
                       cb?.(option)
                     }}
+                  />
+                )}
+
+                {/* Website proposal — Task #1180. Card de proposta extraído
+                    do site institucional, com edição inline e botões de
+                    Salvar tudo/Salvar selecionados/Cancelar que disparam os
+                    saves REST diretamente. */}
+                {hasWebsiteProposal && (
+                  <WebsiteProposalCard
+                    data={meta!.websiteProposal as import("@/components/unified-chat/WebsiteProposalCard").WebsiteProposalCardData}
                   />
                 )}
 

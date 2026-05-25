@@ -12,6 +12,9 @@ import { MinhaEmpresaCard } from "@/components/settings/MinhaEmpresaCard"
 import { LearningLoopsPanel } from "@/components/settings/LearningLoopsPanel"
 import { LiaFieldsConfigPanel } from "@/components/settings/LiaFieldsConfigPanel"
 import { AnalyzeWebsiteModal } from "@/components/settings/AnalyzeWebsiteModal"
+import { useLiaChatContext } from "@/contexts/lia-float-context"
+import type { ProposedSaves } from "@/lib/website-proposal-mapper"
+import { buildWebsiteProposalMessage } from "@/components/unified-chat/website-proposal-injector"
 import { textStyles } from "@/lib/design-tokens"
 import { Globe } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
@@ -119,14 +122,19 @@ export function MinhaEmpresaHub({ activeSubsection }: MinhaEmpresaHubProps = {})
     setAnalyzeModalOpen(true)
   }, [])
 
-  const handleAnalyzeApplied = React.useCallback(() => {
-    // Dispatch para o OnboardingActionOrchestrator marcar o step como done.
-    if (typeof window !== "undefined") {
-      window.dispatchEvent(
-        new CustomEvent("lia:settings-success", { detail: { actionId: "analyze_website" } }),
-      )
-    }
-    refreshAll()
+  const { setChatMessages } = useLiaChatContext()
+  const handleProposed = React.useCallback(
+    ({ proposed, companyId: cid }: { proposed: ProposedSaves; companyId: string }) => {
+      setChatMessages((prev) => [...prev, buildWebsiteProposalMessage(proposed, cid)])
+    },
+    [setChatMessages],
+  )
+  // Card no chat dispara `lia:settings-updated` ao salvar — re-fetch.
+  React.useEffect(() => {
+    if (typeof window === "undefined") return
+    const handler = () => refreshAll()
+    window.addEventListener("lia:settings-updated", handler)
+    return () => window.removeEventListener("lia:settings-updated", handler)
   }, [refreshAll])
 
   const existingBasic = React.useMemo(
@@ -303,7 +311,7 @@ export function MinhaEmpresaHub({ activeSubsection }: MinhaEmpresaHubProps = {})
           companyId: companyId ?? undefined,
           existingBasic,
         }}
-        onApplied={handleAnalyzeApplied}
+        onProposed={handleProposed}
       />
     </div>
   )

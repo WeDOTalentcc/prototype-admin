@@ -24,7 +24,7 @@ vi.mock("@/hooks/company/useCompanyId", () => ({
   useCompanyId: () => ({ companyId: "co-1" }),
 }))
 
-import { BiasAuditPanel } from "@/components/settings/governance/BiasAuditPanel"
+import { BiasAuditPanel } from "@/components/_wedo_internal/fairness/BiasAuditPanel"
 
 const fetchMock = vi.fn()
 
