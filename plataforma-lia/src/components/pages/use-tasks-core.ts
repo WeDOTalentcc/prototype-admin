@@ -394,7 +394,7 @@ export function useTasksCore(onNavigate?: (page: string) => void) {
           type: mapTaskType(t.task_type),
           priority: mapPriority(t.priority),
           dueDate: t.due_date ? new Date(t.due_date) : new Date(),
-          relatedJob: t.related_job_id || undefined,
+          relatedJob: t.context?.job_title as string | undefined || undefined,
           relatedJobId: t.related_job_id || undefined,
           relatedCandidateId: t.related_candidate_id || t.context?.candidate_id as string | undefined || undefined,
           rawTaskType: t.task_type || undefined,
