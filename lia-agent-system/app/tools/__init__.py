@@ -89,8 +89,26 @@ __all__ = [
 ]
 
 
+_INITIALIZED = False
+
+
 def initialize_tools() -> None:
-    """Initialize and register all tools."""
+    """Initialize and register all tools.
+
+    T-1170 (Bug 4): chamada 3x no startup (main.py, orchestrator.legacy,
+    job_wizard_graph). Guard idempotente evita re-registrar ~80 tools e
+    elimina warnings 'already registered, overwriting'. Callsites permanecem
+    como defesa-em-profundidade (garantem init em cenários onde main.py
+    não rodou, ex.: testes).
+    """
+    global _INITIALIZED
+    if _INITIALIZED:
+        import logging
+        logging.getLogger(__name__).debug(
+            "initialize_tools() já executada — skip idempotente (T-1170)"
+        )
+        return
+
     from app.domains.analytics.tools.query_tools import register_query_tools
     from app.domains.communication.tools.communication_tools import register_communication_tools
     from app.domains.company_settings.tools.import_tools import register_company_settings_tools
@@ -121,6 +139,7 @@ def initialize_tools() -> None:
     import logging
     logger = logging.getLogger(__name__)
     logger.info(f"✅ Initialized {len(tool_registry.list_tools())} tools")
+    _INITIALIZED = True
 
 
 def get_all_tool_schemas(agent_type: str | None = None, format: str = "claude") -> list[dict[str, Any]]:
