@@ -275,7 +275,7 @@ export function KanbanTableView({
 
     {/* Conteúdo da Tabela */}
     <div className="flex-1 overflow-hidden bg-lia-bg-primary dark:bg-lia-bg-primary flex flex-col min-w-0">
-      <div className="flex-1 overflow-auto px-4 py-2">
+      <div className="flex-1 overflow-auto px-4 py-2 flex flex-col">
       {/* Tabela Elegante - Unified Component */}
       {(() => {
         const nameCol = getColumnDefinition('candidate')
@@ -441,11 +441,12 @@ export function KanbanTableView({
               }
               return stageColors[stage] || 'var(--lia-btn-primary-bg)'
             }) as unknown as Parameters<typeof UnifiedCandidateTable>[0]["getStageBorderColor"]}
-            className="max-h-[calc(100vh-22rem)]"
+            className=""
           />
         )
       })()}
 
+      <div className="flex-1" aria-hidden="true" />
       {/* Paginação */}
       <KanbanTablePagination
         currentPage={currentPage}
