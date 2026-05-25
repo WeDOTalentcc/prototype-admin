@@ -359,7 +359,7 @@ export function SystemConfigurationModal({ system, onClose }: SystemConfiguratio
                                 </div>
                               </div>
                               <div className="flex items-center gap-1">
-                                {field.required && <span className="text-xs bg-status-error/15 text-status-error px-1.5 py-0.5 rounded-md" aria-live="polite">Obrigatório</span>}
+                                {field.required && <span className="text-micro bg-status-error/15 text-status-error px-1.5 py-0.5 rounded-md" aria-live="polite">Obrigatório</span>}
                                 {isMapped && <CheckCircle className="w-4 h-4 text-status-success" />}
                               </div>
                             </div>
@@ -396,7 +396,7 @@ export function SystemConfigurationModal({ system, onClose }: SystemConfiguratio
                                 </div>
                               </div>
                               <div className="flex items-center gap-2">
-                                {field.required && <span className="text-xs bg-status-error/15 text-status-error px-1.5 py-0.5 rounded-md" aria-live="polite">Obrigatório</span>}
+                                {field.required && <span className="text-micro bg-status-error/15 text-status-error px-1.5 py-0.5 rounded-md" aria-live="polite">Obrigatório</span>}
                                 {mapping && (
                                   <div className="flex items-center gap-1">
                                     <span className={`text-xs px-2 py-1 rounded-md ${getConfidenceColor(mapping.confidence)}`}>{mapping.confidence}%</span>

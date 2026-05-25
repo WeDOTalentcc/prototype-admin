@@ -44,7 +44,7 @@ export const TaskCard = React.memo(function TaskCard({ task, onConfirm, onReject
                 {task.title}
               </h4>
               <Chip variant="neutral" muted
-                className={`border-0 text-xs py-0 px-1.5 font-medium ${getTaskPriorityStyle(task.priority as 'high' | 'medium' | 'low') ??""}`}
+                className={`border-0 text-micro py-0 px-1.5 font-medium ${getTaskPriorityStyle(task.priority as 'high' | 'medium' | 'low') ??""}`}
               >
                 {getPriorityLabel(task.priority as 'high' | 'medium' | 'low')}
               </Chip>

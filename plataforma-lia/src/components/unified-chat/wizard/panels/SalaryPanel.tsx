@@ -124,7 +124,7 @@ export function SalaryPanel({ data, onUpdate }: Props) {
           </div>
           <div className="flex flex-wrap gap-1.5">
             {d.benefits.map((b, i) => (
-              <span key={i} className="px-2 py-0.5 rounded bg-lia-bg-secondary border border-lia-border-subtle text-xs text-lia-text-primary">
+              <span key={i} className="px-2 py-0.5 rounded bg-lia-bg-secondary border border-lia-border-subtle text-micro text-lia-text-primary">
                 {b}
               </span>
             ))}

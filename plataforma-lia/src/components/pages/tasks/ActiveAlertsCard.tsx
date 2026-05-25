@@ -85,7 +85,7 @@ export const ActiveAlertsCard = React.memo(function ActiveAlertsCard({
                         {alert.title}
                       </h4>
                       <Chip variant="neutral" muted
-                        className={`border-0 text-xs py-0 px-1.5 font-medium ${getAlertSeverityStyle(alert.severity)}`}
+                        className={`border-0 text-micro py-0 px-1.5 font-medium ${getAlertSeverityStyle(alert.severity)}`}
                       >
                         {getSeverityLabel(alert.severity)}
                       </Chip>

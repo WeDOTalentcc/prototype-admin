@@ -194,7 +194,7 @@ export function AsyncJobProgress({
           )}
           <Chip
             variant="neutral"
-            className={`text-xs px-1.5 py-0 ${
+            className={`text-micro px-1.5 py-0 ${
  status ==="completed"
                 ?"text-status-success border-status-success/30"
                 : status ==="failed"

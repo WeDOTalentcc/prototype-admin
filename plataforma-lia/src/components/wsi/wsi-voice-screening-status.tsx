@@ -280,7 +280,7 @@ export function WSIVoiceScreeningStatus({
             }
             {t('voiceScreening.title')}
             {isVoipMode && (
-              <span className="text-xs font-normal text-lia-text-tertiary bg-lia-bg-tertiary px-1.5 py-0.5 rounded">
+              <span className="text-micro font-normal text-lia-text-tertiary bg-lia-bg-tertiary px-1.5 py-0.5 rounded">
                 VoIP
               </span>
             )}

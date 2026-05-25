@@ -875,7 +875,7 @@ function AgentCard({
               </span>
             ))}
             {(strategy.required_skills.length > 4) && (
-              <span className="px-2 py-0.5 rounded-xl bg-lia-bg-tertiary text-xs text-lia-text-secondary">
+              <span className="px-2 py-0.5 rounded-xl bg-lia-bg-tertiary text-micro text-lia-text-secondary">
                 +{strategy.required_skills.length - 4}
               </span>
             )}

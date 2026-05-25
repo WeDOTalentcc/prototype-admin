@@ -88,7 +88,7 @@ export function PublishPanel({ data, onUpdate }: Props) {
           <span className="text-xs font-medium text-lia-text-secondary">Canais de contato</span>
           <div className="flex items-center gap-2 mt-1">
             {d.contact_channels.map((c, i) => (
-              <span key={i} className="px-2 py-0.5 rounded bg-lia-bg-secondary border border-lia-border-subtle text-xs text-lia-text-primary">
+              <span key={i} className="px-2 py-0.5 rounded bg-lia-bg-secondary border border-lia-border-subtle text-micro text-lia-text-primary">
                 {c}
               </span>
             ))}

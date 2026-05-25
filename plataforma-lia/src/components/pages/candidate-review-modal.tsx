@@ -186,7 +186,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                  
                 >
                   Approve
-                  <span className="ml-2 text-xs opacity-70 bg-status-success/10 px-1.5 py-0.5 rounded-md">A</span>
+                  <span className="ml-2 text-micro opacity-70 bg-status-success/10 px-1.5 py-0.5 rounded-md">A</span>
                 </Button>
 
                 <Button
@@ -200,7 +200,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                  
                 >
                   Reject
-                  <span className="ml-2 text-xs opacity-70 bg-status-error/10 px-1.5 py-0.5 rounded-md">R</span>
+                  <span className="ml-2 text-micro opacity-70 bg-status-error/10 px-1.5 py-0.5 rounded-md">R</span>
                 </Button>
 
                 <p className="text-xs text-lia-text-secondary text-center mt-4 leading-relaxed">

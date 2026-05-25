@@ -337,7 +337,7 @@ export default function LiaLibraryPage({ onNavigate }: LiaLibraryPageProps) {
                     <div className="flex items-center gap-2">
                       <Chip 
                         variant="neutral" muted 
-                        className="text-xs px-1.5 py-0 h-5 font-open-sans"
+                        className="text-micro px-1.5 py-0 h-5 font-open-sans"
                         style={{backgroundColor: categoryInfo.bgColor, color: categoryInfo.color}}
                       >
                         {categoryInfo.label}

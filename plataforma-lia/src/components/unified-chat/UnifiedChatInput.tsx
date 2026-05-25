@@ -249,7 +249,7 @@ export function UnifiedChatInput({
         {/* Context badge row */}
         {showContext && (
           <div className="px-3 pt-2.5">
-            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-lia-bg-secondary border border-lia-border-subtle text-xs text-lia-text-secondary">
+            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-lia-bg-secondary border border-lia-border-subtle text-micro text-lia-text-secondary">
               {contextPage}
             </span>
           </div>

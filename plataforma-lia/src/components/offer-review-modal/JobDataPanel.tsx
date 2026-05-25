@@ -44,7 +44,7 @@ export function JobDataPanel({ job }: JobDataPanelProps) {
               {job.benefits.slice(0, 8).map((b, i) => (
                 <li
                   key={i}
-                  className="text-xs bg-background border border-border rounded px-2 py-0.5"
+                  className="text-micro bg-background border border-border rounded px-2 py-0.5"
                 >
                   {typeof b === "string" ? b : b.name}
                 </li>

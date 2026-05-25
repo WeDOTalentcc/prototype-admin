@@ -73,7 +73,7 @@ export function TriagemSummaryBar({
           </div>
 
           <div className="text-right">
-            <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full" style={{backgroundColor: decisionDisplay.bg, color: decisionDisplay.color}}>
+            <span className="inline-flex items-center gap-1 px-2 py-1 text-micro font-medium rounded-full" style={{backgroundColor: decisionDisplay.bg, color: decisionDisplay.color}}>
               <DecisionIcon className="w-3 h-3" />
               {decisionDisplay.label}
             </span>

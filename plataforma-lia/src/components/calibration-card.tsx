@@ -223,7 +223,7 @@ export function CalibrationCard({
                   <Chip 
                     key={skill} 
                     variant="neutral" muted
-                    className="text-xs py-0 px-1.5 bg-lia-bg-tertiary dark:bg-lia-bg-secondary"
+                    className="text-micro py-0 px-1.5 bg-lia-bg-tertiary dark:bg-lia-bg-secondary"
                   >
                     {skill}
                   </Chip>
@@ -231,7 +231,7 @@ export function CalibrationCard({
                 {candidate.skills.length > 5 && (
                   <Chip 
                     variant="neutral"
-                    className="text-xs py-0 px-1.5"
+                    className="text-micro py-0 px-1.5"
                   >
                     +{candidate.skills.length - 5}
                   </Chip>

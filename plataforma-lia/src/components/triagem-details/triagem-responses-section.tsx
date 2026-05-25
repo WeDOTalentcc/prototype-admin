@@ -200,7 +200,7 @@ present
                         <p className="text-micro text-lia-text-secondary uppercase tracking-wide mb-2">Evidências</p>
                         <div className="flex flex-wrap gap-2">
                           {resp.evidences.map((ev, i) => (
-                            <span key={`ev-${i}`} className="flex items-center gap-1 text-xs bg-lia-bg-primary border border-lia-border-subtle text-lia-text-secondary px-2 py-1 rounded-full">
+                            <span key={`ev-${i}`} className="flex items-center gap-1 text-micro bg-lia-bg-primary border border-lia-border-subtle text-lia-text-secondary px-2 py-1 rounded-full">
                               <CheckCircle className="w-3 h-3 text-status-success" /> {ev}
                             </span>
                           ))}

@@ -47,7 +47,7 @@ export function TriagemScoresPanel({ scores, sessionInfo, f11Report, details }: 
         </div>
       </div>
       <div className="flex items-center gap-3 mt-3 flex-wrap">
-        <span className="flex items-center gap-1 text-xs text-lia-text-secondary bg-lia-bg-tertiary px-2 py-1 rounded-full">
+        <span className="flex items-center gap-1 text-micro text-lia-text-secondary bg-lia-bg-tertiary px-2 py-1 rounded-full">
           {sessionInfo.screening_type === 'voice' ? <Mic className="w-3 h-3" /> : <MessageSquare className="w-3 h-3" />}
           {sessionInfo.screening_type === 'voice' ? 'Triagem por Voz' : 'Triagem por Texto'}
         </span>

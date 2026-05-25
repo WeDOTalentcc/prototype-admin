@@ -360,7 +360,7 @@ const BulkActionsBar = memo(function BulkActionsBar({
                   key={status.value}
                   onClick={() => handleUpdateStatus(status.value)}
                 >
-                  <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium ${status.color} mr-2`}>
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-micro font-medium ${status.color} mr-2`}>
                     {status.label}
                   </span>
                 </DropdownMenuItem>
