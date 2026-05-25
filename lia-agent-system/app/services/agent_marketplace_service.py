@@ -83,6 +83,7 @@ class AgentMarketplaceService:
         company_id: str,
         status: Optional[str] = None,
         domain: Optional[str] = None,
+        category: Optional[str] = None,  # Sprint 7A category filter
         limit: int = 50,
         offset: int = 0,
     ) -> tuple[list[CustomAgent], int]:
@@ -91,6 +92,8 @@ class AgentMarketplaceService:
             conditions.append(CustomAgent.status == status)
         if domain:
             conditions.append(CustomAgent.domain == domain)
+        if category:  # Sprint 7A category filter
+            conditions.append(CustomAgent.category == category)
 
         count_q = select(func.count(CustomAgent.id)).where(and_(*conditions))
         total = (await db.execute(count_q)).scalar() or 0

@@ -78,6 +78,17 @@ class CustomAgent(Base):
     # entregues ao candidato via email/WhatsApp. Cliente controla via UI.
     triagem_invite_enabled = Column(Boolean, nullable=False, default=False, server_default="false")
 
+    # Sub-sprint 7A (2026-05-25): canonical categorization + sourcing-only payloads.
+    # category virou source-of-truth pra screening|sourcing|communication|analytics|automation|job_management.
+    # Sprint 8 (migration 204) tornara category NOT NULL.
+    category = Column(String(32), nullable=True)
+    runtime_metrics = Column(JSONB, nullable=False, default=dict, server_default="{}")
+    search_strategy = Column(JSONB, nullable=True)   # sourcing-only payload
+    preferences = Column(JSONB, nullable=True)       # sourcing-only payload
+    outreach_config = Column(JSONB, nullable=True)   # sourcing-only payload
+    legacy_sourcing_agent_id = Column(UUID(as_uuid=True), nullable=True)  # back-reference (drop Sprint 8)
+
+
     total_executions = Column(Integer, default=0)
     avg_confidence = Column(Float, default=0.0)
     last_executed_at = Column(DateTime, nullable=True)
@@ -138,6 +149,12 @@ class CustomAgent(Base):
             "avg_confidence": self.avg_confidence,
             "last_executed_at": self.last_executed_at.isoformat() if self.last_executed_at else None,
             "is_marketplace_published": self.is_marketplace_published,
+            "category": self.category,
+            "runtime_metrics": self.runtime_metrics or {},
+            "search_strategy": self.search_strategy,
+            "preferences": self.preferences,
+            "outreach_config": self.outreach_config,
+            "legacy_sourcing_agent_id": str(self.legacy_sourcing_agent_id) if self.legacy_sourcing_agent_id else None,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }

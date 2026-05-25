@@ -770,6 +770,7 @@ from lia_models.screening_question_set import ScreeningQuestionSet
 from lia_models.skills_catalog import CompanySkillsCatalog, BehavioralCompetencyCatalog, SkillUsageAnalytics
 from lia_models.sourcing_agent import SourcingAgent, SourcingAgentSignal
 from lia_models.talent_pool import TalentPool, TalentPoolCandidate
+from lia_models.pool_agent_assignment import PoolAgentAssignment
 from lia_models.task_record import TaskRecord, TaskSchedule, DeadLetterRecord
 from lia_models.technical_tests import TechnicalTest, ClientTestConfig, TestResult, TestCategory, TestSubcategory, TestDifficulty
 from lia_models.tenant_llm_config import TenantLLMConfig

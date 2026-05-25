@@ -125,6 +125,11 @@ company_id: str = Depends(require_company_id)):
 async def list_custom_agents(
     status_filter: Optional[str] = Query(None, alias="status"),
     domain: Optional[str] = None,
+    category: Optional[str] = Query(
+        None,
+        pattern="^(screening|sourcing|communication|analytics|automation|job_management)$",
+        description="Sprint 7A category filter",
+    ),
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
     current_user=Depends(get_current_user),
@@ -136,6 +141,7 @@ company_id: str = Depends(require_company_id)):
         company_id=current_user.company_id,
         status=status_filter,
         domain=domain,
+        category=category,
         limit=limit,
         offset=offset,
     )
