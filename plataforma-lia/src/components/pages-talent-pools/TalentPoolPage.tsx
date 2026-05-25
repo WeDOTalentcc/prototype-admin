@@ -516,32 +516,12 @@ function CandidatesTab({
   )
 }
 
-// ---------- Agents Tab — delegates to real AgentsTab from 6.2 ----------
+// ---------- Agents Tab — Sprint 7B-2 canonical (pool-scoped, M2M) ----------
 
-// Import the real AgentsTab component created in Phase 6.2
-import RealAgentsTab from"../pages-agent-studio/AgentsTab"
-import CalibrationCardModal from"../pages-agent-studio/CalibrationCardModal"
+import { PoolAgentsTab } from "./sub-tabs/PoolAgentsTab"
 
 function AgentsTabWrapper({ pool }: { pool: TalentPool }) {
-  const [calibratingAgentId, setCalibratingAgentId] = useState<string | null>(null)
-
-  return (
-    <>
-      <RealAgentsTab
-        talentPoolId={pool.id}
-        onStartCalibration={(agentId) => setCalibratingAgentId(agentId)}
-        onCreateAgent={() => {/* handled via Agent Studio page or chat */}}
-      />
-      {calibratingAgentId && (
-        <CalibrationCardModal
-          agentId={calibratingAgentId}
-          isOpen
-          onClose={() => setCalibratingAgentId(null)}
-          onCalibrationComplete={() => setCalibratingAgentId(null)}
-        />
-      )}
-    </>
-  )
+  return <PoolAgentsTab poolId={pool.id} />
 }
 
 // ---------- Config Tab (placeholder — populated in 6.2) ----------

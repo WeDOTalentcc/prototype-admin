@@ -129,8 +129,8 @@ function PoolCard({ pool, onClick }: { pool: TalentPoolSummary; onClick: () => v
             <span className={textStyles.bodySmall}>🎯 {pool.ready_count}</span>
           </div>
           {pool.agent_sourcing_enabled && (
-            <div className="flex items-center gap-1 ml-auto" title="Agente de sourcing ativo">
-              <Bot className="w-3.5 h-3.5 text-green-500" />
+            <div className="flex items-center gap-1 ml-auto" title="Sourcing legacy ativo (em migração para o novo modelo de agentes)">
+              <Bot className="w-3.5 h-3.5 text-lia-text-secondary" />
             </div>
           )}
         </div>
