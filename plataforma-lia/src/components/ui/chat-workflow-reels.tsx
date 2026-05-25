@@ -822,7 +822,7 @@ const StageNode = React.forwardRef<
       </span>
       {showPulse ? (
         <span
-          className="text-xs font-bold cursor-pointer rounded-full px-1.5 py-0.5"
+          className="text-micro font-bold cursor-pointer rounded-full px-1.5 py-0.5"
           style={{
             backgroundColor: stage.color.accentBg,
             color: stage.color.accent,

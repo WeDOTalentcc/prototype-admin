@@ -151,7 +151,7 @@ export const DataRequestIndicator = React.memo(function DataRequestIndicator({
                 </span>
               </div>
               <span 
-                className="text-xs font-semibold px-2 py-0.5 rounded-full"
+                className="text-micro font-semibold px-2 py-0.5 rounded-full"
                 style={{backgroundColor: effectiveConfig.bgColor,
                   color: effectiveConfig.color}}
               >

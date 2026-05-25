@@ -272,7 +272,7 @@ export function MultimodalUpload({
               </p>
               {resultType && (
                 <span className={cn(
-                  "inline-flex items-center gap-1 text-xs mt-1 px-2 py-0.5 rounded-full",
+                  "inline-flex items-center gap-1 text-micro mt-1 px-2 py-0.5 rounded-full",
                   resultType === 'resume' 
                     ? "bg-wedo-purple/15 text-wedo-purple"
                     : resultType === 'image'

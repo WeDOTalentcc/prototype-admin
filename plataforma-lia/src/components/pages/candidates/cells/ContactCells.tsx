@@ -30,7 +30,7 @@ export function renderEmailCell(
           e.stopPropagation()
           onRevealContact(candidate, "email")
         }}
-        className="inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium rounded-full bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-interactive-active dark:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse transition-colors motion-reduce:transition-none"
+        className="inline-flex items-center gap-1.5 px-2 py-0.5 text-micro font-medium rounded-full bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-interactive-active dark:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse transition-colors motion-reduce:transition-none"
         title={t ? t('revealEmailTitle') : "Clique para revelar email (2 créditos)"}
       >
         <Mail className="w-3 h-3" />
@@ -76,7 +76,7 @@ export function renderPhoneCell(
           e.stopPropagation()
           onRevealContact(candidate, "phone")
         }}
-        className="inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium rounded-full bg-status-success/10 text-status-success hover:bg-status-success/15 transition-colors motion-reduce:transition-none"
+        className="inline-flex items-center gap-1.5 px-2 py-0.5 text-micro font-medium rounded-full bg-status-success/10 text-status-success hover:bg-status-success/15 transition-colors motion-reduce:transition-none"
         title={titleText}
       >
         <Phone className="w-3 h-3" />

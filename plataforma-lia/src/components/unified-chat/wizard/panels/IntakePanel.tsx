@@ -118,7 +118,7 @@ export function IntakePanel({ data, onUpdate }: Props) {
             {extractedKeywords.map((kw, i) => (
               <span
                 key={i}
-                className="px-2 py-0.5 text-xs rounded-full bg-wedo-cyan/10 text-wedo-cyan border border-wedo-cyan/20"
+                className="px-2 py-0.5 text-micro rounded-full bg-wedo-cyan/10 text-wedo-cyan border border-wedo-cyan/20"
               >
                 {kw}
               </span>

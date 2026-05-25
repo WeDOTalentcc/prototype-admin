@@ -60,7 +60,7 @@ export function CandidateProfilePanel({ data }: CandidateProfilePanelProps) {
               </p>
             )}
             {score != null && (
-              <span className={cn("inline-block text-xs font-semibold px-2 py-0.5 rounded-full mt-1", scoreColor)}>
+              <span className={cn("inline-block text-micro font-semibold px-2 py-0.5 rounded-full mt-1", scoreColor)}>
                 Match: {score}%
               </span>
             )}

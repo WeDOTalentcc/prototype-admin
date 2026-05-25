@@ -156,7 +156,7 @@ const SearchResultsHeader = memo(function SearchResultsHeader({
       result.push(
         <span
           key={`p${idx}`}
-          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${style.pill}`}
+          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-micro font-medium whitespace-nowrap ${style.pill}`}
         >
           {getIcon(span.type, style.icon)}
           {span.matchedText}

@@ -279,7 +279,7 @@ export function GlobalSearchModal({ isOpen, onClose, onNavigate }: GlobalSearchM
                 <type.icon className="w-3.5 h-3.5" />
                 {type.label}
                 {type.count > 0 && (
-                  <span className="text-xs px-1 py-0.5 rounded-full bg-lia-interactive-active dark:bg-lia-bg-elevated text-lia-text-secondary">
+                  <span className="text-micro px-1 py-0.5 rounded-full bg-lia-interactive-active dark:bg-lia-bg-elevated text-lia-text-secondary">
                     {type.count}
                   </span>
                 )}

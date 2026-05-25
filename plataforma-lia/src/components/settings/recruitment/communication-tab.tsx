@@ -188,7 +188,7 @@ export function CommunicationTab({ onSettingsChange }: { onSettingsChange: (chan
       {/* P0-W1-13: Ghost-setting banner — notification channel config is pure local state, not persisted */}
       <div className="rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-900/50 dark:bg-amber-900/20 px-4 py-3">
         <div className="flex items-start gap-3">
-          <span className="inline-flex items-center rounded-full bg-amber-100 dark:bg-amber-800/60 px-2.5 py-0.5 text-xs font-semibold text-amber-700 dark:text-amber-300 flex-shrink-0 mt-0.5">
+          <span className="inline-flex items-center rounded-full bg-amber-100 dark:bg-amber-800/60 px-2.5 py-0.5 text-micro font-semibold text-amber-700 dark:text-amber-300 flex-shrink-0 mt-0.5">
             {t('comingSoon')}
           </span>
           <p className="text-sm text-amber-700 dark:text-amber-300">

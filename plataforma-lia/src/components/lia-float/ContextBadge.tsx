@@ -39,7 +39,7 @@ export function ContextBadge({ contextPage, onRemove, className }: ContextBadgeP
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium",
+        "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-micro font-medium",
         "border border-lia-border-medium text-lia-text-secondary bg-lia-bg-secondary",
         "flex-shrink-0",
         className

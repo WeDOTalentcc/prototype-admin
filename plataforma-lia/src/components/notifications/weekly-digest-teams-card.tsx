@@ -94,7 +94,7 @@ export function WeeklyDigestTeamsCard({
                 <div className="flex items-center gap-2">
                   <span className="text-lg">⚠️</span>
                   <span className="text-sm font-medium text-lia-text-primary">Vagas em Risco</span>
-                  <span className="bg-status-warning/15 text-status-warning text-xs font-medium px-2 py-0.5 rounded-full">
+                  <span className="bg-status-warning/15 text-status-warning text-micro font-medium px-2 py-0.5 rounded-full">
                     {digest.atRiskJobs.length}
                   </span>
                 </div>
@@ -112,7 +112,7 @@ export function WeeklyDigestTeamsCard({
                           {job.detail || `Time-to-fill: ${job.daysOpen} dias (meta: ${job.targetDays})`}
                         </p>
                       </div>
-                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                      <span className={`text-micro font-medium px-2 py-0.5 rounded-full ${
                         job.severity === "critical"
                           ? "bg-status-error/15 text-status-error"
                           : "bg-status-warning/15 text-status-warning"
@@ -134,7 +134,7 @@ export function WeeklyDigestTeamsCard({
               <div className="flex items-center gap-2">
                 <span className="text-lg">🛡️</span>
                 <span className="text-sm font-medium text-lia-text-primary">Compliance e Fairness</span>
-                <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                <span className={`text-micro font-medium px-2 py-0.5 rounded-full ${
                   digest.compliance.status === "ok"
                     ? "bg-status-success/15 text-status-success"
                     : "bg-status-warning/15 text-status-warning"

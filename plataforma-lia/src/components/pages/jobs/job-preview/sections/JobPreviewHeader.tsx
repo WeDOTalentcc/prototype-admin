@@ -209,7 +209,7 @@ export function JobPreviewHeader({ previewJob, onClose, onJobClick }: JobPreview
           <div className="flex items-center gap-0.5 overflow-x-auto">
             {previewJob.hiringProcess.map((step, idx) => (
               <React.Fragment key={idx}>
-                <div className={`px-1.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${
+                <div className={`px-1.5 py-0.5 rounded-full text-micro font-medium whitespace-nowrap ${
                   idx === 0 ? 'bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-elevated font-semibold' :
                   idx === (previewJob.hiringProcess?.length || 0) - 1 ? 'bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-elevated font-semibold' :
                   'bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-elevated'

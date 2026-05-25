@@ -272,7 +272,7 @@ export const EAPTabNatural = React.memo(function EAPTabNatural(props: EAPTabNatu
       {searchSource === 'local' && (
         <div className="flex items-center gap-1.5 mt-2 mb-1">
           <div
-            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-[var(--wedo-cyan-bg-08)] border border-[var(--wedo-cyan-bg-20)]"
+            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-micro font-medium bg-[var(--wedo-cyan-bg-08)] border border-[var(--wedo-cyan-bg-20)]"
           >
             <Home className="w-3 h-3" />
             <span>Base Local</span>

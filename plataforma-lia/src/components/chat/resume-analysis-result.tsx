@@ -130,7 +130,7 @@ export function ResumeAnalysisResult({
                 {result.layout_score}%
               </span>
               <span className={cn(
-                "text-xs px-2 py-0.5 rounded-full",
+                "text-micro px-2 py-0.5 rounded-full",
                 result.layout_score >= 80 
                   ? "bg-status-success/15 text-status-success"
                   : result.layout_score >= 60

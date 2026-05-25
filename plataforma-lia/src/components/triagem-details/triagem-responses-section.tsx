@@ -189,7 +189,7 @@ present
                           <p className="text-micro text-lia-text-secondary">Dreyfus</p>
                           <p className={`font-semibold ${gap.color}`}>{dreyfusLabel(dreyfusExpected)}</p>
                         </div>
-                        <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${gap.bg} ${gap.color} border ${gap.border}`}>
+                        <span className={`text-micro font-medium px-2 py-0.5 rounded-full ${gap.bg} ${gap.color} border ${gap.border}`}>
                           {gap.label}
                         </span>
                       </div>

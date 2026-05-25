@@ -95,7 +95,7 @@ export function SearchPreviewCard({
                     <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none text-lia-text-primary" />
                   ) : (
                     <span 
-                      className={`text-xs font-medium px-2 py-0.5 rounded-full ${hasLocalResults ? 'bg-status-success-bg text-status-success' : 'bg-status-error-bg text-status-error'}`}
+                      className={`text-micro font-medium px-2 py-0.5 rounded-full ${hasLocalResults ? 'bg-status-success-bg text-status-success' : 'bg-status-error-bg text-status-error'}`}
                       aria-live="polite" aria-atomic="true">
                       {data.localCount} encontrados
                     </span>
@@ -138,7 +138,7 @@ export function SearchPreviewCard({
                     <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none text-lia-text-primary" />
                   ) : (
                     <span 
-                      className="text-xs font-medium px-2 py-0.5 rounded-full bg-lia-bg-tertiary text-lia-text-primary"
+                      className="text-micro font-medium px-2 py-0.5 rounded-full bg-lia-bg-tertiary text-lia-text-primary"
                     >
                       ~{data.pearchEstimate} estimados
                     </span>

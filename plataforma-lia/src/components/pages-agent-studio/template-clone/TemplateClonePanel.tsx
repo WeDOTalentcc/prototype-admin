@@ -178,7 +178,7 @@ export function TemplateClonePanel({
                   data-testid="template-clone-vertical"
                 >
                   <span className="font-medium">{t("verticalLabel") || "Vertical"}:</span>{" "}
-                  <span className="inline-flex items-center gap-1 rounded-full bg-wedo-cyan/10 px-2 py-0.5 text-xs font-medium text-wedo-cyan-dark">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-wedo-cyan/10 px-2 py-0.5 text-micro font-medium text-wedo-cyan-dark">
                     {t(`vertical${template.vertical.charAt(0).toUpperCase()}${template.vertical.slice(1)}`) || template.vertical}
                   </span>
                 </p>

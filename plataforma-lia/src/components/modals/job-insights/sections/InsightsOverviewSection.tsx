@@ -380,7 +380,7 @@ export function InsightsOverviewSection({
                     <div className="flex items-center gap-2 mb-1">
                       <h4 className="text-xs font-semibold text-lia-text-primary">{insight.title}</h4>
                       {insight.badge && (
-                        <span className={`text-xs font-medium px-1.5 py-0.5 rounded-full ${insight.type === "attention" ? "bg-status-error/20 text-status-error" : "bg-status-warning/20 text-status-warning"}`}>
+                        <span className={`text-micro font-medium px-1.5 py-0.5 rounded-full ${insight.type === "attention" ? "bg-status-error/20 text-status-error" : "bg-status-warning/20 text-status-warning"}`}>
                           {insight.badge}
                         </span>
                       )}
@@ -407,7 +407,7 @@ export function InsightsOverviewSection({
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xs font-semibold text-lia-text-primary">{b.stage}</span>
                   {b.stuckCount > 0 && (
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-status-warning/15 text-status-warning">
+                    <span className="text-micro px-2 py-0.5 rounded-full bg-status-warning/15 text-status-warning">
                       {b.stuckCount} parados
                     </span>
                   )}
@@ -447,7 +447,7 @@ export function InsightsOverviewSection({
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       {job.code && (
-                        <span className="text-xs font-medium text-status-error bg-status-error/15 px-1.5 py-0.5 rounded-full">
+                        <span className="text-micro font-medium text-status-error bg-status-error/15 px-1.5 py-0.5 rounded-full">
                           {job.code}
                         </span>
                       )}
@@ -483,7 +483,7 @@ export function InsightsOverviewSection({
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         {job.code && (
-                          <span className="text-xs font-medium text-lia-text-secondary bg-lia-bg-tertiary px-1.5 py-0.5 rounded-full">
+                          <span className="text-micro font-medium text-lia-text-secondary bg-lia-bg-tertiary px-1.5 py-0.5 rounded-full">
                             {job.code}
                           </span>
                         )}

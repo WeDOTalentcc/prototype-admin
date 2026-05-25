@@ -34,12 +34,12 @@ export function CompensationPolicyItemCard({ policy, onEdit, onDeactivate }: Pro
           <div className="flex items-center gap-2 flex-wrap">
             <span className="font-medium text-lia-text-primary truncate">{policy.name}</span>
             {policy.is_default && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-wedo-cyan/10 px-2 py-0.5 text-xs text-wedo-cyan">
+              <span className="inline-flex items-center gap-1 rounded-full bg-wedo-cyan/10 px-2 py-0.5 text-micro text-wedo-cyan">
                 <Star className="h-3 w-3" /> Padrão
               </span>
             )}
             {!policy.is_active && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-lia-bg-tertiary/20 px-2 py-0.5 text-xs text-lia-text-secondary">
+              <span className="inline-flex items-center gap-1 rounded-full bg-lia-bg-tertiary/20 px-2 py-0.5 text-micro text-lia-text-secondary">
                 Inativa
               </span>
             )}

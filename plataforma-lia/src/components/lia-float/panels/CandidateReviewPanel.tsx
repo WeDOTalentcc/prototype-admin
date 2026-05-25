@@ -26,7 +26,7 @@ function ScoreBadge({ score }: { score?: number }) {
   const pct = Math.round(score * 100)
   const color = pct >= 80 ? "text-status-success bg-status-success/10" : pct >= 60 ? "text-status-warning bg-status-warning/10" : "text-status-error bg-status-error/10"
   return (
-    <span className={cn("text-xs font-semibold px-2 py-0.5 rounded-full", color)}>
+    <span className={cn("text-micro font-semibold px-2 py-0.5 rounded-full", color)}>
       {pct}%
     </span>
   )

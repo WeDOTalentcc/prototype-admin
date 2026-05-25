@@ -155,7 +155,7 @@ export function ColumnConfigSidebar({
                     {categoryLabels[category] || category}
                   </h4>
                   <span
-                    className="text-xs px-2 py-0.5 rounded-full bg-lia-bg-tertiary text-lia-text-secondary"
+                    className="text-micro px-2 py-0.5 rounded-full bg-lia-bg-tertiary text-lia-text-secondary"
                   >
                     {visibleCount}/{columns.length}
                   </span>

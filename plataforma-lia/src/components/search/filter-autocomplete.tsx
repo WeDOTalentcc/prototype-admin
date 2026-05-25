@@ -159,7 +159,7 @@ export function FilterAutocomplete({
         {selectedValues.map((value) => (
           <span
             key={value}
-            className="inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-full bg-lia-bg-tertiary text-lia-text-primary border border-lia-border-subtle"
+            className="inline-flex items-center gap-1 px-2 py-0.5 text-micro rounded-full bg-lia-bg-tertiary text-lia-text-primary border border-lia-border-subtle"
           >
             {value}
             <button
@@ -252,7 +252,7 @@ export function FilterAutocomplete({
                           </span>
                         )}
                         {suggestion.source === "suggested" && suggestion.local_count === 0 && (
-                          <span className="text-xs text-lia-text-secondary px-1.5 py-0.5 rounded-full bg-lia-bg-tertiary dark:bg-lia-bg-elevated">
+                          <span className="text-micro text-lia-text-secondary px-1.5 py-0.5 rounded-full bg-lia-bg-tertiary dark:bg-lia-bg-elevated">
                             Sugerido
                           </span>
                         )}
@@ -327,7 +327,7 @@ export function TagInput({
       {value.map((val) => (
         <span
           key={val}
-          className="inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-full bg-lia-bg-tertiary text-lia-text-primary border border-lia-border-subtle"
+          className="inline-flex items-center gap-1 px-2 py-0.5 text-micro rounded-full bg-lia-bg-tertiary text-lia-text-primary border border-lia-border-subtle"
         >
           {val}
           <button

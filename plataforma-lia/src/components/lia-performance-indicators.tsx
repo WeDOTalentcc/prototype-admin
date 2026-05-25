@@ -150,7 +150,7 @@ export function LiaPerformanceIndicators({ candidate }: LiaPerformanceIndicators
         <div className="flex gap-1 flex-wrap">
           {(candidate.triageData as Record<string, unknown>).mobility === 'OK' && (
             <div
-              className="text-xs px-1.5 py-0.5 rounded-full  dark:bg-status-success/20 dark:text-status-success"
+              className="text-micro px-1.5 py-0.5 rounded-full  dark:bg-status-success/20 dark:text-status-success"
               title="Mobilidade OK"
             >
               Mob ✓
@@ -158,7 +158,7 @@ export function LiaPerformanceIndicators({ candidate }: LiaPerformanceIndicators
           )}
           {(candidate.triageData as Record<string, unknown>).salary === 'Compatível' && (
             <div
-              className="text-xs px-1.5 py-0.5 rounded-full  dark:bg-status-success/20 dark:text-status-success"
+              className="text-micro px-1.5 py-0.5 rounded-full  dark:bg-status-success/20 dark:text-status-success"
               title="Salário compatível"
             >
               Sal ✓
@@ -166,7 +166,7 @@ export function LiaPerformanceIndicators({ candidate }: LiaPerformanceIndicators
           )}
           {(candidate.triageData as Record<string, unknown>).interest === 'Alto' && (
             <div
-              className="text-xs px-1.5 py-0.5 rounded-full  dark:bg-status-success/20 dark:text-status-success"
+              className="text-micro px-1.5 py-0.5 rounded-full  dark:bg-status-success/20 dark:text-status-success"
               title="Interesse alto"
             >
               Int ✓

@@ -145,7 +145,7 @@ export function JobProcessSection({
                                   type="number"
                                   min={1}
                                   max={90}
-                                  className="w-12 text-xs text-center px-1 py-0.5 border border-lia-border-subtle rounded-full bg-lia-bg-primary text-lia-text-primary"
+                                  className="w-12 text-micro text-center px-1 py-0.5 border border-lia-border-subtle rounded-full bg-lia-bg-primary text-lia-text-primary"
                                   value={currentSla}
                                   onChange={(e) => updateStage(index,"slaDays", parseInt(e.target.value) || 1)}
                                 />

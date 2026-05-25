@@ -220,7 +220,7 @@ function VariableCompTab({
                 className="flex items-center gap-2 px-3 py-2 cursor-pointer bg-lia-bg-elevated hover:bg-lia-bg-tertiary/10"
                 onClick={() => setExpandedIdx(isOpen ? null : idx)}
               >
-                <span className="rounded-full bg-wedo-cyan/10 px-2 py-0.5 text-xs text-wedo-cyan font-medium">
+                <span className="rounded-full bg-wedo-cyan/10 px-2 py-0.5 text-micro text-wedo-cyan font-medium">
                   {kindMeta?.label ?? item.kind}
                 </span>
                 <span className="flex-1 text-sm font-medium text-lia-text-primary">{item.name || "(sem nome)"}</span>
@@ -391,7 +391,7 @@ function EligibilityTab({
         {departments.length > 0 && (
           <div className="mt-2 flex flex-wrap gap-1">
             {departments.map((d) => (
-              <span key={d} className="inline-flex items-center gap-1 rounded-full bg-wedo-cyan/10 px-2 py-0.5 text-xs text-wedo-cyan">
+              <span key={d} className="inline-flex items-center gap-1 rounded-full bg-wedo-cyan/10 px-2 py-0.5 text-micro text-wedo-cyan">
                 {d}
                 <button type="button" onClick={() => onChangeDepts(departments.filter(x => x !== d))} className="ml-0.5 hover:text-red-500">×</button>
               </span>
@@ -422,7 +422,7 @@ function EligibilityTab({
         {roles.length > 0 && (
           <div className="mt-2 flex flex-wrap gap-1">
             {roles.map((r) => (
-              <span key={r} className="inline-flex items-center gap-1 rounded-full bg-wedo-cyan/10 px-2 py-0.5 text-xs text-wedo-cyan">
+              <span key={r} className="inline-flex items-center gap-1 rounded-full bg-wedo-cyan/10 px-2 py-0.5 text-micro text-wedo-cyan">
                 {r}
                 <button type="button" onClick={() => onChangeRoles(roles.filter(x => x !== r))} className="ml-0.5 hover:text-red-500">×</button>
               </span>

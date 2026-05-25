@@ -146,7 +146,7 @@ export function CalibrationCandidateCard({
                         {exp.title}
                       </p>
                       {exp.isPromotion && (
-                        <span className="px-2 py-0.5 text-xs font-medium text-[#60BED1] bg-[#60BED1]/10 rounded-full">
+                        <span className="px-2 py-0.5 text-micro font-medium text-[#60BED1] bg-[#60BED1]/10 rounded-full">
                           Promotion
                         </span>
                       )}

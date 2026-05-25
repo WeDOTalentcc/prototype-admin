@@ -121,7 +121,7 @@ export function ScreeningSchedulingModal({
                   <Target className="w-4 h-4 text-lia-text-secondary" />
                   <Label className="text-xs font-medium text-lia-text-primary">Score Mínimo para Auto-agendar</Label>
                 </div>
-                <span className="text-xs font-semibold text-lia-text-primary bg-lia-bg-tertiary px-2 py-0.5 rounded-full">
+                <span className="text-micro font-semibold text-lia-text-primary bg-lia-bg-tertiary px-2 py-0.5 rounded-full">
                   {minScoreForAuto}%
                 </span>
               </div>

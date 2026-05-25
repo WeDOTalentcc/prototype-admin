@@ -495,7 +495,7 @@ export function InteractiveSubStatusCell({
                     : 'hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover/50'
                 }`}
               >
-                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${statusColors.bg} ${statusColors.text}`}>
+                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium ${statusColors.bg} ${statusColors.text}`}>
                   {status.displayName}
                 </span>
               </button>
