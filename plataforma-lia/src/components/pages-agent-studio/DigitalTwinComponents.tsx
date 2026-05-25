@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react"
 import { useTranslations } from "next-intl"
 import { useAiPersona } from "@/hooks/company/use-ai-persona"
-import { AlertCircle, ArrowRight, BookOpen, Brain, ChevronRight, FileText, HelpCircle, Info, Lightbulb, Loader2, Plus, Star, ThumbsDown, ThumbsUp, Upload, UserCheck, Users, X, Zap } from "lucide-react"
+import { AlertCircle, ArrowRight, BookOpen, ChevronRight, FileText, HelpCircle, Info, Lightbulb, Loader2, Plus, Star, ThumbsDown, ThumbsUp, Upload, UserCheck, Users, Users2, X, Zap } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Chip } from "@/components/ui/chip"
 import { Button } from "@/components/ui/button"
@@ -42,7 +42,7 @@ interface TwinEvaluation {
   }>
 }
 
-const HOW_IT_WORKS_ICONS = [UserCheck, BookOpen, Brain, Lightbulb] as const
+const HOW_IT_WORKS_ICONS = [UserCheck, BookOpen, Users2, Lightbulb] as const
 
 export function DigitalTwinHeader() {
   const t = useTranslations("agents.studio.twins")
@@ -191,7 +191,7 @@ export function DigitalTwinEmptyState({ onCreateTwin }: DigitalTwinEmptyStatePro
   return (
     <div className="flex flex-col items-center py-12 px-6">
       <div className="flex items-center justify-center w-12 h-12 rounded-md bg-cyan-50 dark:bg-cyan-950/30 mb-4">
-        <Brain className="w-6 h-6 text-graphite" />
+        <Users2 className="w-6 h-6 text-graphite" />
       </div>
       <h3 className={`${textStyles.h3} text-center mb-1`}>{t("title")}</h3>
       <p className={`${textStyles.description} text-center max-w-md mb-6`}>
@@ -299,7 +299,7 @@ export function CreateDigitalTwinModal({ isOpen, onClose, onCreated }: CreateDig
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className={textStyles.h3}>
-            <Brain className="w-5 h-5 inline mr-2 text-graphite" />
+            <Users2 className="w-5 h-5 inline mr-2 text-graphite" />
             {t("title")}
           </DialogTitle>
           <DialogDescription className="text-sm text-lia-text-secondary">
@@ -519,7 +519,7 @@ export function TwinCard({ twin, onEvaluate, onManageTwin }: TwinCardProps) {
 
         <div className="flex items-center gap-4 mt-3 text-sm text-lia-text-secondary">
           <span title={t("indexedDecisions")}>
-            <Brain className="w-3.5 h-3.5 inline mr-1" />
+            <Users2 className="w-3.5 h-3.5 inline mr-1" />
             {twin.decision_count}
           </span>
           {twin.accuracy_pct != null && (
@@ -604,7 +604,7 @@ export function EvaluateWithTwinModal({
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle className={cn(textStyles.h3, "flex items-center gap-2 flex-wrap")}>
-            <Brain className="w-5 h-5 text-graphite" aria-hidden="true" />
+            <Users2 className="w-5 h-5 text-graphite" aria-hidden="true" />
             {t("digitalTwinEvaluation")}
             <span className={cn(badgeStyles.default, "text-[10px] font-semibold ml-1")}>
               <Zap className="w-3 h-3 inline mr-0.5" aria-hidden="true" />
@@ -616,7 +616,7 @@ export function EvaluateWithTwinModal({
 
         {isLoading ? (
           <div className="flex flex-col items-center py-8">
-            <Brain className="w-10 h-10 text-slate animate-pulse motion-reduce:animate-none mb-3" />
+            <Users2 className="w-10 h-10 text-slate animate-pulse motion-reduce:animate-none mb-3" />
             <p className={textStyles.body}>{t("analyzingHistory")}</p>
             <p className={textStyles.caption}>{t("searchingSimilarDecisions")}</p>
           </div>
