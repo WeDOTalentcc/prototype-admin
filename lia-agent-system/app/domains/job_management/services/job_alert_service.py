@@ -336,4 +336,127 @@ class JobAlertService:
         }
 
 
+
+    EXPIRATION_WARNING_DAYS = 7
+    APIFY_BUDGET_WARNING_PCT = 0.80   # 80% of budget -> INFO alert
+    APIFY_BUDGET_USD_DEFAULT = 100.0  # overridden by ConsumptionTrackingService.get_tenant_budget
+
+    async def check_job_expiration_alerts(self, db: AsyncSession) -> list[Alert]:
+        """Check for jobs whose closing deadline is approaching (within EXPIRATION_WARNING_DAYS)."""
+        alerts = []
+        now = datetime.utcnow()
+        cutoff = now + timedelta(days=self.EXPIRATION_WARNING_DAYS)
+
+        expiring_jobs = await JobAlertRepository(db).list_jobs_with_deadline_approaching(
+            from_date=now, to_date=cutoff
+        )
+
+        for job in expiring_jobs:
+            existing = await self._check_existing_alert(
+                db, AlertType.DEADLINE_APPROACHING, job.id
+            )
+            if existing:
+                continue
+
+            deadline = getattr(job, "deadline_closing", None)
+            days_left = (deadline - now).days if deadline else 0
+            deadline_str = deadline.strftime("%d/%m/%Y") if deadline else "N/A"
+
+            alert = Alert(
+                alert_type=AlertType.DEADLINE_APPROACHING,
+                severity=AlertSeverity.HIGH,
+                title=f"Prazo proximo: {job.title}",
+                message=(
+                    f"A vaga '{job.title}' tem prazo de fechamento em {days_left} dias ({deadline_str})."
+                ),
+                job_id=job.id,
+                context={
+                    "days_left": days_left,
+                    "job_title": job.title,
+                    "deadline_closing": deadline.isoformat() if deadline else None,
+                },
+                suggested_actions=[
+                    "Revisar candidatos em etapa final",
+                    "Acelerar processo de decisao",
+                    "Notificar hiring manager sobre prazo",
+                ],
+            )
+            db.add(alert)
+            alerts.append(alert)
+
+        if alerts:
+            await db.commit()
+
+        return alerts
+
+    async def check_apify_budget_alerts(
+        self,
+        db: AsyncSession,
+        company_id: str,
+    ) -> list[Alert]:
+        """Surface APIFY budget alerts in /alerts/ endpoint (P0 #7).
+
+        Mirrors logic from ConsumptionTrackingService._check_budget_alert_inner
+        but creates Alert DB records so they appear on the Decidir page.
+        """
+        now = datetime.utcnow()
+        month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+
+        monthly_spend = await JobAlertRepository(db).get_apify_monthly_spend(
+            company_id=company_id, month_start=month_start
+        )
+
+        try:
+            from app.domains.billing.services.consumption_tracking_service import (
+                ConsumptionTrackingService,
+            )
+            budget = ConsumptionTrackingService.get_tenant_budget(company_id, "apify")
+        except Exception:
+            budget = self.APIFY_BUDGET_USD_DEFAULT
+
+        if budget <= 0:
+            return []
+
+        ratio = monthly_spend / budget
+        if ratio < self.APIFY_BUDGET_WARNING_PCT:
+            return []
+
+        dedup_key = f"apify_budget:{company_id}:{now.year}-{now.month:02d}"
+        existing = await self._check_existing_alert(db, AlertType.SYSTEM, job_id=dedup_key)
+        if existing:
+            return []
+
+        pct = round(ratio * 100, 1)
+        severity = AlertSeverity.HIGH if ratio >= 1.0 else AlertSeverity.INFO
+        status_label = "esgotado" if ratio >= 1.0 else "proximo do limite"
+        alert = Alert(
+            alert_type=AlertType.SYSTEM,
+            severity=severity,
+            title=f"Orcamento APIFY {status_label}",
+            message=(
+                f"Consumo APIFY mensal: ${monthly_spend:.2f} ({pct}% do limite ${budget:.2f}). "
+                + (
+                    "Novas buscas de enriquecimento podem ser bloqueadas."
+                    if ratio >= 1.0
+                    else "Considere ajustar o volume de buscas."
+                )
+            ),
+            job_id=dedup_key,
+            context={
+                "monthly_spend_usd": round(monthly_spend, 2),
+                "budget_usd": budget,
+                "usage_percentage": pct,
+                "month": f"{now.year}-{now.month:02d}",
+                "company_id": company_id,
+            },
+            suggested_actions=[
+                "Revisar automacoes de sourcing APIFY",
+                "Ajustar limites de enriquecimento por vaga",
+                "Solicitar aumento de orcamento" if ratio >= 1.0 else "Monitorar consumo diario",
+            ],
+        )
+        db.add(alert)
+        await db.commit()
+        return [alert]
+
 job_alert_service = JobAlertService()

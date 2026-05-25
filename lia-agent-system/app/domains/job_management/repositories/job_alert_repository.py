@@ -133,3 +133,43 @@ class JobAlertRepository:
             .group_by(Alert.severity)
         )
         return {row.severity.value: row.count for row in result.all()}
+
+    async def list_jobs_with_deadline_approaching(
+        self,
+        from_date: datetime,
+        to_date: datetime,
+    ) -> list[JobVacancy]:
+        # TENANT-EXEMPT: scheduler system-context — deadline check runs
+        # across all open jobs regardless of tenant.
+        result = await self.db.execute(
+            select(JobVacancy).where(
+                and_(
+                    JobVacancy.status == "open",
+                    JobVacancy.deadline_closing >= from_date,
+                    JobVacancy.deadline_closing <= to_date,
+                )
+            )
+        )
+        return list(result.scalars().all())
+
+    async def get_apify_monthly_spend(
+        self,
+        company_id: str,
+        month_start: datetime,
+    ) -> float:
+        # TENANT-EXEMPT: billing cross-domain read; scoped by company_id.
+        # ADR-001-EXEMPT: cross-domain read from billing to job_management; no
+        # billing repo available in this domain — localised import avoids circular dep.
+        from lia_models.external_api_consumption import ExternalApiConsumption
+        from sqlalchemy import func as _sa_func
+        result = await self.db.execute(
+            select(_sa_func.sum(ExternalApiConsumption.cost_usd)).where(
+                and_(
+                    ExternalApiConsumption.company_id == company_id,
+                    ExternalApiConsumption.provider == "apify",
+                    ExternalApiConsumption.created_at >= month_start,
+                )
+            )
+        )
+        return float(result.scalar() or 0.0)
+

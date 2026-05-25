@@ -11,7 +11,7 @@ interface Alert {
   id: string
   title: string
   description: string
-  severity: 'critical' | 'high' | 'medium' | 'low'
+  severity: 'critical' | 'high' | 'medium' | 'low' | 'info'
   jobId: string
   jobTitle: string
   createdAt: Date
@@ -76,7 +76,7 @@ export const ActiveAlertsCard = React.memo(function ActiveAlertsCard({
                   >
                     {(alert.severity === 'critical' || alert.severity === 'high') && <AlertTriangle className="w-3.5 h-3.5" />}
                     {alert.severity === 'medium' && <AlertCircle className="w-3.5 h-3.5" />}
-                    {alert.severity === 'low' && <Info className="w-3.5 h-3.5" />}
+                    {(alert.severity === 'low' || alert.severity === 'info') && <Info className="w-3.5 h-3.5" />}
                   </div>
 
                   <div className="flex-1 min-w-0">

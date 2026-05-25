@@ -17,7 +17,7 @@ export const getTaskPriorityStyle = (priority: 'high' | 'medium' | 'low') => {
   }
 }
 
-export const getAlertSeverityStyle = (severity: 'critical' | 'high' | 'medium' | 'low') => {
+export const getAlertSeverityStyle = (severity: 'critical' | 'high' | 'medium' | 'low' | 'info') => {
   switch (severity) {
     case 'critical': return ''
     case 'high': return ''
@@ -34,12 +34,13 @@ export const getPriorityLabel = (priority: 'high' | 'medium' | 'low') => {
   }
 }
 
-export const getSeverityLabel = (severity: 'critical' | 'high' | 'medium' | 'low') => {
+export const getSeverityLabel = (severity: 'critical' | 'high' | 'medium' | 'low' | 'info') => {
   switch (severity) {
     case 'critical': return 'Crítico'
     case 'high': return 'Alto'
     case 'medium': return 'Médio'
     case 'low': return 'Baixo'
+    case 'info': return 'Info'
   }
 }
 

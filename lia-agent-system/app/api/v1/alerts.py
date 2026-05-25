@@ -58,7 +58,7 @@ def _emit_legacy_alerts_config_endpoint_counter(
         pass
 
 
-class AlertResponse(BaseModel):
+class AlertResponse(WeDoBaseModel):
     """Response model for an alert."""
     id: str
     alert_type: str | None
