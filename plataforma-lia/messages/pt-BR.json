@@ -6710,6 +6710,46 @@
           "description": "Regras de automação por gatilho (pipeline, comunicação, alertas)."
         }
       }
+    },
+    "fairness": {
+      "dashboard": {
+        "title": "Dashboard de Fairness",
+        "description": "Visão consolidada de bloqueios e alertas do FairnessGuard por categoria e período.",
+        "errorLoading": "Erro ao carregar",
+        "errorLoadingData": "Erro ao carregar dados de fairness",
+        "errorLoadingFairnessData": "Erro ao carregar dados de fairness",
+        "period7": "Últimos 7 dias",
+        "period30": "Últimos 30 dias",
+        "period90": "Últimos 90 dias",
+        "period365": "Último ano",
+        "exportCsv": "Exportar CSV",
+        "exportJson": "Exportar JSON",
+        "totalEvents": "Total de eventos",
+        "blocks": "Bloqueios",
+        "alerts": "Alertas",
+        "eventsByCategory": "Eventos por categoria",
+        "blocksChart": "Bloqueios",
+        "alertsChart": "Alertas",
+        "recentIncidents": "Incidentes recentes",
+        "categoryColumn": "Categoria",
+        "typeColumn": "Tipo",
+        "termsColumn": "Termos",
+        "dateColumn": "Data",
+        "blocked": "Bloqueado",
+        "alert": "Alerta",
+        "noIncidents": "Sem incidentes no período",
+        "noIncidentsDesc": "Nenhum bloqueio ou alerta foi registrado pelo FairnessGuard.",
+        "dateLocale": "pt-BR",
+        "categoryGender": "Gênero",
+        "categoryAge": "Idade",
+        "categoryRace": "Raça",
+        "categoryDisability": "Deficiência",
+        "categoryReligion": "Religião",
+        "categorySexualOrientation": "Orientação sexual",
+        "categoryNationality": "Nacionalidade",
+        "categoryMaritalStatus": "Estado civil",
+        "categoryAppearance": "Aparência"
+      }
     }
   },
   "workflowRail": {

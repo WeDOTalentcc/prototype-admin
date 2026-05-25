@@ -115,7 +115,7 @@ export function CandidatesTableArea({
   return (
     <div data-testid="candidates-table-area" className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md transition-colors motion-reduce:transition-none duration-300 flex-1 min-w-0 h-full">
       <div className="h-full flex flex-col overflow-hidden">
-          <div ref={tableContainerRef} className="flex-1 relative overflow-auto">
+          <div ref={tableContainerRef} className="flex-1 relative overflow-auto flex flex-col">
             {isLoading && (
               <div
                 className="flex items-center justify-center h-full absolute inset-0 z-20 bg-lia-bg-primary dark:bg-lia-bg-primary"
@@ -335,15 +335,16 @@ export function CandidatesTableArea({
                 </Button>
               </div>
             )}
-          </div>
+            <div className="flex-1" aria-hidden="true" />
 
-          <CandidatesLoadMoreFooter
-            showSearchResults={showSearchResults}
-            displayedResultsCount={displayedResultsCount}
-            sortedCandidatesLength={sortedCandidates.length}
-            isLoadingMore={isLoadingMore}
-            onLoadMore={onLoadMore}
-          />
+            <CandidatesLoadMoreFooter
+              showSearchResults={showSearchResults}
+              displayedResultsCount={displayedResultsCount}
+              sortedCandidatesLength={sortedCandidates.length}
+              isLoadingMore={isLoadingMore}
+              onLoadMore={onLoadMore}
+            />
+          </div>
       </div>
     </div>
   )
