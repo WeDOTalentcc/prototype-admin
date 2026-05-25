@@ -112,6 +112,16 @@ export interface CustomAgent {
   whatsapp_enabled?: boolean
   /** Workstream A 2026-05-23: per-agent capability "criar convite triagem" (default OFF). */
   triagem_invite_enabled?: boolean
+  /** Sprint 7A unification (migration 202): category source-of-truth. Nullable até migration 204 (Sprint 8) tornar NOT NULL. */
+  category?: AgentCategory | string | null
+  /** Sprint 7A: runtime metrics agregadas (last_run_at, success_rate, etc). Populated assíncrono. */
+  runtime_metrics?: Record<string, unknown>
+  /** Sprint 7A: sourcing-only payload (criterios busca). null em agentes non-sourcing. */
+  search_strategy?: Record<string, unknown> | null
+  /** Sprint 7A: sourcing-only payload (config outreach). null em agentes non-sourcing. */
+  outreach_config?: Record<string, unknown> | null
+  /** Sprint 7A: back-reference para legacy sourcing_agents.id (drop em Sprint 8 / migration 204). */
+  legacy_sourcing_agent_id?: string | null
   total_executions: number
   avg_confidence: number
   last_executed_at: string | null

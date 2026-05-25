@@ -20,7 +20,7 @@ export default defineConfig({
           name: 'unit',
           environment: 'node',
           include: ['src/**/__tests__/**/*.test.ts'],
-          exclude: ['src/hooks/__tests__/**'],
+          exclude: ['src/hooks/__tests__/**', 'src/hooks/**/__tests__/**'],
           globals: true,
           alias: {
             '@': path.resolve(dirname, 'src'),
@@ -58,7 +58,7 @@ export default defineConfig({
         test: {
           name: 'hooks',
           environment: 'jsdom',
-          include: ['src/hooks/__tests__/**/*.test.ts'],
+          include: ['src/hooks/__tests__/**/*.test.ts', 'src/hooks/**/__tests__/**/*.test.ts'],
           globals: true,
           setupFiles: ['src/hooks/__tests__/setup.ts'],
           alias: {
