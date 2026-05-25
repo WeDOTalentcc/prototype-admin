@@ -71,6 +71,92 @@ export function useGoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection
     }
   }, [])
 
+  // Bug fix 2026-05-25 (write/read consistency for Planejamento de Headcount):
+  // saveDepartmentPositions persists to Sistema B canonical
+  // (POST /workforce/plans/{id}/headcounts/bulk → planned_headcounts), but
+  // fetchDepartmentsFromBackend above only loads department names from
+  // /company/departments — there was NO read path for planned_headcounts at
+  // all. Result: user edits Backend Developer = 1 vaga em Jan, clicks Salvar,
+  // sees toast verde, reloads → all monthly counts vanish because they were
+  // never re-read from the table that received them.
+  //
+  // This effect fills the gap. It:
+  //   1) Resolves the hiring_plan.id for selectedYear (read-only — never
+  //      auto-creates; create happens lazily in saveDepartmentPositions).
+  //   2) Pages through GET /plans/{id}/headcounts (limit 200 per page is the
+  //      backend cap, so we paginate for plans that exceed 200 rows).
+  //   3) Buckets rows by (department_id, title) into Position[] with
+  //      monthlyPlanned[monthKey] = headcount. Salary fields are taken from
+  //      the first row of each bucket (writes already group salary by
+  //      position, so all 12 monthly rows share the same min/max).
+  //   4) Merges into departments by department_id, preserving any unsaved
+  //      in-memory edits for buckets that the backend doesn't know about.
+  const fetchHeadcountsForYear = useCallback(async (year: number) => {
+    try {
+      const plansRes = await apiFetch(`/api/backend-proxy/workforce/plans?fiscal_year=${year}`)
+      if (!plansRes.ok) return
+      const plans = await plansRes.json()
+      if (!Array.isArray(plans) || plans.length === 0) {
+        // No plan yet for this year; clear stale positions so the UI doesn't
+        // show data leaked from another year.
+        setCurrentPlanId(null)
+        setDepartments(prev => prev.map(d => ({ ...d, positions: [] })))
+        return
+      }
+      const planId = plans[0].id as string
+      setCurrentPlanId(planId)
+
+      const allRows: Record<string, unknown>[] = []
+      const PAGE = 200
+      for (let skip = 0; ; skip += PAGE) {
+        const hcRes = await apiFetch(
+          `/api/backend-proxy/workforce/plans/${planId}/headcounts?target_year=${year}&skip=${skip}&limit=${PAGE}`
+        )
+        if (!hcRes.ok) break
+        const page = await hcRes.json()
+        if (!Array.isArray(page) || page.length === 0) break
+        allRows.push(...page)
+        if (page.length < PAGE) break
+      }
+
+      // Bucket by department_id + title → Position with monthlyPlanned.
+      const buckets = new Map<string, Map<string, Position>>()
+      for (const row of allRows) {
+        const deptId = (row.department_id ?? '__no_dept__') as string
+        const title = (row.title ?? 'Posição') as string
+        const month = Number(row.target_month) // 1..12
+        const count = Number(row.headcount ?? 0)
+        if (!Number.isFinite(month) || month < 1 || month > 12) continue
+
+        let deptBucket = buckets.get(deptId)
+        if (!deptBucket) { deptBucket = new Map(); buckets.set(deptId, deptBucket) }
+
+        let pos = deptBucket.get(title)
+        if (!pos) {
+          pos = {
+            id: `${deptId}-${title}`,
+            name: title,
+            salary_min: (row.salary_min ?? undefined) as number | undefined,
+            salary_max: (row.salary_max ?? undefined) as number | undefined,
+            monthlyPlanned: { jan: 0, feb: 0, mar: 0, apr: 0, may: 0, jun: 0, jul: 0, aug: 0, sep: 0, oct: 0, nov: 0, dec: 0 },
+          }
+          deptBucket.set(title, pos)
+        }
+        const monthKey = monthKeys[month - 1]
+        pos.monthlyPlanned[monthKey] = count
+      }
+
+      setDepartments(prev => prev.map(d => {
+        const fromBackend = buckets.get(d.id)
+        if (!fromBackend) return { ...d, positions: [] }
+        return { ...d, positions: Array.from(fromBackend.values()) }
+      }))
+    } catch {
+      // Silently skip — UI keeps whatever it had; user will see empty state,
+      // not stale wrong data, on real backend failures.
+    }
+  }, [])
+
   const createDepartmentInBackend = useCallback(async (name: string): Promise<string | null> => {
     try {
       const response = await apiFetch(`/api/backend-proxy/company/departments?company_id=${encodeURIComponent(companyId || '')}`, {
@@ -118,6 +204,13 @@ export function useGoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection
   useEffect(() => {
     fetchDepartmentsFromBackend()
   }, [fetchDepartmentsFromBackend])
+
+  // Hydrate planned_headcounts whenever the department list finishes loading
+  // or the user switches year. Without this, save → reload → empty UI.
+  useEffect(() => {
+    if (!departmentsLoaded) return
+    fetchHeadcountsForYear(selectedYear)
+  }, [departmentsLoaded, selectedYear, fetchHeadcountsForYear])
 
   const effectiveUsers = users.length > 0 ? users : fetchedUsers
 
@@ -341,6 +434,9 @@ export function useGoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection
           },
         }))
       }
+      // Re-hydrate from canonical Sistema B so the UI reflects exactly what
+      // was persisted (and surfaces any rows the bulk endpoint normalized).
+      await fetchHeadcountsForYear(selectedYear)
       setSuccessMessage(`${headcounts.length} posição(ões) salvas com sucesso!`)
       setTimeout(() => setSuccessMessage(null), 3000)
     } catch (err) {
