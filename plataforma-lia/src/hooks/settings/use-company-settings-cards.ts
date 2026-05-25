@@ -276,8 +276,8 @@ async function extractErrorMessage(response: Response, fallback: string): Promis
     if (data?.detail) {
       return typeof data.detail === "string" ? data.detail : JSON.stringify(data.detail)
     }
-    if (data?.error) return String(data.error)
-    if (data?.message) return String(data.message)
+    if (data?.message && typeof data.message === "string") return data.message
+    if (data?.error && typeof data.error === "string") return data.error
   } catch {
     /* not JSON */
   }

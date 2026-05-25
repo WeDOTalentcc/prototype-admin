@@ -37,9 +37,9 @@ def upgrade():
     conn.execute(text("""
         UPDATE client_users
         SET invitation_expires_at = CASE
-            WHEN COALESCE(invited_at, created_at) > NOW() - INTERVAL 7 days
-            THEN COALESCE(invited_at, created_at) + INTERVAL 7 days
-            ELSE NOW() - INTERVAL 1 second
+            WHEN COALESCE(invited_at, created_at) > NOW() - INTERVAL '7 days'
+            THEN COALESCE(invited_at, created_at) + INTERVAL '7 days'
+            ELSE NOW() - INTERVAL '1 second'
         END
         WHERE invitation_token IS NOT NULL
           AND invitation_expires_at IS NULL

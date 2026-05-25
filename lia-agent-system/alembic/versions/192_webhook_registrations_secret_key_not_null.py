@@ -4,7 +4,7 @@ Ensures every webhook registration has a secret_key for HMAC signature
 verification. Existing NULL rows receive a generated key.
 
 Revision ID: 192
-Revises: 191
+Revises: 191_company_benefits_extended
 Create Date: 2026-05-24
 """
 from alembic import op
@@ -14,7 +14,7 @@ import secrets
 
 # revision identifiers
 revision = "192"
-down_revision = "191"
+down_revision = "191_company_benefits_extended"
 branch_labels = None
 depends_on = None
 
@@ -22,14 +22,13 @@ depends_on = None
 def upgrade() -> None:
     # 1. Fill existing NULL rows with generated secrets
     op.execute(
-        """
-        UPDATE webhook_registrations
-        SET secret_key = (
-            SELECT
-                encode(gen_random_bytes(32), hex)
+        sa.text(
+            """
+            UPDATE webhook_registrations
+            SET secret_key = encode(gen_random_bytes(32), 'hex')
+            WHERE secret_key IS NULL
+            """
         )
-        WHERE secret_key IS NULL
-        """
     )
 
     # 2. Now enforce NOT NULL
