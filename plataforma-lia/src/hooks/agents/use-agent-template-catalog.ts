@@ -46,13 +46,26 @@ interface UseAgentSectorsReturn {
 
 const FIVE_MIN_MS = 5 * 60 * 1000
 
-const jsonFetcher = (url: string) =>
-  fetch(url).then(r => {
-    if (!r.ok) {
-      throw new Error(`HTTP ${r.status}`)
-    }
-    return r.json()
-  })
+const jsonFetcher = async (url: string) => {
+  const r = await fetch(url)
+  if (!r.ok) {
+    throw new Error(`HTTP ${r.status}`)
+  }
+  const payload = await r.json()
+  // Pattern canonical do projeto: proxy Next /api/backend-proxy/* wrappa em
+  // envelope {ok, data, meta}. Outros hooks (use-ai-credits.ts:137) desempacotam
+  // .data. Defensive: tolerante a backend direct (array sem envelope).
+  if (
+    payload &&
+    typeof payload === "object" &&
+    !Array.isArray(payload) &&
+    "data" in payload &&
+    Array.isArray((payload as { data: unknown }).data)
+  ) {
+    return (payload as { data: unknown[] }).data
+  }
+  return payload
+}
 
 function buildCatalogUrl(opts?: UseAgentTemplateCatalogOptions): string {
   const params = new URLSearchParams()
