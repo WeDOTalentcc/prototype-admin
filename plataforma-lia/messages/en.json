@@ -1,1701 +1,4 @@
 {
-  "workflowRail": {
-    "createJob": {
-      "label": "Create job",
-      "tooltip": "Start the job creation wizard",
-      "ariaLabel": "Create new job"
-    },
-    "pill": {
-      "summaryAriaLabel": "Show {count} active workflow(s)",
-      "moreAriaLabel": "{count} more workflow(s)",
-      "pendingAriaLabel": "{count} pending action(s)"
-    },
-    "popover": {
-      "title": "Active Workflows",
-      "close": "Close",
-      "disconnected": "Disconnected"
-    },
-    "types": {
-      "campaign": "Campaign",
-      "pool": "Pool",
-      "search": "Search"
-    },
-    "entry": {
-      "dismiss": "Dismiss workflow",
-      "go": "Go",
-      "foundCount": "{count} found"
-    },
-    "bar": {
-      "expandAriaLabel": "Expand workflow bar and see next steps",
-      "collapseAriaLabel": "Collapse workflow bar",
-      "noActiveFlow": "No active workflow"
-    },
-    "panel": {
-      "ariaLabel": "Possible next steps",
-      "nextStepsLabel": "Next steps",
-      "nextInFunnel": "Next",
-      "close": "Close panel"
-    },
-    "funnel": {
-      "createJob": "Job",
-      "sourcing": "Sourcing",
-      "screening": "Screening",
-      "interview": "Interview",
-      "offer": "Offer",
-      "hired": "Hired",
-      "analytics": "Analytics"
-    },
-    "nextSteps": {
-      "initial": {
-        "createJob": {
-          "title": "Create a job",
-          "desc": "Start the wizard to open a new position"
-        },
-        "searchCandidates": {
-          "title": "Search candidates",
-          "desc": "Search the available talent pool"
-        },
-        "openFunnel": {
-          "title": "Open funnel",
-          "desc": "View the full recruitment pipeline"
-        }
-      },
-      "createJob": {
-        "publishJob": {
-          "title": "Publish job",
-          "desc": "Make the job visible to candidates"
-        },
-        "startSourcing": {
-          "title": "Start active sourcing",
-          "desc": "Proactively search for candidates"
-        },
-        "generateJD": {
-          "title": "Generate JD with AI",
-          "desc": "LIA writes the job description automatically"
-        },
-        "divulgeChannels": {
-          "title": "Share on channels",
-          "desc": "Post the job across distribution channels"
-        }
-      },
-      "sourcing": {
-        "addToList": {
-          "title": "Add to list",
-          "desc": "Include candidates in this job pipeline"
-        },
-        "searchCandidates": {
-          "title": "Search more candidates",
-          "desc": "Expand the sourced talent pool"
-        },
-        "sendWSI": {
-          "title": "Send WSI screening",
-          "desc": "Start the structured candidate assessment"
-        },
-        "linkToJob": {
-          "title": "Link to existing job",
-          "desc": "Associate candidates with an open position"
-        }
-      },
-      "screening": {
-        "sendWSI": {
-          "title": "Send WSI",
-          "desc": "Apply AI-powered structured screening"
-        },
-        "scheduleInterview": {
-          "title": "Schedule interview",
-          "desc": "Advance approved candidates to interview"
-        },
-        "moveRejected": {
-          "title": "Move to rejected",
-          "desc": "Discard candidates outside the profile"
-        },
-        "liaOpinion": {
-          "title": "Ask LIA for opinion",
-          "desc": "Get a comparative analysis of candidates"
-        }
-      },
-      "interview": {
-        "moveToOffer": {
-          "title": "Move to offer",
-          "desc": "Advance the approved candidate to offer"
-        },
-        "requestFeedback": {
-          "title": "Request manager feedback",
-          "desc": "Ask the responsible manager for evaluation"
-        },
-        "moveRejected": {
-          "title": "Reject candidate",
-          "desc": "Close the process for this candidate"
-        }
-      },
-      "offer": {
-        "approveOffer": {
-          "title": "Approve offer",
-          "desc": "Confirm the offer and advance to hiring"
-        },
-        "negotiate": {
-          "title": "Negotiate terms",
-          "desc": "Adjust compensation or benefits"
-        },
-        "moveRejected": {
-          "title": "Offer declined",
-          "desc": "Record the refusal and close the process"
-        }
-      },
-      "hired": {
-        "startOnboarding": {
-          "title": "Start onboarding",
-          "desc": "Prepare for the new team member arrival"
-        },
-        "viewAnalytics": {
-          "title": "View analytics",
-          "desc": "Check hiring process metrics"
-        },
-        "createNewJob": {
-          "title": "Open new job",
-          "desc": "Start a new recruitment process"
-        }
-      },
-      "analytics": {
-        "viewReport": {
-          "title": "View full report",
-          "desc": "Access all metrics and KPIs"
-        },
-        "createNewJob": {
-          "title": "Open new job",
-          "desc": "Start a new recruitment cycle"
-        }
-      }
-    }
-  },
-  "sidebar": {
-    "sections": {
-      "operational": "Operational",
-      "configuration": "Configuration"
-    },
-    "items": {
-      "conversar": "Chat",
-      "decidir": "Decide",
-      "recrutar": "Recruit",
-      "jobs": "Jobs",
-      "talentPipeline": "Talent Pipeline",
-      "agentStudio": "Agent Studio",
-      "modules": "Modules"
-    },
-    "filters": {
-      "all": "All",
-      "active": "Active",
-      "paused": "Paused",
-      "completed": "Completed",
-      "cancelled": "Cancelled",
-      "byStage": "By Stage"
-    },
-    "labels": {
-      "seeAllPools": "See all pools",
-      "seeAllAgents": "See all agents",
-      "seeAll": "See all",
-      "recent": "Recent",
-      "clearRecent": "Clear",
-      "removeFromRecent": "Remove from recent",
-      "clearRecentItems": "Clear recent items",
-      "notificationPreferences": "Notification Preferences",
-      "expandMenu": "Expand menu (Ctrl+B)",
-      "collapseMenu": "Collapse menu (Ctrl+B)",
-      "resizeSidebar": "Drag to resize sidebar",
-      "globalSearch": "Global Search",
-      "settings": "Settings",
-      "helpTips": "Help & LIA Tips",
-      "mainMenu": "Main menu",
-      "beta": "BETA",
-      "premium": "Premium",
-      "logoAlt": "WeDo Talent",
-      "logoSmallAlt": "WeDo",
-      "expandSubmenu": "Expand submenu",
-      "collapseSubmenu": "Collapse submenu"
-    },
-    "user": {
-      "admin": "Administrator",
-      "recruiter": "Recruiter",
-      "viewer": "Viewer",
-      "defaultName": "User",
-      "defaultEmail": "user@company.com",
-      "myProfile": "My profile",
-      "changePassword": "Change password",
-      "settings": "Company & Team",
-      "apiKeys": "API Keys",
-      "logout": "Sign out"
-    },
-    "password": {
-      "title": "Change Password",
-      "description": "Enter your current password and new password to change it.",
-      "currentPassword": "Current Password",
-      "newPassword": "New Password",
-      "confirmPassword": "Confirm New Password",
-      "currentPlaceholder": "Enter your current password",
-      "newPlaceholder": "Enter new password (min. 8 characters)",
-      "confirmPlaceholder": "Confirm your new password",
-      "cancel": "Cancel",
-      "changing": "Changing...",
-      "change": "Change Password",
-      "success": "Password changed successfully!",
-      "errorFillAll": "All fields are required",
-      "errorMinLength": "New password must be at least 8 characters",
-      "errorMismatch": "Passwords do not match",
-      "errorGeneric": "Error changing password. Please check your current password.",
-      "ssoNotAllowed": "Password managed by corporate SSO"
-    }
-  },
-  "login": {
-    "tagline": "Agentic AI for Recruitment",
-    "heroTitle": "Sign in. <bold>LIA</bold> is already<br></br>working for you.",
-    "heroTitlePlain": "Sign in. LIA is already working for you.",
-    "heroSubtitle": "Global sourcing · Smart screening · Automatic scheduling",
-    "heroRecruitment": "Recruitment <accent>simplified</accent>",
-    "atsConnect": "Connects to your ATS",
-    "atsOrFull": "Or we handle the full workflow.",
-    "companyDescription": "WeDoTalent is a Brazilian HRTech company developing advanced technology solutions for the future of HR.",
-    "copyright": "© 2025 WeDoTalent. All rights reserved.",
-    "copyrightShort": "© 2025 LIA by WeDoTalent",
-    "enterPlatform": "Sign in to the platform",
-    "websiteLink": "Website",
-    "linkedinLink": "LinkedIn",
-    "emailLabel": "Email",
-    "emailPlaceholder": "your@email.com",
-    "enterButton": "Sign in",
-    "passwordLabel": "Password",
-    "passwordPlaceholder": "••••••••",
-    "changeEmail": "Change",
-    "rememberMe": "Remember me",
-    "forgotPassword": "Forgot password?",
-    "submitting": "Signing in...",
-    "confirmButton": "Confirm",
-    "orDivider": "or",
-    "continueWithMicrosoft": "Continue with Microsoft",
-    "showPassword": "Show password",
-    "hidePassword": "Hide password",
-    "invalidEmail": "Please enter a valid email.",
-    "wrongPassword": "Incorrect password. Please check your credentials.",
-    "loading": "Loading...",
-    "redirecting": "Please wait, loading your workspace..."
-  },
-  "chat": {
-    "messageActions": {
-      "copyTitle": "Copy",
-      "copyAriaLabel": "Copy response",
-      "insertTitle": "Insert into chat",
-      "insertAriaLabel": "Insert this response into the message field",
-      "copiedTitle": "Copied",
-      "copiedAriaLabel": "Response copied",
-      "copiedToast": "Copied",
-      "copyErrorToast": "Could not copy the response",
-      "helpfulTitle": "Helpful",
-      "helpfulAriaLabel": "Mark as helpful",
-      "helpfulActiveTitle": "Marked as helpful",
-      "helpfulActiveAriaLabel": "Marked as helpful. Click to undo",
-      "notHelpfulTitle": "Not helpful",
-      "notHelpfulAriaLabel": "Mark as not helpful",
-      "notHelpfulActiveTitle": "Marked as not helpful",
-      "notHelpfulActiveAriaLabel": "Marked as not helpful. Click to undo",
-      "feedbackErrorToast": "Could not save your feedback",
-      "feedbackThanksToast": "Thanks for the feedback",
-      "thumbsDownReasonTitle": "What could be better?",
-      "thumbsDownPlaceholder": "Tell us what was missing or wrong (optional)",
-      "thumbsDownSubmit": "Send",
-      "thumbsDownCancel": "Skip",
-      "thumbsDownCategory": {
-        "inaccurate": "Inaccurate",
-        "wrong_tone": "Wrong tone",
-        "hallucinated": "Made things up"
-      },
-      "regenerateTitle": "Regenerate",
-      "regenerateAriaLabel": "Regenerate the response"
-    },
-    "workflowReels": {
-      "scrollLeft": "Scroll left",
-      "scrollRight": "Scroll right",
-      "stages": {
-        "definir-vaga": {
-          "label": "Define Job",
-          "shortLabel": "Job"
-        },
-        "sourcing": {
-          "label": "Sourcing",
-          "shortLabel": "Sourcing"
-        },
-        "triagem": {
-          "label": "Screening",
-          "shortLabel": "Screening"
-        },
-        "entrevista": {
-          "label": "Interview",
-          "shortLabel": "Interview"
-        },
-        "oferta": {
-          "label": "Offer",
-          "shortLabel": "Offer"
-        },
-        "contratacao": {
-          "label": "Hiring",
-          "shortLabel": "Hiring"
-        },
-        "analytics": {
-          "label": "Analytics",
-          "shortLabel": "Analytics"
-        },
-        "ia-automacoes": {
-          "label": "AI & Automations",
-          "shortLabel": "AI"
-        },
-        "configuracoes": {
-          "label": "Settings",
-          "shortLabel": "Config"
-        }
-      },
-      "suggestions": {
-        "create-job": {
-          "title": "Create new job",
-          "description": "Configure requirements with detailed description",
-          "command": "Create a new job"
-        },
-        "job-template": {
-          "title": "Use job template",
-          "description": "Start from an existing template",
-          "command": "Create job from template"
-        },
-        "search-candidates": {
-          "title": "Search candidates",
-          "description": "Find profiles by skills or experience",
-          "command": "Search candidates"
-        },
-        "add-candidate": {
-          "title": "Add candidate",
-          "description": "Register new profile in the talent pool",
-          "command": "Add new candidate"
-        },
-        "talent-pool": {
-          "title": "Talent pool",
-          "description": "Manage pools and candidate short lists",
-          "command": "Show my talent pools"
-        },
-        "candidate-info": {
-          "title": "Query candidate",
-          "description": "Get full and specific history",
-          "command": "Query candidate information"
-        },
-        "update-status": {
-          "title": "Update status",
-          "description": "Change pipeline status",
-          "command": "Update candidate status"
-        },
-        "schedule-interview": {
-          "title": "Schedule interview",
-          "description": "Set time and notify participants",
-          "command": "Schedule an interview"
-        },
-        "reschedule-interview": {
-          "title": "Reschedule interview",
-          "description": "Change existing interview time",
-          "command": "Reschedule an interview"
-        },
-        "send-offer": {
-          "title": "Send offer",
-          "description": "Generate and send salary offer to candidate",
-          "command": "Send offer to candidate"
-        },
-        "compare-candidates": {
-          "title": "Compare finalists",
-          "description": "Side-by-side analysis of final candidates",
-          "command": "Compare finalist candidates"
-        },
-        "register-hire": {
-          "title": "Register hire",
-          "description": "Finalize the process and update status",
-          "command": "Register candidate hire"
-        },
-        "close-vacancy": {
-          "title": "Close job",
-          "description": "Close the job and notify candidates",
-          "command": "Close job"
-        },
-        "job-report": {
-          "title": "Job report",
-          "description": "Metrics and selection process status",
-          "command": "Generate job report"
-        },
-        "daily-briefing": {
-          "title": "Daily briefing",
-          "description": "Day summary with alerts and pending items",
-          "command": "Give me today's briefing"
-        },
-        "hiring-predictions": {
-          "title": "Predictions",
-          "description": "Time estimates and pipeline conversion",
-          "command": "Show hiring predictions"
-        },
-        "configure-automations": {
-          "title": "Configure automations",
-          "description": "Automatic screening and transition rules",
-          "command": "Configure recruitment automations"
-        },
-        "wsi-screening": {
-          "title": "WSI Screening",
-          "description": "Intelligent assessment with WSI methodology",
-          "command": "Start WSI screening for candidates"
-        },
-        "ai-suggestions": {
-          "title": "LIA Suggestions",
-          "description": "Recommendations based on history",
-          "command": "What do you suggest for my jobs?"
-        },
-        "ai-credits": {
-          "title": "AI Credits",
-          "description": "Check balance and credit usage",
-          "command": "Check my AI credits"
-        },
-        "hiring-policy": {
-          "title": "Hiring policy",
-          "description": "Adjust rules and automation level",
-          "command": "Configure hiring policy"
-        },
-        "email-templates": {
-          "title": "Email templates",
-          "description": "Manage communication templates",
-          "command": "Manage email templates"
-        }
-      }
-    },
-    "greeting": "How can I help today?",
-    "emptyState": {
-      "settings": {
-        "heading": "Set up your company",
-        "subtitle": "Tell me about your company and I'll fill in the data automatically.",
-        "chips": {
-          "profile": {
-            "label": "Complete company profile",
-            "command": "I want to complete my company's profile"
-          },
-          "spreadsheet": {
-            "label": "Import spreadsheet",
-            "command": "I want to import an employee spreadsheet"
-          },
-          "website": {
-            "label": "Analyze website",
-            "command": "Analyze my company's website and extract information"
-          }
-        }
-      }
-    },
-    "scrollLeft": "Scroll left",
-    "scrollRight": "Scroll right",
-    "suggestionCount": "{label} — {count} suggestion",
-    "pulseBadge": "{count} candidates — view pipeline",
-    "pipelineRailCard": {
-      "titleVacancies": "Job pipeline",
-      "titleCandidates": "Candidate pipeline",
-      "totalVacancies": "{count} jobs",
-      "totalCandidates": "{count} candidates",
-      "openFunnel": "Open pipeline view",
-      "continueWizard": "Continue wizard",
-      "empty": "No pipeline data to display."
-    },
-    "stages": {
-      "definir-vaga": {
-        "label": "Define Job",
-        "shortLabel": "Job"
-      },
-      "sourcing": {
-        "label": "Sourcing",
-        "shortLabel": "Sourcing"
-      },
-      "triagem": {
-        "label": "Screening",
-        "shortLabel": "Screening"
-      },
-      "entrevista": {
-        "label": "Interview",
-        "shortLabel": "Interview"
-      },
-      "oferta": {
-        "label": "Offer",
-        "shortLabel": "Offer"
-      },
-      "contratacao": {
-        "label": "Hiring",
-        "shortLabel": "Hiring"
-      },
-      "analytics": {
-        "label": "Analytics",
-        "shortLabel": "Analytics"
-      },
-      "ia-automacoes": {
-        "label": "AI & Automations",
-        "shortLabel": "AI"
-      },
-      "configuracoes": {
-        "label": "Settings",
-        "shortLabel": "Settings"
-      }
-    },
-    "suggestions": {
-      "create-job": {
-        "title": "Create new job",
-        "description": "Set up requirements with detailed description",
-        "command": "Create a new job"
-      },
-      "job-template": {
-        "title": "Use job template",
-        "description": "Start from an existing template",
-        "command": "Create job from template"
-      },
-      "search-candidates": {
-        "title": "Search candidates",
-        "description": "Find profiles by skills or experience",
-        "command": "Search candidates"
-      },
-      "add-candidate": {
-        "title": "Add candidate",
-        "description": "Register new profile in talent pool",
-        "command": "Add new candidate"
-      },
-      "talent-pool": {
-        "title": "Talent pool",
-        "description": "Manage pools and candidate short lists",
-        "command": "Show my talent pools"
-      },
-      "candidate-info": {
-        "title": "Query candidate",
-        "description": "Get specific and complete history",
-        "command": "Query candidate information"
-      },
-      "update-status": {
-        "title": "Update status",
-        "description": "Change position in pipeline",
-        "command": "Update candidate status"
-      },
-      "schedule-interview": {
-        "title": "Schedule interview",
-        "description": "Set time and notify participants",
-        "command": "Schedule an interview"
-      },
-      "reschedule-interview": {
-        "title": "Reschedule interview",
-        "description": "Change existing interview time",
-        "command": "Reschedule an interview"
-      },
-      "send-offer": {
-        "title": "Send offer",
-        "description": "Generate and send salary proposal to candidate",
-        "command": "Send offer to candidate"
-      },
-      "compare-candidates": {
-        "title": "Compare finalists",
-        "description": "Side-by-side analysis of final candidates",
-        "command": "Compare finalist candidates"
-      },
-      "register-hire": {
-        "title": "Register hire",
-        "description": "Finalize the process and update status",
-        "command": "Register candidate hire"
-      },
-      "close-vacancy": {
-        "title": "Close job",
-        "description": "Close the job and notify candidates",
-        "command": "Close job"
-      },
-      "job-report": {
-        "title": "Job report",
-        "description": "Metrics and selection process status",
-        "command": "Generate job report"
-      },
-      "daily-briefing": {
-        "title": "Daily briefing",
-        "description": "Day summary with alerts and pending items",
-        "command": "Give me today's briefing"
-      },
-      "hiring-predictions": {
-        "title": "Predictions",
-        "description": "Timeline and pipeline conversion estimates",
-        "command": "Show hiring predictions"
-      },
-      "configure-automations": {
-        "title": "Configure automations",
-        "description": "Automatic screening and transition rules",
-        "command": "Configure recruitment automations"
-      },
-      "wsi-screening": {
-        "title": "WSI Screening",
-        "description": "Intelligent assessment with WSI methodology",
-        "command": "Start WSI screening for candidates"
-      },
-      "ai-suggestions": {
-        "title": "LIA suggestions",
-        "description": "Recommendations based on history",
-        "command": "What do you suggest for my jobs?"
-      },
-      "ai-credits": {
-        "title": "AI Credits",
-        "description": "Check balance and credit usage",
-        "command": "Check my AI credits"
-      },
-      "hiring-policy": {
-        "title": "Hiring policy",
-        "description": "Adjust rules and automation level",
-        "command": "Configure hiring policy"
-      },
-      "email-templates": {
-        "title": "Email templates",
-        "description": "Manage communication templates",
-        "command": "Manage email templates"
-      }
-    },
-    "header": {
-      "newConversation": "New conversation",
-      "connected": "Connected",
-      "newChat": "New conversation",
-      "switchChat": "Switch conversation ({shortcut})",
-      "switchChatLabel": "Switch conversation",
-      "displayMode": "Change display mode",
-      "displayModeLabel": "Display mode",
-      "close": "Close",
-      "closeChat": "Close chat",
-      "options": "Options",
-      "optionsLabel": "Conversation options",
-      "rename": "Rename",
-      "renameLabel": "Rename conversation",
-      "delete": "Delete",
-      "deleteConfirm": "Are you sure you want to delete this conversation?",
-      "deleteTitle": "Delete conversation",
-      "deleteDescription": "This action cannot be undone. The conversation and all messages will be permanently removed.",
-      "deleteCancel": "Cancel",
-      "deleteAction": "Delete",
-      "deleteError": "Could not delete the conversation",
-      "deleteErrorDescription": "Please try again in a moment.",
-      "modeSidebar": "Sidebar",
-      "modeFloating": "Floating",
-      "modeFullscreen": "Full screen",
-      "modeMinimize": "Minimize",
-      "resetPosition": "Reset position",
-      "dragHandle": "Drag to move"
-    },
-    "input": {
-      "placeholder": "Ask LIA anything...",
-      "messageLabel": "Message for LIA",
-      "sendLabel": "Send message",
-      "dropFileHere": "Drop file here",
-      "removeFile": "Remove file",
-      "addMenu": "Add",
-      "addMenuLabel": "Add menu",
-      "attachFile": "Attach PDF, DOCX or CSV",
-      "mentionJobCandidate": "Mention job or candidate",
-      "suggestionsTitle": "Query suggestions",
-      "suggestionsLabel": "Open query suggestions",
-      "contextConfig": "Context settings",
-      "contextConfigLabel": "Conversation settings",
-      "auto": "Auto"
-    },
-    "suggestionsPanel": {
-      "title": "Query suggestions",
-      "closeLabel": "Close suggestions",
-      "searchPlaceholder": "Search query...",
-      "clearSearch": "Clear search",
-      "all": "All",
-      "noResults": "No queries found",
-      "hint": "Click to insert into prompt",
-      "dynamicTitle": "Suggestions for you now",
-      "dynamicLoading": "Loading personalized suggestions..."
-    },
-    "contextPanel": {
-      "title": "Conversation Context",
-      "helpText": "Set the conversation focus. In Job or Candidate mode, LIA uses specific data to respond more accurately.",
-      "clearContext": "Clear",
-      "recentJobs": "Recent Jobs",
-      "recentCandidates": "Recent Candidates",
-      "emptyHint": "Browse jobs or candidates so they appear here as shortcuts.",
-      "entityJob": "Job",
-      "entityCandidate": "Candidate",
-      "modeGeneral": "General Conversation",
-      "modeGeneralDesc": "Ask about any topic",
-      "modeJob": "Job Focus",
-      "modeJobDesc": "LIA responds using data from the selected job",
-      "modeCandidate": "Candidate Focus",
-      "modeCandidateDesc": "LIA responds using data from the selected candidate"
-    },
-    "queryCategories": {
-      "metricas": "Metrics",
-      "candidatos": "Candidates",
-      "vagas": "Jobs",
-      "pipeline": "Pipeline",
-      "analise": "Analysis",
-      "previsao": "Predictions",
-      "comparacao": "Compare"
-    },
-    "queries": {
-      "q1": "How many candidates are active in the pipeline?",
-      "q2": "What is my pipeline conversion rate this month?",
-      "q3": "What is the average time to close a job?",
-      "q4": "How many hires did we make this quarter?",
-      "q5": "How many jobs are past their SLA?",
-      "q6": "Who are the best candidates for the Developer position?",
-      "q7": "How many candidates are awaiting interviews?",
-      "q8": "Which candidates have a LIA score above 80?",
-      "q9": "Find candidates with experience in React and Node.js",
-      "q10": "Which candidates have a leadership profile?",
-      "q11": "Search candidates in Global Search for the Data Analyst position",
-      "q12": "Which jobs have been open for more than 30 days?",
-      "q13": "Which jobs have no candidates?",
-      "q14": "How many jobs do we have per department?",
-      "q15": "Which job has the best conversion rate?",
-      "q16": "Which jobs need urgent attention?",
-      "q17": "How many candidates do we have at each pipeline stage?",
-      "q18": "Where is the bottleneck in my hiring process?",
-      "q19": "How is candidate progression this week?",
-      "q20": "Which candidates have been stalled for more than 5 days?",
-      "q21": "What are the top recommendations for today?",
-      "q22": "Analyze the ideal personality profile for this job",
-      "q23": "Summarize feedback from recent interviews",
-      "q24": "What is the most common profile among approved candidates?",
-      "q25": "Suggest improvements for the screening process",
-      "q26": "When should I close the Product Manager position?",
-      "q27": "How many hires will we make this month?",
-      "q28": "What is the probability of success for candidate João Silva?",
-      "q29": "Time estimate to fill open positions",
-      "q30": "Compare the 3 finalists for the UX Designer position",
-      "q31": "Compare this month's performance with last month",
-      "q32": "Which department hires fastest?",
-      "q33": "Compare candidate quality across sources"
-    },
-    "bubble": {
-      "openLia": "Open LIA ({shortcut}) — click to open, drag to move",
-      "openLiaLabel": "Open chat with LIA. Click to open, drag to move, use arrow keys to reposition."
-    }
-  },
-  "jobs": {
-    "campaignBadge": {
-      "active": "Active campaign",
-      "paused": "Campaign paused",
-      "none": "No campaign",
-      "tooltip": "A campaign is LIA running this job: she handles sourcing, initial screening and candidate outreach."
-    },
-    "title": "Job Management",
-    "pageTitle": "Jobs",
-    "newJob": "New Job",
-    "reload": "Reload",
-    "loadingJob": "Loading job...",
-    "jobCreation": "Job Creation",
-    "inFunnel": "in pipeline",
-    "interviews": "interviews",
-    "conversion": "conversion",
-    "atRisk": "at risk",
-    "externalSourceUnavailable": "Some external jobs may not be visible — source unavailable",
-    "publishedSuccess": "Jobs published successfully",
-    "publishError": "Error publishing jobs. Please try again.",
-    "unpublishedSuccess": "Jobs unpublished successfully",
-    "unpublishError": "Error unpublishing jobs. Please try again.",
-    "communicationFor": "Communication for: {titles}",
-    "linkedinSimulated": "Simulated LinkedIn publication",
-    "indeedSimulated": "Simulated Indeed publication",
-    "selectAll": "Select All",
-    "filters": "Filters",
-    "filterResults": "Filter table results",
-    "columns": "Columns",
-    "configureColumns": "Configure table columns",
-    "activeFilters": "active filters",
-    "publish": "Publish",
-    "insights": "Insights",
-    "duplicate": "Duplicate",
-    "pause": "Pause",
-    "activate": "Activate",
-    "recruiter": "Recruiter",
-    "expandTable": "Expand jobs table",
-    "collapseTable": "Collapse table",
-    "jobsCount": "Jobs ({count})",
-    "loadingJobs": "Loading jobs...",
-    "loadingAriaLabel": "Loading...",
-    "tryAgain": "Try again",
-    "emptyTitle": "No jobs registered",
-    "emptyDescription": "Create your first job to start attracting candidates.",
-    "emptyAction": "Create first job",
-    "headerTabs": {
-      "all": "All",
-      "active": "Active",
-      "drafts": "Drafts",
-      "closed": "Closed"
-    },
-    "headerBadges": {
-      "total": "{count} total",
-      "active": "{count} active",
-      "drafts": "{count} drafts"
-    },
-    "columnConfig": {
-      "title": "Configure Columns",
-      "description": "Select visible table columns ({count} active)",
-      "savedViews": "Saved Views",
-      "saveView": "Save View",
-      "resetDefault": "Reset Default",
-      "viewNamePrompt": "View name:",
-      "viewSaved": "View \"{name}\" saved!",
-      "columnsReset": "Columns reset to default",
-      "categories": {
-        "principais": "Main Columns",
-        "informacoes": "Job Information",
-        "prazos": "Deadlines",
-        "responsaveis": "Responsible",
-        "localizacao": "Location and Model",
-        "remuneracao": "Compensation and Budget",
-        "divulgacao": "Publishing",
-        "requisitos": "Requirements",
-        "targeting": "Targeting",
-        "metricas": "Metrics"
-      }
-    },
-    "tableColumns": {
-      "id": "ID",
-      "job": "Job",
-      "candidates": "Candidates",
-      "performance": "LIA Screening Performance",
-      "status": "Status",
-      "screening": "Screening",
-      "recruiter": "Recruiter",
-      "manager": "Manager",
-      "screeningDeadline": "Screening Deadline",
-      "shortlistDeadline": "Shortlist Deadline",
-      "closingDeadline": "Closing Deadline",
-      "readiness": "Readiness",
-      "actions": "Actions",
-      "actionsScreenReader": "Actions"
-    },
-    "tableActions": {
-      "openJob": "Open job: {title}",
-      "confidentialJob": "Confidential Job",
-      "internalJob": "Internal Job",
-      "hiddenJob": "Hidden Job",
-      "removeUrgency": "Remove urgency",
-      "markUrgent": "Mark as urgent",
-      "unpinJob": "Unpin job",
-      "pinJob": "Pin job",
-      "removeFavorite": "Remove from favorites",
-      "addFavorite": "Add to favorites",
-      "shareJob": "Share job (copy public link)",
-      "openKanban": "Open job Kanban",
-      "linkCopied": "Link copied!",
-      "linkCopiedDesc": "The public job link has been copied to the clipboard.",
-      "linkError": "Error generating link",
-      "linkErrorDesc": "Could not generate the public link. Try again.",
-      "notConfigured": "Not Configured"
-    },
-    "tableFunnel": {
-      "candidateFunnel": "Candidate Funnel",
-      "total": "Total",
-      "screening": "Screening",
-      "interviews": "Interviews",
-      "finalists": "Finalists",
-      "hired": "✓ Hired",
-      "conversionRate": "Conversion rate",
-      "pipelineLIA": "LIA Pipeline",
-      "candidatesContacted": "{count} candidates contacted",
-      "screeningsScheduled": "Screenings Scheduled",
-      "screeningsScheduledDesc": "{count} screenings scheduled",
-      "screeningsCompleted": "Screenings Completed",
-      "screeningsCompletedDesc": "{count} screenings completed",
-      "interviewsScheduled": "Interviews Scheduled",
-      "interviewsScheduledDesc": "{count} interviews scheduled"
-    },
-    "tableFilters": {
-      "advancedFilters": "Advanced Filters",
-      "activeFiltersCount": "{count, plural, one {# active filter} other {# active filters}}",
-      "refineResults": "Refine displayed results",
-      "searchPlaceholder": "Search by title, ID, department...",
-      "quickFilters": "Quick Filters",
-      "active": "Active",
-      "urgent": "Urgent",
-      "remote": "Remote",
-      "noCandidates": "No Candidates",
-      "jobStatus": "Job Status",
-      "processStage": "Process Stage",
-      "priority": "Priority",
-      "high": "High",
-      "medium": "Medium",
-      "low": "Low",
-      "workModel": "Work Model",
-      "seniority": "Seniority",
-      "location": "Location",
-      "department": "Department",
-      "publishing": "Publishing",
-      "unpublished": "Unpublished",
-      "metrics": "Metrics",
-      "emptyPipeline": "Empty pipeline (no candidates)",
-      "lowConversion": "Low conversion",
-      "savedSearches": "Saved Searches",
-      "saveSearch": "Save Search",
-      "searchNamePrompt": "Search name:",
-      "renamePrompt": "New name:",
-      "rename": "Rename",
-      "remove": "Remove",
-      "noSavedSearches": "No saved searches",
-      "noSavedSearchesHint": "Apply filters and click \"Save Search\"",
-      "filterCount": "{count, plural, =0 {No filters} one {# filter} other {# filters}}",
-      "clear": "Clear",
-      "statusValues": {
-        "Ativa": "Active",
-        "Rascunho": "Draft",
-        "Paralisada": "Paused",
-        "Aguardando aprovação": "Awaiting approval",
-        "Fechada (preenchida)": "Closed (filled)",
-        "Cancelada": "Cancelled"
-      },
-      "stageValues": {
-        "Planejamento": "Planning",
-        "Aprovação": "Approval",
-        "Publicada": "Published",
-        "Triagem": "Screening",
-        "Entrevistas": "Interviews",
-        "Finalização": "Finalization",
-        "Encerrada": "Closed"
-      },
-      "workModelValues": {
-        "presencial": "On-site",
-        "híbrido": "Hybrid",
-        "remoto": "Remote"
-      },
-      "seniorityValues": {
-        "Estágio": "Intern",
-        "Júnior": "Junior",
-        "Pleno": "Mid-level",
-        "Sênior": "Senior",
-        "Especialista": "Specialist",
-        "Coordenador": "Coordinator",
-        "Gerente": "Manager",
-        "Diretor": "Director"
-      },
-      "departmentValues": {
-        "Tecnologia": "Technology",
-        "Design": "Design",
-        "Produto": "Product",
-        "Marketing": "Marketing",
-        "Vendas": "Sales",
-        "RH": "HR",
-        "Financeiro": "Finance",
-        "Operações": "Operations"
-      },
-      "locationValues": {
-        "São Paulo, SP": "São Paulo, SP",
-        "Rio de Janeiro, RJ": "Rio de Janeiro, RJ",
-        "Belo Horizonte, MG": "Belo Horizonte, MG",
-        "Curitiba, PR": "Curitiba, PR",
-        "Porto Alegre, RS": "Porto Alegre, RS",
-        "Brasília, DF": "Brasília, DF",
-        "Remoto": "Remote"
-      },
-      "publishingValues": {
-        "linkedin": "LinkedIn",
-        "website": "Website",
-        "indeed": "Indeed"
-      }
-    },
-    "statuses": {
-      "Ativa": "Active",
-      "Aprovada": "Approved",
-      "Aguardando aprovação": "Awaiting approval",
-      "Reaberta": "Reopened",
-      "Paralisada": "Paused",
-      "Interna": "Internal",
-      "Rascunho": "Draft",
-      "Fechada (preenchida)": "Closed (filled)",
-      "Fechada (expirada)": "Closed (expired)",
-      "Cancelada": "Cancelled",
-      "Concluída": "Completed",
-      "Arquivada": "Archived"
-    },
-    "readinessStages": {
-      "importada": "Imported",
-      "sem_jd": "No JD",
-      "jd_rascunho": "JD Draft",
-      "jd_enriquecido": "JD Enriched",
-      "perguntas_triagem": "Screening Questions",
-      "pronta_disparo": "Ready to Dispatch",
-      "em_triagem": "Screening in Progress"
-    },
-    "readinessBlockers": {
-      "missing_jd": "No JD",
-      "missing_enrichment": "No enrichment",
-      "missing_competencies": "No competencies",
-      "missing_questions": "No questions"
-    }
-  },
-  "kanban": {
-    "loading": "Loading...",
-    "dismiss": "Dismiss",
-    "back": "Back",
-    "pauseJob": "Pause job",
-    "closeJob": "Close job",
-    "reactivateJob": "Reactivate job",
-    "screeningPrefix": "Screening",
-    "screeningActivated": "Screening activated",
-    "screeningPaused": "Screening paused",
-    "screeningUpdated": "Screening updated",
-    "screeningUpdateError": "Error updating screening",
-    "screeningNA": "Screening: N/A",
-    "configureScreening": "Configure Screening",
-    "startScreening": "Start Screening",
-    "configure": "Configure",
-    "pauseScreening": "Pause Screening",
-    "resumeScreening": "Resume Screening",
-    "draft": "Draft",
-    "published": "Published",
-    "late": "late",
-    "open": "open",
-    "updated": "Updated",
-    "screeningDeadline": "Screening deadline",
-    "shortlistDeadline": "Shortlist deadline",
-    "closing": "Closing",
-    "rejectionCategories": {
-      "business_decision": "Business decision",
-      "qualification": "Qualification",
-      "cultural": "Culture fit",
-      "logistics": "Logistics",
-      "compensation": "Compensation",
-      "process": "Process",
-      "other": "Other"
-    },
-    "liaSuggestions": "{count, plural, one {# LIA suggestion} other {# LIA suggestions}}",
-    "comingSoon": "Coming soon",
-    "comingSoonStages": "Coming soon: Pipeline stage configuration",
-    "configureStages": "Configure Stages",
-    "report": "Report",
-    "shareMode": "Share Mode",
-    "shareModeDescription": "All candidates have been selected. Adjust the selection and click Share in the action bar.",
-    "share": "Share",
-    "jobManagement": "Job Management",
-    "settings": "Settings",
-    "customPipeline": "Custom pipeline",
-    "pipelineReset": "Pipeline reset",
-    "pipelineResetDescription": "Pipeline restored to company default.",
-    "resetToDefault": "Reset to default",
-    "inheritedFromCompany": "Inherited from company",
-    "emptyTitle": "No candidates in this pipeline yet",
-    "emptyDescription": "Add candidates or search the talent pool to start the process.",
-    "searchCandidates": "Search candidates",
-    "addColumn": "Add Column",
-    "loadingEllipsis": "Loading...",
-    "staleTooltip": "Stalled for {days} days — consider advancing or providing feedback",
-    "highScoreTooltip": "High WSI Score ({score}) — consider prioritizing",
-    "lowScoreTooltip": "Low WSI Score ({score}) — evaluate retention",
-    "moreOptions": "More options",
-    "moreOptionsCandidateAria": "More candidate options",
-    "sendEmail": "Send Email",
-    "sendWhatsApp": "Send WhatsApp",
-    "scheduleInterview": "Schedule Interview",
-    "wsiScreening": "WSI Screening",
-    "sendFeedback": "Send Feedback",
-    "removeFromShortList": "Remove from Short List",
-    "addToShortList": "Add to Short List",
-    "removeFromFavorites": "Remove from Favorites",
-    "addToFavorites": "Add to Favorites",
-    "approve": "Approve",
-    "reject": "Reject",
-    "joinMeeting": "Join meeting — {date}",
-    "reschedule": "Reschedule",
-    "cancelAction": "Cancel",
-    "urgency": "Urgency",
-    "rescheduleTime": "Reschedule Time",
-    "manageProposal": "Manage Proposal",
-    "cancelInterview": "Cancel interview",
-    "rescheduleInterview": "Reschedule interview",
-    "reschedulePrompt": "The recruiter wants to change the interview time for {name} scheduled for {date}. Ask for the new preferred date and time and confirm the rescheduling with the candidate.",
-    "cancelPrompt": "The recruiter wants to cancel the interview for {name} scheduled for {date}. Ask which stage they want to move the candidate to (or keep in the same) and confirm the cancellation.",
-    "scoreGeral": "Overall",
-    "scoreTriagem": "Screening",
-    "scoreCV": "CV",
-    "scoreTecnico": "Technical",
-    "scoreIngles": "English",
-    "scoreB5": "B5",
-    "appliedViaLinkedin": "Applied via LinkedIn",
-    "appliedOnWebsite": "Applied on website",
-    "mappedByLIA": "Mapped by LIA",
-    "addedManually": "Added manually",
-    "liaWillStartScreening": "LIA will start screening",
-    "screeningCompleted": "Completed",
-    "pendingDecision": "Pending decision",
-    "clickToSeeFullAnalysis": "Click to see full analysis",
-    "respondingNow": "Responding now",
-    "conversationInProgress": "Conversation in progress",
-    "interviewConfirmed": "Interview confirmed",
-    "awaitingScheduling": "Awaiting scheduling",
-    "pendingFeedback": "Pending feedback",
-    "finalist": "Finalist",
-    "proposalSent": "Proposal sent",
-    "awaitingResponse": "Awaiting response",
-    "awaitingApproval": "Awaiting approval",
-    "inNegotiation": "In negotiation",
-    "hiredStatus": "Hired",
-    "startDateLabel": "Start: {date}",
-    "withdrew": "Withdrew",
-    "rejectedScreening": "Rejected at screening",
-    "rejectedInterview": "Rejected at interview",
-    "rejectedStatus": "Rejected",
-    "feedbackSent": "Feedback sent",
-    "proposalDeclined": "Proposal declined",
-    "dragCandidatesHere": "Drag candidates here",
-    "actionRequired": "Action Required",
-    "selectCandidate": "Select candidate {name}",
-    "selectForComparison": "Select {name} for comparison",
-    "maxCandidatesComparison": "Maximum of 4 candidates for comparison",
-    "compareCandidate": "Compare candidate",
-    "profileViewed": "Profile viewed",
-    "notAvailable": "Not available",
-    "selectAllInStage": "Select all in stage {stage}",
-    "configureColumnsTitle": "Configure Columns",
-    "searchColumnPlaceholder": "Search column...",
-    "restoreDefault": "Restore Default",
-    "showAll": "All",
-    "categoryBasico": "Basic Identification",
-    "categoryContato": "Contact",
-    "categoryPessoal": "Personal Info",
-    "categoryProfissional": "Professional Profile",
-    "categoryCompetencias": "Skills",
-    "categoryLocalizacao": "Location",
-    "categoryEndereco": "Full Address",
-    "categoryPreferencias": "Work Preferences",
-    "categorySalario": "Salary & Expectations",
-    "categoryDocumentos": "Resume & Documents",
-    "categoryOrigem": "Source & Integration",
-    "categoryBuscaGlobal": "Global Search",
-    "categoryIA": "LIA / AI Insights",
-    "categoryStatus": "Status & Workflow",
-    "categoryComunicacao": "Communication",
-    "categoryCadastro": "Registration Status",
-    "categoryAdicional": "Additional Info",
-    "categoryDatas": "Dates & Timestamps",
-    "searchPlaceholder": "Search...",
-    "searchCandidatesAria": "Search candidates",
-    "clearSearchAria": "Clear search",
-    "kanbanView": "Kanban",
-    "tableView": "Table",
-    "deselectAll": "Deselect All",
-    "selectAllCount": "Select All ({count})",
-    "degradedOnlyToggle": "Degraded only",
-    "degradedOnlyToggleTooltip": "Show only candidates whose screening was computed in degraded mode",
-    "filters": "Filters",
-    "configureTableColumns": "Configure table columns",
-    "columns": "Columns",
-    "clear": "Clear",
-    "moveStage": "Move Stage",
-    "list": "List",
-    "shareLabel": "Share",
-    "wsiScreeningBulk": "WSI Screening",
-    "requestData": "Request Data",
-    "messageAction": "Message",
-    "favorites": "Favorites",
-    "rejectBulk": "Reject",
-    "candidateAnalysis": "Candidate Analysis",
-    "expandView": "Expand view",
-    "candidatesCount": "Candidates ({count})",
-    "addColumnToPipeline": "Add Column to Pipeline",
-    "stageName": "Stage Name",
-    "stageNamePlaceholder": "E.g.: Logic Test, Cultural Interview...",
-    "suggestActionType": "Suggest action type",
-    "confidenceLabel": "{percent}% confidence",
-    "adding": "Adding...",
-    "addColumnButton": "Add Column",
-    "orChooseFromCatalog": "Or choose from catalog:",
-    "catalogTesteTecnico": "Technical Test",
-    "catalogTesteIngles": "English Test",
-    "catalogEntrevistaTecnica": "Technical Interview",
-    "catalogEntrevistaGestor": "Manager Interview",
-    "catalogEntrevistaFinal": "Final Interview",
-    "catalogDinamicaGrupo": "Group Dynamics",
-    "catalogReferencias": "References",
-    "catalogCaseEstudo": "Case / Study",
-    "chipRankLabel": "Rank",
-    "chipRankPrompt": "Rank candidates for this job",
-    "chipCompareLabel": "Compare",
-    "chipComparePrompt": "Compare the best candidates",
-    "chipScreeningLabel": "Screening",
-    "chipScreeningPrompt": "Start screening of pending candidates",
-    "tableColApproval": "Approval",
-    "tableColCandidate": "Candidate",
-    "tableColRole": "Role",
-    "tableColCompany": "Company",
-    "tableColStage": "Stage",
-    "tableColStatus": "Status",
-    "tableEmptyMessage": "No candidates in this stage",
-    "pipelineSaturated": "Saturated",
-    "pipelineAlmostSaturated": "Almost saturated",
-    "pipelineSaturationTitle": "Pipeline {status} ({count}/{threshold})",
-    "approveCandidate": "Approve candidate",
-    "rejectCandidate": "Reject candidate",
-    "viewProfile": "View Profile",
-    "cvAnalysis": "CV Analysis",
-    "viewScreening": "View Screening",
-    "paginationShowing": "Showing {start} - {end} of {total} candidates",
-    "paginationFirst": "First",
-    "paginationPrevious": "Previous",
-    "paginationNext": "Next",
-    "paginationLast": "Last",
-    "viewCVAnalysis": "View CV vs Job Analysis",
-    "analysisPending": "Analysis pending",
-    "viewScreeningDetails": "View Screening Details",
-    "screeningPending": "Screening pending",
-    "viewFullProfile": "View full profile",
-    "viewLIAScreening": "View LIA screening",
-    "viewBigFive": "View BigFive",
-    "manageInterviewTitle": "Manage interview — {date}",
-    "manageInterviewPrompt": "The recruiter wants to manage the interview of {name} scheduled for {date}. Ask if they want to change the time (request new date/time) or cancel. If canceling, ask which stage they want to move the candidate to.",
-    "advancedFilters": "Advanced Filters",
-    "refineCandidates": "Refine displayed candidates",
-    "pipelineStage": "Pipeline Stage",
-    "minLIAScore": "Minimum LIA Score",
-    "statusLabel": "Status",
-    "statusNew": "New",
-    "statusInAnalysis": "In analysis",
-    "statusAwaitingApproval": "Awaiting approval",
-    "statusScreenedApproved": "Screened approved",
-    "statusNegotiation": "Negotiation",
-    "workModel": "Work Model",
-    "workModelRemote": "Remote",
-    "workModelHybrid": "Hybrid",
-    "workModelOnsite": "On-site",
-    "applyFilters": "Apply",
-    "originLabel": "Origin",
-    "originActiveSourcing": "Active Sourcing",
-    "moreActions": "More actions",
-    "pearchHiring": "Hiring",
-    "copyMessage": "Copy message",
-    "yearsOld": "{age} years old",
-    "moreCount": "+{count} more",
-    "clickDetails": "Click to see details",
-    "notEvaluated": "Not evaluated",
-    "clickLIAScreening": "Click to see LIA Screening",
-    "degradedModeTooltip": "Degraded analysis mode — open the report for details",
-    "clickCVAnalysis": "Click to see CV vs Job Analysis",
-    "notCompleted": "Not completed",
-    "clickBigFiveReport": "Click to see full Big Five report",
-    "candidatesAddedToListSuccess": "Success",
-    "candidatesAddedToListDesc": "Candidates added to list successfully!",
-    "candidateAddedTitle": "Candidate added",
-    "candidateAddedToJobDesc": "Candidate added to job successfully",
-    "candidateFallback": "Candidate",
-    "categoryEliminatoria": "Eliminatory",
-    "categoryInformativa": "Informational",
-    "categoryTecnicaAvaliacao": "Technical/Evaluation",
-    "compareCountBtn": "Compare ({count})",
-    "clearComparisonAria": "Clear comparison selection",
-    "jobPausedSuccess": "Job paused successfully",
-    "jobReactivatedSuccess": "Job reactivated successfully",
-    "jobPublishedTitle": "Job Published!",
-    "jobPublishedDesc": "The job is active. Share the link below with candidates:",
-    "linkCopied": "Link copied!",
-    "linkCopiedDesc": "The link has been copied to clipboard.",
-    "copyFailed": "Could not copy",
-    "copyFailedDesc": "Select the link manually and copy.",
-    "copyLink": "Copy link",
-    "jobClosedSuccess": "Job closed successfully",
-    "candidatesShareTitle": "Candidates — {title}",
-    "jobFallback": "Job",
-    "confirmMovement": "Confirm Movement",
-    "selectDetailedStatus": "Select detailed status",
-    "suggestedStatusByLIA": "Status Suggested by LIA",
-    "selectOtherStatus": "Select other status",
-    "selectAStatus": "Select a status",
-    "overallScoreTitle": "Overall Score",
-    "screeningScoreTitle": "Screening Score",
-    "technicalTestTitle": "Technical Test",
-    "englishTestTitle": "English Test",
-    "overallCandidateScore": "Overall Candidate Score",
-    "screeningScoreLabel": "Screening Score",
-    "cvScoreLabel": "CV Score",
-    "technicalTestScoreLabel": "Technical Test",
-    "englishTestScoreLabel": "English Test",
-    "liaScreeningScore": "LIA Screening Score",
-    "liaAnalysisTitle": "LIA Analysis",
-    "liaAnalysisText": "Candidate automatically evaluated by LIA based on experience criteria, skills and job profile fit. The screening considers factors such as professional history, academic background and declared technical skills.",
-    "technicalTestResult": "Technical Test Result",
-    "testDetailsTitle": "Test Details",
-    "testDetailsText": "Technical evaluation through practical testing focused on the technical skills required for the position. Includes code analysis, problem solving and knowledge of specific tools.",
-    "englishTestResult": "English Test Result",
-    "proficiencyLevelTitle": "Proficiency Level",
-    "proficiencyText": "English proficiency assessment covering written comprehension, oral expression and technical vocabulary relevant to the position.",
-    "confirmMoveTitle": "Confirm Movement",
-    "moveToNewStage": "Move candidate to a new process stage",
-    "liaSuggests": "LIA suggests:",
-    "availableSubstatuses": "Available sub-statuses:",
-    "reasonOptional": "Reason (optional)",
-    "reasonPlaceholder": "E.g.: Interview scheduled for next Tuesday...",
-    "helloLia": "Hello! I'm Lia.",
-    "howCanIHelp": "How can I help you today?",
-    "newConversationBtn": "New conversation",
-    "expandChat": "Expand chat",
-    "candidatesSelectedCount": "{count, plural, one {# candidate selected} other {# candidates selected}}",
-    "liaSuggestionsTitle": "LIA Suggestions",
-    "viewAction": "View",
-    "openManually": "Open manually",
-    "thinkingStatus": "Thinking...",
-    "loadingAriaLabelShort": "Loading...",
-    "sendMessagePlaceholder": "Send a message to LIA...",
-    "suggestionsPrefix": "Suggestions:",
-    "liaQuestionSuggestions": "LIA Question Suggestions",
-    "forScreeningLabel": "For Screening — {question}",
-    "basedOnJobProfile": "Based on the job profile",
-    "recommendedScreeningQuestions": "Recommended Questions for Screening",
-    "clickReplaceInstruction": "Click \"Replace\" to swap the selected question",
-    "recommendedBadge": "Recommended",
-    "popularBadge": "Popular",
-    "suggestedBadge": "Suggested",
-    "relevanceVeryHigh": "Relevance: Very High",
-    "relevanceHigh": "Relevance: High",
-    "relevanceMedium": "Relevance: Medium",
-    "replaceAction": "Replace",
-    "generateMore": "Generate More Suggestions",
-    "closePanel": "Close Panel",
-    "recommendedUXQuestions": "Recommended Questions for UX Design",
-    "evaluatesResearchMethods": "Evaluates: Research Methods",
-    "difficultyMedium": "Difficulty: Medium",
-    "highRelevanceBadge": "High Relevance",
-    "evaluatesPrioritization": "Evaluates: Prioritization",
-    "difficultyEasy": "Difficulty: Easy",
-    "conceptualBadge": "Conceptual",
-    "evaluatesTechnicalKnowledge": "Evaluates: Technical Knowledge",
-    "basedOnTestsCount": "Based on 500+ tests",
-    "suggestionTech1": "How do you structure a scalable Design System for multiple platforms?",
-    "suggestionTech2": "Describe your experience with user research methods and how you apply them",
-    "suggestionTech3": "How do you measure the ROI of UX initiatives in digital products?",
-    "suggestionTech4": "What is your approach to responsive design and accessibility?",
-    "suggestionTech5": "How do you collaborate with developers to ensure faithful design implementation?",
-    "suggestionSoft1": "How do you handle tight deadlines and multiple simultaneous deliverables?",
-    "suggestionSoft2": "Describe a team conflict situation you resolved successfully",
-    "suggestionSoft3": "How do you stay updated with trends and technologies in the field?",
-    "suggestionSoft4": "What was your biggest professional challenge and how did you overcome it?",
-    "suggestionSoft5": "How do you prioritize multiple demands from different stakeholders?",
-    "questionUX1": "Which research method would be most appropriate to validate the usability of an early-stage prototype?",
-    "questionUX1optA": "A) A/B test with large sample",
-    "questionUX1optB": "B) Card sorting",
-    "questionUX1optC": "C) Moderated usability test ✓",
-    "questionUX1optD": "D) Quantitative analytics",
-    "questionUX2": "How would you prioritize features in an MVP using the effort vs impact matrix?",
-    "questionUX2optA": "A) High impact and low effort first ✓",
-    "questionUX2optB": "B) High effort and high impact first",
-    "questionUX2optC": "C) Low effort regardless of impact",
-    "questionUX2optD": "D) All features equally",
-    "questionUX3": "What is the fundamental difference between Design System and Style Guide?",
-    "questionUX3optA": "A) There is no difference, they are synonyms",
-    "questionUX3optB": "B) Design System includes components and patterns, Style Guide focuses on visual ✓",
-    "questionUX3optC": "C) Style Guide is more complete than Design System",
-    "questionUX3optD": "D) Design System is only for developers",
-    "testPreview": {
-      "title": "Technical Test - UX Design",
-      "jobInfo": "Job: UX Designer • Sodexo",
-      "totalTime": "Total Time",
-      "totalTimeValue": "14 minutes",
-      "totalQuestions": "Total Questions",
-      "totalQuestionsValue": "5 questions",
-      "minimumScore": "Minimum Score",
-      "importantInstructions": "Important Instructions",
-      "instructionRead": "Read each question carefully before answering",
-      "instructionTimeLimit": "Each question has an individual time limit (2-4 minutes)",
-      "instructionNavigate": "You can navigate between questions before submitting",
-      "instructionAutoSubmit": "The test will be automatically submitted at the end of time",
-      "instructionConnection": "Make sure you have a stable internet connection",
-      "question1": "What is the main Nielsen heuristic violated when a website does not provide feedback after a user action?",
-      "option1_1": "Error prevention",
-      "option1_2": "User control and freedom",
-      "option1_3": "Visibility of system status",
-      "option1_4": "Consistency and standards",
-      "timeLimitLabel": "Time limit: {time}",
-      "answeredIn": "Answered in {time}",
-      "points": "{count} points",
-      "question2": "In the Design Thinking process, which step comes immediately after the \"Define\" phase?",
-      "option2_1": "Empathize",
-      "option2_2": "Ideate",
-      "option2_3": "Prototype",
-      "option2_4": "Test",
-      "question3": "Which metric is most suitable for measuring the ease of use of an interface?",
-      "option3_1": "Conversion rate",
-      "option3_2": "Average session time",
-      "option3_3": "System Usability Scale (SUS)",
-      "option3_4": "Net Promoter Score (NPS)",
-      "progressLabel": "Progress:",
-      "questionsAnswered": "{answered} of {total} questions answered",
-      "totalTimeLabel": "Total time:",
-      "currentQuestionLabel": "Current question:",
-      "autoSave": "Auto save",
-      "closePreview": "Close Preview",
-      "sendTest": "Send Test"
-    },
-    "testHistory": {
-      "title": "Test Usage History",
-      "historicalAvgScore": "Historical Average Score",
-      "vsPreviousMonth": "{diff} vs previous month",
-      "evolution6Months": "Evolution (6 months)",
-      "totalApplications": "Total Applications",
-      "upThisMonth": "↑ {percent}% this month",
-      "successRate": "Success Rate",
-      "scoreAbove": "Score ≥ {score}",
-      "completionRate": "Completion Rate",
-      "candidatesComplete": "Candidates complete",
-      "averageTime": "Average Time",
-      "ofExpected": "Of {time} expected",
-      "perceivedDifficulty": "Perceived Difficulty",
-      "mediumHigh": "Medium-High",
-      "jobsUsedThisTest": "Jobs That Used This Test",
-      "statusFinished": "Finished",
-      "statusInProgress": "In Progress",
-      "statusCancelled": "Cancelled",
-      "statusActive": "Active",
-      "statusClosed": "Closed",
-      "candidatesCount": "{count} candidates",
-      "approvalRate": "{percent}% approval",
-      "hired": "{count} hired",
-      "success": "Success",
-      "scoreDistribution": "Score Distribution",
-      "avgScore": "Average Score: {score}",
-      "inInterviews": "In interviews",
-      "finalists": "{count} finalists",
-      "jobCancelled": "Job cancelled",
-      "noHire": "No hire",
-      "liaInsights": "LIA Insights",
-      "insight1": "This test performs best with Mid-level and Senior candidates",
-      "insight2": "Question 3 has the lowest success rate (45%) - consider revising or adding context",
-      "insight3": "Candidates scoring above 75% are 3x more likely to be hired",
-      "insight4": "Ideal application time: Monday to Thursday, between 10am-12pm or 2pm-5pm",
-      "aboveAveragePerformance": "Performance above average",
-      "top10Tests": "Top 10% most effective tests",
-      "close": "Close",
-      "exportReport": "Export Report"
-    },
-    "testLibrary": {
-      "title": "LIA Test Library",
-      "subtitle": "Validated tests organized by area of expertise",
-      "categories": "Categories",
-      "catDevelopment": "Development",
-      "catDesignUX": "Design & UX",
-      "catDataAnalytics": "Data & Analytics",
-      "catManagement": "Management & Leadership",
-      "catMarketingSales": "Marketing & Sales",
-      "catAdministrative": "Administrative",
-      "catLanguages": "Languages",
-      "catSoftSkills": "Soft Skills",
-      "filtersTitle": "Filters",
-      "level": "Level",
-      "levelAll": "All",
-      "levelJunior": "Junior",
-      "levelMid": "Mid-level",
-      "levelSenior": "Senior",
-      "duration": "Duration",
-      "durationAny": "Any",
-      "designUXTests": "Design & UX Tests",
-      "testsAvailableApproval": "{count} tests available • {percent}% average approval",
-      "test1Name": "UX Design - Fundamentals",
-      "test1Desc": "Basic test of UX concepts and heuristics",
-      "test2Name": "Design System & Components",
-      "test2Desc": "Assessment on creating and maintaining DS",
-      "test3Name": "User Research",
-      "test3Desc": "Research methods and data analysis",
-      "test4Name": "Prototyping and Tools",
-      "test4Desc": "Figma, Sketch, Adobe XD and prototyping",
-      "badgePopular": "Popular",
-      "badgeNew": "New",
-      "badgeRecommended": "Recommended",
-      "badgeTechnical": "Technical",
-      "overallAvgScore": "Overall Average Score",
-      "basedOn": "Based on",
-      "testsCount": "{count} tests",
-      "successRateLabel": "Success Rate",
-      "realDifficulty": "Real Difficulty",
-      "mediumPlus": "Medium+",
-      "completionLabel": "Completion",
-      "avgTimeLabel": "Average Time",
-      "scoreDistribution": "Score Distribution",
-      "questionsLabel": "Questions:",
-      "questionsCount": "{count} questions",
-      "totalTimeLabel": "Total time:",
-      "minutesValue": "{count} minutes",
-      "levelLabel": "Level:",
-      "usesCount": "{count} uses",
-      "view": "View",
-      "viewFull": "Preview",
-      "history": "History",
-      "use": "Use",
-      "useThis": "Use This",
-      "loadMoreTests": "Load More Tests",
-      "testsAvailable": "{count} tests available",
-      "usedByCompanies": "Used by {count} companies",
-      "successRateFooter": "{percent}% success rate",
-      "close": "Close",
-      "createNewTest": "Create New Test"
-    },
-    "categoryTriagem": "Screening",
-    "screeningTabLabel": "Screening",
-    "agentsTabLabel": "Agents",
-    "retry": "Retry",
-    "screeningTotal": "Total",
-    "screeningInProgress": "In Progress",
-    "screeningAbandoned": "Abandoned",
-    "screeningAvgScore": "Avg WSI Score",
-    "screeningAvgDuration": "Avg Duration",
-    "screeningFilterAll": "All statuses",
-    "screeningFilterInProgress": "In Progress",
-    "screeningFilterCompleted": "Completed",
-    "screeningFilterAbandoned": "Abandoned",
-    "screeningFilterChannel": "All channels",
-    "screeningRefresh": "Refresh",
-    "screeningResultsCount": "results",
-    "screeningEmpty": "No screenings found for this job",
-    "screeningColCandidate": "Candidate",
-    "screeningColStatus": "Status",
-    "screeningColScore": "WSI Score",
-    "screeningColDuration": "Duration",
-    "screeningColChannel": "Channel",
-    "agentsComingSoon": "AI Agents",
-    "agentsComingSoonDesc": "Autonomous agents panel coming soon"
-  },
-  "pipeline": {
-    "title": "Talent Pipeline",
-    "metaDescription": "Manage your talent pool, candidate lists, and saved searches. Find the best profiles for your jobs with smart filters.",
-    "funnelTitle": "Candidate Pipeline",
-    "funnelMetaDescription": "View and manage candidates in the recruitment Kanban pipeline. Move candidates between stages and track the selection pipeline.",
-    "layoutDescription": "View and manage the candidate recruitment pipeline",
-    "funnelLayoutDescription": "Kanban pipeline for candidate management",
-    "shareSearch": "Share Search",
-    "tabs": {
-      "search": "Search",
-      "favorites": "Favorites",
-      "lists": "Lists",
-      "savedSearches": "Saved Searches",
-      "talentPools": "Talent Pools",
-      "history": "History"
-    },
-    "stats": {
-      "candidates": "candidates",
-      "favorites": "favorites"
-    },
-    "searchPlaceholder": "Search by name, position, company, or skill...",
-    "searchAriaLabel": "Search candidates",
-    "bulkActions": {
-      "moveStage": "Move Stage",
-      "message": "Message",
-      "shareSelection": "Share Selection"
-    },
-    "auth": {
-      "reloginTitle": "Your session has expired",
-      "reloginCta": "Sign in again",
-      "retryCta": "Try again",
-      "unauthorizedMessage": "Your session has expired. Please sign in again to continue.",
-      "forbiddenMessage": "You don't have permission to view these candidates.",
-      "serverErrorMessage": "The server is having trouble right now. Please try again in a moment.",
-      "networkErrorMessage": "Failed to load candidates. Please try again."
-    },
-    "emptyState": {
-      "noResults": "No candidates found. Try different filters.",
-      "searchPrompt": "Search candidates by name, skill, or position"
-    },
-    "pagination": {
-      "page": "Page {current} of {total}",
-      "previousPage": "Previous page",
-      "nextPage": "Next page"
-    },
-    "shareModal": {
-      "searchTitle": "Search — {query}",
-      "allCandidates": "All candidates",
-      "selectionTitle": "Selection of {count} candidates"
-    },
-    "loading": {
-      "favorites": "Loading favorites...",
-      "lists": "Loading lists...",
-      "savedSearches": "Loading saved searches...",
-      "history": "Loading history...",
-      "talentPools": "Loading talent pools...",
-      "pipeline": "Loading talent pipeline..."
-    },
-    "access": {
-      "talentPipelineAndPipeline": "Talent pipeline and pipeline"
-    },
-    "filters": {
-      "statusNew": "New",
-      "statusScreening": "In Screening",
-      "statusApproved": "Approved",
-      "statusRejected": "Rejected",
-      "seniorityJunior": "Junior",
-      "seniorityMid": "Mid-level",
-      "senioritySenior": "Senior",
-      "senioritySpecialist": "Specialist"
-    }
-  },
-  "jobsView": {
-    "table": "Table",
-    "kanban": "Kanban",
-    "toggleAriaLabel": "Toggle between Table and Kanban view",
-    "emptyColumn": "No jobs in this stage",
-    "deadlineSoon": "Due in {days}d",
-    "deadlinePast": "Overdue {days}d",
-    "candidatesCount": "{count} candidates",
-    "ageDays": "Open {days}d",
-    "ownerLabel": "Owner",
-    "ribbon": {
-      "label": "Action Required",
-      "urgent": "Job marked as urgent",
-      "deadlineOverdue": "Deadline overdue by {days}d",
-      "deadlineSoon": "Deadline in {days}d",
-      "pendingApproval": "Pending approval",
-      "noCandidates": "No candidates in funnel"
-    },
-    "funnel": {
-      "screening": "Screening",
-      "interview": "Interview",
-      "final": "Final",
-      "hired": "Hired"
-    },
-    "columns": {
-      "rascunho": "Draft",
-      "aguardando": "Pending Approval",
-      "publicada": "Published",
-      "ao_vivo": "Live",
-      "encerrada": "Closed"
-    }
-  },
-  "pipelineOverview": {
-    "title": "Recruit",
-    "metaDescription": "Consolidated pipeline view — candidates per stage and vacancy lifecycle.",
-    "toggle": {
-      "candidates": "Candidates",
-      "vacancies": "Jobs",
-      "ariaLabel": "Toggle between Candidates and Jobs view",
-      "candidatesTotal": "{count} candidates in funnel",
-      "vacanciesTotal": "{count} jobs in lifecycle",
-      "candidatesLabel": "candidates in funnel",
-      "vacanciesLabel": "jobs in lifecycle"
-    },
-    "stages": {
-      "ats_imported": "ATS Imported",
-      "draft": "Draft",
-      "enriched": "Enriched",
-      "wsi_configured": "WSI Configured",
-      "pending_approval": "Pending Approval",
-      "published": "Published",
-      "live": "Live",
-      "closed": "Closed"
-    },
-    "vacancyCard": {
-      "atsBadge": "ATS",
-      "atsBadgeTitle": "Imported from external ATS",
-      "atsBadgeTitleNamed": "Imported via {source}",
-      "approvalPending": "Pending approval",
-      "candidatesCount": "{count} candidates",
-      "openWizard": "Continue JD",
-      "openEnrichment": "Continue enrichment",
-      "openWsi": "Configure WSI",
-      "requestApproval": "Request approval",
-      "openApproval": "Review approval",
-      "openPublish": "Publish job",
-      "openStatus": "Change status",
-      "openKanban": "Open kanban",
-      "openClosed": "View closure"
-    },
-    "empty": {
-      "noVacancies": "No jobs in this stage",
-      "noVacanciesHint": "Jobs will appear here as they progress through the lifecycle"
-    },
-    "close": "Close"
-  },
   "agents": {
     "metadata": {
       "title": "Agent Studio | LIA — WeDo Talent",
@@ -2657,46 +960,6 @@
       "pool": "Pool"
     }
   },
-  "common": {
-    "save": "Save",
-    "cancel": "Cancel",
-    "edit": "Edit",
-    "delete": "Delete",
-    "loading": "Loading...",
-    "error": "Error",
-    "success": "Success",
-    "confirm": "Confirm",
-    "close": "Close",
-    "search": "Search",
-    "back": "Back",
-    "next": "Next",
-    "previous": "Previous",
-    "yes": "Yes",
-    "no": "No",
-    "beta": "BETA",
-    "premium": "Premium",
-    "skipToContent": "Skip to main content",
-    "or": "or",
-    "remove": "Remove",
-    "play": "Play",
-    "newMessage": "New message",
-    "newChat": "New chat",
-    "clearMessages": "Clear messages",
-    "searchInConversation": "Search in conversation",
-    "controlCenter": "Control Center",
-    "searchInConversationPlaceholder": "Search in conversation...",
-    "invalidFile": "Invalid file",
-    "acceptedFormats": "Accepted formats: PDF, DOC, DOCX, TXT, CSV, XLSX, PNG, JPG (max. {maxSize}MB)",
-    "recording": "Recording... {time}s",
-    "audioRecorded": "Audio recorded ({time}s)",
-    "audioReadyToSend": "Ready to send with your message",
-    "fileAnalyzed": "File analyzed: {filename}",
-    "fileAnalysisReady": "The analysis will be sent with your next message",
-    "pending": "Pending",
-    "modulePremium": "Premium Module",
-    "modulePremiumDescription": "This feature requires a premium module",
-    "defaultUserName": "User"
-  },
   "candidates": {
     "header": {
       "title": "Talent Pipeline",
@@ -3318,6 +1581,1609 @@
       "candidatesFound": "{count} candidates found",
       "searchNamePrefix": "Search"
     }
+  },
+  "chat": {
+    "messageActions": {
+      "copyTitle": "Copy",
+      "copyAriaLabel": "Copy response",
+      "insertTitle": "Insert into chat",
+      "insertAriaLabel": "Insert this response into the message field",
+      "copiedTitle": "Copied",
+      "copiedAriaLabel": "Response copied",
+      "copiedToast": "Copied",
+      "copyErrorToast": "Could not copy the response",
+      "helpfulTitle": "Helpful",
+      "helpfulAriaLabel": "Mark as helpful",
+      "helpfulActiveTitle": "Marked as helpful",
+      "helpfulActiveAriaLabel": "Marked as helpful. Click to undo",
+      "notHelpfulTitle": "Not helpful",
+      "notHelpfulAriaLabel": "Mark as not helpful",
+      "notHelpfulActiveTitle": "Marked as not helpful",
+      "notHelpfulActiveAriaLabel": "Marked as not helpful. Click to undo",
+      "feedbackErrorToast": "Could not save your feedback",
+      "feedbackThanksToast": "Thanks for the feedback",
+      "thumbsDownReasonTitle": "What could be better?",
+      "thumbsDownPlaceholder": "Tell us what was missing or wrong (optional)",
+      "thumbsDownSubmit": "Send",
+      "thumbsDownCancel": "Skip",
+      "thumbsDownCategory": {
+        "inaccurate": "Inaccurate",
+        "wrong_tone": "Wrong tone",
+        "hallucinated": "Made things up"
+      },
+      "regenerateTitle": "Regenerate",
+      "regenerateAriaLabel": "Regenerate the response"
+    },
+    "workflowReels": {
+      "scrollLeft": "Scroll left",
+      "scrollRight": "Scroll right",
+      "stages": {
+        "definir-vaga": {
+          "label": "Define Job",
+          "shortLabel": "Job"
+        },
+        "sourcing": {
+          "label": "Sourcing",
+          "shortLabel": "Sourcing"
+        },
+        "triagem": {
+          "label": "Screening",
+          "shortLabel": "Screening"
+        },
+        "entrevista": {
+          "label": "Interview",
+          "shortLabel": "Interview"
+        },
+        "oferta": {
+          "label": "Offer",
+          "shortLabel": "Offer"
+        },
+        "contratacao": {
+          "label": "Hiring",
+          "shortLabel": "Hiring"
+        },
+        "analytics": {
+          "label": "Analytics",
+          "shortLabel": "Analytics"
+        },
+        "ia-automacoes": {
+          "label": "AI & Automations",
+          "shortLabel": "AI"
+        },
+        "configuracoes": {
+          "label": "Settings",
+          "shortLabel": "Config"
+        }
+      },
+      "suggestions": {
+        "create-job": {
+          "title": "Create new job",
+          "description": "Configure requirements with detailed description",
+          "command": "Create a new job"
+        },
+        "job-template": {
+          "title": "Use job template",
+          "description": "Start from an existing template",
+          "command": "Create job from template"
+        },
+        "search-candidates": {
+          "title": "Search candidates",
+          "description": "Find profiles by skills or experience",
+          "command": "Search candidates"
+        },
+        "add-candidate": {
+          "title": "Add candidate",
+          "description": "Register new profile in the talent pool",
+          "command": "Add new candidate"
+        },
+        "talent-pool": {
+          "title": "Talent pool",
+          "description": "Manage pools and candidate short lists",
+          "command": "Show my talent pools"
+        },
+        "candidate-info": {
+          "title": "Query candidate",
+          "description": "Get full and specific history",
+          "command": "Query candidate information"
+        },
+        "update-status": {
+          "title": "Update status",
+          "description": "Change pipeline status",
+          "command": "Update candidate status"
+        },
+        "schedule-interview": {
+          "title": "Schedule interview",
+          "description": "Set time and notify participants",
+          "command": "Schedule an interview"
+        },
+        "reschedule-interview": {
+          "title": "Reschedule interview",
+          "description": "Change existing interview time",
+          "command": "Reschedule an interview"
+        },
+        "send-offer": {
+          "title": "Send offer",
+          "description": "Generate and send salary offer to candidate",
+          "command": "Send offer to candidate"
+        },
+        "compare-candidates": {
+          "title": "Compare finalists",
+          "description": "Side-by-side analysis of final candidates",
+          "command": "Compare finalist candidates"
+        },
+        "register-hire": {
+          "title": "Register hire",
+          "description": "Finalize the process and update status",
+          "command": "Register candidate hire"
+        },
+        "close-vacancy": {
+          "title": "Close job",
+          "description": "Close the job and notify candidates",
+          "command": "Close job"
+        },
+        "job-report": {
+          "title": "Job report",
+          "description": "Metrics and selection process status",
+          "command": "Generate job report"
+        },
+        "daily-briefing": {
+          "title": "Daily briefing",
+          "description": "Day summary with alerts and pending items",
+          "command": "Give me today's briefing"
+        },
+        "hiring-predictions": {
+          "title": "Predictions",
+          "description": "Time estimates and pipeline conversion",
+          "command": "Show hiring predictions"
+        },
+        "configure-automations": {
+          "title": "Configure automations",
+          "description": "Automatic screening and transition rules",
+          "command": "Configure recruitment automations"
+        },
+        "wsi-screening": {
+          "title": "WSI Screening",
+          "description": "Intelligent assessment with WSI methodology",
+          "command": "Start WSI screening for candidates"
+        },
+        "ai-suggestions": {
+          "title": "LIA Suggestions",
+          "description": "Recommendations based on history",
+          "command": "What do you suggest for my jobs?"
+        },
+        "ai-credits": {
+          "title": "AI Credits",
+          "description": "Check balance and credit usage",
+          "command": "Check my AI credits"
+        },
+        "hiring-policy": {
+          "title": "Hiring policy",
+          "description": "Adjust rules and automation level",
+          "command": "Configure hiring policy"
+        },
+        "email-templates": {
+          "title": "Email templates",
+          "description": "Manage communication templates",
+          "command": "Manage email templates"
+        }
+      }
+    },
+    "greeting": "How can I help today?",
+    "emptyState": {
+      "settings": {
+        "heading": "Set up your company",
+        "subtitle": "Tell me about your company and I'll fill in the data automatically.",
+        "chips": {
+          "profile": {
+            "label": "Complete company profile",
+            "command": "I want to complete my company's profile"
+          },
+          "spreadsheet": {
+            "label": "Import spreadsheet",
+            "command": "I want to import an employee spreadsheet"
+          },
+          "website": {
+            "label": "Analyze website",
+            "command": "Analyze my company's website and extract information"
+          }
+        }
+      }
+    },
+    "scrollLeft": "Scroll left",
+    "scrollRight": "Scroll right",
+    "suggestionCount": "{label} — {count} suggestion",
+    "pulseBadge": "{count} candidates — view pipeline",
+    "pipelineRailCard": {
+      "titleVacancies": "Job pipeline",
+      "titleCandidates": "Candidate pipeline",
+      "totalVacancies": "{count} jobs",
+      "totalCandidates": "{count} candidates",
+      "openFunnel": "Open pipeline view",
+      "continueWizard": "Continue wizard",
+      "empty": "No pipeline data to display."
+    },
+    "stages": {
+      "definir-vaga": {
+        "label": "Define Job",
+        "shortLabel": "Job"
+      },
+      "sourcing": {
+        "label": "Sourcing",
+        "shortLabel": "Sourcing"
+      },
+      "triagem": {
+        "label": "Screening",
+        "shortLabel": "Screening"
+      },
+      "entrevista": {
+        "label": "Interview",
+        "shortLabel": "Interview"
+      },
+      "oferta": {
+        "label": "Offer",
+        "shortLabel": "Offer"
+      },
+      "contratacao": {
+        "label": "Hiring",
+        "shortLabel": "Hiring"
+      },
+      "analytics": {
+        "label": "Analytics",
+        "shortLabel": "Analytics"
+      },
+      "ia-automacoes": {
+        "label": "AI & Automations",
+        "shortLabel": "AI"
+      },
+      "configuracoes": {
+        "label": "Settings",
+        "shortLabel": "Settings"
+      }
+    },
+    "suggestions": {
+      "create-job": {
+        "title": "Create new job",
+        "description": "Set up requirements with detailed description",
+        "command": "Create a new job"
+      },
+      "job-template": {
+        "title": "Use job template",
+        "description": "Start from an existing template",
+        "command": "Create job from template"
+      },
+      "search-candidates": {
+        "title": "Search candidates",
+        "description": "Find profiles by skills or experience",
+        "command": "Search candidates"
+      },
+      "add-candidate": {
+        "title": "Add candidate",
+        "description": "Register new profile in talent pool",
+        "command": "Add new candidate"
+      },
+      "talent-pool": {
+        "title": "Talent pool",
+        "description": "Manage pools and candidate short lists",
+        "command": "Show my talent pools"
+      },
+      "candidate-info": {
+        "title": "Query candidate",
+        "description": "Get specific and complete history",
+        "command": "Query candidate information"
+      },
+      "update-status": {
+        "title": "Update status",
+        "description": "Change position in pipeline",
+        "command": "Update candidate status"
+      },
+      "schedule-interview": {
+        "title": "Schedule interview",
+        "description": "Set time and notify participants",
+        "command": "Schedule an interview"
+      },
+      "reschedule-interview": {
+        "title": "Reschedule interview",
+        "description": "Change existing interview time",
+        "command": "Reschedule an interview"
+      },
+      "send-offer": {
+        "title": "Send offer",
+        "description": "Generate and send salary proposal to candidate",
+        "command": "Send offer to candidate"
+      },
+      "compare-candidates": {
+        "title": "Compare finalists",
+        "description": "Side-by-side analysis of final candidates",
+        "command": "Compare finalist candidates"
+      },
+      "register-hire": {
+        "title": "Register hire",
+        "description": "Finalize the process and update status",
+        "command": "Register candidate hire"
+      },
+      "close-vacancy": {
+        "title": "Close job",
+        "description": "Close the job and notify candidates",
+        "command": "Close job"
+      },
+      "job-report": {
+        "title": "Job report",
+        "description": "Metrics and selection process status",
+        "command": "Generate job report"
+      },
+      "daily-briefing": {
+        "title": "Daily briefing",
+        "description": "Day summary with alerts and pending items",
+        "command": "Give me today's briefing"
+      },
+      "hiring-predictions": {
+        "title": "Predictions",
+        "description": "Timeline and pipeline conversion estimates",
+        "command": "Show hiring predictions"
+      },
+      "configure-automations": {
+        "title": "Configure automations",
+        "description": "Automatic screening and transition rules",
+        "command": "Configure recruitment automations"
+      },
+      "wsi-screening": {
+        "title": "WSI Screening",
+        "description": "Intelligent assessment with WSI methodology",
+        "command": "Start WSI screening for candidates"
+      },
+      "ai-suggestions": {
+        "title": "LIA suggestions",
+        "description": "Recommendations based on history",
+        "command": "What do you suggest for my jobs?"
+      },
+      "ai-credits": {
+        "title": "AI Credits",
+        "description": "Check balance and credit usage",
+        "command": "Check my AI credits"
+      },
+      "hiring-policy": {
+        "title": "Hiring policy",
+        "description": "Adjust rules and automation level",
+        "command": "Configure hiring policy"
+      },
+      "email-templates": {
+        "title": "Email templates",
+        "description": "Manage communication templates",
+        "command": "Manage email templates"
+      }
+    },
+    "header": {
+      "newConversation": "New conversation",
+      "connected": "Connected",
+      "newChat": "New conversation",
+      "switchChat": "Switch conversation ({shortcut})",
+      "switchChatLabel": "Switch conversation",
+      "displayMode": "Change display mode",
+      "displayModeLabel": "Display mode",
+      "close": "Close",
+      "closeChat": "Close chat",
+      "options": "Options",
+      "optionsLabel": "Conversation options",
+      "rename": "Rename",
+      "renameLabel": "Rename conversation",
+      "delete": "Delete",
+      "deleteConfirm": "Are you sure you want to delete this conversation?",
+      "deleteTitle": "Delete conversation",
+      "deleteDescription": "This action cannot be undone. The conversation and all messages will be permanently removed.",
+      "deleteCancel": "Cancel",
+      "deleteAction": "Delete",
+      "deleteError": "Could not delete the conversation",
+      "deleteErrorDescription": "Please try again in a moment.",
+      "modeSidebar": "Sidebar",
+      "modeFloating": "Floating",
+      "modeFullscreen": "Full screen",
+      "modeMinimize": "Minimize",
+      "resetPosition": "Reset position",
+      "dragHandle": "Drag to move"
+    },
+    "input": {
+      "placeholder": "Ask LIA anything...",
+      "messageLabel": "Message for LIA",
+      "sendLabel": "Send message",
+      "dropFileHere": "Drop file here",
+      "removeFile": "Remove file",
+      "addMenu": "Add",
+      "addMenuLabel": "Add menu",
+      "attachFile": "Attach PDF, DOCX or CSV",
+      "mentionJobCandidate": "Mention job or candidate",
+      "suggestionsTitle": "Query suggestions",
+      "suggestionsLabel": "Open query suggestions",
+      "contextConfig": "Context settings",
+      "contextConfigLabel": "Conversation settings",
+      "auto": "Auto"
+    },
+    "suggestionsPanel": {
+      "title": "Query suggestions",
+      "closeLabel": "Close suggestions",
+      "searchPlaceholder": "Search query...",
+      "clearSearch": "Clear search",
+      "all": "All",
+      "noResults": "No queries found",
+      "hint": "Click to insert into prompt",
+      "dynamicTitle": "Suggestions for you now",
+      "dynamicLoading": "Loading personalized suggestions..."
+    },
+    "contextPanel": {
+      "title": "Conversation Context",
+      "helpText": "Set the conversation focus. In Job or Candidate mode, LIA uses specific data to respond more accurately.",
+      "clearContext": "Clear",
+      "recentJobs": "Recent Jobs",
+      "recentCandidates": "Recent Candidates",
+      "emptyHint": "Browse jobs or candidates so they appear here as shortcuts.",
+      "entityJob": "Job",
+      "entityCandidate": "Candidate",
+      "modeGeneral": "General Conversation",
+      "modeGeneralDesc": "Ask about any topic",
+      "modeJob": "Job Focus",
+      "modeJobDesc": "LIA responds using data from the selected job",
+      "modeCandidate": "Candidate Focus",
+      "modeCandidateDesc": "LIA responds using data from the selected candidate"
+    },
+    "queryCategories": {
+      "metricas": "Metrics",
+      "candidatos": "Candidates",
+      "vagas": "Jobs",
+      "pipeline": "Pipeline",
+      "analise": "Analysis",
+      "previsao": "Predictions",
+      "comparacao": "Compare"
+    },
+    "queries": {
+      "q1": "How many candidates are active in the pipeline?",
+      "q2": "What is my pipeline conversion rate this month?",
+      "q3": "What is the average time to close a job?",
+      "q4": "How many hires did we make this quarter?",
+      "q5": "How many jobs are past their SLA?",
+      "q6": "Who are the best candidates for the Developer position?",
+      "q7": "How many candidates are awaiting interviews?",
+      "q8": "Which candidates have a LIA score above 80?",
+      "q9": "Find candidates with experience in React and Node.js",
+      "q10": "Which candidates have a leadership profile?",
+      "q11": "Search candidates in Global Search for the Data Analyst position",
+      "q12": "Which jobs have been open for more than 30 days?",
+      "q13": "Which jobs have no candidates?",
+      "q14": "How many jobs do we have per department?",
+      "q15": "Which job has the best conversion rate?",
+      "q16": "Which jobs need urgent attention?",
+      "q17": "How many candidates do we have at each pipeline stage?",
+      "q18": "Where is the bottleneck in my hiring process?",
+      "q19": "How is candidate progression this week?",
+      "q20": "Which candidates have been stalled for more than 5 days?",
+      "q21": "What are the top recommendations for today?",
+      "q22": "Analyze the ideal personality profile for this job",
+      "q23": "Summarize feedback from recent interviews",
+      "q24": "What is the most common profile among approved candidates?",
+      "q25": "Suggest improvements for the screening process",
+      "q26": "When should I close the Product Manager position?",
+      "q27": "How many hires will we make this month?",
+      "q28": "What is the probability of success for candidate João Silva?",
+      "q29": "Time estimate to fill open positions",
+      "q30": "Compare the 3 finalists for the UX Designer position",
+      "q31": "Compare this month's performance with last month",
+      "q32": "Which department hires fastest?",
+      "q33": "Compare candidate quality across sources"
+    },
+    "bubble": {
+      "openLia": "Open LIA ({shortcut}) — click to open, drag to move",
+      "openLiaLabel": "Open chat with LIA. Click to open, drag to move, use arrow keys to reposition."
+    }
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "confirm": "Confirm",
+    "close": "Close",
+    "search": "Search",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "yes": "Yes",
+    "no": "No",
+    "beta": "BETA",
+    "premium": "Premium",
+    "skipToContent": "Skip to main content",
+    "or": "or",
+    "remove": "Remove",
+    "play": "Play",
+    "newMessage": "New message",
+    "newChat": "New chat",
+    "clearMessages": "Clear messages",
+    "searchInConversation": "Search in conversation",
+    "controlCenter": "Control Center",
+    "searchInConversationPlaceholder": "Search in conversation...",
+    "invalidFile": "Invalid file",
+    "acceptedFormats": "Accepted formats: PDF, DOC, DOCX, TXT, CSV, XLSX, PNG, JPG (max. {maxSize}MB)",
+    "recording": "Recording... {time}s",
+    "audioRecorded": "Audio recorded ({time}s)",
+    "audioReadyToSend": "Ready to send with your message",
+    "fileAnalyzed": "File analyzed: {filename}",
+    "fileAnalysisReady": "The analysis will be sent with your next message",
+    "pending": "Pending",
+    "modulePremium": "Premium Module",
+    "modulePremiumDescription": "This feature requires a premium module",
+    "defaultUserName": "User"
+  },
+  "jobs": {
+    "campaignBadge": {
+      "active": "Active campaign",
+      "paused": "Campaign paused",
+      "none": "No campaign",
+      "tooltip": "A campaign is LIA running this job: she handles sourcing, initial screening and candidate outreach."
+    },
+    "title": "Job Management",
+    "pageTitle": "Jobs",
+    "newJob": "New Job",
+    "reload": "Reload",
+    "loadingJob": "Loading job...",
+    "jobCreation": "Job Creation",
+    "inFunnel": "in pipeline",
+    "interviews": "interviews",
+    "conversion": "conversion",
+    "atRisk": "at risk",
+    "externalSourceUnavailable": "Some external jobs may not be visible — source unavailable",
+    "publishedSuccess": "Jobs published successfully",
+    "publishError": "Error publishing jobs. Please try again.",
+    "unpublishedSuccess": "Jobs unpublished successfully",
+    "unpublishError": "Error unpublishing jobs. Please try again.",
+    "communicationFor": "Communication for: {titles}",
+    "linkedinSimulated": "Simulated LinkedIn publication",
+    "indeedSimulated": "Simulated Indeed publication",
+    "selectAll": "Select All",
+    "filters": "Filters",
+    "filterResults": "Filter table results",
+    "columns": "Columns",
+    "configureColumns": "Configure table columns",
+    "activeFilters": "active filters",
+    "publish": "Publish",
+    "insights": "Insights",
+    "duplicate": "Duplicate",
+    "pause": "Pause",
+    "activate": "Activate",
+    "recruiter": "Recruiter",
+    "expandTable": "Expand jobs table",
+    "collapseTable": "Collapse table",
+    "jobsCount": "Jobs ({count})",
+    "loadingJobs": "Loading jobs...",
+    "loadingAriaLabel": "Loading...",
+    "tryAgain": "Try again",
+    "emptyTitle": "No jobs registered",
+    "emptyDescription": "Create your first job to start attracting candidates.",
+    "emptyAction": "Create first job",
+    "headerTabs": {
+      "all": "All",
+      "active": "Active",
+      "drafts": "Drafts",
+      "closed": "Closed"
+    },
+    "headerBadges": {
+      "total": "{count} total",
+      "active": "{count} active",
+      "drafts": "{count} drafts"
+    },
+    "columnConfig": {
+      "title": "Configure Columns",
+      "description": "Select visible table columns ({count} active)",
+      "savedViews": "Saved Views",
+      "saveView": "Save View",
+      "resetDefault": "Reset Default",
+      "viewNamePrompt": "View name:",
+      "viewSaved": "View \"{name}\" saved!",
+      "columnsReset": "Columns reset to default",
+      "categories": {
+        "principais": "Main Columns",
+        "informacoes": "Job Information",
+        "prazos": "Deadlines",
+        "responsaveis": "Responsible",
+        "localizacao": "Location and Model",
+        "remuneracao": "Compensation and Budget",
+        "divulgacao": "Publishing",
+        "requisitos": "Requirements",
+        "targeting": "Targeting",
+        "metricas": "Metrics"
+      }
+    },
+    "tableColumns": {
+      "id": "ID",
+      "job": "Job",
+      "candidates": "Candidates",
+      "performance": "LIA Screening Performance",
+      "status": "Status",
+      "screening": "Screening",
+      "recruiter": "Recruiter",
+      "manager": "Manager",
+      "screeningDeadline": "Screening Deadline",
+      "shortlistDeadline": "Shortlist Deadline",
+      "closingDeadline": "Closing Deadline",
+      "readiness": "Readiness",
+      "actions": "Actions",
+      "actionsScreenReader": "Actions"
+    },
+    "tableActions": {
+      "openJob": "Open job: {title}",
+      "confidentialJob": "Confidential Job",
+      "internalJob": "Internal Job",
+      "hiddenJob": "Hidden Job",
+      "removeUrgency": "Remove urgency",
+      "markUrgent": "Mark as urgent",
+      "unpinJob": "Unpin job",
+      "pinJob": "Pin job",
+      "removeFavorite": "Remove from favorites",
+      "addFavorite": "Add to favorites",
+      "shareJob": "Share job (copy public link)",
+      "openKanban": "Open job Kanban",
+      "linkCopied": "Link copied!",
+      "linkCopiedDesc": "The public job link has been copied to the clipboard.",
+      "linkError": "Error generating link",
+      "linkErrorDesc": "Could not generate the public link. Try again.",
+      "notConfigured": "Not Configured"
+    },
+    "tableFunnel": {
+      "candidateFunnel": "Candidate Funnel",
+      "total": "Total",
+      "screening": "Screening",
+      "interviews": "Interviews",
+      "finalists": "Finalists",
+      "hired": "✓ Hired",
+      "conversionRate": "Conversion rate",
+      "pipelineLIA": "LIA Pipeline",
+      "candidatesContacted": "{count} candidates contacted",
+      "screeningsScheduled": "Screenings Scheduled",
+      "screeningsScheduledDesc": "{count} screenings scheduled",
+      "screeningsCompleted": "Screenings Completed",
+      "screeningsCompletedDesc": "{count} screenings completed",
+      "interviewsScheduled": "Interviews Scheduled",
+      "interviewsScheduledDesc": "{count} interviews scheduled"
+    },
+    "tableFilters": {
+      "advancedFilters": "Advanced Filters",
+      "activeFiltersCount": "{count, plural, one {# active filter} other {# active filters}}",
+      "refineResults": "Refine displayed results",
+      "searchPlaceholder": "Search by title, ID, department...",
+      "quickFilters": "Quick Filters",
+      "active": "Active",
+      "urgent": "Urgent",
+      "remote": "Remote",
+      "noCandidates": "No Candidates",
+      "jobStatus": "Job Status",
+      "processStage": "Process Stage",
+      "priority": "Priority",
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low",
+      "workModel": "Work Model",
+      "seniority": "Seniority",
+      "location": "Location",
+      "department": "Department",
+      "publishing": "Publishing",
+      "unpublished": "Unpublished",
+      "metrics": "Metrics",
+      "emptyPipeline": "Empty pipeline (no candidates)",
+      "lowConversion": "Low conversion",
+      "savedSearches": "Saved Searches",
+      "saveSearch": "Save Search",
+      "searchNamePrompt": "Search name:",
+      "renamePrompt": "New name:",
+      "rename": "Rename",
+      "remove": "Remove",
+      "noSavedSearches": "No saved searches",
+      "noSavedSearchesHint": "Apply filters and click \"Save Search\"",
+      "filterCount": "{count, plural, =0 {No filters} one {# filter} other {# filters}}",
+      "clear": "Clear",
+      "statusValues": {
+        "Ativa": "Active",
+        "Rascunho": "Draft",
+        "Paralisada": "Paused",
+        "Aguardando aprovação": "Awaiting approval",
+        "Fechada (preenchida)": "Closed (filled)",
+        "Cancelada": "Cancelled"
+      },
+      "stageValues": {
+        "Planejamento": "Planning",
+        "Aprovação": "Approval",
+        "Publicada": "Published",
+        "Triagem": "Screening",
+        "Entrevistas": "Interviews",
+        "Finalização": "Finalization",
+        "Encerrada": "Closed"
+      },
+      "workModelValues": {
+        "presencial": "On-site",
+        "híbrido": "Hybrid",
+        "remoto": "Remote"
+      },
+      "seniorityValues": {
+        "Estágio": "Intern",
+        "Júnior": "Junior",
+        "Pleno": "Mid-level",
+        "Sênior": "Senior",
+        "Especialista": "Specialist",
+        "Coordenador": "Coordinator",
+        "Gerente": "Manager",
+        "Diretor": "Director"
+      },
+      "departmentValues": {
+        "Tecnologia": "Technology",
+        "Design": "Design",
+        "Produto": "Product",
+        "Marketing": "Marketing",
+        "Vendas": "Sales",
+        "RH": "HR",
+        "Financeiro": "Finance",
+        "Operações": "Operations"
+      },
+      "locationValues": {
+        "São Paulo, SP": "São Paulo, SP",
+        "Rio de Janeiro, RJ": "Rio de Janeiro, RJ",
+        "Belo Horizonte, MG": "Belo Horizonte, MG",
+        "Curitiba, PR": "Curitiba, PR",
+        "Porto Alegre, RS": "Porto Alegre, RS",
+        "Brasília, DF": "Brasília, DF",
+        "Remoto": "Remote"
+      },
+      "publishingValues": {
+        "linkedin": "LinkedIn",
+        "website": "Website",
+        "indeed": "Indeed"
+      }
+    },
+    "statuses": {
+      "Ativa": "Active",
+      "Aprovada": "Approved",
+      "Aguardando aprovação": "Awaiting approval",
+      "Reaberta": "Reopened",
+      "Paralisada": "Paused",
+      "Interna": "Internal",
+      "Rascunho": "Draft",
+      "Fechada (preenchida)": "Closed (filled)",
+      "Fechada (expirada)": "Closed (expired)",
+      "Cancelada": "Cancelled",
+      "Concluída": "Completed",
+      "Arquivada": "Archived"
+    },
+    "readinessStages": {
+      "importada": "Imported",
+      "sem_jd": "No JD",
+      "jd_rascunho": "JD Draft",
+      "jd_enriquecido": "JD Enriched",
+      "perguntas_triagem": "Screening Questions",
+      "pronta_disparo": "Ready to Dispatch",
+      "em_triagem": "Screening in Progress"
+    },
+    "readinessBlockers": {
+      "missing_jd": "No JD",
+      "missing_enrichment": "No enrichment",
+      "missing_competencies": "No competencies",
+      "missing_questions": "No questions"
+    }
+  },
+  "jobsView": {
+    "table": "Table",
+    "kanban": "Kanban",
+    "toggleAriaLabel": "Toggle between Table and Kanban view",
+    "emptyColumn": "No jobs in this stage",
+    "deadlineSoon": "Due in {days}d",
+    "deadlinePast": "Overdue {days}d",
+    "candidatesCount": "{count} candidates",
+    "ageDays": "Open {days}d",
+    "ownerLabel": "Owner",
+    "ribbon": {
+      "label": "Action Required",
+      "urgent": "Job marked as urgent",
+      "deadlineOverdue": "Deadline overdue by {days}d",
+      "deadlineSoon": "Deadline in {days}d",
+      "pendingApproval": "Pending approval",
+      "noCandidates": "No candidates in funnel"
+    },
+    "funnel": {
+      "screening": "Screening",
+      "interview": "Interview",
+      "final": "Final",
+      "hired": "Hired"
+    },
+    "columns": {
+      "rascunho": "Draft",
+      "aguardando": "Pending Approval",
+      "publicada": "Published",
+      "ao_vivo": "Live",
+      "encerrada": "Closed"
+    }
+  },
+  "kanban": {
+    "loading": "Loading...",
+    "dismiss": "Dismiss",
+    "back": "Back",
+    "pauseJob": "Pause job",
+    "closeJob": "Close job",
+    "reactivateJob": "Reactivate job",
+    "screeningPrefix": "Screening",
+    "screeningActivated": "Screening activated",
+    "screeningPaused": "Screening paused",
+    "screeningUpdated": "Screening updated",
+    "screeningUpdateError": "Error updating screening",
+    "screeningNA": "Screening: N/A",
+    "configureScreening": "Configure Screening",
+    "startScreening": "Start Screening",
+    "configure": "Configure",
+    "pauseScreening": "Pause Screening",
+    "resumeScreening": "Resume Screening",
+    "draft": "Draft",
+    "published": "Published",
+    "late": "late",
+    "open": "open",
+    "updated": "Updated",
+    "screeningDeadline": "Screening deadline",
+    "shortlistDeadline": "Shortlist deadline",
+    "closing": "Closing",
+    "rejectionCategories": {
+      "business_decision": "Business decision",
+      "qualification": "Qualification",
+      "cultural": "Culture fit",
+      "logistics": "Logistics",
+      "compensation": "Compensation",
+      "process": "Process",
+      "other": "Other"
+    },
+    "liaSuggestions": "{count, plural, one {# LIA suggestion} other {# LIA suggestions}}",
+    "comingSoon": "Coming soon",
+    "comingSoonStages": "Coming soon: Pipeline stage configuration",
+    "configureStages": "Configure Stages",
+    "report": "Report",
+    "shareMode": "Share Mode",
+    "shareModeDescription": "All candidates have been selected. Adjust the selection and click Share in the action bar.",
+    "share": "Share",
+    "jobManagement": "Job Management",
+    "settings": "Settings",
+    "customPipeline": "Custom pipeline",
+    "pipelineReset": "Pipeline reset",
+    "pipelineResetDescription": "Pipeline restored to company default.",
+    "resetToDefault": "Reset to default",
+    "inheritedFromCompany": "Inherited from company",
+    "emptyTitle": "No candidates in this pipeline yet",
+    "emptyDescription": "Add candidates or search the talent pool to start the process.",
+    "searchCandidates": "Search candidates",
+    "addColumn": "Add Column",
+    "loadingEllipsis": "Loading...",
+    "staleTooltip": "Stalled for {days} days — consider advancing or providing feedback",
+    "highScoreTooltip": "High WSI Score ({score}) — consider prioritizing",
+    "lowScoreTooltip": "Low WSI Score ({score}) — evaluate retention",
+    "moreOptions": "More options",
+    "moreOptionsCandidateAria": "More candidate options",
+    "sendEmail": "Send Email",
+    "sendWhatsApp": "Send WhatsApp",
+    "scheduleInterview": "Schedule Interview",
+    "wsiScreening": "WSI Screening",
+    "sendFeedback": "Send Feedback",
+    "removeFromShortList": "Remove from Short List",
+    "addToShortList": "Add to Short List",
+    "removeFromFavorites": "Remove from Favorites",
+    "addToFavorites": "Add to Favorites",
+    "approve": "Approve",
+    "reject": "Reject",
+    "joinMeeting": "Join meeting — {date}",
+    "reschedule": "Reschedule",
+    "cancelAction": "Cancel",
+    "urgency": "Urgency",
+    "rescheduleTime": "Reschedule Time",
+    "manageProposal": "Manage Proposal",
+    "cancelInterview": "Cancel interview",
+    "rescheduleInterview": "Reschedule interview",
+    "reschedulePrompt": "The recruiter wants to change the interview time for {name} scheduled for {date}. Ask for the new preferred date and time and confirm the rescheduling with the candidate.",
+    "cancelPrompt": "The recruiter wants to cancel the interview for {name} scheduled for {date}. Ask which stage they want to move the candidate to (or keep in the same) and confirm the cancellation.",
+    "scoreGeral": "Overall",
+    "scoreTriagem": "Screening",
+    "scoreCV": "CV",
+    "scoreTecnico": "Technical",
+    "scoreIngles": "English",
+    "scoreB5": "B5",
+    "appliedViaLinkedin": "Applied via LinkedIn",
+    "appliedOnWebsite": "Applied on website",
+    "mappedByLIA": "Mapped by LIA",
+    "addedManually": "Added manually",
+    "liaWillStartScreening": "LIA will start screening",
+    "screeningCompleted": "Completed",
+    "pendingDecision": "Pending decision",
+    "clickToSeeFullAnalysis": "Click to see full analysis",
+    "respondingNow": "Responding now",
+    "conversationInProgress": "Conversation in progress",
+    "interviewConfirmed": "Interview confirmed",
+    "awaitingScheduling": "Awaiting scheduling",
+    "pendingFeedback": "Pending feedback",
+    "finalist": "Finalist",
+    "proposalSent": "Proposal sent",
+    "awaitingResponse": "Awaiting response",
+    "awaitingApproval": "Awaiting approval",
+    "inNegotiation": "In negotiation",
+    "hiredStatus": "Hired",
+    "startDateLabel": "Start: {date}",
+    "withdrew": "Withdrew",
+    "rejectedScreening": "Rejected at screening",
+    "rejectedInterview": "Rejected at interview",
+    "rejectedStatus": "Rejected",
+    "feedbackSent": "Feedback sent",
+    "proposalDeclined": "Proposal declined",
+    "dragCandidatesHere": "Drag candidates here",
+    "actionRequired": "Action Required",
+    "selectCandidate": "Select candidate {name}",
+    "selectForComparison": "Select {name} for comparison",
+    "maxCandidatesComparison": "Maximum of 4 candidates for comparison",
+    "compareCandidate": "Compare candidate",
+    "profileViewed": "Profile viewed",
+    "notAvailable": "Not available",
+    "selectAllInStage": "Select all in stage {stage}",
+    "configureColumnsTitle": "Configure Columns",
+    "searchColumnPlaceholder": "Search column...",
+    "restoreDefault": "Restore Default",
+    "showAll": "All",
+    "categoryBasico": "Basic Identification",
+    "categoryContato": "Contact",
+    "categoryPessoal": "Personal Info",
+    "categoryProfissional": "Professional Profile",
+    "categoryCompetencias": "Skills",
+    "categoryLocalizacao": "Location",
+    "categoryEndereco": "Full Address",
+    "categoryPreferencias": "Work Preferences",
+    "categorySalario": "Salary & Expectations",
+    "categoryDocumentos": "Resume & Documents",
+    "categoryOrigem": "Source & Integration",
+    "categoryBuscaGlobal": "Global Search",
+    "categoryIA": "LIA / AI Insights",
+    "categoryStatus": "Status & Workflow",
+    "categoryComunicacao": "Communication",
+    "categoryCadastro": "Registration Status",
+    "categoryAdicional": "Additional Info",
+    "categoryDatas": "Dates & Timestamps",
+    "searchPlaceholder": "Search...",
+    "searchCandidatesAria": "Search candidates",
+    "clearSearchAria": "Clear search",
+    "kanbanView": "Kanban",
+    "tableView": "Table",
+    "deselectAll": "Deselect All",
+    "selectAllCount": "Select All ({count})",
+    "degradedOnlyToggle": "Degraded only",
+    "degradedOnlyToggleTooltip": "Show only candidates whose screening was computed in degraded mode",
+    "filters": "Filters",
+    "configureTableColumns": "Configure table columns",
+    "columns": "Columns",
+    "clear": "Clear",
+    "moveStage": "Move Stage",
+    "list": "List",
+    "shareLabel": "Share",
+    "wsiScreeningBulk": "WSI Screening",
+    "requestData": "Request Data",
+    "messageAction": "Message",
+    "favorites": "Favorites",
+    "rejectBulk": "Reject",
+    "candidateAnalysis": "Candidate Analysis",
+    "expandView": "Expand view",
+    "candidatesCount": "Candidates ({count})",
+    "addColumnToPipeline": "Add Column to Pipeline",
+    "stageName": "Stage Name",
+    "stageNamePlaceholder": "E.g.: Logic Test, Cultural Interview...",
+    "suggestActionType": "Suggest action type",
+    "confidenceLabel": "{percent}% confidence",
+    "adding": "Adding...",
+    "addColumnButton": "Add Column",
+    "orChooseFromCatalog": "Or choose from catalog:",
+    "catalogTesteTecnico": "Technical Test",
+    "catalogTesteIngles": "English Test",
+    "catalogEntrevistaTecnica": "Technical Interview",
+    "catalogEntrevistaGestor": "Manager Interview",
+    "catalogEntrevistaFinal": "Final Interview",
+    "catalogDinamicaGrupo": "Group Dynamics",
+    "catalogReferencias": "References",
+    "catalogCaseEstudo": "Case / Study",
+    "chipRankLabel": "Rank",
+    "chipRankPrompt": "Rank candidates for this job",
+    "chipCompareLabel": "Compare",
+    "chipComparePrompt": "Compare the best candidates",
+    "chipScreeningLabel": "Screening",
+    "chipScreeningPrompt": "Start screening of pending candidates",
+    "tableColApproval": "Approval",
+    "tableColCandidate": "Candidate",
+    "tableColRole": "Role",
+    "tableColCompany": "Company",
+    "tableColStage": "Stage",
+    "tableColStatus": "Status",
+    "tableEmptyMessage": "No candidates in this stage",
+    "pipelineSaturated": "Saturated",
+    "pipelineAlmostSaturated": "Almost saturated",
+    "pipelineSaturationTitle": "Pipeline {status} ({count}/{threshold})",
+    "approveCandidate": "Approve candidate",
+    "rejectCandidate": "Reject candidate",
+    "viewProfile": "View Profile",
+    "cvAnalysis": "CV Analysis",
+    "viewScreening": "View Screening",
+    "paginationShowing": "Showing {start} - {end} of {total} candidates",
+    "paginationFirst": "First",
+    "paginationPrevious": "Previous",
+    "paginationNext": "Next",
+    "paginationLast": "Last",
+    "viewCVAnalysis": "View CV vs Job Analysis",
+    "analysisPending": "Analysis pending",
+    "viewScreeningDetails": "View Screening Details",
+    "screeningPending": "Screening pending",
+    "viewFullProfile": "View full profile",
+    "viewLIAScreening": "View LIA screening",
+    "viewBigFive": "View BigFive",
+    "manageInterviewTitle": "Manage interview — {date}",
+    "manageInterviewPrompt": "The recruiter wants to manage the interview of {name} scheduled for {date}. Ask if they want to change the time (request new date/time) or cancel. If canceling, ask which stage they want to move the candidate to.",
+    "advancedFilters": "Advanced Filters",
+    "refineCandidates": "Refine displayed candidates",
+    "pipelineStage": "Pipeline Stage",
+    "minLIAScore": "Minimum LIA Score",
+    "statusLabel": "Status",
+    "statusNew": "New",
+    "statusInAnalysis": "In analysis",
+    "statusAwaitingApproval": "Awaiting approval",
+    "statusScreenedApproved": "Screened approved",
+    "statusNegotiation": "Negotiation",
+    "workModel": "Work Model",
+    "workModelRemote": "Remote",
+    "workModelHybrid": "Hybrid",
+    "workModelOnsite": "On-site",
+    "applyFilters": "Apply",
+    "originLabel": "Origin",
+    "originActiveSourcing": "Active Sourcing",
+    "moreActions": "More actions",
+    "pearchHiring": "Hiring",
+    "copyMessage": "Copy message",
+    "yearsOld": "{age} years old",
+    "moreCount": "+{count} more",
+    "clickDetails": "Click to see details",
+    "notEvaluated": "Not evaluated",
+    "clickLIAScreening": "Click to see LIA Screening",
+    "degradedModeTooltip": "Degraded analysis mode — open the report for details",
+    "clickCVAnalysis": "Click to see CV vs Job Analysis",
+    "notCompleted": "Not completed",
+    "clickBigFiveReport": "Click to see full Big Five report",
+    "candidatesAddedToListSuccess": "Success",
+    "candidatesAddedToListDesc": "Candidates added to list successfully!",
+    "candidateAddedTitle": "Candidate added",
+    "candidateAddedToJobDesc": "Candidate added to job successfully",
+    "candidateFallback": "Candidate",
+    "categoryEliminatoria": "Eliminatory",
+    "categoryInformativa": "Informational",
+    "categoryTecnicaAvaliacao": "Technical/Evaluation",
+    "compareCountBtn": "Compare ({count})",
+    "clearComparisonAria": "Clear comparison selection",
+    "jobPausedSuccess": "Job paused successfully",
+    "jobReactivatedSuccess": "Job reactivated successfully",
+    "jobPublishedTitle": "Job Published!",
+    "jobPublishedDesc": "The job is active. Share the link below with candidates:",
+    "linkCopied": "Link copied!",
+    "linkCopiedDesc": "The link has been copied to clipboard.",
+    "copyFailed": "Could not copy",
+    "copyFailedDesc": "Select the link manually and copy.",
+    "copyLink": "Copy link",
+    "jobClosedSuccess": "Job closed successfully",
+    "candidatesShareTitle": "Candidates — {title}",
+    "jobFallback": "Job",
+    "confirmMovement": "Confirm Movement",
+    "selectDetailedStatus": "Select detailed status",
+    "suggestedStatusByLIA": "Status Suggested by LIA",
+    "selectOtherStatus": "Select other status",
+    "selectAStatus": "Select a status",
+    "overallScoreTitle": "Overall Score",
+    "screeningScoreTitle": "Screening Score",
+    "technicalTestTitle": "Technical Test",
+    "englishTestTitle": "English Test",
+    "overallCandidateScore": "Overall Candidate Score",
+    "screeningScoreLabel": "Screening Score",
+    "cvScoreLabel": "CV Score",
+    "technicalTestScoreLabel": "Technical Test",
+    "englishTestScoreLabel": "English Test",
+    "liaScreeningScore": "LIA Screening Score",
+    "liaAnalysisTitle": "LIA Analysis",
+    "liaAnalysisText": "Candidate automatically evaluated by LIA based on experience criteria, skills and job profile fit. The screening considers factors such as professional history, academic background and declared technical skills.",
+    "technicalTestResult": "Technical Test Result",
+    "testDetailsTitle": "Test Details",
+    "testDetailsText": "Technical evaluation through practical testing focused on the technical skills required for the position. Includes code analysis, problem solving and knowledge of specific tools.",
+    "englishTestResult": "English Test Result",
+    "proficiencyLevelTitle": "Proficiency Level",
+    "proficiencyText": "English proficiency assessment covering written comprehension, oral expression and technical vocabulary relevant to the position.",
+    "confirmMoveTitle": "Confirm Movement",
+    "moveToNewStage": "Move candidate to a new process stage",
+    "liaSuggests": "LIA suggests:",
+    "availableSubstatuses": "Available sub-statuses:",
+    "reasonOptional": "Reason (optional)",
+    "reasonPlaceholder": "E.g.: Interview scheduled for next Tuesday...",
+    "helloLia": "Hello! I'm Lia.",
+    "howCanIHelp": "How can I help you today?",
+    "newConversationBtn": "New conversation",
+    "expandChat": "Expand chat",
+    "candidatesSelectedCount": "{count, plural, one {# candidate selected} other {# candidates selected}}",
+    "liaSuggestionsTitle": "LIA Suggestions",
+    "viewAction": "View",
+    "openManually": "Open manually",
+    "thinkingStatus": "Thinking...",
+    "loadingAriaLabelShort": "Loading...",
+    "sendMessagePlaceholder": "Send a message to LIA...",
+    "suggestionsPrefix": "Suggestions:",
+    "liaQuestionSuggestions": "LIA Question Suggestions",
+    "forScreeningLabel": "For Screening — {question}",
+    "basedOnJobProfile": "Based on the job profile",
+    "recommendedScreeningQuestions": "Recommended Questions for Screening",
+    "clickReplaceInstruction": "Click \"Replace\" to swap the selected question",
+    "recommendedBadge": "Recommended",
+    "popularBadge": "Popular",
+    "suggestedBadge": "Suggested",
+    "relevanceVeryHigh": "Relevance: Very High",
+    "relevanceHigh": "Relevance: High",
+    "relevanceMedium": "Relevance: Medium",
+    "replaceAction": "Replace",
+    "generateMore": "Generate More Suggestions",
+    "closePanel": "Close Panel",
+    "recommendedUXQuestions": "Recommended Questions for UX Design",
+    "evaluatesResearchMethods": "Evaluates: Research Methods",
+    "difficultyMedium": "Difficulty: Medium",
+    "highRelevanceBadge": "High Relevance",
+    "evaluatesPrioritization": "Evaluates: Prioritization",
+    "difficultyEasy": "Difficulty: Easy",
+    "conceptualBadge": "Conceptual",
+    "evaluatesTechnicalKnowledge": "Evaluates: Technical Knowledge",
+    "basedOnTestsCount": "Based on 500+ tests",
+    "suggestionTech1": "How do you structure a scalable Design System for multiple platforms?",
+    "suggestionTech2": "Describe your experience with user research methods and how you apply them",
+    "suggestionTech3": "How do you measure the ROI of UX initiatives in digital products?",
+    "suggestionTech4": "What is your approach to responsive design and accessibility?",
+    "suggestionTech5": "How do you collaborate with developers to ensure faithful design implementation?",
+    "suggestionSoft1": "How do you handle tight deadlines and multiple simultaneous deliverables?",
+    "suggestionSoft2": "Describe a team conflict situation you resolved successfully",
+    "suggestionSoft3": "How do you stay updated with trends and technologies in the field?",
+    "suggestionSoft4": "What was your biggest professional challenge and how did you overcome it?",
+    "suggestionSoft5": "How do you prioritize multiple demands from different stakeholders?",
+    "questionUX1": "Which research method would be most appropriate to validate the usability of an early-stage prototype?",
+    "questionUX1optA": "A) A/B test with large sample",
+    "questionUX1optB": "B) Card sorting",
+    "questionUX1optC": "C) Moderated usability test ✓",
+    "questionUX1optD": "D) Quantitative analytics",
+    "questionUX2": "How would you prioritize features in an MVP using the effort vs impact matrix?",
+    "questionUX2optA": "A) High impact and low effort first ✓",
+    "questionUX2optB": "B) High effort and high impact first",
+    "questionUX2optC": "C) Low effort regardless of impact",
+    "questionUX2optD": "D) All features equally",
+    "questionUX3": "What is the fundamental difference between Design System and Style Guide?",
+    "questionUX3optA": "A) There is no difference, they are synonyms",
+    "questionUX3optB": "B) Design System includes components and patterns, Style Guide focuses on visual ✓",
+    "questionUX3optC": "C) Style Guide is more complete than Design System",
+    "questionUX3optD": "D) Design System is only for developers",
+    "testPreview": {
+      "title": "Technical Test - UX Design",
+      "jobInfo": "Job: UX Designer • Sodexo",
+      "totalTime": "Total Time",
+      "totalTimeValue": "14 minutes",
+      "totalQuestions": "Total Questions",
+      "totalQuestionsValue": "5 questions",
+      "minimumScore": "Minimum Score",
+      "importantInstructions": "Important Instructions",
+      "instructionRead": "Read each question carefully before answering",
+      "instructionTimeLimit": "Each question has an individual time limit (2-4 minutes)",
+      "instructionNavigate": "You can navigate between questions before submitting",
+      "instructionAutoSubmit": "The test will be automatically submitted at the end of time",
+      "instructionConnection": "Make sure you have a stable internet connection",
+      "question1": "What is the main Nielsen heuristic violated when a website does not provide feedback after a user action?",
+      "option1_1": "Error prevention",
+      "option1_2": "User control and freedom",
+      "option1_3": "Visibility of system status",
+      "option1_4": "Consistency and standards",
+      "timeLimitLabel": "Time limit: {time}",
+      "answeredIn": "Answered in {time}",
+      "points": "{count} points",
+      "question2": "In the Design Thinking process, which step comes immediately after the \"Define\" phase?",
+      "option2_1": "Empathize",
+      "option2_2": "Ideate",
+      "option2_3": "Prototype",
+      "option2_4": "Test",
+      "question3": "Which metric is most suitable for measuring the ease of use of an interface?",
+      "option3_1": "Conversion rate",
+      "option3_2": "Average session time",
+      "option3_3": "System Usability Scale (SUS)",
+      "option3_4": "Net Promoter Score (NPS)",
+      "progressLabel": "Progress:",
+      "questionsAnswered": "{answered} of {total} questions answered",
+      "totalTimeLabel": "Total time:",
+      "currentQuestionLabel": "Current question:",
+      "autoSave": "Auto save",
+      "closePreview": "Close Preview",
+      "sendTest": "Send Test"
+    },
+    "testHistory": {
+      "title": "Test Usage History",
+      "historicalAvgScore": "Historical Average Score",
+      "vsPreviousMonth": "{diff} vs previous month",
+      "evolution6Months": "Evolution (6 months)",
+      "totalApplications": "Total Applications",
+      "upThisMonth": "↑ {percent}% this month",
+      "successRate": "Success Rate",
+      "scoreAbove": "Score ≥ {score}",
+      "completionRate": "Completion Rate",
+      "candidatesComplete": "Candidates complete",
+      "averageTime": "Average Time",
+      "ofExpected": "Of {time} expected",
+      "perceivedDifficulty": "Perceived Difficulty",
+      "mediumHigh": "Medium-High",
+      "jobsUsedThisTest": "Jobs That Used This Test",
+      "statusFinished": "Finished",
+      "statusInProgress": "In Progress",
+      "statusCancelled": "Cancelled",
+      "statusActive": "Active",
+      "statusClosed": "Closed",
+      "candidatesCount": "{count} candidates",
+      "approvalRate": "{percent}% approval",
+      "hired": "{count} hired",
+      "success": "Success",
+      "scoreDistribution": "Score Distribution",
+      "avgScore": "Average Score: {score}",
+      "inInterviews": "In interviews",
+      "finalists": "{count} finalists",
+      "jobCancelled": "Job cancelled",
+      "noHire": "No hire",
+      "liaInsights": "LIA Insights",
+      "insight1": "This test performs best with Mid-level and Senior candidates",
+      "insight2": "Question 3 has the lowest success rate (45%) - consider revising or adding context",
+      "insight3": "Candidates scoring above 75% are 3x more likely to be hired",
+      "insight4": "Ideal application time: Monday to Thursday, between 10am-12pm or 2pm-5pm",
+      "aboveAveragePerformance": "Performance above average",
+      "top10Tests": "Top 10% most effective tests",
+      "close": "Close",
+      "exportReport": "Export Report"
+    },
+    "testLibrary": {
+      "title": "LIA Test Library",
+      "subtitle": "Validated tests organized by area of expertise",
+      "categories": "Categories",
+      "catDevelopment": "Development",
+      "catDesignUX": "Design & UX",
+      "catDataAnalytics": "Data & Analytics",
+      "catManagement": "Management & Leadership",
+      "catMarketingSales": "Marketing & Sales",
+      "catAdministrative": "Administrative",
+      "catLanguages": "Languages",
+      "catSoftSkills": "Soft Skills",
+      "filtersTitle": "Filters",
+      "level": "Level",
+      "levelAll": "All",
+      "levelJunior": "Junior",
+      "levelMid": "Mid-level",
+      "levelSenior": "Senior",
+      "duration": "Duration",
+      "durationAny": "Any",
+      "designUXTests": "Design & UX Tests",
+      "testsAvailableApproval": "{count} tests available • {percent}% average approval",
+      "test1Name": "UX Design - Fundamentals",
+      "test1Desc": "Basic test of UX concepts and heuristics",
+      "test2Name": "Design System & Components",
+      "test2Desc": "Assessment on creating and maintaining DS",
+      "test3Name": "User Research",
+      "test3Desc": "Research methods and data analysis",
+      "test4Name": "Prototyping and Tools",
+      "test4Desc": "Figma, Sketch, Adobe XD and prototyping",
+      "badgePopular": "Popular",
+      "badgeNew": "New",
+      "badgeRecommended": "Recommended",
+      "badgeTechnical": "Technical",
+      "overallAvgScore": "Overall Average Score",
+      "basedOn": "Based on",
+      "testsCount": "{count} tests",
+      "successRateLabel": "Success Rate",
+      "realDifficulty": "Real Difficulty",
+      "mediumPlus": "Medium+",
+      "completionLabel": "Completion",
+      "avgTimeLabel": "Average Time",
+      "scoreDistribution": "Score Distribution",
+      "questionsLabel": "Questions:",
+      "questionsCount": "{count} questions",
+      "totalTimeLabel": "Total time:",
+      "minutesValue": "{count} minutes",
+      "levelLabel": "Level:",
+      "usesCount": "{count} uses",
+      "view": "View",
+      "viewFull": "Preview",
+      "history": "History",
+      "use": "Use",
+      "useThis": "Use This",
+      "loadMoreTests": "Load More Tests",
+      "testsAvailable": "{count} tests available",
+      "usedByCompanies": "Used by {count} companies",
+      "successRateFooter": "{percent}% success rate",
+      "close": "Close",
+      "createNewTest": "Create New Test"
+    },
+    "categoryTriagem": "Screening",
+    "screeningTabLabel": "Screening",
+    "agentsTabLabel": "Agents",
+    "retry": "Retry",
+    "screeningTotal": "Total",
+    "screeningInProgress": "In Progress",
+    "screeningAbandoned": "Abandoned",
+    "screeningAvgScore": "Avg WSI Score",
+    "screeningAvgDuration": "Avg Duration",
+    "screeningFilterAll": "All statuses",
+    "screeningFilterInProgress": "In Progress",
+    "screeningFilterCompleted": "Completed",
+    "screeningFilterAbandoned": "Abandoned",
+    "screeningFilterChannel": "All channels",
+    "screeningRefresh": "Refresh",
+    "screeningResultsCount": "results",
+    "screeningEmpty": "No screenings found for this job",
+    "screeningColCandidate": "Candidate",
+    "screeningColStatus": "Status",
+    "screeningColScore": "WSI Score",
+    "screeningColDuration": "Duration",
+    "screeningColChannel": "Channel",
+    "agentsComingSoon": "AI Agents",
+    "agentsComingSoonDesc": "Autonomous agents panel coming soon"
+  },
+  "login": {
+    "tagline": "Agentic AI for Recruitment",
+    "heroTitle": "Sign in. <bold>LIA</bold> is already<br></br>working for you.",
+    "heroTitlePlain": "Sign in. LIA is already working for you.",
+    "heroSubtitle": "Global sourcing · Smart screening · Automatic scheduling",
+    "heroRecruitment": "Recruitment <accent>simplified</accent>",
+    "atsConnect": "Connects to your ATS",
+    "atsOrFull": "Or we handle the full workflow.",
+    "companyDescription": "WeDoTalent is a Brazilian HRTech company developing advanced technology solutions for the future of HR.",
+    "copyright": "© 2025 WeDoTalent. All rights reserved.",
+    "copyrightShort": "© 2025 LIA by WeDoTalent",
+    "enterPlatform": "Sign in to the platform",
+    "websiteLink": "Website",
+    "linkedinLink": "LinkedIn",
+    "emailLabel": "Email",
+    "emailPlaceholder": "your@email.com",
+    "enterButton": "Sign in",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "••••••••",
+    "changeEmail": "Change",
+    "rememberMe": "Remember me",
+    "forgotPassword": "Forgot password?",
+    "submitting": "Signing in...",
+    "confirmButton": "Confirm",
+    "orDivider": "or",
+    "continueWithMicrosoft": "Continue with Microsoft",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "invalidEmail": "Please enter a valid email.",
+    "wrongPassword": "Incorrect password. Please check your credentials.",
+    "loading": "Loading...",
+    "redirecting": "Please wait, loading your workspace..."
+  },
+  "metadata": {
+    "title": "LIA Platform — WeDoTalent",
+    "titleTemplate": "{title} | LIA WeDoTalent",
+    "description": "Intelligent AI-powered recruitment platform — Screening, Kanban and Candidate Analysis"
+  },
+  "modules": {
+    "title": "Modules",
+    "subtitle": "Expand LIA's capabilities with specialized modules",
+    "loading": "Loading modules...",
+    "featuresLabel": "Features",
+    "status": {
+      "beta": "BETA",
+      "trial": "Trial",
+      "active": "Active",
+      "expired": "Expired",
+      "disabled": "Disabled",
+      "comingSoon": "Coming Soon"
+    },
+    "sections": {
+      "availableInBeta": "Available in BETA",
+      "free": "Free",
+      "activeModules": "Active Modules",
+      "comingSoon": "Coming Soon",
+      "others": "Others"
+    },
+    "card": {
+      "freeDuringBeta": "Free during BETA",
+      "explore": "Explore",
+      "activeModule": "Active module",
+      "manage": "Manage",
+      "trialPeriod": "Trial period",
+      "activate": "Activate",
+      "inDevelopment": "In development",
+      "accessUnavailable": "Access unavailable",
+      "reactivate": "Reactivate"
+    },
+    "catalog": {
+      "talentIntelligence": {
+        "label": "Talent Intelligence Pro",
+        "description": "Competency Ontology + Gap Analysis + Market Intelligence"
+      },
+      "internalMobility": {
+        "label": "Internal Mobility",
+        "description": "Internal matching + Readiness score"
+      },
+      "interviewIntelligence": {
+        "label": "Interview Intelligence Pro",
+        "description": "WSI interview analysis + bias + report"
+      },
+      "workforcePlanning": {
+        "label": "Workforce Planning",
+        "description": "Forecasting + scenarios + dashboard"
+      },
+      "candidateNurture": {
+        "label": "Candidate Nurture / CRM",
+        "description": "Sequences + engagement + CRM"
+      },
+      "onboarding": {
+        "label": "Onboarding Intelligence",
+        "description": "Complete post-hire workflow"
+      },
+      "predictiveAnalytics": {
+        "label": "Turnover Prediction",
+        "description": "ML-powered turnover risk prediction"
+      }
+    },
+    "features": {
+      "talentIntelligence": {
+        "onet": "Competency Ontology with O*NET",
+        "gapAnalysis": "Competency Gap Analysis",
+        "marketIntelligence": "Market Intelligence and comparative analysis",
+        "adjacentSkills": "Adjacent skills recommendation",
+        "marketSnapshot": "Market snapshot by position"
+      },
+      "internalMobility": {
+        "talentMatching": "Internal talent matching",
+        "readinessScore": "Position readiness score",
+        "developmentPlan": "Individual development plan",
+        "successionMapping": "Succession mapping"
+      },
+      "interviewIntelligence": {
+        "autoTranscription": "Automatic interview transcription",
+        "biasAnalysis": "Interviewer bias analysis",
+        "wsiReport": "Structured WSI report",
+        "profileScore": "Profile adherence score"
+      },
+      "workforcePlanning": {
+        "demandForecast": "Hiring demand forecast",
+        "growthScenarios": "Team growth scenarios",
+        "capacityDashboard": "Capacity dashboard",
+        "funnelBottlenecks": "Funnel bottleneck alerts"
+      },
+      "candidateNurture": {
+        "autoSequences": "Automated contact sequences",
+        "engagementTracking": "Engagement tracking",
+        "passiveCRM": "Passive candidates CRM",
+        "customTemplates": "Customizable templates"
+      },
+      "onboarding": {
+        "postHireWorkflow": "Post-hire workflow",
+        "documentChecklist": "Document checklist",
+        "hrisIntegration": "HRIS integration",
+        "probationTracking": "Probation period tracking"
+      },
+      "predictiveAnalytics": {
+        "turnoverRisk": "Turnover risk prediction",
+        "exitPatterns": "Exit pattern analysis",
+        "retentionScore": "Team retention score",
+        "proactiveAlerts": "Proactive turnover alerts"
+      }
+    }
+  },
+  "pipeline": {
+    "title": "Talent Pipeline",
+    "metaDescription": "Manage your talent pool, candidate lists, and saved searches. Find the best profiles for your jobs with smart filters.",
+    "funnelTitle": "Candidate Pipeline",
+    "funnelMetaDescription": "View and manage candidates in the recruitment Kanban pipeline. Move candidates between stages and track the selection pipeline.",
+    "layoutDescription": "View and manage the candidate recruitment pipeline",
+    "funnelLayoutDescription": "Kanban pipeline for candidate management",
+    "shareSearch": "Share Search",
+    "tabs": {
+      "search": "Search",
+      "favorites": "Favorites",
+      "lists": "Lists",
+      "savedSearches": "Saved Searches",
+      "talentPools": "Talent Pools",
+      "history": "History"
+    },
+    "stats": {
+      "candidates": "candidates",
+      "favorites": "favorites"
+    },
+    "searchPlaceholder": "Search by name, position, company, or skill...",
+    "searchAriaLabel": "Search candidates",
+    "bulkActions": {
+      "moveStage": "Move Stage",
+      "message": "Message",
+      "shareSelection": "Share Selection"
+    },
+    "auth": {
+      "reloginTitle": "Your session has expired",
+      "reloginCta": "Sign in again",
+      "retryCta": "Try again",
+      "unauthorizedMessage": "Your session has expired. Please sign in again to continue.",
+      "forbiddenMessage": "You don't have permission to view these candidates.",
+      "serverErrorMessage": "The server is having trouble right now. Please try again in a moment.",
+      "networkErrorMessage": "Failed to load candidates. Please try again."
+    },
+    "emptyState": {
+      "noResults": "No candidates found. Try different filters.",
+      "searchPrompt": "Search candidates by name, skill, or position"
+    },
+    "pagination": {
+      "page": "Page {current} of {total}",
+      "previousPage": "Previous page",
+      "nextPage": "Next page"
+    },
+    "shareModal": {
+      "searchTitle": "Search — {query}",
+      "allCandidates": "All candidates",
+      "selectionTitle": "Selection of {count} candidates"
+    },
+    "loading": {
+      "favorites": "Loading favorites...",
+      "lists": "Loading lists...",
+      "savedSearches": "Loading saved searches...",
+      "history": "Loading history...",
+      "talentPools": "Loading talent pools...",
+      "pipeline": "Loading talent pipeline..."
+    },
+    "access": {
+      "talentPipelineAndPipeline": "Talent pipeline and pipeline"
+    },
+    "filters": {
+      "statusNew": "New",
+      "statusScreening": "In Screening",
+      "statusApproved": "Approved",
+      "statusRejected": "Rejected",
+      "seniorityJunior": "Junior",
+      "seniorityMid": "Mid-level",
+      "senioritySenior": "Senior",
+      "senioritySpecialist": "Specialist"
+    }
+  },
+  "pipelineOverview": {
+    "title": "Recruit",
+    "metaDescription": "Consolidated pipeline view — candidates per stage and vacancy lifecycle.",
+    "toggle": {
+      "candidates": "Candidates",
+      "vacancies": "Jobs",
+      "ariaLabel": "Toggle between Candidates and Jobs view",
+      "candidatesTotal": "{count} candidates in funnel",
+      "vacanciesTotal": "{count} jobs in lifecycle",
+      "candidatesLabel": "candidates in funnel",
+      "vacanciesLabel": "jobs in lifecycle"
+    },
+    "stages": {
+      "ats_imported": "ATS Imported",
+      "draft": "Draft",
+      "enriched": "Enriched",
+      "wsi_configured": "WSI Configured",
+      "pending_approval": "Pending Approval",
+      "published": "Published",
+      "live": "Live",
+      "closed": "Closed"
+    },
+    "vacancyCard": {
+      "atsBadge": "ATS",
+      "atsBadgeTitle": "Imported from external ATS",
+      "atsBadgeTitleNamed": "Imported via {source}",
+      "approvalPending": "Pending approval",
+      "candidatesCount": "{count} candidates",
+      "openWizard": "Continue JD",
+      "openEnrichment": "Continue enrichment",
+      "openWsi": "Configure WSI",
+      "requestApproval": "Request approval",
+      "openApproval": "Review approval",
+      "openPublish": "Publish job",
+      "openStatus": "Change status",
+      "openKanban": "Open kanban",
+      "openClosed": "View closure"
+    },
+    "empty": {
+      "noVacancies": "No jobs in this stage",
+      "noVacanciesHint": "Jobs will appear here as they progress through the lifecycle"
+    },
+    "close": "Close"
   },
   "screening": {
     "notification": {
@@ -6582,116 +6448,81 @@
       }
     }
   },
-  "metadata": {
-    "title": "LIA Platform — WeDoTalent",
-    "titleTemplate": "{title} | LIA WeDoTalent",
-    "description": "Intelligent AI-powered recruitment platform — Screening, Kanban and Candidate Analysis"
-  },
-  "modules": {
-    "title": "Modules",
-    "subtitle": "Expand LIA's capabilities with specialized modules",
-    "loading": "Loading modules...",
-    "featuresLabel": "Features",
-    "status": {
-      "beta": "BETA",
-      "trial": "Trial",
-      "active": "Active",
-      "expired": "Expired",
-      "disabled": "Disabled",
-      "comingSoon": "Coming Soon"
-    },
+  "sidebar": {
     "sections": {
-      "availableInBeta": "Available in BETA",
-      "free": "Free",
-      "activeModules": "Active Modules",
-      "comingSoon": "Coming Soon",
-      "others": "Others"
+      "operational": "Operational",
+      "configuration": "Configuration"
     },
-    "card": {
-      "freeDuringBeta": "Free during BETA",
-      "explore": "Explore",
-      "activeModule": "Active module",
-      "manage": "Manage",
-      "trialPeriod": "Trial period",
-      "activate": "Activate",
-      "inDevelopment": "In development",
-      "accessUnavailable": "Access unavailable",
-      "reactivate": "Reactivate"
+    "items": {
+      "conversar": "Chat",
+      "decidir": "Decide",
+      "recrutar": "Recruit",
+      "jobs": "Jobs",
+      "talentPipeline": "Talent Pipeline",
+      "agentStudio": "Agent Studio",
+      "modules": "Modules"
     },
-    "catalog": {
-      "talentIntelligence": {
-        "label": "Talent Intelligence Pro",
-        "description": "Competency Ontology + Gap Analysis + Market Intelligence"
-      },
-      "internalMobility": {
-        "label": "Internal Mobility",
-        "description": "Internal matching + Readiness score"
-      },
-      "interviewIntelligence": {
-        "label": "Interview Intelligence Pro",
-        "description": "WSI interview analysis + bias + report"
-      },
-      "workforcePlanning": {
-        "label": "Workforce Planning",
-        "description": "Forecasting + scenarios + dashboard"
-      },
-      "candidateNurture": {
-        "label": "Candidate Nurture / CRM",
-        "description": "Sequences + engagement + CRM"
-      },
-      "onboarding": {
-        "label": "Onboarding Intelligence",
-        "description": "Complete post-hire workflow"
-      },
-      "predictiveAnalytics": {
-        "label": "Turnover Prediction",
-        "description": "ML-powered turnover risk prediction"
-      }
+    "filters": {
+      "all": "All",
+      "active": "Active",
+      "paused": "Paused",
+      "completed": "Completed",
+      "cancelled": "Cancelled",
+      "byStage": "By Stage"
     },
-    "features": {
-      "talentIntelligence": {
-        "onet": "Competency Ontology with O*NET",
-        "gapAnalysis": "Competency Gap Analysis",
-        "marketIntelligence": "Market Intelligence and comparative analysis",
-        "adjacentSkills": "Adjacent skills recommendation",
-        "marketSnapshot": "Market snapshot by position"
-      },
-      "internalMobility": {
-        "talentMatching": "Internal talent matching",
-        "readinessScore": "Position readiness score",
-        "developmentPlan": "Individual development plan",
-        "successionMapping": "Succession mapping"
-      },
-      "interviewIntelligence": {
-        "autoTranscription": "Automatic interview transcription",
-        "biasAnalysis": "Interviewer bias analysis",
-        "wsiReport": "Structured WSI report",
-        "profileScore": "Profile adherence score"
-      },
-      "workforcePlanning": {
-        "demandForecast": "Hiring demand forecast",
-        "growthScenarios": "Team growth scenarios",
-        "capacityDashboard": "Capacity dashboard",
-        "funnelBottlenecks": "Funnel bottleneck alerts"
-      },
-      "candidateNurture": {
-        "autoSequences": "Automated contact sequences",
-        "engagementTracking": "Engagement tracking",
-        "passiveCRM": "Passive candidates CRM",
-        "customTemplates": "Customizable templates"
-      },
-      "onboarding": {
-        "postHireWorkflow": "Post-hire workflow",
-        "documentChecklist": "Document checklist",
-        "hrisIntegration": "HRIS integration",
-        "probationTracking": "Probation period tracking"
-      },
-      "predictiveAnalytics": {
-        "turnoverRisk": "Turnover risk prediction",
-        "exitPatterns": "Exit pattern analysis",
-        "retentionScore": "Team retention score",
-        "proactiveAlerts": "Proactive turnover alerts"
-      }
+    "labels": {
+      "seeAllPools": "See all pools",
+      "seeAllAgents": "See all agents",
+      "seeAll": "See all",
+      "recent": "Recent",
+      "clearRecent": "Clear",
+      "removeFromRecent": "Remove from recent",
+      "clearRecentItems": "Clear recent items",
+      "notificationPreferences": "Notification Preferences",
+      "expandMenu": "Expand menu (Ctrl+B)",
+      "collapseMenu": "Collapse menu (Ctrl+B)",
+      "resizeSidebar": "Drag to resize sidebar",
+      "globalSearch": "Global Search",
+      "settings": "Settings",
+      "helpTips": "Help & LIA Tips",
+      "mainMenu": "Main menu",
+      "beta": "BETA",
+      "premium": "Premium",
+      "logoAlt": "WeDo Talent",
+      "logoSmallAlt": "WeDo",
+      "expandSubmenu": "Expand submenu",
+      "collapseSubmenu": "Collapse submenu"
+    },
+    "user": {
+      "admin": "Administrator",
+      "recruiter": "Recruiter",
+      "viewer": "Viewer",
+      "defaultName": "User",
+      "defaultEmail": "user@company.com",
+      "myProfile": "My profile",
+      "changePassword": "Change password",
+      "settings": "Company & Team",
+      "apiKeys": "API Keys",
+      "logout": "Sign out"
+    },
+    "password": {
+      "title": "Change Password",
+      "description": "Enter your current password and new password to change it.",
+      "currentPassword": "Current Password",
+      "newPassword": "New Password",
+      "confirmPassword": "Confirm New Password",
+      "currentPlaceholder": "Enter your current password",
+      "newPlaceholder": "Enter new password (min. 8 characters)",
+      "confirmPlaceholder": "Confirm your new password",
+      "cancel": "Cancel",
+      "changing": "Changing...",
+      "change": "Change Password",
+      "success": "Password changed successfully!",
+      "errorFillAll": "All fields are required",
+      "errorMinLength": "New password must be at least 8 characters",
+      "errorMismatch": "Passwords do not match",
+      "errorGeneric": "Error changing password. Please check your current password.",
+      "ssoNotAllowed": "Password managed by corporate SSO"
     }
   },
   "triagem": {
@@ -6848,6 +6679,205 @@
         "voipSessionError": "Voice session error",
         "voipConnectionError": "Voice connection error",
         "voipStartError": "Error starting voice session"
+      }
+    }
+  },
+  "wedo_admin": {
+    "landing": {
+      "title": "WeDo Admin",
+      "subtitle": "Provisional internal area for features that will move to the external WeDOTalent admin panel (admin2.wedotalent.cc) when it is ready. Access restricted to WeDOTalent staff.",
+      "provisional_badge": "Provisional area — WeDOTalent staff",
+      "coming_soon": "Coming soon (migration in progress)",
+      "sections": {
+        "fairness": {
+          "title": "Fairness Dashboards",
+          "description": "Bias rate, audit drill-down and CSV/JSON exports. EU AI Act metrics."
+        },
+        "auditLogs": {
+          "title": "Audit Logs (drill-down)",
+          "description": "Interactive viewer for LGPD audit events with filters by event, actor, severity and period."
+        },
+        "aiTransparency": {
+          "title": "AI Transparency",
+          "description": "Override reasons and AI decision traceability (EU AI Act Art. 13/14 + Annex III)."
+        },
+        "policyEngine": {
+          "title": "Policy Engine",
+          "description": "Compliance policy configuration per sector and canonical rules."
+        },
+        "automationRules": {
+          "title": "Automation Rules",
+          "description": "Trigger-based automation rules (pipeline, communication, alerts)."
+        }
+      }
+    }
+  },
+  "workflowRail": {
+    "createJob": {
+      "label": "Create job",
+      "tooltip": "Start the job creation wizard",
+      "ariaLabel": "Create new job"
+    },
+    "pill": {
+      "summaryAriaLabel": "Show {count} active workflow(s)",
+      "moreAriaLabel": "{count} more workflow(s)",
+      "pendingAriaLabel": "{count} pending action(s)"
+    },
+    "popover": {
+      "title": "Active Workflows",
+      "close": "Close",
+      "disconnected": "Disconnected"
+    },
+    "types": {
+      "campaign": "Campaign",
+      "pool": "Pool",
+      "search": "Search"
+    },
+    "entry": {
+      "dismiss": "Dismiss workflow",
+      "go": "Go",
+      "foundCount": "{count} found"
+    },
+    "bar": {
+      "expandAriaLabel": "Expand workflow bar and see next steps",
+      "collapseAriaLabel": "Collapse workflow bar",
+      "noActiveFlow": "No active workflow"
+    },
+    "panel": {
+      "ariaLabel": "Possible next steps",
+      "nextStepsLabel": "Next steps",
+      "nextInFunnel": "Next",
+      "close": "Close panel"
+    },
+    "funnel": {
+      "createJob": "Job",
+      "sourcing": "Sourcing",
+      "screening": "Screening",
+      "interview": "Interview",
+      "offer": "Offer",
+      "hired": "Hired",
+      "analytics": "Analytics"
+    },
+    "nextSteps": {
+      "initial": {
+        "createJob": {
+          "title": "Create a job",
+          "desc": "Start the wizard to open a new position"
+        },
+        "searchCandidates": {
+          "title": "Search candidates",
+          "desc": "Search the available talent pool"
+        },
+        "openFunnel": {
+          "title": "Open funnel",
+          "desc": "View the full recruitment pipeline"
+        }
+      },
+      "createJob": {
+        "publishJob": {
+          "title": "Publish job",
+          "desc": "Make the job visible to candidates"
+        },
+        "startSourcing": {
+          "title": "Start active sourcing",
+          "desc": "Proactively search for candidates"
+        },
+        "generateJD": {
+          "title": "Generate JD with AI",
+          "desc": "LIA writes the job description automatically"
+        },
+        "divulgeChannels": {
+          "title": "Share on channels",
+          "desc": "Post the job across distribution channels"
+        }
+      },
+      "sourcing": {
+        "addToList": {
+          "title": "Add to list",
+          "desc": "Include candidates in this job pipeline"
+        },
+        "searchCandidates": {
+          "title": "Search more candidates",
+          "desc": "Expand the sourced talent pool"
+        },
+        "sendWSI": {
+          "title": "Send WSI screening",
+          "desc": "Start the structured candidate assessment"
+        },
+        "linkToJob": {
+          "title": "Link to existing job",
+          "desc": "Associate candidates with an open position"
+        }
+      },
+      "screening": {
+        "sendWSI": {
+          "title": "Send WSI",
+          "desc": "Apply AI-powered structured screening"
+        },
+        "scheduleInterview": {
+          "title": "Schedule interview",
+          "desc": "Advance approved candidates to interview"
+        },
+        "moveRejected": {
+          "title": "Move to rejected",
+          "desc": "Discard candidates outside the profile"
+        },
+        "liaOpinion": {
+          "title": "Ask LIA for opinion",
+          "desc": "Get a comparative analysis of candidates"
+        }
+      },
+      "interview": {
+        "moveToOffer": {
+          "title": "Move to offer",
+          "desc": "Advance the approved candidate to offer"
+        },
+        "requestFeedback": {
+          "title": "Request manager feedback",
+          "desc": "Ask the responsible manager for evaluation"
+        },
+        "moveRejected": {
+          "title": "Reject candidate",
+          "desc": "Close the process for this candidate"
+        }
+      },
+      "offer": {
+        "approveOffer": {
+          "title": "Approve offer",
+          "desc": "Confirm the offer and advance to hiring"
+        },
+        "negotiate": {
+          "title": "Negotiate terms",
+          "desc": "Adjust compensation or benefits"
+        },
+        "moveRejected": {
+          "title": "Offer declined",
+          "desc": "Record the refusal and close the process"
+        }
+      },
+      "hired": {
+        "startOnboarding": {
+          "title": "Start onboarding",
+          "desc": "Prepare for the new team member arrival"
+        },
+        "viewAnalytics": {
+          "title": "View analytics",
+          "desc": "Check hiring process metrics"
+        },
+        "createNewJob": {
+          "title": "Open new job",
+          "desc": "Start a new recruitment process"
+        }
+      },
+      "analytics": {
+        "viewReport": {
+          "title": "View full report",
+          "desc": "Access all metrics and KPIs"
+        },
+        "createNewJob": {
+          "title": "Open new job",
+          "desc": "Start a new recruitment cycle"
+        }
       }
     }
   }

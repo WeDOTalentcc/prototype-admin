@@ -38,6 +38,12 @@ const eslintConfig = [...compat.extends("next/core-web-vitals", "next/typescript
             "name": "@/components/ui/badge",
             "message": "[WeDo DS] Use o componente canônico `Chip` (`@/components/ui/chip`) para pílulas de status/estado. O `Badge` primitivo está mantido apenas para affordances do tipo chip-com-botão (raro). Veja docs/design-system/00-design-system-v4.md § 3.39."
           }
+        ],
+        "patterns": [
+          {
+            "group": ["@/components/_wedo_internal/**", "**/_wedo_internal/**"],
+            "message": "[WeDo Staff Area] Components em _wedo_internal/ são da área provisória staff WeDOTalent e NÃO devem ser importados do produto. Acessível apenas via route group (staff)/. Plan: ~/.claude/plans/jolly-roaming-moler.md"
+          }
         ]
       }
     ],
