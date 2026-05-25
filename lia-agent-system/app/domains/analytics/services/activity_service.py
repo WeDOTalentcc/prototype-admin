@@ -6,7 +6,7 @@ Tracks voice screenings, emails, interviews, approvals, tests, and other activit
 """
 
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Any
 
 from sqlalchemy import and_, desc, or_, select
@@ -42,6 +42,9 @@ class ActivityService:
         action_label: str | None = None,
         visible_to: list[str] | None = None,
         created_by: str | None = None,
+        legal_basis: str | None = "legitimate_interests",
+        decision_type: str | None = None,
+        retention_days: int | None = 730,
     ) -> ActivityFeed:
         """
         Create a new activity in the feed.
@@ -69,6 +72,10 @@ class ActivityService:
             Created ActivityFeed instance
         """
         async with AsyncSessionLocal() as session:
+            _retention = (
+                datetime.utcnow() + timedelta(days=retention_days)
+                if retention_days is not None else None
+            )
             activity = ActivityFeed(
                 activity_type=activity_type,
                 title=title,
@@ -88,6 +95,9 @@ class ActivityService:
                 is_visible=True,
                 visible_to=visible_to or [],
                 created_by=created_by,
+                legal_basis=legal_basis,
+                decision_type=decision_type,
+                retention_expires_at=_retention,
             )
             
             session.add(activity)

@@ -64,7 +64,17 @@ class ActivityFeed(Base):
     # Timestamps
     created_at = Column(DateTime, default=datetime.utcnow, index=True)
     created_by = Column(String(255), nullable=True)  # User who triggered this activity
-    
+
+    # LGPD compliance columns (Task 2.C, 2026-05-25)
+    # Art. 15: retention period. Null = system event / indefinite.
+    retention_expires_at = Column(DateTime, nullable=True)
+    # Art. 7: legal basis. Values: consent | contract | legal_obligation |
+    #   vital_interests | public_task | legitimate_interests
+    legal_basis = Column(String(50), nullable=True)
+    # Art. 20: automated decision transparency.
+    # Values: automated | human_review | human_final | no_decision
+    decision_type = Column(String(50), nullable=True)
+
     # Composite indexes for common queries
     __table_args__ = (
         Index('idx_activity_candidate', 'target_id', 'activity_type', 'created_at'),
@@ -118,4 +128,7 @@ class ActivityFeed(Base):
             "is_visible": self.is_visible,
             "created_at": created_at_str,
             "created_by": self.created_by,
+            "retention_expires_at": self.retention_expires_at.isoformat() if self.retention_expires_at else None,
+            "legal_basis": self.legal_basis,
+            "decision_type": self.decision_type,
         }
