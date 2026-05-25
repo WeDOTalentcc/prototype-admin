@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from"react"
+import { useRouter } from "next/navigation"
 import { formatRelativeTime } from"@/lib/format-utils"
 import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
@@ -61,6 +62,7 @@ interface ActivityFeedProps {
 }
 
 export function ActivityFeed({ candidateId, limit = 20, className ="", actorFilter }: ActivityFeedProps) {
+  const router = useRouter()
   const [activities, setActivities] = useState<Activity[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -495,6 +497,7 @@ export function ActivityFeed({ candidateId, limit = 20, className ="", actorFilt
                   size="sm"
                   className={`h-5 px-2 gap-1 mt-1.5 ${textStyles.bodySmall}`}
                   onClick={() => {
+                    if (activity.action?.url) router.push(activity.action.url)
                   }}
                 >
                   {activity.action.label}
