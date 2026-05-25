@@ -74,10 +74,12 @@ try:
     from prometheus_client import REGISTRY as _PROM_REGISTRY
     from prometheus_client import Counter as _PromCounter
     from prometheus_client import Gauge as _PromGauge
+    from prometheus_client import Histogram as _PromHistogram
 except Exception:  # pragma: no cover -- prometheus opcional em dev
     _PROM_REGISTRY = None  # type: ignore[assignment]
     _PromCounter = None  # type: ignore[assignment]
     _PromGauge = None  # type: ignore[assignment]
+    _PromHistogram = None  # type: ignore[assignment]
 
 
 def _make_counter(name: str, doc: str, labels: tuple[str, ...] | tuple = ()):
@@ -111,6 +113,25 @@ def _make_gauge(name: str, doc: str, labels=()):
         return _PromGauge(name, doc)
     except Exception:
         logger.debug("canary_metrics: failed to register gauge %s", name, exc_info=True)
+        return None
+
+
+def _make_histogram(name: str, doc: str, labels=(), buckets=None):
+    """Cria Histogram Prometheus ou reusa existente. None se lib indisponivel."""
+    if _PromHistogram is None or _PROM_REGISTRY is None:
+        return None
+    try:
+        existing = getattr(_PROM_REGISTRY, "_names_to_collectors", {}).get(name)
+        if existing is not None:
+            return existing
+        kwargs = {}
+        if labels:
+            kwargs["labelnames"] = labels
+        if buckets is not None:
+            kwargs["buckets"] = buckets
+        return _PromHistogram(name, doc, **kwargs)
+    except Exception:
+        logger.debug("canary_metrics: failed to register histogram %s", name, exc_info=True)
         return None
 
 
@@ -353,6 +374,69 @@ briefing_dispatch_legacy_alertconfig_read_total = _make_counter(
 )
 
 
+
+# ----------------------------------------------------------------------
+# Task 3.A (2026-05-25) -- Briefing generation observability.
+# Counter tracks outcomes (success/error); histogram tracks latency.
+# Labels use company_id_hash (SHA-256[:12]) per cardinality convention.
+# Used by app/api/v1/briefing.py.
+# Alarm rules:
+#   - rate(briefing_generated_total{outcome="error"}[5m]) / rate(briefing_generated_total[5m]) > 0.1
+#     => briefing error rate > 10% (oncall)
+#   - histogram_quantile(0.95, rate(briefing_generation_duration_seconds_bucket[5m])) > 10
+#     => P95 > 10s (SLO breach)
+# ----------------------------------------------------------------------
+briefing_generated_total = _make_counter(
+    "briefing_generated_total",
+    "Count of daily briefing generation attempts, by outcome. "
+    "Task 3.A observability sensor (2026-05-25).",
+    ("company_id_hash", "outcome"),   # outcome: success | error | empty_user
+)
+
+# Buckets in seconds: sub-second to 60s (briefing is DB-heavy + optional LLM).
+_BRIEFING_LATENCY_BUCKETS = (0.1, 0.25, 0.5, 1.0, 2.5, 5.0, 10.0, 20.0, 30.0, 60.0)
+
+briefing_generation_duration_seconds = _make_histogram(
+    "briefing_generation_duration_seconds",
+    "Latency of generate_daily_briefing() in seconds. "
+    "Task 3.A observability sensor (2026-05-25). "
+    "SLO: P95 < 10s.",
+    ("company_id_hash",),
+    buckets=_BRIEFING_LATENCY_BUCKETS,
+)
+
+
+def inc_briefing_generated(company_id: str, outcome: str) -> None:
+    """Incrementa briefing_generated_total (fail-open).
+
+    Args:
+        company_id: tenant ID para hash (nunca raw como label).
+        outcome: success | error | empty_user
+    """
+    if briefing_generated_total is None:
+        return
+    try:
+        h = hashlib.sha256(company_id.encode("utf-8")).hexdigest()[:12] if company_id else "unknown"
+        briefing_generated_total.labels(company_id_hash=h, outcome=outcome).inc()
+    except Exception:  # pragma: no cover -- fail-open
+        pass
+
+
+def obs_briefing_duration(company_id: str, duration_seconds: float) -> None:
+    """Observa latencia de geracao de briefing (fail-open).
+
+    Args:
+        company_id: tenant ID para hash.
+        duration_seconds: tempo total em segundos.
+    """
+    if briefing_generation_duration_seconds is None:
+        return
+    try:
+        h = hashlib.sha256(company_id.encode("utf-8")).hexdigest()[:12] if company_id else "unknown"
+        briefing_generation_duration_seconds.labels(company_id_hash=h).observe(duration_seconds)
+    except Exception:  # pragma: no cover -- fail-open
+        pass
+
 __all__ = (
     "ai_credit_exhausted_total",
     "ai_credit_gate_calls_total",
@@ -372,6 +456,10 @@ __all__ = (
     "realtime_tokens_consumed_total",
     "legacy_alerts_config_endpoint_calls_total",
     "briefing_dispatch_legacy_alertconfig_read_total",
+    "briefing_generated_total",
+    "briefing_generation_duration_seconds",
+    "inc_briefing_generated",
+    "obs_briefing_duration",
 )
 
 

@@ -6,8 +6,13 @@ Provides endpoints for:
 - Refreshing briefing
 """
 import logging
+import time
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
+from app.shared.observability.canary_metrics import (
+    inc_briefing_generated,
+    obs_briefing_duration,
+)
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
@@ -30,6 +35,7 @@ _EMPTY_BRIEFING = {
 
 @router.get("", response_model=None)
 async def get_daily_briefing(
+    request: Request,
     user_id: str = "default_user",
     db: AsyncSession = Depends(get_db), 
 company_id: str = Depends(require_company_id)):
@@ -48,14 +54,33 @@ company_id: str = Depends(require_company_id)):
     Safety: para "default_user" (pre-auth / anonymous), retorna briefing vazio
     em vez de 500 — evita o card quebrar enquanto o auth context hidrata no FE.
     """
+    request_id = getattr(request.state, "request_id", "unknown")
     if not user_id or user_id == "default_user":
-        logger.info("briefing.anonymous_or_default_user — returning empty briefing")
+        logger.info(
+            "briefing.anonymous_or_default_user",
+            extra={"request_id": request_id, "user_id": user_id},
+        )
+        inc_briefing_generated(company_id or "", "empty_user")
         return {"success": True, "data": _EMPTY_BRIEFING}
 
+    _t0 = time.perf_counter()
     try:
         briefing = await briefing_service.generate_daily_briefing(
             user_id, db, company_id=company_id  # WT-2022 P0.TASK
         )
+        _elapsed = time.perf_counter() - _t0
+        logger.info(
+            "briefing.generated",
+            extra={
+                "request_id": request_id,
+                "user_id": user_id,
+                "duration_ms": round(_elapsed * 1000, 1),
+                "urgent_count": briefing.get("summary", {}).get("urgent_count", 0),
+                "alerts_active": briefing.get("summary", {}).get("alerts_active", 0),
+            },
+        )
+        inc_briefing_generated(company_id or "", "success")
+        obs_briefing_duration(company_id or "", _elapsed)
         return {
             "success": True,
             "data": briefing
@@ -63,7 +88,19 @@ company_id: str = Depends(require_company_id)):
     except HTTPException:
         raise
     except Exception as e:
-        logger.error("briefing.generate_failed user_id=%s error=%s", user_id, e, exc_info=True)
+        _elapsed = time.perf_counter() - _t0
+        logger.error(
+            "briefing.generate_failed",
+            extra={
+                "request_id": request_id,
+                "user_id": user_id,
+                "duration_ms": round(_elapsed * 1000, 1),
+                "error": e.__class__.__name__,
+            },
+            exc_info=True,
+        )
+        inc_briefing_generated(company_id or "", "error")
+        obs_briefing_duration(company_id or "", _elapsed)
         raise HTTPException(
             status_code=500,
             detail=f"Falha ao gerar briefing: {e.__class__.__name__}",
