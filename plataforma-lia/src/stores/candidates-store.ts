@@ -216,7 +216,7 @@ function setOrUpdate<T>(
 ) {
   return (v: T | ((prev: T) => T)) => {
     if (typeof v === 'function') {
-      set((state) => ({ [key]: (v as (prev: T) => T)(state[key] as T) }), false, actionName)
+      set((state: CandidatesFullState) => ({ [key]: (v as (prev: T) => T)(state[key] as T) }), false, actionName)
     } else {
       set({ [key]: v } as Partial<CandidatesFullState>, false, actionName)
     }
