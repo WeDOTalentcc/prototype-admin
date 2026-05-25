@@ -42,7 +42,19 @@ vi.mock("@/lib/toast", () => ({
 
 import { CreateAgentWizard } from "../CreateAgentWizard"
 import { filterTemplatesByGoal, GOAL_TO_CATEGORIES } from "../types"
-import { AGENT_TEMPLATES } from "@/lib/agent-templates-data"
+import { AGENT_TEMPLATES } from "@/lib/__tests__/__fixtures__/agent-templates-fixture"
+
+// Sprint 3 Parte 2: mock catalog hook so render uses fixture.
+vi.mock("@/hooks/agents/use-legacy-agent-templates", async () => {
+  const { AGENT_TEMPLATES } = await import("@/lib/__tests__/__fixtures__/agent-templates-fixture")
+  return {
+    useLegacyAgentTemplates: () => ({
+      templates: AGENT_TEMPLATES,
+      isLoading: false,
+      error: null,
+    }),
+  }
+})
 
 beforeEach(() => {
   global.fetch = vi.fn() as unknown as typeof fetch

@@ -890,7 +890,18 @@
       "verticalRetail": "Retail",
       "verticalGeneric": "Generic",
       "verticalFilterAriaLabel": "Filter templates by industry vertical",
-      "verticalLabel": "Vertical"
+      "verticalLabel": "Vertical",
+      "templateCategories": {
+        "all": "All",
+        "screening": "Screening",
+        "sourcing": "Sourcing",
+        "communication": "Communication",
+        "analytics": "Analytics",
+        "job_management": "Jobs",
+        "automation": "Automation"
+      },
+      "templateLoading": "Loading templates...",
+      "templateLoadError": "Failed to load templates. Try again."
     },
     "digitalTwin": {
       "active": "Active",

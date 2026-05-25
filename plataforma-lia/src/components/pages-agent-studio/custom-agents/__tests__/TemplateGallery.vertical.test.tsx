@@ -25,8 +25,37 @@ vi.mock("@/stores/agent-studio-store", () => ({
   }),
 }))
 
+// Sprint 3 Parte 2: mock catalog hooks so render uses fixture (sem fetch real).
+vi.mock("@/hooks/agents/use-legacy-agent-templates", async () => {
+  const { AGENT_TEMPLATES } = await import("@/lib/__tests__/__fixtures__/agent-templates-fixture")
+  return {
+    useLegacyAgentTemplates: () => ({
+      templates: AGENT_TEMPLATES,
+      isLoading: false,
+      error: null,
+    }),
+  }
+})
+vi.mock("@/hooks/agents/use-agent-template-catalog", () => ({
+  useAgentCategories: () => ({
+    data: [
+      { id: "screening", label_pt: "Triagem", label_en: "Screening", icon: "Filter", sort_order: 1, is_active: true },
+      { id: "sourcing", label_pt: "Captação", label_en: "Sourcing", icon: "Search", sort_order: 2, is_active: true },
+      { id: "communication", label_pt: "Comunicação", label_en: "Communication", icon: "MessageCircle", sort_order: 3, is_active: true },
+      { id: "analytics", label_pt: "Análise", label_en: "Analytics", icon: "BarChart3", sort_order: 4, is_active: true },
+      { id: "job_management", label_pt: "Vagas", label_en: "Jobs", icon: "Briefcase", sort_order: 5, is_active: true },
+      { id: "automation", label_pt: "Automação", label_en: "Automation", icon: "Zap", sort_order: 6, is_active: true },
+    ],
+    isLoading: false,
+    error: null,
+    mutate: () => Promise.resolve(),
+  }),
+  useAgentTemplateCatalog: () => ({ data: [], isLoading: false, error: null, mutate: () => Promise.resolve() }),
+  useAgentSectors: () => ({ data: [], isLoading: false, error: null, mutate: () => Promise.resolve() }),
+}))
+
 import { TemplateGallery } from "../TemplateGallery"
-import { AGENT_TEMPLATES } from "@/lib/agent-templates-data"
+import { AGENT_TEMPLATES } from "@/lib/__tests__/__fixtures__/agent-templates-fixture"
 
 function renderGallery() {
   return render(

@@ -3,7 +3,7 @@
 import { Bot, CheckCircle2, Heart, Phone, Search, Settings2, Sparkles } from "lucide-react"
 import * as Icons from "lucide-react"
 
-import { AGENT_TEMPLATES } from "@/lib/agent-templates-data"
+import { useLegacyAgentTemplates } from "@/hooks/agents/use-legacy-agent-templates"
 
 import type { AgentApproach, AgentGoal, GeneratedConfigPreview, WizardConfig } from "../types"
 
@@ -29,6 +29,7 @@ interface PreviewStepProps {
 }
 
 export function PreviewStep({ goal, approach, config, aiPreview }: PreviewStepProps) {
+  const { templates: AGENT_TEMPLATES } = useLegacyAgentTemplates()
   const goalInfo = GOAL_LABELS[goal]
   const GoalIcon = goalInfo.icon
   const tmpl = approach === "template" ? AGENT_TEMPLATES.find((t) => t.id === config.templateId) : null

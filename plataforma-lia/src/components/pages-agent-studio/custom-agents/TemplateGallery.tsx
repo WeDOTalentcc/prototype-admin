@@ -5,7 +5,8 @@ import * as Icons from "lucide-react"
 import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
 import { buttonStyles, textStyles } from "@/lib/design-tokens"
-import { AGENT_TEMPLATES, TEMPLATE_CATEGORIES } from "@/lib/agent-templates-data"
+import { useLegacyAgentTemplates } from "@/hooks/agents/use-legacy-agent-templates"
+import { useAgentCategories } from "@/hooks/agents/use-agent-template-catalog"
 import { useAgentStudioStore } from "@/stores/agent-studio-store"
 import { TemplateCard } from "./TemplateCard"
 import type { AgentTemplate, AgentCategory, AgentVertical } from "./types"
@@ -47,6 +48,18 @@ export function TemplateGallery({ onTemplateSelect, onCreateManual }: TemplateGa
   const [searchQuery, setSearchQuery] = React.useState("")
   // T5b UX Transformação 5: vertical industry filter local (não persistido em store)
   const [verticalFilter, setVerticalFilter] = React.useState<VerticalFilter>("all")
+
+  const { templates: AGENT_TEMPLATES, isLoading: templatesLoading, error: templatesError } = useLegacyAgentTemplates()
+  const { data: catalogCategories } = useAgentCategories()
+  const t_cat = useTranslations("agents.customAgents.templateCategories")
+
+  // Categorias canonical com label via i18n + fallback "Todos"
+  const TEMPLATE_CATEGORIES = React.useMemo(() => ([
+    { id: "all" as const, label: t_cat("all"), icon: "LayoutGrid" },
+    ...catalogCategories
+      .filter(c => c.is_active)
+      .map(c => ({ id: c.id, label: t_cat(c.id) === c.id ? c.label_pt : t_cat(c.id), icon: c.icon ?? "LayoutGrid" })),
+  ]), [catalogCategories, t_cat])
 
   // UX-Sprint-A QW#20: filter combinado category + search + vertical (T5b)
   const filtered = AGENT_TEMPLATES.filter((tmpl) => {
@@ -161,7 +174,20 @@ export function TemplateGallery({ onTemplateSelect, onCreateManual }: TemplateGa
         ))}
       </div>
 
-      {filtered.length === 0 && (
+      {templatesError && (
+        <div className="text-center py-6" role="alert">
+          <p className={cn(textStyles.caption, "text-red-600")}>
+            {t('templateLoadError') || 'Erro ao carregar templates. Tente novamente.'}
+          </p>
+        </div>
+      )}
+      {!templatesError && templatesLoading && filtered.length === 0 && (
+        <div className="text-center py-10" aria-busy="true">
+          <Icons.Loader2 className="w-6 h-6 mx-auto text-lia-text-disabled mb-2 animate-spin" />
+          <p className={textStyles.caption}>{t('templateLoading') || 'Carregando templates...'}</p>
+        </div>
+      )}
+      {!templatesError && !templatesLoading && filtered.length === 0 && (
         <div className="text-center py-10">
           <Icons.SearchX className="w-8 h-8 mx-auto text-lia-text-disabled mb-2" />
           <p className={textStyles.caption}>{t('noTemplateInCategory')}</p>

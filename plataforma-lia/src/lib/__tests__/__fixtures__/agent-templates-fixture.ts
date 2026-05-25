@@ -1,7 +1,11 @@
 /**
- * Agent Templates — Pre-configured agent recipes for common recruiting scenarios.
- * Each template pre-fills all fields so the recruiter can activate in 1 click.
- * Migrates to backend /agent-templates API in a future sprint.
+ * AGENT_TEMPLATES test fixture (Sprint 3 Parte 2).
+ *
+ * Snapshot do legacy agent-templates-data.ts (DELETADO em produção).
+ * Fixture APENAS para testes (TemplateGallery.vertical, CreateAgentWizard)
+ * sem depender de fetch real ao backend canonical.
+ *
+ * Code de produção NÃO importa deste fixture. Sensor #3 garante.
  */
 import type { AgentTemplate } from "@/components/pages-agent-studio/custom-agents/types"
 

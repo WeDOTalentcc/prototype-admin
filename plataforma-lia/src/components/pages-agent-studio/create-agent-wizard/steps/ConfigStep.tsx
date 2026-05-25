@@ -8,7 +8,7 @@ import { useAiPersona } from "@/hooks/company/use-ai-persona"
 import { Button } from "@/components/ui/button"
 import { Chip } from "@/components/ui/chip"
 import { Textarea } from "@/components/ui/textarea"
-import { AGENT_TEMPLATES } from "@/lib/agent-templates-data"
+import { useLegacyAgentTemplates } from "@/hooks/agents/use-legacy-agent-templates"
 
 import type { AgentApproach, AgentGoal, GeneratedConfigPreview, WizardConfig } from "../types"
 
@@ -35,6 +35,7 @@ export function ConfigStep({
 }: ConfigStepProps) {
   const { persona: aiPersona } = useAiPersona()
   const aiAssistantName = aiPersona?.name ?? "assistente"
+  const { templates: AGENT_TEMPLATES } = useLegacyAgentTemplates()
   if (approach === "ai") {
     return (
       <div className="space-y-4" data-testid="config-step-ai">

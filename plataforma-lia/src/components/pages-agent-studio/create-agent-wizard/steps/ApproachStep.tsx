@@ -8,7 +8,7 @@ import { useAiPersona } from "@/hooks/company/use-ai-persona"
 import { Card, CardContent } from "@/components/ui/card"
 import { Chip } from "@/components/ui/chip"
 import { Textarea } from "@/components/ui/textarea"
-import { AGENT_TEMPLATES } from "@/lib/agent-templates-data"
+import { useLegacyAgentTemplates } from "@/hooks/agents/use-legacy-agent-templates"
 import { cn } from "@/lib/utils"
 
 import { filterTemplatesByGoal, type AgentApproach, type AgentGoal, type WizardConfig } from "../types"
@@ -24,6 +24,7 @@ interface ApproachStepProps {
 export function ApproachStep({ goal, approach, config, onSelect, setConfig }: ApproachStepProps) {
   const { persona: aiPersona } = useAiPersona()
   const aiAssistantName = aiPersona?.name ?? "assistente"
+  const { templates: AGENT_TEMPLATES } = useLegacyAgentTemplates()
   const relevantTemplates = filterTemplatesByGoal(AGENT_TEMPLATES, goal).slice(0, 4)
 
   return (

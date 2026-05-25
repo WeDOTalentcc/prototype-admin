@@ -55,7 +55,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { extractErrorMessage } from "@/lib/api/extract-error-message"
-import { AGENT_TEMPLATES } from "@/lib/agent-templates-data"
+import { useLegacyAgentTemplates } from "@/hooks/agents/use-legacy-agent-templates"
 import { toast } from "@/lib/toast"
 import { cn } from "@/lib/utils"
 
@@ -165,6 +165,7 @@ export function CreateAgentWizard({
   initialGoal,
   initialConfig,
 }: CreateAgentWizardProps) {
+  const { templates: AGENT_TEMPLATES } = useLegacyAgentTemplates()
   const initial = deriveInitialState(initialGoal, initialConfig)
   const [step, setStep] = useState(initial.step)
   const [goal, setGoal] = useState<AgentGoal | null>(initial.goal)

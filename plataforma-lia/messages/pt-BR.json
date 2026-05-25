@@ -890,7 +890,18 @@
       "verticalRetail": "Varejo",
       "verticalGeneric": "Genérico",
       "verticalFilterAriaLabel": "Filtrar templates por vertical de mercado",
-      "verticalLabel": "Vertical"
+      "verticalLabel": "Vertical",
+      "templateCategories": {
+        "all": "Todos",
+        "screening": "Triagem",
+        "sourcing": "Captação",
+        "communication": "Comunicação",
+        "analytics": "Análise",
+        "job_management": "Vagas",
+        "automation": "Automação"
+      },
+      "templateLoading": "Carregando templates...",
+      "templateLoadError": "Erro ao carregar templates. Tente novamente."
     },
     "digitalTwin": {
       "active": "Ativo",

@@ -108,6 +108,13 @@ jobs:
         # produção) bloqueia merge automaticamente.
         run: python3 lia-agent-system/scripts/check_no_broken_window_location.py
 
+      - name: Agent template catalog sensor (Sprint 3 — BLOCKING)
+        # Sensor #3 harness 2026-05-25: bloqueia reintrodução do legacy
+        # agent-templates-data.ts (deletado na Sprint 3 Caminho B Parte 2).
+        # Canonical: backend agent_template_catalog + adapter.
+        working-directory: plataforma-lia
+        run: python3 scripts/check_no_hardcoded_templates_import.py
+
       - name: Unit & Component tests
         run: npx vitest run --reporter=verbose
 
