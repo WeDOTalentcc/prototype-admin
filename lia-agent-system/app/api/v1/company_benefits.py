@@ -315,9 +315,9 @@ async def list_company_benefits(
     search: str | None = Query(None),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
-_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+gated_company_id: str = Depends(require_company_id_strict_match("query.company_id"))):
     try:
-        effective_company_id = company_id or get_user_company_id(current_user)
+        effective_company_id = gated_company_id  # canonical client_account_id from JWT gate (auto-resolves company_profile_id) — was: company_id or get_user_company_id(current_user) which used the raw query param and caused read/write tenant mismatch
         repo = CompanyBenefitRepository(db)
         benefits = await repo.list_for_company(
             effective_company_id,
@@ -440,9 +440,9 @@ async def create_company_benefit(
     company_id: str | None = Query(None),
     db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(get_current_user_or_demo),
-_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+gated_company_id: str = Depends(require_company_id_strict_match("query.company_id"))):
     try:
-        effective_company_id = company_id or get_user_company_id(current_user)
+        effective_company_id = gated_company_id  # canonical client_account_id from JWT gate (auto-resolves company_profile_id) — was: company_id or get_user_company_id(current_user) which used the raw query param and caused read/write tenant mismatch
         repo = CompanyBenefitRepository(db)
         payload = benefit.model_dump()
         if payload.get("subsidiaries"):
@@ -497,10 +497,10 @@ async def list_active_company_benefits(
     seniority_level: str | None = Query(None),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
-_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+gated_company_id: str = Depends(require_company_id_strict_match("query.company_id"))):
     """Must stay registered BEFORE /{benefit_id} to avoid path collision (regression bug B11)."""
     try:
-        effective_company_id = company_id or get_user_company_id(current_user)
+        effective_company_id = gated_company_id  # canonical client_account_id from JWT gate (auto-resolves company_profile_id) — was: company_id or get_user_company_id(current_user) which used the raw query param and caused read/write tenant mismatch
         if not effective_company_id or effective_company_id in ("default", "unknown"):
             return []
         repo = CompanyBenefitRepository(db)
@@ -525,10 +525,10 @@ async def list_highlighted_company_benefits(
     company_id: str | None = Query(None),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
-_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+gated_company_id: str = Depends(require_company_id_strict_match("query.company_id"))):
     """Must stay declared BEFORE /{benefit_id} (route order)."""
     try:
-        effective_company_id = company_id or get_user_company_id(current_user)
+        effective_company_id = gated_company_id  # canonical client_account_id from JWT gate (auto-resolves company_profile_id) — was: company_id or get_user_company_id(current_user) which used the raw query param and caused read/write tenant mismatch
         if not effective_company_id or effective_company_id in ("default", "unknown"):
             return []
         repo = CompanyBenefitRepository(db)
@@ -546,11 +546,11 @@ async def get_company_benefits_summary(
     company_id: str | None = Query(None),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
-_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+gated_company_id: str = Depends(require_company_id_strict_match("query.company_id"))):
     """AI-agent-friendly summary. Must stay declared BEFORE /{benefit_id}."""
     empty = {"total_count": 0, "active_count": 0, "highlighted_count": 0, "categories": {}, "formatted_text": "", "benefits": []}
     try:
-        effective_company_id = company_id or get_user_company_id(current_user)
+        effective_company_id = gated_company_id  # canonical client_account_id from JWT gate (auto-resolves company_profile_id) — was: company_id or get_user_company_id(current_user) which used the raw query param and caused read/write tenant mismatch
         if not effective_company_id or effective_company_id in ("default", "unknown"):
             return empty
         repo = CompanyBenefitRepository(db)
@@ -782,9 +782,9 @@ async def seed_default_benefits(
     company_id: str | None = Query(None),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
-_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+gated_company_id: str = Depends(require_company_id_strict_match("query.company_id"))):
     try:
-        effective_company_id = company_id or get_user_company_id(current_user)
+        effective_company_id = gated_company_id  # canonical client_account_id from JWT gate (auto-resolves company_profile_id) — was: company_id or get_user_company_id(current_user) which used the raw query param and caused read/write tenant mismatch
         repo = CompanyBenefitRepository(db)
         existing_count = await repo.count_for_company(effective_company_id)
         if existing_count > 0:

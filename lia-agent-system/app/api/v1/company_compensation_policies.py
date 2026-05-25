@@ -242,10 +242,10 @@ async def list_policies(
     search: str | None = Query(None),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
-_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+gated_company_id: str = Depends(require_company_id_strict_match("query.company_id"))):
     """List PRV policies for a company."""
     try:
-        effective_company_id = company_id or get_user_company_id(current_user)
+        effective_company_id = gated_company_id  # canonical client_account_id from JWT gate (auto-resolves company_profile_id) — same fix pattern as company_benefits.py
         validate_company_access(current_user, effective_company_id)
         repo = CompensationPolicyRepository(db)
         policies = await repo.list_for_company(
@@ -268,10 +268,10 @@ async def create_policy(
     company_id: str | None = Query(None),
     db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(get_current_user_or_demo),
-_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+gated_company_id: str = Depends(require_company_id_strict_match("query.company_id"))):
     """Create a new PRV policy."""
     try:
-        effective_company_id = company_id or get_user_company_id(current_user)
+        effective_company_id = gated_company_id  # canonical client_account_id from JWT gate (auto-resolves company_profile_id) — same fix pattern as company_benefits.py
         validate_company_access(current_user, effective_company_id)
         repo = CompensationPolicyRepository(db)
         created_by = getattr(current_user, "id", None) or getattr(
@@ -395,10 +395,10 @@ async def seed_default_policies(
     company_id: str | None = Query(None),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
-_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+gated_company_id: str = Depends(require_company_id_strict_match("query.company_id"))):
     """Seed PLR Anual Padrão + Bônus Comercial templates for a new company."""
     try:
-        effective_company_id = company_id or get_user_company_id(current_user)
+        effective_company_id = gated_company_id  # canonical client_account_id from JWT gate (auto-resolves company_profile_id) — same fix pattern as company_benefits.py
         validate_company_access(current_user, effective_company_id)
         repo = CompensationPolicyRepository(db)
         existing = await repo.count_for_company(effective_company_id)
