@@ -56,8 +56,8 @@ function ChipMultiSelect({
           onClick={() => toggle(opt.id)}
           className={`rounded-full border px-3 py-1 text-xs transition-all ${
             value.includes(opt.id)
-              ? "border-lia-primary bg-lia-primary/10 text-lia-primary"
-              : "border-lia-border bg-lia-surface text-lia-text-secondary hover:border-lia-primary/50"
+              ? "border-wedo-cyan bg-wedo-cyan/10 text-wedo-cyan"
+              : "border-lia-border-default bg-lia-bg-elevated text-lia-text-secondary hover:border-wedo-cyan/50"
           }`}
         >
           {opt.label}
@@ -98,7 +98,7 @@ function SalaryBandsTab({
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-lia-border text-lia-text-secondary text-xs">
+            <tr className="border-b border-lia-border-default text-lia-text-secondary text-xs">
               <th className="pb-2 text-left font-medium">Nível</th>
               <th className="pb-2 text-right font-medium">Mín (R$)</th>
               <th className="pb-2 text-right font-medium">Mid (R$)</th>
@@ -106,12 +106,12 @@ function SalaryBandsTab({
               <th className="pb-2" />
             </tr>
           </thead>
-          <tbody className="divide-y divide-lia-border/50">
+          <tbody className="divide-y divide-lia-border-default/50">
             {bands.map((band, idx) => (
               <tr key={idx}>
                 <td className="py-2 pr-2">
                   <input
-                    className="w-24 rounded border border-lia-border bg-lia-surface px-2 py-1 text-sm focus:border-lia-primary focus:outline-none"
+                    className="w-24 rounded border border-lia-border-default bg-lia-bg-elevated px-2 py-1 text-sm focus:border-wedo-cyan focus:outline-none"
                     value={band.level}
                     onChange={(e) => updateField(idx, "level", e.target.value)}
                     placeholder="junior"
@@ -125,7 +125,7 @@ function SalaryBandsTab({
                   <td key={field} className="py-2 px-1">
                     <input
                       type="number"
-                      className="w-28 rounded border border-lia-border bg-lia-surface px-2 py-1 text-sm text-right focus:border-lia-primary focus:outline-none"
+                      className="w-28 rounded border border-lia-border-default bg-lia-bg-elevated px-2 py-1 text-sm text-right focus:border-wedo-cyan focus:outline-none"
                       value={band[field]}
                       onChange={(e) => updateField(idx, field, Number(e.target.value))}
                       min={0}
@@ -149,7 +149,7 @@ function SalaryBandsTab({
       <button
         type="button"
         onClick={addRow}
-        className="flex items-center gap-1.5 text-sm text-lia-primary hover:underline"
+        className="flex items-center gap-1.5 text-sm text-wedo-cyan hover:underline"
       >
         <Plus className="h-4 w-4" /> Adicionar nível
       </button>
@@ -201,7 +201,7 @@ function VariableCompTab({
             key={kind.id}
             type="button"
             onClick={() => addItem(kind.id as VariableCompItem["kind"])}
-            className="flex items-center gap-1.5 rounded-full border border-lia-border px-3 py-1 text-xs text-lia-text-secondary hover:border-lia-primary hover:text-lia-primary"
+            className="flex items-center gap-1.5 rounded-full border border-lia-border-default px-3 py-1 text-xs text-lia-text-secondary hover:border-wedo-cyan hover:text-wedo-cyan"
           >
             <Plus className="h-3 w-3" /> {kind.label}
           </button>
@@ -214,13 +214,13 @@ function VariableCompTab({
           const isOpen = expandedIdx === idx
           const kindMeta = VARIABLE_KIND_OPTIONS.find((k) => k.id === item.kind)
           return (
-            <div key={idx} className="rounded-lg border border-lia-border overflow-hidden">
+            <div key={idx} className="rounded-lg border border-lia-border-default overflow-hidden">
               {/* Row header */}
               <div
-                className="flex items-center gap-2 px-3 py-2 cursor-pointer bg-lia-surface hover:bg-lia-muted/10"
+                className="flex items-center gap-2 px-3 py-2 cursor-pointer bg-lia-bg-elevated hover:bg-lia-bg-tertiary/10"
                 onClick={() => setExpandedIdx(isOpen ? null : idx)}
               >
-                <span className="rounded-full bg-lia-primary/10 px-2 py-0.5 text-xs text-lia-primary font-medium">
+                <span className="rounded-full bg-wedo-cyan/10 px-2 py-0.5 text-xs text-wedo-cyan font-medium">
                   {kindMeta?.label ?? item.kind}
                 </span>
                 <span className="flex-1 text-sm font-medium text-lia-text-primary">{item.name || "(sem nome)"}</span>
@@ -244,11 +244,11 @@ function VariableCompTab({
 
               {/* Expanded form */}
               {isOpen && (
-                <div className="border-t border-lia-border bg-lia-bg-primary/40 p-3 grid grid-cols-2 gap-3">
+                <div className="border-t border-lia-border-default bg-lia-bg-primary/40 p-3 grid grid-cols-2 gap-3">
                   <div className="col-span-2">
                     <label className="text-xs text-lia-text-secondary">Nome da verba</label>
                     <input
-                      className="mt-0.5 w-full rounded border border-lia-border bg-lia-surface px-2 py-1.5 text-sm focus:border-lia-primary focus:outline-none"
+                      className="mt-0.5 w-full rounded border border-lia-border-default bg-lia-bg-elevated px-2 py-1.5 text-sm focus:border-wedo-cyan focus:outline-none"
                       value={item.name}
                       onChange={(e) => updateItem(idx, { name: e.target.value })}
                       placeholder="Ex: PLR Anual 2026"
@@ -257,7 +257,7 @@ function VariableCompTab({
                   <div>
                     <label className="text-xs text-lia-text-secondary">Base de cálculo</label>
                     <select
-                      className="mt-0.5 w-full rounded border border-lia-border bg-lia-surface px-2 py-1.5 text-sm focus:border-lia-primary focus:outline-none"
+                      className="mt-0.5 w-full rounded border border-lia-border-default bg-lia-bg-elevated px-2 py-1.5 text-sm focus:border-wedo-cyan focus:outline-none"
                       value={item.base ?? ""}
                       onChange={(e) => updateItem(idx, { base: e.target.value })}
                     >
@@ -272,7 +272,7 @@ function VariableCompTab({
                   <div>
                     <label className="text-xs text-lia-text-secondary">Frequência</label>
                     <select
-                      className="mt-0.5 w-full rounded border border-lia-border bg-lia-surface px-2 py-1.5 text-sm focus:border-lia-primary focus:outline-none"
+                      className="mt-0.5 w-full rounded border border-lia-border-default bg-lia-bg-elevated px-2 py-1.5 text-sm focus:border-wedo-cyan focus:outline-none"
                       value={item.frequency ?? ""}
                       onChange={(e) => updateItem(idx, { frequency: e.target.value })}
                     >
@@ -288,7 +288,7 @@ function VariableCompTab({
                         <label className="text-xs text-lia-text-secondary">% Mínimo</label>
                         <input
                           type="number" min={0} max={100}
-                          className="mt-0.5 w-full rounded border border-lia-border bg-lia-surface px-2 py-1.5 text-sm focus:border-lia-primary focus:outline-none"
+                          className="mt-0.5 w-full rounded border border-lia-border-default bg-lia-bg-elevated px-2 py-1.5 text-sm focus:border-wedo-cyan focus:outline-none"
                           value={item.min_pct ?? ""}
                           onChange={(e) => updateItem(idx, { min_pct: Number(e.target.value) })}
                           placeholder="0"
@@ -298,7 +298,7 @@ function VariableCompTab({
                         <label className="text-xs text-lia-text-secondary">% Máximo / Alvo</label>
                         <input
                           type="number" min={0} max={500}
-                          className="mt-0.5 w-full rounded border border-lia-border bg-lia-surface px-2 py-1.5 text-sm focus:border-lia-primary focus:outline-none"
+                          className="mt-0.5 w-full rounded border border-lia-border-default bg-lia-bg-elevated px-2 py-1.5 text-sm focus:border-wedo-cyan focus:outline-none"
                           value={item.max_pct ?? item.value_pct ?? ""}
                           onChange={(e) => updateItem(idx, { max_pct: Number(e.target.value), value_pct: Number(e.target.value) })}
                           placeholder="15"
@@ -375,7 +375,7 @@ function EligibilityTab({
         <p className="text-xs text-lia-text-secondary mb-2">Deixe vazio para todos os departamentos.</p>
         <div className="flex gap-2">
           <input
-            className="flex-1 rounded border border-lia-border bg-lia-surface px-3 py-1.5 text-sm focus:border-lia-primary focus:outline-none"
+            className="flex-1 rounded border border-lia-border-default bg-lia-bg-elevated px-3 py-1.5 text-sm focus:border-wedo-cyan focus:outline-none"
             placeholder="Ex: comercial, engineering"
             value={departments.join(", ")}
             onChange={(e) =>
@@ -391,7 +391,7 @@ function EligibilityTab({
         {departments.length > 0 && (
           <div className="mt-2 flex flex-wrap gap-1">
             {departments.map((d) => (
-              <span key={d} className="inline-flex items-center gap-1 rounded-full bg-lia-primary/10 px-2 py-0.5 text-xs text-lia-primary">
+              <span key={d} className="inline-flex items-center gap-1 rounded-full bg-wedo-cyan/10 px-2 py-0.5 text-xs text-wedo-cyan">
                 {d}
                 <button type="button" onClick={() => onChangeDepts(departments.filter(x => x !== d))} className="ml-0.5 hover:text-red-500">×</button>
               </span>
@@ -405,7 +405,7 @@ function EligibilityTab({
         <p className="text-xs text-lia-text-secondary mb-2">Deixe vazio para todos os cargos.</p>
         <div className="flex gap-2">
           <input
-            className="flex-1 rounded border border-lia-border bg-lia-surface px-3 py-1.5 text-sm focus:border-lia-primary focus:outline-none"
+            className="flex-1 rounded border border-lia-border-default bg-lia-bg-elevated px-3 py-1.5 text-sm focus:border-wedo-cyan focus:outline-none"
             placeholder="Adicionar cargo..."
             value={rolesInput}
             onChange={(e) => setRolesInput(e.target.value)}
@@ -414,7 +414,7 @@ function EligibilityTab({
           <button
             type="button"
             onClick={addRole}
-            className="rounded border border-lia-border px-3 py-1.5 text-sm hover:border-lia-primary hover:text-lia-primary"
+            className="rounded border border-lia-border-default px-3 py-1.5 text-sm hover:border-wedo-cyan hover:text-wedo-cyan"
           >
             Adicionar
           </button>
@@ -422,7 +422,7 @@ function EligibilityTab({
         {roles.length > 0 && (
           <div className="mt-2 flex flex-wrap gap-1">
             {roles.map((r) => (
-              <span key={r} className="inline-flex items-center gap-1 rounded-full bg-lia-primary/10 px-2 py-0.5 text-xs text-lia-primary">
+              <span key={r} className="inline-flex items-center gap-1 rounded-full bg-wedo-cyan/10 px-2 py-0.5 text-xs text-wedo-cyan">
                 {r}
                 <button type="button" onClick={() => onChangeRoles(roles.filter(x => x !== r))} className="ml-0.5 hover:text-red-500">×</button>
               </span>
@@ -452,7 +452,7 @@ function ValidityTab({
           <label className="text-xs text-lia-text-secondary">Vigência — início</label>
           <input
             type="date"
-            className="mt-0.5 w-full rounded border border-lia-border bg-lia-surface px-2 py-1.5 text-sm focus:border-lia-primary focus:outline-none"
+            className="mt-0.5 w-full rounded border border-lia-border-default bg-lia-bg-elevated px-2 py-1.5 text-sm focus:border-wedo-cyan focus:outline-none"
             value={policy.effective_from?.slice(0, 10) ?? ""}
             onChange={(e) => onChange({ effective_from: e.target.value || undefined })}
           />
@@ -461,7 +461,7 @@ function ValidityTab({
           <label className="text-xs text-lia-text-secondary">Vigência — fim</label>
           <input
             type="date"
-            className="mt-0.5 w-full rounded border border-lia-border bg-lia-surface px-2 py-1.5 text-sm focus:border-lia-primary focus:outline-none"
+            className="mt-0.5 w-full rounded border border-lia-border-default bg-lia-bg-elevated px-2 py-1.5 text-sm focus:border-wedo-cyan focus:outline-none"
             value={policy.effective_until?.slice(0, 10) ?? ""}
             onChange={(e) => onChange({ effective_until: e.target.value || undefined })}
           />
@@ -473,7 +473,7 @@ function ValidityTab({
           <Lock className="h-3 w-3" /> Aprovado por (user ID — informação interna)
         </label>
         <input
-          className="mt-0.5 w-full rounded border border-lia-border bg-lia-surface px-2 py-1.5 text-sm focus:border-lia-primary focus:outline-none"
+          className="mt-0.5 w-full rounded border border-lia-border-default bg-lia-bg-elevated px-2 py-1.5 text-sm focus:border-wedo-cyan focus:outline-none"
           value={policy.approved_by ?? ""}
           onChange={(e) => onChange({ approved_by: e.target.value || undefined })}
           placeholder="ID do aprovador (mascarado em logs e JD publicada)"
@@ -484,7 +484,7 @@ function ValidityTab({
         <label className="flex items-center gap-2 cursor-pointer">
           <input
             type="checkbox"
-            className="rounded border-lia-border"
+            className="rounded border-lia-border-default"
             checked={policy.is_default}
             onChange={(e) => onChange({ is_default: e.target.checked })}
           />
@@ -494,7 +494,7 @@ function ValidityTab({
 
       {/* Version info (read-only) */}
       {policy.id && (
-        <div className="rounded-lg border border-lia-border bg-lia-surface p-3 text-xs text-lia-text-secondary space-y-1">
+        <div className="rounded-lg border border-lia-border-default bg-lia-bg-elevated p-3 text-xs text-lia-text-secondary space-y-1">
           <div className="font-medium text-lia-text-primary">Histórico de versões</div>
           <div>Versão atual: <strong>v{policy.version}</strong></div>
           {policy.revision_history.length > 0 && (
@@ -553,9 +553,9 @@ export function CompensationPolicyFormModal({
 
   const modalContent = (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="relative flex flex-col w-full max-w-3xl max-h-[90vh] rounded-xl border border-lia-border bg-lia-surface shadow-2xl overflow-hidden">
+      <div className="relative flex flex-col w-full max-w-3xl max-h-[90vh] rounded-xl border border-lia-border-default bg-lia-bg-elevated shadow-2xl overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-lia-border">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-lia-border-default">
           <div>
             <h2 className="text-base font-semibold text-lia-text-primary">
               {isEdit ? "Editar Política de Remuneração" : "Nova Política de Remuneração"}
@@ -564,7 +564,7 @@ export function CompensationPolicyFormModal({
               {isEdit ? `v${form.version} — alterações geram nova versão automaticamente` : "PRV com verbas tipadas (PLR, Bônus, Comissão, Equity)"}
             </p>
           </div>
-          <button onClick={onClose} className="rounded p-1 hover:bg-lia-muted/20 text-lia-text-secondary">
+          <button onClick={onClose} className="rounded p-1 hover:bg-lia-bg-tertiary/20 text-lia-text-secondary">
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -575,7 +575,7 @@ export function CompensationPolicyFormModal({
             <label className="text-xs text-lia-text-secondary">Nome da política *</label>
             <input
               required
-              className="mt-0.5 w-full rounded border border-lia-border bg-lia-surface px-3 py-1.5 text-sm focus:border-lia-primary focus:outline-none"
+              className="mt-0.5 w-full rounded border border-lia-border-default bg-lia-bg-elevated px-3 py-1.5 text-sm focus:border-wedo-cyan focus:outline-none"
               value={form.name}
               onChange={(e) => patch({ name: e.target.value })}
               placeholder="Ex: PLR Anual Padrão 2026"
@@ -584,7 +584,7 @@ export function CompensationPolicyFormModal({
           <div>
             <label className="text-xs text-lia-text-secondary">Tipo</label>
             <select
-              className="mt-0.5 w-full rounded border border-lia-border bg-lia-surface px-2 py-1.5 text-sm focus:border-lia-primary focus:outline-none"
+              className="mt-0.5 w-full rounded border border-lia-border-default bg-lia-bg-elevated px-2 py-1.5 text-sm focus:border-wedo-cyan focus:outline-none"
               value={form.policy_type}
               onChange={(e) => patch({ policy_type: e.target.value })}
             >
@@ -596,7 +596,7 @@ export function CompensationPolicyFormModal({
           <div>
             <label className="text-xs text-lia-text-secondary">Moeda</label>
             <select
-              className="mt-0.5 w-full rounded border border-lia-border bg-lia-surface px-2 py-1.5 text-sm focus:border-lia-primary focus:outline-none"
+              className="mt-0.5 w-full rounded border border-lia-border-default bg-lia-bg-elevated px-2 py-1.5 text-sm focus:border-wedo-cyan focus:outline-none"
               value={form.currency}
               onChange={(e) => patch({ currency: e.target.value })}
             >
@@ -611,7 +611,7 @@ export function CompensationPolicyFormModal({
             <label className="text-xs text-lia-text-secondary">Descrição</label>
             <textarea
               rows={2}
-              className="mt-0.5 w-full rounded border border-lia-border bg-lia-surface px-3 py-1.5 text-sm resize-none focus:border-lia-primary focus:outline-none"
+              className="mt-0.5 w-full rounded border border-lia-border-default bg-lia-bg-elevated px-3 py-1.5 text-sm resize-none focus:border-wedo-cyan focus:outline-none"
               value={form.description}
               onChange={(e) => patch({ description: e.target.value })}
               placeholder="Descreva brevemente o objetivo desta política..."
@@ -620,7 +620,7 @@ export function CompensationPolicyFormModal({
         </div>
 
         {/* Sub-tabs */}
-        <div className="flex border-b border-lia-border px-5 mt-3 gap-1 overflow-x-auto">
+        <div className="flex border-b border-lia-border-default px-5 mt-3 gap-1 overflow-x-auto">
           {TABS.map((tab) => (
             <button
               key={tab.id}
@@ -628,7 +628,7 @@ export function CompensationPolicyFormModal({
               onClick={() => setActiveTab(tab.id)}
               className={`shrink-0 border-b-2 pb-2 pt-1 px-2 text-xs font-medium transition-colors ${
                 activeTab === tab.id
-                  ? "border-lia-primary text-lia-primary"
+                  ? "border-wedo-cyan text-wedo-cyan"
                   : "border-transparent text-lia-text-secondary hover:text-lia-text-primary"
               }`}
             >
@@ -659,7 +659,7 @@ export function CompensationPolicyFormModal({
               <label className="text-xs text-lia-text-secondary">Cliff (meses)</label>
               <input
                 type="number" min={0}
-                className="w-full rounded border border-lia-border bg-lia-surface px-3 py-1.5 text-sm focus:border-lia-primary focus:outline-none"
+                className="w-full rounded border border-lia-border-default bg-lia-bg-elevated px-3 py-1.5 text-sm focus:border-wedo-cyan focus:outline-none"
                 value={(form.equity_rules.cliff_months as number | undefined) ?? ""}
                 onChange={(e) => patch({ equity_rules: { ...form.equity_rules, cliff_months: Number(e.target.value) } })}
                 placeholder="12"
@@ -667,7 +667,7 @@ export function CompensationPolicyFormModal({
               <label className="text-xs text-lia-text-secondary">Vesting (meses)</label>
               <input
                 type="number" min={0}
-                className="w-full rounded border border-lia-border bg-lia-surface px-3 py-1.5 text-sm focus:border-lia-primary focus:outline-none"
+                className="w-full rounded border border-lia-border-default bg-lia-bg-elevated px-3 py-1.5 text-sm focus:border-wedo-cyan focus:outline-none"
                 value={(form.equity_rules.vesting_months as number | undefined) ?? ""}
                 onChange={(e) => patch({ equity_rules: { ...form.equity_rules, vesting_months: Number(e.target.value) } })}
                 placeholder="48"
@@ -675,7 +675,7 @@ export function CompensationPolicyFormModal({
               <label className="text-xs text-lia-text-secondary">Descrição do programa</label>
               <textarea
                 rows={3}
-                className="w-full rounded border border-lia-border bg-lia-surface px-3 py-1.5 text-sm resize-none focus:border-lia-primary focus:outline-none"
+                className="w-full rounded border border-lia-border-default bg-lia-bg-elevated px-3 py-1.5 text-sm resize-none focus:border-wedo-cyan focus:outline-none"
                 value={(form.equity_rules.description as string | undefined) ?? ""}
                 onChange={(e) => patch({ equity_rules: { ...form.equity_rules, description: e.target.value } })}
                 placeholder="Ex: Stock options com cliff de 12 meses e vesting linear em 48 meses."
@@ -698,7 +698,7 @@ export function CompensationPolicyFormModal({
         </div>
 
         {/* Footer */}
-        <div className="border-t border-lia-border px-5 py-3 flex items-center justify-between gap-3">
+        <div className="border-t border-lia-border-default px-5 py-3 flex items-center justify-between gap-3">
           {error && (
             <p className="text-sm text-status-error flex-1 truncate">{error}</p>
           )}
@@ -707,7 +707,7 @@ export function CompensationPolicyFormModal({
             <button
               type="button"
               onClick={onClose}
-              className="rounded-lg border border-lia-border px-4 py-2 text-sm text-lia-text-secondary hover:bg-lia-muted/20"
+              className="rounded-lg border border-lia-border-default px-4 py-2 text-sm text-lia-text-secondary hover:bg-lia-bg-tertiary/20"
             >
               Cancelar
             </button>

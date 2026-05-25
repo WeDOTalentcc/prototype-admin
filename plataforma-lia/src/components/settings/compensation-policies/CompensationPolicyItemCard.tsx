@@ -27,19 +27,19 @@ export function CompensationPolicyItemCard({ policy, onEdit, onDeactivate }: Pro
   const itemCount = policy.variable_compensation?.items?.length ?? 0
 
   return (
-    <div className={`relative rounded-lg border p-4 transition-all ${policy.is_active ? "border-lia-border bg-lia-surface hover:border-lia-primary/40" : "border-lia-border/50 bg-lia-surface/60 opacity-60"}`}>
+    <div className={`relative rounded-lg border p-4 transition-all ${policy.is_active ? "border-lia-border-default bg-lia-bg-elevated hover:border-wedo-cyan/40" : "border-lia-border-default/50 bg-lia-bg-elevated/60 opacity-60"}`}>
       {/* Header */}
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="font-medium text-lia-text-primary truncate">{policy.name}</span>
             {policy.is_default && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-lia-primary/10 px-2 py-0.5 text-xs text-lia-primary">
+              <span className="inline-flex items-center gap-1 rounded-full bg-wedo-cyan/10 px-2 py-0.5 text-xs text-wedo-cyan">
                 <Star className="h-3 w-3" /> Padrão
               </span>
             )}
             {!policy.is_active && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-lia-muted/20 px-2 py-0.5 text-xs text-lia-text-secondary">
+              <span className="inline-flex items-center gap-1 rounded-full bg-lia-bg-tertiary/20 px-2 py-0.5 text-xs text-lia-text-secondary">
                 Inativa
               </span>
             )}
@@ -53,17 +53,17 @@ export function CompensationPolicyItemCard({ policy, onEdit, onDeactivate }: Pro
         <div className="relative shrink-0">
           <button
             onClick={() => setMenuOpen((v) => !v)}
-            className="rounded p-1 hover:bg-lia-muted/20 text-lia-text-secondary"
+            className="rounded p-1 hover:bg-lia-bg-tertiary/20 text-lia-text-secondary"
           >
             <MoreVertical className="h-4 w-4" />
           </button>
           {menuOpen && (
             <div
-              className="absolute right-0 top-7 z-10 min-w-[150px] rounded-lg border border-lia-border bg-lia-surface shadow-lg"
+              className="absolute right-0 top-7 z-10 min-w-[150px] rounded-lg border border-lia-border-default bg-lia-bg-elevated shadow-lg"
               onBlur={() => setMenuOpen(false)}
             >
               <button
-                className="flex w-full items-center gap-2 px-3 py-2 text-sm text-lia-text-primary hover:bg-lia-muted/20"
+                className="flex w-full items-center gap-2 px-3 py-2 text-sm text-lia-text-primary hover:bg-lia-bg-tertiary/20"
                 onClick={() => { setMenuOpen(false); onEdit(policy) }}
               >
                 <Edit2 className="h-3.5 w-3.5" /> Editar
@@ -84,22 +84,22 @@ export function CompensationPolicyItemCard({ policy, onEdit, onDeactivate }: Pro
       {/* Tags */}
       <div className="mt-3 flex flex-wrap gap-2 text-xs">
         {policy.policy_type && (
-          <span className="rounded-full border border-lia-border px-2 py-0.5 text-lia-text-secondary">
+          <span className="rounded-full border border-lia-border-default px-2 py-0.5 text-lia-text-secondary">
             {POLICY_TYPE_LABELS[policy.policy_type] ?? policy.policy_type}
           </span>
         )}
         {policy.currency && policy.currency !== "BRL" && (
-          <span className="rounded-full border border-lia-border px-2 py-0.5 text-lia-text-secondary">
+          <span className="rounded-full border border-lia-border-default px-2 py-0.5 text-lia-text-secondary">
             {policy.currency}
           </span>
         )}
         {hasBands && (
-          <span className="rounded-full bg-lia-primary/10 border border-lia-primary/20 px-2 py-0.5 text-lia-primary">
+          <span className="rounded-full bg-wedo-cyan/10 border border-wedo-cyan/20 px-2 py-0.5 text-wedo-cyan">
             {bandCount} banda{bandCount !== 1 ? "s" : ""}
           </span>
         )}
         {kindLabels.map((label) => (
-          <span key={label} className="rounded-full bg-lia-primary/10 border border-lia-primary/20 px-2 py-0.5 text-lia-primary">
+          <span key={label} className="rounded-full bg-wedo-cyan/10 border border-wedo-cyan/20 px-2 py-0.5 text-wedo-cyan">
             {label}
           </span>
         ))}

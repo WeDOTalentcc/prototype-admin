@@ -60,12 +60,12 @@ export function CompensationPoliciesListSection() {
       {isLoading ? (
         <div className="space-y-3">
           {[1, 2].map((n) => (
-            <div key={n} className="h-24 rounded-lg bg-lia-muted/20 animate-pulse" />
+            <div key={n} className="h-24 rounded-lg bg-lia-bg-tertiary/20 animate-pulse" />
           ))}
         </div>
       ) : policies.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-lia-border bg-lia-surface p-6 text-center">
-          <Sparkles className="mx-auto h-8 w-8 text-lia-primary/40 mb-2" />
+        <div className="rounded-xl border border-dashed border-lia-border-default bg-lia-bg-elevated p-6 text-center">
+          <Sparkles className="mx-auto h-8 w-8 text-wedo-cyan/40 mb-2" />
           <p className="text-sm font-medium text-lia-text-primary">
             Nenhuma política cadastrada ainda
           </p>
@@ -76,7 +76,7 @@ export function CompensationPoliciesListSection() {
             <button
               onClick={seedDefaults}
               disabled={isSaving}
-              className="flex items-center gap-1.5 rounded-lg border border-lia-primary px-3 py-1.5 text-xs font-medium text-lia-primary hover:bg-lia-primary/10 disabled:opacity-60"
+              className="flex items-center gap-1.5 rounded-lg border border-wedo-cyan px-3 py-1.5 text-xs font-medium text-wedo-cyan hover:bg-wedo-cyan/10 disabled:opacity-60"
             >
               <Sparkles className="h-3.5 w-3.5" />
               {isSaving ? "Criando..." : "Usar templates BR padrão"}
