@@ -486,9 +486,58 @@ company_id: str = Depends(require_company_id)):
                 )
 
         update_data = data.model_dump(exclude_unset=True)
+
+        # Sprint 5.5 RBAC (2026-05-25): can_view_salary requires tenant admin grant.
+        # LGPD Art. 6 III minimização — controlador (tenant admin) decides PII access.
+        # Plan canonical: ~/.claude/plans/jolly-roaming-moler.md
+        can_view_salary_change = None
+        if "can_view_salary" in update_data:
+            actor_role = current_user.get("role") if isinstance(current_user, dict) else getattr(current_user, "role", None)
+            actor_role_str = actor_role.value if hasattr(actor_role, "value") else str(actor_role) if actor_role else ""
+            if actor_role_str not in ("admin", "wedotalent_admin"):
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Only tenant admin can grant can_view_salary",
+                )
+            # client_users table doesn't have can_view_salary column — pop and sync to users only.
+            can_view_salary_change = update_data.pop("can_view_salary")
+
         for field, value in update_data.items():
             setattr(user, field, value)
         user.updated_at = datetime.utcnow()
+
+        # Sprint 5.5 RBAC: SYNC can_view_salary → users.can_view_salary (auth table).
+        # client_users doesn't store this field; users.can_view_salary is the canonical SoT.
+        if can_view_salary_change is not None and user.user_id:
+            from sqlalchemy import text
+            try:
+                await repo.db.execute(
+                    text("UPDATE users SET can_view_salary = :v WHERE id = :uid"),
+                    {"v": bool(can_view_salary_change), "uid": str(user.user_id)},
+                )
+                # Audit log SOXAuditLog 7-year retention (LGPD Art. 37 V).
+                from app.shared.compliance.audit_service import AuditService
+                audit_svc = AuditService()
+                actor_id = current_user.get("user_id") if isinstance(current_user, dict) else getattr(current_user, "id", None)
+                actor_email = current_user.get("email") if isinstance(current_user, dict) else getattr(current_user, "email", None)
+                await audit_svc.log_user_provisioning(
+                    company_id=client_id,
+                    actor=str(actor_email or actor_id or "system"),
+                    action="pii_grant_change",
+                    target_user_id=str(user.user_id),
+                    target_user_email=user.email,
+                    details={
+                        "grant_field": "can_view_salary",
+                        "grant_new": bool(can_view_salary_change),
+                        "pii_class": "financial_salary",
+                    },
+                )
+            except HTTPException:
+                raise
+            except Exception as sync_exc:
+                logger.warning(
+                    "[client_users] can_view_salary sync to users failed (non-blocking): %s", sync_exc
+                )
 
         # Sprint 2 RBAC (2026-05-25): SYNC client_users.department_id → users.department_id (auth table).
         # Filter logic em app/api/v1/job_vacancies/crud.py:list_job_vacancies usa users.department_id.

@@ -31,12 +31,10 @@ class ClientUserUpdate(WeDoBaseModel):
     # quando client_users.user_id matches (filter logic em crud.py lê users.department_id).
     department_id: str | None = Field(None, description="Department UUID (FK to departments.id)")
     manager_id: str | None = Field(None, description="Manager UUID (FK to client_users.id) — reserved for approval chains")
-    # RBAC Sprint 2 (2026-05-25): department + manager FKs.
-    # Plan canonical: ~/.claude/plans/jolly-roaming-moler.md
-    # NB: backend endpoint deve sync client_users.department_id → users.department_id
-    # quando client_users.user_id matches (filter logic em crud.py lê users.department_id).
-    department_id: str | None = Field(None, description="Department UUID (FK to departments.id)")
-    manager_id: str | None = Field(None, description="Manager UUID (FK to client_users.id) — reserved for approval chains")
+    # RBAC Sprint 5.5 (2026-05-25): financial PII privilege grant (LGPD Art. 6 III minimização).
+    # Tenant admin grants per-user via UI; sync to users.can_view_salary (auth table).
+    # Backend gate: only current_user.role == 'admin' can mutate this field.
+    can_view_salary: bool | None = Field(None, description="Grant: allow this user to view salary fields. Tenant admin only.")
 
 
 class AcceptInvitationRequest(WeDoBaseModel):

@@ -243,6 +243,7 @@ export function UserManagement(_props: UserManagementProps) {
         onEditUser={handleEditUser}
         onDeleteUser={handleDeleteUser}
         onResendInvitation={handleResendInvitation}
+        onSalaryGrantChange={fetchUsers}
       />
     </div>
   )

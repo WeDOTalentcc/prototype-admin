@@ -20,6 +20,10 @@ export interface UserData {
   createdAt: string
   updatedAt: string
   isScimManaged?: boolean
+  // Sprint 2 RBAC (2026-05-25): department FK (UUID) — alongside legacy `department` (name string)
+  department_id?: string | null
+  // Sprint 5.5 RBAC (2026-05-25): financial PII grant (LGPD Art. 6 III)
+  can_view_salary?: boolean
 }
 
 export interface UserManagementProps {

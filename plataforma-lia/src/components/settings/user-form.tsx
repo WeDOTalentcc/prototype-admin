@@ -7,6 +7,7 @@ import { X, Save, User, Briefcase, Shield } from "lucide-react"
 import { textStyles } from '@/lib/design-tokens'
 import type { UserData } from './user-management-types'
 import { useTranslations } from "next-intl"
+import { useAuth } from "@/contexts/auth-context"
 import { InlineDepartmentCreateModal, type CreatedDepartment } from "./InlineDepartmentCreateModal"
 import { useCompanyId } from "@/hooks/company/useCompanyId"
 
@@ -22,6 +23,11 @@ interface UserFormProps {
 }
 
 export function UserForm({ isCreating, formData, setFormData, onSave, onCancel, departments, onDepartmentCreated }: UserFormProps) {
+  // Sprint 5.5 RBAC (2026-05-25): can_view_salary checkbox gated by tenant admin role.
+  // LGPD Art. 6 III minimização — only admin can grant PII access.
+  const { user: authUser } = useAuth()
+  const isAdmin = authUser?.role === 'admin' || authUser?.role === 'wedotalent_admin'
+
   const t = useTranslations('settings.users')
   const inputClass = "w-full py-1.5 px-2 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-elevated text-lia-text-primary focus:ring-1 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg"
 
@@ -239,6 +245,27 @@ export function UserForm({ isCreating, formData, setFormData, onSave, onCancel, 
                   <span className={textStyles.label}>{t('isManager')}</span>
                 </label>
               </div>
+
+              {/* Sprint 5.5 RBAC (2026-05-25): can_view_salary grant — tenant admin only.
+                  LGPD Art. 6 III minimização. Plan canonical: jolly-roaming-moler.md */}
+              {isAdmin && (
+                <div>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      data-toggle="canViewSalary"
+                      data-testid="user-toggle-can-view-salary"
+                      checked={(formData as Record<string, unknown>).can_view_salary as boolean || false}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        can_view_salary: e.target.checked,
+                      } as typeof prev))}
+                      className="w-3.5 h-3.5 rounded-xl border-lia-border-default"
+                    />
+                    <span className={textStyles.label}>Pode ver salário dos candidatos</span>
+                  </label>
+                </div>
+              )}
             </div>
           </div>
 

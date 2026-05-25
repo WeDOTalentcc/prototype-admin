@@ -11,6 +11,10 @@ import { textStyles, badgeStyles } from '@/lib/design-tokens'
 import { cn } from "@/lib/utils"
 import type { UserData } from './user-management-types'
 import { useTranslations } from "next-intl"
+import { useState } from "react"
+import { useAuth } from "@/contexts/auth-context"
+import { apiFetch } from "@/lib/api/api-fetch"
+import { useCompanyId } from "@/hooks/company/useCompanyId"
 
 // Override de tamanho aplicado em cima do `getStatusColor()` para que as
 // pílulas do card de usuário fiquem na mesma densidade compacta da tabela
@@ -27,6 +31,8 @@ interface UserListProps {
   onEditUser: (user: UserData) => void
   onDeleteUser: (userId: string) => void
   onResendInvitation: (userId: string, userEmail: string) => void
+  // Sprint 5.5 RBAC (2026-05-25): salary grant change callback (parent re-fetches)
+  onSalaryGrantChange?: () => void
 }
 
 export function UserList({
@@ -38,8 +44,36 @@ export function UserList({
   onEditUser,
   onDeleteUser,
   onResendInvitation,
+  onSalaryGrantChange,
 }: UserListProps) {
   const t = useTranslations('settings.users')
+  // Sprint 5.5 RBAC: gate inline grant toggle to tenant admin
+  const { user: authUser } = useAuth()
+  const isAdmin = authUser?.role === 'admin' || authUser?.role === 'wedotalent_admin'
+  const { companyId } = useCompanyId()
+  const [grantingFor, setGrantingFor] = useState<string | null>(null)
+
+  const handleSalaryGrantToggle = async (user: UserData, next: boolean) => {
+    if (!isAdmin || !companyId) return
+    setGrantingFor(user.id)
+    try {
+      await apiFetch(
+        `/api/backend-proxy/clients/${companyId}/client-users/${user.id}`,
+        {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ can_view_salary: next }),
+        },
+      )
+      onSalaryGrantChange?.()
+    } catch (err) {
+      // Silent — parent refresh will fix UI; user can retry
+      // eslint-disable-next-line no-console
+      console.warn('[Sprint 5.5] salary grant toggle failed', err)
+    } finally {
+      setGrantingFor(null)
+    }
+  }
 
   if (filteredUsers.length === 0) {
     return (
@@ -176,6 +210,14 @@ export function UserList({
                 <th className="px-2 py-2.5 text-left text-micro font-medium text-lia-text-secondary uppercase tracking-wider">
                   {t('tableStatus')}
                 </th>
+                {isAdmin && (
+                  <th
+                    className="px-2 py-2.5 text-center text-micro font-medium text-lia-text-secondary uppercase tracking-wider"
+                    title="Pode ver salário dos candidatos (LGPD Art. 6 III)"
+                  >
+                    Ver salário
+                  </th>
+                )}
                 {!isSCIMEnabled && (
                   <th className="px-2 py-2.5 text-center text-micro font-medium text-lia-text-secondary uppercase tracking-wider">
                     {t('tableActions')}
@@ -217,6 +259,20 @@ export function UserList({
                       )}
                     </div>
                   </td>
+                  {isAdmin && (
+                    <td className="px-2 py-1.5 whitespace-nowrap text-center">
+                      <label className="inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          data-testid={`user-salary-grant-toggle-${user.id}`}
+                          checked={((user as unknown as Record<string, unknown>).can_view_salary as boolean) || false}
+                          disabled={grantingFor === user.id}
+                          onChange={(e) => handleSalaryGrantToggle(user, e.target.checked)}
+                          className="w-4 h-4 rounded border-lia-border-default cursor-pointer disabled:opacity-50"
+                        />
+                      </label>
+                    </td>
+                  )}
                   {!isSCIMEnabled && (
                     <td className="px-2 py-1.5 whitespace-nowrap text-center">
                       <div className="flex items-center justify-center gap-1">
