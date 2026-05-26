@@ -1545,3 +1545,53 @@ company_id: str = Depends(require_company_id)):
         "preview_lines": 80,
         "prompt_preview": "\n".join(preview_lines),
     }
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Sprint 7B-3b Part 1 Fase B — Timeline shim canonical (transitional)
+# ─────────────────────────────────────────────────────────────────────────────
+from sqlalchemy import or_, select  # noqa: E402
+
+from app.schemas.agent_timeline import AgentTimelineEventResponse  # noqa: E402
+from app.services.sourcing_agent_orchestrator import sourcing_agent_orchestrator  # noqa: E402
+from app.shared.types import AgentIdParam  # noqa: E402
+
+
+@router.get(
+    "/{agent_id}/timeline",
+    summary="Timeline canonical de eventos do agente (sourcing category)",
+)
+async def get_custom_agent_timeline(
+    agent_id: AgentIdParam,
+    company_id: str = Depends(require_company_id),
+    db: AsyncSession = Depends(get_tenant_db),
+):
+    """Timeline shim — compat com /sourcing-agents/{id}/timeline pré-Sprint 7B-3b.
+
+    Resolve agent_id via OR shim (custom_agent.id OR legacy_sourcing_agent_id)
+    porque Part 2 frontend swap ainda não foi feito. Sprint 7B-3b Part 3 remove
+    OR shim quando frontend passar custom_agent.id direto.
+
+    Filtra por company_id (multi-tenancy fail-closed) e category=sourcing
+    (timeline só faz sentido pra agentes de sourcing — outras categorias usam
+    surfaces diferentes).
+    """
+    stmt = select(CustomAgent).where(
+        or_(
+            CustomAgent.id == agent_id,
+            CustomAgent.legacy_sourcing_agent_id == agent_id,
+        ),
+        CustomAgent.company_id == company_id,
+        CustomAgent.category == "sourcing",
+    )
+    result = await db.execute(stmt)
+    agent = result.scalar_one_or_none()
+    if agent is None:
+        raise HTTPException(status_code=404, detail="Agent not found")
+
+    raw_events = await sourcing_agent_orchestrator.get_agent_timeline(
+        agent.id, db=db
+    )
+
+    timeline = [AgentTimelineEventResponse(**ev) for ev in raw_events]
+    return {"timeline": timeline}

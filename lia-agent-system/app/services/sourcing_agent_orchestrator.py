@@ -52,38 +52,126 @@ class SourcingAgentOrchestrator:
         db=None,
     ) -> dict:
         """
-        Create a new sourcing agent for a job or talent pool.
+        Cria CustomAgent canonical (category='sourcing') preservando dict return shape.
 
-        If no search_strategy provided and job_id given, extracts strategy from JD via LLM.
+        Sprint 7B-3b Part 1: refactor interno. Caller legacy /sourcing-agents POST
+        continua funcionando — return shape backward compat {agent_id, status, strategy}.
+
+        Auto-extract de search_strategy via LLM quando job_id provided (preservado).
+        agent_template_id → copia system_prompt do template (canonical AgentTemplate).
+        talent_pool_id → cria PoolAgentAssignment (canonical Pool→Agent canonical).
         """
-        from lia_models.sourcing_agent import SourcingAgent
+        from lia_models.custom_agent import CustomAgent, CustomAgentStatus
+        from lia_models.pool_agent_assignment import PoolAgentAssignment
 
-        # Extract strategy from JD if not provided
+        # Extract strategy from JD if not provided (PRESERVADO)
         if not search_strategy and job_id:
             search_strategy = await self._extract_strategy_from_job(job_id, db)
         elif not search_strategy:
             search_strategy = {"required_skills": [], "exclusions": [], "positive_signals": []}
 
-        agent = SourcingAgent(
-            id=str(uuid.uuid4()),
+        # Resolve system_prompt do template (quando provided)
+        system_prompt = ""
+        if agent_template_id:
+            try:
+                from lia_models.agent_template import AgentTemplate
+                from sqlalchemy import select
+
+                tpl_result = await db.execute(
+                    select(AgentTemplate).where(AgentTemplate.id == agent_template_id)
+                )
+                template = tpl_result.scalar_one_or_none()
+                if template and getattr(template, "system_prompt", None):
+                    system_prompt = template.system_prompt
+            except Exception as exc:
+                logger.error(
+                    "[SourcingAgent] template lookup failed for template_id=%s: %s",
+                    agent_template_id, exc, exc_info=True,
+                )
+
+        if not system_prompt:
+            system_prompt = (
+                f"Você é um agente de sourcing autônomo chamado {agent_name}. "
+                f"Busque candidatos seguindo a search_strategy canonical e calibre "
+                f"via feedback do recrutador."
+            )
+
+        # Cria CustomAgent canonical (category='sourcing')
+        agent_id = uuid.uuid4()
+        agent = CustomAgent(
+            id=agent_id,
             company_id=company_id,
-            job_id=job_id,
-            talent_pool_id=talent_pool_id,
-            agent_template_id=agent_template_id,
-            agent_name=agent_name,
-            status="active",
-            calibration_v=0,
+            created_by=company_id,  # actor canonical when no user context (admin/system)
+            name=agent_name,
+            role="sourcing-agent",
+            description=f"Sourcing agent for job={job_id or 'none'} pool={talent_pool_id or 'none'}",
+            system_prompt=system_prompt,
+            allowed_tools=[],
+            domain="general",
+            status=CustomAgentStatus.ACTIVE.value,
+            category="sourcing",
             search_strategy=search_strategy,
-            preferences=preferences or self._default_preferences(),
-            outreach_config={},
+            runtime_metrics={},
+            config={
+                "job_id": job_id,
+                "talent_pool_id": talent_pool_id,
+                "agent_template_id": agent_template_id,
+                "preferences": preferences or self._default_preferences(),
+            },
         )
 
         db.add(agent)
-        await db.commit()
-        await db.refresh(agent)
+        await db.flush()
 
-        logger.info("[SourcingAgent] Created agent=%s for job=%s pool=%s", agent.id, job_id, talent_pool_id)
-        return {"agent_id": str(agent.id), "status": "active", "strategy": search_strategy}
+        # PoolAgentAssignment quando talent_pool provided
+        if talent_pool_id:
+            assignment = PoolAgentAssignment(
+                id=uuid.uuid4(),
+                company_id=company_id,
+                talent_pool_id=talent_pool_id,
+                custom_agent_id=agent_id,
+                status="active",
+                created_by=company_id,
+            )
+            db.add(assignment)
+            await db.flush()
+
+        await db.commit()
+
+        # Audit dim 5 — canonical log_decision (non-blocking)
+        try:
+            from app.shared.compliance.audit_service import AuditService
+
+            audit_service = AuditService()
+            await audit_service.log_decision(
+                company_id=company_id,
+                agent_name=agent_name,
+                decision_type="creation",
+                action="custom_agent_created",
+                decision="created",
+                reasoning=[
+                    f"category=sourcing template={agent_template_id or 'none'} "
+                    f"job={job_id or 'none'} pool={talent_pool_id or 'none'}"
+                ],
+                criteria_used=[],
+            )
+        except Exception as exc:
+            logger.error(
+                "[SourcingAgent] audit log_decision failed (non-blocking): %s",
+                exc, exc_info=True,
+            )
+
+        logger.info(
+            "[SourcingAgent] CustomAgent created agent=%s category=sourcing job=%s pool=%s",
+            agent_id, job_id, talent_pool_id,
+        )
+
+        # Backward compat: dict shape antiga
+        return {
+            "agent_id": str(agent_id),
+            "status": "active",
+            "strategy": search_strategy,
+        }
 
     async def process_feedback(
         self,
@@ -161,20 +249,32 @@ class SourcingAgentOrchestrator:
         await db.commit()
 
         # 7.6: Feed calibration signal to ML pipeline for weight adaptation
+        # Canonical: app.shared.services.ml_feedback_service (Paulo locked 2026-05-26).
+        # Option A silent fallback policy: logger.error(exc_info=True) — NÃO logger.debug.
+        # FeedbackSignal canonical dataclass (db, signal) — signature exata
+        # de app/domains/analytics/services/ml_feedback_service.py:92.
         try:
-            from app.domains.analytics.services.ml_feedback_service import MLFeedbackService
+            from app.shared.services.ml_feedback_service import (
+                FeedbackSignal,
+                MLFeedbackService,
+            )
             prefs = agent.preferences or {}
             job_id_fallback = prefs.get("job_id", "") if isinstance(prefs, dict) else ""
             ml_svc = MLFeedbackService()
-            await ml_svc.record_signal(
+            signal_payload = FeedbackSignal(
                 candidate_id=candidate_id,
                 job_id=job_id_fallback,
                 company_id=agent.company_id,
                 ai_score=0.0,
                 recruiter_decision="hire" if signal_type == "positive" else "reject",
             )
+            await ml_svc.record_signal(db, signal_payload)
         except Exception as ml_err:
-            logger.debug("[SourcingAgent] ML feedback recording skipped: %s", ml_err)
+            logger.error(
+                "[SourcingAgent] MLFeedback record_signal failed (non-blocking side channel): %s",
+                ml_err,
+                exc_info=True,
+            )
 
         # Audit dim 5 — log_decision canonical (action='pool_agent_dispatch').
         try:
@@ -191,7 +291,11 @@ class SourcingAgentOrchestrator:
                 candidate_id=candidate_id,
             )
         except Exception as audit_err:
-            logger.debug("[SourcingAgent] audit log_decision skipped: %s", audit_err)
+            logger.error(
+                "[SourcingAgent] audit log_decision failed (non-blocking): %s",
+                audit_err,
+                exc_info=True,
+            )
 
         # Count total signals for calibration status (canonical: custom_agent_id)
         from sqlalchemy import func

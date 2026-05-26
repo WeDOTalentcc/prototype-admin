@@ -72,6 +72,26 @@ CompanyIdParam = Annotated[
     ),
 ]
 
+AgentIdParam = Annotated[
+    str,
+    Path(
+        ...,
+        pattern=UUID_OR_BIGINT_PATTERN,
+        description="Agent ID — UUID v4 (custom_agent.id canonical) OR bigint legacy",
+    ),
+]
+"""
+Uso canonical em FastAPI handlers de Agent Studio (custom_agents endpoints):
+
+    @router.get("/custom-agents/{agent_id}/timeline")
+    async def get_timeline(agent_id: AgentIdParam, ...):
+        ...
+
+Aceita UUID (custom_agent.id) OU bigint legacy. Sprint 7B-3b transitional shim:
+durante migration, agent_id pode ser CustomAgent.id OU legacy_sourcing_agent_id —
+ambos UUIDs, pattern unificado. Sprint 7B-3b Part 3 removerá OR shim.
+"""
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Pydantic base canonical pattern
