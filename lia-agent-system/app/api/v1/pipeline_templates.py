@@ -7,7 +7,8 @@ import uuid
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel
+from typing import Literal
+from pydantic import BaseModel, field_validator
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user_or_demo
@@ -24,12 +25,26 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/company/pipeline-templates", tags=["pipeline-templates"])
 
 
-class PipelineStage(BaseModel):
+class PipelineStage(WeDoBaseModel):
     name: str
     order: int
-    type: str = "manual"
+    type: Literal["automatic", "manual", "hybrid"] = "manual"
     sla_days: int = 3
     instructions: str | None = None
+
+    @field_validator("order")
+    @classmethod
+    def _order_min_1(cls, v: int) -> int:
+        if v < 1:
+            raise ValueError("order must be >= 1")
+        return v
+
+    @field_validator("sla_days")
+    @classmethod
+    def _sla_non_negative(cls, v: int) -> int:
+        if v < 0:
+            raise ValueError("sla_days must be >= 0")
+        return v
 
 
 class PipelineTemplateCreate(WeDoBaseModel):
@@ -37,6 +52,10 @@ class PipelineTemplateCreate(WeDoBaseModel):
     description: str | None = None
     stages: list[PipelineStage]
     is_default: bool = False
+    # Auto-suggest hints (migration 208 — Sprint Pipeline Templates 2026-05-26)
+    department_hint: list[str] | None = None
+    seniority_hint: list[str] | None = None
+    job_family_hint: list[str] | None = None
 
 
 class PipelineTemplateUpdate(WeDoBaseModel):
@@ -45,6 +64,10 @@ class PipelineTemplateUpdate(WeDoBaseModel):
     stages: list[PipelineStage] | None = None
     is_default: bool | None = None
     is_active: bool | None = None
+    is_archived: bool | None = None
+    department_hint: list[str] | None = None
+    seniority_hint: list[str] | None = None
+    job_family_hint: list[str] | None = None
 
 
 class PipelineTemplateResponse(BaseModel):
@@ -55,8 +78,13 @@ class PipelineTemplateResponse(BaseModel):
     stages: list[dict[str, Any]]
     is_default: bool
     is_active: bool
+    is_archived: bool = False
     usage_count: int
+    department_hint: list[str] | None = None
+    seniority_hint: list[str] | None = None
+    job_family_hint: list[str] | None = None
     created_by: str | None = None
+    updated_by: str | None = None
     created_at: str
     updated_at: str
 
@@ -78,6 +106,11 @@ def _to_response(t) -> PipelineTemplateResponse:
         name=t.name,
         description=t.description,
         stages=t.stages or [],
+        is_archived=bool(getattr(t, "is_archived", False)),
+        department_hint=getattr(t, "department_hint", None),
+        seniority_hint=getattr(t, "seniority_hint", None),
+        job_family_hint=getattr(t, "job_family_hint", None),
+        updated_by=getattr(t, "updated_by", None),
         is_default=t.is_default,
         is_active=t.is_active,
         usage_count=t.usage_count or 0,
