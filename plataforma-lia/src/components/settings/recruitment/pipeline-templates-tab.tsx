@@ -38,7 +38,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
-import { Badge } from "@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
@@ -516,15 +516,15 @@ export function PipelineTemplatesTab({ onSettingsChange }: { onSettingsChange?: 
                           <p className="text-sm text-lia-text-secondary line-clamp-2 mt-0.5">{tpl.description}</p>
                         )}
                       </div>
-                      <Badge variant={tpl.is_archived ? "secondary" : "default"}>
+                      <Chip variant={tpl.is_archived ? "secondary" : "default"}>
                         {tpl.is_archived ? tStates("archived") : tStates("active")}
-                      </Badge>
+                      </Chip>
                     </div>
 
                     {hintBadges.length > 0 && (
                       <div className="flex flex-wrap gap-1.5">
                         {hintBadges.map((h, i) => (
-                          <Badge key={`${h}-${i}`} variant="outline" className="text-xs">{h}</Badge>
+                          <Chip key={`${h}-${i}`} variant="outline" className="text-xs">{h}</Chip>
                         ))}
                       </div>
                     )}
