@@ -331,7 +331,7 @@ export function CreateAgentWizard({
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent
-        className="max-w-2xl bg-lia-bg-primary border-lia-border-subtle p-6"
+        className="max-w-2xl bg-lia-bg-primary border border-lia-border-medium shadow-lia-lg rounded-xl p-6"
         data-testid="create-agent-wizard"
       >
         <DialogHeader>

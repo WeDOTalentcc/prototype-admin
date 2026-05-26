@@ -1,23 +1,24 @@
 "use client"
 
 /**
- * TemplateClonePanel — right-panel clone-first preview (UX T4).
+ * TemplateClonePanel — central Dialog clone-first preview (UX T4 + P1-1).
  *
  * UX_AUDIT_ESTUDIO_AGENTES_2026-05-21 T4 (linha 281): adota o pattern
- * "clone-first" do HubSpot Breeze. Hoje o card de template (Sprint B
- * QW#5) abria um Dialog confirm rápido; aqui usamos um Sheet lateral
- * direito com preview RICO (system_prompt completo + tools + persona
- * + greeting + tags + config grid) e CTA "Clonar e customizar" que
- * abre o CreateAgentWizard (T1) já populado com a config do template.
+ * "clone-first" do HubSpot Breeze. O card de template abre um Dialog
+ * central com preview RICO (system_prompt completo + tools + persona +
+ * config grid) e CTA "Clonar e customizar" que abre o CreateAgentWizard
+ * (T1) já populado com a config do template.
+ *
+ * P1-1 (2026-05-26): Sheet lateral → Dialog central canonical. Paulo
+ * apontou inconsistência visual (preview deslizava da direita, fora do
+ * pattern dos outros modais Studio). Conversão preserva conteúdo + a11y.
  *
  * O TemplatePreviewModal (Sprint B QW#5) é preservado em
- * `custom-agents/template-preview-modal.tsx` para fluxos rápidos de
- * confirmação — TemplateClonePanel é o novo entry-point primário a
- * partir do TemplateGallery.
+ * `custom-agents/template-preview-modal.tsx` para fluxos rápidos.
  *
  * Acessibilidade (WCAG 2.2 AA):
- * - Sheet (Radix Dialog wrapper) já provê focus trap + escape key + ARIA
- * - SheetTitle/SheetDescription canonical (não silenciamos para sr-only)
+ * - Dialog (Radix) já provê focus trap + escape key + ARIA modal
+ * - DialogTitle/DialogDescription canonical (não silenciamos para sr-only)
  * - Region landmarks com headings semânticos por seção
  * - ScrollArea com keyboard scroll natural
  */
@@ -27,16 +28,16 @@ import { Copy, MessageSquare, Settings, User, Wrench } from "lucide-react"
 import { useTranslations } from "next-intl"
 
 import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet"
 import { badgeStyles, textStyles } from "@/lib/design-tokens"
 import { cn } from "@/lib/utils"
 
@@ -67,14 +68,17 @@ export function TemplateClonePanel({
     ] || Icons.Bot)
 
   return (
-    <Sheet open={open} onOpenChange={(o) => !o && onClose()}>
-      <SheetContent
-        side="right"
-        className="w-full sm:max-w-xl flex flex-col p-0"
+    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent
+        className={cn(
+          "max-w-2xl w-full p-0 flex flex-col max-h-[85vh]",
+          // Canonical elevation (P1, alinhado com CreateAgentWizard)
+          "bg-lia-bg-primary border border-lia-border-medium shadow-lia-lg rounded-xl"
+        )}
         data-testid="template-clone-panel"
       >
         {/* Header: icon + name + description + tags */}
-        <SheetHeader className="px-6 pt-6 pb-4 border-b border-lia-border-subtle">
+        <DialogHeader className="px-6 pt-6 pb-4 border-b border-lia-border-subtle">
           <div className="flex items-start gap-3">
             <div
               className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-powder text-graphite"
@@ -83,12 +87,12 @@ export function TemplateClonePanel({
               <IconComp className="h-6 w-6" />
             </div>
             <div className="min-w-0 flex-1 text-left">
-              <SheetTitle className={cn(textStyles.h3, "leading-tight")}>
+              <DialogTitle className={cn(textStyles.h3, "leading-tight")}>
                 {template.name}
-              </SheetTitle>
-              <SheetDescription className="mt-1 text-sm text-lia-text-secondary">
+              </DialogTitle>
+              <DialogDescription className="mt-1 text-sm text-lia-text-secondary">
                 {template.description}
-              </SheetDescription>
+              </DialogDescription>
               {template.tags && template.tags.length > 0 && (
                 <div
                   className="mt-2 flex flex-wrap gap-1.5"
@@ -106,10 +110,10 @@ export function TemplateClonePanel({
               )}
             </div>
           </div>
-        </SheetHeader>
+        </DialogHeader>
 
         {/* Scrollable body — rich preview sections */}
-        <ScrollArea className="flex-1">
+        <ScrollArea className="flex-1 min-h-0">
           <div className="px-6 py-5 space-y-5">
             {/* System prompt */}
             <section data-testid="template-clone-section-prompt">
@@ -187,7 +191,7 @@ export function TemplateClonePanel({
 
             <Separator />
 
-            {/* Initial greeting (placeholder — not present on AgentTemplate yet) */}
+            {/* Config grid */}
             <section data-testid="template-clone-section-config">
               <h3 className="flex items-center gap-2 text-xs font-semibold text-lia-text-secondary uppercase mb-2">
                 <MessageSquare className="h-3.5 w-3.5" aria-hidden="true" />
@@ -232,7 +236,7 @@ export function TemplateClonePanel({
         </ScrollArea>
 
         {/* Footer: Cancel + Clone CTA */}
-        <SheetFooter className="px-6 py-4 border-t border-lia-border-subtle flex-row gap-2 sm:justify-between">
+        <DialogFooter className="px-6 py-4 border-t border-lia-border-subtle flex-row gap-2 sm:justify-between">
           <Button
             variant="outline"
             onClick={onClose}
@@ -249,8 +253,8 @@ export function TemplateClonePanel({
             <Copy className="h-4 w-4" aria-hidden="true" />
             {t("cloneAndCustomize") || "Clonar e customizar"}
           </Button>
-        </SheetFooter>
-      </SheetContent>
-    </Sheet>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }
