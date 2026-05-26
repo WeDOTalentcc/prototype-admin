@@ -760,6 +760,27 @@ def intake_node(state: JobCreationState) -> JobCreationState:
         },
     }
 
+    # ── Sprint Pipeline Templates Gap #5 (2026-05-26) — wiring backend↔frontend ──
+    # Frontend useWizardFlow lê ui_action no top do ws_stage_payload + data.templates.
+    # Quando DB suggestion tem should_suggest=True, eleva templates pro top de data
+    # e emite ui_action="suggest_pipeline_template". data.suggestions_data.pipeline_template_db
+    # permanece intacto (retrocompat com wizard-plan-card.ts legacy via Task #1055).
+    try:
+        _db_sugg = (
+            (updates.get("ws_stage_payload", {}).get("data", {}) or {})
+            .get("suggestions_data", {})
+            .get("pipeline_template_db")
+        )
+        if (
+            isinstance(_db_sugg, dict)
+            and _db_sugg.get("should_suggest")
+            and _db_sugg.get("templates")
+        ):
+            updates["ws_stage_payload"]["ui_action"] = "suggest_pipeline_template"
+            updates["ws_stage_payload"]["data"]["templates"] = _db_sugg["templates"]
+    except Exception:  # noqa: BLE001 — fail-open por design (telemetria, não bloqueia fluxo)
+        pass
+
     # NOTE on LL-2 manager preferences:
     # ManagerPreferencesService.apply_to_state() is invoked by
     # WizardSessionService.process_message() BEFORE this graph runs.
@@ -1268,6 +1289,27 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
             "requires_approval": True,
         },
     }
+
+    # ── Sprint Pipeline Templates Gap #5 (2026-05-26) — wiring backend↔frontend ──
+    # Frontend useWizardFlow lê ui_action no top do ws_stage_payload + data.templates.
+    # Quando DB suggestion tem should_suggest=True, eleva templates pro top de data
+    # e emite ui_action="suggest_pipeline_template". data.suggestions_data.pipeline_template_db
+    # permanece intacto (retrocompat com wizard-plan-card.ts legacy via Task #1055).
+    try:
+        _db_sugg = (
+            (updates.get("ws_stage_payload", {}).get("data", {}) or {})
+            .get("suggestions_data", {})
+            .get("pipeline_template_db")
+        )
+        if (
+            isinstance(_db_sugg, dict)
+            and _db_sugg.get("should_suggest")
+            and _db_sugg.get("templates")
+        ):
+            updates["ws_stage_payload"]["ui_action"] = "suggest_pipeline_template"
+            updates["ws_stage_payload"]["data"]["templates"] = _db_sugg["templates"]
+    except Exception:  # noqa: BLE001 — fail-open por design (telemetria, não bloqueia fluxo)
+        pass
 
     # ── Audit EU AI Act Art.13 — JD enrichment decision ──
     try:
