@@ -99,6 +99,10 @@ export function BenefitsList({
             <div
               className={`flex items-center justify-between p-3 cursor-pointer transition-colors motion-reduce:transition-none ${category.bgColor}`}
               onClick={() => toggleCategory(category.id)}
+              role="button"
+              tabIndex={0}
+              aria-expanded={isExpanded}
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleCategory(category.id) } }}
             >
               <div className="flex items-center gap-2">
                 <div className="p-1.5 rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary">

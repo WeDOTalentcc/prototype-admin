@@ -128,6 +128,7 @@ export function ApiKeyConfigForm({
               onClick={handleRemove}
               disabled={isProcessing}
               data-testid={`api-key-remove-${providerId}`}
+              aria-label="Remover chave API"
             >
               <Trash2 className="w-3 h-3 text-lia-text-tertiary hover:text-status-error" />
             </Button>

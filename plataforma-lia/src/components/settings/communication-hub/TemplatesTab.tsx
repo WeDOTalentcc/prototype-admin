@@ -169,7 +169,7 @@ export function TemplatesTab({
                   <div className="w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-2 bg-lia-bg-tertiary dark:bg-lia-bg-secondary">
                     <Search className="w-4 h-4 text-lia-text-secondary" />
                   </div>
-                  <p className="text-xs text-lia-text-secondary" aria-live="polite" aria-atomic="true">{t("noTemplateFound")}</p>
+                  <p className="text-xs text-lia-text-secondary" role="status" aria-live="polite" aria-atomic="true">{t("noTemplateFound")}</p>
                   <p className="text-xs text-lia-text-tertiary mt-1">{t("tryAdjustFilters")}</p>
                 </CardContent>
               </Card>

@@ -47,7 +47,7 @@ const CATEGORY_FILTERS = [
 const CATEGORY_BADGE: Record<string, string> = {
   data_access: "bg-wedo-cyan/10 text-wedo-cyan",
   user_management: "bg-purple-100 text-purple-800",
-  authentication: "bg-gray-100 text-gray-800",
+  authentication: "bg-muted text-muted-foreground",
   configuration: "bg-status-warning/10 text-status-warning",
   ai_decision: "bg-cyan-100 text-cyan-800",
 }

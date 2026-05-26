@@ -51,7 +51,9 @@
     "lint:i18n:blocking": "python3 scripts/check_i18n_keys.py --blocking",
     "lint:i18n:json": "python3 scripts/check_i18n_keys.py --json",
     "lint:candidate-axis": "python3 scripts/check_candidate_score_uses_canonical_badge.py && python3 scripts/check_editable_fields_not_lgpd_sensitive.py",
-    "lint:candidate-axis:blocking": "python3 scripts/check_candidate_score_uses_canonical_badge.py --blocking && python3 scripts/check_editable_fields_not_lgpd_sensitive.py --blocking"
+    "lint:candidate-axis:blocking": "python3 scripts/check_candidate_score_uses_canonical_badge.py --blocking && python3 scripts/check_editable_fields_not_lgpd_sensitive.py --blocking",
+    "sensor:lia-sync": "python3 scripts/check_lia_field_definitions_sync.py",
+    "sensor:lia-sync:blocking": "python3 scripts/check_lia_field_definitions_sync.py --blocking"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

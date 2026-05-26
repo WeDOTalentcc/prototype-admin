@@ -146,6 +146,7 @@ export const BenefitItemCard = React.memo(function BenefitItemCard({
               size="icon"
               className="h-7 w-7"
               onClick={() => onEdit(benefit)}
+              aria-label="Editar"
             >
               <Pencil className="w-3.5 h-3.5 text-lia-text-secondary" />
             </Button>
@@ -154,6 +155,7 @@ export const BenefitItemCard = React.memo(function BenefitItemCard({
               size="icon"
               className="h-7 w-7 text-status-error hover:text-status-error hover:bg-status-error/10 dark:hover:bg-status-error/20 dark:hover:text-status-error"
               onClick={() => benefit.id && onDelete(benefit.id)}
+              aria-label="Excluir"
             >
               <Trash2 className="w-3.5 h-3.5" />
             </Button>

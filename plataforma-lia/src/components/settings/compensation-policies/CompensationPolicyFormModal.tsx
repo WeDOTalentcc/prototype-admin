@@ -219,6 +219,10 @@ function VariableCompTab({
               <div
                 className="flex items-center gap-2 px-3 py-2 cursor-pointer bg-lia-bg-elevated hover:bg-lia-bg-tertiary/10"
                 onClick={() => setExpandedIdx(isOpen ? null : idx)}
+                role="button"
+                tabIndex={0}
+                aria-expanded={isOpen}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setExpandedIdx(isOpen ? null : idx) } }}
               >
                 <span className="rounded-full bg-wedo-cyan/10 px-2 py-0.5 text-micro text-wedo-cyan font-medium">
                   {kindMeta?.label ?? item.kind}

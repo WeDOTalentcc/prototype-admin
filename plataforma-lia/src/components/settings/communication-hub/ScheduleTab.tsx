@@ -158,7 +158,7 @@ export function ScheduleTab({
                 <input type="checkbox" checked={respectWeekends} onChange={(e) => setRespectWeekends(e.target.checked)} disabled={!isEditingSchedule} className="rounded-md accent-lia-btn-primary-bg" />
               </label>
               <label className={`flex items-center justify-between gap-3 p-2.5 bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-md ${isEditingSchedule ? 'cursor-pointer' : 'cursor-default opacity-70'}`}>
-                <span className="text-xs text-lia-text-primary" aria-live="polite" aria-atomic="true">{t("scheduleSection.maxMessages", { count: maxMessagesPerDay })}</span>
+                <span className="text-xs text-lia-text-primary" role="status" aria-live="polite" aria-atomic="true">{t("scheduleSection.maxMessages", { count: maxMessagesPerDay })}</span>
                 <input type="checkbox" checked={maxMessagesPerDay > 0} onChange={(e) => setMaxMessagesPerDay(e.target.checked ? 3 : 0)} disabled={!isEditingSchedule} className="rounded-md accent-lia-btn-primary-bg" />
               </label>
             </div>

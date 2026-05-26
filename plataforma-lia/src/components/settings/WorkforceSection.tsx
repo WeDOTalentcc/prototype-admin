@@ -144,6 +144,10 @@ export function WorkforceSection({ hub }: WorkforceSectionProps) {
                 <div
                   className="flex items-center justify-between p-3 cursor-pointer hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover bg-lia-bg-secondary/50 dark:bg-lia-bg-secondary/50"
                   onClick={() => toggleDepartmentExpand(dept.id)}
+                  role="button"
+                  tabIndex={0}
+                  aria-expanded={dept.expanded}
+                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleDepartmentExpand(dept.id) } }}
                 >
                   <div className="flex items-center gap-2 flex-1">
                     {dept.expanded ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronUp className="w-3.5 h-3.5" />}
