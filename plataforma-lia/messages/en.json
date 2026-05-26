@@ -7260,5 +7260,50 @@
       "skippedSuccessToast": "Company default applied",
       "applyErrorToast": "Error applying template: {error}"
     }
+  },
+  "talentPool": {
+    "schedule": {
+      "typeLabel": "Schedule type",
+      "types": {
+        "on_demand": "On demand",
+        "cron": "Recurring",
+        "event_driven": "Event-driven"
+      },
+      "cronBuilder": {
+        "title": "When to run",
+        "presetLabel": "Frequency",
+        "presets": {
+          "daily": "Daily",
+          "weekly": "Weekly",
+          "monthly": "Monthly",
+          "custom": "Custom"
+        },
+        "hourLabel": "Hour",
+        "minuteLabel": "Minute",
+        "dayOfWeekLabel": "Day of week",
+        "dayOfMonthLabel": "Day of month",
+        "dayLabel": "day",
+        "expressionLabel": "Cron expression",
+        "invalid": "Invalid cron expression",
+        "weekdays": {
+          "0": "Sunday",
+          "1": "Monday",
+          "2": "Tuesday",
+          "3": "Wednesday",
+          "4": "Thursday",
+          "5": "Friday",
+          "6": "Saturday"
+        }
+      },
+      "eventPicker": {
+        "title": "Trigger when",
+        "events": {
+          "candidate_added_to_pool": "New candidate in pool",
+          "candidate_screened": "Candidate screened",
+          "agent_completed_review": "Agent finished review",
+          "weekly_summary": "Weekly summary"
+        }
+      }
+    }
   }
 }

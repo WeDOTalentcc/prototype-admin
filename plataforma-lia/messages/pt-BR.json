@@ -7260,5 +7260,50 @@
       "skippedSuccessToast": "Padrão da empresa aplicado",
       "applyErrorToast": "Erro ao aplicar template: {error}"
     }
+  },
+  "talentPool": {
+    "schedule": {
+      "typeLabel": "Tipo de agendamento",
+      "types": {
+        "on_demand": "Sob demanda",
+        "cron": "Recorrente",
+        "event_driven": "Por evento"
+      },
+      "cronBuilder": {
+        "title": "Quando rodar",
+        "presetLabel": "Frequência",
+        "presets": {
+          "daily": "Diariamente",
+          "weekly": "Semanalmente",
+          "monthly": "Mensalmente",
+          "custom": "Personalizado"
+        },
+        "hourLabel": "Hora",
+        "minuteLabel": "Minuto",
+        "dayOfWeekLabel": "Dia da semana",
+        "dayOfMonthLabel": "Dia do mes",
+        "dayLabel": "dia",
+        "expressionLabel": "Expressao cron",
+        "invalid": "Expressao cron invalida",
+        "weekdays": {
+          "0": "Domingo",
+          "1": "Segunda",
+          "2": "Terca",
+          "3": "Quarta",
+          "4": "Quinta",
+          "5": "Sexta",
+          "6": "Sabado"
+        }
+      },
+      "eventPicker": {
+        "title": "Disparar quando",
+        "events": {
+          "candidate_added_to_pool": "Novo candidato no banco",
+          "candidate_screened": "Candidato triado",
+          "agent_completed_review": "Agente concluiu analise",
+          "weekly_summary": "Resumo semanal"
+        }
+      }
+    }
   }
 }
