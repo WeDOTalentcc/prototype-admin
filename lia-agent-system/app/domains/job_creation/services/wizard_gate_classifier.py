@@ -298,10 +298,15 @@ class WizardGateClassifier:
                     "type": "object",
                     "additionalProperties": True,
                     "description": (
-                        "Dados estruturados extraídos do turno. "
-                        "Para 'reject_with_feedback': {'feedback': str}. "
-                        "Para 'provide_new_content': {'new_content': str}. "
-                        "Outros intents: {}."
+                        "Dados ESTRUTURADOS extraídos do turno (índice, "
+                        "instrução curta, target_section, destinations). "
+                        "NUNCA ecoe o user_message no extracted_data — o "
+                        "caller já tem acesso direto à mensagem original. "
+                        "Para 'reject_with_feedback' e 'provide_new_content' "
+                        "use {} (caller faz fallback para user_message). "
+                        "Para 'edit_specific_question': "
+                        "{'question_index': int, 'instruction': str ≤500}. "
+                        "Outros intents conforme prompt YAML do stage."
                     ),
                 },
                 "conversational_reply": {
@@ -341,11 +346,14 @@ class WizardGateClassifier:
         )
 
         timeout_s = _get_timeout_s()
+        # Sprint 2.1 — read max_tokens from YAML config (eliminate drift).
+        cfg_max_tokens = int(prompt_cfg.get("max_tokens") or 800)
         try:
             raw = await asyncio.wait_for(
                 self._invoke_llm(
                     system_prompt, context_block, schema,
                     company_id=company_id, user_id=user_id, stage=stage,
+                    max_tokens=cfg_max_tokens,
                 ),
                 timeout=timeout_s,
             )
@@ -429,8 +437,16 @@ class WizardGateClassifier:
         company_id: str | None = None,
         user_id: str | None = None,
         stage: str = "",
+        max_tokens: int = 800,
     ) -> dict[str, Any]:
-        """Chama Claude Haiku com tool-use forçado. Retorna dict do tool input."""
+        """Chama Claude Haiku com tool-use forçado. Retorna dict do tool input.
+
+        Sprint 2.1 (2026-05-26): ``max_tokens`` agora vem da config YAML
+        (eliminou hardcode 400 que causava truncation quando LLM tentava
+        ecoar JD substancial via ``extracted_data.new_content`` — root
+        cause de ``confidence=0.0`` no jd_gate). Caller passa do YAML
+        via ``classify()``; default 800 só pra defesa quando caller direto.
+        """
         try:
             from anthropic import Anthropic  # type: ignore  # W3-027-EXEMPT: tool_choice forcing (tool_choice={'type':'tool','name':...}) not exposed by factory API
         except ImportError as exc:  # pragma: no cover — anthropic é dep oficial
@@ -458,7 +474,7 @@ class WizardGateClassifier:
         def _call_sync():
             return client.messages.create(
                 model=self._model,
-                max_tokens=400,
+                max_tokens=max_tokens,
                 temperature=0.0,
                 system=system_prompt,
                 messages=[{"role": "user", "content": user_block}],
