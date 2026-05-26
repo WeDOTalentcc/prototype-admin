@@ -156,7 +156,7 @@ export function DigitalTwinOnboarding() {
             const Icon = step.icon
             return (
               <div key={i} className="flex items-start gap-3 min-w-0">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-cyan-50 dark:bg-cyan-950/30">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-lia-bg-tertiary">
                   <Icon className="w-5 h-5 text-graphite" />
                 </div>
                 <div className="min-w-0 flex-1">
@@ -189,7 +189,7 @@ export function DigitalTwinEmptyState({ onCreateTwin }: DigitalTwinEmptyStatePro
 
   return (
     <div className="flex flex-col items-center py-12 px-6">
-      <div className="flex items-center justify-center w-12 h-12 rounded-md bg-cyan-50 dark:bg-cyan-950/30 mb-4">
+      <div className="flex items-center justify-center w-12 h-12 rounded-md bg-lia-bg-tertiary mb-4">
         <Users2 className="w-6 h-6 text-graphite" />
       </div>
       <h3 className={`${textStyles.h3} text-center mb-1`}>{t("title")}</h3>
@@ -492,8 +492,8 @@ export function TwinCard({ twin, onEvaluate, onManageTwin }: TwinCardProps) {
     <Card className={cardStyles.default}>
       <CardContent className="p-4">
         <div className="flex items-start gap-3">
-          <Avatar className="w-10 h-10 bg-cyan-50 dark:bg-cyan-950/30">
-            <AvatarFallback className="bg-cyan-50 dark:bg-cyan-950/30 text-graphite text-sm font-medium">
+          <Avatar className="w-10 h-10 bg-lia-bg-tertiary">
+            <AvatarFallback className="bg-lia-bg-tertiary text-graphite text-sm font-medium">
               {initials}
             </AvatarFallback>
           </Avatar>
@@ -507,7 +507,7 @@ export function TwinCard({ twin, onEvaluate, onManageTwin }: TwinCardProps) {
             {twin.specialties.length > 0 && (
               <div className="flex gap-1 mt-1 flex-wrap">
                 {twin.specialties.slice(0, 4).map((s) => (
-                  <Chip density="relaxed" variant="neutral" muted key={s} className="bg-cyan-50 dark:bg-cyan-950/30 text-graphite">
+                  <Chip density="relaxed" variant="neutral" muted key={s} className="bg-lia-bg-tertiary text-graphite">
                     {s}
                   </Chip>
                 ))}
@@ -622,8 +622,8 @@ export function EvaluateWithTwinModal({
         ) : evaluation ? (
           <div className="space-y-4 py-4">
             <div className="flex items-center gap-2">
-              <Avatar className="w-8 h-8 bg-cyan-50 dark:bg-cyan-950/30">
-                <AvatarFallback className="bg-cyan-50 dark:bg-cyan-950/30 text-graphite text-xs">
+              <Avatar className="w-8 h-8 bg-lia-bg-tertiary">
+                <AvatarFallback className="bg-lia-bg-tertiary text-graphite text-xs">
                   {evaluation.twin_name
                     .split(" ")
                     .map((w) => w[0])
@@ -669,7 +669,7 @@ export function EvaluateWithTwinModal({
 
             <div>
               <p className={textStyles.label}>{t("reasoning")}</p>
-              <blockquote className="mt-1 border-l-2 border-cyan-300 pl-3 italic text-lia-text-secondary">
+              <blockquote className="mt-1 border-l-2 border-lia-border-medium pl-3 italic text-lia-text-secondary">
                 &ldquo;{evaluation.reasoning}&rdquo;
               </blockquote>
             </div>

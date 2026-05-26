@@ -436,8 +436,8 @@ export default function AgentStudioPage({
               <section className="relative overflow-hidden rounded-xl border border-lia-border-subtle bg-gradient-to-br from-lia-bg-secondary to-lia-bg-primary p-6">
                 <div className="relative">
                   <div className="flex items-center gap-2 mb-1">
-                    <Brain className="w-4 h-4 text-wedo-cyan" />
-                    <span className="text-xs font-semibold uppercase tracking-wider text-wedo-cyan">
+                    <Brain className="w-4 h-4 text-lia-text-primary" />
+                    <span className="text-xs font-semibold uppercase tracking-wider text-lia-text-primary">
                       {t("studio.whatIsAgent")}
                     </span>
                   </div>
@@ -512,11 +512,11 @@ export default function AgentStudioPage({
                   onClick={() => openWizard("outro")}
                   className={cn(
                     "group flex flex-col items-center gap-2.5 p-5 rounded-xl border-2 border-dashed border-lia-border-subtle",
-                    "hover:border-wedo-cyan/40 transition-colors duration-200 cursor-pointer"
+                    "hover:border-lia-border-medium transition-colors duration-200 cursor-pointer"
                   )}
                   data-testid="templates-custom-create-cta"
                 >
-                  <Brain className="w-6 h-6 text-wedo-cyan transition-transform group-hover:scale-110" />
+                  <Brain className="w-6 h-6 text-lia-text-primary transition-transform group-hover:scale-110" />
                   <div className="text-center">
                     <p className="text-xs font-semibold text-lia-text-primary">{t("studio.templates.custom")}</p>
                     <p className="text-[10px] text-lia-text-secondary mt-0.5">{t("studio.templates.createFromScratch")}</p>
@@ -592,7 +592,7 @@ export default function AgentStudioPage({
                 <TabSectionHeader
                   className="mb-4"
                   title={t("studio.howItWorks")}
-                  icon={<Brain className="w-4 h-4 text-wedo-cyan" />}
+                  icon={<Brain className="w-4 h-4 text-lia-text-primary" />}
                 />
                 {/* BUG-10: passa para grid responsivo — em telas apertadas (chat
                     lateral aberto) fica em 2 colunas sem truncar textos; em telas
@@ -818,7 +818,7 @@ function AgentCard({
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-powder flex items-center justify-center">
-              <Bot className="w-5 h-5 text-wedo-cyan" />
+              <Bot className="w-5 h-5 text-lia-text-primary" />
             </div>
             <div>
               <div className="flex items-center gap-1.5">

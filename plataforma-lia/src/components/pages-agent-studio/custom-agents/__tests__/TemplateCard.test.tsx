@@ -1,13 +1,17 @@
 /**
  * Sprint visual 2026-05-25 — TemplateCard refactor canonical tests.
  *
+ * Sprint visual 2026-05-26 — promoted to rich layout (3 metrics + alert + 3 buttons).
+ * Layout assertions movidos para TemplateCard.rich.test.tsx; este arquivo
+ * mantem apenas testes de identidade/branding que continuam validos.
+ *
  * Sprint visual fixes:
  *  - Badge "Popular": cyan → wedo-purple (insight-purple #9860D1)
  *  - Consume <StudioCardShell> canonical
- *  - asButton (entire card clickable) com aria-label
+ *  - White-label: NUNCA cyan no Studio
  */
 import { describe, expect, it, vi } from "vitest"
-import { render, screen, fireEvent } from "@testing-library/react"
+import { render, screen } from "@testing-library/react"
 import { TemplateCard } from "../TemplateCard"
 import type { AgentTemplate } from "../types"
 
@@ -22,12 +26,12 @@ const baseTemplate: AgentTemplate = {
   id: "tpl-1",
   name: "Recrutador Tech",
   description: "Template otimizado para vagas de engenharia",
-  category: "recruiter" as AgentTemplate["category"],
+  category: "screening" as AgentTemplate["category"],
   domain: "tech",
   icon: "Bot",
   system_prompt: "...",
   allowed_tools: ["search", "screen"],
-  context_level: "basic" as AgentTemplate["context_level"],
+  context_level: "standard",
   max_steps: 10,
   temperature: 0.7,
   enable_memory: false,
@@ -35,12 +39,11 @@ const baseTemplate: AgentTemplate = {
   tags: ["popular"],
 }
 
-describe("TemplateCard — Sprint visual canonical refactor", () => {
-  it("renderiza nome + descrição + meta categoria + count tools", () => {
+describe("TemplateCard — Sprint visual identity/branding", () => {
+  it("renderiza nome + descrição", () => {
     render(<TemplateCard template={baseTemplate} onSelect={vi.fn()} />)
     expect(screen.getByText("Recrutador Tech")).toBeTruthy()
     expect(screen.getByText("Template otimizado para vagas de engenharia")).toBeTruthy()
-    expect(screen.getByText("2 tools")).toBeTruthy()
   })
 
   it("badge Popular usa wedo-purple (insight-purple), NÃO wedo-cyan", () => {
@@ -48,19 +51,9 @@ describe("TemplateCard — Sprint visual canonical refactor", () => {
       <TemplateCard template={baseTemplate} onSelect={vi.fn()} />,
     )
     const html = container.innerHTML
-    // Insight purple #9860D1 mapeado para wedo-purple no Tailwind
     expect(html).toContain("wedo-purple")
-    // White-label: NÃO usa cyan no Studio
     expect(html).not.toContain("badgeStyles.cyan")
     expect(html).not.toContain("bg-wedo-cyan/10")
-  })
-
-  it("onSelect chamado quando card clicado (asButton)", () => {
-    const onSelect = vi.fn()
-    render(<TemplateCard template={baseTemplate} onSelect={onSelect} />)
-    const btn = screen.getByRole("button", { name: "Recrutador Tech" })
-    fireEvent.click(btn)
-    expect(onSelect).toHaveBeenCalledWith(baseTemplate)
   })
 
   it("não renderiza badge Popular quando tag ausente", () => {

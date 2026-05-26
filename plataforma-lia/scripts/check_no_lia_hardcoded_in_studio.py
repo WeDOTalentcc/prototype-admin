@@ -1,11 +1,18 @@
 #!/usr/bin/env python3
 """Banir string LIA hardcoded + classe wedo-cyan + gradient cyan->violet em pages-agent-studio/.
 
+Sprint visual 2026-05-26: scope ampliado.
+  - Inclui AgentStudioPage.tsx (hot file revelou-se cold pós-análise; últimos
+    commits foram do próprio bundle Agent Studio).
+  - Regex ampliada pra detectar <Bot ... text-wedo-cyan> e <Brain ... bg-wedo-cyan>
+    inline (cobertura defensive — class swap accidental volta a aparecer).
+
 Justificativa: decisao Paulo 2026-05-25 white-label - nome assistente
 configuravel per-tenant via AiPersona. Studio e onde cliente cria SEUS
 agentes (identidade propria), nao da assistente da plataforma.
 
-Fix: usar useAiPersona() hook para nome + neutros DS (Ink/Graphite) para cor.
+Fix: usar useAiPersona() hook para nome + neutros DS (lia-text-primary,
+lia-bg-tertiary, lia-border-medium) para cor.
 
 Ref: memory project_white_label_ai_assistant, DESIGN.md "LIA Cyan Exclusivity Rule",
 AGENT_STUDIO_IMPLEMENTATION_PLAN.md secao 3 (Sprint 2 REFORMULADO).
@@ -34,6 +41,13 @@ ALLOW_PATTERNS = [
 ]
 ALLOW_RE = re.compile("|".join(ALLOW_PATTERNS))
 
+# Sprint visual 2026-05-26 — regex defensive amplification.
+# Detecta <Bot|<Brain inline com text-wedo-cyan ou bg-wedo-cyan (catch
+# defensivo se alguém reverter um swap canonical).
+BOT_BRAIN_CYAN_RE = re.compile(
+    r"<\s*(Bot|Brain)\b[^>]*\b(text|bg)-wedo-cyan\b"
+)
+
 
 def main() -> int:
     violations: list[str] = []
@@ -43,25 +57,18 @@ def main() -> int:
 
     for path in sorted(ROOT.rglob("*.tsx")):
         rel = path.relative_to(ROOT.parent.parent.parent).as_posix()
-        if "__tests__" in rel or ".bak." in rel:
+        if "__tests__" in rel or ".bak." in rel or ".sprintbak" in rel:
             continue
-        # Sprint 2 scope: AgentStudioPage.tsx is hot file - skip with note
-        if path.name == "AgentStudioPage.tsx":
-            continue
+        # Sprint visual 2026-05-26: AgentStudioPage.tsx incluido (hot file revelou-se cold).
         text = path.read_text(encoding="utf-8", errors="ignore")
         for i, line in enumerate(text.splitlines(), 1):
             if ALLOW_RE.search(line):
-                # check residual LIA/Lia after stripping allowed tokens
                 stripped = ALLOW_RE.sub("", line)
-                if not re.search(r"\bLIA\b|\bLia\b", stripped):
-                    # still check cyan/gradient (those are not allowlisted)
-                    pass
-                else:
+                if re.search(r"\bLIA\b|\bLia\b", stripped):
                     violations.append(
                         f"{rel}:{i}: LIA/Lia hardcoded (apos allowlist). "
                         f"Fix: usar useAiPersona().persona?.name ou i18n com {{aiAssistant}}"
                     )
-                # cyan/gradient continue below
             else:
                 if re.search(r"\bLIA\b|\bLia\b", line):
                     violations.append(
@@ -73,13 +80,20 @@ def main() -> int:
                 violations.append(
                     f"{rel}:{i}: wedo-cyan no Studio. "
                     f"Fix: cyan e exclusiva da assistente quando age - usar token neutro DS "
-                    f"(text-ink, text-graphite, bg-powder, border-mist)"
+                    f"(text-lia-text-primary, bg-lia-bg-tertiary, border-lia-border-medium)"
                 )
             # Detecta gradient cyan->violet/purple (AI slop pattern)
             if re.search(r"from-(wedo-)?cyan[^\"]*to-(wedo-)?(purple|violet)", line):
                 violations.append(
                     f"{rel}:{i}: gradient cyan->violet (AI slop). "
-                    f"Fix: usar fundo neutro DS (bg-chalk, bg-powder, bg-card)"
+                    f"Fix: usar fundo neutro DS (bg-lia-bg-secondary, bg-lia-bg-tertiary)"
+                )
+            # Sprint visual 2026-05-26: amplificacao defensiva — Bot/Brain inline com cyan
+            if BOT_BRAIN_CYAN_RE.search(line):
+                violations.append(
+                    f"{rel}:{i}: <Bot|Brain> inline com wedo-cyan. "
+                    f"Fix: ícone neutro DS (text-lia-text-primary). "
+                    f"Bot/Brain sao iconografia generica de agente, nao identidade IA."
                 )
 
     if violations:
@@ -88,10 +102,10 @@ def main() -> int:
         print(
             f"\n{len(violations)} violations. "
             f"Canonical: white-label Studio (memory project_white_label_ai_assistant). "
-            f"AgentStudioPage.tsx EXCLUIDO desta sprint (hot file - coordenacao futura)."
+            f"AgentStudioPage.tsx INCLUIDO desta sprint (Sprint visual 2026-05-26)."
         )
         return 1
-    print("OK: 0 violations no escopo Sprint 2 (AgentStudioPage.tsx excluido).")
+    print("OK: 0 violations (escopo completo Sprint visual 2026-05-26).")
     return 0
 
 

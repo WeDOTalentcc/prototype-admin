@@ -198,6 +198,9 @@
           "sourcing_agents": "Sourcing Agents",
           "digital_twins": "Digital Twins",
           "campaigns": "Campaigns"
+        },
+        "collapsed": {
+          "summary": "Plan limit: {percent}% used"
         }
       },
       "upgradeRequest": {
@@ -901,7 +904,29 @@
         "automation": "Automation"
       },
       "templateLoading": "Loading templates...",
-      "templateLoadError": "Failed to load templates. Try again."
+      "templateLoadError": "Failed to load templates. Try again.",
+      "template": {
+        "rich": {
+          "metricsLabel": {
+            "tools": "Tools",
+            "maxSteps": "Max steps",
+            "context": "Context"
+          },
+          "contextValue": {
+            "minimal": "Minimal",
+            "standard": "Standard",
+            "full": "Full"
+          },
+          "alert": {
+            "personalize": "Customize before activating"
+          },
+          "actions": {
+            "use": "Use template",
+            "customize": "Customize",
+            "preview": "Preview"
+          }
+        }
+      }
     },
     "digitalTwin": {
       "active": "Active",

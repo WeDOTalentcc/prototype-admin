@@ -198,6 +198,9 @@
           "sourcing_agents": "Agentes de Sourcing",
           "digital_twins": "Gêmeos Digitais",
           "campaigns": "Campanhas"
+        },
+        "collapsed": {
+          "summary": "Limite do plano: {percent}% usado"
         }
       },
       "upgradeRequest": {
@@ -901,7 +904,29 @@
         "automation": "Automação"
       },
       "templateLoading": "Carregando templates...",
-      "templateLoadError": "Erro ao carregar templates. Tente novamente."
+      "templateLoadError": "Erro ao carregar templates. Tente novamente.",
+      "template": {
+        "rich": {
+          "metricsLabel": {
+            "tools": "Ferramentas",
+            "maxSteps": "Passos máx",
+            "context": "Contexto"
+          },
+          "contextValue": {
+            "minimal": "Mínimo",
+            "standard": "Padrão",
+            "full": "Completo"
+          },
+          "alert": {
+            "personalize": "Personalize antes de ativar"
+          },
+          "actions": {
+            "use": "Usar template",
+            "customize": "Customizar",
+            "preview": "Preview"
+          }
+        }
+      }
     },
     "digitalTwin": {
       "active": "Ativo",
