@@ -1,18 +1,18 @@
 "use client"
 
-import { useEffect, useState } from "react"
 import { useTranslations } from "next-intl"
+import { useState } from "react"
+import { useQuery } from "@tanstack/react-query"
+import { useCompanyId } from "@/hooks/company/useCompanyId"
+import { SETTINGS_QUERY_KEYS } from "@/hooks/settings/useSettingsBroadcast"
+import { HubHeader, HubLoadingState, HubErrorState } from "@/components/settings/_shared"
 import { Chip } from "@/components/ui/chip"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { hasModuleAccess } from "@/utils/license-manager"
 import { ModuleUpsell } from "@/components/module-access/module-upsell"
-import { useCompanyId } from "@/hooks/company/useCompanyId"
-import {
-  Edit, Plus, Workflow, FileText, Zap, Target,
-  Download, BarChart3, Activity, MoreHorizontal, AlertCircle,
-} from "lucide-react"
 import { apiFetch } from "@/lib/api/api-fetch"
+import { Edit, Plus, Workflow, FileText, Zap, Download, BarChart3, Activity, MoreHorizontal } from "lucide-react"
 
 interface ApiAutomation {
   id: string
@@ -50,42 +50,38 @@ function mapAutomation(a: ApiAutomation): WorkflowItem {
   }
 }
 
+type ViewTab = "overview" | "builder" | "templates" | "logs"
+
 export function AutomationsTab({ onSettingsChange: _onSettingsChange }: { onSettingsChange: (changed: boolean) => void }) {
   const t = useTranslations("settings.recruitment.automationsTab")
-  const [selectedView, setSelectedView] = useState<"overview" | "builder" | "templates" | "logs">("overview")
-  const [workflows, setWorkflows] = useState<WorkflowItem[]>([])
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-
+  const [selectedView, setSelectedView] = useState<ViewTab>("overview")
   const { companyId } = useCompanyId()
 
-  useEffect(() => {
-    if (!companyId) return
-    setIsLoading(true)
-    setError(null)
-    apiFetch(`/api/backend-proxy/automations?company_id=${encodeURIComponent(companyId)}`)
-      .then((res) => res.json())
-      .then((json) => {
-        if (json?.success && Array.isArray(json?.data?.automations)) {
-          setWorkflows(json.data.automations.map(mapAutomation))
-        } else {
-          setWorkflows([])
-        }
-      })
-      .catch(() => {
-        setError(t("loadError"))
-      })
-      .finally(() => setIsLoading(false))
-  }, [companyId, t])
+  const {
+    data: workflows = [],
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: SETTINGS_QUERY_KEYS.automations(companyId ?? ""),
+    queryFn: async () => {
+      const res = await apiFetch(`/api/backend-proxy/automations?company_id=${encodeURIComponent(companyId ?? "")}`)
+      const json = await res.json()
+      if (json?.success && Array.isArray(json?.data?.automations)) {
+        return json.data.automations.map(mapAutomation) as WorkflowItem[]
+      }
+      return [] as WorkflowItem[]
+    },
+    enabled: !!companyId,
+    staleTime: 30_000,
+  })
 
   const labelForTrigger = (triggerType: string): string => {
-    const key = `trigger_${triggerType}`
+    const key = `trigger_${triggerType}` as Parameters<typeof t>[0]
     try {
-      const label = t(key as never)
+      const label = t(key)
       if (label && label !== key) return label
-    } catch {
-      // missing key — fall through
-    }
+    } catch { /* missing key */ }
     return triggerType
   }
 
@@ -99,287 +95,184 @@ export function AutomationsTab({ onSettingsChange: _onSettingsChange }: { onSett
     )
   }
 
-  const renderOverview = () => {
-    if (isLoading) {
-      return (
-        <div className="flex items-center justify-center py-16">
-          <div className="w-6 h-6 rounded-full border-2 border-lia-text-secondary border-t-transparent animate-spin" />
-          <span className="ml-3 text-sm text-lia-text-primary">{t("loading")}</span>
-        </div>
-      )
-    }
+  if (isLoading) return <HubLoadingState />
+  if (error) return <HubErrorState message={t("loadError")} onRetry={refetch} />
 
-    if (error) {
-      return (
-        <Card>
-          <CardContent className="flex items-center gap-3 p-6 text-status-error">
-            <AlertCircle className="w-5 h-5 shrink-0" />
-            <span className="text-sm">{error}</span>
-          </CardContent>
-        </Card>
-      )
-    }
+  const activeCount = workflows.filter((w) => w.status === "active").length
+  const totalExecs = workflows.reduce((sum, w) => sum + w.executions, 0)
+  const avgSuccess = workflows.length > 0
+    ? Math.round(workflows.reduce((s, w) => s + w.successRate, 0) / workflows.length)
+    : null
 
-    const activeCount = workflows.filter((w) => w.status === "active").length
+  const summaryParts = [
+    t("summaryActive", { active: activeCount, total: workflows.length }),
+    t("summaryExecs", { count: totalExecs }),
+    ...(avgSuccess !== null ? [t("summarySuccess", { pct: avgSuccess })] : []),
+  ]
 
-    return (
-      <div className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-lia-text-primary">{t("activeWorkflows")}</p>
-                  <p className="text-2xl font-semibold text-status-success">{activeCount}</p>
-                  <p className="text-xs text-lia-text-primary">{t("ofTotalSimple", { total: workflows.length })}</p>
-                </div>
-                <div className="w-10 h-10 bg-status-success/15 rounded-md flex items-center justify-center">
-                  <Workflow className="w-5 h-5 text-status-success" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-lia-text-primary">{t("executionsToday")}</p>
-                  <p className="text-2xl font-semibold text-lia-text-primary">
-                    {workflows.reduce((sum, w) => sum + w.executions, 0)}
-                  </p>
-                  <p className="text-xs text-lia-text-primary">{t("totalAccumulated")}</p>
-                </div>
-                <div className="w-10 h-10 bg-wedo-cyan/15 rounded-md flex items-center justify-center">
-                  <Zap className="w-5 h-5 text-lia-text-secondary" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-lia-text-primary">{t("successRate")}</p>
-                  <p className="text-2xl font-semibold text-wedo-orange">
-                    {workflows.length > 0
-                      ? `${Math.round(workflows.reduce((s, w) => s + w.successRate, 0) / workflows.length)}%`
-                      : "—"}
-                  </p>
-                  <p className="text-xs text-lia-text-primary">{t("averageOfAutomations")}</p>
-                </div>
-                <div className="w-10 h-10 bg-wedo-orange/15 rounded-md flex items-center justify-center">
-                  <Target className="w-5 h-5 text-wedo-orange" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-lia-text-primary">{t("automationsLabel")}</p>
-                  <p className="text-2xl font-semibold text-wedo-purple">{workflows.length}</p>
-                  <p className="text-xs text-lia-text-primary">{t("configured")}</p>
-                </div>
-                <div className="w-10 h-10 bg-wedo-purple/15 rounded-md flex items-center justify-center">
-                  <FileText className="w-5 h-5 text-wedo-purple" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <span>{t("configuredWorkflows")}</span>
-              <Button className="gap-2">
-                <Plus className="w-4 h-4" />
-                {t("newWorkflow")}
-              </Button>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {workflows.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 text-center">
-                <Workflow className="w-10 h-10 text-lia-text-primary mb-3" />
-                <p className="text-sm font-medium text-lia-text-primary mb-1">
-                  {t("emptyTitle")}
-                </p>
-                <p className="text-xs text-lia-text-primary mb-4">
-                  {t("emptyDesc")}
-                </p>
-                <Button size="sm" className="gap-2">
-                  <Plus className="w-4 h-4" />
-                  {t("createFirst")}
-                </Button>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {workflows.map((workflow) => (
-                  <div
-                    key={workflow.id}
-                    className="flex items-center justify-between p-4 border border-lia-border-subtle rounded-xl hover:transition-shadow"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div
-                        className={`w-10 h-10 rounded-md flex items-center justify-center ${
-                          workflow.status === "active" ? "bg-status-success/15" : "bg-lia-bg-tertiary"
-                        }`}
-                      >
-                        <Workflow
-                          className={`w-5 h-5 ${
-                            workflow.status === "active" ? "text-status-success" : "text-lia-text-primary"
-                          }`}
-                        />
-                      </div>
-                      <div>
-                        <h4 className="font-medium text-lia-text-primary">{workflow.name}</h4>
-                        {workflow.description && (
-                          <p className="text-sm text-lia-text-primary">{workflow.description}</p>
-                        )}
-                        <div className="flex items-center gap-3 mt-1 text-xs text-lia-text-primary">
-                          <span>{t("trigger", { value: labelForTrigger(workflow.triggerType) })}</span>
-                          <span>•</span>
-                          <span>{t("executions", { count: workflow.executions })}</span>
-                          <span>•</span>
-                          <span className="text-status-success">{t("successPct", { pct: workflow.successRate })}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <Chip variant="neutral" muted={workflow.status !== "active"}>
-                        {workflow.status === "active" ? t("statusActive") : t("statusPaused")}
-                      </Chip>
-                      <Button variant="outline" size="sm">
-                        <Edit className="w-4 h-4 mr-2" />
-                        {t("edit")}
-                      </Button>
-                      <Button variant="ghost" size="sm">
-                        <MoreHorizontal className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>{t("quickActions")}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Button variant="outline" className="h-auto p-4 justify-start gap-3">
-                <Plus className="w-5 h-5 text-lia-text-secondary" />
-                <div className="text-left">
-                  <div className="font-medium">{t("createWorkflow")}</div>
-                  <div className="text-sm text-lia-text-primary">{t("createWorkflowDesc")}</div>
-                </div>
-              </Button>
-
-              <Button variant="outline" className="h-auto p-4 justify-start gap-3">
-                <Download className="w-5 h-5 text-status-success" />
-                <div className="text-left">
-                  <div className="font-medium">{t("importTemplate")}</div>
-                  <div className="text-sm text-lia-text-primary">{t("importTemplateDesc")}</div>
-                </div>
-              </Button>
-
-              <Button variant="outline" className="h-auto p-4 justify-start gap-3">
-                <BarChart3 className="w-5 h-5 text-wedo-purple" />
-                <div className="text-left">
-                  <div className="font-medium">{t("viewAnalytics")}</div>
-                  <div className="text-sm text-lia-text-primary">{t("viewAnalyticsDesc")}</div>
-                </div>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    )
-  }
-
-  const renderBuilder = () => (
-    <div className="text-center py-12">
-      <Workflow className="w-12 h-12 text-lia-text-primary mx-auto mb-4" />
-      <h3 className="text-lg font-medium text-lia-text-primary mb-2">{t("builderTitle")}</h3>
-      <p className="text-lia-text-primary">{t("builderDesc")}</p>
-    </div>
-  )
-
-  const renderTemplates = () => (
-    <div className="text-center py-12">
-      <FileText className="w-12 h-12 text-lia-text-primary mx-auto mb-4" />
-      <h3 className="text-lg font-medium text-lia-text-primary mb-2">{t("templateLibrary")}</h3>
-      <p className="text-lia-text-primary">{t("templateLibraryDesc")}</p>
-    </div>
-  )
-
-  const renderLogs = () => (
-    <div className="text-center py-12">
-      <Activity className="w-12 h-12 text-lia-text-primary mx-auto mb-4" />
-      <h3 className="text-lg font-medium text-lia-text-primary mb-2">{t("executionLogs")}</h3>
-      <p className="text-lia-text-primary">{t("executionLogsDesc")}</p>
-    </div>
-  )
+  const TAB_ITEMS: { id: ViewTab; label: string; icon: React.ElementType }[] = [
+    { id: "overview", label: t("tabOverview"), icon: BarChart3 },
+    { id: "builder", label: t("tabBuilder"), icon: Workflow },
+    { id: "templates", label: t("tabTemplates"), icon: FileText },
+    { id: "logs", label: t("tabLogs"), icon: Activity },
+  ]
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-semibold text-lia-text-primary flex items-center gap-2">
-            <Workflow className="w-5 h-5 text-lia-text-secondary" />
-            {t("pageTitle")}
-          </h2>
-          <p className="text-sm text-lia-text-primary">
-            {t("pageSubtitle")}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="gap-2">
-            <Download className="w-4 h-4" />
-            {t("export")}
-          </Button>
-          <Button size="sm" className="gap-2">
-            <Plus className="w-4 h-4" />
-            {t("newWorkflow")}
-          </Button>
-        </div>
-      </div>
+    <div className="space-y-5">
+      <HubHeader
+        title={t("pageTitle")}
+        description={t("pageSubtitle")}
+      >
+        <Button variant="outline" size="sm" className="gap-2">
+          <Download className="w-4 h-4" />
+          {t("export")}
+        </Button>
+        <Button size="sm" className="gap-2">
+          <Plus className="w-4 h-4" />
+          {t("newWorkflow")}
+        </Button>
+      </HubHeader>
 
       <div className="flex space-x-1 bg-lia-bg-tertiary p-1 rounded-xl w-fit">
-        {[
-          { id: "overview", label: t("tabOverview"), icon: BarChart3 },
-          { id: "builder", label: t("tabBuilder"), icon: Workflow },
-          { id: "templates", label: t("tabTemplates"), icon: FileText },
-          { id: "logs", label: t("tabLogs"), icon: Activity },
-        ].map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setSelectedView(tab.id as Parameters<typeof setSelectedView>[0])}
-            className={`flex items-center gap-2 px-3 py-3 rounded-md text-sm font-medium transition-colors motion-reduce:transition-none ${
-              selectedView === tab.id
-                ? "bg-lia-bg-primary text-lia-text-primary"
-                : "text-lia-text-primary hover:text-lia-text-primary"
-            }`}
-          >
-            <tab.icon className="w-4 h-4" />
-            {tab.label}
-          </button>
-        ))}
+        {TAB_ITEMS.map((tab) => {
+          const Icon = tab.icon
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setSelectedView(tab.id)}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors motion-reduce:transition-none ${
+                selectedView === tab.id
+                  ? "bg-lia-bg-primary text-lia-text-primary shadow-sm"
+                  : "text-lia-text-secondary hover:text-lia-text-primary"
+              }`}
+            >
+              <Icon className="w-4 h-4" />
+              {tab.label}
+            </button>
+          )
+        })}
       </div>
 
-      {selectedView === "overview" && renderOverview()}
-      {selectedView === "builder" && renderBuilder()}
-      {selectedView === "templates" && renderTemplates()}
-      {selectedView === "logs" && renderLogs()}
+      {selectedView === "overview" && (
+        <div className="space-y-4">
+          <Card>
+            <CardHeader className="pb-0">
+              <div className="flex items-center justify-between">
+                <CardTitle>{t("configuredWorkflows")}</CardTitle>
+                {workflows.length > 0 && (
+                  <p className="text-xs text-lia-text-secondary">
+                    {summaryParts.join("  ·  ")}
+                  </p>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent className="pt-4">
+              {workflows.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-10 text-center">
+                  <Workflow className="w-9 h-9 text-lia-text-tertiary mb-3" />
+                  <p className="text-sm font-medium text-lia-text-primary mb-1">{t("emptyTitle")}</p>
+                  <p className="text-xs text-lia-text-secondary mb-4 max-w-xs">{t("emptyDesc")}</p>
+                  <Button size="sm" className="gap-2">
+                    <Plus className="w-4 h-4" />
+                    {t("createFirst")}
+                  </Button>
+                </div>
+              ) : (
+                <div className="divide-y divide-lia-border-subtle">
+                  {workflows.map((workflow) => (
+                    <div key={workflow.id} className="flex items-center justify-between py-3 first:pt-0 last:pb-0">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className={`w-8 h-8 rounded-md flex items-center justify-center shrink-0 ${
+                          workflow.status === "active" ? "bg-status-success/10" : "bg-lia-bg-tertiary"
+                        }`}>
+                          <Zap className={`w-4 h-4 ${
+                            workflow.status === "active" ? "text-status-success" : "text-lia-text-tertiary"
+                          }`} />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-lia-text-primary truncate">{workflow.name}</p>
+                          <p className="text-xs text-lia-text-secondary mt-0.5">
+                            {t("trigger", { value: labelForTrigger(workflow.triggerType) })}
+                            {workflow.executions > 0 && (
+                              <span className="ml-2">· {t("executions", { count: workflow.executions })}</span>
+                            )}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0 ml-4">
+                        <Chip variant={workflow.status === "active" ? "success" : "neutral"} muted={workflow.status !== "active"}>
+                          {workflow.status === "active" ? t("statusActive") : t("statusPaused")}
+                        </Chip>
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                          <Edit className="w-3.5 h-3.5" />
+                        </Button>
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                          <MoreHorizontal className="w-3.5 h-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>{t("quickActions")}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <Button variant="outline" className="h-auto p-4 justify-start gap-3">
+                  <Plus className="w-5 h-5 text-lia-text-secondary shrink-0" />
+                  <div className="text-left">
+                    <div className="text-sm font-medium">{t("createWorkflow")}</div>
+                    <div className="text-xs text-lia-text-secondary mt-0.5">{t("createWorkflowDesc")}</div>
+                  </div>
+                </Button>
+                <Button variant="outline" className="h-auto p-4 justify-start gap-3">
+                  <Download className="w-5 h-5 text-status-success shrink-0" />
+                  <div className="text-left">
+                    <div className="text-sm font-medium">{t("importTemplate")}</div>
+                    <div className="text-xs text-lia-text-secondary mt-0.5">{t("importTemplateDesc")}</div>
+                  </div>
+                </Button>
+                <Button variant="outline" className="h-auto p-4 justify-start gap-3">
+                  <BarChart3 className="w-5 h-5 text-insight-purple shrink-0" />
+                  <div className="text-left">
+                    <div className="text-sm font-medium">{t("viewAnalytics")}</div>
+                    <div className="text-xs text-lia-text-secondary mt-0.5">{t("viewAnalyticsDesc")}</div>
+                  </div>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {selectedView === "builder" && (
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <Workflow className="w-10 h-10 text-lia-text-tertiary mb-3" />
+          <p className="text-sm font-medium text-lia-text-primary mb-1">{t("builderTitle")}</p>
+          <p className="text-xs text-lia-text-secondary max-w-xs">{t("builderDesc")}</p>
+        </div>
+      )}
+
+      {selectedView === "templates" && (
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <FileText className="w-10 h-10 text-lia-text-tertiary mb-3" />
+          <p className="text-sm font-medium text-lia-text-primary mb-1">{t("templateLibrary")}</p>
+          <p className="text-xs text-lia-text-secondary max-w-xs">{t("templateLibraryDesc")}</p>
+        </div>
+      )}
+
+      {selectedView === "logs" && (
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <Activity className="w-10 h-10 text-lia-text-tertiary mb-3" />
+          <p className="text-sm font-medium text-lia-text-primary mb-1">{t("executionLogs")}</p>
+          <p className="text-xs text-lia-text-secondary max-w-xs">{t("executionLogsDesc")}</p>
+        </div>
+      )}
     </div>
   )
 }

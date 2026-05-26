@@ -45,6 +45,7 @@ function I18nLoadingFallback({ tKey }: { tKey: string }) {
 const MinhaEmpresaHub = dynamic(() => import("@/components/settings/MinhaEmpresaHub").then(m => ({ default: m.MinhaEmpresaHub })), { ssr: false, loading: () => <I18nLoadingFallback tKey="company" /> })
 const AiCreditsPage = dynamic(() => import("@/components/pages/ai-credits-page").then(m => ({ default: m.AiCreditsPage })), { ssr: false, loading: () => <I18nLoadingFallback tKey="company" /> })
 const RecruitmentPipelineTab = dynamic(() => import("@/components/settings/RecruitmentPipelineTab").then(m => ({ default: m.RecruitmentPipelineTab })), { ssr: false, loading: () => <I18nLoadingFallback tKey="pipeline" /> })
+const AutomationsTab = dynamic(() => import("@/components/settings/recruitment/automations-tab").then(m => ({ default: m.AutomationsTab })), { ssr: false, loading: () => <I18nLoadingFallback tKey="automations" /> })
 const RecruitmentScreeningTab = dynamic(() => import("@/components/settings/RecruitmentScreeningTab").then(m => ({ default: m.RecruitmentScreeningTab })), { ssr: false, loading: () => <I18nLoadingFallback tKey="screening" /> })
 // P0.G (audit 2026-05-21): aggregated catalog managers for Pipeline Stages,
 // Alert Rules, Integration Catalog, Webhook Event Types.
@@ -137,6 +138,7 @@ const getDefaultSections = (): SettingsSection[] => [
       { id: 'pipeline', title: 'Pipeline', description: 'Etapas do processo seletivo (kanban, SLA, automation)', fields: [] },
       { id: 'screening', title: 'Screening', description: 'Perguntas de elegibilidade via WhatsApp', fields: [] },
       { id: 'instrucoes-lia', title: 'Instruções LIA & Persona', description: 'Configure toggles, instruções por campo (34 canonical) e persona da LIA', fields: [] },
+      { id: 'automacoes', title: 'Automações', description: 'Regras de disparo automático no pipeline', fields: [] },
     ],
   },
   // Consolidações P1 (2026-05-25): hub 'templates-assinatura' absorvido em 'comunicacao-alertas' (renomeado 'Comunicação').
@@ -495,6 +497,15 @@ export default function SettingsPageEnhanced() {
             <ErrorBoundarySection>
               <Suspense fallback={<HubLoadingState />}>
                 <MinhaEmpresaHub activeSubsection="instrucoes-lia" />
+              </Suspense>
+            </ErrorBoundarySection>
+          )
+        }
+        if (activeSubsection === 'automacoes') {
+          return (
+            <ErrorBoundarySection>
+              <Suspense fallback={<HubLoadingState />}>
+                <AutomationsTab onSettingsChange={() => {}} />
               </Suspense>
             </ErrorBoundarySection>
           )

@@ -68,6 +68,7 @@ beforeAll(() => {
   }
 });
 
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AutomationsTab } from "../automations-tab";
 
 const MESSAGES = {
@@ -130,10 +131,13 @@ const MESSAGES = {
 };
 
 function renderWithIntl(ui: React.ReactElement) {
+  const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   return render(
-    <NextIntlClientProvider locale="pt-BR" messages={MESSAGES}>
-      {ui}
-    </NextIntlClientProvider>,
+    <QueryClientProvider client={qc}>
+      <NextIntlClientProvider locale="pt-BR" messages={MESSAGES}>
+        {ui}
+      </NextIntlClientProvider>
+    </QueryClientProvider>,
   );
 }
 

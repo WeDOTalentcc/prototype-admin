@@ -4491,7 +4491,10 @@
         "trigger_interview_scheduled": "Entrevista agendada",
         "trigger_offer_sent": "Proposta enviada",
         "trigger_screening_completed": "Triagem concluída",
-        "trigger_no_response_48h": "Sem resposta (48h)"
+        "trigger_no_response_48h": "Sem resposta (48h)",
+        "summaryActive": "{active} ativo(s) de {total}",
+        "summaryExecs": "{count} execuções",
+        "summarySuccess": "{pct}% de sucesso"
       },
       "communicationTab": {
         "emailTemplates": "Modelos de Email",

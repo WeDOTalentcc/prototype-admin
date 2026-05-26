@@ -4491,7 +4491,10 @@
         "trigger_interview_scheduled": "Interview scheduled",
         "trigger_offer_sent": "Offer sent",
         "trigger_screening_completed": "Screening completed",
-        "trigger_no_response_48h": "No response (48h)"
+        "trigger_no_response_48h": "No response (48h)",
+        "summaryActive": "{active} of {total} active",
+        "summaryExecs": "{count} executions",
+        "summarySuccess": "{pct}% success rate"
       },
       "communicationTab": {
         "emailTemplates": "Email Templates",
