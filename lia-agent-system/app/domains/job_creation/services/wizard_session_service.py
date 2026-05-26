@@ -25,6 +25,54 @@ logger = logging.getLogger(__name__)
 # Keys carried forward from context into wizard state
 _CONTEXT_CARRY_KEYS = ("right_panel_form", "attached_file_text", "tenant_context_snippet")
 
+# ── Sprint F.2-v2 (2026-05-26) — Supervisor skip with content threshold ──
+# Sprint F.2 (2026-05-20) introduziu skip binário do supervisor quando
+# prior_stage em ACTIVE_WIZARD_STAGES. Protege respostas curtas a prompts
+# HITL ("sim", "ok", "modo compacto", "aprovado") de serem misrotuladas
+# pelo Haiku como create_new/meta_question/exit_wizard.
+#
+# Defeito de Sprint F.2: o skip era BINÁRIO — engolia também JD/briefing
+# substancial colado durante stage ativa. Transcript Paulo 2026-05-26:
+# user colou JD 1500 chars no turno 2, supervisor skipou, graph reentrou
+# em loop de "preciso de mais contexto" sem nunca re-classificar.
+#
+# Fix v2: skip SOMENTE quando msg_len < 100 chars. Threshold empírico —
+# JD real começa em ~120 chars (graph.py:842 documenta), prompt-answers
+# canônicos ficam < 30. Margem de 100 dá folga inequívoca.
+#
+# Sensor: tests/wizard/test_supervisor_skip_long_content_threshold.py
+_ACTIVE_WIZARD_STAGES = frozenset({
+    "jd_enrichment", "bigfive", "salary", "competency",
+    "wsi_questions", "eligibility", "review", "publish",
+})
+
+# JD real começa em ~120 chars (graph.py:842 documenta esse mesmo número).
+# Prompt-answers HITL canônicos ("sim"/"ok"/"modo compacto, 7 perguntas")
+# ficam < 30 chars. Threshold 100 dá folga sem ambiguidade.
+_SUPERVISOR_SKIP_LONG_CONTENT_THRESHOLD = 100
+
+
+def _compute_supervisor_skip(
+    user_message: str | None, prior_stage: str | None,
+) -> bool:
+    """Decide if pre-graph supervisor classifier should be skipped.
+
+    Contract:
+      skip ⇔ (prior_stage in _ACTIVE_WIZARD_STAGES)
+             AND (len(user_message.strip()) < _SUPERVISOR_SKIP_LONG_CONTENT_THRESHOLD)
+
+    Skip protects short HITL prompt-answers from being re-classified
+    (Sprint F.2). Long content (JD pastes, briefings) MUST re-classify
+    so the graph can ingest new substance instead of swallowing it as
+    a no-op HITL answer (Sprint F.2-v2).
+    """
+    if not isinstance(prior_stage, str) or prior_stage not in _ACTIVE_WIZARD_STAGES:
+        return False
+    msg_len = len((user_message or "").strip())
+    return msg_len < _SUPERVISOR_SKIP_LONG_CONTENT_THRESHOLD
+
+
+
 # Task #1089 (T3) — o dict canned por stage que mascarava estado inválido
 # do graph (mensagem repetida 4× em HITL, bug original do screenshot) foi
 # REMOVIDO. Sentinela arquitetural em
@@ -868,22 +916,21 @@ class WizardSessionService:
         # / exit_wizard before the first JD parse) and terminal
         # ``done`` / ``handoff`` / ``calibration`` (post-publish).
         # The 8 active stages map 1:1 to nodes with interrupt() gates.
-        _ACTIVE_WIZARD_STAGES = frozenset({
-            "jd_enrichment", "bigfive", "salary", "competency",
-            "wsi_questions", "eligibility", "review", "publish",
-        })
+        # Sprint F.2-v2 canonical: helper module-level testable em isolamento.
+        # ``_ACTIVE_WIZARD_STAGES`` + threshold vivem no topo do módulo agora.
         _prior_stage = None
         if isinstance(prior_state, dict):
             _prior_stage = prior_state.get("current_stage")
-        _skip_supervisor = (
-            isinstance(_prior_stage, str)
-            and _prior_stage in _ACTIVE_WIZARD_STAGES
-        )
+        _skip_supervisor = _compute_supervisor_skip(user_message, _prior_stage)
+        _msg_len = len((user_message or "").strip())
         # Sprint F.4 (iter 3) — diagnostic INFO so we can see supervisor
         # skip engagement in prod INFO logs (was logger.debug, filtered).
+        # Sprint F.2-v2 adiciona ``msg_len`` ao diagnostic pra correlacionar
+        # skip decisions com tamanho do conteúdo (root cause Paulo 2026-05-26).
         logger.info(
-            "[WizardSession] supervisor decision: prior_stage=%r skip=%s thread=%s",
-            _prior_stage, _skip_supervisor, thread_id,
+            "[WizardSession] supervisor decision: prior_stage=%r skip=%s "
+            "msg_len=%d thread=%s",
+            _prior_stage, _skip_supervisor, _msg_len, thread_id,
         )
 
         # ── Task #1127 (T1.1 + T2.1) — Supervisor pre-graph ────────────

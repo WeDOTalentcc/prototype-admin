@@ -46,11 +46,14 @@ def test_supervisor_skip_log_uses_info_level():
     assert (
         'logger.info(\n'
         '            "[WizardSession] supervisor decision: prior_stage=%r '
-        'skip=%s thread=%s",'
+        'skip=%s "\n'
+        '            "msg_len=%d thread=%s",'
     ) in src, (
         "Supervisor decision INFO log missing. The diag line "
         "'[WizardSession] supervisor decision: ...' must be logger.info, "
-        "not logger.debug. See Sprint F.4 iter 3 patch."
+        "not logger.debug. Format updated by Sprint F.2-v2 (2026-05-26) "
+        "to include msg_len for correlating skip decisions with content "
+        "length — see test_supervisor_skip_long_content_threshold.py."
     )
     # The original "supervisor SKIPPED" line must also be INFO so we can
     # confirm in prod logs that the skip path engaged.
