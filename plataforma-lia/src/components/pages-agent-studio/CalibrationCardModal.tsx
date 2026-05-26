@@ -99,7 +99,7 @@ export default function CalibrationCardModal({
     setIsLoading(true)
     setLoadError(null)
     try {
-      const res = await fetch(`/api/backend-proxy/sourcing-agents/${agentId}/calibration-candidates?limit=15`)
+      const res = await fetch(`/api/backend-proxy/custom-agents/${agentId}/calibration-candidates?limit=15`)
       if (!res.ok) {
         throw new Error(`Error ${res.status}: ${res.statusText}`)
       }
@@ -139,7 +139,7 @@ export default function CalibrationCardModal({
   const submitFeedback = async (signalType: string, reason: string): Promise<boolean> => {
     setIsSubmitting(true)
     try {
-      const res = await fetch(`/api/backend-proxy/sourcing-agents/${agentId}/feedback`, {
+      const res = await fetch(`/api/backend-proxy/custom-agents/${agentId}/feedback`, {
         method:"POST",
         headers: {"Content-Type":"application/json" },
         body: JSON.stringify({

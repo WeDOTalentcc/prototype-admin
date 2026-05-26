@@ -72,4 +72,6 @@ def main(blocking: bool = False) -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main(blocking="--blocking" in sys.argv))
+    # Sprint 7B-3b Part 3b v2: promoted to BLOCKING (baseline 0 confirmed pos-DELETE).
+    # Use --warn-only to opt out (e.g., legacy ratchet in transitional branches).
+    sys.exit(main(blocking="--warn-only" not in sys.argv))

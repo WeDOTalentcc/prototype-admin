@@ -187,14 +187,14 @@ function useSidebarDynamicItems() {
 
     async function loadAgents() {
       try {
-        const res = await fetch("/api/backend-proxy/sourcing-agents")
+        const res = await fetch("/api/backend-proxy/custom-agents?category=sourcing")
         if (!res.ok) return
         const data = await res.json()
         const mapped = (data?.agents || [])
           .filter((a: { status: string }) => a.status === "active" || a.status === "paused")
-          .map((a: { id: string; agent_name: string; status: string }) => ({
+          .map((a: { id: string; name: string; status: string }) => ({
             id: a.id,
-            name: a.agent_name,
+            name: a.name,
             status: a.status,
           }))
         if (!cancelled) setAgents(mapped)

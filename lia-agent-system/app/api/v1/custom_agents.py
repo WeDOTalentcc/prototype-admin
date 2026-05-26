@@ -1601,3 +1601,183 @@ async def get_custom_agent_timeline(
 
     timeline = [AgentTimelineEventResponse(**ev) for ev in raw_events]
     return {"timeline": timeline}
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Sprint 7B-3b Part 3b v2 — endpoints canonical novos (substituem legacy
+# app/api/v1/sourcing_agents.py — DELETED nesta sprint).
+#
+# 4 endpoints reusam orchestrator existente + studio_audit dim 5 (EU AI Act
+# Art. 12 + LGPD Art. 20).
+# ─────────────────────────────────────────────────────────────────────────────
+from pydantic import Field as _PydanticField  # noqa: E402
+
+from app.shared.types import WeDoBaseModel as _WeDoBaseModel  # noqa: E402
+
+
+class FeedbackCanonicalRequest(_WeDoBaseModel):
+    """Sprint 7B-3b Part 3b v2: payload feedback canonical (mirror legacy).
+
+    Pydantic REGRA 1 (extra=forbid via WeDoBaseModel) + REGRA 2 (sem company_id
+    no payload — vem do JWT).
+    """
+    candidate_id: str
+    signal_type: str = _PydanticField(..., pattern="^(positive|negative)$")
+    reason: str = _PydanticField(..., min_length=3, max_length=500)
+
+
+@router.get(
+    "/{agent_id}/calibration-candidates",
+    summary="Calibration candidates canonical (sourcing category)",
+)
+async def get_custom_agent_calibration_candidates(
+    agent_id: AgentIdParam,
+    limit: int = 10,
+    company_id: str = Depends(require_company_id),
+    db: AsyncSession = Depends(get_tenant_db),
+):
+    """GET candidates for the Big Card calibration modal.
+
+    Reusa orchestrator.get_calibration_candidates (já canonical via CustomAgent).
+    Multi-tenancy fail-closed: company_id vem do JWT, propagado ao orchestrator
+    que filtra category=sourcing + raise LookupError em cross-tenant.
+    """
+    try:
+        candidates = await sourcing_agent_orchestrator.get_calibration_candidates(
+            agent_id=agent_id, limit=limit, db=db, company_id=company_id,
+        )
+    except LookupError as exc:
+        logger.warning(
+            "[custom-agents] calibration-candidates 404: agent_id=%s company_id=%s reason=%s",
+            agent_id, company_id, exc,
+        )
+        raise HTTPException(status_code=404, detail="Custom agent not found") from exc
+    return {"candidates": candidates}
+
+
+@router.post(
+    "/{agent_id}/feedback",
+    summary="Submit recruiter feedback (positive/negative) — recalibrates agent",
+)
+async def submit_custom_agent_feedback(
+    agent_id: AgentIdParam,
+    body: FeedbackCanonicalRequest,
+    company_id: str = Depends(require_company_id),
+    current_user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_tenant_db),
+):
+    """POST feedback → orchestrator.process_feedback → audit dim 5.
+
+    Reuses orchestrator (canonical via CustomAgent + category=sourcing).
+    studio_audit logs LGPD Art. 20 / EU AI Act Art. 12 review trail.
+    """
+    result = await sourcing_agent_orchestrator.process_feedback(
+        agent_id=agent_id,
+        candidate_id=body.candidate_id,
+        signal_type=body.signal_type,
+        reason=body.reason,
+        db=db,
+    )
+    try:
+        from app.domains.agent_studio._audit_helper import studio_audit
+        await studio_audit(
+            company_id=company_id,
+            action="custom_agent_feedback",
+            decision=body.signal_type,
+            reasoning=[
+                f"candidate_id: {body.candidate_id}",
+                f"signal_type: {body.signal_type}",
+                f"reason: {body.reason[:120]}",
+                f"calibration_version: {result.calibration_version}",
+            ],
+            actor_user_id=str(current_user.id) if current_user else None,
+            target_id=str(agent_id),
+        )
+    except Exception as _audit_err:
+        logger.warning("[custom-agents] feedback audit log_decision failed: %s", _audit_err)
+
+    return {
+        "calibration_version": result.calibration_version,
+        "strategy_updated": result.strategy_updated,
+        "new_exclusions": result.new_exclusions,
+        "new_positive_signals": result.new_positive_signals,
+        "approved_count": result.approved_count,
+        "rejected_count": result.rejected_count,
+        "viewed_count": result.approved_count + result.rejected_count,
+    }
+
+
+async def _load_canonical_agent_for_status(
+    agent_id: str, company_id: str, db: AsyncSession
+):
+    """Load CustomAgent filtered by company_id + category=sourcing. 404 on miss."""
+    stmt = select(CustomAgent).where(
+        CustomAgent.id == agent_id,
+        CustomAgent.company_id == company_id,
+        CustomAgent.category == "sourcing",
+    )
+    result = await db.execute(stmt)
+    agent = result.scalar_one_or_none()
+    if agent is None:
+        raise HTTPException(status_code=404, detail="Custom agent not found")
+    return agent
+
+
+@router.post(
+    "/{agent_id}/pause",
+    summary="Pause a sourcing custom agent (status=paused)",
+)
+async def pause_custom_agent(
+    agent_id: AgentIdParam,
+    company_id: str = Depends(require_company_id),
+    current_user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_tenant_db),
+):
+    """POST pause → status=paused + audit dim 5."""
+    agent = await _load_canonical_agent_for_status(agent_id, company_id, db)
+    prev_status = agent.status
+    agent.status = "paused"
+    await db.commit()
+    try:
+        from app.domains.agent_studio._audit_helper import studio_audit
+        await studio_audit(
+            company_id=company_id,
+            action="custom_agent_paused",
+            decision="paused",
+            reasoning=[f"prev_status: {prev_status}", "next_status: paused"],
+            actor_user_id=str(current_user.id) if current_user else None,
+            target_id=str(agent_id),
+        )
+    except Exception as _audit_err:
+        logger.warning("[custom-agents] pause audit log_decision failed: %s", _audit_err)
+    return {"status": "paused"}
+
+
+@router.post(
+    "/{agent_id}/resume",
+    summary="Resume a paused sourcing custom agent (status=active)",
+)
+async def resume_custom_agent(
+    agent_id: AgentIdParam,
+    company_id: str = Depends(require_company_id),
+    current_user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_tenant_db),
+):
+    """POST resume → status=active + audit dim 5."""
+    agent = await _load_canonical_agent_for_status(agent_id, company_id, db)
+    prev_status = agent.status
+    agent.status = "active"
+    await db.commit()
+    try:
+        from app.domains.agent_studio._audit_helper import studio_audit
+        await studio_audit(
+            company_id=company_id,
+            action="custom_agent_resumed",
+            decision="active",
+            reasoning=[f"prev_status: {prev_status}", "next_status: active"],
+            actor_user_id=str(current_user.id) if current_user else None,
+            target_id=str(agent_id),
+        )
+    except Exception as _audit_err:
+        logger.warning("[custom-agents] resume audit log_decision failed: %s", _audit_err)
+    return {"status": "active"}

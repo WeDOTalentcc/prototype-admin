@@ -554,6 +554,13 @@ jobs:
       - name: "T-RATCHET: tenant filter ratchet (BLOCKING)"
         run: python3 scripts/check_query_has_tenant_filter.py --blocking --baseline-file scripts/baselines/tenant_filter.txt --quiet
 
+      # Sprint 7B-3b Part 3b v2 (2026-05-26): sensor #8 promoted BLOCKING.
+      # Baseline 0 sustentado pos DELETE app/api/v1/sourcing_agents.py +
+      # cleanup libs/models/lia_models/__init__.py (so re-export SourcingAgentSignal canonical).
+      # Bane qualquer reintroducao de import SourcingAgent (use CustomAgent + category='sourcing').
+      - name: "H-AGENT: no legacy SourcingAgent import (BLOCKING)"
+        run: python3 scripts/check_no_legacy_sourcing_agent_import.py
+
       - name: G-RLS-WRITE -- RLS write endpoints use get_tenant_db (BLOCKING)
         run: python3 scripts/check_get_db_rls_safety.py --blocking
 

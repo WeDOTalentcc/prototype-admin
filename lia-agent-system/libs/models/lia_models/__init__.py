@@ -768,7 +768,7 @@ from lia_models.rubric import JobRequirement, RubricEvaluation, RequirementPrior
 from lia_models.saas_metrics import ClientSaasMetrics, ClientUsageMetrics, ClientHealthMetrics, PaymentHistory, ChurnRisk, EngagementLevel, PaymentStatus, PaymentMethod, BillingCycle
 from lia_models.screening_question_set import ScreeningQuestionSet
 from lia_models.skills_catalog import CompanySkillsCatalog, BehavioralCompetencyCatalog, SkillUsageAnalytics
-from lia_models.sourcing_agent import SourcingAgent, SourcingAgentSignal
+from lia_models.sourcing_agent import SourcingAgentSignal  # SourcingAgent class deprecated — Sprint 7B-3b Part 3b v2 drop re-export (table dropped Sprint 8)
 from lia_models.talent_pool import TalentPool, TalentPoolCandidate
 from lia_models.pool_agent_assignment import PoolAgentAssignment
 from lia_models.task_record import TaskRecord, TaskSchedule, DeadLetterRecord

@@ -38,7 +38,7 @@ import { useAiPersona } from "@/hooks/company/use-ai-persona"
 
 // SOURCING-LEGACY-EXEMPT: migration comment header (Sprint 7B-3b Part 2 v2 swap concluido)
 // Sprint 7B-3b Part 2 v2 (2026-05-26): swap canonical SourcingAgent -> CustomAgent.
-// Endpoint /sourcing-agents -> /custom-agents?category=sourcing. Field access via
+// Endpoint canonical /custom-agents?category=sourcing (Sprint 7B-3b Part 3b v2). Field access via
 // adapter helpers (runtime_metrics, config.calibration_v). Snapshot SHA pre-edit:
 // eb933818a49dbf1b89b8cb9619cc6cdfd16324d1.
 
@@ -231,7 +231,7 @@ export default function AgentStudioPage({
   const handleToggleStatus = async (agentId: string, currentStatus: string) => {
     const action = currentStatus === "active" ? "pause" : "resume"
     try {
-      const res = await fetch(`/api/backend-proxy/sourcing-agents/${agentId}/${action}`, { method: "PATCH" })
+      const res = await fetch(`/api/backend-proxy/custom-agents/${agentId}/${action}`, { method: "POST" })
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}))
         throw new Error(extractErrorMessage(errData, res.status))
