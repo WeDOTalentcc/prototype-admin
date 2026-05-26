@@ -201,6 +201,40 @@ export function LiaFieldsConfigPanel() {
     [config, persistConfig],
   )
 
+  // P2-7 (audit 2026-05-26): batch operations sobre os 34 toggles.
+  // Reset = default canonical (toggle ON, instrucao vazia). Useful pra
+  // recrutador que customizou demais e quer voltar ao baseline.
+  const handleClearAllInstructions = useCallback(() => {
+    if (typeof window !== "undefined" && !window.confirm(
+      "Limpar TODAS as instruções customizadas dos 34 campos LIA? Esta ação não pode ser desfeita. Os toggles ON/OFF permanecem como estão.",
+    )) {
+      return
+    }
+    const next: LiaFieldsConfig = {
+      ...config,
+      lia_instructions: {},
+    }
+    persistConfig(next, "__batch_clear_instructions__")
+  }, [config, persistConfig])
+
+  const handleBatchToggleAll = useCallback((targetState: boolean) => {
+    const action = targetState ? "ativar" : "desativar"
+    if (typeof window !== "undefined" && !window.confirm(
+      `${action.charAt(0).toUpperCase() + action.slice(1)} TODOS os 34 toggles de campos LIA? Instruções customizadas permanecem inalteradas.`,
+    )) {
+      return
+    }
+    const allToggles: Partial<Record<LiaFieldKey, boolean>> = {}
+    for (const key of Object.keys(LIA_FIELD_DEFINITIONS) as LiaFieldKey[]) {
+      allToggles[key] = targetState
+    }
+    const next: LiaFieldsConfig = {
+      ...config,
+      lia_field_toggles: allToggles,
+    }
+    persistConfig(next, "__batch_toggle_all__")
+  }, [config, persistConfig])
+
   const fieldsByCategory = React.useMemo(() => {
     const groups: Record<string, Array<{ key: LiaFieldKey; label: string; location: string }>> = {}
     for (const [key, def] of Object.entries(LIA_FIELD_DEFINITIONS) as Array<
@@ -277,6 +311,41 @@ export function LiaFieldsConfigPanel() {
         </TabsList>
 
         <TabsContent value="fields" className="space-y-6 mt-4">
+          {/* P2-7 (audit 2026-05-26): batch actions bar — opera sobre todos
+              os 34 toggles de uma vez. Confirmacao via window.confirm. */}
+          <div
+            className="flex flex-wrap items-center gap-2 p-3 rounded-xl border border-lia-border-subtle bg-lia-bg-secondary/50"
+            data-testid="lia-fields-batch-actions"
+          >
+            <span className="text-xs font-medium text-lia-text-secondary mr-2">
+              Ações em massa:
+            </span>
+            <button
+              type="button"
+              onClick={() => handleBatchToggleAll(true)}
+              className="text-xs px-2.5 py-1 rounded-md bg-lia-bg-primary hover:bg-wedo-cyan/10 border border-lia-border-default text-lia-text-primary transition-colors motion-reduce:transition-none"
+              data-testid="batch-activate-all"
+            >
+              Ativar todos
+            </button>
+            <button
+              type="button"
+              onClick={() => handleBatchToggleAll(false)}
+              className="text-xs px-2.5 py-1 rounded-md bg-lia-bg-primary hover:bg-status-warning/10 border border-lia-border-default text-lia-text-primary transition-colors motion-reduce:transition-none"
+              data-testid="batch-deactivate-all"
+            >
+              Desativar todos
+            </button>
+            <button
+              type="button"
+              onClick={handleClearAllInstructions}
+              className="text-xs px-2.5 py-1 rounded-md bg-lia-bg-primary hover:bg-status-error/10 border border-lia-border-default text-lia-text-primary transition-colors motion-reduce:transition-none"
+              data-testid="batch-clear-instructions"
+            >
+              Limpar todas as instruções
+            </button>
+          </div>
+
           {Object.entries(fieldsByCategory).map(([category, fields]) => (
             <section key={category} className="space-y-3">
               <h4 className={textStyles.h4}>{category}</h4>
