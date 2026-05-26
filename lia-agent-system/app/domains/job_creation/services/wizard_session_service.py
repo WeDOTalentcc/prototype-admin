@@ -1056,6 +1056,80 @@ class WizardSessionService:
             except Exception as mp_exc:
                 logger.warning("[WizardSession] manager_preferences injection failed (fail-open): %s", mp_exc)
 
+        # ── Sprint 4 (2026-05-26) — Proactive context inject canonical ──
+        # Espelha Sprint 3.4 do MainOrchestrator.process para o wizard path.
+        # Settings UI edits (notifyChatOfSettingsUpdate dispatch via
+        # Sprint 2.4 debounce → Sprint 3.3 POST → Sprint 3.2 Redis store)
+        # ficam disponíveis para nodes do wizard que consomem
+        # ``state['tenant_context_snippet']`` (jd_enrichment, gate_classifier,
+        # bigfive, etc). Sem essa injeção, editar Settings durante wizard
+        # ativo NÃO chega ao LLM do wizard — gap identificado no audit
+        # 2026-05-26 (~/Documents/wedotalent_audit_2026-05-26/AUDIT_SESSION_REVIEW.md §3.1).
+        #
+        # Estratégia: appendar notes ao tenant_context_snippet existente
+        # (não substituir) para preservar contexto canonical do tenant.
+        # Reforça Anti-pattern #1 inline igual Sprint 3.4 (consistência
+        # comportamental cross-paths).
+        # Fail-open total: Redis down -> noop, NÃO quebra wizard.
+        if company_id and user_id:
+            try:
+                from app.shared.services.proactive_context_store import (
+                    ProactiveContextStore,
+                )
+                _pc_notes = await ProactiveContextStore.list_recent(
+                    company_id=str(company_id),
+                    user_id=str(user_id),
+                    limit=8,
+                )
+                if _pc_notes:
+                    _pc_lines = [
+                        "\n\n### Contexto recente das configurações (últimos 30min)",
+                        "O recrutador acabou de editar configurações via UI. "
+                        "Considere reagir proativamente APENAS se for relevante "
+                        "para a vaga sendo criada. NUNCA enumere features "
+                        "(Anti-pattern #1) — comente apenas o que mudou se útil "
+                        "para a triagem/wizard.",
+                        "",
+                    ]
+                    for _n in _pc_notes[:8]:
+                        _act = str(_n.get("action_id") or "")
+                        _sec = str(_n.get("section") or "")
+                        _fld = _n.get("field")
+                        _val = _n.get("value")
+                        _fld_part = f' · campo "{_fld}"' if _fld else ""
+                        _val_part = ""
+                        if _val is not None:
+                            _val_str = str(_val)
+                            if len(_val_str) > 200:
+                                _val_str = _val_str[:200] + "…"
+                            _val_part = f" = {_val_str}"
+                        _pc_lines.append(
+                            f"- {_sec}{_fld_part}{_val_part}  (ação: {_act})"
+                        )
+                    _pc_block = "\n".join(_pc_lines)
+                    _existing_snippet = state.get("tenant_context_snippet") or ""
+                    state["tenant_context_snippet"] = _existing_snippet + _pc_block
+                    logger.info(
+                        "[WizardSession] Sprint 4: injected %d proactive context "
+                        "notes into tenant_context_snippet (company=%s user=%s)",
+                        len(_pc_notes), company_id, user_id,
+                    )
+                    # Clear consumed (Sprint 4 mirror Sprint 3.4) — evita
+                    # re-injeção do mesmo contexto a cada turn do wizard.
+                    try:
+                        await ProactiveContextStore.clear_consumed(
+                            company_id=str(company_id),
+                            user_id=str(user_id),
+                        )
+                    except Exception:
+                        pass
+            except Exception as _pc_exc:
+                logger.debug(
+                    "[WizardSession] Sprint 4 proactive context inject failed "
+                    "(fail-open): %s",
+                    _pc_exc,
+                )
+
         # ── Hiring policy summary injection (T2 fix #7 — code review #5) ─
         # O ``wizard_gate_classifier`` recebe ``hiring_policy_summary`` para
         # calibrar a classificação de intent (ex.: tenants com

@@ -478,11 +478,18 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
         : "";
       // G5 canonical fix (2026-05-24): sender "system" (not "lia") so the
       // renderer skips this note. The content is a backstage hint for LIA,
-      // not a user-facing reply. The original sender:"lia" + metadata.silent:true
-      // combination did not work because the renderer ignored the silent flag.
-      // TODO(G9 follow-up): POST this note to backend as proactive context
-      // so LIA can react with a real natural-language suggestion on the next
-      // user turn. Today it is only kept in client state (no backend wire).
+      // not a user-facing reply. Sprint 2.4 (commit 5996e3c3 2026-05-26)
+      // refinou para renderer respeitar metadata.silent (não polui transcript).
+      //
+      // G9 wire COMPLETO (Sprint 3.2/3.3/3.4 — 2026-05-26):
+      //   - Sprint 3.2 (576e67ec) backend POST /api/v1/lia/proactive-context
+      //     + Redis store TTL 30min
+      //   - Sprint 3.3 (67ddb1b9) settings-notify.ts POSTa após debounce
+      //   - Sprint 3.4 (0fd7f8f7) MainOrchestrator inject list_recent() no
+      //     system_prompt antes de agentic_loop.run; LLM próximo turn vê
+      //     contexto e reage proativamente (respeitando lia_persona
+      //     Anti-pattern #1 — NUNCA enumere features).
+      // Note local continua mantido em chatMessages SE !silent (Sprint 2.4).
       const note: LiaChatMessage = {
         id: `sys-settings-${detail.ts || Date.now()}`,
         sender: "system",
