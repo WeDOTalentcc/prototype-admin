@@ -42,19 +42,51 @@ def test_all_phase_e_tools_registered():
 
 
 def test_each_tool_has_company_id_required_param():
-    """Multi-tenancy invariant: every tool must require company_id from
-    the agent context (NEVER from LLM-generated args). The schema marks
-    company_id as a required parameter so the ReAct loop can reject
-    malformed tool calls before reaching the wrap function."""
+    """Multi-tenancy invariant (canonical pattern, registered 2026-05-26):
+    company_id MUST come from the agent ContextVar JWT injected by
+    @tool_handler — NEVER from LLM-generated args. This mirrors REGRA 2
+    of Pydantic Conventions canonical (~/.claude/CLAUDE.md): company_id
+    is forbidden in request payloads / LLM tool schemas; it is always
+    sourced from the authoritative auth context.
+
+    The sensor asserts the inverse of its older formulation:
+      (a) company_id is NOT in the tool schema (it would allow LLM
+          to pass arbitrary company_id, breaking tenant isolation), AND
+      (b) the wrapper function still extracts company_id from kwargs
+          (because @tool_handler injects it from ContextVar — the
+          wrapper sees ``kwargs['company_id']`` even though the LLM
+          schema does not declare it).
+    """
+    import inspect
     for name in PHASE_E_TOOLS:
         tool = _TOOL_MAP[name]
         required = set(tool.parameters.get("required") or [])
-        assert "company_id" in required, (
-            f"Tool {name!r} must declare company_id as required (multi-tenancy)."
+        props = set((tool.parameters.get("properties") or {}).keys())
+        # (a) company_id MUST NOT be exposed to the LLM.
+        assert "company_id" not in required, (
+            f"Tool {name!r} must NOT declare company_id as required — "
+            f"canonical multi-tenancy sources it from JWT ContextVar via "
+            f"@tool_handler, never from LLM-generated args (CLAUDE.md REGRA 2)."
         )
-        # And company_id must be in properties.
-        props = tool.parameters.get("properties") or {}
-        assert "company_id" in props, f"Tool {name!r} missing company_id property."
+        assert "company_id" not in props, (
+            f"Tool {name!r} must NOT expose company_id in schema "
+            f"properties — LLM could pass arbitrary tenant id."
+        )
+        # (b) The wrapper must still extract company_id (injected by
+        #     @tool_handler from ContextVar). We grep the wrapper source
+        #     to keep the check cheap and AST-free.
+        fn = tool.function
+        # Unwrap @tool_handler decorator if necessary
+        underlying = getattr(fn, "__wrapped__", fn)
+        try:
+            src = inspect.getsource(underlying)
+        except (OSError, TypeError):
+            src = ""
+        assert 'kwargs.get("company_id")' in src or "kwargs['company_id']" in src, (
+            f"Tool {name!r} wrapper does not extract company_id from kwargs. "
+            f"Canonical pattern: @tool_handler injects company_id from "
+            f"ContextVar; wrapper reads via kwargs.get('company_id')."
+        )
 
 
 def test_each_tool_has_vacancy_id_required_param():
@@ -133,9 +165,9 @@ def test_stage_tools_includes_phase_e():
 def test_no_phase_e_tool_registered_in_unsupported_stage():
     """Belt-and-suspenders: Phase E tools must NOT be advertised in
     stages that have no business invoking them. Specifically, the wizard
-    stages (input-evaluation, jd-enrichment, salary, competencies)
+    stages (intake, jd_enrichment, salary, competency)
     should not include vacancy lifecycle tools."""
-    forbidden_stages = ["input-evaluation", "jd-enrichment", "salary", "competencies"]
+    forbidden_stages = ["intake", "jd_enrichment", "salary", "competency"]
     for stage in forbidden_stages:
         present = set(STAGE_TOOLS.get(stage) or [])
         leaked = present & {"dispatch_screening", "publish_vacancy", "change_vacancy_status"}

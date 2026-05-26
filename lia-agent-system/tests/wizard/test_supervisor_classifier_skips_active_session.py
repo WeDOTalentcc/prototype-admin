@@ -33,10 +33,17 @@ import pytest
 
 
 ACTIVE_STAGES = (
-    "jd_enrichment", "bigfive", "salary", "competency",
+    # PR-15 (2026-05-26): "intake" + "pipeline_template" added to canonical
+    # _ACTIVE_WIZARD_STAGES (PR-1 of the wizard fixes plan). Supervisor must
+    # SKIP for short HITL replies during these stages too.
+    "intake", "jd_enrichment", "pipeline_template",
+    "bigfive", "salary", "competency",
     "wsi_questions", "eligibility", "review", "publish",
 )
-NON_ACTIVE_STAGES = ("intake", "calibration", "handoff", "done", None)
+# PR-15: "intake" removed from NON_ACTIVE — it is now an active stage.
+# Re-classification-safe stages remain: calibration / handoff / done /
+# None (no prior stage at all).
+NON_ACTIVE_STAGES = ("calibration", "handoff", "done", None)
 HITL_REPLIES = (
     "modo compacto, 7 perguntas",
     "aprovado",
@@ -173,8 +180,14 @@ def test_active_stage_set_matches_wizardstage_literal_minus_safe():
 
     # Canonical WizardStage Literal from app/domains/job_creation/state.py
     # (kept in sync with this test by the test_active_stage_set sentinel).
+    # PR-15 (2026-05-26): "intake" + "pipeline_template" added — PR-1 of
+    # the wizard fixes plan extended _ACTIVE_WIZARD_STAGES to skip the
+    # supervisor classifier on short HITL replies during these stages
+    # too. Re-classification-safe set remains: calibration / handoff /
+    # done (terminals).
     canonical_active = frozenset({
-        "jd_enrichment", "bigfive", "salary", "competency",
+        "intake", "jd_enrichment", "pipeline_template",
+        "bigfive", "salary", "competency",
         "wsi_questions", "eligibility", "review", "publish",
     })
     assert declared == canonical_active, (

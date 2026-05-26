@@ -71,10 +71,15 @@ def test_reinforces_anti_pattern_1_in_wizard_context():
 
 def test_clears_consumed_after_inject():
     """Após inject deve clear_consumed para evitar re-injeção a cada
-    turn do wizard. Mesma semântica do Sprint 3.4."""
+    turn do wizard. Mesma semântica do Sprint 3.4.
+
+    Window bumped 4000 → 6000 em PR-15 (2026-05-26): PR-12/F-4.14
+    adicionou telemetry counter (Prometheus labels) entre o inject e o
+    clear_consumed, empurrando o clear_consumed para além de 4000 chars.
+    Sensor reativa após o bump."""
     src = _read(SVC)
     idx = src.find("Sprint 4")
-    window = src[idx:idx + 4000]
+    window = src[idx:idx + 6000]
     assert "ProactiveContextStore.clear_consumed(" in window, (
         "Sprint 4 missing clear_consumed após inject"
     )
