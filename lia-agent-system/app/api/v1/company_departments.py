@@ -23,6 +23,9 @@ from app.schemas.company import (
     ManagerResponse,
     ManagerSearchResponse,
 )
+from app.auth.dependencies import get_current_user_or_demo
+from app.auth.models import User
+from app.shared.rbac.mutation_gate import assert_mutation_allowed
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 from app.shared.compliance.audit_service import AuditService  # P1-W2-06
 
@@ -94,7 +97,9 @@ async def update_department(
     department_id: uuid.UUID,
     data: DepartmentUpdate,
     dept_repo: DepartmentRepository = Depends(get_department_repo),
-company_id: str = Depends(require_company_id)):
+current_user: User = Depends(get_current_user_or_demo),
+    company_id: str = Depends(require_company_id),
+):
     # Onda 4.2a-P0.1 (2026-05-23): company_id passa ao repo pra cross-tenant guard.
     """Update a department."""
     try:
@@ -105,6 +110,8 @@ company_id: str = Depends(require_company_id)):
         )
         if not department:
             raise HTTPException(status_code=404, detail="Department not found")
+        # Sprint 7.2 RBAC: mutation gate
+        await assert_mutation_allowed(department, current_user, resource_label="departamento")
         await AuditService().log_action(trace_id=str(uuid.uuid4()), company_id=company_id, action_type="department_update", actor="system", target_id=str(department_id), target_type="department")  # P1-W2-06
         return department
     except HTTPException:
@@ -225,7 +232,9 @@ async def update_department_member(
     member_id: uuid.UUID,
     data: DepartmentMemberUpdate,
     dept_repo: DepartmentRepository = Depends(get_department_repo),
-company_id: str = Depends(require_company_id)):
+current_user: User = Depends(get_current_user_or_demo),
+    company_id: str = Depends(require_company_id),
+):
     # Onda 4.2a-P0.1 (2026-05-23): company_id passa ao repo pra cross-tenant guard.
     """Update a department member."""
     try:
@@ -236,6 +245,8 @@ company_id: str = Depends(require_company_id)):
         )
         if not member:
             raise HTTPException(status_code=404, detail="Department member not found")
+        # Sprint 7.2 RBAC: mutation gate
+        await assert_mutation_allowed(member, current_user, resource_label="colaborador")
         await AuditService().log_action(trace_id=str(uuid.uuid4()), company_id=company_id, action_type="department_member_update", actor="system", target_id=str(member_id), target_type="department_member")  # P1-W2-06
         return member
     except HTTPException:

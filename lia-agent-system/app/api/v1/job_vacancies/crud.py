@@ -993,6 +993,8 @@ company_id: str = Depends(require_company_id)):
 
         if not job_vacancy:
             raise HTTPException(status_code=404, detail="Job vacancy not found")
+        # Sprint 7.2 RBAC: mutation gate
+        await assert_mutation_allowed(job_vacancy, current_user, resource_label="vaga")
 
         old_status = job_vacancy.status
         job_vacancy.status = status

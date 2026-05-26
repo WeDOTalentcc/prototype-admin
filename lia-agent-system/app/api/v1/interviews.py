@@ -19,6 +19,7 @@ from app.models.interview import Interview, InterviewFeedback
 from app.domains.analytics.services.activity_service import ActivityService, get_activity_service
 from app.shared.compliance.audit_service import AuditService, get_audit_service
 from app.shared.pii_masking import get_masked_logger
+from app.shared.rbac.mutation_gate import assert_mutation_allowed
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 from app.shared.types import WeDoBaseModel
 
@@ -360,7 +361,9 @@ async def cancel_interview(
     interview_id: str,
     cancellation_message: str | None = None,
     repo: InterviewRepository = Depends(get_interview_repo),
-company_id: str = Depends(require_company_id)):
+    current_user: User = Depends(get_current_user_or_demo),
+    company_id: str = Depends(require_company_id),
+):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Cancel a scheduled interview.
@@ -370,6 +373,8 @@ company_id: str = Depends(require_company_id)):
 
         if not interview:
             raise HTTPException(status_code=404, detail="Interview not found")
+        # Sprint 7.2 RBAC: mutation gate
+        await assert_mutation_allowed(interview, current_user, resource_label="entrevista")
 
         # Cancel in calendar if synced
         if interview.graph_event_id and interview.graph_organizer_email:
@@ -457,7 +462,9 @@ async def reschedule_interview(
     interview_id: str,
     request: RescheduleInterviewRequest,
     repo: InterviewRepository = Depends(get_interview_repo),
-company_id: str = Depends(require_company_id)):
+current_user: User = Depends(get_current_user_or_demo),
+    company_id: str = Depends(require_company_id),
+):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Reschedule an existing interview.
@@ -467,6 +474,8 @@ company_id: str = Depends(require_company_id)):
 
         if not interview:
             raise HTTPException(status_code=404, detail="Interview not found")
+        # Sprint 7.2 RBAC: mutation gate
+        await assert_mutation_allowed(interview, current_user, resource_label="entrevista")
 
         # Reschedule in calendar if synced
         if interview.graph_event_id and interview.graph_organizer_email:
