@@ -321,3 +321,54 @@ export const STAGE_ORDER: WizardStage[] = [
   "wsi_questions", "eligibility", "review", "publish", "calibration",
   "handoff", "done", "scheduling",
 ]
+
+
+// ============================================================================
+// Pipeline Template Suggestion (Fase 3 — auto-suggest no wizard chat)
+// ============================================================================
+//
+// Quando o backend (Phase 1.6) detecta department/seniority/job_family após
+// jd_enrichment, ele emite um WizardStagePayload com `ui_action` extra +
+// `data.templates: WizardPipelineTemplateSuggestion[]` (até top-3 ranked).
+//
+// O type WizardStagePayloadContract gerado tem `ui_action` ausente porque
+// o contract Pydantic ainda não expõe esse campo opcional. Quando o
+// generator regenerar, este alias pode ser absorvido.
+//
+
+export interface WizardPipelineTemplateSuggestion {
+  template_id: string
+  name: string
+  description?: string | null
+  stages_count: number
+  /** Score 0-1 vindo do ranker do backend; UI formata como `${Math.round(score*100)}% match`. */
+  score: number
+}
+
+/** Lista discriminada de ui_actions emitidos no payload do wizard. */
+export type WizardUiAction = "suggest_pipeline_template"
+
+/**
+ * Payload completo do wizard incluindo o campo opcional `ui_action` que
+ * acompanha sugestões discretas (não toma o controle do stage). Quando
+ * presente, `data` carrega o shape correspondente à action.
+ *
+ * Exemplo (Phase 1.6 — pipeline template suggestion):
+ * ```json
+ * {
+ *   "type": "wizard_stage",
+ *   "stage": "jd_enrichment",
+ *   "completeness": 0.45,
+ *   "ui_action": "suggest_pipeline_template",
+ *   "data": { "templates": [...] }
+ * }
+ * ```
+ */
+export type WizardStagePayloadWithUiAction = WizardStagePayload & {
+  ui_action?: WizardUiAction | null
+}
+
+/** Shape de `data` quando `ui_action === "suggest_pipeline_template"`. */
+export interface WizardPipelineTemplateSuggestionPayload {
+  templates: WizardPipelineTemplateSuggestion[]
+}

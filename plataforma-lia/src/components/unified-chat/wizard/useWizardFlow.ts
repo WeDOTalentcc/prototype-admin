@@ -5,6 +5,8 @@ import type {
   WizardStage,
   WizardStagePayload,
   ScreeningMode,
+  WizardPipelineTemplateSuggestion,
+  WizardStagePayloadWithUiAction,
 } from "./wizard-types"
 import { SPLIT_STAGES } from "./DynamicContextPanel"
 
@@ -69,6 +71,13 @@ interface WizardState {
   degradedStages: Partial<Record<WizardStage, DegradedStageEntry>>
   threadId: string | null
   error: string | null
+  /**
+   * Fase 3 (Pipeline Template auto-suggest) — populated when the backend
+   * emits a wizard_stage payload with ui_action="suggest_pipeline_template".
+   * The chat surface renders <PipelineTemplateSuggestion> while this is
+   * non-empty. Skipped/applied actions clear it back to [].
+   */
+  pipelineTemplateSuggestions: WizardPipelineTemplateSuggestion[]
 }
 
 const initialState: WizardState = {
@@ -81,6 +90,7 @@ const initialState: WizardState = {
   degradedStages: {},
   threadId: null,
   error: null,
+  pipelineTemplateSuggestions: [],
 }
 
 /**
@@ -110,6 +120,8 @@ type WizardAction =
   | { type: "CLEAR_ERROR" }
   | { type: "SET_THREAD"; threadId: string }
   | { type: "RESET" }
+  | { type: "SET_PIPELINE_TEMPLATE_SUGGESTIONS"; suggestions: WizardPipelineTemplateSuggestion[] }
+  | { type: "CLEAR_PIPELINE_TEMPLATE_SUGGESTIONS" }
 
 function buildHistory(current: WizardStage | null, next: WizardStage, history: WizardStage[]): WizardStage[] {
   // Always include all visited stages in order
@@ -131,6 +143,20 @@ function wizardReducer(state: WizardState, action: WizardAction): WizardState {
       const nextDegraded = degraded
         ? { ...state.degradedStages, [stage]: degraded }
         : state.degradedStages
+      // Fase 3 — captura ui_action="suggest_pipeline_template" sem
+      // perturbar a transição de stage. O payload "with ui_action" é
+      // estruturalmente compatível com WizardStagePayload (ui_action é
+      // optional), então cast é seguro.
+      const payloadWithAction = action.payload as WizardStagePayloadWithUiAction
+      let nextTemplates = state.pipelineTemplateSuggestions
+      if (
+        payloadWithAction.ui_action === "suggest_pipeline_template" &&
+        safeData &&
+        Array.isArray((safeData as { templates?: unknown }).templates)
+      ) {
+        nextTemplates = (safeData as { templates: WizardPipelineTemplateSuggestion[] })
+          .templates
+      }
       return {
         ...state,
         active: true,
@@ -141,6 +167,7 @@ function wizardReducer(state: WizardState, action: WizardAction): WizardState {
         stageHistory: buildHistory(state.currentStage, stage, state.stageHistory),
         degradedStages: nextDegraded,
         error: null,
+        pipelineTemplateSuggestions: nextTemplates,
       }
     }
     case "APPROVE_STAGE":
@@ -170,6 +197,10 @@ function wizardReducer(state: WizardState, action: WizardAction): WizardState {
       }
     case "SET_THREAD":
       return { ...state, threadId: action.threadId }
+    case "SET_PIPELINE_TEMPLATE_SUGGESTIONS":
+      return { ...state, pipelineTemplateSuggestions: action.suggestions }
+    case "CLEAR_PIPELINE_TEMPLATE_SUGGESTIONS":
+      return { ...state, pipelineTemplateSuggestions: [] }
     case "RESET":
       return initialState
     default:
@@ -288,6 +319,40 @@ export function useWizardFlow(_options: UseWizardFlowOptions = {}) {
     dispatch({ type: "RESET" })
   }, [])
 
+  /**
+   * Fase 3 — aplica um template de pipeline customizado (vindo de
+   * Configurações) à vaga em curso. Faz POST direto ao proxy
+   * `/api/backend-proxy/job-vacancies/{id}/apply-pipeline-template`.
+   * Retorna a Response pra o caller exibir toast/erro. Limpa o card de
+   * sugestão em caso de sucesso.
+   */
+  const applyPipelineTemplateFromWizard = useCallback(
+    async (
+      vacancyId: string,
+      templateId: string,
+      source: "wizard_explicit" | "wizard_auto" = "wizard_explicit",
+    ): Promise<Response> => {
+      const response = await fetch(
+        `/api/backend-proxy/job-vacancies/${vacancyId}/apply-pipeline-template`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ template_id: templateId, source }),
+        },
+      )
+      if (response.ok) {
+        dispatch({ type: "CLEAR_PIPELINE_TEMPLATE_SUGGESTIONS" })
+      }
+      return response
+    },
+    [],
+  )
+
+  /** Fase 3 — dispensa a sugestão sem aplicar (recrutador escolhe customizar). */
+  const skipPipelineTemplateSuggestion = useCallback(() => {
+    dispatch({ type: "CLEAR_PIPELINE_TEMPLATE_SUGGESTIONS" })
+  }, [])
+
   // Task #1165 — quando o stage transitar para uma SPLIT_STAGE (review →
   // publish → calibration → handoff → done / scheduling) o wizard passa a
   // ter UI dedicada (split view 340/420px). Emitimos um
@@ -350,6 +415,11 @@ export function useWizardFlow(_options: UseWizardFlowOptions = {}) {
     setThreadId,
     reset,
     isWizardMessage,
+
+    // Fase 3 — pipeline template auto-suggest
+    pipelineTemplateSuggestions: state.pipelineTemplateSuggestions,
+    applyPipelineTemplateFromWizard,
+    skipPipelineTemplateSuggestion,
   }
 }
 

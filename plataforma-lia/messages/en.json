@@ -7222,5 +7222,20 @@
         }
       }
     }
+  },
+  "wizard": {
+    "pipelineTemplate": {
+      "suggestionTitle": "LIA Suggestion",
+      "suggestionSubtitle": "I found a pipeline template that fits this role.",
+      "matchPercent": "{percent}% match",
+      "stagesCount": "{count, plural, one {# stage} other {# stages}}",
+      "applyAction": "Apply this template",
+      "viewOthers": "See other templates",
+      "skipAction": "No, I will customize",
+      "applying": "Applying...",
+      "appliedToast": "Template applied!",
+      "errorToast": "Error applying template",
+      "errorNoVacancy": "Save the job before applying a template."
+    }
   }
 }

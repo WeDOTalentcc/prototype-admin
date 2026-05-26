@@ -7222,5 +7222,20 @@
         }
       }
     }
+  },
+  "wizard": {
+    "pipelineTemplate": {
+      "suggestionTitle": "Sugestão da LIA",
+      "suggestionSubtitle": "Achei um template de pipeline que combina com esta vaga.",
+      "matchPercent": "{percent}% match",
+      "stagesCount": "{count, plural, one {# etapa} other {# etapas}}",
+      "applyAction": "Aplicar este template",
+      "viewOthers": "Ver outros templates",
+      "skipAction": "Não, vou customizar",
+      "applying": "Aplicando...",
+      "appliedToast": "Template aplicado!",
+      "errorToast": "Erro ao aplicar template",
+      "errorNoVacancy": "Salve a vaga antes de aplicar um template."
+    }
   }
 }
