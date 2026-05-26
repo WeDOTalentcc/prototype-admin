@@ -75,6 +75,12 @@ from app.jobs.tasks.health import (  # noqa: F401
     check_dlq_health_task,
 )
 
+# Sprint 7C Part 1 v2: pool_agents cron infra canonical (dispatch stub + scan REAL)
+from app.jobs.tasks.pool_agents import (  # noqa: F401
+    dispatch_pool_agent_assignment_task,
+    scan_pool_agent_cron_schedules,
+)
+
 __all__ = [
     # agents
     "wizard_process_async_task",
@@ -133,4 +139,7 @@ __all__ = [
     "run_openmic_wsi_pipeline_task",
     # health (R-024)
     "check_dlq_health_task",
+    # pool_agents (Sprint 7C Part 1 v2)
+    "dispatch_pool_agent_assignment_task",
+    "scan_pool_agent_cron_schedules",
 ]

@@ -73,6 +73,7 @@ dependencies = [
     "google-auth-oauthlib>=1.2.1",
     # Scheduler
     "APScheduler==3.10.4",
+    "croniter==3.0.3",
     # Workspace libs (editable installs)
     "lia-config",
     "lia-utils",
