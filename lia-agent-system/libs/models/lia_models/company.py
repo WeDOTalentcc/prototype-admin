@@ -180,6 +180,10 @@ class DepartmentMember(Base):
     department_id = Column(UUID(as_uuid=True), ForeignKey("departments.id"), nullable=False)
     company_id = Column(UUID(as_uuid=True), ForeignKey("company_profiles.id"), nullable=False)
     
+    # Bug 1 fix (2026-05-25): linkage to users when member is platform user.
+    # NULL = external contact (consultant, hiring manager without login).
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
+
     name = Column(String(255), nullable=False)
     title = Column(String(255), nullable=True)
     email = Column(String(255), nullable=True)

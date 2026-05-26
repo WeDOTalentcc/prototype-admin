@@ -62,6 +62,17 @@ export function UsuariosDepartamentosHub() {
     setSuccessMessage: companyActions.setSuccessMessage,
   })
 
+
+  // Bug 2 fix (lift state, 2026-05-25): single source of truth for departments
+  // shared between UserManagement and DepartmentManagement tabs. Eliminates
+  // stale dropdown after create-in-other-tab race. Canonical-fix #2 (single SoT).
+  const hubDeptList = (deptState.departments ?? []).map((d: { id: string; name: string; description?: string }) => ({
+    id: String(d.id),
+    name: String(d.name),
+    code: null as string | null,
+    is_active: true,
+  }))
+
   const tabs = [
     { id: "users", label: t("companyTabs.users"), icon: Users },
     { id: "departments", label: t("companyTabs.departments"), icon: Network },
@@ -70,7 +81,12 @@ export function UsuariosDepartamentosHub() {
   const renderContent = () => {
     switch (activeTab) {
       case "users":
-        return <UserManagement />
+        return (
+          <UserManagement
+            departments={hubDeptList}
+            onDepartmentChanged={deptActions.loadDepartments}
+          />
+        )
       case "departments":
         return (
           <DepartmentsTab
@@ -129,7 +145,12 @@ export function UsuariosDepartamentosHub() {
           />
         )
       default:
-        return <UserManagement />
+        return (
+          <UserManagement
+            departments={hubDeptList}
+            onDepartmentChanged={deptActions.loadDepartments}
+          />
+        )
     }
   }
 

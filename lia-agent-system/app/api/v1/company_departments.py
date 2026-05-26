@@ -180,7 +180,36 @@ company_id: str = Depends(require_company_id)):
             "company_id": department.company_id,
             **data.model_dump(exclude={"department_id"}),
         }
+
+        # Bug 1 fix (2026-05-25): auto-link to users.id by email match when user_id not provided.
+        # If member.email matches a platform user → link AND sync users.department_id.
+        # Plan canonical: ~/.claude/plans/jolly-roaming-moler.md
+        if not member_data.get("user_id") and member_data.get("email"):
+            from sqlalchemy import text
+            try:
+                lookup = await dept_repo.db.execute(
+                    text("SELECT id FROM users WHERE lower(email) = lower(:e) AND company_id = :c LIMIT 1"),
+                    {"e": member_data["email"], "c": str(department.company_id)},
+                )
+                row = lookup.fetchone()
+                if row:
+                    member_data["user_id"] = row[0]
+            except Exception as link_exc:
+                logger.warning("[dept_member] auto-link by email failed (non-blocking): %s", link_exc)
+
         member = await dept_repo.add_member(member_data)
+
+        # Bug 1 fix: sync users.department_id when member is linked to platform user.
+        # Mirrors Sprint 2 Phase 2 sync pattern (client_users → users).
+        if member_data.get("user_id"):
+            from sqlalchemy import text
+            try:
+                await dept_repo.db.execute(
+                    text("UPDATE users SET department_id = :d WHERE id = :u"),
+                    {"d": str(department_id), "u": str(member_data["user_id"])},
+                )
+            except Exception as sync_exc:
+                logger.warning("[dept_member] users.department_id sync failed (non-blocking): %s", sync_exc)
         # pii-logs ok: PII (nome/email candidate ou recruiter) mascarado em runtime via PIIMaskingFilter (LGPD Art.46)
         logger.info(f"Created department member: {member.id} in department {department.name}")
         return member

@@ -8,12 +8,14 @@ import {
 import { textStyles } from '@/lib/design-tokens'
 import { useUserManagement } from './use-user-management'
 import { UserForm } from './user-form'
-import { useDepartmentsList } from "@/hooks/settings/useDepartmentsList"  // Sprint 2 RBAC Phase 2.5: canonical departments fetcher (id+name)
+// Bug 2 fix (2026-05-25): departments LIFTED to UsuariosDepartamentosHub parent
+// (single source of truth). UserManagement consumes via props now.
+import type { DepartmentItem } from "@/hooks/settings/useDepartmentsList"
 import { UserList } from './user-list'
 import type { UserManagementProps } from './user-management-types'
 import { useTranslations } from "next-intl"
 
-export function UserManagement(_props: UserManagementProps) {
+export function UserManagement({ departments: hubDepartments = [], onDepartmentChanged }: UserManagementProps = {}) {
   const t = useTranslations('settings.users')
   const {
     filteredUsers,
@@ -47,15 +49,9 @@ export function UserManagement(_props: UserManagementProps) {
     handleDeleteUser,
     getStatusColor,
   } = useUserManagement()
-
-  // Sprint 2 RBAC Phase 2.5 (2026-05-25): departments canonical (id+name) para user-form select + inline create modal.
-  // O hook useUserManagement só expõe departments como string Set (derivado de users.department), insuficiente.
-  // Plan canonical: ~/.claude/plans/jolly-roaming-moler.md
-  const { departments: deptList, refetch: refetchDepartments } = useDepartmentsList()
-
-  // Sprint 2 RBAC Phase 2.5 (2026-05-25): departments canonical (id+name) para user-form select + inline create modal.
-  // O hook useUserManagement só expõe departments como string Set (derivado de users.department), insuficiente.
-  // Plan canonical: ~/.claude/plans/jolly-roaming-moler.md
+  // Bug 2 fix (2026-05-25): use lifted props instead of own hook (single SoT)
+  const deptList = hubDepartments
+  const refetchDepartments = onDepartmentChanged ?? (() => {})
 
   if (isLoading) {
     return (

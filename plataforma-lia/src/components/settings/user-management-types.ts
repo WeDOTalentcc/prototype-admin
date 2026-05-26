@@ -26,6 +26,11 @@ export interface UserData {
   can_view_salary?: boolean
 }
 
+import type { DepartmentItem } from "@/hooks/settings/useDepartmentsList"
+
 export interface UserManagementProps {
   onUserUpdate?: (user: UserData) => void
+  // Bug 2 fix (2026-05-25): departments lifted to UsuariosDepartamentosHub (single SoT).
+  departments?: DepartmentItem[]
+  onDepartmentChanged?: () => void | Promise<void>
 }
