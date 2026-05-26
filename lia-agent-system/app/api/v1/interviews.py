@@ -412,7 +412,9 @@ async def complete_interview(
     interview_id: str,
     request: CompleteInterviewRequest,
     repo: InterviewRepository = Depends(get_interview_repo),
-company_id: str = Depends(require_company_id)):
+    current_user: User = Depends(get_current_user_or_demo),
+    company_id: str = Depends(require_company_id),
+):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Mark an interview as completed.
@@ -427,6 +429,12 @@ company_id: str = Depends(require_company_id)):
         company_id: Company ID for event dispatch
     """
     try:
+        # Sprint 7.4 RBAC: fetch-first pattern — gate ANTES de qualquer mutação
+        existing_interview = await repo.get_interview_by_id(interview_id)
+        if not existing_interview:
+            raise HTTPException(status_code=404, detail="Interview not found")
+        await assert_mutation_allowed(existing_interview, current_user, resource_label="entrevista")
+
         from app.domains.interview_scheduling.services.scheduling_service import scheduling_service
 
         interview = await scheduling_service.complete_interview(

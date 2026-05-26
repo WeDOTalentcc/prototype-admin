@@ -125,10 +125,18 @@ current_user: User = Depends(get_current_user_or_demo),
 async def delete_department(
     department_id: uuid.UUID,
     dept_repo: DepartmentRepository = Depends(get_department_repo),
-company_id: str = Depends(require_company_id)):
+    current_user: User = Depends(get_current_user_or_demo),
+    company_id: str = Depends(require_company_id),
+):
     # Onda 4.2a-P0.1 (2026-05-23): company_id passa ao repo pra cross-tenant guard.
     """Soft delete a department."""
     try:
+        # Sprint 7.4 RBAC: fetch-first pattern — gate ANTES da mutação
+        department = await dept_repo.get_by_id(department_id, company_id=uuid.UUID(company_id))
+        if not department:
+            raise HTTPException(status_code=404, detail="Department not found")
+        await assert_mutation_allowed(department, current_user, resource_label="departamento")
+
         deleted = await dept_repo.delete(
             department_id, company_id=uuid.UUID(company_id),
         )
@@ -260,10 +268,18 @@ current_user: User = Depends(get_current_user_or_demo),
 async def delete_department_member(
     member_id: uuid.UUID,
     dept_repo: DepartmentRepository = Depends(get_department_repo),
-company_id: str = Depends(require_company_id)):
+    current_user: User = Depends(get_current_user_or_demo),
+    company_id: str = Depends(require_company_id),
+):
     # Onda 4.2a-P0.1 (2026-05-23): company_id passa ao repo pra cross-tenant guard.
     """Soft delete a department member."""
     try:
+        # Sprint 7.4 RBAC: fetch-first pattern — gate ANTES da mutação
+        member = await dept_repo.get_member(member_id, company_id=uuid.UUID(company_id))
+        if not member:
+            raise HTTPException(status_code=404, detail="Department member not found")
+        await assert_mutation_allowed(member, current_user, resource_label="colaborador")
+
         deleted = await dept_repo.remove_member(
             member_id, company_id=uuid.UUID(company_id),
         )

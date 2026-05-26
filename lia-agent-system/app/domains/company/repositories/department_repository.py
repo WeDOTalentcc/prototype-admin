@@ -148,6 +148,22 @@ class DepartmentRepository:
         await self.db.refresh(member)
         return member
 
+    async def get_member(
+        self,
+        member_id: UUID,
+        company_id: UUID | None = None,
+    ) -> DepartmentMember | None:
+        """Fetch single department member by id. Multi-tenancy defense-in-depth
+        via company_id filter quando passado. Used by Sprint 7.4 mutation gate
+        fetch-first pattern before delete."""
+        # TENANT-EXEMPT: dynamic builder — DepartmentMember.company_id == company_id
+        # é appended conditionally below quando company_id passado.
+        query = select(DepartmentMember).where(DepartmentMember.id == member_id)
+        if company_id:
+            query = query.where(DepartmentMember.company_id == company_id)
+        result = await self.db.execute(query)
+        return result.scalar_one_or_none()
+
     async def update_member(
         self,
         member_id: UUID,
