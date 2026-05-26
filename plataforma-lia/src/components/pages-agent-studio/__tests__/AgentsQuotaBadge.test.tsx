@@ -41,6 +41,38 @@ describe("AgentsQuotaBadge — render canonical", () => {
     expect(badge.textContent).toBe("5/10")
     expect(badge.getAttribute("data-tier")).toBe("green")
   })
+
+  it("renders null when data has undefined fields (defensive guard)", () => {
+    mockUse.mockReturnValue({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      data: {} as any,
+      tier: "green",
+      isLoading: false,
+      error: null,
+      refetch: async () => {},
+    })
+    render(<AgentsQuotaBadge />)
+    expect(screen.queryByTestId("agents-quota-badge")).toBeNull()
+    expect(screen.queryByTestId("agents-quota-badge-dot")).toBeNull()
+  })
+
+  it("renders null when data has NaN fields (defensive guard)", () => {
+    mockUse.mockReturnValue({
+      data: {
+        company_id: "c1",
+        max_agents_total: Number.NaN,
+        current_agents_total: Number.NaN,
+        percentage_agents_total: 0,
+        is_unlimited: false,
+      },
+      tier: "green",
+      isLoading: false,
+      error: null,
+      refetch: async () => {},
+    })
+    render(<AgentsQuotaBadge />)
+    expect(screen.queryByTestId("agents-quota-badge")).toBeNull()
+  })
 })
 
 describe("computeTotalTier — cor canonical per percentage", () => {

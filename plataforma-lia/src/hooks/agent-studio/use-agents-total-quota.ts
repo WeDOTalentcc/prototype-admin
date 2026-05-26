@@ -32,6 +32,19 @@ export interface UseAgentsTotalQuotaResult {
   refetch: () => Promise<void>
 }
 
+
+function isValidQuotaData(json: unknown): json is AgentsTotalQuotaData {
+  if (!json || typeof json !== "object") return false
+  const d = json as Record<string, unknown>
+  return (
+    typeof d.company_id === "string" &&
+    typeof d.max_agents_total === "number" &&
+    typeof d.current_agents_total === "number" &&
+    typeof d.percentage_agents_total === "number" &&
+    typeof d.is_unlimited === "boolean"
+  )
+}
+
 export function computeTotalTier(
   percentage: number,
   isUnlimited: boolean,
@@ -58,7 +71,12 @@ export function useAgentsTotalQuota(): UseAgentsTotalQuotaResult {
       if (!res.ok) {
         throw new Error(`HTTP ${res.status} fetching agents-total quota`)
       }
-      const json = (await res.json()) as AgentsTotalQuotaData
+      const json = (await res.json()) as unknown
+      if (!isValidQuotaData(json)) {
+        throw new Error(
+          `Invalid quota response shape: ${JSON.stringify(json).slice(0, 200)}`,
+        )
+      }
       setData(json)
     } catch (e) {
       setError(e instanceof Error ? e : new Error(String(e)))

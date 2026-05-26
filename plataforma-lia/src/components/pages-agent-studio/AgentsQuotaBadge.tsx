@@ -27,6 +27,17 @@ export function AgentsQuotaBadge({ compact = false }: AgentsQuotaBadgeProps) {
 
   if (isLoading || error || !data) return null
 
+  // Defense in depth: producer (hook) deve ter validado, mas se algo escapou
+  // (shape parcial, NaN, JSON malformado), evitar render "undefined/undefined".
+  if (
+    !Number.isFinite(data.current_agents_total) ||
+    !Number.isFinite(data.max_agents_total)
+  ) {
+    console.warn("[AgentsQuotaBadge] invalid quota data shape", data)
+    return null
+  }
+
+
   const label = data.is_unlimited
     ? `${data.current_agents_total}/∞`
     : `${data.current_agents_total}/${data.max_agents_total}`
