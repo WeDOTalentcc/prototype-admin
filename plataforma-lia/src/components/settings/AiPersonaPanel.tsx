@@ -106,9 +106,9 @@ export function AiPersonaPanel() {
       )}
 
       {savedFeedback && (
-        <div className="rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900 p-3 flex items-start gap-2">
+        <div className="rounded-xl bg-status-success-bg border border-status-success/20 p-3 flex items-start gap-2">
           <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-          <p className="text-sm text-emerald-700 dark:text-emerald-300">
+          <p className="text-sm text-status-success">
             {savedFeedback}
           </p>
         </div>
@@ -134,7 +134,7 @@ export function AiPersonaPanel() {
             de IAs terceiras (Claude, GPT, Gemini, etc.) são reservados.
           </p>
           {nameErr && (
-            <div className="rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900 p-2 text-xs text-amber-700 dark:text-amber-300">
+            <div className="rounded-lg bg-status-warning-bg border border-status-warning-border p-2 text-xs text-status-warning">
               <strong>{nameErr.message}</strong>
               {nameErr.fix && (
                 <span className="block mt-1">{nameErr.fix}</span>
@@ -197,7 +197,7 @@ export function AiPersonaPanel() {
           </div>
         )}
         {toneErr && (
-          <div className="rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900 p-2 text-xs text-amber-700 dark:text-amber-300">
+          <div className="rounded-lg bg-status-warning-bg border border-status-warning-border p-2 text-xs text-status-warning">
             <strong>{toneErr.message}</strong>
             {toneErr.fix && <span className="block mt-1">{toneErr.fix}</span>}
           </div>

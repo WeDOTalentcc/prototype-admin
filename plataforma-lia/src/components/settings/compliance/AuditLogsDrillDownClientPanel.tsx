@@ -45,10 +45,10 @@ const CATEGORY_FILTERS = [
 ]
 
 const CATEGORY_BADGE: Record<string, string> = {
-  data_access: "bg-blue-100 text-blue-800",
+  data_access: "bg-wedo-cyan/10 text-wedo-cyan",
   user_management: "bg-purple-100 text-purple-800",
   authentication: "bg-gray-100 text-gray-800",
-  configuration: "bg-amber-100 text-amber-800",
+  configuration: "bg-status-warning/10 text-status-warning",
   ai_decision: "bg-cyan-100 text-cyan-800",
 }
 
@@ -100,7 +100,7 @@ export function AuditLogsDrillDownClientPanel() {
 
   if (!isAdmin) {
     return (
-      <Card className="border-amber-200 bg-amber-50">
+      <Card className="border-status-warning-border-light bg-status-warning-bg">
         <CardContent className="p-4 flex items-start gap-3">
           <Shield className="w-5 h-5 text-amber-600 mt-0.5" />
           <div>

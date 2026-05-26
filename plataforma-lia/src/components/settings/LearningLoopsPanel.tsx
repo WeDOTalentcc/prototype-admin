@@ -354,13 +354,13 @@ export function LearningLoopsPanel() {
 
         {backendUnavailable && (
           <div
-            className="flex items-start gap-2 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl"
+            className="flex items-start gap-2 p-3 bg-status-warning-bg border border-status-warning-border rounded-xl"
             role="status"
             aria-live="polite"
             data-testid="learning-loops-backend-unavailable"
           >
             <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-            <p className="text-sm text-amber-700 dark:text-amber-300">
+            <p className="text-sm text-status-warning">
               Não foi possível carregar configurações salvas. Exibindo defaults da plataforma — recarregue em alguns instantes.
             </p>
           </div>
