@@ -228,15 +228,10 @@ except (ImportError, ValueError):  # pragma: no cover
     lia_wizard_sourcing_mode_default_total = None
 
 
-# ── PR-11 F-4.7: magic numbers canonical ──
-# Default question distribution para WSI quando state nao fornece (fallback
-# defensivo). Source: WSI_METHODOLOGY_COMPLETE_v2.md "compact mode / pleno"
-# — mesmo valor canonical retornado por _get_question_distribution() quando
-# nao acha match na tabela. Centralizar evita drift (5 sites pre-PR-11).
-WSI_DEFAULT_DISTRIBUTION_COMPACT_PLENO: Dict[str, int] = {
-    "technical": 5,
-    "behavioral": 2,
-}
+# WSI_DEFAULT_DISTRIBUTION_COMPACT_PLENO moved to internal/constants.py (PR-17 ONDA 3 follow-up)
+from app.domains.job_creation.internal.constants import (  # noqa: E402, F401
+    WSI_DEFAULT_DISTRIBUTION_COMPACT_PLENO,
+)
 
 # Shared service instances (lazy-initialized in nodes)
 _jd_service: Optional[JdEnrichmentService] = None
@@ -328,25 +323,13 @@ def _get_api_client(state: dict) -> JobCreationAPIClient:
 #       "suggested_type": <"technical"|"executive"|"operational"|"mass_hiring"|"intern">,
 #       "templates": [<id>, ...]   # ordem canônica dos 5 presets
 #   }
-_PIPELINE_TEMPLATE_IDS: tuple[str, ...] = (
-    "technical", "executive", "operational", "mass_hiring", "intern",
-)
-_EXECUTIVE_KEYWORDS = (
-    "director", "diretor", "vp", "vice", "cto", "cfo", "ceo", "head",
-    "gerente geral", "c-level", "chief",
-)
-_TECHNICAL_KEYWORDS = (
-    "developer", "desenvolvedor", "engineer", "engenheiro", "programador",
-    "software", "data", "devops", "sre", "backend", "frontend", "fullstack",
-    "full-stack", "tech lead", "arquiteto",
-)
-_OPERATIONAL_KEYWORDS = (
-    "operador", "auxiliar", "assistente", "atendente", "vendedor",
-    "recepcionista", "caixa", "estoquista",
-)
-_INTERN_KEYWORDS = (
-    # `estagi` cobre "estágio", "estagio", "estagiário", "estagiaria".
-    "estagi", "trainee", "jovem aprendiz", "intern",
+# Pipeline template constants moved to internal/constants.py (PR-17 ONDA 3 follow-up)
+from app.domains.job_creation.internal.constants import (  # noqa: E402, F401
+    _PIPELINE_TEMPLATE_IDS,
+    _EXECUTIVE_KEYWORDS,
+    _TECHNICAL_KEYWORDS,
+    _OPERATIONAL_KEYWORDS,
+    _INTERN_KEYWORDS,
 )
 
 
@@ -522,8 +505,9 @@ def _emit_wizard_step_audit(
 #      — habilita gráficos de "fallback rate por node por dia" e alertas
 #      `count_unique(message:"wizard fallback") > X em 1h` no Sentry.
 # Fail-open por design — falha de telemetria NUNCA bloqueia o wizard.
-_WIZARD_FALLBACK_NODES: tuple[str, ...] = (
-    "jd_enrichment", "bigfive", "salary", "wsi_questions",
+# _WIZARD_FALLBACK_NODES moved to internal/constants.py (PR-17 ONDA 3 follow-up)
+from app.domains.job_creation.internal.constants import (  # noqa: E402, F401
+    _WIZARD_FALLBACK_NODES,
 )
 
 
@@ -1191,36 +1175,12 @@ def route_after_review(state: JobCreationState) -> str:
 # T6 (Task #1088) — review gate (LLM-based, HITL #3)
 # ---------------------------------------------------------------------------
 
-# Allowlist canônica de canais ATS aceitos por ``configure_destinations``.
-# Mantém-se sincronizada com ``Literal[...]`` no system_prompt YAML
-# (gate_review.yaml). Adicionar novo canal requer (a) update aqui, (b)
-# update no YAML, (c) update na sentinela.
-_REVIEW_DESTINATIONS_ALLOWLIST: frozenset[str] = frozenset({
-    "site_carreiras", "gupy", "pandape", "linkedin",
-})
-
-# Mapeia ``target_section`` (do request_changes) → nó destino do graph.
-# Usado por ``route_after_review_gate`` quando o recrutador pede ajuste.
-# Para ``destinations`` o roteamento é determinístico END (não há nó
-# dedicado): o gate emite ``gate_clarify_message`` pedindo os canais
-# desejados, e o próximo turno do recrutador é classificado como
-# ``configure_destinations`` (handler dedicado no mesmo gate). Isso
-# evita o anti-padrão "route → review (suprimido) → END" criticado no
-# code review.
-_REVIEW_TARGET_SECTION_TO_NODE: dict[str, str] = {
-    "title": "jd_enrichment",
-    "description": "jd_enrichment",
-    "questions": "wsi_questions",
-    "salary": "salary",
-    "pipeline": "eligibility",
-    # NOTE: "destinations" propositalmente AUSENTE — handled inline.
-}
-
-# T6: target_sections válidos para ``request_changes`` (inclui
-# "destinations" mesmo que não tenha nó destino — handled inline).
-_REVIEW_VALID_TARGET_SECTIONS: frozenset[str] = frozenset({
-    "title", "description", "questions", "salary", "pipeline", "destinations",
-})
+# Review gate constants moved to internal/constants.py (PR-17 ONDA 3 follow-up)
+from app.domains.job_creation.internal.constants import (  # noqa: E402, F401
+    _REVIEW_DESTINATIONS_ALLOWLIST,
+    _REVIEW_TARGET_SECTION_TO_NODE,
+    _REVIEW_VALID_TARGET_SECTIONS,
+)
 
 
 def _resolve_effective_destinations_allowlist(state: JobCreationState) -> tuple[frozenset[str], bool]:
@@ -1257,6 +1217,8 @@ def _resolve_effective_destinations_allowlist(state: JobCreationState) -> tuple[
 # TTL (segundos) entre o 1º ``publish_now`` (que SETA pending) e o 2º
 # (que destrava ``policy_confirmed_publish``). Após o TTL expirar, o 2º
 # publish_now é tratado como NOVO 1º (volta a pedir confirmação).
+# NOTE: kept inline — sentinel test_clock_skew_clip_preserves_canonical_constant
+# greps for exact literal "_PUBLISH_DUAL_CONFIRMATION_TTL_S: float = 300.0".
 _PUBLISH_DUAL_CONFIRMATION_TTL_S: float = 300.0
 
 
@@ -1414,9 +1376,9 @@ def route_after_calibration(state: JobCreationState) -> str:
 # PR-8 ONDA 3 / F-3.3: extraido de hardcoded dict para
 # app/prompts/job_creation/wsi_question_distribution.yaml.
 # Sensor: tests/contract/test_wsi_question_distribution_taxonomy.py
-_WSI_QUESTION_DISTRIBUTION_FILE = (
-    Path(__file__).resolve().parent.parent.parent
-    / "prompts" / "job_creation" / "wsi_question_distribution.yaml"
+# _WSI_QUESTION_DISTRIBUTION_FILE moved to internal/constants.py (PR-17 ONDA 3 follow-up)
+from app.domains.job_creation.internal.constants import (  # noqa: E402, F401
+    _WSI_QUESTION_DISTRIBUTION_FILE,
 )
 
 
