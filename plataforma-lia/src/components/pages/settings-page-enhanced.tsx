@@ -361,14 +361,16 @@ export default function SettingsPageEnhanced() {
       if (data.sections) {
         setSectionCompletion(prev => ({
           ...prev,
-          'minha-empresa': data.sections['minha-empresa'] ?? prev['minha-empresa'],
-          'pipeline': data.sections['pipeline'] ?? prev['pipeline'],
-          'screening': data.sections['screening'] ?? prev['screening'],
-          'templates-assinatura': data.sections['templates-assinatura'] ?? prev['templates-assinatura'],
-          'comunicacao-alertas': data.sections['comunicacao-alertas'] ?? prev['comunicacao-alertas'],
-          'usuarios-departamentos': data.sections['usuarios-departamentos'] ?? prev['usuarios-departamentos'],
-          'integrations': data.sections['integracoes'] ?? data.sections['integrations'] ?? prev['integrations'],
-          'webhooks': data.sections['webhooks'] ?? prev['webhooks'],
+          // Canonical sidebar IDs (matching backend settings_progress.py P0-4 fix 2026-05-26).
+          // Backend ADICIONOU 7 chaves canonical; aqui consumimos exatamente os 7 hubs do getDefaultSections().
+          // Legacy IDs (pipeline, screening, templates-assinatura, webhooks) removidos — nao existem mais como hubs top-level.
+          'minha-empresa': data.sections['minha-empresa'] ?? prev['minha-empresa'] ?? 0,
+          'recrutamento-lia': data.sections['recrutamento-lia'] ?? prev['recrutamento-lia'] ?? 0,
+          'comunicacao-alertas': data.sections['comunicacao-alertas'] ?? prev['comunicacao-alertas'] ?? 0,
+          'usuarios-departamentos': data.sections['usuarios-departamentos'] ?? prev['usuarios-departamentos'] ?? 0,
+          'integrations': data.sections['integrations'] ?? prev['integrations'] ?? 0,
+          'ai-credits': data.sections['ai-credits'] ?? prev['ai-credits'] ?? 0,
+          'fairness-compliance': data.sections['fairness-compliance'] ?? prev['fairness-compliance'] ?? 0,
         }))
       }
       
@@ -379,6 +381,8 @@ export default function SettingsPageEnhanced() {
         }))
       }
     } catch (error) {
+      // P0-4 (2026-05-26): nao silenciar — logar para observability
+      console.error("[fetchProgress] failed to load settings progress", error)
     } finally {
       setProgressLoading(false)
     }
