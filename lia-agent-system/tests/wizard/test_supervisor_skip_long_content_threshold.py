@@ -31,7 +31,10 @@ import pytest
 
 
 ACTIVE_STAGES = (
-    "jd_enrichment", "bigfive", "salary", "competency",
+    # PR-1 Onda 1 (2026-05-26) — expandido: intake + pipeline_template
+    # entram como HITL stages com turnos predominantemente curtos.
+    "intake", "jd_enrichment", "pipeline_template",
+    "bigfive", "salary", "competency",
     "wsi_questions", "eligibility", "review", "publish",
 )
 
@@ -217,14 +220,24 @@ async def test_supervisor_SKIPPED_when_active_stage_AND_short_reply(
     ("aprovado",                           "review",        True),
     ("modo compacto",                      "competency",    True),
     ("modo compacto, 7 perguntas",         "wsi_questions", True),
+    # PR-1 Onda 1 (2026-05-26) — intake e pipeline_template entram em
+    # _ACTIVE_WIZARD_STAGES. Acks curtos canonical DEVEM skipar.
+    ("sim",                                "intake",            True),
+    ("ok",                                 "intake",            True),
+    ("Aplicar Médicos Afya",              "pipeline_template", True),
+    ("Usar pipeline padrão da empresa.",   "pipeline_template", True),
+    ("sim",                                "pipeline_template", True),
     # Long content NÃO deve skipar (Sprint F.2-v2)
     ("a" * 100,                            "jd_enrichment", False),  # threshold exato
     ("a" * 150,                            "bigfive",       False),
     ("Desenvolvedor Python Senior com solida experiencia 5+ anos. Responsabilidades: arquitetura, code review e mentoria. Requisitos: FastAPI, PostgreSQL, Docker, AWS.",
                                            "jd_enrichment", False),
+    # Long content em intake/pipeline_template TAMBÉM re-classifica
+    ("a" * 150,                            "intake",            False),
+    ("Desenvolvedor Python Senior com solida experiencia 5+ anos em backend, arquitetura, FastAPI, Docker, AWS, mentoria de devs juniores.",
+                                           "pipeline_template", False),
     # Sem prior_stage ativa → supervisor SEMPRE roda
     ("sim",                                None,            False),
-    ("modo compacto",                      "intake",        False),
     ("ok",                                 "done",          False),
     ("ok",                                 "calibration",   False),
     ("ok",                                 "handoff",       False),

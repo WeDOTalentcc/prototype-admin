@@ -79,6 +79,7 @@ class CalibrationCandidate(TypedDict, total=False):
 WizardStage = Literal[
     "intake",
     "jd_enrichment",
+    "pipeline_template",
     "bigfive",
     "salary",
     "competency",
@@ -258,6 +259,7 @@ class JobCreationState(TypedDict, total=False):
     # interview_stages = canonical translated stages (translate_template_stages_to_interview_stages).
     # Persisted via PipelineTemplateService.apply_to_vacancy AFTER publish (vacancy_id existe).
     pipeline_template_id: Optional[str]
+    pipeline_template_skipped: Optional[bool]  # True quando recrutador opta por "Usar Padrão da Empresa"
     pipeline_template_score: Optional[float]
     interview_stages: List[Dict[str, Any]]
 

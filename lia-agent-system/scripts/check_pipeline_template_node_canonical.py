@@ -10,6 +10,13 @@ Sprint Pipeline Templates 2026-05-26 — Opção B (Paulo aprovou). Garantias:
 5. builder.add_node("pipeline_template", pipeline_template_node) presente
 6. add_edge("pipeline_template", "bigfive") presente (linear next stage)
 
+PR-1 Onda 1 (2026-05-26) — fecha drift canonical Sprint Pipeline Templates:
+
+7. "pipeline_template" está no Literal WizardStage de state.py (type-safety)
+8. "pipeline_template" está em _ACTIVE_WIZARD_STAGES (supervisor skip protection)
+9. pipeline_template_skipped declarado em JobCreationState TypedDict (graph.py:1534 escreve)
+10. "pipeline-template" (kebab) está em STAGE_TOOLS do wizard_tool_registry (consistency)
+
 Sensor blocking (baseline 0). Quebra = recriou o node ou removeu wiring canonical.
 
 Exit:
@@ -25,6 +32,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 GRAPH = ROOT / "app" / "domains" / "job_creation" / "graph.py"
 STATE = ROOT / "app" / "domains" / "job_creation" / "state.py"
+WIZARD_SESSION = ROOT / "app" / "domains" / "job_creation" / "services" / "wizard_session_service.py"
+TOOL_REGISTRY = ROOT / "app" / "domains" / "job_management" / "agents" / "wizard_tool_registry.py"
 
 
 def _read(path: Path) -> str:
@@ -146,15 +155,176 @@ def check_builder_wiring(graph_src: str) -> list[str]:
     return errs
 
 
+
+def check_wizard_stage_literal(state_src: str) -> list[str]:
+    """Invariante 7: pipeline_template em Literal WizardStage."""
+    errs: list[str] = []
+    tree = ast.parse(state_src)
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Assign):
+            for tgt in node.targets:
+                if isinstance(tgt, ast.Name) and tgt.id == "WizardStage":
+                    # value should be a Subscript: Literal["intake", "jd_enrichment", ...]
+                    val = node.value
+                    if isinstance(val, ast.Subscript):
+                        slice_node = val.slice
+                        # Python 3.9+: slice is a Tuple of Constants
+                        if isinstance(slice_node, ast.Tuple):
+                            literals = [
+                                e.value for e in slice_node.elts
+                                if isinstance(e, ast.Constant) and isinstance(e.value, str)
+                            ]
+                            if "pipeline_template" not in literals:
+                                errs.append(
+                                    "pipeline_template ausente do Literal WizardStage em state.py.\n"
+                                    "   → Fix: adicionar \"pipeline_template\" entre \"jd_enrichment\" e \"bigfive\" no Literal[]."
+                                )
+                            elif "jd_enrichment" in literals and "bigfive" in literals:
+                                jd_idx = literals.index("jd_enrichment")
+                                pt_idx = literals.index("pipeline_template")
+                                bf_idx = literals.index("bigfive")
+                                if not (jd_idx < pt_idx < bf_idx):
+                                    errs.append(
+                                        f"pipeline_template em posição errada no Literal WizardStage "
+                                        f"(esperado entre jd_enrichment[{jd_idx}] e bigfive[{bf_idx}], got {pt_idx}).\n"
+                                        "   → Fix: reordenar para jd_enrichment → pipeline_template → bigfive."
+                                    )
+                            return errs
+    errs.append(
+        "WizardStage = Literal[...] não encontrado em state.py (ou sintaxe não-canonical).\n"
+        "   → Fix: confirmar declaração `WizardStage = Literal[\"intake\", \"jd_enrichment\", \"pipeline_template\", ...]`."
+    )
+    return errs
+
+
+def check_active_wizard_stages(session_src: str) -> list[str]:
+    """Invariante 8: pipeline_template em _ACTIVE_WIZARD_STAGES frozenset."""
+    errs: list[str] = []
+    tree = ast.parse(session_src)
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Assign):
+            for tgt in node.targets:
+                if isinstance(tgt, ast.Name) and tgt.id == "_ACTIVE_WIZARD_STAGES":
+                    # value is Call: frozenset({...})
+                    val = node.value
+                    if isinstance(val, ast.Call) and isinstance(val.func, ast.Name) and val.func.id == "frozenset":
+                        if val.args and isinstance(val.args[0], ast.Set):
+                            elements = [
+                                e.value for e in val.args[0].elts
+                                if isinstance(e, ast.Constant) and isinstance(e.value, str)
+                            ]
+                            if "pipeline_template" not in elements:
+                                errs.append(
+                                    "pipeline_template ausente de _ACTIVE_WIZARD_STAGES em wizard_session_service.py.\n"
+                                    "   → Fix: adicionar \"pipeline_template\" ao frozenset (supervisor skip protection)."
+                                )
+                            if "intake" not in elements:
+                                errs.append(
+                                    "intake ausente de _ACTIVE_WIZARD_STAGES em wizard_session_service.py.\n"
+                                    "   → Fix: adicionar \"intake\" ao frozenset (HITL turnos curtos)."
+                                )
+                            return errs
+    errs.append(
+        "_ACTIVE_WIZARD_STAGES = frozenset({...}) não encontrado em wizard_session_service.py.\n"
+        "   → Fix: confirmar declaração canonical do frozenset."
+    )
+    return errs
+
+
+def check_skipped_field_in_typeddict(state_src: str) -> list[str]:
+    """Invariante 9: pipeline_template_skipped declarado em JobCreationState TypedDict."""
+    errs: list[str] = []
+    tree = ast.parse(state_src)
+    for node in ast.walk(tree):
+        if isinstance(node, ast.ClassDef) and node.name == "JobCreationState":
+            # Walk annotations (AnnAssign) inside class body
+            field_names = set()
+            for stmt in node.body:
+                if isinstance(stmt, ast.AnnAssign) and isinstance(stmt.target, ast.Name):
+                    field_names.add(stmt.target.id)
+            if "pipeline_template_skipped" not in field_names:
+                errs.append(
+                    "pipeline_template_skipped ausente do TypedDict JobCreationState em state.py.\n"
+                    "   → Fix: graph.py:1534 escreve esse campo no checkpoint LangGraph. Adicionar:\n"
+                    "     `pipeline_template_skipped: Optional[bool]` entre pipeline_template_id e pipeline_template_score."
+                )
+            return errs
+    errs.append(
+        "class JobCreationState(TypedDict) não encontrado em state.py.\n"
+        "   → Fix: confirmar declaração canonical."
+    )
+    return errs
+
+
+def check_stage_tools_kebab_entry(registry_src: str) -> list[str]:
+    """Invariante 10: \"pipeline-template\" (kebab) em STAGE_TOOLS.
+
+    NOTA: get_stage_tools tem zero callers produção (STAGE_TOOLS hoje é
+    canonical documentation, não enforcement). Entry kebab é consistency
+    com convenção de outros stages de criação (jd-enrichment, wsi-questions).
+    """
+    errs: list[str] = []
+    tree = ast.parse(registry_src)
+    for node in ast.walk(tree):
+        if isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name) and node.target.id == "STAGE_TOOLS":
+            val = node.value
+            if isinstance(val, ast.Dict):
+                keys = [
+                    k.value for k in val.keys
+                    if isinstance(k, ast.Constant) and isinstance(k.value, str)
+                ]
+                if "pipeline-template" not in keys:
+                    errs.append(
+                        "pipeline-template (kebab) ausente de STAGE_TOOLS em wizard_tool_registry.py.\n"
+                        "   → Fix: adicionar entry após \"jd-enrichment\":\n"
+                        "     `\"pipeline-template\": [\"suggest_pipeline_stage_templates\", \"apply_pipeline_stage_template_to_vacancy\", \"create_custom_pipeline_stage_template\"],`"
+                    )
+                else:
+                    # Verify referenced tools exist
+                    pt_tools = None
+                    for k, v in zip(val.keys, val.values):
+                        if isinstance(k, ast.Constant) and k.value == "pipeline-template" and isinstance(v, ast.List):
+                            pt_tools = [
+                                e.value for e in v.elts
+                                if isinstance(e, ast.Constant) and isinstance(e.value, str)
+                            ]
+                            break
+                    expected = {
+                        "suggest_pipeline_stage_templates",
+                        "apply_pipeline_stage_template_to_vacancy",
+                        "create_custom_pipeline_stage_template",
+                    }
+                    if pt_tools is not None:
+                        missing = expected - set(pt_tools)
+                        if missing:
+                            errs.append(
+                                f"STAGE_TOOLS[pipeline-template] sem tools canonical: {sorted(missing)}.\n"
+                                "   → Fix: incluir as 3 tools canonical (suggest/apply/create_custom)."
+                            )
+            return errs
+    errs.append(
+        "STAGE_TOOLS: dict[...] não encontrado em wizard_tool_registry.py.\n"
+        "   → Fix: confirmar declaração canonical."
+    )
+    return errs
+
+
 def main() -> int:
     graph_src = _read(GRAPH)
     state_src = _read(STATE)
+    session_src = _read(WIZARD_SESSION)
+    registry_src = _read(TOOL_REGISTRY)
 
     all_errs: list[str] = []
     all_errs.extend(check_node_defined(graph_src))
     all_errs.extend(check_ui_action_literal(graph_src))
     all_errs.extend(check_stage_order(state_src))
     all_errs.extend(check_builder_wiring(graph_src))
+    # PR-1 Onda 1 (2026-05-26) — drift fixes
+    all_errs.extend(check_wizard_stage_literal(state_src))
+    all_errs.extend(check_active_wizard_stages(session_src))
+    all_errs.extend(check_skipped_field_in_typeddict(state_src))
+    all_errs.extend(check_stage_tools_kebab_entry(registry_src))
 
     if all_errs:
         print("❌ Sensor pipeline_template_node canonical FAILED")
@@ -163,7 +333,7 @@ def main() -> int:
             print(f"  [{i}] {err}\n")
         return 1
 
-    print("✅ Sensor pipeline_template_node canonical OK (6 invariantes)")
+    print("✅ Sensor pipeline_template_node canonical OK (10 invariantes)")
     return 0
 
 

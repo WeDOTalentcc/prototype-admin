@@ -1518,6 +1518,9 @@ _TOOL_MAP: dict[str, ToolDefinition] = {t.name: t for t in TOOL_DEFINITIONS}
 STAGE_TOOLS: dict[str, list[str]] = {
     "input-evaluation": ["validate_job_requirements", "validate_job_fields", "get_job_suggestions", "get_company_config", "save_job_draft", "check_job_draft_health", "suggest_pipeline_stage_templates", "apply_pipeline_stage_template_to_vacancy", "create_custom_pipeline_stage_template"],
     "jd-enrichment": ["generate_enriched_jd", "get_job_suggestions", "get_company_config", "save_job_draft", "check_job_draft_health"],
+    # NOTE: STAGE_TOOLS é canonical documentation (não enforcement) — get_stage_tools tem zero callers em produção.
+    # Kebab key "pipeline-template" segue convenção de outros stages de criação (jd-enrichment, wsi-questions).
+    "pipeline-template": ["suggest_pipeline_stage_templates", "apply_pipeline_stage_template_to_vacancy", "create_custom_pipeline_stage_template"],
     "salary": ["get_salary_benchmarks", "search_salary_benchmark", "validate_job_fields", "save_job_draft", "check_job_draft_health"],
     "competencies": ["validate_job_requirements", "get_job_suggestions", "validate_job_fields", "save_job_draft", "suggest_eligibility_templates", "apply_eligibility_template_to_vacancy", "create_custom_eligibility_template"],
     "wsi-questions": ["validate_job_requirements", "validate_job_fields", "save_job_draft", "generate_screening_questions", "suggest_eligibility_templates", "apply_eligibility_template_to_vacancy", "create_custom_eligibility_template"],

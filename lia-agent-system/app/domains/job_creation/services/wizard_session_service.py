@@ -42,7 +42,8 @@ _CONTEXT_CARRY_KEYS = ("right_panel_form", "attached_file_text", "tenant_context
 #
 # Sensor: tests/wizard/test_supervisor_skip_long_content_threshold.py
 _ACTIVE_WIZARD_STAGES = frozenset({
-    "jd_enrichment", "bigfive", "salary", "competency",
+    "intake", "jd_enrichment", "pipeline_template",
+    "bigfive", "salary", "competency",
     "wsi_questions", "eligibility", "review", "publish",
 })
 
