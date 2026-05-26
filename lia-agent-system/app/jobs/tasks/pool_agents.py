@@ -29,7 +29,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import time
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 from sqlalchemy import select
 
@@ -44,6 +44,10 @@ from app.jobs.tasks._utils import (
 )
 from app.jobs.tenant_aware_task import TenantAwareTask
 from app.shared.compliance.audit_service import AuditService
+from app.shared.messaging.platform_events import (
+    PlatformEvent,
+    publish_platform_event,
+)
 
 # Re-exported for tests/patch — modules above are the canonical source.
 from app.core.database import AsyncSessionLocal  # noqa: F401
@@ -219,6 +223,29 @@ async def _dispatch_impl(assignment_id: str, trigger_source: str = "cron") -> No
                 criteria_used=[],
             )
 
+            # Agent J: emit canonical event agent_completed_review (event-driven loop).
+            # Fail-safe: publish_platform_event swallows RabbitMQ errors (logs only).
+            try:
+                await publish_platform_event(
+                    PlatformEvent(
+                        event_type="agent_completed_review",
+                        company_id=str(assignment.company_id),
+                        payload={
+                            "assignment_id": str(assignment.id),
+                            "run_id": str(run.id),
+                            "agent_id": str(agent.id),
+                            "trigger_source": trigger_source,
+                            "completed_at": datetime.now(timezone.utc).isoformat(),
+                        },
+                        source_api="lia-agent-system",
+                    )
+                )
+            except Exception as emit_err:
+                _log.warning(
+                    "publish_platform_event agent_completed_review failed run=%s: %s",
+                    run.id, emit_err,
+                )
+
         except Exception as exc:
             # Error path: persist run.status=error + audit + re-raise pra retry.
             err_text = str(exc)
@@ -384,6 +411,73 @@ def scan_pool_agent_cron_schedules(self) -> dict:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Agent J: weekly_summary scheduled emitter (Celery beat segunda 9h).
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+async def _emit_weekly_summary_impl() -> None:
+    """Per-company weekly_summary emit canonical.
+
+    Query distinct companies com pool_agent_runs ultima semana → emite 1 evento
+    per company. Fail-safe: try/except per company, publish_platform_event ja
+    swallow RabbitMQ errors.
+    """
+    from sqlalchemy import text as _text
+
+    week_starting = datetime.now(timezone.utc) - timedelta(days=7)
+    week_ending = datetime.now(timezone.utc)
+
+    async with AsyncSessionLocal() as db:
+        stmt = _text(
+            "SELECT DISTINCT company_id FROM pool_agent_runs "
+            "WHERE created_at >= NOW() - INTERVAL '7 days'"
+        )
+        result = await db.execute(stmt)
+        companies = [r[0] for r in result.fetchall()]
+
+    for company_id in companies:
+        try:
+            await publish_platform_event(
+                PlatformEvent(
+                    event_type="weekly_summary",
+                    company_id=str(company_id),
+                    payload={
+                        "week_starting": week_starting.isoformat(),
+                        "week_ending": week_ending.isoformat(),
+                    },
+                    source_api="lia-agent-system",
+                )
+            )
+        except Exception as emit_err:
+            _log.warning(
+                "publish_platform_event weekly_summary failed company=%s: %s",
+                company_id, emit_err,
+            )
+
+
+@celery_app.task(
+    base=TenantAwareTask,
+    name="pool_agents.emit_weekly_summary",
+    bind=True,
+    queue="default",
+)
+def emit_weekly_summary_task(self) -> dict:
+    """Celery beat scheduled emitter weekly_summary canonical (Agent J).
+
+    Roda 1x por semana (segunda 9h UTC). Delega pra _emit_weekly_summary_impl.
+    """
+    span = _celery_span("celery.task_start", "pool_agents.emit_weekly_summary")
+    try:
+        asyncio.run(_emit_weekly_summary_impl())
+        _finish_celery_success(span, "pool_agents.emit_weekly_summary")
+        return {"status": "ok"}
+    except Exception as exc:
+        _finish_celery_failure(span, "pool_agents.emit_weekly_summary", exc)
+        logger.error("pool_agents.emit_weekly_summary FAIL: %s", exc)
+        raise
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Beat schedule entry — idempotent: side-effect na import canonical.
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -398,6 +492,17 @@ def _register_beat_schedule() -> None:
         "task": "pool_agents.scan_cron_schedules",
         "schedule": 60.0,
         "options": {"expires": 120, "queue": "default"},
+    }
+    # Agent J: weekly_summary scheduled emit (segunda 9h UTC).
+    try:
+        from celery.schedules import crontab as _crontab
+        weekly_sched = _crontab(day_of_week=1, hour=9, minute=0)
+    except Exception:
+        weekly_sched = 7 * 24 * 3600.0  # fallback: 7 dias em segundos
+    schedule["emit-pool-agent-weekly-summary"] = {
+        "task": "pool_agents.emit_weekly_summary",
+        "schedule": weekly_sched,
+        "options": {"expires": 3600, "queue": "default"},
     }
     celery_app.conf.beat_schedule = schedule
 

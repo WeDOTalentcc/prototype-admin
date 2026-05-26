@@ -68,6 +68,10 @@ from app.shared.services.automated_decision_logger import (
 from app.shared.compliance.audit_service import AuditService
 from app.shared.runtime_context import RuntimeContext
 from app.shared.prompt_injection import PromptInjectionGuard
+from app.shared.messaging.platform_events import (
+    PlatformEvent,
+    publish_platform_event,
+)
 
 try:
     from app.shared.services.gemini_voice_service import get_voice_service as _get_voice_service
@@ -2144,6 +2148,29 @@ class VoiceCoreOrchestrator:
                 duration_seconds=duration_seconds,
                 db=db,
             )
+
+            # Agent J: emit canonical event candidate_screened (event-driven loop).
+            # Fail-safe: publish_platform_event swallows RabbitMQ errors (logs only).
+            try:
+                await publish_platform_event(
+                    PlatformEvent(
+                        event_type="candidate_screened",
+                        company_id=str(session.company_id),
+                        payload={
+                            "candidate_id": str(session.candidate_id),
+                            "session_id": str(session.session_id),
+                            "score": score,
+                            "wsi_strategy": wsi_strategy,
+                            "completed_at": datetime.utcnow().isoformat(),
+                        },
+                        source_api="lia-agent-system",
+                    )
+                )
+            except Exception as emit_err:
+                logger.warning(
+                    "[VOICE SCREENING] publish_platform_event candidate_screened failed: %s",
+                    emit_err,
+                )
 
             return {
                 "session_id": session_id,
