@@ -19,9 +19,16 @@ Audit ref: ~/Documents/wedotalent_audit_2026-05-26/P2-2_ONBOARDING_CONVERSACIONA
 from __future__ import annotations
 
 import logging
+import time
 from dataclasses import dataclass
 from typing import Any, Awaitable, Callable
 
+from app.shared.observability.onboarding_metrics import (
+    record_chat_completed,
+    record_chat_started,
+    record_extraction_duration,
+    record_field_extracted,
+)
 from app.services.onboarding_field_extractor import (
     ExtractionResult,
     extract_field_from_message,
@@ -161,6 +168,7 @@ async def start(company_id: str) -> RunnerResponse:
         company_id: tenant id (JWT). Usado em audit downstream.
     """
     # company_id reservado pra audit downstream (start em si nao escreve).
+    record_chat_started()  # P2-2 Sprint C telemetry
     status, action = start_settings_extraction()
     return RunnerResponse(
         user_message=action.message,
@@ -219,12 +227,14 @@ async def process_message(
                 progress_percent=_progress(new_status),
             )
 
+        _extract_start = time.time()  # P2-2 Sprint C telemetry
         result: ExtractionResult = await extract_field_from_message(
             target_field=action.target_field,
             user_message=user_message,
             additional_context_fields=action.additional_context,
             company_id=company_id,
         )
+        record_extraction_duration(time.time() - _extract_start)
 
         if not result.success or not result.extracted_fields:
             # Fail-CLOSED: mostrar erro amigavel, NAO finge sucesso.
@@ -268,6 +278,10 @@ async def process_message(
             )
             if save_result.get("success"):
                 persisted[field_key] = value
+                record_field_extracted(  # P2-2 Sprint C telemetry
+                    field_key=field_key,
+                    confidence=1.0,
+                )
             else:
                 errors.append(
                     save_result.get("message") or f"Falha ao salvar {field_key}"
@@ -286,6 +300,8 @@ async def process_message(
         # Sucesso total -> proxima acao (next question OR finalize)
         new_status, next_action = handle_persist_success(new_status, persisted)
         is_complete = next_action.action_type == ActionType.FINALIZE
+        if is_complete:
+            record_chat_completed()  # P2-2 Sprint C telemetry
         return RunnerResponse(
             user_message=next_action.message,
             status=new_status,
@@ -295,6 +311,8 @@ async def process_message(
 
     # SEND_MESSAGE, TRANSITION_BLOCK, FINALIZE, CONFIRM_EXTRACTION -- so retorna o message
     is_complete = action.action_type == ActionType.FINALIZE
+    if is_complete:
+        record_chat_completed()  # P2-2 Sprint C telemetry
     return RunnerResponse(
         user_message=action.message,
         status=new_status,
