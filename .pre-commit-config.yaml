@@ -74,3 +74,15 @@ repos:
         language: system
         pass_filenames: false
         verbose: true
+      - id: no-conflict-markers
+        name: No merge conflict markers (BLOCKING)
+        description: |
+          BLOCKING. Sensor canonical (2026-05-26): nenhum merge conflict
+          marker (<<<<<<<, =======, >>>>>>>) pode atravessar para commit.
+          Histórico: 5 arquivos com markers vivos quebraram tsc/build em
+          feat/benefits-prv-canonical. Fix: resolver conflict (escolher
+          um lado) antes de git add + commit.
+        entry: python3 plataforma-lia/scripts/check_no_conflict_markers.py
+        language: system
+        pass_filenames: false
+        verbose: true

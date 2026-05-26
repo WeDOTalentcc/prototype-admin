@@ -56,7 +56,8 @@
     "sensor:lia-sync": "python3 scripts/check_lia_field_definitions_sync.py",
     "sensor:lia-sync:blocking": "python3 scripts/check_lia_field_definitions_sync.py --blocking",
     "sensor:tokens": "node scripts/check_canonical_tailwind_tokens.mjs",
-    "sensor:tokens:blocking": "node scripts/check_canonical_tailwind_tokens.mjs --blocking"
+    "sensor:tokens:blocking": "node scripts/check_canonical_tailwind_tokens.mjs --blocking",
+    "lint:no-conflict-markers": "python3 scripts/check_no_conflict_markers.py"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
