@@ -4232,6 +4232,10 @@
           "activate": "Activate",
           "deactivate": "Deactivate",
           "manageHelp": "Enable/disable sub-statuses from the catalog. Inactive sub-statuses do not appear in the recruitment process."
+        },
+        "subTabs": {
+          "default": "Company Default",
+          "templates": "Templates"
         }
       },
       "screening": {
@@ -4571,7 +4575,8 @@
         "automationStatusActive": "active",
         "automationStatusPaused": "paused",
         "comingSoon": "Coming soon",
-        "notificationsComingSoonText": "Notification channel configuration will be available soon. Preferences below are not yet persisted."
+        "notificationsComingSoonText": "Notification channel configuration will be available soon. Preferences below are not yet persisted.",
+        "noTemplatesYet": "No email templates created yet."
       },
       "npsTab": {
         "title": "NPS System Settings",

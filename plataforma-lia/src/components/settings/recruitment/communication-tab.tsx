@@ -1,7 +1,8 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState } from "react"
 import { useTranslations, useLocale } from "next-intl"
+import { useQuery } from "@tanstack/react-query"
 import { Chip } from "@/components/ui/chip"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -10,49 +11,34 @@ import {
   MoreVertical, CheckCircle,
 } from "lucide-react"
 
+interface EmailTemplate {
+  id: string
+  name: string
+  subject: string
+  type: string
+  status: "active" | "paused"
+  trigger: string
+  lastModified: string
+}
+
 export function CommunicationTab({ onSettingsChange }: { onSettingsChange: (changed: boolean) => void }) {
   const t = useTranslations("settings.recruitment.communicationTab")
   const locale = useLocale()
   const [activeSubTab, setActiveSubTab] = useState<'templates' | 'notifications' | 'whatsapp' | 'sms' | 'automation'>('templates')
 
-  const templates = useMemo(() => ([
-    {
-      id: 'welcome',
-      name: t('templateBoasVindasName'),
-      subject: t('templateBoasVindasSubject', { empresa: '{empresa}' }),
-      type: 'email',
-      status: 'active' as const,
-      trigger: t('templateBoasVindasTrigger'),
-      lastModified: '2024-01-15',
+  const { data: templates = [], isLoading: isLoadingTemplates } = useQuery<EmailTemplate[]>({
+    queryKey: ["communication-templates-recruitment"],
+    queryFn: async () => {
+      const resp = await fetch("/api/backend-proxy/communication/templates")
+      if (!resp.ok) return []
+      const data = await resp.json()
+      // backend may return { templates: [...] } or plain array
+      if (Array.isArray(data)) return data
+      if (Array.isArray(data?.templates)) return data.templates
+      return []
     },
-    {
-      id: 'interview-invite',
-      name: t('templateInterviewInviteName'),
-      subject: t('templateInterviewInviteSubject', { vaga: '{vaga}' }),
-      type: 'email',
-      status: 'active' as const,
-      trigger: t('templateInterviewInviteTrigger'),
-      lastModified: '2024-01-18',
-    },
-    {
-      id: 'rejection',
-      name: t('templateRejectionName'),
-      subject: t('templateRejectionSubject', { vaga: '{vaga}' }),
-      type: 'email',
-      status: 'active' as const,
-      trigger: t('templateRejectionTrigger'),
-      lastModified: '2024-01-10',
-    },
-    {
-      id: 'offer',
-      name: t('templateOfferName'),
-      subject: t('templateOfferSubject', { vaga: '{vaga}' }),
-      type: 'email',
-      status: 'active' as const,
-      trigger: t('templateOfferTrigger'),
-      lastModified: '2024-01-20',
-    },
-  ]), [t])
+    staleTime: 300_000, // 5 min — templates rarely change
+  })
 
   const subTabs = [
     { id: 'templates', name: t('emailTemplates'), icon: Mail },
@@ -100,38 +86,50 @@ export function CommunicationTab({ onSettingsChange }: { onSettingsChange: (chan
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {templates.map((template) => (
-              <div key={template.id} className="flex items-center justify-between p-4 border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl">
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 bg-wedo-cyan/15 dark:bg-wedo-cyan/20 rounded-md flex items-center justify-center">
-                    <Mail className="w-5 h-5 text-lia-text-secondary" />
-                  </div>
-                  <div>
-                    <h4 className="font-medium text-lia-text-primary">{template.name}</h4>
-                    <p className="text-sm text-lia-text-primary">{template.subject}</p>
-                    <div className="flex items-center gap-3 mt-1 text-xs text-lia-text-primary">
-                      <span>{t('triggerLabel', { value: template.trigger })}</span>
-                      <span>•</span>
-                      <span>{t('modifiedOn', { date: new Date(template.lastModified).toLocaleDateString(locale) })}</span>
+          {isLoadingTemplates ? (
+            <div className="space-y-4">
+              {[1, 2, 3].map((n) => (
+                <div key={n} className="h-20 rounded-xl bg-lia-bg-secondary animate-pulse" />
+              ))}
+            </div>
+          ) : templates.length === 0 ? (
+            <div className="text-center py-8 text-lia-text-primary text-sm">
+              {t('noTemplatesYet')}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {templates.map((template) => (
+                <div key={template.id} className="flex items-center justify-between p-4 border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 bg-wedo-cyan/15 dark:bg-wedo-cyan/20 rounded-md flex items-center justify-center">
+                      <Mail className="w-5 h-5 text-lia-text-secondary" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-lia-text-primary">{template.name}</h4>
+                      <p className="text-sm text-lia-text-primary">{template.subject}</p>
+                      <div className="flex items-center gap-3 mt-1 text-xs text-lia-text-primary">
+                        <span>{t('triggerLabel', { value: template.trigger })}</span>
+                        <span>•</span>
+                        <span>{t('modifiedOn', { date: new Date(template.lastModified).toLocaleDateString(locale) })}</span>
+                      </div>
                     </div>
                   </div>
+                  <div className="flex items-center gap-2">
+                    <Chip variant="neutral" muted={template.status !== 'active'}>
+                      {template.status === 'active' ? t('statusActive') : t('statusPaused')}
+                    </Chip>
+                    <Button variant="outline" size="sm">
+                      <Edit className="w-4 h-4 mr-2" />
+                      {t('edit')}
+                    </Button>
+                    <Button variant="ghost" size="sm">
+                      <MoreVertical className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Chip variant="neutral" muted={template.status !== 'active'}>
-                    {template.status === 'active' ? t('statusActive') : t('statusPaused')}
-                  </Chip>
-                  <Button variant="outline" size="sm">
-                    <Edit className="w-4 h-4 mr-2" />
-                    {t('edit')}
-                  </Button>
-                  <Button variant="ghost" size="sm">
-                    <MoreVertical className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
 
