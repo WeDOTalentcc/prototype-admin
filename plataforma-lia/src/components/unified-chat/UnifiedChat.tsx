@@ -57,6 +57,7 @@ import { ProgressiveDisclosure } from "./wizard/ProgressiveDisclosure";
 import { TaskContextBar } from "./wizard/TaskContextBar";
 import { WizardProgressBar } from "./wizard/WizardProgressBar";
 import { PipelineTemplateSuggestion } from "./wizard/PipelineTemplateSuggestion";
+import { WizardPipelineTemplateStagePanel } from "./wizard/WizardPipelineTemplateStagePanel";
 import { useWizardChatCards } from "./wizard/useWizardChatCards";
 import { useWizardFlow } from "./wizard/useWizardFlow";
 import { useWizardIntegration } from "./wizard/useWizardIntegration";
@@ -862,13 +863,76 @@ export function UnifiedChat({
             limpam a sugestão do state do wizard. vacancyId hoje é null (vaga ainda não
             persistida no intake/jd_enrichment); card desabilita "Aplicar" e orienta
             recrutador a re-aplicar pelo edit-job modal pós-publish. */}
-        {wizard.pipelineTemplateSuggestions.length > 0 && (
+        {wizard.pipelineTemplateSuggestions.length > 0 && wizard.currentStage !== "pipeline_template" && (
           <div className="px-4 pt-2" data-testid="wizard-pipeline-template-suggestion-container">
             <PipelineTemplateSuggestion
               templates={wizard.pipelineTemplateSuggestions}
               vacancyId={null}
               onApplied={() => wizard.skipPipelineTemplateSuggestion()}
               onSkip={() => wizard.skipPipelineTemplateSuggestion()}
+            />
+          </div>
+        )}
+
+        {/* Sprint Pipeline Templates Opção B (2026-05-26) — STAGE FORMAL panel.
+            Quando o backend graph emite wizard_stage com stage="pipeline_template",
+            renderizamos o painel canonical (em vez do card passivo acima). O
+            recrutador DEVE decidir: aplicar um template sugerido OU usar o
+            "Padrão da Empresa" canonical. Skip emite chat message livre que o
+            backend graph parseia para avançar; apply usa o canonical proxy
+            POST /api/backend-proxy/job-vacancies/{id}/apply-pipeline-template
+            via wizard.applyPipelineTemplateFromWizard. vacancyId vem de
+            stageData.vacancy_id quando disponível (publish posterior — em
+            fluxos onde vaga ainda não existe, fica null e Apply é desabilitado). */}
+        {wizard.currentStage === "pipeline_template" && wizard.stageData && (
+          <div className="px-4 pt-2" data-testid="wizard-pipeline-template-stage-container">
+            <WizardPipelineTemplateStagePanel
+              templates={
+                ((wizard.stageData as { templates?: unknown }).templates as
+                  | import("./wizard/wizard-types").WizardPipelineTemplateSuggestion[]
+                  | undefined) ?? []
+              }
+              suggestedTemplateId={
+                ((wizard.stageData as { suggested_template_id?: string | null })
+                  .suggested_template_id) ?? null
+              }
+              defaultPipelineStagesCount={
+                ((wizard.stageData as { default_pipeline_stages_count?: number })
+                  .default_pipeline_stages_count) ?? 0
+              }
+              allowSkip={
+                ((wizard.stageData as { allow_skip?: boolean }).allow_skip) ?? true
+              }
+              onApply={async (templateId) => {
+                const vacancyId = (wizard.stageData as { vacancy_id?: string | null })
+                  .vacancy_id
+                if (!vacancyId) {
+                  // Sem vaga persistida, o backend graph é quem segura a
+                  // transição. Emite mensagem livre PT-BR para o graph
+                  // anotar a escolha e retomar.
+                  sendChatMessage(`Aplicar template de pipeline ${templateId}`)
+                  return
+                }
+                const response = await wizard.applyPipelineTemplateFromWizard(
+                  vacancyId,
+                  templateId,
+                  "wizard_explicit",
+                )
+                if (!response.ok) {
+                  const detail = await response
+                    .json()
+                    .catch(() => ({ detail: response.statusText }))
+                  throw new Error(
+                    typeof detail?.detail === "string" ? detail.detail : "apply_failed",
+                  )
+                }
+                // Sinaliza ao backend graph que a stage foi resolvida.
+                sendChatMessage("Template de pipeline aplicado, pode seguir.")
+              }}
+              onSkip={async () => {
+                // Backend graph parseia free-text para "use_default_pipeline".
+                sendChatMessage("Usar pipeline padrão da empresa.")
+              }}
             />
           </div>
         )}

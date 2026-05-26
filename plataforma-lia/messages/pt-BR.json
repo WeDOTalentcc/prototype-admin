@@ -7241,6 +7241,21 @@
       "appliedToast": "Template aplicado!",
       "errorToast": "Erro ao aplicar template",
       "errorNoVacancy": "Salve a vaga antes de aplicar um template."
+    },
+    "pipelineTemplateStage": {
+      "title": "Pipeline de Recrutamento",
+      "subtitle": "Escolha o pipeline que melhor reflete o processo desta vaga.",
+      "suggestedBadge": "Sugerido",
+      "applyTemplate": "Aplicar este template",
+      "applying": "Aplicando...",
+      "useDefaultPipeline": "Usar Padrão da Empresa",
+      "viewAllTemplates": "Ver todos os templates",
+      "matchPercent": "{percent}% match",
+      "stagesCount": "{count, plural, one {# etapa} other {# etapas}}",
+      "defaultPipelineInfo": "{count, plural, one {Padrão da empresa tem # etapa} other {Padrão da empresa tem # etapas}}",
+      "appliedSuccessToast": "Template aplicado!",
+      "skippedSuccessToast": "Padrão da empresa aplicado",
+      "applyErrorToast": "Erro ao aplicar template: {error}"
     }
   }
 }

@@ -35,6 +35,11 @@ import type {
 export type WizardStage =
   | "intake"
   | "jd_enrichment"
+  // Sprint Pipeline Templates 2026-05-26 — Opção B (Paulo aprovou).
+  // Stage formal entre jd_enrichment e bigfive; backend graph emite
+  // wizard_stage com stage="pipeline_template" e o frontend renderiza
+  // WizardPipelineTemplateStagePanel.
+  | "pipeline_template"
   | "bigfive"
   | "salary"
   | "competency"
@@ -290,6 +295,8 @@ export const STAGE_LABELS: Record<WizardStage, string> = {
   publish: "Publicacao",
   calibration: "Calibracao",
   handoff: "Pagina da vaga",
+  // Sprint Pipeline Templates 2026-05-26 — Opção B.
+  pipeline_template: "Pipeline · Template",
   done: "Concluido",
   scheduling: "Agendamento",
 }

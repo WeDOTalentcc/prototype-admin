@@ -7241,6 +7241,21 @@
       "appliedToast": "Template applied!",
       "errorToast": "Error applying template",
       "errorNoVacancy": "Save the job before applying a template."
+    },
+    "pipelineTemplateStage": {
+      "title": "Recruitment Pipeline",
+      "subtitle": "Choose the pipeline that best reflects this role's process.",
+      "suggestedBadge": "Suggested",
+      "applyTemplate": "Apply this template",
+      "applying": "Applying...",
+      "useDefaultPipeline": "Use Company Default",
+      "viewAllTemplates": "See all templates",
+      "matchPercent": "{percent}% match",
+      "stagesCount": "{count, plural, one {# stage} other {# stages}}",
+      "defaultPipelineInfo": "{count, plural, one {Company default has # stage} other {Company default has # stages}}",
+      "appliedSuccessToast": "Template applied!",
+      "skippedSuccessToast": "Company default applied",
+      "applyErrorToast": "Error applying template: {error}"
     }
   }
 }
