@@ -86,7 +86,7 @@ class CustomAgent(Base):
     search_strategy = Column(JSONB, nullable=True)   # sourcing-only payload
     preferences = Column(JSONB, nullable=True)       # sourcing-only payload
     outreach_config = Column(JSONB, nullable=True)   # sourcing-only payload
-    legacy_sourcing_agent_id = Column(UUID(as_uuid=True), nullable=True)  # back-reference (drop Sprint 8)
+    # Sprint 8 (migration 211): legacy_sourcing_agent_id Column DELETED.
 
 
     total_executions = Column(Integer, default=0)
@@ -161,7 +161,6 @@ class CustomAgent(Base):
             "search_strategy": self.search_strategy,
             "preferences": self.preferences,
             "outreach_config": self.outreach_config,
-            "legacy_sourcing_agent_id": str(self.legacy_sourcing_agent_id) if self.legacy_sourcing_agent_id else None,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }

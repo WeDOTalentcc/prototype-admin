@@ -7,6 +7,16 @@ Pre-step Part 2 full: orchestrator vai escrever signals canonical via custom_age
 """
 from __future__ import annotations
 
+import pytest
+
+# Sprint 8 (migration 211) DELETED agent_id column + sourcing_agents table.
+# Subsets dos sensores Sprint 7B-3a Part 1.5 v2 que pinavam comportamento de
+# agent_id ficam obsoletos. Tests que validam custom_agent_id canonical ainda
+# rodam normalmente; tests sobre agent_id pulam.
+pytestmark_legacy_agent_id_obsolete_post_sprint_8 = pytest.mark.skip(
+    reason="Sprint 8 migration 211 dropou agent_id column — sensor obsoleto"
+)
+
 
 def test_signal_custom_agent_id_declared_fk_canonical():
     """SourcingAgentSignal.custom_agent_id FK custom_agents.id, nullable=False (canonical fail-closed)."""
@@ -21,6 +31,7 @@ def test_signal_custom_agent_id_declared_fk_canonical():
     assert fks[0].ondelete == "CASCADE"
 
 
+@pytestmark_legacy_agent_id_obsolete_post_sprint_8
 def test_signal_agent_id_now_nullable():
     """agent_id agora nullable=True (legacy preservado, signals novos via custom_agent_id)."""
     from lia_models.sourcing_agent import SourcingAgentSignal
@@ -43,6 +54,7 @@ def test_signal_assignment_id_declared_fk_optional():
     assert fks[0].ondelete == "SET NULL"
 
 
+@pytestmark_legacy_agent_id_obsolete_post_sprint_8
 def test_signal_relationships_canonical():
     """SourcingAgentSignal expõe relationships custom_agent, assignment, agent (legacy)."""
     from lia_models.sourcing_agent import SourcingAgentSignal
@@ -63,6 +75,7 @@ def test_custom_agent_has_signals_reverse_relationship():
     assert rel.cascade.delete_orphan, "cascade delete-orphan obrigatório"
 
 
+@pytestmark_legacy_agent_id_obsolete_post_sprint_8
 def test_migration_209_relaxes_agent_id_in_db():
     """Migration 209 aplicada deixa agent_id nullable no DB real."""
     import os

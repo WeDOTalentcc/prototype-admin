@@ -2,11 +2,21 @@
 
 Pin'a invariantes da data migration sourcing_agents -> custom_agents.
 Roda contra DB live (mesma config dos outros tests/migrations/).
+
+Sprint 8 (migration 211) DROPOU sourcing_agents table + custom_agents.legacy_sourcing_agent_id.
+Esses sensores 7A pinavam estado pos-backfill 7A; agora obsoletos.
 """
 from __future__ import annotations
 
 import os
 import pytest
+
+# Sprint 8 (migration 211): sensores Sprint 7A pinavam state intermediario
+# (sourcing_agents + legacy_sourcing_agent_id ambos existindo). Pos-Sprint 8 ambos
+# foram dropados; sensores obsoletos.
+pytestmark = pytest.mark.skip(
+    reason="Sprint 8 migration 211 dropou sourcing_agents + legacy_sourcing_agent_id — sensor 7A obsoleto"
+)
 from sqlalchemy import create_engine, text
 
 
