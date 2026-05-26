@@ -17,7 +17,7 @@ import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 SCAN_DIRS = ["app", "libs"]
-BANNED_NAMES = {"SourcingAgent", "SourcingAgentSignal"}
+BANNED_NAMES = {"SourcingAgent"}  # SourcingAgentSignal is canonical (table sourcing_agent_signals active, FK custom_agent_id NOT NULL per Sprint 7B-3b Part 1.5 v2)
 BANNED_MODULES = {
     "lia_models.sourcing_agent",
     "libs.models.lia_models.sourcing_agent",

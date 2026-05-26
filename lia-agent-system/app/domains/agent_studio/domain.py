@@ -80,13 +80,12 @@ class AgentStudioDomain(ComplianceDomainPrompt):
             "list_agents": self._handle_list_agents,
         }
 
-        # Canonical truth (Sprint 7B-3a Part 2):
-        # Reads de status + deactivate (branch sourcing) usam CustomAgent + category='sourcing'
-        # via OR shim transitional (CustomAgent.id OR CustomAgent.legacy_sourcing_agent_id).
+        # Canonical truth (Sprint 7B-3b Part 3a):
+        # Reads de status + deactivate (branch sourcing) usam CustomAgent + category='sourcing'.
+        # custom_agent branch: select(CustomAgent).where(CustomAgent.id, CustomAgent.company_id).
+        # sourcing branch: select(CustomAgent).where(CustomAgent.id, CustomAgent.category, CustomAgent.company_id).
         # Aplica a: _handle_get_agent_status, _handle_deactivate_agent (sourcing branch).
-        # CustomAgent + category='sourcing' = canonical truth.
-        # TODO Sprint 7B-3b: remover legacy_sourcing_agent_id branch quando frontend
-        # migrar pra passar custom_agent.id direto.
+        # Frontend Part 2 v2 (cc622d4c9) ja passa custom_agent.id direto — OR shim removido.
 
         handler = handler_map.get(action_id)
         if handler:
@@ -234,20 +233,15 @@ class AgentStudioDomain(ComplianceDomainPrompt):
         try:
             from app.core.database import get_db
             from lia_models.custom_agent import CustomAgent
-            from sqlalchemy import or_, select
+            from sqlalchemy import select
 
             company_id = context.tenant_id
 
-            # TODO Sprint 7B-3b: remover legacy_sourcing_agent_id branch quando frontend
-            # (AgentsTab + AgentStudioPage + AgentPanel) migrar pra passar custom_agent.id
-            # direto após DELETE legacy endpoint /sourcing-agents.
+            # Sprint 7B-3b Part 3a: OR shim removed — frontend Part 2 v2 swap completou.
             async for db in get_db():
                 result = await db.execute(
                     select(CustomAgent).where(
-                        or_(
-                            CustomAgent.id == agent_id,
-                            CustomAgent.legacy_sourcing_agent_id == agent_id,
-                        ),
+                        CustomAgent.id == agent_id,
                         CustomAgent.category == "sourcing",
                         CustomAgent.company_id == company_id,
                     )
@@ -858,17 +852,12 @@ class AgentStudioDomain(ComplianceDomainPrompt):
                     break
             else:
                 async for db in get_db():
-                    # TODO Sprint 7B-3b: remover legacy_sourcing_agent_id branch quando frontend
-                    # (AgentsTab + AgentStudioPage + AgentPanel) migrar pra passar custom_agent.id
-                    # direto após DELETE legacy endpoint /sourcing-agents.
+                    # Sprint 7B-3b Part 3a: OR shim removed — frontend Part 2 v2 swap completou.
                     from lia_models.custom_agent import CustomAgent
-                    from sqlalchemy import or_, select
+                    from sqlalchemy import select
                     result = await db.execute(
                         select(CustomAgent).where(
-                            or_(
-                                CustomAgent.id == agent_id,
-                                CustomAgent.legacy_sourcing_agent_id == agent_id,
-                            ),
+                            CustomAgent.id == agent_id,
                             CustomAgent.category == "sourcing",
                             CustomAgent.company_id == company_id,
                         )

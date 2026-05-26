@@ -189,18 +189,13 @@ class SourcingAgentOrchestrator:
         - Each approval → LLM extracts positive criteria → reinforces positive_signals
         """
         from lia_models.custom_agent import CustomAgent
-        from sqlalchemy import or_, select
+        from sqlalchemy import select
 
-        # Load agent canonical (CustomAgent + category='sourcing') com transitional OR shim.
-        # TODO Sprint 7B-3b: remover legacy_sourcing_agent_id branch quando frontend
-        # (AgentsTab + AgentStudioPage + AgentPanel) migrar pra passar custom_agent.id
-        # direto após DELETE legacy endpoint /sourcing-agents.
+        # Load agent canonical (CustomAgent + category='sourcing').
+        # Sprint 7B-3b Part 3a: OR shim removed — frontend Part 2 v2 swap completou.
         result = await db.execute(
             select(CustomAgent).where(
-                or_(
-                    CustomAgent.id == agent_id,
-                    CustomAgent.legacy_sourcing_agent_id == agent_id,
-                ),
+                CustomAgent.id == agent_id,
                 CustomAgent.category == "sourcing",
             )
         )
@@ -338,16 +333,11 @@ class SourcingAgentOrchestrator:
         (fail-loud REGRA 4, handler traduz pra HTTP 404).
         """
         from lia_models.custom_agent import CustomAgent
-        from sqlalchemy import or_, select
+        from sqlalchemy import select
 
-        # TODO Sprint 7B-3b: remover legacy_sourcing_agent_id branch quando frontend
-        # (AgentsTab + AgentStudioPage + AgentPanel) migrar pra passar custom_agent.id
-        # direto após DELETE legacy endpoint /sourcing-agents.
+        # Sprint 7B-3b Part 3a: OR shim removed — frontend Part 2 v2 swap completou.
         stmt = select(CustomAgent).where(
-            or_(
-                CustomAgent.id == agent_id,
-                CustomAgent.legacy_sourcing_agent_id == agent_id,
-            ),
+            CustomAgent.id == agent_id,
             CustomAgent.category == "sourcing",
         )
         if company_id is not None:
@@ -402,22 +392,16 @@ class SourcingAgentOrchestrator:
     async def get_agent_timeline(self, agent_id: str, limit: int = 20, db=None) -> list[dict]:
         """Get activity timeline for the Agents tab.
 
-        Resolve agent_id via shim transitional (CustomAgent.id OR legacy_sourcing_agent_id)
-        e filtra signals por custom_agent_id canonical.
+        Sprint 7B-3b Part 3a: OR shim removed — frontend Part 2 v2 swap completou.
+        Lookup canonical via CustomAgent.id; filtra signals por custom_agent_id.
         """
         from lia_models.custom_agent import CustomAgent
-        from sqlalchemy import or_, select
+        from sqlalchemy import select
 
-        # TODO Sprint 7B-3b: remover legacy_sourcing_agent_id branch quando frontend
-        # (AgentsTab + AgentStudioPage + AgentPanel) migrar pra passar custom_agent.id
-        # direto após DELETE legacy endpoint /sourcing-agents.
         agent_row = (
             await db.execute(
                 select(CustomAgent.id).where(
-                    or_(
-                        CustomAgent.id == agent_id,
-                        CustomAgent.legacy_sourcing_agent_id == agent_id,
-                    ),
+                    CustomAgent.id == agent_id,
                     CustomAgent.category == "sourcing",
                 )
             )

@@ -5,15 +5,15 @@
  * Bane uso do hook legacy `useSourcingAgents` e imports do type `SourcingAgent`,
  * em prep da unification Sprint 7B-2/7B-3 (sourcing_agents → custom_agents M2M).
  *
- * Modo: WARN-ONLY nesta sub-sprint. Promovido a BLOCKING em 7B-3 após todos
- * os sites migrarem pra `usePoolAgents` / `CustomAgent`.
+ * Modo: BLOCKING por default (Sprint 7B-3b Part 3a — baseline 0 mantido pos Part 2 v2
+ * frontend swap cc622d4c9). Opt-out via --warn-only para diagnosticos locais.
  *
  * Honra marker `// SOURCING-LEGACY-EXEMPT: <reason>` (mesma linha ou linha
  * imediatamente anterior).
  *
  * Usage:
- *   node scripts/check_no_legacy_useSourcingAgents.mjs              # warn-only
- *   node scripts/check_no_legacy_useSourcingAgents.mjs --blocking   # exit 1 se viol > max
+ *   node scripts/check_no_legacy_useSourcingAgents.mjs              # BLOCKING (default)
+ *   node scripts/check_no_legacy_useSourcingAgents.mjs --warn-only  # exit 0 sempre
  *   node scripts/check_no_legacy_useSourcingAgents.mjs --json
  *   node scripts/check_no_legacy_useSourcingAgents.mjs --max-violations=N --blocking
  *
@@ -91,7 +91,7 @@ function isExempt(lines, idx, lineText) {
 }
 
 const args = process.argv.slice(2)
-const blocking = args.includes('--blocking')
+const blocking = !args.includes('--warn-only')  // Sprint 7B-3b Part 3a: default BLOCKING; opt-out via --warn-only
 const jsonOutput = args.includes('--json')
 const maxArg = args.find(a => a.startsWith('--max-violations='))
 const maxViolations = maxArg ? parseInt(maxArg.split('=')[1], 10) : 0
@@ -160,8 +160,8 @@ if (jsonOutput) {
     }
 
     console.log(`  ${DIM}Total: ${violations.length} violation(s)${RESET}`)
-    console.log(`  ${DIM}Modo: ${blocking ? 'BLOCKING' : 'WARN-ONLY (sub-sprint 7B-1 baseline)'}${RESET}`)
-    console.log(`  ${DIM}Promovido a BLOCKING em Sprint 7B-3 após sites migrarem.${RESET}`)
+    console.log(`  ${DIM}Modo: ${blocking ? 'BLOCKING (Sprint 7B-3b Part 3a default)' : 'WARN-ONLY (--warn-only opt-out)'}${RESET}`)
+    console.log(`  ${DIM}Sprint 7B-3b Part 3a: BLOCKING default; opt-out via --warn-only.${RESET}`)
     console.log(`  ${DIM}Exempt marker: // SOURCING-LEGACY-EXEMPT: <reason>${RESET}`)
   }
 }

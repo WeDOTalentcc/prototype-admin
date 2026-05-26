@@ -77,6 +77,14 @@ jobs:
         # Ver scripts/check_chip_overrides.mjs + commits 36cb22fa4/82e92d7dc/fe38f191d.
         run: npm run lint:chips
 
+      - name: Sensor #9 — no legacy useSourcingAgents / SourcingAgent (BLOCKING)
+        # Sprint 7B-3b Part 3a (2026-05-26): promovido a BLOCKING.
+        # Baseline 0 mantido pos Part 2 v2 frontend swap (cc622d4c9): AgentsTab +
+        # AgentStudioPage + AgentPanel passam custom_agent.id direto.
+        # Honra marker `// SOURCING-LEGACY-EXEMPT: <reason>`.
+        # Ver scripts/check_no_legacy_useSourcingAgents.mjs.
+        run: node scripts/check_no_legacy_useSourcingAgents.mjs
+
 
       - name: Multi-tenancy gate sensor (Phase F, warn-only)
         # Walks app/api/v1/*.py and warns on routes missing
