@@ -17,6 +17,13 @@ export interface FloatMessage {
   timestamp: string
   executionPlan?: Record<string, unknown>
   planProgressSteps?: Array<{ task_id: string; action_id: string; status: string }>
+  // Sprint B.6 (P2-2 onboarding): backend marca pergunta com hint de quick_reply
+  // pra UI renderizar botões inline em vez de exigir texto livre. Preset
+  // corresponde aos canonical em QuickReplies.tsx (boolean, work_model, ...).
+  metadata?: {
+    quick_reply_preset?: "boolean" | "work_model" | "autonomy" | "channel" | "experience_policy" | "ai_tone"
+    [k: string]: unknown
+  }
 }
 
 export const FLOAT_CONTEXT_TYPE = "general" as const

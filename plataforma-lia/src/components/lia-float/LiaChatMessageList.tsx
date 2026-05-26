@@ -19,6 +19,7 @@ import { type FloatMessage } from "@/hooks/chat/use-float-conversation"
 import { cleanAgentResponse, parseChatMarkdown, escapeHtml } from "@/lib/chat-format"
 import { sanitizeHtml } from "@/lib/sanitize"
 import { ThinkingDots } from "@/components/ui/thinking-dots"
+import { QuickReplies, type QuickReplyPreset } from "@/components/onboarding/QuickReplies"
 
 export interface LiaChatMessageListProps {
   showHistory: boolean
@@ -93,7 +94,7 @@ export function LiaChatMessageList({
             // only sees msg.sender of type "lia" | "user".
             .filter((msg): msg is FloatMessage & { sender: "lia" | "user" } => msg.sender !== "system")
             .map(msg => (
-              <MessageBubble key={msg.id} msg={msg} conversationId={conversationId} />
+              <MessageBubble key={msg.id} msg={msg} conversationId={conversationId} onQuickReply={handleChipSend} />
             ))}
           {hitlPending && (
             <ChatBubbleBase
@@ -260,10 +261,11 @@ function StreamingBubble({ content }: { content: string }) {
   )
 }
 
-function MessageBubble({ msg, conversationId }: { msg: FloatMessage & { sender: "lia" | "user" }; conversationId: string | null }) {
+function MessageBubble({ msg, conversationId, onQuickReply }: { msg: FloatMessage & { sender: "lia" | "user" }; conversationId: string | null; onQuickReply?: (text: string) => void }) {
   const authUser = useAuthStore((s) => s.user)
   const userDisplayName = authUser?.name || authUser?.email || "Usuário"
   const isUser = msg.sender === "user"
+  const quickReplyPreset = msg.metadata?.quick_reply_preset as QuickReplyPreset | undefined
 
   const renderedHtml = useMemo(() => {
     if (isUser) return escapeHtml(msg.content).replace(/\n/g, "<br/>")
@@ -293,6 +295,14 @@ function MessageBubble({ msg, conversationId }: { msg: FloatMessage & { sender: 
       />
       {!isUser && msg.executionPlan && (
         <PlanProgressCard plan={msg.executionPlan as unknown as ExecutionPlanData} />
+      )}
+      {/* Sprint B.6 (P2-2): renderiza quick replies inline quando backend
+          marca a mensagem com metadata.quick_reply_preset. Só pra LIA. */}
+      {!isUser && quickReplyPreset && (
+        <QuickReplies
+          preset={quickReplyPreset}
+          onSelect={(value) => onQuickReply?.(value)}
+        />
       )}
     </ChatBubbleBase>
   )
