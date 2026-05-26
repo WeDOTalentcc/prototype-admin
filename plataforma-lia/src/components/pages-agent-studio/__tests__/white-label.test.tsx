@@ -67,7 +67,6 @@ const messages = {
 }
 
 import {
-  DigitalTwinOnboarding,
   DigitalTwinEmptyState,
 } from "../DigitalTwinComponents"
 
@@ -80,26 +79,28 @@ function renderWithIntl(ui: React.ReactNode) {
 }
 
 describe("Agent Studio — white-label canonical (Sprint 2)", () => {
-  it("DigitalTwinOnboarding usa aiAssistant injetado, não 'LIA'", () => {
-    const { container } = renderWithIntl(<DigitalTwinOnboarding />)
+  // P0 rewrite 2026-05-26: DigitalTwinOnboarding REMOVIDO (página Gêmeos Digitais
+  // segue layout canonical Marketplace/Personalizados sem onboarding 4-steps inline).
+  // White-label assertion agora corre via DigitalTwinEmptyState.
+
+  it("DigitalTwinEmptyState injeta aiAssistant (não hardcoda 'LIA')", () => {
+    if (typeof DigitalTwinEmptyState !== "function") {
+      return // export interno; skip defensivo
+    }
+    const { container } = renderWithIntl(
+      <DigitalTwinEmptyState onCreateTwin={() => {}} />,
+    )
     const text = container.textContent ?? ""
+    // aiAssistant é "Aurora" no mock useAiPersona acima
     expect(text).toContain("Aurora")
     expect(text).not.toMatch(/\bLIA\b/)
   })
 
-  it("DigitalTwinEmptyState (uma das views internas) injeta aiAssistant", () => {
-    // DigitalTwinEmptyState pode ser exportado ou interno; teste via
-    // DigitalTwinOnboarding cobre o caso comum + esse aqui é defensivo.
-    if (typeof DigitalTwinEmptyState !== "function") {
-      return // export interno; cobertura via Onboarding já é suficiente
-    }
-    const { container } = renderWithIntl(<DigitalTwinEmptyState />)
-    const text = container.textContent ?? ""
-    expect(text).not.toMatch(/\bLIA\b/)
-  })
-
-  it("DigitalTwinOnboarding não emite classes wedo-cyan", () => {
-    const { container } = renderWithIntl(<DigitalTwinOnboarding />)
+  it("DigitalTwinEmptyState não emite classes wedo-cyan", () => {
+    if (typeof DigitalTwinEmptyState !== "function") return
+    const { container } = renderWithIntl(
+      <DigitalTwinEmptyState onCreateTwin={() => {}} />,
+    )
     const html = container.innerHTML
     expect(html).not.toMatch(/\bwedo-cyan\b/)
     expect(html).not.toMatch(/from-(wedo-)?cyan[^"' ]*to-(wedo-)?(violet|purple)/)

@@ -74,15 +74,13 @@
       "chooseTemplateAbove": "Choose a template above to create your first sourcing agent",
       "chooseTemplateOrDescribe": "Choose a template below or describe to {aiAssistant} what you need",
       "twins": {
-        "cloneReasoning": "Clone the reasoning of your best evaluators",
-        "cloneDesc": "Capture how a team specialist evaluates candidates. The Digital Twin learns the criteria and works as an automatic 'second opinion' in screening.",
         "label": "Digital Twins",
-        "headerTitle": "Clone the reasoning of your best evaluators",
-        "headerDesc": "Capture how a team specialist evaluates candidates. The Digital Twin learns the criteria and acts as an automatic \"second opinion\" during screening.",
+        "headerTitle": "Digital Twins",
+        "headerDesc": "A Digital Twin is an AI agent that learns a team specialist's evaluation pattern and offers an automatic second opinion on new candidates.",
         "emptyState": {
-          "title": "You don't have any Digital Twin yet",
-          "description": "Create your first Digital Twin to clone the evaluation reasoning of a team specialist and get an automatic second opinion during screening.",
-          "createFirst": "Create my first Digital Twin",
+          "title": "No Digital Twin created yet",
+          "description": "Create a Twin from the historical decisions of your best evaluator.",
+          "createFirst": "Create Digital Twin",
           "noExperience": "No technical background? No problem — {aiAssistant} walks you through it step by step."
         },
         "createModal": {
@@ -109,28 +107,33 @@
           "errorDesc": "Please try again in a moment — if it persists, contact support.",
           "cancel": "Cancel",
           "creating": "Creating…",
-          "create": "Create Digital Twin"
+          "create": "Create Digital Twin",
+          "lgpd": {
+            "summary": "This feature indexes historical decisions under LGPD Art. 6 + 11 + 18. View details.",
+            "detail": {
+              "indexing": "This feature indexes historical decisions (approvals, rejections, rationales) from the chosen evaluator so the AI learns the pattern and offers an automatic second opinion.",
+              "storage": "Stores references to the candidate (candidate_id) and snapshots without direct PII (no name), under LGPD Art. 6 + Art. 11. Embeddings derive from the evaluator's rationale, not from the candidate's personal data.",
+              "confirmation": "By confirming you attest that (1) candidates were informed of behavioral analysis in the process (LGPD Art. 11); (2) the evaluator authorized using the decisions as training data; (3) the system preserves the right to erasure (LGPD Art. 18) — the twin reference is anonymized via FK SET NULL when the candidate requests removal."
+            },
+            "cancelAria": "Cancel Digital Twin creation",
+            "confirmAria": "I acknowledge LGPD and continue to creation",
+            "confirmButton": "Confirm — Continue"
+          }
         },
-        "onboarding": {
-          "stepLabel": "Step {number}",
-          "step1Title": "Select an evaluator",
-          "step1Desc": "Pick a recruiter or hiring manager who makes good decisions.",
-          "step2Title": "Import past decisions",
-          "step2Desc": "Upload historical approvals/rejections with rationale.",
-          "step3Title": "{aiAssistant} learns the pattern",
-          "step3Desc": "The model identifies the implicit criteria behind the decisions.",
-          "step4Title": "Use as a second opinion",
-          "step4Desc": "Apply the twin to new candidates to validate the screening."
+        "subheader": "A Digital Twin is an AI agent that learns a team specialist's evaluation pattern and offers an automatic second opinion on new candidates.",
+        "createCta": "Create Digital Twin",
+        "lgpd": {
+          "summary": "This feature indexes historical decisions under LGPD Art. 6 + 11 + 18. View details.",
+          "detail": {
+            "indexing": "This feature indexes historical decisions (approvals, rejections, rationales) from the chosen evaluator so the AI learns the pattern and offers an automatic second opinion.",
+            "storage": "Stores references to the candidate (candidate_id) and snapshots without direct PII (no name), under LGPD Art. 6 + Art. 11. Embeddings derive from the evaluator's rationale, not from the candidate's personal data.",
+            "confirmation": "By confirming you attest that (1) candidates were informed of behavioral analysis in the process (LGPD Art. 11); (2) the evaluator authorized using the decisions as training data; (3) the system preserves the right to erasure (LGPD Art. 18) — the twin reference is anonymized via FK SET NULL when the candidate requests removal."
+          },
+          "cancelAria": "Cancel Digital Twin creation",
+          "confirmAria": "I acknowledge LGPD and continue to creation",
+          "confirmButton": "Confirm — Continue"
         },
-        "competitiveBanner": {
-          "regionLabel": "Digital Twins competitive differentiator",
-          "dismissLabel": "Dismiss banner",
-          "eyebrow": "WeDOTalent differentiator",
-          "badge": "Only HR-tech with this on the market",
-          "heading": "Clone the reasoning of your best interviewer",
-          "paragraph1": "Unlike <bold>Eightfold Andromeda</bold> (which clones employees for career planning) or generalist assistants, WeDOTalent's Digital Twin creates a <bold>behavioral copy of your human hiring decision-maker</bold> — the top interviewer you trust most. The AI learns their specific evaluation pattern and offers an <bold>automatic second opinion</bold> on new candidates, in their style.",
-          "paragraph2": "Combined with native PT-BR + built-in LGPD compliance (Art. 18 erasure via FK SET NULL), it's a globally unique differentiator package."
-        }
+        "cancel": "Cancel"
       },
       "search": {
         "multiStrategy": "Multi-Strategy Search",

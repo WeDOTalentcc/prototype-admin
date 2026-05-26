@@ -74,15 +74,13 @@
       "chooseTemplateAbove": "Escolha um template acima para criar seu primeiro agente de sourcing",
       "chooseTemplateOrDescribe": "Escolha um template abaixo ou descreva para {aiAssistant} o que você precisa",
       "twins": {
-        "cloneReasoning": "Clone o raciocínio dos seus melhores avaliadores",
-        "cloneDesc": "Capture como um especialista da equipe avalia candidatos. O Digital Twin aprende os critérios e funciona como uma \"segunda opinião\" automática na triagem.",
         "label": "Gêmeos Digitais",
-        "headerTitle": "Clone o raciocínio dos seus melhores avaliadores",
-        "headerDesc": "Capture como um especialista da equipe avalia candidatos. O Digital Twin aprende os critérios e funciona como uma \"segunda opinião\" automática na triagem.",
+        "headerTitle": "Gêmeos Digitais",
+        "headerDesc": "Um Gêmeo Digital é um agente IA que aprende o padrão de avaliação de um especialista da equipe e oferece segunda opinião automática em novos candidatos.",
         "emptyState": {
-          "title": "Você ainda não tem nenhum Gêmeo Digital",
-          "description": "Crie seu primeiro Digital Twin para clonar o raciocínio de avaliação de um especialista da equipe e receber uma segunda opinião automática na triagem.",
-          "createFirst": "Criar meu primeiro Gêmeo Digital",
+          "title": "Nenhum Gêmeo Digital criado ainda",
+          "description": "Crie um Gêmeo a partir das decisões históricas do seu melhor avaliador.",
+          "createFirst": "Criar Gêmeo Digital",
           "noExperience": "Sem experiência técnica? Tudo bem — {aiAssistant} te guia passo a passo."
         },
         "createModal": {
@@ -109,28 +107,33 @@
           "errorDesc": "Tente novamente em instantes — se persistir, fale com o suporte.",
           "cancel": "Cancelar",
           "creating": "Criando…",
-          "create": "Criar Gêmeo Digital"
+          "create": "Criar Gêmeo Digital",
+          "lgpd": {
+            "summary": "Esta funcionalidade indexa decisões históricas conforme LGPD Art. 6 + 11 + 18. Ver detalhes.",
+            "detail": {
+              "indexing": "Esta funcionalidade indexa decisões históricas (aprovações, rejeições, raciocínios) do avaliador escolhido para que a IA aprenda o padrão e ofereça segunda opinião automática.",
+              "storage": "Armazena referências ao candidato (candidate_id) e snapshots sem PII direta (sem nome), conforme LGPD Art. 6 + Art. 11. Embeddings derivam do raciocínio do avaliador, não dos dados pessoais do candidato.",
+              "confirmation": "Ao confirmar você atesta que (1) candidatos foram informados sobre análise comportamental no processo (LGPD Art. 11); (2) o avaliador autorizou uso das decisões como treinamento; (3) o sistema preserva direito de eliminação (LGPD Art. 18) — referência no twin é anonimizada via FK SET NULL quando candidato solicita exclusão."
+            },
+            "cancelAria": "Cancelar criação do Gêmeo Digital",
+            "confirmAria": "Confirmo ciência LGPD e continuo para criação",
+            "confirmButton": "Confirmo — Continuar"
+          }
         },
-        "onboarding": {
-          "stepLabel": "Passo {number}",
-          "step1Title": "Selecione um avaliador",
-          "step1Desc": "Escolha um recrutador ou hiring manager que toma boas decisões.",
-          "step2Title": "Importe decisões passadas",
-          "step2Desc": "Faça upload de aprovações/rejeições históricas com a justificativa.",
-          "step3Title": "{aiAssistant} aprende o padrão",
-          "step3Desc": "O modelo identifica os critérios implícitos por trás das decisões.",
-          "step4Title": "Use como segunda opinião",
-          "step4Desc": "Aplique o twin em novos candidatos para validar a triagem."
+        "subheader": "Um Gêmeo Digital é um agente IA que aprende o padrão de avaliação de um especialista da equipe e oferece segunda opinião automática em novos candidatos.",
+        "createCta": "Criar Gêmeo Digital",
+        "lgpd": {
+          "summary": "Esta funcionalidade indexa decisões históricas conforme LGPD Art. 6 + 11 + 18. Ver detalhes.",
+          "detail": {
+            "indexing": "Esta funcionalidade indexa decisões históricas (aprovações, rejeições, raciocínios) do avaliador escolhido para que a IA aprenda o padrão e ofereça segunda opinião automática.",
+            "storage": "Armazena referências ao candidato (candidate_id) e snapshots sem PII direta (sem nome), conforme LGPD Art. 6 + Art. 11. Embeddings derivam do raciocínio do avaliador, não dos dados pessoais do candidato.",
+            "confirmation": "Ao confirmar você atesta que (1) candidatos foram informados sobre análise comportamental no processo (LGPD Art. 11); (2) o avaliador autorizou uso das decisões como treinamento; (3) o sistema preserva direito de eliminação (LGPD Art. 18) — referência no twin é anonimizada via FK SET NULL quando candidato solicita exclusão."
+          },
+          "cancelAria": "Cancelar criação do Gêmeo Digital",
+          "confirmAria": "Confirmo ciência LGPD e continuo para criação",
+          "confirmButton": "Confirmo — Continuar"
         },
-        "competitiveBanner": {
-          "regionLabel": "Diferencial competitivo Gêmeos Digitais",
-          "dismissLabel": "Dispensar banner",
-          "eyebrow": "Diferencial WeDOTalent",
-          "badge": "Único no mercado HR-tech",
-          "heading": "Clone o raciocínio do seu melhor entrevistador",
-          "paragraph1": "Diferente do <bold>Eightfold Andromeda</bold> (que clona funcionários para career planning) ou de assistentes generalistas, o Digital Twin da WeDOTalent cria uma <bold>cópia comportamental do seu decisor humano de hiring</bold> — o entrevistador top que você confia mais. A IA aprende o padrão específico de avaliação dele e oferece <bold>segunda opinião automática</bold> em novos candidatos, no estilo dele.",
-          "paragraph2": "Combinado com PT-BR nativo + LGPD compliance built-in (Art. 18 erasure via FK SET NULL), é um pacote diferenciador único globalmente."
-        }
+        "cancel": "Cancelar"
       },
       "search": {
         "multiStrategy": "Busca Multi-Estratégia",

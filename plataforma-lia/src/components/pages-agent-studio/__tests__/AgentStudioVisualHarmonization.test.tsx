@@ -17,7 +17,6 @@ vi.mock("next-intl", () => ({
 
 import {
   DigitalTwinHeader,
-  DigitalTwinOnboarding,
   TwinsList,
 } from "../DigitalTwinComponents"
 import SourcingTab from "@/components/pages-talent-pools/sub-tabs/sourcing-tab"
@@ -40,12 +39,14 @@ describe("Agent Studio — harmonização visual (Task #1044)", () => {
     expect(container.querySelector("section")).toBeNull()
   })
 
-  it("DigitalTwinOnboarding ainda existe (renderizado quando twins.length === 0)", () => {
-    const { container } = render(<DigitalTwinOnboarding />)
-    expect(container.querySelector("section")).not.toBeNull()
-    // Mantém o grid de 4 passos do onboarding
-    const steps = container.querySelectorAll(".grid > div")
-    expect(steps.length).toBe(4)
+  it("DigitalTwinOnboarding REMOVIDO (P0 rewrite 2026-05-26): export não existe", async () => {
+    // Antes da rewrite, página Gêmeos Digitais renderizava 4 cards "Passo 1-4"
+    // + banner com citação concorrente (Eightfold Andromeda). Paulo locked 2026-05-26:
+    // página agora segue layout canonical Marketplace/Personalizados — sem onboarding
+    // inline, sem citação concorrente. Validar via import dinâmico que symbol não existe.
+    const mod = await import("../DigitalTwinComponents")
+    expect((mod as Record<string, unknown>).DigitalTwinOnboarding).toBeUndefined()
+    expect((mod as Record<string, unknown>).TwinCompetitiveBanner).toBeUndefined()
   })
 
   it("SourcingTab: inputs usam rounded-md e focus ring tokenizado", () => {
@@ -99,7 +100,9 @@ describe("Agent Studio — harmonização visual (Task #1044)", () => {
     vi.unstubAllGlobals()
   })
 
-  it("TwinsList: renderiza onboarding quando twins.length === 0", async () => {
+  it("TwinsList: empty state canonical (sem onboarding 4-steps, sem banner concorrente)", async () => {
+    // P0 rewrite 2026-05-26: empty state agora é simples (icon + título + CTA),
+    // sem "Passo 1-4" e sem TwinCompetitiveBanner (Eightfold Andromeda).
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({ twins: [] }),
@@ -111,10 +114,16 @@ describe("Agent Studio — harmonização visual (Task #1044)", () => {
     })
     const { container } = result!
     await waitFor(() => {
-      expect(container.querySelector("section")).not.toBeNull()
+      // Sub-header canonical aparece (TwinsList tem header próprio agora).
+      // O mock useTranslations devolve a key crua, então procuramos por elas.
+      expect(container.textContent).toMatch(/subheader|headerTitle/i)
     })
-    const steps = container.querySelectorAll("section .grid > div")
-    expect(steps.length).toBe(4)
+    // NÃO renderiza 4-step onboarding section nem banner concorrente.
+    // (Conteúdo do banner removido: "Eightfold" / "DIFERENCIAL" / 4 step blocks.)
+    expect(container.textContent).not.toMatch(/Eightfold/i)
+    expect(container.textContent).not.toMatch(/DIFERENCIAL/i)
+    // step1Title/step2Title/... (keys do onboarding antigo) também sumiram
+    expect(container.textContent).not.toMatch(/step1Title|step2Title|step3Title|step4Title/i)
     vi.unstubAllGlobals()
   })
 })

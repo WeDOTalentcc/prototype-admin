@@ -732,13 +732,10 @@ export default function AgentStudioPage({
         )}
 
         {activeTab === "my-agents" && mySubTab === "gemeos" && (
-          <div className="space-y-6">
-            <TabSectionHeader
-              title={t("studio.twins.cloneReasoning")}
-              subtitle={t("studio.twins.cloneDesc")}
-            />
-            <TwinsList onEvaluate={(id) => setEvaluatingTwinId(id)} onCreateTwin={() => setShowCreateTwinModal(true)} refreshKey={twinsRefreshKey} />
-          </div>
+          // P0 rewrite 2026-05-26: TabSectionHeader externo removido (citava
+          // marketing copy + duplicava header). TwinsList agora renderiza header
+          // canonical próprio (título + sub-header neutro + CTA topo direito).
+          <TwinsList onEvaluate={(id) => setEvaluatingTwinId(id)} onCreateTwin={() => setShowCreateTwinModal(true)} refreshKey={twinsRefreshKey} />
         )}
 
       </div>
