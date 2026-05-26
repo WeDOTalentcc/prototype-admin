@@ -352,7 +352,7 @@ export function MinhaEmpresaCard({
                     key={field.key}
                     className="group flex items-center justify-between gap-2 py-1.5 px-1.5 rounded-md hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse/50"
                   >
-                    <span className={`${textStyles.description} flex-shrink-0 min-w-[120px]`}>
+                    <span className={`${textStyles.description} min-w-[120px] max-w-[60%] break-words leading-snug pr-2`}>
                       {field.label}
                     </span>
                     <LogoUploadField
@@ -377,7 +377,7 @@ export function MinhaEmpresaCard({
                       : "hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse/50"
                   }`}
                 >
-                  <span className={`${textStyles.description} flex-shrink-0 min-w-[120px]`}>
+                  <span className={`${textStyles.description} min-w-[120px] max-w-[60%] break-words leading-snug pr-2`}>
                     {field.label}
                   </span>
                   {isEditing ? (
