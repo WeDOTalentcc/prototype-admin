@@ -12,30 +12,15 @@ import {
   textStyles, badgeStyles, buttonStyles,
 } from "@/lib/design-tokens"
 import { StudioCardShell } from "./StudioCardShell"
+import type { CustomAgent } from "./custom-agents/types"
 
-// Types — kept aligned with AgentsTab.tsx SourcingAgent/TimelineEvent shapes.
-// Sprint visual 2026-05-25: extraído de AgentsTab.tsx:181-251 (inline) →
-// componente próprio consumindo <StudioCardShell> canonical (Opção A Paulo).
-// Não migra SourcingAgent → CustomAgent nesta sprint (backlog 7B-3a part 2).
-
-export interface SourcingAgent {
-  id: string
-  agent_name: string
-  status: "active" | "paused" | "completed"
-  calibration_v: number
-  search_strategy: {
-    required_skills?: string[]
-    exclusions?: string[]
-    positive_signals?: string[]
-    seniority?: string
-    location?: string
-  }
-  preferences: Record<string, unknown>
-  profiles_viewed: number
-  profiles_approved: number
-  profiles_rejected: number
-  created_at: string
-}
+// SOURCING-LEGACY-EXEMPT: migration comment header (Sprint 7B-3b Part 2 v2 swap concluido)
+// Sprint 7B-3b Part 2 v2 (2026-05-26): SourcingAgent local type DELETADO.
+// Componente agora consome CustomAgent canonical (Sprint 7B-1 schema).
+// Field access via adapter: agent.name (era agent_name), agent.runtime_metrics
+// (era profiles_viewed/approved/rejected diretos), agent.config.calibration_v
+// (era top-level), agent.search_strategy continua (CustomAgent ja tem o field).
+// Snapshot SHA pre-edit: 7c61cafbb7bcc9799d7eb05ba9936cedd717f778.
 
 export interface TimelineEvent {
   id: string
@@ -51,19 +36,55 @@ const STATUS_CONFIG_KEYS = {
   active: { labelKey: "statusActive" as const, style: badgeStyles.success },
   paused: { labelKey: "statusPaused" as const, style: badgeStyles.warning },
   completed: { labelKey: "statusCompleted" as const, style: badgeStyles.error },
-}
+  draft: { labelKey: "statusPaused" as const, style: badgeStyles.warning },
+  pending_approval: { labelKey: "statusPaused" as const, style: badgeStyles.warning },
+  archived: { labelKey: "statusCompleted" as const, style: badgeStyles.error },
+} as const
+
+type CardStatus = keyof typeof STATUS_CONFIG_KEYS
 
 export interface AgentPanelProps {
-  agent: SourcingAgent
+  agent: CustomAgent
   timeline: TimelineEvent[]
   onToggle: () => void
   onRecalibrate: () => void
 }
 
+// Adapter helpers — extraem runtime metrics + sourcing strategy do CustomAgent canonical.
+function metricsOf(agent: CustomAgent) {
+  const rm = (agent.runtime_metrics || {}) as Record<string, unknown>
+  return {
+    profiles_viewed: typeof rm.profiles_viewed === "number" ? rm.profiles_viewed : 0,
+    profiles_approved: typeof rm.profiles_approved === "number" ? rm.profiles_approved : 0,
+    profiles_rejected: typeof rm.profiles_rejected === "number" ? rm.profiles_rejected : 0,
+  }
+}
+
+function calibrationVOf(agent: CustomAgent): number {
+  const cfg = (agent.config || {}) as Record<string, unknown>
+  const v = cfg.calibration_v
+  return typeof v === "number" ? v : 0
+}
+
+function strategyOf(agent: CustomAgent) {
+  return (agent.search_strategy || {}) as {
+    required_skills?: string[]
+    exclusions?: string[]
+    positive_signals?: string[]
+    seniority?: string
+    location?: string
+  }
+}
+
 export function AgentPanel({ agent, timeline, onToggle, onRecalibrate }: AgentPanelProps) {
   const t = useTranslations("agents.agentsTab")
-  const statusCfg = STATUS_CONFIG_KEYS[agent.status]
-  const strategy = agent.search_strategy
+  const statusKey = (agent.status as CardStatus) in STATUS_CONFIG_KEYS
+    ? (agent.status as CardStatus)
+    : "completed"
+  const statusCfg = STATUS_CONFIG_KEYS[statusKey]
+  const strategy = strategyOf(agent)
+  const metrics = metricsOf(agent)
+  const calibrationV = calibrationVOf(agent)
 
   const statusBadge = (
     <Chip variant="neutral" muted className={statusCfg.style}>
@@ -71,7 +92,7 @@ export function AgentPanel({ agent, timeline, onToggle, onRecalibrate }: AgentPa
     </Chip>
   )
 
-  const subtitle = `v${agent.calibration_v}`
+  const subtitle = `v${calibrationV}`
 
   const actionsSlot = (
     <>
@@ -92,8 +113,6 @@ export function AgentPanel({ agent, timeline, onToggle, onRecalibrate }: AgentPa
     </>
   )
 
-  // Strategy chips — DS canonical tokens (era hardcode bg-green-50/red-50/blue-50/lia-bg-tertiary).
-  // Sprint visual 2026-05-25: migrado pra tokens semânticos. Sem cyan (white-label Studio).
   const chipsSlot = (strategy.required_skills?.length ||
     strategy.exclusions?.length ||
     strategy.seniority ||
@@ -144,25 +163,23 @@ export function AgentPanel({ agent, timeline, onToggle, onRecalibrate }: AgentPa
     </div>
   ) : undefined
 
-  // Stats row — canonical metrics slot.
   const metricsSlot = (
     <div className="flex items-center gap-6 text-sm text-lia-text-secondary py-2 border-y border-lia-border-subtle">
       <span title={t("profilesAnalyzed")}>
         <SearchIcon className="w-3.5 h-3.5 inline mr-1" />
-        {agent.profiles_viewed}
+        {metrics.profiles_viewed}
       </span>
       <span title={t("approved")}>
         <ThumbsUp className="w-3.5 h-3.5 inline mr-1" />
-        {agent.profiles_approved}
+        {metrics.profiles_approved}
       </span>
       <span title={t("rejected")}>
         <ThumbsDown className="w-3.5 h-3.5 inline mr-1" />
-        {agent.profiles_rejected}
+        {metrics.profiles_rejected}
       </span>
     </div>
   )
 
-  // Timeline as bodySlot — keeps complex layout out of shell.
   const bodySlot = timeline.length > 0 ? (
     <div>
       <h4 className={`${textStyles.label} mb-2`}>{t("recentActivity")}</h4>
@@ -197,7 +214,7 @@ export function AgentPanel({ agent, timeline, onToggle, onRecalibrate }: AgentPa
   return (
     <StudioCardShell
       icon={<Bot className="w-4 h-4 text-graphite" />}
-      title={agent.agent_name}
+      title={agent.name}
       subtitle={subtitle}
       statusBadge={statusBadge}
       metricsSlot={metricsSlot}

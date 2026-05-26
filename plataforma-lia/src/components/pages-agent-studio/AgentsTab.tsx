@@ -7,15 +7,14 @@ import { Button } from "@/components/ui/button"
 import { textStyles, buttonStyles } from "@/lib/design-tokens"
 import { extractErrorMessage } from "@/lib/api/extract-error-message"
 import { AgentPanel } from "./AgentPanel"
-import type { SourcingAgent, TimelineEvent } from "./AgentPanel"
+import type { TimelineEvent } from "./AgentPanel"
+import type { CustomAgent } from "./custom-agents/types"
 
-// Sprint visual 2026-05-25 (Paulo Opção A canonical):
-// AgentPanel extraído pra componente próprio (./AgentPanel.tsx) consumindo
-// <StudioCardShell>. Snapshot SHA pré-edit: 65e65084e.
-// SourcingAgent + TimelineEvent re-exportados a partir de AgentPanel pra
-// manter backward-compat com qualquer caller que importava daqui.
-
-// ---------- Main Component ----------
+// SOURCING-LEGACY-EXEMPT: migration comment header (Sprint 7B-3b Part 2 v2 swap concluido)
+// Sprint 7B-3b Part 2 v2 (2026-05-26): swap canonical SourcingAgent -> CustomAgent.
+// Endpoint /sourcing-agents -> /custom-agents?category=sourcing&talent_pool_id=X&job_id=Y
+// (backend filter B1 estendido). Timeline /custom-agents/{id}/timeline (Part 1 shim).
+// Snapshot SHA pre-edit: bb7bde407bc646709ee3e6ff5bdd40211be76146.
 
 interface AgentsTabProps {
   jobId?: string
@@ -28,7 +27,7 @@ export default function AgentsTab({
   jobId, talentPoolId, onStartCalibration, onCreateAgent,
 }: AgentsTabProps) {
   const t = useTranslations('agents.agentsTab')
-  const [agents, setAgents] = useState<SourcingAgent[]>([])
+  const [agents, setAgents] = useState<CustomAgent[]>([])
   const [timelines, setTimelines] = useState<Record<string, TimelineEvent[]>>({})
   const [isLoading, setIsLoading] = useState(true)
   const [loadError, setLoadError] = useState<string | null>(null)
@@ -40,27 +39,23 @@ export default function AgentsTab({
     setLoadError(null)
     try {
       const params = new URLSearchParams()
+      params.set("category", "sourcing")
       if (jobId) params.set("job_id", jobId)
       if (talentPoolId) params.set("talent_pool_id", talentPoolId)
-      const res = await fetch(`/api/backend-proxy/sourcing-agents?${params}`)
+      const res = await fetch(`/api/backend-proxy/custom-agents?${params}`)
 
-      // Ao contrário do comportamento antigo (data?.agents || []), aqui
-      // distinguimos lista vazia legítima (200 OK, zero agentes) de falha
-      // de backend (500/4xx). Sem isso, 500 caía no empty state silenciosamente
-      // mesmo com agentes cadastrados (bug QA BUG-02).
       if (!res.ok) {
         const errBody = await res.json().catch(() => ({}))
         throw new Error(extractErrorMessage(errBody, res.status))
       }
       const data = await res.json()
-      const agentList = data?.agents || []
+      const agentList: CustomAgent[] = data?.agents || []
       setAgents(agentList)
 
-      // Load timelines for each agent
       const tl: Record<string, TimelineEvent[]> = {}
-      await Promise.all(agentList.map(async (a: SourcingAgent) => {
+      await Promise.all(agentList.map(async (a: CustomAgent) => {
         try {
-          const tlRes = await fetch(`/api/backend-proxy/sourcing-agents/${a.id}/timeline?limit=10`)
+          const tlRes = await fetch(`/api/backend-proxy/custom-agents/${a.id}/timeline?limit=10`)
           if (!tlRes.ok) { tl[a.id] = []; return }
           const tlData = await tlRes.json()
           tl[a.id] = tlData?.timeline || []
@@ -81,7 +76,7 @@ export default function AgentsTab({
 
   const handleToggle = async (agentId: string, currentStatus: string) => {
     const action = currentStatus === "active" ? "pause" : "resume"
-    await fetch(`/api/backend-proxy/sourcing-agents/${agentId}/${action}`, { method: "PATCH" })
+    await fetch(`/api/backend-proxy/custom-agents/${agentId}/${action}`, { method: "PATCH" })
     loadAgents()
   }
 
@@ -93,7 +88,7 @@ export default function AgentsTab({
     return (
       <div className="flex flex-col items-center justify-center h-48 gap-3 text-center px-4">
         <AlertCircle className="w-10 h-10 text-status-error" />
-        <p className={textStyles.body}>Não foi possível carregar os agentes</p>
+        <p className={textStyles.body}>Nao foi possivel carregar os agentes</p>
         <p className={`${textStyles.caption} max-w-md`}>{loadError}</p>
         <Button variant="outline" onClick={loadAgents} className="mt-2">
           <RefreshCw className="w-4 h-4 mr-2" />

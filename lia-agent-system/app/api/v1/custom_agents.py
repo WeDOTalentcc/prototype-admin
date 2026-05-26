@@ -130,6 +130,14 @@ async def list_custom_agents(
         pattern="^(screening|sourcing|communication|analytics|automation|job_management)$",
         description="Sprint 7A category filter",
     ),
+    talent_pool_id: Optional[str] = Query(
+        None,
+        description="Sprint 7B-3b Part 2 v2: filtra agents assigned ao pool via PoolAgentAssignment",
+    ),
+    job_id: Optional[str] = Query(
+        None,
+        description="Sprint 7B-3b Part 2 v2: filtra agents com config.job_id match (JSONB)",
+    ),
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
     current_user=Depends(get_current_user),
@@ -142,6 +150,8 @@ company_id: str = Depends(require_company_id)):
         status=status_filter,
         domain=domain,
         category=category,
+        talent_pool_id=talent_pool_id,
+        job_id=job_id,
         limit=limit,
         offset=offset,
     )

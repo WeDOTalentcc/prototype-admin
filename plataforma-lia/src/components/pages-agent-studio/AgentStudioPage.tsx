@@ -36,19 +36,24 @@ import type { AgentGoal, CreateAgentInitialConfig } from "@/components/pages-age
 import { useTranslations } from "next-intl"
 import { useAiPersona } from "@/hooks/company/use-ai-persona"
 
-interface SourcingAgent {
-  id: string
-  agent_name: string
-  status: "active" | "paused" | "completed"
-  calibration_v: number
-  job_id: string | null
-  talent_pool_id: string | null
-  search_strategy: Record<string, unknown>
-  preferences: Record<string, unknown>
-  profiles_viewed: number
-  profiles_approved: number
-  profiles_rejected: number
-  created_at: string
+// SOURCING-LEGACY-EXEMPT: migration comment header (Sprint 7B-3b Part 2 v2 swap concluido)
+// Sprint 7B-3b Part 2 v2 (2026-05-26): swap canonical SourcingAgent -> CustomAgent.
+// Endpoint /sourcing-agents -> /custom-agents?category=sourcing. Field access via
+// adapter helpers (runtime_metrics, config.calibration_v). Snapshot SHA pre-edit:
+// eb933818a49dbf1b89b8cb9619cc6cdfd16324d1.
+
+// Adapter helpers para campos legacy sourcing_agents derivados.
+function agentMetrics(agent: CustomAgent) {
+  const rm = (agent.runtime_metrics || {}) as Record<string, unknown>
+  return {
+    profiles_viewed: typeof rm.profiles_viewed === "number" ? rm.profiles_viewed : 0,
+    profiles_approved: typeof rm.profiles_approved === "number" ? rm.profiles_approved : 0,
+    profiles_rejected: typeof rm.profiles_rejected === "number" ? rm.profiles_rejected : 0,
+  }
+}
+function agentCalibrationV(agent: CustomAgent): number {
+  const cfg = (agent.config || {}) as Record<string, unknown>
+  return typeof cfg.calibration_v === "number" ? cfg.calibration_v : 0
 }
 
 interface SectorTemplate {
@@ -105,7 +110,7 @@ export default function AgentStudioPage({
   const t = useTranslations("agents")
   const { persona: aiPersona } = useAiPersona()
   const aiAssistantName = aiPersona?.name ?? "assistente"
-  const [agents, setAgents] = useState<SourcingAgent[]>([])
+  const [agents, setAgents] = useState<CustomAgent[]>([])
   const [templates, setTemplates] = useState<SectorTemplate[]>([])
   const [isLoading, setIsLoading] = useState(true)
   // UX_AUDIT_ESTUDIO_AGENTES_2026-05-21 T1+T3+T4: wizard goal-first unico
@@ -203,7 +208,7 @@ export default function AgentStudioPage({
     setIsLoading(true)
     try {
       const [agentsRes, templatesRes] = await Promise.allSettled([
-        fetch("/api/backend-proxy/sourcing-agents"),
+        fetch("/api/backend-proxy/custom-agents?category=sourcing"),
         fetch("/api/backend-proxy/agent-templates/sectors"),
       ])
       let agentsData: Record<string, unknown> = {}
@@ -214,7 +219,7 @@ export default function AgentStudioPage({
       if (templatesRes.status === "fulfilled" && templatesRes.value.ok) {
         try { templatesData = await templatesRes.value.json() } catch { /* */ }
       }
-      setAgents(Array.isArray(agentsData?.agents) ? agentsData.agents as SourcingAgent[] : [])
+      setAgents(Array.isArray(agentsData?.agents) ? agentsData.agents as CustomAgent[] : [])
       setTemplates(Array.isArray(templatesData) ? templatesData as SectorTemplate[] : [])
     } catch (err) {
       console.error("Failed to load agent studio data:", err)
@@ -312,8 +317,8 @@ export default function AgentStudioPage({
     }
   }
 
-  const totalViewed = agents.reduce((s, a) => s + a.profiles_viewed, 0)
-  const totalApproved = agents.reduce((s, a) => s + a.profiles_approved, 0)
+  const totalViewed = agents.reduce((s, a) => s + agentMetrics(a).profiles_viewed, 0)
+  const totalApproved = agents.reduce((s, a) => s + agentMetrics(a).profiles_approved, 0)
   const activeCount = agents.filter(a => a.status === "active").length
 
   return (
@@ -571,10 +576,13 @@ export default function AgentStudioPage({
                       onToggleStatus={() => handleToggleStatus(agent.id, agent.status)}
                       onCalibrate={() => onStartCalibration?.(agent.id)}
                       onNavigate={() => {
-                        if (agent.talent_pool_id) {
-                          onNavigateToPool?.(agent.talent_pool_id)
-                        } else if (agent.job_id) {
-                          onNavigateToJob?.(agent.job_id)
+                        const cfg = (agent.config || {}) as Record<string, unknown>
+                        const poolId = typeof cfg.talent_pool_id === "string" ? cfg.talent_pool_id : null
+                        const jId = typeof cfg.job_id === "string" ? cfg.job_id : null
+                        if (poolId) {
+                          onNavigateToPool?.(poolId)
+                        } else if (jId) {
+                          onNavigateToJob?.(jId)
                         } else {
                           toast.warning(
                             t("studio.toast.noLinkTitle"),
@@ -796,7 +804,7 @@ export default function AgentStudioPage({
 function AgentCard({
   agent, onToggleStatus, onCalibrate, onNavigate,
 }: {
-  agent: SourcingAgent
+  agent: CustomAgent
   onToggleStatus: () => void
   onCalibrate: () => void
   onNavigate: () => void
@@ -804,9 +812,14 @@ function AgentCard({
   const t = useTranslations("agents")
   const status = getSourcingAgentStatusConfig(agent.status)
   const statusLabelKey = STATUS_CONFIG_LABELS[agent.status as keyof typeof STATUS_CONFIG_LABELS] || "studio.status.completed"
-  const strategy = agent.search_strategy as { required_skills?: string[]; exclusions?: string[] }
-  const totalReviewed = agent.profiles_approved + agent.profiles_rejected
-  const approvalRate = totalReviewed > 0 ? Math.round((agent.profiles_approved / totalReviewed) * 100) : 0
+  const strategy = (agent.search_strategy || {}) as { required_skills?: string[]; exclusions?: string[] }
+  const metrics = agentMetrics(agent)
+  const calibrationV = agentCalibrationV(agent)
+  const _agentConfig = (agent.config || {}) as Record<string, unknown>
+  const linkedPoolId = typeof _agentConfig.talent_pool_id === "string" ? _agentConfig.talent_pool_id : null
+  const linkedJobId = typeof _agentConfig.job_id === "string" ? _agentConfig.job_id : null
+  const totalReviewed = metrics.profiles_approved + metrics.profiles_rejected
+  const approvalRate = totalReviewed > 0 ? Math.round((metrics.profiles_approved / totalReviewed) * 100) : 0
 
   return (
     <div className={cn(
@@ -822,16 +835,16 @@ function AgentCard({
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <p className="text-sm font-semibold text-lia-text-primary">{agent.agent_name}</p>
+                <p className="text-sm font-semibold text-lia-text-primary">{agent.name}</p>
                 <BetaBadge />
               </div>
               <div className="flex items-center gap-2 mt-0.5">
-                <span className="text-xs text-lia-text-secondary">v{agent.calibration_v}</span>
+                <span className="text-xs text-lia-text-secondary">v{calibrationV}</span>
                 <span className="text-lia-text-disabled">·</span>
                 <div className="flex items-center gap-1">
                   <Clock className="w-3 h-3 text-lia-text-disabled" />
                   <span className="text-xs text-lia-text-secondary">
-                    {new Date(agent.created_at).toLocaleDateString(undefined, { day: "2-digit", month: "short" })}
+                    {agent.created_at ? new Date(agent.created_at).toLocaleDateString(undefined, { day: "2-digit", month: "short" }) : ""}
                   </span>
                 </div>
               </div>
@@ -862,11 +875,11 @@ function AgentCard({
         {/* Stats Row */}
         <div className="grid grid-cols-3 gap-2 mb-4">
           <div className="flex flex-col items-center p-2 rounded-lg bg-lia-bg-primary">
-            <span className="text-xs font-bold text-lia-text-primary">{agent.profiles_viewed}</span>
+            <span className="text-xs font-bold text-lia-text-primary">{metrics.profiles_viewed}</span>
             <span className="text-xs text-lia-text-secondary uppercase tracking-wider">{t("studio.stats.analyzed")}</span>
           </div>
           <div className="flex flex-col items-center p-2 rounded-lg bg-lia-bg-primary">
-            <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">{agent.profiles_approved}</span>
+            <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">{metrics.profiles_approved}</span>
             <span className="text-xs text-lia-text-secondary uppercase tracking-wider">{t("studio.stats.approved")}</span>
           </div>
           <div className="flex flex-col items-center p-2 rounded-lg bg-lia-bg-primary">
@@ -876,9 +889,9 @@ function AgentCard({
         </div>
 
         {/* Link indicator */}
-        {(agent.talent_pool_id || agent.job_id) ? (
+        {(linkedPoolId || linkedJobId) ? (
           <div className="flex items-center gap-1.5 mb-3 px-2.5 py-1.5 rounded-lg bg-lia-bg-primary border border-lia-border-subtle">
-            {agent.talent_pool_id ? (
+            {linkedPoolId ? (
               <>
                 <Database className="w-3 h-3 text-lia-text-disabled" />
                 <span className="text-[10px] text-lia-text-secondary">{t("studio.card.linkedToPool")}</span>

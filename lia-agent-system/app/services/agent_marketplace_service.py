@@ -13,6 +13,7 @@ from lia_models.custom_agent import (
     CustomAgentStatus,
     MarketplaceListingStatus,
 )
+from lia_models.pool_agent_assignment import PoolAgentAssignment
 
 logger = logging.getLogger(__name__)
 
@@ -84,6 +85,8 @@ class AgentMarketplaceService:
         status: Optional[str] = None,
         domain: Optional[str] = None,
         category: Optional[str] = None,  # Sprint 7A category filter
+        talent_pool_id: Optional[str] = None,  # Sprint 7B-3b Part 2 v2
+        job_id: Optional[str] = None,  # Sprint 7B-3b Part 2 v2
         limit: int = 50,
         offset: int = 0,
     ) -> tuple[list[CustomAgent], int]:
@@ -95,11 +98,35 @@ class AgentMarketplaceService:
         if category:  # Sprint 7A category filter
             conditions.append(CustomAgent.category == category)
 
-        count_q = select(func.count(CustomAgent.id)).where(and_(*conditions))
+        # Sprint 7B-3b Part 2 v2: filter por talent_pool via JOIN canonical M2M
+        # PoolAgentAssignment. Reuso do pattern Sub-sprint 7A (tabela canonical
+        # pool_agent_assignments). Evita filter in-memory.
+        use_pool_join = talent_pool_id is not None
+
+        # Sprint 7B-3b Part 2 v2: filter por job_id via JSONB config->>job_id.
+        # Reflete pattern sourcing-agents legacy onde job_id ficava em coluna
+        # dedicada; em CustomAgent canonical o payload sourcing-specific vai em
+        # config (vide ADR Sprint 7A unification).
+        if job_id:
+            conditions.append(CustomAgent.config["job_id"].astext == job_id)
+
+        base = select(CustomAgent)
+        count_base = select(func.count(CustomAgent.id))
+        if use_pool_join:
+            base = base.join(
+                PoolAgentAssignment,
+                PoolAgentAssignment.custom_agent_id == CustomAgent.id,
+            ).where(PoolAgentAssignment.talent_pool_id == talent_pool_id)
+            count_base = count_base.join(
+                PoolAgentAssignment,
+                PoolAgentAssignment.custom_agent_id == CustomAgent.id,
+            ).where(PoolAgentAssignment.talent_pool_id == talent_pool_id)
+
+        count_q = count_base.where(and_(*conditions))
         total = (await db.execute(count_q)).scalar() or 0
 
         q = (
-            select(CustomAgent)
+            base
             .where(and_(*conditions))
             .order_by(CustomAgent.updated_at.desc())
             .limit(limit)

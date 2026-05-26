@@ -1,37 +1,60 @@
 /**
- * Sprint visual 2026-05-25 — AgentPanel canonical tests.
+ * Sprint 7B-3b Part 2 v2 (2026-05-26) — AgentPanel canonical CustomAgent tests.
  *
- * Componente extraído de AgentsTab.tsx:181-251 inline → consumindo
- * <StudioCardShell> canonical (Paulo Opção A).
+ * Componente migrado de SourcingAgent local type -> CustomAgent canonical
+ * (Sprint 7B-1 schema). Field access via adapter helpers (runtime_metrics,
+ * config.calibration_v).
  */
 import { describe, expect, it, vi } from "vitest"
 import { render, screen, fireEvent } from "@testing-library/react"
-import { AgentPanel, type SourcingAgent, type TimelineEvent } from "../AgentPanel"
+import { AgentPanel, type TimelineEvent } from "../AgentPanel"
+import type { CustomAgent } from "../custom-agents/types"
 
 vi.mock("next-intl", () => ({
   useTranslations: () => (key: string) => key,
 }))
 
-const baseAgent: SourcingAgent = {
+const baseAgent: CustomAgent = {
   id: "agent-1",
-  agent_name: "Captação Eng",
+  company_id: "comp-1",
+  name: "Captacao Eng",
+  role: "sourcing_agent",
+  description: null,
+  system_prompt: "",
+  allowed_tools: [],
+  domain: "sourcing",
+  icon: "Bot",
   status: "active",
-  calibration_v: 3,
+  config: { calibration_v: 3 },
+  max_steps: 10,
+  temperature: 0.7,
+  model_override: null,
+  enable_memory: false,
+  context_level: "standard",
+  excluded_tools: [],
+  category: "sourcing",
+  runtime_metrics: {
+    profiles_viewed: 42,
+    profiles_approved: 10,
+    profiles_rejected: 5,
+  },
   search_strategy: {
     required_skills: ["Python"],
     exclusions: ["Java"],
     seniority: "Pleno",
     location: "Remoto",
   },
-  preferences: {},
-  profiles_viewed: 42,
-  profiles_approved: 10,
-  profiles_rejected: 5,
+  outreach_config: null,
+  legacy_sourcing_agent_id: null,
+  total_executions: 0,
+  avg_confidence: 0,
+  last_executed_at: null,
   created_at: "2026-05-25T00:00:00Z",
+  updated_at: null,
 }
 
-describe("AgentPanel — Sprint visual canonical", () => {
-  it("renderiza nome do agente + versão + status badge", () => {
+describe("AgentPanel — Sprint 7B-3b Part 2 v2 canonical CustomAgent", () => {
+  it("renderiza nome do agente (CustomAgent.name) + versao (config.calibration_v) + status badge", () => {
     render(
       <AgentPanel
         agent={baseAgent}
@@ -40,12 +63,12 @@ describe("AgentPanel — Sprint visual canonical", () => {
         onRecalibrate={vi.fn()}
       />,
     )
-    expect(screen.getByText("Captação Eng")).toBeTruthy()
+    expect(screen.getByText("Captacao Eng")).toBeTruthy()
     expect(screen.getByText("v3")).toBeTruthy()
     expect(screen.getByText("statusActive")).toBeTruthy()
   })
 
-  it("renderiza metrics canonical (viewed / approved / rejected)", () => {
+  it("renderiza metrics canonical extraidas de runtime_metrics", () => {
     render(
       <AgentPanel
         agent={baseAgent}
@@ -59,7 +82,21 @@ describe("AgentPanel — Sprint visual canonical", () => {
     expect(screen.getByText("5")).toBeTruthy()
   })
 
-  it("status paused exibe ícone Play (resume) + onToggle handler chamado", () => {
+  it("runtime_metrics ausente cai pra zero (adapter fail-safe)", () => {
+    render(
+      <AgentPanel
+        agent={{ ...baseAgent, runtime_metrics: undefined }}
+        timeline={[]}
+        onToggle={vi.fn()}
+        onRecalibrate={vi.fn()}
+      />,
+    )
+    // 3 zeros: viewed, approved, rejected
+    const zeros = screen.getAllByText("0")
+    expect(zeros.length).toBeGreaterThanOrEqual(3)
+  })
+
+  it("status paused exibe icone Play (resume) + onToggle handler chamado", () => {
     const onToggle = vi.fn()
     render(
       <AgentPanel
@@ -69,7 +106,6 @@ describe("AgentPanel — Sprint visual canonical", () => {
         onRecalibrate={vi.fn()}
       />,
     )
-    // Botão pause/resume é o primeiro com title="resume" (paused → resume key)
     const buttons = screen.getAllByRole("button")
     fireEvent.click(buttons[0])
     expect(onToggle).toHaveBeenCalledOnce()
@@ -85,13 +121,9 @@ describe("AgentPanel — Sprint visual canonical", () => {
       />,
     )
     const html = container.innerHTML
-    // Não deve haver classes Tailwind hardcoded
     expect(html).not.toContain("bg-green-50")
     expect(html).not.toContain("bg-red-50")
     expect(html).not.toContain("bg-blue-50")
-    // bg-lia-bg-tertiary é canonical (badgeStyles.default) — não checar inline.
-    // O fix do Sprint visual foi remover hardcodes Tailwind brutos (bg-green-50/red-50/blue-50)
-    // + chip seniority migrado pra wedo-purple. Verifica seniority purple:
     expect(html).toContain("bg-wedo-purple/10")
   })
 
@@ -99,7 +131,7 @@ describe("AgentPanel — Sprint visual canonical", () => {
     const timeline: TimelineEvent[] = [
       {
         id: "t1",
-        icon: "👍",
+        icon: "thumbs-up",
         type: "positive",
         reason: "Match perfeito",
         criteria: ["Python", "Remoto"],
