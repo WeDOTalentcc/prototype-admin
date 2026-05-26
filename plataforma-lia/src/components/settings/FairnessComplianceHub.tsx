@@ -23,6 +23,7 @@ import React from "react"
 import { Shield } from "lucide-react"
 import { useTranslations } from "next-intl"
 import { StudioComplianceView } from "./StudioComplianceView"
+import { ComplianceOverviewPanel } from "./ComplianceOverviewPanel"
 import { DSRInboxPanel } from "./governance/DSRInboxPanel"
 import { ConsentPanel } from "./governance/ConsentPanel"
 import { AuditLogsSummaryPanel } from "./compliance/AuditLogsSummaryPanel"
@@ -62,7 +63,11 @@ function FairnessGuardStatusBanner() {
 export function FairnessComplianceHub({ activeSubsection }: FairnessComplianceHubProps) {
   let content: React.ReactNode = null
 
-  if (activeSubsection === "studio") {
+  // P2-4 (audit 2026-05-26): default landing = ComplianceOverviewPanel.
+  // Quando activeSubsection vazio, mostra visao agregada de sinais compliance.
+  if (!activeSubsection || activeSubsection === "") {
+    content = <ComplianceOverviewPanel />
+  } else if (activeSubsection === "studio") {
     content = <StudioComplianceView />
   } else if (activeSubsection === "lgpd-candidatos") {
     // WT-2022 P1.B: DSRInbox filtered por Art. 20 (decisão automatizada review).
