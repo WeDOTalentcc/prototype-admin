@@ -10,6 +10,8 @@ from app.domains.tasks.dependencies import get_tasks_repo
 from app.domains.tasks.repositories.tasks_repository import TasksRepository
 from app.domains.automation.services.task_service import task_service
 from app.models.task import TaskPriority, TaskStatus, TaskType
+from app.auth.dependencies import get_current_user_or_demo
+from app.auth.models import User
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
 
@@ -104,6 +106,49 @@ company_id: str = Depends(require_company_id)):
     return task.to_dict()
 
 
+
+
+# ---------------------------------------------------------------------------
+# Sprint 6.2 RBAC — manager hierarchy filter for tasks
+# Plan canonical: ~/.claude/plans/jolly-roaming-moler.md
+# ---------------------------------------------------------------------------
+async def _filter_tasks_by_visible_scope(tasks: list, current_user) -> list:
+    """Visible scope filter (1-level manager hierarchy).
+
+    Task visible if:
+      - admin (bypass)
+      - legacy user (no dept + no subordinates) — soft-launch compat
+      - assigned_to_user_id is self
+      - assigned_to_user_id in subordinate_user_ids (manager sees team)
+      - assigned_to_user_id is None (unassigned tasks visible to all in tenant)
+    """
+    if not tasks:
+        return tasks
+    try:
+        from app.shared.rbac.visible_scope import compute_visible_scope
+        scope = await compute_visible_scope(current_user)
+    except Exception:
+        return tasks  # non-blocking fallback
+
+    if scope.is_admin:
+        return tasks
+    if scope.own_dept_id is None and not scope.has_subordinates:
+        return tasks  # legacy soft-launch bypass
+
+    allowed = set(scope.subordinate_user_ids)
+    if scope.user_id:
+        allowed.add(scope.user_id)
+
+    visible = []
+    for t in tasks:
+        assignee = getattr(t, "assigned_to_user_id", None)
+        if assignee is None:
+            visible.append(t)  # unassigned tasks visible (could be reassigned)
+            continue
+        if str(assignee) in allowed:
+            visible.append(t)
+    return visible
+
 @router.get("/", response_model=list[TaskResponse])
 async def list_tasks(
     status: TaskStatus | None = None,
@@ -111,8 +156,10 @@ async def list_tasks(
     user_id: str | None = None,
     agent_type: str | None = None,
     limit: int = Query(default=50, le=100),
-    repo: TasksRepository = Depends(get_tasks_repo), 
-company_id: str = Depends(require_company_id)):
+    repo: TasksRepository = Depends(get_tasks_repo),
+    current_user: User = Depends(get_current_user_or_demo),
+    company_id: str = Depends(require_company_id),
+):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """List tasks with optional filters."""
     tasks = await repo.get_pending_tasks(
@@ -121,6 +168,8 @@ company_id: str = Depends(require_company_id)):
         priority=priority,
         limit=limit
     )
+    # Sprint 6.2 RBAC visible scope filter
+    tasks = await _filter_tasks_by_visible_scope(tasks, current_user)
     return [task.to_dict() for task in tasks]
 
 
@@ -143,6 +192,7 @@ company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get tasks due today."""
     tasks = await repo.get_tasks_due_today(user_id=user_id)
+    tasks = await _filter_tasks_by_visible_scope(tasks, current_user)
     return [task.to_dict() for task in tasks]
 
 
@@ -154,6 +204,7 @@ company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get overdue tasks."""
     tasks = await repo.get_overdue_tasks(user_id=user_id)
+    tasks = await _filter_tasks_by_visible_scope(tasks, current_user)
     return [task.to_dict() for task in tasks]
 
 

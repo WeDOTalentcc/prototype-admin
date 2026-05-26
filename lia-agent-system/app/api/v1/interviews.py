@@ -6,6 +6,8 @@ import uuid
 from datetime import datetime, timedelta
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request
+from app.auth.dependencies import get_current_user_or_demo
+from app.auth.models import User
 from app.shared.providers.llm_factory import get_provider_for_tenant
 from app.domains.analytics.services.activity_service import activity_service as activity_svc
 from pydantic import BaseModel, EmailStr
@@ -259,7 +261,9 @@ async def list_interviews(
     candidate_id: str | None = Query(None, description="Filter by candidate ID"),
     limit: int = Query(50, ge=1, le=100),
     repo: InterviewRepository = Depends(get_interview_repo),
-company_id: str = Depends(require_company_id)):
+    current_user: User = Depends(get_current_user_or_demo),
+    company_id: str = Depends(require_company_id),
+):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     List interviews with optional filters.
@@ -286,6 +290,30 @@ company_id: str = Depends(require_company_id)):
             company_id=company_id,
             limit=limit,
         )
+
+        # Sprint 6.2 RBAC: visible scope filter (1-level manager hierarchy).
+        # Plan canonical: ~/.claude/plans/jolly-roaming-moler.md
+        # Visible interview if:
+        #   - user is admin (bypass)
+        #   - user has no dept_id AND no subordinates (legacy soft-launch bypass)
+        #   - interviewer_email is self
+        #   - interviewer_email is in subordinate_emails (manager sees team)
+        try:
+            from app.shared.rbac.visible_scope import compute_visible_scope
+            _scope = await compute_visible_scope(current_user)
+            if not _scope.is_admin and (
+                _scope.own_dept_id is not None or _scope.has_subordinates
+            ):
+                _allowed = set(_scope.subordinate_user_emails)
+                if _scope.user_email:
+                    _allowed.add(_scope.user_email)
+                rows = [
+                    r for r in rows
+                    if (r[0].interviewer_email or "").lower() in _allowed
+                    or not r[0].interviewer_email  # unassigned interviews visible to all
+                ]
+        except Exception as _scope_exc:
+            logger.debug("[Sprint6.2] interview scope filter failed (non-blocking): %s", _scope_exc)
 
         return [
             {
