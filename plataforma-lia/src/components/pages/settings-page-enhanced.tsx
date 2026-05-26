@@ -62,6 +62,8 @@ import { useHoverDebounce } from '@/lib/sidebar/useHoverDebounce'
 import { ErrorBoundarySection } from"@/components/ui/error-boundary-section"
 import { useCompanyId } from"@/hooks/company/useCompanyId"
 import { resolveSettingsTarget } from "@/lib/settings/resolve-settings-target"
+import { isHubVisible, getHubPermission } from "@/lib/settings/settings-rbac"
+import { useAuth } from "@/contexts/auth-context"
 import { apiFetch } from "@/lib/api/api-fetch"
 
 interface SettingsSubsection {
@@ -243,6 +245,11 @@ const getCompletionBadgeColor = (percentage: number): string => {
 export default function SettingsPageEnhanced() {
   const { companyId, tenantInfo, isLoading: isTenantLoading } = useCompanyId()
   const searchParams = useSearchParams()
+  // P2-3 (audit 2026-05-26): RBAC × Configuracoes — role do usuario logado
+  // determina quais hubs aparecem no sidebar e quais campos sao editaveis.
+  // Fail-secure: role null/undefined → hubs hidden.
+  const { user } = useAuth()
+  const userRole = (user && "role" in user ? user.role : null) ?? null
   const [activeSection, setActiveSection] = useState<string>('minha-empresa')
   const [activeSubsection, setActiveSubsection] = useState<string>('')
   // P2-1 (audit 2026-05-26): progressive disclosure — toggle pra esconder
@@ -676,6 +683,9 @@ export default function SettingsPageEnhanced() {
           <div className="flex-1 overflow-y-auto p-3">
             <nav className="space-y-2" role="navigation" aria-label="Configurações">
               {settingsSections.filter((section) => {
+                // P2-3 (audit 2026-05-26): RBAC first — hubs hidden pra role atual nao aparecem.
+                // Fail-secure: role null → todos hubs hidden (usuario nao logado nao deveria estar aqui).
+                if (!isHubVisible(section.id, userRole)) return false
                 // P2-1 progressive disclosure: quando OFF, mostra apenas hubs essenciais
                 // (basic categoryOR priority=high). Mantem operacional (Recrutamento & LIA)
                 // visivel para evitar quebrar fluxo do recrutador.

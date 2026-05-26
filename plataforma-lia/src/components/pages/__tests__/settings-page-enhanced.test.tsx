@@ -72,6 +72,15 @@ vi.mock("next-intl", () => ({
   useLocale: () => "pt-BR",
 }))
 
+// P2-3 RBAC: mock auth-context com admin role (todos hubs visiveis nos tests).
+vi.mock("@/contexts/auth-context", () => ({
+  useAuth: () => ({
+    user: { id: "test-user", email: "admin@test.com", role: "admin", company: "test-co" },
+    isAuthenticated: true,
+    isLoading: false,
+  }),
+}))
+
 vi.mock("@/hooks/company/useCompanyId", () => ({
   useCompanyId: () => ({
     companyId: "test-company-id",
