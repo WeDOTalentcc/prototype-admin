@@ -382,7 +382,7 @@ export function ABTestingTab() {
                             </div>
                             <div className="mt-1 h-1.5 bg-lia-bg-secondary rounded-full overflow-hidden">
                               <div
-                                className="h-full bg-wedo-cyan rounded-full transition-all"
+                                className="h-full bg-wedo-cyan rounded-full transition-[width]"
                                 style={{ width: `${variant.traffic_percentage}%` }}
                               />
                             </div>

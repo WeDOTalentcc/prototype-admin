@@ -52,11 +52,8 @@ function inferThresholdUnit(alertType: string): ThresholdUnit {
   return "count"
 }
 
-export interface AlertPreferencesPanelProps {
-  // Sprint D: panel se auto-gerencia. Não recebe props de useCommunicationHub.
-}
-
-export function AlertPreferencesPanel(_props: AlertPreferencesPanelProps = {}) {
+// Sprint D: panel se auto-gerencia — zero props.
+export function AlertPreferencesPanel() {
   const t = useTranslations("settings.communication")
   const { preferences, isLoading, error: loadError, updatePreference } = useAlertPreferences()
   const [savingId, setSavingId] = useState<string | null>(null)

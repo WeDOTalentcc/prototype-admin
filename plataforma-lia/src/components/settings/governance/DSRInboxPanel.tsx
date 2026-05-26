@@ -147,7 +147,7 @@ export function DSRInboxPanel({ defaultRequestType }: { defaultRequestType?: str
     return () => {
       cancelled = true
     }
-  }, [companyId, t, statusFilter, refetchSignal])
+  }, [companyId, t, statusFilter, refetchSignal, requestTypeFilter])
 
   // WT-2022 P1-W4-01: handlers que recebem value do modal inline (antes usavam window.prompt)
   const handleAssign = async (dsrId: string, assigneeEmail: string) => {
@@ -438,7 +438,6 @@ export function DSRInboxPanel({ defaultRequestType }: { defaultRequestType?: str
               }
               value={actionModal.value}
               onChange={e => setActionModal(prev => ({ ...prev, value: e.target.value }))}
-              // eslint-disable-next-line jsx-a11y/no-autofocus
               autoFocus
             />
             <div className="flex gap-2 justify-end">
@@ -449,13 +448,14 @@ export function DSRInboxPanel({ defaultRequestType }: { defaultRequestType?: str
               >
                 Cancelar
               </button>
-              <button
+              <Button
                 type="button"
-                className="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
+                variant="default"
+                size="sm"
                 onClick={confirmModalAction}
-              >
+                >
                 Confirmar
-              </button>
+              </Button>
             </div>
           </div>
         </div>

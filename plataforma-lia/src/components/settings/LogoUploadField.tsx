@@ -115,7 +115,7 @@ export function LogoUploadField({
       <div className="flex items-center gap-3">
         {hasLogo ? (
           <div className="relative w-10 h-10 rounded-md border border-lia-border-default dark:border-lia-border-subtle overflow-hidden bg-lia-bg-secondary flex items-center justify-center">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
+            { }
             <img
               src={currentValue}
               alt="Logo da empresa"

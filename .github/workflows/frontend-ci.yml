@@ -55,6 +55,15 @@ jobs:
           fi
           echo "OK: no Rules of Hooks violations"
 
+      - name: Settings scope ESLint — 0 errors + 0 warnings (BLOCKING)
+        # Harness ratchet 2026-05-26 (Sessão B enterprise hardening).
+        # src/components/settings/ + src/hooks/settings/ atingiram baseline 0
+        # violations pós fixes: rules-of-hooks P0, exhaustive-deps, DS tokens,
+        # unused eslint-disable, rounded-2xl, transition-all, bg-blue-606.
+        # Qualquer regressão neste escopo bloqueia PR.
+        # Escopo será expandido a src/ completo quando restante for limpo.
+        run: npx eslint src/components/settings/ src/hooks/settings/ --max-warnings=0
+
       - name: VacancyAction stage coverage sensor (Phase F)
         # Compares JOB_LIFECYCLE_ORDER (backend) with getVacancyAction switch
         # (frontend). Blocks if a stage is added in one place but not the other.

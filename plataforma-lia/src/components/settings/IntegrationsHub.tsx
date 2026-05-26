@@ -93,6 +93,23 @@ export function IntegrationsHub({ activeSubsection }: IntegrationsHubProps) {
     setActiveTab(activeSubsection || "all")
   }, [activeSubsection])
 
+  const fetchLlmConfig = useCallback(() => {
+    apiFetch("/api/backend-proxy/llm-config")
+      .then((r) => {
+        if (!r.ok) throw new Error("Failed to fetch LLM config")
+        return r.json()
+      })
+      .then((data: LLMConfigData) => {
+        setLlmConfig(data)
+        if (data.primary_provider) {
+          setActiveProvider(data.primary_provider)
+        }
+      })
+      .catch(() => {
+        // Non-fatal: leave llmConfig as null. UI degrada graciosamente.
+      })
+  }, [])
+
   useEffect(() => {
     apiFetch("/api/backend-proxy/calendar/health")
       .then((r) => r.json())
@@ -129,24 +146,8 @@ export function IntegrationsHub({ activeSubsection }: IntegrationsHubProps) {
         setAtsConnections(data)
       })
       .catch(() => setAtsConnections([]))
-  }, [])
+  }, [fetchLlmConfig])
 
-  const fetchLlmConfig = useCallback(() => {
-    apiFetch("/api/backend-proxy/llm-config")
-      .then((r) => {
-        if (!r.ok) throw new Error("Failed to fetch LLM config")
-        return r.json()
-      })
-      .then((data: LLMConfigData) => {
-        setLlmConfig(data)
-        if (data.primary_provider) {
-          setActiveProvider(data.primary_provider)
-        }
-      })
-      .catch(() => {
-        // Non-fatal: leave llmConfig as null. UI degrada graciosamente.
-      })
-  }, [])
 
   const handleConnectGoogle = async () => {
     setGoogleStatus("loading")

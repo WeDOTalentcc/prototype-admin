@@ -58,7 +58,7 @@ function _warnDeprecation() {
   if (_deprecationWarningEmitted) return
   _deprecationWarningEmitted = true
   if (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production') {
-    // eslint-disable-next-line no-console
+     
     console.warn(
       '[DEPRECATED Sprint 3 F6] DEFAULT_ALERTS hardcoded — ' +
       'usar useAlertRuleTemplates() canonical per-tenant. ' +

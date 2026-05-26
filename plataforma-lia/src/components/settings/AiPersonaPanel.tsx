@@ -55,12 +55,12 @@ export function AiPersonaPanel() {
   // Onda 2 lição 6: `useState(propX)` é stale state em rerender async).
   // Dependência granular em campos para evitar disparar quando o objeto
   // muda de referência mas valores são iguais.
+  const personaName = persona?.name
+  const personaTone = persona?.tone
   useEffect(() => {
-    if (persona) {
-      setDraftName(persona.name)
-      setDraftTone(persona.tone)
-    }
-  }, [persona?.name, persona?.tone])
+    if (personaName != null) setDraftName(personaName)
+    if (personaTone != null) setDraftTone(personaTone)
+  }, [personaName, personaTone])
 
   const toneOptions: ToneOption[] = options?.tones ?? []
   const previewedTone =
@@ -86,7 +86,7 @@ export function AiPersonaPanel() {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-2xl border border-lia-border-default bg-lia-bg-tertiary p-4 flex items-start gap-3">
+      <div className="rounded-xl border border-lia-border-default bg-lia-bg-tertiary p-4 flex items-start gap-3">
         <Sparkles className="w-5 h-5 text-lia-accent-default shrink-0 mt-0.5" />
         <div className="space-y-1">
           <h3 className={textStyles.h4}>Personalidade da IA</h3>
@@ -152,7 +152,7 @@ export function AiPersonaPanel() {
             {[0, 1, 2, 3, 4, 5].map((idx) => (
               <div
                 key={idx}
-                className="rounded-2xl border border-lia-border-default bg-lia-bg-primary p-4 h-[78px] animate-pulse"
+                className="rounded-xl border border-lia-border-default bg-lia-bg-primary p-4 h-[78px] animate-pulse"
                 aria-hidden="true"
               />
             ))}
@@ -176,7 +176,7 @@ export function AiPersonaPanel() {
                   onClick={() => setDraftTone(opt.value as AiPersonaTone)}
                   disabled={isLoading || isSaving}
                   data-testid={`ai-persona-tone-${opt.value}`}
-                  className={`text-left rounded-2xl border p-4 transition-all ${
+                  className={`text-left rounded-xl border p-4 transition-all ${
                     isSelected
                       ? "border-lia-accent-default bg-lia-accent-soft ring-2 ring-lia-accent-default"
                       : "border-lia-border-default bg-lia-bg-primary hover:border-lia-border-strong"
@@ -235,7 +235,7 @@ export function AiPersonaPanel() {
       )}
 
       {/* Compliance imutável */}
-      <div className="rounded-2xl bg-lia-bg-tertiary border border-lia-border-default p-4 flex items-start gap-3">
+      <div className="rounded-xl bg-lia-bg-tertiary border border-lia-border-default p-4 flex items-start gap-3">
         <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
         <div className="space-y-1">
           <p className="text-sm font-medium">Compliance imutável</p>

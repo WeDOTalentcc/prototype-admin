@@ -396,7 +396,7 @@ export function DocumentUploadCard() {
           </div>
           <div className="w-full h-1.5 bg-lia-bg-tertiary dark:bg-lia-bg-elevated rounded-full overflow-hidden">
             <div
-              className="h-full bg-lia-btn-primary-bg rounded-full transition-all duration-300 ease-out"
+              className="h-full bg-lia-btn-primary-bg rounded-full transition-[width] duration-300 ease-out"
               style={{ width: `${progressPercent}%` }}
             />
           </div>

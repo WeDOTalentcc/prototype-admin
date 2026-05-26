@@ -102,7 +102,7 @@ export function UserList({
       onSalaryGrantChange?.()
       setSelectedIds(new Set())
     } catch (err) {
-      // eslint-disable-next-line no-console
+       
       console.warn('[B3] bulk salary grant failed', err)
     } finally {
       setBulkSubmitting(false)
@@ -125,7 +125,7 @@ export function UserList({
       onSalaryGrantChange?.()
     } catch (err) {
       // Silent — parent refresh will fix UI; user can retry
-      // eslint-disable-next-line no-console
+       
       console.warn('[Sprint 5.5] salary grant toggle failed', err)
     } finally {
       setGrantingFor(null)

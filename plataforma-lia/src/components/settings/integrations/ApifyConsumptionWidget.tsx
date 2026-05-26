@@ -73,7 +73,7 @@ export function ApifyConsumptionWidget({ className, autoRefreshMs }: Props) {
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
 
-  const fetchStatus = async () => {
+  const fetchStatus = useCallback(async () => {
     setLoading(true)
     setError(null)
     try {
@@ -93,14 +93,14 @@ export function ApifyConsumptionWidget({ className, autoRefreshMs }: Props) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [t])
 
   useEffect(() => {
     fetchStatus()
     if (!autoRefreshMs || autoRefreshMs < 5000) return
     const id = setInterval(fetchStatus, autoRefreshMs)
     return () => clearInterval(id)
-  }, [autoRefreshMs])
+  }, [autoRefreshMs, fetchStatus])
 
   const severity = data ? severityForUsage(data.usage_percentage) : "success"
 

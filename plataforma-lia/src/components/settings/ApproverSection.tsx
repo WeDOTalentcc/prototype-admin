@@ -200,9 +200,11 @@ export const ApproverSection = React.memo(function ApproverSection({
                         }
                         onChange={(e) => {
                           const val = e.target.value || null;
-                          editingApprover
-                            ? setEditingApprover({ ...editingApprover, departmentId: val })
-                            : setNewApprover((prev) => ({ ...prev, departmentId: val }));
+                          if (editingApprover) {
+                            setEditingApprover({ ...editingApprover, departmentId: val })
+                          } else {
+                            setNewApprover((prev) => ({ ...prev, departmentId: val }))
+                          }
                         }}
                       >
                         <option value="">Empresa toda</option>
@@ -224,9 +226,11 @@ export const ApproverSection = React.memo(function ApproverSection({
                         }
                         onChange={(e) => {
                           const val = e.target.value || null;
-                          editingApprover
-                            ? setEditingApprover({ ...editingApprover, departmentId: val })
-                            : setNewApprover((prev) => ({ ...prev, departmentId: val }));
+                          if (editingApprover) {
+                            setEditingApprover({ ...editingApprover, departmentId: val })
+                          } else {
+                            setNewApprover((prev) => ({ ...prev, departmentId: val }))
+                          }
                         }}
                       />
                     )}
@@ -252,9 +256,11 @@ export const ApproverSection = React.memo(function ApproverSection({
                       onChange={(e) => {
                         const raw = e.target.value;
                         const val = raw === "" ? null : parseFloat(raw);
-                        editingApprover
-                          ? setEditingApprover({ ...editingApprover, canApproveAboveAmount: val })
-                          : setNewApprover((prev) => ({ ...prev, canApproveAboveAmount: val }));
+                        if (editingApprover) {
+                          setEditingApprover({ ...editingApprover, canApproveAboveAmount: val })
+                        } else {
+                          setNewApprover((prev) => ({ ...prev, canApproveAboveAmount: val }))
+                        }
                       }}
                     />
                   </div>
