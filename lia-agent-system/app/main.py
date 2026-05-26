@@ -564,6 +564,18 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.warning(f"⚠️  Platform Event Handlers não registrados: {e}")
 
+    # Sprint 7C Part 2 — Pool-Agent event-driven consumer (4 canonical events)
+    try:
+        from app.jobs.consumers.pool_agent_event_consumer import (
+            register_pool_agent_event_handlers,
+            start_pool_agent_event_consumer,
+        )
+        register_pool_agent_event_handlers()
+        await start_pool_agent_event_consumer()
+        logger.info("✅ Pool-Agent Event Consumer iniciado (Sprint 7C Part 2)")
+    except Exception as e:
+        logger.warning(f"⚠️  Pool-Agent Event Consumer não iniciado: {e}")
+
     # Seed A/B Testing email template variants (Fase 5 / A5 — idempotent)
     try:
         from app.shared.intelligence.ab_testing import seed_email_ab_tests
@@ -601,6 +613,14 @@ async def lifespan(app: FastAPI):
     try:
         from app.shared.messaging.rabbitmq_consumer import rabbitmq_consumer
         await rabbitmq_consumer.stop()
+    except Exception:
+        pass
+    # Sprint 7C Part 2 — stop Pool-Agent event consumer
+    try:
+        from app.jobs.consumers.pool_agent_event_consumer import (
+            stop_pool_agent_event_consumer,
+        )
+        await stop_pool_agent_event_consumer()
     except Exception:
         pass
     # Sprint R.2: close singleton aio_pika producer connection on main loop

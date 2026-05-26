@@ -19,6 +19,10 @@ from app.auth.models import User
 from app.core.database import get_db
 from app.models.talent_pool import TalentPool, TalentPoolCandidate
 from app.shared.security.require_company_id import require_company_id
+from app.shared.messaging.platform_events import (
+    PlatformEvent,
+    publish_platform_event,
+)
 from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
@@ -334,6 +338,28 @@ company_id: str = Depends(require_company_id)):
 
     await _refresh_counts(pool_id, db)
     await db.commit()
+
+    # Sprint 7C Part 2 — emit canonical event pra pool_agent event-driven dispatch.
+    # Fail-safe: publish_platform_event swallows RabbitMQ errors (logs only).
+    if added:
+        try:
+            await publish_platform_event(
+                PlatformEvent(
+                    event_type="candidate_added_to_pool",
+                    company_id=str(company_id),
+                    payload={
+                        "pool_id": str(pool_id),
+                        "candidate_ids": [str(c) for c in added],
+                        "origin": payload.origin,
+                    },
+                    source_api="lia-agent-system",
+                )
+            )
+        except Exception as exc:
+            logger.warning(
+                "[TalentPools] publish_platform_event candidate_added_to_pool failed: %s",
+                exc,
+            )
 
     return {
         "data": {"added": added, "skipped": skipped, "total_added": len(added)},
