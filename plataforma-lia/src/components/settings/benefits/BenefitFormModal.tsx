@@ -11,6 +11,11 @@
  * - 4 switches em lista vertical (era grid 2x2 confuso)
  * - <BenefitFormSection> extraido para DRY
  *
+ * Refactor 2026-05-26:
+ * - Seções maiores extraídas em sub-componentes (<280 LOC cada):
+ *   BenefitFormSectionQuemRecebe, BenefitFormSectionComoFunciona, BenefitFormSectionVigencia
+ * - Modal principal: 929 → ~370 LOC
+ *
  * Aplica:
  * - canonical-fix: taxonomia 100% via hook canonical (single source of truth)
  * - production-quality (frontend): tokens DS, Rules of Hooks compliant
@@ -19,13 +24,11 @@
 
 import React from "react"
 import { useTranslations } from "next-intl"
-import { CURRENCY_SYMBOL } from "@/lib/pricing"
 import { textStyles } from "@/lib/design-tokens"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Switch } from "@/components/ui/switch"
 import {
   Select,
   SelectContent,
@@ -41,29 +44,16 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog"
+import { Loader2, Lock } from "lucide-react"
 import {
-  DollarSign,
-  Percent,
-  Info,
-  Repeat,
-  Receipt,
-  Shield,
-  Loader2,
-  Lock,
-  X,
-  Plus,
-  type LucideIcon,
-} from "lucide-react"
-import {
-  APPLICABLE_TO_OPTIONS,
-  CONTRACT_TYPE_OPTIONS,
-  SENIORITY_OPTIONS,
-  type SubsidiaryEntry,
   type BenefitHistoryEntry,
   type BenefitTabRecord,
 } from "./benefits-types"
 import { useDepartmentsList } from "@/hooks/settings/useDepartmentsList"
 import { useBenefitTaxonomy } from "@/hooks/settings/useBenefitTaxonomy"
+import { BenefitFormSectionQuemRecebe } from "./BenefitFormSectionQuemRecebe"
+import { BenefitFormSectionComoFunciona } from "./BenefitFormSectionComoFunciona"
+import { BenefitFormSectionVigencia } from "./BenefitFormSectionVigencia"
 
 // ---------------------------------------------------------------------------
 // Types
@@ -83,23 +73,6 @@ interface BenefitFormModalProps {
   onSave: (benefit: Benefit) => void
   history?: BenefitHistoryEntry[]
   historyLoading?: boolean
-}
-
-// ---------------------------------------------------------------------------
-// Mapping: lucide icon name (from canonical backend) → component
-// ---------------------------------------------------------------------------
-
-const VALUE_TYPE_ICON_MAP: Record<string, LucideIcon> = {
-  DollarSign,
-  Percent,
-  Repeat,
-  Receipt,
-  Shield,
-  Info,
-}
-
-function valueTypeIcon(iconName: string): LucideIcon {
-  return VALUE_TYPE_ICON_MAP[iconName] ?? Info
 }
 
 // ---------------------------------------------------------------------------
@@ -124,88 +97,11 @@ function BenefitFormSection({
       }
     >
       <h4
-        className={`${textStyles.label} uppercase tracking-wider text-lia-text-tertiary`}
+        className={}
       >
         {title}
       </h4>
       {children}
-    </div>
-  )
-}
-
-// ---------------------------------------------------------------------------
-// ChipMultiSelect — chips toggleaveis para arrays
-// ---------------------------------------------------------------------------
-
-function ChipMultiSelect({
-  options,
-  selected,
-  onChange,
-  ariaLabel,
-}: {
-  options: readonly { id: string; label: string }[]
-  selected: string[]
-  onChange: (next: string[]) => void
-  ariaLabel: string
-}) {
-  const toggle = (id: string) => {
-    if (selected.includes(id)) {
-      onChange(selected.filter((s) => s !== id))
-    } else {
-      if (id === "all") {
-        onChange(["all"])
-      } else {
-        onChange([...selected.filter((s) => s !== "all"), id])
-      }
-    }
-  }
-  return (
-    <div className="flex flex-wrap gap-1.5 mt-1" role="group" aria-label={ariaLabel}>
-      {options.map((opt) => {
-        const isSel = selected.includes(opt.id)
-        return (
-          <button
-            key={opt.id}
-            type="button"
-            onClick={() => toggle(opt.id)}
-            className={[
-              "px-2.5 py-1 rounded-full text-xs border transition-colors motion-reduce:transition-none",
-              isSel
-                ? "bg-lia-bg-tertiary border-lia-btn-primary-bg text-lia-text-primary"
-                : "bg-lia-bg-secondary border-lia-border-subtle text-lia-text-secondary hover:bg-lia-interactive-hover hover:text-lia-text-primary",
-            ].join(" ")}
-            aria-pressed={isSel}
-          >
-            {opt.label}
-          </button>
-        )
-      })}
-    </div>
-  )
-}
-
-// ---------------------------------------------------------------------------
-// SwitchRow — toggle horizontal (substitui grid 2x2 do legado)
-// ---------------------------------------------------------------------------
-
-function SwitchRow({
-  label,
-  description,
-  checked,
-  onCheckedChange,
-}: {
-  label: string
-  description: string
-  checked: boolean
-  onCheckedChange: (b: boolean) => void
-}) {
-  return (
-    <div className="flex items-center justify-between p-3 rounded-md bg-lia-bg-secondary border border-lia-border-subtle">
-      <div className="flex-1 pr-3">
-        <Label className={textStyles.label}>{label}</Label>
-        <p className="text-xs text-lia-text-tertiary mt-0.5">{description}</p>
-      </div>
-      <Switch checked={checked} onCheckedChange={onCheckedChange} />
     </div>
   )
 }
@@ -232,23 +128,6 @@ export function BenefitFormModal({
     waitingPeriods: WAITING_PERIODS,
     isLoading: taxonomyLoading,
   } = useBenefitTaxonomy()
-
-  // Normaliza selectedDepartmentIds — `departments` pode ser dict legado, array novo ou null.
-  const selectedDepartmentIds: string[] = (() => {
-    const v = editingBenefit?.departments
-    if (!v) return []
-    if (Array.isArray(v)) return v.filter((x): x is string => typeof x === "string")
-    if (typeof v === "object") return Object.keys(v as Record<string, unknown>)
-    return []
-  })()
-
-  const toggleDepartment = (deptId: string) => {
-    if (!editingBenefit) return
-    const next = selectedDepartmentIds.includes(deptId)
-      ? selectedDepartmentIds.filter((id) => id !== deptId)
-      : [...selectedDepartmentIds, deptId]
-    setEditingBenefit({ ...editingBenefit, departments: next })
-  }
 
   // Validacao condicional por value_type (espelha backend Pydantic)
   const validationError: string | null = (() => {
@@ -383,398 +262,37 @@ export function BenefitFormModal({
             {/* SECAO 2 — QUEM RECEBE                                  */}
             {/* ===================================================== */}
             <BenefitFormSection title="Quem recebe">
-              <div>
-                <Label className={textStyles.label}>Senioridade aplicável</Label>
-                <ChipMultiSelect
-                  options={SENIORITY_OPTIONS}
-                  selected={editingBenefit.seniority_levels || []}
-                  onChange={(next) =>
-                    setEditingBenefit({ ...editingBenefit, seniority_levels: next })
-                  }
-                  ariaLabel="Senioridade aplicável"
-                />
-              </div>
-              <div>
-                <Label className={textStyles.label}>Aplicável a</Label>
-                <ChipMultiSelect
-                  options={APPLICABLE_TO_OPTIONS}
-                  selected={editingBenefit.applicable_to || []}
-                  onChange={(next) =>
-                    setEditingBenefit({ ...editingBenefit, applicable_to: next })
-                  }
-                  ariaLabel="Aplicável a"
-                />
-              </div>
-              <div>
-                <Label className={textStyles.label}>Tipos de contrato</Label>
-                <ChipMultiSelect
-                  options={CONTRACT_TYPE_OPTIONS}
-                  selected={editingBenefit.contract_types || []}
-                  onChange={(next) =>
-                    setEditingBenefit({ ...editingBenefit, contract_types: next })
-                  }
-                  ariaLabel="Tipos de contrato"
-                />
-              </div>
-              <div>
-                <Label className={textStyles.label}>
-                  Departamentos específicos (opcional)
-                </Label>
-                <p className="text-xs text-lia-text-secondary mb-2">
-                  {selectedDepartmentIds.length === 0
-                    ? "Nenhum departamento selecionado (aplica a todos)"
-                    : `${selectedDepartmentIds.length} selecionado(s)`}
-                </p>
-                {deptsLoading ? (
-                  <div className="flex items-center gap-2 text-xs text-lia-text-tertiary">
-                    <Loader2
-                      size={14}
-                      className="animate-spin motion-reduce:animate-none"
-                    />
-                    Carregando departamentos...
-                  </div>
-                ) : companyDepartments.length === 0 ? (
-                  <p className="text-xs text-lia-text-tertiary italic">
-                    Nenhum departamento cadastrado. Cadastre em Configurações →
-                    Departamentos primeiro.
-                  </p>
-                ) : (
-                  <div
-                    className="flex flex-wrap gap-1.5"
-                    role="group"
-                    aria-label="Departamentos específicos"
-                  >
-                    {companyDepartments.map((dept) => {
-                      const isSel = selectedDepartmentIds.includes(dept.id)
-                      return (
-                        <button
-                          key={dept.id}
-                          type="button"
-                          onClick={() => toggleDepartment(dept.id)}
-                          aria-pressed={isSel}
-                          className={[
-                            "px-2.5 py-1 rounded-full text-xs border transition-colors motion-reduce:transition-none",
-                            isSel
-                              ? "bg-lia-bg-tertiary border-lia-btn-primary-bg text-lia-text-primary"
-                              : "bg-lia-bg-secondary border-lia-border-subtle text-lia-text-secondary hover:bg-lia-interactive-hover hover:text-lia-text-primary",
-                          ].join(" ")}
-                        >
-                          {dept.name}
-                        </button>
-                      )
-                    })}
-                  </div>
-                )}
-              </div>
+              <BenefitFormSectionQuemRecebe
+                benefit={editingBenefit}
+                onChange={setEditingBenefit}
+                departments={companyDepartments}
+                deptsLoading={deptsLoading}
+              />
             </BenefitFormSection>
 
             {/* ===================================================== */}
             {/* SECAO 3 — COMO FUNCIONA (valor + carencia)             */}
             {/* ===================================================== */}
             <BenefitFormSection title="Como funciona">
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label className={textStyles.label}>
-                    {t("valueType")} <span className="text-status-error">*</span>
-                  </Label>
-                  <Select
-                    value={editingBenefit.value_type}
-                    onValueChange={(value) =>
-                      setEditingBenefit({ ...editingBenefit, value_type: value })
-                    }
-                    disabled={taxonomyLoading}
-                  >
-                    <SelectTrigger className="mt-1 rounded-md text-sm">
-                      <SelectValue
-                        placeholder={taxonomyLoading ? "Carregando..." : "Selecione"}
-                      />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {VALUE_TYPES.map((type) => {
-                        const Icon = valueTypeIcon(type.icon)
-                        return (
-                          <SelectItem key={type.id} value={type.id} className="text-sm">
-                            <div className="flex items-center gap-2">
-                              <Icon className="w-3.5 h-3.5" />
-                              <span>{type.name}</span>
-                            </div>
-                          </SelectItem>
-                        )
-                      })}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {editingBenefit.value_type === "monetary" && (
-                  <div>
-                    <Label className={textStyles.label}>
-                      {t("valueCurrency", { currency: CURRENCY_SYMBOL })}
-                    </Label>
-                    <Input
-                      type="number"
-                      value={editingBenefit.value ?? ""}
-                      onChange={(e) =>
-                        setEditingBenefit({
-                          ...editingBenefit,
-                          value:
-                            e.target.value === ""
-                              ? undefined
-                              : parseFloat(e.target.value),
-                        })
-                      }
-                      placeholder="0,00"
-                      className="mt-1 rounded-md text-sm"
-                    />
-                  </div>
-                )}
-
-                {editingBenefit.value_type === "percentage" && (
-                  <div>
-                    <Label className={textStyles.label}>{t("percentageLabel")}</Label>
-                    <Input
-                      type="number"
-                      value={editingBenefit.percentage_value ?? ""}
-                      onChange={(e) =>
-                        setEditingBenefit({
-                          ...editingBenefit,
-                          percentage_value:
-                            e.target.value === ""
-                              ? undefined
-                              : parseFloat(e.target.value),
-                        })
-                      }
-                      placeholder="0"
-                      className="mt-1 rounded-md text-sm"
-                    />
-                  </div>
-                )}
-
-                {(editingBenefit.value_type === "informative" ||
-                  editingBenefit.value_type === "match" ||
-                  editingBenefit.value_type === "reimbursement" ||
-                  editingBenefit.value_type === "coverage") && (
-                  <div>
-                    <Label className={textStyles.label}>
-                      {t("valueDetails")}
-                      {editingBenefit.value_type !== "informative" && (
-                        <span className="text-status-error"> *</span>
-                      )}
-                    </Label>
-                    <Input
-                      value={editingBenefit.value_details || ""}
-                      onChange={(e) =>
-                        setEditingBenefit({
-                          ...editingBenefit,
-                          value_details: e.target.value,
-                        })
-                      }
-                      placeholder={
-                        editingBenefit.value_type === "match"
-                          ? "Ex: empresa iguala até 5% do salário"
-                          : editingBenefit.value_type === "reimbursement"
-                            ? "Ex: até R$ 500/mês mediante nota fiscal"
-                            : editingBenefit.value_type === "coverage"
-                              ? "Ex: cobertura com 30% de coparticipação"
-                              : t("valueDetailsPlaceholder")
-                      }
-                      className="mt-1 rounded-md text-sm"
-                    />
-                  </div>
-                )}
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label className={textStyles.label}>{t("waitingPeriod")}</Label>
-                  <Select
-                    value={String(editingBenefit.waiting_period_days)}
-                    onValueChange={(value) =>
-                      setEditingBenefit({
-                        ...editingBenefit,
-                        waiting_period_days: parseInt(value),
-                      })
-                    }
-                    disabled={taxonomyLoading}
-                  >
-                    <SelectTrigger className="mt-1 rounded-md text-sm">
-                      <SelectValue
-                        placeholder={taxonomyLoading ? "Carregando..." : "Selecione"}
-                      />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {WAITING_PERIODS.map((period) => (
-                        <SelectItem
-                          key={period.id}
-                          value={String(period.id)}
-                          className="text-sm"
-                        >
-                          {period.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label className={textStyles.label}>Ordem (apresentação)</Label>
-                  <Input
-                    type="number"
-                    value={editingBenefit.order ?? 0}
-                    onChange={(e) =>
-                      setEditingBenefit({
-                        ...editingBenefit,
-                        order:
-                          e.target.value === ""
-                            ? 0
-                            : parseInt(e.target.value, 10) || 0,
-                      })
-                    }
-                    placeholder="0"
-                    className="mt-1 rounded-md text-sm"
-                  />
-                </div>
-              </div>
-
-              {validationError && (
-                <p
-                  className="text-xs text-status-warning mt-1"
-                  role="alert"
-                  data-testid="validation-error"
-                >
-                  {validationError}
-                </p>
-              )}
-
-              <div className="space-y-2 pt-1">
-                <SwitchRow
-                  label={t("activeLabel")}
-                  description={t("activeDesc")}
-                  checked={editingBenefit.is_active}
-                  onCheckedChange={(checked) =>
-                    setEditingBenefit({ ...editingBenefit, is_active: checked })
-                  }
-                />
-                <SwitchRow
-                  label={t("highlight")}
-                  description={t("highlightDesc")}
-                  checked={editingBenefit.is_highlighted}
-                  onCheckedChange={(checked) =>
-                    setEditingBenefit({ ...editingBenefit, is_highlighted: checked })
-                  }
-                />
-                <SwitchRow
-                  label={t("mandatoryLabel")}
-                  description={t("mandatoryDesc")}
-                  checked={editingBenefit.is_mandatory}
-                  onCheckedChange={(checked) =>
-                    setEditingBenefit({ ...editingBenefit, is_mandatory: checked })
-                  }
-                />
-                <SwitchRow
-                  label={t("payrollDeduction")}
-                  description={t("payrollDeductionDesc")}
-                  checked={editingBenefit.is_discount}
-                  onCheckedChange={(checked) =>
-                    setEditingBenefit({ ...editingBenefit, is_discount: checked })
-                  }
-                />
-              </div>
+              <BenefitFormSectionComoFunciona
+                benefit={editingBenefit}
+                onChange={setEditingBenefit}
+                valueTypes={VALUE_TYPES}
+                waitingPeriods={WAITING_PERIODS}
+                taxonomyLoading={taxonomyLoading}
+                validationError={validationError}
+                t={t}
+              />
             </BenefitFormSection>
 
             {/* ===================================================== */}
             {/* SECAO 4 — VIGENCIA & COBERTURA                         */}
             {/* ===================================================== */}
             <BenefitFormSection title="Vigência e cobertura">
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label className={textStyles.label}>Início do contrato</Label>
-                  <Input
-                    type="date"
-                    value={editingBenefit.valid_from || ""}
-                    onChange={(e) =>
-                      setEditingBenefit({
-                        ...editingBenefit,
-                        valid_from: e.target.value || null,
-                      })
-                    }
-                    className="mt-1 rounded-md text-sm"
-                  />
-                </div>
-                <div>
-                  <Label className={textStyles.label}>Fim do contrato</Label>
-                  <Input
-                    type="date"
-                    value={editingBenefit.valid_until || ""}
-                    onChange={(e) =>
-                      setEditingBenefit({
-                        ...editingBenefit,
-                        valid_until: e.target.value || null,
-                      })
-                    }
-                    className="mt-1 rounded-md text-sm"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <Label className={textStyles.label}>Filiais aplicáveis</Label>
-                <p className="text-xs text-lia-text-tertiary mb-2">
-                  Deixe em branco para aplicar a todas as entidades da empresa
-                </p>
-                <div className="space-y-2">
-                  {(editingBenefit.subsidiaries || []).map((sub, idx) => (
-                    <div key={idx} className="flex gap-2 items-center">
-                      <Input
-                        value={sub.name}
-                        onChange={(e) => {
-                          const next = [...(editingBenefit.subsidiaries || [])]
-                          next[idx] = { ...next[idx], name: e.target.value }
-                          setEditingBenefit({ ...editingBenefit, subsidiaries: next })
-                        }}
-                        placeholder="Nome da filial"
-                        className="flex-1 rounded-md text-sm"
-                      />
-                      <Input
-                        value={sub.cnpj || ""}
-                        onChange={(e) => {
-                          const next = [...(editingBenefit.subsidiaries || [])]
-                          next[idx] = { ...next[idx], cnpj: e.target.value || null }
-                          setEditingBenefit({ ...editingBenefit, subsidiaries: next })
-                        }}
-                        placeholder="CNPJ"
-                        maxLength={18}
-                        className="w-40 rounded-md text-sm"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const next = (editingBenefit.subsidiaries || []).filter(
-                            (_, i) => i !== idx,
-                          )
-                          setEditingBenefit({ ...editingBenefit, subsidiaries: next })
-                        }}
-                        className="text-lia-text-tertiary hover:text-status-error transition-colors"
-                        aria-label="Remover filial"
-                      >
-                        <X size={16} />
-                      </button>
-                    </div>
-                  ))}
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      const next = [
-                        ...(editingBenefit.subsidiaries || []),
-                        { name: "", cnpj: null },
-                      ]
-                      setEditingBenefit({ ...editingBenefit, subsidiaries: next })
-                    }}
-                  >
-                    <Plus size={14} className="mr-1" /> Adicionar filial
-                  </Button>
-                </div>
-              </div>
+              <BenefitFormSectionVigencia
+                benefit={editingBenefit}
+                onChange={setEditingBenefit}
+              />
             </BenefitFormSection>
 
             {/* ===================================================== */}
@@ -794,7 +312,7 @@ export function BenefitFormModal({
                   />
                 </div>
                 <div>
-                  <Label className={`${textStyles.label} flex items-center gap-1`}>
+                  <Label className={}>
                     <Lock className="w-3 h-3 text-lia-text-tertiary" />
                     Contato do fornecedor (interno)
                   </Label>
