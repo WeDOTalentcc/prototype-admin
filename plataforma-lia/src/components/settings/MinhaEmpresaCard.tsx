@@ -183,6 +183,12 @@ interface MinhaEmpresaCardProps {
   isSavingField: boolean
   benefits?: Array<Partial<CompanyBenefit> & { id?: string; name?: string }>
   companyId?: string | null
+  /**
+   * Sprint B.7 (2026-05-26): quando true, esconde edit buttons e mostra hint.
+   * Wired via useSettingsEditMode("minha-empresa") no MinhaEmpresaHub.
+   * Default false = backwards-compatible com tests/callers existentes.
+   */
+  isReadOnly?: boolean
   onBenefitsChanged?: () => Promise<void> | void
   onLogoUploaded?: () => Promise<void> | void
   onToggle: () => void
@@ -200,6 +206,7 @@ export function MinhaEmpresaCard({
   isSavingField,
   benefits = [],
   companyId = null,
+  isReadOnly = false,
   onBenefitsChanged,
   onLogoUploaded,
   onToggle,
@@ -286,6 +293,14 @@ export function MinhaEmpresaCard({
 
       {isExpanded && (
         <CardContent className="px-4 py-3 border-t border-lia-border-subtle space-y-3">
+          {isReadOnly && (
+            <div
+              className="text-xs text-lia-text-secondary italic px-2 py-1 rounded-md bg-lia-bg-secondary/40 border border-lia-border-subtle"
+              data-testid={`readonly-hint-${block.key}`}
+            >
+              {t("readOnlyHint")}
+            </div>
+          )}
           {uploadConfig && (
             <SectionUploadDropZone
               targetSection={uploadConfig.targetSection}
@@ -341,6 +356,7 @@ export function MinhaEmpresaCard({
               }
 
               const isEditing =
+                !isReadOnly &&
                 editingField?.block === block.key &&
                 editingField?.field === field.key
               const isUpdated = recentlyUpdated.has(field.key)
@@ -398,7 +414,7 @@ export function MinhaEmpresaCard({
                       >
                         {formatFieldValue(field.value)}
                       </span>
-                      {field.editable && (
+                      {field.editable && !isReadOnly && (
                         <button
                           onClick={(e) => {
                             e.stopPropagation()

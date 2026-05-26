@@ -63,8 +63,24 @@ vi.mock("@/components/settings/SettingsEditModeToggle", () => ({
   SettingsEditModeToggle: () => <div data-testid="settings-edit-mode-toggle-mock" />,
 }))
 
+// Sprint B.7 (2026-05-26): Hub agora chama useSettingsEditMode → useAuth.
+// Mockar hook canonical para isolar smoke test de provider deps.
+vi.mock("@/hooks/settings/useSettingsEditMode", () => ({
+  useSettingsEditMode: () => ({
+    isEditing: true,
+    canToggle: true,
+    toggleEditMode: vi.fn(),
+    setEditMode: vi.fn(),
+  }),
+}))
+
+// Sprint B.7 (2026-05-26): captura prop `isReadOnly` para validar wiring.
+const cardPropsCaptured: Array<{ isReadOnly?: boolean }> = []
 vi.mock("@/components/settings/MinhaEmpresaCard", () => ({
-  MinhaEmpresaCard: () => <div data-testid="minha-empresa-card">Card</div>,
+  MinhaEmpresaCard: (props: { isReadOnly?: boolean }) => {
+    cardPropsCaptured.push({ isReadOnly: props.isReadOnly })
+    return <div data-testid="minha-empresa-card">Card</div>
+  },
 }))
 
 vi.mock("@/components/unified-chat/website-proposal-injector", () => ({

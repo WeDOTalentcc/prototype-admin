@@ -6466,6 +6466,7 @@
       "missingFieldsTitle": "Pending fields ({count})",
       "uploadHint": "An upload here can automatically fill these fields (you confirm first).",
       "editFieldAria": "Edit {label}",
+      "readOnlyHint": "View-only mode. Click \"Edit mode\" in the header to make changes.",
       "invalidNumber": "Invalid number",
       "timeRangeFormat": "Use HH:MM - HH:MM",
       "blockUpload": {

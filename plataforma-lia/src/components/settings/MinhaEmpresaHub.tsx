@@ -21,6 +21,7 @@ import type { LucideIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { HubHeader, HubLoadingState } from "./_shared"
 import { SettingsEditModeToggle } from "@/components/settings/SettingsEditModeToggle"
+import { useSettingsEditMode } from "@/hooks/settings/useSettingsEditMode"
 
 const ICON_MAP: Record<string, LucideIcon> = {
   Building,
@@ -64,6 +65,10 @@ export function MinhaEmpresaHub({ activeSubsection }: MinhaEmpresaHubProps = {})
   } = useCompanySettingsCards()
 
   const { triggerAction: _triggerAction, triggerPrefillSection } = useSettingsConversational()
+
+  // Sprint B.7 (2026-05-26): wire edit-mode toggle aos campos do Card.
+  // isEditing=true → comportamento atual. isEditing=false → read-only (esconde edit buttons, mostra hint).
+  const { isEditing: isEditModeOn } = useSettingsEditMode("minha-empresa")
 
   const BLOCK_TO_PREFILL: Record<string, "basic" | "culture" | "tech_stack" | "benefits" | "workforce" | "policy" | "compensation" | undefined> = {
     basic: "basic",
@@ -282,6 +287,7 @@ export function MinhaEmpresaHub({ activeSubsection }: MinhaEmpresaHubProps = {})
             isSavingField={isSavingField}
             benefits={benefits}
             companyId={companyId}
+            isReadOnly={!isEditModeOn}
             onBenefitsChanged={refreshAll}
             onLogoUploaded={refreshAll}
             onToggle={() => toggleBlock(block.key)}
