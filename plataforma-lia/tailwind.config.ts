@@ -25,6 +25,33 @@ export default {
       },
       colors: {
         // ──────────────────────────────────────────────
+        // DS CANONICAL "Quiet Operator" — DESIGN.md 2026-05-26
+        // Fonte de verdade: plataforma-lia/DESIGN.md frontmatter `colors:`
+        // 10 cinza stops (paper→ink) + 7 acentos funcionais wired top-level
+        // como hex literais (suportam opacity modifiers: bg-graphite/80).
+        // Sensor: scripts/check_ds_tokens_canonical.mjs garante sync com DESIGN.md.
+        // ──────────────────────────────────────────────
+        // Cinza scale (10 stops)
+        'paper':     '#FFFFFF',
+        'chalk':     '#F9FAFB',
+        'powder':    '#F3F4F6',
+        'mist':      '#E5E7EB',
+        'pebble':    '#D1D5DB',
+        'fog':       '#9CA3AF',
+        'ash':       '#6B7280',
+        'slate':     '#4B5563',
+        'graphite':  '#1F2937',
+        'ink':       '#030712',
+        // Acentos funcionais canonical
+        'lia-cyan-hover': '#4DA8BB',
+        'coral-quiet':    '#C74446',
+        'forest-green':   '#5DA47A',
+        'amber-warning':  '#D19960',
+        'insight-purple': '#9860D1',
+        'alert-magenta':  '#D160AB',
+        // Alias canonical name → wedo-cyan equivalente (backward compat preservado)
+        'lia-cyan':       '#60BED1',
+        // ──────────────────────────────────────────────
         // BRAND — wedo-cyan EXCLUSIVO para LIA/IA
         // Fonte de verdade: design-tokens.css (--wedo-cyan)
         // Hardcoded aqui para suportar opacity modifiers (bg-wedo-cyan/10)
