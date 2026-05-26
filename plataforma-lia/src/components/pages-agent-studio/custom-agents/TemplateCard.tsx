@@ -3,8 +3,8 @@
 import React from "react"
 import * as Icons from "lucide-react"
 import { useTranslations } from "next-intl"
-import { cn } from "@/lib/utils"
-import { cardStyles, badgeStyles, textStyles } from "@/lib/design-tokens"
+import { badgeStyles } from "@/lib/design-tokens"
+import { StudioCardShell } from "../StudioCardShell"
 import type { AgentTemplate } from "./types"
 
 interface TemplateCardProps {
@@ -12,46 +12,49 @@ interface TemplateCardProps {
   onSelect: (template: AgentTemplate) => void
 }
 
+/**
+ * Sprint visual 2026-05-25 (Paulo, Opção A canonical):
+ *  - Consume <StudioCardShell> canonical (slots) em vez de layout próprio.
+ *  - Badge "Popular": cyan → wedo-purple (insight-purple #9860D1). Cyan é
+ *    exclusiva da assistente quando age (white-label decision, memory
+ *    `project_white_label_ai_assistant.md`). Studio neutro.
+ */
 export function TemplateCard({ template, onSelect }: TemplateCardProps) {
-  const t = useTranslations('agents.customAgents')
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const IconComponent = ((Icons as any)[template.icon] || Icons.Bot) as React.ComponentType<{ className?: string }>
+  const t = useTranslations("agents.customAgents")
+  const IconComponent = ((Icons as unknown as Record<string, React.ComponentType<{ className?: string }>>)[template.icon] || Icons.Bot)
+
+  const badges = template.tags.includes("popular") ? (
+    <span className={badgeStyles.purple}>{t("popular")}</span>
+  ) : undefined
+
+  const metaSlot = (
+    <div className="flex items-center gap-1.5 flex-wrap">
+      <span className={badgeStyles.default}>
+        {t("categories." + template.category) || template.category}
+      </span>
+      <span className={badgeStyles.default}>
+        {t("toolsCount", { count: template.allowed_tools.length })}
+      </span>
+    </div>
+  )
+
+  const bodySlot = (
+    <p className="text-xs text-lia-text-secondary leading-relaxed line-clamp-2">
+      {template.description}
+    </p>
+  )
 
   return (
-    <button
-      type="button"
+    <StudioCardShell
+      icon={<IconComponent className="w-4 h-4 text-graphite" />}
+      title={template.name}
+      badges={badges}
+      bodySlot={bodySlot}
+      metaSlot={metaSlot}
+      asButton
       onClick={() => onSelect(template)}
-      className={cn(
-        cardStyles.interactive,
-        "p-4 text-left w-full flex flex-col gap-2 group"
-      )}
-    >
-      <div className="flex items-start justify-between">
-        <div className="w-9 h-9 rounded-md bg-powder flex items-center justify-center shrink-0">
-          <IconComponent className="w-4 h-4 text-graphite" />
-        </div>
-        {template.tags.includes("popular") && (
-          <span className={badgeStyles.cyan}>{t('popular')}</span>
-        )}
-      </div>
-
-      <div>
-        <h4 className={cn(textStyles.subtitle, "text-sm font-semibold leading-tight")}>
-          {template.name}
-        </h4>
-        <p className={cn(textStyles.caption, "mt-1 text-xs leading-relaxed line-clamp-2")}>
-          {template.description}
-        </p>
-      </div>
-
-      <div className="flex items-center gap-1.5 mt-auto pt-1">
-        <span className={cn(badgeStyles.default, "text-[10px]")}>
-          {t('categories.' + template.category) || template.category}
-        </span>
-        <span className={cn(badgeStyles.default, "text-[10px]")}>
-          {t('toolsCount', { count: template.allowed_tools.length })}
-        </span>
-      </div>
-    </button>
+      ariaLabel={template.name}
+      data-testid={`template-card-${template.id ?? template.name}`}
+    />
   )
 }

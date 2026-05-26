@@ -1,57 +1,19 @@
 "use client"
 
-import React, { useState, useEffect } from"react"
+import React, { useState, useEffect } from "react"
 import { useTranslations } from "next-intl"
-import {
-  Bot, Play, Pause, Settings, RefreshCw, Search as SearchIcon,
-  ThumbsUp, ThumbsDown, AlertCircle
-} from"lucide-react"
-import { Card, CardContent } from"@/components/ui/card"
-import { Chip } from "@/components/ui/chip"
-import { Button } from"@/components/ui/button"
-import {
-  textStyles, cardStyles, badgeStyles, buttonStyles
-} from"@/lib/design-tokens"
+import { Bot, RefreshCw, AlertCircle } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { textStyles, buttonStyles } from "@/lib/design-tokens"
 import { extractErrorMessage } from "@/lib/api/extract-error-message"
+import { AgentPanel } from "./AgentPanel"
+import type { SourcingAgent, TimelineEvent } from "./AgentPanel"
 
-// ---------- Types ----------
-
-interface SourcingAgent {
-  id: string
-  agent_name: string
-  status:"active" |"paused" |"completed"
-  calibration_v: number
-  search_strategy: {
-    required_skills?: string[]
-    exclusions?: string[]
-    positive_signals?: string[]
-    seniority?: string
-    location?: string
-  }
-  preferences: Record<string, unknown>
-  profiles_viewed: number
-  profiles_approved: number
-  profiles_rejected: number
-  created_at: string
-}
-
-interface TimelineEvent {
-  id: string
-  icon: string
-  type:"positive" |"negative"
-  reason: string
-  criteria: string[]
-  candidate_id: string | null
-  created_at: string
-}
-
-// ---------- Constants ----------
-
-const STATUS_CONFIG_KEYS = {
-  active: { labelKey: "statusActive" as const, style: badgeStyles.success },
-  paused: { labelKey: "statusPaused" as const, style: badgeStyles.warning },
-  completed: { labelKey: "statusCompleted" as const, style: badgeStyles.error },
-}
+// Sprint visual 2026-05-25 (Paulo Opção A canonical):
+// AgentPanel extraído pra componente próprio (./AgentPanel.tsx) consumindo
+// <StudioCardShell>. Snapshot SHA pré-edit: 65e65084e.
+// SourcingAgent + TimelineEvent re-exportados a partir de AgentPanel pra
+// manter backward-compat com qualquer caller que importava daqui.
 
 // ---------- Main Component ----------
 
@@ -118,8 +80,8 @@ export default function AgentsTab({
   }
 
   const handleToggle = async (agentId: string, currentStatus: string) => {
-    const action = currentStatus ==="active" ?"pause" :"resume"
-    await fetch(`/api/backend-proxy/sourcing-agents/${agentId}/${action}`, { method:"PATCH" })
+    const action = currentStatus === "active" ? "pause" : "resume"
+    await fetch(`/api/backend-proxy/sourcing-agents/${agentId}/${action}`, { method: "PATCH" })
     loadAgents()
   }
 
@@ -166,90 +128,5 @@ export default function AgentsTab({
         />
       ))}
     </div>
-  )
-}
-
-// ---------- Agent Panel ----------
-
-function AgentPanel({
-  agent, timeline, onToggle, onRecalibrate,
-}: {
-  agent: SourcingAgent
-  timeline: TimelineEvent[]
-  onToggle: () => void
-  onRecalibrate: () => void
-}) {
-  const t = useTranslations('agents.agentsTab')
-  const statusCfg = STATUS_CONFIG_KEYS[agent.status]
-  const strategy = agent.search_strategy
-
-  return (
-    <Card className={cardStyles.default}>
-      <CardContent className="p-4">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <Bot className="w-5 h-5 text-lia-text-secondary" />
-            <span className={textStyles.subtitle}>{agent.agent_name}</span>
-            <Chip variant="neutral" muted className={statusCfg.style}>{t(statusCfg.labelKey)}</Chip>
-            <span className={textStyles.caption}>v{agent.calibration_v}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button className={buttonStyles.outline} onClick={onToggle} title={agent.status ==="active" ? t('pause') : t('resume')}>
-              {agent.status ==="active" ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
-            </Button>
-            <Button className={buttonStyles.outline} onClick={onRecalibrate}>
-              <RefreshCw className="w-3.5 h-3.5 mr-1" /> {t('recalibrate')}
-            </Button>
-          </div>
-        </div>
-
-        {/* Strategy summary */}
-        <div className="flex flex-wrap gap-1.5 mb-3">
-          {strategy.required_skills?.map(s => (
-            <Chip density="relaxed" variant="neutral" muted key={s} className="bg-green-50 text-green-700">✅ {s}</Chip>
-          ))}
-          {strategy.exclusions?.map(e => (
-            <Chip density="relaxed" variant="neutral" muted key={e} className="bg-red-50 text-red-700">❌ {e}</Chip>
-          ))}
-          {strategy.seniority && <Chip density="relaxed" variant="neutral" muted className="bg-blue-50 text-blue-700">{strategy.seniority}</Chip>}
-          {strategy.location && <Chip density="relaxed" variant="neutral" muted className="bg-lia-bg-tertiary text-lia-text-secondary">{strategy.location}</Chip>}
-        </div>
-
-        {/* Stats */}
-        <div className="flex items-center gap-6 text-sm text-lia-text-secondary mb-3 py-2 border-y border-lia-border-subtle">
-          <span title={t('profilesAnalyzed')}><SearchIcon className="w-3.5 h-3.5 inline mr-1" />{agent.profiles_viewed}</span>
-          <span title={t('approved')}><ThumbsUp className="w-3.5 h-3.5 inline mr-1" />{agent.profiles_approved}</span>
-          <span title={t('rejected')}><ThumbsDown className="w-3.5 h-3.5 inline mr-1" />{agent.profiles_rejected}</span>
-        </div>
-
-        {/* Timeline */}
-        {timeline.length > 0 && (
-          <div>
-            <h4 className={`${textStyles.label} mb-2`}>{t('recentActivity')}</h4>
-            <div className="space-y-2 max-h-48 overflow-y-auto">
-              {timeline.map(event => (
-                <div key={event.id} className="flex items-start gap-2 text-sm">
-                  <span className="flex-shrink-0 mt-0.5">{event.icon}</span>
-                  <div className="min-w-0">
-                    <p className={textStyles.bodySmall}>{event.reason}</p>
-                    {event.criteria.length > 0 && (
-                      <p className={textStyles.caption}>
-                        {t('criteria')}: {event.criteria.join(",")}
-                      </p>
-                    )}
-                    {event.created_at && (
-                      <p className={textStyles.caption}>
-                        {new Date(event.created_at).toLocaleDateString(undefined, { day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit" })}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </CardContent>
-    </Card>
   )
 }
