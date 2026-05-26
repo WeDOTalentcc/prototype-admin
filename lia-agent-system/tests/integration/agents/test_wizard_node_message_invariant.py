@@ -40,6 +40,21 @@ def _graph_source_path() -> Path:
     return Path(p)
 
 
+def _wizard_source_paths() -> list[Path]:
+    """PR-10 (ONDA 3 sub-B): wizard nodes were split out of graph.py into
+    nodes/<x>.py files. Return graph.py + all nodes/*.py so AST scanners
+    can still find every node and every ws_stage_payload literal.
+    """
+    graph_path = _graph_source_path()
+    out = [graph_path]
+    nodes_dir = graph_path.parent / "nodes"
+    if nodes_dir.is_dir():
+        for sub in sorted(nodes_dir.glob("*.py")):
+            if sub.name != "__init__.py":
+                out.append(sub)
+    return out
+
+
 def _is_str_const(node: ast.AST | None, value: str) -> bool:
     return isinstance(node, ast.Constant) and node.value == value
 
@@ -206,9 +221,10 @@ def test_graph_contains_wizard_stage_payloads() -> None:
     para zero, ou a constante for renomeada silenciosamente, este teste
     falha antes do invariante real (S2) — protege o próprio scanner.
     """
-    src_path = _graph_source_path()
-    tree = ast.parse(src_path.read_text(encoding="utf-8"))
-    payloads = list(_walk_wizard_stage_dicts(tree))
+    payloads = []
+    for src_path in _wizard_source_paths():
+        tree = ast.parse(src_path.read_text(encoding="utf-8"))
+        payloads.extend(_walk_wizard_stage_dicts(tree))
     assert len(payloads) >= 10, (
         f"Expected ≥10 wizard_stage dict literals in graph.py "
         f"(15 canonical nodes + fairness paths), found {len(payloads)}. "
@@ -220,43 +236,43 @@ def test_graph_contains_wizard_stage_payloads() -> None:
 # S2 — INVARIANT: every wizard_stage payload's data dict has a "message" key
 # ---------------------------------------------------------------------------
 def test_every_wizard_stage_payload_has_data_message() -> None:
-    src_path = _graph_source_path()
-    source = src_path.read_text(encoding="utf-8")
-    tree = ast.parse(source)
-
+    # PR-10 (ONDA 3 sub-B): scan graph.py + nodes/*.py.
     offenders: list[str] = []
-    for payload_dict in _walk_wizard_stage_dicts(tree):
-        data_value = _dict_key_value(payload_dict, "data")
-        line = payload_dict.lineno
+    for src_path in _wizard_source_paths():
+        source = src_path.read_text(encoding="utf-8")
+        tree = ast.parse(source)
+        for payload_dict in _walk_wizard_stage_dicts(tree):
+            data_value = _dict_key_value(payload_dict, "data")
+            line = payload_dict.lineno
 
-        if data_value is None:
-            offenders.append(
-                f"L{line}: ws_stage_payload missing 'data' key entirely"
-            )
-            continue
+            if data_value is None:
+                offenders.append(
+                    f"L{line}: ws_stage_payload missing 'data' key entirely"
+                )
+                continue
 
-        resolved, status = _resolve_data_dict_literal(data_value, tree)
-        if resolved is None:
-            offenders.append(
-                f"L{line}: ws_stage_payload.data could not be resolved "
-                f"(type={type(data_value).__name__}, status={status}). "
-                "Inline the dict or bind it to a name in the same function "
-                "via assignment to a dict literal."
-            )
-            continue
+            resolved, status = _resolve_data_dict_literal(data_value, tree)
+            if resolved is None:
+                offenders.append(
+                    f"L{line}: ws_stage_payload.data could not be resolved "
+                    f"(type={type(data_value).__name__}, status={status}). "
+                    "Inline the dict or bind it to a name in the same function "
+                    "via assignment to a dict literal."
+                )
+                continue
 
-        if not _dict_has_key(resolved, "message"):
-            snippet = ast.get_source_segment(source, payload_dict) or ""
-            snippet_head = snippet.splitlines()[0][:120] if snippet else "?"
-            origin = (
-                f"resolved via {data_value.id} @ L{resolved.lineno}"
-                if status == "name_resolved" and isinstance(data_value, ast.Name)
-                else "literal"
-            )
-            offenders.append(
-                f"L{line}: ws_stage_payload.data ({origin}) has no 'message' "
-                f"key (starts: {snippet_head!r})"
-            )
+            if not _dict_has_key(resolved, "message"):
+                snippet = ast.get_source_segment(source, payload_dict) or ""
+                snippet_head = snippet.splitlines()[0][:120] if snippet else "?"
+                origin = (
+                    f"resolved via {data_value.id} @ L{resolved.lineno}"
+                    if status == "name_resolved" and isinstance(data_value, ast.Name)
+                    else "literal"
+                )
+                offenders.append(
+                    f"L{line}: ws_stage_payload.data ({origin}) has no 'message' "
+                    f"key (starts: {snippet_head!r})"
+                )
 
     assert not offenders, (
         "Wizard ws_stage_payload(s) without data.message detected. "
@@ -273,21 +289,21 @@ def test_every_wizard_stage_payload_has_data_message() -> None:
 # S3 — anti-pattern: data.message must NEVER be a literal empty string
 # ---------------------------------------------------------------------------
 def test_no_wizard_stage_payload_has_empty_string_message() -> None:
-    src_path = _graph_source_path()
-    tree = ast.parse(src_path.read_text(encoding="utf-8"))
-
+    # PR-10 (ONDA 3 sub-B): scan graph.py + nodes/*.py.
     offenders: list[str] = []
-    for payload_dict in _walk_wizard_stage_dicts(tree):
-        data_value = _dict_key_value(payload_dict, "data")
-        if not isinstance(data_value, ast.Dict):
-            continue
-        message_value = _dict_key_value(data_value, "message")
-        if message_value is None:
-            continue  # caught by S2
-        if _is_str_const(message_value, ""):
-            offenders.append(
-                f"L{payload_dict.lineno}: data.message is an empty string literal"
-            )
+    for src_path in _wizard_source_paths():
+        tree = ast.parse(src_path.read_text(encoding="utf-8"))
+        for payload_dict in _walk_wizard_stage_dicts(tree):
+            data_value = _dict_key_value(payload_dict, "data")
+            if not isinstance(data_value, ast.Dict):
+                continue
+            message_value = _dict_key_value(data_value, "message")
+            if message_value is None:
+                continue  # caught by S2
+            if _is_str_const(message_value, ""):
+                offenders.append(
+                    f"L{payload_dict.lineno}: data.message is an empty string literal"
+                )
 
     assert not offenders, (
         "Wizard ws_stage_payload with literally empty data.message:\n  - "
@@ -323,14 +339,18 @@ CANONICAL_NODE_NAMES = (
 
 @pytest.mark.parametrize("node_name", CANONICAL_NODE_NAMES)
 def test_canonical_node_function_exists(node_name: str) -> None:
-    src_path = _graph_source_path()
-    tree = ast.parse(src_path.read_text(encoding="utf-8"))
-    found = any(
-        isinstance(n, ast.FunctionDef) and n.name == node_name
-        for n in ast.walk(tree)
-    )
+    # PR-10 (ONDA 3 sub-B): scan graph.py + nodes/*.py.
+    found = False
+    for src_path in _wizard_source_paths():
+        tree = ast.parse(src_path.read_text(encoding="utf-8"))
+        if any(
+            isinstance(n, ast.FunctionDef) and n.name == node_name
+            for n in ast.walk(tree)
+        ):
+            found = True
+            break
     assert found, (
-        f"Canonical wizard node '{node_name}' missing from graph.py. "
+        f"Canonical wizard node '{node_name}' missing from graph.py or nodes/*.py. "
         "If renamed/removed, update CANONICAL_NODE_NAMES in this sentinel "
         "AND docs/architecture/wizard-flow.md §2."
     )

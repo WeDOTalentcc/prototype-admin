@@ -72,6 +72,25 @@ def _function_defs(path: Path) -> dict[str, ast.FunctionDef]:
     }
 
 
+def _function_defs_with_nodes(graph_path: Path) -> dict[str, ast.FunctionDef]:
+    """PR-10 (ONDA 3 sub-B): also scan nodes/<x>.py files that were
+    extracted from graph.py during the refactor. Returns merged dict so the
+    decorator check works whether the function lives in graph.py or in
+    nodes/<x>.py.
+    """
+    out: dict[str, ast.FunctionDef] = dict(_function_defs(graph_path))
+    nodes_dir = graph_path.parent / "nodes"
+    if nodes_dir.is_dir():
+        for sub in sorted(nodes_dir.glob("*.py")):
+            if sub.name == "__init__.py":
+                continue
+            try:
+                out.update(_function_defs(sub))
+            except Exception:
+                continue
+    return out
+
+
 # ---------------------------------------------------------------------------
 # Static checks (cheap, run first)
 # ---------------------------------------------------------------------------
@@ -82,7 +101,8 @@ class TestWizardGraphInstrumentation:
     @pytest.fixture(scope="class")
     def funcs(self) -> dict[str, ast.FunctionDef]:
         assert GRAPH_FILE.exists(), f"Graph file not found: {GRAPH_FILE}"
-        return _function_defs(GRAPH_FILE)
+        # PR-10 (ONDA 3 sub-B): include nodes/ split files in the AST scan.
+        return _function_defs_with_nodes(GRAPH_FILE)
 
     @pytest.mark.parametrize("node_name", EXPECTED_DECORATED_NODES)
     def test_node_has_wizard_traced_node_decorator(self, funcs, node_name):
