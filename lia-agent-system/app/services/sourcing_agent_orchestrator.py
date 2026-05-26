@@ -107,6 +107,7 @@ class SourcingAgentOrchestrator:
         criteria = await self._extract_criteria(reason, signal_type)
 
         # Persist signal
+        # SOURCING-SIGNAL-LEGACY-EXEMPT: Sprint 7B-3a Part 2 vai migrar para custom_agent_id canonical-only fail-closed. Marker removido lá.
         signal = SourcingAgentSignal(
             id=str(uuid.uuid4()),
             agent_id=agent_id,

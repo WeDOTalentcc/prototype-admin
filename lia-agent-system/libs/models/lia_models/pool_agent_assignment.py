@@ -59,6 +59,13 @@ class PoolAgentAssignment(Base):
     )
     created_by = Column(String(36), nullable=False)
 
+    # Sprint 7B-3a Part 1.5 v2 (2026-05-26): reverse relationship opcional pra SourcingAgentSignal.
+    # assignment_id no signal é nullable (ON DELETE SET NULL), então cascade NÃO é delete-orphan.
+    signals = relationship(
+        "SourcingAgentSignal",
+        back_populates="assignment",
+    )
+
     __table_args__ = (
         UniqueConstraint("talent_pool_id", "custom_agent_id", name="uq_pool_agent"),
         CheckConstraint(

@@ -110,6 +110,13 @@ class CustomAgent(Base):
         foreign_keys="AgentInstallation.source_agent_id",
         cascade="all, delete-orphan",
     )
+    # Sprint 7B-3a Part 1.5 v2 (2026-05-26): reverse relationship pra SourcingAgentSignal
+    # canonical write path (signals novos via custom_agent_id NOT NULL fail-closed).
+    signals = relationship(
+        "SourcingAgentSignal",
+        back_populates="custom_agent",
+        cascade="all, delete-orphan",
+    )
 
     __table_args__ = (
         Index("idx_custom_agents_company", "company_id"),

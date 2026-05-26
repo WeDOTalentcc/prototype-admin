@@ -50,7 +50,22 @@ class SourcingAgentSignal(Base):
     __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    agent_id = Column(UUID(as_uuid=True), ForeignKey("sourcing_agents.id", ondelete="CASCADE"), nullable=False)
+    # Sprint 7B-3a Part 1.5 v2 (migration 209): agent_id → NULLABLE.
+    # Signals históricos pré-Sprint 7A preservados (calibração). Signals novos
+    # (Part 2 full) usam custom_agent_id canonical-only fail-closed.
+    agent_id = Column(UUID(as_uuid=True), ForeignKey("sourcing_agents.id", ondelete="CASCADE"), nullable=True)
+    # Sprint 7B-3a Part 1.5 v2: canonical write path. NOT NULL = fail-closed.
+    custom_agent_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("custom_agents.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    # Sprint 7A migration 202: opcional, liga signal a um assignment talent_pool×agent.
+    assignment_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("pool_agent_assignments.id", ondelete="SET NULL"),
+        nullable=True,
+    )
     signal_type = Column(String(16), nullable=False)  # positive, negative
     candidate_id = Column(String(64), nullable=True)
     reason = Column(Text, nullable=False)
@@ -58,6 +73,8 @@ class SourcingAgentSignal(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
     agent = relationship("SourcingAgent", back_populates="signals")
+    custom_agent = relationship("CustomAgent", back_populates="signals")
+    assignment = relationship("PoolAgentAssignment", back_populates="signals")
 
     def __repr__(self):
-        return f"<Signal agent={self.agent_id} type={self.signal_type} criteria={self.criteria_extracted}>"
+        return f"<Signal custom_agent={self.custom_agent_id} type={self.signal_type} criteria={self.criteria_extracted}>"
