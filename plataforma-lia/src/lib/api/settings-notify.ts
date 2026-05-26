@@ -21,15 +21,31 @@ export interface SettingsUpdateDetail {
   value?: unknown
 }
 
+// Sprint 2.4 CR-3 (2026-05-26) — debounce per (actionId+section+field) key
+// pra evitar events prematuros durante typing/drag/slider. Antes do fix,
+// transcript Paulo capturou "[contexto] hiring_policies · default_duration_minutes = 3"
+// que era valor intermediário de typing (user provavelmente digitou "3" e
+// depois "30" ou abandonou — backend Pydantic schema ge=15 rejeitaria mas
+// evento UI disparava antes). 1500ms é safe-guard sem prejudicar UX.
+const _settingsUpdateDebounce: Map<string, ReturnType<typeof setTimeout>> = new Map()
+const SETTINGS_UPDATE_DEBOUNCE_MS = 1500
+
 export function notifyChatOfSettingsUpdate(detail: SettingsUpdateDetail): void {
   if (typeof window === "undefined") return
-  window.dispatchEvent(
-    new CustomEvent("lia:settings-updated", {
-      detail: {
-        ...detail,
-        source: "ui",
-        ts: Date.now(),
-      },
-    }),
-  )
+  const key = `${detail.actionId}|${detail.section}|${detail.field ?? ""}`
+  const existing = _settingsUpdateDebounce.get(key)
+  if (existing) clearTimeout(existing)
+  const timer = setTimeout(() => {
+    _settingsUpdateDebounce.delete(key)
+    window.dispatchEvent(
+      new CustomEvent("lia:settings-updated", {
+        detail: {
+          ...detail,
+          source: "ui",
+          ts: Date.now(),
+        },
+      }),
+    )
+  }, SETTINGS_UPDATE_DEBOUNCE_MS)
+  _settingsUpdateDebounce.set(key, timer)
 }

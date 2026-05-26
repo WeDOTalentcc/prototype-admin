@@ -497,7 +497,16 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
           silent: true,
         },
       };
-      setChatMessages((prev) => [...prev, note]);
+      // Sprint 2.4 CR-3 (2026-05-26) — respeitar metadata.silent: NÃO
+      // inserir em chatMessages quando silent=true. Antes do fix, system
+      // notes "[contexto] Recrutador editou via UI" apareciam visualmente
+      // no transcript apesar do flag silent (renderer não respeitava).
+      // Polluía a conversa sem benefício — LLM backend nem vê (TODO G9
+      // follow-up wire ainda pendente: POSTar pro backend pra LIA reagir
+      // proativamente no próximo turno).
+      if (!note.metadata?.silent) {
+        setChatMessages((prev) => [...prev, note]);
+      }
     };
     window.addEventListener("lia:settings-updated", onUpdated);
     return () => window.removeEventListener("lia:settings-updated", onUpdated);
