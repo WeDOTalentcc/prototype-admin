@@ -1031,6 +1031,73 @@ class MainOrchestrator:
                             "pergunte clarificação (regra anterior)."
                         )
 
+                    # Sprint 3.4 G9 wire (2026-05-26) — inject proactive
+                    # context notes from Settings hub. Frontend
+                    # settings-notify.ts (debounced 1500ms) POSTou notes
+                    # para Redis via ProactiveContextStore (Sprint 3.2/3.3).
+                    # Aqui, ao construir o system_prompt do agentic loop,
+                    # buscamos notes recentes do user+company e incluímos
+                    # em context_block. LLM próximo turn vê e reage
+                    # proativamente respeitando lia_persona.yaml
+                    # Anti-pattern #1 (NÃO bullet-list capabilities; sim,
+                    # contextual sugestões baseadas no que mudou).
+                    # Fail-open: Redis down -> empty list -> sem injeção.
+                    try:
+                        from app.shared.services.proactive_context_store import (
+                            ProactiveContextStore,
+                        )
+                        _pc_notes = await ProactiveContextStore.list_recent(
+                            company_id=str(_loop_company_id or ""),
+                            user_id=str(getattr(ctx, "user_id", None) or ""),
+                            limit=8,
+                        )
+                        if _pc_notes:
+                            _pc_lines = [
+                                "\n\n### Contexto recente das configurações (últimos 30min)\n",
+                                "O recrutador acabou de editar configurações via UI. "
+                                "Considere reagir proativamente (sugerir complementos, "
+                                "validar consistência, ou continuar silencioso se não "
+                                "houver follow-up útil). NUNCA enumere features (Anti-"
+                                "pattern #1) — comente APENAS o que mudou se relevante.",
+                                "",
+                            ]
+                            for _n in _pc_notes[:8]:
+                                _act = str(_n.get("action_id") or "")
+                                _sec = str(_n.get("section") or "")
+                                _fld = _n.get("field")
+                                _val = _n.get("value")
+                                _fld_part = f' · campo "{_fld}"' if _fld else ""
+                                _val_part = ""
+                                if _val is not None:
+                                    _val_str = str(_val)
+                                    if len(_val_str) > 200:
+                                        _val_str = _val_str[:200] + "…"
+                                    _val_part = f" = {_val_str}"
+                                _pc_lines.append(
+                                    f"- {_sec}{_fld_part}{_val_part}  (ação: {_act})"
+                                )
+                            _phase15_system_prompt += "\n".join(_pc_lines)
+                            logger.info(
+                                "[MainOrchestrator] Sprint 3.4 G9: injected %d proactive "
+                                "context notes (company=%s user=%s)",
+                                len(_pc_notes), _loop_company_id,
+                                getattr(ctx, "user_id", None),
+                            )
+                            # Clear notes consumed para evitar re-injeção
+                            # no próximo turn (LIA já viu). Fail-open.
+                            try:
+                                await ProactiveContextStore.clear_consumed(
+                                    company_id=str(_loop_company_id or ""),
+                                    user_id=str(getattr(ctx, "user_id", None) or ""),
+                                )
+                            except Exception:
+                                pass
+                    except Exception as _pc_exc:
+                        logger.debug(
+                            "[MainOrchestrator] proactive context inject failed (fail-open): %s",
+                            _pc_exc,
+                        )
+
                     _agentic_result = await agentic_loop.run(
                         user_message=ctx.message,
                         system_prompt=_phase15_system_prompt,
