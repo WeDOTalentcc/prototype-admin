@@ -621,6 +621,7 @@ class OnboardingOrchestrator:
                     answered_fields=raw.get("answered_fields", {}),
                     pending_extraction=raw.get("pending_extraction", {}),
                     skipped_fields=set(raw.get("skipped_fields", [])),
+                    last_asked_field=raw.get("last_asked_field"),
                 )
             except Exception as e:
                 logger.warning(
@@ -629,8 +630,12 @@ class OnboardingOrchestrator:
                 )
                 status = None
 
-        # Primeira chamada (sem status ou em INTRO) -> start.
-        if status is None or status.state == SettingsExtractionState.INTRO:
+        # Primeira chamada (sem status) -> start.
+        # Apos start, status fica em state=INTRO ate primeira user response.
+        # runner_process trata transicao INTRO -> ASKING via handle_user_response.
+        # Bug fix Sprint A.8: NAO re-rodar runner_start quando status restored=INTRO
+        # — isso causava loop infinito INTRO. (Flagged pelo E2E agent.)
+        if status is None:
             response: RunnerResponse = await runner_start(company_id=company_id)
         else:
             response = await runner_process(
@@ -641,12 +646,15 @@ class OnboardingOrchestrator:
             )
 
         # Persiste novo status como JSON em session.
+        # Bug fix Sprint A.8: incluir last_asked_field pra preservar
+        # contexto de re-ask/skip entre requests. (Flagged pelo E2E agent.)
         session.settings_extraction_status_json = _json.dumps({
             "state": response.status.state.value,
             "current_block_id": response.status.current_block_id,
             "answered_fields": response.status.answered_fields,
             "pending_extraction": response.status.pending_extraction,
             "skipped_fields": list(response.status.skipped_fields),
+            "last_asked_field": response.status.last_asked_field,
         })
 
         await self._audit(
