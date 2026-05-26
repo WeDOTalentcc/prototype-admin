@@ -83,7 +83,7 @@ export function UserList({
       )
       onSalaryGrantChange?.()
     } catch (err) {
-      // eslint-disable-next-line no-console
+       
       console.warn('[Sprint 8] sensitive PII grant toggle failed', err)
     } finally {
       setGrantingPiiFor(null)
