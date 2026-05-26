@@ -8,6 +8,7 @@ import type {
   SalaryBand,
   VariableCompItem,
 } from "./compensation-policies-types"
+import { ChipMultiSelect } from "@/components/settings/_shared"
 import {
   defaultPolicy,
   POLICY_TYPE_OPTIONS,
@@ -31,41 +32,6 @@ const TABS: { id: Tab; label: string }[] = [
   { id: "validity",    label: "Vigência & Aprovação" },
 ]
 
-// ---------------------------------------------------------------------------
-// ChipMultiSelect (reutilizável interno)
-// ---------------------------------------------------------------------------
-
-function ChipMultiSelect({
-  options,
-  value,
-  onChange,
-}: {
-  options: readonly { id: string; label: string }[]
-  value: string[]
-  onChange: (v: string[]) => void
-}) {
-  const toggle = (id: string) => {
-    onChange(value.includes(id) ? value.filter((v) => v !== id) : [...value, id])
-  }
-  return (
-    <div className="flex flex-wrap gap-2">
-      {options.map((opt) => (
-        <button
-          key={opt.id}
-          type="button"
-          onClick={() => toggle(opt.id)}
-          className={`rounded-full border px-3 py-1 text-xs transition-all ${
-            value.includes(opt.id)
-              ? "border-wedo-cyan bg-wedo-cyan/10 text-wedo-cyan"
-              : "border-lia-border-default bg-lia-bg-elevated text-lia-text-secondary hover:border-wedo-cyan/50"
-          }`}
-        >
-          {opt.label}
-        </button>
-      ))}
-    </div>
-  )
-}
 
 // ---------------------------------------------------------------------------
 // SalaryBandsTab
