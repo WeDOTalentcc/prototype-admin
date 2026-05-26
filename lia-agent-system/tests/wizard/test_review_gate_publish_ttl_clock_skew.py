@@ -34,11 +34,21 @@ _GRAPH_FILE = (
     Path(__file__).resolve().parents[2]
     / "app/domains/job_creation/graph.py"
 )
+# PR-10 step 17: review_gate_node moved to nodes/review_gate.py.
+# Source-string sentinels concatenate both to remain robust regardless
+# of where the code physically lives.
+_REVIEW_GATE_NODE_FILE = (
+    Path(__file__).resolve().parents[2]
+    / "app/domains/job_creation/nodes/review_gate.py"
+)
 
 
 def _read_source() -> str:
     assert _GRAPH_FILE.exists(), f"missing canonical file: {_GRAPH_FILE}"
-    return _GRAPH_FILE.read_text(encoding="utf-8")
+    parts = [_GRAPH_FILE.read_text(encoding="utf-8")]
+    if _REVIEW_GATE_NODE_FILE.exists():
+        parts.append(_REVIEW_GATE_NODE_FILE.read_text(encoding="utf-8"))
+    return "\n".join(parts)
 
 
 def test_ttl_check_uses_clip_not_raw_difference() -> None:

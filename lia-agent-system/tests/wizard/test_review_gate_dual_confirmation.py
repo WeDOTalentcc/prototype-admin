@@ -29,11 +29,19 @@ _REVIEW_GATE_FILE = (
     Path(__file__).resolve().parents[2]
     / "app/domains/job_creation/graph.py"
 )
+# PR-10 step 17: review_gate_node moved to nodes/review_gate.py.
+_REVIEW_GATE_NODE_FILE = (
+    Path(__file__).resolve().parents[2]
+    / "app/domains/job_creation/nodes/review_gate.py"
+)
 
 
 def _read_source() -> str:
     assert _REVIEW_GATE_FILE.exists(), f"missing canonical file: {_REVIEW_GATE_FILE}"
-    return _REVIEW_GATE_FILE.read_text(encoding="utf-8")
+    parts = [_REVIEW_GATE_FILE.read_text(encoding="utf-8")]
+    if _REVIEW_GATE_NODE_FILE.exists():
+        parts.append(_REVIEW_GATE_NODE_FILE.read_text(encoding="utf-8"))
+    return "\n".join(parts)
 
 
 def test_dual_confirmation_clears_gate_clarify_message() -> None:
