@@ -13,6 +13,7 @@ import {
   type PipelineTemplate,
   type CompanyDefaultQuestion,
 } from "./edit-job.types"
+import { applyPipelineTemplateCore } from "./apply-pipeline-template"
 import type { Job as PageJob } from "@/components/jobs/jobsPageTypes"
 
 interface UseEditJobProps {
@@ -203,22 +204,24 @@ export function useEditJob({ isOpen, job: rawJob, onSave, onClose }: UseEditJobP
     }
   }
 
-  const applyPipelineTemplate = (templateId: string) => {
+  const applyPipelineTemplate = async (templateId: string): Promise<void> => {
     const template = pipelineTemplates.find(t => t.id === templateId)
-    if (!template) return
-    
-    const stages: InterviewStage[] = template.stages.map((s, idx) => ({
-      stageName: s.name,
-      order: s.order || idx + 1,
-      sla: s.sla_days,
-      type: s.type === 'automatic' ? 'automated' : s.type as 'automated' | 'manual' | 'hybrid'
-    }))
-    
-    setFormData(prev => ({ ...prev, interviewStages: stages }))
+    const vacancyId = job?.backendId || job?.jobId
+    const result = await applyPipelineTemplateCore(
+      { vacancyId, template },
+      templateId,
+    )
+    if (result.mode === 'error') {
+      toast.error(result.message)
+      return
+    }
+    setFormData(prev => ({ ...prev, interviewStages: result.stages }))
     setSelectedTemplateId(templateId)
-    toast.success(`Template "${template.name}" aplicado com sucesso`)
-    
-    fetch(`/api/backend-proxy/company/pipeline-templates/${templateId}/increment-usage`, { method: 'POST' }).catch((err) => { console.warn('[useEditJob] increment-usage fire-and-forget failed', err) })
+    if (result.mode === 'persisted') {
+      toast.success(`Template "${result.templateName}" aplicado e salvo`)
+    } else {
+      toast.success(`Template "${result.templateName}" aplicado — salve a vaga para confirmar`)
+    }
   }
 
 

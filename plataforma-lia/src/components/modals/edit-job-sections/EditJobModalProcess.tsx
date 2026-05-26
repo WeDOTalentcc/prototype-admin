@@ -29,7 +29,7 @@ interface EditJobModalProcessProps {
   pipelineTemplates: PipelineTemplate[]
   isLoadingTemplates: boolean
   selectedTemplateId: string
-  applyPipelineTemplate: (id: string) => void
+  applyPipelineTemplate: (id: string) => Promise<void>
   fetchPipelineTemplates: () => void
 }
 
