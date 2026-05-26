@@ -1360,13 +1360,184 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
 #   - data.templates: top-3 com {template_id, name, description, stages_count, score}
 #   - data.suggested_template_id: top-1 ou None
 #   - data.allow_skip: True
+
+# Sprint Pipeline Templates Gap #7 (2026-05-26) — apply helpers para o node.
+def _apply_pipeline_template_to_state(state: dict, template_id: str) -> Optional[Dict[str, Any]]:
+    """Translate template.stages → vacancy.interview_stages, fail-open.
+
+    Sync wrapper para uso dentro de pipeline_template_node. Usa
+    AsyncSessionLocal + asyncio.run (pattern canonical do graph audit blocks).
+    """
+    try:
+        import asyncio as _asyncio
+        import uuid as _uuid
+        from app.core.database import AsyncSessionLocal
+        from app.domains.pipeline.repositories.pipeline_template_repository import (
+            PipelineTemplateRepository,
+        )
+        from app.domains.pipeline.services.pipeline_template_service import (
+            translate_template_stages_to_interview_stages,
+        )
+
+        company_id = str(state.get("workspace_id") or state.get("company_id") or "")
+        if not company_id:
+            return None
+
+        async def _run():
+            async with AsyncSessionLocal() as session:
+                repo = PipelineTemplateRepository(session)
+                template = await repo.get_by_id(_uuid.UUID(template_id), company_id)
+                if not template:
+                    return None
+                stages_translated = translate_template_stages_to_interview_stages(template.stages or [])
+                await repo.increment_usage(template)
+                return {"interview_stages": stages_translated, "template_name": template.name}
+
+        return _asyncio.run(_run())
+    except Exception as exc:  # noqa: BLE001 — fail-open por design
+        logger.warning(
+            "_apply_pipeline_template_to_state fail-open (graph continua com default): %s",
+            exc,
+        )
+        return None
+
+
+def _emit_pipeline_template_audit(
+    state: dict,
+    *,
+    action: str,
+    template_id: Optional[str],
+    extra: Optional[Dict[str, Any]] = None,
+) -> None:
+    """Emit audit log canonical (REGRA #1 ACH-026 + LGPD trail).
+
+    Fail-open: audit failure NUNCA bloqueia graph (igual ao bloco de audit
+    do jd_enrichment_node).
+    """
+    try:
+        import asyncio as _asyncio
+        from app.shared.compliance.audit_service import audit_service
+        from app.models.audit_log import DecisionType
+
+        company_id = str(state.get("workspace_id") or state.get("company_id") or "")
+        if not company_id:
+            return
+        reasoning = [
+            f"action: {action}",
+            f"template_id: {template_id}",
+            f"stage: pipeline_template",
+        ]
+        if extra:
+            for k, v in extra.items():
+                reasoning.append(f"{k}: {v}")
+        _asyncio.run(audit_service.log_decision(
+            company_id=company_id,
+            agent_name="job_creation:pipeline_template",
+            decision_type=DecisionType.COMPANY_SETTINGS_CHANGE.value,
+            action=action,
+            decision=f"{action}: {template_id or 'default'}",
+            reasoning=reasoning,
+            criteria_used=["template_id", "company_id", "stage"],
+            actor_user_id=state.get("user_id") or state.get("created_by"),
+            human_review_required=False,
+        ))
+    except Exception as exc:  # noqa: BLE001
+        logger.warning(
+            "[pipeline_template] audit emission failed (fail-open): %s", exc,
+        )
+
+
 def pipeline_template_node(state: JobCreationState) -> JobCreationState:
     """HITL stage canonical — sugere pipeline template ou permite skip.
 
+    Fluxo canonical (Gap #7 fix 2026-05-26):
+    - Primeira passagem: emite ws_stage_payload com suggestions + requires_approval=True.
+    - Re-entrada (recrutador respondeu): parse raw_input para detectar action canonical:
+        * "Aplicar template de pipeline <uuid>" → apply: translate stages + persist em state
+        * "Template de pipeline aplicado, pode seguir" → ack apenas (frontend já fez fetch)
+        * "Usar pipeline padrão da empresa" → skip: state.pipeline_template_skipped=True
+
     Fail-open: DB suggestion miss → legacy heuristic fallback → allow_skip.
-    NUNCA crasha o graph. NUNCA persiste no DB (deferred to publish).
+    NUNCA crasha o graph. Apply de stages persiste em state.interview_stages
+    (publish_node lê depois pra criar vacancy com pipeline_template_id correto).
     """
+    import re as _re
+
     t0 = time.time()
+
+    # ── Gap #7 fix: parse user re-entry FIRST ──
+    # Se recrutador já escolheu (template_id presente OU explicit skip), pula emit.
+    raw_input = (state.get("raw_input") or state.get("user_query") or "").strip()
+    already_chosen = bool(state.get("pipeline_template_id")) or bool(state.get("pipeline_template_skipped"))
+
+    if raw_input and not already_chosen:
+        # Pattern 1: explicit apply with template_id UUID
+        m_apply = _re.search(
+            r"aplicar.*?template.*?pipeline.*?([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})",
+            raw_input,
+            _re.IGNORECASE,
+        )
+        # Pattern 2: ack (frontend already applied via separate fetch)
+        m_ack = _re.search(r"template.*?pipeline.*?aplicad[oa]", raw_input, _re.IGNORECASE)
+        # Pattern 3: skip / use company default
+        m_skip = _re.search(r"(pipeline.*?padr[ãa]o.*?empresa|usar.*?padr[ãa]o.*?empresa|pular.*?template)", raw_input, _re.IGNORECASE)
+
+        if m_apply:
+            template_id_str = m_apply.group(1)
+            logger.info("[JobCreation:pipeline_template] APPLY detected: template_id=%s", template_id_str)
+            applied = _apply_pipeline_template_to_state(state, template_id_str)
+            if applied:
+                _emit_pipeline_template_audit(
+                    state,
+                    action="pipeline_template_applied_in_wizard",
+                    template_id=template_id_str,
+                    extra={"source": "wizard_explicit", "raw_input_preview": raw_input[:80]},
+                )
+                return {
+                    **state,
+                    "current_stage": "pipeline_template",
+                    "pipeline_template_id": template_id_str,
+                    "interview_stages": applied.get("interview_stages", []),
+                    "stage_history": (state.get("stage_history") or []) + ["pipeline_template"],
+                    "completeness": calculate_completeness("pipeline_template"),
+                    "requires_approval": False,
+                }
+            # Apply failed (template not found / cross-tenant) → fall through to re-emit
+
+        elif m_ack:
+            logger.info("[JobCreation:pipeline_template] ACK detected (frontend already applied)")
+            _emit_pipeline_template_audit(
+                state,
+                action="pipeline_template_applied_ack",
+                template_id=state.get("pipeline_template_id"),
+                extra={"raw_input_preview": raw_input[:80]},
+            )
+            return {
+                **state,
+                "current_stage": "pipeline_template",
+                "stage_history": (state.get("stage_history") or []) + ["pipeline_template"],
+                "completeness": calculate_completeness("pipeline_template"),
+                "requires_approval": False,
+            }
+
+        elif m_skip:
+            logger.info("[JobCreation:pipeline_template] SKIP detected (use company default)")
+            _emit_pipeline_template_audit(
+                state,
+                action="pipeline_template_skipped",
+                template_id=None,
+                extra={"source": "wizard_explicit", "raw_input_preview": raw_input[:80]},
+            )
+            return {
+                **state,
+                "current_stage": "pipeline_template",
+                "pipeline_template_skipped": True,
+                "stage_history": (state.get("stage_history") or []) + ["pipeline_template"],
+                "completeness": calculate_completeness("pipeline_template"),
+                "requires_approval": False,
+            }
+        # else: free-text não matched → cai no emit (LIA re-pergunta)
+
     logger.info("[JobCreation:pipeline_template] Starting (stage idx 2)")
 
     parsed_title = state.get("parsed_title")
@@ -5069,6 +5240,12 @@ def create_job_creation_graph(
                 "end": END,
             },
         )
+
+    # Sprint Pipeline Templates 2026-05-26 — Opção B (Gap #7 fix 2026-05-26).
+    # Linear edge from pipeline_template to bigfive — sem isso, jd_gate roteia para
+    # pipeline_template MAS pipeline_template não tem destino e graph termina em __end__,
+    # tornando bigfive/salary/competency/wsi/eligibility/review/publish/etc unreachable.
+    builder.add_edge("pipeline_template", "bigfive")
 
     # F2+F3 -> salary -> F4+F5
     builder.add_edge("bigfive", "salary")
