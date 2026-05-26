@@ -1366,12 +1366,21 @@ def _apply_pipeline_template_to_state(state: dict, template_id: str) -> Optional
     """Translate template.stages → vacancy.interview_stages, fail-open.
 
     Sync wrapper para uso dentro de pipeline_template_node. Usa
-    AsyncSessionLocal + asyncio.run (pattern canonical do graph audit blocks).
+    AsyncSessionLocal + run_coro_in_threadpool (canonical async helper).
+
+    PR-4 (2026-05-26): substituído _asyncio.run() por run_coro_in_threadpool()
+    do app.domains.job_creation.helpers.async_audit. Python 3.12+ raise
+    RuntimeError quando há event loop ativo + asyncio.run — sync nodes do
+    LangGraph SEMPRE rodam num event loop, então asyncio.run aqui era
+    silent-failure (template nunca aplicado em runtime). Helper canonical
+    delega para ThreadPoolExecutor + asyncio.run em thread separada.
     """
     try:
-        import asyncio as _asyncio
         import uuid as _uuid
         from app.core.database import AsyncSessionLocal
+        from app.domains.job_creation.helpers.async_audit import (
+            run_coro_in_threadpool,
+        )
         from app.domains.pipeline.repositories.pipeline_template_repository import (
             PipelineTemplateRepository,
         )
@@ -1393,11 +1402,12 @@ def _apply_pipeline_template_to_state(state: dict, template_id: str) -> Optional
                 await repo.increment_usage(template)
                 return {"interview_stages": stages_translated, "template_name": template.name}
 
-        return _asyncio.run(_run())
+        return run_coro_in_threadpool(lambda: _run())
     except Exception as exc:  # noqa: BLE001 — fail-open por design
         logger.warning(
             "_apply_pipeline_template_to_state fail-open (graph continua com default): %s",
             exc,
+            exc_info=True,
         )
         return None
 
