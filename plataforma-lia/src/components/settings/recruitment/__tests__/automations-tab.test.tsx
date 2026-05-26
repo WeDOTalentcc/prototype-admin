@@ -184,7 +184,9 @@ describe("AutomationsTab — API wiring (PR-AUTO)", () => {
     );
   });
 
-  it("faz fetch para /api/backend-proxy/automations com company_id correto", async () => {
+  it("faz fetch para /api/backend-proxy/automations SEM company_id no URL (REGRA 2 canonical)", async () => {
+    // REGRA 2 CLAUDE.md user-global: company_id NUNCA via query/body.
+    // Backend extrai do JWT via Depends(require_company_id). Frontend stripped.
     renderWithIntl(<AutomationsTab onSettingsChange={() => {}} />);
 
     await waitFor(() => {
@@ -194,7 +196,8 @@ describe("AutomationsTab — API wiring (PR-AUTO)", () => {
     });
 
     const url = (fetch as ReturnType<typeof vi.fn>).mock.calls[0][0] as string;
-    expect(url).toContain("company_id=test-company-123");
+    // Sensor canonical: a URL NÃO pode conter company_id query param.
+    expect(url).not.toContain("company_id=");
   });
 
   it("exibe nome da automação retornada pela API", async () => {

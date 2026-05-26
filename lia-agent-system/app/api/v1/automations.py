@@ -19,7 +19,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db, get_tenant_db
 from app.domains.automation.services.automation_service import AutomationService, automation_service, get_automation_service
 from app.models.automation import ActionType, TriggerType
-from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
@@ -75,14 +75,14 @@ class TriggerAutomationRequest(WeDoBaseModel):
 
 @router.get("", summary="List automations", response_model=None)
 async def list_automations(
-    company_id: str = Query(..., description="Company ID (required)"),
+    company_id: str = Depends(require_company_id),  # JWT canonical (REGRA 2)
     is_active: bool | None = Query(None, description="Filter by active status"),
     trigger_type: str | None = Query(None, description="Filter by trigger type"),
     limit: int = Query(50, ge=1, le=200, description="Max results"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
     db: AsyncSession = Depends(get_db),
-    auto_svc: AutomationService = Depends(get_automation_service),
-_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    auto_svc: AutomationService = Depends(get_automation_service)
+):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     List all automations for a company.
@@ -117,11 +117,11 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 @router.post("", status_code=status.HTTP_201_CREATED, summary="Create automation", response_model=None)
 async def create_automation(
     data: CreateAutomationRequest,
-    company_id: str = Query(..., description="Company ID (required)"),
+    company_id: str = Depends(require_company_id),  # JWT canonical (REGRA 2)
     user_id: str | None = Query(None, description="User creating the automation"),
     db: AsyncSession = Depends(get_tenant_db),
-    auto_svc: AutomationService = Depends(get_automation_service),
-_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    auto_svc: AutomationService = Depends(get_automation_service)
+):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Create a new automation.
@@ -184,10 +184,10 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 @router.get("/{automation_id}", summary="Get automation", response_model=None)
 async def get_automation(
     automation_id: str,
-    company_id: str = Query(..., description="Company ID (required)"),
+    company_id: str = Depends(require_company_id),  # JWT canonical (REGRA 2)
     db: AsyncSession = Depends(get_db),
-    auto_svc: AutomationService = Depends(get_automation_service),
-_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    auto_svc: AutomationService = Depends(get_automation_service)
+):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get a single automation by ID.
@@ -226,11 +226,11 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 async def update_automation(
     automation_id: str,
     data: UpdateAutomationRequest,
-    company_id: str = Query(..., description="Company ID (required)"),
+    company_id: str = Depends(require_company_id),  # JWT canonical (REGRA 2)
     user_id: str | None = Query(None, description="User updating the automation"),
     db: AsyncSession = Depends(get_tenant_db),
-    auto_svc: AutomationService = Depends(get_automation_service),
-_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    auto_svc: AutomationService = Depends(get_automation_service)
+):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Update an existing automation.
@@ -292,10 +292,10 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 @router.delete("/{automation_id}", summary="Delete automation", response_model=None)
 async def delete_automation(
     automation_id: str,
-    company_id: str = Query(..., description="Company ID (required)"),
+    company_id: str = Depends(require_company_id),  # JWT canonical (REGRA 2)
     db: AsyncSession = Depends(get_tenant_db),
-    auto_svc: AutomationService = Depends(get_automation_service),
-_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    auto_svc: AutomationService = Depends(get_automation_service)
+):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Delete an automation.
@@ -336,10 +336,10 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 async def test_automation(
     automation_id: str,
     data: TestAutomationRequest = None,
-    company_id: str = Query(..., description="Company ID (required)"),
+    company_id: str = Depends(require_company_id),  # JWT canonical (REGRA 2)
     db: AsyncSession = Depends(get_db),
-    auto_svc: AutomationService = Depends(get_automation_service),
-_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    auto_svc: AutomationService = Depends(get_automation_service)
+):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Test an automation without executing the actual action.
@@ -386,10 +386,10 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 @router.post("/trigger", summary="Manually trigger automations", response_model=None)
 async def trigger_automations(
     data: TriggerAutomationRequest,
-    company_id: str = Query(..., description="Company ID (required)"),
+    company_id: str = Depends(require_company_id),  # JWT canonical (REGRA 2)
     db: AsyncSession = Depends(get_db),
-    auto_svc: AutomationService = Depends(get_automation_service),
-_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    auto_svc: AutomationService = Depends(get_automation_service)
+):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Manually trigger automations for a specific event.
@@ -424,12 +424,12 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 @router.get("/{automation_id}/logs", summary="Get automation execution logs", response_model=None)
 async def get_automation_logs(
     automation_id: str,
-    company_id: str = Query(..., description="Company ID (required)"),
+    company_id: str = Depends(require_company_id),  # JWT canonical (REGRA 2)
     limit: int = Query(50, ge=1, le=200, description="Max results"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
     db: AsyncSession = Depends(get_db),
-    auto_svc: AutomationService = Depends(get_automation_service),
-_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    auto_svc: AutomationService = Depends(get_automation_service)
+):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get execution logs for a specific automation.

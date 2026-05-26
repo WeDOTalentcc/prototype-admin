@@ -65,7 +65,8 @@ export function AutomationsTab({ onSettingsChange: _onSettingsChange }: { onSett
   } = useQuery({
     queryKey: SETTINGS_QUERY_KEYS.automations(companyId ?? ""),
     queryFn: async () => {
-      const res = await apiFetch(`/api/backend-proxy/automations?company_id=${encodeURIComponent(companyId ?? "")}`)
+      // company_id NUNCA via query — backend extrai do JWT (REGRA 2 CLAUDE.md user-global)
+      const res = await apiFetch(`/api/backend-proxy/automations`)
       const json = await res.json()
       if (json?.success && Array.isArray(json?.data?.automations)) {
         return json.data.automations.map(mapAutomation) as WorkflowItem[]
