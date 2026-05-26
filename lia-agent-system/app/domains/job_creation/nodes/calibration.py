@@ -180,6 +180,3 @@ def calibration_node(state: JobCreationState) -> JobCreationState:
     logger.info("[JobCreation:calibration] %d/%d approved | %0.fms", approved_count, threshold, elapsed)
     return {**state, **updates}
 
-
-# handoff_node moved to nodes/handoff.py (PR-10 ONDA 3 sub-B)
-from app.domains.job_creation.nodes.handoff import handoff_node  # noqa: F401, E402

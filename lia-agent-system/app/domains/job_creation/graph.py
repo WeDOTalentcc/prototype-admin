@@ -2607,6 +2607,10 @@ def publish_node(state: JobCreationState) -> JobCreationState:
 from app.domains.job_creation.nodes.calibration import calibration_node  # noqa: F401, E402
 
 
+# handoff_node moved to nodes/handoff.py (PR-10 ONDA 3 sub-B)
+from app.domains.job_creation.nodes.handoff import handoff_node  # noqa: F401, E402
+
+
 
 
 # ---------------------------------------------------------------------------
