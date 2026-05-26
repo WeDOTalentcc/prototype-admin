@@ -17,6 +17,7 @@ from app.domains.job_creation.state import (
 from app.domains.job_creation.helpers.ws_payload_builder import (
     build_ws_stage_payload,
 )
+from app.domains.job_creation.helpers.i18n import msg
 
 logger = logging.getLogger(__name__)
 
@@ -158,13 +159,9 @@ def salary_node(state: JobCreationState) -> JobCreationState:
             data={
                 # Task #1099 — invariant: data.message obrigatório.
                 "message": (
-                    "Faixa salarial e benefícios prontos"
-                    + (
-                        " (benchmark indisponível — revise manualmente)."
-                        if salary_used_fallback
-                        else "."
-                    )
-                    + " Quer ajustar algo ou seguir para competências?"
+                    msg("salary.ready_fallback")
+                    if salary_used_fallback
+                    else msg("salary.ready")
                 ),
                 "salary_min": state.get("salary_min"),
                 "salary_max": state.get("salary_max"),

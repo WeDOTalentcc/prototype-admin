@@ -17,6 +17,7 @@ from app.domains.job_creation.state import (
 from app.domains.job_creation.helpers.ws_payload_builder import (
     build_ws_stage_payload,
 )
+from app.domains.job_creation.helpers.i18n import msg
 
 logger = logging.getLogger(__name__)
 
@@ -74,14 +75,9 @@ def review_node(state: JobCreationState) -> JobCreationState:
             data={
                 # Task #1099 — invariant: data.message obrigatório.
                 "message": (
-                    "Tudo pronto para publicar. Quer revisar algo ou "
-                    "publicar a vaga agora?"
+                    msg("review.ready")
                     if readiness.get("ready")
-                    else (
-                        "Antes de publicar, ainda faltam alguns campos: "
-                        + ", ".join(readiness.get("missing", []) or ["informações"])
-                        + ". Quer ajustar?"
-                    )
+                    else msg("review.missing_fields", missing=", ".join(readiness.get("missing", []) or ["informações"]))
                 ),
                 "readiness": readiness,
                 "defaults_applied": defaults_applied,

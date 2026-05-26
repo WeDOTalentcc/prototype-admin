@@ -15,6 +15,8 @@ from app.domains.job_creation.state import JobCreationState
 from app.domains.job_creation.helpers.ws_payload_builder import (
     build_ws_stage_payload,
 )
+from app.domains.job_creation.helpers.i18n import msg
+from app.domains.job_creation.helpers.i18n import msg
 
 logger = logging.getLogger(__name__)
 
@@ -53,9 +55,8 @@ def handoff_node(state: JobCreationState) -> JobCreationState:
             data={
                 # Task #1099 — invariant: data.message obrigatório.
                 "message": (
-                    "Vaga pronta! Vou levar você para a página da vaga"
-                    + (f" ({handoff_url})." if handoff_url else ".")
-                    + (f" Link de divulgação: {share_link}." if share_link else "")
+                    (msg("handoff.job_ready_with_url", handoff_url=handoff_url) if handoff_url else msg("handoff.job_ready") + ".")
+                    + (msg("handoff.share_link_suffix", share_link=share_link) if share_link else "")
                 ),
                 "job_id": job_id,
                 "handoff_url": handoff_url,

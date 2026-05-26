@@ -17,6 +17,7 @@ from app.domains.job_creation.state import (
 from app.domains.job_creation.helpers.ws_payload_builder import (
     build_ws_stage_payload,
 )
+from app.domains.job_creation.helpers.i18n import msg
 from app.domains.job_creation.helpers.async_audit import (
     emit_audit_fire_and_forget,
     run_coro_in_threadpool,
@@ -186,7 +187,7 @@ def wsi_questions_gate_node(state: JobCreationState) -> JobCreationState:
             "gate_resume_message": "",
             "gate_clarify_message": (
                 output.conversational_reply
-                or "Você quer aprovar o pacote, regenerar tudo, editar/adicionar/remover alguma pergunta específica?"
+                or msg("wsi_questions_gate.approve_or_regen")
             ),
             "gate_last_intent": output.intent,
             "gate_last_confidence": output.confidence,
@@ -250,7 +251,7 @@ def wsi_questions_gate_node(state: JobCreationState) -> JobCreationState:
                 extracted.get("question_index"), len(instruction),
             )
             next_state["gate_clarify_message"] = (
-                f"Qual pergunta você quer editar (1 a {total_q}) e o que mudar nela?"
+                msg("wsi_questions_gate.edit_question_clarify", total_q=total_q)
             )
         else:
             next_state["wsi_questions_pending_edit"] = {
@@ -273,7 +274,7 @@ def wsi_questions_gate_node(state: JobCreationState) -> JobCreationState:
                 "[JobCreation:wsi_questions_gate] add_question sem topic → clarify",
             )
             next_state["gate_clarify_message"] = (
-                "Sobre que tópico você quer a pergunta nova?"
+                msg("wsi_questions_gate.add_question_topic")
             )
         else:
             next_state["wsi_questions_pending_add"] = {"topic": topic}
@@ -293,7 +294,7 @@ def wsi_questions_gate_node(state: JobCreationState) -> JobCreationState:
                 extracted.get("question_index"), total_q,
             )
             next_state["gate_clarify_message"] = (
-                f"Qual pergunta você quer remover (1 a {total_q})?"
+                msg("wsi_questions_gate.remove_question_clarify", total_q=total_q)
             )
         else:
             new_questions = current_questions[: idx - 1] + current_questions[idx:]
@@ -320,13 +321,13 @@ def wsi_questions_gate_node(state: JobCreationState) -> JobCreationState:
         next_state["gate_clarify_message"] = (
             _sonnet_reply
             or output.conversational_reply
-            or "Posso explicar a metodologia WSI ou o pacote atual. O que você quer saber?"
+            or msg("wsi_questions_gate.explain_clarify")
         )
 
     else:
         logger.warning("[JobCreation:wsi_questions_gate] unhandled intent=%r → clarify", intent)
         next_state["gate_clarify_message"] = (
-            "Você quer aprovar, regenerar, editar, adicionar ou remover alguma pergunta?"
+            msg("wsi_questions_gate.final_clarify")
         )
 
     return next_state

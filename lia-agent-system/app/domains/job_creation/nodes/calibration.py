@@ -17,6 +17,7 @@ from app.domains.job_creation.state import (
 from app.domains.job_creation.helpers.ws_payload_builder import (
     build_ws_stage_payload,
 )
+from app.domains.job_creation.helpers.i18n import msg
 
 logger = logging.getLogger(__name__)
 
@@ -84,28 +85,15 @@ def calibration_node(state: JobCreationState) -> JobCreationState:
         _share_link = state.get("share_link") or ""
         _wsi_n = len(state.get("wsi_questions") or [])
         _calib_message = (
-            "🎉 Vaga publicada com sucesso! "
-            + (f"Link de divulgação: {_share_link}. " if _share_link else "")
-            + (
-                f"Já está visível para captação. Quando os primeiros candidatos "
-                f"se inscreverem, vou usar suas {_wsi_n} perguntas WSI para "
-                "calibrar a triagem inicial — é só voltar para revisar."
+            (msg("calibration.fresh_publish_with_wsi", wsi_n=_wsi_n)
                 if _wsi_n
-                else "Já está visível para captação. Quando candidatos se "
-                "inscreverem, vou ajudar você a calibrar a triagem por aqui."
-            )
+                else msg("calibration.fresh_publish_no_wsi"))
+            + (msg("handoff.share_link_suffix", share_link=_share_link) if _share_link else "")
         )
     elif complete:
-        _calib_message = (
-            f"Calibração concluída — {approved_count}/{threshold} "
-            "candidatos aprovados. Posso encerrar a configuração da vaga?"
-        )
+        _calib_message = msg("calibration.complete", approved_count=approved_count, threshold=threshold)
     else:
-        _calib_message = (
-            f"Carreguei {len(candidates)} candidato(s) para "
-            f"calibração ({approved_count}/{threshold} aprovados). "
-            "Continue avaliando para liberar a publicação completa."
-        )
+        _calib_message = msg("calibration.in_progress", candidates_count=len(candidates), approved_count=approved_count, threshold=threshold)
 
     updates: Dict[str, Any] = {
         "current_stage": "calibration",

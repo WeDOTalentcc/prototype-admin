@@ -17,6 +17,7 @@ from app.domains.job_creation.state import (
 from app.domains.job_creation.helpers.ws_payload_builder import (
     build_ws_stage_payload,
 )
+from app.domains.job_creation.helpers.i18n import msg
 from app.domains.job_creation.helpers.async_audit import (
     emit_audit_fire_and_forget,
     run_coro_in_threadpool,
@@ -278,7 +279,7 @@ def jd_gate_node(state: JobCreationState) -> JobCreationState:
         next_state["interview_stages"] = []
         next_state["gate_clarify_message"] = (
             output.conversational_reply
-            or "Recebi a descrição nova. Vou re-enriquecer agora."
+            or msg("jd_gate.new_jd_received")
         )
     elif intent == "ask_question":
         # Task #1123 — resposta rica via Sonnet (tenant + history-aware).
@@ -308,16 +309,13 @@ def jd_gate_node(state: JobCreationState) -> JobCreationState:
         next_state["gate_clarify_message"] = (
             _sonnet_reply
             or output.conversational_reply
-            or "Vamos focar na descrição da vaga? Você quer aprovar ou ajustar algo?"
+            or msg("jd_gate.off_topic_redirect")
         )
     else:
         # Defesa em profundidade — Pydantic Literal já blinda, mas se algo
         # vazar (ex.: bug futuro no schema) caímos no fallback de pergunta.
         logger.warning("[JobCreation:jd_gate] unhandled intent=%r → clarify", intent)
-        next_state["gate_clarify_message"] = (
-            "Não consegui interpretar sua resposta. Pode me dizer se aprovou "
-            "a descrição enriquecida ou se quer ajustar alguma coisa?"
-        )
+        next_state["gate_clarify_message"] = msg("jd_gate.unhandled_intent")
 
     return next_state
 

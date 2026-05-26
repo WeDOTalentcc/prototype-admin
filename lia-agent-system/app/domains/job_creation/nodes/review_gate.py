@@ -17,6 +17,7 @@ from app.domains.job_creation.state import (
 from app.domains.job_creation.helpers.ws_payload_builder import (
     build_ws_stage_payload,
 )
+from app.domains.job_creation.helpers.i18n import msg
 from app.domains.job_creation.helpers.async_audit import (
     emit_audit_fire_and_forget,
     run_coro_in_threadpool,
@@ -194,7 +195,7 @@ def review_gate_node(state: JobCreationState) -> JobCreationState:
             "gate_resume_message": "",
             "gate_clarify_message": (
                 output.conversational_reply
-                or "Você quer publicar agora, ajustar alguma seção do resumo, configurar destinos ou tirar uma dúvida?"
+                or msg("review_gate.clarify_default")
             ),
             "gate_last_intent": output.intent,
             "gate_last_confidence": output.confidence,
@@ -236,11 +237,11 @@ def review_gate_node(state: JobCreationState) -> JobCreationState:
         if not _readiness.get("ready"):
             _missing = _readiness.get("missing") or []
             _missing_pt = {
-                "jd_approved": "aprovação da descrição",
-                "questions_approved": "aprovação das questões WSI",
-                "has_questions": "questões WSI geradas",
+                "jd_approved": msg("review_gate.missing_field_jd_approved"),
+                "questions_approved": msg("review_gate.missing_field_questions_approved"),
+                "has_questions": msg("review_gate.missing_field_has_questions"),
                 "has_seniority": "senioridade definida",
-                "quality_score_ok": "qualidade da descrição (score ≥ 50)",
+                "quality_score_ok": msg("review_gate.missing_field_quality_score_ok"),
             }
             _missing_str = ", ".join(_missing_pt.get(k, k) for k in _missing) or "configurações pendentes"
             next_state["pending_publish_confirmation"] = False
@@ -248,10 +249,7 @@ def review_gate_node(state: JobCreationState) -> JobCreationState:
             next_state["policy_confirmed_publish"] = False
             # Reclassifica como ask_clarification para o audit trail
             # (intent original publish_now ficou em gate_last_intent acima).
-            next_state["gate_clarify_message"] = (
-                f"Antes de publicar preciso fechar: {_missing_str}. "
-                "Quando esses pontos estiverem ok, é só me dizer 'publica' que sigo."
-            )
+            next_state["gate_clarify_message"] = msg("review_gate.missing_fields_publish_blocked", missing=_missing_str)
             confirmation_method = "chat"
             logger.info(
                 "[JobCreation:review_gate] publish_now BLOCKED — readiness not ready, missing=%s",
@@ -314,7 +312,7 @@ def review_gate_node(state: JobCreationState) -> JobCreationState:
             _title = (
                 _jd.get("titulo_padronizado")
                 or state.get("parsed_title")
-                or "(sem título)"
+                or msg("review_gate.no_title_fallback")
             )
             _smin = state.get("salary_min")
             _smax = state.get("salary_max")
@@ -324,7 +322,7 @@ def review_gate_node(state: JobCreationState) -> JobCreationState:
             elif _smin:
                 _salary = f"{_scur} a partir de {_smin:,}".replace(",", ".")
             else:
-                _salary = "faixa salarial não definida"
+                _salary = msg("review_gate.salary_not_defined")
             _q_total = len(state.get("wsi_questions") or [])
             _dests = state.get("publish_platforms") or []
             _dests_str = ", ".join(_dests) if _dests else "os canais configurados"
@@ -352,7 +350,7 @@ def review_gate_node(state: JobCreationState) -> JobCreationState:
             )
             valid_sections = ", ".join(sorted(_REVIEW_VALID_TARGET_SECTIONS))
             next_state["gate_clarify_message"] = (
-                f"Qual seção você quer ajustar ({valid_sections}) e o que mudar nela?"
+                msg("review_gate.request_changes_clarify", valid_sections=valid_sections)
             )
         elif target == "destinations":
             # Inline-handled: NÃO há nó destino para "destinations" — pedimos
@@ -361,13 +359,13 @@ def review_gate_node(state: JobCreationState) -> JobCreationState:
             # para listar SOMENTE canais que o tenant tem habilitados.
             allow_eff, is_tenant = _resolve_effective_destinations_allowlist(state)
             allow_str = ", ".join(sorted(allow_eff))
-            scope = "habilitados pelo seu tenant" if is_tenant else "disponíveis"
+            scope = msg("review_gate.tenant_scope") if is_tenant else msg("review_gate.available_scope")
             next_state["review_request_changes_pending"] = {
                 "target_section": "destinations",
                 "instruction": instruction,
             }
             next_state["gate_clarify_message"] = (
-                f"Quais canais você quer publicar? {scope.capitalize()}: {allow_str}."
+                msg("review_gate.channels_ask", scope_capitalized=scope.capitalize(), allow_str=allow_str)
             )
             next_state["pending_publish_confirmation"] = False
             next_state["publish_confirmation_ts"] = None
@@ -424,16 +422,15 @@ def review_gate_node(state: JobCreationState) -> JobCreationState:
                 valid_dedup.append(d)
         if not valid_dedup:
             allowed_str = ", ".join(sorted(allow_eff))
-            scope = "habilitados pelo seu tenant" if is_tenant_constrained else "disponíveis"
+            scope = msg("review_gate.tenant_scope") if is_tenant_constrained else msg("review_gate.available_scope")
             if rejected:
                 rej_str = ", ".join(sorted(set(rejected)))
                 next_state["gate_clarify_message"] = (
-                    f"Os canais {rej_str} não estão {scope} pra essa empresa. "
-                    f"Quais você quer publicar? {scope.capitalize()}: {allowed_str}."
+                    msg("review_gate.channels_rejected", rej_str=rej_str, scope=scope, scope_capitalized=scope.capitalize(), allowed_str=allowed_str)
                 )
             else:
                 next_state["gate_clarify_message"] = (
-                    f"Quais canais você quer publicar? {scope.capitalize()}: {allowed_str}."
+                    msg("review_gate.channels_ask_fallback", scope_capitalized=scope.capitalize(), allowed_str=allowed_str)
                 )
         else:
             next_state["publish_platforms"] = valid_dedup
@@ -443,14 +440,13 @@ def review_gate_node(state: JobCreationState) -> JobCreationState:
                 rej_str = ", ".join(sorted(set(rejected)))
                 scope = "habilitados pelo seu tenant" if is_tenant_constrained else "disponíveis"
                 next_state["gate_clarify_message"] = (
-                    f"Configurando publicação em: {', '.join(valid_dedup)} "
-                    f"(ignorei {rej_str} — não estão {scope}). "
-                    "Quando quiser, me confirma pra publicar."
+                    msg("review_gate.channels_partial_ok", valid_channels=", ".join(valid_dedup), rej_str=rej_str, scope=scope)
+                    + msg("review_gate.missing_fields_summary").replace("publica", "confirma")
                 )
             else:
                 next_state["gate_clarify_message"] = (
                     output.conversational_reply
-                    or f"Configurando publicação em: {', '.join(valid_dedup)}. Quando quiser, me confirma pra publicar."
+                    or msg("review_gate.channels_ok", valid_channels=", ".join(valid_dedup))
                 )
             # Reseta dual-confirmation — destinos mudaram.
             next_state["pending_publish_confirmation"] = False
@@ -472,13 +468,13 @@ def review_gate_node(state: JobCreationState) -> JobCreationState:
         next_state["gate_clarify_message"] = (
             _sonnet_reply
             or output.conversational_reply
-            or "Posso explicar qualquer parte do resumo. O que você quer saber?"
+            or msg("review_gate.explain_clarify")
         )
 
     else:
         logger.warning("[JobCreation:review_gate] unhandled intent=%r → clarify", intent)
         next_state["gate_clarify_message"] = (
-            "Você quer publicar agora, ajustar alguma seção, escolher destinos ou tirar uma dúvida?"
+            msg("review_gate.final_clarify")
         )
 
     # Audit row (best-effort) — confirmation_method é o discriminador SOX

@@ -17,6 +17,7 @@ from app.domains.job_creation.state import (
 from app.domains.job_creation.helpers.ws_payload_builder import (
     build_ws_stage_payload,
 )
+from app.domains.job_creation.helpers.i18n import msg
 
 logger = logging.getLogger(__name__)
 
@@ -75,10 +76,7 @@ def publish_node(state: JobCreationState) -> JobCreationState:
                 requires_approval=False,
                 data={
                     # Task #1099 — invariant: data.message obrigatório.
-                    "message": (
-                        "Não consigo publicar a vaga — "
-                        f"{_pub_policy.rationale}"
-                    ),
+                    "message": msg("publish.policy_deny", rationale=_pub_policy.rationale),
                     "policy_blocked": True,
                     "policy_decision": _pub_pd_dict,
                 },
@@ -100,10 +98,7 @@ def publish_node(state: JobCreationState) -> JobCreationState:
                 requires_approval=True,
                 data={
                     # Task #1099 — invariant: data.message obrigatório.
-                    "message": (
-                        "Antes de publicar, preciso da sua confirmação "
-                        f"explícita: {_pub_policy.rationale}"
-                    ),
+                    "message": msg("publish.policy_hitl", rationale=_pub_policy.rationale),
                     "policy_decision": _pub_pd_dict,
                     "policy_pending_confirmation": True,
                 },
@@ -203,13 +198,12 @@ def publish_node(state: JobCreationState) -> JobCreationState:
             data={
                 # Task #1099 — invariant: data.message obrigatório.
                 "message": (
-                    f"Tive um problema ao publicar a vaga: {error}. "
-                    "Posso tentar de novo?"
+                    msg("publish.error", error=error)
                     if error
                     else (
-                        "Vaga publicada com sucesso! "
-                        + (f"Link de divulgação: {share_link}. " if share_link else "")
-                        + "Quer seguir para a calibração de candidatos?"
+                        msg("publish.success_with_share_link", share_link=share_link)
+                        if share_link
+                        else msg("publish.success")
                     )
                 ),
                 "job_id": job_id,

@@ -17,6 +17,7 @@ from app.domains.job_creation.state import (
 from app.domains.job_creation.helpers.ws_payload_builder import (
     build_ws_stage_payload,
 )
+from app.domains.job_creation.helpers.i18n import msg
 
 logger = logging.getLogger(__name__)
 
@@ -44,11 +45,9 @@ def eligibility_node(state: JobCreationState) -> JobCreationState:
             data={
                 # Task #1099 — invariant: data.message obrigatório.
                 "message": (
-                    f"Configurei {len(questions)} pergunta(s) eliminatória(s) "
-                    "para a triagem inicial."
+                    msg("eligibility.questions_configured", count=len(questions))
                     if questions
-                    else "Nenhuma pergunta eliminatória configurada — quer "
-                    "adicionar alguma ou seguir direto para a revisão final?"
+                    else msg("eligibility.no_questions")
                 ),
                 "questions": questions,
             },

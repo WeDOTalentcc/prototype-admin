@@ -17,6 +17,7 @@ from app.domains.job_creation.state import (
 from app.domains.job_creation.helpers.ws_payload_builder import (
     build_ws_stage_payload,
 )
+from app.domains.job_creation.helpers.i18n import msg
 
 logger = logging.getLogger(__name__)
 
@@ -89,14 +90,9 @@ def competency_node(state: JobCreationState) -> JobCreationState:
             data={
                 # Task #1099 — invariant: data.message obrigatório.
                 "message": (
-                    f"Resolvi a senioridade ({seniority_result.display_name}) "
-                    "e a distribuição de perguntas WSI"
-                    + (
-                        f" (modo {screening_mode})."
-                        if screening_mode
-                        else " — escolha entre modo compacto (7q) ou completo (12q)."
-                    )
-                    + " Quer ajustar ou seguir para gerar as perguntas?"
+                    msg("competency.seniority_with_mode", seniority_display=seniority_result.display_name, screening_mode=screening_mode)
+                    if screening_mode
+                    else msg("competency.seniority_no_mode", seniority_display=seniority_result.display_name)
                 ),
                 "seniority": seniority,
                 "seniority_display": seniority_result.display_name,

@@ -17,6 +17,7 @@ from app.domains.job_creation.state import (
 from app.domains.job_creation.helpers.ws_payload_builder import (
     build_ws_stage_payload,
 )
+from app.domains.job_creation.helpers.i18n import msg
 from app.domains.job_creation.helpers.async_audit import (
     emit_audit_fire_and_forget,
     run_coro_in_threadpool,
@@ -165,20 +166,11 @@ def pipeline_template_node(state: JobCreationState) -> JobCreationState:
     # 5. Mensagem PT-BR canonical (UX conversacional)
     if templates:
         top_name = templates[0].get("name") or "este pipeline"
-        message = (
-            f"Para essa vaga, sugiro o pipeline **{top_name}**. "
-            f"Você pode aplicar este, escolher outro ou usar o padrão da empresa."
-        )
+        message = msg("pipeline_template.suggest_template", top_name=top_name)
     elif legacy:
-        message = (
-            "Não encontrei um pipeline customizado que combine perfeitamente. "
-            "Quer usar um dos templates padrão ou seguir com o pipeline padrão da empresa?"
-        )
+        message = msg("pipeline_template.no_custom_match")
     else:
-        message = (
-            "Vamos usar o pipeline padrão da empresa para essa vaga? "
-            "Você pode customizar depois nas configurações."
-        )
+        message = msg("pipeline_template.use_default")
 
     ws_stage_payload = build_ws_stage_payload(
         stage="pipeline_template",

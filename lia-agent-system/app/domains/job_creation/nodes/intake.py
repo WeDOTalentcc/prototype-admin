@@ -17,6 +17,7 @@ from app.domains.job_creation.state import (
 from app.domains.job_creation.helpers.ws_payload_builder import (
     build_ws_stage_payload,
 )
+from app.domains.job_creation.helpers.i18n import msg
 from app.domains.job_creation.helpers.intake_audit import emit_intake_audit
 
 logger = logging.getLogger(__name__)
@@ -146,9 +147,9 @@ def intake_node(state: JobCreationState) -> JobCreationState:
             data={
                 # Task #1099 — invariant: data.message obrigatório.
                 "message": (
-                    f"Captei: {parsed_title}."
+                    msg("intake.captured", parsed_title=parsed_title)
                     if parsed_title
-                    else "Pode me passar o título da vaga ou colar a JD?"
+                    else msg("intake.ask_for_title")
                 ),
                 "raw_input": query,
                 "parsed_title": parsed_title,

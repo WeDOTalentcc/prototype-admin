@@ -17,6 +17,7 @@ from app.domains.job_creation.state import (
 from app.domains.job_creation.helpers.ws_payload_builder import (
     build_ws_stage_payload,
 )
+from app.domains.job_creation.helpers.i18n import msg
 from app.domains.job_creation.helpers.async_audit import (
     emit_audit_fire_and_forget,
     run_coro_in_threadpool,
@@ -71,11 +72,7 @@ def bigfive_node(state: JobCreationState) -> JobCreationState:
                 # setado DEVE incluir ws_stage_payload.data.message truthy.
                 # Sem isso o WizardSessionService cai em
                 # _emit_silent_fallback (Task #1089).
-                _bf_block_msg = (
-                    "Detectei linguagem que pode ser discriminatória na "
-                    "descrição enriquecida — vou pausar o mapeamento Big "
-                    "Five para esta vaga. Revise a JD e me peça para retomar."
-                )
+                _bf_block_msg = msg("bigfive.fairness_blocked")
                 return {
                     **state,
                     "current_stage": "bigfive",
@@ -137,10 +134,7 @@ def bigfive_node(state: JobCreationState) -> JobCreationState:
                 requires_approval=False,
                 data={
                     # Task #1099 — invariant: data.message obrigatório.
-                    "message": (
-                        "Não consigo gerar o perfil Big Five — política da "
-                        f"empresa bloqueou: {_policy_result.rationale}"
-                    ),
+                    "message": msg("bigfive.policy_deny", rationale=_policy_result.rationale),
                     "policy_blocked": True,
                     "policy_decision": _pd_dict,
                 },
@@ -240,14 +234,9 @@ def bigfive_node(state: JobCreationState) -> JobCreationState:
                 # fallback, espelhando o padrão do jd_enrichment_node (Task
                 # #1096).
                 "message": (
-                    "Mapeei o perfil Big Five para "
-                    f"{(state.get('parsed_title') or 'esta vaga')}"
-                    + (
-                        " (sugestão mínima — revise antes de seguir)."
-                        if locals().get("bigfive_used_fallback", False)
-                        else "."
-                    )
-                    + " Quer ajustar algum traço ou seguir para a faixa salarial?"
+                    msg("bigfive.ready_fallback", title=(state.get("parsed_title") or "esta vaga"))
+                    if locals().get("bigfive_used_fallback", False)
+                    else msg("bigfive.ready", title=(state.get("parsed_title") or "esta vaga"))
                 ),
                 "bigfive_profile": bigfive_profile,
                 "trait_rankings": trait_rankings,

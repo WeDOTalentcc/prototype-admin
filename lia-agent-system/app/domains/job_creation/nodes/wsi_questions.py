@@ -17,6 +17,7 @@ from app.domains.job_creation.state import (
 from app.domains.job_creation.helpers.ws_payload_builder import (
     build_ws_stage_payload,
 )
+from app.domains.job_creation.helpers.i18n import msg
 from app.domains.job_creation.helpers.async_audit import (
     emit_audit_fire_and_forget,
     run_coro_in_threadpool,
@@ -74,10 +75,7 @@ def wsi_questions_node(state: JobCreationState) -> JobCreationState:
                 requires_approval=False,
                 data={
                     # Task #1099 — invariant: data.message obrigatório.
-                    "message": (
-                        "Não consigo gerar as perguntas WSI — política da "
-                        f"empresa bloqueou: {_wsi_policy.rationale}"
-                    ),
+                    "message": msg("wsi_questions.policy_deny", rationale=_wsi_policy.rationale),
                     "policy_blocked": True,
                     "policy_decision": _wsi_pd_dict,
                 },
@@ -285,19 +283,13 @@ def wsi_questions_node(state: JobCreationState) -> JobCreationState:
         # count). Sem isso o WizardSessionService cai em
         # _emit_silent_fallback (Task #1089).
         "message": (
-            f"Gerei {len(questions_data)} perguntas WSI"
-            + (
-                " (sugestão mínima — revise)."
-                if locals().get("wsi_questions_used_fallback", False)
-                else "."
-            )
-            + (
-                f" Bloqueei {len(_wsi_dropped)} pergunta(s) por linguagem "
-                "potencialmente discriminatória."
-                if _wsi_dropped
-                else ""
-            )
-            + " Pode revisar — preciso da sua aprovação antes de seguir."
+            msg("wsi_questions.ready_fallback_with_dropped", count=len(questions_data), dropped=len(_wsi_dropped))
+            if locals().get("wsi_questions_used_fallback", False) and _wsi_dropped
+            else msg("wsi_questions.ready_fallback", count=len(questions_data))
+            if locals().get("wsi_questions_used_fallback", False)
+            else msg("wsi_questions.ready_with_dropped", count=len(questions_data), dropped=len(_wsi_dropped))
+            if _wsi_dropped
+            else msg("wsi_questions.ready", count=len(questions_data))
         ),
         "questions": questions_data,
         "screening_mode": state.get("screening_mode"),

@@ -17,6 +17,7 @@ from app.domains.job_creation.state import (
 from app.domains.job_creation.helpers.ws_payload_builder import (
     build_ws_stage_payload,
 )
+from app.domains.job_creation.helpers.i18n import msg
 from app.domains.job_creation.helpers.async_audit import (
     emit_audit_fire_and_forget,
     run_coro_in_threadpool,
@@ -173,7 +174,7 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
         _intent = _intent_intake.intent
         _reply = (
             _intent_intake.conversational_reply
-            or "Pode me passar o título do cargo para começar?"
+            or msg("jd_enrichment.ask_for_title")
         )
         # Branch determinístico por intent ∈ ALLOWED_INTAKE_INTENTS.
         if _intent == "provides_jd_intent":
@@ -202,8 +203,7 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
                     tenant_context_snippet=str(state.get("tenant_context_snippet") or ""),
                     last_turns=_extract_last_turns(state, n=3),
                     stage_description=(
-                        "início do wizard: precisamos do título do cargo "
-                        "ou da descrição da vaga (JD) para começar."
+                        msg("jd_enrichment.stage_description_hitl")
                     ),
                 )
                 if _sonnet_reply:
@@ -249,13 +249,7 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
         # nem sempre está montado (ex.: viewport mobile, layout reduzido,
         # release-flag desligada). Aqui falamos só de ações universais
         # (chat e anexo) e deixamos a alternativa textual como "me diga".
-        _ask_jd_msg = (
-            "Para começar a criação da vaga, preciso de mais contexto. "
-            "Você pode (a) colar a descrição da vaga (JD) aqui no chat, "
-            "ou (b) anexar um arquivo (PDF, DOCX ou TXT). "
-            "Se preferir, me diga em uma frase o título do cargo, a "
-            "senioridade e as principais responsabilidades."
-        )
+        _ask_jd_msg = msg("jd_enrichment.ask_for_jd")
         logger.info(
             "[JobCreation:jd_enrichment] input-thin guard fired "
             "(raw_len=%d, has_panel=%s, has_attached=%s, has_title=%s) — "
@@ -362,7 +356,7 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
                 state.get("parsed_seniority", ""),
             )
             enriched_obj.wsi_quality_warnings.append(
-                "Enriquecimento via LLM em fallback determinístico (timeout)"
+                msg("jd_enrichment.fallback_warning")
             )
             jd_quality_score, jd_quality_warnings = _calc_q(enriched_obj)
             jd_enrichment_used_fallback = True
@@ -456,19 +450,9 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
     _used_fallback = locals().get("jd_enrichment_used_fallback", False)
     _q_int = int(round(jd_quality_score or 0.0))
     if _used_fallback:
-        _stage_message = (
-            f"Recebi a descrição de **{_enriched_title}**. O serviço de IA está "
-            f"degradado neste momento, então gerei um enriquecimento mínimo "
-            f"(qualidade estimada: {_q_int}%). Revise no painel à direita: "
-            f"se estiver ok, me confirme aqui no chat (ex.: \"pode seguir\"); "
-            f"se quiser ajustar, me diga o que mudar; ou cole uma versão nova."
-        )
+        _stage_message = msg("jd_enrichment.enriched_fallback", title=_enriched_title, quality=_q_int)
     else:
-        _stage_message = (
-            f"Recebi a descrição de **{_enriched_title}** e enriqueci no painel "
-            f"à direita (qualidade: {_q_int}%). Quer que eu siga para o próximo "
-            f"passo, ajustar algum ponto, ou prefere substituir o texto?"
-        )
+        _stage_message = msg("jd_enrichment.enriched_ok", title=_enriched_title, quality=_q_int)
 
     updates: Dict[str, Any] = {
         "current_stage": "jd_enrichment",

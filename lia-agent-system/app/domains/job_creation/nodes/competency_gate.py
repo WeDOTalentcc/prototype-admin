@@ -17,6 +17,7 @@ from app.domains.job_creation.state import (
 from app.domains.job_creation.helpers.ws_payload_builder import (
     build_ws_stage_payload,
 )
+from app.domains.job_creation.helpers.i18n import msg
 from app.domains.job_creation.helpers.async_audit import (
     emit_audit_fire_and_forget,
     run_coro_in_threadpool,
@@ -210,14 +211,13 @@ def competency_gate_node(state: JobCreationState) -> JobCreationState:
             stage="competency",
             user_message=msg,
             stage_description=(
-                f"HITL #2: escolha do modo de triagem WSI (Compacto 7 perguntas "
-                f"ou Completo 12 perguntas). Recomendação para este nível: {recommended}."
+                msg("competency_gate.recommend_mode", recommended=recommended)
             ),
         )
         next_state["gate_clarify_message"] = (
             _sonnet_reply
             or output.conversational_reply
-            or f"Compacto tem 7 perguntas (mais ágil) e Completo tem 12 (mais evidência). Pra esta vaga eu sugiro {recommended}."
+            or msg("competency_gate.explain_modes", recommended=recommended)
         )
     elif intent == "undecided":
         next_state["gate_clarify_message"] = (
