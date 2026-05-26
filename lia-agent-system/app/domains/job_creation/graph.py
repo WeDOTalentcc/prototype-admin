@@ -1344,6 +1344,150 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
     return {**state, **updates}
 
 
+# ---------------------------------------------------------------------------
+# Pipeline Template Node (Sprint Pipeline Templates 2026-05-26 — Opção B)
+# ---------------------------------------------------------------------------
+# HITL stage canonical entre jd_enrichment e bigfive. Sugere top-3 templates
+# do PipelineTemplateRepository (scored por department / seniority / job_family),
+# com fallback heurístico determinístico quando DB vazia. Recrutador pode:
+#   - aplicar um template (state.pipeline_template_id + state.interview_stages)
+#   - usar padrão da empresa (skippable — allow_skip=True)
+# Persistência via PipelineTemplateService.apply_to_vacancy é deferida até
+# publish_node (vacancy_id existe somente após publish). Node NÃO mutua DB.
+#
+# ws_stage_payload canonical:
+#   - ui_action: "suggest_pipeline_template" (frontend WizardPipelineTemplateCard)
+#   - data.templates: top-3 com {template_id, name, description, stages_count, score}
+#   - data.suggested_template_id: top-1 ou None
+#   - data.allow_skip: True
+def pipeline_template_node(state: JobCreationState) -> JobCreationState:
+    """HITL stage canonical — sugere pipeline template ou permite skip.
+
+    Fail-open: DB suggestion miss → legacy heuristic fallback → allow_skip.
+    NUNCA crasha o graph. NUNCA persiste no DB (deferred to publish).
+    """
+    t0 = time.time()
+    logger.info("[JobCreation:pipeline_template] Starting (stage idx 2)")
+
+    parsed_title = state.get("parsed_title")
+    parsed_seniority = state.get("parsed_seniority")
+
+    # 1. Canonical DB suggestion (top-3 com scoring real)
+    db_sugg: Optional[Dict[str, Any]] = None
+    try:
+        db_sugg = _build_pipeline_template_db_suggestion(state)
+    except Exception as exc:  # noqa: BLE001 — fail-open por design
+        logger.warning("[JobCreation:pipeline_template] DB suggestion failed (fail-open): %s", exc)
+
+    # 2. Legacy heuristic fallback (sem DB)
+    legacy: Optional[Dict[str, Any]] = None
+    try:
+        legacy = _suggest_pipeline_template(parsed_title, parsed_seniority)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("[JobCreation:pipeline_template] legacy heuristic failed (fail-open): %s", exc)
+
+    # 3. Build canonical templates list (preferindo DB quando should_suggest=True)
+    templates: List[Dict[str, Any]] = []
+    suggested_template_id: Optional[str] = None
+    top_score: float = 0.0
+    if isinstance(db_sugg, dict) and db_sugg.get("should_suggest") and db_sugg.get("templates"):
+        templates = list(db_sugg["templates"])
+        top_score = float(db_sugg.get("top_score") or 0.0)
+        if templates:
+            suggested_template_id = templates[0].get("template_id")
+
+    # 4. Default pipeline stage count (proxy para mensagem "padrão da empresa tem N etapas")
+    default_pipeline_stages_count = len((state.get("interview_stages") or []) or [])
+
+    # 5. Mensagem PT-BR canonical (UX conversacional)
+    if templates:
+        top_name = templates[0].get("name") or "este pipeline"
+        message = (
+            f"Para essa vaga, sugiro o pipeline **{top_name}**. "
+            f"Você pode aplicar este, escolher outro ou usar o padrão da empresa."
+        )
+    elif legacy:
+        message = (
+            "Não encontrei um pipeline customizado que combine perfeitamente. "
+            "Quer usar um dos templates padrão ou seguir com o pipeline padrão da empresa?"
+        )
+    else:
+        message = (
+            "Vamos usar o pipeline padrão da empresa para essa vaga? "
+            "Você pode customizar depois nas configurações."
+        )
+
+    ws_stage_payload = {
+        "type": "wizard_stage",
+        "stage": "pipeline_template",
+        "ui_action": "suggest_pipeline_template",
+        "data": {
+            "message": message,
+            "templates": templates,
+            "suggested_template_id": suggested_template_id,
+            "allow_skip": True,
+            "default_pipeline_stages_count": default_pipeline_stages_count,
+            # Retrocompat com pattern legacy (jd_enrichment_node emite o mesmo shape).
+            "suggestions_data": {
+                "pipeline_template": legacy,
+                "pipeline_template_db": db_sugg,
+            },
+        },
+        "completeness": calculate_completeness("pipeline_template"),
+        "requires_approval": True,
+    }
+
+    stage_history = list(state.get("stage_history") or [])
+    if "pipeline_template" not in stage_history:
+        stage_history.append("pipeline_template")
+
+    updates = {
+        "current_stage": "pipeline_template",
+        "stage_history": stage_history,
+        "completeness": calculate_completeness("pipeline_template"),
+        "requires_approval": True,
+        "ws_stage_payload": ws_stage_payload,
+    }
+
+    # 6. Audit canonical (EU AI Act Art.13 / SOX 7y) — fail-open
+    try:
+        import asyncio as _asyncio
+        from app.shared.compliance.audit_service import AuditService
+        _audit = AuditService()
+        _company_id = str(state.get("company_id") or state.get("workspace_id") or "")
+        if _company_id:
+            _asyncio.run(_audit.log_decision(
+                company_id=_company_id,
+                agent_name="job_creation:pipeline_template",
+                decision_type="company_settings_change",
+                action="pipeline_template_suggested",
+                decision="suggested" if templates else "no_match",
+                reasoning=[
+                    f"db_should_suggest={bool(db_sugg and db_sugg.get('should_suggest'))}",
+                    f"db_top_score={top_score:.3f}",
+                    f"templates_count={len(templates)}",
+                    f"suggested_template_id={suggested_template_id or 'none'}",
+                    f"legacy_fallback={'yes' if legacy else 'no'}",
+                ],
+                criteria_used=["parsed_department", "parsed_seniority", "parsed_job_family"],
+                job_vacancy_id=state.get("job_id"),
+                confidence=top_score if top_score else None,
+                human_review_required=True,  # HITL — recrutador escolhe
+            ))
+    except Exception as _audit_exc:
+        logger.debug(
+            "[JobCreation:pipeline_template] audit log failed (fail-open): %s", _audit_exc,
+        )
+
+    elapsed = (time.time() - t0) * 1000
+    logger.info(
+        "[JobCreation:pipeline_template] templates=%d top_score=%.2f | %.0fms",
+        len(templates), top_score, elapsed,
+    )
+    return {**state, **updates}
+
+
+
 def bigfive_node(state: JobCreationState) -> JobCreationState:
     """F2+F3: Extract Big Five profile from enriched JD + rank traits.
 
@@ -4868,6 +5012,7 @@ def create_job_creation_graph(
     builder.add_node("jd_enrichment", jd_enrichment_node)
     if use_llm_gates:
         builder.add_node("jd_gate", jd_gate_node)
+    builder.add_node("pipeline_template", pipeline_template_node)
     builder.add_node("bigfive", bigfive_node)
     builder.add_node("salary", salary_node)
     builder.add_node("competency", competency_node)
@@ -4899,7 +5044,13 @@ def create_job_creation_graph(
             "jd_gate",
             route_after_gate,
             {
-                "bigfive": "bigfive",
+                # Sprint Pipeline Templates 2026-05-26 — Opção B: route_after_gate
+                # ainda retorna "bigfive" como aprovação, mas roteamos
+                # primeiro para pipeline_template (stage canonical HITL).
+                # pipeline_template emite ws_stage_payload e termina;
+                # ao resume (recrutador escolhe template ou skip), o graph
+                # avança em add_edge("pipeline_template", "bigfive").
+                "bigfive": "pipeline_template",
                 "intake": "intake",
                 "jd_gate": "jd_gate",  # Sprint F.2 fix — self-loop to interrupt
                 "end": END,
@@ -4910,7 +5061,10 @@ def create_job_creation_graph(
             "jd_enrichment",
             route_after_jd,
             {
-                "bigfive": "bigfive",
+                # Sprint Pipeline Templates 2026-05-26 — Opção B: route_after_jd
+                # legacy ainda retorna "bigfive" como aprovação, mas roteamos
+                # primeiro para pipeline_template (stage canonical HITL).
+                "bigfive": "pipeline_template",
                 "intake": "intake",
                 "end": END,
             },

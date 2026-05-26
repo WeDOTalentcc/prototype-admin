@@ -252,6 +252,15 @@ class JobCreationState(TypedDict, total=False):
     # --- Handoff ---
     handoff_url: Optional[str]  # URL to the job page
 
+
+    # --- Pipeline Template (Sprint Pipeline Templates 2026-05-26 — Opção B) ---
+    # Set by pipeline_template_node when recruiter applies a template.
+    # interview_stages = canonical translated stages (translate_template_stages_to_interview_stages).
+    # Persisted via PipelineTemplateService.apply_to_vacancy AFTER publish (vacancy_id existe).
+    pipeline_template_id: Optional[str]
+    pipeline_template_score: Optional[float]
+    interview_stages: List[Dict[str, Any]]
+
     # --- WS protocol fields ---
     ws_stage_payload: Optional[Dict[str, Any]]  # last wizard_stage WS message sent
     requires_approval: bool  # current stage needs HITL
