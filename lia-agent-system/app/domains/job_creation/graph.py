@@ -167,11 +167,24 @@ from app.domains.job_creation.services.seniority_resolver import resolve_seniori
 from app.domains.job_creation.services.wsi_question_generator import WSIQuestionGenerator
 from app.domains.job_creation.api_client import JobCreationAPIClient
 from app.domains.job_creation.helpers.async_audit import emit_audit_fire_and_forget
+from app.domains.job_creation.helpers.intake_audit import emit_intake_audit
 from app.domains.job_creation.helpers.llm_exceptions import (
     classify_llm_exception_reason,
 )
+from app.domains.job_creation.audit_actions import PipelineTemplateAuditAction
+from app.domains.job_creation import dispatch_messages as _wizard_dispatch
 
 logger = logging.getLogger(__name__)
+
+# ── PR-11 F-4.7: magic numbers canonical ──
+# Default question distribution para WSI quando state nao fornece (fallback
+# defensivo). Source: WSI_METHODOLOGY_COMPLETE_v2.md "compact mode / pleno"
+# — mesmo valor canonical retornado por _get_question_distribution() quando
+# nao acha match na tabela. Centralizar evita drift (5 sites pre-PR-11).
+WSI_DEFAULT_DISTRIBUTION_COMPACT_PLENO: Dict[str, int] = {
+    "technical": 5,
+    "behavioral": 2,
+}
 
 # Shared service instances (lazy-initialized in nodes)
 _jd_service: Optional[JdEnrichmentService] = None
@@ -654,70 +667,20 @@ def intake_node(state: JobCreationState) -> JobCreationState:
             "[JobCreation:intake] F3-1 extraction failed (fail-open): %s", _ex_exc,
         )
 
-    # WT-2022 P0.C: LGPD Art. 20 audit trail para decisão automatizada de intake extraction.
-    # Caller-side wire (intake_extractor.extract é sync; intake_node também é sync — não
-    # pode usar await). Pattern: schedule fire-and-forget coroutine no loop em execução
-    # (LangGraph roda em async runtime). Fail-safe: gap de log NUNCA bloqueia wizard.
-    try:
-        import asyncio
-        _company_id = str(state.get("workspace_id") or state.get("company_id") or "")
-        if _company_id:
-            from app.core.database import async_session_factory
-            from app.shared.services.automated_decision_logger import (
-                PROTECTED_CRITERIA_PT,
-                log_automated_decision,
-            )
-
-            _audit_job_id = str(state.get("job_id")) if state.get("job_id") else None
-            _audit_model = f"intake_extractor_{intake_source}"
-            _audit_explanation = (
-                f"Intake extraction (source={intake_source}, conf={intake_confidence:.2f}): "
-                f"title={parsed_title!r}, seniority={parsed_seniority!r}, "
-                f"location={parsed_location!r}, model={parsed_model!r}."
-            )
-            _audit_conf = float(intake_confidence) if intake_confidence else None
-
-            async def _do_audit_log():
-                try:
-                    async with async_session_factory() as _adl_db:
-                        # fire-and-forget audit context (scheduled via
-                        # loop.create_task below); persist errors are logged
-                        # but MUST NOT bubble up — the wizard intake path
-                        # cannot block on the LGPD audit log. P0.C.HELPER
-                        # pattern: caller opts in to silent persist degrade.
-                        await log_automated_decision(
-                            db=_adl_db,
-                            company_id=_company_id,
-                            job_id=_audit_job_id,
-                            decision_type="intake_extraction",
-                            ai_model_used=_audit_model,
-                            explanation_text=_audit_explanation,
-                            criteria_used=["title", "seniority", "department", "location", "work_model"],
-                            criteria_ignored=PROTECTED_CRITERIA_PT,
-                            confidence_score=_audit_conf,
-                            review_eligible=True,
-                            silent_on_persist_error=True,
-                        )
-                        await _adl_db.commit()
-                except Exception as _inner_exc:  # fail-safe
-                    logger.warning(
-                        "[JobCreation:intake] WT-2022 P0.C inner audit log failed (fail-safe): %s",
-                        _inner_exc,
-                    )
-
-            try:
-                _loop = asyncio.get_running_loop()
-                _loop.create_task(_do_audit_log())
-            except RuntimeError:
-                # Sem loop ativo (testes sync isolados). Pular log — pattern fail-safe.
-                logger.debug(
-                    "[JobCreation:intake] WT-2022 P0.C audit log skipped (no running loop)",
-                )
-    except Exception as _adl_exc:  # fail-safe: log gap não bloqueia wizard
-        logger.warning(
-            "[JobCreation:intake] WT-2022 P0.C audit log scheduling failed (fail-safe): %s",
-            _adl_exc,
-        )
+    # WT-2022 P0.C: LGPD Art. 20 audit trail para decisao automatizada de
+    # intake extraction. Delegado a emit_intake_audit (helper canonical em
+    # app/domains/job_creation/helpers/intake_audit.py) — 70 LOC inline
+    # extraidas em PR-11 (F-4.3). Fail-safe: gap NUNCA bloqueia wizard.
+    emit_intake_audit(
+        company_id=str(state.get("workspace_id") or state.get("company_id") or ""),
+        job_id=str(state.get("job_id")) if state.get("job_id") else None,
+        intake_source=intake_source,
+        intake_confidence=intake_confidence,
+        parsed_title=parsed_title,
+        parsed_seniority=parsed_seniority,
+        parsed_location=parsed_location,
+        parsed_model=parsed_model,
+    )
 
     updates: Dict[str, Any] = {
         "current_stage": "intake",
@@ -1483,16 +1446,22 @@ def pipeline_template_node(state: JobCreationState) -> JobCreationState:
     already_chosen = bool(state.get("pipeline_template_id")) or bool(state.get("pipeline_template_skipped"))
 
     if raw_input and not already_chosen:
+        # PR-11 F-4.11: patterns canonical em dispatch_messages.py (TS mirror
+        # em plataforma-lia/src/components/unified-chat/wizard/dispatchMessages.ts).
         # Pattern 1: explicit apply with template_id UUID
         m_apply = _re.search(
-            r"aplicar.*?template.*?pipeline.*?([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})",
+            _wizard_dispatch.APPLY_TEMPLATE_PATTERN,
             raw_input,
             _re.IGNORECASE,
         )
         # Pattern 2: ack (frontend already applied via separate fetch)
-        m_ack = _re.search(r"template.*?pipeline.*?aplicad[oa]", raw_input, _re.IGNORECASE)
+        m_ack = _re.search(
+            _wizard_dispatch.APPLIED_ACK_PATTERN, raw_input, _re.IGNORECASE,
+        )
         # Pattern 3: skip / use company default
-        m_skip = _re.search(r"(pipeline.*?padr[ãa]o.*?empresa|usar.*?padr[ãa]o.*?empresa|pular.*?template)", raw_input, _re.IGNORECASE)
+        m_skip = _re.search(
+            _wizard_dispatch.USE_DEFAULT_PATTERN, raw_input, _re.IGNORECASE,
+        )
 
         if m_apply:
             template_id_str = m_apply.group(1)
@@ -1501,7 +1470,7 @@ def pipeline_template_node(state: JobCreationState) -> JobCreationState:
             if applied:
                 _emit_pipeline_template_audit(
                     state,
-                    action="pipeline_template_applied_in_wizard",
+                    action=PipelineTemplateAuditAction.APPLIED_IN_WIZARD.value,
                     template_id=template_id_str,
                     extra={"source": "wizard_explicit", "raw_input_preview": raw_input[:80]},
                 )
@@ -1520,7 +1489,7 @@ def pipeline_template_node(state: JobCreationState) -> JobCreationState:
             logger.info("[JobCreation:pipeline_template] ACK detected (frontend already applied)")
             _emit_pipeline_template_audit(
                 state,
-                action="pipeline_template_applied_ack",
+                action=PipelineTemplateAuditAction.APPLIED_ACK.value,
                 template_id=state.get("pipeline_template_id"),
                 extra={"raw_input_preview": raw_input[:80]},
             )
@@ -1536,7 +1505,7 @@ def pipeline_template_node(state: JobCreationState) -> JobCreationState:
             logger.info("[JobCreation:pipeline_template] SKIP detected (use company default)")
             _emit_pipeline_template_audit(
                 state,
-                action="pipeline_template_skipped",
+                action=PipelineTemplateAuditAction.SKIPPED.value,
                 template_id=None,
                 extra={"source": "wizard_explicit", "raw_input_preview": raw_input[:80]},
             )
@@ -1644,7 +1613,7 @@ def pipeline_template_node(state: JobCreationState) -> JobCreationState:
                     company_id=_company_id,
                     agent_name="job_creation:pipeline_template",
                     decision_type="company_settings_change",
-                    action="pipeline_template_suggested",
+                    action=PipelineTemplateAuditAction.SUGGESTED.value,
                     decision="suggested" if templates else "no_match",
                     reasoning=[
                         f"db_should_suggest={bool(db_sugg and db_sugg.get('should_suggest'))}",
@@ -2313,10 +2282,14 @@ def wsi_questions_node(state: JobCreationState) -> JobCreationState:
                 logger.warning("[JobCreation:wsi_questions] PII masking failed (fail-open): %s", _wsi_pii_exc)
 
             enriched = EnrichedJobDescription(**_safe_wsi_dict) if _safe_wsi_dict else None
-            distribution = state.get("question_distribution", {"technical": 5, "behavioral": 2})
+            # PR-11 F-4.7: fallback canonical via WSI_DEFAULT_DISTRIBUTION_COMPACT_PLENO
+            # (constante top-level — alinhada com _get_question_distribution).
+            distribution = state.get(
+                "question_distribution", dict(WSI_DEFAULT_DISTRIBUTION_COMPACT_PLENO),
+            )
             # Sprint F.4: defensive coerce — state may have None explicit; .get(default) only kicks in for MISSING keys.
             if not isinstance(distribution, dict):
-                distribution = {"technical": 5, "behavioral": 2}
+                distribution = dict(WSI_DEFAULT_DISTRIBUTION_COMPACT_PLENO)
             seniority = state.get("seniority_resolved", "pleno")
             trait_rankings = state.get("trait_rankings", [])
 

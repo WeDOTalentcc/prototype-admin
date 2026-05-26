@@ -49,6 +49,7 @@ import {
   purgeLegacyWizardStorage,
   resetWizardSession,
 } from "./wizard/useWizardSessionApi";
+import { WIZARD_PIPELINE_TEMPLATE_DISPATCH } from "./wizard/dispatchMessages";
 import {
   DynamicContextPanel,
   SPLIT_STAGES,
@@ -910,7 +911,9 @@ export function UnifiedChat({
                   // Sem vaga persistida, o backend graph é quem segura a
                   // transição. Emite mensagem livre PT-BR para o graph
                   // anotar a escolha e retomar.
-                  sendChatMessage(`Aplicar template de pipeline ${templateId}`)
+                  sendChatMessage(
+                    WIZARD_PIPELINE_TEMPLATE_DISPATCH.applyTemplate(templateId),
+                  )
                   return
                 }
                 const response = await wizard.applyPipelineTemplateFromWizard(
@@ -927,11 +930,11 @@ export function UnifiedChat({
                   )
                 }
                 // Sinaliza ao backend graph que a stage foi resolvida.
-                sendChatMessage("Template de pipeline aplicado, pode seguir.")
+                sendChatMessage(WIZARD_PIPELINE_TEMPLATE_DISPATCH.appliedAck)
               }}
               onSkip={async () => {
                 // Backend graph parseia free-text para "use_default_pipeline".
-                sendChatMessage("Usar pipeline padrão da empresa.")
+                sendChatMessage(WIZARD_PIPELINE_TEMPLATE_DISPATCH.useDefault)
               }}
             />
           </div>
