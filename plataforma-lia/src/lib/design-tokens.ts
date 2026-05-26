@@ -253,7 +253,7 @@ export const textStyles = {
  */
 export const cardStyles = {
   default: 'bg-lia-bg-primary border border-lia-border-subtle rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle',
-  elevated: 'bg-lia-bg-primary border border-lia-border-subtle rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle',
+  elevated: 'bg-lia-bg-secondary border border-lia-border-subtle rounded-md dark:bg-lia-bg-tertiary dark:border-lia-border-subtle',
   interactive: 'bg-lia-bg-primary border border-lia-border-subtle rounded-md hover:border-lia-border-default transition-colors duration-200 cursor-pointer dark:bg-lia-bg-secondary dark:border-lia-border-subtle dark:hover:border-lia-border-medium',
   selected: 'bg-lia-bg-primary border-2 border-lia-btn-primary-bg rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-medium',
   flat: 'bg-lia-bg-secondary border border-lia-border-subtle rounded-md dark:bg-lia-bg-primary dark:border-lia-border-subtle',

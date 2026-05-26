@@ -161,6 +161,7 @@ export function TemplateCard({
       metricsSlot={metricsSlot}
       alertSlot={alertSlot}
       actionsSlot={actionsSlot}
+      tone="elevated"
       data-testid={`template-card-${template.id ?? template.name}`}
     />
   )

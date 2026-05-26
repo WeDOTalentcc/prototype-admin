@@ -45,6 +45,8 @@ export type StudioCardShellProps = {
   className?: string
   /** Render as <button> (default false → renders <div>). Use when entire card is clickable. */
   asButton?: boolean
+  /** Tonal variant. 'default' (paper, flat) vs 'elevated' (chalk lift for cards on white page bg). */
+  tone?: 'default' | 'elevated'
   /** ARIA label when asButton. */
   ariaLabel?: string
   /** Optional test id. */
@@ -68,9 +70,12 @@ export function StudioCardShell({
   className,
   asButton,
   ariaLabel,
+  tone = 'default',
   "data-testid": testId,
 }: StudioCardShellProps) {
-  const baseStyle = interactive || asButton ? cardStyles.interactive : cardStyles.default
+  const baseStyle = tone === 'elevated'
+    ? cardStyles.elevated
+    : (interactive || asButton ? cardStyles.interactive : cardStyles.default)
 
   const inner = (
     <>

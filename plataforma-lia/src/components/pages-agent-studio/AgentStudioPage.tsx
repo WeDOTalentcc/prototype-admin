@@ -34,6 +34,7 @@ import { TabSectionHeader } from "@/components/pages-agent-studio/TabSectionHead
 import { CreateAgentWizard, inferGoalFromTemplate } from "@/components/pages-agent-studio/create-agent-wizard"
 import type { AgentGoal, CreateAgentInitialConfig } from "@/components/pages-agent-studio/create-agent-wizard"
 import { useTranslations } from "next-intl"
+import { useAiPersona } from "@/hooks/company/use-ai-persona"
 
 interface SourcingAgent {
   id: string
@@ -102,6 +103,8 @@ export default function AgentStudioPage({
   onStartCalibration,
 }: AgentStudioPageProps) {
   const t = useTranslations("agents")
+  const { persona: aiPersona } = useAiPersona()
+  const aiAssistantName = aiPersona?.name ?? "assistente"
   const [agents, setAgents] = useState<SourcingAgent[]>([])
   const [templates, setTemplates] = useState<SectorTemplate[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -638,7 +641,7 @@ export default function AgentStudioPage({
                 <div className="text-center py-8">
                   <Bot className="w-8 h-8 text-lia-text-disabled mx-auto mb-2" />
                   <p className="text-sm text-lia-text-secondary">{t("studio.noAgentsYet")}</p>
-                  <p className="text-xs text-lia-text-disabled mt-1">{t("studio.chooseTemplateOrDescribe")}</p>
+                  <p className="text-xs text-lia-text-disabled mt-1">{t("studio.chooseTemplateOrDescribe", { aiAssistant: aiAssistantName })}</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
