@@ -128,11 +128,19 @@ function PoolCard({ pool, onClick }: { pool: TalentPoolSummary; onClick: () => v
           <div className="flex items-center gap-1" title="Prontos para mover para vaga">
             <span className={textStyles.bodySmall}>🎯 {pool.ready_count}</span>
           </div>
-          {pool.agent_sourcing_enabled && (
+          {typeof pool.assignments_count === "number" && pool.assignments_count > 0 ? (
+            <div className="flex items-center gap-1 ml-auto" title={`${pool.assignments_count} ${pool.assignments_count === 1 ? "agente atribuído" : "agentes atribuídos"} a este banco`}>
+              <Bot className="w-3.5 h-3.5 text-lia-text-secondary" />
+              <span className={textStyles.bodySmall}>
+                {pool.assignments_count} {pool.assignments_count === 1 ? "agente" : "agentes"}
+              </span>
+            </div>
+          ) : pool.agent_sourcing_enabled ? (
             <div className="flex items-center gap-1 ml-auto" title="Sourcing legacy ativo (em migração para o novo modelo de agentes)">
               <Bot className="w-3.5 h-3.5 text-lia-text-secondary" />
+              <span className={textStyles.bodySmall}>Sourcing legacy</span>
             </div>
-          )}
+          ) : null}
         </div>
 
         {/* Action */}

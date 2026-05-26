@@ -16,7 +16,7 @@
 
 import { badgeStyles } from "@/lib/design-tokens"
 
-export type SourcingAgentStatus = "active" | "paused" | "completed"
+export type AgentStatus = "active" | "paused" | "completed"
 export type CustomAgentStatus = "draft" | "active" | "paused" | "archived"
 
 interface StatusVisualConfig {
@@ -72,7 +72,7 @@ const ARCHIVED: StatusVisualConfig = {
   pulse: false,
 }
 
-const SOURCING_MAP: Record<SourcingAgentStatus, StatusVisualConfig> = {
+export const STATUS_MAP: Record<AgentStatus, StatusVisualConfig> = {
   active: ACTIVE,
   paused: PAUSED,
   completed: COMPLETED,
@@ -89,8 +89,8 @@ const CUSTOM_MAP: Record<CustomAgentStatus, StatusVisualConfig> = {
  * Get visual config for sourcing agent status (active/paused/completed).
  * Returns COMPLETED config as fallback for unknown status.
  */
-export function getSourcingAgentStatusConfig(status: string): StatusVisualConfig {
-  return SOURCING_MAP[status as SourcingAgentStatus] || COMPLETED
+export function getAgentStatusConfig(status: string): StatusVisualConfig {
+  return STATUS_MAP[status as AgentStatus] || COMPLETED
 }
 
 /**
@@ -100,3 +100,10 @@ export function getSourcingAgentStatusConfig(status: string): StatusVisualConfig
 export function getCustomAgentStatusConfig(status: string): StatusVisualConfig {
   return CUSTOM_MAP[status as CustomAgentStatus] || DRAFT
 }
+
+
+// Backward-compat aliases pra consumers legacy (Sprint 7B-3a part 2)
+// Remover quando todos consumers migrarem pros nomes canonical
+export const getSourcingAgentStatusConfig = getAgentStatusConfig
+export type SourcingAgentStatus = AgentStatus
+export { STATUS_MAP as SOURCING_MAP }

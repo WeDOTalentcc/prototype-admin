@@ -9,6 +9,7 @@ export interface TalentPoolSummary {
   ready_count: number
   ideal_profile_name: string | null
   agent_sourcing_enabled: boolean
+  assignments_count?: number
 }
 
 export function useTalentPools() {
