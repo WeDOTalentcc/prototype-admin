@@ -1,7 +1,7 @@
 import { createProxyHandlers } from "@/lib/api/proxy-handler"
 
 export const { dynamic, POST } = createProxyHandlers({
-  backendPath: "/api/v1/job-vacancies/:jobId/unlock-pipeline",
+  backendPath: "/api/v1/job-vacancies/:id/unlock-pipeline",
   methods: ["POST"],
   backendTarget: "fastapi",
 })

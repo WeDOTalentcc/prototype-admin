@@ -10,7 +10,7 @@
  *               useCompanyData (futuro migrate Sprint 2.3).
  */
 
-import type { CompanyData } from "@/hooks/settings/department-types"
+import type { CompanyData, SalaryRange } from "@/hooks/settings/department-types"
 import type { CompanyBenefit } from "@/types/benefits"
 import { useMemo } from "react"
 import { useTranslations } from "next-intl"
@@ -342,6 +342,6 @@ export function mergeToCompanyData(
     engineering_culture: (rawCulture?.engineering_culture as string) || "",
     default_languages: (rawCulture?.default_languages as string[]) || [],
     additional_data: (rawCulture?.additional_data as Record<string, unknown>) || (rawProfile?.additional_data as Record<string, unknown>) || undefined,
-    default_salary_ranges: (rawProfile?.default_salary_ranges as unknown[]) || [],
+    default_salary_ranges: (rawProfile?.default_salary_ranges as SalaryRange[]) || [],
   }
 }

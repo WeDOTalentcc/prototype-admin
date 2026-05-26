@@ -5,7 +5,7 @@ import { createProxyHandlers } from "@/lib/api/proxy-handler"
 // published_* flags. Recruiter triggers via JobPublishModal.onUnpublish
 // from the vacancy preview side panel.
 export const { dynamic, POST } = createProxyHandlers({
-  backendPath: "/api/v1/job-vacancies/:jobId/unpublish",
+  backendPath: "/api/v1/job-vacancies/:id/unpublish",
   methods: ["POST"],
   backendTarget: "fastapi",
 })

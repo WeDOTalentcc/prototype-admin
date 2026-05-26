@@ -46,7 +46,7 @@ export const SETTINGS_SUBSECTIONS: Record<string, string[]> = {
 export const SETTINGS_SECTION_ALIASES: Record<string, SettingsSectionId> = {
   alertas: 'comunicacao-alertas',
   integracoes: 'integrations',
-  'templates-e-assinatura': 'templates-assinatura',
+  'templates-e-assinatura': 'comunicacao-alertas',
 }
 
 export interface ResolvedSettingsTarget {
