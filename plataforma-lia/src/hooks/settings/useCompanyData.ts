@@ -1,5 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
-import { notifyChatOfSettingsUpdate } from "@/lib/api/settings-notify"
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { notifyChatOfSettingsUpdate } from "@/lib/api/settings-notify";
+import { SETTINGS_QUERY_KEYS } from "@/hooks/settings/useSettingsBroadcast";
 import {
   type CompanyData,
   type Department,
@@ -50,226 +52,245 @@ export interface UseCompanyDataResult {
   initialApprovers: Approver[];
 }
 
+async function fetchCompanyProfile() {
+  const res = await fetch("/api/backend-proxy/company/profile");
+  if (!res.ok) throw new Error("Failed to fetch company profile");
+  return res.json();
+}
+
+async function fetchCultureProfile(companyId: string) {
+  const res = await fetch(
+    "/api/backend-proxy/company/culture-profile/" + encodeURIComponent(companyId),
+  );
+  if (!res.ok) return null;
+  const data = await res.json();
+  return data && data.notFound ? null : data;
+}
+
+async function fetchDepartments(): Promise<Department[]> {
+  const res = await fetch("/api/backend-proxy/company/departments");
+  if (!res.ok) return [];
+  const data = await res.json();
+  if (!Array.isArray(data)) return [];
+  return data.map((d: {
+    id: string;
+    name: string;
+    description?: string;
+    manager_name?: string;
+    manager_title?: string;
+    manager_email?: string;
+    manager_phone?: string;
+    headcount?: number;
+    color?: string;
+  }) => ({
+    id: d.id,
+    name: d.name,
+    description: d.description || "",
+    manager: d.manager_name || undefined,
+    manager_title: d.manager_title || undefined,
+    manager_email: d.manager_email || undefined,
+    manager_phone: d.manager_phone || undefined,
+    headcount: d.headcount || 0,
+    color: d.color || "bg-lia-bg-tertiary text-lia-text-primary dark:text-lia-text-primary",
+  }));
+}
+
+async function fetchApprovers(): Promise<Approver[]> {
+  const res = await fetch("/api/backend-proxy/company/approvers");
+  if (!res.ok) return [];
+  const data = await res.json();
+  if (!Array.isArray(data)) return [];
+  return data.map((a: {
+    id: string;
+    user_id?: string;
+    user_name: string;
+    email: string;
+    role?: string;
+    level: number;
+    is_active: boolean;
+    department_id?: string | null;
+    can_approve_above_amount?: string | number | null;
+  }) => ({
+    id: a.id,
+    userId: a.user_id || "",
+    userName: a.user_name,
+    email: a.email,
+    role: a.role || "",
+    level: a.level,
+    isActive: a.is_active,
+    departmentId: a.department_id ?? null,
+    canApproveAboveAmount:
+      a.can_approve_above_amount === null || a.can_approve_above_amount === undefined
+        ? null
+        : typeof a.can_approve_above_amount === "string"
+          ? parseFloat(a.can_approve_above_amount)
+          : a.can_approve_above_amount,
+  }));
+}
+
+function mapProfileToCompanyData(r: Record<string, unknown>): Partial<CompanyData> {
+  return {
+    name: (r.name as string) || defaultCompanyData.name,
+    tradeName: (r.trading_name as string) || (r.name as string) || defaultCompanyData.tradeName,
+    cnpj: (r.cnpj as string) || defaultCompanyData.cnpj,
+    website: (r.website as string) || defaultCompanyData.website,
+    email: (r.hr_email as string) || (r.main_email as string) || defaultCompanyData.email,
+    phone: (r.hr_phone as string) || (r.main_phone as string) || defaultCompanyData.phone,
+    address: (r.address as string) || defaultCompanyData.address,
+    logo: (r.logo_url as string) || undefined,
+    industry: (r.industry as string) || defaultCompanyData.industry,
+    size: (r.size as string) || defaultCompanyData.size,
+    employee_count: (r.employee_count as number) ?? undefined,
+    company_size: (r.company_size as string) || defaultCompanyData.company_size,
+    founded_year: (r.founded_year as number) ?? undefined,
+    linkedin_url: (r.linkedin_url as string) || "",
+    headquarters: (r.headquarters_city as string)
+      ? (r.headquarters_city as string) + (r.headquarters_state ? ", " + (r.headquarters_state as string) : "")
+      : "",
+    additional_data: (r.additional_data as Record<string, unknown>) || undefined,
+  };
+}
+
+function mergeCultureProfile(prev: CompanyData, c: Record<string, unknown>): CompanyData {
+  return {
+    ...prev,
+    mission: (c.mission as string) || prev.mission || "",
+    vision: (c.vision as string) || prev.vision || "",
+    values: (c.values as string[]) || prev.values || [],
+    coreCompetencies: (c.core_competencies as string[]) || prev.coreCompetencies || [],
+    evp_bullets: (c.evp_bullets as string[]) || [],
+    work_model: (c.work_model as string) || "",
+    hybrid_days_onsite: (c.hybrid_days_onsite as number) || 3,
+    employment_types: (c.employment_types as string[]) || ["CLT"],
+    growth_opportunities: (c.growth_opportunities as string) || "",
+    team_dynamics: (c.team_dynamics as string) || "",
+    leadership_style: (c.leadership_style as string) || "",
+    dei_initiatives: (c.dei_initiatives as string) || "",
+    sustainability: (c.sustainability as string) || "",
+    social_impact: (c.social_impact as string) || "",
+    tech_stack: (c.tech_stack as string[]) || [],
+    engineering_culture: (c.engineering_culture as string) || "",
+    default_languages: (c.default_languages as string[]) || [],
+    locations: (c.locations as string[]) || prev.locations || [],
+    employee_count: (c.employee_count as number) ?? prev.employee_count,
+    company_size: (c.company_size as string) || prev.company_size || "",
+    headquarters: (c.headquarters as string) || prev.headquarters || "",
+    founded_year: (c.founded_year as number) ?? prev.founded_year,
+    linkedin_url: (c.linkedin_url as string) || prev.linkedin_url || "",
+    openness_score: (c.openness_score as number) ?? prev.openness_score ?? 50,
+    conscientiousness_score: (c.conscientiousness_score as number) ?? prev.conscientiousness_score ?? 50,
+    extraversion_score: (c.extraversion_score as number) ?? prev.extraversion_score ?? 50,
+    agreeableness_score: (c.agreeableness_score as number) ?? prev.agreeableness_score ?? 50,
+    stability_score: (c.stability_score as number) ?? prev.stability_score ?? 50,
+    seniority_levels: (c.seniority_levels as CompanyData["seniority_levels"]) ?? prev.seniority_levels ?? defaultCompanyData.seniority_levels,
+    default_behavioral_competencies: (c.default_behavioral_competencies as CompanyData["default_behavioral_competencies"]) ?? prev.default_behavioral_competencies ?? defaultCompanyData.default_behavioral_competencies,
+    default_salary_ranges: (c.default_salary_ranges as CompanyData["default_salary_ranges"]) ?? prev.default_salary_ranges ?? [],
+    lia_instructions: (c.lia_instructions as CompanyData["lia_instructions"]) ?? prev.lia_instructions ?? {},
+  };
+}
+
+
+function extractBigFive(result: Record<string, unknown>, prev?: Partial<CompanyData>) {
+  const bf = result.big_five as Record<string, number> | undefined;
+  return {
+    openness_score: bf?.openness ?? (result.openness_score as number) ?? prev?.openness_score ?? 50,
+    conscientiousness_score: bf?.conscientiousness ?? (result.conscientiousness_score as number) ?? prev?.conscientiousness_score ?? 50,
+    extraversion_score: bf?.extraversion ?? (result.extraversion_score as number) ?? prev?.extraversion_score ?? 50,
+    agreeableness_score: bf?.agreeableness ?? (result.agreeableness_score as number) ?? prev?.agreeableness_score ?? 50,
+    stability_score: bf?.stability ?? (result.stability_score as number) ?? prev?.stability_score ?? 50,
+  };
+}
+
 export function useCompanyData(): UseCompanyDataResult {
-  const [companyData, setCompanyData] = useState<CompanyData>(defaultCompanyData);
-  const [companyId, setCompanyId] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [hasCultureProfile, setHasCultureProfile] = useState(false);
   const [isEditingCompanyData, setIsEditingCompanyData] = useState(false);
   const [companyDataBackup, setCompanyDataBackup] = useState<CompanyData | null>(null);
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
   const [isLiaAnalyzing, setIsLiaAnalyzing] = useState(false);
   const [liaAnalysisProgress, setLiaAnalysisProgress] = useState(0);
   const [liaAnalysisStep, setLiaAnalysisStep] = useState<string | null>(null);
-  const [initialDepartments, setInitialDepartments] = useState<Department[]>([]);
-  const [initialApprovers, setInitialApprovers] = useState<Approver[]>([]);
+  const [companyData, setCompanyData] = useState<CompanyData>(defaultCompanyData);
+  const [companyId, setCompanyId] = useState<string | null>(null);
+  const [hasCultureProfile, setHasCultureProfile] = useState(false);
+
+  const { data: profileData, isLoading: profileLoading } = useQuery({
+    queryKey: SETTINGS_QUERY_KEYS.companyProfile(),
+    queryFn: fetchCompanyProfile,
+    staleTime: 60_000,
+  });
+
+  const apiCompanyId: string | null = profileData ? (profileData.id ?? null) : null;
+
+  const { data: cultureData, isLoading: cultureLoading } = useQuery({
+    queryKey: SETTINGS_QUERY_KEYS.cultureProfile(apiCompanyId ?? ""),
+    queryFn: () => fetchCultureProfile(apiCompanyId!),
+    enabled: !!apiCompanyId,
+    staleTime: 60_000,
+  });
+
+  const { data: departmentsData, isLoading: departmentsLoading } = useQuery({
+    queryKey: ["company-departments"],
+    queryFn: fetchDepartments,
+    staleTime: 60_000,
+  });
+
+  const { data: approversData, isLoading: approversLoading } = useQuery({
+    queryKey: ["company-approvers"],
+    queryFn: fetchApprovers,
+    staleTime: 60_000,
+  });
+
+  const loading =
+    profileLoading ||
+    (!!apiCompanyId && cultureLoading) ||
+    departmentsLoading ||
+    approversLoading;
+
+  useEffect(() => {
+    if (profileData && !isEditingCompanyData) {
+      setCompanyId(profileData.id ?? null);
+      setCompanyData((prev) => ({ ...prev, ...mapProfileToCompanyData(profileData) }));
+    }
+  }, [profileData, isEditingCompanyData]);
+
+  useEffect(() => {
+    if (cultureData && !isEditingCompanyData) {
+      const hasData = !!(
+        cultureData.mission ||
+        cultureData.vision ||
+        (cultureData.values && cultureData.values.length > 0)
+      );
+      setHasCultureProfile(hasData);
+      setCompanyData((prev) => mergeCultureProfile(prev, cultureData));
+    }
+  }, [cultureData, isEditingCompanyData]);
+
+  const initialDepartments: Department[] = departmentsData ?? [];
+  const initialApprovers: Approver[] = approversData ?? [];
 
   const techStackByCategory = useMemo(
     () => parseTechStackToCategories(companyData.tech_stack || []),
     [companyData.tech_stack],
   );
 
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        setLoading(true);
-        setError(null);
-
-        const [companyRes, departmentsRes, approversRes] = await Promise.all([
-          fetch("/api/backend-proxy/company/profile"),
-          fetch("/api/backend-proxy/company/departments"),
-          fetch("/api/backend-proxy/company/approvers"),
-        ]);
-
-        let fetchedCompanyId: string | null = null;
-        if (companyRes.ok) {
-          const companyResult = await companyRes.json();
-          if (companyResult) {
-            fetchedCompanyId = companyResult.id || null;
-            setCompanyId(fetchedCompanyId);
-            setCompanyData({
-              name: companyResult.name || defaultCompanyData.name,
-              tradeName:
-                companyResult.trading_name ||
-                companyResult.name ||
-                defaultCompanyData.tradeName,
-              cnpj: companyResult.cnpj || defaultCompanyData.cnpj,
-              website: companyResult.website || defaultCompanyData.website,
-              email:
-                companyResult.hr_email ||
-                companyResult.main_email ||
-                defaultCompanyData.email,
-              phone:
-                companyResult.hr_phone ||
-                companyResult.main_phone ||
-                defaultCompanyData.phone,
-              address: companyResult.address || defaultCompanyData.address,
-              logo: companyResult.logo_url || undefined,
-              industry: companyResult.industry || defaultCompanyData.industry,
-              size: companyResult.size || defaultCompanyData.size,
-              employee_count: companyResult.employee_count ?? undefined,
-              company_size:
-                companyResult.company_size || defaultCompanyData.company_size,
-              founded_year: companyResult.founded_year ?? undefined,
-              linkedin_url: companyResult.linkedin_url || "",
-              headquarters: companyResult.headquarters_city
-                ? `${companyResult.headquarters_city}${companyResult.headquarters_state ? `, ${companyResult.headquarters_state}` : ""}`
-                : "",
-              additional_data: companyResult.additional_data || undefined,
-            });
-          }
-        }
-
-        if (departmentsRes.ok) {
-          const departmentsResult = await departmentsRes.json();
-          if (Array.isArray(departmentsResult) && departmentsResult.length > 0) {
-            setInitialDepartments(
-              departmentsResult.map((d: { id: string; name: string; description?: string; manager_name?: string; manager_title?: string; manager_email?: string; manager_phone?: string; headcount?: number; color?: string }) => ({
-                id: d.id,
-                name: d.name,
-                description: d.description || "",
-                manager: d.manager_name || undefined,
-                manager_title: d.manager_title || undefined,
-                manager_email: d.manager_email || undefined,
-                manager_phone: d.manager_phone || undefined,
-                headcount: d.headcount || 0,
-                color: d.color || "bg-lia-bg-tertiary text-lia-text-primary dark:text-lia-text-primary",
-              })),
-            );
-          }
-        }
-
-        if (approversRes.ok) {
-          const approversResult = await approversRes.json();
-          if (Array.isArray(approversResult) && approversResult.length > 0) {
-            setInitialApprovers(
-              approversResult.map((a: { id: string; user_id?: string; user_name: string; email: string; role?: string; level: number; is_active: boolean; department_id?: string | null; can_approve_above_amount?: string | number | null }) => ({
-                id: a.id,
-                userId: a.user_id || "",
-                userName: a.user_name,
-                email: a.email,
-                role: a.role || "",
-                level: a.level,
-                isActive: a.is_active,
-                // P0.D2 (audit Wave 2 2026-05-22): per-department + amount-threshold.
-                // API may return Decimal as string; coerce to number for the form.
-                departmentId: a.department_id ?? null,
-                canApproveAboveAmount:
-                  a.can_approve_above_amount === null || a.can_approve_above_amount === undefined
-                    ? null
-                    : typeof a.can_approve_above_amount === "string"
-                      ? parseFloat(a.can_approve_above_amount)
-                      : a.can_approve_above_amount,
-              })),
-            );
-          }
-        }
-
-        if (fetchedCompanyId) {
-          const cultureRes = await fetch(
-            `/api/backend-proxy/company/culture-profile/${encodeURIComponent(fetchedCompanyId)}`,
-          );
-          if (cultureRes.ok) {
-            const cultureProfile = await cultureRes.json();
-            if (cultureProfile && !cultureProfile.notFound) {
-              const hasData = !!(
-                cultureProfile.mission ||
-                cultureProfile.vision ||
-                (cultureProfile.values && cultureProfile.values.length > 0)
-              );
-              setHasCultureProfile(hasData);
-              setCompanyData((prev) => ({
-                ...prev,
-                mission: cultureProfile.mission || prev.mission || "",
-                vision: cultureProfile.vision || prev.vision || "",
-                values: cultureProfile.values || prev.values || [],
-                coreCompetencies:
-                  cultureProfile.core_competencies ||
-                  prev.coreCompetencies ||
-                  [],
-                evp_bullets: cultureProfile.evp_bullets || [],
-                work_model: cultureProfile.work_model || "",
-                hybrid_days_onsite: cultureProfile.hybrid_days_onsite || 3,
-                employment_types: cultureProfile.employment_types || ["CLT"],
-                growth_opportunities: cultureProfile.growth_opportunities || "",
-                team_dynamics: cultureProfile.team_dynamics || "",
-                leadership_style: cultureProfile.leadership_style || "",
-                dei_initiatives: cultureProfile.dei_initiatives || "",
-                sustainability: cultureProfile.sustainability || "",
-                social_impact: cultureProfile.social_impact || "",
-                tech_stack: cultureProfile.tech_stack || [],
-                engineering_culture: cultureProfile.engineering_culture || "",
-                default_languages: cultureProfile.default_languages || [],
-                locations: cultureProfile.locations || prev.locations || [],
-                employee_count:
-                  cultureProfile.employee_count ?? prev.employee_count,
-                company_size:
-                  cultureProfile.company_size || prev.company_size || "",
-                headquarters:
-                  cultureProfile.headquarters || prev.headquarters || "",
-                founded_year: cultureProfile.founded_year ?? prev.founded_year,
-                linkedin_url:
-                  cultureProfile.linkedin_url || prev.linkedin_url || "",
-                openness_score:
-                  cultureProfile.openness_score ?? prev.openness_score ?? 50,
-                conscientiousness_score:
-                  cultureProfile.conscientiousness_score ??
-                  prev.conscientiousness_score ??
-                  50,
-                extraversion_score:
-                  cultureProfile.extraversion_score ??
-                  prev.extraversion_score ??
-                  50,
-                agreeableness_score:
-                  cultureProfile.agreeableness_score ??
-                  prev.agreeableness_score ??
-                  50,
-                stability_score:
-                  cultureProfile.stability_score ??
-                  prev.stability_score ??
-                  50,
-                seniority_levels:
-                  cultureProfile.seniority_levels ?? prev.seniority_levels ?? defaultCompanyData.seniority_levels,
-                default_behavioral_competencies:
-                  cultureProfile.default_behavioral_competencies ?? prev.default_behavioral_competencies ?? defaultCompanyData.default_behavioral_competencies,
-                default_salary_ranges:
-                  cultureProfile.default_salary_ranges ?? prev.default_salary_ranges ?? [],
-                lia_instructions:
-                  cultureProfile.lia_instructions ?? prev.lia_instructions ?? {},
-              }));
-            }
-          }
-        }
-      } catch (err) {
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchData();
-  }, []);
-
   const saveCultureData = async (data: Record<string, unknown>) => {
-    if (!companyId) {
-      return;
-    }
-    try {
-      const response = await fetch(
-        `/api/backend-proxy/company/culture-profile/${encodeURIComponent(companyId)}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
-        },
-      );
-      if (!response.ok) {
-      } else {
-        setHasCultureProfile(true);
-      }
-    } catch (err) {
+    const id = companyId || apiCompanyId;
+    if (!id) return;
+    const response = await fetch(
+      "/api/backend-proxy/company/culture-profile/" + encodeURIComponent(id),
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      },
+    );
+    if (response.ok) {
+      setHasCultureProfile(true);
+      queryClient.invalidateQueries({ queryKey: SETTINGS_QUERY_KEYS.cultureProfile(id) });
     }
   };
 
@@ -306,13 +327,10 @@ export function useCompanyData(): UseCompanyDataResult {
         agreeableness_score: companyData.agreeableness_score,
         stability_score: companyData.stability_score,
       });
-      notifyChatOfSettingsUpdate({
-        actionId: "update_company_culture",
-        section: "company_data",
-      });
+      notifyChatOfSettingsUpdate({ actionId: "update_company_culture", section: "company_data" });
       setSuccessMessage("Dados culturais salvos com sucesso!");
       setTimeout(() => setSuccessMessage(null), 3000);
-    } catch (err) {
+    } catch {
       setError("Erro ao salvar dados culturais");
       setTimeout(() => setError(null), 3000);
     } finally {
@@ -324,13 +342,13 @@ export function useCompanyData(): UseCompanyDataResult {
     try {
       setSaving(true);
       setError(null);
-
-      const url = companyId
-        ? `/api/backend-proxy/company/profile/${companyId}`
+      const id = companyId || apiCompanyId;
+      const url = id
+        ? "/api/backend-proxy/company/profile/" + id
         : "/api/backend-proxy/company/profile";
 
       const response = await fetch(url, {
-        method: companyId ? "PUT" : "POST",
+        method: id ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: companyData.name,
@@ -353,15 +371,9 @@ export function useCompanyData(): UseCompanyDataResult {
           lia_field_toggles: companyData.lia_field_toggles,
         }),
       });
-
-      if (!response.ok) {
-        throw new Error("Falha ao salvar dados da empresa");
-      }
-
-      notifyChatOfSettingsUpdate({
-        actionId: "update_company_data",
-        section: "company_data",
-      });
+      if (!response.ok) throw new Error("Falha ao salvar dados da empresa");
+      queryClient.invalidateQueries({ queryKey: SETTINGS_QUERY_KEYS.companyProfile() });
+      notifyChatOfSettingsUpdate({ actionId: "update_company_data", section: "company_data" });
       setSuccessMessage("Dados salvos com sucesso!");
       setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err) {
@@ -374,79 +386,49 @@ export function useCompanyData(): UseCompanyDataResult {
   const updateLiaInstruction = (fieldKey: string, instruction: string) => {
     setCompanyData((prev) => ({
       ...prev,
-      lia_instructions: {
-        ...(prev.lia_instructions || {}),
-        [fieldKey]: instruction,
-      },
+      lia_instructions: { ...(prev.lia_instructions || {}), [fieldKey]: instruction },
     }));
   };
 
   const saveLiaToggleToBackend = async (fieldKey: string, isActive: boolean) => {
     try {
-      let currentCompanyId = companyId || '';
-
-      if (!currentCompanyId) {
-        const profileRes = await fetch('/api/backend-proxy/company/profile');
-        if (profileRes.ok) {
-          const profile = await profileRes.json();
-          currentCompanyId = profile.id || '';
-        }
-      }
-
-      const currentToggles = companyData.lia_field_toggles || {};
-      const newToggles = { ...currentToggles, [fieldKey]: isActive };
-
-      await fetch(
-        `/api/backend-proxy/company/culture-profile/${encodeURIComponent(currentCompanyId)}`,
-        {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            lia_field_toggles: newToggles,
-          }),
-        }
-      );
-    } catch (error) {
+      const id = companyId || apiCompanyId || "";
+      if (!id) return;
+      const newToggles = { ...(companyData.lia_field_toggles || {}), [fieldKey]: isActive };
+      await fetch("/api/backend-proxy/company/culture-profile/" + encodeURIComponent(id), {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ lia_field_toggles: newToggles }),
+      });
+    } catch {
+      // non-critical toggle persist; swallow
     }
   };
 
   const updateLiaToggle = (fieldKey: string, isActive: boolean) => {
     setCompanyData((prev) => ({
       ...prev,
-      lia_field_toggles: {
-        ...(prev.lia_field_toggles || {}),
-        [fieldKey]: isActive,
-      },
+      lia_field_toggles: { ...(prev.lia_field_toggles || {}), [fieldKey]: isActive },
     }));
     saveLiaToggleToBackend(fieldKey, isActive);
   };
 
   const addTechToCategory = (category: string, tech: string) => {
     const current: TechStackByCategory = {};
-    Object.keys(techStackByCategory).forEach((key) => {
-      current[key] = [...techStackByCategory[key]];
-    });
+    Object.keys(techStackByCategory).forEach((key) => { current[key] = [...techStackByCategory[key]]; });
     if (!current[category]) current[category] = [];
     if (!current[category].includes(tech)) {
       current[category] = [...current[category], tech];
-      setCompanyData((prev) => ({
-        ...prev,
-        tech_stack: categoriesToTechStack(current),
-      }));
+      setCompanyData((prev) => ({ ...prev, tech_stack: categoriesToTechStack(current) }));
     }
   };
 
   const removeTechFromCategory = (category: string, tech: string) => {
     const current: TechStackByCategory = {};
-    Object.keys(techStackByCategory).forEach((key) => {
-      current[key] = [...techStackByCategory[key]];
-    });
+    Object.keys(techStackByCategory).forEach((key) => { current[key] = [...techStackByCategory[key]]; });
     if (current[category]) {
       current[category] = current[category].filter((t) => t !== tech);
-      setCompanyData((prev) => ({
-        ...prev,
-        tech_stack: categoriesToTechStack(current),
-      }));
+      setCompanyData((prev) => ({ ...prev, tech_stack: categoriesToTechStack(current) }));
     }
   };
 
@@ -464,69 +446,46 @@ export function useCompanyData(): UseCompanyDataResult {
       setTimeout(() => setError(null), 5000);
       return;
     }
-
     setIsLiaAnalyzing(true);
     setLiaAnalysisProgress(0);
     setLiaAnalysisStep("Conectando...");
     setError(null);
-
     let progressInterval: NodeJS.Timeout | null = null;
-
     try {
       progressInterval = setInterval(() => {
         setLiaAnalysisProgress((prev) => {
           if (prev >= 90) return prev;
-          const increment =
-            prev < 15 ? 3 : prev < 35 ? 2 : prev < 60 ? 1.5 : 0.8;
+          const increment = prev < 15 ? 3 : prev < 35 ? 2 : prev < 60 ? 1.5 : 0.8;
           const newProgress = Math.min(prev + increment, 90);
           setLiaAnalysisStep(getLiaAnalysisStepLabel(newProgress));
           return newProgress;
         });
       }, 500);
 
-      let normalizedWebsiteUrl = companyData.website.trim();
-      normalizedWebsiteUrl = normalizedWebsiteUrl.replace(
-        /^httsp:\/\//i,
-        "https://",
-      );
-      normalizedWebsiteUrl = normalizedWebsiteUrl.replace(
-        /^htts:\/\//i,
-        "https://",
-      );
-      if (!normalizedWebsiteUrl.match(/^https?:\/\//i)) {
-        normalizedWebsiteUrl = "https://" + normalizedWebsiteUrl;
+      let url = companyData.website.trim();
+      url = url.replace(/^httsp:\/\//i, "https://");
+      url = url.replace(/^htts:\/\//i, "https://");
+      if (!url.match(/^https?:\/\//i)) url = "https://" + url;
+
+      let linkedinUrl = companyData.linkedin_url ? companyData.linkedin_url.trim() : undefined;
+      if (linkedinUrl && !linkedinUrl.match(/^https?:\/\//i)) {
+        linkedinUrl = "https://" + linkedinUrl;
       }
 
-      let normalizedLinkedinUrl = companyData.linkedin_url?.trim();
-      if (
-        normalizedLinkedinUrl &&
-        !normalizedLinkedinUrl.match(/^https?:\/\//i)
-      ) {
-        normalizedLinkedinUrl = "https://" + normalizedLinkedinUrl;
-      }
-
-      const response = await fetch(
-        "/api/backend-proxy/company/culture-profile/analyze-direct",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            website_url: normalizedWebsiteUrl,
-            linkedin_url: normalizedLinkedinUrl || undefined,
-            company_id: companyId,
-          }),
-        },
-      );
-
+      const response = await fetch("/api/backend-proxy/company/culture-profile/analyze-direct", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          website_url: url,
+          linkedin_url: linkedinUrl || undefined,
+          company_id: companyId || apiCompanyId,
+        }),
+      });
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(
-          errorData.detail || errorData.error || "Falha na análise",
-        );
+        throw new Error(errorData.detail || errorData.error || "Falha na analise");
       }
-
       const result = await response.json();
-
       setLiaAnalysisProgress(95);
       setLiaAnalysisStep("LIA analisando...");
 
@@ -534,54 +493,18 @@ export function useCompanyData(): UseCompanyDataResult {
         ...prev,
         mission: result.mission || prev.mission || "",
         vision: result.vision || prev.vision || "",
-        values: result.values?.length > 0 ? result.values : prev.values || [],
-        coreCompetencies:
-          result.core_competencies?.length > 0
-            ? result.core_competencies
-            : prev.coreCompetencies || [],
-        evp_bullets:
-          result.evp_bullets?.length > 0
-            ? result.evp_bullets
-            : prev.evp_bullets || [],
-        growth_opportunities:
-          result.growth_opportunities || prev.growth_opportunities || "",
+        values: result.values && result.values.length > 0 ? result.values : prev.values || [],
+        coreCompetencies: result.core_competencies && result.core_competencies.length > 0 ? result.core_competencies : prev.coreCompetencies || [],
+        evp_bullets: result.evp_bullets && result.evp_bullets.length > 0 ? result.evp_bullets : prev.evp_bullets || [],
+        growth_opportunities: result.growth_opportunities || prev.growth_opportunities || "",
         team_dynamics: result.team_dynamics || prev.team_dynamics || "",
-        leadership_style:
-          result.leadership_style || prev.leadership_style || "",
+        leadership_style: result.leadership_style || prev.leadership_style || "",
         dei_initiatives: result.dei_initiatives || prev.dei_initiatives || "",
         sustainability: result.sustainability || prev.sustainability || "",
         social_impact: result.social_impact || prev.social_impact || "",
-        engineering_culture:
-          result.engineering_culture || prev.engineering_culture || "",
-        tech_stack:
-          result.tech_stack?.length > 0
-            ? result.tech_stack
-            : prev.tech_stack || [],
-        openness_score:
-          result.big_five?.openness ??
-          result.openness_score ??
-          prev.openness_score ??
-          50,
-        conscientiousness_score:
-          result.big_five?.conscientiousness ??
-          result.conscientiousness_score ??
-          prev.conscientiousness_score ??
-          50,
-        extraversion_score:
-          result.big_five?.extraversion ??
-          result.extraversion_score ??
-          prev.extraversion_score ??
-          50,
-        agreeableness_score:
-          result.big_five?.agreeableness ??
-          result.agreeableness_score ??
-          prev.agreeableness_score ??
-          50,
-        stability_score:
-          result.big_five?.stability ??
-          result.stability_score ??
-          prev.stability_score ??
-          50,
+        engineering_culture: result.engineering_culture || prev.engineering_culture || "",
+        tech_stack: result.tech_stack && result.tech_stack.length > 0 ? result.tech_stack : prev.tech_stack || [],
+        ...extractBigFive(result, prev),
       }));
 
       try {
@@ -599,48 +522,26 @@ export function useCompanyData(): UseCompanyDataResult {
           social_impact: result.social_impact || "",
           engineering_culture: result.engineering_culture || "",
           tech_stack: result.tech_stack || [],
-          openness_score:
-            result.big_five?.openness ?? result.openness_score ?? 50,
-          conscientiousness_score:
-            result.big_five?.conscientiousness ??
-            result.conscientiousness_score ??
-            50,
-          extraversion_score:
-            result.big_five?.extraversion ?? result.extraversion_score ?? 50,
-          agreeableness_score:
-            result.big_five?.agreeableness ?? result.agreeableness_score ?? 50,
-          stability_score:
-            result.big_five?.stability ?? result.stability_score ?? 50,
+          ...extractBigFive(result),
         });
         setHasCultureProfile(true);
-      } catch (saveErr) {
+      } catch {
+        // save failure is non-critical; form already updated
       }
 
       setLiaAnalysisProgress(100);
-      setLiaAnalysisStep("Concluído!");
+      setLiaAnalysisStep("Concluido!");
       setHasCultureProfile(true);
-      setSuccessMessage(
-        "Análise LIA concluída com sucesso! Campos preenchidos automaticamente.",
-      );
+      setSuccessMessage("Analise LIA concluida com sucesso! Campos preenchidos automaticamente.");
       setTimeout(() => setSuccessMessage(null), 4000);
-
-      setTimeout(() => {
-        setLiaAnalysisProgress(0);
-        setLiaAnalysisStep(null);
-      }, 2000);
+      setTimeout(() => { setLiaAnalysisProgress(0); setLiaAnalysisStep(null); }, 2000);
     } catch (err) {
       setLiaAnalysisProgress(0);
       setLiaAnalysisStep(null);
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Erro ao analisar com LIA. Verifique a URL e tente novamente.",
-      );
+      setError(err instanceof Error ? err.message : "Erro ao analisar com LIA. Verifique a URL e tente novamente.");
       setTimeout(() => setError(null), 5000);
     } finally {
-      if (progressInterval) {
-        clearInterval(progressInterval);
-      }
+      if (progressInterval) clearInterval(progressInterval);
       setIsLiaAnalyzing(false);
     }
   };
