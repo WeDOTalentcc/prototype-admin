@@ -3649,7 +3649,25 @@
       "confirmDeleteUser": "Tem certeza que deseja excluir este usuário?",
       "errorDeleteUser": "Erro ao excluir usuário",
       "dismissSuccess": "Fechar mensagem",
-      "avatarOf": "Avatar de {name}"
+      "avatarOf": "Avatar de {name}",
+      "linkUserSectionLabel": "Vincular a usuário existente da plataforma (opcional)",
+      "linkUserExternalContactOption": "— Contato externo (sem login) —",
+      "linkUserConfirmationNote": "Vinculado a usuário da plataforma. Editar dados abaixo refletirá no cadastro do colaborador, não no usuário canônico.",
+      "salaryGrantConfirmTitleGrant": "Conceder acesso a salários?",
+      "salaryGrantConfirmTitleRevoke": "Revogar acesso a salários?",
+      "salaryGrantConfirmBodyGrant": "Esta pessoa poderá ver salários de candidatos ao acessar a plataforma. A ação será registrada no log de auditoria (LGPD Art. 37 V, retenção 7 anos).",
+      "salaryGrantConfirmBodyRevoke": "Esta pessoa deixará de ver salários dos candidatos. Acessos futuros virão mascarados como restritos. A revogação será registrada no log de auditoria.",
+      "salaryGrantConfirmActionGrant": "Conceder acesso",
+      "salaryGrantConfirmActionRevoke": "Revogar acesso",
+      "salaryGrantConfirmCancel": "Cancelar",
+      "bulkSelectionLabel": "{count, plural, =1 {<strong>1</strong> usuário selecionado} other {<strong>#</strong> usuários selecionados}}",
+      "bulkActionGrant": "Conceder acesso a salários",
+      "bulkActionRevoke": "Revogar acesso a salários",
+      "bulkActionClearSelection": "Limpar seleção",
+      "bulkTargetLabel": "{count, plural, =1 {1 usuário selecionado} other {# usuários selecionados}}",
+      "canViewSalaryCheckboxLabel": "Pode ver salário dos candidatos",
+      "tableCanViewSalary": "Ver salário",
+      "tableCanViewSalaryTooltip": "Pode ver salário dos candidatos (LGPD Art. 6 III)"
     },
     "departments": {
       "title": "Departamentos",
@@ -3689,7 +3707,10 @@
       "orgChartLoading": "Carregando...",
       "noTitle": "Sem cargo",
       "person": "pessoa",
-      "people": "pessoas"
+      "people": "pessoas",
+      "linkUserSectionLabel": "Vincular a usuário existente da plataforma (opcional)",
+      "linkUserExternalContactOption": "— Contato externo (sem login) —",
+      "linkUserConfirmationNote": "Vinculado a usuário da plataforma. Editar dados abaixo refletirá no cadastro do colaborador, não no usuário canônico."
     },
     "members": {
       "title": "Colaboradores do Departamento",
@@ -3715,7 +3736,10 @@
       "levelOther": "Outros",
       "cancel": "Cancelar",
       "saving": "Salvando...",
-      "save": "Salvar"
+      "save": "Salvar",
+      "linkUserSectionLabel": "Vincular a usuário existente da plataforma (opcional)",
+      "linkUserExternalContactOption": "— Contato externo (sem login) —",
+      "linkUserConfirmationNote": "Vinculado a usuário da plataforma. Editar dados abaixo refletirá no cadastro do colaborador, não no usuário canônico."
     },
     "approvers": {
       "title": "Fluxo de Aprovação de Vagas",

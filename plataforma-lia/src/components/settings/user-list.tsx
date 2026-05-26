@@ -265,7 +265,7 @@ export function UserList({
     {isAdmin && selectedIds.size > 0 && (
       <div className="mb-2 flex items-center justify-between gap-3 rounded-xl border border-lia-border-medium bg-lia-bg-secondary px-3 py-2">
         <div className="text-xs text-lia-text-primary">
-          <strong>{selectedIds.size}</strong> usuário{selectedIds.size === 1 ? '' : 's'} selecionado{selectedIds.size === 1 ? '' : 's'}
+          {t.rich('bulkSelectionLabel', { count: selectedIds.size, strong: (chunks) => <strong>{chunks}</strong> })}
         </div>
         <div className="flex items-center gap-2">
           <Button
@@ -275,7 +275,7 @@ export function UserList({
             disabled={bulkSubmitting}
             onClick={() => setBulkConfirm({ open: true, next: false })}
           >
-            Revogar acesso a salários
+            {t('bulkActionRevoke')}
           </Button>
           <Button
             data-testid="bulk-grant-allow"
@@ -283,14 +283,14 @@ export function UserList({
             disabled={bulkSubmitting}
             onClick={() => setBulkConfirm({ open: true, next: true })}
           >
-            Conceder acesso a salários
+            {t('bulkActionGrant')}
           </Button>
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setSelectedIds(new Set())}
           >
-            Limpar seleção
+            {t('bulkActionClearSelection')}
           </Button>
         </div>
       </div>
@@ -324,9 +324,9 @@ export function UserList({
                 {isAdmin && (
                   <th
                     className="px-2 py-2.5 text-center text-micro font-medium text-lia-text-secondary uppercase tracking-wider"
-                    title="Pode ver salário dos candidatos (LGPD Art. 6 III)"
+                    title={t('tableCanViewSalaryTooltip')}
                   >
-                    Ver salário
+                    {t('tableCanViewSalary')}
                   </th>
                 )}
                 {!isSCIMEnabled && (
@@ -442,7 +442,7 @@ export function UserList({
         open={bulkConfirm.open}
         onOpenChange={(open) => setBulkConfirm((s) => ({ ...s, open }))}
         granting={bulkConfirm.next}
-        target={`${selectedIds.size} usuário${selectedIds.size === 1 ? '' : 's'} selecionado${selectedIds.size === 1 ? '' : 's'}`}
+        target={t('bulkTargetLabel', { count: selectedIds.size })}
         onConfirm={handleBulkSalaryGrant}
       />
     </>

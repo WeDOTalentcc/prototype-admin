@@ -265,7 +265,7 @@ export function UserForm({ isCreating, formData, setFormData, onSave, onCancel, 
                       onChange={(e) => setSalaryConfirm({ open: true, next: e.target.checked })}
                       className="w-3.5 h-3.5 rounded-xl border-lia-border-default"
                     />
-                    <span className={textStyles.label}>Pode ver salário dos candidatos</span>
+                    <span className={textStyles.label}>{t('canViewSalaryCheckboxLabel')}</span>
                   </label>
                 </div>
               )}

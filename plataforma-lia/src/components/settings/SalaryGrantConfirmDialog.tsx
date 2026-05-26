@@ -1,5 +1,6 @@
 "use client"
 
+import { useTranslations } from "next-intl"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -43,8 +44,9 @@ export function SalaryGrantConfirmDialog({
   targetDetail,
   onConfirm,
 }: SalaryGrantConfirmDialogProps) {
-  const titleGrant = "Conceder acesso a salários?"
-  const titleRevoke = "Revogar acesso a salários?"
+  const t = useTranslations('settings.users')
+  const titleGrant = t("salaryGrantConfirmTitleGrant")
+  const titleRevoke = t("salaryGrantConfirmTitleRevoke")
 
   const bodyGrant = (
     <>
@@ -53,9 +55,7 @@ export function SalaryGrantConfirmDialog({
         {targetDetail && <span className="text-lia-text-secondary"> · {targetDetail}</span>}
       </p>
       <p>
-        Esta pessoa poderá <strong>ver salários de candidatos</strong> ao acessar
-        a plataforma. A ação será registrada no log de auditoria
-        (LGPD Art. 37 V, retenção 7 anos).
+        {t('salaryGrantConfirmBodyGrant')}
       </p>
     </>
   )
@@ -67,9 +67,7 @@ export function SalaryGrantConfirmDialog({
         {targetDetail && <span className="text-lia-text-secondary"> · {targetDetail}</span>}
       </p>
       <p>
-        Esta pessoa <strong>deixará de ver salários</strong> dos candidatos.
-        Acessos futuros virão mascarados como restritos. A revogação será
-        registrada no log de auditoria.
+        {t('salaryGrantConfirmBodyRevoke')}
       </p>
     </>
   )
@@ -89,7 +87,7 @@ export function SalaryGrantConfirmDialog({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel data-testid="salary-grant-cancel">
-            Cancelar
+            {t('salaryGrantConfirmCancel')}
           </AlertDialogCancel>
           <AlertDialogAction
             data-testid="salary-grant-confirm"
@@ -99,7 +97,7 @@ export function SalaryGrantConfirmDialog({
             }}
             className={granting ? "" : "bg-status-error hover:bg-status-error/90"}
           >
-            {granting ? "Conceder acesso" : "Revogar acesso"}
+            {granting ? t('salaryGrantConfirmActionGrant') : t('salaryGrantConfirmActionRevoke')}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

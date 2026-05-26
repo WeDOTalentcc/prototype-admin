@@ -159,7 +159,7 @@ export function MemberSection({
           {!editingMember && existingUsers.length > 0 && (
             <div className="mb-2 p-2 rounded-xl bg-lia-bg-secondary dark:bg-lia-bg-inverse border border-lia-border-subtle">
               <label className="block text-micro font-medium text-lia-text-secondary mb-1">
-                Vincular a usuário existente da plataforma (opcional)
+                {t('linkUserSectionLabel')}
               </label>
               <select
                 data-testid="member-field-user-link"
@@ -183,7 +183,7 @@ export function MemberSection({
                 }}
                 className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-xl bg-lia-bg-primary"
               >
-                <option value="">— Contato externo (sem login) —</option>
+                <option value="">{t('linkUserExternalContactOption')}</option>
                 {existingUsers.map((u) => (
                   <option key={u.id} value={u.id}>
                     {u.name} ({u.email})
@@ -192,7 +192,7 @@ export function MemberSection({
               </select>
               {newMember.user_id && (
                 <p className="text-micro text-status-success mt-1">
-                  Vinculado a usuário da plataforma. Editar dados abaixo refletirá no cadastro do colaborador, não no usuário canônico.
+                  {t('linkUserConfirmationNote')}
                 </p>
               )}
             </div>

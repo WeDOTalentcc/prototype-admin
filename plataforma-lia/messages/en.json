@@ -3649,7 +3649,25 @@
       "confirmDeleteUser": "Are you sure you want to delete this user?",
       "errorDeleteUser": "Error deleting user",
       "dismissSuccess": "Dismiss message",
-      "avatarOf": "Avatar of {name}"
+      "avatarOf": "Avatar of {name}",
+      "linkUserSectionLabel": "Link to existing platform user (optional)",
+      "linkUserExternalContactOption": "— External contact (no login) —",
+      "linkUserConfirmationNote": "Linked to platform user. Editing fields below affects the collaborator record, not the canonical user.",
+      "salaryGrantConfirmTitleGrant": "Grant access to salaries?",
+      "salaryGrantConfirmTitleRevoke": "Revoke access to salaries?",
+      "salaryGrantConfirmBodyGrant": "This person will be able to view candidate salaries on the platform. The action will be recorded in the audit log (LGPD Art. 37 V, 7-year retention).",
+      "salaryGrantConfirmBodyRevoke": "This person will stop seeing candidate salaries. Future access will be masked as restricted. The revocation will be recorded in the audit log.",
+      "salaryGrantConfirmActionGrant": "Grant access",
+      "salaryGrantConfirmActionRevoke": "Revoke access",
+      "salaryGrantConfirmCancel": "Cancel",
+      "bulkSelectionLabel": "{count, plural, =1 {<strong>1</strong> user selected} other {<strong>#</strong> users selected}}",
+      "bulkActionGrant": "Grant salary access",
+      "bulkActionRevoke": "Revoke salary access",
+      "bulkActionClearSelection": "Clear selection",
+      "bulkTargetLabel": "{count, plural, =1 {1 user selected} other {# users selected}}",
+      "canViewSalaryCheckboxLabel": "Can view candidate salary",
+      "tableCanViewSalary": "View salary",
+      "tableCanViewSalaryTooltip": "Can view candidate salaries (LGPD Art. 6 III)"
     },
     "departments": {
       "title": "Departments",
@@ -3689,7 +3707,10 @@
       "orgChartLoading": "Loading...",
       "noTitle": "No title",
       "person": "person",
-      "people": "people"
+      "people": "people",
+      "linkUserSectionLabel": "Link to existing platform user (optional)",
+      "linkUserExternalContactOption": "— External contact (no login) —",
+      "linkUserConfirmationNote": "Linked to platform user. Editing fields below affects the collaborator record, not the canonical user."
     },
     "members": {
       "title": "Department Employees",
@@ -3715,7 +3736,10 @@
       "levelOther": "Other",
       "cancel": "Cancel",
       "saving": "Saving...",
-      "save": "Save"
+      "save": "Save",
+      "linkUserSectionLabel": "Link to existing platform user (optional)",
+      "linkUserExternalContactOption": "— External contact (no login) —",
+      "linkUserConfirmationNote": "Linked to platform user. Editing fields below affects the collaborator record, not the canonical user."
     },
     "approvers": {
       "title": "Job Approval Flow",
