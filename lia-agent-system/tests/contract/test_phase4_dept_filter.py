@@ -27,9 +27,11 @@ from app.api.v1.candidates.candidates_crud import _filter_candidates_by_dept_sco
 
 
 class _FakeRow:
-    def __init__(self, cid: str, dept: str | None):
+    def __init__(self, cid: str, dept: str | None, created_by: str = "", recruiter_email: str = ""):
         self.cid = cid
         self.dept = dept
+        self.created_by = created_by
+        self.recruiter_email = recruiter_email
 
 
 def _make_candidate(cid: str | None = None):

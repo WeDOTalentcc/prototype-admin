@@ -507,6 +507,16 @@ company_id: str = Depends(require_company_id)):
         user_id = str(current_user.id) if current_user.id else ""
         is_admin = current_user.role == UserRole.admin if hasattr(current_user, "role") else False
 
+        # Sprint 6 RBAC: compute visible scope (own dept + 1-level subordinate depts/emails)
+        try:
+            from app.shared.rbac.visible_scope import compute_visible_scope
+            _scope = await compute_visible_scope(current_user)
+            current_user._sprint6_subord_depts = set(_scope.subordinate_dept_ids)
+            current_user._sprint6_subord_emails = set(_scope.subordinate_user_emails)
+        except Exception:
+            current_user._sprint6_subord_depts = set()
+            current_user._sprint6_subord_emails = set()
+
         if RAILS_ENABLED:
             page = skip // limit + 1 if limit else 1
             rails_jobs = await rails_adapter.list_jobs_from_rails_only(
@@ -571,27 +581,43 @@ company_id: str = Depends(require_company_id)):
                 continue
             jv_visibility = jv.visibility or "public"
 
-            # RBAC Sprint 2 (2026-05-25): department scope SOFT LAUNCH.
-            # Enforce SÓ se ambos user.department_id E jv.department_id setados.
-            # NULL em qualquer lado → legacy (não filtra). Plan: ~/.claude/plans/jolly-roaming-moler.md
+            # RBAC Sprint 2 + Sprint 6 (2026-05-25): department scope + manager hierarchy.
+            # Plan canonical: ~/.claude/plans/jolly-roaming-moler.md
+            #
+            # Sprint 6 adds 1-level manager hierarchy. Manager sees jobs of their direct subordinates.
+            # NULL on either side (user.dept_id or jv.dept_id) = legacy soft-launch (no enforcement).
             user_dept_id = getattr(current_user, "department_id", None)
             jv_dept_id = getattr(jv, "department_id", None)
+
+            # Build expanded dept set: own dept + direct subordinate depts
+            subord_depts = getattr(current_user, "_sprint6_subord_depts", None)
+            subord_emails = getattr(current_user, "_sprint6_subord_emails", None)
+            visible_depts: set[str] = set()
+            if user_dept_id:
+                visible_depts.add(str(user_dept_id))
+            if subord_depts:
+                visible_depts.update(subord_depts)
+
             dept_scope_enforced = (
                 not is_admin
                 and user_dept_id is not None
                 and jv_dept_id is not None
-                and str(user_dept_id) != str(jv_dept_id)
+                and str(jv_dept_id) not in visible_depts
             )
 
             if jv_visibility in ["public", "internal"]:
                 if not dept_scope_enforced:
                     job_vacancies.append(jv)
                     continue
-                # Dept mismatch → só libera se user em hiring_team (owner ou access_list)
+                # Dept out of scope → libera se hiring_team match OU subordinate owner (Sprint 6)
                 jv_created_by = (jv.created_by or "").lower()
                 jv_recruiter_email = (jv.recruiter_email or "").lower()
                 jv_access_list = [x.lower() for x in (jv.access_list or [])]
                 if user_email in (jv_created_by, jv_recruiter_email) or user_email in jv_access_list:
+                    job_vacancies.append(jv)
+                    continue
+                # Sprint 6: manager sees jobs owned by direct subordinates
+                if subord_emails and (jv_created_by in subord_emails or jv_recruiter_email in subord_emails):
                     job_vacancies.append(jv)
                 continue
 
