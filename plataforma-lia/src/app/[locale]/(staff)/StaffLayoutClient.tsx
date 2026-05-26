@@ -42,7 +42,7 @@ export default function StaffLayoutClient({
       router.replace("/login")
       return
     }
-    if (user.role !== "wedotalent_admin") {
+    if (!("role" in user) || user.role !== "wedotalent_admin") {
       router.replace("/acesso-negado")
     }
   }, [isLoading, isAuthenticated, user, router, pathname])
@@ -55,7 +55,7 @@ export default function StaffLayoutClient({
     )
   }
 
-  if (!isAuthenticated || !user || user.role !== "wedotalent_admin") {
+  if (!isAuthenticated || !user || !("role" in user) || user.role !== "wedotalent_admin") {
     // Mantém UI mínima enquanto o redirect via useEffect dispara.
     return (
       <div className="min-h-screen flex items-center justify-center bg-lia-bg-primary">

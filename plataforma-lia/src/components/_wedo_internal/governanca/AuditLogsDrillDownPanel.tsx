@@ -336,4 +336,4 @@ function SummaryCard({ label, value }: { label: string; value: number | string }
   )
 }
 
-export default AuditLogsPanel
+export default AuditLogsDrillDownPanel

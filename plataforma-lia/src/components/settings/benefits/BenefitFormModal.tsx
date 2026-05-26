@@ -97,7 +97,7 @@ function BenefitFormSection({
       }
     >
       <h4
-        className={}
+        className={textStyles.subtitle}
       >
         {title}
       </h4>
@@ -312,7 +312,7 @@ export function BenefitFormModal({
                   />
                 </div>
                 <div>
-                  <Label className={}>
+                  <Label className={textStyles.label}>
                     <Lock className="w-3 h-3 text-lia-text-tertiary" />
                     Contato do fornecedor (interno)
                   </Label>

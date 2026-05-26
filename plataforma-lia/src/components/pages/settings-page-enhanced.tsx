@@ -17,7 +17,7 @@ import {
   Send, Bell, Palette, Lightbulb, TrendingDown, Activity, RotateCcw,
   ChevronLeft, FastForward, SkipForward, RefreshCw, Zap as Lightning,
   MousePointer, Compass, HelpCircle, Rocket,
-  ChevronDown, ChevronUp, Lock, Unlock, Circle, Plug, Shield, Webhook, Sparkles, Brain
+  ChevronDown, ChevronUp, Lock, Unlock, Circle, Plug, Shield, Webhook, Sparkles
 } from"lucide-react"
 
 const SECTION_ICON_COLORS: Record<string, string> = {
@@ -245,6 +245,24 @@ export default function SettingsPageEnhanced() {
   const searchParams = useSearchParams()
   const [activeSection, setActiveSection] = useState<string>('minha-empresa')
   const [activeSubsection, setActiveSubsection] = useState<string>('')
+  // P2-1 (audit 2026-05-26): progressive disclosure — toggle pra esconder
+  // hubs advanced/integrations. Default ON (mostra tudo, sem regressao
+  // pra power users). Persistencia localStorage pra preferencia stick.
+  const [showAdvanced, setShowAdvanced] = useState<boolean>(() => {
+    if (typeof window === "undefined") return true
+    const stored = window.localStorage.getItem("lia-settings-show-advanced")
+    return stored === null ? true : stored === "true"
+  })
+
+  const handleToggleAdvanced = useCallback(() => {
+    setShowAdvanced((prev) => {
+      const next = !prev
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem("lia-settings-show-advanced", String(next))
+      }
+      return next
+    })
+  }, [])
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['minha-empresa']))
 
   // Task #894 — quando a página é aberta via deep-link com `?section=…`
@@ -641,11 +659,29 @@ export default function SettingsPageEnhanced() {
 
               </div>
             )}
+            {/* P2-1 (audit 2026-05-26): progressive disclosure toggle.
+                Default ON; persist em localStorage. */}
+            {shouldShowContent && (
+              <button
+                onClick={handleToggleAdvanced}
+                data-testid="toggle-show-advanced"
+                aria-pressed={showAdvanced}
+                className="w-full text-left text-xs text-lia-text-secondary hover:text-lia-text-primary py-1.5 px-1 rounded-md hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none"
+              >
+                {showAdvanced ? "Modo simples (essenciais)" : "Mostrar todas as configurações"}
+              </button>
+            )}
           </div>
 
           <div className="flex-1 overflow-y-auto p-3">
             <nav className="space-y-2" role="navigation" aria-label="Configurações">
-              {settingsSections.map((section) => {
+              {settingsSections.filter((section) => {
+                // P2-1 progressive disclosure: quando OFF, mostra apenas hubs essenciais
+                // (basic categoryOR priority=high). Mantem operacional (Recrutamento & LIA)
+                // visivel para evitar quebrar fluxo do recrutador.
+                if (showAdvanced) return true
+                return section.category === "basic" || section.priority === "high"
+              }).map((section) => {
                 const IconComponent = section.icon
                 const PriorityIcon = priorityIcons[section.priority]
                 const isExpanded = expandedSections.has(section.id)
