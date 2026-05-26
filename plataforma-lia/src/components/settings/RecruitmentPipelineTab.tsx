@@ -10,6 +10,8 @@ import {
 import {
   RecruitmentJourneyConfig,
 } from"@/components/settings/RecruitmentJourneyConfig"
+import { PipelineTemplatesTab } from "@/components/settings/recruitment/pipeline-templates-tab"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useTranslations } from "next-intl"
 import { textStyles, actionButtonStyles } from '@/lib/design-tokens'
 import { useRecruitmentHub } from './useRecruitmentHub'
@@ -49,7 +51,17 @@ export function RecruitmentPipelineTab() {
   }
 
   return (
-    <div className="space-y-6" data-testid="pipeline-tab-root">
+    <Tabs defaultValue="default" className="w-full" data-testid="pipeline-tab-root">
+      <TabsList className="mb-4">
+        <TabsTrigger value="default" data-testid="pipeline-subtab-default">
+          {t("recruitment.pipeline.subTabs.default")}
+        </TabsTrigger>
+        <TabsTrigger value="templates" data-testid="pipeline-subtab-templates">
+          {t("recruitment.pipeline.subTabs.templates")}
+        </TabsTrigger>
+      </TabsList>
+      <TabsContent value="default" className="space-y-6">
+    <div className="space-y-6" data-testid="pipeline-tab-default-content">
       {error && (
         <div className="px-2 py-1.5 rounded-xl flex items-center gap-2 bg-status-error/10 border border-status-error/30 text-status-error">
           <AlertCircle className="w-4 h-4" />
@@ -125,5 +137,10 @@ export function RecruitmentPipelineTab() {
         </CardContent>
       </Card>
     </div>
+      </TabsContent>
+      <TabsContent value="templates" className="space-y-6" data-testid="pipeline-tab-templates-content">
+        <PipelineTemplatesTab />
+      </TabsContent>
+    </Tabs>
   )
 }
