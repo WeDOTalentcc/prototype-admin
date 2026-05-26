@@ -21,9 +21,9 @@ from pathlib import Path
 GRAPH_PATH = Path(__file__).resolve().parent.parent / "app" / "domains" / "job_creation" / "graph.py"
 
 # Budget pos-PR-9. Ajustar quando PR-10 (split nodes) completar.
-TARGET_LOC = 5300
-WARN_THRESHOLD = 5400  # 100 LOC margem
-HARD_LIMIT = 5550  # +50 sobre baseline atual (5500 pos-PR-9)
+TARGET_LOC = 1100  # PR-17 ONDA 3 follow-up — internal/ extraction complete
+WARN_THRESHOLD = 1200  # 100 LOC margem (PR-17)
+HARD_LIMIT = 1400  # +200 sobre baseline atual (1103 pos-PR-17)
 
 
 def main() -> int:
