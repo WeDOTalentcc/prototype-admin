@@ -4494,7 +4494,9 @@
         "summarySuccess": "{pct}% de sucesso",
         "emptyExample": "Exemplo: \"Quando um candidato chega na etapa Entrevista, envie automaticamente o convite pelo WhatsApp.\"",
         "createWithLia": "Criar com a LIA",
-        "seeExamples": "Ver exemplos"
+        "seeExamples": "Ver exemplos",
+        "builderTitleNew": "Nova automação",
+        "builderTitleEdit": "Editar automação"
       },
       "communicationTab": {
         "emailTemplates": "Modelos de Email",

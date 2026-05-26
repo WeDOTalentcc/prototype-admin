@@ -4494,7 +4494,9 @@
         "summarySuccess": "{pct}% success rate",
         "emptyExample": "Example: \"When a candidate reaches the Interview stage, automatically send the invite via WhatsApp.\"",
         "createWithLia": "Create with LIA",
-        "seeExamples": "See examples"
+        "seeExamples": "See examples",
+        "builderTitleNew": "New automation",
+        "builderTitleEdit": "Edit automation"
       },
       "communicationTab": {
         "emailTemplates": "Email Templates",
