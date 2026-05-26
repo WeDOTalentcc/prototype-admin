@@ -29,6 +29,12 @@ class PipelineTemplate(Base):
     created_by = Column(String(255), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow, index=True)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    # Pipeline Templates Sprint 2026-05-26 — auto-suggest hints + is_archived (migration 208)
+    department_hint = Column(JSON, nullable=True)
+    seniority_hint = Column(JSON, nullable=True)
+    job_family_hint = Column(JSON, nullable=True)
+    is_archived = Column(Boolean, default=False, nullable=False, server_default="false")
+    updated_by = Column(String(255), nullable=True)
     
     def __repr__(self):
         return f"<PipelineTemplate {self.id} - {self.name}>"
