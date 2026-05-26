@@ -166,6 +166,10 @@ from app.domains.job_creation.services.jd_enrichment import JdEnrichmentService
 from app.domains.job_creation.services.seniority_resolver import resolve_seniority
 from app.domains.job_creation.services.wsi_question_generator import WSIQuestionGenerator
 from app.domains.job_creation.api_client import JobCreationAPIClient
+from app.domains.job_creation.helpers.async_audit import emit_audit_fire_and_forget
+from app.domains.job_creation.helpers.llm_exceptions import (
+    classify_llm_exception_reason,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -416,17 +420,19 @@ def _emit_wizard_step_audit(
             f"target_id:{target_id}",
         ]
 
-        _asyncio.run(AuditService().log_decision(
-            company_id=company_id,
-            agent_name=f"job_creation:{stage}",
-            decision_type="wizard_step_completed",
-            action=f"complete_{stage}",
-            decision="completed",
-            reasoning=reasoning,
-            criteria_used=criteria,
-            job_vacancy_id=state.get("job_id"),
-            human_review_required=human_review_required,
-        ))
+        emit_audit_fire_and_forget(
+            lambda: AuditService().log_decision(
+                company_id=company_id,
+                agent_name=f"job_creation:{stage}",
+                decision_type="wizard_step_completed",
+                action=f"complete_{stage}",
+                decision="completed",
+                reasoning=reasoning,
+                criteria_used=criteria,
+                job_vacancy_id=state.get("job_id"),
+                human_review_required=human_review_required,
+            )
+        )
     except Exception as _audit_exc:  # noqa: BLE001 — fail-open
         logger.warning(
             "[JobCreation:%s] wizard_step_completed audit failed (fail-open): %s",
@@ -1140,16 +1146,8 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
             )
             jd_quality_score, jd_quality_warnings = _calc_q(enriched_obj)
             jd_enrichment_used_fallback = True
-            # Heurística leve: erros HTTP/quota do provedor LLM costumam
-            # carregar termos como "rate", "quota", "429", "503", "provider".
-            _exc_str = str(_enrich_exc).lower()
-            if any(t in _exc_str for t in (
-                "rate", "quota", "429", "503", "provider", "api",
-                "unauthorized", "forbidden", "401", "403",
-            )):
-                jd_enrichment_fallback_reason = "provider_error"
-            else:
-                jd_enrichment_fallback_reason = "exception"
+            # Heurística canonical extraída para helper compartilhado (F-2.9).
+            jd_enrichment_fallback_reason = classify_llm_exception_reason(_enrich_exc)
             _emit_wizard_fallback_metric(
                 node="jd_enrichment", state=state,
                 reason=f"llm_{jd_enrichment_fallback_reason}",
@@ -1318,22 +1316,24 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
         _audit = AuditService()
         _company_id = str(state.get("workspace_id") or state.get("company_id") or "")
         if _company_id:
-            _asyncio.run(_audit.log_decision(
-                company_id=_company_id,
-                agent_name="job_creation:jd_enrichment",
-                decision_type="generate_jd",
-                action="enrich_jd",
-                decision="enriched" if jd_enriched_dict else "fallback",
-                reasoning=[
-                    f"quality_score={jd_quality_score:.1f}",
-                    *(jd_quality_warnings or []),
-                ],
-                criteria_used=["title", "responsibilities", "skills_obrigatorias",
-                               "skills_desejaveis", "competencias_comportamentais"],
-                job_vacancy_id=state.get("job_id"),
-                confidence=getattr(enriched_obj, "confidence", None),
-                human_review_required=True,  # HITL 1
-            ))
+            emit_audit_fire_and_forget(
+                lambda: _audit.log_decision(
+                    company_id=_company_id,
+                    agent_name="job_creation:jd_enrichment",
+                    decision_type="generate_jd",
+                    action="enrich_jd",
+                    decision="enriched" if jd_enriched_dict else "fallback",
+                    reasoning=[
+                        f"quality_score={jd_quality_score:.1f}",
+                        *(jd_quality_warnings or []),
+                    ],
+                    criteria_used=["title", "responsibilities", "skills_obrigatorias",
+                                   "skills_desejaveis", "competencias_comportamentais"],
+                    job_vacancy_id=state.get("job_id"),
+                    confidence=getattr(enriched_obj, "confidence", None),
+                    human_review_required=True,  # HITL 1
+                )
+            )
     except Exception as _audit_exc:
         logger.warning(
             "[JobCreation:jd_enrichment] audit log failed (fail-open): %s", _audit_exc,
@@ -1440,17 +1440,19 @@ def _emit_pipeline_template_audit(
         if extra:
             for k, v in extra.items():
                 reasoning.append(f"{k}: {v}")
-        _asyncio.run(audit_service.log_decision(
-            company_id=company_id,
-            agent_name="job_creation:pipeline_template",
-            decision_type=DecisionType.COMPANY_SETTINGS_CHANGE.value,
-            action=action,
-            decision=f"{action}: {template_id or 'default'}",
-            reasoning=reasoning,
-            criteria_used=["template_id", "company_id", "stage"],
-            actor_user_id=state.get("user_id") or state.get("created_by"),
-            human_review_required=False,
-        ))
+        emit_audit_fire_and_forget(
+            lambda: audit_service.log_decision(
+                company_id=company_id,
+                agent_name="job_creation:pipeline_template",
+                decision_type=DecisionType.COMPANY_SETTINGS_CHANGE.value,
+                action=action,
+                decision=f"{action}: {template_id or 'default'}",
+                reasoning=reasoning,
+                criteria_used=["template_id", "company_id", "stage"],
+                actor_user_id=state.get("user_id") or state.get("created_by"),
+                human_review_required=False,
+            )
+        )
     except Exception as exc:  # noqa: BLE001
         logger.warning(
             "[pipeline_template] audit emission failed (fail-open): %s", exc,
@@ -1637,24 +1639,26 @@ def pipeline_template_node(state: JobCreationState) -> JobCreationState:
         _audit = AuditService()
         _company_id = str(state.get("company_id") or state.get("workspace_id") or "")
         if _company_id:
-            _asyncio.run(_audit.log_decision(
-                company_id=_company_id,
-                agent_name="job_creation:pipeline_template",
-                decision_type="company_settings_change",
-                action="pipeline_template_suggested",
-                decision="suggested" if templates else "no_match",
-                reasoning=[
-                    f"db_should_suggest={bool(db_sugg and db_sugg.get('should_suggest'))}",
-                    f"db_top_score={top_score:.3f}",
-                    f"templates_count={len(templates)}",
-                    f"suggested_template_id={suggested_template_id or 'none'}",
-                    f"legacy_fallback={'yes' if legacy else 'no'}",
-                ],
-                criteria_used=["parsed_department", "parsed_seniority", "parsed_job_family"],
-                job_vacancy_id=state.get("job_id"),
-                confidence=top_score if top_score else None,
-                human_review_required=True,  # HITL — recrutador escolhe
-            ))
+            emit_audit_fire_and_forget(
+                lambda: _audit.log_decision(
+                    company_id=_company_id,
+                    agent_name="job_creation:pipeline_template",
+                    decision_type="company_settings_change",
+                    action="pipeline_template_suggested",
+                    decision="suggested" if templates else "no_match",
+                    reasoning=[
+                        f"db_should_suggest={bool(db_sugg and db_sugg.get('should_suggest'))}",
+                        f"db_top_score={top_score:.3f}",
+                        f"templates_count={len(templates)}",
+                        f"suggested_template_id={suggested_template_id or 'none'}",
+                        f"legacy_fallback={'yes' if legacy else 'no'}",
+                    ],
+                    criteria_used=["parsed_department", "parsed_seniority", "parsed_job_family"],
+                    job_vacancy_id=state.get("job_id"),
+                    confidence=top_score if top_score else None,
+                    human_review_required=True,  # HITL — recrutador escolhe
+                )
+            )
     except Exception as _audit_exc:
         logger.debug(
             "[JobCreation:pipeline_template] audit log failed (fail-open): %s", _audit_exc,
@@ -1825,14 +1829,7 @@ def bigfive_node(state: JobCreationState) -> JobCreationState:
                 )
                 bigfive_obj = _BFE()
                 bigfive_used_fallback = True
-                _exc_str = str(_bf_exc).lower()
-                if any(t in _exc_str for t in (
-                    "rate", "quota", "429", "503", "provider", "api",
-                    "unauthorized", "forbidden", "401", "403",
-                )):
-                    bigfive_fallback_reason = "provider_error"
-                else:
-                    bigfive_fallback_reason = "exception"
+                bigfive_fallback_reason = classify_llm_exception_reason(_bf_exc)
                 _emit_wizard_fallback_metric(
                     node="bigfive", state=state,
                     reason=f"llm_{bigfive_fallback_reason}",
@@ -2057,14 +2054,7 @@ def salary_node(state: JobCreationState) -> JobCreationState:
                 "[JobCreation:salary] benchmark fetch failed (fail-open): %s", _bench_exc,
             )
             salary_used_fallback = True
-            _exc_str = str(_bench_exc).lower()
-            if any(t in _exc_str for t in (
-                "rate", "quota", "429", "503", "provider", "api",
-                "unauthorized", "forbidden", "401", "403",
-            )):
-                salary_fallback_reason = "provider_error"
-            else:
-                salary_fallback_reason = "exception"
+            salary_fallback_reason = classify_llm_exception_reason(_bench_exc)
 
     updates: Dict[str, Any] = {
         "current_stage": "salary",
@@ -2401,14 +2391,7 @@ def wsi_questions_node(state: JobCreationState) -> JobCreationState:
                                 generator._fallback_questions("behavioral", n_behav)
                             )
                         wsi_questions_used_fallback = True
-                        _exc_str = str(_wq_exc).lower()
-                        if any(t in _exc_str for t in (
-                            "rate", "quota", "429", "503", "provider", "api",
-                            "unauthorized", "forbidden", "401", "403",
-                        )):
-                            wsi_questions_fallback_reason = "provider_error"
-                        else:
-                            wsi_questions_fallback_reason = "exception"
+                        wsi_questions_fallback_reason = classify_llm_exception_reason(_wq_exc)
                         _emit_wizard_fallback_metric(
                             node="wsi_questions", state=state,
                             reason=f"llm_{wsi_questions_fallback_reason}",
@@ -2537,22 +2520,24 @@ def wsi_questions_node(state: JobCreationState) -> JobCreationState:
         _audit = AuditService()
         _company_id = str(state.get("workspace_id") or state.get("company_id") or "")
         if _company_id:
-            _asyncio.run(_audit.log_decision(
-                company_id=_company_id,
-                agent_name="job_creation:wsi_questions",
-                decision_type="generate_wsi_questions",
-                action="generate_questions",
-                decision=f"generated_{len(questions_data)}_kept_{len(_wsi_dropped)}_dropped",
-                reasoning=[
-                    f"distribution={state.get('question_distribution')}",
-                    f"seniority={state.get('seniority_resolved')}",
-                    f"dropped_by_fairness={len(_wsi_dropped)}",
-                ],
-                criteria_used=["distribution", "trait_rankings", "competency_tree",
-                               "fairness_layer4"],
-                job_vacancy_id=state.get("job_id"),
-                human_review_required=True,  # HITL 2
-            ))
+            emit_audit_fire_and_forget(
+                lambda: _audit.log_decision(
+                    company_id=_company_id,
+                    agent_name="job_creation:wsi_questions",
+                    decision_type="generate_wsi_questions",
+                    action="generate_questions",
+                    decision=f"generated_{len(questions_data)}_kept_{len(_wsi_dropped)}_dropped",
+                    reasoning=[
+                        f"distribution={state.get('question_distribution')}",
+                        f"seniority={state.get('seniority_resolved')}",
+                        f"dropped_by_fairness={len(_wsi_dropped)}",
+                    ],
+                    criteria_used=["distribution", "trait_rankings", "competency_tree",
+                                   "fairness_layer4"],
+                    job_vacancy_id=state.get("job_id"),
+                    human_review_required=True,  # HITL 2
+                )
+            )
     except Exception as _audit_exc:
         logger.warning(
             "[JobCreation:wsi_questions] audit log failed (fail-open): %s", _audit_exc,
@@ -2882,29 +2867,31 @@ def publish_node(state: JobCreationState) -> JobCreationState:
         _audit = AuditService()
         _company_id = str(state.get("workspace_id") or state.get("company_id") or "")
         if _company_id:
-            _asyncio.run(_audit.log_decision(
-                company_id=_company_id,
-                agent_name="job_creation:publish",
-                decision_type="move_stage",
-                action="publish_job",
-                decision="published" if job_id and not error else "failed",
-                reasoning=[
-                    f"platforms={state.get('publish_platforms', [])}",
-                    f"sourcing_mode={state.get('sourcing_mode')}",
-                    # T6 (Task #1088) — confirmation_method propagado pelo
-                    # review_gate_node (chat | dual | button). Default "button"
-                    # preserva o caminho legacy (UI button → policy_confirmed_publish
-                    # direto, sem passar pelo gate LLM).
-                    f"confirmation_method={state.get('publish_confirmation_method') or 'button'}",
-                    *([f"error={error}"] if error else []),
-                ],
-                criteria_used=[
-                    "job_data", "screening_config", "publish_platforms",
-                    f"confirmation_method:{state.get('publish_confirmation_method') or 'button'}",
-                ],
-                job_vacancy_id=job_id,
-                human_review_required=False,
-            ))
+            emit_audit_fire_and_forget(
+                lambda: _audit.log_decision(
+                    company_id=_company_id,
+                    agent_name="job_creation:publish",
+                    decision_type="move_stage",
+                    action="publish_job",
+                    decision="published" if job_id and not error else "failed",
+                    reasoning=[
+                        f"platforms={state.get('publish_platforms', [])}",
+                        f"sourcing_mode={state.get('sourcing_mode')}",
+                        # T6 (Task #1088) — confirmation_method propagado pelo
+                        # review_gate_node (chat | dual | button). Default "button"
+                        # preserva o caminho legacy (UI button → policy_confirmed_publish
+                        # direto, sem passar pelo gate LLM).
+                        f"confirmation_method={state.get('publish_confirmation_method') or 'button'}",
+                        *([f"error={error}"] if error else []),
+                    ],
+                    criteria_used=[
+                        "job_data", "screening_config", "publish_platforms",
+                        f"confirmation_method:{state.get('publish_confirmation_method') or 'button'}",
+                    ],
+                    job_vacancy_id=job_id,
+                    human_review_required=False,
+                )
+            )
     except Exception as _audit_exc:
         logger.warning(
             "[JobCreation:publish] audit log failed (fail-open): %s", _audit_exc,
@@ -3497,7 +3484,6 @@ def _emit_jd_gate_audit(
     ``confidence``, ``thread_id`` e preview do reply para correlação no
     trail. Mantém EU AI Act Art. 13 (decisões automatizadas rastreáveis).
     """
-    import asyncio as _asyncio
     company_id = str(
         state.get("workspace_id") or state.get("company_id") or ""
     )
@@ -3532,35 +3518,31 @@ def _emit_jd_gate_audit(
         "jd_quality_score": 0.0 if _intent == "provide_new_content" else _before["jd_quality_score"],
         "jd_enriched_present": False if _intent == "provide_new_content" else _before["jd_enriched_present"],
     }
-    coro = audit_service.log_decision(
-        company_id=company_id,
-        agent_name="wizard_jd_gate_classifier",
-        decision_type="wizard_step_completed",
-        action="jd_gate_classify",
-        decision=_intent,
-        reasoning=[
-            f"intent={_intent}",
-            f"confidence={float(output.confidence or 0.0):.2f}",
-            f"thread_id={state.get('session_id') or ''}",
-            f"user_msg_preview={user_message[:120]}",
-            f"reply_preview={(output.conversational_reply or '')[:120]}",
-            f"state_before={_before}",
-            f"state_after={_after}",
-        ],
-        criteria_used=["llm_intent_classifier", "wizard_jd_enrichment"],
-        confidence=float(output.confidence or 0.0),
+    # PR-6 (2026-05-26): substituído get_event_loop+create_task+asyncio.run
+    # fallback redundante por emit_audit_fire_and_forget() canonical (PR-4
+    # foundation). Helper detecta running loop e cria task fire-and-forget;
+    # sem loop, loga warning e skip (audit best-effort). Resolve get_event_loop
+    # deprecated em Python 3.10+ e asyncio.run RuntimeError em loop ativo Py 3.12+.
+    emit_audit_fire_and_forget(
+        lambda: audit_service.log_decision(
+            company_id=company_id,
+            agent_name="wizard_jd_gate_classifier",
+            decision_type="wizard_step_completed",
+            action="jd_gate_classify",
+            decision=_intent,
+            reasoning=[
+                f"intent={_intent}",
+                f"confidence={float(output.confidence or 0.0):.2f}",
+                f"thread_id={state.get('session_id') or ''}",
+                f"user_msg_preview={user_message[:120]}",
+                f"reply_preview={(output.conversational_reply or '')[:120]}",
+                f"state_before={_before}",
+                f"state_after={_after}",
+            ],
+            criteria_used=["llm_intent_classifier", "wizard_jd_enrichment"],
+            confidence=float(output.confidence or 0.0),
+        )
     )
-    try:
-        loop = _asyncio.get_event_loop()
-        if loop.is_running():
-            loop.create_task(coro)
-            return
-    except RuntimeError:
-        pass
-    try:
-        _asyncio.run(coro)
-    except Exception as exc:
-        logger.debug("[JobCreation:jd_gate] audit run failed: %s", exc)
 
 
 def competency_gate_node(state: JobCreationState) -> JobCreationState:
@@ -3777,7 +3759,6 @@ def _emit_competency_gate_audit(
 
     Best-effort: falha NÃO bloqueia o resume. EU AI Act Art. 13.
     """
-    import asyncio as _asyncio
     company_id = str(state.get("workspace_id") or state.get("company_id") or "")
     if not company_id:
         return
@@ -3802,35 +3783,27 @@ def _emit_competency_gate_audit(
         "gate_last_intent": _intent,
         "seniority_resolved": _before["seniority_resolved"],
     }
-    coro = audit_service.log_decision(
-        company_id=company_id,
-        agent_name="wizard_competency_gate_classifier",
-        decision_type="wizard_step_completed",
-        action="competency_gate_classify",
-        decision=_intent,
-        reasoning=[
-            f"intent={_intent}",
-            f"confidence={float(output.confidence or 0.0):.2f}",
-            f"thread_id={state.get('session_id') or ''}",
-            f"user_msg_preview={user_message[:120]}",
-            f"reply_preview={(output.conversational_reply or '')[:120]}",
-            f"state_before={_before}",
-            f"state_after={_after}",
-        ],
-        criteria_used=["llm_intent_classifier", "wizard_competency"],
-        confidence=float(output.confidence or 0.0),
+    # PR-6 (2026-05-26): emit_audit_fire_and_forget canonical (Tipo E migration)
+    emit_audit_fire_and_forget(
+        lambda: audit_service.log_decision(
+            company_id=company_id,
+            agent_name="wizard_competency_gate_classifier",
+            decision_type="wizard_step_completed",
+            action="competency_gate_classify",
+            decision=_intent,
+            reasoning=[
+                f"intent={_intent}",
+                f"confidence={float(output.confidence or 0.0):.2f}",
+                f"thread_id={state.get('session_id') or ''}",
+                f"user_msg_preview={user_message[:120]}",
+                f"reply_preview={(output.conversational_reply or '')[:120]}",
+                f"state_before={_before}",
+                f"state_after={_after}",
+            ],
+            criteria_used=["llm_intent_classifier", "wizard_competency"],
+            confidence=float(output.confidence or 0.0),
+        )
     )
-    try:
-        loop = _asyncio.get_event_loop()
-        if loop.is_running():
-            loop.create_task(coro)
-            return
-    except RuntimeError:
-        pass
-    try:
-        _asyncio.run(coro)
-    except Exception as exc:
-        logger.debug("[JobCreation:competency_gate] audit run failed: %s", exc)
 
 
 def route_after_competency_gate(state: JobCreationState) -> str:
@@ -4270,7 +4243,6 @@ def _emit_wsi_questions_gate_audit(
     """Emite audit row (decision_type=wizard_step_completed) para o
     wsi_questions gate. Best-effort: falha NÃO bloqueia o resume.
     EU AI Act Art. 13."""
-    import asyncio as _asyncio
     company_id = str(state.get("workspace_id") or state.get("company_id") or "")
     if not company_id:
         return
@@ -4294,36 +4266,28 @@ def _emit_wsi_questions_gate_audit(
         "questions_approved": _after_approved,
         "gate_last_intent": _intent,
     }
-    coro = audit_service.log_decision(
-        company_id=company_id,
-        agent_name="wizard_wsi_questions_gate_classifier",
-        decision_type="wizard_step_completed",
-        action="wsi_questions_gate_classify",
-        decision=_intent,
-        reasoning=[
-            f"intent={_intent}",
-            f"confidence={float(output.confidence or 0.0):.2f}",
-            f"thread_id={state.get('session_id') or ''}",
-            f"user_msg_preview={user_message[:120]}",
-            f"reply_preview={(output.conversational_reply or '')[:120]}",
-            f"state_before={_before}",
-            f"state_after={_after}",
-            f"extracted_data_keys={sorted((output.extracted_data or {}).keys())}",
-        ],
-        criteria_used=["llm_intent_classifier", "wizard_wsi_questions"],
-        confidence=float(output.confidence or 0.0),
+    # PR-6 (2026-05-26): emit_audit_fire_and_forget canonical (Tipo E migration)
+    emit_audit_fire_and_forget(
+        lambda: audit_service.log_decision(
+            company_id=company_id,
+            agent_name="wizard_wsi_questions_gate_classifier",
+            decision_type="wizard_step_completed",
+            action="wsi_questions_gate_classify",
+            decision=_intent,
+            reasoning=[
+                f"intent={_intent}",
+                f"confidence={float(output.confidence or 0.0):.2f}",
+                f"thread_id={state.get('session_id') or ''}",
+                f"user_msg_preview={user_message[:120]}",
+                f"reply_preview={(output.conversational_reply or '')[:120]}",
+                f"state_before={_before}",
+                f"state_after={_after}",
+                f"extracted_data_keys={sorted((output.extracted_data or {}).keys())}",
+            ],
+            criteria_used=["llm_intent_classifier", "wizard_wsi_questions"],
+            confidence=float(output.confidence or 0.0),
+        )
     )
-    try:
-        loop = _asyncio.get_event_loop()
-        if loop.is_running():
-            loop.create_task(coro)
-            return
-    except RuntimeError:
-        pass
-    try:
-        _asyncio.run(coro)
-    except Exception as exc:
-        logger.debug("[JobCreation:wsi_questions_gate] audit run failed: %s", exc)
 
 
 def route_after_wsi_questions_gate(state: JobCreationState) -> str:
@@ -4922,7 +4886,6 @@ def _emit_review_gate_audit(
     qual a decisão de publicação foi tomada (rastreabilidade EU AI Act
     Art. 13 + ISO 27001 control trail).
     """
-    import asyncio as _asyncio
     company_id = str(state.get("workspace_id") or state.get("company_id") or "")
     if not company_id:
         return
@@ -4951,40 +4914,32 @@ def _emit_review_gate_audit(
         "pending_publish_confirmation": _after_pending,
         "gate_last_intent": _intent,
     }
-    coro = audit_service.log_decision(
-        company_id=company_id,
-        agent_name="wizard_review_gate_classifier",
-        decision_type="wizard_step_completed",
-        action="review_gate_classify",
-        decision=_intent,
-        reasoning=[
-            f"intent={_intent}",
-            f"confidence={float(output.confidence or 0.0):.2f}",
-            f"thread_id={state.get('session_id') or ''}",
-            f"user_msg_preview={user_message[:120]}",
-            f"reply_preview={(output.conversational_reply or '')[:120]}",
-            f"state_before={_before}",
-            f"state_after={_after}",
-            f"extracted_data_keys={sorted((output.extracted_data or {}).keys())}",
-        ],
-        criteria_used=[
-            "llm_intent_classifier",
-            "wizard_review",
-            f"confirmation_method:{confirmation_method}",
-        ],
-        confidence=float(output.confidence or 0.0),
+    # PR-6 (2026-05-26): emit_audit_fire_and_forget canonical (Tipo E migration)
+    emit_audit_fire_and_forget(
+        lambda: audit_service.log_decision(
+            company_id=company_id,
+            agent_name="wizard_review_gate_classifier",
+            decision_type="wizard_step_completed",
+            action="review_gate_classify",
+            decision=_intent,
+            reasoning=[
+                f"intent={_intent}",
+                f"confidence={float(output.confidence or 0.0):.2f}",
+                f"thread_id={state.get('session_id') or ''}",
+                f"user_msg_preview={user_message[:120]}",
+                f"reply_preview={(output.conversational_reply or '')[:120]}",
+                f"state_before={_before}",
+                f"state_after={_after}",
+                f"extracted_data_keys={sorted((output.extracted_data or {}).keys())}",
+            ],
+            criteria_used=[
+                "llm_intent_classifier",
+                "wizard_review",
+                f"confirmation_method:{confirmation_method}",
+            ],
+            confidence=float(output.confidence or 0.0),
+        )
     )
-    try:
-        loop = _asyncio.get_event_loop()
-        if loop.is_running():
-            loop.create_task(coro)
-            return
-    except RuntimeError:
-        pass
-    try:
-        _asyncio.run(coro)
-    except Exception as exc:
-        logger.debug("[JobCreation:review_gate] audit run failed: %s", exc)
 
 
 def route_after_review_gate(state: JobCreationState) -> str:
