@@ -20,6 +20,10 @@ import uuid
 from dataclasses import dataclass
 from typing import Optional
 
+# SourcingAgentSignal canonical-only fail-closed (Part 1.5 + Part 2 layers 1+2):
+# writes/reads usam custom_agent_id; agent_id legacy é nullable (migration 209).
+from lia_models.sourcing_agent import SourcingAgentSignal  # noqa: E402 imported at module level for consolidation
+
 logger = logging.getLogger(__name__)
 
 
@@ -96,21 +100,31 @@ class SourcingAgentOrchestrator:
         - Each rejection + reason → LLM extracts anti-criteria → added to exclusions
         - Each approval → LLM extracts positive criteria → reinforces positive_signals
         """
-        from lia_models.sourcing_agent import SourcingAgent, SourcingAgentSignal
-        from sqlalchemy import select
+        from lia_models.custom_agent import CustomAgent
+        from sqlalchemy import or_, select
 
-        # Load agent
-        result = await db.execute(select(SourcingAgent).where(SourcingAgent.id == agent_id))
+        # Load agent canonical (CustomAgent + category='sourcing') com transitional OR shim.
+        # TODO Sprint 7B-3b: remover legacy_sourcing_agent_id branch quando frontend
+        # (AgentsTab + AgentStudioPage + AgentPanel) migrar pra passar custom_agent.id
+        # direto após DELETE legacy endpoint /sourcing-agents.
+        result = await db.execute(
+            select(CustomAgent).where(
+                or_(
+                    CustomAgent.id == agent_id,
+                    CustomAgent.legacy_sourcing_agent_id == agent_id,
+                ),
+                CustomAgent.category == "sourcing",
+            )
+        )
         agent = result.scalar_one()
 
         # Extract criteria from reason via LLM
         criteria = await self._extract_criteria(reason, signal_type)
 
-        # Persist signal
-        # SOURCING-SIGNAL-LEGACY-EXEMPT: Sprint 7B-3a Part 2 vai migrar para custom_agent_id canonical-only fail-closed. Marker removido lá.
+        # Persist signal (Layer 2 canonical: custom_agent_id direto)
         signal = SourcingAgentSignal(
             id=str(uuid.uuid4()),
-            agent_id=agent_id,
+            custom_agent_id=agent.id,
             signal_type=signal_type,
             candidate_id=candidate_id,
             reason=reason,
@@ -119,7 +133,7 @@ class SourcingAgentOrchestrator:
         db.add(signal)
 
         # Recalibrate strategy
-        strategy = dict(agent.search_strategy)
+        strategy = dict(agent.search_strategy or {})
         new_exclusions = []
         new_positives = []
 
@@ -133,23 +147,28 @@ class SourcingAgentOrchestrator:
             strategy["positive_signals"] = list(set(strategy.get("positive_signals", []) + criteria))
 
         agent.search_strategy = strategy
-        agent.calibration_v += 1
 
-        agent.profiles_viewed = (agent.profiles_viewed or 0) + 1
+        # Counters canonical via runtime_metrics JSONB dict.
+        metrics = dict(agent.runtime_metrics or {})
+        metrics["calibration_v"] = int(metrics.get("calibration_v", 0)) + 1
+        metrics["profiles_viewed"] = int(metrics.get("profiles_viewed", 0)) + 1
         if signal_type == "positive":
-            agent.profiles_approved = (agent.profiles_approved or 0) + 1
+            metrics["profiles_approved"] = int(metrics.get("profiles_approved", 0)) + 1
         else:
-            agent.profiles_rejected = (agent.profiles_rejected or 0) + 1
+            metrics["profiles_rejected"] = int(metrics.get("profiles_rejected", 0)) + 1
+        agent.runtime_metrics = metrics
 
         await db.commit()
 
         # 7.6: Feed calibration signal to ML pipeline for weight adaptation
         try:
             from app.domains.analytics.services.ml_feedback_service import MLFeedbackService
+            prefs = agent.preferences or {}
+            job_id_fallback = prefs.get("job_id", "") if isinstance(prefs, dict) else ""
             ml_svc = MLFeedbackService()
             await ml_svc.record_signal(
                 candidate_id=candidate_id,
-                job_id=agent.job_id or "",
+                job_id=job_id_fallback,
                 company_id=agent.company_id,
                 ai_score=0.0,
                 recruiter_decision="hire" if signal_type == "positive" else "reject",
@@ -157,23 +176,41 @@ class SourcingAgentOrchestrator:
         except Exception as ml_err:
             logger.debug("[SourcingAgent] ML feedback recording skipped: %s", ml_err)
 
-        # Count total signals for calibration status
+        # Audit dim 5 — log_decision canonical (action='pool_agent_dispatch').
+        try:
+            from app.shared.compliance.audit_service import AuditService
+            audit_service = AuditService()
+            await audit_service.log_decision(
+                company_id=agent.company_id,
+                agent_name=agent.name,
+                decision_type="feedback",
+                action="pool_agent_dispatch",
+                decision="positive" if signal_type == "positive" else "negative",
+                reasoning=[reason],
+                criteria_used=criteria or [],
+                candidate_id=candidate_id,
+            )
+        except Exception as audit_err:
+            logger.debug("[SourcingAgent] audit log_decision skipped: %s", audit_err)
+
+        # Count total signals for calibration status (canonical: custom_agent_id)
         from sqlalchemy import func
         count_result = await db.execute(
-            select(func.count()).where(SourcingAgentSignal.agent_id == agent_id)
+            select(func.count()).where(SourcingAgentSignal.custom_agent_id == agent.id)
         )
         total = count_result.scalar()
 
+        cal_v = int(metrics.get("calibration_v", 0))
         logger.info(
             "[SourcingAgent] agent=%s recalibrated to v%d | %s | criteria=%s",
-            agent_id, agent.calibration_v, signal_type, criteria,
+            agent.id, cal_v, signal_type, criteria,
         )
 
         return CalibrationResult(
-            calibration_version=agent.calibration_v,
+            calibration_version=cal_v,
             total_signals=total,
-            approved_count=agent.profiles_approved or 0,
-            rejected_count=agent.profiles_rejected or 0,
+            approved_count=int(metrics.get("profiles_approved", 0)),
+            rejected_count=int(metrics.get("profiles_rejected", 0)),
             strategy_updated=bool(new_exclusions or new_positives),
             new_exclusions=new_exclusions,
             new_positive_signals=new_positives,
@@ -196,26 +233,37 @@ class SourcingAgentOrchestrator:
         passado. Levanta LookupError quando agent inexistente ou cross-tenant
         (fail-loud REGRA 4, handler traduz pra HTTP 404).
         """
-        from lia_models.sourcing_agent import SourcingAgent
-        from sqlalchemy import select
+        from lia_models.custom_agent import CustomAgent
+        from sqlalchemy import or_, select
 
-        stmt = select(SourcingAgent).where(SourcingAgent.id == agent_id)
+        # TODO Sprint 7B-3b: remover legacy_sourcing_agent_id branch quando frontend
+        # (AgentsTab + AgentStudioPage + AgentPanel) migrar pra passar custom_agent.id
+        # direto após DELETE legacy endpoint /sourcing-agents.
+        stmt = select(CustomAgent).where(
+            or_(
+                CustomAgent.id == agent_id,
+                CustomAgent.legacy_sourcing_agent_id == agent_id,
+            ),
+            CustomAgent.category == "sourcing",
+        )
         if company_id is not None:
-            stmt = stmt.where(SourcingAgent.company_id == company_id)
+            stmt = stmt.where(CustomAgent.company_id == company_id)
         result = await db.execute(stmt)
         agent = result.scalar_one_or_none()
         if agent is None:
             raise LookupError(
-                f"SourcingAgent agent_id={agent_id} company_id={company_id} not found"
+                f"CustomAgent agent_id={agent_id} company_id={company_id} not found"
             )
 
-        query = self._strategy_to_query(agent.search_strategy)
+        query = self._strategy_to_query(agent.search_strategy or {})
 
         # Wave 3 sectoral wiring (audit 2026-05-21): enriquece query com prompt
-        # canonical do AgentTemplate quando agent_template_id está setado.
+        # canonical do AgentTemplate quando agent_template_id está setado em config.
         # Antes: template content era ghost. Agora: SourcingSearchAgent recebe
         # contexto sectorial (LGPD compliance, scoring_weights, screening_questions).
-        template_context = await self._load_template_context(agent.agent_template_id, db)
+        prefs_for_tpl = agent.preferences or {}
+        agent_template_id = prefs_for_tpl.get("agent_template_id") if isinstance(prefs_for_tpl, dict) else None
+        template_context = await self._load_template_context(agent_template_id, db)
         if template_context:
             query = (
                 f"[CONTEXTO SECTORAL]\n{template_context}\n\n"
@@ -248,13 +296,34 @@ class SourcingAgentOrchestrator:
         return enriched
 
     async def get_agent_timeline(self, agent_id: str, limit: int = 20, db=None) -> list[dict]:
-        """Get activity timeline for the Agents tab."""
-        from lia_models.sourcing_agent import SourcingAgentSignal
-        from sqlalchemy import select
+        """Get activity timeline for the Agents tab.
+
+        Resolve agent_id via shim transitional (CustomAgent.id OR legacy_sourcing_agent_id)
+        e filtra signals por custom_agent_id canonical.
+        """
+        from lia_models.custom_agent import CustomAgent
+        from sqlalchemy import or_, select
+
+        # TODO Sprint 7B-3b: remover legacy_sourcing_agent_id branch quando frontend
+        # (AgentsTab + AgentStudioPage + AgentPanel) migrar pra passar custom_agent.id
+        # direto após DELETE legacy endpoint /sourcing-agents.
+        agent_row = (
+            await db.execute(
+                select(CustomAgent.id).where(
+                    or_(
+                        CustomAgent.id == agent_id,
+                        CustomAgent.legacy_sourcing_agent_id == agent_id,
+                    ),
+                    CustomAgent.category == "sourcing",
+                )
+            )
+        ).scalar_one_or_none()
+        if agent_row is None:
+            return []
 
         result = await db.execute(
             select(SourcingAgentSignal)
-            .where(SourcingAgentSignal.agent_id == agent_id)
+            .where(SourcingAgentSignal.custom_agent_id == agent_row)
             .order_by(SourcingAgentSignal.created_at.desc())
             .limit(limit)
         )

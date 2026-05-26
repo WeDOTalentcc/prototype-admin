@@ -80,6 +80,14 @@ class AgentStudioDomain(ComplianceDomainPrompt):
             "list_agents": self._handle_list_agents,
         }
 
+        # Canonical truth (Sprint 7B-3a Part 2):
+        # Reads de status + deactivate (branch sourcing) usam CustomAgent + category='sourcing'
+        # via OR shim transitional (CustomAgent.id OR CustomAgent.legacy_sourcing_agent_id).
+        # Aplica a: _handle_get_agent_status, _handle_deactivate_agent (sourcing branch).
+        # CustomAgent + category='sourcing' = canonical truth.
+        # TODO Sprint 7B-3b: remover legacy_sourcing_agent_id branch quando frontend
+        # migrar pra passar custom_agent.id direto.
+
         handler = handler_map.get(action_id)
         if handler:
             return await handler(params, context)
@@ -225,16 +233,23 @@ class AgentStudioDomain(ComplianceDomainPrompt):
 
         try:
             from app.core.database import get_db
-            from lia_models.sourcing_agent import SourcingAgent
-            from sqlalchemy import select
+            from lia_models.custom_agent import CustomAgent
+            from sqlalchemy import or_, select
 
             company_id = context.tenant_id
 
+            # TODO Sprint 7B-3b: remover legacy_sourcing_agent_id branch quando frontend
+            # (AgentsTab + AgentStudioPage + AgentPanel) migrar pra passar custom_agent.id
+            # direto após DELETE legacy endpoint /sourcing-agents.
             async for db in get_db():
                 result = await db.execute(
-                    select(SourcingAgent).where(
-                        SourcingAgent.id == agent_id,
-                        SourcingAgent.company_id == company_id,
+                    select(CustomAgent).where(
+                        or_(
+                            CustomAgent.id == agent_id,
+                            CustomAgent.legacy_sourcing_agent_id == agent_id,
+                        ),
+                        CustomAgent.category == "sourcing",
+                        CustomAgent.company_id == company_id,
                     )
                 )
                 agent = result.scalar_one_or_none()
@@ -251,14 +266,15 @@ class AgentStudioDomain(ComplianceDomainPrompt):
             skills = ", ".join(strategy.get("required_skills", [])) or "não definidas"
             exclusions = ", ".join(strategy.get("exclusions", [])) or "nenhuma"
 
+            metrics = agent.runtime_metrics or {}
             msg = (
-                f"📊 Status do Agente '{agent.agent_name}':\n\n"
+                f"📊 Status do Agente '{agent.name}':\n\n"
                 f"**Status:** {agent.status}\n"
-                f"**Versão de calibração:** v{agent.calibration_v}\n"
-                f"**Perfis visualizados:** {agent.profiles_viewed or 0}\n"
-                f"**Aprovados:** {agent.profiles_approved or 0}\n"
-                f"**Rejeitados:** {agent.profiles_rejected or 0}\n"
-                f"**Emails enviados:** {agent.emails_sent or 0}\n\n"
+                f"**Versão de calibração:** v{int(metrics.get('calibration_v', 0))}\n"
+                f"**Perfis visualizados:** {int(metrics.get('profiles_viewed', 0))}\n"
+                f"**Aprovados:** {int(metrics.get('profiles_approved', 0))}\n"
+                f"**Rejeitados:** {int(metrics.get('profiles_rejected', 0))}\n"
+                f"**Emails enviados:** {int(metrics.get('emails_sent', 0))}\n\n"
                 f"**Skills buscadas:** {skills}\n"
                 f"**Exclusões:** {exclusions}"
             )
@@ -842,12 +858,19 @@ class AgentStudioDomain(ComplianceDomainPrompt):
                     break
             else:
                 async for db in get_db():
-                    from lia_models.sourcing_agent import SourcingAgent
-                    from sqlalchemy import select
+                    # TODO Sprint 7B-3b: remover legacy_sourcing_agent_id branch quando frontend
+                    # (AgentsTab + AgentStudioPage + AgentPanel) migrar pra passar custom_agent.id
+                    # direto após DELETE legacy endpoint /sourcing-agents.
+                    from lia_models.custom_agent import CustomAgent
+                    from sqlalchemy import or_, select
                     result = await db.execute(
-                        select(SourcingAgent).where(
-                            SourcingAgent.id == agent_id,
-                            SourcingAgent.company_id == company_id,
+                        select(CustomAgent).where(
+                            or_(
+                                CustomAgent.id == agent_id,
+                                CustomAgent.legacy_sourcing_agent_id == agent_id,
+                            ),
+                            CustomAgent.category == "sourcing",
+                            CustomAgent.company_id == company_id,
                         )
                     )
                     agent = result.scalar_one_or_none()
