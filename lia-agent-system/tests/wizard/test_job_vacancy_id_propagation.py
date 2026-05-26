@@ -98,14 +98,17 @@ def test_o1_calibration_node_preserves_job_id_in_data():
     data dict and drops the key.
     """
     from pathlib import Path
-    graph_path = Path(__file__).resolve().parents[2] / "app" / "domains" / "job_creation" / "graph.py"
-    assert graph_path.is_file(), f"graph.py not found at {graph_path}"
-
-    src = graph_path.read_text()
-    # Find the calibration_node body
+    # PR-10 (ONDA 3 sub-B): calibration_node moved to nodes/calibration.py
+    repo_root = Path(__file__).resolve().parents[2]
+    node_path = repo_root / "app" / "domains" / "job_creation" / "nodes" / "calibration.py"
+    graph_path = repo_root / "app" / "domains" / "job_creation" / "graph.py"
+    if node_path.is_file():
+        src = node_path.read_text()
+    else:
+        assert graph_path.is_file(), f"graph.py not found at {graph_path}"
+        src = graph_path.read_text()
     cal_idx = src.find("def calibration_node(")
-    assert cal_idx != -1, "calibration_node function not found in graph.py"
-    # Find next function def to bound the search
+    assert cal_idx != -1, "calibration_node function not found in graph.py or nodes/calibration.py"
     next_def = src.find("\ndef ", cal_idx + 1)
     cal_body = src[cal_idx:next_def] if next_def != -1 else src[cal_idx:]
 
