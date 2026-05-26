@@ -11,10 +11,13 @@ import logging
 
 import pytest
 
+from unittest.mock import AsyncMock, MagicMock
+
 from app.services.onboarding_field_extractor import (
     ExtractionResult,
     build_extraction_prompt,
     extract_field_from_message,
+    extract_field_from_message_llm,
     validate_extracted_value,
 )
 from app.services.onboarding_yaml_loader import OnboardingField
@@ -277,3 +280,218 @@ class TestExtractMock:
         res = await extract_field_from_message(fld, "   ")
         assert res.success is False
         assert res.error
+
+
+
+# --- Sprint A.6: LLM path tests --------------------------------------------
+
+
+def _mock_llm_with_tool_call(arguments_dict: dict | str, *, use_parameters: bool = True):
+    """Cria mock LLMService que retorna ToolCallResponse-like com tool_calls."""
+    mock_llm = MagicMock()
+    mock_response = MagicMock()
+    mock_response.is_tool_call = True
+    mock_response.text_response = None
+
+    mock_tool_call = MagicMock(spec=[])
+    if use_parameters:
+        # ToolCallRequest canonical: parameters: dict
+        mock_tool_call.parameters = arguments_dict
+        mock_tool_call.arguments = None
+    else:
+        # OpenAI-style: arguments is JSON string
+        mock_tool_call.parameters = None
+        mock_tool_call.arguments = arguments_dict
+
+    mock_response.tool_calls = [mock_tool_call]
+    mock_llm.generate_with_tools = AsyncMock(return_value=mock_response)
+    return mock_llm
+
+
+class TestExtractWithLLM:
+    """Sprint A.6 — extract_field_from_message_llm com LLMService mockado."""
+
+    @pytest.mark.asyncio
+    async def test_llm_tool_call_success_with_parameters_dict(self):
+        fld = _f("industry", validation="required")
+        mock_llm = _mock_llm_with_tool_call(
+            {"extracted_fields": {"industry": "fintech"}, "confidence": 0.9},
+            use_parameters=True,
+        )
+
+        res = await extract_field_from_message_llm(
+            target_field=fld,
+            user_message="Somos fintech",
+            llm_service=mock_llm,
+        )
+
+        assert res.success is True
+        assert res.extracted_fields == {"industry": "fintech"}
+        assert res.confidence == 0.9
+        assert res.needs_confirmation is True
+        mock_llm.generate_with_tools.assert_awaited_once()
+
+    @pytest.mark.asyncio
+    async def test_llm_tool_call_success_with_json_string_arguments(self):
+        fld = _f("industry", validation="required")
+        mock_llm = _mock_llm_with_tool_call(
+            '{"extracted_fields": {"industry": "saas"}, "confidence": 0.8}',
+            use_parameters=False,
+        )
+
+        res = await extract_field_from_message_llm(
+            target_field=fld,
+            user_message="SaaS",
+            llm_service=mock_llm,
+        )
+
+        assert res.success is True
+        assert res.extracted_fields == {"industry": "saas"}
+        assert res.confidence == 0.8
+
+    @pytest.mark.asyncio
+    async def test_llm_call_exception_returns_error(self):
+        fld = _f("industry", validation="required")
+        mock_llm = MagicMock()
+        mock_llm.generate_with_tools = AsyncMock(side_effect=RuntimeError("upstream down"))
+
+        res = await extract_field_from_message_llm(
+            target_field=fld,
+            user_message="fintech",
+            llm_service=mock_llm,
+        )
+
+        assert res.success is False
+        assert res.error is not None
+        assert "RuntimeError" in res.error
+        assert res.extracted_fields == {}
+
+    @pytest.mark.asyncio
+    async def test_invalid_json_in_tool_args_returns_error(self):
+        fld = _f("industry", validation="required")
+        mock_llm = _mock_llm_with_tool_call(
+            "{not valid json at all",
+            use_parameters=False,
+        )
+
+        res = await extract_field_from_message_llm(
+            target_field=fld,
+            user_message="fintech",
+            llm_service=mock_llm,
+        )
+
+        assert res.success is False
+        assert res.error is not None
+        assert "Parse failed" in res.error
+
+    @pytest.mark.asyncio
+    async def test_validation_filters_extracted_fields(self):
+        # LLM "extrai" valor inválido pra enum_work_model → ignorado, success=False
+        fld = _f("work_model", validation="enum_work_model")
+        mock_llm = _mock_llm_with_tool_call(
+            {"extracted_fields": {"work_model": "valor_invalido_xyz"}, "confidence": 0.7},
+            use_parameters=True,
+        )
+
+        res = await extract_field_from_message_llm(
+            target_field=fld,
+            user_message="qualquer coisa",
+            llm_service=mock_llm,
+        )
+
+        assert res.success is False
+        assert res.extracted_fields == {}
+        assert res.error == "Nenhum campo válido extraído"
+
+    @pytest.mark.asyncio
+    async def test_hallucinated_field_ignored(self, caplog):
+        # LLM retorna field que NÃO está no target nem additional_context → ignorado
+        fld = _f("industry", validation="required")
+        mock_llm = _mock_llm_with_tool_call(
+            {
+                "extracted_fields": {
+                    "industry": "fintech",
+                    "totally_made_up_field": "garbage",
+                },
+                "confidence": 0.85,
+            },
+            use_parameters=True,
+        )
+
+        with caplog.at_level(logging.WARNING):
+            res = await extract_field_from_message_llm(
+                target_field=fld,
+                user_message="fintech",
+                llm_service=mock_llm,
+            )
+
+        assert res.success is True
+        assert res.extracted_fields == {"industry": "fintech"}
+        assert "totally_made_up_field" not in res.extracted_fields
+        assert any("hallucination" in r.message or "unknown field" in r.message for r in caplog.records)
+
+    @pytest.mark.asyncio
+    async def test_no_tool_call_falls_back_to_text_parse(self):
+        fld = _f("industry", validation="required")
+        mock_llm = MagicMock()
+        mock_response = MagicMock()
+        mock_response.is_tool_call = False
+        mock_response.tool_calls = []
+        mock_response.text_response = "fintech B2B"
+        mock_llm.generate_with_tools = AsyncMock(return_value=mock_response)
+
+        res = await extract_field_from_message_llm(
+            target_field=fld,
+            user_message="fintech B2B",
+            llm_service=mock_llm,
+        )
+
+        assert res.success is True
+        # Text fallback: usa text como valor literal do field
+        assert res.extracted_fields == {"industry": "fintech B2B"}
+        assert res.confidence == 0.3  # low confidence (text fallback)
+
+    @pytest.mark.asyncio
+    async def test_empty_message_short_circuits_without_calling_llm(self):
+        fld = _f("industry", validation="required")
+        mock_llm = MagicMock()
+        mock_llm.generate_with_tools = AsyncMock()
+
+        res = await extract_field_from_message_llm(
+            target_field=fld,
+            user_message="   ",
+            llm_service=mock_llm,
+        )
+
+        assert res.success is False
+        assert res.error == "Mensagem vazia"
+        mock_llm.generate_with_tools.assert_not_awaited()
+
+    @pytest.mark.asyncio
+    async def test_use_llm_param_opts_in_delegates_to_llm_path(self):
+        fld = _f("industry", validation="required")
+        mock_llm = _mock_llm_with_tool_call(
+            {"extracted_fields": {"industry": "edtech"}, "confidence": 0.95},
+            use_parameters=True,
+        )
+
+        res = await extract_field_from_message(
+            fld,
+            "edtech",
+            use_llm=True,
+            llm_service=mock_llm,
+        )
+
+        assert res.success is True
+        assert res.extracted_fields == {"industry": "edtech"}
+        mock_llm.generate_with_tools.assert_awaited_once()
+
+    @pytest.mark.asyncio
+    async def test_use_llm_default_false_uses_mock_heuristic(self):
+        # Sem use_llm, mantém heurística mock canonical (não chama LLMService)
+        fld = _f("manager_approval_for_offer", validation="required")
+        # Se chamasse LLM com llm_service=None, importaria LLMService real (caro);
+        # default mock heurístico evita isso. Cobre boolean inference.
+        res = await extract_field_from_message(fld, "sim")
+        assert res.success is True
+        assert res.extracted_fields["manager_approval_for_offer"] is True

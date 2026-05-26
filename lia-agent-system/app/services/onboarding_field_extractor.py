@@ -309,21 +309,35 @@ async def extract_field_from_message(
     user_message: str,
     additional_context_fields: list[OnboardingField] | None = None,
     company_id: str | None = None,
+    use_llm: bool = False,
+    llm_service: Any = None,
 ) -> ExtractionResult:
-    """Wrapper async que (futuramente) chamará LLMService.generate_with_tools.
+    """Wrapper async — default mock heuristic, opt-in LLM via use_llm=True.
 
-    NOTE: por enquanto retorna heurística simples — wire-up com LLMService real
-    fica pra Sprint A.4 integração. Mantém API canonical estável.
+    Sprint A.6 (2026-05-26): adicionado use_llm + llm_service params.
+    Default (use_llm=False) preserva mock heurístico — backwards compat com 33 tests.
+    use_llm=True delega para extract_field_from_message_llm (real LLMService).
 
     Args:
         target_field: campo principal sendo perguntado
         user_message: resposta natural language
         additional_context_fields: outros campos pra extração oportunista
         company_id: pra audit trail (não usado na extração em si)
+        use_llm: se True, chama LLM real via extract_field_from_message_llm
+        llm_service: LLMService instance (injectable pra testes). None = canonical default
 
     Returns:
         ExtractionResult com extracted_fields + confidence + needs_confirmation=True
     """
+    if use_llm:
+        return await extract_field_from_message_llm(
+            target_field=target_field,
+            user_message=user_message,
+            additional_context_fields=additional_context_fields,
+            company_id=company_id,
+            llm_service=llm_service,
+        )
+
     if not isinstance(user_message, str) or not user_message.strip():
         logger.warning(
             "extract_field_from_message: empty message field=%s company=%s",
@@ -433,3 +447,213 @@ async def extract_field_from_message(
         raw_response=msg,
         error=None,
     )
+
+
+
+# --- Sprint A.6: LLM real path (opt-in via use_llm=True) -------------------
+
+
+def _parse_text_extraction(field: "OnboardingField", text: str) -> ExtractionResult:
+    """Fallback: parse text response (sem tool call) tentando JSON inline."""
+    import json
+    import re as _re
+
+    json_match = _re.search(r'\{[^{}]*"extracted_fields"[^{}]*\}', text, _re.DOTALL)
+    if json_match:
+        try:
+            args = json.loads(json_match.group(0))
+            return ExtractionResult(
+                success=True,
+                extracted_fields=args.get("extracted_fields", {}),
+                confidence=float(args.get("confidence", 0.5)),
+                needs_confirmation=True,
+                raw_response=text[:500],
+            )
+        except (json.JSONDecodeError, ValueError):
+            pass
+
+    # No JSON found — fallback total: text como valor literal do field
+    return ExtractionResult(
+        success=True,
+        extracted_fields={field.field_key: text.strip()},
+        confidence=0.3,
+        needs_confirmation=True,
+        raw_response=text[:500],
+    )
+
+
+async def extract_field_from_message_llm(
+    target_field: OnboardingField,
+    user_message: str,
+    additional_context_fields: list[OnboardingField] | None = None,
+    company_id: str | None = None,
+    llm_service: Any = None,
+) -> ExtractionResult:
+    """Chama LLM real (LLMService.generate_with_tools) para extrair valor estruturado.
+
+    Sprint A.6 (P2-2). Usa tool call pattern com Pydantic-like schema —
+    LLM retorna {"extracted_fields": {...}, "confidence": 0-1}.
+
+    Args:
+        target_field: campo principal sendo perguntado
+        user_message: resposta natural language
+        additional_context_fields: outros campos pra extração oportunista
+        company_id: pra audit trail
+        llm_service: LLMService instance (None = importa canonical default)
+
+    Returns:
+        ExtractionResult com extracted_fields parseado do tool call,
+        validado contra rules dos field defs. success=False se LLM falhar
+        ou JSON inválido ou nenhum field passar validação.
+    """
+    if not isinstance(user_message, str) or not user_message.strip():
+        logger.warning(
+            "extract_field_from_message_llm: empty message field=%s company=%s",
+            target_field.field_key,
+            company_id,
+        )
+        return ExtractionResult(
+            success=False,
+            extracted_fields={},
+            confidence=0.0,
+            needs_confirmation=False,
+            raw_response="",
+            error="Mensagem vazia",
+        )
+
+    if llm_service is None:
+        from app.domains.ai.services.llm import LLMService
+        llm_service = LLMService()
+
+    prompt = build_extraction_prompt(
+        target_field=target_field,
+        user_message=user_message,
+        additional_context_fields=additional_context_fields,
+    )
+
+    extract_tool = {
+        "type": "function",
+        "function": {
+            "name": "extract_field_values",
+            "description": "Extrai valores estruturados da resposta do usuário",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "extracted_fields": {
+                        "type": "object",
+                        "description": "Map de field_key → valor extraído",
+                        "additionalProperties": True,
+                    },
+                    "confidence": {
+                        "type": "number",
+                        "minimum": 0.0,
+                        "maximum": 1.0,
+                        "description": "Confidence 0-1 da extração",
+                    },
+                },
+                "required": ["extracted_fields", "confidence"],
+            },
+        },
+    }
+
+    try:
+        response = await llm_service.generate_with_tools(
+            messages=[{"role": "user", "content": prompt}],
+            tools=[extract_tool],
+        )
+    except Exception as e:
+        logger.error(
+            "P2-2 A.6 LLM call failed field=%s company=%s err=%s",
+            target_field.field_key, company_id, e,
+            exc_info=True,
+        )
+        return ExtractionResult(
+            success=False,
+            extracted_fields={},
+            confidence=0.0,
+            needs_confirmation=False,
+            raw_response="",
+            error=f"LLM falhou: {type(e).__name__}",
+        )
+
+    # Parse tool call response
+    if not getattr(response, "is_tool_call", False) or not getattr(response, "tool_calls", None):
+        return _parse_text_extraction(target_field, getattr(response, "text_response", None) or "")
+
+    tool_call = response.tool_calls[0]
+    try:
+        raw_args = getattr(tool_call, "parameters", None)
+        if raw_args is None:
+            raw_args = getattr(tool_call, "arguments", None)
+        if isinstance(raw_args, str):
+            import json
+            args = json.loads(raw_args)
+        elif isinstance(raw_args, dict):
+            args = raw_args
+        else:
+            raise ValueError(f"unexpected tool args type: {type(raw_args).__name__}")
+
+        extracted = args.get("extracted_fields", {}) or {}
+        confidence = float(args.get("confidence", 0.5))
+
+        # Validar cada field extraído contra rule (filtra hallucinations)
+        validated: dict[str, Any] = {}
+        for key, value in extracted.items():
+            field_def: OnboardingField | None = None
+            if target_field.field_key == key:
+                field_def = target_field
+            elif additional_context_fields:
+                for f in additional_context_fields:
+                    if f.field_key == key:
+                        field_def = f
+                        break
+
+            if field_def is None:
+                logger.warning(
+                    "P2-2 A.6 LLM extracted unknown field %s — ignorando (hallucination)",
+                    key,
+                )
+                continue
+
+            is_valid, err = validate_extracted_value(field_def, value)
+            if is_valid:
+                validated[key] = value
+            else:
+                logger.warning(
+                    "P2-2 A.6 field %s extracted but failed validation: %s",
+                    key, err,
+                )
+
+        if not validated:
+            return ExtractionResult(
+                success=False,
+                extracted_fields={},
+                confidence=confidence,
+                needs_confirmation=False,
+                raw_response=str(raw_args)[:500],
+                error="Nenhum campo válido extraído",
+            )
+
+        return ExtractionResult(
+            success=True,
+            extracted_fields=validated,
+            confidence=confidence,
+            needs_confirmation=True,
+            raw_response=str(raw_args)[:500],
+            error=None,
+        )
+
+    except Exception as e:
+        logger.error(
+            "P2-2 A.6 tool call parse failed field=%s company=%s err=%s",
+            target_field.field_key, company_id, e,
+            exc_info=True,
+        )
+        return ExtractionResult(
+            success=False,
+            extracted_fields={},
+            confidence=0.0,
+            needs_confirmation=False,
+            raw_response="",
+            error=f"Parse failed: {type(e).__name__}",
+        )
