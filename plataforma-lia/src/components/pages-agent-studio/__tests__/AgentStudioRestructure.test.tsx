@@ -53,6 +53,11 @@ vi.mock("../create-agent-wizard", () => ({
 vi.mock("@/hooks/agents", () => ({
   __esModule: true,
   useCustomAgents: () => ({ agents: [], mutate: vi.fn() }),
+  usePendingApprovals: () => ({ approvals: [], total: 0, isLoading: false, isError: false, mutate: vi.fn() }),
+  useAgentDeployments: () => ({ deployments: [], isLoading: false, isError: false, mutate: vi.fn() }),
+  useAgentVersions: () => ({ versions: [], isLoading: false, isError: false, mutate: vi.fn() }),
+  useStudioChatIntents: () => ({ intents: [], isLoading: false, mutate: vi.fn() }),
+  useWebhooks: () => ({ webhooks: [], isLoading: false, mutate: vi.fn() }),
 }))
 vi.mock("@/stores/agent-studio-store", () => ({
   __esModule: true,

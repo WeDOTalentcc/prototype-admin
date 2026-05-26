@@ -8,20 +8,10 @@
     },
     "studio": {
       "title": "Estúdio de Agentes",
-      "createAgent": "Criar Agente",
       "loadingAgents": "Carregando agentes...",
       "tabs": {
-        "agents": "Agentes de Captação",
-        "custom": "Agentes Personalizados",
-        "marketplace": "Marketplace",
-        "twins": "Gêmeos Digitais",
-        "search": "Busca Inteligente",
-        "sourcingAgents": "Agentes de Captação",
-        "customAgents": "Agentes Personalizados",
         "digitalTwins": "Gêmeos Digitais",
-        "smartSearch": "Busca Inteligente",
-        "myAgents": "Meus Agentes",
-        "talentSearch": "Busca de Talentos"
+        "myAgents": "Meus Agentes"
       },
       "stats": {
         "activeAgents": "{count} agente(s) ativo(s)",
@@ -51,8 +41,6 @@
         "chooseProfile": "Comece escolhendo um perfil",
         "createNewAgent": "Criar novo agente",
         "description": "Templates pré-configurados com critérios de avaliação específicos por setor",
-        "custom": "Personalizado",
-        "createFromScratch": "Criar do zero",
         "startChoosing": "Comece escolhendo um perfil",
         "createNew": "Criar novo agente",
         "preConfigured": "Templates pré-configurados com critérios de avaliação específicos por setor"
@@ -228,6 +216,15 @@
           "business": "Business",
           "enterprise": "Enterprise"
         }
+      },
+      "cta": {
+        "createAgent": "Criar Agente",
+        "exploreMarketplace": "Explorar Marketplace"
+      },
+      "filters": {
+        "typeLabel": "Tipo:",
+        "verticalLabel": "Vertical:",
+        "marketplaceBadge": "Marketplace"
       }
     },
     "status": {
