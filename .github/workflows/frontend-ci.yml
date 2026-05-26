@@ -146,6 +146,27 @@ jobs:
         working-directory: plataforma-lia
         run: python3 scripts/check_no_studio_decorative_gradient.py
 
+      - name: Canonical tokens sensor (BLOCKING desde 2026-05-26)
+        # Sensor harness 2026-05-26 (tasks 7+8 blocking promotion).
+        # Detecta uso de tokens legacy (lia-surface/border/primary/muted) em
+        # componentes. Aliases temporarios em tailwind.config.ts — NAO usar em
+        # codigo novo. Baseline atingiu 0 violations apos exclusao do produtor
+        # design-tokens.ts (false-positive) e cleanup de compensation-policies.
+        # design-tokens.ts excluido (produtor, como tailwind.config.ts).
+        # Ver CLAUDE.md § Tailwind legacy token fix 2026-05-25.
+        working-directory: plataforma-lia
+        run: npm run sensor:tokens:blocking
+
+      - name: Schema sync sensor TS<->Python (BLOCKING desde 2026-05-26)
+        # Sensor harness 2026-05-26 (tasks 7+8 blocking promotion).
+        # Valida que LIA_FIELD_DEFINITIONS (TS: use-company-lia-instructions.ts)
+        # e DEFAULT_FIELD_TOGGLES (PY: lia_field_toggles.py) estao em sincronia
+        # (mesmo conjunto de 34 campos). Baseline 0 violations desde criacao.
+        # Adicionar campo em um lado sem o outro bloqueia o merge.
+        # Ver CLAUDE.md § lia_field_toggles canonical pattern 2026-05-21.
+        working-directory: plataforma-lia
+        run: npm run sensor:lia-sync:blocking
+
       - name: Unit & Component tests
         run: npx vitest run --reporter=verbose
 

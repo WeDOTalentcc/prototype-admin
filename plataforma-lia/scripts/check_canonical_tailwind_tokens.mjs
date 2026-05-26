@@ -60,7 +60,7 @@ const LEGACY_TOKENS = [
 // Diretórios/arquivos a ignorar
 const EXCLUDE_DIRS = new Set(['node_modules', '.next', 'dist', '__tests__', '.impeccable', '.git']);
 // O produtor (tailwind.config.ts) define os aliases — não é violation
-const EXCLUDE_FILES = new Set(['tailwind.config.ts', 'tailwind.config.js', 'check_canonical_tailwind_tokens.mjs']);
+const EXCLUDE_FILES = new Set(['tailwind.config.ts', 'tailwind.config.js', 'check_canonical_tailwind_tokens.mjs', 'design-tokens.ts']);
 
 function* walkFiles(dir) {
   let entries;
