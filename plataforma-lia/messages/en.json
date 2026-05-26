@@ -5781,6 +5781,15 @@
         "documents": "Variable Compensation"
       },
       "fields": {
+        "blocks": {
+          "basic": "Company Profile",
+          "culture": "Culture & Values",
+          "tech": "Tech Stack",
+          "benefits": "Benefits",
+          "policy": "Recruitment Policies",
+          "workforce": "Workforce Planning",
+          "documents": "Variable Compensation"
+        },
         "basic": {
           "name": "Company Name",
           "tradeName": "Trade Name",

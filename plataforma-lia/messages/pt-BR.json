@@ -5781,6 +5781,15 @@
         "documents": "Remuneração Variável"
       },
       "fields": {
+        "blocks": {
+          "basic": "Perfil da Empresa",
+          "culture": "Cultura & Valores",
+          "tech": "Stack Tecnológico",
+          "benefits": "Benefícios",
+          "policy": "Políticas de Recrutamento",
+          "workforce": "Workforce Planning",
+          "documents": "Remuneração Variável"
+        },
         "basic": {
           "name": "Nome da Empresa",
           "tradeName": "Nome Fantasia",
