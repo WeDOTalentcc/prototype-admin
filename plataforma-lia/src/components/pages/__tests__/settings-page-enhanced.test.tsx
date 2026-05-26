@@ -14,7 +14,7 @@
  *   usuarios-departamentos | integrations | ai-credits | fairness-compliance
  *
  * Cobre:
- *   1. Sidebar renderiza os 7 hubs definidos em getDefaultSections().
+ *   1. Sidebar renderiza os 8 hubs definidos em getDefaultSections().
  *   2. O switch renderSectionContent() carrega o hub correto por activeSection.
  *   3. O listener de window.dispatchEvent('settings-open-tab', sectionId) muda a tab.
  *   4. O alias 'alertas' é traduzido para 'comunicacao-alertas'.
@@ -195,15 +195,16 @@ afterEach(() => {
 // Imports que dependem dos mocks acima
 import SettingsPageEnhanced from "@/components/pages/settings-page-enhanced"
 
-// ── 1. Sidebar: 7 hubs + estado inicial ──────────────────────────────────
+// ── 1. Sidebar: 8 hubs + estado inicial ──────────────────────────────────
 
 describe("SettingsPageEnhanced — sidebar", () => {
-  it("renderiza os 7 hubs definidos em getDefaultSections()", async () => {
+  it("renderiza os 8 hubs definidos em getDefaultSections()", async () => {
     render(<SettingsPageEnhanced />)
 
-    // Seções actuais pós-consolidação 2026-05-25
+    // Seções actuais: 7 pós-consolidação 2026-05-25 + 'lia-personalizacao' (P1-4 2026-05-26).
     const expected = [
       "minha-empresa",
+      "lia-personalizacao",
       "recrutamento-lia",
       "comunicacao-alertas",
       "usuarios-departamentos",
@@ -214,11 +215,11 @@ describe("SettingsPageEnhanced — sidebar", () => {
     for (const id of expected) {
       expect(screen.getByTestId(`settings-menu-${id}`)).toBeInTheDocument()
     }
-    // 7 itens, nem mais nem menos — protege contra regressão silenciosa
+    // 8 itens, nem mais nem menos — protege contra regressão silenciosa
     const allMenuButtons = screen.getAllByRole("button").filter((b) =>
       b.getAttribute("data-testid")?.startsWith("settings-menu-"),
     )
-    expect(allMenuButtons).toHaveLength(7)
+    expect(allMenuButtons).toHaveLength(8)
     // Drena o microtask do dynamic-import
     await screen.findByTestId("hub-minha-empresa")
   })

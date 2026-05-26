@@ -17,7 +17,7 @@ import {
   Send, Bell, Palette, Lightbulb, TrendingDown, Activity, RotateCcw,
   ChevronLeft, FastForward, SkipForward, RefreshCw, Zap as Lightning,
   MousePointer, Compass, HelpCircle, Rocket,
-  ChevronDown, ChevronUp, Lock, Unlock, Circle, Plug, Shield, Webhook, Sparkles
+  ChevronDown, ChevronUp, Lock, Unlock, Circle, Plug, Shield, Webhook, Sparkles, Brain
 } from"lucide-react"
 
 const SECTION_ICON_COLORS: Record<string, string> = {
@@ -114,9 +114,24 @@ const getDefaultSections = (): SettingsSection[] => [
     priority: 'high',
     category: 'basic',
     estimatedTime: 15,
+    // P1-4 (2026-05-26): 'learning-loops' movido para hub 'lia-personalizacao' (config LIA juntada).
+    // Plan canonical: ~/.claude/plans/jolly-roaming-moler.md + audit §9 (taxonomia 2026-05-26).
+  },
+  // P1-4 (2026-05-26): hub novo "LIA & Personalização" desentrelaça config LIA
+  // (instrucoes-lia + learning-loops + ai-persona) do hub operacional Recrutamento.
+  // Audit ref: ~/Documents/wedotalent_audit_2026-05-26/CONFIGURACOES_MENU_COHERENCE_AUDIT.md §9.
+  {
+    id: 'lia-personalizacao',
+    title: 'LIA & Personalização',
+    description: 'Persona, campos visíveis e learning loops da LIA',
+    icon: Brain,
+    status: 'incomplete',
+    priority: 'medium',
+    category: 'advanced',
+    estimatedTime: 10,
+    dependencies: ['minha-empresa'],
     subsections: [
-      // Consolidações P1 (2026-05-25): 'instrucoes-lia' movido para hub 'recrutamento-lia'
-      // (consolidação Pipeline+Screening+Instruções LIA). Plan canonical: ~/.claude/plans/jolly-roaming-moler.md
+      { id: 'instrucoes-lia', title: 'Instruções LIA & Persona', description: 'Configure toggles, instruções por campo (34 canonical) e persona da LIA', fields: [] },
       { id: 'learning-loops', title: 'Learning Loops', description: 'Aprendizado contínuo: Big5 cultura, JD similar, WSI effectiveness (Sprint B Phase 2)', fields: [] },
     ],
   },
@@ -124,7 +139,7 @@ const getDefaultSections = (): SettingsSection[] => [
   {
     id: 'recrutamento-lia',
     title: 'Recrutamento & LIA',
-    description: 'Pipeline, screening e instruções da LIA — políticas operacionais',
+    description: 'Pipeline, screening e automações — políticas operacionais',
     icon: Workflow,
     status: 'pending',
     priority: 'high',
@@ -134,10 +149,10 @@ const getDefaultSections = (): SettingsSection[] => [
     // Consolidações P1 (2026-05-25): hub NOVO absorve pipeline + screening (ex-standalone)
     // + instrucoes-lia (ex-subsection de minha-empresa, contém AiPersonaPanel + LiaFieldsConfigPanel).
     // Plan canonical: ~/.claude/plans/jolly-roaming-moler.md
+    // P1-4 (2026-05-26): 'instrucoes-lia' movido para hub 'lia-personalizacao' (config LIA).
     subsections: [
       { id: 'pipeline', title: 'Pipeline', description: 'Etapas do processo seletivo (kanban, SLA, automation)', fields: [] },
       { id: 'screening', title: 'Screening', description: 'Perguntas de elegibilidade via WhatsApp', fields: [] },
-      { id: 'instrucoes-lia', title: 'Instruções LIA & Persona', description: 'Configure toggles, instruções por campo (34 canonical) e persona da LIA', fields: [] },
       { id: 'automacoes', title: 'Automações', description: 'Regras de disparo automático no pipeline', fields: [] },
     ],
   },
@@ -365,6 +380,7 @@ export default function SettingsPageEnhanced() {
           // Backend ADICIONOU 7 chaves canonical; aqui consumimos exatamente os 7 hubs do getDefaultSections().
           // Legacy IDs (pipeline, screening, templates-assinatura, webhooks) removidos — nao existem mais como hubs top-level.
           'minha-empresa': data.sections['minha-empresa'] ?? prev['minha-empresa'] ?? 0,
+          'lia-personalizacao': data.sections['lia-personalizacao'] ?? prev['lia-personalizacao'] ?? 0,
           'recrutamento-lia': data.sections['recrutamento-lia'] ?? prev['recrutamento-lia'] ?? 0,
           'comunicacao-alertas': data.sections['comunicacao-alertas'] ?? prev['comunicacao-alertas'] ?? 0,
           'usuarios-departamentos': data.sections['usuarios-departamentos'] ?? prev['usuarios-departamentos'] ?? 0,
@@ -483,24 +499,24 @@ export default function SettingsPageEnhanced() {
         )
       // Consolidações P1 (2026-05-25): cases pipeline/screening/templates-assinatura removidos.
       // Plan canonical: ~/.claude/plans/jolly-roaming-moler.md
+      case 'lia-personalizacao':
+        // P1-4 (2026-05-26): hub novo agrupa instrucoes-lia + learning-loops.
+        // Renderiza via MinhaEmpresaHub (componente canonical) com activeSubsection.
+        return (
+          <ErrorBoundarySection>
+            <Suspense fallback={<HubLoadingState />}>
+              <MinhaEmpresaHub activeSubsection={activeSubsection || 'instrucoes-lia'} />
+            </Suspense>
+          </ErrorBoundarySection>
+        )
       case 'recrutamento-lia':
-        // 3 subsections: pipeline | screening | instrucoes-lia
+        // 3 subsections (operacional): pipeline (default) | screening | automacoes
+        // P1-4: instrucoes-lia migrou para hub lia-personalizacao.
         if (activeSubsection === 'screening') {
           return (
             <ErrorBoundarySection>
               <Suspense fallback={<HubLoadingState />}>
                 <RecruitmentScreeningTab />
-              </Suspense>
-            </ErrorBoundarySection>
-          )
-        }
-        if (activeSubsection === 'instrucoes-lia') {
-          // Reusa MinhaEmpresaHub passando subsection — renderiza LiaFieldsConfigPanel
-          // (que inclui AiPersonaPanel como tab interna canonical).
-          return (
-            <ErrorBoundarySection>
-              <Suspense fallback={<HubLoadingState />}>
-                <MinhaEmpresaHub activeSubsection="instrucoes-lia" />
               </Suspense>
             </ErrorBoundarySection>
           )

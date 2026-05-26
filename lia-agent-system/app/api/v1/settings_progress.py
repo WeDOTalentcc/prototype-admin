@@ -149,6 +149,9 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
                 "global-search": global_search_score,
                 # Canonical sidebar IDs (settings-page-enhanced.tsx getDefaultSections)
                 "minha-empresa": minha_empresa_score,
+                # P1-4 (2026-05-26): hub novo "LIA & Personalização" (instrucoes-lia + learning-loops).
+                # TODO: calcular score real baseado em lia_field_toggles + learning_loops state.
+                "lia-personalizacao": 100,
                 "recrutamento-lia": recruitment_score,
                 "comunicacao-alertas": communication_score,
                 "usuarios-departamentos": usuarios_departamentos_score,
@@ -200,6 +203,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
                 "global-search": 80,
                 # Canonical sidebar IDs (fallback degradado em error path)
                 "minha-empresa": 60,
+                "lia-personalizacao": 100,
                 "recrutamento-lia": 40,
                 "comunicacao-alertas": 60,
                 "usuarios-departamentos": 60,

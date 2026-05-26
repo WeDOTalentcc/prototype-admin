@@ -12,6 +12,9 @@
 
 export const SETTINGS_SECTION_IDS = [
   'minha-empresa',
+  // P1-4 (2026-05-26): hub novo "LIA & Personalização" desentrelaça config LIA
+  // do hub operacional Recrutamento & LIA. Audit ref: §3.learning-loops-vs-instrucoes-lia.
+  'lia-personalizacao',
   // Consolidações P1 (2026-05-25): 'pipeline', 'screening', 'templates-assinatura' absorvidos.
   // Plan canonical: ~/.claude/plans/jolly-roaming-moler.md
   'recrutamento-lia',
@@ -28,12 +31,16 @@ export const SETTINGS_SUBSECTIONS: Record<string, string[]> = {
   // PR 2/3 (2026-05-25): 'fairness' (dashboard) e 'ai-transparency' movidos para /wedo-admin/ (staff).
   // 'consent' e 'audit-summary' adicionados — vindos de Governança dissolvida.
   'fairness-compliance': ['lgpd-candidatos', 'consent', 'audit-summary', 'studio'],
-  // Consolidações P1 (2026-05-25): hub recrutamento-lia consolida pipeline+screening+instrucoes-lia.
-  'recrutamento-lia': ['pipeline', 'screening', 'instrucoes-lia'],
+  // P1-4 (2026-05-26): hub novo agrupa toda config LIA (instrucoes-lia + learning-loops).
+  'lia-personalizacao': ['instrucoes-lia', 'learning-loops'],
+  // P1-4 (2026-05-26): 'instrucoes-lia' movido para hub 'lia-personalizacao' (config LIA juntada).
+  // Recrutamento & LIA fica apenas com subsections operacionais (pipeline + screening + automacoes).
+  'recrutamento-lia': ['pipeline', 'screening', 'automacoes'],
   // Consolidações P1 (2026-05-25): hub comunicacao-alertas absorveu templates-assinatura (5 tabs canonical).
   'comunicacao-alertas': ['templates', 'signature', 'schedule', 'alerts'],
-  // minha-empresa: 'instrucoes-lia' subsection removida — agora vive em recrutamento-lia.
-  'minha-empresa': ['learning-loops'],
+  // P1-4 (2026-05-26): 'learning-loops' movido para hub 'lia-personalizacao' (config LIA juntada).
+  // Minha Empresa fica sem subsections — bloco direto (basic + cultura + tech + etc.).
+  'minha-empresa': [],
 }
 
 export const SETTINGS_SECTION_ALIASES: Record<string, SettingsSectionId> = {
