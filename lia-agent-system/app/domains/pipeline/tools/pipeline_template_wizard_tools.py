@@ -46,6 +46,48 @@ from app.domains.pipeline.services.pipeline_template_service import (
 logger = logging.getLogger(__name__)
 
 
+# Prometheus telemetry counter (Fase 5 - Sprint Pipeline Templates).
+# Buckets de score com cardinality fechada para evitar explosao de labels.
+_pipeline_template_suggest_shown_total = None  # type: ignore[assignment]
+
+try:
+    from prometheus_client import REGISTRY as _PROM_REGISTRY  # type: ignore
+    from prometheus_client import Counter as _PromCounter  # type: ignore
+
+    _names_map = getattr(_PROM_REGISTRY, "_names_to_collectors", {})
+    _SUGGEST_NAME = "pipeline_template_suggest_shown_total"
+    if _SUGGEST_NAME in _names_map:
+        _pipeline_template_suggest_shown_total = _names_map[_SUGGEST_NAME]
+    else:
+        _pipeline_template_suggest_shown_total = _PromCounter(
+            _SUGGEST_NAME,
+            "Pipeline template suggest_db calls com should_suggest=True",
+            ["score_bucket"],
+        )
+except Exception as _exc:  # pragma: no cover - fail-open
+    logger.debug("Prometheus counter unavailable for pipeline_template wizard tools: %s", _exc)
+
+
+def _score_bucket(score: float) -> str:
+    """Bucket canonical low-cardinality para score 0..1."""
+    if score >= 0.85:
+        return "0.85-1.0"
+    if score >= 0.70:
+        return "0.70-0.85"
+    return "below_threshold"
+
+
+def _inc_suggest_shown(top_score: float) -> None:
+    """Increment suggestion counter - fail-open."""
+    try:
+        if _pipeline_template_suggest_shown_total is not None:
+            _pipeline_template_suggest_shown_total.labels(
+                score_bucket=_score_bucket(top_score)
+            ).inc()
+    except Exception as exc:  # pragma: no cover
+        logger.debug("pipeline_template_suggest_shown_total inc failed: %s", exc)
+
+
 # Threshold canonical para auto-suggest no wizard chat.
 # < 0.7 = LIA não chama a sugestão (fluxo segue normal). >= 0.7 = card renderizado.
 WIZARD_SUGGEST_THRESHOLD = 0.7
@@ -107,10 +149,13 @@ async def suggest_pipeline_template_db(
         for t, s in filtered
     ]
 
+    _should_suggest = top_score >= threshold
+    if _should_suggest:
+        _inc_suggest_shown(top_score)
     return {
         "templates": templates,
         "top_score": round(top_score, 3),
-        "should_suggest": top_score >= threshold,
+        "should_suggest": _should_suggest,
     }
 
 

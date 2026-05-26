@@ -36,10 +36,69 @@ from app.domains.job_management.repositories.job_vacancy_crud_repository import 
     JobVacancyCrudRepository,
 )
 from app.shared.compliance.audit_service import audit_service
+from app.shared.observability.tracing import trace_span
 from lia_models.audit_log import DecisionType
 from app.models.pipeline_template import PipelineTemplate
 
 logger = logging.getLogger(__name__)
+
+
+# Prometheus telemetry counters (Fase 5 - Sprint Pipeline Templates).
+# Cardinalidade controlada: company_id + enums fechados (action, source).
+# template_id NAO e label (cardinality unbounded).
+# Reuso via REGISTRY._names_to_collectors (pattern fallback_metrics.py).
+_pipeline_template_apply_total = None  # type: ignore[assignment]
+_pipeline_template_mutation_total = None  # type: ignore[assignment]
+
+try:
+    from prometheus_client import REGISTRY as _PROM_REGISTRY  # type: ignore
+    from prometheus_client import Counter as _PromCounter  # type: ignore
+
+    _names_map = getattr(_PROM_REGISTRY, "_names_to_collectors", {})
+
+    _APPLY_NAME = "pipeline_template_apply_total"
+    if _APPLY_NAME in _names_map:
+        _pipeline_template_apply_total = _names_map[_APPLY_NAME]
+    else:
+        _pipeline_template_apply_total = _PromCounter(
+            _APPLY_NAME,
+            "Number of pipeline template applies (canonical apply_to_vacancy)",
+            ["company_id", "source"],
+        )
+
+    _MUT_NAME = "pipeline_template_mutation_total"
+    if _MUT_NAME in _names_map:
+        _pipeline_template_mutation_total = _names_map[_MUT_NAME]
+    else:
+        _pipeline_template_mutation_total = _PromCounter(
+            _MUT_NAME,
+            "Number of pipeline template CRUD mutations",
+            ["company_id", "action"],
+        )
+except Exception as _exc:  # pragma: no cover - fail-open
+    logger.debug("Prometheus counters unavailable for pipeline_template_service: %s", _exc)
+
+
+def _inc_mutation(company_id: str, action: str) -> None:
+    """Increment mutation counter - fail-open (telemetria NUNCA bloqueia mutation)."""
+    try:
+        if _pipeline_template_mutation_total is not None:
+            _pipeline_template_mutation_total.labels(
+                company_id=str(company_id), action=action
+            ).inc()
+    except Exception as exc:  # pragma: no cover
+        logger.debug("pipeline_template_mutation_total inc failed: %s", exc)
+
+
+def _inc_apply(company_id: str, source: str) -> None:
+    """Increment apply counter - fail-open."""
+    try:
+        if _pipeline_template_apply_total is not None:
+            _pipeline_template_apply_total.labels(
+                company_id=str(company_id), source=source
+            ).inc()
+    except Exception as exc:  # pragma: no cover
+        logger.debug("pipeline_template_apply_total inc failed: %s", exc)
 
 
 # canonical source enum — auditável e tipado.
@@ -103,6 +162,7 @@ class PipelineTemplateService:
             actor=created_by,
             template=template,
         )
+        _inc_mutation(company_id, "created")
         return template
 
     async def update(
@@ -125,6 +185,7 @@ class PipelineTemplateService:
             template=template,
             extra_reasoning=[f"fields_updated: {sorted(data.keys())}"],
         )
+        _inc_mutation(company_id, "updated")
         return template
 
     async def archive(
@@ -143,6 +204,7 @@ class PipelineTemplateService:
             actor=updated_by,
             template=template,
         )
+        _inc_mutation(company_id, "archived")
         return template
 
     async def clone(
@@ -163,12 +225,14 @@ class PipelineTemplateService:
             template=cloned,
             extra_reasoning=[f"cloned_from_id: {original.id}", f"cloned_from_name: {original.name}"],
         )
+        _inc_mutation(company_id, "cloned")
         return cloned
 
     # ─────────────────────────────────────────────────────────────────
     # Apply canonical (copy-on-write)
     # ─────────────────────────────────────────────────────────────────
 
+    @trace_span("pipeline.template.apply", attributes={"pipeline.template.applied": True})
     async def apply_to_vacancy(
         self,
         template_id: uuid.UUID,
@@ -223,6 +287,7 @@ class PipelineTemplateService:
             ],
         )
 
+        _inc_apply(company_id, source)
         return {
             "vacancy_id": str(vacancy_id),
             "template_id": str(template.id),
