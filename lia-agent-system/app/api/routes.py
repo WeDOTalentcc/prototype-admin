@@ -308,6 +308,9 @@ def register_all_routes(app: FastAPI) -> None:
     # ── Core / Navigation ─────────────────────────────────────────────────────
     app.include_router(navigation_intent_router, prefix="/api/v1")
     app.include_router(chat.router, prefix="/api/v1")
+    # Sprint 3 G9 wire (2026-05-26): proactive context from Settings hub
+    from app.api.v1 import proactive_context
+    app.include_router(proactive_context.router, prefix="/api/v1", tags=["lia-proactive-context"])
     app.include_router(teams.router, prefix="/api/v1")
     app.include_router(calendar.router, prefix="/api/v1")
 
