@@ -32,6 +32,7 @@ class OnboardingPhase(Enum):
     ACTION_CHOICE = "action_choice"
     JOB_CREATION = "job_creation"
     COMPLETE = "complete"
+    SETTINGS_EXTRACTION = "settings_extraction"  # P2-2 Sprint A.5
 
 
 # Valid transitions
@@ -79,6 +80,11 @@ class OnboardingSession:
     onboarding_lia_enabled: bool = True
     invited_by: Optional[str] = None
     created_at: Optional[datetime] = None
+
+    # P2-2 Sprint A.5: settings extraction state (opcional).
+    # Quando phase=SETTINGS_EXTRACTION, este campo guarda snapshot JSON
+    # do SettingsExtractionStatus do settings_phase module.
+    settings_extraction_status_json: Optional[str] = None
 
     @property
     def is_complete(self) -> bool:
@@ -554,6 +560,93 @@ class OnboardingOrchestrator:
             return self._build_wa_response(session, "Me desculpe, tive um problema. Tente novamente ou acesse o link para ir para a plataforma.")
 
     # === Helpers ===
+
+    async def handle_settings_extraction_message(
+        self,
+        session: OnboardingSession,
+        message: str,
+    ) -> dict:
+        """P2-2 Sprint A.5 — handler do flow conversacional de settings.
+
+        Delega ao onboarding_settings_runner que orquestra:
+        loader (next question) -> extractor (LLM) -> runner (persist via tool).
+
+        Returns dict canonical:
+            {
+                "phase": str,
+                "message": str,
+                "is_complete": bool,
+                "progress_percent": int,
+            }
+        """
+        from app.services.onboarding_settings_runner import (
+            start as runner_start,
+            process_message as runner_process,
+            RunnerResponse,
+        )
+        from app.services.onboarding_settings_phase import (
+            SettingsExtractionStatus,
+            SettingsExtractionState,
+        )
+        import json as _json
+
+        # company_id derivado de account_id (tenant pass-through canonical do orchestrator).
+        company_id = str(session.account_id)
+        user_id_str = str(session.user_id) if session.user_id is not None else None
+
+        # Restore status do session.settings_extraction_status_json (ou novo).
+        status = None
+        if session.settings_extraction_status_json:
+            try:
+                raw = _json.loads(session.settings_extraction_status_json)
+                status = SettingsExtractionStatus(
+                    state=SettingsExtractionState(raw.get("state", "intro")),
+                    current_block_id=raw.get("current_block_id"),
+                    answered_fields=raw.get("answered_fields", {}),
+                    pending_extraction=raw.get("pending_extraction", {}),
+                    skipped_fields=set(raw.get("skipped_fields", [])),
+                )
+            except Exception as e:
+                logger.warning(
+                    "settings_extraction_status_json invalid for session %s: %s - re-iniciando",
+                    session.session_id, e,
+                )
+                status = None
+
+        # Primeira chamada (sem status ou em INTRO) -> start.
+        if status is None or status.state == SettingsExtractionState.INTRO:
+            response: RunnerResponse = await runner_start(company_id=company_id)
+        else:
+            response = await runner_process(
+                status=status,
+                user_message=message,
+                company_id=company_id,
+                user_id=user_id_str,
+            )
+
+        # Persiste novo status como JSON em session.
+        session.settings_extraction_status_json = _json.dumps({
+            "state": response.status.state.value,
+            "current_block_id": response.status.current_block_id,
+            "answered_fields": response.status.answered_fields,
+            "pending_extraction": response.status.pending_extraction,
+            "skipped_fields": list(response.status.skipped_fields),
+        })
+
+        await self._audit(
+            "settings_extraction_step",
+            session,
+            f"progress={response.progress_percent}% state={response.status.state.value}",
+        )
+
+        await self._persist(session)
+
+        return {
+            "phase": OnboardingPhase.SETTINGS_EXTRACTION.value,
+            "message": response.user_message,
+            "is_complete": response.is_complete,
+            "progress_percent": response.progress_percent,
+        }
 
     async def _audit(self, action: str, session: OnboardingSession, details: str = "") -> None:
         """Non-blocking audit log."""
