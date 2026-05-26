@@ -1109,7 +1109,7 @@ company_id: str = Depends(require_company_id)):
     Used by Settings > Fairness & Compliance > Studio dashboard.
     """
     from datetime import datetime, timedelta, timezone
-    from sqlalchemy import select, and_, func, desc, cast, Date
+    from sqlalchemy import select, and_, func, desc, cast, Date, case
     from lia_models.custom_agent import CustomAgent
     from lia_models.agent_execution_log import AgentExecutionLog
 
@@ -1125,7 +1125,7 @@ company_id: str = Depends(require_company_id)):
             func.count(AgentExecutionLog.id).label("total"),
             func.coalesce(
                 func.sum(
-                    func.case((AgentExecutionLog.compliance_status != "pass", 1), else_=0)
+                    case((AgentExecutionLog.compliance_status != "pass", 1), else_=0)
                 ),
                 0,
             ).label("blocked"),
@@ -1189,7 +1189,7 @@ company_id: str = Depends(require_company_id)):
             func.count(AgentExecutionLog.id).label("count"),
             func.coalesce(
                 func.sum(
-                    func.case((AgentExecutionLog.compliance_status != "pass", 1), else_=0)
+                    case((AgentExecutionLog.compliance_status != "pass", 1), else_=0)
                 ),
                 0,
             ).label("blocked"),
