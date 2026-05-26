@@ -27,7 +27,6 @@ export async function POST(request: NextRequest) {
         collected_data: body.collected_data || {},
         conversation_history: body.conversation_history || [],
         conversation_id: body.conversation_id || `session-${Date.now()}`,
-        company_id: body.company_id || '',
         user_id: body.user_id || 'default'
       }),
     })

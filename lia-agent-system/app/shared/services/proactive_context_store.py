@@ -36,6 +36,39 @@ logger = logging.getLogger(__name__)
 PROACTIVE_CTX_KEY_PREFIX = "lia:proactive_ctx"
 PROACTIVE_CTX_TTL_S = 1800  # 30 minutos
 
+# ── PR-12 / F-4.15 (Onda 4) — canonical env var for inject limit ──────────
+# Default 8 preserves the historical hardcoded value. Operations can tune
+# via env without code change. Read at module load (cheap; not hot-path).
+import os as _os
+PROACTIVE_CTX_MAX_NOTES = int(_os.getenv("LIA_PROACTIVE_CONTEXT_MAX_NOTES", "8"))
+
+
+# ── PR-12 / F-4.14 (Onda 4) — Prometheus counter for inject sites ────────
+# Two call sites today: wizard_session_service + main_orchestrator. Counter
+# is canonical here so both register against the same metric. Pattern
+# mirrors `app/services/voice/wsi_pipeline.py:35-55` (try/except fail-open,
+# REGISTRY lookup to survive double-init under pytest).
+try:
+    from prometheus_client import REGISTRY as _PROM_REGISTRY
+    from prometheus_client import Counter as _PromCounter
+
+    _PROACTIVE_INJECT_METRIC = "lia_proactive_context_inject_total"
+    _existing_inject = getattr(_PROM_REGISTRY, "_names_to_collectors", {}).get(
+        _PROACTIVE_INJECT_METRIC
+    )
+    if _existing_inject is not None:
+        proactive_context_inject_counter = _existing_inject
+    else:
+        proactive_context_inject_counter = _PromCounter(
+            _PROACTIVE_INJECT_METRIC,
+            "Proactive settings-context injection into LIA system prompt "
+            "(PR-12 / F-4.14 Onda 4).",
+            labelnames=("path", "status"),  # path: wizard|orchestrator; status: hit|miss|fail_open
+        )
+except (ImportError, ValueError):  # pragma: no cover
+    proactive_context_inject_counter = None
+
+
 
 async def _get_redis():
     """Async Redis client. None se indisponível (fail-open)."""

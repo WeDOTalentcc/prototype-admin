@@ -1045,11 +1045,13 @@ class MainOrchestrator:
                     try:
                         from app.shared.services.proactive_context_store import (
                             ProactiveContextStore,
+                            PROACTIVE_CTX_MAX_NOTES,  # PR-12/F-4.15 env-tunable
+                            proactive_context_inject_counter,  # PR-12/F-4.14
                         )
                         _pc_notes = await ProactiveContextStore.list_recent(
                             company_id=str(_loop_company_id or ""),
                             user_id=str(getattr(ctx, "user_id", None) or ""),
-                            limit=8,
+                            limit=PROACTIVE_CTX_MAX_NOTES,
                         )
                         if _pc_notes:
                             _pc_lines = [
@@ -1061,7 +1063,7 @@ class MainOrchestrator:
                                 "pattern #1) — comente APENAS o que mudou se relevante.",
                                 "",
                             ]
-                            for _n in _pc_notes[:8]:
+                            for _n in _pc_notes[:PROACTIVE_CTX_MAX_NOTES]:
                                 _act = str(_n.get("action_id") or "")
                                 _sec = str(_n.get("section") or "")
                                 _fld = _n.get("field")
@@ -1083,6 +1085,14 @@ class MainOrchestrator:
                                 len(_pc_notes), _loop_company_id,
                                 getattr(ctx, "user_id", None),
                             )
+                            # PR-12 / F-4.14 — telemetry: count successful injections
+                            if proactive_context_inject_counter is not None:
+                                try:
+                                    proactive_context_inject_counter.labels(
+                                        path="orchestrator", status="hit"
+                                    ).inc()
+                                except Exception:
+                                    pass
                             # Clear notes consumed para evitar re-injeção
                             # no próximo turn (LIA já viu). Fail-open.
                             try:
@@ -1097,6 +1107,15 @@ class MainOrchestrator:
                             "[MainOrchestrator] proactive context inject failed (fail-open): %s",
                             _pc_exc,
                         )
+                        # PR-12 / F-4.14 — telemetry: count fail-open occurrences
+                        try:
+                            from app.shared.services.proactive_context_store import (
+                                proactive_context_inject_counter as _ctr,
+                            )
+                            if _ctr is not None:
+                                _ctr.labels(path="orchestrator", status="fail_open").inc()
+                        except Exception:
+                            pass
 
                     _agentic_result = await agentic_loop.run(
                         user_message=ctx.message,

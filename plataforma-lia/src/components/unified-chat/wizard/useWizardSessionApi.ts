@@ -208,6 +208,9 @@ export async function resetWizardSession(
  * repeatedly — the second pass is a no-op.
  */
 export const LEGACY_WIZARD_STORAGE_PREFIX = "lia-wizard-state";
+// PR-12 / F-4.6 — also purge the old `lia-wizard-store` (Zustand persist key)
+// left behind by the deleted src/stores/wizard-store.ts. Single key, not prefix.
+export const LEGACY_WIZARD_STORE_KEY = "lia-wizard-store";
 
 export function purgeLegacyWizardStorage(): number {
   if (typeof window === "undefined") return 0;
@@ -220,6 +223,11 @@ export function purgeLegacyWizardStorage(): number {
     }
     for (const k of keys) {
       window.localStorage.removeItem(k);
+      removed += 1;
+    }
+    // PR-12 — purge legacy Zustand persist key (different prefix)
+    if (window.localStorage.getItem(LEGACY_WIZARD_STORE_KEY) !== null) {
+      window.localStorage.removeItem(LEGACY_WIZARD_STORE_KEY);
       removed += 1;
     }
   } catch {

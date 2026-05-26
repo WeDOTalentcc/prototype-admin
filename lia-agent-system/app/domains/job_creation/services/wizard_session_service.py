@@ -1076,11 +1076,13 @@ class WizardSessionService:
             try:
                 from app.shared.services.proactive_context_store import (
                     ProactiveContextStore,
+                    PROACTIVE_CTX_MAX_NOTES,  # PR-12/F-4.15 env-tunable
+                    proactive_context_inject_counter,  # PR-12/F-4.14
                 )
                 _pc_notes = await ProactiveContextStore.list_recent(
                     company_id=str(company_id),
                     user_id=str(user_id),
-                    limit=8,
+                    limit=PROACTIVE_CTX_MAX_NOTES,
                 )
                 if _pc_notes:
                     _pc_lines = [
@@ -1092,7 +1094,7 @@ class WizardSessionService:
                         "para a triagem/wizard.",
                         "",
                     ]
-                    for _n in _pc_notes[:8]:
+                    for _n in _pc_notes[:PROACTIVE_CTX_MAX_NOTES]:
                         _act = str(_n.get("action_id") or "")
                         _sec = str(_n.get("section") or "")
                         _fld = _n.get("field")
@@ -1115,6 +1117,14 @@ class WizardSessionService:
                         "notes into tenant_context_snippet (company=%s user=%s)",
                         len(_pc_notes), company_id, user_id,
                     )
+                    # PR-12 / F-4.14 — telemetry: count successful injections
+                    if proactive_context_inject_counter is not None:
+                        try:
+                            proactive_context_inject_counter.labels(
+                                path="wizard", status="hit"
+                            ).inc()
+                        except Exception:
+                            pass
                     # Clear consumed (Sprint 4 mirror Sprint 3.4) — evita
                     # re-injeção do mesmo contexto a cada turn do wizard.
                     try:
@@ -1130,6 +1140,15 @@ class WizardSessionService:
                     "(fail-open): %s",
                     _pc_exc,
                 )
+                # PR-12 / F-4.14 — telemetry: count fail-open occurrences
+                try:
+                    from app.shared.services.proactive_context_store import (
+                        proactive_context_inject_counter as _ctr,
+                    )
+                    if _ctr is not None:
+                        _ctr.labels(path="wizard", status="fail_open").inc()
+                except Exception:
+                    pass
 
         # ── Hiring policy summary injection (T2 fix #7 — code review #5) ─
         # O ``wizard_gate_classifier`` recebe ``hiring_policy_summary`` para

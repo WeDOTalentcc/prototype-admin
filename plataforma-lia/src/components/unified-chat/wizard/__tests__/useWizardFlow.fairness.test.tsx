@@ -2,16 +2,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
 import { useWizardFlow } from '../useWizardFlow'
 
-vi.mock('@/stores/wizard-store', () => ({
-  useWizardStore: vi.fn(() => ({
-    draft: null,
-    draftId: null,
-    setDraft: vi.fn(),
-    setDraftId: vi.fn(),
-    clearDraft: vi.fn(),
-  })),
-}))
-
 describe('useWizardFlow — FairnessGuard wiring (regression)', () => {
   beforeEach(() => {
     try { localStorage.clear() } catch { /* jsdom */ }

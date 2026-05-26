@@ -161,60 +161,56 @@ except ImportError:  # pragma: no cover — pydantic é dep oficial
     raise
 
 
-_INLINE_SYSTEM_PROMPT = (
-    "Você é o SUPERVISOR de intenção do wizard de criação de vaga da "
-    "Plataforma LIA. Sua tarefa: classificar a INTENÇÃO GLOBAL do "
-    "recrutador no turno atual. Você NÃO responde a vaga, NÃO classifica "
-    "JD, NÃO interpreta gate — apenas decide a ROTA. Existem 6 categorias "
-    "canônicas (responda EXATAMENTE uma):\n\n"
-    "1. 'create_new' — recrutador quer abrir uma VAGA NOVA. Exemplos: "
-    "\"quero abrir outra vaga\", \"vamos criar uma vaga de gerente\", "
-    "\"preciso de mais uma vaga\".\n\n"
-    "2. 'resume_draft' — recrutador faz referência EXPLÍCITA a um draft "
-    "anterior. Exemplos: \"retoma a vaga de ontem\", \"continua o draft "
-    "do dev\", \"abre aquele rascunho\".\n\n"
-    "3. 'edit_published' — recrutador quer EDITAR uma vaga já publicada. "
-    "Exemplos: \"muda a vaga de engenheiro pleno\", \"ajusta a do "
-    "gerente\", \"corrige o salário daquela vaga publicada\".\n\n"
-    "4. 'meta_question' — pergunta SOBRE o wizard, sobre o que a LIA "
-    "precisa, sobre a UI, sobre o processo. Exemplos: \"o que você "
-    "precisa de mim?\", \"como funciona?\", \"em que etapa estamos?\", "
-    "\"o que esse painel mostra?\".\n\n"
-    "5. 'exit_wizard' — recrutador quer SAIR / CANCELAR o wizard INTEIRO, "
-    "não apenas responder negativamente a uma pergunta específica. "
-    "Exemplos claros: \"cancela tudo\", \"desisto da vaga\", \"depois eu "
-    "volto\", \"tchau LIA\", \"vamos parar essa criação\", \"sair do "
-    "wizard\". "
-    "ANTI-EXEMPLOS — JAMAIS classifique como 'exit_wizard':\n"
-    "  • \"agora não\" / \"agora nao\" → respondendo pergunta sim/não\n"
-    "  • \"não\" / \"nao\" isolado → respondendo gate ou proposta\n"
-    "  • \"depois\" isolado → respondendo timing de proposta\n"
-    "  • \"não vou aprovar isso\" → resposta de gate (continue_current)\n"
-    "  • \"agora não quero ir pra lá\" → resposta a proposta navegação\n"
-    "Em TODOS esses anti-exemplos use 'continue_current'.\n\n"
-    "6. 'continue_current' — DEFAULT. A mensagem é resposta natural à "
-    "pergunta corrente do wizard (JD colada, aprovação, ajuste de "
-    "competência, escolha de pipeline, resposta sim/não a propostas, etc.). "
-    "Use SEMPRE que não houver evidência clara das outras 5.\n\n"
-    "REGRA CRÍTICA 1: em dúvida entre 'create_new' e 'continue_current', "
-    "escolha 'continue_current'. O wizard está SEMPRE em andamento; o "
-    "recrutador só salta de vaga quando diz claramente. NÃO interprete "
-    "menção a OUTRO cargo no meio de uma JD como 'create_new'.\n\n"
-    "REGRA CRÍTICA 2 — disambiguar SIM/NÃO contra HISTÓRICO: se a "
-    "mensagem é uma RESPOSTA CURTA (≤25 chars) tipo sim/não/agora-não/"
-    "depois/pode/aprovo/rejeito E o HISTÓRICO RECENTE mostra a LIA "
-    "fazendo uma pergunta sim/não (proposta de navegação, gate de "
-    "aprovação, escolha de modo, confirmação de ação), classifique "
-    "SEMPRE como 'continue_current'. 'exit_wizard' exige verbo "
-    "EXPLÍCITO de abandono do wizard inteiro, não apenas negação à "
-    "pergunta corrente.\n\n"
-    "Responda OBRIGATORIAMENTE chamando a tool 'classify_supervisor' com "
-    "JSON válido. Em 'conversational_reply' escreva uma resposta curta em "
-    "PT-BR (≤2 frases) APENAS para os intents 'meta_question' e "
-    "'exit_wizard' (será mostrada ao recrutador). Para os outros 4, "
-    "deixe 'conversational_reply' vazio — o graph vai gerar a resposta. "
-    "Confidence ≥0.85 só quando o intent for inequívoco."
+# PR-12 / F-4.10 (Onda 4) — Extracted to YAML for governance + ops editability.
+# YAML lives at app/prompts/job_creation/wizard_supervisor.yaml (canonical
+# alongside gate_classifier.yaml, gate_competency.yaml, etc.).
+# Inline fallback preserved for resilience (parity with wizard_gate_classifier).
+_INLINE_SYSTEM_PROMPT_FALLBACK = (
+    "Você é o SUPERVISOR de intenção do wizard de criação de vaga. "
+    "Classifique a INTENÇÃO GLOBAL em UMA das 6 categorias: 'create_new', "
+    "'resume_draft', 'edit_published', 'meta_question', 'exit_wizard', ou "
+    "'continue_current' (DEFAULT). Em dúvida → 'continue_current'. Resposta "
+    "curta (≤25 chars) contra histórico sim/não → 'continue_current'. Chame "
+    "tool 'classify_supervisor'."
 )
+
+
+def _load_system_prompt() -> str:
+    """Carrega system_prompt do YAML canonical. Fail-open ao inline fallback.
+
+    Mirrors `WizardGateClassifier._load_prompt` pattern. Cached por chamada
+    de módulo (lazy init via try/except em escopo de função).
+    """
+    global _SYSTEM_PROMPT_CACHE
+    cached = globals().get('_SYSTEM_PROMPT_CACHE')
+    if cached is not None:
+        return cached
+    try:
+        import yaml  # type: ignore
+        from pathlib import Path as _Path
+        # services/ → job_creation/ → domains/ → app/
+        app_root = _Path(__file__).resolve().parents[3]
+        yaml_path = app_root / "prompts" / "job_creation" / "wizard_supervisor.yaml"
+        data = yaml.safe_load(yaml_path.read_text(encoding="utf-8")) or {}
+        prompt = data.get("system_prompt") or _INLINE_SYSTEM_PROMPT_FALLBACK
+        _SYSTEM_PROMPT_CACHE = prompt
+        return prompt
+    except Exception as exc:  # FileNotFoundError, ImportError, parse error
+        logger.warning(
+            "[WizardSupervisor] YAML load failed, using inline fallback: %s",
+            exc,
+        )
+        _SYSTEM_PROMPT_CACHE = _INLINE_SYSTEM_PROMPT_FALLBACK
+        return _INLINE_SYSTEM_PROMPT_FALLBACK
+
+
+_SYSTEM_PROMPT_CACHE: str | None = None
+
+
+# Backward-compat alias: existing callers reference `_INLINE_SYSTEM_PROMPT`.
+# Eager-load on import so legacy module-level reads work (test fixtures, etc.).
+_INLINE_SYSTEM_PROMPT = _load_system_prompt()
+
 
 
 class WizardSupervisorClassifier:

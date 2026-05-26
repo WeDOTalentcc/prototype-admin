@@ -84,23 +84,39 @@ def test_gate_classifier_truncate_preserves_proactive_append():
 
 
 def test_supervisor_classifier_truncate_preserves_proactive_append():
-    """PR-3 fix: wizard_supervisor_classifier:329 deve usar [:1500] (não [:400]).
+    """PR-3 fix: wizard_supervisor_classifier deve usar [:1500] (não [:400]).
 
     Mesma classe de bug que gate_classifier — truncate baixo cortava
     bloco proactive Sprint 4 appendado.
+
+    PR-12 hardening: search by content (tenant_context_snippet truncate
+    site) em vez de pin de linha fixa — YAML extraction PR-12 shifted lines.
     """
     src = _read(SUPERVISOR_SVC)
-    lines = src.split("\n")
-    line_329 = lines[328]  # 0-indexed
-    assert "tenant_context_snippet" in line_329, (
-        "line 329 nao tem tenant_context_snippet. Got: {!r}".format(line_329)
+    # Find the canonical truncate site: line containing both
+    # `tenant_context_snippet` AND a slice `[:N]` on it.
+    truncate_re = re.compile(
+        r"tenant_context_snippet.*\[:(\d+)\]"
     )
-    assert "[:400]" not in line_329, (
-        "PR-3 REGRESSION: line 329 has [:400] truncate (kills Sprint 4 "
-        "proactive context). Got: {!r}".format(line_329)
+    candidates = []
+    for line in src.split("\n"):
+        m = truncate_re.search(line)
+        if m:
+            candidates.append((line, int(m.group(1))))
+    assert candidates, (
+        "Could not locate tenant_context_snippet[:N] truncate site in "
+        "wizard_supervisor_classifier.py. Pattern (tenant_context_snippet"
+        " ... = ... [:N]) ausente — refactor quebrou contract."
     )
-    assert "[:1500]" in line_329, (
-        "PR-3 REGRESSION: line 329 must use [:1500]. Got: {!r}".format(line_329)
+    found_line, limit = candidates[0]
+    assert "[:400]" not in found_line, (
+        "PR-3 REGRESSION: truncate is [:400] (kills Sprint 4 proactive "
+        "context). Got: {!r}".format(found_line)
+    )
+    assert limit >= 1500, (
+        "PR-3 REGRESSION: truncate limit {} < 1500. Got: {!r}".format(
+            limit, found_line
+        )
     )
 
 
@@ -125,18 +141,25 @@ def test_gate_classifier_truncate_fits_proactive_block_size():
 
 def test_supervisor_classifier_truncate_fits_proactive_block_size():
     """Garantia quantitativa: supervisor_classifier limite acomoda
-    proactive block."""
+    proactive block.
+
+    PR-12 hardening: content-anchored em vez de line-pinned.
+    """
     src = _read(SUPERVISOR_SVC)
-    lines = src.split("\n")
-    line_329 = lines[328]
-    m = re.search(r"\[:(\d+)\]", line_329)
-    assert m, "Truncate pattern not found on supervisor_classifier line 329: {!r}".format(line_329)
-    limit = int(m.group(1))
+    truncate_re = re.compile(
+        r"tenant_context_snippet.*\[:(\d+)\]"
+    )
+    limits = [int(m.group(1)) for m in truncate_re.finditer(src)]
+    assert limits, (
+        "Truncate pattern not found in wizard_supervisor_classifier.py — "
+        "refactor quebrou contract (tenant_context_snippet truncate ausente)."
+    )
+    limit = limits[0]
     # Supervisor recebe snippet potencialmente menor (sem hiring policy),
     # mas ainda assim precisa acomodar bloco proactive. Minimo = 1400.
     assert limit >= 1400, (
         "supervisor_classifier truncate limit={} eh menor que 1400. "
-        "Subir limite em wizard_supervisor_classifier.py:329.".format(limit)
+        "Subir limite no tenant_context_snippet truncate site.".format(limit)
     )
 
 
