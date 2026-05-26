@@ -37,15 +37,53 @@ export function notifyChatOfSettingsUpdate(detail: SettingsUpdateDetail): void {
   if (existing) clearTimeout(existing)
   const timer = setTimeout(() => {
     _settingsUpdateDebounce.delete(key)
+    const ts = Date.now()
     window.dispatchEvent(
       new CustomEvent("lia:settings-updated", {
         detail: {
           ...detail,
           source: "ui",
-          ts: Date.now(),
+          ts,
         },
       }),
     )
+    // Sprint 3.3 G9 wire (2026-05-26) — POST pro backend para LIA reagir
+    // proativamente no próximo turn. Fail-open: erro de rede NÃO bloqueia
+    // event local dispatch (UX local com debounce já é resiliente).
+    // Endpoint: POST /api/backend-proxy/lia/proactive-context → backend
+    // FastAPI /api/v1/lia/proactive-context → Redis store TTL 30min.
+    void _postProactiveContext({
+      actionId: detail.actionId,
+      section: detail.section,
+      field: detail.field,
+      value: detail.value,
+    })
   }, SETTINGS_UPDATE_DEBOUNCE_MS)
   _settingsUpdateDebounce.set(key, timer)
+}
+
+
+// Sprint 3.3 G9 wire (2026-05-26) — fail-open POST helper. NÃO export
+// pra evitar callers diretos: only notifyChatOfSettingsUpdate dispara,
+// preservando a abstração single entry-point.
+async function _postProactiveContext(payload: {
+  actionId: string
+  section: string
+  field?: string
+  value?: unknown
+}): Promise<void> {
+  try {
+    await fetch("/api/backend-proxy/lia/proactive-context", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    })
+    // Response intentionally not inspected — backend é fail-open
+    // (ok:true sempre, stored:bool reflete Redis). Nada útil aqui
+    // para o client (UX local já está completo).
+  } catch {
+    // Network error / backend down: silent. Local dispatch já aconteceu,
+    // event listener pode usar mesmo sem persistência server-side.
+  }
 }

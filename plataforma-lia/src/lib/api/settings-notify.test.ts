@@ -17,17 +17,20 @@ import { notifyChatOfSettingsUpdate } from "./settings-notify"
 
 describe("settings-notify — Sprint 2.4 CR-3 debounce", () => {
   let dispatchSpy: ReturnType<typeof vi.fn>
+  let fetchSpy: ReturnType<typeof vi.fn>
 
   beforeEach(() => {
     vi.useFakeTimers()
     dispatchSpy = vi.fn()
-    // Replace window.dispatchEvent
+    fetchSpy = vi.fn(() => Promise.resolve(new Response("{}", { status: 200 })))
+    // Replace window.dispatchEvent + global.fetch
     if (typeof window === "undefined") {
       // @ts-expect-error — vitest env
       global.window = { dispatchEvent: dispatchSpy } as any
     } else {
       vi.spyOn(window, "dispatchEvent").mockImplementation(dispatchSpy)
     }
+    vi.stubGlobal("fetch", fetchSpy)
   })
 
   afterEach(() => {
@@ -108,5 +111,58 @@ describe("settings-notify — Sprint 2.4 CR-3 debounce", () => {
       source: "ui",
     })
     expect((call.detail as { ts: number }).ts).toBeGreaterThan(0)
+  })
+  it("POSTs to /api/backend-proxy/lia/proactive-context after debounce", async () => {
+    notifyChatOfSettingsUpdate({
+      actionId: "configure_hiring_policy",
+      section: "hiring_policies",
+      field: "default_duration_minutes",
+      value: 30,
+    })
+    vi.advanceTimersByTime(1501)
+    // Allow async POST to be scheduled
+    await Promise.resolve()
+    await Promise.resolve()
+    expect(fetchSpy).toHaveBeenCalledTimes(1)
+    const [url, init] = fetchSpy.mock.calls[0]
+    expect(url).toBe("/api/backend-proxy/lia/proactive-context")
+    expect(init?.method).toBe("POST")
+    const body = JSON.parse(init?.body as string)
+    expect(body).toMatchObject({
+      actionId: "configure_hiring_policy",
+      section: "hiring_policies",
+      field: "default_duration_minutes",
+      value: 30,
+    })
+    // NÃO inclui company_id no payload (REGRA Pydantic R2 — JWT only)
+    expect(body.company_id).toBeUndefined()
+  })
+
+  it("uses credentials=include + Content-Type JSON", async () => {
+    notifyChatOfSettingsUpdate({
+      actionId: "x", section: "y", field: "z", value: 1,
+    })
+    vi.advanceTimersByTime(1501)
+    await Promise.resolve()
+    await Promise.resolve()
+    const [, init] = fetchSpy.mock.calls[0]
+    expect(init?.credentials).toBe("include")
+    expect((init?.headers as Record<string, string>)["Content-Type"]).toBe("application/json")
+  })
+
+  it("fail-open: network error NÃO previne dispatch local", async () => {
+    fetchSpy.mockRejectedValueOnce(new TypeError("fetch failed"))
+    notifyChatOfSettingsUpdate({
+      actionId: "configure_workforce",
+      section: "workforce",
+      value: 42,
+    })
+    vi.advanceTimersByTime(1501)
+    await Promise.resolve()
+    await Promise.resolve()
+    // Dispatch local aconteceu mesmo com fetch failing
+    expect(dispatchSpy).toHaveBeenCalledTimes(1)
+    // fetch foi tentado
+    expect(fetchSpy).toHaveBeenCalledTimes(1)
   })
 })
