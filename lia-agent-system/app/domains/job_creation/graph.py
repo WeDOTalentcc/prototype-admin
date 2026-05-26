@@ -126,40 +126,11 @@ from app.domains.job_creation.internal.services import (  # noqa: F401
 )
 
 
-def _emit_fallback_telemetry(
-    state: dict, stage: str, reason):
-    """Task #1070 — registra um evento de fallback no tracker e devolve o
-    snapshot ai_degraded_mode (sessão ou tenant) para ser propagado pelo
-    ws_stage_payload. Quando o threshold é cruzado, o tracker emite log
-    estruturado + sentry_sdk.capture_message para o time de plataforma.
-
-    Sempre invoca get_state para que stages que não caíram em fallback
-    no turno atual ainda surfacem o aviso enquanto a janela está ativa.
-    """
-    try:
-        from app.shared.observability.wizard_fallback_tracker import (
-            get_wizard_fallback_tracker,
-        )
-
-        sid = (
-            str(state.get("session_id") or state.get("thread_id") or "")
-            or None
-        )
-        cid = (
-            str(state.get("workspace_id") or state.get("company_id") or "")
-            or None
-        )
-        tracker = get_wizard_fallback_tracker()
-        if reason:
-            tracker.record_fallback(
-                session_id=sid, company_id=cid, stage=stage, reason=reason,
-            )
-        return tracker.get_state(session_id=sid, company_id=cid)
-    except Exception as exc:  # noqa: BLE001 — telemetria nunca quebra o wizard
-        logger.warning(
-            "[JobCreation:%s] wizard fallback tracker failed: %s", stage, exc,
-        )
-        return None
+# Telemetry helpers moved to internal/telemetry.py (PR-17 step 5 ONDA 3 follow-up)
+from app.domains.job_creation.internal.telemetry import (  # noqa: F401
+    _emit_fallback_telemetry,
+    _emit_wizard_fallback_metric,
+)
 
 
 # _get_api_client moved to internal/services.py (PR-17 step 3 ONDA 3 follow-up)
@@ -194,36 +165,12 @@ from app.domains.job_creation.internal.constants import (  # noqa: E402, F401
 )
 
 
-def _suggest_pipeline_template(
-    parsed_title: Optional[str],
-    parsed_seniority: Optional[str] = None,
-) -> Optional[Dict[str, Any]]:
-    """Sugestão determinística de template de pipeline a partir do título.
-
-    Retorna `None` quando ainda não há sinal suficiente (sem título), para o
-    frontend pular a injeção do card. Nunca levanta — fail-open."""
-    try:
-        title = (parsed_title or "").strip().lower()
-        if not title:
-            return None
-        seniority = (parsed_seniority or "").strip().lower()
-
-        if any(kw in title for kw in _INTERN_KEYWORDS) or seniority in {"estagiário", "estagiario", "trainee"}:
-            suggested = "intern"
-        elif any(kw in title for kw in _EXECUTIVE_KEYWORDS) or seniority in {"diretor", "vp", "c-level", "executive"}:
-            suggested = "executive"
-        elif any(kw in title for kw in _TECHNICAL_KEYWORDS):
-            suggested = "technical"
-        elif any(kw in title for kw in _OPERATIONAL_KEYWORDS):
-            suggested = "operational"
-        else:
-            suggested = "technical"  # default seguro — frontend ainda mostra todos
-        return {
-            "suggested_type": suggested,
-            "templates": list(_PIPELINE_TEMPLATE_IDS),
-        }
-    except Exception:  # noqa: BLE001 — fail-open por design
-        return None
+# Pipeline template helpers moved to internal/pipeline_template_helpers.py (PR-17 step 5)
+from app.domains.job_creation.internal.pipeline_template_helpers import (  # noqa: F401
+    _suggest_pipeline_template,
+    _build_pipeline_template_db_suggestion,
+    _apply_pipeline_template_to_state,
+)
 
 # ---------------------------------------------------------------------------
 # Canonical DB-based pipeline template suggestion
@@ -236,26 +183,6 @@ def _suggest_pipeline_template(
 # Fail-open: qualquer erro retorna None. O caller (intake_node / jd_enrichment_node)
 # continua emitindo o heurístico legacy. Frontend WizardPipelineTemplateCard pode
 # preferir o canonical (com template_id real + score) quando presente.
-def _build_pipeline_template_db_suggestion(state: dict) -> Optional[Dict[str, Any]]:
-    """Sync wrapper canonical para uso dentro dos nodes do graph.
-
-    Returns {"templates": [...], "top_score": float, "should_suggest": bool} ou None.
-    """
-    try:
-        from app.domains.pipeline.tools.pipeline_template_wizard_tools import (
-            suggest_pipeline_template_sync_for_graph,
-        )
-    except Exception:  # noqa: BLE001 — fail-open por design
-        return None
-    company_id = str(state.get("workspace_id") or state.get("company_id") or "")
-    if not company_id:
-        return None
-    return suggest_pipeline_template_sync_for_graph(
-        company_id,
-        department=state.get("parsed_department") or state.get("department"),
-        seniority=state.get("parsed_seniority"),
-        job_family=state.get("parsed_job_family"),
-    )
 
 
 # ---------------------------------------------------------------------------
@@ -301,171 +228,12 @@ from app.domains.job_creation.internal.constants import (  # noqa: E402, F401
 )
 
 
-def _emit_wizard_fallback_metric(
-    *,
-    node: str,
-    state: dict,
-    reason: str,
-    timeout_s: Optional[float] = None,
-    elapsed_ms: Optional[float] = None,
-) -> None:
-    """Emit observability signal when a wizard node falls back.
-
-    Args:
-        node: One of `_WIZARD_FALLBACK_NODES`.
-        state: LangGraph state — used to extract tenant id (workspace_id /
-            company_id) and session id without leaking PII.
-        reason: Short machine token, e.g. `"llm_timeout"`, `"llm_exception"`,
-            `"benchmark_timeout"`. Becomes a Sentry tag — keep it low-cardinality.
-        timeout_s: Configured timeout (when applicable) so dashboards can
-            justify raising it.
-        elapsed_ms: Wall-clock spent before the fallback fired (when known).
-    """
-    try:
-        if node not in _WIZARD_FALLBACK_NODES:
-            # Prevent silent taxonomy drift — a typo here would split the
-            # dashboard into two buckets and hide the regression.
-            logger.warning(
-                "[JobCreation] _emit_wizard_fallback_metric got unknown node=%r "
-                "(allowed=%s) — telemetry skipped",
-                node, _WIZARD_FALLBACK_NODES,
-            )
-            return
-        tenant_id = str(
-            state.get("workspace_id") or state.get("company_id") or ""
-        ) or "unknown"
-        session_id = str(state.get("session_id") or "") or None
-        job_id = state.get("job_id")
-
-        # ── 1. Structured log (picked up by JSONFormatter) ──
-        extra: Dict[str, Any] = {
-            "extra_data": {
-                "metric": "wizard_fallback",
-                "node": node,
-                "tenant_id": tenant_id,
-                "reason": reason,
-                "timeout_s": timeout_s,
-                "elapsed_ms": elapsed_ms,
-                "session_id": session_id,
-                "job_id": str(job_id) if job_id else None,
-            },
-            "tenant_id": tenant_id,
-        }
-        logger.warning(
-            "[JobCreation:%s] wizard fallback fired (reason=%s)",
-            node, reason, extra=extra,
-        )
-
-        # REGRA 4 sensor — Prometheus counter for Grafana alarm.
-        # inc_wizard_fallback is fail-open + cardinality-bounded.
-        try:
-            from app.shared.observability.fallback_metrics import (
-                inc_wizard_fallback,
-            )
-            inc_wizard_fallback(node, reason)
-        except Exception as _counter_exc:  # noqa: BLE001 — fail-open
-            logger.debug(
-                "[JobCreation:%s] wizard fallback counter inc failed: %s",
-                node, _counter_exc,
-            )
-
-        # ── 2. Sentry breadcrumb + capture_message ──
-        try:
-            import sentry_sdk as _sentry  # noqa: WPS433 — lazy import
-        except Exception:  # noqa: BLE001 — sentry optional
-            return
-        try:
-            _sentry.add_breadcrumb(
-                category="wizard.fallback",
-                level="warning",
-                message=f"wizard:{node} fallback ({reason})",
-                data={
-                    "node": node,
-                    "reason": reason,
-                    "tenant_id": tenant_id,
-                    "timeout_s": timeout_s,
-                    "elapsed_ms": elapsed_ms,
-                },
-            )
-            with _sentry.push_scope() as _scope:
-                _scope.set_tag("wizard.node", node)
-                _scope.set_tag("wizard.fallback_reason", reason)
-                _scope.set_tag("tenant_id", tenant_id)
-                _scope.set_extra("timeout_s", timeout_s)
-                _scope.set_extra("elapsed_ms", elapsed_ms)
-                _scope.set_extra("session_id", session_id)
-                _sentry.capture_message(
-                    f"wizard fallback: {node} ({reason})",
-                    level="warning",
-                )
-        except Exception as _sentry_exc:  # noqa: BLE001 — fail-open
-            logger.debug(
-                "[JobCreation:%s] sentry capture failed (fail-open): %s",
-                node, _sentry_exc,
-            )
-    except Exception as _metric_exc:  # noqa: BLE001 — fail-open
-        logger.debug(
-            "[JobCreation:%s] wizard fallback metric emit failed (fail-open): %s",
-            node, _metric_exc,
-        )
-
-
 # intake_node moved to nodes/intake.py (PR-10 ONDA 3 sub-B)
 from app.domains.job_creation.nodes.intake import intake_node  # noqa: F401, E402
 
 
 # jd_enrichment_node moved to nodes/jd_enrichment.py (PR-10 ONDA 3 sub-B)
 from app.domains.job_creation.nodes.jd_enrichment import jd_enrichment_node  # noqa: F401, E402
-
-
-def _apply_pipeline_template_to_state(state: dict, template_id: str) -> Optional[Dict[str, Any]]:
-    """Translate template.stages → vacancy.interview_stages, fail-open.
-
-    Sync wrapper para uso dentro de pipeline_template_node. Usa
-    AsyncSessionLocal + run_coro_in_threadpool (canonical async helper).
-
-    PR-4 (2026-05-26): substituído _asyncio.run() por run_coro_in_threadpool()
-    do app.domains.job_creation.helpers.async_audit. Python 3.12+ raise
-    RuntimeError quando há event loop ativo + asyncio.run — sync nodes do
-    LangGraph SEMPRE rodam num event loop, então asyncio.run aqui era
-    silent-failure (template nunca aplicado em runtime). Helper canonical
-    delega para ThreadPoolExecutor + asyncio.run em thread separada.
-    """
-    try:
-        import uuid as _uuid
-        from app.core.database import AsyncSessionLocal
-        from app.domains.job_creation.helpers.async_audit import (
-            run_coro_in_threadpool,
-        )
-        from app.domains.pipeline.repositories.pipeline_template_repository import (
-            PipelineTemplateRepository,
-        )
-        from app.domains.pipeline.services.pipeline_template_service import (
-            translate_template_stages_to_interview_stages,
-        )
-
-        company_id = str(state.get("workspace_id") or state.get("company_id") or "")
-        if not company_id:
-            return None
-
-        async def _run():
-            async with AsyncSessionLocal() as session:
-                repo = PipelineTemplateRepository(session)
-                template = await repo.get_by_id(_uuid.UUID(template_id), company_id)
-                if not template:
-                    return None
-                stages_translated = translate_template_stages_to_interview_stages(template.stages or [])
-                await repo.increment_usage(template)
-                return {"interview_stages": stages_translated, "template_name": template.name}
-
-        return run_coro_in_threadpool(lambda: _run())
-    except Exception as exc:  # noqa: BLE001 — fail-open por design
-        logger.warning(
-            "_apply_pipeline_template_to_state fail-open (graph continua com default): %s",
-            exc,
-            exc_info=True,
-        )
-        return None
 
 
 # pipeline_template_node moved to nodes/pipeline_template.py (PR-10 ONDA 3 sub-B)
