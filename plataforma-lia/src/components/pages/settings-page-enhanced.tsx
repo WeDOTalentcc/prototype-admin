@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useMemo, useCallback, useEffect } from"react"
+import React, { Suspense, useState, useMemo, useCallback, useEffect } from"react"
 import { useSearchParams } from "next/navigation"
 import { Button } from"@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
@@ -36,6 +36,7 @@ const SECTION_ICON_COLORS: Record<string, string> = {
 import dynamic from"next/dynamic"
 import { useTranslations } from "next-intl"
 import { LoadingFallback } from"@/components/ui/loading"
+import { HubLoadingState } from"@/components/settings/_shared"
 function I18nLoadingFallback({ tKey }: { tKey: string }) {
   const tLoad = useTranslations("settings.loading")
   return <LoadingFallback text={tLoad(tKey)} />
@@ -461,13 +462,17 @@ export default function SettingsPageEnhanced() {
       case 'minha-empresa':
         return (
           <ErrorBoundarySection>
-            <MinhaEmpresaHub activeSubsection={activeSubsection} />
+            <Suspense fallback={<HubLoadingState />}>
+              <MinhaEmpresaHub activeSubsection={activeSubsection} />
+            </Suspense>
           </ErrorBoundarySection>
         )
       case 'ai-credits':
         return (
           <ErrorBoundarySection>
-            <AiCreditsPage />
+            <Suspense fallback={<HubLoadingState />}>
+              <AiCreditsPage />
+            </Suspense>
           </ErrorBoundarySection>
         )
       // Consolidações P1 (2026-05-25): cases pipeline/screening/templates-assinatura removidos.
@@ -477,7 +482,9 @@ export default function SettingsPageEnhanced() {
         if (activeSubsection === 'screening') {
           return (
             <ErrorBoundarySection>
-              <RecruitmentScreeningTab />
+              <Suspense fallback={<HubLoadingState />}>
+                <RecruitmentScreeningTab />
+              </Suspense>
             </ErrorBoundarySection>
           )
         }
@@ -486,14 +493,18 @@ export default function SettingsPageEnhanced() {
           // (que inclui AiPersonaPanel como tab interna canonical).
           return (
             <ErrorBoundarySection>
-              <MinhaEmpresaHub activeSubsection="instrucoes-lia" />
+              <Suspense fallback={<HubLoadingState />}>
+                <MinhaEmpresaHub activeSubsection="instrucoes-lia" />
+              </Suspense>
             </ErrorBoundarySection>
           )
         }
         // default → pipeline (mais comum)
         return (
           <ErrorBoundarySection>
-            <RecruitmentPipelineTab />
+            <Suspense fallback={<HubLoadingState />}>
+              <RecruitmentPipelineTab />
+            </Suspense>
           </ErrorBoundarySection>
         )
       case 'comunicacao-alertas':
@@ -501,22 +512,28 @@ export default function SettingsPageEnhanced() {
         // Default subsection = 'alerts' (matching comportamento histórico).
         return (
           <ErrorBoundarySection>
-            <CommunicationHub
-              activeSubsection={activeSubsection || 'alerts'}
-              visibleTabs={['templates', 'signature', 'schedule', 'alerts', 'abtesting']}
-            />
+            <Suspense fallback={<HubLoadingState />}>
+              <CommunicationHub
+                activeSubsection={activeSubsection || 'alerts'}
+                visibleTabs={['templates', 'signature', 'schedule', 'alerts', 'abtesting']}
+              />
+            </Suspense>
           </ErrorBoundarySection>
         )
       case 'usuarios-departamentos':
         return (
           <ErrorBoundarySection>
-            <UsuariosDepartamentosHub />
+            <Suspense fallback={<HubLoadingState />}>
+              <UsuariosDepartamentosHub />
+            </Suspense>
           </ErrorBoundarySection>
         )
       case 'integrations':
         return (
           <ErrorBoundarySection>
-            <IntegrationsHub activeSubsection={activeSubsection} />
+            <Suspense fallback={<HubLoadingState />}>
+              <IntegrationsHub activeSubsection={activeSubsection} />
+            </Suspense>
           </ErrorBoundarySection>
         )
       // Webhooks DEFER (2026-05-25): case removido — hub não está mais no menu cliente.
@@ -524,7 +541,9 @@ export default function SettingsPageEnhanced() {
       case 'fairness-compliance':
         return (
           <ErrorBoundarySection>
-            <FairnessComplianceHub activeSubsection={activeSubsection || 'lgpd-candidatos'} />
+            <Suspense fallback={<HubLoadingState />}>
+              <FairnessComplianceHub activeSubsection={activeSubsection || 'lgpd-candidatos'} />
+            </Suspense>
           </ErrorBoundarySection>
         )
           }
