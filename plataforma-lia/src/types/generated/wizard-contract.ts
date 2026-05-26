@@ -83,6 +83,7 @@ export type Type = "wizard_stage";
 export type Stage =
   | "intake"
   | "jd_enrichment"
+  | "pipeline_template"
   | "bigfive"
   | "salary"
   | "competency"
@@ -111,6 +112,7 @@ export type CurrentStage =
   | (
       | "intake"
       | "jd_enrichment"
+      | "pipeline_template"
       | "bigfive"
       | "salary"
       | "competency"
@@ -127,6 +129,7 @@ export type CurrentStage =
 export type StageHistory = (
   | "intake"
   | "jd_enrichment"
+  | "pipeline_template"
   | "bigfive"
   | "salary"
   | "competency"

@@ -34,6 +34,13 @@ from pydantic import BaseModel, ConfigDict, Field
 WizardStage = Literal[
     "intake",
     "jd_enrichment",
+    # Sprint Pipeline Templates 2026-05-26 — Opção B (Paulo aprovou):
+    # stage formal entre jd_enrichment e bigfive. LIA pergunta qual template
+    # de pipeline de recrutamento aplicar (Médicos Afya / Liderança / TI / etc.),
+    # ou usar padrão da empresa. Pipeline define a forma estrutural do processo —
+    # toda config posterior (bigfive/salary/competency/wsi_questions) depende dele.
+    # Skippable: recrutador pode escolher "Padrão da Empresa" e seguir.
+    "pipeline_template",
     "bigfive",
     "salary",
     "competency",

@@ -262,6 +262,11 @@ class JobCreationState(TypedDict, total=False):
 STAGE_ORDER: List[WizardStage] = [
     "intake",
     "jd_enrichment",
+    # Sprint Pipeline Templates 2026-05-26 — Opção B (Paulo aprovou).
+    # Posicionamento canonical: APÓS jd_enrichment (department/seniority/job_family
+    # já extraídos), ANTES de bigfive (primeira stage que depende estruturalmente
+    # do pipeline). Skippable — recrutador pode dizer "padrão da empresa".
+    "pipeline_template",
     "bigfive",
     "salary",
     "competency",
@@ -284,4 +289,7 @@ def calculate_completeness(current_stage: WizardStage) -> float:
 
 
 # HITL approval stages
-HITL_STAGES: set[WizardStage] = {"jd_enrichment", "wsi_questions"}
+# Sprint Pipeline Templates 2026-05-26 — Opção B (Paulo aprovou):
+# pipeline_template é HITL stage canonical. requires_approval=True bloqueia
+# graph até recrutador escolher template OR optar por padrão da empresa.
+HITL_STAGES: set[WizardStage] = {"jd_enrichment", "pipeline_template", "wsi_questions"}

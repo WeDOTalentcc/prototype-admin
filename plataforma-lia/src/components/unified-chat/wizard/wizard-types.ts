@@ -312,12 +312,18 @@ export const STAGE_PILL_LABELS: Record<WizardStage, string> = {
   publish: "Criando vaga · Publicação",
   calibration: "Calibrando · Candidatos",
   handoff: "Criando vaga · Finalização",
+  // Sprint Pipeline Templates 2026-05-26 — Opção B (Paulo aprovou)
+  pipeline_template: "Pipeline · Template",
   done: "Vaga criada",
   scheduling: "Agendando · Entrevistas",
 }
 
 export const STAGE_ORDER: WizardStage[] = [
-  "intake", "jd_enrichment", "bigfive", "salary", "competency",
+  "intake", "jd_enrichment",
+  // Sprint Pipeline Templates 2026-05-26 — Opção B (Paulo aprovou).
+  // Stage formal entre jd_enrichment e bigfive.
+  "pipeline_template",
+  "bigfive", "salary", "competency",
   "wsi_questions", "eligibility", "review", "publish", "calibration",
   "handoff", "done", "scheduling",
 ]
