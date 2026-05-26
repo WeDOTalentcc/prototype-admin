@@ -35,6 +35,9 @@ class ClientUserUpdate(WeDoBaseModel):
     # Tenant admin grants per-user via UI; sync to users.can_view_salary (auth table).
     # Backend gate: only current_user.role == 'admin' can mutate this field.
     can_view_salary: bool | None = Field(None, description="Grant: allow this user to view salary fields. Tenant admin only.")
+    # RBAC Sprint 8 (2026-05-26): sensitive PII grant (LGPD Art. 5 II).
+    # Covers CPF + DoB + address + secondary contacts. Tenant admin only.
+    can_view_sensitive_pii: bool | None = Field(None, description="Grant: allow this user to view sensitive PII (CPF, DoB, address, secondary contacts). Tenant admin only.")
 
 
 class AcceptInvitationRequest(WeDoBaseModel):

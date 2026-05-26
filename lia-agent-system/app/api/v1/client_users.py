@@ -487,33 +487,44 @@ company_id: str = Depends(require_company_id)):
 
         update_data = data.model_dump(exclude_unset=True)
 
-        # Sprint 5.5 RBAC (2026-05-25): can_view_salary requires tenant admin grant.
-        # LGPD Art. 6 III minimização — controlador (tenant admin) decides PII access.
+        # Sprint 5.5 + Sprint 8 RBAC: PII grants require tenant admin role.
+        # LGPD Art. 6 III minimização + Art. 5 II categorias sensíveis.
         # Plan canonical: ~/.claude/plans/jolly-roaming-moler.md
         can_view_salary_change = None
+        can_view_sensitive_pii_change = None
+        actor_role = current_user.get("role") if isinstance(current_user, dict) else getattr(current_user, "role", None)
+        actor_role_str = actor_role.value if hasattr(actor_role, "value") else str(actor_role) if actor_role else ""
+
+        for grant_field in ("can_view_salary", "can_view_sensitive_pii"):
+            if grant_field in update_data:
+                if actor_role_str not in ("admin", "wedotalent_admin"):
+                    raise HTTPException(
+                        status_code=status.HTTP_403_FORBIDDEN,
+                        detail=f"Only tenant admin can grant {grant_field}",
+                    )
+
         if "can_view_salary" in update_data:
-            actor_role = current_user.get("role") if isinstance(current_user, dict) else getattr(current_user, "role", None)
-            actor_role_str = actor_role.value if hasattr(actor_role, "value") else str(actor_role) if actor_role else ""
-            if actor_role_str not in ("admin", "wedotalent_admin"):
-                raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN,
-                    detail="Only tenant admin can grant can_view_salary",
-                )
-            # client_users table doesn't have can_view_salary column — pop and sync to users only.
             can_view_salary_change = update_data.pop("can_view_salary")
+        if "can_view_sensitive_pii" in update_data:
+            can_view_sensitive_pii_change = update_data.pop("can_view_sensitive_pii")
 
         for field, value in update_data.items():
             setattr(user, field, value)
         user.updated_at = datetime.utcnow()
 
-        # Sprint 5.5 RBAC: SYNC can_view_salary → users.can_view_salary (auth table).
-        # client_users doesn't store this field; users.can_view_salary is the canonical SoT.
-        if can_view_salary_change is not None and user.user_id:
-            from sqlalchemy import text
+        # Sprint 5.5 + Sprint 8 RBAC: SYNC PII grants → users.* (auth SoT).
+        # client_users doesn't store these fields; users.can_view_* is the canonical SoT.
+        from sqlalchemy import text as _sa_text
+        for grant_field, grant_value, audit_action, pii_class in [
+            ("can_view_salary", can_view_salary_change, "pii_grant_change", "financial_salary"),
+            ("can_view_sensitive_pii", can_view_sensitive_pii_change, "pii_grant_change", "sensitive_identity"),
+        ]:
+            if grant_value is None or not user.user_id:
+                continue
             try:
                 await repo.db.execute(
-                    text("UPDATE users SET can_view_salary = :v WHERE id = :uid"),
-                    {"v": bool(can_view_salary_change), "uid": str(user.user_id)},
+                    _sa_text(f"UPDATE users SET {grant_field} = :v WHERE id = :uid"),
+                    {"v": bool(grant_value), "uid": str(user.user_id)},
                 )
                 # Audit log SOXAuditLog 7-year retention (LGPD Art. 37 V).
                 from app.shared.compliance.audit_service import AuditService
@@ -523,13 +534,13 @@ company_id: str = Depends(require_company_id)):
                 await audit_svc.log_user_provisioning(
                     company_id=client_id,
                     actor=str(actor_email or actor_id or "system"),
-                    action="pii_grant_change",
+                    action=audit_action,
                     target_user_id=str(user.user_id),
                     target_user_email=user.email,
                     details={
-                        "grant_field": "can_view_salary",
-                        "grant_new": bool(can_view_salary_change),
-                        "pii_class": "financial_salary",
+                        "grant_field": grant_field,
+                        "grant_new": bool(grant_value),
+                        "pii_class": pii_class,
                     },
                 )
             except HTTPException:

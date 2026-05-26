@@ -13,6 +13,7 @@ import type { UserData } from './user-management-types'
 import { useTranslations } from "next-intl"
 import { useState } from "react"
 import { SalaryGrantConfirmDialog } from "./SalaryGrantConfirmDialog"
+import { SensitivePiiGrantConfirmDialog } from "./SensitivePiiGrantConfirmDialog"
 import { useAuth } from "@/contexts/auth-context"
 import { apiFetch } from "@/lib/api/api-fetch"
 import { useCompanyId } from "@/hooks/company/useCompanyId"
@@ -59,6 +60,35 @@ export function UserList({
     user: UserData | null
     next: boolean
   }>({ open: false, user: null, next: false })
+
+  // Sprint 8 (2026-05-26): sensitive PII grant state
+  const [sensitivePiiDialog, setSensitivePiiDialog] = useState<{
+    open: boolean
+    user: UserData | null
+    next: boolean
+  }>({ open: false, user: null, next: false })
+  const [grantingPiiFor, setGrantingPiiFor] = useState<string | null>(null)
+
+  const handleSensitivePiiToggle = async (user: UserData, next: boolean) => {
+    if (!isAdmin || !companyId) return
+    setGrantingPiiFor(user.id)
+    try {
+      await apiFetch(
+        `/api/backend-proxy/clients/${companyId}/client-users/${user.id}`,
+        {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ can_view_sensitive_pii: next }),
+        },
+      )
+      onSalaryGrantChange?.()
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.warn('[Sprint 8] sensitive PII grant toggle failed', err)
+    } finally {
+      setGrantingPiiFor(null)
+    }
+  }
 
   // B3 (2026-05-25): bulk selection state for batch salary grant
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
@@ -329,6 +359,14 @@ export function UserList({
                     {t('tableCanViewSalary')}
                   </th>
                 )}
+                {isAdmin && (
+                  <th
+                    className="px-2 py-2.5 text-center text-micro font-medium text-lia-text-secondary uppercase tracking-wider"
+                    title="Pode ver dados pessoais sensíveis (CPF, endereço, etc.) (LGPD Art. 5 II)"
+                  >
+                    Ver PII
+                  </th>
+                )}
                 {!isSCIMEnabled && (
                   <th className="px-2 py-2.5 text-center text-micro font-medium text-lia-text-secondary uppercase tracking-wider">
                     {t('tableActions')}
@@ -395,6 +433,22 @@ export function UserList({
                       </label>
                     </td>
                   )}
+                  {isAdmin && (
+                    <td className="px-2 py-1.5 whitespace-nowrap text-center">
+                      <label className="inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          data-testid={`user-sensitive-pii-toggle-${user.id}`}
+                          checked={
+                            ((user as unknown as Record<string, unknown>).can_view_sensitive_pii as boolean | undefined) ?? true
+                          }
+                          disabled={grantingPiiFor === user.id}
+                          onChange={(e) => setSensitivePiiDialog({ open: true, user, next: e.target.checked })}
+                          className="w-4 h-4 rounded border-lia-border-default cursor-pointer disabled:opacity-50"
+                        />
+                      </label>
+                    </td>
+                  )}
                   {!isSCIMEnabled && (
                     <td className="px-2 py-1.5 whitespace-nowrap text-center">
                       <div className="flex items-center justify-center gap-1">
@@ -436,6 +490,21 @@ export function UserList({
         target={confirmDialog.user?.name || ""}
         targetDetail={confirmDialog.user?.email}
         onConfirm={handleConfirmSalaryGrant}
+      />
+
+      <SensitivePiiGrantConfirmDialog
+        open={sensitivePiiDialog.open}
+        onOpenChange={(open) => setSensitivePiiDialog({ ...sensitivePiiDialog, open })}
+        granting={sensitivePiiDialog.next}
+        target={sensitivePiiDialog.user?.name || ""}
+        targetDetail={sensitivePiiDialog.user?.email}
+        onConfirm={async () => {
+          if (!sensitivePiiDialog.user) return
+          const u = sensitivePiiDialog.user
+          const n = sensitivePiiDialog.next
+          setSensitivePiiDialog({ open: false, user: null, next: false })
+          await handleSensitivePiiToggle(u, n)
+        }}
       />
 
       <SalaryGrantConfirmDialog

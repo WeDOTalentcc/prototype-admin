@@ -28,11 +28,12 @@ from app.api.v1.candidates.candidates_crud import (
 )
 
 
-def _make_user(can_view_salary: bool, email="user@acme.com"):
+def _make_user(can_view_salary: bool, email="user@acme.com", can_view_sensitive_pii: bool = False):
     u = MagicMock()
     u.id = uuid.uuid4()
     u.email = email
     u.can_view_salary = can_view_salary
+    u.can_view_sensitive_pii = can_view_sensitive_pii
     return u
 
 

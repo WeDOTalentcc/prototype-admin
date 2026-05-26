@@ -183,6 +183,24 @@ _SALARY_FIELDS = (
     "salary_expectation_freelance",
 )
 
+# Sprint 8 RBAC (2026-05-26): sensitive PII fields gated por can_view_sensitive_pii.
+# LGPD Art. 5 II — categorias sensíveis (CPF + DoB + endereço + secondary contacts).
+# Plan canonical: ~/.claude/plans/jolly-roaming-moler.md
+_SENSITIVE_PII_FIELDS = (
+    "cpf",
+    "date_of_birth",
+    "address_street",
+    "address_number",
+    "address_zip",
+    "address_complement",
+    "secondary_email",
+    "secondary_phone",
+    "personal_emails",
+    "business_emails",
+    "best_personal_email",
+    "best_business_email",
+)
+
 
 def _redact_salary_for_user(candidate_dict: dict, current_user) -> dict:
     """Redact salary fields when user lacks can_view_salary grant.
@@ -207,28 +225,62 @@ def _redact_salary_for_user(candidate_dict: dict, current_user) -> dict:
     return candidate_dict
 
 
-async def _audit_pii_access(current_user, candidate_id: str, company_id: str) -> None:
-    """Log SOXAuditLog when privileged user accesses unmasked salary (LGPD Art. 37 V).
+def _redact_sensitive_pii_for_user(candidate_dict: dict, current_user) -> dict:
+    """Sprint 8 RBAC: redact sensitive PII fields when user lacks can_view_sensitive_pii grant.
 
-    Only fires for users WITH can_view_salary grant. Default-redacted users
-    don't trigger audit (no PII actually viewed).
+    LGPD Art. 5 II — categorias sensíveis. Default grant=true (zero-quebra);
+    admin pode revogar per-user via UI.
+
+    Mutates dict in place AND returns it. Adds flag `sensitive_pii_masked` for UI.
+    Lists (personal_emails, business_emails) viram []. Strings viram None.
     """
-    if not bool(getattr(current_user, "can_view_salary", False)):
-        return  # default-redacted users don't see PII, no audit needed
+    can_view = bool(getattr(current_user, "can_view_sensitive_pii", True))
+    if can_view:
+        candidate_dict["sensitive_pii_masked"] = False
+        return candidate_dict
+
+    for field in _SENSITIVE_PII_FIELDS:
+        if field in candidate_dict:
+            existing = candidate_dict[field]
+            if isinstance(existing, list):
+                candidate_dict[field] = []
+            else:
+                candidate_dict[field] = None
+    candidate_dict["sensitive_pii_masked"] = True
+    return candidate_dict
+
+
+async def _audit_pii_access(current_user, candidate_id: str, company_id: str) -> None:
+    """Log SOXAuditLog when privileged user accesses unmasked PII (LGPD Art. 37 V).
+
+    Sprint 5 (salary) + Sprint 8 (sensitive PII). Fires for each grant that user holds.
+    Default-redacted users (sem grant) NÃO geram audit (não viram dados).
+    """
+    grants_to_audit = []
+    if bool(getattr(current_user, "can_view_salary", False)):
+        grants_to_audit.append("financial_salary")
+    # Sprint 8: default=true, so most users have this grant (audit fires)
+    if bool(getattr(current_user, "can_view_sensitive_pii", True)):
+        grants_to_audit.append("sensitive_identity")
+
+    if not grants_to_audit:
+        return
+
     try:
         from app.shared.compliance.audit_service import AuditService
         svc = AuditService()
-        await svc.log_data_access(
-            company_id=company_id,
-            user_id=str(current_user.id) if getattr(current_user, "id", None) else None,
-            user_email=getattr(current_user, "email", None),
-            resource_type="candidate",
-            resource_id=candidate_id,
-            action="view_pii",
-            details={"pii_class": "financial_salary"},
-        )
+        for pii_class in grants_to_audit:
+            await svc.log_data_access(
+                company_id=company_id,
+                user_id=str(current_user.id) if getattr(current_user, "id", None) else None,
+                user_email=getattr(current_user, "email", None),
+                resource_type="candidate",
+                resource_id=candidate_id,
+                action="view_pii",
+                details={"pii_class": pii_class},
+            )
     except Exception as exc:  # noqa: BLE001
-        logger.debug("[Sprint5] _audit_pii_access failed (non-blocking): %s", exc)
+        logger.debug("[Sprint5/8] _audit_pii_access failed (non-blocking): %s", exc)
 
 
 # ---------------------------------------------------------------------------
@@ -399,8 +451,14 @@ async def list_candidates(
         )
         # Sprint 2 Phase 4 RBAC: dept scope filter (soft-launch). No-op when user has no dept_id.
         candidates = await _filter_candidates_by_dept_scope(candidates, current_user)
-        # Sprint 5 RBAC: redact salary fields when user lacks can_view_salary grant.
-        items = [_redact_salary_for_user(_serialize_candidate(c), current_user) for c in candidates]
+        # Sprint 5 + Sprint 8 RBAC: redact PII fields when user lacks grants.
+        items = [
+            _redact_sensitive_pii_for_user(
+                _redact_salary_for_user(_serialize_candidate(c), current_user),
+                current_user,
+            )
+            for c in candidates
+        ]
         return {
             "total": total,
             "skip": effective_skip,
@@ -448,9 +506,12 @@ async def get_candidate(
         visible = await _filter_candidates_by_dept_scope([candidate], current_user)
         if not visible:
             raise HTTPException(status_code=404, detail="Candidate not found")
-        # Sprint 5 RBAC: redact salary + audit privileged PII access (LGPD Art. 6 III + Art. 37 V).
-        serialized = _redact_salary_for_user(
-            _serialize_candidate(candidate, full=True), current_user,
+        # Sprint 5 + Sprint 8 RBAC: redact financial + sensitive PII + audit (LGPD).
+        serialized = _redact_sensitive_pii_for_user(
+            _redact_salary_for_user(
+                _serialize_candidate(candidate, full=True), current_user,
+            ),
+            current_user,
         )
         await _audit_pii_access(current_user, candidate_id, company_id)
         return ok_envelope(serialized, meta={"source": "local"})

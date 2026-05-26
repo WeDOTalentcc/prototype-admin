@@ -9,6 +9,7 @@ import type { UserData } from './user-management-types'
 import { useTranslations } from "next-intl"
 import { useAuth } from "@/contexts/auth-context"
 import { SalaryGrantConfirmDialog } from "./SalaryGrantConfirmDialog"
+import { SensitivePiiGrantConfirmDialog } from "./SensitivePiiGrantConfirmDialog"
 import { InlineDepartmentCreateModal, type CreatedDepartment } from "./InlineDepartmentCreateModal"
 import { useCompanyId } from "@/hooks/company/useCompanyId"
 
@@ -30,6 +31,10 @@ export function UserForm({ isCreating, formData, setFormData, onSave, onCancel, 
   const isAdmin = authUser?.role === 'admin' || authUser?.role === 'wedotalent_admin'
   // B2 (2026-05-25): confirm dialog antes do grant via checkbox
   const [salaryConfirm, setSalaryConfirm] = useState<{ open: boolean; next: boolean }>({
+    open: false,
+    next: false,
+  })
+  const [sensitivePiiConfirm, setSensitivePiiConfirm] = useState<{ open: boolean; next: boolean }>({
     open: false,
     next: false,
   })
@@ -269,6 +274,22 @@ export function UserForm({ isCreating, formData, setFormData, onSave, onCancel, 
                   </label>
                 </div>
               )}
+
+              {isAdmin && (
+                <div>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      data-toggle="canViewSensitivePii"
+                      data-testid="user-toggle-can-view-sensitive-pii"
+                      checked={((formData as Record<string, unknown>).can_view_sensitive_pii as boolean | undefined) ?? true}
+                      onChange={(e) => setSensitivePiiConfirm({ open: true, next: e.target.checked })}
+                      className="w-3.5 h-3.5 rounded-xl border-lia-border-default"
+                    />
+                    <span className={textStyles.label}>Pode ver dados pessoais sensíveis (CPF, endereço)</span>
+                  </label>
+                </div>
+              )}
             </div>
           </div>
 
@@ -345,6 +366,28 @@ export function UserForm({ isCreating, formData, setFormData, onSave, onCancel, 
           }))
           // Notify parent para refresh canonical list
           onDepartmentCreated?.()
+        }}
+      />
+    <SalaryGrantConfirmDialog
+        open={salaryConfirm.open}
+        onOpenChange={(open) => setSalaryConfirm((s) => ({ ...s, open }))}
+        granting={salaryConfirm.next}
+        target={formData.name || ""}
+        targetDetail={formData.email}
+        onConfirm={() => {
+          setFormData(prev => ({ ...prev, can_view_salary: salaryConfirm.next } as typeof prev))
+          setSalaryConfirm({ open: false, next: false })
+        }}
+      />
+      <SensitivePiiGrantConfirmDialog
+        open={sensitivePiiConfirm.open}
+        onOpenChange={(open) => setSensitivePiiConfirm((s) => ({ ...s, open }))}
+        granting={sensitivePiiConfirm.next}
+        target={formData.name || ""}
+        targetDetail={formData.email}
+        onConfirm={() => {
+          setFormData(prev => ({ ...prev, can_view_sensitive_pii: sensitivePiiConfirm.next } as typeof prev))
+          setSensitivePiiConfirm({ open: false, next: false })
         }}
       />
     </>

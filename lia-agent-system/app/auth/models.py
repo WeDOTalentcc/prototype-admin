@@ -83,6 +83,11 @@ class User(EncryptedFieldMixin, Base):
     # Bootstrap: migration 204 backfilled True for role='admin'.
     can_view_salary = Column(Boolean, default=False, nullable=False, server_default=text("false"))
 
+    # RBAC Sprint 8 (2026-05-26): sensitive PII grant — LGPD Art. 5 II.
+    # Default True (zero-quebra, opt-out via admin). Cobre CPF + DoB + endereço +
+    # secondary contacts. Distinct from can_view_salary (financial PII).
+    can_view_sensitive_pii = Column(Boolean, default=True, nullable=False, server_default=text("true"))
+
     @validates("company_id")
     def _validate_company_id(self, _key: str, value):  # noqa: ANN001
         """Fail-LOUD on non-UUID writes to ``company_id``.
