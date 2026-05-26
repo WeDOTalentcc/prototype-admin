@@ -88,8 +88,11 @@ const MESSAGES = {
         automationsLabel: "Automações",
         configured: "configuradas",
         configuredWorkflows: "Workflows Configurados",
-        newWorkflow: "Novo Workflow",
-        emptyTitle: "Nenhuma automação configurada",
+        newWorkflow: "Nova automação",
+        emptyTitle: "A LIA pode automatizar tarefas repetitivas pra você",
+        emptyExample: "Exemplo: Quando um candidato chega na etapa Entrevista, envie automaticamente o convite pelo WhatsApp.",
+        createWithLia: "Criar com a LIA",
+        seeExamples: "Ver exemplos",
         emptyDesc: "Crie seu primeiro workflow de automação",
         createFirst: "Criar primeira automação",
         trigger: "Gatilho: {value}",
@@ -112,13 +115,13 @@ const MESSAGES = {
         templateLibraryDesc: "Templates prontos para usar",
         executionLogs: "Logs de Execução",
         executionLogsDesc: "Histórico de execuções",
-        pageTitle: "Automações de Recrutamento",
-        pageSubtitle: "Configure automações inteligentes para o seu processo",
+        pageTitle: "Automações",
+        pageSubtitle: "Deixe a LIA executar tarefas repetitivas do seu processo",
         export: "Exportar",
         tabOverview: "Visão Geral",
-        tabBuilder: "Builder",
-        tabTemplates: "Templates",
-        tabLogs: "Logs",
+        tabBuilder: "Criar",
+        tabTemplates: "Exemplos",
+        tabLogs: "Histórico",
         trigger_candidate_stage_changed: "Candidato movimentado",
         trigger_interview_scheduled: "Entrevista agendada",
         trigger_offer_sent: "Oferta enviada",
@@ -243,7 +246,7 @@ describe("AutomationsTab — API wiring (PR-AUTO)", () => {
     renderWithIntl(<AutomationsTab onSettingsChange={() => {}} />);
     await waitFor(() => {
       expect(
-        screen.getByText(/nenhuma automação/i),
+        screen.getByText(/a lia pode automatizar/i),
       ).toBeInTheDocument();
     });
   });

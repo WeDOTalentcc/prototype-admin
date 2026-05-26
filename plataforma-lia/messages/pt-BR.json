@@ -4446,7 +4446,7 @@
         "templates": "Modelos",
         "preConfigured": "pré-configurados",
         "configuredWorkflows": "Fluxos Configurados",
-        "newWorkflow": "Novo Fluxo",
+        "newWorkflow": "Nova automação",
         "trigger": "Gatilho: {value}",
         "actions": "{count} actions",
         "executions": "{count} executions",
@@ -4462,12 +4462,12 @@
         "viewAnalytics": "Ver Análises",
         "viewAnalyticsDesc": "Desempenho detalhado",
         "export": "Exportar",
-        "pageTitle": "Automação de Fluxos Empresariais",
-        "pageSubtitle": "Construtor visual para automações inteligentes de recrutamento",
+        "pageTitle": "Automações",
+        "pageSubtitle": "Deixe a LIA executar tarefas repetitivas do seu processo",
         "tabOverview": "Visão Geral",
-        "tabBuilder": "Construtor",
-        "tabTemplates": "Modelos",
-        "tabLogs": "Logs",
+        "tabBuilder": "Criar",
+        "tabTemplates": "Exemplos",
+        "tabLogs": "Histórico",
         "builderTitle": "Construtor Visual de Fluxos",
         "builderDesc": "Interface arrastar e soltar para criar fluxos",
         "templateLibrary": "Biblioteca de Modelos",
@@ -4476,7 +4476,7 @@
         "executionLogsDesc": "Histórico detalhado de todas as execuções",
         "loading": "Carregando automações…",
         "loadError": "Não foi possível carregar as automações.",
-        "emptyTitle": "Nenhuma automação configurada ainda",
+        "emptyTitle": "A LIA pode automatizar tarefas repetitivas pra você",
         "emptyDesc": "Crie sua primeira automação para agilizar o processo seletivo",
         "createFirst": "Criar primeira automação",
         "ofTotalSimple": "de {total} total",
@@ -4491,7 +4491,10 @@
         "trigger_no_response_48h": "Sem resposta (48h)",
         "summaryActive": "{active} ativo(s) de {total}",
         "summaryExecs": "{count} execuções",
-        "summarySuccess": "{pct}% de sucesso"
+        "summarySuccess": "{pct}% de sucesso",
+        "emptyExample": "Exemplo: \"Quando um candidato chega na etapa Entrevista, envie automaticamente o convite pelo WhatsApp.\"",
+        "createWithLia": "Criar com a LIA",
+        "seeExamples": "Ver exemplos"
       },
       "communicationTab": {
         "emailTemplates": "Modelos de Email",
@@ -6293,7 +6296,8 @@
       "users": "Carregando usuários...",
       "webhooks": "Carregando webhooks...",
       "governanca": "Carregando governança...",
-      "aiTransparency": "Carregando transparência de IA..."
+      "aiTransparency": "Carregando transparência de IA...",
+      "automations": "Carregando automações..."
     },
     "nps": {
       "title": "Configurações do Sistema NPS",

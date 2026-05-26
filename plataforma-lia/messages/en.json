@@ -4446,7 +4446,7 @@
         "templates": "Templates",
         "preConfigured": "pre-configured",
         "configuredWorkflows": "Configured Workflows",
-        "newWorkflow": "New Workflow",
+        "newWorkflow": "New automation",
         "trigger": "Trigger: {value}",
         "actions": "{count} actions",
         "executions": "{count} executions",
@@ -4462,12 +4462,12 @@
         "viewAnalytics": "View Analytics",
         "viewAnalyticsDesc": "Detailed performance",
         "export": "Export",
-        "pageTitle": "Enterprise Workflow Automation",
-        "pageSubtitle": "Visual builder for intelligent recruitment automations",
+        "pageTitle": "Automations",
+        "pageSubtitle": "Let LIA handle the repetitive parts of your process",
         "tabOverview": "Overview",
-        "tabBuilder": "Builder",
-        "tabTemplates": "Templates",
-        "tabLogs": "Logs",
+        "tabBuilder": "Create",
+        "tabTemplates": "Examples",
+        "tabLogs": "History",
         "builderTitle": "Visual Workflow Builder",
         "builderDesc": "Drag and drop interface to create workflows",
         "templateLibrary": "Template Library",
@@ -4476,7 +4476,7 @@
         "executionLogsDesc": "Detailed history of all executions",
         "loading": "Loading automations…",
         "loadError": "Could not load automations.",
-        "emptyTitle": "No automations configured yet",
+        "emptyTitle": "LIA can automate the repetitive parts for you",
         "emptyDesc": "Create your first automation to streamline the recruitment process",
         "createFirst": "Create first automation",
         "ofTotalSimple": "of {total} total",
@@ -4491,7 +4491,10 @@
         "trigger_no_response_48h": "No response (48h)",
         "summaryActive": "{active} of {total} active",
         "summaryExecs": "{count} executions",
-        "summarySuccess": "{pct}% success rate"
+        "summarySuccess": "{pct}% success rate",
+        "emptyExample": "Example: \"When a candidate reaches the Interview stage, automatically send the invite via WhatsApp.\"",
+        "createWithLia": "Create with LIA",
+        "seeExamples": "See examples"
       },
       "communicationTab": {
         "emailTemplates": "Email Templates",
@@ -6293,7 +6296,8 @@
       "users": "Loading users...",
       "webhooks": "Loading webhooks...",
       "governanca": "Loading governance...",
-      "aiTransparency": "Loading AI transparency..."
+      "aiTransparency": "Loading AI transparency...",
+      "automations": "Loading automations..."
     },
     "nps": {
       "title": "NPS System Settings",
