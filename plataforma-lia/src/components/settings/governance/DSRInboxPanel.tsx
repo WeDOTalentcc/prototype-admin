@@ -450,7 +450,7 @@ export function DSRInboxPanel({ defaultRequestType }: { defaultRequestType?: str
               </button>
               <Button
                 type="button"
-                variant="default"
+                variant="primary"
                 size="sm"
                 onClick={confirmModalAction}
                 >

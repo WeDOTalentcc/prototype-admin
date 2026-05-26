@@ -95,7 +95,7 @@ export function IntegrationsHub({ activeSubsection }: IntegrationsHubProps) {
     setErrorMsg(null)
     try {
       if (!effectiveCompanyId) throw new Error(t("integrations.companyNotIdentified") || "Empresa nao identificada")
-      const res = await apiFetch()
+      const res = await apiFetch("/api/backend-proxy/calendar/google/auth-url")
       if (!res.ok) {
         const data = await res.json()
         throw new Error(data.detail || t("integrations.authUrlError"))

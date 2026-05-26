@@ -108,7 +108,7 @@ export interface ActiveAlert {
   id: string
   title: string
   description: string
-  severity: 'critical' | 'high' | 'medium' | 'low'
+  severity: 'critical' | 'high' | 'medium' | 'low' | 'info'
   jobId: string
   jobTitle: string
   createdAt: Date
@@ -217,8 +217,9 @@ function mapAlertSeverity(severity: string | null): ActiveAlert['severity'] {
     case 'medium':
       return 'medium'
     case 'low':
-    case 'info':
       return 'low'
+    case 'info':
+      return 'info'
     default:
       return 'medium'
   }
