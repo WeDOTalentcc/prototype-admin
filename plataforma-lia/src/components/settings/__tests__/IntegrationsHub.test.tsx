@@ -36,9 +36,17 @@ vi.mock("@/hooks/company/use-current-company", () => ({
   useCurrentCompany: () => ({ companyId: "test-co", tenantId: "test-co" }),
 }))
 
-vi.mock("@/hooks/integrations/use-integration-catalog", () => ({
-  useIntegrationCatalog: () => ({ entries: [], isLoading: false, error: null }),
-  flattenEntries: () => [],
+// Mock the canonical server-data hook (Task 3.3 extraction)
+vi.mock("@/hooks/integrations/use-integrations-data", () => ({
+  useIntegrationsData: () => ({
+    enrichedIntegrations: [],
+    catalogLoading: false,
+    googleStatus: "idle",
+    microsoftStatus: "not_configured",
+    teamsStatus: "not_configured",
+    llmConfig: null,
+    refetchLlmConfig: vi.fn(),
+  }),
 }))
 
 vi.mock("@/lib/api/api-fetch", () => ({
@@ -54,6 +62,10 @@ vi.mock("@/components/settings/integrations/IntegrationDetailDrawer", () => ({
   IntegrationDetailDrawer: () => <div data-testid="integration-drawer-stub" />,
 }))
 
+vi.mock("@/components/settings/integrations/IntegrationGrid", () => ({
+  IntegrationGrid: () => <div data-testid="integration-grid-stub" />,
+}))
+
 // integration-data is a pure constants file — import as-is (no mock needed)
 
 import { IntegrationsHub } from "@/components/settings/IntegrationsHub"
@@ -64,7 +76,7 @@ describe("IntegrationsHub — smoke rerender (rules-of-hooks + mount)", () => {
     unmount()
   })
 
-  it("monta com activeSubsection='ai-models' sem lançar", () => {
+  it("monta com activeSubsection=i-models\ sem lançar", () => {
     const { unmount } = render(<IntegrationsHub activeSubsection="ai-models" />)
     unmount()
   })
