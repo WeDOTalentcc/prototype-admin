@@ -312,6 +312,40 @@ def _suggest_pipeline_template(
     except Exception:  # noqa: BLE001 — fail-open por design
         return None
 
+# ---------------------------------------------------------------------------
+# Canonical DB-based pipeline template suggestion
+# (Sprint Pipeline Templates 2026-05-26 — Fase 1.6)
+# ---------------------------------------------------------------------------
+# Complementa o heurístico determinístico _suggest_pipeline_template (Task #1055)
+# consultando o repositório real (PipelineTemplateRepository.list_for_suggestion)
+# com scoring baseado em department_hint / seniority_hint / job_family_hint.
+#
+# Fail-open: qualquer erro retorna None. O caller (intake_node / jd_enrichment_node)
+# continua emitindo o heurístico legacy. Frontend WizardPipelineTemplateCard pode
+# preferir o canonical (com template_id real + score) quando presente.
+def _build_pipeline_template_db_suggestion(state: dict) -> Optional[Dict[str, Any]]:
+    """Sync wrapper canonical para uso dentro dos nodes do graph.
+
+    Returns {"templates": [...], "top_score": float, "should_suggest": bool} ou None.
+    """
+    try:
+        from app.domains.pipeline.tools.pipeline_template_wizard_tools import (
+            suggest_pipeline_template_sync_for_graph,
+        )
+    except Exception:  # noqa: BLE001 — fail-open por design
+        return None
+    company_id = str(state.get("workspace_id") or state.get("company_id") or "")
+    if not company_id:
+        return None
+    return suggest_pipeline_template_sync_for_graph(
+        company_id,
+        department=state.get("parsed_department") or state.get("department"),
+        seniority=state.get("parsed_seniority"),
+        job_family=state.get("parsed_job_family"),
+    )
+
+
+
 
 # ---------------------------------------------------------------------------
 # Wizard step audit helper (Task #1061 — EU AI Act Art.13 / SOX)
@@ -716,6 +750,9 @@ def intake_node(state: JobCreationState) -> JobCreationState:
                     "pipeline_template": _suggest_pipeline_template(
                         parsed_title, parsed_seniority,
                     ),
+                    # Sprint Pipeline Templates 2026-05-26 — canonical DB-based suggestion
+                    # (Phase 1.6). Frontend prefere quando templates != [] e score >= threshold.
+                    "pipeline_template_db": _build_pipeline_template_db_suggestion(state),
                 },
             },
             "completeness": calculate_completeness("intake"),
@@ -1224,6 +1261,7 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
                         or state.get("parsed_title"),
                         state.get("parsed_seniority"),
                     ),
+                    "pipeline_template_db": _build_pipeline_template_db_suggestion(state),
                 },
             },
             "completeness": calculate_completeness("jd_enrichment"),
