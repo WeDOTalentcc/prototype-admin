@@ -1515,6 +1515,28 @@ TOOL_DEFINITIONS.append(
 
 _TOOL_MAP: dict[str, ToolDefinition] = {t.name: t for t in TOOL_DEFINITIONS}
 
+# --- STAGE_TOOLS canonical allowlist ---------------------------------------
+#
+# DESIGN LAYERED (NAO eh bug -- ADR registrada 2026-05-26 / PR-8 ONDA 3):
+#
+# Dict mistura DUAS convencoes de nome porque cobre DUAS camadas:
+#
+#   kebab-case  -> stages do WIZARD DE CRIACAO (LangGraph job_creation)
+#     - input-evaluation, jd-enrichment, pipeline-template, salary,
+#       competencies, wsi-questions, review-publish
+#     - Frontend dispatch usa estes IDs (REST/GraphQL convention)
+#
+#   snake_case  -> estagios do CICLO DE VIDA pos-publicacao (Phase E)
+#     - enriquecida, wsi_config, aguardando_aprovacao, publicada, ao_vivo
+#     - DB column values, _classify_job_lifecycle_stage em
+#       app/api/v1/job_vacancies/analytics.py
+#
+# Sensor canonical (scripts/check_stage_tools_naming.py) valida que toda
+# entry nova segue UMA das convencoes (kebab para criacao, snake para
+# lifecycle). NAO ha sobreposicao entre as duas listas.
+#
+# Fonte da verdade: dict abaixo + sensor + ADR registrada em CLAUDE.md.
+# --------------------------------------------------------------------------
 STAGE_TOOLS: dict[str, list[str]] = {
     "input-evaluation": ["validate_job_requirements", "validate_job_fields", "get_job_suggestions", "get_company_config", "save_job_draft", "check_job_draft_health", "suggest_pipeline_stage_templates", "apply_pipeline_stage_template_to_vacancy", "create_custom_pipeline_stage_template"],
     "jd-enrichment": ["generate_enriched_jd", "get_job_suggestions", "get_company_config", "save_job_draft", "check_job_draft_health"],

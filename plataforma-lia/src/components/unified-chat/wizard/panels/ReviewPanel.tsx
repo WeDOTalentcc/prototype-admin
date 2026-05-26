@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react"
-import { CheckCircle, XCircle, ClipboardCheck, Settings } from "lucide-react"
+import { CheckCircle, XCircle, ClipboardCheck, Settings, Globe, Building2, Layers } from "lucide-react"
 import type { ReviewData } from "../wizard-types"
 
 interface Props {
@@ -19,15 +19,52 @@ const CHECK_LABELS: Record<string, string> = {
   has_salary: "Faixa salarial definida",
 }
 
+type SourcingMode = "local" | "global" | "hybrid"
+
+const SOURCING_OPTIONS: Array<{
+  value: SourcingMode
+  label: string
+  description: string
+  Icon: typeof Building2
+}> = [
+  {
+    value: "local",
+    label: "Talent Pool interno",
+    description: "Buscar somente na base da empresa",
+    Icon: Building2,
+  },
+  {
+    value: "hybrid",
+    label: "Interno + Global",
+    description: "Interno primeiro; complementar com global se necessario",
+    Icon: Layers,
+  },
+  {
+    value: "global",
+    label: "Busca global",
+    description: "Sourcing publico + base interna",
+    Icon: Globe,
+  },
+]
+
+function classes(...names: Array<string | false | undefined | null>) {
+  return names.filter(Boolean).join(" ")
+}
+
 export function ReviewPanel({ data, onUpdate }: Props) {
   const d = data as unknown as ReviewData
   const readiness = d.readiness || { ready: false, checks: {}, missing: [] }
   const defaultsApplied = d.defaults_applied || []
+  const sourcingMode = d.sourcing_mode ?? null
 
   const handleApplyDefaults = () => {
     window.dispatchEvent(new CustomEvent("lia:prefill-message", {
       detail: { message: "Aplicar defaults da empresa nesta vaga" },
     }))
+  }
+
+  const handleSourcingSelect = (mode: SourcingMode) => {
+    onUpdate?.({ sourcing_mode: mode })
   }
 
   return (
@@ -67,6 +104,54 @@ export function ReviewPanel({ data, onUpdate }: Props) {
           </p>
         </div>
       )}
+
+      {/* PR-8 ONDA 3 / F-3.5: sourcing_mode explicit selector */}
+      <div data-testid="sourcing-mode-selector" className="space-y-1.5">
+        <div className="text-xs font-semibold text-lia-text-secondary">
+          Onde a LIA deve buscar candidatos?
+        </div>
+        {sourcingMode === null && (
+          <div className="text-[10px] text-status-warning">
+            Defina o modo antes de publicar (default = Talent Pool interno).
+          </div>
+        )}
+        <div className="grid grid-cols-1 gap-1.5">
+          {SOURCING_OPTIONS.map(({ value, label, description, Icon }) => {
+            const selected = sourcingMode === value
+            return (
+              <button
+                key={value}
+                type="button"
+                data-sourcing-mode={value}
+                aria-pressed={selected}
+                onClick={() => handleSourcingSelect(value)}
+                className={classes(
+                  "flex items-start gap-2 px-3 py-2 rounded-md border text-left transition-colors motion-reduce:transition-none",
+                  selected
+                    ? "border-wedo-cyan bg-wedo-cyan/5"
+                    : "border-lia-border-subtle hover:border-lia-text-tertiary hover:bg-lia-bg-secondary",
+                )}
+              >
+                <Icon className={classes(
+                  "w-4 h-4 flex-shrink-0 mt-0.5",
+                  selected ? "text-wedo-cyan" : "text-lia-text-tertiary",
+                )} />
+                <div className="flex-1 min-w-0">
+                  <div className={classes(
+                    "text-xs font-medium",
+                    selected ? "text-wedo-cyan" : "text-lia-text-primary",
+                  )}>
+                    {label}
+                  </div>
+                  <div className="text-[10px] text-lia-text-tertiary leading-tight">
+                    {description}
+                  </div>
+                </div>
+              </button>
+            )
+          })}
+        </div>
+      </div>
 
       {/* Applied defaults */}
       {defaultsApplied.length > 0 && (

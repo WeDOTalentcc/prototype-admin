@@ -30,6 +30,8 @@ Invariant — data.message obrigatório (Task #1099, generaliza Task #1096):
 import logging
 import os
 import time
+from pathlib import Path
+from functools import lru_cache as _lru_cache
 from typing import Any, Dict, Optional
 
 from langgraph.graph import StateGraph, END
@@ -178,6 +180,50 @@ from app.domains.job_creation.audit_actions import PipelineTemplateAuditAction
 from app.domains.job_creation import dispatch_messages as _wizard_dispatch
 
 logger = logging.getLogger(__name__)
+
+# PR-8 ONDA 3 / F-3.4 + F-3.5: Prometheus counters canonical pattern
+# (replicado de app/services/voice/wsi_pipeline.py:30-55 race-safe REGISTRY lookup).
+#
+# - lia_wizard_fairness_l4_check_failed_total: increment quando Layer 4
+#   fairness guard exceptiona em wsi_questions_node (antes era silent).
+# - lia_wizard_sourcing_mode_default_total: increment quando publish_node
+#   recebe sourcing_mode=None e cai no default "local" (UI faltou setar).
+try:
+    from prometheus_client import REGISTRY as _WIZ_PROM_REGISTRY
+    from prometheus_client import Counter as _WIZ_PromCounter
+
+    _L4_METRIC_NAME = "lia_wizard_fairness_l4_check_failed_total"
+    _existing_l4 = getattr(_WIZ_PROM_REGISTRY, "_names_to_collectors", {}).get(
+        _L4_METRIC_NAME
+    )
+    if _existing_l4 is not None:
+        lia_wizard_fairness_l4_check_failed_total = _existing_l4
+    else:
+        lia_wizard_fairness_l4_check_failed_total = _WIZ_PromCounter(
+            _L4_METRIC_NAME,
+            "Layer 4 fairness check failures in wsi_questions_node "
+            "(currently silent fail-open -- questions kept as recruiter input). "
+            "PR-8 ONDA 3 / F-3.4.",
+            labelnames=("node", "reason"),
+        )
+
+    _SOURCING_METRIC_NAME = "lia_wizard_sourcing_mode_default_total"
+    _existing_sm = getattr(_WIZ_PROM_REGISTRY, "_names_to_collectors", {}).get(
+        _SOURCING_METRIC_NAME
+    )
+    if _existing_sm is not None:
+        lia_wizard_sourcing_mode_default_total = _existing_sm
+    else:
+        lia_wizard_sourcing_mode_default_total = _WIZ_PromCounter(
+            _SOURCING_METRIC_NAME,
+            "sourcing_mode fell back to default 'local' (UI selector missing). "
+            "PR-8 ONDA 3 / F-3.5.",
+            labelnames=("stage",),
+        )
+except (ImportError, ValueError):  # pragma: no cover
+    lia_wizard_fairness_l4_check_failed_total = None
+    lia_wizard_sourcing_mode_default_total = None
+
 
 # ── PR-11 F-4.7: magic numbers canonical ──
 # Default question distribution para WSI quando state nao fornece (fallback
@@ -2406,9 +2452,19 @@ def wsi_questions_node(state: JobCreationState) -> JobCreationState:
                 _wsi_kept.append(_q)
         questions_data = _wsi_kept
     except Exception as _fg_l4_exc:
+        # PR-8 ONDA 3 / F-3.4: increment counter + structured log (era silent mute).
+        if lia_wizard_fairness_l4_check_failed_total is not None:
+            try:
+                lia_wizard_fairness_l4_check_failed_total.labels(
+                    node="wsi_questions",
+                    reason=type(_fg_l4_exc).__name__,
+                ).inc()
+            except Exception:  # pragma: no cover - never block on metric
+                pass
         logger.warning(
             "[JobCreation:wsi_questions] FairnessGuard L4 check failed (fail-open): %s",
             _fg_l4_exc,
+            exc_info=True,
         )
         # On failure, keep all questions (don't lose recruiter's work)
 
@@ -2782,7 +2838,21 @@ def publish_node(state: JobCreationState) -> JobCreationState:
 
             # Step 3: Publish to platforms
             platforms = state.get("publish_platforms", ["website"])
-            sourcing_mode = state.get("sourcing_mode", "local")
+            # PR-8 ONDA 3 / F-3.5: warn + count quando UI nao setou sourcing_mode.
+            _sourcing_raw = state.get("sourcing_mode")
+            if _sourcing_raw is None:
+                sourcing_mode = "local"
+                if lia_wizard_sourcing_mode_default_total is not None:
+                    try:
+                        lia_wizard_sourcing_mode_default_total.labels(stage="publish").inc()
+                    except Exception:  # pragma: no cover
+                        pass
+                logger.warning(
+                    "[JobCreation:publish] sourcing_mode nao setado pelo recrutador -- "
+                    "default=local. Considere exigir selector explicito em review stage."
+                )
+            else:
+                sourcing_mode = _sourcing_raw
             cb_wrap(api.publish_job, job_id, platforms, sourcing_mode)
 
             # Step 4: Get share link
@@ -4964,36 +5034,41 @@ def route_after_calibration(state: JobCreationState) -> str:
 # Helper functions
 # ---------------------------------------------------------------------------
 
+# WSI F5 deterministic distribution -- canonical config em YAML.
+# PR-8 ONDA 3 / F-3.3: extraido de hardcoded dict para
+# app/prompts/job_creation/wsi_question_distribution.yaml.
+# Sensor: tests/contract/test_wsi_question_distribution_taxonomy.py
+_WSI_QUESTION_DISTRIBUTION_FILE = (
+    Path(__file__).resolve().parent.parent.parent
+    / "prompts" / "job_creation" / "wsi_question_distribution.yaml"
+)
+
+
+@_lru_cache(maxsize=1)
+def _load_wsi_question_distributions() -> Dict[str, Dict[str, Dict[str, int]]]:
+    """Lazy load do YAML canonical. Cached para evitar I/O repetido."""
+    import yaml as _yaml
+    with open(_WSI_QUESTION_DISTRIBUTION_FILE) as _fh:
+        data = _yaml.safe_load(_fh)
+    if not isinstance(data, dict):
+        raise RuntimeError(
+            f"wsi_question_distribution.yaml malformed: expected dict, got {type(data)}"
+        )
+    return data
+
+
 def _get_question_distribution(mode: str, seniority: str) -> Dict[str, int]:
     """WSI F5 deterministic distribution tables.
 
-    Source: WSI_METHODOLOGY_COMPLETE_v2.md — canonical values.
-    These MUST match the methodology exactly; do not change without updating the doc.
-    """
-    # Compact mode (7 questions total) — from methodology table
-    compact_dist = {
-        "estagiario": {"technical": 5, "behavioral": 2},
-        "junior": {"technical": 5, "behavioral": 2},
-        "pleno": {"technical": 5, "behavioral": 2},
-        "senior": {"technical": 4, "behavioral": 3},
-        "lead": {"technical": 3, "behavioral": 4},
-        "principal": {"technical": 4, "behavioral": 3},
-        "staff": {"technical": 4, "behavioral": 3},
-        "diretor": {"technical": 3, "behavioral": 4},
-    }
-    # Full mode (12 questions total) — from methodology table
-    full_dist = {
-        "estagiario": {"technical": 9, "behavioral": 3},
-        "junior": {"technical": 9, "behavioral": 3},
-        "pleno": {"technical": 8, "behavioral": 4},
-        "senior": {"technical": 7, "behavioral": 5},
-        "lead": {"technical": 7, "behavioral": 5},
-        "principal": {"technical": 7, "behavioral": 5},
-        "staff": {"technical": 7, "behavioral": 5},
-        "diretor": {"technical": 7, "behavioral": 5},
-    }
+    Source: WSI_METHODOLOGY_COMPLETE_v2.md (canonical values).
+    Storage: app/prompts/job_creation/wsi_question_distribution.yaml
+    (PR-8 ONDA 3 / F-3.3 -- extraido do dict hardcoded).
 
-    table = compact_dist if mode == "compact" else full_dist
+    Os valores devem bater com a methodology exatamente; nao mude o YAML
+    sem atualizar o doc + test sentinel.
+    """
+    distributions = _load_wsi_question_distributions()
+    table = distributions.get(mode if mode == "compact" else "full", {})
     seniority_key = (
         seniority.lower()
         .replace("sênior", "senior")
@@ -5001,8 +5076,10 @@ def _get_question_distribution(mode: str, seniority: str) -> Dict[str, int]:
         .replace("estágio", "estagiario")
         .replace("estagiário", "estagiario")
     )
-
-    return table.get(seniority_key, table.get("pleno", {"technical": 5, "behavioral": 2}))
+    return table.get(
+        seniority_key,
+        table.get("pleno", {"technical": 5, "behavioral": 2}),
+    )
 
 
 def _build_readiness_check(state: JobCreationState) -> Dict[str, Any]:

@@ -239,6 +239,8 @@ export interface ReviewData {
     missing: string[]
   }
   defaults_applied: string[]
+  // PR-8 ONDA 3 / F-3.5: sourcing_mode escolhido no review (default null = fallback "local" no backend + warning).
+  sourcing_mode?: "local" | "global" | "hybrid" | null
 }
 
 export interface PublishData {
