@@ -279,6 +279,22 @@ class OnboardingOrchestrator:
     ) -> dict:
         """Process web events (first_login, tour_step, action_choice, etc.)"""
 
+        # P2-2 Sprint A.7: explicit trigger to enter SETTINGS_EXTRACTION phase.
+        # Frontend dispatcha "start_settings_extraction" quando o banner do
+        # onboarding chat e acionado (Sprint B.1). NAO usa _safe_transition
+        # porque SETTINGS_EXTRACTION nao tem path canonical no FSM TRANSITIONS
+        # (eh um side-flow opt-in, nao um proximo passo do flow principal).
+        if event_type == "start_settings_extraction":
+            session.phase = OnboardingPhase.SETTINGS_EXTRACTION
+            return await self.handle_settings_extraction_message(session, "")
+
+        # P2-2 Sprint A.7: route user messages quando session ja esta dentro
+        # do settings extraction flow. Aceita "message" ou "text" no payload.
+        if session.phase == OnboardingPhase.SETTINGS_EXTRACTION:
+            payload = data or {}
+            message = payload.get("message") or payload.get("text") or ""
+            return await self.handle_settings_extraction_message(session, message)
+
         if event_type == "magic_link_used":
             return await self._handle_first_login(session)
 
