@@ -37,6 +37,49 @@ from app.shared.llm_models import CANONICAL_HAIKU_MODEL
 logger = logging.getLogger(__name__)
 
 
+# ---------------------------------------------------------------------------
+# F-100 telemetry (PR-13 / Opção C) — medir uso real de `right_panel_form`.
+#
+# Decisão Paulo 2026-05-26 (Opção C): `right_panel_form` é feature half-shipped
+# — backend extrai/funde 14 fields desse dict (extract_from_sources abaixo),
+# MAS o frontend NUNCA shipped a UI lateral que populava esse dict no chat-
+# initiated wizard. Zero matches em plataforma-lia.
+#
+# Plano: 48h de telemetria em prod → revisar contagem → decidir:
+#   Opção A — implementar UI lateral (~2-3 dias FE) se counter > 0 e crescendo.
+#   Opção B — remover backend órfão (~4h cleanup) se counter = 0 ou estagnado.
+#
+# Pattern canonical: app/services/voice/wsi_pipeline.py:30-55 (try/except +
+# REGISTRY lookup pra hot-reload race em dev / multi-import).
+# ---------------------------------------------------------------------------
+try:
+    from prometheus_client import REGISTRY as _PROM_REGISTRY
+    from prometheus_client import Counter as _PromCounter
+
+    _RIGHT_PANEL_METRIC_NAME = "lia_right_panel_form_received_total"
+    _existing_right_panel = getattr(
+        _PROM_REGISTRY, "_names_to_collectors", {}
+    ).get(_RIGHT_PANEL_METRIC_NAME)
+    if _existing_right_panel is not None:
+        lia_right_panel_form_received_total = _existing_right_panel
+    else:
+        lia_right_panel_form_received_total = _PromCounter(
+            _RIGHT_PANEL_METRIC_NAME,
+            (
+                "Total intake_extractor.extract_from_sources calls observed "
+                "with the optional right_panel_form dict. Label populated=true "
+                "iff dict is non-empty AND has at least one non-empty value. "
+                "Used to decide between Opção A (ship UI) vs Opção B (remove "
+                "backend) — see PR-13 F-100 telemetry."
+            ),
+            labelnames=("populated", "stage"),
+        )
+    _RIGHT_PANEL_METRICS_AVAILABLE = True
+except (ImportError, ValueError):  # pragma: no cover
+    lia_right_panel_form_received_total = None
+    _RIGHT_PANEL_METRICS_AVAILABLE = False
+
+
 # Provenance enum — kept backward compatible.
 #   * `user_text`         — extracted from the recruiter's free-text turn
 #   * `right_panel_form`  — supplied via the right-side draft form
@@ -432,6 +475,32 @@ class IntakeExtractor:
         returned payload exposes the dominant `source` per field so
         downstream stages can decide what to re-confirm.
         """
+        # ----- F-100 telemetry (PR-13) -------------------------------------
+        # Conta toda chamada e classifica se o dict opcional `right_panel_form`
+        # chegou populado. "Populado" = pelo menos um valor não-vazio (None,
+        # "", [], {} contam como vazio). Janela inicial: 48h em prod.
+        _rpf_populated = bool(
+            right_panel_form
+            and any(v not in (None, "", [], {}) for v in right_panel_form.values())
+        )
+        if lia_right_panel_form_received_total is not None:
+            try:
+                lia_right_panel_form_received_total.labels(
+                    populated="true" if _rpf_populated else "false",
+                    stage="intake",
+                ).inc()
+            except Exception:  # pragma: no cover — telemetria nunca quebra hot path
+                logger.debug(
+                    "right_panel_form counter inc failed", exc_info=True
+                )
+        # Log INFO complementar (canary durante a janela 48h).
+        logger.info(
+            "[right_panel_form] received populated=%s fields=%s",
+            _rpf_populated,
+            sorted(right_panel_form.keys()) if (right_panel_form and _rpf_populated) else [],
+        )
+        # -------------------------------------------------------------------
+
         # 1) Form fields are authoritative — wrap each non-empty entry.
         form_payload = JobIntakePayload(raw_input="")
         if right_panel_form:
