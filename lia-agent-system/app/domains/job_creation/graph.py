@@ -176,6 +176,9 @@ from app.domains.job_creation.helpers.intake_audit import emit_intake_audit
 from app.domains.job_creation.helpers.llm_exceptions import (
     classify_llm_exception_reason,
 )
+from app.domains.job_creation.helpers.ws_payload_builder import (
+    build_ws_stage_payload,
+)
 from app.domains.job_creation.audit_actions import PipelineTemplateAuditAction
 from app.domains.job_creation import dispatch_messages as _wizard_dispatch
 
@@ -743,10 +746,11 @@ def intake_node(state: JobCreationState) -> JobCreationState:
         "stage_history": (state.get("stage_history") or []) + ["intake"],
         "completeness": calculate_completeness("intake"),
         "requires_approval": False,
-        "ws_stage_payload": {
-            "type": "wizard_stage",
-            "stage": "intake",
-            "data": {
+        "ws_stage_payload": build_ws_stage_payload(
+            stage="intake",
+            completeness=calculate_completeness("intake"),
+            requires_approval=False,
+            data={
                 # Task #1099 — invariant: data.message obrigatório.
                 "message": (
                     f"Captei: {parsed_title}."
@@ -773,9 +777,7 @@ def intake_node(state: JobCreationState) -> JobCreationState:
                     "pipeline_template_db": _build_pipeline_template_db_suggestion(state),
                 },
             },
-            "completeness": calculate_completeness("intake"),
-            "requires_approval": False,
-        },
+        ),
     }
 
     # ── Sprint Pipeline Templates Gap #5 (2026-05-26) — wiring backend↔frontend ──
@@ -847,16 +849,15 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
                 "jd_approved": False,
                 "jd_quality_score": 0.0,
                 "stage_history": (state.get("stage_history") or []) + ["jd_enrichment_blocked"],
-                "ws_stage_payload": {
-                    "type": "wizard_stage",
-                    "stage": "jd_enrichment",
-                    "data": {
+                "ws_stage_payload": build_ws_stage_payload(
+                    stage="jd_enrichment",
+                    requires_approval=False,
+                    data={
                         "error": "fairness_blocked",
                         "category": _fg_input.category,
                         "message": _fg_input.educational_message,
                     },
-                    "requires_approval": False,
-                },
+                ),
             }
     except Exception as _fg_l1_exc:
         # Fail-open for guard regression — não bloqueia UX por bug do guard
@@ -995,16 +996,15 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
                 "requires_approval": False,
                 "stage_history": (state.get("stage_history") or [])
                 + [f"jd_enrichment_intent_{_intent}"],
-                "ws_stage_payload": {
-                    "type": "wizard_stage",
-                    "stage": "jd_enrichment",
-                    "data": {
+                "ws_stage_payload": build_ws_stage_payload(
+                    stage="jd_enrichment",
+                    requires_approval=False,
+                    data={
                         "awaiting_jd_input": True,
                         "intent_classified": _intent,
                         "message": _reply,
                     },
-                    "requires_approval": False,
-                },
+                ),
             }
         elif _intent == "intent_only":
             # Task #1123 — "quero abrir uma vaga" / similar: intenção clara
@@ -1044,15 +1044,14 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
             "jd_fairness_blocked": False,
             "requires_approval": False,
             "stage_history": (state.get("stage_history") or []) + ["jd_enrichment_awaiting_input"],
-            "ws_stage_payload": {
-                "type": "wizard_stage",
-                "stage": "jd_enrichment",
-                "data": {
+            "ws_stage_payload": build_ws_stage_payload(
+                stage="jd_enrichment",
+                requires_approval=False,
+                data={
                     "awaiting_jd_input": True,
                     "message": _ask_jd_msg,
                 },
-                "requires_approval": False,
-            },
+            ),
         }
 
     # ── Layer 2: PII strip (BEFORE LLM) ──
@@ -1201,16 +1200,15 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
                         "error": "fairness_blocked_output",
                         "requires_approval": False,
                         "stage_history": (state.get("stage_history") or []) + ["jd_enrichment_blocked_l3"],
-                        "ws_stage_payload": {
-                            "type": "wizard_stage",
-                            "stage": "jd_enrichment",
-                            "data": {
+                        "ws_stage_payload": build_ws_stage_payload(
+                            stage="jd_enrichment",
+                            requires_approval=False,
+                            data={
                                 "error": "fairness_blocked_output",
                                 "category": _fg_output.category,
                                 "message": _fg_output.educational_message,
                             },
-                            "requires_approval": False,
-                        },
+                        ),
                     }
         except Exception as _fg_l3_exc:
             logger.warning(
@@ -1255,10 +1253,11 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
         "stage_history": (state.get("stage_history") or []) + ["jd_enrichment"],
         "completeness": calculate_completeness("jd_enrichment"),
         "requires_approval": True,
-        "ws_stage_payload": {
-            "type": "wizard_stage",
-            "stage": "jd_enrichment",
-            "data": {
+        "ws_stage_payload": build_ws_stage_payload(
+            stage="jd_enrichment",
+            completeness=calculate_completeness("jd_enrichment"),
+            requires_approval=True,
+            data={
                 "message": _stage_message,
                 "jd_raw": raw_input,
                 "jd_enriched": jd_enriched_dict,
@@ -1295,9 +1294,7 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
                     "pipeline_template_db": _build_pipeline_template_db_suggestion(state),
                 },
             },
-            "completeness": calculate_completeness("jd_enrichment"),
-            "requires_approval": True,
-        },
+        ),
     }
 
     # ── Sprint Pipeline Templates Gap #5 (2026-05-26) — wiring backend↔frontend ──
@@ -1618,11 +1615,12 @@ def pipeline_template_node(state: JobCreationState) -> JobCreationState:
             "Você pode customizar depois nas configurações."
         )
 
-    ws_stage_payload = {
-        "type": "wizard_stage",
-        "stage": "pipeline_template",
-        "ui_action": "suggest_pipeline_template",
-        "data": {
+    ws_stage_payload = build_ws_stage_payload(
+        stage="pipeline_template",
+        completeness=calculate_completeness("pipeline_template"),
+        requires_approval=True,
+        ui_action="suggest_pipeline_template",
+        data={
             "message": message,
             "templates": templates,
             "suggested_template_id": suggested_template_id,
@@ -1634,9 +1632,7 @@ def pipeline_template_node(state: JobCreationState) -> JobCreationState:
                 "pipeline_template_db": db_sugg,
             },
         },
-        "completeness": calculate_completeness("pipeline_template"),
-        "requires_approval": True,
-    }
+    )
 
     stage_history = list(state.get("stage_history") or [])
     if "pipeline_template" not in stage_history:
@@ -1732,17 +1728,16 @@ def bigfive_node(state: JobCreationState) -> JobCreationState:
                 return {
                     **state,
                     "current_stage": "bigfive",
-                    "ws_stage_payload": {
-                        "type": "wizard_stage",
-                        "stage": "bigfive",
-                        "data": {
+                    "ws_stage_payload": build_ws_stage_payload(
+                        stage="bigfive",
+                        completeness=0,
+                        requires_approval=False,
+                        data={
                             "message": _bf_block_msg,
                             "fairness_blocked": True,
                             "fairness_category": _bf_fg_result.category,
                         },
-                        "completeness": 0,
-                        "requires_approval": False,
-                    },
+                    ),
                 }
         except Exception as _bf_fg_exc:
             logger.warning("[JobCreation:bigfive] FairnessGuard pre-check failed (fail-open): %s", _bf_fg_exc)
@@ -1785,10 +1780,11 @@ def bigfive_node(state: JobCreationState) -> JobCreationState:
             "error": f"Big Five bloqueado: {_policy_result.rationale}",
             "pending_human_confirmation": False,
             "requires_approval": False,
-            "ws_stage_payload": {
-                "type": "wizard_stage",
-                "stage": "bigfive",
-                "data": {
+            "ws_stage_payload": build_ws_stage_payload(
+                stage="bigfive",
+                completeness=0,
+                requires_approval=False,
+                data={
                     # Task #1099 — invariant: data.message obrigatório.
                     "message": (
                         "Não consigo gerar o perfil Big Five — política da "
@@ -1797,9 +1793,7 @@ def bigfive_node(state: JobCreationState) -> JobCreationState:
                     "policy_blocked": True,
                     "policy_decision": _pd_dict,
                 },
-                "completeness": 0,
-                "requires_approval": False,
-            },
+            ),
         }
     _pending_hitl = (_policy_result.decision == PolicyDecision.HITL_REQUIRED)
 
@@ -1883,10 +1877,11 @@ def bigfive_node(state: JobCreationState) -> JobCreationState:
         "requires_approval": _pending_hitl,
         "pending_human_confirmation": _pending_hitl,
         "policy_decisions": _policy_decisions_local,
-        "ws_stage_payload": {
-            "type": "wizard_stage",
-            "stage": "bigfive",
-            "data": {
+        "ws_stage_payload": build_ws_stage_payload(
+            stage="bigfive",
+            completeness=calculate_completeness("bigfive"),
+            requires_approval=_pending_hitl,
+            data={
                 # Task #1099 — invariant: data.message obrigatório em todo
                 # retorno com current_stage setado. Sem isso o
                 # WizardSessionService cai em _emit_silent_fallback
@@ -1922,9 +1917,7 @@ def bigfive_node(state: JobCreationState) -> JobCreationState:
                 ),
                 **_pd_data,
             },
-            "completeness": calculate_completeness("bigfive"),
-            "requires_approval": _pending_hitl,
-        },
+        ),
     }
 
     # ── Task #1061: wizard_step_completed audit (EU AI Act Art.13) ──
@@ -2076,10 +2069,11 @@ def salary_node(state: JobCreationState) -> JobCreationState:
         "stage_history": (state.get("stage_history") or []) + ["salary"],
         "completeness": calculate_completeness("salary"),
         "requires_approval": False,
-        "ws_stage_payload": {
-            "type": "wizard_stage",
-            "stage": "salary",
-            "data": {
+        "ws_stage_payload": build_ws_stage_payload(
+            stage="salary",
+            completeness=calculate_completeness("salary"),
+            requires_approval=False,
+            data={
                 # Task #1099 — invariant: data.message obrigatório.
                 "message": (
                     "Faixa salarial e benefícios prontos"
@@ -2105,9 +2099,7 @@ def salary_node(state: JobCreationState) -> JobCreationState:
                     state, "salary", salary_fallback_reason,
                 ),
             },
-            "completeness": calculate_completeness("salary"),
-            "requires_approval": False,
-        },
+        ),
     }
 
     elapsed = (time.time() - t0) * 1000
@@ -2170,10 +2162,11 @@ def competency_node(state: JobCreationState) -> JobCreationState:
         "stage_history": (state.get("stage_history") or []) + ["competency"],
         "completeness": calculate_completeness("competency"),
         "requires_approval": False,
-        "ws_stage_payload": {
-            "type": "wizard_stage",
-            "stage": "competency",
-            "data": {
+        "ws_stage_payload": build_ws_stage_payload(
+            stage="competency",
+            completeness=calculate_completeness("competency"),
+            requires_approval=False,
+            data={
                 # Task #1099 — invariant: data.message obrigatório.
                 "message": (
                     f"Resolvi a senioridade ({seniority_result.display_name}) "
@@ -2193,9 +2186,7 @@ def competency_node(state: JobCreationState) -> JobCreationState:
                 "distribution": distribution,
                 "competency_tree": competency_tree,
             },
-            "completeness": calculate_completeness("competency"),
-            "requires_approval": False,
-        },
+        ),
     }
 
     # ── Task #1061: wizard_step_completed audit (EU AI Act Art.13) ──
@@ -2257,10 +2248,11 @@ def wsi_questions_node(state: JobCreationState) -> JobCreationState:
             "error": f"WSI gen blocked: {_wsi_policy.rationale}",
             "pending_human_confirmation": False,
             "requires_approval": False,
-            "ws_stage_payload": {
-                "type": "wizard_stage",
-                "stage": "wsi_questions",
-                "data": {
+            "ws_stage_payload": build_ws_stage_payload(
+                stage="wsi_questions",
+                completeness=0,
+                requires_approval=False,
+                data={
                     # Task #1099 — invariant: data.message obrigatório.
                     "message": (
                         "Não consigo gerar as perguntas WSI — política da "
@@ -2269,9 +2261,7 @@ def wsi_questions_node(state: JobCreationState) -> JobCreationState:
                     "policy_blocked": True,
                     "policy_decision": _wsi_pd_dict,
                 },
-                "completeness": 0,
-                "requires_approval": False,
-            },
+            ),
         }
     _wsi_pending_hitl = (_wsi_policy.decision == PolicyDecision.HITL_REQUIRED)
 
@@ -2524,13 +2514,12 @@ def wsi_questions_node(state: JobCreationState) -> JobCreationState:
         "requires_approval": True,
         "pending_human_confirmation": locals().get("_wsi_pending_hitl", False),
         "policy_decisions": locals().get("_wsi_pd_decisions", state.get("policy_decisions") or []),
-        "ws_stage_payload": {
-            "type": "wizard_stage",
-            "stage": "wsi_questions",
-            "data": _wsi_stage_data,
-            "completeness": calculate_completeness("wsi_questions"),
-            "requires_approval": True,
-        },
+        "ws_stage_payload": build_ws_stage_payload(
+            stage="wsi_questions",
+            completeness=calculate_completeness("wsi_questions"),
+            requires_approval=True,
+            data=_wsi_stage_data,
+        ),
     }
     # Inject policy_decision into ws_stage_payload.data for HITL/ALLOW visibility
     if "_wsi_policy" in dir():
@@ -2608,10 +2597,11 @@ def eligibility_node(state: JobCreationState) -> JobCreationState:
         "stage_history": (state.get("stage_history") or []) + ["eligibility"],
         "completeness": calculate_completeness("eligibility"),
         "requires_approval": False,
-        "ws_stage_payload": {
-            "type": "wizard_stage",
-            "stage": "eligibility",
-            "data": {
+        "ws_stage_payload": build_ws_stage_payload(
+            stage="eligibility",
+            completeness=calculate_completeness("eligibility"),
+            requires_approval=False,
+            data={
                 # Task #1099 — invariant: data.message obrigatório.
                 "message": (
                     f"Configurei {len(questions)} pergunta(s) eliminatória(s) "
@@ -2622,9 +2612,7 @@ def eligibility_node(state: JobCreationState) -> JobCreationState:
                 ),
                 "questions": questions,
             },
-            "completeness": calculate_completeness("eligibility"),
-            "requires_approval": False,
-        },
+        ),
     }
 
     # ── Task #1061: wizard_step_completed audit (EU AI Act Art.13) ──
@@ -2682,10 +2670,11 @@ def review_node(state: JobCreationState) -> JobCreationState:
         "stage_history": (state.get("stage_history") or []) + ["review"],
         "completeness": calculate_completeness("review"),
         "requires_approval": False,
-        "ws_stage_payload": {
-            "type": "wizard_stage",
-            "stage": "review",
-            "data": {
+        "ws_stage_payload": build_ws_stage_payload(
+            stage="review",
+            completeness=calculate_completeness("review"),
+            requires_approval=False,
+            data={
                 # Task #1099 — invariant: data.message obrigatório.
                 "message": (
                     "Tudo pronto para publicar. Quer revisar algo ou "
@@ -2700,9 +2689,7 @@ def review_node(state: JobCreationState) -> JobCreationState:
                 "readiness": readiness,
                 "defaults_applied": defaults_applied,
             },
-            "completeness": calculate_completeness("review"),
-            "requires_approval": False,
-        },
+        ),
     }
 
     elapsed = (time.time() - t0) * 1000
@@ -2750,9 +2737,11 @@ def publish_node(state: JobCreationState) -> JobCreationState:
             "error": _pub_policy.rationale,
             "pending_human_confirmation": False,
             "requires_approval": False,
-            "ws_stage_payload": {
-                "type": "wizard_stage", "stage": "publish",
-                "data": {
+            "ws_stage_payload": build_ws_stage_payload(
+                stage="publish",
+                completeness=0,
+                requires_approval=False,
+                data={
                     # Task #1099 — invariant: data.message obrigatório.
                     "message": (
                         "Não consigo publicar a vaga — "
@@ -2761,8 +2750,7 @@ def publish_node(state: JobCreationState) -> JobCreationState:
                     "policy_blocked": True,
                     "policy_decision": _pub_pd_dict,
                 },
-                "completeness": 0, "requires_approval": False,
-            },
+            ),
         }
 
     if _pub_policy.decision == PolicyDecision.HITL_REQUIRED and not _pub_confirmed:
@@ -2774,9 +2762,11 @@ def publish_node(state: JobCreationState) -> JobCreationState:
             "pending_human_confirmation": True,
             "requires_approval": True,
             "job_id": None,
-            "ws_stage_payload": {
-                "type": "wizard_stage", "stage": "publish",
-                "data": {
+            "ws_stage_payload": build_ws_stage_payload(
+                stage="publish",
+                completeness=0,
+                requires_approval=True,
+                data={
                     # Task #1099 — invariant: data.message obrigatório.
                     "message": (
                         "Antes de publicar, preciso da sua confirmação "
@@ -2785,8 +2775,7 @@ def publish_node(state: JobCreationState) -> JobCreationState:
                     "policy_decision": _pub_pd_dict,
                     "policy_pending_confirmation": True,
                 },
-                "completeness": 0, "requires_approval": True,
-            },
+            ),
         }
 
     api = _get_api_client(state)
@@ -2875,10 +2864,11 @@ def publish_node(state: JobCreationState) -> JobCreationState:
         "requires_approval": False,
         "pending_human_confirmation": False,
         "policy_decisions": locals().get("_pub_pd_decisions", state.get("policy_decisions") or []),
-        "ws_stage_payload": {
-            "type": "wizard_stage",
-            "stage": "publish",
-            "data": {
+        "ws_stage_payload": build_ws_stage_payload(
+            stage="publish",
+            completeness=calculate_completeness("publish"),
+            requires_approval=False,
+            data={
                 # Task #1099 — invariant: data.message obrigatório.
                 "message": (
                     f"Tive um problema ao publicar a vaga: {error}. "
@@ -2898,9 +2888,7 @@ def publish_node(state: JobCreationState) -> JobCreationState:
                 "auto_screen": state.get("auto_screen_enabled", True),
                 "error": error,
             },
-            "completeness": calculate_completeness("publish"),
-            "requires_approval": False,
-        },
+        ),
     }
 
     # ── Audit EU AI Act Art.13 — publish job decision ──
@@ -3061,10 +3049,11 @@ def calibration_node(state: JobCreationState) -> JobCreationState:
         "stage_history": _stage_history + ["calibration"],
         "completeness": calculate_completeness("calibration"),
         "requires_approval": False,
-        "ws_stage_payload": {
-            "type": "wizard_stage",
-            "stage": "calibration",
-            "data": {
+        "ws_stage_payload": build_ws_stage_payload(
+            stage="calibration",
+            completeness=calculate_completeness("calibration"),
+            requires_approval=False,
+            data={
                 # Task #1099 — invariant: data.message obrigatório.
                 # Sprint O.3 — fresh-publish branch above for UX celebratory.
                 "message": _calib_message,
@@ -3078,9 +3067,7 @@ def calibration_node(state: JobCreationState) -> JobCreationState:
                 "complete": complete,
                 "fresh_publish": _fresh_publish_zero_cands,
             },
-            "completeness": calculate_completeness("calibration"),
-            "requires_approval": False,
-        },
+        ),
     }
 
     # ── LL-1 — Calibration delta loop (canonical wiring) ──
@@ -3157,10 +3144,11 @@ def handoff_node(state: JobCreationState) -> JobCreationState:
         "stage_history": (state.get("stage_history") or []) + ["handoff"],
         "completeness": 1.0,
         "requires_approval": False,
-        "ws_stage_payload": {
-            "type": "wizard_stage",
-            "stage": "handoff",
-            "data": {
+        "ws_stage_payload": build_ws_stage_payload(
+            stage="handoff",
+            completeness=1.0,
+            requires_approval=False,
+            data={
                 # Task #1099 — invariant: data.message obrigatório.
                 "message": (
                     "Vaga pronta! Vou levar você para a página da vaga"
@@ -3171,9 +3159,7 @@ def handoff_node(state: JobCreationState) -> JobCreationState:
                 "handoff_url": handoff_url,
                 "share_link": share_link,
             },
-            "completeness": 1.0,
-            "requires_approval": False,
-        },
+        ),
     }
 
     # NOTE on LL-2 manager preferences learning loop:
