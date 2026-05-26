@@ -57,6 +57,7 @@ const FairnessComplianceHub = dynamic(() => import("@/components/settings/Fairne
 const WebhooksManager = dynamic(() => import("@/components/settings/WebhooksManager").then(m => ({ default: m.WebhooksManager })), { ssr: false, loading: () => <I18nLoadingFallback tKey="webhooks" /> })
 // PR 3 (2026-05-25): GovernancaHub removido — panels movidos para /wedo-admin/governanca/ (staff) e Consent/DSR/AuditSummary integrados em FairnessComplianceHub.
 
+import { OnboardingProgressBar } from "@/components/onboarding/OnboardingProgressBar"
 import { textStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
 import { useHoverDebounce } from '@/lib/sidebar/useHoverDebounce'
 import { ErrorBoundarySection } from"@/components/ui/error-boundary-section"
@@ -657,12 +658,7 @@ export default function SettingsPageEnhanced() {
                     </span>
                   </div>
                 </div>
-                <div className="w-full bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full h-1.5 mb-3">
-                  <div
-                    className="bg-lia-btn-primary-bg dark:bg-lia-bg-secondary h-1.5 rounded-full transition-[width,height] duration-500"
-                    style={{width: `${progressMetrics.overall}%`}}
-                  />
-                </div>
+                <OnboardingProgressBar variant="compact" initialProgress={progressMetrics.overall} showLabel={false} className="mb-3" />
 
               </div>
             )}

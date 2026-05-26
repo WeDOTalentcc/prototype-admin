@@ -59,6 +59,10 @@ vi.mock("@/components/settings/AnalyzeWebsiteModal", () => ({
   AnalyzeWebsiteModal: () => null,
 }))
 
+vi.mock("@/components/settings/SettingsEditModeToggle", () => ({
+  SettingsEditModeToggle: () => <div data-testid="settings-edit-mode-toggle-mock" />,
+}))
+
 vi.mock("@/components/settings/MinhaEmpresaCard", () => ({
   MinhaEmpresaCard: () => <div data-testid="minha-empresa-card">Card</div>,
 }))

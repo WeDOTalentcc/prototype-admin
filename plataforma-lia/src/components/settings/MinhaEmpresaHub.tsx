@@ -20,6 +20,7 @@ import { Globe } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { HubHeader, HubLoadingState } from "./_shared"
+import { SettingsEditModeToggle } from "@/components/settings/SettingsEditModeToggle"
 
 const ICON_MAP: Record<string, LucideIcon> = {
   Building,
@@ -175,6 +176,7 @@ export function MinhaEmpresaHub({ activeSubsection }: MinhaEmpresaHubProps = {})
       <div>
         <HubHeader title={t("title")} description={t("description")}>
           <div className="flex items-center gap-3">
+            <SettingsEditModeToggle hubId="minha-empresa" />
             <Button
               type="button"
               variant="outline"
