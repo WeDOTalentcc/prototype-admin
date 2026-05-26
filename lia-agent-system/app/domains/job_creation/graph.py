@@ -3426,6 +3426,22 @@ def jd_gate_node(state: JobCreationState) -> JobCreationState:
         next_state["raw_input"] = str(new_content)[:8000]
         next_state["jd_enriched"] = None  # invalida cache → jd_enrichment_node re-roda
         next_state["jd_quality_score"] = 0.0
+        # F-1.6 (P0-#3): provide_new_content cascade invalidation.
+        # Recrutador trocando JD: derivados (bigfive, traits, wsi questions,
+        # competency tree, pipeline template) foram calculados sobre a JD
+        # ANTERIOR. Sem zerar, wizard publicaria vaga com mistura de 2 JDs
+        # diferentes. Próximo turno re-calcula do zero sobre a nova JD.
+        # Sprint Pipeline Templates (2026-05-26) expandiu escopo: agora
+        # pipeline_template_id + score + skipped + interview_stages também
+        # ficam stale e precisam ser invalidados aqui.
+        next_state["bigfive_profile"] = None
+        next_state["trait_rankings"] = []
+        next_state["wsi_questions"] = []
+        next_state["competency_tree"] = []
+        next_state["pipeline_template_id"] = None
+        next_state["pipeline_template_score"] = None
+        next_state["pipeline_template_skipped"] = False
+        next_state["interview_stages"] = []
         next_state["gate_clarify_message"] = (
             output.conversational_reply
             or "Recebi a descrição nova. Vou re-enriquecer agora."
