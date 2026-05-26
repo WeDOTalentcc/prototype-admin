@@ -4616,7 +4616,75 @@
       },
       "tabPipeline": "Pipeline",
       "tabScreening": "Eligibility Questions",
-      "tabHiringPolicies": "Hiring Policies"
+      "tabHiringPolicies": "Hiring Policies",
+      "pipelineTemplates": {
+        "title": "Pipeline Templates",
+        "subtitle": "Create and manage reusable pipeline templates. Apply them to new jobs to standardize stages, SLAs and instructions per area (doctors, leadership, IT…).",
+        "newTemplate": "New template",
+        "newTemplateDefaultName": "New pipeline template",
+        "newStageDefaultName": "New stage",
+        "selectOrCreate": "Select a template on the left or create a new one to get started.",
+        "unsavedConfirm": "You have unsaved changes. Discard them?",
+        "loading": "Loading templates…",
+        "loadError": "Couldn't load templates. Please try again.",
+        "stagesHeading": "Pipeline stages",
+        "noStages": "No stages yet. Add the first one to save the template.",
+        "confirmArchiveTitle": "Archive template",
+        "confirmArchive": "Archive this template? It will no longer appear for new jobs, but its history is preserved.",
+        "confirmDeleteTitle": "Delete template",
+        "confirmDelete": "Delete this template? This action cannot be undone.",
+        "actions": {
+          "edit": "Edit",
+          "clone": "Clone",
+          "archive": "Archive",
+          "delete": "Delete",
+          "save": "Save",
+          "cancel": "Cancel",
+          "addStage": "Add stage",
+          "removeStage": "Remove stage"
+        },
+        "fields": {
+          "name": "Name",
+          "namePlaceholder": "e.g. Doctors — On-call",
+          "description": "Description",
+          "isDefault": "Set as default",
+          "isActive": "Active",
+          "departmentHint": "Suggested departments",
+          "departmentHintPlaceholder": "e.g. Health, Doctors",
+          "seniorityHint": "Suggested seniority levels",
+          "seniorityHintPlaceholder": "e.g. Mid, Senior",
+          "jobFamilyHint": "Suggested job families",
+          "jobFamilyHintPlaceholder": "e.g. Doctor, Specialist",
+          "csvHelp": "Separate multiple values with commas.",
+          "stageName": "Stage name",
+          "stageNamePlaceholder": "e.g. Clinical screening",
+          "stageType": "Type",
+          "slaDays": "SLA (days)",
+          "stageInstructions": "Instructions",
+          "stageInstructionsPlaceholder": "Guidance for LIA and the recruiter at this stage."
+        },
+        "stageType": {
+          "automatic": "Automatic",
+          "manual": "Manual",
+          "hybrid": "Hybrid"
+        },
+        "states": {
+          "active": "Active",
+          "archived": "Archived"
+        },
+        "empty": {
+          "title": "No templates yet",
+          "description": "Create one from scratch or apply the WeDOTalent default templates to get started.",
+          "cta": "Create first template",
+          "seedCta": "Apply default templates"
+        },
+        "hints": {
+          "stagesCount_one": "{count} stage",
+          "stagesCount_other": "{count} stages",
+          "usageCount_one": "{count} use",
+          "usageCount_other": "{count} uses"
+        }
+      }
     },
     "communication": {
       "tabs": {

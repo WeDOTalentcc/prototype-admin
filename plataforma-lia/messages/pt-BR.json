@@ -4616,7 +4616,75 @@
       },
       "tabPipeline": "Pipeline",
       "tabScreening": "Perguntas de Elegibilidade",
-      "tabHiringPolicies": "Políticas de Recrutamento"
+      "tabHiringPolicies": "Políticas de Recrutamento",
+      "pipelineTemplates": {
+        "title": "Templates de Pipeline",
+        "subtitle": "Crie e gerencie modelos reutilizáveis de pipeline. Aplique-os a vagas novas para padronizar etapas, SLAs e instruções por área (médicos, liderança, TI…).",
+        "newTemplate": "Novo template",
+        "newTemplateDefaultName": "Novo template de pipeline",
+        "newStageDefaultName": "Nova etapa",
+        "selectOrCreate": "Selecione um template à esquerda ou crie um novo para começar.",
+        "unsavedConfirm": "Você tem alterações não salvas. Deseja descartar?",
+        "loading": "Carregando templates…",
+        "loadError": "Não foi possível carregar os templates. Tente novamente.",
+        "stagesHeading": "Etapas do pipeline",
+        "noStages": "Nenhuma etapa ainda. Adicione a primeira para salvar o template.",
+        "confirmArchiveTitle": "Arquivar template",
+        "confirmArchive": "Arquivar este template? Ele deixará de aparecer para uso em novas vagas, mas o histórico será preservado.",
+        "confirmDeleteTitle": "Excluir template",
+        "confirmDelete": "Excluir este template? Esta ação não pode ser desfeita.",
+        "actions": {
+          "edit": "Editar",
+          "clone": "Clonar",
+          "archive": "Arquivar",
+          "delete": "Excluir",
+          "save": "Salvar",
+          "cancel": "Cancelar",
+          "addStage": "Adicionar etapa",
+          "removeStage": "Remover etapa"
+        },
+        "fields": {
+          "name": "Nome",
+          "namePlaceholder": "Ex: Médicos — Plantonistas",
+          "description": "Descrição",
+          "isDefault": "Definir como padrão",
+          "isActive": "Ativo",
+          "departmentHint": "Departamentos sugeridos",
+          "departmentHintPlaceholder": "Ex: Saúde, Médicos",
+          "seniorityHint": "Senioridades sugeridas",
+          "seniorityHintPlaceholder": "Ex: Pleno, Sênior",
+          "jobFamilyHint": "Famílias de cargo sugeridas",
+          "jobFamilyHintPlaceholder": "Ex: Médico, Especialista",
+          "csvHelp": "Separe múltiplos valores por vírgula.",
+          "stageName": "Nome da etapa",
+          "stageNamePlaceholder": "Ex: Triagem clínica",
+          "stageType": "Tipo",
+          "slaDays": "SLA (dias)",
+          "stageInstructions": "Instruções",
+          "stageInstructionsPlaceholder": "Orientações para a LIA e para o recrutador nesta etapa."
+        },
+        "stageType": {
+          "automatic": "Automática",
+          "manual": "Manual",
+          "hybrid": "Híbrida"
+        },
+        "states": {
+          "active": "Ativo",
+          "archived": "Arquivado"
+        },
+        "empty": {
+          "title": "Nenhum template ainda",
+          "description": "Crie um template do zero ou aplique os modelos padrão WeDOTalent para começar.",
+          "cta": "Criar primeiro template",
+          "seedCta": "Aplicar templates padrão"
+        },
+        "hints": {
+          "stagesCount_one": "{count} etapa",
+          "stagesCount_other": "{count} etapas",
+          "usageCount_one": "{count} uso",
+          "usageCount_other": "{count} usos"
+        }
+      }
     },
     "communication": {
       "tabs": {
