@@ -84,6 +84,8 @@
     "@rails/actioncable": "^8.1.300",
     "@replit/connectors-sdk": "^0.2.0",
     "@sentry/nextjs": "^10.46.0",
+    "@tanstack/react-query": "^5.100.14",
+    "@tanstack/react-query-devtools": "^5.100.14",
     "@tanstack/react-virtual": "^3.13.19",
     "@testing-library/dom": "^10.4.1",
     "@tiptap/extension-link": "^3.22.3",

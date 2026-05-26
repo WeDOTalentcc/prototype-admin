@@ -1,7 +1,10 @@
 "use client"
 
+import { useState } from "react"
 import { usePathname } from "next/navigation"
 import { useMemo } from "react"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
 import { DashboardApp } from "@/components/dashboard-app"
 import { labelFromPath } from "@/lib/navigation/routes"
 
@@ -28,11 +31,30 @@ export default function DashboardLayoutClient({
 }: {
   children: React.ReactNode
 }) {
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            staleTime: 30_000,
+            retry: 2,
+            refetchOnWindowFocus: false,
+          },
+        },
+      }),
+  )
   const pathname = usePathname()
   const initialPage = useMemo(
     () => pathnameToCurrentPage(pathname),
     [pathname],
   )
 
-  return <DashboardApp initialPage={initialPage}>{children}</DashboardApp>
+  return (
+    <QueryClientProvider client={queryClient}>
+      <DashboardApp initialPage={initialPage}>{children}</DashboardApp>
+      {process.env.NODE_ENV === "development" && (
+        <ReactQueryDevtools initialIsOpen={false} />
+      )}
+    </QueryClientProvider>
+  )
 }
