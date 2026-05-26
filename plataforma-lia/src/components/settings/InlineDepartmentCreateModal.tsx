@@ -41,12 +41,21 @@ export interface CreatedDepartment {
   name: string
 }
 
+/** Quando fornecida, o modal delega o POST ao produtor (fix P1 save-duplicado).
+ *  Quando ausente, usa fetch inline (compatibilidade retroativa). */
+export type InlineDepartmentSaveFn = (
+  name: string,
+  payload: { code?: string; managerEmail?: string }
+) => Promise<CreatedDepartment>
+
 interface InlineDepartmentCreateModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   companyId: string | null | undefined
   existingDepartments?: Array<{ id?: string; name: string }>
   onCreated: (dept: CreatedDepartment) => void
+  /** Produtor canônico de save. Quando passado, remove fetch duplicado do modal. */
+  onSave?: InlineDepartmentSaveFn
 }
 
 export function InlineDepartmentCreateModal({
@@ -55,6 +64,7 @@ export function InlineDepartmentCreateModal({
   companyId,
   existingDepartments = [],
   onCreated,
+  onSave,
 }: InlineDepartmentCreateModalProps) {
   const t = useTranslations("settings.users")
   const [name, setName] = useState("")
@@ -104,52 +114,65 @@ export function InlineDepartmentCreateModal({
 
     setIsSubmitting(true)
     try {
-      // Payload canonical (subset de useDepartmentManagement.saveDepartmentToAPI)
-      const payload: Record<string, unknown> = {
-        name: trimmedName,
-        description: "",
-        manager_name: "",
-        manager_title: "",
-        manager_email: managerEmail.trim() || "",
-        manager_phone: "",
-        headcount: 0,
-        color: "",
-      }
-      if (code.trim()) {
-        payload.code = code.trim()
-      }
+      let newDept: CreatedDepartment
 
-      const res = await apiFetch(
-        `/api/backend-proxy/company/departments?company_id=${encodeURIComponent(companyId)}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
+      if (onSave) {
+        // Produtor canônico delega o POST (fix P1: sem save duplicado no modal).
+        // O caller é responsável pela lógica de fetch — modal fica thin.
+        newDept = await onSave(trimmedName, {
+          code: code.trim() || undefined,
+          managerEmail: managerEmail.trim() || undefined,
+        })
+      } else {
+        // Fallback inline mantido para compatibilidade retroativa quando
+        // o caller não fornece onSave (contextos sem acesso ao hook canonical).
+        const payload: Record<string, unknown> = {
+          name: trimmedName,
+          description: "",
+          manager_name: "",
+          manager_title: "",
+          manager_email: managerEmail.trim() || "",
+          manager_phone: "",
+          headcount: 0,
+          color: "",
         }
-      )
+        if (code.trim()) {
+          payload.code = code.trim()
+        }
 
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}))
-        const detail =
-          (typeof body.detail === "string" ? body.detail : null) ||
-          (typeof body.message === "string" ? body.message : null) ||
-          `HTTP ${res.status}`
-        setError(`Falha ao criar departamento: ${detail}`)
-        setIsSubmitting(false)
-        return
-      }
+        const companyIdSafe = companyId ?? ""
+        const res = await apiFetch(
+          "/api/backend-proxy/company/departments?company_id=" + encodeURIComponent(companyIdSafe),
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          }
+        )
 
-      const result = await res.json().catch(() => ({}))
-      // Backend canonical returns dept object com id; some routes wrap em ResponseEnvelope
-      const newDept: CreatedDepartment = {
-        id: result?.id || result?.data?.id || result?.department?.id || "",
-        name: result?.name || result?.data?.name || trimmedName,
-      }
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}))
+          const detail =
+            (typeof body.detail === "string" ? body.detail : null) ||
+            (typeof body.message === "string" ? body.message : null) ||
+            "HTTP " + res.status
+          setError("Falha ao criar departamento: " + detail)
+          setIsSubmitting(false)
+          return
+        }
 
-      if (!newDept.id) {
-        setError("Departamento criado mas resposta sem ID. Recarregue a lista.")
-        setIsSubmitting(false)
-        return
+        const result = await res.json().catch(() => ({}))
+        // Backend canonical returns dept object com id; some routes wrap em ResponseEnvelope
+        newDept = {
+          id: result?.id || result?.data?.id || result?.department?.id || "",
+          name: result?.name || result?.data?.name || trimmedName,
+        }
+
+        if (!newDept.id) {
+          setError("Departamento criado mas resposta sem ID. Recarregue a lista.")
+          setIsSubmitting(false)
+          return
+        }
       }
 
       // Success

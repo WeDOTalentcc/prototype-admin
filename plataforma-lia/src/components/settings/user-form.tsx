@@ -10,8 +10,9 @@ import { useTranslations } from "next-intl"
 import { useAuth } from "@/contexts/auth-context"
 import { SalaryGrantConfirmDialog } from "./SalaryGrantConfirmDialog"
 import { SensitivePiiGrantConfirmDialog } from "./SensitivePiiGrantConfirmDialog"
-import { InlineDepartmentCreateModal, type CreatedDepartment } from "./InlineDepartmentCreateModal"
+import { InlineDepartmentCreateModal, type CreatedDepartment, type InlineDepartmentSaveFn } from "./InlineDepartmentCreateModal"
 import { useCompanyId } from "@/hooks/company/useCompanyId"
+import { apiFetch } from "@/lib/api/api-fetch"
 
 interface UserFormProps {
   departments?: Array<{ id?: string; name: string }>
@@ -47,6 +48,44 @@ export function UserForm({ isCreating, formData, setFormData, onSave, onCancel, 
   const { companyId } = useCompanyId()
   const [isCreateDeptOpen, setIsCreateDeptOpen] = useState(false)
   const [prevDeptIdBeforeCreate, setPrevDeptIdBeforeCreate] = useState<string | null>(null)
+
+  // Fix P1 (2026-05-26): produtor canônico de save para InlineDepartmentCreateModal.
+  // Remove fetch duplicado do modal — modal fica thin, lógica de persistência fica aqui.
+  const handleCreateDepartmentSave: InlineDepartmentSaveFn = async (name, { code, managerEmail } = {}) => {
+    const payload: Record<string, unknown> = {
+      name,
+      description: "",
+      manager_name: "",
+      manager_title: "",
+      manager_email: managerEmail ?? "",
+      manager_phone: "",
+      headcount: 0,
+      color: "",
+    }
+    if (code) payload.code = code
+    const cid = companyId ?? ""
+    const res = await apiFetch(
+      "/api/backend-proxy/company/departments?company_id=" + encodeURIComponent(cid),
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      }
+    )
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}))
+      const detail =
+        (typeof body.detail === "string" ? body.detail : null) ||
+        (typeof body.message === "string" ? body.message : null) ||
+        "HTTP " + res.status
+      throw new Error("Falha ao criar departamento: " + detail)
+    }
+    const result = await res.json().catch(() => ({}))
+    return {
+      id: result?.id || result?.data?.id || result?.department?.id || "",
+      name: result?.name || result?.data?.name || name,
+    }
+  }
 
   return (
     <>
@@ -357,6 +396,7 @@ export function UserForm({ isCreating, formData, setFormData, onSave, onCancel, 
         }}
         companyId={companyId}
         existingDepartments={departments}
+        onSave={handleCreateDepartmentSave}
         onCreated={(newDept: CreatedDepartment) => {
           // Auto-select new dept no form
           setFormData(prev => ({
