@@ -53,6 +53,52 @@ _NAV_IMPERATIVE_PREFIXES = re.compile(
     re.IGNORECASE,
 )
 
+# CR-1 fix (2026-05-26) — actionable analytics intent veto.
+#
+# Keywords abaixo indicam que user está pedindo AÇÃO de analytics
+# (gerar relatório, análise de funil, métrica, KPI, taxa, velocidade,
+# gargalo, comparação, tendência, status). Para essas queries há tool
+# real registrada em ``app/orchestrator/action_handlers/analytics_actions.py``
+# (gerar_relatorio_kpi, analisar_funil, vagas_sem_candidatos, etc.) que
+# deve rodar — NÃO devemos deflectar pra "Posso te levar pro ambiente de
+# X". ActionExecutor tem precedência.
+#
+# Bug histórico: transcript Paulo 2026-05-26 mostrou query
+# "faca analise de funil e velocidade de gargalo das vagas ativas"
+# sendo deflectada pra page='Vagas' confidence=0.84, em vez de invocar
+# get_vacancy_funnel/get_velocity_metrics/get_bottleneck_analysis.
+#
+# Sensor: tests/contract/test_navigation_intent_yields_to_actionable.py
+_ACTIONABLE_ANALYTICS_KEYWORDS = re.compile(
+    r"\b("
+    # Análise/análise SEGUIDO de contexto analytics (não candidato/CV/currículo
+    # — esses são nav legítima pra Funil de Talentos). v2 refined 2026-05-26.
+    r"an[áa]li[sc]es?\s+(de|do|da)\s+(funil|gargalo|pipeline|kpi|m[ée]trica|relat[óo]rio|velocidade|status|tend[êe]ncia|convers[ãa]o|performance)|"
+    r"an[áa]li[sc]ar\s+(o\s+|a\s+)?(funil|gargalo|pipeline|kpi|m[ée]trica|relat[óo]rio|velocidade|status|tend[êe]ncia|convers[ãa]o|performance)|"
+    # Relatório (sempre tool)
+    r"relat[óo]rios?|"
+    # Velocidade / gargalo (analytics terms)
+    r"velocidade|gargalos?|"
+    # Métricas / KPI
+    r"m[ée]tricas?|kpis?|"
+    # Taxa / conversão
+    r"taxa\s+de|convers[ãa]o|"
+    # Quantitativo (perguntas "quantos X?")
+    r"quantos|quantas|quanto|quanta|"
+    # Comparação / tendência
+    r"compare|comparar|comparativ[oa]|compara[çc][ãa]o|"
+    r"tend[êe]ncia|"
+    # Status / como está
+    r"status\s+(do|da|de)|"
+    r"como\s+est[áa]|"
+    # Funil-de-query (taxa/status/velocidade de funil)
+    r"qual\s+(a|o)\s+(taxa|velocidade|status|funil|convers[ãa]o)|"
+    # Vagas sem candidatos (vacancies_without_candidates tool)
+    r"sem\s+candidatos"
+    r")\b",
+    re.IGNORECASE,
+)
+
 _PATTERNS: list[tuple[list[tuple[str, float]], str, str]] = [
     # ([(keyword, weight), ...], page_name, hint_text)
     # weight: 1.0 = strong action phrase, 0.3 = generic/ambiguous word
@@ -124,6 +170,20 @@ class NavigationIntentDetector:
     def detect(self, message: str) -> NavigationIntentResult:
         logger.debug("[LIA-I06] NavigationIntentDetector still uses internal patterns. Migration to KeywordIntentMatcher pending.")
         text = message.lower().strip()
+
+        # CR-1 fix (2026-05-26) — actionable analytics veto. Quando user
+        # pede análise/relatório/métrica/KPI/funil-query, tool real do
+        # ActionExecutor tem precedência. NÃO sugerir navegação.
+        if _ACTIONABLE_ANALYTICS_KEYWORDS.search(text):
+            logger.debug(
+                "[NavigationIntent] CR-1 veto: actionable analytics keyword "
+                "detected in %r — yielding to ActionExecutor (no deflection)",
+                text[:80],
+            )
+            return NavigationIntentResult(
+                page=None, confidence=0.0, hint=None,
+                matched_pattern="cr1_actionable_intent_veto",
+            )
 
         # BUG-18: imperativos de navegação ("me leva pra vagas", "abra a página X",
         # "quero ver minhas vagas") NÃO são perguntas, mesmo com "?". Eles devem
