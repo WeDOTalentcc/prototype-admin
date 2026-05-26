@@ -131,7 +131,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
     """
     repo = AutomationRuleRepository(db)
     data = rule.model_dump()
-    data["confidence_threshold"] = str(data["confidence_threshold"])
+    # confidence_threshold kept as float (Column is Float as of mig 212)
     new_rule = await repo.create(company_id, data)
     # P3.2: mirror em communication_automations (non-fatal se falhar)
     await StageRuleAdapter.upsert_communication_automation_from_stage_rule(
@@ -158,8 +158,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
     if not rule:
         raise HTTPException(status_code=404, detail="Rule not found")
     update_data = updates.model_dump(exclude_unset=True)
-    if "confidence_threshold" in update_data:
-        update_data["confidence_threshold"] = str(update_data["confidence_threshold"])
+    # confidence_threshold kept as float (Column is Float as of mig 212)
     rule = await repo.update(rule, update_data)
     # P3.2: mirror update em communication_automations
     await StageRuleAdapter.upsert_communication_automation_from_stage_rule(

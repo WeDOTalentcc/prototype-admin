@@ -885,7 +885,7 @@ async def log_automation_execution(
     action_executed: str,
     action_result: dict,
     status: str = "success",
-    execution_time_ms: str = "0",
+    execution_time_ms: int = 0,
 ) -> None:
     """Create an AutomationExecutionLog entry with error handling.
 

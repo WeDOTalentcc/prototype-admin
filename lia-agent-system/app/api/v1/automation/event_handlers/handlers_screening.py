@@ -192,7 +192,7 @@ def _add_screening_execution_log(db, request, overall_wsi: float, wsi_result, re
                 "classification": wsi_result.classification,
                 "recommendation": recommendation, "passed": passed
             },
-            status="success", execution_time_ms=str(execution_time)
+            status="success", execution_time_ms=execution_time
         ))
     except Exception as e:
         logger.error(f"❌ [SCREENING_COMPLETED] Failed to create execution log: {e}")

@@ -5,7 +5,7 @@ This model stores automation configurations that trigger actions based on events
 like candidate stage changes, interview scheduling, screening completion, etc.
 """
 from datetime import datetime
-from sqlalchemy import Column, String, DateTime, Boolean, JSON, Text, Index
+from sqlalchemy import Column, String, DateTime, Boolean, JSON, Text, Index, Integer, Float
 from sqlalchemy.dialects.postgresql import UUID
 import uuid
 import enum
@@ -67,9 +67,9 @@ class CommunicationAutomation(Base):
     
     priority = Column(String(20), default="normal")
     
-    cooldown_minutes = Column(String(10), default="0")
-    
-    execution_count = Column(String(10), default="0")
+    cooldown_minutes = Column(Integer, nullable=False, default=0)
+
+    execution_count = Column(Integer, nullable=False, default=0)
     last_executed_at = Column(DateTime, nullable=True)
     
     created_by = Column(String(255), nullable=True)
@@ -100,8 +100,8 @@ class CommunicationAutomation(Base):
             "conditions": self.conditions or [],
             "is_active": self.is_active,
             "priority": self.priority,
-            "cooldown_minutes": int(self.cooldown_minutes) if self.cooldown_minutes else 0,
-            "execution_count": int(self.execution_count) if self.execution_count else 0,
+            "cooldown_minutes": self.cooldown_minutes if self.cooldown_minutes is not None else 0,
+            "execution_count": self.execution_count if self.execution_count is not None else 0,
             "last_executed_at": self.last_executed_at.isoformat() if self.last_executed_at else None,
             "created_by": self.created_by,
             "updated_by": self.updated_by,
@@ -132,7 +132,7 @@ class AutomationExecutionLog(Base):
     status = Column(String(20), nullable=False, default="success")
     error_message = Column(Text, nullable=True)
     
-    execution_time_ms = Column(String(10), nullable=True)
+    execution_time_ms = Column(Integer, nullable=True)
     
     executed_at = Column(DateTime, default=datetime.utcnow, index=True)
     
@@ -155,7 +155,7 @@ class AutomationExecutionLog(Base):
             "action_result": self.action_result,
             "status": self.status,
             "error_message": self.error_message,
-            "execution_time_ms": int(self.execution_time_ms) if self.execution_time_ms else None,
+            "execution_time_ms": self.execution_time_ms if self.execution_time_ms is not None else None,
             "executed_at": self.executed_at.isoformat() if self.executed_at else None,
         }
 
@@ -190,7 +190,7 @@ class AISuggestion(Base):
     title = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
     
-    confidence_score = Column(String(10), nullable=True)
+    confidence_score = Column(Float, nullable=True)
     reasoning = Column(Text, nullable=True)
     
     status = Column(String(20), nullable=False, default="pending", index=True)
@@ -226,7 +226,7 @@ class AISuggestion(Base):
             "action_config": self.action_config or {},
             "title": self.title,
             "description": self.description,
-            "confidence_score": float(self.confidence_score) if self.confidence_score else None,
+            "confidence_score": self.confidence_score if self.confidence_score is not None else None,
             "reasoning": self.reasoning,
             "status": self.status,
             "reviewed_by": self.reviewed_by,
@@ -254,7 +254,7 @@ class StageAutomationRule(Base):
     is_active = Column(Boolean, default=True, index=True)
     
     auto_execute = Column(Boolean, default=False)
-    confidence_threshold = Column(String(10), default="0.8")
+    confidence_threshold = Column(Float, nullable=False, default=0.8)
     
     conditions = Column(JSON, default=dict)
     actions = Column(JSON, default=list)
@@ -287,7 +287,7 @@ class StageAutomationRule(Base):
             "trigger_type": self.trigger_type,
             "is_active": self.is_active,
             "auto_execute": self.auto_execute,
-            "confidence_threshold": float(self.confidence_threshold) if self.confidence_threshold else 0.8,
+            "confidence_threshold": self.confidence_threshold if self.confidence_threshold is not None else 0.8,
             "conditions": self.conditions or {},
             "actions": self.actions or [],
             "source_stage": self.source_stage,

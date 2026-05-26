@@ -149,7 +149,7 @@ async def _log_interview_scheduled_audit(db, request, email_sent: bool, whatsapp
                 "interview_id": interview_id, "calendar_event_id": calendar_event_id
             },
             status="success" if (email_sent or whatsapp_sent) else "partial",
-            execution_time_ms="0"
+            execution_time_ms=0
         ))
     except Exception as e:
         logger.error(f"❌ [INTERVIEW_SCHEDULED] Failed to create audit log: {e}")

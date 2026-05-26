@@ -567,7 +567,7 @@ company_id: str = Depends(require_company_id)):
                 },
                 title=suggestion_title,
                 description=suggestion_description,
-                confidence_score=str(confidence_score),
+                confidence_score=confidence_score,
                 reasoning=recommendation,
                 status="pending",
                 extra_data={

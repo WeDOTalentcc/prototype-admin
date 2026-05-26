@@ -119,7 +119,7 @@ async def _log_ats_sync_audit(db, audit_svc, request, ats_stage: str, is_mapped:
                 "error": error, "notification_created": notification_created
             },
             status="success" if sync_status == "completed" else "failed",
-            execution_time_ms="0"
+            execution_time_ms=0
         ))
     except Exception as e:
         logger.error(f"❌ [ATS_SYNC] Failed to create execution log: {e}")

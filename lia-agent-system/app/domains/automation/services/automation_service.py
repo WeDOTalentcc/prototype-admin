@@ -25,10 +25,46 @@ from app.domains.job_management.repositories.job_vacancy_crud_repository import 
     JobVacancyCRUDRepository,
 )
 from app.services.notification_service import NotificationService
+from app.shared.compliance.audit_service import AuditService
+from app.shared.pii_masking import mask_pii
 from lia_models.automation import ActionType, AutomationExecutionLog, CommunicationAutomation
 from lia_models.task import Task, TaskPriority, TaskType
 
 logger = logging.getLogger(__name__)
+
+# Z.3 (registered 2026-05-26) — canonical audit_service singleton for
+# automation execute paths. LGPD Art. 9 + EU AI Act Art. 13 require an
+# audit trail for every automated decision (executed / skipped / errored
+# / simulated). Domain-specific AutomationExecutionLog continues for
+# product analytics; this is the cross-cutting canonical trail.
+_audit_service = AuditService()
+
+
+def _mask_trigger_data_for_audit(trigger_data: dict[str, Any] | None) -> dict[str, Any]:
+    """Mask PII inside trigger_data before persisting to canonical audit_logs.
+
+    Removes/masks candidate_email, candidate_name, candidate_phone, plus any
+    free-form string fields that may carry PII (e.g. notes, custom_message).
+    UUIDs (candidate_id / vacancy_id) are preserved — they are not PII per LGPD.
+    """
+    if not trigger_data:
+        return {}
+    safe: dict[str, Any] = {}
+    pii_keys = {
+        "candidate_email", "candidate_phone", "candidate_name",
+        "email", "phone", "name", "cpf", "rg",
+    }
+    for k, v in trigger_data.items():
+        if k in pii_keys:
+            safe[k] = "***REDACTED***"
+        elif isinstance(v, str) and v:
+            safe[k] = mask_pii(v)
+        elif isinstance(v, (int, float, bool)) or v is None:
+            safe[k] = v
+        else:
+            # nested dict/list — coerce to str+mask to avoid leaking nested PII
+            safe[k] = mask_pii(str(v))
+    return safe
 
 ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
 IS_PRODUCTION = ENVIRONMENT.lower() == "production"
@@ -131,6 +167,9 @@ class AutomationService:
             skipped = []
             errors = []
             
+            # Z.3 — masked trigger snapshot reused across audit_logs in this batch
+            safe_trigger_data = _mask_trigger_data_for_audit(trigger_data)
+
             for automation in automations:
                 try:
                     if not await self._check_cooldown(automation, db):
@@ -139,6 +178,29 @@ class AutomationService:
                             "name": automation.name,
                             "reason": "cooldown_active"
                         })
+                        # Z.3 — canonical audit trail for skipped-by-cooldown
+                        try:
+                            await _audit_service.log_decision(
+                                company_id=company_id,
+                                agent_name="automation_engine",
+                                decision_type="automation_skipped",
+                                action=f"trigger:{trigger_type}|action:{automation.action_type}",
+                                decision="skipped",
+                                reasoning=[
+                                    f"Automation '{automation.name}' skipped",
+                                    "Reason: cooldown_active",
+                                ],
+                                criteria_used=["cooldown_check"],
+                                candidate_id=trigger_data.get("candidate_id"),
+                                job_vacancy_id=trigger_data.get("vacancy_id"),
+                                human_review_required=False,
+                            )
+                        except Exception as audit_err:
+                            logger.error(
+                                f"[Z.3] Failed to write canonical audit_log (cooldown skip) "
+                                f"for automation {automation.id}: {audit_err}",
+                                exc_info=True,
+                            )
                         continue
                     
                     conditions_met = await self.evaluate_conditions(
@@ -152,6 +214,33 @@ class AutomationService:
                             "name": automation.name,
                             "reason": "conditions_not_met"
                         })
+                        # Z.3 — canonical audit trail for skipped-by-conditions
+                        try:
+                            await _audit_service.log_decision(
+                                company_id=company_id,
+                                agent_name="automation_engine",
+                                decision_type="automation_skipped",
+                                action=f"trigger:{trigger_type}|action:{automation.action_type}",
+                                decision="skipped",
+                                reasoning=[
+                                    f"Automation '{automation.name}' skipped",
+                                    "Reason: conditions_not_met",
+                                    f"Conditions evaluated: {len(automation.conditions or [])}",
+                                ],
+                                criteria_used=[
+                                    str(c.get("field", "?"))
+                                    for c in (automation.conditions or [])
+                                ],
+                                candidate_id=trigger_data.get("candidate_id"),
+                                job_vacancy_id=trigger_data.get("vacancy_id"),
+                                human_review_required=False,
+                            )
+                        except Exception as audit_err:
+                            logger.error(
+                                f"[Z.3] Failed to write canonical audit_log (conditions skip) "
+                                f"for automation {automation.id}: {audit_err}",
+                                exc_info=True,
+                            )
                         continue
                     
                     start_time = time.time()
@@ -177,9 +266,43 @@ class AutomationService:
                         vacancy_id=trigger_data.get("vacancy_id"),
                         db=db
                     )
-                    
+
+                    # Z.3 — canonical audit trail for successful execution
+                    # (LGPD Art. 9 + EU AI Act Art. 13). PII in trigger_data
+                    # was masked via _mask_trigger_data_for_audit above.
+                    try:
+                        await _audit_service.log_decision(
+                            company_id=company_id,
+                            agent_name="automation_engine",
+                            decision_type="automation_executed",
+                            action=f"trigger:{trigger_type}|action:{automation.action_type}",
+                            decision="success",
+                            reasoning=[
+                                f"Automation '{automation.name}' executed",
+                                f"Trigger type: {trigger_type}",
+                                f"Action type: {automation.action_type}",
+                                f"Execution time: {execution_time_ms}ms",
+                                f"Trigger data (masked): {safe_trigger_data}",
+                            ],
+                            criteria_used=[
+                                str(c.get("field", "?"))
+                                for c in (automation.conditions or [])
+                            ],
+                            candidate_id=trigger_data.get("candidate_id"),
+                            job_vacancy_id=trigger_data.get("vacancy_id"),
+                            human_review_required=False,
+                        )
+                    except Exception as audit_err:
+                        # Audit write failure must not break user-visible flow;
+                        # log loud and continue. Same pattern as transition_dispatch.
+                        logger.error(
+                            f"[Z.3] Failed to write canonical audit_log (success) "
+                            f"for automation {automation.id}: {audit_err}",
+                            exc_info=True,
+                        )
+
                     automation.last_executed_at = datetime.utcnow()
-                    automation.execution_count = str(int(automation.execution_count or "0") + 1)
+                    automation.execution_count = (automation.execution_count or 0) + 1
                     
                     executed.append({
                         "automation_id": str(automation.id),
@@ -205,7 +328,39 @@ class AutomationService:
                         vacancy_id=trigger_data.get("vacancy_id"),
                         db=db
                     )
-                    
+
+                    # Z.3 — canonical audit trail for execution failure.
+                    # human_review_required=True so compliance dashboards
+                    # surface this row for manual triage (LGPD Art. 9).
+                    try:
+                        await _audit_service.log_decision(
+                            company_id=company_id,
+                            agent_name="automation_engine",
+                            decision_type="automation_failed",
+                            action=f"trigger:{trigger_type}|action:{automation.action_type}",
+                            decision="error",
+                            reasoning=[
+                                f"Automation '{automation.name}' failed",
+                                f"Trigger type: {trigger_type}",
+                                f"Action type: {automation.action_type}",
+                                f"Error: {mask_pii(str(e))}",
+                                f"Trigger data (masked): {safe_trigger_data}",
+                            ],
+                            criteria_used=[
+                                str(c.get("field", "?"))
+                                for c in (automation.conditions or [])
+                            ],
+                            candidate_id=trigger_data.get("candidate_id"),
+                            job_vacancy_id=trigger_data.get("vacancy_id"),
+                            human_review_required=True,
+                        )
+                    except Exception as audit_err:
+                        logger.error(
+                            f"[Z.3] Failed to write canonical audit_log (error) "
+                            f"for automation {automation.id}: {audit_err}",
+                            exc_info=True,
+                        )
+
                     errors.append({
                         "automation_id": str(automation.id),
                         "name": automation.name,
@@ -728,7 +883,7 @@ class AutomationService:
             action_result=action_result,
             status=status,
             error_message=error_message,
-            execution_time_ms=str(execution_time_ms)
+            execution_time_ms=execution_time_ms
         )
         
         if db:
@@ -823,7 +978,7 @@ class AutomationService:
                 conditions=conditions or [],
                 is_active=is_active,
                 priority=priority,
-                cooldown_minutes=str(cooldown_minutes),
+                cooldown_minutes=cooldown_minutes,
                 created_by=created_by
             )
             
@@ -977,7 +1132,42 @@ class AutomationService:
             cooldown_ok = await self._check_cooldown(automation, db)
             
             would_execute = conditions_met and cooldown_ok and automation.is_active
-            
+
+            # Z.3 — canonical audit trail for dry-run simulation. Even
+            # simulated automated decisions need a trail per LGPD Art. 9
+            # (decision over a personal data subject was modeled). Default
+            # test_trigger_data is synthetic ("João Silva (Teste)", etc.)
+            # but is still masked defensively.
+            try:
+                safe_test_data = _mask_trigger_data_for_audit(test_trigger_data)
+                await _audit_service.log_decision(
+                    company_id=company_id,
+                    agent_name="automation_engine",
+                    decision_type="automation_simulated",
+                    action=f"test:{automation.action_type}",
+                    decision="would_execute" if would_execute else "would_skip",
+                    reasoning=[
+                        f"Automation '{automation.name}' tested (dry-run)",
+                        f"is_active: {automation.is_active}",
+                        f"conditions_met: {conditions_met}",
+                        f"cooldown_ok: {cooldown_ok}",
+                        f"Test data (masked): {safe_test_data}",
+                    ],
+                    criteria_used=[
+                        str(c.get("field", "?"))
+                        for c in (automation.conditions or [])
+                    ],
+                    candidate_id=test_trigger_data.get("candidate_id"),
+                    job_vacancy_id=test_trigger_data.get("vacancy_id"),
+                    human_review_required=False,
+                )
+            except Exception as audit_err:
+                logger.error(
+                    f"[Z.3] Failed to write canonical audit_log (test) "
+                    f"for automation {automation_id}: {audit_err}",
+                    exc_info=True,
+                )
+
             return {
                 "success": True,
                 "automation": automation.to_dict(),
