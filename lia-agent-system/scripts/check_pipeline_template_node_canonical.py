@@ -15,7 +15,7 @@ PR-1 Onda 1 (2026-05-26) — fecha drift canonical Sprint Pipeline Templates:
 7. "pipeline_template" está no Literal WizardStage de state.py (type-safety)
 8. "pipeline_template" está em _ACTIVE_WIZARD_STAGES (supervisor skip protection)
 9. pipeline_template_skipped declarado em JobCreationState TypedDict (graph.py:1534 escreve)
-10. "pipeline-template" (kebab) está em STAGE_TOOLS do wizard_tool_registry (consistency)
+10. "pipeline_template" (snake) está em STAGE_TOOLS do wizard_tool_registry (consistency)
 
 Sensor blocking (baseline 0). Quebra = recriou o node ou removeu wiring canonical.
 
@@ -31,6 +31,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 GRAPH = ROOT / "app" / "domains" / "job_creation" / "graph.py"
+# PR-10 ONDA 3: pipeline_template_node movido para nodes/. Sensor checa ambos.
+NODE_FILE = ROOT / "app" / "domains" / "job_creation" / "nodes" / "pipeline_template.py"
 STATE = ROOT / "app" / "domains" / "job_creation" / "state.py"
 WIZARD_SESSION = ROOT / "app" / "domains" / "job_creation" / "services" / "wizard_session_service.py"
 TOOL_REGISTRY = ROOT / "app" / "domains" / "job_management" / "agents" / "wizard_tool_registry.py"
@@ -44,10 +46,12 @@ def _read(path: Path) -> str:
     return path.read_text()
 
 
-def check_node_defined(graph_src: str) -> list[str]:
+def check_node_defined(graph_src: str, node_src: str = "") -> list[str]:
     """Invariante 1: pipeline_template_node existe como FunctionDef."""
     errs: list[str] = []
-    tree = ast.parse(graph_src)
+    # PR-10: FunctionDef esta em nodes/pipeline_template.py, nao em graph.py
+    _combined_src = graph_src + "\n" + node_src
+    tree = ast.parse(_combined_src)
     found = False
     for node in ast.walk(tree):
         if isinstance(node, ast.FunctionDef) and node.name == "pipeline_template_node":
@@ -68,9 +72,10 @@ def check_node_defined(graph_src: str) -> list[str]:
     return errs
 
 
-def check_ui_action_literal(graph_src: str) -> list[str]:
+def check_ui_action_literal(graph_src: str, node_src: str = "") -> list[str]:
     """Invariante 2: literal 'suggest_pipeline_template' presente no source."""
-    if '"suggest_pipeline_template"' not in graph_src and "'suggest_pipeline_template'" not in graph_src:
+    _ui_src = graph_src + "\n" + node_src
+    if '"suggest_pipeline_template"' not in _ui_src and "'suggest_pipeline_template'" not in _ui_src:
         return [
             "ui_action canonical 'suggest_pipeline_template' NÃO encontrado em graph.py.\n"
             "   → Fix: pipeline_template_node DEVE emitir ws_stage_payload['ui_action']='suggest_pipeline_template'\n"
@@ -261,7 +266,7 @@ def check_stage_tools_kebab_entry(registry_src: str) -> list[str]:
 
     NOTA: get_stage_tools tem zero callers produção (STAGE_TOOLS hoje é
     canonical documentation, não enforcement). Entry kebab é consistency
-    com convenção de outros stages de criação (jd-enrichment, wsi-questions).
+    Pos PR-16 (2026-05-26) snake_case canonical alinhado com WizardStage Literal.
     """
     errs: list[str] = []
     tree = ast.parse(registry_src)
@@ -273,9 +278,9 @@ def check_stage_tools_kebab_entry(registry_src: str) -> list[str]:
                     k.value for k in val.keys
                     if isinstance(k, ast.Constant) and isinstance(k.value, str)
                 ]
-                if "pipeline-template" not in keys:
+                if "pipeline_template" not in keys:
                     errs.append(
-                        "pipeline-template (kebab) ausente de STAGE_TOOLS em wizard_tool_registry.py.\n"
+                        "pipeline_template (snake) ausente de STAGE_TOOLS em wizard_tool_registry.py.\n"
                         "   → Fix: adicionar entry após \"jd-enrichment\":\n"
                         "     `\"pipeline-template\": [\"suggest_pipeline_stage_templates\", \"apply_pipeline_stage_template_to_vacancy\", \"create_custom_pipeline_stage_template\"],`"
                     )
@@ -283,7 +288,7 @@ def check_stage_tools_kebab_entry(registry_src: str) -> list[str]:
                     # Verify referenced tools exist
                     pt_tools = None
                     for k, v in zip(val.keys, val.values):
-                        if isinstance(k, ast.Constant) and k.value == "pipeline-template" and isinstance(v, ast.List):
+                        if isinstance(k, ast.Constant) and k.value == "pipeline_template" and isinstance(v, ast.List):
                             pt_tools = [
                                 e.value for e in v.elts
                                 if isinstance(e, ast.Constant) and isinstance(e.value, str)
@@ -298,7 +303,7 @@ def check_stage_tools_kebab_entry(registry_src: str) -> list[str]:
                         missing = expected - set(pt_tools)
                         if missing:
                             errs.append(
-                                f"STAGE_TOOLS[pipeline-template] sem tools canonical: {sorted(missing)}.\n"
+                                f"STAGE_TOOLS[pipeline_template] sem tools canonical: {sorted(missing)}.\n"
                                 "   → Fix: incluir as 3 tools canonical (suggest/apply/create_custom)."
                             )
             return errs
@@ -311,13 +316,14 @@ def check_stage_tools_kebab_entry(registry_src: str) -> list[str]:
 
 def main() -> int:
     graph_src = _read(GRAPH)
+    node_src = _read(NODE_FILE) if NODE_FILE.exists() else ""  # PR-10 nodes/ split
     state_src = _read(STATE)
     session_src = _read(WIZARD_SESSION)
     registry_src = _read(TOOL_REGISTRY)
 
     all_errs: list[str] = []
-    all_errs.extend(check_node_defined(graph_src))
-    all_errs.extend(check_ui_action_literal(graph_src))
+    all_errs.extend(check_node_defined(graph_src, node_src))
+    all_errs.extend(check_ui_action_literal(graph_src, node_src))
     all_errs.extend(check_stage_order(state_src))
     all_errs.extend(check_builder_wiring(graph_src))
     # PR-1 Onda 1 (2026-05-26) — drift fixes

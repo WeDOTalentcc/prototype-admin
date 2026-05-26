@@ -18,7 +18,7 @@ Invariantes (4):
    JobCreationState.__annotations__ — graph.py:1534 escreve esse campo
    no checkpoint LangGraph (TypedDict precisa declarar pra type-checker
    detectar regressão).
-4. "pipeline-template" (kebab) presente em STAGE_TOOLS do
+4. "pipeline_template" (snake) presente em STAGE_TOOLS do
    wizard_tool_registry — consistency com outros stages de criação
    (jd-enrichment, wsi-questions).
 
@@ -79,16 +79,16 @@ def test_pipeline_template_skipped_declared_in_typeddict():
     )
 
 
-def test_stage_tools_has_pipeline_template_kebab_key():
+def test_stage_tools_has_pipeline_template_key():
     """Invariante 4: 'pipeline-template' (kebab) em STAGE_TOOLS.
 
     NOTA: STAGE_TOOLS é hoje canonical documentation (não enforcement).
-    get_stage_tools tem zero callers em produção. Entry kebab é
-    consistency com convenção de outros stages de criação.
+    get_stage_tools tem zero callers em produção. Pos PR-16 (2026-05-26) todas as keys sao snake_case canonical,
+    alinhadas com WizardStage Literal.
     """
     from app.domains.job_management.agents.wizard_tool_registry import STAGE_TOOLS
 
-    assert "pipeline-template" in STAGE_TOOLS, (
+    assert "pipeline_template" in STAGE_TOOLS, (
         "'pipeline-template' (kebab) ausente de STAGE_TOOLS.\n"
         "   Fix: adicionar entry após \"jd-enrichment\" em "
         "app/domains/job_management/agents/wizard_tool_registry.py:\n"
@@ -101,8 +101,8 @@ def test_stage_tools_has_pipeline_template_kebab_key():
         "apply_pipeline_stage_template_to_vacancy",
         "create_custom_pipeline_stage_template",
     }
-    actual_tools = set(STAGE_TOOLS["pipeline-template"])
+    actual_tools = set(STAGE_TOOLS["pipeline_template"])
     missing = expected_tools - actual_tools
     assert not missing, (
-        f"STAGE_TOOLS[pipeline-template] sem tools canonical: {sorted(missing)}."
+        f"STAGE_TOOLS[pipeline_template] sem tools canonical: {sorted(missing)}."
     )

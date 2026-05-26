@@ -179,6 +179,7 @@ def test_stage_tools_include_generate_report():
 
     assert "generate_report" in talent_stages.get("action_planning", [])
     assert "generate_report" in sourcing_stages.get("shortlist-creation", [])
-    assert "generate_report" in wizard_stages.get("review-publish", [])
+    assert "generate_report" in wizard_stages.get("review", [])
+    assert "generate_report" in wizard_stages.get("publish", [])
     assert "generate_report" in pipeline_stages.get("offer", [])
     assert "generate_report" in pipeline_stages.get("hired", [])

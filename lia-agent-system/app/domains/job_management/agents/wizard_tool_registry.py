@@ -1517,37 +1517,37 @@ _TOOL_MAP: dict[str, ToolDefinition] = {t.name: t for t in TOOL_DEFINITIONS}
 
 # --- STAGE_TOOLS canonical allowlist ---------------------------------------
 #
-# DESIGN LAYERED (NAO eh bug -- ADR registrada 2026-05-26 / PR-8 ONDA 3):
+# CONVENCAO CANONICAL (PR-16 / 2026-05-26): TODAS as keys sao snake_case.
 #
-# Dict mistura DUAS convencoes de nome porque cobre DUAS camadas:
+# Creation stages alinhados com WizardStage Literal canonical
+# (app/domains/job_creation/state.py):
+#   intake, jd_enrichment, pipeline_template, salary, competency,
+#   wsi_questions, review, publish
 #
-#   kebab-case  -> stages do WIZARD DE CRIACAO (LangGraph job_creation)
-#     - input-evaluation, jd-enrichment, pipeline-template, salary,
-#       competencies, wsi-questions, review-publish
-#     - Frontend dispatch usa estes IDs (REST/GraphQL convention)
+# Lifecycle stages Phase E (DB column values em
+# _classify_job_lifecycle_stage / app/api/v1/job_vacancies/analytics.py):
+#   enriquecida, wsi_config, aguardando_aprovacao, publicada, ao_vivo
 #
-#   snake_case  -> estagios do CICLO DE VIDA pos-publicacao (Phase E)
-#     - enriquecida, wsi_config, aguardando_aprovacao, publicada, ao_vivo
-#     - DB column values, _classify_job_lifecycle_stage em
-#       app/api/v1/job_vacancies/analytics.py
+# Frontend ainda dispatch kebab (input-evaluation, jd-enrichment, etc.)
+# via /api/v1/wizard/smart-orchestrate -- traducao kebab->snake fica em
+# FRONTEND_TO_BACKEND_STAGE (app/api/v1/wizard_smart_orchestrator.py).
+# STAGE_TOOLS aqui e canonical documentation (zero callers de
+# get_stage_tools em producao).
 #
-# Sensor canonical (scripts/check_stage_tools_naming.py) valida que toda
-# entry nova segue UMA das convencoes (kebab para criacao, snake para
-# lifecycle). NAO ha sobreposicao entre as duas listas.
-#
-# Fonte da verdade: dict abaixo + sensor + ADR registrada em CLAUDE.md.
+# Sensor canonical (scripts/check_stage_tools_naming.py) valida que
+# entries seguem snake_case e estao no conjunto canonical conhecido.
 # --------------------------------------------------------------------------
 STAGE_TOOLS: dict[str, list[str]] = {
-    "input-evaluation": ["validate_job_requirements", "validate_job_fields", "get_job_suggestions", "get_company_config", "save_job_draft", "check_job_draft_health", "suggest_pipeline_stage_templates", "apply_pipeline_stage_template_to_vacancy", "create_custom_pipeline_stage_template"],
-    "jd-enrichment": ["generate_enriched_jd", "get_job_suggestions", "get_company_config", "save_job_draft", "check_job_draft_health"],
-    # NOTE: STAGE_TOOLS é canonical documentation (não enforcement) — get_stage_tools tem zero callers em produção.
-    # Kebab key "pipeline-template" segue convenção de outros stages de criação (jd-enrichment, wsi-questions).
-    "pipeline-template": ["suggest_pipeline_stage_templates", "apply_pipeline_stage_template_to_vacancy", "create_custom_pipeline_stage_template"],
+    # Creation stages (alinhados com WizardStage Literal canonical):
+    "intake": ["validate_job_requirements", "validate_job_fields", "get_job_suggestions", "get_company_config", "save_job_draft", "check_job_draft_health", "suggest_pipeline_stage_templates", "apply_pipeline_stage_template_to_vacancy", "create_custom_pipeline_stage_template"],
+    "jd_enrichment": ["generate_enriched_jd", "get_job_suggestions", "get_company_config", "save_job_draft", "check_job_draft_health"],
+    "pipeline_template": ["suggest_pipeline_stage_templates", "apply_pipeline_stage_template_to_vacancy", "create_custom_pipeline_stage_template"],
     "salary": ["get_salary_benchmarks", "search_salary_benchmark", "validate_job_fields", "save_job_draft", "check_job_draft_health"],
-    "competencies": ["validate_job_requirements", "get_job_suggestions", "validate_job_fields", "save_job_draft", "suggest_eligibility_templates", "apply_eligibility_template_to_vacancy", "create_custom_eligibility_template"],
-    "wsi-questions": ["validate_job_requirements", "validate_job_fields", "save_job_draft", "generate_screening_questions", "suggest_eligibility_templates", "apply_eligibility_template_to_vacancy", "create_custom_eligibility_template"],
-    "review-publish": ["validate_job_requirements", "save_job_draft", "validate_job_fields", "check_job_draft_health", "generate_report", "publish_vacancy", "change_vacancy_status", "suggest_pipeline_stage_templates", "apply_pipeline_stage_template_to_vacancy", "create_custom_pipeline_stage_template"],
-    # Phase E — vacancy lifecycle stages (Recrutar > Vagas rail).
+    "competency": ["validate_job_requirements", "get_job_suggestions", "validate_job_fields", "save_job_draft", "suggest_eligibility_templates", "apply_eligibility_template_to_vacancy", "create_custom_eligibility_template"],
+    "wsi_questions": ["validate_job_requirements", "validate_job_fields", "save_job_draft", "generate_screening_questions", "suggest_eligibility_templates", "apply_eligibility_template_to_vacancy", "create_custom_eligibility_template"],
+    "review": ["validate_job_requirements", "save_job_draft", "validate_job_fields", "check_job_draft_health", "generate_report", "publish_vacancy", "change_vacancy_status", "suggest_pipeline_stage_templates", "apply_pipeline_stage_template_to_vacancy", "create_custom_pipeline_stage_template"],
+    "publish": ["validate_job_requirements", "save_job_draft", "validate_job_fields", "check_job_draft_health", "generate_report", "publish_vacancy", "change_vacancy_status", "suggest_pipeline_stage_templates", "apply_pipeline_stage_template_to_vacancy", "create_custom_pipeline_stage_template"],
+    # Phase E -- vacancy lifecycle stages (Recrutar > Vagas rail).
     # Stage names match _classify_job_lifecycle_stage in
     # app/api/v1/job_vacancies/analytics.py.
     "enriquecida": ["generate_screening_questions", "validate_job_requirements"],
