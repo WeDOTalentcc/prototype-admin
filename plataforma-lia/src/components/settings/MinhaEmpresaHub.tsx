@@ -37,19 +37,10 @@ interface MinhaEmpresaHubProps {
 }
 
 export function MinhaEmpresaHub({ activeSubsection }: MinhaEmpresaHubProps = {}) {
-  // Subsection routing — quando activeSubsection é 'learning-loops', renderiza
-  // o painel canonical de Learning Loops (Sprint B Phase 2). Caso contrário,
-  // segue o fluxo padrão de cards de Minha Empresa.
-  if (activeSubsection === "learning-loops") {
-    return <LearningLoopsPanel />
-  }
-
-  // Audit 2026-05-20 Tema D / P1.8: 34 canonical LIA field definitions
-  // mas UI só expunha 3. Painel canonical novo expõe todos.
-  if (activeSubsection === "instrucoes-lia") {
-    return <LiaFieldsConfigPanel />
-  }
-
+  // ─── TODOS OS HOOKS PRIMEIRO (rules-of-hooks, CLAUDE.md Sprint 1 Hardening 2026-05-26) ───
+  // Early returns de subsection foram movidos para APÓS o último hook.
+  // Antes estavam nas linhas 47-55 causando 14 violations detectadas pelo ESLint.
+  // Padrão: BulkImportModal fix 2026-05-04 (CLAUDE.md "Frontend / React rules-of-hooks discipline").
   const t = useTranslations("settings.minhaEmpresa")
   const {
     blocks,
@@ -70,7 +61,7 @@ export function MinhaEmpresaHub({ activeSubsection }: MinhaEmpresaHubProps = {})
     refreshAll,
   } = useCompanySettingsCards()
 
-  const { triggerAction, triggerPrefillSection } = useSettingsConversational()
+  const { triggerAction: _triggerAction, triggerPrefillSection } = useSettingsConversational()
 
   const BLOCK_TO_PREFILL: Record<string, "basic" | "culture" | "tech_stack" | "benefits" | "workforce" | "policy" | "compensation" | undefined> = {
     basic: "basic",
@@ -114,9 +105,6 @@ export function MinhaEmpresaHub({ activeSubsection }: MinhaEmpresaHubProps = {})
   const websiteUrl = getBasicField("website")
 
   // Task #1180 — botão "Analisar nosso site" agora abre o modal pré-análise
-  // (nome + website + linkedin + checkbox "atualizar existentes"), em vez de
-  // disparar um prompt para o chat. Mantemos `triggerAction(analyze_website)`
-  // como notificação ao onboarding orchestrator quando o modal aplica o save.
   const [analyzeModalOpen, setAnalyzeModalOpen] = React.useState(false)
   const handleAnalyzeWebsite = React.useCallback(() => {
     setAnalyzeModalOpen(true)
@@ -129,6 +117,7 @@ export function MinhaEmpresaHub({ activeSubsection }: MinhaEmpresaHubProps = {})
     },
     [setChatMessages],
   )
+
   // Card no chat dispara `lia:settings-updated` ao salvar — re-fetch.
   React.useEffect(() => {
     if (typeof window === "undefined") return
@@ -153,6 +142,18 @@ export function MinhaEmpresaHub({ activeSubsection }: MinhaEmpresaHubProps = {})
   )
   const companyName = getBasicField("name") ?? ""
 
+  // ─── SUBSECTION ROUTING — APÓS TODOS OS HOOKS ────────────────────────────
+  // Audit Sprint B Phase 2 (2026-05-05): Learning Loops panel.
+  if (activeSubsection === "learning-loops") {
+    return <LearningLoopsPanel />
+  }
+
+  // Audit 2026-05-20 Tema D / P1.8: 34 canonical LIA field definitions.
+  if (activeSubsection === "instrucoes-lia") {
+    return <LiaFieldsConfigPanel />
+  }
+
+  // ─── LOADING STATE ────────────────────────────────────────────────────────
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64" role="status" aria-live="polite" aria-label={t("loading")}>
