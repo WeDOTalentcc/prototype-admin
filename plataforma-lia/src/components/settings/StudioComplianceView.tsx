@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Bot, ShieldCheck, AlertTriangle, Activity, TrendingDown, Loader2 } from "lucide-react"
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts"
 import { textStyles, cardStyles } from "@/lib/design-tokens"
+import { HubHeader, HubLoadingState, HubErrorState } from "./_shared"
 import { CHART_GRID, CHART_LIA, CHART_DANGER } from "@/lib/chart-colors"
 import { apiFetch } from "@/lib/api/api-fetch"
 
@@ -53,20 +54,11 @@ export function StudioComplianceView() {
   }, [period, t])
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-12 gap-2 text-sm text-lia-text-secondary">
-        <Loader2 className="w-4 h-4 animate-spin" /> {t("loading")}
-      </div>
-    )
+    return <HubLoadingState message={t("loading")} />
   }
 
   if (error) {
-    return (
-      <div className="text-center py-12">
-        <AlertTriangle className="w-10 h-10 text-status-error mx-auto mb-3" />
-        <p className={textStyles.subtitle}>{error}</p>
-      </div>
-    )
+    return <HubErrorState message={error} />
   }
 
   if (!data) return null
@@ -74,11 +66,7 @@ export function StudioComplianceView() {
   return (
     <div className="space-y-4" data-testid="studio-compliance-view">
       {/* Header with period selector */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Bot className="w-5 h-5 text-wedo-cyan-dark" />
-          <h2 className={textStyles.title}>{t("title")}</h2>
-        </div>
+      <HubHeader title={t("title")}>
         <Select value={period} onValueChange={setPeriod}>
           <SelectTrigger className="w-40" data-testid="studio-compliance-period-select">
             <SelectValue />
@@ -89,7 +77,7 @@ export function StudioComplianceView() {
             <SelectItem value="90">{t("last90")}</SelectItem>
           </SelectContent>
         </Select>
-      </div>
+      </HubHeader>
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">

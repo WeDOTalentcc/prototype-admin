@@ -2,6 +2,7 @@
 
 import React, { useState } from "react"
 import { useTranslations } from "next-intl"
+import { HubHeader, HubLoadingState } from "./_shared"
 import { Webhook as WebhookIcon, Plus, Trash2, Send, Loader2, Copy, CheckCircle2, AlertCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Card, CardContent } from "@/components/ui/card"
@@ -152,23 +153,15 @@ export function WebhooksManager() {
 
   return (
     <div className="space-y-4" data-testid="webhooks-manager">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <WebhookIcon className="w-5 h-5 text-wedo-cyan-dark" />
-          <h2 className={textStyles.title}>{t("title")}</h2>
-        </div>
+      <HubHeader title={t("title")} description={t("description")}>
         <Button onClick={() => setCreating(true)} className={buttonStyles.primary} data-testid="webhooks-create-button">
           <Plus className="w-4 h-4 mr-1" /> {t("newWebhook")}
         </Button>
-      </div>
-
-      <p className={textStyles.description}>
-        {t("description")}
-      </p>
+      </HubHeader>
 
       {isLoading && (
         <div className="flex items-center gap-2 py-8 justify-center text-xs text-lia-text-disabled">
-          <Loader2 className="w-3.5 h-3.5 animate-spin" /> {t("loading")}
+          <HubLoadingState variant="inline" message={t("loading")} />
         </div>
       )}
 

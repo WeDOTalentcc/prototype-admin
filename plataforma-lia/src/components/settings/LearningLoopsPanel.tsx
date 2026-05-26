@@ -11,6 +11,7 @@
 import React, { useState, useEffect, useCallback } from "react"
 import { Brain, BookOpen, BarChart2, FileText, AlertCircle, X, Loader2 } from "lucide-react"
 import { textStyles } from "@/lib/design-tokens"
+import { HubLoadingState } from "./_shared"
 import useCompanyId from "@/hooks/company/useCompanyId"
 import { notifyChatOfSettingsUpdate } from "@/lib/api/settings-notify"
 
@@ -313,11 +314,7 @@ export function LearningLoopsPanel() {
   }, [pendingToggle, applyToggle])
 
   if (isFetching) {
-    return (
-      <div className="flex items-center justify-center py-8">
-        <Loader2 className="w-5 h-5 animate-spin text-lia-text-tertiary" />
-      </div>
-    )
+    return <HubLoadingState />
   }
 
   return (

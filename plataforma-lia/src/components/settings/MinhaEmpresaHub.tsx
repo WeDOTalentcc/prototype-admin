@@ -19,6 +19,7 @@ import { textStyles } from "@/lib/design-tokens"
 import { Globe } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { HubHeader, HubLoadingState } from "./_shared"
 
 const ICON_MAP: Record<string, LucideIcon> = {
   Building,
@@ -153,16 +154,9 @@ export function MinhaEmpresaHub({ activeSubsection }: MinhaEmpresaHubProps = {})
     return <LiaFieldsConfigPanel />
   }
 
-  // ─── LOADING STATE ────────────────────────────────────────────────────────
+  // ─── LOADING STATE ────────────────────────────────────────────
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64" role="status" aria-live="polite" aria-label={t("loading")}>
-        <Loader2 className="w-5 h-5 animate-spin motion-reduce:animate-none text-lia-text-tertiary" />
-        <span className={`ml-2 ${textStyles.body}`}>
-          {t("loadingCompanyData")}
-        </span>
-      </div>
-    )
+    return <HubLoadingState message={t("loadingCompanyData")} />
   }
 
   return (
@@ -179,13 +173,7 @@ export function MinhaEmpresaHub({ activeSubsection }: MinhaEmpresaHubProps = {})
       )}
 
       <div>
-        <div className="flex items-center justify-between mb-2">
-          <div>
-            <h2 className={textStyles.h3}>{t("title")}</h2>
-            <p className={`${textStyles.description} mt-0.5`}>
-              {t("description")}
-            </p>
-          </div>
+        <HubHeader title={t("title")} description={t("description")}>
           <div className="flex items-center gap-3">
             <Button
               type="button"
@@ -216,7 +204,7 @@ export function MinhaEmpresaHub({ activeSubsection }: MinhaEmpresaHubProps = {})
               </span>
             )}
           </div>
-        </div>
+        </HubHeader>
         <div className="w-full bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full h-1.5">
           <div
             className="h-1.5 rounded-full transition-[width] duration-500 bg-lia-btn-primary-bg"

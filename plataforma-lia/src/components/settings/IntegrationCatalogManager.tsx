@@ -40,6 +40,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select"
 import { textStyles } from "@/lib/design-tokens"
+import { HubLoadingState } from "./_shared"
 import {
   useIntegrationCatalog,
   type IntegrationCatalogEntry,
@@ -222,13 +223,7 @@ export function IntegrationCatalogManager({
   }
 
   if (isLoading) {
-    return (
-      <Card className="border border-lia-border-subtle/50 rounded-xl">
-        <CardContent className="flex items-center justify-center py-8">
-          <Loader2 className="w-5 h-5 animate-spin text-lia-text-secondary" />
-        </CardContent>
-      </Card>
-    )
+    return <HubLoadingState />
   }
 
   return (

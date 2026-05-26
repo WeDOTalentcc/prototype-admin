@@ -23,6 +23,7 @@ import { BenefitsList } from "./benefits/BenefitsList"
 import { useBenefitsTab } from "./benefits/useBenefitsTab"
 import { defaultBenefit } from "./benefits/benefits-types"
 import type { BenefitTemplate } from "./benefits/benefits-types"
+import { HubHeader } from "./_shared"
 
 export function BenefitsTab() {
   const t = useTranslations("settings.benefits")
@@ -67,13 +68,7 @@ export function BenefitsTab() {
         </div>
       )}
 
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className={textStyles.titleLarge}>{t("title")}</h2>
-          <p className={`${textStyles.body} mt-1`}>
-            {t("description")}
-          </p>
-        </div>
+      <HubHeader title={t("title")} description={t("description")}>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-3">
             <LiaFieldToggle
@@ -140,7 +135,7 @@ export function BenefitsTab() {
             {t("newBenefit")}
           </Button>
         </div>
-      </div>
+      </HubHeader>
 
       <BenefitsList
         benefits={hub.benefits}

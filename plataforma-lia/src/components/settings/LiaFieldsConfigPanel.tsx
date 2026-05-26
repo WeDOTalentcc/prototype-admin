@@ -32,6 +32,7 @@ import {
   CheckCircle2,
 } from "lucide-react"
 import { textStyles } from "@/lib/design-tokens"
+import { HubLoadingState } from "./_shared"
 import { apiFetch } from "@/lib/api/api-fetch"
 import { notifyChatOfSettingsUpdate } from "@/lib/api/settings-notify"
 import useCompanyId from "@/hooks/company/useCompanyId"
@@ -211,11 +212,7 @@ export function LiaFieldsConfigPanel() {
   }, [])
 
   if (isLoadingCompany || isLoading) {
-    return (
-      <div className="flex items-center justify-center p-12">
-        <Loader2 className="w-6 h-6 animate-spin text-lia-text-secondary" />
-      </div>
-    )
+    return <HubLoadingState />
   }
 
   return (

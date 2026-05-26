@@ -20,6 +20,7 @@ import {
   getActionBehaviorShort,
 } from "./StageCard"
 import type { SubStatus, RecruitmentStage, RecruitmentJourneyConfigProps } from "./recruitment-journey.types"
+import { HubHeader } from "./_shared"
 
 export type { SubStatus, RecruitmentStage, RecruitmentJourneyConfigProps }
 
@@ -232,15 +233,7 @@ export function RecruitmentJourneyConfig({
   return (
     <div className="space-y-4" data-testid="pipeline-journey-root">
       {!hideHeader && (
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h3 className={`${textStyles.titleLarge} text-lia-text-primary`}>
-              {t("title")}
-            </h3>
-            <p className={`${textStyles.description} mt-1`}>
-              {isEditMode ? t("descEdit") : t("descView")}
-            </p>
-          </div>
+        <HubHeader title={t("title")} description={isEditMode ? t("descEdit") : t("descView")}>
           {isEditMode && (
             <Popover open={catalogOpen} onOpenChange={setCatalogOpen}>
               <PopoverTrigger asChild>
@@ -310,7 +303,7 @@ export function RecruitmentJourneyConfig({
               </PopoverContent>
             </Popover>
           )}
-        </div>
+        </HubHeader>
       )}
 
       <div className="mb-4 p-3 bg-lia-bg-secondary dark:bg-lia-bg-primary rounded-xl border border-lia-border-subtle dark:border-lia-border-strong">

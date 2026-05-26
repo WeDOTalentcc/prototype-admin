@@ -14,6 +14,7 @@ import type { DepartmentItem } from "@/hooks/settings/useDepartmentsList"
 import { UserList } from './user-list'
 import type { UserManagementProps } from './user-management-types'
 import { useTranslations } from "next-intl"
+import { HubHeader } from "./_shared"
 
 export function UserManagement({ departments: hubDepartments = [], onDepartmentChanged }: UserManagementProps = {}) {
   const t = useTranslations('settings.users')
@@ -130,23 +131,17 @@ export function UserManagement({ departments: hubDepartments = [], onDepartmentC
         </Card>
       )}
 
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className={textStyles.h3}>{t('title')}</h3>
-          <p className={textStyles.description}>
-            {isSCIMEnabled 
-              ? t('descriptionScim')
-              : t('description')
-            }
-          </p>
-        </div>
+      <HubHeader
+        title={t('title')}
+        description={isSCIMEnabled ? t('descriptionScim') : t('description')}
+      >
         {!isSCIMEnabled && (
           <Button data-testid="users-create-button" onClick={handleCreateUser} size="sm" className="gap-1.5">
             <UserPlus className="w-3.5 h-3.5" />
             {t('newUser')}
           </Button>
         )}
-      </div>
+      </HubHeader>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <Card className="rounded-md">
