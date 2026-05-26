@@ -1,21 +1,22 @@
 /**
- * UX_AUDIT_ESTUDIO_AGENTES_2026-05-21 — Transformação T2.
+ * Studio Restructure Fase 1 — TDD Red pin para estado-alvo pós-refactor.
  *
- * Garante o contrato canonical pós-consolidação 5 tabs -> 3 tabs:
- *   - Top-level: Meus Agentes | Marketplace | Busca de Talentos
- *   - Sub-tabs em "Meus Agentes": Captação | Personalizados | Gêmeos Digitais
- *   - Default top tab = Meus Agentes; default sub-tab = Personalizados (per audit)
- *   - URL backward-compat: ?tab=<id-antigo> mapeia para o novo agrupamento
- *     (captacao/agents -> Meus Agentes > Captacao; custom/personalizados -> Meus
- *     Agentes > Personalizados; twins/gemeos -> Meus Agentes > Gemeos;
- *     marketplace -> Marketplace; search/busca -> Busca de Talentos).
+ * Estado-alvo (substitui T2 consolidation prévio):
+ *   - Top-level: exatamente 2 tabs — Meus Agentes (default) + Gêmeos Digitais
+ *   - SEM sub-tabs (MySubTab eliminado)
+ *   - Marketplace NÃO é tab — vira CTA secundário "Explorar Marketplace"
+ *     no header right, com href="/agents/marketplace"
+ *   - CTA primário "+ Criar Agente" permanece no header right
  *
- * Mantemos os componentes filhos (CaptacaoSection-like content, CustomAgentsTab,
- * MarketplaceTab, TwinsList, MultiStrategySearchPanel) PRESERVADOS — esse teste
- * mocka apenas para isolar a logica de tabs/URL, sem rerender pesado.
+ * Mistura source-grep (assertions de eliminação) + render mock (assertions de UI).
  */
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest"
 import { render, screen, fireEvent, act, waitFor } from "@testing-library/react"
+import { readFileSync } from "node:fs"
+import { join } from "node:path"
+
+const STUDIO_PATH = join(__dirname, "..", "AgentStudioPage.tsx")
+const STUDIO_SRC = readFileSync(STUDIO_PATH, "utf-8")
 
 vi.mock("next-intl", () => ({
   useTranslations: () => (key: string, vars?: Record<string, unknown>) => {
@@ -25,7 +26,6 @@ vi.mock("next-intl", () => ({
   },
 }))
 
-// Stubs leves para componentes pesados — focamos no contrato de tabs/URL.
 vi.mock("../MultiStrategySearchPanel", () => ({
   __esModule: true,
   default: () => <div data-testid="stub-multi-strategy">multi-strategy</div>,
@@ -72,7 +72,6 @@ vi.mock("@/stores/agent-studio-store", () => ({
   useAgentStudioStore: () => ({ selectTemplate: vi.fn(), reset: vi.fn() }),
 }))
 
-// Stub fetch para evitar warnings de rede.
 const fetchMock = vi.fn().mockResolvedValue({
   ok: true,
   json: async () => ({ agents: [] }),
@@ -82,7 +81,6 @@ import AgentStudioPage from "../AgentStudioPage"
 
 beforeEach(() => {
   vi.stubGlobal("fetch", fetchMock)
-  // limpa URL entre testes.
   window.history.replaceState({}, "", "/estudio-agentes")
 })
 afterEach(() => {
@@ -90,18 +88,35 @@ afterEach(() => {
   vi.clearAllMocks()
 })
 
-function setUrl(qs: string) {
-  window.history.replaceState({}, "", `/estudio-agentes${qs}`)
-}
+describe("Studio Restructure Fase 1 — source-grep eliminations", () => {
+  it("AgentStudioPage NÃO declara o type MySubTab", () => {
+    expect(STUDIO_SRC).not.toMatch(/type\s+MySubTab\b/)
+  })
 
-describe("Agent Studio — T2 consolidation (5 tabs -> 3 tabs)", () => {
-  it("renderiza exatamente 2 main tabs top-level (Sprint 4 v3: talentSearch movido pra TalentPoolPage)", async () => {
+  it("AgentStudioPage NÃO importa MarketplaceTab", () => {
+    expect(STUDIO_SRC).not.toMatch(
+      /import\s+MarketplaceTab\s+from\s+["']@\/components\/pages-agent-studio\/MarketplaceTab["']/
+    )
+  })
+
+  it("AgentStudioPage NÃO usa useState<MySubTab>", () => {
+    expect(STUDIO_SRC).not.toMatch(/useState<MySubTab>/)
+    expect(STUDIO_SRC).not.toMatch(/\bmySubTab\b/)
+  })
+
+  it("AgentStudioPage NÃO renderiza <MarketplaceTab /> como tab content", () => {
+    expect(STUDIO_SRC).not.toMatch(/<MarketplaceTab\s*\/>/)
+  })
+
+  it("AgentStudioPage NÃO tem branch activeTab === 'marketplace'", () => {
+    expect(STUDIO_SRC).not.toMatch(/activeTab\s*===\s*["']marketplace["']/)
+  })
+})
+
+describe("Studio Restructure Fase 1 — top-level tabs render", () => {
+  it("renderiza exatamente 2 tabs top-level: Meus Agentes + Gêmeos Digitais", async () => {
     render(<AgentStudioPage />)
     await waitFor(() => {
-      // Tab navigation usa role="tablist" via PageTabNavigation. Dois tablists
-      // aparecem quando "Meus Agentes" esta ativo (top-level + sub-tabs).
-      // Sprint 4 v3 (2026-05-25): tab "Busca de Talentos" migrou pra sub-tab
-      // "Captação" do TalentPoolPage. Studio agora tem 2 main tabs.
       const tablists = screen.getAllByRole("tablist", { name: /tabs/i })
       expect(tablists.length).toBeGreaterThanOrEqual(1)
       const top = tablists[0]
@@ -109,129 +124,70 @@ describe("Agent Studio — T2 consolidation (5 tabs -> 3 tabs)", () => {
       expect(directTabs.length).toBe(2)
       const labels = Array.from(directTabs).map((b) => b.textContent ?? "")
       expect(labels.join("|")).toContain("studio.tabs.myAgents")
-      expect(labels.join("|")).toContain("studio.tabs.marketplace")
-      expect(labels.join("|")).not.toContain("studio.tabs.talentSearch")
+      expect(labels.join("|")).toContain("studio.tabs.digitalTwins")
+      expect(labels.join("|")).not.toContain("studio.tabs.marketplace")
     })
   })
 
   it("default top tab = Meus Agentes", async () => {
     render(<AgentStudioPage />)
     await waitFor(() => {
-      const myAgentsTab = screen.getByRole("tab", { name: /studio\.tabs\.myAgents/i })
-      expect(myAgentsTab.getAttribute("aria-selected")).toBe("true")
+      const t = screen.getByRole("tab", { name: /studio\.tabs\.myAgents/i })
+      expect(t.getAttribute("aria-selected")).toBe("true")
     })
   })
 
-  it("Meus Agentes mostra 3 sub-tabs: Captacao, Personalizados, Gemeos", async () => {
+  it("NÃO renderiza sub-tab 'Agentes de Captação'", async () => {
     render(<AgentStudioPage />)
     await waitFor(() => {
-      expect(screen.getByRole("tab", { name: /studio\.tabs\.sourcingAgents/i })).toBeTruthy()
-      expect(screen.getByRole("tab", { name: /studio\.tabs\.customAgents/i })).toBeTruthy()
-      expect(screen.getByRole("tab", { name: /studio\.tabs\.digitalTwins/i })).toBeTruthy()
+      expect(screen.queryByText(/studio\.tabs\.sourcingAgents/i)).toBeNull()
+      expect(screen.queryByText(/Agentes de Captação/i)).toBeNull()
     })
   })
 
-  it("default sub-tab dentro de Meus Agentes = Personalizados", async () => {
+  it("NÃO renderiza sub-tab 'Agentes Personalizados'", async () => {
     render(<AgentStudioPage />)
     await waitFor(() => {
-      const customTab = screen.getByRole("tab", { name: /studio\.tabs\.customAgents/i })
-      expect(customTab.getAttribute("aria-selected")).toBe("true")
+      expect(screen.queryByText(/studio\.tabs\.customAgents/i)).toBeNull()
+      expect(screen.queryByText(/Agentes Personalizados/i)).toBeNull()
     })
-    // Conteudo: stub-template-gallery (renderizado apenas em personalizados).
-    expect(screen.getByTestId("stub-template-gallery")).toBeTruthy()
   })
 
-  it("clicar em Marketplace alterna pra MarketplaceTab", async () => {
+  it("aba 'Gêmeos Digitais' alterna conteúdo para TwinsList", async () => {
     render(<AgentStudioPage />)
-    const mkTab = await screen.findByRole("tab", { name: /studio\.tabs\.marketplace/i })
-    await act(async () => {
-      fireEvent.click(mkTab)
+    const gemeosTab = await screen.findByRole("tab", {
+      name: /studio\.tabs\.digitalTwins/i,
     })
-    expect(screen.getByTestId("stub-marketplace")).toBeTruthy()
-  })
-
-  it("clicar em sub-tab Gemeos alterna o conteudo para TwinsList", async () => {
-    render(<AgentStudioPage />)
-    const gemeosTab = await screen.findByRole("tab", { name: /studio\.tabs\.digitalTwins/i })
     await act(async () => {
       fireEvent.click(gemeosTab)
     })
     expect(screen.getByTestId("stub-twins-list")).toBeTruthy()
   })
+})
 
-  // URL backward compat ---------------------------------------------------
-
-  it("URL ?tab=captacao redireciona para Meus Agentes > sub Captacao", async () => {
-    setUrl("?tab=captacao")
+describe("Studio Restructure Fase 1 — header CTAs", () => {
+  it("renderiza CTA primário '+ Criar Agente'", async () => {
     render(<AgentStudioPage />)
     await waitFor(() => {
-      const captacaoTab = screen.getByRole("tab", { name: /studio\.tabs\.sourcingAgents/i })
-      expect(captacaoTab.getAttribute("aria-selected")).toBe("true")
-    })
-    expect(new URL(window.location.href).searchParams.get("tab")).toBe("my-agents")
-    expect(new URL(window.location.href).searchParams.get("subTab")).toBe("captacao")
-  })
-
-  it("URL ?tab=custom (legacy) redireciona para Meus Agentes > Personalizados", async () => {
-    setUrl("?tab=custom")
-    render(<AgentStudioPage />)
-    await waitFor(() => {
-      const customTab = screen.getByRole("tab", { name: /studio\.tabs\.customAgents/i })
-      expect(customTab.getAttribute("aria-selected")).toBe("true")
-    })
-    expect(new URL(window.location.href).searchParams.get("tab")).toBe("my-agents")
-    expect(new URL(window.location.href).searchParams.get("subTab")).toBe("personalizados")
-  })
-
-  it("URL ?tab=twins (legacy) redireciona para Meus Agentes > Gemeos", async () => {
-    setUrl("?tab=twins")
-    render(<AgentStudioPage />)
-    await waitFor(() => {
-      const gemeosTab = screen.getByRole("tab", { name: /studio\.tabs\.digitalTwins/i })
-      expect(gemeosTab.getAttribute("aria-selected")).toBe("true")
-    })
-    expect(new URL(window.location.href).searchParams.get("tab")).toBe("my-agents")
-    expect(new URL(window.location.href).searchParams.get("subTab")).toBe("gemeos")
-  })
-
-  it("URL ?tab=marketplace mantem Marketplace ativo", async () => {
-    setUrl("?tab=marketplace")
-    render(<AgentStudioPage />)
-    await waitFor(() => {
-      const mkTab = screen.getByRole("tab", { name: /studio\.tabs\.marketplace/i })
-      expect(mkTab.getAttribute("aria-selected")).toBe("true")
-    })
-    expect(screen.getByTestId("stub-marketplace")).toBeTruthy()
-  })
-
-  it("URL ?tab=search (legacy de Sprint 4 v3) cai no default myAgents — tab removida", async () => {
-    // Sprint 4 v3 (2026-05-25): tab 'search' migrou pra TalentPoolPage sub-tab Captação.
-    // URL legacy ?tab=search nao tem mais correspondencia no Studio — cai no default.
-    setUrl("?tab=search")
-    render(<AgentStudioPage />)
-    await waitFor(() => {
-      const myAgentsTab = screen.getByRole("tab", { name: /studio\.tabs\.myAgents/i })
-      expect(myAgentsTab.getAttribute("aria-selected")).toBe("true")
+      // Match botão pelo texto canonical ou key i18n
+      const el =
+        screen.queryByText(/\+\s*Criar Agente/i) ||
+        screen.queryByText(/studio\.cta\.createAgent/i)
+      expect(el).not.toBeNull()
     })
   })
 
-  it("URL ?tab=busca (legacy de Sprint 4 v3) cai no default myAgents — tab removida", async () => {
-    setUrl("?tab=busca")
+  it("renderiza CTA secundário 'Explorar Marketplace' como link com href /agents/marketplace", async () => {
     render(<AgentStudioPage />)
     await waitFor(() => {
-      const myAgentsTab = screen.getByRole("tab", { name: /studio\.tabs\.myAgents/i })
-      expect(myAgentsTab.getAttribute("aria-selected")).toBe("true")
+      const el =
+        (screen.queryByText(/Explorar Marketplace/i) as HTMLElement | null) ||
+        (screen.queryByText(/studio\.cta\.exploreMarketplace/i) as HTMLElement | null)
+      expect(el).not.toBeNull()
+      // Sobe pra ancora mais próxima.
+      const anchor = el?.closest("a")
+      expect(anchor).not.toBeNull()
+      expect(anchor?.getAttribute("href")).toBe("/agents/marketplace")
     })
-  })
-
-  it("URL desconhecida (?tab=foo) NAO redireciona — mantem default Meus Agentes", async () => {
-    setUrl("?tab=foo")
-    render(<AgentStudioPage />)
-    await waitFor(() => {
-      const myAgentsTab = screen.getByRole("tab", { name: /studio\.tabs\.myAgents/i })
-      expect(myAgentsTab.getAttribute("aria-selected")).toBe("true")
-    })
-    // URL nao foi reescrita (foo nao tem mapping).
-    expect(new URL(window.location.href).searchParams.get("tab")).toBe("foo")
   })
 })
