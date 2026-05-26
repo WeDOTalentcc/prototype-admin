@@ -130,8 +130,8 @@ export function PoolAgentsTab({ poolId }: PoolAgentsTabProps) {
               onClick={() => setFilter(opt.value)}
               className={
                 filter === opt.value
-                  ? "px-3 py-1.5 text-sm rounded-full border border-lia-border bg-lia-surface-strong text-lia-text-primary font-medium"
-                  : "px-3 py-1.5 text-sm rounded-full border border-lia-border-subtle bg-lia-surface text-lia-text-secondary hover:text-lia-text-primary hover:border-lia-border transition-colors"
+                  ? "px-3 py-1.5 text-sm rounded-full border border-lia-border-default bg-lia-bg-elevated text-lia-text-primary font-medium"
+                  : "px-3 py-1.5 text-sm rounded-full border border-lia-border-subtle bg-lia-bg-elevated text-lia-text-secondary hover:text-lia-text-primary hover:border-lia-border-default transition-colors"
               }
             >
               {opt.label}
@@ -152,7 +152,7 @@ export function PoolAgentsTab({ poolId }: PoolAgentsTabProps) {
       {isLoading && (
         <div className="space-y-2" data-testid="pool-agents-loading">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-20 bg-lia-surface-muted animate-pulse rounded-md" />
+            <div key={i} className="h-20 bg-lia-bg-tertiary animate-pulse rounded-md" />
           ))}
         </div>
       )}

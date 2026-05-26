@@ -233,7 +233,7 @@ export function FairnessDashboard() {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-lia-border">
+                  <tr className="border-b border-lia-border-default">
                     <th className="text-left py-2 px-3 font-medium text-lia-text-secondary">{t("categoryColumn")}</th>
                     <th className="text-left py-2 px-3 font-medium text-lia-text-secondary">{t("typeColumn")}</th>
                     <th className="text-left py-2 px-3 font-medium text-lia-text-secondary">{t("termsColumn")}</th>
@@ -242,7 +242,7 @@ export function FairnessDashboard() {
                 </thead>
                 <tbody>
                   {logs.map((log) => (
-                    <tr key={log.id} className="border-lia-border/50 hover:bg-lia-bg-tertiary/50">
+                    <tr key={log.id} className="border-lia-border-default/50 hover:bg-lia-bg-tertiary/50">
                       <td className="py-2.5 px-3">
                         <Badge variant="outline" className="text-xs">
                           {translateCategory(log.category)}

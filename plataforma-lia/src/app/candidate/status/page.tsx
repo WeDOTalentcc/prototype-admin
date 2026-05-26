@@ -111,7 +111,7 @@ export default function CandidateStatusPage() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-3 text-center">
-          <Loader2 className="h-8 w-8 animate-spin text-lia-primary" />
+          <Loader2 className="h-8 w-8 animate-spin text-wedo-cyan" />
           <p className="text-sm text-muted-foreground">Carregando seu portal...</p>
         </div>
       </div>

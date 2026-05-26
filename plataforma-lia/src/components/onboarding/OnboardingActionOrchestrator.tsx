@@ -238,7 +238,7 @@ export function OnboardingActionOrchestrator() {
   return (
     <aside
       data-testid="onboarding-orchestrator"
-      className="w-[340px] flex-shrink-0 border-r border-lia-border bg-lia-bg-secondary/40
+      className="w-[340px] flex-shrink-0 border-r border-lia-border-default bg-lia-bg-secondary/40
                  p-4 flex flex-col gap-3 overflow-y-auto"
     >
       <header className="flex items-center justify-between">
@@ -271,10 +271,10 @@ export function OnboardingActionOrchestrator() {
                 isCurrent
                   ? "border-wedo-cyan bg-lia-bg-primary"
                   : status === "done"
-                    ? "border-lia-border bg-lia-bg-tertiary/40 opacity-80"
+                    ? "border-lia-border-default bg-lia-bg-tertiary/40 opacity-80"
                     : status === "skipped"
-                      ? "border-lia-border bg-lia-bg-tertiary/20 opacity-60"
-                      : "border-lia-border bg-lia-bg-secondary"
+                      ? "border-lia-border-default bg-lia-bg-tertiary/20 opacity-60"
+                      : "border-lia-border-default bg-lia-bg-secondary"
               }`}
             >
               <div className="flex items-center gap-2">
@@ -312,7 +312,7 @@ export function OnboardingActionOrchestrator() {
                       type="button"
                       onClick={() => advance("skip")}
                       data-testid={`onb-step-${step.key}-skip`}
-                      className="px-3 py-1 text-xs rounded border border-lia-border
+                      className="px-3 py-1 text-xs rounded border border-lia-border-default
                                  text-lia-text-secondary hover:bg-lia-bg-tertiary"
                     >
                       Pular

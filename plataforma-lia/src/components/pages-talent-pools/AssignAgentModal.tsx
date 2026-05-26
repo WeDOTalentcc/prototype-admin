@@ -105,8 +105,8 @@ export function AssignAgentModal({
                 data-testid={`modal-filter-${opt.value}`}
                 className={
                   category === opt.value
-                    ? "px-3 py-1 text-sm rounded-full border border-lia-border bg-lia-surface-strong"
-                    : "px-3 py-1 text-sm rounded-full border border-lia-border-subtle bg-lia-surface text-lia-text-secondary"
+                    ? "px-3 py-1 text-sm rounded-full border border-lia-border-default bg-lia-bg-elevated"
+                    : "px-3 py-1 text-sm rounded-full border border-lia-border-subtle bg-lia-bg-elevated text-lia-text-secondary"
                 }
               >
                 {opt.label}
@@ -142,8 +142,8 @@ export function AssignAgentModal({
                   onClick={() => setSelectedAgentId(a.id)}
                   className={
                     isSelected
-                      ? "w-full text-left p-3 rounded-md border border-lia-border bg-lia-surface-strong"
-                      : "w-full text-left p-3 rounded-md border border-lia-border-subtle bg-lia-surface hover:border-lia-border"
+                      ? "w-full text-left p-3 rounded-md border border-lia-border-default bg-lia-bg-elevated"
+                      : "w-full text-left p-3 rounded-md border border-lia-border-subtle bg-lia-bg-elevated hover:border-lia-border-default"
                   }
                 >
                   <div className="flex items-center justify-between gap-2">

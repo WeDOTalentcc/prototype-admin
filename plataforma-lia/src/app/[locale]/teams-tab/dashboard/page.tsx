@@ -129,7 +129,7 @@ export default function TeamsTabDashboard() {
           />
         </div>
 
-        <footer className="mt-6 pt-4 border-t border-lia-border">
+        <footer className="mt-6 pt-4 border-t border-lia-border-default">
           <p className="text-xs text-lia-text-tertiary">
             Clique em qualquer card para abrir os detalhes na plataforma.
           </p>
@@ -151,7 +151,7 @@ function KPICard({ label, value, loading, onClick, severity = "default" }: KPICa
   const severityClasses =
     severity === "warning"
       ? "border-status-warning-text bg-status-warning-bg"
-      : "border-lia-border bg-lia-bg-secondary"
+      : "border-lia-border-default bg-lia-bg-secondary"
 
   return (
     <button

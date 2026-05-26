@@ -228,7 +228,7 @@ export function FilteredNoContactModal({
           </div>
         )}
 
-        <div className="flex-1 overflow-auto border border-lia-border rounded-md">
+        <div className="flex-1 overflow-auto border border-lia-border-default rounded-md">
           <table className="w-full text-sm">
             <thead className="bg-lia-bg-secondary sticky top-0">
               <tr>
@@ -253,7 +253,7 @@ export function FilteredNoContactModal({
                   const isLoading = state.status === 'loading'
                   const noUrl = !c.linkedin_url
                   return (
-                    <tr key={c.id} className="border-t border-lia-border hover:bg-lia-bg-secondary/50">
+                    <tr key={c.id} className="border-t border-lia-border-default hover:bg-lia-bg-secondary/50">
                       <td className="p-2 align-top">{c.name}</td>
                       <td className="p-2 align-top">{c.current_title || c.headline || "—"}</td>
                       <td className="p-2 align-top">{c.current_company || "—"}</td>

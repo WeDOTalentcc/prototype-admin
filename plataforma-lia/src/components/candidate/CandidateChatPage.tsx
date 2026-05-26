@@ -125,7 +125,7 @@ export function CandidateChatPage({ token, vacancyId, context }: CandidateChatPa
               className={cn(
                 'max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed',
                 msg.role === 'user'
-                  ? 'bg-lia-primary text-white rounded-br-sm'
+                  ? 'bg-wedo-cyan text-white rounded-br-sm'
                   : 'bg-muted text-foreground rounded-bl-sm'
               )}
             >
@@ -169,7 +169,7 @@ export function CandidateChatPage({ token, vacancyId, context }: CandidateChatPa
             size="icon"
             onClick={sendMessage}
             disabled={!input.trim() || loading}
-            className="h-11 w-11 shrink-0 rounded-xl bg-lia-primary hover:bg-lia-primary/90"
+            className="h-11 w-11 shrink-0 rounded-xl bg-wedo-cyan hover:bg-wedo-cyan/90"
           >
             <Send className="h-4 w-4" />
           </Button>

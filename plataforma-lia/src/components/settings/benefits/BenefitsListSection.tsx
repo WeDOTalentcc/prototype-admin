@@ -367,7 +367,7 @@ export function BenefitsListSection({
                     {meta?.name || category}
                   </h4>
                   <span
-                    className="ml-1 inline-flex items-center justify-center min-w-[1.25rem] px-1.5 h-5 rounded-full bg-lia-surface-secondary text-[10px] font-medium text-lia-text-secondary"
+                    className="ml-1 inline-flex items-center justify-center min-w-[1.25rem] px-1.5 h-5 rounded-full bg-lia-bg-secondary text-[10px] font-medium text-lia-text-secondary"
                     data-testid={`benefits-group-count-${category}`}
                   >
                     {items.length}

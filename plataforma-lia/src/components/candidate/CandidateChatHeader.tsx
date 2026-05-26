@@ -41,11 +41,11 @@ export function CandidateChatHeader({
 
   return (
     <header className="flex items-center gap-3 border-b border-border px-4 py-3 bg-background">
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-lia-primary/10 overflow-hidden">
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-wedo-cyan/10 overflow-hidden">
         {logoUrl ? (
           <img src={logoUrl} alt={companyName ?? 'Empresa'} className="h-full w-full object-contain" />
         ) : (
-          <span className="text-lia-primary text-sm font-semibold">
+          <span className="text-wedo-cyan text-sm font-semibold">
             {(companyName ?? 'E')[0].toUpperCase()}
           </span>
         )}

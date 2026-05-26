@@ -60,12 +60,12 @@ export function CandidateJobSelector({
             return (
               <Card
                 key={app.apply_id}
-                className="cursor-pointer transition-all duration-150 hover:shadow-md hover:border-lia-primary/40 active:scale-[0.99] p-4"
+                className="cursor-pointer transition-all duration-150 hover:shadow-md hover:border-wedo-cyan/40 active:scale-[0.99] p-4"
                 onClick={() => onSelect(app)}
               >
                 <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-lia-primary/10">
-                    <Briefcase className="h-4 w-4 text-lia-primary" />
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-wedo-cyan/10">
+                    <Briefcase className="h-4 w-4 text-wedo-cyan" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-foreground truncate">
