@@ -13,6 +13,7 @@
 import type { CompanyData } from "@/hooks/settings/department-types"
 import type { CompanyBenefit } from "@/types/benefits"
 import { useMemo } from "react"
+import { useTranslations } from "next-intl"
 
 // ─── Exported types ─────────────────────────────────────────────────────────
 
@@ -147,43 +148,49 @@ export function buildBlocks(
   company: CompanyData | null,
   benefits: BenefitItem[],
   hiringPolicy: HiringPolicyData | null,
+  t?: (key: string) => string,
 ): CardBlock[] {
   if (!company) return []
 
+  /** Helper: use translation if t provided, else return hardcoded fallback. */
+  const lbl = (key: string, fallback: string) => (t ? t(key) : fallback)
+  /** Block title helper: looks up blocks.{blockKey}. */
+  const blk = (key: string, fallback: string) => (t ? t("blocks." + key) : fallback)
+
   const basicFields: CardField[] = [
-    { key: "name", label: "Nome da Empresa", value: company.name, type: "text", editable: true, block: "basic" },
-    { key: "tradeName", label: "Nome Fantasia", value: company.tradeName, type: "text", editable: true, block: "basic" },
-    { key: "logo", label: "Logo (URL)", value: company.logo || null, type: "text", editable: true, block: "basic" },
-    { key: "cnpj", label: "CNPJ", value: company.cnpj, type: "text", editable: true, block: "basic" },
-    { key: "website", label: "Website", value: company.website, type: "text", editable: true, block: "basic" },
-    { key: "industry", label: "Setor", value: company.industry, type: "text", editable: true, block: "basic" },
-    { key: "size", label: "Porte", value: company.company_size || company.size, type: "text", editable: true, block: "basic" },
-    { key: "employee_count", label: "Funcionarios", value: company.employee_count, type: "number", editable: true, block: "basic" },
-    { key: "headquarters", label: "Sede", value: company.headquarters, type: "text", editable: true, block: "basic" },
-    { key: "founded_year", label: "Ano de Fundacao", value: company.founded_year, type: "number", editable: true, block: "basic" },
-    { key: "linkedin_url", label: "LinkedIn", value: company.linkedin_url, type: "text", editable: true, block: "basic" },
-    { key: "email", label: "Email RH", value: company.email, type: "text", editable: true, block: "basic" },
-    { key: "phone", label: "Telefone", value: company.phone, type: "text", editable: true, block: "basic" },
+    { key: "name", label: lbl("basic.name", "Nome da Empresa"), value: company.name, type: "text", editable: true, block: "basic" },
+    { key: "tradeName", label: lbl("basic.tradeName", "Nome Fantasia"), value: company.tradeName, type: "text", editable: true, block: "basic" },
+    { key: "logo", label: lbl("basic.logo", "Logo (URL)"), value: company.logo || null, type: "text", editable: true, block: "basic" },
+    { key: "cnpj", label: lbl("basic.cnpj", "CNPJ"), value: company.cnpj, type: "text", editable: true, block: "basic" },
+    { key: "website", label: lbl("basic.website", "Website"), value: company.website, type: "text", editable: true, block: "basic" },
+    { key: "industry", label: lbl("basic.industry", "Setor"), value: company.industry, type: "text", editable: true, block: "basic" },
+    { key: "size", label: lbl("basic.size", "Porte"), value: company.company_size || company.size, type: "text", editable: true, block: "basic" },
+    { key: "employee_count", label: lbl("basic.employee_count", "Funcionários"), value: company.employee_count, type: "number", editable: true, block: "basic" },
+    { key: "headquarters", label: lbl("basic.headquarters", "Sede"), value: company.headquarters, type: "text", editable: true, block: "basic" },
+    { key: "founded_year", label: lbl("basic.founded_year", "Ano de Fundação"), value: company.founded_year, type: "number", editable: true, block: "basic" },
+    { key: "linkedin_url", label: lbl("basic.linkedin_url", "LinkedIn"), value: company.linkedin_url, type: "text", editable: true, block: "basic" },
+    { key: "email", label: lbl("basic.email", "Email RH"), value: company.email, type: "text", editable: true, block: "basic" },
+    { key: "phone", label: lbl("basic.phone", "Telefone"), value: company.phone, type: "text", editable: true, block: "basic" },
   ]
 
   const cultureFields: CardField[] = [
-    { key: "mission", label: "Missao", value: company.mission, type: "text", editable: true, block: "culture" },
-    { key: "vision", label: "Visao", value: company.vision, type: "text", editable: true, block: "culture" },
-    { key: "values", label: "Valores", value: company.values, type: "list", editable: true, block: "culture" },
-    { key: "work_model", label: "Modelo de Trabalho", value: company.work_model, type: "text", editable: true, block: "culture" },
-    { key: "dei_initiatives", label: "DEI", value: company.dei_initiatives, type: "text", editable: true, block: "culture" },
-    { key: "sustainability", label: "Sustentabilidade", value: company.sustainability, type: "text", editable: true, block: "culture" },
-    { key: "social_impact", label: "Impacto Social", value: company.social_impact, type: "text", editable: true, block: "culture" },
-    { key: "leadership_style", label: "Estilo de Lideranca", value: company.leadership_style, type: "text", editable: true, block: "culture" },
-    { key: "growth_opportunities", label: "Oportunidades de Crescimento", value: company.growth_opportunities, type: "text", editable: true, block: "culture" },
-    { key: "team_dynamics", label: "Dinamica de Equipe", value: company.team_dynamics, type: "text", editable: true, block: "culture" },
-    { key: "evp_bullets", label: "EVP", value: company.evp_bullets, type: "list", editable: true, block: "culture" },
+    { key: "mission", label: lbl("culture.mission", "Missão"), value: company.mission, type: "text", editable: true, block: "culture" },
+    { key: "vision", label: lbl("culture.vision", "Visão"), value: company.vision, type: "text", editable: true, block: "culture" },
+    { key: "values", label: lbl("culture.values", "Valores"), value: company.values, type: "list", editable: true, block: "culture" },
+    { key: "work_model", label: lbl("culture.work_model", "Modelo de Trabalho"), value: company.work_model, type: "text", editable: true, block: "culture" },
+    { key: "dei_initiatives", label: lbl("culture.dei_initiatives", "DEI"), value: company.dei_initiatives, type: "text", editable: true, block: "culture" },
+    { key: "sustainability", label: lbl("culture.sustainability", "Sustentabilidade"), value: company.sustainability, type: "text", editable: true, block: "culture" },
+    { key: "social_impact", label: lbl("culture.social_impact", "Impacto Social"), value: company.social_impact, type: "text", editable: true, block: "culture" },
+    { key: "leadership_style", label: lbl("culture.leadership_style", "Estilo de Liderança"), value: company.leadership_style, type: "text", editable: true, block: "culture" },
+    { key: "growth_opportunities", label: lbl("culture.growth_opportunities", "Oportunidades de Crescimento"), value: company.growth_opportunities, type: "text", editable: true, block: "culture" },
+    { key: "team_dynamics", label: lbl("culture.team_dynamics", "Dinâmica de Equipe"), value: company.team_dynamics, type: "text", editable: true, block: "culture" },
+    { key: "evp_bullets", label: lbl("culture.evp_bullets", "EVP"), value: company.evp_bullets, type: "list", editable: true, block: "culture" },
   ]
 
   const techFields: CardField[] = [
-    { key: "tech_stack", label: "Stack Tecnologico", value: company.tech_stack, type: "list", editable: true, block: "tech" },
-    { key: "engineering_culture", label: "Cultura de Engenharia", value: company.engineering_culture, type: "text", editable: true, block: "tech" },
-    { key: "default_languages", label: "Idiomas", value: company.default_languages, type: "list", editable: true, block: "tech" },
+    { key: "tech_stack", label: lbl("tech.tech_stack", "Stack Tecnológico"), value: company.tech_stack, type: "list", editable: true, block: "tech" },
+    { key: "engineering_culture", label: lbl("tech.engineering_culture", "Cultura de Engenharia"), value: company.engineering_culture, type: "text", editable: true, block: "tech" },
+    { key: "default_languages", label: lbl("tech.default_languages", "Idiomas"), value: company.default_languages, type: "list", editable: true, block: "tech" },
   ]
 
   const activeBenefits = benefits.filter((b) => b.is_active !== false)
@@ -229,13 +236,13 @@ export function buildBlocks(
   const additionalData = company.additional_data
   const workforcePlan = (additionalData as Record<string, unknown> | undefined)?.workforce_plan as Record<string, unknown> | undefined
   const workforceFields: CardField[] = [
-    { key: "hiring_volume", label: "Volume de Contratacao", value: additionalData?.hiring_volume ?? workforcePlan?.hiring_volume, type: "number", editable: true, block: "workforce" },
-    { key: "job_types", label: "Tipos de Vaga", value: additionalData?.job_types ?? workforcePlan?.job_types, type: "list", editable: true, block: "workforce" },
-    { key: "current_ats", label: "ATS Atual", value: additionalData?.current_ats ?? workforcePlan?.current_ats, type: "text", editable: true, block: "workforce" },
-    { key: "main_challenges", label: "Principais Desafios", value: additionalData?.main_challenges ?? workforcePlan?.main_challenges, type: "list", editable: true, block: "workforce" },
-    { key: "main_priority", label: "Prioridade Principal", value: additionalData?.main_priority ?? workforcePlan?.main_priority, type: "text", editable: true, block: "workforce" },
-    { key: "communication_channels", label: "Canais de Comunicacao", value: additionalData?.communication_channels ?? workforcePlan?.communication_channels, type: "list", editable: true, block: "workforce" },
-    { key: "import_spreadsheet", label: "Importar Planilha", value: null, type: "text", editable: false, block: "workforce" },
+    { key: "hiring_volume", label: lbl("workforce.hiring_volume", "Volume de Contratação"), value: additionalData?.hiring_volume ?? workforcePlan?.hiring_volume, type: "number", editable: true, block: "workforce" },
+    { key: "job_types", label: lbl("workforce.job_types", "Tipos de Vaga"), value: additionalData?.job_types ?? workforcePlan?.job_types, type: "list", editable: true, block: "workforce" },
+    { key: "current_ats", label: lbl("workforce.current_ats", "ATS Atual"), value: additionalData?.current_ats ?? workforcePlan?.current_ats, type: "text", editable: true, block: "workforce" },
+    { key: "main_challenges", label: lbl("workforce.main_challenges", "Principais Desafios"), value: additionalData?.main_challenges ?? workforcePlan?.main_challenges, type: "list", editable: true, block: "workforce" },
+    { key: "main_priority", label: lbl("workforce.main_priority", "Prioridade Principal"), value: additionalData?.main_priority ?? workforcePlan?.main_priority, type: "text", editable: true, block: "workforce" },
+    { key: "communication_channels", label: lbl("workforce.communication_channels", "Canais de Comunicação"), value: additionalData?.communication_channels ?? workforcePlan?.communication_channels, type: "list", editable: true, block: "workforce" },
+    { key: "import_spreadsheet", label: lbl("workforce.import_spreadsheet", "Importar Planilha"), value: null, type: "text", editable: false, block: "workforce" },
   ]
 
   const documentFields: CardField[] = [
@@ -249,13 +256,13 @@ export function buildBlocks(
   ]
 
   return [
-    { key: "basic", title: "Perfil da Empresa", iconName: "Building2", fields: basicFields, status: computeBlockStatus(basicFields), progress: computeBlockProgress(basicFields) },
-    { key: "culture", title: "Cultura & Valores", iconName: "Heart", fields: cultureFields, status: computeBlockStatus(cultureFields), progress: computeBlockProgress(cultureFields) },
-    { key: "tech", title: "Stack Tecnológico", iconName: "Code2", fields: techFields, status: computeBlockStatus(techFields), progress: computeBlockProgress(techFields) },
-    { key: "benefits", title: "Benefícios", subtitle: benefitsSubtitle, iconName: "Gift", fields: benefitsFields, status: computeBlockStatus(benefitsFields), progress: computeBlockProgress(benefitsFields) },
-    { key: "policy", title: "Políticas de Recrutamento", iconName: "FileText", fields: policyFields, status: computeBlockStatus(policyFields), progress: computeBlockProgress(policyFields) },
-    { key: "workforce", title: "Workforce Planning", iconName: "Users", fields: workforceFields, status: computeBlockStatus(workforceFields), progress: computeBlockProgress(workforceFields) },
-    { key: "documents", title: "Remuneração Variável", iconName: "TrendingUp", fields: documentFields, status: computeBlockStatus(documentFields), progress: computeBlockProgress(documentFields) },
+    { key: "basic", title: blk("basic", "Perfil da Empresa"), iconName: "Building2", fields: basicFields, status: computeBlockStatus(basicFields), progress: computeBlockProgress(basicFields) },
+    { key: "culture", title: blk("culture", "Cultura & Valores"), iconName: "Heart", fields: cultureFields, status: computeBlockStatus(cultureFields), progress: computeBlockProgress(cultureFields) },
+    { key: "tech", title: blk("tech", "Stack Tecnológico"), iconName: "Code2", fields: techFields, status: computeBlockStatus(techFields), progress: computeBlockProgress(techFields) },
+    { key: "benefits", title: blk("benefits", "Benefícios"), subtitle: benefitsSubtitle, iconName: "Gift", fields: benefitsFields, status: computeBlockStatus(benefitsFields), progress: computeBlockProgress(benefitsFields) },
+    { key: "policy", title: blk("policy", "Políticas de Recrutamento"), iconName: "FileText", fields: policyFields, status: computeBlockStatus(policyFields), progress: computeBlockProgress(policyFields) },
+    { key: "workforce", title: blk("workforce", "Workforce Planning"), iconName: "Users", fields: workforceFields, status: computeBlockStatus(workforceFields), progress: computeBlockProgress(workforceFields) },
+    { key: "documents", title: blk("documents", "Remuneração Variável"), iconName: "TrendingUp", fields: documentFields, status: computeBlockStatus(documentFields), progress: computeBlockProgress(documentFields) },
   ]
 }
 
@@ -274,6 +281,7 @@ export function snapshotFieldValues(blocks: CardBlock[]): Map<string, string> {
 
 /**
  * Thin React hook wrapping buildBlocks with useMemo.
+ * Resolves i18n labels via next-intl for the current locale.
  * Stable identity: only recomputes when inputs change.
  */
 export function useCompanyBlocks(
@@ -281,8 +289,10 @@ export function useCompanyBlocks(
   benefits: BenefitItem[],
   hiringPolicy: HiringPolicyData | null,
 ): CardBlock[] {
+  const t = useTranslations("settings.minhaEmpresa.fields")
   return useMemo(
-    () => buildBlocks(company, benefits, hiringPolicy),
+    () => buildBlocks(company, benefits, hiringPolicy, t),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [company, benefits, hiringPolicy],
   )
 }

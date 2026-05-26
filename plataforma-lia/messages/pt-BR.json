@@ -5765,6 +5765,98 @@
         "cnpjPlaceholder": "00.000.000/0000-00",
         "industry": "Setor/Indústria",
         "industryPlaceholder": "Selecione o setor..."
+      },
+      "blocks": {
+        "basic": "Perfil da Empresa",
+        "culture": "Cultura & Valores",
+        "tech": "Stack Tecnológico",
+        "benefits": "Benefícios",
+        "policy": "Políticas de Recrutamento",
+        "workforce": "Workforce Planning",
+        "documents": "Remuneração Variável"
+      },
+      "fields": {
+        "basic": {
+          "name": "Nome da Empresa",
+          "tradeName": "Nome Fantasia",
+          "logo": "Logo (URL)",
+          "cnpj": "CNPJ",
+          "website": "Website",
+          "industry": "Setor",
+          "size": "Porte",
+          "employee_count": "Funcionários",
+          "headquarters": "Sede",
+          "founded_year": "Ano de Fundação",
+          "linkedin_url": "LinkedIn",
+          "email": "Email RH",
+          "phone": "Telefone"
+        },
+        "culture": {
+          "mission": "Missão",
+          "vision": "Visão",
+          "values": "Valores",
+          "work_model": "Modelo de Trabalho",
+          "dei_initiatives": "DEI",
+          "sustainability": "Sustentabilidade",
+          "social_impact": "Impacto Social",
+          "leadership_style": "Estilo de Liderança",
+          "growth_opportunities": "Oportunidades de Crescimento",
+          "team_dynamics": "Dinâmica de Equipe",
+          "evp_bullets": "EVP"
+        },
+        "tech": {
+          "tech_stack": "Stack Tecnológico",
+          "engineering_culture": "Cultura de Engenharia",
+          "default_languages": "Idiomas"
+        },
+        "benefits": {
+          "benefits_count": "Total de Benefícios",
+          "benefits_active": "Benefícios Ativos",
+          "benefits_list": "Pacote",
+          "emptySubtitle": "Nenhum benefício cadastrado",
+          "countSuffix": "cadastrado",
+          "countSuffixPlural": "cadastrados",
+          "activeSuffix": "ativo",
+          "activeSuffixPlural": "ativos"
+        },
+        "policy": {
+          "min_interviews_before_offer": "Mín. Entrevistas p/ Oferta",
+          "manager_approval_for_offer": "Aprovação Gestor",
+          "max_days_in_stage": "Máx. Dias por Etapa",
+          "allowed_days": "Dias Permitidos",
+          "allowed_hours": "Horário Permitido",
+          "default_duration_minutes": "Duração Padrão (min)",
+          "self_scheduling_enabled": "Auto-agendamento",
+          "auto_rejection_feedback": "Feedback Auto Rejeição",
+          "rejection_feedback_deadline_hours": "Prazo Feedback Rejeição (h)",
+          "preferred_channel": "Canal Preferido",
+          "salary_expectation_filter": "Filtro Pretensão Salarial",
+          "salary_tolerance_percent": "Tolerância Salarial (%)",
+          "experience_policy": "Política de Experiência",
+          "auto_screening": "Triagem Automática",
+          "auto_scheduling": "Agendamento Automático (Em breve)",
+          "auto_stage_advance": "Avanço Automático Etapas",
+          "autonomy_level": "Nível de Autonomia LIA",
+          "setup_progress": "Progresso Configuração"
+        },
+        "workforce": {
+          "hiring_volume": "Volume de Contratação",
+          "job_types": "Tipos de Vaga",
+          "current_ats": "ATS Atual",
+          "main_challenges": "Principais Desafios",
+          "main_priority": "Prioridade Principal",
+          "communication_channels": "Canais de Comunicação",
+          "import_spreadsheet": "Importar Planilha"
+        },
+        "documents": {
+          "onboarding_completed": "Onboarding Concluído",
+          "responsible_name": "Responsável",
+          "responsible_position": "Cargo do Responsável",
+          "additional_notes": "Notas Adicionais",
+          "compensation_structure": "Políticas de PRV",
+          "handbook": "Manual do Colaborador",
+          "org_chart": "Organograma"
+        }
       }
     },
     "governanca": {

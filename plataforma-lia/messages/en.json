@@ -5765,6 +5765,98 @@
         "cnpjPlaceholder": "00.000.000/0000-00",
         "industry": "Industry/Sector",
         "industryPlaceholder": "Select the industry..."
+      },
+      "blocks": {
+        "basic": "Company Profile",
+        "culture": "Culture & Values",
+        "tech": "Tech Stack",
+        "benefits": "Benefits",
+        "policy": "Recruiting Policies",
+        "workforce": "Workforce Planning",
+        "documents": "Variable Compensation"
+      },
+      "fields": {
+        "basic": {
+          "name": "Company Name",
+          "tradeName": "Trade Name",
+          "logo": "Logo (URL)",
+          "cnpj": "Tax ID (CNPJ)",
+          "website": "Website",
+          "industry": "Industry",
+          "size": "Company Size",
+          "employee_count": "Employee Count",
+          "headquarters": "Headquarters",
+          "founded_year": "Founded Year",
+          "linkedin_url": "LinkedIn",
+          "email": "HR Email",
+          "phone": "Phone"
+        },
+        "culture": {
+          "mission": "Mission Statement",
+          "vision": "Vision Statement",
+          "values": "Core Values",
+          "work_model": "Work Model",
+          "dei_initiatives": "DEI Initiatives",
+          "sustainability": "Sustainability",
+          "social_impact": "Social Impact",
+          "leadership_style": "Leadership Style",
+          "growth_opportunities": "Growth Opportunities",
+          "team_dynamics": "Team Dynamics",
+          "evp_bullets": "EVP"
+        },
+        "tech": {
+          "tech_stack": "Tech Stack",
+          "engineering_culture": "Engineering Culture",
+          "default_languages": "Languages"
+        },
+        "benefits": {
+          "benefits_count": "Total Benefits",
+          "benefits_active": "Active Benefits",
+          "benefits_list": "Benefits Package",
+          "emptySubtitle": "No benefits registered",
+          "countSuffix": "registered",
+          "countSuffixPlural": "registered",
+          "activeSuffix": "active",
+          "activeSuffixPlural": "active"
+        },
+        "policy": {
+          "min_interviews_before_offer": "Min. Interviews Before Offer",
+          "manager_approval_for_offer": "Manager Approval",
+          "max_days_in_stage": "Max. Days per Stage",
+          "allowed_days": "Allowed Days",
+          "allowed_hours": "Allowed Hours",
+          "default_duration_minutes": "Default Duration (min)",
+          "self_scheduling_enabled": "Self-Scheduling",
+          "auto_rejection_feedback": "Auto Rejection Feedback",
+          "rejection_feedback_deadline_hours": "Rejection Feedback Deadline (h)",
+          "preferred_channel": "Preferred Channel",
+          "salary_expectation_filter": "Salary Expectation Filter",
+          "salary_tolerance_percent": "Salary Tolerance (%)",
+          "experience_policy": "Experience Policy",
+          "auto_screening": "Automatic Screening",
+          "auto_scheduling": "Automatic Scheduling (Coming Soon)",
+          "auto_stage_advance": "Automatic Stage Advance",
+          "autonomy_level": "LIA Autonomy Level",
+          "setup_progress": "Setup Progress"
+        },
+        "workforce": {
+          "hiring_volume": "Hiring Volume",
+          "job_types": "Job Types",
+          "current_ats": "Current ATS",
+          "main_challenges": "Main Challenges",
+          "main_priority": "Main Priority",
+          "communication_channels": "Communication Channels",
+          "import_spreadsheet": "Import Spreadsheet"
+        },
+        "documents": {
+          "onboarding_completed": "Onboarding Completed",
+          "responsible_name": "Responsible",
+          "responsible_position": "Responsible Position",
+          "additional_notes": "Additional Notes",
+          "compensation_structure": "Variable Compensation Policies",
+          "handbook": "Employee Handbook",
+          "org_chart": "Org Chart"
+        }
       }
     },
     "governanca": {
