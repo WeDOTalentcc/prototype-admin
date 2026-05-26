@@ -44,6 +44,7 @@ import {
   LIA_FIELD_DEFINITIONS,
   type LiaFieldKey,
 } from "@/hooks/company/use-company-lia-instructions"
+import { LiaImpactSummary } from "@/components/settings/LiaImpactSummary"
 
 interface LiaFieldsConfig {
   lia_field_toggles: Partial<Record<LiaFieldKey, boolean>>
@@ -233,6 +234,10 @@ export function LiaFieldsConfigPanel() {
           </p>
         </div>
       </div>
+
+      {/* P1-9 (audit 2026-05-26): visualiza diferencial competitivo invisível —
+          quantos campos canonical a LIA consome + exemplos por campo. */}
+      <LiaImpactSummary toggles={config.lia_field_toggles} />
 
       {error && (
         <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
