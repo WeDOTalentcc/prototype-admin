@@ -117,3 +117,53 @@ async def test_run_coro_in_threadpool_with_real_value():
 
     result = run_coro_in_threadpool(lambda: fake_template_payload())
     assert result == {"interview_stages": ["screening"], "template_name": "Default"}
+
+
+# --- timeout param (PR-14 extension) --------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_run_coro_in_threadpool_with_timeout_success():
+    """Timeout suficiente: coro completa OK (running loop branch)."""
+
+    async def fast_op():
+        await asyncio.sleep(0.01)
+        return "done"
+
+    result = run_coro_in_threadpool(lambda: fast_op(), timeout=1.0)
+    assert result == "done"
+
+
+@pytest.mark.asyncio
+async def test_run_coro_in_threadpool_timeout_exceeded_raises():
+    """Timeout insuficiente: lanca concurrent.futures.TimeoutError."""
+    import concurrent.futures
+
+    async def slow_op():
+        await asyncio.sleep(5.0)
+        return "never"
+
+    with pytest.raises(concurrent.futures.TimeoutError):
+        run_coro_in_threadpool(lambda: slow_op(), timeout=0.05)
+
+
+@pytest.mark.asyncio
+async def test_run_coro_in_threadpool_none_timeout_default():
+    """timeout=None (default) — espera indefinido OK."""
+
+    async def op():
+        return 42
+
+    result = run_coro_in_threadpool(lambda: op(), timeout=None)
+    assert result == 42
+
+
+def test_run_coro_in_threadpool_no_loop_ignores_timeout():
+    """Sem loop ativo, asyncio.run e usado e timeout e ignorado."""
+
+    async def op():
+        return "ok"
+
+    # timeout passado mas no-loop branch nao usa ThreadPoolExecutor
+    result = run_coro_in_threadpool(lambda: op(), timeout=0.001)
+    assert result == "ok"

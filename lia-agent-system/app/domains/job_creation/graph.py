@@ -166,7 +166,10 @@ from app.domains.job_creation.services.jd_enrichment import JdEnrichmentService
 from app.domains.job_creation.services.seniority_resolver import resolve_seniority
 from app.domains.job_creation.services.wsi_question_generator import WSIQuestionGenerator
 from app.domains.job_creation.api_client import JobCreationAPIClient
-from app.domains.job_creation.helpers.async_audit import emit_audit_fire_and_forget
+from app.domains.job_creation.helpers.async_audit import (
+    emit_audit_fire_and_forget,
+    run_coro_in_threadpool,
+)
 from app.domains.job_creation.helpers.intake_audit import emit_intake_audit
 from app.domains.job_creation.helpers.llm_exceptions import (
     classify_llm_exception_reason,
@@ -1926,7 +1929,9 @@ def salary_node(state: JobCreationState) -> JobCreationState:
     salary_fallback_reason: Optional[str] = None
     if not state.get("salary_benchmark"):
         try:
-            import asyncio as _asyncio
+            # PR-14 (2026-05-26): substituido _asyncio.run() + ThreadPoolExecutor
+            # local por helper canonical run_coro_in_threadpool(). _cf_sl mantido
+            # apenas para capturar TimeoutError (mesmo type lancado pelo helper).
             import concurrent.futures as _cf_sl
 
             async def _fetch_benchmark():
@@ -1985,32 +1990,27 @@ def salary_node(state: JobCreationState) -> JobCreationState:
 
                 return combined
 
-            def _run_fetch():
-                return _asyncio.run(_fetch_benchmark())
-
-            # NOTE: shutdown(wait=False) — ver comentário em bigfive_node.
-            _ex_sl = _cf_sl.ThreadPoolExecutor(max_workers=1)
+            # PR-14 (2026-05-26): helper canonical run_coro_in_threadpool()
+            # substitui ThreadPoolExecutor inline + _run_fetch wrapper. Mesma
+            # semantica de timeout (concurrent.futures.TimeoutError).
             try:
-                try:
-                    _benchmark = _ex_sl.submit(_run_fetch).result(
-                        timeout=_SALARY_TIMEOUT_S
-                    )
-                except _cf_sl.TimeoutError:
-                    logger.warning(
-                        "[JobCreation:salary] benchmark fetch timeout after %.1fs — "
-                        "skipping benchmark gracefully (Task #1062)",
-                        _SALARY_TIMEOUT_S,
-                    )
-                    _benchmark = None
-                    salary_used_fallback = True
-                    salary_fallback_reason = "timeout"
-                    _emit_wizard_fallback_metric(
-                        node="salary", state=state, reason="benchmark_timeout",
-                        timeout_s=_SALARY_TIMEOUT_S,
-                        elapsed_ms=(time.time() - t0) * 1000,
-                    )
-            finally:
-                _ex_sl.shutdown(wait=False)
+                _benchmark = run_coro_in_threadpool(
+                    _fetch_benchmark, timeout=_SALARY_TIMEOUT_S
+                )
+            except _cf_sl.TimeoutError:
+                logger.warning(
+                    "[JobCreation:salary] benchmark fetch timeout after %.1fs — "
+                    "skipping benchmark gracefully (Task #1062)",
+                    _SALARY_TIMEOUT_S,
+                )
+                _benchmark = None
+                salary_used_fallback = True
+                salary_fallback_reason = "timeout"
+                _emit_wizard_fallback_metric(
+                    node="salary", state=state, reason="benchmark_timeout",
+                    timeout_s=_SALARY_TIMEOUT_S,
+                    elapsed_ms=(time.time() - t0) * 1000,
+                )
             if _benchmark:
                 state = {**state, "salary_benchmark": _benchmark}
                 logger.info(
@@ -3296,14 +3296,8 @@ def jd_gate_node(state: JobCreationState) -> JobCreationState:
     )
     classifier = get_wizard_gate_classifier()
 
-    import asyncio as _asyncio
     output = None
     try:
-        try:
-            # F-2.6: get_running_loop() é canonical Python 3.10+ (raise se nao ha loop)
-            running_loop = _asyncio.get_running_loop()
-        except RuntimeError:
-            running_loop = None
         # T2 fix #3 (code review #2): plumb company_id/user_id do state para
         # o classifier registrar custo no ledger ``external_api_consumption``
         # (ConsumptionTrackingService.record_llm_call) por tenant. Sem isso,
@@ -3322,15 +3316,9 @@ def jd_gate_node(state: JobCreationState) -> JobCreationState:
             user_id=str(_user_id) if _user_id else None,
             last_turns=_extract_last_turns(state, n=3),  # Task #1123
         )
-        if running_loop is not None and running_loop.is_running():
-            # Dentro de loop ativo (ex.: chamado de WS handler async). Offload
-            # para thread isolada com seu próprio event loop.
-            import concurrent.futures as _cf
-            with _cf.ThreadPoolExecutor(max_workers=1) as _ex:
-                _fut = _ex.submit(lambda: _asyncio.run(coro_factory()))
-                output = _fut.result(timeout=30.0)
-        else:
-            output = _asyncio.run(coro_factory())
+        # PR-14 (2026-05-26): helper canonical run_coro_in_threadpool() substitui
+        # bloco running_loop + ThreadPoolExecutor inline (Tipo B migration).
+        output = run_coro_in_threadpool(coro_factory, timeout=30.0)
     except Exception as exc:
         logger.warning("[JobCreation:jd_gate] classify failed (fallback): %s", exc)
         output = _make_fallback()
@@ -3608,14 +3596,8 @@ def competency_gate_node(state: JobCreationState) -> JobCreationState:
     )
     classifier = get_wizard_gate_classifier()
 
-    import asyncio as _asyncio
     output = None
     try:
-        try:
-            # F-2.6: get_running_loop() é canonical Python 3.10+ (raise se nao ha loop)
-            running_loop = _asyncio.get_running_loop()
-        except RuntimeError:
-            running_loop = None
         _company_id = state.get("workspace_id") or state.get("company_id")
         _user_id = state.get("user_id") or state.get("recruiter_id")
         coro_factory = lambda: classifier.classify(  # noqa: E731
@@ -3628,13 +3610,9 @@ def competency_gate_node(state: JobCreationState) -> JobCreationState:
             user_id=str(_user_id) if _user_id else None,
             last_turns=_extract_last_turns(state, n=3),  # Task #1123
         )
-        if running_loop is not None and running_loop.is_running():
-            import concurrent.futures as _cf
-            with _cf.ThreadPoolExecutor(max_workers=1) as _ex:
-                _fut = _ex.submit(lambda: _asyncio.run(coro_factory()))
-                output = _fut.result(timeout=30.0)
-        else:
-            output = _asyncio.run(coro_factory())
+        # PR-14 (2026-05-26): helper canonical run_coro_in_threadpool() substitui
+        # bloco running_loop + ThreadPoolExecutor inline (Tipo B migration).
+        output = run_coro_in_threadpool(coro_factory, timeout=30.0)
     except Exception as exc:
         logger.warning("[JobCreation:competency_gate] classify failed (fallback): %s", exc)
         output = _make_fallback()
@@ -4016,14 +3994,8 @@ def wsi_questions_gate_node(state: JobCreationState) -> JobCreationState:
     )
     classifier = get_wizard_gate_classifier()
 
-    import asyncio as _asyncio
     output = None
     try:
-        try:
-            # F-2.6: get_running_loop() é canonical Python 3.10+ (raise se nao ha loop)
-            running_loop = _asyncio.get_running_loop()
-        except RuntimeError:
-            running_loop = None
         _company_id = state.get("workspace_id") or state.get("company_id")
         _user_id = state.get("user_id") or state.get("recruiter_id")
         coro_factory = lambda: classifier.classify(  # noqa: E731
@@ -4036,13 +4008,9 @@ def wsi_questions_gate_node(state: JobCreationState) -> JobCreationState:
             user_id=str(_user_id) if _user_id else None,
             last_turns=_extract_last_turns(state, n=3),  # Task #1123
         )
-        if running_loop is not None and running_loop.is_running():
-            import concurrent.futures as _cf
-            with _cf.ThreadPoolExecutor(max_workers=1) as _ex:
-                _fut = _ex.submit(lambda: _asyncio.run(coro_factory()))
-                output = _fut.result(timeout=30.0)
-        else:
-            output = _asyncio.run(coro_factory())
+        # PR-14 (2026-05-26): helper canonical run_coro_in_threadpool() substitui
+        # bloco running_loop + ThreadPoolExecutor inline (Tipo B migration).
+        output = run_coro_in_threadpool(coro_factory, timeout=30.0)
     except Exception as exc:
         logger.warning("[JobCreation:wsi_questions_gate] classify failed (fallback): %s", exc)
         output = _make_fallback()
@@ -4513,14 +4481,8 @@ def review_gate_node(state: JobCreationState) -> JobCreationState:
     )
     classifier = get_wizard_gate_classifier()
 
-    import asyncio as _asyncio
     output = None
     try:
-        try:
-            # F-2.6: get_running_loop() é canonical Python 3.10+ (raise se nao ha loop)
-            running_loop = _asyncio.get_running_loop()
-        except RuntimeError:
-            running_loop = None
         _company_id = state.get("workspace_id") or state.get("company_id")
         _user_id = state.get("user_id") or state.get("recruiter_id")
         coro_factory = lambda: classifier.classify(  # noqa: E731
@@ -4533,13 +4495,9 @@ def review_gate_node(state: JobCreationState) -> JobCreationState:
             user_id=str(_user_id) if _user_id else None,
             last_turns=_extract_last_turns(state, n=3),  # Task #1123
         )
-        if running_loop is not None and running_loop.is_running():
-            import concurrent.futures as _cf
-            with _cf.ThreadPoolExecutor(max_workers=1) as _ex:
-                _fut = _ex.submit(lambda: _asyncio.run(coro_factory()))
-                output = _fut.result(timeout=30.0)
-        else:
-            output = _asyncio.run(coro_factory())
+        # PR-14 (2026-05-26): helper canonical run_coro_in_threadpool() substitui
+        # bloco running_loop + ThreadPoolExecutor inline (Tipo B migration).
+        output = run_coro_in_threadpool(coro_factory, timeout=30.0)
     except Exception as exc:
         logger.warning("[JobCreation:review_gate] classify failed (fallback): %s", exc)
         output = _make_fallback()

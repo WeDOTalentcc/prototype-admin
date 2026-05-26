@@ -9,15 +9,16 @@ existe em app/domains/job_creation/helpers/async_audit.py:
 
 Allowlist: marker `# ASYNCIO-RUN-EXEMPT: <reason>` na mesma linha ou +/- 2 linhas.
 
-Modo: warn-only por default; --blocking para CI gating.
+Modo: BLOCKING por default (post-PR-14 2026-05-26). `--warn-only` para opt-out.
 
-Baseline esperado pos-PR-4: 19 violations (PR-4 fix apenas site C-1 graph.py:1396).
+Baseline esperado pos-PR-14: 0 violations (P0-#2 fechado 100%).
 
-Ratchet target:
+Ratchet historico:
+- PR-4 baseline: 19 violations (apenas site C-1 graph.py:1396 fixado)
 - PR-5: 19 -> 13 (6 sites Tipo A migrados para emit_audit_fire_and_forget)
 - PR-6: 13 -> 9  (4 sites Tipo E migrados)
-- PR-7: 9 -> 4   (5 sites isolated get_event_loop refactor)
-- Sprint async dedicada: 4 -> 0 -> BLOCKING
+- PR-7: 9 -> 4 (4 isolated get_event_loop refactor)
+- PR-14: 10 -> 0 (4 gates + salary_node Tipo B migration) -> BLOCKING default
 
 Exit:
   0 — todas as invariantes OK (ou warn-only)
@@ -97,10 +98,19 @@ def find_violations(filepath: Path) -> list[dict]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Sensor R5 asyncio.run em sync nodes")
+    # PR-14 (2026-05-26): default e BLOCKING agora que baseline = 0.
+    # Use --warn-only para reverter ao comportamento antigo (legacy ratchet).
     parser.add_argument(
         "--blocking",
         action="store_true",
-        help="Exit 1 se violations > max-violations (CI gating)",
+        default=True,
+        help="(default) Exit 1 se violations > max-violations (CI gating)",
+    )
+    parser.add_argument(
+        "--warn-only",
+        dest="blocking",
+        action="store_false",
+        help="Opt-out de blocking (legacy mode, exit 0 mesmo com violations)",
     )
     parser.add_argument(
         "--json",
@@ -110,8 +120,8 @@ def main() -> int:
     parser.add_argument(
         "--max-violations",
         type=int,
-        default=20,
-        help="Threshold baseline (warn-only se nao --blocking). Default: 20",
+        default=0,
+        help="Threshold baseline (0 post-PR-14). Default: 0",
     )
     args = parser.parse_args()
 

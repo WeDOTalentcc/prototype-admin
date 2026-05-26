@@ -88,6 +88,7 @@ def emit_audit_fire_and_forget(
 
 def run_coro_in_threadpool(
     coro_factory: Callable[[], Coroutine[Any, Any, Any]],
+    timeout: float | None = None,
 ) -> Any:
     """Executa coroutine que PRECISA retornar resultado em sync node.
 
@@ -98,18 +99,30 @@ def run_coro_in_threadpool(
     Pattern canonical (substitui `_asyncio.run(coro)` em sync nodes):
 
     ```python
-    # ❌ ANTIPATTERN:
+    # ANTIPATTERN:
     result = _asyncio.run(fetch_data())  # RuntimeError Py 3.12+
 
-    # ✅ CANONICAL:
+    # CANONICAL:
     result = run_coro_in_threadpool(lambda: fetch_data())
+    # com timeout (lanca concurrent.futures.TimeoutError se exceder):
+    result = run_coro_in_threadpool(lambda: fetch_data(), timeout=30.0)
     ```
+
+    Args:
+        coro_factory: Callable que retorna a coroutine. Lazy para evitar
+            RuntimeWarning de coro nunca-awaited.
+        timeout: Timeout em segundos para future.result(). None = sem timeout
+            (default). Lanca `concurrent.futures.TimeoutError` se exceder
+            (apenas quando ha event loop ativo e ThreadPoolExecutor e usado).
+            PR-14 (2026-05-26): parametro adicionado para suportar migration
+            dos 4 gates do wizard que usavam timeout=30s.
 
     Behavior:
     - Running loop: ThreadPoolExecutor cria thread separada + novo loop ali,
-      executa coro, retorna resultado. Bloqueia sync node ate completar
-      (esperado — caller precisa do resultado).
-    - No loop: usa `asyncio.run(coro)` direto (seguro).
+      executa coro, retorna resultado. Bloqueia sync node ate completar ou
+      timeout (esperado — caller precisa do resultado).
+    - No loop: usa `asyncio.run(coro)` direto (seguro). timeout ignorado
+      neste caminho (coro completa naturalmente).
     """
     try:
         asyncio.get_running_loop()
@@ -120,4 +133,4 @@ def run_coro_in_threadpool(
     # Event loop ativo — ThreadPoolExecutor cria nova thread + novo loop ali
     with ThreadPoolExecutor(max_workers=1) as executor:
         future = executor.submit(asyncio.run, coro_factory())
-        return future.result()
+        return future.result(timeout=timeout)
