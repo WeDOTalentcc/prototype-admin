@@ -1,5 +1,7 @@
-// Shared constants extracted from GoalsPlanningHub components.
-// Used by both src/components/GoalsPlanningHub.tsx and src/components/settings/GoalsPlanningHub.tsx.
+// Shared constants for goals planning workforce subsection.
+// Consumed by useGoalsPlanningHub hook + WorkforceHubContent + WorkforceSection.
+// (Original GoalsPlanningHub.tsx component foi deletado 2026-05-26 como dead code;
+// constants extraidas viraram canonical pra hook funcional.)
 
 export interface AlertConfig {
   id: string
