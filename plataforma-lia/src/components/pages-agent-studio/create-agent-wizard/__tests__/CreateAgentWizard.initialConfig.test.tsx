@@ -30,6 +30,18 @@ vi.mock("@/lib/toast", () => ({
   },
 }))
 
+// Mock catalog hook so render uses fixture (alinhado a CreateAgentWizard.test.tsx).
+vi.mock("@/hooks/agents/use-legacy-agent-templates", async () => {
+  const { AGENT_TEMPLATES } = await import("@/lib/__tests__/__fixtures__/agent-templates-fixture")
+  return {
+    useLegacyAgentTemplates: () => ({
+      templates: AGENT_TEMPLATES,
+      isLoading: false,
+      error: null,
+    }),
+  }
+})
+
 import { CreateAgentWizard } from "../CreateAgentWizard"
 import type { CreateAgentInitialConfig } from "../types"
 
