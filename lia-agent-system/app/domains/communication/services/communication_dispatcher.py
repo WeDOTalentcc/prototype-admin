@@ -580,6 +580,27 @@ class CommunicationDispatcher:
                     policy, "communication_rules", "lia_tone",
                     default="professional",
                 )
+                # P1-6 sensor (audit 2026-05-26): detecta divergencia entre
+                # lia_tone (outbound, configurado em Politicas) e ai_persona.tone
+                # (chat persona E2, configurado em Recrutamento & LIA > Instrucoes LIA).
+                # Ambos vivem em communication_rules JSONB mas em chaves diferentes
+                # com superficies UI distintas — divergencia = silent inconsistency
+                # que o recrutador nao ve. Log warn (nao bloqueia dispatch).
+                # CLAUDE.md "lia_tone canonical precedence" documenta a separacao.
+                ai_persona_data = resolve_policy_value(
+                    policy, "communication_rules", "ai_persona",
+                    default=None,
+                )
+                if isinstance(ai_persona_data, dict):
+                    persona_tone = ai_persona_data.get("tone")
+                    if persona_tone and persona_tone != lia_tone:
+                        logger.warning(
+                            "lia_tone divergence detected: outbound lia_tone=%s vs "
+                            "chat ai_persona.tone=%s for company_id=%s. UI surfaces "
+                            "(Politicas vs Ai Persona tab) editaram valores diferentes. "
+                            "P1-6 sensor.",
+                            lia_tone, persona_tone, company_id,
+                        )
             except Exception as e:
                 logger.warning(f"Failed to load communication policy for {company_id}: {e}")
         
