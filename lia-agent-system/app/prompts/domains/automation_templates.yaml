@@ -1,0 +1,174 @@
+# automation_templates.yaml — Sprint B canonical impeccable.
+# 8 templates PT-BR pra recrutamento, alinhados com triggers/actions canonical.
+#
+# Voice "Quiet Operator": templates são SUGESTÕES, não imposições.
+# User hidrata SentenceBuilder via 1-click import e edita ANTES de salvar.
+#
+# Audit ref: AUTOMATIONS_SPRINT_PLAN_ADR.md Sprint B
+
+version: 1
+locale: pt-BR
+
+templates:
+  - id: welcome_email_on_apply
+    name: Email de boas-vindas pós-aplicação
+    category: communication
+    description: |
+      Quando candidato se aplica a uma vaga, envie email de boas-vindas
+      confirmando recebimento e próximos passos.
+    impact: "Recrutador economiza ~5 min por aplicação. Candidato sai com clareza."
+    state:
+      trigger:
+        type: candidate_applied
+        params: {}
+      conditions: []
+      actions:
+        - type: send_email
+          params:
+            template_id: welcome_application_received
+      name: Boas-vindas após aplicação
+
+  - id: auto_advance_high_wsi
+    name: Auto-avanço quando WSI > 80
+    category: pipeline
+    description: |
+      Quando candidato recebe score WSI > 80 na triagem, move automaticamente
+      para etapa Entrevista (skip de revisão manual em high-confidence).
+    impact: "Reduz tempo médio até entrevista em 2-3 dias. Use apenas se
+      autonomy_level >= medium nas políticas."
+    state:
+      trigger:
+        type: wsi_score_received
+        params: {}
+      conditions:
+        - field: candidate.wsi_score
+          operator: gt
+          value: 80
+      actions:
+        - type: move_stage
+          params:
+            stage_id: interview
+      name: Avanço automático WSI alto
+
+  - id: rejection_feedback_24h
+    name: Feedback de recusa em até 24h
+    category: communication
+    description: |
+      Quando candidato é movido para etapa Rejeitado, envia automaticamente
+      feedback personalizado em até 24h (LGPD tempestividade).
+    impact: "Compliance LGPD + experiência candidato melhor."
+    state:
+      trigger:
+        type: stage_changed
+        params:
+          stage_id: rejected
+      conditions: []
+      actions:
+        - type: send_email
+          params:
+            template_id: rejection_with_feedback
+      name: Feedback automático após rejeição
+
+  - id: interview_invite_whatsapp
+    name: Convite de entrevista por WhatsApp
+    category: scheduling
+    description: |
+      Quando candidato chega na etapa Entrevista, envia link de agendamento
+      por WhatsApp (canal preferido per candidate research).
+    impact: "Taxa de resposta WhatsApp ~80% vs ~40% email. Reduz no-show."
+    state:
+      trigger:
+        type: stage_changed
+        params:
+          stage_id: interview
+      conditions: []
+      actions:
+        - type: send_whatsapp
+          params:
+            template_id: interview_invite
+      name: Convite entrevista WhatsApp
+
+  - id: salary_filter
+    name: Filtro de pretensão salarial fora da faixa
+    category: screening
+    description: |
+      Quando candidato declara pretensão fora da tolerância salarial da vaga,
+      move para Rejeitado automaticamente com feedback transparente.
+    impact: "Recrutador foca tempo em candidatos viáveis. Candidato sai com
+      clareza imediata."
+    state:
+      trigger:
+        type: candidate_applied
+        params: {}
+      conditions:
+        - field: candidate.salary_outside_range
+          operator: eq
+          value: true
+      actions:
+        - type: move_stage
+          params:
+            stage_id: rejected
+        - type: send_email
+          params:
+            template_id: salary_mismatch
+      name: Filtro salarial automático
+
+  - id: manager_approval_alert
+    name: Alerta de aprovação pendente do gestor
+    category: workflow
+    description: |
+      Quando oferta aguarda aprovação do gestor há mais de 48h, alerta
+      o gestor (e CC recrutador) por email.
+    impact: "Evita ofertas presas no pipeline. SLA visível."
+    state:
+      trigger:
+        type: offer_pending_approval
+        params:
+          hours_threshold: 48
+      conditions: []
+      actions:
+        - type: send_email
+          params:
+            template_id: manager_approval_reminder
+            cc_recruiter: true
+      name: Alerta aprovação pendente
+
+  - id: stale_pipeline_nudge
+    name: Cutucada de pipeline parado
+    category: workflow
+    description: |
+      Quando candidato fica > 7 dias na mesma etapa, notifica recrutador
+      pra mover ou rejeitar (anti-pipeline-stale).
+    impact: "Mantém pipeline saudável. Candidato não 'morre' esperando."
+    state:
+      trigger:
+        type: candidate_stale_in_stage
+        params:
+          days_threshold: 7
+      conditions: []
+      actions:
+        - type: notify_recruiter
+          params:
+            message_template: stale_candidate_nudge
+      name: Pipeline parado há 7 dias
+
+  - id: post_offer_celebration
+    name: Mensagem de celebração pós-aceite
+    category: communication
+    description: |
+      Quando candidato aceita oferta, envia WhatsApp celebrando + email com
+      próximos passos pra onboarding.
+    impact: "Reduz arrependimento pós-aceite. Inicia onboarding com energia."
+    state:
+      trigger:
+        type: offer_accepted
+        params: {}
+      conditions: []
+      actions:
+        - type: send_whatsapp
+          params:
+            template_id: offer_celebration
+        - type: send_email
+          params:
+            template_id: pre_onboarding_steps
+      name: Celebração aceite oferta
