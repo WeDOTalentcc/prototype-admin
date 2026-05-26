@@ -153,6 +153,13 @@ jobs:
         # em pages-agent-studio (DESIGN.md Quiet Operator 90/10 Rule).
         working-directory: plataforma-lia
         run: python3 scripts/check_no_studio_decorative_gradient.py
+      - name: Studio no-substabs sensor (Sprint Studio Restructure F4 — BLOCKING)
+        # Sensor #15 harness 2026-05-26: AgentStudioPage tem 2 abas topo apenas
+        # (my-agents + digital-twins). Marketplace foi extraido para rota
+        # /agents/marketplace. Bloqueia reintroducao de type MySubTab, state
+        # mySubTab, ou import de MarketplaceTab em AgentStudioPage.tsx.
+        working-directory: plataforma-lia
+        run: python3 scripts/check_no_studio_substabs.py
 
       - name: Canonical tokens sensor (BLOCKING desde 2026-05-26)
         # Sensor harness 2026-05-26 (tasks 7+8 blocking promotion).
