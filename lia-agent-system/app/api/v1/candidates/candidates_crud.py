@@ -42,6 +42,7 @@ from app.domains.integrations_hub.services.rails_adapter import RailsAdapter, RA
 from app.domains.integrations_hub.services.rails_adapter_dependency import get_rails_adapter
 from app.shared.rails_migration.deprecation import enforce_candidates_deprecation
 from app.schemas.envelope import ResponseEnvelope, ok_envelope
+from app.shared.rbac.mutation_gate import assert_mutation_allowed
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
 
@@ -564,13 +565,17 @@ async def update_candidate(
     candidate_id: str,
     candidate_data: CandidateUpdate,
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
-company_id: str = Depends(require_company_id)):
+    current_user: User = Depends(get_current_user_or_demo),
+    company_id: str = Depends(require_company_id),
+):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Update an existing candidate."""
     try:
         candidate = await candidate_repo.get_by_id_str(candidate_id)
         if not candidate:
             raise HTTPException(status_code=404, detail="Candidate not found")
+        await assert_mutation_allowed(candidate, current_user, resource_label="candidato")
+
         update_data = candidate_data.model_dump(exclude_unset=True)
         for field, value in update_data.items():
             if hasattr(candidate, field):
@@ -602,13 +607,17 @@ async def update_candidate_stage(
     vc_repo: VacancyCandidateRepository = Depends(get_vacancy_candidate_repo),
     audit_svc: AuditService = Depends(get_audit_service),
     activity_svc: ActivityService = Depends(get_activity_service),
-company_id: str = Depends(require_company_id)):
+    current_user: User = Depends(get_current_user_or_demo),
+    company_id: str = Depends(require_company_id),
+):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Update candidate pipeline stage (used when moving candidates in Kanban)."""
     try:
         candidate = await candidate_repo.get_by_id_str(candidate_id)
         if not candidate:
             raise HTTPException(status_code=404, detail="Candidate not found")
+
+        await assert_mutation_allowed(candidate, current_user, resource_label="candidato")
 
         vacancy_candidate = await vc_repo.get_for_candidate_and_job(
             candidate_id=candidate_id,

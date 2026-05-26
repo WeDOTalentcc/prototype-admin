@@ -22,6 +22,7 @@ from app.domains.job_management.dependencies import get_job_vacancy_crud_repo
 from app.domains.integrations_hub.services.rails_adapter import RailsAdapter, RAILS_ENABLED
 from app.domains.integrations_hub.services.rails_adapter_dependency import get_rails_adapter
 from app.shared.rails_migration.deprecation import enforce_job_vacancies_deprecation
+from app.shared.rbac.mutation_gate import assert_mutation_allowed
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
 
@@ -846,6 +847,8 @@ company_id: str = Depends(require_company_id)):
 
         if not job_vacancy:
             raise HTTPException(status_code=404, detail="Job vacancy not found")
+
+        await assert_mutation_allowed(job_vacancy, current_user, resource_label="vaga")
 
         update_data = job_data.model_dump(exclude_unset=True, exclude_none=True)
         update_data["updated_at"] = datetime.utcnow()

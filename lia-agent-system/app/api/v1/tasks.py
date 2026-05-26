@@ -12,6 +12,7 @@ from app.domains.automation.services.task_service import task_service
 from app.models.task import TaskPriority, TaskStatus, TaskType
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
+from app.shared.rbac.mutation_gate import assert_mutation_allowed
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
 
@@ -218,6 +219,7 @@ company_id: str = Depends(require_company_id)):
     task = await repo.get_task(task_id=task_id)
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
+
     return task.to_dict()
 
 
@@ -225,13 +227,16 @@ company_id: str = Depends(require_company_id)):
 async def update_task(
     task_id: str,
     update_data: TaskUpdate,
-    repo: TasksRepository = Depends(get_tasks_repo), 
-company_id: str = Depends(require_company_id)):
+    repo: TasksRepository = Depends(get_tasks_repo),
+    current_user: User = Depends(get_current_user_or_demo),
+    company_id: str = Depends(require_company_id),
+):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Update a task."""
     task = await repo.get_task(task_id=task_id)
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
+        await assert_mutation_allowed(task, current_user, resource_label="tarefa")
 
     if update_data.title:
         task.title = update_data.title
