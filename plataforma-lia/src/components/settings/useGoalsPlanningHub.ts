@@ -3,11 +3,10 @@
 import { useState, useMemo, useEffect, useCallback } from "react"
 import { useCompanyLiaInstructions } from "@/hooks/company/use-company-lia-instructions"
 import { useCompanyId } from "@/hooks/company/useCompanyId"
-import { DEFAULT_ALERTS, MOCK_WORKFORCE, INITIAL_DEPARTMENTS, AlertConfig, WorkforceEntry, MonthlyPlanning, Position, DepartmentData } from "./goalsPlanningConstants"
+import { DEFAULT_ALERTS, INITIAL_DEPARTMENTS, AlertConfig, WorkforceEntry, MonthlyPlanning, Position, DepartmentData } from "./goalsPlanningConstants"
 import { apiFetch } from "@/lib/api/api-fetch"
 
 const defaultAlerts = DEFAULT_ALERTS
-const mockWorkforce = MOCK_WORKFORCE
 
 export interface GoalsPlanningHubProps {
   users?: { id: string; name?: string; email?: string; role?: string; [key: string]: unknown }[]
@@ -25,7 +24,8 @@ export const getPositionTotal = (pos: Position) => {
 export function useGoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }: GoalsPlanningHubProps) {
   const [activeTab, setActiveTab] = useState(activeSubsection || 'workforce')
   const [alerts, setAlerts] = useState<AlertConfig[]>(defaultAlerts)
-  const [workforce, setWorkforce] = useState<WorkforceEntry[]>(mockWorkforce)
+  // TODO: conectar ao endpoint /api/backend-proxy/workforce quando disponível
+  const [workforce, setWorkforce] = useState<WorkforceEntry[]>([])
   const [briefingFrequency, setBriefingFrequency] = useState<'twice_daily' | 'daily' | 'weekly' | 'monthly'>('daily')
   const [selectedYear, setSelectedYear] = useState(2024)
 
