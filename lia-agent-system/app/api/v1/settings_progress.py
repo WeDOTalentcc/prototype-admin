@@ -132,14 +132,30 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
             (global_search_score * 0.10)
         )
 
+        # Canonical sidebar IDs (2026-05-26 — consolidação P1 do audit menu Configurações).
+        # Plan: ~/.claude/plans/jolly-roaming-moler.md. Sidebar canonical: 7 hubs.
+        # Mapping reusa scores granulares ja calculados para evitar dupla contagem.
+        minha_empresa_score = int((company_data_score + departments_score + benefits_score) / 3)
+        usuarios_departamentos_score = int((users_score + approvers_score) / 2)
+
         return {
             "overall": overall,
             "sections": {
+                # Legacy keys (mantidas por compat com consumers que ainda usem)
                 "company-team": company_team_score,
                 "recruitment": recruitment_score,
                 "communication": communication_score,
                 "goals-planning": goals_planning_score,
-                "global-search": global_search_score
+                "global-search": global_search_score,
+                # Canonical sidebar IDs (settings-page-enhanced.tsx getDefaultSections)
+                "minha-empresa": minha_empresa_score,
+                "recrutamento-lia": recruitment_score,
+                "comunicacao-alertas": communication_score,
+                "usuarios-departamentos": usuarios_departamentos_score,
+                # TODO(P1): cálculos próprios para os 3 hubs abaixo (hoje retornam 100 default).
+                "integrations": 100,
+                "ai-credits": 100,
+                "fairness-compliance": 100,
             },
             "subsections": {
                 "company-data": company_data_complete,
@@ -176,11 +192,20 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         return {
             "overall": 50,
             "sections": {
+                # Legacy keys (compat)
                 "company-team": 60,
                 "recruitment": 40,
                 "communication": 60,
                 "goals-planning": 50,
-                "global-search": 80
+                "global-search": 80,
+                # Canonical sidebar IDs (fallback degradado em error path)
+                "minha-empresa": 60,
+                "recrutamento-lia": 40,
+                "comunicacao-alertas": 60,
+                "usuarios-departamentos": 60,
+                "integrations": 100,
+                "ai-credits": 100,
+                "fairness-compliance": 100,
             },
             "subsections": {
                 "company-data": False,
