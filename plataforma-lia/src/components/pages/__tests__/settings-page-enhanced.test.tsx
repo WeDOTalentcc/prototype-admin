@@ -1,24 +1,25 @@
 /**
- * Tests — SettingsPageEnhanced (Task #896)
+ * Tests — SettingsPageEnhanced (Task #896, updated 2026-05-25)
  *
- * Estabelece a rede de proteção mínima do menu Configurações antes das
- * próximas ondas de refactor (cluster Goals/Workforce/GlobalSearch órfão,
- * unificação Templates+Communication, etc).
+ * Actualizado para refletir a consolidação do menu 2026-05-25:
+ *   - hub 'pipeline' (standalone) → subsection de 'recrutamento-lia'
+ *   - hub 'screening' (standalone) → subsection de 'recrutamento-lia'
+ *   - hub 'templates-assinatura' → absorvido por 'comunicacao-alertas'
+ *   - hub 'governanca' → dissolvido; panels movidos para FairnessComplianceHub + /wedo-admin/
+ *   - hub 'webhooks' → removido do menu cliente (Wave 1+)
+ *   - hub 'ai-credits' → NOVO no menu
+ *
+ * Seções actuais (7):
+ *   minha-empresa | recrutamento-lia | comunicacao-alertas |
+ *   usuarios-departamentos | integrations | ai-credits | fairness-compliance
  *
  * Cobre:
- *   1. Sidebar renderiza os 10 hubs definidos em `getDefaultSections()`.
- *   2. O switch `renderSectionContent()` carrega o hub correto por
- *      `activeSection` (via dynamic import — mockado abaixo).
- *   3. O listener de `window.dispatchEvent('settings-open-tab', sectionId)`
- *      muda a tab ativa e expande a seção.
- *   4. O alias `'alertas'` é traduzido para `'comunicacao-alertas'`.
- *   5. Regressão Task #712 — `dispatchEvent('lia:settings-action',
- *      { section, field })` abre a tab e faz scrollIntoView no
- *      `[data-field="..."]`.
- *   6. A11y básico — `<nav role="navigation">` + cada item com
- *      `aria-label` e foco visível ao tabular.
- *
- * Out of scope: cobertura interna de cada hub (tasks subsequentes).
+ *   1. Sidebar renderiza os 7 hubs definidos em getDefaultSections().
+ *   2. O switch renderSectionContent() carrega o hub correto por activeSection.
+ *   3. O listener de window.dispatchEvent('settings-open-tab', sectionId) muda a tab.
+ *   4. O alias 'alertas' é traduzido para 'comunicacao-alertas'.
+ *   5. Regressão Task #712 — bridge lia:settings-action abre tab e faz scrollIntoView.
+ *   6. A11y básico — nav role + aria-label + foco visível.
  */
 
 import React from "react"
@@ -55,7 +56,7 @@ beforeAll(() => {
   if (typeof Element !== "undefined") {
     Element.prototype.scrollIntoView = vi.fn()
   }
-  // requestAnimationFrame em ambiente headless: invoca callback em timeout 0
+  // requestAnimationFrame em ambiente headless
   if (typeof window !== "undefined" && !window.requestAnimationFrame) {
     window.requestAnimationFrame = (cb: FrameRequestCallback) => {
       return window.setTimeout(() => cb(0), 0) as unknown as number
@@ -65,10 +66,6 @@ beforeAll(() => {
 
 // ── Mocks de dependências (todos hoisted por vi.mock) ─────────────────────
 
-// next-intl: SettingsPageEnhanced e os hubs chamam useTranslations direto.
-// Sem este mock, qualquer render falha com "context from NextIntlClientProvider
-// was not found" (regressão Task #904, quando a Page passou a usar i18n direto).
-// Padrão alinhado com CandidatesTableArea.test.
 vi.mock("next-intl", () => ({
   useTranslations: () => (key: string, params?: Record<string, unknown>) =>
     params ? `${key}:${JSON.stringify(params)}` : key,
@@ -100,8 +97,7 @@ vi.mock("@/lib/sidebar/useHoverDebounce", () => ({
 }))
 
 // Stubs leves para cada hub — assertam apenas que o switch trocou para o
-// componente certo. Nenhum hub é instanciado de verdade (eles puxariam
-// dezenas de hooks/fetches que estão fora do escopo desta task).
+// componente certo. Nenhum hub é instanciado de verdade.
 vi.mock("@/components/settings/MinhaEmpresaHub", () => ({
   MinhaEmpresaHub: () => (
     <div data-testid="hub-minha-empresa">
@@ -110,26 +106,17 @@ vi.mock("@/components/settings/MinhaEmpresaHub", () => ({
   ),
 }))
 vi.mock("@/components/settings/RecruitmentPipelineTab", () => ({
-  RecruitmentPipelineTab: () => <div data-testid="hub-pipeline" />,
+  RecruitmentPipelineTab: () => <div data-testid="hub-recrutamento-lia-pipeline" />,
 }))
 vi.mock("@/components/settings/RecruitmentScreeningTab", () => ({
-  RecruitmentScreeningTab: () => <div data-testid="hub-screening" />,
+  RecruitmentScreeningTab: () => <div data-testid="hub-recrutamento-lia-screening" />,
 }))
 vi.mock("@/components/settings/CommunicationHub", () => ({
   CommunicationHub: (props: { activeSubsection?: string; visibleTabs?: string[]; stacked?: boolean }) => {
     const tabs = props.visibleTabs ?? []
-    // Task #900 — o mesmo CommunicationHub canônico atende duas tabs do
-    // menu (templates+signature ↔ schedule+alerts+abtesting). O testid
-    // muda conforme `visibleTabs` para distinguir as duas instâncias.
-    // A flag `stacked` é refletida em data-stacked para preservar a
-    // paridade visual do antigo TemplatesAssinaturaHub (Templates +
-    // Signature renderizados juntos, sem pill nav).
-    const testid = tabs.includes("templates")
-      ? "hub-templates-assinatura"
-      : "hub-comunicacao-alertas"
     return (
       <div
-        data-testid={testid}
+        data-testid="hub-comunicacao-alertas"
         data-active-subsection={props.activeSubsection ?? ""}
         data-visible-tabs={tabs.join(",")}
         data-stacked={props.stacked ? "true" : "false"}
@@ -150,16 +137,11 @@ vi.mock("@/components/settings/FairnessComplianceHub", () => ({
     <div data-testid="hub-fairness-compliance" data-active-subsection={props.activeSubsection ?? ""} />
   ),
 }))
-vi.mock("@/components/settings/governance/GovernancaHub", () => ({
-  GovernancaHub: (props: { activeSubsection?: string }) => (
-    <div data-testid="hub-governanca" data-active-subsection={props.activeSubsection ?? ""} />
-  ),
+vi.mock("@/components/pages/ai-credits-page", () => ({
+  AiCreditsPage: () => <div data-testid="hub-ai-credits" />,
 }))
 
 // `next/dynamic` no jsdom: invoca o loader e renderiza o módulo resolvido.
-// Casado com os mocks acima, garante que o hub correto aparece dentro do
-// switch `renderSectionContent()`. Loading é renderizado até o microtask
-// resolver (≤ 1 tick).
 vi.mock("next/dynamic", () => ({
   default: (loader: () => Promise<{ default?: React.ComponentType<unknown> }>, options?: { loading?: () => React.ReactNode }) => {
     function DynamicMock(props: Record<string, unknown>) {
@@ -193,12 +175,12 @@ beforeEach(() => {
       overall: 42,
       sections: {
         "minha-empresa": 50,
-        pipeline: 0,
-        screening: 0,
-        "templates-assinatura": 30,
+        "recrutamento-lia": 0,
         "comunicacao-alertas": 10,
         "usuarios-departamentos": 20,
         integrations: 5,
+        "ai-credits": 0,
+        "fairness-compliance": 0,
       },
       subsections: {},
     }),
@@ -213,35 +195,41 @@ afterEach(() => {
 // Imports que dependem dos mocks acima
 import SettingsPageEnhanced from "@/components/pages/settings-page-enhanced"
 
-// ── 1. Sidebar: 10 hubs + estado inicial ──────────────────────────────────
+// ── 1. Sidebar: 7 hubs + estado inicial ──────────────────────────────────
 
 describe("SettingsPageEnhanced — sidebar", () => {
-  it("renderiza os 10 hubs definidos em getDefaultSections()", async () => {
+  it("renderiza os 7 hubs definidos em getDefaultSections()", async () => {
     render(<SettingsPageEnhanced />)
 
+    // Seções actuais pós-consolidação 2026-05-25
     const expected = [
       "minha-empresa",
-      "pipeline",
-      "screening",
-      "templates-assinatura",
+      "recrutamento-lia",
       "comunicacao-alertas",
       "usuarios-departamentos",
       "integrations",
-      "webhooks",
+      "ai-credits",
       "fairness-compliance",
-      "governanca",
     ]
     for (const id of expected) {
       expect(screen.getByTestId(`settings-menu-${id}`)).toBeInTheDocument()
     }
-    // 10 itens, nem mais nem menos — protege contra regressão silenciosa
+    // 7 itens, nem mais nem menos — protege contra regressão silenciosa
     const allMenuButtons = screen.getAllByRole("button").filter((b) =>
       b.getAttribute("data-testid")?.startsWith("settings-menu-"),
     )
-    expect(allMenuButtons).toHaveLength(10)
-    // Drena o microtask do dynamic-import para evitar contaminar o
-    // próximo teste com state-updates pendentes do MinhaEmpresaHub.
+    expect(allMenuButtons).toHaveLength(7)
+    // Drena o microtask do dynamic-import
     await screen.findByTestId("hub-minha-empresa")
+  })
+
+  it("seções removidas (pipeline, screening, templates-assinatura, governanca, webhooks) NÃO existem no menu", () => {
+    render(<SettingsPageEnhanced />)
+
+    const removed = ["pipeline", "screening", "templates-assinatura", "governanca", "webhooks"]
+    for (const id of removed) {
+      expect(screen.queryByTestId(`settings-menu-${id}`)).not.toBeInTheDocument()
+    }
   })
 
   it("começa com 'minha-empresa' ativo e renderiza o hub correspondente", async () => {
@@ -260,14 +248,12 @@ describe("SettingsPageEnhanced — sidebar", () => {
 describe("SettingsPageEnhanced — switch de hubs por activeSection", () => {
   const cases: Array<{ id: string; testid: string }> = [
     { id: "minha-empresa", testid: "hub-minha-empresa" },
-    { id: "pipeline", testid: "hub-pipeline" },
-    { id: "screening", testid: "hub-screening" },
-    { id: "templates-assinatura", testid: "hub-templates-assinatura" },
+    { id: "recrutamento-lia", testid: "hub-recrutamento-lia-pipeline" },
     { id: "comunicacao-alertas", testid: "hub-comunicacao-alertas" },
     { id: "usuarios-departamentos", testid: "hub-usuarios-departamentos" },
     { id: "integrations", testid: "hub-integrations" },
+    { id: "ai-credits", testid: "hub-ai-credits" },
     { id: "fairness-compliance", testid: "hub-fairness-compliance" },
-    { id: "governanca", testid: "hub-governanca" },
   ]
 
   for (const { id, testid } of cases) {
@@ -285,48 +271,49 @@ describe("SettingsPageEnhanced — switch de hubs por activeSection", () => {
     })
   }
 
-  // Task #900 — paridade visual: 'templates-assinatura' deve renderizar
-  // CommunicationHub no modo stacked (Templates + Signature empilhados,
-  // sem pill nav), preservando o layout do antigo TemplatesAssinaturaHub.
-  it("'templates-assinatura' renderiza CommunicationHub com stacked=true e visibleTabs=templates,signature", async () => {
+  it("'recrutamento-lia' renderiza RecruitmentPipelineTab por default", async () => {
     const user = userEvent.setup()
     render(<SettingsPageEnhanced />)
 
-    await user.click(screen.getByTestId("settings-menu-templates-assinatura"))
+    await user.click(screen.getByTestId("settings-menu-recrutamento-lia"))
 
-    const hub = await screen.findByTestId("hub-templates-assinatura")
-    expect(hub.getAttribute("data-stacked")).toBe("true")
-    expect(hub.getAttribute("data-visible-tabs")).toBe("templates,signature")
+    const hub = await screen.findByTestId("hub-recrutamento-lia-pipeline")
+    expect(hub).toBeInTheDocument()
   })
 
-  it("'comunicacao-alertas' renderiza CommunicationHub sem stacked (modo pill)", async () => {
+  it("'comunicacao-alertas' renderiza CommunicationHub com todas as tabs", async () => {
     const user = userEvent.setup()
     render(<SettingsPageEnhanced />)
 
     await user.click(screen.getByTestId("settings-menu-comunicacao-alertas"))
 
     const hub = await screen.findByTestId("hub-comunicacao-alertas")
-    expect(hub.getAttribute("data-stacked")).toBe("false")
+    expect(hub).toBeInTheDocument()
+    // Deve expor templates + signature + schedule + alerts + abtesting
+    const tabs = hub.getAttribute("data-visible-tabs") ?? ""
+    expect(tabs).toContain("templates")
+    expect(tabs).toContain("signature")
+    expect(tabs).toContain("alerts")
   })
 })
 
 // ── 3. Listener `settings-open-tab` ───────────────────────────────────────
 
 describe("SettingsPageEnhanced — listener 'settings-open-tab'", () => {
-  it("abre a tab indicada quando o evento é despachado", async () => {
+  it("abre a tab 'recrutamento-lia' quando o evento é despachado", async () => {
     render(<SettingsPageEnhanced />)
     // Aguarda hub default montar antes de despachar
     await screen.findByTestId("hub-minha-empresa")
 
     await act(async () => {
-      window.dispatchEvent(new CustomEvent("settings-open-tab", { detail: "pipeline" }))
+      window.dispatchEvent(new CustomEvent("settings-open-tab", { detail: "recrutamento-lia" }))
     })
 
     await waitFor(() => {
-      expect(screen.getByTestId("hub-pipeline")).toBeInTheDocument()
+      expect(screen.getByTestId("hub-recrutamento-lia-pipeline")).toBeInTheDocument()
     })
     expect(screen.getByTestId("settings-content-area").getAttribute("data-active-section")).toBe(
-      "pipeline",
+      "recrutamento-lia",
     )
   })
 
@@ -357,6 +344,21 @@ describe("SettingsPageEnhanced — listener 'settings-open-tab'", () => {
     expect(screen.getByTestId("settings-content-area").getAttribute("data-active-section")).toBe(
       "minha-empresa",
     )
+  })
+
+  it("ignora detalhes de seções removidas (pipeline, governanca, templates-assinatura)", async () => {
+    render(<SettingsPageEnhanced />)
+    await screen.findByTestId("hub-minha-empresa")
+
+    for (const removed of ["pipeline", "governanca", "templates-assinatura", "webhooks"]) {
+      await act(async () => {
+        window.dispatchEvent(new CustomEvent("settings-open-tab", { detail: removed }))
+      })
+      // Tab não deve mudar — permanece em minha-empresa
+      expect(screen.getByTestId("settings-content-area").getAttribute("data-active-section")).toBe(
+        "minha-empresa",
+      )
+    }
   })
 })
 
@@ -441,13 +443,12 @@ describe("SettingsPageEnhanced — acessibilidade básica da sidebar", () => {
     render(<SettingsPageEnhanced />)
     const expected: Record<string, string> = {
       "minha-empresa": "Minha Empresa",
-      pipeline: "Pipeline",
-      screening: "Screening",
-      "templates-assinatura": "Templates & Assinatura",
-      "comunicacao-alertas": "Comunicação & Alertas",
+      "recrutamento-lia": "Recrutamento & LIA",
+      "comunicacao-alertas": "Comunicação",
       "usuarios-departamentos": "Usuários & Departamentos",
       integrations: "Integrações",
-      "fairness-compliance": "Fairness & LGPD",
+      "ai-credits": "AI Credits",
+      "fairness-compliance": "Compliance & LGPD",
     }
     for (const [id, label] of Object.entries(expected)) {
       const btn = screen.getByTestId(`settings-menu-${id}`)
@@ -459,8 +460,7 @@ describe("SettingsPageEnhanced — acessibilidade básica da sidebar", () => {
     const user = userEvent.setup()
     render(<SettingsPageEnhanced />)
 
-    // Tabula até alcançar o primeiro item de menu (pode haver botões antes
-    // — lock toggle etc — então iteramos com limite seguro).
+    // Tabula até alcançar o primeiro item de menu
     let safety = 0
     let firstMenuFocused = false
     while (safety < 30 && !firstMenuFocused) {
