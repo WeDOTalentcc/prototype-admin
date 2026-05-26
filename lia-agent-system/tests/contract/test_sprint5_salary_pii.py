@@ -33,6 +33,7 @@ def _make_user(can_view_salary: bool, email="user@acme.com", can_view_sensitive_
     u.id = uuid.uuid4()
     u.email = email
     u.can_view_salary = can_view_salary
+    # Sprint 8: explicit pra não interferir nos tests Sprint 5 (default=False aqui)
     u.can_view_sensitive_pii = can_view_sensitive_pii
     return u
 
