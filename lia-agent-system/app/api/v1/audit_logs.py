@@ -21,6 +21,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db, get_tenant_db
 from app.domains.admin.repositories.audit_log_repository import AuditLogRepository
+from app.auth.dependencies import get_current_user_or_demo
+from app.auth.models import User
 from app.models.audit_logs import SOXAuditLog
 from app.schemas.audit_logs import (
     AuditLogCreate,
@@ -72,6 +74,26 @@ def _build_conditions(
     return conditions
 
 
+
+
+def _require_tenant_admin(current_user) -> None:
+    """LGPD Art. 9 — only tenant admin can view tenant audit log (own data).
+
+    Sprint 7.3 RBAC. Restricts /audit-logs endpoint to admin/wedotalent_admin role.
+    Prevents recruiter/viewer from seeing audit trail of other users.
+    Plan canonical: ~/.claude/plans/jolly-roaming-moler.md
+    """
+    from app.auth.models import UserRole
+    from fastapi import HTTPException, status as _http_status
+
+    role = getattr(current_user, "role", None)
+    role_str = role.value if hasattr(role, "value") else str(role) if role else ""
+    if role_str not in (UserRole.admin.value, UserRole.wedotalent_admin.value):
+        raise HTTPException(
+            status_code=_http_status.HTTP_403_FORBIDDEN,
+            detail="Apenas admin do tenant pode acessar logs de auditoria (LGPD Art. 9)",
+        )
+
 @router.get("/stats", response_model=AuditStatsResponse, summary="Get audit log statistics")
 async def get_audit_stats(
     date_from: datetime | None = Query(None),
@@ -79,7 +101,9 @@ async def get_audit_stats(
     client_id: str | None = Query(None),
     company_id: str | None = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db),
-_company_gate: str = Depends(require_company_id)):
+    current_user: User = Depends(get_current_user_or_demo),
+    _company_gate: str = Depends(require_company_id),
+):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get aggregated statistics for audit logs."""
     try:
@@ -269,6 +293,8 @@ async def list_audit_logs(
 _company_gate: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """List audit logs with optional filtering and pagination."""
+    # Sprint 7.3 LGPD Art. 9: only tenant admin can access audit trail
+    _require_tenant_admin(current_user)
     try:
         conditions = _build_conditions(
             date_from, date_to, client_id, company_id,

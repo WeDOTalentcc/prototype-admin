@@ -6563,6 +6563,23 @@
       "fairnessGuardStatus": {
         "title": "FairnessGuard active",
         "subtitle": "Automatic algorithmic bias blocking (LGPD Art. 20 + EU AI Act). Always on, not configurable."
+      },
+      "auditDrillDown": {
+        "title": "Detailed audit logs",
+        "subtitle": "Full history of data access and changes in your tenant (LGPD Art. 9 + Art. 37 V).",
+        "notAdminTitle": "Restricted access",
+        "notAdminBody": "Only tenant admin can view detailed audit logs. Request access from your company administrator.",
+        "forbiddenByBackend": "Server denied permission (LGPD Art. 9). Check your profile.",
+        "refresh": "Refresh",
+        "total": "{count, plural, =0 {no records} =1 {1 record} other {# records}}",
+        "empty": "No logs found",
+        "colWhen": "When",
+        "colUser": "User",
+        "colCategory": "Category",
+        "colAction": "Action",
+        "colResource": "Resource",
+        "retentionNote": "Logs retained 7 years (SOX Section 802 + LGPD). Use filter to refine search.",
+        "notAdmin": "Admin-only access"
       }
     }
   },

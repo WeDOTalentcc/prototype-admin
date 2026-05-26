@@ -26,6 +26,7 @@ import { StudioComplianceView } from "./StudioComplianceView"
 import { DSRInboxPanel } from "./governance/DSRInboxPanel"
 import { ConsentPanel } from "./governance/ConsentPanel"
 import { AuditLogsSummaryPanel } from "./compliance/AuditLogsSummaryPanel"
+import { AuditLogsDrillDownClientPanel } from "./compliance/AuditLogsDrillDownClientPanel"
 
 interface FairnessComplianceHubProps {
   activeSubsection: string
@@ -71,8 +72,13 @@ export function FairnessComplianceHub({ activeSubsection }: FairnessComplianceHu
     content = <ConsentPanel />
   } else if (activeSubsection === "audit-summary") {
     // PR 3 (2026-05-25): Audit log summary read-only últimos 30d.
-    // Para drill-down completo, staff acessa /wedo-admin/governanca/audit-logs/.
-    content = <AuditLogsSummaryPanel />
+    // Sprint 7.3 LGPD Art. 9: tenant admin direito ao drill-down do próprio tenant.
+    content = (
+      <div className="space-y-4">
+        <AuditLogsSummaryPanel />
+        <AuditLogsDrillDownClientPanel />
+      </div>
+    )
   }
 
   return (
