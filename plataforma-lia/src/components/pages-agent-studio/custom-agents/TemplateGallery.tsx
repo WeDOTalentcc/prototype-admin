@@ -106,8 +106,9 @@ export function TemplateGallery({ onTemplateSelect, onCreateManual }: TemplateGa
         />
       </div>
 
-      {/* Category Filters */}
-      <div className="flex flex-wrap gap-1.5">
+      {/* Category Filters — Studio Restructure Fase 1: label visível 'Tipo:' antes das pills */}
+      <span className="text-sm font-medium text-lia-text-secondary" data-testid="template-category-label">Tipo:</span>
+      <div className="flex flex-wrap items-center gap-1.5" data-testid="template-category-filter">
         {TEMPLATE_CATEGORIES.map((cat) => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const CatIcon = ((Icons as any)[cat.icon] || Icons.LayoutGrid) as React.ComponentType<{ className?: string }>
@@ -132,8 +133,9 @@ export function TemplateGallery({ onTemplateSelect, onCreateManual }: TemplateGa
       </div>
 
       {/* T5b UX Transformação 5: Vertical Industry Filters */}
+      <span className="text-sm font-medium text-lia-text-secondary" data-testid="template-vertical-label">Vertical:</span>
       <div
-        className="flex flex-wrap gap-1.5"
+        className="flex flex-wrap items-center gap-1.5"
         role="group"
         aria-label={t('verticalFilterAriaLabel') || 'Filtrar templates por vertical de mercado'}
         data-testid="template-vertical-filter"

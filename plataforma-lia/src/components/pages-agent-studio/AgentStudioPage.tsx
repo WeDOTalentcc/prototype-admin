@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react"
 import { TwinsList, EvaluateWithTwinModal, CreateDigitalTwinModal } from "@/components/pages-agent-studio/DigitalTwinComponents"
-import CustomAgentsTab from "@/components/pages-agent-studio/CustomAgentsTab"
 import { TemplateGallery, AgentCard as CustomAgentCard, AgentCardSkeleton, AgentDetailsPanel, DeployDialog, ConversationalCreator, TestDebugPanel, ApprovalsList } from "@/components/pages-agent-studio/custom-agents"
 // UX_AUDIT T4 (2026-05-21): TemplateClonePanel substitui TemplatePreviewModal como
 // entry-point primário do TemplateGallery (clone-first / HubSpot Breeze).
@@ -12,7 +11,6 @@ import { TemplateClonePanel } from "@/components/pages-agent-studio/template-clo
 import { useCustomAgents } from "@/hooks/agents"
 import { useAgentStudioStore } from "@/stores/agent-studio-store"
 import type { CustomAgent, AgentTemplate } from "@/components/pages-agent-studio/custom-agents/types"
-import MarketplaceTab from "@/components/pages-agent-studio/MarketplaceTab"
 import { QuotaMeter } from "@/components/pages-agent-studio/QuotaMeter"
 import {
   Bot, Plus, Play, Pause, Briefcase, Database,
@@ -137,71 +135,51 @@ export default function AgentStudioPage({
   const [detailsAgent, setDetailsAgent] = useState<CustomAgent | null>(null)
   const { agents: customAgents, mutate: mutateCustomAgents } = useCustomAgents()
   const { selectTemplate } = useAgentStudioStore()
-  // UX_AUDIT_ESTUDIO_AGENTES_2026-05-21 T2 + Sprint 4 v3 (2026-05-25):
-  // 5 tabs -> 3 tabs -> 2 tabs canonical.
-  // - "my-agents" consolida Captacao + Personalizados + Gemeos via sub-tabs.
-  // - "marketplace" permanece top-level.
-  // - Sprint 4 v3: tab "search" (Busca de Talentos) migrou pra sub-tab
-  //   "Captação" do TalentPoolPage. Coexiste com agente automatico via
-  //   origin tag (search=manual, agent=auto) no mesmo banco.
-  // Default sub-section = "personalizados" (mais usado, per audit doc).
-  type MainTab = "my-agents" | "marketplace"
-  type MySubTab = "captacao" | "personalizados" | "gemeos"
+  // Studio Restructure Fase 2 (2026-05-26): 2 top tabs sem sub-tabs.
+  // - "my-agents" (default): templates + lista unificada de agentes do usuário
+  //   (captação + personalizados juntos).
+  // - "digital-twins": TwinsList canonical.
+  // Marketplace deixou de ser tab — virou CTA "Explorar Marketplace" no header,
+  // rota /agents/marketplace renderiza MarketplaceTab standalone.
+  type MainTab = "my-agents" | "digital-twins"
   const [activeTab, setActiveTab] = useState<MainTab>("my-agents")
-  const [mySubTab, setMySubTab] = useState<MySubTab>("personalizados")
 
   useEffect(() => {
     loadData()
   }, [])
 
-  // UX_AUDIT_ESTUDIO_AGENTES_2026-05-21 T2: backward compat para deep-links externos
-  // que usam ?tab=<old-id>. Preserva URLs antigas redirecionando para o novo
-  // mapeamento canonical. Roda uma vez no mount (ler URL atual) e em mudancas
-  // explicitas de query string (caso navegacao client-side).
+  // Studio Restructure Fase 2 (2026-05-26): backward compat para deep-links
+  // legacy. ?tab=marketplace → redirect /agents/marketplace. Outros tabs antigos
+  // colapsam em my-agents OU digital-twins.
   useEffect(() => {
     if (typeof window === "undefined") return
     const url = new URL(window.location.href)
     const oldTab = url.searchParams.get("tab")
     if (!oldTab) return
-    const mapping: Record<string, { mainTab: MainTab; subTab?: MySubTab }> = {
-      // legacy top-level ids
-      "agents": { mainTab: "my-agents", subTab: "captacao" },
-      "captacao": { mainTab: "my-agents", subTab: "captacao" },
-      "custom": { mainTab: "my-agents", subTab: "personalizados" },
-      "personalizados": { mainTab: "my-agents", subTab: "personalizados" },
-      "twins": { mainTab: "my-agents", subTab: "gemeos" },
-      "gemeos": { mainTab: "my-agents", subTab: "gemeos" },
-      "marketplace": { mainTab: "marketplace" },
-      // Sprint 4 v3 (2026-05-25): legacy ?tab=search / ?tab=busca caem no default
-      // myAgents — a sub-tab Sourcing canonical agora vive em TalentPoolPage.
-      // current canonical ids (no-op but accepted)
-      "my-agents": { mainTab: "my-agents" },
+    if (oldTab === "marketplace") {
+      // Redirect canonical — Marketplace deixou de ser tab.
+      const target = url.pathname.replace(/\/[^/]*$/, "") + "/agents/marketplace"
+      window.location.replace("/agents/marketplace")
+      return
+    }
+    const mapping: Record<string, MainTab> = {
+      "agents": "my-agents",
+      "captacao": "my-agents",
+      "custom": "my-agents",
+      "personalizados": "my-agents",
+      "my-agents": "my-agents",
+      "twins": "digital-twins",
+      "gemeos": "digital-twins",
+      "digital-twins": "digital-twins",
     }
     const target = mapping[oldTab]
     if (!target) return
-    setActiveTab(target.mainTab)
-    if (target.subTab) setMySubTab(target.subTab)
-    const subFromUrl = url.searchParams.get("subTab")
-    if (target.mainTab === "my-agents" && subFromUrl) {
-      if (subFromUrl === "captacao" || subFromUrl === "personalizados" || subFromUrl === "gemeos") {
-        setMySubTab(subFromUrl)
-      }
-    }
-    // Only rewrite URL if it changed (avoid loops + preserve history entry).
-    const needsRewrite =
-      oldTab !== target.mainTab ||
-      (target.mainTab === "my-agents" && target.subTab && subFromUrl !== target.subTab)
-    if (needsRewrite) {
-      url.searchParams.set("tab", target.mainTab)
-      if (target.mainTab === "my-agents" && target.subTab) {
-        url.searchParams.set("subTab", target.subTab)
-      } else {
-        url.searchParams.delete("subTab")
-      }
+    setActiveTab(target)
+    if (oldTab !== target) {
+      url.searchParams.set("tab", target)
+      url.searchParams.delete("subTab")
       window.history.replaceState(window.history.state, "", url.toString())
     }
-    // Empty deps: only run on mount. Subsequent tab changes update state via
-    // the tab nav handlers below, not via URL parsing.
   }, [])
 
   const loadData = async () => {
@@ -353,6 +331,16 @@ export default function AgentStudioPage({
                 (sourcing modal) que confundia o usuario com 2 entry-points
                 diferentes ali no mesmo header. Agora ha 1 CTA -> 1 wizard -> 1 fluxo
                 que internamente cobre IA (T3 hero), templates e custom manual. */}
+            {/* Studio Restructure Fase 2 (2026-05-26): CTA secundário pra Marketplace
+                (substitui a tab antiga). Variant outline DS canonical, sem cyan. */}
+            <a
+              href="/agents/marketplace"
+              className="inline-flex items-center gap-2 h-9 px-3 rounded-md border border-lia-border-subtle bg-transparent text-sm font-medium text-lia-text-primary hover:bg-lia-bg-tertiary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lia-btn-primary-bg/30"
+              data-testid="header-explore-marketplace-cta"
+            >
+              <Store className="w-4 h-4" aria-hidden="true" />
+              {t("studio.cta.exploreMarketplace")}
+            </a>
             <Button
               size="sm"
               onClick={() => openWizard()}
@@ -360,14 +348,13 @@ export default function AgentStudioPage({
               data-testid="header-create-agent-cta"
             >
               <Plus className="w-4 h-4" />
-              {t("studio.createAgent")}
+              {t("studio.cta.createAgent")}
             </Button>
           </div>
         </div>
 
-        {/* UX_AUDIT_ESTUDIO_AGENTES_2026-05-21 T2: 5 tabs -> 3 tabs.
-            "Meus Agentes" consolida Captacao + Personalizados + Gemeos via
-            sub-tabs internos. Componentes filhos PRESERVADOS — apenas reagrupados. */}
+        {/* Studio Restructure Fase 2 (2026-05-26): 2 top tabs canonical.
+            Sub-tabs eliminados — my-agents agrega templates + lista unificada. */}
         <PageTabNavigation
           tabs={[
             {
@@ -376,26 +363,11 @@ export default function AgentStudioPage({
               icon: Bot,
               count: agents.length + customAgents.length,
             },
-            { id: "marketplace", label: t("studio.tabs.marketplace"), icon: Store },
+            { id: "digital-twins", label: t("studio.tabs.digitalTwins"), icon: Users },
           ]}
           activeTab={activeTab}
           onTabChange={(id) => setActiveTab(id as MainTab)}
         />
-
-        {activeTab === "my-agents" && (
-          <div className="mt-2">
-            <PageTabNavigation
-              tabs={[
-                { id: "captacao", label: t("studio.tabs.sourcingAgents"), icon: Bot, count: agents.length },
-                { id: "personalizados", label: t("studio.tabs.customAgents"), icon: Wand2, count: customAgents.length },
-                { id: "gemeos", label: t("studio.tabs.digitalTwins"), icon: Users },
-              ]}
-              activeTab={mySubTab}
-              onTabChange={(id) => setMySubTab(id as MySubTab)}
-              className="opacity-90"
-            />
-          </div>
-        )}
 
         {/* QuotaMeter (feedforward audit harness 2026-05-23):
             mostra X / Y por recurso pra cliente ver uso antes de bater limit.
@@ -437,7 +409,7 @@ export default function AgentStudioPage({
       </div>
 
       <div className="flex-1 overflow-auto px-4 py-4">
-        {activeTab === "my-agents" && mySubTab === "captacao" && (
+        {activeTab === "my-agents" && (
           <div className="space-y-8">
             {/* How It Works — show prominently when no agents */}
             {agents.length === 0 && !isLoading && (
@@ -516,20 +488,6 @@ export default function AgentStudioPage({
                     </button>
                   )
                 })}
-                <button
-                  onClick={() => openWizard("outro")}
-                  className={cn(
-                    "group flex flex-col items-center gap-2.5 p-5 rounded-xl border-2 border-dashed border-lia-border-subtle",
-                    "hover:border-lia-border-medium transition-colors duration-200 cursor-pointer"
-                  )}
-                  data-testid="templates-custom-create-cta"
-                >
-                  <Brain className="w-6 h-6 text-lia-text-primary transition-transform group-hover:scale-110" />
-                  <div className="text-center">
-                    <p className="text-xs font-semibold text-lia-text-primary">{t("studio.templates.custom")}</p>
-                    <p className="text-[10px] text-lia-text-secondary mt-0.5">{t("studio.templates.createFromScratch")}</p>
-                  </div>
-                </button>
               </div>
             </section>
 
@@ -628,11 +586,6 @@ export default function AgentStudioPage({
                 </div>
               </section>
             )}
-          </div>
-        )}
-
-        {activeTab === "my-agents" && mySubTab === "personalizados" && (
-          <div className="space-y-6">
             {/* Pending Approvals (admin only — hidden if empty or not admin) */}
             <section>
               <ApprovalsList onReviewed={() => mutateCustomAgents()} />
@@ -686,10 +639,8 @@ export default function AgentStudioPage({
             <TemplateGallery
               onTemplateSelect={handleTemplateSelect}
               onCreateManual={() => {
-                // UX_AUDIT_ESTUDIO_AGENTES_2026-05-21 T1: "Criar do zero" agora abre
-                // CreateAgentWizard com goal=outro. Substitui o scroll-to-ConversationalCreator
-                // (UX-Sprint-A QW#1) que era um hack semantic — agora o usuario tem o
-                // mesmo onboarding goal-first em qualquer ponto de entrada.
+                // Studio Restructure Fase 2 (2026-05-26): CTA inline de criar
+                // do TemplateGallery delega ao wizard goal-first (goal=outro).
                 openWizard("outro")
               }}
             />
@@ -723,26 +674,10 @@ export default function AgentStudioPage({
               onTest={(a) => { setDetailsAgent(null); setTestAgent(a) }}
             />
 
-            {/* Legacy form for advanced editing */}
-            <details className="mt-4">
-              <summary className="text-xs text-lia-text-disabled cursor-pointer hover:text-lia-text-secondary">
-                {t("studio.advancedForm")}
-              </summary>
-              <div className="mt-3">
-                <CustomAgentsTab />
-              </div>
-            </details>
           </div>
         )}
 
-        {activeTab === "marketplace" && (
-          <MarketplaceTab />
-        )}
-
-        {activeTab === "my-agents" && mySubTab === "gemeos" && (
-          // P0 rewrite 2026-05-26: TabSectionHeader externo removido (citava
-          // marketing copy + duplicava header). TwinsList agora renderiza header
-          // canonical próprio (título + sub-header neutro + CTA topo direito).
+        {activeTab === "digital-twins" && (
           <TwinsList onEvaluate={(id) => setEvaluatingTwinId(id)} onCreateTwin={() => setShowCreateTwinModal(true)} refreshKey={twinsRefreshKey} />
         )}
 
