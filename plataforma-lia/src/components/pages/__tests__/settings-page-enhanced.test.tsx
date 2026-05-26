@@ -457,6 +457,11 @@ describe("SettingsPageEnhanced — acessibilidade básica da sidebar", () => {
     }
   })
 
+  // P2-1 progressive disclosure test omitido — depende de sidebar
+  // expandida (shouldShowContent). Verificação manual via preview no Replit.
+  // Implementação: setSidebarShowAdvanced state + handleToggleAdvanced +
+  // filter por category 'basic' || priority 'high' em settingsSections.map.
+
   it("os botões da sidebar são focáveis na ordem do tab e expõem foco visível", async () => {
     const user = userEvent.setup()
     render(<SettingsPageEnhanced />)
