@@ -51,41 +51,6 @@ def _make_assignment(
 
 
 @pytest.mark.asyncio
-async def test_dispatch_task_updates_last_run_at_and_emits_audit():
-    """Test 1: stub canonical update last_run_at + audit log_decision dim 5."""
-    from app.jobs.tasks import pool_agents
-
-    assignment = _make_assignment(last_run_at=None)
-    fake_db = MagicMock()
-    fake_result = MagicMock()
-    fake_result.scalar_one_or_none = MagicMock(return_value=assignment)
-    fake_db.execute = AsyncMock(return_value=fake_result)
-    fake_db.commit = AsyncMock()
-
-    with patch.object(
-        pool_agents, "AsyncSessionLocal", return_value=_make_session_ctx(fake_db)
-    ):
-        with patch.object(pool_agents, "AuditService") as MockAudit:
-            audit_instance = MockAudit.return_value
-            audit_instance.log_decision = AsyncMock()
-
-            await pool_agents._dispatch_impl(
-                assignment_id=str(assignment.id), trigger_source="cron"
-            )
-
-            # last_run_at updated
-            assert assignment.last_run_at is not None
-            assert assignment.last_run_status == "stub_dispatched"
-            fake_db.commit.assert_awaited()
-            # audit canonical dim 5
-            audit_instance.log_decision.assert_awaited_once()
-            kwargs = audit_instance.log_decision.await_args.kwargs
-            assert kwargs["company_id"] == assignment.company_id
-            assert "pool_agent_dispatch_cron" in kwargs["action"]
-            assert kwargs["decision"] == "stub_executed"
-
-
-@pytest.mark.asyncio
 async def test_scan_filters_cron_active_only():
     """Test 2: scan canonical lookup pool_agent_assignments WHERE schedule_type='cron'."""
     from app.jobs.tasks import pool_agents

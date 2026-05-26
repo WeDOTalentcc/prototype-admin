@@ -35,6 +35,7 @@ from app.shared.security.require_company_id import require_company_id
 from app.domains.agent_studio.repositories.pool_agent_run_repository import (
     PoolAgentRunRepository,
 )
+from app.jobs.tasks.pool_agents import dispatch_pool_agent_assignment_task
 from app.schemas.pool_agent_run import PoolAgentRunResponse
 from app.shared.types import AgentIdParam
 
@@ -183,9 +184,11 @@ async def dispatch_on_demand(
     db: AsyncSession = Depends(get_tenant_db),
     company_id: str = Depends(require_company_id),
 ):
-    """STUB Sprint 7A — full impl em Sprint 7C (Celery task agents.pool.execute_assignment).
+    """Sprint 7C Part 1.5c — wire dispatch_pool_agent_assignment_task.delay (REAL).
 
-    Por enquanto: valida assignment existe + retorna 202 com status='queued'.
+    Pre-valida assignment existe (cross-tenant via company_id no repo) + pool match.
+    Despacha via Celery (trigger_source='on_demand'). Worker cria PoolAgentRun + executa
+    CustomAgentRuntime + persiste resultados (Part 1.5b _dispatch_impl canonical).
     """
     repo = PoolAgentAssignmentRepository(db)
     row = await repo.get_by_id(assignment_id=assignment_id, company_id=company_id)
@@ -193,11 +196,16 @@ async def dispatch_on_demand(
         raise HTTPException(status_code=404, detail="assignment_not_found")
     if str(row.talent_pool_id) != pool_id:
         raise HTTPException(status_code=400, detail="pool_id_mismatch")
+
+    dispatch_pool_agent_assignment_task.delay(
+        assignment_id=str(assignment_id),
+        trigger_source="on_demand",
+    )
     logger.info(
-        "dispatch_on_demand stub assignment_id=%s pool=%s agent=%s company=%s",
+        "dispatch_on_demand canonical assignment_id=%s pool=%s agent=%s company=%s",
         assignment_id, pool_id, row.custom_agent_id, company_id,
     )
-    return {"status": "queued", "assignment_id": assignment_id, "sprint": "7A-stub"}
+    return {"status": "queued", "assignment_id": assignment_id}
 
 
 @router.get(

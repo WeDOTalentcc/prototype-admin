@@ -1,27 +1,26 @@
-"""Celery tasks canonical pra pool_agent_assignments (Sprint 7C Part 1 v2).
+"""Celery tasks canonical pra pool_agent_assignments (Sprint 7C Part 1.5b/c).
 
 Cron infra canonical entrega:
-1. dispatch_pool_agent_assignment_task — STUB canonical Part 1. Atualiza
-   last_run_at + audit dim 5. Orchestrator real (execute CustomAgent +
-   persist pool_agent_runs) fica Part 1.5 com decisão arquitetural separada.
+1. dispatch_pool_agent_assignment_task — REAL canonical Part 1.5b. Load assignment +
+   CustomAgent, cria PoolAgentRun, executa via CustomAgentRuntime.execute,
+   persiste resultados (queued→running→success|error) + audit dim 5.
 2. scan_pool_agent_cron_schedules — REAL. Tick 60s lookup canonical
-   pool_agent_assignments WHERE schedule_type='cron' AND status='active'.
+   pool_agent_assignments WHERE schedule_type=cron AND status=active.
    Croniter expression vs last_run_at → dispatch via .delay().
 
-Beat schedule entry registrado neste módulo (idempotente): toda vez que
-app/jobs/tasks/pool_agents é importado pelo Celery beat ou worker, garante
-que `scan-pool-agent-cron-schedules` está em celery_app.conf.beat_schedule
-com schedule=60.0s.
+Beat schedule entry registrado neste módulo (idempotente).
 
 REGRA ZERO multi-tenancy: dispatch usa company_id do próprio assignment
-(persistido na tabela), nunca de payload. AuditService.log_decision
-emite trail dim 5 canonical (LGPD/SOX trail).
+(persistido na tabela), nunca de payload.
 
-Sprint 7C Part 1.5 vai trocar status 'stub_dispatched' por 'success' | 'error'
-do CustomAgent run real + persistir pool_agent_runs row.
+Decisões Paulo locked 2026-05-26:
+- Candidate selection: agent-driven via tools (LangGraph ReAct via _get_tools()).
+- dispatch_prompt: CustomAgent.config[default_prompt] (sem migration).
+- State: stateless por default. Cada run isolado (conversation_id=run_id).
 
 Refs:
 - AGENT_STUDIO_SPRINT7_PLAN.md §4 Sprint 7C
+- AGENT_STUDIO_SPRINT7C_PART1_5B_INVESTIGATION.md (decisões + reuse ~85%)
 - libs/models/lia_models/pool_agent_assignment.py (model canonical)
 - app/jobs/tasks/voice_retention.py (pattern Celery+asyncio.run canonical)
 """
@@ -29,6 +28,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import time
 from datetime import datetime, timezone
 
 from sqlalchemy import select
@@ -51,26 +51,46 @@ from app.core.database import AsyncSessionLocal  # noqa: F401
 _log = logging.getLogger(__name__)
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Async impls (testable directly, separate from Celery task wrapper).
-# ─────────────────────────────────────────────────────────────────────────────
+_FALLBACK_PROMPT_TEMPLATE = (
+    "Avalie candidatos do pool {pool_id} conforme critérios do agente."
+)
 
 
 async def _dispatch_impl(assignment_id: str, trigger_source: str = "cron") -> None:
-    """STUB canonical dispatch Part 1 v2.
+    """REAL canonical dispatch Part 1.5b/c.
 
-    Atualiza last_run_at + audit dim 5. Não executa CustomAgent (Part 1.5).
+    Pipeline:
+      1. Load assignment + CustomAgent (cross-tenant validated by FK + company_id).
+      2. Create PoolAgentRun (status=queued) via canonical repository.
+      3. Transition queued→running.
+      4. Resolve dispatch_prompt (CustomAgent.config.default_prompt OR canonical fallback).
+      5. get_or_create_runtime + execute (stateless: conversation_id=run.id).
+      6. Persist run.results + runtime_metrics + status=success.
+      7. Update assignment.last_run_at + last_run_status.
+      8. Audit dim 5 (success or error).
+
+    On exception: persist run.status=error + run.error_message + audit error +
+    re-raise pra Celery retry policy.
 
     Args:
         assignment_id: UUID do pool_agent_assignment.
-        trigger_source: 'cron' | 'on_demand' | (futuro Part 2 'event_driven').
+        trigger_source: cron | on_demand | (futuro Part 2 event_driven).
     """
+    from lia_models.custom_agent import CustomAgent
     from lia_models.pool_agent_assignment import PoolAgentAssignment
 
+    from app.domains.agent_studio.custom_agent_runtime import get_or_create_runtime
+    from app.domains.agent_studio.repositories.pool_agent_run_repository import (
+        PoolAgentRunRepository,
+    )
+
     async with AsyncSessionLocal() as db:
-        stmt = select(PoolAgentAssignment).where(PoolAgentAssignment.id == assignment_id)
-        result = await db.execute(stmt)
-        assignment = result.scalar_one_or_none()
+        # Step 1: load assignment.
+        stmt_a = select(PoolAgentAssignment).where(
+            PoolAgentAssignment.id == assignment_id
+        )
+        result_a = await db.execute(stmt_a)
+        assignment = result_a.scalar_one_or_none()
         if assignment is None:
             _log.warning(
                 "dispatch_pool_agent_assignment_task: assignment_id=%s não encontrado "
@@ -79,32 +99,169 @@ async def _dispatch_impl(assignment_id: str, trigger_source: str = "cron") -> No
             )
             return
 
-        # Update last_run_at + status canonical (Part 1 v2 stub).
-        assignment.last_run_at = datetime.now(timezone.utc)
-        assignment.last_run_status = "stub_dispatched"  # Part 1.5 muda pra success/error real
-        await db.commit()
-
-        # Audit dim 5 obrigatório (feature-audit canonical).
-        audit = AuditService()
-        await audit.log_decision(
+        # Step 2: create run (queued).
+        run_repo = PoolAgentRunRepository(db)
+        run = await run_repo.create(
+            assignment_id=assignment.id,
             company_id=assignment.company_id,
-            agent_name=f"pool_agent_assignment:{assignment_id}",
-            decision_type="dispatch",
-            action=f"pool_agent_dispatch_{trigger_source}",
-            decision="stub_executed",
-            reasoning=[
-                f"Sprint 7C Part 1 v2 stub: dispatch via {trigger_source}.",
-                "Orchestrator real (CustomAgent execute + pool_agent_runs persist) "
-                "fica Part 1.5 com decisão arquitetural separada.",
-            ],
-            criteria_used=[],
+            trigger_source=trigger_source,
+            dispatch_metadata={"trigger_source": trigger_source},
         )
+
+        # Step 1b: load CustomAgent (after run row exists pra trail).
+        stmt_c = select(CustomAgent).where(
+            CustomAgent.id == assignment.custom_agent_id
+        )
+        result_c = await db.execute(stmt_c)
+        agent = result_c.scalar_one_or_none()
+        if agent is None:
+            err_msg = f"CustomAgent {assignment.custom_agent_id} not found"
+            await run_repo.update_status(run.id, "error", error_message=err_msg)
+            assignment.last_run_status = "error"
+            assignment.last_run_at = datetime.now(timezone.utc)
+            await db.commit()
+            audit_err = AuditService()
+            await audit_err.log_decision(
+                company_id=assignment.company_id,
+                agent_name=str(assignment.custom_agent_id),
+                decision_type="dispatch",
+                action=f"pool_agent_dispatch_{trigger_source}",
+                decision="error",
+                reasoning=[f"Run {run.id} failed: {err_msg}"],
+                criteria_used=[],
+            )
+            raise RuntimeError(err_msg)
+
+        try:
+            # Step 3: queued → running.
+            await run_repo.update_status(run.id, "running")
+
+            # Step 4: resolve dispatch_prompt canonical.
+            cfg = agent.config or {}
+            dispatch_prompt = cfg.get("default_prompt") if isinstance(cfg, dict) else None
+            if not dispatch_prompt:
+                dispatch_prompt = _FALLBACK_PROMPT_TEMPLATE.format(
+                    pool_id=assignment.talent_pool_id
+                )
+
+            # Step 5: runtime + execute (canonical pattern from custom_agents.py:316).
+            runtime = get_or_create_runtime(
+                agent_id=str(agent.id),
+                agent_name=agent.name,
+                system_prompt=agent.system_prompt,
+                allowed_tools=agent.allowed_tools or [],
+                domain=agent.domain,
+                max_steps=agent.max_steps,
+                temperature=agent.temperature,
+                model_override=agent.model_override,
+                company_id=assignment.company_id,
+                enable_memory=getattr(agent, "enable_memory", True),
+                excluded_tools=getattr(agent, "excluded_tools", None),
+                context_level=getattr(agent, "context_level", "full"),
+            )
+
+            t_start = time.time()
+            # Stateless: 1 conversation per run (decisão Paulo #3).
+            output = await runtime.execute(
+                message=dispatch_prompt,
+                user_id="system",
+                company_id=assignment.company_id,
+                session_id=str(run.id),
+                context={
+                    "trigger_source": trigger_source,
+                    "assignment_id": str(assignment.id),
+                    "pool_id": str(assignment.talent_pool_id),
+                    "run_id": str(run.id),
+                },
+                db=db,
+            )
+            elapsed_ms = int((time.time() - t_start) * 1000)
+
+            out_meta = output.metadata or {}
+            tool_calls = [
+                a.params.get("tool", "") if hasattr(a, "params") else ""
+                for a in (output.actions or [])
+            ]
+
+            # Step 6: persist results + status=success.
+            await run_repo.update_status(
+                run.id,
+                "success",
+                results={
+                    "response": output.message or "",
+                    "tools_used": tool_calls,
+                    "confidence": float(output.confidence or 0.0),
+                },
+                runtime_metrics={
+                    "latency_ms": elapsed_ms,
+                    "tokens_input": out_meta.get("tokens_input", 0),
+                    "tokens_output": out_meta.get("tokens_output", 0),
+                },
+            )
+
+            # Step 7: assignment.last_run_at + status.
+            assignment.last_run_at = datetime.now(timezone.utc)
+            assignment.last_run_status = "success"
+            await db.commit()
+
+            # Step 8: audit dim 5 (success).
+            audit = AuditService()
+            await audit.log_decision(
+                company_id=assignment.company_id,
+                agent_name=agent.name,
+                decision_type="dispatch",
+                action=f"pool_agent_dispatch_{trigger_source}",
+                decision="success",
+                reasoning=[
+                    f"Run {run.id} completed via {trigger_source}.",
+                    f"Latency {elapsed_ms}ms, tool_calls={len(tool_calls)}.",
+                ],
+                criteria_used=[],
+            )
+
+        except Exception as exc:
+            # Error path: persist run.status=error + audit + re-raise pra retry.
+            err_text = str(exc)
+            try:
+                await run_repo.update_status(
+                    run.id, "error", error_message=err_text
+                )
+            except Exception as inner:
+                _log.error(
+                    "Falha ao persistir run.status=error run=%s: %s",
+                    run.id, inner,
+                )
+            try:
+                assignment.last_run_status = "error"
+                assignment.last_run_at = datetime.now(timezone.utc)
+                await db.commit()
+            except Exception as inner:
+                _log.error(
+                    "Falha ao atualizar assignment.last_run_status=error %s: %s",
+                    assignment.id, inner,
+                )
+
+            audit_err = AuditService()
+            try:
+                await audit_err.log_decision(
+                    company_id=assignment.company_id,
+                    agent_name=agent.name if agent else str(assignment.custom_agent_id),
+                    decision_type="dispatch",
+                    action=f"pool_agent_dispatch_{trigger_source}",
+                    decision="error",
+                    reasoning=[f"Run {run.id} failed: {err_text}"],
+                    criteria_used=[],
+                )
+            except Exception as inner:
+                _log.error("audit error path log failed: %s", inner)
+
+            raise
 
 
 async def _scan_impl() -> None:
     """REAL scan canonical: pool_agent_assignments cron-due → dispatch via .delay().
 
-    Tick 60s: lookup WHERE schedule_type='cron' AND status='active'. Pra cada
+    Tick 60s: lookup WHERE schedule_type=cron AND status=active. Pra cada
     assignment match croniter expression vs last_run_at (ou created_at se
     last_run_at nulo) → dispatch.
 
@@ -145,7 +302,6 @@ async def _scan_impl() -> None:
                         trigger_source="cron",
                     )
             except (ValueError, KeyError, TypeError) as exc:
-                # Não silent fallback: log explícito + continue scan.
                 _log.warning(
                     "scan_pool_agent_cron_schedules: cron expression inválida "
                     "assignment_id=%s expr=%r erro=%s — skip canonical, continue scan.",
@@ -171,7 +327,11 @@ async def _scan_impl() -> None:
 def dispatch_pool_agent_assignment_task(
     self, assignment_id: str, trigger_source: str = "cron"
 ) -> dict:
-    """Celery task wrapper canonical (STUB Part 1 v2)."""
+    """Celery task wrapper canonical (REAL Part 1.5b/c).
+
+    Delega pra _dispatch_impl — audit canonical é responsabilidade do impl
+    (sensor #10 honra delegação para ).
+    """
     span = _celery_span("celery.task_start", "pool_agents.dispatch_assignment")
     span.set_attribute("assignment_id", str(assignment_id))
     span.set_attribute("trigger_source", trigger_source)
@@ -184,7 +344,7 @@ def dispatch_pool_agent_assignment_task(
             assignment_id,
             trigger_source,
         )
-        return {"assignment_id": assignment_id, "status": "stub_dispatched"}
+        return {"assignment_id": assignment_id, "status": "dispatched"}
     except Exception as exc:
         _finish_celery_failure(span, "pool_agents.dispatch_assignment", exc)
         logger.error(
@@ -220,7 +380,6 @@ def scan_pool_agent_cron_schedules(self) -> dict:
     except Exception as exc:
         _finish_celery_failure(span, "pool_agents.scan_cron_schedules", exc)
         logger.error("pool_agents.scan_cron_schedules FAIL: %s", exc)
-        # No retry pra scan (próximo tick 60s pega de novo).
         raise
 
 
@@ -230,14 +389,14 @@ def scan_pool_agent_cron_schedules(self) -> dict:
 
 
 def _register_beat_schedule() -> None:
-    """Registra `scan-pool-agent-cron-schedules` no beat_schedule canonical.
+    """Registra  no beat_schedule canonical.
 
     Idempotente: pode ser chamado múltiplas vezes (override seguro).
     """
     schedule = getattr(celery_app.conf, "beat_schedule", None) or {}
     schedule["scan-pool-agent-cron-schedules"] = {
         "task": "pool_agents.scan_cron_schedules",
-        "schedule": 60.0,  # tick canonical Sprint 7C Part 1 v2
+        "schedule": 60.0,
         "options": {"expires": 120, "queue": "default"},
     }
     celery_app.conf.beat_schedule = schedule

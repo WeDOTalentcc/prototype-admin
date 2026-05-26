@@ -126,13 +126,12 @@ def main() -> int:
         print("\n".join(violations))
         print(
             f"\n{len(violations)} dispatch_* function(s) sem audit log canonical.\n"
-            "warn-only (Sprint 7C Part 1 v2). Promote BLOCKING após Part 1.5 quando "
-            "orchestrator real wire audit em todos."
+            "BLOCKING (Sprint 7C Part 1.5c). Wire AuditService.log_decision em cada\n"
+            "dispatch_* (decisao Paulo audit dim 5 canonical) ou delegar pra _<n>_impl."
         )
-    else:
-        print("check_dispatch_has_audit: 0 violations (baseline canonical).")
+        return 1
 
-    # Warn-only Part 1 v2: sempre exit 0.
+    print("check_dispatch_has_audit: 0 violations (baseline canonical).")
     return 0
 
 

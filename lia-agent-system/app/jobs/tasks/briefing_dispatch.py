@@ -460,6 +460,23 @@ def dispatch_daily_briefings(self) -> dict:
             )
         )
         _finish_celery_success(span, "briefing.dispatch_daily")
+        # Sprint 7C Part 1.5b/c: audit dim 5 canonical.
+        try:
+            from app.shared.compliance.audit_service import AuditService as _AuditBriefing
+            async def _audit_briefing():
+                _svc = _AuditBriefing()
+                await _svc.log_decision(
+                    company_id="__system__",
+                    agent_name="briefing_dispatch",
+                    decision_type="dispatch",
+                    action="briefing.dispatch_daily",
+                    decision="executed",
+                    reasoning=[f"frequency_label='daily'", f"result={result}"],
+                    criteria_used=[],
+                )
+            asyncio.run(_audit_briefing())
+        except Exception:
+            pass  # audit best-effort
         return result
     except Exception as exc:
         _finish_celery_failure(span, "briefing.dispatch_daily", exc)
@@ -496,6 +513,23 @@ def dispatch_weekly_briefings(self) -> dict:
             )
         )
         _finish_celery_success(span, "briefing.dispatch_weekly")
+        # Sprint 7C Part 1.5b/c: audit dim 5 canonical.
+        try:
+            from app.shared.compliance.audit_service import AuditService as _AuditBriefing
+            async def _audit_briefing():
+                _svc = _AuditBriefing()
+                await _svc.log_decision(
+                    company_id="__system__",
+                    agent_name="briefing_dispatch",
+                    decision_type="dispatch",
+                    action="briefing.dispatch_weekly",
+                    decision="executed",
+                    reasoning=[f"frequency_label='weekly'", f"result={result}"],
+                    criteria_used=[],
+                )
+            asyncio.run(_audit_briefing())
+        except Exception:
+            pass  # audit best-effort
         return result
     except Exception as exc:
         _finish_celery_failure(span, "briefing.dispatch_weekly", exc)
@@ -532,6 +566,23 @@ def dispatch_monthly_briefings(self) -> dict:
             )
         )
         _finish_celery_success(span, "briefing.dispatch_monthly")
+        # Sprint 7C Part 1.5b/c: audit dim 5 canonical.
+        try:
+            from app.shared.compliance.audit_service import AuditService as _AuditBriefing
+            async def _audit_briefing():
+                _svc = _AuditBriefing()
+                await _svc.log_decision(
+                    company_id="__system__",
+                    agent_name="briefing_dispatch",
+                    decision_type="dispatch",
+                    action="briefing.dispatch_monthly",
+                    decision="executed",
+                    reasoning=[f"frequency_label='monthly'", f"result={result}"],
+                    criteria_used=[],
+                )
+            asyncio.run(_audit_briefing())
+        except Exception:
+            pass  # audit best-effort
         return result
     except Exception as exc:
         _finish_celery_failure(span, "briefing.dispatch_monthly", exc)

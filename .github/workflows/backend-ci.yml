@@ -51,6 +51,14 @@ jobs:
         working-directory: lia-agent-system
         run: |
           python3 scripts/check_no_plaintext_pii.py
+      - name: Check dispatch_* has audit dim 5 (BLOCKING — Sprint 7C Part 1.5c)
+        # Sensor #10: toda funcao dispatch_* em app/services/ + app/jobs/tasks/
+        # deve emitir audit log_decision canonical (dim 5 feature-audit).
+        # Baseline 0 post Sprint 7C Part 1.5b/c.
+        working-directory: lia-agent-system
+        run: |
+          python3 scripts/check_dispatch_has_audit.py
+
 
       - name: Check data-toggle naming consistency (WARN, baseline ratchet)
         # Baseline file: scripts/baselines/data_toggle_naming.txt (atual: 0).

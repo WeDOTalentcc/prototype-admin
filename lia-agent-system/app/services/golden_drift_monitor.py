@@ -235,7 +235,38 @@ class GoldenDriftDetector:
 # ── Alert dispatcher ─────────────────────────────────────────────
 
 def dispatch_drift_alerts(report: DriftReport) -> None:
-    """Send alerts for WARNING/CRITICAL drift results."""
+    """Send alerts for WARNING/CRITICAL drift results.
+
+    Sprint 7C Part 1.5b/c: audit dim 5 canonical wired (feature-audit).
+    """
+    try:
+        # Audit dim 5 — emit log_decision canonical pra trail.
+        # Sync function: usar asyncio.run via best-effort (sem bloquear flow se loop em uso).
+        import asyncio as _asyncio_audit
+        from app.shared.compliance.audit_service import AuditService as _AuditAudit
+        _critical_agents = [a.agent for a in report.agents if a.status == "critical"]
+        _warn_agents = [a.agent for a in report.agents if a.status == "warning"]
+        if _critical_agents or _warn_agents:
+            async def _audit_drift():
+                _svc = _AuditAudit()
+                await _svc.log_decision(
+                    company_id="__system__",
+                    agent_name="golden_drift_monitor",
+                    decision_type="dispatch",
+                    action="dispatch_drift_alerts",
+                    decision="executed",
+                    reasoning=[
+                        f"critical={_critical_agents}",
+                        f"warning={_warn_agents}",
+                    ],
+                    criteria_used=[],
+                )
+            try:
+                _asyncio_audit.run(_audit_drift())
+            except RuntimeError:
+                pass  # event loop ja rodando — skip audit best-effort
+    except Exception:
+        pass  # audit best-effort, nao bloqueia alerts
     for agent_result in report.agents:
         if agent_result.status == "critical":
             msg = (
