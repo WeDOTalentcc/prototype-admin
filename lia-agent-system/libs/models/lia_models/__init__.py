@@ -771,6 +771,7 @@ from lia_models.skills_catalog import CompanySkillsCatalog, BehavioralCompetency
 from lia_models.sourcing_agent import SourcingAgentSignal  # SourcingAgent class deprecated — Sprint 7B-3b Part 3b v2 drop re-export (table dropped Sprint 8)
 from lia_models.talent_pool import TalentPool, TalentPoolCandidate
 from lia_models.pool_agent_assignment import PoolAgentAssignment
+from lia_models.pool_agent_run import PoolAgentRun
 from lia_models.task_record import TaskRecord, TaskSchedule, DeadLetterRecord
 from lia_models.technical_tests import TechnicalTest, ClientTestConfig, TestResult, TestCategory, TestSubcategory, TestDifficulty
 from lia_models.tenant_llm_config import TenantLLMConfig

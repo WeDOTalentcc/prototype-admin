@@ -32,6 +32,11 @@ from app.schemas.pool_agent_assignment import (
     PoolAgentAssignmentUpdate,
 )
 from app.shared.security.require_company_id import require_company_id
+from app.domains.agent_studio.repositories.pool_agent_run_repository import (
+    PoolAgentRunRepository,
+)
+from app.schemas.pool_agent_run import PoolAgentRunResponse
+from app.shared.types import AgentIdParam
 
 logger = logging.getLogger(__name__)
 
@@ -195,25 +200,54 @@ async def dispatch_on_demand(
     return {"status": "queued", "assignment_id": assignment_id, "sprint": "7A-stub"}
 
 
-@router.get("/{pool_id}/agents/{assignment_id}/runs")
+@router.get(
+    "/{pool_id}/agents/{assignment_id}/runs",
+    response_model=list[PoolAgentRunResponse],
+    summary="Lista histórico de runs do assignment (Sprint 7C Part 1.5a canonical).",
+)
 async def list_runs(
     pool_id: str,
-    assignment_id: str,
-    limit: int = 20,
+    assignment_id: AgentIdParam,
+    limit: int = 50,
+    offset: int = 0,
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_tenant_db),
     company_id: str = Depends(require_company_id),
 ):
-    """STUB Sprint 7A — full impl em Sprint 7C (tabela pool_agent_runs)."""
-    repo = PoolAgentAssignmentRepository(db)
-    row = await repo.get_by_id(assignment_id=assignment_id, company_id=company_id)
+    """Lista runs canonical. Sprint 7C Part 1.5a substituiu stub Sprint 7A.
+
+    Orchestrator real (Part 1.5b futuro) escreve via PoolAgentRunRepository.create
+    + update_status. Este endpoint apenas le.
+    """
+    # Tenant gate + pool consistency: valida assignment pertence ao tenant + pool
+    assign_repo = PoolAgentAssignmentRepository(db)
+    row = await assign_repo.get_by_id(
+        assignment_id=assignment_id, company_id=company_id
+    )
     if row is None:
         raise HTTPException(status_code=404, detail="assignment_not_found")
     if str(row.talent_pool_id) != pool_id:
         raise HTTPException(status_code=400, detail="pool_id_mismatch")
-    return {
-        "assignment_id": assignment_id,
-        "runs": [],
-        "limit": limit,
-        "sprint": "7A-stub",
-    }
+
+    runs_repo = PoolAgentRunRepository(db)
+    runs = await runs_repo.list_by_assignment(
+        assignment_id, company_id, limit=limit, offset=offset
+    )
+    return [
+        PoolAgentRunResponse(
+            id=r.id,
+            assignment_id=r.assignment_id,
+            company_id=r.company_id,
+            trigger_source=r.trigger_source,
+            status=r.status,
+            started_at=r.started_at,
+            finished_at=r.finished_at,
+            dispatch_metadata=r.dispatch_metadata or {},
+            results=r.results or {},
+            runtime_metrics=r.runtime_metrics or {},
+            error_message=r.error_message,
+            created_at=r.created_at,
+            updated_at=r.updated_at,
+        )
+        for r in runs
+    ]

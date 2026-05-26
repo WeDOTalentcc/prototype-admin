@@ -66,6 +66,14 @@ class PoolAgentAssignment(Base):
         back_populates="assignment",
     )
 
+    # Sprint 7C Part 1.5a: histórico de dispatch executions.
+    runs = relationship(
+        "PoolAgentRun",
+        back_populates="assignment",
+        cascade="all, delete-orphan",
+        order_by="desc(PoolAgentRun.created_at)",
+    )
+
     __table_args__ = (
         UniqueConstraint("talent_pool_id", "custom_agent_id", name="uq_pool_agent"),
         CheckConstraint(
