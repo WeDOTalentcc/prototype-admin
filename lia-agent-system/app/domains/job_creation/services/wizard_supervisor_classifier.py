@@ -326,7 +326,7 @@ class WizardSupervisorClassifier:
 
         stage_label = current_stage or "(não iniciado)"
         draft_flag = "sim" if has_active_draft else "não"
-        tenant_block = (tenant_context_snippet or "")[:400] or "(não disponível)"
+        tenant_block = (tenant_context_snippet or "")[:1500] or "(não disponível)"
 
         turns_block = "(sem histórico)"
         if last_turns:

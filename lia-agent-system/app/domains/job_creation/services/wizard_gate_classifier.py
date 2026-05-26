@@ -339,7 +339,7 @@ class WizardGateClassifier:
             f"# Stage atual\n{stage}\n\n"
             f"# Resumo do que a LIA propôs no último turno\n{stage_summary}\n\n"
             f"# Histórico recente da conversa (últimos turnos)\n{turns_block}\n\n"
-            f"# Contexto da empresa (tenant)\n{(tenant_context_snippet or '(não disponível)')[:500]}\n\n"
+            f"# Contexto da empresa (tenant)\n{(tenant_context_snippet or '(não disponível)')[:2000]}\n\n"
             f"# Política de hiring (resumo)\n{(hiring_policy_summary or '(default)')[:300]}\n\n"
             f"# Mensagem do recrutador\n{msg[:2000]}\n\n"
             "Responda OBRIGATORIAMENTE chamando a tool 'classify' com JSON válido."
