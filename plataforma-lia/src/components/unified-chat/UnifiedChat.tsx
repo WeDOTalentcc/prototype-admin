@@ -56,6 +56,7 @@ import {
 import { ProgressiveDisclosure } from "./wizard/ProgressiveDisclosure";
 import { TaskContextBar } from "./wizard/TaskContextBar";
 import { WizardProgressBar } from "./wizard/WizardProgressBar";
+import { PipelineTemplateSuggestion } from "./wizard/PipelineTemplateSuggestion";
 import { useWizardChatCards } from "./wizard/useWizardChatCards";
 import { useWizardFlow } from "./wizard/useWizardFlow";
 import { useWizardIntegration } from "./wizard/useWizardIntegration";
@@ -849,6 +850,25 @@ export function UnifiedChat({
               degradedStages={wizardDegradedStages}
               compact={effectiveMode === "floating"}
               onCancelWizard={handleCancelWizard}
+            />
+          </div>
+        )}
+
+        {/* Sprint Pipeline Templates Gap #6 (2026-05-26) — render auto-suggest card no chat.
+            Card aparece quando backend graph (intake_node ou jd_enrichment_node) emite
+            ui_action="suggest_pipeline_template" + data.templates. O fetch de apply é
+            interno do card (PipelineTemplateSuggestion.handleApply usa o canonical proxy
+            /api/backend-proxy/job-vacancies/{id}/apply-pipeline-template). onApplied/onSkip
+            limpam a sugestão do state do wizard. vacancyId hoje é null (vaga ainda não
+            persistida no intake/jd_enrichment); card desabilita "Aplicar" e orienta
+            recrutador a re-aplicar pelo edit-job modal pós-publish. */}
+        {wizard.pipelineTemplateSuggestions.length > 0 && (
+          <div className="px-4 pt-2" data-testid="wizard-pipeline-template-suggestion-container">
+            <PipelineTemplateSuggestion
+              templates={wizard.pipelineTemplateSuggestions}
+              vacancyId={null}
+              onApplied={() => wizard.skipPipelineTemplateSuggestion()}
+              onSkip={() => wizard.skipPipelineTemplateSuggestion()}
             />
           </div>
         )}
