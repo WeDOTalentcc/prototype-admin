@@ -11,7 +11,7 @@ import {
   type NewMemberForm,
   COLOR_OPTIONS,
 } from '@/hooks/settings/department-types';
-import { MemberSection } from './MemberSection';
+import { MemberSection, type ExistingUserOption } from './MemberSection';
 import { useTranslations } from "next-intl";
 
 export interface DepartmentFormCardProps {
@@ -35,6 +35,8 @@ export interface DepartmentFormCardProps {
   handleSaveMember: () => Promise<void>;
   handleEditMember: (member: DepartmentMember) => void;
   handleDeleteMember: (memberId: string) => Promise<void>;
+  // B1 (2026-05-25): pass platform users for explicit linkage
+  existingUsers?: ExistingUserOption[];
 }
 
 export function DepartmentFormCard({
@@ -58,6 +60,7 @@ export function DepartmentFormCard({
   handleSaveMember,
   handleEditMember,
   handleDeleteMember,
+  existingUsers,
 }: DepartmentFormCardProps) {
   const t = useTranslations('settings.departments');
 
@@ -214,6 +217,7 @@ export function DepartmentFormCard({
             handleSaveMember={handleSaveMember}
             handleEditMember={handleEditMember}
             handleDeleteMember={handleDeleteMember}
+            existingUsers={existingUsers}
           />
         )}
 

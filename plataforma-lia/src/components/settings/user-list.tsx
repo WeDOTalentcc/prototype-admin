@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils"
 import type { UserData } from './user-management-types'
 import { useTranslations } from "next-intl"
 import { useState } from "react"
+import { SalaryGrantConfirmDialog } from "./SalaryGrantConfirmDialog"
 import { useAuth } from "@/contexts/auth-context"
 import { apiFetch } from "@/lib/api/api-fetch"
 import { useCompanyId } from "@/hooks/company/useCompanyId"
@@ -52,6 +53,62 @@ export function UserList({
   const isAdmin = authUser?.role === 'admin' || authUser?.role === 'wedotalent_admin'
   const { companyId } = useCompanyId()
   const [grantingFor, setGrantingFor] = useState<string | null>(null)
+  // B2 (2026-05-25): confirmation dialog state for salary grant toggle.
+  const [confirmDialog, setConfirmDialog] = useState<{
+    open: boolean
+    user: UserData | null
+    next: boolean
+  }>({ open: false, user: null, next: false })
+
+  // B3 (2026-05-25): bulk selection state for batch salary grant
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [bulkConfirm, setBulkConfirm] = useState<{ open: boolean; next: boolean }>({
+    open: false,
+    next: false,
+  })
+  const [bulkSubmitting, setBulkSubmitting] = useState(false)
+
+  const toggleSelect = (id: string, checked: boolean) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (checked) next.add(id)
+      else next.delete(id)
+      return next
+    })
+  }
+
+  const toggleSelectAll = (checked: boolean) => {
+    if (checked) setSelectedIds(new Set(filteredUsers.map((u) => u.id)))
+    else setSelectedIds(new Set())
+  }
+
+  const handleBulkSalaryGrant = async () => {
+    if (!isAdmin || !companyId || selectedIds.size === 0) return
+    setBulkSubmitting(true)
+    const ids = Array.from(selectedIds)
+    const next = bulkConfirm.next
+    try {
+      // Sequential PUTs (small N, simpler than bulk endpoint; canonical pattern)
+      for (const uid of ids) {
+        await apiFetch(
+          `/api/backend-proxy/clients/${companyId}/client-users/${uid}`,
+          {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ can_view_salary: next }),
+          },
+        )
+      }
+      onSalaryGrantChange?.()
+      setSelectedIds(new Set())
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.warn('[B3] bulk salary grant failed', err)
+    } finally {
+      setBulkSubmitting(false)
+      setBulkConfirm({ open: false, next: false })
+    }
+  }
 
   const handleSalaryGrantToggle = async (user: UserData, next: boolean) => {
     if (!isAdmin || !companyId) return
@@ -194,13 +251,67 @@ export function UserList({
     )
   }
 
+  // B2 dialog handler — confirmed grant action
+  const handleConfirmSalaryGrant = async () => {
+    if (!confirmDialog.user) return
+    const u = confirmDialog.user
+    const n = confirmDialog.next
+    setConfirmDialog({ open: false, user: null, next: false })
+    await handleSalaryGrantToggle(u, n)
+  }
+
   return (
+    <>
+    {isAdmin && selectedIds.size > 0 && (
+      <div className="mb-2 flex items-center justify-between gap-3 rounded-xl border border-lia-border-medium bg-lia-bg-secondary px-3 py-2">
+        <div className="text-xs text-lia-text-primary">
+          <strong>{selectedIds.size}</strong> usuário{selectedIds.size === 1 ? '' : 's'} selecionado{selectedIds.size === 1 ? '' : 's'}
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            data-testid="bulk-grant-revoke"
+            variant="outline"
+            size="sm"
+            disabled={bulkSubmitting}
+            onClick={() => setBulkConfirm({ open: true, next: false })}
+          >
+            Revogar acesso a salários
+          </Button>
+          <Button
+            data-testid="bulk-grant-allow"
+            size="sm"
+            disabled={bulkSubmitting}
+            onClick={() => setBulkConfirm({ open: true, next: true })}
+          >
+            Conceder acesso a salários
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setSelectedIds(new Set())}
+          >
+            Limpar seleção
+          </Button>
+        </div>
+      </div>
+    )}
     <Card data-testid="users-list-table" className="rounded-md">
       <CardContent className="p-0">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-lia-bg-secondary dark:bg-lia-bg-secondary">
               <tr>
+                {isAdmin && (
+                  <th className="px-2 py-2.5 text-center text-micro font-medium text-lia-text-secondary uppercase tracking-wider w-8">
+                    <input
+                      type="checkbox"
+                      data-testid="bulk-select-all"
+                      checked={filteredUsers.length > 0 && selectedIds.size === filteredUsers.length}
+                      onChange={(e) => toggleSelectAll(e.target.checked)}
+                      className="w-3.5 h-3.5 rounded border-lia-border-default"
+                    />
+                  </th>
+                )}
                 <th className="px-2 py-2.5 text-left text-micro font-medium text-lia-text-secondary uppercase tracking-wider">
                   {t('tableUser')}
                 </th>
@@ -228,6 +339,17 @@ export function UserList({
             <tbody className="bg-lia-bg-primary dark:bg-lia-bg-secondary divide-y divide-lia-border-subtle dark:divide-lia-border-strong">
               {filteredUsers.map((user) => (
                 <tr key={user.id} data-testid={`user-row-${user.id}`} className="hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse">
+                  {isAdmin && (
+                    <td className="px-2 py-1.5 text-center w-8">
+                      <input
+                        type="checkbox"
+                        data-testid={`bulk-select-${user.id}`}
+                        checked={selectedIds.has(user.id)}
+                        onChange={(e) => toggleSelect(user.id, e.target.checked)}
+                        className="w-3.5 h-3.5 rounded border-lia-border-default"
+                      />
+                    </td>
+                  )}
                   <td className="px-2 py-1.5 whitespace-nowrap">
                     <div className="flex items-center gap-2">
                       <Avatar className="w-8 h-8">
@@ -267,7 +389,7 @@ export function UserList({
                           data-testid={`user-salary-grant-toggle-${user.id}`}
                           checked={((user as unknown as Record<string, unknown>).can_view_salary as boolean) || false}
                           disabled={grantingFor === user.id}
-                          onChange={(e) => handleSalaryGrantToggle(user, e.target.checked)}
+                          onChange={(e) => setConfirmDialog({ open: true, user, next: e.target.checked })}
                           className="w-4 h-4 rounded border-lia-border-default cursor-pointer disabled:opacity-50"
                         />
                       </label>
@@ -306,5 +428,23 @@ export function UserList({
         </div>
       </CardContent>
     </Card>
+
+      <SalaryGrantConfirmDialog
+        open={confirmDialog.open}
+        onOpenChange={(open) => setConfirmDialog({ ...confirmDialog, open })}
+        granting={confirmDialog.next}
+        target={confirmDialog.user?.name || ""}
+        targetDetail={confirmDialog.user?.email}
+        onConfirm={handleConfirmSalaryGrant}
+      />
+
+      <SalaryGrantConfirmDialog
+        open={bulkConfirm.open}
+        onOpenChange={(open) => setBulkConfirm((s) => ({ ...s, open }))}
+        granting={bulkConfirm.next}
+        target={`${selectedIds.size} usuário${selectedIds.size === 1 ? '' : 's'} selecionado${selectedIds.size === 1 ? '' : 's'}`}
+        onConfirm={handleBulkSalaryGrant}
+      />
+    </>
   )
 }

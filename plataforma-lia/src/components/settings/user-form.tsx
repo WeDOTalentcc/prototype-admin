@@ -8,6 +8,7 @@ import { textStyles } from '@/lib/design-tokens'
 import type { UserData } from './user-management-types'
 import { useTranslations } from "next-intl"
 import { useAuth } from "@/contexts/auth-context"
+import { SalaryGrantConfirmDialog } from "./SalaryGrantConfirmDialog"
 import { InlineDepartmentCreateModal, type CreatedDepartment } from "./InlineDepartmentCreateModal"
 import { useCompanyId } from "@/hooks/company/useCompanyId"
 
@@ -27,6 +28,11 @@ export function UserForm({ isCreating, formData, setFormData, onSave, onCancel, 
   // LGPD Art. 6 III minimização — only admin can grant PII access.
   const { user: authUser } = useAuth()
   const isAdmin = authUser?.role === 'admin' || authUser?.role === 'wedotalent_admin'
+  // B2 (2026-05-25): confirm dialog antes do grant via checkbox
+  const [salaryConfirm, setSalaryConfirm] = useState<{ open: boolean; next: boolean }>({
+    open: false,
+    next: false,
+  })
 
   const t = useTranslations('settings.users')
   const inputClass = "w-full py-1.5 px-2 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-elevated text-lia-text-primary focus:ring-1 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg"
@@ -256,10 +262,7 @@ export function UserForm({ isCreating, formData, setFormData, onSave, onCancel, 
                       data-toggle="canViewSalary"
                       data-testid="user-toggle-can-view-salary"
                       checked={(formData as Record<string, unknown>).can_view_salary as boolean || false}
-                      onChange={(e) => setFormData(prev => ({
-                        ...prev,
-                        can_view_salary: e.target.checked,
-                      } as typeof prev))}
+                      onChange={(e) => setSalaryConfirm({ open: true, next: e.target.checked })}
                       className="w-3.5 h-3.5 rounded-xl border-lia-border-default"
                     />
                     <span className={textStyles.label}>Pode ver salário dos candidatos</span>

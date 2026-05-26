@@ -23,6 +23,7 @@ import {
 import { actionButtonStyles } from "@/lib/design-tokens";
 import { ApproverSection } from "./ApproverSection";
 import { DepartmentFormCard } from "./DepartmentFormCard";
+import type { ExistingUserOption } from "./MemberSection";
 import { DepartmentGrid } from "./DepartmentGrid";
 import { OrgChartDialog } from "./OrgChartDialog";
 import { useTranslations } from "next-intl";
@@ -80,6 +81,8 @@ export interface DepartmentsTabProps {
   handleOpenOrgChart: (dept: Department) => Promise<void>;
   handleSaveApprover: () => Promise<void>;
   handleDeleteApprover: (id: string) => Promise<void>;
+  // B1 (2026-05-25): platform users for linkage UX
+  existingUsers?: ExistingUserOption[];
 }
 
 export function DepartmentsTab({
@@ -135,6 +138,7 @@ export function DepartmentsTab({
   handleOpenOrgChart,
   handleSaveApprover,
   handleDeleteApprover,
+  existingUsers,
 }: DepartmentsTabProps) {
   const t = useTranslations('settings.departments');
 
@@ -252,6 +256,7 @@ export function DepartmentsTab({
             handleSaveMember={handleSaveMember}
             handleEditMember={handleEditMember}
             handleDeleteMember={handleDeleteMember}
+            existingUsers={existingUsers}
           />
         )}
 

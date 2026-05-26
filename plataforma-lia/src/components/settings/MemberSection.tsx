@@ -18,6 +18,17 @@ import {
 } from '@/hooks/settings/department-types';
 import { useTranslations } from "next-intl";
 
+/**
+ * B1 (2026-05-25): platform user option for "Vincular usuário existente" selector.
+ * Lifted from useUserManagement.users at UsuariosDepartamentosHub level.
+ */
+export interface ExistingUserOption {
+  id: string;
+  name: string;
+  email: string;
+  title?: string;
+}
+
 export interface MemberSectionProps {
   departmentMembers: DepartmentMember[];
   showMemberForm: boolean;
@@ -34,6 +45,8 @@ export interface MemberSectionProps {
   handleSaveMember: () => Promise<void>;
   handleEditMember: (member: DepartmentMember) => void;
   handleDeleteMember: (memberId: string) => Promise<void>;
+  // B1 (2026-05-25): existing platform users for explicit linkage
+  existingUsers?: ExistingUserOption[];
 }
 
 export function MemberSection({
@@ -48,6 +61,7 @@ export function MemberSection({
   setShowMemberForm,
   setEditingMember,
   setNewMember,
+  existingUsers = [],
   setMemberError,
   handleSaveMember,
   handleEditMember,
@@ -138,6 +152,52 @@ export function MemberSection({
           <h6 className="text-micro font-medium text-lia-text-secondary mb-2">
             {editingMember ? t("editMember") : t("newMember")}
           </h6>
+
+          {/* B1 (2026-05-25): "Vincular usuário existente" selector.
+              When admin picks a platform user → auto-fill name/email/title + set user_id.
+              When left as "Contato externo" → user_id stays null. */}
+          {!editingMember && existingUsers.length > 0 && (
+            <div className="mb-2 p-2 rounded-xl bg-lia-bg-secondary dark:bg-lia-bg-inverse border border-lia-border-subtle">
+              <label className="block text-micro font-medium text-lia-text-secondary mb-1">
+                Vincular a usuário existente da plataforma (opcional)
+              </label>
+              <select
+                data-testid="member-field-user-link"
+                value={newMember.user_id ?? ""}
+                onChange={(e) => {
+                  const uid = e.target.value || null;
+                  if (uid) {
+                    const u = existingUsers.find((x) => x.id === uid);
+                    if (u) {
+                      setNewMember((prev) => ({
+                        ...prev,
+                        user_id: u.id,
+                        name: u.name,
+                        email: u.email,
+                        title: u.title || prev.title,
+                      }));
+                      return;
+                    }
+                  }
+                  setNewMember((prev) => ({ ...prev, user_id: null }));
+                }}
+                className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-xl bg-lia-bg-primary"
+              >
+                <option value="">— Contato externo (sem login) —</option>
+                {existingUsers.map((u) => (
+                  <option key={u.id} value={u.id}>
+                    {u.name} ({u.email})
+                  </option>
+                ))}
+              </select>
+              {newMember.user_id && (
+                <p className="text-micro text-status-success mt-1">
+                  Vinculado a usuário da plataforma. Editar dados abaixo refletirá no cadastro do colaborador, não no usuário canônico.
+                </p>
+              )}
+            </div>
+          )}
+
           <div className="grid grid-cols-2 gap-2 mb-2">
             <input
               type="text"

@@ -21,6 +21,8 @@ export interface DepartmentMember {
   avatar_url?: string;
   level: string;
   is_active: boolean;
+  // B1 (2026-05-25): backend FK to users.id
+  user_id?: string | null;
 }
 
 export interface Approver {
@@ -144,6 +146,8 @@ export interface NewMemberForm {
   phone: string;
   linkedin_url: string;
   level: string;
+  // B1 (2026-05-25): optional FK to users.id (platform user) | null = external contact
+  user_id?: string | null;
 }
 
 export interface NewApproverForm {
@@ -172,6 +176,7 @@ export const DEFAULT_NEW_MEMBER: NewMemberForm = {
   phone: "",
   linkedin_url: "",
   level: "outros",
+  user_id: null,
 };
 
 export const COLOR_OPTIONS = [

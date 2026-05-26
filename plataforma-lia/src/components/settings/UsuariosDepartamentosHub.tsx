@@ -10,6 +10,7 @@ import { DepartmentScopeBanner } from "./DepartmentScopeBanner"  // Sprint 2 RBA
 import { useCompanyId } from "@/hooks/company/useCompanyId"
 import { useCompanyData } from "@/hooks/settings/useCompanyData"
 import { useDepartmentManagement } from "@/hooks/settings/useDepartmentManagement"
+import { useUserManagement } from "./use-user-management"
 
 export function UsuariosDepartamentosHub() {
   const t = useTranslations("settings")
@@ -63,6 +64,17 @@ export function UsuariosDepartamentosHub() {
   })
 
 
+  // B1 (2026-05-25): existing platform users for member linkage UX.
+  // Lift state pattern: users canonical via useUserManagement.users, mapped to
+  // ExistingUserOption shape, passed down to MemberSection through tab.
+  const { users: hubUsers } = useUserManagement()
+  const hubExistingUsers = (hubUsers ?? []).map((u: { id: string; name: string; email: string; position?: string }) => ({
+    id: String(u.id),
+    name: String(u.name),
+    email: String(u.email),
+    title: u.position ? String(u.position) : undefined,
+  }))
+
   // Bug 2 fix (lift state, 2026-05-25): single source of truth for departments
   // shared between UserManagement and DepartmentManagement tabs. Eliminates
   // stale dropdown after create-in-other-tab race. Canonical-fix #2 (single SoT).
@@ -103,6 +115,7 @@ export function UsuariosDepartamentosHub() {
             newDepartment={deptState.newDepartment}
             isEditingDepartments={deptState.isEditingDepartments}
             departmentsBackup={deptState.departmentsBackup}
+            existingUsers={hubExistingUsers}
             departmentMembers={deptState.departmentMembers}
             showMemberForm={deptState.showMemberForm}
             editingMember={deptState.editingMember}
