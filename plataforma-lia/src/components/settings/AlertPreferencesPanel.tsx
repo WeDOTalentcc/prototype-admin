@@ -3,10 +3,17 @@
  *
  * Substitui AlertsTab.tsx (legacy AlertConfig). Lê e escreve AlertPreference
  * via `useAlertPreferences()` hook canonical. Single source of truth para
- * configuração de alertas per-tenant.
+ * configuração de alertas DESTE recrutador (per-user, isolado per-tenant).
  *
- * Multi-tenancy: nenhum input de `company_id` (Pydantic REGRA 2 — JWT-only
- * no backend via `Depends(require_company_id)`).
+ * Ownership (P1-10 audit 2026-05-26): AlertPreference table tem company_id E
+ * user_id como NOT NULL (composite index). Cada recrutador tem suas próprias
+ * preferências; outros recrutadores da mesma company NÃO veem essas
+ * configurações. Auditoria considerou mover este panel pra /profile/notifications
+ * (mais alinhado com per-user mental model), mas mantido em Configurações por
+ * compat com fluxo atual. Decisão de migração pra /profile fica como P2 futuro.
+ *
+ * Multi-tenancy: nenhum input de `company_id` ou `user_id` (Pydantic REGRA 2 —
+ * JWT-only no backend via `Depends(require_company_id)` + user_id do token).
  *
  * Design tokens canonical (00-design-system-v4.2.2.md) — sem cores hardcoded.
  * Rules of Hooks: TODOS os hooks no topo (lição BulkImportModal 2026-05-04).
