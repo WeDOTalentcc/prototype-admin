@@ -40,6 +40,16 @@ vi.mock("@/lib/toast", () => ({
   },
 }))
 
+// Mock useAiPersona — ApproachStep/ConfigStep usam o hook que faz fetch
+// para /api/backend-proxy/company-ai-persona no mount. Sem o mock, esses
+// fetches consomem os mockResolvedValueOnce destinados aos endpoints
+// canonical do wizard (/custom-agents, /custom-agents/generate) e o teste
+// falha porque o POST canonical recebe response undefined.
+vi.mock("@/hooks/company/use-ai-persona", () => ({
+  useAiPersona: () => ({ persona: { name: "LIA", tone: "professional" }, isLoading: false, error: null }),
+  useAiPersonaOptions: () => ({ options: null, isLoading: false, error: null }),
+}))
+
 import { CreateAgentWizard } from "../CreateAgentWizard"
 import { filterTemplatesByGoal, GOAL_TO_CATEGORIES } from "../types"
 import { AGENT_TEMPLATES } from "@/lib/__tests__/__fixtures__/agent-templates-fixture"
