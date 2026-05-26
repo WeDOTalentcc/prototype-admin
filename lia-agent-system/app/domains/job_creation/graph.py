@@ -3327,7 +3327,8 @@ def jd_gate_node(state: JobCreationState) -> JobCreationState:
     output = None
     try:
         try:
-            running_loop = _asyncio.get_event_loop()
+            # F-2.6: get_running_loop() é canonical Python 3.10+ (raise se nao ha loop)
+            running_loop = _asyncio.get_running_loop()
         except RuntimeError:
             running_loop = None
         # T2 fix #3 (code review #2): plumb company_id/user_id do state para
@@ -3638,7 +3639,8 @@ def competency_gate_node(state: JobCreationState) -> JobCreationState:
     output = None
     try:
         try:
-            running_loop = _asyncio.get_event_loop()
+            # F-2.6: get_running_loop() é canonical Python 3.10+ (raise se nao ha loop)
+            running_loop = _asyncio.get_running_loop()
         except RuntimeError:
             running_loop = None
         _company_id = state.get("workspace_id") or state.get("company_id")
@@ -4045,7 +4047,8 @@ def wsi_questions_gate_node(state: JobCreationState) -> JobCreationState:
     output = None
     try:
         try:
-            running_loop = _asyncio.get_event_loop()
+            # F-2.6: get_running_loop() é canonical Python 3.10+ (raise se nao ha loop)
+            running_loop = _asyncio.get_running_loop()
         except RuntimeError:
             running_loop = None
         _company_id = state.get("workspace_id") or state.get("company_id")
@@ -4541,7 +4544,8 @@ def review_gate_node(state: JobCreationState) -> JobCreationState:
     output = None
     try:
         try:
-            running_loop = _asyncio.get_event_loop()
+            # F-2.6: get_running_loop() é canonical Python 3.10+ (raise se nao ha loop)
+            running_loop = _asyncio.get_running_loop()
         except RuntimeError:
             running_loop = None
         _company_id = state.get("workspace_id") or state.get("company_id")
@@ -4657,7 +4661,19 @@ def review_gate_node(state: JobCreationState) -> JobCreationState:
         _now = _time.time()
         _pending = bool(state.get("pending_publish_confirmation"))
         _ts = state.get("publish_confirmation_ts") or 0.0
-        _within_ttl = _pending and (_now - float(_ts)) <= _PUBLISH_DUAL_CONFIRMATION_TTL_S
+        # F-2.4 (P0-#4): clock-skew guard for dual-confirmation TTL.
+        # `_now - _ts` pode ser negativo (clock voltou no tempo via NTP correction)
+        # ou >> TTL drástico (worker restart, deploy delay, pgbouncer reconnect,
+        # timestamp persistido em DB com tz diferente). Clip preserva dual-confirm
+        # em janela canonical [0, 2*TTL] + warn quando age > TTL pra observability.
+        _ts_age = max(0.0, min(_now - float(_ts), 2.0 * _PUBLISH_DUAL_CONFIRMATION_TTL_S))
+        _within_ttl = _pending and _ts_age <= _PUBLISH_DUAL_CONFIRMATION_TTL_S
+        if _pending and _ts_age > _PUBLISH_DUAL_CONFIRMATION_TTL_S:
+            logger.warning(
+                "[review_gate] dual-confirm TTL excedido: age=%.1fs > TTL=%ds — "
+                "exigindo nova confirmação. clock-skew suspeita se age >> TTL.",
+                _ts_age, int(_PUBLISH_DUAL_CONFIRMATION_TTL_S),
+            )
         if _within_ttl:
             # 2ª confirmação dentro da janela → destrava publish_node.
             next_state["policy_confirmed_publish"] = True
@@ -5093,7 +5109,9 @@ def emit_policy_block_audit(*, stage: str, decision: "Any") -> None:
         from app.shared.compliance.audit_service import audit_service as _audit
         _decision_val = str(getattr(getattr(decision, "decision", decision), "value", decision))
         _rationale = getattr(decision, "rationale", "")
-        _asyncio.get_event_loop().call_soon_threadsafe(
+        # F-2.6: get_running_loop() canonical Python 3.10+ (raise se nao ha loop ativo)
+        # Outer try/except absorve RuntimeError (sem loop) -> emit skip silently.
+        _asyncio.get_running_loop().call_soon_threadsafe(
             lambda: logger.info(
                 "[PolicyAudit] stage=%s decision=%s rationale=%s",
                 stage, _decision_val, _rationale,
