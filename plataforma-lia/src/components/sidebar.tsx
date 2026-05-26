@@ -65,6 +65,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { NotificationSystem } from "@/components/notification-system"
 import { BetaBadge } from "@/components/ui/beta-badge"
+import { AgentsQuotaBadge } from "@/components/pages-agent-studio/AgentsQuotaBadge"
 import { HitlPendingBadge } from "@/components/hitl-pending-badge"
 import { ProfileModal } from "@/components/modals/profile-modal"
 import { useAuth } from "@/contexts/auth-context"
@@ -304,6 +305,9 @@ const MenuItem = React.memo(({
               <span className="text-base-ui">{itemLabelKeys[item.label] ? t(itemLabelKeys[item.label]) : item.label}</span>
               {item.isBeta && (
                 <BetaBadge size="sm" label={t('labels.beta')} />
+              )}
+              {item.label === "Estúdio de Agentes" && (
+                <AgentsQuotaBadge />
               )}
             </div>
             <div className="flex items-center gap-1">

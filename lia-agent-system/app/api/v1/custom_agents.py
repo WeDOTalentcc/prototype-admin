@@ -30,6 +30,11 @@ from app.schemas.custom_agent import (
     UpdateCustomAgentRequest,
 )
 from app.services.agent_marketplace_service import agent_marketplace_service
+from app.services.quota_enforcement import (
+    get_current_agents_total,
+    get_effective_quotas,
+    get_max_agents_total,
+)
 from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
@@ -907,6 +912,58 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         logger.error("Error fetching studio quota: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail="Failed to fetch studio quota")
+
+
+@router.get(
+    "/studio/quota/agents-total",
+    summary="Get unified agents quota total (4 categories summed)",
+)
+async def get_studio_quota_agents_total(
+    current_user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_tenant_db),
+    company_id: str = Depends(require_company_id),
+):
+    """Canonical alias endpoint (Sprint 7C / 7B-3b backlog).
+
+    Retorna soma das 4 categorias agent (sourcing + custom + digital_twins + campaigns)
+    com shape unified pra UI sidebar consumir como "X/Y agentes".
+
+    PRESERVA /studio/quota (4 categorias) + admin_external contract.
+    Apenas adiciona view computed.
+    """
+    # multi-tenancy: company_id from JWT via require_company_id (canonical)
+    try:
+        quotas = await get_effective_quotas(company_id, db)
+        category_keys = (
+            "sourcing_agents",
+            "custom_agents",
+            "digital_twins",
+            "campaigns",
+        )
+        values = [quotas.get(k, 0) for k in category_keys]
+        max_total = -1 if -1 in values else sum(values)
+        current_total = await get_current_agents_total(company_id, db)
+
+        is_unlimited = max_total == -1
+        if is_unlimited or max_total == 0:
+            percentage = 0.0
+        else:
+            percentage = round((current_total / max_total) * 100, 2)
+
+        return {
+            "company_id": company_id,
+            "max_agents_total": max_total,
+            "current_agents_total": current_total,
+            "percentage_agents_total": percentage,
+            "is_unlimited": is_unlimited,
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error("Error fetching agents-total quota: %s", e, exc_info=True)
+        raise HTTPException(
+            status_code=500, detail="Failed to fetch agents-total quota"
+        )
 
 
 @router.get("/{agent_id}/versions", summary="List agent version history")

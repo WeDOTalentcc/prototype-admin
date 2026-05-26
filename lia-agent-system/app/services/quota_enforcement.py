@@ -150,3 +150,47 @@ async def enforce_quota(
                 f"Upgrade your plan or contact admin to increase quota."
             ),
         )
+
+
+# === Sprint 7C / 7B-3b backlog (2026-05-26): max_agents_total alias canonical ===
+# Decisão Paulo: soma transparente como ALIAS, não refactor breaking.
+# PRESERVA PLAN_AGENT_QUOTAS 4 categorias + admin_external contract.
+# Apenas adiciona views computed pra UI sidebar consumir "X/Y agentes" unified.
+
+_AGENT_CATEGORY_KEYS = (
+    "sourcing_agents",
+    "custom_agents",
+    "digital_twins",
+    "campaigns",
+)
+
+
+def get_max_agents_total(plan: str) -> int:
+    """Soma 4 categorias agent (sourcing + custom + digital_twins + campaigns).
+
+    -1 (ilimitado) em qualquer categoria -> -1 result (propaga ilimitado).
+    Plano desconhecido -> 0.
+
+    Sprint 7C / 7B-3b backlog: alias unified pra UI sidebar/badges.
+    NÃO substitui PLAN_AGENT_QUOTAS dict (admin_external + per-category
+    enforce_quota continuam canonical).
+    """
+    quota = PLAN_AGENT_QUOTAS.get((plan or "").lower().strip())
+    if not quota:
+        return 0
+    values = [quota.get(field, 0) for field in _AGENT_CATEGORY_KEYS]
+    if -1 in values:
+        return -1
+    return sum(values)
+
+
+async def get_current_agents_total(company_id: str, db: AsyncSession) -> int:
+    """Soma current count das 4 categorias agent canonical.
+
+    Reusa get_current_count per resource pra single source of truth
+    (filtros de status: status != archived, campaigns ativas, etc).
+    """
+    total = 0
+    for resource_key in _AGENT_CATEGORY_KEYS:
+        total += await get_current_count(resource_key, company_id, db)
+    return total
