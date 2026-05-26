@@ -336,6 +336,15 @@ class MainOrchestrator:
                     ctx.user_id, ctx.company_id,
                     _security_result.risk_level, _security_result.threat_categories,
                 )
+                # CR-5 Sprint 2.2 observability
+                try:
+                    from app.shared.observability.canary_metrics import main_orchestrator_guard_fires_total
+                    if main_orchestrator_guard_fires_total is not None:
+                        main_orchestrator_guard_fires_total.labels(
+                            guard="security_patterns_input", outcome="block",
+                        ).inc()
+                except Exception:
+                    pass
                 return ChatResponse(
                     success=False,
                     content=get_block_response(_security_result, language="pt"),
@@ -354,6 +363,15 @@ class MainOrchestrator:
                     "user=%s company=%s category=%s",
                     ctx.user_id, ctx.company_id, getattr(_fairness_result, "category", "unknown"),
                 )
+                # CR-5 Sprint 2.2 observability
+                try:
+                    from app.shared.observability.canary_metrics import main_orchestrator_guard_fires_total
+                    if main_orchestrator_guard_fires_total is not None:
+                        main_orchestrator_guard_fires_total.labels(
+                            guard="fairness_input", outcome="block",
+                        ).inc()
+                except Exception:
+                    pass
                 return ChatResponse(
                     success=False,
                     content=_fairness_result.educational_message or (
@@ -376,6 +394,15 @@ class MainOrchestrator:
                         "[MainOrchestrator] FairnessGuard soft warnings: user=%s count=%d",
                         ctx.user_id, len(_soft_warnings),
                     )
+                    # CR-5 Sprint 2.2 observability
+                    try:
+                        from app.shared.observability.canary_metrics import main_orchestrator_guard_fires_total
+                        if main_orchestrator_guard_fires_total is not None:
+                            main_orchestrator_guard_fires_total.labels(
+                                guard="fairness_implicit", outcome="soft_warn",
+                            ).inc()
+                    except Exception:
+                        pass
             except Exception as _fg_exc:
                 logger.debug("[MainOrchestrator] FairnessGuard implicit check skipped: %s", _fg_exc)
 
@@ -392,6 +419,16 @@ class MainOrchestrator:
                         "[MainOrchestrator] AI credit budget exhausted: company=%s",
                         ctx.company_id,
                     )
+                    # CR-5 Sprint 2.2 observability (complementa ai_credit_exhausted_total
+                    # com label unificado de guard origin).
+                    try:
+                        from app.shared.observability.canary_metrics import main_orchestrator_guard_fires_total
+                        if main_orchestrator_guard_fires_total is not None:
+                            main_orchestrator_guard_fires_total.labels(
+                                guard="ai_credit_gate", outcome="block",
+                            ).inc()
+                    except Exception:
+                        pass
                     return ChatResponse(
                         success=False,
                         content=(
@@ -426,6 +463,15 @@ class MainOrchestrator:
                             _policy_result.intent, _policy_result.reason,
                             ctx.company_id, ctx.user_id,
                         )
+                        # CR-5 Sprint 2.2 observability
+                        try:
+                            from app.shared.observability.canary_metrics import main_orchestrator_guard_fires_total
+                            if main_orchestrator_guard_fires_total is not None:
+                                main_orchestrator_guard_fires_total.labels(
+                                    guard="policy_gate", outcome="soft_warn",
+                                ).inc()
+                        except Exception:
+                            pass
                         # TODO P1-W4-11: converter em hard block (return ChatResponse blocked)
                         # quando policies estiverem validadas em produção.
                 except Exception as _pg_err:

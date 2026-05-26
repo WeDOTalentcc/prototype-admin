@@ -141,6 +141,30 @@ ai_credit_exhausted_total = _make_counter(
     ("company_id_hash", "service"),
 )
 
+# ----------------------------------------------------------------------
+# CR-5 Sprint 2.2 (2026-05-26) — Main orchestrator guard fast-fails.
+#
+# main_orchestrator.process() tem 6 guards pre-LLM que podem fast-fail:
+#   1. security_patterns_input — SecurityPatterns.check_input_security
+#   2. fairness_input          — FairnessGuard.check (hard block)
+#   3. fairness_implicit       — FairnessGuard.check_implicit_bias (soft warn)
+#   4. ai_credit_gate          — AICreditGate exhausted (ja ha ai_credit_exhausted_total
+#                                 mas counter generico aqui da view unificada)
+#   5. policy_gate             — PolicyGateService.validate denial
+#   6. tenant_context          — TenantContextService.get_context exception
+#
+# Antes deste counter, observar qual guard disparou exigia grep ad-hoc de logs.
+# Agora dashboard pode mostrar distribuicao + alarme em spike.
+#
+# Labels:
+# - guard: nome do guard (whitelist acima — cardinality ~6)
+# - outcome: 'block' | 'soft_warn' | 'fail_open' (cardinality 3)
+main_orchestrator_guard_fires_total = _make_counter(
+    "main_orchestrator_guard_fires_total",
+    "Count of main_orchestrator.process() pre-LLM guards firing (block/soft_warn/fail_open).",
+    ("guard", "outcome"),
+)
+
 # Wave 3 fix (2026-05-22): universal SDK monkey-patch in llm_bootstrap.
 # Increments on EVERY gated LLM call (allowed or denied) to give visibility into
 # coverage gap closure. Compared against ai_credit_exhausted_total it answers
