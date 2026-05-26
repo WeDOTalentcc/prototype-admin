@@ -214,7 +214,7 @@ export function buildBlocks(
 
   const policyFields: CardField[] = [
     { key: "min_interviews_before_offer", label: "Min. Entrevistas p/ Oferta", value: pr?.min_interviews_before_offer ?? null, type: "number", editable: true, block: "policy" },
-    { key: "manager_approval_for_offer", label: "Aprovacao Gestor", value: pr?.manager_approval_for_offer ?? null, type: "boolean", editable: true, block: "policy" },
+    { key: "manager_approval_for_offer", label: "Aprovação da oferta pelo gestor", value: pr?.manager_approval_for_offer ?? null, type: "boolean", editable: true, block: "policy" },
     { key: "max_days_in_stage", label: "Max. Dias por Etapa", value: pr?.max_days_in_stage ?? null, type: "text", editable: false, block: "policy" },
     { key: "allowed_days", label: "Dias Permitidos", value: sr?.allowed_days ?? null, type: "list", editable: true, block: "policy" },
     { key: "allowed_hours", label: "Horario Permitido", value: hours ? `${hours.start || ""} - ${hours.end || ""}` : null, type: "time-range", editable: true, block: "policy" },

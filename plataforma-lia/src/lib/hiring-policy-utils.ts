@@ -33,7 +33,7 @@ export const FIELD_CONFIGS: Record<string, FieldConfig> = {
     max: 10,
   },
   manager_approval_for_offer: {
-    label: "Aprovacao do gestor para oferta",
+    label: "Aprovação da oferta pelo gestor",
     type: 'boolean',
   },
   max_days_in_stage: {
