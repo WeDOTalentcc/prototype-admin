@@ -88,7 +88,8 @@ MUTATION_ROUTES = [
     ("/{template_id}", "DELETE"),                               # delete (legacy soft-delete)
     ("/{template_id}/archive", "POST"),                         # archive
     ("/{template_id}/clone", "POST"),                           # clone
-    ("/seed-defaults", "POST"),                                 # seed
+    # Gap #2 (2026-05-26): /seed-defaults movido pra READ_ROUTES — idempotente,
+    # qualquer user autenticado do tenant pode trigar (provisioning self-service).
 ]
 
 
@@ -114,6 +115,7 @@ READ_ROUTES = [
     ("/{template_id}", "GET"),                     # get single
     ("/suggest", "GET"),                           # suggest
     ("/{template_id}/increment-usage", "POST"),    # increment-usage (legacy frontend)
+    ("/seed-defaults", "POST"),                    # seed (idempotent provisioning, Gap #2)
 ]
 
 

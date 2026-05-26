@@ -399,7 +399,6 @@ async def clone_pipeline_template(
 @router.post(
     "/seed-defaults",
     response_model=None,
-    dependencies=[Depends(require_pipeline_template_admin)],
 )
 async def seed_default_templates(
     force: bool = Query(False, description="Force re-seeding even if templates exist"),
@@ -407,7 +406,15 @@ async def seed_default_templates(
     current_user: User = Depends(get_current_user_or_demo),
     company_id: str = Depends(require_company_id),
 ):
-    """Seed default templates for the company (admin/wedotalent_admin only)."""
+    """Seed default templates for the company (idempotent provisioning).
+
+    Gap #2 (2026-05-26): RBAC removido por canonical-fix.
+    Justificativa: seed_defaults é idempotente — repo.seed_defaults skip por nome existente.
+    Force=true também skip nomes — non-destructive. Qualquer user autenticado pode trigar
+    seed do próprio tenant; abrir gate evita useEditJob.ts:175 fallback retornar 403
+    quando recruiter abre modal sem templates pré-criados (regressão UX).
+    Multi-tenancy fail-closed mantida via require_company_id.
+    """
     user_email = current_user.email or "demo@example.com"
     repo = PipelineTemplateRepository(db)
     count = await repo.count_active(company_id)
