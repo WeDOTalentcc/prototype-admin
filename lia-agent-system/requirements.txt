@@ -89,7 +89,7 @@ google-auth-oauthlib>=1.2.1
 
 # Testing
 pytest>=9.0.0
-pytest-asyncio==0.24.0
+pytest-asyncio>=1.0.0,<2.0.0
 
 APScheduler==3.10.4
 starlette>=0.42.0
