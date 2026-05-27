@@ -336,3 +336,43 @@ mas dispatcher pode ter outros callers — preferir Approach A enquanto não há
 necessidade clara.
 
 **Single UI control = 2 backend writes coerentes** (pattern canonical reforçado).
+
+---
+
+## Agent Studio Architecture (registrado 2026-05-27 — Wave F)
+
+### Stack
+- Frontend: `plataforma-lia/src/components/pages-agent-studio/` (Next.js 15 + SWR)
+- Backend: `lia-agent-system/app/domains/agent_studio/` (FastAPI + LangGraph ReAct)
+- Runtime: `custom_agent_runtime.py` (~1088 LOC) — 4 guards: FairnessGuard (pre+post), PromptInjectionGuard, SecurityPatterns, PIIStripCallback
+
+### REGRA — pages-agent-studio usa SWR para dados de API
+Todo hook em `src/hooks/agents/` que faz fetch de API DEVE usar `useSWR` de `swr`. Anti-pattern `useState + useEffect(fetch)` inline em componente é proibido (migrar para hook com SWR). Ex canônico: `use-agent-activities.ts` + `use-custom-agents.ts`.
+
+### REGRA — FairnessGuard é obrigatório no runtime
+`FairnessGuard` (pre + post) está wired em `custom_agent_runtime.py`. Ao criar novo agent type, verificar que os guards são invocados. Sensor `check_trace_span_in_runtime.py` garante observabilidade.
+
+### REGRA — compliance_block sempre injetado
+`SystemPromptBuilder.build()` injeta `compliance_block.yaml` (14 atributos LGPD protegidos) automaticamente via `PromptComposer.compliance_blocks_for(agent_type)`. Sensor `check_compliance_block_injection.py` garante.
+
+### Estrutura de agentes
+- **Agentes de Captação (Sourcing):** calibração via `pool_agent_runs`, cron via Celery beat, métricas em `pool_agent_runs.runtime_metrics`
+- **Agentes Personalizados (Custom):** runtime direto via `CustomAgentRuntime`, sem cron próprio
+- **Gêmeos Digitais (Digital Twins):** avaliação LLM via `TwinInferenceService.evaluate`, indexação via `TwinKnowledgeIndexer`
+
+### Token tracking
+`pool_agent_runs.runtime_metrics` persiste: `input_tokens`, `output_tokens`, `cost_usd`, `model_used`, `latency_ms`. Fonte: `LangChain AIMessage.usage_metadata` agregado em `_state_to_output`.
+
+### OTEL tracing
+`@trace_span` decorator em `app/shared/observability/tracing.py:275`. Métodos cobertos: `CustomAgentRuntime.execute`, `_run_graph`, `_invoke_voice`, `_invoke_whatsapp`, `_invoke_chat`, `TalentPoolReActAgent.process`, `TwinInferenceService.evaluate`.
+
+### Marketplace UX canonical (Wave F)
+- Install com sucesso: `toast.success(t('installSuccess'))` + auto-switch para tab "installed"
+- Search: debounce 300ms (não query a cada keystroke)
+- Ambos implementados em `MarketplaceTab.tsx` via `onInstallSuccess` callback + `debouncedSearch` state
+
+### Fase 2 (pendente — após Fase 1 completo + pesquisa concorrentes Paulo)
+- Job-Agent assignment (tabela `job_agent_assignments` não existe ainda)
+- KPI dashboard per agente
+- Surface visibility per-surface (pool/vaga/NPS)
+- Integração Configurações > Consumo
