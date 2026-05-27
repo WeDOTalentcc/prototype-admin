@@ -99,6 +99,33 @@ _ACTIONABLE_ANALYTICS_KEYWORDS = re.compile(
     re.IGNORECASE,
 )
 
+
+# CR-2 fix (2026-05-27) -- wizard creation intent veto.
+#
+# Quando user pede pra CRIAR/INICIAR um wizard (criar vaga, abrir vaga,
+# publicar vaga, nova vaga, vamos criar, etc), NAO deflectar pra navegacao.
+# O wizard conversacional eh a UX correta -- oferecer "Posso te levar pra
+# pagina de Vagas?" em vez de iniciar wizard interrompe o flow e forca
+# user a confirmar 2x. Wizard tem precedencia sobre sugestao de navegacao.
+#
+# Bug historico: teste Paulo 2026-05-27 -- query "vamos criar uma nova
+# vaga agora" -> NavigationIntent retornou page="Vagas" -> frontend ofereceu
+# "Posso te levar para o ambiente de vagas?" em vez de iniciar wizard.
+#
+# Sensor: tests/contract/test_navigation_intent_yields_to_wizard.py
+_WIZARD_CREATION_KEYWORDS = re.compile(
+    r"\b("
+    # Verbo de criacao + (qualificador opcional) + vaga/posicao/requisicao.
+    # Cobre: "criar vaga", "criar uma vaga", "criar uma nova vaga",
+    # "abrir uma nova posicao", "publicar nova vaga", "iniciar wizard de vaga", etc.
+    r"(criar|abrir|publicar|iniciar|come[cç]ar|comecar)"
+    r"\s+(uma\s+|um\s+)?"
+    r"(nova\s+|novo\s+)?"
+    r"(vaga|vagas|posi[cç][aã]o|posi[cç][oõ]es|requisi[cç][aã]o|requisi[cç][oõ]es|wizard)"
+    r")",
+    re.IGNORECASE,
+)
+
 _PATTERNS: list[tuple[list[tuple[str, float]], str, str]] = [
     # ([(keyword, weight), ...], page_name, hint_text)
     # weight: 1.0 = strong action phrase, 0.3 = generic/ambiguous word
@@ -183,6 +210,21 @@ class NavigationIntentDetector:
             return NavigationIntentResult(
                 page=None, confidence=0.0, hint=None,
                 matched_pattern="cr1_actionable_intent_veto",
+            )
+
+        # CR-2 fix (2026-05-27) -- wizard creation veto. Quando user pede
+        # pra criar/iniciar wizard (criar vaga, nova vaga, publicar vaga,
+        # iniciar wizard, etc), o wizard conversacional tem precedencia
+        # sobre sugestao de navegacao. NAO deflectar pra pagina de Vagas.
+        if _WIZARD_CREATION_KEYWORDS.search(text):
+            logger.info(
+                "[NavigationIntent] CR-2 veto: wizard creation keyword "
+                "detected in %r -- yielding to JobCreationWizard (no deflection)",
+                text[:80],
+            )
+            return NavigationIntentResult(
+                page=None, confidence=0.0, hint=None,
+                matched_pattern="cr2_wizard_creation_veto",
             )
 
         # BUG-18: imperativos de navegação ("me leva pra vagas", "abra a página X",

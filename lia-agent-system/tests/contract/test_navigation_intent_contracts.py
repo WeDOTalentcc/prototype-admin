@@ -149,10 +149,12 @@ class TestNavigationIntentDetector:
 
     def test_detect_multiple_keywords_increases_confidence(self):
         from app.orchestrator.context.navigation_intent import detect_navigation_intent
-        # Single keyword
-        r1 = detect_navigation_intent("vaga")
-        # Multiple keywords from same group
-        r2 = detect_navigation_intent("criar vaga headcount job description posição aberta")
+        # Single keyword (navegacao genuina)
+        r1 = detect_navigation_intent("vagas")
+        # Multiple keywords from same group -- evita verbos de criacao (CR-2
+        # veto) usando keywords que indicam VER vagas existentes em vez de
+        # CRIAR novas. Mantem invariante do ranking cumulativo do detector.
+        r2 = detect_navigation_intent("vagas headcount job description posição aberta")
         assert r2.confidence >= r1.confidence
 
     def test_detect_kanban_keywords(self):
