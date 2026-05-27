@@ -2488,7 +2488,8 @@
         "errorSendingFeedback": "Feedback was not saved. Try again.",
         "errorSendingFeedbackTitle": "Error sending feedback",
         "installedOn": "Installed on {date}",
-        "errorRunningTest": "Error running test."
+        "errorRunningTest": "Error running test.",
+        "errorLoadingActivities": "Could not load activities."
       },
       "targetIdLabel": "{target} ID",
       "contextLabel": "context",
@@ -2582,7 +2583,12 @@
       "auditLogOk": "Audit Log OK",
       "agentFallback": "Agent",
       "approvalsTooltip": "Approve draft agents to publish them and allow execution.",
-      "approvalsDescription": "Draft agents awaiting publication."
+      "approvalsDescription": "Draft agents awaiting publication.",
+      "editBtn": "Edit agent",
+      "recentActivity": "Recent activity",
+      "loadingActivities": "Loading activities…",
+      "noActivities": "No activity yet.",
+      "slaBreach": "SLA breached"
     },
     "digitalTwin": {
       "active": "Active",

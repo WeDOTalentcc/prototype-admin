@@ -279,19 +279,17 @@ export default function SettingsPageEnhanced() {
       if (data.sections) {
         setSectionCompletion(prev => ({
           ...prev,
+          // P0-4: all 9 canonical sidebar section IDs mapped to backend keys
           'minha-empresa': data.sections['minha-empresa'] ?? prev['minha-empresa'],
-          'pipeline': data.sections['pipeline'] ?? prev['pipeline'],
-          'screening': data.sections['screening'] ?? prev['screening'],
-          'templates-assinatura': data.sections['templates-assinatura'] ?? prev['templates-assinatura'],
-          'comunicacao-alertas': data.sections['comunicacao-alertas'] ?? prev['comunicacao-alertas'],
-          'usuarios-departamentos': data.sections['usuarios-departamentos'] ?? prev['usuarios-departamentos'],
-          'integrations': data.sections['integracoes'] ?? data.sections['integrations'] ?? prev['integrations'],
-          // P0-4 fix: add missing section mappings so per-hub % shows correctly
-          'fairness-compliance': data.sections['fairness-compliance'] ?? prev['fairness-compliance'],
-          'consumo': data.sections['ai-credits'] ?? data.sections['consumo'] ?? prev['consumo'],
+          // pipeline/screening/templates share recrutamento-lia score (no dedicated backend key yet)
           'pipeline': data.sections['pipeline'] ?? data.sections['recrutamento-lia'] ?? prev['pipeline'],
           'screening': data.sections['screening'] ?? data.sections['recrutamento-lia'] ?? prev['screening'],
           'templates-assinatura': data.sections['templates-assinatura'] ?? data.sections['recrutamento-lia'] ?? prev['templates-assinatura'],
+          'comunicacao-alertas': data.sections['comunicacao-alertas'] ?? prev['comunicacao-alertas'],
+          'usuarios-departamentos': data.sections['usuarios-departamentos'] ?? prev['usuarios-departamentos'],
+          'integrations': data.sections['integracoes'] ?? data.sections['integrations'] ?? prev['integrations'],
+          'fairness-compliance': data.sections['fairness-compliance'] ?? prev['fairness-compliance'],
+          'consumo': data.sections['ai-credits'] ?? data.sections['consumo'] ?? prev['consumo'],
         }))
       }
       

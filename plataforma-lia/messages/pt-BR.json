@@ -2471,7 +2471,8 @@
         "errorSendingFeedback": "O feedback não foi salvo. Tente novamente.",
         "errorSendingFeedbackTitle": "Erro ao enviar feedback",
         "installedOn": "Instalado em {date}",
-        "errorRunningTest": "Erro ao executar teste."
+        "errorRunningTest": "Erro ao executar teste.",
+        "errorLoadingActivities": "Não foi possível carregar as atividades."
       },
       "targetIdLabel": "ID do {target}",
       "contextLabel": "contexto",
@@ -2565,7 +2566,12 @@
       "auditLogOk": "Log de Auditoria OK",
       "agentFallback": "Agente",
       "approvalsTooltip": "Aprove agentes em draft para publica-los e permitir execucao.",
-      "approvalsDescription": "Agentes em draft aguardando publicacao."
+      "approvalsDescription": "Agentes em draft aguardando publicacao.",
+      "editBtn": "Editar agente",
+      "recentActivity": "Atividade recente",
+      "loadingActivities": "Carregando atividades…",
+      "noActivities": "Nenhuma atividade ainda.",
+      "slaBreach": "SLA estourado"
     },
     "digitalTwin": {
       "active": "Ativo",
