@@ -17,6 +17,7 @@ export async function GET(request: NextRequest) {
     const response = await fetch(backendUrl, {
       method: 'GET',
       headers: getAuthHeaders(request),
+      signal: AbortSignal.timeout(8000),
     })
 
     if (!response.ok) {
@@ -61,7 +62,9 @@ export async function PUT(request: NextRequest) {
     const response = await fetch(backendUrl, {
       method: 'PUT',
       headers: getAuthHeaders(request),
+      signal: AbortSignal.timeout(8000),
       body: JSON.stringify(body),
+      signal: AbortSignal.timeout(8000),
     })
 
     if (!response.ok) {

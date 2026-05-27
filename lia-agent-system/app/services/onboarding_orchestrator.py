@@ -770,14 +770,15 @@ class OnboardingOrchestrator:
         try:
             await self.db.execute(
                 """
-                INSERT INTO onboarding_agent_state (id, user_id, account_id, phase, channel, session_data, whatsapp_context, onboarding_metadata)
-                VALUES (:id, :user_id, :account_id, :phase, :channel, :session_data, :whatsapp_context, :metadata)
+                INSERT INTO onboarding_agent_state (id, user_id, account_id, phase, channel, session_data, whatsapp_context, onboarding_metadata, settings_extraction_status_json)
+                VALUES (:id, :user_id, :account_id, :phase, :channel, :session_data, :whatsapp_context, :metadata, :settings_json)
                 ON CONFLICT (user_id) DO UPDATE SET
                     phase = :phase,
                     channel = :channel,
                     session_data = :session_data,
                     whatsapp_context = :whatsapp_context,
                     onboarding_metadata = :metadata,
+                    settings_extraction_status_json = :settings_json,
                     updated_at = NOW()
                 """,
                 {
@@ -789,6 +790,7 @@ class OnboardingOrchestrator:
                     "session_data": json.dumps(session.to_dict()),
                     "whatsapp_context": json.dumps(session.whatsapp_messages),
                     "metadata": json.dumps(session.onboarding_data),
+                    "settings_json": session.settings_extraction_status_json,
                 },
             )
         except Exception as e:

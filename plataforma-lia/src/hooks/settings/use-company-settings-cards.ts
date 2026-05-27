@@ -109,9 +109,12 @@ export function useCompanySettingsCards() {
     queryKey: SETTINGS_QUERY_KEYS.companyProfile(),
     queryFn: fetchCompanyProfile,
     staleTime: 30_000,
+    retry: 0,
   })
 
   const rawProfile = profileQuery.data ?? null
+  // Unblock cascade: use tenantInfo immediately so culture+benefits queries
+  // do not wait for profileQuery to resolve first (avoids sequential round-trips).
   const companyId: string | null = (rawProfile?.id as string) ?? (tenantInfo?.clientAccountId ?? null)
   const apiCompanyId = companyId ?? ""
 
@@ -133,12 +136,14 @@ export function useCompanySettingsCards() {
     queryKey: SETTINGS_QUERY_KEYS.hiringPolicy(),
     queryFn: fetchHiringPolicy,
     staleTime: 30_000,
+    retry: 0,
   })
 
   const progressQuery = useQuery({
     queryKey: SETTINGS_QUERY_KEYS.settingsProgress(),
     queryFn: fetchSettingsProgress,
     staleTime: 15_000,
+    retry: 0,
   })
 
   // ── Derived state ──

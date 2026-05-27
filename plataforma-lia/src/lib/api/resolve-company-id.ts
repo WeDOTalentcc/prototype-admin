@@ -20,7 +20,7 @@ async function resolveTenantFromBackend(workosOrgId: string): Promise<string | n
   }
   try {
     const url = `${BACKEND_URL}/api/v1/company/resolve-tenant?workos_organization_id=${encodeURIComponent(workosOrgId)}`
-    const res = await fetch(url, { cache: 'no-store' })
+    const res = await fetch(url, { cache: "no-store", signal: AbortSignal.timeout(3000) })
     if (!res.ok) return null
     const data = (await res.json()) as { company_profile_id?: string | null }
     const cid = data?.company_profile_id || null

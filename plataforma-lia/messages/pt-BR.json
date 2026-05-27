@@ -214,7 +214,9 @@
       "beta": "BETA",
       "premium": "Premium",
       "logoAlt": "WeDo Talent",
-      "logoSmallAlt": "WeDo"
+      "logoSmallAlt": "WeDo",
+      "expandSubmenu": "Expandir submenu",
+      "collapseSubmenu": "Recolher submenu"
     },
     "user": {
       "admin": "Administrador(a)",
