@@ -13,6 +13,17 @@ from typing import Optional
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
 
+# Sprint 2 BE-4 — section → actionId mapping canonical
+_SECTION_TO_ACTION_ID: dict[str, str] = {
+    "profile": "configure_profile",
+    "culture": "configure_culture",
+    "tech_stack": "configure_tech_stack",
+    "benefits": "configure_benefits",
+    "workforce": "configure_workforce",
+    "policy": "configure_hiring_policy",
+    "lia_persona": "configure_persona",
+}
+
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/onboarding", tags=["onboarding"])
@@ -32,6 +43,10 @@ class StartOnboardingRequest(WeDoBaseModel):
 class WebEventRequest(WeDoBaseModel):
     event_type: str
     data: Optional[dict] = None
+
+class ChatMessageRequest(WeDoBaseModel):
+    """Typed request for settings extraction chat. Sprint 2 BE-4."""
+    message: str
 
 
 # --- Helpers ---
@@ -62,6 +77,13 @@ async def _load_session(db, user_id: int):
             wa_context = json.loads(row["whatsapp_context"]) if row["whatsapp_context"] else []
             metadata = json.loads(row["onboarding_metadata"]) if row["onboarding_metadata"] else {}
 
+            # BE-3: restore settings_extraction_status_json from DB (graceful — column added in mig 214)
+            settings_json = None
+            try:
+                settings_json = row["settings_extraction_status_json"]
+            except (KeyError, IndexError):
+                pass
+
             session = OnboardingSession(
                 session_id=str(row["id"]),
                 user_id=row["user_id"],
@@ -73,6 +95,7 @@ async def _load_session(db, user_id: int):
                 channel=row["channel"] or "web",
                 whatsapp_messages=wa_context,
                 onboarding_data=metadata,
+                settings_extraction_status_json=settings_json,
             )
             return session
     except Exception as e:
@@ -222,6 +245,57 @@ async def handle_web_event(user_id: int, req: WebEventRequest, company_id: str =
 
     return result
 
+
+
+
+@router.post("/{user_id}/chat")
+async def handle_settings_chat(
+    user_id: int,
+    req: ChatMessageRequest,
+    company_id: str = Depends(require_company_id),
+):
+    # multi-tenancy: gated via Depends(require_company_id). company_id NOT in payload (REGRA 2).
+    """Settings extraction chat for onboarding — Sprint 2 BE-4+BE-5.
+
+    Typed wrapper around handle_settings_extraction_message that synthesizes
+    ui_action so the frontend can advance orchestrator steps without polling.
+    Returns:
+        {phase, message, is_complete, progress_percent, ui_action}
+        ui_action: {type: "settings_saved", actionId, section} | {type: "settings_complete"} | None
+    """
+    db = await _get_db()
+    session = await _load_session(db, user_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="No active onboarding session")
+
+    orchestrator = await _get_orchestrator(db, tenant_id=company_id)
+    result = await orchestrator.handle_settings_extraction_message(session, req.message)
+
+    # Synthesize ui_action from extraction state (Sprint 2 BE-5)
+    # After handle_settings_extraction_message, session.settings_extraction_status_json
+    # was updated by _persist — use last_asked_field to derive section → actionId.
+    ui_action: dict | None = None
+    if session.settings_extraction_status_json:
+        try:
+            status_data = json.loads(session.settings_extraction_status_json)
+            last_field = status_data.get("last_asked_field")
+            if last_field:
+                from app.services.onboarding_settings_runner import _resolve_section_for_field
+                section = _resolve_section_for_field(last_field)
+                action_id = _SECTION_TO_ACTION_ID.get(section)
+                if action_id:
+                    ui_action = {
+                        "type": "settings_saved",
+                        "actionId": action_id,
+                        "section": section,
+                    }
+        except Exception as exc:
+            logger.debug("[Onboarding] ui_action synthesis failed (non-blocking): %s", exc)
+
+    if result.get("is_complete"):
+        ui_action = {"type": "settings_complete"}
+
+    return {**result, "ui_action": ui_action}
 
 @router.get("/{user_id}/context")
 async def get_whatsapp_context(user_id: int, company_id: str = Depends(require_company_id)):
