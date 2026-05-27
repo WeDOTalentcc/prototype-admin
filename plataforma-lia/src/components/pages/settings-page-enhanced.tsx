@@ -27,6 +27,7 @@ const SECTION_ICON_COLORS: Record<string, string> = {
   'comunicacao-alertas': 'text-rose-400',
   'usuarios-departamentos': 'text-sky-500',
   'integrations': 'text-emerald-500',
+  'lia-personalizacao': 'text-cyan-500',
   'fairness-compliance': 'text-violet-400',
   'consumo': 'text-teal-500',
 }
@@ -43,6 +44,7 @@ const UsuariosDepartamentosHub = dynamic(() => import("@/components/settings/Usu
 const FairnessComplianceHub = dynamic(() => import("@/components/settings/FairnessComplianceHub").then(m => ({ default: m.FairnessComplianceHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando compliance..." /> })
 const ConsumoHub = dynamic(() => import("@/components/settings/ConsumoHub").then(m => ({ default: m.ConsumoHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando consumo..." /> })
 const HiringPoliciesHub = dynamic(() => import("@/components/settings/HiringPoliciesHub").then(m => ({ default: m.HiringPoliciesHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando políticas..." /> })
+const LiaPersonalizacaoHub = dynamic(() => import("@/components/settings/LiaPersonalizacaoHub").then(m => ({ default: m.LiaPersonalizacaoHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando LIA..." /> })
 
 import { textStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
 import { useHoverDebounce } from '@/lib/sidebar/useHoverDebounce'
@@ -113,6 +115,18 @@ const getDefaultSections = (): SettingsSection[] => [
     group: 'empresa' as const,
   },
   {
+    id: 'lia-personalizacao',
+    title: 'LIA & Personalizacao',
+    description: 'Persona da IA, instrucoes por campo e learning loops',
+    icon: Brain,
+    status: 'incomplete',
+    priority: 'high',
+    category: 'advanced',
+    estimatedTime: 10,
+    dependencies: ['minha-empresa'],
+    group: 'lia' as const,
+  },
+  {
     id: 'pipeline',
     title: 'Pipeline',
     description: 'Etapas do processo seletivo',
@@ -145,7 +159,7 @@ const getDefaultSections = (): SettingsSection[] => [
     priority: 'medium',
     category: 'advanced',
     estimatedTime: 10,
-    group: 'processo' as const,
+    group: 'comunicacao' as const,
   },
   {
     id: 'comunicacao-alertas',
@@ -407,6 +421,12 @@ export default function SettingsPageEnhanced() {
         return (
           <ErrorBoundarySection>
             <MinhaEmpresaHub />
+          </ErrorBoundarySection>
+        )
+      case 'lia-personalizacao':
+        return (
+          <ErrorBoundarySection>
+            <LiaPersonalizacaoHub activeSubsection={activeSubsection} />
           </ErrorBoundarySection>
         )
       case 'pipeline':
