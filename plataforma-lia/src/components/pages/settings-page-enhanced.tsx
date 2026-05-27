@@ -1,7 +1,6 @@
 "use client"
 
-import React, { Suspense, useState, useMemo, useCallback, useEffect } from"react"
-import { useSearchParams } from "next/navigation"
+import React, { useState, useMemo, useCallback, useEffect } from"react"
 import { Button } from"@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
 import { Chip } from "@/components/ui/chip"
@@ -17,7 +16,7 @@ import {
   Send, Bell, Palette, Lightbulb, TrendingDown, Activity, RotateCcw,
   ChevronLeft, FastForward, SkipForward, RefreshCw, Zap as Lightning,
   MousePointer, Compass, HelpCircle, Rocket,
-  ChevronDown, ChevronUp, Lock, Unlock, Circle, Plug, Shield, Webhook, Sparkles
+  ChevronDown, ChevronUp, Lock, Unlock, Circle, Plug, Shield
 } from"lucide-react"
 
 const SECTION_ICON_COLORS: Record<string, string> = {
@@ -28,44 +27,27 @@ const SECTION_ICON_COLORS: Record<string, string> = {
   'comunicacao-alertas': 'text-rose-400',
   'usuarios-departamentos': 'text-sky-500',
   'integrations': 'text-emerald-500',
-  'webhooks': 'text-wedo-cyan',
   'fairness-compliance': 'text-violet-400',
+  'consumo': 'text-teal-500',
 }
 
 
 import dynamic from"next/dynamic"
-import { useTranslations } from "next-intl"
 import { LoadingFallback } from"@/components/ui/loading"
-import { HubLoadingState } from"@/components/settings/_shared"
-function I18nLoadingFallback({ tKey }: { tKey: string }) {
-  const tLoad = useTranslations("settings.loading")
-  return <LoadingFallback text={tLoad(tKey)} />
-}
+const MinhaEmpresaHub = dynamic(() => import("@/components/settings/MinhaEmpresaHub").then(m => ({ default: m.MinhaEmpresaHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando empresa..." /> })
+const PipelineStandalone = dynamic(() => import("@/components/settings/PipelineStandalone").then(m => ({ default: m.PipelineStandalone })), { ssr: false, loading: () => <LoadingFallback text="Carregando pipeline..." /> })
+const ScreeningStandalone = dynamic(() => import("@/components/settings/ScreeningStandalone").then(m => ({ default: m.ScreeningStandalone })), { ssr: false, loading: () => <LoadingFallback text="Carregando screening..." /> })
+const CommunicationHub = dynamic(() => import("@/components/settings/CommunicationHub").then(m => ({ default: m.CommunicationHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando comunicação..." /> })
+const IntegrationsHub = dynamic(() => import("@/components/settings/IntegrationsHub").then(m => ({ default: m.IntegrationsHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando integrações..." /> })
+const TemplatesAssinaturaHub = dynamic(() => import("@/components/settings/TemplatesAssinaturaHub").then(m => ({ default: m.TemplatesAssinaturaHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando templates..." /> })
+const UsuariosDepartamentosHub = dynamic(() => import("@/components/settings/UsuariosDepartamentosHub").then(m => ({ default: m.UsuariosDepartamentosHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando usuários..." /> })
+const FairnessComplianceHub = dynamic(() => import("@/components/settings/FairnessComplianceHub").then(m => ({ default: m.FairnessComplianceHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando compliance..." /> })
+const ConsumoHub = dynamic(() => import("@/components/settings/ConsumoHub").then(m => ({ default: m.ConsumoHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando consumo..." /> })
 
-const MinhaEmpresaHub = dynamic(() => import("@/components/settings/MinhaEmpresaHub").then(m => ({ default: m.MinhaEmpresaHub })), { ssr: false, loading: () => <I18nLoadingFallback tKey="company" /> })
-const AiCreditsPage = dynamic(() => import("@/components/pages/ai-credits-page").then(m => ({ default: m.AiCreditsPage })), { ssr: false, loading: () => <I18nLoadingFallback tKey="company" /> })
-const RecruitmentPipelineTab = dynamic(() => import("@/components/settings/RecruitmentPipelineTab").then(m => ({ default: m.RecruitmentPipelineTab })), { ssr: false, loading: () => <I18nLoadingFallback tKey="pipeline" /> })
-const AutomationsTab = dynamic(() => import("@/components/settings/recruitment/automations-tab").then(m => ({ default: m.AutomationsTab })), { ssr: false, loading: () => <I18nLoadingFallback tKey="automations" /> })
-const RecruitmentScreeningTab = dynamic(() => import("@/components/settings/RecruitmentScreeningTab").then(m => ({ default: m.RecruitmentScreeningTab })), { ssr: false, loading: () => <I18nLoadingFallback tKey="screening" /> })
-// P0.G (audit 2026-05-21): aggregated catalog managers for Pipeline Stages,
-// Alert Rules, Integration Catalog, Webhook Event Types.
-const CatalogsManagementSection = dynamic(() => import("@/components/settings/CatalogsManagementSection").then(m => ({ default: m.CatalogsManagementSection })), { ssr: false, loading: () => <I18nLoadingFallback tKey="screening" /> })
-const CommunicationHub = dynamic(() => import("@/components/settings/CommunicationHub").then(m => ({ default: m.CommunicationHub })), { ssr: false, loading: () => <I18nLoadingFallback tKey="communication" /> })
-const IntegrationsHub = dynamic(() => import("@/components/settings/IntegrationsHub").then(m => ({ default: m.IntegrationsHub })), { ssr: false, loading: () => <I18nLoadingFallback tKey="integrations" /> })
-const UsuariosDepartamentosHub = dynamic(() => import("@/components/settings/UsuariosDepartamentosHub").then(m => ({ default: m.UsuariosDepartamentosHub })), { ssr: false, loading: () => <I18nLoadingFallback tKey="users" /> })
-const FairnessComplianceHub = dynamic(() => import("@/components/settings/FairnessComplianceHub").then(m => ({ default: m.FairnessComplianceHub })), { ssr: false, loading: () => <I18nLoadingFallback tKey="compliance" /> })
-const WebhooksManager = dynamic(() => import("@/components/settings/WebhooksManager").then(m => ({ default: m.WebhooksManager })), { ssr: false, loading: () => <I18nLoadingFallback tKey="webhooks" /> })
-// PR 3 (2026-05-25): GovernancaHub removido — panels movidos para /wedo-admin/governanca/ (staff) e Consent/DSR/AuditSummary integrados em FairnessComplianceHub.
-
-import { OnboardingProgressBar } from "@/components/onboarding/OnboardingProgressBar"
 import { textStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
 import { useHoverDebounce } from '@/lib/sidebar/useHoverDebounce'
 import { ErrorBoundarySection } from"@/components/ui/error-boundary-section"
 import { useCompanyId } from"@/hooks/company/useCompanyId"
-import { resolveSettingsTarget } from "@/lib/settings/resolve-settings-target"
-import { isHubVisible, getHubPermission } from "@/lib/settings/settings-rbac"
-import { useAuth } from "@/contexts/auth-context"
-import { apiFetch } from "@/lib/api/api-fetch"
 
 interface SettingsSubsection {
   id: string
@@ -117,67 +99,49 @@ const getDefaultSections = (): SettingsSection[] => [
     priority: 'high',
     category: 'basic',
     estimatedTime: 15,
-    // P1-4 (2026-05-26): 'learning-loops' movido para hub 'lia-personalizacao' (config LIA juntada).
-    // Plan canonical: ~/.claude/plans/jolly-roaming-moler.md + audit §9 (taxonomia 2026-05-26).
   },
-  // P1-4 (2026-05-26): hub novo "LIA & Personalização" desentrelaça config LIA
-  // (instrucoes-lia + learning-loops + ai-persona) do hub operacional Recrutamento.
-  // Audit ref: ~/Documents/wedotalent_audit_2026-05-26/CONFIGURACOES_MENU_COHERENCE_AUDIT.md §9.
   {
-    id: 'lia-personalizacao',
-    title: 'LIA & Personalização',
-    description: 'Persona, campos visíveis e learning loops da LIA',
-    icon: Brain,
+    id: 'pipeline',
+    title: 'Pipeline',
+    description: 'Etapas do processo seletivo',
+    icon: Workflow,
+    status: 'pending',
+    priority: 'high',
+    category: 'advanced',
+    estimatedTime: 10,
+    dependencies: ['minha-empresa'],
+  },
+  {
+    id: 'screening',
+    title: 'Screening',
+    description: 'Perguntas de elegibilidade via WhatsApp',
+    icon: MessageSquare,
+    status: 'pending',
+    priority: 'high',
+    category: 'advanced',
+    estimatedTime: 10,
+    dependencies: ['minha-empresa'],
+  },
+  {
+    id: 'templates-assinatura',
+    title: 'Templates & Assinatura',
+    description: 'Modelos de comunicação e assinatura de email',
+    icon: FileText,
+    status: 'incomplete',
+    priority: 'medium',
+    category: 'advanced',
+    estimatedTime: 10,
+  },
+  {
+    id: 'comunicacao-alertas',
+    title: 'Comunicação & Alertas',
+    description: 'Horários LGPD, alertas e notificações da LIA',
+    icon: Bell,
     status: 'incomplete',
     priority: 'medium',
     category: 'advanced',
     estimatedTime: 10,
     dependencies: ['minha-empresa'],
-    subsections: [
-      { id: 'instrucoes-lia', title: 'Instruções LIA & Persona', description: 'Configure toggles, instruções por campo (34 canonical) e persona da LIA', fields: [] },
-      { id: 'learning-loops', title: 'Learning Loops', description: 'Aprendizado contínuo: Big5 cultura, JD similar, WSI effectiveness (Sprint B Phase 2)', fields: [] },
-    ],
-  },
-  // Consolidações P1 (2026-05-25): hub 'pipeline' absorvido em 'recrutamento-lia' como subsection.
-  {
-    id: 'recrutamento-lia',
-    title: 'Recrutamento & LIA',
-    description: 'Pipeline, screening e automações — políticas operacionais',
-    icon: Workflow,
-    status: 'pending',
-    priority: 'high',
-    category: 'advanced',
-    estimatedTime: 20,
-    dependencies: ['minha-empresa'],
-    // Consolidações P1 (2026-05-25): hub NOVO absorve pipeline + screening (ex-standalone)
-    // + instrucoes-lia (ex-subsection de minha-empresa, contém AiPersonaPanel + LiaFieldsConfigPanel).
-    // Plan canonical: ~/.claude/plans/jolly-roaming-moler.md
-    // P1-4 (2026-05-26): 'instrucoes-lia' movido para hub 'lia-personalizacao' (config LIA).
-    subsections: [
-      { id: 'pipeline', title: 'Pipeline', description: 'Etapas do processo seletivo (kanban, SLA, automation)', fields: [] },
-      { id: 'screening', title: 'Screening', description: 'Perguntas de elegibilidade via WhatsApp', fields: [] },
-      { id: 'automacoes', title: 'Automações', description: 'Regras de disparo automático no pipeline', fields: [] },
-    ],
-  },
-  // Consolidações P1 (2026-05-25): hub 'templates-assinatura' absorvido em 'comunicacao-alertas' (renomeado 'Comunicação').
-  {
-    id: 'comunicacao-alertas',
-    title: 'Comunicação',
-    description: 'Templates, assinatura, horários LGPD, alertas e notificações da LIA',
-    icon: Bell,
-    status: 'incomplete',
-    priority: 'medium',
-    category: 'advanced',
-    estimatedTime: 15,
-    dependencies: ['minha-empresa'],
-    // Consolidações P1 (2026-05-25): renamed (era "Comunicação & Alertas") + absorveu templates-assinatura.
-    // CommunicationHub agora expõe TODAS as tabs canonicas (templates/signature/schedule/alerts/abtesting).
-    subsections: [
-      { id: 'templates', title: 'Templates', description: 'Modelos de mensagens para candidatos', fields: [] },
-      { id: 'signature', title: 'Assinatura', description: 'Assinatura padrão dos emails', fields: [] },
-      { id: 'schedule', title: 'Horários', description: 'Janelas de envio e LGPD compliance', fields: [] },
-      { id: 'alerts', title: 'Alertas', description: 'Alertas operacionais e SLA', fields: [] },
-    ],
   },
   {
     id: 'usuarios-departamentos',
@@ -200,38 +164,29 @@ const getDefaultSections = (): SettingsSection[] => [
     estimatedTime: 10,
   },
   {
-    id: 'ai-credits',
-    title: 'AI Credits',
-    description: 'Saldo + consumo de creditos LIA por modelo (BYOK + plataforma)',
-    icon: Sparkles,
-    status: 'incomplete',
-    priority: 'medium',
-    category: 'advanced',
-    estimatedTime: 5,
-  },
-  // Webhooks DEFER (2026-05-25): hub removido do menu cliente — audit recomendou Wave 1+
-  // (0 clientes usando, 0 deliveries lifetime, 0 dispatcher call sites no produto).
-  // WebhooksManager.tsx preservado pra reativação futura quando 1º cliente pedir integração.
-  // Plan canonical: ~/.claude/plans/jolly-roaming-moler.md
-  {
     id: 'fairness-compliance',
-    title: 'Compliance & LGPD',
-    description: 'LGPD, consent, audit log e compliance da IA',
+    title: 'Fairness & LGPD',
+    description: 'Equidade da IA e pedidos LGPD de candidatos',
     icon: Shield,
     status: 'incomplete',
     priority: 'low',
     category: 'advanced',
     estimatedTime: 0,
     subsections: [
-      // PR 2 (2026-05-25): 'fairness' removida — dashboard movido para /wedo-admin/fairness/ (staff).
-      // PR 3 (2026-05-25): 'ai-transparency' removida — movido para /wedo-admin/governanca/ai-transparency/ (staff).
-      // PR 3 (2026-05-25): 'consent' + 'audit-summary' adicionados — vindos de Governança dissolvida.
-      // Plan canonical: ~/.claude/plans/jolly-roaming-moler.md
+      { id: 'fairness', title: 'Fairness & Compliance', description: 'Eventos de equidade e auditoria da IA', fields: [] },
       { id: 'lgpd-candidatos', title: 'LGPD Candidatos', description: 'Pedidos Art. 20 de candidatos (prazo 15 dias úteis)', fields: [] },
-      { id: 'consent', title: 'Consent', description: 'Tipos de consentimento e revogação (LGPD Art. 8)', fields: [] },
-      { id: 'audit-summary', title: 'Audit Summary', description: 'Resumo de eventos LGPD dos últimos 30 dias (read-only)', fields: [] },
       { id: 'studio', title: 'Agent Studio', description: 'Compliance do Agent Studio', fields: [] },
     ],
+  },
+  {
+    id: 'consumo',
+    title: 'Consumo',
+    description: 'Créditos IA, Pearch, agentes e billing',
+    icon: BarChart3,
+    status: 'incomplete',
+    priority: 'low',
+    category: 'advanced',
+    estimatedTime: 0,
   },
 ]
 
@@ -245,110 +200,21 @@ const getCompletionBadgeColor = (percentage: number): string => {
 
 export default function SettingsPageEnhanced() {
   const { companyId, tenantInfo, isLoading: isTenantLoading } = useCompanyId()
-  const searchParams = useSearchParams()
-  // P2-3 (audit 2026-05-26): RBAC × Configuracoes — role do usuario logado
-  // determina quais hubs aparecem no sidebar e quais campos sao editaveis.
-  // Fail-secure: role null/undefined → hubs hidden.
-  const { user } = useAuth()
-  const userRole = (user && "role" in user ? user.role : null) ?? null
   const [activeSection, setActiveSection] = useState<string>('minha-empresa')
   const [activeSubsection, setActiveSubsection] = useState<string>('')
-  // P2-1 (audit 2026-05-26): progressive disclosure — toggle pra esconder
-  // hubs advanced/integrations. Default ON (mostra tudo, sem regressao
-  // pra power users). Persistencia localStorage pra preferencia stick.
-  const [showAdvanced, setShowAdvanced] = useState<boolean>(() => {
-    if (typeof window === "undefined") return true
-    const stored = window.localStorage.getItem("lia-settings-show-advanced")
-    return stored === null ? true : stored === "true"
-  })
-
-  const handleToggleAdvanced = useCallback(() => {
-    setShowAdvanced((prev) => {
-      const next = !prev
-      if (typeof window !== "undefined") {
-        window.localStorage.setItem("lia-settings-show-advanced", String(next))
-      }
-      return next
-    })
-  }, [])
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['minha-empresa']))
 
-  // Task #894 — quando a página é aberta via deep-link com `?section=…`
-  // (ex.: CTA do job-publish-modal ou cards do chat-workflow-reels), abre
-  // direto a tab solicitada em vez de cair na default `minha-empresa`.
-  // O parâmetro `?field=…` continua funcionando para scroll-into-view
-  // (compatibilidade com Task #712), mesmo sem `?section=`, desde que
-  // a tab atual contenha o campo.
   useEffect(() => {
-    const target = resolveSettingsTarget(searchParams)
-    if (target.section) {
-      setActiveSection(target.section)
-      setActiveSubsection(target.subsection)
-      setExpandedSections((prev) => new Set([...Array.from(prev), target.section as string]))
-    }
-    if (target.field && typeof window !== 'undefined') {
-      window.requestAnimationFrame(() => {
-        const el = document.querySelector(`[data-field="${target.field}"]`) as HTMLElement | null
-        if (el) {
-          el.scrollIntoView({ behavior: 'smooth', block: 'center' })
-          el.dataset.recentlyHighlighted = 'true'
-          window.setTimeout(() => {
-            if (el) delete el.dataset.recentlyHighlighted
-          }, 3000)
-        }
-      })
-    }
-  }, [searchParams])
-
-  useEffect(() => {
-    const openTabHandler = (e: Event) => {
+    const handler = (e: Event) => {
       const detail = (e as CustomEvent).detail
-      if (typeof detail !== 'string') return
       if (detail === 'alertas') {
         setActiveSection('comunicacao-alertas')
         setActiveSubsection('')
         setExpandedSections(new Set(['comunicacao-alertas']))
-        return
-      }
-      const known = settingsSections.find((s) => s.id === detail)
-      if (known) {
-        setActiveSection(detail)
-        setActiveSubsection('')
-        setExpandedSections((prev) => new Set([...Array.from(prev), detail]))
       }
     }
-
-    // Task #712 — bridge bidirecional chat<>configurações para as 7 actions
-    // de company_settings. Quando a LIA executa uma action via chat, ela
-    // dispara este evento e a tab correspondente abre destacando o campo.
-    const actionHandler = (e: Event) => {
-      const detail = (e as CustomEvent).detail || {}
-      const section = detail.section || 'minha-empresa'
-      const known = settingsSections.find((s) => s.id === section)
-      if (!known) return
-      setActiveSection(section)
-      setActiveSubsection('')
-      setExpandedSections((prev) => new Set([...Array.from(prev), section]))
-      if (detail.field && typeof window !== 'undefined') {
-        window.requestAnimationFrame(() => {
-          const el = document.querySelector(`[data-field="${detail.field}"]`) as HTMLElement | null
-          if (el) {
-            el.scrollIntoView({ behavior: 'smooth', block: 'center' })
-            el.dataset.recentlyHighlighted = 'true'
-            window.setTimeout(() => {
-              if (el) delete el.dataset.recentlyHighlighted
-            }, 3000)
-          }
-        })
-      }
-    }
-
-    window.addEventListener('settings-open-tab', openTabHandler)
-    window.addEventListener('lia:settings-action', actionHandler)
-    return () => {
-      window.removeEventListener('settings-open-tab', openTabHandler)
-      window.removeEventListener('lia:settings-action', actionHandler)
-    }
+    window.addEventListener('settings-open-tab', handler)
+    return () => window.removeEventListener('settings-open-tab', handler)
   }, [])
   
   const [sectionCompletion, setSectionCompletion] = useState<Record<string, number>>({
@@ -359,8 +225,8 @@ export default function SettingsPageEnhanced() {
     'comunicacao-alertas': 0,
     'usuarios-departamentos': 0,
     'integrations': 0,
-    'webhooks': 0,
     'fairness-compliance': 0,
+    'consumo': 0,
   })
 
   const [subsectionCompletion, setSubsectionCompletion] = useState<Record<string, boolean>>({})
@@ -387,7 +253,7 @@ export default function SettingsPageEnhanced() {
   const fetchProgress = useCallback(async () => {
     try {
       setProgressLoading(true)
-      const response = await apiFetch('/api/backend-proxy/settings/progress/')
+      const response = await fetch('/api/backend-proxy/settings/progress/')
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
@@ -402,17 +268,13 @@ export default function SettingsPageEnhanced() {
       if (data.sections) {
         setSectionCompletion(prev => ({
           ...prev,
-          // Canonical sidebar IDs (matching backend settings_progress.py P0-4 fix 2026-05-26).
-          // Backend ADICIONOU 7 chaves canonical; aqui consumimos exatamente os 7 hubs do getDefaultSections().
-          // Legacy IDs (pipeline, screening, templates-assinatura, webhooks) removidos — nao existem mais como hubs top-level.
-          'minha-empresa': data.sections['minha-empresa'] ?? prev['minha-empresa'] ?? 0,
-          'lia-personalizacao': data.sections['lia-personalizacao'] ?? prev['lia-personalizacao'] ?? 0,
-          'recrutamento-lia': data.sections['recrutamento-lia'] ?? prev['recrutamento-lia'] ?? 0,
-          'comunicacao-alertas': data.sections['comunicacao-alertas'] ?? prev['comunicacao-alertas'] ?? 0,
-          'usuarios-departamentos': data.sections['usuarios-departamentos'] ?? prev['usuarios-departamentos'] ?? 0,
-          'integrations': data.sections['integrations'] ?? prev['integrations'] ?? 0,
-          'ai-credits': data.sections['ai-credits'] ?? prev['ai-credits'] ?? 0,
-          'fairness-compliance': data.sections['fairness-compliance'] ?? prev['fairness-compliance'] ?? 0,
+          'minha-empresa': data.sections['minha-empresa'] ?? prev['minha-empresa'],
+          'pipeline': data.sections['pipeline'] ?? prev['pipeline'],
+          'screening': data.sections['screening'] ?? prev['screening'],
+          'templates-assinatura': data.sections['templates-assinatura'] ?? prev['templates-assinatura'],
+          'comunicacao-alertas': data.sections['comunicacao-alertas'] ?? prev['comunicacao-alertas'],
+          'usuarios-departamentos': data.sections['usuarios-departamentos'] ?? prev['usuarios-departamentos'],
+          'integrations': data.sections['integracoes'] ?? data.sections['integrations'] ?? prev['integrations'],
         }))
       }
       
@@ -423,8 +285,6 @@ export default function SettingsPageEnhanced() {
         }))
       }
     } catch (error) {
-      // P0-4 (2026-05-26): nao silenciar — logar para observability
-      console.error("[fetchProgress] failed to load settings progress", error)
     } finally {
       setProgressLoading(false)
     }
@@ -510,100 +370,72 @@ export default function SettingsPageEnhanced() {
       case 'minha-empresa':
         return (
           <ErrorBoundarySection>
-            <Suspense fallback={<HubLoadingState />}>
-              <MinhaEmpresaHub activeSubsection={activeSubsection} />
-            </Suspense>
+            <MinhaEmpresaHub />
           </ErrorBoundarySection>
         )
-      case 'ai-credits':
+      case 'pipeline':
         return (
           <ErrorBoundarySection>
-            <Suspense fallback={<HubLoadingState />}>
-              <AiCreditsPage />
-            </Suspense>
+            <PipelineStandalone />
           </ErrorBoundarySection>
         )
-      // Consolidações P1 (2026-05-25): cases pipeline/screening/templates-assinatura removidos.
-      // Plan canonical: ~/.claude/plans/jolly-roaming-moler.md
-      case 'lia-personalizacao':
-        // P1-4 (2026-05-26): hub novo agrupa instrucoes-lia + learning-loops.
-        // Renderiza via MinhaEmpresaHub (componente canonical) com activeSubsection.
+      case 'screening':
         return (
           <ErrorBoundarySection>
-            <Suspense fallback={<HubLoadingState />}>
-              <MinhaEmpresaHub activeSubsection={activeSubsection || 'instrucoes-lia'} />
-            </Suspense>
+            <ScreeningStandalone />
           </ErrorBoundarySection>
         )
-      case 'recrutamento-lia':
-        // 3 subsections (operacional): pipeline (default) | screening | automacoes
-        // P1-4: instrucoes-lia migrou para hub lia-personalizacao.
-        if (activeSubsection === 'screening') {
-          return (
-            <ErrorBoundarySection>
-              <Suspense fallback={<HubLoadingState />}>
-                <RecruitmentScreeningTab />
-              </Suspense>
-            </ErrorBoundarySection>
-          )
-        }
-        if (activeSubsection === 'automacoes') {
-          return (
-            <ErrorBoundarySection>
-              <Suspense fallback={<HubLoadingState />}>
-                <AutomationsTab onSettingsChange={() => {}} />
-              </Suspense>
-            </ErrorBoundarySection>
-          )
-        }
-        // default → pipeline (mais comum)
+      case 'templates-assinatura':
         return (
           <ErrorBoundarySection>
-            <Suspense fallback={<HubLoadingState />}>
-              <RecruitmentPipelineTab />
-            </Suspense>
+            <TemplatesAssinaturaHub />
           </ErrorBoundarySection>
         )
       case 'comunicacao-alertas':
-        // Consolidações P1: agora exibe TODAS as 5 tabs (templates+signature+schedule+alerts+abtesting).
-        // Default subsection = 'alerts' (matching comportamento histórico).
         return (
           <ErrorBoundarySection>
-            <Suspense fallback={<HubLoadingState />}>
-              <CommunicationHub
-                activeSubsection={activeSubsection || 'alerts'}
-                visibleTabs={['templates', 'signature', 'schedule', 'alerts', 'abtesting']}
-              />
-            </Suspense>
+            <CommunicationHub activeSubsection="alerts" visibleTabs={['schedule', 'alerts', 'abtesting']} />
           </ErrorBoundarySection>
         )
       case 'usuarios-departamentos':
         return (
           <ErrorBoundarySection>
-            <Suspense fallback={<HubLoadingState />}>
-              <UsuariosDepartamentosHub />
-            </Suspense>
+            <UsuariosDepartamentosHub />
           </ErrorBoundarySection>
         )
       case 'integrations':
         return (
           <ErrorBoundarySection>
-            <Suspense fallback={<HubLoadingState />}>
-              <IntegrationsHub activeSubsection={activeSubsection} />
-            </Suspense>
+            <IntegrationsHub activeSubsection={activeSubsection} />
           </ErrorBoundarySection>
         )
-      // Webhooks DEFER (2026-05-25): case removido — hub não está mais no menu cliente.
-      // WebhooksManager.tsx ainda existe — reativação futura.
       case 'fairness-compliance':
         return (
           <ErrorBoundarySection>
-            <Suspense fallback={<HubLoadingState />}>
-              <FairnessComplianceHub activeSubsection={activeSubsection} />
-            </Suspense>
+            <FairnessComplianceHub activeSubsection={activeSubsection || 'fairness'} />
           </ErrorBoundarySection>
         )
-          }
+      case 'consumo':
+        return (
+          <ErrorBoundarySection>
+            <ConsumoHub />
+          </ErrorBoundarySection>
+        )
+      default:
+        return (
+          <div className="text-center py-12">
+            <div className="w-16 h-16 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-xl flex items-center justify-center mx-auto mb-4">
+              <Settings className="w-8 h-8 text-lia-text-primary" />
+            </div>
+            <h3 className={`${textStyles.subtitle} mb-2`}>
+              Selecione uma seção
+            </h3>
+            <p className={`${textStyles.description}`}>
+              Escolha uma das opções no menu lateral
+            </p>
+          </div>
+        )
+    }
   }
 
   const shouldShowContent = !isCollapsed || isLocked
@@ -658,36 +490,20 @@ export default function SettingsPageEnhanced() {
                     </span>
                   </div>
                 </div>
-                <OnboardingProgressBar variant="compact" initialProgress={progressMetrics.overall} showLabel={false} className="mb-3" />
+                <div className="w-full bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full h-1.5 mb-3">
+                  <div
+                    className="bg-lia-btn-primary-bg dark:bg-lia-bg-secondary h-1.5 rounded-full transition-[width,height] duration-500"
+                    style={{width: `${progressMetrics.overall}%`}}
+                  />
+                </div>
 
               </div>
-            )}
-            {/* P2-1 (audit 2026-05-26): progressive disclosure toggle.
-                Default ON; persist em localStorage. */}
-            {shouldShowContent && (
-              <button
-                onClick={handleToggleAdvanced}
-                data-testid="toggle-show-advanced"
-                aria-pressed={showAdvanced}
-                className="w-full text-left text-xs text-lia-text-secondary hover:text-lia-text-primary py-1.5 px-1 rounded-md hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none"
-              >
-                {showAdvanced ? "Modo simples (essenciais)" : "Mostrar todas as configurações"}
-              </button>
             )}
           </div>
 
           <div className="flex-1 overflow-y-auto p-3">
-            <nav className="space-y-2" role="navigation" aria-label="Configurações">
-              {settingsSections.filter((section) => {
-                // P2-3 (audit 2026-05-26): RBAC first — hubs hidden pra role atual nao aparecem.
-                // Fail-secure: role null → todos hubs hidden (usuario nao logado nao deveria estar aqui).
-                if (!isHubVisible(section.id, userRole)) return false
-                // P2-1 progressive disclosure: quando OFF, mostra apenas hubs essenciais
-                // (basic categoryOR priority=high). Mantem operacional (Recrutamento & LIA)
-                // visivel para evitar quebrar fluxo do recrutador.
-                if (showAdvanced) return true
-                return section.category === "basic" || section.priority === "high"
-              }).map((section) => {
+            <nav className="space-y-2">
+              {settingsSections.map((section) => {
                 const IconComponent = section.icon
                 const PriorityIcon = priorityIcons[section.priority]
                 const isExpanded = expandedSections.has(section.id)
@@ -698,8 +514,6 @@ export default function SettingsPageEnhanced() {
                     <button
                       data-testid={`settings-menu-${section.id}`}
                       data-active={isActive && !activeSubsection}
-                      aria-label={section.title}
-                      aria-current={isActive && !activeSubsection ? 'page' : undefined}
                       onClick={() => {
                         setActiveSection(section.id)
                         setActiveSubsection('')
@@ -707,7 +521,7 @@ export default function SettingsPageEnhanced() {
                           handleToggleSection(section.id)
                         }
                       }}
-                      className={`w-full flex items-center gap-2 p-2.5 rounded-lg text-left transition-colors motion-reduce:transition-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wedo-cyan ${
+                      className={`w-full flex items-center gap-2 p-2.5 rounded-lg text-left transition-colors motion-reduce:transition-none ${
                         isActive && !activeSubsection
                           ? 'bg-lia-bg-tertiary dark:bg-lia-bg-elevated text-lia-text-primary'
                           : 'hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse/50 text-lia-text-secondary'
