@@ -38,6 +38,8 @@ from app.shared.services.confidence_policy_service import confidence_policy_serv
 
 logger = logging.getLogger(__name__)
 
+from app.shared.observability.tracing import trace_span
+
 from app.shared.agents.agent_registry import register_agent
 from app.shared.agents.tenant_aware_agent import TenantAwareAgentMixin
 from app.shared.prompts.prompt_composer import PromptComposer
@@ -158,12 +160,14 @@ class TalentPoolReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAg
 
     # ── Main entry point ─────────────────────────────────────────────────────
 
+    @trace_span("talent_pool.process")
     async def process(self, input: AgentInput) -> AgentOutput:
         """Process an incoming message through the LangGraph ReAct loop."""
         return await self._process_langgraph(input)
 
     # ── HITL integration ─────────────────────────────────────────────────────
 
+    @trace_span("talent_pool.hitl_request")
     async def _request_hitl_if_needed(self, output: AgentOutput) -> None:
         """Request HITL review for high-impact talent pool operations.
 

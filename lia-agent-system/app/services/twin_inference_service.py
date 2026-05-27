@@ -21,6 +21,8 @@ from typing import Optional
 
 logger = logging.getLogger(__name__)
 
+from app.shared.observability.tracing import trace_span
+
 
 @dataclass
 class TwinEvaluation:
@@ -39,6 +41,7 @@ class TwinEvaluation:
 
 class TwinInferenceService:
 
+    @trace_span("digital_twin.evaluate")
     async def evaluate(
         self,
         twin_id: str,

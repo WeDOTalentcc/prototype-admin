@@ -81,27 +81,34 @@ async def _load_session(db, user_id: int):
     return None
 
 
-async def _get_orchestrator(db=None):
-    """Build orchestrator with real dependencies."""
+async def _get_orchestrator(db=None, *, tenant_id: str | None = None):
+    """Build orchestrator with real dependencies.
+
+    Multi-tenancy (Wave D2.1, 2026-05-27): tenant_id é o company_id resolvido
+    pelo endpoint (via Depends(require_company_id) -> JWT). Threaded até o
+    llm_factory para que BYOK / per-tenant model config funcione. Callers
+    DEVEM passar tenant_id sempre que houver — fallback None é exclusivamente
+    para pre-signup onboarding (caso de uso aceito, documentado abaixo).
+    """
     from app.services.onboarding_orchestrator import OnboardingOrchestrator
 
     llm = None
     whatsapp_client = None
 
     try:
-        # Canonical LLM factory (multi-tenant aware). Replaces broken
-        # get_llm import (function never existed in llm_factory.py),
-        # which previously caused this branch to *always* fail silently.
-        # NOTE: orchestrator helper has no company_id context; tenant_id=None
-        # uses global env credentials. See "Issues residuais" — multi-tenancy
-        # gap: onboarding orchestrator should thread company_id from caller.
+        # Canonical LLM factory (multi-tenant aware). tenant_id=None aceito
+        # APENAS no pre-signup onboarding (user ainda nao associado a company);
+        # nesse caso, LLM roda com credenciais globais (env), sem PII tenant.
+        # Pos-signup (que é o caso dos endpoints aqui — todos passam por
+        # require_company_id), tenant_id DEVE ser threaded pelo caller via
+        # _get_orchestrator(db, tenant_id=company_id).
         from app.shared.providers.llm_factory import create_tracked_llm
         llm = create_tracked_llm(
             temperature=0.3,
             service_name="OnboardingOrchestrator",
             operation="onboarding_chat",
             max_output_tokens=512,
-            tenant_id=None,
+            tenant_id=tenant_id,
         )
     except Exception:
         pass
@@ -137,7 +144,7 @@ async def start_onboarding(req: StartOnboardingRequest, company_id: str = Depend
         invited_by=req.invited_by,
     )
 
-    orchestrator = await _get_orchestrator(db)
+    orchestrator = await _get_orchestrator(db, tenant_id=company_id)
 
     # Audit: log onboarding start
     try:
@@ -192,7 +199,7 @@ async def handle_web_event(user_id: int, req: WebEventRequest, company_id: str =
     if not session:
         raise HTTPException(status_code=404, detail="No active onboarding session")
 
-    orchestrator = await _get_orchestrator(db)
+    orchestrator = await _get_orchestrator(db, tenant_id=company_id)
     result = await orchestrator.handle_web_event(session, req.event_type, req.data)
 
     # Audit: log event
