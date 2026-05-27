@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
-import { TwinsList, EvaluateWithTwinModal, CreateDigitalTwinModal } from "@/components/pages-agent-studio/DigitalTwinComponents"
+import { TwinsList, CreateDigitalTwinModal } from "@/components/pages-agent-studio/DigitalTwinComponents"
 import { TemplateGallery, AgentCard as CustomAgentCard, AgentCardSkeleton, AgentDetailsPanel, DeployDialog, ConversationalCreator, TestDebugPanel, ApprovalsList } from "@/components/pages-agent-studio/custom-agents"
 // UX_AUDIT T4 (2026-05-21): TemplateClonePanel substitui TemplatePreviewModal como
 // entry-point primário do TemplateGallery (clone-first / HubSpot Breeze).
@@ -122,7 +122,6 @@ export default function AgentStudioPage({
     setWizardInitialConfig(config)
     setWizardOpen(true)
   }
-  const [evaluatingTwinId, setEvaluatingTwinId] = useState<string | null>(null)
   // UX_AUDIT T4 (2026-05-21): previewTemplate aciona TemplateClonePanel (Sheet lateral).
   // Sprint B QW#5 (Dialog confirm) preservado em TemplatePreviewModal, mas não montado
   // a partir do TemplateGallery — o clone-first é o pattern canonical agora.
@@ -677,8 +676,9 @@ export default function AgentStudioPage({
           </div>
         )}
 
+        {/* TODO Fase 2: trigger via kanban-card com candidate real. onEvaluate removido pra evitar payload vazio (Wave A P0 #5). */}
         {activeTab === "digital-twins" && (
-          <TwinsList onEvaluate={(id) => setEvaluatingTwinId(id)} onCreateTwin={() => setShowCreateTwinModal(true)} refreshKey={twinsRefreshKey} />
+          <TwinsList onCreateTwin={() => setShowCreateTwinModal(true)} refreshKey={twinsRefreshKey} />
         )}
 
       </div>
@@ -693,16 +693,6 @@ export default function AgentStudioPage({
         onClose={() => setPreviewTemplate(null)}
         onClone={handleCloneTemplate}
       />
-
-      {evaluatingTwinId && (
-        <EvaluateWithTwinModal
-          twinId={evaluatingTwinId}
-          candidateProfile={{}}
-          jobContext={{}}
-          isOpen
-          onClose={() => setEvaluatingTwinId(null)}
-        />
-      )}
 
       {/* P0-6 audit 2026-05-21: CreateDigitalTwinModal wired canonical (estava orfão). */}
       <CreateDigitalTwinModal
