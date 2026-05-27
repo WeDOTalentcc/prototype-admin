@@ -37,7 +37,7 @@ export function LiaMetricsFunnelSection({ data }: LiaMetricsFunnelSectionProps) 
           <CardHeader className="pb-2">
             <CardTitle className={`${textStyles.title} flex items-center gap-2`}>
               <Activity className="w-4 h-4 text-wedo-purple" />
-              Funil de Conversão LIA
+              Funil de Conversão IA
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -93,7 +93,7 @@ export function LiaMetricsFunnelSection({ data }: LiaMetricsFunnelSectionProps) 
           <CardHeader className="pb-2">
             <CardTitle className={`${textStyles.title} flex items-center gap-2`}>
               <TrendingUp className="w-4 h-4 text-status-success" />
-              Distribuição de Scores LIA
+              Distribuição de Scores IA
             </CardTitle>
           </CardHeader>
           <CardContent>

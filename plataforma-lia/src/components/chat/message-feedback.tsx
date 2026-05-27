@@ -185,7 +185,7 @@ export function MessageFeedback({
                 Sugerir correção
               </span>
               <p className="text-micro text-lia-text-secondary mt-0.5">
-                Ajude a LIA a melhorar suas respostas
+                Ajude a IA a melhorar suas respostas
               </p>
             </div>
             

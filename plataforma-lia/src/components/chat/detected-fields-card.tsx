@@ -68,7 +68,7 @@ export function DetectedFieldsCard({ fields, title = "Campos detectados automati
         ))}
       </div>
       <p className="text-micro text-lia-text-tertiary mt-2 italic">
-        Campos preenchidos pela LIA com base na sua descrição. Edite se necessário.
+        Campos preenchidos pela IA com base na sua descrição. Edite se necessário.
       </p>
     </div>
   )

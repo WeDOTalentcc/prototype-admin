@@ -149,7 +149,7 @@ export function getSmartSuggestions(
 
   if (selectedCount === 0) {
     const advancedSuggestions: SuggestionItem[] = [
-      { id: 'smart_search_ai', icon: '🧠', label: 'Busca inteligente com IA', description: 'Descreva o perfil ideal e a LIA encontra candidatos similares', action: 'ai_smart_search', category: 'search' },
+      { id: 'smart_search_ai', icon: '🧠', label: 'Busca inteligente com IA', description: 'Descreva o perfil ideal e a IA encontra candidatos similares', action: 'ai_smart_search', category: 'search' },
       { id: 'boolean_search_expert', icon: '🔧', label: 'Busca booleana avançada', description: 'Construtor visual de queries complexas para LinkedIn/Github', action: 'boolean_search_builder', category: 'search' },
       { id: 'passive_candidates', icon: '🕵️', label: 'Identificar candidatos passivos', description: 'Encontrar talentos que não estão procurando ativamente', action: 'find_passive_candidates', category: 'search' },
       { id: 'competitor_analysis', icon: '🏢', label: 'Mapear concorrentes e talentos', description: 'Análise de empresas similares e seus melhores profissionais', action: 'competitor_talent_mapping', category: 'search' },

@@ -300,7 +300,7 @@ export function CandidateComparison({
             <div className="flex items-center gap-3 mb-4">
               <Brain className="w-5 h-5 text-status-success" />
               <h4 className="text-lg font-semibold text-status-success dark:text-status-success">
-                Análise Comparativa da LIA
+                Análise Comparativa IA
               </h4>
               {isAnalyzing && <RefreshCw className="w-4 h-4 animate-spin motion-reduce:animate-none text-status-success" />}
             </div>
@@ -310,7 +310,7 @@ export function CandidateComparison({
                 <div className="text-center">
                   <RefreshCw className="w-12 h-12 animate-spin motion-reduce:animate-none text-status-success mx-auto mb-4" />
                   <h5 className="text-lg font-medium text-status-success dark:text-status-success mb-2">
-                    LIA analisando candidatos...
+                    IA analisando candidatos...
                   </h5>
                   <p className="text-status-success dark:text-status-success">
                     Comparando perfis, experiências e aderência cultural
@@ -329,7 +329,7 @@ export function CandidateComparison({
                 <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl p-4 border border-status-success/30">
                   <h5 className="font-semibold text-status-success dark:text-status-success mb-2 flex items-center gap-2">
                     <Brain className="w-4 h-4 text-wedo-cyan" />
-                    Recomendação Final da LIA
+                    Recomendação Final IA
                   </h5>
                   <p className="text-status-success dark:text-status-success mb-3">
                     {liaAnalysis.summary}
@@ -420,7 +420,7 @@ export function CandidateComparison({
                   <div className="absolute top-3 right-3 z-10">
                     <Chip variant="warning" muted className="gap-1">
                       <Crown className="w-3 h-3" />
-                      LIA Recomenda
+                      IA Recomenda
                     </Chip>
                   </div>
                 )}
@@ -497,7 +497,7 @@ export function CandidateComparison({
                     <div className="space-y-3 pt-3 border-t border-lia-border-subtle dark:border-lia-border-subtle">
                       <h6 className="text-xs font-medium text-status-success dark:text-status-success flex items-center gap-1">
                         <Brain className="w-3 h-3 text-wedo-cyan" />
-                        Análise da LIA
+                        Análise IA
                       </h6>
 
                       <div className="grid grid-cols-2 gap-2">

@@ -225,7 +225,7 @@ export function CreateJobModal({ open, onOpenChange, onJobCreated }: CreateJobMo
             <span className="text-lia-text-primary">Novo Job Autônomo</span>
           </DialogTitle>
           <DialogDescription className="dark:text-lia-text-tertiary">
-            Configure uma tarefa para a LIA executar em background
+            Configure uma tarefa para a IA executar em background
           </DialogDescription>
         </DialogHeader>
 

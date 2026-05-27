@@ -59,7 +59,7 @@ export const ChatBubbleBase = React.memo(function ChatBubbleBase({
         {isLia && !hideLabel && (
           <div className="flex items-center gap-1.5 px-1">
             <span className="text-xs font-semibold text-lia-text-primary">
-              {label || "LIA"}
+              {label || "IA"}
             </span>
             {labelExtra}
             {!hideTimestamp && timestamp && (

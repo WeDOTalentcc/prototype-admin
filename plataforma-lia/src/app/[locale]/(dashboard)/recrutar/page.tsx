@@ -3,7 +3,7 @@ import { ErrorBoundarySection } from "@/components/ui/error-boundary-section"
 import { PipelineOverviewPage } from "@/components/pages/pipeline-overview-page"
 
 export const metadata: Metadata = {
-  title: "Recrutar | LIA — WeDo Talent",
+  title: "Recrutar | WeDoTalent",
   description: "Visão global do pipeline de recrutamento.",
 }
 

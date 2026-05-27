@@ -42,7 +42,7 @@ export function LiaMetricsSLA({
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-xs text-lia-text-secondary mb-1">
-                  Score Médio LIA
+                  Score Médio IA
                 </div>
                 <div className="text-3xl font-semibold text-lia-text-primary">
                   {avgLiaScore.toFixed(1)}

@@ -34,7 +34,7 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-lg font-semibold text-lia-text-primary">{contextData.title}</h3>
-              <p className="text-sm text-lia-text-secondary">Potencializado por LIA</p>
+              <p className="text-sm text-lia-text-secondary">Potencializado por IA</p>
             </div>
             <Button variant="ghost" size="sm" onClick={() => onClose()} className="rounded-full">
               <X className="w-4 h-4" />

@@ -133,7 +133,7 @@ export function LiaMetricsDetailsSection({ data }: LiaMetricsDetailsSectionProps
         <CardHeader className="pb-2">
           <CardTitle className={`${textStyles.title} flex items-center gap-2`}>
             <TrendingUp className="w-4 h-4 text-wedo-purple" />
-            Insights da LIA
+            Insights IA
           </CardTitle>
         </CardHeader>
         <CardContent>

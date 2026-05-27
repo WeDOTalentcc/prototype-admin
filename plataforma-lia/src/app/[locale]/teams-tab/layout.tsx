@@ -5,7 +5,7 @@ import { TeamsSSOProvider } from "@/contexts/teams-sso-context"
 import { Toaster } from "sonner"
 
 export const metadata: Metadata = {
-  title: "LIA — WeDoTalent",
+  title: "WeDoTalent",
   description: "Plataforma de recrutamento inteligente",
 }
 

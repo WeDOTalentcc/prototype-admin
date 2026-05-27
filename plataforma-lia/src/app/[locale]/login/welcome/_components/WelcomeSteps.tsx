@@ -42,20 +42,20 @@ const FLOW_STEPS = [
   {
     icon: Globe,
     number: "03",
-    title: "A LIA busca candidatos",
+    title: "A IA busca candidatos",
     description: "Busca local e global por talentos compatíveis.",
   },
   {
     icon: MessageSquare,
     number: "04",
     title: "Dispare as triagens",
-    description: "A LIA conversa com centenas de candidatos em horas.",
+    description: "A IA conversa com centenas de candidatos em horas.",
   },
   {
     icon: CalendarCheck,
     number: "05",
     title: "Entrevistas agendadas",
-    description: "Aguarde a LIA agendar entrevistas para você.",
+    description: "Aguarde a IA agendar entrevistas para você.",
   },
 ]
 
@@ -69,7 +69,7 @@ export function WelcomeSteps() {
   const [visibleSteps, setVisibleSteps] = useState(0)
   const [dontShowAgain, setDontShowAgain] = useState(false)
 
-  const text1 = "Prazer, eu sou a LIA."
+  const text1 = "Prazer! Seu assistente de recrutamento está pronto."
   const text2 = "Sua agente de IA de recrutamento."
   const text3 = "A partir de agora, vamos trabalhar juntos."
 
@@ -375,7 +375,7 @@ export function WelcomeSteps() {
                 <div className="text-center mt-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
                   <p className="text-xl text-lia-text-primary font-light leading-relaxed">
                     Recrutamento humano, impulsionado pela{" "}
-                    <span className="font-['Source_Serif_4',serif] font-bold">LIA</span>.
+                    <span className="font-['Source_Serif_4',serif] font-bold">WeDoTalent</span>.
                   </p>
                 </div>
               )}

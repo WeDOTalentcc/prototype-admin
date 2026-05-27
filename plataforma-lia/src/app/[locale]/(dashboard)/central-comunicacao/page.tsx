@@ -3,7 +3,7 @@ import { ErrorBoundarySection } from "@/components/ui/error-boundary-section"
 import { CentralComunicacaoRouteClient } from "./CentralComunicacaoRouteClient"
 
 export const metadata: Metadata = {
-  title: "Central Comunicação | LIA — WeDo Talent",
+  title: "Central Comunicação | WeDoTalent",
   description: "Sistema unificado de comunicação multi-canal.",
 }
 

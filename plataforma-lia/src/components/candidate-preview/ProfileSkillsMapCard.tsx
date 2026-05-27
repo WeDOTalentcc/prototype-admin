@@ -96,7 +96,7 @@ export function ProfileSkillsMapCard({ candidate }: ProfileSkillsMapCardProps) {
               <div className="space-y-1">
                 <p><span className="inline-block w-2 h-2 rounded-full bg-lia-border-medium mr-1"></span> Skills do CV</p>
                 <p><span className="inline-block w-2 h-2 rounded-full mr-1 bg-lia-btn-primary-bg"></span> Expertise do LinkedIn</p>
-                <p><span className="inline-block w-2 h-2 rounded-full mr-1 bg-lia-btn-primary-bg"></span> Soft Skills (LIA)</p>
+                <p><span className="inline-block w-2 h-2 rounded-full mr-1 bg-lia-btn-primary-bg"></span> Soft Skills (IA)</p>
                 <p><span className="inline-block w-2 h-2 rounded-full bg-wedo-magenta mr-1"></span> Interesses</p>
                 <p><span className="inline-block w-2 h-2 rounded-full mr-1 bg-lia-btn-primary-bg"></span> Tags</p>
               </div>
@@ -142,7 +142,7 @@ export function ProfileSkillsMapCard({ candidate }: ProfileSkillsMapCardProps) {
                   <span className="cursor-help text-micro text-lia-text-secondary">ⓘ</span>
                 </TooltipTrigger>
                 <TooltipContent side="right" className="text-xs">
-                  Competências comportamentais inferidas pela LIA
+                  Competências comportamentais inferidas pela IA
                 </TooltipContent>
               </Tooltip>
             </div>

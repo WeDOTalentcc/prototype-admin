@@ -32,7 +32,7 @@ export function CandidateChatPage({ token, vacancyId, context }: CandidateChatPa
     {
       id: 'welcome',
       role: 'assistant',
-      content: 'Olá! Sou a LIA, assistente de recrutamento. Posso te ajudar a acompanhar seu processo seletivo. O que gostaria de saber?',
+      content: 'Olá! Sou sua assistente de recrutamento. Posso te ajudar a acompanhar seu processo seletivo. O que gostaria de saber?',
       createdAt: new Date(),
     },
   ])
@@ -175,7 +175,7 @@ export function CandidateChatPage({ token, vacancyId, context }: CandidateChatPa
           </Button>
         </div>
         <p className="mt-2 text-center text-xs text-muted-foreground">
-          LIA só tem acesso ao seu processo seletivo nesta empresa.
+          Só tenho acesso ao seu processo seletivo nesta empresa.
         </p>
       </div>
     </div>

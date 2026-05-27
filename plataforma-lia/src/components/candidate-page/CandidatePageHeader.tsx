@@ -372,7 +372,7 @@ export function CandidatePageHeader({
                     <Brain className="w-5 h-5 text-wedo-cyan" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent side="bottom" className="text-xs">Análises LIA</TooltipContent>
+                <TooltipContent side="bottom" className="text-xs">Análises IA</TooltipContent>
               </Tooltip>
             </LiaAnalysisModal>
 

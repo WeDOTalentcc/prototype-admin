@@ -99,6 +99,7 @@ const getDefaultSections = (): SettingsSection[] => [
     priority: 'high',
     category: 'basic',
     estimatedTime: 15,
+    group: empresa as const,
   },
   {
     id: 'pipeline',
@@ -110,6 +111,7 @@ const getDefaultSections = (): SettingsSection[] => [
     category: 'advanced',
     estimatedTime: 10,
     dependencies: ['minha-empresa'],
+    group: processo as const,
   },
   {
     id: 'screening',
@@ -121,6 +123,7 @@ const getDefaultSections = (): SettingsSection[] => [
     category: 'advanced',
     estimatedTime: 10,
     dependencies: ['minha-empresa'],
+    group: processo as const,
   },
   {
     id: 'templates-assinatura',
@@ -132,6 +135,7 @@ const getDefaultSections = (): SettingsSection[] => [
     category: 'advanced',
     estimatedTime: 10,
   },
+    group: processo as const,
   {
     id: 'comunicacao-alertas',
     title: 'Comunicação & Alertas',
@@ -142,6 +146,7 @@ const getDefaultSections = (): SettingsSection[] => [
     category: 'advanced',
     estimatedTime: 10,
     dependencies: ['minha-empresa'],
+    group: comunicacao as const,
   },
   {
     id: 'usuarios-departamentos',
@@ -153,6 +158,7 @@ const getDefaultSections = (): SettingsSection[] => [
     category: 'basic',
     estimatedTime: 10,
   },
+    group: plataforma as const,
   {
     id: 'integrations',
     title: 'Integrações',
@@ -163,6 +169,7 @@ const getDefaultSections = (): SettingsSection[] => [
     category: 'integrations',
     estimatedTime: 10,
   },
+    group: plataforma as const,
   {
     id: 'fairness-compliance',
     title: 'Fairness & LGPD',
@@ -172,6 +179,7 @@ const getDefaultSections = (): SettingsSection[] => [
     priority: 'low',
     category: 'advanced',
     estimatedTime: 0,
+    group: "plataforma" as const,
     subsections: [
       { id: 'fairness', title: 'Fairness & Compliance', description: 'Eventos de equidade e auditoria da IA', fields: [] },
       { id: 'lgpd-candidatos', title: 'LGPD Candidatos', description: 'Pedidos Art. 20 de candidatos (prazo 15 dias úteis)', fields: [] },
@@ -188,6 +196,7 @@ const getDefaultSections = (): SettingsSection[] => [
     category: 'advanced',
     estimatedTime: 0,
   },
+    group: plataforma as const,
   {
     id: 'politicas-recrutamento',
     title: 'Políticas de Recrutamento',
@@ -198,6 +207,7 @@ const getDefaultSections = (): SettingsSection[] => [
     category: 'advanced',
     estimatedTime: 15,
     dependencies: ['minha-empresa'],
+    group: processo as const,
   },
 ]
 

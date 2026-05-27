@@ -53,7 +53,7 @@ export default function AccessPage() {
                     <Zap className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary mt-0.5 flex-shrink-0" />
                     <div>
                       <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
-                        Assistente LIA
+                        Assistente IA
                       </p>
                       <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary">
                         Busca inteligente de candidatos
@@ -172,7 +172,7 @@ export default function AccessPage() {
         {/* Footer */}
         <div className="text-center mt-12">
           <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary">
-            Powered by LIA (Learning Intelligence Assistant) • WedoTalent © 2024
+            WeDoTalent © 2025
           </p>
         </div>
       </div>

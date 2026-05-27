@@ -425,7 +425,7 @@ const candidateId = candidate?.id as string | undefined
     const isWsiOpinion = type === 'wsi' || opinion.opinion_type === 'wsi'
     const displayScore = isWsiOpinion ? opinion.wsi_score : opinion.score
 
-    let textToCopy = `PARECER LIA - ${c.name || c.nome}\n`
+    let textToCopy = `PARECER IA - ${c.name || c.nome}\n`
     textToCopy += `Tipo: ${isWsiOpinion ? 'Parecer WSI' : (opinion.job_vacancy_id ? 'Parecer de Vaga' : 'Parecer Geral')}\n`
     if (opinion.job_vacancy_title) {
       textToCopy += `Vaga: ${opinion.job_vacancy_title}\n`
@@ -468,7 +468,7 @@ const candidateId = candidate?.id as string | undefined
       'detailed_bullets': 'Análise Detalhada'
     }
 
-    let textToCopy = `ANÁLISE LIA - ${c.name || c.nome}\n`
+    let textToCopy = `ANÁLISE IA - ${c.name || c.nome}\n`
     textToCopy += `Tipo: ${analysisLabels[String(analysis.analysis_type)] || analysis.analysis_type}\n`
     textToCopy += `Data: ${analysis.created_at ? new Date(String(analysis.created_at)).toLocaleDateString('pt-BR') : ''}\n`
     textToCopy += `\n`

@@ -3,7 +3,7 @@ import { ErrorBoundarySection } from "@/components/ui/error-boundary-section"
 import JobDetail from "./JobDetailClient"
 
 export const metadata: Metadata = {
-  title: "Vaga | LIA — WeDo Talent",
+  title: "Vaga | WeDoTalent",
   description: "Detalhes da vaga e quadro Kanban de candidatos.",
 }
 

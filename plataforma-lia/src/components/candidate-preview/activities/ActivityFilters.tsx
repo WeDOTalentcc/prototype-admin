@@ -103,7 +103,7 @@ export function ActivityFilters({
           onClick={() => onActivityFilterChange('lia')}
           className={`px-2 py-1 text-xs rounded-full transition-colors motion-reduce:transition-none ${activityFilter === 'lia' ? 'bg-lia-text-primary text-white font-semibold' : 'bg-wedo-cyan-bg-15 text-lia-text-secondary hover:opacity-80'}`}
         >
-          🤖 LIA
+          🤖 IA
         </button>
         <button
           onClick={() => onActivityFilterChange('offers')}

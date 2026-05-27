@@ -150,7 +150,7 @@ export function JobsDashboard({ className, onJobSelect }: JobsDashboardProps) {
             Jobs Autônomos
           </h2>
           <p className="text-xs text-lia-text-tertiary">
-            Gerencie tarefas de background executadas pela LIA
+            Gerencie tarefas de background executadas pela IA
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -215,7 +215,7 @@ export function JobsDashboard({ className, onJobSelect }: JobsDashboardProps) {
             <p className="text-xs text-lia-text-tertiary text-center max-w-sm">
               {searchTerm || statusFilter !== 'all'
                 ? 'Tente ajustar os filtros de busca'
-                : 'Crie seu primeiro job autônomo para a LIA executar tarefas em background'}
+                : 'Crie seu primeiro job autônomo para a IA executar tarefas em background'}
             </p>
             {!searchTerm && statusFilter === 'all' && (
               <Button

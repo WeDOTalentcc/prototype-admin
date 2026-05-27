@@ -119,7 +119,7 @@ export function MetricsDetailedSections({
         <CardHeader className="pb-2">
           <CardTitle className={`${textStyles.title} flex items-center gap-2`}>
             <TrendingUp className="w-4 h-4 text-wedo-purple" />
-            Insights da LIA
+            Insights IA
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -160,7 +160,7 @@ export function MetricsDetailedSections({
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-xs text-lia-text-secondary mb-1">Score Médio LIA</div>
+                <div className="text-xs text-lia-text-secondary mb-1">Score Médio IA</div>
                 <div className="text-3xl font-semibold text-lia-text-primary">{avgLiaScore.toFixed(1)}</div>
               </div>
               <div className="w-16 h-16 rounded-full bg-wedo-cyan flex items-center justify-center text-white text-xl font-semibold">

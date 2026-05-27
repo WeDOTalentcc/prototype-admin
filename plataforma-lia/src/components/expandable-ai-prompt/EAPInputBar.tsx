@@ -76,7 +76,7 @@ export function EAPInputBar(props: EAPInputBarProps) {
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           onFocus={() => !isProcessing && setIsExpanded(true)}
-          placeholder={isProcessing ? "LIA processando..." : getPlaceholder()}
+          placeholder={isProcessing ? "IA processando..." : getPlaceholder()}
           disabled={isProcessing}
           className={`flex-1 bg-transparent text-lia-text-primary placeholder-lia-text-tertiary text-xs focus:outline-none ${
 isProcessing ? 'opacity-60 cursor-not-allowed' : ''

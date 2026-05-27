@@ -485,7 +485,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
           <div className="mb-6">
             <h3 className="text-sm font-medium text-lia-text-secondary flex items-center gap-2 mb-3">
               <Activity className="w-4 h-4" />
-              Calibração LIA vs. Recrutador
+              Calibração IA vs. Recrutador
             </h3>
             <div className="grid grid-cols-4 gap-3 mb-4">
               <MetricCard
@@ -502,7 +502,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
               />
               <MetricCard
                 icon={<Brain className="w-4 h-4" />}
-                title="Score Médio LIA"
+                title="Score Médio IA"
                 value={`${calibration.overall.avg_lia_score}`}
                 accentColor="var(--wedo-cyan)"
               />

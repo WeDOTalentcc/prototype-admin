@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 import AcceptInvitationClient from "./AcceptInvitationClient"
 
 export const metadata: Metadata = {
-  title: "Aceitar Convite | LIA — WeDo Talent",
+  title: "Aceitar Convite | WeDoTalent",
   description: "Aceite seu convite para ingressar na equipe de recrutamento na Plataforma LIA WeDoTalent e comece a colaborar.",
 }
 

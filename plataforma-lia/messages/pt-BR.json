@@ -71,7 +71,7 @@
         },
         "generateJD": {
           "title": "Gerar JD com IA",
-          "desc": "LIA cria a descrição da vaga automaticamente"
+          "desc": "IA cria a descrição da vaga automaticamente"
         },
         "divulgeChannels": {
           "title": "Divulgar em canais",
@@ -110,7 +110,7 @@
           "desc": "Descarte candidatos fora do perfil"
         },
         "liaOpinion": {
-          "title": "Pedir parecer da LIA",
+          "title": "Pedir parecer da IA",
           "desc": "Obtenha análise comparativa dos candidatos"
         }
       },
@@ -178,7 +178,7 @@
       "conversar": "Conversar",
       "decidir": "Decidir",
       "recrutar": "Recrutar",
-      "chatLia": "Chat LIA",
+      "chatLia": "Chat",
       "tasks": "Tarefas",
       "jobs": "Vagas",
       "talentPipeline": "Funil de Talentos",
@@ -209,7 +209,7 @@
       "resizeSidebar": "Arrastar para redimensionar sidebar",
       "globalSearch": "Busca Global",
       "settings": "Configurações",
-      "helpTips": "Ajuda e Dicas LIA",
+      "helpTips": "Ajuda e Dicas",
       "mainMenu": "Menu principal",
       "beta": "BETA",
       "premium": "Premium",
@@ -250,15 +250,15 @@
   },
   "login": {
     "tagline": "IA Agêntica para Recrutamento",
-    "heroTitle": "Entre. A <bold>LIA</bold> já está<br></br>trabalhando por você.",
-    "heroTitlePlain": "Entre. A LIA já está trabalhando por você.",
+    "heroTitle": "Entre. A <bold>IA</bold> já está<br></br>trabalhando por você.",
+    "heroTitlePlain": "Entre. A IA já está trabalhando por você.",
     "heroSubtitle": "Sourcing global · Triagem inteligente · Agendamentos automáticos",
     "heroRecruitment": "Recrutamento <accent>simples</accent>",
     "atsConnect": "Conecta ao seu ATS",
     "atsOrFull": "Ou fazemos o trabalho completo.",
     "companyDescription": "A WeDoTalent é uma HRTech brasileira que desenvolve soluções avançadas de tecnologia para o RH do futuro.",
     "copyright": "© 2025 WeDoTalent. Todos os direitos reservados.",
-    "copyrightShort": "© 2025 LIA by WeDoTalent",
+    "copyrightShort": "© 2025 WeDoTalent",
     "enterPlatform": "Entrar na plataforma",
     "websiteLink": "Website",
     "linkedinLink": "LinkedIn",
@@ -446,7 +446,7 @@
           "command": "Iniciar triagem WSI para candidatos"
         },
         "ai-suggestions": {
-          "title": "Sugestões da LIA",
+          "title": "Sugestões da IA",
           "description": "Recomendações baseadas no histórico",
           "command": "O que você sugere para minhas vagas?"
         },
@@ -472,7 +472,7 @@
     "greetingMorning": "Bom dia",
     "greetingAfternoon": "Boa tarde",
     "greetingEvening": "Boa noite",
-    "iAmLia": "Sou a LIA.",
+    "iAmLia": "Sou a IA.",
     "helpHint": "Digite /ajuda para ver todas as funcionalidades",
     "scrollLeft": "Rolar para a esquerda",
     "scrollRight": "Rolar para a direita",
@@ -617,7 +617,7 @@
         "command": "Iniciar triagem WSI para candidatos"
       },
       "ai-suggestions": {
-        "title": "Sugestões da LIA",
+        "title": "Sugestões da IA",
         "description": "Recomendações baseadas no histórico",
         "command": "O que você sugere para minhas vagas?"
       },
@@ -693,8 +693,8 @@
       "dragHandle": "Arraste para mover"
     },
     "input": {
-      "placeholder": "Faça qualquer coisa com a LIA...",
-      "messageLabel": "Mensagem para a LIA",
+      "placeholder": "Faça qualquer coisa com a IA...",
+      "messageLabel": "Mensagem para a IA",
       "sendLabel": "Enviar mensagem",
       "dropFileHere": "Solte o arquivo aqui",
       "removeFile": "Remover arquivo",
@@ -719,7 +719,7 @@
     },
     "contextPanel": {
       "title": "Contexto da Conversa",
-      "helpText": "Defina o foco da conversa. No modo Vaga ou Candidato, a LIA usa os dados específicos para responder com mais precisão.",
+      "helpText": "Defina o foco da conversa. No modo Vaga ou Candidato, a IA usa os dados específicos para responder com mais precisão.",
       "clearContext": "Limpar",
       "recentJobs": "Vagas Recentes",
       "recentCandidates": "Candidatos Recentes",
@@ -729,9 +729,9 @@
       "modeGeneral": "Conversa Geral",
       "modeGeneralDesc": "Pergunte sobre qualquer tema",
       "modeJob": "Foco em Vaga",
-      "modeJobDesc": "A LIA responde usando dados da vaga selecionada",
+      "modeJobDesc": "A IA responde usando dados da vaga selecionada",
       "modeCandidate": "Foco em Candidato",
-      "modeCandidateDesc": "A LIA responde usando dados do candidato selecionado"
+      "modeCandidateDesc": "A IA responde usando dados do candidato selecionado"
     },
     "queryCategories": {
       "metricas": "Métricas",
@@ -772,10 +772,10 @@
       "confirmProcess": "Confirmar e processar"
     },
     "bubble": {
-      "openLia": "Abrir LIA ({shortcut}) — clique para abrir, arraste para mover",
-      "openLiaLabel": "Abrir chat com a LIA. Clique para abrir, arraste para mover, use as setas para reposicionar."
+      "openLia": "Abrir chat ({shortcut}) - clique para abrir, arraste para mover",
+      "openLiaLabel": "Abrir chat. Clique para abrir, arraste para mover, use as setas para reposicionar."
     },
-    "helpResponse": "**O que a LIA pode fazer:**\n\n**Criar vagas**\n- Criar vaga com enriquecimento automático do JD\n- Gerar perguntas de triagem WSI (CBI/Bloom/Dreyfus)\n- Configurar elegibilidade e publicar\n\n**Buscar candidatos**\n- Sourcing automático (local/global/híbrido)\n- Busca por skills, experiência, localização\n- Talent pools e listas\n\n**Analisar**\n- Pipeline health e gargalos\n- Analytics por vaga (funil, velocidade, qualidade)\n- Relatórios semanais/mensais\n\n**Comunicar**\n- Agendar entrevistas (direto ou self-scheduling)\n- Enviar feedback (aprovação/rejeição)\n- Email e WhatsApp\n\n**Atalhos**\n- @nome — mencionar candidato ou vaga\n- /criar vaga (ou /nova vaga, /job) — iniciar wizard\n- /buscar (ou /talent) — buscar candidatos\n- /pipeline — ver pipeline\n- /relatório (ou /relatorio) — gerar relatório\n- /feedback @nome — enviar feedback\n- /agendar @nome — agendar entrevista\n- Arrastar PDF — auto-detecta CV ou JD"
+    "helpResponse": "**O que a IA pode fazer:**\n\n**Criar vagas**\n- Criar vaga com enriquecimento automático do JD\n- Gerar perguntas de triagem WSI (CBI/Bloom/Dreyfus)\n- Configurar elegibilidade e publicar\n\n**Buscar candidatos**\n- Sourcing automático (local/global/híbrido)\n- Busca por skills, experiência, localização\n- Talent pools e listas\n\n**Analisar**\n- Pipeline health e gargalos\n- Analytics por vaga (funil, velocidade, qualidade)\n- Relatórios semanais/mensais\n\n**Comunicar**\n- Agendar entrevistas (direto ou self-scheduling)\n- Enviar feedback (aprovação/rejeição)\n- Email e WhatsApp\n\n**Atalhos**\n- @nome — mencionar candidato ou vaga\n- /criar vaga (ou /nova vaga, /job) — iniciar wizard\n- /buscar (ou /talent) — buscar candidatos\n- /pipeline — ver pipeline\n- /relatório (ou /relatorio) — gerar relatório\n- /feedback @nome — enviar feedback\n- /agendar @nome — agendar entrevista\n- Arrastar PDF — auto-detecta CV ou JD"
   },
   "jobCreation": {
     "screeningToggleLabel": "Triagem automática",
@@ -787,7 +787,7 @@
       "active": "Campanha ativa",
       "paused": "Campanha pausada",
       "none": "Sem campanha",
-      "tooltip": "Uma campanha é a LIA executando esta vaga: ela cuida do sourcing, da triagem inicial e do contato com candidatos."
+      "tooltip": "Uma campanha é a IA executando esta vaga: ela cuida do sourcing, da triagem inicial e do contato com candidatos."
     },
     "title": "Gestão de Vagas",
     "pageTitle": "Vagas",
@@ -865,7 +865,7 @@
       "id": "ID",
       "job": "Vaga",
       "candidates": "Candidatos",
-      "performance": "Performance LIA Triagens",
+      "performance": "Performance IA Triagens",
       "status": "Status",
       "screening": "Triagem",
       "recruiter": "Recrutador(a)",
@@ -906,14 +906,14 @@
       "applicationsCount": "Inscrições diretas",
       "sourcedCount": "Leads de sourcing",
       "applicationsCountTooltip": "Candidatos que se inscreveram na vaga (portal, resposta web)",
-      "sourcedCountTooltip": "Perfis adicionados via sourcing ou busca ativa da LIA",
+      "sourcedCountTooltip": "Perfis adicionados via sourcing ou busca ativa da IA",
       "total": "Total",
       "screening": "Triagem",
       "interviews": "Entrevistas",
       "finalists": "Finalistas",
       "hired": "✓ Contratados",
       "conversionRate": "Taxa conversão",
-      "pipelineLIA": "Pipeline LIA",
+      "pipelineLIA": "Pipeline IA",
       "candidatesContacted": "{count} candidatos contatados",
       "screeningsScheduled": "Triagens Agendadas",
       "screeningsScheduledDesc": "{count} triagens marcadas",
@@ -1061,7 +1061,7 @@
     "screeningDeadline": "Prazo triagem",
     "shortlistDeadline": "Prazo short",
     "closing": "Encerramento",
-    "liaSuggestions": "{count, plural, one {# sugestão da LIA} other {# sugestões da LIA}}",
+    "liaSuggestions": "{count, plural, one {# sugestão da IA} other {# sugestões da IA}}",
     "comingSoon": "Em breve",
     "comingSoonStages": "Em breve: Configuração de etapas do funil",
     "configureStages": "Configurar Etapas",
@@ -1115,9 +1115,9 @@
     "scoreB5": "B5",
     "appliedViaLinkedin": "Aplicou via LinkedIn",
     "appliedOnWebsite": "Aplicou no site",
-    "mappedByLIA": "Mapeado pela LIA",
+    "mappedByLIA": "Mapeado pela IA",
     "addedManually": "Adicionado manual",
-    "liaWillStartScreening": "LIA iniciará triagem",
+    "liaWillStartScreening": "IA iniciará triagem",
     "screeningCompleted": "Concluídas",
     "pendingDecision": "Decisão pendente",
     "clickToSeeFullAnalysis": "Clique para ver análise completa",
@@ -1164,7 +1164,7 @@
     "categoryDocumentos": "Currículo e Documentos",
     "categoryOrigem": "Origem e Integração",
     "categoryBuscaGlobal": "Busca Global",
-    "categoryIA": "Insights LIA / IA",
+    "categoryIA": "Insights IA",
     "categoryStatus": "Status e Workflow",
     "categoryComunicacao": "Comunicação",
     "categoryCadastro": "Status de Cadastro",
@@ -1241,7 +1241,7 @@
     "viewScreeningDetails": "Ver Detalhes da Triagem",
     "screeningPending": "Triagem pendente",
     "viewFullProfile": "Ver perfil completo",
-    "viewLIAScreening": "Ver triagem LIA",
+    "viewLIAScreening": "Ver triagem IA",
     "viewBigFive": "Ver BigFive",
     "manageInterviewTitle": "Gerenciar entrevista — {date}",
     "manageInterviewPrompt": "O recrutador quer gerenciar a entrevista de {name} agendada para {date}. Pergunte se quer alterar o horário (peça nova data/hora) ou cancelar. Se cancelar, pergunte para qual etapa quer mover o candidato.",
@@ -1252,7 +1252,7 @@
     "sortWsiDesc": "Score WSI (maior primeiro)",
     "sortWsiAsc": "Score WSI (menor primeiro)",
     "pipelineStage": "Etapa do Pipeline",
-    "minLIAScore": "Score LIA Mínimo",
+    "minLIAScore": "Score IA Mínimo",
     "statusLabel": "Situação",
     "statusNew": "Novo",
     "statusInAnalysis": "Em análise",
@@ -1275,7 +1275,7 @@
     "clickDetails": "Clique para ver detalhes",
     "notEvaluated": "Não avaliado",
     "screeningNotFilled": "Triagem não preenchida",
-    "clickLIAScreening": "Clique para ver Triagem LIA",
+    "clickLIAScreening": "Clique para ver Triagem IA",
     "degradedModeTooltip": "Análise em modo degradado — abra o relatório para ver detalhes",
     "clickCVAnalysis": "Clique para ver Análise CV vs Vaga",
     "notCompleted": "Não realizado",
@@ -1304,7 +1304,7 @@
     "jobFallback": "Vaga",
     "confirmMovement": "Confirmar Movimentação",
     "selectDetailedStatus": "Selecione o status detalhado",
-    "suggestedStatusByLIA": "Status Sugerido pela LIA",
+    "suggestedStatusByLIA": "Status Sugerido pela IA",
     "selectOtherStatus": "Selecionar outro status",
     "selectAStatus": "Selecione um status",
     "overallScoreTitle": "Nota Geral",
@@ -1316,9 +1316,9 @@
     "cvScoreLabel": "Nota CV",
     "technicalTestScoreLabel": "Teste Técnico",
     "englishTestScoreLabel": "Teste Inglês",
-    "liaScreeningScore": "Score de Triagem LIA",
-    "liaAnalysisTitle": "Análise da LIA",
-    "liaAnalysisText": "Candidato avaliado automaticamente pela LIA com base em critérios de experiência, competências e aderência ao perfil da vaga. A triagem considera fatores como histórico profissional, formação acadêmica e habilidades técnicas declaradas.",
+    "liaScreeningScore": "Score de Triagem IA",
+    "liaAnalysisTitle": "Análise IA",
+    "liaAnalysisText": "Candidato avaliado automaticamente pela IA com base em critérios de experiência, competências e aderência ao perfil da vaga. A triagem considera fatores como histórico profissional, formação acadêmica e habilidades técnicas declaradas.",
     "technicalTestResult": "Resultado do Teste Técnico",
     "testDetailsTitle": "Detalhes do Teste",
     "testDetailsText": "Avaliação técnica realizada através de teste prático com foco nas competências técnicas requeridas para a posição. Inclui análise de código, resolução de problemas e conhecimento de ferramentas específicas.",
@@ -1327,23 +1327,23 @@
     "proficiencyText": "Avaliação de proficiência em inglês cobrindo compreensão escrita, expressão oral e vocabulário técnico relevante para a posição.",
     "confirmMoveTitle": "Confirmar Movimentação",
     "moveToNewStage": "Mover candidato para uma nova etapa do processo",
-    "liaSuggests": "LIA sugere:",
+    "liaSuggests": "IA sugere:",
     "availableSubstatuses": "Sub-status disponíveis:",
     "reasonOptional": "Motivo (opcional)",
     "reasonPlaceholder": "Ex: Entrevista marcada para próxima terça...",
-    "helloLia": "Olá! Sou a Lia.",
+    "helloLia": "Olá!",
     "howCanIHelp": "Como posso te ajudar hoje?",
     "newConversationBtn": "Nova conversa",
     "expandChat": "Expandir chat",
     "candidatesSelectedCount": "{count, plural, one {# candidato selecionado} other {# candidatos selecionados}}",
-    "liaSuggestionsTitle": "Sugestões da LIA",
+    "liaSuggestionsTitle": "Sugestões da IA",
     "viewAction": "Ver",
     "openManually": "Abrir manualmente",
     "thinkingStatus": "Pensando...",
     "loadingAriaLabelShort": "Carregando...",
-    "sendMessagePlaceholder": "Envie mensagem para a LIA...",
+    "sendMessagePlaceholder": "Envie uma mensagem...",
     "suggestionsPrefix": "Sugestões:",
-    "liaQuestionSuggestions": "Sugestões de Perguntas da LIA",
+    "liaQuestionSuggestions": "Sugestões de Perguntas da IA",
     "forScreeningLabel": "Para Triagem - {question}",
     "basedOnJobProfile": "Baseado no perfil da vaga",
     "recommendedScreeningQuestions": "Perguntas Recomendadas para Triagem",
@@ -1462,7 +1462,7 @@
       "finalists": "{count} finalistas",
       "jobCancelled": "Vaga cancelada",
       "noHire": "Sem contratação",
-      "liaInsights": "Insights da LIA",
+      "liaInsights": "Insights IA",
       "insight1": "Este teste tem melhor performance com candidatos de nível Pleno e Sênior",
       "insight2": "A questão 3 tem a menor taxa de acerto (45%) - considere revisar ou adicionar contexto",
       "insight3": "Candidatos que pontuam acima de 75% têm 3x mais chance de serem contratados",
@@ -1473,7 +1473,7 @@
       "exportReport": "Exportar Relatório"
     },
     "testLibrary": {
-      "title": "Biblioteca de Testes da LIA",
+      "title": "Biblioteca de Testes IA",
       "subtitle": "Testes validados e organizados por área de atuação",
       "categories": "Categorias",
       "catDevelopment": "Desenvolvimento",
@@ -1729,7 +1729,7 @@
   },
   "agents": {
     "metadata": {
-      "title": "Estúdio de Agentes | LIA — WeDo Talent",
+      "title": "Estúdio de Agentes | WeDoTalent",
       "description": "Crie agentes de sourcing a partir de templates por setor. Configure calibração e automação.",
       "layoutDescription": "Crie e gerencie agentes de sourcing inteligentes",
       "layoutTitle": "Estúdio de Agentes"
@@ -1790,7 +1790,7 @@
       "createFirstAgent": "Criar primeiro agente",
       "myAgentsCustom": "Meus Agentes",
       "noCustomAgentsYet": "Nenhum agente criado ainda",
-      "noCustomAgentsHint": "Escolha um template abaixo ou descreva para a LIA o que voce precisa",
+      "noCustomAgentsHint": "Escolha um template abaixo ou descreva para a IA o que você precisa",
       "advancedForm": "Formulário avançado (modo técnico)",
       "status": {
         "active": "Ativo",
@@ -1799,7 +1799,7 @@
       },
       "loading": "Carregando agentes...",
       "chooseTemplateAbove": "Escolha um template acima para criar seu primeiro agente de sourcing",
-      "chooseTemplateOrDescribe": "Escolha um template abaixo ou descreva para a LIA o que você precisa",
+      "chooseTemplateOrDescribe": "Escolha um template abaixo ou descreva para a IA o que você precisa",
       "twins": {
         "cloneReasoning": "Clone o raciocínio dos seus melhores avaliadores",
         "cloneDesc": "Capture como um especialista da equipe avalia candidatos. O Digital Twin aprende os critérios e funciona como uma \"segunda opinião\" automática na triagem.",
@@ -2199,9 +2199,9 @@
       "webChat": "Chat Web",
       "webChatDesc": "Candidato responde pelo navegador",
       "whatsapp": "WhatsApp",
-      "whatsappDesc": "LIA envia perguntas por WhatsApp",
+      "whatsappDesc": "IA envia perguntas por WhatsApp",
       "phoneCall": "Ligação",
-      "phoneCallDesc": "LIA liga para o candidato",
+      "phoneCallDesc": "IA liga para o candidato",
       "cancel": "Cancelar",
       "starting": "Iniciando...",
       "startScreeningBtn": "Iniciar Triagem",
@@ -2339,7 +2339,7 @@
       "viewDetailsShort": "Ver detalhes",
       "newAgent": "Novo Agente",
       "yourRequest": "Sua solicitacao",
-      "liaConfiguring": "LIA esta configurando o agente...",
+      "liaConfiguring": "IA está configurando o agente...",
       "suggestedConfig": "Configuracao sugerida",
       "context": "Contexto",
       "steps": "Passos",
@@ -2396,7 +2396,7 @@
       "deployAndActivate": "Vincular e Ativar",
       "requestApproval": "Solicitar aprovacao",
       "startWithTemplate": "Comece com um template",
-      "templateHint": "Escolha um modelo pronto ou descreva para a LIA o que voce precisa no chat",
+      "templateHint": "Escolha um modelo pronto ou descreva para a IA o que você precisa no chat",
       "createFromScratch": "Criar do zero",
       "noTemplateInCategory": "Nenhum template nesta categoria",
       "toolsCount": "{count} ferramentas",
@@ -2644,9 +2644,9 @@
       "channelWeb": "Chat Web",
       "channelWebDesc": "Candidato responde pelo navegador",
       "channelWhatsapp": "WhatsApp",
-      "channelWhatsappDesc": "LIA envia perguntas por WhatsApp",
+      "channelWhatsappDesc": "IA envia perguntas por WhatsApp",
       "channelPhone": "Ligacao",
-      "channelPhoneDesc": "LIA liga para o candidato",
+      "channelPhoneDesc": "IA liga para o candidato",
       "cancel": "Cancelar",
       "starting": "Iniciando...",
       "startScreening": "Iniciar Triagem",
@@ -2733,7 +2733,7 @@
       "comingSoon": "Em Breve"
     },
     "searchBar": {
-      "searchingTitle": "LIA está buscando...",
+      "searchingTitle": "IA está buscando...",
       "defaultTitle": "Vamos buscar de forma inteligente?",
       "dropCvHere": "Solte o CV aqui",
       "fileFormats": "PDF, DOC, DOCX ou TXT",
@@ -2778,7 +2778,7 @@
       "candidate": "Candidato",
       "currentPosition": "Cargo Atual",
       "location": "Localização",
-      "scoreLia": "Score LIA",
+      "scoreLia": "Score IA",
       "skills": "Habilidades",
       "activity": "Atividade",
       "actions": "Ações",
@@ -2800,7 +2800,7 @@
       "loadingAriaLabel": "Carregando...",
       "loadingCandidates": "Carregando candidatos...",
       "enrichingContacts": "Enriquecendo contatos...",
-      "rankingCandidates": "{count, plural, one {LIA está ranqueando # candidato...} other {LIA está ranqueando # candidatos...}}",
+      "rankingCandidates": "{count, plural, one {IA está ranqueando # candidato...} other {IA está ranqueando # candidatos...}}",
       "filteredNoContact": "{count, plural, one {# candidato descartado por não termos como contatar (sem email nem telefone após enriquecimento).} other {# candidatos descartados por não termos como contatar (sem email nem telefone após enriquecimento).}}",
       "enrichmentAttempted": "{count, plural, one {# de {total} candidato foi enriquecido via Apify nesta busca.} other {# de {total} candidatos foram enriquecidos via Apify nesta busca.}}",
       "viewDiscarded": "Ver descartados",
@@ -2862,7 +2862,7 @@
       "techStack": "Stack"
     },
     "scoreModal": {
-      "title": "Nota Geral LIA",
+      "title": "Nota Geral IA",
       "subtitle": "Metodologia de cálculo do score",
       "finalScore": "Nota Final",
       "composition": "Composição do Score (Média Ponderada)",
@@ -2872,8 +2872,8 @@
           "description": "Análise do alinhamento do CV do candidato com os requisitos da vaga"
         },
         "triagem_lia": {
-          "label": "Triagem LIA",
-          "description": "Nota da triagem inteligente realizada pela LIA"
+          "label": "Triagem IA",
+          "description": "Nota da triagem inteligente realizada pela IA"
         },
         "teste_tecnico": {
           "label": "Teste Técnico",
@@ -2931,7 +2931,7 @@
       "experience": "Experiência",
       "minYears": "Mín. Anos",
       "maxYears": "Máx. Anos",
-      "scoreLia": "Score LIA",
+      "scoreLia": "Score IA",
       "minScore": "Mín. Score",
       "maxScore": "Máx. Score",
       "seniority": "Senioridade",
@@ -3029,7 +3029,7 @@
       "documentos": "Currículo e Documentos",
       "origem": "Origem e Integração",
       "busca_global": "Busca Global",
-      "ia": "Insights LIA / IA",
+      "ia": "Insights IA",
       "status": "Status e Workflow",
       "comunicacao": "Comunicação",
       "cadastro": "Status de Cadastro",
@@ -3068,7 +3068,7 @@
     "scoreCells": {
       "noEvaluation": "Sem avaliação",
       "noEvaluationDesc": "Este candidato ainda não participou de nenhum processo seletivo.",
-      "liaScoreInfo": "O Score LIA é calculado quando o candidato é avaliado para uma vaga específica."
+      "liaScoreInfo": "O Score IA é calculado quando o candidato é avaliado para uma vaga específica."
     },
     "pageHeader": {
       "candidatesCount": "{count} candidatos",
@@ -3093,7 +3093,7 @@
       "competitiveIntelligence": "Inteligência Competitiva",
       "showingCompany": "Mostrando candidatos da empresa \"{company}\" mapeada",
       "showingCompanies": "Mostrando candidatos das empresas: {companies}",
-      "discontentedTalents": "Talentos com indicações de descontentamento detectadas pela LIA",
+      "discontentedTalents": "Talentos com indicações de descontentamento detectadas pela IA",
       "clearFilter": "Limpar Filtro"
     },
     "searchResultsHeader": {
@@ -3104,7 +3104,7 @@
       "editFilters": "Editar Filtros"
     },
     "liaSidebar": {
-      "greeting": "Olá! Sou a Lia.",
+      "greeting": "Olá!",
       "subtitle": "Posso criar vagas, buscar candidatos, analisar métricas e muito mais!",
       "collapseChat": "Retrair chat",
       "expandSuperchat": "Expandir para Superchat",
@@ -3112,9 +3112,9 @@
       "creatingArchetype": "Criando novo arquétipo...",
       "cancelArchetypeCreation": "Cancelar criação de arquétipo",
       "archetypePlaceholder": "Cole a descrição da vaga ou descreva o perfil ideal...",
-      "messagePlaceholder": "Envie mensagem para a LIA...",
+      "messagePlaceholder": "Envie uma mensagem...",
       "archetypeInputLabel": "Descrição do perfil ideal para arquétipo",
-      "messageInputLabel": "Mensagem para a LIA",
+      "messageInputLabel": "Mensagem para a IA",
       "suggestionsLabel": "Sugestões:",
       "top5": "Top 5",
       "summarizeSearch": "Resumir busca",
@@ -3134,7 +3134,7 @@
       "globalAvailable": "Busca global disponível",
       "expandSearchLink": "Expandir busca",
       "globalCandidatesAdded": "{count} candidatos globais adicionados à tabela",
-      "liaSearching": "LIA está buscando...",
+      "liaSearching": "IA está buscando...",
       "analyzingProfiles": "Analisando perfis compatíveis",
       "interpretingCriteria": "Interpretando critérios",
       "searchingDatabase": "Buscando na base de candidatos",
@@ -3180,7 +3180,7 @@
       "searchSimilarGeneric": "Buscar candidatos similares: {input}"
     },
     "compactLia": {
-      "liaThinking": "LIA está pensando"
+      "liaThinking": "IA está pensando"
     },
     "preview": {
       "tabs": {
@@ -3197,7 +3197,7 @@
       "statusProspect": "Prospecto",
       "statusInterview": "Entrevista",
       "statusHired": "Contratado",
-      "scoreLia": "Score LIA",
+      "scoreLia": "Score IA",
       "compatibility": "Compatibilidade",
       "scoreDescription": "Score baseado em habilidades, experiência e aderência cultural",
       "professionalExperience": "Experiência Profissional",
@@ -3291,7 +3291,7 @@
       "deleting": "Excluindo...",
       "delete": "Excluir",
       "editYourSearch": "Editar sua busca",
-      "editSearchDescription": "Refine sua busca com linguagem natural. A LIA irá analisar e sugerir melhorias.",
+      "editSearchDescription": "Refine sua busca com linguagem natural. A IA irá analisar e sugerir melhorias.",
       "searchPlaceholder": "Ex: desenvolvedor python com 5 anos de experiência em machine learning",
       "saveAndSearch": "Salvar e Buscar",
       "saveAsArchetype": "Salvar como Arquétipo",
@@ -3369,9 +3369,9 @@
       "duration": "Duração: {duration}",
       "candidate": "Candidato",
       "transcriptionUnavailable": "Transcrição não disponível",
-      "liaHighlights": "Highlights da LIA",
-      "dialogDescriptionAudio": "Modal para reprodução de áudio de triagem com transcrição e análise da LIA",
-      "dialogDescriptionVideo": "Modal para reprodução de vídeo de entrevista com transcrição e análise da LIA"
+      "liaHighlights": "Highlights IA",
+      "dialogDescriptionAudio": "Modal para reprodução de áudio de triagem com transcrição e análise de IA",
+      "dialogDescriptionVideo": "Modal para reprodução de vídeo de entrevista com transcrição e análise de IA"
     },
     "wsi": {
       "classification": {
@@ -3533,37 +3533,37 @@
         "scriptWillAppear": "O script aparecerá aqui...",
         "whatsappWebWillOpen": "Será aberto o WhatsApp Web/App",
         "callScript": "Script de Ligação",
-        "liaWillCall": "LIA realizará a chamada",
+        "liaWillCall": "IA realizará a chamada",
         "simultaneousSending": "Envio Simultâneo:",
         "afterConfirmation": "Após Confirmação:",
         "emailSentViaSystem": "Email será enviado via sistema",
         "whatsappOpenInBrowser": "WhatsApp será aberto no navegador",
         "emailPlusWhatsapp": "Email enviado via sistema + WhatsApp aberto no navegador",
-        "scriptForLiaCall": "Script para ligação com LIA",
+        "scriptForLiaCall": "Script para ligação com IA",
         "cancel": "Cancelar",
         "sending": "Enviando...",
         "sendEmail": "Enviar Email",
         "sendWhatsapp": "Enviar WhatsApp",
         "sendBoth": "Enviar Email + WhatsApp",
         "startCall": "Iniciar Ligação",
-        "phoneScriptTemplate": "📞 SCRIPT DE LIGAÇÃO - LIA\n\n[Início da chamada] \"Olá, bom dia/tarde! Eu sou a LIA, assistente virtual da equipe de recrutamento da [Empresa].\n\nEstou ligando para {name} referente ao processo seletivo para a posição de {job}.\n\n[Se a pessoa confirmar que é ela]\n\nQue ótimo falar com você! Gostaria de realizar uma triagem rápida, que leva aproximadamente 15 a 20 minutos. Posso prosseguir agora ou prefere que eu retorne em outro momento?\n\n[Se sim, prosseguir]\n\nPerfeito! Antes de começarmos, preciso informar que esta conversa será gravada para fins de avaliação, conforme nossa política de privacidade. Você concorda em prosseguir?\n\n[Após confirmação]\n\nÓtimo! Vou fazer algumas perguntas sobre sua experiência e forma de trabalhar. Pode responder com calma, não há resposta certa ou errada.\n\n[Iniciar perguntas de triagem]\"",
+        "phoneScriptTemplate": "📞 SCRIPT DE LIGAÇÃO - IA\n\n[Início da chamada] \"Olá, bom dia/tarde! Eu sou sua assistente virtual da equipe de recrutamento da [Empresa].\n\nEstou ligando para {name} referente ao processo seletivo para a posição de {job}.\n\n[Se a pessoa confirmar que é ela]\n\nQue ótimo falar com você! Gostaria de realizar uma triagem rápida, que leva aproximadamente 15 a 20 minutos. Posso prosseguir agora ou prefere que eu retorne em outro momento?\n\n[Se sim, prosseguir]\n\nPerfeito! Antes de começarmos, preciso informar que esta conversa será gravada para fins de avaliação, conforme nossa política de privacidade. Você concorda em prosseguir?\n\n[Após confirmação]\n\nÓtimo! Vou fazer algumas perguntas sobre sua experiência e forma de trabalhar. Pode responder com calma, não há resposta certa ou errada.\n\n[Iniciar perguntas de triagem]\"",
         "infoEmailBoth": {
           "emailSentPlusWA": "Email será enviado via sistema + WhatsApp Web será aberto",
           "candidateChoosesChannel": "Candidato escolhe canal preferido (Chat ou WhatsApp)",
           "receivesLGPD": "Recebe termos LGPD para aceite",
-          "liaStartsScreening": "LIA inicia triagem automaticamente",
+          "liaStartsScreening": "IA inicia triagem automaticamente",
           "youGetNotified": "Você recebe notificação ao concluir"
         },
         "infoWhatsapp": {
           "title": "Fluxo WhatsApp:",
           "candidateRepliesYes": "Candidato responde \"SIM\" para iniciar",
-          "liaPresentsLGPD": "LIA apresenta termos LGPD",
+          "liaPresentsLGPD": "IA apresenta termos LGPD",
           "wsiStartsAuto": "Triagem WSI inicia automaticamente",
           "youGetNotified": "Você recebe notificação ao concluir"
         },
         "infoPhone": {
-          "title": "Ligação com LIA:",
-          "liaWillCallScheduled": "LIA realizará a ligação no horário agendado",
+          "title": "Ligação com IA:",
+          "liaWillCallScheduled": "IA realizará a ligação no horário agendado",
           "conversationRecorded": "Conversa gravada para análise",
           "transcriptionAvailable": "Transcrição disponível após chamada",
           "wsiAutoCalculated": "Score WSI calculado automaticamente"
@@ -3860,14 +3860,14 @@
     },
     "alerts": {
       "title": "Configuração de Alertas",
-      "description": "A LIA aprende com seus padrões e ajusta os alertas automaticamente",
+      "description": "A IA aprende com seus padrões e ajusta os alertas automaticamente",
       "edit": "Editar",
       "cancel": "Cancelar",
       "saveChanges": "Salvar Alterações",
       "channelEmail": "Email",
       "channelTeams": "Teams",
       "channelBoth": "Ambos",
-      "briefingTitle": "Frequência do Briefing da LIA",
+      "briefingTitle": "Frequência do Briefing IA",
       "twiceDaily": "2x ao Dia",
       "twiceDailyDesc": "Resumo às 8h e às 14h",
       "daily": "Diário",
@@ -3876,13 +3876,13 @@
       "weeklyDesc": "Resumo toda segunda-feira",
       "monthly": "Mensal",
       "monthlyDesc": "Resumo no 1º dia útil do mês",
-      "liaLearns": "A LIA aprende com você",
+      "liaLearns": "A IA aprende com você",
       "liaLearnsDesc": "Quanto mais você interage, melhor ela entende quais alertas são relevantes. Alertas ignorados consistentemente serão automaticamente desativados."
     },
     "goals": {
       "tabWorkforce": "Planejamento de Contratações",
       "importGoalsTitle": "Importar Metas",
-      "importGoalsDescription": "Importe metas mensais ou trimestrais por recrutador via planilha. A LIA identifica período, responsável e valores automaticamente.",
+      "importGoalsDescription": "Importe metas mensais ou trimestrais por recrutador via planilha. A IA identifica período, responsável e valores automaticamente.",
       "managementTitle": "Gestão de Metas - {year}",
       "managementDescription": "Configure e acompanhe as metas de performance da equipe",
       "applyTemplate": "Aplicar Template",
@@ -3971,10 +3971,10 @@
       "editTemplateTip": "Editar template",
       "hideTemplateTip": "Ocultar template",
       "importHeadcountTitle": "Importar Plano de Headcount",
-      "importHeadcountDescription": "Importe o plano anual de contratações por departamento e mês. A LIA analisa e sugere ajustes com base em dados históricos.",
+      "importHeadcountDescription": "Importe o plano anual de contratações por departamento e mês. A IA analisa e sugere ajustes com base em dados históricos.",
       "headcountPlanning": "Planejamento de Headcount {year}",
       "synced": "Sincronizado",
-      "consumedByLia": "Consumido pela LIA",
+      "consumedByLia": "Consumido pela IA",
       "departmentsIntegrated": "Departamentos integrados com Empresa e Equipe. Novos departamentos são criados automaticamente.",
       "export": "Exportar",
       "edit": "Editar",
@@ -3990,9 +3990,9 @@
       "positionSingular": "posição",
       "positionPlural": "posições",
       "alertsTitle": "Configuração de Alertas",
-      "alertsDescription": "A LIA aprende com seus padrões e ajusta os alertas automaticamente",
+      "alertsDescription": "A IA aprende com seus padrões e ajusta os alertas automaticamente",
       "channelBoth": "Ambos",
-      "briefingTitle": "Frequência do Briefing da LIA",
+      "briefingTitle": "Frequência do Briefing IA",
       "twiceDaily": "2x ao Dia",
       "twiceDailyDesc": "Resumo às 8h e às 14h",
       "daily": "Diário",
@@ -4001,7 +4001,7 @@
       "weeklyDesc": "Resumo toda segunda-feira",
       "monthlyFreq": "Mensal",
       "monthlyFreqDesc": "Resumo no 1º dia útil do mês",
-      "liaLearns": "A LIA aprende com você",
+      "liaLearns": "A IA aprende com você",
       "liaLearnsDesc": "Quanto mais você interage, melhor ela entende quais alertas são relevantes. Alertas ignorados consistentemente serão automaticamente desativados.",
       "title": "Gestão de Metas - {year}",
       "noUsersTitle": "Nenhum usuário cadastrado",
@@ -4014,7 +4014,7 @@
     "benefits": {
       "title": "Benefícios da Empresa",
       "description": "Gerencie os benefícios oferecidos aos colaboradores",
-      "consumedByLia": "Consumido pela LIA",
+      "consumedByLia": "Consumido pela IA",
       "edit": "Editar",
       "cancel": "Cancelar",
       "saving": "Salvando...",
@@ -4174,25 +4174,25 @@
       "register": "Cadastro",
       "document": "Documento",
       "custom": "Personalizado",
-      "cvTooltip": "O CV enviado será automaticamente parseado pela LIA para extração de dados estruturados.",
+      "cvTooltip": "O CV enviado será automaticamente parseado pela IA para extração de dados estruturados.",
       "companyLogo": "Logo da Empresa",
       "primaryColor": "Cor Primária",
       "welcomeMessage": "Mensagem de Boas-vindas",
       "welcomePlaceholder": "Mensagem exibida no início do formulário...",
       "thankYouMessage": "Mensagem de Agradecimento",
       "thankYouPlaceholder": "Mensagem exibida após envio do formulário...",
-      "suggestWithLia": "Sugerir com LIA",
+      "suggestWithLia": "Sugerir com IA",
       "howCandidateResponds": "Como o candidato responde?",
       "portalOnly": "Apenas Portal",
       "portalOnlyDesc": "Link direto para formulário",
       "chatOnly": "Apenas Chat",
       "chatOnlyDesc": "Conversa pergunta por pergunta",
       "candidateChoice": "Candidato Escolhe",
-      "candidateChoiceDesc": "LIA pergunta preferência",
+      "candidateChoiceDesc": "IA pergunta preferência",
       "recommended": "Recomendado",
       "portalOnlyBadgeDesc": "- Envia link direto para formulário",
       "chatOnlyBadgeDesc": "- Coleta via conversa no WhatsApp",
-      "candidateChoiceBadgeDesc": "- LIA pergunta preferência ao candidato",
+      "candidateChoiceBadgeDesc": "- IA pergunta preferência ao candidato",
       "whatsappMessages": "Mensagens do WhatsApp",
       "whatsappVariables": "Use variáveis: {{nome}}, {{empresa}}, {{campo}}, {{proximo_campo}}, {{campos_pendentes}}, {{dias_restantes}}",
       "initialRequest": "Solicitação Inicial",
@@ -4204,8 +4204,8 @@
       "dataToCollect": "Dados para coletar",
       "fieldsCount": "({count} campo(s))",
       "requiredField": "Obrigatório",
-      "liaCollects": "LIA coleta",
-      "liaCollectsHint": "Marque \"LIA coleta\" para que a assistente solicite o dado durante a conversa nesta etapa."
+      "liaCollects": "IA coleta",
+      "liaCollectsHint": "Marque \"IA coleta\" para que a assistente solicite o dado durante a conversa nesta etapa."
     },
     "fairness": {
       "title": "Equidade e Conformidade",
@@ -4248,13 +4248,13 @@
       "whenEnabled": "Quando habilitado, você tem acesso a:",
       "enabledTalentFunnel": "Talent Funnel: Opções de busca \"Híbrida\" e \"Global\" no prompt de busca",
       "enabledSearchResults": "Search Results: Ícones de expansão global e híbrida no prompt expandido",
-      "enabledJobCreation": "Job Creation: LIA pode buscar candidatos externos para calibração e sourcing",
+      "enabledJobCreation": "Job Creation: IA pode buscar candidatos externos para calibração e sourcing",
       "enabledAutoSourcing": "Auto Sourcing: Expansão para base global quando base local for insuficiente",
       "enabledContactReveal": "Contact Reveal: Opção de revelar emails e telefones (1 crédito + $0.01 Apify/candidato)",
       "whenDisabled": "Quando desabilitado:",
       "disabledTalentFunnel": "Talent Funnel: Apenas busca \"Local\" disponível (base própria)",
       "disabledSearchResults": "Search Results: Ícones de busca global/híbrida serão ocultados",
-      "disabledJobCreation": "Job Creation: LIA usará apenas candidatos da sua base para calibração",
+      "disabledJobCreation": "Job Creation: IA usará apenas candidatos da sua base para calibração",
       "disabledAutoSourcing": "Auto Sourcing: Desabilitado - sem expansão para base externa",
       "disabledSavings": "Savings: Nenhum crédito de busca global será consumido",
       "reactivateAnytime": "Você pode reativar a busca global a qualquer momento.",
@@ -4335,7 +4335,7 @@
       },
       "screening": {
         "autoQuestionsTitle": "Perguntas automáticas",
-        "autoQuestionsDesc": "(modelo de trabalho, localização, idiomas, regime de contratação) são geradas automaticamente pela LIA a partir dos campos de cada vaga — não precisam ser configuradas aqui.",
+        "autoQuestionsDesc": "(modelo de trabalho, localização, idiomas, regime de contratação) são geradas automaticamente pela IA a partir dos campos de cada vaga — não precisam ser configuradas aqui.",
         "catalogTitle": "Catálogo de Perguntas de Elegibilidade",
         "catalogDesc": "Perguntas padrão da empresa — aparecem ativas em todas as vagas por padrão. O recrutador pode desativar individualmente em cada vaga.",
         "questionBank": "Banco de Perguntas",
@@ -4493,7 +4493,7 @@
         "liaSubtitle": "Posso criar vagas, buscar candidatos, analisar...",
         "expandChat": "Expandir chat",
         "closeChat": "Fechar chat",
-        "chatPlaceholder": "Envie uma mensagem para LIA...",
+        "chatPlaceholder": "Envie uma mensagem...",
         "selectPlaceholder": "Selecione...",
         "editField": "Editar {field}"
       },
@@ -4603,7 +4603,7 @@
         "pipeline": "Pipeline",
         "eligibilityQuestions": "Perguntas de Elegibilidade",
         "dataRequest": "Solicitação de Dados",
-        "liaInstructions": "LIA Instructions",
+        "liaInstructions": "Instruções IA",
         "deleteTemplate": "Excluir Modelo",
         "edit": "Editar",
         "done": "Concluído",
@@ -4620,7 +4620,7 @@
         "addCustomStage": "Adicionar Etapa Personalizada",
         "eligibilityConfig": "Configurações de Perguntas de Elegibilidade",
         "dataRequestConfig": "Configurações de Solicitação de Dados",
-        "liaInstructionsConfig": "Instructions for LIA",
+        "liaInstructionsConfig": "Instructions for IA",
         "newStage": "New Stage"
       },
       "tabPipeline": "Pipeline",
@@ -4654,13 +4654,13 @@
         "emailBody": "Corpo do Email",
         "whatsappMessage": "Mensagem WhatsApp",
         "availableVariables": "Variáveis Disponíveis",
-        "adjustWithLia": "Ajustar com LIA",
+        "adjustWithLia": "Ajustar com IA",
         "describeChanges": "Descreva as alterações desejadas",
         "aiPlaceholder": "Ex: Torne mais formal e adicione um agradecimento...",
         "adjusting": "Ajustando...",
         "adjust": "Ajustar",
-        "liaAnalyzing": "LIA está analisando e ajustando o modelo...",
-        "liaAdjustments": "Ajustes LIA",
+        "liaAnalyzing": "IA está analisando e ajustando o modelo...",
+        "liaAdjustments": "Ajustes IA",
         "reviewChanges": "Revise as alterações sugeridas",
         "changesMade": "Alterações Realizadas",
         "newSubject": "Novo Assunto",
@@ -4688,7 +4688,7 @@
         "cancel": "Cancelar",
         "saveChanges": "Salvar Alterações",
         "lgpdCompliance": "Conformidade LGPD",
-        "lgpdDescription": "Conforme boas práticas da LGPD, mensagens só podem ser enviadas entre 8h e 20h em dias úteis. LIA respeita automaticamente esses horários.",
+        "lgpdDescription": "Conforme boas práticas da LGPD, mensagens só podem ser enviadas entre 8h e 20h em dias úteis. A IA respeita automaticamente esses horários.",
         "startTime": "Horário Inicial",
         "endTime": "Horário Final",
         "sendingWindow": "Janela de Envio",
@@ -4703,14 +4703,14 @@
       },
       "communicationAlerts": {
         "title": "Configuração de Alertas",
-        "description": "LIA aprende com seus padrões e ajusta alertas automaticamente",
+        "description": "A IA aprende com seus padrões e ajusta alertas automaticamente",
         "edit": "Editar",
         "cancel": "Cancelar",
         "saveChanges": "Salvar Alterações",
         "channelEmail": "E-mail",
         "channelTeams": "Teams",
         "channelBoth": "Ambos",
-        "briefingTitle": "Frequência do Briefing LIA",
+        "briefingTitle": "Frequência do Briefing IA",
         "twiceDaily": "2x ao Dia",
         "twiceDailyDesc": "Resumo às 8h e 14h",
         "daily": "Diário",
@@ -4719,7 +4719,7 @@
         "weeklyDesc": "Resumo toda segunda-feira",
         "monthly": "Mensal",
         "monthlyDesc": "Resumo no 1º dia útil",
-        "liaLearns": "LIA aprende com você",
+        "liaLearns": "IA aprende com você",
         "liaLearnsDesc": "Quanto mais você interage, melhor ela entende quais alertas são relevantes. Alertas consistentemente ignorados serão desabilitados automaticamente.",
         "weeklyDigestTitle": "Resumo Semanal",
         "weeklyInsights": "Insights Semanais Proativos",
@@ -4801,8 +4801,8 @@
         "about": "Sobre",
         "capabilities": "Resources & Capabilities",
         "requiredForVoice": "Required for voice screening",
-        "voiceDescription": "Transcrição de áudio do candidato (Whisper) e voz LIA (TTS) dependem da OpenAI. Sem esta chave, as triagens funcionam apenas por texto.",
-        "voiceEnabled": "Transcrição (Whisper) e voz LIA (TTS) ativadas para triagens.",
+        "voiceDescription": "Transcrição de áudio do candidato (Whisper) e voz IA (TTS) dependem da OpenAI. Sem esta chave, as triagens funcionam apenas por texto.",
+        "voiceEnabled": "Transcrição (Whisper) e voz IA (TTS) ativadas para triagens.",
         "voiceHint": "Para ativar voz nas triagens (transcrição e TTS), configure também a integração OpenAI GPT. {provider} é usado para chat e análise de candidatos.",
         "requiredConfig": "Required Configuration",
         "configureAzure": "Configure as variáveis de ambiente do Azure ({clientId}, {clientSecret}, {tenantId}) para ativar esta integração.",
@@ -4951,7 +4951,7 @@
         "screening": "Perguntas de Elegibilidade",
         "screeningDesc": "Initial questions via WhatsApp",
         "hiringPolicies": "Políticas de Contratação",
-        "hiringPoliciesDesc": "Pipeline rules, scheduling and LIA autonomy"
+        "hiringPoliciesDesc": "Pipeline rules, scheduling and IA autonomy"
       },
       "communication": {
         "title": "Comunicação e Alertas",
@@ -4963,7 +4963,7 @@
         "schedule": "LGPD Hours",
         "scheduleDesc": "Janela de envio (8h-20h)",
         "alerts": "Alertas",
-        "alertsDesc": "Notificações e briefings LIA"
+        "alertsDesc": "Notificações e briefings IA"
       },
       "goalsPlanning": {
         "title": "Planejamento",
@@ -5017,7 +5017,7 @@
     },
     "companyData": {
       "title": "Dados da Empresa",
-      "description": "Configure dados institucionais e preferências da LIA",
+      "description": "Configure dados institucionais e preferências da IA",
       "activeFields": "{active} of {total} active fields",
       "edit": "Editar",
       "cancel": "Cancelar",
@@ -5025,11 +5025,11 @@
       "saving": "Salvando..."
     },
     "companyDataCard": {
-      "liaInstruction": "Instrução LIA",
-      "closeLiaInstruction": "Fechar instrução LIA",
-      "configureLiaInstruction": "Configurar instrução LIA para {label}",
+      "liaInstruction": "Instrução IA",
+      "closeLiaInstruction": "Fechar instrução IA",
+      "configureLiaInstruction": "Configurar instrução IA para {label}",
       "field": "Campo",
-      "instructionPlaceholder": "Adicione instruções para ajudar a LIA a interpretar melhor este campo...",
+      "instructionPlaceholder": "Adicione instruções para ajudar a IA a interpretar melhor este campo...",
       "examples": "Exemplos",
       "examplesOfInstructions": "Exemplos de instruções"
     },
@@ -5140,10 +5140,10 @@
       "stabilityDesc": "Resiliência e calma"
     },
     "liaAnalysis": {
-      "title": "Análise Inteligente com LIA",
-      "description": "LIA can analyze the company's website and LinkedIn to automatically fill in Culture, Mission, Vision, Values fields and adjust the Big Five profile.",
+      "title": "Análise Inteligente com IA",
+      "description": "IA can analyze the company's website and LinkedIn to automatically fill in Culture, Mission, Vision, Values fields and adjust the Big Five profile.",
       "starting": "Iniciando...",
-      "analyzeWithLia": "Analisar com LIA",
+      "analyzeWithLia": "Analisar com IA",
       "clickEditToEnable": "Clique em 'Editar' para ativar a análise",
       "enterWebsiteToEnable": "Insira o site da empresa acima para ativar a análise"
     },
@@ -5156,7 +5156,7 @@
       "language": "Idioma",
       "localization": "Localização",
       "timezone": "Fuso Horário",
-      "liaPersonality": "Personalidade da LIA",
+      "liaPersonality": "Personalidade da IA",
       "communicationStyle": "Estilo de Comunicação",
       "professional": "Profissional",
       "professionalDesc": "Formal e objetivo",
@@ -5167,13 +5167,13 @@
       "detailed": "Detalhado",
       "detailedDesc": "Explicações completas",
       "autoSuggestions": "Sugestões Automáticas",
-      "autoSuggestionsDesc": "LIA sugere ações proativamente",
+      "autoSuggestionsDesc": "IA sugere ações proativamente",
       "contextAwareness": "Consciência de Contexto",
       "contextAwarenessDesc": "Considera o contexto da conversa",
       "proactiveInsights": "Insights Proativos",
       "proactiveInsightsDesc": "Análises e alertas automáticos",
       "learningMode": "Modo de Aprendizado",
-      "learningModeDesc": "LIA aprende com suas preferências"
+      "learningModeDesc": "IA aprende com suas preferências"
     },
     "security": {
       "accountSecurity": "Segurança da Conta",
@@ -5198,7 +5198,7 @@
       "interviewsDesc": "Lembretes e confirmações de entrevistas",
       "deadlines": "Prazos",
       "deadlinesDesc": "Prazos de feedback e processos",
-      "liaInsights": "Análises LIA",
+      "liaInsights": "Análises IA",
       "liaInsightsDesc": "Análises e sugestões de IA"
     },
     "apiKeys": {
@@ -5384,7 +5384,7 @@
       "downloadTemplate": "Baixar Modelo",
       "expectedFields": "Campos esperados:",
       "uploading": "Enviando arquivo...",
-      "analyzing": "LIA está analisando...",
+      "analyzing": "IA está analisando...",
       "analyzingDesc": "Identificando campos e validando dados",
       "previewTitle": "Prévia dos Dados",
       "recordsFound": "{count} records found in {file}",
@@ -5393,7 +5393,7 @@
       "andMore": "... e mais {count} registros",
       "confirmImport": "Confirmar Importação",
       "importing": "Importando dados...",
-      "importingDesc": "LIA está processando {count} registros",
+      "importingDesc": "IA está processando {count} registros",
       "importComplete": "Importação Concluída!",
       "newImport": "Nova Importação",
       "importError": "Erro na Importação",
@@ -5415,9 +5415,9 @@
       "fieldDisabled": "Campo desativado"
     },
     "onboarding": {
-      "title": "Integração com LIA",
-      "description": "New recruiters receive conversational LIA introduction via WhatsApp and chat",
-      "ariaLabel": "Ativar integração com LIA"
+      "title": "Integração com IA",
+      "description": "New recruiters receive conversational IA introduction via WhatsApp and chat",
+      "ariaLabel": "Ativar integração com IA"
     },
     "consumo": {
       "title": "Consumo",
@@ -5445,9 +5445,9 @@
   },
   "publicJob": {
     "meta": {
-      "titleWithJob": "{jobTitle} | Vagas LIA — WeDo Talent",
-      "descriptionWithJob": "Candidate-se para {jobTitle}. Processo seletivo com triagem inteligente (LIA) na Plataforma WeDOTalent.",
-      "titleFromSlug": "{slugPretty} | Vagas LIA — WeDo Talent",
+      "titleWithJob": "{jobTitle} | Vagas IA — WeDo Talent",
+      "descriptionWithJob": "Candidate-se para {jobTitle}. Processo seletivo com triagem inteligente (IA) na Plataforma WeDOTalent.",
+      "titleFromSlug": "{slugPretty} | Vagas IA — WeDo Talent",
       "descriptionFromSlug": "Candidate-se para a vaga {slugPretty}."
     },
     "loading": "Carregando vaga...",
@@ -5490,7 +5490,7 @@
         "description": "Envie seu CV online ou via WhatsApp"
       },
       "lia": {
-        "title": "Triagem com LIA",
+        "title": "Triagem com IA",
         "description": "Nossa IA analisa seu perfil e faz perguntas"
       },
       "message": {
@@ -5507,7 +5507,7 @@
       }
     },
     "liaIntro": {
-      "lead": "Triagem inteligente com LIA.",
+      "lead": "Triagem inteligente com IA.",
       "body": "Nossa assistente de IA conduz uma conversa amigável para conhecer você melhor, garantindo uma avaliação justa e feedback em todas as etapas."
     },
     "success": {
@@ -5558,7 +5558,7 @@
     },
     "privacy": {
       "title": "Privacidade e proteção de dados",
-      "body": "Este processo seletivo utiliza inteligência artificial (LIA) para auxiliar na triagem. Seus dados são tratados conforme a LGPD. Ao se candidatar, você autoriza a coleta e análise dos seus dados para fins deste processo.",
+      "body": "Este processo seletivo utiliza inteligência artificial (IA) para auxiliar na triagem. Seus dados são tratados conforme a LGPD. Ao se candidatar, você autoriza a coleta e análise dos seus dados para fins deste processo.",
       "privacyPolicy": "Política de privacidade",
       "dpoEmail": "dpo@wedotalent.com"
     },
@@ -5572,13 +5572,13 @@
     }
   },
   "metadata": {
-    "title": "Plataforma LIA — WeDoTalent",
-    "titleTemplate": "{title} | LIA WeDoTalent",
+    "title": "Plataforma IA — WeDoTalent",
+    "titleTemplate": "{title} | IA WeDoTalent",
     "description": "Plataforma de recrutamento inteligente com IA — Triagem, Kanban e Análise de Candidatos"
   },
   "modules": {
     "title": "Módulos",
-    "subtitle": "Expanda as capacidades da LIA com módulos especializados",
+    "subtitle": "Expanda as capacidades da IA com módulos especializados",
     "loading": "Carregando módulos...",
     "featuresLabel": "Funcionalidades",
     "status": {

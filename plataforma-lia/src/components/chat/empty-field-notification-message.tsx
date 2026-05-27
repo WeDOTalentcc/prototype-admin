@@ -161,7 +161,7 @@ export function EmptyFieldNotificationMessage({
                         <CardContent className="p-3 space-y-2">
                           <div className="flex items-center gap-2">
                             <span className="text-lg">{getSourceIcon(suggestion.source)}</span>
-                            <span className="text-sm font-medium">Sugestão da LIA</span>
+                            <span className="text-sm font-medium">Sugestão da IA</span>
                             <Chip density="relaxed" variant="neutral" muted >
                               {Math.round(suggestion.confidence * 100)}% confiança
                             </Chip>

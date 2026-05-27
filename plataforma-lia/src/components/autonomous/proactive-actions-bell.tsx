@@ -296,7 +296,7 @@ export function ProactiveActionsBell({
             <div className="flex items-center gap-2">
               <Brain className="h-4 w-4 text-wedo-cyan-dark" />
               <span className="text-xs font-semibold text-lia-text-primary">
-                Sugestões da LIA
+                Sugestões da IA
               </span>
             </div>
             {pendingCount > 0 && (

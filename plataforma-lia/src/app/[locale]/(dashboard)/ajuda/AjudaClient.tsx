@@ -56,7 +56,7 @@ export default function AjudaPage() {
             </div>
             <div>
               <h1 className="text-3xl font-semibold text-lia-text-primary dark:text-lia-text-primary">Central de Ajuda</h1>
-              <p className="text-lia-text-secondary dark:text-lia-text-tertiary">Entenda como a LIA analisa candidatos</p>
+              <p className="text-lia-text-secondary dark:text-lia-text-tertiary">Entenda como a IA analisa candidatos</p>
             </div>
           </div>
         </div>
@@ -66,12 +66,12 @@ export default function AjudaPage() {
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
                 <Lightbulb className="w-5 h-5 text-lia-text-primary" />
-                <CardTitle className="text-lg font-semibold text-lia-text-primary">Como a LIA Analisa Candidatos</CardTitle>
+                <CardTitle className="text-lg font-semibold text-lia-text-primary">Como a IA Analisa Candidatos</CardTitle>
               </div>
             </CardHeader>
             <CardContent className="text-lia-text-secondary space-y-3">
               <p>
-                A LIA utiliza inteligência artificial avançada para <strong>extrair e inferir informações</strong> a partir de currículos e perfis profissionais. O processo combina técnicas de processamento de linguagem natural (NLP) com análise semântica para compreender o contexto e significado das informações.
+                A IA utiliza inteligência artificial avançada para <strong>extrair e inferir informações</strong> a partir de currículos e perfis profissionais. O processo combina técnicas de processamento de linguagem natural (NLP) com análise semântica para compreender o contexto e significado das informações.
               </p>
               <p>
                 Cada currículo passa por um pipeline de análise que identifica automaticamente experiências profissionais, formações acadêmicas, habilidades técnicas e comportamentais, além de inferir o nível de senioridade do candidato.
@@ -140,7 +140,7 @@ export default function AjudaPage() {
                   Soft Skills (Competências Comportamentais)
                 </h4>
                 <p className="text-lia-text-secondary mb-2">
-                  Habilidades interpessoais e comportamentais identificadas pela LIA:
+                  Habilidades identificadas pela IA:
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {softSkillsList.map((skill) => (
@@ -220,7 +220,7 @@ export default function AjudaPage() {
                 <p className="text-status-warning dark:text-status-warning flex items-start gap-2">
                   <HelpCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
                   <span>
-                    <strong>Importante:</strong> Períodos sobrepostos (experiências paralelas) não são contabilizados em duplicidade. A LIA identifica automaticamente trabalhos simultâneos e calcula o tempo real de experiência profissional.
+                    <strong>Importante:</strong> Períodos sobrepostos (experiências paralelas) não são contabilizados em duplicidade. A IA identifica automaticamente trabalhos simultâneos e calcula o tempo real de experiência profissional.
                   </span>
                 </p>
               </div>
@@ -258,7 +258,7 @@ export default function AjudaPage() {
             </CardHeader>
             <CardContent className="text-lia-text-secondary space-y-4">
               <p>
-                O <strong>Big Five</strong> é o modelo científico mais validado para avaliação de personalidade, utilizado em mais de 3.000 estudos acadêmicos. A LIA utiliza este framework para inferir tendências comportamentais dos candidatos através de análise probabilística.
+                O <strong>Big Five</strong> é o modelo científico mais validado para avaliação de personalidade, utilizado em mais de 3.000 estudos acadêmicos. A IA utiliza este framework para inferir tendências comportamentais dos candidatos através de análise probabilística.
               </p>
               <div className="space-y-3">
                 {bigFiveDimensions.map((dim) => (
@@ -288,7 +288,7 @@ export default function AjudaPage() {
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
                 <TrendingUp className="w-5 h-5 text-lia-text-primary" />
-                <CardTitle className="text-lg font-semibold text-lia-text-primary">Como a LIA Infere a Personalidade</CardTitle>
+                <CardTitle className="text-lg font-semibold text-lia-text-primary">Como a IA Infere a Personalidade</CardTitle>
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -349,7 +349,7 @@ export default function AjudaPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-lia-text-secondary">
-                Com base nas combinações das 5 dimensões, a LIA identifica 8 arquétipos profissionais que ajudam a prever o fit para diferentes tipos de posições:
+                Com base nas combinações das 5 dimensões, a IA identifica 8 arquétipos profissionais que ajudam a prever o fit para diferentes tipos de posições:
               </p>
               
               <div className="grid gap-3 sm:grid-cols-2">
@@ -388,7 +388,7 @@ export default function AjudaPage() {
             <CardContent className="space-y-4">
               <div className="p-4 rounded-xl bg-status-warning/10 dark:bg-status-warning/20 border border-status-warning/30 dark:border-status-warning/30">
                 <p className="text-status-warning dark:text-status-warning text-sm">
-                  <strong>Esta é uma inferência probabilística, não uma avaliação clínica.</strong> Os perfis gerados pela LIA são estimativas baseadas em padrões observáveis, não diagnósticos psicológicos formais.
+                  <strong>Esta é uma inferência probabilística, não uma avaliação clínica.</strong> Os perfis gerados pela IA são estimativas baseadas em padrões observáveis, não diagnósticos psicológicos formais.
                 </p>
               </div>
               

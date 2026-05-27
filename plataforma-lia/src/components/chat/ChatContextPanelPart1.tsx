@@ -41,7 +41,7 @@ export function ChatContextPanelPart1({ contextData }: Props) {
                 <div className="p-5 rounded-xl bg-stone-50 dark:bg-stone-900/20">
                   <div className="flex items-center justify-between mb-4">
                     <div>
-                      <p className="text-sm text-lia-text-secondary">Recomendação LIA - Target</p>
+                      <p className="text-sm text-lia-text-secondary">Recomendação IA - Target</p>
                       <p className="text-xl font-semibold text-lia-text-primary">{data.recommended_package.base_salary.target}</p>
                     </div>
                     <Chip variant="neutral" muted className="bg-status-warning/10 dark:bg-status-warning/20 text-lia-text-primary">Percentil 90</Chip>

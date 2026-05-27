@@ -150,7 +150,7 @@ export function ParecerLIACard({ data, onAcceptSuggestion, className }: ParecerL
           <div className="flex items-center gap-2 mb-1">
             <Brain className="w-4 h-4 text-wedo-cyan flex-shrink-0" />
             <span className="text-xs font-semibold text-lia-text-primary uppercase tracking-wide">
-              Parecer LIA
+              Parecer IA
             </span>
           </div>
           <CompletenessBar score={data.completenessScore ?? data.completenessNota} />

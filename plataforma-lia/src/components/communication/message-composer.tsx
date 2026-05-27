@@ -183,7 +183,7 @@ export function MessageComposer({
         }
       } else {
         const errorData = await response.json().catch(() => ({}))
-        setErrorMessage(errorData.details?.detail || 'Erro ao ajustar com a LIA')
+        setErrorMessage(errorData.details?.detail || 'Erro ao ajustar com a IA')
         setTimeout(() => setErrorMessage(null), 5000)
       }
     } catch (err) {
@@ -199,7 +199,7 @@ export function MessageComposer({
     if (!aiResultModal) return
     handleSubjectChange(aiResultModal.newSubject)
     handleMessageChange(aiResultModal.newBody)
-    setSuccessMessage('Ajustes da LIA aplicados ao texto atual.')
+    setSuccessMessage('Ajustes de IA aplicados ao texto atual.')
     setTimeout(() => setSuccessMessage(null), 4000)
     setAiResultModal(null)
   }
@@ -232,7 +232,7 @@ export function MessageComposer({
             </label>
             <span className="text-micro flex items-center gap-1 text-lia-text-secondary">
               <Brain className="w-3 h-3 text-wedo-cyan" />
-              LIA disponível
+              IA disponível
             </span>
           </div>
           <div className="space-y-1.5 max-h-[150px] overflow-y-auto" role="status" aria-live="polite" aria-label="Carregando...">
@@ -346,7 +346,7 @@ export function MessageComposer({
               </div>
               <div className="flex-1">
                 <span className="text-base-ui font-semibold text-lia-text-primary">
-                  Ajustar com a LIA
+                  Ajustar com IA
                 </span>
                 <p className="text-xs text-lia-text-secondary">
                   Ajustes são aplicados apenas neste envio
@@ -400,7 +400,7 @@ export function MessageComposer({
                   <ThinkingDots dotClassName="bg-lia-btn-primary-bg" size="md" />
                 </div>
                 <span className="text-xs">
-                  A LIA está analisando e ajustando a mensagem...
+                  A IA está analisando e ajustando a mensagem...
                 </span>
               </div>
             )}
@@ -419,7 +419,7 @@ export function MessageComposer({
                   </div>
                   <div>
                     <h3 className="text-sm font-semibold text-lia-text-primary">
-                      Ajustes da LIA
+                      Ajustes da IA
                     </h3>
                     <p className="text-xs text-lia-text-secondary">
                       Revise as alterações sugeridas

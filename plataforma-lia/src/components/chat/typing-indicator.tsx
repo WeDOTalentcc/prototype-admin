@@ -32,7 +32,7 @@ export function TypingIndicator({ className }: TypingIndicatorProps) {
           ))}
         </div>
         <span className="text-xs text-lia-text-secondary animate-pulse motion-reduce:animate-none">
-          LIA está pensando...
+          IA está pensando...
         </span>
       </div>
 

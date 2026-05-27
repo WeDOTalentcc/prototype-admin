@@ -125,7 +125,7 @@ const LIARulesInfo: React.FC<{ type: 'triage' | 'interview' }> = ({ type }) => {
         <TooltipContent side="bottom" className="max-w-xs p-3">
           <div className="space-y-2">
             <p className="font-medium text-xs text-lia-text-primary">
-              {isInterview ? 'Processo de Agendamento LIA:' : 'Processo de Triagem LIA:'}
+              {isInterview ? 'Processo de Agendamento IA:' : 'Processo de Triagem IA:'}
             </p>
             <ul className="space-y-1 text-xs text-lia-text-secondary">
               {isInterview ? (
@@ -215,7 +215,7 @@ Equipe de Recrutamento`
           icon: <Brain className="w-5 h-5 text-wedo-cyan" />,
           steps: [
             { id: 'approve', label: 'Aprovação', status: 'current' as const },
-            { id: 'triage', label: 'Triagem LIA', status: 'upcoming' as const },
+            { id: 'triage', label: 'Triagem IA', status: 'upcoming' as const },
             { id: 'interview', label: 'Entrevista', status: 'upcoming' as const },
             { id: 'schedule', label: 'Agendamento', status: 'upcoming' as const },
           ],
@@ -228,7 +228,7 @@ Equipe de Recrutamento`
           icon: <Calendar className="w-5 h-5 text-lia-text-secondary" />,
           steps: [
             { id: 'approve', label: 'Aprovação', status: 'completed' as const },
-            { id: 'triage', label: 'Triagem LIA', status: 'completed' as const },
+            { id: 'triage', label: 'Triagem IA', status: 'completed' as const },
             { id: 'interview', label: 'Entrevista', status: 'current' as const },
             { id: 'schedule', label: 'Agendamento', status: 'upcoming' as const },
           ],

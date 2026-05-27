@@ -203,7 +203,7 @@ export function ProactiveActions({
         <div className="flex items-center gap-2">
           <Brain className="h-5 w-5 text-wedo-cyan" />
           <h3 className="text-sm font-semibold text-lia-text-primary">
-            Sugestões da LIA
+            Sugestões da IA
           </h3>
           <Chip variant="neutral" muted>{actions.length}</Chip>
         </div>

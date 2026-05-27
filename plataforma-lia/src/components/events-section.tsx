@@ -53,7 +53,7 @@ const morningEvents = [
     time:"08:45",
     type:"reminder",
     priority:"medium",
-    details:"Sugerido pela LIA • Lembrete automático",
+    details:"Sugerido pela IA • Lembrete automático",
     hasReminder: false,
     isSuggested: true,
     actions: [
@@ -79,11 +79,11 @@ const morningEvents = [
   {
     id: 4,
     title:"Revisar Perfis",
-    subtitle:"15 candidatos pendentes • Sugestão LIA",
+    subtitle:"15 candidatos pendentes • Sugestão IA",
     time:"11:00",
     type:"review",
     priority:"medium",
-    details:"Sugerido pela LIA • Triagem rápida",
+    details:"Sugerido pela IA • Triagem rápida",
     hasReminder: false,
     isSuggested: true,
     actions: [
@@ -131,11 +131,11 @@ const afternoonEvents = [
   {
     id: 7,
     title:"Aprovar Oferta",
-    subtitle:"Lucas Mendes - Backend • Sugestão LIA",
+    subtitle:"Lucas Mendes - Backend • Sugestão IA",
     time:"16:00",
     type:"offer",
     priority:"high",
-    details: `Sugerido pela LIA • Oferta ${CURRENCY_SYMBOL} 12.000`,
+    details: `Sugerido pela IA • Oferta ${CURRENCY_SYMBOL} 12.000`,
     hasReminder: false,
     isSuggested: true,
     actions: [
@@ -284,7 +284,7 @@ export function EventsSection() {
                 Próximas Atividades e Tarefas
               </CardTitle>
               <p className="text-sm text-lia-text-tertiary mt-1">
-                {totalTasks} tarefas • {urgentTasks} urgentes • {suggestedTasks} sugeridas pela LIA
+                {totalTasks} tarefas • {urgentTasks} urgentes • {suggestedTasks} sugeridas pela IA
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -323,7 +323,7 @@ export function EventsSection() {
               <div>
                 <h3 className="font-medium text-lia-text-primary text-sm">Sessão Manhã</h3>
                 <p className="text-xs text-lia-text-tertiary">
-                  Organizado pela LIA • {morningEvents.length} atividades • {morningEvents.filter(e => e.isSuggested).length} sugeridas
+                  Organizado pela IA • {morningEvents.length} atividades • {morningEvents.filter(e => e.isSuggested).length} sugeridas
                 </p>
               </div>
             </div>
@@ -341,7 +341,7 @@ export function EventsSection() {
               <div>
                 <h3 className="font-medium text-lia-text-primary text-sm">Sessão Tarde</h3>
                 <p className="text-xs text-lia-text-tertiary">
-                  Organizado pela LIA • {afternoonEvents.length} atividades • {afternoonEvents.filter(e => e.isSuggested).length} sugeridas
+                  Organizado pela IA • {afternoonEvents.length} atividades • {afternoonEvents.filter(e => e.isSuggested).length} sugeridas
                 </p>
               </div>
             </div>
@@ -381,7 +381,7 @@ export function EventsSection() {
                             </h3>
                             {event.isSuggested && (
  <Chip density="relaxed" variant="neutral" className="border-lia-border-default text-lia-text-secondary">
-                                Sugerido pela LIA
+                                Sugerido pela IA
                               </Chip>
                             )}
                             {getPriorityBadge(event.priority)}

@@ -351,7 +351,7 @@ export default function PublicTrustCenterPage() {
                   <div className="w-8 h-8 rounded-md bg-status-success/15 flex items-center justify-center">
                     <Award className="w-4 h-4 text-status-success" />
                   </div>
-                  <h4 className="font-medium text-lia-text-primary dark:text-lia-text-primary">LIA Scoring</h4>
+                  <h4 className="font-medium text-lia-text-primary dark:text-lia-text-primary">IA Scoring</h4>
                 </div>
                 <p className="text-xs text-lia-text-secondary">
                   Score numérico (0-100) calculado a partir de múltiplos fatores: aderência técnica, experiência relevante, formação e fit cultural. Algoritmo documentado e auditável.
@@ -362,7 +362,7 @@ export default function PublicTrustCenterPage() {
                   <div className="w-8 h-8 rounded-md bg-status-warning/15 flex items-center justify-center">
                     <FileText className="w-4 h-4 text-status-warning" />
                   </div>
-                  <h4 className="font-medium text-lia-text-primary dark:text-lia-text-primary">LIA Opinion (Parecer)</h4>
+                  <h4 className="font-medium text-lia-text-primary dark:text-lia-text-primary">IA Opinion (Parecer)</h4>
                 </div>
                 <p className="text-xs text-lia-text-secondary">
                   Parecer qualitativo em linguagem natural explicando pontos fortes, gaps identificados e recomendação. Sempre acompanhado de justificativa baseada em evidências.

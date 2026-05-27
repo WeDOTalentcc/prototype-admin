@@ -3,7 +3,7 @@ import { ErrorBoundarySection } from "@/components/ui/error-boundary-section"
 import CandidateRoutePage from "./CandidateRoutePage"
 
 export const metadata: Metadata = {
-  title: "Candidato | LIA — WeDo Talent",
+  title: "Candidato | WeDoTalent",
   description: "Perfil completo do candidato.",
 }
 

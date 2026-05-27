@@ -94,7 +94,7 @@ export default function RegisterPage() {
         
         <div className="max-w-md text-center">
           <h1 className="text-5xl font-semibold text-white leading-tight mb-6">
-            Junte-se à LIA
+            Junte-se à WeDoTalent
           </h1>
           <p className="text-xl text-lia-text-disabled leading-relaxed mb-8">
             Transforme seu processo de recrutamento com inteligência artificial avançada.
@@ -127,7 +127,7 @@ export default function RegisterPage() {
               </div>
               <h2 className="text-3xl font-semibold text-lia-text-primary dark:text-lia-text-primary mb-3">Criar Conta</h2>
               <p className="text-lia-text-secondary text-base leading-relaxed">
-                Preencha seus dados para começar a usar a LIA.
+                Preencha seus dados para começar a usar a plataforma.
               </p>
             </div>
 

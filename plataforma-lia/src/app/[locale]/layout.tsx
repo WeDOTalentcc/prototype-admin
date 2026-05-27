@@ -59,15 +59,15 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
   return {
     title: {
-      default: isEn ? 'LIA Platform — WeDoTalent' : 'Plataforma LIA — WeDoTalent',
-      template: '%s | LIA WeDoTalent',
+      default: isEn ? 'WeDoTalent' : 'WeDoTalent',
+      template: '%s | WeDoTalent',
     },
     description: isEn
       ? 'Intelligent AI-powered recruitment platform — Screening, Kanban and Candidate Analysis'
       : 'Plataforma de recrutamento inteligente com IA — Triagem, Kanban e Análise de Candidatos',
     keywords: isEn
-      ? ['recruitment', 'hiring', 'HR', 'AI', 'candidates', 'jobs', 'WeDoTalent', 'LIA']
-      : ['recrutamento', 'seleção', 'RH', 'IA', 'candidatos', 'vagas', 'WeDoTalent', 'LIA'],
+      ? ['recruitment', 'hiring', 'HR', 'AI', 'candidates', 'jobs', 'WeDoTalent']
+      : ['recrutamento', 'seleção', 'RH', 'IA', 'candidatos', 'vagas', 'WeDoTalent'],
     authors: [{ name: 'WeDoTalent' }],
     creator: 'WeDoTalent',
     publisher: 'WeDoTalent',
@@ -80,21 +80,21 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
       type: 'website' as const,
       locale: isEn ? 'en_US' : 'pt_BR',
       url: 'https://app.wedotalent.com',
-      siteName: isEn ? 'LIA Platform' : 'Plataforma LIA',
-      title: isEn ? 'LIA Platform — WeDoTalent' : 'Plataforma LIA — WeDoTalent',
+      siteName: 'WeDoTalent',
+      title: isEn ? 'WeDoTalent' : 'WeDoTalent',
       description: isEn ? 'Intelligent AI-powered recruitment' : 'Recrutamento inteligente com IA',
       images: [
         {
           url: '/og-image.png',
           width: 1200,
           height: 630,
-          alt: 'Plataforma LIA WeDoTalent',
+          alt: 'WeDoTalent',
         },
       ],
     },
     twitter: {
       card: 'summary_large_image' as const,
-      title: isEn ? 'LIA Platform — WeDoTalent' : 'Plataforma LIA — WeDoTalent',
+      title: isEn ? 'WeDoTalent' : 'WeDoTalent',
       description: isEn ? 'Intelligent AI-powered recruitment' : 'Recrutamento inteligente com IA',
       images: ['/og-image.png'],
     },

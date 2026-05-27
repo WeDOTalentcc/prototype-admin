@@ -101,7 +101,7 @@ const mockCandidateDetails = {
       id: 2,
       author:"João Costa",
       date:"2025-03-15T16:45:00",
-      content:"Nota LIA muito alta, compatibilidade perfeita para nossa necessidade. Verificar disponibilidade para início.",
+      content:"Nota IA muito alta, compatibilidade perfeita para nossa necessidade. Verificar disponibilidade para início.",
       type:"neutral"
     }
   ],
@@ -234,7 +234,7 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
               <div className="flex items-center gap-4 mt-2">
                 <div className="flex items-center gap-1">
                   <BrainCircuit className="w-4 h-4 text-lia-text-secondary" />
-                  <span className="text-sm font-medium text-wedo-cyan-dark">LIA: {candidateData.liaScore}/10</span>
+                  <span className="text-sm font-medium text-wedo-cyan-dark">IA: {candidateData.liaScore}/10</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <Target className="w-4 h-4 text-status-success" />

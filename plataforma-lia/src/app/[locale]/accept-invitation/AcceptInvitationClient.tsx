@@ -159,7 +159,7 @@ function AcceptInvitationContent() {
             </div>
             <h2 className="text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary mb-3">Bem-vindo(a)!</h2>
             <p className="text-lia-text-secondary text-base leading-relaxed">
-              Você foi convidado(a) para participar da plataforma LIA.
+              Você foi convidado(a) para participar da plataforma WeDoTalent.
             </p>
             {invitationInfo && (
               <div className="mt-4 p-4 bg-lia-bg-secondary rounded-xl border border-lia-border-subtle">

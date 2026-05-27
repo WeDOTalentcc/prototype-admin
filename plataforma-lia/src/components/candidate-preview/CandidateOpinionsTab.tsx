@@ -57,7 +57,7 @@ opinionsSubTab === 'pareceres'
           }`}
         >
           <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
-          Pareceres da LIA
+          Pareceres IA
           {opinionsHistory.length > 0 && (
             <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 flex items-center ml-1 bg-wedo-cyan/15">
               {opinionsHistory.length}
@@ -82,7 +82,7 @@ opinionsSubTab === 'analises'
         </button>
       </div>
 
-      {/* Subtab: Pareceres da LIA */}
+      {/* Subtab: Pareceres IA */}
       {opinionsSubTab === 'pareceres' && (
         <>
           {/* Loading State */}
@@ -114,7 +114,7 @@ opinionsSubTab === 'analises'
               </div>
               <p className={`${textStyles.subtitle} mb-1`}>Nenhum parecer disponível</p>
               <p className={textStyles.description}>
-                Os pareceres serão gerados automaticamente após triagens ou análises da LIA.
+                Os pareceres serão gerados automaticamente após triagens ou análises da IA.
               </p>
             </div>
           )}
@@ -210,7 +210,7 @@ opinionsSubTab === 'analises'
                         </div>
                         <div className="min-w-0">
                           <div className="flex items-center gap-2">
-                            <span className={`${textStyles.bodySmall} font-medium`}>Análise LIA</span>
+                            <span className={`${textStyles.bodySmall} font-medium`}>Análise IA</span>
                             <Chip variant="neutral" muted
                               className="text-micro px-1.5 py-0 h-4 flex items-center"
                              

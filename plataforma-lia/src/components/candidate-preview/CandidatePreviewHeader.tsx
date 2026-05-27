@@ -340,7 +340,7 @@ export function CandidatePreviewHeader({
               variant="ghost"
               size="sm"
               className="h-8 w-8 p-0 hover:bg-lia-bg-tertiary border border-lia-border-default rounded-md flex-shrink-0"
-              title="Análises LIA"
+              title="Análises IA"
             >
               <Brain className="w-5 h-5 text-wedo-cyan" />
             </Button>

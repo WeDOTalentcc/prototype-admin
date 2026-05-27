@@ -145,7 +145,7 @@ export function LiaChatModal({
                 size="sm"
                 onClick={onClose}
                 className="h-6 w-6 p-0"
-                aria-label="Fechar chat LIA"
+                aria-label="Fechar chat IA"
                 data-dismiss="true"
               >
                 <X className="w-3 h-3" aria-hidden="true" />

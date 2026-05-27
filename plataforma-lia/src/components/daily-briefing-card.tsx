@@ -237,7 +237,7 @@ export function DailyBriefingCard({
           onNavigate('Vagas')
           break
         default:
-          onNavigate('Chat com LIA')
+          onNavigate('Chat')
       }
     }
   }
@@ -491,7 +491,7 @@ export function DailyBriefingCard({
             <div className="space-y-2">
               <h4 className="text-xs font-medium flex items-center gap-2 text-wedo-cyan-dark">
                 <Brain className="w-4 h-4 text-wedo-cyan" />
-                Insights LIA
+                Insights IA
               </h4>
               <div className="grid md:grid-cols-2 gap-2">
                 {briefing.insights.map((insight, index) => (

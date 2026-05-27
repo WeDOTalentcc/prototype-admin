@@ -3,7 +3,7 @@ import { ErrorBoundarySection } from "@/components/ui/error-boundary-section"
 import { JobsPage } from "@/components/pages/jobs-page"
 
 export const metadata: Metadata = {
-  title: "Vagas | LIA — WeDo Talent",
+  title: "Vagas | WeDoTalent",
   description: "Acompanhe e gerencie todas as suas vagas: status, candidatos, publicações e ações da LIA.",
 }
 

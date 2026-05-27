@@ -238,7 +238,7 @@ export const EAPTabNatural = React.memo(function EAPTabNatural(props: EAPTabNatu
             <Wand2 className="w-4 h-4 mt-0.5 flex-shrink-0 text-lia-text-secondary" />
             <div className="flex-1 min-w-0" role="status" aria-live="polite" aria-label="Carregando...">
               <div className="flex items-center gap-1.5 mb-1" role="status" aria-live="polite" aria-label="Carregando...">
-                <span className="text-xs font-medium text-lia-text-secondary">Sugestão da LIA</span>
+                <span className="text-xs font-medium text-lia-text-secondary">Sugestão da IA</span>
                 {isEnhancingPrompt && (
                   <div className="w-3 h-3 border-2 border-lia-btn-primary-bg border-t-transparent rounded-full animate-spin motion-reduce:animate-none" />
                 )}
@@ -392,7 +392,7 @@ export const EAPTabNatural = React.memo(function EAPTabNatural(props: EAPTabNatu
                   </span>
                 </div>
                 <p className="text-micro text-lia-text-tertiary">
-                  Enquanto você descreve o perfil, a LIA analisa e sugere melhorias:
+                  Enquanto você descreve o perfil, a IA analisa e sugere melhorias:
                 </p>
                 <ul className="text-micro space-y-1 text-lia-text-tertiary">
                   <li className="flex items-start gap-1.5">

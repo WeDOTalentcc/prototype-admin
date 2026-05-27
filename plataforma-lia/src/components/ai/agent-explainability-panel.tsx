@@ -156,7 +156,7 @@ export function AgentExplainabilityPanel({
         <div className="flex items-center gap-2">
           <Brain className="h-4 w-4 text-wedo-cyan" />
           <span className="text-sm font-medium text-lia-text-disabled font-[Inter]">
-            Raciocínio da LIA
+            Raciocínio da IA
           </span>
           {summary && !loading && (
             <Chip

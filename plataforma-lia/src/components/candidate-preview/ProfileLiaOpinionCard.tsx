@@ -68,7 +68,7 @@ export function ProfileLiaOpinionCard({
             <div className="p-0.5 rounded-xl bg-lia-bg-tertiary">
               <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
             </div>
-            <CardTitle className={`${textStyles.label} text-lia-text-secondary`}>Parecer LIA</CardTitle>
+            <CardTitle className={`${textStyles.label} text-lia-text-secondary`}>Parecer IA</CardTitle>
           </div>
           <div className="flex items-center gap-2">
             <div className={`flex items-center gap-1 ${textStyles.caption}`}>

@@ -103,7 +103,7 @@ export function LIAFeedbackWidget({
           >
             <Brain className="w-3 h-3 text-wedo-cyan" />
             {feedbackState === "none" ? (
-              <span className="hidden sm:inline">LIA acertou?</span>
+              <span className="hidden sm:inline">IA acertou?</span>
             ) : feedbackState === "agree" ? (
               <ThumbsUp className="w-3 h-3" />
             ) : (
@@ -115,7 +115,7 @@ export function LIAFeedbackWidget({
           <div className="space-y-3">
             <div className="flex items-center gap-2 text-sm font-medium text-lia-text-primary">
               <Brain className="w-4 h-4 text-wedo-cyan" />
-              A avaliação da LIA está correta?
+              A avaliação da IA está correta?
             </div>
             
             {!showReason ? (
@@ -189,7 +189,7 @@ export function LIAFeedbackWidget({
       {showLabel && (
         <span className="text-xs text-lia-text-primary flex items-center gap-1">
           <Brain className="w-3 h-3 text-wedo-cyan" />
-          LIA acertou?
+          IA acertou?
         </span>
       )}
       
@@ -203,7 +203,7 @@ export function LIAFeedbackWidget({
           )}
           onClick={() => handleFeedback(true)}
           disabled={isSubmitting || feedbackState !== "none"}
-          title="Concordo com a LIA"
+          title="Concordo com a IA"
         >
           <ThumbsUp className="w-4 h-4" />
         </Button>
@@ -219,7 +219,7 @@ export function LIAFeedbackWidget({
               )}
               onClick={() => handleFeedback(false)}
               disabled={isSubmitting || feedbackState !== "none"}
-              title="Discordo da LIA"
+              title="Discordo da IA"
             >
               <ThumbsDown className="w-4 h-4" />
             </Button>

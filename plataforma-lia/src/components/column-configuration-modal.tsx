@@ -33,7 +33,7 @@ const AVAILABLE_COLUMNS = [
   { id: 'current_company', label: 'Empresa atual', type: 'string', defaultVisible: true },
   { id: 'role_name', label: 'Cargo atual', type: 'string', defaultVisible: true },
   { id: 'position_level', label: 'Nível de posição', type: 'string', defaultVisible: false },
-  { id: 'score_lia', label: 'Score LIA', type: 'number', defaultVisible: true },
+  { id: 'score_lia', label: 'Score IA', type: 'number', defaultVisible: true },
   { id: 'date_birth', label: 'Data de nascimento', type: 'date', defaultVisible: false },
   { id: 'gender', label: 'Gênero', type: 'integer', defaultVisible: false },
   { id: 'nationality', label: 'Nacionalidade', type: 'string', defaultVisible: false },

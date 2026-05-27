@@ -3,7 +3,7 @@ import { DashboardApp } from "@/components/dashboard-app"
 import { OnboardingController } from "@/components/onboarding/onboarding-controller"
 
 export const metadata: Metadata = {
-  title: "Dashboard | LIA — WeDo Talent",
+  title: "Dashboard | WeDoTalent",
   description: "Plataforma de recrutamento inteligente com IA — gerencie vagas, candidatos e pipelines de seleção em um só lugar.",
 }
 

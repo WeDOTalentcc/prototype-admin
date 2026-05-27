@@ -101,7 +101,7 @@ const processSteps = [
   },
   {
     icon: Bot,
-    title: "Triagem com LIA",
+    title: "Triagem com IA",
     description: "Nossa IA analisa seu perfil e faz perguntas",
     highlight: true
   },
@@ -600,7 +600,7 @@ export default function VagasDetailClient({ slug }: Props) {
             <div className="flex items-start gap-3">
               <Bot className="w-5 h-5 text-lia-text-tertiary dark:text-lia-text-secondary mt-0.5 flex-shrink-0" aria-hidden="true" />
               <p className={cn(textStyles.body, "leading-relaxed")}>
-                <strong className="font-semibold text-lia-text-primary dark:text-lia-text-primary">Triagem inteligente com LIA.</strong>{" "}
+                <strong className="font-semibold text-lia-text-primary dark:text-lia-text-primary">Triagem inteligente com IA.</strong>{" "}
                 Nossa assistente de IA conduz uma conversa amigável para conhecer você melhor,
                 garantindo uma avaliação justa e feedback em todas as etapas.
               </p>
@@ -858,7 +858,7 @@ export default function VagasDetailClient({ slug }: Props) {
               </h4>
             </div>
             <p className={cn(textStyles.description, "leading-relaxed max-w-lg mx-auto mb-2")}>
-              Este processo seletivo utiliza inteligência artificial (LIA) para auxiliar na triagem.
+              Este processo seletivo utiliza inteligência artificial (IA) para auxiliar na triagem.
               Seus dados são tratados conforme a LGPD. Ao se candidatar, você autoriza a coleta
               e análise dos seus dados para fins deste processo.
             </p>

@@ -17,7 +17,7 @@ interface ChatInputBarProps {
 export function ChatInputBar({
   onSend,
   isLoading = false,
-  placeholder = "Envie mensagem para a LIA...",
+  placeholder = "Envie uma mensagem...",
   className,
   maxLength = 2000,
   showMic = true,
@@ -75,7 +75,7 @@ export function ChatInputBar({
         disabled={isLoading}
         maxLength={maxLength}
         rows={1}
-        aria-label="Mensagem para a LIA"
+        aria-label="Mensagem para a IA"
         className={cn(
           "flex-1 bg-transparent text-base-ui",
           "text-lia-text-primary placeholder:text-lia-text-disabled",

@@ -370,12 +370,12 @@ isProcessing
         {isProcessing && (
           <div className="flex items-center gap-2 text-xs text-lia-text-secondary bg-lia-bg-secondary p-2 rounded-xl mb-3 border border-lia-border-subtle">
             <div className="w-2 h-2 bg-lia-btn-primary-bg rounded-full animate-pulse motion-reduce:animate-none"></div>
-            <span>🧠 LIA processando:"{lastCommand}"</span>
+            <span>🧠 IA processando:"{lastCommand}"</span>
           </div>
         )}
 
         <div className="text-xs text-lia-text-primary text-center pt-2 space-y-1">
-          <div>💡 LIA aprende com seus padrões para sugerir ações mais precisas</div>
+          <div>💡 IA aprende com seus padrões para sugerir ações mais precisas</div>
           <div className="flex justify-center gap-4">
             <span>⌨️ Esc para fechar</span>
             <span>Ctrl+K para focar</span>

@@ -3,7 +3,7 @@ import { ErrorBoundarySection } from "@/components/ui/error-boundary-section"
 import { SettingsRouteClient } from "./SettingsRouteClient"
 
 export const metadata: Metadata = {
-  title: "Configurações | LIA — WeDo Talent",
+  title: "Configurações | WeDoTalent",
   description: "Configure sua conta, preferências da plataforma, integrações e configurações da empresa no LIA WeDoTalent.",
 }
 

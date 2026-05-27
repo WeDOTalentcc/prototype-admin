@@ -88,7 +88,7 @@ export function AISuggestionBadge({
           <div className="space-y-3">
             <div className="flex items-center gap-2">
               <Brain className="h-4 w-4 text-wedo-cyan" />
-              <span className="font-medium text-sm">Sugestão da LIA</span>
+              <span className="font-medium text-sm">Sugestão da IA</span>
             </div>
             <p className="text-sm text-lia-text-tertiary">{actionLabel}</p>
             <div className="flex items-center justify-between text-xs">
