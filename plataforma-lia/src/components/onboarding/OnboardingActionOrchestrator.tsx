@@ -85,6 +85,24 @@ const STEPS: StepDef[] = [
     cta: "Planejar contratacoes",
   },
   {
+    key: "policy",
+    actionId: "configure_hiring_policy",
+    title: "Políticas de recrutamento",
+    question: "Como você quer que a LIA conduza o processo? Aprovações, triagem automática, horários permitidos.",
+    prompt:
+      "Quero configurar as políticas de recrutamento: aprovação de oferta, triagem automática, autonomia da LIA e horários permitidos para contato.",
+    cta: "Configurar políticas",
+  },
+  {
+    key: "persona",
+    actionId: "configure_persona",
+    title: "Personalidade da LIA",
+    question: "Quer dar um nome ou escolher um tom de voz para a sua assistente?",
+    prompt:
+      "Quero personalizar a assistente: escolher um nome customizado e o tom de comunicação que combina com a nossa empresa.",
+    cta: "Personalizar assistente",
+  },
+  {
     key: "website",
     actionId: "analyze_website",
     title: "Analisar nosso site",
@@ -258,7 +276,7 @@ export function OnboardingActionOrchestrator() {
       </header>
       <div className="h-1 w-full rounded bg-lia-bg-tertiary overflow-hidden">
         <div
-          className="h-full bg-wedo-cyan transition-all"
+          className="h-full bg-wedo-cyan transition-[width]"
           style={{ width: `${(completed / total) * 100}%` }}
         />
       </div>

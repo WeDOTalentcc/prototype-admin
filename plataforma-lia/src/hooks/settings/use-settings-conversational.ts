@@ -9,6 +9,7 @@ export type SettingsActionId =
   | "configure_benefits"
   | "configure_workforce"
   | "configure_hiring_policy"
+  | "configure_persona"
   | "analyze_website"
   | "process_document"
   | "prefill_section"
@@ -49,6 +50,7 @@ const ACTION_TO_TAB: Record<SettingsActionId, string> = {
   configure_benefits: "minha-empresa",
   configure_workforce: "minha-empresa",
   configure_hiring_policy: "minha-empresa",
+  configure_persona: "lia-personalizacao",
   analyze_website: "minha-empresa",
   process_document: "minha-empresa",
   prefill_section: "minha-empresa",
