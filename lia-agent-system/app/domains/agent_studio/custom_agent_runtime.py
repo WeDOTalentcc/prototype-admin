@@ -471,10 +471,29 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
             logger.warning("[CustomAgentRuntime] cost estimation failed: %s", _cost_exc)
             cost_usd = 0.0
 
+        # Onda 1 B2 (2026-05-27): construir reasoning_trace canonical pra
+        # Studio Control Room (DecisionTreeDrawer). Helper extracted pra ser
+        # testable em isolamento + manter _state_to_output legivel.
+        try:
+            from app.domains.agent_studio.reasoning_trace_builder import (
+                build_reasoning_trace,
+            )
+            reasoning_trace = build_reasoning_trace(messages, max_steps=20)
+        except Exception as _trace_exc:
+            # Fail-open: trace e best-effort, nao deve quebrar agent execution.
+            # Mas logamos LOUD (anti-silent) — recidiva proibida.
+            logger.error(
+                "[CustomAgentRuntime] build_reasoning_trace falhou — trace=None",
+                exc_info=True,
+                extra={"agent_id": self._agent_id, "err": str(_trace_exc)},
+            )
+            reasoning_trace = None
+
         return AgentOutput(
             message=response,
             actions=actions,
             confidence=0.8,
+            reasoning_trace=reasoning_trace,
             metadata={
                 "source": "custom_agent_runtime",
                 "agent_id": self._agent_id,
