@@ -102,6 +102,42 @@ export function useWizardIntegration({
     }
   }, [])
 
+  // Fix G (2026-05-27 -- WIZARD_DEEP_DIVE_2026-05-27_POST_PR18 P1-NOVO-#4):
+  // wire `handleWizardStepResponse` via `lia:wizard-stage-payload` window event
+  // (mesmo event canonical do Fix B). Antes deste fix, o handler era orfao
+  // desde a Onda 33 -- nenhum caller invocava, missingFields sempre vazio,
+  // banner "Campos obrigatorios em aberto" nunca aparecia em UnifiedChat:948.
+  //
+  // Adapter shape: extrai missing_fields direto do detail.data (canonical
+  // wizard_stage payload) E backward-compat com message_metadata.wizard_step_response
+  // caso backend emita esse shape no futuro. Cleanup canonical no return.
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    const handler = (e: Event) => {
+      const detail = ((e as CustomEvent).detail ?? {}) as Record<string, unknown>
+      const data = (detail.data as Record<string, unknown>) ?? {}
+
+      // Path 1 canonical: missing_fields direto no wizard_stage payload.
+      const missing = data.missing_fields
+      if (Array.isArray(missing)) {
+        setMissingFields(missing.map(String))
+      } else if (detail.requires_approval === false) {
+        // Stage avancou sem pendencias -- limpar banner residual.
+        setMissingFields([])
+      }
+
+      // Path 2 backward-compat: message_metadata.wizard_step_response shape
+      // (Onda 33 original). Se backend emitir esse blob, o handler trata.
+      const wsr = data.wizard_step_response
+      if (wsr && typeof wsr === "object") {
+        handleWizardStepResponse({ metadata: { wizard_step_response: wsr } })
+      }
+    }
+    window.addEventListener("lia:wizard-stage-payload", handler)
+    return () =>
+      window.removeEventListener("lia:wizard-stage-payload", handler)
+  }, [handleWizardStepResponse])
+
   // D.1: File upload → wizard intake
   useEffect(() => {
     function handleFileConfirmed(e: CustomEvent) {
