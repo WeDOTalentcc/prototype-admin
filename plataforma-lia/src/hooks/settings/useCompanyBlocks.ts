@@ -117,6 +117,21 @@ export const POLICY_FIELD_TO_BLOCK: Record<string, string> = {
   auto_scheduling: "automation_rules",
   auto_stage_advance: "automation_rules",
   autonomy_level: "automation_rules",
+  // P0-1 (2026-05-27): conversational policy fields
+  screening_criteria: "screening_rules",
+  candidate_feedback_policy: "communication_rules",
+  communication_window: "communication_rules",
+  interview_scheduling_policy: "scheduling_rules",
+  interview_reminder_policy: "scheduling_rules",
+  no_show_policy: "scheduling_rules",
+  minimum_compatibility_score: "screening_rules",
+  salary_negotiation_policy: "screening_rules",
+  remote_work_policy: "screening_rules",
+  data_retention_candidate_policy: "screening_rules",
+  talent_pool_opt_in_policy: "screening_rules",
+  diversity_inclusion_guidelines: "screening_rules",
+  manager_approval_sla_hours: "pipeline_rules",
+  vacancy_approval_required: "pipeline_rules",
 }
 
 // ─── Pure helper functions ───────────────────────────────────────────────────
@@ -214,7 +229,7 @@ export function buildBlocks(
 
   const policyFields: CardField[] = [
     { key: "min_interviews_before_offer", label: "Quantas entrevistas mínimas antes de fazer oferta?", value: pr?.min_interviews_before_offer ?? null, type: "number", editable: true, block: "policy" },
-    { key: "manager_approval_for_offer", label: "A oferta requer aprovação do gestor antes de enviar?", value: pr?.manager_approval_for_offer ?? null, type: "boolean", editable: true, block: "policy" },
+    { key: "manager_approval_for_offer", label: "Aprovação Final de Oferta (gestor precisa aprovar antes de enviar proposta ao candidato)?", value: pr?.manager_approval_for_offer ?? null, type: "boolean", editable: true, block: "policy" },
     { key: "max_days_in_stage", label: "Máximo de dias que candidato pode ficar em uma etapa?", value: pr?.max_days_in_stage ?? null, type: "text", editable: false, block: "policy" },
     { key: "allowed_days", label: "Em quais dias da semana podemos agendar entrevistas?", value: sr?.allowed_days ?? null, type: "list", editable: true, block: "policy" },
     { key: "allowed_hours", label: "Em qual janela horária podemos agendar entrevistas?", value: hours ? `${hours.start || ""} - ${hours.end || ""}` : null, type: "time-range", editable: true, block: "policy" },

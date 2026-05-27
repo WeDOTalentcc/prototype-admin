@@ -42,6 +42,7 @@ const IntegrationsHub = dynamic(() => import("@/components/settings/Integrations
 const UsuariosDepartamentosHub = dynamic(() => import("@/components/settings/UsuariosDepartamentosHub").then(m => ({ default: m.UsuariosDepartamentosHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando usuários..." /> })
 const FairnessComplianceHub = dynamic(() => import("@/components/settings/FairnessComplianceHub").then(m => ({ default: m.FairnessComplianceHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando compliance..." /> })
 const ConsumoHub = dynamic(() => import("@/components/settings/ConsumoHub").then(m => ({ default: m.ConsumoHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando consumo..." /> })
+const HiringPoliciesHub = dynamic(() => import("@/components/settings/HiringPoliciesHub").then(m => ({ default: m.HiringPoliciesHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando políticas..." /> })
 
 import { textStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
 import { useHoverDebounce } from '@/lib/sidebar/useHoverDebounce'
@@ -187,6 +188,17 @@ const getDefaultSections = (): SettingsSection[] => [
     category: 'advanced',
     estimatedTime: 0,
   },
+  {
+    id: 'politicas-recrutamento',
+    title: 'Políticas de Recrutamento',
+    description: 'Triagem, aprovação, comunicação, LGPD e D&I',
+    icon: FileText,
+    status: 'incomplete',
+    priority: 'high',
+    category: 'advanced',
+    estimatedTime: 15,
+    dependencies: ['minha-empresa'],
+  },
 ]
 
 const settingsSections: SettingsSection[] = getDefaultSections()
@@ -274,6 +286,12 @@ export default function SettingsPageEnhanced() {
           'comunicacao-alertas': data.sections['comunicacao-alertas'] ?? prev['comunicacao-alertas'],
           'usuarios-departamentos': data.sections['usuarios-departamentos'] ?? prev['usuarios-departamentos'],
           'integrations': data.sections['integracoes'] ?? data.sections['integrations'] ?? prev['integrations'],
+          // P0-4 fix: add missing section mappings so per-hub % shows correctly
+          'fairness-compliance': data.sections['fairness-compliance'] ?? prev['fairness-compliance'],
+          'consumo': data.sections['ai-credits'] ?? data.sections['consumo'] ?? prev['consumo'],
+          'pipeline': data.sections['pipeline'] ?? data.sections['recrutamento-lia'] ?? prev['pipeline'],
+          'screening': data.sections['screening'] ?? data.sections['recrutamento-lia'] ?? prev['screening'],
+          'templates-assinatura': data.sections['templates-assinatura'] ?? data.sections['recrutamento-lia'] ?? prev['templates-assinatura'],
         }))
       }
       
@@ -418,6 +436,12 @@ export default function SettingsPageEnhanced() {
         return (
           <ErrorBoundarySection>
             <ConsumoHub />
+          </ErrorBoundarySection>
+        )
+      case 'politicas-recrutamento':
+        return (
+          <ErrorBoundarySection>
+            <HiringPoliciesHub />
           </ErrorBoundarySection>
         )
       default:
