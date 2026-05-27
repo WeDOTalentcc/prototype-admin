@@ -30,6 +30,7 @@ const SECTION_ICON_COLORS: Record<string, string> = {
   'lia-personalizacao': 'text-cyan-500',
   'fairness-compliance': 'text-violet-400',
   'consumo': 'text-teal-500',
+  'politicas-recrutamento': 'text-orange-500',
 }
 
 
@@ -273,6 +274,8 @@ export default function SettingsPageEnhanced() {
     'integrations': 0,
     'fairness-compliance': 0,
     'consumo': 0,
+    'lia-personalizacao': 0,
+    'politicas-recrutamento': 0,
   })
 
   const [subsectionCompletion, setSubsectionCompletion] = useState<Record<string, boolean>>({})
@@ -325,6 +328,8 @@ export default function SettingsPageEnhanced() {
           'integrations': data.sections['integracoes'] ?? data.sections['integrations'] ?? prev['integrations'],
           'fairness-compliance': data.sections['fairness-compliance'] ?? prev['fairness-compliance'],
           'consumo': data.sections['ai-credits'] ?? data.sections['consumo'] ?? prev['consumo'],
+          'lia-personalizacao': data.sections['lia-personalizacao'] ?? prev['lia-personalizacao'],
+          'politicas-recrutamento': data.sections['politicas-recrutamento'] ?? data.sections['recrutamento-lia'] ?? prev['politicas-recrutamento'],
         }))
       }
       
