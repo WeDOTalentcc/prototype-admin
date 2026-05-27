@@ -128,3 +128,9 @@ check-recoveries-fast:	## Recovery sensors EXCETO no_collection (que demora ~90s
 		tests/contract/test_policy_migration.py \
 		tests/api/test_lia_feedback_hardening.py \
 		--no-header --no-cov -q --tb=short
+
+check-lia-toggles: ## P2-5: Verify all lia_field_toggles have real consumers
+	python3 scripts/check_lia_field_toggle_consumers.py
+
+check-lia-toggles-blocking:
+	python3 scripts/check_lia_field_toggle_consumers.py --blocking
