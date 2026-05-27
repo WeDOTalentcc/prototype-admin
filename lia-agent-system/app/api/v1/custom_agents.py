@@ -58,7 +58,13 @@ async def create_custom_agent(
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     from app.services.quota_enforcement import enforce_quota
-    await enforce_quota("custom_agents", current_user.company_id, db)
+    # Wave C2.1 (2026-05-27): quota_key derivado de body.category — agents
+    # sourcing contam contra quota separada de custom_agents. Fix harness:
+    # antes hardcoded "custom_agents" inflava errado quando recruiter criava
+    # sourcing agent (que tem pricing/quota distinto).
+    _category = (body.category or "general").lower()
+    _quota_key = "sourcing_agents" if _category == "sourcing" else "custom_agents"
+    await enforce_quota(_quota_key, current_user.company_id, db)
 
     # Wave 2 audit 2026-05-21: FG check no system_prompt antes de persistir.
     # ANTES: recruiter podia digitar prompt enviesado ("prefer male candidates")
@@ -1642,18 +1648,11 @@ async def get_custom_agent_timeline(
     (timeline só faz sentido pra agentes de sourcing — outras categorias usam
     surfaces diferentes).
     """
-    stmt = select(CustomAgent).where(
-        CustomAgent.id == agent_id,
-        CustomAgent.company_id == company_id,
-        CustomAgent.category == "sourcing",
-    )
-    result = await db.execute(stmt)
-    agent = result.scalar_one_or_none()
-    if agent is None:
-        raise HTTPException(status_code=404, detail="Agent not found")
+    # Wave C2.4: helper distingue "nao existe" vs "existe mas nao e sourcing"
+    await _ensure_sourcing_agent_or_404(agent_id, company_id, db)
 
     raw_events = await sourcing_agent_orchestrator.get_agent_timeline(
-        agent.id, db=db
+        agent_id, db=db
     )
 
     timeline = [AgentTimelineEventResponse(**ev) for ev in raw_events]
@@ -1683,6 +1682,39 @@ class FeedbackCanonicalRequest(_WeDoBaseModel):
     reason: str = _PydanticField(..., min_length=3, max_length=500)
 
 
+async def _ensure_sourcing_agent_or_404(
+    agent_id: str, company_id: str, db: AsyncSession
+) -> None:
+    """Wave C2.4 (2026-05-27): distingue 404 "agent inexistente" vs
+    "agent existe mas não é sourcing" para endpoints de calibração.
+
+    Antes: orchestrator devolvia LookupError genérico e API mandava
+    \"Custom agent not found\" — recruiter ficava perdido se tinha
+    criado agent de outra category e clicou em calibração.
+
+    Agora: pré-check explicita o motivo. Mantém multi-tenancy fail-closed.
+    """
+    stmt = select(CustomAgent).where(
+        CustomAgent.id == agent_id,
+        CustomAgent.company_id == company_id,
+    )
+    result = await db.execute(stmt)
+    agent = result.scalar_one_or_none()
+    if agent is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Custom agent não encontrado para esta empresa.",
+        )
+    if agent.category != "sourcing":
+        raise HTTPException(
+            status_code=404,
+            detail=(
+                f"Calibração disponível apenas para agents de sourcing. "
+                f"Este agent é \u0027{agent.category}\u0027."
+            ),
+        )
+
+
 @router.get(
     "/{agent_id}/calibration-candidates",
     summary="Calibration candidates canonical (sourcing category)",
@@ -1699,13 +1731,15 @@ async def get_custom_agent_calibration_candidates(
     Multi-tenancy fail-closed: company_id vem do JWT, propagado ao orchestrator
     que filtra category=sourcing + raise LookupError em cross-tenant.
     """
+    # Wave C2.4: helper distingue "nao existe" vs "existe mas nao e sourcing"
+    await _ensure_sourcing_agent_or_404(agent_id, company_id, db)
     try:
         candidates = await sourcing_agent_orchestrator.get_calibration_candidates(
             agent_id=agent_id, limit=limit, db=db, company_id=company_id,
         )
     except LookupError as exc:
         logger.warning(
-            "[custom-agents] calibration-candidates 404: agent_id=%s company_id=%s reason=%s",
+            "[custom-agents] calibration-candidates 404 (race?): agent_id=%s company_id=%s reason=%s",
             agent_id, company_id, exc,
         )
         raise HTTPException(status_code=404, detail="Custom agent not found") from exc
@@ -1728,6 +1762,8 @@ async def submit_custom_agent_feedback(
     Reuses orchestrator (canonical via CustomAgent + category=sourcing).
     studio_audit logs LGPD Art. 20 / EU AI Act Art. 12 review trail.
     """
+    # Wave C2.4: helper distingue "nao existe" vs "existe mas nao e sourcing"
+    await _ensure_sourcing_agent_or_404(agent_id, company_id, db)
     result = await sourcing_agent_orchestrator.process_feedback(
         agent_id=agent_id,
         candidate_id=body.candidate_id,
