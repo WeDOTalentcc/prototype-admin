@@ -9,6 +9,8 @@ import { TemplateGallery, AgentCard as CustomAgentCard, AgentCardSkeleton, Agent
 // TemplatePreviewModal (Sprint B QW#5) preservado como export de custom-agents/
 // para outros entry-points que queiram um confirm-rápido sem o wizard.
 import { TemplateClonePanel } from "@/components/pages-agent-studio/template-clone"
+// Onda 1 F1 (2026-05-27): Sala de Controle = 4ª aba canonical.
+import { StudioControlRoom } from "@/components/pages-agent-studio/control-room"
 import { useCustomAgents, usePendingApprovals } from "@/hooks/agents"
 import { useAgentStudioStore } from "@/stores/agent-studio-store"
 import type { CustomAgent, AgentTemplate } from "@/components/pages-agent-studio/custom-agents/types"
@@ -19,7 +21,7 @@ import {
   ChevronRight, Zap, Target, ArrowRight,
   Activity, Eye, ThumbsUp, ThumbsDown, RefreshCw,
   Loader2, Users, Wand2, Store,
-  GraduationCap, BarChart3, Clock, Inbox
+  GraduationCap, BarChart3, Clock, Inbox, Radar
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { getSourcingAgentStatusConfig } from "@/lib/agent-studio/status-config"
@@ -144,7 +146,8 @@ export default function AgentStudioPage({
   // - "digital-twins": TwinsList canonical.
   // Marketplace deixou de ser tab — virou CTA "Explorar Marketplace" no header,
   // rota /agents/marketplace renderiza MarketplaceTab standalone.
-  type MainTab = "my-agents" | "approvals" | "digital-twins"
+  // Onda 1 F1 (2026-05-27): "control-room" entre "approvals" e "digital-twins".
+  type MainTab = "my-agents" | "approvals" | "control-room" | "digital-twins"
   const [activeTab, setActiveTab] = useState<MainTab>("my-agents")
 
   // Wave 0 Fix 3 (2026-05-27): contagem de aprovações pendentes pro badge da tab.
@@ -179,6 +182,8 @@ export default function AgentStudioPage({
       "my-agents": "my-agents",
       "approvals": "approvals",
       "aprovacoes": "approvals",
+      "control-room": "control-room",
+      "sala-de-controle": "control-room",
       "twins": "digital-twins",
       "gemeos": "digital-twins",
       "digital-twins": "digital-twins",
@@ -383,6 +388,12 @@ export default function AgentStudioPage({
               count: pendingCount,
               badgeLabel: pendingBadgeLabel,
               badgeAccent: "cyan",
+            },
+            // Onda 1 F1 (2026-05-27): Sala de Controle = 4ª aba canonical.
+            {
+              id: "control-room",
+              label: t("studio.tabs.controlRoom"),
+              icon: Radar,
             },
             { id: "digital-twins", label: t("studio.tabs.digitalTwins"), icon: Users },
           ]}
@@ -711,6 +722,11 @@ export default function AgentStudioPage({
             <ApprovalsList onReviewed={() => mutateCustomAgents()} />
           </section>
         )}
+
+        {/* Onda 1 F1 (2026-05-27): Sala de Controle — execuções ao vivo,
+            histórico recente e auditoria LGPD. DecisionTreeDrawer canonical
+            embebido em StudioControlRoom será reutilizado pelas Ondas 2-3. */}
+        {activeTab === "control-room" && <StudioControlRoom />}
 
         {/* TODO Fase 2: trigger via kanban-card com candidate real. onEvaluate removido pra evitar payload vazio (Wave A P0 #5). */}
         {activeTab === "digital-twins" && (
