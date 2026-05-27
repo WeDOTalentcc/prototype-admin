@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react"
 import { TwinsList, CreateDigitalTwinModal } from "@/components/pages-agent-studio/DigitalTwinComponents"
-import { TemplateGallery, AgentCard as CustomAgentCard, AgentCardSkeleton, AgentDetailsPanel, DeployDialog, ConversationalCreator, TestDebugPanel, ApprovalsList } from "@/components/pages-agent-studio/custom-agents"
+import { TemplateGallery, AgentCard as CustomAgentCard, AgentCardSkeleton, AgentDetailsPanel, DeployDialog, AIAgentBuilder, TestDebugPanel, ApprovalsList } from "@/components/pages-agent-studio/custom-agents"
 // UX_AUDIT T4 (2026-05-21): TemplateClonePanel substitui TemplatePreviewModal como
 // entry-point primário do TemplateGallery (clone-first / HubSpot Breeze).
 // TemplatePreviewModal (Sprint B QW#5) preservado como export de custom-agents/
@@ -646,7 +646,7 @@ export default function AgentStudioPage({
 
             {/* Conversational Creator (target do CTA "Criar com IA" — BUG-12) */}
             <div id="agent-studio-conversational-creator" className="scroll-mt-4">
-              <ConversationalCreator onAgentCreated={() => mutateCustomAgents()} />
+              <AIAgentBuilder onAgentCreated={() => mutateCustomAgents()} />
             </div>
 
             {/* Deploy Dialog */}

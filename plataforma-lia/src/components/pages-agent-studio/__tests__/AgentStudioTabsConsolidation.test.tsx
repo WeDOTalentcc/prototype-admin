@@ -51,7 +51,7 @@ vi.mock("../custom-agents", () => ({
   AgentCardSkeleton: () => null,
   AgentDetailsPanel: () => null,
   DeployDialog: () => null,
-  ConversationalCreator: () => <div data-testid="stub-conv-creator" />,
+  AIAgentBuilder: () => <div data-testid="stub-conv-creator" />,
   TestDebugPanel: () => null,
   ApprovalsList: () => null,
 }))

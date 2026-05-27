@@ -1772,7 +1772,8 @@
         "approved": "approved",
         "approvalRate": "approval rate",
         "analyzed": "Analyzed",
-        "rate": "Rate"
+        "rate": "Rate",
+        "totalExecutions": "executions"
       },
       "whatIsAgent": "What is an Agent?",
       "virtualRecruiter": "A virtual recruiter that works for you",
@@ -1870,7 +1871,9 @@
         "cancel": "Cancel",
         "creating": "Creating...",
         "createAndCalibrate": "Create and Calibrate"
-      }
+      },
+      "sourcingAgents": "Sourcing agents",
+      "customAgentsLabel": "Custom agents"
     },
     "status": {
       "active": "Active",
@@ -2306,7 +2309,7 @@
       "linkBtn": "Link",
       "clone": "Clone",
       "cloning": "...",
-      "pendingApprovals": "Pending approvals ({count})",
+      "pendingApprovals": "Publication approvals ({count})",
       "pending": "Pending",
       "requestedBy": "Requested by: {name}",
       "reviewNotes": "Review notes (optional)",
@@ -2321,8 +2324,8 @@
       "standardDesc": "Persona + tenant + user + instructions. Balanced.",
       "full": "Full",
       "fullDesc": "Everything: persona + tenant + user + history + few-shot.",
-      "createWithAI": "Create with AI",
-      "describeNeed": "Describe what you need and LIA configures the agent automatically",
+      "createWithAI": "Create agent with AI",
+      "describeNeed": "Describe the agent you want to create — the configuration is generated automatically",
       "aiPlaceholder": "E.g.: I need an agent that filters Python candidates with 3+ years of cloud AWS experience and classifies by seniority...",
       "generate": "Generate",
       "startOver": "Start over",
@@ -2512,7 +2515,9 @@
       "fairnessGuardOk": "FairnessGuard OK",
       "piiStripOk": "PII Strip OK",
       "auditLogOk": "Audit Log OK",
-      "agentFallback": "Agent"
+      "agentFallback": "Agent",
+      "approvalsTooltip": "Approve draft agents to publish them and allow execution.",
+      "approvalsDescription": "Draft agents awaiting publication."
     },
     "digitalTwin": {
       "active": "Active",

@@ -1755,7 +1755,8 @@
         "approved": "aprovados",
         "approvalRate": "taxa de aprovação",
         "analyzed": "Analisados",
-        "rate": "Taxa"
+        "rate": "Taxa",
+        "totalExecutions": "execucoes"
       },
       "whatIsAgent": "O que é um Agente?",
       "virtualRecruiter": "Um recrutador virtual que trabalha para você",
@@ -1853,7 +1854,9 @@
         "cancel": "Cancelar",
         "creating": "Criando...",
         "createAndCalibrate": "Criar e Calibrar"
-      }
+      },
+      "sourcingAgents": "Agentes de sourcing",
+      "customAgentsLabel": "Agentes personalizados"
     },
     "status": {
       "active": "Ativo",
@@ -2289,7 +2292,7 @@
       "linkBtn": "Vincular",
       "clone": "Clonar",
       "cloning": "...",
-      "pendingApprovals": "Aprovacoes pendentes ({count})",
+      "pendingApprovals": "Aprovacoes de publicacao ({count})",
       "pending": "Pendente",
       "requestedBy": "Solicitado por: {name}",
       "reviewNotes": "Notas da revisao (opcional)",
@@ -2304,8 +2307,8 @@
       "standardDesc": "Persona + tenant + usuario + instrucoes. Equilibrado.",
       "full": "Completo",
       "fullDesc": "Tudo: persona + tenant + usuario + historico + few-shot.",
-      "createWithAI": "Criar com IA",
-      "describeNeed": "Descreva o que voce precisa e a LIA configura o agente automaticamente",
+      "createWithAI": "Criar agente com IA",
+      "describeNeed": "Descreva o agente que voce quer criar — a configuracao e gerada automaticamente",
       "aiPlaceholder": "Ex: Preciso de um agente que filtre candidatos Python com 3+ anos de experiencia em cloud AWS e classifique por senioridade...",
       "generate": "Gerar",
       "startOver": "Recomecar",
@@ -2495,7 +2498,9 @@
       "fairnessGuardOk": "FairnessGuard OK",
       "piiStripOk": "Remoção PII OK",
       "auditLogOk": "Log de Auditoria OK",
-      "agentFallback": "Agente"
+      "agentFallback": "Agente",
+      "approvalsTooltip": "Aprove agentes em draft para publica-los e permitir execucao.",
+      "approvalsDescription": "Agentes em draft aguardando publicacao."
     },
     "digitalTwin": {
       "active": "Ativo",

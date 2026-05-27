@@ -15,7 +15,7 @@ import { FlaskConical } from "lucide-react"
  * text-lia-text-on-inverse. Neutro dark canonical (slate-800-ish) garante
  * contraste alto sem usurpar identidade cyan da IA. Cascateia automaticamente
  * para os 8 consumers de BetaBadge (AgentStudioPage, AgentCard,
- * ConversationalCreator, AgentCreationPreview, AgentActivityCard,
+ * AIAgentBuilder, AgentCreationPreview, AgentActivityCard,
  * AgentChatCard, AgentDetailsPanel, TestDebugPanel).
  */
 export interface BetaBadgeProps {
