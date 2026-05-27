@@ -1,7 +1,8 @@
 "use client"
 
 import React, { useState } from "react"
-import { Bot, Link2, Zap, Calendar, MousePointer, GitBranch, MapPin, Loader2, Copy } from "lucide-react"
+import Link from "next/link"
+import { Bot, Link2, Zap, Calendar, MousePointer, GitBranch, MapPin, Loader2, Copy, Pencil, Activity } from "lucide-react"
 import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
 import { cardStyles, badgeStyles, textStyles } from "@/lib/design-tokens"
@@ -9,8 +10,9 @@ import { BetaBadge } from "@/components/ui/beta-badge"
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog"
-import { useAgentDeployments } from "@/hooks/agents"
+import { useAgentDeployments, useAgentActivities } from "@/hooks/agents"
 import { VersionHistoryPanel } from "./VersionHistoryPanel"
+import { AgentActivityCard } from "./AgentActivityCard"
 import type { CustomAgent } from "./types"
 import { safeCategoryKey } from "./types"
 
@@ -33,6 +35,7 @@ export function AgentDetailsPanel({ agent, open, onClose, onDeploy, onTest }: Ag
   const t = useTranslations('agents.customAgents')
   const tStatus = useTranslations('agents.status')
   const { deployments, isLoading: deploymentsLoading } = useAgentDeployments(agent?.id ?? null)
+  const { activities, isLoading: activitiesLoading, isError: activitiesError } = useAgentActivities(agent?.id ?? null, 10)
   const [isCloning, setIsCloning] = useState(false)
 
   const handleClone = async () => {
@@ -65,6 +68,16 @@ export function AgentDetailsPanel({ agent, open, onClose, onDeploy, onTest }: Ag
             <Bot className="w-5 h-5 text-graphite" />
             {agent.name}
             <BetaBadge size="sm" />
+            <Link
+              href={`/agent-studio/${agent.id}/edit`}
+              onClick={() => onClose()}
+              className="ml-auto inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium text-lia-text-secondary hover:bg-lia-bg-tertiary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lia-btn-primary-bg/30"
+              aria-label={t('editBtn')}
+              data-testid="agent-details-edit-button"
+            >
+              <Pencil className="w-3.5 h-3.5" />
+              {t('editBtn')}
+            </Link>
           </DialogTitle>
         </DialogHeader>
 
@@ -156,6 +169,35 @@ export function AgentDetailsPanel({ agent, open, onClose, onDeploy, onTest }: Ag
                       {dep.is_active ? tStatus('active') : tStatus('paused')}
                     </span>
                   </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Activity Timeline (Wave B2.2) */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <h4 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5">
+                <Activity className="w-3.5 h-3.5" /> {t('recentActivity')}
+              </h4>
+            </div>
+            {activitiesLoading ? (
+              <div className="flex items-center gap-2 py-3 text-xs text-lia-text-disabled" data-testid="activity-loading">
+                <Loader2 className="w-3 h-3 animate-spin" /> {t('loadingActivities')}
+              </div>
+            ) : activitiesError ? (
+              <div className={cn(cardStyles.flat, "p-3 text-center")} data-testid="activity-error">
+                <p className="text-xs text-lia-text-disabled">{t('errors.errorLoadingActivities')}</p>
+              </div>
+            ) : activities.length === 0 ? (
+              <div className={cn(cardStyles.flat, "p-3 text-center")} data-testid="activity-empty">
+                <Activity className="w-5 h-5 text-lia-text-disabled mx-auto mb-1" />
+                <p className="text-xs text-lia-text-disabled">{t('noActivities')}</p>
+              </div>
+            ) : (
+              <div className="space-y-0.5 max-h-[260px] overflow-y-auto" data-testid="activity-list">
+                {activities.slice(0, 10).map((act) => (
+                  <AgentActivityCard key={act.id} activity={act} />
                 ))}
               </div>
             )}
