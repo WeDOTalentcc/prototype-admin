@@ -4506,7 +4506,16 @@
         "testOk": "Test OK: {name}",
         "testFailed": "Test failed: {name}",
         "duplicateSuffix": "{name} (copy)",
-        "deleteConfirm": "Delete automation \"{name}\"?"
+        "deleteConfirm": "Delete automation \"{name}\"?",
+        "csvExportButton": "Export CSV",
+        "csvExportAriaLabel": "Export automation logs to CSV (LGPD audit trail)",
+        "csvExportSuccess": "{count} records exported",
+        "csvHeaderExecutedAt": "Executed at",
+        "csvHeaderAutomation": "Automation",
+        "csvHeaderTrigger": "Trigger",
+        "csvHeaderStatus": "Status",
+        "csvHeaderCandidate": "Candidate",
+        "csvHeaderError": "Error message"
       },
       "communicationTab": {
         "emailTemplates": "Email Templates",

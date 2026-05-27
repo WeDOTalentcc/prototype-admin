@@ -1,15 +1,16 @@
 "use client"
 
 /**
- * AutomationLogsView — Sprint C canonical impeccable.
+ * AutomationLogsView — Sprint C canonical impeccable + Sprint C.5 CSV export.
  *
- * Table de execution logs com filters + drill-down.
+ * Table de execution logs com filters + drill-down + CSV export (LGPD audit trail).
  * Voice "Quiet Operator": logs sao confirmacao calma de que a LIA fez.
  *
- * Audit ref: AUTOMATIONS_SPRINT_PLAN_ADR.md Sprint C
+ * Audit ref: AUTOMATIONS_SPRINT_PLAN_ADR.md Sprint C / C.5
  */
 
 import { useState, useMemo } from "react"
+import { useTranslations } from "next-intl"
 import {
   useAutomationsList,
   useAutomationLogs,
@@ -22,12 +23,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
 import {
   CheckCircle,
   AlertCircle,
   Clock,
   ChevronRight,
   Sparkles,
+  Download,
 } from "lucide-react"
 
 interface LogEntry {
@@ -48,7 +51,69 @@ interface LogEntry {
 
 type StatusFilter = "all" | "success" | "failure" | "skipped"
 
+// Canonical CSV cell escape: wrap em "..." se contem virgula/aspas/quebra; double-up aspas internas.
+function csvCell(value: unknown): string {
+  if (value === null || value === undefined) return ""
+  const s = String(value)
+  if (/[",\n\r]/.test(s)) {
+    return `"${s.replace(/"/g, '""')}"`
+  }
+  return s
+}
+
+// Export client-side dos logs visiveis. Respeita filtros aplicados (filteredLogs).
+export function exportLogsToCsv(
+  logs: LogEntry[],
+  headers: {
+    executedAt: string
+    automation: string
+    trigger: string
+    status: string
+    candidate: string
+    error: string
+  },
+  filename: string,
+): number {
+  const headerRow = [
+    headers.executedAt,
+    headers.automation,
+    headers.trigger,
+    headers.status,
+    headers.candidate,
+    headers.error,
+  ]
+    .map(csvCell)
+    .join(",")
+
+  const dataRows = logs.map((l) =>
+    [
+      l.executed_at,
+      l.automation_name ?? l.automation_id ?? "",
+      l.trigger_event,
+      l.status,
+      l.candidate_name ?? l.candidate_id ?? "",
+      l.error_message ?? "",
+    ]
+      .map(csvCell)
+      .join(","),
+  )
+
+  // UTF-8 BOM para Excel reconhecer acentos.
+  const csv = "﻿" + [headerRow, ...dataRows].join("\r\n")
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement("a")
+  link.href = url
+  link.download = filename
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(url)
+  return logs.length
+}
+
 export function AutomationLogsView() {
+  const t = useTranslations("settings.recruitment.automationsTab")
   const { data: automations = [] } = useAutomationsList()
   const [selectedAutomationId, setSelectedAutomationId] = useState<string | "all">("all")
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all")
@@ -72,6 +137,26 @@ export function AutomationLogsView() {
     if (statusFilter === "all") return logs
     return logs.filter((l) => l.status === statusFilter)
   }, [logs, statusFilter])
+
+  const handleExportCsv = () => {
+    if (filteredLogs.length === 0) return
+    const today = format(new Date(), "yyyy-MM-dd")
+    const filename = `automation-logs-${today}.csv`
+    const exported = exportLogsToCsv(
+      filteredLogs,
+      {
+        executedAt: t("csvHeaderExecutedAt"),
+        automation: t("csvHeaderAutomation"),
+        trigger: t("csvHeaderTrigger"),
+        status: t("csvHeaderStatus"),
+        candidate: t("csvHeaderCandidate"),
+        error: t("csvHeaderError"),
+      },
+      filename,
+    )
+    // Quiet Operator: console confirmation; toast pode ser wired Sprint posterior.
+    console.log(t("csvExportSuccess", { count: exported }))
+  }
 
   return (
     <div className="space-y-4" data-testid="automation-logs-view">
@@ -126,6 +211,22 @@ export function AutomationLogsView() {
                     : "Pulou"}
             </button>
           ))}
+        </div>
+
+        {/* C.5 CSV export — LGPD audit trail download */}
+        <div className="ml-auto">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleExportCsv}
+            disabled={filteredLogs.length === 0}
+            data-testid="export-csv-btn"
+            aria-label={t("csvExportAriaLabel")}
+          >
+            <Download className="w-3 h-3 mr-1" aria-hidden="true" />
+            {t("csvExportButton")}
+          </Button>
         </div>
       </div>
 
@@ -258,7 +359,7 @@ export function AutomationLogsView() {
                   <p>
                     {format(
                       new Date(selectedLog.executed_at),
-                      "dd MMM yyyy 'as' HH:mm:ss",
+                      "dd MMM yyyy as HH:mm:ss",
                       { locale: ptBR },
                     )}
                   </p>

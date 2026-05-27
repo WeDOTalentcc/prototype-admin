@@ -4506,7 +4506,16 @@
         "testOk": "Teste OK: {name}",
         "testFailed": "Teste falhou: {name}",
         "duplicateSuffix": "{name} (cópia)",
-        "deleteConfirm": "Excluir automação \"{name}\"?"
+        "deleteConfirm": "Excluir automação \"{name}\"?",
+        "csvExportButton": "Exportar CSV",
+        "csvExportAriaLabel": "Exportar registros de automação para CSV (trilha de auditoria LGPD)",
+        "csvExportSuccess": "{count} registros exportados",
+        "csvHeaderExecutedAt": "Executado em",
+        "csvHeaderAutomation": "Automação",
+        "csvHeaderTrigger": "Gatilho",
+        "csvHeaderStatus": "Status",
+        "csvHeaderCandidate": "Candidato",
+        "csvHeaderError": "Mensagem de erro"
       },
       "communicationTab": {
         "emailTemplates": "Modelos de Email",
