@@ -1,12 +1,13 @@
 /**
  * Workstream A 2026-05-23 — AgentCard Triagem Invite UI sentinels.
  *
+ * Wave A P0 #7 (2026-05-27): trailing "Enviar convite" button foi removido
+ * (pertencia a surface com contexto de candidato+vaga — kanban). Asserts
+ * referentes ao botao foram deletadas. Toggle de capability continua canonical.
+ *
  * Cobre:
  * - 4o ChannelToggleRow renderiza com aria-label correto (WCAG 2.2 AA)
- * - "Enviar convite" button DISABLED quando triagem_invite_enabled = false
- * - "Enviar convite" button HABILITADO quando triagem_invite_enabled = true
  * - Toggle dispara useToggleAgentChannel('triagem_invite')
- * - Initiate dispara useInitiateAgentTriagemInvite
  * - Coexistencia: 4 toggles (whatsapp + voice + voip + triagem_invite) na mesma card
  *
  * Pattern reference: AgentCard.voice.test.tsx + AgentCard.whatsapp.test.tsx
@@ -100,22 +101,7 @@ describe("AgentCard — Triagem Invite UI (Workstream A 2026-05-23)", () => {
     renderCard(makeAgent({ triagem_invite_enabled: false }))
     const toggle = screen.getByTestId("agent-card-triagem-invite-toggle")
     expect(toggle).toBeInTheDocument()
-    // aria-label deve refletir estado (Habilitar quando OFF)
     expect(toggle.getAttribute("aria-label") || "").toMatch(/Habilitar|enableTriagemInvite/i)
-  })
-
-  it('"Enviar convite" button DISABLED quando triagem_invite_enabled = false', () => {
-    renderCard(makeAgent({ triagem_invite_enabled: false }))
-    const btn = screen.getByTestId("agent-card-initiate-triagem-invite") as HTMLButtonElement
-    expect(btn.disabled).toBe(true)
-  })
-
-  it('"Enviar convite" button HABILITADO quando triagem_invite_enabled = true', () => {
-    renderCard(makeAgent({ triagem_invite_enabled: true }))
-    const btn = screen.getByTestId("agent-card-initiate-triagem-invite") as HTMLButtonElement
-    expect(btn.disabled).toBe(false)
-    // aria-label semantico ON
-    expect(btn.getAttribute("aria-label") || "").toMatch(/Enviar|sendTriagemInvite|sendInvite/i)
   })
 
   it("Toggle dispara useToggleAgentChannel('triagem_invite') quando clicado em OFF", () => {
@@ -136,19 +122,5 @@ describe("AgentCard — Triagem Invite UI (Workstream A 2026-05-23)", () => {
     expect(screen.getByTestId("agent-card-voice-toggle")).toBeInTheDocument()
     expect(screen.getByTestId("agent-card-voip-toggle")).toBeInTheDocument()
     expect(screen.getByTestId("agent-card-triagem-invite-toggle")).toBeInTheDocument()
-  })
-
-  it("Click no 'Enviar convite' (HABILITADO) dispara useInitiateAgentTriagemInvite", () => {
-    renderCard(makeAgent({ triagem_invite_enabled: true }))
-    const btn = screen.getByTestId("agent-card-initiate-triagem-invite") as HTMLButtonElement
-    fireEvent.click(btn)
-    expect(initiateTriagemInviteTrigger).toHaveBeenCalledTimes(1)
-  })
-
-  it("Click no 'Enviar convite' (DISABLED) NAO dispara initiate", () => {
-    renderCard(makeAgent({ triagem_invite_enabled: false }))
-    const btn = screen.getByTestId("agent-card-initiate-triagem-invite") as HTMLButtonElement
-    fireEvent.click(btn)
-    expect(initiateTriagemInviteTrigger).not.toHaveBeenCalled()
   })
 })
