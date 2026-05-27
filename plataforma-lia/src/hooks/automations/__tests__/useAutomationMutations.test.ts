@@ -18,6 +18,8 @@ import {
   useTestAutomation,
   useTriggerTypes,
   useActionTypes,
+  useOperators,
+  useConditionFields,
   type AutomationResponse,
 } from "@/hooks/automations/useAutomationMutations"
 
@@ -222,5 +224,48 @@ describe("useAutomationMutations canonical", () => {
     expect(apiFetch).toHaveBeenCalledWith(
       "/api/backend-proxy/automations/action-types/available",
     )
+  })
+
+  it("useOperators faz fetch endpoint correto", async () => {
+    vi.mocked(apiFetch).mockResolvedValue(
+      mockOk({ success: true, data: { operators: [{ value: "eq", name: "for igual a" }] } }),
+    )
+    const { Wrapper } = makeWrapper()
+    const { result } = renderHook(() => useOperators(), { wrapper: Wrapper })
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+    expect(apiFetch).toHaveBeenCalledWith(
+      "/api/backend-proxy/automations/operators/available",
+    )
+  })
+
+  it("useOperators throws fail-CLOSED em 5xx", async () => {
+    vi.mocked(apiFetch).mockResolvedValue(mockFail(500))
+    const { Wrapper } = makeWrapper()
+    const { result } = renderHook(() => useOperators(), { wrapper: Wrapper })
+    await waitFor(() => expect(result.current.isError).toBe(true))
+    expect((result.current.error as Error).message).toContain("500")
+  })
+
+  it("useConditionFields faz fetch endpoint correto", async () => {
+    vi.mocked(apiFetch).mockResolvedValue(
+      mockOk({
+        success: true,
+        data: { condition_fields: [{ value: "candidate.wsi_score", name: "score WSI" }] },
+      }),
+    )
+    const { Wrapper } = makeWrapper()
+    const { result } = renderHook(() => useConditionFields(), { wrapper: Wrapper })
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+    expect(apiFetch).toHaveBeenCalledWith(
+      "/api/backend-proxy/automations/condition-fields/available",
+    )
+  })
+
+  it("useConditionFields throws fail-CLOSED em 5xx", async () => {
+    vi.mocked(apiFetch).mockResolvedValue(mockFail(500))
+    const { Wrapper } = makeWrapper()
+    const { result } = renderHook(() => useConditionFields(), { wrapper: Wrapper })
+    await waitFor(() => expect(result.current.isError).toBe(true))
+    expect((result.current.error as Error).message).toContain("500")
   })
 })

@@ -464,62 +464,12 @@ async def get_trigger_types(company_id: str = Depends(require_company_id)):
     """
     Get list of available trigger types for automations.
     """
+    # Sprint Z.4: delegado para canonical single source
+    # (app/shared/automation/trigger_types_canonical.py)
+    from app.shared.automation.trigger_types_canonical import to_api_response
     return {
         "success": True,
-        "data": {
-            "trigger_types": [
-                {
-                    "value": TriggerType.CANDIDATE_STAGE_CHANGED.value,
-                    "name": "Candidato mudou de etapa",
-                    "description": "Dispara quando um candidato muda de etapa no processo seletivo"
-                },
-                {
-                    "value": TriggerType.INTERVIEW_SCHEDULED.value,
-                    "name": "Entrevista agendada",
-                    "description": "Dispara quando uma entrevista é agendada"
-                },
-                {
-                    "value": TriggerType.OFFER_SENT.value,
-                    "name": "Proposta enviada",
-                    "description": "Dispara quando uma proposta é enviada ao candidato"
-                },
-                {
-                    "value": TriggerType.SCREENING_COMPLETED.value,
-                    "name": "Triagem concluída",
-                    "description": "Dispara quando a triagem do candidato é concluída"
-                },
-                {
-                    "value": TriggerType.NO_RESPONSE_48H.value,
-                    "name": "Sem resposta há 48h",
-                    "description": "Dispara quando não há resposta do candidato por 48 horas"
-                },
-                {
-                    "value": TriggerType.CANDIDATE_APPLIED.value,
-                    "name": "Candidato se candidatou",
-                    "description": "Dispara quando um candidato se candidata a uma vaga"
-                },
-                {
-                    "value": TriggerType.CANDIDATE_REJECTED.value,
-                    "name": "Candidato rejeitado",
-                    "description": "Dispara quando um candidato é rejeitado"
-                },
-                {
-                    "value": TriggerType.CANDIDATE_HIRED.value,
-                    "name": "Candidato contratado",
-                    "description": "Dispara quando um candidato é contratado"
-                },
-                {
-                    "value": TriggerType.FEEDBACK_RECEIVED.value,
-                    "name": "Feedback recebido",
-                    "description": "Dispara quando um feedback é recebido"
-                },
-                {
-                    "value": TriggerType.DEADLINE_APPROACHING.value,
-                    "name": "Prazo se aproximando",
-                    "description": "Dispara quando o prazo de uma vaga está se aproximando"
-                }
-            ]
-        }
+        "data": {"trigger_types": to_api_response()},
     }
 
 
@@ -571,4 +521,38 @@ async def get_action_types(company_id: str = Depends(require_company_id)):
                 }
             ]
         }
+    }
+
+
+
+@router.get("/operators/available", summary="Get available operators", response_model=None)
+async def get_operators(company_id: str = Depends(require_company_id)):
+    """
+    Get list of canonical operators used by SentenceBuilder.
+
+    Sprint A.8 canonical source: app/shared/automation/conditions_canonical.py.
+    Multi-tenancy: gated via Depends(require_company_id). Sem company-specific data
+    (catalog estático), mas mantemos o gate por consistência com action/trigger endpoints.
+    """
+    from app.shared.automation.conditions_canonical import operators_to_api_response
+
+    return {
+        "success": True,
+        "data": {"operators": operators_to_api_response()},
+    }
+
+
+@router.get("/condition-fields/available", summary="Get available condition fields", response_model=None)
+async def get_condition_fields(company_id: str = Depends(require_company_id)):
+    """
+    Get list of canonical condition fields used by SentenceBuilder.
+
+    Sprint A.8 canonical source: app/shared/automation/conditions_canonical.py.
+    Catalog cobre candidate/job/pipeline. Multi-tenancy gate idêntico a operators.
+    """
+    from app.shared.automation.conditions_canonical import condition_fields_to_api_response
+
+    return {
+        "success": True,
+        "data": {"condition_fields": condition_fields_to_api_response()},
     }

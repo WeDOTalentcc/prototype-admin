@@ -16,6 +16,8 @@ import { apiFetch } from "@/lib/api/api-fetch"
 const QUERY_KEY_AUTOMATIONS = ["automations"] as const
 const QUERY_KEY_TRIGGER_TYPES = ["automations", "trigger-types"] as const
 const QUERY_KEY_ACTION_TYPES = ["automations", "action-types"] as const
+const QUERY_KEY_OPERATORS = ["automations", "operators"] as const
+const QUERY_KEY_CONDITION_FIELDS = ["automations", "condition-fields"] as const
 
 export interface AutomationCondition {
   field: string
@@ -88,6 +90,31 @@ export function useActionTypes() {
     staleTime: 5 * 60_000,
   })
 }
+
+export function useOperators() {
+  return useQuery({
+    queryKey: QUERY_KEY_OPERATORS,
+    queryFn: async () => {
+      const res = await apiFetch("/api/backend-proxy/automations/operators/available")
+      if (!res.ok) throw new Error(`Falha operators: ${res.status}`)
+      return (await res.json()) as unknown
+    },
+    staleTime: 5 * 60_000,
+  })
+}
+
+export function useConditionFields() {
+  return useQuery({
+    queryKey: QUERY_KEY_CONDITION_FIELDS,
+    queryFn: async () => {
+      const res = await apiFetch("/api/backend-proxy/automations/condition-fields/available")
+      if (!res.ok) throw new Error(`Falha condition-fields: ${res.status}`)
+      return (await res.json()) as unknown
+    },
+    staleTime: 5 * 60_000,
+  })
+}
+
 
 export function useAutomationLogs(id: string | null) {
   return useQuery({
