@@ -33,10 +33,14 @@ def _make_twin(twin_id="twin-1", company_id="comp-1", name="Joao SME",
 
 
 def _inject_fake_get_llm(monkeypatch, response_content=None, raises=None):
-    """Patch llm_factory.get_llm via sys.modules injection (lazy import target)."""
+    """Patch llm_factory.create_tracked_llm (canonical LLM factory).
+
+    Fix 2026-05-27: previously patched ``get_llm`` which never existed in
+    llm_factory.py (broken import). Canonical pattern uses
+    ``create_tracked_llm(tenant_id=...)``.
+    """
     mod = sys.modules.get("app.shared.providers.llm_factory")
     if mod is None:
-        # import to ensure presence
         import app.shared.providers.llm_factory as mod  # noqa
 
     mock_llm = MagicMock()
@@ -47,8 +51,29 @@ def _inject_fake_get_llm(monkeypatch, response_content=None, raises=None):
         resp.content = response_content
         mock_llm.ainvoke = AsyncMock(return_value=resp)
 
-    monkeypatch.setattr(mod, "get_llm", lambda tier="default": mock_llm, raising=False)
+    monkeypatch.setattr(
+        mod, "create_tracked_llm",
+        lambda **kwargs: mock_llm,
+        raising=False,
+    )
     return mock_llm
+
+
+async def test_evaluate_uses_canonical_llm_factory(monkeypatch):
+    """Smoke test: evaluate() imports create_tracked_llm (NOT broken get_llm).
+
+    Regression guard for 2026-05-27 P0 fix. Asserts the canonical factory
+    symbol exists in llm_factory and that the broken alias is gone from
+    the service module's import path.
+    """
+    from app.services import twin_inference_service as svc_mod
+    src = open(svc_mod.__file__).read()
+    assert "create_tracked_llm" in src, "canonical factory must be referenced"
+    assert "import get_llm" not in src, "broken get_llm import must be gone"
+
+    from app.shared.providers import llm_factory
+    assert hasattr(llm_factory, "create_tracked_llm"), "canonical symbol must exist"
+    assert not hasattr(llm_factory, "get_llm"), "ghost symbol must not exist"
 
 
 async def test_evaluate_with_real_decisions_returns_valid_score(monkeypatch):

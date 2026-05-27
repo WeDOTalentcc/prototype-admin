@@ -135,8 +135,18 @@ Responda APENAS com o JSON.
         # If LLM fails, return evaluation with explicit failure flags so the caller
         # (and ultimately the recruiter UI) can surface "needs manual review".
         try:
-            from app.shared.providers.llm_factory import get_llm
-            llm = get_llm(tier="default")
+            # Canonical LLM factory (multi-tenant aware). Replaces broken
+            # get_llm import (function never existed in llm_factory.py),
+            # which previously caused this branch to *always* hit the
+            # except: block below and return evaluation_failed=True.
+            from app.shared.providers.llm_factory import create_tracked_llm
+            llm = create_tracked_llm(
+                temperature=0.3,
+                service_name="TwinInferenceService",
+                operation="evaluate",
+                max_output_tokens=512,
+                tenant_id=company_id,
+            )
             response = await llm.ainvoke(prompt)
             data = json.loads(response.content)
         except Exception as e:
