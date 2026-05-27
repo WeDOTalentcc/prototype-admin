@@ -11,7 +11,8 @@ module Authenticable
       @jwt_payload = decoded
 
       role = decoded[:role].to_s
-      return authorize_service(decoded) if role == "service" || role == "one_time_token"
+      return render_unauthorized("Tipo de token desconhecido: #{role}") if role == "one_time_token"
+      return authorize_service(decoded) if role == "service"
       return authorize_user(decoded) if decoded[:user_id]
 
       render_unauthorized("Tipo de token desconhecido: #{role}")

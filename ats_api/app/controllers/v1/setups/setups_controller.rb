@@ -26,16 +26,35 @@ module V1
       end
 
       def create_user
-        @user = User.new(user_params)
-        @user.account = @account
+        result = nil
 
-        if @user.save
+        @account.with_lock do
+          if User.exists?(account_id: @account.id)
+            result = :conflict
+            next
+          end
+
+          @user = User.new(user_params)
+          @user.account = @account
+
+          if @user.save
+            @account.update_columns(setup_token_expires_at: Time.current)
+            result = :created
+          else
+            result = :invalid
+          end
+        end
+
+        case result
+        when :conflict
+          render json: { error: "Convite de configuração já utilizado." }, status: :conflict
+        when :created
           token = JsonWebToken.encode(user_id: @user.id)
           render json: {
             data: UserSerializer.new(@user).serializable_hash[:data],
             token: token
           }, status: :created
-        else
+        when :invalid
           render_error(@user, status: :unprocessable_entity)
         end
       end

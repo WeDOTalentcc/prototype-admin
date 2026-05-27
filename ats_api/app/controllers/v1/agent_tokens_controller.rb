@@ -60,7 +60,7 @@ class V1::AgentTokensController < ActionController::API
       return render_unauthorized("Token invalid") unless payload
     end
 
-    unless %w[service one_time_token].include?(payload[:role].to_s)
+    unless payload[:role].to_s == "service"
       return render_unauthorized("Invalid token role for refresh")
     end
 
