@@ -70,7 +70,18 @@ interface Props {
  * Stages not listed (intake → eligibility) are conversational — full-width only.
  */
 export const SPLIT_STAGES: WizardStage[] = [
-  "jd_enrichment",   // Bug-fix 2026-05-26: right panel shows enriched JD for HITL approval
+  // HITL canonical stages -- todos com case correspondente em renderPanel switch
+  // abaixo. Fix C 2026-05-27: expandido de 7 -> 13 stages cobrindo todo o fluxo
+  // wizard. pipeline_template e deliberadamente excluido pq tem rendering
+  // proprio em UnifiedChat.tsx (via WizardPipelineTemplateStagePanel inline).
+  // Sensor canonical em __tests__/DynamicContextPanel.split-stages-canonical.test.ts.
+  "intake",
+  "jd_enrichment",
+  "bigfive",
+  "salary",
+  "competency",
+  "wsi_questions",
+  "eligibility",
   "review",
   "publish",
   "calibration",
