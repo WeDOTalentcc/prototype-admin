@@ -306,6 +306,7 @@ class LiaFieldConfigService:
                 "technical_requirements": j.technical_requirements,
                 "behavioral_competencies": j.behavioral_competencies,
                 "location": j.location,
+                "eligibility_questions": j.eligibility_questions or [],
             }
             for j in jobs
         ]
@@ -393,6 +394,7 @@ class LiaFieldConfigService:
             "behavioral_competencies": "behavioral_competencies",
             "locations": "location",
             "departments": "department",
+            "eligibility_questions": "eligibility_questions",
         }
         
         if field_key not in history_field_mapping:
@@ -414,7 +416,7 @@ class LiaFieldConfigService:
         if field_key == "salary_ranges" and values:
             return values[0], 0.7
         
-        if field_key in ["benefits", "tech_stack", "behavioral_competencies"]:
+        if field_key in ["benefits", "tech_stack", "behavioral_competencies", "eligibility_questions"]:
             all_items = []
             for v in values:
                 if isinstance(v, list):
