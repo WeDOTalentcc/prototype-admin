@@ -123,6 +123,21 @@ const STEPS: StepDef[] = [
   },
 ]
 
+// Sprint 3 BE-6: map section from lia:settings-updated → actionId so the
+// general LIA chat (WS) also advances the onboarding orchestrator when the
+// agent saves a settings field. Covers both onboarding runner sections
+// ("policy") and useChatTransport TOOL_TO_SECTION values ("hiring_policies").
+const SECTION_TO_ONBOARDING_ACTION: Partial<Record<string, string>> = {
+  profile: "configure_profile",
+  culture: "configure_culture",
+  tech_stack: "configure_tech_stack",
+  benefits: "configure_benefits",
+  workforce: "configure_workforce",
+  policy: "configure_hiring_policy",
+  hiring_policies: "configure_hiring_policy",
+  lia_persona: "configure_persona",
+}
+
 type StepStatus = "pending" | "in_progress" | "done" | "skipped"
 
 interface ProgressState {
@@ -187,7 +202,11 @@ export function OnboardingActionOrchestrator() {
     if (typeof window === "undefined") return
     const onSuccess = (e: Event) => {
       const detail = (e as CustomEvent).detail || {}
-      const actionId: string | undefined = detail.actionId
+      // Sprint 3 BE-6: lia:settings-updated carries section but no actionId.
+      // Derive actionId from section so WS-based saves also advance the orchestrator.
+      const actionId: string | undefined =
+        detail.actionId ||
+        (detail.section ? SECTION_TO_ONBOARDING_ACTION[detail.section as string] : undefined)
       if (!actionId) return
       setState((prev) => {
         const idx = STEPS.findIndex((s) => s.actionId === actionId)
