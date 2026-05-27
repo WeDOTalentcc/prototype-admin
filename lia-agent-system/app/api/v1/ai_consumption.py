@@ -321,11 +321,19 @@ _company_gate: str = Depends(require_company_id)):
 async def get_usage_by_agent(
     start_date: datetime | None = Query(None, description="Start date filter"),
     end_date: datetime | None = Query(None, description="End date filter"),
+    studio_agent_id: str | None = Query(
+        None,
+        description=(
+            "Filtra consumo de um agente Studio individual (canonical). "
+            "Quando omitido, agrega todos os agentes da tenant. "
+            "Wave 0 Fix 5 (2026-05-27)."
+        ),
+    ),
     company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db), 
 _company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
-    """Get AI usage grouped by agent type."""
+    """Get AI usage grouped by agent type. Optionally filter by studio_agent_id."""
     try:
         company_uuid = UUID(company_id)
         conditions = [AiConsumption.company_id == company_uuid]
@@ -336,7 +344,12 @@ _company_gate: str = Depends(require_company_id)):
             conditions.append(AiConsumption.created_at <= end_date)
         
         repo = AiConsumptionRepository(db)
-        rows = await repo.get_usage_by_agent(company_id, start_date=start_date, end_date=end_date)
+        rows = await repo.get_usage_by_agent(
+            company_id,
+            start_date=start_date,
+            end_date=end_date,
+            studio_agent_id=studio_agent_id,
+        )
         
         grand_total_tokens = sum(row.total_tokens or 0 for row in rows)
         grand_total_ops = sum(row.total_ops or 0 for row in rows)

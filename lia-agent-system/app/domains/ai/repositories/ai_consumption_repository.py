@@ -123,7 +123,14 @@ class AiConsumptionRepository:
         *,
         start_date=None,
         end_date=None,
+        studio_agent_id: str | None = None,
     ) -> list:
+        """Agrega consumo AI por agent_type.
+
+        Wave 0 Fix 5 (2026-05-27): aceita studio_agent_id opcional pra filtrar
+        consumo de **um agente individual** (Studio canonical), além do agregado
+        por agent_type. Backward-compat: sem o param, comportamento original.
+        """
         from uuid import UUID as _UUID
         from sqlalchemy import and_
         company_uuid = _UUID(company_id) if isinstance(company_id, str) else company_id
@@ -132,6 +139,8 @@ class AiConsumptionRepository:
             conditions.append(AiConsumption.created_at >= start_date)
         if end_date:
             conditions.append(AiConsumption.created_at <= end_date)
+        if studio_agent_id:
+            conditions.append(AiConsumption.studio_agent_id == studio_agent_id)
 
         q = (
             select(
