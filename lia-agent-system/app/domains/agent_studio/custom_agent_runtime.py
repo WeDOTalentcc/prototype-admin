@@ -467,7 +467,8 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
             if tokens_input or tokens_output:
                 from libs.audit.lia_audit.audit_callback import _estimate_cost
                 cost_usd = _estimate_cost(model_used or None, tokens_input, tokens_output)
-        except Exception:
+        except Exception as _cost_exc:  # REGRA-4-EXEMPT: cost helper, not AI decision path
+            logger.warning("[CustomAgentRuntime] cost estimation failed: %s", _cost_exc)
             cost_usd = 0.0
 
         return AgentOutput(
