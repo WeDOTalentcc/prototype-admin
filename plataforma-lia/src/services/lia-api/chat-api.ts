@@ -9,8 +9,6 @@ import type {
   InterpretMessageResponse,
   ConversationalRequest,
   ConversationalResponse,
-  WizardOrchestratorRequest,
-  WizardOrchestratorResponse,
   ActiveDraftInfo,
 } from './types'
 
@@ -182,52 +180,5 @@ export async function getActiveDraft(): Promise<ActiveDraftInfo | null> {
     return null
   } catch {
     return null
-  }
-}
-
-export async function orchestrateWizardMessage(request: WizardOrchestratorRequest): Promise<WizardOrchestratorResponse> {
-  try {
-    const response = await fetch(`${BACKEND_URL}/wizard/smart-orchestrate/`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        message: request.message,
-        current_stage: request.current_stage,
-        collected_data: request.collected_data,
-        conversation_history: request.conversation_history || [],
-        conversation_id: request.conversation_id,
-        company_id: request.company_id,
-        user_id: request.user_id
-      }),
-    })
-
-    if (!response.ok) {
-      return {
-        success: false,
-        lia_message: 'Desculpe, tive um problema ao processar sua mensagem. Pode tentar novamente?',
-        detected_criteria: {},
-        auto_transition: false,
-        tool_results: [],
-        confidence: 0.3,
-        reasoning_steps: [],
-        error: `HTTP ${response.status}`
-      }
-    }
-
-    const result = await response.json()
-    return result
-  } catch (error) {
-    return {
-      success: false,
-      lia_message: 'Desculpe, tive um problema ao processar sua mensagem. Pode tentar novamente?',
-      detected_criteria: {},
-      auto_transition: false,
-      tool_results: [],
-      confidence: 0.3,
-      reasoning_steps: [],
-      error: error instanceof Error ? error.message : 'Unknown error'
-    }
   }
 }
