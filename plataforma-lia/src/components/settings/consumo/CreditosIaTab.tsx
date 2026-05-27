@@ -32,33 +32,60 @@ function formatCost(cents: number): string {
   return `$${(cents / 100).toFixed(2)}`
 }
 
-export const AGENT_COLORS: Record<string, string> = {
-  screening: '#6366f1',
-  scoring: '#8b5cf6',
-  interview: '#a78bfa',
-  cv_parsing: '#06b6d4',
-  search: '#14b8a6',
-  matching: '#10b981',
-  communication: '#f59e0b',
-  analysis: '#ef4444',
+// Mapa canônico: agent_type (backend) → { label PT-BR, cor para gráficos }
+// Atualizado 2026-05-27 para refletir tipos reais registrados em ai_consumption.
+export const AGENT_TYPE_MAP: Record<string, { label: string; color: string }> = {
+  // --- Triagem e CV ---
+  cv_screening:           { label: Triagem de CV,          color: #6366f1 }, // indigo
+  cv_screening_pipeline:  { label: Pipeline de Triagem,    color: #8b5cf6 }, // violet
+  scoring:                { label: Pontuação,              color: #a855f7 }, // purple
+
+  // --- Captação e Busca ---
+  sourcing:               { label: Captação Ativa,         color: #0ea5e9 }, // sky
+  sourcing_agent:         { label: Captação Ativa,         color: #0ea5e9 }, // back-compat alias
+  search:                 { label: Busca,                  color: #38bdf8 }, // sky lighter
+  matching:               { label: Matching,               color: #7dd3fc }, // sky lightest
+
+  // --- Entrevista e Voz ---
+  voice_screening:        { label: Triagem por Voz,        color: #14b8a6 }, // teal
+  interview:              { label: Entrevista,             color: #2dd4bf }, // teal lighter
+
+  // --- Comunicação ---
+  communication:          { label: Comunicação,            color: #f59e0b }, // amber
+  whatsapp:               { label: WhatsApp Bot,           color: #22c55e }, // green
+  onboarding:             { label: Onboarding,             color: #84cc16 }, // lime
+
+  // --- IA Interna ---
+  orchestrator:           { label: Orquestrador IA,        color: #ef4444 }, // red
+  wizard:                 { label: Wizard de Vaga,         color: #f97316 }, // orange
+  wsi_question_generator: { label: Perguntas WSI,          color: #fb923c }, // orange lighter
+  recruiter_assistant:    { label: Assistente Recrutador,  color: #ec4899 }, // pink
+
+  // --- Agentes Studio ---
+  digital_twin:           { label: Gêmeo Digital,         color: #06b6d4 }, // cyan (cor IA WeDO)
+  custom_agent:           { label: Agente Personalizado,  color: #64748b }, // slate
+  analysis:               { label: Análise,               color: #94a3b8 }, // slate lighter
+
+  // --- Legados (compatibilidade com registros históricos) ---
+  cv_parsing:             { label: Leitura de CV,          color: #a3a3a3 },
+  screening:              { label: Triagem,                color: #737373 },
 }
 
+// Cor de fallback para tipos não mapeados
+const FALLBACK_COLOR = #94a3b8
+const FALLBACK_LABEL = (agentType: string) => agentType.replace(/_/g,  )
+
+// Mantém AGENT_COLORS exportado para compatibilidade com código que importa diretamente
+export const AGENT_COLORS: Record<string, string> = Object.fromEntries(
+  Object.entries(AGENT_TYPE_MAP).map(([k, v]) => [k, v.color])
+)
+
 export function getAgentColor(agentType: string): string {
-  return AGENT_COLORS[agentType.toLowerCase()] ?? '#94a3b8'
+  return AGENT_TYPE_MAP[agentType.toLowerCase()]?.color ?? FALLBACK_COLOR
 }
 
 export function getAgentLabel(agentType: string): string {
-  const labels: Record<string, string> = {
-    screening: 'Screening',
-    scoring: 'Scoring',
-    interview: 'Entrevista',
-    cv_parsing: 'Parse de CV',
-    search: 'Busca',
-    matching: 'Matching',
-    communication: 'Comunicação',
-    analysis: 'Análise',
-  }
-  return labels[agentType.toLowerCase()] ?? agentType.replace(/_/g, ' ')
+  return AGENT_TYPE_MAP[agentType.toLowerCase()]?.label ?? FALLBACK_LABEL(agentType)
 }
 
 export interface AgentChartEntry {
