@@ -12,18 +12,16 @@
  *
  * Resultado: usuário novo que clica "Start Setup Wizard" via Setup Intro Modal
  * caía em 404 por 35 dias. Esta page fecha o gap canonical.
+ *
+ * Sprint 2 FE-3 (2026-05-27): substitui ChatPageFullscreen por OnboardingSettingsChat
+ * — usa endpoint dedicado POST /onboarding/{userId}/chat em vez do chat LIA genérico.
  */
 
 import { useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useJWTAuth } from "@/contexts/auth-context"
 import { OnboardingChatPage } from "@/components/onboarding/OnboardingChatPage"
-import dynamic from "next/dynamic"
-
-const ChatPageFullscreen = dynamic(
-  () => import("@/components/unified-chat/ChatPageFullscreen").then(m => ({ default: m.ChatPageFullscreen })),
-  { ssr: false }
-)
+import { OnboardingSettingsChat } from "@/components/onboarding/OnboardingSettingsChat"
 
 export default function OnboardingRoute() {
   const router = useRouter()
@@ -33,16 +31,12 @@ export default function OnboardingRoute() {
     return crypto.randomUUID()
   })
 
-  // Redirect to login if not authenticated (after initial load)
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       router.replace("/login")
     }
   }, [isLoading, isAuthenticated, router])
 
-  // user.id is the canonical UUID identifier; OnboardingChatPage typed userId as number
-  // historically (legacy Rails int), but only uses it as a path param in backend-proxy fetch.
-  // Cast pragmatically; backend handles both.
   const userId = useMemo(() => {
     if (!user) return null
     return user.id as unknown as number
@@ -61,7 +55,7 @@ export default function OnboardingRoute() {
       sessionId={sessionId}
       userId={userId}
     >
-      <ChatPageFullscreen />
+      <OnboardingSettingsChat userId={userId} />
     </OnboardingChatPage>
   )
 }

@@ -45,7 +45,7 @@ export function OnboardingSettingsChat({ userId }: Props) {
     setLoading(true)
 
     try {
-      const resp = await fetch(, {
+      const resp = await fetch(`/api/backend-proxy/onboarding/${userId}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -96,9 +96,13 @@ export function OnboardingSettingsChat({ userId }: Props) {
         )}
 
         {messages.map((m, i) => (
-          <div key={i} className={}>
+          <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
             <div
-              className={}
+              className={`max-w-[80%] px-3 py-2 rounded-xl text-sm leading-relaxed ${
+                m.role === "user"
+                  ? "bg-gray-900 text-white"
+                  : "bg-lia-bg-secondary text-lia-text-primary border border-lia-border-subtle"
+              }`}
             >
               {m.content}
             </div>
@@ -113,7 +117,7 @@ export function OnboardingSettingsChat({ userId }: Props) {
                   <span
                     key={delay}
                     className="w-1.5 h-1.5 bg-wedo-cyan rounded-full animate-bounce"
-                    style={{ animationDelay:  }}
+                    style={{ animationDelay: `${delay}ms` }}
                     aria-hidden="true"
                   />
                 ))}
