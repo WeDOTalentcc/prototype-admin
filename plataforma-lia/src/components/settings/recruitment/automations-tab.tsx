@@ -1,7 +1,7 @@
 "use client"
 
 import { useTranslations } from "next-intl"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { useCompanyId } from "@/hooks/company/useCompanyId"
 import { SETTINGS_QUERY_KEYS } from "@/hooks/settings/useSettingsBroadcast"
@@ -9,10 +9,25 @@ import { HubHeader, HubLoadingState, HubErrorState } from "@/components/settings
 import { Chip } from "@/components/ui/chip"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
 import { hasModuleAccess } from "@/utils/license-manager"
 import { ModuleUpsell } from "@/components/module-access/module-upsell"
 import { apiFetch } from "@/lib/api/api-fetch"
-import { Edit, Plus, Workflow, FileText, Zap, Download, BarChart3, Activity, MoreHorizontal, Sparkles } from "lucide-react"
+import {
+  Edit,
+  Plus,
+  Workflow,
+  FileText,
+  Zap,
+  Download,
+  BarChart3,
+  Activity,
+  MoreHorizontal,
+  Sparkles,
+  Play,
+  Copy,
+  Trash,
+} from "lucide-react"
 import {
   SentenceBuilder,
   type SentenceBuilderState,
@@ -24,6 +39,11 @@ import {
 import {
   useCreateAutomation,
   useUpdateAutomation,
+  useToggleAutomationActive,
+  useTestAutomation,
+  useDeleteAutomation,
+  useTriggerTypes,
+  useActionTypes,
   type AutomationPayload,
 } from "@/hooks/automations/useAutomationMutations"
 
@@ -76,10 +96,15 @@ function mapAutomation(a: ApiAutomation): WorkflowItem {
 
 type ViewTab = "overview" | "builder" | "templates" | "logs"
 
-// ─── Mock catalog (Sprint A.5) ───────────────────────────────────────
-// TODO Sprint A.7: substituir mock por useTriggerTypes() + useActionTypes()
-// hooks (já existem em useAutomationMutations.ts) quando endpoints estiverem
-// canonical no backend. Hoje mantemos hardcoded pra desbloquear UX flow.
+// ─── Catalog mocks (Sprint A.5 → A.7) ────────────────────────────────
+// Sprint A.7 (2026-05-26): triggers/actions agora vêm de useTriggerTypes()
+// + useActionTypes() (backend canonical em /api/backend-proxy/automations/
+// {trigger,action}-types/available). Os arrays MOCK_* abaixo permanecem
+// como FALLBACK pra:
+//   1) loading state (hook ainda em flight) — evita SentenceBuilder vazio
+//   2) error state (backend down) — REGRA 4 fail-explicit no log + UX continua
+// MOCK_OPERATORS e MOCK_CONDITION_FIELDS continuam mock porque backend
+// ainda não tem endpoint pra eles (TODO Sprint A.8+).
 
 const MOCK_TRIGGERS: TriggerOption[] = [
   {
@@ -155,6 +180,65 @@ const MOCK_CONDITION_FIELDS: ConditionFieldDef[] = [
   { value: "candidate.expected_salary", label: "pretensão salarial", type: "number" },
 ]
 
+// ─── Backend → SentenceBuilder adapters (Sprint A.7) ─────────────────
+// Backend canonical shape (lia-agent-system/app/api/v1/automations.py):
+//   trigger_types: [{ value, name, description }]
+//   action_types:  [{ value, name, description, config_fields: string[] }]
+// SentenceBuilder espera TriggerOption/ActionOption com { value, label, params[] }.
+// `params` requer schema (name/label/type[/options]) que backend não envia hoje —
+// retornamos params=[] (SentenceBuilder renderiza trigger/action standalone sem
+// inputs adicionais até backend expor schema completo).
+//
+// REGRA 4 (anti-silent-fallback): se backend vier com shape inesperado, .map
+// resulta em entries com value=undefined → React filtra; logamos warn.
+
+interface BackendTriggerType {
+  value?: string
+  name?: string
+  description?: string
+}
+
+interface BackendActionType {
+  value?: string
+  name?: string
+  description?: string
+  config_fields?: string[]
+}
+
+interface BackendCatalogResponse<T> {
+  success?: boolean
+  data?: {
+    trigger_types?: T[]
+    action_types?: T[]
+  }
+}
+
+function mapBackendTriggers(payload: unknown): TriggerOption[] {
+  const root = payload as BackendCatalogResponse<BackendTriggerType> | undefined
+  const arr = root?.data?.trigger_types
+  if (!Array.isArray(arr) || arr.length === 0) return []
+  return arr
+    .filter((t): t is BackendTriggerType => !!t && typeof t.value === "string")
+    .map((t) => ({
+      value: t.value as string,
+      label: t.name ?? (t.value as string),
+      params: [],
+    }))
+}
+
+function mapBackendActions(payload: unknown): ActionOption[] {
+  const root = payload as BackendCatalogResponse<BackendActionType> | undefined
+  const arr = root?.data?.action_types
+  if (!Array.isArray(arr) || arr.length === 0) return []
+  return arr
+    .filter((a): a is BackendActionType => !!a && typeof a.value === "string")
+    .map((a) => ({
+      value: a.value as string,
+      label: a.name ?? (a.value as string),
+      params: [],
+    }))
+}
+
 function workflowToBuilderState(w: WorkflowItem): SentenceBuilderState {
   return {
     trigger: { type: w.triggerType, params: w.triggerData ?? {} },
@@ -186,6 +270,39 @@ export function AutomationsTab({ onSettingsChange: _onSettingsChange }: { onSett
 
   const createMutation = useCreateAutomation()
   const updateMutation = useUpdateAutomation()
+  const toggleMutation = useToggleAutomationActive()
+  const testMutation = useTestAutomation()
+  const deleteMutation = useDeleteAutomation()
+
+  // Sprint A.7: trigger/action catalog from backend canonical.
+  // Fallback to MOCK_* on loading (avoid empty SentenceBuilder) or error
+  // (REGRA 4: log warn but keep UX functional).
+  const triggerTypesQuery = useTriggerTypes()
+  const actionTypesQuery = useActionTypes()
+
+  const triggers = useMemo<TriggerOption[]>(() => {
+    if (triggerTypesQuery.error) {
+      console.warn(
+        "[AutomationsTab] useTriggerTypes error, using mock fallback:",
+        triggerTypesQuery.error,
+      )
+      return MOCK_TRIGGERS
+    }
+    const mapped = mapBackendTriggers(triggerTypesQuery.data)
+    return mapped.length > 0 ? mapped : MOCK_TRIGGERS
+  }, [triggerTypesQuery.data, triggerTypesQuery.error])
+
+  const actions = useMemo<ActionOption[]>(() => {
+    if (actionTypesQuery.error) {
+      console.warn(
+        "[AutomationsTab] useActionTypes error, using mock fallback:",
+        actionTypesQuery.error,
+      )
+      return MOCK_ACTIONS
+    }
+    const mapped = mapBackendActions(actionTypesQuery.data)
+    return mapped.length > 0 ? mapped : MOCK_ACTIONS
+  }, [actionTypesQuery.data, actionTypesQuery.error])
 
   const {
     data: workflows = [],
@@ -241,6 +358,49 @@ export function AutomationsTab({ onSettingsChange: _onSettingsChange }: { onSett
       await createMutation.mutateAsync(payload)
     }
     closeBuilder()
+  }
+
+  // ─── Sprint D.1+D.4: workflow item actions ────────────────────────
+  const handleToggleActive = (workflow: WorkflowItem) => {
+    toggleMutation.mutate({
+      id: workflow.id,
+      isActive: workflow.status !== "active",
+    })
+  }
+
+  const handleTest = async (workflow: WorkflowItem) => {
+    try {
+      const result = (await testMutation.mutateAsync({
+        id: workflow.id,
+        dryRunPayload: {},
+      })) as { success?: boolean; result_summary?: string } | null
+      const ok = result?.success !== false
+      // Voice Quiet Operator
+      window.alert(
+        ok
+          ? t("testOk", { name: workflow.name })
+          : t("testFailed", { name: workflow.name }),
+      )
+    } catch (_err) {
+      window.alert(t("testFailed", { name: workflow.name }))
+    }
+  }
+
+  const handleDuplicate = (workflow: WorkflowItem) => {
+    createMutation.mutate({
+      name: t("duplicateSuffix", { name: workflow.name }),
+      trigger_type: workflow.triggerType,
+      trigger_data: workflow.triggerData,
+      action_type: workflow.actionType,
+      action_data: workflow.actionData,
+      conditions: workflow.conditions,
+    })
+  }
+
+  const handleDelete = (workflow: WorkflowItem) => {
+    // MVP: window.confirm (shadcn AlertDialog em polish futuro)
+    if (!window.confirm(t("deleteConfirm", { name: workflow.name }))) return
+    deleteMutation.mutate(workflow.id)
   }
 
   if (!hasModuleAccess("workflow_automation")) {
@@ -363,9 +523,28 @@ export function AutomationsTab({ onSettingsChange: _onSettingsChange }: { onSett
                         </div>
                       </div>
                       <div className="flex items-center gap-2 shrink-0 ml-4">
-                        <Chip variant={workflow.status === "active" ? "success" : "neutral"} muted={workflow.status !== "active"}>
-                          {workflow.status === "active" ? t("statusActive") : t("statusPaused")}
-                        </Chip>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleToggleActive(workflow)
+                          }}
+                          disabled={toggleMutation.isPending}
+                          className="cursor-pointer rounded-md focus:outline-none focus:ring-2 focus:ring-wedo-cyan/40 disabled:opacity-60 disabled:cursor-not-allowed"
+                          aria-label={
+                            workflow.status === "active"
+                              ? t("pauseAutomation")
+                              : t("activateAutomation")
+                          }
+                          data-testid={`workflow-toggle-${workflow.id}`}
+                        >
+                          <Chip
+                            variant={workflow.status === "active" ? "success" : "neutral"}
+                            muted={workflow.status !== "active"}
+                          >
+                            {workflow.status === "active" ? t("statusActive") : t("statusPaused")}
+                          </Chip>
+                        </button>
                         <Button
                           variant="ghost"
                           size="sm"
@@ -375,9 +554,51 @@ export function AutomationsTab({ onSettingsChange: _onSettingsChange }: { onSett
                         >
                           <Edit className="w-3.5 h-3.5" />
                         </Button>
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                          <MoreHorizontal className="w-3.5 h-3.5" />
-                        </Button>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 w-8 p-0"
+                              aria-label={t("moreActions")}
+                              data-testid={`workflow-more-${workflow.id}`}
+                            >
+                              <MoreHorizontal className="w-3.5 h-3.5" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-48 p-1" align="end">
+                            <button
+                              type="button"
+                              onClick={() => handleTest(workflow)}
+                              disabled={testMutation.isPending}
+                              className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-lia-text-primary hover:bg-lia-bg-tertiary disabled:opacity-60 disabled:cursor-not-allowed"
+                              data-testid={`workflow-action-test-${workflow.id}`}
+                            >
+                              <Play className="w-3.5 h-3.5" />
+                              {t("actionTest")}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDuplicate(workflow)}
+                              disabled={createMutation.isPending}
+                              className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-lia-text-primary hover:bg-lia-bg-tertiary disabled:opacity-60 disabled:cursor-not-allowed"
+                              data-testid={`workflow-action-duplicate-${workflow.id}`}
+                            >
+                              <Copy className="w-3.5 h-3.5" />
+                              {t("actionDuplicate")}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDelete(workflow)}
+                              disabled={deleteMutation.isPending}
+                              className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-status-error hover:bg-status-error/10 disabled:opacity-60 disabled:cursor-not-allowed"
+                              data-testid={`workflow-action-delete-${workflow.id}`}
+                            >
+                              <Trash className="w-3.5 h-3.5" />
+                              {t("actionDelete")}
+                            </button>
+                          </PopoverContent>
+                        </Popover>
                       </div>
                     </div>
                   ))}
@@ -399,8 +620,8 @@ export function AutomationsTab({ onSettingsChange: _onSettingsChange }: { onSett
           </div>
           <SentenceBuilder
             initial={editingAutomation?.initial}
-            triggers={MOCK_TRIGGERS}
-            actions={MOCK_ACTIONS}
+            triggers={triggers}
+            actions={actions}
             operators={MOCK_OPERATORS}
             conditionFields={MOCK_CONDITION_FIELDS}
             onSave={handleSave}

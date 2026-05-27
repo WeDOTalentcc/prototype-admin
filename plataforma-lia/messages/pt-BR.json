@@ -4496,7 +4496,17 @@
         "createWithLia": "Criar com a LIA",
         "seeExamples": "Ver exemplos",
         "builderTitleNew": "Nova automação",
-        "builderTitleEdit": "Editar automação"
+        "builderTitleEdit": "Editar automação",
+        "moreActions": "Mais ações",
+        "actionTest": "Testar",
+        "actionDuplicate": "Duplicar",
+        "actionDelete": "Excluir",
+        "pauseAutomation": "Pausar automação",
+        "activateAutomation": "Ativar automação",
+        "testOk": "Teste OK: {name}",
+        "testFailed": "Teste falhou: {name}",
+        "duplicateSuffix": "{name} (cópia)",
+        "deleteConfirm": "Excluir automação \"{name}\"?"
       },
       "communicationTab": {
         "emailTemplates": "Modelos de Email",

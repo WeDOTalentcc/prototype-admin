@@ -1,17 +1,8 @@
 /**
  * PR-AUTO — AutomationsTab API wiring tests (TDD red→green)
  *
- * Verifica que AutomationsTab busca automações da API real em vez de
- * usar dados hardcoded. Resolve achado P0 do audit enterprise (2026-04-26):
- * `useState` com 3 workflows falsos de 2024 — dados fantasma exibidos
- * ao recrutador como se fossem reais.
- *
- * Sensor computacional: este teste detecta regressão se alguém
- * reintroduzir dados hardcoded no componente.
- *
- * Sprint A.5+A.6 (2026-05-26): adicionado describe "Builder wiring"
- * cobrindo abertura do SentenceBuilder via "Nova automação", empty state
- * "Criar com a LIA", edição de workflow existente, e cancel→overview.
+ * Sprint A.5+A.6 (2026-05-26): Builder wiring
+ * Sprint D.1+D.4 (2026-05-26): Item actions wiring (toggle, test, duplicate, delete)
  */
 
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
@@ -34,40 +25,77 @@ vi.mock("@/utils/license-manager", () => ({
   hasModuleAccess: () => true,
 }));
 
-// `automations-tab` chama `apiFetch` (wrapper de `fetch` com `credentials:
-// 'include'`). Como o módulo captura `fetch` no escopo da factory durante o
-// import, `vi.stubGlobal('fetch', …)` chamado em `beforeEach` não intercepta
-// — o componente continua usando o `fetch` original. Mockar `apiFetch`
-// diretamente é o vetor canônico, e como `apiFetch` delega para `fetch`,
-// preservamos a asserção `expect(fetch).toHaveBeenCalledWith(...)`
-// encaminhando os mesmos argumentos para o `fetch` global (que continua sendo
-// stubbed por `vi.stubGlobal`).
 vi.mock("@/lib/api/api-fetch", () => ({
   apiFetch: (input: RequestInfo | URL, init?: RequestInit) => {
     const f = globalThis.fetch as typeof fetch;
-    // Encaminha exatamente os argumentos recebidos (sem `init` quando ausente)
-    // para preservar a forma do call signature observado pelo `expect` —
-    // `toHaveBeenCalledWith(stringContaining(...))` exige match exato da lista
-    // de args, então um `undefined` extra quebraria a asserção.
     return init === undefined ? f(input as RequestInfo) : f(input as RequestInfo, init);
   },
 }));
 
-// Sprint A.5: mocks de mutations canonical. Não chamam backend real — o
-// teste verifica que o componente WIRE chama a mutation com o payload
-// correto quando user clica "Salvar" no SentenceBuilder.
-const mockCreateMutate = vi.fn().mockResolvedValue({ id: "new-auto-id" });
-const mockUpdateMutate = vi.fn().mockResolvedValue({ id: "existing-id" });
+// Sprint A.5+D.1+D.4: mocks de mutations canonical.
+const mockCreateMutateAsync = vi.fn().mockResolvedValue({ id: "new-auto-id" });
+const mockCreateMutate = vi.fn();
+const mockUpdateMutateAsync = vi.fn().mockResolvedValue({ id: "existing-id" });
+const mockToggleMutate = vi.fn();
+const mockTestMutateAsync = vi.fn().mockResolvedValue({ success: true });
+const mockDeleteMutate = vi.fn();
+
+// Sprint A.7: useTriggerTypes/useActionTypes wiring. Default = backend canonical
+// shape success. Tests podem reatribuir esses objetos via beforeEach pra simular
+// loading/error states. (vi.mock factory roda no hoisting — variables aqui são
+// closure-captured pelo mock factory.)
+const mockTriggerTypesState: { data: unknown; error: unknown; isLoading: boolean } = {
+  data: {
+    success: true,
+    data: {
+      trigger_types: [
+        { value: "candidate_stage_changed", name: "Candidato mudou de etapa", description: "..." },
+        { value: "interview_scheduled", name: "Entrevista agendada", description: "..." },
+      ],
+    },
+  },
+  error: null,
+  isLoading: false,
+};
+
+const mockActionTypesState: { data: unknown; error: unknown; isLoading: boolean } = {
+  data: {
+    success: true,
+    data: {
+      action_types: [
+        { value: "send_email", name: "Enviar e-mail", description: "...", config_fields: [] },
+        { value: "send_whatsapp", name: "Enviar WhatsApp", description: "...", config_fields: [] },
+      ],
+    },
+  },
+  error: null,
+  isLoading: false,
+};
 
 vi.mock("@/hooks/automations/useAutomationMutations", () => ({
   useCreateAutomation: () => ({
-    mutateAsync: mockCreateMutate,
+    mutateAsync: mockCreateMutateAsync,
+    mutate: mockCreateMutate,
     isPending: false,
   }),
   useUpdateAutomation: () => ({
-    mutateAsync: mockUpdateMutate,
+    mutateAsync: mockUpdateMutateAsync,
     isPending: false,
   }),
+  useToggleAutomationActive: () => ({
+    mutate: mockToggleMutate,
+    isPending: false,
+  }),
+  useTestAutomation: () => ({
+    mutateAsync: mockTestMutateAsync,
+    isPending: false,
+  }),
+  useDeleteAutomation: () => ({
+    mutate: mockDeleteMutate,
+    isPending: false,
+  }),
+  useTriggerTypes: () => mockTriggerTypesState,
+  useActionTypes: () => mockActionTypesState,
 }));
 
 beforeAll(() => {
@@ -122,6 +150,16 @@ const MESSAGES = {
         statusActive: "Ativo",
         statusPaused: "Pausado",
         edit: "Editar",
+        moreActions: "Mais ações",
+        actionTest: "Testar",
+        actionDuplicate: "Duplicar",
+        actionDelete: "Excluir",
+        pauseAutomation: "Pausar automação",
+        activateAutomation: "Ativar automação",
+        testOk: "Teste OK: {name}",
+        testFailed: "Teste falhou: {name}",
+        duplicateSuffix: "{name} (cópia)",
+        deleteConfirm: 'Excluir automação "{name}"?',
         quickActions: "Ações Rápidas",
         createWorkflow: "Criar Workflow",
         createWorkflowDesc: "Crie um novo workflow do zero",
@@ -178,7 +216,10 @@ const MOCK_AUTOMATIONS = [
     name: "Notificação Automática de Aprovação",
     description: "Envia email quando candidato é aprovado na triagem",
     trigger_type: "candidate_stage_changed",
+    trigger_data: { stage: "approved" },
     action_type: "send_email",
+    action_data: { template_id: "approval" },
+    conditions: [],
     is_active: true,
     executions_count: 42,
     last_executed_at: "2026-04-20T10:00:00Z",
@@ -189,7 +230,10 @@ const MOCK_AUTOMATIONS = [
     name: "Lembrete de Entrevista",
     description: "WhatsApp 24h antes da entrevista",
     trigger_type: "interview_scheduled",
+    trigger_data: {},
     action_type: "send_whatsapp",
+    action_data: {},
+    conditions: [],
     is_active: false,
     executions_count: 0,
     last_executed_at: null,
@@ -200,6 +244,14 @@ const MOCK_AUTOMATIONS = [
 const EMPTY_API_RESPONSE = {
   ok: true,
   json: async () => ({ success: true, data: { automations: [], total: 0 } }),
+};
+
+const POPULATED_API_RESPONSE = {
+  ok: true,
+  json: async () => ({
+    success: true,
+    data: { automations: MOCK_AUTOMATIONS, total: 2 },
+  }),
 };
 
 // ── Tests ────────────────────────────────────────────────────────────────
@@ -219,8 +271,6 @@ describe("AutomationsTab — API wiring (PR-AUTO)", () => {
   });
 
   it("faz fetch para /api/backend-proxy/automations SEM company_id no URL (REGRA 2 canonical)", async () => {
-    // REGRA 2 CLAUDE.md user-global: company_id NUNCA via query/body.
-    // Backend extrai do JWT via Depends(require_company_id). Frontend stripped.
     renderWithIntl(<AutomationsTab onSettingsChange={() => {}} />);
 
     await waitFor(() => {
@@ -230,7 +280,6 @@ describe("AutomationsTab — API wiring (PR-AUTO)", () => {
     });
 
     const url = (fetch as ReturnType<typeof vi.fn>).mock.calls[0][0] as string;
-    // Sensor canonical: a URL NÃO pode conter company_id query param.
     expect(url).not.toContain("company_id=");
   });
 
@@ -254,7 +303,6 @@ describe("AutomationsTab — API wiring (PR-AUTO)", () => {
   it("mapeia trigger_type para label legível", async () => {
     renderWithIntl(<AutomationsTab onSettingsChange={() => {}} />);
     await waitFor(() => {
-      // candidate_stage_changed → "Candidato movimentado"
       expect(screen.getByText(/Candidato movimentado/i)).toBeInTheDocument();
     });
   });
@@ -297,35 +345,24 @@ describe("AutomationsTab — API wiring (PR-AUTO)", () => {
 
 describe("AutomationsTab — Builder wiring (Sprint A.5+A.6)", () => {
   beforeEach(() => {
+    mockCreateMutateAsync.mockClear();
+    mockUpdateMutateAsync.mockClear();
     mockCreateMutate.mockClear();
-    mockUpdateMutate.mockClear();
   });
 
   it("clicar 'Nova automação' no header abre tab Criar com SentenceBuilder", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(EMPTY_API_RESPONSE));
     renderWithIntl(<AutomationsTab onSettingsChange={() => {}} />);
 
-    // espera carregar (sai do loading state)
     await screen.findByText(/a lia pode automatizar/i);
 
-    // Botão "Nova automação" no header (HubHeader)
     const buttons = screen.getAllByRole("button", { name: /nova automação/i });
-    // o primeiro com esse texto é o header (CTA principal)
     fireEvent.click(buttons[0]);
 
-    // Tab builder agora ativa — esperamos header "Nova automação" no body
-    // (não o do header). Como o título do header tab usa "builderTitleNew"
-    // que é "Nova automação", esperamos pelo menos 2 ocorrências do texto.
     await waitFor(() => {
       const matches = screen.getAllByText(/nova automação/i);
-      // header CTA + section title do builder
       expect(matches.length).toBeGreaterThanOrEqual(2);
     });
-
-    // SentenceBuilder rendered — espera trigger slot inicial visível
-    // (heurística: o builder tem ao menos um botão "Adicionar" ou texto
-    // canonical do paradigma frase)
-    // Não exige string específica pra não acoplar com copy do SentenceBuilder.
   });
 
   it("empty state 'Criar com a LIA' abre tab Criar (mesmo flow que header)", async () => {
@@ -338,7 +375,6 @@ describe("AutomationsTab — Builder wiring (Sprint A.5+A.6)", () => {
     fireEvent.click(createWithLiaBtn);
 
     await waitFor(() => {
-      // SentenceBuilder builder section title
       const matches = screen.getAllByText(/nova automação/i);
       expect(matches.length).toBeGreaterThanOrEqual(2);
     });
@@ -358,27 +394,15 @@ describe("AutomationsTab — Builder wiring (Sprint A.5+A.6)", () => {
   });
 
   it("clicar Edit pencil em workflow existente abre builder com state populado", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: async () => ({
-          success: true,
-          data: { automations: MOCK_AUTOMATIONS, total: 2 },
-        }),
-      }),
-    );
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(POPULATED_API_RESPONSE));
     renderWithIntl(<AutomationsTab onSettingsChange={() => {}} />);
 
-    // espera workflows aparecerem
     await screen.findByText("Notificação Automática de Aprovação");
 
-    // O botão Edit usa aria-label="Editar" (t("edit"))
     const editButtons = screen.getAllByRole("button", { name: /^editar$/i });
     expect(editButtons.length).toBeGreaterThan(0);
     fireEvent.click(editButtons[0]);
 
-    // Builder agora em modo edit: título "Editar automação"
     await waitFor(() => {
       expect(screen.getByText(/editar automação/i)).toBeInTheDocument();
     });
@@ -390,7 +414,6 @@ describe("AutomationsTab — Builder wiring (Sprint A.5+A.6)", () => {
 
     await screen.findByText(/a lia pode automatizar/i);
 
-    // abre builder
     fireEvent.click(screen.getByRole("button", { name: /criar com a lia/i }));
 
     await waitFor(() => {
@@ -398,11 +421,9 @@ describe("AutomationsTab — Builder wiring (Sprint A.5+A.6)", () => {
       expect(matches.length).toBeGreaterThanOrEqual(2);
     });
 
-    // clica tab "Visão Geral"
     fireEvent.click(screen.getByRole("button", { name: /visão geral/i }));
 
     await waitFor(() => {
-      // de volta no empty state
       expect(screen.getByText(/a lia pode automatizar/i)).toBeInTheDocument();
     });
   });
@@ -413,7 +434,6 @@ describe("AutomationsTab — Builder wiring (Sprint A.5+A.6)", () => {
 
     await screen.findByText(/a lia pode automatizar/i);
 
-    // abre builder mas não salva nada
     fireEvent.click(screen.getByRole("button", { name: /criar com a lia/i }));
 
     await waitFor(() => {
@@ -421,8 +441,238 @@ describe("AutomationsTab — Builder wiring (Sprint A.5+A.6)", () => {
       expect(matches.length).toBeGreaterThanOrEqual(2);
     });
 
-    // mutation NÃO foi chamada
-    expect(mockCreateMutate).not.toHaveBeenCalled();
-    expect(mockUpdateMutate).not.toHaveBeenCalled();
+    expect(mockCreateMutateAsync).not.toHaveBeenCalled();
+    expect(mockUpdateMutateAsync).not.toHaveBeenCalled();
+  });
+});
+
+// ── Sprint D.1+D.4: Item actions wiring ─────────────────────────────────
+
+describe("AutomationsTab — Item actions wiring (Sprint D.1+D.4)", () => {
+  beforeEach(() => {
+    mockToggleMutate.mockClear();
+    mockTestMutateAsync.mockClear();
+    mockCreateMutate.mockClear();
+    mockDeleteMutate.mockClear();
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(POPULATED_API_RESPONSE));
+  });
+
+  it("D.1: clicar chip status 'Ativo' chama useToggleAutomationActive com isActive=false", async () => {
+    renderWithIntl(<AutomationsTab onSettingsChange={() => {}} />);
+    await screen.findByText("Notificação Automática de Aprovação");
+
+    const toggleBtn = screen.getByTestId("workflow-toggle-auto-001");
+    fireEvent.click(toggleBtn);
+
+    expect(mockToggleMutate).toHaveBeenCalledWith({
+      id: "auto-001",
+      isActive: false,
+    });
+  });
+
+  it("D.1: clicar chip status 'Pausado' chama toggle com isActive=true", async () => {
+    renderWithIntl(<AutomationsTab onSettingsChange={() => {}} />);
+    await screen.findByText("Lembrete de Entrevista");
+
+    const toggleBtn = screen.getByTestId("workflow-toggle-auto-002");
+    fireEvent.click(toggleBtn);
+
+    expect(mockToggleMutate).toHaveBeenCalledWith({
+      id: "auto-002",
+      isActive: true,
+    });
+  });
+
+  it("D.4: clicar MoreHorizontal abre popover com Testar/Duplicar/Excluir", async () => {
+    renderWithIntl(<AutomationsTab onSettingsChange={() => {}} />);
+    await screen.findByText("Notificação Automática de Aprovação");
+
+    const moreBtn = screen.getByTestId("workflow-more-auto-001");
+    fireEvent.click(moreBtn);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("workflow-action-test-auto-001")).toBeInTheDocument();
+      expect(screen.getByTestId("workflow-action-duplicate-auto-001")).toBeInTheDocument();
+      expect(screen.getByTestId("workflow-action-delete-auto-001")).toBeInTheDocument();
+    });
+  });
+
+  it("D.4: clicar 'Testar' chama useTestAutomation com {id, dryRunPayload:{}}", async () => {
+    const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {});
+
+    renderWithIntl(<AutomationsTab onSettingsChange={() => {}} />);
+    await screen.findByText("Notificação Automática de Aprovação");
+
+    fireEvent.click(screen.getByTestId("workflow-more-auto-001"));
+    await waitFor(() => {
+      expect(screen.getByTestId("workflow-action-test-auto-001")).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByTestId("workflow-action-test-auto-001"));
+
+    await waitFor(() => {
+      expect(mockTestMutateAsync).toHaveBeenCalledWith({
+        id: "auto-001",
+        dryRunPayload: {},
+      });
+    });
+    await waitFor(() => {
+      expect(alertSpy).toHaveBeenCalled();
+    });
+    alertSpy.mockRestore();
+  });
+
+  it("D.4: clicar 'Duplicar' chama useCreateAutomation com clone do workflow", async () => {
+    renderWithIntl(<AutomationsTab onSettingsChange={() => {}} />);
+    await screen.findByText("Notificação Automática de Aprovação");
+
+    fireEvent.click(screen.getByTestId("workflow-more-auto-001"));
+    await waitFor(() => {
+      expect(screen.getByTestId("workflow-action-duplicate-auto-001")).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByTestId("workflow-action-duplicate-auto-001"));
+
+    expect(mockCreateMutate).toHaveBeenCalledTimes(1);
+    const payload = mockCreateMutate.mock.calls[0][0];
+    expect(payload.trigger_type).toBe("candidate_stage_changed");
+    expect(payload.action_type).toBe("send_email");
+    expect(payload.name).toContain("cópia");
+  });
+
+  it("D.4: clicar 'Excluir' + confirm chama useDeleteAutomation com id", async () => {
+    const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
+
+    renderWithIntl(<AutomationsTab onSettingsChange={() => {}} />);
+    await screen.findByText("Notificação Automática de Aprovação");
+
+    fireEvent.click(screen.getByTestId("workflow-more-auto-001"));
+    await waitFor(() => {
+      expect(screen.getByTestId("workflow-action-delete-auto-001")).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByTestId("workflow-action-delete-auto-001"));
+
+    expect(confirmSpy).toHaveBeenCalled();
+    expect(mockDeleteMutate).toHaveBeenCalledWith("auto-001");
+
+    confirmSpy.mockRestore();
+  });
+
+  it("D.4: cancelar confirm dialog NÃO chama deleteMutation", async () => {
+    const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(false);
+
+    renderWithIntl(<AutomationsTab onSettingsChange={() => {}} />);
+    await screen.findByText("Notificação Automática de Aprovação");
+
+    fireEvent.click(screen.getByTestId("workflow-more-auto-001"));
+    await waitFor(() => {
+      expect(screen.getByTestId("workflow-action-delete-auto-001")).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByTestId("workflow-action-delete-auto-001"));
+
+    expect(confirmSpy).toHaveBeenCalled();
+    expect(mockDeleteMutate).not.toHaveBeenCalled();
+
+    confirmSpy.mockRestore();
+  });
+});
+
+// ── Sprint A.7: real types wiring (useTriggerTypes / useActionTypes) ─────
+
+describe("AutomationsTab — Catalog wiring (Sprint A.7)", () => {
+  beforeEach(() => {
+    // reset to canonical success state by default
+    mockTriggerTypesState.data = {
+      success: true,
+      data: {
+        trigger_types: [
+          { value: "candidate_stage_changed", name: "Candidato mudou de etapa", description: "..." },
+          { value: "interview_scheduled", name: "Entrevista agendada", description: "..." },
+        ],
+      },
+    };
+    mockTriggerTypesState.error = null;
+    mockTriggerTypesState.isLoading = false;
+    mockActionTypesState.data = {
+      success: true,
+      data: {
+        action_types: [
+          { value: "send_email", name: "Enviar e-mail", description: "...", config_fields: [] },
+          { value: "send_whatsapp", name: "Enviar WhatsApp", description: "...", config_fields: [] },
+        ],
+      },
+    };
+    mockActionTypesState.error = null;
+    mockActionTypesState.isLoading = false;
+    mockCreateMutateAsync.mockClear();
+    mockUpdateMutateAsync.mockClear();
+  });
+
+  it("renderiza builder sem crash quando triggers/actions vêm do backend canonical", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(EMPTY_API_RESPONSE));
+    renderWithIntl(<AutomationsTab onSettingsChange={() => {}} />);
+
+    await screen.findByText(/a lia pode automatizar/i);
+    fireEvent.click(screen.getByRole("button", { name: /criar com a lia/i }));
+
+    await waitFor(() => {
+      // SentenceBuilder renderiza — section title visível 2x (header CTA + body)
+      const headers = screen.getAllByText(/nova automação/i);
+      expect(headers.length).toBeGreaterThanOrEqual(2);
+    });
+  });
+
+  it("usa mock fallback quando useTriggerTypes retorna error (REGRA 4 explicit warn)", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(EMPTY_API_RESPONSE));
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    mockTriggerTypesState.data = undefined;
+    mockTriggerTypesState.error = new Error("backend down");
+
+    renderWithIntl(<AutomationsTab onSettingsChange={() => {}} />);
+    await screen.findByText(/a lia pode automatizar/i);
+    fireEvent.click(screen.getByRole("button", { name: /criar com a lia/i }));
+
+    await waitFor(() => {
+      const headers = screen.getAllByText(/nova automação/i);
+      expect(headers.length).toBeGreaterThanOrEqual(2);
+    });
+
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining("useTriggerTypes error"),
+      expect.any(Error),
+    );
+
+    warnSpy.mockRestore();
+  });
+
+  it("usa mock fallback quando backend retorna array vazio (loading-equivalent)", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(EMPTY_API_RESPONSE));
+
+    mockTriggerTypesState.data = { success: true, data: { trigger_types: [] } };
+    mockActionTypesState.data = { success: true, data: { action_types: [] } };
+
+    renderWithIntl(<AutomationsTab onSettingsChange={() => {}} />);
+    await screen.findByText(/a lia pode automatizar/i);
+    fireEvent.click(screen.getByRole("button", { name: /criar com a lia/i }));
+
+    await waitFor(() => {
+      const headers = screen.getAllByText(/nova automação/i);
+      expect(headers.length).toBeGreaterThanOrEqual(2);
+    });
+  });
+
+  it("não crasha quando backend retorna shape inesperado (defesa adapter)", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(EMPTY_API_RESPONSE));
+
+    mockTriggerTypesState.data = { unexpected: "garbage" };
+    mockActionTypesState.data = null;
+
+    renderWithIntl(<AutomationsTab onSettingsChange={() => {}} />);
+    await screen.findByText(/a lia pode automatizar/i);
+    fireEvent.click(screen.getByRole("button", { name: /criar com a lia/i }));
+
+    await waitFor(() => {
+      const headers = screen.getAllByText(/nova automação/i);
+      expect(headers.length).toBeGreaterThanOrEqual(2);
+    });
   });
 });

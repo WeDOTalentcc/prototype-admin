@@ -4496,7 +4496,17 @@
         "createWithLia": "Create with LIA",
         "seeExamples": "See examples",
         "builderTitleNew": "New automation",
-        "builderTitleEdit": "Edit automation"
+        "builderTitleEdit": "Edit automation",
+        "moreActions": "More actions",
+        "actionTest": "Test",
+        "actionDuplicate": "Duplicate",
+        "actionDelete": "Delete",
+        "pauseAutomation": "Pause automation",
+        "activateAutomation": "Activate automation",
+        "testOk": "Test OK: {name}",
+        "testFailed": "Test failed: {name}",
+        "duplicateSuffix": "{name} (copy)",
+        "deleteConfirm": "Delete automation \"{name}\"?"
       },
       "communicationTab": {
         "emailTemplates": "Email Templates",
