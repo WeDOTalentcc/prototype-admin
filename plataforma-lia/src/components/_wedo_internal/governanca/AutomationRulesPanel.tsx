@@ -39,7 +39,7 @@ export function AutomationRulesPanel() {
       setLoading(true)
       setError(null)
       try {
-        const res = await apiFetch()
+        const res = await apiFetch("/api/backend-proxy/automations?limit=100")
         if (!res.ok) throw new Error()
         const body = await res.json()
         if (cancelled) return
@@ -65,7 +65,7 @@ export function AutomationRulesPanel() {
     setPending((p) => ({ ...p, [id]: true }))
     const nextActive = !(rule.is_active ?? false)
     try {
-      const res = await apiFetch(, {
+      const res = await apiFetch(`/api/backend-proxy/automations/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ is_active: nextActive }),
@@ -164,7 +164,7 @@ export function AutomationRulesPanel() {
                       type="button"
                       disabled={isPending}
                       onClick={() => toggleRule(rule)}
-                      data-testid={}
+                      data-testid={rule.id ? `toggle-automation-${rule.id}` : undefined}
                       className="rounded-md border border-lia-border-default px-2 py-1 text-xs font-medium hover:bg-lia-bg-tertiary disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       {isActive ? t("disable") : t("enable")}

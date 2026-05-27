@@ -35,11 +35,10 @@ const SECTION_ICON_COLORS: Record<string, string> = {
 import dynamic from"next/dynamic"
 import { LoadingFallback } from"@/components/ui/loading"
 const MinhaEmpresaHub = dynamic(() => import("@/components/settings/MinhaEmpresaHub").then(m => ({ default: m.MinhaEmpresaHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando empresa..." /> })
-const PipelineStandalone = dynamic(() => import("@/components/settings/PipelineStandalone").then(m => ({ default: m.PipelineStandalone })), { ssr: false, loading: () => <LoadingFallback text="Carregando pipeline..." /> })
-const ScreeningStandalone = dynamic(() => import("@/components/settings/ScreeningStandalone").then(m => ({ default: m.ScreeningStandalone })), { ssr: false, loading: () => <LoadingFallback text="Carregando screening..." /> })
+const RecruitmentPipelineTab = dynamic(() => import("@/components/settings/RecruitmentPipelineTab").then(m => ({ default: m.RecruitmentPipelineTab })), { ssr: false, loading: () => <LoadingFallback text="Carregando pipeline..." /> })
+const RecruitmentScreeningTab = dynamic(() => import("@/components/settings/RecruitmentScreeningTab").then(m => ({ default: m.RecruitmentScreeningTab })), { ssr: false, loading: () => <LoadingFallback text="Carregando screening..." /> })
 const CommunicationHub = dynamic(() => import("@/components/settings/CommunicationHub").then(m => ({ default: m.CommunicationHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando comunicação..." /> })
 const IntegrationsHub = dynamic(() => import("@/components/settings/IntegrationsHub").then(m => ({ default: m.IntegrationsHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando integrações..." /> })
-const TemplatesAssinaturaHub = dynamic(() => import("@/components/settings/TemplatesAssinaturaHub").then(m => ({ default: m.TemplatesAssinaturaHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando templates..." /> })
 const UsuariosDepartamentosHub = dynamic(() => import("@/components/settings/UsuariosDepartamentosHub").then(m => ({ default: m.UsuariosDepartamentosHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando usuários..." /> })
 const FairnessComplianceHub = dynamic(() => import("@/components/settings/FairnessComplianceHub").then(m => ({ default: m.FairnessComplianceHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando compliance..." /> })
 const ConsumoHub = dynamic(() => import("@/components/settings/ConsumoHub").then(m => ({ default: m.ConsumoHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando consumo..." /> })
@@ -376,19 +375,19 @@ export default function SettingsPageEnhanced() {
       case 'pipeline':
         return (
           <ErrorBoundarySection>
-            <PipelineStandalone />
+            <RecruitmentPipelineTab />
           </ErrorBoundarySection>
         )
       case 'screening':
         return (
           <ErrorBoundarySection>
-            <ScreeningStandalone />
+            <RecruitmentScreeningTab />
           </ErrorBoundarySection>
         )
       case 'templates-assinatura':
         return (
           <ErrorBoundarySection>
-            <TemplatesAssinaturaHub />
+            <CommunicationHub visibleTabs={['templates', 'signature']} stacked />
           </ErrorBoundarySection>
         )
       case 'comunicacao-alertas':

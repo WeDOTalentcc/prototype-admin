@@ -226,6 +226,7 @@ export function useCompanySettingsCards() {
   )
 
   const refreshAll = useCallback(() => {
+    setWatchdogError(null)
     queryClient.invalidateQueries({ queryKey: SETTINGS_QUERY_KEYS.companyProfile() })
     queryClient.invalidateQueries({ queryKey: SETTINGS_QUERY_KEYS.hiringPolicy() })
     queryClient.invalidateQueries({ queryKey: SETTINGS_QUERY_KEYS.settingsProgress() })

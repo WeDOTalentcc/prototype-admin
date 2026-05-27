@@ -198,7 +198,7 @@ export function IntegrationDetailDrawer({
     : undefined
 
   return (
-    <Sheet open={open} onOpenChange={(v) => !v && onClose()}>
+    <Sheet open={open} onOpenChange={(v: boolean) => !v && onClose()}>
       <SheetContent
         side="right"
         className="w-full sm:max-w-md overflow-y-auto bg-lia-bg-primary dark:bg-lia-bg-secondary border-l border-lia-border-subtle dark:border-lia-border-subtle"
