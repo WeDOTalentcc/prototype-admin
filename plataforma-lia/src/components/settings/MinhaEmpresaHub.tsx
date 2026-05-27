@@ -19,7 +19,7 @@ import { textStyles } from "@/lib/design-tokens"
 import { Globe } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { HubHeader, HubLoadingState } from "./_shared"
+import { HubHeader, HubLoadingState, HubErrorState } from "./_shared"
 import { SettingsEditModeToggle } from "@/components/settings/SettingsEditModeToggle"
 import { useSettingsEditMode } from "@/hooks/settings/useSettingsEditMode"
 
@@ -62,6 +62,7 @@ export function MinhaEmpresaHub({ activeSubsection }: MinhaEmpresaHubProps = {})
     cancelEditing,
     saveField,
     refreshAll,
+    watchdogError,
   } = useCompanySettingsCards()
 
   const { triggerAction: _triggerAction, triggerPrefillSection } = useSettingsConversational()
@@ -161,6 +162,9 @@ export function MinhaEmpresaHub({ activeSubsection }: MinhaEmpresaHubProps = {})
   }
 
   // ─── LOADING STATE ────────────────────────────────────────────
+  if (watchdogError) {
+    return <HubErrorState message={watchdogError} onRetry={refreshAll} />
+  }
   if (loading) {
     return <HubLoadingState message={t("loadingCompanyData")} />
   }

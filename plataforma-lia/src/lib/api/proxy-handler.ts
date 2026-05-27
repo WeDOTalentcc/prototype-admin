@@ -175,7 +175,7 @@ export function createProxyHandlers<M extends HttpMethod = "GET">(
           }
         }
 
-        const response = await fetch(url, { ...fetchOptions, signal: AbortSignal.timeout(30000) })
+        const response = await fetch(url, { ...fetchOptions, signal: AbortSignal.timeout(10000) })
 
         if (!response.ok) {
           // Pass the backend response through verbatim — preserve status, body

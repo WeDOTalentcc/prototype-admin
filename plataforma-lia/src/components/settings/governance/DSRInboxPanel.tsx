@@ -131,9 +131,10 @@ export function DSRInboxPanel({ defaultRequestType }: { defaultRequestType?: str
         const listData = await listRes.json()
         const statsData = statsRes.ok ? await statsRes.json() : null
         if (cancelled) return
-        const list: DSR[] = Array.isArray(listData)
+        const raw = Array.isArray(listData)
           ? listData
           : listData.requests ?? listData.items ?? listData.data ?? []
+        const list: DSR[] = Array.isArray(raw) ? raw : []
         setItems(list)
         setStats(statsData)
       } catch (err) {

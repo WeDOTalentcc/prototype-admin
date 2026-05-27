@@ -189,7 +189,7 @@ export function useCompanySettingsCards() {
 
   // ── Loading watchdog ──
   const [watchdogError, setWatchdogError] = useState<string | null>(null)
-  useLoadingWatchdog(loading, () => setWatchdogError("Tempo limite de carregamento excedido"), 20_000)
+  useLoadingWatchdog(loading, () => setWatchdogError("Tempo limite de carregamento excedido"), 8_000)
 
   // ── UI state ──
   const [expandedBlocks, setExpandedBlocks] = useState<Set<string>>(new Set(["basic"]))
@@ -237,6 +237,7 @@ export function useCompanySettingsCards() {
     blocks,
     loading,
     error: error ?? watchdogError,
+    watchdogError,
     successMessage,
     overallProgress,
     expandedBlocks,

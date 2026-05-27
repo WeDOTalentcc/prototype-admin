@@ -599,7 +599,7 @@ export default function SettingsPageEnhanced() {
         return (
           <ErrorBoundarySection>
             <Suspense fallback={<HubLoadingState />}>
-              <FairnessComplianceHub activeSubsection={activeSubsection || 'lgpd-candidatos'} />
+              <FairnessComplianceHub activeSubsection={activeSubsection} />
             </Suspense>
           </ErrorBoundarySection>
         )
