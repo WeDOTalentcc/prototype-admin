@@ -58,8 +58,8 @@ vi.mock("@/components/settings/integrations/IntegrationCard", () => ({
   IntegrationCard: () => <div data-testid="integration-card-stub" />,
 }))
 
-vi.mock("@/components/settings/integrations/IntegrationDetailDrawer", () => ({
-  IntegrationDetailDrawer: () => <div data-testid="integration-drawer-stub" />,
+vi.mock("@/components/settings/integrations/IntegrationDetailModal", () => ({
+  IntegrationDetailModal: () => <div data-testid="integration-modal-stub" />,
 }))
 
 vi.mock("@/components/settings/integrations/IntegrationGrid", () => ({

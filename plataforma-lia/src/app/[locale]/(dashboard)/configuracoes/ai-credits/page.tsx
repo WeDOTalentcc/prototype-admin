@@ -1,12 +1,9 @@
-"use client"
+import { redirect } from "next/navigation"
 
-import dynamic from "next/dynamic"
+interface PageProps {
+  params: { locale: string }
+}
 
-const AiCreditsPage = dynamic(
-  () => import("@/components/pages/ai-credits-page").then((m) => ({ default: m.AiCreditsPage })),
-  { ssr: false }
-)
-
-export default function AiCreditsSettingsPage() {
-  return <AiCreditsPage />
+export default function AiCreditsRedirectPage({ params }: PageProps) {
+  redirect(`/${params.locale}/configuracoes?section=consumo`)
 }

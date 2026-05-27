@@ -146,8 +146,8 @@ vi.mock("@/components/settings/FairnessComplianceHub", () => ({
     <div data-testid="hub-fairness-compliance" data-active-subsection={props.activeSubsection ?? ""} />
   ),
 }))
-vi.mock("@/components/pages/ai-credits-page", () => ({
-  AiCreditsPage: () => <div data-testid="hub-ai-credits" />,
+vi.mock("@/components/settings/ConsumoHub", () => ({
+  ConsumoHub: () => <div data-testid="hub-ai-credits" />,
 }))
 
 // `next/dynamic` no jsdom: invoca o loader e renderiza o módulo resolvido.
