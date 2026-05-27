@@ -13,18 +13,9 @@ import enum
 from lia_config.database import Base
 
 
-class TriggerType(str, enum.Enum):
-    """Types of automation triggers."""
-    CANDIDATE_STAGE_CHANGED = "candidate_stage_changed"
-    INTERVIEW_SCHEDULED = "interview_scheduled"
-    OFFER_SENT = "offer_sent"
-    SCREENING_COMPLETED = "screening_completed"
-    NO_RESPONSE_48H = "no_response_48h"
-    CANDIDATE_APPLIED = "candidate_applied"
-    CANDIDATE_REJECTED = "candidate_rejected"
-    CANDIDATE_HIRED = "candidate_hired"
-    FEEDBACK_RECEIVED = "feedback_received"
-    DEADLINE_APPROACHING = "deadline_approaching"
+# TriggerType imported from canonical source (Sprint Z.db 2026-05-27).
+# DO NOT redefine here -- single source of truth is trigger_types_canonical.py.
+from app.shared.automation.trigger_types_canonical import TriggerType  # noqa: F401
 
 
 class ActionType(str, enum.Enum):
