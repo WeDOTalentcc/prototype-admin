@@ -9,6 +9,8 @@ Detecta:
   dentro de payloads JSON.stringify() em chamadas fetch()
 - Props JSX com nome de ID e valor "" (ex: <Component agentId="" />)
 
+Ignora linhas dentro de comentários (/* ... */ e // ...)
+
 Honra marker: // SENSOR-EXEMPT: <reason>
 
 Exit 0 = OK. Exit 1 = violations encontradas (BLOCKING).
@@ -21,46 +23,75 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent / "src" / "components" / "pages-agent-studio"
 
-# Padrões de ID em payloads JSON
-ID_KEY_PATTERN = re.compile(
-    r'(?:^|[,{]\s*)'           # início de objeto ou vírgula
-    r'["\'"]?'                   # aspas opcionais
-    r'(?:id|agentId|candidateId|jobId|agent_id|candidate_id|job_id|poolId|pool_id)'
-    r'["\'"]?'
-    r'\s*:\s*'
-    r'""',                       # valor string vazia
-    re.MULTILINE,
-)
-
 # Props JSX com ID vazio: agentId="" ou candidateId=""
+# Deve ser em atributo JSX real: propName=""
 JSX_ID_PROP_PATTERN = re.compile(
     r'\b(?:agentId|candidateId|jobId|agent_id|candidate_id|job_id|poolId|pool_id)'
     r'\s*=\s*""',
 )
 
-# Pattern dentro de JSON.stringify com ID vazio
-STRINGIFY_ID_PATTERN = re.compile(
-    r'JSON\.stringify\s*\(\s*\{[^}]*'
-    r'(?:id|agentId|candidateId|jobId)\s*:\s*""'
-    r'[^}]*\}',
-    re.DOTALL,
+# Propriedade em objeto JSON/JS com ID vazio: id: "" (dentro de {} de código)
+JSON_ID_PATTERN = re.compile(
+    r'(?:^|\s|[,{(])'
+    r'["\'"]?(?:id|agentId|candidateId|jobId|agent_id|candidate_id|job_id)["\'"]?'
+    r'\s*:\s*""',
 )
 
 EXEMPT_MARKER = "SENSOR-EXEMPT"
+
+# Patterns de comentário de linha
+LINE_COMMENT_RE = re.compile(r'^\s*//')
+# Detecta estar dentro de bloco de comentário JSX /* ... */
+BLOCK_COMMENT_START_RE = re.compile(r'/\*')
+BLOCK_COMMENT_END_RE = re.compile(r'\*/')
+# Comentário JSX inline: {/* ... */}
+JSX_COMMENT_RE = re.compile(r'\{/\*.*\*/\}')
+
+
+def strip_comments(line: str) -> str:
+    """Remove partes de comentário da linha para análise."""
+    # Remove comentário de linha
+    stripped = re.sub(r'//.*$', '', line)
+    # Remove comentário JSX inline: {/* ... */}
+    stripped = re.sub(r'\{/\*.*?\*/\}', '', stripped)
+    return stripped
 
 
 def check_file(path: Path) -> list[tuple[int, str]]:
     violations = []
     lines = path.read_text(encoding="utf-8", errors="replace").splitlines()
+
+    in_block_comment = False
     for lineno, line in enumerate(lines, 1):
+        # Rastrear bloco de comentário /* ... */
+        if in_block_comment:
+            if BLOCK_COMMENT_END_RE.search(line):
+                in_block_comment = False
+            continue
+
+        if BLOCK_COMMENT_START_RE.search(line) and not BLOCK_COMMENT_END_RE.search(line):
+            in_block_comment = True
+            continue
+
+        # Linha de comentário simples
+        if LINE_COMMENT_RE.match(line):
+            continue
+
         if EXEMPT_MARKER in line:
             continue
-        # Verificar prop JSX com ID vazio
-        if JSX_ID_PROP_PATTERN.search(line):
+
+        # Analisar apenas a parte sem comentários
+        code_part = strip_comments(line)
+
+        # Verificar prop JSX com ID vazio em código real
+        if JSX_ID_PROP_PATTERN.search(code_part):
             violations.append((lineno, f"Prop JSX com ID vazio detectada: {line.strip()!r}"))
-        # Verificar ID em payload literal
-        if ID_KEY_PATTERN.search(line):
-            violations.append((lineno, f"Propriedade de ID com string vazia em payload: {line.strip()!r}"))
+
+        # Verificar ID em payload literal (apenas em linhas com código funcional)
+        if re.search(r'fetch\(|JSON\.stringify\(|body:', code_part):
+            if JSON_ID_PATTERN.search(code_part):
+                violations.append((lineno, f"Propriedade de ID com string vazia em payload: {line.strip()!r}"))
+
     return violations
 
 
