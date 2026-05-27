@@ -13,6 +13,9 @@ from datetime import datetime
 from typing import Any
 
 from app.shared.policy_middleware import get_policy_for_company, resolve_policy_value
+from app.domains.persona.services.ai_persona_validator import (  # P1-6 sensor: tone normalization
+    TONE_PT_TO_EN_LEGACY,
+)
 
 try:
     import httpx as _httpx
@@ -593,14 +596,26 @@ class CommunicationDispatcher:
                 )
                 if isinstance(ai_persona_data, dict):
                     persona_tone = ai_persona_data.get("tone")
-                    if persona_tone and persona_tone != lia_tone:
-                        logger.warning(
-                            "lia_tone divergence detected: outbound lia_tone=%s vs "
-                            "chat ai_persona.tone=%s for company_id=%s. UI surfaces "
-                            "(Politicas vs Ai Persona tab) editaram valores diferentes. "
-                            "P1-6 sensor.",
-                            lia_tone, persona_tone, company_id,
-                        )
+                    if persona_tone:
+                        # Normalize PT-BR ai_persona.tone to EN before comparing with
+                        # legacy lia_tone (EN). Without normalization "profissional" ≠
+                        # "professional" fires a false positive even when tones are synced.
+                        # TONE_PT_TO_EN_LEGACY graceful passthrough: if already EN (legacy
+                        # config path), .get(v, v) returns unchanged — no double-translate.
+                        persona_tone_en = TONE_PT_TO_EN_LEGACY.get(persona_tone, persona_tone)
+                        if persona_tone_en != lia_tone:
+                            logger.warning(
+                                "lia_tone_divergence: outbound lia_tone=%r vs "
+                                "chat ai_persona.tone=%r (→EN: %r) for company_id=%s. "
+                                "Outbound messages use lia_tone; chat persona uses "
+                                "ai_persona.tone. UI surfaces edited independently — "
+                                "P1-6 sensor (read-time).",
+                                lia_tone, persona_tone, persona_tone_en, company_id,
+                                extra={"company_id": company_id,
+                                       "lia_tone": lia_tone,
+                                       "ai_persona_tone": persona_tone,
+                                       "ai_persona_tone_en": persona_tone_en},
+                            )
             except Exception as e:
                 logger.warning(f"Failed to load communication policy for {company_id}: {e}")
         

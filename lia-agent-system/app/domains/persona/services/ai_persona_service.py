@@ -152,7 +152,28 @@ async def update_ai_persona(
         # if a caller already provides an EN value (legacy code path),
         # `.get(tone, tone)` keeps it as-is rather than double-translating.
         # See ai_persona_validator.TONE_PT_TO_EN_LEGACY for the mapping.
-        rules["lia_tone"] = TONE_PT_TO_EN_LEGACY.get(tone, tone)
+        new_lia_tone_en = TONE_PT_TO_EN_LEGACY.get(tone, tone)
+        existing_lia_tone = rules.get("lia_tone")
+        # P1-6 write-time sensor: detect prior divergence before overwriting.
+        # Guards against: legacy ai_config.py endpoint wrote lia_tone in EN
+        # independently (bypassing the canonical update path), leaving the two
+        # surfaces out of sync until the recruiter next visits the persona panel.
+        # This write unifies them but we log the prior state for observability.
+        if existing_lia_tone and existing_lia_tone != new_lia_tone_en:
+            logger.warning(
+                "lia_tone_divergence: write-time sync overriding stale lia_tone. "
+                "prior_lia_tone=%r, new ai_persona.tone=%r (to_EN=%r), company_id=%s. "
+                "Likely cause: legacy ai_config endpoint wrote lia_tone independently. "
+                "P1-6 sensor (write-time) - resolving divergence now.",
+                existing_lia_tone, tone, new_lia_tone_en, company_id,
+                extra={
+                    "company_id": company_id,
+                    "prior_lia_tone": existing_lia_tone,
+                    "ai_persona_tone": tone,
+                    "resolved_lia_tone": new_lia_tone_en,
+                },
+            )
+        rules["lia_tone"] = new_lia_tone_en
     # Preserve defaults for any missing key after merge — ensures the dict
     # returned to the caller is always fully populated, never partial.
     next_persona.setdefault("name", DEFAULT_AI_NAME)
