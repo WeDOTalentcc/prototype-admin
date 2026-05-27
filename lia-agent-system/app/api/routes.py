@@ -48,7 +48,6 @@ from app.api.v1 import (
     auth,
     autocomplete,
     automation,
-    automation_rules,
     automations,
     benefits,
     bias_audit,
@@ -439,7 +438,6 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(task_monitoring.router, prefix="/api/v1", tags=["task-monitoring"])
     app.include_router(automation.router, prefix="/api/v1", tags=["automation"])
     app.include_router(automations.router, prefix="/api/v1", tags=["automations"])
-    app.include_router(automation_rules.router, prefix="/api/v1", tags=["automation-rules"])
     app.include_router(async_endpoints.router, prefix="/api/v1", tags=["async-jobs"])
 
     # ── Search & Discovery ────────────────────────────────────────────────────

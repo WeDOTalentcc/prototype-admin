@@ -152,7 +152,6 @@ from app.api.v1.ats import router as _t489_ats_router
 from app.api.v1.attachments import router as _t489_attachments_router
 from app.api.v1.audit_logs import router as _t489_audit_logs_router
 from app.api.v1.audit_timeline import router as _t489_audit_timeline_router
-from app.api.v1.automation_rules import router as _t489_automation_rules_router
 from app.api.v1.automations import router as _t489_automations_router
 from app.api.v1.bias_audit import router as _t489_bias_audit_router
 from app.api.v1.big_five import router as _t489_big_five_router
@@ -273,7 +272,6 @@ _TASK_489_DUAL_ID_PARAMS = [
     pytest.param(_t489_attachments_router, "attachments", id="attachments"),
     pytest.param(_t489_audit_logs_router, "audit-logs", id="audit-logs"),
     pytest.param(_t489_audit_timeline_router, "audit-timeline", id="audit-timeline"),
-    pytest.param(_t489_automation_rules_router, "automation-rules", id="automation-rules"),
     pytest.param(_t489_automations_router, "automations", id="automations"),
     pytest.param(_t489_bias_audit_router, "bias-audit", id="bias-audit"),
     pytest.param(_t489_big_five_router, "big-five", id="big-five"),
