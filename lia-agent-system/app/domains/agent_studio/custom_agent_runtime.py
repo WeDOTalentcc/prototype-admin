@@ -437,6 +437,39 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
                 name = tc.get("name", "") if isinstance(tc, dict) else getattr(tc, "name", "")
                 actions.append(AgentAction(action_type="call_tool", params={"tool": name}))
 
+        # Wave D1.3 (2026-05-27): aggregate token usage from langgraph AIMessages.
+        # LangChain populates ``usage_metadata`` on each AIMessage when the
+        # provider returns it (Anthropic, OpenAI, Gemini via langchain-google-genai).
+        # Sum across messages and derive cost via canonical pricing helper.
+        tokens_input = 0
+        tokens_output = 0
+        model_used = ""
+        for m in messages:
+            usage = getattr(m, "usage_metadata", None) or (
+                m.get("usage_metadata") if isinstance(m, dict) else None
+            )
+            if usage:
+                tokens_input += int(usage.get("input_tokens", 0) or 0)
+                tokens_output += int(usage.get("output_tokens", 0) or 0)
+            if not model_used:
+                resp_meta = getattr(m, "response_metadata", None) or (
+                    m.get("response_metadata") if isinstance(m, dict) else None
+                )
+                if resp_meta:
+                    model_used = (
+                        resp_meta.get("model_name")
+                        or resp_meta.get("model")
+                        or ""
+                    )
+
+        cost_usd = 0.0
+        try:
+            if tokens_input or tokens_output:
+                from libs.audit.lia_audit.audit_callback import _estimate_cost
+                cost_usd = _estimate_cost(model_used or None, tokens_input, tokens_output)
+        except Exception:
+            cost_usd = 0.0
+
         return AgentOutput(
             message=response,
             actions=actions,
@@ -447,6 +480,14 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
                 "agent_name": self._agent_name,
                 "domain": self._domain,
                 "tool_calls": len(actions),
+                # Wave D1.3 — token tracking canonical (consumido por pool_agents
+                # task ao persistir runtime_metrics).
+                "tokens_input": tokens_input,
+                "tokens_output": tokens_output,
+                "input_tokens": tokens_input,  # alias canonical
+                "output_tokens": tokens_output,
+                "model_used": model_used,
+                "cost_usd": cost_usd,
             },
         )
 

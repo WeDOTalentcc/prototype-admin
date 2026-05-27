@@ -410,6 +410,28 @@ class SystemPromptBuilder:
         if agent_type and agent_type != "orchestrator":
             sections.append(REACT_INSTRUCTIONS)
 
+        # Wave D1.2 (2026-05-27): canonical compliance_block injection.
+        # PromptComposer.compliance_blocks_for() é single source of truth
+        # — LGPD + fairness + bias + audit + guardrails universais. Garante
+        # que TODO system prompt construído via SystemPromptBuilder (Studio
+        # custom agents, recruiter_assistant, autonomous, orchestrator, etc.)
+        # leva os 14 protected attributes + EU AI Act + universal guardrails.
+        # Variant é selecionada automaticamente por agent_type via
+        # _classify_agent_variant (decision / communication / operational).
+        # Fail-open: se YAML load falhar, retorna string vazia (graceful).
+        try:
+            from app.shared.prompts.prompt_composer import PromptComposer
+            compliance_block = PromptComposer.compliance_blocks_for(agent_type)
+            if compliance_block and compliance_block.strip():
+                sections.append(f"\n## Compliance e Guardrails\n{compliance_block}")
+        except Exception as _comp_exc:
+            import logging as _log
+            _log.getLogger(__name__).error(
+                "[Wave D1.2] compliance_block injection failed: %s",
+                _comp_exc,
+                exc_info=True,
+            )
+
         if extra_instructions:
             sections.append(f"\n## Instruções Adicionais\n{extra_instructions}")
 

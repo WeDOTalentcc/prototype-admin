@@ -194,13 +194,42 @@ def test_full_wizard_run_emits_single_job_creation_audit(initial_state):
         GateClassifierOutput,
     )
 
-    def _make_approve_classifier():
+    def _make_stage_aware_classifier():
+        """Mock canonical: detecta stage via system_prompt + retorna intent apropriado.
+
+        - jd_enrichment / wsi_questions / competency / outros -> approve
+        - review -> publish_now (review_gate allowlist nao tem approve)
+        """
+        async def _classify(system_prompt, context_block, schema, **kw):
+            # Detecta stage via system_prompt content
+            if "review" in (system_prompt or "").lower() and "publish_now" in (system_prompt or "").lower():
+                return GateClassifierOutput(
+                    intent="publish_now", confidence=0.95,
+                    conversational_reply="(mock publish_now)", extracted_data={},
+                )
+            return GateClassifierOutput(
+                intent="approve", confidence=0.95,
+                conversational_reply="(mock approve)", extracted_data={},
+            )
         clf = MagicMock()
-        clf.classify = AsyncMock(return_value=GateClassifierOutput(
-            intent="approve", confidence=0.95,
-            conversational_reply="(mock approve)", extracted_data={},
-        ))
+        clf.classify = AsyncMock(side_effect=_classify)
         return clf
+
+    # Mock intake_intent_classifier para devolver provides_jd_intent (pula
+    # guard do jd_enrichment que pede JD ao recrutador). Pos Fix D 2026-05-27
+    # (commit 8c5f53ddd), classifier_eligible sempre roda quando nao ha
+    # JD enriquecida -- precisa mock pra cobertura E2E.
+    from app.domains.job_creation.services.intake_intent_classifier import (
+        IntakeIntentOutput,
+    )
+
+    class _MockIntakeProvidesJd:
+        def classify_sync(self, **kwargs):
+            return IntakeIntentOutput(
+                intent="provides_jd_intent",
+                confidence=0.95,
+                conversational_reply="(mock segue pro enrichment)",
+            )
 
     with patch.object(job_graph, "_get_jd_service", return_value=_fake_jd_service()), \
          patch.object(job_graph, "_get_wsi_generator", return_value=_fake_wsi_generator()), \
@@ -213,7 +242,12 @@ def test_full_wizard_run_emits_single_job_creation_audit(initial_state):
          patch(
              "app.domains.job_creation.services.wizard_gate_classifier."
              "get_wizard_gate_classifier",
-             return_value=_make_approve_classifier(),
+             return_value=_make_stage_aware_classifier(),
+         ), \
+         patch(
+             "app.domains.job_creation.services.intake_intent_classifier."
+             "get_intake_intent_classifier",
+             return_value=_MockIntakeProvidesJd(),
          ):
         audit_cls.return_value.log_decision = log_decision
 
@@ -224,10 +258,10 @@ def test_full_wizard_run_emits_single_job_creation_audit(initial_state):
         # (pausa em jd_gate via interrupt()).
         state = compiled.invoke(initial_state, config=config)
 
-        # Resume canonical loop -- max 5 resumes (4 HITL gates + safety).
+        # Resume canonical loop -- max 8 resumes (4 HITL gates + dupla confirmacao publish + safety).
         # Cada resume passa "ok" pro Command -- classifier mock sempre
         # devolve approve.
-        for _ in range(5):
+        for _ in range(8):
             if state.get("current_stage") == "handoff":
                 break
             state = compiled.invoke(
@@ -323,6 +357,41 @@ def test_resume_after_hitl_does_not_duplicate_audit(initial_state):
     """A wizard that pauses at the HITL points and resumes must still
     emit exactly one audit row — never zero, never duplicated."""
     from app.domains.job_creation import graph as job_graph
+    from app.domains.job_creation.services.wizard_gate_classifier import (
+        GateClassifierOutput,
+    )
+    from app.domains.job_creation.services.intake_intent_classifier import (
+        IntakeIntentOutput,
+    )
+
+    def _make_stage_aware_classifier():
+        """Mock canonical: detecta stage via system_prompt + retorna intent apropriado.
+
+        - jd_enrichment / wsi_questions / competency / outros -> approve
+        - review -> publish_now (review_gate allowlist nao tem approve)
+        """
+        async def _classify(system_prompt, context_block, schema, **kw):
+            # Detecta stage via system_prompt content
+            if "review" in (system_prompt or "").lower() and "publish_now" in (system_prompt or "").lower():
+                return GateClassifierOutput(
+                    intent="publish_now", confidence=0.95,
+                    conversational_reply="(mock publish_now)", extracted_data={},
+                )
+            return GateClassifierOutput(
+                intent="approve", confidence=0.95,
+                conversational_reply="(mock approve)", extracted_data={},
+            )
+        clf = MagicMock()
+        clf.classify = AsyncMock(side_effect=_classify)
+        return clf
+
+    class _MockIntakeProvidesJd:
+        def classify_sync(self, **kwargs):
+            return IntakeIntentOutput(
+                intent="provides_jd_intent",
+                confidence=0.95,
+                conversational_reply="(mock segue pro enrichment)",
+            )
 
     log_decision = AsyncMock()
 
@@ -356,7 +425,7 @@ def test_resume_after_hitl_does_not_duplicate_audit(initial_state):
         # com novo state. Loop ate handoff (4 HITL gates).
         from langgraph.types import Command
         resumed = first
-        for _ in range(5):
+        for _ in range(8):
             if resumed.get("current_stage") == "handoff":
                 break
             resumed = compiled.invoke(Command(resume="ok"), config=config)
