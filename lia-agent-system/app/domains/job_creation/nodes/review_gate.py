@@ -18,6 +18,7 @@ from app.domains.job_creation.helpers.ws_payload_builder import (
     build_ws_stage_payload,
 )
 from app.domains.job_creation.helpers.i18n import msg
+from app.domains.job_creation.internal.constants import _REVIEW_VALID_TARGET_SECTIONS
 from app.domains.job_creation.helpers.async_audit import (
     emit_audit_fire_and_forget,
     run_coro_in_threadpool,
@@ -66,6 +67,9 @@ def review_gate_node(state: JobCreationState) -> JobCreationState:
     em ``criteria_used`` (SOX 7 anos retention via decision_type=
     ``wizard_step_completed``).
     """
+    # Pendencia 5 (2026-05-27): lazy import de graph.py (circular import risk).
+    from app.domains.job_creation.graph import _PUBLISH_DUAL_CONFIRMATION_TTL_S
+
     # Deferred imports to avoid circular dependency with graph.py module-level state.
     from app.domains.job_creation.graph import (
         _emit_review_gate_audit,

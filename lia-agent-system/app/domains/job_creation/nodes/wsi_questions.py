@@ -50,7 +50,12 @@ def wsi_questions_node(state: JobCreationState) -> JobCreationState:
 
     t0 = time.time()
     # PR-10 fix Fix J: lazy import de graph.py (circular import risk)
-    from app.domains.job_creation.graph import evaluate_wizard_policy
+    # Pendencia 5 (2026-05-27): emit_policy_block_audit + l4_counter add aqui.
+    from app.domains.job_creation.graph import (
+        evaluate_wizard_policy,
+        emit_policy_block_audit,
+        lia_wizard_fairness_l4_check_failed_total,
+    )
 
     logger.info("[JobCreation:wsi_questions] Starting F6")
 

@@ -8,7 +8,7 @@ Validate salary range vs market benchmark (Phase 2C-1).
 
 import logging
 import time
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from app.domains.job_creation.state import (
     JobCreationState,
