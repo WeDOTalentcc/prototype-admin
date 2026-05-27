@@ -173,10 +173,34 @@ def initial_state() -> dict:
 def test_full_wizard_run_emits_single_job_creation_audit(initial_state):
     """End-to-end: graph runs through every node and emits exactly one
     ``decision_type="job_creation"`` audit row with company_id,
-    prompt_hash and model captured."""
+    prompt_hash and model captured.
+
+    Pendencia 6 update (2026-05-27): pos Sprint F.2 (LLM gates 2026-05) +
+    Sprint Pipeline Templates (2026-05-26), o graph tem 4 HITL interrupts:
+    jd_gate, pipeline_template, wsi_questions_gate, review_gate. Test
+    pre-Sprint-F.2 (2026-04-26) apenas pre-setava jd_approved=True e
+    invocava uma vez -- nao mais suficiente. Pattern canonical agora:
+    Command(resume="<msg>") canonical via langgraph.types apos cada
+    interrupt(), seguindo aresume_with_message do JobCreationGraph.
+    """
     from app.domains.job_creation import graph as job_graph
+    from langgraph.types import Command
 
     log_decision = AsyncMock()
+
+    # Mock classifier que sempre devolve `approve` confidence alta pra
+    # bypass dos 4 HITL gates LLM canonical.
+    from app.domains.job_creation.services.wizard_gate_classifier import (
+        GateClassifierOutput,
+    )
+
+    def _make_approve_classifier():
+        clf = MagicMock()
+        clf.classify = AsyncMock(return_value=GateClassifierOutput(
+            intent="approve", confidence=0.95,
+            conversational_reply="(mock approve)", extracted_data={},
+        ))
+        return clf
 
     with patch.object(job_graph, "_get_jd_service", return_value=_fake_jd_service()), \
          patch.object(job_graph, "_get_wsi_generator", return_value=_fake_wsi_generator()), \
@@ -185,19 +209,39 @@ def test_full_wizard_run_emits_single_job_creation_audit(initial_state):
          patch(
              "app.domains.job_creation.compliance._run_async",
              lambda coro, **kw: coro.close(),
+         ), \
+         patch(
+             "app.domains.job_creation.services.wizard_gate_classifier."
+             "get_wizard_gate_classifier",
+             return_value=_make_approve_classifier(),
          ):
         audit_cls.return_value.log_decision = log_decision
 
-        # Build a fresh graph with an in-memory checkpointer so we don't
-        # depend on the singleton (which may carry state from other tests).
         compiled = job_graph.create_job_creation_graph(checkpointer=MemorySaver())
-        final_state = compiled.invoke(
-            initial_state,
-            config={"configurable": {"thread_id": THREAD_ID}},
-        )
+        config = {"configurable": {"thread_id": THREAD_ID}}
+
+        # Initial invoke -- graph runs intake -> jd_enrichment -> jd_gate
+        # (pausa em jd_gate via interrupt()).
+        state = compiled.invoke(initial_state, config=config)
+
+        # Resume canonical loop -- max 5 resumes (4 HITL gates + safety).
+        # Cada resume passa "ok" pro Command -- classifier mock sempre
+        # devolve approve.
+        for _ in range(5):
+            if state.get("current_stage") == "handoff":
+                break
+            state = compiled.invoke(
+                Command(resume="ok"),
+                config=config,
+            )
+
+        final_state = state
 
     # --- Walk reached every node, including the final handoff stage ---
-    assert final_state["current_stage"] == "handoff"
+    assert final_state["current_stage"] == "handoff", (
+        f"Wizard nao atingiu handoff. Parou em: {final_state.get('current_stage')!r}. "
+        f"stage_history: {final_state.get('stage_history')!r}"
+    )
     assert final_state["handoff_url"] == "/jobs/999"
     stages = final_state["stage_history"]
     for required in (
@@ -295,22 +339,32 @@ def test_resume_after_hitl_does_not_duplicate_audit(initial_state):
         compiled = job_graph.create_job_creation_graph(checkpointer=MemorySaver())
         config = {"configurable": {"thread_id": THREAD_ID + "-resume"}}
 
-        # First run: simulate a recruiter who has not yet approved the JD.
-        # The graph should park at jd_enrichment and emit no audit row.
+        # First run: graph pausa em jd_gate (HITL #1 canonical interrupt).
+        # Sem gate_resume_message, jd_gate_node chama interrupt() e devolve
+        # control ao caller. Pre-set de jd_approved nao basta (PoS Sprint F.2).
         paused_state = dict(initial_state)
         paused_state["jd_approved"] = None
         paused_state["questions_approved"] = None
         first = compiled.invoke(paused_state, config=config)
-        assert first["current_stage"] == "jd_enrichment"
+        assert first["current_stage"] == "jd_enrichment", (
+            f"Esperava parar em jd_enrichment (HITL #1), parou em: "
+            f"{first.get('current_stage')!r}"
+        )
         assert log_decision.call_count == 0
 
-        # Recruiter approves the JD and the questions; resume the same thread.
-        resumed = compiled.invoke(
-            {**first, "jd_approved": True, "questions_approved": True},
-            config=config,
-        )
+        # Resume canonical via Command(resume=...) -- nao basta invocar
+        # com novo state. Loop ate handoff (4 HITL gates).
+        from langgraph.types import Command
+        resumed = first
+        for _ in range(5):
+            if resumed.get("current_stage") == "handoff":
+                break
+            resumed = compiled.invoke(Command(resume="ok"), config=config)
 
-    assert resumed["current_stage"] == "handoff"
+    assert resumed["current_stage"] == "handoff", (
+        f"Wizard nao atingiu handoff pos-resume. Parou em: "
+        f"{resumed.get('current_stage')!r}"
+    )
     assert log_decision.call_count == 1
     kwargs = log_decision.call_args.kwargs
     assert kwargs["decision_type"] == "job_creation"

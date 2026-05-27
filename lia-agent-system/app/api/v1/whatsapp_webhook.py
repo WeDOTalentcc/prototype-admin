@@ -93,8 +93,18 @@ async def _find_session_by_phone(phone: str):
     return None
 
 
-async def _get_orchestrator():
-    """Build orchestrator with dependencies."""
+async def _get_orchestrator(*, tenant_id: str | None = None):
+    """Build orchestrator with dependencies.
+
+    Multi-tenancy (Wave D2.2, 2026-05-27): tenant_id resolvido via
+    _find_session_by_phone(from_number).account_id ANTES de chamar este
+    helper. Twilio webhook é pre-auth canonical (HMAC do Twilio + lookup
+    do número), portanto tenant resolution acontece via session phone.
+
+    Callers DEVEM passar tenant_id sempre que houver session bound. Para
+    branches pre-session (LGPD consent flow / unknown number flows), o
+    fallback None roda com credenciais globais (env) sem PII tenant.
+    """
     from app.services.onboarding_orchestrator import OnboardingOrchestrator
 
     db, llm, wa_client = None, None, None
@@ -105,17 +115,17 @@ async def _get_orchestrator():
     except ImportError:
         pass
     try:
-        # Canonical LLM factory (multi-tenant aware). Replaces broken
-        # get_llm import. NOTE: orchestrator helper runs BEFORE Twilio
-        # signature/tenant resolution; tenant_id=None uses global env
-        # credentials. Multi-tenancy gap reported as residual issue.
+        # Canonical LLM factory (multi-tenant aware). tenant_id threaded
+        # from session.account_id resolved via _find_session_by_phone().
+        # tenant_id=None aceito apenas em flows pre-session (LGPD consent
+        # rejection) — documentado nos call sites.
         from app.shared.providers.llm_factory import create_tracked_llm
         llm = create_tracked_llm(
             temperature=0.3,
             service_name="WhatsAppWebhook",
             operation="whatsapp_chat",
             max_output_tokens=512,
-            tenant_id=None,
+            tenant_id=tenant_id,
         )
     except Exception:
         pass
@@ -196,8 +206,10 @@ async def whatsapp_message_webhook(request: Request, ):
         logger.warning("[WhatsApp] Ownership/signature rejected: %s", exc)
         raise HTTPException(status_code=exc.status_code, detail=str(exc))
 
-    # Route to orchestrator
-    orchestrator, wa_client = await _get_orchestrator()
+    # Route to orchestrator — tenant_id threaded from session.account_id
+    # (Wave D2.2 multi-tenancy fix). Session foi resolvida acima via
+    # _find_session_by_phone + ownership/signature verified.
+    orchestrator, wa_client = await _get_orchestrator(tenant_id=str(session.account_id))
     result = await orchestrator.handle_whatsapp_message(session, message_body)
 
     # Send response
@@ -283,9 +295,12 @@ async def whatsapp_flow_webhook(request: Request, ):
     if not flow_data.get("lgpd_consent"):
         # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
         logger.warning(f"[WhatsApp Flow] LGPD consent NOT given by {phone_number} — blocking")
-        # Send message asking for consent
+        # Send message asking for consent. tenant_id=None aceito aqui:
+        # candidato negou consent LGPD, portanto não temos session bound
+        # nem permissão de processar PII — LLM roda com env credentials
+        # apenas para gerar a mensagem de consent request (sem dados PII).
         try:
-            orchestrator, wa_client = await _get_orchestrator()
+            orchestrator, wa_client = await _get_orchestrator(tenant_id=None)
             if wa_client:
                 await wa_client.send_message(
                     phone_number,
@@ -300,7 +315,8 @@ async def whatsapp_flow_webhook(request: Request, ):
     if not session:
         return {"status": "session_not_found"}
 
-    orchestrator, wa_client = await _get_orchestrator()
+    # tenant_id threaded from session.account_id (Wave D2.2 multi-tenancy fix).
+    orchestrator, wa_client = await _get_orchestrator(tenant_id=str(session.account_id))
     result = await orchestrator.handle_whatsapp_flow_complete(session, flow_data)
 
     # Send post-flow message + CTA
