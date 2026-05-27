@@ -61,12 +61,12 @@ interface SettingsSubsection {
 
 type SettingsSectionGroup = "empresa" | "processo" | "lia" | "comunicacao" | "plataforma"
 
-const SECTION_GROUPS: { id: SettingsSectionGroup; label: string }[] = [
-  { id: "empresa", label: "Empresa" },
-  { id: "processo", label: "Processo" },
-  { id: "lia", label: "LIA & Personalização" },
-  { id: "comunicacao", label: "Comunicação" },
-  { id: "plataforma", label: "Plataforma" },
+const SECTION_GROUPS: { id: SettingsSectionGroup; label: string; defaultExpanded: boolean }[] = [
+  { id: "empresa", label: "Empresa", defaultExpanded: true },
+  { id: "processo", label: "Processo", defaultExpanded: true },
+  { id: "lia", label: "LIA & Personalização", defaultExpanded: true },
+  { id: "comunicacao", label: "Comunicação", defaultExpanded: true },
+  { id: "plataforma", label: "Plataforma", defaultExpanded: false },
 ]
 
 interface SettingsSection {
@@ -250,6 +250,27 @@ export default function SettingsPageEnhanced() {
   const [activeSection, setActiveSection] = useState<string>('minha-empresa')
   const [activeSubsection, setActiveSubsection] = useState<string>('')
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['minha-empresa']))
+
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(() => {
+    try {
+      const saved = typeof window !== 'undefined' ? localStorage.getItem('settings-groups-expanded') : null
+      if (saved) return new Set(JSON.parse(saved) as string[])
+    } catch {}
+    return new Set(SECTION_GROUPS.filter(g => g.defaultExpanded).map(g => g.id))
+  })
+
+  const toggleGroupExpanded = useCallback((groupId: string) => {
+    setExpandedGroups(prev => {
+      const next = new Set(prev)
+      if (next.has(groupId)) {
+        next.delete(groupId)
+      } else {
+        next.add(groupId)
+      }
+      try { localStorage.setItem('settings-groups-expanded', JSON.stringify([...next])) } catch {}
+      return next
+    })
+  }, [])
 
   useEffect(() => {
     const handler = (e: Event) => {
@@ -578,11 +599,20 @@ export default function SettingsPageEnhanced() {
                 return grouped.map((grp, gi) => (
                   <div key={grp.id} data-group-id={grp.id}>
                     {shouldShowContent && (
-                      <div className={`px-1 pb-1 text-[10px] font-semibold uppercase tracking-widest text-gray-400 ${gi === 0 ? 'pt-1' : 'pt-4'}`}>
-                        {grp.label}
-                      </div>
+                      <button
+                        onClick={() => toggleGroupExpanded(grp.id)}
+                        className={`w-full flex items-center justify-between px-1 pb-1 text-[10px] font-semibold uppercase tracking-widest text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors ${gi === 0 ? 'pt-1' : 'pt-4'}`}
+                        aria-expanded={expandedGroups.has(grp.id)}
+                        aria-controls={`group-${grp.id}`}
+                      >
+                        <span>{grp.label}</span>
+                        {expandedGroups.has(grp.id)
+                          ? <ChevronDown className="w-3 h-3 flex-shrink-0" aria-hidden="true" />
+                          : <ChevronRight className="w-3 h-3 flex-shrink-0" aria-hidden="true" />
+                        }
+                      </button>
                     )}
-                    {grp.sections.map((section) => {
+                    {expandedGroups.has(grp.id) && grp.sections.map((section) => {
                 const IconComponent = section.icon
                 const isExpanded = expandedSections.has(section.id)
                 const isActive = activeSection === section.id
