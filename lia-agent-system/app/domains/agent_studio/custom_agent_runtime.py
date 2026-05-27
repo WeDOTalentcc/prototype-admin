@@ -188,11 +188,26 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
                     else:
                         kwargs.pop("company_id", None)
 
+                    # ── AUD-4 HITL gate (canonical, registrado Wave C2.6 2026-05-27) ──
+                    # `confirm=True` em write tools E O gate Human-in-the-Loop canonical
+                    # do Agent Studio. LLM custom NAO pode bypass — runtime intercepta
+                    # antes da execucao. AUD-4 audit trail logged abaixo.
                     if _write and not kwargs.get("confirm"):
+                        logger.info(
+                            "[Studio][AUD-4] HITL gate held tool=%s tenant=%s",
+                            _fn.__name__, request_company_id or "unknown",
+                        )
                         return {
                             "success": False,
                             "message": "Operação de escrita bloqueada: confirm=True necessário.",
+                            "hitl_gate": "AUD-4",
                         }
+                    if _write:
+                        # AUD-4 audit: write tool com confirm=True foi aprovado pelo recruiter
+                        logger.info(
+                            "[Studio][AUD-4] HITL gate passed tool=%s tenant=%s",
+                            _fn.__name__, request_company_id or "unknown",
+                        )
                     _tool_result = await _fn(*args, **kwargs)
 
                     # === 2.3: FairnessGuard on tool output (bias detection) ===

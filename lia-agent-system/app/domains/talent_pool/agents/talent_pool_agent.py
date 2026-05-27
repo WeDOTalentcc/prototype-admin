@@ -167,16 +167,70 @@ class TalentPoolReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAg
     async def _request_hitl_if_needed(self, output: AgentOutput) -> None:
         """Request HITL review for high-impact talent pool operations.
 
-        Fail-safe: continues without blocking if HITL service is unavailable.
+        Wave C2.5 (2026-05-27): exception narrow. HitlServiceUnavailable =
+        degraded mode (log + flag metadata + continua). Outras Exception =
+        bug real, re-raise pra alarme nao mascarar como \"unavailability\".
+        AUD-4 audit trail nos dois ramos (compliance LGPD Art. 20).
         """
-        if output.state_updates:
+        if not output.state_updates:
+            return
+        company_id = getattr(output, "company_id", None) or (
+            output.metadata.get("company_id") if isinstance(output.metadata, dict) else None
+        )
+        try:
+            from app.domains.cv_screening.services.hitl_service import (
+                hitl_service,
+                HitlServiceUnavailable,
+            )
+        except ImportError:
+            # Module not importable — degraded mode (best-effort)
+            logger.warning(
+                "[TalentPoolReActAgent] HITL module not importable, degraded mode",
+                extra={"company_id": company_id},
+            )
+            if isinstance(output.metadata, dict):
+                output.metadata["hitl_bypassed"] = True
+                output.metadata["hitl_bypass_reason"] = "import_error"
+            return
+
+        try:
+            await hitl_service.request_approval(output.state_updates)
+        except HitlServiceUnavailable as exc:
+            logger.warning(
+                "[TalentPoolReActAgent] HITL service unavailable, degraded mode",
+                extra={"exception": str(exc), "company_id": company_id},
+            )
+            if isinstance(output.metadata, dict):
+                output.metadata["hitl_bypassed"] = True
+                output.metadata["hitl_bypass_reason"] = "service_unavailable"
+            # AUD-4: registrar bypass como decisao auditavel
             try:
-                from app.domains.cv_screening.services.hitl_service import hitl_service
-                await hitl_service.request_approval(output.state_updates)
-            except Exception as exc:
-                logger.warning(
-                    "[TalentPoolReActAgent] HITL service unavailable, prosseguindo: %s", exc
+                from app.shared.services.audit_service import audit_service
+                await audit_service.log_decision(
+                    company_id=company_id or "unknown",
+                    agent_name="talent_pool_react_agent",
+                    decision_type="hitl_bypass",
+                    action="hitl_bypass_degraded",
+                    decision="continued_without_approval",
+                    reasoning=[
+                        f"HitlServiceUnavailable: {str(exc)[:200]}",
+                        "AUD-4 degraded mode (service down)",
+                    ],
+                    criteria_used=["hitl_service_health"],
+                    human_review_required=True,
                 )
+            except Exception as _audit_err:
+                logger.warning(
+                    "[TalentPoolReActAgent] audit log_decision failed: %s", _audit_err,
+                )
+        except Exception:
+            # Bug real (TypeError/AttributeError/etc): re-raise nao mascarar
+            logger.error(
+                "[TalentPoolReActAgent] HITL request failed unexpectedly",
+                exc_info=True,
+                extra={"company_id": company_id},
+            )
+            raise
 
     # ── Status / introspection ────────────────────────────────────────────────
 

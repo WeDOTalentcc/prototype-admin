@@ -27,6 +27,15 @@ from app.shared.tracing import get_tracer
 
 logger = logging.getLogger(__name__)
 
+
+class HitlServiceUnavailable(Exception):
+    """Raised when HITL service is temporarily down (Redis down, queue full,
+    network blip, etc). Callers MAY catch and proceed in degraded mode with
+    explicit \"hitl_bypassed\" flag in metadata. Bugs (TypeError, AttributeError)
+    NOT wrapped here — those should propagate so alarms fire (Wave C2.5)."""
+    pass
+
+
 # TTL 24 horas em segundos
 _HITL_TTL_SECONDS = 86400
 
