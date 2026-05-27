@@ -1,9 +1,16 @@
+"""Agent Marketplace orchestration service.
+
+Wave C1.3 (2026-05-27): raw select calls migrated to canonical repositories:
+  - CustomAgentRepository (agent lookup)
+  - AgentMarketplaceListingRepository (listings)
+  - AgentInstallationRepository (installs + billing)
+"""
 import logging
 import uuid
 from datetime import datetime
 from typing import Any, Optional
 
-from sqlalchemy import and_, func, or_, select
+from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from lia_models.custom_agent import (
@@ -14,6 +21,11 @@ from lia_models.custom_agent import (
     MarketplaceListingStatus,
 )
 from lia_models.pool_agent_assignment import PoolAgentAssignment
+
+from app.domains.agent_studio.repositories.agent_marketplace_repository import (
+    AgentInstallationRepository,
+    AgentMarketplaceListingRepository,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -90,6 +102,10 @@ class AgentMarketplaceService:
         limit: int = 50,
         offset: int = 0,
     ) -> tuple[list[CustomAgent], int]:
+        # ADR-001-EXEMPT: dynamic conditional builder with JSONB indexing +
+        # talent_pool JOIN. Canonical CustomAgentRepository does not yet cover
+        # the combined filter matrix used by this endpoint (Sprint 7A+7B-3b).
+        # Move to repo when an `advanced_search` method is added.
         conditions = [CustomAgent.company_id == company_id]
         if status:
             conditions.append(CustomAgent.status == status)
@@ -162,12 +178,9 @@ class AgentMarketplaceService:
         if agent.status != CustomAgentStatus.ACTIVE.value:
             raise ValueError("Agent must be active before publishing to marketplace")
 
-        existing = await db.execute(
-            select(AgentMarketplaceListing).where(
-                AgentMarketplaceListing.agent_id == agent.id
-            )
-        )
-        if existing.scalar_one_or_none():
+        listing_repo = AgentMarketplaceListingRepository(db)
+        existing = await listing_repo.get_by_agent_id(agent_id=agent.id)
+        if existing is not None:
             raise ValueError("Agent already has a marketplace listing")
 
         listing = AgentMarketplaceListing(
@@ -183,10 +196,9 @@ class AgentMarketplaceService:
             is_free=data.get("is_free", False),
             status=MarketplaceListingStatus.PENDING_REVIEW.value,
         )
-        db.add(listing)
+        listing = await listing_repo.create(listing)
         agent.is_marketplace_published = True
         await db.flush()
-        await db.refresh(listing)
         logger.info("[AgentMarketplace] Published listing=%s agent=%s", listing.id, agent_id)
         return listing
 
@@ -198,31 +210,10 @@ class AgentMarketplaceService:
         limit: int = 50,
         offset: int = 0,
     ) -> tuple[list[dict[str, Any]], int]:
-        conditions = [
-            AgentMarketplaceListing.status == MarketplaceListingStatus.APPROVED.value
-        ]
-        if category:
-            conditions.append(AgentMarketplaceListing.category == category)
-        if search:
-            search_filter = or_(
-                AgentMarketplaceListing.title.ilike(f"%{search}%"),
-                AgentMarketplaceListing.short_description.ilike(f"%{search}%"),
-            )
-            conditions.append(search_filter)
-
-        count_q = select(func.count(AgentMarketplaceListing.id)).where(and_(*conditions))
-        total = (await db.execute(count_q)).scalar() or 0
-
-        q = (
-            select(AgentMarketplaceListing, CustomAgent)
-            .join(CustomAgent, AgentMarketplaceListing.agent_id == CustomAgent.id)
-            .where(and_(*conditions))
-            .order_by(AgentMarketplaceListing.install_count.desc())
-            .limit(limit)
-            .offset(offset)
+        listing_repo = AgentMarketplaceListingRepository(db)
+        rows, total = await listing_repo.list_public(
+            category=category, search=search, limit=limit, offset=offset
         )
-        result = await db.execute(q)
-        rows = result.all()
 
         listings = []
         for listing, agent in rows:
@@ -242,31 +233,13 @@ class AgentMarketplaceService:
         action: str,
         review_notes: Optional[str] = None,
     ) -> Optional[AgentMarketplaceListing]:
-        try:
-            listing_uuid = uuid.UUID(listing_id)
-        except (ValueError, AttributeError):
-            return None
-        result = await db.execute(
-            select(AgentMarketplaceListing).where(
-                AgentMarketplaceListing.id == listing_uuid
-            )
+        listing_repo = AgentMarketplaceListingRepository(db)
+        return await listing_repo.update_review(
+            listing_id=listing_id,
+            reviewer_id=reviewer_id,
+            action=action,
+            review_notes=review_notes,
         )
-        listing = result.scalar_one_or_none()
-        if not listing:
-            return None
-
-        if action == "approve":
-            listing.status = MarketplaceListingStatus.APPROVED.value
-            listing.published_at = datetime.utcnow()
-        elif action == "reject":
-            listing.status = MarketplaceListingStatus.REJECTED.value
-
-        listing.reviewed_by = reviewer_id
-        listing.reviewed_at = datetime.utcnow()
-        listing.review_notes = review_notes
-        await db.flush()
-        await db.refresh(listing)
-        return listing
 
     async def install_agent(
         self,
@@ -275,36 +248,21 @@ class AgentMarketplaceService:
         installer_company_id: str,
         installed_by: str,
     ) -> AgentInstallation:
-        try:
-            listing_uuid = uuid.UUID(listing_id)
-        except (ValueError, AttributeError):
-            raise ValueError("Invalid listing ID format")
-        result = await db.execute(
-            select(AgentMarketplaceListing, CustomAgent)
-            .join(CustomAgent, AgentMarketplaceListing.agent_id == CustomAgent.id)
-            .where(
-                and_(
-                    AgentMarketplaceListing.id == listing_uuid,
-                    AgentMarketplaceListing.status == MarketplaceListingStatus.APPROVED.value,
-                )
-            )
-        )
-        row = result.one_or_none()
-        if not row:
-            raise ValueError("Listing not found or not approved")
+        listing_repo = AgentMarketplaceListingRepository(db)
+        install_repo = AgentInstallationRepository(db)
 
+        row = await listing_repo.get_approved_listing_with_agent(
+            listing_id=listing_id
+        )
+        if row is None:
+            raise ValueError("Listing not found or not approved")
         listing, source_agent = row
 
-        existing = await db.execute(
-            select(AgentInstallation).where(
-                and_(
-                    AgentInstallation.source_agent_id == source_agent.id,
-                    AgentInstallation.installer_company_id == installer_company_id,
-                    AgentInstallation.status == "active",
-                )
-            )
+        existing = await install_repo.get_active_installation(
+            source_agent_id=source_agent.id,
+            company_id=installer_company_id,
         )
-        if existing.scalar_one_or_none():
+        if existing is not None:
             raise ValueError("Agent already installed for this company")
 
         installed_agent = CustomAgent(
@@ -335,12 +293,10 @@ class AgentMarketplaceService:
             installed_by=installed_by,
             version_at_install=source_agent.version,
         )
-        db.add(installation)
+        installation = await install_repo.create(installation)
 
-        listing.install_count = (listing.install_count or 0) + 1
+        await listing_repo.increment_install_count(listing=listing)
 
-        await db.flush()
-        await db.refresh(installation)
         logger.info(
             "[AgentMarketplace] Installed agent=%s from listing=%s company=%s",
             source_agent.id,
@@ -355,31 +311,19 @@ class AgentMarketplaceService:
         installation_id: str,
         company_id: str,
     ) -> bool:
-        try:
-            inst_uuid = uuid.UUID(installation_id)
-        except (ValueError, AttributeError):
-            return False
-        result = await db.execute(
-            select(AgentInstallation).where(
-                and_(
-                    AgentInstallation.id == inst_uuid,
-                    AgentInstallation.installer_company_id == company_id,
-                    AgentInstallation.status == "active",
-                )
-            )
+        install_repo = AgentInstallationRepository(db)
+        installation = await install_repo.get_by_id(
+            installation_id=installation_id, company_id=company_id
         )
-        installation = result.scalar_one_or_none()
-        if not installation:
+        if installation is None:
             return False
 
-        installation.status = "uninstalled"
-        installation.uninstalled_at = datetime.utcnow()
+        await install_repo.mark_uninstalled(installation=installation)
 
         if installation.installed_agent_id:
-            agent_result = await db.execute(
-                select(CustomAgent).where(CustomAgent.id == installation.installed_agent_id)
+            installed_agent = await install_repo.get_installed_agent_by_id(
+                installed_agent_id=installation.installed_agent_id
             )
-            installed_agent = agent_result.scalar_one_or_none()
             if installed_agent:
                 installed_agent.status = CustomAgentStatus.ARCHIVED.value
 
@@ -393,24 +337,10 @@ class AgentMarketplaceService:
         limit: int = 50,
         offset: int = 0,
     ) -> tuple[list[dict[str, Any]], int]:
-        conditions = [
-            AgentInstallation.installer_company_id == company_id,
-            AgentInstallation.status == "active",
-        ]
-
-        count_q = select(func.count(AgentInstallation.id)).where(and_(*conditions))
-        total = (await db.execute(count_q)).scalar() or 0
-
-        q = (
-            select(AgentInstallation, CustomAgent)
-            .join(CustomAgent, AgentInstallation.source_agent_id == CustomAgent.id)
-            .where(and_(*conditions))
-            .order_by(AgentInstallation.installed_at.desc())
-            .limit(limit)
-            .offset(offset)
+        install_repo = AgentInstallationRepository(db)
+        rows, total = await install_repo.list_by_company(
+            company_id=company_id, limit=limit, offset=offset
         )
-        result = await db.execute(q)
-        rows = result.all()
 
         installations = []
         for inst, agent in rows:
@@ -452,11 +382,18 @@ class AgentMarketplaceService:
             except Exception as e:
                 logger.warning("[agent_pricing] compute_credits failed: %s", e)
                 credits_consumed = 0
+
         try:
             agent_uuid = uuid.UUID(agent_id)
         except (ValueError, AttributeError):
             return
 
+        # Bump agent-level counters via direct ORM (single-tenant lookup OK here
+        # because record_execution is invoked from in-tenant agent runners that
+        # already passed the company gate). Future: extend CustomAgentRepository
+        # with bump_execution_counters.
+        # ADR-001-EXEMPT: counter increment on already-validated agent; lifted to
+        # repo when CustomAgentRepository.bump_executions lands.
         result = await db.execute(
             select(CustomAgent).where(CustomAgent.id == agent_uuid)
         )
@@ -466,21 +403,16 @@ class AgentMarketplaceService:
             agent.last_executed_at = datetime.utcnow()
 
         if credits_consumed > 0:
-            inst_result = await db.execute(
-                select(AgentInstallation).where(
-                    and_(
-                        AgentInstallation.installed_agent_id == agent_uuid,
-                        AgentInstallation.installer_company_id == company_id,
-                        AgentInstallation.status == "active",
-                    )
-                )
+            install_repo = AgentInstallationRepository(db)
+            installation = await install_repo.get_active_for_installed_agent(
+                installed_agent_id=agent_uuid,
+                company_id=company_id,
             )
-            installation = inst_result.scalar_one_or_none()
             if installation:
-                installation.total_executions = (installation.total_executions or 0) + 1
-                installation.total_credits_consumed = (
-                    installation.total_credits_consumed or 0
-                ) + credits_consumed
+                await install_repo.bump_execution_counters(
+                    installation=installation,
+                    credits_consumed=credits_consumed,
+                )
 
         await db.flush()
 
@@ -489,18 +421,8 @@ class AgentMarketplaceService:
         db: AsyncSession,
         company_id: str,
     ) -> list[dict[str, Any]]:
-        q = (
-            select(AgentInstallation, CustomAgent)
-            .join(CustomAgent, AgentInstallation.source_agent_id == CustomAgent.id)
-            .where(
-                and_(
-                    AgentInstallation.installer_company_id == company_id,
-                    AgentInstallation.status == "active",
-                )
-            )
-        )
-        result = await db.execute(q)
-        rows = result.all()
+        install_repo = AgentInstallationRepository(db)
+        rows = await install_repo.list_billing_summary(company_id=company_id)
 
         summaries = []
         for inst, agent in rows:
@@ -518,23 +440,10 @@ class AgentMarketplaceService:
         limit: int = 50,
         offset: int = 0,
     ) -> tuple[list[dict[str, Any]], int]:
-        conditions = [
-            AgentMarketplaceListing.status == MarketplaceListingStatus.PENDING_REVIEW.value
-        ]
-
-        count_q = select(func.count(AgentMarketplaceListing.id)).where(and_(*conditions))
-        total = (await db.execute(count_q)).scalar() or 0
-
-        q = (
-            select(AgentMarketplaceListing, CustomAgent)
-            .join(CustomAgent, AgentMarketplaceListing.agent_id == CustomAgent.id)
-            .where(and_(*conditions))
-            .order_by(AgentMarketplaceListing.created_at.asc())
-            .limit(limit)
-            .offset(offset)
+        listing_repo = AgentMarketplaceListingRepository(db)
+        rows, total = await listing_repo.list_pending_reviews(
+            limit=limit, offset=offset
         )
-        result = await db.execute(q)
-        rows = result.all()
 
         listings = []
         for listing, agent in rows:
@@ -553,19 +462,16 @@ class AgentMarketplaceService:
         agent_id: str,
         company_id: str,
     ) -> Optional[CustomAgent]:
-        try:
-            agent_uuid = uuid.UUID(agent_id)
-        except (ValueError, AttributeError):
-            return None
-        result = await db.execute(
-            select(CustomAgent).where(
-                and_(
-                    CustomAgent.id == agent_uuid,
-                    CustomAgent.company_id == company_id,
-                )
-            )
+        """Canonical agent lookup — delegates to CustomAgentRepository."""
+        from app.domains.agent_studio.repositories.custom_agent_repository import (
+            CustomAgentRepository,
         )
-        return result.scalar_one_or_none()
+        try:
+            uuid.UUID(agent_id)
+        except (ValueError, AttributeError, TypeError):
+            return None
+        repo = CustomAgentRepository(db)
+        return await repo.get_by_id(agent_id=agent_id, company_id=company_id)
 
 
 agent_marketplace_service = AgentMarketplaceService()
