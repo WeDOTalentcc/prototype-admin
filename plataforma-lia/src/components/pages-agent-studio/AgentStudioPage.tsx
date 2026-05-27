@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
+import Link from "next/link"
 import { TwinsList, CreateDigitalTwinModal } from "@/components/pages-agent-studio/DigitalTwinComponents"
 import { TemplateGallery, AgentCard as CustomAgentCard, AgentCardSkeleton, AgentDetailsPanel, DeployDialog, AIAgentBuilder, TestDebugPanel, ApprovalsList } from "@/components/pages-agent-studio/custom-agents"
 // UX_AUDIT T4 (2026-05-21): TemplateClonePanel substitui TemplatePreviewModal como
@@ -296,7 +297,9 @@ export default function AgentStudioPage({
 
   const totalViewed = agents.reduce((s, a) => s + agentMetrics(a).profiles_viewed, 0)
   const totalApproved = agents.reduce((s, a) => s + agentMetrics(a).profiles_approved, 0)
-  const activeCount = agents.filter(a => a.status === "active").length
+  // Wave B1.4 (2026-05-27): activeCount agrega sourcing + custom; totalCustomExecutions soma execucoes de agents custom.
+  const activeCount = agents.filter(a => a.status === "active").length + customAgents.filter(a => a.status === "active").length
+  const totalCustomExecutions = customAgents.reduce((s, a) => s + (a.total_executions ?? 0), 0)
 
   return (
     <div id="estudio-main-content" className="flex-1 flex flex-col h-full overflow-hidden bg-lia-bg-primary">
@@ -332,14 +335,14 @@ export default function AgentStudioPage({
                 que internamente cobre IA (T3 hero), templates e custom manual. */}
             {/* Studio Restructure Fase 2 (2026-05-26): CTA secundário pra Marketplace
                 (substitui a tab antiga). Variant outline DS canonical, sem cyan. */}
-            <a
+            <Link
               href="/agents/marketplace"
               className="inline-flex items-center gap-2 h-9 px-3 rounded-md border border-lia-border-subtle bg-transparent text-sm font-medium text-lia-text-primary hover:bg-lia-bg-tertiary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lia-btn-primary-bg/30"
               data-testid="header-explore-marketplace-cta"
             >
               <Store className="w-4 h-4" aria-hidden="true" />
               {t("studio.cta.exploreMarketplace")}
-            </a>
+            </Link>
             <Button
               size="sm"
               onClick={() => openWizard()}
@@ -375,7 +378,7 @@ export default function AgentStudioPage({
             Account Manager" via mailto. */}
         <QuotaMeter className="mt-2" />
 
-        {agents.length > 0 && (
+        {(agents.length > 0 || customAgents.length > 0) && (
           <div className="flex items-center gap-6 mt-2 mb-1">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -400,6 +403,14 @@ export default function AgentStudioPage({
                 <BarChart3 className="w-3.5 h-3.5 text-lia-text-disabled" />
                 <span className="text-xs text-lia-text-secondary">
                   <span className="font-semibold text-lia-text-primary">{Math.round((totalApproved / totalViewed) * 100)}%</span> {t("studio.stats.approvalRate")}
+                </span>
+              </div>
+            )}
+            {totalCustomExecutions > 0 && (
+              <div className="flex items-center gap-1.5">
+                <Zap className="w-3.5 h-3.5 text-lia-text-disabled" />
+                <span className="text-xs text-lia-text-secondary">
+                  <span className="font-semibold text-lia-text-primary">{totalCustomExecutions}</span> {t("studio.stats.totalExecutions")}
                 </span>
               </div>
             )}
@@ -494,7 +505,7 @@ export default function AgentStudioPage({
             <section>
               <TabSectionHeader
                 className="mb-3"
-                title={t("studio.myAgents")}
+                title={t("studio.sourcingAgents")}
                 count={agents.length}
               />
 
@@ -594,7 +605,7 @@ export default function AgentStudioPage({
             <section>
               <TabSectionHeader
                 className="mb-3"
-                title={t("studio.myAgents")}
+                title={t("studio.customAgentsLabel")}
                 count={customAgents.length}
               />
               {customAgents.length === 0 ? (
@@ -815,7 +826,10 @@ function AgentCard({
 
         {/* Link indicator */}
         {(linkedPoolId || linkedJobId) ? (
-          <div className="flex items-center gap-1.5 mb-3 px-2.5 py-1.5 rounded-lg bg-lia-bg-primary border border-lia-border-subtle">
+          <div
+            className="flex items-center gap-1.5 mb-3 px-2.5 py-1.5 rounded-lg bg-lia-bg-primary border border-lia-border-subtle"
+            title={t("studio.card.linkedTooltip")}
+          >
             {linkedPoolId ? (
               <>
                 <Database className="w-3 h-3 text-lia-text-disabled" />
@@ -851,13 +865,17 @@ function AgentCard({
               <Play className="w-3.5 h-3.5 text-emerald-600" />
             )}
           </button>
-          <button
-            onClick={onCalibrate}
-            className="flex-1 flex items-center justify-center gap-1.5 h-8 rounded-lg border border-lia-border-subtle text-xs font-medium text-lia-text-secondary hover:bg-lia-bg-tertiary hover:text-lia-text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lia-btn-primary-bg/30"
-          >
-            <Activity className="w-3.5 h-3.5" />
-            {t("studio.card.recalibrate")}
-          </button>
+          {/* Wave B1.6 (2026-05-27): backend /calibrate aceita apenas category=sourcing.
+              Esconde botao para outras categorias para evitar 404. */}
+          {(agent.category ?? "sourcing") === "sourcing" && (
+            <button
+              onClick={onCalibrate}
+              className="flex-1 flex items-center justify-center gap-1.5 h-8 rounded-lg border border-lia-border-subtle text-xs font-medium text-lia-text-secondary hover:bg-lia-bg-tertiary hover:text-lia-text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lia-btn-primary-bg/30"
+            >
+              <Activity className="w-3.5 h-3.5" />
+              {t("studio.card.recalibrate")}
+            </button>
+          )}
           <button
             onClick={onNavigate}
             className="flex items-center justify-center gap-1 h-8 px-3 rounded-lg bg-lia-btn-primary-bg text-lia-btn-primary-text text-xs font-medium hover:bg-lia-btn-primary-hover transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lia-btn-primary-bg/30"
