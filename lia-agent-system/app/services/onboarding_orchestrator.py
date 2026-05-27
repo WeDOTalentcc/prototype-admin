@@ -44,8 +44,9 @@ TRANSITIONS = {
     OnboardingPhase.AWAITING_LOGIN: [OnboardingPhase.FIRST_LOGIN],
     OnboardingPhase.FIRST_LOGIN: [OnboardingPhase.PLATFORM_TOUR],
     OnboardingPhase.PLATFORM_TOUR: [OnboardingPhase.ACTION_CHOICE],
-    OnboardingPhase.ACTION_CHOICE: [OnboardingPhase.JOB_CREATION, OnboardingPhase.COMPLETE],
+    OnboardingPhase.ACTION_CHOICE: [OnboardingPhase.JOB_CREATION, OnboardingPhase.SETTINGS_EXTRACTION, OnboardingPhase.COMPLETE],
     OnboardingPhase.JOB_CREATION: [OnboardingPhase.COMPLETE],
+    OnboardingPhase.SETTINGS_EXTRACTION: [OnboardingPhase.ACTION_CHOICE, OnboardingPhase.COMPLETE],
     OnboardingPhase.COMPLETE: [],
 }
 
