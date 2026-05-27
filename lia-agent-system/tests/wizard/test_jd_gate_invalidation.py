@@ -279,3 +279,143 @@ class JdGateShortContentSanityCheck(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
+
+
+class JdGateMsgShadowingFallback(unittest.TestCase):
+    """RED tests Fix A (2026-05-27) — i18n fallback path NÃO pode disparar TypeError.
+
+    Background: o commit f8043593d (Fix #3) adicionou ``msg("jd_gate.new_jd_short_clarify")``
+    na linha 280 do node, mas a variável local ``msg`` foi rebound como ``str``
+    na linha 69 (resume path), 97 (WS resume) e 121 (interrupt path) — shadowing
+    da função ``msg`` importada de ``helpers.i18n``. Resultado: quando o LLM
+    classifier retorna ``conversational_reply=""`` (caso comum), o branch defensivo
+    cai no fallback ``or msg("...")`` que dispara
+    ``TypeError: 'str' object is not callable`` → silent fallback no
+    ``wizard_session_service.process_message`` → recrutador vê
+    ``[ATENÇÃO: estado inconsistente]``.
+
+    O teste S3 acima (Fix #3) NÃO pegou porque usa ``reply="Para substituir..."``
+    (truthy) — ``output.conversational_reply or msg(...)`` curto-circuita ANTES
+    de chamar ``msg(...)``. Em produção, o classifier ocasionalmente devolve
+    ``conversational_reply=""``, e aí explode.
+
+    Cobertura:
+      S5 — provide_new_content + new_content<150 + reply="" → fallback i18n
+            ``jd_gate.new_jd_short_clarify`` resolve sem TypeError
+      S6 — provide_new_content + new_content>=150 + reply="" → fallback i18n
+            ``jd_gate.new_jd_received`` resolve sem TypeError
+      S7 — off_topic + reply="" + sonnet_helper indisponível → fallback i18n
+            ``jd_gate.off_topic_redirect`` resolve sem TypeError
+
+    Run standalone:
+        python -m pytest lia-agent-system/tests/wizard/test_jd_gate_invalidation.py::JdGateMsgShadowingFallback -v
+    """
+
+    def _assert_no_typeerror_and_clarify_resolved(self, result, i18n_key_hint):
+        """Helper canonical: clarify deve ser str não-vazia e NÃO conter a key crua."""
+        clarify = result.get("gate_clarify_message")
+        self.assertIsNotNone(
+            clarify,
+            f"Fix A ({i18n_key_hint}): clarify_message DEVE ser resolvido via i18n",
+        )
+        self.assertIsInstance(
+            clarify, str,
+            f"Fix A ({i18n_key_hint}): clarify_message deve ser str",
+        )
+        self.assertGreater(
+            len(clarify.strip()), 5,
+            f"Fix A ({i18n_key_hint}): clarify_message deve ter conteúdo real",
+        )
+        self.assertNotIn(
+            i18n_key_hint, clarify,
+            f"Fix A: i18n key '{i18n_key_hint}' deve estar RESOLVIDA, não literal",
+        )
+
+    def test_S5_short_pnc_with_empty_reply_falls_back_to_i18n_no_typeerror(self):
+        """S5 — provide_new_content + new_content curto + reply="" deve cair
+        no fallback i18n SEM disparar TypeError."""
+        clf = classifier_mod.get_wizard_gate_classifier()
+        out = _make_output(
+            "provide_new_content",
+            confidence=0.75,
+            reply="",  # ← CRÍTICO: força fallback i18n msg("jd_gate.new_jd_short_clarify")
+            extracted={"new_content": "ok"},  # <150 chars → Fix #3 short-circuit branch
+        )
+
+        state = _make_dirty_state()
+        state["gate_resume_message"] = "ok"
+        state["user_query"] = "ok"
+
+        with mock.patch.object(clf, "classify", new=mock.AsyncMock(return_value=out)):
+            with mock.patch.object(graph_mod, "_emit_jd_gate_audit", lambda *a, **k: None):
+                # PRÉ-FIX A: TypeError "'str' object is not callable" aqui
+                # PÓS-FIX A: clarify_message resolvido normalmente
+                result = graph_mod.jd_gate_node(state)
+
+        self._assert_no_typeerror_and_clarify_resolved(
+            result, "jd_gate.new_jd_short_clarify",
+        )
+        # Sanidade extra: Fix #3 ainda preserva jd_enriched + derivados
+        self.assertIsNotNone(
+            result.get("jd_enriched"),
+            "Fix A: preserva contrato do Fix #3 (jd_enriched intact em short PNC)",
+        )
+
+    def test_S6_long_pnc_with_empty_reply_falls_back_to_i18n_no_typeerror(self):
+        """S6 — provide_new_content + new_content longo + reply="" cai no
+        fallback i18n SEM disparar TypeError. Cascade canonical dispara."""
+        clf = classifier_mod.get_wizard_gate_classifier()
+        long_jd = "Dev Senior Backend Python: FastAPI, PostgreSQL, Docker, AWS. " * 5
+        self.assertGreaterEqual(len(long_jd), 150, "fixture deve ser real PNC (>=150)")
+        out = _make_output(
+            "provide_new_content",
+            confidence=0.92,
+            reply="",  # ← CRÍTICO: força fallback msg("jd_gate.new_jd_received")
+            extracted={"new_content": long_jd},
+        )
+
+        state = _make_dirty_state()
+        state["gate_resume_message"] = long_jd
+        state["user_query"] = long_jd
+
+        with mock.patch.object(clf, "classify", new=mock.AsyncMock(return_value=out)):
+            with mock.patch.object(graph_mod, "_emit_jd_gate_audit", lambda *a, **k: None):
+                result = graph_mod.jd_gate_node(state)
+
+        self._assert_no_typeerror_and_clarify_resolved(
+            result, "jd_gate.new_jd_received",
+        )
+        # Sanidade: cascade canonical disparou (jd_approved=False, derivados zerados)
+        self.assertIs(
+            result.get("jd_approved"), False,
+            "S6: cascade canonical disparou (long PNC)",
+        )
+
+    def test_S7_off_topic_with_empty_reply_falls_back_to_i18n_no_typeerror(self):
+        """S7 — off_topic intent + reply="" + sonnet_helper indisponível cai
+        no fallback i18n SEM disparar TypeError."""
+        clf = classifier_mod.get_wizard_gate_classifier()
+        out = _make_output(
+            "off_topic",
+            confidence=0.88,
+            reply="",  # ← CRÍTICO: força fallback msg("jd_gate.off_topic_redirect")
+            extracted={},
+        )
+
+        state = _make_dirty_state()
+        state["gate_resume_message"] = "qual o clima hoje?"
+        state["user_query"] = "qual o clima hoje?"
+
+        with mock.patch.object(clf, "classify", new=mock.AsyncMock(return_value=out)):
+            with mock.patch.object(graph_mod, "_emit_jd_gate_audit", lambda *a, **k: None):
+                # Sonnet helper mockado pra retornar None (ramo defensivo)
+                with mock.patch.object(
+                    graph_mod, "_try_sonnet_off_topic_redirect",
+                    new=mock.MagicMock(return_value=None),
+                    create=True,
+                ):
+                    result = graph_mod.jd_gate_node(state)
+
+        self._assert_no_typeerror_and_clarify_resolved(
+            result, "jd_gate.off_topic_redirect",
+        )

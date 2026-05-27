@@ -66,8 +66,8 @@ def jd_gate_node(state: JobCreationState) -> JobCreationState:
     # Nesse caso, ``user_query`` é a resposta dele. Mantemos
     # ``gate_resume_message`` como fonte preferencial para preservar a
     # semântica explícita do path action-based e dos testes existentes.
-    msg = (state.get("gate_resume_message") or "").strip()
-    if not msg:
+    resume_msg = (state.get("gate_resume_message") or "").strip()
+    if not resume_msg:
         # T2 fix #6 (code review #5): WS resume também precisa cobrir
         # POST-REJECT (jd_approved=False após reject_with_feedback). Antes
         # checávamos só ``jd_approved is None``, então o turno seguinte do
@@ -94,14 +94,14 @@ def jd_gate_node(state: JobCreationState) -> JobCreationState:
         # ao HITL — nesse ponto ``user_query != raw_input``.
         _is_initial_pass = bool(_raw) and _uq == _raw
         if _has_enriched and _not_approved_yet and _is_fresh_turn and not _is_initial_pass:
-            msg = _uq
+            resume_msg = _uq
             logger.info(
                 "[JobCreation:jd_gate] WS resume detected (jd_enriched + fresh user_query, jd_approved=%s) — classify",
                 state.get("jd_approved"),
             )
-    if not msg and _in_graph_runtime():
+    if not resume_msg and _in_graph_runtime():
         # Task #1094 — pausa canônica via langgraph.types.interrupt().
-        # Quando o caller usa ``Command(resume=<msg>)`` (process_message ou
+        # Quando o caller usa ``Command(resume=<resume_msg>)`` (process_message ou
         # JobCreationGraph.resume_with_message), interrupt() retorna a
         # mensagem do recrutador e o gate prossegue para classificar abaixo.
         # Em primeira entrada (HITL freshly reached), interrupt() levanta
@@ -118,8 +118,8 @@ def jd_gate_node(state: JobCreationState) -> JobCreationState:
                 "jd_quality_score": state.get("jd_quality_score"),
             },
         })
-        msg = (str(_resume) if _resume is not None else "").strip()
-    if not msg:
+        resume_msg = (str(_resume) if _resume is not None else "").strip()
+    if not resume_msg:
         # Primeira passagem (após enrichment) OU re-entrada após
         # ``provide_new_content`` ter rodado intake+jd_enrichment_node. Sem
         # mensagem nova do recrutador para classificar.
@@ -157,7 +157,7 @@ def jd_gate_node(state: JobCreationState) -> JobCreationState:
     # adicional sobre a mensagem do gate.
     try:
         from app.shared.compliance.fairness_guard import FairnessGuard
-        _fg = FairnessGuard().check(msg)
+        _fg = FairnessGuard().check(resume_msg)
         if _fg.is_blocked:
             logger.warning(
                 "[JobCreation:jd_gate] FairnessGuard L1 BLOCK on resume message: cat=%s, terms=%s",
@@ -193,7 +193,7 @@ def jd_gate_node(state: JobCreationState) -> JobCreationState:
         )
         _user_id = state.get("user_id") or state.get("recruiter_id")
         coro_factory = lambda: classifier.classify(  # noqa: E731
-            user_message=msg,
+            user_message=resume_msg,
             stage="jd_enrichment",
             ws_stage_payload=state.get("ws_stage_payload"),
             tenant_context_snippet=str(state.get("tenant_context_snippet") or ""),
@@ -211,7 +211,7 @@ def jd_gate_node(state: JobCreationState) -> JobCreationState:
 
     # Audit row (best-effort) — EU AI Act Art. 13: decisão LLM rastreável.
     try:
-        _emit_jd_gate_audit(state, msg, output)
+        _emit_jd_gate_audit(state, resume_msg, output)
     except Exception as exc:
         logger.debug("[JobCreation:jd_gate] audit emit failed: %s", exc)
 
@@ -228,7 +228,7 @@ def jd_gate_node(state: JobCreationState) -> JobCreationState:
             "gate_last_intent": output.intent,
             "gate_last_confidence": output.confidence,
             "current_stage": "jd_enrichment",
-            "gate_seen_user_query": msg,
+            "gate_seen_user_query": resume_msg,
         }
 
     intent = output.intent
@@ -242,7 +242,7 @@ def jd_gate_node(state: JobCreationState) -> JobCreationState:
         # T2 fix #6: marca a mensagem como já classificada nesta invocação,
         # para evitar re-classificação no segundo visit do gate (após
         # provide_new_content → intake → jd_enrichment → jd_gate).
-        "gate_seen_user_query": msg,
+        "gate_seen_user_query": resume_msg,
     }
 
     extracted = output.extracted_data if isinstance(output.extracted_data, dict) else {}
@@ -252,11 +252,11 @@ def jd_gate_node(state: JobCreationState) -> JobCreationState:
         next_state["gate_clarify_message"] = output.conversational_reply or None
     elif intent == "reject_with_feedback":
         next_state["jd_approved"] = False
-        feedback = (extracted.get("feedback") or output.conversational_reply or msg)
+        feedback = (extracted.get("feedback") or output.conversational_reply or resume_msg)
         next_state["jd_rejection_feedback"] = str(feedback)[:1000]
         next_state["gate_clarify_message"] = output.conversational_reply or None
     elif intent == "provide_new_content":
-        new_content = extracted.get("new_content") or msg
+        new_content = extracted.get("new_content") or resume_msg
         # Bug-fix 2026-05-26: sanity check on new_content length.
         # Real JDs have >= 150 chars. Short content (< 150) almost always means
         # a misclassification — the classifier saw an approval message ("ok",
@@ -310,7 +310,7 @@ def jd_gate_node(state: JobCreationState) -> JobCreationState:
         _sonnet_reply = _try_meta_helper(
             state=state,
             stage="jd_enrichment",
-            user_message=msg,
+            user_message=resume_msg,
             stage_description=(
                 "HITL #1: revisão da descrição enriquecida da vaga (JD). "
                 "O recrutador pode aprovar, rejeitar, ou enviar nova JD."
@@ -323,7 +323,7 @@ def jd_gate_node(state: JobCreationState) -> JobCreationState:
         _sonnet_reply = _try_meta_helper(
             state=state,
             stage="jd_enrichment",
-            user_message=msg,
+            user_message=resume_msg,
             stage_description=(
                 "HITL #1: revisão da descrição enriquecida da vaga (JD). "
                 "Recrutador desviou — trazer de volta para aprovação."
