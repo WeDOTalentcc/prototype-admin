@@ -5,6 +5,7 @@ module V1
     skip_before_action :authorize_request
     before_action :switch_tenant
     before_action :set_session
+    before_action :require_internal_auth, only: %i[complete result]
 
     def show
       return render json: { status: "expired" }, status: :ok if @session.expires_at <= Time.current
@@ -87,6 +88,14 @@ module V1
     end
 
     private
+
+    def require_internal_auth
+      token = request.headers["Authorization"]&.split(" ")&.last
+      payload = token.present? ? JsonWebToken.decode(token) : nil
+      role = payload&.dig(:role).to_s
+
+      render json: { error: "Forbidden" }, status: :forbidden unless %w[service one_time_token].include?(role)
+    end
 
     def switch_tenant
       @account = Account.find_by(uid: params[:account_uid])
