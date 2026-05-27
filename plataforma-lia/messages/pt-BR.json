@@ -1747,7 +1747,8 @@
         "sourcingAgents": "Agentes de Captação",
         "customAgents": "Agentes Personalizados",
         "digitalTwins": "Gêmeos Digitais",
-        "smartSearch": "Busca Inteligente"
+        "smartSearch": "Busca Inteligente",
+        "myAgents": "Meus agentes"
       },
       "stats": {
         "activeAgents": "{count} agente(s) ativo(s)",
@@ -1878,7 +1879,9 @@
         "agentCreatedDesc": "Agora vincule a uma vaga ou banco de talentos.",
         "noLinkTitle": "Agente sem vínculo",
         "noLinkDesc": "Este agente não está vinculado a uma vaga ou banco de talentos. Vincule-o para poder navegar.",
-        "errorStatus": "Erro ao alterar status"
+        "errorStatus": "Erro ao alterar status",
+        "agentCloned": "Agente duplicado com sucesso",
+        "errorCloning": "Erro ao duplicar agente"
       },
       "modal": {
         "createTitle": "Criar Agente",
@@ -1921,6 +1924,34 @@
         "collapsed": {
           "summary": "{percent}% usado"
         }
+      },
+      "refresh": "Atualizar",
+      "cta": {
+        "exploreMarketplace": "Explorar marketplace",
+        "createAgent": "Criar agente"
+      },
+      "upgradeRequest": {
+        "successTitle": "Solicitação enviada",
+        "successDesc": "Retornamos em até {hours}h.",
+        "errorTitle": "Falha ao enviar solicitação",
+        "errorDesc": "Tente novamente em alguns instantes.",
+        "title": "Solicitar upgrade de plano",
+        "description": "Você atingiu o limite de {resource} ({current}/{limit}) no plano {plan}. Solicite um upgrade para liberar mais recursos.",
+        "requestedPlanLabel": "Plano desejado",
+        "requestedPlanPlaceholder": "Selecione um plano",
+        "currentSuffix": "atual",
+        "requestedPlanHelp": "Deixe em branco se quiser apenas relatar o limite atingido.",
+        "notesLabel": "Observações",
+        "notesPlaceholder": "Conte um pouco mais sobre o seu caso de uso (opcional).",
+        "disclosure": "Vamos analisar e responder em até 48h úteis.",
+        "cancel": "Cancelar",
+        "submit": "Enviar solicitação",
+        "plans": {
+          "starter": "Starter",
+          "pro": "Pro",
+          "business": "Business",
+          "enterprise": "Enterprise"
+        }
       }
     },
     "status": {
@@ -1945,7 +1976,21 @@
       "confidence": "confianca",
       "test": "Testar",
       "link": "Vincular",
-      "activate": "Ativar"
+      "activate": "Ativar",
+      "moreActions": "Mais ações",
+      "clone": "Duplicar",
+      "whatsapp": "WhatsApp",
+      "enableWhatsapp": "Habilitar WhatsApp no agente {name}",
+      "disableWhatsapp": "Desabilitar WhatsApp no agente {name}",
+      "voice": "Ligação telefônica",
+      "enableVoice": "Habilitar voz no agente {name}",
+      "disableVoice": "Desabilitar voz no agente {name}",
+      "voip": "Voz no navegador (VoIP)",
+      "enableVoip": "Habilitar voz no navegador (VoIP) no agente {name}",
+      "disableVoip": "Desabilitar voz no navegador (VoIP) no agente {name}",
+      "triagemInvite": "Convite de triagem",
+      "enableTriagemInvite": "Habilitar criação de convites de triagem no agente {name}",
+      "disableTriagemInvite": "Desabilitar criação de convites de triagem no agente {name}"
     },
     "createModal": {
       "titleWithTemplate": "Criar Agente — {template}",
@@ -2072,7 +2117,9 @@
       "connectionError": "Erro de conexão",
       "subtitle": "Descubra e instale agentes criados por outras empresas",
       "tryAnotherSearch": "Tente outro termo de busca",
-      "noAgentsPublished": "O marketplace ainda não tem agentes publicados"
+      "noAgentsPublished": "O marketplace ainda não tem agentes publicados",
+      "confirmUninstallTitle": "Desinstalar agente?",
+      "viewSwitcher": "Visão do marketplace"
     },
     "calibration": {
       "completed": "Calibração concluída",
@@ -2572,7 +2619,56 @@
       "loadingActivities": "Carregando atividades…",
       "noActivities": "Nenhuma atividade ainda.",
       "slaBreach": "SLA estourado",
-      "backToStudio": "Estúdio de Agentes"
+      "backToStudio": "Estúdio de Agentes",
+      "defaultAgentName": "Novo agente",
+      "template": {
+        "rich": {
+          "metricsLabel": {
+            "tools": "ferramentas",
+            "maxSteps": "passos máx.",
+            "context": "contexto"
+          },
+          "alert": {
+            "personalize": "Personalize este template antes de usar em produção."
+          },
+          "actions": {
+            "use": "Usar template",
+            "customize": "Personalizar",
+            "preview": "Visualizar"
+          }
+        }
+      },
+      "templateCategories": {
+        "all": "Todas"
+      },
+      "searchPlaceholder": "Buscar templates...",
+      "verticalFilterAriaLabel": "Filtrar por vertical",
+      "templateLoadError": "Não foi possível carregar os templates.",
+      "templateLoading": "Carregando templates...",
+      "toolsLabel": "Ferramentas",
+      "confirmRevertTitle": "Reverter para esta versão?",
+      "templatePreviewTitle": "Visualizar template",
+      "templatePreviewDesc": "Confira a configuração antes de criar o agente.",
+      "nameLabel": "Nome",
+      "templatePreviewNameHelp": "Você pode renomear o agente depois.",
+      "descLabel": "Descrição",
+      "systemPromptLabel": "Prompt do sistema",
+      "allowedToolsLabel": "Ferramentas permitidas",
+      "maxStepsLabel": "Passos máximos",
+      "temperatureLabel": "Temperatura",
+      "contextLevelLabel": "Nível de contexto",
+      "creating": "Criando...",
+      "noToolsConfigured": "Nenhuma ferramenta configurada.",
+      "personaLabel": "Persona",
+      "categoryLabel": "Categoria",
+      "verticalLabel": "Vertical",
+      "configLabel": "Configuração",
+      "memoryLabel": "Memória",
+      "memoryYes": "Sim",
+      "memoryNo": "Não",
+      "cloneAndCustomize": "Clonar e personalizar",
+      "confirmDeleteTitle": "Excluir agente?",
+      "delete": "Excluir"
     },
     "digitalTwin": {
       "active": "Ativo",

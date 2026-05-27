@@ -1764,7 +1764,8 @@
         "sourcingAgents": "Sourcing Agents",
         "customAgents": "Custom Agents",
         "digitalTwins": "Digital Twins",
-        "smartSearch": "Smart Search"
+        "smartSearch": "Smart Search",
+        "myAgents": "My agents"
       },
       "stats": {
         "activeAgents": "{count} active agent(s)",
@@ -1895,7 +1896,9 @@
         "agentCreatedDesc": "Now link it to a job or talent pool.",
         "noLinkTitle": "Agent without link",
         "noLinkDesc": "This agent is not linked to a job or talent pool. Link it to navigate.",
-        "errorStatus": "Error changing status"
+        "errorStatus": "Error changing status",
+        "agentCloned": "Agent duplicated successfully",
+        "errorCloning": "Error duplicating agent"
       },
       "modal": {
         "createTitle": "Create Agent",
@@ -1938,6 +1941,34 @@
         "collapsed": {
           "summary": "{percent}% used"
         }
+      },
+      "refresh": "Refresh",
+      "cta": {
+        "exploreMarketplace": "Explore marketplace",
+        "createAgent": "Create agent"
+      },
+      "upgradeRequest": {
+        "successTitle": "Request submitted",
+        "successDesc": "We'll respond within {hours}h.",
+        "errorTitle": "Failed to submit request",
+        "errorDesc": "Please try again in a moment.",
+        "title": "Request plan upgrade",
+        "description": "You've reached the {resource} limit ({current}/{limit}) on the {plan} plan. Request an upgrade to unlock more.",
+        "requestedPlanLabel": "Desired plan",
+        "requestedPlanPlaceholder": "Select a plan",
+        "currentSuffix": "current",
+        "requestedPlanHelp": "Leave blank if you only want to report the limit reached.",
+        "notesLabel": "Notes",
+        "notesPlaceholder": "Tell us more about your use case (optional).",
+        "disclosure": "We'll review and respond within 48 business hours.",
+        "cancel": "Cancel",
+        "submit": "Submit request",
+        "plans": {
+          "starter": "Starter",
+          "pro": "Pro",
+          "business": "Business",
+          "enterprise": "Enterprise"
+        }
       }
     },
     "status": {
@@ -1962,7 +1993,21 @@
       "confidence": "confidence",
       "test": "Test",
       "link": "Link",
-      "activate": "Activate"
+      "activate": "Activate",
+      "moreActions": "More actions",
+      "clone": "Duplicate",
+      "whatsapp": "WhatsApp",
+      "enableWhatsapp": "Enable WhatsApp on agent {name}",
+      "disableWhatsapp": "Disable WhatsApp on agent {name}",
+      "voice": "Phone call",
+      "enableVoice": "Enable voice on agent {name}",
+      "disableVoice": "Disable voice on agent {name}",
+      "voip": "Browser voice (VoIP)",
+      "enableVoip": "Enable browser voice (VoIP) on agent {name}",
+      "disableVoip": "Disable browser voice (VoIP) on agent {name}",
+      "triagemInvite": "Screening invite",
+      "enableTriagemInvite": "Enable screening invite creation on agent {name}",
+      "disableTriagemInvite": "Disable screening invite creation on agent {name}"
     },
     "createModal": {
       "titleWithTemplate": "Create Agent — {template}",
@@ -2089,7 +2134,9 @@
       "connectionError": "Connection error",
       "subtitle": "Discover and install agents created by other companies",
       "tryAnotherSearch": "Try another search term",
-      "noAgentsPublished": "The marketplace has no published agents yet"
+      "noAgentsPublished": "The marketplace has no published agents yet",
+      "confirmUninstallTitle": "Uninstall agent?",
+      "viewSwitcher": "Marketplace view"
     },
     "calibration": {
       "completed": "Calibration completed",
@@ -2589,7 +2636,56 @@
       "loadingActivities": "Loading activities…",
       "noActivities": "No activity yet.",
       "slaBreach": "SLA breached",
-      "backToStudio": "Agent Studio"
+      "backToStudio": "Agent Studio",
+      "defaultAgentName": "New agent",
+      "template": {
+        "rich": {
+          "metricsLabel": {
+            "tools": "tools",
+            "maxSteps": "max steps",
+            "context": "context"
+          },
+          "alert": {
+            "personalize": "Customize this template before using in production."
+          },
+          "actions": {
+            "use": "Use template",
+            "customize": "Customize",
+            "preview": "Preview"
+          }
+        }
+      },
+      "templateCategories": {
+        "all": "All"
+      },
+      "searchPlaceholder": "Search templates...",
+      "verticalFilterAriaLabel": "Filter by vertical",
+      "templateLoadError": "Could not load templates.",
+      "templateLoading": "Loading templates...",
+      "toolsLabel": "Tools",
+      "confirmRevertTitle": "Revert to this version?",
+      "templatePreviewTitle": "Preview template",
+      "templatePreviewDesc": "Review the configuration before creating the agent.",
+      "nameLabel": "Name",
+      "templatePreviewNameHelp": "You can rename the agent later.",
+      "descLabel": "Description",
+      "systemPromptLabel": "System prompt",
+      "allowedToolsLabel": "Allowed tools",
+      "maxStepsLabel": "Max steps",
+      "temperatureLabel": "Temperature",
+      "contextLevelLabel": "Context level",
+      "creating": "Creating...",
+      "noToolsConfigured": "No tools configured.",
+      "personaLabel": "Persona",
+      "categoryLabel": "Category",
+      "verticalLabel": "Vertical",
+      "configLabel": "Configuration",
+      "memoryLabel": "Memory",
+      "memoryYes": "Yes",
+      "memoryNo": "No",
+      "cloneAndCustomize": "Clone and customize",
+      "confirmDeleteTitle": "Delete agent?",
+      "delete": "Delete"
     },
     "digitalTwin": {
       "active": "Active",
