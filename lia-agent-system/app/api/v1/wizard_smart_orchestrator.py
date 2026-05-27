@@ -25,6 +25,33 @@ from app.shared.tenant_session import create_session_id
 from app.shared.types import WeDoBaseModel
 
 router = APIRouter()
+
+# Pendencia 4 (2026-05-27): soft deprecation marker.
+# Frontend proxy + caller deletados no Fix F (commit 3f1d34b42). Tests E2E
+# em tests/e2e/test_wizard_job_creation.py (7 callers) ainda dependem deste
+# endpoint -- mantemos canonical mas sinalizamos deprecation para observar
+# uso real em prod e potenciais callers externos (mobile, webhook, scripts)
+# antes de delete em sprint dedicada.
+_DEPRECATION_MODULE = "wizard_smart_orchestrator"
+_DEPRECATION_SUNSET = "2026-07-01"  # sunset target (revisar em sprint)
+
+
+def _emit_smart_orchestrate_deprecation_log(
+    endpoint_name: str,
+    company_id: str | None,
+    user_agent: str | None,
+) -> None:
+    """Emit structured 'wizard.smart_orchestrate.deprecated_call' log."""
+    logger.warning(
+        "wizard.smart_orchestrate.deprecated_call",
+        extra={
+            "tenant.company_id": company_id,
+            "caller": f"{_DEPRECATION_MODULE}.{endpoint_name}",
+            "user_agent": user_agent,
+            "sunset_date": _DEPRECATION_SUNSET,
+            "canonical_replacement": "WS /ws/agent-chat with domain=job_creation",
+        },
+    )
 logger = logging.getLogger(__name__)
 
 
@@ -197,7 +224,19 @@ async def smart_orchestrate(
     REST counterpart of the WebSocket wizard path in agent_chat_ws.py:1108.
     Same service, same graph, same checkpointer — just synchronous request/
     response instead of streaming WS frames.
+
+    Pendencia 4 (2026-05-27) soft deprecation: frontend proxy + caller
+    deletados no Fix F. Endpoint mantido pra 7 tests E2E + potenciais
+    callers externos. Log estruturado emitido por chamada para rastreio.
+    Sunset target: _DEPRECATION_SUNSET (revisar em sprint dedicada).
     """
+    # Pendencia 4 soft deprecation -- emit log para rastreio de uso real.
+    _emit_smart_orchestrate_deprecation_log(
+        endpoint_name="smart_orchestrate",
+        company_id=company_id,
+        user_agent=None,  # endpoint sem Request param; OK
+    )
+
     hitl_err = request.hitl_validation_error()
     if hitl_err is not None:
         raise HTTPException(status_code=422, detail=hitl_err)
@@ -377,6 +416,12 @@ async def get_stage_mapping(
     company_id: str = Depends(require_company_id),
 ) -> dict[str, Any]:
     """Debug endpoint: frontend↔backend stage mapping."""
+    _emit_smart_orchestrate_deprecation_log(
+        endpoint_name="stage_mapping",
+        company_id=company_id,
+        user_agent=None,  # debug endpoint, no request param available
+    )
+
     return {
         "frontend_to_backend": FRONTEND_TO_BACKEND_STAGE,
         "backend_to_frontend": BACKEND_TO_FRONTEND_STAGE,
