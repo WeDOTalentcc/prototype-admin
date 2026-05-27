@@ -4,7 +4,7 @@ import { TasksPage } from "@/components/pages/tasks-page"
 
 export const metadata: Metadata = {
   title: "Decidir | WeDoTalent",
-  description: "Painel diário com tarefas pendentes, alertas ativos e vagas para acompanhar com a LIA.",
+  description: "Painel diário com tarefas pendentes, alertas ativos e vagas para acompanhar com a IA.",
 }
 
 export default function DecidirRoute() {

@@ -163,7 +163,7 @@ export function InsightsOverviewSection({
         </div>
       </div>
 
-      {/* ── Análise LIA Textual ─────────────────────────────────────────── */}
+      {/* ── Análise IA Textual ─────────────────────────────────────────── */}
       <div className="bg-lia-bg-secondary/50 rounded-xl p-4 border border-lia-border-default">
         <div className="flex items-start gap-3">
           <div className="w-8 h-8 rounded-full bg-lia-bg-tertiary flex items-center justify-center flex-shrink-0">
@@ -171,7 +171,7 @@ export function InsightsOverviewSection({
           </div>
           <div>
             <h3 className="text-xs font-semibold text-lia-text-primary uppercase tracking-wide mb-2">
-              Análise LIA
+              Análise IA
             </h3>
             <p className="text-sm text-lia-text-primary leading-relaxed">
               {liaTextualAnalysis.summary} {liaTextualAnalysis.performance}

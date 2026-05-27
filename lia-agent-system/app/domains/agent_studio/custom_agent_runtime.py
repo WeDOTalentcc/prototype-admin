@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 # Sprint 1B `tool_handler` decorator's ContextVar resolution path.
 # The local alias name is kept for backward compat in this file's call sites.
 from app.middleware.auth_enforcement import _current_company_id as _CURRENT_COMPANY_ID  # noqa: F401
+from app.shared.observability.tracing import trace_span
 
 PLATFORM_TOOLS_REGISTRY: dict[str, str] = {
     "search_candidates": "read",
@@ -245,6 +246,7 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
 
         return [tool_definition_to_langchain_tool(td) for td in filtered]
 
+    @trace_span("agent_studio.run_graph")
     async def _run_graph(
         self,
         initial_state: dict,
@@ -448,6 +450,7 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
             },
         )
 
+    @trace_span("agent_studio.execute")
     async def execute(
         self,
         message: str = "",
@@ -664,6 +667,7 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
 
 
 
+    @trace_span("agent_studio.invoke_voice")
     async def _invoke_voice(
         self,
         message: str,
@@ -894,6 +898,7 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
                 metadata={"error": str(exc), "channel": "voice"},
             )
 
+    @trace_span("agent_studio.invoke_whatsapp")
     async def _invoke_whatsapp(
         self,
         *,

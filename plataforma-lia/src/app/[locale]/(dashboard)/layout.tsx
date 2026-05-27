@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 import DashboardLayoutClient from "./DashboardLayoutClient"
 
 export const metadata: Metadata = {
-  title: "LIA — WeDo Talent",
+  title: "WeDoTalent",
 }
 
 /**

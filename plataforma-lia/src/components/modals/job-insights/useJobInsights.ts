@@ -231,7 +231,7 @@ export function useJobInsights({
   const calculatedConversionRates = useMemo((): ConversionRate[] => {
     if (conversionRates && conversionRates.length > 0) return conversionRates
     const stages = [
-      { from: "Funil LIA", to: "Triagens Agendadas", fromValue: liaFunnelMetrics.pipeline_lia, toValue: liaFunnelMetrics.triagens_agendadas },
+      { from: "Funil IA", to: "Triagens Agendadas", fromValue: liaFunnelMetrics.pipeline_lia, toValue: liaFunnelMetrics.triagens_agendadas },
       { from: "Triagens Agendadas", to: "Triagens Realizadas", fromValue: liaFunnelMetrics.triagens_agendadas, toValue: liaFunnelMetrics.triagens_realizadas },
       { from: "Triagens Realizadas", to: "Entrevistas Agendadas", fromValue: liaFunnelMetrics.triagens_realizadas, toValue: liaFunnelMetrics.entrevistas_agendadas },
       { from: "Inscritos", to: "Aprovados", fromValue: aggregateMetrics.totalCandidates, toValue: aggregateMetrics.totalApproved },
@@ -388,7 +388,7 @@ export function useJobInsights({
         <div class="section">
           ${jobs.map((job) => `<div class="job-item"><strong>${job.code || ""} ${job.title}</strong><div style="font-size:12px;color:#6b7280;">${job.candidates_count || 0} candidatos • ${job.approved_count || 0} aprovados • Nota: ${job.performance_score || "--"}%</div></div>`).join("")}
         </div>
-        <p style="font-size:12px;color:#9ca3af;margin-top:32px;">Gerado pela Plataforma LIA - WeDO Talent</p>
+        <p style="font-size:12px;color:#9ca3af;margin-top:32px;">Gerado pelo WeDoTalent</p>
       </body>
       </html>
     `)

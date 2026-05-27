@@ -122,7 +122,7 @@ function LGPDFooter() {
   return (
     <div className="py-3 px-4 text-center">
       <p className="text-micro text-lia-text-tertiary dark:text-lia-text-secondary">
-        Powered by <span className="text-wedo-cyan font-medium">LIA</span> · WeDOTalent ·{" "}
+        Powered by WeDoTalent ·{" "}
         <a
           href="/privacidade"
           target="_blank"

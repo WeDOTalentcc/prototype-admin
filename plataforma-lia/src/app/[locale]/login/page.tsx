@@ -3,7 +3,7 @@ import LoginClient from "./LoginClient"
 
 export const metadata: Metadata = {
   title: "Entrar | WeDoTalent",
-  description: "Acesse a Plataforma LIA WeDoTalent com suas credenciais. Faça login para gerenciar vagas, candidatos e pipelines de recrutamento.",
+  description: "Acesse a WeDoTalent com suas credenciais. Faça login para gerenciar vagas, candidatos e pipelines de recrutamento.",
 }
 
 export default function LoginPage() {

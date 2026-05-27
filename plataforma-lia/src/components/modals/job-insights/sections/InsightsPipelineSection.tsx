@@ -98,11 +98,11 @@ export function InsightsPipelineSection({
 
   return (
     <div className="space-y-4">
-      {/* ── Funil de Triagem LIA ────────────────────────────────────────── */}
+      {/* ── Funil de Triagem IA ────────────────────────────────────────── */}
       <div className="bg-lia-bg-secondary/50 rounded-xl p-4 border border-lia-border-subtle">
         <h3 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-3 flex items-center gap-1.5">
           <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
-          Funil de Triagem LIA
+          Funil de Triagem IA
           {liaFunnelMetrics.isEstimated && (
             <span className="text-xs text-lia-text-disabled font-normal ml-1">(estimativa)</span>
           )}

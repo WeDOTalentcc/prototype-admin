@@ -26,7 +26,7 @@ type WhatsAppCopy = {
 
 const COPY: Record<"pt" | "en", WhatsAppCopy> = {
   pt: {
-    contactName: "LIA · Lumina Tecnologia",
+    contactName: "IA · Lumina Tecnologia",
     candidatePhone: "+55 11 98765-4321",
     presence: "online",
     loading: "Carregando mensagem...",
@@ -35,7 +35,7 @@ const COPY: Record<"pt" | "en", WhatsAppCopy> = {
     notFound: 'Template "tpl-screening-complete-whatsapp" não encontrado.',
   },
   en: {
-    contactName: "LIA · Lumina Tech",
+    contactName: "IA · Lumina Tech",
     candidatePhone: "+1 415 555 0142",
     presence: "online",
     loading: "Loading message...",

@@ -256,7 +256,7 @@ export default function TriagemPreviewChat() {
 
       <div className="py-3 px-4 text-center">
         <p className="text-micro text-lia-text-tertiary dark:text-lia-text-secondary">
-          Powered by <span className="text-wedo-cyan font-medium">LIA</span> · WeDOTalent · {preview.footerSuffix}
+          Powered by WeDoTalent · {preview.footerSuffix}
         </p>
       </div>
     </ChatContainer>

@@ -1,7 +1,7 @@
 import { type Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "WeDo Design System — Plataforma LIA",
+  title: "WeDo Design System — WeDoTalent",
   description: "Referência visual dos tokens do WeDo Design System",
 }
 
@@ -9,7 +9,7 @@ export default function DesignSystemPage() {
   return (
     <div className="p-8 max-w-4xl mx-auto space-y-12">
       <h1 className="text-3xl font-semibold text-lia-text-primary dark:text-lia-text-primary">
-        WeDo Design System — Plataforma LIA
+        WeDo Design System — WeDoTalent
       </h1>
 
       {/* Cores */}

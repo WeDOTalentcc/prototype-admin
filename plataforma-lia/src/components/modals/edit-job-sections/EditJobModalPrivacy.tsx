@@ -29,7 +29,7 @@ export function EditJobModalPrivacy({
       </div>
       
       <p className="text-xs text-lia-text-tertiary mb-3" aria-live="polite" aria-atomic="true">
-        Configure o que a LIA pode ou não revelar durante conversas com candidatos.
+        Configure o que a IA pode ou não revelar durante conversas com candidatos.
       </p>
 
       <div className="space-y-3">

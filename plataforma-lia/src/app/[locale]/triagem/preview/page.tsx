@@ -28,7 +28,7 @@ const COPY: Record<"pt" | "en", PreviewCopy> = {
         href: "preview/chat",
         title: "Chat em andamento",
         description:
-          "Conversa entre LIA e candidato com barra de progresso e indicador de digitacao.",
+          "Conversa entre IA e candidato com barra de progresso e indicador de digitacao.",
       },
       {
         href: "preview/email",
@@ -65,7 +65,7 @@ const COPY: Record<"pt" | "en", PreviewCopy> = {
         href: "preview/chat",
         title: "Chat in progress",
         description:
-          "Conversation between LIA and the candidate with a progress bar and typing indicator.",
+          "Conversation between IA and the candidate with a progress bar and typing indicator.",
       },
       {
         href: "preview/email",

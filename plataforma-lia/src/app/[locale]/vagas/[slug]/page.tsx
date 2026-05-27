@@ -10,8 +10,8 @@ export async function generateMetadata({
   const { slug } = await params
   const title = slug.replace(/-/g, " ").replace(/\b\w/g, (l: string) => l.toUpperCase())
   return {
-    title: `${title} | Vagas LIA — WeDo Talent`,
-    description: `Candidate-se para a vaga de ${title}. Processo seletivo com triagem inteligente por IA da Plataforma LIA WeDoTalent.`,
+    title: `${title} | WeDoTalent`,
+    description: `Candidate-se para a vaga de ${title}. Processo seletivo com triagem inteligente por IA da WeDoTalent.`,
     robots: { index: true, follow: true },
   }
 }

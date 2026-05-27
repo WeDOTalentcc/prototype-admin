@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 import StaffLayoutClient from "./StaffLayoutClient"
 
 export const metadata: Metadata = {
-  title: "WeDo Admin — LIA",
+  title: "WeDo Admin",
 }
 
 /**

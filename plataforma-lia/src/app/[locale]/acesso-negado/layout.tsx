@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Acesso Negado | LIA — WeDo Talent',
+  title: 'Acesso Negado | WeDoTalent',
   description: 'Você não tem permissão para acessar esta área.',
   robots: { index: false, follow: false },
 }

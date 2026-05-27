@@ -8,7 +8,7 @@ export async function generateMetadata({
   const { slug } = await params
   const title = slug.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())
   return {
-    title: `${title} | Vagas LIA`,
+    title: `${title} | WeDoTalent`,
     description: `Detalhes da vaga ${title}`,
     robots: { index: true, follow: true },
   }

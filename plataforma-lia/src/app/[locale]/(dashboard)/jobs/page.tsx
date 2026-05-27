@@ -4,7 +4,7 @@ import { JobsPage } from "@/components/pages/jobs-page"
 
 export const metadata: Metadata = {
   title: "Vagas | WeDoTalent",
-  description: "Acompanhe e gerencie todas as suas vagas: status, candidatos, publicações e ações da LIA.",
+  description: "Acompanhe e gerencie todas as suas vagas: status, candidatos, publicações e ações da IA.",
 }
 
 export default function VagasRoute() {

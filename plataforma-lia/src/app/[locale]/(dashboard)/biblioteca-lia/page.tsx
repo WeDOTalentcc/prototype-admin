@@ -3,7 +3,7 @@ import { ErrorBoundarySection } from "@/components/ui/error-boundary-section"
 import { BibliotecaLiaRouteClient } from "./BibliotecaLiaRouteClient"
 
 export const metadata: Metadata = {
-  title: "Biblioteca LIA | WeDoTalent",
+  title: "Biblioteca IA | WeDoTalent",
   description: "Conteúdos, prompts e recursos de IA.",
 }
 
