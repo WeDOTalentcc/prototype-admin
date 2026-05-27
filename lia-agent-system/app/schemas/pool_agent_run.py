@@ -27,6 +27,7 @@ class PoolAgentRunResponse(WeDoBaseModel):
     dispatch_metadata: dict[str, Any]
     results: dict[str, Any]
     runtime_metrics: dict[str, Any]
+    reasoning_payload: list[dict[str, Any]] | None = None
     error_message: str | None
     created_at: datetime
     updated_at: datetime

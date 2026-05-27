@@ -47,6 +47,10 @@ class PoolAgentRun(Base):
     dispatch_metadata = Column(JSONB, nullable=False, default=dict)
     results = Column(JSONB, nullable=False, default=dict)
     runtime_metrics = Column(JSONB, nullable=False, default=dict)
+    # Onda 1 Fase 2 (2026-05-27): decision tree do agente (AgentReasoningStep[]).
+    # Populado em real-time pelo TalentPoolReActAgent.process() via output.reasoning_trace.
+    # Consumido pelo Studio Control Room (GET /agent-monitoring/executions/{id}/reasoning).
+    reasoning_payload = Column(JSONB, nullable=True)
     error_message = Column(Text, nullable=True)
 
     created_at = Column(
@@ -93,6 +97,7 @@ class PoolAgentRun(Base):
             "dispatch_metadata": self.dispatch_metadata or {},
             "results": self.results or {},
             "runtime_metrics": self.runtime_metrics or {},
+            "reasoning_payload": self.reasoning_payload,
             "error_message": self.error_message,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
