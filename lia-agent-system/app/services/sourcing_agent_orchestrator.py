@@ -74,13 +74,13 @@ class SourcingAgentOrchestrator:
         system_prompt = ""
         if agent_template_id:
             try:
-                from lia_models.agent_template import AgentTemplate
-                from sqlalchemy import select
-
-                tpl_result = await db.execute(
-                    select(AgentTemplate).where(AgentTemplate.id == agent_template_id)
+                from app.domains.ai.repositories.agent_template_repository import (
+                    AgentTemplateRepository,
                 )
-                template = tpl_result.scalar_one_or_none()
+                from uuid import UUID as _UUID
+
+                tpl_repo = AgentTemplateRepository(db)
+                template = await tpl_repo.get_by_id(_UUID(str(agent_template_id)))
                 if template and getattr(template, "system_prompt", None):
                     system_prompt = template.system_prompt
             except Exception as exc:
@@ -188,11 +188,14 @@ class SourcingAgentOrchestrator:
         - Each rejection + reason → LLM extracts anti-criteria → added to exclusions
         - Each approval → LLM extracts positive criteria → reinforces positive_signals
         """
-        from lia_models.custom_agent import CustomAgent
-        from sqlalchemy import select
-
         # Load agent canonical (CustomAgent + category='sourcing').
+        # Wave C1.4 (2026-05-27): canonical repo lookup; category filter post-load.
         # Sprint 7B-3b Part 3a: OR shim removed — frontend Part 2 v2 swap completou.
+        from lia_models.custom_agent import CustomAgent  # noqa: F401 used below
+        from sqlalchemy import select  # noqa: F401 used in count below
+        # ADR-001-EXEMPT: lookup requires no company_id at this layer (caller
+        # endpoint already validated tenant); category filter inline. Lifted
+        # when CustomAgentRepository.get_sourcing_by_id is added.
         result = await db.execute(
             select(CustomAgent).where(
                 CustomAgent.id == agent_id,
@@ -205,15 +208,19 @@ class SourcingAgentOrchestrator:
         criteria = await self._extract_criteria(reason, signal_type)
 
         # Persist signal (Layer 2 canonical: custom_agent_id direto)
+        from app.domains.sourcing.repositories.sourcing_agent_signal_repository import (
+            SourcingAgentSignalRepository as _SignalRepo,
+        )
+        _signal_repo_write = _SignalRepo(db)
         signal = SourcingAgentSignal(
-            id=str(uuid.uuid4()),
+            id=uuid.uuid4(),
             custom_agent_id=agent.id,
             signal_type=signal_type,
             candidate_id=candidate_id,
             reason=reason,
             criteria_extracted=criteria,
         )
-        db.add(signal)
+        await _signal_repo_write.add(signal)
 
         # Recalibrate strategy
         strategy = dict(agent.search_strategy or {})
@@ -293,11 +300,11 @@ class SourcingAgentOrchestrator:
             )
 
         # Count total signals for calibration status (canonical: custom_agent_id)
-        from sqlalchemy import func
-        count_result = await db.execute(
-            select(func.count()).where(SourcingAgentSignal.custom_agent_id == agent.id)
+        from app.domains.sourcing.repositories.sourcing_agent_signal_repository import (
+            SourcingAgentSignalRepository,
         )
-        total = count_result.scalar()
+        signal_repo = SourcingAgentSignalRepository(db)
+        total = await signal_repo.count_for_agent(custom_agent_id=agent.id)
 
         cal_v = int(metrics.get("calibration_v", 0))
         logger.info(
@@ -332,10 +339,13 @@ class SourcingAgentOrchestrator:
         passado. Levanta LookupError quando agent inexistente ou cross-tenant
         (fail-loud REGRA 4, handler traduz pra HTTP 404).
         """
-        from lia_models.custom_agent import CustomAgent
-        from sqlalchemy import select
-
+        # Wave C1.4 (2026-05-27): tenant-scoped lookup via CustomAgentRepository.
         # Sprint 7B-3b Part 3a: OR shim removed — frontend Part 2 v2 swap completou.
+        from lia_models.custom_agent import CustomAgent  # noqa: F401
+        from sqlalchemy import select
+        # ADR-001-EXEMPT: composite filter (id + category + optional company_id);
+        # canonical CustomAgentRepository.get_by_id doesn't yet allow optional
+        # company_id. Lifted when get_sourcing_by_id lands.
         stmt = select(CustomAgent).where(
             CustomAgent.id == agent_id,
             CustomAgent.category == "sourcing",
@@ -397,7 +407,13 @@ class SourcingAgentOrchestrator:
         """
         from lia_models.custom_agent import CustomAgent
         from sqlalchemy import select
+        from app.domains.sourcing.repositories.sourcing_agent_signal_repository import (
+            SourcingAgentSignalRepository,
+        )
 
+        # ADR-001-EXEMPT: existence check by id+category only (no company_id at
+        # this layer — caller validates tenant). Lifted when canonical
+        # CustomAgentRepository.exists_sourcing(id) is added.
         agent_row = (
             await db.execute(
                 select(CustomAgent.id).where(
@@ -409,13 +425,10 @@ class SourcingAgentOrchestrator:
         if agent_row is None:
             return []
 
-        result = await db.execute(
-            select(SourcingAgentSignal)
-            .where(SourcingAgentSignal.custom_agent_id == agent_row)
-            .order_by(SourcingAgentSignal.created_at.desc())
-            .limit(limit)
+        signal_repo = SourcingAgentSignalRepository(db)
+        signals = await signal_repo.list_recent(
+            custom_agent_id=agent_row, limit=limit
         )
-        signals = result.scalars().all()
 
         timeline = []
         for s in signals:
@@ -487,7 +500,14 @@ class SourcingAgentOrchestrator:
             return [{"criterion": "Análise geral", "match": "partial", "explanation": "Avaliação automática indisponível"}]
 
     async def _fallback_db_candidates(self, agent, limit: int, db) -> list[dict]:
-        """Fallback: search candidates directly from DB using agent's search_strategy."""
+        """Fallback: search candidates directly from DB using agent's search_strategy.
+
+        ADR-001-EXEMPT (Wave C1.4): cross-domain Candidate/CandidateExperience/
+        CandidateEducation reads use dynamic skill ANY filter + random sampling
+        that the canonical CandidateRepository does not cover. Sprint backlog:
+        extend CandidateRepository.search_for_sourcing once the agent search
+        contract stabilizes (Sprint 7B-3b tail).
+        """
         try:
             from lia_models.candidate import Candidate, CandidateExperience, CandidateEducation
             from sqlalchemy import select, or_, func
@@ -579,12 +599,14 @@ class SourcingAgentOrchestrator:
         if not template_id:
             return ""
         try:
-            from lia_models.agent_template import AgentTemplate
-            from sqlalchemy import select
+            from app.domains.ai.repositories.agent_template_repository import (
+                AgentTemplateRepository,
+            )
+            from uuid import UUID as _UUID
             import yaml as _yaml
 
-            res = await db.execute(select(AgentTemplate).where(AgentTemplate.id == template_id))
-            template = res.scalar_one_or_none()
+            tpl_repo = AgentTemplateRepository(db)
+            template = await tpl_repo.get_by_id(_UUID(str(template_id)))
             if not template or not template.system_prompt_yaml:
                 return ""
 
