@@ -50,6 +50,15 @@ async def sourcing_react_orchestrate(request: Request, company_id: str = Depends
             "actions": [{"type": a.action_type, "data": a.params} for a in output.actions] if output.actions else [],
             "metadata": output.metadata or {},
         }
+    except HTTPException:
+        # Re-raise HTTPException (auth, validation, etc.) — preserva status code original
+        raise
     except Exception as e:
+        # Wave 0 Fix 2 (2026-05-27): erro genérico deve sair como 503 (não 200+payload mascarado).
+        # Cliente trata como serviço indisponível e oferece retry.
         logger.error(f"Sourcing ReAct error: {e}", exc_info=True)
-        return {"message": "Desculpe, ocorreu um erro ao processar sua solicitação. Tente novamente.", "confidence": 0, "error": str(e)}
+        raise HTTPException(
+            status_code=503,
+            detail="Sourcing ReAct agent indisponível temporariamente. Tente novamente em instantes.",
+            headers={"Retry-After": "60"},
+        )
