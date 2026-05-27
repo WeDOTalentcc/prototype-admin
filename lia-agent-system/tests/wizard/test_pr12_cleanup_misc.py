@@ -16,16 +16,21 @@ LIA = REPO_ROOT / "lia-agent-system"
 # F-4.2 — smart-orchestrate proxy company_id removal
 # ─────────────────────────────────────────────────────────────────────────
 def test_smart_orchestrate_proxy_no_company_id():
-    """F-4.2: route.ts não envia company_id (backend lê do JWT)."""
+    """F-4.2 + Fix F (2026-05-27): proxy smart-orchestrate foi DELETADO
+    inteiramente (dead code violando REGRA ZERO + REGRA 4 + multi-tenancy).
+    Forma mais forte do contrato original F-4.2 ("nao enviar company_id no
+    payload"): se o proxy nao existe, nao ha como enviar. Backend canonical
+    em wizard_smart_orchestrator.py:192 segue protegido por
+    Depends(require_company_id) JWT."""
     route_ts = (
         PLAT
         / "src/app/api/backend-proxy/wizard/smart-orchestrate/route.ts"
     )
-    content = route_ts.read_text()
-    assert "company_id: body.company_id" not in content, (
-        "F-4.2 regression: route.ts ainda envia company_id no payload. "
-        "Backend canonical (wizard_smart_orchestrator.py:192) lê do JWT via "
-        "Depends(require_company_id). Field redundante + viola R2 sensor."
+    assert not route_ts.exists(), (
+        "Fix F regression: smart-orchestrate proxy foi recriado. Deveria "
+        "permanecer DELETADO (dead code com violacao REGRA ZERO + REGRA 4 "
+        "+ multi-tenancy). Backend endpoint canonical wizard_smart_orchestrator.py "
+        "protegido por Depends(require_company_id) eh suficiente."
     )
 
 

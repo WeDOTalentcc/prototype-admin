@@ -57,8 +57,8 @@ def competency_gate_node(state: JobCreationState) -> JobCreationState:
         _emit_competency_gate_audit,
     )
 
-    msg = (state.get("gate_resume_message") or "").strip()
-    if not msg:
+    resume_msg = (state.get("gate_resume_message") or "").strip()
+    if not resume_msg:
         # WS resume detection — caminho canônico via process_message não
         # seta gate_resume_message; detectamos via state nativo.
         _at_competency = (
@@ -70,11 +70,11 @@ def competency_gate_node(state: JobCreationState) -> JobCreationState:
         _seen = (state.get("gate_seen_user_query") or "").strip()
         _is_fresh_turn = bool(_uq) and _uq != _seen
         if _at_competency and _no_mode_yet and _is_fresh_turn:
-            msg = _uq
+            resume_msg = _uq
             logger.info(
                 "[JobCreation:competency_gate] WS resume detected (competency + fresh user_query, no mode yet) — classify",
             )
-    if not msg and _in_graph_runtime():
+    if not resume_msg and _in_graph_runtime():
         # Task #1094 — pausa canônica via interrupt() (HITL #2 — competency).
         from langgraph.types import interrupt
         _resume = interrupt({
@@ -85,8 +85,8 @@ def competency_gate_node(state: JobCreationState) -> JobCreationState:
                 "competency_recommendation": state.get("competency_recommendation"),
             },
         })
-        msg = (str(_resume) if _resume is not None else "").strip()
-    if not msg:
+        resume_msg = (str(_resume) if _resume is not None else "").strip()
+    if not resume_msg:
         # Sem mensagem nova — cleanup de intent transitório (mirror jd_gate
         # T2 fix #4) e END via route_after_competency_gate.
         _last_intent = state.get("gate_last_intent")
@@ -103,7 +103,7 @@ def competency_gate_node(state: JobCreationState) -> JobCreationState:
     # FairnessGuard L1 sobre a mensagem do gate (defesa em profundidade).
     try:
         from app.shared.compliance.fairness_guard import FairnessGuard
-        _fg = FairnessGuard().check(msg)
+        _fg = FairnessGuard().check(resume_msg)
         if _fg.is_blocked:
             logger.warning(
                 "[JobCreation:competency_gate] FairnessGuard L1 BLOCK on resume message: cat=%s, terms=%s",
@@ -131,7 +131,7 @@ def competency_gate_node(state: JobCreationState) -> JobCreationState:
         _company_id = state.get("workspace_id") or state.get("company_id")
         _user_id = state.get("user_id") or state.get("recruiter_id")
         coro_factory = lambda: classifier.classify(  # noqa: E731
-            user_message=msg,
+            user_message=resume_msg,
             stage="competency",
             ws_stage_payload=state.get("ws_stage_payload"),
             tenant_context_snippet=str(state.get("tenant_context_snippet") or ""),
@@ -149,7 +149,7 @@ def competency_gate_node(state: JobCreationState) -> JobCreationState:
 
     # Audit row (best-effort).
     try:
-        _emit_competency_gate_audit(state, msg, output)
+        _emit_competency_gate_audit(state, resume_msg, output)
     except Exception as exc:
         logger.debug("[JobCreation:competency_gate] audit emit failed: %s", exc)
 
@@ -178,7 +178,7 @@ def competency_gate_node(state: JobCreationState) -> JobCreationState:
             "gate_last_intent": output.intent,
             "gate_last_confidence": output.confidence,
             "current_stage": "competency",
-            "gate_seen_user_query": msg,
+            "gate_seen_user_query": resume_msg,
         }
 
     intent = output.intent
@@ -189,7 +189,7 @@ def competency_gate_node(state: JobCreationState) -> JobCreationState:
         "gate_last_intent": intent,
         "gate_last_confidence": output.confidence,
         "current_stage": "competency",
-        "gate_seen_user_query": msg,
+        "gate_seen_user_query": resume_msg,
     }
 
     if intent == "select_compact":
@@ -209,7 +209,7 @@ def competency_gate_node(state: JobCreationState) -> JobCreationState:
         _sonnet_reply = _try_meta_helper(
             state=state,
             stage="competency",
-            user_message=msg,
+            user_message=resume_msg,
             stage_description=(
                 msg("competency_gate.recommend_mode", recommended=recommended)
             ),

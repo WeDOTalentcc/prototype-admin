@@ -81,8 +81,8 @@ def wsi_questions_gate_node(state: JobCreationState) -> JobCreationState:
         _emit_wsi_questions_gate_audit,
     )
 
-    msg = (state.get("gate_resume_message") or "").strip()
-    if not msg:
+    resume_msg = (state.get("gate_resume_message") or "").strip()
+    if not resume_msg:
         _at_wsi = (
             state.get("current_stage") == "wsi_questions"
             and bool(state.get("wsi_questions"))
@@ -92,11 +92,11 @@ def wsi_questions_gate_node(state: JobCreationState) -> JobCreationState:
         _seen = (state.get("gate_seen_user_query") or "").strip()
         _is_fresh_turn = bool(_uq) and _uq != _seen
         if _at_wsi and _no_decision_yet and _is_fresh_turn:
-            msg = _uq
+            resume_msg = _uq
             logger.info(
                 "[JobCreation:wsi_questions_gate] WS resume detected (wsi_questions + fresh user_query, awaiting decision) — classify",
             )
-    if not msg and _in_graph_runtime():
+    if not resume_msg and _in_graph_runtime():
         # Task #1094 — pausa canônica via interrupt() (HITL #2 — WSI questions).
         from langgraph.types import interrupt
         _resume = interrupt({
@@ -107,8 +107,8 @@ def wsi_questions_gate_node(state: JobCreationState) -> JobCreationState:
                 "screening_mode": state.get("screening_mode"),
             },
         })
-        msg = (str(_resume) if _resume is not None else "").strip()
-    if not msg:
+        resume_msg = (str(_resume) if _resume is not None else "").strip()
+    if not resume_msg:
         _last_intent = state.get("gate_last_intent")
         _is_transitional = _last_intent in ("ask_question",)
         clean_state = {**state, "current_stage": "wsi_questions"}
@@ -123,7 +123,7 @@ def wsi_questions_gate_node(state: JobCreationState) -> JobCreationState:
     # FairnessGuard L1 sobre a mensagem do gate (defesa em profundidade).
     try:
         from app.shared.compliance.fairness_guard import FairnessGuard
-        _fg = FairnessGuard().check(msg)
+        _fg = FairnessGuard().check(resume_msg)
         if _fg.is_blocked:
             logger.warning(
                 "[JobCreation:wsi_questions_gate] FairnessGuard L1 BLOCK on resume message: cat=%s, terms=%s",
@@ -151,7 +151,7 @@ def wsi_questions_gate_node(state: JobCreationState) -> JobCreationState:
         _company_id = state.get("workspace_id") or state.get("company_id")
         _user_id = state.get("user_id") or state.get("recruiter_id")
         coro_factory = lambda: classifier.classify(  # noqa: E731
-            user_message=msg,
+            user_message=resume_msg,
             stage="wsi_questions",
             ws_stage_payload=state.get("ws_stage_payload"),
             tenant_context_snippet=str(state.get("tenant_context_snippet") or ""),
@@ -169,7 +169,7 @@ def wsi_questions_gate_node(state: JobCreationState) -> JobCreationState:
 
     # Audit row (best-effort).
     try:
-        _emit_wsi_questions_gate_audit(state, msg, output)
+        _emit_wsi_questions_gate_audit(state, resume_msg, output)
     except Exception as exc:
         logger.debug("[JobCreation:wsi_questions_gate] audit emit failed: %s", exc)
 
@@ -192,7 +192,7 @@ def wsi_questions_gate_node(state: JobCreationState) -> JobCreationState:
             "gate_last_intent": output.intent,
             "gate_last_confidence": output.confidence,
             "current_stage": "wsi_questions",
-            "gate_seen_user_query": msg,
+            "gate_seen_user_query": resume_msg,
         }
 
     intent = output.intent
@@ -217,7 +217,7 @@ def wsi_questions_gate_node(state: JobCreationState) -> JobCreationState:
         "gate_last_intent": intent,
         "gate_last_confidence": output.confidence,
         "current_stage": "wsi_questions",
-        "gate_seen_user_query": msg,
+        "gate_seen_user_query": resume_msg,
     }
 
     if intent == "approve_all":
@@ -312,7 +312,7 @@ def wsi_questions_gate_node(state: JobCreationState) -> JobCreationState:
         _sonnet_reply = _try_meta_helper(
             state=state,
             stage="wsi_questions",
-            user_message=msg,
+            user_message=resume_msg,
             stage_description=(
                 f"HITL #3: revisão do pacote WSI gerado ({total_q} perguntas). "
                 "Recrutador pode aprovar, regenerar tudo, editar/adicionar/remover uma."

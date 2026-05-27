@@ -81,7 +81,7 @@ def review_gate_node(state: JobCreationState) -> JobCreationState:
     # graph retornar a este nó (próximo turno do recrutador, ou um
     # passthrough sem mensagem), garantimos que NUNCA reroteamos com base
     # em estado antigo — limpamos no ENTRY. Sem isso, qualquer no-op
-    # entrada em review_gate_node (sem msg fresca) ainda routava para o
+    # entrada em review_gate_node (sem resume_msg fresca) ainda routava para o
     # destino mapeado, criando reroute loops.
     _stale_pending = state.get("review_request_changes_pending")
     if _stale_pending:
@@ -90,8 +90,8 @@ def review_gate_node(state: JobCreationState) -> JobCreationState:
             _stale_pending,
         )
 
-    msg = (state.get("gate_resume_message") or "").strip()
-    if not msg:
+    resume_msg = (state.get("gate_resume_message") or "").strip()
+    if not resume_msg:
         # WS resume detection — caminho canônico via process_message não
         # seta gate_resume_message; detectamos via state nativo.
         _at_review = state.get("current_stage") == "review"
@@ -99,11 +99,11 @@ def review_gate_node(state: JobCreationState) -> JobCreationState:
         _seen = (state.get("gate_seen_user_query") or "").strip()
         _is_fresh_turn = bool(_uq) and _uq != _seen
         if _at_review and _is_fresh_turn:
-            msg = _uq
+            resume_msg = _uq
             logger.info(
                 "[JobCreation:review_gate] WS resume detected (review + fresh user_query) — classify",
             )
-    if not msg and _in_graph_runtime():
+    if not resume_msg and _in_graph_runtime():
         # Task #1094 — pausa canônica via interrupt() (HITL #3 — review/publish).
         from langgraph.types import interrupt
         _resume = interrupt({
@@ -114,8 +114,8 @@ def review_gate_node(state: JobCreationState) -> JobCreationState:
                 "ws_stage_payload": state.get("ws_stage_payload"),
             },
         })
-        msg = (str(_resume) if _resume is not None else "").strip()
-    if not msg:
+        resume_msg = (str(_resume) if _resume is not None else "").strip()
+    if not resume_msg:
         _last_intent = state.get("gate_last_intent")
         _is_transitional = _last_intent in ("ask_clarification",)
         clean_state = {
@@ -135,7 +135,7 @@ def review_gate_node(state: JobCreationState) -> JobCreationState:
     # FairnessGuard L1 sobre a mensagem do gate (defesa em profundidade).
     try:
         from app.shared.compliance.fairness_guard import FairnessGuard
-        _fg = FairnessGuard().check(msg)
+        _fg = FairnessGuard().check(resume_msg)
         if _fg.is_blocked:
             logger.warning(
                 "[JobCreation:review_gate] FairnessGuard L1 BLOCK on resume message: cat=%s, terms=%s",
@@ -162,7 +162,7 @@ def review_gate_node(state: JobCreationState) -> JobCreationState:
         _company_id = state.get("workspace_id") or state.get("company_id")
         _user_id = state.get("user_id") or state.get("recruiter_id")
         coro_factory = lambda: classifier.classify(  # noqa: E731
-            user_message=msg,
+            user_message=resume_msg,
             stage="review",
             ws_stage_payload=state.get("ws_stage_payload"),
             tenant_context_snippet=str(state.get("tenant_context_snippet") or ""),
@@ -200,10 +200,10 @@ def review_gate_node(state: JobCreationState) -> JobCreationState:
             "gate_last_intent": output.intent,
             "gate_last_confidence": output.confidence,
             "current_stage": "review",
-            "gate_seen_user_query": msg,
+            "gate_seen_user_query": resume_msg,
         }
         try:
-            _emit_review_gate_audit(state, msg, output, confirmation_method="chat")
+            _emit_review_gate_audit(state, resume_msg, output, confirmation_method="chat")
         except Exception as exc:
             logger.debug("[JobCreation:review_gate] audit emit failed: %s", exc)
         return clarify_state
@@ -218,7 +218,7 @@ def review_gate_node(state: JobCreationState) -> JobCreationState:
         "gate_last_intent": intent,
         "gate_last_confidence": output.confidence,
         "current_stage": "review",
-        "gate_seen_user_query": msg,
+        "gate_seen_user_query": resume_msg,
         # T6 (post-review fix #1) — sempre nasce limpo neste turno.
         # Quem precisar (request_changes não-destinations) seta logo abaixo.
         "review_request_changes_pending": None,
@@ -256,7 +256,7 @@ def review_gate_node(state: JobCreationState) -> JobCreationState:
                 _missing,
             )
             try:
-                _emit_review_gate_audit(state, msg, output, confirmation_method=confirmation_method)
+                _emit_review_gate_audit(state, resume_msg, output, confirmation_method=confirmation_method)
             except Exception as exc:
                 logger.debug("[JobCreation:review_gate] audit emit failed: %s", exc)
             return next_state
@@ -458,7 +458,7 @@ def review_gate_node(state: JobCreationState) -> JobCreationState:
         _sonnet_reply = _try_meta_helper(
             state=state,
             stage="review",
-            user_message=msg,
+            user_message=resume_msg,
             stage_description=(
                 "HITL #4: revisão final da vaga antes da publicação. "
                 "Recrutador pode publicar, ajustar campo específico, "
@@ -482,7 +482,7 @@ def review_gate_node(state: JobCreationState) -> JobCreationState:
     # (button é setado externamente via _handle_gate_review quando o FE
     # emite um sinal explícito de botão).
     try:
-        _emit_review_gate_audit(state, msg, output, confirmation_method=confirmation_method)
+        _emit_review_gate_audit(state, resume_msg, output, confirmation_method=confirmation_method)
     except Exception as exc:
         logger.debug("[JobCreation:review_gate] audit emit failed: %s", exc)
 
