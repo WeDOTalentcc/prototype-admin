@@ -56,6 +56,16 @@ interface SettingsSubsection {
   fields: string[]
 }
 
+type SettingsSectionGroup = "empresa" | "processo" | "lia" | "comunicacao" | "plataforma"
+
+const SECTION_GROUPS: { id: SettingsSectionGroup; label: string }[] = [
+  { id: "empresa", label: "Empresa" },
+  { id: "processo", label: "Processo" },
+  { id: "lia", label: "LIA & Personalização" },
+  { id: "comunicacao", label: "Comunicação" },
+  { id: "plataforma", label: "Plataforma" },
+]
+
 interface SettingsSection {
   id: string
   title: string
@@ -65,6 +75,7 @@ interface SettingsSection {
   priority: 'high' | 'medium' | 'low'
   category: 'basic' | 'advanced' | 'integrations'
   estimatedTime: number
+  group: SettingsSectionGroup
   dependencies?: string[]
   subsections?: SettingsSubsection[]
 }
@@ -99,7 +110,7 @@ const getDefaultSections = (): SettingsSection[] => [
     priority: 'high',
     category: 'basic',
     estimatedTime: 15,
-    group: empresa as const,
+    group: 'empresa' as const,
   },
   {
     id: 'pipeline',
@@ -111,7 +122,7 @@ const getDefaultSections = (): SettingsSection[] => [
     category: 'advanced',
     estimatedTime: 10,
     dependencies: ['minha-empresa'],
-    group: processo as const,
+    group: 'processo' as const,
   },
   {
     id: 'screening',
@@ -123,7 +134,7 @@ const getDefaultSections = (): SettingsSection[] => [
     category: 'advanced',
     estimatedTime: 10,
     dependencies: ['minha-empresa'],
-    group: processo as const,
+    group: 'processo' as const,
   },
   {
     id: 'templates-assinatura',
@@ -134,8 +145,8 @@ const getDefaultSections = (): SettingsSection[] => [
     priority: 'medium',
     category: 'advanced',
     estimatedTime: 10,
+    group: 'processo' as const,
   },
-    group: processo as const,
   {
     id: 'comunicacao-alertas',
     title: 'Comunicação & Alertas',
@@ -146,7 +157,7 @@ const getDefaultSections = (): SettingsSection[] => [
     category: 'advanced',
     estimatedTime: 10,
     dependencies: ['minha-empresa'],
-    group: comunicacao as const,
+    group: 'comunicacao' as const,
   },
   {
     id: 'usuarios-departamentos',
@@ -157,8 +168,8 @@ const getDefaultSections = (): SettingsSection[] => [
     priority: 'medium',
     category: 'basic',
     estimatedTime: 10,
+    group: 'plataforma' as const,
   },
-    group: plataforma as const,
   {
     id: 'integrations',
     title: 'Integrações',
@@ -168,8 +179,8 @@ const getDefaultSections = (): SettingsSection[] => [
     priority: 'medium',
     category: 'integrations',
     estimatedTime: 10,
+    group: 'plataforma' as const,
   },
-    group: plataforma as const,
   {
     id: 'fairness-compliance',
     title: 'Fairness & LGPD',
@@ -179,7 +190,7 @@ const getDefaultSections = (): SettingsSection[] => [
     priority: 'low',
     category: 'advanced',
     estimatedTime: 0,
-    group: "plataforma" as const,
+    group: 'plataforma' as const,
     subsections: [
       { id: 'fairness', title: 'Fairness & Compliance', description: 'Eventos de equidade e auditoria da IA', fields: [] },
       { id: 'lgpd-candidatos', title: 'LGPD Candidatos', description: 'Pedidos Art. 20 de candidatos (prazo 15 dias úteis)', fields: [] },
@@ -195,8 +206,8 @@ const getDefaultSections = (): SettingsSection[] => [
     priority: 'low',
     category: 'advanced',
     estimatedTime: 0,
+    group: 'plataforma' as const,
   },
-    group: plataforma as const,
   {
     id: 'politicas-recrutamento',
     title: 'Políticas de Recrutamento',
@@ -207,7 +218,7 @@ const getDefaultSections = (): SettingsSection[] => [
     category: 'advanced',
     estimatedTime: 15,
     dependencies: ['minha-empresa'],
-    group: processo as const,
+    group: 'processo' as const,
   },
 ]
 
@@ -533,10 +544,21 @@ export default function SettingsPageEnhanced() {
           </div>
 
           <div className="flex-1 overflow-y-auto p-3">
-            <nav className="space-y-2">
-              {settingsSections.map((section) => {
+            <nav className="space-y-0">
+              {(() => {
+                const grouped = SECTION_GROUPS.map(g => ({
+                  ...g,
+                  sections: settingsSections.filter(s => s.group === g.id),
+                })).filter(g => g.sections.length > 0)
+                return grouped.map((grp, gi) => (
+                  <div key={grp.id} data-group-id={grp.id}>
+                    {shouldShowContent && (
+                      <div className={`px-1 pb-1 text-[10px] font-semibold uppercase tracking-widest text-gray-400 ${gi === 0 ? 'pt-1' : 'pt-4'}`}>
+                        {grp.label}
+                      </div>
+                    )}
+                    {grp.sections.map((section) => {
                 const IconComponent = section.icon
-                const PriorityIcon = priorityIcons[section.priority]
                 const isExpanded = expandedSections.has(section.id)
                 const isActive = activeSection === section.id
 
@@ -615,6 +637,9 @@ export default function SettingsPageEnhanced() {
                   </div>
                 )
               })}
+                  </div>
+                ))
+              })()}
             </nav>
 
           </div>

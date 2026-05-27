@@ -494,3 +494,22 @@ describe("SettingsPageEnhanced — acessibilidade básica da sidebar", () => {
     expect(focused.className).toMatch(/focus-visible:outline/)
   })
 })
+
+
+// ── P1-7. Grupos visuais da sidebar (5 grupos) ──────────────────────────
+
+describe('SettingsPageEnhanced — grupos visuais da sidebar (P1-7)', () => {
+  it('renderiza os 4 grupos activos como containers data-group-id', async () => {
+    render(<SettingsPageEnhanced />)
+    await screen.findByTestId('hub-minha-empresa')
+    // Grupos com items são sempre renderizados como containers (independe de isCollapsed)
+    // LIA & Personalização está vazio (hub não existe ainda) → filtrado
+    const expectedGroupIds = ['empresa', 'processo', 'comunicacao', 'plataforma']
+    for (const gid of expectedGroupIds) {
+      const el = document.querySelector(`[data-group-id="${gid}"]`)
+      expect(el).toBeTruthy()
+    }
+    // LIA não deve aparecer (nenhum section com group=lia existe)
+    expect(document.querySelector('[data-group-id="lia"]')).toBeNull()
+  })
+})
