@@ -40,7 +40,14 @@ WIZARD_NODES = ("bigfive", "wsi_questions", "competency", "eligibility")
 
 @pytest.fixture
 def captured_audit_calls(monkeypatch):
-    """Patch ``AuditService.log_decision`` to record calls in memory."""
+    """Patch ``AuditService.log_decision`` to record calls in memory.
+
+    Fix J 2026-05-27: pos PR-17, audit usa emit_audit_fire_and_forget que skipa
+    em sync test context (sem event loop). Patchamos o helper para invocar o
+    coro_factory sincronamente via asyncio.run, garantindo captura no fixture.
+    """
+    import asyncio
+
     calls: list[dict[str, Any]] = []
 
     async def _record(self, **kwargs):
@@ -50,6 +57,36 @@ def captured_audit_calls(monkeypatch):
     from app.shared.compliance import audit_service as audit_svc
 
     monkeypatch.setattr(audit_svc.AuditService, "log_decision", _record)
+
+    # Patch emit_audit_fire_and_forget canonical (PR-17) -- run coro sync em test.
+    # Necessario para capturar audit calls quando node usa o helper canonical
+    # (substituiu asyncio.run em sync nodes -- ver scripts/check_no_asyncio_run_in_sync_nodes.py).
+    def _sync_emit(coro_factory):
+        try:
+            coro = coro_factory()
+            asyncio.run(coro)
+        except Exception:
+            pass  # mirror fire-and-forget swallow
+
+    # Patch em ambos os modulos onde emit_audit_fire_and_forget eh referenciado
+    # (cada node faz `from helpers.async_audit import emit_audit_fire_and_forget`).
+    from app.domains.job_creation.helpers import async_audit
+    monkeypatch.setattr(async_audit, "emit_audit_fire_and_forget", _sync_emit)
+    # Plus modulos internal/audit.py que reusa o helper
+    from app.domains.job_creation.internal import audit as internal_audit
+    monkeypatch.setattr(internal_audit, "emit_audit_fire_and_forget", _sync_emit)
+    # Plus os 4 nodes que importam direto
+    for node_name in ("bigfive", "wsi_questions", "competency", "eligibility"):
+        try:
+            node_mod = __import__(
+                f"app.domains.job_creation.nodes.{node_name}",
+                fromlist=["emit_audit_fire_and_forget"],
+            )
+            if hasattr(node_mod, "emit_audit_fire_and_forget"):
+                monkeypatch.setattr(node_mod, "emit_audit_fire_and_forget", _sync_emit)
+        except (ImportError, AttributeError):
+            pass
+
     # Allow policy gate (DENY would short-circuit before audit by design)
     monkeypatch.setattr(
         graph_mod,
@@ -172,25 +209,33 @@ def test_eligibility_node_emits_wizard_step_audit(captured_audit_calls):
 
 
 def test_all_four_wizard_nodes_have_audit_callsite_in_source():
-    """Static guard: a string ``_emit_wizard_step_audit(`` deve aparecer
-    pelo menos 4× em ``graph.py`` (1 call site por node decisório).
-    Falha imediatamente se alguém remover um call site sem atualizar a
-    sentinela — D3 ressurgiria silenciosamente."""
-    import inspect
+    """Static guard: pos PR-10 split (2026-05-26), os call sites de
+    ``_emit_wizard_step_audit(`` vivem em nodes/*.py individuais (um por
+    node decisorio). Pre-PR-10 viviam todos em graph.py. Sentinel atualizado
+    Fix J 2026-05-27: checa callsite em cada arquivo node correspondente.
 
-    src = inspect.getsource(graph_mod)
-    occurrences = src.count("_emit_wizard_step_audit(")
-    # 1 definição + 4 call sites = 5 ocorrências mínimas
-    assert occurrences >= 5, (
-        f"Esperava >=5 ocorrências de `_emit_wizard_step_audit(` em "
-        f"graph.py (1 def + 4 call sites para "
-        f"{WIZARD_NODES}); achei {occurrences}. Algum node decisório "
-        f"perdeu o audit — Drift D3 ressurgiu."
+    Falha imediatamente se algum node decisorio perder seu callsite (D3
+    ressurgiria silenciosamente)."""
+    from pathlib import Path
+
+    NODES_DIR = (
+        Path(__file__).resolve().parents[3]
+        / "lia-agent-system"
+        / "app" / "domains" / "job_creation" / "nodes"
     )
-    # Garante que cada stage aparece como argumento literal
+    if not NODES_DIR.exists():
+        # Fallback path resolution for non-standard test runners
+        NODES_DIR = Path("/home/runner/workspace/lia-agent-system/app/domains/job_creation/nodes")
+
     for stage in WIZARD_NODES:
-        needle = f'stage="{stage}"'
-        assert needle in src, (
-            f"call site de `_emit_wizard_step_audit` para stage "
-            f"`{stage}` ausente em graph.py — D3 ressurgiu."
+        node_file = NODES_DIR / f"{stage}.py"
+        assert node_file.exists(), (
+            f"PR-10 split: node file {stage}.py nao encontrado em {NODES_DIR}. "
+            f"Sentinel obsoleto ou node deletado -- atualizar."
+        )
+        node_src = node_file.read_text()
+        assert "_emit_wizard_step_audit(" in node_src, (
+            f"node `{stage}.py` perdeu seu callsite `_emit_wizard_step_audit(` "
+            f"-- Drift D3 ressurgiu. Re-adicionar emit antes do return canonical "
+            f"do node."
         )

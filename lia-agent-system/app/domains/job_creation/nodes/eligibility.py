@@ -18,6 +18,7 @@ from app.domains.job_creation.helpers.ws_payload_builder import (
     build_ws_stage_payload,
 )
 from app.domains.job_creation.helpers.i18n import msg
+from app.domains.job_creation.internal.audit import _emit_wizard_step_audit
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +27,6 @@ def eligibility_node(state: JobCreationState) -> JobCreationState:
     """Pre-screening: yes/no eliminatory questions configured by recruiter."""
     # Lazy import of helpers defined in graph.py (avoids circular import at
     # module load time — graph.py is fully constructed by the time this runs).
-    from app.domains.job_creation.graph import _emit_wizard_step_audit
 
     t0 = time.time()
     logger.info("[JobCreation:eligibility] Starting eligibility questions")

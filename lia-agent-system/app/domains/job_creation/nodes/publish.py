@@ -18,6 +18,7 @@ from app.domains.job_creation.helpers.ws_payload_builder import (
     build_ws_stage_payload,
 )
 from app.domains.job_creation.helpers.i18n import msg
+from app.domains.job_creation.helpers.async_audit import emit_audit_fire_and_forget
 
 logger = logging.getLogger(__name__)
 

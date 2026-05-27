@@ -18,6 +18,7 @@ from app.domains.job_creation.helpers.ws_payload_builder import (
     build_ws_stage_payload,
 )
 from app.domains.job_creation.helpers.i18n import msg
+from app.domains.job_creation.services.seniority_resolver import resolve_seniority
 
 logger = logging.getLogger(__name__)
 

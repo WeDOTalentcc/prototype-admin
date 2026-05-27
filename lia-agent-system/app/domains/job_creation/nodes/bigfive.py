@@ -18,6 +18,7 @@ from app.domains.job_creation.helpers.ws_payload_builder import (
     build_ws_stage_payload,
 )
 from app.domains.job_creation.helpers.i18n import msg
+from app.domains.job_creation.internal.audit import _emit_wizard_step_audit
 from app.domains.job_creation.helpers.async_audit import (
     emit_audit_fire_and_forget,
     run_coro_in_threadpool,

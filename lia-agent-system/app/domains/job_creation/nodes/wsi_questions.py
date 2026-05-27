@@ -18,6 +18,7 @@ from app.domains.job_creation.helpers.ws_payload_builder import (
     build_ws_stage_payload,
 )
 from app.domains.job_creation.helpers.i18n import msg
+from app.domains.job_creation.internal.constants import WSI_DEFAULT_DISTRIBUTION_COMPACT_PLENO
 from app.domains.job_creation.helpers.async_audit import (
     emit_audit_fire_and_forget,
     run_coro_in_threadpool,
@@ -48,6 +49,9 @@ def wsi_questions_node(state: JobCreationState) -> JobCreationState:
     )
 
     t0 = time.time()
+    # PR-10 fix Fix J: lazy import de graph.py (circular import risk)
+    from app.domains.job_creation.graph import evaluate_wizard_policy
+
     logger.info("[JobCreation:wsi_questions] Starting F6")
 
     # Policy gate check
