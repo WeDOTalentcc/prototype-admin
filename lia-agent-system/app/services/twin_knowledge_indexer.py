@@ -9,12 +9,23 @@ Sources:
 Each decision is embedded (768d) and stored in twin_decisions for K-NN retrieval.
 
 Apply to: lia-agent-system/app/services/twin_knowledge_indexer.py
+
+Wave C1.1 (2026-05-27): raw `select(DigitalTwin)` for stats refresh migrated to
+`DigitalTwinRepository.update_decision_count` (ADR-001 canonical). All `index_*`
+methods now require `company_id` (multi-tenancy fail-closed via repo guard).
 """
 
 import json
 import logging
 import uuid
 from typing import Optional
+
+# Module-level imports for canonical model + raw ATS query that operates on
+# Rails-owned tables (applies/candidates/jobs) — see ADR-001-EXEMPT in
+# index_from_ats_history.
+from sqlalchemy import text as sql_text
+
+from lia_models.digital_twin import TwinDecision
 
 logger = logging.getLogger(__name__)
 
@@ -36,11 +47,11 @@ class TwinKnowledgeIndexer:
 
         Returns number of decisions indexed.
         """
-        from lia_models.digital_twin import TwinDecision
-        from sqlalchemy import text
-
-        # Query past decisions with reasoning from ATS
-        query = text("""
+        # ADR-001-EXEMPT: cross-domain Rails-owned tables (applies, candidates,
+        # jobs) — schema not modeled in lia_models; canonical CandidateRepository
+        # does not cover this analytics-style join. Sprint backlog: lift to
+        # ATSAnalyticsRepository when the cross-domain repo lands.
+        query = sql_text("""
             SELECT
                 a.candidate_id,
                 a.status,
@@ -70,6 +81,11 @@ class TwinKnowledgeIndexer:
             logger.warning("[TwinIndexer] ATS query failed, trying simplified: %s", e)
             rows = []
 
+        from app.domains.agent_studio.repositories.digital_twin_repository import (
+            DigitalTwinRepository,
+        )
+        repo = DigitalTwinRepository(db)
+
         indexed = 0
         for row in rows:
             decision = self._map_status(row.status)
@@ -96,7 +112,7 @@ class TwinKnowledgeIndexer:
             embedding = await self._embed(text_for_embedding)
 
             td = TwinDecision(
-                id=str(uuid.uuid4()),
+                id=uuid.uuid4(),
                 twin_id=twin_id,
                 decision=decision,
                 reasoning=row.reviewer_notes or "",
@@ -105,12 +121,15 @@ class TwinKnowledgeIndexer:
                 embedding=embedding,
                 source="ats_history",
             )
-            db.add(td)
+            await repo.add_decision(decision=td, company_id=company_id)
             indexed += 1
 
         if indexed > 0:
             await db.commit()
-            await self._update_twin_stats(twin_id, db)
+            await repo.update_decision_count(
+                twin_id=twin_id, company_id=company_id
+            )
+            await db.commit()
 
         logger.info("[TwinIndexer] twin=%s indexed %d decisions from ATS", twin_id, indexed)
         return indexed
@@ -118,6 +137,7 @@ class TwinKnowledgeIndexer:
     async def index_from_audio(
         self,
         twin_id: str,
+        company_id: str,
         audio_bytes: bytes,
         audio_format: str = "audio/mp4",
         language: str = "pt-BR",
@@ -137,15 +157,19 @@ class TwinKnowledgeIndexer:
         # 2. Extract decisions from transcript via LLM
         decisions = await self._extract_decisions_from_transcript(transcription)
 
-        # 3. Index each decision
-        from lia_models.digital_twin import TwinDecision
+        # 3. Index each decision via canonical repo (tenant validation)
+        from app.domains.agent_studio.repositories.digital_twin_repository import (
+            DigitalTwinRepository,
+        )
+        repo = DigitalTwinRepository(db)
+
         indexed = 0
         for d in decisions:
             text_for_embedding = f"Decisão: {d['decision']}\nRaciocínio: {d['reasoning']}"
             embedding = await self._embed(text_for_embedding)
 
             td = TwinDecision(
-                id=str(uuid.uuid4()),
+                id=uuid.uuid4(),
                 twin_id=twin_id,
                 decision=d["decision"],
                 reasoning=d["reasoning"],
@@ -153,18 +177,22 @@ class TwinKnowledgeIndexer:
                 embedding=embedding,
                 source="audio",
             )
-            db.add(td)
+            await repo.add_decision(decision=td, company_id=company_id)
             indexed += 1
 
         if indexed > 0:
             await db.commit()
-            await self._update_twin_stats(twin_id, db)
+            await repo.update_decision_count(
+                twin_id=twin_id, company_id=company_id
+            )
+            await db.commit()
 
         return {"status": "ok", "indexed": indexed, "transcript_length": len(transcription)}
 
     async def index_manual_decision(
         self,
         twin_id: str,
+        company_id: str,
         decision: str,
         reasoning: str,
         candidate_snapshot: Optional[dict] = None,
@@ -172,7 +200,10 @@ class TwinKnowledgeIndexer:
         db=None,
     ) -> dict:
         """Index a single manually entered decision."""
-        from lia_models.digital_twin import TwinDecision
+        from app.domains.agent_studio.repositories.digital_twin_repository import (
+            DigitalTwinRepository,
+        )
+        repo = DigitalTwinRepository(db)
 
         text_for_embedding = (
             f"Decisão: {decision}\n"
@@ -182,7 +213,7 @@ class TwinKnowledgeIndexer:
         embedding = await self._embed(text_for_embedding)
 
         td = TwinDecision(
-            id=str(uuid.uuid4()),
+            id=uuid.uuid4(),
             twin_id=twin_id,
             decision=decision,
             reasoning=reasoning,
@@ -191,9 +222,10 @@ class TwinKnowledgeIndexer:
             embedding=embedding,
             source="manual",
         )
-        db.add(td)
+        await repo.add_decision(decision=td, company_id=company_id)
         await db.commit()
-        await self._update_twin_stats(twin_id, db)
+        await repo.update_decision_count(twin_id=twin_id, company_id=company_id)
+        await db.commit()
 
         return {"status": "ok", "decision_id": str(td.id)}
 
@@ -254,23 +286,6 @@ class TwinKnowledgeIndexer:
         except Exception as e:
             logger.warning("[TwinIndexer] Decision extraction failed: %s", e)
             return []
-
-    async def _update_twin_stats(self, twin_id: str, db):
-        """Update twin's decision_count and recompute centroid embedding."""
-        from lia_models.digital_twin import DigitalTwin, TwinDecision
-        from sqlalchemy import select, func
-
-        # Count decisions
-        count = await db.execute(
-            select(func.count()).where(TwinDecision.twin_id == twin_id)
-        )
-        total = count.scalar()
-
-        # Update twin
-        result = await db.execute(select(DigitalTwin).where(DigitalTwin.id == twin_id))
-        twin = result.scalar_one()
-        twin.decision_count = total
-        await db.commit()
 
     @staticmethod
     def _map_status(status: str) -> Optional[str]:

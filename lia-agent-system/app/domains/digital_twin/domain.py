@@ -251,6 +251,7 @@ class DigitalTwinDomain(ComplianceDomainPrompt):
                     twin_id=twin_id,
                     candidate_profile=candidate_profile,
                     job_context=job_context,
+                    company_id=company_id,
                     db=db,
                 )
 
@@ -409,6 +410,7 @@ class DigitalTwinDomain(ComplianceDomainPrompt):
 
                 result = await twin_knowledge_indexer.index_from_audio(
                     twin_id=twin_id,
+                    company_id=company_id,
                     audio_bytes=audio_bytes,
                     audio_format=audio_format,
                     language="pt-BR",

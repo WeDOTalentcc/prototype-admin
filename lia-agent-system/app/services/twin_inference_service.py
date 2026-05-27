@@ -9,6 +9,9 @@ Flow:
   5. LLM generates score + reasoning in the SME's style
 
 Apply to: lia-agent-system/app/services/twin_inference_service.py
+
+Wave C1.1 (2026-05-27): twin/decision raw queries + pgvector inline SQL
+migrated to DigitalTwinRepository (ADR-001 canonical).
 """
 
 import json
@@ -41,6 +44,7 @@ class TwinInferenceService:
         twin_id: str,
         candidate_profile: dict,
         job_context: dict,
+        company_id: str,
         k: int = 5,
         db=None,
     ) -> TwinEvaluation:
@@ -51,18 +55,25 @@ class TwinInferenceService:
             twin_id: UUID of the digital twin
             candidate_profile: {name, role_name, skills, experience, ...}
             job_context: {title, description, requirements, ...}
+            company_id: tenant scope (multi-tenancy fail-closed)
             k: number of similar examples to retrieve
             db: database session
 
         Returns:
             TwinEvaluation with score, decision, reasoning in SME style
         """
-        from lia_models.digital_twin import DigitalTwin
-        from sqlalchemy import select
+        from app.domains.agent_studio.repositories.digital_twin_repository import (
+            DigitalTwinRepository,
+        )
 
-        # 1. Load twin
-        result = await db.execute(select(DigitalTwin).where(DigitalTwin.id == twin_id))
-        twin = result.scalar_one()
+        repo = DigitalTwinRepository(db)
+
+        # 1. Load twin (tenant-scoped)
+        twin = await repo.get_by_id(twin_id=twin_id, company_id=company_id)
+        if twin is None:
+            raise LookupError(
+                f"DigitalTwin twin_id={twin_id} not found for company_id={company_id}"
+            )
 
         # 2. Generate embedding for current candidate
         candidate_text = (
@@ -71,8 +82,14 @@ class TwinInferenceService:
         )
         query_embedding = await self._embed(candidate_text)
 
-        # 3. Retrieve K most similar decisions via pgvector
-        examples = await self._retrieve_similar(twin_id, query_embedding, k, db)
+        # 3. Retrieve K most similar decisions via pgvector (canonical repo)
+        examples = await self._retrieve_similar(
+            repo=repo,
+            twin_id=twin_id,
+            company_id=company_id,
+            embedding=query_embedding,
+            k=k,
+        )
 
         # 4. Separate approved/rejected for few-shot
         approved_ex = [e for e in examples if e["decision"] == "approved"][:3]
@@ -156,21 +173,19 @@ Responda APENAS com o JSON.
         )
 
     async def _retrieve_similar(
-        self, twin_id: str, embedding: Optional[list[float]], k: int, db,
+        self,
+        repo,
+        twin_id: str,
+        company_id: str,
+        embedding: Optional[list[float]],
+        k: int,
     ) -> list[dict]:
-        """Retrieve K most similar decisions from twin's corpus via pgvector."""
+        """Retrieve K most similar decisions from twin's corpus via canonical repo."""
         if not embedding:
-            # No embedding — return most recent decisions as fallback
-            from lia_models.digital_twin import TwinDecision
-            from sqlalchemy import select
-
-            result = await db.execute(
-                select(TwinDecision)
-                .where(TwinDecision.twin_id == twin_id)
-                .order_by(TwinDecision.created_at.desc())
-                .limit(k)
+            # No embedding — fallback to most recent decisions
+            rows = await repo.get_twin_decisions(
+                twin_id=twin_id, company_id=company_id, limit=k
             )
-            rows = result.scalars().all()
             return [
                 {
                     "decision": r.decision,
@@ -181,34 +196,13 @@ Responda APENAS com o JSON.
                 for r in rows
             ]
 
-        # pgvector K-NN search
-        from sqlalchemy import text as sql_text
-
-        embedding_str = str(embedding)
-        result = await db.execute(
-            sql_text("""
-                SELECT decision, reasoning, candidate_snapshot, job_snapshot,
-                       1 - (embedding <=> :emb::vector) AS similarity
-                FROM twin_decisions
-                WHERE twin_id = :twin_id
-                  AND embedding IS NOT NULL
-                ORDER BY embedding <=> :emb::vector
-                LIMIT :k
-            """),
-            {"twin_id": twin_id, "emb": embedding_str, "k": k},
+        # pgvector K-NN search via canonical repo
+        return await repo.search_similar_decisions(
+            twin_id=twin_id,
+            company_id=company_id,
+            embedding=embedding,
+            k=k,
         )
-        rows = result.fetchall()
-
-        return [
-            {
-                "decision": r[0],
-                "reasoning": r[1],
-                "candidate_snapshot": r[2] or {},
-                "job_snapshot": r[3] or {},
-                "similarity": round(float(r[4]), 3) if r[4] else 0.0,
-            }
-            for r in rows
-        ]
 
     async def _embed(self, text: str) -> Optional[list[float]]:
         """Generate embedding using existing infrastructure."""
