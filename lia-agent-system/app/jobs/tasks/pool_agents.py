@@ -198,8 +198,15 @@ async def _dispatch_impl(assignment_id: str, trigger_source: str = "cron") -> No
                 },
                 runtime_metrics={
                     "latency_ms": elapsed_ms,
+                    # Wave D1.3 (2026-05-27) — canonical token tracking shape.
+                    # Custom Agent runtime _state_to_output agora popula tokens
+                    # + model + cost_usd derivado de _estimate_cost canonical.
                     "tokens_input": out_meta.get("tokens_input", 0),
                     "tokens_output": out_meta.get("tokens_output", 0),
+                    "input_tokens": out_meta.get("input_tokens", out_meta.get("tokens_input", 0)),
+                    "output_tokens": out_meta.get("output_tokens", out_meta.get("tokens_output", 0)),
+                    "model_used": out_meta.get("model_used", ""),
+                    "cost_usd": float(out_meta.get("cost_usd", 0.0) or 0.0),
                 },
             )
 
