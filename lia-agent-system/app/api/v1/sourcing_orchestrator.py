@@ -16,8 +16,14 @@ router = APIRouter(prefix="/sourcing", tags=["Sourcing Agent"])
 async def sourcing_react_orchestrate(request: Request, company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Sourcing agent endpoint - ReAct based autonomous talent sourcing."""
-    if not os.getenv("USE_REACT_AGENTS", "false").lower() == "true":
-        return {"error": "ReAct agents not enabled", "detail": "Set USE_REACT_AGENTS=true"}
+    # Wave C2.3 (2026-05-27): feature flag desligada deve retornar 503 explícito
+    # (não 200 com payload de erro mascarado). Client trata como serviço indisponível.
+    if os.getenv("USE_REACT_AGENTS", "false").lower() != "true":
+        raise HTTPException(
+            status_code=503,
+            detail="ReAct agents feature flag desligada. Endpoint indisponível.",
+            headers={"Retry-After": "3600"},
+        )
 
     user_id = getattr(request.state, "user_id", None)
     company_id = getattr(request.state, "company_id", None)

@@ -121,7 +121,11 @@ company_id: str = Depends(require_company_id)):
             target_type="digital_twin",
         )
     except Exception:
-        pass
+        logger.warning(
+            "studio_audit twin_create failed",
+            exc_info=True,
+            extra={"twin_id": str(twin.id), "company_id": company_id},
+        )
 
     return {
         "twin_id": str(twin.id),
@@ -277,7 +281,11 @@ company_id: str = Depends(require_company_id)):
             confidence=evaluation.confidence,
         )
     except Exception:
-        pass
+        logger.warning(
+            "studio_audit twin_evaluate failed",
+            exc_info=True,
+            extra={"twin_id": str(evaluation.twin_id), "company_id": company_id},
+        )
 
     return {
         "twin_id": evaluation.twin_id,
