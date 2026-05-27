@@ -161,5 +161,121 @@ class JdGateInvalidationCascade(unittest.TestCase):
         )
 
 
+
+class JdGateShortContentSanityCheck(unittest.TestCase):
+    """Bug-fix 2026-05-26 Fix 3 — provide_new_content with short content (<150 chars)
+    must NOT cascade into intake (would clear jd_enriched → re-ask loop).
+
+    Cobertura:
+      S3 — short provide_new_content (< 150 chars) overrides to ask_question;
+           jd_enriched + derivatives preserved intact.
+      S4 — content at exactly 150 chars is treated as REAL provide_new_content;
+           full cascade fires (boundary test).
+    """
+
+    def test_S3_short_provide_new_content_overrides_to_ask_question(self):
+        """Mensagem curta classificada como provide_new_content NÃO deve limpar
+        jd_enriched nem disparar o cascade — seria um loop de re-ask."""
+        clf = classifier_mod.get_wizard_gate_classifier()
+
+        # Simula o classificador retornando provide_new_content com conteúdo curto
+        # (mensagem de aprovação mal classificada como provide_new_content).
+        short_msg = "ok, pode avançar"  # len = 16 chars — well below 150
+        out = _make_output(
+            "provide_new_content",
+            confidence=0.75,
+            reply="Para substituir a JD cole o texto completo. Para aprovar diga ok.",
+            extracted={"new_content": short_msg},
+        )
+
+        state = _make_dirty_state()
+        state["gate_resume_message"] = short_msg
+        state["user_query"] = short_msg
+
+        with mock.patch.object(clf, "classify", new=mock.AsyncMock(return_value=out)):
+            with mock.patch.object(graph_mod, "_emit_jd_gate_audit", lambda *a, **k: None):
+                result = graph_mod.jd_gate_node(state)
+
+        # Fix 3 override: intent redirected to ask_question
+        self.assertEqual(
+            result.get("gate_last_intent"), "ask_question",
+            "Fix3: short provide_new_content deve sobrescrever para ask_question",
+        )
+        self.assertIsNotNone(
+            result.get("gate_clarify_message"),
+            "Fix3: clarify_message deve ser setada para orientar o recrutador",
+        )
+
+        # CRITICAL: jd_approved deve permanecer None (NÃO False — isso dispara cascade)
+        self.assertIsNot(
+            result.get("jd_approved"), False,
+            "Fix3: jd_approved NÃO deve ser setado para False (dispararia cascade de intake)",
+        )
+
+        # CRITICAL: jd_enriched NÃO deve ser zerado
+        self.assertIsNotNone(
+            result.get("jd_enriched"),
+            "Fix3: jd_enriched NÃO deve ser zerado — preservar JD já processada",
+        )
+
+        # Derivados também preservados (cascade NÃO disparou)
+        self.assertIsNotNone(
+            result.get("bigfive_profile"),
+            "Fix3: bigfive_profile preservado (cascade NÃO disparou)",
+        )
+        self.assertEqual(
+            len(result.get("wsi_questions", [])), 2,
+            "Fix3: wsi_questions preservado (cascade NÃO disparou)",
+        )
+        self.assertEqual(
+            result.get("pipeline_template_id"), "template-uuid-123",
+            "Fix3: pipeline_template_id preservado (cascade NÃO disparou)",
+        )
+
+    def test_S4_content_at_150_chars_triggers_normal_cascade(self):
+        """Conteúdo com EXATAMENTE 150 chars passa pela sanidade e dispara
+        o cascade normal de provide_new_content (boundary test)."""
+        clf = classifier_mod.get_wizard_gate_classifier()
+
+        # len == 150 → condition `< 150` é False → sanity check NÃO aplica
+        # Gera uma string de exatamente 150 chars preenchendo com texto canônico
+        base = "Desenvolvedor Backend Pleno: Python, FastAPI, PostgreSQL, Docker."
+        content_150 = (base * 3)[:150]
+        self.assertEqual(len(content_150.strip()), 150, "fixture deve ter exatamente 150 chars")
+
+        out = _make_output(
+            "provide_new_content",
+            confidence=0.90,
+            reply="Recebi a nova descrição.",
+            extracted={"new_content": content_150},
+        )
+
+        state = _make_dirty_state()
+        state["gate_resume_message"] = content_150
+        state["user_query"] = content_150
+
+        with mock.patch.object(clf, "classify", new=mock.AsyncMock(return_value=out)):
+            with mock.patch.object(graph_mod, "_emit_jd_gate_audit", lambda *a, **k: None):
+                result = graph_mod.jd_gate_node(state)
+
+        # 150 chars → cascade normal dispara
+        self.assertIs(
+            result.get("jd_approved"), False,
+            "S4: conteúdo >=150 chars deve disparar cascade normal (jd_approved=False)",
+        )
+        self.assertIsNone(
+            result.get("jd_enriched"),
+            "S4: jd_enriched deve ser zerado pelo cascade normal",
+        )
+        self.assertIsNone(
+            result.get("bigfive_profile"),
+            "S4: bigfive_profile deve ser zerado pelo cascade normal",
+        )
+        self.assertNotEqual(
+            result.get("gate_last_intent"), "ask_question",
+            "S4: gate_last_intent NÃO deve ser ask_question (cascade normal)",
+        )
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
