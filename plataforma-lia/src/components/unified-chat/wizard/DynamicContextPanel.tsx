@@ -70,6 +70,7 @@ interface Props {
  * Stages not listed (intake → eligibility) are conversational — full-width only.
  */
 export const SPLIT_STAGES: WizardStage[] = [
+  "jd_enrichment",   // Bug-fix 2026-05-26: right panel shows enriched JD for HITL approval
   "review",
   "publish",
   "calibration",

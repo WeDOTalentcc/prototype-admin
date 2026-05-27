@@ -77,13 +77,14 @@ jd_enrichment:
   ask_for_title: "Pode me passar o título do cargo para começar?"
   stage_description_hitl: "início do wizard: precisamos do título do cargo ou da descrição da vaga (JD) para começar."
   ask_for_jd: "Para começar a criação da vaga, preciso de mais contexto. Você pode (a) colar a descrição da vaga (JD) aqui no chat, ou (b) anexar um arquivo (PDF, DOCX ou TXT). Se preferir, me diga em uma frase o título do cargo, a senioridade e as principais responsabilidades."
-  enriched_ok: "Recebi a descrição de **{title}** e enriqueci no painel à direita (qualidade: {quality}%). Quer que eu siga para o próximo passo, ajustar algum ponto, ou prefere substituir o texto?"
+  enriched_ok: "Enriqueci a descrição de **{title}** (qualidade: {quality}%). Revise no painel ao lado e me diga: **ok** para avançar, o que quer ajustar, ou cole uma nova descrição se quiser substituir."
   enriched_fallback: "Recebi a descrição de **{title}**. O serviço de IA está degradado neste momento, então gerei um enriquecimento mínimo (qualidade estimada: {quality}%). Revise no painel à direita: se estiver ok, me confirme aqui no chat (ex.: \"pode seguir\"); se quiser ajustar, me diga o que mudar; ou cole uma versão nova."
   fallback_warning: "Enriquecimento via LLM em fallback determinístico (timeout)"
 
 # ── jd_gate ────────────────────────────────────────────────────────────────
 jd_gate:
   new_jd_received: "Recebi a descrição nova. Vou re-enriquecer agora."
+  new_jd_short_clarify: "Para substituir o texto, cole a nova descrição completa. Para aprovar o que temos, diga ok ou pode avançar."
   off_topic_redirect: "Vamos focar na descrição da vaga? Você quer aprovar ou ajustar algo?"
   unhandled_intent: "Não consegui interpretar sua resposta. Pode me dizer se aprovou a descrição enriquecida ou se quer ajustar alguma coisa?"
 

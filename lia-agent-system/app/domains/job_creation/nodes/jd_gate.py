@@ -257,6 +257,29 @@ def jd_gate_node(state: JobCreationState) -> JobCreationState:
         next_state["gate_clarify_message"] = output.conversational_reply or None
     elif intent == "provide_new_content":
         new_content = extracted.get("new_content") or msg
+        # Bug-fix 2026-05-26: sanity check on new_content length.
+        # Real JDs have >= 150 chars. Short content (< 150) almost always means
+        # a misclassification — the classifier saw an approval message ("ok",
+        # "pode avançar", "vamos lá") and mistakenly tagged it as provide_new_content.
+        # If we let this cascade into intake→jd_enrichment with a short raw_input,
+        # the jd_enrichment guard fires and asks "me passa a descrição da vaga" —
+        # causing the re-ask loop seen in production.
+        # Solution: treat short provide_new_content as ask_question (clarify).
+        if len(str(new_content).strip()) < 150:
+            logger.warning(
+                "[JobCreation:jd_gate] provide_new_content but new_content too short "
+                "(len=%d) — likely misclassification of approval message. "
+                "Treating as ask_question to avoid intake cascade.",
+                len(str(new_content).strip()),
+            )
+            # Override to ask_question behavior: self-loop via route_after_gate,
+            # do NOT clear jd_enriched or cascade to intake.
+            next_state["gate_last_intent"] = "ask_question"
+            next_state["gate_clarify_message"] = (
+                output.conversational_reply
+                or msg("jd_gate.new_jd_short_clarify")
+            )
+            return next_state
         next_state["jd_approved"] = False
         next_state["raw_input"] = str(new_content)[:8000]
         next_state["jd_enriched"] = None  # invalida cache → jd_enrichment_node re-roda
