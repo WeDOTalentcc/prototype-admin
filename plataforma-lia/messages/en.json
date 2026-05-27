@@ -1820,7 +1820,53 @@
       "twins": {
         "cloneReasoning": "Clone the reasoning of your best evaluators",
         "cloneDesc": "Capture how a team specialist evaluates candidates. The Digital Twin learns the criteria and works as an automatic 'second opinion' in screening.",
-        "label": "Digital Twins"
+        "label": "Digital Twins",
+        "headerTitle": "Digital Twins",
+        "subheader": "Create an AI agent that learns the evaluation pattern of your best experts.",
+        "createCta": "Create Digital Twin",
+        "emptyState": {
+          "title": "No Digital Twin created yet",
+          "description": "Create the first Digital Twin by selecting an experienced evaluator on the team.",
+          "createFirst": "Create first Digital Twin",
+          "noExperience": "No historical decisions indexed yet."
+        },
+        "createModal": {
+          "title": "Create Digital Twin",
+          "subtitle": "Capture the evaluation pattern of an expert.",
+          "nameLabel": "Digital Twin name",
+          "namePlaceholder": "Ex: Maria Santos Twin",
+          "nameHelp": "Use the evaluator's name or a descriptive label.",
+          "specialtyLabel": "Specialty",
+          "specialtyPlaceholder": "Ex: Senior software engineering",
+          "specialtyHelp": "Area this expert works in.",
+          "descLabel": "Description",
+          "descPlaceholder": "How does this person evaluate candidates?",
+          "descHelp": "Optional. Helps the team understand what the Twin replicates.",
+          "decisionsLabel": "Historical decisions",
+          "decisionsHelp": "Upload a CSV with past decisions for training.",
+          "decisionsUploadCta": "Select file",
+          "decisionsFormats": "Accepted formats: CSV, JSON. Max 10MB.",
+          "create": "Create Digital Twin",
+          "creating": "Creating…",
+          "cancel": "Cancel",
+          "successTitle": "Digital Twin created",
+          "successDesc": "The Digital Twin is being indexed and will be ready in a few minutes.",
+          "errorTitle": "Error creating",
+          "errorDesc": "Could not create the Digital Twin. Try again.",
+          "fileTooLargeTitle": "File too large",
+          "fileTooLargeDesc": "The selected file exceeds the 10MB limit.",
+          "lgpd": {
+            "summary": "LGPD Art. 6, 11 and 18: we index historical decisions to train the Digital Twin.",
+            "detail": {
+              "indexing": "This feature indexes historical decisions (approvals, rejections, comments) from the selected evaluators to train the model. Data is processed internally and never shared with third parties.",
+              "storage": "Data is stored for the duration of the contract. You can request deletion at any time via Settings → LGPD.",
+              "confirmation": "By confirming, you declare adequate legal basis for the processing and agree with the terms."
+            },
+            "confirmButton": "I confirm and want to create",
+            "confirmAria": "I confirm and want to create the Digital Twin",
+            "cancelAria": "Cancel creation"
+          }
+        }
       },
       "search": {
         "multiStrategy": "Multi-Strategy Search",
@@ -1834,7 +1880,8 @@
         "recalibrate": "Recalibrate",
         "view": "View",
         "pause": "Pause",
-        "resume": "Resume"
+        "resume": "Resume",
+        "linkedTooltip": "Click to open the linked target (job or talent pool)."
       },
       "toast": {
         "agentPaused": "Agent paused",
@@ -1873,7 +1920,25 @@
         "createAndCalibrate": "Create and Calibrate"
       },
       "sourcingAgents": "Sourcing agents",
-      "customAgentsLabel": "Custom agents"
+      "customAgentsLabel": "Custom agents",
+      "quotaMeter": {
+        "title": "Platform usage",
+        "loading": "Loading usage…",
+        "plan": "{plan} plan",
+        "regionLabel": "Platform usage indicator",
+        "unlimited": "Unlimited · {active} active",
+        "warning": "You are close to the limit on a resource.",
+        "contactAm": "Talk to your account manager",
+        "resources": {
+          "custom_agents": "Custom agents",
+          "sourcing_agents": "Sourcing agents",
+          "digital_twins": "Digital twins",
+          "campaigns": "Active campaigns"
+        },
+        "collapsed": {
+          "summary": "{percent}% used"
+        }
+      }
     },
     "status": {
       "active": "Active",
@@ -2544,7 +2609,8 @@
       "evaluateCandidate": "Evaluate candidate",
       "manage": "Manage",
       "digitalTwinEvaluation": "Digital Twin Evaluation",
-      "reevaluate": "Re-evaluate"
+      "reevaluate": "Re-evaluate",
+      "twinCount": "{count, plural, =0 {No Digital Twin} one {# Digital Twin} other {# Digital Twins}}"
     },
     "candidateOrigin": {
       "origins": {
@@ -3799,7 +3865,7 @@
       "noApproversHint": "Click \"Add Level\" to create an approval flow",
       "active": "Active",
       "inactive": "Inactive",
-      "flowTitle": "Approval Flow",
+      "flowTitle": "Job Opening Approval Flow",
       "flowDescription": "Jobs will be sent for sequential approval, from level 1 to the final level. Each approver will receive an email notification and can approve directly on the platform."
     },
     "alerts": {

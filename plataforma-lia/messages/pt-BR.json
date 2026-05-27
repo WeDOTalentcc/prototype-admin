@@ -1803,7 +1803,53 @@
       "twins": {
         "cloneReasoning": "Clone o raciocínio dos seus melhores avaliadores",
         "cloneDesc": "Capture como um especialista da equipe avalia candidatos. O Digital Twin aprende os critérios e funciona como uma \"segunda opinião\" automática na triagem.",
-        "label": "Gêmeos Digitais"
+        "label": "Gêmeos Digitais",
+        "headerTitle": "Gêmeos Digitais",
+        "subheader": "Crie um agente IA que aprende o padrão de avaliação dos seus melhores especialistas.",
+        "createCta": "Criar Gêmeo Digital",
+        "emptyState": {
+          "title": "Nenhum Gêmeo Digital criado ainda",
+          "description": "Crie o primeiro Gêmeo Digital escolhendo um avaliador experiente da equipe.",
+          "createFirst": "Criar primeiro Gêmeo Digital",
+          "noExperience": "Sem decisões históricas indexadas ainda."
+        },
+        "createModal": {
+          "title": "Criar Gêmeo Digital",
+          "subtitle": "Capture o padrão de avaliação de um especialista.",
+          "nameLabel": "Nome do Gêmeo Digital",
+          "namePlaceholder": "Ex: Gêmeo Maria Santos",
+          "nameHelp": "Use o nome do avaliador ou um rótulo descritivo.",
+          "specialtyLabel": "Especialidade",
+          "specialtyPlaceholder": "Ex: Engenharia de software sênior",
+          "specialtyHelp": "Área onde este especialista atua.",
+          "descLabel": "Descrição",
+          "descPlaceholder": "Como esta pessoa avalia candidatos?",
+          "descHelp": "Opcional. Ajuda a equipe a entender o que o Gêmeo replica.",
+          "decisionsLabel": "Decisões históricas",
+          "decisionsHelp": "Faça upload de um CSV com decisões passadas para treinamento.",
+          "decisionsUploadCta": "Selecionar arquivo",
+          "decisionsFormats": "Formatos aceitos: CSV, JSON. Máx 10MB.",
+          "create": "Criar Gêmeo Digital",
+          "creating": "Criando…",
+          "cancel": "Cancelar",
+          "successTitle": "Gêmeo Digital criado",
+          "successDesc": "O Gêmeo Digital está sendo indexado e estará pronto em alguns minutos.",
+          "errorTitle": "Erro ao criar",
+          "errorDesc": "Não foi possível criar o Gêmeo Digital. Tente novamente.",
+          "fileTooLargeTitle": "Arquivo muito grande",
+          "fileTooLargeDesc": "O arquivo selecionado excede o limite de 10MB.",
+          "lgpd": {
+            "summary": "LGPD Art. 6, 11 e 18: indexamos decisões históricas para treinar o Gêmeo Digital.",
+            "detail": {
+              "indexing": "Esta funcionalidade indexa decisões históricas (aprovações, rejeições, comentários) dos avaliadores selecionados para treinar o modelo. Dados são processados internamente e nunca compartilhados com terceiros.",
+              "storage": "Os dados ficam armazenados pelo prazo do contrato. Você pode solicitar exclusão a qualquer momento via Configurações → LGPD.",
+              "confirmation": "Ao confirmar, você declara base legal adequada para o tratamento e concorda com os termos."
+            },
+            "confirmButton": "Confirmo e quero criar",
+            "confirmAria": "Confirmo e quero criar o Gêmeo Digital",
+            "cancelAria": "Cancelar criação"
+          }
+        }
       },
       "search": {
         "multiStrategy": "Busca Multi-Estratégia",
@@ -1817,7 +1863,8 @@
         "recalibrate": "Recalibrar",
         "view": "Ver",
         "pause": "Pausar",
-        "resume": "Retomar"
+        "resume": "Retomar",
+        "linkedTooltip": "Clique para abrir o destino vinculado (vaga ou banco de talentos)."
       },
       "toast": {
         "agentPaused": "Agente pausado",
@@ -1856,7 +1903,25 @@
         "createAndCalibrate": "Criar e Calibrar"
       },
       "sourcingAgents": "Agentes de sourcing",
-      "customAgentsLabel": "Agentes personalizados"
+      "customAgentsLabel": "Agentes personalizados",
+      "quotaMeter": {
+        "title": "Uso da plataforma",
+        "loading": "Carregando uso…",
+        "plan": "Plano {plan}",
+        "regionLabel": "Indicador de uso da plataforma",
+        "unlimited": "Ilimitado · {active} ativos",
+        "warning": "Você está próximo do limite de algum recurso.",
+        "contactAm": "Falar com seu gerente de conta",
+        "resources": {
+          "custom_agents": "Agentes personalizados",
+          "sourcing_agents": "Agentes de sourcing",
+          "digital_twins": "Gêmeos digitais",
+          "campaigns": "Campanhas ativas"
+        },
+        "collapsed": {
+          "summary": "{percent}% usado"
+        }
+      }
     },
     "status": {
       "active": "Ativo",
@@ -2527,7 +2592,8 @@
       "evaluateCandidate": "Avaliar candidato",
       "manage": "Gerenciar",
       "digitalTwinEvaluation": "Avaliação Digital Twin",
-      "reevaluate": "Reavaliar"
+      "reevaluate": "Reavaliar",
+      "twinCount": "{count, plural, =0 {Nenhum Gêmeo Digital} one {# Gêmeo Digital} other {# Gêmeos Digitais}}"
     },
     "candidateOrigin": {
       "origins": {
@@ -3782,7 +3848,7 @@
       "noApproversHint": "Clique em \"Adicionar Nível\" para criar um fluxo de aprovação",
       "active": "Ativo",
       "inactive": "Inativo",
-      "flowTitle": "Fluxo de Aprovação",
+      "flowTitle": "Fluxo de Aprovação de Vagas",
       "flowDescription": "Vagas serão enviadas para aprovação sequencial, do nível 1 ao nível final. Cada aprovador receberá notificação por email e pode aprovar diretamente na plataforma."
     },
     "alerts": {
