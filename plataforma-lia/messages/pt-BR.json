@@ -2571,7 +2571,8 @@
       "recentActivity": "Atividade recente",
       "loadingActivities": "Carregando atividades…",
       "noActivities": "Nenhuma atividade ainda.",
-      "slaBreach": "SLA estourado"
+      "slaBreach": "SLA estourado",
+      "backToStudio": "Estúdio de Agentes"
     },
     "digitalTwin": {
       "active": "Ativo",
@@ -4682,7 +4683,7 @@
         "preview": "Visualizar"
       },
       "schedule": {
-        "title": "Horários de Envio (Conformidade LGPD)",
+        "title": "Janela de Envio de Comunicações (LGPD)",
         "edit": "Editar",
         "cancel": "Cancelar",
         "saveChanges": "Salvar Alterações",
@@ -4695,7 +4696,10 @@
         "additionalSettings": "Configurações Adicionais",
         "respectHolidays": "Respeitar feriados nacionais",
         "noWeekends": "Não enviar nos finais de semana",
-        "maxMessages": "Limite máximo de {count} mensagens/dia por candidato"
+        "maxMessages": "Limite máximo de {count} mensagens/dia por candidato",
+        "lgpdTitle": "Conformidade LGPD",
+        "respectWeekends": "Não enviar nos finais de semana",
+        "crossRefInterviews": "ⓘ Veja também: Janela de Agendamento de Entrevistas em Políticas de Recrutamento → grupo D"
       },
       "communicationAlerts": {
         "title": "Configuração de Alertas",
@@ -4761,7 +4765,7 @@
       },
       "tabTemplates": "Modelos",
       "tabSignature": "Assinatura",
-      "tabSchedule": "Horários LGPD",
+      "tabSchedule": "Horários de Envio (LGPD)",
       "tabAlerts": "Alertas",
       "tabAbTesting": "Teste A/B"
     },

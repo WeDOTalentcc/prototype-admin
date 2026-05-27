@@ -2588,7 +2588,8 @@
       "recentActivity": "Recent activity",
       "loadingActivities": "Loading activities…",
       "noActivities": "No activity yet.",
-      "slaBreach": "SLA breached"
+      "slaBreach": "SLA breached",
+      "backToStudio": "Agent Studio"
     },
     "digitalTwin": {
       "active": "Active",
@@ -4699,7 +4700,7 @@
         "preview": "Preview"
       },
       "schedule": {
-        "title": "Sending Hours (LGPD Compliance)",
+        "title": "Communication Sending Window (LGPD)",
         "edit": "Edit",
         "cancel": "Cancel",
         "saveChanges": "Save Changes",
@@ -4712,7 +4713,10 @@
         "additionalSettings": "Additional Settings",
         "respectHolidays": "Respect national holidays",
         "noWeekends": "Don't send on weekends",
-        "maxMessages": "Maximum limit of {count} messages/day per candidate"
+        "maxMessages": "Maximum limit of {count} messages/day per candidate",
+        "lgpdTitle": "LGPD Compliance",
+        "respectWeekends": "Don't send on weekends",
+        "crossRefInterviews": "ⓘ See also: Interview Scheduling Window in Recruitment Policies → group D"
       },
       "communicationAlerts": {
         "title": "Alert Configuration",
@@ -4778,7 +4782,7 @@
       },
       "tabTemplates": "Templates",
       "tabSignature": "Signature",
-      "tabSchedule": "LGPD Schedule",
+      "tabSchedule": "Sending Hours (LGPD)",
       "tabAlerts": "Alerts",
       "tabAbTesting": "A/B Testing"
     },

@@ -51,7 +51,7 @@ export function ScheduleTab({
           <div className="flex items-center justify-between">
             <CardTitle className={`${textStyles.h4} flex items-center gap-2`}>
               <Clock className="w-3.5 h-3.5 text-lia-text-secondary" />
-              {t("scheduleSection.title")}
+              {t("schedule.title")}
             </CardTitle>
             {!isEditingSchedule ? (
               <button onClick={() => setIsEditingSchedule(true)} className={actionButtonStyles.smOutline}>
@@ -80,9 +80,9 @@ export function ScheduleTab({
             <div className="flex items-start gap-2">
               <Shield className="w-4 h-4 text-status-warning flex-shrink-0 mt-0.5" />
               <div>
-                <p className={`${textStyles.subtitle} text-status-warning dark:text-status-warning`}>{t("scheduleSection.lgpdTitle")}</p>
+                <p className={`${textStyles.subtitle} text-status-warning dark:text-status-warning`}>{t("schedule.lgpdTitle")}</p>
                 <p className="text-xs text-status-warning dark:text-status-warning mt-0.5">
-                  {t("scheduleSection.lgpdDescription")}
+                  {t("schedule.lgpdDescription")}
                 </p>
               </div>
             </div>
@@ -91,7 +91,7 @@ export function ScheduleTab({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-micro font-medium text-lia-text-secondary mb-1.5">
-                {t("scheduleSection.startTime")}
+                {t("schedule.startTime")}
               </label>
               <div className="flex items-center gap-2">
                 <input
@@ -108,7 +108,7 @@ export function ScheduleTab({
             </div>
             <div>
               <label className="block text-micro font-medium text-lia-text-secondary mb-1.5">
-                {t("scheduleSection.endTime")}
+                {t("schedule.endTime")}
               </label>
               <div className="flex items-center gap-2">
                 <input
@@ -127,9 +127,9 @@ export function ScheduleTab({
 
           <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-xl p-3">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-micro font-medium text-lia-text-secondary">{t("scheduleSection.sendingWindow")}</span>
+              <span className="text-micro font-medium text-lia-text-secondary">{t("schedule.sendingWindow")}</span>
               <Chip variant="neutral" className="text-micro rounded-full border-lia-border-default text-lia-text-primary dark:border-lia-border-default">
-                {t("scheduleSection.hoursPerDay", { hours: sendingHours.end - sendingHours.start })}
+                {t("schedule.hoursPerDay", { count: sendingHours.end - sendingHours.start })}
               </Chip>
             </div>
             <div className="relative h-6 bg-lia-interactive-active rounded-full overflow-hidden">
@@ -146,19 +146,19 @@ export function ScheduleTab({
 
           <div className="space-y-2">
             <h4 className="text-micro font-semibold text-lia-text-secondary uppercase tracking-wider">
-              {t("scheduleSection.additionalSettings")}
+              {t("schedule.additionalSettings")}
             </h4>
             <div className="space-y-1.5">
               <label className={`flex items-center justify-between gap-3 p-2.5 bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-md ${isEditingSchedule ? 'cursor-pointer' : 'cursor-default opacity-70'}`}>
-                <span className="text-xs text-lia-text-primary">{t("scheduleSection.respectHolidays")}</span>
+                <span className="text-xs text-lia-text-primary">{t("schedule.respectHolidays")}</span>
                 <input type="checkbox" checked={respectHolidays} onChange={(e) => setRespectHolidays(e.target.checked)} disabled={!isEditingSchedule} className="rounded-md accent-lia-btn-primary-bg" />
               </label>
               <label className={`flex items-center justify-between gap-3 p-2.5 bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-md ${isEditingSchedule ? 'cursor-pointer' : 'cursor-default opacity-70'}`}>
-                <span className="text-xs text-lia-text-primary">{t("scheduleSection.respectWeekends")}</span>
+                <span className="text-xs text-lia-text-primary">{t("schedule.respectWeekends")}</span>
                 <input type="checkbox" checked={respectWeekends} onChange={(e) => setRespectWeekends(e.target.checked)} disabled={!isEditingSchedule} className="rounded-md accent-lia-btn-primary-bg" />
               </label>
               <label className={`flex items-center justify-between gap-3 p-2.5 bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-md ${isEditingSchedule ? 'cursor-pointer' : 'cursor-default opacity-70'}`}>
-                <span className="text-xs text-lia-text-primary" role="status" aria-live="polite" aria-atomic="true">{t("scheduleSection.maxMessages", { count: maxMessagesPerDay })}</span>
+                <span className="text-xs text-lia-text-primary" role="status" aria-live="polite" aria-atomic="true">{t("schedule.maxMessages", { count: maxMessagesPerDay })}</span>
                 <input type="checkbox" checked={maxMessagesPerDay > 0} onChange={(e) => setMaxMessagesPerDay(e.target.checked ? 3 : 0)} disabled={!isEditingSchedule} className="rounded-md accent-lia-btn-primary-bg" />
               </label>
             </div>

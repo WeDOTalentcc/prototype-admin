@@ -46,6 +46,7 @@ interface QuestionDef {
   label: string
   hint: string
   placeholder: string
+  crossRef?: string
 }
 
 // ─── Question definitions ─────────────────────────────────────────────────
@@ -99,8 +100,9 @@ const HIRING_POLICY_QUESTIONS: QuestionDef[] = [
   {
     field: "communication_window",
     group: "C. Comunicação com o candidato",
-    label: "Em quais dias e horários a LIA pode entrar em contato com candidatos?",
-    hint: "Respeitar LGPD e boas práticas — evitar contato fora do horário comercial.",
+    label: "Janela de Envio de Comunicações — dias e horários permitidos para contato automatizado",
+    hint: "Dias e horários em que a LIA pode enviar mensagens automáticas ao candidato (LGPD). Diferente do agendamento de entrevistas — consulte 'Janela de Agendamento de Entrevistas' no grupo D abaixo.",
+    crossRef: "ⓘ Veja também: Janela de Agendamento de Entrevistas (grupo D — Entrevistas e agenda)",
     placeholder: "Ex: Segunda a sexta, das 8h às 18h. Sábados até 12h para posições urgentes...",
   },
   {
@@ -121,8 +123,9 @@ const HIRING_POLICY_QUESTIONS: QuestionDef[] = [
   {
     field: "interview_scheduling_policy",
     group: "D. Entrevistas e agenda",
-    label: "Como funciona o agendamento de entrevistas? A LIA pode agendar diretamente?",
-    hint: "Define a autonomia da LIA no processo de agendamento.",
+    label: "Janela de Agendamento de Entrevistas — dias, horários e regras para marcar entrevistas",
+    hint: "Dias e horários em que candidatos podem ser convidados para entrevistas. Diferente do envio de mensagens automáticas — consulte 'Janela de Envio de Comunicações' no grupo C acima.",
+    crossRef: "ⓘ Veja também: Janela de Envio de Comunicações (grupo C — Comunicação com o candidato)",
     placeholder: "Ex: LIA pode enviar 3 opções de horário ao candidato. Confirmação é automática se o candidato escolher. Cancelamentos precisam de aviso de 12h...",
   },
   {
@@ -294,6 +297,9 @@ function QuestionBlock({
         )}
       </div>
       <p className="text-xs text-lia-text-secondary leading-relaxed">{question.hint}</p>
+      {question.crossRef && (
+        <p className="text-xs text-lia-text-tertiary italic mt-0.5">{question.crossRef}</p>
+      )}
       <Textarea
         id={`policy-q-${question.field}`}
         value={value}
