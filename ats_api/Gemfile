@@ -1,7 +1,7 @@
 source "https://rubygems.org"
 
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
-gem "rails", "~> 7.2"
+gem "rails", "~> 7.2", ">= 7.2.3"
 gem "rack-session", ">= 2.1.2"
 # The original asset pipeline for Rails [https://github.com/rails/sprockets-rails]
 gem "sprockets-rails"
@@ -28,7 +28,9 @@ gem "elastic-transport", ">= 8.0", "< 9.0"  # garante transportar v8 (até 8.4.1
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
 # gem "bcrypt", "~> 3.1.7"
 gem "twilio-ruby"
-gem "httparty", "~> 0.23"
+gem "httparty", ">= 0.23.2"
+gem "addressable", ">= 2.9.0"
+gem "net-imap", ">= 0.6.3"
 gem "gemini-ai"
 gem "pgvector"
 gem "neighbor"
@@ -53,8 +55,8 @@ gem "google-cloud-storage", "~> 1.47", require: false
 gem "sneakers"
 gem "bunny"
 gem "sneakers_handlers"
-gem "nokogiri"
-gem "sidekiq-cron"
+gem "nokogiri", ">= 1.18.8"
+gem "sidekiq-cron", ">= 2.4.0"
 gem "exception_notification"
 gem "matrix"
 gem "prawn", "~> 2.4"

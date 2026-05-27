@@ -52,6 +52,7 @@ botbuilder-schema==4.17.1
 jsonpickle>=3.3.4
 msrest==0.7.1
 pyjwt[crypto]==2.12.1
+python-jose>=3.5.0
 cryptography>=44.0.4
 
 # Twilio
@@ -87,7 +88,7 @@ google-auth-httplib2>=0.2.0
 google-auth-oauthlib>=1.2.1
 
 # Testing
-pytest>=8.4.0
+pytest>=9.0.0
 pytest-asyncio==0.24.0
 
 APScheduler==3.10.4
