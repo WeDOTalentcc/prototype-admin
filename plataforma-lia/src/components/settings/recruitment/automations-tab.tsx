@@ -1,8 +1,10 @@
 "use client"
 
 import { useTranslations } from "next-intl"
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
+import { useSearchParams } from "next/navigation"
 import { useQuery } from "@tanstack/react-query"
+import { LIA_PENDING_AUTOMATION_STORAGE_KEY } from "./AutomationFromChatBridge"
 import { useCompanyId } from "@/hooks/company/useCompanyId"
 import { SETTINGS_QUERY_KEYS } from "@/hooks/settings/useSettingsBroadcast"
 import { HubHeader, HubLoadingState, HubErrorState } from "@/components/settings/_shared"
@@ -44,6 +46,8 @@ import {
   useDeleteAutomation,
   useTriggerTypes,
   useActionTypes,
+  useOperators,
+  useConditionFields,
   type AutomationPayload,
 } from "@/hooks/automations/useAutomationMutations"
 
@@ -103,8 +107,10 @@ type ViewTab = "overview" | "builder" | "templates" | "logs"
 // como FALLBACK pra:
 //   1) loading state (hook ainda em flight) — evita SentenceBuilder vazio
 //   2) error state (backend down) — REGRA 4 fail-explicit no log + UX continua
-// MOCK_OPERATORS e MOCK_CONDITION_FIELDS continuam mock porque backend
-// ainda não tem endpoint pra eles (TODO Sprint A.8+).
+// Sprint A.8 (2026-05-26): operators + condition_fields agora vêm de
+// useOperators() + useConditionFields() (backend canonical em
+// /api/backend-proxy/automations/operators/available + condition-fields/available).
+// MOCK_OPERATORS / MOCK_CONDITION_FIELDS mantidos como fallback REGRA 4 (error path).
 
 const MOCK_TRIGGERS: TriggerOption[] = [
   {
@@ -239,6 +245,69 @@ function mapBackendActions(payload: unknown): ActionOption[] {
     }))
 }
 
+
+
+// Sprint A.8 — operators + condition fields backend canonical adapters
+interface BackendOperator {
+  value?: string
+  name?: string
+  label_pt?: string
+  label_en?: string
+  applicable_types?: string[]
+}
+
+interface BackendConditionField {
+  value?: string
+  name?: string
+  label_pt?: string
+  label_en?: string
+  type?: string
+  category?: string
+}
+
+interface BackendOperatorsResponse {
+  success?: boolean
+  data?: { operators?: BackendOperator[] }
+}
+
+interface BackendConditionFieldsResponse {
+  success?: boolean
+  data?: { condition_fields?: BackendConditionField[] }
+}
+
+function mapBackendOperators(payload: unknown): ConditionOperator[] {
+  const root = payload as BackendOperatorsResponse | undefined
+  const arr = root?.data?.operators
+  if (!Array.isArray(arr) || arr.length === 0) return []
+  return arr
+    .filter((o): o is BackendOperator => !!o && typeof o.value === "string")
+    .map((o) => ({
+      value: o.value as string,
+      label: o.label_pt ?? o.name ?? (o.value as string),
+    }))
+}
+
+// Backend type vocabulary: "number" | "string" | "boolean" | "list".
+// SentenceBuilder ConditionFieldDef.type accepts "string" | "number" | "select".
+// Map boolean/list → string (closest renderer); upgrade SentenceBuilder vocab later.
+function mapBackendConditionFields(payload: unknown): ConditionFieldDef[] {
+  const root = payload as BackendConditionFieldsResponse | undefined
+  const arr = root?.data?.condition_fields
+  if (!Array.isArray(arr) || arr.length === 0) return []
+  return arr
+    .filter((f): f is BackendConditionField => !!f && typeof f.value === "string")
+    .map((f) => {
+      const rawType = f.type ?? "string"
+      const uiType: "string" | "number" | "select" =
+        rawType === "number" ? "number" : "string"
+      return {
+        value: f.value as string,
+        label: f.label_pt ?? f.name ?? (f.value as string),
+        type: uiType,
+      }
+    })
+}
+
 function workflowToBuilderState(w: WorkflowItem): SentenceBuilderState {
   return {
     trigger: { type: w.triggerType, params: w.triggerData ?? {} },
@@ -267,6 +336,64 @@ export function AutomationsTab({ onSettingsChange: _onSettingsChange }: { onSett
     { id?: string; initial: SentenceBuilderState } | null
   >(null)
   const { companyId } = useCompanyId()
+  const searchParams = useSearchParams()
+
+  // Sprint D.3: hidrata builder a partir de payload vindo do chat LIA
+  // (AutomationFromChatBridge persistiu em sessionStorage antes de navegar).
+  // Mount-only — evita race com sessionStorage em rerenders subsequentes.
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    try {
+      const stored = window.sessionStorage.getItem(
+        LIA_PENDING_AUTOMATION_STORAGE_KEY,
+      )
+      if (!stored) return
+      const parsed = JSON.parse(stored) as {
+        trigger?: { type: string; params?: Record<string, unknown> }
+        conditions?: Array<{ field: string; operator: string; value: unknown }>
+        actions?: Array<{ type: string; params?: Record<string, unknown> }>
+        name?: string
+      }
+      // Normaliza params (SentenceBuilderState requer params obrigatório)
+      const normalizedTrigger = parsed.trigger
+        ? { type: parsed.trigger.type, params: parsed.trigger.params ?? {} }
+        : undefined
+      const normalizedActions = (parsed.actions ?? []).map((a) => ({
+        type: a.type,
+        params: a.params ?? {},
+      }))
+      setEditingAutomation({
+        initial: {
+          trigger: normalizedTrigger,
+          conditions: parsed.conditions ?? [],
+          actions: normalizedActions,
+          name: parsed.name ?? "",
+        },
+      })
+      setSelectedView("builder")
+      window.sessionStorage.removeItem(LIA_PENDING_AUTOMATION_STORAGE_KEY)
+    } catch (err) {
+      // REGRA 4: log + skip (Builder fica em modo overview, UX não broken)
+      console.warn(
+        "[AutomationsTab] failed to hydrate from sessionStorage:",
+        err,
+      )
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Sprint D.3: deep-link ?view=builder abre Builder em modo "novo"
+  // mesmo sem sessionStorage payload (caso o bridge não tenha disparado,
+  // ex: link compartilhado, voltar do navegador).
+  useEffect(() => {
+    const view = searchParams?.get("view")
+    if (view === "builder" && !editingAutomation) {
+      setEditingAutomation({
+        initial: { trigger: undefined, conditions: [], actions: [], name: "" },
+      })
+      setSelectedView("builder")
+    }
+  }, [searchParams, editingAutomation])
 
   const createMutation = useCreateAutomation()
   const updateMutation = useUpdateAutomation()
@@ -279,6 +406,8 @@ export function AutomationsTab({ onSettingsChange: _onSettingsChange }: { onSett
   // (REGRA 4: log warn but keep UX functional).
   const triggerTypesQuery = useTriggerTypes()
   const actionTypesQuery = useActionTypes()
+  const operatorsQuery = useOperators()
+  const conditionFieldsQuery = useConditionFields()
 
   const triggers = useMemo<TriggerOption[]>(() => {
     if (triggerTypesQuery.error) {
@@ -303,6 +432,31 @@ export function AutomationsTab({ onSettingsChange: _onSettingsChange }: { onSett
     const mapped = mapBackendActions(actionTypesQuery.data)
     return mapped.length > 0 ? mapped : MOCK_ACTIONS
   }, [actionTypesQuery.data, actionTypesQuery.error])
+
+  // Sprint A.8: operators + condition fields canonical from backend, with mock fallback.
+  const operators = useMemo<ConditionOperator[]>(() => {
+    if (operatorsQuery.error) {
+      console.warn(
+        "[AutomationsTab] useOperators error, using mock fallback:",
+        operatorsQuery.error,
+      )
+      return MOCK_OPERATORS
+    }
+    const mapped = mapBackendOperators(operatorsQuery.data)
+    return mapped.length > 0 ? mapped : MOCK_OPERATORS
+  }, [operatorsQuery.data, operatorsQuery.error])
+
+  const conditionFields = useMemo<ConditionFieldDef[]>(() => {
+    if (conditionFieldsQuery.error) {
+      console.warn(
+        "[AutomationsTab] useConditionFields error, using mock fallback:",
+        conditionFieldsQuery.error,
+      )
+      return MOCK_CONDITION_FIELDS
+    }
+    const mapped = mapBackendConditionFields(conditionFieldsQuery.data)
+    return mapped.length > 0 ? mapped : MOCK_CONDITION_FIELDS
+  }, [conditionFieldsQuery.data, conditionFieldsQuery.error])
 
   const {
     data: workflows = [],
@@ -622,8 +776,8 @@ export function AutomationsTab({ onSettingsChange: _onSettingsChange }: { onSett
             initial={editingAutomation?.initial}
             triggers={triggers}
             actions={actions}
-            operators={MOCK_OPERATORS}
-            conditionFields={MOCK_CONDITION_FIELDS}
+            operators={operators}
+            conditionFields={conditionFields}
             onSave={handleSave}
             onCancel={closeBuilder}
           />

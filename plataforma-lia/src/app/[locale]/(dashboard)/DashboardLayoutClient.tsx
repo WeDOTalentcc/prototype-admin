@@ -8,6 +8,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
 import { DashboardApp } from "@/components/dashboard-app"
 import { labelFromPath } from "@/lib/navigation/routes"
 import { OnboardingChatBanner } from "@/components/onboarding/OnboardingChatBanner"
+import { AutomationFromChatBridge } from "@/components/settings/recruitment/AutomationFromChatBridge"
 
 /**
  * Strip the locale prefix from a pathname.
@@ -54,6 +55,7 @@ export default function DashboardLayoutClient({
     <QueryClientProvider client={queryClient}>
       <DashboardApp initialPage={initialPage}>
         <OnboardingChatBanner onOpenChat={() => window.dispatchEvent(new CustomEvent("lia:open-onboarding-chat", { detail: {} }))} />
+        <AutomationFromChatBridge />
         {children}
       </DashboardApp>
       {process.env.NODE_ENV === "development" && (

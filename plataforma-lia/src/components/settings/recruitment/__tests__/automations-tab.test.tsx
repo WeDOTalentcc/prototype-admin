@@ -11,10 +11,13 @@ import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 // ── Mocks ────────────────────────────────────────────────────────────────
 
+// Sprint D.3: useSearchParams mockable per-test (deep-link ?view=builder)
+const mockSearchParamsState = { current: new URLSearchParams() };
+
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), replace: vi.fn(), prefetch: vi.fn() }),
   usePathname: () => "/configuracoes/recruitment",
-  useSearchParams: () => new URLSearchParams(),
+  useSearchParams: () => mockSearchParamsState.current,
 }));
 
 vi.mock("@/hooks/company/useCompanyId", () => ({
@@ -72,6 +75,36 @@ const mockActionTypesState: { data: unknown; error: unknown; isLoading: boolean 
   isLoading: false,
 };
 
+// Sprint A.8: useOperators/useConditionFields wiring mock state.
+const mockOperatorsState: { data: unknown; error: unknown; isLoading: boolean } = {
+  data: {
+    success: true,
+    data: {
+      operators: [
+        { value: "eq", name: "for igual a", label_pt: "for igual a", label_en: "equals" },
+        { value: "gt", name: "for maior que", label_pt: "for maior que", label_en: "greater than" },
+      ],
+    },
+  },
+  error: null,
+  isLoading: false,
+};
+
+const mockConditionFieldsState: { data: unknown; error: unknown; isLoading: boolean } = {
+  data: {
+    success: true,
+    data: {
+      condition_fields: [
+        { value: "candidate.wsi_score", name: "score WSI", type: "number", category: "candidate" },
+        { value: "candidate.years_experience", name: "anos de experiência", type: "number", category: "candidate" },
+      ],
+    },
+  },
+  error: null,
+  isLoading: false,
+};
+
+
 vi.mock("@/hooks/automations/useAutomationMutations", () => ({
   useCreateAutomation: () => ({
     mutateAsync: mockCreateMutateAsync,
@@ -96,6 +129,8 @@ vi.mock("@/hooks/automations/useAutomationMutations", () => ({
   }),
   useTriggerTypes: () => mockTriggerTypesState,
   useActionTypes: () => mockActionTypesState,
+  useOperators: () => mockOperatorsState,
+  useConditionFields: () => mockConditionFieldsState,
 }));
 
 beforeAll(() => {
@@ -674,5 +709,82 @@ describe("AutomationsTab — Catalog wiring (Sprint A.7)", () => {
       const headers = screen.getAllByText(/nova automação/i);
       expect(headers.length).toBeGreaterThanOrEqual(2);
     });
+  });
+});
+
+describe("AutomationsTab — Sprint D.3 LIA chat bridge hydration", () => {
+  beforeEach(() => {
+    window.sessionStorage.clear();
+    mockSearchParamsState.current = new URLSearchParams();
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ success: true, data: { automations: [], total: 0 } }),
+      }),
+    );
+  });
+
+  it("hidrata builder a partir de sessionStorage payload (vindo do chat LIA)", async () => {
+    const payload = {
+      trigger: { type: "candidate_applied", params: {} },
+      conditions: [],
+      actions: [{ type: "send_whatsapp", params: { template_id: "interview_invite" } }],
+      name: "Convite WhatsApp ao se candidatar",
+    };
+    window.sessionStorage.setItem(
+      "lia-pending-automation-state",
+      JSON.stringify(payload),
+    );
+
+    renderWithIntl(<AutomationsTab onSettingsChange={() => {}} />);
+
+    // Builder abre — title de edição/criação aparece
+    await waitFor(() => {
+      const headers = screen.getAllByText(/nova automação/i);
+      expect(headers.length).toBeGreaterThanOrEqual(1);
+    });
+
+    // sessionStorage é limpo após hidratação (one-shot consume)
+    expect(
+      window.sessionStorage.getItem("lia-pending-automation-state"),
+    ).toBeNull();
+  });
+
+  it("abre builder em modo novo quando URL tem ?view=builder (deep-link)", async () => {
+    mockSearchParamsState.current = new URLSearchParams("view=builder");
+
+    renderWithIntl(<AutomationsTab onSettingsChange={() => {}} />);
+
+    await waitFor(() => {
+      const headers = screen.getAllByText(/nova automação/i);
+      expect(headers.length).toBeGreaterThanOrEqual(1);
+    });
+  });
+
+  it("não abre builder sem payload nem deep-link (modo overview default)", async () => {
+    renderWithIntl(<AutomationsTab onSettingsChange={() => {}} />);
+
+    // Overview state: empty state aparece (sem builder header de edição)
+    await screen.findByText(/a lia pode automatizar/i);
+  });
+
+  it("gracefully handles sessionStorage JSON inválido (REGRA 4 anti-silent)", async () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    window.sessionStorage.setItem(
+      "lia-pending-automation-state",
+      "{not-valid-json",
+    );
+
+    renderWithIntl(<AutomationsTab onSettingsChange={() => {}} />);
+
+    // Não crasha — log warn + fallback pra overview
+    await screen.findByText(/a lia pode automatizar/i);
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining("[AutomationsTab]"),
+      expect.anything(),
+    );
+
+    warnSpy.mockRestore();
   });
 });
