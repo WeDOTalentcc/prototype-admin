@@ -70,3 +70,22 @@ jobs:
         run: |
           python3 scripts/check_data_toggle_matches_persisted_key.py \
             --baseline-file scripts/baselines/data_toggle_naming.txt
+
+      - name: Backend Studio contract + API tests (BLOCKING)
+        # Wave A saneamento Studio audit 2026-05-27: CI estava cego pra Studio.
+        # test_studio_voice_plugin.py em red por 5 testes (checkpointer APP_ENV
+        # gate) — caso clássico de feedback control faltando. Wire canonical:
+        # contract + custom_agent + studio + sector_templates + digital_twins.
+        working-directory: lia-agent-system
+        env:
+          APP_ENV: development   # checkpointer fallback (libs/agents-core)
+        run: |
+          python3 -m pytest \
+            tests/contract/test_studio_voice_plugin.py \
+            tests/contract/test_custom_agent_repository.py \
+            tests/contract/test_custom_agent_runtime_voice_channel.py \
+            tests/api/test_custom_agents_canonical_endpoints.py \
+            tests/api/test_custom_agents_filter.py \
+            tests/api/test_custom_agents_timeline.py \
+            --no-cov --tb=short
+

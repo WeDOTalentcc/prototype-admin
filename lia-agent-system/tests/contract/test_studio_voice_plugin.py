@@ -413,6 +413,19 @@ class TestOnSessionFinalized:
 # ────────────────────────────────────────────────────────────────────────────
 
 class TestCustomAgentRuntimeVoiceIntegration:
+    @pytest.fixture(autouse=True)
+    def _force_dev_env_for_checkpointer(self, monkeypatch):
+        """Checkpointer canonical (libs/agents-core/lia_agents_core/checkpointer.py)
+        raises RuntimeError em APP_ENV='production'/'staging' se
+        initialize_checkpointer_async() não rodou no lifespan. Como SSH/CI roda
+        com APP_ENV=production e estes testes exercitam CustomAgentRuntime.execute
+        sem app lifespan, monkeypatch tanto a env var quanto o settings.APP_ENV
+        (Pydantic Settings é cached, env var sozinha não basta).
+        Fix audit 2026-05-27 — anterior: 5 testes red bloqueando CI Studio."""
+        monkeypatch.setenv("APP_ENV", "development")
+        from lia_config.config import settings as _settings
+        monkeypatch.setattr(_settings, "APP_ENV", "development", raising=False)
+
     @pytest.mark.asyncio
     async def test_invoke_voice_builds_studio_plugin_from_agent_config(
         self, monkeypatch,
