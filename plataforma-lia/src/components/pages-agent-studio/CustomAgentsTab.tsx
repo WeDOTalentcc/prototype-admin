@@ -295,7 +295,7 @@ export default function CustomAgentsTab() {
   )
 }
 
-function CreateCustomAgentModal({
+export function CreateCustomAgentModal({
   agent, onClose, onSaved,
 }: {
   agent: CustomAgent | null
