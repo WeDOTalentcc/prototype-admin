@@ -10,7 +10,6 @@ import {
   TestTube2,
   Copy,
   Phone,
-  PhoneCall,
   MessageCircle,
   Mic,
   Send,
@@ -28,10 +27,9 @@ import {
 import { getCustomAgentStatusConfig } from "@/lib/agent-studio/status-config"
 import { BetaBadge } from "@/components/ui/beta-badge"
 import { Switch } from "@/components/ui/switch"
-import { useToggleAgentVoice, useInitiateVoiceCall } from "@/hooks/agent-studio/use-agent-voice"
+import { useToggleAgentVoice } from "@/hooks/agent-studio/use-agent-voice"
 import { useToggleAgentWhatsApp } from "@/hooks/agent-studio/use-agent-whatsapp"
 import { useToggleAgentChannel } from "@/hooks/agent-studio/use-agent-channel"
-import { useInitiateAgentTriagemInvite } from "@/hooks/agent-studio/use-agent-triagem-invite"
 import { StudioCardShell } from "@/components/pages-agent-studio/StudioCardShell"
 import type { CustomAgent } from "./types"
 import { safeCategoryKey } from "./types"
@@ -118,8 +116,6 @@ export function AgentCard({ agent, onTest, onDeploy, onToggleStatus, onClone }: 
   const toggleVoip = useToggleAgentChannel(agent.id, "voip")
   // Workstream A 2026-05-23: 4o toggle — capability "convite triagem".
   const toggleTriagemInvite = useToggleAgentChannel(agent.id, "triagem_invite")
-  const initiateVoice = useInitiateVoiceCall(agent.id)
-  const initiateTriagemInvite = useInitiateAgentTriagemInvite(agent.id)
 
   // Backward compat: voip=false; voice=false; whatsapp=false; triagem_invite=false.
   const whatsappEnabled = Boolean(agent.whatsapp_enabled)
@@ -219,22 +215,9 @@ export function AgentCard({ agent, onTest, onDeploy, onToggleStatus, onClone }: 
         ariaOn={t("enableVoice", { name: agent.name }) || `Habilitar voz no agente ${agent.name}`}
         ariaOff={t("disableVoice", { name: agent.name }) || `Desabilitar voz no agente ${agent.name}`}
         testId="agent-card-voice-toggle"
-        trailing={
-          <button
-            type="button"
-            onClick={() => {
-              if (!voiceEnabled) return
-              initiateVoice.trigger({ candidate_id: "" })
-            }}
-            disabled={!voiceEnabled || initiateVoice.isMutating}
-            className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium text-graphite hover:bg-powder transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-            aria-label={voiceEnabled ? t("startVoiceCall") : t("voiceDisabled")}
-            data-testid="agent-card-initiate-voice"
-          >
-            <PhoneCall className="w-3.5 h-3.5" aria-hidden="true" />
-            {t("startCall")}
-          </button>
-        }
+        /* Wave A P0 #6 (2026-05-27): trailing "Iniciar chamada" removido — pertencia a surface
+           com contexto de candidato (kanban/perfil), aqui disparava candidate_id="" anti-pattern.
+           Toggle de canal mantido pra config global do agente. */
       />
 
       {/* 3. Voz no navegador (VoIP) */}
@@ -259,22 +242,9 @@ export function AgentCard({ agent, onTest, onDeploy, onToggleStatus, onClone }: 
         ariaOn={t("enableTriagemInvite", { name: agent.name }) || `Habilitar criacao de convites de triagem no agente ${agent.name}`}
         ariaOff={t("disableTriagemInvite", { name: agent.name }) || `Desabilitar criacao de convites de triagem no agente ${agent.name}`}
         testId="agent-card-triagem-invite-toggle"
-        trailing={
-          <button
-            type="button"
-            onClick={() => {
-              if (!triagemInviteEnabled) return
-              initiateTriagemInvite.trigger({ candidate_id: "", job_id: "" })
-            }}
-            disabled={!triagemInviteEnabled || initiateTriagemInvite.isMutating}
-            className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium text-graphite hover:bg-powder transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-            aria-label={triagemInviteEnabled ? (t("sendTriagemInvite") || "Enviar convite triagem") : (t("triagemInviteDisabled") || "Convite triagem desabilitado")}
-            data-testid="agent-card-initiate-triagem-invite"
-          >
-            <Send className="w-3.5 h-3.5" aria-hidden="true" />
-            {t("sendInvite") || "Enviar convite"}
-          </button>
-        }
+        /* Wave A P0 #7 (2026-05-27): trailing "Enviar convite" removido — pertencia a surface
+           com contexto de candidato+vaga (kanban), aqui disparava candidate_id="" + job_id="" anti-pattern.
+           Toggle de capability mantido pra config global do agente. */
       />
     </>
   )
