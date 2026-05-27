@@ -39,7 +39,9 @@ async def test_calibration_candidates_canonical_returns_list(mock_db):
         {"id": "c1", "name": "Alice"},
         {"id": "c2", "name": "Bob"},
     ])
-    with patch.object(ca_module, "sourcing_agent_orchestrator", mock_orch):
+    # Wave C2.4: helper pre-check needs db.execute mocked OR helper bypassed.
+    # Bypass it here — orchestrator filtering already covers category=sourcing.
+    with patch.object(ca_module, "sourcing_agent_orchestrator", mock_orch),          patch.object(ca_module, "_ensure_sourcing_agent_or_404", AsyncMock(return_value=None)):
         result = await ca_module.get_custom_agent_calibration_candidates(
             agent_id="agent-1",
             limit=10,
@@ -84,7 +86,7 @@ async def test_feedback_canonical_reuses_orchestrator_and_audits(mock_db):
     current_user.id = "user-1"
     current_user.company_id = "comp-1"
 
-    with patch.object(ca_module, "sourcing_agent_orchestrator", mock_orch),          patch("app.domains.agent_studio._audit_helper.studio_audit", side_effect=fake_studio_audit):
+    with patch.object(ca_module, "sourcing_agent_orchestrator", mock_orch),          patch.object(ca_module, "_ensure_sourcing_agent_or_404", AsyncMock(return_value=None)),          patch("app.domains.agent_studio._audit_helper.studio_audit", side_effect=fake_studio_audit):
         result = await ca_module.submit_custom_agent_feedback(
             agent_id="agent-1",
             body=body,

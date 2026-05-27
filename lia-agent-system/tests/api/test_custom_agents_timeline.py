@@ -92,6 +92,8 @@ async def test_timeline_response_shape_canonical(mock_db):
 
     fake_agent = MagicMock()
     fake_agent.id = "uuid-x"
+    fake_agent.company_id = "comp-1"
+    fake_agent.category = "sourcing"  # Wave C2.4: helper requires actual string
     exec_result = MagicMock()
     exec_result.scalar_one_or_none = MagicMock(return_value=fake_agent)
     mock_db.execute = AsyncMock(return_value=exec_result)
