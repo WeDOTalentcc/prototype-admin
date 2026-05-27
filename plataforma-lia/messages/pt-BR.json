@@ -4827,7 +4827,8 @@
       "noResults": "Nenhuma integração encontrada",
       "noResultsHint": "Tente buscar com outros termos",
       "authUrlError": "Erro ao obter URL de autorização",
-      "googleConnectError": "Erro ao conectar com Google"
+      "googleConnectError": "Erro ao conectar com Google",
+      "companyNotIdentified": "Empresa não identificada"
     },
     "page": {
       "title": "Configurações",

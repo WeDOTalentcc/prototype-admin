@@ -4844,7 +4844,8 @@
       "noResults": "No integrations found",
       "noResultsHint": "Try searching with other terms",
       "authUrlError": "Error getting authorization URL",
-      "googleConnectError": "Error connecting with Google"
+      "googleConnectError": "Error connecting with Google",
+      "companyNotIdentified": "Company not identified"
     },
     "page": {
       "title": "Settings",

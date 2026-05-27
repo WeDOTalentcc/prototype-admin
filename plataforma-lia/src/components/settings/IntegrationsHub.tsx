@@ -7,7 +7,7 @@ import { Search, Brain, Briefcase, Calendar, MessageCircle, Building, Code, Plug
 import { cn } from "@/lib/utils"
 import { useTranslations } from "next-intl"
 import { categories, type Integration, type IntegrationCategory } from "./integrations/integration-data"
-import { IntegrationDetailDrawer } from "./integrations/IntegrationDetailDrawer"
+import { IntegrationDetailModal } from "./integrations/IntegrationDetailModal"
 import { IntegrationGrid } from "./integrations/IntegrationGrid"
 import { useIntegrationsData } from "@/hooks/integrations/use-integrations-data"
 import { useCurrentCompany } from "@/hooks/company/use-current-company"
@@ -46,7 +46,6 @@ export function IntegrationsHub({ activeSubsection }: IntegrationsHubProps) {
   const [activeTab, setActiveTab] = useState(activeSubsection || "all")
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedIntegration, setSelectedIntegration] = useState<Integration | null>(null)
-  const [drawerOpen, setDrawerOpen] = useState(false)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
   React.useEffect(() => {
@@ -88,7 +87,6 @@ export function IntegrationsHub({ activeSubsection }: IntegrationsHubProps) {
 
   const handleCardClick = useCallback((integration: Integration) => {
     setSelectedIntegration(integration)
-    setDrawerOpen(true)
   }, [])
 
   const handleConnectGoogle = useCallback(async () => {
@@ -160,10 +158,10 @@ export function IntegrationsHub({ activeSubsection }: IntegrationsHubProps) {
         />
       )}
 
-      <IntegrationDetailDrawer
+      <IntegrationDetailModal
         integration={selectedIntegration}
-        open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
+        open={!!selectedIntegration}
+        onClose={() => setSelectedIntegration(null)}
         googleStatus={googleStatus as "idle" | "loading" | "connected" | "error"}
         microsoftStatus={microsoftStatus as "loading" | "connected" | "not_configured"}
         teamsStatus={teamsStatus as "loading" | "configured" | "not_configured"}
