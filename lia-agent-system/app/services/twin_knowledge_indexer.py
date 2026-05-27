@@ -155,7 +155,7 @@ class TwinKnowledgeIndexer:
             return {"status": "error", "message": "Transcrição falhou"}
 
         # 2. Extract decisions from transcript via LLM
-        decisions = await self._extract_decisions_from_transcript(transcription)
+        decisions = await self._extract_decisions_from_transcript(transcription, company_id=company_id)
 
         # 3. Index each decision via canonical repo (tenant validation)
         from app.domains.agent_studio.repositories.digital_twin_repository import (
@@ -266,11 +266,22 @@ class TwinKnowledgeIndexer:
 
         return ""
 
-    async def _extract_decisions_from_transcript(self, transcript: str) -> list[dict]:
+    async def _extract_decisions_from_transcript(
+        self, transcript: str, company_id: str | None = None,
+    ) -> list[dict]:
         """Extract individual decisions from a transcript via LLM."""
         try:
-            from app.shared.providers.llm_factory import get_llm
-            llm = get_llm(tier="fast")
+            # Canonical LLM factory (multi-tenant aware). Replaces broken
+            # get_llm import — twin audio indexing was 100% in fallback
+            # (returned []) until 2026-05-27.
+            from app.shared.providers.llm_factory import create_tracked_llm
+            llm = create_tracked_llm(
+                temperature=0.3,
+                service_name="TwinKnowledgeIndexer",
+                operation="extract_decisions",
+                max_output_tokens=1024,
+                tenant_id=company_id,
+            )
             prompt = (
                 "A seguir é a transcrição de uma entrevista onde um especialista de RH "
                 "explica suas decisões sobre candidatos. Extraia cada decisão como JSON:\n\n"

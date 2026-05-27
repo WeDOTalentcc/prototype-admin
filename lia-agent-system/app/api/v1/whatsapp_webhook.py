@@ -105,9 +105,19 @@ async def _get_orchestrator():
     except ImportError:
         pass
     try:
-        from app.shared.providers.llm_factory import get_llm
-        llm = get_llm(tier="fast")
-    except ImportError:
+        # Canonical LLM factory (multi-tenant aware). Replaces broken
+        # get_llm import. NOTE: orchestrator helper runs BEFORE Twilio
+        # signature/tenant resolution; tenant_id=None uses global env
+        # credentials. Multi-tenancy gap reported as residual issue.
+        from app.shared.providers.llm_factory import create_tracked_llm
+        llm = create_tracked_llm(
+            temperature=0.3,
+            service_name="WhatsAppWebhook",
+            operation="whatsapp_chat",
+            max_output_tokens=512,
+            tenant_id=None,
+        )
+    except Exception:
         pass
     try:
         from app.services.whatsapp_client import WhatsAppClient

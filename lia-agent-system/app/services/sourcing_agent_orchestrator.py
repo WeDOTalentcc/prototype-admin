@@ -66,7 +66,7 @@ class SourcingAgentOrchestrator:
 
         # Extract strategy from JD if not provided (PRESERVADO)
         if not search_strategy and job_id:
-            search_strategy = await self._extract_strategy_from_job(job_id, db)
+            search_strategy = await self._extract_strategy_from_job(job_id, db, company_id=company_id)
         elif not search_strategy:
             search_strategy = {"required_skills": [], "exclusions": [], "positive_signals": []}
 
@@ -205,7 +205,7 @@ class SourcingAgentOrchestrator:
         agent = result.scalar_one()
 
         # Extract criteria from reason via LLM
-        criteria = await self._extract_criteria(reason, signal_type)
+        criteria = await self._extract_criteria(reason, signal_type, company_id=str(agent.company_id) if agent.company_id else None)
 
         # Persist signal (Layer 2 canonical: custom_agent_id direto)
         from app.domains.sourcing.repositories.sourcing_agent_signal_repository import (
@@ -394,7 +394,7 @@ class SourcingAgentOrchestrator:
 
         enriched = []
         for c in candidates:
-            match_criteria = await self._generate_match_criteria(c, agent.search_strategy)
+            match_criteria = await self._generate_match_criteria(c, agent.search_strategy, company_id=str(agent.company_id) if agent.company_id else None)
             enriched.append({**c, "match_criteria": match_criteria})
 
         return enriched
@@ -444,11 +444,22 @@ class SourcingAgentOrchestrator:
             })
         return timeline
 
-    async def _extract_criteria(self, reason: str, signal_type: str) -> list[str]:
+    async def _extract_criteria(
+        self, reason: str, signal_type: str, company_id: str | None = None,
+    ) -> list[str]:
         """Extract criteria from recruiter's feedback reason via LLM."""
         try:
-            from app.shared.providers.llm_factory import get_llm
-            llm = get_llm(tier="fast")
+            # Canonical LLM factory (multi-tenant aware). Replaces broken
+            # get_llm import — feedback criteria extraction was 100% in
+            # fallback (truncated reason string) until 2026-05-27.
+            from app.shared.providers.llm_factory import create_tracked_llm
+            llm = create_tracked_llm(
+                temperature=0.3,
+                service_name="SourcingAgentOrchestrator",
+                operation="extract_criteria",
+                max_output_tokens=256,
+                tenant_id=company_id,
+            )
             action = "aprovou" if signal_type == "positive" else "rejeitou"
             prompt = (
                 f"Um recrutador {action} um candidato.\n"
@@ -463,11 +474,22 @@ class SourcingAgentOrchestrator:
             logger.warning("[SourcingAgent] Criteria extraction failed: %s", e)
             return [reason[:100]]  # Fallback: use reason as-is
 
-    async def _extract_strategy_from_job(self, job_id: str, db) -> dict:
+    async def _extract_strategy_from_job(
+        self, job_id: str, db, company_id: str | None = None,
+    ) -> dict:
         """Extract search strategy from job description via LLM."""
         try:
-            from app.shared.providers.llm_factory import get_llm
-            llm = get_llm(tier="fast")
+            # Canonical LLM factory (multi-tenant aware). Replaces broken
+            # get_llm import — sourcing strategy extraction was 100% in
+            # fallback (empty strategy) until 2026-05-27.
+            from app.shared.providers.llm_factory import create_tracked_llm
+            llm = create_tracked_llm(
+                temperature=0.3,
+                service_name="SourcingAgentOrchestrator",
+                operation="extract_strategy",
+                max_output_tokens=512,
+                tenant_id=company_id,
+            )
             # Load job (simplified — adapt to actual model)
             prompt = (
                 f"Extraia os critérios de busca para um agente de sourcing.\n"
@@ -481,11 +503,22 @@ class SourcingAgentOrchestrator:
         except Exception:
             return {"required_skills": [], "exclusions": [], "positive_signals": []}
 
-    async def _generate_match_criteria(self, candidate: dict, strategy: dict) -> list[dict]:
+    async def _generate_match_criteria(
+        self, candidate: dict, strategy: dict, company_id: str | None = None,
+    ) -> list[dict]:
         """Generate 'Why we matched' criteria for calibration card."""
         try:
-            from app.shared.providers.llm_factory import get_llm
-            llm = get_llm(tier="fast")
+            # Canonical LLM factory (multi-tenant aware). Replaces broken
+            # get_llm import — match criteria generation was 100% in
+            # fallback (generic placeholder) until 2026-05-27.
+            from app.shared.providers.llm_factory import create_tracked_llm
+            llm = create_tracked_llm(
+                temperature=0.3,
+                service_name="SourcingAgentOrchestrator",
+                operation="generate_match_criteria",
+                max_output_tokens=512,
+                tenant_id=company_id,
+            )
             prompt = (
                 f"Critérios de busca: {json.dumps(strategy, ensure_ascii=False)}\n"
                 f"Candidato: {json.dumps(candidate, ensure_ascii=False)[:500]}\n\n"

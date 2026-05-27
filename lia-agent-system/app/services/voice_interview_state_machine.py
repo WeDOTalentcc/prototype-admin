@@ -195,7 +195,7 @@ class VoiceInterviewStateMachine:
         session.answers[current_q.question_id] = answer
 
         # Score this answer
-        score = await self._score_answer(answer, current_q)
+        score = await self._score_answer(answer, current_q, company_id=session.company_id)
         session.scores[current_q.question_id] = score
 
         # Advance
@@ -233,11 +233,23 @@ class VoiceInterviewStateMachine:
 
         return self._build_response(session, text, is_done=True)
 
-    async def _score_answer(self, answer: str, question: ScreeningQuestion) -> float:
+    async def _score_answer(
+        self, answer: str, question: ScreeningQuestion, company_id: str | None = None,
+    ) -> float:
         """Score candidate answer against ideal using LLM."""
         try:
-            from app.shared.providers.llm_factory import get_llm
-            llm = get_llm(tier="fast")
+            # Canonical LLM factory (multi-tenant aware). Replaces broken
+            # get_llm import — voice interview scoring was 100% in fallback
+            # (returned 50.0 neutral) until 2026-05-27. ALL candidates
+            # received same default score.
+            from app.shared.providers.llm_factory import create_tracked_llm
+            llm = create_tracked_llm(
+                temperature=0.0,
+                service_name="VoiceInterviewStateMachine",
+                operation="score_answer",
+                max_output_tokens=64,
+                tenant_id=company_id,
+            )
             prompt = (
                 f'Pergunta: "{question.text}"\n'
                 f'Resposta ideal: "{question.ideal_answer}"\n'

@@ -89,9 +89,21 @@ async def _get_orchestrator(db=None):
     whatsapp_client = None
 
     try:
-        from app.shared.providers.llm_factory import get_llm
-        llm = get_llm(tier="fast")
-    except ImportError:
+        # Canonical LLM factory (multi-tenant aware). Replaces broken
+        # get_llm import (function never existed in llm_factory.py),
+        # which previously caused this branch to *always* fail silently.
+        # NOTE: orchestrator helper has no company_id context; tenant_id=None
+        # uses global env credentials. See "Issues residuais" — multi-tenancy
+        # gap: onboarding orchestrator should thread company_id from caller.
+        from app.shared.providers.llm_factory import create_tracked_llm
+        llm = create_tracked_llm(
+            temperature=0.3,
+            service_name="OnboardingOrchestrator",
+            operation="onboarding_chat",
+            max_output_tokens=512,
+            tenant_id=None,
+        )
+    except Exception:
         pass
 
     try:

@@ -71,7 +71,7 @@ class MultiStrategySearchService:
             )
         if "adjacent" in enabled:
             tasks["adjacent"] = asyncio.create_task(
-                self._strategy_adjacent(job_title, required_skills, location, limit)
+                self._strategy_adjacent(job_title, required_skills, location, limit, company_id=company_id)
             )
         if "silver" in enabled and job_id:
             tasks["silver"] = asyncio.create_task(
@@ -156,12 +156,22 @@ class MultiStrategySearchService:
 
     async def _strategy_adjacent(
         self, title: str, skills: list[str], location: str, limit: int,
+        company_id: str | None = None,
     ) -> StrategyResult:
         """Strategy B: similar titles + related skills via LLM."""
         t = time.time()
         try:
-            from app.shared.providers.llm_factory import get_llm
-            llm = get_llm(tier="fast")
+            # Canonical LLM factory (multi-tenant aware). Replaces broken
+            # get_llm import — feature was 100% in fallback (single title,
+            # no adjacent expansion) until 2026-05-27.
+            from app.shared.providers.llm_factory import create_tracked_llm
+            llm = create_tracked_llm(
+                temperature=0.3,
+                service_name="MultiStrategySearch",
+                operation="adjacent_titles",
+                max_output_tokens=256,
+                tenant_id=company_id,
+            )
             resp = await llm.ainvoke(
                 f"Liste 3 títulos de cargo similares a '{title}' no mercado brasileiro. "
                 f"Liste também 3 skills relacionadas a {', '.join(skills[:3])}. "

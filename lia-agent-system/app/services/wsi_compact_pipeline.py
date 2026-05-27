@@ -84,7 +84,7 @@ class WSICompactPipeline:
         context = self._build_context(name, description, seniority, tech_reqs, behav_reqs, exp_reqs, skills)
 
         # Generate questions via LLM
-        questions = await self._generate_questions(context, language)
+        questions = await self._generate_questions(context, language, company_id=company_id)
 
         # Extract traits/competencies for metadata
         traits = self._extract_traits(tech_reqs, behav_reqs)
@@ -105,12 +105,21 @@ class WSICompactPipeline:
         return config
 
     async def _generate_questions(
-        self, context: str, language: str
+        self, context: str, language: str, company_id: str | None = None,
     ) -> list[ScreeningQuestion]:
         """Generate screening questions using LLM."""
         try:
-            from app.shared.providers.llm_factory import get_llm
-            llm = get_llm(tier="fast")
+            # Canonical LLM factory (multi-tenant aware). Replaces broken
+            # get_llm import — WSI compact question generation was 100%
+            # in fallback (template questions) until 2026-05-27.
+            from app.shared.providers.llm_factory import create_tracked_llm
+            llm = create_tracked_llm(
+                temperature=0.3,
+                service_name="WSICompactPipeline",
+                operation="generate_questions",
+                max_output_tokens=2048,
+                tenant_id=company_id,
+            )
 
             prompt = f"""
 Você é um especialista em recrutamento usando a metodologia WSI (Work Sample Interview).
