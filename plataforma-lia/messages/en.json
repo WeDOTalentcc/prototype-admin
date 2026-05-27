@@ -1767,7 +1767,8 @@
         "customAgents": "Custom Agents",
         "digitalTwins": "Digital Twins",
         "smartSearch": "Smart Search",
-        "myAgents": "My agents"
+        "myAgents": "My agents",
+        "approvals": "Approvals"
       },
       "stats": {
         "activeAgents": "{count} active agent(s)",

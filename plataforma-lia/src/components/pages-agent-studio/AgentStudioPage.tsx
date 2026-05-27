@@ -9,7 +9,7 @@ import { TemplateGallery, AgentCard as CustomAgentCard, AgentCardSkeleton, Agent
 // TemplatePreviewModal (Sprint B QW#5) preservado como export de custom-agents/
 // para outros entry-points que queiram um confirm-rápido sem o wizard.
 import { TemplateClonePanel } from "@/components/pages-agent-studio/template-clone"
-import { useCustomAgents } from "@/hooks/agents"
+import { useCustomAgents, usePendingApprovals } from "@/hooks/agents"
 import { useAgentStudioStore } from "@/stores/agent-studio-store"
 import type { CustomAgent, AgentTemplate } from "@/components/pages-agent-studio/custom-agents/types"
 import { QuotaMeter } from "@/components/pages-agent-studio/QuotaMeter"
@@ -19,7 +19,7 @@ import {
   ChevronRight, Zap, Target, ArrowRight,
   Activity, Eye, ThumbsUp, ThumbsDown, RefreshCw,
   Loader2, Users, Wand2, Store,
-  GraduationCap, BarChart3, Clock
+  GraduationCap, BarChart3, Clock, Inbox
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { getSourcingAgentStatusConfig } from "@/lib/agent-studio/status-config"
@@ -135,14 +135,23 @@ export default function AgentStudioPage({
   const [detailsAgent, setDetailsAgent] = useState<CustomAgent | null>(null)
   const { agents: customAgents, mutate: mutateCustomAgents } = useCustomAgents()
   const { selectTemplate } = useAgentStudioStore()
-  // Studio Restructure Fase 2 (2026-05-26): 2 top tabs sem sub-tabs.
+  // Studio Restructure Fase 2 (2026-05-26 + Onda 0 Fix 3, 2026-05-27): 3 top tabs.
   // - "my-agents" (default): templates + lista unificada de agentes do usuário
   //   (captação + personalizados juntos).
+  // - "approvals": ApprovalsList promovido a tab top-level (Wave 0 Fix 3).
+  //   Antes ficava embedded em my-agents — recrutador podia não perceber
+  //   pendências. Badge com count 1-9 ou "9+" sinaliza urgência.
   // - "digital-twins": TwinsList canonical.
   // Marketplace deixou de ser tab — virou CTA "Explorar Marketplace" no header,
   // rota /agents/marketplace renderiza MarketplaceTab standalone.
-  type MainTab = "my-agents" | "digital-twins"
+  type MainTab = "my-agents" | "approvals" | "digital-twins"
   const [activeTab, setActiveTab] = useState<MainTab>("my-agents")
+
+  // Wave 0 Fix 3 (2026-05-27): contagem de aprovações pendentes pro badge da tab.
+  const { approvals: pendingApprovals } = usePendingApprovals()
+  const pendingCount = pendingApprovals?.length ?? 0
+  // Display rule: 1-9 exato, 10+ vira "9+" (anti-overflow visual + sinal de urgência).
+  const pendingBadgeLabel = pendingCount > 9 ? "9+" : undefined
 
   useEffect(() => {
     loadData()
@@ -168,6 +177,8 @@ export default function AgentStudioPage({
       "custom": "my-agents",
       "personalizados": "my-agents",
       "my-agents": "my-agents",
+      "approvals": "approvals",
+      "aprovacoes": "approvals",
       "twins": "digital-twins",
       "gemeos": "digital-twins",
       "digital-twins": "digital-twins",
@@ -364,6 +375,14 @@ export default function AgentStudioPage({
               label: t("studio.tabs.myAgents"),
               icon: Bot,
               count: agents.length + customAgents.length,
+            },
+            {
+              id: "approvals",
+              label: t("studio.tabs.approvals"),
+              icon: Inbox,
+              count: pendingCount,
+              badgeLabel: pendingBadgeLabel,
+              badgeAccent: "cyan",
             },
             { id: "digital-twins", label: t("studio.tabs.digitalTwins"), icon: Users },
           ]}
@@ -596,10 +615,8 @@ export default function AgentStudioPage({
                 </div>
               </section>
             )}
-            {/* Pending Approvals (admin only — hidden if empty or not admin) */}
-            <section>
-              <ApprovalsList onReviewed={() => mutateCustomAgents()} />
-            </section>
+            {/* Pending Approvals: Wave 0 Fix 3 (2026-05-27) promovido a 3a tab top-level.
+                Bloco removido daqui — render movido para activeTab === "approvals". */}
 
             {/* My Agents */}
             <section>
@@ -685,6 +702,14 @@ export default function AgentStudioPage({
             />
 
           </div>
+        )}
+
+        {/* Wave 0 Fix 3 (2026-05-27): tab Approvals canonical top-level.
+            ApprovalsList encapsula state vazio + lista paginada + ações HITL. */}
+        {activeTab === "approvals" && (
+          <section className="mt-6">
+            <ApprovalsList onReviewed={() => mutateCustomAgents()} />
+          </section>
         )}
 
         {/* TODO Fase 2: trigger via kanban-card com candidate real. onEvaluate removido pra evitar payload vazio (Wave A P0 #5). */}

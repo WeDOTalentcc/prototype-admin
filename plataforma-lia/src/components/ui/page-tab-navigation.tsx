@@ -8,6 +8,17 @@ interface PageTab {
   label: string
   icon?: React.ComponentType<{ className?: string }>
   count?: number | null
+  /**
+   * When set, overrides the rendered numeric count.
+   * Use for "9+" style display when count exceeds a display ceiling.
+   * Wave 0 Fix 3 (2026-05-27).
+   */
+  badgeLabel?: string
+  /**
+   * When true, applies cyan accent to the badge (canonical token lia-cyan-*).
+   * Use for AI/agent-related counts (approvals, agents running, etc.).
+   */
+  badgeAccent?: "cyan" | "default"
   comingSoon?: boolean
 }
 
@@ -54,7 +65,9 @@ const PageTabNavigation = memo(function PageTabNavigation({
                 <span
                   className={cn(
                     "px-1.5 py-0.5 rounded-full text-[10px] font-bold",
-                    isActive
+                    tab.badgeAccent === "cyan"
+                      ? "bg-lia-cyan text-white"
+                      : isActive
                       ? "bg-lia-interactive-active text-lia-text-primary"
                       : "bg-lia-bg-tertiary text-lia-text-disabled"
                   )}
@@ -62,7 +75,7 @@ const PageTabNavigation = memo(function PageTabNavigation({
                   {isLoading ? (
                     <span className="inline-block w-4 h-3 bg-lia-interactive-active rounded animate-pulse motion-reduce:animate-none" />
                   ) : (
-                    tab.count
+                    tab.badgeLabel ?? tab.count
                   )}
                 </span>
               )}

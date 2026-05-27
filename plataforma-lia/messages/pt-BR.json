@@ -1767,7 +1767,8 @@
         "customAgents": "Agentes Personalizados",
         "digitalTwins": "Gêmeos Digitais",
         "smartSearch": "Busca Inteligente",
-        "myAgents": "Meus agentes"
+        "myAgents": "Meus agentes",
+        "approvals": "Aprovações"
       },
       "stats": {
         "activeAgents": "{count} agente(s) ativo(s)",
