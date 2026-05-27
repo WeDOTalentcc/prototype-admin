@@ -236,3 +236,55 @@ _company_gate: str = Depends(require_company_id)):
     except Exception as e:
         logger.error("Error generating pricing analytics: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail="Failed to generate pricing analytics")
+
+
+class PearchConsumptionResponse(BaseModel):
+    """Response schema for dedicated Pearch consumption endpoint."""
+    company_id: str
+    period_start: str
+    period_end: str
+    period_days: int
+    total_searches: int
+    successful_searches: int
+    total_credits_consumed: int
+    estimated_cost_brl: float
+
+
+@router.get("/pearch", response_model=PearchConsumptionResponse)
+async def get_pearch_consumption(
+    days: int = Query(30, ge=1, le=365, description="Number of days to include"),
+    company_id: str = Depends(get_verified_company_id),
+    db: AsyncSession = Depends(get_db),
+_company_gate: str = Depends(require_company_id)):
+    # multi-tenancy: company_id from JWT via get_verified_company_id (REGRA 2 Pydantic canonical)
+    """Get Pearch (external candidate search) consumption for the current period.
+
+    Returns aggregated Pearch API call statistics from external_api_consumption table
+    (provider='pearch'), NOT from ai_consumption/LLM token tracking.
+
+    This is the canonical source for PearchTab.tsx — replaces client-side filter
+    of /ai-credits?endpoint=by-agent&agent_type=search which reads the wrong table.
+    """
+    from datetime import timedelta as _timedelta
+    end_date = datetime.utcnow()
+    start_date = end_date - _timedelta(days=days)
+    try:
+        report = await ConsumptionReportService.get_report_by_period(
+            db, company_id, start_date, end_date
+        )
+        pearch = report.get("pearch", {})
+        return PearchConsumptionResponse(
+            company_id=company_id,
+            period_start=start_date.date().isoformat(),
+            period_end=end_date.date().isoformat(),
+            period_days=days,
+            total_searches=pearch.get("total_calls", 0),
+            successful_searches=pearch.get("successful_calls", 0),
+            total_credits_consumed=pearch.get("total_credits_consumed", 0),
+            estimated_cost_brl=pearch.get("estimated_cost_brl", 0.0),
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error("Error getting pearch consumption: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="Failed to get Pearch consumption data")

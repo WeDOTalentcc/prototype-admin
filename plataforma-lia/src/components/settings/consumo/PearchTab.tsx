@@ -4,39 +4,20 @@ import useSWR from 'swr'
 
 const jsonFetcher = (url: string) => fetch(url).then(r => r.json())
 
-interface AgentUsage {
-  agent_type: string
-  total_tokens: number
-  total_cost_cents: number
-  total_operations?: number
-  operation_count?: number
-  requests_count?: number
-  total_requests?: number
-  tokens_used?: number
-}
-
-function parseAgentData(raw: unknown): AgentUsage[] {
-  if (!raw) return []
-  if (Array.isArray(raw)) return raw as AgentUsage[]
-  const r = raw as Record<string, unknown>
-  return (r.data ?? r.usage_by_agent ?? []) as AgentUsage[]
+interface PearchConsumption {
+  company_id: string
+  period_start: string
+  period_end: string
+  period_days: number
+  total_searches: number
+  successful_searches: number
+  total_credits_consumed: number
+  estimated_cost_brl: number
 }
 
 export function PearchTab() {
-  const { data: agentRaw, isLoading, error } =
-    useSWR('/api/backend-proxy/ai-credits?endpoint=by-agent&days=30', jsonFetcher)
-
-  const agents: AgentUsage[] = parseAgentData(agentRaw)
-  const pearchData = agents.find((a) => a.agent_type === 'search') ?? null
-
-  const totalSearches =
-    pearchData?.requests_count ??
-    pearchData?.total_requests ??
-    pearchData?.total_operations ??
-    pearchData?.operation_count ??
-    0
-  const tokensUsed =
-    pearchData?.tokens_used ?? pearchData?.total_tokens ?? 0
+  const { data, isLoading, error } =
+    useSWR<PearchConsumption>('/api/backend-proxy/consumo/pearch?days=30', jsonFetcher)
 
   if (isLoading) {
     return (
@@ -54,6 +35,11 @@ export function PearchTab() {
     )
   }
 
+  const totalSearches = data?.total_searches ?? 0
+  const creditsUsed = data?.total_credits_consumed ?? 0
+  const successfulSearches = data?.successful_searches ?? 0
+  const costBrl = data?.estimated_cost_brl ?? 0
+
   return (
     <div className="space-y-6">
       <p className="text-sm text-lia-text-tertiary">
@@ -65,19 +51,41 @@ export function PearchTab() {
           <p className="text-2xl font-semibold text-lia-text-primary">
             {totalSearches.toLocaleString('pt-BR')}
           </p>
-          <p className="text-xs text-lia-text-disabled mt-1">Este mês</p>
+          <p className="text-xs text-lia-text-disabled mt-1">Últimos 30 dias</p>
         </div>
         <div className="rounded-lg border border-lia-border-subtle bg-lia-bg-primary p-4">
           <p className="text-xs text-lia-text-tertiary mb-1">Créditos utilizados</p>
           <p className="text-2xl font-semibold text-lia-text-primary">
-            {tokensUsed.toLocaleString('pt-BR')}
+            {creditsUsed.toLocaleString('pt-BR')}
           </p>
-          <p className="text-xs text-lia-text-disabled mt-1">tokens</p>
+          <p className="text-xs text-lia-text-disabled mt-1">créditos</p>
         </div>
+        {successfulSearches > 0 && (
+          <div className="rounded-lg border border-lia-border-subtle bg-lia-bg-primary p-4">
+            <p className="text-xs text-lia-text-tertiary mb-1">Buscas bem-sucedidas</p>
+            <p className="text-2xl font-semibold text-lia-text-primary">
+              {successfulSearches.toLocaleString('pt-BR')}
+            </p>
+            <p className="text-xs text-lia-text-disabled mt-1">
+              {totalSearches > 0
+                ? `${Math.round((successfulSearches / totalSearches) * 100)}% de sucesso`
+                : '—'}
+            </p>
+          </div>
+        )}
+        {costBrl > 0 && (
+          <div className="rounded-lg border border-lia-border-subtle bg-lia-bg-primary p-4">
+            <p className="text-xs text-lia-text-tertiary mb-1">Custo estimado</p>
+            <p className="text-2xl font-semibold text-lia-text-primary">
+              {costBrl.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+            </p>
+            <p className="text-xs text-lia-text-disabled mt-1">no período</p>
+          </div>
+        )}
       </div>
-      {!pearchData && (
+      {totalSearches === 0 && (
         <p className="text-sm text-lia-text-disabled">
-          Nenhuma busca Pearch registrada este mês.
+          Nenhuma busca Pearch registrada nos últimos 30 dias.
         </p>
       )}
     </div>
