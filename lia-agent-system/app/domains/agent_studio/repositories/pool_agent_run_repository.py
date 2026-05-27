@@ -107,6 +107,7 @@ class PoolAgentRunRepository:
         error_message: str | None = None,
         results: dict | None = None,
         runtime_metrics: dict | None = None,
+        reasoning_payload: list[dict] | None = None,
     ) -> PoolAgentRun:
         """Orchestrator (Part 1.5b) atualiza durante execução.
 
@@ -137,6 +138,8 @@ class PoolAgentRunRepository:
             run.results = results
         if runtime_metrics is not None:
             run.runtime_metrics = runtime_metrics
+        if reasoning_payload is not None:
+            run.reasoning_payload = reasoning_payload
         await self.db.commit()
         await self.db.refresh(run)
         return run

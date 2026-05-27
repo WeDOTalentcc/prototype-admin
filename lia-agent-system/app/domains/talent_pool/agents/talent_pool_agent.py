@@ -263,6 +263,14 @@ class TalentPoolReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAg
                     a.params.get("tool", "") if hasattr(a, "params") else ""
                     for a in (output.actions or [])
                 ]
+                # Onda 1 B3 (2026-05-27): serializa decision tree pra JSONB.
+                # output.reasoning_trace populado pelo CustomAgentRuntime (B2)
+                # OU pelo proprio TalentPoolReActAgent quando a versao canonical
+                # for migrada (Onda 2/3). Quando None, grava None (legacy path).
+                _trace = output.reasoning_trace if hasattr(output, "reasoning_trace") else None
+                reasoning_payload_serialized = (
+                    [step.model_dump() for step in _trace] if _trace else None
+                )
                 async with AsyncSessionLocal() as db:
                     repo = PoolAgentRunRepository(db)
                     await repo.update_status(
@@ -273,6 +281,7 @@ class TalentPoolReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAg
                             "tools_used": tool_calls,
                             "confidence": float(output.confidence or 0.0),
                         },
+                        reasoning_payload=reasoning_payload_serialized,
                         runtime_metrics={
                             "latency_ms": elapsed_ms,
                             "tokens_input": out_meta.get("tokens_input", 0),
