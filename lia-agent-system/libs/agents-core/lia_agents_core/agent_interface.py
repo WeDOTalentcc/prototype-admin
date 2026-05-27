@@ -80,6 +80,94 @@ class AgentInput(BaseModel):
     )
 
 
+class AgentReasoningStep(BaseModel):
+    """Structured single step in an agent decision tree.
+
+    Wave 0 Fix 4 (2026-05-27) — preparatório Onda 1 Studio Control Room.
+
+    Diferente da `ReasoningStep` em libs/agents-core/lia_agents_core/state_machine.py
+    (que captura graph execution log: node_name, durations), esta classe captura
+    **a lógica de decisão do agente** — critérios avaliados, scores, dados
+    acessados (LGPD Art. 9). Usada pelo DecisionTreeDrawer (Onda 1) pra render
+    "por que o agente recomendou esta ação".
+
+    Campo `data_fields_accessed` é o backbone do audit LGPD — toda execução
+    de agente declara quais campos do candidato leu, e o sensor
+    `check_lgpd_data_access_logged.py` (Onda 1) valida.
+    """
+
+    step_type: Literal["criterion", "thought", "action", "observation"] = Field(
+        ...,
+        description="Tipo do passo no decision tree.",
+    )
+    label: str = Field(
+        ...,
+        description="Rótulo curto exibido na UI (ex: Experiência 3 anos).",
+    )
+    score: Optional[float] = Field(
+        default=None,
+        ge=0.0,
+        le=1.0,
+        description="Score normalizado [0.0, 1.0]. Opcional pra passos sem peso.",
+    )
+    matched: Optional[bool] = Field(
+        default=None,
+        description="True/False/None — checkmark visual no DecisionTreeDrawer.",
+    )
+    detail: Optional[str] = Field(
+        default=None,
+        description="Detalhe textual livre exibido em expand.",
+    )
+    data_fields_accessed: List[str] = Field(
+        default_factory=list,
+        description="Campos do candidato/job lidos neste passo (LGPD Art. 9 trail).",
+    )
+
+
+class AgentReasoningStep(BaseModel):
+    """Structured single step in an agent decision tree.
+
+    Wave 0 Fix 4 (2026-05-27) — preparatório Onda 1 Studio Control Room.
+
+    Diferente da `ReasoningStep` em libs/agents-core/lia_agents_core/state_machine.py
+    (que captura graph execution log: node_name, durations), esta classe captura
+    **a lógica de decisão do agente** — critérios avaliados, scores, dados
+    acessados (LGPD Art. 9). Usada pelo DecisionTreeDrawer (Onda 1) pra render
+    "por que o agente recomendou esta ação".
+
+    Campo `data_fields_accessed` é o backbone do audit LGPD — toda execução
+    de agente declara quais campos do candidato leu, e o sensor
+    `check_lgpd_data_access_logged.py` (Onda 1) valida.
+    """
+
+    step_type: Literal["criterion", "thought", "action", "observation"] = Field(
+        ...,
+        description="Tipo do passo no decision tree.",
+    )
+    label: str = Field(
+        ...,
+        description="Rótulo curto exibido na UI (ex: Experiência 3 anos).",
+    )
+    score: Optional[float] = Field(
+        default=None,
+        ge=0.0,
+        le=1.0,
+        description="Score normalizado [0.0, 1.0]. Opcional pra passos sem peso.",
+    )
+    matched: Optional[bool] = Field(
+        default=None,
+        description="True/False/None — checkmark visual no DecisionTreeDrawer.",
+    )
+    detail: Optional[str] = Field(
+        default=None,
+        description="Detalhe textual livre exibido em expand.",
+    )
+    data_fields_accessed: List[str] = Field(
+        default_factory=list,
+        description="Campos do candidato/job lidos neste passo (LGPD Art. 9 trail).",
+    )
+
+
 class AgentOutput(BaseModel):
     """Standardized output from all domain agents."""
 
@@ -107,7 +195,15 @@ class AgentOutput(BaseModel):
     )
     reasoning_steps: List[str] = Field(
         default_factory=list,
-        description="Chain of reasoning steps the agent took",
+        description="Chain of reasoning steps the agent took (legacy flat list).",
+    )
+    reasoning_trace: Optional[List[AgentReasoningStep]] = Field(
+        default=None,
+        description=(
+            "Structured decision tree — Wave 0 Fix 4 (2026-05-27). Populated by "
+            "agents that expose audit-grade reasoning (Onda 1 DecisionTreeDrawer). "
+            "None = legacy path; [] = agent ran but produced no structured trace."
+        ),
     )
     tool_results: List[Dict[str, Any]] = Field(
         default_factory=list,
