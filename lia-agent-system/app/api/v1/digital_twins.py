@@ -10,6 +10,7 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.dependencies import get_current_user
+from app.auth.models import User
 from app.core.database import get_db, get_tenant_db
 from pydantic import BaseModel, Field
 from typing import Optional
@@ -45,7 +46,7 @@ class ManualDecisionRequest(WeDoBaseModel):
 @router.post("")
 async def create_twin(
     body: CreateTwinRequest,
-    current_user: dict = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_tenant_db),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
@@ -115,7 +116,7 @@ company_id: str = Depends(require_company_id)):
                 f"Decisions indexed: {indexed}",
                 f"Indexing failed: {indexing_failed}",
             ],
-            actor_user_id=current_user.get("user_id", "system") if isinstance(current_user, dict) else str(getattr(current_user, "id", "")),
+            actor_user_id=str(current_user.id),
             target_id=str(twin.id),
             target_type="digital_twin",
         )
@@ -135,7 +136,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("")
 async def list_twins(
-    current_user: dict = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_tenant_db),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
@@ -285,6 +286,10 @@ company_id: str = Depends(require_company_id)):
         "decision": evaluation.decision,
         "reasoning": evaluation.reasoning,
         "confidence": evaluation.confidence,
+        # REGRA 4 anti-silent-fallback (audit 2026-05-27): propaga falha LLM explícita
+        "evaluation_failed": evaluation.evaluation_failed,
+        "failure_reason": evaluation.failure_reason,
+        "needs_manual_review": evaluation.needs_manual_review,
         "supporting_examples": [
             {
                 "decision": ex["decision"],

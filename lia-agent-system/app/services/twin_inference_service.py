@@ -23,11 +23,15 @@ logger = logging.getLogger(__name__)
 class TwinEvaluation:
     twin_id: str
     twin_name: str
-    score: int  # 0-100
-    decision: str  # approved, rejected, maybe
+    score: Optional[int]  # 0-100; None if evaluation failed
+    decision: str  # approved, rejected, maybe, evaluation_failed
     reasoning: str  # in first person, SME style
     confidence: float  # 0.0-1.0, based on corpus size and similarity
     supporting_examples: list[dict]  # K similar past decisions
+    # REGRA 4 anti-silent-fallback (audit 2026-05-27): expose LLM failure explicitly
+    evaluation_failed: bool = False
+    failure_reason: Optional[str] = None
+    needs_manual_review: bool = False
 
 
 class TwinInferenceService:
@@ -110,15 +114,33 @@ Responda com JSON:
 Responda APENAS com o JSON.
 """
 
-        # 6. LLM inference
+        # 6. LLM inference — REGRA 4 (CLAUDE.md): no silent fallback in critical AI path.
+        # If LLM fails, return evaluation with explicit failure flags so the caller
+        # (and ultimately the recruiter UI) can surface "needs manual review".
         try:
             from app.shared.providers.llm_factory import get_llm
             llm = get_llm(tier="default")
             response = await llm.ainvoke(prompt)
             data = json.loads(response.content)
         except Exception as e:
-            logger.warning("[TwinInference] LLM failed: %s", e)
-            data = {"score": 50, "decision": "maybe", "reasoning": "Avaliação automática indisponível."}
+            logger.error(
+                "[TwinInference] LLM evaluation failed",
+                exc_info=True,
+                extra={"twin_id": str(twin.id), "twin_name": twin.twin_name},
+            )
+            confidence = self._calculate_confidence(twin.decision_count, examples)
+            return TwinEvaluation(
+                twin_id=str(twin.id),
+                twin_name=twin.twin_name,
+                score=None,
+                decision="evaluation_failed",
+                reasoning=f"Avaliação automática indisponível: {type(e).__name__}",
+                confidence=0.0,
+                supporting_examples=examples,
+                evaluation_failed=True,
+                failure_reason=str(e)[:200],
+                needs_manual_review=True,
+            )
 
         # 7. Calculate confidence based on corpus size and similarity
         confidence = self._calculate_confidence(twin.decision_count, examples)
