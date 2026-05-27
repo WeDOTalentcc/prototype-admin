@@ -544,12 +544,10 @@ class LLMService:
             system_prompt=system_prompt,
             company_id=_company_id,
         )
-        # REGRA-4-EXEMPT (Wave D2.3, 2026-05-27): cache lookup fallthrough.
-        # Except assigns _cached=None, mas o return-after-try abaixo (linha ~560)
-        # NÃO retorna dados fabricados: o branch `if _cached and ...:` exige
-        # _cached truthy + safe marker. Cache miss/error => _cached=None =>
-        # cai pro real LLM call (provider). Não é silent fallback — é cache
-        # bypass canonical. Real LLM error sobe como exception (sem mascarar).
+        # Cache lookup is fail-soft: errors bypass cache and fall through
+        # to real provider call (no silent fallback — cache miss is canonical
+        # path, not a masked failure). See REGRA-4-EXEMPT marker on cache HIT
+        # return below.
         try:
             _cached = await response_cache_service.get_cached_response(_cache_key)
         except Exception as _cache_err:
@@ -563,6 +561,10 @@ class LLMService:
                 f"[LLM-CACHE] HIT provider={provider} key=...{_cache_key[-12:]} "
                 f"text_len={len(_cached.get('text_response', '') or '')}"
             )
+            # cache HIT return — _cached comes from successful cache lookup
+            # (try branch). When lookup fails, _cached=None and falls through
+            # to real provider call below; not silent fallback.
+            # REGRA-4-EXEMPT (Wave D2.3): cache hit, not error fallback.
             return ToolCallResponse(
                 text_response=_cached.get("text_response"),
                 tool_calls=[],

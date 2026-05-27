@@ -163,13 +163,9 @@ def wsi_questions_gate_node(state: JobCreationState) -> JobCreationState:
         # PR-14 (2026-05-26): helper canonical run_coro_in_threadpool() substitui
         # bloco running_loop + ThreadPoolExecutor inline (Tipo B migration).
         output = run_coro_in_threadpool(coro_factory, timeout=30.0)
-    # REGRA-4-EXEMPT (Wave D2.3, 2026-05-27): graceful degradation HITL.
-    # except atribui `output = _make_fallback()` com confidence=0.0 e intent
-    # neutro. O return-after-try abaixo NÃO entrega `output` como answer
-    # canonical — confidence < 0.7 dispara branch `clarify` (linha ~180),
-    # surfando uma pergunta real pro recrutador (HITL). Não é silent
-    # fallback: o usuário VÊ que a LIA precisa de mais contexto. Exception
-    # já é logada com WARNING + contexto.
+    # Fallback path is fail-soft and feeds into the clarify HITL branch
+    # below (confidence < 0.7 surfaces a real question to the recruiter).
+    # See REGRA-4-EXEMPT marker on the clarify return for sensor opt-out.
     except Exception as exc:
         logger.warning("[JobCreation:wsi_questions_gate] classify failed (fallback): %s", exc)
         output = _make_fallback()
@@ -189,13 +185,13 @@ def wsi_questions_gate_node(state: JobCreationState) -> JobCreationState:
             "[JobCreation:wsi_questions_gate] confidence=%.2f < 0.7 → clarify (intent=%s)",
             output.confidence, output.intent,
         )
-        # REGRA-4-EXEMPT (Wave D2.3, 2026-05-27): HITL clarify, not silent fallback.
-        # `output` pode ter vindo do except `_make_fallback()` (confidence=0.0)
-        # ou do classifier real com confidence baixa. Em AMBOS os casos, este
-        # branch surfa pergunta real pro recrutador (clarify_message). Recrutador
-        # vê que a LIA precisa de mais contexto — fluxo HITL canonical, sem
-        # mascarar falha como sucesso. fallback_used=True não aplicável aqui
-        # (resposta é clarify message, não envelope de sucesso).
+        # HITL clarify, not silent fallback. `output` pode ter vindo do
+        # except `_make_fallback()` (confidence=0.0) ou do classifier real
+        # com confidence baixa. Em AMBOS os casos, surfa pergunta real pro
+        # recrutador (clarify_message) — fluxo HITL canonical, sem mascarar
+        # falha como sucesso.
+        # REGRA-4-EXEMPT (Wave D2.3): HITL clarify return — fallback_used flag
+        # não aplicável (resposta é clarify message, não envelope de sucesso).
         return {
             **state,
             "gate_resume_message": "",
