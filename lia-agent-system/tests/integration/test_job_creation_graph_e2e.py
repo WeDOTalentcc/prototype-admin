@@ -195,18 +195,39 @@ def test_full_wizard_run_emits_single_job_creation_audit(initial_state):
     )
 
     def _make_stage_aware_classifier():
-        """Mock canonical: detecta stage via system_prompt + retorna intent apropriado.
+        """Mock canonical: usa `stage` parameter de classify() para retornar
+        intent apropriado por gate.
 
-        - jd_enrichment / wsi_questions / competency / outros -> approve
-        - review -> publish_now (review_gate allowlist nao tem approve)
+        Stage allowlist intents canonical (STAGE_ALLOWLISTS):
+          - jd_enrichment: approve, reject_with_feedback, provide_new_content, ask_question
+          - competency: select_compact, select_full, undecided, ask_question
+          - wsi_questions: approve, regenerate, edit_specific_question, add_question,
+                           remove_question, ask_question
+          - review: publish_now, request_changes, ask_clarification, configure_destinations
+
+        Test E2E precisa fluir todo o flow -> intent canonical para avancar.
         """
-        async def _classify(system_prompt, context_block, schema, **kw):
-            # Detecta stage via system_prompt content
-            if "review" in (system_prompt or "").lower() and "publish_now" in (system_prompt or "").lower():
+        async def _classify(**kw):
+            stage = kw.get("stage", "")
+            if stage == "competency":
+                # Competency: select_compact = avanca para wsi_questions com modo compact
+                return GateClassifierOutput(
+                    intent="select_compact", confidence=0.95,
+                    conversational_reply="(mock select_compact)", extracted_data={},
+                )
+            if stage == "review":
+                # Review: publish_now (dupla confirmacao -- pode precisar 2 calls)
                 return GateClassifierOutput(
                     intent="publish_now", confidence=0.95,
                     conversational_reply="(mock publish_now)", extracted_data={},
                 )
+            if stage == "wsi_questions":
+                # wsi_questions: approve_all (canonical intent)
+                return GateClassifierOutput(
+                    intent="approve_all", confidence=0.95,
+                    conversational_reply="(mock approve_all)", extracted_data={},
+                )
+            # jd_enrichment + default: approve
             return GateClassifierOutput(
                 intent="approve", confidence=0.95,
                 conversational_reply="(mock approve)", extracted_data={},
@@ -261,7 +282,7 @@ def test_full_wizard_run_emits_single_job_creation_audit(initial_state):
         # Resume canonical loop -- max 8 resumes (4 HITL gates + dupla confirmacao publish + safety).
         # Cada resume passa "ok" pro Command -- classifier mock sempre
         # devolve approve.
-        for _ in range(8):
+        for _ in range(15):
             if state.get("current_stage") == "handoff":
                 break
             state = compiled.invoke(
@@ -365,18 +386,39 @@ def test_resume_after_hitl_does_not_duplicate_audit(initial_state):
     )
 
     def _make_stage_aware_classifier():
-        """Mock canonical: detecta stage via system_prompt + retorna intent apropriado.
+        """Mock canonical: usa `stage` parameter de classify() para retornar
+        intent apropriado por gate.
 
-        - jd_enrichment / wsi_questions / competency / outros -> approve
-        - review -> publish_now (review_gate allowlist nao tem approve)
+        Stage allowlist intents canonical (STAGE_ALLOWLISTS):
+          - jd_enrichment: approve, reject_with_feedback, provide_new_content, ask_question
+          - competency: select_compact, select_full, undecided, ask_question
+          - wsi_questions: approve, regenerate, edit_specific_question, add_question,
+                           remove_question, ask_question
+          - review: publish_now, request_changes, ask_clarification, configure_destinations
+
+        Test E2E precisa fluir todo o flow -> intent canonical para avancar.
         """
-        async def _classify(system_prompt, context_block, schema, **kw):
-            # Detecta stage via system_prompt content
-            if "review" in (system_prompt or "").lower() and "publish_now" in (system_prompt or "").lower():
+        async def _classify(**kw):
+            stage = kw.get("stage", "")
+            if stage == "competency":
+                # Competency: select_compact = avanca para wsi_questions com modo compact
+                return GateClassifierOutput(
+                    intent="select_compact", confidence=0.95,
+                    conversational_reply="(mock select_compact)", extracted_data={},
+                )
+            if stage == "review":
+                # Review: publish_now (dupla confirmacao -- pode precisar 2 calls)
                 return GateClassifierOutput(
                     intent="publish_now", confidence=0.95,
                     conversational_reply="(mock publish_now)", extracted_data={},
                 )
+            if stage == "wsi_questions":
+                # wsi_questions: approve_all (canonical intent)
+                return GateClassifierOutput(
+                    intent="approve_all", confidence=0.95,
+                    conversational_reply="(mock approve_all)", extracted_data={},
+                )
+            # jd_enrichment + default: approve
             return GateClassifierOutput(
                 intent="approve", confidence=0.95,
                 conversational_reply="(mock approve)", extracted_data={},
@@ -402,6 +444,16 @@ def test_resume_after_hitl_does_not_duplicate_audit(initial_state):
          patch(
              "app.domains.job_creation.compliance._run_async",
              lambda coro, **kw: coro.close(),
+         ), \
+         patch(
+             "app.domains.job_creation.services.wizard_gate_classifier."
+             "get_wizard_gate_classifier",
+             return_value=_make_stage_aware_classifier(),
+         ), \
+         patch(
+             "app.domains.job_creation.services.intake_intent_classifier."
+             "get_intake_intent_classifier",
+             return_value=_MockIntakeProvidesJd(),
          ):
         audit_cls.return_value.log_decision = log_decision
 
@@ -425,7 +477,7 @@ def test_resume_after_hitl_does_not_duplicate_audit(initial_state):
         # com novo state. Loop ate handoff (4 HITL gates).
         from langgraph.types import Command
         resumed = first
-        for _ in range(8):
+        for _ in range(15):
             if resumed.get("current_stage") == "handoff":
                 break
             resumed = compiled.invoke(Command(resume="ok"), config=config)
