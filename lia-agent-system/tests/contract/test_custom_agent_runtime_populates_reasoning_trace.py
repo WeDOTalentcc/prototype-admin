@@ -3,10 +3,12 @@
 Onda 1 B2 — sensor + test em camadas:
 - sensor (B5.1) garante AST shape (recidiva proibida)
 - este teste garante runtime behavior (output.reasoning_trace populated)
+
+Approach: bypass __init__ pesado (LangGraphReActBase precisa checkpointer +
+async init). Set atributos minimos diretos via __new__ → testa apenas
+_state_to_output (helper puro).
 """
 from __future__ import annotations
-
-from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -18,17 +20,14 @@ class _FakeAIMessage:
 
 
 def _make_runtime():
-    """Helper: monta CustomAgentRuntime mockando boot pesado de enhanced mixin."""
+    """Cria runtime via __new__ (skip pesado __init__)."""
     from app.domains.agent_studio.custom_agent_runtime import CustomAgentRuntime
 
-    with patch.object(CustomAgentRuntime, "_setup_enhanced", return_value=None):
-        rt = CustomAgentRuntime(
-            agent_id="agent-1",
-            agent_name="TestAgent",
-            system_prompt="você é teste",
-            allowed_tools=["search_candidates"],
-            company_id="comp-1",
-        )
+    rt = CustomAgentRuntime.__new__(CustomAgentRuntime)
+    rt._agent_id = "agent-1"
+    rt._agent_name = "TestAgent"
+    rt._domain = "custom"
+    rt._allowed_tools = []
     return rt
 
 
