@@ -765,6 +765,33 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
     setState((prev) => ({ ...prev, dynamicPanel: null }));
   }, []);
 
+  // Bridge canonical (Fix B 2026-05-27 -- WIZARD_DEEP_DIVE P0-NOVO-#2):
+  // Backend `agent_chat_ws.py` emite APENAS `wizard_stage` ao avancar de etapa
+  // (nunca `panel_update`). `useChatSocket.ts:289` dispatcha o window event
+  // `lia:wizard-stage-payload` mas NAO chama `openDynamicPanel`. Sem essa bridge,
+  // `state.dynamicPanel` fica `null` durante todo o wizard, o gate
+  // `hasDynamicPanel` falha, e o painel HITL nunca renderiza.
+  //
+  // Skill canonica: harness-engineering [guide computacional + sensor em
+  // `lia-float-context.wizard-stage-bridge.test.ts`].
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const handler = (e: Event) => {
+      const detail = ((e as CustomEvent).detail ?? {}) as Record<string, unknown>;
+      const stage = detail.stage as string | undefined;
+      if (!stage) return; // payload incompleto -- ignora silenciosamente
+      openDynamicPanel({
+        panelType: "job_creation",
+        data: (detail.data as Record<string, unknown>) ?? {},
+        stage,
+        requires_approval: Boolean(detail.requires_approval),
+      });
+    };
+    window.addEventListener("lia:wizard-stage-payload", handler);
+    return () =>
+      window.removeEventListener("lia:wizard-stage-payload", handler);
+  }, [openDynamicPanel]);
+
   const updateDynamicPanelData = useCallback(
     (data: Record<string, unknown>) => {
       setState((prev) => {
