@@ -324,3 +324,102 @@ def test_classifier_low_conf_long_msg_no_guard():
     # invalida o contrato). Nenhum assert sobre enrich aqui — a sentinela
     # foca no fato de que o classifier rodou (vs. o bug original onde
     # nem rodava).
+
+
+def test_classifier_runs_when_parsed_title_extracted_but_raw_thin():
+    """Fix D (2026-05-27) — quando intake extrai parsed_title MAS raw_input
+    eh curto e SEM JD/panel/attached, classifier DEVE rodar pra decidir
+    entre intent_only (pedir JD) e provides_jd_intent (seguir enrichment).
+    
+    Bug raiz (descoberto via WIZARD_DEEP_DIVE_2026-05-27_POST_PR18.md P1-NOVO-#1):
+    `_classifier_eligible = ... and not _has_parsed_title` bloqueava classifier
+    quando title estava extraido. Resultado: guard tambem nao disparava
+    (depende de _classifier_eligible), LLM enrichment recebia 40 chars de
+    input e inventava about_role/requirements/skills fictícios. Recrutador
+    aprovava JD ilusoria, vaga publicada com conteudo nao escrito por ele.
+    
+    Cenario reproducao Paulo 2026-05-27: "Quero contratar um Engenheiro
+    Backend Senior" (40 chars) -> intake extrai title -> jd_enrichment
+    invoca LLM com lixo curto.
+    """
+    from app.domains.job_creation import graph as g
+
+    state = _base_state("Quero contratar um Engenheiro Backend Senior")
+    state["parsed_title"] = "Engenheiro Backend Senior"
+    state["parsed_seniority"] = "senior"
+    called = {"n": 0}
+
+    class _MockClassifier:
+        def classify_sync(self, **kwargs):
+            called["n"] += 1
+            return _make_intake_output("intent_only", 0.9)
+
+    with patch.object(
+        g, "_extract_last_turns", return_value=[],
+    ), patch(
+        "app.domains.job_creation.services.intake_intent_classifier."
+        "get_intake_intent_classifier",
+        return_value=_MockClassifier(),
+    ):
+        result = g.jd_enrichment_node(state)
+
+    assert called["n"] == 1, (
+        "Fix D: classifier DEVE rodar quando parsed_title set mas raw curto "
+        "(sem JD/panel/attached). Pre-fix: _has_parsed_title=True bloqueava "
+        "_classifier_eligible. Pos-fix: title nao bloqueia mais."
+    )
+    assert result.get("jd_enriched") is None, (
+        "Fix D: intent_only com conf>=0.7 deve disparar guard "
+        "-> jd_enriched permanece None (nao chama LLM enrichment com lixo)."
+    )
+    history = result.get("stage_history", [])
+    assert any("awaiting" in h or "intent" in h for h in history), (
+        f"Fix D: stage_history deve indicar awaiting/intent (guard fired). "
+        f"Got: {history!r}"
+    )
+
+
+def test_classifier_runs_when_parsed_title_set_and_raw_rich():
+    """Fix D non-regression — quando parsed_title set MAS raw_input eh rico
+    (>=100 chars JD-like), classifier roda e classifica como provides_jd_intent.
+    Mantem o behavior de seguir pra LLM enrichment quando ha informacao real."""
+    from app.domains.job_creation import graph as g
+
+    raw = (
+        "Engenheiro Backend Senior remoto Brasil, Python/FastAPI, PostgreSQL, "
+        "Docker, AWS. 5+ anos experiencia. CLT 20-28k. Cultura colaborativa, "
+        "mentoria, code review canonical. Sem requisitos discriminatorios."
+    )
+    assert len(raw) >= 100
+    state = _base_state(raw)
+    state["parsed_title"] = "Engenheiro Backend Senior"
+    called = {"n": 0}
+
+    class _MockClassifier:
+        def classify_sync(self, **kwargs):
+            called["n"] += 1
+            return _make_intake_output("provides_jd_intent", 0.95)
+
+    with patch.object(
+        g, "_extract_last_turns", return_value=[],
+    ), patch(
+        "app.domains.job_creation.services.intake_intent_classifier."
+        "get_intake_intent_classifier",
+        return_value=_MockClassifier(),
+    ), patch(
+        "app.domains.job_creation.graph._enrich_jd_via_llm",
+        return_value={"enriched_jd": "(mocked)", "quality_score": 80.0},
+        create=True,
+    ):
+        try:
+            g.jd_enrichment_node(state)
+        except Exception:
+            # Downstream pode falhar por outros mocks faltando -- importante eh
+            # que classifier rodou ANTES de tudo (contrato Fix D + Task #1123).
+            pass
+
+    assert called["n"] == 1, (
+        "Fix D non-regression: classifier deve rodar mesmo com parsed_title "
+        "set, agora que `not _has_parsed_title` foi removido de "
+        "_classifier_eligible."
+    )

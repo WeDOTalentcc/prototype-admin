@@ -123,11 +123,20 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
     # genuinamente magra (raw_len<100). Mantém safety net contra
     # disponibilidade do LLM sem reintroduzir o non-determinismo de
     # length-gated routing.
+    # Fix D 2026-05-27 (WIZARD_DEEP_DIVE_2026-05-27_POST_PR18 P1-NOVO-#1):
+    # Removido "and not _has_parsed_title". Ter title extraido pelo
+    # intake_node eh evidencia DE PROGRESSO mas NAO substitui ter JD real.
+    # Pre-fix: title set bloqueava classifier; guard tambem nao disparava
+    # (depende de _classifier_eligible); LLM enrichment invocado com 40 chars
+    # de input inventava about_role/requirements ficticios. Recrutador aprovava
+    # JD ilusoria, vaga publicada com conteudo nao escrito por ele.
+    # Pos-fix: classifier sempre roda quando jd_enriched=None e nao ha JD
+    # estruturada (panel_form/attached). Title eh evidencia auxiliar mas
+    # nao gate.
     _classifier_eligible = (
         not state.get("jd_enriched")  # nunca short-circuit em resume
         and not _has_panel_form
         and not _has_attached
-        and not _has_parsed_title
     )
 
     # ── Task #1098 + Task #1123 — LLM intent classifier SEMPRE roda ──
