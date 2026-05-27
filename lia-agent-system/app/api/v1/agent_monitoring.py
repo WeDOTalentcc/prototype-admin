@@ -272,3 +272,367 @@ async def seed_demo_data(db: AsyncSession = Depends(get_db), company_id: str = D
         "message": f"Created {result['activities_created']} demo activities",
         **result
     }
+
+
+# ============================================================================
+# Onda 1 B4 — Studio Control Room endpoints (2026-05-27)
+# ============================================================================
+# Sala de Controle = 4ª aba do Agent Studio. Recruiter ve em real-time:
+#   1. Execucoes ativas (running last 1h)
+#   2. Reasoning detalhado de uma execucao (decision tree LGPD-compliant)
+#   3. Historico recente (paginado)
+#
+# Multi-tenancy: require_company_id obrigatorio em todos endpoints.
+# LGPD Art. 9: campo data_fields_NOT_accessed declarativo em B4.2 declara
+# que campos sensiveis (cpf, raca, religiao, genero, estado_civil) NUNCA
+# aparecem em data_fields_accessed dos steps. Sensor B5.2 garante invariante.
+# ============================================================================
+
+from datetime import datetime, timedelta, timezone
+from typing import Literal
+from uuid import UUID as PyUUID
+
+from sqlalchemy import and_, desc, select
+
+from app.shared.types import WeDoBaseModel as _WeDoBaseModel
+from lia_agents_core.agent_interface import AgentReasoningStep
+from lia_models.custom_agent import CustomAgent as _CustomAgent
+from lia_models.pool_agent_assignment import PoolAgentAssignment as _PoolAgentAssignment
+from lia_models.pool_agent_run import PoolAgentRun as _PoolAgentRun
+from lia_models.talent_pool import TalentPool as _TalentPool
+
+
+# LGPD Art. 9 — fields canonical que NUNCA podem aparecer em data_fields_accessed.
+# Declarativo: B4.2 response sempre inclui essa lista pra audit transparency.
+# Sensor B5.2 (check_lgpd_data_access_logged.py) garante invariante.
+_LGPD_NEVER_ACCESSED_FIELDS = [
+    "cpf",
+    "raca",
+    "religiao",
+    "genero",
+    "estado_civil",
+]
+
+_StudioTargetSurface = Literal["talent_pool", "job", "pipeline_stage", "candidate_list"]
+
+
+class ActiveExecutionResponse(_WeDoBaseModel):
+    execution_id: str
+    agent_id: str
+    agent_name: str
+    target_type: str
+    target_id: str
+    target_name: str | None = None
+    status: Literal["running", "completed", "error"]
+    started_at: datetime
+    progress_pct: int | None = None
+    candidates_processed: int | None = None
+    eta_seconds: int | None = None
+
+
+class RecentExecutionResponse(_WeDoBaseModel):
+    execution_id: str
+    agent_id: str
+    agent_name: str
+    target_type: str
+    target_id: str
+    target_name: str | None = None
+    status: Literal["success", "error", "timeout", "cancelled", "running", "queued"]
+    started_at: datetime | None = None
+    finished_at: datetime | None = None
+    latency_ms: int | None = None
+    success_summary: str | None = None
+
+
+class ExecutionReasoningResponse(_WeDoBaseModel):
+    execution_id: str
+    agent_id: str
+    agent_name: str
+    started_at: datetime | None = None
+    completed_at: datetime | None = None
+    model_used: str | None = None
+    cost_usd: float | None = None
+    latency_ms: int | None = None
+    input_tokens: int | None = None
+    output_tokens: int | None = None
+    reasoning_trace: list[AgentReasoningStep]
+    data_fields_accessed_summary: list[str]
+    data_fields_NOT_accessed: list[str]
+
+
+def _resolve_target_info(
+    assignment: _PoolAgentAssignment | None,
+    talent_pool: _TalentPool | None,
+) -> tuple[str, str, str | None]:
+    """Resolve target_type / target_id / target_name canonical.
+
+    Wave 1 escopo: TalentPoolReActAgent é o único agent canonical que grava
+    pool_agent_runs em real-time, então target_type sempre = 'talent_pool'.
+    Quando Onda 2/3 expandir pra jobs/stages/lists, este helper ganha
+    branches via assignment.config_overrides[\"target_type\"].
+    """
+    if talent_pool is not None:
+        return "talent_pool", str(talent_pool.id), talent_pool.name
+    if assignment is not None:
+        return "talent_pool", str(assignment.talent_pool_id), None
+    return "talent_pool", "unknown", None
+
+
+def _map_status_to_studio(db_status: str) -> Literal["running", "completed", "error"]:
+    """Map pool_agent_runs.status (6 valores) -> Studio Control Room (3 buckets)."""
+    if db_status == "running":
+        return "running"
+    if db_status == "success":
+        return "completed"
+    return "error"
+
+
+@router.get("/active-executions", response_model=list[ActiveExecutionResponse])
+async def list_active_executions(
+    surface: _StudioTargetSurface | None = Query(
+        default=None,
+        description="Filtra por target surface (talent_pool|job|pipeline_stage|candidate_list)",
+    ),
+    db: AsyncSession = Depends(get_db),
+    company_id: str = Depends(require_company_id),
+) -> list[ActiveExecutionResponse]:
+    """Onda 1 B4.1 — Studio Control Room: execuções rodando agora.
+
+    Multi-tenancy fail-closed via require_company_id.
+    Filtro: status='running' AND started_at > now() - 1h (exclui orphans).
+    """
+    cutoff = datetime.now(timezone.utc) - timedelta(hours=1)
+    stmt = (
+        select(_PoolAgentRun, _PoolAgentAssignment, _CustomAgent, _TalentPool)
+        .join(
+            _PoolAgentAssignment,
+            _PoolAgentRun.assignment_id == _PoolAgentAssignment.id,
+        )
+        .join(
+            _CustomAgent,
+            _PoolAgentAssignment.custom_agent_id == _CustomAgent.id,
+        )
+        .outerjoin(
+            _TalentPool,
+            _PoolAgentAssignment.talent_pool_id == _TalentPool.id,
+        )
+        .where(
+            and_(
+                _PoolAgentRun.company_id == company_id,
+                _PoolAgentRun.status == "running",
+                _PoolAgentRun.started_at != None,  # noqa: E711 — sqlalchemy idiom
+                _PoolAgentRun.started_at > cutoff,
+            )
+        )
+        .order_by(desc(_PoolAgentRun.started_at))
+    )
+    result = await db.execute(stmt)
+    rows = result.all()
+
+    out: list[ActiveExecutionResponse] = []
+    for run, assignment, agent, pool in rows:
+        target_type, target_id, target_name = _resolve_target_info(assignment, pool)
+        # Onda 1 escopo: filtro surface só suporta 'talent_pool' (canonical real
+        # gravando pool_agent_runs). Outros tipos retornam vazio até Onda 2/3.
+        if surface is not None and surface != target_type:
+            continue
+        rm = run.runtime_metrics or {}
+        candidates_processed = rm.get("candidates_processed")
+        progress_pct = rm.get("progress_pct")
+        eta_seconds = rm.get("eta_seconds")
+        out.append(
+            ActiveExecutionResponse(
+                execution_id=str(run.id),
+                agent_id=str(agent.id),
+                agent_name=agent.name,
+                target_type=target_type,
+                target_id=target_id,
+                target_name=target_name,
+                status="running",
+                started_at=run.started_at,
+                progress_pct=int(progress_pct) if progress_pct is not None else None,
+                candidates_processed=(
+                    int(candidates_processed)
+                    if candidates_processed is not None
+                    else None
+                ),
+                eta_seconds=int(eta_seconds) if eta_seconds is not None else None,
+            )
+        )
+    return out
+
+
+@router.get(
+    "/executions/{execution_id}/reasoning",
+    response_model=ExecutionReasoningResponse,
+)
+async def get_execution_reasoning(
+    execution_id: str,
+    db: AsyncSession = Depends(get_db),
+    company_id: str = Depends(require_company_id),
+) -> ExecutionReasoningResponse:
+    """Onda 1 B4.2 — decision tree completo de uma execução.
+
+    Retorna AgentReasoningStep[] + LGPD declarative trail.
+    404 se reasoning_payload é None (execução pre-B3 ou agent não-instrumentado).
+    """
+    try:
+        exec_uuid = PyUUID(execution_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="execution_id deve ser UUID válido")
+
+    stmt = (
+        select(_PoolAgentRun, _PoolAgentAssignment, _CustomAgent)
+        .join(
+            _PoolAgentAssignment,
+            _PoolAgentRun.assignment_id == _PoolAgentAssignment.id,
+        )
+        .join(
+            _CustomAgent,
+            _PoolAgentAssignment.custom_agent_id == _CustomAgent.id,
+        )
+        .where(
+            and_(
+                _PoolAgentRun.id == exec_uuid,
+                _PoolAgentRun.company_id == company_id,
+            )
+        )
+    )
+    result = await db.execute(stmt)
+    row = result.one_or_none()
+    if row is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Execução não encontrada ou pertence a outro tenant.",
+        )
+    run, _assignment, agent = row
+    if not run.reasoning_payload:
+        raise HTTPException(
+            status_code=404,
+            detail=(
+                "Decision tree não disponível para esta execução. "
+                "Execuções gravadas antes da Onda 1 B3 ou via agentes "
+                "não-instrumentados não têm reasoning_payload."
+            ),
+        )
+
+    # Parse JSONB -> Pydantic models (validation).
+    try:
+        steps = [AgentReasoningStep(**s) for s in (run.reasoning_payload or [])]
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Reasoning payload corrompido (shape divergente): {exc}",
+        )
+
+    # Aggregate data_fields_accessed across all steps (LGPD audit summary).
+    accessed_summary: set[str] = set()
+    for s in steps:
+        accessed_summary.update(s.data_fields_accessed)
+    # Defense-in-depth: strip any LGPD-forbidden field that might have slipped.
+    accessed_summary -= set(_LGPD_NEVER_ACCESSED_FIELDS)
+
+    rm = run.runtime_metrics or {}
+    return ExecutionReasoningResponse(
+        execution_id=str(run.id),
+        agent_id=str(agent.id),
+        agent_name=agent.name,
+        started_at=run.started_at,
+        completed_at=run.finished_at,
+        model_used=rm.get("model_used") or None,
+        cost_usd=float(rm["cost_usd"]) if rm.get("cost_usd") is not None else None,
+        latency_ms=int(rm["latency_ms"]) if rm.get("latency_ms") is not None else None,
+        input_tokens=(
+            int(rm["input_tokens"]) if rm.get("input_tokens") is not None else None
+        ),
+        output_tokens=(
+            int(rm["output_tokens"]) if rm.get("output_tokens") is not None else None
+        ),
+        reasoning_trace=steps,
+        data_fields_accessed_summary=sorted(accessed_summary),
+        data_fields_NOT_accessed=list(_LGPD_NEVER_ACCESSED_FIELDS),
+    )
+
+
+@router.get("/recent-executions", response_model=list[RecentExecutionResponse])
+async def list_recent_executions(
+    limit: int = Query(default=50, ge=1, le=200),
+    agent_id: str | None = Query(default=None),
+    surface: _StudioTargetSurface | None = Query(default=None),
+    status: Literal["completed", "error", "all"] = Query(default="all"),
+    db: AsyncSession = Depends(get_db),
+    company_id: str = Depends(require_company_id),
+) -> list[RecentExecutionResponse]:
+    """Onda 1 B4.3 — histórico recente de execuções (não-running).
+
+    Filtros opcionais: agent_id, surface, status.
+    Paginação: limit (max 200), order by created_at desc.
+    """
+    conditions = [
+        _PoolAgentRun.company_id == company_id,
+        _PoolAgentRun.status != "running",
+        _PoolAgentRun.status != "queued",
+    ]
+    if status == "completed":
+        conditions.append(_PoolAgentRun.status == "success")
+    elif status == "error":
+        conditions.append(_PoolAgentRun.status.in_(["error", "timeout", "cancelled"]))
+    if agent_id is not None:
+        try:
+            agent_uuid = PyUUID(agent_id)
+        except ValueError:
+            raise HTTPException(status_code=400, detail="agent_id deve ser UUID válido")
+        conditions.append(_PoolAgentAssignment.custom_agent_id == agent_uuid)
+
+    stmt = (
+        select(_PoolAgentRun, _PoolAgentAssignment, _CustomAgent, _TalentPool)
+        .join(
+            _PoolAgentAssignment,
+            _PoolAgentRun.assignment_id == _PoolAgentAssignment.id,
+        )
+        .join(
+            _CustomAgent,
+            _PoolAgentAssignment.custom_agent_id == _CustomAgent.id,
+        )
+        .outerjoin(
+            _TalentPool,
+            _PoolAgentAssignment.talent_pool_id == _TalentPool.id,
+        )
+        .where(and_(*conditions))
+        .order_by(desc(_PoolAgentRun.created_at))
+        .limit(limit)
+    )
+    result = await db.execute(stmt)
+    rows = result.all()
+
+    out: list[RecentExecutionResponse] = []
+    for run, assignment, agent, pool in rows:
+        target_type, target_id, target_name = _resolve_target_info(assignment, pool)
+        if surface is not None and surface != target_type:
+            continue
+        rm = run.runtime_metrics or {}
+        results = run.results or {}
+        success_summary = None
+        if run.status == "success":
+            response = results.get("response", "")
+            success_summary = response[:140] if response else None
+        elif run.error_message:
+            success_summary = run.error_message[:140]
+        out.append(
+            RecentExecutionResponse(
+                execution_id=str(run.id),
+                agent_id=str(agent.id),
+                agent_name=agent.name,
+                target_type=target_type,
+                target_id=target_id,
+                target_name=target_name,
+                status=run.status,
+                started_at=run.started_at,
+                finished_at=run.finished_at,
+                latency_ms=(
+                    int(rm["latency_ms"]) if rm.get("latency_ms") is not None else None
+                ),
+                success_summary=success_summary,
+            )
+        )
+    return out
