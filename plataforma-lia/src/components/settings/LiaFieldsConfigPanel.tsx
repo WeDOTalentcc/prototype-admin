@@ -86,6 +86,32 @@ interface TenantOverrideListResponse {
   overrides: TenantOverrideEntry[]
 }
 
+function ToggleBadge({ type }: { type: "gate" | "prompt" }) {
+  const config = {
+    gate: {
+      label: "Gate",
+      title:
+        "Gate de funcionalidade — quando desativado, a IA não pode usar este recurso (fail-closed).",
+      className: "bg-amber-50 text-amber-700 border border-amber-200",
+    },
+    prompt: {
+      label: "Prompt",
+      title: "Injeção em prompt — quando ativado, este campo é incluído no contexto da IA.",
+      className: "bg-blue-50 text-blue-700 border border-blue-200",
+    },
+  }
+  const c = config[type]
+  return (
+    <span
+      title={c.title}
+      className={`inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-medium cursor-help ${c.className}`}
+    >
+      {c.label}
+    </span>
+  )
+}
+
+
 export function LiaFieldsConfigPanel() {
   const t = useTranslations("settings.liaFields")
   const { companyId, isLoading: isLoadingCompany } = useCompanyId()
@@ -346,6 +372,12 @@ export function LiaFieldsConfigPanel() {
             </button>
           </div>
 
+          <div className="rounded-md bg-gray-50 border border-gray-100 px-3 py-2 mb-2 text-xs text-gray-500">
+            <ToggleBadge type="prompt" />{" "}
+            quando ativado, este campo é enviado como contexto para a IA.{" "}
+            Desativar oculta o dado do sistema de IA.
+          </div>
+
           {Object.entries(fieldsByCategory).map(([category, fields]) => (
             <section key={category} className="space-y-3">
               <h4 className={textStyles.h4}>{category}</h4>
@@ -356,7 +388,10 @@ export function LiaFieldsConfigPanel() {
                     className="flex items-center justify-between p-3 bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-subtle rounded-xl"
                   >
                     <div className="flex-1 min-w-0 mr-3">
+                      <div className="flex items-center gap-1.5">
                       <p className="text-sm font-medium text-lia-text-primary truncate">{field.label}</p>
+                      <ToggleBadge type="prompt" />
+                    </div>
                       <p className="text-xs text-lia-text-secondary truncate" title={field.location}>
                         {field.location}
                       </p>

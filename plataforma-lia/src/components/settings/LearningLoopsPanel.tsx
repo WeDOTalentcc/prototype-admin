@@ -173,6 +173,32 @@ function DisclosureModal({
   )
 }
 
+function ToggleBadge({ type }: { type: "gate" | "prompt" }) {
+  const config = {
+    gate: {
+      label: "Gate",
+      title:
+        "Gate de funcionalidade — quando desativado, a IA não pode usar este recurso (fail-closed).",
+      className: "bg-amber-50 text-amber-700 border border-amber-200",
+    },
+    prompt: {
+      label: "Prompt",
+      title: "Injeção em prompt — quando ativado, este campo é incluído no contexto da IA.",
+      className: "bg-blue-50 text-blue-700 border border-blue-200",
+    },
+  }
+  const c = config[type]
+  return (
+    <span
+      title={c.title}
+      className={`inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-medium cursor-help ${c.className}`}
+    >
+      {c.label}
+    </span>
+  )
+}
+
+
 function ToggleCard({
   def,
   value,
@@ -198,7 +224,10 @@ function ToggleCard({
       <div className="flex items-start gap-3 min-w-0">
         <Icon className="w-4 h-4 text-lia-text-secondary flex-shrink-0 mt-0.5" />
         <div className="min-w-0">
-          <p className={`${textStyles.label} text-lia-text-primary`}>{def.label}</p>
+          <div className="flex items-center gap-1.5">
+            <p className={`${textStyles.label} text-lia-text-primary`}>{def.label}</p>
+            <ToggleBadge type="gate" />
+          </div>
           <p className={`${textStyles.description} text-lia-text-tertiary mt-0.5 leading-relaxed`}>
             {def.description}
           </p>
@@ -369,6 +398,12 @@ export function LearningLoopsPanel() {
             <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
           </div>
         )}
+
+        <div className="rounded-md bg-gray-50 border border-gray-100 px-3 py-2 mb-4 text-xs text-gray-500">
+          <ToggleBadge type="gate" />{" "}
+          funcionalidade desativada completamente quando desligado.{" "}
+          A IA não pode usar este recurso.
+        </div>
 
         <div className={`space-y-2 ${isLoading ? "pointer-events-none" : ""}`}>
           {SUB_TOGGLE_DEFS.map((def) => (
