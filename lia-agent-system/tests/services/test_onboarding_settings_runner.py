@@ -99,6 +99,7 @@ class TestProcessMessage:
             company_id=COMPANY_ID,
             user_id=USER_ID,
             save_field_fn=save,
+            use_llm=False,  # Sprint 1 BE-1: tests use mock heuristic; production uses use_llm=True
         )
         # Deve ter pedido extracao, recebido confirmation render
         assert resp.status.state == SettingsExtractionState.CONFIRMING
@@ -252,6 +253,7 @@ class TestProcessMessage:
             company_id=COMPANY_ID,
             user_id=USER_ID,
             save_field_fn=save,
+            use_llm=False,  # Sprint 1 BE-1: tests use mock heuristic
         )
         # Extractor falhou -> resposta amigavel, state ASKING preservado
         assert resp.status.state == SettingsExtractionState.ASKING
@@ -321,6 +323,25 @@ class TestSectionResolution:
         assert _resolve_section_for_field("work_model") == "culture"
         assert _resolve_section_for_field("tech_stack") == "culture"
 
+    def test_policy_fields_map_to_policy(self):
+        """Sprint 1 BE-2: policy fields route correctly."""
+        assert _resolve_section_for_field("auto_screening_enabled") == "policy"
+        assert _resolve_section_for_field("manager_approval_for_offer") == "policy"
+        assert _resolve_section_for_field("salary_screening_enabled") == "policy"
+        assert _resolve_section_for_field("autonomy_level") == "policy"
+
+    def test_workforce_fields_map_to_workforce(self):
+        """Sprint 1 BE-2: workforce fields route correctly."""
+        assert _resolve_section_for_field("hiring_volume") == "workforce"
+        assert _resolve_section_for_field("job_types") == "workforce"
+        assert _resolve_section_for_field("main_priority") == "workforce"
+        assert _resolve_section_for_field("main_challenges") == "workforce"
+
+    def test_lia_persona_fields_map_to_lia_persona(self):
+        """Sprint 1 BE-2: lia_persona fields route correctly."""
+        assert _resolve_section_for_field("ai_persona.name") == "lia_persona"
+        assert _resolve_section_for_field("ai_persona.tone") == "lia_persona"
+
     def test_unknown_field_logs_warning_falls_back_to_profile(self, caplog):
         import logging
 
@@ -328,6 +349,6 @@ class TestSectionResolution:
             section = _resolve_section_for_field("totally_unknown_field")
         assert section == "profile"
         assert any(
-            "totally_unknown_field" in record.message and "Sprint A.5" in record.message
+            "totally_unknown_field" in record.message
             for record in caplog.records
         )

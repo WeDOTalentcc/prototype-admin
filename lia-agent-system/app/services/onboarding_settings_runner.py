@@ -85,6 +85,40 @@ _CULTURE_FIELDS: frozenset[str] = frozenset(
         "tech_stack",
     }
 )
+_POLICY_FIELDS: frozenset[str] = frozenset(
+    {
+        "auto_screening_enabled",
+        "min_interviews_before_offer",
+        "auto_stage_advance_enabled",
+        "max_days_in_stage",
+        "manager_approval_for_offer",
+        "autonomy_level",
+        "allowed_days",
+        "allowed_hours",
+        "preferred_channel",
+        "auto_rejection_feedback",
+        "rejection_feedback_deadline_hours",
+        "default_interview_duration_min",
+        "auto_scheduling_enabled",
+        "salary_screening_enabled",
+        "salary_tolerance_percent",
+        "experience_policy",
+    }
+)
+_WORKFORCE_FIELDS: frozenset[str] = frozenset(
+    {
+        "hiring_volume",
+        "job_types",
+        "main_priority",
+        "main_challenges",
+    }
+)
+_LIA_PERSONA_FIELDS: frozenset[str] = frozenset(
+    {
+        "ai_persona.name",
+        "ai_persona.tone",
+    }
+)
 
 
 SaveFieldFn = Callable[..., Awaitable[dict[str, Any]]]
@@ -113,23 +147,30 @@ def _progress(status: SettingsExtractionStatus) -> int:
 
 
 def _resolve_section_for_field(field_key: str) -> str:
-    """Mapeia field_key -> section esperada por _wrap_save_company_field.
+    """Mapeia field_key -> section canonical.
 
-    Sections canonical do company_tool_registry:
+    Sections:
     - "profile" -> CompanyProfile cols
     - "culture" -> CompanyCultureProfile cols
+    - "policy" -> HiringPolicy communication_rules (via _wrap_save_hiring_policy)
+    - "workforce" -> CompanyProfile additional_data JSONB
+    - "lia_persona" -> ai_persona_service.update_ai_persona
 
-    Fields fora desses 2 (policy.*, workforce.*, lia_persona.*) precisam
-    estender _wrap_save_company_field OR usar outro tool. Por enquanto:
-    fall-back para "profile" + log warning (Sprint A.5 wire-up estende cobertura).
+    Sprint 1 BE-2 (2026-05-27): adicionados policy/workforce/lia_persona sections.
     """
     if field_key in _PROFILE_FIELDS:
         return "profile"
     if field_key in _CULTURE_FIELDS:
         return "culture"
+    if field_key in _POLICY_FIELDS:
+        return "policy"
+    if field_key in _WORKFORCE_FIELDS:
+        return "workforce"
+    if field_key in _LIA_PERSONA_FIELDS:
+        return "lia_persona"
     logger.warning(
-        "P2-2 A.4: field_key '%s' sem section mapping -- fall-back to 'profile'. "
-        "Estender _wrap_save_company_field cobertura em Sprint A.5.",
+        "P2-2 Sprint 1 BE-2: field_key '%s' sem section mapping "
+        "fall-back to 'profile'. Adicionar ao frozenset correto.",
         field_key,
     )
     return "profile"
@@ -143,18 +184,82 @@ async def _default_save_field(
     value: Any,
     user_id: str | None = None,
 ) -> dict[str, Any]:
-    """Default save fn -- wire pro tool canonical _wrap_save_company_field.
+    """Default save fn - routes based on section to canonical tool.
 
-    Lazy import dentro da fn pra evitar carregar agent registry no import-time
-    do runner (mantem o runner unit-testavel sem boot completo do agent stack).
+    Sections:
+    - "profile" / "culture" to _wrap_save_company_field (existing)
+    - "workforce" to _wrap_save_company_field section="profile" (additional_data JSONB)
+    - "policy" to _wrap_save_hiring_policy(rules={field: value})
+    - "lia_persona" to ai_persona_service.update_ai_persona
+
+    Lazy import pra manter o runner unit-testavel sem boot completo do agent stack.
+    Sprint 1 BE-2 (2026-05-27): adicionado routing policy/workforce/lia_persona.
     """
+    if section in ("profile", "culture", "workforce"):
+        from app.domains.company_settings.agents.company_tool_registry import (
+            _wrap_save_company_field,
+        )
+        actual_section = "profile" if section == "workforce" else section
+        return await _wrap_save_company_field(
+            company_id=company_id,
+            section=actual_section,
+            field=field,
+            value=value,
+            user_id=user_id,
+        )
+
+    if section == "policy":
+        from app.domains.company_settings.agents.company_tool_registry import (
+            _wrap_save_hiring_policy,
+        )
+        return await _wrap_save_hiring_policy(
+            company_id=company_id,
+            user_id=user_id,
+            rules={field: value},
+        )
+
+    if section == "lia_persona":
+        persona_key = field.removeprefix("ai_persona.")
+        try:
+            from app.core.database import AsyncSessionLocal
+            from app.domains.persona.services import ai_persona_service
+
+            async with AsyncSessionLocal() as db:
+                current = await ai_persona_service.get_ai_persona(company_id, db)
+                update_kwargs: dict[str, Any] = {**current, persona_key: value}
+                result = await ai_persona_service.update_ai_persona(
+                    company_id=company_id,
+                    db=db,
+                    name=update_kwargs.get("name", current.get("name")),
+                    tone=update_kwargs.get("tone", current.get("tone")),
+                    actor_user_id=user_id,
+                )
+                return {
+                    "success": True,
+                    "data": result,
+                    "message": f"Persona atualizada: {persona_key} = {value}",
+                }
+        except Exception as e:
+            logger.error(
+                "P2-2 Sprint 1 BE-2: lia_persona save failed field=%s company=%s err=%s",
+                field,
+                company_id,
+                e,
+                exc_info=True,
+            )
+            return {
+                "success": False,
+                "data": {},
+                "message": f"Erro ao salvar persona: {type(e).__name__}",
+            }
+
+    # Fallback to profile (unknown section)
     from app.domains.company_settings.agents.company_tool_registry import (
         _wrap_save_company_field,
     )
-
     return await _wrap_save_company_field(
         company_id=company_id,
-        section=section,
+        section="profile",
         field=field,
         value=value,
         user_id=user_id,
@@ -184,6 +289,8 @@ async def process_message(
     company_id: str,
     user_id: str | None = None,
     save_field_fn: SaveFieldFn | None = None,
+    use_llm: bool = True,
+    llm_service: Any = None,
 ) -> RunnerResponse:
     """Processa mensagem do usuario e avanca state machine.
 
@@ -233,6 +340,8 @@ async def process_message(
             user_message=user_message,
             additional_context_fields=action.additional_context,
             company_id=company_id,
+            use_llm=use_llm,
+            llm_service=llm_service,
         )
         record_extraction_duration(time.time() - _extract_start)
 
