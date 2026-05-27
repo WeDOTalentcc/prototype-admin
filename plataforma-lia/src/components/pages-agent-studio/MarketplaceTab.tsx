@@ -81,7 +81,8 @@ export default function MarketplaceTab() {
         </TabsList>
 
         <TabsContent value="browse" className="mt-4">
-          <BrowseMarketplace />
+          {/* F3 Wave F: onInstallSuccess auto-switch para tab "installed" */}
+          <BrowseMarketplace onInstallSuccess={() => setActiveView("installed")} />
         </TabsContent>
         <TabsContent value="installed" className="mt-4">
           <InstalledAgents />
@@ -94,7 +95,7 @@ export default function MarketplaceTab() {
   )
 }
 
-function BrowseMarketplace() {
+function BrowseMarketplace({ onInstallSuccess }: { onInstallSuccess?: () => void }) {
   const t = useTranslations('agents.marketplace')
   const [listings, setListings] = useState<MarketplaceListing[]>([])
   const [total, setTotal] = useState(0)
@@ -103,14 +104,21 @@ function BrowseMarketplace() {
   const [search, setSearch] = useState("")
   const [installing, setInstalling] = useState<string | null>(null)
 
-  useEffect(() => { loadListings() }, [category, search])
+  // F4 Wave F: debounce search 300ms — evita query a cada keystroke
+  const [debouncedSearch, setDebouncedSearch] = useState("")
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search), 300)
+    return () => clearTimeout(timer)
+  }, [search])
+
+  useEffect(() => { loadListings() }, [category, debouncedSearch])
 
   const loadListings = useCallback(async () => {
     setIsLoading(true)
     try {
       const params = new URLSearchParams()
       if (category) params.set("category", category)
-      if (search) params.set("search", search)
+      if (debouncedSearch) params.set("search", debouncedSearch)
       const res = await fetch(`/api/backend-proxy/agent-marketplace?${params}`)
       if (res.ok) {
         const data = await res.json()
@@ -122,7 +130,7 @@ function BrowseMarketplace() {
     } finally {
       setIsLoading(false)
     }
-  }, [category, search])
+  }, [category, debouncedSearch])
 
   // Removed: useEffect handled above with [category, search]
 
@@ -135,7 +143,10 @@ function BrowseMarketplace() {
         body: JSON.stringify({ listing_id: listingId }),
       })
       if (res.ok) {
+        toast.success(t('installSuccess'))
         loadListings()
+        // F3 Wave F: auto-switch para tab Instalados após install com sucesso
+        onInstallSuccess?.()
       } else {
         const err = await res.json().catch(() => ({ detail: t('errorGeneric') }))
         toast.error(err.detail || t('errorInstalling'))

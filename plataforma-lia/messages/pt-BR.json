@@ -2130,6 +2130,7 @@
       "screening": "Triagem",
       "general": "Geral",
       "errorGeneric": "Erro",
+      "installSuccess": "Agente instalado com sucesso!",
       "errorInstalling": "Erro ao instalar",
       "connectionError": "Erro de conexão",
       "subtitle": "Descubra e instale agentes criados por outras empresas",

@@ -2130,6 +2130,7 @@
       "screening": "Screening",
       "general": "General",
       "errorGeneric": "Error",
+      "installSuccess": "Agent installed successfully!",
       "errorInstalling": "Error installing",
       "connectionError": "Connection error",
       "subtitle": "Discover and install agents created by other companies",
