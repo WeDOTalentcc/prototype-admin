@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { NextIntlClientProvider } from 'next-intl'
 import ptBRMessages from '../../../../../messages/pt-BR.json'
+import { PearchTab } from '../PearchTab'
 
 // Mock SWR to avoid real fetch calls in tests
 vi.mock('swr', () => ({
@@ -83,7 +84,6 @@ describe('PearchTab unit', () => {
   })
 
   it('shows loading state when SWR is loading', () => {
-    const { PearchTab } = require('../PearchTab')
     renderWithIntl(
       <NextIntlClientProvider locale="pt" messages={ptBRMessages}>
         <PearchTab />

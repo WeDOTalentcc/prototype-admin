@@ -1768,7 +1768,8 @@
         "digitalTwins": "Digital Twins",
         "smartSearch": "Smart Search",
         "myAgents": "My agents",
-        "approvals": "Approvals"
+        "approvals": "Approvals",
+        "controlRoom": "Control Room"
       },
       "stats": {
         "activeAgents": "{count} active agent(s)",
@@ -1972,6 +1973,121 @@
           "business": "Business",
           "enterprise": "Enterprise"
         }
+      },
+      "controlRoom": {
+        "title": "Control Room",
+        "description": "See your agents working in real time, audit decisions and export LGPD trails.",
+        "liveSection": {
+          "title": "Live",
+          "subtitle": "Agents working right now",
+          "empty": "No agents currently working",
+          "emptyHint": "When an agent starts processing candidates, youll see it here in real time.",
+          "loadError": "Couldnt load active agents. Please try again.",
+          "statusPill": "Running",
+          "etaLabel": "~ {value}",
+          "progressLabel": "Processing candidate {current} of {total}",
+          "processedCount": "{count, plural, =0 {No candidates processed} =1 {1 candidate processed} other {# candidates processed}}",
+          "openReasoning": "View reasoning",
+          "target": {
+            "talent_pool": "Pool",
+            "job": "Job",
+            "pipeline_stage": "Funnel stage",
+            "candidate_list": "List"
+          }
+        },
+        "recentSection": {
+          "title": "Recent activity",
+          "subtitle": "Latest executions of your agents",
+          "empty": "No recent executions found",
+          "emptyHint": "Adjust filters or wait for your agents to start working.",
+          "loadError": "Couldnt load history. Please try again.",
+          "filters": {
+            "agent": "Agent",
+            "agentAll": "All agents",
+            "surface": "Where",
+            "surfaceAll": "All",
+            "surfaceTalentPool": "Pool",
+            "surfaceJob": "Job",
+            "surfacePipelineStage": "Funnel stage",
+            "surfaceCandidateList": "List",
+            "status": "Status",
+            "statusAll": "All",
+            "statusSuccess": "Success",
+            "statusError": "Error"
+          },
+          "columns": {
+            "agent": "Agent",
+            "surface": "Where",
+            "startedAt": "Started",
+            "duration": "Duration",
+            "status": "Status",
+            "actions": "Actions"
+          },
+          "status": {
+            "success": "Success",
+            "error": "Error",
+            "timeout": "Timeout",
+            "cancelled": "Cancelled",
+            "running": "Running",
+            "queued": "Queued"
+          },
+          "viewReasoning": "View reasoning"
+        },
+        "lgpdSection": {
+          "title": "LGPD Audit",
+          "subtitle": "Record of data accessed by AI agents",
+          "description": "Complete record of data accessed by AI agents per LGPD Art. 6 (purpose) and Art. 9 (sensitive data). You can export the trail for internal audit or to a data protection officer (DPO).",
+          "expand": "Expand trail",
+          "collapse": "Collapse trail",
+          "exportAll": "Export full trail (CSV)",
+          "rangeLabel": "Period",
+          "range7d": "Last 7 days",
+          "range30d": "Last 30 days",
+          "range90d": "Last 90 days",
+          "empty": "No executions in the selected period",
+          "columns": {
+            "agent": "Agent",
+            "date": "Date",
+            "fieldsRead": "Fields read",
+            "actions": "Actions"
+          },
+          "exportRow": "Export this execution",
+          "fieldsCount": "{count, plural, =0 {no fields} =1 {1 field} other {# fields}}"
+        }
+      },
+      "decisionTree": {
+        "title": "Why did the agent recommend this action?",
+        "closeAria": "Close reasoning panel",
+        "loading": "Loading decision...",
+        "loadError": "Couldnt load reasoning for this execution.",
+        "legacyNotice": "Decision tree not available for this execution (pre-2026-05-27 legacy or non-instrumented agent).",
+        "meta": {
+          "model": "Model",
+          "tokens": "Tokens",
+          "cost": "Cost",
+          "latency": "Latency",
+          "startedAt": "Started at",
+          "duration": "Duration"
+        },
+        "criteriaTitle": "Key criteria",
+        "noCriteria": "Structured criteria not yet available for this agent.",
+        "criterionMatched": "Match",
+        "criterionNotMatched": "No match",
+        "lgpdTitle": "Data accessed (LGPD)",
+        "lgpdRead": "Read by the agent",
+        "lgpdNotAccessed": "NOT accessed (compliance-blocked)",
+        "lgpdNoFieldsRead": "No candidate fields were accessed in this execution.",
+        "exportLgpd": "Export LGPD trail (CSV)",
+        "technicalDetails": "View technical details",
+        "technicalDetailsHide": "Hide technical details",
+        "noSteps": "This execution didnt record detailed reasoning steps.",
+        "stepType": {
+          "action": "Action",
+          "thought": "Thought",
+          "observation": "Observation",
+          "criterion": "Criterion"
+        },
+        "stepScore": "Score: {score}"
       }
     },
     "status": {
@@ -5558,6 +5674,21 @@
         "title": "Coming soon",
         "description": "Invoice history, current plan, and payment configuration will be available soon."
       }
+    },
+    "apifyWidget": {
+      "loadError": "Error loading Apify data (status {status})",
+      "loadFailed": "Failed to load Apify data",
+      "title": "Apify Usage",
+      "refresh": "Refresh Apify data",
+      "loading": "Loading...",
+      "spent": "Spent",
+      "limit": "Limit",
+      "remaining": "{amount} remaining",
+      "usagePct": "{pct}% used",
+      "nearLimit": "Near limit",
+      "highUse": "High usage",
+      "healthy": "Healthy",
+      "nearLimitWarning": "Warning: you are near your Apify plan limit"
     }
   },
   "publicJob": {

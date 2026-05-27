@@ -1768,7 +1768,8 @@
         "digitalTwins": "Gêmeos Digitais",
         "smartSearch": "Busca Inteligente",
         "myAgents": "Meus agentes",
-        "approvals": "Aprovações"
+        "approvals": "Aprovações",
+        "controlRoom": "Sala de Controle"
       },
       "stats": {
         "activeAgents": "{count} agente(s) ativo(s)",
@@ -1972,6 +1973,121 @@
           "business": "Business",
           "enterprise": "Enterprise"
         }
+      },
+      "controlRoom": {
+        "title": "Sala de Controle",
+        "description": "Veja seus agentes trabalhando em tempo real, audite decisões e exporte trilhas LGPD.",
+        "liveSection": {
+          "title": "Ao Vivo",
+          "subtitle": "Agentes trabalhando neste momento",
+          "empty": "Nenhum agente trabalhando no momento",
+          "emptyHint": "Quando um agente começar a processar candidatos, você verá aqui em tempo real.",
+          "loadError": "Não foi possível carregar os agentes ativos. Tente novamente.",
+          "statusPill": "Em execução",
+          "etaLabel": "≈ {value}",
+          "progressLabel": "Processando candidato {current} de {total}",
+          "processedCount": "{count, plural, =0 {Nenhum candidato processado} =1 {1 candidato processado} other {# candidatos processados}}",
+          "openReasoning": "Ver raciocínio",
+          "target": {
+            "talent_pool": "Pool",
+            "job": "Vaga",
+            "pipeline_stage": "Etapa do funil",
+            "candidate_list": "Lista"
+          }
+        },
+        "recentSection": {
+          "title": "Histórico recente",
+          "subtitle": "Últimas execuções dos seus agentes",
+          "empty": "Nenhuma execução recente encontrada",
+          "emptyHint": "Ajuste os filtros ou aguarde seus agentes começarem a trabalhar.",
+          "loadError": "Não foi possível carregar o histórico. Tente novamente.",
+          "filters": {
+            "agent": "Agente",
+            "agentAll": "Todos os agentes",
+            "surface": "Onde",
+            "surfaceAll": "Todos",
+            "surfaceTalentPool": "Pool",
+            "surfaceJob": "Vaga",
+            "surfacePipelineStage": "Etapa do funil",
+            "surfaceCandidateList": "Lista",
+            "status": "Status",
+            "statusAll": "Todos",
+            "statusSuccess": "Sucesso",
+            "statusError": "Erro"
+          },
+          "columns": {
+            "agent": "Agente",
+            "surface": "Onde",
+            "startedAt": "Iniciado",
+            "duration": "Duração",
+            "status": "Status",
+            "actions": "Ações"
+          },
+          "status": {
+            "success": "Sucesso",
+            "error": "Erro",
+            "timeout": "Tempo esgotado",
+            "cancelled": "Cancelado",
+            "running": "Em execução",
+            "queued": "Na fila"
+          },
+          "viewReasoning": "Ver raciocínio"
+        },
+        "lgpdSection": {
+          "title": "Auditoria LGPD",
+          "subtitle": "Registro de dados acessados pelos agentes IA",
+          "description": "Registro completo de dados acessados pelos agentes IA conforme LGPD Art. 6 (finalidade) e Art. 9 (dados sensíveis). Você pode exportar a trilha para auditoria interna ou para encarregado de dados (DPO).",
+          "expand": "Expandir trilha",
+          "collapse": "Recolher trilha",
+          "exportAll": "Exportar trilha completa (CSV)",
+          "rangeLabel": "Período",
+          "range7d": "Últimos 7 dias",
+          "range30d": "Últimos 30 dias",
+          "range90d": "Últimos 90 dias",
+          "empty": "Sem execuções no período selecionado",
+          "columns": {
+            "agent": "Agente",
+            "date": "Data",
+            "fieldsRead": "Campos lidos",
+            "actions": "Ações"
+          },
+          "exportRow": "Exportar esta execução",
+          "fieldsCount": "{count, plural, =0 {nenhum campo} =1 {1 campo} other {# campos}}"
+        }
+      },
+      "decisionTree": {
+        "title": "Por que o agente recomendou esta ação?",
+        "closeAria": "Fechar painel de raciocínio",
+        "loading": "Carregando decisão...",
+        "loadError": "Não foi possível carregar o raciocínio desta execução.",
+        "legacyNotice": "Decision tree não disponível para esta execução (legacy pré-2026-05-27 ou agente não-instrumentado).",
+        "meta": {
+          "model": "Modelo",
+          "tokens": "Tokens",
+          "cost": "Custo",
+          "latency": "Latência",
+          "startedAt": "Iniciado em",
+          "duration": "Duração"
+        },
+        "criteriaTitle": "Principais critérios",
+        "noCriteria": "Critérios estruturados ainda não disponíveis para este agente.",
+        "criterionMatched": "Atende",
+        "criterionNotMatched": "Não atende",
+        "lgpdTitle": "Dados acessados (LGPD)",
+        "lgpdRead": "Lidos pelo agente",
+        "lgpdNotAccessed": "NÃO acessados (proibido por compliance)",
+        "lgpdNoFieldsRead": "Nenhum campo do candidato foi acessado nesta execução.",
+        "exportLgpd": "Exportar trilha LGPD (CSV)",
+        "technicalDetails": "Ver detalhes técnicos",
+        "technicalDetailsHide": "Esconder detalhes técnicos",
+        "noSteps": "Esta execução não registrou passos de raciocínio detalhados.",
+        "stepType": {
+          "action": "Ação",
+          "thought": "Pensamento",
+          "observation": "Observação",
+          "criterion": "Critério"
+        },
+        "stepScore": "Score: {score}"
       }
     },
     "status": {
@@ -5558,6 +5674,21 @@
         "title": "Em breve",
         "description": "Histórico de faturas, plano atual e configuração de pagamento estarão disponíveis em breve."
       }
+    },
+    "apifyWidget": {
+      "loadError": "Erro ao carregar dados do Apify (status {status})",
+      "loadFailed": "Falha ao carregar dados do Apify",
+      "title": "Consumo Apify",
+      "refresh": "Atualizar dados do Apify",
+      "loading": "Carregando...",
+      "spent": "Gasto",
+      "limit": "Limite",
+      "remaining": "{amount} disponíveis",
+      "usagePct": "{pct}% utilizado",
+      "nearLimit": "Próximo do limite",
+      "highUse": "Uso elevado",
+      "healthy": "Saudável",
+      "nearLimitWarning": "Atenção: você está próximo do limite do plano Apify"
     }
   },
   "publicJob": {
