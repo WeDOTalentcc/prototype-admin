@@ -17,6 +17,7 @@ Harness-engineering notes:
           this agent structure at CI time.
 """
 import logging
+import time
 from typing import Any
 
 from lia_agents_core.agent_interface import AgentAction, AgentInput, AgentOutput
@@ -162,8 +163,142 @@ class TalentPoolReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAg
 
     @trace_span("talent_pool.process")
     async def process(self, input: AgentInput) -> AgentOutput:
-        """Process an incoming message through the LangGraph ReAct loop."""
-        return await self._process_langgraph(input)
+        """Process an incoming message through the LangGraph ReAct loop.
+
+        Wave 0 Fix 1 (2026-05-27) — wire PoolAgentRunRepository pra gravar
+        execução em tempo real quando \`input.context["assignment_id"]\` está
+        presente (manual "run now" via Studio, scheduled invocations que
+        passam pelo agent canonical em vez do CustomAgentRuntime).
+
+        Comportamento:
+          - Sem assignment_id no context → skip silencioso (chat-driven path,
+            agente respondendo no canal sem assignment vinculado).
+          - Com assignment_id → cria PoolAgentRun(status=queued), transita pra
+            running, executa, persiste runtime_metrics + status=success|error.
+
+        FK CASCADE: pool_agent_runs.assignment_id requer assignment válido;
+        validamos antes de criar a row. Erro de FK não corrompe a execução
+        principal (log only).
+        """
+        ctx = input.context or {}
+        assignment_id = ctx.get("assignment_id")
+        trigger_source = ctx.get("trigger_source", "manual")
+
+        # Skip recording if no assignment_id in context (chat-driven path).
+        if not assignment_id:
+            return await self._process_langgraph(input)
+
+        # Lazy imports pra não criar dependência circular no boot do módulo.
+        from app.core.database import AsyncSessionLocal
+        from app.domains.agent_studio.repositories.pool_agent_run_repository import (
+            PoolAgentRunRepository,
+        )
+
+        run_id: str | None = None
+        t_start = time.time()
+        try:
+            async with AsyncSessionLocal() as db:
+                repo = PoolAgentRunRepository(db)
+                # trigger_source canonical: cron | on_demand | event_driven.
+                normalized_trigger = (
+                    "on_demand" if trigger_source in ("manual", "on_demand") else trigger_source
+                )
+                if normalized_trigger not in ("cron", "on_demand", "event_driven"):
+                    normalized_trigger = "on_demand"
+                run = await repo.create(
+                    assignment_id=assignment_id,
+                    company_id=input.company_id,
+                    trigger_source=normalized_trigger,
+                    dispatch_metadata={
+                        "trigger_source": trigger_source,
+                        "session_id": input.session_id,
+                        "via": "TalentPoolReActAgent.process",
+                    },
+                )
+                run_id = str(run.id)
+                await repo.update_status(run.id, "running")
+        except Exception as exc:
+            # Fail-open: gravação falhou mas execução principal continua.
+            # Logger.error com exc_info pra observabilidade — anti-silent.
+            logger.error(
+                "[TalentPoolReActAgent] PoolAgentRun.create falhou — execução continua sem registro",
+                exc_info=True,
+                extra={
+                    "assignment_id": str(assignment_id),
+                    "company_id": input.company_id,
+                    "trigger_source": trigger_source,
+                },
+            )
+
+        # Execute the ReAct loop (canonical path).
+        try:
+            output = await self._process_langgraph(input)
+        except Exception as exc:
+            # Update run to error before re-raising.
+            if run_id is not None:
+                try:
+                    async with AsyncSessionLocal() as db:
+                        repo = PoolAgentRunRepository(db)
+                        await repo.update_status(
+                            run_id,
+                            "error",
+                            error_message=str(exc)[:500],
+                            runtime_metrics={
+                                "latency_ms": int((time.time() - t_start) * 1000),
+                            },
+                        )
+                except Exception:
+                    logger.error(
+                        "[TalentPoolReActAgent] PoolAgentRun.update_status(error) falhou",
+                        exc_info=True,
+                    )
+            raise
+
+        # Success path: persist runtime_metrics + status=success.
+        if run_id is not None:
+            try:
+                elapsed_ms = int((time.time() - t_start) * 1000)
+                out_meta = output.metadata or {}
+                tool_calls = [
+                    a.params.get("tool", "") if hasattr(a, "params") else ""
+                    for a in (output.actions or [])
+                ]
+                async with AsyncSessionLocal() as db:
+                    repo = PoolAgentRunRepository(db)
+                    await repo.update_status(
+                        run_id,
+                        "success",
+                        results={
+                            "response": output.message or "",
+                            "tools_used": tool_calls,
+                            "confidence": float(output.confidence or 0.0),
+                        },
+                        runtime_metrics={
+                            "latency_ms": elapsed_ms,
+                            "tokens_input": out_meta.get("tokens_input", 0),
+                            "tokens_output": out_meta.get("tokens_output", 0),
+                            "input_tokens": out_meta.get(
+                                "input_tokens", out_meta.get("tokens_input", 0)
+                            ),
+                            "output_tokens": out_meta.get(
+                                "output_tokens", out_meta.get("tokens_output", 0)
+                            ),
+                            "model_used": out_meta.get("model_used", ""),
+                            "cost_usd": float(out_meta.get("cost_usd", 0.0) or 0.0),
+                            "trigger_source": trigger_source,
+                        },
+                    )
+                logger.info(
+                    "[TalentPoolReActAgent] PoolAgentRun gravado run_id=%s assignment=%s latency=%dms",
+                    run_id, assignment_id, elapsed_ms,
+                )
+            except Exception:
+                logger.error(
+                    "[TalentPoolReActAgent] PoolAgentRun.update_status(success) falhou",
+                    exc_info=True,
+                )
+
+        return output
 
     # ── HITL integration ─────────────────────────────────────────────────────
 
