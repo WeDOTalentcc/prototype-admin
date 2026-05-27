@@ -42,6 +42,10 @@ class TriggerType(str, Enum):
     # NOTE: 'candidate_stage_changed' é o canonical value (lib DB enum legacy);
     # stage_automation_engine usa 'stage_changed' como alias local que sera deprecado em Z.5.
     CANDIDATE_STAGE_CHANGED = "candidate_stage_changed"
+    # Alias runtime-dispatch (Sprint Z.6 consolidation; stage_automation_engine
+    # registers handler under STAGE_CHANGED while pipeline mapping normalizes
+    # to candidate_stage_changed string for downstream).
+    STAGE_CHANGED = "stage_changed"
     CANDIDATE_INACTIVE = "candidate_inactive"
     CANDIDATE_NO_SHOW = "candidate_no_show"
 
@@ -138,6 +142,15 @@ TRIGGER_TYPE_CATALOG: tuple[TriggerMetadata, ...] = (
         params=(
             ParamDef(name="stage_id", label="Etapa destino", type="stage_id", required=False),
         ),
+    ),
+    # Alias runtime-dispatch (Sprint Z.6) — mesmo semantico de CANDIDATE_STAGE_CHANGED
+    # mas value "stage_changed" preserva handler registration historica do engine.
+    TriggerMetadata(
+        value=TriggerType.STAGE_CHANGED,
+        label_pt="Mudanca de etapa (runtime)",
+        label_en="Stage changed (runtime alias)",
+        description="Alias runtime de candidate_stage_changed usado pelo StageAutomationEngine.",
+        category="pipeline",
     ),
     TriggerMetadata(
         value=TriggerType.CANDIDATE_INACTIVE,

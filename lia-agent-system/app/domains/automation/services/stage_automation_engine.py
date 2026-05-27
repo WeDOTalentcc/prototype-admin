@@ -6,8 +6,10 @@ import logging
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
-from enum import Enum, StrEnum
+from enum import Enum
 from typing import Any
+
+from app.shared.automation.trigger_types_canonical import TriggerType
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -17,26 +19,6 @@ from app.domains.automation.repositories.communication_automation_repository imp
 
 logger = logging.getLogger(__name__)
 
-
-class TriggerType(StrEnum):
-    """Types of automation triggers."""
-    SCREENING_COMPLETED = "screening_completed"
-    INTERVIEW_SCHEDULED = "interview_scheduled"
-    INTERVIEW_COMPLETED = "interview_completed"
-    CANDIDATE_INACTIVE = "candidate_inactive"
-    CANDIDATE_NO_SHOW = "candidate_no_show"
-    OFFER_SENT = "offer_sent"
-    CANDIDATE_HIRED = "candidate_hired"
-    CANDIDATE_REJECTED = "candidate_rejected"
-    ATS_SYNC = "ats_sync"
-    STAGE_CHANGED = "stage_changed"
-    CANDIDATE_APPLIED = "candidate_applied"
-    NO_RESPONSE_48H = "no_response_48h"
-    FEEDBACK_RECEIVED = "feedback_received"
-    DEADLINE_APPROACHING = "deadline_approaching"
-    JOB_PUBLISHED = "job_published"
-    CANDIDATES_SOURCED = "candidates_sourced"
-    SLOT_OPENED = "slot_opened"
 
 
 @dataclass

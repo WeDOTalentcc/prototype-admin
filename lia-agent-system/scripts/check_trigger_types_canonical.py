@@ -36,9 +36,10 @@ SCAN_DIRS = ["app/", "libs/"]
 # Arquivos que ainda definem TriggerType pre-Z.4 e estao agendados pra
 # deprecacao. Drift = qualquer arquivo NOVO fora do canonical OU deste set.
 DEPRECATED_ALLOWLIST = {
+    # libs/models/lia_models/automation.py: DB-bound enum tied to column;
+    # removal deferred until data migration. Sprints Z.5/Z.6 removed the two
+    # runtime-service local enums (stage_automation_engine, automation_trigger_service).
     "libs/models/lia_models/automation.py",
-    "app/domains/automation/services/stage_automation_engine.py",
-    "app/domains/automation/services/automation_trigger_service.py",
 }
 
 

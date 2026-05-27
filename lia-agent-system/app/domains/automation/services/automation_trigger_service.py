@@ -32,21 +32,10 @@ from lia_models.interview import Interview
 from lia_models.job_vacancy import JobVacancy
 from lia_models.task import Task, TaskPriority, TaskStatus, TaskType
 from app.domains.analytics.services.activity_service import ActivityService
+from app.shared.automation.trigger_types_canonical import TriggerType
 
 logger = logging.getLogger(__name__)
 
-
-class TriggerType(StrEnum):
-    """Types of automation triggers."""
-    CANDIDATE_NO_CONTACT_48H = "candidate_no_contact_48h"
-    INTERVIEW_REMINDER_24H = "interview_reminder_24h"
-    SCORECARD_PENDING_24H = "scorecard_pending_24h"
-    JOB_NO_MOVEMENT_5D = "job_no_movement_5d"
-    CANDIDATE_LINKEDIN_UPDATE = "candidate_linkedin_update"
-    OFFER_ACCEPTED = "offer_accepted"
-    FEEDBACK_PENDING_48H = "feedback_pending_48h"
-    CANDIDATE_BIRTHDAY = "candidate_birthday"
-    JOB_DEADLINE_APPROACHING = "job_deadline_approaching"
 
 
 class AutomationAction(StrEnum):
