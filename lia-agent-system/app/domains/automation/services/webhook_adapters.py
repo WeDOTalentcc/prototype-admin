@@ -1,5 +1,4 @@
 import logging
-from datetime import datetime
 from enum import Enum, StrEnum
 from typing import Any
 
@@ -23,7 +22,6 @@ class WebhookAdapter:
     """Base adapter for processing inbound webhook events."""
 
     _processed_events: set[str] = set()
-    _event_log: list[dict[str, Any]] = []
 
     @classmethod
     def is_duplicate(cls, event_id: str) -> bool:
@@ -32,20 +30,8 @@ class WebhookAdapter:
     @classmethod
     def mark_processed(cls, event_id: str, event_type: str, provider: str, result: dict[str, Any]):
         cls._processed_events.add(event_id)
-        cls._event_log.append({
-            "event_id": event_id,
-            "event_type": event_type,
-            "provider": provider,
-            "processed_at": datetime.utcnow().isoformat(),
-            "result": result,
-        })
         if len(cls._processed_events) > 10000:
             cls._processed_events = set(list(cls._processed_events)[-5000:])
-            cls._event_log = cls._event_log[-5000:]
-
-    @classmethod
-    def get_event_log(cls, limit: int = 50) -> list[dict[str, Any]]:
-        return cls._event_log[-limit:]
 
 
 class InterviewWebhookAdapter(WebhookAdapter):

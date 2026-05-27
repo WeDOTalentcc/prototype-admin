@@ -20,7 +20,6 @@ from app.domains.automation.services.webhook_adapters import (
     DocumentWebhookAdapter,
     InterviewWebhookAdapter,
     TestWebhookAdapter,
-    WebhookAdapter,
 )
 
 from app.domains.ats_integration.services.ats_sync_service import ATSSyncService, get_ats_sync_service
@@ -541,15 +540,6 @@ async def handle_document_webhook(
     return result
 
 
-@router.get("/event-log", response_model=None)
-async def get_webhook_event_log(limit: int = 50, ):
-    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
-    """Get recent webhook event processing log."""
-    return {
-        "events": WebhookAdapter.get_event_log(limit),
-        "total_processed": len(WebhookAdapter._processed_events),
-    }
-
 
 @router.get("/health", response_model=None)
 async def external_webhooks_health():
@@ -562,7 +552,6 @@ async def external_webhooks_health():
             "interview": "/external-webhooks/interview/{provider}",
             "test": "/external-webhooks/test/{provider}",
             "document": "/external-webhooks/document/{provider}",
-            "event_log": "/external-webhooks/event-log",
         },
         "supported_ats_platforms": ["gupy", "pandape", "merge"],
         "secrets_configured": {

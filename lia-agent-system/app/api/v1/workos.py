@@ -47,7 +47,7 @@ class RoleMappingRequest(WeDoBaseModel):
     role: str
     permissions: list[str] | None = []
 
-INTERNAL_API_SECRET = os.getenv("INTERNAL_API_SECRET", os.getenv("WORKOS_WEBHOOK_SECRET", ""))
+INTERNAL_API_SECRET = os.getenv("INTERNAL_API_SECRET", "")
 WORKOS_WEBHOOK_SECRET = os.getenv("WORKOS_WEBHOOK_SECRET", "")
 
 
