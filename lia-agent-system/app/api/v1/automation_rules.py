@@ -1,5 +1,24 @@
 """
 Automation Rules API
+
+DEPRECATED Sprint Z.5 (2026-05-26)
+==================================
+
+CANONICAL: use app/api/v1/automations.py (prefix /automations) for any new
+work. Engine reads communication_automations table; this legacy endpoint
+manipulates stage_automation_rules with dual-write via StageRuleAdapter.
+
+This module is kept ONLY because plataforma-lia/.../governanca/
+AutomationRulesPanel.tsx (staff WeDOTalent UI) still calls
+/api/v1/automation-rules/*. The panel itself displays a deprecation banner.
+Remove this file once that panel is migrated to /api/v1/automations.
+
+Sprint Z.4 consolidated /automations as canonical. Sprint Z.5 (this change)
+emits a runtime DeprecationWarning when this module is imported so the drift
+is visible in logs/CI.
+
+---
+
 CRUD endpoints for company-specific stage automation rules.
 
 WT-2022 P3.2 (2026-05-21): endpoint DEPRECATED-mas-funcional. UI continua
@@ -37,6 +56,22 @@ from app.shared.security.require_company_id import require_company_id, require_c
 from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
+
+# Sprint Z.5 (2026-05-26): emit runtime warning so import-time deprecation is
+# visible in app boot logs + pytest captures. Canonical = app/api/v1/automations.py
+import warnings as _warnings
+_warnings.warn(
+    "app.api.v1.automation_rules is DEPRECATED (Sprint Z.5). "
+    "Use app.api.v1.automations (canonical /automations endpoint) instead. "
+    "Kept only for staff wedo-admin AutomationRulesPanel compatibility.",
+    DeprecationWarning,
+    stacklevel=2,
+)
+logger.warning(
+    "[DEPRECATED Sprint Z.5] app.api.v1.automation_rules imported - "
+    "canonical is app.api.v1.automations (/automations). "
+    "This router exists only for staff wedo-admin UI compat."
+)
 
 # WT-2022 P3.2 DEPRECATED: endpoint manipula stage_automation_rules; engine
 # real (stage_automation_engine.py:198) lê communication_automations. Adapter
