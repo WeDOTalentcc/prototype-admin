@@ -18,6 +18,12 @@ import { useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useJWTAuth } from "@/contexts/auth-context"
 import { OnboardingChatPage } from "@/components/onboarding/OnboardingChatPage"
+import dynamic from "next/dynamic"
+
+const ChatPageFullscreen = dynamic(
+  () => import("@/components/unified-chat/ChatPageFullscreen").then(m => ({ default: m.ChatPageFullscreen })),
+  { ssr: false }
+)
 
 export default function OnboardingRoute() {
   const router = useRouter()
@@ -54,6 +60,8 @@ export default function OnboardingRoute() {
     <OnboardingChatPage
       sessionId={sessionId}
       userId={userId}
-    />
+    >
+      <ChatPageFullscreen />
+    </OnboardingChatPage>
   )
 }

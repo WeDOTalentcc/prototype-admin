@@ -183,7 +183,11 @@ export function OnboardingActionOrchestrator() {
       })
     }
     window.addEventListener("lia:settings-success", onSuccess)
-    return () => window.removeEventListener("lia:settings-success", onSuccess)
+    window.addEventListener("lia:settings-updated", onSuccess)
+    return () => {
+      window.removeEventListener("lia:settings-success", onSuccess)
+      window.removeEventListener("lia:settings-updated", onSuccess)
+    }
   }, [])
 
   const advance = useCallback((reason: "skip" | "back") => {

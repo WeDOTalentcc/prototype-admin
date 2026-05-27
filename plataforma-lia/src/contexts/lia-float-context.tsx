@@ -215,6 +215,8 @@ interface LiaFloatContextType extends LiaFloatState {
   dismissFairnessWarnings: () => void;
   connectChat: () => void;
   disconnectChat: () => void;
+  pendingPrefill: string | null;
+  clearPendingPrefill: () => void;
 }
 
 const LiaFloatContext = createContext<LiaFloatContextType | undefined>(
@@ -315,8 +317,22 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
   );
 
   const [sessionId] = useState(() => loadOrCreateSessionId());
+  const [pendingPrefill, setPendingPrefill] = useState<string | null>(null);
 
   const { dispatchOrEmit: dispatchUIAction } = useUIAction();
+
+  // Global listener: captures lia:prefill-message dispatched from any surface
+  // (settings conversational, wizard panels, etc.) and stores as pendingPrefill.
+  // Consumers (UnifiedChat, ChatPageFullscreen) read and clear via context.
+  useEffect(() => {
+    const handler = (ev: Event) => {
+      const detail = (ev as CustomEvent).detail || {};
+      const msg: string = detail.message || detail.text || "";
+      if (msg) setPendingPrefill(msg);
+    };
+    window.addEventListener("lia:prefill-message", handler);
+    return () => window.removeEventListener("lia:prefill-message", handler);
+  }, []);
 
   const handleMessageComplete = useCallback(
     (
@@ -888,6 +904,8 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
       dismissFairnessWarnings: connection.dismissFairnessWarnings,
       connectChat: connection.connect,
       disconnectChat: connection.disconnect,
+      pendingPrefill,
+      clearPendingPrefill: () => setPendingPrefill(null),
     }),
     [
       state,
@@ -944,6 +962,7 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
       connection.connect,
       connection.disconnect,
       setSharedMessages,
+      pendingPrefill,
     ],
   );
 

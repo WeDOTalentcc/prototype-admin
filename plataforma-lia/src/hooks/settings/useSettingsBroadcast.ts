@@ -85,7 +85,7 @@ export function useSettingsBroadcastDispatch() {
         basic: { section: "profile", actionId: "configure_profile" },
         culture: { section: "culture", actionId: "configure_culture" },
         tech: { section: "tech_stack", actionId: "configure_tech_stack" },
-        policy: { section: "hiring_policies", actionId: "configure_culture" },
+        policy: { section: "hiring_policies", actionId: "configure_hiring_policy" },
         workforce: { section: "workforce", actionId: "configure_workforce" },
         documents: { section: "profile", actionId: "configure_profile" },
         benefits: { section: "benefits", actionId: "configure_benefits" },
