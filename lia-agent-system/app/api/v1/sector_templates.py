@@ -13,6 +13,7 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.dependencies import get_current_user
+from app.auth.models import User
 from app.core.database import get_db
 from pydantic import BaseModel
 from typing import Optional
@@ -55,7 +56,7 @@ async def list_sector_templates(company_id: str = Depends(require_company_id)):
 async def apply_sector_template(
     sector: str,
     body: ApplySectorRequest = ApplySectorRequest(),
-    current_user: dict = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
@@ -83,15 +84,18 @@ company_id: str = Depends(require_company_id)):
     if body.company_context:
         yaml_content = yaml_content.rstrip() + f"\n  Contexto da empresa: {body.company_context}\n"
 
+    # Multi-tenancy canonical (CLAUDE.md REGRA 6): company_id vem do JWT via
+    # Depends(require_company_id), NUNCA do payload nem de current_user dict
+    # (que tinha fallback literal "unknown" — anti-pattern audit 2026-05-27).
     agent_template = AgentTemplate(
         id=template_id,
-        company_id=current_user.get("company_id", "unknown"),
+        company_id=company_id,
         name=name,
         domain=template["domain"],
         system_prompt_yaml=yaml_content,
         version=1,
         status="draft",
-        created_by=current_user.get("user_id", "system"),
+        created_by=str(current_user.id),
         created_at=datetime.utcnow(),
     )
 
@@ -102,7 +106,7 @@ company_id: str = Depends(require_company_id)):
     try:
         from app.domains.agent_studio._audit_helper import studio_audit
         await studio_audit(
-            company_id=current_user.get("company_id", "unknown"),
+            company_id=company_id,
             action="studio_sector_apply",
             decision="applied",
             reasoning=[
@@ -110,7 +114,7 @@ company_id: str = Depends(require_company_id)):
                 f"Display name: {template['display_name']}",
                 f"Template ID: {template_id}",
             ],
-            actor_user_id=current_user.get("user_id", "system"),
+            actor_user_id=str(current_user.id),
             target_id=template_id,
             target_type="agent_template",
         )
