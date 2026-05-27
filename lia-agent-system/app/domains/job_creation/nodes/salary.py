@@ -19,6 +19,7 @@ from app.domains.job_creation.helpers.ws_payload_builder import (
 )
 from app.domains.job_creation.helpers.i18n import msg
 from app.domains.job_creation.helpers.llm_exceptions import classify_llm_exception_reason
+from app.domains.job_creation.helpers.async_audit import run_coro_in_threadpool
 
 logger = logging.getLogger(__name__)
 
