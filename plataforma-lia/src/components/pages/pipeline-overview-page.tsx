@@ -45,6 +45,8 @@ import { PipelineRail, type PipelineRailNode } from "@/components/pages/pipeline
 import { useActiveAgentsSummary } from "@/hooks/agents/use-active-agents-summary"
 // Onda 3 F2.2 (2026-05-28) — batch deployments para "stage tem deployment static".
 import { useDeploymentsByTargets } from "@/hooks/agents/use-deployments-by-targets"
+// Onda 3 F5/F6 (2026-05-28) — modal trigger por evento de stage.
+import { StageAgentTriggerModal } from "@/components/pipeline/StageAgentTriggerModal"
 import { JobCampaignBadge } from "@/components/jobs/JobCampaignBadge"
 import dynamic from "next/dynamic"
 import { useRouter } from "next/navigation"
@@ -366,6 +368,8 @@ export function PipelineOverviewPage() {
 
   const [stages, setStages] = useState<PipelineStageWithCount[]>([])
   const [selectedStage, setSelectedStage] = useState<string | null>(null)
+  // Onda 3 F6 — modal trigger agente por evento de stage (apenas candidatos mode).
+  const [stageAgentModalStageId, setStageAgentModalStageId] = useState<string | null>(null)
   const [totalCandidates, setTotalCandidates] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -916,12 +920,26 @@ export function PipelineOverviewPage() {
                       {(selectedStageData?.count ?? 0) !== 1 ? "s" : ""}
                     </span>
                   </div>
-                  <button
-                    onClick={() => setSelectedStage(null)}
-                    className="text-xs text-lia-text-disabled hover:text-lia-text-secondary transition-colors"
-                  >
-                    Fechar
-                  </button>
+                  <div className="flex items-center gap-2">
+                    {/* Onda 3 F6 — CTA acoplar agente a este stage. */}
+                    {selectedStageData?.id ? (
+                      <button
+                        onClick={() => setStageAgentModalStageId(selectedStageData.id)}
+                        data-testid={`stage-attach-agent-${selectedStageData.id}`}
+                        className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium text-lia-cyan border border-lia-cyan/30 hover:bg-lia-cyan/10 transition-colors motion-reduce:transition-none"
+                        aria-label="Adicionar agente a esta etapa"
+                      >
+                        <span aria-hidden="true">+</span>
+                        <span>Agente</span>
+                      </button>
+                    ) : null}
+                    <button
+                      onClick={() => setSelectedStage(null)}
+                      className="text-xs text-lia-text-disabled hover:text-lia-text-secondary transition-colors"
+                    >
+                      Fechar
+                    </button>
+                  </div>
                 </div>
 
                 <div className="flex-1 overflow-y-auto px-6 py-3">
@@ -975,6 +993,16 @@ export function PipelineOverviewPage() {
           </div>
           </>
           )}
+
+          {/* Onda 3 F5/F6 — modal trigger agente acoplado a stage. */}
+          <StageAgentTriggerModal
+            stageId={stageAgentModalStageId ?? ""}
+            stageName={
+              stages.find((s) => s.id === stageAgentModalStageId)?.display_name
+            }
+            open={stageAgentModalStageId !== null}
+            onClose={() => setStageAgentModalStageId(null)}
+          />
 
           {mode === "vagas" && (
           <>
