@@ -2181,6 +2181,58 @@
           "criterion": "Critério"
         },
         "stepScore": "Score: {score}"
+      },
+      "kpis": {
+        "title": "Métricas do agente",
+        "period": {
+          "7d": "Últimos 7 dias",
+          "30d": "Últimos 30 dias",
+          "90d": "Últimos 90 dias",
+          "all": "Todos"
+        },
+        "cards": {
+          "candidatesProcessed": "Candidatos processados",
+          "executions": "{count} execuções",
+          "avgTime": "Tempo médio",
+          "p95": "p95: {value}",
+          "approved": "Aprovados",
+          "approvedPct": "{pct}%",
+          "rejected": "Rejeitados",
+          "rejectedPct": "{pct}%",
+          "totalCost": "Custo total",
+          "tokens": "{value} tokens"
+        },
+        "heatmap": {
+          "title": "Atividade por hora do dia",
+          "ariaLabel": "Distribuição de execuções por hora do dia"
+        },
+        "tools": {
+          "title": "Uso por ferramenta",
+          "successRate": "{rate}% sucesso"
+        },
+        "empty": {
+          "title": "KPIs em breve",
+          "description": "Este agente ainda não foi executado. KPIs aparecerão após a primeira execução."
+        },
+        "error": {
+          "title": "Não foi possível carregar os KPIs"
+        },
+        "learning": {
+          "badge": "🩵 aprendendo",
+          "tooltip": "Agente com menos de 5 execuções. As métricas se estabilizam após mais runs."
+        },
+        "viewConsumption": "Ver consumo financeiro deste agente",
+        "a11y": {
+          "summary": "{personaName} reportando KPIs do agente {agentName} no período {period}"
+        }
+      },
+      "empty": {
+        "title": "Você ainda não tem agentes",
+        "description": "Eles fazem o trabalho repetitivo para você focar nas decisões. Comece com um template ou converse com a {personaName} para descobrir qual agente faz sentido.",
+        "cta": {
+          "marketplace": "Explorar Marketplace",
+          "chat": "Conversar com {personaName}"
+        }
       }
     },
     "status": {
@@ -3005,6 +3057,10 @@
       "strategy": "Estrategia",
       "skills": "Habilidades",
       "pool": "Banco"
+    },
+    "firstExecution": {
+      "tooltip": "{agentName} acabou de processar candidatos pela primeira vez. Você pode ver o raciocínio dela em qualquer linha.",
+      "dismiss": "OK, entendi"
     }
   },
   "common": {
@@ -5787,6 +5843,41 @@
       "highUse": "Uso elevado",
       "healthy": "Saudável",
       "nearLimitWarning": "Atenção: você está próximo do limite do plano Apify"
+    },
+    "consumption": {
+      "budgetAlerts": {
+        "title": "Alertas",
+        "info": {
+          "global": "Você consumiu {pct}% do orçamento mensal"
+        },
+        "warning": {
+          "global": "Atenção: você consumiu {pct}% do orçamento mensal"
+        },
+        "critical": {
+          "global": "Crítico: você consumiu {pct}% do orçamento mensal"
+        },
+        "projected": "Projeção: ultrapassará o limite em ~{days} dias",
+        "perAgent": "Agente {agentName} consumiu {pct}% do orçamento global",
+        "viewExecutions": "Ver execuções deste agente"
+      },
+      "drilldown": {
+        "title": "Execuções de {agentType}",
+        "subtitle": "{total} execuções no período",
+        "column": {
+          "timestamp": "Quando",
+          "operation": "Operação",
+          "candidate": "Candidato",
+          "cost": "Custo",
+          "tokens": "Tokens"
+        },
+        "empty": "Nenhuma execução encontrada",
+        "error": "Não foi possível carregar as execuções",
+        "pagination": {
+          "page": "Página {page} de {total}",
+          "prev": "Anterior",
+          "next": "Próxima"
+        }
+      }
     }
   },
   "publicJob": {

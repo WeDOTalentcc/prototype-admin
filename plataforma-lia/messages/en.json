@@ -2181,6 +2181,58 @@
           "criterion": "Criterion"
         },
         "stepScore": "Score: {score}"
+      },
+      "kpis": {
+        "title": "Agent metrics",
+        "period": {
+          "7d": "Last 7 days",
+          "30d": "Last 30 days",
+          "90d": "Last 90 days",
+          "all": "All time"
+        },
+        "cards": {
+          "candidatesProcessed": "Candidates processed",
+          "executions": "{count} executions",
+          "avgTime": "Average time",
+          "p95": "p95: {value}",
+          "approved": "Approved",
+          "approvedPct": "{pct}%",
+          "rejected": "Rejected",
+          "rejectedPct": "{pct}%",
+          "totalCost": "Total cost",
+          "tokens": "{value} tokens"
+        },
+        "heatmap": {
+          "title": "Activity by hour of day",
+          "ariaLabel": "Execution distribution across hours of day"
+        },
+        "tools": {
+          "title": "Tool usage",
+          "successRate": "{rate}% success"
+        },
+        "empty": {
+          "title": "Metrics coming soon",
+          "description": "This agent hasn't been executed yet. KPIs will appear after the first run."
+        },
+        "error": {
+          "title": "Could not load KPIs"
+        },
+        "learning": {
+          "badge": "🩵 learning",
+          "tooltip": "Agent with fewer than 5 executions. Metrics will stabilize after more runs."
+        },
+        "viewConsumption": "View financial usage for this agent",
+        "a11y": {
+          "summary": "{personaName} reporting KPIs for agent {agentName} in period {period}"
+        }
+      },
+      "empty": {
+        "title": "You don't have any agents yet",
+        "description": "They handle the repetitive work so you can focus on decisions. Start with a template or chat with {personaName} to discover which agent fits.",
+        "cta": {
+          "marketplace": "Explore Marketplace",
+          "chat": "Chat with {personaName}"
+        }
       }
     },
     "status": {
@@ -3005,6 +3057,10 @@
       "strategy": "Strategy",
       "skills": "Skills",
       "pool": "Pool"
+    },
+    "firstExecution": {
+      "tooltip": "{agentName} just processed candidates for the first time. You can see their reasoning on any row.",
+      "dismiss": "Got it"
     }
   },
   "common": {
@@ -5787,6 +5843,41 @@
       "highUse": "High usage",
       "healthy": "Healthy",
       "nearLimitWarning": "Warning: you are near your Apify plan limit"
+    },
+    "consumption": {
+      "budgetAlerts": {
+        "title": "Alerts",
+        "info": {
+          "global": "You used {pct}% of monthly budget"
+        },
+        "warning": {
+          "global": "Heads up: you used {pct}% of monthly budget"
+        },
+        "critical": {
+          "global": "Critical: you used {pct}% of monthly budget"
+        },
+        "projected": "Projection: will exceed limit in ~{days} days",
+        "perAgent": "Agent {agentName} used {pct}% of global budget",
+        "viewExecutions": "View executions for this agent"
+      },
+      "drilldown": {
+        "title": "Executions of {agentType}",
+        "subtitle": "{total} executions in period",
+        "column": {
+          "timestamp": "When",
+          "operation": "Operation",
+          "candidate": "Candidate",
+          "cost": "Cost",
+          "tokens": "Tokens"
+        },
+        "empty": "No executions found",
+        "error": "Could not load executions",
+        "pagination": {
+          "page": "Page {page} of {total}",
+          "prev": "Previous",
+          "next": "Next"
+        }
+      }
     }
   },
   "publicJob": {
