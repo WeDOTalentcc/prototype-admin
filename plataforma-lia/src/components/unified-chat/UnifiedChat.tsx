@@ -113,6 +113,31 @@ interface Props {
  * - DynamicContextPanel split view (sidebar expands, fullscreen adds panel)
  * - Auto-scroll, streaming, thinking indicators
  */
+
+function wizardUpdateToMessage(updates: Record<string, unknown>): string {
+  if ("jd_similar_reuse_id" in updates) return "Reutilizar JD similar: " + String(updates.jd_similar_reuse_id)
+  if ("jd_similar_dismissed" in updates) return "Ignorar JD similar, vou digitar manualmente"
+  if ("raw_input" in updates) return String(updates.raw_input)
+  if ("screening_mode" in updates)
+    return updates.screening_mode === "compact" ? "Modo compacto (7 perguntas)" : "Modo completo (12 perguntas)"
+  if ("sourcing_mode" in updates) {
+    const labels: Record<string, string> = {
+      internal: "Talent Pool interno",
+      internal_global: "Interno + Global",
+      global: "Busca global",
+    }
+    return labels[String(updates.sourcing_mode)] ?? "Sourcing: " + String(updates.sourcing_mode)
+  }
+  if ("salary_min" in updates && "salary_max" in updates)
+    return "Salario entre R$ " + String(updates.salary_min) + " e R$ " + String(updates.salary_max)
+  if ("salary_min" in updates) return "Salario minimo: R$ " + String(updates.salary_min)
+  if ("salary_max" in updates) return "Salario maximo: R$ " + String(updates.salary_max)
+  if ("platforms" in updates) return "Plataformas: " + (updates.platforms as string[]).join(", ")
+  if ("auto_screen" in updates) return "Auto-triagem: " + (updates.auto_screen ? "ativada" : "desativada")
+  if ("questions" in updates) return "Atualizar perguntas de elegibilidade"
+  return JSON.stringify({ type: "wizard_update", updates })
+}
+
 export function UnifiedChat({
   renderMode = "overlay",
   initialMode,
@@ -1077,11 +1102,7 @@ export function UnifiedChat({
             onApprove={() => sendApproval(true)}
             onReject={() => sendApproval(false)}
             onClose={closeDynamicPanel}
-            onUpdate={(updates) =>
-              sendChatMessage(
-                JSON.stringify({ type: "wizard_update", updates }),
-              )
-            }
+            onUpdate={(updates) => sendChatMessage(wizardUpdateToMessage(updates))}
           />
         </div>
       )}

@@ -1,8 +1,0 @@
-{
-  "message_non_empty": true,
-  "domain": "pipeline",
-  "company_id": "test-company-001",
-  "stage": "triage",
-  "has_actions": true,
-  "confidence_valid": true
-}
