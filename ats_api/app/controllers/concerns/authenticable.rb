@@ -1,24 +1,34 @@
 module Authenticable
   extend ActiveSupport::Concern
 
+  GENERIC_AUTH_ERROR = "Não autorizado".freeze
+
   def authorize_request
     token = request.headers["Authorization"]&.split(" ")&.last
 
     begin
       decoded = JsonWebToken.decode(token)
-      return render_unauthorized("Token inválido ou expirado") unless decoded
+      unless decoded
+        Rails.logger.warn("[auth] Token inválido ou expirado")
+        return render_unauthorized
+      end
 
       @jwt_payload = decoded
 
       role = decoded[:role].to_s
-      return render_unauthorized("Tipo de token desconhecido: #{role}") if role == "one_time_token"
+      if role == "one_time_token"
+        Rails.logger.warn("[auth] Tipo de token desconhecido: #{role}")
+        return render_unauthorized
+      end
       return authorize_service(decoded) if role == "service"
       return authorize_user(decoded) if decoded[:user_id]
 
-      render_unauthorized("Tipo de token desconhecido: #{role}")
+      Rails.logger.warn("[auth] Tipo de token desconhecido: #{role}")
+      render_unauthorized
 
     rescue JWT::DecodeError => e
-      render_unauthorized("Erro na decodificação do JWT: #{e.message}")
+      Rails.logger.warn("[auth] Erro na decodificação do JWT: #{e.message}")
+      render_unauthorized
     end
   end
 
@@ -26,13 +36,19 @@ module Authenticable
 
   def authorize_service(payload)
     account = Account.find_by(id: payload[:account_id])
-    return render_unauthorized("Conta inválida especificada no token") unless account
+    unless account
+      Rails.logger.warn("[auth] Conta inválida especificada no token (account_id=#{payload[:account_id].inspect})")
+      return render_unauthorized
+    end
 
     Current.account = account
 
     if payload[:user_id].present?
       @current_user = User.find_by(id: payload[:user_id])
-      return render_unauthorized("Usuário do token não encontrado") unless @current_user
+      unless @current_user
+        Rails.logger.warn("[auth] Usuário do token não encontrado (user_id=#{payload[:user_id].inspect})")
+        return render_unauthorized
+      end
 
       Current.user = @current_user
     end
@@ -45,7 +61,10 @@ module Authenticable
     user = Rails.cache.fetch("auth:user:#{user_id}", expires_in: 30.seconds) do
       User.find_by(id: user_id)
     end
-    return render_unauthorized("Usuário do token não encontrado") unless user
+    unless user
+      Rails.logger.warn("[auth] Usuário do token não encontrado (user_id=#{user_id.inspect})")
+      return render_unauthorized
+    end
 
     @current_user = user
     Current.user = @current_user
@@ -56,9 +75,8 @@ module Authenticable
     Apartment::Tenant.switch!(account.tenant)
   end
 
-  def render_unauthorized(msg)
-    response.set_header("X-Auth-Debug", msg.to_s)
-    render(json: { error: msg }, status: :unauthorized)
+  def render_unauthorized
+    render(json: { error: GENERIC_AUTH_ERROR }, status: :unauthorized)
   end
 
   def render_forbidden(msg)    = render(json: { error: msg }, status: :forbidden)
