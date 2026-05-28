@@ -93,7 +93,8 @@ class SharedSearchAccess(Base):
     access_token = Column(String(255), nullable=False, unique=True, index=True)
     otp_hash = Column(String(255), nullable=True)
     otp_expires_at = Column(DateTime, nullable=True)
-    
+    otp_attempts = Column(Integer, nullable=False, server_default="0", default=0)
+
     first_accessed_at = Column(DateTime, nullable=True)
     last_accessed_at = Column(DateTime, nullable=True)
     total_views = Column(Integer, nullable=False, default=0)
