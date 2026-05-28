@@ -5118,7 +5118,10 @@
         "learnMore": "Saiba mais",
         "connect": "Conectar",
         "systemKey": "Chave do sistema",
-        "systemKeyTooltip": "Esta empresa está usando a chave global da plataforma. Configure uma chave própria para isolar quota e rate-limit."
+        "systemKeyTooltip": "Esta empresa está usando a chave global da plataforma. Configure uma chave própria para isolar quota e rate-limit.",
+        "connectedTooltip": "Integração ativa e funcionando",
+        "notConfiguredTooltip": "Configure as credenciais para ativar esta integração",
+        "comingSoonTooltip": "Em desenvolvimento — disponível em breve"
       },
       "drawer": {
         "activeProvider": "Provedor ativo",
@@ -5235,7 +5238,9 @@
       "noResultsHint": "Tente buscar com outros termos",
       "authUrlError": "Erro ao obter URL de autorização",
       "googleConnectError": "Erro ao conectar com Google",
-      "companyNotIdentified": "Empresa não identificada"
+      "companyNotIdentified": "Empresa não identificada",
+      "emptyCategory": "Nenhuma integração nesta categoria",
+      "emptyCategoryHint": "Novas integrações são adicionadas continuamente"
     },
     "page": {
       "title": "Configurações",

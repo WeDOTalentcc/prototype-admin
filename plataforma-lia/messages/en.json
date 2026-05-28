@@ -5118,7 +5118,10 @@
         "learnMore": "Learn more",
         "connect": "Connect",
         "systemKey": "System key",
-        "systemKeyTooltip": "This company is using the platform's global system key. Configure your own key to isolate quota and rate limits."
+        "systemKeyTooltip": "This company is using the platform's global system key. Configure your own key to isolate quota and rate limits.",
+        "connectedTooltip": "Integration active and working",
+        "notConfiguredTooltip": "Configure credentials to activate this integration",
+        "comingSoonTooltip": "In development — available soon"
       },
       "drawer": {
         "activeProvider": "Active provider",
@@ -5235,7 +5238,9 @@
       "noResultsHint": "Try searching with other terms",
       "authUrlError": "Error getting authorization URL",
       "googleConnectError": "Error connecting with Google",
-      "companyNotIdentified": "Company not identified"
+      "companyNotIdentified": "Company not identified",
+      "emptyCategory": "No integrations in this category",
+      "emptyCategoryHint": "New integrations are added regularly"
     },
     "page": {
       "title": "Settings",
