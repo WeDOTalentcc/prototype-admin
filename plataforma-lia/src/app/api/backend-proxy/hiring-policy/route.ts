@@ -64,7 +64,6 @@ export async function PUT(request: NextRequest) {
       headers: getAuthHeaders(request),
       signal: AbortSignal.timeout(8000),
       body: JSON.stringify(body),
-      signal: AbortSignal.timeout(8000),
     })
 
     if (!response.ok) {

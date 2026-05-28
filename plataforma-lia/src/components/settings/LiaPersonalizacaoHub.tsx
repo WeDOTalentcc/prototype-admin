@@ -43,7 +43,6 @@ export function LiaPersonalizacaoHub({ activeSubsection }: LiaPersonalizacaoHubP
       <HubHeader
         title="LIA & Personalizacao"
         description="Configure a persona da IA, instrucoes por campo e retroalimentacao do modelo"
-        icon={<Brain className="w-5 h-5" />}
       />
 
       {/* Tab nav */}

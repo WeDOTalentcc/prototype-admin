@@ -364,7 +364,7 @@ export function HiringPoliciesHub() {
       })
       setSaveErrors((prev) => ({ ...prev, [field]: null }))
       queryClient.invalidateQueries({ queryKey: SETTINGS_QUERY_KEYS.hiringPolicy() })
-      dispatchSettingsUpdate({ section: "hiring_policies", source: "ui" })
+      dispatchSettingsUpdate({ actionId: "save_hiring_policy", section: "hiring_policies", field, source: "ui", ts: Date.now() })
     },
     onError: (err: Error, { field }) => {
       setSavingFields((prev) => {

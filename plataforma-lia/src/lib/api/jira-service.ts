@@ -295,7 +295,7 @@ export class JiraService {
         fields: ['summary', 'status', 'assignee', 'updated'],
       });
 
-      return (response.issues || []).map((issue) => {
+      return (response.issues || []).map((issue: any) => {
         const fields = issue.fields as Record<string, unknown> | undefined
         const status = fields?.status as Record<string, unknown> | undefined
         const assignee = fields?.assignee as Record<string, unknown> | undefined
@@ -488,7 +488,7 @@ export class JiraService {
         fields: ['summary', 'status', 'description', 'updated'],
       });
 
-      return (response.issues || []).map((issue) => {
+      return (response.issues || []).map((issue: any) => {
         const fields = issue.fields as Record<string, unknown> | undefined
         const status = fields?.status as Record<string, unknown> | undefined
         const statusCategory = status?.statusCategory as Record<string, unknown> | undefined
