@@ -120,6 +120,7 @@ class OnboardingSession:
             "onboarding_data": self.onboarding_data,
             "tour_steps_completed": self.tour_steps_completed,
             "is_complete": self.is_complete,
+            "settings_extraction_status_json": self.settings_extraction_status_json,
         }
 
     @classmethod

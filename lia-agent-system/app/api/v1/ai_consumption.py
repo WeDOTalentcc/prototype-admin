@@ -13,7 +13,7 @@ Provides endpoints for:
 # Este arquivo trata de metering tecnico: tokens por modelo, rate limiting, overage.
 # Para verificar limite de plano ou emitir fatura, usar billing.py.
 import logging
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from typing import Any, cast
 from uuid import UUID
 
@@ -892,3 +892,124 @@ _company_gate: str = Depends(require_company_id)) -> dict[str, Any]:
     except Exception as e:
         logger.error(f"Error getting real-time usage: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============================================================================
+# Onda 4 B2/B3 — Drilldown + Budget Alerts (2026-05-28)
+# ============================================================================
+# B2: lista execuções individuais (rows ai_consumption) com filtros + paginação.
+# B3: alertas de orçamento global + per-agent com severity info/warning/critical.
+#
+# Multi-tenancy: get_verified_company_id obrigatório.
+# ADR-001: queries SQL fail-closed via WHERE company_id; agregação on-demand
+# (sem tabela snapshot — esperar evidência de carga antes de pré-computar).
+# ============================================================================
+
+from typing import Literal as _Literal
+
+from app.shared.types import WeDoBaseModel as _WeDoBaseModel
+
+
+class ConsumptionExecutionItem(_WeDoBaseModel):
+    """Onda 4 B2 — uma linha de drilldown de consumo."""
+
+    consumption_id: str
+    agent_type: str
+    studio_agent_id: str | None = None
+    operation: str
+    model: str
+    input_tokens: int
+    output_tokens: int
+    total_tokens: int
+    cost_cents: int
+    candidate_id: str | None = None
+    vacancy_id: str | None = None
+    created_at: datetime
+
+
+class ConsumptionDrilldownResponse(_WeDoBaseModel):
+    """Onda 4 B2 — payload completo do drilldown."""
+
+    items: list[ConsumptionExecutionItem]
+    total_count: int
+    total_cost_cents: int
+    total_tokens: int
+
+
+@router.get(
+    "/by-agent/drilldown",
+    response_model=ConsumptionDrilldownResponse,
+    summary="Onda 4 B2 — drilldown de execuções de consumo",
+)
+async def get_consumption_drilldown(
+    agent_type: str | None = Query(default=None, description="Filtra por agent_type (ex: 'digital_twin')"),
+    studio_agent_id: str | None = Query(default=None, description="Filtra por studio_agent_id (agente individual)"),
+    since_days: int = Query(default=30, ge=1, le=365),
+    limit: int = Query(default=100, ge=1, le=500),
+    offset: int = Query(default=0, ge=0),
+    company_id: str = Depends(get_verified_company_id),
+    db: AsyncSession = Depends(get_db),
+) -> ConsumptionDrilldownResponse:
+    """Lista execuções individuais (ai_consumption) com filtros + paginação.
+
+    Multi-tenancy: filter company_id no SQL.
+    Performance: usa index idx_ai_consumption_company_type_date quando existir;
+    fallback aceitável em volumes < 100k rows/tenant/period.
+    """
+    from datetime import date as _date_type
+
+    company_uuid = UUID(company_id)
+    since_cutoff = datetime.now() - timedelta(days=since_days)
+
+    conditions = [
+        AiConsumption.company_id == company_uuid,
+        AiConsumption.created_at >= since_cutoff,
+    ]
+    if agent_type:
+        conditions.append(AiConsumption.agent_type == agent_type)
+    if studio_agent_id:
+        conditions.append(AiConsumption.studio_agent_id == studio_agent_id)
+
+    totals_stmt = select(
+        func.count(AiConsumption.id).label("total_count"),
+        func.coalesce(func.sum(AiConsumption.cost_cents), 0).label("total_cost_cents"),
+        func.coalesce(func.sum(AiConsumption.total_tokens), 0).label("total_tokens"),
+    ).where(and_(*conditions))
+    totals_result = await db.execute(totals_stmt)
+    totals = totals_result.one()
+
+    items_stmt = (
+        select(AiConsumption)
+        .where(and_(*conditions))
+        .order_by(desc(AiConsumption.created_at))
+        .limit(limit)
+        .offset(offset)
+    )
+    items_result = await db.execute(items_stmt)
+    rows = list(items_result.scalars().all())
+
+    items: list[ConsumptionExecutionItem] = []
+    for row in rows:
+        items.append(
+            ConsumptionExecutionItem(
+                consumption_id=str(row.id),
+                agent_type=row.agent_type,
+                studio_agent_id=row.studio_agent_id,
+                operation=row.operation,
+                model=row.model,
+                input_tokens=int(row.input_tokens or 0),
+                output_tokens=int(row.output_tokens or 0),
+                total_tokens=int(row.total_tokens or 0),
+                cost_cents=int(row.cost_cents or 0),
+                candidate_id=str(row.candidate_id) if row.candidate_id else None,
+                vacancy_id=str(row.vacancy_id) if row.vacancy_id else None,
+                created_at=row.created_at,
+            )
+        )
+
+    return ConsumptionDrilldownResponse(
+        items=items,
+        total_count=int(totals.total_count or 0),
+        total_cost_cents=int(totals.total_cost_cents or 0),
+        total_tokens=int(totals.total_tokens or 0),
+    )

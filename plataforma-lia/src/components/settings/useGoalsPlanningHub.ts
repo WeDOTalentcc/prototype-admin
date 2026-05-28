@@ -327,6 +327,11 @@ export function useGoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection
           },
         }))
       }
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('lia:settings-success', {
+          detail: { actionId: 'configure_workforce', section: 'workforce', source: 'ui' },
+        }))
+      }
       setSuccessMessage('Planejamento salvo com sucesso!')
       setTimeout(() => setSuccessMessage(null), 3000)
     } catch (err) {
@@ -437,6 +442,11 @@ export function useGoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection
       // Re-hydrate from canonical Sistema B so the UI reflects exactly what
       // was persisted (and surfaces any rows the bulk endpoint normalized).
       await fetchHeadcountsForYear(selectedYear)
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('lia:settings-success', {
+          detail: { actionId: 'configure_workforce', section: 'workforce', source: 'ui' },
+        }))
+      }
       setSuccessMessage(`${headcounts.length} posição(ões) salvas com sucesso!`)
       setTimeout(() => setSuccessMessage(null), 3000)
     } catch (err) {
