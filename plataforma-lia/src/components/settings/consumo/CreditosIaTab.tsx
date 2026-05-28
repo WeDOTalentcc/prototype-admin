@@ -19,6 +19,7 @@ import {
 import type { Payload } from 'recharts/types/component/DefaultTooltipContent'
 import { AlertTriangle, Zap, TrendingUp, DollarSign, Activity } from 'lucide-react'
 import { useMemo, type ComponentProps } from 'react'
+import { BudgetAlertsList } from './BudgetAlertsList'
 
 const jsonFetcher = (url: string) => fetch(url).then(r => r.json())
 
@@ -301,6 +302,9 @@ export function CreditosIaTab() {
       </div>
 
       {balance && <MonthlyUsageAlert percentage={usagePct} />}
+
+      {/* Onda 4 F5 — alertas de orçamento (global + per-agent) */}
+      <BudgetAlertsList />
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <Card className="border border-lia-border-subtle shadow-none">
