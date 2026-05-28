@@ -16,18 +16,65 @@ import { LiveAgentsList } from "./LiveAgentsList"
 import { RecentExecutionsTable } from "./RecentExecutionsTable"
 import { LgpdAuditPanel } from "./LgpdAuditPanel"
 import { DecisionTreeDrawer } from "../decision-tree/DecisionTreeDrawer"
+// Onda 3 F7 (2026-05-28) — filtro global "Por surface" propagado pros componentes.
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+
+type ControlRoomSurfaceFilter =
+  | "all"
+  | "talent_pool"
+  | "job"
+  | "pipeline_stage"
+  | "candidate_list"
 
 export function StudioControlRoom() {
   const t = useTranslations("agents.studio.controlRoom")
   const tLive = useTranslations("agents.studio.controlRoom.liveSection")
   const tRecent = useTranslations("agents.studio.controlRoom.recentSection")
   const [openExecutionId, setOpenExecutionId] = React.useState<string | null>(null)
+  // Onda 3 F7 — filtro global "Por surface" propagado pros componentes filhos.
+  const [surfaceFilter, setSurfaceFilter] =
+    React.useState<ControlRoomSurfaceFilter>("all")
+  const tFilters = useTranslations("agents.studio.controlRoom.filters")
 
   return (
     <div className="mx-auto mt-6 flex w-full max-w-7xl flex-col gap-6">
-      <header>
-        <h2 className="text-base font-semibold text-lia-text-primary">{t("title")}</h2>
-        <p className="mt-1 max-w-2xl text-xs text-lia-text-secondary">{t("description")}</p>
+      <header className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h2 className="text-base font-semibold text-lia-text-primary">{t("title")}</h2>
+          <p className="mt-1 max-w-2xl text-xs text-lia-text-secondary">{t("description")}</p>
+        </div>
+        <div
+          className="flex items-center gap-2"
+          data-testid="control-room-surface-filter"
+        >
+          <span className="text-xs text-lia-text-secondary">
+            {tFilters("surface")}
+          </span>
+          <Select
+            value={surfaceFilter}
+            onValueChange={(v) => setSurfaceFilter(v as ControlRoomSurfaceFilter)}
+          >
+            <SelectTrigger
+              className="h-8 w-44 border-lia-border-default text-xs"
+              aria-label={tFilters("surface")}
+            >
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{tFilters("surface.all")}</SelectItem>
+              <SelectItem value="talent_pool">{tFilters("surface.pool")}</SelectItem>
+              <SelectItem value="job">{tFilters("surface.job")}</SelectItem>
+              <SelectItem value="pipeline_stage">{tFilters("surface.pipeline")}</SelectItem>
+              <SelectItem value="candidate_list">{tFilters("surface.decidir")}</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </header>
 
       {/* Seção Ao Vivo */}
@@ -46,7 +93,7 @@ export function StudioControlRoom() {
           </h3>
           <span className="text-xs text-lia-text-tertiary">— {tLive("subtitle")}</span>
         </div>
-        <LiveAgentsList onOpenReasoning={setOpenExecutionId} />
+        <LiveAgentsList onOpenReasoning={setOpenExecutionId} surfaceFilter={surfaceFilter} />
       </section>
 
       {/* Seção Histórico recente */}
@@ -65,7 +112,7 @@ export function StudioControlRoom() {
           </h3>
           <span className="text-xs text-lia-text-tertiary">— {tRecent("subtitle")}</span>
         </div>
-        <RecentExecutionsTable onOpenReasoning={setOpenExecutionId} />
+        <RecentExecutionsTable onOpenReasoning={setOpenExecutionId} surfaceFilter={surfaceFilter} />
       </section>
 
       {/* Seção Auditoria LGPD */}

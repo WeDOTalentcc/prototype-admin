@@ -22,6 +22,12 @@ import type { RecentExecution } from "../decision-tree/types"
 
 interface RecentExecutionsTableProps {
   onOpenReasoning: (executionId: string) => void
+  /**
+   * Onda 3 F7 — quando provido pelo parent (StudioControlRoom), sobrepoe o
+   * filtro local de surface. Quando undefined ou "all", o usuario controla
+   * via Select local.
+   */
+  surfaceFilter?: SurfaceFilter
 }
 
 type SurfaceFilter = "all" | "talent_pool" | "job" | "pipeline_stage" | "candidate_list"
@@ -95,7 +101,7 @@ function formatDuration(latencyMs: number | null): string {
   return `${Math.floor(latencyMs / 60_000)}min`
 }
 
-export function RecentExecutionsTable({ onOpenReasoning }: RecentExecutionsTableProps) {
+export function RecentExecutionsTable({ onOpenReasoning, surfaceFilter }: RecentExecutionsTableProps) {
   const t = useTranslations("agents.studio.controlRoom.recentSection")
   const tFilters = useTranslations("agents.studio.controlRoom.recentSection.filters")
   const tCols = useTranslations("agents.studio.controlRoom.recentSection.columns")
@@ -107,9 +113,13 @@ export function RecentExecutionsTable({ onOpenReasoning }: RecentExecutionsTable
   const [surface, setSurface] = React.useState<SurfaceFilter>("all")
   const [status, setStatus] = React.useState<StatusFilter>("all")
 
+  // Onda 3 F7 — parent (StudioControlRoom) pode sobrepor o filtro local.
+  const effectiveSurface: SurfaceFilter =
+    surfaceFilter && surfaceFilter !== "all" ? surfaceFilter : surface
+
   const { data, isLoading, isError } = useQuery({
-    queryKey: RECENT_EXECUTIONS_QUERY_KEY({ agentId, surface, status }),
-    queryFn: () => fetchRecentExecutions({ agentId, surface, status }),
+    queryKey: RECENT_EXECUTIONS_QUERY_KEY({ agentId, surface: effectiveSurface, status }),
+    queryFn: () => fetchRecentExecutions({ agentId, surface: effectiveSurface, status }),
     staleTime: 30_000,
   })
 

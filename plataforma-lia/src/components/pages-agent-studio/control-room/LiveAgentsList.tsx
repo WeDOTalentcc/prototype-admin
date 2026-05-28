@@ -15,15 +15,34 @@ import { cn } from "@/lib/utils"
 import { useAiPersona } from "@/hooks/company/use-ai-persona"
 import type { ActiveExecution } from "../decision-tree/types"
 
-export const LIVE_EXECUTIONS_QUERY_KEY = ["agent-monitoring", "active-executions"] as const
+export type LiveSurfaceFilter =
+  | "all"
+  | "talent_pool"
+  | "job"
+  | "pipeline_stage"
+  | "candidate_list"
+
+export const LIVE_EXECUTIONS_QUERY_KEY = (surface: LiveSurfaceFilter = "all") =>
+  ["agent-monitoring", "active-executions", surface] as const
 
 interface LiveAgentsListProps {
   onOpenReasoning: (executionId: string) => void
+  /**
+   * Onda 3 F7 — filtro "Por surface" propagado da Sala de Controle. Quando
+   * "all" não envia query param e backend retorna todos.
+   */
+  surfaceFilter?: LiveSurfaceFilter
 }
 
-async function fetchActiveExecutions(): Promise<ActiveExecution[]> {
+async function fetchActiveExecutions(
+  surface: LiveSurfaceFilter = "all",
+): Promise<ActiveExecution[]> {
   const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null
-  const res = await fetch("/api/backend-proxy/agent-monitoring/active-executions", {
+  const url =
+    surface === "all"
+      ? "/api/backend-proxy/agent-monitoring/active-executions"
+      : `/api/backend-proxy/agent-monitoring/active-executions?surface=${encodeURIComponent(surface)}`
+  const res = await fetch(url, {
     headers: token ? { Authorization: `Bearer ${token}` } : {},
   })
   if (!res.ok) {
@@ -103,12 +122,15 @@ function LiveCard({ execution, onOpenReasoning, displayName }: LiveCardProps) {
   )
 }
 
-export function LiveAgentsList({ onOpenReasoning }: LiveAgentsListProps) {
+export function LiveAgentsList({
+  onOpenReasoning,
+  surfaceFilter = "all",
+}: LiveAgentsListProps) {
   const t = useTranslations("agents.studio.controlRoom.liveSection")
   const { persona } = useAiPersona()
   const { data, isLoading, isError } = useQuery({
-    queryKey: LIVE_EXECUTIONS_QUERY_KEY,
-    queryFn: fetchActiveExecutions,
+    queryKey: LIVE_EXECUTIONS_QUERY_KEY(surfaceFilter),
+    queryFn: () => fetchActiveExecutions(surfaceFilter),
     refetchInterval: 5000,
     staleTime: 2000,
   })
