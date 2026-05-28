@@ -10,6 +10,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.dependencies import get_current_user
 from app.core.database import get_db, get_tenant_db
 from app.schemas.agent_deployment import (
+    BatchTargetsRequest,
+    BatchTargetsResponse,
+    BulkDeploymentFailedItem,
+    BulkDeploymentRequest,
+    BulkDeploymentResponse,
+    BulkDeploymentSkippedItem,
     CreateDeploymentRequest,
     DeploymentListResponse,
     DeploymentResponse,
@@ -18,6 +24,7 @@ from app.schemas.agent_deployment import (
     UpdateDeploymentRequest,
 )
 from app.services.agent_deployment_service import agent_deployment_service
+from app.shared.trigger_mode_validation import validate_trigger_mode
 from lia_models.agent_deployment import DeploymentTargetType
 from app.shared.security.require_company_id import require_company_id
 
@@ -35,6 +42,8 @@ async def create_deployment(
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Bind an agent to a target (job, talent pool, pipeline stage, candidate list)."""
+    # Onda 3.B4 — validate target_type × trigger_mode coherence canonical.
+    validate_trigger_mode(body.target_type, body.trigger_mode)
     try:
         deployment = await agent_deployment_service.create_deployment(
             db=db,
@@ -148,6 +157,17 @@ async def update_deployment(
     db: AsyncSession = Depends(get_tenant_db),
 company_id: str = Depends(require_company_id)):
     """Update a deployment (change trigger, pause/resume, override config)."""
+    # Onda 3.B4 — if trigger_mode changes, re-validate against current target_type.
+    if body.trigger_mode is not None:
+        existing = await agent_deployment_service.get_deployment(
+            db=db,
+            deployment_id=deployment_id,
+            company_id=current_user.company_id,
+        )
+        if not existing:
+            raise HTTPException(status_code=404, detail="Deployment not found")
+        validate_trigger_mode(existing.target_type, body.trigger_mode)
+
     deployment = await agent_deployment_service.update_deployment(
         db=db,
         deployment_id=deployment_id,
@@ -277,4 +297,134 @@ company_id: str = Depends(require_company_id)):
         candidates_processed=1,
         execution_time_ms=elapsed_ms,
         status="completed",
+    )
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Onda 3.B1 — Batch by-targets (elimina N+1 do frontend Onda 2)
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+@target_router.post("/by-targets", response_model=BatchTargetsResponse)
+async def get_deployments_by_targets(
+    payload: BatchTargetsRequest,
+    current_user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+    company_id: str = Depends(require_company_id),
+):
+    """Batch lookup: dict[target_id → list[active deployments]] in ONE SQL query.
+
+    Limite: <= 100 target_ids por request (enforced via Pydantic max_length).
+
+    Multi-tenancy: company_id from JWT applied as outer filter; target_ids
+    are filtered IN within tenant.
+    """
+    grouped = await agent_deployment_service.list_by_targets(
+        db=db,
+        company_id=current_user.company_id,
+        target_type=payload.target_type.value,
+        target_ids=payload.target_ids,
+    )
+
+    return BatchTargetsResponse(
+        deployments_by_target={
+            tid: [DeploymentResponse(**d.to_dict()) for d in deps]
+            for tid, deps in grouped.items()
+        }
+    )
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Onda 3.B3 — Bulk deployment (1 agent → N targets atomic)
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+@router.post(
+    "/{agent_id}/deployments/bulk",
+    response_model=BulkDeploymentResponse,
+    status_code=201,
+)
+async def bulk_create_deployments(
+    agent_id: str,
+    payload: BulkDeploymentRequest,
+    current_user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_tenant_db),
+    company_id: str = Depends(require_company_id),
+):
+    """Onda 3.B3 — Acoplar 1 agente a N targets em transação atômica.
+
+    Limite: <= 50 target_ids (enforced via Pydantic max_length).
+
+    Semantics:
+      - Validação target_type × trigger_mode upfront.
+      - Targets já com deployment ativo do mesmo agente: soft-skip
+        (não bloqueiam criação dos demais).
+      - Per-target cap (MAX_DEPLOYMENTS_PER_TARGET=5): se ultrapassado,
+        target vai para `failed`, demais prosseguem.
+      - Global agent cap (MAX_DEPLOYMENTS_PER_AGENT=10): se snapshot inicial
+        + len(target_ids) excederia, rejeita o batch INTEIRO (400).
+      - Commit atomic: created só persistem se nenhum raise. Skipped/failed
+        são returned sem afetar commit.
+      - Audit trail: single AuditLog entry per bulk operation.
+    """
+    # B4 — coerência target_type × trigger_mode (1 vez para o batch).
+    validate_trigger_mode(payload.target_type.value, payload.trigger_mode)
+
+    try:
+        created, skipped, failed = await agent_deployment_service.bulk_create_deployments(
+            db=db,
+            agent_id=agent_id,
+            company_id=current_user.company_id,
+            created_by=str(current_user.id),
+            target_type=payload.target_type.value,
+            target_ids=payload.target_ids,
+            trigger_mode=payload.trigger_mode,
+            schedule_cron=payload.schedule_cron,
+            is_active=payload.is_active,
+            config_overrides=payload.config_overrides,
+        )
+        await db.commit()
+    except ValueError as e:
+        await db.rollback()
+        raise HTTPException(status_code=400, detail=str(e))
+    except HTTPException:
+        await db.rollback()
+        raise
+    except Exception as e:
+        await db.rollback()
+        logger.error("[BulkDeploy] failed: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="Bulk deployment failed")
+
+    # LGPD audit trail — single entry per bulk operation.
+    try:
+        from app.shared.compliance.audit_service import get_audit_service
+
+        audit_svc = get_audit_service()
+        await audit_svc.log_decision(
+            company_id=current_user.company_id,
+            agent_name="agent_studio.bulk_deploy",
+            decision_type="generate_feedback",
+            action="bulk_deploy_agent",
+            decision=(
+                f"Acoplado agente {agent_id} a {len(created)} target(s) "
+                f"(skipped={len(skipped)}, failed={len(failed)})"
+            ),
+            reasoning=[
+                f"target_type={payload.target_type.value}",
+                f"trigger_mode={payload.trigger_mode}",
+                f"requested={len(payload.target_ids)}",
+                f"created={len(created)}",
+                f"skipped={len(skipped)}",
+                f"failed={len(failed)}",
+            ],
+            criteria_used=["agent_studio.bulk_deploy"],
+            actor_user_id=str(current_user.id),
+        )
+    except Exception as _audit_err:
+        logger.warning("[BulkDeploy] audit log failed: %s", _audit_err)
+
+    return BulkDeploymentResponse(
+        created=[DeploymentResponse(**d.to_dict()) for d in created],
+        skipped=[BulkDeploymentSkippedItem(**s) for s in skipped],
+        failed=[BulkDeploymentFailedItem(**f) for f in failed],
     )
