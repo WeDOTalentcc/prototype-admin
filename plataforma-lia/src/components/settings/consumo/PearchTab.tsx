@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import useSWR from "swr"
-import { Search, CheckCircle2, DollarSign, BarChart3 } from "lucide-react"
+import { Search, CheckCircle2, BarChart3, DollarSign } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const jsonFetcher = (url: string) => fetch(url).then(r => r.json())
@@ -28,7 +28,7 @@ export function PearchTab() {
   const [days, setDays] = useState<7 | 30 | 90>(30)
 
   const { data, isLoading, error } =
-    useSWR<PearchConsumption>(, jsonFetcher)
+    useSWR<PearchConsumption>(`/api/backend-proxy/consumo/pearch?days=${days}`, jsonFetcher)
 
   if (isLoading) {
     return (
@@ -122,7 +122,7 @@ export function PearchTab() {
                   <div className="mt-2 h-1.5 rounded-full bg-lia-bg-tertiary overflow-hidden">
                     <div
                       className="h-full rounded-full bg-forest-green transition-all duration-500"
-                      style={{ width:  }}
+                      style={{ width: `${successRate}%` }}
                     />
                   </div>
                 </>

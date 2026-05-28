@@ -49,7 +49,7 @@ export function IntegrationGrid({
   return (
     <div className="space-y-8" data-testid="integrations-list">
       {groups.map((group) => (
-        <section key={group.category} data-testid={}>
+        <section key={group.category} data-testid={`integrations-group-${group.category}`}>
           {activeCategory === "all" && (
             <div className="flex items-center gap-2 mb-3">
               <span className="text-lia-text-tertiary">{categoryIcons[group.category]}</span>

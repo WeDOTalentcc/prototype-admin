@@ -130,7 +130,7 @@ export function IntegrationsHub({ activeSubsection }: IntegrationsHubProps) {
             key={id}
             onClick={() => setActiveTab(id)}
             className={activeTab === id ? tabStyles.pillActive : tabStyles.pill}
-            data-testid={}
+            data-testid={`integrations-tab-${id}`}
           >
             <Icon className={tabStyles.pillIcon} />
             {t(labelKey)}
