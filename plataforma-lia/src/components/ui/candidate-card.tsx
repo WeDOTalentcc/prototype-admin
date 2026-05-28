@@ -4,6 +4,7 @@ import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import { MapPin, Building, Mail, Linkedin, ExternalLink, Award, Calendar, ChevronDown, ChevronUp, MessageSquare, Check, AlertCircle, Clock, Send } from"lucide-react"
 import { textStyles, buttonStyles, cardStyles, badgeStyles } from"@/lib/design-tokens"
+import { CandidateTouchIndicator } from "@/components/candidates/CandidateTouchIndicator"
 
 interface CommunicationHistoryItem {
   id: string
@@ -152,6 +153,8 @@ export function CandidateCard({
               <h4 className="font-semibold text-base truncate text-lia-text-primary">
                 {name}
               </h4>
+              {/* Onda 2 F8 — icone "tocado por agente nas ultimas 24h". */}
+              <CandidateTouchIndicator candidateId={candidateId} />
               <Chip variant="neutral" muted className={`text-xs shrink-0 border-0 text-lia-text-secondary ${source_badge.includes("Banco Proprietário") ? 'bg-stone-50' : 'bg-wedo-cyan/10'}`}>
                 {source_badge}
               </Chip>
