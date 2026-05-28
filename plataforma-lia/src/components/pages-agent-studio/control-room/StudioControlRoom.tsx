@@ -67,11 +67,11 @@ export function StudioControlRoom() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">{tFilters("surface.all")}</SelectItem>
-              <SelectItem value="talent_pool">{tFilters("surface.pool")}</SelectItem>
-              <SelectItem value="job">{tFilters("surface.job")}</SelectItem>
-              <SelectItem value="pipeline_stage">{tFilters("surface.pipeline")}</SelectItem>
-              <SelectItem value="candidate_list">{tFilters("surface.decidir")}</SelectItem>
+              <SelectItem value="all">{tFilters("surfaceAll")}</SelectItem>
+              <SelectItem value="talent_pool">{tFilters("surfacePool")}</SelectItem>
+              <SelectItem value="job">{tFilters("surfaceJobLabel")}</SelectItem>
+              <SelectItem value="pipeline_stage">{tFilters("surfacePipelineLabel")}</SelectItem>
+              <SelectItem value="candidate_list">{tFilters("surfaceDecidir")}</SelectItem>
             </SelectContent>
           </Select>
         </div>

@@ -1052,6 +1052,61 @@
       "Cancelada": "Cancelled",
       "Concluída": "Completed",
       "Arquivada": "Archived"
+    },
+    "tabs": {
+      "agents": "Agents"
+    },
+    "agents": {
+      "header": "Agents attached to this job",
+      "subheader": "Manage agents that automate tasks for this job.",
+      "loading": "Loading attached agents...",
+      "loadError": "Could not load agents for this job. Try again.",
+      "emptyTitle": "No agents attached yet",
+      "empty": "Attach an agent to automate tasks for this job.",
+      "fallbackAgentName": "Agent",
+      "lastRun": "Last run",
+      "neverRun": "Not yet executed",
+      "processed": "{count, plural, =0 {No candidates processed} =1 {1 candidate processed} other {# candidates processed}}",
+      "detachConfirm": "Are you sure you want to detach this agent? This cannot be undone.",
+      "attachSuccess": "Agent attached successfully",
+      "status": {
+        "active": "Active",
+        "paused": "Paused"
+      },
+      "cta": {
+        "attach": "Attach agent"
+      },
+      "action": {
+        "pause": "Pause",
+        "resume": "Activate",
+        "detach": "Detach",
+        "viewReasoning": "View reasoning"
+      },
+      "triggerMode": {
+        "on_create": "When the job is created",
+        "on_schedule": "On schedule",
+        "manual": "Manually",
+        "on_apply": "When a candidate applies"
+      },
+      "attachModal": {
+        "title": "Attach agent to this job",
+        "jobLabel": "Job",
+        "cancel": "Cancel",
+        "submit": "Attach",
+        "loadingAgents": "Loading agents...",
+        "fields": {
+          "agent": "Agent",
+          "agentPlaceholder": "Select an agent",
+          "trigger": "When to run",
+          "schedule": "Schedule",
+          "activateNow": "Activate immediately"
+        },
+        "errors": {
+          "agentRequired": "Select an agent to continue.",
+          "agentsLoadFailed": "Could not load agent list.",
+          "generic": "Failed to attach agent. Try again."
+        }
+      }
     }
   },
   "kanban": {
@@ -1670,6 +1725,36 @@
       "seniorityMid": "Mid-level",
       "senioritySenior": "Senior",
       "senioritySpecialist": "Specialist"
+    },
+    "stage": {
+      "cta": {
+        "attachAgent": "+ Agent",
+        "manageAgents": "Manage agents"
+      },
+      "attachModal": {
+        "title": "Add agent to this stage",
+        "stageLabel": "Stage",
+        "cancel": "Cancel",
+        "submit": "Add",
+        "loadingAgents": "Loading agents...",
+        "fields": {
+          "agent": "Agent",
+          "agentPlaceholder": "Select an agent",
+          "trigger": "Trigger when candidate",
+          "activateNow": "Activate immediately"
+        },
+        "errors": {
+          "agentRequired": "Select an agent to continue.",
+          "agentsLoadFailed": "Could not load agent list.",
+          "generic": "Failed to add agent. Try again."
+        }
+      },
+      "triggerMode": {
+        "on_enter_stage": "Enter this stage",
+        "on_exit_stage": "Exit this stage",
+        "on_stuck_in_stage": "Get stuck in this stage",
+        "on_stage_change": "Any change"
+      }
     }
   },
   "jobsView": {
@@ -2053,6 +2138,14 @@
           },
           "exportRow": "Export this execution",
           "fieldsCount": "{count, plural, =0 {no fields} =1 {1 field} other {# fields}}"
+        },
+        "filters": {
+          "surface": "Filter by",
+          "surfaceAll": "All",
+          "surfacePool": "Talent Pool",
+          "surfaceJobLabel": "Job",
+          "surfacePipelineLabel": "Pipeline",
+          "surfaceDecidir": "Decide"
         }
       },
       "decisionTree": {

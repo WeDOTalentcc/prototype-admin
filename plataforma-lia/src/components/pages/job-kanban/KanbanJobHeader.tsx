@@ -41,7 +41,7 @@ interface KanbanJobHeaderProps {
 
 export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: KanbanJobHeaderProps) {
   const t = useTranslations('kanban')
-  const tJobs = useTranslations('jobs.agents')
+  const tJobs = useTranslations('jobs')
   const {
     onBack, router, currentJob, jobEditForm, setJobEditForm,
     setJobStatusModalMode, setShowJobStatusModal, setShowCloseVacancyModal,
