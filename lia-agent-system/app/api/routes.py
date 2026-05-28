@@ -242,6 +242,8 @@ from app.api.v1.agent_studio_channels import router as agent_studio_channels_rou
 from app.api.v1.agent_studio_triagem_invite import router as agent_studio_triagem_invite_router
 from app.api.v1.agent_deployments import router as agent_deployments_router
 from app.api.v1.agent_deployments import target_router as agent_deployments_target_router
+# Onda 3.B2 — /jobs/{id}/agents canonical shortcut
+from app.api.v1.jobs_agents import router as jobs_agents_router
 from app.api.v1.agent_approvals import agent_router as agent_approvals_agent_router
 from app.api.v1.agent_approvals import approvals_router as agent_approvals_approvals_router
 from app.api.v1.webhooks import router as webhooks_router
@@ -654,6 +656,8 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(agent_studio_triagem_invite_router, prefix="/api/v1", tags=["agent-studio-triagem-invite"])
     app.include_router(agent_deployments_router, prefix="/api/v1")
     app.include_router(agent_deployments_target_router, prefix="/api/v1")
+    # Onda 3.B2 — /jobs/{id}/agents canonical shortcut
+    app.include_router(jobs_agents_router, prefix="/api/v1")
     app.include_router(agent_approvals_agent_router, prefix="/api/v1")
     app.include_router(agent_approvals_approvals_router, prefix="/api/v1")
     # webhooks_router DELETED 2026-05-24 F10 — duplicate of webhooks.router included at L569
