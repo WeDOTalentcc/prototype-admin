@@ -26,6 +26,8 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { getCustomAgentStatusConfig } from "@/lib/agent-studio/status-config"
 import { BetaBadge } from "@/components/ui/beta-badge"
+// Onda 4 F6.4 — badge "agente novo aprendendo" quando < 5 execuções.
+import { LearningBadge } from "@/components/pages-agent-studio/LearningBadge"
 import { Switch } from "@/components/ui/switch"
 import { useToggleAgentVoice } from "@/hooks/agent-studio/use-agent-voice"
 import { useToggleAgentWhatsApp } from "@/hooks/agent-studio/use-agent-whatsapp"
@@ -166,6 +168,8 @@ export function AgentCard({ agent, onTest, onDeploy, onToggleStatus, onClone }: 
         </DropdownMenu>
       )}
       <BetaBadge size="sm" />
+      {/* Onda 4 F6.4 — < 5 execuções = is_learning */}
+      {agent.total_executions < 5 && <LearningBadge />}
     </>
   )
 

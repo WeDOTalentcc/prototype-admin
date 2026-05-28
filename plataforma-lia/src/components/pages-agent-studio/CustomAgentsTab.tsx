@@ -8,6 +8,8 @@ import { ConfirmAlertDialog } from "@/components/agent-studio/confirm-alert-dial
 import { getCustomAgentStatusConfig } from "@/lib/agent-studio/status-config"
 import { Button } from "@/components/ui/button"
 import { TabSectionHeader } from "@/components/pages-agent-studio/TabSectionHeader"
+// Onda 4 F6.1 — empty state persona-aware canonical
+import { StudioEmptyState } from "@/components/pages-agent-studio/StudioEmptyState"
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
   DialogDescription, DialogFooter,
@@ -132,23 +134,18 @@ export default function CustomAgentsTab() {
       />
 
       {agents.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-12 rounded-md border border-dashed border-lia-border-subtle bg-lia-bg-secondary/50">
-          <div className="w-14 h-14 rounded-2xl bg-lia-bg-tertiary flex items-center justify-center mb-3">
-            <Bot className="w-7 h-7 text-lia-text-disabled" />
-          </div>
-          <p className="text-sm font-medium text-lia-text-secondary">{t('noCustomAgents')}</p>
-          <p className="text-xs text-lia-text-disabled mt-1 mb-4">
-            {t('createCustomHint')}
-          </p>
-          <Button
-            size="sm"
-            onClick={() => setShowCreateModal(true)}
-            className="gap-2 bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            {t('createFirstAgent')}
-          </Button>
-        </div>
+        // Onda 4 F6.1 — empty state persona-aware com 2 CTAs (marketplace + chat).
+        // Original "createFirstAgent" inline state substituído pelo canonical.
+        <StudioEmptyState
+          onExploreMarketplace={() => {
+            // Switch para tab Marketplace dentro do Studio.
+            // Default fallback do componente já navega via ?tab=marketplace, mas
+            // como o CustomAgentsTab é um sub-tab, prefer keeping in same surface.
+            if (typeof window !== "undefined") {
+              window.dispatchEvent(new CustomEvent("studio:open-marketplace"))
+            }
+          }}
+        />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {agents.map(agent => {
