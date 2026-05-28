@@ -841,3 +841,146 @@ async def get_active_agents_summary(
         )
 
     return ActiveSummaryResponse(running_count=running_count, items=items)
+
+
+# ============================================================================
+# Onda 2 B3 — /agent-monitoring/candidate/{id}/touches (2026-05-28)
+# ============================================================================
+# Alimenta o icone "candidato tocado por agente nas últimas 24h" no card
+# de candidato (kanban + preview).
+#
+# MVP scope: deriva touches de pool_agent_runs.results JSONB procurando
+# arrays candidate_ids. Forward-compat — quando agents canonical popularem
+# este campo, endpoint passa a retornar dados sem mudanca de contrato.
+#
+# Multi-tenancy fail-closed: lookup do candidate FILTRA por company_id;
+# se candidate.company_id != current_company_id, retorna 404 (nao vaza).
+# ============================================================================
+
+from lia_models.candidate import Candidate as _Candidate
+
+
+class CandidateTouch(_WeDoBaseModel):
+    execution_id: str
+    agent_id: str
+    agent_name: str
+    action_type: str
+    timestamp: datetime
+    outcome: str | None = None
+
+
+class CandidateTouchesResponse(_WeDoBaseModel):
+    candidate_id: str
+    touch_count: int
+    last_touch_at: datetime | None = None
+    touches: list[CandidateTouch]
+
+
+def _extract_candidate_action(results: dict | None) -> tuple[str, str | None]:
+    """Heurística MVP: deriva action_type + outcome do results JSONB.
+
+    Forward-compat: quando agents canonical populardem com structured
+    fields, este helper passa a ser source-of-truth. Hoje default é
+    "processed" / None.
+    """
+    if not isinstance(results, dict):
+        return "processed", None
+    action = results.get("action_type") or "processed"
+    outcome = results.get("outcome")
+    return str(action), str(outcome) if outcome is not None else None
+
+
+@router.get(
+    "/candidate/{candidate_id}/touches",
+    response_model=CandidateTouchesResponse,
+)
+async def list_candidate_touches(
+    candidate_id: str,
+    since_hours: int = Query(default=24, ge=1, le=168),
+    db: AsyncSession = Depends(get_db),
+    company_id: str = Depends(require_company_id),
+) -> CandidateTouchesResponse:
+    """Onda 2 B3 — runs de agentes que tocaram este candidato.
+
+    MVP lê de `pool_agent_runs.results[candidate_ids]` (JSONB array
+    containment). Forward-compat: quando agents canonical popularem
+    estruturadamente, endpoint só fica mais rico — contrato estavel.
+
+    Multi-tenancy fail-closed: lookup do candidate FILTRA por company_id.
+    Tenant cross-access => 404 (nao vaza existencia de candidato).
+    """
+    # 1) Validar candidate pertence ao tenant.
+    candidate_stmt = (
+        select(_Candidate)
+        .where(
+            and_(
+                _Candidate.id == candidate_id,
+                _Candidate.company_id == company_id,
+            )
+        )
+        .limit(1)
+    )
+    candidate_result = await db.execute(candidate_stmt)
+    candidate = candidate_result.scalar_one_or_none()
+    if candidate is None:
+        # Fail-closed: nao distinguir "nao existe" de "outro tenant".
+        raise HTTPException(
+            status_code=404,
+            detail="Candidato nao encontrado ou pertence a outro tenant.",
+        )
+
+    # 2) Buscar runs no window since_hours que mencionem este candidate_id.
+    cutoff = datetime.now(timezone.utc) - timedelta(hours=since_hours)
+
+    # JSONB containment: results @> {"candidate_ids": ["<id>"]}.
+    # MVP usa filter Python-side defensivo (mock-friendly) + filter SQL window.
+    runs_stmt = (
+        select(_PoolAgentRun, _PoolAgentAssignment, _CustomAgent)
+        .join(
+            _PoolAgentAssignment,
+            _PoolAgentRun.assignment_id == _PoolAgentAssignment.id,
+        )
+        .join(
+            _CustomAgent,
+            _PoolAgentAssignment.custom_agent_id == _CustomAgent.id,
+        )
+        .where(
+            and_(
+                _PoolAgentRun.company_id == company_id,
+                _PoolAgentRun.started_at != None,  # noqa: E711
+                _PoolAgentRun.started_at > cutoff,
+            )
+        )
+        .order_by(desc(_PoolAgentRun.started_at))
+    )
+    runs_result = await db.execute(runs_stmt)
+    rows = runs_result.all()
+
+    # 3) Filter Python-side: results.candidate_ids inclui o candidate_id.
+    touches: list[CandidateTouch] = []
+    cid_str = str(candidate_id)
+    for row in rows:
+        run, _assignment, agent = row
+        results = run.results or {}
+        cids = results.get("candidate_ids") or []
+        if cid_str not in [str(c) for c in cids]:
+            continue
+        action_type, outcome = _extract_candidate_action(results)
+        touches.append(
+            CandidateTouch(
+                execution_id=str(run.id),
+                agent_id=str(agent.id),
+                agent_name=agent.name,
+                action_type=action_type,
+                timestamp=run.started_at,
+                outcome=outcome,
+            )
+        )
+
+    last_touch_at = touches[0].timestamp if touches else None
+    return CandidateTouchesResponse(
+        candidate_id=str(candidate_id),
+        touch_count=len(touches),
+        last_touch_at=last_touch_at,
+        touches=touches,
+    )
