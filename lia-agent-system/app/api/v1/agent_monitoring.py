@@ -3,6 +3,8 @@ Agent Monitoring API Endpoints
 Provides real-time metrics, health scores, and activity tracking for AI agents.
 """
 
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -13,6 +15,8 @@ from app.shared.security.require_company_id import require_company_id, require_c
 from app.shared.types import WeDoBaseModel
 
 router = APIRouter(prefix="/agent-monitoring", tags=["Agent Monitoring"])
+
+logger = logging.getLogger(__name__)
 
 
 class GlobalMetricsResponse(BaseModel):
@@ -636,3 +640,204 @@ async def list_recent_executions(
             )
         )
     return out
+
+
+# ============================================================================
+# Onda 2 B1 — /agent-monitoring/active-summary (2026-05-28)
+# ============================================================================
+# AgentsCard no Decidir + indicador global "N agentes trabalhando agora".
+# Top N agentes mais ativos do tenant (last hour). surface=decidir mostra
+# todos os surfaces; pool/job/funil filtram pelo target_type canonical.
+#
+# Multi-tenancy: require_company_id + filter explícito.
+# ADR-001: lê via select() em api/ (não em services/) — pattern canonical
+# dos endpoints B4 Onda 1.
+# ============================================================================
+
+from lia_models.approval import ApprovalRequest, ApprovalStatus
+
+_AgentsCardSurface = Literal["decidir", "pool", "job", "funil", "all"]
+
+# Mapping surface (UI-level) -> target_type (model-level canonical).
+# "decidir" e "all" não filtram; outros mapeiam 1-1 com DeploymentTargetType.
+_SURFACE_TO_TARGET_TYPE = {
+    "pool": "talent_pool",
+    "job": "job",
+    "funil": "pipeline_stage",
+}
+
+
+class ActiveAgentSummary(_WeDoBaseModel):
+    agent_id: str
+    agent_name: str
+    agent_category: str
+    status: Literal["running", "idle", "pending_approval"]
+    target_type: str | None = None
+    target_id: str | None = None
+    target_name: str | None = None
+    last_action_label: str | None = None
+    last_execution_id: str | None = None
+    pending_approvals_count: int = 0
+    last_activity_at: datetime | None = None
+
+
+class ActiveSummaryResponse(_WeDoBaseModel):
+    running_count: int
+    items: list[ActiveAgentSummary]
+
+
+def _build_action_label(run) -> str | None:
+    """Heurística leve pra um label humano-legível do progresso atual."""
+    rm = run.runtime_metrics or {}
+    cp = rm.get("candidates_processed")
+    pp = rm.get("progress_pct")
+    if cp is not None and pp is not None:
+        return f"Processando {cp} candidato(s) — {pp}%"
+    if cp is not None:
+        return f"Processando {cp} candidato(s)"
+    if pp is not None:
+        return f"Progresso: {pp}%"
+    results = run.results or {}
+    resp = results.get("response")
+    if resp:
+        return resp[:120]
+    return None
+
+
+@router.get("/active-summary", response_model=ActiveSummaryResponse)
+async def get_active_agents_summary(
+    surface: _AgentsCardSurface = Query(
+        default="decidir",
+        description="Afinidade UI (decidir=mix; pool/job/funil filtram por target_type).",
+    ),
+    limit: int = Query(default=5, ge=1, le=20),
+    db: AsyncSession = Depends(get_db),
+    company_id: str = Depends(require_company_id),
+) -> ActiveSummaryResponse:
+    """Onda 2 B1 — top N agentes ativos (Decidir + indicador global).
+
+    Agrega `pool_agent_runs` da última hora, top-N por last_activity desc.
+    Multi-tenancy fail-closed via require_company_id.
+
+    surface canonical mapping:
+      - decidir / all  -> mix completo
+      - pool           -> target_type=talent_pool
+      - job            -> target_type=job (Onda 2/3 wiring)
+      - funil          -> target_type=pipeline_stage (Onda 2 B2)
+    """
+    cutoff = datetime.now(timezone.utc) - timedelta(hours=1)
+
+    # 1) Pegar runs RUNNING + recentes (excluindo orphans), ordenados por última atividade.
+    base_stmt = (
+        select(_PoolAgentRun, _PoolAgentAssignment, _CustomAgent, _TalentPool)
+        .join(
+            _PoolAgentAssignment,
+            _PoolAgentRun.assignment_id == _PoolAgentAssignment.id,
+        )
+        .join(
+            _CustomAgent,
+            _PoolAgentAssignment.custom_agent_id == _CustomAgent.id,
+        )
+        .outerjoin(
+            _TalentPool,
+            _PoolAgentAssignment.talent_pool_id == _TalentPool.id,
+        )
+        .where(
+            and_(
+                _PoolAgentRun.company_id == company_id,
+                _PoolAgentRun.started_at != None,  # noqa: E711
+                _PoolAgentRun.started_at > cutoff,
+            )
+        )
+        .order_by(desc(_PoolAgentRun.started_at))
+    )
+    result = await db.execute(base_stmt)
+    rows = result.all()
+
+    # 2) Dedupe por agent_id, manter o run mais recente (já ordenado desc).
+    seen_agents: set[str] = set()
+    dedup_rows: list[tuple] = []
+    for row in rows:
+        run, _assignment, agent, _pool = row
+        aid = str(agent.id)
+        if aid in seen_agents:
+            continue
+        seen_agents.add(aid)
+        dedup_rows.append(row)
+
+    # 3) Filtrar por surface (canonical mapping).
+    target_filter = _SURFACE_TO_TARGET_TYPE.get(surface)
+    filtered_rows: list[tuple] = []
+    for row in dedup_rows:
+        _run, assignment, _agent, pool = row
+        target_type, _tid, _tname = _resolve_target_info(assignment, pool)
+        if target_filter is not None and target_type != target_filter:
+            continue
+        filtered_rows.append(row)
+
+    # 4) Running count = total ÚNICOS após filtro de surface (não limitado).
+    running_count = sum(
+        1 for row in filtered_rows if row[0].status == "running"
+    )
+
+    # 5) Aplicar limit pra montar items.
+    top_rows = filtered_rows[:limit]
+
+    # 6) Pending approvals — agregar por agent_id em UMA query (evita N+1).
+    agent_ids = [str(row[2].id) for row in top_rows]
+    pending_by_agent: dict[str, int] = {}
+    if agent_ids:
+        try:
+            approvals_stmt = (
+                select(ApprovalRequest.target_id, ApprovalRequest.id)
+                .where(
+                    and_(
+                        ApprovalRequest.company_id == company_id,
+                        ApprovalRequest.status == ApprovalStatus.PENDING.value,
+                        ApprovalRequest.target_type == "custom_agent",
+                        ApprovalRequest.target_id.in_(agent_ids),
+                    )
+                )
+            )
+            approvals_result = await db.execute(approvals_stmt)
+            for row in approvals_result.fetchall():
+                aid = str(row[0])
+                pending_by_agent[aid] = pending_by_agent.get(aid, 0) + 1
+        except Exception:
+            # Defense: approvals query schema drift não deve quebrar o endpoint.
+            # Endpoint serve UI cyan-dot — failure recoverable retornando 0.
+            logger.warning(
+                "[active-summary] pending approvals query failed", exc_info=True
+            )
+
+    # 7) Montar response items.
+    items: list[ActiveAgentSummary] = []
+    for run, assignment, agent, pool in top_rows:
+        target_type, target_id, target_name = _resolve_target_info(assignment, pool)
+        aid = str(agent.id)
+        pending = pending_by_agent.get(aid, 0)
+
+        if run.status == "running":
+            status_mapped: Literal["running", "idle", "pending_approval"] = "running"
+        elif pending > 0:
+            status_mapped = "pending_approval"
+        else:
+            status_mapped = "idle"
+
+        items.append(
+            ActiveAgentSummary(
+                agent_id=aid,
+                agent_name=agent.name,
+                agent_category=getattr(agent, "category", None) or "general",
+                status=status_mapped,
+                target_type=target_type,
+                target_id=target_id,
+                target_name=target_name,
+                last_action_label=_build_action_label(run),
+                last_execution_id=str(run.id),
+                pending_approvals_count=pending,
+                last_activity_at=run.started_at,
+            )
+        )
+
+    return ActiveSummaryResponse(running_count=running_count, items=items)
