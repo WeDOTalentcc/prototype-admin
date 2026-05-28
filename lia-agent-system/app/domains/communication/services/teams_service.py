@@ -17,6 +17,7 @@ from typing import Any
 import httpx
 
 from app.core.config import settings
+from app.shared.security.url_validator import UnsafeOutboundURLError, safe_outbound_url
 
 logger = logging.getLogger(__name__)
 
@@ -416,6 +417,14 @@ class TeamsService:
         Returns:
             Result dict with success status and details
         """
+        try:
+            safe_outbound_url(url, require_https=True)
+        except UnsafeOutboundURLError as exc:
+            logger.warning("TeamsService: blocked unsafe webhook URL: %s", exc)
+            return {
+                "success": False,
+                "error": "Invalid or unsafe webhook URL"
+            }
         try:
             async with httpx.AsyncClient(timeout=30) as client:
                 response = await client.post(

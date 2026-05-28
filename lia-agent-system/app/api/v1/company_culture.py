@@ -60,6 +60,7 @@ from app.shared.security.require_company_id import (
     require_company_id,
     require_company_id_strict_match,
 )
+from app.shared.security.url_validator import UnsafeOutboundURLError, safe_outbound_url
 
 logger = logging.getLogger(__name__)
 
@@ -1222,11 +1223,16 @@ company_id: str = Depends(require_company_id)):
 
         if data.website_url:
             try:
+                safe_outbound_url(data.website_url, require_https=False)
+            except UnsafeOutboundURLError as exc:
+                logger.warning("analyze-culture: blocked unsafe website_url: %s", exc)
+                raise HTTPException(status_code=400, detail="Invalid or unsafe website URL") from exc
+            try:
                 async with httpx.AsyncClient(timeout=30.0) as client:
                     response = await client.get(
                         data.website_url,
                         headers={"User-Agent": "Mozilla/5.0 (compatible; LIABot/1.0; +https://wedotalent.com)"},
-                        follow_redirects=True,
+                        follow_redirects=False,
                     )
                     if response.status_code == 200:
                         website_content = response.text[:50000]
