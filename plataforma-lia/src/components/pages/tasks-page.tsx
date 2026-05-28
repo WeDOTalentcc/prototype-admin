@@ -15,6 +15,9 @@ import { TasksMetricsBar } from "./tasks/TasksMetricsBar"
 import { MyTasksCard } from "./tasks/MyTasksCard"
 import { ActiveAlertsCard } from "./tasks/ActiveAlertsCard"
 import { ActiveJobsCard } from "./tasks/ActiveJobsCard"
+import { AgentsCard } from "./tasks/AgentsCard"
+import { AgentRunningBanner } from "./tasks/AgentRunningBanner"
+import { DecisionTreeDrawer } from "@/components/pages-agent-studio/decision-tree"
 
 interface TasksPageProps {
   onNavigate?: (page: string) => void
@@ -52,6 +55,8 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
 
   const [subtitleText, setSubtitleText] = useState<string | null>(null)
   const [activityActorFilter, setActivityActorFilter] = useState<'todos' | 'lia' | 'recrutador'>('todos')
+  // Onda 2 F2 — Drawer canonical Onda 1 disparado por AgentsCard.
+  const [activeExecutionId, setActiveExecutionId] = useState<string | null>(null)
 
   return (
     <>
@@ -113,6 +118,9 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
 
         <div className="space-y-2">
 
+            {/* Onda 2 F3 — banner global "N agentes trabalhando agora". */}
+            <AgentRunningBanner />
+
             <TasksMetricsBar metrics={metrics} />
 
             {error && (
@@ -159,6 +167,12 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                     activeAlerts={activeAlerts}
                     onAlertAction={handleAlertAction}
                     textStyles={textStyles}
+                  />
+
+                  {/* Onda 2 F2 — AgentsCard 5º card no Decidir.
+                     Drawer canonical Onda 1 controlado pelo state desta page. */}
+                  <AgentsCard
+                    onOpenDecisionTree={(execId) => setActiveExecutionId(execId)}
                   />
                 </div>
 
@@ -226,6 +240,12 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
       </div>
     </div>
     </ErrorBoundarySection>
+    {/* Onda 2 F2 — Drawer canonical Onda 1, montado no nível da page para
+       não competir com modais filhos por z-index nem por focus trap. */}
+    <DecisionTreeDrawer
+      executionId={activeExecutionId}
+      onClose={() => setActiveExecutionId(null)}
+    />
     </>
   )
 }
