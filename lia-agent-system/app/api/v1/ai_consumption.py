@@ -1013,3 +1013,174 @@ async def get_consumption_drilldown(
         total_cost_cents=int(totals.total_cost_cents or 0),
         total_tokens=int(totals.total_tokens or 0),
     )
+
+
+class BudgetAlert(_WeDoBaseModel):
+    """Onda 4 B3 — alert individual."""
+
+    severity: _Literal["info", "warning", "critical"]
+    scope: _Literal["global", "agent"]
+    studio_agent_id: str | None = None
+    agent_name: str | None = None
+    used_pct: float
+    used_cents: int
+    limit_cents: int
+    days_in_period: int
+    days_remaining: int
+    projected_to_exceed: bool
+
+
+class BudgetAlertsResponse(_WeDoBaseModel):
+    """Onda 4 B3 — payload completo de alertas."""
+
+    alerts: list[BudgetAlert]
+    period_start: date
+    period_end: date
+
+
+_INFO_THRESHOLD = 0.50
+_WARNING_THRESHOLD = 0.80
+_CRITICAL_THRESHOLD = 0.95
+_PER_AGENT_ALERT_THRESHOLD = 0.20  # 20% do limite global
+
+
+def _severity_for(used_pct: float) -> _Literal["info", "warning", "critical"] | None:
+    if used_pct >= _CRITICAL_THRESHOLD:
+        return "critical"
+    if used_pct >= _WARNING_THRESHOLD:
+        return "warning"
+    if used_pct >= _INFO_THRESHOLD:
+        return "info"
+    return None
+
+
+@router.get(
+    "/budget-alerts",
+    response_model=BudgetAlertsResponse,
+    summary="Onda 4 B3 — alertas de orçamento (global + per-agent)",
+)
+async def get_budget_alerts(
+    db: AsyncSession = Depends(get_db),
+    company_id: str = Depends(get_verified_company_id),
+) -> BudgetAlertsResponse:
+    """Emite alertas baseados em consumo vs limite mensal.
+
+    Severity (global):
+    - >= 95% → critical
+    - >= 80% → warning
+    - >= 50% → info
+    - <  50% → não emite alert global
+
+    Per-agent: agentes que consumiram > 20% do limite global emitem alert
+    de scope='agent' independente do global.
+
+    Backwards compat: se company não tem AiCreditsBalance row → alerts=[].
+    """
+    company_uuid = UUID(company_id)
+
+    balance_stmt = select(AiCreditsBalance).where(AiCreditsBalance.company_id == company_uuid)
+    balance_result = await db.execute(balance_stmt)
+    balance = balance_result.scalar_one_or_none()
+
+    today = datetime.now().date()
+    if balance is None:
+        # Sem limit configurado → não emitir alerts (tenant trial sem limit).
+        period_start = today.replace(day=1)
+        if today.month == 12:
+            period_end = today.replace(year=today.year + 1, month=1, day=1) - timedelta(days=1)
+        else:
+            period_end = today.replace(month=today.month + 1, day=1) - timedelta(days=1)
+        return BudgetAlertsResponse(alerts=[], period_start=period_start, period_end=period_end)
+
+    period_start_dt = datetime.combine(balance.period_start, datetime.min.time())
+    period_end_dt = datetime.combine(balance.period_end, datetime.max.time())
+
+    usage_stmt = select(
+        func.coalesce(func.sum(AiConsumption.total_tokens), 0).label("tokens"),
+    ).where(
+        and_(
+            AiConsumption.company_id == company_uuid,
+            AiConsumption.created_at >= period_start_dt,
+            AiConsumption.created_at <= period_end_dt,
+        )
+    )
+    usage_result = await db.execute(usage_stmt)
+    current_tokens = int(usage_result.scalar() or 0)
+
+    monthly_limit = int(balance.monthly_limit or 0)
+    used_pct = (current_tokens / monthly_limit) if monthly_limit > 0 else 0.0
+
+    days_in_period = max((balance.period_end - balance.period_start).days + 1, 1)
+    days_elapsed = max((today - balance.period_start).days + 1, 1)
+    days_elapsed = min(days_elapsed, days_in_period)
+    days_remaining = max(days_in_period - days_elapsed, 0)
+    pct_period_elapsed = days_elapsed / days_in_period if days_in_period > 0 else 1.0
+    projected_to_exceed = (
+        used_pct / pct_period_elapsed > 1.0 if pct_period_elapsed > 0 else False
+    )
+
+    alerts: list[BudgetAlert] = []
+    severity = _severity_for(used_pct)
+    if severity is not None:
+        alerts.append(
+            BudgetAlert(
+                severity=severity,
+                scope="global",
+                studio_agent_id=None,
+                agent_name=None,
+                used_pct=round(used_pct, 4),
+                used_cents=current_tokens,  # tokens used (limit é em tokens)
+                limit_cents=monthly_limit,
+                days_in_period=days_in_period,
+                days_remaining=days_remaining,
+                projected_to_exceed=projected_to_exceed,
+            )
+        )
+
+    # Per-agent: agrupa por studio_agent_id quando presente.
+    per_agent_stmt = (
+        select(
+            AiConsumption.studio_agent_id.label("studio_agent_id"),
+            func.coalesce(func.sum(AiConsumption.total_tokens), 0).label("tokens"),
+            func.coalesce(func.sum(AiConsumption.cost_cents), 0).label("cost_cents"),
+        )
+        .where(
+            and_(
+                AiConsumption.company_id == company_uuid,
+                AiConsumption.created_at >= period_start_dt,
+                AiConsumption.created_at <= period_end_dt,
+                AiConsumption.studio_agent_id != None,  # noqa: E711
+            )
+        )
+        .group_by(AiConsumption.studio_agent_id)
+    )
+    per_agent_result = await db.execute(per_agent_stmt)
+    per_agent_rows = per_agent_result.all()
+
+    for row in per_agent_rows:
+        agent_tokens = int(getattr(row, "tokens", 0) or 0)
+        agent_used_pct = (agent_tokens / monthly_limit) if monthly_limit > 0 else 0.0
+        if agent_used_pct < _PER_AGENT_ALERT_THRESHOLD:
+            continue
+        agent_severity = _severity_for(agent_used_pct) or "info"
+        agent_name = getattr(row, "agent_name", None)
+        alerts.append(
+            BudgetAlert(
+                severity=agent_severity,
+                scope="agent",
+                studio_agent_id=str(row.studio_agent_id) if row.studio_agent_id else None,
+                agent_name=agent_name,
+                used_pct=round(agent_used_pct, 4),
+                used_cents=agent_tokens,
+                limit_cents=monthly_limit,
+                days_in_period=days_in_period,
+                days_remaining=days_remaining,
+                projected_to_exceed=projected_to_exceed,
+            )
+        )
+
+    return BudgetAlertsResponse(
+        alerts=alerts,
+        period_start=balance.period_start,
+        period_end=balance.period_end,
+    )
