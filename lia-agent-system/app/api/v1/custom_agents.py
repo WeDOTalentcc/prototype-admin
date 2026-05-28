@@ -1874,3 +1874,288 @@ async def resume_custom_agent(
     except Exception as _audit_err:
         logger.warning("[custom-agents] resume audit log_decision failed: %s", _audit_err)
     return {"status": "active"}
+
+
+# ============================================================================
+# Onda 4 B1 — /custom-agents/{agent_id}/kpis (2026-05-28)
+# ============================================================================
+# KPIs por agente individual: candidates, exec count, latency, cost, hour
+# heatmap, tool breakdown, is_learning badge.
+#
+# Multi-tenancy: filter company_id no SQL + verificação explícita agent.company_id.
+# Agregação on-demand de pool_agent_runs.runtime_metrics (sensor B4 garante que
+# endpoint NÃO recompute tokens/cost — runtime_metrics é fonte única).
+# ============================================================================
+
+from datetime import datetime as _datetime, timedelta as _timedelta, timezone as _timezone
+from typing import Literal as _Literal
+
+from sqlalchemy import and_ as _and_, desc as _desc, select as _select
+
+from app.shared.security.require_company_id import require_company_id as _require_company_id_onda4
+from app.shared.types import WeDoBaseModel as _WeDoBaseModel
+from lia_models.pool_agent_assignment import PoolAgentAssignment as _PoolAgentAssignment
+from lia_models.pool_agent_run import PoolAgentRun as _PoolAgentRun
+
+
+class AgentKpiBucket(_WeDoBaseModel):
+    """Onda 4 B1 — agregado canonical do período."""
+
+    period: str
+    candidates_processed: int
+    candidates_approved: int
+    candidates_rejected: int
+    candidates_pending: int
+    avg_execution_seconds: float
+    p95_execution_seconds: float
+    total_executions: int
+    error_count: int
+    total_cost_usd: float
+    total_tokens_input: int
+    total_tokens_output: int
+
+
+class AgentKpiHourHeatmap(_WeDoBaseModel):
+    """Onda 4 B1 — 1 entry por hora do dia (0..23)."""
+
+    hour_of_day: int
+    executions_count: int
+
+
+class AgentKpiToolBreakdown(_WeDoBaseModel):
+    """Onda 4 B1 — uso de tool por agente no período."""
+
+    tool_name: str
+    count: int
+    success_rate: float
+
+
+class AgentKpiResponse(_WeDoBaseModel):
+    """Onda 4 B1 — payload completo de KPIs."""
+
+    agent_id: str
+    agent_name: str
+    agent_category: str
+    period: str
+    bucket: AgentKpiBucket
+    hour_heatmap: list[AgentKpiHourHeatmap]
+    tool_breakdown: list[AgentKpiToolBreakdown]
+    last_run_at: _datetime | None
+    is_learning: bool
+
+
+_PERIOD_TO_DAYS = {
+    "7d": 7,
+    "30d": 30,
+    "90d": 90,
+    "all": None,  # sem filtro de data
+}
+_LEARNING_THRESHOLD = 5  # < 5 execuções → is_learning=True
+
+
+def _percentile(values: list[float], pct: float) -> float:
+    """Calcula percentil simples (linear interpolation entre vizinhos).
+
+    Para listas pequenas (< 100) precisão é aceitável.
+    """
+    if not values:
+        return 0.0
+    sorted_v = sorted(values)
+    if len(sorted_v) == 1:
+        return float(sorted_v[0])
+    k = (len(sorted_v) - 1) * pct
+    f = int(k)
+    c = min(f + 1, len(sorted_v) - 1)
+    if f == c:
+        return float(sorted_v[f])
+    d0 = sorted_v[f] * (c - k)
+    d1 = sorted_v[c] * (k - f)
+    return float(d0 + d1)
+
+
+@router.get(
+    "/{agent_id}/kpis",
+    response_model=AgentKpiResponse,
+    summary="Onda 4 B1 — KPIs agregados de um agente individual",
+)
+async def get_agent_kpis(
+    agent_id: str,
+    period: _Literal["7d", "30d", "90d", "all"] = Query(default="30d"),
+    db: AsyncSession = Depends(get_db),
+    company_id: str = Depends(_require_company_id_onda4),
+) -> AgentKpiResponse:
+    """Agrega KPIs on-demand a partir de pool_agent_runs.runtime_metrics.
+
+    Multi-tenancy fail-closed: 404 quando agent não pertence ao tenant atual.
+    Sensor B4 garante que esta função NÃO recompute tokens/cost.
+    """
+    agent_stmt = _select(CustomAgent).where(
+        _and_(CustomAgent.id == agent_id, CustomAgent.company_id == company_id)
+    )
+    agent_result = await db.execute(agent_stmt)
+    agent = agent_result.scalar_one_or_none()
+    if agent is None:
+        raise HTTPException(status_code=404, detail="Agent not found")
+
+    runs_conditions: list = [
+        _PoolAgentAssignment.custom_agent_id == agent.id,
+        _PoolAgentRun.company_id == company_id,
+    ]
+    days = _PERIOD_TO_DAYS.get(period)
+    if days is not None:
+        cutoff = _datetime.now(_timezone.utc) - _timedelta(days=days)
+        runs_conditions.append(_PoolAgentRun.created_at >= cutoff)
+
+    runs_stmt = (
+        _select(_PoolAgentRun)
+        .join(
+            _PoolAgentAssignment,
+            _PoolAgentRun.assignment_id == _PoolAgentAssignment.id,
+        )
+        .where(_and_(*runs_conditions))
+        .order_by(_desc(_PoolAgentRun.created_at))
+    )
+    runs_result = await db.execute(runs_stmt)
+    runs = list(runs_result.scalars().all())
+
+    total_executions = len(runs)
+    is_learning = total_executions < _LEARNING_THRESHOLD
+
+    if not runs:
+        empty_bucket = AgentKpiBucket(
+            period=period,
+            candidates_processed=0,
+            candidates_approved=0,
+            candidates_rejected=0,
+            candidates_pending=0,
+            avg_execution_seconds=0.0,
+            p95_execution_seconds=0.0,
+            total_executions=0,
+            error_count=0,
+            total_cost_usd=0.0,
+            total_tokens_input=0,
+            total_tokens_output=0,
+        )
+        return AgentKpiResponse(
+            agent_id=str(agent.id),
+            agent_name=agent.name,
+            agent_category=getattr(agent, "category", None) or "general",
+            period=period,
+            bucket=empty_bucket,
+            hour_heatmap=[
+                AgentKpiHourHeatmap(hour_of_day=h, executions_count=0)
+                for h in range(24)
+            ],
+            tool_breakdown=[],
+            last_run_at=None,
+            is_learning=is_learning,
+        )
+
+    error_count = 0
+    total_cost_usd = 0.0
+    total_tokens_input = 0
+    total_tokens_output = 0
+    latencies_s: list[float] = []
+    hour_counts: dict[int, int] = {h: 0 for h in range(24)}
+    tool_total: dict[str, int] = {}
+    tool_success: dict[str, int] = {}
+    candidate_ids_seen: set[str] = set()
+    last_run_at: _datetime | None = None
+
+    for run in runs:
+        # canonical: ler de runtime_metrics (sensor B4 garante invariante)
+        rm = run.runtime_metrics or {}
+        results = run.results or {}
+
+        if run.status in ("error", "timeout", "cancelled"):
+            error_count += 1
+
+        try:
+            total_cost_usd += float(rm.get("cost_usd", 0.0) or 0.0)
+        except (TypeError, ValueError):
+            pass
+        try:
+            total_tokens_input += int(
+                rm.get("tokens_input", rm.get("input_tokens", 0)) or 0
+            )
+            total_tokens_output += int(
+                rm.get("tokens_output", rm.get("output_tokens", 0)) or 0
+            )
+        except (TypeError, ValueError):
+            pass
+
+        try:
+            latency_ms = rm.get("latency_ms")
+            if latency_ms is not None:
+                latencies_s.append(float(latency_ms) / 1000.0)
+        except (TypeError, ValueError):
+            pass
+
+        ts = run.started_at or run.created_at
+        if ts is not None:
+            hour_counts[ts.hour] = hour_counts.get(ts.hour, 0) + 1
+            if last_run_at is None or ts > last_run_at:
+                last_run_at = ts
+
+        is_success = run.status == "success"
+        for tool_name in results.get("tools_used", []) or []:
+            if not isinstance(tool_name, str) or not tool_name:
+                continue
+            tool_total[tool_name] = tool_total.get(tool_name, 0) + 1
+            if is_success:
+                tool_success[tool_name] = tool_success.get(tool_name, 0) + 1
+
+        for cid in results.get("candidate_ids", []) or []:
+            if cid:
+                candidate_ids_seen.add(str(cid))
+
+    avg_s = sum(latencies_s) / len(latencies_s) if latencies_s else 0.0
+    p95_s = _percentile(latencies_s, 0.95)
+
+    # Gap documentado: candidates_approved/rejected exigem cross-table com
+    # vacancy_candidates.status. Em escopo Onda 4 retornamos candidates_processed
+    # = N distinct candidate_ids vistos. approved/rejected/pending = 0 até
+    # cruzamento ser implementado (Onda 5+ ou Settings hub que já sabe stats).
+    bucket = AgentKpiBucket(
+        period=period,
+        candidates_processed=len(candidate_ids_seen),
+        candidates_approved=0,
+        candidates_rejected=0,
+        candidates_pending=0,
+        avg_execution_seconds=round(avg_s, 3),
+        p95_execution_seconds=round(p95_s, 3),
+        total_executions=total_executions,
+        error_count=error_count,
+        total_cost_usd=round(total_cost_usd, 6),
+        total_tokens_input=total_tokens_input,
+        total_tokens_output=total_tokens_output,
+    )
+
+    heatmap = [
+        AgentKpiHourHeatmap(hour_of_day=h, executions_count=hour_counts.get(h, 0))
+        for h in range(24)
+    ]
+
+    tool_breakdown_list = []
+    for name, count in tool_total.items():
+        success_rate = (tool_success.get(name, 0) / count) if count > 0 else 0.0
+        tool_breakdown_list.append(
+            AgentKpiToolBreakdown(
+                tool_name=name,
+                count=count,
+                success_rate=round(success_rate, 4),
+            )
+        )
+    tool_breakdown_list.sort(key=lambda t: (-t.count, t.tool_name))
+
+    return AgentKpiResponse(
+        agent_id=str(agent.id),
+        agent_name=agent.name,
+        agent_category=getattr(agent, "category", None) or "general",
+        period=period,
+        bucket=bucket,
+        hour_heatmap=heatmap,
+        tool_breakdown=tool_breakdown_list,
+        last_run_at=last_run_at,
+        is_learning=is_learning,
+    )
