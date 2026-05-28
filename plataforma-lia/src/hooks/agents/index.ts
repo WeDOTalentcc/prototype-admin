@@ -17,3 +17,8 @@ export {
   useCandidateTouches,
   CANDIDATE_TOUCHES_QUERY_KEY,
 } from "./use-candidate-touches"
+// Onda 3 F1 (2026-05-28) — batch deployments lookup (elimina N+1 da Onda 2).
+export {
+  useDeploymentsByTargets,
+  DEPLOYMENTS_BY_TARGETS_QUERY_KEY,
+} from "./use-deployments-by-targets"
