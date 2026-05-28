@@ -31,6 +31,7 @@ module V1
     end
 
     def start
+      return render json: { error: "expired" }, status: :unprocessable_entity if @session.expires_at <= Time.current
       return render json: { error: "already started" }, status: :unprocessable_entity unless @session.status == "pending"
 
       @session.update!(status: "active", started_at: Time.current)
@@ -38,6 +39,7 @@ module V1
     end
 
     def submit_answer
+      return render json: { error: "expired" }, status: :unprocessable_entity if @session.expires_at <= Time.current
       return render json: { error: "not active" }, status: :unprocessable_entity unless @session.status == "active"
       return render json: { error: "missing question_id" }, status: :unprocessable_entity if params[:question_id].blank?
 
