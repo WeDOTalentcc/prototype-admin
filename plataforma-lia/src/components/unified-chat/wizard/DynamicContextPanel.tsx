@@ -176,7 +176,7 @@ function renderPanel(
     case "eligibility":
       return <EligibilityPanel data={data} onUpdate={onUpdate} />
     case "review":
-      return <ReviewPanel data={data} />
+      return <ReviewPanel data={data} onUpdate={onUpdate} />
     case "publish":
       return <PublishPanel data={data} onUpdate={onUpdate} />
     case "calibration":
