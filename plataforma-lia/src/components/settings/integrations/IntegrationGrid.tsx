@@ -29,6 +29,7 @@ export interface IntegrationGridProps {
   emptyState?: React.ReactNode
   onCardClick: (integration: Integration) => void
   getCategoryLabel: (id: IntegrationCategory) => string
+  searchQuery?: string
 }
 
 export function IntegrationGrid({
@@ -38,6 +39,7 @@ export function IntegrationGrid({
   emptyState,
   onCardClick,
   getCategoryLabel,
+  searchQuery = "",
 }: IntegrationGridProps) {
   if (isLoading) return <HubLoadingState />
 
@@ -47,7 +49,7 @@ export function IntegrationGrid({
   return (
     <div className="space-y-8" data-testid="integrations-list">
       {groups.map((group) => (
-        <section key={group.category} data-testid={`integrations-group-${group.category}`}>
+        <section key={group.category} data-testid={}>
           {activeCategory === "all" && (
             <div className="flex items-center gap-2 mb-3">
               <span className="text-lia-text-tertiary">{categoryIcons[group.category]}</span>
@@ -57,7 +59,12 @@ export function IntegrationGrid({
           )}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {group.items.map((integration) => (
-              <IntegrationCard key={integration.id} integration={integration} onClick={onCardClick} />
+              <IntegrationCard
+                key={integration.id}
+                integration={integration}
+                onClick={onCardClick}
+                searchQuery={searchQuery}
+              />
             ))}
           </div>
         </section>

@@ -1,8 +1,9 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import { useAuthStore } from "@/stores/auth-store"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { DashboardApp } from "@/components/dashboard-app"
 
 /**
@@ -64,5 +65,16 @@ export default function StaffLayoutClient({
     )
   }
 
-  return <DashboardApp initialPage="WeDo Admin">{children}</DashboardApp>
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: { queries: { staleTime: 30_000, retry: 2, refetchOnWindowFocus: false } },
+      }),
+  )
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <DashboardApp initialPage="WeDo Admin">{children}</DashboardApp>
+    </QueryClientProvider>
+  )
 }
