@@ -18,8 +18,9 @@ import {
 } from 'recharts'
 import type { Payload } from 'recharts/types/component/DefaultTooltipContent'
 import type { ComponentProps } from 'react'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { getAgentColor, getAgentLabel, type AgentChartEntry, type AgentTrendDayEntry } from './CreditosIaTab'
+import { ConsumptionDrilldownModal } from './ConsumptionDrilldownModal'
 
 const jsonFetcher = (url: string) => fetch(url).then(r => r.json())
 
@@ -73,6 +74,9 @@ function agentBreakdownTooltipFormatter(
 }
 
 export function AgentesTab() {
+  // Onda 4 F4 — drilldown modal state
+  const [drilldownAgentType, setDrilldownAgentType] = useState<string | null>(null)
+
   const { data: agentRaw, isLoading: agentLoading } =
     useSWR('/api/backend-proxy/ai-credits?endpoint=by-agent', jsonFetcher)
 
@@ -224,7 +228,17 @@ export function AgentesTab() {
                   agentBreakdownTooltipFormatter as NonNullable<ComponentProps<typeof Tooltip>['formatter']>
                 }
               />
-              <Bar dataKey="tokens" radius={[0, 4, 4, 0]} barSize={24}>
+              <Bar
+                dataKey="tokens"
+                radius={[0, 4, 4, 0]}
+                barSize={24}
+                cursor="pointer"
+                onClick={(payload: unknown) => {
+                  // Onda 4 F4 — abre drilldown ao clicar segmento
+                  const entry = payload as { agentType?: string } | undefined
+                  if (entry?.agentType) setDrilldownAgentType(entry.agentType)
+                }}
+              >
                 {agentChartData.map((entry) => (
                   <Cell key={entry.agentType} fill={getAgentColor(entry.agentType)} />
                 ))}
@@ -234,9 +248,12 @@ export function AgentesTab() {
 
           <div className="mt-4 space-y-1">
             {agentChartData.map((agent) => (
-              <div
+              <button
                 key={agent.agentType}
-                className="flex items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors hover:bg-lia-bg-secondary"
+                type="button"
+                onClick={() => setDrilldownAgentType(agent.agentType)}
+                aria-label={`Ver execuções de ${agent.name}`}
+                className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm text-left transition-colors hover:bg-lia-bg-secondary focus:bg-lia-bg-secondary focus:outline-none"
               >
                 <div className="flex items-center gap-2">
                   <div
@@ -253,11 +270,20 @@ export function AgentesTab() {
                     {agent.percentage}%
                   </Chip>
                 </div>
-              </div>
+              </button>
             ))}
           </div>
         </CardContent>
       </Card>
+
+      {/* Onda 4 F4 — drilldown modal */}
+      <ConsumptionDrilldownModal
+        agentType={drilldownAgentType}
+        open={drilldownAgentType !== null}
+        onOpenChange={(open) => {
+          if (!open) setDrilldownAgentType(null)
+        }}
+      />
     </div>
   )
 }
