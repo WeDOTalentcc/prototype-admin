@@ -5,6 +5,7 @@
 Plataforma LIA is a multi-tenant B2B recruitment and candidate assessment platform. The production backend is primarily `lia-agent-system`, a Python FastAPI service using SQLAlchemy/AsyncPG, PostgreSQL, Redis/RabbitMQ/Celery, LangGraph/LangChain AI agents, WorkOS SSO/JWT authentication, and many external integrations. The legacy/system-of-record backend is `ats_api`, a Ruby on Rails 7 API using JWT authentication, Apartment schema-based tenancy, Sidekiq, Redis, and Elasticsearch. The platform processes recruiter accounts, tenant configuration, job requisitions, candidate profiles, WSI assessments, interview transcripts, messaging events, external ATS data, and LLM provider credentials.
 
 Production assumptions for scans: mockup sandboxes and copied backups are not deployed; production uses TLS provided by the platform; production has `NODE_ENV=production`; the current deployment is private, so findings should prioritize authenticated users, invited users, public-link holders, and integration/webhook callers rather than broad anonymous internet access.
+In `lia-agent-system`, dependencies named `get_current_user_or_demo` only fall back to the demo user in development. In production they require real authentication and should be analyzed as authenticated-user surfaces, not anonymous ones.
 
 ## Assets
 
@@ -29,6 +30,7 @@ Production assumptions for scans: mockup sandboxes and copied backups are not de
 
 - **FastAPI entry point:** `lia-agent-system/app/main.py`; global auth and public route scope in `lia-agent-system/app/middleware/auth_enforcement.py`; config defaults in `lia-agent-system/libs/config/lia_config/config.py`.
 - **FastAPI route surfaces:** `lia-agent-system/app/api/v1/`, `lia-agent-system/app/api/public/`, `lia-agent-system/app/api/orchestrator_routes.py`, webhook files (`*webhook*.py`), candidate/job/WSI/calendar/billing/admin routes, `/external-webhooks/*`, WorkOS routes in `lia-agent-system/app/api/v1/workos.py`, and WebSocket/SSE chat routes.
+- **Outbound URL and fetch surfaces:** routes and services that accept recruiter-controlled URLs or trigger server-side HTTP fetches, especially `lia-agent-system/app/api/v1/integrations.py`, `lia-agent-system/app/api/v1/company_culture.py`, `lia-agent-system/app/api/v1/job_status_webhooks.py`, webhook schemas, and the canonical validator `lia-agent-system/app/shared/security/url_validator.py`.
 - **AI tool surfaces:** `lia-agent-system/app/tools/`, `lia-agent-system/app/domains/*/tools/`, `lia-agent-system/app/domains/*/agents/*tool_registry*.py`, and `lia-agent-system/app/domains/*/agents/*graph*.py`.
 - **Rails entry point and routes:** `ats_api/config.ru`, `ats_api/config/routes.rb`, `ats_api/app/controllers/concerns/authenticable.rb`, and controllers under `ats_api/app/controllers/v1/`.
 - **High-risk public Rails surfaces:** sessions/MFA, WorkOS, setup tokens, password resets, tracking, public jobs/applies, public interview links, agent token bootstrap/exchange routes, webhooks, Sidekiq mount, and ActionCable mount.
