@@ -10,6 +10,7 @@ import {
 import { getUrgencyBadge, getConversionRate, getAlertIcon, getAlertStyle, getAlertColor } from"../task-helpers"
 import type { JobWithAlert } from"../use-tasks-core"
 import { useUIPreferencesStore } from"@/stores/ui-preferences-store"
+import { JobAgentDot } from "./JobAgentDot"
 
 interface JobListItemProps {
   job: JobWithAlert
@@ -24,6 +25,8 @@ export function JobListItem({ job, onLIAAction, onNavigate }: JobListItemProps) 
         <div className="flex-1 space-y-1">
           <div className="flex items-center gap-2 flex-wrap">
             <h3 className="font-semibold text-sm text-lia-text-primary">{job.title}</h3>
+            {/* Onda 2 F4 — pingo cyan estatico quando ha agentes acoplados a esta vaga. */}
+            <JobAgentDot targetId={job.id} />
             <Chip density="relaxed" variant="neutral" >{job.jobId}</Chip>
             {getUrgencyBadge(job.urgencyLevel, job.daysOpen)}
             {job.publishedLinkedIn && (

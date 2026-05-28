@@ -14,6 +14,7 @@ import {
 import { Button } from"@/components/ui/button"
 import { Chip } from "@/components/ui/chip"
 import { toast } from"sonner"
+import { JobAgentBadge } from "@/components/jobs/JobAgentBadge"
 
 interface KanbanJobHeaderProps {
   onBack?: () => void
@@ -69,6 +70,9 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
                       {currentJob.jobId as string}
                     </span>
                   )}
+                  {/* Onda 2 F5 — pingo cyan + tooltip quando ha agentes acoplados a esta vaga. */}
+                  <JobAgentBadge jobId={(currentJob.backendId || currentJob.id) as string | undefined} />
+
                   <Popover>
                     <PopoverTrigger asChild>
                       <Chip density="relaxed" variant="neutral" muted className="bg-lia-bg-tertiary border border-lia-border-subtle text-lia-text-primary font-medium whitespace-nowrap px-2 py-0.5 cursor-pointer hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none select-none">
