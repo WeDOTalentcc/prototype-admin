@@ -12,6 +12,7 @@ import { headers } from "next/headers"
 import { Toaster as SonnerToaster } from "sonner"
 import { LiaFloatProvider } from "@/contexts/lia-float-context"
 import DeferredLayoutClients from "@/components/layout/DeferredLayoutClients"
+import { ReactQueryProvider } from "@/components/providers/ReactQueryProvider"
 
 async function getServerUser(): Promise<Record<string, unknown> | null> {
   try {
@@ -153,9 +154,11 @@ export default async function LocaleLayout({
           <JWTAuthProvider>
             <LiaFloatProvider>
               <ErrorBoundary>
-                {children}
-                <SonnerToaster position="top-right" richColors />
-                <DeferredLayoutClients />
+                <ReactQueryProvider>
+                  {children}
+                  <SonnerToaster position="top-right" richColors />
+                  <DeferredLayoutClients />
+                </ReactQueryProvider>
               </ErrorBoundary>
             </LiaFloatProvider>
           </JWTAuthProvider>

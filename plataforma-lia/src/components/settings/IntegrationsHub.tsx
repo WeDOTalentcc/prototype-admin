@@ -42,7 +42,6 @@ export function IntegrationsHub({ activeSubsection }: IntegrationsHubProps) {
   const { companyId, tenantId } = useCurrentCompany()
   const effectiveCompanyId = tenantId || companyId
 
-  // UI state
   const [activeTab, setActiveTab] = useState(activeSubsection || "all")
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedIntegration, setSelectedIntegration] = useState<Integration | null>(null)
@@ -52,11 +51,9 @@ export function IntegrationsHub({ activeSubsection }: IntegrationsHubProps) {
     setActiveTab(activeSubsection || "all")
   }, [activeSubsection])
 
-  // Server data via canonical hook
   const { enrichedIntegrations, catalogLoading, googleStatus, microsoftStatus, teamsStatus, llmConfig, refetchLlmConfig } =
     useIntegrationsData()
 
-  // Filtering + grouping
   const activeCategory = tabToCategoryMap[activeTab] ?? "all"
 
   const filteredIntegrations = useMemo(() => {
@@ -105,13 +102,25 @@ export function IntegrationsHub({ activeSubsection }: IntegrationsHubProps) {
     }
   }, [effectiveCompanyId, t])
 
-  const emptyState = (
+  const isSearching = searchQuery.trim().length > 0
+
+  const searchEmptyState = (
     <div className="flex flex-col items-center justify-center py-16 text-center" data-testid="integrations-empty-state">
       <Search className="w-8 h-8 text-lia-text-tertiary mb-3" />
       <p className={textStyles.subtitle}>{t("integrations.noResults")}</p>
       <p className={cn(textStyles.description, "mt-1")}>{t("integrations.noResultsHint")}</p>
     </div>
   )
+
+  const categoryEmptyState = (
+    <div className="flex flex-col items-center justify-center py-16 text-center" data-testid="integrations-empty-state">
+      <Plug className="w-8 h-8 text-lia-text-tertiary mb-3" />
+      <p className={textStyles.subtitle}>{t("integrations.emptyCategory")}</p>
+      <p className={cn(textStyles.description, "mt-1")}>{t("integrations.emptyCategoryHint")}</p>
+    </div>
+  )
+
+  const emptyState = isSearching ? searchEmptyState : categoryEmptyState
 
   return (
     <div className="space-y-3" data-testid="integrations-hub">
@@ -121,7 +130,7 @@ export function IntegrationsHub({ activeSubsection }: IntegrationsHubProps) {
             key={id}
             onClick={() => setActiveTab(id)}
             className={activeTab === id ? tabStyles.pillActive : tabStyles.pill}
-            data-testid={`integrations-tab-${id}`}
+            data-testid={}
           >
             <Icon className={tabStyles.pillIcon} />
             {t(labelKey)}
@@ -155,6 +164,7 @@ export function IntegrationsHub({ activeSubsection }: IntegrationsHubProps) {
           emptyState={emptyState}
           onCardClick={handleCardClick}
           getCategoryLabel={getCategoryLabel}
+          searchQuery={searchQuery}
         />
       )}
 
