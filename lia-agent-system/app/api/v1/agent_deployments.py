@@ -18,6 +18,7 @@ from app.schemas.agent_deployment import (
     UpdateDeploymentRequest,
 )
 from app.services.agent_deployment_service import agent_deployment_service
+from lia_models.agent_deployment import DeploymentTargetType
 from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
@@ -119,7 +120,9 @@ target_router = APIRouter(prefix="/agent-deployments", tags=["Agent Deployments"
 
 @target_router.get("", response_model=DeploymentListResponse)
 async def list_deployments_by_target(
-    target_type: str = Query(..., description="job | talent_pool | pipeline_stage | candidate_list"),
+    target_type: DeploymentTargetType = Query(
+        ..., description="job | talent_pool | pipeline_stage | candidate_list (enum canonical)"
+    ),
     target_id: str = Query(..., description="UUID of the target"),
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
@@ -128,7 +131,7 @@ company_id: str = Depends(require_company_id)):
     deployments = await agent_deployment_service.list_by_target(
         db=db,
         company_id=current_user.company_id,
-        target_type=target_type,
+        target_type=target_type.value,
         target_id=target_id,
     )
     return DeploymentListResponse(
