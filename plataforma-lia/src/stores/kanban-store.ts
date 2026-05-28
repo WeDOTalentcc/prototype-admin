@@ -4,7 +4,7 @@ import { registerStoreReset } from './auth-store'
 
 interface KanbanState {
   viewMode: 'kanban' | 'table'
-  activeTab: 'management' | 'edit'
+  activeTab: 'management' | 'edit' | 'agents'
   searchQuery: string
   selectedCandidates: Set<string>
   selectedCandidate: Record<string, unknown> | null
@@ -15,7 +15,7 @@ interface KanbanState {
 
 interface KanbanActions {
   setViewMode: (mode: 'kanban' | 'table') => void
-  setActiveTab: (tab: 'management' | 'edit') => void
+  setActiveTab: (tab: 'management' | 'edit' | 'agents') => void
   setSearchQuery: (query: string) => void
   setSelectedCandidates: (candidates: Set<string> | ((prev: Set<string>) => Set<string>)) => void
   setSelectedCandidate: (candidate: Record<string, unknown> | null) => void

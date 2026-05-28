@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button"
 import { BulkActionsBar, type BulkActionType } from "@/components/ui/bulk-actions-bar"
 import { PipelineStagesCarousel } from "@/components/ui/pipeline-stages-carousel"
 import { JobEditTab } from "@/components/jobs/JobEditTab"
+// Onda 3 F4 (2026-05-28) — aba Agentes da Vaga.
+import { JobAgentsTab } from "@/components/jobs/JobAgentsTab"
 import { KanbanToolbar } from "@/components/pages/job-kanban/KanbanToolbar"
 import { KanbanTableView } from "@/components/pages/job-kanban/KanbanTableView"
 import { KanbanBoardSection } from "@/components/pages/job-kanban/KanbanBoardSection"
@@ -58,6 +60,15 @@ export function KanbanPageContent({ state }: KanbanPageContentProps) {
     handleSendAgendamento, handleSendFeedback,
     favoriteCandidates, jobData,
   } = state
+
+  if (activeTab === 'agents') {
+    return (
+      <JobAgentsTab
+        jobId={String(currentJob?.id || jobData?.id || '')}
+        jobTitle={(currentJob?.title || jobData?.title) as string | undefined}
+      />
+    )
+  }
 
   if (activeTab === 'edit') {
     return (

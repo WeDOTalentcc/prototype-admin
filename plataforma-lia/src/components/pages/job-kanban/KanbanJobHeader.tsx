@@ -9,7 +9,7 @@ import { SCREENING_STATUS_LABELS } from"@/types/screening"
 import { liaApi } from"@/services/lia-api"
 import {
   ArrowLeft, Settings, Share2, FileText, Layers3, ListChecks, Lightbulb,
-  PauseCircle, PlayCircle, Archive, Calendar, Link2, RotateCcw,
+  PauseCircle, PlayCircle, Archive, Calendar, Link2, RotateCcw, Brain,
 } from"lucide-react"
 import { Button } from"@/components/ui/button"
 import { Chip } from "@/components/ui/chip"
@@ -41,6 +41,7 @@ interface KanbanJobHeaderProps {
 
 export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: KanbanJobHeaderProps) {
   const t = useTranslations('kanban')
+  const tJobs = useTranslations('jobs.agents')
   const {
     onBack, router, currentJob, jobEditForm, setJobEditForm,
     setJobStatusModalMode, setShowJobStatusModal, setShowCloseVacancyModal,
@@ -344,6 +345,19 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
             >
               <Settings className="w-3.5 h-3.5" />
               {t('settings')}
+            </button>
+            {/* Onda 3 F4 — aba Agentes (acoplar agentes a esta vaga). */}
+            <button
+              onClick={() => { setActiveTab('agents'); setShowJobEditor(false); }}
+              data-testid="job-tab-agents"
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer ${
+                activeTab === 'agents'
+                  ? 'bg-lia-bg-tertiary text-lia-text-primary'
+                  : 'text-lia-text-secondary hover:bg-lia-interactive-hover'
+              }`}
+            >
+              <Brain className="w-3.5 h-3.5 text-lia-cyan" />
+              {tJobs('tabs.agents')}
             </button>
             <div className="ml-auto flex items-center gap-2">
               {pipelineInheritance.isCustomized ? (
