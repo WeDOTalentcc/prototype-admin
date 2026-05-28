@@ -50,7 +50,7 @@ module V1
       def send_push
         return render_forbidden("Service token required") unless service_token?
 
-        user = User.find_by(id: params[:user_id])
+        user = User.find_by(id: params[:user_id], account_id: Current.account.id)
         return render_not_found("User") unless user
 
         reference = resolve_reference

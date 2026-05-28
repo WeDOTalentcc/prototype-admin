@@ -96,7 +96,14 @@ module V1
       payload = token.present? ? JsonWebToken.decode(token) : nil
       role = payload&.dig(:role).to_s
 
-      render json: { error: "Forbidden" }, status: :forbidden unless %w[service one_time_token].include?(role)
+      unless %w[service one_time_token].include?(role)
+        return render json: { error: "Forbidden" }, status: :forbidden
+      end
+
+      token_account_id = payload[:account_id].presence&.to_i
+      if token_account_id.nil? || token_account_id != @account.id
+        return render json: { error: "Forbidden" }, status: :forbidden
+      end
     end
 
     def switch_tenant
