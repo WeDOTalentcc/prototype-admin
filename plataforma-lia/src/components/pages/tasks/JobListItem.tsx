@@ -11,14 +11,21 @@ import { getUrgencyBadge, getConversionRate, getAlertIcon, getAlertStyle, getAle
 import type { JobWithAlert } from"../use-tasks-core"
 import { useUIPreferencesStore } from"@/stores/ui-preferences-store"
 import { JobAgentDot } from "./JobAgentDot"
+import type { AgentDeployment } from "@/types/agents/agent-deployment"
 
 interface JobListItemProps {
   job: JobWithAlert
   onLIAAction: (action: string, job: JobWithAlert) => void
   onNavigate?: (page: string) => void
+  /**
+   * Onda 3 F2 — deployments deste job já carregados via batch endpoint
+   * (parent ActiveJobsCard chama useDeploymentsByTargets). Quando undefined,
+   * JobAgentDot cai no fetch per-target legacy.
+   */
+  agentDeployments?: AgentDeployment[]
 }
 
-export function JobListItem({ job, onLIAAction, onNavigate }: JobListItemProps) {
+export function JobListItem({ job, onLIAAction, onNavigate, agentDeployments }: JobListItemProps) {
   return (
     <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl p-3 hover:border-lia-border-medium dark:hover:border-lia-border-medium hover:shadow-sm transition-shadow transition-[color,background-color,border-color] duration-200 bg-lia-bg-primary dark:bg-lia-bg-primary cursor-pointer">
       <div className="flex items-start justify-between mb-2">
@@ -26,7 +33,7 @@ export function JobListItem({ job, onLIAAction, onNavigate }: JobListItemProps) 
           <div className="flex items-center gap-2 flex-wrap">
             <h3 className="font-semibold text-sm text-lia-text-primary">{job.title}</h3>
             {/* Onda 2 F4 — pingo cyan estatico quando ha agentes acoplados a esta vaga. */}
-            <JobAgentDot targetId={job.id} />
+            <JobAgentDot targetId={job.id} deployments={agentDeployments} />
             <Chip density="relaxed" variant="neutral" >{job.jobId}</Chip>
             {getUrgencyBadge(job.urgencyLevel, job.daysOpen)}
             {job.publishedLinkedIn && (

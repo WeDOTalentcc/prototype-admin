@@ -8,6 +8,10 @@ import { Input } from"@/components/ui/input"
 import { Search, SlidersHorizontal, ArrowUpDown, X } from"lucide-react"
 import { JobListItem } from"./JobListItem"
 import type { JobWithAlert } from"../use-tasks-core"
+// Onda 3 F2 (2026-05-28) — batch fetch deployments para todas as vagas
+// renderizadas. Substitui N+1 onde cada JobListItem chamava
+// useTargetDeployments individual.
+import { useDeploymentsByTargets } from "@/hooks/agents/use-deployments-by-targets"
 
 interface ActiveJobsCardProps {
   filteredAndSortedJobs: JobWithAlert[]
@@ -50,6 +54,17 @@ export function ActiveJobsCard({
   handleLIAAction,
   onNavigate,
 }: ActiveJobsCardProps) {
+  // Onda 3 F2 — batch fetch deployments para evitar N+1. 1 request agregado
+  // pra todas as vagas renderizadas. JobListItem recebe slice via prop.
+  const jobIds = React.useMemo(
+    () => filteredAndSortedJobs.map((j) => j.id),
+    [filteredAndSortedJobs],
+  )
+  const { data: batchData } = useDeploymentsByTargets({
+    targetType: "job",
+    targetIds: jobIds,
+  })
+  const deploymentsByJob = batchData?.deployments_by_target ?? {}
   return (
     <Card className="border-lia-border-subtle dark:border-lia-border-subtle">
       <CardHeader className="pb-2">
@@ -155,6 +170,7 @@ export function ActiveJobsCard({
                 job={job}
                 onLIAAction={handleLIAAction}
                 onNavigate={onNavigate}
+                agentDeployments={deploymentsByJob[job.id]}
               />
             ))}
           </div>

@@ -43,6 +43,8 @@ import { useTranslations } from "next-intl"
 import { useSearchParams } from "next/navigation"
 import { PipelineRail, type PipelineRailNode } from "@/components/pages/pipeline-overview/pipeline-rail"
 import { useActiveAgentsSummary } from "@/hooks/agents/use-active-agents-summary"
+// Onda 3 F2.2 (2026-05-28) — batch deployments para "stage tem deployment static".
+import { useDeploymentsByTargets } from "@/hooks/agents/use-deployments-by-targets"
 import { JobCampaignBadge } from "@/components/jobs/JobCampaignBadge"
 import dynamic from "next/dynamic"
 import { useRouter } from "next/navigation"
@@ -390,6 +392,29 @@ export function PipelineOverviewPage() {
     }
     return ids
   }, [funilAgentSummary])
+
+  // Onda 3 F2.2 — batch fetch deployments static por stage. 1 request agregado
+  // pra todos os stages do funil. Diferente de runningStageIds (active-summary
+  // = quem está executando agora), deployedStageIds traz stages que TEM
+  // agente acoplado mesmo idle.
+  const allStageIds = React.useMemo(
+    () => stages.map((s) => s.id).filter(Boolean),
+    [stages],
+  )
+  const { data: stageDeploymentsBatch } = useDeploymentsByTargets({
+    targetType: "pipeline_stage",
+    targetIds: allStageIds,
+  })
+  const deployedStageIds = React.useMemo(() => {
+    const ids = new Set<string>()
+    const byTarget = stageDeploymentsBatch?.deployments_by_target ?? {}
+    for (const [stageId, deps] of Object.entries(byTarget)) {
+      if ((deps ?? []).some((d) => d.is_active !== false)) {
+        ids.add(stageId)
+      }
+    }
+    return ids
+  }, [stageDeploymentsBatch])
 
   const [previewCandidate, setPreviewCandidate] = useState<CandidateItem | null>(null)
   const [showPreview, setShowPreview] = useState(false)
@@ -810,6 +835,8 @@ export function PipelineOverviewPage() {
                 onClick: () => handleStageClick(stage.name),
                 // Onda 2 F7 — pingo pulsante quando ha agente rodando neste stage.
                 agentRunning: runningStageIds.has(stage.id),
+                // Onda 3 F2.2 — stage com agente acoplado mas idle (static dot).
+                agentDeployed: deployedStageIds.has(stage.id),
               }))}
               emptyMessage={
                 <div className="flex items-center gap-2 text-lia-text-disabled text-sm">
