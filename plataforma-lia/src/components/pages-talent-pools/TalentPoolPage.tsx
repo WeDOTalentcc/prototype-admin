@@ -19,6 +19,7 @@ import {
 import CandidateOriginBadge from"@/components/pages-agent-studio/CandidateOriginBadge"
 import VoiceScreeningButton from"@/components/pages-agent-studio/VoiceScreeningButton"
 import SourcingTab from "./sub-tabs/sourcing-tab"
+import { useActiveAgentsSummary } from "@/hooks/agents/use-active-agents-summary"
 
 // ---------- Types ----------
 
@@ -124,6 +125,17 @@ export default function TalentPoolPage({
   const [pool, setPool] = useState<TalentPool | null>(null)
   const [candidates, setCandidates] = useState<PoolCandidate[]>([])
   const [activeTab, setActiveTab] = useState("candidates")
+  // Onda 2 F6 — pingo cyan na aba "Agentes" quando ha agente rodando neste pool.
+  const { data: poolAgentSummary } = useActiveAgentsSummary({
+    surface: "pool",
+    limit: 20,
+  })
+  const hasRunningPoolAgent = (poolAgentSummary?.items ?? []).some(
+    (item) =>
+      item.target_type === "talent_pool" &&
+      item.target_id === poolId &&
+      item.status === "running",
+  )
   const [stageFilter, setStageFilter] = useState<string | null>(null)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [isLoading, setIsLoading] = useState(true)
@@ -280,6 +292,15 @@ export default function TalentPoolPage({
             >
               <tab.icon className={tabStyles.pillIcon} />
               {tab.label}
+              {/* Onda 2 F6 — pingo cyan na aba "Agentes" quando ha agente rodando neste pool. */}
+              {tab.id === "agents" && hasRunningPoolAgent && (
+                <span
+                  className="ml-1 w-1.5 h-1.5 rounded-full bg-wedo-cyan inline-block"
+                  aria-label="Agente em execucao neste pool"
+                  title="Agente trabalhando agora neste pool"
+                  role="img"
+                />
+              )}
             </button>
           ))}
         </div>

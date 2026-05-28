@@ -10,6 +10,15 @@ export interface PipelineRailNode {
   Icon: React.ComponentType<{ className?: string; style?: React.CSSProperties; strokeWidth?: number }>
   isSelected: boolean
   onClick: () => void
+  /**
+   * Onda 2 F7 (2026-05-27) — pingo cyan no header da etapa.
+   * - `agentDeployed`: existe pelo menos um agent acoplado a este stage (static dot)
+   * - `agentRunning`: ha um agent EXECUTANDO neste stage AGORA (pulsing dot)
+   *
+   * Quando ambos truthy, pulsing ganha. Tooltip muda conforme estado.
+   */
+  agentDeployed?: boolean
+  agentRunning?: boolean
 }
 
 export interface PipelineRailProps {
@@ -126,7 +135,7 @@ export function PipelineRail({ nodes, emptyMessage }: PipelineRailProps) {
                 }}
               >
                 <div
-                  className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-150 border-2"
+                  className="relative w-10 h-10 rounded-full flex items-center justify-center transition-all duration-150 border-2"
                   style={{
                     backgroundColor: node.isSelected
                       ? stageColor
@@ -153,6 +162,28 @@ export function PipelineRail({ nodes, emptyMessage }: PipelineRailProps) {
                         : "var(--lia-text-disabled)",
                     }}
                   />
+                  {/* Onda 2 F7 — pingo cyan no canto top-right do node. Pulsing
+                     quando agentRunning; static quando apenas deployed. */}
+                  {(node.agentRunning || node.agentDeployed) && (
+                    <span
+                      className={`absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-wedo-cyan ring-2 ring-lia-bg-primary dark:ring-lia-bg-primary ${
+                        node.agentRunning
+                          ? "animate-agent-pulse motion-reduce:animate-none"
+                          : ""
+                      }`}
+                      aria-label={
+                        node.agentRunning
+                          ? "Agente trabalhando agora nesta etapa"
+                          : "Agente acoplado a esta etapa"
+                      }
+                      title={
+                        node.agentRunning
+                          ? "Agente trabalhando agora nesta etapa"
+                          : "Agente acoplado a esta etapa"
+                      }
+                      role="img"
+                    />
+                  )}
                 </div>
 
                 <span

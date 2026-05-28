@@ -42,6 +42,7 @@ import { useUIPreferencesStore } from "@/stores/ui-preferences-store"
 import { useTranslations } from "next-intl"
 import { useSearchParams } from "next/navigation"
 import { PipelineRail, type PipelineRailNode } from "@/components/pages/pipeline-overview/pipeline-rail"
+import { useActiveAgentsSummary } from "@/hooks/agents/use-active-agents-summary"
 import { JobCampaignBadge } from "@/components/jobs/JobCampaignBadge"
 import dynamic from "next/dynamic"
 import { useRouter } from "next/navigation"
@@ -367,6 +368,28 @@ export function PipelineOverviewPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
+
+  // Onda 2 F7 — pingo PULSANTE no header da coluna do Funil.
+  // 1 fetch single source (active-summary surface=funil) cobre todas as stages
+  // que tem agente RODANDO agora. Para "stage tem deployment static" (sem
+  // execucao ativa), defer Onda 3 (precisa batch endpoint).
+  const { data: funilAgentSummary } = useActiveAgentsSummary({
+    surface: "funil",
+    limit: 20,
+  })
+  const runningStageIds = React.useMemo(() => {
+    const ids = new Set<string>()
+    for (const item of funilAgentSummary?.items ?? []) {
+      if (
+        item.target_type === "pipeline_stage" &&
+        item.target_id &&
+        item.status === "running"
+      ) {
+        ids.add(item.target_id)
+      }
+    }
+    return ids
+  }, [funilAgentSummary])
 
   const [previewCandidate, setPreviewCandidate] = useState<CandidateItem | null>(null)
   const [showPreview, setShowPreview] = useState(false)
@@ -785,6 +808,8 @@ export function PipelineOverviewPage() {
                 Icon: getStageIcon(stage.name, stage.action_behavior, stage.stage_category),
                 isSelected: selectedStage === stage.name,
                 onClick: () => handleStageClick(stage.name),
+                // Onda 2 F7 — pingo pulsante quando ha agente rodando neste stage.
+                agentRunning: runningStageIds.has(stage.id),
               }))}
               emptyMessage={
                 <div className="flex items-center gap-2 text-lia-text-disabled text-sm">

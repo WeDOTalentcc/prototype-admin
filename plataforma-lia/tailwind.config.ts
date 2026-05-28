@@ -251,11 +251,19 @@ export default {
           from: { opacity: '0', transform: 'translateY(16px)' },
           to:   { opacity: '1', transform: 'translateY(0)' },
         },
+        // Onda 2 F7 (2026-05-27) — pulse exclusivo do pingo cyan no Funil.
+        // Cycle 2s ease-in-out. Honra motion-reduce via Tailwind utility.
+        'agent-pulse': {
+          '0%, 100%': { opacity: '0.6', transform: 'scale(1)' },
+          '50%':      { opacity: '1',   transform: 'scale(1.2)' },
+        },
       },
       animation: {
         'fade-in-up':       'fade-in-up 0.3s ease-out',
         'scale-in-delayed': 'scale-in-delayed 0.2s ease-out',
         'slide-in-up':      'slide-in-up 0.3s ease-out',
+        // Onda 2 F7 — usar com `motion-reduce:animate-none` no consumer.
+        'agent-pulse':      'agent-pulse 2s ease-in-out infinite',
       },
       fontFamily: {
         // DS v4.2.1: `font-sans` → Open Sans (fonte primária 85% do produto).
