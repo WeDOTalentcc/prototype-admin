@@ -342,9 +342,30 @@ export async function expectPanelOpens(
 export async function goToChatHome(page: Page): Promise<void> {
   // Task #1054 — bumped 30s → 90s para tolerar cold-compile do Next/Turbopack
   // no Replit (primeira request de /pt pode levar 40-70s pra render). O wrapper
-  // run-pw-cenario-a.sh faz warmup via curl antes do test, mas a margem aqui
-  // é a rede de segurança quando o warmup é skipado (CI fresh container, etc).
-  await page.goto('/pt', { waitUntil: 'domcontentloaded', timeout: 90_000 })
+  // run-pw-cenario.sh faz warmup via curl + Chromium headless antes do test
+  // (Task #1173), mas a margem aqui é a rede de segurança quando o warmup é
+  // skipado (CI fresh container, etc).
+  //
+  // Task #1173 — retry de navegação: durante cold-compile o `next dev --turbopack`
+  // responde 502 / "Failed to fetch" em chunks ainda não compilados, e um único
+  // goto consome os 90s e morre. Aqui tentamos até 3× com timeout menor por
+  // tentativa, de forma que um 502 transitório no primeiro contato recompila e
+  // a 2ª/3ª tentativa pega os bundles quentes — falhando só por motivo real.
+  const NAV_ATTEMPTS = 3
+  let lastErr: unknown
+  for (let attempt = 1; attempt <= NAV_ATTEMPTS; attempt++) {
+    try {
+      await page.goto('/pt', { waitUntil: 'domcontentloaded', timeout: 60_000 })
+      lastErr = undefined
+      break
+    } catch (err) {
+      lastErr = err
+      if (attempt < NAV_ATTEMPTS) {
+        await page.waitForTimeout(2_000)
+      }
+    }
+  }
+  if (lastErr) throw lastErr
   // Bubble flutuante é o âncora estável (UnifiedChatBubble)
   const bubble = page.locator(SEL.liaBubble)
   if (await bubble.isVisible({ timeout: 5_000 }).catch(() => false)) {

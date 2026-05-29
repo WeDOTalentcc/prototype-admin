@@ -57,15 +57,26 @@ if [ "$FE_OK" != "1" ]; then
   exit 1
 fi
 
-# --- warmup do Next/Turbopack (Task #1054) ---------------------------------
+# --- warmup do Next/Turbopack (Task #1054, #1173) --------------------------
 # Cold-compile de /pt no Replit pode levar 30-70s na primeira request.
-# Pre-aquece para o teste já encontrar a rota compilada.
-echo "[$LABEL] warming up rotas Next.js ..."
+#
+# Etapa 1 (curl): compila a ROTA do servidor. Rápido, mas NÃO compila os
+# chunks JS client-side que o Chromium headless pede em seguida.
+echo "[$LABEL] warming up rotas Next.js (curl) ..."
 for path in "/pt" "/pt/chat"; do
   curl -fsS --connect-timeout 10 --max-time 120 \
     -o /dev/null -w "[$LABEL]   GET $path -> HTTP %{http_code} em %{time_total}s\n" \
     "$PLAYWRIGHT_BASE_URL$path" \
     || echo "[$LABEL]   warmup $path falhou (continuando — teste reportará)"
 done
+
+# Etapa 2 (browser): Task #1173 — dirige um Chromium headless real pelas
+# rotas-alvo para forçar a compilação dos chunks lazy (dynamic imports do
+# chat, locale routing). Sem isto, a PRIMEIRA navegação do teste pega o
+# `next dev --turbopack` ainda compilando esses chunks → 502 / "Failed to
+# fetch" → goto estoura 90s mesmo com o curl tendo passado em <1s. Best-effort.
+echo "[$LABEL] warming up bundles via headless Chromium (Task #1173) ..."
+PLAYWRIGHT_BASE_URL="$PLAYWRIGHT_BASE_URL" node scripts/pw-warmup.mjs "$PLAYWRIGHT_BASE_URL" \
+  || echo "[$LABEL]   warmup browser falhou (continuando — teste tem retry próprio)"
 
 exec pnpm playwright test "$SPEC" --project="$PROJECT" --reporter=list
