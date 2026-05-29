@@ -1,13 +1,16 @@
 /**
- * Onda 3 F8 (2026-05-28) — AssignAgentToJobModal canonical tests.
+ * Onda 3 F8 → Onda 4 Agent E (2026-05-29) — AssignAgentToJobModal tests.
  *
- * Cobertura:
- *   1. Abre quando open=true e renderiza titulo + jobTitle.
- *   2. Trigger modes mostrados = APENAS os 4 do target_type=job
- *      (on_create, on_schedule, manual, on_apply).
- *   3. Submit sem agente selecionado → erro inline.
- *   4. Submit OK fecha modal + chama onAssigned.
- *   5. Erro do backend mostra mensagem inline.
+ * Apos refactor Rule of Three (Onda 4), este modal e um wrapper thin sobre
+ * src/components/shared/agents/AssignAgentModal. Estes tests sao
+ * smoke + integration do wrapper:
+ *   1. Abre com titulo + jobTitle.
+ *   2. Trigger modes mostrados = APENAS os 4 do target_type=job.
+ *   3. Submit OK fecha + chama onAssigned.
+ *   4. Erro do backend mostra mensagem inline.
+ *
+ * Tests profundos do comportamento generico moram em
+ * src/components/shared/agents/__tests__/AssignAgentModal.test.tsx.
  */
 import { describe, expect, it, vi, beforeEach } from "vitest"
 import { render, screen, fireEvent, waitFor, cleanup } from "@testing-library/react"
@@ -16,6 +19,40 @@ import { NextIntlClientProvider } from "next-intl"
 import { AssignAgentToJobModal } from "../AssignAgentToJobModal"
 
 const messages = {
+  agents: {
+    assignModal: {
+      title: {
+        job: "Acoplar agente a esta vaga",
+        talent_pool: "Adicionar agente ao pool",
+        pipeline_stage: "Adicionar agente a esta etapa",
+        candidate_list: "Adicionar agente a esta lista",
+      },
+      submit: {
+        job: "Acoplar",
+        talent_pool: "Atribuir",
+        pipeline_stage: "Adicionar",
+        candidate_list: "Adicionar",
+      },
+      cancel: "Cancelar",
+      loadingAgents: "Carregando...",
+      jobLabel: "Vaga",
+      poolLabel: "Pool",
+      stageLabel: "Etapa",
+      listLabel: "Lista",
+      fields: {
+        agent: "Agente",
+        agentPlaceholder: "Selecione um agente",
+        trigger: "Quando rodar",
+        schedule: "Agendamento",
+        activateNow: "Ativar imediatamente",
+      },
+      errors: {
+        agentRequired: "Selecione um agente para continuar.",
+        agentsLoadFailed: "Erro ao carregar agentes",
+        generic: "Falha ao acoplar agente.",
+      },
+    },
+  },
   jobs: {
     agents: {
       triggerMode: {
@@ -24,24 +61,15 @@ const messages = {
         manual: "Manualmente",
         on_apply: "Quando candidato aplicar",
       },
-      attachModal: {
-        title: "Acoplar agente a esta vaga",
-        jobLabel: "Vaga",
-        cancel: "Cancelar",
-        submit: "Acoplar",
-        loadingAgents: "Carregando...",
-        fields: {
-          agent: "Agente",
-          agentPlaceholder: "Selecione um agente",
-          trigger: "Quando rodar",
-          schedule: "Agendamento",
-          activateNow: "Ativar imediatamente",
-        },
-        errors: {
-          agentRequired: "Selecione um agente para continuar.",
-          agentsLoadFailed: "Erro ao carregar agentes",
-          generic: "Falha ao acoplar agente.",
-        },
+    },
+  },
+  pipeline: {
+    stage: {
+      triggerMode: {
+        on_enter_stage: "Entrar nesta etapa",
+        on_exit_stage: "Sair desta etapa",
+        on_stuck_in_stage: "Ficar travado nesta etapa",
+        on_stage_change: "Houver qualquer mudança",
       },
     },
   },
@@ -60,7 +88,9 @@ beforeEach(() => {
   })
 })
 
-function renderModal(props: Partial<React.ComponentProps<typeof AssignAgentToJobModal>> = {}) {
+function renderModal(
+  props: Partial<React.ComponentProps<typeof AssignAgentToJobModal>> = {},
+) {
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false, gcTime: 0 } },
   })
@@ -85,14 +115,22 @@ function mockAgentsFetch() {
       return Promise.resolve({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ agents: [{ id: "a1", name: "Sourcing Bot" }], total: 1 }),
+        json: () =>
+          Promise.resolve({
+            agents: [{ id: "a1", name: "Sourcing Bot" }],
+            total: 1,
+          }),
       })
     }
-    return Promise.resolve({ ok: true, status: 201, json: () => Promise.resolve({}) })
+    return Promise.resolve({
+      ok: true,
+      status: 201,
+      json: () => Promise.resolve({}),
+    })
   }) as unknown as typeof fetch
 }
 
-describe("AssignAgentToJobModal", () => {
+describe("AssignAgentToJobModal (wrapper) — Onda 4 Agent E", () => {
   it("abre com titulo + jobTitle", async () => {
     mockAgentsFetch()
     renderModal()
@@ -106,22 +144,30 @@ describe("AssignAgentToJobModal", () => {
     mockAgentsFetch()
     renderModal()
     await waitFor(() => {
-      expect(screen.getByTestId("trigger-radio-on_create")).toBeInTheDocument()
-      expect(screen.getByTestId("trigger-radio-on_schedule")).toBeInTheDocument()
-      expect(screen.getByTestId("trigger-radio-manual")).toBeInTheDocument()
-      expect(screen.getByTestId("trigger-radio-on_apply")).toBeInTheDocument()
-      // stage-only modes NÃO devem aparecer
-      expect(screen.queryByTestId("trigger-radio-on_enter_stage")).toBeNull()
+      expect(
+        screen.getByTestId("assign-agent-to-job-trigger-radio-on_create"),
+      ).toBeInTheDocument()
+      expect(
+        screen.getByTestId("assign-agent-to-job-trigger-radio-on_schedule"),
+      ).toBeInTheDocument()
+      expect(
+        screen.getByTestId("assign-agent-to-job-trigger-radio-manual"),
+      ).toBeInTheDocument()
+      expect(
+        screen.getByTestId("assign-agent-to-job-trigger-radio-on_apply"),
+      ).toBeInTheDocument()
+      // stage-only modes NAO aparecem
+      expect(
+        screen.queryByTestId("assign-agent-to-job-trigger-radio-on_enter_stage"),
+      ).toBeNull()
     })
   })
 
-  it("submit sem agente selecionado mostra erro inline", async () => {
+  it("submit button disabled sem agente selecionado", async () => {
     mockAgentsFetch()
     renderModal()
-    await waitFor(() => screen.getByTestId("attach-submit"))
-    const btn = screen.getByTestId("attach-submit") as HTMLButtonElement
-    // O botão está disabled sem agente selecionado, então o erro real vem
-    // ao tentar submit programaticamente. Verificamos o disabled state.
+    await waitFor(() => screen.getByTestId("assign-agent-to-job-submit"))
+    const btn = screen.getByTestId("assign-agent-to-job-submit") as HTMLButtonElement
     expect(btn.disabled).toBe(true)
   })
 
@@ -130,13 +176,14 @@ describe("AssignAgentToJobModal", () => {
     const onClose = vi.fn()
     const onAssigned = vi.fn()
     renderModal({ onClose, onAssigned })
-    await waitFor(() => screen.getByTestId("job-agent-select"))
+    await waitFor(() => screen.getByTestId("assign-agent-to-job-agent-select"))
 
-    // Select agent
-    const select = screen.getByTestId("job-agent-select") as HTMLSelectElement
-    fireEvent.change(select, { target: { value: "a1" } })
+    fireEvent.change(
+      screen.getByTestId("assign-agent-to-job-agent-select"),
+      { target: { value: "a1" } },
+    )
 
-    const btn = screen.getByTestId("attach-submit") as HTMLButtonElement
+    const btn = screen.getByTestId("assign-agent-to-job-submit") as HTMLButtonElement
     expect(btn.disabled).toBe(false)
     fireEvent.click(btn)
     await waitFor(() => {
@@ -151,10 +198,13 @@ describe("AssignAgentToJobModal", () => {
         return Promise.resolve({
           ok: true,
           status: 200,
-          json: () => Promise.resolve({ agents: [{ id: "a1", name: "Bot" }], total: 1 }),
+          json: () =>
+            Promise.resolve({
+              agents: [{ id: "a1", name: "Bot" }],
+              total: 1,
+            }),
         })
       }
-      // attach call fails
       return Promise.resolve({
         ok: false,
         status: 400,
@@ -163,13 +213,14 @@ describe("AssignAgentToJobModal", () => {
     }) as unknown as typeof fetch
 
     renderModal()
-    await waitFor(() => screen.getByTestId("job-agent-select"))
-    fireEvent.change(screen.getByTestId("job-agent-select"), {
-      target: { value: "a1" },
-    })
-    fireEvent.click(screen.getByTestId("attach-submit"))
+    await waitFor(() => screen.getByTestId("assign-agent-to-job-agent-select"))
+    fireEvent.change(
+      screen.getByTestId("assign-agent-to-job-agent-select"),
+      { target: { value: "a1" } },
+    )
+    fireEvent.click(screen.getByTestId("assign-agent-to-job-submit"))
     await waitFor(() => {
-      expect(screen.getByTestId("attach-error")).toBeInTheDocument()
+      expect(screen.getByTestId("assign-agent-to-job-error")).toBeInTheDocument()
     })
   })
 })

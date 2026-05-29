@@ -1,11 +1,11 @@
 /**
- * Onda 3 F8 (2026-05-28) — StageAgentTriggerModal canonical tests.
+ * Onda 3 F8 → Onda 4 Agent E (2026-05-29) — StageAgentTriggerModal tests.
  *
- * Cobertura:
- *   1. Trigger modes mostrados = APENAS os 4 do target_type=pipeline_stage
- *      (on_enter_stage, on_exit_stage, on_stuck_in_stage, on_stage_change).
+ * Apos refactor Rule of Three (Onda 4), este modal e wrapper thin sobre
+ * src/components/shared/agents/AssignAgentModal. Smoke + integration:
+ *   1. Trigger modes mostrados = APENAS os 4 do target_type=pipeline_stage.
  *   2. Submit OK fecha modal.
- *   3. Submit sem agente: botão disabled.
+ *   3. Submit sem agente: botao disabled.
  *   4. Erro do backend mostra mensagem inline.
  */
 import { describe, expect, it, vi, beforeEach } from "vitest"
@@ -15,6 +15,40 @@ import { NextIntlClientProvider } from "next-intl"
 import { StageAgentTriggerModal } from "../StageAgentTriggerModal"
 
 const messages = {
+  agents: {
+    assignModal: {
+      title: {
+        job: "Acoplar agente a esta vaga",
+        talent_pool: "Adicionar agente ao pool",
+        pipeline_stage: "Adicionar agente a esta etapa",
+        candidate_list: "Adicionar agente a esta lista",
+      },
+      submit: {
+        job: "Acoplar",
+        talent_pool: "Atribuir",
+        pipeline_stage: "Adicionar",
+        candidate_list: "Adicionar",
+      },
+      cancel: "Cancelar",
+      loadingAgents: "Carregando agentes...",
+      jobLabel: "Vaga",
+      poolLabel: "Pool",
+      stageLabel: "Etapa",
+      listLabel: "Lista",
+      fields: {
+        agent: "Agente",
+        agentPlaceholder: "Selecione um agente",
+        trigger: "Disparar quando candidato",
+        schedule: "Agendamento",
+        activateNow: "Ativar imediatamente",
+      },
+      errors: {
+        agentRequired: "Selecione um agente.",
+        agentsLoadFailed: "Erro",
+        generic: "Falha.",
+      },
+    },
+  },
   pipeline: {
     stage: {
       triggerMode: {
@@ -23,23 +57,15 @@ const messages = {
         on_stuck_in_stage: "Ficar travado nesta etapa",
         on_stage_change: "Houver qualquer mudança",
       },
-      attachModal: {
-        title: "Adicionar agente a esta etapa",
-        stageLabel: "Etapa",
-        cancel: "Cancelar",
-        submit: "Adicionar",
-        loadingAgents: "Carregando agentes...",
-        fields: {
-          agent: "Agente",
-          agentPlaceholder: "Selecione um agente",
-          trigger: "Disparar quando candidato",
-          activateNow: "Ativar imediatamente",
-        },
-        errors: {
-          agentRequired: "Selecione um agente.",
-          agentsLoadFailed: "Erro",
-          generic: "Falha.",
-        },
+    },
+  },
+  jobs: {
+    agents: {
+      triggerMode: {
+        on_create: "Quando a vaga for criada",
+        on_schedule: "Sob agendamento",
+        manual: "Manualmente",
+        on_apply: "Quando candidato aplicar",
       },
     },
   },
@@ -58,7 +84,9 @@ beforeEach(() => {
   })
 })
 
-function renderModal(props: Partial<React.ComponentProps<typeof StageAgentTriggerModal>> = {}) {
+function renderModal(
+  props: Partial<React.ComponentProps<typeof StageAgentTriggerModal>> = {},
+) {
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false, gcTime: 0 } },
   })
@@ -83,32 +111,52 @@ function mockAgentsFetch() {
       return Promise.resolve({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ agents: [{ id: "a1", name: "Triagem Bot" }], total: 1 }),
+        json: () =>
+          Promise.resolve({
+            agents: [{ id: "a1", name: "Triagem Bot" }],
+            total: 1,
+          }),
       })
     }
-    return Promise.resolve({ ok: true, status: 201, json: () => Promise.resolve({}) })
+    return Promise.resolve({
+      ok: true,
+      status: 201,
+      json: () => Promise.resolve({}),
+    })
   }) as unknown as typeof fetch
 }
 
-describe("StageAgentTriggerModal", () => {
+describe("StageAgentTriggerModal (wrapper) — Onda 4 Agent E", () => {
   it("mostra APENAS os 4 trigger modes do target_type=pipeline_stage", async () => {
     mockAgentsFetch()
     renderModal()
     await waitFor(() => {
-      expect(screen.getByTestId("stage-trigger-radio-on_enter_stage")).toBeInTheDocument()
-      expect(screen.getByTestId("stage-trigger-radio-on_exit_stage")).toBeInTheDocument()
-      expect(screen.getByTestId("stage-trigger-radio-on_stuck_in_stage")).toBeInTheDocument()
-      expect(screen.getByTestId("stage-trigger-radio-on_stage_change")).toBeInTheDocument()
-      expect(screen.queryByTestId("stage-trigger-radio-on_create")).toBeNull()
-      expect(screen.queryByTestId("stage-trigger-radio-on_apply")).toBeNull()
+      expect(
+        screen.getByTestId("stage-agent-trigger-trigger-radio-on_enter_stage"),
+      ).toBeInTheDocument()
+      expect(
+        screen.getByTestId("stage-agent-trigger-trigger-radio-on_exit_stage"),
+      ).toBeInTheDocument()
+      expect(
+        screen.getByTestId("stage-agent-trigger-trigger-radio-on_stuck_in_stage"),
+      ).toBeInTheDocument()
+      expect(
+        screen.getByTestId("stage-agent-trigger-trigger-radio-on_stage_change"),
+      ).toBeInTheDocument()
+      expect(
+        screen.queryByTestId("stage-agent-trigger-trigger-radio-on_create"),
+      ).toBeNull()
+      expect(
+        screen.queryByTestId("stage-agent-trigger-trigger-radio-on_apply"),
+      ).toBeNull()
     })
   })
 
-  it("submit sem agente: botão disabled", async () => {
+  it("submit sem agente: botao disabled", async () => {
     mockAgentsFetch()
     renderModal()
-    await waitFor(() => screen.getByTestId("stage-attach-submit"))
-    const btn = screen.getByTestId("stage-attach-submit") as HTMLButtonElement
+    await waitFor(() => screen.getByTestId("stage-agent-trigger-submit"))
+    const btn = screen.getByTestId("stage-agent-trigger-submit") as HTMLButtonElement
     expect(btn.disabled).toBe(true)
   })
 
@@ -117,13 +165,14 @@ describe("StageAgentTriggerModal", () => {
     const onClose = vi.fn()
     const onAssigned = vi.fn()
     renderModal({ onClose, onAssigned })
-    await waitFor(() => screen.getByTestId("stage-agent-select"))
+    await waitFor(() => screen.getByTestId("stage-agent-trigger-agent-select"))
 
-    fireEvent.change(screen.getByTestId("stage-agent-select"), {
-      target: { value: "a1" },
-    })
+    fireEvent.change(
+      screen.getByTestId("stage-agent-trigger-agent-select"),
+      { target: { value: "a1" } },
+    )
 
-    fireEvent.click(screen.getByTestId("stage-attach-submit"))
+    fireEvent.click(screen.getByTestId("stage-agent-trigger-submit"))
 
     await waitFor(() => {
       expect(onAssigned).toHaveBeenCalled()
@@ -137,7 +186,11 @@ describe("StageAgentTriggerModal", () => {
         return Promise.resolve({
           ok: true,
           status: 200,
-          json: () => Promise.resolve({ agents: [{ id: "a1", name: "Bot" }], total: 1 }),
+          json: () =>
+            Promise.resolve({
+              agents: [{ id: "a1", name: "Bot" }],
+              total: 1,
+            }),
         })
       }
       return Promise.resolve({
@@ -148,13 +201,14 @@ describe("StageAgentTriggerModal", () => {
     }) as unknown as typeof fetch
 
     renderModal()
-    await waitFor(() => screen.getByTestId("stage-agent-select"))
-    fireEvent.change(screen.getByTestId("stage-agent-select"), {
-      target: { value: "a1" },
-    })
-    fireEvent.click(screen.getByTestId("stage-attach-submit"))
+    await waitFor(() => screen.getByTestId("stage-agent-trigger-agent-select"))
+    fireEvent.change(
+      screen.getByTestId("stage-agent-trigger-agent-select"),
+      { target: { value: "a1" } },
+    )
+    fireEvent.click(screen.getByTestId("stage-agent-trigger-submit"))
     await waitFor(() => {
-      expect(screen.getByTestId("stage-attach-error")).toBeInTheDocument()
+      expect(screen.getByTestId("stage-agent-trigger-error")).toBeInTheDocument()
     })
   })
 })
