@@ -40,10 +40,21 @@ domains:
     - "benef[ií]cios"
     - "enrichment"
   wizard:
-    # Wizard UI triggers + explicit job creation request
+    # Wizard UI triggers + explicit job creation request.
+    # Frente 1 (unificacao wizard 2026-05-29): TODA intencao de CRIACAO de vaga
+    # roteia deterministicamente para o grafo canonico (job_creation/graph.py via
+    # WizardSessionService). Espelhado em _HARDCODED_DOMAIN_PATTERNS (fast_router.py)
+    # como defense-in-depth. GESTAO de vaga existente fica em job_management.
     - "\\bwizard\\b"
     - "job\\s+creation\\s+wizard"
     - "criar.*\\bvaga\\b"
+    - "abrir.*\\bvaga\\b"
+    - "cadastr\\w*.*\\bvaga\\b"
+    - "registrar.*\\bvaga\\b"
+    - "\\bnova\\s+vaga\\b"
+    - "\\bnova\\s+oportunidade\\b"
+    - "(criar|abrir).*posi[çc][ãa]o"
+    - "(preciso|quero|vou|gostaria)\\b.{0,15}contratar"
   sourcing:
     - "buscar?\\s+\\w*\\s*candidato"
     - "pesquisar?\\s+\\w*\\s*candidato"

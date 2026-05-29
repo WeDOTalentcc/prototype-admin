@@ -63,6 +63,16 @@ _HARDCODED_DOMAIN_PATTERNS: dict[str, list[str]] = {
     "wizard": [
         r"\bwizard\b",
         r"job\s+creation\s+wizard",
+        # Frente 1 (unificacao wizard 2026-05-29) — intencao de CRIACAO de vaga.
+        # Espelhado em app/orchestrator/config/domain_routing.yaml (YAML primario).
+        r"criar.*\bvaga\b",
+        r"abrir.*\bvaga\b",
+        r"cadastr\w*.*\bvaga\b",
+        r"registrar.*\bvaga\b",
+        r"\bnova\s+vaga\b",
+        r"\bnova\s+oportunidade\b",
+        r"(criar|abrir).*posi[çc][ãa]o",
+        r"(preciso|quero|vou|gostaria)\b.{0,15}contratar",
     ],
     "job_management": [
         r"editar?\s+\w*\s*vaga",
@@ -400,15 +410,16 @@ def _load_domain_patterns() -> dict[str, list[str]]:
     import yaml as _yaml
     import pathlib as _pathlib
 
-    # Resolve YAML path relative to this file (works in any deployment layout)
-    _yaml_path = (
-        _pathlib.Path(__file__).parent.parent
-        / "orchestrator"
-        / "config"
-        / "domain_routing.yaml"
-    )
-    # app/orchestrator/fast_router.py -> app/orchestrator/config/domain_routing.yaml
-    _yaml_path = _pathlib.Path(__file__).parent / "config" / "domain_routing.yaml"
+    # Resolve YAML path relative to this file (works in any deployment layout).
+    # __file__ = app/orchestrator/routing/fast_router.py
+    # .parent = app/orchestrator/routing/ ; .parent.parent = app/orchestrator/
+    # YAML canonical vive em app/orchestrator/config/domain_routing.yaml.
+    # FIX 2026-05-29 (audit unificacao wizard): o path anterior apontava para
+    # routing/config/ (INEXISTENTE), fazendo TODO o domain_routing.yaml cair no
+    # fallback hardcoded silenciosamente (logger.warning "YAML not found"). 3 dominios
+    # degradados: company_settings(+18p), job_management(+10p listagem), wizard(+1p).
+    # Sensor: tests/unit/orchestrator/test_domain_routing_yaml_loads.py
+    _yaml_path = _pathlib.Path(__file__).parent.parent / "config" / "domain_routing.yaml"
 
     if _os.environ.get("LIA_DISABLE_YAML_ROUTING", "").lower() in ("1", "true", "yes"):  # R-044: verified-active — disables YAML domain routing, falls back to hardcoded DOMAIN_PATTERNS
         # W3-022 (2026-05-23): canary warning — fallback ativo sinaliza candidato
@@ -610,6 +621,21 @@ class FastRouter:
             logger.debug(
                 "FastRouter structured-tag short-circuit: '%s' → %s (conf=%.2f)",
                 message[:50], best_match.domain_id, best_match.confidence,
+            )
+            return best_match
+
+        # Frente 1 (unificacao wizard 2026-05-29) — wizard creation short-circuit.
+        # Intencao de CRIACAO de vaga e deterministica (mesma filosofia do Tier 2.5
+        # Wizard Guard no cascaded_router). Os patterns do dominio `wizard` sao TODOS
+        # gatilhos especificos de criacao (sem generico tipo \bvaga\b), entao quando
+        # wizard e o top match ele DEVE vencer. Sem isto, frases curtas como "nova vaga"
+        # (match 9 chars -> conf 0.88) perdiam para o `\bvaga\b` de job_management
+        # (0.78) por causa da penalidade de ambiguidade (gap 0.10) que rebaixava o
+        # vencedor a 0.73 e o _deduplicate_matches (re-sort por conf) o flipava.
+        if best_match.domain_id == "wizard":
+            logger.debug(
+                "FastRouter wizard-creation short-circuit: '%s' → wizard (conf=%.2f)",
+                message[:50], best_match.confidence,
             )
             return best_match
 
