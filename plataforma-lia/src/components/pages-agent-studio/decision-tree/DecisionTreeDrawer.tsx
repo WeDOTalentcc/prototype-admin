@@ -101,7 +101,7 @@ interface MetaRowProps {
 function MetaRow({ label, value }: MetaRowProps) {
   if (!value) return null
   return (
-    <div className="flex items-center justify-between gap-2 text-xs">
+    <div className="flex items-center justify-between gap-2 text-xs" role="listitem">
       <span className="text-lia-text-tertiary">{label}</span>
       <span className="text-lia-text-secondary font-medium">{value}</span>
     </div>
@@ -127,8 +127,11 @@ function DecisionTreeBody({ reasoning, agentDisplayName }: DecisionTreeBodyProps
 
   return (
     <div className="flex flex-col gap-5">
-      {/* Header bloco — agente + meta */}
-      <div className="flex items-start gap-3 rounded-md border border-lia-border-subtle bg-lia-cyan/5 p-3">
+      {/* Header bloco — agente + meta. Onda 5.7: id para aria-describedby do Sheet. */}
+      <div
+        id="dt-header-meta"
+        className="flex items-start gap-3 rounded-md border border-lia-border-subtle bg-lia-cyan/5 p-3"
+      >
         <div
           className={cn(
             "flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-lia-cyan text-white",
@@ -141,7 +144,7 @@ function DecisionTreeBody({ reasoning, agentDisplayName }: DecisionTreeBodyProps
           <div className="font-semibold text-lia-text-primary truncate">
             {agentDisplayName}
           </div>
-          <div className="mt-1 grid grid-cols-2 gap-x-3 gap-y-1">
+          <div className="mt-1 grid grid-cols-2 gap-x-3 gap-y-1" role="list">
             <MetaRow label={t("meta.model")} value={reasoning.model_used} />
             <MetaRow label={t("meta.tokens")} value={tokensLabel} />
             <MetaRow label={t("meta.cost")} value={costLabel} />
@@ -252,6 +255,7 @@ function DecisionTreeBody({ reasoning, agentDisplayName }: DecisionTreeBodyProps
             onClick={() => downloadLgpdTrailCsv(reasoning)}
             className="mt-1 gap-2 border-lia-border-default text-lia-text-primary hover:bg-lia-bg-tertiary"
             data-testid="decision-tree-export-lgpd"
+            aria-label={t("exportLgpd")}
           >
             <Database className="h-3.5 w-3.5" aria-hidden="true" />
             {t("exportLgpd")}
@@ -259,7 +263,8 @@ function DecisionTreeBody({ reasoning, agentDisplayName }: DecisionTreeBodyProps
         </div>
       </section>
 
-      {/* Detalhes técnicos (Collapsible) */}
+      {/* Detalhes técnicos (Collapsible). Onda 5.7: aria-expanded explicito (Radix
+          ja injeta via CollapsibleTrigger, mas duplicar e robusto pra testes a11y). */}
       <Collapsible open={showTechnical} onOpenChange={setShowTechnical}>
         <CollapsibleTrigger asChild>
           <Button
@@ -268,6 +273,8 @@ function DecisionTreeBody({ reasoning, agentDisplayName }: DecisionTreeBodyProps
             size="sm"
             className="w-full justify-between text-lia-text-secondary hover:text-lia-text-primary"
             data-testid="decision-tree-technical-toggle"
+            aria-expanded={showTechnical}
+            aria-controls="dt-technical-content"
           >
             <span className="text-sm font-medium">
               {showTechnical ? t("technicalDetailsHide") : t("technicalDetails")}
@@ -281,7 +288,7 @@ function DecisionTreeBody({ reasoning, agentDisplayName }: DecisionTreeBodyProps
             />
           </Button>
         </CollapsibleTrigger>
-        <CollapsibleContent className="mt-2">
+        <CollapsibleContent id="dt-technical-content" className="mt-2">
           {reasoning.reasoning_trace.length === 0 ? (
             <p className="text-xs text-lia-text-tertiary italic px-3 py-2">{t("noSteps")}</p>
           ) : (
@@ -354,6 +361,7 @@ export function DecisionTreeDrawer({ executionId, onClose }: DecisionTreeDrawerP
         side="right"
         data-testid="decision-tree-drawer"
         className="flex w-full flex-col gap-4 overflow-y-auto border-lia-border-default bg-lia-bg-primary sm:max-w-md"
+        aria-describedby={data ? "dt-header-meta" : undefined}
       >
         <SheetHeader className="border-b border-lia-border-subtle pb-3">
           <SheetTitle className="text-base font-semibold text-lia-text-primary">
