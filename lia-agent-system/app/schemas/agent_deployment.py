@@ -123,7 +123,14 @@ class BatchTargetsResponse(BaseModel):
 
 
 class AgentDeploymentWithAgent(BaseModel):
-    """Deployment + joined CustomAgent metadata (name, category, status)."""
+    """Deployment + joined CustomAgent metadata (name, category, status).
+
+    Onda 5+2 D (2026-05-29) — adicionado `last_execution_id` populado via
+    lookup mais-recente em pool_agent_runs por agent_id + company_id. Permite
+    o frontend abrir DecisionTreeDrawer canonical sem usar deployment.id como
+    fallback (deployment.id NÃO é execution_id válido — o endpoint
+    /agent-monitoring/executions/{id}/reasoning espera PoolAgentRun.id).
+    """
     # Deployment fields (mirror DeploymentResponse minus joined)
     id: str
     agent_id: str
@@ -138,6 +145,7 @@ class AgentDeploymentWithAgent(BaseModel):
     execution_count: int = 0
     candidates_processed: int = 0
     last_execution_at: Optional[str] = None
+    last_execution_id: Optional[str] = None
     created_by: str = ""
     created_at: Optional[str] = None
     updated_at: Optional[str] = None

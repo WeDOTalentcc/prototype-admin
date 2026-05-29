@@ -15,7 +15,7 @@ import logging
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import and_, select
+from sqlalchemy import and_, desc, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user
@@ -33,6 +33,8 @@ from app.shared.security.require_company_id import require_company_id
 from app.shared.trigger_mode_validation import validate_trigger_mode
 from lia_models.agent_deployment import AgentDeployment
 from lia_models.custom_agent import CustomAgent
+from lia_models.pool_agent_assignment import PoolAgentAssignment
+from lia_models.pool_agent_run import PoolAgentRun
 
 logger = logging.getLogger(__name__)
 
@@ -49,8 +51,12 @@ async def _validate_job_ownership(
         raise HTTPException(status_code=404, detail="Job not found")
 
 
-def _to_with_agent(deployment: AgentDeployment, agent: Optional[CustomAgent]) -> dict:
-    """Merge deployment.to_dict() with selected CustomAgent fields."""
+def _to_with_agent(
+    deployment: AgentDeployment,
+    agent: Optional[CustomAgent],
+    last_execution_id: Optional[str] = None,
+) -> dict:
+    """Merge deployment.to_dict() with selected CustomAgent fields + last execution."""
     base = deployment.to_dict()
     if agent:
         base["agent_name"] = agent.name
@@ -62,7 +68,78 @@ def _to_with_agent(deployment: AgentDeployment, agent: Optional[CustomAgent]) ->
         base["agent_category"] = None
         base["agent_status"] = None
         base["agent_domain"] = None
+    base["last_execution_id"] = last_execution_id
     return base
+
+
+async def _fetch_last_execution_id_map(
+    *,
+    db: AsyncSession,
+    agent_ids: list[str],
+    company_id: str,
+) -> dict[str, str]:
+    """Para cada agent_id, retorna PoolAgentRun.id mais recente.
+
+    Onda 5+2 D (2026-05-29). Estratégia Python-aggregate (1 query agregada):
+      SELECT assignment.custom_agent_id, run.id
+      FROM pool_agent_runs run
+      JOIN pool_agent_assignments assignment ON run.assignment_id = assignment.id
+      WHERE run.company_id = :tenant
+        AND assignment.company_id = :tenant
+        AND assignment.custom_agent_id IN agent_ids
+      ORDER BY run.started_at DESC NULLS LAST, run.created_at DESC
+
+    Multi-tenancy fail-closed: filtra company_id em AMBAS as tabelas (run e
+    assignment) — defense-in-depth contra leak cross-tenant via assignment
+    legacy onde company_id pudesse divergir.
+
+    Sem N+1: query agregada única independente de quantos deployments. Python
+    agrupa por custom_agent_id (primeiro hit wins, rows já sorted DESC).
+
+    NOTA arquitetural: deployments com target_type='job' não geram
+    PoolAgentRun diretamente (PoolAgentRun é assignment-scoped via
+    pool_agent_assignments, que é talent_pool-bound). Logo, last_execution_id
+    para job deployments só é populado quando o MESMO custom_agent também é
+    deployed via talent_pool e executou lá. Frontend trata None desabilitando
+    "Ver raciocínio" — UX honesta vs deployment.id-fallback que sempre
+    retornava 400 no endpoint /executions/{id}/reasoning.
+
+    Returns:
+        Dict[agent_id_str, run_id_str]. Agents sem execução omitidos.
+    """
+    if not agent_ids:
+        return {}
+
+    stmt = (
+        select(
+            PoolAgentAssignment.custom_agent_id,
+            PoolAgentRun.id,
+        )
+        .join(
+            PoolAgentAssignment,
+            PoolAgentRun.assignment_id == PoolAgentAssignment.id,
+        )
+        .where(
+            and_(
+                PoolAgentRun.company_id == company_id,
+                PoolAgentAssignment.company_id == company_id,
+                PoolAgentAssignment.custom_agent_id.in_(agent_ids),
+            )
+        )
+        .order_by(
+            desc(PoolAgentRun.started_at),
+            desc(PoolAgentRun.created_at),
+        )
+    )
+    result = await db.execute(stmt)
+    rows = result.all()
+
+    out: dict[str, str] = {}
+    for agent_uuid, run_id in rows:
+        key = str(agent_uuid)
+        if key not in out:
+            out[key] = str(run_id)
+    return out
 
 
 @router.get("/{job_id}/agents", response_model=JobAgentListResponse)
@@ -84,6 +161,7 @@ async def list_job_agents(
 
     # Join with CustomAgent (1 query for all agent_ids).
     agent_map: dict = {}
+    last_exec_map: dict[str, str] = {}
     if deployments:
         agent_ids = list({str(d.agent_id) for d in deployments})
         # Multi-tenancy fail-closed: CustomAgent.company_id filter
@@ -97,8 +175,24 @@ async def list_job_agents(
         )
         agent_map = {str(a.id): a for a in result.scalars().all()}
 
+        # Onda 5+2 D (2026-05-29) — last_execution_id por agent_id (mais
+        # recente PoolAgentRun via PoolAgentAssignment.custom_agent_id).
+        # 1 query agregada — sem N+1. Multi-tenancy fail-closed em ambas
+        # tabelas. Deployments cujo agent nunca executou ficam com None.
+        last_exec_map = await _fetch_last_execution_id_map(
+            db=db,
+            agent_ids=agent_ids,
+            company_id=current_user.company_id,
+        )
+
     items = [
-        AgentDeploymentWithAgent(**_to_with_agent(d, agent_map.get(str(d.agent_id))))
+        AgentDeploymentWithAgent(
+            **_to_with_agent(
+                d,
+                agent_map.get(str(d.agent_id)),
+                last_execution_id=last_exec_map.get(str(d.agent_id)),
+            )
+        )
         for d in deployments
     ]
     return JobAgentListResponse(deployments=items, total=len(items))
