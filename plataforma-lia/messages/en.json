@@ -4250,8 +4250,8 @@
       "tableCanViewSalaryTooltip": "Allows viewing salary ranges and compensation.",
       "salaryGrantConfirmTitleGrant": "Grant salary access",
       "salaryGrantConfirmTitleRevoke": "Revoke salary access",
-      "salaryGrantConfirmBodyGrant": "Confirm that {name} will be able to view salary data?",
-      "salaryGrantConfirmBodyRevoke": "Confirm that {name} will no longer view salary data?",
+      "salaryGrantConfirmBodyGrant": "This person will be able to view salary and compensation data. Confirm?",
+      "salaryGrantConfirmBodyRevoke": "This person will no longer be able to view salary data. Confirm?",
       "salaryGrantConfirmActionGrant": "Grant",
       "salaryGrantConfirmActionRevoke": "Revoke",
       "salaryGrantConfirmCancel": "Cancel"
@@ -5143,9 +5143,9 @@
         "loadError": "Failed to load automations.",
         "moreActions": "More actions",
         "seeExamples": "See examples",
-        "summaryActive": "{count} active",
+        "summaryActive": "{active} of {total} active",
         "summaryExecs": "{count} executions",
-        "summarySuccess": "{count}% success",
+        "summarySuccess": "{pct}% success",
         "testFailed": "Test failed",
         "testOk": "Test succeeded",
         "csvExportAriaLabel": "Export logs as CSV",
@@ -6141,8 +6141,8 @@
       "csvFormat": "CSV",
       "excelFormat": "Excel",
       "previewSubtitle": "Review the data before confirming the import.",
-      "matchedFields": "{count} matched fields",
-      "unmatchedFields": "{count} unmatched fields",
+      "matchedFields": "Matched fields",
+      "unmatchedFields": "Unmatched fields",
       "moreRecords": "+{count} records"
     },
     "liaFieldToggle": {
@@ -6502,7 +6502,7 @@
     "liaFields": {
       "title": "LIA Fields",
       "description": "Control which data LIA uses and how it interprets each field.",
-      "fieldsTotal": "{count} fields",
+      "fieldsTotal": "fields",
       "tabs": {
         "fields": "Fields",
         "aiPersona": "AI Persona",

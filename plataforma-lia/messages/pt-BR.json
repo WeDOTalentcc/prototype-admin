@@ -4250,8 +4250,8 @@
       "tableCanViewSalaryTooltip": "Permite visualizar faixas salariais e remuneração.",
       "salaryGrantConfirmTitleGrant": "Conceder acesso a salários",
       "salaryGrantConfirmTitleRevoke": "Revogar acesso a salários",
-      "salaryGrantConfirmBodyGrant": "Confirmar que {name} poderá ver dados salariais?",
-      "salaryGrantConfirmBodyRevoke": "Confirmar que {name} não poderá mais ver dados salariais?",
+      "salaryGrantConfirmBodyGrant": "Esta pessoa poderá visualizar dados salariais e de remuneração. Deseja confirmar?",
+      "salaryGrantConfirmBodyRevoke": "Esta pessoa não poderá mais visualizar dados salariais. Deseja confirmar?",
       "salaryGrantConfirmActionGrant": "Conceder",
       "salaryGrantConfirmActionRevoke": "Revogar",
       "salaryGrantConfirmCancel": "Cancelar"
@@ -5143,9 +5143,9 @@
         "loadError": "Erro ao carregar automações.",
         "moreActions": "Mais ações",
         "seeExamples": "Ver exemplos",
-        "summaryActive": "{count} ativas",
+        "summaryActive": "{active} de {total} ativas",
         "summaryExecs": "{count} execuções",
-        "summarySuccess": "{count}% de sucesso",
+        "summarySuccess": "{pct}% de sucesso",
         "testFailed": "Teste falhou",
         "testOk": "Teste bem-sucedido",
         "csvExportAriaLabel": "Exportar logs em CSV",
@@ -6141,8 +6141,8 @@
       "csvFormat": "CSV",
       "excelFormat": "Excel",
       "previewSubtitle": "Revise os dados antes de confirmar a importação.",
-      "matchedFields": "{count} campos correspondentes",
-      "unmatchedFields": "{count} campos não mapeados",
+      "matchedFields": "Campos correspondentes",
+      "unmatchedFields": "Campos não mapeados",
       "moreRecords": "+{count} registros"
     },
     "liaFieldToggle": {
@@ -6502,7 +6502,7 @@
     "liaFields": {
       "title": "Campos da LIA",
       "description": "Controle quais dados a LIA usa e como ela interpreta cada campo.",
-      "fieldsTotal": "{count} campos",
+      "fieldsTotal": "campos",
       "tabs": {
         "fields": "Campos",
         "aiPersona": "Persona da IA",
