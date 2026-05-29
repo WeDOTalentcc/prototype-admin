@@ -44,6 +44,7 @@ from app.shared.services.token_tracking_service import (
     get_token_tracking_service,
 )
 from app.domains.credits.services.token_budget_service import get_plan_limit
+from app.shared.observability.tracing import trace_span
 from app.shared.tenant_guard import get_verified_company_id
 from app.auth.dependencies import get_current_active_user
 from app.auth.models import User, UserRole
@@ -318,6 +319,7 @@ _company_gate: str = Depends(require_company_id)):
 
 
 @router.get("/by-agent", response_model=UsageByAgentListResponse, summary="Get usage by agent type")
+@trace_span("ai_consumption.usage_by_agent")
 async def get_usage_by_agent(
     start_date: datetime | None = Query(None, description="Start date filter"),
     end_date: datetime | None = Query(None, description="End date filter"),
@@ -380,6 +382,7 @@ _company_gate: str = Depends(require_company_id)):
 
 
 @router.get("/agent-trend", response_model=AgentDailyTrendListResponse, summary="Get daily trend per agent")
+@trace_span("ai_consumption.agent_daily_trend")
 async def get_agent_daily_trend(
     days: int = Query(30, ge=1, le=365, description="Number of days to include"),
     company_id: str = Depends(get_verified_company_id),
@@ -941,6 +944,7 @@ class ConsumptionDrilldownResponse(_WeDoBaseModel):
     response_model=ConsumptionDrilldownResponse,
     summary="Onda 4 B2 — drilldown de execuções de consumo",
 )
+@trace_span("ai_consumption.consumption_drilldown")
 async def get_consumption_drilldown(
     agent_type: str | None = Query(default=None, description="Filtra por agent_type (ex: 'digital_twin')"),
     studio_agent_id: str | None = Query(default=None, description="Filtra por studio_agent_id (agente individual)"),
@@ -1023,8 +1027,11 @@ class BudgetAlert(_WeDoBaseModel):
     studio_agent_id: str | None = None
     agent_name: str | None = None
     used_pct: float
-    used_cents: int
-    limit_cents: int
+    # P1-9 (2026-05-29): renomeado de used_cents/limit_cents — os valores SAO
+    # tokens (AiConsumption.total_tokens / AiCreditsBalance.monthly_limit),
+    # nao centavos. O nome antigo era um misnomer herdado de copy-paste.
+    used_tokens: int
+    limit_tokens: int
     days_in_period: int
     days_remaining: int
     projected_to_exceed: bool
@@ -1059,6 +1066,7 @@ def _severity_for(used_pct: float) -> _Literal["info", "warning", "critical"] | 
     response_model=BudgetAlertsResponse,
     summary="Onda 4 B3 — alertas de orçamento (global + per-agent)",
 )
+@trace_span("ai_consumption.budget_alerts")
 async def get_budget_alerts(
     db: AsyncSession = Depends(get_db),
     company_id: str = Depends(get_verified_company_id),
@@ -1129,8 +1137,8 @@ async def get_budget_alerts(
                 studio_agent_id=None,
                 agent_name=None,
                 used_pct=round(used_pct, 4),
-                used_cents=current_tokens,  # tokens used (limit é em tokens)
-                limit_cents=monthly_limit,
+                used_tokens=current_tokens,
+                limit_tokens=monthly_limit,
                 days_in_period=days_in_period,
                 days_remaining=days_remaining,
                 projected_to_exceed=projected_to_exceed,
@@ -1171,8 +1179,8 @@ async def get_budget_alerts(
                 studio_agent_id=str(row.studio_agent_id) if row.studio_agent_id else None,
                 agent_name=agent_name,
                 used_pct=round(agent_used_pct, 4),
-                used_cents=agent_tokens,
-                limit_cents=monthly_limit,
+                used_tokens=agent_tokens,
+                limit_tokens=monthly_limit,
                 days_in_period=days_in_period,
                 days_remaining=days_remaining,
                 projected_to_exceed=projected_to_exceed,

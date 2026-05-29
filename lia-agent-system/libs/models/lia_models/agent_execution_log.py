@@ -2,6 +2,30 @@
 AgentExecutionLog — Persists every individual Studio agent execution.
 
 Enables: execution history, temporal metrics, debugging, billing audit.
+
+CANONICAL vs pool_agent_runs (decisao A4 / AUDIT 6 P1-8, 2026-05-29)
+---------------------------------------------------------------------
+agent_execution_logs e pool_agent_runs NAO sao duplicados -- cobrem
+modos de execucao DISTINTOS e ambos sao canonical:
+
+- agent_execution_logs (ESTA tabela): execucao INTERATIVA sincrona.
+  Escrita por POST /custom-agents/{id}/execute (custom_agents.py:480) a
+  cada mensagem que o usuario manda pro agente in-request. Carrega o par
+  input_message/output_message + compliance_status -- trilha de auditoria
+  de chat interativo (debugging, billing por execucao, FairnessGuard
+  blocked vs pass). Lida por endpoints Studio de KPI/compliance/usage em
+  custom_agents.py.
+
+- pool_agent_runs (libs/models/lia_models/pool_agent_run.py): execucao
+  AUTONOMA de assignment/deployment (cron / on_demand / event_driven).
+  Escrita pelo orchestrator via PoolAgentRunRepository. Carrega
+  assignment_id/deployment_id + runtime_metrics + results[] -- telemetria
+  de run em lote (Sala de Controle / DecisionTreeDrawer). Lida pelos
+  endpoints de agent_monitoring (active-executions, recent-executions).
+
+Se a tabela aparecer "vazia" num tenant (observacao do AUDIT 6) e
+artefato do dev tenant nao ter executado custom agents interativos
+recentemente -- NAO e sinal de tabela vestigial.
 """
 import uuid
 from datetime import datetime

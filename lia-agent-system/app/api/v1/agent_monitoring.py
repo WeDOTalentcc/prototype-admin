@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.domains.analytics.services.agent_monitoring_service import AgentMonitoringService
+from app.shared.observability.tracing import trace_span
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 from app.shared.types import WeDoBaseModel
 
@@ -488,6 +489,7 @@ def _map_status_to_studio(db_status: str) -> Literal["running", "completed", "er
 
 
 @router.get("/active-executions", response_model=list[ActiveExecutionResponse])
+@trace_span("agent_monitoring.active_executions")
 async def list_active_executions(
     surface: _StudioTargetSurface | None = Query(
         default=None,
@@ -556,6 +558,7 @@ async def list_active_executions(
     "/executions/{execution_id}/reasoning",
     response_model=ExecutionReasoningResponse,
 )
+@trace_span("agent_monitoring.execution_reasoning")
 async def get_execution_reasoning(
     execution_id: str,
     db: AsyncSession = Depends(get_db),
@@ -643,6 +646,7 @@ async def get_execution_reasoning(
 
 
 @router.get("/recent-executions", response_model=list[RecentExecutionResponse])
+@trace_span("agent_monitoring.recent_executions")
 async def list_recent_executions(
     limit: int = Query(default=50, ge=1, le=200),
     agent_id: str | None = Query(default=None),
@@ -789,6 +793,7 @@ def _build_action_label(run) -> str | None:
 
 
 @router.get("/active-summary", response_model=ActiveSummaryResponse)
+@trace_span("agent_monitoring.active_summary")
 async def get_active_agents_summary(
     surface: _AgentsCardSurface = Query(
         default="decidir",
@@ -972,6 +977,7 @@ def _extract_candidate_action(results: dict | None) -> tuple[str, str | None]:
     "/candidate/{candidate_id}/touches",
     response_model=CandidateTouchesResponse,
 )
+@trace_span("agent_monitoring.candidate_touches")
 async def list_candidate_touches(
     candidate_id: str,
     since_hours: int = Query(default=24, ge=1, le=168),
@@ -1171,6 +1177,7 @@ def _digest_target_phrase(target_type: str | None, target_name: str | None) -> s
 
 
 @router.get("/daily-digest", response_model=DailyDigestResponse)
+@trace_span("agent_monitoring.daily_digest")
 async def get_daily_digest(
     since_hours: int = Query(default=24, ge=1, le=168),
     limit: int = Query(default=8, ge=1, le=20),

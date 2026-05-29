@@ -97,6 +97,12 @@ async def test_alerts_60pct_emits_info(mock_db):
     assert len(global_alerts) == 1
     assert global_alerts[0].severity == "info"
     assert 0.59 <= global_alerts[0].used_pct <= 0.61
+    # P1-9 (2026-05-29): campos canonical sao used_tokens/limit_tokens (tokens,
+    # nao cents). Pin contra recidiva do misnomer used_cents/limit_cents.
+    assert global_alerts[0].used_tokens == 60000
+    assert global_alerts[0].limit_tokens == 100000
+    assert not hasattr(global_alerts[0], "used_cents")
+    assert not hasattr(global_alerts[0], "limit_cents")
 
 
 # ────────────────────────────────────────────────────────────────────────────
@@ -166,6 +172,9 @@ async def test_alerts_per_agent_when_gt_20pct(mock_db):
     assert per_agent_alerts[0].studio_agent_id == agent_row.studio_agent_id
     assert per_agent_alerts[0].agent_name == "Heavy Agent"
     assert per_agent_alerts[0].used_pct >= 0.20
+    # P1-9 — per-agent tambem expoe used_tokens/limit_tokens canonical.
+    assert per_agent_alerts[0].used_tokens == 25000
+    assert per_agent_alerts[0].limit_tokens == 100000
 
 
 # ────────────────────────────────────────────────────────────────────────────

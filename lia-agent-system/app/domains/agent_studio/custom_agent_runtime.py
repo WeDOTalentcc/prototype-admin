@@ -474,14 +474,18 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
         # Onda 1 B2 (2026-05-27): construir reasoning_trace canonical pra
         # Studio Control Room (DecisionTreeDrawer). Helper extracted pra ser
         # testable em isolamento + manter _state_to_output legivel.
+        # reasoning_trace e um artefato de observabilidade best-effort
+        # (DecisionTreeDrawer UI), NAO uma decisao/parecer de IA. Fora do escopo
+        # do anti-silent-fallback de path critico de decisao IA.
         try:
             from app.domains.agent_studio.reasoning_trace_builder import (
                 build_reasoning_trace,
             )
             reasoning_trace = build_reasoning_trace(messages, max_steps=20)
         except Exception as _trace_exc:
-            # Fail-open: trace e best-effort, nao deve quebrar agent execution.
-            # Mas logamos LOUD (anti-silent) — recidiva proibida.
+            # REGRA-4-EXEMPT (P1-6, 2026-05-29): fail-open LOUD. O except ja loga
+            # com exc_info e degrada pra None, que o consumer trata como "sem
+            # trace". Nao ha envelope de sucesso falso nem parecer fabricado.
             logger.error(
                 "[CustomAgentRuntime] build_reasoning_trace falhou — trace=None",
                 exc_info=True,
