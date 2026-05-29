@@ -6743,7 +6743,10 @@
           "disclaimerAnon": "Data is anonymized before use in training.",
           "disclaimerCrossBorder": "International data transfer may occur in compliance with LGPD.",
           "disclaimerCustomModel": "Data may be used to train tenant-specific custom models."
-        }
+        },
+        "status_revoked": "Revoked",
+        "status_given": "Granted",
+        "status_missing": "Missing"
       },
       "dsr": {
         "requests": "Requests",

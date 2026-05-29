@@ -6743,7 +6743,10 @@
           "disclaimerAnon": "Dados são anonimizados antes do uso em treinamento.",
           "disclaimerCrossBorder": "Pode haver transferência internacional de dados conforme a LGPD.",
           "disclaimerCustomModel": "Dados podem ser usados para treinar modelos personalizados do tenant."
-        }
+        },
+        "status_revoked": "Revogado",
+        "status_given": "Concedido",
+        "status_missing": "Pendente"
       },
       "dsr": {
         "requests": "Solicitações",
