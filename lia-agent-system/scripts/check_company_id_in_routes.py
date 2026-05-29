@@ -1,24 +1,41 @@
 #!/usr/bin/env python3
-"""AST sensor — every FastAPI route in app/api/v1/ must call _require_company_id
-or get_user_company_id within its body.
+"""AST sensor — every FastAPI route in app/api/v1/ must reference a canonical
+multi-tenancy gate within its signature/body.
 
 Multi-tenancy is the most important invariant in this codebase. CLAUDE.md
 makes it golden rule #1. This script walks every Python file under
 app/api/v1/, finds @router.{get,post,put,patch,delete} decorated functions,
-and asserts each function body references at least one of the two
+and asserts each function references at least one of the canonical
 multi-tenancy gate functions.
 
-Exit code:
-  0 — all routes guarded
-  1 — one or more routes missing the gate (printed to stderr)
+Canonical gates (CLAUDE.md REGRA 6 + ADR multi-tenancy):
+  - require_company_id              (Depends — JWT-authoritative)
+  - require_company_id_strict_match (Depends factory — 403 se header/query != JWT)
+  - get_verified_company_id         (tenant_guard — defense-in-depth)
+  - _require_company_id             (helper interno)
+  - get_user_company_id             (helper de resolução por user)
+  - _assert_tenant_scope            (assert pós-load do recurso)
 
-Usage in CI:
-  python lia-agent-system/scripts/check_company_id_in_routes.py
+Exit code (RATCHET):
+  0 — offenders <= BASELINE (no regression)
+  1 — offenders >  BASELINE (new untenanted route introduced)  OR  --strict
 
-Allowlist:
-  Routes that intentionally do NOT scope by company_id (e.g., webhook
-  receivers that resolve company from payload signature) can opt out by
-  adding `# multi-tenancy: payload-signature` comment in the function body.
+O ratchet impede REGRESSAO: qualquer rota nova sem gate canonico falha o CI.
+Os offenders legados (BASELINE) sao debito documentado — triagem em backlog
+separado (auth/* endpoints pre-tenant + catalogos globais WeDOTalent sao
+falsos positivos legitimos; candidates_crud/stages_* sao gaps reais).
+
+Para baixar o baseline conforme o debito e pago, ajuste BASELINE_OFFENDERS.
+
+Usage:
+  python scripts/check_company_id_in_routes.py            # ratchet (default)
+  python scripts/check_company_id_in_routes.py --strict   # zero-tolerance
+  python scripts/check_company_id_in_routes.py --list      # lista todos offenders
+
+Allowlist por rota:
+  Adicione  no corpo da funcao para rotas que
+  intencionalmente NAO escopam por company_id (login, webhooks resolvidos por
+  assinatura de payload, catalogos globais da plataforma).
 """
 from __future__ import annotations
 
@@ -28,8 +45,32 @@ from pathlib import Path
 from typing import Iterator
 
 ROOT = Path(__file__).resolve().parents[1] / "app" / "api" / "v1"
-GATE_FUNCS = {"_require_company_id", "get_user_company_id"}
+
+# Conjunto canonico completo de gates multi-tenancy (CLAUDE.md REGRA 6).
+# Inclui as funcoes Depends, o factory strict-match e os asserts pos-load.
+GATE_FUNCS = {
+    "_require_company_id",
+    "get_user_company_id",
+    "require_company_id",
+    "require_company_id_strict_match",
+    "get_verified_company_id",
+    "_assert_tenant_scope",
+}
 OPT_OUT_MARKER = "# multi-tenancy:"
+
+# Baseline honesto medido 2026-05-29 com o conjunto canonico completo de gates + deteccao
+# correta de Depends(gate) por ast.Name (fix do falso positivo massivo 224->33).
+# 33 offenders legados = majoritariamente falsos positivos legitimos:
+#   - auth.py (13): login/register/refresh/password/verify/invitation -> pre-tenant
+#     (sem JWT company ainda); deveriam receber marker `# multi-tenancy: pre-auth`.
+#   - webhooks (email_tracking, mailgun, openmic, whatsapp, twilio_voice): resolvidos
+#     por assinatura/provider, nao JWT -> marker `# multi-tenancy: webhook-signature`.
+#   - self_scheduling_public: candidate-facing por token publico.
+# Gaps REAIS a investigar (backlog): wsi/reports.py:874 get_wsi_audit_trail (audit
+#   trail deveria ser tenant-scoped), admin_persona.py:80 get_contract_version,
+#   custom_agents.py:1981 get_agent_kpis.
+# RATCHET: qualquer rota nova sem gate canonico empurra acima de 33 e falha o CI.
+BASELINE_OFFENDERS = 33
 
 
 def is_router_decorator(decorator: ast.expr) -> bool:
@@ -46,14 +87,20 @@ def is_router_decorator(decorator: ast.expr) -> bool:
 
 
 def function_calls_gate(func: ast.AsyncFunctionDef | ast.FunctionDef) -> bool:
-    """True iff the function body or args contain a call to a gate function."""
+    """True iff the function references a canonical gate anywhere.
+
+    Detecta tanto chamadas diretas (``require_company_id(...)``) quanto
+    referencias por nome usadas como dependencia FastAPI
+    (``Depends(require_company_id)`` -- onde o gate e um ``ast.Name``
+    argumento de ``Depends``, NAO o ``.func`` da call). O sensor antigo so
+    olhava ``node.func`` e gerava falso positivo massivo em rotas que se
+    gateavam corretamente via ``Depends(...)`` na assinatura.
+    """
     for node in ast.walk(func):
-        if isinstance(node, ast.Call):
-            target = node.func
-            if isinstance(target, ast.Name) and target.id in GATE_FUNCS:
-                return True
-            if isinstance(target, ast.Attribute) and target.attr in GATE_FUNCS:
-                return True
+        if isinstance(node, ast.Name) and node.id in GATE_FUNCS:
+            return True
+        if isinstance(node, ast.Attribute) and node.attr in GATE_FUNCS:
+            return True
     return False
 
 
@@ -103,20 +150,48 @@ def main() -> int:
 
     print(f"Scanned {files_scanned} file(s), {routes_checked} route(s).")
 
-    is_strict = '--strict' in sys.argv
-    if offenders:
-        # Warn-only by default per CLAUDE.md harness convention (pre-existing
-        # tech debt in recruitment_stages exists; cleaning it is a separate
-        # PR). Pass --strict to make this a CI gate when the debt is paid.
-        prefix = 'FAIL' if is_strict else 'WARN'
-        stream = sys.stderr if is_strict else sys.stdout
-        print(f'\n{prefix} — {len(offenders)} route(s) missing multi-tenancy gate:', file=stream)
-        for path, name, line in offenders:
-            print(f'  {path}:{line}  {name}()  — call _require_company_id or get_user_company_id, '
-                  'or add `# multi-tenancy: <reason>` comment if intentional.', file=stream)
-        return 1 if is_strict else 0
+    is_strict = "--strict" in sys.argv
+    do_list = "--list" in sys.argv
+    n = len(offenders)
 
-    print('OK — every route is multi-tenant guarded.')
+    if do_list or n > BASELINE_OFFENDERS or is_strict:
+        for path, name, line in offenders:
+            print(
+                f"  {path}:{line}  {name}()  — call require_company_id / "
+                "get_verified_company_id / _assert_tenant_scope, or add "
+                " comment if intentional.",
+                file=sys.stderr,
+            )
+
+    if is_strict:
+        if n:
+            print(f"\nFAIL (--strict) — {n} route(s) missing canonical multi-tenancy gate.", file=sys.stderr)
+            return 1
+        print("OK (--strict) — every route is multi-tenant guarded.")
+        return 0
+
+    # RATCHET mode (default).
+    if n > BASELINE_OFFENDERS:
+        print(
+            f"\nFAIL — {n} route(s) sem gate canonico, acima do baseline {BASELINE_OFFENDERS}.\n"
+            f"  Uma rota NOVA foi adicionada sem gate multi-tenancy.\n"
+            f"  Fix: adicione  (do JWT, NUNCA do payload),\n"
+            f"       ou  se a rota e intencionalmente global.",
+            file=sys.stderr,
+        )
+        return 1
+
+    if n < BASELINE_OFFENDERS:
+        print(
+            f"\n✅ {n} offender(s) — ABAIXO do baseline {BASELINE_OFFENDERS}. "
+            f"Debito pago! Atualize BASELINE_OFFENDERS = {n} no sensor para travar o ganho."
+        )
+        return 0
+
+    print(
+        f"\n⚠️  {n} offender(s) legados == baseline {BASELINE_OFFENDERS} (debito documentado, sem regressao). "
+        f"Use --list para inspecionar, --strict para zero-tolerance."
+    )
     return 0
 
 

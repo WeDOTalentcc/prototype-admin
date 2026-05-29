@@ -181,6 +181,30 @@ jobs:
         run: |
           python3 scripts/check_webhook_auth.py --blocking
 
+      # ────────────────────────────────────────────────────────────────
+      # Camada Compliance hot-path — broad except + multi-tenancy ratchet
+      # (wired 2026-05-29, Fase 2.5 Onda C3 — sensores que estavam órfãos)
+      # ────────────────────────────────────────────────────────────────
+
+      - name: "G-COMPLIANCE: no broad except:pass em paths compliance-critical (BLOCKING)"
+        # Baseline 0 (2026-05-29) — audit_decorators/fairness_guard/hitl_service
+        # limpos: rollback-of-rollback marcado # REGRA-4-EXEMPT, auto-confirm loga.
+        # Bug class: except Exception: pass mascara falha de audit/fairness/HITL
+        # (REGRA 4 anti-silent-fallback). Estava órfão (sem CI wire) até hoje.
+        working-directory: lia-agent-system
+        run: |
+          python3 scripts/check_no_broad_except_in_compliance_paths.py
+
+      - name: "G-MTENANT: company_id gate em routes (RATCHET baseline 33)"
+        # Ratchet honesto 2026-05-29: 33 offenders legados (auth pre-tenant +
+        # webhooks por assinatura + 3 gaps reais em backlog). Sensor refinado
+        # detecta Depends(gate) via ast.Name (corrigiu falso positivo 224->33)
+        # e retorna exit 1 quando offenders > baseline (rota nova sem gate).
+        # Substitui a versão warn-only mascarada em frontend-ci.yml.
+        working-directory: lia-agent-system
+        run: |
+          python3 scripts/check_company_id_in_routes.py
+
   harness-ratchet:
     name: Harness Sensors (RATCHET warn-only — baseline > 0)
     runs-on: ubuntu-latest
