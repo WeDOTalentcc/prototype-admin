@@ -9,24 +9,18 @@
 import { describe, expect, it, vi, beforeEach } from "vitest"
 import { render, screen, fireEvent, waitFor } from "@testing-library/react"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import { NextIntlClientProvider } from "next-intl"
 import { AgentsCard } from "../AgentsCard"
 import type { ActiveSummaryResponse } from "@/types/agents/active-summary"
+import ptBRMessages from "../../../../../messages/pt-BR.json"
 
 vi.mock("@/hooks/company/use-ai-persona", () => ({
   useAiPersona: () => ({ persona: { name: "Catarina", tone: "profissional" } }),
 }))
 
-// Onda 5.1 — AgentsCard agora renderiza FirstExecutionTooltip que usa
-// useTranslations(agents.firstExecution). Mock retorna keys estaticas em PT-BR.
-vi.mock("next-intl", () => ({
-  useTranslations: (_ns: string) => (key: string, vars?: Record<string, unknown>) => {
-    if (key === "tooltip" && vars?.agentName) {
-      return `${String(vars.agentName)} acabou de processar candidatos pela primeira vez.`
-    }
-    if (key === "dismiss") return "OK, entendi"
-    return key
-  },
-}))
+// i18n canonical (P1-5, 2026-05-29): copy migrada pra agents.summary.*.
+// Em vez de mockar next-intl, renderizamos com o messages real (pt-BR) via
+// NextIntlClientProvider — garante que toda key resolve (contract test).
 
 beforeEach(() => {
   Object.defineProperty(window, "localStorage", {
@@ -47,7 +41,9 @@ function renderWithQuery(ui: React.ReactElement) {
     },
   })
   return render(
-    <QueryClientProvider client={client}>{ui}</QueryClientProvider>,
+    <NextIntlClientProvider locale="pt-BR" messages={ptBRMessages}>
+      <QueryClientProvider client={client}>{ui}</QueryClientProvider>
+    </NextIntlClientProvider>,
   )
 }
 
@@ -151,5 +147,33 @@ describe("AgentsCard", () => {
       ).toBeInTheDocument()
     })
     expect(screen.getByText(/Pool: SP Tech Pros/)).toBeInTheDocument()
+  })
+})
+
+describe("AgentsCard — i18n canonical contract", () => {
+  it("nao emite MISSING_MESSAGE com messages/pt-BR.json real", async () => {
+    const errors: Error[] = []
+    mockFetchOnce(SAMPLE)
+    const client = new QueryClient({
+      defaultOptions: { queries: { retry: false, gcTime: 0 } },
+    })
+    render(
+      <NextIntlClientProvider
+        locale="pt-BR"
+        messages={ptBRMessages}
+        onError={(err) => errors.push(err)}
+      >
+        <QueryClientProvider client={client}>
+          <AgentsCard onOpenDecisionTree={() => {}} />
+        </QueryClientProvider>
+      </NextIntlClientProvider>,
+    )
+    await waitFor(() => {
+      expect(screen.getByTestId("agents-card-list")).toBeInTheDocument()
+    })
+    const missing = errors.filter((e) =>
+      e.message.includes("MISSING_MESSAGE"),
+    )
+    expect(missing).toEqual([])
   })
 })

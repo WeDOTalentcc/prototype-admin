@@ -16,6 +16,7 @@
 import React from "react"
 import Link from "next/link"
 import { Brain } from "lucide-react"
+import { useTranslations } from "next-intl"
 import { useTargetDeployments } from "@/hooks/agents/use-target-deployments"
 
 interface JobAgentBadgeProps {
@@ -23,6 +24,7 @@ interface JobAgentBadgeProps {
 }
 
 export function JobAgentBadge({ jobId }: JobAgentBadgeProps) {
+  const t = useTranslations("agents.summary")
   const { data } = useTargetDeployments({
     targetType: "job",
     targetId: jobId ?? null,
@@ -31,8 +33,7 @@ export function JobAgentBadge({ jobId }: JobAgentBadgeProps) {
   const activeCount = deployments.filter((d) => d.is_active !== false).length
   if (activeCount === 0 || !jobId) return null
 
-  const label =
-    activeCount === 1 ? "1 agente ativo" : `${activeCount} agentes ativos`
+  const label = t("jobBadge.active", { count: activeCount })
   return (
     <Link
       href={`/agent-studio?target_type=job&target_id=${encodeURIComponent(jobId)}`}

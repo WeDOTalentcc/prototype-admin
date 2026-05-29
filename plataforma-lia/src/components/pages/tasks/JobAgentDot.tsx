@@ -10,6 +10,7 @@
 // title attribute (acessível por hover/touch/screen reader).
 
 import React from "react"
+import { useTranslations } from "next-intl"
 import { useTargetDeployments } from "@/hooks/agents/use-target-deployments"
 import type {
   AgentDeployment,
@@ -51,6 +52,8 @@ export function JobAgentDot({
   hidden = false,
   ariaLabel,
 }: JobAgentDotProps) {
+  // Rules of Hooks discipline: hooks no topo, antes de qualquer early return.
+  const t = useTranslations("agents.summary")
   // Onda 3 F2 — quando parent já provê deployments via batch, skip fetch.
   // Hook is always called (Rules of Hooks discipline) mas com enabled=false
   // quando deploymentsProp é fornecido.
@@ -68,10 +71,7 @@ export function JobAgentDot({
   if (activeCount === 0) return null
 
   const resolvedTooltip =
-    tooltip ??
-    (activeCount === 1
-      ? "1 agente acoplado"
-      : `${activeCount} agentes acoplados`)
+    tooltip ?? t("jobDot.tooltip", { count: activeCount })
 
   return (
     <span

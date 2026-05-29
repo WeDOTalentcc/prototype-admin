@@ -3115,6 +3115,40 @@
         "agentsLoadFailed": "Não foi possível carregar a lista de agentes.",
         "generic": "Falha ao acoplar agente. Tente novamente."
       }
+    },
+    "summary": {
+      "card": {
+        "title": "Agentes ativos",
+        "viewAll": "Ver tudo",
+        "errorTitle": "Não foi possível carregar os agentes",
+        "retry": "Tentar novamente",
+        "empty": {
+          "title": "Nenhum agente ativo",
+          "description": "Seus agentes vão aparecer aqui assim que estiverem ativos.",
+          "cta": "Conhecer agentes"
+        }
+      },
+      "status": {
+        "running": "trabalhando",
+        "idle": "em espera",
+        "pendingApproval": "aguardando aprovação"
+      },
+      "target": {
+        "job": "Vaga",
+        "pool": "Pool",
+        "stage": "Etapa"
+      },
+      "pendingApprovals": "{count, plural, one {1 aprovação pendente} other {# aprovações pendentes}}",
+      "banner": {
+        "running": "{count, plural, one {1 agente trabalhando agora} other {# agentes trabalhando agora}}",
+        "viewControlRoom": "Ver na Sala de Controle"
+      },
+      "jobDot": {
+        "tooltip": "{count, plural, one {1 agente acoplado} other {# agentes acoplados}}"
+      },
+      "jobBadge": {
+        "active": "{count, plural, one {1 agente ativo} other {# agentes ativos}}"
+      }
     }
   },
   "common": {

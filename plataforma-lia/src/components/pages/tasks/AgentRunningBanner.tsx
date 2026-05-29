@@ -12,17 +12,12 @@
 import React from "react"
 import Link from "next/link"
 import { Brain } from "lucide-react"
+import { useTranslations } from "next-intl"
 import { useActiveAgentsSummary } from "@/hooks/agents/use-active-agents-summary"
 
-const COPY = {
-  countMessage: (n: number) =>
-    n === 1
-      ? "1 agente trabalhando agora"
-      : `${n} agentes trabalhando agora`,
-  controlRoomLink: "Ver na Sala de Controle",
-} as const
-
 export function AgentRunningBanner() {
+  // Rules of Hooks discipline: hooks no topo, antes do early return.
+  const t = useTranslations("agents.summary")
   // Reusa a mesma query key do AgentsCard (surface=decidir, limit=5).
   // React Query dedupa: 1 fetch para os dois consumers.
   const { data } = useActiveAgentsSummary({
@@ -40,13 +35,13 @@ export function AgentRunningBanner() {
     >
       <Brain className="w-4 h-4 text-wedo-cyan" aria-hidden="true" />
       <span className="text-wedo-cyan-dark dark:text-wedo-cyan font-medium">
-        {COPY.countMessage(running)}
+        {t("banner.running", { count: running })}
       </span>
       <Link
         href="/agent-studio?tab=control-room"
         className="ml-auto text-wedo-cyan-dark dark:text-wedo-cyan hover:underline"
       >
-        {COPY.controlRoomLink} →
+        {t("banner.viewControlRoom")} →
       </Link>
     </div>
   )

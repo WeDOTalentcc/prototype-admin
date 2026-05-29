@@ -7,8 +7,10 @@
 import { describe, expect, it, vi, beforeEach } from "vitest"
 import { render, waitFor } from "@testing-library/react"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import { NextIntlClientProvider } from "next-intl"
 import { JobAgentDot } from "../JobAgentDot"
 import type { DeploymentListResponse } from "@/types/agents/agent-deployment"
+import ptBRMessages from "../../../../../messages/pt-BR.json"
 
 beforeEach(() => {
   Object.defineProperty(window, "localStorage", {
@@ -27,7 +29,9 @@ function renderWithQuery(ui: React.ReactElement) {
     defaultOptions: { queries: { retry: false, gcTime: 0 } },
   })
   return render(
-    <QueryClientProvider client={client}>{ui}</QueryClientProvider>,
+    <NextIntlClientProvider locale="pt-BR" messages={ptBRMessages}>
+      <QueryClientProvider client={client}>{ui}</QueryClientProvider>
+    </NextIntlClientProvider>,
   )
 }
 
@@ -92,5 +96,45 @@ describe("JobAgentDot", () => {
     const { container } = renderWithQuery(<JobAgentDot targetId={null} />)
     expect(container.querySelector("span[role='img']")).toBeNull()
     expect(fetchMock).not.toHaveBeenCalled()
+  })
+
+  it("i18n canonical contract — singular sem MISSING_MESSAGE (pt-BR real)", async () => {
+    const errors: Error[] = []
+    mockFetchOnce({
+      total: 1,
+      deployments: [
+        {
+          id: "d1",
+          agent_id: "a1",
+          target_type: "job",
+          target_id: "job-9",
+          target_name: null,
+          is_active: true,
+          created_at: null,
+          updated_at: null,
+        },
+      ],
+    })
+    const client = new QueryClient({
+      defaultOptions: { queries: { retry: false, gcTime: 0 } },
+    })
+    const { container } = render(
+      <NextIntlClientProvider
+        locale="pt-BR"
+        messages={ptBRMessages}
+        onError={(err) => errors.push(err)}
+      >
+        <QueryClientProvider client={client}>
+          <JobAgentDot targetId="job-9" />
+        </QueryClientProvider>
+      </NextIntlClientProvider>,
+    )
+    await waitFor(() => {
+      const dot = container.querySelector("span[role='img']")
+      expect(dot?.getAttribute("title")).toMatch(/1 agente acoplado/)
+    })
+    expect(
+      errors.filter((e) => e.message.includes("MISSING_MESSAGE")),
+    ).toEqual([])
   })
 })

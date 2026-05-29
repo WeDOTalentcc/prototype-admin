@@ -7,8 +7,10 @@
 import { describe, expect, it, vi, beforeEach } from "vitest"
 import { render, screen, waitFor } from "@testing-library/react"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import { NextIntlClientProvider } from "next-intl"
 import { AgentRunningBanner } from "../AgentRunningBanner"
 import type { ActiveSummaryResponse } from "@/types/agents/active-summary"
+import ptBRMessages from "../../../../../messages/pt-BR.json"
 
 beforeEach(() => {
   Object.defineProperty(window, "localStorage", {
@@ -27,7 +29,9 @@ function renderWithQuery(ui: React.ReactElement) {
     defaultOptions: { queries: { retry: false, gcTime: 0 } },
   })
   return render(
-    <QueryClientProvider client={client}>{ui}</QueryClientProvider>,
+    <NextIntlClientProvider locale="pt-BR" messages={ptBRMessages}>
+      <QueryClientProvider client={client}>{ui}</QueryClientProvider>
+    </NextIntlClientProvider>,
   )
 }
 
@@ -64,5 +68,32 @@ describe("AgentRunningBanner", () => {
     await waitFor(() => {
       expect(screen.getByText(/1 agente trabalhando agora/)).toBeInTheDocument()
     })
+  })
+
+  it("i18n canonical contract — sem MISSING_MESSAGE (pt-BR real)", async () => {
+    const errors: Error[] = []
+    mockFetchOnce({ running_count: 3, items: [] })
+    const client = new QueryClient({
+      defaultOptions: { queries: { retry: false, gcTime: 0 } },
+    })
+    render(
+      <NextIntlClientProvider
+        locale="pt-BR"
+        messages={ptBRMessages}
+        onError={(err) => errors.push(err)}
+      >
+        <QueryClientProvider client={client}>
+          <AgentRunningBanner />
+        </QueryClientProvider>
+      </NextIntlClientProvider>,
+    )
+    await waitFor(() => {
+      expect(
+        screen.getByText(/3 agentes trabalhando agora/),
+      ).toBeInTheDocument()
+    })
+    expect(
+      errors.filter((e) => e.message.includes("MISSING_MESSAGE")),
+    ).toEqual([])
   })
 })

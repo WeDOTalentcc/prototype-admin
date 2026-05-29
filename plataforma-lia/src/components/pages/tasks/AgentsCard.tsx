@@ -17,10 +17,11 @@
 // MyTasksCard/ActiveJobsCard. Linhas clicáveis com hover suave.
 
 import React from "react"
+import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Chip } from "@/components/ui/chip"
-import { Brain, Loader2, AlertCircle } from "lucide-react"
+import { Brain, AlertCircle } from "lucide-react"
 import Link from "next/link"
 import { textStyles } from "@/lib/design-tokens"
 import { useActiveAgentsSummary } from "@/hooks/agents/use-active-agents-summary"
@@ -36,67 +37,58 @@ export interface AgentsCardProps {
   onOpenDecisionTree: (executionId: string) => void
 }
 
-// Mensagens i18n estáticas em PT-BR. Os termos canonical são determinados
-// pelo namespace tasks.agentsCard.* (F10). Em vez de plumb useTranslations
-// daqui (já é hub presentational), parent passa via children OU keys fixos.
-// Decisão: este componente renderiza copy direta — Hub do Decidir não usa
-// useTranslations em outros cards (MyTasksCard, ActiveJobsCard hardcode PT).
-// Quando i18n vier no Decidir como um todo, migrar todos juntos.
-const COPY = {
-  title: "Agentes ativos",
-  viewAll: "Ver tudo",
-  emptyTitle: "Nenhum agente ativo",
-  emptyDescription:
-    "Seus agentes vão aparecer aqui assim que estiverem ativos.",
-  emptyCta: "Conhecer agentes",
-  errorTitle: "Não foi possível carregar os agentes",
-  retry: "Tentar novamente",
-  statusRunning: "trabalhando",
-  statusIdle: "em espera",
-  statusPendingApproval: "aguardando aprovação",
-  targetJob: "Vaga",
-  targetPool: "Pool",
-  targetStage: "Etapa",
-  pendingApprovalsLabel: (n: number) =>
-    n === 1 ? "1 aprovação pendente" : `${n} aprovações pendentes`,
-  pendingBadge: (n: number) => (n > 9 ? "9+" : String(n)),
-} as const
+// i18n canonical (P1-5, 2026-05-29): copy migrada pra namespace
+// agents.summary.* em messages/pt-BR.json + en.json. Helpers module-level
+// recebem `t` por parâmetro (não podem chamar useTranslations diretamente).
+type SummaryTranslator = ReturnType<typeof useTranslations>
 
-function targetLabel(item: ActiveAgentSummaryItem): string | null {
+// Badge numérico (não-localizável: "9+" é convenção universal de contagem).
+function pendingBadge(n: number): string {
+  return n > 9 ? "9+" : String(n)
+}
+
+function targetLabel(
+  item: ActiveAgentSummaryItem,
+  t: SummaryTranslator,
+): string | null {
   if (!item.target_name) return null
   switch (item.target_type) {
     case "job":
-      return `${COPY.targetJob}: ${item.target_name}`
+      return `${t("target.job")}: ${item.target_name}`
     case "talent_pool":
-      return `${COPY.targetPool}: ${item.target_name}`
+      return `${t("target.pool")}: ${item.target_name}`
     case "pipeline_stage":
-      return `${COPY.targetStage}: ${item.target_name}`
+      return `${t("target.stage")}: ${item.target_name}`
     default:
       return item.target_name
   }
 }
 
-function statusLabel(status: ActiveAgentSummaryItem["status"]): string {
+function statusLabel(
+  status: ActiveAgentSummaryItem["status"],
+  t: SummaryTranslator,
+): string {
   switch (status) {
     case "running":
-      return COPY.statusRunning
+      return t("status.running")
     case "pending_approval":
-      return COPY.statusPendingApproval
+      return t("status.pendingApproval")
     case "idle":
     default:
-      return COPY.statusIdle
+      return t("status.idle")
   }
 }
 
 interface AgentRowProps {
   item: ActiveAgentSummaryItem
   onOpenDecisionTree: (executionId: string) => void
+  t: SummaryTranslator
 }
 
-function AgentRow({ item, onOpenDecisionTree }: AgentRowProps) {
+function AgentRow({ item, onOpenDecisionTree, t }: AgentRowProps) {
   const canOpen = !!item.last_execution_id
   const pending = item.pending_approvals_count
-  const target = targetLabel(item)
+  const target = targetLabel(item, t)
 
   const handleClick = () => {
     if (canOpen && item.last_execution_id) {
@@ -119,7 +111,7 @@ function AgentRow({ item, onOpenDecisionTree }: AgentRowProps) {
         tabIndex={canOpen ? 0 : -1}
         onClick={canOpen ? handleClick : undefined}
         onKeyDown={handleKeyDown}
-        aria-label={`${item.agent_name} — ${statusLabel(item.status)}`}
+        aria-label={`${item.agent_name} — ${statusLabel(item.status, t)}`}
         className={`flex items-start gap-3 rounded-lg p-2 transition-colors motion-reduce:transition-none ${
           canOpen
             ? "cursor-pointer hover:bg-lia-interactive-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan"
@@ -143,16 +135,16 @@ function AgentRow({ item, onOpenDecisionTree }: AgentRowProps) {
             </span>
             <span className="text-xs text-lia-text-tertiary">·</span>
             <span className="text-xs text-lia-text-secondary">
-              {statusLabel(item.status)}
+              {statusLabel(item.status, t)}
             </span>
             {pending > 0 && (
               <Chip
                 density="relaxed"
                 variant="neutral"
                 className="border-transparent bg-wedo-cyan/15 text-wedo-cyan-dark dark:text-wedo-cyan font-medium"
-                aria-label={COPY.pendingApprovalsLabel(pending)}
+                aria-label={t("pendingApprovals", { count: pending })}
               >
-                {COPY.pendingBadge(pending)}
+                {pendingBadge(pending)}
               </Chip>
             )}
           </div>
@@ -173,6 +165,7 @@ function AgentRow({ item, onOpenDecisionTree }: AgentRowProps) {
 }
 
 export function AgentsCard({ onOpenDecisionTree }: AgentsCardProps) {
+  const t = useTranslations("agents.summary")
   const { data, isLoading, isError, refetch } = useActiveAgentsSummary({
     surface: "decidir",
     limit: 5,
@@ -198,14 +191,14 @@ export function AgentsCard({ onOpenDecisionTree }: AgentsCardProps) {
             <CardTitle
               className={`${textStyles.label} font-semibold text-lia-text-primary`}
             >
-              {COPY.title}
+              {t("card.title")}
             </CardTitle>
           </div>
           <Link
             href="/agent-studio?tab=control-room"
             className="text-xs text-wedo-cyan-dark dark:text-wedo-cyan hover:underline transition-colors motion-reduce:transition-none"
           >
-            {COPY.viewAll}
+            {t("card.viewAll")}
           </Link>
         </div>
       </CardHeader>
@@ -232,14 +225,14 @@ export function AgentsCard({ onOpenDecisionTree }: AgentsCardProps) {
           {!isLoading && isError && (
             <div className="flex items-center gap-2 p-3 rounded-lg bg-status-warning/10 border border-status-warning/30 text-sm text-status-warning">
               <AlertCircle className="w-4 h-4 shrink-0" />
-              <span className="flex-1">{COPY.errorTitle}</span>
+              <span className="flex-1">{t("card.errorTitle")}</span>
               <Button
                 variant="ghost"
                 size="sm"
                 className="h-7 px-2 text-xs hover:bg-lia-interactive-hover transition-colors cursor-pointer"
                 onClick={() => refetch()}
               >
-                {COPY.retry}
+                {t("card.retry")}
               </Button>
             </div>
           )}
@@ -253,16 +246,16 @@ export function AgentsCard({ onOpenDecisionTree }: AgentsCardProps) {
                 />
               </div>
               <p className="text-sm font-medium text-lia-text-primary">
-                {COPY.emptyTitle}
+                {t("card.empty.title")}
               </p>
               <p className="text-xs text-lia-text-secondary max-w-xs">
-                {COPY.emptyDescription}
+                {t("card.empty.description")}
               </p>
               <Link
                 href="/agent-studio"
                 className="mt-1 text-xs font-medium text-wedo-cyan-dark dark:text-wedo-cyan hover:underline"
               >
-                {COPY.emptyCta} →
+                {t("card.empty.cta")} →
               </Link>
             </div>
           )}
@@ -292,6 +285,7 @@ export function AgentsCard({ onOpenDecisionTree }: AgentsCardProps) {
                     key={item.agent_id}
                     item={item}
                     onOpenDecisionTree={onOpenDecisionTree}
+                    t={t}
                   />
                 ))}
               </ul>

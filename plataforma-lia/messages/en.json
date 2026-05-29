@@ -3115,6 +3115,40 @@
         "agentsLoadFailed": "Could not load agent list.",
         "generic": "Failed to attach agent. Try again."
       }
+    },
+    "summary": {
+      "card": {
+        "title": "Active agents",
+        "viewAll": "View all",
+        "errorTitle": "Could not load agents",
+        "retry": "Retry",
+        "empty": {
+          "title": "No active agents",
+          "description": "Your agents will show up here as soon as they're active.",
+          "cta": "Discover agents"
+        }
+      },
+      "status": {
+        "running": "working",
+        "idle": "idle",
+        "pendingApproval": "awaiting approval"
+      },
+      "target": {
+        "job": "Job",
+        "pool": "Pool",
+        "stage": "Stage"
+      },
+      "pendingApprovals": "{count, plural, one {1 pending approval} other {# pending approvals}}",
+      "banner": {
+        "running": "{count, plural, one {1 agent working now} other {# agents working now}}",
+        "viewControlRoom": "View in Control Room"
+      },
+      "jobDot": {
+        "tooltip": "{count, plural, one {1 attached agent} other {# attached agents}}"
+      },
+      "jobBadge": {
+        "active": "{count, plural, one {1 active agent} other {# active agents}}"
+      }
     }
   },
   "common": {
