@@ -16,6 +16,8 @@ from app.schemas.custom_agent import (
     CreateCustomAgentRequest,
     CustomAgentListResponse,
     CustomAgentResponse,
+    DryRunCustomAgentRequest,
+    DryRunCustomAgentResponse,
     ExecuteCustomAgentRequest,
     ExecuteCustomAgentResponse,
     GeneratedAgentConfig,
@@ -377,6 +379,118 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         logger.error("Error testing custom agent: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=f"Test execution failed: {e}")
+
+
+# ── Q4.1 Sandbox dry-run (2026-05-29) ─────────────────────────────────────────
+# Endpoint dedicado de simulacao: roda o raciocinio REAL (LLM/BYOK + read tools)
+# mas intercepta write tools (send_*/move_*/update_*). Retorna o que o agente
+# FARIA, pro recruiter validar ANTES de ativar.
+# NOTA coordenacao custom_agents.py: este bloco e SEPARADO e ACIMA de
+# get_agent_kpis (linha ~1981, owner CID-GAPS) — sem overlap.
+@router.post("/{agent_id}/dry-run", response_model=DryRunCustomAgentResponse)
+async def dry_run_custom_agent(
+    agent_id: str,
+    body: DryRunCustomAgentRequest,
+    current_user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_tenant_db),
+    company_id: str = Depends(require_company_id),
+):
+    """Simula a execucao do agente sem efeitos colaterais reais.
+
+    Multi-tenancy fail-closed: company_id vem do JWT (Depends), nunca do payload.
+    Side-effects (WhatsApp/email/move candidato) sao interceptados pelo runtime
+    (CustomAgentRuntime.execute(dry_run=True)) e devolvidos como would_do_actions.
+    NAO grava AgentExecutionLog nem record_execution — e simulacao, nao execucao.
+    """
+    agent = await agent_marketplace_service.get_agent(
+        db=db, agent_id=agent_id, company_id=current_user.company_id
+    )
+    if not agent:
+        raise HTTPException(status_code=404, detail="Agent not found")
+
+    try:
+        from app.domains.agent_studio.custom_agent_runtime import get_or_create_runtime
+
+        runtime = get_or_create_runtime(
+            agent_id=str(agent.id),
+            agent_name=agent.name,
+            system_prompt=agent.system_prompt,
+            allowed_tools=agent.allowed_tools or [],
+            domain=agent.domain,
+            max_steps=agent.max_steps,
+            temperature=agent.temperature,
+            model_override=agent.model_override,
+            company_id=current_user.company_id,
+            enable_memory=getattr(agent, "enable_memory", True),
+            excluded_tools=getattr(agent, "excluded_tools", None),
+            context_level=getattr(agent, "context_level", "full"),
+        )
+
+        start = time.time()
+        output = await runtime.execute(
+            message=body.message,
+            user_id=str(current_user.id),
+            company_id=current_user.company_id,
+            context=body.context,
+            dry_run=True,  # ← intercepta write tools, BYOK/LLM roda real
+        )
+        elapsed_ms = int((time.time() - start) * 1000)
+
+        _meta = output.metadata or {}
+        _would_do = _meta.get("would_do_actions", []) or []
+        tool_calls = [a.params.get("tool", "") for a in (output.actions or [])]
+
+        # Serializa reasoning_trace canonical (AgentReasoningStep BaseModel) pro
+        # DecisionTreeDrawer no frontend. Best-effort.
+        _trace_serialized = None
+        try:
+            if output.reasoning_trace:
+                _trace_serialized = [
+                    s.model_dump() if hasattr(s, "model_dump") else dict(s)
+                    for s in output.reasoning_trace
+                ]
+        except Exception as _trace_err:
+            logger.warning("[Studio][DRY-RUN] trace serialize failed: %s", _trace_err)
+
+        # Audit canonical: simulacao tambem e auditada (trilha LGPD/EU AI Act),
+        # decision="simulated" deixa claro que nenhuma acao real ocorreu.
+        try:
+            from app.domains.agent_studio._audit_helper import studio_audit
+            await studio_audit(
+                company_id=current_user.company_id,
+                action="studio_agent_dry_run",
+                decision="simulated",
+                reasoning=[
+                    f"Dry-run message: {body.message[:200]}",
+                    f"Would-do actions: {len(_would_do)}",
+                    f"Latency: {elapsed_ms}ms",
+                ],
+                actor_user_id=str(current_user.id),
+                target_id=str(agent.id),
+            )
+        except Exception as _audit_err:
+            logger.warning("[Studio][DRY-RUN] audit failed: %s", _audit_err)
+
+        return DryRunCustomAgentResponse(
+            agent_id=str(agent.id),
+            agent_name=agent.name,
+            message=body.message,
+            response=output.message,
+            confidence=output.confidence,
+            would_do_actions=_would_do,
+            reasoning_trace=_trace_serialized,
+            tool_calls=tool_calls,
+            execution_time_ms=elapsed_ms,
+            tokens_input=_meta.get("tokens_input", 0),
+            tokens_output=_meta.get("tokens_output", 0),
+            model_used=_meta.get("model_used", ""),
+            dry_run=True,
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error("Error in dry-run for custom agent: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Dry-run failed: {e}")
 
 
 @router.post("/{agent_id}/execute", response_model=ExecuteCustomAgentResponse)
@@ -1989,6 +2103,9 @@ async def get_agent_kpis(
     Multi-tenancy fail-closed: 404 quando agent não pertence ao tenant atual.
     Sensor B4 garante que esta função NÃO recompute tokens/cost.
     """
+    # multi-tenancy: ja escopado via Depends(_require_company_id_onda4) (alias de
+    # require_company_id canonical) + filtro company_id em CustomAgent e
+    # PoolAgentRun, com 404 cross-tenant. Sensor false positive: gate eh alias.
     agent_stmt = _select(CustomAgent).where(
         _and_(CustomAgent.id == agent_id, CustomAgent.company_id == company_id)
     )

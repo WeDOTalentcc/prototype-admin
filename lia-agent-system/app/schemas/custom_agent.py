@@ -90,6 +90,43 @@ class TestCustomAgentResponse(BaseModel):
     model_used: str = ""
 
 
+# ── Q4.1 Sandbox dry-run (2026-05-29) ─────────────────────────────────────────
+class DryRunCustomAgentRequest(WeDoBaseModel):
+    """Request para simular a execucao de um agente antes de ativar.
+
+    Multi-tenancy: company_id NUNCA no payload (REGRA 2) — vem do JWT.
+    """
+
+    message: str = Field(..., min_length=1)
+    context: dict[str, Any] = Field(default_factory=dict)
+
+
+class DryRunWouldDoAction(BaseModel):
+    """Uma acao que o agente FARIA em execucao real (interceptada na simulacao)."""
+
+    tool: str
+    args: dict[str, Any] = Field(default_factory=dict)
+
+
+class DryRunCustomAgentResponse(BaseModel):
+    agent_id: str
+    agent_name: str
+    message: str
+    response: str
+    confidence: float = 0.0
+    # Acoes interceptadas — "Enviaria WhatsApp para X", "Moveria candidato Y".
+    would_do_actions: list[DryRunWouldDoAction] = []
+    # reasoning_trace canonical (consumido pelo DecisionTreeDrawer no frontend).
+    reasoning_trace: Optional[list[dict[str, Any]]] = None
+    tool_calls: list[str] = []
+    execution_time_ms: int = 0
+    tokens_input: int = 0
+    tokens_output: int = 0
+    model_used: str = ""
+    # Sempre True — banner "MODO SIMULAÇÃO" no frontend depende disto.
+    dry_run: bool = True
+
+
 class PublishToMarketplaceRequest(WeDoBaseModel):
     title: str = Field(..., min_length=3, max_length=256)
     short_description: Optional[str] = Field(None, max_length=512)

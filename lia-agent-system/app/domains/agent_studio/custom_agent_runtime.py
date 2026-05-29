@@ -42,6 +42,50 @@ def get_available_tool_names() -> list[str]:
     return list(PLATFORM_TOOLS_REGISTRY.keys())
 
 
+# ── Q4.1 Sandbox dry-run (2026-05-29) ─────────────────────────────────────────
+# ContextVars (canonical pattern espelhando _CURRENT_COMPANY_ID em
+# auth_enforcement): o runtime e cacheado por agent_id (get_or_create_runtime),
+# logo as tool wrappers sao construidas UMA vez no _get_compiled_graph e
+# reusadas. Nao da pra fechar o flag dry_run no closure — precisa ser lido
+# dinamicamente em cada tool call. ContextVar e fail-closed por request e
+# reset em finally de execute() (sem leak entre requests).
+#
+# Semantica:
+#   _DRY_RUN=True  → write tools (PLATFORM_TOOLS_REGISTRY[name]=="write") sao
+#                    INTERCEPTADAS: NAO executam side-effect real (sem
+#                    WhatsApp/email/move), retornam mock success e registram
+#                    "WOULD execute: <tool>(<args>)" em _DRY_RUN_WOULD_DO.
+#                    Read tools rodam normal (o recruiter quer ver o raciocinio
+#                    real sobre dados reais). LLM/BYOK roda de verdade.
+#   _DRY_RUN_WOULD_DO → lista por-request das acoes que o agente FARIA. Lida em
+#                    _state_to_output e exposta em AgentOutput.metadata pro
+#                    frontend renderizar "Enviaria WhatsApp para X", etc.
+_DRY_RUN: contextvars.ContextVar[bool] = contextvars.ContextVar(
+    "studio_dry_run", default=False
+)
+_DRY_RUN_WOULD_DO: contextvars.ContextVar[Optional[list]] = contextvars.ContextVar(
+    "studio_dry_run_would_do", default=None
+)
+
+
+def _summarize_tool_args(kwargs: dict[str, Any]) -> dict[str, Any]:
+    """Resumo legivel dos args de uma write tool pro painel de simulacao.
+
+    Remove ruido interno (confirm, company_id injetado pelo wrapper) e trunca
+    valores longos. NAO faz PII redaction profunda — o consumer (frontend)
+    exibe so pro proprio recruiter do tenant; multi-tenancy ja garante escopo.
+    """
+    out: dict[str, Any] = {}
+    for k, v in (kwargs or {}).items():
+        if k in ("confirm", "company_id"):
+            continue
+        if isinstance(v, str) and len(v) > 200:
+            out[k] = v[:200] + "…"
+        else:
+            out[k] = v
+    return out
+
+
 class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
 
     def __init__(
@@ -188,6 +232,32 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
                         kwargs["company_id"] = request_company_id
                     else:
                         kwargs.pop("company_id", None)
+
+                    # ── Q4.1 Sandbox dry-run interception (2026-05-29) ──
+                    # Em modo simulacao, write tools NAO executam side-effect real.
+                    # Registramos "WOULD execute" e retornamos mock success pro LLM
+                    # continuar o raciocinio. Read tools caem fora deste branch e
+                    # rodam normal (dados reais alimentam o raciocinio real).
+                    # lia-compliance: garante que nenhuma mensagem/movimentacao
+                    # real sai sem o recruiter ter ativado o agente.
+                    if _write and _DRY_RUN.get(False):
+                        _safe_args = _summarize_tool_args(kwargs)
+                        _would = _DRY_RUN_WOULD_DO.get(None)
+                        if _would is not None:
+                            _would.append({"tool": _fn.__name__, "args": _safe_args})
+                        logger.info(
+                            "[Studio][DRY-RUN] WOULD execute tool=%s tenant=%s args=%s",
+                            _fn.__name__, request_company_id or "unknown", _safe_args,
+                        )
+                        return {
+                            "success": True,
+                            "dry_run": True,
+                            "message": (
+                                f"[SIMULAÇÃO] O agente executaria a ação "
+                                f"'{_fn.__name__}' — nenhuma ação real foi realizada."
+                            ),
+                            "would_execute": {"tool": _fn.__name__, "args": _safe_args},
+                        }
 
                     # ── AUD-4 HITL gate (canonical, registrado Wave C2.6 2026-05-27) ──
                     # `confirm=True` em write tools E O gate Human-in-the-Loop canonical
@@ -512,6 +582,12 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
                 extra={"agent_id": self._agent_id, "err": str(_cid_exc)},
             )
 
+        # Q4.1 Sandbox: surface dry-run flag + would-do actions pro frontend.
+        # ContextVar ainda esta ativo aqui (execute() so reseta no finally, que
+        # roda depois de _process_langgraph → _state_to_output retornar).
+        _is_dry_run = _DRY_RUN.get(False)
+        _would_do = _DRY_RUN_WOULD_DO.get(None) or []
+
         return AgentOutput(
             message=response,
             actions=actions,
@@ -523,6 +599,9 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
                 "agent_name": self._agent_name,
                 "domain": self._domain,
                 "tool_calls": len(actions),
+                # Q4.1 Sandbox dry-run (2026-05-29)
+                "dry_run": _is_dry_run,
+                "would_do_actions": list(_would_do),
                 # Wave D1.3 — token tracking canonical (consumido por pool_agents
                 # task ao persistir runtime_metrics).
                 "tokens_input": tokens_input,
@@ -552,8 +631,15 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
         sender_phone: str | None = None,
         conversation_history: list[dict[str, Any]] | None = None,
         db: Any = None,
+        dry_run: bool = False,
     ) -> AgentOutput:
         """Execute custom agent against a single user message.
+
+        Q4.1 Sandbox (2026-05-29) — ``dry_run=True`` roda o raciocinio REAL
+        (LLM/BYOK + tools de leitura) mas INTERCEPTA write tools (send_*/move_*/
+        update_*): nenhum side-effect real acontece. O resultado expoe em
+        ``metadata["dry_run"]=True`` e ``metadata["would_do_actions"]`` a lista
+        de acoes que o agente FARIA, pro recruiter validar antes de ativar.
 
         Sprint 3.5 W4-1 V2 — channel routing (revisão 2026-05-23):
         - channel="text" (default): text-only langgraph conversation.
@@ -626,6 +712,12 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
         # mandatoriamente reset em finally (linha ~541) para evitar ContextVar leak.
         # Sensor scripts/check_no_direct_contextvar_set.py reconhece este marker.
         _token = _CURRENT_COMPANY_ID.set(effective_company_id)
+
+        # Q4.1 Sandbox: ativa interceptacao de write tools + buffer de would-do.
+        # Reset garantido no finally (junto com _CURRENT_COMPANY_ID) — sem leak.
+        _dry_token = _DRY_RUN.set(bool(dry_run))
+        _would_do_buffer: list = []
+        _would_token = _DRY_RUN_WOULD_DO.set(_would_do_buffer if dry_run else None)
 
         # === P0-8 + P0-9 audit 2026-05-21: pre-load AI persona + lia_field_toggles canonical ===
         # Antes: agent custom ignorava persona name/tone customizado pelo cliente E
@@ -751,6 +843,8 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
             )
         finally:
             _CURRENT_COMPANY_ID.reset(_token)
+            _DRY_RUN.reset(_dry_token)
+            _DRY_RUN_WOULD_DO.reset(_would_token)
 
 
 
