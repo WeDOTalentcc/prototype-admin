@@ -399,8 +399,13 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
 
   const chatConversationId = connection.conversationId;
   const chatConversationIdRef = useRef(chatConversationId);
+  // Bug 2 (2026-05-29): dynamicPanel via ref — sendChatMessage NAO pode
+  // depender de state.dynamicPanel no dep array, senao recria a cada
+  // wizard_stage e faz churn dos listeners de edit/regenerate WSI.
+  const dynamicPanelRef = useRef(state.dynamicPanel);
   chatContextTypeRef.current = chatContextType;
   chatConversationIdRef.current = chatConversationId;
+  dynamicPanelRef.current = state.dynamicPanel;
   const setChatConversationId = useCallback(
     (id: string | null) => {
       chatConversationIdRef.current = id;
@@ -622,12 +627,12 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
       // active so backend Tier -1 routes deterministically. See
       // PANEL_TYPE_TO_DOMAIN_HINT above for the mapping rationale. Caller
       // can override by passing explicit metadata.domain_hint.
-      const activePanelType = state.dynamicPanel?.panelType;
+      const activePanelType = dynamicPanelRef.current?.panelType;
       // Resolution chain: dynamicPanel → chatContextType → undefined (default routing).
       // panelType wins because it's a more specific signal (active wizard panel etc).
       const hintDomain =
         (activePanelType && PANEL_TYPE_TO_DOMAIN_HINT[activePanelType]) ||
-        CONTEXT_TYPE_TO_DOMAIN_HINT[chatContextType] ||
+        CONTEXT_TYPE_TO_DOMAIN_HINT[chatContextTypeRef.current] ||
         undefined;
 
       const enrichedMetadata =
@@ -639,14 +644,14 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
                 metadata?.card_id ??
                 (activePanelType
                   ? `panel_active:${activePanelType}`
-                  : `context:${chatContextType}`),
+                  : `context:${chatContextTypeRef.current}`),
               domain_hint: hintDomain,
             }
           : metadata;
 
       await connection.sendMessage(content, domain, scope, enrichedMetadata);
     },
-    [connection, addChatMessage, state.dynamicPanel],
+    [connection, addChatMessage],
   );
 
   const sendOrchestratedMessage = useCallback(

@@ -155,8 +155,10 @@ describe("Task #1128 — wizard session reset canonical contract", () => {
     expect(unifiedSrc).toMatch(/handleCancelWizard|onCancelWizard/)
     // O execute branch precisa cair em handleNewChat — qualquer mudança
     // tem que atualizar essa expectativa de forma explícita.
+    // Wiring atual é prop-based: onExecuteSlashCommand={handleNewChat}
+    // (refactor posterior ao Task #1128 — antes era commandId === ...).
     expect(unifiedSrc).toMatch(
-      /case\s+"nova-conversa"|commandId\s*===\s*"nova-conversa"|"nova-conversa"\s*:\s*[^,;{]*handleNewChat/,
+      /case\s+"nova-conversa"|commandId\s*===\s*"nova-conversa"|"nova-conversa"\s*:\s*[^,;{]*handleNewChat|onExecuteSlashCommand=\{handleNewChat\}/,
     )
   })
 

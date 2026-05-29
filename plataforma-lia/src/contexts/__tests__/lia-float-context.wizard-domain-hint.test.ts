@@ -11,9 +11,10 @@
  *
  * Guards (structural — read source file, regex over expected patterns):
  *   1. PANEL_TYPE_TO_DOMAIN_HINT map exists and contains job_creation: "wizard".
- *   2. sendChatMessage reads state.dynamicPanel?.panelType.
+ *   2. sendChatMessage reads the active panel via dynamicPanelRef (Bug 2).
  *   3. enrichedMetadata sets source: "rail_a" and uses the mapped domain_hint.
- *   4. useCallback dependency array includes state.dynamicPanel.
+ *   4. (Bug 2) sendChatMessage é ESTÁVEL — não depende de state.dynamicPanel
+ *      (lê via ref sincronizado), evitando churn dos listeners WSI.
  *   5. Caller-provided metadata.domain_hint takes precedence (no override).
  *
  * Fix se falhar:
@@ -41,11 +42,12 @@ describe("PR-A FE — wizard domain_hint injection", () => {
     expect(SRC).toMatch(/job_creation\s*:\s*["']wizard["']/)
   })
 
-  test("Guard 2: sendChatMessage reads state.dynamicPanel?.panelType", () => {
-    // We expect a read of dynamicPanel.panelType inside (or around) sendChatMessage.
+  test("Guard 2: sendChatMessage lê o panelType do painel ativo via ref", () => {
+    // Bug 2: lê via dynamicPanelRef.current (ref sincronizado todo render),
+    // não via state.dynamicPanel direto — mantém o callback estável.
     const sendBlock = SRC.split("const sendChatMessage")[1]
     expect(sendBlock).toBeDefined()
-    expect(sendBlock).toMatch(/dynamicPanel\?\.panelType/)
+    expect(sendBlock).toMatch(/dynamicPanelRef\.current\?\.panelType/)
   })
 
   test("Guard 3: enriched metadata sets source 'rail_a' and uses mapped domain_hint", () => {
@@ -54,11 +56,17 @@ describe("PR-A FE — wizard domain_hint injection", () => {
     expect(sendBlock).toMatch(/domain_hint\s*:\s*hintDomain/)
   })
 
-  test("Guard 4: useCallback deps include state.dynamicPanel", () => {
-    // After the closure body, the deps array must include state.dynamicPanel.
-    const sendBlock = SRC.split("const sendChatMessage")[1]
-    // Find the deps array — first ']' followed by ')' after the closure.
-    expect(sendBlock).toMatch(/\[[^\]]*state\.dynamicPanel[^\]]*\]/)
+  test("Guard 4 (Bug 2): sendChatMessage estável — NÃO depende de state.dynamicPanel", () => {
+    // Bug 2: state.dynamicPanel no dep array recriava sendChatMessage a cada
+    // wizard_stage -> churn dos listeners de edit/regenerate WSI -> loop.
+    // Agora o painel ativo é lido via dynamicPanelRef (sincronizado todo
+    // render), então o callback não precisa de state.dynamicPanel nas deps.
+    const sendBlock = SRC.split("const sendChatMessage")[1].split(
+      "const sendOrchestratedMessage",
+    )[0]
+    expect(sendBlock).not.toMatch(/state\.dynamicPanel/)
+    // O ref deve ser sincronizado no corpo do provider.
+    expect(SRC).toMatch(/dynamicPanelRef\.current\s*=\s*state\.dynamicPanel/)
   })
 
   test("Guard 5: caller-provided metadata.domain_hint not overridden", () => {

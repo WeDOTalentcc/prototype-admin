@@ -139,6 +139,19 @@ function wizardReducer(state: WizardState, action: WizardAction): WizardState {
     case "STAGE_UPDATE": {
       const { stage, data, completeness, requires_approval } = action.payload
       const safeData: Record<string, unknown> = (data ?? {}) as Record<string, unknown>
+      // Bug 2 (2026-05-29): dedup estrutural. Se o payload e identico ao
+      // estado atual, retorna o MESMO objeto state (sem novo stageData) —
+      // quebra o ciclo auto-alimentado de re-render quando o mesmo
+      // wizard_stage (ex: wsi_questions requires_approval) e re-emitido.
+      if (
+        state.active &&
+        state.currentStage === stage &&
+        state.completeness === completeness &&
+        state.requiresApproval === (requires_approval ?? false) &&
+        JSON.stringify(state.stageData) === JSON.stringify(safeData)
+      ) {
+        return state
+      }
       const degraded = extractDegradedStage(stage, safeData)
       const nextDegraded = degraded
         ? { ...state.degradedStages, [stage]: degraded }
