@@ -39,7 +39,7 @@ from app.shared.agents.agent_registry import register_agent
 from app.shared.agents.tenant_aware_agent import TenantAwareAgentMixin
 from app.shared.prompts.prompt_composer import PromptComposer
 
-@register_agent("jobs_management", aliases=['jobs_mgmt'])
+@register_agent("job_management", aliases=['jobs_management', 'jobs_mgmt'])
 class JobsManagementReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgentMixin):
     # W4-032 (2026-05-23): publish/unpublish e bulk job ops requerem HITL.
     _HITL_ACTION_TYPES = frozenset({
