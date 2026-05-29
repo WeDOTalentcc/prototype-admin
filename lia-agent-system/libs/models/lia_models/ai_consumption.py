@@ -32,7 +32,9 @@ class AiConsumption(Base):
     __table_args__ = {"extend_existing": True}
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    company_id = Column(UUID(as_uuid=True), nullable=False, index=True)
+    # C2.3 (2026-05-29): varchar(64) canonical -- matches companies.id (varchar) +
+    # dominant agent-studio convention (custom_agents/agent_deployments). FK in mig 218.
+    company_id = Column(String(64), nullable=False, index=True)
     user_id = Column(UUID(as_uuid=True), nullable=True, index=True)
     
     agent_type = Column(String(50), nullable=False, index=True)
@@ -94,7 +96,8 @@ class AiCreditsBalance(Base):
     __table_args__ = {"extend_existing": True}
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    company_id = Column(UUID(as_uuid=True), unique=True, nullable=False, index=True)
+    # C2.3 (2026-05-29): varchar(64) canonical (see AiConsumption above). FK in mig 218.
+    company_id = Column(String(64), unique=True, nullable=False, index=True)
     
     monthly_limit = Column(Integer, default=100000)
     current_usage = Column(Integer, default=0)
