@@ -13,6 +13,7 @@ import * as React from "react"
 import { useTranslations } from "next-intl"
 import { Activity, History } from "lucide-react"
 import { LiveAgentsList } from "./LiveAgentsList"
+import { MorningDigest } from "./MorningDigest"
 import { RecentExecutionsTable } from "./RecentExecutionsTable"
 import { LgpdAuditPanel } from "./LgpdAuditPanel"
 import { DecisionTreeDrawer } from "../decision-tree/DecisionTreeDrawer"
@@ -44,6 +45,8 @@ export function StudioControlRoom() {
 
   return (
     <div className="mx-auto mt-6 flex w-full max-w-7xl flex-col gap-6">
+      {/* Onda C4.2 — Morning Brief: o que aconteceu enquanto você não estava. */}
+      <MorningDigest onOpenReasoning={setOpenExecutionId} />
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h2 className="text-base font-semibold text-lia-text-primary">{t("title")}</h2>

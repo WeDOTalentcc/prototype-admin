@@ -1055,3 +1055,334 @@ async def list_candidate_touches(
         last_touch_at=last_touch_at,
         touches=touches,
     )
+
+
+# ============================================================================
+# Onda C4.2 — /agent-monitoring/daily-digest (2026-05-29)
+# ============================================================================
+# Morning Brief / Daily Digest — "o que aconteceu enquanto eu não estava".
+# Curado por relevância: os top N eventos mais dignos de atenção do recrutador
+# nas últimas 24h (configurável via since_hours).
+#
+# Fontes (multi-surface via _studio_runs_select — assignment OU deployment):
+#   - agent_error        : runs status in (error, timeout, cancelled)
+#   - pending_approval   : ApprovalRequest PENDING (target_type=custom_agent)
+#   - decision_approved  : runs success com results.approved_count > 0
+#   - candidates_surfaced: runs success com results.candidate_ids não-vazio
+#   - high_cost          : runs com runtime_metrics.cost_usd acima de threshold
+#
+# Relevância (ordem decrescente de prioridade — sort key):
+#   agent_error > pending_approval > decision_approved (celebration) >
+#   candidates_surfaced > high_cost (info)
+#
+# Multi-tenancy fail-closed: company_id do JWT, todo SELECT filtra company_id.
+# canonical-fix: reusa _studio_runs_select() (C1.6a) + _resolve_agent /
+# _resolve_target_info (multi-surface) + lógica candidate_ids de C4.1.
+# ============================================================================
+
+_DigestKind = Literal[
+    "decision_approved",
+    "candidates_surfaced",
+    "agent_error",
+    "pending_approval",
+    "high_cost",
+]
+_DigestSeverity = Literal["info", "attention", "celebration"]
+
+# Threshold canonical de "execução cara" (USD). Acima disso vira item de digest.
+# Escolha conservadora: a maioria das execuções LLM custa centavos; >$0.50
+# numa única run sinaliza um job grande/caro que merece visibilidade.
+_HIGH_COST_THRESHOLD_USD = 0.50
+
+# Peso de relevância por kind — menor = mais relevante (sort ascendente).
+# Errors primeiro (precisa ação), depois aprovações pendentes (bloqueiam o
+# recrutador), depois celebrações (aprovações concluídas), surfaced, e por fim
+# high_cost (informativo).
+_DIGEST_RELEVANCE_WEIGHT: dict[str, int] = {
+    "agent_error": 0,
+    "pending_approval": 1,
+    "decision_approved": 2,
+    "candidates_surfaced": 3,
+    "high_cost": 4,
+}
+
+_DIGEST_SEVERITY_BY_KIND: dict[str, _DigestSeverity] = {
+    "agent_error": "attention",
+    "pending_approval": "attention",
+    "decision_approved": "celebration",
+    "candidates_surfaced": "celebration",
+    "high_cost": "info",
+}
+
+
+class DigestItem(_WeDoBaseModel):
+    kind: _DigestKind
+    agent_id: str
+    agent_name: str
+    summary: str
+    target_type: str | None = None
+    target_name: str | None = None
+    count: int | None = None
+    severity: _DigestSeverity
+    execution_id: str | None = None
+    timestamp: datetime
+
+
+class DailyDigestResponse(_WeDoBaseModel):
+    period_hours: int
+    generated_at: datetime
+    items: list[DigestItem]
+    total_runs: int
+    total_candidates_processed: int
+
+
+def _extract_approved_count(results: dict | None) -> int:
+    """Quantos candidatos foram aprovados nesta run.
+
+    Forward-compat com C4.1: agents canonical populam `approved_count` OU
+    `approved_candidate_ids` em results. Sem isso, retorna 0.
+    """
+    if not isinstance(results, dict):
+        return 0
+    ac = results.get("approved_count")
+    if isinstance(ac, int) and ac > 0:
+        return ac
+    approved_ids = results.get("approved_candidate_ids")
+    if isinstance(approved_ids, list):
+        return len(approved_ids)
+    return 0
+
+
+def _extract_surfaced_count(results: dict | None) -> int:
+    """Quantos candidatos foram surfaced (results.candidate_ids — lógica C4.1)."""
+    if not isinstance(results, dict):
+        return 0
+    cids = results.get("candidate_ids")
+    if isinstance(cids, list):
+        return len(cids)
+    return 0
+
+
+def _digest_target_phrase(target_type: str | None, target_name: str | None) -> str:
+    """Sufixo humano do summary: ' · <target_name>' quando houver nome."""
+    if target_name:
+        return f" · {target_name}"
+    return ""
+
+
+@router.get("/daily-digest", response_model=DailyDigestResponse)
+async def get_daily_digest(
+    since_hours: int = Query(default=24, ge=1, le=168),
+    limit: int = Query(default=8, ge=1, le=20),
+    db: AsyncSession = Depends(get_db),
+    company_id: str = Depends(require_company_id),
+) -> DailyDigestResponse:
+    """Onda C4.2 — Morning Brief: top eventos relevantes das últimas N horas.
+
+    Curado por relevância (errors > pending > celebrations > surfaced > info),
+    limitado a `limit` items. Multi-tenancy fail-closed via require_company_id.
+
+    Multi-surface: runs de assignment (pool legacy) E deployment (job/funil/
+    pool/lista) entram no digest via _studio_runs_select (C1.6a).
+    """
+    cutoff = datetime.now(timezone.utc) - timedelta(hours=since_hours)
+
+    # 1) Runs da janela (multi-surface). Driver tenant-scoped (fail-closed).
+    runs_stmt = (
+        _studio_runs_select()
+        .where(
+            and_(
+                _PoolAgentRun.company_id == company_id,
+                _PoolAgentRun.created_at != None,  # noqa: E711
+                _PoolAgentRun.created_at > cutoff,
+            )
+        )
+        .order_by(desc(_PoolAgentRun.created_at))
+    )
+    runs_result = await db.execute(runs_stmt)
+    rows = runs_result.all()
+
+    candidate_items: list[DigestItem] = []
+    total_runs = 0
+    total_candidates_processed = 0
+
+    for row in rows:
+        run, assignment, agent_a, pool, deployment, agent_d = row
+        agent = _resolve_agent(agent_a, agent_d)
+        if agent is None:
+            continue
+        total_runs += 1
+        target_type, _target_id, target_name = _resolve_target_info(
+            assignment, pool, deployment
+        )
+        results = run.results or {}
+        rm = run.runtime_metrics or {}
+
+        cp = rm.get("candidates_processed")
+        if isinstance(cp, int):
+            total_candidates_processed += cp
+
+        agent_id = str(agent.id)
+        agent_name = agent.name
+        run_id = str(run.id)
+        ts = run.finished_at or run.started_at or run.created_at
+        suffix = _digest_target_phrase(target_type, target_name)
+
+        # error (qualquer status de falha)
+        if run.status in ("error", "timeout", "cancelled"):
+            candidate_items.append(
+                DigestItem(
+                    kind="agent_error",
+                    agent_id=agent_id,
+                    agent_name=agent_name,
+                    summary=f"{agent_name} teve uma falha de execução{suffix}",
+                    target_type=target_type,
+                    target_name=target_name,
+                    count=None,
+                    severity=_DIGEST_SEVERITY_BY_KIND["agent_error"],
+                    execution_id=run_id,
+                    timestamp=ts,
+                )
+            )
+            continue
+
+        if run.status != "success":
+            # queued/running não geram item de digest (ainda em andamento).
+            continue
+
+        # decision_approved (celebração)
+        approved = _extract_approved_count(results)
+        if approved > 0:
+            candidate_items.append(
+                DigestItem(
+                    kind="decision_approved",
+                    agent_id=agent_id,
+                    agent_name=agent_name,
+                    summary=(
+                        f"{agent_name} aprovou {approved} candidato(s){suffix}"
+                    ),
+                    target_type=target_type,
+                    target_name=target_name,
+                    count=approved,
+                    severity=_DIGEST_SEVERITY_BY_KIND["decision_approved"],
+                    execution_id=run_id,
+                    timestamp=ts,
+                )
+            )
+            continue
+
+        # candidates_surfaced (lógica C4.1 — results.candidate_ids)
+        surfaced = _extract_surfaced_count(results)
+        if surfaced > 0:
+            candidate_items.append(
+                DigestItem(
+                    kind="candidates_surfaced",
+                    agent_id=agent_id,
+                    agent_name=agent_name,
+                    summary=(
+                        f"{agent_name} encontrou {surfaced} candidato(s) novo(s)"
+                        f"{suffix}"
+                    ),
+                    target_type=target_type,
+                    target_name=target_name,
+                    count=surfaced,
+                    severity=_DIGEST_SEVERITY_BY_KIND["candidates_surfaced"],
+                    execution_id=run_id,
+                    timestamp=ts,
+                )
+            )
+            continue
+
+        # high_cost (informativo)
+        cost = rm.get("cost_usd")
+        if isinstance(cost, (int, float)) and cost >= _HIGH_COST_THRESHOLD_USD:
+            candidate_items.append(
+                DigestItem(
+                    kind="high_cost",
+                    agent_id=agent_id,
+                    agent_name=agent_name,
+                    summary=(
+                        f"{agent_name} consumiu ${cost:.2f} numa execução{suffix}"
+                    ),
+                    target_type=target_type,
+                    target_name=target_name,
+                    count=None,
+                    severity=_DIGEST_SEVERITY_BY_KIND["high_cost"],
+                    execution_id=run_id,
+                    timestamp=ts,
+                )
+            )
+
+    # 2) Aprovações pendentes — agregadas por agente (uma query, evita N+1).
+    #    Não dependem de run; surfaçam tudo que aguarda o recrutador.
+    try:
+        approvals_stmt = (
+            select(
+                ApprovalRequest.target_id,
+                ApprovalRequest.target_name,
+                ApprovalRequest.created_at,
+            )
+            .where(
+                and_(
+                    ApprovalRequest.company_id == company_id,
+                    ApprovalRequest.status == ApprovalStatus.PENDING.value,
+                    ApprovalRequest.target_type == "custom_agent",
+                )
+            )
+            .order_by(desc(ApprovalRequest.created_at))
+        )
+        approvals_result = await db.execute(approvals_stmt)
+        approval_rows = approvals_result.fetchall()
+    except Exception:
+        # Defense: schema drift em approvals não deve quebrar o digest inteiro.
+        logger.warning(
+            "[daily-digest] pending approvals query failed", exc_info=True
+        )
+        approval_rows = []
+
+    pending_by_agent: dict[str, dict] = {}
+    for ar in approval_rows:
+        aid = str(ar[0]) if ar[0] is not None else None
+        if aid is None:
+            continue
+        entry = pending_by_agent.setdefault(
+            aid, {"count": 0, "name": ar[1], "ts": ar[2]}
+        )
+        entry["count"] += 1
+
+    for aid, entry in pending_by_agent.items():
+        ts = entry["ts"]
+        if ts is not None and ts.tzinfo is None:
+            ts = ts.replace(tzinfo=timezone.utc)
+        candidate_items.append(
+            DigestItem(
+                kind="pending_approval",
+                agent_id=aid,
+                agent_name=entry["name"] or "Agente",
+                summary=(
+                    f"{entry['count']} aprovação(ões) aguardando você"
+                ),
+                target_type="custom_agent",
+                target_name=entry["name"],
+                count=entry["count"],
+                severity=_DIGEST_SEVERITY_BY_KIND["pending_approval"],
+                execution_id=None,
+                timestamp=ts or datetime.now(timezone.utc),
+            )
+        )
+
+    # 3) Ordenar por relevância (weight asc) e desempate por recência (desc).
+    candidate_items.sort(
+        key=lambda it: (
+            _DIGEST_RELEVANCE_WEIGHT.get(it.kind, 99),
+            -(it.timestamp.timestamp() if it.timestamp else 0),
+        )
+    )
+
+    return DailyDigestResponse(
+        period_hours=since_hours,
+        generated_at=datetime.now(timezone.utc),
+        items=candidate_items[:limit],
+        total_runs=total_runs,
+        total_candidates_processed=total_candidates_processed,
+    )
