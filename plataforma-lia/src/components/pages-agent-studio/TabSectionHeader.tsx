@@ -8,6 +8,11 @@ export interface TabSectionHeaderProps {
   count?: number
   actions?: React.ReactNode
   className?: string
+  /**
+   * id aplicado ao <h2> do cabeçalho. Permite que um container externo o
+   * referencie via aria-labelledby (ex.: <section aria-labelledby={id}>).
+   */
+  headingId?: string
 }
 
 export function TabSectionHeader({
@@ -17,6 +22,7 @@ export function TabSectionHeader({
   count,
   actions,
   className,
+  headingId,
 }: TabSectionHeaderProps) {
   const hasActions = actions !== undefined && actions !== null && actions !== false
   return (
@@ -27,7 +33,7 @@ export function TabSectionHeader({
       )}
     >
       <div>
-        <h2 className="text-sm font-semibold text-lia-text-primary flex items-center gap-2">
+        <h2 id={headingId} className="text-sm font-semibold text-lia-text-primary flex items-center gap-2">
           {icon}
           <span>{title}</span>
           {typeof count === "number" && count > 0 && (

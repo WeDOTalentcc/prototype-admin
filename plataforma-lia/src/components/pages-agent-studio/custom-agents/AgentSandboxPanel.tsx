@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { useAiPersona } from "@/hooks/company/use-ai-persona"
+import { TabSectionHeader } from "@/components/pages-agent-studio/TabSectionHeader"
 import { DecisionTreeBody } from "../decision-tree/DecisionTreeDrawer"
 import type {
   AgentReasoningStep,
@@ -212,12 +213,11 @@ export function AgentSandboxPanel({ agent, open, onClose, onActivate }: AgentSan
 
               {/* Ações que o agente FARIA (interceptadas) */}
               <section aria-labelledby="sandbox-would-do-heading">
-                <h3
-                  id="sandbox-would-do-heading"
-                  className="mb-2 text-sm font-semibold text-lia-text-primary"
-                >
-                  {t("wouldDoTitle")}
-                </h3>
+                <TabSectionHeader
+                  headingId="sandbox-would-do-heading"
+                  className="mb-2"
+                  title={t("wouldDoTitle")}
+                />
                 {result.would_do_actions.length === 0 ? (
                   <p
                     className="text-xs text-lia-text-tertiary italic"
@@ -259,12 +259,11 @@ export function AgentSandboxPanel({ agent, open, onClose, onActivate }: AgentSan
                   aria-labelledby="sandbox-reasoning-heading"
                   className="border-t border-lia-border-subtle pt-3"
                 >
-                  <h3
-                    id="sandbox-reasoning-heading"
-                    className="mb-2 text-sm font-semibold text-lia-text-primary"
-                  >
-                    {t("reasoningTitle")}
-                  </h3>
+                  <TabSectionHeader
+                    headingId="sandbox-reasoning-heading"
+                    className="mb-2"
+                    title={t("reasoningTitle")}
+                  />
                   <DecisionTreeBody reasoning={reasoning} agentDisplayName={agentDisplayName} />
                 </section>
               ) : null}

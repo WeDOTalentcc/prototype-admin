@@ -22,6 +22,7 @@ import {
 
 import { cn } from "@/lib/utils"
 import { Skeleton } from "@/components/ui/skeleton"
+import { TabSectionHeader } from "@/components/pages-agent-studio/TabSectionHeader"
 import { useDailyDigest } from "@/hooks/agents/use-daily-digest"
 import { useAiPersona } from "@/hooks/company/use-ai-persona"
 import type { DigestItem, DigestKind, DigestSeverity } from "@/types/agents/daily-digest"
@@ -132,16 +133,13 @@ export function MorningDigest({ onOpenReasoning }: MorningDigestProps) {
       aria-labelledby="morning-digest-heading"
       data-testid="morning-digest"
     >
-      <div className="mb-3 flex items-center gap-2">
-        <Sun className="h-4 w-4 text-wedo-cyan" aria-hidden="true" />
-        <h3
-          id="morning-digest-heading"
-          className="text-sm font-semibold text-lia-text-primary"
-        >
-          {greeting}
-        </h3>
-        <span className="text-xs text-lia-text-tertiary">— {t("subtitle")}</span>
-      </div>
+      <TabSectionHeader
+        headingId="morning-digest-heading"
+        className="mb-3"
+        icon={<Sun className="h-4 w-4 text-wedo-cyan" aria-hidden="true" />}
+        title={greeting}
+        subtitle={t("subtitle")}
+      />
 
       {items.length === 0 ? (
         <div

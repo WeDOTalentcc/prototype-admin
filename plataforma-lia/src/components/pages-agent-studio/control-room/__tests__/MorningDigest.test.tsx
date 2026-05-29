@@ -61,7 +61,7 @@ describe("MorningDigest — canonical Onda C4.2", () => {
       expect(screen.getByTestId("morning-digest-empty")).toBeTruthy()
     })
     // saudação contextual presente
-    expect(screen.getByRole("heading", { level: 3 }).textContent).toMatch(/^g:/)
+    expect(screen.getByRole("heading", { level: 2 }).textContent).toMatch(/^g:/)
   })
 
   it("renderiza items com summary + footer agregado", async () => {
@@ -158,7 +158,7 @@ describe("MorningDigest — canonical Onda C4.2", () => {
     mockFetch(baseResp([]))
     renderWith(<MorningDigest onOpenReasoning={() => {}} />)
     await waitFor(() => {
-      const heading = screen.getByRole("heading", { level: 3 })
+      const heading = screen.getByRole("heading", { level: 2 })
       expect(heading.textContent).toMatch(/^g:(morning|afternoon|evening)$/)
     })
   })
