@@ -87,6 +87,9 @@ async def get_contract_version(
     importantes. Resposta cabe em <1KB e é cacheable do lado deles por
     poucos minutos (esta versão muda apenas quando há release de backend).
     """
+    # multi-tenancy: nao toca dado de tenant — retorna constante estatica
+    # (ADMIN_PERSONA_CONTRACT_VERSION) + lista de surfaces hardcoded. Gated por
+    # require_wedotalent_admin (staff-only). Sensor false positive.
     parts = ADMIN_PERSONA_CONTRACT_VERSION.split(".")
     return AdminPersonaContractVersionResponse(
         contract_version=ADMIN_PERSONA_CONTRACT_VERSION,

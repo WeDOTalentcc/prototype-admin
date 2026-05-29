@@ -77,3 +77,47 @@ def test_get_wsi_audit_trail_has_role_gate():
             )
             return
     raise AssertionError("Route /reports/audit/{session_id} not found in router.routes")
+
+
+def test_get_wsi_audit_trail_is_tenant_scoped():
+    """Multi-tenancy fail-closed (Task #511 r3 + Fase 2.5 triagem 2026-05-29).
+
+    O handler DEVE chamar ``validate_company_access`` (escopa tenant admin a
+    propria company) e manter o deny-by-default quando a sessao nao resolve
+    company (job_vacancy orfao). Cross-tenant SO e permitido a
+    ``wedotalent_admin`` — staff WeDOTalent que responde regulador EU/ANPD
+    (EU AI Act Art. 12). Sem isso, IDOR cross-tenant vaza audit trail de
+    outro tenant.
+
+    O sensor company_id flagga este handler como false positive porque o gate
+    e ``validate_company_access`` (nao ``require_company_id``); este teste
+    pina o gate real pra impedir regressao silenciosa do isolamento.
+    """
+    import inspect
+
+    src = inspect.getsource(wsi_reports_module.get_wsi_audit_trail)
+    assert "validate_company_access" in src, (
+        "get_wsi_audit_trail perdeu validate_company_access — isolamento "
+        "tenant quebrado (IDOR cross-tenant). Restaurar Task #511 r3."
+    )
+    assert "cross_tenant_roles" in src and "status_code=403" in src, (
+        "get_wsi_audit_trail perdeu o deny-by-default (403 quando company "
+        "nao resolve). Sem company resolvivel, so roles cross-tenant acessam."
+    )
+    assert "wedotalent_admin" in src, (
+        "get_wsi_audit_trail deve reconhecer wedotalent_admin como o unico "
+        "role com acesso cross-tenant (compliance EU AI Act Art. 12)."
+    )
+
+
+def test_get_wsi_audit_trail_has_multi_tenancy_marker():
+    """O marker ``# multi-tenancy:`` documenta o false-positive do sensor
+    company_id e mantem o baseline limpo. Regressao = re-aparece como
+    offender e empurra o ratchet acima do baseline."""
+    import inspect
+
+    src = inspect.getsource(wsi_reports_module.get_wsi_audit_trail)
+    assert "# multi-tenancy:" in src, (
+        "Marker # multi-tenancy: removido de get_wsi_audit_trail — sensor "
+        "check_company_id_in_routes volta a flaggar como offender."
+    )

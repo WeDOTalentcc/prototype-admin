@@ -66,11 +66,19 @@ OPT_OUT_MARKER = "# multi-tenancy:"
 #   - webhooks (email_tracking, mailgun, openmic, whatsapp, twilio_voice): resolvidos
 #     por assinatura/provider, nao JWT -> marker `# multi-tenancy: webhook-signature`.
 #   - self_scheduling_public: candidate-facing por token publico.
-# Gaps REAIS a investigar (backlog): wsi/reports.py:874 get_wsi_audit_trail (audit
-#   trail deveria ser tenant-scoped), admin_persona.py:80 get_contract_version,
-#   custom_agents.py:1981 get_agent_kpis.
-# RATCHET: qualquer rota nova sem gate canonico empurra acima de 33 e falha o CI.
-BASELINE_OFFENDERS = 33
+# Triagem Fase 2.5 (2026-05-29): os 3 "gaps reais" suspeitos eram falsos positivos
+#   ja-protegidos -> marcados com `# multi-tenancy:`:
+#   - wsi/reports.py get_wsi_audit_trail: tenant-scoped via validate_company_access +
+#     deny-by-default (Task #511 r3); cross-tenant INTENCIONAL p/ wedotalent_admin
+#     (EU AI Act Art. 12). Gate nao estava em GATE_FUNCS -> false positive.
+#   - admin_persona.py get_contract_version: retorna constante estatica, zero dado de
+#     tenant, gated por require_wedotalent_admin.
+#   - custom_agents.py get_agent_kpis: ja usa require_company_id (aliased
+#     _require_company_id_onda4) + filtro company_id + 404 cross-tenant (Onda 4).
+# Remanescentes (30) sao FPs legitimos em auth/webhooks/self_scheduling_public,
+#   fora do escopo deste agente (ownership) -> backlog de marker dedicado.
+# RATCHET: qualquer rota nova sem gate canonico empurra acima de 30 e falha o CI.
+BASELINE_OFFENDERS = 30
 
 
 def is_router_decorator(decorator: ast.expr) -> bool:

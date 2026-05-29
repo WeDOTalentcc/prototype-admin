@@ -892,6 +892,10 @@ async def get_wsi_audit_trail(
     O hash permite verificar integridade sem reprocessar o texto e detectar
     duplicatas / adulterações posteriores.
     """
+    # multi-tenancy: tenant-scoped via validate_company_access + deny-by-default
+    # (Task #511 round 3). wedotalent_admin tem acesso cross-tenant INTENCIONAL
+    # (EU AI Act Art. 12 — staff WeDOTalent responde regulador). Sensor false
+    # positive: gate eh validate_company_access, nao require_company_id.
     # 1) Sessão existe? (join com job_vacancies para obter company_id)
     sess_row = (await db.execute(text(
         "SELECT s.id, s.status, s.candidate_id, s.job_vacancy_id, "
