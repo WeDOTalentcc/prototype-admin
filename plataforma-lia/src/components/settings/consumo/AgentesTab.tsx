@@ -73,9 +73,29 @@ function agentBreakdownTooltipFormatter(
   return [`${formatTokens(v)} tokens (${pct}%)`, 'Consumo']
 }
 
-export function AgentesTab() {
-  // Onda 4 F4 — drilldown modal state
-  const [drilldownAgentType, setDrilldownAgentType] = useState<string | null>(null)
+/**
+ * Onda 5.2 — drilldown state lives in ConsumoHub (parent owner).
+ * Quando prop ausente (uso isolado, e.g. testes), fallback para state local.
+ */
+export interface AgentesTabProps {
+  onOpenDrilldown?: (state: {
+    agentType: string | null
+    studioAgentId: string | null
+  }) => void
+}
+
+export function AgentesTab({ onOpenDrilldown }: AgentesTabProps = {}) {
+  // Onda 4 F4 + Onda 5.2 — state local apenas como fallback (testes/standalone).
+  // ConsumoHub é o owner canonical em produção.
+  const [localDrilldownAgentType, setLocalDrilldownAgentType] = useState<string | null>(null)
+
+  function openDrilldown(agentType: string) {
+    if (onOpenDrilldown) {
+      onOpenDrilldown({ agentType, studioAgentId: null })
+    } else {
+      setLocalDrilldownAgentType(agentType)
+    }
+  }
 
   const { data: agentRaw, isLoading: agentLoading } =
     useSWR('/api/backend-proxy/ai-credits?endpoint=by-agent', jsonFetcher)
@@ -234,9 +254,9 @@ export function AgentesTab() {
                 barSize={24}
                 cursor="pointer"
                 onClick={(payload: unknown) => {
-                  // Onda 4 F4 — abre drilldown ao clicar segmento
+                  // Onda 4 F4 + Onda 5.2 — abre drilldown ao clicar segmento.
                   const entry = payload as { agentType?: string } | undefined
-                  if (entry?.agentType) setDrilldownAgentType(entry.agentType)
+                  if (entry?.agentType) openDrilldown(entry.agentType)
                 }}
               >
                 {agentChartData.map((entry) => (
@@ -251,7 +271,7 @@ export function AgentesTab() {
               <button
                 key={agent.agentType}
                 type="button"
-                onClick={() => setDrilldownAgentType(agent.agentType)}
+                onClick={() => openDrilldown(agent.agentType)}
                 aria-label={`Ver execuções de ${agent.name}`}
                 className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm text-left transition-colors hover:bg-lia-bg-secondary focus:bg-lia-bg-secondary focus:outline-none"
               >
@@ -276,14 +296,19 @@ export function AgentesTab() {
         </CardContent>
       </Card>
 
-      {/* Onda 4 F4 — drilldown modal */}
-      <ConsumptionDrilldownModal
-        agentType={drilldownAgentType}
-        open={drilldownAgentType !== null}
-        onOpenChange={(open) => {
-          if (!open) setDrilldownAgentType(null)
-        }}
-      />
+      {/* Onda 4 F4 + Onda 5.2 — drilldown modal local apenas como fallback.
+          Quando AgentesTab e renderizado dentro do ConsumoHub (uso canonical),
+          onOpenDrilldown e fornecido e o modal vive no parent (compartilhado
+          com CreditosIaTab via BudgetAlertsList). */}
+      {!onOpenDrilldown && (
+        <ConsumptionDrilldownModal
+          agentType={localDrilldownAgentType}
+          open={localDrilldownAgentType !== null}
+          onOpenChange={(open) => {
+            if (!open) setLocalDrilldownAgentType(null)
+          }}
+        />
+      )}
     </div>
   )
 }

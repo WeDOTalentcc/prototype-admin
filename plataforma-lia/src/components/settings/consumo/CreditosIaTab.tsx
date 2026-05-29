@@ -193,7 +193,17 @@ function agentBreakdownTooltipFormatter(
   return [`${formatTokens(v)} tokens (${pct}%)`, 'Consumo']
 }
 
-export function CreditosIaTab() {
+/**
+ * Onda 5.2 — drilldown state lives in ConsumoHub. Tab receives opener.
+ */
+export interface CreditosIaTabProps {
+  onOpenDrilldown?: (state: {
+    agentType: string | null
+    studioAgentId: string | null
+  }) => void
+}
+
+export function CreditosIaTab({ onOpenDrilldown }: CreditosIaTabProps = {}) {
   const { data: balance, isLoading: balanceLoading, error: balanceError } =
     useSWR<AiCreditsBalance>('/api/backend-proxy/ai-credits?endpoint=balance', jsonFetcher)
 
@@ -303,8 +313,13 @@ export function CreditosIaTab() {
 
       {balance && <MonthlyUsageAlert percentage={usagePct} />}
 
-      {/* Onda 4 F5 — alertas de orçamento (global + per-agent) */}
-      <BudgetAlertsList />
+      {/* Onda 4 F5 + Onda 5.2 — alertas de orçamento (global + per-agent).
+          onViewExecutions: passa o studio_agent_id ao opener canonical do Hub. */}
+      <BudgetAlertsList
+        onViewExecutions={(studioAgentId) =>
+          onOpenDrilldown?.({ agentType: null, studioAgentId })
+        }
+      />
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <Card className="border border-lia-border-subtle shadow-none">
