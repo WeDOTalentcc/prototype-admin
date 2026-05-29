@@ -47,8 +47,13 @@ def intake_node(state: JobCreationState) -> JobCreationState:
     # vindo do checkpoint (path canônico WS via WizardSessionService).
     # Em ambos os casos, parsed_title já foi extraído em turno anterior
     # e re-rodar IntakeExtractor (~1-3s + tokens) é desperdício puro.
+    # Frente 2 (2026-05-29): short-circuit adicional quando intake_gate já foi visitado.
+    # Evita re-rodar IntakeExtractor nos turnos após intake_gate emitir sugestão/clarify.
     if state.get("parsed_title") and (
-        state.get("gate_resume_message") or state.get("jd_enriched")
+        state.get("gate_resume_message")
+        or state.get("jd_enriched")
+        or state.get("intake_salary_suggested")
+        or state.get("intake_approved") is True
     ):
         return {**state, "current_stage": "intake"}
 

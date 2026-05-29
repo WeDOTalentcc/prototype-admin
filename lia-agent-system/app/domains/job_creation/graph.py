@@ -230,6 +230,9 @@ from app.domains.job_creation.internal.constants import (  # noqa: E402, F401
 
 # intake_node moved to nodes/intake.py (PR-10 ONDA 3 sub-B)
 from app.domains.job_creation.nodes.intake import intake_node  # noqa: F401, E402
+from app.domains.job_creation.nodes.intake_gate import (  # noqa: F401, E402
+    intake_gate_node, route_after_intake_gate,
+)
 
 
 # jd_enrichment_node moved to nodes/jd_enrichment.py (PR-10 ONDA 3 sub-B)
@@ -777,6 +780,8 @@ def create_job_creation_graph(
     # Add all nodes
     builder.add_node("intake", intake_node)
     builder.add_node("jd_enrichment", jd_enrichment_node)
+    # Frente 2 (2026-05-29): gate conversacional antes do jd_enrichment.
+    builder.add_node("intake_gate", intake_gate_node)
     if use_llm_gates:
         builder.add_node("jd_gate", jd_gate_node)
     builder.add_node("pipeline_template", pipeline_template_node)
@@ -800,7 +805,16 @@ def create_job_creation_graph(
     builder.set_entry_point("intake")
 
     # Linear edges (no conditional routing needed)
-    builder.add_edge("intake", "jd_enrichment")
+    # Frente 2 (2026-05-29): intake gate conversacional.
+    builder.add_edge("intake", "intake_gate")
+    builder.add_conditional_edges(
+        "intake_gate",
+        route_after_intake_gate,
+        {
+            "jd_enrichment": "jd_enrichment",
+            "end": END,
+        },
+    )
 
     # HITL point 1: JD enrichment
     if use_llm_gates:

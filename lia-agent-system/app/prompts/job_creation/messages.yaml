@@ -123,3 +123,14 @@ wsi_questions_gate:
 competency_gate:
   recommend_mode: "HITL #2: escolha do modo de triagem WSI (Compacto 7 perguntas ou Completo 12 perguntas). Recomendação para este nível: {recommended}."
   explain_modes: "Compacto tem 7 perguntas (mais ágil) e Completo tem 12 (mais evidência). Pra esta vaga eu sugiro {recommended}."
+
+# ── intake_gate ─────────────────────────────────────────────────────────────
+intake_gate:
+  ask_fields: "Para criar a vaga, ainda preciso de: {missing}."
+  ask_fields_with_title: "Para **{title}**, ainda preciso de: {missing}."
+  ask_fields_partial: "Quase lá! Só falta: {missing}."
+  salary_suggestion: "Para **{title}** ({seniority}, {model}), o mercado pratica em torno de **{min}–{max}/mês**. Posso começar a criar a vaga?"
+  salary_fallback: "Para **{title}** ({seniority}), não tenho dados de mercado disponíveis no momento. Posso começar a criar a vaga assim mesmo?"
+  ask_permission: "Posso seguir com a criação?"
+  proceeding: "Ótimo! Processando a criação de **{title}**..."
+  off_topic_redirect: "Para avançar, é só confirmar que posso criar a vaga (ex: \"pode criar\", \"sim\" ou \"pode avançar\"). Quer algum ajuste antes?"

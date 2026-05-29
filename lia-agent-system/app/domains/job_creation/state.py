@@ -253,6 +253,15 @@ class JobCreationState(TypedDict, total=False):
     # --- Handoff ---
     handoff_url: Optional[str]  # URL to the job page
 
+    # --- intake_gate fields (Frente 2 — 2026-05-29) ---
+    # Sprint conversacional: intake gate antes do jd_enrichment.
+    # Declarados aqui para sobreviver ao merge do LangGraph (mesma razão
+    # que gate_seen_user_query + company_id — LangGraph filtra keys não-declaradas).
+    intake_approved: Optional[bool]              # True quando recrutador confirmou criação
+    intake_salary_suggested: Optional[bool]      # True após sugestão salarial emitida
+    intake_gate_seen_user_query: Optional[str]   # evita re-processar mesma msg (anti-loop)
+
+
 
     # --- Pipeline Template (Sprint Pipeline Templates 2026-05-26 — Opção B) ---
     # Set by pipeline_template_node when recruiter applies a template.
