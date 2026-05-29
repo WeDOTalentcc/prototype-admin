@@ -10,7 +10,7 @@ import { useCandidatesStore } from "@/stores/candidates-store"
 import { useLoadingWatchdog } from "@/hooks/shared/use-loading-watchdog"
 import { useGlobalSearchSettings } from "@/hooks/search/useGlobalSearchSettings"
 import { useHideViewedCandidates } from "@/hooks/candidates/useHideViewedCandidates"
-import { useCandidateFilters } from "@/hooks/candidates/use-candidate-filters"
+import { useCandidateFilters, getDefaultTableFilters } from "@/hooks/candidates/use-candidate-filters"
 import { useCandidateSelection } from "@/hooks/candidates/use-candidate-selection"
 import { useTalentFunnel } from "@/hooks/candidates/use-talent-funnel"
 import { useCandidatesSearchState } from "@/hooks/candidates/use-candidates-search-state"
@@ -310,7 +310,12 @@ export function useCandidatesPageCore({
     user: user as Record<string, unknown> | null,
   })
 
-  const { archetypesHook, revealContactHook, executeSearch, cvHandlers, searchHandlers } = searchComposition
+  const { archetypesHook, revealContactHook, executeSearch: _rawExecuteSearch, cvHandlers, searchHandlers } = searchComposition
+
+  const executeSearch = useCallback(async (...args: Parameters<typeof _rawExecuteSearch>) => {
+    setTableFilters(getDefaultTableFilters())
+    return _rawExecuteSearch(...args)
+  }, [_rawExecuteSearch, setTableFilters])
   const {
     state: {
       backendArchetypes, isLoadingArchetypes, archetypesLoadError,
