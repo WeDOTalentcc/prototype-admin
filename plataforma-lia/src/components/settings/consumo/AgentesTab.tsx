@@ -170,45 +170,52 @@ export function AgentesTab({ onOpenDrilldown }: AgentesTabProps = {}) {
             </CardTitle>
           </CardHeader>
           <CardContent className="pb-4">
-            <ResponsiveContainer width="100%" height={250}>
-              <LineChart data={trendChartData} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--lia-border-subtle)" />
-                <XAxis
-                  dataKey="date"
-                  tick={{ fontSize: 10, fill: 'var(--lia-text-tertiary)' }}
-                  tickLine={false}
-                  axisLine={false}
-                />
-                <YAxis
-                  tick={{ fontSize: 10, fill: 'var(--lia-text-tertiary)' }}
-                  tickLine={false}
-                  axisLine={false}
-                  unit="K"
-                />
-                <Tooltip
-                  contentStyle={{ fontSize: 11, borderRadius: 6, border: '1px solid var(--lia-border-subtle)' }}
-                  formatter={(value, name) => {
-                    const v = Number(value ?? 0)
-                    return [`${v}K tokens`, getAgentLabel(String(name))] as [string, string]
-                  }}
-                />
-                <Legend
-                  formatter={(value: string) => getAgentLabel(value)}
-                  wrapperStyle={{ fontSize: 11 }}
-                />
-                {trendAgentTypes.map((agentType) => (
-                  <Line
-                    key={agentType}
-                    type="monotone"
-                    dataKey={agentType}
-                    stroke={getAgentColor(agentType)}
-                    strokeWidth={2}
-                    dot={false}
-                    connectNulls
+            {/* Onda 5.5 — wrapper a11y: chart vira role=img com descrição contextual. */}
+            <div
+              role="img"
+              aria-label={`Tendência de consumo por agente nos últimos 30 dias. ${trendAgentTypes.length} agentes acompanhados.`}
+              data-testid="agentes-trend-chart"
+            >
+              <ResponsiveContainer width="100%" height={250}>
+                <LineChart data={trendChartData} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--lia-border-subtle)" />
+                  <XAxis
+                    dataKey="date"
+                    tick={{ fontSize: 10, fill: 'var(--lia-text-tertiary)' }}
+                    tickLine={false}
+                    axisLine={false}
                   />
-                ))}
-              </LineChart>
-            </ResponsiveContainer>
+                  <YAxis
+                    tick={{ fontSize: 10, fill: 'var(--lia-text-tertiary)' }}
+                    tickLine={false}
+                    axisLine={false}
+                    unit="K"
+                  />
+                  <Tooltip
+                    contentStyle={{ fontSize: 11, borderRadius: 6, border: '1px solid var(--lia-border-subtle)' }}
+                    formatter={(value, name) => {
+                      const v = Number(value ?? 0)
+                      return [`${v}K tokens`, getAgentLabel(String(name))] as [string, string]
+                    }}
+                  />
+                  <Legend
+                    formatter={(value: string) => getAgentLabel(value)}
+                    wrapperStyle={{ fontSize: 11 }}
+                  />
+                  {trendAgentTypes.map((agentType) => (
+                    <Line
+                      key={agentType}
+                      type="monotone"
+                      dataKey={agentType}
+                      stroke={getAgentColor(agentType)}
+                      strokeWidth={2}
+                      dot={false}
+                      connectNulls
+                    />
+                  ))}
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
           </CardContent>
         </Card>
       )}
@@ -220,51 +227,58 @@ export function AgentesTab({ onOpenDrilldown }: AgentesTabProps = {}) {
           </CardTitle>
         </CardHeader>
         <CardContent className="pb-4">
-          <ResponsiveContainer width="100%" height={Math.max(200, agentChartData.length * 48)}>
-            <BarChart
-              data={agentChartData}
-              layout="vertical"
-              margin={{ top: 4, right: 60, bottom: 0, left: 90 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--lia-border-subtle)" horizontal={false} />
-              <XAxis
-                type="number"
-                tick={{ fontSize: 10, fill: 'var(--lia-text-tertiary)' }}
-                tickLine={false}
-                axisLine={false}
-                tickFormatter={(v: number) => formatTokens(v)}
-              />
-              <YAxis
-                type="category"
-                dataKey="name"
-                tick={{ fontSize: 11, fill: 'var(--lia-text-secondary)' }}
-                tickLine={false}
-                axisLine={false}
-                width={85}
-              />
-              <Tooltip
-                contentStyle={{ fontSize: 11, borderRadius: 6, border: '1px solid var(--lia-border-subtle)' }}
-                formatter={
-                  agentBreakdownTooltipFormatter as NonNullable<ComponentProps<typeof Tooltip>['formatter']>
-                }
-              />
-              <Bar
-                dataKey="tokens"
-                radius={[0, 4, 4, 0]}
-                barSize={24}
-                cursor="pointer"
-                onClick={(payload: unknown) => {
-                  // Onda 4 F4 + Onda 5.2 — abre drilldown ao clicar segmento.
-                  const entry = payload as { agentType?: string } | undefined
-                  if (entry?.agentType) openDrilldown(entry.agentType)
-                }}
+          {/* Onda 5.5 — wrapper a11y para BarChart breakdown. */}
+          <div
+            role="img"
+            aria-label={`Consumo por agente. ${agentChartData.length} agentes ordenados por tokens. Maior: ${agentChartData[0]?.name ?? '—'}.`}
+            data-testid="agentes-breakdown-chart"
+          >
+            <ResponsiveContainer width="100%" height={Math.max(200, agentChartData.length * 48)}>
+              <BarChart
+                data={agentChartData}
+                layout="vertical"
+                margin={{ top: 4, right: 60, bottom: 0, left: 90 }}
               >
-                {agentChartData.map((entry) => (
-                  <Cell key={entry.agentType} fill={getAgentColor(entry.agentType)} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--lia-border-subtle)" horizontal={false} />
+                <XAxis
+                  type="number"
+                  tick={{ fontSize: 10, fill: 'var(--lia-text-tertiary)' }}
+                  tickLine={false}
+                  axisLine={false}
+                  tickFormatter={(v: number) => formatTokens(v)}
+                />
+                <YAxis
+                  type="category"
+                  dataKey="name"
+                  tick={{ fontSize: 11, fill: 'var(--lia-text-secondary)' }}
+                  tickLine={false}
+                  axisLine={false}
+                  width={85}
+                />
+                <Tooltip
+                  contentStyle={{ fontSize: 11, borderRadius: 6, border: '1px solid var(--lia-border-subtle)' }}
+                  formatter={
+                    agentBreakdownTooltipFormatter as NonNullable<ComponentProps<typeof Tooltip>['formatter']>
+                  }
+                />
+                <Bar
+                  dataKey="tokens"
+                  radius={[0, 4, 4, 0]}
+                  barSize={24}
+                  cursor="pointer"
+                  onClick={(payload: unknown) => {
+                    // Onda 4 F4 + Onda 5.2 — abre drilldown ao clicar segmento.
+                    const entry = payload as { agentType?: string } | undefined
+                    if (entry?.agentType) openDrilldown(entry.agentType)
+                  }}
+                >
+                  {agentChartData.map((entry) => (
+                    <Cell key={entry.agentType} fill={getAgentColor(entry.agentType)} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
 
           <div className="mt-4 space-y-1">
             {agentChartData.map((agent) => (

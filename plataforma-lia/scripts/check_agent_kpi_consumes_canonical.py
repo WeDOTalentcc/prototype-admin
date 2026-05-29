@@ -12,8 +12,9 @@ Motivação:
   - Sensor protege contra regressão de futuras edits.
 
 Modo:
-  - warn-only por default (não bloqueia CI).
-  - --blocking promove para BLOCKING (exit 1 quando viola).
+  - BLOCKING por default (exit 1 quando viola). Promovido Onda 5.4 (2026-05-28)
+    apos confirmar baseline 0.
+  - --warn-only opt-out para branches legadas (mantem exit 0).
 
 Output otimizado pra consumo de LLM:
   - aponta arquivo:linha
@@ -86,7 +87,8 @@ def find_violations() -> list[tuple[Path, int, str]]:
 
 
 def main() -> int:
-    blocking = "--blocking" in sys.argv
+    # Onda 5.4 — promovido a BLOCKING por default (baseline 0 confirmado).
+    warn_only = "--warn-only" in sys.argv
     violations = find_violations()
     if not violations:
         print("✅ check_agent_kpi_consumes_canonical: 0 violations.")
@@ -104,11 +106,12 @@ def main() -> int:
         )
         print()
 
-    if blocking:
-        print(f"Modo: BLOCKING — exit 1 ({len(violations)} violations)")
-        return 1
-    print(f"Modo: warn-only (exit 0). Promover com --blocking quando baseline = 0.")
-    return 0
+    if warn_only:
+        print(f"Modo: warn-only opt-out (exit 0). {len(violations)} violations.")
+        return 0
+    print(f"Modo: BLOCKING — exit 1 ({len(violations)} violations).")
+    print("Use --warn-only para opt-out em branches legadas.")
+    return 1
 
 
 if __name__ == "__main__":

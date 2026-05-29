@@ -433,35 +433,42 @@ export function CreditosIaTab({ onOpenDrilldown }: CreditosIaTabProps = {}) {
               Sem dados de consumo no período
             </div>
           ) : (
-            <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={chartData} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--lia-border-subtle)" />
-                <XAxis
-                  dataKey="date"
-                  tick={{ fontSize: 10, fill: 'var(--lia-text-tertiary)' }}
-                  tickLine={false}
-                  axisLine={false}
-                />
-                <YAxis
-                  tick={{ fontSize: 10, fill: 'var(--lia-text-tertiary)' }}
-                  tickLine={false}
-                  axisLine={false}
-                  unit="K"
-                />
-                <Tooltip
-                  contentStyle={{ fontSize: 11, borderRadius: 6, border: '1px solid var(--lia-border-subtle)' }}
-                  formatter={(value, name) => {
-                    const v = Number(value ?? 0)
-                    const n = String(name)
-                    return [
-                      n === 'tokens' ? `${v}K tokens` : `$${v}`,
-                      n === 'tokens' ? 'Tokens' : 'Custo',
-                    ] as [string, string]
-                  }}
-                />
-                <Bar dataKey="tokens" fill="var(--lia-btn-primary-bg)" radius={[3, 3, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+            /* Onda 5.5 — wrapper a11y para chart diario. */
+            <div
+              role="img"
+              aria-label={`Consumo diário de tokens nos últimos 30 dias. ${chartData.length} dias com dados.`}
+              data-testid="creditos-daily-chart"
+            >
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={chartData} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--lia-border-subtle)" />
+                  <XAxis
+                    dataKey="date"
+                    tick={{ fontSize: 10, fill: 'var(--lia-text-tertiary)' }}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <YAxis
+                    tick={{ fontSize: 10, fill: 'var(--lia-text-tertiary)' }}
+                    tickLine={false}
+                    axisLine={false}
+                    unit="K"
+                  />
+                  <Tooltip
+                    contentStyle={{ fontSize: 11, borderRadius: 6, border: '1px solid var(--lia-border-subtle)' }}
+                    formatter={(value, name) => {
+                      const v = Number(value ?? 0)
+                      const n = String(name)
+                      return [
+                        n === 'tokens' ? `${v}K tokens` : `$${v}`,
+                        n === 'tokens' ? 'Tokens' : 'Custo',
+                      ] as [string, string]
+                    }}
+                  />
+                  <Bar dataKey="tokens" fill="var(--lia-btn-primary-bg)" radius={[3, 3, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           )}
         </CardContent>
       </Card>
@@ -474,45 +481,52 @@ export function CreditosIaTab({ onOpenDrilldown }: CreditosIaTabProps = {}) {
             </CardTitle>
           </CardHeader>
           <CardContent className="pb-4">
-            <ResponsiveContainer width="100%" height={250}>
-              <LineChart data={trendChartData} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--lia-border-subtle)" />
-                <XAxis
-                  dataKey="date"
-                  tick={{ fontSize: 10, fill: 'var(--lia-text-tertiary)' }}
-                  tickLine={false}
-                  axisLine={false}
-                />
-                <YAxis
-                  tick={{ fontSize: 10, fill: 'var(--lia-text-tertiary)' }}
-                  tickLine={false}
-                  axisLine={false}
-                  unit="K"
-                />
-                <Tooltip
-                  contentStyle={{ fontSize: 11, borderRadius: 6, border: '1px solid var(--lia-border-subtle)' }}
-                  formatter={(value, name) => {
-                    const v = Number(value ?? 0)
-                    return [`${v}K tokens`, getAgentLabel(String(name))] as [string, string]
-                  }}
-                />
-                <Legend
-                  formatter={(value: string) => getAgentLabel(value)}
-                  wrapperStyle={{ fontSize: 11 }}
-                />
-                {trendAgentTypes.map((agentType) => (
-                  <Line
-                    key={agentType}
-                    type="monotone"
-                    dataKey={agentType}
-                    stroke={getAgentColor(agentType)}
-                    strokeWidth={2}
-                    dot={false}
-                    connectNulls
+            {/* Onda 5.5 — wrapper a11y. */}
+            <div
+              role="img"
+              aria-label={`Tendência de consumo por agente nos últimos 30 dias. ${trendAgentTypes.length} agentes acompanhados.`}
+              data-testid="creditos-trend-chart"
+            >
+              <ResponsiveContainer width="100%" height={250}>
+                <LineChart data={trendChartData} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--lia-border-subtle)" />
+                  <XAxis
+                    dataKey="date"
+                    tick={{ fontSize: 10, fill: 'var(--lia-text-tertiary)' }}
+                    tickLine={false}
+                    axisLine={false}
                   />
-                ))}
-              </LineChart>
-            </ResponsiveContainer>
+                  <YAxis
+                    tick={{ fontSize: 10, fill: 'var(--lia-text-tertiary)' }}
+                    tickLine={false}
+                    axisLine={false}
+                    unit="K"
+                  />
+                  <Tooltip
+                    contentStyle={{ fontSize: 11, borderRadius: 6, border: '1px solid var(--lia-border-subtle)' }}
+                    formatter={(value, name) => {
+                      const v = Number(value ?? 0)
+                      return [`${v}K tokens`, getAgentLabel(String(name))] as [string, string]
+                    }}
+                  />
+                  <Legend
+                    formatter={(value: string) => getAgentLabel(value)}
+                    wrapperStyle={{ fontSize: 11 }}
+                  />
+                  {trendAgentTypes.map((agentType) => (
+                    <Line
+                      key={agentType}
+                      type="monotone"
+                      dataKey={agentType}
+                      stroke={getAgentColor(agentType)}
+                      strokeWidth={2}
+                      dot={false}
+                      connectNulls
+                    />
+                  ))}
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
           </CardContent>
         </Card>
       )}
