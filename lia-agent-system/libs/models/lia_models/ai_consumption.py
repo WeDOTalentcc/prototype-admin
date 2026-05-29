@@ -53,6 +53,15 @@ class AiConsumption(Base):
     agent_category = Column(String(20), nullable=False, default="core", index=True)
     operation = Column(String(100), nullable=False)
     model = Column(String(50), nullable=False, index=True)
+    # C2.1b (2026-05-29, mig 224): POLYMORPHIC reference, intentionally NOT a FK.
+    # Discriminated by agent_type, this column stores ids from several unrelated
+    # entities -- custom_agents.id (agent_type=custom_agent), the orchestrator
+    # sourcing agent_id (sourcing_agent), digital_twins.id (digital_twin), and
+    # installation_id. A FK to custom_agents.id would reject every valid
+    # sourcing_agent/digital_twin row, and a varchar->uuid conversion is unsafe
+    # because those ids do not all live in the custom_agents uuid space. The
+    # correct integrity model is polymorphic, so this stays varchar(64) with no
+    # FK. Pinned by tests/migrations/test_fk_closure.py. Do NOT add a FK here.
     studio_agent_id = Column(String(64), nullable=True, index=True)
     
     input_tokens = Column(Integer, default=0)

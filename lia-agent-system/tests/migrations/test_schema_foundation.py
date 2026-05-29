@@ -153,10 +153,11 @@ def test_source_check_rejects_orphan_run(engine):
 # ---------------------------------------------------------------------------
 # 219 — foreign keys (C2.1)
 # ---------------------------------------------------------------------------
-# Each tuple: (table, fk_column, referenced_table). Only FKs actually applied
-# (orphan-free + type-compatible) are asserted. Two FKs are DEFERRED and
-# intentionally NOT asserted: custom_agents.company_id (42 orphan test rows in
-# dev) and ai_consumption.studio_agent_id (varchar vs uuid type mismatch).
+# Each tuple: (table, fk_column, referenced_table). The 7 FKs applied directly
+# by mig 219 are asserted here. The deferred FKs are validated in
+# tests/migrations/test_fk_closure.py (mig 224): custom_agents.company_id was
+# closed (orphans cleaned + FK CASCADE); ai_consumption.studio_agent_id stays
+# without a FK by design (polymorphic reference discriminated by agent_type).
 _EXPECTED_FKS = [
     ("digital_twins", "company_id", "companies"),
     ("ai_consumption", "company_id", "companies"),
