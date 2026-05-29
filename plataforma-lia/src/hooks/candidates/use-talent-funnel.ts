@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { liaApi } from "@/services/lia-api"
 import type { CandidateLocal } from "@/services/lia-api"
 import { useTalentFunnelStore } from "@/stores/talent-funnel-store"
@@ -18,14 +18,14 @@ const MAX_HISTORY_ITEMS = 100
 const MAX_SAVED_SEARCHES = 100
 
 const normalizeSearchSource = (source: string): SearchSource => {
-  if (source === 'pearch') return 'global'
-  if (source === 'local' || source === 'global' || source === 'hybrid') return source
-  return 'local'
+  if (source === "pearch") return "global"
+  if (source === "local" || source === "global" || source === "hybrid") return source
+  return "local"
 }
 
 async function fetchFavoritesFromAPI(): Promise<Map<string, FavoriteCandidate>> {
   try {
-    const response = await fetch('/api/backend-proxy/candidates/favorites')
+    const response = await fetch("/api/backend-proxy/candidates/favorites")
     if (!response.ok) {
       return new Map()
     }
@@ -37,7 +37,7 @@ async function fetchFavoritesFromAPI(): Promise<Map<string, FavoriteCandidate>> 
           candidateId: item.candidate_id,
           note: item.note,
           addedAt: item.created_at,
-          isPinned: item.is_pinned || false
+          isPinned: item.is_pinned || false,
         })
       }
     }
@@ -50,9 +50,9 @@ async function fetchFavoritesFromAPI(): Promise<Map<string, FavoriteCandidate>> 
 async function toggleFavoriteAPI(candidateId: string, note?: string, isPinned?: boolean): Promise<boolean> {
   try {
     const response = await fetch(`/api/backend-proxy/candidates/${candidateId}/favorite`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ note, is_pinned: isPinned || false })
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ note, is_pinned: isPinned || false }),
     })
     return response.ok
   } catch {
@@ -63,9 +63,9 @@ async function toggleFavoriteAPI(candidateId: string, note?: string, isPinned?: 
 async function updateFavoriteAPI(candidateId: string, note?: string, isPinned?: boolean): Promise<boolean> {
   try {
     const response = await fetch(`/api/backend-proxy/candidates/${candidateId}/favorite`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ note, is_pinned: isPinned })
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ note, is_pinned: isPinned }),
     })
     return response.ok
   } catch {
@@ -78,36 +78,47 @@ export function useTalentFunnel() {
   const [history, setHistory] = useState<SearchHistoryItem[]>([])
   const [savedSearches, setSavedSearches] = useState<SavedSearch[]>([])
   const [favorites, setFavorites] = useState<Map<string, FavoriteCandidate>>(new Map())
+  // Refs keep current values accessible in callbacks without stale closures,
+  // and allow store.setXxx() to be called outside setState updaters (avoids
+  // "Cannot update a component while rendering" — Zustand set() notifies
+  // subscribers synchronously; calling it inside a setState updater triggers
+  // that notification during React reconciliation).
+  const historyRef = useRef<SearchHistoryItem[]>([])
+  const savedSearchesRef = useRef<SavedSearch[]>([])
+  const favoritesRef = useRef<Map<string, FavoriteCandidate>>(new Map())
+  historyRef.current = history
+  savedSearchesRef.current = savedSearches
+  favoritesRef.current = favorites
   const [favoriteCandidatesData, setFavoriteCandidatesData] = useState<CandidateLocal[]>([])
   const [favoritesDataLoading, setFavoritesDataLoading] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     loadFromStorage()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const loadFromStorage = async () => {
     try {
       const storedHistory = store.history
       if (storedHistory.length > 0) {
-        const normalized = storedHistory.map(item => ({
+        const normalized = storedHistory.map((item) => ({
           ...item,
-          source: normalizeSearchSource(item.source)
+          source: normalizeSearchSource(item.source),
         }))
         setHistory(normalized)
       }
 
       const storedSearches = store.savedSearches
       if (storedSearches.length > 0) {
-        const normalized = storedSearches.map(search => ({
+        const normalized = storedSearches.map((search) => ({
           ...search,
-          source: normalizeSearchSource(search.source)
+          source: normalizeSearchSource(search.source),
         }))
         setSavedSearches(normalized)
       }
 
-      await new Promise(r => setTimeout(r, 500))
+      await new Promise((r) => setTimeout(r, 500))
       const apiFavorites = await fetchFavoritesFromAPI()
       if (apiFavorites.size > 0) {
         setFavorites(apiFavorites)
@@ -135,7 +146,7 @@ export function useTalentFunnel() {
       return
     }
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-    const validIds = candidateIds.filter(id => uuidRegex.test(id))
+    const validIds = candidateIds.filter((id) => uuidRegex.test(id))
     if (validIds.length === 0) {
       setFavoriteCandidatesData([])
       return
@@ -143,11 +154,14 @@ export function useTalentFunnel() {
     setFavoritesDataLoading(true)
     try {
       const result = await liaApi.getCandidates({
-        ids: validIds.join(','),
+        ids: validIds.join(","),
         limit: validIds.length,
-        offset: 0
+        offset: 0,
       })
-      const items = result.candidates || (result as unknown as Record<string, unknown>).items as typeof result.candidates || []
+      const items =
+        result.candidates ||
+        ((result as unknown as Record<string, unknown>).items as typeof result.candidates) ||
+        []
       setFavoriteCandidatesData(items)
     } catch {
     } finally {
@@ -155,176 +169,202 @@ export function useTalentFunnel() {
     }
   }
 
-  const addToHistory = useCallback((item: Omit<SearchHistoryItem, 'id' | 'timestamp'>) => {
-    const newItem: SearchHistoryItem = {
-      ...item,
-      id: `history-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      timestamp: new Date().toISOString()
-    }
-
-    setHistory(prev => {
-      const updated = [newItem, ...prev].slice(0, MAX_HISTORY_ITEMS)
+  const addToHistory = useCallback(
+    (item: Omit<SearchHistoryItem, "id" | "timestamp">) => {
+      const newItem: SearchHistoryItem = {
+        ...item,
+        id: `history-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        timestamp: new Date().toISOString(),
+      }
+      const updated = [newItem, ...historyRef.current].slice(0, MAX_HISTORY_ITEMS)
+      historyRef.current = updated
+      setHistory(updated)
       store.setHistory(updated)
-      return updated
-    })
+      return newItem
+    },
+    [store],
+  )
 
-    return newItem
-  }, [store])
-
-  const removeFromHistory = useCallback((id: string) => {
-    setHistory(prev => {
-      const updated = prev.filter(item => item.id !== id)
+  const removeFromHistory = useCallback(
+    (id: string) => {
+      const updated = historyRef.current.filter((item) => item.id !== id)
+      historyRef.current = updated
+      setHistory(updated)
       store.setHistory(updated)
-      return updated
-    })
-  }, [store])
+    },
+    [store],
+  )
 
   const clearHistory = useCallback(() => {
+    historyRef.current = []
     setHistory([])
     store.setHistory([])
   }, [store])
 
-  const addSavedSearch = useCallback((search: Omit<SavedSearch, 'id' | 'createdAt' | 'updatedAt' | 'usageCount' | 'isFavorite'>) => {
-    const now = new Date().toISOString()
-    const newSearch: SavedSearch = {
-      ...search,
-      id: `saved-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      isFavorite: false,
-      usageCount: 0,
-      createdAt: now,
-      updatedAt: now
-    }
-
-    setSavedSearches(prev => {
-      const updated = [newSearch, ...prev].slice(0, MAX_SAVED_SEARCHES)
+  const addSavedSearch = useCallback(
+    (
+      search: Omit<
+        SavedSearch,
+        "id" | "createdAt" | "updatedAt" | "usageCount" | "isFavorite"
+      >,
+    ) => {
+      const now = new Date().toISOString()
+      const newSearch: SavedSearch = {
+        ...search,
+        id: `saved-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        isFavorite: false,
+        usageCount: 0,
+        createdAt: now,
+        updatedAt: now,
+      }
+      const updated = [newSearch, ...savedSearchesRef.current].slice(0, MAX_SAVED_SEARCHES)
+      savedSearchesRef.current = updated
+      setSavedSearches(updated)
       store.setSavedSearches(updated)
-      return updated
-    })
+      return newSearch
+    },
+    [store],
+  )
 
-    return newSearch
-  }, [store])
-
-  const updateSavedSearch = useCallback((id: string, updates: Partial<SavedSearch>) => {
-    setSavedSearches(prev => {
-      const updated = prev.map(search => 
-        search.id === id 
+  const updateSavedSearch = useCallback(
+    (id: string, updates: Partial<SavedSearch>) => {
+      const updated = savedSearchesRef.current.map((search) =>
+        search.id === id
           ? { ...search, ...updates, updatedAt: new Date().toISOString() }
-          : search
+          : search,
       )
+      savedSearchesRef.current = updated
+      setSavedSearches(updated)
       store.setSavedSearches(updated)
-      return updated
-    })
-  }, [store])
+    },
+    [store],
+  )
 
-  const removeSavedSearch = useCallback((id: string) => {
-    setSavedSearches(prev => {
-      const updated = prev.filter(search => search.id !== id)
+  const removeSavedSearch = useCallback(
+    (id: string) => {
+      const updated = savedSearchesRef.current.filter((search) => search.id !== id)
+      savedSearchesRef.current = updated
+      setSavedSearches(updated)
       store.setSavedSearches(updated)
-      return updated
-    })
-  }, [store])
+    },
+    [store],
+  )
 
-  const toggleSavedSearchFavorite = useCallback((id: string) => {
-    setSavedSearches(prev => {
-      const updated = prev.map(search =>
+  const toggleSavedSearchFavorite = useCallback(
+    (id: string) => {
+      const updated = savedSearchesRef.current.map((search) =>
         search.id === id
           ? { ...search, isFavorite: !search.isFavorite, updatedAt: new Date().toISOString() }
-          : search
+          : search,
       )
+      savedSearchesRef.current = updated
+      setSavedSearches(updated)
       store.setSavedSearches(updated)
-      return updated
-    })
-  }, [store])
+    },
+    [store],
+  )
 
-  const incrementSavedSearchUsage = useCallback((id: string, resultsCount?: number) => {
-    setSavedSearches(prev => {
-      const updated = prev.map(search => {
+  const incrementSavedSearchUsage = useCallback(
+    (id: string, resultsCount?: number) => {
+      const updated = savedSearchesRef.current.map((search) => {
         if (search.id === id) {
           const newUsageCount = search.usageCount + 1
-          const newAvgResults = resultsCount !== undefined
-            ? Math.round(((search.avgResults || 0) * search.usageCount + resultsCount) / newUsageCount)
-            : search.avgResults
-          
+          const newAvgResults =
+            resultsCount !== undefined
+              ? Math.round(
+                  ((search.avgResults || 0) * search.usageCount + resultsCount) / newUsageCount,
+                )
+              : search.avgResults
           return {
             ...search,
             usageCount: newUsageCount,
             avgResults: newAvgResults,
             lastUsed: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
+            updatedAt: new Date().toISOString(),
           }
         }
         return search
       })
+      savedSearchesRef.current = updated
+      setSavedSearches(updated)
       store.setSavedSearches(updated)
-      return updated
-    })
-  }, [store])
+    },
+    [store],
+  )
 
-  const saveHistoryAsSearch = useCallback((historyItem: SearchHistoryItem, name: string, description?: string) => {
-    return addSavedSearch({
-      name,
-      description,
-      query: historyItem.query,
-      mode: historyItem.mode,
-      source: historyItem.source,
-      entities: historyItem.entities,
-      metadata: historyItem.metadata
-    })
-  }, [addSavedSearch])
+  const saveHistoryAsSearch = useCallback(
+    (historyItem: SearchHistoryItem, name: string, description?: string) => {
+      return addSavedSearch({
+        name,
+        description,
+        query: historyItem.query,
+        mode: historyItem.mode,
+        source: historyItem.source,
+        entities: historyItem.entities,
+        metadata: historyItem.metadata,
+      })
+    },
+    [addSavedSearch],
+  )
 
-  const addFavoriteCandidate = useCallback((candidateId: string, note?: string) => {
-    const favorite: FavoriteCandidate = {
-      candidateId,
-      note,
-      addedAt: new Date().toISOString(),
-      isPinned: false
-    }
-
-    setFavorites(prev => {
-      const updated = new Map(prev)
+  const addFavoriteCandidate = useCallback(
+    (candidateId: string, note?: string) => {
+      const favorite: FavoriteCandidate = {
+        candidateId,
+        note,
+        addedAt: new Date().toISOString(),
+        isPinned: false,
+      }
+      const updated = new Map(favoritesRef.current)
       updated.set(candidateId, favorite)
+      favoritesRef.current = updated
+      setFavorites(updated)
       store.setFavoritesMap(Object.fromEntries(updated))
-      return updated
-    })
+      return favorite
+    },
+    [store],
+  )
 
-    return favorite
-  }, [store])
-
-  const removeFavoriteCandidate = useCallback((candidateId: string) => {
-    setFavorites(prev => {
-      const updated = new Map(prev)
+  const removeFavoriteCandidate = useCallback(
+    (candidateId: string) => {
+      const updated = new Map(favoritesRef.current)
       updated.delete(candidateId)
+      favoritesRef.current = updated
+      setFavorites(updated)
       store.setFavoritesMap(Object.fromEntries(updated))
-      return updated
-    })
-  }, [store])
+    },
+    [store],
+  )
 
-  const toggleFavoriteCandidate = useCallback((candidateId: string, note?: string) => {
-    setFavorites(prev => {
-      const updated = new Map(prev)
-      const wasRemoved = updated.has(candidateId)
-      if (wasRemoved) {
+  const toggleFavoriteCandidate = useCallback(
+    (candidateId: string, note?: string) => {
+      const updated = new Map(favoritesRef.current)
+      const wasPresent = updated.has(candidateId)
+      if (wasPresent) {
         updated.delete(candidateId)
-        setFavoriteCandidatesData(prevData => prevData.filter(c => c.id !== candidateId))
+        setFavoriteCandidatesData((prevData) => prevData.filter((c) => c.id !== candidateId))
       } else {
         updated.set(candidateId, {
           candidateId,
           note,
           addedAt: new Date().toISOString(),
-          isPinned: false
+          isPinned: false,
         })
         fetchFavoriteCandidatesFullData([...Array.from(updated.keys())])
       }
+      favoritesRef.current = updated
+      setFavorites(updated)
       store.setFavoritesMap(Object.fromEntries(updated))
-      return updated
-    })
-    
-    toggleFavoriteAPI(candidateId, note).catch((err) => { console.warn('[useTalentFunnel] toggleFavoriteAPI fire-and-forget failed', err) })
-  }, [store])
+      toggleFavoriteAPI(candidateId, note).catch((err) => {
+        console.warn("[useTalentFunnel] toggleFavoriteAPI fire-and-forget failed", err)
+      })
+    },
+    [store],
+  )
 
-  const togglePinnedCandidate = useCallback((candidateId: string) => {
-    setFavorites(prev => {
-      const updated = new Map(prev)
+  const togglePinnedCandidate = useCallback(
+    (candidateId: string) => {
+      const updated = new Map(favoritesRef.current)
       const existing = updated.get(candidateId)
       const newIsPinned = existing ? !existing.isPinned : true
       if (existing) {
@@ -333,46 +373,61 @@ export function useTalentFunnel() {
         updated.set(candidateId, {
           candidateId,
           addedAt: new Date().toISOString(),
-          isPinned: true
+          isPinned: true,
         })
       }
+      favoritesRef.current = updated
+      setFavorites(updated)
       store.setFavoritesMap(Object.fromEntries(updated))
-      
       if (existing) {
-        updateFavoriteAPI(candidateId, existing.note, newIsPinned).catch((err) => { console.warn('[useTalentFunnel] updateFavoriteAPI (pin) fire-and-forget failed', err) })
+        updateFavoriteAPI(candidateId, existing.note, newIsPinned).catch((err) => {
+          console.warn("[useTalentFunnel] updateFavoriteAPI (pin) fire-and-forget failed", err)
+        })
       } else {
-        toggleFavoriteAPI(candidateId, undefined, true).catch((err) => { console.warn('[useTalentFunnel] toggleFavoriteAPI (pin) fire-and-forget failed', err) })
+        toggleFavoriteAPI(candidateId, undefined, true).catch((err) => {
+          console.warn("[useTalentFunnel] toggleFavoriteAPI (pin) fire-and-forget failed", err)
+        })
       }
-      
-      return updated
-    })
-  }, [store])
+    },
+    [store],
+  )
 
-  const updateFavoriteNote = useCallback((candidateId: string, note: string) => {
-    setFavorites(prev => {
-      const updated = new Map(prev)
-      const existing = updated.get(candidateId)
-      if (existing) {
-        updated.set(candidateId, { ...existing, note })
-        store.setFavoritesMap(Object.fromEntries(updated))
-        
-        updateFavoriteAPI(candidateId, note, existing.isPinned).catch((err) => { console.warn('[useTalentFunnel] updateFavoriteAPI (note) fire-and-forget failed', err) })
-      }
-      return updated
-    })
-  }, [store])
+  const updateFavoriteNote = useCallback(
+    (candidateId: string, note: string) => {
+      const existing = favoritesRef.current.get(candidateId)
+      if (!existing) return
+      const updated = new Map(favoritesRef.current)
+      updated.set(candidateId, { ...existing, note })
+      favoritesRef.current = updated
+      setFavorites(updated)
+      store.setFavoritesMap(Object.fromEntries(updated))
+      updateFavoriteAPI(candidateId, note, existing.isPinned).catch((err) => {
+        console.warn("[useTalentFunnel] updateFavoriteAPI (note) fire-and-forget failed", err)
+      })
+    },
+    [store],
+  )
 
-  const isFavorite = useCallback((candidateId: string) => {
-    return favorites.has(candidateId)
-  }, [favorites])
+  const isFavorite = useCallback(
+    (candidateId: string) => {
+      return favorites.has(candidateId)
+    },
+    [favorites],
+  )
 
-  const isPinned = useCallback((candidateId: string) => {
-    return favorites.get(candidateId)?.isPinned || false
-  }, [favorites])
+  const isPinned = useCallback(
+    (candidateId: string) => {
+      return favorites.get(candidateId)?.isPinned || false
+    },
+    [favorites],
+  )
 
-  const getFavoriteNote = useCallback((candidateId: string) => {
-    return favorites.get(candidateId)?.note
-  }, [favorites])
+  const getFavoriteNote = useCallback(
+    (candidateId: string) => {
+      return favorites.get(candidateId)?.note
+    },
+    [favorites],
+  )
 
   const getFavoriteIds = useCallback(() => {
     return new Set(favorites.keys())
@@ -381,8 +436,8 @@ export function useTalentFunnel() {
   const getPinnedIds = useCallback(() => {
     return new Set(
       Array.from(favorites.entries())
-        .filter(([_, fav]) => fav.isPinned)
-        .map(([id]) => id)
+        .filter(([, fav]) => fav.isPinned)
+        .map(([id]) => id),
     )
   }, [favorites])
 
@@ -422,6 +477,6 @@ export function useTalentFunnel() {
     getFavoriteNote,
     getFavoriteIds,
     getPinnedIds,
-    getFavoriteNotes
+    getFavoriteNotes,
   }
 }
