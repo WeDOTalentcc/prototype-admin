@@ -78,6 +78,46 @@ class ScreeningCompletedEvent(PlatformEvent):
 
 
 # ---------------------------------------------------------------------------
+# Agent Studio Fase 2.5 — Onda C1.3 (registrado 2026-05-29)
+#
+# Eventos event-driven que o motor de execução (C1.2 consumer) escuta para
+# disparar deployments com trigger_mode correspondente:
+#   on_apply                                          -> candidate_applied
+#   on_enter_stage / on_exit_stage / on_stage_change  -> stage_changed
+#   (on_stuck_in_stage e detectado por scheduler, nao por evento)
+#
+# Convencao de routing key: nome FLAT (candidate_applied, stage_changed),
+# alinhado com CANONICAL_EVENT_TYPES do pool_agent_event_consumer e com a
+# matriz canonical de app.shared.trigger_mode_validation. NAO usa o padrao
+# dotted; o consumer event-driven faz match do event_type contra a
+# allowlist de event_triggers do deployment.
+# ---------------------------------------------------------------------------
+
+class CandidateAppliedEvent(PlatformEvent):
+    """Emitido quando um candidato se inscreve numa vaga (apply nativo).
+
+    Dispara deployments com trigger_mode=on_apply acoplados ao target
+    job=vacancy_id. payload canonical: {candidate_id, vacancy_id}.
+    company_id vem do contexto do tenant (vacancy.company_id), NUNCA do
+    payload do request -- multi-tenancy fail-closed (REGRA ZERO).
+    """
+    event_type: str = "candidate_applied"
+    source_api: str = "lia-agent-system"
+
+
+class StageChangedEvent(PlatformEvent):
+    """Emitido quando o stage de um candidato muda no pipeline.
+
+    Cobre os trigger_modes on_enter_stage / on_exit_stage / on_stage_change
+    (on_stuck_in_stage e detectado por scheduler, fora do escopo de evento).
+    payload canonical: {candidate_id, vacancy_id, from_stage, to_stage}.
+    company_id vem do contexto do tenant, NUNCA do payload do request.
+    """
+    event_type: str = "stage_changed"
+    source_api: str = "lia-agent-system"
+
+
+# ---------------------------------------------------------------------------
 # Publisher
 # ---------------------------------------------------------------------------
 

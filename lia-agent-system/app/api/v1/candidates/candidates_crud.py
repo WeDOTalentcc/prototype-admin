@@ -860,6 +860,39 @@ async def update_candidate_stage(
             except Exception as calibration_error:
                 logger.warning(f"Failed to record implicit feedback: {calibration_error}")
 
+        # Agent Studio Fase 2.5 — Onda C1.3: emite stage_changed no
+        # platform.events para o motor event-driven. Cobre os trigger_modes
+        # on_enter_stage / on_exit_stage / on_stage_change (o consumer C1.2
+        # faz o match from_stage/to_stage). on_stuck_in_stage e detectado por
+        # scheduler, fora do escopo deste evento.
+        # REGRA 4: fail-soft mas LOUD. Multi-tenancy: company_id vem de
+        # vacancy_candidate.company_id (row do tenant), NUNCA do request.
+        if previous_stage != vacancy_candidate.stage:
+            try:
+                from app.shared.messaging.platform_events import (
+                    StageChangedEvent,
+                    publish_platform_event,
+                )
+
+                _evt_company_id = str(getattr(vacancy_candidate, "company_id", "") or company_id)
+                await publish_platform_event(
+                    StageChangedEvent(
+                        company_id=_evt_company_id,
+                        payload={
+                            "candidate_id": str(candidate.id),
+                            "vacancy_id": str(vacancy_candidate.vacancy_id),
+                            "from_stage": previous_stage,
+                            "to_stage": vacancy_candidate.stage,
+                        },
+                    )
+                )
+            except Exception as _evt_err:  # noqa: BLE001
+                logger.error(
+                    "[C1.3] publish stage_changed failed (transicao prossegue): %s",
+                    _evt_err,
+                    exc_info=True,
+                )
+
         return {
             "id": str(candidate.id),
             "name": candidate.name,

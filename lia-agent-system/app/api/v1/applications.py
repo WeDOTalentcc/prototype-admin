@@ -285,6 +285,34 @@ company_id: str = Depends(require_company_id)):
                 },
             )
 
+            # Agent Studio Fase 2.5 — Onda C1.3: emite candidate_applied no
+            # platform.events para o motor event-driven (deployments on_apply).
+            # REGRA 4: fail-soft mas LOUD — falha de publish NAO quebra o apply
+            # do candidato, mas e logada com exc_info (nunca silenciada).
+            # Multi-tenancy: company_id vem de vacancy.company_id (contexto do
+            # tenant), NUNCA do payload do request.
+            try:
+                from app.shared.messaging.platform_events import (
+                    CandidateAppliedEvent,
+                    publish_platform_event,
+                )
+
+                await publish_platform_event(
+                    CandidateAppliedEvent(
+                        company_id=str(vacancy.company_id),
+                        payload={
+                            "candidate_id": str(candidate.id),
+                            "vacancy_id": str(vacancy_id),
+                        },
+                    )
+                )
+            except Exception as _evt_err:  # noqa: BLE001
+                logger.error(
+                    "[C1.3] publish candidate_applied failed (apply prossegue): %s",
+                    _evt_err,
+                    exc_info=True,
+                )
+
         _cand_name = candidate_data["name"]
         _vac_title = vacancy.title
         await notification_service.create_notification(

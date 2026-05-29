@@ -531,6 +531,39 @@ company_id: str = Depends(require_company_id)):
                 vacancy_candidate.human_reviewer_id = request.reviewer_id
             await vc_repo.update(vacancy_candidate)
 
+            # Agent Studio Fase 2.5 — Onda C1.3: emite stage_changed no
+            # platform.events (decisao de triagem move o candidato de stage).
+            # REGRA 4: fail-soft mas LOUD. Multi-tenancy: company_id de
+            # vacancy_candidate.company_id (row do tenant), NUNCA do request.
+            if current_stage != new_stage:
+                try:
+                    from app.shared.messaging.platform_events import (
+                        StageChangedEvent,
+                        publish_platform_event,
+                    )
+
+                    _evt_company_id = str(
+                        getattr(vacancy_candidate, "company_id", "") or company_id
+                    )
+                    await publish_platform_event(
+                        StageChangedEvent(
+                            company_id=_evt_company_id,
+                            payload={
+                                "candidate_id": str(candidate_id),
+                                "vacancy_id": str(vacancy_candidate.vacancy_id),
+                                "from_stage": current_stage or "unknown",
+                                "to_stage": new_stage,
+                            },
+                        )
+                    )
+                except Exception as _evt_err:  # noqa: BLE001
+                    logger.error(
+                        "[C1.3] publish stage_changed (screening) failed "
+                        "(decisao prossegue): %s",
+                        _evt_err,
+                        exc_info=True,
+                    )
+
         candidate.status = new_status
         await candidate_repo.update(candidate)
 

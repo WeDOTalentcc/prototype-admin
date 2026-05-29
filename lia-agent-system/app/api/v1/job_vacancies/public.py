@@ -446,6 +446,32 @@ company_id: str = Depends(require_company_id)):
         )
         await repo.add_vacancy_candidate(vacancy_candidate)
 
+        # Agent Studio Fase 2.5 — Onda C1.3: emite candidate_applied no
+        # platform.events para o motor event-driven (deployments on_apply).
+        # REGRA 4: fail-soft mas LOUD. Multi-tenancy: company_id de
+        # job.company_id (contexto tenant), NUNCA do payload do request.
+        try:
+            from app.shared.messaging.platform_events import (
+                CandidateAppliedEvent,
+                publish_platform_event,
+            )
+
+            await publish_platform_event(
+                CandidateAppliedEvent(
+                    company_id=str(job.company_id),
+                    payload={
+                        "candidate_id": str(candidate.id),
+                        "vacancy_id": str(job.id),
+                    },
+                )
+            )
+        except Exception as _evt_err:  # noqa: BLE001
+            logger.error(
+                "[C1.3] publish candidate_applied (web) failed (apply prossegue): %s",
+                _evt_err,
+                exc_info=True,
+            )
+
         try:
             await notification_service.create_notification(
                 user_id="default_user",
