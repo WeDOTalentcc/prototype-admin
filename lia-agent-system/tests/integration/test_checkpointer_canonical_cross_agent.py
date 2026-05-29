@@ -79,22 +79,6 @@ def test_interview_scheduling_graph_uses_canonical_postgres_saver():
     )
 
 
-def test_job_wizard_graph_uses_canonical_postgres_saver():
-    """JobWizardGraph (job_management legacy/HITL resume) usa PostgresSaver."""
-    from app.domains.job_management.agents.job_wizard_graph import (
-        JobWizardGraph,
-    )
-
-    graph = JobWizardGraph()
-    compiled = graph._build_langgraph()
-
-    cp = getattr(compiled, "checkpointer", None)
-    assert cp is not None, "JobWizardGraph compilou sem checkpointer."
-    assert type(cp).__name__ == "PostgresSaver", (
-        f"JobWizardGraph usa {type(cp).__name__} em vez de PostgresSaver."
-    )
-
-
 def test_job_creation_graph_uses_canonical_postgres_saver():
     """JobCreationGraph (caminho canonical do wizard de vaga) usa PostgresSaver.
 

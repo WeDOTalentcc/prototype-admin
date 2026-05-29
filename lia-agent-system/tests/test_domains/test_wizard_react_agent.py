@@ -20,32 +20,6 @@ class TestWizardReActAgentImport:
         agent = WizardReActAgent()
         assert agent is not None
 
-    def test_job_wizard_graph_importable(self):
-        """job_wizard_graph importável do domínio correto."""
-        from app.domains.job_management.agents.job_wizard_graph import job_wizard_graph
-        assert job_wizard_graph is not None
-
-
-class TestJobWizardGraphCheckpoint:
-    """Checkpoint restore: B2 fix verificado."""
-
-    def test_ephemeral_fields_defined(self):
-        """EPHEMERAL_FIELDS deve estar definido no job_wizard_graph."""
-        from app.domains.job_management.agents.job_wizard_graph import EPHEMERAL_FIELDS
-        assert isinstance(EPHEMERAL_FIELDS, (set, frozenset, list))
-        assert "user_message" in EPHEMERAL_FIELDS
-
-    def test_checkpoint_merge_preserves_prior_state(self):
-        """Merge de checkpoint deve preservar estado anterior (não ser sobrescrito)."""
-        from app.domains.job_management.agents.job_wizard_graph import EPHEMERAL_FIELDS
-        # Simular o merge
-        prior = {"title": "Dev Python", "requirements": ["Python", "FastAPI"], "stage": "requirements"}
-        state = {"user_message": "quero adicionar Docker", "session_id": "s1", "stage": "requirements"}
-        # Lógica do fix B2: {**state, **{k:v for k,v in prior.items() if k not in EPHEMERAL_FIELDS}}
-        merged = {**state, **{k: v for k, v in prior.items() if k not in EPHEMERAL_FIELDS}}
-        assert merged["title"] == "Dev Python", "Prior state deve ser preservado"
-        assert merged["user_message"] == "quero adicionar Docker", "Estado atual deve prevalecer em ephemeral"
-
 
 class TestWizardFairnessGuard:
     """FairnessGuard em wizard_tool_registry."""

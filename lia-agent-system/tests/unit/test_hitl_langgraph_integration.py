@@ -96,80 +96,6 @@ class TestHITLServiceResumeInfo:
 # JobWizardGraph — interrupt_before stage_transition
 # ---------------------------------------------------------------------------
 
-class TestJobWizardGraphHITL:
-
-    def test_build_langgraph_has_interrupt_before(self):
-        """_build_langgraph deve compilar com interrupt_before=['stage_transition']."""
-        try:
-            from app.domains.job_management.agents.job_wizard_graph import JobWizardGraph
-        except ImportError:
-            pytest.skip("JobWizardGraph não disponível")
-
-        graph = JobWizardGraph()
-        try:
-            compiled = graph._build_langgraph()
-            # LangGraph compiled graphs expõem interrupt_before nos metadados
-            config = getattr(compiled, "config_schema", None) or {}
-            # Verificar que a compilação não lança erro (interrupt_before válido)
-            assert compiled is not None
-        except Exception as exc:
-            if "checkpointer" in str(exc).lower() or "postgres" in str(exc).lower():
-                pytest.skip("Checkpointer não configurado em test env")
-            raise
-
-    @pytest.mark.asyncio
-    async def test_invoke_langgraph_handles_interrupt_confirm_intent(self):
-        """Quando __interrupt__ presente e intent=confirm → HITL request_approval chamado."""
-        try:
-            from app.domains.job_management.agents.job_wizard_graph import JobWizardGraph
-            from lia_agents_core.state_machine import WizardIntent
-        except ImportError:
-            pytest.skip("JobWizardGraph não disponível")
-
-        confirm_value = WizardIntent.CONFIRM.value  # "confirm"
-
-        graph = JobWizardGraph()
-        graph._compiled_lg = MagicMock()
-        graph._compiled_lg.ainvoke = AsyncMock(return_value={
-            "__interrupt__": [{"value": {}}],
-            "intent": confirm_value,
-        })
-
-        state = {
-            "intent": confirm_value,
-            "session_id": "s-wizard-test",
-            "job_title": "Engenheiro",
-            "company_id": "acme",
-            "user_message": "confirmar",
-        }
-
-        with patch("app.domains.cv_screening.services.hitl_service.hitl_service") as mock_hitl:
-            mock_hitl.request_approval = AsyncMock(return_value="pending-123")
-            mock_hitl.store_resume_info = AsyncMock()
-            result = await graph._invoke_langgraph(state)
-
-        assert result.get("hitl_pending") is True
-        assert result.get("hitl_pending_id") == "pending-123"
-
-    @pytest.mark.asyncio
-    async def test_invoke_langgraph_no_interrupt_passes_through(self):
-        """Sem __interrupt__ → retorna resultado normal."""
-        try:
-            from app.domains.job_management.agents.job_wizard_graph import JobWizardGraph
-        except ImportError:
-            pytest.skip("JobWizardGraph não disponível")
-
-        graph = JobWizardGraph()
-        expected = {"intent": "provide_info", "session_id": "s-normal"}
-        graph._compiled_lg = MagicMock()
-        graph._compiled_lg.ainvoke = AsyncMock(return_value=expected)
-
-        state = {"intent": "provide_info", "session_id": "s-normal"}
-        result = await graph._invoke_langgraph(state)
-
-        assert result == expected
-        assert "__interrupt__" not in result
-
 
 # ---------------------------------------------------------------------------
 # PipelineTransitionAgent — HITL pre-check
@@ -379,13 +305,6 @@ class TestHITLContractFull:
         assert "hitl_approved" in content
         assert "needs_hitl" in content
 
-    def test_wizard_graph_has_interrupt_before(self):
-        import pathlib
-        content = pathlib.Path(
-            "app/domains/job_management/agents/job_wizard_graph.py"
-        ).read_text()
-        assert "interrupt_before" in content
-        assert "stage_transition" in content
 
     def test_wsi_graph_has_interrupt_before(self):
         import pathlib

@@ -133,15 +133,9 @@ def get_production_handlers() -> dict[str, Any]:
     return handlers
 
 
-_job_wizard_graph = None
-_JOB_DOMAIN_AVAILABLE = False
-
-try:
-    from app.domains.job_management.agents.job_wizard_graph import JobWizardGraph
-    _JOB_DOMAIN_AVAILABLE = True
-except ImportError as exc:
-    logger.info("JobWizardGraph not available (missing deps): %s", exc)
-    JobWizardGraph = None  # type: ignore[misc, assignment]
+# JobWizardGraph LEGACY removido (2026-05-29). A criação canônica de vaga é
+# conversacional via WizardSessionService/JobCreationGraph (chat), não via
+# crew/plan_executor. handler_create_job_opening é stub explícito abaixo.
 
 
 _SOURCING_DOMAIN_AVAILABLE = False
@@ -160,55 +154,30 @@ async def handler_create_job_opening(
     params: dict[str, Any],
     crew_ctx: CrewContext,
 ) -> dict[str, Any]:
-    """Create a job opening via JobWizardGraph.
+    """Stub EXPLÍCITO de criação de vaga via crew (não implementado).
 
-    Delegates to the real ``JobWizardGraph.invoke()`` when the domain is
-    available.  Falls back to a minimal stub otherwise.
+    O JobWizardGraph LEGACY foi removido (2026-05-29). A criação canônica de
+    vaga é conversacional via WizardSessionService/JobCreationGraph (chat), não
+    via crew/plan_executor. Este handler está dormente — nenhum plano de crew
+    dispara ``create_job_opening``. Retorna um resultado explícito de
+    não-implementado: NUNCA finge sucesso (REGRA 4 anti-silent-fallback).
     """
-    import uuid
-
     job_title = params.get("job_title", "Untitled")
-    company_id = params.get("company_id", "")
-
-    if _JOB_DOMAIN_AVAILABLE and JobWizardGraph is not None:
-        global _job_wizard_graph
-        if _job_wizard_graph is None:
-            _job_wizard_graph = JobWizardGraph()
-
-        state = {
-            "user_message": f"Criar vaga: {job_title}",
-            "company_id": company_id,
-            "session_id": f"crew:{uuid.uuid4().hex[:8]}",
-            "current_stage": "initial_input",
-            "job_data": {
-                "title": job_title,
-                **{k: v for k, v in params.items() if k not in ("job_title", "company_id", "crew_execution_id")},
-            },
-        }
-
-        result_state = await _job_wizard_graph.invoke(state)
-
-        job_data = result_state.get("job_data", {})
-        return {
-            "job_id": job_data.get("id", uuid.uuid4().hex[:8]),
-            "job_title": job_data.get("title", job_title),
-            "status": result_state.get("current_stage", "draft"),
-            "requirements": job_data.get("requirements", params.get("requirements", [])),
-            "message": result_state.get("response", f"Job '{job_title}' created via JobWizardGraph"),
-            "source": "job_wizard_graph",
-        }
-
-    if not _JOB_DOMAIN_AVAILABLE:
-        logger.warning("[handler_create_job_opening] JobWizardGraph unavailable — using stub (test mode only)")
-
-    job_id = uuid.uuid4().hex[:8]
+    logger.warning(
+        "[handler_create_job_opening] crew job-creation não implementado — "
+        "use o wizard conversacional (WizardSessionService/JobCreationGraph)."
+    )
     return {
-        "job_id": job_id,
+        "job_id": None,
         "job_title": job_title,
-        "status": "draft",
+        "status": "not_implemented",
+        "created": False,
         "requirements": params.get("requirements", []),
-        "message": f"Job '{job_title}' created successfully (id={job_id})",
-        "source": "stub",
+        "message": (
+            "Criação de vaga via crew não está implementada. "
+            "Use o wizard conversacional da LIA."
+        ),
+        "source": "stub_not_implemented",
     }
 
 

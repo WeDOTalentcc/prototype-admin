@@ -8,7 +8,7 @@ Agentes testados:
   ReAct (9): WizardReActAgent, PipelineReActAgent, SourcingReActAgent,
              TalentReActAgent, KanbanReActAgent, JobsManagementReActAgent,
              PolicyReActAgent, AutomationReActAgent, PipelineTransitionAgent
-  Graph (3): JobWizardGraph, WSIInterviewGraph, InterviewGraph
+  Graph (2): WSIInterviewGraph, InterviewGraph
 """
 import sys
 import os
@@ -164,59 +164,6 @@ class TestReActDispatch:
 # Seção 3: Agentes Graph — _invoke_langgraph existe e é chamado quando flag=True
 # ---------------------------------------------------------------------------
 
-class TestJobWizardGraphLangGraphNative:
-
-    def test_build_langgraph_callable(self):
-        from app.domains.job_management.agents.job_wizard_graph import JobWizardGraph
-        g = JobWizardGraph()
-        assert callable(getattr(g, "_build_langgraph", None))
-
-    def test_invoke_langgraph_method_exists(self):
-        from app.domains.job_management.agents.job_wizard_graph import JobWizardGraph
-        g = JobWizardGraph()
-        assert hasattr(g, "_invoke_langgraph")
-        assert callable(g._invoke_langgraph)
-
-    @pytest.mark.asyncio
-    async def test_invoke_calls_invoke_langgraph(self):
-        from app.domains.job_management.agents.job_wizard_graph import JobWizardGraph
-        g = JobWizardGraph()
-        state = {
-            "session_id": "sess-wizard-graph-001",
-            "company_id": "company-test",
-            "intent": "",
-            "message": "Criar vaga de dev",
-            "response": "",
-            "tool_calls": [],
-            "should_continue": True,
-            "error": None,
-        }
-        with patch.object(g, "_invoke_langgraph", new_callable=AsyncMock) as mock_lg:
-            mock_lg.return_value = {**state, "response": "Vaga criada"}
-            await g.invoke(state)
-            mock_lg.assert_called_once()
-
-    @pytest.mark.asyncio
-    async def test_invoke_langgraph_does_not_raise_with_minimal_input(self):
-        from app.domains.job_management.agents.job_wizard_graph import JobWizardGraph
-        g = JobWizardGraph()
-        state = {
-            "session_id": "sess-wizard-graph-002",
-            "company_id": "company-test",
-            "intent": "",
-            "message": "Criar vaga",
-            "response": "",
-            "tool_calls": [],
-            "should_continue": True,
-            "error": None,
-        }
-        mock_compiled = MagicMock()
-        mock_compiled.ainvoke = AsyncMock(return_value={**state, "response": "OK"})
-        g._compiled = mock_compiled
-
-        result = await g._invoke_langgraph(state)
-        assert result is not None
-
 
 class TestWSIInterviewGraphLangGraphNative:
 
@@ -370,10 +317,8 @@ class TestLangGraphNativeEnvironment:
 
     def test_all_graph_agents_importable(self):
         """Todos os 3 agentes Graph são importáveis sem erro."""
-        from app.domains.job_management.agents.job_wizard_graph import JobWizardGraph
         from app.domains.cv_screening.agents.wsi_interview_graph import WSIInterviewGraph
         from app.domains.interview_scheduling.agents.interview_graph import InterviewGraph
-        assert JobWizardGraph is not None
         assert WSIInterviewGraph is not None
         assert InterviewGraph is not None
 

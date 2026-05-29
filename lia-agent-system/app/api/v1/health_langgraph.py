@@ -120,13 +120,6 @@ async def langgraph_health(
 
     graphs.append(_probe_graph("WSIInterviewGraph", _wsi_factory))
 
-    def _wizard_factory():
-        from app.domains.job_management.agents.job_wizard_graph import JobWizardGraph
-        g = JobWizardGraph()
-        return g._build_langgraph()
-
-    graphs.append(_probe_graph("JobWizardGraph", _wizard_factory))
-
     error_count = sum(1 for g in graphs if g.status == "error")
     if error_count == 0:
         overall = "ok"

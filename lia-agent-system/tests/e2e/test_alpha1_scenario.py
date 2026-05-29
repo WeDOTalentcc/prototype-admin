@@ -43,14 +43,7 @@ class TestEtapa1CriarVaga:
     def test_wizard_components_importable(self):
         """Componentes do wizard devem ser importáveis."""
         from app.domains.job_management.agents.wizard_react_agent import WizardReActAgent
-        from app.domains.job_management.agents.job_wizard_graph import job_wizard_graph
         assert WizardReActAgent is not None
-        assert job_wizard_graph is not None
-
-    def test_wizard_graph_has_invoke_method(self):
-        """job_wizard_graph deve ter método invoke/ainvoke."""
-        from app.domains.job_management.agents.job_wizard_graph import job_wizard_graph
-        assert hasattr(job_wizard_graph, "invoke") or hasattr(job_wizard_graph, "ainvoke")
 
 
 # ─── Etapa 2: Buscar Candidatos ───────────────────────────────────────────────
