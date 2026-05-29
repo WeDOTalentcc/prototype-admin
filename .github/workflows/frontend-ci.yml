@@ -195,5 +195,12 @@ jobs:
       - name: G-CANDIDATE-FIELDS -- canonical snake_case candidate fields (BLOCKING)
         run: python3 scripts/check_canonical_candidate_fields.py --blocking
 
+      - name: Phase 2 invariants (Onda 5.9 — BLOCKING)
+        # Sensor agregado que roda 9 sensores BLOCKING + 2 warn-only da
+        # Studio Fase 2 (Ondas 0+1+2+3+4 + promovido 5.4). Falha em qualquer
+        # BLOCKING sub-sensor bloqueia o merge. warn-only sub-sensors apenas
+        # imprimem warning. Doc: CLAUDE.md § Studio Fase 2.
+        run: python3 ../lia-agent-system/scripts/check_phase2_invariants.py
+
       - name: Build
         run: npm run build

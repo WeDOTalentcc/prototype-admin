@@ -42,8 +42,12 @@ import { useAiPersona } from "@/hooks/company/use-ai-persona"
 import type { AgentKpiPeriod, AgentKpiResponse } from "@/types/agents/kpi"
 
 const PERIODS: AgentKpiPeriod[] = ["7d", "30d", "90d", "all"]
-const CYAN_TOKEN = "var(--wedo-cyan, #60BED1)"
-const NEUTRAL_TOKEN = "var(--lia-border-default, #E5E7EB)"
+// Onda 5.4/5.9 — sem fallback hex (sensor check_cyan_token_for_agents BLOCKING).
+// Token canonical: tailwind.config.ts:59 expoe wedo-cyan; design-tokens.css
+// define --wedo-cyan globalmente. Fallback nao precisa porque ambos sempre
+// existem (sao injetados em runtime independentemente de cliente customizado).
+const CYAN_TOKEN = "var(--wedo-cyan)"
+const NEUTRAL_TOKEN = "var(--lia-border-default)"
 
 function formatNumber(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`
