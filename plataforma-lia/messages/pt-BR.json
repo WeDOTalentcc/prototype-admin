@@ -5229,7 +5229,18 @@
         "selectTemplate": "Selecione um modelo para visualizar",
         "active": "Ativo",
         "inactive": "Inativo",
-        "priority": "Prioridade: {priority}"
+        "priority": "Prioridade: {priority}",
+        "applyChangesWarning": "Há alterações não salvas neste template.",
+        "applyChangesWarningSave": "Salve",
+        "applyChangesWarningEnd": "para aplicá-las.",
+        "emailBodyLabel": "Corpo do e-mail",
+        "subjectLabel": "Assunto",
+        "whatsappMessageLabel": "Mensagem do WhatsApp",
+        "filterEmail": "E-mail",
+        "filterWhatsapp": "WhatsApp",
+        "templatesFoundCount": "{count} template(s) encontrado(s)",
+        "tryAdjustFilters": "Tente ajustar os filtros.",
+        "viewing": "Visualizando"
       },
       "signature": {
         "title": "Assinatura de Email Padrão",
@@ -5319,13 +5330,64 @@
         "metricsError": "Erro ao carregar métricas",
         "createError": "Erro ao criar experimento",
         "newExperimentTitle": "Novo Experimento",
-        "variantCount": "{count} variante(s)"
+        "variantCount": "{count} variante(s)",
+        "addVariantBtn": "Adicionar variante",
+        "createdOnLabel": "Criado em",
+        "experimentNameLabel": "Nome do experimento",
+        "experimentNamePlaceholder": "Ex: Assunto do e-mail de convite",
+        "meanLabel": "Média",
+        "metricsHeader": "Métricas",
+        "noObservationsYet": "Sem observações ainda",
+        "templateLabel": "Template",
+        "templatePlaceholder": "Selecione um template",
+        "trafficSmall": "tráfego",
+        "variantNameSmall": "variante",
+        "variantsCountLabel": "Variantes",
+        "variantsLabel": "Variantes",
+        "winnerInline": "Vencedora"
       },
       "tabTemplates": "Modelos",
       "tabSignature": "Assinatura",
       "tabSchedule": "Horários de Envio (LGPD)",
       "tabAlerts": "Alertas",
-      "tabAbTesting": "Teste A/B"
+      "tabAbTesting": "Teste A/B",
+      "common": {
+        "cancel": "Cancelar",
+        "edit": "Editar",
+        "saveChanges": "Salvar alterações"
+      },
+      "signatureSection": {
+        "title": "Assinatura de E-mail",
+        "templateLabel": "Modelo de assinatura",
+        "variablesLabel": "Variáveis disponíveis",
+        "previewLabel": "Pré-visualização",
+        "sampleName": "Maria Silva",
+        "sampleRole": "Gerente de Recrutamento",
+        "sampleCompany": "WeDoTalent",
+        "sampleEmail": "maria@empresa.com",
+        "samplePhone": "(11) 99999-9999",
+        "sampleWebsite": "www.empresa.com"
+      },
+      "alertPreferences": {
+        "title": "Preferências de Alertas",
+        "subtitle": "Escolha como e quando ser notificado sobre cada evento.",
+        "loading": "Carregando preferências...",
+        "empty": "Nenhuma preferência de alerta disponível.",
+        "saved": "Salvo",
+        "thresholdAria": "Limite para {type}",
+        "cooldownAria": "Intervalo entre alertas para {type}",
+        "toggleAria": "Ativar ou desativar alerta de {type}",
+        "channelEmail": "E-mail",
+        "channelInApp": "No app",
+        "channelTeams": "Teams",
+        "channelWhatsapp": "WhatsApp",
+        "unit": {
+          "count": "vezes",
+          "hours": "horas",
+          "days": "dias",
+          "percent": "%"
+        }
+      }
     },
     "integrations": {
       "tabs": {

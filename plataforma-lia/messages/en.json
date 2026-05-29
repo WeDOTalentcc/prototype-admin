@@ -5229,7 +5229,18 @@
         "selectTemplate": "Select a template to preview",
         "active": "Active",
         "inactive": "Inactive",
-        "priority": "Priority: {priority}"
+        "priority": "Priority: {priority}",
+        "applyChangesWarning": "You have unsaved changes in this template.",
+        "applyChangesWarningSave": "Save",
+        "applyChangesWarningEnd": "to apply them.",
+        "emailBodyLabel": "Email body",
+        "subjectLabel": "Subject",
+        "whatsappMessageLabel": "WhatsApp message",
+        "filterEmail": "Email",
+        "filterWhatsapp": "WhatsApp",
+        "templatesFoundCount": "{count} template(s) found",
+        "tryAdjustFilters": "Try adjusting the filters.",
+        "viewing": "Viewing"
       },
       "signature": {
         "title": "Default Email Signature",
@@ -5319,13 +5330,64 @@
         "metricsError": "Error loading metrics",
         "createError": "Error creating experiment",
         "newExperimentTitle": "New Experiment",
-        "variantCount": "{count} variant(s)"
+        "variantCount": "{count} variant(s)",
+        "addVariantBtn": "Add variant",
+        "createdOnLabel": "Created on",
+        "experimentNameLabel": "Experiment name",
+        "experimentNamePlaceholder": "e.g. Invitation email subject",
+        "meanLabel": "Mean",
+        "metricsHeader": "Metrics",
+        "noObservationsYet": "No observations yet",
+        "templateLabel": "Template",
+        "templatePlaceholder": "Select a template",
+        "trafficSmall": "traffic",
+        "variantNameSmall": "variant",
+        "variantsCountLabel": "Variants",
+        "variantsLabel": "Variants",
+        "winnerInline": "Winner"
       },
       "tabTemplates": "Templates",
       "tabSignature": "Signature",
       "tabSchedule": "Sending Hours (LGPD)",
       "tabAlerts": "Alerts",
-      "tabAbTesting": "A/B Testing"
+      "tabAbTesting": "A/B Testing",
+      "common": {
+        "cancel": "Cancel",
+        "edit": "Edit",
+        "saveChanges": "Save changes"
+      },
+      "signatureSection": {
+        "title": "Email Signature",
+        "templateLabel": "Signature template",
+        "variablesLabel": "Available variables",
+        "previewLabel": "Preview",
+        "sampleName": "Maria Silva",
+        "sampleRole": "Recruitment Manager",
+        "sampleCompany": "WeDoTalent",
+        "sampleEmail": "maria@company.com",
+        "samplePhone": "+55 11 99999-9999",
+        "sampleWebsite": "www.company.com"
+      },
+      "alertPreferences": {
+        "title": "Alert Preferences",
+        "subtitle": "Choose how and when to be notified about each event.",
+        "loading": "Loading preferences...",
+        "empty": "No alert preferences available.",
+        "saved": "Saved",
+        "thresholdAria": "Threshold for {type}",
+        "cooldownAria": "Cooldown between alerts for {type}",
+        "toggleAria": "Enable or disable {type} alert",
+        "channelEmail": "Email",
+        "channelInApp": "In-app",
+        "channelTeams": "Teams",
+        "channelWhatsapp": "WhatsApp",
+        "unit": {
+          "count": "times",
+          "hours": "hours",
+          "days": "days",
+          "percent": "%"
+        }
+      }
     },
     "integrations": {
       "tabs": {
