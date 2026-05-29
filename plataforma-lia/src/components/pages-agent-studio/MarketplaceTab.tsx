@@ -18,6 +18,9 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
   DialogDescription, DialogFooter,
 } from "@/components/ui/dialog"
+// White-label canonical 2026-05-29: persona do cliente como fallback de nome
+// de agente quando o billing row não traz agent_name (agente deletado etc.).
+import { useAiPersona } from "@/hooks/company/use-ai-persona"
 
 interface MarketplaceListing {
   id: string
@@ -385,6 +388,9 @@ function InstalledAgents() {
 
 function BillingView() {
   const t = useTranslations('agents.marketplace')
+  // White-label canonical 2026-05-29: fallback do nome quando agent_name
+  // ausente (agente deletado fora do ciclo de billing).
+  const { persona: aiPersona } = useAiPersona()
   const [billing, setBilling] = useState<Array<{
     agent_id: string
     agent_name: string
@@ -443,7 +449,7 @@ function BillingView() {
             <tbody>
               {billing.map(b => (
                 <tr key={b.agent_id} className="border-t border-lia-border-subtle">
-                  <td className="px-4 py-3 font-medium text-lia-text-primary">{b.agent_name}</td>
+                  <td className="px-4 py-3 font-medium text-lia-text-primary">{b.agent_name || aiPersona?.name || t('agent')}</td>
                   <td className="px-4 py-3 text-right text-lia-text-secondary">{b.total_executions}</td>
                   <td className="px-4 py-3 text-right font-semibold text-lia-text-primary">{b.total_credits_consumed}</td>
                 </tr>

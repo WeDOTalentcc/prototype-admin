@@ -13,6 +13,9 @@ import {
 import { useAgentDeployments, useAgentActivities } from "@/hooks/agents"
 import { VersionHistoryPanel } from "./VersionHistoryPanel"
 import { AgentActivityCard } from "./AgentActivityCard"
+// White-label canonical 2026-05-29: persona do cliente como fallback do nome
+// quando agent.name está vazio (edge case de erro/criação).
+import { useAiPersona } from "@/hooks/company/use-ai-persona"
 import type { CustomAgent } from "./types"
 import { safeCategoryKey } from "./types"
 
@@ -34,6 +37,8 @@ interface AgentDetailsPanelProps {
 export function AgentDetailsPanel({ agent, open, onClose, onDeploy, onTest }: AgentDetailsPanelProps) {
   const t = useTranslations('agents.customAgents')
   const tStatus = useTranslations('agents.status')
+  // White-label canonical: persona como fallback do nome do agente no header.
+  const { persona: aiPersona } = useAiPersona()
   const { deployments, isLoading: deploymentsLoading } = useAgentDeployments(agent?.id ?? null)
   const { activities, isLoading: activitiesLoading, isError: activitiesError } = useAgentActivities(agent?.id ?? null, 10)
   const [isCloning, setIsCloning] = useState(false)
@@ -66,7 +71,7 @@ export function AgentDetailsPanel({ agent, open, onClose, onDeploy, onTest }: Ag
         <DialogHeader>
           <DialogTitle className={cn(textStyles.title, "flex items-center gap-2")}>
             <Bot className="w-5 h-5 text-graphite" />
-            {agent.name}
+            {agent.name || aiPersona?.name || t('untitledAgent')}
             <BetaBadge size="sm" />
             <Link
               href={`/agent-studio/${agent.id}/edit`}

@@ -2970,7 +2970,8 @@
       "memoryNo": "Não",
       "cloneAndCustomize": "Clonar e personalizar",
       "confirmDeleteTitle": "Excluir agente?",
-      "delete": "Excluir"
+      "delete": "Excluir",
+      "untitledAgent": "Agente sem nome"
     },
     "digitalTwin": {
       "active": "Ativo",
@@ -3081,6 +3082,38 @@
     "firstExecution": {
       "tooltip": "{agentName} acabou de processar candidatos pela primeira vez. Você pode ver o raciocínio dela em qualquer linha.",
       "dismiss": "OK, entendi"
+    },
+    "assignModal": {
+      "title": {
+        "job": "Acoplar agente a esta vaga",
+        "talent_pool": "Adicionar agente ao pool",
+        "pipeline_stage": "Adicionar agente a esta etapa",
+        "candidate_list": "Adicionar agente a esta lista"
+      },
+      "submit": {
+        "job": "Acoplar",
+        "talent_pool": "Atribuir",
+        "pipeline_stage": "Adicionar",
+        "candidate_list": "Adicionar"
+      },
+      "cancel": "Cancelar",
+      "loadingAgents": "Carregando agentes...",
+      "jobLabel": "Vaga",
+      "poolLabel": "Pool",
+      "stageLabel": "Etapa",
+      "listLabel": "Lista",
+      "fields": {
+        "agent": "Agente",
+        "agentPlaceholder": "Selecione um agente",
+        "trigger": "Quando rodar",
+        "schedule": "Agendamento",
+        "activateNow": "Ativar imediatamente"
+      },
+      "errors": {
+        "agentRequired": "Selecione um agente para continuar.",
+        "agentsLoadFailed": "Não foi possível carregar a lista de agentes.",
+        "generic": "Falha ao acoplar agente. Tente novamente."
+      }
     }
   },
   "common": {

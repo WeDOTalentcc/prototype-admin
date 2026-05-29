@@ -2970,7 +2970,8 @@
       "memoryNo": "No",
       "cloneAndCustomize": "Clone and customize",
       "confirmDeleteTitle": "Delete agent?",
-      "delete": "Delete"
+      "delete": "Delete",
+      "untitledAgent": "Untitled agent"
     },
     "digitalTwin": {
       "active": "Active",
@@ -3081,6 +3082,38 @@
     "firstExecution": {
       "tooltip": "{agentName} just processed candidates for the first time. You can see their reasoning on any row.",
       "dismiss": "Got it"
+    },
+    "assignModal": {
+      "title": {
+        "job": "Attach agent to this job",
+        "talent_pool": "Add agent to pool",
+        "pipeline_stage": "Add agent to this stage",
+        "candidate_list": "Add agent to this list"
+      },
+      "submit": {
+        "job": "Attach",
+        "talent_pool": "Assign",
+        "pipeline_stage": "Add",
+        "candidate_list": "Add"
+      },
+      "cancel": "Cancel",
+      "loadingAgents": "Loading agents...",
+      "jobLabel": "Job",
+      "poolLabel": "Pool",
+      "stageLabel": "Stage",
+      "listLabel": "List",
+      "fields": {
+        "agent": "Agent",
+        "agentPlaceholder": "Select an agent",
+        "trigger": "When to run",
+        "schedule": "Schedule",
+        "activateNow": "Activate immediately"
+      },
+      "errors": {
+        "agentRequired": "Select an agent to continue.",
+        "agentsLoadFailed": "Could not load agent list.",
+        "generic": "Failed to attach agent. Try again."
+      }
     }
   },
   "common": {

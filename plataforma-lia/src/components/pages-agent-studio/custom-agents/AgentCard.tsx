@@ -33,6 +33,10 @@ import { useToggleAgentVoice } from "@/hooks/agent-studio/use-agent-voice"
 import { useToggleAgentWhatsApp } from "@/hooks/agent-studio/use-agent-whatsapp"
 import { useToggleAgentChannel } from "@/hooks/agent-studio/use-agent-channel"
 import { StudioCardShell } from "@/components/pages-agent-studio/StudioCardShell"
+// White-label canonical (CLAUDE.md project_white_label_ai_assistant 2026-05-25):
+// agent.name é o nome custom do agente; aiPersona.name é o nome do assistente IA
+// configurado pelo cliente (default "LIA"). Fallback: agent.name → persona → genérico.
+import { useAiPersona } from "@/hooks/company/use-ai-persona"
 import type { CustomAgent } from "./types"
 import { safeCategoryKey } from "./types"
 
@@ -110,6 +114,11 @@ function ChannelToggleRow({
  */
 export function AgentCard({ agent, onTest, onDeploy, onToggleStatus, onClone }: AgentCardProps) {
   const t = useTranslations("agents.card")
+  // White-label canonical 2026-05-29: persona do cliente como fallback do nome.
+  // Se agent.name estiver vazio (edge case durante criação/erro), exibe o nome
+  // do assistente IA configurado em Configurações (default "LIA").
+  const { persona: aiPersona } = useAiPersona()
+  const displayName = agent.name || aiPersona?.name || "Agente"
   // W-Channels-A revisao (2026-05-23): 4 canais canonical independentes
   // (whatsapp / voice / voip / triagem_invite). in_app revertido — gap conceitual;
   // chat candidato publico vive em /api/v1/triagem/. voice = PSTN, voip = browser/Gemini Live.
@@ -204,8 +213,8 @@ export function AgentCard({ agent, onTest, onDeploy, onToggleStatus, onClone }: 
         enabled={whatsappEnabled}
         disabled={toggleWhatsApp.isMutating}
         onToggle={(next) => toggleWhatsApp.trigger(next)}
-        ariaOn={t("enableWhatsapp", { name: agent.name }) || `Habilitar WhatsApp no agente ${agent.name}`}
-        ariaOff={t("disableWhatsapp", { name: agent.name }) || `Desabilitar WhatsApp no agente ${agent.name}`}
+        ariaOn={t("enableWhatsapp", { name: displayName }) || `Habilitar WhatsApp no agente ${displayName}`}
+        ariaOff={t("disableWhatsapp", { name: displayName }) || `Desabilitar WhatsApp no agente ${displayName}`}
         testId="agent-card-whatsapp-toggle"
       />
 
@@ -216,8 +225,8 @@ export function AgentCard({ agent, onTest, onDeploy, onToggleStatus, onClone }: 
         enabled={voiceEnabled}
         disabled={toggleVoice.isMutating}
         onToggle={(next) => toggleVoice.trigger(next)}
-        ariaOn={t("enableVoice", { name: agent.name }) || `Habilitar voz no agente ${agent.name}`}
-        ariaOff={t("disableVoice", { name: agent.name }) || `Desabilitar voz no agente ${agent.name}`}
+        ariaOn={t("enableVoice", { name: displayName }) || `Habilitar voz no agente ${displayName}`}
+        ariaOff={t("disableVoice", { name: displayName }) || `Desabilitar voz no agente ${displayName}`}
         testId="agent-card-voice-toggle"
         /* Wave A P0 #6 (2026-05-27): trailing "Iniciar chamada" removido — pertencia a surface
            com contexto de candidato (kanban/perfil), aqui disparava candidate_id="" anti-pattern.
@@ -231,8 +240,8 @@ export function AgentCard({ agent, onTest, onDeploy, onToggleStatus, onClone }: 
         enabled={voipEnabled}
         disabled={toggleVoip.isMutating}
         onToggle={(next) => toggleVoip.trigger(next)}
-        ariaOn={t("enableVoip", { name: agent.name }) || `Habilitar voz no navegador (VoIP) no agente ${agent.name}`}
-        ariaOff={t("disableVoip", { name: agent.name }) || `Desabilitar voz no navegador (VoIP) no agente ${agent.name}`}
+        ariaOn={t("enableVoip", { name: displayName }) || `Habilitar voz no navegador (VoIP) no agente ${displayName}`}
+        ariaOff={t("disableVoip", { name: displayName }) || `Desabilitar voz no navegador (VoIP) no agente ${displayName}`}
         testId="agent-card-voip-toggle"
       />
 
@@ -243,8 +252,8 @@ export function AgentCard({ agent, onTest, onDeploy, onToggleStatus, onClone }: 
         enabled={triagemInviteEnabled}
         disabled={toggleTriagemInvite.isMutating}
         onToggle={(next) => toggleTriagemInvite.trigger(next)}
-        ariaOn={t("enableTriagemInvite", { name: agent.name }) || `Habilitar criacao de convites de triagem no agente ${agent.name}`}
-        ariaOff={t("disableTriagemInvite", { name: agent.name }) || `Desabilitar criacao de convites de triagem no agente ${agent.name}`}
+        ariaOn={t("enableTriagemInvite", { name: displayName }) || `Habilitar criacao de convites de triagem no agente ${displayName}`}
+        ariaOff={t("disableTriagemInvite", { name: displayName }) || `Desabilitar criacao de convites de triagem no agente ${displayName}`}
         testId="agent-card-triagem-invite-toggle"
         /* Wave A P0 #7 (2026-05-27): trailing "Enviar convite" removido — pertencia a surface
            com contexto de candidato+vaga (kanban), aqui disparava candidate_id="" + job_id="" anti-pattern.
@@ -287,7 +296,7 @@ export function AgentCard({ agent, onTest, onDeploy, onToggleStatus, onClone }: 
     <StudioCardShell
       tone="elevated"
       icon={<Bot className="w-4 h-4 text-graphite" />}
-      title={agent.name}
+      title={displayName}
       statusBadge={statusBadge}
       badges={badges}
       metricsSlot={metricsSlot}

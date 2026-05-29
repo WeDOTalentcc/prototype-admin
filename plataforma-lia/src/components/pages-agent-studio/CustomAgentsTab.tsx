@@ -14,6 +14,9 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
   DialogDescription, DialogFooter,
 } from "@/components/ui/dialog"
+// White-label canonical 2026-05-29: persona do cliente como fallback do nome
+// quando agent.name está vazio (edge case durante criação/erro).
+import { useAiPersona } from "@/hooks/company/use-ai-persona"
 
 interface CustomAgent {
   id: string
@@ -47,6 +50,8 @@ const STATUS_LABELS = {
 
 export default function CustomAgentsTab() {
   const t = useTranslations('agents.customAgents')
+  // White-label canonical: fallback do nome do agente no card list.
+  const { persona: aiPersona } = useAiPersona()
   const [agents, setAgents] = useState<CustomAgent[]>([])
   const [total, setTotal] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
@@ -165,7 +170,7 @@ export default function CustomAgentsTab() {
                         {agent.icon || "🤖"}
                       </div>
                       <div>
-                        <p className="text-sm font-semibold text-lia-text-primary">{agent.name}</p>
+                        <p className="text-sm font-semibold text-lia-text-primary">{agent.name || aiPersona?.name || t('untitledAgent')}</p>
                         <p className="text-[10px] text-lia-text-secondary">{agent.role}</p>
                       </div>
                     </div>
@@ -501,6 +506,9 @@ export function CreateCustomAgentModal({
 
 function TestAgentModal({ agent, onClose }: { agent: CustomAgent; onClose: () => void }) {
   const t = useTranslations('agents.customAgents')
+  // White-label canonical: fallback do nome no título do modal de teste.
+  const { persona: aiPersona } = useAiPersona()
+  const agentDisplayName = agent.name || aiPersona?.name || t('untitledAgent')
   const [message, setMessage] = useState("")
   const [response, setResponse] = useState("")
   const [isRunning, setIsRunning] = useState(false)
@@ -534,7 +542,7 @@ function TestAgentModal({ agent, onClose }: { agent: CustomAgent; onClose: () =>
         <DialogHeader>
           <DialogTitle className="text-base font-semibold text-lia-text-primary flex items-center gap-2">
             <TestTube2 className="w-4 h-4 text-graphite" />
-            {t('testAgent')}: {agent.name}
+            {t('testAgent')}: {agentDisplayName}
           </DialogTitle>
           <DialogDescription className="sr-only">{t('testAgent')}</DialogDescription>
         </DialogHeader>

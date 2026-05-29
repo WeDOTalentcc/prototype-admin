@@ -9,6 +9,9 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog"
 import { BetaBadge } from "@/components/ui/beta-badge"
+// White-label canonical 2026-05-29: persona como fallback do nome do agente
+// no título do modal de teste/debug.
+import { useAiPersona } from "@/hooks/company/use-ai-persona"
 import type { CustomAgent } from "./types"
 
 interface TestResult {
@@ -29,6 +32,9 @@ interface TestDebugPanelProps {
 
 export function TestDebugPanel({ agent, open, onClose }: TestDebugPanelProps) {
   const t = useTranslations('agents.customAgents')
+  // White-label canonical: persona como fallback do nome do agente no header.
+  const { persona: aiPersona } = useAiPersona()
+  const agentDisplayName = agent?.name || aiPersona?.name || t('untitledAgent')
   const [message, setMessage] = useState("")
   const [isTesting, setIsTesting] = useState(false)
   const [results, setResults] = useState<TestResult[]>([])
@@ -74,7 +80,7 @@ export function TestDebugPanel({ agent, open, onClose }: TestDebugPanelProps) {
       <DialogContent className="sm:max-w-4xl max-h-[80vh]">
         <DialogHeader>
           <DialogTitle className={cn(textStyles.title, "flex items-center gap-2")}>
-            {t('testAgent')}: {agent.name}
+            {t('testAgent')}: {agentDisplayName}
             <BetaBadge size="sm" />
           </DialogTitle>
         </DialogHeader>
