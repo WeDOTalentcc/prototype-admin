@@ -445,10 +445,18 @@ company_id: str = Depends(require_company_id)):
                 _wizard_handled = True
             except Exception as _wiz_exc:
                 logger.error(
-                    "[SSEChat] WizardSessionService canonical path crashed; "
-                    "falling back to generic agent: %s",
+                    "[SSEChat] WizardSessionService canonical path crashed: %s",
                     _wiz_exc, exc_info=True,
                 )
+                yield format_sse_event(
+                    serialize_error(
+                        "Não consegui processar a criação da vaga agora. "
+                        "Pode tentar novamente em instantes?",
+                        "wizard_canonical_error",
+                    ),
+                    next_id(),
+                )
+                return  # falha alto — NUNCA cai pro agente genérico (REGRA 4)
             if _wizard_handled:
                 return
 

@@ -1100,7 +1100,11 @@ company_id: str = Depends(require_company_id)):
             #   • manager_preferences apply_to_state (centralizado, não duplicar)
             #   • graph.stream_invoke (streaming token-by-token)
             #   • record_job_completion on handoff (idempotente, centralizado)
-            # Falls through to _get_agent fallback only on hard exception.
+            # Frente 3 (2026-05-29): canonical SEMPRE trata o domínio wizard.
+            # Em exceção dura, falha alto com erro explícito ao cliente e
+            # encerra o turno — NUNCA cai pro ReAct legacy (REGRA 4
+            # anti-silent-fallback). O fallback silencioso mascarava crashes
+            # do canonical com respostas de um agente diferente.
             if active_domain == "wizard":
                 _wizard_canonical_handled = False
                 try:
@@ -1158,10 +1162,15 @@ company_id: str = Depends(require_company_id)):
                     _wizard_canonical_handled = True
                 except Exception as _wiz_exc:
                     logger.error(
-                        "[AgentChatWS] WizardSessionService canonical path crashed; "
-                        "falling back to legacy: %s",
+                        "[AgentChatWS] WizardSessionService canonical path crashed: %s",
                         _wiz_exc, exc_info=True,
                     )
+                    await ws_mgr.send_to_session(session_id, serialize_error(
+                        "Não consegui processar a criação da vaga agora. "
+                        "Pode tentar novamente em instantes?",
+                        "wizard_canonical_error",
+                    ))
+                    continue  # falha alto — NUNCA cai pro ReAct legacy (REGRA 4)
                 if _wizard_canonical_handled:
                     continue  # canonical handled — skip ReAct loop
 

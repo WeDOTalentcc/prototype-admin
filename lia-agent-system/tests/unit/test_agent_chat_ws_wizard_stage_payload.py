@@ -61,8 +61,9 @@ def test_wizard_canonical_path_uses_derived_thread_id_variable():
     """Pre-condition canonical: _wiz_thread_id e derivado de
     WizardSessionService.derive_thread_id."""
     src = _src()
-    assert "_wiz_thread_id = WizardSessionService.derive_thread_id" in src, (
-        "Pre-condition violada: _wiz_thread_id deveria ser derivado canonical."
+    assert "_wiz_thread_id = _derive_tid(company_id, session_id)" in src, (
+        "Pre-condition violada: _wiz_thread_id deveria ser derivado canonical "
+        "via app.shared.sessions.derive_thread_id (Task #1080)."
     )
     assert "thread_id=_wiz_thread_id" in src, (
         "Pre-condition violada: _wiz_thread_id deveria ser passado em "
