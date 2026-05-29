@@ -229,15 +229,15 @@ jobs:
         # Baseline 0 (2026-05-29). Doc: CLAUDE.md secao Fase 2.5.
         run: python3 ../lia-agent-system/scripts/check_phase25_invariants.py --skip-phase2
 
-      - name: Hardcoded PT-BR strings em Agent Studio UI (warn-only desde 2026-05-29)
+      - name: Hardcoded PT-BR strings em Agent Studio UI (BLOCKING desde 2026-05-29 Q4.4)
         # Sensor harness Fase 2.5 (Onda C1, AUDIT 3/5 P2-8): detecta texto
         # PT-BR hardcoded em surfaces de Agent Studio que NAO passam por
         # useTranslations/t() - complemento do check_i18n_keys.py (que so
-        # valida t() existente). Baseline 6 (warn-only ratchet). Promover a
-        # --blocking quando baseline = 0. Ver CLAUDE.md secao i18n contract.
-        continue-on-error: true
+        # valida t() existente). Baseline ZERADO em Q4.4 (6 strings migradas em
+        # ApproachStep/ConfigStep/GoalStep) -> promovido a --blocking. Qualquer
+        # regressao bloqueia merge. Ver CLAUDE.md secao i18n contract.
         working-directory: plataforma-lia
-        run: python3 scripts/check_hardcoded_strings_in_agent_ui.py
+        run: python3 scripts/check_hardcoded_strings_in_agent_ui.py --blocking
 
       - name: Build
         run: npm run build

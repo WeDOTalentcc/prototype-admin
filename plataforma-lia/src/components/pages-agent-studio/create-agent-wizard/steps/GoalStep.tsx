@@ -1,6 +1,7 @@
 "use client"
 
 import { Sparkles, Search, Heart, Phone, Settings2 } from "lucide-react"
+import { useTranslations } from "next-intl"
 
 import { Card, CardContent } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
@@ -51,8 +52,9 @@ interface GoalStepProps {
 }
 
 export function GoalStep({ goal, onSelect }: GoalStepProps) {
+  const t = useTranslations("agents.studio.wizard")
   return (
-    <div className="space-y-3" role="radiogroup" aria-label="Objetivo do agente">
+    <div className="space-y-3" role="radiogroup" aria-label={t("goalAriaLabel")}>
       <p className="text-sm text-lia-text-secondary">
         Escolha o que voce quer que o agente faca. Vamos sugerir o melhor caminho no proximo passo.
       </p>

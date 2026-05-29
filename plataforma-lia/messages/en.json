@@ -2247,6 +2247,14 @@
         "empty": "All quiet — no relevant events in the last 24h.",
         "footer": "{runs, plural, =0 {No runs} =1 {1 run} other {# runs}} · {candidates, plural, =0 {no candidates processed} =1 {1 candidate processed} other {# candidates processed}} in the last {hours}h",
         "loadError": "Could not load the digest. Please try again."
+      },
+      "wizard": {
+        "orCreateFromScratch": "or create from scratch",
+        "createManual": "Create custom manually",
+        "yourDescription": "Your description",
+        "suggestedConfig": "Suggested configuration",
+        "namePlaceholder": "E.g.: Screening Agent",
+        "goalAriaLabel": "Agent goal"
       }
     },
     "status": {

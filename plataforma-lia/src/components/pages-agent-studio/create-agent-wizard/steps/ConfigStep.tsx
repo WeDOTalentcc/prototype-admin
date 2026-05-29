@@ -2,6 +2,7 @@
 
 import { Loader2, Zap } from "lucide-react"
 import * as Icons from "lucide-react"
+import { useTranslations } from "next-intl"
 
 import { useAiPersona } from "@/hooks/company/use-ai-persona"
 
@@ -33,6 +34,7 @@ export function ConfigStep({
   aiError,
   onGenerateAI,
 }: ConfigStepProps) {
+  const t = useTranslations("agents.studio.wizard")
   const { persona: aiPersona } = useAiPersona()
   const aiAssistantName = aiPersona?.name ?? "assistente"
   const { templates: AGENT_TEMPLATES } = useLegacyAgentTemplates()
@@ -42,7 +44,7 @@ export function ConfigStep({
         <div className="rounded-lg border border-lia-border-subtle bg-lia-bg-secondary p-4">
           <div className="flex items-center gap-2 mb-2">
             <Zap className="h-4 w-4 text-graphite" aria-hidden="true" />
-            <span className="text-sm font-semibold text-lia-text-primary">Sua descricao</span>
+            <span className="text-sm font-semibold text-lia-text-primary">{t("yourDescription")}</span>
           </div>
           <p className="text-xs text-lia-text-secondary italic">"{config.aiDescription}"</p>
         </div>
@@ -84,7 +86,7 @@ export function ConfigStep({
         {aiPreview && !isGeneratingAI && (
           <div className="space-y-3" data-testid="ai-preview">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold text-lia-text-primary">Configuracao sugerida</span>
+              <span className="text-sm font-semibold text-lia-text-primary">{t("suggestedConfig")}</span>
               <Chip variant="neutral" density="compact" muted>Editavel</Chip>
             </div>
 
@@ -216,7 +218,7 @@ export function ConfigStep({
           type="text"
           value={config.name}
           onChange={(e) => setConfig({ ...config, name: e.target.value })}
-          placeholder="Ex: Agente de Triagem"
+          placeholder={t("namePlaceholder")}
           className="w-full rounded-lg border border-lia-border-subtle bg-lia-bg-primary px-3 py-2 text-sm text-lia-text-primary focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/30"
           data-testid="wizard-manual-name-input"
         />

@@ -2,6 +2,7 @@
 
 import { FileText, Settings2, Zap } from "lucide-react"
 import * as Icons from "lucide-react"
+import { useTranslations } from "next-intl"
 
 import { useAiPersona } from "@/hooks/company/use-ai-persona"
 
@@ -22,6 +23,7 @@ interface ApproachStepProps {
 }
 
 export function ApproachStep({ goal, approach, config, onSelect, setConfig }: ApproachStepProps) {
+  const t = useTranslations("agents.studio.wizard")
   const { persona: aiPersona } = useAiPersona()
   const aiAssistantName = aiPersona?.name ?? "assistente"
   const { templates: AGENT_TEMPLATES } = useLegacyAgentTemplates()
@@ -148,7 +150,7 @@ export function ApproachStep({ goal, approach, config, onSelect, setConfig }: Ap
           <div className="w-full border-t border-lia-border-subtle" />
         </div>
         <div className="relative flex justify-center text-[10px] uppercase tracking-wider">
-          <span className="bg-lia-bg-primary px-2 text-lia-text-disabled">ou crie do zero</span>
+          <span className="bg-lia-bg-primary px-2 text-lia-text-disabled">{t("orCreateFromScratch")}</span>
         </div>
       </div>
 
@@ -177,7 +179,7 @@ export function ApproachStep({ goal, approach, config, onSelect, setConfig }: Ap
             <Settings2 className="h-4 w-4" />
           </div>
           <div className="min-w-0 flex-1">
-            <div className="text-sm font-semibold text-lia-text-primary">Criar custom manual</div>
+            <div className="text-sm font-semibold text-lia-text-primary">{t("createManual")}</div>
             <div className="text-xs text-lia-text-secondary mt-0.5">
               Configure tudo manualmente: nome, system prompt, ferramentas e persona. Para quem ja sabe
               exatamente o que quer.

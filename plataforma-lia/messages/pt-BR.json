@@ -2247,6 +2247,14 @@
         "empty": "Tudo tranquilo — nenhum evento relevante nas últimas 24h.",
         "footer": "{runs, plural, =0 {Nenhuma execução} =1 {1 execução} other {# execuções}} · {candidates, plural, =0 {nenhum candidato processado} =1 {1 candidato processado} other {# candidatos processados}} em {hours}h",
         "loadError": "Não foi possível carregar o resumo. Tente novamente."
+      },
+      "wizard": {
+        "orCreateFromScratch": "ou crie do zero",
+        "createManual": "Criar custom manual",
+        "yourDescription": "Sua descrição",
+        "suggestedConfig": "Configuração sugerida",
+        "namePlaceholder": "Ex: Agente de Triagem",
+        "goalAriaLabel": "Objetivo do agente"
       }
     },
     "status": {
