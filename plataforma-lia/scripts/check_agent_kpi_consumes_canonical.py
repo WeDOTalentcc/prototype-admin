@@ -44,7 +44,15 @@ REQUIRED_IMPORT_PATTERN = re.compile(
 )
 
 EXEMPT_FILES: dict[str, str] = {
-    # Sem exempts no momento. Adicionar aqui com motivo se justificado.
+    # C5.4 (2026-05-29): HeatmapCard é um sub-componente PURAMENTE apresentacional
+    # extraído de AgentKpisClient para lazy-load do Recharts (next/dynamic). Recebe
+    # o slice `data: AgentKpiResponse["hour_heatmap"]` via props do
+    # AgentKpisClient (que SIM usa useAgentKpis). Não faz fetch nem deve chamar o
+    # hook — chamar useAgentKpis aqui duplicaria a query. Importa o TYPE
+    # AgentKpiResponse só para tipar a prop. Falso positivo legítimo do sensor.
+    "src/app/[locale]/(dashboard)/agent-studio/[id]/kpis/HeatmapCard.tsx": (
+        "presentational sub-component; recebe data via props do AgentKpisClient"
+    ),
 }
 
 

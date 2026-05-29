@@ -19,19 +19,10 @@
 // Design tokens: zero hex hardcoded; cyan = #60BED1 (token canonical wedo-cyan).
 "use client"
 
+import dynamic from "next/dynamic"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { useTranslations } from "next-intl"
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Cell,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts"
 import { ArrowRight, Clock, DollarSign, Users } from "lucide-react"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -41,13 +32,23 @@ import { useAgentKpis } from "@/hooks/agents/use-agent-kpis"
 import { useAiPersona } from "@/hooks/company/use-ai-persona"
 import type { AgentKpiPeriod, AgentKpiResponse } from "@/types/agents/kpi"
 
+// C5.4 (2026-05-29): lazy-load the Recharts heatmap so the heavy charting lib is
+// code-split out of the main KPIs bundle. ssr:false because Recharts measures the
+// DOM (ResponsiveContainer); skeleton fallback keeps layout stable while it loads.
+const HeatmapCard = dynamic(
+  () => import("./HeatmapCard").then((m) => m.HeatmapCard),
+  {
+    ssr: false,
+    loading: () => <Skeleton className="h-[248px] w-full rounded-lg" />,
+  },
+)
+
 const PERIODS: AgentKpiPeriod[] = ["7d", "30d", "90d", "all"]
 // Onda 5.4/5.9 — sem fallback hex (sensor check_cyan_token_for_agents BLOCKING).
 // Token canonical: tailwind.config.ts:59 expoe wedo-cyan; design-tokens.css
 // define --wedo-cyan globalmente. Fallback nao precisa porque ambos sempre
 // existem (sao injetados em runtime independentemente de cliente customizado).
 const CYAN_TOKEN = "var(--wedo-cyan)"
-const NEUTRAL_TOKEN = "var(--lia-border-default)"
 
 function formatNumber(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`
@@ -381,77 +382,8 @@ function KpiCard({ icon, label, value, subtitle }: KpiCardProps) {
   )
 }
 
-interface HeatmapCardProps {
-  title: string
-  ariaLabel: string
-  data: AgentKpiResponse["hour_heatmap"]
-}
-
-function HeatmapCard({ title, ariaLabel, data }: HeatmapCardProps) {
-  const chartData = data.map((entry) => ({
-    hour: `${String(entry.hour_of_day).padStart(2, "0")}h`,
-    executions: entry.executions_count,
-  }))
-  return (
-    <Card className="border border-lia-border-subtle shadow-none">
-      <CardHeader className="pb-2 pt-4">
-        <CardTitle className="text-xs font-medium text-lia-text-tertiary">
-          {title}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="pb-4">
-        <div aria-label={ariaLabel} role="img" data-testid="kpi-heatmap">
-          <ResponsiveContainer width="100%" height={200}>
-            <BarChart
-              data={chartData}
-              margin={{ top: 4, right: 4, bottom: 0, left: 0 }}
-            >
-              <CartesianGrid
-                strokeDasharray="3 3"
-                stroke="var(--lia-border-subtle)"
-                vertical={false}
-              />
-              <XAxis
-                dataKey="hour"
-                tick={{
-                  fontSize: 10,
-                  fill: "var(--lia-text-tertiary)",
-                }}
-                tickLine={false}
-                axisLine={false}
-                interval={1}
-              />
-              <YAxis
-                tick={{
-                  fontSize: 10,
-                  fill: "var(--lia-text-tertiary)",
-                }}
-                tickLine={false}
-                axisLine={false}
-                allowDecimals={false}
-              />
-              <Tooltip
-                contentStyle={{
-                  fontSize: 11,
-                  borderRadius: 6,
-                  border: "1px solid var(--lia-border-subtle)",
-                }}
-              />
-              <Bar dataKey="executions" radius={[2, 2, 0, 0]}>
-                {chartData.map((entry, index) => (
-                  <Cell
-                    key={index}
-                    fill={entry.executions > 0 ? CYAN_TOKEN : NEUTRAL_TOKEN}
-                  />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </CardContent>
-    </Card>
-  )
-}
+// C5.4 (2026-05-29): HeatmapCard (Recharts) moved to ./HeatmapCard.tsx and
+// lazy-loaded via next/dynamic at the top of this file.
 
 interface ToolBreakdownCardProps {
   title: string

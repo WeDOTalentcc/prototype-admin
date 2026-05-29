@@ -27,7 +27,17 @@ import { Button } from "@/components/ui/button"
 import { Chip } from "@/components/ui/chip"
 import { useJobAgents, useDetachJobAgent } from "@/hooks/agents/use-job-agents"
 import { AssignAgentToJobModal } from "@/components/jobs/AssignAgentToJobModal"
-import { DecisionTreeDrawer } from "@/components/pages-agent-studio/decision-tree/DecisionTreeDrawer"
+import dynamic from "next/dynamic"
+// C5.4 (2026-05-29): lazy-load DecisionTreeDrawer (Radix Sheet + reasoning query)
+// so its chunk only downloads when an execution is opened. Combined with the
+// conditional mount below, keeps the drawer out of the JobAgentsTab initial bundle.
+const DecisionTreeDrawer = dynamic(
+  () =>
+    import("@/components/pages-agent-studio/decision-tree/DecisionTreeDrawer").then(
+      (m) => m.DecisionTreeDrawer,
+    ),
+  { ssr: false },
+)
 import { useAiPersona } from "@/hooks/company/use-ai-persona"
 import { useQueryClient } from "@tanstack/react-query"
 import { JOB_AGENTS_QUERY_KEY } from "@/hooks/agents/use-job-agents"
@@ -282,10 +292,13 @@ export function JobAgentsTab({ jobId, jobTitle }: JobAgentsTabProps) {
         onClose={() => setAttachOpen(false)}
       />
 
-      <DecisionTreeDrawer
-        executionId={openExecutionId}
-        onClose={() => setOpenExecutionId(null)}
-      />
+      {/* C5.4: mount condicional habilita lazy-load do chunk dinâmico. */}
+      {openExecutionId !== null && (
+        <DecisionTreeDrawer
+          executionId={openExecutionId}
+          onClose={() => setOpenExecutionId(null)}
+        />
+      )}
     </div>
   )
 }

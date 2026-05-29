@@ -17,7 +17,18 @@ import { ActiveAlertsCard } from "./tasks/ActiveAlertsCard"
 import { ActiveJobsCard } from "./tasks/ActiveJobsCard"
 import { AgentsCard } from "./tasks/AgentsCard"
 import { AgentRunningBanner } from "./tasks/AgentRunningBanner"
-import { DecisionTreeDrawer } from "@/components/pages-agent-studio/decision-tree"
+import dynamic from "next/dynamic"
+// C5.4 (2026-05-29): lazy-load DecisionTreeDrawer (Radix Sheet + reasoning query)
+// so its chunk only downloads when an execution is actually opened. Combined with
+// the conditional mount below (drawer rendered only when activeExecutionId !== null),
+// this keeps the drawer out of the tasks-page initial bundle.
+const DecisionTreeDrawer = dynamic(
+  () =>
+    import("@/components/pages-agent-studio/decision-tree").then(
+      (m) => m.DecisionTreeDrawer,
+    ),
+  { ssr: false },
+)
 
 interface TasksPageProps {
   onNavigate?: (page: string) => void
@@ -241,11 +252,15 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
     </div>
     </ErrorBoundarySection>
     {/* Onda 2 F2 — Drawer canonical Onda 1, montado no nível da page para
-       não competir com modais filhos por z-index nem por focus trap. */}
-    <DecisionTreeDrawer
-      executionId={activeExecutionId}
-      onClose={() => setActiveExecutionId(null)}
-    />
+       não competir com modais filhos por z-index nem por focus trap.
+       C5.4: mount condicional (só quando há execução ativa) habilita o
+       lazy-load do chunk dinâmico — o drawer mantém executionId não-null. */}
+    {activeExecutionId !== null && (
+      <DecisionTreeDrawer
+        executionId={activeExecutionId}
+        onClose={() => setActiveExecutionId(null)}
+      />
+    )}
     </>
   )
 }

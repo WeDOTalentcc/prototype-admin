@@ -7,7 +7,7 @@ This module provides models for:
 - Billing and usage metrics
 """
 from datetime import datetime, date, timedelta
-from sqlalchemy import Column, String, Integer, DateTime, Date, Text, JSON, Boolean
+from sqlalchemy import Column, String, Integer, DateTime, Date, Text, JSON, Boolean, Index, text
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.sql import func
 from lia_config.database import Base
@@ -29,8 +29,20 @@ class AiConsumption(Base):
     __tablename__ = "ai_consumption"
     # Boy scout 2026-05-24: defense-in-depth contra Table already defined.
     # Sibling classes neste arquivo já tinham extend_existing.
-    __table_args__ = {"extend_existing": True}
-    
+    __table_args__ = (
+        # C5.2 (2026-05-29): composite (company_id, created_at DESC) for the
+        # consumption drilldown sort. Replaces reliance on two separate
+        # single-column indexes (ix_ai_consumption_company_id +
+        # ix_ai_consumption_created_at) for "filter by company, order by created_at".
+        # Migration 223.
+        Index(
+            "idx_ai_consumption_company_created",
+            "company_id",
+            text("created_at DESC"),
+        ),
+        {"extend_existing": True},
+    )
+
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     # C2.3 (2026-05-29): varchar(64) canonical -- matches companies.id (varchar) +
     # dominant agent-studio convention (custom_agents/agent_deployments). FK in mig 218.

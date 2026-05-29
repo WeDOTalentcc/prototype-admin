@@ -20,6 +20,7 @@ from sqlalchemy import (
     Index,
     String,
     Text,
+    text,
 )
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import relationship
@@ -89,6 +90,22 @@ class PoolAgentRun(Base):
         Index("idx_pool_agent_runs_assignment", "assignment_id", "created_at"),
         Index("idx_pool_agent_runs_deployment", "deployment_id", "created_at"),
         Index("idx_pool_agent_runs_company_status", "company_id", "status"),
+        # C5.2 (2026-05-29): composite (company_id, started_at DESC) for the
+        # active-summary / recent-executions sort. Migration 223.
+        Index(
+            "idx_pool_agent_runs_company_started",
+            "company_id",
+            started_at.desc(),
+        ),
+        # C5.1 (2026-05-29): GIN on results->'candidate_ids' so the
+        # /candidate/{id}/touches endpoint can move from a Python-side O(N) scan
+        # to an index-backed containment query (`results -> 'candidate_ids' @> :jsonb`)
+        # when the endpoint is later optimized (endpoint owned by C4.2). Migration 223.
+        Index(
+            "idx_pool_agent_runs_results_candidate_ids",
+            text("(results -> 'candidate_ids')"),
+            postgresql_using="gin",
+        ),
         {"extend_existing": True},
     )
 
