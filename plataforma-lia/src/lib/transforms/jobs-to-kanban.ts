@@ -1,6 +1,7 @@
 import type { Job, JobStatus } from "@/components/jobs"
 import type { KanbanItem } from "@/components/pages/job-kanban/types"
 import { getJobSeniority } from "@/lib/jobs/seniority"
+import { formatJobLocation } from "@/lib/jobs/location"
 
 export interface JobKanbanColumnDef {
   id: string
@@ -180,7 +181,7 @@ export function jobToKanbanItem(job: Job, deps: JobToKanbanItemDeps): KanbanItem
     id: String(job.id),
     title: job.title,
     subtitle: job.department || undefined,
-    tertiary: job.location || undefined,
+    tertiary: formatJobLocation(job.location) || undefined,
     avatarFallback: deptInitials(job.department).toUpperCase(),
     progressPercent: progress != null ? Math.round(progress * 100) : undefined,
     chips,

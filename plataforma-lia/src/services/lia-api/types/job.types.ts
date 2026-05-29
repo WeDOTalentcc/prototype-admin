@@ -81,11 +81,23 @@ export interface ScreeningQuestion {
   required?: boolean
 }
 
+/**
+ * Task #1196 — `location` pode chegar do backend como string simples,
+ * string contendo JSON de endereço, ou objeto de endereço já parseado.
+ * A normalização para texto legível é feita por `formatJobLocation`.
+ */
+export interface JobLocationAddress {
+  city?: string | null
+  state?: string | null
+  country?: string | null
+  [extra: string]: unknown
+}
+
 export interface JobVacancy {
   id: string
   title: string
   department?: string
-  location?: string
+  location?: string | JobLocationAddress
   work_model?: string
   employment_type?: string
   seniority_level?: string

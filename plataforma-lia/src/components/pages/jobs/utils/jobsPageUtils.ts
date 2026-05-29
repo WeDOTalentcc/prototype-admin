@@ -2,6 +2,7 @@ import { formatBRL, CURRENCY_SYMBOL } from "@/lib/pricing"
 import type { Job, JobFilters } from "@/components/jobs"
 import type { JobVacancy } from "@/services/lia-api"
 import { getJobSeniority } from "@/lib/jobs/seniority"
+import { formatJobLocation } from "@/lib/jobs/location"
 import { READINESS_STAGES_ORDER, type ReadinessStage } from "@/services/lia-api/readiness-api"
 
 const READINESS_STAGE_RANK: Record<string, number> = READINESS_STAGES_ORDER.reduce(
@@ -190,7 +191,7 @@ export function convertBackendJobToFrontend(jv: JobVacancy, index: number): Job 
     backendId: jv.id,
     title: jv.title,
     department: jv.department || 'Geral',
-    location: jv.location || 'Não especificado',
+    location: formatJobLocation(jv.location) || '',
     workModel: (raw.work_model as Job['workModel']) || 'híbrido',
     type: (raw.employment_type as string) || 'CLT',
     seniority: (raw.seniority_level as string) || (raw.seniority as string) || undefined,
@@ -280,7 +281,7 @@ export function convertBackendJobSimple(jv: Record<string, unknown>, index: numb
     jobId: `WDT-${(jv.id as string).slice(0, 8).toUpperCase()}`,
     title: jv.title as string,
     department: (jv.department as string) || 'Geral',
-    location: (jv.location as string) || 'Não especificado',
+    location: formatJobLocation(jv.location as Parameters<typeof formatJobLocation>[0]) || '',
     workModel: (jv.work_model as Job['workModel']) || 'híbrido',
     type: (jv.employment_type as string) || 'CLT',
     seniority: (jv.seniority_level as string) || (jv.seniority as string) || undefined,
