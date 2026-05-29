@@ -27,7 +27,7 @@ agents:
 
   - name: wizard
     domain: wizard
-    class_path: app.domains.job_management.agents.job_wizard_graph.JobWizardGraph
+    class_path: app.domains.job_management.agents.wizard_react_agent.WizardReActAgent
     model_id: claude-sonnet-4-6
     system_prompt_path: app/domains/job_management/agents/system_prompt.py
     enabled: true

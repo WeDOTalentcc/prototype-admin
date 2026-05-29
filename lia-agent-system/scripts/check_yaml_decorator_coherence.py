@@ -68,10 +68,12 @@ INTERNAL_AGENTS: frozenset[str] = frozenset({
     "candidate_self_service",
     "company_settings",
     "talent_pool",
-    # jobs_management foi consolidado em wizard (R-004 2026-05-07 audit). Existe
-    # canonical no decorator pra compat com legacy DOMAIN_TO_AGENT mapping em
-    # workflow.py:621, mas NÃO está no YAML por desenho.
-    "jobs_management",
+    # job_management (Frente 4 2026-05-29): canonical id do JobsManagementReActAgent
+    # foi flipado de "jobs_management" -> "job_management" pra alinhar com o domain
+    # id do roteamento (singular). jobs_management/jobs_mgmt viram aliases. O agente
+    # roda GESTAO de vaga existente via routing, mas NÃO está no YAML por desenho
+    # (consolidado; o entry wizard do YAML cobre criação). Allowlist segue o canonical.
+    "job_management",
     # NOTA: autonomous é chamado por CascadedRouter Tier 6 (não via chat
     # direto), mas ESTÁ no YAML como hint pra observabilidade. Não está em
     # INTERNAL_AGENTS por desejo explícito (canonical chat-eligible fallback).

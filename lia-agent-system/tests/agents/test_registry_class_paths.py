@@ -33,3 +33,23 @@ def test_class_path_resolves(agent_cfg):
     mod = importlib.import_module(module_path)
     cls = getattr(mod, class_name)
     assert cls is not None, f"class {class_name} resolveu para None"
+
+
+def test_wizard_entry_is_canonical_not_legacy():
+    """Cleanup 2026-05-29: a entrada `wizard` do registry NAO pode apontar pro
+    JobWizardGraph LEGACY. Canonical = WizardReActAgent (alinhado ao
+    @register_agent('wizard') do decorator registry). O dominio wizard no chat
+    roda via WizardSessionService/JobCreationGraph; este entry e o agente
+    registrado pro registry yaml-based + background tasks."""
+    reg = _load_registry()
+    wizard = next(
+        (a for a in reg.get("agents", []) if a.get("name") == "wizard"), None
+    )
+    assert wizard is not None, "entrada 'wizard' sumiu do agents_registry.yaml"
+    cp = wizard["class_path"]
+    assert "job_wizard_graph" not in cp, (
+        f"wizard ainda aponta pro JobWizardGraph LEGACY: {cp}"
+    )
+    assert cp.endswith("WizardReActAgent"), (
+        f"wizard class_path canonical = WizardReActAgent, got: {cp}"
+    )
