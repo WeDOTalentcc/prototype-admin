@@ -24,13 +24,15 @@ import { ConsumptionDrilldownModal } from './ConsumptionDrilldownModal'
 
 const jsonFetcher = (url: string) => fetch(url).then(r => r.json())
 
-function formatTokens(tokens: number): string {
+function formatTokens(tokens: number | null | undefined): string {
+  if (tokens == null || Number.isNaN(tokens)) return "—"
   if (tokens >= 1_000_000) return `${(tokens / 1_000_000).toFixed(1)}M`
   if (tokens >= 1_000) return `${(tokens / 1_000).toFixed(1)}K`
   return tokens.toString()
 }
 
-function formatCost(cents: number): string {
+function formatCost(cents: number | null | undefined): string {
+  if (cents == null || Number.isNaN(cents)) return "—"
   return `$${(cents / 100).toFixed(2)}`
 }
 
