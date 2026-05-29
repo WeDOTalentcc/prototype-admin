@@ -808,7 +808,7 @@ class AuditService:
         Reused: SOXAuditLog table + observability_repository (already canonical).
         """
         try:
-            from libs.models.lia_models.audit_logs import (
+            from lia_models.audit_logs import (
                 ActionCategory,
                 AuditStatus,
                 SOXAuditLog,
@@ -871,7 +871,7 @@ class AuditService:
             request_id: trace correlation
         """
         try:
-            from libs.models.lia_models.audit_logs import (
+            from lia_models.audit_logs import (
                 ActionCategory,
                 AuditStatus,
                 SOXAuditLog,

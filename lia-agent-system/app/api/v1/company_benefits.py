@@ -289,7 +289,7 @@ async def _append_history(
     change_notes=None,
 ) -> None:
     try:
-        from libs.models.lia_models.company_benefit import CompanyBenefitHistory
+        from lia_models.company_benefit import CompanyBenefitHistory
         entry = CompanyBenefitHistory(
             benefit_id=benefit_id,
             company_id=str(company_id),
@@ -607,7 +607,7 @@ company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via require_company_id + company_id filter in WHERE
     """Retorna historico de alteracoes de um beneficio (max 50, mais recente primeiro)."""
     try:
-        from libs.models.lia_models.company_benefit import CompanyBenefitHistory
+        from lia_models.company_benefit import CompanyBenefitHistory
         result = await db.execute(
             select(CompanyBenefitHistory)
             .where(

@@ -89,6 +89,7 @@ async def _db_save_pending(
     except Exception as exc:
         try:
             await db.rollback()
+        # REGRA-4-EXEMPT: rollback-of-rollback defensivo; o except externo (linha acima) ja loga via logger.warning
         except Exception:
             pass
         logger.warning("[HITL] DB save pending falhou (best-effort): %s", exc)
@@ -136,6 +137,7 @@ async def _db_resolve(
     except Exception as exc:
         try:
             await db.rollback()
+        # REGRA-4-EXEMPT: rollback-of-rollback defensivo; o except externo (linha acima) ja loga via logger.warning
         except Exception:
             pass
         logger.warning("[HITL] DB resolve falhou (best-effort): %s", exc)
@@ -243,8 +245,8 @@ class HITLService:
                             comment="auto_confirm", resolved_by=user_id,
                             company_id=company_id,
                         )
-                    except Exception:
-                        pass
+                    except Exception as auto_exc:
+                        logger.debug("[HITL] auto-confirm _db_resolve falhou (best-effort): %s", auto_exc)
                     return pending_id
 
         async with _tracer.start_span("hitl.request_approval", attributes={

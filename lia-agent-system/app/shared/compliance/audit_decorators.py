@@ -341,6 +341,7 @@ class _AuditCtx:
         except Exception as audit_exc:
             try:
                 await self.session.rollback()
+            # REGRA-4-EXEMPT: rollback-of-rollback defensivo; o logger.critical abaixo ja reporta com exc_info=True
             except Exception:
                 pass
             logger.critical(

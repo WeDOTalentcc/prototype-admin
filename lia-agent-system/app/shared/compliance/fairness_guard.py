@@ -1127,6 +1127,7 @@ class FairnessGuard:
         except Exception as e:
             try:
                 await db.rollback()
+            # REGRA-4-EXEMPT: rollback-of-rollback defensivo; o logger.error abaixo ja reporta a falha do audit log
             except Exception:
                 pass
             logger.error("FairnessGuard audit log failed (non-blocking): %s", e)
