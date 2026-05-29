@@ -264,3 +264,147 @@ async def test_multi_tenancy_job_not_owned_returns_404(mock_db, mock_user, monke
             company_id=mock_user.company_id,
         )
     assert exc.value.status_code == 404
+
+
+async def test_last_execution_id_resolved_via_deployment_id(
+    mock_db, mock_user, monkeypatch
+):
+    """C1.6-FINAL — deployment de vaga com run via deployment_id retorna
+    last_execution_id NAO-None (motor unificado grava deployment_id no run).
+
+    Antes do fix, last_execution_id resolvia so via assignment.custom_agent_id,
+    entao deployments de vaga ficavam com None mesmo tendo runs reais ->
+    botao "Ver raciocinio" desabilitado erroneamente.
+    """
+    job_id = str(uuid.uuid4())
+    agent_id = uuid.uuid4()
+    _mock_job_repo(
+        mock_db, monkeypatch,
+        job=_fake_job(job_id=job_id, company_id=mock_user.company_id),
+    )
+
+    dep = _fake_deployment(
+        job_id=uuid.UUID(job_id), agent_id=agent_id, company_id=mock_user.company_id
+    )
+    agent = _fake_agent(agent_id=agent_id, company_id=mock_user.company_id)
+    run_id = uuid.uuid4()
+
+    fake_svc = MagicMock()
+    fake_svc.list_by_target = AsyncMock(return_value=[dep])
+    monkeypatch.setattr(ja_api, "agent_deployment_service", fake_svc)
+
+    # execute() called 2x: (1) CustomAgent join, (2) deployment-scoped run query.
+    # Origin 1 finds the run, so the legacy fallback query is NOT executed.
+    agent_scalars = MagicMock()
+    agent_scalars.all = MagicMock(return_value=[agent])
+    agent_result = MagicMock()
+    agent_result.scalars = MagicMock(return_value=agent_scalars)
+
+    dep_run_result = MagicMock()
+    dep_run_result.all = MagicMock(return_value=[(dep.id, run_id)])
+
+    mock_db.execute = AsyncMock(side_effect=[agent_result, dep_run_result])
+
+    result = await ja_api.list_job_agents(
+        job_id=job_id,
+        current_user=mock_user,
+        db=mock_db,
+        company_id=mock_user.company_id,
+    )
+    assert result.total == 1
+    assert result.deployments[0].last_execution_id == str(run_id)
+    # Origin 1 hit -> only 2 execute calls (no legacy fallback query).
+    assert mock_db.execute.call_count == 2
+
+
+async def test_last_execution_id_fallback_via_assignment_legacy(
+    mock_db, mock_user, monkeypatch
+):
+    """C1.6-FINAL — quando NAO ha run via deployment_id, cai no fallback
+    legacy via assignment.custom_agent_id (defense-in-depth talent_pool)."""
+    job_id = str(uuid.uuid4())
+    agent_id = uuid.uuid4()
+    _mock_job_repo(
+        mock_db, monkeypatch,
+        job=_fake_job(job_id=job_id, company_id=mock_user.company_id),
+    )
+
+    dep = _fake_deployment(
+        job_id=uuid.UUID(job_id), agent_id=agent_id, company_id=mock_user.company_id
+    )
+    agent = _fake_agent(agent_id=agent_id, company_id=mock_user.company_id)
+    legacy_run_id = uuid.uuid4()
+
+    fake_svc = MagicMock()
+    fake_svc.list_by_target = AsyncMock(return_value=[dep])
+    monkeypatch.setattr(ja_api, "agent_deployment_service", fake_svc)
+
+    # execute() called 3x: CustomAgent join, deployment-scoped (empty),
+    # legacy assignment fallback (finds run).
+    agent_scalars = MagicMock()
+    agent_scalars.all = MagicMock(return_value=[agent])
+    agent_result = MagicMock()
+    agent_result.scalars = MagicMock(return_value=agent_scalars)
+
+    dep_run_result = MagicMock()
+    dep_run_result.all = MagicMock(return_value=[])  # no deployment-scoped run
+
+    legacy_result = MagicMock()
+    legacy_result.all = MagicMock(return_value=[(agent_id, legacy_run_id)])
+
+    mock_db.execute = AsyncMock(
+        side_effect=[agent_result, dep_run_result, legacy_result]
+    )
+
+    result = await ja_api.list_job_agents(
+        job_id=job_id,
+        current_user=mock_user,
+        db=mock_db,
+        company_id=mock_user.company_id,
+    )
+    assert result.total == 1
+    assert result.deployments[0].last_execution_id == str(legacy_run_id)
+    assert mock_db.execute.call_count == 3
+
+
+async def test_last_execution_id_none_when_no_runs(
+    mock_db, mock_user, monkeypatch
+):
+    """C1.6-FINAL — deployment sem nenhum run (nem deployment_id nem legacy)
+    retorna last_execution_id=None (UX honesta: botao desabilitado)."""
+    job_id = str(uuid.uuid4())
+    agent_id = uuid.uuid4()
+    _mock_job_repo(
+        mock_db, monkeypatch,
+        job=_fake_job(job_id=job_id, company_id=mock_user.company_id),
+    )
+
+    dep = _fake_deployment(
+        job_id=uuid.UUID(job_id), agent_id=agent_id, company_id=mock_user.company_id
+    )
+    agent = _fake_agent(agent_id=agent_id, company_id=mock_user.company_id)
+
+    fake_svc = MagicMock()
+    fake_svc.list_by_target = AsyncMock(return_value=[dep])
+    monkeypatch.setattr(ja_api, "agent_deployment_service", fake_svc)
+
+    agent_scalars = MagicMock()
+    agent_scalars.all = MagicMock(return_value=[agent])
+    agent_result = MagicMock()
+    agent_result.scalars = MagicMock(return_value=agent_scalars)
+
+    empty_result = MagicMock()
+    empty_result.all = MagicMock(return_value=[])
+
+    mock_db.execute = AsyncMock(
+        side_effect=[agent_result, empty_result, empty_result]
+    )
+
+    result = await ja_api.list_job_agents(
+        job_id=job_id,
+        current_user=mock_user,
+        db=mock_db,
+        company_id=mock_user.company_id,
+    )
+    assert result.total == 1
+    assert result.deployments[0].last_execution_id is None

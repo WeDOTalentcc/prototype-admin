@@ -75,55 +75,49 @@ def _to_with_agent(
 async def _fetch_last_execution_id_map(
     *,
     db: AsyncSession,
-    agent_ids: list[str],
+    deployments: list[AgentDeployment],
     company_id: str,
 ) -> dict[str, str]:
-    """Para cada agent_id, retorna PoolAgentRun.id mais recente.
+    """Para cada deployment, retorna o id do PoolAgentRun mais recente.
 
-    Onda 5+2 D (2026-05-29). Estratégia Python-aggregate (1 query agregada):
-      SELECT assignment.custom_agent_id, run.id
-      FROM pool_agent_runs run
-      JOIN pool_agent_assignments assignment ON run.assignment_id = assignment.id
-      WHERE run.company_id = :tenant
-        AND assignment.company_id = :tenant
-        AND assignment.custom_agent_id IN agent_ids
-      ORDER BY run.started_at DESC NULLS LAST, run.created_at DESC
+    C1.6-FINAL (2026-05-29). Resolve last_execution_id pela fonte UNICA
+    (pool_agent_runs) via DUAS origens, keyed por deployment_id:
 
-    Multi-tenancy fail-closed: filtra company_id em AMBAS as tabelas (run e
-    assignment) — defense-in-depth contra leak cross-tenant via assignment
-    legacy onde company_id pudesse divergir.
+    1. Primaria (multi-surface): pool_agent_runs.deployment_id == deployment.id.
+       Cobre deployments de vaga/funil executados pelo motor unificado
+       (dispatch_agent_deployment_task grava deployment_id no run).
 
-    Sem N+1: query agregada única independente de quantos deployments. Python
-    agrupa por custom_agent_id (primeiro hit wins, rows já sorted DESC).
+    2. Fallback (talent_pool legacy): pool_agent_runs.assignment_id JOIN
+       pool_agent_assignments.custom_agent_id == deployment.agent_id. Cobre
+       runs antigos assignment-scoped antes do cutover de deployments.
+       Defense-in-depth -- so usado se (1) nao achou run.
 
-    NOTA arquitetural: deployments com target_type='job' não geram
-    PoolAgentRun diretamente (PoolAgentRun é assignment-scoped via
-    pool_agent_assignments, que é talent_pool-bound). Logo, last_execution_id
-    para job deployments só é populado quando o MESMO custom_agent também é
-    deployed via talent_pool e executou lá. Frontend trata None desabilitando
-    "Ver raciocínio" — UX honesta vs deployment.id-fallback que sempre
-    retornava 400 no endpoint /executions/{id}/reasoning.
+    Multi-tenancy fail-closed: filtra company_id em TODAS as tabelas
+    envolvidas (run + assignment) -- sem leak cross-tenant.
+
+    Sem N+1: duas queries agregadas (uma por origem), independente do numero
+    de deployments. Python agrupa (primeiro hit wins, rows sorted DESC).
 
     Returns:
-        Dict[agent_id_str, run_id_str]. Agents sem execução omitidos.
+        Dict[deployment_id_str, run_id_str]. Deployments sem run sao omitidos.
     """
-    if not agent_ids:
+    if not deployments:
         return {}
 
-    stmt = (
+    deployment_ids = list({str(d.id) for d in deployments})
+
+    out: dict[str, str] = {}
+
+    # --- Origem 1: runs scoped por deployment_id (motor unificado) ---
+    stmt_dep = (
         select(
-            PoolAgentAssignment.custom_agent_id,
+            PoolAgentRun.deployment_id,
             PoolAgentRun.id,
-        )
-        .join(
-            PoolAgentAssignment,
-            PoolAgentRun.assignment_id == PoolAgentAssignment.id,
         )
         .where(
             and_(
                 PoolAgentRun.company_id == company_id,
-                PoolAgentAssignment.company_id == company_id,
-                PoolAgentAssignment.custom_agent_id.in_(agent_ids),
+                PoolAgentRun.deployment_id.in_(deployment_ids),
             )
         )
         .order_by(
@@ -131,14 +125,49 @@ async def _fetch_last_execution_id_map(
             desc(PoolAgentRun.created_at),
         )
     )
-    result = await db.execute(stmt)
-    rows = result.all()
-
-    out: dict[str, str] = {}
-    for agent_uuid, run_id in rows:
-        key = str(agent_uuid)
+    result_dep = await db.execute(stmt_dep)
+    for dep_uuid, run_id in result_dep.all():
+        key = str(dep_uuid)
         if key not in out:
             out[key] = str(run_id)
+
+    # --- Origem 2: fallback legacy via assignment.custom_agent_id ---
+    # So relevante pra deployments ainda sem run resolvido na origem 1.
+    pending = [d for d in deployments if str(d.id) not in out]
+    if pending:
+        pending_agent_ids = list({str(d.agent_id) for d in pending})
+        stmt_asg = (
+            select(
+                PoolAgentAssignment.custom_agent_id,
+                PoolAgentRun.id,
+            )
+            .join(
+                PoolAgentAssignment,
+                PoolAgentRun.assignment_id == PoolAgentAssignment.id,
+            )
+            .where(
+                and_(
+                    PoolAgentRun.company_id == company_id,
+                    PoolAgentAssignment.company_id == company_id,
+                    PoolAgentAssignment.custom_agent_id.in_(pending_agent_ids),
+                )
+            )
+            .order_by(
+                desc(PoolAgentRun.started_at),
+                desc(PoolAgentRun.created_at),
+            )
+        )
+        result_asg = await db.execute(stmt_asg)
+        by_agent: dict[str, str] = {}
+        for agent_uuid, run_id in result_asg.all():
+            akey = str(agent_uuid)
+            if akey not in by_agent:
+                by_agent[akey] = str(run_id)
+        for d in pending:
+            run_id = by_agent.get(str(d.agent_id))
+            if run_id is not None:
+                out[str(d.id)] = run_id
+
     return out
 
 
@@ -175,13 +204,14 @@ async def list_job_agents(
         )
         agent_map = {str(a.id): a for a in result.scalars().all()}
 
-        # Onda 5+2 D (2026-05-29) — last_execution_id por agent_id (mais
-        # recente PoolAgentRun via PoolAgentAssignment.custom_agent_id).
-        # 1 query agregada — sem N+1. Multi-tenancy fail-closed em ambas
-        # tabelas. Deployments cujo agent nunca executou ficam com None.
+        # C1.6-FINAL (2026-05-29) — last_execution_id por DEPLOYMENT (mais
+        # recente PoolAgentRun via deployment_id, fallback legacy via
+        # assignment.custom_agent_id). Keyed por deployment_id: deployments de
+        # vaga/funil executados pelo motor unificado agora resolvem o run.
+        # 2 queries agregadas — sem N+1. Multi-tenancy fail-closed.
         last_exec_map = await _fetch_last_execution_id_map(
             db=db,
-            agent_ids=agent_ids,
+            deployments=deployments,
             company_id=current_user.company_id,
         )
 
@@ -190,7 +220,7 @@ async def list_job_agents(
             **_to_with_agent(
                 d,
                 agent_map.get(str(d.agent_id)),
-                last_execution_id=last_exec_map.get(str(d.agent_id)),
+                last_execution_id=last_exec_map.get(str(d.id)),
             )
         )
         for d in deployments
