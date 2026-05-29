@@ -18,6 +18,11 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: false,  // R-020: TS errors fixed, gate now active
   },
+  eslint: {
+    // Lint roda no CI (frontend-ci.yml). Build de producao nao deve ser
+    // bloqueado por regras de estilo nem por arquivos de teste.
+    ignoreDuringBuilds: true,
+  },
   productionBrowserSourceMaps: false,
   logging: process.env.NODE_ENV === 'production'
     ? { fetches: { fullUrl: true, hmrRefreshes: true }, incomingRequests: true }

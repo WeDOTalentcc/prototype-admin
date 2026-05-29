@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Loader2, AlertCircle } from 'lucide-react'
 import { CandidateChatPage } from '@/components/candidate/CandidateChatPage'
@@ -23,7 +23,7 @@ function parseJwtPayload(token: string): Record<string, unknown> | null {
   }
 }
 
-export default function CandidateStatusPage() {
+function CandidateStatusContent() {
   const searchParams = useSearchParams()
   const token = searchParams.get('token') ?? ''
   const [state, setState] = useState<PageState>({ type: 'loading' })
@@ -152,5 +152,20 @@ export default function CandidateStatusPage() {
       vacancyId={state.vacancyId}
       context={state.context}
     />
+  )
+}
+
+
+export default function CandidateStatusPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+        </div>
+      }
+    >
+      <CandidateStatusContent />
+    </Suspense>
   )
 }

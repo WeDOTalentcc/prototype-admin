@@ -1,6 +1,7 @@
 "use client"
 
 import { formatBRL } from "@/lib/pricing"
+import { formatJobLocation } from "@/lib/jobs/location"
 
 interface JobData {
   id: string
@@ -89,7 +90,7 @@ export default function JobPage() {
           backendId: v.id,
           title: v.title,
           department: v.department,
-          location: v.location,
+          location: formatJobLocation(v.location),
           workModel: v.work_model,
           type: v.contract_type || "CLT",
           level: v.seniority_level,

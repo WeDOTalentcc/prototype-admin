@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from"react"
 import { liaApi, JobVacancy } from"@/services/lia-api"
+import { formatJobLocation } from "@/lib/jobs/location"
 import { Button } from"@/components/ui/button"
 import { Input } from"@/components/ui/input"
 import { Checkbox } from"@/components/ui/checkbox"
@@ -85,7 +86,7 @@ const [vacancies, setVacancies] = useState<JobVacancy[]>([])
   const filteredVacancies = vacancies.filter(v => 
     v.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     v.department?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    v.location?.toLowerCase().includes(searchTerm.toLowerCase())
+    formatJobLocation(v.location)?.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
   const handleSubmit = async () => {
@@ -260,7 +261,7 @@ const [vacancies, setVacancies] = useState<JobVacancy[]>([])
                               {vacancy.location && (
                                 <div className="flex items-center gap-1">
                                   <MapPin className="w-3 h-3" />
-                                  <span>{vacancy.location}</span>
+                                  <span>{formatJobLocation(vacancy.location)}</span>
                                 </div>
                               )}
                             </div>

@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect } from "react"
 import { liaApi } from "@/services/lia-api"
+import { formatJobLocation } from "@/lib/jobs/location"
 import type { 
   KanbanJob, 
   KanbanCandidate, 
@@ -63,7 +64,7 @@ export function useKanbanState(options: UseKanbanStateOptions): UseKanbanStateRe
         id: response.id,
         title: response.title,
         department: response.department,
-        location: response.location,
+        location: formatJobLocation(response.location),
         status: response.status as KanbanJob['status'],
         stages: defaultStages,
         totalCandidates: 0,

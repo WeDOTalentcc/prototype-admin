@@ -89,6 +89,11 @@ class PoolAgentAssignmentRepository:
                 f"Agent company={agent.company_id} != jwt company={company_id}"
             )
 
+        # Write legado mantido read-write durante a janela de transição C1.5
+        # (Fase 2.5). Endpoints talent_pool_agents.py ainda criam assignments aqui.
+        # Backlog: migrar callers pra AgentDeployment(target_type=talent_pool) e
+        # tornar a tabela read-only/drop.
+        # CANONICAL-EXEMPT: legacy talent_pool assignment write (transição C1.5).
         row = PoolAgentAssignment(
             company_id=company_id,
             talent_pool_id=pool_id,

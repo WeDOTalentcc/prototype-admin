@@ -5,6 +5,7 @@ import dynamic from "next/dynamic"
 import { toast } from "sonner"
 import { useTranslations } from "next-intl"
 import { liaApi } from "@/services/lia-api"
+import { formatJobLocation } from "@/lib/jobs/location"
 import type { CandidatesPageModalsProps } from "./CandidatesPageModals.types"
 
 const CandidateComparison = dynamic(() => import("@/components/candidate-comparison").then(m => ({ default: m.CandidateComparison })), { ssr: false, loading: () => <LoadingModal /> })
@@ -205,7 +206,7 @@ export function CandidatesCoreModals(props: CandidatesCoreModalsProps) {
             }).catch((err) => { console.error('[CandidatesCoreModals] candidate lists fetch failed', err) })
           }
         }}
-        jobVacancies={bulkJobVacancies.map(j => ({ id: j.id, title: j.title, department: j.department, location: j.location }))}
+        jobVacancies={bulkJobVacancies.map(j => ({ id: j.id, title: j.title, department: j.department, location: formatJobLocation(j.location) }))}
         candidateLists={candidateListsForModal}
         preSelectedListId={preSelectedListForModal?.id}
         preSelectedListName={preSelectedListForModal?.name}

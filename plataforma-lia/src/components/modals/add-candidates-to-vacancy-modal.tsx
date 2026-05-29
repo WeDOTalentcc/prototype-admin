@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from"react"
 import { createPortal } from"react-dom"
 import { liaApi, JobVacancy } from"@/services/lia-api"
+import { formatJobLocation } from "@/lib/jobs/location"
 import { Button } from"@/components/ui/button"
 import { Input } from"@/components/ui/input"
 import { Briefcase, Search, Loader2, Users, Check, Building2, MapPin, Star, X, AlertCircle } from"lucide-react"
@@ -39,7 +40,7 @@ function mapApiVacancyToDisplay(vacancy: JobVacancy): VacancyDisplay {
     id: vacancy.id,
     title: vacancy.title,
     department: vacancy.department,
-    location: vacancy.location,
+    location: formatJobLocation(vacancy.location),
     status: vacancy.status,
     priority: vacancy.priority as string | undefined,
     candidates_count: (vacancy as unknown as Record<string, unknown>).candidates_count as number | undefined,

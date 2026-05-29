@@ -6,7 +6,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import type { NextRequest } from "next/server"
 
-import { GET, isBackendUnavailableError } from "../route"
+import { GET } from "../route"
+import { isBackendUnavailableError } from "../backend-error"
 
 function makeReq(): NextRequest {
   return {

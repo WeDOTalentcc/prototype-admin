@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
+import { isBackendUnavailableError } from './backend-error'
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8001'
 const MAX_BODY_SIZE = 2 * 1024 * 1024
@@ -41,45 +42,6 @@ function getHeaders(request: NextRequest): HeadersInit {
  * recover with a short retry — so we report 503 + `retryable: true` instead
  * of an opaque 500 that triggers the dev overlay and a hard toast.
  */
-export function isBackendUnavailableError(error: unknown): {
-  unavailable: boolean
-  code: string
-} {
-  if (!error) return { unavailable: false, code: 'unknown' }
-  const err = error as { name?: unknown; code?: unknown; cause?: unknown; message?: unknown }
-  const name = typeof err.name === 'string' ? err.name : ''
-  const message = typeof err.message === 'string' ? err.message : ''
-  const directCode = typeof err.code === 'string' ? err.code : ''
-  const causeCode =
-    err.cause && typeof err.cause === 'object' && err.cause !== null
-      ? (() => {
-          const c = err.cause as { code?: unknown }
-          return typeof c.code === 'string' ? c.code : ''
-        })()
-      : ''
-  const code = directCode || causeCode || ''
-  if (name === 'AbortError' || name === 'TimeoutError') {
-    return { unavailable: true, code: code || 'TIMEOUT' }
-  }
-  if (
-    code === 'ECONNREFUSED' ||
-    code === 'ENOTFOUND' ||
-    code === 'ECONNRESET' ||
-    code === 'EAI_AGAIN' ||
-    code === 'UND_ERR_SOCKET' ||
-    code === 'UND_ERR_CONNECT_TIMEOUT'
-  ) {
-    return { unavailable: true, code }
-  }
-  // `undici` raises a bare TypeError("fetch failed") whose .cause carries
-  // the syscall info; if we made it here without matching a code but the
-  // message looks like a connection failure, treat it as transient.
-  if (name === 'TypeError' && /fetch failed/i.test(message)) {
-    return { unavailable: true, code: code || 'FETCH_FAILED' }
-  }
-  return { unavailable: false, code: code || name || 'unknown' }
-}
-
 async function proxyRequest(
   request: NextRequest,
   params: Promise<{ path: string[] }>,

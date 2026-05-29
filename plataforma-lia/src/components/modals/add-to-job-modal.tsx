@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from "react"
 import { createPortal } from "react-dom"
 import { liaApi, JobVacancy } from "@/services/lia-api"
+import { formatJobLocation } from "@/lib/jobs/location"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -216,7 +217,7 @@ const [jobs, setJobs] = useState<JobDisplay[]>([])
           id: jv.id,
           title: jv.title,
           department: jv.department,
-          location: jv.location,
+          location: formatJobLocation(jv.location),
           status: jv.status,
           candidates_count: (jv as JobVacancy & { candidates_count?: number; funnel_data?: { total?: number } }).candidates_count || (jv as JobVacancy & { candidates_count?: number; funnel_data?: { total?: number } }).funnel_data?.total || 0,
           pipeline_stages: (jv as JobVacancy & { pipeline_stages?: string[]; candidate_ids?: string[] }).pipeline_stages || dynamicDefaultStages,

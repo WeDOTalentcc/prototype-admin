@@ -1,6 +1,7 @@
 import type { Candidate } from "@/components/pages/candidates/types"
 import type { CommunicationType } from "@/components/modals/unified-communication-modal"
 import type { ParsedCVResponse } from "@/components/cv"
+import type { JobLocationAddress } from "@/services/lia-api"
 export interface ModalPearchSearchOptions {
   searchType?: 'fast'
   limit?: number
@@ -115,7 +116,7 @@ export interface CandidatesPageModalsProps {
   setPreSelectedListForModal: (v: { id: string; name: string } | null) => void
   handleAddCandidate: (c: unknown) => void
   setCandidateListsForModal: (v: unknown[]) => void
-  bulkJobVacancies: Array<{ id: string; title: string; department?: string; location?: string }>
+  bulkJobVacancies: Array<{ id: string; title: string; department?: string; location?: string | JobLocationAddress }>
   candidateListsForModal: Array<{ id: string; name: string; color?: string }>
   handleCandidatePageOpen: (c: Candidate) => void
 

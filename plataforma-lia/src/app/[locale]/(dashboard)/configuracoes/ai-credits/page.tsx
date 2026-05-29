@@ -1,9 +1,10 @@
 import { redirect } from "next/navigation"
 
 interface PageProps {
-  params: { locale: string }
+  params: Promise<{ locale: string }>
 }
 
-export default function AiCreditsRedirectPage({ params }: PageProps) {
-  redirect(`/${params.locale}/configuracoes?section=consumo`)
+export default async function AiCreditsRedirectPage({ params }: PageProps) {
+  const { locale } = await params
+  redirect(`/${locale}/configuracoes?section=consumo`)
 }

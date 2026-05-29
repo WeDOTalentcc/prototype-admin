@@ -564,17 +564,14 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.warning(f"⚠️  Platform Event Handlers não registrados: {e}")
 
-    # Sprint 7C Part 2 — Pool-Agent event-driven consumer (4 canonical events)
-    try:
-        from app.jobs.consumers.pool_agent_event_consumer import (
-            register_pool_agent_event_handlers,
-            start_pool_agent_event_consumer,
-        )
-        register_pool_agent_event_handlers()
-        await start_pool_agent_event_consumer()
-        logger.info("✅ Pool-Agent Event Consumer iniciado (Sprint 7C Part 2)")
-    except Exception as e:
-        logger.warning(f"⚠️  Pool-Agent Event Consumer não iniciado: {e}")
+    # Fase 2.5 Onda C1.5 — Pool-Agent event consumer (Sprint 7C) DEPRECADO/REMOVIDO.
+    # Cutover canonical: agent_deployment_event_consumer (C1.2, abaixo) é o único
+    # consumer event-driven do motor unificado. O legado operava em
+    # pool_agent_assignments; após a migração de dados C1.5.1 a junction canonical
+    # é agent_deployments. Removido daqui pra evitar double-dispatch.
+    # Eventos órfãos só-do-legado (candidate_added_to_pool/candidate_screened/
+    # agent_completed_review/weekly_summary): ver relatório C1.5 — handoff pro
+    # consumer canonical cobrir candidate_added_to_pool (talent_pool on_create).
 
     # Fase 2.5 Onda C1.2 — Agent Deployment event-driven consumer (motor unificado)
     # Escuta candidate_applied + stage_changed → dispara agent_deployments com
@@ -630,14 +627,7 @@ async def lifespan(app: FastAPI):
         await rabbitmq_consumer.stop()
     except Exception:
         pass
-    # Sprint 7C Part 2 — stop Pool-Agent event consumer
-    try:
-        from app.jobs.consumers.pool_agent_event_consumer import (
-            stop_pool_agent_event_consumer,
-        )
-        await stop_pool_agent_event_consumer()
-    except Exception:
-        pass
+    # Fase 2.5 C1.5 — Pool-Agent event consumer (Sprint 7C) removido no cutover.
     # Fase 2.5 Onda C1.2 — stop Agent Deployment event consumer
     try:
         from app.jobs.consumers.agent_deployment_event_consumer import (

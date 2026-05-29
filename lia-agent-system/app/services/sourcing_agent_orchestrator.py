@@ -125,6 +125,10 @@ class SourcingAgentOrchestrator:
 
         # PoolAgentAssignment quando talent_pool provided
         if talent_pool_id:
+            # Write legado mantido durante a transição C1.5 (Fase 2.5). O sourcing
+            # orchestrator ainda acopla agente a pool via tabela legada. Backlog:
+            # emitir AgentDeployment(target_type=talent_pool) e deprecar este write.
+            # CANONICAL-EXEMPT: legacy talent_pool assignment write (transição C1.5).
             assignment = PoolAgentAssignment(
                 id=uuid.uuid4(),
                 company_id=company_id,

@@ -48,6 +48,13 @@ export default function StaffLayoutClient({
     }
   }, [isLoading, isAuthenticated, user, router, pathname])
 
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: { queries: { staleTime: 30_000, retry: 2, refetchOnWindowFocus: false } },
+      }),
+  )
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-lia-bg-primary">
@@ -64,13 +71,6 @@ export default function StaffLayoutClient({
       </div>
     )
   }
-
-  const [queryClient] = useState(
-    () =>
-      new QueryClient({
-        defaultOptions: { queries: { staleTime: 30_000, retry: 2, refetchOnWindowFocus: false } },
-      }),
-  )
 
   return (
     <QueryClientProvider client={queryClient}>

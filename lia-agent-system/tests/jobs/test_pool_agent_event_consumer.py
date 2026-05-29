@@ -15,6 +15,18 @@ dispatch task em si (Part 1.5b Agent E).
 """
 from __future__ import annotations
 
+import pytest
+
+# Fase 2.5 Onda C1.5 (cutover 2026-05-29): o pool_agent_event_consumer foi
+# DEPRECADO/no-op. O motor unificado usa agent_deployment_event_consumer (C1.2).
+# Estes testes pinavam o dispatch legado em pool_agent_assignments; obsoletos
+# após o cutover. Cobertura equivalente vive em
+# tests/jobs/test_agent_deployment_event_consumer.py.
+pytestmark = pytest.mark.skip(
+    reason="C1.5 cutover: pool_agent_event_consumer deprecado/no-op; "
+    "motor unificado usa agent_deployment_event_consumer"
+)
+
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
 
