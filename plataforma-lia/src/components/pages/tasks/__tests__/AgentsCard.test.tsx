@@ -16,6 +16,18 @@ vi.mock("@/hooks/company/use-ai-persona", () => ({
   useAiPersona: () => ({ persona: { name: "Catarina", tone: "profissional" } }),
 }))
 
+// Onda 5.1 — AgentsCard agora renderiza FirstExecutionTooltip que usa
+// useTranslations(agents.firstExecution). Mock retorna keys estaticas em PT-BR.
+vi.mock("next-intl", () => ({
+  useTranslations: (_ns: string) => (key: string, vars?: Record<string, unknown>) => {
+    if (key === "tooltip" && vars?.agentName) {
+      return `${String(vars.agentName)} acabou de processar candidatos pela primeira vez.`
+    }
+    if (key === "dismiss") return "OK, entendi"
+    return key
+  },
+}))
+
 beforeEach(() => {
   Object.defineProperty(window, "localStorage", {
     value: {
