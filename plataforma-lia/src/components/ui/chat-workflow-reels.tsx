@@ -143,9 +143,9 @@ export const SUGGESTION_HINTS: Record<
  * que têm páginas dedicadas.
  */
 export const NAVIGATION_OVERRIDES: Record<string, string> = {
-  /** W1-3: Créditos IA tem página dedicada /configuracoes/ai-credits. */
-  "ai-credits": "/configuracoes/ai-credits",
-  "hiring-policy": "/configuracoes?section=pipeline",
+  /** Créditos IA = Consumo: deep-link direto para a seção consumo (redirect /ai-credits mantido p/ bookmarks legados). */
+  "ai-credits": "/configuracoes?section=consumo",
+  "hiring-policy": "/configuracoes?section=politicas-recrutamento",
   "email-templates": "/configuracoes?section=templates-assinatura",
   /** PR-Q1: Banco de talentos tem página dedicada. */
   "talent-pool": "/bancos-de-talentos",
@@ -782,7 +782,7 @@ const StageNode = React.forwardRef<
       }}
     >
       <div
-        className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-150 border-2"
+        className="w-10 h-10 rounded-full flex items-center justify-center transition-colors duration-150 border-2"
         style={{
           backgroundColor: isActive
             ? stage.color.accent

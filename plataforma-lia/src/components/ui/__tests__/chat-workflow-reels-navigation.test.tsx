@@ -126,12 +126,12 @@ describe("NAVIGATION_OVERRIDES — mapa de navegação direta", () => {
     expect(NAVIGATION_OVERRIDES["talent-pool"]).toBe("/bancos-de-talentos");
   });
 
-  it("inclui ai-credits → /configuracoes/ai-credits", () => {
-    expect(NAVIGATION_OVERRIDES["ai-credits"]).toBe("/configuracoes/ai-credits");
+  it("inclui ai-credits → /configuracoes?section=consumo", () => {
+    expect(NAVIGATION_OVERRIDES["ai-credits"]).toBe("/configuracoes?section=consumo");
   });
 
-  it("inclui hiring-policy → /configuracoes?section=pipeline", () => {
-    expect(NAVIGATION_OVERRIDES["hiring-policy"]).toBe("/configuracoes?section=pipeline");
+  it("inclui hiring-policy → /configuracoes?section=politicas-recrutamento", () => {
+    expect(NAVIGATION_OVERRIDES["hiring-policy"]).toBe("/configuracoes?section=politicas-recrutamento");
   });
 
   it("inclui email-templates → /configuracoes?section=templates-assinatura", () => {

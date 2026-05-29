@@ -284,6 +284,21 @@ export default function SettingsPageEnhanced() {
     window.addEventListener('settings-open-tab', handler)
     return () => window.removeEventListener('settings-open-tab', handler)
   }, [])
+
+  // Deep-link: /configuracoes?section=<id> abre a secao diretamente.
+  // Conserta os NAVIGATION_OVERRIDES (?section=pipeline, ?section=templates-assinatura,
+  // ?section=consumo via redirect ai-credits) que antes caiam em minha-empresa.
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    const requested = new URLSearchParams(window.location.search).get("section")
+    if (!requested) return
+    const match = settingsSections.find((s) => s.id === requested)
+    if (!match) return
+    setActiveSection(match.id)
+    setActiveSubsection("")
+    setExpandedSections(new Set([match.id]))
+    setExpandedGroups((prev) => new Set(prev).add(match.group))
+  }, [])
   
   const [sectionCompletion, setSectionCompletion] = useState<Record<string, number>>({
     'minha-empresa': 0,
