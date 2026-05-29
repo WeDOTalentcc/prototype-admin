@@ -25,6 +25,7 @@ import Link from "next/link"
 import { textStyles } from "@/lib/design-tokens"
 import { useActiveAgentsSummary } from "@/hooks/agents/use-active-agents-summary"
 import { useAiPersona } from "@/hooks/company/use-ai-persona"
+import { FirstExecutionTooltip } from "@/components/pages-agent-studio/FirstExecutionTooltip"
 import type { ActiveAgentSummaryItem } from "@/types/agents/active-summary"
 
 export interface AgentsCardProps {
@@ -267,15 +268,34 @@ export function AgentsCard({ onOpenDecisionTree }: AgentsCardProps) {
           )}
 
           {!isLoading && !isError && items.length > 0 && (
-            <ul className="space-y-0.5" data-testid="agents-card-list">
-              {items.map((item) => (
-                <AgentRow
-                  key={item.agent_id}
-                  item={item}
-                  onOpenDecisionTree={onOpenDecisionTree}
-                />
-              ))}
-            </ul>
+            <>
+              {/* Onda 5.1 — tooltip 1x por agente quando primeira execução
+                  acontece. Heurística: primeiro item com last_execution_id
+                  (agente já rodou); storage key inclui agent_id para gate
+                  per-agent (mostrar de novo se outro agente fizer 1ª exec). */}
+              {(() => {
+                const firstExecAgent = items.find(
+                  (it) => it.last_execution_id != null,
+                )
+                if (!firstExecAgent) return null
+                return (
+                  <FirstExecutionTooltip
+                    agentName={firstExecAgent.agent_name}
+                    storageKey={`studio_first_execution_seen_${firstExecAgent.agent_id}`}
+                    className="mb-2"
+                  />
+                )
+              })()}
+              <ul className="space-y-0.5" data-testid="agents-card-list">
+                {items.map((item) => (
+                  <AgentRow
+                    key={item.agent_id}
+                    item={item}
+                    onOpenDecisionTree={onOpenDecisionTree}
+                  />
+                ))}
+              </ul>
+            </>
           )}
         </div>
       </CardContent>

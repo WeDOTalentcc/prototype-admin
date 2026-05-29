@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
 import { useAiPersona } from "@/hooks/company/use-ai-persona"
+import { FirstExecutionTooltip } from "@/components/pages-agent-studio/FirstExecutionTooltip"
 import type { ActiveExecution } from "../decision-tree/types"
 
 export type LiveSurfaceFilter =
@@ -169,24 +170,37 @@ export function LiveAgentsList({
     )
   }
 
+  // Onda 5.1 — tooltip 1x por agente quando primeira execução está rodando.
+  // Heurística: primeiro item running (executions são active = status running).
+  // Storage key inclui agent_id pra gate per-agent.
+  const firstExec = executions[0]
+
   return (
-    <ul
-      className={cn("space-y-2")}
-      aria-live="polite"
-      aria-relevant="additions text"
-      data-testid="live-agents-list"
-    >
-      {executions.map((exec) => (
-        <LiveCard
-          key={exec.execution_id}
-          execution={exec}
-          onOpenReasoning={onOpenReasoning}
-          // White-label canonical: nome do agente passa por useAiPersona.
-          // Custom agent tem nome próprio (agent_name canonical); fallback é o
-          // persona name configurado pela cliente em Configurações.
-          displayName={exec.agent_name || persona?.name || "Agente"}
+    <div className="space-y-2">
+      {firstExec && (
+        <FirstExecutionTooltip
+          agentName={firstExec.agent_name || persona?.name || "Agente"}
+          storageKey={`studio_first_execution_seen_${firstExec.agent_id}`}
         />
-      ))}
-    </ul>
+      )}
+      <ul
+        className={cn("space-y-2")}
+        aria-live="polite"
+        aria-relevant="additions text"
+        data-testid="live-agents-list"
+      >
+        {executions.map((exec) => (
+          <LiveCard
+            key={exec.execution_id}
+            execution={exec}
+            onOpenReasoning={onOpenReasoning}
+            // White-label canonical: nome do agente passa por useAiPersona.
+            // Custom agent tem nome próprio (agent_name canonical); fallback é o
+            // persona name configurado pela cliente em Configurações.
+            displayName={exec.agent_name || persona?.name || "Agente"}
+          />
+        ))}
+      </ul>
+    </div>
   )
 }
