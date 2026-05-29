@@ -371,8 +371,66 @@ Todo hook em `src/hooks/agents/` que faz fetch de API DEVE usar `useSWR` de `swr
 - Search: debounce 300ms (não query a cada keystroke)
 - Ambos implementados em `MarketplaceTab.tsx` via `onInstallSuccess` callback + `debouncedSearch` state
 
-### Fase 2 (pendente — após Fase 1 completo + pesquisa concorrentes Paulo)
-- Job-Agent assignment (tabela `job_agent_assignments` não existe ainda)
-- KPI dashboard per agente
-- Surface visibility per-surface (pool/vaga/NPS)
-- Integração Configurações > Consumo
+## Studio Fase 2 — onde os agentes vivem (registrado 2026-05-28)
+
+A Fase 2 do Agent Studio distribuiu a presença dos agentes para FORA do Studio.
+O recrutador encontra agentes em todos os surfaces da plataforma.
+
+### Surfaces que mostram agentes
+
+| Surface | O que mostra | Componente | Endpoint |
+|---|---|---|---|
+| **Sala de Controle** (`/agent-studio?tab=control-room`) | Live + histórico + LGPD + decision tree | `StudioControlRoom` | `/agent-monitoring/active-executions`, `/recent-executions`, `/executions/{id}/reasoning` |
+| **Decidir** (`/tasks`) | AgentsCard (5º card) + banner global "N agentes trabalhando" | `AgentsCard`, `AgentRunningBanner` | `/agent-monitoring/active-summary?surface=decidir` |
+| **Vagas** (`/jobs/{id}`) | Aba "Agentes" + badge "🩵 N agentes ativos" no header | `JobAgentsTab`, `JobAgentBadge` | `/jobs/{id}/agents`, `/agent-deployments?target_type=job` |
+| **Banco Vivo** (`/bancos-de-talentos/{id}`) | Aba "Agentes" com pingo cyan quando running | `TalentPoolPage` | `/agent-deployments?target_type=talent_pool` |
+| **Funil** (`/funil-de-talentos`) | Botão "+ Agente" no header de cada stage + pingo PULSANTE quando running | `PipelineRailNode`, `StageAgentTriggerModal` | `/agent-deployments?target_type=pipeline_stage` |
+| **Candidato (kanban/preview)** | Ícone Brain canto inferior se candidato foi tocado por agente nas últimas 24h | `CandidateTouchIndicator` | `/agent-monitoring/candidate/{id}/touches` |
+| **Configurações > Consumo** | Drilldown ao clicar barra do gráfico + alertas de orçamento per-agent | `ConsumptionDrilldownModal`, `BudgetAlertsList` | `/ai-consumption/by-agent/drilldown`, `/budget-alerts` |
+| **Studio > KPIs por agente** (`/agent-studio/{id}/kpis`) | Cards + heatmap horário + tools breakdown + badge "aprendendo" | `AgentKpisClient` | `/custom-agents/{id}/kpis` |
+
+### REGRA — Componentes canonical reutilizáveis
+
+- **`DecisionTreeDrawer`** (`pages-agent-studio/decision-tree/`) — usado por TODOS os surfaces que mostram "por que o agente fez X". Props canonical: `{executionId, onClose}`. Sensor `check_decision_tree_drawer_uses_canonical_props.py` BLOCKING garante.
+- **`useDeploymentsByTargets`** (`hooks/agents/use-deployments-by-targets.ts`) — batch endpoint, elimina N+1. Usar SEMPRE em vez de N fetches per target.
+- **`useActiveAgentsSummary`** (`hooks/agents/use-active-agents-summary.ts`) — top N agentes ativos, polling 10s, surface filter.
+- **`AgentDeployment`** (backend canonical) — única junction table agente↔surface. NÃO criar tabelas `job_agent_assignments`, `pipeline_agent_assignments`. Sensor `check_no_duplicate_assignment_table.py` BLOCKING garante.
+- **`FirstExecutionTooltip`** (`pages-agent-studio/`) — tooltip 1x por agente quando primeira execução acontece. Wired em AgentsCard + LiveAgentsList (Onda 5.1). Storage key per-agent (`studio_first_execution_seen_{agent_id}`).
+- **`ConsumptionDrilldownModal`** — modal canonical único, owned pelo `ConsumoHub` (Onda 5.2). Tabs (CreditosIaTab/AgentesTab) chamam `onOpenDrilldown` em vez de manter state local. Param URL `?filter={studio_agent_id}` auto-abre (Onda 5.3).
+
+### REGRA — Cyan é a cor da IA
+
+Toda surface de agente usa `lia-cyan-*` tokens. Sensor `check_cyan_token_for_agents.py` BLOCKING garante.
+Pingo PULSANTE é exclusivo do Funil (decisão de produto). Em outros surfaces, pingo é static 4-6px.
+Honra `prefers-reduced-motion`.
+
+### REGRA — LGPD em todo decision tree
+
+`AgentReasoningStep.data_fields_accessed[]` lista quais campos do candidato foram lidos.
+`/agent-monitoring/executions/{id}/reasoning` sempre retorna `data_fields_NOT_accessed: ["cpf", "raca", "religiao", "genero", "estado_civil"]` (declarativo).
+Helper canonical `lgpd-csv.ts` exporta trilha LGPD para CSV (DPO compliance).
+Sensor `check_lgpd_data_access_logged.py` BLOCKING garante.
+
+### REGRA — Trigger modes válidos por target_type
+
+`VALID_TRIGGER_MODES_BY_TARGET` em `app/shared/trigger_mode_validation.py`:
+- `talent_pool`: on_create, on_schedule, manual
+- `job`: on_create, on_schedule, manual, on_apply
+- `pipeline_stage`: on_enter_stage, on_exit_stage, on_stuck_in_stage, on_stage_change
+- `candidate_list`: on_schedule, manual
+
+Validation enforced em todos endpoints write (create, update, bulk).
+
+### REGRA — Recharts em surfaces de Studio têm aria-label
+
+Todo `<BarChart>`, `<LineChart>`, `<AreaChart>` em surfaces de Studio (Onda 5.5) é envolto em wrapper `<div role="img" aria-label="...">` com descrição contextual (e.g., "Heatmap de execuções 24h, pico às 14h"). Screen readers anunciam a função e contexto do chart antes do conteúdo SVG.
+
+### Empty states e onboarding
+
+- Studio empty: `StudioEmptyState` com persona name via `useAiPersona()`
+- Badge "🩵 aprendendo" quando `is_learning=true` (< 5 execuções) — `LearningBadge`
+- `FirstExecutionTooltip` mostra dica 1x por agente quando primeira execução acontece (gate via localStorage `studio_first_execution_seen_{agent_id}`)
+
+### Sensor agregado de invariantes Fase 2
+
+`lia-agent-system/scripts/check_phase2_invariants.py` (Onda 5.9) roda os 10 sensores BLOCKING + 3 warn-only da Fase 2 em sequência. Wired em `frontend-ci.yml` (step "Phase 2 invariants") como gate de regressão.
