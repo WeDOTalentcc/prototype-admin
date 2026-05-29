@@ -4238,7 +4238,23 @@
       "errorSaveUser": "Erro ao salvar usuário",
       "errorResendInvite": "Erro ao reenviar convite",
       "confirmDeleteUser": "Tem certeza que deseja excluir este usuário?",
-      "errorDeleteUser": "Erro ao excluir usuário"
+      "errorDeleteUser": "Erro ao excluir usuário",
+      "avatarOf": "Avatar de {name}",
+      "bulkActionClearSelection": "Limpar seleção",
+      "bulkActionGrant": "Conceder acesso",
+      "bulkActionRevoke": "Revogar acesso",
+      "bulkTargetLabel": "{count} selecionados",
+      "canViewSalaryCheckboxLabel": "Pode ver salários",
+      "dismissSuccess": "Fechar",
+      "tableCanViewSalary": "Vê salários",
+      "tableCanViewSalaryTooltip": "Permite visualizar faixas salariais e remuneração.",
+      "salaryGrantConfirmTitleGrant": "Conceder acesso a salários",
+      "salaryGrantConfirmTitleRevoke": "Revogar acesso a salários",
+      "salaryGrantConfirmBodyGrant": "Confirmar que {name} poderá ver dados salariais?",
+      "salaryGrantConfirmBodyRevoke": "Confirmar que {name} não poderá mais ver dados salariais?",
+      "salaryGrantConfirmActionGrant": "Conceder",
+      "salaryGrantConfirmActionRevoke": "Revogar",
+      "salaryGrantConfirmCancel": "Cancelar"
     },
     "departments": {
       "title": "Departamentos",
@@ -4304,7 +4320,10 @@
       "levelOther": "Outros",
       "cancel": "Cancelar",
       "saving": "Salvando...",
-      "save": "Salvar"
+      "save": "Salvar",
+      "linkUserSectionLabel": "Vincular a um usuário",
+      "linkUserExternalContactOption": "Contato externo (sem usuário)",
+      "linkUserConfirmationNote": "O usuário vinculado terá acesso a esta área."
     },
     "approvers": {
       "title": "Fluxo de Aprovação de Vagas",
@@ -6028,7 +6047,18 @@
       "importFailed": "Falha ao importar dados",
       "downloadFailed": "Erro ao baixar modelo",
       "recordImported": "{count} record imported successfully!",
-      "recordsImported": "{count} records imported successfully!"
+      "recordsImported": "{count} records imported successfully!",
+      "cancel": "Cancelar",
+      "loading": "Carregando...",
+      "uploadingFile": "Enviando arquivo...",
+      "success": "Importação concluída com sucesso.",
+      "errorTitle": "Erro na importação",
+      "csvFormat": "CSV",
+      "excelFormat": "Excel",
+      "previewSubtitle": "Revise os dados antes de confirmar a importação.",
+      "matchedFields": "{count} campos correspondentes",
+      "unmatchedFields": "{count} campos não mapeados",
+      "moreRecords": "+{count} registros"
     },
     "liaFieldToggle": {
       "active": "Ativo",
@@ -6337,6 +6367,89 @@
         "error": "Erro"
       },
       "sensitiveTermsDetected": "Termos sensíveis detectados: {terms}. Não serão usados em decisões de IA."
+    },
+    "aiPreview": {
+      "previewLabel": "Pré-visualização",
+      "questionDev": "Como você lida com prazos apertados?",
+      "answerCasual": "Resposta em tom casual",
+      "answerConcise": "Resposta concisa",
+      "answerDetailed": "Resposta detalhada",
+      "answerProfessional": "Resposta profissional"
+    },
+    "aiTransparency": {
+      "title": "Transparência da IA",
+      "description": "Veja e ajuste como a LIA usa os dados da empresa nas decisões.",
+      "loading": "Carregando...",
+      "errorLoad": "Erro ao carregar a configuração de transparência.",
+      "errorOverride": "Erro ao salvar a alteração."
+    },
+    "assessment": {
+      "title": "Avaliação",
+      "categoryTechnical": "Técnico",
+      "categoryCultural": "Cultural",
+      "categorySoft": "Soft Skills",
+      "categoryGrowth": "Potencial de Crescimento",
+      "criteriaTechnical1": "Domínio técnico da função",
+      "criteriaTechnical2": "Experiência com ferramentas relevantes",
+      "criteriaCultural1": "Alinhamento com os valores da empresa",
+      "criteriaCultural2": "Colaboração e trabalho em equipe",
+      "criteriaSoft1": "Comunicação",
+      "criteriaSoft2": "Resolução de problemas",
+      "criteriaGrowth1": "Capacidade de aprendizado",
+      "criteriaGrowth2": "Ambição e iniciativa"
+    },
+    "dataFields": {
+      "collapseLabel": "Recolher",
+      "comingSoon": "Em breve",
+      "comingSoonText": "Este recurso estará disponível em breve.",
+      "enableField": "Ativar campo",
+      "fieldCount": "{count} campos",
+      "helpText": "Defina quais dados a LIA coleta dos candidatos.",
+      "liaCollects": "A LIA coleta",
+      "required": "Obrigatório"
+    },
+    "liaField": {
+      "addInstruction": "Adicionar instrução",
+      "editInstruction": "Editar instrução",
+      "fieldDisabled": "Campo desativado",
+      "instructionPlaceholder": "Ex: Priorize candidatos com experiência em liderança..."
+    },
+    "liaFields": {
+      "title": "Campos da LIA",
+      "description": "Controle quais dados a LIA usa e como ela interpreta cada campo.",
+      "fieldsTotal": "{count} campos",
+      "tabs": {
+        "fields": "Campos",
+        "aiPersona": "Persona da IA",
+        "tenantOverride": "Override (YAML)"
+      },
+      "tenantOverride": {
+        "title": "Override de Persona (YAML)",
+        "disclaimer": "Edição avançada. Restrito à equipe WeDoTalent.",
+        "loading": "Carregando...",
+        "empty": "Nenhum override configurado.",
+        "create": "Criar override",
+        "save": "Salvar",
+        "saved": "Salvo",
+        "delete": "Remover",
+        "confirmDelete": "Tem certeza que deseja remover este override?",
+        "pathLabel": "Caminho do arquivo",
+        "activeOverrides": "Overrides ativos"
+      }
+    },
+    "nps": {
+      "title": "NPS / Satisfação",
+      "mainQuestionLabel": "Pergunta principal",
+      "defaultQuestion": "De 0 a 10, qual a probabilidade de você recomendar nosso processo seletivo?",
+      "frequencyLabel": "Frequência",
+      "frequencyAfterEach": "Após cada etapa",
+      "frequencyWeekly": "Semanal",
+      "frequencyMonthly": "Mensal",
+      "frequencyQuarterly": "Trimestral",
+      "scaleLabel": "Escala",
+      "scaleStandard": "Padrão (0-10)",
+      "scaleSimplified": "Simplificada (1-5)",
+      "scaleCustom": "Personalizada"
     }
   },
   "publicJob": {
