@@ -2,13 +2,18 @@
 Sourcing Pipeline API - Endpoints for automated candidate sourcing.
 """
 from datetime import datetime
+from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.domains.sourcing.services.sourcing_pipeline_service import sourcing_pipeline_service
+from app.api.v1._path_patterns import (
+    DUAL_ID_PATH_PATTERN,
+    reorder_collection_before_item,
+)
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
 
@@ -113,7 +118,7 @@ async def update_pipeline_config(config_update: PipelineConfigRequest, company_i
 
 @router.get("/status/{job_id}", response_model=JobPipelineStatusResponse)
 async def get_job_pipeline_status(
-    job_id: str,
+    job_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     db: AsyncSession = Depends(get_db), 
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
@@ -175,7 +180,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.post("/run/{job_id}", response_model=PipelineRunResponse)
 async def run_pipeline_for_job(
-    job_id: str,
+    job_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     request: RunPipelineRequest | None = None,
     db: AsyncSession = Depends(get_db), 
 company_id: str = Depends(require_company_id)):
@@ -265,3 +270,9 @@ async def get_pipeline_summary(db: AsyncSession = Depends(get_db), company_id: s
             for j in jobs_needing[:5]
         ]
     }
+
+
+# Task #455/#458 blindagem: garante que rotas collection-scoped sejam
+# registradas ANTES das item-scoped ({job_id}), evitando shadowing.
+# Roda uma vez ao fim do modulo apos todas as rotas declaradas.
+reorder_collection_before_item(router)

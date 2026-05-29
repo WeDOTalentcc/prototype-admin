@@ -112,6 +112,9 @@ async def lifespan(app: FastAPI):
     Lifespan context manager for startup/shutdown events.
     """
     # Startup
+    # A4: default health-flag — sobrescrito pelo bloco do event consumer
+    # (C1.2) abaixo. Garante atributo sempre definido para observabilidade.
+    app.state.event_consumer_healthy = False
     logger.info("🚀 Starting LIA Agent System...")
     logger.info(f"Environment: {settings.APP_ENV}")
     logger.info(f"Debug mode: {settings.DEBUG}")
@@ -584,9 +587,21 @@ async def lifespan(app: FastAPI):
         )
         register_agent_deployment_event_handlers()
         await start_agent_deployment_event_consumer()
+        app.state.event_consumer_healthy = True
         logger.info("✅ Agent Deployment Event Consumer iniciado (Fase 2.5 C1.2)")
     except Exception as e:
-        logger.warning(f"⚠️  Agent Deployment Event Consumer não iniciado: {e}")
+        # A4 (2026-05-29): falhar ALTO, não silenciosamente. Se o RabbitMQ
+        # cai no boot, o motor event-driven (on_apply/on_enter_stage/etc.)
+        # NÃO sobe e o sistema degrada para só-scheduler. O boot continua
+        # (resiliência: scheduler ainda funciona), mas o erro precisa ser
+        # LOUD (logger.error + exc_info) e observável via health-flag.
+        app.state.event_consumer_healthy = False
+        logger.error(
+            "❌ Agent Deployment Event Consumer NÃO iniciado — motor "
+            "event-driven degradado para só-scheduler: %s",
+            e,
+            exc_info=True,
+        )
 
     # Seed A/B Testing email template variants (Fase 5 / A5 — idempotent)
     try:

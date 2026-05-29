@@ -229,7 +229,7 @@ from app.api.v1.search_feedback import router as _t489_search_feedback_router
 from app.api.v1.shared_searches import router as _t489_shared_searches_router
 from app.api.v1.short_lists import router as _t489_short_lists_router
 from app.api.v1.sourcing import router as _t489_sourcing_router
-from app.api.v1.sourcing_agents import router as _t489_sourcing_agents_router
+from app.api.v1.sourcing_orchestrator import router as _t489_sourcing_orchestrator_router
 from app.api.v1.sourcing_pipeline import router as _t489_sourcing_pipeline_router
 from app.api.v1.suggestion_feedback import router as _t489_suggestion_feedback_router
 from app.api.v1.task_lifecycle import router as _t489_task_lifecycle_router
@@ -346,7 +346,7 @@ _TASK_489_DUAL_ID_PARAMS = [
     pytest.param(_t489_shared_searches_router, "shared-searches", id="shared-searches"),
     pytest.param(_t489_short_lists_router, "short-lists", id="short-lists"),
     pytest.param(_t489_sourcing_router, "sourcing", id="sourcing"),
-    pytest.param(_t489_sourcing_agents_router, "sourcing-agents", id="sourcing-agents"),
+    pytest.param(_t489_sourcing_orchestrator_router, "sourcing-orchestrator", id="sourcing-orchestrator"),
     pytest.param(_t489_sourcing_pipeline_router, "sourcing-pipeline", id="sourcing-pipeline"),
     pytest.param(_t489_suggestion_feedback_router, "suggestion-feedback", id="suggestion-feedback"),
     pytest.param(_t489_task_lifecycle_router, "task-lifecycle", id="task-lifecycle"),

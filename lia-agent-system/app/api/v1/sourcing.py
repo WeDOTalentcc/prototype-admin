@@ -10,9 +10,9 @@ Provides:
 """
 import logging
 from datetime import datetime
-from typing import Any
+from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from pydantic import BaseModel, Field
 from sqlalchemy import and_, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -24,6 +24,10 @@ from app.domains.sourcing.services.query_builders import (
 )
 from app.models.candidate import Candidate
 from app.models.job_vacancy import JobVacancy
+from app.api.v1._path_patterns import (
+    DUAL_ID_PATH_PATTERN,
+    reorder_collection_before_item,
+)
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
 
@@ -360,7 +364,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/suggestions/{job_id}", response_model=SuggestionResponse)
 async def get_suggested_candidates(
-    job_id: str,
+    job_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     limit: int = Query(default=20, ge=1, le=100),
     min_score: float = Query(default=55.0, ge=0, le=100),
     db: AsyncSession = Depends(get_db), 
@@ -570,3 +574,9 @@ async def sourcing_health_check(company_id: str = Depends(require_company_id)):
         ],
         "timestamp": datetime.utcnow().isoformat()
     }
+
+
+# Task #455/#458 blindagem: garante que rotas collection-scoped sejam
+# registradas ANTES das item-scoped ({job_id}), evitando shadowing.
+# Roda uma vez ao fim do modulo apos todas as rotas declaradas.
+reorder_collection_before_item(router)

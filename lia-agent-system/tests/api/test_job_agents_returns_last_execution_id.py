@@ -172,7 +172,7 @@ async def test_last_execution_id_returns_most_recent_run(mock_db, mock_user, mon
     monkeypatch.setattr(
         ja_api,
         "_fetch_last_execution_id_map",
-        AsyncMock(return_value={str(agent_id): most_recent_run_id}),
+        AsyncMock(return_value={str(dep.id): most_recent_run_id}),
     )
 
     scalars_mock = MagicMock()
@@ -192,14 +192,15 @@ async def test_last_execution_id_returns_most_recent_run(mock_db, mock_user, mon
 
 
 async def test_multi_tenancy_helper_filters_by_company_id(mock_db):
-    """_fetch_last_execution_id_map deve filtrar company_id em AMBAS as tabelas.
+    """_fetch_last_execution_id_map filtra company_id em TODAS as tabelas.
 
-    Sensor: query stmt deve incluir PoolAgentRun.company_id == company_id E
-    PoolAgentAssignment.company_id == company_id. Defense-in-depth.
+    Sensor: origem 1 (deployment_id) filtra PoolAgentRun.company_id; origem 2
+    (fallback legacy assignment-join) filtra PoolAgentRun.company_id E
+    PoolAgentAssignment.company_id. Defense-in-depth.
+
+    C1.6-FINAL (2026-05-29): helper agora recebe `deployments=[AgentDeployment]`
+    keyed por deployment_id; assignment-join e apenas fallback.
     """
-    from lia_models.pool_agent_assignment import PoolAgentAssignment
-    from lia_models.pool_agent_run import PoolAgentRun
-
     captured_stmts: list = []
 
     async def fake_execute(stmt):
@@ -210,29 +211,34 @@ async def test_multi_tenancy_helper_filters_by_company_id(mock_db):
 
     mock_db.execute = fake_execute
 
+    dep = MagicMock()
+    dep.id = uuid.uuid4()
+    dep.agent_id = uuid.uuid4()
+
     out = await ja_api._fetch_last_execution_id_map(
         db=mock_db,
-        agent_ids=[str(uuid.uuid4())],
+        deployments=[dep],
         company_id="tenant-X",
     )
     assert out == {}
-    assert len(captured_stmts) == 1
+    # Origem 1 (deployment_id) + origem 2 (fallback, pois origem 1 vazia).
+    assert len(captured_stmts) == 2
 
-    # Render statement to string to assert filters lexically.
-    rendered = str(
-        captured_stmts[0].compile(compile_kwargs={"literal_binds": False})
+    rendered_all = "\n".join(
+        str(s.compile(compile_kwargs={"literal_binds": False})) for s in captured_stmts
     )
-    # Both company_id filters must appear in the WHERE clause.
-    assert "pool_agent_runs.company_id" in rendered
-    assert "pool_agent_assignments.company_id" in rendered
+    # PoolAgentRun.company_id filtrado em ambas as origens.
+    assert "pool_agent_runs.company_id" in rendered_all
+    # PoolAgentAssignment.company_id filtrado na origem 2 (fallback legacy).
+    assert "pool_agent_assignments.company_id" in rendered_all
 
 
-async def test_fetch_helper_empty_agent_ids_short_circuits(mock_db):
-    """agent_ids=[] → retorna {} SEM disparar query (otimização)."""
+async def test_fetch_helper_empty_deployments_short_circuits(mock_db):
+    """deployments=[] retorna {} SEM disparar query (otimizacao)."""
     mock_db.execute = AsyncMock()
     out = await ja_api._fetch_last_execution_id_map(
         db=mock_db,
-        agent_ids=[],
+        deployments=[],
         company_id="tenant-X",
     )
     assert out == {}
@@ -240,28 +246,33 @@ async def test_fetch_helper_empty_agent_ids_short_circuits(mock_db):
 
 
 async def test_fetch_helper_first_hit_wins_in_python_aggregate(mock_db):
-    """Helper consome rows DESC e mantém primeiro hit por custom_agent_id.
+    """Helper consome rows DESC e mantem primeiro hit por deployment_id.
 
-    Cenário: agent A teve 3 runs. SQL retorna [run3, run2, run1] (DESC).
-    Mapping resultante deve ser {A: run3}.
+    Cenario: deployment D teve 3 runs. SQL (origem 1) retorna [run3, run2, run1]
+    (DESC por started_at). Mapping resultante deve ser {D: run3}. Como origem 1
+    resolveu o deployment, a origem 2 (fallback) nao e mais necessaria.
     """
-    agent_a = uuid.uuid4()
+    dep = MagicMock()
+    dep.id = uuid.uuid4()
+    dep.agent_id = uuid.uuid4()
     run3 = uuid.uuid4()
     run2 = uuid.uuid4()
     run1 = uuid.uuid4()
 
     result_mock = MagicMock()
-    # Rows: (custom_agent_id, run_id), already sorted DESC by SQL.
+    # Rows: (deployment_id, run_id), already sorted DESC by SQL.
     result_mock.all = MagicMock(return_value=[
-        (agent_a, run3),
-        (agent_a, run2),
-        (agent_a, run1),
+        (dep.id, run3),
+        (dep.id, run2),
+        (dep.id, run1),
     ])
     mock_db.execute = AsyncMock(return_value=result_mock)
 
     out = await ja_api._fetch_last_execution_id_map(
         db=mock_db,
-        agent_ids=[str(agent_a)],
+        deployments=[dep],
         company_id="tenant-X",
     )
-    assert out == {str(agent_a): str(run3)}
+    assert out == {str(dep.id): str(run3)}
+    # Origem 1 resolveu -> fallback (origem 2) nao dispara segunda query.
+    assert mock_db.execute.await_count == 1

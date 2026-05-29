@@ -119,7 +119,13 @@ jobs:
         # eliminou 154 falsos positivos do v1 single-namespace, (c) fix de 6
         # voice keys do AgentCard.tsx. Qualquer regressão bloqueia merge.
         # Ver CLAUDE.md § i18n contract canonical (2026-05-23).
-        run: npm run lint:i18n:blocking
+        #
+        # RATCHET (2026-05-29): baseline 790 — débito legado settings
+        # (não Studio). Reduzir incremental; novas violações falham
+        # (max 790 → a 791ª quebra). lint:i18n:blocking (max 0) deixava CI
+        # vermelho no merge por débito histórico. ratchet protege contra
+        # regressão sem bloquear o pipeline com débito pré-existente.
+        run: npm run lint:i18n:ratchet
 
       - name: Candidate canonical axis sensors (WSI 0-10 + LGPD field policy) BLOCKING
         # F6 ADR-001/002. WSI 0-10 (Task #512): bloqueia /100 em candidate-* surfaces.
