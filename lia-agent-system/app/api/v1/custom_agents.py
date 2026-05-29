@@ -2112,16 +2112,25 @@ async def get_agent_kpis(
     avg_s = sum(latencies_s) / len(latencies_s) if latencies_s else 0.0
     p95_s = _percentile(latencies_s, 0.95)
 
-    # Gap documentado: candidates_approved/rejected exigem cross-table com
-    # vacancy_candidates.status. Em escopo Onda 4 retornamos candidates_processed
-    # = N distinct candidate_ids vistos. approved/rejected/pending = 0 até
-    # cruzamento ser implementado (Onda 5+ ou Settings hub que já sabe stats).
+    # Onda C4.1 (2026-05-29): cruzamento candidate_ids ↔ vacancy_candidates.status
+    # via repository canonical (ADR-001). Fail-closed por company_id: candidatos
+    # de outro tenant NUNCA contam. Antes hardcoded 0 (quebrava perguntas 1+2 do
+    # Paulo: "este agente funciona? quanto produziu?").
+    from app.domains.candidates.repositories.vacancy_candidate_repository import (
+        VacancyCandidateRepository as _VacancyCandidateRepository,
+    )
+
+    _status_counts = await _VacancyCandidateRepository(db).count_status_for_candidates(
+        company_id=company_id,
+        candidate_ids=list(candidate_ids_seen),
+    )
+
     bucket = AgentKpiBucket(
         period=period,
         candidates_processed=len(candidate_ids_seen),
-        candidates_approved=0,
-        candidates_rejected=0,
-        candidates_pending=0,
+        candidates_approved=_status_counts["approved"],
+        candidates_rejected=_status_counts["rejected"],
+        candidates_pending=_status_counts["pending"],
         avg_execution_seconds=round(avg_s, 3),
         p95_execution_seconds=round(p95_s, 3),
         total_executions=total_executions,

@@ -406,3 +406,180 @@ async def test_kpis_p95_latency_computed(mock_db):
     assert 49 <= result.bucket.avg_execution_seconds <= 52
     # p95 = ~95th value = 95000ms = 95s
     assert 90 <= result.bucket.p95_execution_seconds <= 100
+
+
+# ────────────────────────────────────────────────────────────────────────────
+# C4.1 — candidates_approved/rejected/pending cruzados com vacancy_candidates
+# ────────────────────────────────────────────────────────────────────────────
+
+async def test_kpis_candidate_status_counts_wired_into_bucket(mock_db, monkeypatch):
+    """Endpoint popula approved/rejected/pending a partir do repository canonical
+    (antes hardcoded 0). Mockamos o repo para isolar o wiring do endpoint."""
+    from app.api.v1 import custom_agents as ca
+    import app.domains.candidates.repositories.vacancy_candidate_repository as vcr
+
+    agent_id = uuid.uuid4()
+    agent = _fake_agent(agent_id)
+    cid_a, cid_b, cid_c = str(uuid.uuid4()), str(uuid.uuid4()), str(uuid.uuid4())
+    runs = [_fake_run(candidate_ids=[cid_a, cid_b, cid_c])]
+    _mock_query_result(
+        mock_db,
+        execute_sequence=[
+            ("scalar_one_or_none", agent),
+            ("scalars_all", runs),
+        ],
+    )
+
+    captured = {}
+
+    async def _fake_count(self, company_id, candidate_ids):
+        captured["company_id"] = company_id
+        captured["candidate_ids"] = sorted(candidate_ids)
+        return {"approved": 1, "rejected": 1, "pending": 1}
+
+    monkeypatch.setattr(
+        vcr.VacancyCandidateRepository, "count_status_for_candidates", _fake_count
+    )
+
+    result = await ca.get_agent_kpis(
+        agent_id=str(agent_id), period="30d", db=mock_db, company_id="comp-1"
+    )
+
+    assert result.bucket.candidates_processed == 3
+    assert result.bucket.candidates_approved == 1
+    assert result.bucket.candidates_rejected == 1
+    assert result.bucket.candidates_pending == 1
+    # Multi-tenancy: company_id do JWT (não payload) é repassado fail-closed
+    assert captured["company_id"] == "comp-1"
+    assert captured["candidate_ids"] == sorted([cid_a, cid_b, cid_c])
+
+
+async def test_kpis_empty_agent_status_counts_zero_without_repo_call(mock_db, monkeypatch):
+    """Agente sem runs → todos 0 (honesto, não bug). Repo NÃO é chamado."""
+    from app.api.v1 import custom_agents as ca
+    import app.domains.candidates.repositories.vacancy_candidate_repository as vcr
+
+    agent_id = uuid.uuid4()
+    agent = _fake_agent(agent_id)
+    _mock_query_result(
+        mock_db,
+        execute_sequence=[
+            ("scalar_one_or_none", agent),
+            ("scalars_all", []),
+        ],
+    )
+
+    called = {"n": 0}
+
+    async def _boom(self, company_id, candidate_ids):
+        called["n"] += 1
+        return {"approved": 9, "rejected": 9, "pending": 9}
+
+    monkeypatch.setattr(
+        vcr.VacancyCandidateRepository, "count_status_for_candidates", _boom
+    )
+
+    result = await ca.get_agent_kpis(
+        agent_id=str(agent_id), period="30d", db=mock_db, company_id="comp-1"
+    )
+
+    assert result.bucket.candidates_approved == 0
+    assert result.bucket.candidates_rejected == 0
+    assert result.bucket.candidates_pending == 0
+    assert called["n"] == 0  # short-circuit no branch de runs vazios
+
+
+# ── Repository unit tests: status mapping + precedência + multi-tenancy ──────
+
+
+def _vc_repo_with_rows(rows):
+    """Constrói um VacancyCandidateRepository com db.execute mockado retornando
+     (lista de (candidate_id, status))."""
+    from app.domains.candidates.repositories.vacancy_candidate_repository import (
+        VacancyCandidateRepository,
+    )
+
+    db = AsyncMock()
+    exec_result = MagicMock()
+    exec_result.all = MagicMock(return_value=rows)
+    db.execute = AsyncMock(return_value=exec_result)
+    return VacancyCandidateRepository(db), db
+
+
+async def test_repo_count_status_maps_canonical_buckets():
+    """approved={approved,hired,shortlisted,offer}; rejected={rejected,
+    not_selected,cancelled}; pending=resto."""
+    ca_id = [str(uuid.uuid4()) for _ in range(6)]
+    rows = [
+        (uuid.UUID(ca_id[0]), "approved"),
+        (uuid.UUID(ca_id[1]), "hired"),
+        (uuid.UUID(ca_id[2]), "rejected"),
+        (uuid.UUID(ca_id[3]), "not_selected"),
+        (uuid.UUID(ca_id[4]), "screening"),
+        (uuid.UUID(ca_id[5]), "sourced"),
+    ]
+    repo, _ = _vc_repo_with_rows(rows)
+    counts = await repo.count_status_for_candidates("comp-1", ca_id)
+    assert counts == {"approved": 2, "rejected": 2, "pending": 2}
+
+
+async def test_repo_count_status_precedence_approved_over_rejected_over_pending():
+    """Candidato em N vagas com status distintos → conta o mais decisivo:
+    approved > rejected > pending."""
+    cid = str(uuid.uuid4())
+    rows = [
+        (uuid.UUID(cid), "pending"),
+        (uuid.UUID(cid), "rejected"),
+        (uuid.UUID(cid), "approved"),  # vence
+    ]
+    repo, _ = _vc_repo_with_rows(rows)
+    counts = await repo.count_status_for_candidates("comp-1", [cid])
+    assert counts == {"approved": 1, "rejected": 0, "pending": 0}
+
+    # rejected vence pending quando não há approved
+    cid2 = str(uuid.uuid4())
+    rows2 = [
+        (uuid.UUID(cid2), "screening"),
+        (uuid.UUID(cid2), "rejected"),
+    ]
+    repo2, _ = _vc_repo_with_rows(rows2)
+    counts2 = await repo2.count_status_for_candidates("comp-1", [cid2])
+    assert counts2 == {"approved": 0, "rejected": 1, "pending": 0}
+
+
+async def test_repo_count_status_empty_candidate_ids_no_db_call():
+    repo, db = _vc_repo_with_rows([])
+    counts = await repo.count_status_for_candidates("comp-1", [])
+    assert counts == {"approved": 0, "rejected": 0, "pending": 0}
+    db.execute.assert_not_called()
+
+
+async def test_repo_count_status_non_uuid_ids_skipped_no_db_call():
+    """candidate_ids legacy/bigint (não-UUID) são descartados fail-safe; sem
+    query (IN vazio evitado)."""
+    repo, db = _vc_repo_with_rows([])
+    counts = await repo.count_status_for_candidates("comp-1", ["c1", "c2", "999"])
+    assert counts == {"approved": 0, "rejected": 0, "pending": 0}
+    db.execute.assert_not_called()
+
+
+async def test_repo_count_status_fail_closed_without_company_id():
+    repo, _ = _vc_repo_with_rows([])
+    with pytest.raises(ValueError):
+        await repo.count_status_for_candidates("", [str(uuid.uuid4())])
+    with pytest.raises(ValueError):
+        await repo.count_status_for_candidates(None, [str(uuid.uuid4())])
+
+
+async def test_repo_count_status_multitenancy_filters_company_id():
+    """Garante que o WHERE company_id == cid é aplicado (candidatos de outro
+    tenant não retornam da query → não contam). Verificamos via o filtro no
+    statement executado."""
+    cid = str(uuid.uuid4())
+    repo, db = _vc_repo_with_rows([(uuid.UUID(cid), "approved")])
+    await repo.count_status_for_candidates("tenant-X", [cid])
+    # compila o statement passado ao execute e confirma company_id no WHERE
+    assert db.execute.await_count == 1
+    stmt = db.execute.await_args.args[0]
+    compiled = str(stmt.compile(compile_kwargs={"literal_binds": False}))
+    assert "company_id" in compiled

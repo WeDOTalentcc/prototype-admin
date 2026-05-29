@@ -503,3 +503,96 @@ class VacancyCandidateRepository:
         )
         await self.db.commit()
         return result.rowcount > 0
+
+    async def count_status_for_candidates(
+        self,
+        company_id: str,
+        candidate_ids: list[str],
+    ) -> dict[str, int]:
+        """Conta status canonical (approved/rejected/pending) para um conjunto
+        de candidate_ids, escolhendo o status MAIS DECISIVO por candidato.
+
+        Onda C4.1 (2026-05-29): consumido por
+        GET /custom-agents/{id}/kpis para popular candidates_approved/
+        rejected/pending (antes hardcoded 0 — quebrava perguntas 1+2 do Paulo).
+
+        Um mesmo candidato pode estar em N vagas com status distintos. Regra de
+        precedencia por candidato (decisao terminal > em fluxo):
+          approved  > rejected > pending
+        Logo um candidato aprovado em qualquer vaga conta como approved; se nao
+        aprovado mas rejeitado em alguma, conta rejected; senao pending.
+
+        Mapeamento canonical (VacancyCandidate.VALID_STATUSES):
+          approved = approved, hired, shortlisted, offer
+          rejected = rejected, not_selected, cancelled
+          pending  = sourced, pending, on_hold, screening, interview (resto)
+
+        Multi-tenancy: company_id validado fail-closed (candidatos de outro
+        tenant NUNCA contam). Retorna {"approved":N,"rejected":N,"pending":N}.
+        """
+        from sqlalchemy import and_ as _and_
+
+        cid = self._require_company_id(company_id)
+        empty = {"approved": 0, "rejected": 0, "pending": 0}
+        if not candidate_ids:
+            return dict(empty)
+
+        # normaliza para str (candidate_id em vacancy_candidates e UUID; o set
+        # do endpoint vem como str — comparamos via cast textual fail-safe)
+        wanted = {str(c) for c in candidate_ids if c}
+        if not wanted:
+            return dict(empty)
+
+        approved_statuses = {"approved", "hired", "shortlisted", "offer"}
+        rejected_statuses = {"rejected", "not_selected", "cancelled"}
+
+        # candidate_id em vacancy_candidates e UUID — descartamos ids legacy/
+        # bigint que nunca casariam (fail-safe, evita query com IN vazio).
+        wanted_uuids = [UUID(c) for c in wanted if _is_uuid(c)]
+        if not wanted_uuids:
+            return dict(empty)
+
+        result = await self.db.execute(
+            select(
+                VacancyCandidate.candidate_id,
+                VacancyCandidate.status,
+            ).where(
+                _and_(
+                    VacancyCandidate.company_id == cid,
+                    VacancyCandidate.candidate_id.in_(wanted_uuids),
+                )
+            )
+        )
+
+        # precedencia por candidato: 2=approved, 1=rejected, 0=pending
+        best_rank: dict[str, int] = {}
+        for row_cid, status in result.all():
+            key = str(row_cid)
+            if status in approved_statuses:
+                rank = 2
+            elif status in rejected_statuses:
+                rank = 1
+            else:
+                rank = 0
+            if rank > best_rank.get(key, -1):
+                best_rank[key] = rank
+
+        counts = dict(empty)
+        for rank in best_rank.values():
+            if rank == 2:
+                counts["approved"] += 1
+            elif rank == 1:
+                counts["rejected"] += 1
+            else:
+                counts["pending"] += 1
+        return counts
+
+
+def _is_uuid(value: str) -> bool:
+    """True se value e um UUID valido (fail-safe para candidate_ids
+    legacy/bigint que nao batem com vacancy_candidates.candidate_id UUID)."""
+    try:
+        UUID(str(value))
+        return True
+    except (ValueError, AttributeError, TypeError):
+        return False
