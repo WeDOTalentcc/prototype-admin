@@ -25,6 +25,8 @@ const MESSAGES = {
         projected: "Projeção: ultrapassará o limite em ~{days} dias",
         perAgent: "Agente {agentName} consumiu {pct}% do orçamento global",
         viewExecutions: "Ver execuções deste agente",
+        limit: "Limite: {value}",
+        error: { title: "Não foi possível carregar os alertas de orçamento.", retry: "Tentar novamente" },
       },
     },
   },

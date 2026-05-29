@@ -2216,7 +2216,9 @@
           "description": "This agent hasn't been executed yet. KPIs will appear after the first run."
         },
         "error": {
-          "title": "Could not load KPIs"
+          "title": "Could not load KPIs",
+          "description": "Something went wrong loading the metrics. Please try again.",
+          "retry": "Try again"
         },
         "learning": {
           "badge": "🩵 learning",
@@ -6222,7 +6224,12 @@
         },
         "projected": "Projection: will exceed limit in ~{days} days",
         "perAgent": "Agent {agentName} used {pct}% of global budget",
-        "viewExecutions": "View executions for this agent"
+        "viewExecutions": "View executions for this agent",
+        "error": {
+          "title": "Could not load budget alerts.",
+          "retry": "Try again"
+        },
+        "limit": "Limit: {value}"
       },
       "drilldown": {
         "title": "Executions of {agentType}",
@@ -6240,7 +6247,17 @@
           "page": "Page {page} of {total}",
           "prev": "Previous",
           "next": "Next"
-        }
+        },
+        "errorRetry": "Try again"
+      },
+      "agentes": {
+        "loading": "Loading data by agent...",
+        "empty": "No consumption data by agent available.",
+        "trendTitle": "Trend by agent — last 30 days (tokens in K)",
+        "trendAriaLabel": "Agent consumption trend over the last 30 days. {count} agents tracked.",
+        "breakdownTitle": "Consumption by agent — breakdown",
+        "breakdownAriaLabel": "Consumption by agent. {count} agents sorted by tokens. Top: {top}.",
+        "viewExecutionsAria": "View executions for {agentName}"
       }
     },
     "minhaEmpresa": {

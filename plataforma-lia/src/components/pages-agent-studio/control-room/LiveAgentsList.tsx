@@ -74,19 +74,19 @@ function LiveCard({ execution, onOpenReasoning, displayName }: LiveCardProps) {
   return (
     <li className="flex items-center gap-3 rounded-md border border-lia-border-subtle bg-lia-bg-elevated p-3">
       <div
-        className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-lia-cyan text-white"
+        className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-wedo-cyan text-white"
         aria-hidden="true"
       >
         <Brain className="h-5 w-5" />
         <span className="absolute -right-0.5 -top-0.5 flex h-3 w-3">
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-lia-cyan opacity-60 motion-reduce:animate-none" />
-          <span className="relative inline-flex h-3 w-3 rounded-full bg-lia-cyan ring-2 ring-lia-bg-elevated" />
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-wedo-cyan opacity-60 motion-reduce:animate-none" />
+          <span className="relative inline-flex h-3 w-3 rounded-full bg-wedo-cyan ring-2 ring-lia-bg-elevated" />
         </span>
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-baseline justify-between gap-2">
           <div className="truncate font-medium text-lia-text-primary">{displayName}</div>
-          <span className="shrink-0 text-[10px] font-medium uppercase tracking-wide text-lia-cyan">
+          <span className="shrink-0 text-[10px] font-medium uppercase tracking-wide text-wedo-cyan">
             {t("statusPill")}
           </span>
         </div>

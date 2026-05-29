@@ -9,7 +9,7 @@
 //
 // Decisão UX (Paulo, calibrada no plano): híbrido resumido + "Ver detalhes
 // técnicos" expandindo todos os steps. Cyan canonical exclusivo da IA via
-// tokens lia-cyan-* em tailwind.config.ts.
+// tokens wedo-cyan-* em tailwind.config.ts.
 "use client"
 
 import * as React from "react"
@@ -48,10 +48,10 @@ const STEP_TYPE_STYLES: Record<
   { dot: string; variant: ChipVariant; chipClassName?: string }
 > = {
   action: {
-    dot: "bg-lia-cyan",
+    dot: "bg-wedo-cyan",
     // Cyan canonical exclusivo IA — override do variant info.
     variant: "info",
-    chipClassName: "!border-lia-cyan/40 !bg-lia-cyan/10 !text-lia-cyan",
+    chipClassName: "!border-wedo-cyan/40 !bg-wedo-cyan/10 !text-wedo-cyan",
   },
   thought: {
     dot: "bg-violet-500",
@@ -130,11 +130,11 @@ function DecisionTreeBody({ reasoning, agentDisplayName }: DecisionTreeBodyProps
       {/* Header bloco — agente + meta. Onda 5.7: id para aria-describedby do Sheet. */}
       <div
         id="dt-header-meta"
-        className="flex items-start gap-3 rounded-md border border-lia-border-subtle bg-lia-cyan/5 p-3"
+        className="flex items-start gap-3 rounded-md border border-lia-border-subtle bg-wedo-cyan/5 p-3"
       >
         <div
           className={cn(
-            "flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-lia-cyan text-white",
+            "flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-wedo-cyan text-white",
           )}
           aria-hidden="true"
         >
@@ -159,7 +159,7 @@ function DecisionTreeBody({ reasoning, agentDisplayName }: DecisionTreeBodyProps
           id="dt-criteria-heading"
           className="mb-2 flex items-center gap-2 text-sm font-semibold text-lia-text-primary"
         >
-          <Sparkles className="h-4 w-4 text-lia-cyan" aria-hidden="true" />
+          <Sparkles className="h-4 w-4 text-wedo-cyan" aria-hidden="true" />
           {t("criteriaTitle")}
         </h3>
         {criteria.length === 0 ? (
@@ -205,7 +205,7 @@ function DecisionTreeBody({ reasoning, agentDisplayName }: DecisionTreeBodyProps
           id="dt-lgpd-heading"
           className="mb-2 flex items-center gap-2 text-sm font-semibold text-lia-text-primary"
         >
-          <FileLock2 className="h-4 w-4 text-lia-cyan" aria-hidden="true" />
+          <FileLock2 className="h-4 w-4 text-wedo-cyan" aria-hidden="true" />
           {t("lgpdTitle")}
         </h3>
 

@@ -87,7 +87,7 @@ export function StudioControlRoom() {
         data-testid="control-room-live-section"
       >
         <div className="mb-3 flex items-center gap-2">
-          <Activity className="h-4 w-4 text-lia-cyan" aria-hidden="true" />
+          <Activity className="h-4 w-4 text-wedo-cyan" aria-hidden="true" />
           <h3
             id="control-room-live-heading"
             className="text-sm font-semibold text-lia-text-primary"

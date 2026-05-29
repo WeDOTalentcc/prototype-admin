@@ -23,8 +23,9 @@ import dynamic from "next/dynamic"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { useTranslations } from "next-intl"
-import { ArrowRight, Clock, DollarSign, Users } from "lucide-react"
+import { ArrowRight, Clock, DollarSign, RotateCw, Users } from "lucide-react"
 
+import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
@@ -99,7 +100,7 @@ export default function AgentKpisClient({ agentId }: KpiPageProps) {
   const personaName = persona?.name ?? "LIA"
 
   const [period, setPeriod] = useState<AgentKpiPeriod>("30d")
-  const { data, isLoading, error } = useAgentKpis(agentId, period)
+  const { data, isLoading, error, refetch } = useAgentKpis(agentId, period)
 
   if (isLoading) {
     return (
@@ -123,8 +124,27 @@ export default function AgentKpisClient({ agentId }: KpiPageProps) {
     return (
       <div className="p-6">
         <Card>
-          <CardContent className="py-12 text-center text-sm text-lia-text-secondary">
-            {t("error.title")}
+          <CardContent
+            className="flex flex-col items-center gap-3 py-12 text-center"
+            role="alert"
+            data-testid="agent-kpis-error"
+          >
+            <p className="text-sm font-medium text-lia-text-primary">
+              {t("error.title")}
+            </p>
+            <p className="max-w-md text-xs text-lia-text-secondary">
+              {t("error.description")}
+            </p>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => refetch()}
+              className="gap-1.5"
+              data-testid="agent-kpis-retry"
+            >
+              <RotateCw className="h-3.5 w-3.5" />
+              {t("error.retry")}
+            </Button>
           </CardContent>
         </Card>
       </div>

@@ -13,7 +13,7 @@
 
 import { useState } from "react"
 import { useTranslations } from "next-intl"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import { ChevronLeft, ChevronRight, RotateCw } from "lucide-react"
 
 import {
   Dialog,
@@ -22,6 +22,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
 import { useConsumptionDrilldown } from "@/hooks/consumption/use-consumption-drilldown"
@@ -69,7 +70,7 @@ export function ConsumptionDrilldownModal({
   const t = useTranslations("settings.consumption.drilldown")
   const [page, setPage] = useState(0)
 
-  const { data, isLoading, error } = useConsumptionDrilldown(
+  const { data, isLoading, error, refetch } = useConsumptionDrilldown(
     {
       agent_type: agentType ?? undefined,
       studio_agent_id: studioAgentId ?? undefined,
@@ -114,8 +115,22 @@ export function ConsumptionDrilldownModal({
         )}
 
         {error && (
-          <div className="py-8 text-center text-sm text-lia-text-secondary">
-            {t("error")}
+          <div
+            className="flex flex-col items-center gap-3 py-8 text-center text-sm text-lia-text-secondary"
+            role="alert"
+            data-testid="drilldown-error"
+          >
+            <p>{t("error")}</p>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => refetch()}
+              className="gap-1.5"
+              data-testid="drilldown-retry"
+            >
+              <RotateCw className="h-3.5 w-3.5" />
+              {t("errorRetry")}
+            </Button>
           </div>
         )}
 

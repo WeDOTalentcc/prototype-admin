@@ -13,12 +13,15 @@
  * Reuso:
  *  - useJobAgents (Onda 3.F3) → GET deployments
  *  - useDetachJobAgent (Onda 3.F3) → DELETE
+ *  - useUpdateDeployment (CF-B B7) → PATCH pause/resume (hook canonical)
  *  - AssignAgentToJobModal (Onda 3.F3) → CTA primary
  *  - DecisionTreeDrawer (Onda 1) → raciocínio última exec
  *  - useAiPersona → white-label do nome quando o agente não tem nome próprio
  *
- * Pause/resume: PATCH /agent-deployments/{deployment_id} via inline fetch
- * (não há hook canonical ainda; defer extração).
+ * CF-B (2026-05-29):
+ *  - B3: cyan unificado para token canonical `wedo-cyan` (era `lia-cyan`).
+ *  - B5: breakpoints responsivos (cards empilham acoes em telas pequenas).
+ *  - B7: pause/resume extraido para useUpdateDeployment (sem inline fetch).
  */
 import React, { useState } from "react"
 import { useTranslations } from "next-intl"
@@ -26,6 +29,7 @@ import { Brain, ChevronRight, Pause, Play, Plus, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Chip } from "@/components/ui/chip"
 import { useJobAgents, useDetachJobAgent } from "@/hooks/agents/use-job-agents"
+import { useUpdateDeployment } from "@/hooks/agents/use-update-deployment"
 import { AssignAgentToJobModal } from "@/components/jobs/AssignAgentToJobModal"
 import dynamic from "next/dynamic"
 // C5.4 (2026-05-29): lazy-load DecisionTreeDrawer (Radix Sheet + reasoning query)
@@ -39,8 +43,6 @@ const DecisionTreeDrawer = dynamic(
   { ssr: false },
 )
 import { useAiPersona } from "@/hooks/company/use-ai-persona"
-import { useQueryClient } from "@tanstack/react-query"
-import { JOB_AGENTS_QUERY_KEY } from "@/hooks/agents/use-job-agents"
 import type { JobAgentDeployment } from "@/types/agents/job-agent"
 
 interface JobAgentsTabProps {
@@ -48,37 +50,14 @@ interface JobAgentsTabProps {
   jobTitle?: string
 }
 
-function authHeaders(): Record<string, string> {
-  if (typeof window === "undefined") return {}
-  const token = localStorage.getItem("auth_token")
-  return token ? { Authorization: `Bearer ${token}` } : {}
-}
-
-async function patchDeploymentActive(
-  deploymentId: string,
-  isActive: boolean,
-): Promise<void> {
-  const res = await fetch(
-    `/api/backend-proxy/agent-deployments/${encodeURIComponent(deploymentId)}`,
-    {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json", ...authHeaders() },
-      body: JSON.stringify({ is_active: isActive }),
-    },
-  )
-  if (!res.ok) {
-    throw new Error(`Failed to update deployment: ${res.status}`)
-  }
-}
-
 export function JobAgentsTab({ jobId, jobTitle }: JobAgentsTabProps) {
   const t = useTranslations("jobs.agents")
   const tTrigger = useTranslations("jobs.agents.triggerMode")
   const { persona } = useAiPersona()
-  const qc = useQueryClient()
 
   const { data, isLoading, isError } = useJobAgents(jobId)
   const detach = useDetachJobAgent(jobId)
+  const updateDeployment = useUpdateDeployment(jobId)
   const [attachOpen, setAttachOpen] = useState(false)
   const [openExecutionId, setOpenExecutionId] = useState<string | null>(null)
   const [busyDeploymentId, setBusyDeploymentId] = useState<string | null>(null)
@@ -88,9 +67,10 @@ export function JobAgentsTab({ jobId, jobTitle }: JobAgentsTabProps) {
   const handleTogglePause = async (d: JobAgentDeployment) => {
     setBusyDeploymentId(d.id)
     try {
-      await patchDeploymentActive(d.id, !d.is_active)
-      qc.invalidateQueries({ queryKey: JOB_AGENTS_QUERY_KEY(jobId) })
-      qc.invalidateQueries({ queryKey: ["agent-deployments"] })
+      await updateDeployment.mutateAsync({
+        deploymentId: d.id,
+        isActive: !d.is_active,
+      })
     } catch {
       // soft fail; UI mantém estado anterior por causa do invalidate
     } finally {
@@ -117,7 +97,7 @@ export function JobAgentsTab({ jobId, jobTitle }: JobAgentsTabProps) {
       data-testid="job-agents-tab"
     >
       <div className="mx-auto max-w-5xl px-4 py-6">
-        <header className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <header className="mb-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
           <div>
             <h2 className="text-base font-semibold text-lia-text-primary">
               {t("header")}
@@ -129,7 +109,7 @@ export function JobAgentsTab({ jobId, jobTitle }: JobAgentsTabProps) {
           <Button
             onClick={() => setAttachOpen(true)}
             data-testid="attach-agent-cta"
-            className="gap-1.5 bg-lia-cyan text-white hover:bg-lia-cyan/90"
+            className="w-full gap-1.5 bg-wedo-cyan text-white hover:bg-wedo-cyan/90 sm:w-auto"
           >
             <Plus className="h-4 w-4" />
             {t("cta.attach")}
@@ -177,8 +157,8 @@ export function JobAgentsTab({ jobId, jobTitle }: JobAgentsTabProps) {
                   className="rounded-md border border-lia-border-subtle bg-lia-bg-elevated p-4"
                   data-testid={`job-agent-card-${d.id}`}
                 >
-                  <div className="flex items-start gap-3">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-lia-cyan text-white">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-wedo-cyan text-white">
                       <Brain className="h-4.5 w-4.5" aria-hidden="true" />
                     </div>
                     <div className="min-w-0 flex-1">
@@ -194,7 +174,7 @@ export function JobAgentsTab({ jobId, jobTitle }: JobAgentsTabProps) {
                             {t("status.paused")}
                           </Chip>
                         ) : (
-                          <Chip variant="neutral" muted className="text-lia-cyan">
+                          <Chip variant="neutral" muted className="text-wedo-cyan">
                             {t("status.active")}
                           </Chip>
                         )}

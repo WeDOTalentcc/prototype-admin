@@ -11,7 +11,7 @@
 //   - REGRA 6 _shared/: presentational only, sem fetch inline aqui
 //   - useAiPersona() para renderizar nome customizado per-tenant
 //   - aria-live="polite" no container (a11y polling 10s)
-//   - design tokens: lia-cyan / wedo-cyan canonical, sem hex hardcoded
+//   - design tokens: wedo-cyan canonical (acento IA), sem hex hardcoded
 //
 // Visual: card canonical (Card + CardHeader + CardContent) — paridade com
 // MyTasksCard/ActiveJobsCard. Linhas clicáveis com hover suave.

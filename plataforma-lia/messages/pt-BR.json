@@ -2216,7 +2216,9 @@
           "description": "Este agente ainda não foi executado. KPIs aparecerão após a primeira execução."
         },
         "error": {
-          "title": "Não foi possível carregar os KPIs"
+          "title": "Não foi possível carregar os KPIs",
+          "description": "Houve um problema ao buscar as métricas. Tente novamente.",
+          "retry": "Tentar novamente"
         },
         "learning": {
           "badge": "🩵 aprendendo",
@@ -6222,7 +6224,12 @@
         },
         "projected": "Projeção: ultrapassará o limite em ~{days} dias",
         "perAgent": "Agente {agentName} consumiu {pct}% do orçamento global",
-        "viewExecutions": "Ver execuções deste agente"
+        "viewExecutions": "Ver execuções deste agente",
+        "error": {
+          "title": "Não foi possível carregar os alertas de orçamento.",
+          "retry": "Tentar novamente"
+        },
+        "limit": "Limite: {value}"
       },
       "drilldown": {
         "title": "Execuções de {agentType}",
@@ -6240,7 +6247,17 @@
           "page": "Página {page} de {total}",
           "prev": "Anterior",
           "next": "Próxima"
-        }
+        },
+        "errorRetry": "Tentar novamente"
+      },
+      "agentes": {
+        "loading": "Carregando dados por agente...",
+        "empty": "Nenhum dado de consumo por agente disponível.",
+        "trendTitle": "Tendência por agente — últimos 30 dias (tokens em K)",
+        "trendAriaLabel": "Tendência de consumo por agente nos últimos 30 dias. {count} agentes acompanhados.",
+        "breakdownTitle": "Consumo por agente — breakdown",
+        "breakdownAriaLabel": "Consumo por agente. {count} agentes ordenados por tokens. Maior: {top}.",
+        "viewExecutionsAria": "Ver execuções de {agentName}"
       }
     },
     "minhaEmpresa": {

@@ -1,6 +1,7 @@
 'use client'
 
 import useSWR from 'swr'
+import { useTranslations } from 'next-intl'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Chip } from '@/components/ui/chip'
 import {
@@ -18,9 +19,8 @@ import {
 } from 'recharts'
 import type { Payload } from 'recharts/types/component/DefaultTooltipContent'
 import type { ComponentProps } from 'react'
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { getAgentColor, getAgentLabel, type AgentChartEntry, type AgentTrendDayEntry } from './CreditosIaTab'
-import { ConsumptionDrilldownModal } from './ConsumptionDrilldownModal'
 
 const jsonFetcher = (url: string) => fetch(url).then(r => r.json())
 
@@ -76,27 +76,23 @@ function agentBreakdownTooltipFormatter(
 }
 
 /**
- * Onda 5.2 — drilldown state lives in ConsumoHub (parent owner).
- * Quando prop ausente (uso isolado, e.g. testes), fallback para state local.
+ * Onda 5.2 / CF-B B6 (2026-05-29) — drilldown e 100% owned pelo ConsumoHub.
+ * AgentesTab apenas emite o request via onOpenDrilldown (prop obrigatoria).
+ * O fallback de modal local foi removido para eliminar risco de double-mount
+ * (AUDIT 4 P2-12).
  */
 export interface AgentesTabProps {
-  onOpenDrilldown?: (state: {
+  onOpenDrilldown: (state: {
     agentType: string | null
     studioAgentId: string | null
   }) => void
 }
 
-export function AgentesTab({ onOpenDrilldown }: AgentesTabProps = {}) {
-  // Onda 4 F4 + Onda 5.2 — state local apenas como fallback (testes/standalone).
-  // ConsumoHub é o owner canonical em produção.
-  const [localDrilldownAgentType, setLocalDrilldownAgentType] = useState<string | null>(null)
+export function AgentesTab({ onOpenDrilldown }: AgentesTabProps) {
+  const t = useTranslations('settings.consumption.agentes')
 
   function openDrilldown(agentType: string) {
-    if (onOpenDrilldown) {
-      onOpenDrilldown({ agentType, studioAgentId: null })
-    } else {
-      setLocalDrilldownAgentType(agentType)
-    }
+    onOpenDrilldown({ agentType, studioAgentId: null })
   }
 
   const { data: agentRaw, isLoading: agentLoading } =
@@ -127,7 +123,7 @@ export function AgentesTab({ onOpenDrilldown }: AgentesTabProps = {}) {
     if (agentTrend.length === 0)
       return { trendChartData: [] as AgentTrendDayEntry[], trendAgentTypes: [] as string[] }
 
-    const agentTypes = [...new Set(agentTrend.map((t) => t.agent_type))]
+    const agentTypes = [...new Set(agentTrend.map((tr) => tr.agent_type))]
     const byDate = new Map<string, { isoDate: string; entry: AgentTrendDayEntry }>()
 
     for (const item of agentTrend) {
@@ -149,7 +145,7 @@ export function AgentesTab({ onOpenDrilldown }: AgentesTabProps = {}) {
   if (agentLoading || trendLoading) {
     return (
       <div className="flex h-64 items-center justify-center text-sm text-lia-text-tertiary">
-        Carregando dados por agente...
+        {t('loading')}
       </div>
     )
   }
@@ -157,7 +153,7 @@ export function AgentesTab({ onOpenDrilldown }: AgentesTabProps = {}) {
   if (agentChartData.length === 0) {
     return (
       <div className="flex h-64 items-center justify-center text-sm text-lia-text-disabled">
-        Nenhum dado de consumo por agente disponível.
+        {t('empty')}
       </div>
     )
   }
@@ -168,14 +164,14 @@ export function AgentesTab({ onOpenDrilldown }: AgentesTabProps = {}) {
         <Card className="border border-lia-border-subtle shadow-none">
           <CardHeader className="pb-2 pt-4">
             <CardTitle className="text-xs font-medium text-lia-text-tertiary">
-              Tendência por agente — últimos 30 dias (tokens em K)
+              {t('trendTitle')}
             </CardTitle>
           </CardHeader>
           <CardContent className="pb-4">
-            {/* Onda 5.5 — wrapper a11y: chart vira role=img com descrição contextual. */}
+            {/* Onda 5.5 — wrapper a11y: chart vira role=img com descricao contextual. */}
             <div
               role="img"
-              aria-label={`Tendência de consumo por agente nos últimos 30 dias. ${trendAgentTypes.length} agentes acompanhados.`}
+              aria-label={t('trendAriaLabel', { count: trendAgentTypes.length })}
               data-testid="agentes-trend-chart"
             >
               <ResponsiveContainer width="100%" height={250}>
@@ -225,14 +221,17 @@ export function AgentesTab({ onOpenDrilldown }: AgentesTabProps = {}) {
       <Card className="border border-lia-border-subtle shadow-none">
         <CardHeader className="pb-2 pt-4">
           <CardTitle className="text-xs font-medium text-lia-text-tertiary">
-            Consumo por agente — breakdown
+            {t('breakdownTitle')}
           </CardTitle>
         </CardHeader>
         <CardContent className="pb-4">
           {/* Onda 5.5 — wrapper a11y para BarChart breakdown. */}
           <div
             role="img"
-            aria-label={`Consumo por agente. ${agentChartData.length} agentes ordenados por tokens. Maior: ${agentChartData[0]?.name ?? '—'}.`}
+            aria-label={t('breakdownAriaLabel', {
+              count: agentChartData.length,
+              top: agentChartData[0]?.name ?? '—',
+            })}
             data-testid="agentes-breakdown-chart"
           >
             <ResponsiveContainer width="100%" height={Math.max(200, agentChartData.length * 48)}>
@@ -269,7 +268,6 @@ export function AgentesTab({ onOpenDrilldown }: AgentesTabProps = {}) {
                   barSize={24}
                   cursor="pointer"
                   onClick={(payload: unknown) => {
-                    // Onda 4 F4 + Onda 5.2 — abre drilldown ao clicar segmento.
                     const entry = payload as { agentType?: string } | undefined
                     if (entry?.agentType) openDrilldown(entry.agentType)
                   }}
@@ -288,7 +286,7 @@ export function AgentesTab({ onOpenDrilldown }: AgentesTabProps = {}) {
                 key={agent.agentType}
                 type="button"
                 onClick={() => openDrilldown(agent.agentType)}
-                aria-label={`Ver execuções de ${agent.name}`}
+                aria-label={t('viewExecutionsAria', { agentName: agent.name })}
                 className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm text-left transition-colors hover:bg-lia-bg-secondary focus:bg-lia-bg-secondary focus:outline-none"
               >
                 <div className="flex items-center gap-2">
@@ -311,20 +309,6 @@ export function AgentesTab({ onOpenDrilldown }: AgentesTabProps = {}) {
           </div>
         </CardContent>
       </Card>
-
-      {/* Onda 4 F4 + Onda 5.2 — drilldown modal local apenas como fallback.
-          Quando AgentesTab e renderizado dentro do ConsumoHub (uso canonical),
-          onOpenDrilldown e fornecido e o modal vive no parent (compartilhado
-          com CreditosIaTab via BudgetAlertsList). */}
-      {!onOpenDrilldown && (
-        <ConsumptionDrilldownModal
-          agentType={localDrilldownAgentType}
-          open={localDrilldownAgentType !== null}
-          onOpenChange={(open) => {
-            if (!open) setLocalDrilldownAgentType(null)
-          }}
-        />
-      )}
     </div>
   )
 }

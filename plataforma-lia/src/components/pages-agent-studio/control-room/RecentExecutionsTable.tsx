@@ -90,7 +90,7 @@ const STATUS_CHIP: Record<
   running: {
     label: "running",
     variant: "info",
-    className: "!border-lia-cyan/40 !bg-lia-cyan/10 !text-lia-cyan",
+    className: "!border-wedo-cyan/40 !bg-wedo-cyan/10 !text-wedo-cyan",
   },
   queued: { label: "queued", variant: "info" },
 }

@@ -1,26 +1,30 @@
-// Onda 4 F5 (2026-05-28) — lista de alertas de orçamento.
+// Onda 4 F5 (2026-05-28) — lista de alertas de orcamento.
 //
 // Renderiza alerts do endpoint /ai-consumption/budget-alerts (Onda 4 B3).
 // Severity: info (azul) / warning (amber) / critical (red) com border-l-4
 // canonical.
 //
-// Decisão: backend tem gap — `limit_cents` é na realidade TOKENS, não cents.
-// Renderizamos via helper formatBudgetLimit que rotula "tokens".
+// CF-B B1 (2026-05-29): error state com retry (nao silenciar falha de fetch).
+// CF-B B2 (2026-05-29): limite renderizado em TOKENS via resolveBudgetLimitTokens
+// (le limit_tokens com fallback para legacy limit_cents) + formatBudgetLimit.
 //
-// projected_to_exceed=true → adicionar texto "Projeção: ultrapassará o limite
+// projected_to_exceed=true -> adicionar texto "Projecao: ultrapassara o limite
 // em ~X dias".
 "use client"
 
 import { useTranslations } from "next-intl"
-import { AlertCircle, AlertTriangle, Info } from "lucide-react"
+import { AlertCircle, AlertTriangle, Info, RotateCw } from "lucide-react"
 
+import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { useBudgetAlerts } from "@/hooks/consumption/use-budget-alerts"
-import { getAgentLabel } from "@/components/settings/consumo/CreditosIaTab"
-import type { BudgetAlert } from "@/types/consumption/budget-alerts"
+import {
+  resolveBudgetLimitTokens,
+  type BudgetAlert,
+} from "@/types/consumption/budget-alerts"
 
 interface BudgetAlertsListProps {
-  /** Permite consumer escutar request para drilldown (F4 já é por agent_type). */
+  /** Permite consumer escutar request para drilldown (F4 ja e por agent_type). */
   onViewExecutions?: (agentType: string | null) => void
 }
 
@@ -55,11 +59,42 @@ function severityIcon(sev: BudgetAlert["severity"]) {
 
 export function BudgetAlertsList({ onViewExecutions }: BudgetAlertsListProps) {
   const t = useTranslations("settings.consumption.budgetAlerts")
-  const { data, isLoading, error } = useBudgetAlerts()
+  const { data, isLoading, error, refetch } = useBudgetAlerts()
 
-  // Não renderiza nada quando isLoading/error/empty — alerts são "ruído baixo".
-  if (isLoading || error || !data || data.alerts.length === 0) {
+  // Loading/empty sao "ruido baixo" — nao renderiza nada.
+  if (isLoading || (!error && (!data || data.alerts.length === 0))) {
     return null
+  }
+
+  // CF-B B1 — falha de fetch e visivel + acionavel (nao silenciar).
+  if (error) {
+    return (
+      <section
+        aria-label={t("title")}
+        className="space-y-2"
+        data-testid="budget-alerts-error"
+      >
+        <h3 className="text-xs font-medium text-lia-text-tertiary">
+          {t("title")}
+        </h3>
+        <div
+          role="alert"
+          className="flex flex-col items-start gap-2 rounded-md border-l-4 border-red-500 bg-red-50 p-3 text-sm text-red-900 dark:bg-red-950/30 dark:text-red-100"
+        >
+          <p className="font-medium">{t("error.title")}</p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => refetch()}
+            className="gap-1.5"
+            data-testid="budget-alerts-retry"
+          >
+            <RotateCw className="h-3.5 w-3.5" />
+            {t("error.retry")}
+          </Button>
+        </div>
+      </section>
+    )
   }
 
   return (
@@ -72,10 +107,11 @@ export function BudgetAlertsList({ onViewExecutions }: BudgetAlertsListProps) {
         {t("title")}
       </h3>
       <ul className="space-y-2">
-        {data.alerts.map((alert, idx) => {
+        {data!.alerts.map((alert, idx) => {
           const cls = SEVERITY_CLASS[alert.severity]
           const pct = Math.round(alert.used_pct * 100)
           const projectionDays = alert.days_remaining
+          const limitTokens = resolveBudgetLimitTokens(alert)
 
           const messageKey =
             alert.scope === "global"
@@ -104,6 +140,11 @@ export function BudgetAlertsList({ onViewExecutions }: BudgetAlertsListProps) {
               </span>
               <div className="flex-1 space-y-1">
                 <p className="font-medium">{labelMessage}</p>
+                {limitTokens > 0 && (
+                  <p className="text-xs opacity-90">
+                    {t("limit", { value: formatBudgetLimit(limitTokens) })}
+                  </p>
+                )}
                 {alert.projected_to_exceed && (
                   <p className="text-xs opacity-90">
                     {t("projected", { days: projectionDays })}
@@ -113,8 +154,6 @@ export function BudgetAlertsList({ onViewExecutions }: BudgetAlertsListProps) {
                   <button
                     type="button"
                     onClick={() => {
-                      // Onda 4 F5 — open drilldown filtered by agent
-                      // Default: passa null agent_type para abrir o modal por agent_id se consumer suportar
                       onViewExecutions?.(alert.studio_agent_id)
                     }}
                     className="text-xs font-medium underline-offset-2 hover:underline"
@@ -132,8 +171,8 @@ export function BudgetAlertsList({ onViewExecutions }: BudgetAlertsListProps) {
 }
 
 /**
- * Helper canonical para renderizar o "limite" como tokens (não cents).
- * Backend gap: field name é limit_cents mas value é tokens.
+ * Helper canonical para renderizar o limite como tokens.
+ * O valor ja vem em tokens (ver resolveBudgetLimitTokens / type doc).
  */
 export function formatBudgetLimit(limit: number): string {
   if (limit >= 1_000_000) return `${(limit / 1_000_000).toFixed(1)}M tokens`

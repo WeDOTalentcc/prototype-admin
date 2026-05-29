@@ -49,7 +49,7 @@ const KIND_ICON: Record<DigestKind, React.ComponentType<{ className?: string }>>
 
 // Cor por severity. celebration = cyan da IA; attention = amber; info = neutro.
 const SEVERITY_ICON_CLASS: Record<DigestSeverity, string> = {
-  celebration: "text-lia-cyan",
+  celebration: "text-wedo-cyan",
   attention: "text-amber-500 dark:text-amber-400",
   info: "text-lia-text-tertiary",
 }
@@ -80,7 +80,7 @@ function DigestRow({ item, displaySummary, onOpenReasoning }: DigestRowProps) {
         <button
           type="button"
           onClick={() => onOpenReasoning(item.execution_id as string)}
-          className="flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-lia-bg-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lia-cyan"
+          className="flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-lia-bg-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan"
           data-testid={`digest-item-${item.kind}`}
         >
           {content}
@@ -133,7 +133,7 @@ export function MorningDigest({ onOpenReasoning }: MorningDigestProps) {
       data-testid="morning-digest"
     >
       <div className="mb-3 flex items-center gap-2">
-        <Sun className="h-4 w-4 text-lia-cyan" aria-hidden="true" />
+        <Sun className="h-4 w-4 text-wedo-cyan" aria-hidden="true" />
         <h3
           id="morning-digest-heading"
           className="text-sm font-semibold text-lia-text-primary"

@@ -22,3 +22,8 @@ export {
   useDeploymentsByTargets,
   DEPLOYMENTS_BY_TARGETS_QUERY_KEY,
 } from "./use-deployments-by-targets"
+// CF-B B7 (2026-05-29) — PATCH de agent-deployment (pause/resume canonical).
+export {
+  useUpdateDeployment,
+  type UpdateDeploymentVars,
+} from "./use-update-deployment"
