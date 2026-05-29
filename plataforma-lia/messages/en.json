@@ -4801,7 +4801,58 @@
         "cancel": "Cancel",
         "saving": "Saving...",
         "saveChanges": "Save Changes",
-        "edit": "Edit"
+        "edit": "Edit",
+        "subTabs": {
+          "default": "Default",
+          "templates": "Templates"
+        },
+        "stage": {
+          "active": "Active",
+          "inactive": "Inactive",
+          "sla": "SLA",
+          "slaDay": "day",
+          "slaDays": "days",
+          "channel": "Channel",
+          "channelPrefix": "Channel:",
+          "channelEmail": "Email",
+          "channelWhatsapp": "WhatsApp",
+          "channelEmailWhatsapp": "Email + WhatsApp",
+          "action": "Action",
+          "actionPassive": "Passive",
+          "actionScreening": "WSI Screening",
+          "actionScheduling": "Scheduling",
+          "actionEvaluation": "Evaluation",
+          "actionVerification": "Verification",
+          "actionOffer": "Offer",
+          "actionIntake": "Intake",
+          "actionConclusionHired": "Hired",
+          "actionConclusionRejected": "Rejected",
+          "actionConclusionDeclined": "Offer Declined",
+          "dragToReorder": "Drag to reorder",
+          "stageNamePlaceholder": "Stage name",
+          "notesPlaceholder": "Internal notes (optional)",
+          "removeStage": "Remove stage"
+        },
+        "subStatus": {
+          "collapse": "Collapse",
+          "expand": "Expand",
+          "subStatusesLabel": "Sub-statuses",
+          "activeCount": "{count} active",
+          "saveStageFirst": "Save the stage first to manage sub-statuses",
+          "loading": "Loading...",
+          "loadingSubStatuses": "Loading sub-statuses...",
+          "noSubStatuses": "No sub-statuses configured",
+          "waiting": "Waiting",
+          "removeDefault": "Remove '{name}' as default",
+          "setDefault": "Set '{name}' as default",
+          "removeDefaultShort": "Remove default",
+          "setDefaultShort": "Make default",
+          "toggleActive": "{action} sub-status",
+          "toggleAria": "{action} sub-status",
+          "activate": "Activate",
+          "deactivate": "Deactivate",
+          "manageHelp": "Sub-statuses let you track candidates with more granularity within a stage."
+        }
       },
       "screening": {
         "autoQuestionsTitle": "Automatic questions",
@@ -4862,7 +4913,27 @@
         "customLabel": "Custom:",
         "customDesc": "Fully editable",
         "noStages": "No stages configured.",
-        "noStagesHint": "Click \"Add stage\" to get started."
+        "noStagesHint": "Click \"Add stage\" to get started.",
+        "catalogLoadError": "Failed to load the stage catalog",
+        "loadingCatalog": "Loading catalog...",
+        "retry": "Try again",
+        "defaultStageNames": {
+          "sourcing": "Sourcing",
+          "screening": "Screening",
+          "long_list": "Long List",
+          "short_list": "Short List",
+          "interview_hr": "HR Interview",
+          "technical_test": "Technical Test",
+          "english_test": "English Test",
+          "interview_technical": "Technical Interview",
+          "interview_manager": "Manager Interview",
+          "interview_final": "Final Interview",
+          "references": "References",
+          "offer": "Offer",
+          "offer_declined": "Offer Declined",
+          "hired": "Hired",
+          "rejected": "Rejected"
+        }
       },
       "stageCard": {
         "active": "Active",
@@ -5091,7 +5162,8 @@
         "eligibilityConfig": "Eligibility Questions Settings",
         "dataRequestConfig": "Data Request Settings",
         "liaInstructionsConfig": "Instructions for IA",
-        "newStage": "New Stage"
+        "newStage": "New Stage",
+        "newCustomStageName": "New Custom Stage"
       },
       "tabPipeline": "Pipeline",
       "tabScreening": "Eligibility Questions",
@@ -6063,6 +6135,21 @@
         "documentsLabel": "Variable Compensation",
         "documentsHint": "Upload the variable compensation policy"
       }
+    },
+    "stageHelpers": {
+      "typeSystem": "System",
+      "typeDefault": "Default",
+      "typeCustom": "Custom",
+      "behaviorIntake": "Intake",
+      "behaviorScreening": "WSI Screening",
+      "behaviorScheduling": "Scheduling",
+      "behaviorEvaluation": "Evaluation",
+      "behaviorVerification": "Verification",
+      "behaviorOffer": "Offer",
+      "behaviorPassive": "Passive",
+      "behaviorHired": "Hired",
+      "behaviorRejected": "Rejected",
+      "behaviorDeclined": "Offer Declined"
     }
   },
   "publicJob": {

@@ -4801,7 +4801,58 @@
         "cancel": "Cancelar",
         "saving": "Salvando...",
         "saveChanges": "Salvar Alterações",
-        "edit": "Editar"
+        "edit": "Editar",
+        "subTabs": {
+          "default": "Padrão",
+          "templates": "Templates"
+        },
+        "stage": {
+          "active": "Ativo",
+          "inactive": "Inativo",
+          "sla": "SLA",
+          "slaDay": "dia",
+          "slaDays": "dias",
+          "channel": "Canal",
+          "channelPrefix": "Canal:",
+          "channelEmail": "Email",
+          "channelWhatsapp": "WhatsApp",
+          "channelEmailWhatsapp": "Email + WhatsApp",
+          "action": "Ação",
+          "actionPassive": "Passivo",
+          "actionScreening": "Triagem WSI",
+          "actionScheduling": "Agendamento",
+          "actionEvaluation": "Avaliação",
+          "actionVerification": "Verificação",
+          "actionOffer": "Proposta",
+          "actionIntake": "Entrada",
+          "actionConclusionHired": "Contratação",
+          "actionConclusionRejected": "Reprovação",
+          "actionConclusionDeclined": "Proposta Recusada",
+          "dragToReorder": "Arrastar para reordenar",
+          "stageNamePlaceholder": "Nome da etapa",
+          "notesPlaceholder": "Notas internas (opcional)",
+          "removeStage": "Remover etapa"
+        },
+        "subStatus": {
+          "collapse": "Recolher",
+          "expand": "Expandir",
+          "subStatusesLabel": "Sub-status",
+          "activeCount": "{count} ativos",
+          "saveStageFirst": "Salve a etapa primeiro para gerenciar os sub-status",
+          "loading": "Carregando...",
+          "loadingSubStatuses": "Carregando sub-status...",
+          "noSubStatuses": "Nenhum sub-status configurado",
+          "waiting": "Aguardando",
+          "removeDefault": "Remover '{name}' como padrão",
+          "setDefault": "Definir '{name}' como padrão",
+          "removeDefaultShort": "Remover padrão",
+          "setDefaultShort": "Tornar padrão",
+          "toggleActive": "{action} sub-status",
+          "toggleAria": "{action} sub-status",
+          "activate": "Ativar",
+          "deactivate": "Desativar",
+          "manageHelp": "Sub-status permitem acompanhar candidatos com mais granularidade dentro de uma etapa."
+        }
       },
       "screening": {
         "autoQuestionsTitle": "Perguntas automáticas",
@@ -4862,7 +4913,27 @@
         "customLabel": "Personalizado:",
         "customDesc": "Totalmente editável",
         "noStages": "Nenhuma etapa configurada.",
-        "noStagesHint": "Clique em \"Adicionar etapa\" para começar."
+        "noStagesHint": "Clique em \"Adicionar etapa\" para começar.",
+        "catalogLoadError": "Erro ao carregar o catálogo de etapas",
+        "loadingCatalog": "Carregando catálogo...",
+        "retry": "Tentar novamente",
+        "defaultStageNames": {
+          "sourcing": "Captação",
+          "screening": "Triagem",
+          "long_list": "Long List",
+          "short_list": "Short List",
+          "interview_hr": "Entrevista RH",
+          "technical_test": "Teste Técnico",
+          "english_test": "Teste de Inglês",
+          "interview_technical": "Entrevista Técnica",
+          "interview_manager": "Entrevista com Gestor",
+          "interview_final": "Entrevista Final",
+          "references": "Referências",
+          "offer": "Proposta",
+          "offer_declined": "Proposta Recusada",
+          "hired": "Contratado",
+          "rejected": "Reprovado"
+        }
       },
       "stageCard": {
         "active": "Ativo",
@@ -5091,7 +5162,8 @@
         "eligibilityConfig": "Configurações de Perguntas de Elegibilidade",
         "dataRequestConfig": "Configurações de Solicitação de Dados",
         "liaInstructionsConfig": "Instructions for IA",
-        "newStage": "New Stage"
+        "newStage": "New Stage",
+        "newCustomStageName": "Nova Etapa Personalizada"
       },
       "tabPipeline": "Pipeline",
       "tabScreening": "Perguntas de Elegibilidade",
@@ -6063,6 +6135,21 @@
         "documentsLabel": "Remuneração Variável",
         "documentsHint": "Envie a política de PRV / remuneração variável"
       }
+    },
+    "stageHelpers": {
+      "typeSystem": "Sistema",
+      "typeDefault": "Padrão",
+      "typeCustom": "Personalizado",
+      "behaviorIntake": "Entrada",
+      "behaviorScreening": "Triagem WSI",
+      "behaviorScheduling": "Agendamento",
+      "behaviorEvaluation": "Avaliação",
+      "behaviorVerification": "Verificação",
+      "behaviorOffer": "Proposta",
+      "behaviorPassive": "Passivo",
+      "behaviorHired": "Contratação",
+      "behaviorRejected": "Reprovação",
+      "behaviorDeclined": "Proposta Recusada"
     }
   },
   "publicJob": {
