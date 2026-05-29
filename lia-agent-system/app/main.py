@@ -576,6 +576,21 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.warning(f"⚠️  Pool-Agent Event Consumer não iniciado: {e}")
 
+    # Fase 2.5 Onda C1.2 — Agent Deployment event-driven consumer (motor unificado)
+    # Escuta candidate_applied + stage_changed → dispara agent_deployments com
+    # trigger_mode event-based (on_apply / on_enter_stage / on_exit_stage /
+    # on_stage_change). Fecha o silent contract break do AUDIT 4.
+    try:
+        from app.jobs.consumers.agent_deployment_event_consumer import (
+            register_agent_deployment_event_handlers,
+            start_agent_deployment_event_consumer,
+        )
+        register_agent_deployment_event_handlers()
+        await start_agent_deployment_event_consumer()
+        logger.info("✅ Agent Deployment Event Consumer iniciado (Fase 2.5 C1.2)")
+    except Exception as e:
+        logger.warning(f"⚠️  Agent Deployment Event Consumer não iniciado: {e}")
+
     # Seed A/B Testing email template variants (Fase 5 / A5 — idempotent)
     try:
         from app.shared.intelligence.ab_testing import seed_email_ab_tests
@@ -621,6 +636,14 @@ async def lifespan(app: FastAPI):
             stop_pool_agent_event_consumer,
         )
         await stop_pool_agent_event_consumer()
+    except Exception:
+        pass
+    # Fase 2.5 Onda C1.2 — stop Agent Deployment event consumer
+    try:
+        from app.jobs.consumers.agent_deployment_event_consumer import (
+            stop_agent_deployment_event_consumer,
+        )
+        await stop_agent_deployment_event_consumer()
     except Exception:
         pass
     # Sprint R.2: close singleton aio_pika producer connection on main loop

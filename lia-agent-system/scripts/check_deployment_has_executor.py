@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Sensor (warn-only baseline): todo trigger_mode de agent_deployments tem executor.
+"""Sensor (BLOCKING por default desde C1.2): todo trigger_mode de agent_deployments tem executor.
 
 Fase 2.5 Onda C1-core.3 — harness guard do motor unificado (plano §C1).
 
@@ -112,9 +112,20 @@ def _event_consumer_exists() -> bool:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--blocking", action="store_true")
+    # C1.2 (2026-05-29): event consumer canonical existe -> sensor BLOCKING por
+    # default. --warn-only opt-out para branches legadas durante migracao.
+    parser.add_argument("--blocking", action="store_true", default=True)
+    parser.add_argument(
+        "--warn-only",
+        dest="warn_only",
+        action="store_true",
+        help="opt-out do modo blocking (default desde C1.2).",
+    )
     parser.add_argument("--max-violations", type=int, default=0)
     args = parser.parse_args(argv)
+
+    # --warn-only sobrescreve o default blocking.
+    blocking = args.blocking and not args.warn_only
 
     modes = _load_canonical_trigger_modes()
     if not modes:
@@ -171,14 +182,14 @@ def main(argv: list[str] | None = None) -> int:
     if not violations and (not event_based or has_consumer):
         print("[deployment-executor sensor] OK — todo trigger_mode tem executor.")
 
-    if args.blocking and len(violations) > args.max_violations:
+    if blocking and len(violations) > args.max_violations:
         print(
             f"\n[deployment-executor sensor] BLOCKING: {len(violations)} > "
             f"max {args.max_violations}.",
             file=sys.stderr,
         )
         return 1
-    if not args.blocking and (violations or (event_based and not has_consumer)):
+    if not blocking and (violations or (event_based and not has_consumer)):
         print(
             "[deployment-executor sensor] WARN-ONLY — não bloqueia. Promover a "
             "--blocking quando C1.2 (event consumer) fechar.",
