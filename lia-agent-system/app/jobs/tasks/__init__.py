@@ -81,6 +81,12 @@ from app.jobs.tasks.pool_agents import (  # noqa: F401
     scan_pool_agent_cron_schedules,
 )
 
+# Fase 2.5 Onda C1-core: motor de execução unificado (agent_deployments)
+from app.jobs.tasks.agent_deployments import (  # noqa: F401
+    dispatch_agent_deployment_task,
+    scan_agent_deployment_cron_schedules,
+)
+
 __all__ = [
     # agents
     "wizard_process_async_task",
@@ -142,4 +148,7 @@ __all__ = [
     # pool_agents (Sprint 7C Part 1 v2)
     "dispatch_pool_agent_assignment_task",
     "scan_pool_agent_cron_schedules",
+    # agent_deployments (Fase 2.5 Onda C1-core — motor unificado)
+    "dispatch_agent_deployment_task",
+    "scan_agent_deployment_cron_schedules",
 ]
