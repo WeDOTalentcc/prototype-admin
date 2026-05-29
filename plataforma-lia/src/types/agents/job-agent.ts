@@ -48,6 +48,7 @@ export interface JobAgentDeployment {
   execution_count: number
   candidates_processed: number
   last_execution_at: string | null
+  last_execution_id: string | null
   created_by: string
   created_at: string | null
   updated_at: string | null

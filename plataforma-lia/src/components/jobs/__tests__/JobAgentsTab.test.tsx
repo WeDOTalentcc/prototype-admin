@@ -36,6 +36,7 @@ const messages = {
         resume: "Ativar",
         detach: "Desacoplar",
         viewReasoning: "Ver raciocínio",
+        viewReasoningUnavailable: "Sem execuções ainda",
       },
       triggerMode: {
         on_create: "Quando criada",
@@ -133,6 +134,7 @@ describe("JobAgentsTab", () => {
           execution_count: 3,
           candidates_processed: 5,
           last_execution_at: "2026-05-27T10:00:00Z",
+          last_execution_id: null,
           created_by: "u1",
           created_at: null,
           updated_at: null,
@@ -176,6 +178,7 @@ describe("JobAgentsTab", () => {
           execution_count: 0,
           candidates_processed: 0,
           last_execution_at: null,
+          last_execution_id: null,
           created_by: "u",
           created_at: null,
           updated_at: null,
@@ -222,6 +225,7 @@ describe("JobAgentsTab", () => {
           execution_count: 0,
           candidates_processed: 0,
           last_execution_at: null,
+          last_execution_id: null,
           created_by: "u",
           created_at: null,
           updated_at: null,
@@ -246,5 +250,86 @@ describe("JobAgentsTab", () => {
       expect(del).toBeTruthy()
     })
     window.confirm = originalConfirm
+  })
+
+  it("view reasoning button habilitado quando last_execution_id presente", async () => {
+    renderTab({
+      deployments: [
+        {
+          id: "d1",
+          agent_id: "a1",
+          company_id: "c",
+          target_type: "job",
+          target_id: "job-1",
+          target_name: null,
+          trigger_mode: "manual",
+          schedule_cron: null,
+          is_active: true,
+          config_overrides: {},
+          execution_count: 1,
+          candidates_processed: 0,
+          last_execution_at: "2026-05-27T10:00:00Z",
+          last_execution_id: "exec-1",
+          created_by: "u",
+          created_at: null,
+          updated_at: null,
+          agent_name: "Bot",
+          agent_category: null,
+          agent_status: "active",
+          agent_domain: null,
+        },
+      ],
+      total: 1,
+    })
+    await waitFor(() => screen.getByTestId("view-reasoning-d1"))
+    const btn = screen.getByTestId("view-reasoning-d1") as HTMLButtonElement
+    expect(btn).not.toBeDisabled()
+    fireEvent.click(btn)
+    // Drawer is rendered with executionId="exec-1" — fetch fires for reasoning endpoint.
+    await waitFor(() => {
+      const calls = (global.fetch as ReturnType<typeof vi.fn>).mock.calls
+      const reasoningCall = calls.find(
+        ([url]) =>
+          typeof url === "string" &&
+          url.includes("/agent-monitoring/executions/exec-1/reasoning"),
+      )
+      expect(reasoningCall).toBeTruthy()
+    })
+  })
+
+  it("view reasoning button disabled quando last_execution_id é null mas last_execution_at presente", async () => {
+    renderTab({
+      deployments: [
+        {
+          id: "d1",
+          agent_id: "a1",
+          company_id: "c",
+          target_type: "job",
+          target_id: "job-1",
+          target_name: null,
+          trigger_mode: "manual",
+          schedule_cron: null,
+          is_active: true,
+          config_overrides: {},
+          execution_count: 1,
+          candidates_processed: 0,
+          last_execution_at: "2026-05-27T10:00:00Z",
+          last_execution_id: null,
+          created_by: "u",
+          created_at: null,
+          updated_at: null,
+          agent_name: "Bot",
+          agent_category: null,
+          agent_status: "active",
+          agent_domain: null,
+        },
+      ],
+      total: 1,
+    })
+    await waitFor(() => screen.getByTestId("view-reasoning-disabled-d1"))
+    const btn = screen.getByTestId("view-reasoning-disabled-d1") as HTMLButtonElement
+    expect(btn).toBeDisabled()
+    // No enabled fallback button must render (sanity).
+    expect(screen.queryByTestId("view-reasoning-d1")).toBeNull()
   })
 })

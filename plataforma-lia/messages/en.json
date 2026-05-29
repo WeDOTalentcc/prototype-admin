@@ -1080,7 +1080,8 @@
         "pause": "Pause",
         "resume": "Activate",
         "detach": "Detach",
-        "viewReasoning": "View reasoning"
+        "viewReasoning": "View reasoning",
+        "viewReasoningUnavailable": "No executions yet"
       },
       "triggerMode": {
         "on_create": "When the job is created",

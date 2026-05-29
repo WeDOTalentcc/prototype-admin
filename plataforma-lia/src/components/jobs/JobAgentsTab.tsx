@@ -204,17 +204,32 @@ export function JobAgentsTab({ jobId, jobTitle }: JobAgentsTabProps) {
                       </div>
                     </div>
                     <div className="flex shrink-0 flex-wrap items-center gap-1">
-                      {d.last_execution_at ? (
+                      {d.last_execution_id ? (
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => {
-                            // Backend não retorna last_execution_id; usar deployment.id
-                            // como execução-aproximação. Drawer canonical resolve.
-                            setOpenExecutionId(d.id)
+                            // Onda 5+2 D — backend agora popula last_execution_id
+                            // (PoolAgentRun.id mais recente). DecisionTreeDrawer
+                            // canonical resolve via /agent-monitoring/executions/
+                            // {id}/reasoning. Botão só renderiza se houver execução.
+                            setOpenExecutionId(d.last_execution_id as string)
                           }}
                           className="gap-1 text-lia-text-secondary hover:text-lia-text-primary"
                           data-testid={`view-reasoning-${d.id}`}
+                        >
+                          <span className="text-xs">{t("action.viewReasoning")}</span>
+                          <ChevronRight className="h-3.5 w-3.5" />
+                        </Button>
+                      ) : d.last_execution_at ? (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          disabled
+                          title={t("action.viewReasoningUnavailable")}
+                          aria-label={t("action.viewReasoningUnavailable")}
+                          className="gap-1 text-lia-text-tertiary"
+                          data-testid={`view-reasoning-disabled-${d.id}`}
                         >
                           <span className="text-xs">{t("action.viewReasoning")}</span>
                           <ChevronRight className="h-3.5 w-3.5" />

@@ -1080,7 +1080,8 @@
         "pause": "Pausar",
         "resume": "Ativar",
         "detach": "Desacoplar",
-        "viewReasoning": "Ver raciocínio"
+        "viewReasoning": "Ver raciocínio",
+        "viewReasoningUnavailable": "Sem execuções ainda"
       },
       "triggerMode": {
         "on_create": "Quando a vaga for criada",
