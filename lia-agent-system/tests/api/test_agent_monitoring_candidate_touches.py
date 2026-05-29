@@ -45,11 +45,13 @@ def _fake_run_touched(
     started_at=None,
     status="success",
     action_type="screened",
+    deployment_id=None,
 ):
     """Cria fake run cujo results JSONB referencia candidate_id."""
     r = MagicMock()
     r.id = run_id
     r.assignment_id = assignment_id
+    r.deployment_id = deployment_id
     r.company_id = company_id
     r.status = status
     r.started_at = started_at or datetime.now(timezone.utc)
@@ -78,6 +80,37 @@ def _fake_agent(agent_id, name="ScreeningAgent"):
     a.id = agent_id
     a.name = name
     return a
+
+
+def _fake_deployment(
+    deployment_id, agent_id, target_type="job", target_name="Vaga Dev"
+):
+    """C1.6a: agent_deployments row (multi-surface)."""
+    d = MagicMock()
+    d.id = deployment_id
+    d.agent_id = agent_id
+    d.target_type = target_type
+    d.target_id = uuid.uuid4()
+    d.target_name = target_name
+    return d
+
+
+def _row_assignment(run, assignment, agent):
+    """Tuple canonical C1.6a: run via assignment (talent_pool legacy).
+
+    Shape: (run, assignment, agent_via_assignment, pool=None,
+            deployment=None, agent_via_deployment=None).
+    """
+    return (run, assignment, agent, None, None, None)
+
+
+def _row_deployment(run, deployment, agent):
+    """Tuple canonical C1.6a: run via deployment (qualquer surface).
+
+    Shape: (run, assignment=None, agent_via_assignment=None, pool=None,
+            deployment, agent_via_deployment).
+    """
+    return (run, None, None, None, deployment, agent)
 
 
 def _mock_db_pipeline(mock_db, candidate, runs_rows):
@@ -141,7 +174,7 @@ async def test_candidate_touches_ordered_desc_by_timestamp(mock_db):
 
     agent_id = uuid.uuid4()
     runs_rows = [
-        (
+        _row_assignment(
             _fake_run_touched(
                 uuid.uuid4(),
                 uuid.uuid4(),
@@ -153,7 +186,7 @@ async def test_candidate_touches_ordered_desc_by_timestamp(mock_db):
             _fake_assignment(uuid.uuid4(), agent_id, company_id),
             _fake_agent(agent_id, name="MsgAgent"),
         ),
-        (
+        _row_assignment(
             _fake_run_touched(
                 uuid.uuid4(),
                 uuid.uuid4(),
@@ -238,3 +271,40 @@ async def test_candidate_touches_multi_tenancy_isolation(mock_db):
             company_id="comp-OUTRO",
         )
     assert exc_info.value.status_code == 404
+
+
+async def test_candidate_touches_includes_deployment_run(mock_db):
+    """C1.6a — touch de run de deployment (job/funil) também aparece."""
+    from app.api.v1 import agent_monitoring as am
+
+    candidate_id = uuid.uuid4()
+    company_id = "comp-1"
+    candidate = _fake_candidate(candidate_id, company_id)
+    deployment_id = uuid.uuid4()
+    agent_id = uuid.uuid4()
+    run = _fake_run_touched(
+        uuid.uuid4(),
+        None,
+        company_id,
+        candidate_id,
+        action_type="ranked",
+        deployment_id=deployment_id,
+    )
+    runs_rows = [
+        _row_deployment(
+            run,
+            _fake_deployment(deployment_id, agent_id, target_type="job"),
+            _fake_agent(agent_id, name="Ranker Vaga"),
+        )
+    ]
+    _mock_db_pipeline(mock_db, candidate, runs_rows)
+
+    response = await am.list_candidate_touches(
+        candidate_id=str(candidate_id),
+        since_hours=24,
+        db=mock_db,
+        company_id=company_id,
+    )
+    assert response.touch_count == 1
+    assert response.touches[0].agent_name == "Ranker Vaga"
+    assert response.touches[0].action_type == "ranked"

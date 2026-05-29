@@ -31,10 +31,12 @@ def _fake_run(
     company_id,
     status="running",
     started_at=None,
+    deployment_id=None,
 ):
     r = MagicMock()
     r.id = run_id
     r.assignment_id = assignment_id
+    r.deployment_id = deployment_id
     r.company_id = company_id
     r.status = status
     r.started_at = started_at or datetime.now(timezone.utc)
@@ -70,9 +72,34 @@ def _fake_pool(pool_id, name="Pool X"):
     return p
 
 
+def _fake_deployment(
+    deployment_id, agent_id, target_type="job", target_id=None, target_name="Vaga Dev"
+):
+    """C1.6a: agent_deployments row — fonte canonical de target_* multi-surface."""
+    d = MagicMock()
+    d.id = deployment_id
+    d.agent_id = agent_id
+    d.target_type = target_type
+    d.target_id = target_id or uuid.uuid4()
+    d.target_name = target_name
+    return d
+
+
+def _row_assignment(run, assignment, agent, pool):
+    """Tuple canonical C1.6a: run via assignment (talent_pool legacy)."""
+    return (run, assignment, agent, pool, None, None)
+
+
+def _row_deployment(run, deployment, agent):
+    """Tuple canonical C1.6a: run via deployment (qualquer surface)."""
+    return (run, None, None, None, deployment, agent)
+
+
 def _mock_db_executes(mock_db, runs_rows, pending_count_by_agent=None):
     """Configure mock_db.execute to return:
-    - 1st call: runs_rows (run, assignment, agent, pool)
+    - 1st call: runs_rows — tuplas canonical C1.6a 6-shape
+      (run, assignment, agent_via_assignment, pool, deployment,
+       agent_via_deployment)
     - 2nd call: scalar (pending approvals count per agent or 0)
     """
     pending_count_by_agent = pending_count_by_agent or {}
@@ -129,7 +156,7 @@ async def test_active_summary_respects_limit(mock_db):
         agent_id = uuid.uuid4()
         pool_id = uuid.uuid4()
         rows.append(
-            (
+            _row_assignment(
                 _fake_run(run_id, assignment_id, company_id),
                 _fake_assignment(assignment_id, pool_id, agent_id, company_id),
                 _fake_agent(agent_id, name=f"Agent-{i}", category="screening"),
@@ -158,7 +185,7 @@ async def test_active_summary_filter_surface_pool_excludes_jobs(mock_db):
     agent_id = uuid.uuid4()
     pool_id = uuid.uuid4()
     rows = [
-        (
+        _row_assignment(
             _fake_run(run_id, assignment_id, company_id),
             _fake_assignment(assignment_id, pool_id, agent_id, company_id),
             _fake_agent(agent_id),
@@ -176,7 +203,7 @@ async def test_active_summary_filter_surface_pool_excludes_jobs(mock_db):
     assert len(response_pool.items) == 1
     assert response_pool.items[0].target_type == "talent_pool"
 
-    # surface=job — filtro deve excluir (atual canonical = talent_pool only)
+    # surface=job — filtra fora um run de talent_pool (target_type != job)
     _mock_db_executes(mock_db, rows)
     response_job = await am.get_active_agents_summary(
         surface="job",
@@ -224,7 +251,7 @@ async def test_active_summary_aggregates_pending_approvals(mock_db):
     agent_id = uuid.uuid4()
     pool_id = uuid.uuid4()
     rows = [
-        (
+        _row_assignment(
             _fake_run(run_id, assignment_id, company_id),
             _fake_assignment(assignment_id, pool_id, agent_id, company_id),
             _fake_agent(agent_id),
@@ -244,3 +271,111 @@ async def test_active_summary_aggregates_pending_approvals(mock_db):
     # Validamos que o field existe e é int >= 0 (mock pode retornar 0 dependendo
     # de como o endpoint consulta — o importante é o contrato).
     assert response.items[0].pending_approvals_count >= 0
+
+
+# ─────────────────────────────────────────────────────────────────────
+# C1.6a (2026-05-29) — multi-surface: agentes de VAGA e FUNIL no summary.
+# ─────────────────────────────────────────────────────────────────────
+
+
+async def test_active_summary_surface_job_returns_job_deployment(mock_db):
+    """surface=job retorna agente de VAGA rodando (via deployment_id)."""
+    from app.api.v1 import agent_monitoring as am
+
+    company_id = "comp-1"
+    run_id = uuid.uuid4()
+    deployment_id = uuid.uuid4()
+    agent_id = uuid.uuid4()
+    rows = [
+        _row_deployment(
+            _fake_run(run_id, None, company_id, deployment_id=deployment_id),
+            _fake_deployment(
+                deployment_id, agent_id, target_type="job",
+                target_name="Engenheiro de Dados",
+            ),
+            _fake_agent(agent_id, name="Sourcing Vaga"),
+        )
+    ]
+    _mock_db_executes(mock_db, rows)
+    response = await am.get_active_agents_summary(
+        surface="job", limit=5, db=mock_db, company_id=company_id
+    )
+    assert response.running_count == 1
+    assert len(response.items) == 1
+    item = response.items[0]
+    assert item.target_type == "job"
+    assert item.target_name == "Engenheiro de Dados"
+    assert item.agent_name == "Sourcing Vaga"
+
+    # surface=pool deve filtrar fora o run de job.
+    _mock_db_executes(mock_db, rows)
+    response_pool = await am.get_active_agents_summary(
+        surface="pool", limit=5, db=mock_db, company_id=company_id
+    )
+    assert len(response_pool.items) == 0
+
+
+async def test_active_summary_surface_funil_returns_pipeline_stage(mock_db):
+    """surface=funil retorna agente de pipeline_stage (via deployment_id)."""
+    from app.api.v1 import agent_monitoring as am
+
+    company_id = "comp-1"
+    run_id = uuid.uuid4()
+    deployment_id = uuid.uuid4()
+    agent_id = uuid.uuid4()
+    rows = [
+        _row_deployment(
+            _fake_run(run_id, None, company_id, deployment_id=deployment_id),
+            _fake_deployment(
+                deployment_id, agent_id, target_type="pipeline_stage",
+                target_name="Entrevista RH",
+            ),
+            _fake_agent(agent_id, name="Triagem Funil"),
+        )
+    ]
+    _mock_db_executes(mock_db, rows)
+    response = await am.get_active_agents_summary(
+        surface="funil", limit=5, db=mock_db, company_id=company_id
+    )
+    assert response.running_count == 1
+    assert len(response.items) == 1
+    item = response.items[0]
+    assert item.target_type == "pipeline_stage"
+    assert item.target_name == "Entrevista RH"
+
+
+async def test_active_summary_decidir_mixes_all_surfaces(mock_db):
+    """surface=decidir mostra mix: talent_pool + job + funil juntos."""
+    from app.api.v1 import agent_monitoring as am
+
+    company_id = "comp-1"
+    # 1 talent_pool (assignment) + 1 job (deployment) + 1 funil (deployment)
+    a_run, a_assign, a_pool = uuid.uuid4(), uuid.uuid4(), uuid.uuid4()
+    a_agent = uuid.uuid4()
+    j_run, j_dep, j_agent = uuid.uuid4(), uuid.uuid4(), uuid.uuid4()
+    f_run, f_dep, f_agent = uuid.uuid4(), uuid.uuid4(), uuid.uuid4()
+    rows = [
+        _row_assignment(
+            _fake_run(a_run, a_assign, company_id),
+            _fake_assignment(a_assign, a_pool, a_agent, company_id),
+            _fake_agent(a_agent, name="Pool Agent"),
+            _fake_pool(a_pool),
+        ),
+        _row_deployment(
+            _fake_run(j_run, None, company_id, deployment_id=j_dep),
+            _fake_deployment(j_dep, j_agent, target_type="job"),
+            _fake_agent(j_agent, name="Job Agent"),
+        ),
+        _row_deployment(
+            _fake_run(f_run, None, company_id, deployment_id=f_dep),
+            _fake_deployment(f_dep, f_agent, target_type="pipeline_stage"),
+            _fake_agent(f_agent, name="Funil Agent"),
+        ),
+    ]
+    _mock_db_executes(mock_db, rows)
+    response = await am.get_active_agents_summary(
+        surface="decidir", limit=10, db=mock_db, company_id=company_id
+    )
+    assert response.running_count == 3
+    target_types = {it.target_type for it in response.items}
+    assert target_types == {"talent_pool", "job", "pipeline_stage"}

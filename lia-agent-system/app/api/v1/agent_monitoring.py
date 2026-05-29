@@ -296,14 +296,29 @@ from datetime import datetime, timedelta, timezone
 from typing import Literal
 from uuid import UUID as PyUUID
 
-from sqlalchemy import and_, desc, select
+from sqlalchemy import and_, desc, or_, select
+from sqlalchemy.orm import aliased
 
 from app.shared.types import WeDoBaseModel as _WeDoBaseModel
 from lia_agents_core.agent_interface import AgentReasoningStep
+from lia_models.agent_deployment import AgentDeployment as _AgentDeployment
 from lia_models.custom_agent import CustomAgent as _CustomAgent
 from lia_models.pool_agent_assignment import PoolAgentAssignment as _PoolAgentAssignment
 from lia_models.pool_agent_run import PoolAgentRun as _PoolAgentRun
 from lia_models.talent_pool import TalentPool as _TalentPool
+
+# C1.6a (2026-05-29): pool_agent_runs agora têm DUAS origens canonical —
+# `assignment_id` (legacy/talent_pool via pool_agent_assignments) OU
+# `deployment_id` (motor unificado Onda C1, qualquer surface: job, funil,
+# pool, candidate_list). O CustomAgent é alcançado por caminhos distintos:
+#   - run.assignment_id → pool_agent_assignments.custom_agent_id → custom_agents
+#   - run.deployment_id → agent_deployments.agent_id            → custom_agents
+# Para surfacar AMBAS as origens num único SELECT mock-friendly, juntamos via
+# LEFT OUTER em todos os hops e resolvemos o agent/target efetivo em Python
+# (_resolve_agent / _resolve_target_info). Aliases dão dois caminhos distintos
+# até custom_agents sem colidir no FROM.
+_AgentViaAssignment = aliased(_CustomAgent, name="agent_via_assignment")
+_AgentViaDeployment = aliased(_CustomAgent, name="agent_via_deployment")
 
 
 # LGPD Art. 9 — fields canonical que NUNCA podem aparecer em data_fields_accessed.
@@ -367,19 +382,100 @@ class ExecutionReasoningResponse(_WeDoBaseModel):
 def _resolve_target_info(
     assignment: _PoolAgentAssignment | None,
     talent_pool: _TalentPool | None,
+    deployment: "_AgentDeployment | None" = None,
 ) -> tuple[str, str, str | None]:
-    """Resolve target_type / target_id / target_name canonical.
+    """Resolve target_type / target_id / target_name canonical multi-surface.
 
-    Wave 1 escopo: TalentPoolReActAgent é o único agent canonical que grava
-    pool_agent_runs em real-time, então target_type sempre = 'talent_pool'.
-    Quando Onda 2/3 expandir pra jobs/stages/lists, este helper ganha
-    branches via assignment.config_overrides[\"target_type\"].
+    C1.6a (2026-05-29): pool_agent_runs agora têm duas origens —
+    `assignment_id` (legacy/talent_pool) OU `deployment_id` (motor unificado
+    Onda C1, qualquer surface). Precedência canonical:
+
+      1. deployment presente → agent_deployments.{target_type,target_id,
+         target_name} é a fonte de verdade (target_name já denormalizado).
+         Cobre todos os surfaces: job, talent_pool, pipeline_stage,
+         candidate_list.
+      2. talent_pool presente (caminho legacy assignment) → talent_pool.
+      3. assignment presente sem pool join → talent_pool sem nome.
+      4. nada → ('talent_pool', 'unknown', None) fail-safe.
     """
+    if deployment is not None:
+        target_name = deployment.target_name
+        return (
+            str(deployment.target_type),
+            str(deployment.target_id),
+            target_name,
+        )
     if talent_pool is not None:
         return "talent_pool", str(talent_pool.id), talent_pool.name
     if assignment is not None:
         return "talent_pool", str(assignment.talent_pool_id), None
     return "talent_pool", "unknown", None
+
+
+def _resolve_agent(
+    agent_via_assignment: _CustomAgent | None,
+    agent_via_deployment: _CustomAgent | None,
+) -> _CustomAgent | None:
+    """Coalesce o CustomAgent das duas origens (assignment OU deployment).
+
+    Um run tem exatamente uma origem (chk_par_source_present), então no máximo
+    um dos dois aliases é não-nulo. Precedência: deployment (motor novo) >
+    assignment (legacy) — irrelevante na prática pois são mutuamente
+    exclusivos, mas determinística por segurança.
+    """
+    return agent_via_deployment or agent_via_assignment
+
+
+def _studio_runs_select():
+    """SELECT canonical multi-surface pra Studio Control Room.
+
+    C1.6a (2026-05-29): driver é pool_agent_runs (fonte única). Cada run vem
+    de assignment_id OU deployment_id. Resolvemos agent/target via DOIS
+    caminhos LEFT OUTER (sem perder runs de nenhuma origem):
+
+      run ─┬─ assignment ── agent_via_assignment
+           │      └──────── talent_pool (nome legacy)
+           └─ deployment ── agent_via_deployment
+                  (agent_deployments traz target_type/id/name denormalizado)
+
+    Tuple shape devolvido por linha:
+      (run, assignment, agent_via_assignment, talent_pool,
+       deployment, agent_via_deployment)
+
+    Multi-tenancy: o caller adiciona `_PoolAgentRun.company_id == company_id`
+    no .where() — fail-closed mantido. Os outer joins não relaxam o filtro de
+    tenant porque o run (driver) já é tenant-scoped.
+    """
+    return (
+        select(
+            _PoolAgentRun,
+            _PoolAgentAssignment,
+            _AgentViaAssignment,
+            _TalentPool,
+            _AgentDeployment,
+            _AgentViaDeployment,
+        )
+        .outerjoin(
+            _PoolAgentAssignment,
+            _PoolAgentRun.assignment_id == _PoolAgentAssignment.id,
+        )
+        .outerjoin(
+            _AgentViaAssignment,
+            _PoolAgentAssignment.custom_agent_id == _AgentViaAssignment.id,
+        )
+        .outerjoin(
+            _TalentPool,
+            _PoolAgentAssignment.talent_pool_id == _TalentPool.id,
+        )
+        .outerjoin(
+            _AgentDeployment,
+            _PoolAgentRun.deployment_id == _AgentDeployment.id,
+        )
+        .outerjoin(
+            _AgentViaDeployment,
+            _AgentDeployment.agent_id == _AgentViaDeployment.id,
+        )
+    )
 
 
 def _map_status_to_studio(db_status: str) -> Literal["running", "completed", "error"]:
@@ -406,38 +502,28 @@ async def list_active_executions(
     Filtro: status='running' AND started_at > now() - 1h (exclui orphans).
     """
     cutoff = datetime.now(timezone.utc) - timedelta(hours=1)
-    stmt = (
-        select(_PoolAgentRun, _PoolAgentAssignment, _CustomAgent, _TalentPool)
-        .join(
-            _PoolAgentAssignment,
-            _PoolAgentRun.assignment_id == _PoolAgentAssignment.id,
+    stmt = _studio_runs_select().where(
+        and_(
+            _PoolAgentRun.company_id == company_id,
+            _PoolAgentRun.status == "running",
+            _PoolAgentRun.started_at != None,  # noqa: E711 — sqlalchemy idiom
+            _PoolAgentRun.started_at > cutoff,
         )
-        .join(
-            _CustomAgent,
-            _PoolAgentAssignment.custom_agent_id == _CustomAgent.id,
-        )
-        .outerjoin(
-            _TalentPool,
-            _PoolAgentAssignment.talent_pool_id == _TalentPool.id,
-        )
-        .where(
-            and_(
-                _PoolAgentRun.company_id == company_id,
-                _PoolAgentRun.status == "running",
-                _PoolAgentRun.started_at != None,  # noqa: E711 — sqlalchemy idiom
-                _PoolAgentRun.started_at > cutoff,
-            )
-        )
-        .order_by(desc(_PoolAgentRun.started_at))
-    )
+    ).order_by(desc(_PoolAgentRun.started_at))
     result = await db.execute(stmt)
     rows = result.all()
 
     out: list[ActiveExecutionResponse] = []
-    for run, assignment, agent, pool in rows:
-        target_type, target_id, target_name = _resolve_target_info(assignment, pool)
-        # Onda 1 escopo: filtro surface só suporta 'talent_pool' (canonical real
-        # gravando pool_agent_runs). Outros tipos retornam vazio até Onda 2/3.
+    for run, assignment, agent_a, pool, deployment, agent_d in rows:
+        agent = _resolve_agent(agent_a, agent_d)
+        if agent is None:
+            # Defesa: run órfão sem agent resolvível (FK quebrada) — skip.
+            continue
+        target_type, target_id, target_name = _resolve_target_info(
+            assignment, pool, deployment
+        )
+        # C1.6a (2026-05-29): filtro surface agora vale pra TODOS os
+        # target_types (deployment_id surfaca job/funil/pool/list).
         if surface is not None and surface != target_type:
             continue
         rm = run.runtime_metrics or {}
@@ -485,21 +571,13 @@ async def get_execution_reasoning(
     except ValueError:
         raise HTTPException(status_code=400, detail="execution_id deve ser UUID válido")
 
-    stmt = (
-        select(_PoolAgentRun, _PoolAgentAssignment, _CustomAgent)
-        .join(
-            _PoolAgentAssignment,
-            _PoolAgentRun.assignment_id == _PoolAgentAssignment.id,
-        )
-        .join(
-            _CustomAgent,
-            _PoolAgentAssignment.custom_agent_id == _CustomAgent.id,
-        )
-        .where(
-            and_(
-                _PoolAgentRun.id == exec_uuid,
-                _PoolAgentRun.company_id == company_id,
-            )
+    # C1.6a (2026-05-29): reasoning funciona pra run de QUALQUER origem
+    # (assignment_id legacy OU deployment_id multi-surface). Multi-surface
+    # select resolve o agent via ambos os caminhos.
+    stmt = _studio_runs_select().where(
+        and_(
+            _PoolAgentRun.id == exec_uuid,
+            _PoolAgentRun.company_id == company_id,
         )
     )
     result = await db.execute(stmt)
@@ -509,7 +587,13 @@ async def get_execution_reasoning(
             status_code=404,
             detail="Execução não encontrada ou pertence a outro tenant.",
         )
-    run, _assignment, agent = row
+    run, _assignment, agent_a, _pool, _deployment, agent_d = row
+    agent = _resolve_agent(agent_a, agent_d)
+    if agent is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Execução sem agente resolvível (FK quebrada).",
+        )
     if not run.reasoning_payload:
         raise HTTPException(
             status_code=404,
@@ -586,22 +670,17 @@ async def list_recent_executions(
             agent_uuid = PyUUID(agent_id)
         except ValueError:
             raise HTTPException(status_code=400, detail="agent_id deve ser UUID válido")
-        conditions.append(_PoolAgentAssignment.custom_agent_id == agent_uuid)
+        # C1.6a (2026-05-29): agent_id filter precisa casar AMBAS as origens —
+        # via assignment.custom_agent_id (legacy) OU deployment.agent_id (novo).
+        conditions.append(
+            or_(
+                _PoolAgentAssignment.custom_agent_id == agent_uuid,
+                _AgentDeployment.agent_id == agent_uuid,
+            )
+        )
 
     stmt = (
-        select(_PoolAgentRun, _PoolAgentAssignment, _CustomAgent, _TalentPool)
-        .join(
-            _PoolAgentAssignment,
-            _PoolAgentRun.assignment_id == _PoolAgentAssignment.id,
-        )
-        .join(
-            _CustomAgent,
-            _PoolAgentAssignment.custom_agent_id == _CustomAgent.id,
-        )
-        .outerjoin(
-            _TalentPool,
-            _PoolAgentAssignment.talent_pool_id == _TalentPool.id,
-        )
+        _studio_runs_select()
         .where(and_(*conditions))
         .order_by(desc(_PoolAgentRun.created_at))
         .limit(limit)
@@ -610,8 +689,13 @@ async def list_recent_executions(
     rows = result.all()
 
     out: list[RecentExecutionResponse] = []
-    for run, assignment, agent, pool in rows:
-        target_type, target_id, target_name = _resolve_target_info(assignment, pool)
+    for run, assignment, agent_a, pool, deployment, agent_d in rows:
+        agent = _resolve_agent(agent_a, agent_d)
+        if agent is None:
+            continue
+        target_type, target_id, target_name = _resolve_target_info(
+            assignment, pool, deployment
+        )
         if surface is not None and surface != target_type:
             continue
         rm = run.runtime_metrics or {}
@@ -728,49 +812,41 @@ async def get_active_agents_summary(
     cutoff = datetime.now(timezone.utc) - timedelta(hours=1)
 
     # 1) Pegar runs RUNNING + recentes (excluindo orphans), ordenados por última atividade.
-    base_stmt = (
-        select(_PoolAgentRun, _PoolAgentAssignment, _CustomAgent, _TalentPool)
-        .join(
-            _PoolAgentAssignment,
-            _PoolAgentRun.assignment_id == _PoolAgentAssignment.id,
+    # C1.6a (2026-05-29): multi-surface — surfaca runs de assignment E deployment.
+    base_stmt = _studio_runs_select().where(
+        and_(
+            _PoolAgentRun.company_id == company_id,
+            _PoolAgentRun.started_at != None,  # noqa: E711
+            _PoolAgentRun.started_at > cutoff,
         )
-        .join(
-            _CustomAgent,
-            _PoolAgentAssignment.custom_agent_id == _CustomAgent.id,
-        )
-        .outerjoin(
-            _TalentPool,
-            _PoolAgentAssignment.talent_pool_id == _TalentPool.id,
-        )
-        .where(
-            and_(
-                _PoolAgentRun.company_id == company_id,
-                _PoolAgentRun.started_at != None,  # noqa: E711
-                _PoolAgentRun.started_at > cutoff,
-            )
-        )
-        .order_by(desc(_PoolAgentRun.started_at))
-    )
+    ).order_by(desc(_PoolAgentRun.started_at))
     result = await db.execute(base_stmt)
     rows = result.all()
 
-    # 2) Dedupe por agent_id, manter o run mais recente (já ordenado desc).
+    # 2) Normalizar cada row pra (run, assignment, agent, pool, deployment) e
+    #    dedupe por agent_id, manter o run mais recente (já ordenado desc).
     seen_agents: set[str] = set()
     dedup_rows: list[tuple] = []
     for row in rows:
-        run, _assignment, agent, _pool = row
+        run, assignment, agent_a, pool, deployment, agent_d = row
+        agent = _resolve_agent(agent_a, agent_d)
+        if agent is None:
+            continue
         aid = str(agent.id)
         if aid in seen_agents:
             continue
         seen_agents.add(aid)
-        dedup_rows.append(row)
+        dedup_rows.append((run, assignment, agent, pool, deployment))
 
-    # 3) Filtrar por surface (canonical mapping).
+    # 3) Filtrar por surface (canonical mapping). Agora vale pra TODOS os
+    #    target_types — job/funil/pool surfaçam via deployment_id.
     target_filter = _SURFACE_TO_TARGET_TYPE.get(surface)
     filtered_rows: list[tuple] = []
     for row in dedup_rows:
-        _run, assignment, _agent, pool = row
-        target_type, _tid, _tname = _resolve_target_info(assignment, pool)
+        _run, assignment, _agent, pool, deployment = row
+        target_type, _tid, _tname = _resolve_target_info(
+            assignment, pool, deployment
+        )
         if target_filter is not None and target_type != target_filter:
             continue
         filtered_rows.append(row)
@@ -812,8 +888,10 @@ async def get_active_agents_summary(
 
     # 7) Montar response items.
     items: list[ActiveAgentSummary] = []
-    for run, assignment, agent, pool in top_rows:
-        target_type, target_id, target_name = _resolve_target_info(assignment, pool)
+    for run, assignment, agent, pool, deployment in top_rows:
+        target_type, target_id, target_name = _resolve_target_info(
+            assignment, pool, deployment
+        )
         aid = str(agent.id)
         pending = pending_by_agent.get(aid, 0)
 
@@ -934,25 +1012,15 @@ async def list_candidate_touches(
 
     # JSONB containment: results @> {"candidate_ids": ["<id>"]}.
     # MVP usa filter Python-side defensivo (mock-friendly) + filter SQL window.
-    runs_stmt = (
-        select(_PoolAgentRun, _PoolAgentAssignment, _CustomAgent)
-        .join(
-            _PoolAgentAssignment,
-            _PoolAgentRun.assignment_id == _PoolAgentAssignment.id,
+    # C1.6a (2026-05-29): multi-surface — runs de deployment (job/funil) que
+    # tocaram este candidato também aparecem.
+    runs_stmt = _studio_runs_select().where(
+        and_(
+            _PoolAgentRun.company_id == company_id,
+            _PoolAgentRun.started_at != None,  # noqa: E711
+            _PoolAgentRun.started_at > cutoff,
         )
-        .join(
-            _CustomAgent,
-            _PoolAgentAssignment.custom_agent_id == _CustomAgent.id,
-        )
-        .where(
-            and_(
-                _PoolAgentRun.company_id == company_id,
-                _PoolAgentRun.started_at != None,  # noqa: E711
-                _PoolAgentRun.started_at > cutoff,
-            )
-        )
-        .order_by(desc(_PoolAgentRun.started_at))
-    )
+    ).order_by(desc(_PoolAgentRun.started_at))
     runs_result = await db.execute(runs_stmt)
     rows = runs_result.all()
 
@@ -960,7 +1028,10 @@ async def list_candidate_touches(
     touches: list[CandidateTouch] = []
     cid_str = str(candidate_id)
     for row in rows:
-        run, _assignment, agent = row
+        run, _assignment, agent_a, _pool, _deployment, agent_d = row
+        agent = _resolve_agent(agent_a, agent_d)
+        if agent is None:
+            continue
         results = run.results or {}
         cids = results.get("candidate_ids") or []
         if cid_str not in [str(c) for c in cids]:
