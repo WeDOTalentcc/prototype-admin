@@ -2,7 +2,13 @@ name: CI — Frontend
 
 on:
   push:
-    branches: [main, develop]
+    # Inclui branches de trabalho (feat/**, fix/**) para que os sensores
+    # BLOCKING baseline-0 (i18n, tsc, eslint settings, Phase 2/2.5 invariants)
+    # rodem na branch ativa, NAO apenas em main/develop. Descoberta C4.3 Fase 2.5:
+    # CI dormente ate o merge deixava os sensores cegos durante o sprint.
+    # Ratchet/warn-only steps mantem continue-on-error; so os strict-zero
+    # (baseline 0) bloqueiam o push.
+    branches: [main, develop, 'feat/**', 'fix/**']
     paths:
       - 'plataforma-lia/**'
       - '.github/workflows/frontend-ci.yml'
@@ -213,6 +219,25 @@ jobs:
         # BLOCKING sub-sensor bloqueia o merge. warn-only sub-sensors apenas
         # imprimem warning. Doc: CLAUDE.md § Studio Fase 2.
         run: python3 ../lia-agent-system/scripts/check_phase2_invariants.py
+
+      - name: Phase 2.5 invariants (motor unificado - BLOCKING)
+        # Sensor agregado Fase 2.5 (Onda C2): roda os 5 sensores BLOCKING
+        # do motor unificado (RLS tenant tables, BYOK tenant_id, deployment
+        # tem executor, no novo pool_agent_assignments, no silent LLM
+        # fallback) + sub-chamada Phase 2. --skip-phase2 evita rodar o
+        # agregado Fase 2 duas vezes (ja roda no step anterior).
+        # Baseline 0 (2026-05-29). Doc: CLAUDE.md secao Fase 2.5.
+        run: python3 ../lia-agent-system/scripts/check_phase25_invariants.py --skip-phase2
+
+      - name: Hardcoded PT-BR strings em Agent Studio UI (warn-only desde 2026-05-29)
+        # Sensor harness Fase 2.5 (Onda C1, AUDIT 3/5 P2-8): detecta texto
+        # PT-BR hardcoded em surfaces de Agent Studio que NAO passam por
+        # useTranslations/t() - complemento do check_i18n_keys.py (que so
+        # valida t() existente). Baseline 6 (warn-only ratchet). Promover a
+        # --blocking quando baseline = 0. Ver CLAUDE.md secao i18n contract.
+        continue-on-error: true
+        working-directory: plataforma-lia
+        run: python3 scripts/check_hardcoded_strings_in_agent_ui.py
 
       - name: Build
         run: npm run build

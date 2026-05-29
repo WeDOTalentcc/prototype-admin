@@ -205,6 +205,22 @@ jobs:
         run: |
           python3 scripts/check_company_id_in_routes.py
 
+      # ────────────────────────────────────────────────────────────────
+      # Camada Studio Fase 2.5 — motor de execução unificado
+      # (wired 2026-05-29, Fase 2.5 Onda C3)
+      # ────────────────────────────────────────────────────────────────
+
+      - name: "G-STUDIO25: Fase 2.5 invariants (motor unificado — BLOCKING)"
+        # Sensor agregado check_phase25_invariants.py roda os 5 sensores
+        # BLOCKING da Fase 2.5 (RLS tenant tables, BYOK tenant_id em LLM,
+        # deployment tem executor, no novo pool_agent_assignments, no silent
+        # LLM fallback) + sub-chamada check_phase2_invariants (Fase 2).
+        # Baseline 0 (2026-05-29). Doc: CLAUDE.md § Fase 2.5 — Motor de
+        # execução unificado. Falha em qualquer BLOCKING bloqueia merge.
+        working-directory: lia-agent-system
+        run: |
+          python3 scripts/check_phase25_invariants.py
+
   harness-ratchet:
     name: Harness Sensors (RATCHET warn-only — baseline > 0)
     runs-on: ubuntu-latest

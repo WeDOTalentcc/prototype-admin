@@ -434,3 +434,71 @@ Todo `<BarChart>`, `<LineChart>`, `<AreaChart>` em surfaces de Studio (Onda 5.5)
 ### Sensor agregado de invariantes Fase 2
 
 `lia-agent-system/scripts/check_phase2_invariants.py` (Onda 5.9) roda os 10 sensores BLOCKING + 3 warn-only da Fase 2 em sequência. Wired em `frontend-ci.yml` (step "Phase 2 invariants") como gate de regressão.
+
+### Fase 2.5 — Motor de execução unificado (registrado 2026-05-29)
+
+A Fase 2.5 consolidou o acoplamento agente↔surface num único motor de
+execução. Antes existiam tabelas/caminhos paralelos (`pool_agent_assignments`)
+que fragmentavam quem dispara o quê. Agora há uma fonte única.
+
+### REGRA — `agent_deployments` é a ÚNICA junction agente↔surface
+
+- `agent_deployments` é a única tabela que liga um agente a um surface
+  (`target_type` ∈ job, talent_pool, pipeline_stage, candidate_list).
+- `pool_agent_assignments` está **DEPRECATED** — nenhum write novo.
+  Sensor `check_no_new_pool_agent_assignments.py` BLOCKING garante.
+- **Novo acoplamento agente↔surface usa `agent_deployments` +
+  `dispatch_agent_deployment_task`, NUNCA `pool_agent_assignments`.**
+
+### REGRA — Motor: dispatch + scheduler + event consumer
+
+- **`dispatch_agent_deployment_task`** é o entry-point único de execução de um
+  deployment. Resolve config do deployment, monta contexto e roda o agente.
+- **Scheduler (cron)** dispara deployments com `trigger_mode ∈ on_schedule,
+  scheduled` no horário configurado.
+- **Event consumer** dispara deployments reativos (`apply`/`stage`) ao receber
+  eventos canonical do barramento.
+- Todo `trigger_mode` válido TEM um executor (scheduler OU event consumer OU
+  manual). Sensor `check_deployment_has_executor.py` BLOCKING garante que
+  nenhum trigger_mode fica órfão sem caminho de execução.
+
+### REGRA — BYOK: tenant_id resolvido no dispatch
+
+- `dispatch_agent_deployment_task` resolve `tenant_id` a partir de
+  `deployment.company_id` → `ProviderContainer` do tenant → chamada LLM.
+- Toda LLM call no caminho de agente/runtime/dispatch DEVE threadar
+  `tenant_id` (Choose Your AI / BYOK por tenant — nunca chave global).
+- Sensor `check_byok_tenant_id_in_llm_calls.py` BLOCKING garante que nenhum
+  `create_tracked_llm` no caminho de agente fica sem `tenant_id` resolvido.
+
+### REGRA — `pool_agent_runs` é cross-target + fail-closed
+
+- `pool_agent_runs` carrega `deployment_id` (execução cross-target, não mais
+  amarrada a pool). CHECK constraint fail-closed: run sem vínculo válido é
+  rejeitado.
+- RLS habilitado em `pool_agent_runs` e nas demais tabelas tenant do motor
+  (`agent_deployments` inclusive). FKs presentes nas tabelas tenant.
+  Sensor `check_rls_enabled_on_tenant_tables.py` BLOCKING garante.
+
+### REGRA — Eventos canonical são flat `event_type`
+
+- Eventos do motor usam `event_type` flat no `platform.events`:
+  `candidate_applied`, `stage_changed`. Não criar sub-objetos aninhados nem
+  variantes por surface — o consumer faz match pelo `event_type` plano.
+
+### Sensor agregado de invariantes Fase 2.5
+
+`lia-agent-system/scripts/check_phase25_invariants.py` roda em sequência os 5
+sensores BLOCKING da Fase 2.5 (`check_rls_enabled_on_tenant_tables`,
+`check_byok_tenant_id_in_llm_calls`, `check_deployment_has_executor`,
+`check_no_new_pool_agent_assignments`, `check_no_silent_llm_fallback`) + uma
+sub-chamada de `check_phase2_invariants.py` (defesa em profundidade). Exit 1
+se qualquer BLOCKING falhar. Wired em `harness-sensors.yml` (job
+harness-blocking) e em `frontend-ci.yml` (step "Phase 2.5 invariants",
+com `--skip-phase2` para não duplicar o agregado Fase 2).
+
+Complemento i18n: `plataforma-lia/scripts/check_hardcoded_strings_in_agent_ui.py`
+(warn-only, baseline 6 em 2026-05-29) detecta texto PT-BR hardcoded em surfaces
+de Agent Studio que não passam por `useTranslations`/`t()` — o ângulo cego que
+`check_i18n_keys.py` (só valida `t()` existente) não cobre. Ratchet: zerar e
+promover a `--blocking`.
