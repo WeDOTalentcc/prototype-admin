@@ -9,7 +9,9 @@ Sensor detecta anti-pattern:
   - {agent.name} / {agent_name} renderizado direto em JSX
   - sem `useAiPersona()` no mesmo file
 
-Modo: WARN-ONLY enquanto baseline > 0. Promover --blocking quando baseline = 0.
+Modo: BLOCKING por default (promovido 2026-05-29, Agent B batch pós-Fase 2).
+Baseline 0 confirmado. Use `--warn-only` para opt-out (legacy ratchet em
+branches atrasadas), exit 1 quando violations existem.
 
 Mensagem otimizada pra consumo de LLM:
   - aponta arquivo:linha
@@ -38,7 +40,10 @@ EXEMPT_RE = re.compile(r"PERSONA-EXEMPT")
 
 
 def main() -> int:
-    blocking = "--blocking" in sys.argv
+    # Promovido a BLOCKING default 2026-05-29 (Agent B batch pós-Fase 2,
+    # baseline 14→0). Opt-out via --warn-only para ratchet em branches atrasadas.
+    warn_only = "--warn-only" in sys.argv
+    blocking = not warn_only
     violations: list[tuple[Path, int, str]] = []
     for tsx in ROOT.rglob("*.tsx"):
         # Skip tests + Drawer canonical (já lida com persona).

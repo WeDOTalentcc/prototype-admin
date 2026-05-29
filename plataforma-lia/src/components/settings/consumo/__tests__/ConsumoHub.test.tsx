@@ -1,8 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { NextIntlClientProvider } from 'next-intl'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import ptBRMessages from '../../../../../messages/pt-BR.json'
 import { PearchTab } from '../PearchTab'
+
+// Mock next/navigation hooks used by ConsumoHub
+vi.mock('next/navigation', () => ({
+  useSearchParams: () => ({ get: () => null }),
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
+  usePathname: () => '/configuracoes/consumo',
+}))
 
 // Mock SWR to avoid real fetch calls in tests
 vi.mock('swr', () => ({
@@ -24,13 +32,18 @@ vi.mock('recharts', () => ({
   Legend: () => null,
 }))
 
-import { ConsumoHub } from '../ConsumoHub'
+import { ConsumoHub } from '../../ConsumoHub'
 
 function renderWithIntl(ui: React.ReactElement) {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  })
   return render(
-    <NextIntlClientProvider locale="pt" messages={ptBRMessages}>
-      {ui}
-    </NextIntlClientProvider>
+    <QueryClientProvider client={queryClient}>
+      <NextIntlClientProvider locale="pt" messages={ptBRMessages}>
+        {ui}
+      </NextIntlClientProvider>
+    </QueryClientProvider>
   )
 }
 

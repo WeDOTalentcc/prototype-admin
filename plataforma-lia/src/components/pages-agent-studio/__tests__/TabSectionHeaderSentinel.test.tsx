@@ -27,6 +27,15 @@ const PAGES_AGENT_STUDIO_DIR = join(HERE, "..")
 
 const ALLOWED_FILES = new Set<string>([
   "TabSectionHeader.tsx",
+  // Cabecalhos legitimos fora do contrato TabSectionHeader:
+  // - StudioEmptyState: titulo centralizado de empty state (com emoji), nao
+  //   eh um cabecalho de tab/secao. Pattern visual distinto.
+  // - StudioControlRoom: composicao propria do Control Room; header proprio.
+  // - DecisionTreeDrawer: sub-headings (<h3>) dentro de um Sheet/drawer
+  //   accordion, nao sao section headers de tab.
+  "StudioEmptyState.tsx",
+  "control-room/StudioControlRoom.tsx",
+  "decision-tree/DecisionTreeDrawer.tsx",
 ])
 
 function listTsxFiles(dir: string): string[] {
