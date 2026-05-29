@@ -5966,6 +5966,103 @@
           "next": "Next"
         }
       }
+    },
+    "minhaEmpresa": {
+      "title": "My Company",
+      "description": "Company data, culture, benefits and policies",
+      "loadingCompanyData": "Loading company data...",
+      "analyzeWebsiteTitle": "Analyze the company website to auto-fill data",
+      "analyzeWebsite": "Analyze website",
+      "refreshData": "Refresh data",
+      "configuredSuffix": "{progress}% configured",
+      "almostComplete": "Almost complete",
+      "profileCompletePending": "Profile {progress}% complete · {count} pending fields",
+      "sectionsToReview": "{count} sections to review",
+      "askLiaToFillTitle": "Ask LIA to fill in {section}",
+      "askLiaShort": "Ask LIA",
+      "fields": {
+        "blocks": {
+          "basic": "Company Profile",
+          "culture": "Culture & Values",
+          "tech": "Tech Stack",
+          "benefits": "Benefits",
+          "policy": "Recruitment Policies",
+          "workforce": "Workforce Planning",
+          "documents": "Variable Compensation"
+        },
+        "basic": {
+          "name": "Company Name",
+          "tradeName": "Trade Name",
+          "logo": "Logo (URL)",
+          "cnpj": "Tax ID",
+          "website": "Website",
+          "industry": "Industry",
+          "size": "Size",
+          "employee_count": "Employees",
+          "headquarters": "Headquarters",
+          "founded_year": "Founded Year",
+          "linkedin_url": "LinkedIn",
+          "email": "HR Email",
+          "phone": "Phone"
+        },
+        "culture": {
+          "mission": "Mission",
+          "vision": "Vision",
+          "values": "Values",
+          "work_model": "Work Model",
+          "dei_initiatives": "DEI",
+          "sustainability": "Sustainability",
+          "social_impact": "Social Impact",
+          "leadership_style": "Leadership Style",
+          "growth_opportunities": "Growth Opportunities",
+          "team_dynamics": "Team Dynamics",
+          "evp_bullets": "EVP"
+        },
+        "tech": {
+          "tech_stack": "Tech Stack",
+          "engineering_culture": "Engineering Culture",
+          "default_languages": "Languages"
+        },
+        "workforce": {
+          "hiring_volume": "Hiring Volume",
+          "job_types": "Job Types",
+          "current_ats": "Current ATS",
+          "main_challenges": "Main Challenges",
+          "main_priority": "Main Priority",
+          "communication_channels": "Communication Channels",
+          "import_spreadsheet": "Import Spreadsheet"
+        }
+      }
+    },
+    "minhaEmpresaCard": {
+      "invalidNumber": "Invalid number",
+      "timeRangeFormat": "Use the format HH:MM - HH:MM",
+      "valueNotDefined": "Not defined",
+      "valueYes": "Yes",
+      "valueNo": "No",
+      "valueNone": "None",
+      "statusConfigured": "Configured",
+      "statusPartial": "Partial",
+      "statusPending": "Pending",
+      "fieldsFilled": "{filled}/{total} filled",
+      "readOnlyHint": "Read-only mode. Enable editing to change these fields.",
+      "missingFieldsTitle": "{count} pending fields",
+      "uploadHint": "Tip: upload a document to fill these fields automatically.",
+      "editFieldAria": "Edit {label}",
+      "blockUpload": {
+        "cultureLabel": "Culture & Values",
+        "cultureHint": "Upload the employee handbook or culture code",
+        "techLabel": "Tech Stack",
+        "techHint": "Upload technical or architecture documentation",
+        "benefitsLabel": "Benefits",
+        "benefitsHint": "Upload the benefits handbook",
+        "policyLabel": "Recruitment Policies",
+        "policyHint": "Upload the HR policies document",
+        "workforceLabel": "Workforce Planning",
+        "workforceHint": "Upload the company org chart",
+        "documentsLabel": "Variable Compensation",
+        "documentsHint": "Upload the variable compensation policy"
+      }
     }
   },
   "publicJob": {

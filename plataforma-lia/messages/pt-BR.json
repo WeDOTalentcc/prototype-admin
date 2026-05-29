@@ -5966,6 +5966,103 @@
           "next": "Próxima"
         }
       }
+    },
+    "minhaEmpresa": {
+      "title": "Minha Empresa",
+      "description": "Dados, cultura, benefícios e políticas da empresa",
+      "loadingCompanyData": "Carregando dados da empresa...",
+      "analyzeWebsiteTitle": "Analisar o site da empresa para preencher dados automaticamente",
+      "analyzeWebsite": "Analisar site",
+      "refreshData": "Atualizar dados",
+      "configuredSuffix": "{progress}% configurado",
+      "almostComplete": "Quase completo",
+      "profileCompletePending": "Perfil {progress}% completo · {count} campos pendentes",
+      "sectionsToReview": "{count} seções a revisar",
+      "askLiaToFillTitle": "Pedir à LIA para preencher {section}",
+      "askLiaShort": "Pedir à LIA",
+      "fields": {
+        "blocks": {
+          "basic": "Perfil da Empresa",
+          "culture": "Cultura & Valores",
+          "tech": "Stack Tecnológico",
+          "benefits": "Benefícios",
+          "policy": "Políticas de Recrutamento",
+          "workforce": "Workforce Planning",
+          "documents": "Remuneração Variável"
+        },
+        "basic": {
+          "name": "Nome da Empresa",
+          "tradeName": "Nome Fantasia",
+          "logo": "Logo (URL)",
+          "cnpj": "CNPJ",
+          "website": "Website",
+          "industry": "Setor",
+          "size": "Porte",
+          "employee_count": "Funcionários",
+          "headquarters": "Sede",
+          "founded_year": "Ano de Fundação",
+          "linkedin_url": "LinkedIn",
+          "email": "Email RH",
+          "phone": "Telefone"
+        },
+        "culture": {
+          "mission": "Missão",
+          "vision": "Visão",
+          "values": "Valores",
+          "work_model": "Modelo de Trabalho",
+          "dei_initiatives": "DEI",
+          "sustainability": "Sustentabilidade",
+          "social_impact": "Impacto Social",
+          "leadership_style": "Estilo de Liderança",
+          "growth_opportunities": "Oportunidades de Crescimento",
+          "team_dynamics": "Dinâmica de Equipe",
+          "evp_bullets": "EVP"
+        },
+        "tech": {
+          "tech_stack": "Stack Tecnológico",
+          "engineering_culture": "Cultura de Engenharia",
+          "default_languages": "Idiomas"
+        },
+        "workforce": {
+          "hiring_volume": "Volume de Contratação",
+          "job_types": "Tipos de Vaga",
+          "current_ats": "ATS Atual",
+          "main_challenges": "Principais Desafios",
+          "main_priority": "Prioridade Principal",
+          "communication_channels": "Canais de Comunicação",
+          "import_spreadsheet": "Importar Planilha"
+        }
+      }
+    },
+    "minhaEmpresaCard": {
+      "invalidNumber": "Número inválido",
+      "timeRangeFormat": "Use o formato HH:MM - HH:MM",
+      "valueNotDefined": "Não definido",
+      "valueYes": "Sim",
+      "valueNo": "Não",
+      "valueNone": "Nenhum",
+      "statusConfigured": "Configurado",
+      "statusPartial": "Parcial",
+      "statusPending": "Pendente",
+      "fieldsFilled": "{filled}/{total} preenchidos",
+      "readOnlyHint": "Modo somente leitura. Ative a edição para alterar estes campos.",
+      "missingFieldsTitle": "{count} campos pendentes",
+      "uploadHint": "Dica: envie um documento para preencher estes campos automaticamente.",
+      "editFieldAria": "Editar {label}",
+      "blockUpload": {
+        "cultureLabel": "Cultura & Valores",
+        "cultureHint": "Envie o manual do colaborador ou código de cultura",
+        "techLabel": "Stack Tecnológico",
+        "techHint": "Envie documentação técnica ou de arquitetura",
+        "benefitsLabel": "Benefícios",
+        "benefitsHint": "Envie o manual de benefícios",
+        "policyLabel": "Políticas de Recrutamento",
+        "policyHint": "Envie o documento de políticas de RH",
+        "workforceLabel": "Workforce Planning",
+        "workforceHint": "Envie o organograma da empresa",
+        "documentsLabel": "Remuneração Variável",
+        "documentsHint": "Envie a política de PRV / remuneração variável"
+      }
     }
   },
   "publicJob": {
