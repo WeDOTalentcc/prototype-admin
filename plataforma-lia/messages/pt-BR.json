@@ -5127,7 +5127,36 @@
         "templateLibrary": "Biblioteca de Modelos",
         "templateLibraryDesc": "Modelos pré-configurados para casos de uso comuns",
         "executionLogs": "Logs de Execução",
-        "executionLogsDesc": "Histórico detalhado de todas as execuções"
+        "executionLogsDesc": "Histórico detalhado de todas as execuções",
+        "actionDelete": "Excluir",
+        "actionDuplicate": "Duplicar",
+        "actionTest": "Testar",
+        "activateAutomation": "Ativar automação",
+        "pauseAutomation": "Pausar automação",
+        "builderTitleEdit": "Editar automação",
+        "builderTitleNew": "Nova automação",
+        "createWithLia": "Criar com a LIA",
+        "deleteConfirm": "Tem certeza que deseja excluir esta automação?",
+        "duplicateSuffix": "(cópia)",
+        "emptyTitle": "Nenhuma automação criada",
+        "emptyExample": "Ex: quando um candidato é aprovado na triagem, enviar convite para entrevista.",
+        "loadError": "Erro ao carregar automações.",
+        "moreActions": "Mais ações",
+        "seeExamples": "Ver exemplos",
+        "summaryActive": "{count} ativas",
+        "summaryExecs": "{count} execuções",
+        "summarySuccess": "{count}% de sucesso",
+        "testFailed": "Teste falhou",
+        "testOk": "Teste bem-sucedido",
+        "csvExportAriaLabel": "Exportar logs em CSV",
+        "csvExportButton": "Exportar CSV",
+        "csvExportSuccess": "CSV exportado com sucesso.",
+        "csvHeaderAutomation": "Automação",
+        "csvHeaderCandidate": "Candidato",
+        "csvHeaderError": "Erro",
+        "csvHeaderExecutedAt": "Executado em",
+        "csvHeaderStatus": "Status",
+        "csvHeaderTrigger": "Gatilho"
       },
       "communicationTab": {
         "emailTemplates": "Modelos de Email",
@@ -5202,7 +5231,63 @@
       },
       "tabPipeline": "Pipeline",
       "tabScreening": "Perguntas de Elegibilidade",
-      "tabHiringPolicies": "Políticas de Recrutamento"
+      "tabHiringPolicies": "Políticas de Recrutamento",
+      "pipelineTemplates": {
+        "title": "Templates de Pipeline",
+        "subtitle": "Crie e gerencie modelos de pipeline reutilizáveis.",
+        "loading": "Carregando...",
+        "loadError": "Erro ao carregar os templates.",
+        "selectOrCreate": "Selecione ou crie um template",
+        "newTemplate": "Novo template",
+        "newTemplateDefaultName": "Novo Template",
+        "newStageDefaultName": "Nova Etapa",
+        "noStages": "Nenhuma etapa neste template.",
+        "stagesHeading": "Etapas",
+        "unsavedConfirm": "Você tem alterações não salvas. Deseja descartá-las?",
+        "actions": {
+          "addStage": "Adicionar etapa",
+          "archive": "Arquivar",
+          "cancel": "Cancelar",
+          "clone": "Clonar",
+          "delete": "Excluir",
+          "edit": "Editar",
+          "save": "Salvar"
+        },
+        "confirmArchive": "Tem certeza que deseja arquivar este template?",
+        "confirmArchiveTitle": "Arquivar template",
+        "confirmDelete": "Tem certeza que deseja excluir este template?",
+        "confirmDeleteTitle": "Excluir template",
+        "empty": {
+          "title": "Nenhum template ainda",
+          "description": "Crie modelos de pipeline para reutilizar em várias vagas.",
+          "cta": "Criar template",
+          "seedCta": "Usar modelos prontos"
+        },
+        "fields": {
+          "name": "Nome",
+          "namePlaceholder": "Ex: Pipeline Técnico Sênior",
+          "description": "Descrição",
+          "isActive": "Ativo",
+          "isDefault": "Padrão",
+          "csvHelp": "Cole as etapas separadas por vírgula.",
+          "departmentHint": "Departamento",
+          "departmentHintPlaceholder": "Ex: Engenharia",
+          "jobFamilyHint": "Família de cargo",
+          "jobFamilyHintPlaceholder": "Ex: Tecnologia",
+          "seniorityHint": "Senioridade",
+          "seniorityHintPlaceholder": "Ex: Sênior"
+        },
+        "hints": {
+          "stagesCount_one": "{count} etapa",
+          "stagesCount_other": "{count} etapas",
+          "usageCount_one": "{count} vaga",
+          "usageCount_other": "{count} vagas"
+        },
+        "states": {
+          "active": "Ativo",
+          "archived": "Arquivado"
+        }
+      }
     },
     "communication": {
       "tabs": {

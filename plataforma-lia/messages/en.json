@@ -5127,7 +5127,36 @@
         "templateLibrary": "Template Library",
         "templateLibraryDesc": "Pre-configured templates for common use cases",
         "executionLogs": "Execution Logs",
-        "executionLogsDesc": "Detailed history of all executions"
+        "executionLogsDesc": "Detailed history of all executions",
+        "actionDelete": "Delete",
+        "actionDuplicate": "Duplicate",
+        "actionTest": "Test",
+        "activateAutomation": "Activate automation",
+        "pauseAutomation": "Pause automation",
+        "builderTitleEdit": "Edit automation",
+        "builderTitleNew": "New automation",
+        "createWithLia": "Create with LIA",
+        "deleteConfirm": "Are you sure you want to delete this automation?",
+        "duplicateSuffix": "(copy)",
+        "emptyTitle": "No automations created",
+        "emptyExample": "e.g. when a candidate passes screening, send an interview invitation.",
+        "loadError": "Failed to load automations.",
+        "moreActions": "More actions",
+        "seeExamples": "See examples",
+        "summaryActive": "{count} active",
+        "summaryExecs": "{count} executions",
+        "summarySuccess": "{count}% success",
+        "testFailed": "Test failed",
+        "testOk": "Test succeeded",
+        "csvExportAriaLabel": "Export logs as CSV",
+        "csvExportButton": "Export CSV",
+        "csvExportSuccess": "CSV exported successfully.",
+        "csvHeaderAutomation": "Automation",
+        "csvHeaderCandidate": "Candidate",
+        "csvHeaderError": "Error",
+        "csvHeaderExecutedAt": "Executed at",
+        "csvHeaderStatus": "Status",
+        "csvHeaderTrigger": "Trigger"
       },
       "communicationTab": {
         "emailTemplates": "Email Templates",
@@ -5202,7 +5231,63 @@
       },
       "tabPipeline": "Pipeline",
       "tabScreening": "Eligibility Questions",
-      "tabHiringPolicies": "Hiring Policies"
+      "tabHiringPolicies": "Hiring Policies",
+      "pipelineTemplates": {
+        "title": "Pipeline Templates",
+        "subtitle": "Create and manage reusable pipeline templates.",
+        "loading": "Loading...",
+        "loadError": "Failed to load templates.",
+        "selectOrCreate": "Select or create a template",
+        "newTemplate": "New template",
+        "newTemplateDefaultName": "New Template",
+        "newStageDefaultName": "New Stage",
+        "noStages": "No stages in this template.",
+        "stagesHeading": "Stages",
+        "unsavedConfirm": "You have unsaved changes. Do you want to discard them?",
+        "actions": {
+          "addStage": "Add stage",
+          "archive": "Archive",
+          "cancel": "Cancel",
+          "clone": "Clone",
+          "delete": "Delete",
+          "edit": "Edit",
+          "save": "Save"
+        },
+        "confirmArchive": "Are you sure you want to archive this template?",
+        "confirmArchiveTitle": "Archive template",
+        "confirmDelete": "Are you sure you want to delete this template?",
+        "confirmDeleteTitle": "Delete template",
+        "empty": {
+          "title": "No templates yet",
+          "description": "Create pipeline templates to reuse across multiple jobs.",
+          "cta": "Create template",
+          "seedCta": "Use ready-made templates"
+        },
+        "fields": {
+          "name": "Name",
+          "namePlaceholder": "e.g. Senior Technical Pipeline",
+          "description": "Description",
+          "isActive": "Active",
+          "isDefault": "Default",
+          "csvHelp": "Paste stages separated by commas.",
+          "departmentHint": "Department",
+          "departmentHintPlaceholder": "e.g. Engineering",
+          "jobFamilyHint": "Job family",
+          "jobFamilyHintPlaceholder": "e.g. Technology",
+          "seniorityHint": "Seniority",
+          "seniorityHintPlaceholder": "e.g. Senior"
+        },
+        "hints": {
+          "stagesCount_one": "{count} stage",
+          "stagesCount_other": "{count} stages",
+          "usageCount_one": "{count} job",
+          "usageCount_other": "{count} jobs"
+        },
+        "states": {
+          "active": "Active",
+          "archived": "Archived"
+        }
+      }
     },
     "communication": {
       "tabs": {
