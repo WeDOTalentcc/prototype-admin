@@ -6450,6 +6450,66 @@
       "scaleStandard": "Padrão (0-10)",
       "scaleSimplified": "Simplificada (1-5)",
       "scaleCustom": "Personalizada"
+    },
+    "fairnessCompliance": {
+      "fairnessGuardStatus": {
+        "title": "FairnessGuard",
+        "subtitle": "Status da proteção contra viés nas decisões de IA."
+      },
+      "auditDrillDown": {
+        "title": "Trilha de Auditoria",
+        "subtitle": "Eventos detalhados de auditoria e conformidade.",
+        "refresh": "Atualizar",
+        "empty": "Nenhum evento de auditoria registrado.",
+        "total": "{count} eventos",
+        "retentionNote": "Eventos retidos por 12 meses conforme a política de LGPD.",
+        "forbiddenByBackend": "Acesso negado pelo servidor.",
+        "notAdmin": "Acesso restrito",
+        "notAdminTitle": "Acesso restrito",
+        "notAdminBody": "Apenas administradores podem visualizar a trilha de auditoria.",
+        "colWhen": "Quando",
+        "colUser": "Usuário",
+        "colAction": "Ação",
+        "colCategory": "Categoria",
+        "colResource": "Recurso"
+      },
+      "auditSummary": {
+        "title": "Resumo de Auditoria",
+        "description": "Visão consolidada dos eventos de conformidade.",
+        "errorLoad": "Erro ao carregar o resumo.",
+        "totalEventsTitle": "Total de eventos",
+        "totalEventsHint": "nos últimos 30 dias",
+        "criticalEvents": "Eventos críticos",
+        "aiOverrides": "Overrides de IA",
+        "consentsRevoked": "Consentimentos revogados",
+        "contactCompliance": "Conformidade de contato",
+        "erasuresHandled": "Exclusões processadas",
+        "dpoEmailSubject": "Solicitação ao DPO",
+        "needDeepDiveTitle": "Precisa investigar?",
+        "needDeepDiveBody": "Abra a trilha detalhada para ver cada evento."
+      }
+    },
+    "studio": {
+      "title": "Agent Studio",
+      "loading": "Carregando...",
+      "loadError": "Erro ao carregar.",
+      "loadErrorGeneric": "Não foi possível carregar os dados do Studio.",
+      "noExecutions": "Nenhuma execução registrada.",
+      "noExecutionsHint": "As execuções dos agentes aparecerão aqui.",
+      "activeAgents": "Agentes ativos",
+      "executions": "Execuções",
+      "executionsByDay": "Execuções por dia",
+      "approved": "Aprovadas",
+      "blocked": "Bloqueadas",
+      "blocks": "Bloqueios",
+      "blockedLine": "Bloqueadas",
+      "totalLine": "Total",
+      "blockedPctOfTotal": "{pct}% do total",
+      "avgConfidence": "Confiança média",
+      "topBlockedAgents": "Agentes mais bloqueados",
+      "last7": "7 dias",
+      "last30": "30 dias",
+      "last90": "90 dias"
     }
   },
   "publicJob": {
