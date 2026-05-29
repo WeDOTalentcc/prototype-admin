@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react"
 import Link from "next/link"
 import { TwinsList, CreateDigitalTwinModal } from "@/components/pages-agent-studio/DigitalTwinComponents"
-import { TemplateGallery, AgentCard as CustomAgentCard, AgentCardSkeleton, AgentDetailsPanel, DeployDialog, AIAgentBuilder, TestDebugPanel, ApprovalsList } from "@/components/pages-agent-studio/custom-agents"
+import { TemplateGallery, AgentCard as CustomAgentCard, AgentCardSkeleton, AgentDetailsPanel, DeployDialog, AIAgentBuilder, TestDebugPanel, AgentSandboxPanel, ApprovalsList } from "@/components/pages-agent-studio/custom-agents"
 // UX_AUDIT T4 (2026-05-21): TemplateClonePanel substitui TemplatePreviewModal como
 // entry-point primário do TemplateGallery (clone-first / HubSpot Breeze).
 // TemplatePreviewModal (Sprint B QW#5) preservado como export de custom-agents/
@@ -33,6 +33,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { PageTabNavigation } from "@/components/ui/page-tab-navigation"
 import { TabSectionHeader } from "@/components/pages-agent-studio/TabSectionHeader"
 import { CreateAgentWizard, inferGoalFromTemplate } from "@/components/pages-agent-studio/create-agent-wizard"
+// Q4.3 Tour interno do Studio (primeira visita)
+import { StudioTour } from "@/components/pages-agent-studio/StudioTour"
 import type { AgentGoal, CreateAgentInitialConfig } from "@/components/pages-agent-studio/create-agent-wizard"
 import { useTranslations } from "next-intl"
 import { useAiPersona } from "@/hooks/company/use-ai-persona"
@@ -134,6 +136,7 @@ export default function AgentStudioPage({
   const [twinsRefreshKey, setTwinsRefreshKey] = useState(0)
   const [deployAgent, setDeployAgent] = useState<CustomAgent | null>(null)
   const [testAgent, setTestAgent] = useState<CustomAgent | null>(null)
+  const [sandboxAgent, setSandboxAgent] = useState<CustomAgent | null>(null)
   const [detailsAgent, setDetailsAgent] = useState<CustomAgent | null>(null)
   const { agents: customAgents, mutate: mutateCustomAgents } = useCustomAgents()
   const { selectTemplate } = useAgentStudioStore()
@@ -364,6 +367,7 @@ export default function AgentStudioPage({
               onClick={() => openWizard()}
               className="gap-2 bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover"
               data-testid="header-create-agent-cta"
+              data-tour="studio-create-agent"
             >
               <Plus className="w-4 h-4" />
               {t("studio.cta.createAgent")}
@@ -373,6 +377,7 @@ export default function AgentStudioPage({
 
         {/* Studio Restructure Fase 2 (2026-05-26): 2 top tabs canonical.
             Sub-tabs eliminados — my-agents agrega templates + lista unificada. */}
+        <div data-tour="studio-tabs">
         <PageTabNavigation
           tabs={[
             {
@@ -400,6 +405,7 @@ export default function AgentStudioPage({
           activeTab={activeTab}
           onTabChange={(id) => setActiveTab(id as MainTab)}
         />
+        </div>
 
         {/* QuotaMeter (feedforward audit harness 2026-05-23):
             mostra X / Y por recurso pra cliente ver uso antes de bater limit.
@@ -409,7 +415,7 @@ export default function AgentStudioPage({
         <QuotaMeter className="mt-2" />
 
         {(agents.length > 0 || customAgents.length > 0) && (
-          <div className="flex items-center gap-6 mt-2 mb-1">
+          <div className="flex items-center gap-6 mt-2 mb-1" data-tour="studio-stats">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               <span className="text-xs font-medium text-lia-text-secondary">
@@ -703,6 +709,14 @@ export default function AgentStudioPage({
               onClose={() => setTestAgent(null)}
             />
 
+            {/* Q4.2 Sandbox — "Testar antes de ativar" (dry-run simulation) */}
+            <AgentSandboxPanel
+              agent={sandboxAgent}
+              open={!!sandboxAgent}
+              onClose={() => setSandboxAgent(null)}
+              onActivate={(a) => { setSandboxAgent(null); setDeployAgent(a) }}
+            />
+
             {/* Agent Details Panel */}
             <AgentDetailsPanel
               agent={detailsAgent}
@@ -710,6 +724,7 @@ export default function AgentStudioPage({
               onClose={() => setDetailsAgent(null)}
               onDeploy={(a) => { setDetailsAgent(null); setDeployAgent(a) }}
               onTest={(a) => { setDetailsAgent(null); setTestAgent(a) }}
+              onSandbox={(a) => { setDetailsAgent(null); setSandboxAgent(a) }}
             />
 
           </div>
@@ -774,6 +789,10 @@ export default function AgentStudioPage({
           if (agentId) onStartCalibration?.(agentId)
         }}
       />
+
+      {/* Q4.3 Tour interno — dispara na primeira visita (localStorage flag).
+          Dismissível. Reusa TourSpotlight canonical. */}
+      <StudioTour />
     </div>
   )
 }

@@ -2255,6 +2255,42 @@
         "suggestedConfig": "Suggested configuration",
         "namePlaceholder": "E.g.: Screening Agent",
         "goalAriaLabel": "Agent goal"
+      },
+      "sandbox": {
+        "title": "Simulate: {agent}",
+        "untitledAgent": "Agent",
+        "simulationBanner": "SIMULATION MODE — no real action was performed. The agent reasons over real data, but sends and moves are only simulated.",
+        "description": "Test how the agent would behave on its 1st run before activating it. Send a sample message.",
+        "inputPlaceholder": "E.g.: Evaluate candidate John for the Dev role",
+        "inputAriaLabel": "Sample message for simulation",
+        "simulateButton": "Simulate",
+        "agentResponse": "Agent response",
+        "wouldDoTitle": "What the agent would do",
+        "noWouldDo": "No write action would be executed in this simulation.",
+        "wouldDoGeneric": "Would execute action {tool}",
+        "reasoningTitle": "Agent reasoning",
+        "activateButton": "Activate agent",
+        "retryButton": "Simulate again",
+        "error": "Could not simulate execution. Please try again.",
+        "wouldDoVerb": {
+          "send_email": "Would send an email",
+          "move_candidate": "Would move the candidate to another stage",
+          "update_candidate_field": "Would update candidate data",
+          "create_note": "Would create a note",
+          "schedule_interview": "Would schedule an interview"
+        }
+      },
+      "tour": {
+        "skip": "Skip tour",
+        "nextHint": "Click to continue →",
+        "finishHint": "Click to finish the tour ✓",
+        "steps": {
+          "create": "Here you create AI agents that work for you. Start with the create button — I will guide you through setup.",
+          "sandbox": "Before activating an agent, open its details and click \"Simulate\" to see how the 1st run would look — with no real action taken.",
+          "controlRoom": "In the Control Room tab you follow executions live, in real time.",
+          "decisionTree": "For each execution you can open the agent reasoning — step by step, with full transparency on what it read and decided.",
+          "kpis": "Here are the metrics: profiles analyzed, approval rate, executions and cost. All in plain sight."
+        }
       }
     },
     "status": {

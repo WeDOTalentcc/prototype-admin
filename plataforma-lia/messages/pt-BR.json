@@ -2255,6 +2255,42 @@
         "suggestedConfig": "Configuração sugerida",
         "namePlaceholder": "Ex: Agente de Triagem",
         "goalAriaLabel": "Objetivo do agente"
+      },
+      "sandbox": {
+        "title": "Simular: {agent}",
+        "untitledAgent": "Agente",
+        "simulationBanner": "MODO SIMULAÇÃO — nenhuma ação real foi executada. O agente raciocina sobre dados reais, mas envios e movimentações são apenas simulados.",
+        "description": "Teste como o agente se comportaria na 1ª execução antes de ativá-lo. Envie uma mensagem de amostra.",
+        "inputPlaceholder": "Ex: Avalie o candidato João para a vaga de Dev",
+        "inputAriaLabel": "Mensagem de amostra para simulação",
+        "simulateButton": "Simular",
+        "agentResponse": "Resposta do agente",
+        "wouldDoTitle": "O que o agente faria",
+        "noWouldDo": "Nenhuma ação de escrita seria executada nesta simulação.",
+        "wouldDoGeneric": "Executaria a ação {tool}",
+        "reasoningTitle": "Raciocínio do agente",
+        "activateButton": "Ativar agente",
+        "retryButton": "Simular de novo",
+        "error": "Não foi possível simular a execução. Tente novamente.",
+        "wouldDoVerb": {
+          "send_email": "Enviaria um e-mail",
+          "move_candidate": "Moveria o candidato de etapa",
+          "update_candidate_field": "Atualizaria dados do candidato",
+          "create_note": "Criaria uma anotação",
+          "schedule_interview": "Agendaria uma entrevista"
+        }
+      },
+      "tour": {
+        "skip": "Pular tour",
+        "nextHint": "Clique para continuar →",
+        "finishHint": "Clique para concluir o tour ✓",
+        "steps": {
+          "create": "Aqui você cria agentes de IA que trabalham para você. Comece pelo botão de criar — eu te guio na configuração.",
+          "sandbox": "Antes de ativar um agente, abra os detalhes dele e clique em \"Simular\" para ver como seria a 1ª execução — sem nenhuma ação real.",
+          "controlRoom": "Na aba Sala de Controle você acompanha as execuções ao vivo, em tempo real.",
+          "decisionTree": "Em cada execução você pode abrir o raciocínio do agente — passo a passo, com transparência total sobre o que ele leu e decidiu.",
+          "kpis": "Aqui ficam as métricas: quantos perfis analisados, taxa de aprovação, execuções e custo. Tudo à vista."
+        }
       }
     },
     "status": {

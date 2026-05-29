@@ -113,7 +113,9 @@ interface DecisionTreeBodyProps {
   agentDisplayName: string
 }
 
-function DecisionTreeBody({ reasoning, agentDisplayName }: DecisionTreeBodyProps) {
+// Q4.2 Sandbox (2026-05-29): exportado pra reuso canonical pelo SandboxPanel
+// (dry-run). Mesma renderizacao de reasoning_trace + LGPD, sem viewer paralelo.
+export function DecisionTreeBody({ reasoning, agentDisplayName }: DecisionTreeBodyProps) {
   const t = useTranslations("agents.studio.decisionTree")
   const [showTechnical, setShowTechnical] = React.useState(false)
 

@@ -2,7 +2,7 @@
 
 import React, { useState } from "react"
 import Link from "next/link"
-import { Bot, Link2, Zap, Calendar, MousePointer, GitBranch, MapPin, Loader2, Copy, Pencil, Activity } from "lucide-react"
+import { Bot, Link2, Zap, Calendar, MousePointer, GitBranch, MapPin, Loader2, Copy, Pencil, Activity, FlaskConical } from "lucide-react"
 import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
 import { cardStyles, badgeStyles, textStyles } from "@/lib/design-tokens"
@@ -32,10 +32,13 @@ interface AgentDetailsPanelProps {
   onClose: () => void
   onDeploy: (agent: CustomAgent) => void
   onTest: (agent: CustomAgent) => void
+  // Q4.2 Sandbox — abre simulação "testar antes de ativar" (dry-run).
+  onSandbox?: (agent: CustomAgent) => void
 }
 
-export function AgentDetailsPanel({ agent, open, onClose, onDeploy, onTest }: AgentDetailsPanelProps) {
+export function AgentDetailsPanel({ agent, open, onClose, onDeploy, onTest, onSandbox }: AgentDetailsPanelProps) {
   const t = useTranslations('agents.customAgents')
+  const tSandbox = useTranslations('agents.studio.sandbox')
   const tStatus = useTranslations('agents.status')
   // White-label canonical: persona como fallback do nome do agente no header.
   const { persona: aiPersona } = useAiPersona()
@@ -219,7 +222,18 @@ export function AgentDetailsPanel({ agent, open, onClose, onDeploy, onTest }: Ag
           </div>
 
           {/* Actions */}
-          <div className="flex gap-2 pt-2 border-t border-lia-border-subtle">
+          <div className="flex flex-wrap gap-2 pt-2 border-t border-lia-border-subtle">
+            {onSandbox && (
+              <button
+                type="button"
+                onClick={() => onSandbox(agent)}
+                className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-xs font-medium bg-amber-50 text-amber-800 hover:bg-amber-100 transition-colors dark:bg-amber-950/30 dark:text-amber-200 dark:hover:bg-amber-950/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/40"
+                data-testid="agent-details-sandbox-button"
+              >
+                <FlaskConical className="w-3.5 h-3.5" aria-hidden="true" />
+                {tSandbox('simulateButton')}
+              </button>
+            )}
             <button
               type="button"
               onClick={() => onTest(agent)}
