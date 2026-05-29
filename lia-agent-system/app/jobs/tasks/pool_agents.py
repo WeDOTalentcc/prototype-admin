@@ -188,6 +188,10 @@ async def _dispatch_impl(assignment_id: str, trigger_source: str = "cron") -> No
             ]
 
             # Step 6: persist results + status=success.
+            # Onda 5+1 (2026-05-29) — candidate_ids[] consumido pelo endpoint
+            # /agent-monitoring/candidate/{id}/touches (Onda 2 B3). Populated
+            # by CustomAgentRuntime._state_to_output via
+            # extract_touched_candidate_ids helper.
             await run_repo.update_status(
                 run.id,
                 "success",
@@ -195,6 +199,12 @@ async def _dispatch_impl(assignment_id: str, trigger_source: str = "cron") -> No
                     "response": output.message or "",
                     "tools_used": tool_calls,
                     "confidence": float(output.confidence or 0.0),
+                    "candidate_ids": list(
+                        out_meta.get("touched_candidate_ids") or []
+                    ),
+                    "candidate_ids_truncated": bool(
+                        out_meta.get("candidate_ids_truncated", False)
+                    ),
                 },
                 runtime_metrics={
                     "latency_ms": elapsed_ms,

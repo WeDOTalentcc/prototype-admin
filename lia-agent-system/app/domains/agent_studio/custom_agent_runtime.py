@@ -489,6 +489,25 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
             )
             reasoning_trace = None
 
+        # Onda 5+1 (2026-05-29) — extrair candidate_ids tocados pra popular
+        # pool_agent_runs.results.candidate_ids[] (endpoint /agent-monitoring/
+        # candidate/{id}/touches da Onda 2 B3). Fail-open + LOUD log.
+        touched_candidate_ids: list[str] = []
+        candidate_ids_truncated = False
+        try:
+            from app.domains.agent_studio.reasoning_trace_builder import (
+                extract_touched_candidate_ids,
+            )
+            touched_candidate_ids, candidate_ids_truncated = (
+                extract_touched_candidate_ids(messages)
+            )
+        except Exception as _cid_exc:
+            logger.error(
+                "[CustomAgentRuntime] extract_touched_candidate_ids falhou",
+                exc_info=True,
+                extra={"agent_id": self._agent_id, "err": str(_cid_exc)},
+            )
+
         return AgentOutput(
             message=response,
             actions=actions,
@@ -508,6 +527,9 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
                 "output_tokens": tokens_output,
                 "model_used": model_used,
                 "cost_usd": cost_usd,
+                # Onda 5+1 — candidate IDs tocados (LGPD audit trail + UI badge).
+                "touched_candidate_ids": touched_candidate_ids,
+                "candidate_ids_truncated": candidate_ids_truncated,
             },
         )
 

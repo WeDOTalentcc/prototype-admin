@@ -260,3 +260,121 @@ def _extract_text(content: Any) -> str:
                 parts.append(str(item))
         return " ".join(parts)
     return str(content)
+
+
+# ============================================================================
+# Onda 5+1 (2026-05-29) — extract_touched_candidate_ids canonical helper
+# ============================================================================
+# Popular `pool_agent_runs.results.candidate_ids[]` permite endpoint
+# `/agent-monitoring/candidate/{id}/touches` (Onda 2 B3) retornar dados reais
+# pro `CandidateTouchIndicator` (frontend Onda 2). Sem essa extração,
+# touch_count fica sempre 0 e o ícone "agente tocou este candidato" não
+# aparece — usuários não veem proveniência de IA nas cards.
+#
+# Heurística canonical: percorre messages do LangGraph state procurando
+# `tool_calls` com args contendo `candidate_id` (str) ou `candidate_ids`
+# (list[str]). Dedup + truncate em MAX_CANDIDATE_IDS_PER_RUN.
+#
+# Multi-tenancy: extração é PURA — não toca banco, não valida tenant. O
+# consumer (caller que persiste em results) já roda no contexto correto.
+# Sensível por design — quando dúvida, omite (zero falso-positivo > falso-
+# negativo).
+# ============================================================================
+
+MAX_CANDIDATE_IDS_PER_RUN = 500
+
+
+def _is_uuid_like(value: Any) -> bool:
+    """Heurística leve: aceita UUID v4-ish ou bigint numérico (Rails legacy).
+
+    Conservadora: rejeita strings vazias, None, dicts, listas aninhadas.
+    """
+    if not value:
+        return False
+    if isinstance(value, (int, float)):
+        return value > 0
+    if not isinstance(value, str):
+        return False
+    s = value.strip()
+    if not s:
+        return False
+    if len(s) == 36 and s.count("-") == 4:
+        return True
+    if s.isdigit() and len(s) <= 19:
+        return True
+    return False
+
+
+def extract_touched_candidate_ids(
+    messages: list[Any],
+    max_ids: int = MAX_CANDIDATE_IDS_PER_RUN,
+) -> tuple[list[str], bool]:
+    """Extrair candidate IDs tocados pelo agente durante uma run.
+
+    Onda 5+1 (2026-05-29) — helper canonical pra popular
+    `pool_agent_runs.results.candidate_ids[]`. Consumido por:
+      - app/domains/talent_pool/agents/talent_pool_agent.py (TalentPoolReActAgent.process)
+      - app/jobs/tasks/pool_agents.py (_dispatch_impl via output.metadata)
+      - app/domains/agent_studio/custom_agent_runtime.py (_state_to_output → metadata)
+
+    Args:
+        messages: state["messages"] do LangGraph (lista AIMessage/ToolMessage).
+        max_ids: cap canonical pra não inchar JSONB (default 500).
+
+    Returns:
+        tuple (candidate_ids: list[str] dedup ordenado por 1ª aparição,
+               truncated: bool indica se exceeded max_ids).
+
+    Shape extraído:
+        - tool_calls[i].args["candidate_id"] (str) → 1 ID
+        - tool_calls[i].args["candidate_ids"] (list[str]) → N IDs
+        - Outros nomes (candidate, target_candidate, etc.) NÃO são lidos —
+          mantém conservador, evita falso-positivo.
+    """
+    seen: dict[str, None] = {}
+    truncated = False
+
+    for m in messages:
+        if len(seen) >= max_ids:
+            truncated = True
+            break
+
+        tool_calls = getattr(m, "tool_calls", None) or (
+            m.get("tool_calls") if isinstance(m, dict) else None
+        ) or []
+
+        for tc in tool_calls:
+            if isinstance(tc, dict):
+                args = tc.get("args") or tc.get("arguments") or {}
+            else:
+                args = getattr(tc, "args", None) or getattr(tc, "arguments", None) or {}
+
+            if not isinstance(args, dict):
+                continue
+
+            cid = args.get("candidate_id")
+            if cid and _is_uuid_like(cid):
+                key = str(cid).strip()
+                if key not in seen:
+                    if len(seen) >= max_ids:
+                        truncated = True
+                        break
+                    seen[key] = None
+
+            cids = args.get("candidate_ids")
+            if isinstance(cids, (list, tuple)):
+                for c in cids:
+                    if _is_uuid_like(c):
+                        key = str(c).strip()
+                        if key not in seen:
+                            if len(seen) >= max_ids:
+                                truncated = True
+                                break
+                            seen[key] = None
+                if truncated:
+                    break
+
+        if truncated:
+            break
+
+    return list(seen.keys()), truncated

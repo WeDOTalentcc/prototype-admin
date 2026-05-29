@@ -148,6 +148,24 @@ class TalentPoolReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAg
             confidence = 0.40
         conf_action = confidence_policy_service.get_action_for_confidence(confidence)
 
+        # Onda 5+1 (2026-05-29) — extrair candidate_ids tocados pra popular
+        # pool_agent_runs.results.candidate_ids[] (endpoint /agent-monitoring/
+        # candidate/{id}/touches da Onda 2 B3).
+        touched_candidate_ids: list[str] = []
+        candidate_ids_truncated = False
+        try:
+            from app.domains.agent_studio.reasoning_trace_builder import (
+                extract_touched_candidate_ids,
+            )
+            touched_candidate_ids, candidate_ids_truncated = (
+                extract_touched_candidate_ids(messages)
+            )
+        except Exception:
+            logger.error(
+                "[TalentPoolReActAgent] extract_touched_candidate_ids falhou",
+                exc_info=True,
+            )
+
         return AgentOutput(
             message=response,
             actions=actions,
@@ -156,6 +174,9 @@ class TalentPoolReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAg
                 "source": "langgraph_native",
                 "domain": self.domain_name,
                 "confidence_action": conf_action.value,
+                # Onda 5+1 — candidate IDs tocados (LGPD audit trail + UI badge).
+                "touched_candidate_ids": touched_candidate_ids,
+                "candidate_ids_truncated": candidate_ids_truncated,
             },
         )
 
@@ -280,6 +301,14 @@ class TalentPoolReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAg
                             "response": output.message or "",
                             "tools_used": tool_calls,
                             "confidence": float(output.confidence or 0.0),
+                            # Onda 5+1 — candidate_ids[] consumido pelo endpoint
+                            # /agent-monitoring/candidate/{id}/touches (Onda 2 B3).
+                            "candidate_ids": list(
+                                out_meta.get("touched_candidate_ids") or []
+                            ),
+                            "candidate_ids_truncated": bool(
+                                out_meta.get("candidate_ids_truncated", False)
+                            ),
                         },
                         reasoning_payload=reasoning_payload_serialized,
                         runtime_metrics={
