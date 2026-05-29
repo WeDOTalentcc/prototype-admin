@@ -31,10 +31,18 @@ class PoolAgentRun(Base):
     __tablename__ = "pool_agent_runs"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    # C1.4 (2026-05-29): a run is sourced from EITHER a legacy assignment OR an
+    # agent_deployment (unified engine, Onda C1). Both nullable; the
+    # chk_par_source_present CHECK guarantees at least one is set (fail-closed).
     assignment_id = Column(
         UUID(as_uuid=True),
         ForeignKey("pool_agent_assignments.id", ondelete="CASCADE"),
-        nullable=False,
+        nullable=True,
+    )
+    deployment_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("agent_deployments.id", ondelete="CASCADE"),
+        nullable=True,
     )
     company_id = Column(String(64), nullable=False, index=True)
 
@@ -74,7 +82,12 @@ class PoolAgentRun(Base):
             "status IN ('queued','running','success','error','timeout','cancelled')",
             name="chk_par_status",
         ),
+        CheckConstraint(
+            "(assignment_id IS NOT NULL) OR (deployment_id IS NOT NULL)",
+            name="chk_par_source_present",
+        ),
         Index("idx_pool_agent_runs_assignment", "assignment_id", "created_at"),
+        Index("idx_pool_agent_runs_deployment", "deployment_id", "created_at"),
         Index("idx_pool_agent_runs_company_status", "company_id", "status"),
         {"extend_existing": True},
     )
@@ -88,7 +101,8 @@ class PoolAgentRun(Base):
     def to_dict(self) -> dict:
         return {
             "id": str(self.id),
-            "assignment_id": str(self.assignment_id),
+            "assignment_id": str(self.assignment_id) if self.assignment_id else None,
+            "deployment_id": str(self.deployment_id) if self.deployment_id else None,
             "company_id": self.company_id,
             "trigger_source": self.trigger_source,
             "status": self.status,
