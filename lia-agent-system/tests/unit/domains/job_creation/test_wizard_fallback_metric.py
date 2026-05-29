@@ -180,9 +180,12 @@ def test_jd_enrichment_node_emits_metric_on_timeout(_spy_emit):
              return_value=(50.0, []),
          ):
         state = _enriched_state()
-        # Force re-enrichment path
+        # Force re-enrichment path. right_panel_form bypassa o input-thin
+        # guard (Task #1096/#1123): com raw curto + jd_enriched=None ele
+        # retornaria "ask for JD" antes de chegar no path de timeout.
         state["jd_enriched"] = None
         state["jd_approved"] = None
+        state["right_panel_form"] = {"title": "Eng Backend"}
         result = job_graph.jd_enrichment_node(state)
 
     assert result["ws_stage_payload"]["data"]["jd_enrichment_used_fallback"] is True
@@ -223,6 +226,7 @@ def test_jd_enrichment_node_emits_metric_on_exception(_spy_emit):
         state = _enriched_state()
         state["jd_enriched"] = None
         state["jd_approved"] = None
+        state["right_panel_form"] = {"title": "Eng Backend"}
         job_graph.jd_enrichment_node(state)
 
     _assert_called_with_node(_spy_emit, "jd_enrichment", reason_substring="exception")
@@ -261,19 +265,18 @@ def test_salary_node_emits_metric_on_benchmark_timeout(_spy_emit):
     import concurrent.futures as _cf
     from app.domains.job_creation import graph as job_graph
 
-    class _FakeFut:
-        def result(self, timeout):
-            raise _cf.TimeoutError()
-
-    class _FakeExec:
-        def __init__(self, *_a, **_kw): pass
-        def submit(self, *a, **kw): return _FakeFut()
-        def shutdown(self, **kw): pass
+    def _raise_timeout(*_a, **_kw):
+        raise _cf.TimeoutError()
 
     state = _enriched_state()
     state["salary_benchmark"] = None
 
-    with patch.object(_cf, "ThreadPoolExecutor", _FakeExec):
+    # PR-14 (2026-05-26): salary_node usa run_coro_in_threadpool(), não
+    # ThreadPoolExecutor inline — patchar o helper canonical simula o timeout.
+    with patch(
+        "app.domains.job_creation.nodes.salary.run_coro_in_threadpool",
+        side_effect=_raise_timeout,
+    ):
         result = job_graph.salary_node(state)
 
     assert result["ws_stage_payload"]["data"].get("salary_used_fallback") is True
