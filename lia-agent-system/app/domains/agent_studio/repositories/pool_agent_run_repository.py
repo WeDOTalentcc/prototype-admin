@@ -61,6 +61,28 @@ class PoolAgentRunRepository:
         result = await self.db.execute(stmt)
         return list(result.scalars().all())
 
+    async def list_by_deployment(
+        self,
+        deployment_id: UUID | str,
+        company_id: str,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> list[PoolAgentRun]:
+        """C1.4: runs sourced from an agent_deployment (unified engine)."""
+        _require_company_id(company_id)
+        stmt = (
+            select(PoolAgentRun)
+            .where(
+                PoolAgentRun.deployment_id == deployment_id,
+                PoolAgentRun.company_id == company_id,
+            )
+            .order_by(PoolAgentRun.created_at.desc())
+            .limit(limit)
+            .offset(offset)
+        )
+        result = await self.db.execute(stmt)
+        return list(result.scalars().all())
+
     async def get_by_id(
         self, run_id: UUID | str, company_id: str
     ) -> PoolAgentRun | None:
@@ -75,13 +97,24 @@ class PoolAgentRunRepository:
     async def create(
         self,
         *,
-        assignment_id: UUID | str,
         company_id: str,
         trigger_source: str,
+        assignment_id: UUID | str | None = None,
+        deployment_id: UUID | str | None = None,
         dispatch_metadata: dict | None = None,
     ) -> PoolAgentRun:
-        """Orchestrator (Part 1.5b) chama no início do dispatch."""
+        """Orchestrator chama no início do dispatch.
+
+        C1.4 (2026-05-29): a run is sourced from EITHER a legacy assignment OR an
+        agent_deployment (unified engine). At least one must be provided —
+        fail-closed at the app layer, mirroring the chk_par_source_present DB CHECK.
+        """
         _require_company_id(company_id)
+        if assignment_id is None and deployment_id is None:
+            raise ValueError(
+                "PoolAgentRunRepository.create: assignment_id or deployment_id "
+                "required (chk_par_source_present fail-closed)."
+            )
         if trigger_source not in ("cron", "on_demand", "event_driven"):
             raise ValueError(
                 f"invalid trigger_source={trigger_source!r}; "
@@ -89,6 +122,7 @@ class PoolAgentRunRepository:
             )
         run = PoolAgentRun(
             assignment_id=assignment_id,
+            deployment_id=deployment_id,
             company_id=company_id,
             trigger_source=trigger_source,
             status="queued",
