@@ -101,3 +101,93 @@ grep -rn "wedo-apoio" src/
 # Build
 cd plataforma-lia && npx next build
 ```
+
+## Wizard panels canonical pattern (registrado 2026-05-29)
+
+**Contexto:** auditoria 2026-05-29 do wizard de criacao de vaga ("Criando vaga · Descricao") descobriu defeito de canal entre produtor (backend) e consumidor (frontend panel). O `jd_enrichment_node` emitia o sinal canonical `awaiting_jd_input: True` em `build_ws_stage_payload.data` quando o recrutador ainda nao tinha colado a JD (input magro, e.g., "vamos abrir uma vaga"). `JdEnrichmentPanel` ignorava esse sinal e renderizava "Critico - Score: 0/100 - O enriquecimento esta demorando..." com timer de 30s. Saga A-G (`dd2586dc..c288be976`) tratou loop bugs no `jd_gate` mas nunca tocou o consumidor — defeito atravessou.
+
+**Defeito de harness (Hashimoto):** produtor emite sinal correto, consumidor nao le. Classificacao: **computacional × sensor (feedback)** + **computacional × guide (feedforward)**.
+
+### REGRA — Wizard panels DEVEM ler sinais canonical de sub-estado do produtor
+
+Cada panel em `src/components/unified-chat/wizard/panels/*Panel.tsx` recebe `data: Record<string, unknown>` que vem de `build_ws_stage_payload.data` (canonical helper em `lia-agent-system/app/domains/job_creation/helpers/ws_payload_builder.py`). O backend pode emitir, alem dos campos especificos do stage:
+
+- `awaiting_<stage>_input: True` — stage esta idle, aguardando input substancial do recrutador (input thin guard fired). **Panel MUST** renderizar idle state (sem badge, sem timer, sem palavra "demorando")
+- `message: string` — Task #1099 invariant, sempre presente, carrega a copy do agente pra esse turno
+
+**Anti-pattern proibido:**
+
+```tsx
+// ❌ ANTI-PATTERN — score default 0 vira badge "Critico" em idle/loading
+const score = d.quality_score || 0
+const badge = getQualityBadge(score)  // 0 -> "Critico"
+return (
+  <div>
+    <div>{badge.label} Score: {score}/100</div>  {/* renderiza sempre, mesmo idle */}
+    {enriched ? <Content /> : <LoadingStateWith30sTimer />}
+  </div>
+)
+```
+
+**Pattern canonical:**
+
+```tsx
+// ✅ canonical — early-return idle, badge so quando enriched real
+export function JdEnrichmentPanel({ data, ... }: Props) {
+  const d = data as unknown as JdEnrichmentData
+  const enriched = d.jd_enriched
+  // ...
+
+  // 1. Idle state — backend signals "awaiting JD content".
+  if (d.awaiting_jd_input) {
+    return <JdAwaitingInputState message={d.message} />
+  }
+
+  return (
+    <div>
+      {/* 2. Badge — only when enriched (score real, not default-0). */}
+      {enriched && <BadgeWithScore score={score} />}
+      {/* 3. Loading or content. */}
+      {enriched ? <Content enriched={enriched} /> : <JdLoadingState />}
+    </div>
+  )
+}
+```
+
+### Sensores canonical
+
+- **Computacional (estatico):** `plataforma-lia/scripts/check_wizard_panel_idle_signals.py` — walks `lia-agent-system/app/domains/job_creation/nodes/*.py` extraindo todos `awaiting_*_input: True` emit sites; para cada sinal cruza com `SIGNAL_TO_PANEL` map e verifica que o panel correspondente le e usa o sinal em conditional. Baseline 2026-05-29: **0 violations, 1 OK** (`awaiting_jd_input -> JdEnrichmentPanel.tsx`). Wired em `.github/workflows/frontend-ci.yml` warn-only enquanto baseline = 0.
+
+- **Runtime (vitest):** `plataforma-lia/src/components/unified-chat/wizard/panels/__tests__/JdEnrichmentPanel.test.tsx` describe "canonical idle state (awaiting_jd_input)" — 3 testes:
+  1. `awaiting_jd_input=true` -> renderiza `data-testid="jd-awaiting-input"`, NAO renderiza "Critico"/"0/100"/"demorando"/"Aguardar mais"
+  2. `enriched` ausente sem flag idle -> renderiza loading mas NAO badge "Critico"
+  3. `enriched` presente -> renderiza badge + score + content
+
+### Como adicionar novo wizard stage que precisa idle state
+
+1. **Backend** (`lia-agent-system/app/domains/job_creation/nodes/<stage>.py`): em branches que detectam "user input is thin", emit:
+   ```python
+   "ws_stage_payload": build_ws_stage_payload(
+       stage="<stage>",
+       requires_approval=False,
+       data={
+           "awaiting_<stage>_input": True,
+           "message": msg("<stage>.ask_for_content"),
+       },
+   ),
+   ```
+2. **Tipo TS** (`plataforma-lia/src/components/unified-chat/wizard/wizard-types.ts`): adicione `awaiting_<stage>_input?: boolean` + `message?: string` na interface `<Stage>Data`.
+3. **Panel** (`plataforma-lia/src/components/unified-chat/wizard/panels/<Stage>Panel.tsx`): early-return idle:
+   ```tsx
+   if (d.awaiting_<stage>_input) {
+     return <<Stage>AwaitingInputState message={d.message} />
+   }
+   ```
+4. **Sensor** (`plataforma-lia/scripts/check_wizard_panel_idle_signals.py`): adicione entry em `SIGNAL_TO_PANEL` mapping `"awaiting_<stage>_input": "<Stage>Panel.tsx"`.
+5. **Teste** (`plataforma-lia/src/components/unified-chat/wizard/panels/__tests__/<Stage>Panel.test.tsx`): describe "canonical idle state" copiando template de `JdEnrichmentPanel.test.tsx`.
+
+### Defesa em profundidade
+
+- **Producer-side**: `build_ws_stage_payload` raise ValueError se `data.message` faltar (Task #1099 invariant) — garante que toda copy contextual existe.
+- **Consumer-side**: idle state pula badge + loading timer — recrutador ve copy direta do agente, nao mensagem ambigua "demorando".
+- **CI**: sensor estatico bloqueia regressao se backend adicionar novo `awaiting_*_input` sem mapping no script + panel handler.

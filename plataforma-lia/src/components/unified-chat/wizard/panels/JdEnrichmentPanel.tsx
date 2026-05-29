@@ -34,6 +34,14 @@ export function JdEnrichmentPanel({ data, requiresApproval, onApprove, onReject 
   const badge = getQualityBadge(score)
   const BadgeIcon = badge.icon
 
+  // Canonical idle state — backend signals "awaiting JD content from recruiter".
+  // Source: lia-agent-system/app/domains/job_creation/nodes/jd_enrichment.py:269
+  // emits {awaiting_jd_input: true, message: ...} when raw_input is too thin.
+  // Without this branch, panel would render misleading "Critico 0/100" + 30s timeout.
+  if (d.awaiting_jd_input) {
+    return <JdAwaitingInputState message={d.message} />
+  }
+
   return (
     <div className="flex flex-col">
       {/* Task #1070 — banner de modo degradado agregado (sessao/tenant). */}
@@ -51,28 +59,30 @@ export function JdEnrichmentPanel({ data, requiresApproval, onApprove, onReject 
           }
         />
       )}
-      {/* Quality score badge */}
-      <div className="px-4 py-3">
-        <div className="flex items-center gap-2">
-          <div className={cn("flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium", badge.color)}>
-            <BadgeIcon className="w-3.5 h-3.5" />
-            <span >{badge.label}</span>
+      {/* Quality score badge — only when enrichment actually completed (score real, not default-0). */}
+      {enriched && (
+        <div className="px-4 py-3">
+          <div className="flex items-center gap-2">
+            <div className={cn("flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium", badge.color)}>
+              <BadgeIcon className="w-3.5 h-3.5" />
+              <span >{badge.label}</span>
+            </div>
+            <span className="text-xs text-lia-text-secondary">
+              Score: {score}/100
+            </span>
           </div>
-          <span className="text-xs text-lia-text-secondary">
-            Score: {score}/100
-          </span>
+          {warnings.length > 0 && (
+            <div className="mt-2 space-y-1">
+              {warnings.map((w, i) => (
+                <p key={i} className="text-xs text-status-warning flex items-start gap-1">
+                  <AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0" />
+                  {w}
+                </p>
+              ))}
+            </div>
+          )}
         </div>
-        {warnings.length > 0 && (
-          <div className="mt-2 space-y-1">
-            {warnings.map((w, i) => (
-              <p key={i} className="text-xs text-status-warning flex items-start gap-1">
-                <AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0" />
-                {w}
-              </p>
-            ))}
-          </div>
-        )}
-      </div>
+      )}
 
       {enriched ? (
         <div className="px-4 py-3 space-y-4">
@@ -191,6 +201,25 @@ export function JdEnrichmentPanel({ data, requiresApproval, onApprove, onReject 
           </button>
         </div>
       )}
+    </div>
+  )
+}
+
+function JdAwaitingInputState({ message }: { message?: string }) {
+  return (
+    <div
+      data-testid="jd-awaiting-input"
+      className="px-4 py-8 text-center space-y-3"
+    >
+      <div className="mx-auto w-10 h-10 rounded-full bg-wedo-cyan/10 flex items-center justify-center">
+        <Brain className="w-5 h-5 text-wedo-cyan" aria-hidden="true" />
+      </div>
+      <p className="text-sm text-lia-text-primary font-medium">
+        Aguardando descricao da vaga
+      </p>
+      <p className="text-xs text-lia-text-secondary leading-relaxed">
+        {message ?? "Cole a descricao da vaga (JD) no chat — texto, PDF, DOCX ou TXT. A LIA enriquece automaticamente assim que receber."}
+      </p>
     </div>
   )
 }

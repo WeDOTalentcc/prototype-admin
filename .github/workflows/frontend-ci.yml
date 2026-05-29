@@ -189,6 +189,18 @@ jobs:
         working-directory: plataforma-lia
         run: npm run sensor:lia-sync:blocking
 
+      - name: Wizard panel idle signals sensor (warn-only desde 2026-05-29)
+        # Sensor harness 2026-05-29 — defeito de canal produtor->consumidor.
+        # Walks lia-agent-system/app/domains/job_creation/nodes/ extraindo
+        # todos awaiting_*_input: True emit sites; cruza com SIGNAL_TO_PANEL
+        # map e verifica que o panel correspondente le e usa o sinal em
+        # conditional. Baseline 0 violations + 1 OK (awaiting_jd_input ->
+        # JdEnrichmentPanel.tsx). Promover a --blocking quando estavel.
+        # Ver plataforma-lia/CLAUDE.md secao Wizard panels canonical pattern.
+        continue-on-error: true
+        working-directory: plataforma-lia
+        run: python3 scripts/check_wizard_panel_idle_signals.py
+
       - name: Unit & Component tests
         run: npx vitest run --reporter=verbose
 

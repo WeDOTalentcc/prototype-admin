@@ -103,6 +103,18 @@ export interface JdEnrichmentData {
   jd_enrichment_fallback_reason?: string | null
   /** Task #1070 — modo degradado agregado (sessao/tenant). */
   ai_degraded_mode?: AiDegradedMode | null
+  /**
+   * Canonical idle signal — backend emits this when raw_input is too thin
+   * to enrich (e.g., recruiter said only "vamos abrir uma vaga" without JD).
+   * Source: lia-agent-system/app/domains/job_creation/nodes/jd_enrichment.py:269.
+   * Panel MUST render idle state (no badge, no loading timer) when true.
+   */
+  awaiting_jd_input?: boolean
+  /**
+   * Canonical message field — Task #1099 invariant of build_ws_stage_payload.
+   * Carries the agent text for this stage (used by idle/loading copy fallback).
+   */
+  message?: string
 }
 
 export interface EnrichedJobDescription {
