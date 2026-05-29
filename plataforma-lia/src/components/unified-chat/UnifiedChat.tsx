@@ -632,7 +632,7 @@ export function UnifiedChat({
     if (!proceed) return;
     const ok = await resetCurrentWizardSession();
     if (!ok) return;
-    switchChatContext("general", { conversationId: null });
+    switchChatContext("general", { conversationId: null, resetConversation: true });
     setChatMessages([]);
     setInputText("");
     setAttachedFile(null);

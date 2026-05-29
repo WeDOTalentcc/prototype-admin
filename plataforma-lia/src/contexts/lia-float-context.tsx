@@ -152,7 +152,11 @@ interface LiaFloatContextType extends LiaFloatState {
   setChatContextType: (type: ChatContextType) => void;
   switchChatContext: (
     newType: ChatContextType,
-    options?: { conversationId?: string | null; continuePrevious?: boolean },
+    options?: {
+      conversationId?: string | null;
+      continuePrevious?: boolean;
+      resetConversation?: boolean;
+    },
   ) => string | null;
   previousConversationId: string | null;
 
@@ -538,12 +542,31 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
   const switchChatContext = useCallback(
     (
       newType: ChatContextType,
-      options?: { conversationId?: string | null; continuePrevious?: boolean },
+      options?: {
+        conversationId?: string | null;
+        continuePrevious?: boolean;
+        resetConversation?: boolean;
+      },
     ): string | null => {
+      // Opção A (Paulo 2026-05-29) — conversa GLOBAL contínua. A LIA flutuante
+      // é UMA conversa que segue o recrutador por todas as páginas; navegar /
+      // trocar de contexto NUNCA descarta a conversa. O contexto é metadado
+      // (domain hint por mensagem), não um thread separado por tela. Reverte o
+      // modelo thread-por-contexto da Task #1103 (causa raiz do "chat reset" /
+      // Bug 4 + perda de histórico no reload / Bug 1). Só dois caminhos mexem
+      // na conversa: (1) carregar conversa específica (conversationId string —
+      // URL/sidebar); (2) reset explícito (resetConversation:true — "Nova
+      // conversa", único reset autorizado).
+      const loadConvId =
+        typeof options?.conversationId === "string" &&
+        options.conversationId.length > 0
+          ? options.conversationId
+          : null;
+      const wantsReset = options?.resetConversation === true;
+
       const prevType = chatContextTypeRef.current;
       const isActualSwitch =
-        prevType !== newType || options?.conversationId !== undefined;
-
+        prevType !== newType || loadConvId !== null || wantsReset;
       if (!isActualSwitch) {
         return chatConversationIdRef.current;
       }
@@ -554,29 +577,29 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
       }
       setPreviousConversationId(currentConvId);
 
-      let nextId: string | null = null;
-      if (options?.conversationId !== undefined) {
-        nextId = options.conversationId;
-      } else if (options?.continuePrevious) {
-        nextId = contextConversationMapRef.current.get(newType) ?? null;
-      }
-
-      // Task #1103 — keep sessionStorage in sync when the chat context
-      // switches. Otherwise the persisted `lia.chat.conversation_id` would
-      // still point at the previous context's conversation and a reload
-      // would hydrate the wrong history.
-      persistConversationId(nextId);
-      connection.setConversationId(nextId);
-      chatConversationIdRef.current = nextId;
+      // Tipo de contexto sempre atualiza (drive do domain hint / metadado).
       chatContextTypeRef.current = newType;
       setChatContextType(newType);
 
-      const isLoadingExistingConversation = options?.conversationId != null;
-      if (!options?.continuePrevious && !isLoadingExistingConversation) {
-        setChatMessages([]);
+      if (loadConvId !== null) {
+        // (1) Carregar uma conversa específica.
+        persistConversationId(loadConvId);
+        connection.setConversationId(loadConvId);
+        chatConversationIdRef.current = loadConvId;
+        return loadConvId;
       }
 
-      return nextId;
+      if (wantsReset) {
+        // (2) Reset explícito — única forma de zerar a conversa.
+        persistConversationId(null);
+        connection.setConversationId(null);
+        chatConversationIdRef.current = null;
+        setChatMessages([]);
+        return null;
+      }
+
+      // Troca de contexto pura: preserva a conversa ativa intacta.
+      return currentConvId;
     },
     [connection],
   );

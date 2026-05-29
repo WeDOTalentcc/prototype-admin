@@ -237,7 +237,7 @@ export function useChatSession({
       setIsPanelOpen(false)
       setChatTitle('Nova Conversa')
       closeDynamicPanel()
-      switchChatContext("general", { conversationId: null })
+      switchChatContext("general", { conversationId: null, resetConversation: true })
     }
     window.addEventListener('lia:new-chat', handleNewChat)
     return () => window.removeEventListener('lia:new-chat', handleNewChat)
