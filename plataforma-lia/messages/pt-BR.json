@@ -2770,7 +2770,8 @@
         "analytics": "Análise",
         "job_management": "Vagas",
         "automation": "Automação",
-        "jobManagement": "Vagas"
+        "jobManagement": "Vagas",
+        "general": "Geral"
       },
       "triggers": {
         "manual": "Manual",
@@ -2905,6 +2906,11 @@
       "defaultAgentName": "Novo agente",
       "template": {
         "rich": {
+          "contextValue": {
+            "minimal": "Mínimo",
+            "standard": "Padrão",
+            "full": "Completo"
+          },
           "metricsLabel": {
             "tools": "ferramentas",
             "maxSteps": "passos máx.",
@@ -2921,10 +2927,24 @@
         }
       },
       "templateCategories": {
-        "all": "Todas"
+        "all": "Todas",
+        "screening": "Triagem",
+        "sourcing": "Captação",
+        "communication": "Comunicação",
+        "analytics": "Análise",
+        "job_management": "Vagas",
+        "automation": "Automação",
+        "general": "Geral",
+        "jobManagement": "Vagas"
       },
       "searchPlaceholder": "Buscar templates...",
       "verticalFilterAriaLabel": "Filtrar por vertical",
+      "verticalAll": "Todas",
+      "verticalTech": "Tecnologia",
+      "verticalHealth": "Saúde",
+      "verticalEducation": "Educação",
+      "verticalRetail": "Varejo",
+      "verticalGeneric": "Genérico",
       "templateLoadError": "Não foi possível carregar os templates.",
       "templateLoading": "Carregando templates...",
       "toolsLabel": "Ferramentas",
