@@ -45,7 +45,25 @@ const CandidateScoreBadge = memo(function CandidateScoreBadge({
   className,
 }: CandidateScoreBadgeProps) {
   const t = useTranslations('candidates.profile')
-  if (score == null) return null
+  // F1 canonical: null/undefined score renders em-dash with gray class
+  if (score == null) {
+    return (
+      <span
+        aria-label={t("scoreUnavailable")}
+        className={cn(
+          "inline-flex items-center gap-1 font-medium",
+          size === "sm" ? "text-xs" : "text-sm",
+          "text-lia-text-secondary",
+          className
+        )}
+      >
+        {label && (
+          <span className="text-lia-text-secondary font-normal">{label}</span>
+        )}
+        {"—"}
+      </span>
+    )
+  }
 
   const colorClass = getScoreColor(score, format)
   const formattedScore = formatScore(score, format)

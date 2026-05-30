@@ -51,3 +51,11 @@ describe("getInitials helper", () => {
     expect(getInitials("")).toBe("")
   })
 })
+
+describe("CandidateAvatar -- F1 mandatory: empty name fallback", () => {
+  it("empty name string renders fallback ? or empty (not crash)", () => {
+    // getInitials("") returns "" -- component should render without crash
+    const { container } = render(<CandidateAvatar name="" />)
+    expect(container.firstChild).toBeTruthy()
+  })
+})

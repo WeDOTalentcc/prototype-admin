@@ -25,16 +25,18 @@ describe("CandidateContactActions", () => {
   })
 
   it("renders email button enabled when email exists", () => {
+    // F1: only email provided -> only email button visible (phone hidden)
     renderWithProvider(<CandidateContactActions email="foo@bar.com" />)
     const buttons = screen.getAllByRole("button")
-    expect(buttons.length).toBeGreaterThanOrEqual(2)
+    expect(buttons.length).toBe(1)
     expect(buttons[0]).not.toBeDisabled()
   })
 
-  it("disables email button when no email and no callback", () => {
-    renderWithProvider(<CandidateContactActions />)
-    const buttons = screen.getAllByRole("button")
-    expect(buttons[0]).toBeDisabled()
+  it("hides email button when no email and no callback (F1: no placeholder)", () => {
+    // F1: absent field -> button hidden, not disabled
+    const { container } = renderWithProvider(<CandidateContactActions />)
+    const buttons = container.querySelectorAll("button")
+    expect(buttons.length).toBe(0)
   })
 
   it("calls onSendEmail callback when provided", () => {
@@ -53,25 +55,55 @@ describe("CandidateContactActions", () => {
   })
 
   it("hides LinkedIn button when no linkedinUrl and no callback", () => {
+    // email present, no linkedin -> only 1 button (email)
     renderWithProvider(<CandidateContactActions email="x@y.com" />)
     const buttons = screen.getAllByRole("button")
-    expect(buttons.length).toBe(2)
+    expect(buttons.length).toBe(1)
   })
 
   it("renders LinkedIn button when linkedinUrl provided", () => {
     const onOpenLinkedIn = vi.fn()
+    // linkedinUrl only (no email, no phone) -> 1 button
     renderWithProvider(<CandidateContactActions linkedinUrl="https://linkedin.com/in/x" onOpenLinkedIn={onOpenLinkedIn} />)
     const buttons = screen.getAllByRole("button")
-    expect(buttons.length).toBe(3)
-    fireEvent.click(buttons[2])
+    expect(buttons.length).toBe(1)
+    fireEvent.click(buttons[0])
     expect(onOpenLinkedIn).toHaveBeenCalled()
   })
 
   it("calls onSendWhatsApp callback when provided", () => {
     const onSendWhatsApp = vi.fn()
+    // phone only -> 1 button at index 0
     renderWithProvider(<CandidateContactActions phone="+55 11 99999-9999" onSendWhatsApp={onSendWhatsApp} />)
     const buttons = screen.getAllByRole("button")
-    fireEvent.click(buttons[1])
+    expect(buttons.length).toBe(1)
+    fireEvent.click(buttons[0])
     expect(onSendWhatsApp).toHaveBeenCalled()
+  })
+})
+
+describe("CandidateContactActions -- F1 mandatory: absent fields hidden (no placeholder)", () => {
+  it("no email and no callback → email button NOT rendered", () => {
+    renderWithProvider(<CandidateContactActions phone="+55 11 99999-9999" />)
+    // only phone button should be present; email button hidden when absent
+    const buttons = screen.getAllByRole("button")
+    expect(buttons.length).toBe(1)
+  })
+
+  it("no phone and no callback → phone button NOT rendered", () => {
+    renderWithProvider(<CandidateContactActions email="x@y.com" />)
+    const buttons = screen.getAllByRole("button")
+    expect(buttons.length).toBe(1)
+  })
+
+  it("all absent → no buttons rendered", () => {
+    const { container } = renderWithProvider(<CandidateContactActions />)
+    const buttons = container.querySelectorAll("button")
+    expect(buttons.length).toBe(0)
+  })
+
+  it("email only → exactly 1 button", () => {
+    renderWithProvider(<CandidateContactActions email="foo@bar.com" />)
+    expect(screen.getAllByRole("button").length).toBe(1)
   })
 })

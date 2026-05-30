@@ -65,6 +65,7 @@ const CandidateContactActions = memo(function CandidateContactActions({
 
   return (
     <div className={cn("flex items-center gap-1.5", className)}>
+      {(email || onSendEmail) && (
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
@@ -75,7 +76,6 @@ const CandidateContactActions = memo(function CandidateContactActions({
               "hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-secondary"
             )}
             onClick={handleEmail}
-            disabled={!email && !onSendEmail}
             aria-label={t("contactEmail")}
           >
             <Mail
@@ -90,7 +90,9 @@ const CandidateContactActions = memo(function CandidateContactActions({
           {t('contactEmail')}
         </TooltipContent>
       </Tooltip>
+      )}
 
+      {(phone || onSendWhatsApp) && (
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
@@ -101,7 +103,6 @@ const CandidateContactActions = memo(function CandidateContactActions({
               "hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-secondary"
             )}
             onClick={handleWhatsApp}
-            disabled={!phone && !onSendWhatsApp}
             aria-label={t("contactWhatsApp")}
           >
             <Phone
@@ -116,6 +117,7 @@ const CandidateContactActions = memo(function CandidateContactActions({
           {t('contactWhatsApp')}
         </TooltipContent>
       </Tooltip>
+      )}
 
       {(linkedinUrl || onOpenLinkedIn) && (
         <Tooltip>

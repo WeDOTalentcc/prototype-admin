@@ -3474,7 +3474,8 @@
       "positionNotProvided": "Cargo não informado",
       "companyNotProvided": "Empresa não informada",
       "durationYears": "{years} anos",
-      "techStack": "Stack"
+      "techStack": "Stack",
+      "scoreUnavailable": "Score não disponível"
     },
     "scoreModal": {
       "title": "Nota Geral IA",
