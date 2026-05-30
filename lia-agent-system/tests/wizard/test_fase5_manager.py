@@ -106,3 +106,24 @@ def test_publish_job_data_includes_manager():
     assert '"manager_email": state.get("parsed_manager_email")' in src, (
         "publish.job_data nao inclui manager_email."
     )
+
+
+def test_devlocal_insert_includes_manager_and_p0_fields():
+    """Sensor estrutural: o INSERT dev-local (api_client._create_job_local) inclui
+    manager/manager_email/employment_type/salary_range.
+
+    Gap descoberto 2026-05-30: o path dev-local (ativo no Replit quando Rails
+    base_url vazio) so inseria 15 colunas e descartava silenciosamente os campos
+    que o publish_node monta. Sem isto, gestor/email (FASE 5), contrato (P0-A) e
+    salario (P0-B) nao persistiam no path dev-local.
+    """
+    import inspect
+    from app.domains.job_creation import api_client as ac_mod
+
+    src = inspect.getsource(ac_mod.JobCreationAPIClient._create_job_local)
+    for col in ("employment_type", "manager", "manager_email", "salary_range"):
+        assert col in src, f"dev-local INSERT nao inclui coluna {col!r}"
+    # As colunas precisam estar na lista canonica _columns E no SQL INSERT.
+    assert '"manager", "manager_email"' in src or "'manager', 'manager_email'" in src, (
+        "manager/manager_email ausentes da lista _columns do INSERT dev-local"
+    )

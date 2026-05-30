@@ -344,6 +344,17 @@ class JobCreationAPIClient:
         work_model = _bp_str(job_data.get("work_model"))
         seniority = _bp_str(job_data.get("seniority"))
 
+        # FASE 5 / P0-A / P0-B: campos que o publish_node monta mas que o
+        # INSERT dev-local antes descartava silenciosamente (gap half-shipped).
+        employment_type = _bp_str(job_data.get("employment_type"))
+        manager = _bp_str(job_data.get("manager"), max_chars=255)
+        manager_email = _bp_str(job_data.get("manager_email"), max_chars=255)
+        salary_range_jsonb = (
+            _json.dumps(_bp_jsonable(job_data.get("salary_range")),
+                        default=str, ensure_ascii=False)
+            if job_data.get("salary_range") else None
+        )
+
         # Skills list extraction (text[] column "requirements")
         tech_reqs_raw = job_data.get("technical_requirements") or []
         skills_list = []
@@ -372,6 +383,7 @@ class JobCreationAPIClient:
             "location", "work_model", "seniority_level", "requirements",
             "responsibilities", "technical_requirements",
             "behavioral_competencies", "status",
+            "employment_type", "manager", "manager_email", "salary_range",
             "created_at", "updated_at",
         ]
         # Sprint O.2: explicit timestamps (belt-and-suspenders with DB server_default)
@@ -380,6 +392,7 @@ class JobCreationAPIClient:
             str(new_id), str(company_id), title, description, department,
             location, work_model, seniority, skills_list, resp_list,
             tech_reqs_jsonb, beh_comp_jsonb, "Rascunho",
+            employment_type, manager, manager_email, salary_range_jsonb,
             _now_utc, _now_utc,
         ]
 
@@ -406,9 +419,9 @@ class JobCreationAPIClient:
                         )
                         _safe.append(_bp_str(_x) or "")
                 _params.append(_safe)
-            elif _col in ("technical_requirements", "behavioral_competencies"):
-                # JSONB columns - must be str (json-encoded)
-                if not isinstance(_val, str):
+            elif _col in ("technical_requirements", "behavioral_competencies", "salary_range"):
+                # JSONB columns - must be str (json-encoded) ou None (SQL NULL p/ salary_range)
+                if _val is not None and not isinstance(_val, str):
                     logger.warning(
                         "[JobCreationAPI dev-local INSERT] col=%s JSONB NOT str (type=%s) - re-encoding",
                         _col, type(_val).__name__,
@@ -452,9 +465,11 @@ class JobCreationAPIClient:
                     (id, company_id, title, description, department, location,
                      work_model, seniority_level, requirements, responsibilities,
                      technical_requirements, behavioral_competencies, status,
+                     employment_type, manager, manager_email, salary_range,
                      created_at, updated_at)
                     VALUES
                     (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s::jsonb, %s::jsonb, %s,
+                     %s, %s, %s, %s::jsonb,
                      %s, %s)
                     RETURNING id
                     """,
