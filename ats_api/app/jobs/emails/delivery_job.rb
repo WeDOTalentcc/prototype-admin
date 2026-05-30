@@ -30,12 +30,11 @@ module Emails
 
         message.update!(status: :processing)
 
-        strategy = Emails::Delivery::StrategyResolver.for(dispatch)
-        result = strategy.deliver(
+        result = Emails::Delivery::StrategyResolver.deliver_with_fallback(
+          dispatch: dispatch,
           to: message.recipient_address,
           subject: rendered_subject,
           body: rendered_body,
-          dispatch: dispatch,
           message: message
         )
 
