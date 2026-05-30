@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react"
 import Link from "next/link"
 import { TwinsList, CreateDigitalTwinModal } from "@/components/pages-agent-studio/DigitalTwinComponents"
-import { TemplateGallery, AgentCard as CustomAgentCard, AgentCardSkeleton, AgentDetailsPanel, DeployDialog, AIAgentBuilder, TestDebugPanel, AgentSandboxPanel, ApprovalsList } from "@/components/pages-agent-studio/custom-agents"
+import { TemplateGallery, AgentCard as CustomAgentCard, AgentCardSkeleton, AgentDetailsPanel, DeployDialog, AIAgentBuilder, TestDebugPanel, ApprovalsList } from "@/components/pages-agent-studio/custom-agents"
 // UX_AUDIT T4 (2026-05-21): TemplateClonePanel substitui TemplatePreviewModal como
 // entry-point primário do TemplateGallery (clone-first / HubSpot Breeze).
 // TemplatePreviewModal (Sprint B QW#5) preservado como export de custom-agents/
@@ -147,7 +147,6 @@ export default function AgentStudioPage({
   const [twinsRefreshKey, setTwinsRefreshKey] = useState(0)
   const [deployAgent, setDeployAgent] = useState<CustomAgent | null>(null)
   const [testAgent, setTestAgent] = useState<CustomAgent | null>(null)
-  const [sandboxAgent, setSandboxAgent] = useState<CustomAgent | null>(null)
   const [detailsAgent, setDetailsAgent] = useState<CustomAgent | null>(null)
   const { agents: customAgents, mutate: mutateCustomAgents } = useCustomAgents()
   const { selectTemplate } = useAgentStudioStore()
@@ -475,15 +474,15 @@ export default function AgentStudioPage({
               <section className="relative overflow-hidden rounded-xl border border-lia-border-subtle bg-lia-bg-secondary p-6">
                 <div className="relative">
                   <div className="flex items-center gap-2 mb-1">
-                    <Brain className="w-4 h-4 text-lia-text-primary" />
-                    <span className="text-xs font-semibold uppercase tracking-wider text-lia-text-primary">
+                    <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
+                    <span className="text-micro font-semibold uppercase tracking-wider text-wedo-cyan">
                       {t("studio.whatIsAgent")}
                     </span>
                   </div>
-                  <p className="text-base font-semibold text-lia-text-primary mb-2" role="heading" aria-level={2}>
+                  <p className="text-sm font-semibold text-lia-text-primary mb-1" role="heading" aria-level={2}>
                     {t("studio.virtualRecruiter")}
                   </p>
-                  <p className="text-sm text-lia-text-secondary mb-6 max-w-2xl">
+                  <p className="text-xs text-lia-text-secondary mb-4 max-w-2xl">
                     {t("studio.virtualRecruiterDesc")}
                   </p>
 
@@ -494,16 +493,16 @@ export default function AgentStudioPage({
                   <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
                     {FLOW_STEPS_CONFIG.map((step, i) => (
                       <div key={i} className="flex items-start gap-3 min-w-0">
-                        <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0", FLOW_STEP_ICON_STYLE.bg)}>
-                          <step.icon className={cn("w-5 h-5", FLOW_STEP_ICON_STYLE.color)} />
+                        <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0", FLOW_STEP_ICON_STYLE.bg)}>
+                          <step.icon className={cn("w-4 h-4", FLOW_STEP_ICON_STYLE.color)} />
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-1.5 mb-0.5">
-                            <span className="text-[10px] font-bold text-lia-text-disabled uppercase whitespace-nowrap">{t("studio.flowSteps.step")} {i + 1}</span>
+                            <span className="text-micro font-medium text-lia-text-disabled uppercase tracking-wide whitespace-nowrap">{t("studio.flowSteps.step")} {i + 1}</span>
                             {i < 3 && <ArrowRight className="w-3 h-3 text-lia-text-disabled hidden xl:block" />}
                           </div>
                           <p className="text-xs font-semibold text-lia-text-primary break-words">{t(step.titleKey)}</p>
-                          <p className="text-[11px] text-lia-text-secondary leading-relaxed break-words">{t(step.descKey)}</p>
+                          <p className="text-micro text-lia-text-secondary leading-relaxed break-words">{t(step.descKey)}</p>
                         </div>
                       </div>
                     ))}
@@ -721,14 +720,6 @@ export default function AgentStudioPage({
               onClose={() => setTestAgent(null)}
             />
 
-            {/* Q4.2 Sandbox — "Testar antes de ativar" (dry-run simulation) */}
-            <AgentSandboxPanel
-              agent={sandboxAgent}
-              open={!!sandboxAgent}
-              onClose={() => setSandboxAgent(null)}
-              onActivate={(a) => { setSandboxAgent(null); setDeployAgent(a) }}
-            />
-
             {/* Agent Details Panel */}
             <AgentDetailsPanel
               agent={detailsAgent}
@@ -736,7 +727,7 @@ export default function AgentStudioPage({
               onClose={() => setDetailsAgent(null)}
               onDeploy={(a) => { setDetailsAgent(null); setDeployAgent(a) }}
               onTest={(a) => { setDetailsAgent(null); setTestAgent(a) }}
-              onSandbox={(a) => { setDetailsAgent(null); setSandboxAgent(a) }}
+              onActivate={(a) => { setDetailsAgent(null); setDeployAgent(a) }}
             />
 
           </div>

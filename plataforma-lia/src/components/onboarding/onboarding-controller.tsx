@@ -264,7 +264,7 @@ function SetupIntroModal({ onStartSetup, onSkip }: { onStartSetup: () => void, o
             </div>
             
             <h1
-              className="lia-title-medium text-lia-text-primary mb-3 animate-in fade-in slide-in-from-bottom-3 duration-300"
+              className="text-xl font-semibold text-lia-text-primary mb-3 animate-in fade-in slide-in-from-bottom-3 duration-300"
             >
               Vamos Configurar sua Plataforma
             </h1>
@@ -394,7 +394,7 @@ function ThankYouScreen({ onClose }: { onClose: () => void }) {
           </div>
           
           <h1
-            className="lia-title-large text-lia-text-primary mb-6 animate-in fade-in slide-in-from-bottom-4 duration-500"
+            className="text-xl font-semibold text-lia-text-primary mb-6 animate-in fade-in slide-in-from-bottom-4 duration-500"
           >
             Parabéns! Configuração Concluída
           </h1>
