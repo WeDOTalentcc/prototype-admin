@@ -2,7 +2,7 @@
 
 import React from "react"
 import { useTranslations } from "next-intl"
-import { X } from "lucide-react"
+import { X, Search } from "lucide-react"
 import { FilterSectionsBasic } from "./FilterSectionsBasic"
 import { FilterSectionsProfile } from "./FilterSectionsProfile"
 import { FilterSectionsAdvanced } from "./FilterSectionsAdvanced"
@@ -21,6 +21,7 @@ export function CandidatesFilterPanel({
   onToggleFilter,
   onClearAll,
   onClose,
+  onReSearchWithFilters,
 }: CandidatesFilterPanelProps) {
   const t = useTranslations('candidates.filters')
 
@@ -75,6 +76,19 @@ export function CandidatesFilterPanel({
             onClearAll={onClearAll}
           />
         </div>
+        {onReSearchWithFilters && activeFiltersCount > 0 && (
+          <div className="p-4 border-t border-lia-border-subtle">
+            <button
+              type="button"
+              data-testid="re-search-with-filters-btn"
+              onClick={onReSearchWithFilters}
+              className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 text-xs font-medium rounded-full transition-colors motion-reduce:transition-none bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover"
+            >
+              <Search className="w-4 h-4" aria-hidden="true" />
+              {t('reSearchWithFilters')}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   )

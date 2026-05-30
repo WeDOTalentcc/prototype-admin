@@ -77,6 +77,7 @@ export interface CandidateSearchResultsViewProps {
   setNewCertificationFilter: (value: string) => void
   toggleTableFilter: (category: keyof TableFilters, value: string) => void
   clearAllTableFilters: () => void
+  onReSearchWithFilters?: () => void
   // Table
   isLoading: boolean
   visibleCandidates: Candidate[]
@@ -204,6 +205,7 @@ export function CandidateSearchResultsView({
   setNewCertificationFilter,
   toggleTableFilter,
   clearAllTableFilters,
+  onReSearchWithFilters,
   isLoading,
   visibleCandidates,
   visibleTableColumns,
@@ -423,6 +425,7 @@ export function CandidateSearchResultsView({
             activeFiltersCount={getActiveTableFiltersCount()}
             onToggleFilter={toggleTableFilter}
             onClearAll={clearAllTableFilters}
+            onReSearchWithFilters={onReSearchWithFilters}
             onClose={() => setShowTableFiltersPanel(false)}
           />
         )}

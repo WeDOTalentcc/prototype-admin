@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useEffect, useRef, useCallback } from "react"
+import { tableFiltersToSearchSpec } from "../filters/tableFiltersToSearchSpec"
 import { useRouter } from "next/navigation"
 import dynamic from "next/dynamic"
 import { type ParsedEntities, type SmartSearchInputProps } from "@/components/search/smart-search-input"
@@ -318,6 +319,21 @@ export function useCandidatesPageCore({
     setTableFilters(getDefaultTableFilters())
     return _rawExecuteSearch(...args)
   }, [_rawExecuteSearch, setTableFilters])
+
+  // Fase 3b: refazer a busca empurrando os filtros pro search_spec (Pearch re-consulta
+  // na fonte). Constroi o spec ANTES de executeSearch (que reseta os tableFilters).
+  const handleReSearchWithFilters = useCallback(() => {
+    if (!lastSearchQuery) return
+    const spec = tableFiltersToSearchSpec(tableFilters, advancedFilters as unknown as Record<string, string[]>)
+    void executeSearch(
+      lastSearchQuery,
+      (lastSearchEntities as ParsedEntities | null) ?? undefined,
+      lastSearchMode as Parameters<typeof executeSearch>[2],
+      lastSearchMetadata as Parameters<typeof executeSearch>[3],
+      true,
+      spec,
+    )
+  }, [executeSearch, lastSearchQuery, lastSearchEntities, lastSearchMode, lastSearchMetadata, tableFilters, advancedFilters])
   const {
     state: {
       backendArchetypes, isLoadingArchetypes, archetypesLoadError,
@@ -470,6 +486,7 @@ export function useCandidatesPageCore({
 
   return {
     searchFingerprint,
+    handleReSearchWithFilters,
     activeSearchFilters, activeSearchTab, activeTab, addToListCandidateIds, addToListCandidateNames, bulkJobVacancies,
     candidateListsForModal, candidates, chatMessages, clearAllFilters, clearAllTableFilters, clearCrossTabFilter,
     columnSearchTerm, columnWidths, confirmContactFilterChange, confirmSourceChange, contactModalAction, contactModalCandidate,

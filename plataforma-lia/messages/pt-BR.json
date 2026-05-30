@@ -3448,6 +3448,7 @@
     },
     "filters": {
       "refineResults": "Refinar Resultados",
+      "reSearchWithFilters": "Refazer busca com estes filtros",
       "filterHint": "Filtre os resultados exibidos",
       "activeFiltersSingular": "{count} filtro ativo",
       "activeFiltersPlural": "{count} filtros ativos",

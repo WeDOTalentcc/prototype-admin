@@ -56,6 +56,7 @@ const CandidatePreview = dynamic(() => import("@/components/candidate-preview").
 export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandidateOpened }: { onAddRecentItem?: (item: { id: string; type: 'vaga' | 'chat' | 'candidato'; title: string; subtitle?: string; meta?: Record<string, string | undefined> }) => void; pendingCandidateOpen?: { candidateId: string; candidateName: string } | null; onCandidateOpened?: () => void } = {}) {
   const {
     searchFingerprint,
+    handleReSearchWithFilters,
     activeSearchFilters, activeSearchTab, activeTab, addToListCandidateIds, addToListCandidateNames, bulkJobVacancies,
     candidateListsForModal, candidates, chatMessages, clearAllFilters, clearAllTableFilters, clearCrossTabFilter,
     columnSearchTerm, columnWidths, confirmContactFilterChange, confirmSourceChange, contactModalAction, contactModalCandidate,
@@ -169,6 +170,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
           <CandidateSearchResultsView
             lastSearchQuery={lastSearchQuery}
             lastSearchEntities={lastSearchEntities}
+            onReSearchWithFilters={handleReSearchWithFilters}
             onBack={() => setShowSearchResults(false)}
             onOpenEditQueryModal={(value) => {
               setEditQueryValue(value)

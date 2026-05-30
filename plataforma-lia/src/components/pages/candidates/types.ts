@@ -324,6 +324,7 @@ export interface FilterSectionAdvancedProps extends FilterSectionBaseProps {
 }
 
 export interface CandidatesFilterPanelProps {
+  onReSearchWithFilters?: () => void
   tableFilters: TableFilters
   setTableFilters: React.Dispatch<React.SetStateAction<TableFilters>>
   searchSortBy: string

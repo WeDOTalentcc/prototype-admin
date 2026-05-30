@@ -291,3 +291,10 @@ Cada item: canonical-fix → feature-impact → lia-testing (Red→Green) → fe
   - PageCore: handleReSearchWithFilters = executeSearch(lastSearchQuery, lastSearchEntities, lastSearchMode, metadata, true, tableFiltersToSearchSpec(tableFilters, advancedFilters)). Expor.
   - threading onReSearch: PageCore -> candidates-page -> CandidateSearchResultsView -> CandidatesFilterPanel.
   - CandidatesFilterPanel: botao pill no rodape (ao lado de onClearAll) chamando onReSearch. i18n controls.reSearchWithFilters (pt-BR+en).
+
+### Fase 3b — COMPLETA (code-complete, tsc + i18n limpos)
+- executeSearch ganhou param opcional searchSpecOverride (merge sobre o spec das entities).
+- PageCore: handleReSearchWithFilters (constroi tableFiltersToSearchSpec ANTES do executeSearch que reseta filtros) -> executeSearch(query, entities, mode, metadata, true, spec).
+- Threading: PageCore -> candidates-page:169 -> CandidateSearchResultsView -> CandidatesFilterPanel (curto, 2 hops).
+- Botao pill no rodape do painel (reusa tokens lia-btn-primary), so quando ha filtros ativos. i18n candidates.filters.reSearchWithFilters (pt-BR + en).
+- FASE 3 COMPLETA. Falta so Fase 4 (viajar com lista/pool).

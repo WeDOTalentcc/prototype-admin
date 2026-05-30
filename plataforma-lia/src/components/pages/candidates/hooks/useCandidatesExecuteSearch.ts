@@ -178,7 +178,8 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
     entities?: ParsedEntities,
     mode?: SearchMode,
     metadata?: SearchMetadata,
-    usePearch: boolean = false
+    usePearch: boolean = false,
+    searchSpecOverride?: Record<string, unknown>
   ) => {
     setIsLoading(true)
     setIsSearchActive(true)
@@ -263,11 +264,14 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
           if (data.candidates?.length > 0) mappedCandidates = data.candidates.map((c: Record<string, unknown>) => mapCandidateToInternal(c))
         }
       } else {
-        const searchSpec = entities ? {
+        // Fase 3b: merge filtros (searchSpecOverride) sobre o spec das entities da query.
+        const _entitySpec = entities ? {
           location: entities.location, job_title: entities.job_title, seniority: entities.seniority,
           years_experience: entities.years_experience, skills: entities.skills || [],
           industry: entities.industry, company: entities.company
-        } : undefined
+        } : {}
+        const _mergedSpec = { ..._entitySpec, ...(searchSpecOverride || {}) }
+        const searchSpec = Object.keys(_mergedSpec).length > 0 ? _mergedSpec : undefined
         const searchResponse = await searchCandidatesHybrid({
           query, thread_id: searchThreadId, search_spec: searchSpec,
           search_local: true, search_pearch: shouldUsePearch || shouldUseHybrid,
