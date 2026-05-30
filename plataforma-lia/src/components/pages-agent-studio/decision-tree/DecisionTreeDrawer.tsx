@@ -14,7 +14,7 @@
 
 import * as React from "react"
 import { useTranslations } from "next-intl"
-import { Brain, Check, ChevronDown, Database, FileLock2, Loader2, Sparkles, X } from "lucide-react"
+import { Brain, Check, ChevronDown, Database, FileLock2, Loader2, X } from "lucide-react"
 import {
   Sheet,
   SheetContent,
@@ -161,7 +161,7 @@ export function DecisionTreeBody({ reasoning, agentDisplayName }: DecisionTreeBo
           id="dt-criteria-heading"
           className="mb-2 flex items-center gap-2 text-sm font-semibold text-lia-text-primary"
         >
-          <Sparkles className="h-4 w-4 text-wedo-cyan" aria-hidden="true" />
+          <Brain className="h-4 w-4 text-wedo-cyan" aria-hidden="true" />
           {t("criteriaTitle")}
         </h3>
         {criteria.length === 0 ? (

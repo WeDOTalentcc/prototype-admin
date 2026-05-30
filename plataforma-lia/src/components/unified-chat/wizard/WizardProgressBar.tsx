@@ -2,7 +2,7 @@
 
 import React from "react"
 import { cn } from "@/lib/utils"
-import { Check, ShieldAlert, X } from "lucide-react"
+import { ShieldAlert, X } from "lucide-react"
 import { STAGE_LABELS, STAGE_ORDER, type WizardStage } from "./wizard-types"
 import { PLAN_VISIBLE_STAGES } from "./wizard-plan-card"
 import type { DegradedStageEntry } from "./useWizardFlow"
@@ -184,59 +184,6 @@ export function WizardProgressBar({ currentStage, completeness, stageHistory, de
           className="h-full rounded-full bg-wedo-cyan transition-all duration-500 ease-out motion-reduce:transition-none"
           style={{ width: `${Math.round(completeness * 100)}%` }}
         />
-      </div>
-
-      {/* Stage dots */}
-      <div className="flex items-center justify-between">
-        {PLAN_VISIBLE_STAGES.map((stage) => {
-          const stageIdx = STAGE_ORDER.indexOf(stage)
-          const isCompleted = stageIdx < currentIdx
-          const isCurrent = stage === currentStage
-          const isPending = stageIdx > currentIdx
-          const degradedMarker = degraded[stage]
-          const isDegraded = Boolean(degradedMarker)
-          const degradedTooltip = isDegraded
-            ? buildDegradedTooltip(stage, degradedMarker as DegradedStageEntry)
-            : undefined
-
-          return (
-            <div key={stage} className="flex flex-col items-center gap-1">
-              <div className="relative">
-                <div
-                  className={cn(
-                    "w-5 h-5 rounded-full flex items-center justify-center text-[10px] transition-colors",
-                    isCompleted && "bg-wedo-cyan text-white",
-                    isCurrent && "bg-wedo-cyan/20 border-2 border-wedo-cyan text-wedo-cyan",
-                    isPending && "bg-lia-bg-secondary text-lia-text-disabled border border-lia-border-subtle",
-                  )}
-                >
-                  {isCompleted ? <Check className="w-3 h-3" /> : null}
-                </div>
-                {isDegraded && (
-                  <span
-                    role="status"
-                    data-testid={`wizard-progress-degraded-${stage}`}
-                    data-stage={stage}
-                    title={degradedTooltip}
-                    aria-label={degradedTooltip}
-                    className="absolute -top-1.5 -right-1.5 inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-status-error text-white border border-lia-bg-primary shadow-sm"
-                  >
-                    <ShieldAlert className="w-2.5 h-2.5" aria-hidden="true" />
-                  </span>
-                )}
-              </div>
-              <span
-                className={cn(
-                  "text-[10px] leading-tight text-center max-w-[60px]",
-                  isCurrent ? "text-wedo-cyan font-medium" : "text-lia-text-tertiary",
-                  isDegraded && "text-status-error",
-                )}
-              >
-                {STAGE_LABELS[stage]}
-              </span>
-            </div>
-          )
-        })}
       </div>
 
       {totalDegradedCount > 0 && (

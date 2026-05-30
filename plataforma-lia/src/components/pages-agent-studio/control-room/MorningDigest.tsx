@@ -16,7 +16,7 @@ import {
   Bell,
   CheckCircle2,
   CircleDollarSign,
-  Sparkles,
+  Brain,
   Sun,
 } from "lucide-react"
 
@@ -44,7 +44,7 @@ const KIND_ICON: Record<DigestKind, React.ComponentType<{ className?: string }>>
   agent_error: AlertTriangle,
   pending_approval: Bell,
   decision_approved: CheckCircle2,
-  candidates_surfaced: Sparkles,
+  candidates_surfaced: Brain,
   high_cost: CircleDollarSign,
 }
 

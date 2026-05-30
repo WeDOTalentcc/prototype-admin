@@ -1,6 +1,6 @@
 "use client"
 
-import { Sparkles, Search, Heart, Phone, Settings2 } from "lucide-react"
+import { Brain, Search, Heart, Phone, Settings2 } from "lucide-react"
 import { useTranslations } from "next-intl"
 
 import { Card, CardContent } from "@/components/ui/card"
@@ -10,13 +10,13 @@ import type { AgentGoal } from "../types"
 
 const GOALS: Array<{
   id: AgentGoal
-  icon: typeof Sparkles
+  icon: typeof Brain
   label: string
   desc: string
 }> = [
   {
     id: "triagem_inicial",
-    icon: Sparkles,
+    icon: Brain,
     label: "Triagem inicial automatizada",
     desc: "Analisar CV, ranquear candidatos e gerar Big Five/WSI scores",
   },

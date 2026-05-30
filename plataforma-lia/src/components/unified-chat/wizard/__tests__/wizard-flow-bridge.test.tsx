@@ -59,19 +59,19 @@ describe("Wizard flow bridge — useWizardFlow + WizardProgressBar", () => {
     expect(screen.getByTestId("bar-absent")).toBeTruthy()
   })
 
-  it("mounts the bar after intake and shows the current stage label", () => {
+  it("mounts the bar after intake (etapas vivem no plan card do chat, não na barra)", () => {
     render(<Harness />)
     act(() => {
       dispatchStage("intake", 0.05)
     })
     expect(screen.getByTestId("bar-present")).toBeTruthy()
-    // The bar surfaces 6 visible stages even when the wizard is on intake;
-    // the active one is highlighted by reused `STAGE_LABELS`.
-    expect(screen.getByText(STAGE_LABELS.jd_enrichment)).toBeTruthy()
-    expect(screen.getByText(STAGE_LABELS.calibration)).toBeTruthy()
+    // Stepper redundante removido (2026-05-30): os labels das 6 etapas saíram
+    // da barra e agora vivem no plan card do chat (synthetic message via
+    // useWizardChatCards). A barra mantém só progresso% + cancelar + degradado.
+    expect(screen.queryByText(STAGE_LABELS.calibration)).toBeNull()
   })
 
-  it("advances visually as new stage events arrive", () => {
+  it("mantém a barra montada conforme novos stages chegam (avanço por etapa vive no plan card)", () => {
     render(<Harness />)
     act(() => {
       dispatchStage("intake", 0.05)
@@ -79,9 +79,10 @@ describe("Wizard flow bridge — useWizardFlow + WizardProgressBar", () => {
     act(() => {
       dispatchStage("jd_enrichment", 0.2)
     })
-    // Bar is still mounted on jd_enrichment.
+    // Barra continua montada entre stages; o avanço visual por etapa (labels)
+    // agora é responsabilidade do plan card do chat, não da barra.
     expect(screen.getByTestId("bar-present")).toBeTruthy()
-    expect(screen.getByText(STAGE_LABELS.jd_enrichment)).toBeTruthy()
+    expect(screen.queryByText(STAGE_LABELS.jd_enrichment)).toBeNull()
   })
 
   it("unmounts the bar when the wizard reaches handoff", () => {

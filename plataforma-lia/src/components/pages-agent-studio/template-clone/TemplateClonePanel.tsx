@@ -24,7 +24,7 @@
  */
 
 import * as Icons from "lucide-react"
-import { Copy, Layers, ListChecks, Sparkles } from "lucide-react"
+import { Copy, Layers, ListChecks, MessagesSquare, Brain } from "lucide-react"
 import { useTranslations } from "next-intl"
 
 import { Button } from "@/components/ui/button"
@@ -41,6 +41,7 @@ import { Separator } from "@/components/ui/separator"
 import { textStyles } from "@/lib/design-tokens"
 import { cn } from "@/lib/utils"
 import { summarizeCapabilities } from "@/lib/agents/tool-capabilities"
+import { AgentConversationPreview } from "../AgentConversationPreview"
 
 import type { AgentTemplate, ContextLevel } from "../custom-agents/types"
 
@@ -112,6 +113,24 @@ export function TemplateClonePanel({
         {/* Body — seções didáticas */}
         <ScrollArea className="flex-1 min-h-0">
           <div className="px-6 py-5 space-y-5">
+            {/* Veja em ação — conversa-exemplo (Fase 3 Sprint 2). Primeira seção:
+                comprehension by demonstration > descrição. */}
+            <section data-testid="template-clone-section-conversation">
+              <h3 className="flex items-center gap-2 text-sm font-semibold text-lia-text-primary mb-1">
+                <MessagesSquare className="h-4 w-4 text-lia-text-secondary" aria-hidden="true" />
+                {t("seeInActionLabel")}
+              </h3>
+              <p className="mb-3 text-xs text-lia-text-secondary">
+                {t("seeInActionHint")}
+              </p>
+              <AgentConversationPreview
+                slug={template.slug}
+                category={template.category}
+              />
+            </section>
+
+            <Separator />
+
             {/* O que este agente faz — capacidades de alto nível */}
             <section data-testid="template-clone-section-tools">
               <h3 className="flex items-center gap-2 text-sm font-semibold text-lia-text-primary mb-2">
@@ -145,7 +164,7 @@ export function TemplateClonePanel({
             {/* Especialidade + área */}
             <section data-testid="template-clone-section-persona">
               <h3 className="flex items-center gap-2 text-sm font-semibold text-lia-text-primary mb-2">
-                <Sparkles className="h-4 w-4 text-lia-text-secondary" aria-hidden="true" />
+                <Brain className="h-4 w-4 text-lia-text-secondary" aria-hidden="true" />
                 {t("specialtyLabel")}
               </h3>
               <p className="text-sm text-lia-text-secondary">

@@ -11,7 +11,7 @@
 
 import { useRouter, usePathname } from "next/navigation"
 import { useTranslations } from "next-intl"
-import { MessageCircle, Sparkles } from "lucide-react"
+import { MessageCircle, Brain } from "lucide-react"
 
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -75,7 +75,7 @@ export function StudioEmptyState({
             onClick={handleMarketplace}
             className="gap-1.5"
           >
-            <Sparkles className="h-3.5 w-3.5" />
+            <Brain className="h-3.5 w-3.5" />
             {t("cta.marketplace")}
           </Button>
           <Button

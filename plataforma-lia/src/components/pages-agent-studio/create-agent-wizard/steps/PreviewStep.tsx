@@ -1,14 +1,14 @@
 "use client"
 
-import { Bot, CheckCircle2, Heart, Phone, Search, Settings2, Sparkles } from "lucide-react"
+import { Bot, CheckCircle2, Heart, Phone, Search, Settings2, Brain } from "lucide-react"
 import * as Icons from "lucide-react"
 
 import { useLegacyAgentTemplates } from "@/hooks/agents/use-legacy-agent-templates"
 
 import type { AgentApproach, AgentGoal, GeneratedConfigPreview, WizardConfig } from "../types"
 
-const GOAL_LABELS: Record<AgentGoal, { icon: typeof Sparkles; label: string }> = {
-  triagem_inicial: { icon: Sparkles, label: "Triagem inicial automatizada" },
+const GOAL_LABELS: Record<AgentGoal, { icon: typeof Brain; label: string }> = {
+  triagem_inicial: { icon: Brain, label: "Triagem inicial automatizada" },
   sourcing_ativo: { icon: Search, label: "Sourcing ativo" },
   screening_cultural: { icon: Heart, label: "Screening cultural / fit" },
   voz_whatsapp: { icon: Phone, label: "Triagem por voz ou WhatsApp" },

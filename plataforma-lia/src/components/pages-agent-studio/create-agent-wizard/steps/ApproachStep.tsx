@@ -1,6 +1,6 @@
 "use client"
 
-import { FileText, Lightbulb, Settings2, Sparkles } from "lucide-react"
+import { FileText, Lightbulb, MessagesSquare, Settings2, Brain } from "lucide-react"
 import * as Icons from "lucide-react"
 import { useTranslations } from "next-intl"
 
@@ -11,6 +11,7 @@ import { Chip } from "@/components/ui/chip"
 import { Textarea } from "@/components/ui/textarea"
 import { useLegacyAgentTemplates } from "@/hooks/agents/use-legacy-agent-templates"
 import { cn } from "@/lib/utils"
+import { AgentConversationPreview } from "../../AgentConversationPreview"
 
 import { filterTemplatesByGoal, type AgentApproach, type AgentGoal, type WizardConfig } from "../types"
 
@@ -24,10 +25,15 @@ interface ApproachStepProps {
 
 export function ApproachStep({ goal, approach, config, onSelect, setConfig }: ApproachStepProps) {
   const t = useTranslations("agents.studio.wizard")
+  const tStudio = useTranslations("agents.studio")
   const { persona: aiPersona } = useAiPersona()
   const aiAssistantName = aiPersona?.name ?? "assistente"
   const { templates: AGENT_TEMPLATES } = useLegacyAgentTemplates()
   const relevantTemplates = filterTemplatesByGoal(AGENT_TEMPLATES, goal).slice(0, 4)
+  const selectedTemplate =
+    approach === "template"
+      ? relevantTemplates.find((tmpl) => tmpl.id === config.templateId) ?? null
+      : null
 
   return (
     <div className="space-y-5" role="radiogroup" aria-label={t("approachGroupAriaLabel")}>
@@ -61,7 +67,7 @@ export function ApproachStep({ goal, approach, config, onSelect, setConfig }: Ap
       >
         <CardContent className="space-y-3 p-5">
           <div className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-wedo-cyan" aria-hidden="true" />
+            <Brain className="h-5 w-5 text-wedo-cyan" aria-hidden="true" />
             {/* Nao usamos <TabSectionHeader> aqui (sentinela Task #1050) porque o
                 titulo eh interno a um card de option do wizard, nao header de tab.
                 Usamos <p> com role="heading" + aria-level pra manter semantica. */}
@@ -176,6 +182,33 @@ export function ApproachStep({ goal, approach, config, onSelect, setConfig }: Ap
               )
             })}
           </div>
+
+          {/* Veja em ação — conversa-exemplo do template selecionado
+              (Fase 3 Sprint 2). "Veja como ela trabalha": só aparece quando há
+              template escolhido, full-width abaixo do grid. */}
+          {selectedTemplate && (
+            <div
+              className="rounded-lg border border-lia-border-subtle bg-lia-bg-secondary p-4"
+              data-testid="approach-template-conversation"
+            >
+              <div className="mb-2 flex items-center gap-2">
+                <MessagesSquare
+                  className="h-4 w-4 text-lia-text-secondary"
+                  aria-hidden="true"
+                />
+                <p className="text-sm font-semibold text-lia-text-primary">
+                  {tStudio("seeInActionLabel")}
+                </p>
+              </div>
+              <p className="mb-3 text-xs text-lia-text-secondary">
+                {tStudio("seeInActionHint")}
+              </p>
+              <AgentConversationPreview
+                slug={selectedTemplate.slug}
+                category={selectedTemplate.category}
+              />
+            </div>
+          )}
         </>
       )}
 

@@ -20,7 +20,7 @@
  * Audit ref: ~/Documents/wedotalent_audit_2026-05-26/P2-2_ONBOARDING_CONVERSACIONAL_ADR.md Sprint B.1
  */
 
-import { Sparkles, MessageCircle, Settings, X } from "lucide-react"
+import { Brain, MessageCircle, Settings, X } from "lucide-react"
 import { useEffect, useState, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { useOnboardingFlow } from "@/components/onboarding/useOnboardingFlow"
@@ -78,7 +78,7 @@ export function OnboardingChatBanner({ onOpenChat, className = "" }: Props) {
       aria-label="Banner de onboarding conversacional"
     >
       <div className="flex items-start gap-3">
-        <Sparkles className="w-5 h-5 text-wedo-cyan shrink-0 mt-0.5" aria-hidden="true" />
+        <Brain className="w-5 h-5 text-wedo-cyan shrink-0 mt-0.5" aria-hidden="true" />
         <div className="flex-1 space-y-2">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-semibold text-lia-text-primary">

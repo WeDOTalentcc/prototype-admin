@@ -104,7 +104,7 @@ describe("WizardProgressBar — degraded stage badge", () => {
         jd_enrichment_fallback_reason: "timeout",
       })
     })
-    const badge = screen.getByTestId("wizard-progress-degraded-jd_enrichment")
+    const badge = screen.getByTestId("wizard-progress-degraded-list-jd_enrichment")
     expect(badge).toBeTruthy()
     expect(badge.getAttribute("aria-label")).toMatch(/IA degradada/i)
     expect(badge.getAttribute("aria-label")).toMatch(/tempo esgotado/i)
@@ -119,7 +119,7 @@ describe("WizardProgressBar — degraded stage badge", () => {
       })
     })
     expect(
-      screen.getByTestId("wizard-progress-degraded-jd_enrichment"),
+      screen.getByTestId("wizard-progress-degraded-list-jd_enrichment"),
     ).toBeTruthy()
 
     act(() => {
@@ -129,7 +129,7 @@ describe("WizardProgressBar — degraded stage badge", () => {
     // jd_enrichment badge must remain — the recruiter still needs to know
     // that the JD they already approved was generated in degraded mode.
     expect(
-      screen.getByTestId("wizard-progress-degraded-jd_enrichment"),
+      screen.getByTestId("wizard-progress-degraded-list-jd_enrichment"),
     ).toBeTruthy()
     expect(screen.queryByTestId("wizard-progress-degraded-salary")).toBeNull()
   })
