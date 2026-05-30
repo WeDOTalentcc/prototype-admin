@@ -153,13 +153,19 @@ describe("useWizardChatCards — published card", () => {
   })
 })
 
+
 /**
- * Hotfix tests for the LGPD cross-tenant bleed regression flagged in the
- * post-merge architect review of Task A4. The contract is: when `userId`
- * changes mid-session (logout → login, identity hydration finally
- * resolves, recruiter swap on a shared browser, etc.), the previous
- * user's wizard state must NOT be observable through the new identity
- * AND must NOT leak into the new identity's localStorage namespace.
+ * Task #1128 — localStorage persistence was REMOVED from useWizardFlow.
+ * The LangGraph checkpointer (server-side, keyed by company_id + session_id)
+ * is now the only source of truth. LGPD isolation is enforced server-side.
+ *
+ * These tests pin down the NEW contract:
+ *  - hook always starts in initialState regardless of localStorage content
+ *  - userId changes have NO effect on hook state (it is a legacy no-op prop)
+ *  - no localStorage writes happen from the hook
+ *
+ * getWizardStorageKey is still exported (used by the one-shot legacy
+ * purger in useWizardSessionApi.ts) so the import is valid.
  */
 describe("useWizardFlow — identity transitions (LGPD)", () => {
   beforeEach(() => {
@@ -169,44 +175,34 @@ describe("useWizardFlow — identity transitions (LGPD)", () => {
     localStorage.clear()
   })
 
-  function seedPersistedStage(userId: string, stage: WizardStage) {
-    const key = getWizardStorageKey(userId)
-    if (!key) throw new Error("test setup: invalid userId")
-    localStorage.setItem(
-      key,
-      JSON.stringify({
-        active: true,
-        currentStage: stage,
-        stageData: { marker: userId },
-        completeness: 1,
-        requiresApproval: false,
-        stageHistory: [stage],
-        threadId: null,
-        error: null,
-      }),
-    )
-  }
-
-  it("rehydrates from the new namespace when userId switches recruiter A → B", () => {
-    seedPersistedStage("user-A", "intake")
-    seedPersistedStage("user-B", "calibration")
+  it("rehydrates from the new namespace when userId switches recruiter A to B", () => {
+    // Task #1128: hook no longer reads localStorage — both users start in
+    // initialState regardless of any localStorage content. LGPD isolation
+    // is enforced server-side via (company_id, session_id) checkpointer.
+    const keyA = getWizardStorageKey("user-A")!
+    const keyB = getWizardStorageKey("user-B")!
+    localStorage.setItem(keyA, JSON.stringify({ active: true, currentStage: "intake" }))
+    localStorage.setItem(keyB, JSON.stringify({ active: true, currentStage: "calibration" }))
 
     const { result, rerender } = renderHook(
       ({ userId }: { userId: string | null }) => useWizardFlow({ userId }),
       { initialProps: { userId: "user-A" } },
     )
-    expect(result.current.currentStage).toBe("intake")
-    expect(result.current.stageData?.marker).toBe("user-A")
+    // Hook MUST NOT rehydrate from localStorage — starts fresh.
+    expect(result.current.currentStage).toBeNull()
+    expect(result.current.active).toBe(false)
 
     rerender({ userId: "user-B" })
-    expect(result.current.currentStage).toBe("calibration")
-    expect(result.current.stageData?.marker).toBe("user-B")
+    // userId change does NOT mutate state — server-driven, not client-driven.
+    expect(result.current.currentStage).toBeNull()
+    expect(result.current.active).toBe(false)
   })
 
-  it("does not write recruiter A's stale state into recruiter B's namespace", () => {
-    seedPersistedStage("user-A", "intake")
-    // user-B has nothing persisted — must stay empty after the swap.
+  it("does not write recruiter A stale state into recruiter B namespace", () => {
+    // Task #1128: hook never writes to localStorage, so no bleed is possible.
+    const keyA = getWizardStorageKey("user-A")!
     const keyB = getWizardStorageKey("user-B")!
+    localStorage.setItem(keyA, JSON.stringify({ active: true, stageData: { marker: "user-A" } }))
 
     const { rerender } = renderHook(
       ({ userId }: { userId: string | null }) => useWizardFlow({ userId }),
@@ -214,25 +210,25 @@ describe("useWizardFlow — identity transitions (LGPD)", () => {
     )
     rerender({ userId: "user-B" })
 
+    // Hook must not have written A payload into B key.
     const persistedB = localStorage.getItem(keyB)
     if (persistedB) {
       const parsed = JSON.parse(persistedB) as { stageData?: { marker?: string } }
       expect(parsed.stageData?.marker).not.toBe("user-A")
     }
-    // The dispatched REHYDRATE on key-change must have wiped in-memory
-    // state down to `initialState` for B (no persisted snapshot exists).
-    // i.e. the persist effect either writes nothing (state.active=false →
-    // removeItem) or writes B's own state — never A's payload.
+    // If persistedB is null (nothing written) the assertion above is vacuously satisfied.
   })
 
-  it("resets to initial state on logout (userId → null) so nothing renders downstream", () => {
-    seedPersistedStage("user-A", "intake")
-
+  it("resets to initial state on logout (userId to null) so nothing renders downstream", () => {
+    // Task #1128: hook starts in initialState regardless of userId — no rehydration.
+    // Logout (userId->null) also has no effect: state was never read from localStorage
+    // so there is nothing to clear. Both before and after logout: null/inactive.
     const { result, rerender } = renderHook(
       ({ userId }: { userId: string | null }) => useWizardFlow({ userId }),
       { initialProps: { userId: "user-A" } as { userId: string | null } },
     )
-    expect(result.current.currentStage).toBe("intake")
+    expect(result.current.currentStage).toBeNull()
+    expect(result.current.active).toBe(false)
 
     rerender({ userId: null })
     expect(result.current.currentStage).toBeNull()
