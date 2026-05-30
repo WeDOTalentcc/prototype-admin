@@ -20,6 +20,9 @@ from app.domains.cv_screening.repositories.suggestion_feedback_repository import
 from app.domains.analytics.services.feedback_learning_service import feedback_learning_service as _feedback_service
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 from app.shared.types import WeDoBaseModel
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 router = APIRouter(prefix="/suggestion-feedback", tags=["Suggestion Feedback"])
 logger = logging.getLogger(__name__)
@@ -107,7 +110,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/{company_id}/stats", response_model=SuggestionStatsResponse)
 async def get_suggestion_stats(
-    company_id: str,
+    company_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     db: AsyncSession = Depends(get_db),
 _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
@@ -144,7 +147,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
 
 @router.get("/{company_id}/adjustments", response_model=list[AdjustmentResponse])
 async def get_learned_adjustments(
-    company_id: str,
+    company_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     role: str | None = Query(default=None),
     seniority: str | None = Query(default=None),
     db: AsyncSession = Depends(get_db),
@@ -177,3 +180,5 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
     except Exception as e:
         logger.error(f"Failed to get learned adjustments: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
+
+reorder_collection_before_item(router)

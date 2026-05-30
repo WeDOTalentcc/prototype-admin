@@ -18,6 +18,9 @@ from app.schemas.webhook import (
 )
 from app.services.webhook_dispatcher import webhook_service
 from app.shared.security.require_company_id import require_company_id
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -76,7 +79,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.patch("/{webhook_id}", response_model=WebhookResponse)
 async def update_webhook(
-    webhook_id: str,
+    webhook_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     body: UpdateWebhookRequest,
     current_user=Depends(require_role([UserRole.admin])),
     db: AsyncSession = Depends(get_tenant_db),
@@ -97,7 +100,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.delete("/{webhook_id}", status_code=204)
 async def delete_webhook(
-    webhook_id: str,
+    webhook_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     current_user=Depends(require_role([UserRole.admin])),
     db: AsyncSession = Depends(get_tenant_db),
 company_id: str = Depends(require_company_id)):
@@ -113,7 +116,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.post("/{webhook_id}/test", summary="Send test event to webhook")
 async def test_webhook(
-    webhook_id: str,
+    webhook_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     current_user=Depends(require_role([UserRole.admin])),
     db: AsyncSession = Depends(get_db),
 company_id: str = Depends(require_company_id)):
@@ -145,3 +148,5 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         logger.error("Error queueing test webhook: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail="Failed to queue test event")
+
+reorder_collection_before_item(router)

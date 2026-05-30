@@ -37,6 +37,9 @@ from app.schemas.global_policies import (
     SeedPoliciesResponse,
 )
 from app.shared.security.require_company_id import require_company_id
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -128,7 +131,7 @@ async def list_categories(db: AsyncSession = Depends(get_db), company_id: str = 
 
 @router.get("/{policy_id}", response_model=PolicyWithHistoryResponse)
 async def get_policy(
-    policy_id: str,
+    policy_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     include_history: bool = Query(True),
     history_limit: int = Query(10, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
@@ -159,7 +162,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.put("/{policy_id}", response_model=PolicyResponse)
 async def update_policy(
-    policy_id: str,
+    policy_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     data: PolicyUpdate,
     user_id: str = Depends(get_user_id_from_header),
     db: AsyncSession = Depends(get_tenant_db),
@@ -208,7 +211,7 @@ async def update_policy(
 
 @router.get("/{policy_id}/history", response_model=PolicyAuditLogListResponse)
 async def get_policy_history(
-    policy_id: str,
+    policy_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
     db: AsyncSession = Depends(get_db),
@@ -257,3 +260,5 @@ async def seed_default_policies(
         await db.rollback()
         logger.error(f"Error seeding policies: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
+
+reorder_collection_before_item(router)

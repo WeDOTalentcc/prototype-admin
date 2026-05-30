@@ -19,6 +19,9 @@ from app.auth.dependencies import get_current_user
 from app.core.database import get_db
 from lia_models.audit_log import AuditLog
 from app.shared.security.require_company_id import require_company_id
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -133,7 +136,7 @@ PROTECTED_CRITERIA_LABELS = {
     response_model=DecisionExplanationResponse,
 )
 async def explain_candidate_decisions(
-    candidate_id: str,
+    candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     job_id: str = Query(..., description="Job vacancy ID"),
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user),
@@ -218,3 +221,5 @@ company_id: str = Depends(require_company_id)):
         decisions=decisions,
         total_decisions=len(decisions),
     )
+
+reorder_collection_before_item(router)

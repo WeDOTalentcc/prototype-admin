@@ -13,6 +13,9 @@ from app.models.company import CompanyProfile
 from app.models.job_vacancy import JobVacancy
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
 
 
 # RAILS-DEPRECATED: This endpoint manages Rails-owned entities (candidates/jobs/applies).
@@ -200,7 +203,7 @@ async def update_saturation_settings(
 
 
 @router.get("/job-vacancies/{job_id}/saturation-status", response_model=SaturationStatusResponse, tags=["saturation"])
-async def get_saturation_status(job_id: UUID, db: AsyncSession = Depends(get_db), company_id: str = Depends(require_company_id)):
+async def get_saturation_status(job_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)], db: AsyncSession = Depends(get_db), company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     result = await db.execute(select(JobVacancy).where(JobVacancy.id == job_id))  # ADR-001-EXEMPT: router-level query (canonical applies to services only — see CLAUDE.md)
     vacancy = result.scalar_one_or_none()
@@ -363,7 +366,7 @@ class ProcessQueueResponse(BaseModel):
 
 
 @router.get("/job-vacancies/{job_id}/screening-queue", response_model=QueueStatusResponse, tags=["saturation"])
-async def get_screening_queue(job_id: UUID, db: AsyncSession = Depends(get_db), company_id: str = Depends(require_company_id)):
+async def get_screening_queue(job_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)], db: AsyncSession = Depends(get_db), company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     result = await db.execute(select(JobVacancy).where(JobVacancy.id == job_id))  # ADR-001-EXEMPT: router-level query (canonical applies to services only — see CLAUDE.md)
     vacancy = result.scalar_one_or_none()
@@ -400,7 +403,7 @@ async def get_screening_queue(job_id: UUID, db: AsyncSession = Depends(get_db), 
 
 
 @router.post("/job-vacancies/{job_id}/process-queue", response_model=ProcessQueueResponse, tags=["saturation"])
-async def process_queue(job_id: UUID, request: ProcessQueueRequest, db: AsyncSession = Depends(get_db), company_id: str = Depends(require_company_id)):
+async def process_queue(job_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)], request: ProcessQueueRequest, db: AsyncSession = Depends(get_db), company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     result = await db.execute(select(JobVacancy).where(JobVacancy.id == job_id))  # ADR-001-EXEMPT: router-level query (canonical applies to services only — see CLAUDE.md)
     vacancy = result.scalar_one_or_none()
@@ -430,7 +433,7 @@ async def process_queue(job_id: UUID, request: ProcessQueueRequest, db: AsyncSes
 
 @router.post("/job-vacancies/{job_id}/unlock-pipeline", response_model=UnlockPipelineResponse, tags=["saturation"])
 async def unlock_pipeline(
-    job_id: UUID,
+    job_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     request: UnlockPipelineRequest,
     db: AsyncSession = Depends(get_db),
     company_id: str = Depends(require_company_id),

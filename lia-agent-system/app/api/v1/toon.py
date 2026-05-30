@@ -21,6 +21,9 @@ from app.core.database import get_db
 from app.services.toon_service import TOONCard, toon_service
 from app.shared.security.require_company_id import require_company_id
 from app.shared.tenant_guard import get_verified_company_id
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -107,7 +110,7 @@ def _get_company_id(
     ),
 )
 async def get_toon_card(
-    candidate_id: str,
+    candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     job_id: str | None = Query(None, description="Job opening UUID for match scoring"),
     anonymize: bool = Query(False, description="When true, masks all PII (LGPD-safe)"),
     company_id: str = Depends(_get_company_id),
@@ -156,3 +159,5 @@ _company_gate: str = Depends(require_company_id)) -> TOONCardResponse:
         )
 
     return TOONCardResponse.from_card(card)
+
+reorder_collection_before_item(router)

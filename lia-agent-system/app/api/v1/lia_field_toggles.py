@@ -18,6 +18,9 @@ from app.core.database import get_db, get_tenant_db
 from app.models.lia_field_toggles import DEFAULT_FIELD_TOGGLES, FIELD_FALLBACK_CONFIG, LiaFieldToggle
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 from app.shared.types import WeDoBaseModel
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -82,7 +85,7 @@ class CompletenessCheckResponse(BaseModel):
 
 @router.get("/{company_id}/field-toggles", response_model=FieldTogglesResponse)
 async def get_field_toggles(
-    company_id: str,
+    company_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     db: AsyncSession = Depends(get_db),
     current_user: dict = Depends(get_current_user_or_demo), 
 _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
@@ -146,7 +149,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
 
 @router.put("/{company_id}/field-toggles", response_model=FieldTogglesResponse)
 async def update_field_toggles(
-    company_id: str,
+    company_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     update_data: FieldTogglesUpdate,
     db: AsyncSession = Depends(get_tenant_db),
     current_user: dict = Depends(get_current_user_or_demo), 
@@ -226,7 +229,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
 
 @router.post("/{company_id}/check-completeness", response_model=CompletenessCheckResponse)
 async def check_job_completeness(
-    company_id: str,
+    company_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     request: CompletenessCheckRequest,
     db: AsyncSession = Depends(get_db),
     current_user: dict = Depends(get_current_user_or_demo), 
@@ -326,7 +329,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
 
 @router.post("/{company_id}/field-toggles/seed", response_model=None)
 async def seed_default_toggles(
-    company_id: str,
+    company_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     db: AsyncSession = Depends(get_tenant_db),
     current_user: dict = Depends(get_current_user_or_demo), 
 _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
@@ -394,7 +397,7 @@ class AgentContextResponse(BaseModel):
 
 @router.post("/{company_id}/agent-context", response_model=AgentContextResponse)
 async def get_agent_context(
-    company_id: str,
+    company_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     job_context: JobContextRequest | None = None,
     db: AsyncSession = Depends(get_db),
     current_user: dict = Depends(get_current_user_or_demo), 
@@ -512,7 +515,7 @@ class FieldValueSuggestion(BaseModel):
 
 @router.get("/{company_id}/empty-fields", response_model=EmptyFieldsResponse)
 async def get_empty_field_notifications(
-    company_id: str,
+    company_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     db: AsyncSession = Depends(get_db),
     current_user = Depends(get_current_user_or_demo), 
 _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
@@ -566,7 +569,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
 
 @router.post("/{company_id}/empty-fields/{field_key}/action", response_model=ReminderPreferenceResponse)
 async def update_empty_field_preference(
-    company_id: str,
+    company_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     field_key: str,
     update: ReminderPreferenceUpdate,
     db: AsyncSession = Depends(get_tenant_db),
@@ -613,7 +616,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
 
 @router.post("/{company_id}/empty-fields/{field_key}/suggest", response_model=FieldValueSuggestion)
 async def suggest_field_value(
-    company_id: str,
+    company_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     field_key: str,
     request: FieldSuggestionRequest | None = None,
     db: AsyncSession = Depends(get_db),
@@ -662,3 +665,5 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
         confidence=result["confidence"],
         formatted_value=result["formatted_value"]
     )
+
+reorder_collection_before_item(router)

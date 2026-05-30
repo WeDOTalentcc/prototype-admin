@@ -5,12 +5,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.shared.security.require_company_id import require_company_id
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 router = APIRouter(tags=["audit"])
 
 @router.get("/candidates/{candidate_id}/event-history", response_model=None)
 async def get_candidate_event_history(
-    candidate_id: str,
+    candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     from_sequence: int = 0,
     limit: int = 100,
     db: AsyncSession = Depends(get_db),
@@ -26,3 +29,5 @@ async def get_candidate_event_history(
         limit=min(limit, 500),
     )
     return {"candidate_id": candidate_id, "events": events, "total": len(events)}
+
+reorder_collection_before_item(router)

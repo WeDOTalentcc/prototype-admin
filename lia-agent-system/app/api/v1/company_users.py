@@ -36,6 +36,9 @@ from app.schemas.company import (
 from app.domains.company.services.company_configuration_service import company_config_service
 from app.shared.security.require_company_id import require_company_id
 from app.shared.compliance.audit_service import AuditService  # P1-W2-06
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 FRONTEND_URL = os.getenv("FRONTEND_URL", "https://plataforma-lia.replit.app")
 
@@ -185,7 +188,7 @@ async def create_user(
 
 @router.put("/users/{user_id}", response_model=UserManagementResponse)
 async def update_user(
-    user_id: str,
+    user_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     data: UserManagementUpdate,
     user_repo: UserRepository = Depends(get_user_repo),
     current_user=Depends(get_current_user_or_demo),
@@ -260,7 +263,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.delete("/users/{user_id}", status_code=204, response_model=None)
 async def delete_user(
-    user_id: str,
+    user_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     user_repo: UserRepository = Depends(get_user_repo),
     current_user: User = Depends(get_current_user_or_demo),
 company_id: str = Depends(require_company_id)):
@@ -295,7 +298,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.post("/users/{user_id}/resend-invitation", response_model=None)
 async def resend_invitation(
-    user_id: str,
+    user_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     user_repo: UserRepository = Depends(get_user_repo),
     email_svc: EmailService = Depends(get_email_service),
     current_user=Depends(get_current_user_or_demo),
@@ -530,3 +533,5 @@ Qual opção você prefere?"""
     except Exception as e:
         logger.error(f"Error getting smart wizard greeting: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+reorder_collection_before_item(router)

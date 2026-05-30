@@ -11,6 +11,9 @@ from app.core.database import get_db
 from app.domains.recruitment.repositories.learning_patterns_repository import LearningPatternsRepository
 from app.domains.automation.services.learning_automation import LearningAutomationService, get_learning_automation_service
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 
 logger = logging.getLogger(__name__)
@@ -23,7 +26,7 @@ SKILL_PROMOTION_THRESHOLD = 5
 @router.get("/{company_id}/detected", response_model=None)
 # TODO(phase2): extract to repository — learning pattern storage
 async def get_detected_patterns(
-    company_id: str,
+    company_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     field: str | None = None,
     seniority: str | None = None,
     db: AsyncSession = Depends(get_db),
@@ -68,7 +71,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
 
 @router.get("/{company_id}/skills", response_model=None)
 async def get_promoted_skills(
-    company_id: str,
+    company_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     job_title: str | None = None,
     db: AsyncSession = Depends(get_db),
 _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
@@ -116,7 +119,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
 
 @router.get("/{company_id}/success-profiles", response_model=None)
 async def get_success_profiles(
-    company_id: str,
+    company_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     role: str | None = None,
     seniority: str | None = None,
     db: AsyncSession = Depends(get_db),
@@ -160,7 +163,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
 
 @router.post("/{company_id}/trigger-detection", response_model=None)
 async def trigger_pattern_detection(
-    company_id: str,
+    company_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     service: LearningAutomationService = Depends(get_learning_automation_service),
 _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
@@ -181,3 +184,5 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
     except Exception as e:
         logger.error(f"Error triggering pattern detection: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+reorder_collection_before_item(router)

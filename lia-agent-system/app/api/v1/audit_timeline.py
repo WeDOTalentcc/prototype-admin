@@ -19,6 +19,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.auth import get_current_user
 from app.core.database import get_db
 from app.shared.security.require_company_id import require_company_id
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -77,7 +80,7 @@ class TimelineResponse(BaseModel):
 @router.get("/executions/{execution_id}/timeline", response_model=TimelineResponse)
 # TODO(phase2): extract to repository — audit timeline queries
 async def get_execution_timeline(
-    execution_id: str,
+    execution_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     db: AsyncSession = Depends(get_db),
     current_user: dict = Depends(get_current_user),
 company_id: str = Depends(require_company_id)):
@@ -226,3 +229,5 @@ company_id: str = Depends(require_company_id)):
         )
         for row in rows
     ]
+
+reorder_collection_before_item(router)

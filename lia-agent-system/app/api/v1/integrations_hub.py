@@ -16,6 +16,9 @@ from app.shared.security.require_company_id import require_company_id, require_c
 from app.shared.types import WeDoBaseModel
 import uuid as _uuid_mod
 from app.shared.compliance.audit_service import AuditService  # P1-W3-05
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -262,7 +265,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.put("/connections/{connection_id}", response_model=ConnectionResponse)
 async def update_connection(
-    connection_id: str,
+    connection_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     request: ConnectionUpdate,
     company_id: str = Query(..., description="Company ID"),
     repo: IntegrationsHubRepository = Depends(get_integrations_hub_repo),
@@ -303,7 +306,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 
 @router.delete("/connections/{connection_id}", response_model=None)
 async def delete_connection(
-    connection_id: str,
+    connection_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     company_id: str = Query(..., description="Company ID"),
     repo: IntegrationsHubRepository = Depends(get_integrations_hub_repo),
 _company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
@@ -332,7 +335,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 
 @router.post("/connections/{connection_id}/test", response_model=None)
 async def test_connection(
-    connection_id: str,
+    connection_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     company_id: str = Query(..., description="Company ID"),
     repo: IntegrationsHubRepository = Depends(get_integrations_hub_repo),
 _company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
@@ -366,7 +369,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 
 @router.post("/connections/{connection_id}/sync", response_model=None)
 async def trigger_sync(
-    connection_id: str,
+    connection_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     company_id: str = Query(..., description="Company ID"),
     sync_type: str = Query("full", description="full, incremental, or webhook"),
     repo: IntegrationsHubRepository = Depends(get_integrations_hub_repo),
@@ -400,7 +403,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 
 @router.get("/connections/{connection_id}/logs", response_model=list[SyncLogResponse])
 async def get_sync_logs(
-    connection_id: str,
+    connection_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     company_id: str = Query(..., description="Company ID"),
     limit: int = Query(20, ge=1, le=100),
     repo: IntegrationsHubRepository = Depends(get_integrations_hub_repo),
@@ -615,3 +618,5 @@ async def apify_health_check(company_id: str = Depends(require_company_id)):
         "avg_response_time_ms": None,
         "cost_per_enrichment_usd": 0.01,
     }
+
+reorder_collection_before_item(router)

@@ -30,6 +30,9 @@ from ._shared import (
 )
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
 
 router = APIRouter()
 
@@ -52,7 +55,7 @@ class ViewedCandidateResponse(BaseModel):
 
 @router.post("/{candidate_id}/viewed", response_model=None)
 async def mark_candidate_viewed(
-    candidate_id: str,
+    candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     body: ViewedCandidateCreate = None,
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
 company_id: str = Depends(require_company_id)):
@@ -117,7 +120,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.delete("/{candidate_id}/viewed", response_model=None)
 async def unmark_candidate_viewed(
-    candidate_id: str,
+    candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
@@ -152,7 +155,7 @@ class FavoriteUpdate(WeDoBaseModel):
 
 @router.post("/{candidate_id}/favorite", response_model=None)
 async def toggle_favorite(
-    candidate_id: str,
+    candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     body: FavoriteCreate = None,
     current_user: User = Depends(get_current_user_or_demo),
     favorites_repo: CandidateFavoritesRepository = Depends(get_candidate_favorites_repo),
@@ -200,7 +203,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.put("/{candidate_id}/favorite", response_model=None)
 async def update_favorite(
-    candidate_id: str,
+    candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     body: FavoriteUpdate,
     favorites_repo: CandidateFavoritesRepository = Depends(get_candidate_favorites_repo),
 company_id: str = Depends(require_company_id)):
@@ -264,7 +267,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.delete("/{candidate_id}/favorite", response_model=None)
 async def remove_favorite(
-    candidate_id: str,
+    candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     favorites_repo: CandidateFavoritesRepository = Depends(get_candidate_favorites_repo),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
@@ -294,7 +297,7 @@ class HiddenCreate(WeDoBaseModel):
 
 @router.post("/{candidate_id}/hide", response_model=None)
 async def toggle_hidden(
-    candidate_id: str,
+    candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     body: HiddenCreate = None,
     current_user: User = Depends(get_current_user_or_demo),
     hidden_repo: CandidateHiddenRepository = Depends(get_candidate_hidden_repo),
@@ -370,7 +373,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.delete("/{candidate_id}/hide", response_model=None)
 async def remove_hidden(
-    candidate_id: str,
+    candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     hidden_repo: CandidateHiddenRepository = Depends(get_candidate_hidden_repo),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
@@ -395,7 +398,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.post("/{candidate_id}/screening-decision", response_model=None)
 async def screening_decision(
-    candidate_id: str,
+    candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     request: ScreeningDecisionRequest,
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
     vc_repo: VacancyCandidateRepository = Depends(get_vacancy_candidate_repo),

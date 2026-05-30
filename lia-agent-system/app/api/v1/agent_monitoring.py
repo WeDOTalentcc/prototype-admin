@@ -14,6 +14,9 @@ from app.domains.analytics.services.agent_monitoring_service import AgentMonitor
 from app.shared.observability.tracing import trace_span
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 from app.shared.types import WeDoBaseModel
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 router = APIRouter(prefix="/agent-monitoring", tags=["Agent Monitoring"])
 
@@ -120,7 +123,7 @@ async def get_all_agents_summary(db: AsyncSession = Depends(get_db), company_id:
 
 
 @router.get("/agents/{agent_id}", response_model=AgentSummaryResponse)
-async def get_agent_summary(agent_id: str, db: AsyncSession = Depends(get_db), company_id: str = Depends(require_company_id)):
+async def get_agent_summary(agent_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)], db: AsyncSession = Depends(get_db), company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get summary for a specific agent."""
     service = AgentMonitoringService(db)
@@ -131,7 +134,7 @@ async def get_agent_summary(agent_id: str, db: AsyncSession = Depends(get_db), c
 
 
 @router.get("/agents/{agent_id}/health", response_model=AgentHealthResponse)
-async def get_agent_health(agent_id: str, db: AsyncSession = Depends(get_db), company_id: str = Depends(require_company_id)):
+async def get_agent_health(agent_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)], db: AsyncSession = Depends(get_db), company_id: str = Depends(require_company_id)):
     # multi-tenancy: public endpoint (health) — no tenant data
     """Get health score and details for a specific agent."""
     service = AgentMonitoringService(db)
@@ -143,7 +146,7 @@ async def get_agent_health(agent_id: str, db: AsyncSession = Depends(get_db), co
 
 @router.get("/agents/{agent_id}/activities", response_model=list[ActivityResponse])
 async def get_agent_activities(
-    agent_id: str,
+    agent_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     status: str | None = Query(None, description="Filter by status"),
     limit: int = Query(50, le=100),
     offset: int = Query(0, ge=0),
@@ -560,7 +563,7 @@ async def list_active_executions(
 )
 @trace_span("agent_monitoring.execution_reasoning")
 async def get_execution_reasoning(
-    execution_id: str,
+    execution_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     db: AsyncSession = Depends(get_db),
     company_id: str = Depends(require_company_id),
 ) -> ExecutionReasoningResponse:
@@ -979,7 +982,7 @@ def _extract_candidate_action(results: dict | None) -> tuple[str, str | None]:
 )
 @trace_span("agent_monitoring.candidate_touches")
 async def list_candidate_touches(
-    candidate_id: str,
+    candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     since_hours: int = Query(default=24, ge=1, le=168),
     db: AsyncSession = Depends(get_db),
     company_id: str = Depends(require_company_id),
@@ -1393,3 +1396,5 @@ async def get_daily_digest(
         total_runs=total_runs,
         total_candidates_processed=total_candidates_processed,
     )
+
+reorder_collection_before_item(router)

@@ -21,6 +21,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.dependencies import get_current_user
 from app.core.database import get_db
 from app.shared.security.require_company_id import require_company_id
+from typing import Annotated
+from fastapi import Path as FastAPIPath
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -95,7 +98,7 @@ async def list_templates(company_id: str = Depends(require_company_id)):
 
 @router.get("/{agent_id}/quality-score", response_model=QualityScoreResponse)
 async def get_quality_score(
-    agent_id: str,
+    agent_id: Annotated[str, FastAPIPath(pattern=DUAL_ID_PATH_PATTERN)],
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user),
 company_id: str = Depends(require_company_id)):
@@ -138,3 +141,5 @@ company_id: str = Depends(require_company_id)):
         ],
         suggestions=gate_result.suggestions,
     )
+
+reorder_collection_before_item(router)

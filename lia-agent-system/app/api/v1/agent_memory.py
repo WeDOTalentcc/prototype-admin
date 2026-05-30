@@ -10,6 +10,9 @@ from app.domains.agent_memory.dependencies import get_agent_memory_repo
 from app.domains.agent_memory.repositories.agent_memory_repository import AgentMemoryRepository
 from lia_agents_core.working_memory import AgentWorkingMemory
 from app.shared.security.require_company_id import require_company_id
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger("lia.agent_memory")
 router = APIRouter(prefix="/agent-memory", tags=["Agent Memory"])
@@ -106,7 +109,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/{session_id}/summary", response_model=None)
 async def get_memory_summary(
-    session_id: str,
+    session_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     domain: str = Query("wizard"),
     current_user: User = Depends(get_current_user_or_demo),
     repo: AgentMemoryRepository = Depends(get_agent_memory_repo),
@@ -125,7 +128,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/{session_id}", response_model=None)
 async def get_memory(
-    session_id: str,
+    session_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     domain: str = Query("wizard"),
     current_user: User = Depends(get_current_user_or_demo),
     repo: AgentMemoryRepository = Depends(get_agent_memory_repo),
@@ -144,7 +147,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.delete("/{session_id}", response_model=None)
 async def reset_memory(
-    session_id: str,
+    session_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     domain: str = Query("wizard"),
     current_user: User = Depends(get_current_user_or_demo),
     repo: AgentMemoryRepository = Depends(get_agent_memory_repo),
@@ -166,3 +169,5 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         logger.error(f"Failed to reset memory for session={session_id}: {e}")
         return {"status": "error", "message": "Failed to reset working memory"}
+
+reorder_collection_before_item(router)

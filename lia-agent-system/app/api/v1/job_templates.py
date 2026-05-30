@@ -23,6 +23,9 @@ from app.domains.job_management.services.job_template_service import (
 )
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 from app.shared.types import WeDoBaseModel
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 router = APIRouter(prefix="/job-templates", tags=["Job Templates"])
 
@@ -286,7 +289,7 @@ async def get_brazilian_market_templates(company_id: str = Depends(require_compa
 
 @router.get("/{template_id}", response_model=TemplateResponse)
 async def get_template(
-    template_id: str,
+    template_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     db: AsyncSession = Depends(get_db),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
@@ -302,7 +305,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.post("/{template_id}/use", response_model=WizardDataResponse)
 async def use_template(
-    template_id: str,
+    template_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     company_id: str = Query(...),
     user_id: str | None = None,
     db: AsyncSession = Depends(get_db),
@@ -328,7 +331,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 
 @router.post("/{template_id}/clone", response_model=TemplateResponse)
 async def clone_template(
-    template_id: str,
+    template_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     request: CloneTemplateRequest,
     db: AsyncSession = Depends(get_db),
 company_id: str = Depends(require_company_id)):
@@ -349,7 +352,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.post("/{template_id}/feedback", response_model=None)
 async def submit_feedback(
-    template_id: str,
+    template_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     request: TemplateFeedbackRequest,
     company_id: str = Query(...),
     db: AsyncSession = Depends(get_db),
@@ -601,3 +604,5 @@ company_id: str = Depends(require_company_id)):
             "template_created": False,
             "message": "Job recorded for future learning (need 3+ similar jobs to create template)"
         }
+
+reorder_collection_before_item(router)

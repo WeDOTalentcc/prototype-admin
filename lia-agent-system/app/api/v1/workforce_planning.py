@@ -19,6 +19,9 @@ from app.shared.tenant_guard import get_verified_company_id
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
 from app.api.v1.big_five import get_client  # canonical client lookup helper (vide ADR-Reuse)
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/workforce-planning", tags=["workforce-planning"])
@@ -124,7 +127,7 @@ _company_gate: str = Depends(require_company_id)):
 
 @router.get("/{plan_id}", summary="Get workforce plan by ID", response_model=None)
 async def get_workforce_plan(
-    plan_id: str,
+    plan_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db), 
 _company_gate: str = Depends(require_company_id)):
@@ -208,7 +211,7 @@ _company_gate: str = Depends(require_company_id)):
 
 @router.put("/{plan_id}", summary="Update workforce plan", response_model=None)
 async def update_workforce_plan(
-    plan_id: str,
+    plan_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     data: WorkforcePlanUpdate,
     company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db), 
@@ -267,7 +270,7 @@ _company_gate: str = Depends(require_company_id)):
 
 @router.delete("/{plan_id}", summary="Delete workforce plan", response_model=None)
 async def delete_workforce_plan(
-    plan_id: str,
+    plan_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db), 
 _company_gate: str = Depends(require_company_id)):
@@ -310,7 +313,7 @@ _company_gate: str = Depends(require_company_id)):
 
 @router.get("/{plan_id}/departments", summary="List departments of a plan", response_model=None)
 async def list_plan_departments(
-    plan_id: str,
+    plan_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db), 
 _company_gate: str = Depends(require_company_id)):
@@ -352,7 +355,7 @@ _company_gate: str = Depends(require_company_id)):
 
 @router.post("/{plan_id}/calculate", summary="Recalculate plan metrics", response_model=None)
 async def calculate_plan_metrics(
-    plan_id: str,
+    plan_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db), 
 _company_gate: str = Depends(require_company_id)):
@@ -410,3 +413,5 @@ _company_gate: str = Depends(require_company_id)):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to calculate plan metrics: {str(e)}"
         )
+
+reorder_collection_before_item(router)

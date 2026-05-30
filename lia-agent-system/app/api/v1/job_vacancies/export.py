@@ -19,13 +19,14 @@ from ._shared import (  # noqa: F401
     logger,
 )
 from app.shared.security.require_company_id import require_company_id
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
 
 router = APIRouter()
 
 
 @router.get("/job-vacancies/{job_id}/export/pdf", response_model=None)
 async def export_job_vacancy_pdf(
-    job_id: str = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
+    job_id: str = Path(..., pattern=DUAL_ID_PATH_PATTERN),
     report_type: str = Query("analytics", description="Report type: funnel, analytics, or candidates"),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_active_user), 
@@ -78,7 +79,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/job-vacancies/{job_id}/export/excel", response_model=None)
 async def export_job_vacancy_excel(
-    job_id: str = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
+    job_id: str = Path(..., pattern=DUAL_ID_PATH_PATTERN),
     report_type: str = Query("analytics", description="Report type: funnel, analytics, or candidates"),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_active_user), 

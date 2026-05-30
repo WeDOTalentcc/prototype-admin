@@ -15,6 +15,9 @@ from app.auth.models import User
 from app.shared.rbac.mutation_gate import assert_mutation_allowed
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 
@@ -211,7 +214,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/{task_id}", response_model=TaskResponse)
 async def get_task(
-    task_id: str,
+    task_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     repo: TasksRepository = Depends(get_tasks_repo), 
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
@@ -225,7 +228,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.patch("/{task_id}", response_model=TaskResponse)
 async def update_task(
-    task_id: str,
+    task_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     update_data: TaskUpdate,
     repo: TasksRepository = Depends(get_tasks_repo),
     current_user: User = Depends(get_current_user_or_demo),
@@ -264,7 +267,7 @@ async def update_task(
 
 @router.post("/{task_id}/complete", response_model=TaskResponse)
 async def complete_task(
-    task_id: str,
+    task_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     result: dict | None = None,
     repo: TasksRepository = Depends(get_tasks_repo), 
 company_id: str = Depends(require_company_id)):
@@ -283,7 +286,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.post("/{task_id}/cancel", response_model=TaskResponse)
 async def cancel_task(
-    task_id: str,
+    task_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     reason: str | None = None,
     repo: TasksRepository = Depends(get_tasks_repo), 
 company_id: str = Depends(require_company_id)):
@@ -301,7 +304,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.post("/{task_id}/assign", response_model=TaskResponse)
 async def assign_task(
-    task_id: str,
+    task_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     user_id: str | None = None,
     agent_type: str | None = None,
     repo: TasksRepository = Depends(get_tasks_repo), 
@@ -323,3 +326,5 @@ company_id: str = Depends(require_company_id)):
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
     return task.to_dict()
+
+reorder_collection_before_item(router)

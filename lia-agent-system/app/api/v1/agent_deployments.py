@@ -27,6 +27,9 @@ from app.services.agent_deployment_service import agent_deployment_service
 from app.shared.trigger_mode_validation import validate_trigger_mode
 from lia_models.agent_deployment import DeploymentTargetType
 from app.shared.security.require_company_id import require_company_id
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +38,7 @@ router = APIRouter(prefix="/custom-agents", tags=["Agent Deployments"])
 
 @router.post("/{agent_id}/deployments", response_model=DeploymentResponse, status_code=201)
 async def create_deployment(
-    agent_id: str,
+    agent_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     body: CreateDeploymentRequest,
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_tenant_db),
@@ -108,7 +111,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/{agent_id}/deployments", response_model=DeploymentListResponse)
 async def list_agent_deployments(
-    agent_id: str,
+    agent_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 company_id: str = Depends(require_company_id)):
@@ -345,7 +348,7 @@ async def get_deployments_by_targets(
     status_code=201,
 )
 async def bulk_create_deployments(
-    agent_id: str,
+    agent_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     payload: BulkDeploymentRequest,
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_tenant_db),
@@ -428,3 +431,5 @@ async def bulk_create_deployments(
         skipped=[BulkDeploymentSkippedItem(**s) for s in skipped],
         failed=[BulkDeploymentFailedItem(**f) for f in failed],
     )
+
+reorder_collection_before_item(router)

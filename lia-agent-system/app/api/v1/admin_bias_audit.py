@@ -9,13 +9,14 @@ from fastapi import APIRouter, Depends, Path
 
 from app.auth.dependencies import require_admin
 from app.shared.security.require_company_id import require_company_id
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 router = APIRouter(prefix="/bias-audit", tags=["Bias Audit - Admin"])
 
 
 @router.post("/job/{job_id}/run-baseline", response_model=None)
 async def run_bias_audit_baseline(
-    job_id: str = Path(..., description="ID da vaga"),
+    job_id: str = Path(..., description="ID da vaga", pattern=DUAL_ID_PATH_PATTERN),
     save_snapshot: bool = True,
     _user=Depends(require_admin),
 company_id: str = Depends(require_company_id)):
@@ -48,3 +49,5 @@ company_id: str = Depends(require_company_id)):
             else "ATENÇÃO: Baseline audit falhou — revisar algoritmo de seleção."
         ),
     }
+
+reorder_collection_before_item(router)

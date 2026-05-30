@@ -38,6 +38,9 @@ from app.schemas.data_subject_requests import (
 )
 from app.shared.tenant_guard import get_verified_company_id
 from app.shared.security.require_company_id import require_company_id
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -273,7 +276,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/track/{request_id}", response_model=DataSubjectRequestPublicTrack, summary="Track request status (public)")
 async def track_request_status(
-    request_id: str,
+    request_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     repo: DataSubjectRepository = Depends(get_data_subject_repo),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
@@ -395,7 +398,7 @@ _company_gate: str = Depends(require_company_id)):
 
 @router.get("/{request_id}", response_model=DataSubjectRequestResponse, summary="Get request details")
 async def get_data_subject_request(
-    request_id: str,
+    request_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     company_id: str = Depends(get_verified_company_id),
     repo: DataSubjectRepository = Depends(get_data_subject_repo),
 _company_gate: str = Depends(require_company_id)):
@@ -422,7 +425,7 @@ _company_gate: str = Depends(require_company_id)):
 
 @router.put("/{request_id}/assign", response_model=DataSubjectRequestResponse, summary="Assign request to user")
 async def assign_request(
-    request_id: str,
+    request_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     data: DataSubjectRequestAssign,
     company_id: str = Depends(get_verified_company_id),
     repo: DataSubjectRepository = Depends(get_data_subject_repo),
@@ -468,7 +471,7 @@ _company_gate: str = Depends(require_company_id)):
 
 @router.put("/{request_id}/verify-identity", response_model=DataSubjectRequestResponse, summary="Verify subject identity")
 async def verify_identity(
-    request_id: str,
+    request_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     data: DataSubjectRequestVerifyIdentity,
     company_id: str = Depends(get_verified_company_id),
     repo: DataSubjectRepository = Depends(get_data_subject_repo),
@@ -525,7 +528,7 @@ _company_gate: str = Depends(require_company_id)):
 
 @router.put("/{request_id}/process", response_model=DataSubjectRequestResponse, summary="Start processing request")
 async def start_processing(
-    request_id: str,
+    request_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     company_id: str = Depends(get_verified_company_id),
     repo: DataSubjectRepository = Depends(get_data_subject_repo),
 _company_gate: str = Depends(require_company_id)):
@@ -573,7 +576,7 @@ _company_gate: str = Depends(require_company_id)):
 
 @router.put("/{request_id}/complete", response_model=DataSubjectRequestResponse, summary="Complete request")
 async def complete_request(
-    request_id: str,
+    request_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     data: DataSubjectRequestComplete,
     company_id: str = Depends(get_verified_company_id),
     repo: DataSubjectRepository = Depends(get_data_subject_repo),
@@ -663,7 +666,7 @@ _company_gate: str = Depends(require_company_id)):
 
 @router.put("/{request_id}/reject", response_model=DataSubjectRequestResponse, summary="Reject request")
 async def reject_request(
-    request_id: str,
+    request_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     data: DataSubjectRequestReject,
     company_id: str = Depends(get_verified_company_id),
     repo: DataSubjectRepository = Depends(get_data_subject_repo),
@@ -733,3 +736,5 @@ _company_gate: str = Depends(require_company_id)):
         await repo.rollback()
         logger.error("Error rejecting data subject request: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
+
+reorder_collection_before_item(router)

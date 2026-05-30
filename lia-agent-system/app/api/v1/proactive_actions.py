@@ -10,6 +10,9 @@ from pydantic import BaseModel
 from app.domains.automation.services.autonomous_agent_service import AutonomousAgentService, get_autonomous_agent_service
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 from app.shared.types import WeDoBaseModel
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -71,7 +74,7 @@ class MonitorTriggerResponse(BaseModel):
 
 @router.get("/pending/{company_id}", response_model=list[ActionResponse])
 async def get_pending_actions(
-    company_id: str,
+    company_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     limit: int = Query(default=10, le=50),
     service: AutonomousAgentService = Depends(get_autonomous_agent_service),
 _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
@@ -106,7 +109,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
 
 @router.get("/history/{company_id}", response_model=list[ActionResponse])
 async def get_action_history(
-    company_id: str,
+    company_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     status: str = Query(default="accepted"),
     limit: int = Query(default=20, le=100),
     service: AutonomousAgentService = Depends(get_autonomous_agent_service),
@@ -142,7 +145,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
 
 @router.post("/accept/{action_id}", response_model=AcceptRejectResponse)
 async def accept_action(
-    action_id: str,
+    action_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     request: AcceptRejectRequest,
     service: AutonomousAgentService = Depends(get_autonomous_agent_service),
 company_id: str = Depends(require_company_id)):
@@ -166,7 +169,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.post("/reject/{action_id}", response_model=AcceptRejectResponse)
 async def reject_action(
-    action_id: str,
+    action_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     request: AcceptRejectRequest,
     service: AutonomousAgentService = Depends(get_autonomous_agent_service),
 company_id: str = Depends(require_company_id)):
@@ -189,7 +192,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/feed/{company_id}", response_model=list[ProactiveFeedItem])
 async def get_proactive_feed(
-    company_id: str,
+    company_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     limit: int = Query(default=10, le=30),
     service: AutonomousAgentService = Depends(get_autonomous_agent_service),
 _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
@@ -229,7 +232,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
 
 
 @router.post("/trigger-monitor/{company_id}", response_model=MonitorTriggerResponse)
-async def trigger_pipeline_monitor(company_id: str, _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
+async def trigger_pipeline_monitor(company_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)], _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Manually trigger pipeline monitor for a specific company.
@@ -341,3 +344,5 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
     except Exception as exc:
         logger.warning("Error getting proactive insights: %s", exc)
         return []
+
+reorder_collection_before_item(router)

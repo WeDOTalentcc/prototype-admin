@@ -42,6 +42,9 @@ from app.shared.resilience.circuit_breaker import GEMINI_LIVE_CIRCUIT
 from fastapi import Depends
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 
 def _get_hmac_secret() -> str:
@@ -694,7 +697,7 @@ company_id: str = Depends(require_company_id)):
 
 
 @router.get("/gemini-voice/session/{session_id}", response_model=None)
-async def get_gemini_session_status(session_id: str, company_id: str = Depends(require_company_id)):
+async def get_gemini_session_status(session_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)], company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     from app.shared.services.gemini_live_audio_service import get_gemini_live_service
 
@@ -746,3 +749,5 @@ async def gemini_voice_health(company_id: str = Depends(require_company_id)):
         "cost_per_interview_usd": "~0.065 (15 min)",
         "target_latency_p95_ms": 500,
     }
+
+reorder_collection_before_item(router)

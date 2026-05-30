@@ -25,6 +25,9 @@ from ._shared import (
 )
 from app.shared.security.require_company_id import require_company_id
 from app.shared.compliance.audit_service import AuditService  # P1-W1-05
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
 
 logger = logging.getLogger(__name__)
 
@@ -108,7 +111,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.put("/stages/{stage_id}", response_model=None)
 async def update_stage(
-    stage_id: str,
+    stage_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     stage: StageUpdate,
     current_user: User = Depends(require_admin_or_recruiter),
     stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
@@ -145,7 +148,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.delete("/stages/{stage_id}", response_model=None)
 async def delete_stage(
-    stage_id: str,
+    stage_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     hard_delete: bool = Query(default=False),
     current_user: User = Depends(require_admin_or_recruiter),
     stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
@@ -184,7 +187,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.put("/stages/{stage_id}/config", response_model=None)
 async def update_stage_config(
-    stage_id: str,
+    stage_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     config: StageConfigUpdate,
     current_user: User = Depends(require_admin_or_recruiter),
     stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
@@ -279,7 +282,7 @@ async def get_defaults(company_id: str = Depends(require_company_id)):
 
 @router.patch("/stages/{stage_id}/inline-edit", response_model=None)
 async def inline_edit_stage(
-    stage_id: str,
+    stage_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     payload: InlineStageEdit,
     current_user: User = Depends(get_current_active_user),
     stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
@@ -337,7 +340,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.delete("/stages/{stage_id}/remove", response_model=None)
 async def remove_custom_stage(
-    stage_id: str,
+    stage_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     current_user: User = Depends(get_current_active_user),
     stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
 company_id: str = Depends(require_company_id)):

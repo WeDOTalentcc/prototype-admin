@@ -16,6 +16,7 @@ from app.domains.billing.services.consumption_tracking_service import (
 )
 from app.shared.tenant_guard import get_verified_company_id
 from app.shared.security.require_company_id import require_company_id
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -201,7 +202,7 @@ _company_gate: str = Depends(require_company_id)):
     response_model=DetailedInvoiceResponse,
 )
 async def get_detailed_invoice(
-    target_company_id: str = Path(..., description="Company ID"),
+    target_company_id: str = Path(..., description="Company ID", pattern=DUAL_ID_PATH_PATTERN),
     year: int = Path(..., ge=2024, le=2030, description="Invoice year"),
     month: int = Path(..., ge=1, le=12, description="Invoice month"),
     company_id: str = Depends(get_verified_company_id),
@@ -288,3 +289,5 @@ _company_gate: str = Depends(require_company_id)):
     except Exception as e:
         logger.error("Error getting pearch consumption: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail="Failed to get Pearch consumption data")
+
+reorder_collection_before_item(router)

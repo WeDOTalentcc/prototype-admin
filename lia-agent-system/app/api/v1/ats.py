@@ -24,6 +24,9 @@ from app.shared.encryption import encrypt_value, decrypt_value
 from app.domains.ats_integration.services.ats_sync_service import ATSSyncService, get_ats_sync_service
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -290,7 +293,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/ats/field-mappings/{connection_id}", response_model=dict)
 async def get_field_mappings(
-    connection_id: str,
+    connection_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     repo: ATSRepository = Depends(get_ats_repo),
     current_user=Depends(get_current_user_or_demo),
 company_id: str = Depends(require_company_id)):
@@ -319,7 +322,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/ats/connections/{connection_id}/jobs", response_model=dict)
 async def list_remote_jobs(
-    connection_id: str,
+    connection_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     page: int = 1,
     size: int = 50,
     repo: ATSRepository = Depends(get_ats_repo),
@@ -411,7 +414,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.post("/ats/connections/{connection_id}/sync", response_model=dict)
 async def trigger_ats_sync(
-    connection_id: str,
+    connection_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     request: TriggerSyncRequest,
     repo: ATSRepository = Depends(get_ats_repo),
     current_user=Depends(get_current_user_or_demo),
@@ -1108,3 +1111,5 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         logger.error(f"❌ Failed to list webhook logs: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+reorder_collection_before_item(router)

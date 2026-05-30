@@ -49,6 +49,9 @@ from app.domains.credits.services.token_budget_service import (
 from fastapi import Depends
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -205,7 +208,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.post("/chat/{session_id}/stream", response_model=None)
 async def sse_chat_stream(
-    session_id: str,
+    session_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     req: SSEChatRequest,
     request: Request,
     authorization: str = Header(default=""),
@@ -610,3 +613,5 @@ company_id: str = Depends(require_company_id)):
             "X-Transport": "sse",
         },
     )
+
+reorder_collection_before_item(router)

@@ -31,6 +31,9 @@ from app.schemas.consent_management import (
 )
 from app.shared.tenant_guard import get_verified_company_id
 from app.shared.security.require_company_id import require_company_id
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -186,7 +189,7 @@ _company_gate: str = Depends(require_company_id)):
     summary="Get consent version by ID",
 )
 async def get_consent_version(
-    version_id: str,
+    version_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     company_id: str = Depends(get_verified_company_id),
     repo: ConsentRepository = Depends(get_consent_repo),
 _company_gate: str = Depends(require_company_id)):
@@ -547,3 +550,5 @@ _company_gate: str = Depends(require_company_id)):
     except Exception as e:
         logger.error(f"Error getting consent stats: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
+
+reorder_collection_before_item(router)

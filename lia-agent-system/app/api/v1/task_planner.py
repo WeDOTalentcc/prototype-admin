@@ -24,6 +24,9 @@ from app.domains.automation.services.planned_task_service import CycleDetectedEr
 from app.models.planned_task import PlannedTaskPriority, PlannedTaskStatus
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 router = APIRouter(prefix="/task-planner", tags=["Task Planner"])
 
@@ -151,7 +154,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/tasks/{task_id}", response_model=None)
 async def get_planned_task(
-    task_id: str,
+    task_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     db: AsyncSession = Depends(get_db), 
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
@@ -166,7 +169,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.patch("/tasks/{task_id}/status", response_model=None)
 async def update_task_status(
-    task_id: str,
+    task_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     request: UpdateTaskStatusRequest,
     db: AsyncSession = Depends(get_tenant_db), 
 company_id: str = Depends(require_company_id)):
@@ -196,7 +199,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/tasks/{task_id}/subtasks", response_model=None)
 async def get_subtasks(
-    task_id: str,
+    task_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     db: AsyncSession = Depends(get_db), 
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
@@ -212,7 +215,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/tasks/{task_id}/dependencies", response_model=None)
 async def check_task_dependencies(
-    task_id: str,
+    task_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     db: AsyncSession = Depends(get_db), 
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
@@ -227,7 +230,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/goal/{goal_id}/tasks", response_model=None)
 async def get_tasks_by_goal(
-    goal_id: str,
+    goal_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     include_completed: bool = Query(False),
     db: AsyncSession = Depends(get_db), 
 company_id: str = Depends(require_company_id)):
@@ -339,7 +342,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/execution-plans/{plan_id}", response_model=None)
 async def get_execution_plan(
-    plan_id: str,
+    plan_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     db: AsyncSession = Depends(get_db), 
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
@@ -393,7 +396,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.post("/tasks/{task_id}/chain-of-thought", response_model=None)
 async def add_chain_of_thought(
-    task_id: str,
+    task_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     thought: str = Body(..., embed=True),
     thought_type: str = Body("reasoning", embed=True),
     db: AsyncSession = Depends(get_tenant_db), 
@@ -455,7 +458,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/execution-templates/{template_id}")
 async def get_execution_template(
-    template_id: str,
+    template_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     current_user: User = Depends(get_current_user_or_demo),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
@@ -470,3 +473,5 @@ company_id: str = Depends(require_company_id)):
         "id": template_id,
         **template,
     }
+
+reorder_collection_before_item(router)

@@ -20,6 +20,9 @@ from app.domains.admin_settings.repositories.admin_settings_repository import (
 )
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 from app.shared.types import WeDoBaseModel
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -169,7 +172,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 
 @router.put("/roles/{role_id}", response_model=None)
 async def update_role(
-    role_id: str,
+    role_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     data: RoleUpdate,
     company_id: str = Query(..., description="Company ID"),
     repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
@@ -206,7 +209,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 
 @router.delete("/roles/{role_id}", response_model=None)
 async def delete_role(
-    role_id: str,
+    role_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     company_id: str = Query(..., description="Company ID"),
     repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
     admin: User = Depends(require_admin),
@@ -330,7 +333,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 
 @router.delete("/user-roles/{assignment_id}", response_model=None)
 async def remove_role_assignment(
-    assignment_id: str,
+    assignment_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     company_id: str = Query(..., description="Company ID"),
     repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
     admin: User = Depends(require_admin),
@@ -417,7 +420,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 
 @router.put("/notification-policies/{policy_id}", response_model=None)
 async def update_notification_policy(
-    policy_id: str,
+    policy_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     data: NotificationPolicyUpdate,
     company_id: str = Query(..., description="Company ID"),
     repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
@@ -455,7 +458,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 
 @router.delete("/notification-policies/{policy_id}", response_model=None)
 async def delete_notification_policy(
-    policy_id: str,
+    policy_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     company_id: str = Query(..., description="Company ID"),
     repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
     admin: User = Depends(require_admin),
@@ -613,3 +616,5 @@ async def get_notification_event_types(_admin: User = Depends(require_admin), co
         "success": True,
         "data": NOTIFICATION_EVENT_TYPES,
     }
+
+reorder_collection_before_item(router)

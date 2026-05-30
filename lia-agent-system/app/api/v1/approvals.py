@@ -4,6 +4,9 @@ import uuid
 from datetime import datetime
 from uuid import UUID
 from typing import Any
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 
 def _hash(value: Any) -> str:
@@ -234,7 +237,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 
 @router.get("/{approval_id}", response_model=ApprovalRequestResponse)
 async def get_approval_request(
-    approval_id: str,
+    approval_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     repo: ApprovalsRepository = Depends(get_approvals_repo), 
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
@@ -256,7 +259,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.put("/{approval_id}/approve", response_model=ApprovalRequestResponse)
 async def approve_request(
-    approval_id: str,
+    approval_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     update: ApprovalRequestUpdate,
     company_id: str = Query(..., description="Company ID"),
     current_user: User = Depends(get_current_active_user),
@@ -348,7 +351,7 @@ async def approve_request(
 
 @router.put("/{approval_id}/reject", response_model=ApprovalRequestResponse)
 async def reject_request(
-    approval_id: str,
+    approval_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     update: ApprovalRequestUpdate,
     company_id: str = Query(..., description="Company ID"),
     current_user: User = Depends(get_current_active_user),
@@ -437,7 +440,7 @@ async def reject_request(
 
 @router.put("/{approval_id}/cancel", response_model=ApprovalRequestResponse)
 async def cancel_request(
-    approval_id: str,
+    approval_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     company_id: str = Query(..., description="Company ID"),
     cancelled_by: str = Query(..., description="Email of the canceller"),
     repo: ApprovalsRepository = Depends(get_approvals_repo), 
@@ -573,3 +576,5 @@ async def send_approval_result_email(db, approval: ApprovalRequest, approved: bo
     except Exception as e:
         logger.error(f"Failed to send approval result email: {e}")
         raise
+
+reorder_collection_before_item(router)

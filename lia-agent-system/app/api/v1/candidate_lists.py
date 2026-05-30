@@ -15,6 +15,9 @@ from app.domains.candidate_lists.repositories.candidate_list_repository import (
 )
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -132,7 +135,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/{list_id}", response_model=None)
 async def get_candidate_list(
-    list_id: str,
+    list_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     skip: int = 0,
     limit: int = 50,
     repo: CandidateListRepository = Depends(get_candidate_list_repo),
@@ -206,7 +209,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.patch("/{list_id}", response_model=None)
 async def update_candidate_list(
-    list_id: str,
+    list_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     data: CandidateListUpdate,
     repo: CandidateListRepository = Depends(get_candidate_list_repo),
     current_user: User = Depends(get_current_user_or_demo),
@@ -248,7 +251,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.delete("/{list_id}", response_model=None)
 async def delete_candidate_list(
-    list_id: str,
+    list_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     repo: CandidateListRepository = Depends(get_candidate_list_repo),
     current_user: User = Depends(get_current_user_or_demo),
 company_id: str = Depends(require_company_id)):
@@ -276,7 +279,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.post("/{list_id}/candidates", response_model=None)
 async def add_candidates_to_list(
-    list_id: str,
+    list_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     data: AddCandidatesRequest,
     repo: CandidateListRepository = Depends(get_candidate_list_repo),
     current_user: User = Depends(get_current_user_or_demo),
@@ -350,7 +353,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.delete("/{list_id}/candidates", response_model=None)
 async def remove_candidates_from_list(
-    list_id: str,
+    list_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     data: RemoveCandidatesRequest,
     repo: CandidateListRepository = Depends(get_candidate_list_repo),
     current_user: User = Depends(get_current_user_or_demo),
@@ -395,7 +398,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.post("/{list_id}/assign-jobs", response_model=None)
 async def assign_list_to_jobs(
-    list_id: str,
+    list_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     data: AssignJobsRequest,
     repo: CandidateListRepository = Depends(get_candidate_list_repo),
     current_user: User = Depends(get_current_user_or_demo),
@@ -464,3 +467,5 @@ company_id: str = Depends(require_company_id)):
         logger.error(f"Error assigning list to jobs: {e}", exc_info=True)
         await repo.rollback()
         raise HTTPException(status_code=500, detail=str(e))
+
+reorder_collection_before_item(router)

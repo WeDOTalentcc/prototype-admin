@@ -38,6 +38,9 @@ from app.services.quota_enforcement import (
     get_max_agents_total,
 )
 from app.shared.security.require_company_id import require_company_id
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -176,7 +179,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/{agent_id}", response_model=CustomAgentResponse)
 async def get_custom_agent(
-    agent_id: str,
+    agent_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_tenant_db),
 company_id: str = Depends(require_company_id)):
@@ -191,7 +194,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.patch("/{agent_id}", response_model=CustomAgentResponse)
 async def update_custom_agent(
-    agent_id: str,
+    agent_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     body: UpdateCustomAgentRequest,
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_tenant_db),
@@ -279,7 +282,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.delete("/{agent_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_custom_agent(
-    agent_id: str,
+    agent_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_tenant_db),
 company_id: str = Depends(require_company_id)):
@@ -311,7 +314,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.post("/{agent_id}/test", response_model=TestCustomAgentResponse)
 async def test_custom_agent(
-    agent_id: str,
+    agent_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     body: TestCustomAgentRequest,
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_tenant_db),
@@ -389,7 +392,7 @@ company_id: str = Depends(require_company_id)):
 # get_agent_kpis (linha ~1981, owner CID-GAPS) — sem overlap.
 @router.post("/{agent_id}/dry-run", response_model=DryRunCustomAgentResponse)
 async def dry_run_custom_agent(
-    agent_id: str,
+    agent_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     body: DryRunCustomAgentRequest,
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_tenant_db),
@@ -495,7 +498,7 @@ async def dry_run_custom_agent(
 
 @router.post("/{agent_id}/execute", response_model=ExecuteCustomAgentResponse)
 async def execute_custom_agent(
-    agent_id: str,
+    agent_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     body: ExecuteCustomAgentRequest,
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_tenant_db),
@@ -718,7 +721,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.post("/{agent_id}/publish", response_model=MarketplaceListingResponse)
 async def publish_to_marketplace(
-    agent_id: str,
+    agent_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     body: PublishToMarketplaceRequest,
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_tenant_db),
@@ -937,7 +940,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/{agent_id}/executions", summary="Get execution history for an agent")
 async def get_agent_executions(
-    agent_id: str,
+    agent_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     limit: int = Query(20, ge=1, le=100),
     offset: int = Query(0, ge=0),
     current_user=Depends(get_current_user),
@@ -1088,7 +1091,7 @@ async def get_studio_quota_agents_total(
 
 @router.get("/{agent_id}/versions", summary="List agent version history")
 async def list_agent_versions(
-    agent_id: str,
+    agent_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     limit: int = Query(20, ge=1, le=100),
     offset: int = Query(0, ge=0),
     current_user=Depends(get_current_user),
@@ -1114,7 +1117,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/{agent_id}/versions/{version}", summary="Get specific version snapshot")
 async def get_agent_version(
-    agent_id: str,
+    agent_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     version: int,
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_tenant_db),
@@ -1135,7 +1138,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.post("/{agent_id}/revert/{version}", summary="Revert agent to previous version")
 async def revert_agent_to_version(
-    agent_id: str,
+    agent_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     version: int,
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_tenant_db),
@@ -1623,7 +1626,7 @@ Responda APENAS com o JSON, sem texto adicional."""
 
 @router.post("/{agent_id}/clone", summary="Clone an existing agent")
 async def clone_custom_agent(
-    agent_id: str,
+    agent_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_tenant_db),
 company_id: str = Depends(require_company_id)):
@@ -1679,7 +1682,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/{agent_id}/preview-prompt")
 async def preview_agent_prompt(
-    agent_id: str,
+    agent_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_tenant_db),
 company_id: str = Depends(require_company_id)):
@@ -2093,7 +2096,7 @@ def _percentile(values: list[float], pct: float) -> float:
     summary="Onda 4 B1 — KPIs agregados de um agente individual",
 )
 async def get_agent_kpis(
-    agent_id: str,
+    agent_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     period: _Literal["7d", "30d", "90d", "all"] = Query(default="30d"),
     db: AsyncSession = Depends(get_db),
     company_id: str = Depends(_require_company_id_onda4),
@@ -2285,3 +2288,5 @@ async def get_agent_kpis(
         last_run_at=last_run_at,
         is_learning=is_learning,
     )
+
+reorder_collection_before_item(router)

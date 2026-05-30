@@ -21,6 +21,9 @@ from app.models.email_template import EmailTemplate
 from app.schemas.email_template import EmailTemplateResponse
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -155,7 +158,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/{template_id}", response_model=SystemTemplateResponse)
 async def get_system_template(
-    template_id: str,
+    template_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     db: AsyncSession = Depends(get_db),
     _admin: User = Depends(require_admin),
 company_id: str = Depends(require_company_id)):
@@ -178,7 +181,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.put("/{template_id}", response_model=SystemTemplateResponse)
 async def update_system_template(
-    template_id: str,
+    template_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     template_data: SystemTemplateUpdate,
     db: AsyncSession = Depends(get_tenant_db),
     _admin: User = Depends(require_admin),
@@ -216,7 +219,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.delete("/{template_id}", response_model=None)
 async def delete_system_template(
-    template_id: str,
+    template_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     hard_delete: bool = Query(False),
     db: AsyncSession = Depends(get_tenant_db),
     _admin: User = Depends(require_admin),
@@ -243,7 +246,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.post("/{template_id}/publish", response_model=PublishResult)
 async def publish_template_to_companies(
-    template_id: str,
+    template_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     company_ids: list[str] | None = Query(None),
     db: AsyncSession = Depends(get_tenant_db),
     _admin: User = Depends(require_admin),
@@ -283,3 +286,5 @@ company_id: str = Depends(require_company_id)):
         await db.rollback()
         logger.error(f"Error publishing template: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
+
+reorder_collection_before_item(router)

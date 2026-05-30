@@ -36,6 +36,9 @@ from app.schemas.audit_logs import (
 )
 from app.shared.tenant_guard import get_verified_company_id
 from app.shared.security.require_company_id import require_company_id
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -254,7 +257,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/{log_id}", response_model=AuditLogResponse)
 async def get_audit_log(
-    log_id: str,
+    log_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     company_id: str | None = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db),
 _company_gate: str = Depends(require_company_id)):
@@ -369,3 +372,5 @@ company_id: str = Depends(require_company_id)):
         await db.rollback()
         logger.error(f"Error creating audit log: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
+
+reorder_collection_before_item(router)

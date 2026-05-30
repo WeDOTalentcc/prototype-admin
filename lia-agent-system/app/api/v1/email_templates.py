@@ -42,6 +42,9 @@ from app.schemas.email_template import (
 )
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 from app.shared.compliance.fairness_guard_middleware import check_fairness_async  # P1-W2-04
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -188,7 +191,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 
 @router.get("/{template_id}", response_model=EmailTemplateResponse)
 async def get_email_template(
-    template_id: str,
+    template_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     repo: EmailTemplatesRepository = Depends(get_email_templates_repo),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
@@ -318,7 +321,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.put("/{template_id}", response_model=EmailTemplateResponse)
 async def update_email_template(
-    template_id: str,
+    template_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     template_data: EmailTemplateUpdate,
     repo: EmailTemplatesRepository = Depends(get_email_templates_repo),
     email_svc: EmailService = Depends(get_email_service),
@@ -411,7 +414,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.delete("/{template_id}", response_model=None)
 async def delete_email_template(
-    template_id: str,
+    template_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     hard_delete: bool = Query(False, description="If True, permanently delete. If False, soft delete (deactivate)."),
     repo: EmailTemplatesRepository = Depends(get_email_templates_repo),
 company_id: str = Depends(require_company_id)):
@@ -488,7 +491,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.post("/{template_id}/preview", response_model=TemplatePreviewByIdResponse)
 async def preview_template_by_id(
-    template_id: str,
+    template_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     request: TemplatePreviewByIdRequest,
     repo: EmailTemplatesRepository = Depends(get_email_templates_repo),
 company_id: str = Depends(require_company_id)):
@@ -537,7 +540,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.post("/{template_id}/send", response_model=EmailSendResponse)
 async def send_email(
-    template_id: str,
+    template_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     request: EmailSendRequest,
     current_user: User = Depends(get_current_user),
     repo: EmailTemplatesRepository = Depends(get_email_templates_repo),
@@ -720,7 +723,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.post("/clone-for-client/{client_id}", response_model=None)
 async def clone_templates_for_client(
-    client_id: str,
+    client_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     repo: EmailTemplatesRepository = Depends(get_email_templates_repo),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
@@ -1000,3 +1003,5 @@ Responda APENAS com o JSON, sem texto adicional."""
     except Exception as e:
         logger.error(f"Error adjusting template with AI: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
+
+reorder_collection_before_item(router)

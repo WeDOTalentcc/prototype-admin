@@ -10,6 +10,9 @@ from app.shared.channels.channel_adapter import ChannelMessage, ChannelType
 from app.shared.channels.multi_channel_service import multi_channel_service
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -129,7 +132,7 @@ async def send_message(request: SendMessageRequest, current_user: User = Depends
 
 
 @router.get("/status/{message_id}", response_model=DeliveryStatusResponse)
-async def get_delivery_status(message_id: str, current_user: User = Depends(get_current_user_or_demo), company_id: str = Depends(require_company_id)):
+async def get_delivery_status(message_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)], current_user: User = Depends(get_current_user_or_demo), company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
         status = await multi_channel_service.get_delivery_status(message_id)
@@ -229,3 +232,5 @@ async def send_bulk_messages(request: BulkSendRequest, current_user: User = Depe
             f"[MULTI_CHANNEL_API] Erro no envio em massa: {e}", exc_info=True
         )
         raise HTTPException(status_code=500, detail=str(e))
+
+reorder_collection_before_item(router)

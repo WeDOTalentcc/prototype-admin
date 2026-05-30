@@ -10,6 +10,9 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from app.domains.analytics.services.activity_service import ActivityService, get_activity_service
 from app.shared.security.require_company_id import require_company_id
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -94,7 +97,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/{activity_id}", response_model=None)
 async def get_activity(
-    activity_id: str,
+    activity_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     activity_svc: ActivityService = Depends(get_activity_service),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
@@ -124,3 +127,5 @@ company_id: str = Depends(require_company_id)):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to get activity: {str(e)}"
         )
+
+reorder_collection_before_item(router)

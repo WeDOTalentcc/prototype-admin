@@ -43,6 +43,9 @@ from libs.schemas.ats import (
     JobSaturationData,
     JobSourcingData,
 )
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -125,7 +128,7 @@ def _build_ai_insights(candidate: Any) -> CandidateAIInsights:
     response_model_exclude_none=True,
 )
 async def get_candidate_enrichment(
-    candidate_id: str,
+    candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     request: Request,
     token: str = Depends(verify_rails_token),
     db: AsyncSession = Depends(get_db),
@@ -158,7 +161,7 @@ async def get_candidate_enrichment(
     response_model_exclude_none=True,
 )
 async def get_job_intelligence(
-    job_id: str,
+    job_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     token: str = Depends(verify_rails_token),
     db: AsyncSession = Depends(get_db),
     company_id: str = Depends(require_company_id),
@@ -293,3 +296,5 @@ async def bulk_sync_candidates(
         missing_ids=missing_ids,
         synced_at=datetime.now(timezone.utc),
     )
+
+reorder_collection_before_item(router)

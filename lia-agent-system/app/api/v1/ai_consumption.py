@@ -49,6 +49,9 @@ from app.shared.tenant_guard import get_verified_company_id
 from app.auth.dependencies import get_current_active_user
 from app.auth.models import User, UserRole
 from app.shared.security.require_company_id import require_company_id
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -204,7 +207,7 @@ _company_gate: str = Depends(require_company_id)):
 
 @router.get("/usage/{client_id}", response_model=UsageSummaryResponse, summary="Get client usage (admin)")
 async def get_client_usage(
-    client_id: str,
+    client_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     company_id: str = Depends(get_verified_company_id),
     current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db), 
@@ -591,7 +594,7 @@ _company_gate: str = Depends(require_company_id)):
 
 @router.put("/limits/{client_id}", response_model=BalanceResponse, summary="Update client limits (admin)")
 async def update_limits(
-    client_id: str,
+    client_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     request: UpdateLimitsRequest,
     company_id: str = Depends(get_verified_company_id),
     current_user: User = Depends(get_current_active_user),
@@ -1192,3 +1195,5 @@ async def get_budget_alerts(
         period_start=balance.period_start,
         period_end=balance.period_end,
     )
+
+reorder_collection_before_item(router)

@@ -31,6 +31,7 @@ from app.models.candidate import Candidate, VacancyCandidate
 from app.services.notification_service import NotificationType
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
 
 router = APIRouter()
 router_public = APIRouter()
@@ -92,7 +93,7 @@ class PublicApplicationResponse(BaseModel):
 
 @router.post("/job-vacancies/{vacancy_id}/generate-public-link", response_model=GeneratePublicLinkResponse)
 async def generate_public_link(
-    vacancy_id: str = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
+    vacancy_id: str = Path(..., pattern=DUAL_ID_PATH_PATTERN),
     request: GeneratePublicLinkRequest = GeneratePublicLinkRequest(),
     repo: JobVacancyPublicRepository = Depends(get_job_vacancy_public_repo),
     current_user: User = Depends(get_current_user_or_demo), 
@@ -147,7 +148,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/job-vacancies/{vacancy_id}/share-link", response_model=ShareLinkResponse)
 async def get_share_link(
-    vacancy_id: str = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
+    vacancy_id: str = Path(..., pattern=DUAL_ID_PATH_PATTERN),
     repo: JobVacancyPublicRepository = Depends(get_job_vacancy_public_repo),
     current_user: User = Depends(get_current_user_or_demo), 
 company_id: str = Depends(require_company_id)):

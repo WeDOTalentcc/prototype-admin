@@ -12,7 +12,6 @@ from app.models.candidate import (
     CandidateExperience,
     CandidateEducation,
 )
-DUAL_ID_PATH_PATTERN = r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
 
@@ -45,6 +44,7 @@ from app.schemas.envelope import ResponseEnvelope, ok_envelope
 from app.shared.rbac.mutation_gate import assert_mutation_allowed
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
 
 def _assert_tenant_scope(candidate, current_user) -> None:
     """Multi-tenant guard — ensures candidate belongs to current user company."""
@@ -475,7 +475,7 @@ async def list_candidates(
 
 @router.get("/{candidate_id}", response_model=ResponseEnvelope)
 async def get_candidate(
-    candidate_id: str,
+    candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
     rails_adapter: RailsAdapter = Depends(get_rails_adapter),
     current_user: User = Depends(get_current_user_or_demo),
@@ -623,7 +623,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.put("/{candidate_id}", response_model=None)
 async def update_candidate(
-    candidate_id: str,
+    candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     candidate_data: CandidateUpdate,
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
     current_user: User = Depends(get_current_user_or_demo),
@@ -661,7 +661,7 @@ async def update_candidate(
 
 @router.patch("/{candidate_id}/stage", response_model=None)
 async def update_candidate_stage(
-    candidate_id: str,
+    candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     stage_data: CandidateStageUpdate,
     background_tasks: BackgroundTasks,
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
@@ -1262,7 +1262,7 @@ async def update_candidate_identity(
 
 @router.delete("/{candidate_id}", response_model=None)
 async def delete_candidate(
-    candidate_id: str,
+    candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
@@ -1294,7 +1294,7 @@ class EnrichmentRequest(WeDoBaseModel):
 
 @router.post("/{candidate_id}/enrich", response_model=None)
 async def enrich_candidate(
-    candidate_id: str,
+    candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     request: EnrichmentRequest = EnrichmentRequest(),
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
 company_id: str = Depends(require_company_id)):
@@ -1341,7 +1341,7 @@ company_id: str = Depends(require_company_id)):
     tags=["candidates", "lgpd", "explainability"],
 )
 async def get_candidate_ai_explanation(
-    candidate_id: str,
+    candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     job_vacancy_id: str = Query(..., description="Job vacancy ID for which to explain decisions"),
     current_user=Depends(get_current_user_or_demo),
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),

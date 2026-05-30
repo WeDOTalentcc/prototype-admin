@@ -20,6 +20,9 @@ from app.core.database import get_tenant_db
 from app.domains.cv_screening.repositories.experience_highlight_repository import ExperienceHighlightRepository
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -156,7 +159,7 @@ def generate_fallback_highlight(data: GenerateHighlightRequest) -> str:
 
 @router.get("/{candidate_id}", response_model=None)
 async def get_experience_highlight(
-    candidate_id: str,
+    candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(get_current_user_or_demo), 
 company_id: str = Depends(require_company_id)) -> ExperienceHighlightResponse:
@@ -261,7 +264,7 @@ company_id: str = Depends(require_company_id)) -> ExperienceHighlightResponse:
 
 @router.delete("/{candidate_id}", response_model=None)
 async def delete_experience_highlight(
-    candidate_id: str,
+    candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(get_current_user_or_demo), 
 company_id: str = Depends(require_company_id)):
@@ -319,3 +322,5 @@ company_id: str = Depends(require_company_id)) -> list[ExperienceHighlightRespon
             ))
 
     return results
+
+reorder_collection_before_item(router)

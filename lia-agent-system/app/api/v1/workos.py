@@ -39,6 +39,9 @@ from app.shared.resilience.circuit_breaker import WORKOS_CIRCUIT, circuit_breake
 from app.shared.compliance.audit_service import AuditService
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 from app.shared.types import WeDoBaseModel
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -945,7 +948,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 
 @router.post("/admin/groups/{group_id}/role-mapping", response_model=None)
 async def set_group_role_mapping(
-    group_id: str,
+    group_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     mapping: RoleMappingRequest,
     company_id: str = Query(...),
     workos_repo: WorkOSRepository = Depends(get_workos_repo),
@@ -1652,3 +1655,5 @@ async def scim_webhook(
         status_code=status.HTTP_200_OK,
         content={"success": True, "event_id": event_id, "event_type": event_type}
     )
+
+reorder_collection_before_item(router)

@@ -17,6 +17,9 @@ from app.domains.goals.repositories.goals_repository import GoalsRepository
 from app.models.goal import Goal
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 from app.shared.types import WeDoBaseModel
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -136,7 +139,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 
 @router.get("/by-user/{user_id}", response_model=None)
 async def get_goals_by_user(
-    user_id: str,
+    user_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     include_inactive: bool = Query(False),
     repo: GoalsRepository = Depends(get_goals_repo),
 company_id: str = Depends(require_company_id)):
@@ -183,7 +186,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/{goal_id}", response_model=GoalResponse)
 async def get_goal(
-    goal_id: uuid.UUID,
+    goal_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     repo: GoalsRepository = Depends(get_goals_repo),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
@@ -231,7 +234,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.put("/{goal_id}", response_model=GoalResponse)
 async def update_goal(
-    goal_id: uuid.UUID,
+    goal_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     data: GoalUpdate,
     repo: GoalsRepository = Depends(get_goals_repo),
 company_id: str = Depends(require_company_id)):
@@ -256,7 +259,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.delete("/{goal_id}", response_model=None)
 async def delete_goal(
-    goal_id: uuid.UUID,
+    goal_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     repo: GoalsRepository = Depends(get_goals_repo),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
@@ -670,3 +673,5 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         await repo.rollback()
         logger.error(f"Error importing goals: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+reorder_collection_before_item(router)

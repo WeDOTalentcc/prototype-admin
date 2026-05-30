@@ -17,6 +17,9 @@ from ._shared import (
 )
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
 
 router = APIRouter()
 
@@ -44,7 +47,7 @@ class CommunicationPreferencesUpdate(WeDoBaseModel):
 
 @router.get("/{candidate_id}/consents", response_model=None)
 async def get_candidate_consents(
-    candidate_id: uuid.UUID,
+    candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
 company_id: str = Depends(require_company_id)):
     """Lista todos os consentimentos LGPD de um candidato."""
@@ -55,7 +58,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.post("/{candidate_id}/consents", response_model=None)
 async def create_or_update_candidate_consent(
-    candidate_id: uuid.UUID,
+    candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     request: ConsentCreateRequest,
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
 company_id: str = Depends(require_company_id)):
@@ -76,7 +79,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.delete("/{candidate_id}/consents/{consent_type}", status_code=200, response_model=None)
 async def revoke_candidate_consent(
-    candidate_id: uuid.UUID,
+    candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     consent_type: str,
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
 company_id: str = Depends(require_company_id)):
@@ -103,7 +106,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/{candidate_id}/communication-preferences", response_model=None)
 async def get_communication_preferences(
-    candidate_id: uuid.UUID,
+    candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
     current_user: User = Depends(get_current_user_or_demo),
 company_id: str = Depends(require_company_id)):
@@ -121,7 +124,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.put("/{candidate_id}/communication-preferences", response_model=None)
 async def update_communication_preferences(
-    candidate_id: uuid.UUID,
+    candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     request: CommunicationPreferencesUpdate,
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
     current_user: User = Depends(get_current_user_or_demo),

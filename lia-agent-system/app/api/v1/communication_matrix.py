@@ -33,6 +33,9 @@ from app.models.communication_matrix import (
 )
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -144,7 +147,7 @@ async def list_modules(company_id: str = Depends(require_company_id)):
 
 @router.get("/{entry_id}", summary="Get specific matrix entry", response_model=None)
 async def get_matrix_entry(
-    entry_id: str,
+    entry_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo), 
 company_id: str = Depends(require_company_id)):
@@ -187,7 +190,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.put("/{entry_id}", summary="Update matrix entry", response_model=None)
 async def update_matrix_entry(
-    entry_id: str,
+    entry_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     data: UpdateMatrixEntryRequest,
     db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(get_current_user_or_demo), 
@@ -432,3 +435,5 @@ company_id: str = Depends(require_company_id)):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to copy matrix to company: {str(e)}"
         )
+
+reorder_collection_before_item(router)

@@ -22,6 +22,9 @@ from app.domains.policy.repositories.global_policy_repository import GlobalPolic
 from app.models.global_policy import POLICY_TYPES, GlobalPolicy, PolicyScope, PolicyType
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 from app.shared.types import WeDoBaseModel
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -141,7 +144,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 
 @router.get("/{policy_id}", summary="Get policy by ID", response_model=None)
 async def get_policy(
-    policy_id: str,
+    policy_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db), 
 company_id: str = Depends(require_company_id)):
@@ -266,7 +269,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.put("/{policy_id}", summary="Update policy", response_model=None)
 async def update_policy(
-    policy_id: str,
+    policy_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     data: PolicyUpdate,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_tenant_db), 
@@ -357,7 +360,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.delete("/{policy_id}", summary="Delete policy", response_model=None)
 async def delete_policy(
-    policy_id: str,
+    policy_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_tenant_db), 
 company_id: str = Depends(require_company_id)):
@@ -418,3 +421,5 @@ company_id: str = Depends(require_company_id)):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to delete policy: {str(e)}"
         )
+
+reorder_collection_before_item(router)

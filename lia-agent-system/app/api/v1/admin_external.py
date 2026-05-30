@@ -47,6 +47,9 @@ from app.services.quota_enforcement import (
 )
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 from app.shared.types import WeDoBaseModel
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -262,7 +265,7 @@ company_id: str = Depends(require_company_id)):
     summary="Consolidated tenant overview",
 )
 async def get_company_overview(
-    company_id: str,
+    company_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     _admin: Any = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
 _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
@@ -378,7 +381,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
     summary="List studio agents for a tenant",
 )
 async def list_studio_agents(
-    company_id: str,
+    company_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     _admin: Any = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
 _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
@@ -502,7 +505,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
     summary="Core vs Studio consumption breakdown",
 )
 async def get_studio_consumption(
-    company_id: str,
+    company_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     days: int = Query(30, ge=1, le=365),
     _admin: Any = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
@@ -588,7 +591,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
     summary="Get agent quotas for a tenant",
 )
 async def get_agent_quota(
-    company_id: str,
+    company_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     _admin: Any = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
 _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
@@ -645,7 +648,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
     summary="Adjust agent quotas for a tenant",
 )
 async def update_agent_quota(
-    company_id: str,
+    company_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     body: AgentQuotaUpdateRequest,
     _admin: Any = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
@@ -680,3 +683,5 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
     await db.flush()
 
     return await get_agent_quota(company_id, _admin=_admin, db=db)
+
+reorder_collection_before_item(router)

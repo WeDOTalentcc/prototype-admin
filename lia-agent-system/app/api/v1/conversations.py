@@ -18,6 +18,9 @@ from app.core.database import get_db, get_tenant_db
 from app.domains.recruiter_assistant.services.conversation_memory import conversation_memory
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -158,7 +161,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/{conversation_id}", response_model=ConversationDetailResponse)
 async def get_conversation(
-    conversation_id: str,
+    conversation_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     include_messages: bool = Query(True, description="Include messages"),
     include_summaries: bool = Query(True, description="Include conversation summaries"),
     message_limit: int = Query(50, ge=1, le=200),
@@ -280,7 +283,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.post("/{conversation_id}/messages", response_model=MessageResponse)
 async def add_message(
-    conversation_id: str,
+    conversation_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     request: AddMessageRequest,
     db: AsyncSession = Depends(get_tenant_db),
 company_id: str = Depends(require_company_id)):
@@ -322,7 +325,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.post("/{conversation_id}/summary", response_model=dict[str, Any])
 async def update_summary(
-    conversation_id: str,
+    conversation_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     request: UpdateSummaryRequest = UpdateSummaryRequest(),
     db: AsyncSession = Depends(get_tenant_db),
 company_id: str = Depends(require_company_id)):
@@ -354,7 +357,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.patch("/{conversation_id}")
 async def rename_conversation(
-    conversation_id: str,
+    conversation_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     request: RenameConversationRequest,
     db: AsyncSession = Depends(get_db),
 company_id: str = Depends(require_company_id)):
@@ -385,7 +388,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.delete("/{conversation_id}", response_model=None)
 async def delete_conversation(
-    conversation_id: str,
+    conversation_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     db: AsyncSession = Depends(get_tenant_db),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
@@ -413,7 +416,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.post("/{conversation_id}/archive", response_model=None)
 async def archive_conversation(
-    conversation_id: str,
+    conversation_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     db: AsyncSession = Depends(get_db),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
@@ -441,7 +444,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.post("/{conversation_id}/clear", response_model=None)
 async def clear_conversation(
-    conversation_id: str,
+    conversation_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     db: AsyncSession = Depends(get_db),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
@@ -469,7 +472,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/{conversation_id}/context", response_model=None)
 async def get_conversation_context(
-    conversation_id: str,
+    conversation_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     max_messages: int = Query(20, ge=1, le=50),
     db: AsyncSession = Depends(get_db),
 company_id: str = Depends(require_company_id)):
@@ -492,3 +495,5 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         logger.error(f"Error getting conversation context: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+reorder_collection_before_item(router)

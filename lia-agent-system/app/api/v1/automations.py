@@ -21,6 +21,9 @@ from app.domains.automation.services.automation_service import AutomationService
 from app.models.automation import ActionType, TriggerType
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -183,7 +186,7 @@ async def create_automation(
 
 @router.get("/{automation_id}", summary="Get automation", response_model=None)
 async def get_automation(
-    automation_id: str,
+    automation_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     company_id: str = Depends(require_company_id),  # JWT canonical (REGRA 2)
     db: AsyncSession = Depends(get_db),
     auto_svc: AutomationService = Depends(get_automation_service)
@@ -224,7 +227,7 @@ async def get_automation(
 
 @router.put("/{automation_id}", summary="Update automation", response_model=None)
 async def update_automation(
-    automation_id: str,
+    automation_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     data: UpdateAutomationRequest,
     company_id: str = Depends(require_company_id),  # JWT canonical (REGRA 2)
     user_id: str | None = Query(None, description="User updating the automation"),
@@ -291,7 +294,7 @@ async def update_automation(
 
 @router.delete("/{automation_id}", summary="Delete automation", response_model=None)
 async def delete_automation(
-    automation_id: str,
+    automation_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     company_id: str = Depends(require_company_id),  # JWT canonical (REGRA 2)
     db: AsyncSession = Depends(get_tenant_db),
     auto_svc: AutomationService = Depends(get_automation_service)
@@ -334,7 +337,7 @@ async def delete_automation(
 
 @router.post("/{automation_id}/test", summary="Test automation", response_model=None)
 async def test_automation(
-    automation_id: str,
+    automation_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     data: TestAutomationRequest = None,
     company_id: str = Depends(require_company_id),  # JWT canonical (REGRA 2)
     db: AsyncSession = Depends(get_db),
@@ -423,7 +426,7 @@ async def trigger_automations(
 
 @router.get("/{automation_id}/logs", summary="Get automation execution logs", response_model=None)
 async def get_automation_logs(
-    automation_id: str,
+    automation_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     company_id: str = Depends(require_company_id),  # JWT canonical (REGRA 2)
     limit: int = Query(50, ge=1, le=200, description="Max results"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
@@ -556,3 +559,5 @@ async def get_condition_fields(company_id: str = Depends(require_company_id)):
         "success": True,
         "data": {"condition_fields": condition_fields_to_api_response()},
     }
+
+reorder_collection_before_item(router)

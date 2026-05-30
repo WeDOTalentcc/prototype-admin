@@ -28,6 +28,9 @@ from app.models.guardrail import Guardrail
 from app.shared.compliance.guardrail_repository import GuardrailCreate, GuardrailRepository
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 from app.shared.types import WeDoBaseModel
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -124,7 +127,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/{guardrail_id}", response_model=GuardrailResponse)
 async def get_guardrail(
-    guardrail_id: str,
+    guardrail_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     db: AsyncSession = Depends(get_db),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
@@ -145,7 +148,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.put("/{guardrail_id}", response_model=GuardrailResponse)
 async def update_guardrail(
-    guardrail_id: str,
+    guardrail_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     data: GuardrailUpdateRequest,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_admin),
@@ -181,7 +184,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.patch("/{guardrail_id}/toggle", response_model=GuardrailResponse)
 async def toggle_guardrail(
-    guardrail_id: str,
+    guardrail_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_admin),
 company_id: str = Depends(require_company_id)):
@@ -202,7 +205,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.delete("/{guardrail_id}", status_code=204, response_model=None)
 async def delete_guardrail(
-    guardrail_id: str,
+    guardrail_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_admin),
 company_id: str = Depends(require_company_id)):
@@ -331,3 +334,5 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         created, skipped, company_id, _actor,
     )
     return SeedDefaultsResponse(created=created, skipped=skipped, total=len(all_defaults))
+
+reorder_collection_before_item(router)

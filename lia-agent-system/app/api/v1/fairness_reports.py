@@ -19,6 +19,7 @@ from app.core.database import get_db
 from app.domains.analytics.repositories.fairness_report_repository import FairnessReportRepository
 from app.schemas.envelope import ResponseEnvelope, ok_envelope
 from app.shared.security.require_company_id import require_company_id
+from app.api.v1._path_patterns import reorder_collection_before_item
 
 router = APIRouter(prefix="/fairness", tags=["fairness-reports"])
 
@@ -269,3 +270,5 @@ async def export_fairness_report(
         media_type="text/csv",
         headers={"Content-Disposition": f"attachment; filename={filename}"},
     )
+
+reorder_collection_before_item(router)

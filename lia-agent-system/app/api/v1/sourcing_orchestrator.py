@@ -7,6 +7,7 @@ from lia_agents_core.agent_interface import AgentInput
 from app.domains.sourcing.agents.sourcing_react_agent import SourcingReActAgent
 from fastapi import Depends
 from app.shared.security.require_company_id import require_company_id
+from app.api.v1._path_patterns import reorder_collection_before_item
 
 logger = logging.getLogger("lia.sourcing_orchestrator")
 router = APIRouter(prefix="/sourcing", tags=["Sourcing Agent"])
@@ -62,3 +63,5 @@ async def sourcing_react_orchestrate(request: Request, company_id: str = Depends
             detail="Sourcing ReAct agent indisponível temporariamente. Tente novamente em instantes.",
             headers={"Retry-After": "60"},
         )
+
+reorder_collection_before_item(router)

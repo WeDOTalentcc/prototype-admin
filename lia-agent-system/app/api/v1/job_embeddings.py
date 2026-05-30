@@ -16,6 +16,9 @@ from app.domains.job_management.services.job_embedding_service import job_embedd
 from fastapi import Depends
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 from app.shared.types import WeDoBaseModel
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 router = APIRouter(prefix="/job-embeddings", tags=["Job Embeddings"])
 logger = logging.getLogger(__name__)
@@ -234,7 +237,7 @@ async def batch_process_embeddings(request: BatchProcessRequest, company_id: str
 
 
 @router.get("/stats/{company_id}", response_model=None)
-async def get_embedding_stats(company_id: str, _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
+async def get_embedding_stats(company_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)], _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get embedding statistics for a company.
@@ -323,7 +326,7 @@ async def update_job_outcome(request: OutcomeUpdateRequest, company_id: str = De
 
 
 @router.get("/fast-track/insights/{company_id}", response_model=None)
-async def get_fast_track_insights(company_id: str, _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
+async def get_fast_track_insights(company_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)], _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get Fast Track usage insights for a company.
@@ -344,3 +347,5 @@ async def get_fast_track_insights(company_id: str, _company_gate: str = Depends(
     except Exception as e:
         logger.error(f"Error getting Fast Track insights: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+reorder_collection_before_item(router)

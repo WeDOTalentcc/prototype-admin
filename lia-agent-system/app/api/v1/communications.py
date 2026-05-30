@@ -11,6 +11,9 @@ agora passam company_id pra tenant guard (P0-3+P0-4 do audit Comunicacao).
 import hashlib
 import logging
 from typing import Any
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 
 def _hash(value: Any) -> str:
@@ -178,7 +181,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 
 
 @router.get("/{communication_id}", response_model=CommunicationResponse)
-async def get_communication(communication_id: str, company_id: str = Depends(require_company_id)):
+async def get_communication(communication_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)], company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get a single communication by ID.
@@ -214,7 +217,7 @@ async def get_communication(communication_id: str, company_id: str = Depends(req
 
 @router.put("/{communication_id}/status", response_model=CommunicationResponse)
 async def update_communication_status(
-    communication_id: str,
+    communication_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     data: CommunicationStatusUpdate, 
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
@@ -262,7 +265,7 @@ company_id: str = Depends(require_company_id)):
 
 @candidate_communications_router.get("/{candidate_id}/communications", response_model=CommunicationListResponse)
 async def get_candidate_communications(
-    candidate_id: str,
+    candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     company_id: str = Query(..., description="Company ID (required)"),
     limit: int = Query(100, ge=1, le=500, description="Max results (default: 100, max: 500)"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
@@ -698,3 +701,5 @@ _company_gate: str = Depends(require_company_id)):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Erro ao transferir comunicações: {str(e)}"
         )
+
+reorder_collection_before_item(router)

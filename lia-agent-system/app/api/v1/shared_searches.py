@@ -32,6 +32,9 @@ from app.schemas.shared_search import (
 )
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -574,7 +577,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/{search_id}", response_model=None)
 async def get_shared_search(
-    search_id: str,
+    search_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     repo: SharedSearchRepository = Depends(get_shared_search_repo),
     current_user: User = Depends(get_current_user_or_demo), 
 company_id: str = Depends(require_company_id)):
@@ -680,7 +683,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.post("/{search_id}/resend", response_model=None)
 async def resend_invite(
-    search_id: str,
+    search_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     data: ResendInviteRequest,
     repo: SharedSearchRepository = Depends(get_shared_search_repo),
     current_user: User = Depends(get_current_user_or_demo), 
@@ -732,7 +735,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.patch("/{search_id}", response_model=None)
 async def update_shared_search(
-    search_id: str,
+    search_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     data: UpdateSharedSearchRequest,
     repo: SharedSearchRepository = Depends(get_shared_search_repo),
     current_user: User = Depends(get_current_user_or_demo), 
@@ -784,7 +787,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.delete("/{search_id}", response_model=None)
 async def delete_shared_search(
-    search_id: str,
+    search_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     repo: SharedSearchRepository = Depends(get_shared_search_repo),
     current_user: User = Depends(get_current_user_or_demo), 
 company_id: str = Depends(require_company_id)):
@@ -817,7 +820,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.post("/{search_id}/add-to-job", response_model=None)
 async def add_approved_to_job(
-    search_id: str,
+    search_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     data: AddToJobRequest,
     repo: SharedSearchRepository = Depends(get_shared_search_repo),
     current_user: User = Depends(get_current_user_or_demo), 
@@ -907,3 +910,5 @@ company_id: str = Depends(require_company_id)):
         logger.error(f"Error adding candidates to job: {e}", exc_info=True)
         await repo.rollback()
         raise HTTPException(status_code=500, detail=str(e))
+
+reorder_collection_before_item(router)

@@ -1,4 +1,7 @@
 from __future__ import annotations
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 """
 Bias Audit API — E.2
@@ -93,7 +96,7 @@ def _to_response(report: BiasAuditReport) -> BiasAuditReportResponse:
 
 @router.get("/job/{job_id}", response_model=BiasAuditReportResponse)
 async def get_bias_audit(
-    job_id: UUID,
+    job_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db),
 _company_gate: str = Depends(require_company_id)) -> BiasAuditReportResponse:
@@ -124,7 +127,7 @@ _company_gate: str = Depends(require_company_id)) -> BiasAuditReportResponse:
 
 @router.get("/job/{job_id}/history", response_model=None)
 async def get_bias_audit_history(
-    job_id: str,
+    job_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     company_id: str = Depends(get_verified_company_id),
     limit: int = Query(10, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
@@ -150,3 +153,5 @@ _company_gate: str = Depends(require_company_id)):
     except Exception as exc:
         logger.error("bias_audit/job/%s/history erro: %s", job_id, exc)
         raise HTTPException(status_code=500, detail="Erro ao buscar histórico de auditoria")
+
+reorder_collection_before_item(router)

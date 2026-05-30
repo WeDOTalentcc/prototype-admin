@@ -25,6 +25,9 @@ from app.core.database import get_db, get_tenant_db
 from lia_models.agent_template import AgentTemplate, AgentTemplateStatus
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 router = APIRouter()
 
@@ -144,7 +147,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/agent-templates/{template_id}", response_model=AgentTemplateResponse)
 async def get_template(
-    template_id: str,
+    template_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 company_id: str = Depends(require_company_id)):
@@ -165,7 +168,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.patch("/agent-templates/{template_id}", response_model=AgentTemplateResponse)
 async def update_template(
-    template_id: str,
+    template_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     body: AgentTemplateCreate,
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_tenant_db),
@@ -218,7 +221,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.post("/agent-templates/{template_id}/publish", response_model=AgentTemplateResponse)
 async def publish_template(
-    template_id: str,
+    template_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_tenant_db),
 company_id: str = Depends(require_company_id)):
@@ -251,7 +254,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.delete("/agent-templates/{template_id}", status_code=204, response_model=None)
 async def archive_template(
-    template_id: str,
+    template_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_tenant_db),
 company_id: str = Depends(require_company_id)):
@@ -270,3 +273,5 @@ company_id: str = Depends(require_company_id)):
         "status": AgentTemplateStatus.ARCHIVED,
         "archived_at": datetime.now(UTC),
     })
+
+reorder_collection_before_item(router)

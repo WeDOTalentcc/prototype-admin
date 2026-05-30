@@ -13,6 +13,9 @@ from app.shared.services.organization_catalog_service import (
     get_organization_catalog_service,
 )
 from app.shared.security.require_company_id import require_company_id
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 router = APIRouter(prefix="/catalog", tags=["organization-catalog"])
 
@@ -32,7 +35,7 @@ company_id: str = Depends(require_company_id)) -> dict[str, Any]:
 
 @router.get("/areas/{area_id}", response_model=None)
 async def get_area(
-    area_id: str,
+    area_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     catalog_svc: OrganizationCatalogService = Depends(get_organization_catalog_service),
 company_id: str = Depends(require_company_id)) -> dict[str, Any]:
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
@@ -91,7 +94,7 @@ company_id: str = Depends(require_company_id)) -> dict[str, Any]:
 
 @router.get("/roles/{area_id}", response_model=None)
 async def get_roles_by_area(
-    area_id: str,
+    area_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     catalog_svc: OrganizationCatalogService = Depends(get_organization_catalog_service),
 company_id: str = Depends(require_company_id)) -> dict[str, Any]:
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
@@ -140,7 +143,7 @@ company_id: str = Depends(require_company_id)) -> dict[str, Any]:
 
 @router.get("/skills/technical/{area_id}", response_model=None)
 async def get_technical_skills_by_area(
-    area_id: str,
+    area_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     catalog_svc: OrganizationCatalogService = Depends(get_organization_catalog_service),
 company_id: str = Depends(require_company_id)) -> dict[str, Any]:
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
@@ -214,3 +217,5 @@ company_id: str = Depends(require_company_id)) -> dict[str, Any]:
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get a complete summary of the catalog for review."""
     return catalog_svc.get_catalog_summary()
+
+reorder_collection_before_item(router)

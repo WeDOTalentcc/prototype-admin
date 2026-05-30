@@ -19,6 +19,7 @@ from app.core.database import get_db
 from app.shared.services.recruiter_behavior_service import recruiter_behavior_service
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -52,7 +53,7 @@ class BehaviorSignalRequest(WeDoBaseModel):
 
 @router.get("/{recruiter_id}/behavior-profile", response_model=BehaviorProfileResponse)
 async def get_behavior_profile(
-    recruiter_id: str = Path(..., description="ID do recrutador"),
+    recruiter_id: str = Path(..., description="ID do recrutador", pattern=DUAL_ID_PATH_PATTERN),
     force_refresh: bool = False,
     current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
@@ -84,7 +85,7 @@ company_id: str = Depends(require_company_id)):
 @router.post("/{recruiter_id}/behavior-signal", status_code=202, response_model=None)
 async def record_behavior_signal(
     body: BehaviorSignalRequest,
-    recruiter_id: str = Path(..., description="ID do recrutador"),
+    recruiter_id: str = Path(..., description="ID do recrutador", pattern=DUAL_ID_PATH_PATTERN),
     current_user: User = Depends(get_current_user_or_demo),
 company_id: str = Depends(require_company_id)):
     """
@@ -108,7 +109,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.post("/{recruiter_id}/behavior-invalidate", status_code=200, response_model=None)
 async def invalidate_behavior_cache(
-    recruiter_id: str = Path(..., description="ID do recrutador"),
+    recruiter_id: str = Path(..., description="ID do recrutador", pattern=DUAL_ID_PATH_PATTERN),
     current_user: User = Depends(get_current_user_or_demo),
 company_id: str = Depends(require_company_id)):
     """Força re-computação do perfil comportamental (remove cache Redis)."""
@@ -117,3 +118,5 @@ company_id: str = Depends(require_company_id)):
         raise HTTPException(status_code=403, detail="Permissão negada.")
     await recruiter_behavior_service.invalidate(recruiter_id, company_id)
     return {"invalidated": True, "recruiter_id": recruiter_id}
+
+reorder_collection_before_item(router)

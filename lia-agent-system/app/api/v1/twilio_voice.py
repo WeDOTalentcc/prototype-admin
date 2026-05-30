@@ -50,6 +50,9 @@ from app.shared.pii_masking import mask_pii
 from fastapi import Depends
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -618,7 +621,7 @@ async def audio_stream_websocket(
 # ── Management endpoints ───────────────────────────────────────────────────────
 
 @router.post("/twilio-voice/end-call/{session_id}", response_model=None)
-async def end_call(session_id: str, ):
+async def end_call(session_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)], ):
     """Programmatically end an active screening call."""
     from app.core.database import AsyncSessionLocal
 
@@ -642,7 +645,7 @@ async def end_call(session_id: str, ):
 
 
 @router.get("/twilio-voice/sessions/{session_id}", response_model=None)
-async def get_session_status(session_id: str, ):
+async def get_session_status(session_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)], ):
     """Get status and results of a voice screening session."""
     from app.core.database import AsyncSessionLocal
 
@@ -838,3 +841,5 @@ async def voice_health():
             "VoIP requires TWILIO_TWIML_APP_SID in addition to standard Twilio config."
         ),
     }
+
+reorder_collection_before_item(router)

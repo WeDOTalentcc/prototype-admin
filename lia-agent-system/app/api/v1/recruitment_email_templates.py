@@ -24,6 +24,9 @@ from app.domains.job_management.services.recruitment_email_templates import (
 from app.models.recruitment_email_template import RecruitmentEmailTemplate, RecruitmentStageName, TemplateType
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 from app.shared.types import WeDoBaseModel
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -239,7 +242,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 
 @router.get("/{template_id}", response_model=TemplateResponse)
 async def get_template_by_id(
-    template_id: str,
+    template_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     repo: RecruitmentEmailTemplateRepository = Depends(get_recruitment_email_template_repo),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
@@ -262,7 +265,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.put("/{template_id}", response_model=TemplateResponse)
 async def update_template(
-    template_id: str,
+    template_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     update_data: TemplateUpdateRequest,
     repo: RecruitmentEmailTemplateRepository = Depends(get_recruitment_email_template_repo),
 company_id: str = Depends(require_company_id)):
@@ -352,7 +355,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 
 @router.post("/{template_id}/preview", response_model=TemplatePreviewResponse)
 async def preview_template_with_data(
-    template_id: str,
+    template_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     preview_request: TemplatePreviewRequest,
     repo: RecruitmentEmailTemplateRepository = Depends(get_recruitment_email_template_repo),
 company_id: str = Depends(require_company_id)):
@@ -432,7 +435,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 
 @router.delete("/{template_id}", response_model=None)
 async def delete_template(
-    template_id: str,
+    template_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     repo: RecruitmentEmailTemplateRepository = Depends(get_recruitment_email_template_repo),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
@@ -464,3 +467,5 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         logger.error(f"Error deleting template {template_id}: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
+
+reorder_collection_before_item(router)

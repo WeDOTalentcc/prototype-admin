@@ -13,6 +13,9 @@ from app.domains.analytics.services.candidate_report_service import candidate_re
 from app.domains.analytics.services.report_service import report_service
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 router = APIRouter(prefix="/reports", tags=["reports"])
 
@@ -115,7 +118,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/candidate/{candidate_id}", response_model=None)
 async def get_candidate_report(
-    candidate_id: str,
+    candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     job_id: str | None = None,
     format: str = Query(default="detailed", enum=["detailed", "executive", "comparison"]),
     db: AsyncSession = Depends(get_db), 
@@ -295,3 +298,5 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error generating preview: {str(e)}")
+
+reorder_collection_before_item(router)

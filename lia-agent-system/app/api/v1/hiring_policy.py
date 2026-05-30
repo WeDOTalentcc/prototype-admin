@@ -40,6 +40,9 @@ from app.schemas.company_hiring_policy import (
 from app.shared.policy_helper import get_company_policy, invalidate_policy_cache
 from app.shared.policy_sync_service import sync_policy_to_models
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -85,7 +88,7 @@ def _blocks_completed(policy) -> dict[str, bool]:
 
 
 @router.get("/{company_id}", response_model=CompanyHiringPolicyResponse)
-async def get_policy(company_id: str, db: AsyncSession = Depends(get_db), _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
+async def get_policy(company_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)], db: AsyncSession = Depends(get_db), _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get hiring policy for a company. Returns defaults if none exists."""
     repo = HiringPolicyRepository(db)
@@ -113,7 +116,7 @@ async def get_policy(company_id: str, db: AsyncSession = Depends(get_db), _compa
 
 @router.put("/{company_id}", response_model=CompanyHiringPolicyResponse)
 async def upsert_policy(
-    company_id: str,
+    company_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     payload: CompanyHiringPolicyUpdate,
     user_id: str | None = Query(None),
     db: AsyncSession = Depends(get_tenant_db),
@@ -148,7 +151,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
 
 @router.patch("/{company_id}", response_model=CompanyHiringPolicyResponse)
 async def update_policy_partial(
-    company_id: str,
+    company_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     payload: CompanyHiringPolicyUpdate,
     user_id: str | None = Query(None),
     db: AsyncSession = Depends(get_tenant_db),
@@ -189,7 +192,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
 
 @router.patch("/{company_id}/block", response_model=CompanyHiringPolicyResponse)
 async def update_policy_block(
-    company_id: str,
+    company_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     payload: CompanyHiringPolicyBlockUpdate,
     user_id: str | None = Query(None),
     db: AsyncSession = Depends(get_tenant_db),
@@ -232,7 +235,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
 
 
 @router.get("/{company_id}/progress", response_model=PolicyProgressResponse)
-async def get_policy_progress(company_id: str, db: AsyncSession = Depends(get_db), _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
+async def get_policy_progress(company_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)], db: AsyncSession = Depends(get_db), _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get setup progress for a company's hiring policy."""
     repo = HiringPolicyRepository(db)
@@ -254,7 +257,7 @@ async def get_policy_progress(company_id: str, db: AsyncSession = Depends(get_db
 
 @router.post("/{company_id}/chat", response_model=PolicyChatResponse)
 async def policy_chat(
-    company_id: str,
+    company_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     payload: PolicyChatMessage,
     db: AsyncSession = Depends(get_tenant_db),
 _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
@@ -330,3 +333,5 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
         all_completed=result.get("all_completed", False),
         session_id=session_id,
     )
+
+reorder_collection_before_item(router)

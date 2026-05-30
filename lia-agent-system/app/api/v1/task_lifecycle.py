@@ -11,6 +11,9 @@ from app.domains.automation.services.task_service import task_service
 from app.models.task import Task
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 router = APIRouter(prefix="/task-lifecycle", tags=["task-lifecycle"])
 
@@ -96,7 +99,7 @@ class BulkOperationResponse(BaseModel):
 
 @router.post("/{task_id}/confirm", response_model=TaskLifecycleResponse)
 async def confirm_task(
-    task_id: str,
+    task_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     request: TaskConfirmRequest,
     db: AsyncSession = Depends(get_db), 
 company_id: str = Depends(require_company_id)):
@@ -118,7 +121,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.post("/{task_id}/reject", response_model=TaskLifecycleResponse)
 async def reject_task(
-    task_id: str,
+    task_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     request: TaskRejectRequest,
     db: AsyncSession = Depends(get_db), 
 company_id: str = Depends(require_company_id)):
@@ -141,7 +144,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.post("/{task_id}/escalate", response_model=TaskLifecycleResponse)
 async def escalate_task(
-    task_id: str,
+    task_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     request: TaskEscalateRequest,
     db: AsyncSession = Depends(get_db), 
 company_id: str = Depends(require_company_id)):
@@ -168,7 +171,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.post("/{task_id}/reminder", response_model=TaskLifecycleResponse)
 async def send_task_reminder(
-    task_id: str,
+    task_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     db: AsyncSession = Depends(get_db), 
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
@@ -273,3 +276,5 @@ company_id: str = Depends(require_company_id)):
         overdue_hours=overdue_hours
     )
     return [_task_to_lifecycle_response(task) for task in tasks]
+
+reorder_collection_before_item(router)

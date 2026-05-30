@@ -16,6 +16,9 @@ from pydantic import BaseModel, Field
 from typing import Optional
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -175,7 +178,7 @@ company_id: str = Depends(require_company_id)):
 
 
 @router.get("/{twin_id}")
-async def get_twin(twin_id: str, db: AsyncSession = Depends(get_tenant_db), company_id: str = Depends(require_company_id)):
+async def get_twin(twin_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)], db: AsyncSession = Depends(get_tenant_db), company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get details of a specific Digital Twin."""
     from lia_models.digital_twin import DigitalTwin
@@ -200,7 +203,7 @@ async def get_twin(twin_id: str, db: AsyncSession = Depends(get_tenant_db), comp
 
 @router.post("/{twin_id}/index-audio")
 async def index_audio(
-    twin_id: str,
+    twin_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     file: UploadFile = File(...),
     db: AsyncSession = Depends(get_tenant_db),
 company_id: str = Depends(require_company_id)):
@@ -221,7 +224,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.post("/{twin_id}/index-decision")
 async def index_manual_decision(
-    twin_id: str,
+    twin_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     body: ManualDecisionRequest,
     db: AsyncSession = Depends(get_tenant_db),
 company_id: str = Depends(require_company_id)):
@@ -241,7 +244,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.post("/{twin_id}/evaluate")
 async def evaluate_candidate(
-    twin_id: str,
+    twin_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     body: EvaluateRequest,
     db: AsyncSession = Depends(get_tenant_db),
 company_id: str = Depends(require_company_id)):
@@ -307,3 +310,5 @@ company_id: str = Depends(require_company_id)):
             for ex in evaluation.supporting_examples
         ],
     }
+
+reorder_collection_before_item(router)

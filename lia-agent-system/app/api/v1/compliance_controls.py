@@ -42,6 +42,9 @@ from app.schemas.compliance_controls import (
 from app.shared.tenant_guard import get_verified_company_id
 from app.schemas.envelope import ResponseEnvelope, ok_envelope
 from app.shared.security.require_company_id import require_company_id
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -219,7 +222,7 @@ _company_gate: str = Depends(require_company_id)):
 
 @router.put("/company-controls/{control_id}", response_model=CompanyControlResponse, summary="Update company control")
 async def update_company_control(
-    control_id: str,
+    control_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     data: CompanyControlUpdate,
     company_id: str = Depends(get_verified_company_id),
     repo: ComplianceControlsRepository = Depends(get_compliance_repo),
@@ -256,7 +259,7 @@ _company_gate: str = Depends(require_company_id)):
 
 @router.post("/company-controls/{control_id}/evidence", response_model=CompanyControlResponse, summary="Upload evidence")
 async def upload_evidence(
-    control_id: str,
+    control_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     data: EvidenceUpload,
     company_id: str = Depends(get_verified_company_id),
     repo: ComplianceControlsRepository = Depends(get_compliance_repo),
@@ -496,7 +499,7 @@ _company_gate: str = Depends(require_company_id)):
 
 @router.put("/sox/{control_id}", response_model=SOXControlResponse, summary="Update SOX control")
 async def update_sox_control(
-    control_id: str,
+    control_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     data: SOXControlUpdate,
     company_id: str = Depends(get_verified_company_id),
     repo: ComplianceControlsRepository = Depends(get_compliance_repo),
@@ -782,3 +785,5 @@ company_id: str = Depends(require_company_id)):
         await repo.rollback()
         logger.error(f"Error seeding control library: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
+
+reorder_collection_before_item(router)

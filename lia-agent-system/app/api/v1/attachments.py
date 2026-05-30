@@ -24,6 +24,9 @@ from app.schemas.attachment import (
 from app.shared.services.attachment_service import attachment_service
 from fastapi import Depends
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from typing import Annotated
+from fastapi import Path as FastAPIPath
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -154,7 +157,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 
 
 @router.get("/{attachment_id}", response_model=AttachmentResponse)
-async def get_attachment(attachment_id: str, company_id: str = Depends(require_company_id)):
+async def get_attachment(attachment_id: Annotated[str, FastAPIPath(pattern=DUAL_ID_PATH_PATTERN)], company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get a single attachment by ID.
@@ -185,7 +188,7 @@ async def get_attachment(attachment_id: str, company_id: str = Depends(require_c
 
 
 @router.delete("/{attachment_id}", response_model=AttachmentResponse)
-async def delete_attachment(attachment_id: str, company_id: str = Depends(require_company_id)):
+async def delete_attachment(attachment_id: Annotated[str, FastAPIPath(pattern=DUAL_ID_PATH_PATTERN)], company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Soft delete an attachment (deactivate).
@@ -217,7 +220,7 @@ async def delete_attachment(attachment_id: str, company_id: str = Depends(requir
 
 @candidate_attachments_router.get("/{candidate_id}/attachments", response_model=AttachmentListResponse)
 async def get_candidate_attachments(
-    candidate_id: str,
+    candidate_id: Annotated[str, FastAPIPath(pattern=DUAL_ID_PATH_PATTERN)],
     company_id: str = Query(..., description="Company ID (required)"),
     limit: int = Query(100, ge=1, le=500, description="Max results (default: 100, max: 500)"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
@@ -254,7 +257,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 
 @candidate_attachments_router.post("/{candidate_id}/files", response_model=FileUploadResponse)
 async def upload_candidate_file(
-    candidate_id: str,
+    candidate_id: Annotated[str, FastAPIPath(pattern=DUAL_ID_PATH_PATTERN)],
     file: UploadFile = File(...),
     candidate_name: str = Form(default="Candidato"),
     category: str = Form(default=""),
@@ -346,7 +349,7 @@ _company_gate: str = Depends(require_company_id_strict_match("form.company_id"))
 
 @candidate_attachments_router.get("/{candidate_id}/files", response_model=CandidateFilesResponse)
 async def get_candidate_files(
-    candidate_id: str,
+    candidate_id: Annotated[str, FastAPIPath(pattern=DUAL_ID_PATH_PATTERN)],
     company_id: str = Query(..., description="Company ID"),
     category: str | None = Query(None, description="Filter by category"),
 _company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
@@ -403,7 +406,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 
 @candidate_attachments_router.get("/{candidate_id}/files/download/{filename}")
 async def download_candidate_file(
-    candidate_id: str,
+    candidate_id: Annotated[str, FastAPIPath(pattern=DUAL_ID_PATH_PATTERN)],
     filename: str,
 company_id: str = Depends(require_company_id)):
     """
@@ -450,8 +453,8 @@ company_id: str = Depends(require_company_id)):
 
 @candidate_attachments_router.delete("/{candidate_id}/files/{attachment_id}")
 async def delete_candidate_file(
-    candidate_id: str,
-    attachment_id: str,
+    candidate_id: Annotated[str, FastAPIPath(pattern=DUAL_ID_PATH_PATTERN)],
+    attachment_id: Annotated[str, FastAPIPath(pattern=DUAL_ID_PATH_PATTERN)],
 company_id: str = Depends(require_company_id)):
     """
     Delete a candidate file.
@@ -483,3 +486,5 @@ company_id: str = Depends(require_company_id)):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to delete file: {str(e)}"
         )
+
+reorder_collection_before_item(router)

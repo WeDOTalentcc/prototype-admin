@@ -30,6 +30,9 @@ from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
 import uuid as _uuid_mod
 from app.shared.compliance.audit_service import AuditService  # P1-W1-08
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -234,7 +237,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.put("/company/screening-questions/{question_id}", response_model=ScreeningQuestionResponse)
 async def update_screening_question(
-    question_id: str,
+    question_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     request: ScreeningQuestionUpdate,
     db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(get_current_active_user), 
@@ -312,7 +315,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.delete("/company/screening-questions/{question_id}", response_model=None)
 async def delete_screening_question(
-    question_id: str,
+    question_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(get_current_active_user), 
 company_id: str = Depends(require_company_id)):
@@ -444,3 +447,5 @@ company_id: str = Depends(require_company_id)):
         categories=QUESTION_CATEGORIES,
         types=QUESTION_TYPES
     )
+
+reorder_collection_before_item(router)

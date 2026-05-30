@@ -18,6 +18,9 @@ from app.domains.communication.dependencies import get_email_repo
 from app.domains.communication.repositories.email_repository import EmailRepository
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -128,7 +131,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/history/{candidate_id}", response_model=EmailHistoryResponse)
 async def get_email_history_by_candidate(
-    candidate_id: str,
+    candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=100),
     repo: EmailRepository = Depends(get_email_repo),
@@ -267,3 +270,5 @@ async def get_email_system_status(company_id: str = Depends(require_company_id))
         "database_logging": True,
         "audit_trail": True,
     }
+
+reorder_collection_before_item(router)

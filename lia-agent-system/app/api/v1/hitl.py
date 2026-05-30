@@ -18,6 +18,9 @@ from app.core.database import get_db
 from app.domains.cv_screening.services.hitl_service import hitl_service
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +57,7 @@ ApprovalResponse = HitlApprovalResponse
 
 @router.post("/{thread_id}/approve", response_model=HitlApprovalResponse)
 async def approve_hitl_action(
-    thread_id: str,
+    thread_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     body: ApprovalRequest,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
@@ -139,7 +142,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/{thread_id}/pending", response_model=None)
 async def get_pending_approval(
-    thread_id: str,
+    thread_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     current_user: User = Depends(get_current_user),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
@@ -151,3 +154,5 @@ company_id: str = Depends(require_company_id)):
         pending = None
 
     return {"thread_id": thread_id, "pending": pending}
+
+reorder_collection_before_item(router)

@@ -12,6 +12,9 @@ from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
 from app.core.database import get_db
 from app.shared.security.require_company_id import require_company_id
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -52,7 +55,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/{campaign_id}", status_code=501)
 async def get_campaign(
-    campaign_id: str,
+    campaign_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     current_user: User = Depends(get_current_user_or_demo),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
@@ -61,7 +64,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.patch("/{campaign_id}", status_code=501)
 async def update_campaign(
-    campaign_id: str,
+    campaign_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     payload: dict[str, Any],
     current_user: User = Depends(get_current_user_or_demo),
 company_id: str = Depends(require_company_id)):
@@ -71,7 +74,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.post("/{campaign_id}/advance-stage", status_code=501)
 async def advance_stage(
-    campaign_id: str,
+    campaign_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     payload: dict[str, Any] | None = None,
     current_user: User = Depends(get_current_user_or_demo),
 company_id: str = Depends(require_company_id)):
@@ -81,7 +84,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.post("/{campaign_id}/complete-stage", status_code=501)
 async def complete_stage(
-    campaign_id: str,
+    campaign_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     payload: dict[str, Any] | None = None,
     current_user: User = Depends(get_current_user_or_demo),
 company_id: str = Depends(require_company_id)):
@@ -91,7 +94,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.post("/{campaign_id}/add-checkpoint", status_code=501)
 async def add_checkpoint(
-    campaign_id: str,
+    campaign_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     payload: dict[str, Any] | None = None,
     current_user: User = Depends(get_current_user_or_demo),
 company_id: str = Depends(require_company_id)):
@@ -253,3 +256,5 @@ def _jsonapi_campaign(campaign) -> dict:
             "created_at": created_at_str,
         },
     }
+
+reorder_collection_before_item(router)

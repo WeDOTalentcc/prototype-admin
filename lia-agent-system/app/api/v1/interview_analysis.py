@@ -36,6 +36,9 @@ from app.services.notification_service import (
 )
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 from app.shared.types import WeDoBaseModel
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -259,7 +262,7 @@ async def send_analysis_notification(
 
 @router.post("/analyze/{interview_id}", response_model=None)
 async def analyze_interview(
-    interview_id: str,
+    interview_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     force_refresh: bool = Query(False, description="Force fetch new transcript from Teams"),
     company_id: str = Query(..., description="Company ID for tenant scoping"),
     db: AsyncSession = Depends(get_tenant_db), 
@@ -465,7 +468,7 @@ async def teams_meeting_webhook(
 
 @router.get("/status/{interview_id}", response_model=None)
 async def get_analysis_status(
-    interview_id: str,
+    interview_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     db: AsyncSession = Depends(get_db), 
 company_id: str = Depends(require_company_id)) -> AnalysisStatusResponse:
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
@@ -508,7 +511,7 @@ company_id: str = Depends(require_company_id)) -> AnalysisStatusResponse:
 
 @router.get("/results/{interview_id}", response_model=None)
 async def get_analysis_results(
-    interview_id: str,
+    interview_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     db: AsyncSession = Depends(get_db), 
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
@@ -647,3 +650,5 @@ async def process_meeting_transcript(resource_data: dict, resource_path: str = "
 
     except Exception as e:
         logger.error(f"❌ Failed to process meeting transcript: {e}")
+
+reorder_collection_before_item(router)

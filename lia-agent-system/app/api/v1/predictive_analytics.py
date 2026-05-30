@@ -18,6 +18,9 @@ from app.core.database import get_db
 from app.domains.analytics.services.predictive_analytics_service import predictive_analytics_service
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/analytics/predictions", tags=["predictive-analytics"])
@@ -113,8 +116,8 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/hiring-probability/{candidate_id}/{job_id}", response_model=None)
 async def get_hiring_probability(
-    candidate_id: str,
-    job_id: str,
+    candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
+    job_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     db: AsyncSession = Depends(get_db), 
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
@@ -174,7 +177,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/time-to-fill/{job_id}", response_model=None)
 async def get_time_to_fill(
-    job_id: str,
+    job_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     db: AsyncSession = Depends(get_db), 
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
@@ -233,8 +236,8 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/dropout-risk/{candidate_id}/{job_id}", response_model=None)
 async def get_dropout_risk(
-    candidate_id: str,
-    job_id: str,
+    candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
+    job_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     db: AsyncSession = Depends(get_db), 
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
@@ -294,7 +297,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/pipeline-forecast/{job_id}", response_model=None)
 async def get_pipeline_forecast(
-    job_id: str,
+    job_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     weeks_ahead: int = Query(4, ge=1, le=12, description="Weeks to forecast"),
     db: AsyncSession = Depends(get_db), 
 company_id: str = Depends(require_company_id)):
@@ -333,3 +336,5 @@ async def analytics_health(company_id: str = Depends(require_company_id)):
             "pipeline_forecast"
         ]
     }
+
+reorder_collection_before_item(router)

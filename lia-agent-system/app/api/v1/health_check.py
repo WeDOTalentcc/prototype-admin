@@ -33,6 +33,9 @@ from app.schemas.health_check import (
     SeedHealthCheckResponse,
 )
 from app.shared.security.require_company_id import require_company_id
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -258,7 +261,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/{req_id}/history", response_model=HealthCheckHistoryListResponse, summary="Get item history")
 async def get_item_history(
-    req_id: str,
+    req_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     repo: HealthCheckRepository = Depends(get_health_check_repo),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: public endpoint (health) — no tenant data
@@ -287,7 +290,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.put("/{req_id}/check", response_model=HealthCheckItemResponse, summary="Mark item as verified")
 async def mark_item_checked(
-    req_id: str,
+    req_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     data: HealthCheckVerifyRequest,
     repo: HealthCheckRepository = Depends(get_health_check_repo),
 company_id: str = Depends(require_company_id)):
@@ -321,7 +324,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.put("/{req_id}/status", response_model=HealthCheckItemResponse, summary="Update item status")
 async def update_item_status(
-    req_id: str,
+    req_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     data: HealthCheckStatusUpdateRequest,
     repo: HealthCheckRepository = Depends(get_health_check_repo),
 company_id: str = Depends(require_company_id)):
@@ -356,7 +359,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/{req_id}", response_model=HealthCheckItemResponse, summary="Get health check item by req_id")
 async def get_health_check_item(
-    req_id: str,
+    req_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     repo: HealthCheckRepository = Depends(get_health_check_repo),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: public endpoint (health) — no tenant data
@@ -449,3 +452,5 @@ company_id: str = Depends(require_company_id)):
         await repo.rollback()
         logger.error(f"Error creating health check item: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
+
+reorder_collection_before_item(router)

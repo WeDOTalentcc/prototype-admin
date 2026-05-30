@@ -21,6 +21,9 @@ from app.models.recruitment_journey import (
 )
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 from app.shared.types import WeDoBaseModel
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -185,7 +188,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 
 @router.put("/templates/{template_id}", response_model=None)
 async def update_template(
-    template_id: str,
+    template_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     data: TemplateUpdate,
     company_id: str = Query(..., description="Company ID"),
     repo: RecruitmentJourneyRepository = Depends(get_recruitment_journey_repo),
@@ -208,7 +211,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 
 @router.delete("/templates/{template_id}", response_model=None)
 async def delete_template(
-    template_id: str,
+    template_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     company_id: str = Query(..., description="Company ID"),
     repo: RecruitmentJourneyRepository = Depends(get_recruitment_journey_repo),
 _company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
@@ -311,7 +314,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 
 @router.put("/slas/{sla_id}", response_model=None)
 async def update_sla(
-    sla_id: str,
+    sla_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     data: SLAUpdate,
     company_id: str = Query(..., description="Company ID"),
     repo: RecruitmentJourneyRepository = Depends(get_recruitment_journey_repo),
@@ -337,7 +340,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 
 @router.delete("/slas/{sla_id}", response_model=None)
 async def delete_sla(
-    sla_id: str,
+    sla_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     company_id: str = Query(..., description="Company ID"),
     repo: RecruitmentJourneyRepository = Depends(get_recruitment_journey_repo),
 _company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
@@ -473,7 +476,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 
 @router.put("/automations/{automation_id}", response_model=None)
 async def update_automation(
-    automation_id: str,
+    automation_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     data: AutomationUpdate,
     company_id: str = Query(..., description="Company ID"),
     repo: RecruitmentJourneyRepository = Depends(get_recruitment_journey_repo),
@@ -496,7 +499,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 
 @router.delete("/automations/{automation_id}", response_model=None)
 async def delete_automation(
-    automation_id: str,
+    automation_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     company_id: str = Query(..., description="Company ID"),
     repo: RecruitmentJourneyRepository = Depends(get_recruitment_journey_repo),
 _company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
@@ -695,3 +698,5 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
     except Exception as e:
         logger.error(f"Error optimizing SLA: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+reorder_collection_before_item(router)

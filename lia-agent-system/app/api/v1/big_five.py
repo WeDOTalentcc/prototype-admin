@@ -20,6 +20,9 @@ from app.core.database import get_db
 from app.models.client_account import ClientAccount
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -275,7 +278,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/profiles/{profile_id}", summary="Get Big Five profile", response_model=None)
 async def get_profile(
-    profile_id: str,
+    profile_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db), 
 company_id: str = Depends(require_company_id)):
@@ -310,7 +313,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.put("/profiles/{profile_id}", summary="Update Big Five profile", response_model=None)
 async def update_profile(
-    profile_id: str,
+    profile_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     data: BigFiveProfileUpdate,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db), 
@@ -370,7 +373,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.delete("/profiles/{profile_id}", summary="Delete Big Five profile", response_model=None)
 async def delete_profile(
-    profile_id: str,
+    profile_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db), 
 company_id: str = Depends(require_company_id)):
@@ -508,3 +511,5 @@ company_id: str = Depends(require_company_id)):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to analyze candidate: {str(e)}"
         )
+
+reorder_collection_before_item(router)

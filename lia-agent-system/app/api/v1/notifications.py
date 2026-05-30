@@ -24,6 +24,9 @@ from app.services.notification_service import (
 from app.domains.communication.services.email_service import EmailService, get_email_service
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/notifications", tags=["notifications"])
@@ -229,7 +232,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.post("/{notification_id}/read", response_model=None)
 async def mark_notification_as_read(
-    notification_id: str,
+    notification_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     user_id: str = "default_user",
     repo: NotificationsRepository = Depends(get_notifications_repo), 
 company_id: str = Depends(require_company_id)):
@@ -275,7 +278,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.post("/{notification_id}/dismiss", response_model=None)
 async def dismiss_notification(
-    notification_id: str,
+    notification_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     user_id: str = "default_user",
     repo: NotificationsRepository = Depends(get_notifications_repo), 
 company_id: str = Depends(require_company_id)):
@@ -460,7 +463,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.post("/chat/{notification_id}/delivered", response_model=None)
 async def mark_chat_notification_delivered(
-    notification_id: str,
+    notification_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     user_id: str = "default_user",
     repo: NotificationsRepository = Depends(get_notifications_repo), 
 company_id: str = Depends(require_company_id)):
@@ -995,3 +998,5 @@ Recrutador: {request.recruiter_name or request.recruiter_email}
     except Exception as e:
         logger.error(f"Error sending job created notification: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
+
+reorder_collection_before_item(router)

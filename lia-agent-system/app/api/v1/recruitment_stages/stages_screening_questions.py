@@ -25,6 +25,9 @@ from pydantic import BaseModel, Field
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
 from app.shared.compliance.audit_service import AuditService  # P1-W1-08
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
 
 logger = logging.getLogger(__name__)
 
@@ -259,7 +262,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.put("/{question_id}")
 async def update_screening_question(
-    question_id: str,
+    question_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     question: ScreeningQuestionUpdate,
     current_user: User = Depends(require_admin_or_recruiter),
     sq_repo: ScreeningQuestionRepository = Depends(get_screening_question_repo),
@@ -304,7 +307,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.delete("/{question_id}")
 async def delete_screening_question(
-    question_id: str,
+    question_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     current_user: User = Depends(require_admin_or_recruiter),
     sq_repo: ScreeningQuestionRepository = Depends(get_screening_question_repo),
 company_id: str = Depends(require_company_id)):

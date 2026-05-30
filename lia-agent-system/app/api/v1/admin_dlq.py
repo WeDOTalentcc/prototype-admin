@@ -18,6 +18,7 @@ from pydantic import BaseModel
 from app.auth.dependencies import require_admin
 from app.shared.resilience.dlq_service import KNOWN_QUEUES, dlq_service
 from app.shared.security.require_company_id import require_company_id
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -106,7 +107,7 @@ company_id: str = Depends(require_company_id)):
 @router.post("/{queue}/requeue/{entry_id}", response_model=RequeueResponse)
 async def requeue_entry(
     queue: str = Path(..., description="Nome da fila"),
-    entry_id: str = Path(..., description="ID da entry a re-enfileirar"),
+    entry_id: str = Path(..., description="ID da entry a re-enfileirar", pattern=DUAL_ID_PATH_PATTERN),
     _: None = Depends(require_admin),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: admin/platform-level (admin_) — role-based access required
@@ -150,3 +151,5 @@ company_id: str = Depends(require_company_id)):
 
     removed = await dlq_service.clear(queue)
     return ClearResponse(queue=queue, entries_removed=removed)
+
+reorder_collection_before_item(router)

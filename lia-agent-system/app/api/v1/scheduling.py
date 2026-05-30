@@ -24,6 +24,9 @@ from app.shared.compliance.audit_service import AuditService, get_audit_service
 from app.shared.pii_masking import get_masked_logger
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = get_masked_logger(__name__)
 
@@ -311,7 +314,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/interviews/{interview_id}", response_model=InterviewResponse)
 async def get_interview(
-    interview_id: str,
+    interview_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     repo: SchedulingRepository = Depends(get_scheduling_repo), 
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
@@ -335,7 +338,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.put("/interviews/{interview_id}", response_model=InterviewResponse)
 async def update_interview(
-    interview_id: str,
+    interview_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     request: UpdateInterviewRequest,
     repo: SchedulingRepository = Depends(get_scheduling_repo), 
 company_id: str = Depends(require_company_id)):
@@ -367,7 +370,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.delete("/interviews/{interview_id}", response_model=None)
 async def cancel_interview(
-    interview_id: str,
+    interview_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     reason: str | None = Query(None, description="Cancellation reason"),
     repo: SchedulingRepository = Depends(get_scheduling_repo), 
 company_id: str = Depends(require_company_id)):
@@ -403,7 +406,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/interviews/{interview_id}/ics", response_model=None)
 async def download_interview_ics(
-    interview_id: str,
+    interview_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     repo: SchedulingRepository = Depends(get_scheduling_repo), 
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
@@ -604,3 +607,5 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         logger.error(f"Failed to send interview confirmation: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+reorder_collection_before_item(router)

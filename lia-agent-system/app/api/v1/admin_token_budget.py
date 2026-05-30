@@ -21,6 +21,9 @@ from app.shared.admin.cross_tenant_session import (
     cross_tenant_session,
     require_superadmin,
 )
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 router = APIRouter(prefix="/admin/token-budget", tags=["admin-token-budget"])
 logger = logging.getLogger(__name__)
@@ -79,7 +82,7 @@ class BudgetCheckResponse(BaseModel):
     ),
 )
 async def get_company_token_budget(
-    company_id: str,
+    company_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     plan_code: str | None = Query(
         default=None,
         description="Código do plano da assinatura ativa. Se omitido, usa fallback (starter/10k).",
@@ -156,7 +159,7 @@ async def get_company_token_budget(
     description="Retorna se a empresa ainda pode fazer chamadas LLM hoje.",
 )
 async def check_company_budget(
-    company_id: str,
+    company_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     plan_code: str | None = Query(default=None),
     admin: User = Depends(require_admin),
     current_user=None,  # test-only alias
@@ -198,3 +201,5 @@ async def check_company_budget(
             company_id, exc
         )
         raise HTTPException(status_code=500, detail="Erro ao verificar token budget")
+
+reorder_collection_before_item(router)

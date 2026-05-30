@@ -43,6 +43,9 @@ from app.shared.security.require_company_id import require_company_id
 from app.auth.dependencies import get_current_active_user
 from app.auth.models import User, UserRole
 from app.shared.types import WeDoBaseModel
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -405,7 +408,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/subscriptions/{client_id}", summary="Get client subscription", response_model=SubscriptionItemWrapper)
 async def get_client_subscription(
-    client_id: str,
+    client_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: BillingRepository = Depends(get_billing_repo), 
 company_id: str = Depends(require_company_id)):
@@ -518,7 +521,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.put("/subscriptions/{subscription_id}", summary="Update subscription", response_model=SubscriptionItemWrapper)
 async def update_subscription(
-    subscription_id: str,
+    subscription_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     data: SubscriptionUpdate,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: BillingRepository = Depends(get_billing_repo), 
@@ -592,7 +595,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.delete("/subscriptions/{subscription_id}", summary="Cancel subscription", response_model=SubscriptionItemWrapper)
 async def cancel_subscription(
-    subscription_id: str,
+    subscription_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     data: SubscriptionCancel | None = None,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: BillingRepository = Depends(get_billing_repo), 
@@ -717,7 +720,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/invoices/client/{client_id}", summary="Get client invoices", response_model=InvoiceListWrapper)
 async def get_client_invoices(
-    client_id: str,
+    client_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     status_filter: str | None = Query(None, alias="status", description="Filter by status"),
     limit: int = Query(50, ge=1, le=200, description="Max results"),
     current_user: dict[str, Any] = Depends(get_user_from_headers),
@@ -772,7 +775,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/invoices/{invoice_id}", summary="Get invoice details", response_model=InvoiceItemWrapper)
 async def get_invoice(
-    invoice_id: str,
+    invoice_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: BillingRepository = Depends(get_billing_repo), 
 company_id: str = Depends(require_company_id)):
@@ -825,7 +828,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.post("/invoices/{invoice_id}/refund", summary="Refund invoice", response_model=InvoiceItemWrapper)
 async def refund_invoice(
-    invoice_id: str,
+    invoice_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     data: RefundRequest | None = None,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: BillingRepository = Depends(get_billing_repo), 
@@ -898,7 +901,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/payment-methods/{client_id}", summary="Get client payment methods", response_model=PaymentMethodListWrapper)
 async def get_client_payment_methods(
-    client_id: str,
+    client_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: BillingRepository = Depends(get_billing_repo), 
 company_id: str = Depends(require_company_id)):
@@ -1038,7 +1041,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.delete("/payment-methods/{payment_method_id}", summary="Remove payment method", response_model=PaymentMethodItemWrapper)
 async def remove_payment_method(
-    payment_method_id: str,
+    payment_method_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: BillingRepository = Depends(get_billing_repo), 
 company_id: str = Depends(require_company_id)):
@@ -1300,7 +1303,7 @@ def get_billing_settings(client) -> dict[str, Any]:
 
 @router.get("/clients/{client_id}", summary="Get client billing data", response_model=ClientBillingWrapper)
 async def get_client_billing(
-    client_id: str,
+    client_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: BillingRepository = Depends(get_billing_repo), 
 company_id: str = Depends(require_company_id)):
@@ -1479,7 +1482,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/my-invoices/{invoice_id}", summary="Get invoice details", response_model=InvoiceItemWrapper)
 async def get_my_invoice(
-    invoice_id: str,
+    invoice_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: BillingRepository = Depends(get_billing_repo), 
 company_id: str = Depends(require_company_id)):
@@ -1520,7 +1523,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.post("/my-invoices/{invoice_id}/pay", summary="Mark invoice as paid (simulation)", response_model=InvoiceItemWrapper)
 async def pay_my_invoice(
-    invoice_id: str,
+    invoice_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: BillingRepository = Depends(get_billing_repo), 
 company_id: str = Depends(require_company_id)):
@@ -1674,7 +1677,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.delete("/my-payment-methods/{method_id}", summary="Remove payment method", response_model=PaymentMethodItemWrapper)
 async def remove_my_payment_method(
-    method_id: str,
+    method_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: BillingRepository = Depends(get_billing_repo), 
 company_id: str = Depends(require_company_id)):
@@ -1770,3 +1773,5 @@ company_id: str = Depends(require_company_id)):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to get usage: {str(e)}"
         )
+
+reorder_collection_before_item(router)

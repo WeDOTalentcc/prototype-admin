@@ -30,6 +30,9 @@ from app.schemas.technical_tests import (
 )
 from app.shared.security.require_company_id import require_company_id
 from app.shared.tenant_guard import get_verified_company_id
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -133,7 +136,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/technical-tests/{test_id}", summary="Get test details", response_model=None)
 async def get_technical_test(
-    test_id: str,
+    test_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: TechnicalTestsRepository = Depends(get_technical_tests_repo),
 company_id: str = Depends(require_company_id)):
@@ -227,7 +230,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.put("/technical-tests/{test_id}", summary="Update test", response_model=None)
 async def update_technical_test(
-    test_id: str,
+    test_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     data: TechnicalTestUpdate,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: TechnicalTestsRepository = Depends(get_technical_tests_repo),
@@ -291,7 +294,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.delete("/technical-tests/{test_id}", summary="Delete test", response_model=None)
 async def delete_technical_test(
-    test_id: str,
+    test_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: TechnicalTestsRepository = Depends(get_technical_tests_repo),
 company_id: str = Depends(require_company_id)):
@@ -344,7 +347,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/clients/{client_id}/tests", summary="Get tests configured for a client", response_model=None)
 async def get_client_tests(
-    client_id: str,
+    client_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     is_enabled: bool | None = Query(None, description="Filter by enabled status"),
     category: str | None = Query(None, description="Filter by category"),
     limit: int = Query(50, ge=1, le=200, description="Max results"),
@@ -413,8 +416,8 @@ company_id: str = Depends(require_company_id)):
 
 @router.put("/clients/{client_id}/tests/{test_id}", summary="Configure test for client", response_model=None)
 async def configure_client_test(
-    client_id: str,
-    test_id: str,
+    client_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
+    test_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     data: ClientTestConfigCreate,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: TechnicalTestsRepository = Depends(get_technical_tests_repo),
@@ -501,8 +504,8 @@ company_id: str = Depends(require_company_id)):
 
 @router.delete("/clients/{client_id}/tests/{test_id}", summary="Remove test from client", response_model=None)
 async def remove_client_test(
-    client_id: str,
-    test_id: str,
+    client_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
+    test_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: TechnicalTestsRepository = Depends(get_technical_tests_repo),
 company_id: str = Depends(require_company_id)):
@@ -557,7 +560,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/clients/{client_id}/tests/stats", summary="Get test statistics for client", response_model=None)
 async def get_client_test_stats(
-    client_id: str,
+    client_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: TechnicalTestsRepository = Depends(get_technical_tests_repo),
 company_id: str = Depends(require_company_id)):
@@ -715,3 +718,5 @@ company_id: str = Depends(require_company_id)):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to seed default tests: {str(e)}"
         )
+
+reorder_collection_before_item(router)

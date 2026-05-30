@@ -17,6 +17,9 @@ from app.domains.job_management.services.job_pattern_service import job_pattern_
 from fastapi import Depends
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 from app.shared.types import WeDoBaseModel
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 router = APIRouter(prefix="/learning", tags=["Job Learning"])
 logger = logging.getLogger(__name__)
@@ -320,7 +323,7 @@ async def record_job_outcome(request: JobOutcomeRequest, company_id: str = Depen
 
 @router.get("/patterns/{company_id}", response_model=None)
 async def list_patterns(
-    company_id: str,
+    company_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     pattern_type: str | None = Query(None),
     min_samples: int = Query(3),
     limit: int = Query(20),
@@ -372,3 +375,5 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
     except Exception as e:
         logger.error(f"Error listing patterns: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+reorder_collection_before_item(router)

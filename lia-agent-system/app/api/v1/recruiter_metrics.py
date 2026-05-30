@@ -15,6 +15,9 @@ from app.core.auth import get_current_user_or_demo
 from app.core.database import get_db
 from app.shared.services.recruiter_metrics_service import recruiter_metrics_service
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +26,7 @@ router = APIRouter(prefix="/recruiter-metrics", tags=["recruiter-metrics"])
 
 @router.get("/{recruiter_id}", response_model=None)
 async def get_recruiter_summary(
-    recruiter_id: str,
+    recruiter_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     company_id: str = Query(..., description="ID da empresa (multi-tenant)"),
     period_days: int = Query(30, ge=1, le=90, description="Período em dias para avg response time"),
     current_user=Depends(get_current_user_or_demo),
@@ -51,7 +54,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 
 @router.get("/{recruiter_id}/backlog", response_model=None)
 async def get_recruiter_backlog(
-    recruiter_id: str,
+    recruiter_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     company_id: str = Query(..., description="ID da empresa (multi-tenant)"),
     current_user=Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
@@ -84,7 +87,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 
 @router.get("/{recruiter_id}/benchmark", response_model=None)
 async def get_recruiter_benchmark(
-    recruiter_id: str,
+    recruiter_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     company_id: str = Query(..., description="ID da empresa (multi-tenant)"),
     current_user=Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
@@ -109,3 +112,5 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
     except Exception as e:
         logger.error(f"get_recruiter_benchmark failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Erro ao calcular benchmark do recrutador")
+
+reorder_collection_before_item(router)

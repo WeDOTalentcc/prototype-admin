@@ -22,6 +22,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.models.agent_quality_evaluation import AgentQualityEvaluation
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -114,7 +117,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 
 @router.get("/{evaluation_id}", response_model=AgentQualityDetail)
 async def get_evaluation_detail(
-    evaluation_id: str,
+    evaluation_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     db: AsyncSession = Depends(get_db),
     company_id: str = Depends(require_company_id),
 ):
@@ -166,3 +169,5 @@ def _classify_trend(evaluations: list[AgentQualityEvaluation]) -> str:
     if delta < -0.05:
         return "degrading"
     return "stable"
+
+reorder_collection_before_item(router)

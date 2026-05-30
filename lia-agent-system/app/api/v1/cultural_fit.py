@@ -12,6 +12,9 @@ from app.core.database import get_db
 from app.shared.services.cultural_fit_integration_service import cultural_fit_service
 from app.shared.tenant_guard import get_verified_company_id
 from app.shared.security.require_company_id import require_company_id
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/candidates", tags=["cultural-fit"])
@@ -19,7 +22,7 @@ router = APIRouter(prefix="/candidates", tags=["cultural-fit"])
 
 @router.get("/{candidate_id}/cultural-fit", response_model=None)
 async def get_cultural_fit(
-    candidate_id: str,
+    candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     job_id: str = Query(..., description="ID da vaga"),
     company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db),
@@ -42,3 +45,5 @@ _company_gate: str = Depends(require_company_id)) -> dict:
     except Exception as exc:
         logger.error("[cultural-fit] Erro: %s", exc)
         raise HTTPException(status_code=500, detail="Erro ao calcular fit cultural")
+
+reorder_collection_before_item(router)

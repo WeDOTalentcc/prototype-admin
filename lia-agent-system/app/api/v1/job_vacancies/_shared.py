@@ -56,6 +56,7 @@ from app.domains.communication.services.teams_service import teams_service
 from libs.messaging.lia_messaging.notification_service import notification_service
 from app.models.job_vacancy import JobVacancy
 from app.schemas.job_vacancy_state import JobVacancyState
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
 
 logger = logging.getLogger(__name__)
 
@@ -563,3 +564,6 @@ def run_fairness_guard_on_jd(
         )
 
     return list(result.soft_warnings or [])
+# Backward-compat alias: job-vacancy handlers historically imported
+# JOB_ID_PATH_PATTERN from here. It IS the canonical dual-ID pattern.
+JOB_ID_PATH_PATTERN = DUAL_ID_PATH_PATTERN

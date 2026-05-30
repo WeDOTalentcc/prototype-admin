@@ -25,6 +25,9 @@ from app.shared.services.automated_decision_logger import (
     log_automated_decision,
 )
 from app.shared.types import WeDoBaseModel
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -405,7 +408,7 @@ async def auto_trigger_screening(
 
 @router.get("/tasks/{job_id}", response_model=None)
 async def list_screening_tasks(
-    job_id: str,
+    job_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     repo: ScreeningRepository = Depends(get_screening_repo),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
@@ -421,7 +424,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.post("/tasks/{task_id}/execute", response_model=None)
 async def execute_screening_task(
-    task_id: str,
+    task_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     repo: ScreeningRepository = Depends(get_screening_repo),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
@@ -453,3 +456,5 @@ company_id: str = Depends(require_company_id)):
         logger.error(f"Failed to execute screening task {task_id}: {e}")
         await repo.rollback()
         raise HTTPException(status_code=500, detail="Failed to execute screening task")
+
+reorder_collection_before_item(router)

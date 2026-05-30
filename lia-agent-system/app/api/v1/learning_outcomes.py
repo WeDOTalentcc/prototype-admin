@@ -19,6 +19,9 @@ from app.domains.job_management.services.outcome_tracker import outcome_tracker
 from app.models.feedback_learning import JobOutcome, JobOutcomeType
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 from app.shared.types import WeDoBaseModel
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 router = APIRouter(prefix="/learning-outcomes", tags=["Learning Outcomes"])
 logger = logging.getLogger(__name__)
@@ -102,7 +105,7 @@ async def record_outcome(request: OutcomeRecordRequest, db: AsyncSession = Depen
 
 @router.get("/outcomes/{company_id}", response_model=list[OutcomeResponse])
 async def list_outcomes(
-    company_id: str,
+    company_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     limit: int = Query(default=20, le=100),
     offset: int = Query(default=0, ge=0),
     outcome_type: str | None = Query(default=None),
@@ -152,7 +155,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
 
 @router.get("/outcomes/{company_id}/stats", response_model=OutcomeStatsResponse)
 async def get_outcome_stats(
-    company_id: str,
+    company_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     repo: LearningOutcomeRepository = Depends(get_learning_outcome_repo),
 _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
@@ -184,7 +187,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
 
 @router.get("/outcomes/{company_id}/patterns", response_model=list[OutcomePatternResponse])
 async def get_outcome_patterns(
-    company_id: str,
+    company_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     group_by: str = Query(default="role", regex="^(role|seniority|department)$"),
     repo: LearningOutcomeRepository = Depends(get_learning_outcome_repo),
 _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
@@ -210,3 +213,5 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
     except Exception as e:
         logger.error(f"Failed to get outcome patterns: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
+
+reorder_collection_before_item(router)

@@ -39,6 +39,9 @@ from app.schemas.client_user import (
     ClientUserUpdate,
 )
 from app.shared.security.require_company_id import require_company_id
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 FRONTEND_URL = os.getenv("FRONTEND_URL", "https://app.wedotalent.com")
 
@@ -247,7 +250,7 @@ async def list_options(company_id: str = Depends(require_company_id)):
 
 @router.get("", summary="List users for a client", response_model=None)
 async def list_client_users(
-    client_id: str,
+    client_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     status: str | None = Query(None, description="Filter by status"),
     role: str | None = Query(None, description="Filter by role"),
     search: str | None = Query(None, description="Search by name or email"),
@@ -303,8 +306,8 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/{user_id}", summary="Get user by ID", response_model=None)
 async def get_client_user(
-    client_id: str,
-    user_id: str,
+    client_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
+    user_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: ClientUserRepository = Depends(get_client_user_repo),
 company_id: str = Depends(require_company_id)):
@@ -344,7 +347,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.post("", status_code=status.HTTP_201_CREATED, summary="Create/invite user", response_model=None)
 async def create_client_user(
-    client_id: str,
+    client_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     data: ClientUserCreate,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: ClientUserRepository = Depends(get_client_user_repo),
@@ -449,8 +452,8 @@ company_id: str = Depends(require_company_id)):
 
 @router.put("/{user_id}", summary="Update user", response_model=None)
 async def update_client_user(
-    client_id: str,
-    user_id: str,
+    client_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
+    user_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     data: ClientUserUpdate,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: ClientUserRepository = Depends(get_client_user_repo),
@@ -599,8 +602,8 @@ company_id: str = Depends(require_company_id)):
 
 @router.delete("/{user_id}", summary="Delete user (soft delete)", response_model=None)
 async def delete_client_user(
-    client_id: str,
-    user_id: str,
+    client_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
+    user_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: ClientUserRepository = Depends(get_client_user_repo),
 company_id: str = Depends(require_company_id)):
@@ -658,8 +661,8 @@ company_id: str = Depends(require_company_id)):
 
 @router.post("/{user_id}/resend-invite", summary="Resend invitation", response_model=None)
 async def resend_invite(
-    client_id: str,
-    user_id: str,
+    client_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
+    user_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: ClientUserRepository = Depends(get_client_user_repo),
     email_svc: EmailService = Depends(get_email_service),
@@ -748,8 +751,8 @@ company_id: str = Depends(require_company_id)):
 
 @router.put("/{user_id}/role", summary="Update user role", response_model=None)
 async def update_user_role(
-    client_id: str,
-    user_id: str,
+    client_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
+    user_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     data: ClientUserRoleUpdate,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: ClientUserRepository = Depends(get_client_user_repo),
@@ -815,3 +818,5 @@ company_id: str = Depends(require_company_id)):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to update user role: {str(e)}",
         )
+
+reorder_collection_before_item(router)

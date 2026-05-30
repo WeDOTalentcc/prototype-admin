@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from typing import Any
 from uuid import UUID
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
 
 """
 Analytics routes: metrics, analytics deep-dive, history, stats/overview,
@@ -71,7 +72,7 @@ class JobVacancyMetricsResponse(BaseModel):
 
 @router.get("/job-vacancies/{job_vacancy_id}/metrics", response_model=JobVacancyMetricsResponse)
 async def get_job_vacancy_metrics(
-    job_vacancy_id: str = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
+    job_vacancy_id: str = Path(..., pattern=DUAL_ID_PATH_PATTERN),
     current_user: User = Depends(get_current_user_or_demo),
     repo: JobVacanciesAnalyticsRepository = Depends(get_job_vacancies_analytics_repo),
 company_id: str = Depends(require_company_id)):
@@ -219,7 +220,7 @@ class JobAnalyticsResponse(BaseModel):
 
 @router.get("/job-vacancies/{job_id}/analytics", response_model=JobAnalyticsResponse)
 async def get_job_analytics(
-    job_id: str = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
+    job_id: str = Path(..., pattern=DUAL_ID_PATH_PATTERN),
     current_user: User = Depends(get_current_user_or_demo),
     repo: JobVacanciesAnalyticsRepository = Depends(get_job_vacancies_analytics_repo),
 company_id: str = Depends(require_company_id)):
@@ -445,7 +446,7 @@ class JobVacancyHistoryResponse(BaseModel):
 
 @router.get("/job-vacancies/{job_id}/history", response_model=JobVacancyHistoryResponse)
 async def get_job_vacancy_history(
-    job_id: str = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
+    job_id: str = Path(..., pattern=DUAL_ID_PATH_PATTERN),
     page: int = Query(1, ge=1),
     page_size: int = Query(50, ge=1, le=100),
     current_user: User = Depends(get_current_user_or_demo),

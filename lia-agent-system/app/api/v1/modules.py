@@ -11,6 +11,9 @@ from app.domains.modules.services.module_service import get_module_service, Modu
 from lia_models.billing import AVAILABLE_MODULES, MODULE_STATUS_OPTIONS, ModuleStatus, ModuleTier
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 from app.shared.types import WeDoBaseModel
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -78,7 +81,7 @@ async def get_module_catalog(company_id: str = Depends(require_company_id)):
 @router.get("/{company_id}")
 @router.get("/company/{company_id}")
 async def get_company_modules(
-    company_id: str,
+    company_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     request: Request,
     include_catalog: bool = False,
     db: AsyncSession = Depends(get_db),
@@ -92,7 +95,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
 
 @router.get("/company/{company_id}/check/{module_name}")
 async def check_module_active(
-    company_id: str,
+    company_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     module_name: str,
     request: Request,
     db: AsyncSession = Depends(get_db),
@@ -114,7 +117,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
 
 @router.post("/company/{company_id}/activate")
 async def activate_module(
-    company_id: str,
+    company_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     body: ModuleActivateRequest,
     request: Request,
     db: AsyncSession = Depends(get_db),
@@ -147,7 +150,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
 
 @router.post("/company/{company_id}/deactivate/{module_name}")
 async def deactivate_module(
-    company_id: str,
+    company_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     module_name: str,
     request: Request,
     db: AsyncSession = Depends(get_db),
@@ -163,7 +166,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
 
 @router.patch("/company/{company_id}/{module_name}")
 async def update_module(
-    company_id: str,
+    company_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     module_name: str,
     body: ModuleUpdateRequest,
     request: Request,
@@ -200,7 +203,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
 
 @router.post("/company/{company_id}/seed")
 async def seed_company_modules(
-    company_id: str,
+    company_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     request: Request,
     db: AsyncSession = Depends(get_db),
     svc: ModuleService = Depends(get_module_service),
@@ -217,7 +220,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
 
 @router.patch("/{module_id}")
 async def update_module_by_id(
-    module_id: str,
+    module_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     body: ModuleUpdateRequest,
     request: Request,
     db: AsyncSession = Depends(get_tenant_db),
@@ -255,7 +258,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/company/{company_id}/billing/{module_name}")
 async def get_module_billing_context(
-    company_id: str,
+    company_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     module_name: str,
     request: Request,
     db: AsyncSession = Depends(get_db),
@@ -267,3 +270,5 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
     if not ctx:
         raise HTTPException(status_code=404, detail="Module not found")
     return ctx
+
+reorder_collection_before_item(router)

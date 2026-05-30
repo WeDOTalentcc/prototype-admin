@@ -12,6 +12,9 @@ from app.core.database import get_db, get_tenant_db
 from app.shared.services.affirmative_service import AffirmativeService
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 from app.shared.types import WeDoBaseModel
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 router = APIRouter(prefix="/affirmative", tags=["affirmative"])
 
@@ -96,7 +99,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/pending-documents/{company_id}", response_model=PendingDocumentsResponse)
 async def get_pending_documents(
-    company_id: str,
+    company_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     vacancy_id: str | None = None,
     db: AsyncSession = Depends(get_db), 
 _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
@@ -161,7 +164,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.post("/check-expired/{company_id}", response_model=ExpiredDocumentsResponse)
 async def check_expired_documents(
-    company_id: str,
+    company_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     db: AsyncSession = Depends(get_db), 
 _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
@@ -169,3 +172,5 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
     service = AffirmativeService(db)
     count = service.check_expired_documents(company_id)
     return {"expired_count": count}
+
+reorder_collection_before_item(router)

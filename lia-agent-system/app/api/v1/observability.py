@@ -50,6 +50,9 @@ from app.schemas.observability import (
 )
 from app.shared.tenant_guard import get_verified_company_id
 from app.shared.security.require_company_id import require_company_id
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -147,7 +150,7 @@ _company_gate: str = Depends(require_company_id)):
 
 @router.get("/ai-logs/{log_id}", response_model=AIInferenceLogResponse, summary="Get AI inference log by ID")
 async def get_ai_inference_log(
-    log_id: str,
+    log_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     company_id: str = Depends(get_verified_company_id),
     repo: ObservabilityRepository = Depends(get_observability_repo),
 _company_gate: str = Depends(require_company_id)):
@@ -287,7 +290,7 @@ _company_gate: str = Depends(require_company_id)):
 
 @router.get("/consents/{candidate_id}", response_model=ConsentRecordListResponse, summary="Get consents by candidate")
 async def get_candidate_consents(
-    candidate_id: str,
+    candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     is_active: bool | None = Query(None, description="Filter by active status"),
     company_id: str = Depends(get_verified_company_id),
     repo: ObservabilityRepository = Depends(get_observability_repo),
@@ -354,7 +357,7 @@ _company_gate: str = Depends(require_company_id)):
 
 @router.put("/consents/{consent_id}/revoke", response_model=ConsentRecordResponse, summary="Revoke consent")
 async def revoke_consent(
-    consent_id: str,
+    consent_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     data: ConsentRevoke,
     company_id: str = Depends(get_verified_company_id),
     repo: ObservabilityRepository = Depends(get_observability_repo),
@@ -453,7 +456,7 @@ _company_gate: str = Depends(require_company_id)):
 
 @router.put("/incidents/{incident_id}", response_model=IncidentReportResponse, summary="Update incident")
 async def update_incident(
-    incident_id: str,
+    incident_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     data: IncidentUpdate,
     company_id: str = Depends(get_verified_company_id),
     repo: ObservabilityRepository = Depends(get_observability_repo),
@@ -498,7 +501,7 @@ _company_gate: str = Depends(require_company_id)):
 
 @router.put("/incidents/{incident_id}/resolve", response_model=IncidentReportResponse, summary="Resolve incident")
 async def resolve_incident(
-    incident_id: str,
+    incident_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     data: IncidentResolve,
     company_id: str = Depends(get_verified_company_id),
     repo: ObservabilityRepository = Depends(get_observability_repo),
@@ -668,7 +671,7 @@ _company_gate: str = Depends(require_company_id)):
 
 @router.put("/compliance/{control_id}", response_model=ComplianceControlResponse, summary="Update compliance control")
 async def update_compliance_control(
-    control_id: str,
+    control_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     data: ComplianceControlUpdate,
     company_id: str = Depends(get_verified_company_id),
     repo: ObservabilityRepository = Depends(get_observability_repo),
@@ -881,7 +884,7 @@ _company_gate: str = Depends(require_company_id)):
 
 @router.get("/bias-audits/{audit_id}", response_model=BiasAuditReportResponse, summary="Get bias audit by ID")
 async def get_bias_audit(
-    audit_id: str,
+    audit_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     company_id: str = Depends(get_verified_company_id),
     repo: ObservabilityRepository = Depends(get_observability_repo),
 _company_gate: str = Depends(require_company_id)):
@@ -961,7 +964,7 @@ _company_gate: str = Depends(require_company_id)):
 
 @router.post("/bias-audits/{audit_id}/publish", response_model=BiasAuditReportResponse, summary="Publish bias audit")
 async def publish_bias_audit(
-    audit_id: str,
+    audit_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     data: BiasAuditPublish,
     company_id: str = Depends(get_verified_company_id),
     repo: ObservabilityRepository = Depends(get_observability_repo),
@@ -992,3 +995,5 @@ _company_gate: str = Depends(require_company_id)):
     except Exception as e:
         logger.error(f"Error publishing bias audit: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
+
+reorder_collection_before_item(router)

@@ -14,6 +14,9 @@ from app.schemas.async_job import AsyncJobResponse, AsyncJobStatusResponse
 from fastapi import Depends
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 router = APIRouter(prefix="/async", tags=["async-jobs"])
 logger = logging.getLogger(__name__)
@@ -176,7 +179,7 @@ async def send_bulk_email(req: BulkEmailRequest, company_id: str = Depends(requi
 # ---------------------------------------------------------------------------
 
 @router.get("/jobs/{job_id}/status", response_model=AsyncJobStatusResponse, summary="Status de tarefa async")
-async def get_job_status(job_id: str, company_id: str = Depends(require_company_id)):
+async def get_job_status(job_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)], company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Polling fallback — retorna status atual de uma tarefa Celery.
@@ -206,3 +209,5 @@ async def get_job_status(job_id: str, company_id: str = Depends(require_company_
     except Exception as exc:
         logger.error("Falha ao consultar status do job %s: %s", job_id, exc)
         raise HTTPException(status_code=404, detail="Tarefa não encontrada")
+
+reorder_collection_before_item(router)

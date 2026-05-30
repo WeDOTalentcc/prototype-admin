@@ -10,6 +10,9 @@ from app.domains.recruitment.repositories.search_feedback_repository import Sear
 from app.models.search_feedback import SearchFeedback
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -94,7 +97,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/{job_id}", response_model=None)
 async def get_job_feedbacks(
-    job_id: str,
+    job_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     repo: SearchFeedbackRepository = Depends(get_search_feedback_repo),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
@@ -114,7 +117,7 @@ company_id: str = Depends(require_company_id)):
 @router.delete("/{feedback_id}", response_model=None)
 async def delete_feedback(
     request: Request,
-    feedback_id: str,
+    feedback_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     repo: SearchFeedbackRepository = Depends(get_search_feedback_repo),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
@@ -127,3 +130,5 @@ company_id: str = Depends(require_company_id)):
         raise HTTPException(status_code=404, detail="Feedback not found")
     await repo.delete(feedback)
     return {"deleted": True, "id": feedback_id}
+
+reorder_collection_before_item(router)

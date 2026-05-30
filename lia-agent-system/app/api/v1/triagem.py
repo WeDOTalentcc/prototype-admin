@@ -59,6 +59,9 @@ from app.domains.recruitment.services.triagem_session_service import (
 )
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -427,7 +430,7 @@ async def synthesize_speech(
 @router.post("/{token}/tts/{message_id}", response_model=None)
 async def synthesize_message_speech(
     token: str,
-    message_id: str,
+    message_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     repo: TriagemRepository = Depends(get_triagem_repo),
     triagem_svc: TriagemSessionService = Depends(get_triagem_service),
 ):
@@ -585,3 +588,5 @@ async def voip_start(
         "fallback_channel": "chat",
         "message": "Chamada de voz temporariamente indisponível. Use o chat de texto para continuar a triagem.",
     })
+
+reorder_collection_before_item(router)

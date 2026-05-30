@@ -26,6 +26,9 @@ from app.domains.cv_screening.services.lia_score_service import lia_score_servic
 from app.services.notification_service import NotificationType, notification_service
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
 
 logger = logging.getLogger(__name__)
 
@@ -100,7 +103,7 @@ class FeedbackAnalyticsDTO(BaseModel):
 
 @router.post("/apply/{vacancy_id}", response_model=ApplicationResponseDTO)
 async def apply_to_vacancy(
-    vacancy_id: str,
+    vacancy_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     application: CandidateApplicationRequest,
     cv_file: UploadFile | None = File(None),
     repo: ApplicationRepository = Depends(get_application_repo),
@@ -385,7 +388,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.post("/resubmit/{vacancy_id}", response_model=ResubmitResponseDTO)
 async def resubmit_cv(
-    vacancy_id: str,
+    vacancy_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     candidate_id: str = Query(..., description="ID do candidato"),
     token: str = Query(..., description="Token de reenvio"),
     cv_file: UploadFile = File(..., description="Curriculo atualizado"),
@@ -555,7 +558,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/feedback/{vacancy_id}/analytics", response_model=FeedbackAnalyticsDTO)
 async def get_feedback_analytics(
-    vacancy_id: str,
+    vacancy_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     days: int = Query(30, ge=1, le=365, description="Periodo em dias"),
     repo: ApplicationRepository = Depends(get_application_repo), 
 company_id: str = Depends(require_company_id)):
@@ -587,7 +590,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.post("/feedback/{feedback_id}/track-click", response_model=None)
 async def track_resubmit_click(
-    feedback_id: str,
+    feedback_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     repo: ApplicationRepository = Depends(get_application_repo), 
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)

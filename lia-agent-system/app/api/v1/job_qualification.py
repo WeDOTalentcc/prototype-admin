@@ -16,6 +16,9 @@ from app.domains.job_management.services.job_qualification_service import job_qu
 from app.models.job_vacancy import JobVacancy
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 # RAILS-DEPRECATED: This endpoint manages Rails-owned entities (candidates/jobs/applies/users).
 # Direct DB calls will be replaced by RailsAdapter after ats-api-rails handoff.
@@ -75,7 +78,7 @@ async def classify_job(body: ClassifyJobRequest, company_id: str = Depends(requi
 
 
 @router.post("/{job_id}/classify", response_model=JobQualificationResponse)
-async def classify_and_save(job_id: str, db: AsyncSession = Depends(get_db), company_id: str = Depends(require_company_id)):
+async def classify_and_save(job_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)], db: AsyncSession = Depends(get_db), company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Classify a job vacancy and save the result to the database."""
     result = await db.execute(select(JobVacancy).where(JobVacancy.id == job_id, JobVacancy.company_id == company_id))
@@ -121,7 +124,7 @@ async def classify_and_save(job_id: str, db: AsyncSession = Depends(get_db), com
 
 
 @router.get("/{job_id}", response_model=JobQualificationResponse)
-async def get_qualification(job_id: str, db: AsyncSession = Depends(get_db), company_id: str = Depends(require_company_id)):
+async def get_qualification(job_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)], db: AsyncSession = Depends(get_db), company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get the current qualification level of a job vacancy."""
     result = await db.execute(select(JobVacancy).where(JobVacancy.id == job_id, JobVacancy.company_id == company_id))
@@ -140,7 +143,7 @@ async def get_qualification(job_id: str, db: AsyncSession = Depends(get_db), com
 
 
 @router.put("/{job_id}/override", response_model=JobQualificationResponse)
-async def override_qualification(job_id: str, body: OverrideQualificationRequest, db: AsyncSession = Depends(get_db), company_id: str = Depends(require_company_id)):
+async def override_qualification(job_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)], body: OverrideQualificationRequest, db: AsyncSession = Depends(get_db), company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Manually override the qualification level of a job vacancy."""
     result = await db.execute(select(JobVacancy).where(JobVacancy.id == job_id, JobVacancy.company_id == company_id))
@@ -163,3 +166,5 @@ async def override_qualification(job_id: str, body: OverrideQualificationRequest
         qualification_override=True,
         classified=True,
     )
+
+reorder_collection_before_item(router)

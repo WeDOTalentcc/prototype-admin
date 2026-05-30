@@ -43,6 +43,9 @@ from app.schemas.saas_metrics import (
     RevenueBreakdown,
 )
 from app.shared.security.require_company_id import require_company_id
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -351,7 +354,7 @@ company_id: str = Depends(require_company_id)):
     summary="Get all metrics for a client",
 )
 async def get_all_client_metrics(
-    client_id: str,
+    client_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: SaasMetricsRepository = Depends(get_saas_metrics_repo),
 company_id: str = Depends(require_company_id)) -> ClientAllMetricsResponse:
@@ -398,7 +401,7 @@ company_id: str = Depends(require_company_id)) -> ClientAllMetricsResponse:
     summary="Get revenue metrics for a client",
 )
 async def get_revenue_metrics(
-    client_id: str,
+    client_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: SaasMetricsRepository = Depends(get_saas_metrics_repo),
 company_id: str = Depends(require_company_id)) -> ClientSaasMetricsResponse:
@@ -442,7 +445,7 @@ company_id: str = Depends(require_company_id)) -> ClientSaasMetricsResponse:
     summary="Get usage metrics for a client",
 )
 async def get_usage_metrics(
-    client_id: str,
+    client_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: SaasMetricsRepository = Depends(get_saas_metrics_repo),
 company_id: str = Depends(require_company_id)) -> ClientUsageMetricsResponse:
@@ -486,7 +489,7 @@ company_id: str = Depends(require_company_id)) -> ClientUsageMetricsResponse:
     summary="Get health metrics for a client",
 )
 async def get_health_metrics(
-    client_id: str,
+    client_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: SaasMetricsRepository = Depends(get_saas_metrics_repo),
 company_id: str = Depends(require_company_id)) -> ClientHealthMetricsResponse:
@@ -530,7 +533,7 @@ company_id: str = Depends(require_company_id)) -> ClientHealthMetricsResponse:
     summary="Get payment history for a client",
 )
 async def get_payment_history(
-    client_id: str,
+    client_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     status_filter: str | None = Query(None, alias="status", description="Filter by status"),
     limit: int = Query(50, ge=1, le=200, description="Max results"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
@@ -586,7 +589,7 @@ company_id: str = Depends(require_company_id)) -> PaymentHistoryListResponse:
     summary="Record a payment",
 )
 async def create_payment(
-    client_id: str,
+    client_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     payment_data: PaymentHistoryCreate,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: SaasMetricsRepository = Depends(get_saas_metrics_repo),
@@ -650,7 +653,7 @@ company_id: str = Depends(require_company_id)) -> PaymentHistoryResponse:
     summary="Get client-specific metrics",
 )
 async def get_client_metrics(
-    client_id: str,
+    client_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: SaasMetricsRepository = Depends(get_saas_metrics_repo),
 company_id: str = Depends(require_company_id)):
@@ -966,3 +969,5 @@ company_id: str = Depends(require_company_id)):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to get revenue analysis: {str(e)}",
         )
+
+reorder_collection_before_item(router)

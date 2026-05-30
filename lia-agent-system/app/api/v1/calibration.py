@@ -17,6 +17,9 @@ from app.core.database import get_db
 from app.domains.analytics.services.calibration_service import CalibrationService  # R-055: direct canonical (shim deleted)
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 router = APIRouter(prefix="/calibration", tags=["Calibration"])
 
@@ -377,7 +380,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.post("/suggestions/{suggestion_id}/approve", response_model=SuggestionActionResponse)
 async def approve_suggestion(
-    suggestion_id: str,
+    suggestion_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     user_id: str = "system",
     db: AsyncSession = Depends(get_db), 
 company_id: str = Depends(require_company_id)):
@@ -399,7 +402,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.post("/suggestions/{suggestion_id}/reject", response_model=SuggestionActionResponse)
 async def reject_suggestion(
-    suggestion_id: str,
+    suggestion_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     request: SuggestionActionRequest,
     user_id: str = "system",
     db: AsyncSession = Depends(get_db), 
@@ -490,3 +493,5 @@ company_id: str = Depends(require_company_id)):
             "generated_at": datetime.utcnow().isoformat()
         }
     }
+
+reorder_collection_before_item(router)

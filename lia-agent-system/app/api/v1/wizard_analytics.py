@@ -16,6 +16,9 @@ from app.domains.analytics.services.wizard_analytics_service import wizard_analy
 from fastapi import Depends
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 from app.shared.types import WeDoBaseModel
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 router = APIRouter(prefix="/wizard-analytics", tags=["Wizard Analytics"])
 logger = logging.getLogger(__name__)
@@ -167,7 +170,7 @@ async def complete_session(request: CompleteSessionRequest, company_id: str = De
 
 @router.get("/metrics/{company_id}", response_model=None)
 async def get_company_metrics(
-    company_id: str,
+    company_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     days: int = Query(30, ge=1, le=365),
 _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
     # multi-tenancy: public endpoint (metrics) — no tenant data
@@ -189,8 +192,8 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
 
 @router.get("/metrics/{company_id}/recruiter/{recruiter_id}", response_model=None)
 async def get_recruiter_metrics(
-    company_id: str,
-    recruiter_id: str,
+    company_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
+    recruiter_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     days: int = Query(30, ge=1, le=365),
 _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
     # multi-tenancy: public endpoint (metrics) — no tenant data
@@ -213,7 +216,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
 
 @router.get("/stages/{company_id}", response_model=None)
 async def get_stage_breakdown(
-    company_id: str,
+    company_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     days: int = Query(30, ge=1, le=365),
 _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
@@ -235,7 +238,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
 
 @router.get("/suggestions/{company_id}", response_model=None)
 async def get_suggestion_effectiveness(
-    company_id: str,
+    company_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     days: int = Query(30, ge=1, le=365),
 _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
@@ -264,7 +267,7 @@ async def get_kpi_summary(company_id: str = Depends(require_company_id)):
 
 @router.get("/dashboard/{company_id}", response_model=None)
 async def get_dashboard_data(
-    company_id: str,
+    company_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     days: int = Query(30, ge=1, le=365),
 _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
@@ -300,3 +303,5 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
     except Exception as e:
         logger.error(f"Error getting dashboard data: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+reorder_collection_before_item(router)

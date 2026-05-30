@@ -15,6 +15,9 @@ from app.core.database import get_db
 from app.domains.analytics.services.job_analytics_prompt_service import job_analytics_prompt_service
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -243,7 +246,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/quick-insights/{job_id}", response_model=QuickInsightsResponse)
 async def get_quick_insights(
-    job_id: str,
+    job_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     db: AsyncSession = Depends(get_db), 
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
@@ -324,7 +327,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/suggestions/{job_id}", response_model=SuggestionsResponse)
 async def get_suggestions(
-    job_id: str,
+    job_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     db: AsyncSession = Depends(get_db), 
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
@@ -441,3 +444,5 @@ company_id: str = Depends(require_company_id)):
         failed=failed,
         results=list(results)
     )
+
+reorder_collection_before_item(router)

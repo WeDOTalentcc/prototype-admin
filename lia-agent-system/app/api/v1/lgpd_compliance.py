@@ -44,6 +44,9 @@ from app.shared.services.lgpd_cleanup_service import (
 from app.shared.tenant_guard import get_verified_company_id
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -116,7 +119,7 @@ _company_gate: str = Depends(require_company_id)):
 
 @router.get("/dpo/{target_company_id}", response_model=DPORegistryResponse, summary="Get DPO for company")
 async def get_dpo_for_company(
-    target_company_id: str,
+    target_company_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     company_id: str = Depends(get_verified_company_id),
     lgpd_repo: LGPDRepository = Depends(get_lgpd_repo),
 _company_gate: str = Depends(require_company_id)):
@@ -246,7 +249,7 @@ _company_gate: str = Depends(require_company_id)):
 
 @router.get("/breaches/{breach_id}", response_model=BreachNotificationResponse, summary="Get breach notification")
 async def get_breach_notification(
-    breach_id: str,
+    breach_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     company_id: str = Depends(get_verified_company_id),
     lgpd_repo: LGPDRepository = Depends(get_lgpd_repo),
 _company_gate: str = Depends(require_company_id)):
@@ -303,7 +306,7 @@ _company_gate: str = Depends(require_company_id)):
 
 @router.put("/breaches/{breach_id}", response_model=BreachNotificationResponse, summary="Update breach notification")
 async def update_breach_notification(
-    breach_id: str,
+    breach_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     data: BreachNotificationUpdate,
     company_id: str = Depends(get_verified_company_id),
     lgpd_repo: LGPDRepository = Depends(get_lgpd_repo),
@@ -339,7 +342,7 @@ _company_gate: str = Depends(require_company_id)):
 
 @router.put("/breaches/{breach_id}/notify-anpd", response_model=BreachNotificationResponse, summary="Mark ANPD notified")
 async def mark_anpd_notified(
-    breach_id: str,
+    breach_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     data: ANPDNotification,
     company_id: str = Depends(get_verified_company_id),
     lgpd_repo: LGPDRepository = Depends(get_lgpd_repo),
@@ -373,7 +376,7 @@ _company_gate: str = Depends(require_company_id)):
 
 @router.put("/breaches/{breach_id}/notify-subjects", response_model=BreachNotificationResponse, summary="Mark subjects notified")
 async def mark_subjects_notified(
-    breach_id: str,
+    breach_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     data: SubjectsNotification,
     company_id: str = Depends(get_verified_company_id),
     lgpd_repo: LGPDRepository = Depends(get_lgpd_repo),
@@ -399,7 +402,7 @@ _company_gate: str = Depends(require_company_id)):
 
 @router.put("/breaches/{breach_id}/resolve", response_model=BreachNotificationResponse, summary="Resolve breach")
 async def resolve_breach(
-    breach_id: str,
+    breach_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     data: BreachResolution,
     company_id: str = Depends(get_verified_company_id),
     lgpd_repo: LGPDRepository = Depends(get_lgpd_repo),
@@ -460,7 +463,7 @@ _company_gate: str = Depends(require_company_id)):
 
 @router.get("/decisions/{decision_id}", response_model=AutomatedDecisionResponse, summary="Get automated decision")
 async def get_automated_decision(
-    decision_id: str,
+    decision_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     company_id: str = Depends(get_verified_company_id),
     lgpd_repo: LGPDRepository = Depends(get_lgpd_repo),
 _company_gate: str = Depends(require_company_id)):
@@ -517,7 +520,7 @@ _company_gate: str = Depends(require_company_id)):
 
 @router.post("/decisions/{decision_id}/request-human-review", response_model=AutomatedDecisionResponse, summary="Request human review")
 async def request_human_review(
-    decision_id: str,
+    decision_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     data: HumanReviewRequest,
     company_id: str = Depends(get_verified_company_id),
     lgpd_repo: LGPDRepository = Depends(get_lgpd_repo),
@@ -547,7 +550,7 @@ _company_gate: str = Depends(require_company_id)):
 
 @router.post("/decisions/{decision_id}/complete-human-review", response_model=AutomatedDecisionResponse, summary="Complete human review")
 async def complete_human_review(
-    decision_id: str,
+    decision_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     data: HumanReviewComplete,
     company_id: str = Depends(get_verified_company_id),
     lgpd_repo: LGPDRepository = Depends(get_lgpd_repo),
@@ -684,3 +687,5 @@ _company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Return count of records pending deletion (monitoring/DPO dashboard)."""
     return await get_pending_deletions_count(lgpd_repo.db)
+
+reorder_collection_before_item(router)

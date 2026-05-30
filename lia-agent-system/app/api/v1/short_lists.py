@@ -24,6 +24,9 @@ from app.core.database import get_db, get_tenant_db
 from app.domains.candidates.repositories.short_list_repository import ShortListRepository
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 from app.shared.types import WeDoBaseModel
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -140,7 +143,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 
 @router.get("/{list_id}", response_model=ShortListResponse)
 async def get_short_list(
-    list_id: UUID,
+    list_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     company_id: str = Query(...),
     db: AsyncSession = Depends(get_db),
 _company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
@@ -155,7 +158,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 
 @router.post("/{list_id}/candidates", response_model=ShortListCandidateResponse, status_code=201)
 async def add_candidate(
-    list_id: UUID,
+    list_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     body: ShortListCandidateAdd,
     company_id: str = Query(...),
     db: AsyncSession = Depends(get_tenant_db),
@@ -183,8 +186,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 
 @router.delete("/{list_id}/candidates/{candidate_id}", status_code=204, response_model=None)
 async def remove_candidate(
-    list_id: UUID,
-    candidate_id: str,
+    list_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
+    candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     company_id: str = Query(...),
     db: AsyncSession = Depends(get_db),
 _company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
@@ -200,3 +203,5 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise HTTPException(status_code=404, detail="Candidato não encontrado na short list")
 
     await repo.remove_member(member)
+
+reorder_collection_before_item(router)

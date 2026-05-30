@@ -21,6 +21,9 @@ from app.shared.services.granular_consent_service import (
 )
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +64,7 @@ class BulkConsentUpdateRequest(WeDoBaseModel):
 
 @router.get("/{candidate_id}", response_model=GranularConsentSummaryResponse)
 async def get_granular_consents(
-    candidate_id: str,
+    candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db),
 _company_gate: str = Depends(require_company_id)) -> GranularConsentSummaryResponse:
@@ -104,7 +107,7 @@ _company_gate: str = Depends(require_company_id)) -> GranularConsentSummaryRespo
 
 @router.post("/{candidate_id}/update", response_model=None)
 async def update_granular_consents(
-    candidate_id: str,
+    candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     payload: BulkConsentUpdateRequest,
     request: Request,
     company_id: str = Depends(get_verified_company_id),
@@ -156,3 +159,5 @@ _company_gate: str = Depends(require_company_id)) -> dict:
     except Exception as exc:
         logger.error("granular_consent/%s/update erro: %s", candidate_id, exc)
         raise HTTPException(status_code=500, detail="Erro ao atualizar consentimentos")
+
+reorder_collection_before_item(router)

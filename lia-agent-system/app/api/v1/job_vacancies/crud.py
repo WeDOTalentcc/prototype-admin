@@ -8,6 +8,7 @@ from pydantic import ConfigDict, Field
 from app.auth.models import UserRole
 from app.middleware.trial_enforcement import require_active_subscription_or_demo  # noqa: F401
 from app.shared.services.plan_limits_service import check_active_jobs_limit_or_demo  # noqa: F401
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
 
 """
 CRUD routes: finalize, search, GET one, GET list, POST create, PUT update,
@@ -382,7 +383,7 @@ async def get_job_vacancy(
     # reject any other token (e.g. "lifecycle-overview", "stats") so that
     # if router-include order ever regresses, FastAPI returns 422 instead
     # of swallowing a static collection path into this item handler.
-    job_vacancy_id: str = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
+    job_vacancy_id: str = Path(..., pattern=DUAL_ID_PATH_PATTERN),
     repo: JobVacancyCRUDRepository = Depends(get_job_vacancy_crud_repo),
     current_user: User = Depends(get_current_user_or_demo),
     rails_adapter: RailsAdapter = Depends(get_rails_adapter),
@@ -831,7 +832,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.put("/job-vacancies/{job_vacancy_id}", response_model=JobVacancyResponse)
 async def update_job_vacancy(
-    job_vacancy_id: str = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
+    job_vacancy_id: str = Path(..., pattern=DUAL_ID_PATH_PATTERN),
     job_data: JobVacancyUpdate = ...,
     repo: JobVacancyCRUDRepository = Depends(get_job_vacancy_crud_repo),
     current_user: User = Depends(get_current_user_or_demo), 
@@ -922,7 +923,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.delete("/job-vacancies/{job_vacancy_id}", response_model=JobVacancyDeleteResponse)
 async def delete_job_vacancy(
-    job_vacancy_id: str = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
+    job_vacancy_id: str = Path(..., pattern=DUAL_ID_PATH_PATTERN),
     repo: JobVacancyCRUDRepository = Depends(get_job_vacancy_crud_repo),
     current_user: User = Depends(get_current_active_user), 
 company_id: str = Depends(require_company_id)):
@@ -969,7 +970,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.patch("/job-vacancies/{job_vacancy_id}/status", response_model=JobVacancyStatusUpdateResponse)
 async def update_job_vacancy_status(
-    job_vacancy_id: str = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
+    job_vacancy_id: str = Path(..., pattern=DUAL_ID_PATH_PATTERN),
     status: str = ...,
     repo: JobVacancyCRUDRepository = Depends(get_job_vacancy_crud_repo),
     current_user: User = Depends(get_current_active_user), 
@@ -1057,7 +1058,7 @@ class CloneFromTemplateRequest(WeDoBaseModel):
 
 @router.post("/job-vacancies/{job_id}/duplicate", response_model=DuplicateJobResponse)
 async def duplicate_job(
-    job_id: str = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
+    job_id: str = Path(..., pattern=DUAL_ID_PATH_PATTERN),
     request: DuplicateJobRequest = ...,
     repo: JobVacancyCRUDRepository = Depends(get_job_vacancy_crud_repo),
     current_user: User = Depends(get_current_user_or_demo), 
@@ -1098,7 +1099,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.post("/job-vacancies/{job_id}/clone-from-template", response_model=CloneFromTemplateResponse)
 async def clone_from_template(
-    job_id: str = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
+    job_id: str = Path(..., pattern=DUAL_ID_PATH_PATTERN),
     request: CloneFromTemplateRequest = ...,
     repo: JobVacancyCRUDRepository = Depends(get_job_vacancy_crud_repo),
     current_user: User = Depends(get_current_user_or_demo), 
@@ -1136,7 +1137,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/job-vacancies/{job_id}/clone-summary", response_model=CloneSummaryResponse)
 async def get_clone_summary(
-    job_id: str = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
+    job_id: str = Path(..., pattern=DUAL_ID_PATH_PATTERN),
     repo: JobVacancyCRUDRepository = Depends(get_job_vacancy_crud_repo), 
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)

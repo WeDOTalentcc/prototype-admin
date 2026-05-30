@@ -12,6 +12,9 @@ from pydantic import BaseModel
 from typing import Optional
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 # Sprint 2 BE-4 — section → actionId mapping canonical
 _SECTION_TO_ACTION_ID: dict[str, str] = {
@@ -192,7 +195,7 @@ async def start_onboarding(req: StartOnboardingRequest, company_id: str = Depend
 
 
 @router.get("/{user_id}/state")
-async def get_onboarding_state(user_id: int, company_id: str = Depends(require_company_id)):
+async def get_onboarding_state(user_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)], company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get current onboarding state for a user."""
     db = await _get_db()
@@ -213,7 +216,7 @@ async def get_onboarding_state(user_id: int, company_id: str = Depends(require_c
 
 
 @router.post("/{user_id}/event")
-async def handle_web_event(user_id: int, req: WebEventRequest, company_id: str = Depends(require_company_id)):
+async def handle_web_event(user_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)], req: WebEventRequest, company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Handle web events (first_login, tour steps, action choices)."""
     db = await _get_db()
@@ -250,7 +253,7 @@ async def handle_web_event(user_id: int, req: WebEventRequest, company_id: str =
 
 @router.post("/{user_id}/chat")
 async def handle_settings_chat(
-    user_id: int,
+    user_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     req: ChatMessageRequest,
     company_id: str = Depends(require_company_id),
 ):
@@ -298,7 +301,7 @@ async def handle_settings_chat(
     return {**result, "ui_action": ui_action}
 
 @router.get("/{user_id}/context")
-async def get_whatsapp_context(user_id: int, company_id: str = Depends(require_company_id)):
+async def get_whatsapp_context(user_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)], company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get WhatsApp conversation context for web handoff."""
     db = await _get_db()
@@ -314,3 +317,5 @@ async def get_whatsapp_context(user_id: int, company_id: str = Depends(require_c
         "phase": session.phase.value,
         "progress": session.progress,
     }
+
+reorder_collection_before_item(router)

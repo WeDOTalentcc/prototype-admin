@@ -16,6 +16,9 @@ from app.shared.services.microsoft_graph_service import AttendeeType, MeetingAtt
 from fastapi import Depends
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -204,7 +207,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/calendar/events/{event_id}", response_model=None)
 async def get_calendar_event(
-    event_id: str,
+    event_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     user_email: EmailStr = Query(..., description="Email of the calendar owner"), 
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
@@ -240,7 +243,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.delete("/calendar/events/{event_id}", response_model=None)
 async def cancel_calendar_event(
-    event_id: str,
+    event_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     user_email: EmailStr = Query(..., description="Email of the calendar owner"),
     cancellation_message: str | None = None, 
 company_id: str = Depends(require_company_id)):
@@ -296,7 +299,7 @@ async def list_bookings_businesses(company_id: str = Depends(require_company_id)
 
 
 @router.get("/bookings/businesses/{business_id}/services", response_model=None)
-async def list_bookings_services(business_id: str, company_id: str = Depends(require_company_id)):
+async def list_bookings_services(business_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)], company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     List services for a Bookings business.
@@ -324,7 +327,7 @@ async def list_bookings_services(business_id: str, company_id: str = Depends(req
 
 
 @router.get("/bookings/businesses/{business_id}/booking-page-url", response_model=None)
-async def get_booking_page_url(business_id: str, company_id: str = Depends(require_company_id)):
+async def get_booking_page_url(business_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)], company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get the public booking page URL for a business.
@@ -379,3 +382,5 @@ async def create_bookings_appointment(request: CreateBookingsAppointmentRequest,
     except Exception as e:
         logger.error(f"Failed to create Bookings appointment: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+reorder_collection_before_item(router)

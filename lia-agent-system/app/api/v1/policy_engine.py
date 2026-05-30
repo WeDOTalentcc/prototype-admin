@@ -51,6 +51,9 @@ from app.schemas.policy import (
 )
 from app.shared.tenant_guard import get_verified_company_id
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -153,7 +156,7 @@ _company_gate: str = Depends(require_company_id)):
 
 @router.get("/business-rules/{rule_id}", response_model=BusinessRuleResponse, summary="Get business rule")
 async def get_business_rule(
-    rule_id: str,
+    rule_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     repo: PolicyRepository = Depends(get_policy_repo),
     company_id: str = Depends(require_company_id),
 ):
@@ -181,7 +184,7 @@ async def get_business_rule(
 
 @router.put("/business-rules/{rule_id}", response_model=BusinessRuleResponse, summary="Update business rule")
 async def update_business_rule(
-    rule_id: str,
+    rule_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     data: BusinessRuleUpdate,
     repo: PolicyRepository = Depends(get_policy_repo),
     company_id: str = Depends(require_company_id),
@@ -209,7 +212,7 @@ async def update_business_rule(
 
 @router.delete("/business-rules/{rule_id}", summary="Delete business rule", response_model=None)
 async def delete_business_rule(
-    rule_id: str,
+    rule_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     repo: PolicyRepository = Depends(get_policy_repo),
     company_id: str = Depends(require_company_id),
 ):
@@ -265,7 +268,7 @@ _company_gate: str = Depends(require_company_id)):
 
 @router.put("/rate-limit-rules/{rule_id}", response_model=RateLimitRuleResponse, summary="Update rate limit rule")
 async def update_rate_limit_rule(
-    rule_id: str,
+    rule_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     data: RateLimitRuleUpdate,
     repo: PolicyRepository = Depends(get_policy_repo),
     company_id: str = Depends(require_company_id),
@@ -324,7 +327,7 @@ _company_gate: str = Depends(require_company_id)):
 
 @router.put("/escalation-rules/{rule_id}", response_model=EscalationRuleResponse, summary="Update escalation rule")
 async def update_escalation_rule(
-    rule_id: str,
+    rule_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     data: EscalationRuleUpdate,
     repo: PolicyRepository = Depends(get_policy_repo),
     company_id: str = Depends(require_company_id),
@@ -441,7 +444,7 @@ _company_gate: str = Depends(require_company_id)):
     response_model=None,
 )
 async def apply_sector_defaults(
-    company_id: str,
+    company_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     sector: str = Query(..., description="Setor: tech | varejo | logistica | financeiro | saude | rpo"),
     repo: PolicyRepository = Depends(get_policy_repo),
     service: PolicyEngineService = Depends(get_policy_engine_service),
@@ -577,7 +580,7 @@ _company_gate: str = Depends(require_company_id)):
 
 @router.post("/escalation-logs/{log_id}/resolve", summary="Resolve an escalation", response_model=None)
 async def resolve_escalation(
-    log_id: str,
+    log_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     resolution_notes: str | None = Query(None, description="Resolution notes"),
     user_id: str | None = Depends(get_user_id_from_header),
     repo: PolicyRepository = Depends(get_policy_repo),
@@ -598,3 +601,5 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         logger.error(f"Error resolving escalation: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
+
+reorder_collection_before_item(router)

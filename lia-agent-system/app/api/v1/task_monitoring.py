@@ -12,6 +12,9 @@ from app.shared.async_processing.task_queue import TaskPriority
 from app.shared.async_processing.task_scheduler import TaskScheduler
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
 
@@ -159,7 +162,7 @@ async def create_schedule(request: ScheduleCreateRequest, current_user: User = D
 
 
 @router.delete("/schedules/{schedule_id}", response_model=None)
-async def remove_schedule(schedule_id: str, current_user: User = Depends(get_current_user_or_demo), company_id: str = Depends(require_company_id)):
+async def remove_schedule(schedule_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)], current_user: User = Depends(get_current_user_or_demo), company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
         scheduler = TaskScheduler.get_instance()
@@ -197,7 +200,7 @@ company_id: str = Depends(require_company_id)):
 
 
 @router.post("/dlq/{dlq_id}/retry", response_model=None)
-async def retry_dlq_entry(dlq_id: str, current_user: User = Depends(get_current_user_or_demo), company_id: str = Depends(require_company_id)):
+async def retry_dlq_entry(dlq_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)], current_user: User = Depends(get_current_user_or_demo), company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
         persistence = TaskPersistenceService.get_instance()
@@ -225,7 +228,7 @@ async def retry_dlq_entry(dlq_id: str, current_user: User = Depends(get_current_
 
 
 @router.get("/{task_id}", response_model=None)
-async def get_task_status(task_id: str, current_user: User = Depends(get_current_user_or_demo), company_id: str = Depends(require_company_id)):
+async def get_task_status(task_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)], current_user: User = Depends(get_current_user_or_demo), company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
         manager = EnhancedTaskManager.get_instance()
@@ -269,7 +272,7 @@ company_id: str = Depends(require_company_id)):
 
 
 @router.delete("/{task_id}", response_model=None)
-async def cancel_task(task_id: str, current_user: User = Depends(get_current_user_or_demo), company_id: str = Depends(require_company_id)):
+async def cancel_task(task_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)], current_user: User = Depends(get_current_user_or_demo), company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
         manager = EnhancedTaskManager.get_instance()
@@ -288,3 +291,5 @@ async def cancel_task(task_id: str, current_user: User = Depends(get_current_use
     except Exception as e:
         logger.error(f"Failed to cancel task: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+reorder_collection_before_item(router)

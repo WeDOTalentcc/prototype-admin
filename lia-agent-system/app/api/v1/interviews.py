@@ -22,6 +22,9 @@ from app.shared.pii_masking import get_masked_logger
 from app.shared.rbac.mutation_gate import assert_mutation_allowed
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 from app.shared.types import WeDoBaseModel
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = get_masked_logger(__name__)
 
@@ -358,7 +361,7 @@ async def list_interviews(
 
 @router.post("/interviews/{interview_id}/cancel", response_model=dict)
 async def cancel_interview(
-    interview_id: str,
+    interview_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     cancellation_message: str | None = None,
     repo: InterviewRepository = Depends(get_interview_repo),
     current_user: User = Depends(get_current_user_or_demo),
@@ -409,7 +412,7 @@ class CompleteInterviewRequest(WeDoBaseModel):
 
 @router.post("/interviews/{interview_id}/complete", response_model=dict)
 async def complete_interview(
-    interview_id: str,
+    interview_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     request: CompleteInterviewRequest,
     repo: InterviewRepository = Depends(get_interview_repo),
     current_user: User = Depends(get_current_user_or_demo),
@@ -467,7 +470,7 @@ async def complete_interview(
 
 @router.post("/interviews/{interview_id}/reschedule", response_model=dict)
 async def reschedule_interview(
-    interview_id: str,
+    interview_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     request: RescheduleInterviewRequest,
     repo: InterviewRepository = Depends(get_interview_repo),
 current_user: User = Depends(get_current_user_or_demo),
@@ -555,7 +558,7 @@ async def check_availability(request: CheckAvailabilityRequest, company_id: str 
 
 @router.post("/interviews/{interview_id}/feedback", response_model=dict)
 async def submit_interview_feedback(
-    interview_id: str,
+    interview_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     feedback: InterviewFeedbackRequest,
     repo: InterviewRepository = Depends(get_interview_repo),
 company_id: str = Depends(require_company_id)):
@@ -998,7 +1001,7 @@ class TranscribeInterviewRequest(WeDoBaseModel):
 
 @router.patch("/interviews/{interview_id}/recording", response_model=dict)
 async def upload_recording(
-    interview_id: str,
+    interview_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     request: UploadRecordingRequest,
     request_obj: Request,
     background_tasks: BackgroundTasks,
@@ -1055,7 +1058,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.post("/interviews/{interview_id}/transcribe", response_model=dict)
 async def transcribe_interview(
-    interview_id: str,
+    interview_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     request: TranscribeInterviewRequest,
     request_obj: Request,
     background_tasks: BackgroundTasks,
@@ -1114,7 +1117,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/interviews/{interview_id}/transcript", response_model=dict)
 async def get_interview_transcript(
-    interview_id: str,
+    interview_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     request_obj: Request,
     repo: InterviewRepository = Depends(get_interview_repo),
 company_id: str = Depends(require_company_id)):
@@ -1192,3 +1195,5 @@ async def _run_transcription_background(
             )
     except Exception as e:
         logger.error("Background transcription failed for interview %s: %s", interview_id, e)
+
+reorder_collection_before_item(router)

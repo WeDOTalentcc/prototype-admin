@@ -37,6 +37,7 @@ from app.domains.sourcing.services.sourcing_pipeline_service import sourcing_pip
 from app.domains.job_management.services.job_status_webhook_service import job_status_webhook_service
 from app.services.notification_service import NotificationChannel, NotificationType
 from app.shared.types import WeDoBaseModel
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
 
 router = APIRouter()
 
@@ -119,7 +120,7 @@ class SourcingStatusResponseV2(BaseModel):
 
 @router.post("/job-vacancies/{job_id}/publish", response_model=JobPublishResponse)
 async def publish_job_vacancy_simple(
-    job_id: str = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
+    job_id: str = Path(..., pattern=DUAL_ID_PATH_PATTERN),
     request: JobPublishRequest = JobPublishRequest(),
     repo: JobVacancyLifecycleRepository = Depends(get_job_vacancy_lifecycle_repo),
     current_user: User = Depends(get_current_active_user), 
@@ -191,7 +192,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.post("/job-vacancies/{job_id}/confirm-global-search", response_model=ConfirmGlobalSearchResponse)
 async def confirm_global_search_simple(
-    job_id: str = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
+    job_id: str = Path(..., pattern=DUAL_ID_PATH_PATTERN),
     request: ConfirmGlobalSearchRequest = ...,
     repo: JobVacancyLifecycleRepository = Depends(get_job_vacancy_lifecycle_repo),
     current_user: User = Depends(get_current_active_user), 
@@ -224,7 +225,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/job-vacancies/{job_id}/sourcing-status", response_model=SourcingStatusResponseSimple)
 async def get_sourcing_status_simple(
-    job_id: str = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
+    job_id: str = Path(..., pattern=DUAL_ID_PATH_PATTERN),
     repo: JobVacancyLifecycleRepository = Depends(get_job_vacancy_lifecycle_repo),
     current_user: User = Depends(get_current_active_user), 
 company_id: str = Depends(require_company_id)):
@@ -310,7 +311,7 @@ async def _send_candidates_added_notification(
 
 @router.post("/job-vacancies/{job_id}/unpublish", response_model=JobPublishResponse)
 async def unpublish_job_vacancy(
-    job_id: str = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
+    job_id: str = Path(..., pattern=DUAL_ID_PATH_PATTERN),
     repo: JobVacancyLifecycleRepository = Depends(get_job_vacancy_lifecycle_repo),
     current_user: User = Depends(get_current_active_user),
 company_id: str = Depends(require_company_id)):

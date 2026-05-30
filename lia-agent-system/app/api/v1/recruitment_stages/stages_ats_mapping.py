@@ -17,6 +17,9 @@ from ._shared import (
     User,
 )
 from app.shared.security.require_company_id import require_company_id
+from typing import Annotated
+from fastapi import Path
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
 
 logger = logging.getLogger(__name__)
 
@@ -82,7 +85,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.delete("/ats-mappings/{mapping_id}", response_model=None)
 async def delete_ats_mapping(
-    mapping_id: str,
+    mapping_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     current_user: User = Depends(require_admin_or_recruiter),
     ats_repo: ATSMappingRepository = Depends(get_ats_mapping_repo),
 company_id: str = Depends(require_company_id)):
