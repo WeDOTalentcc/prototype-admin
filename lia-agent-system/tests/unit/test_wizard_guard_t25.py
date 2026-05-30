@@ -124,7 +124,7 @@ async def test_wizard_guard_overwrites_redis_with_correct_domain():
 
     await router.route(
         message="nova vaga para designer UX",
-        context={},
+        context={"company_id": "co-test"},  # Task #1144: tenant Redis namespace requires company_id
     )
 
     # Redis.set should have been called with wizard domain to overwrite stale entry

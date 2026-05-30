@@ -30,4 +30,5 @@ from app.shared.observability.tracing import (  # noqa: F401 — explicit re-exp
     get_recent_traces,
     get_trace_stats,
     enrich_llm_span,  # UC-P1-07: LLM span enrichment — callers: llm_factory, tests
+    _try_init_otlp,  # Z6-Z7: OTLP init helper re-exported for test_z6_z7_features
 )

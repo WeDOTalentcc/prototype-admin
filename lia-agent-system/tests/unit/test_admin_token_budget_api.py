@@ -87,6 +87,43 @@ class TestBudgetCheckResponseSchema:
         assert resp.company_id == "acme"
 
 
+
+
+# ---------------------------------------------------------------------------
+# Autouse fixture: patch auth/session deps — tests exercise budget logic, not
+# superadmin auth or cross-tenant session machinery.
+# ---------------------------------------------------------------------------
+
+@pytest.fixture(autouse=True)
+def _patch_admin_auth_deps():
+    """Patch require_superadmin + cross_tenant_session for unit test isolation.
+
+    Production path calls require_superadmin when actor_company != queried
+    company_id (cross-tenant). Unit tests use plain MagicMock() users with no
+    company_id set, so actor_company becomes a MagicMock repr → is_cross_tenant
+    is always True → 403 without this fixture.
+
+    cross_tenant_session is also patched to avoid DB connections in unit tests;
+    its bypass_db mock accepts .execute() calls transparently.
+    """
+    from unittest.mock import patch as _patch, AsyncMock as _AsyncMock, MagicMock as _MagicMock
+    mock_bypass_db = _MagicMock(execute=_AsyncMock(return_value=None))
+    mock_ctx = _MagicMock()
+    mock_ctx.__aenter__ = _AsyncMock(return_value=mock_bypass_db)
+    mock_ctx.__aexit__ = _AsyncMock(return_value=False)
+    with (
+        _patch(
+            "app.api.v1.admin_token_budget.require_superadmin",
+            new_callable=_AsyncMock,
+            return_value=None,
+        ),
+        _patch(
+            "app.api.v1.admin_token_budget.cross_tenant_session",
+            return_value=mock_ctx,
+        ),
+    ):
+        yield
+
 # ---------------------------------------------------------------------------
 # get_company_token_budget endpoint
 # ---------------------------------------------------------------------------
