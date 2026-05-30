@@ -54,26 +54,60 @@ def competency_node(state: JobCreationState) -> JobCreationState:
     seniority = seniority_result.final_level
     screening_mode = state.get("screening_mode")
 
-    # F5: Question distribution by mode (deterministic)
-    distribution = None
-    if screening_mode and seniority:
-        distribution = _get_question_distribution(screening_mode, seniority)
+    # ── Fase 6: reconciliar com competências confirmadas (Fase 3/4) ──
+    # Quando o recrutador confirmou competências, o distribution e a árvore
+    # refletem EXATAMENTE as confirmadas (respeita edições no painel) — NÃO
+    # re-deriva do YAML por senioridade. WSI gera ~1 pergunta por competência
+    # confirmada, então o total = len(téc) + len(comp). Sem confirmadas,
+    # comportamento legado (distribution por senioridade + tree do jd_enriched).
+    confirmed_tech = state.get("confirmed_technical_competencies") or []
+    confirmed_behav = state.get("confirmed_behavioral_competencies") or []
+    _has_confirmed = bool(confirmed_tech or confirmed_behav)
 
-    # Build competency tree from enriched JD
-    competency_tree = []
-    for s in jd_enriched.get("skills_obrigatorias", []):
-        competency_tree.append({
-            "skill": s.get("skill", ""),
-            "contexto": s.get("contexto", ""),
-            "block": "technical",
-        })
-    for c in jd_enriched.get("competencias_comportamentais", []):
-        competency_tree.append({
-            "skill": c.get("competencia", ""),
-            "contexto": c.get("contexto", ""),
-            "block": "behavioral",
-            "trait": c.get("trait_big_five", ""),
-        })
+    if _has_confirmed:
+        distribution = {
+            "technical": len(confirmed_tech),
+            "behavioral": len(confirmed_behav),
+        }
+        competency_tree = []
+        for s in confirmed_tech:
+            competency_tree.append({
+                "skill": s.get("skill", ""),
+                "contexto": s.get("contexto", ""),
+                "block": "technical",
+            })
+        for c in confirmed_behav:
+            competency_tree.append({
+                "skill": c.get("competencia", ""),
+                "contexto": c.get("contexto", ""),
+                "block": "behavioral",
+                "trait": c.get("trait_big_five", ""),
+            })
+        logger.info(
+            "[JobCreation:competency] distribution from CONFIRMED competencies: "
+            "%dtec+%dcomp (mode=%s)", len(confirmed_tech), len(confirmed_behav), screening_mode,
+        )
+    else:
+        # F5 legado: Question distribution by mode (deterministic, per-seniority YAML).
+        distribution = None
+        if screening_mode and seniority:
+            distribution = _get_question_distribution(screening_mode, seniority)
+
+        # Build competency tree from enriched JD
+        competency_tree = []
+        for s in jd_enriched.get("skills_obrigatorias", []):
+            competency_tree.append({
+                "skill": s.get("skill", ""),
+                "contexto": s.get("contexto", ""),
+                "block": "technical",
+            })
+        for c in jd_enriched.get("competencias_comportamentais", []):
+            competency_tree.append({
+                "skill": c.get("competencia", ""),
+                "contexto": c.get("contexto", ""),
+                "block": "behavioral",
+                "trait": c.get("trait_big_five", ""),
+            })
 
     updates: Dict[str, Any] = {
         "current_stage": "competency",
