@@ -144,14 +144,19 @@ Branch Replit: .
   Intake gate captura modo do recrutador; competency_gate pula LLM quando modo já setado.
 - ✅ **Fase 2** — CompetencyBenchmarkService (net-new, espelho do MarketBenchmarkService): commit `0b1f8a793`. (+16 testes TDD)
   Sugere competências téc+comp por título/senioridade/depto/modo; dimensionado via SCREENING_MODE_CONFIG (compact 5+2, full 8+4); FairnessGuard P7 filtra; fallback por família de cargo; company_id na cache key.
-- ⏭️ **PRÓXIMA: Fase 3** — intake_gate vira confirmação assistida (consome Fase 2): sugere competências, recruiter aceita/edita via painel.
-- ⬜ Fases 4 (inverter jd_enrichment), 5 (painel ficha viva), 6 (reconciliar consumidores) — pendentes.
+- ✅ **Fase 3** — intake_gate confirmação assistida de competências: commit `8b0c9186b`. (+11 testes TDD)
+  Ao aprovar, sugere competências (via Fase 2) dimensionadas pelo modo, seed em confirmed_* (accept-all; right_panel_form tem precedência); campos novos no state; fail-open não bloqueia aprovação; gestor/email já eram não-bloqueantes.
+- ⏭️ **PRÓXIMA: Fase 4** — inverter jd_enrichment (WSI F1): consumir confirmed_* em vez de gerar competências do zero. Nó mais central; exige fallback robusto (sem confirmed_* → comportamento legado).
+- ⬜ Fases 5 (painel ficha viva, frontend), 6 (reconciliar competency/wsi_questions) — pendentes.
 
 ### Como retomar (sessão nova)
 1. Abrir Claude Code no projeto.
 2. Colar: "Continue o épico do funil de criação de vaga. Leia o plano em
     no Replit (ssh replit-wedo-0405,
-   branch feat/benefits-prv-canonical). Fases 0, 1 e 2 estão feitas e commitadas.
-   Comece a Fase 3 (intake_gate confirmação assistida — consome o CompetencyBenchmarkService da Fase 2), seguindo a cascata canonical-fix + lia-testing (TDD) + harness-engineering."
+   branch feat/benefits-prv-canonical). Fases 0, 1, 2 e 3 estão feitas e commitadas
+   (+ fix do benchmark salarial no intake_gate, commit 101963773).
+   Comece a Fase 4 (inverter jd_enrichment — consumir confirmed_technical_competencies/
+   confirmed_behavioral_competencies em vez de gerar; fallback ao legado quando ausentes),
+   seguindo a cascata canonical-fix + lia-testing (TDD) + harness-engineering."
 3. Disciplina: ler código real no Replit antes de editar; TDD Red→Green; commit atômico
    por fase; stage só os arquivos da fase (agente paralelo ativo no workspace).
