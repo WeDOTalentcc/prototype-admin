@@ -1,5 +1,3 @@
-from app.api.v1 import admin_persona
-from app.api.v1 import company_ai_persona
 """
 LIA Route Registry — all API routers registered here.
 Called from app/main.py via register_all_routes(app).
@@ -16,13 +14,10 @@ from app.api.public import shared_searches as public_shared_searches
 # ── Bulk import from app.api.v1 ──────────────────────────────────────────────
 # ── Individual imports ────────────────────────────────────────────────────────
 # ── Lazy imports (originally inline in main.py) ───────────────────────────────
-from app.api.v1 import llm_config as llm_config_router_mod
 
+from app.api.v1.candidate_portal import router as candidate_portal_router
 from app.api.v1 import (
     ab_testing,
-    ai_performance,
-    jd_similar,
-    learning_loops_config,
     activities,
     admin,
     admin_bias_audit,
@@ -34,7 +29,6 @@ from app.api.v1 import (
     admin_token_budget,
     affirmative,
     agent_explainability,
-    ai_transparency,
     agent_monitoring,
     ai_consumption,
     alerts,
@@ -48,14 +42,13 @@ from app.api.v1 import (
     auth,
     autocomplete,
     automation,
+    automation_rules,
     automations,
     benefits,
     bias_audit,
-    bias_audit_annual,
     big_five,
     billing,
     briefing,
-    upgrade_requests,
     bulk_actions,
     cache,
     calendar,
@@ -80,7 +73,6 @@ from app.api.v1 import (
     company_culture_config,
     company_departments,
     compliance_controls,
-    compliance_report,
     compliance_status,
     consent_management,
     conversations,
@@ -136,13 +128,11 @@ from app.api.v1 import (
     lia_assistant,
     lia_assistant_fasttrack,
     lia_assistant_flags,
+    lia_assistant_graph,
     lia_assistant_learning,
     lia_assistant_vacancy,
     lia_assistant_wizard_stages,
     lia_field_toggles,
-    eligibility_question_templates,
-    integration_catalog,
-    webhook_event_types,
     lia_profile_analysis,
     merge_webhooks,
     microsoft_graph,
@@ -191,7 +181,6 @@ from app.api.v1 import (
     system_health,
     talent_funnel,
     talent_pools,
-    talent_pool_agents,
     task_lifecycle,
     task_monitoring,
     task_planner,
@@ -201,7 +190,6 @@ from app.api.v1 import (
     test_activities,
     triagem,
     trust_center,
-    openmic_webhook,
     twilio_voice,
     voice,
     webhooks,
@@ -213,8 +201,6 @@ from app.api.v1 import (
     workforce_planning,
     workos,
     wsi_observability,
-    wsi_question_adjust,
-    wsi_questions,
     wsi_screening_pipeline_endpoint,
 )
 from app.api.v1 import wsi_async as wsi_async_v1
@@ -223,8 +209,6 @@ from app.api.v1.admin_external import router as admin_external_router
 from app.api.v1.admin_circuit_breakers import router as admin_cb_router
 from app.api.v1.admin_dlq import router as admin_dlq_router
 from app.api.v1.admin_lgpd import router as admin_lgpd_router
-from app.api.v1.admin_consent import router as admin_consent_router  # T-21c
-from app.api.v1.incident_response import router as incident_response_router
 from app.api.v1.agent_chat_ws import router as agent_chat_ws_router
 from app.api.v1.agent_chat_sse import router as agent_chat_sse_router
 from app.api.v1.agent_memory import router as agent_memory_router
@@ -233,24 +217,21 @@ from app.api.v1.agent_quality_dashboard import router as agent_quality_dashboard
 from app.api.v1.ml_predictions_dashboard import router as ml_predictions_router
 from app.api.v1.calibration_dashboard_v2 import router as calibration_dashboard_v2_router
 from app.api.v1.agent_templates import router as agent_templates_router
-from app.api.v1.agent_template_catalog import router as agent_template_catalog_router
 from app.api.v1.sector_templates import router as sector_templates_router
+from app.api.v1.sourcing_agents import router as sourcing_agents_router
 from app.api.v1.custom_agents import router as custom_agents_router
-from app.api.v1.agent_studio_voice import router as agent_studio_voice_router
-from app.api.v1.agent_studio_whatsapp import router as agent_studio_whatsapp_router
-from app.api.v1.agent_studio_channels import router as agent_studio_channels_router
-from app.api.v1.agent_studio_triagem_invite import router as agent_studio_triagem_invite_router
 from app.api.v1.agent_deployments import router as agent_deployments_router
 from app.api.v1.agent_deployments import target_router as agent_deployments_target_router
-# Onda 3.B2 — /jobs/{id}/agents canonical shortcut
-from app.api.v1.jobs_agents import router as jobs_agents_router
 from app.api.v1.agent_approvals import agent_router as agent_approvals_agent_router
 from app.api.v1.agent_approvals import approvals_router as agent_approvals_approvals_router
-from app.api.v1.webhooks import router as webhooks_router
 from app.api.v1.custom_agents import marketplace_router as agent_marketplace_router
 from app.api.v1.custom_agents import admin_marketplace_router
 from app.api.v1.multi_strategy_search import router as multi_strategy_router
 from app.api.v1.digital_twins import router as digital_twins_router
+from app.api.v1.manager_alignments import router as manager_alignments_router
+from app.api.v1.studio_summary import router as studio_summary_router
+from app.api.v1.job_offers import router as job_offers_router
+from app.api.v1.hiring_nps import router as hiring_nps_router
 from app.api.v1.voice_screening import router as voice_screening_router
 from app.api.v1.audit_timeline import router as audit_timeline_router
 from app.api.v1.candidate_compare import router as candidate_compare_router
@@ -269,7 +250,6 @@ from app.api.v1.navigation_intent import router as navigation_intent_router
 from app.api.v1.pipeline_orchestrator import router as pipeline_orchestrator_router
 from app.api.v1.pipeline_policy import router as pipeline_policy_router
 from app.api.v1.proactive_actions import router as proactive_actions_router
-from app.api.v1.proactive_hints import router as proactive_hints_router  # WT-2022
 from app.api.v1.rag_search import router as rag_search_router
 from app.api.v1.recruiter_behavior import router as recruiter_behavior_router
 from app.api.v1.salary_benchmark import router as salary_benchmark_router
@@ -279,6 +259,7 @@ from app.api.v1.toon import router as toon_router
 from app.api.v1.traces import router as traces_router
 from app.api.v1.user_agent_preferences import router as user_prefs_router
 from app.api.v1.wsi import router as wsi_router
+from app.api.v1.rh_dashboard import router as rh_dashboard_router
 from app.api.v1.rails_health import router as rails_health_router
 from app.api.v1.rails_sync import router as rails_sync_router
 from app.api.v1.llm_config import router as llm_config_router
@@ -298,19 +279,9 @@ def register_all_routes(app: FastAPI) -> None:
     from app.api.v1 import internal_llm
     app.include_router(internal_llm.router, prefix="/api/v1")
 
-    # Glossary (canonical term lookup for chat tooltips and /definir)
-    from app.api.v1 import glossary as glossary_v1
-    app.include_router(glossary_v1.router, prefix="/api/v1/glossary", tags=["glossary"])
-    app.include_router(jd_similar.router, prefix="/api/v1", tags=["jd-similar"])
-    app.include_router(learning_loops_config.router, prefix="/api/v1", tags=["learning-loops"])
-
-
     # ── Core / Navigation ─────────────────────────────────────────────────────
     app.include_router(navigation_intent_router, prefix="/api/v1")
     app.include_router(chat.router, prefix="/api/v1")
-    # Sprint 3 G9 wire (2026-05-26): proactive context from Settings hub
-    from app.api.v1 import proactive_context
-    app.include_router(proactive_context.router, prefix="/api/v1", tags=["lia-proactive-context"])
     app.include_router(teams.router, prefix="/api/v1")
     app.include_router(calendar.router, prefix="/api/v1")
 
@@ -342,6 +313,9 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(job_drafts.router, prefix="/api/v1", tags=["job_drafts"])
     app.include_router(job_analytics.router, prefix="/api/v1", tags=["job-analytics"])
     app.include_router(job_board.router, prefix="/api/v1", tags=["job-boards"])
+    # Job-status webhooks: prefix=/api/v1/job-status-webhooks  (job vacancy status change notifications)
+    # NOTE: This router must NOT share a prefix with the generic webhooks router below
+    # (/api/v1/webhooks). Sharing caused duplicate FastAPI operation IDs. Keep them separate.
     app.include_router(job_status_webhooks.router, prefix="/api/v1", tags=["job-status-webhooks"])
     app.include_router(job_learning.router, prefix="/api/v1", tags=["job-learning"])
     app.include_router(job_embeddings.router, prefix="/api/v1", tags=["job-embeddings"])
@@ -356,7 +330,6 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(recruitment_stages.router, prefix="/api/v1/recruitment-stages", tags=["recruitment-stages"])
     app.include_router(recruitment_stages.screening_questions_router, prefix="/api/v1", tags=["screening-questions"])
     app.include_router(pipeline_templates.router, prefix="/api/v1", tags=["pipeline-templates"])
-    app.include_router(pipeline_templates.vacancy_apply_router, prefix="/api/v1", tags=["pipeline-templates", "vacancies"])
     app.include_router(pipeline_policy_router, prefix="/api/v1")
     app.include_router(pipeline_orchestrator_router, prefix="/api/v1")
     app.include_router(pipeline_velocity.router, prefix="/api/v1", tags=["pipeline-velocity"])
@@ -372,7 +345,6 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(sourcing_orchestrator_router, prefix="/api/v1")
     app.include_router(talent_funnel.router, prefix="/api/v1", tags=["talent-funnel"])
     app.include_router(talent_pools.router, prefix="/api/v1", tags=["talent-pools"])
-    app.include_router(talent_pool_agents.router, prefix="/api/v1", tags=["talent-pool-agents"])
     app.include_router(recruitment_campaigns.router, prefix="/api/v1", tags=["recruitment-campaigns"])
 
     # ── Interviews & Scheduling ───────────────────────────────────────────────
@@ -390,7 +362,6 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(twilio_voice.router, prefix="/api/v1", tags=["twilio-voice"])
     app.include_router(gemini_voice.router, prefix="/api/v1", tags=["gemini-voice"])
     app.include_router(voice_stream.router, prefix="/api/v1", tags=["voice-stream"])
-    app.include_router(openmic_webhook.router, prefix="/api/v1", tags=["openmic-voice"])
     app.include_router(whatsapp.router, prefix="/api/v1", tags=["whatsapp"])
     app.include_router(multi_channel.router, prefix="/api/v1", tags=["multi-channel"])
 
@@ -413,15 +384,7 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(company_approvers.router, prefix="/api/v1", tags=["company"])
     app.include_router(company_users.router, prefix="/api/v1", tags=["company"])
     app.include_router(lia_field_toggles.router, prefix="/api/v1", tags=["field-toggles"])
-    app.include_router(eligibility_question_templates.router, prefix="/api/v1", tags=["eligibility-question-templates"])
-    app.include_router(integration_catalog.router, prefix="/api/v1", tags=["integration-catalog"])
-    app.include_router(webhook_event_types.router, prefix="/api/v1", tags=["webhook-event-types"])
     app.include_router(company_culture.router, prefix="/api/v1", tags=["company-culture"])
-    # T2/#994 — legacy ``/company/{enrich,auto-enrich,profile/{id}/generate-evp,
-    # analyze-culture}`` routes were relocated from ``company.py`` into
-    # ``company_culture.py``. Public paths are preserved byte-for-byte
-    # via this second router so the frontend sees zero change.
-    app.include_router(company_culture.legacy_router, prefix="/api/v1", tags=["company-culture"])
     app.include_router(company_culture_config.router, prefix="/api/v1", tags=["company"])
     app.include_router(company_departments.router, prefix="/api/v1", tags=["company"])
     app.include_router(company_assessments.router, prefix="/api/v1", tags=["company"])
@@ -440,6 +403,7 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(task_monitoring.router, prefix="/api/v1", tags=["task-monitoring"])
     app.include_router(automation.router, prefix="/api/v1", tags=["automation"])
     app.include_router(automations.router, prefix="/api/v1", tags=["automations"])
+    app.include_router(automation_rules.router, prefix="/api/v1", tags=["automation-rules"])
     app.include_router(async_endpoints.router, prefix="/api/v1", tags=["async-jobs"])
 
     # ── Search & Discovery ────────────────────────────────────────────────────
@@ -459,7 +423,6 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(intelligence.router, prefix="/api/v1/intelligence", tags=["intelligence-layer"])
     app.include_router(drift.router, prefix="/api/v1", tags=["model-drift"])
     app.include_router(ab_testing.router, prefix="/api/v1", tags=["ab-testing"])
-    app.include_router(ai_performance.router, prefix="/api/v1", tags=["ai-performance"])
     app.include_router(finetuning_export.router, prefix="/api/v1", tags=["finetuning-export"])
     app.include_router(wizard_analytics.router, prefix="/api/v1", tags=["wizard-analytics"])
 
@@ -486,10 +449,14 @@ def register_all_routes(app: FastAPI) -> None:
     # ── WSI / Triagem ─────────────────────────────────────────────────────────
     app.include_router(wsi_endpoints.router, tags=["wsi"])
     app.include_router(wsi_router, tags=["wsi-v1"])
-    app.include_router(wsi_async_v1.router, prefix="/api/v1", tags=["wsi-async"])
-    app.include_router(wsi_questions.router, prefix="/api/v1", tags=["wsi-questions"])
+    # P1-5 (audit rev. 15) — endpoint duplicado `POST /wsi-async/invite` removido.
+    # Frontend usa só `/api/backend-proxy/communication/send-screening-invite`.
+    # Mantemos o import acima desativado para evitar regressão silenciosa.
+    # app.include_router(wsi_async_v1.router, prefix="/api/v1", tags=["wsi-async"])
+    # NOTE: `wsi_questions` and `wsi_question_adjust` standalone routers were
+    # merged into `app/api/v1/wsi/questions.py` (registered above via
+    # `wsi_router`) in Task #244. Do not re-add them here.
     app.include_router(wsi_screening_pipeline_endpoint.router, prefix="/api/v1", tags=["wsi-screening-pipeline"])
-    app.include_router(wsi_question_adjust.router, prefix="/api/v1", tags=["wsi-question-adjust"])
     app.include_router(wsi_observability.router, prefix="/api/v1", tags=["wsi-observability"])
     app.include_router(triagem.router, prefix="/api/v1", tags=["triagem"])
     app.include_router(screening.router, prefix="/api/v1", tags=["screening"])
@@ -502,6 +469,12 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(lia_assistant_wizard_stages.router, prefix="/api/v1", tags=["lia-wizard-stages"])
     app.include_router(lia_assistant_vacancy.router, prefix="/api/v1", tags=["lia-vacancy"])
     app.include_router(lia_assistant_fasttrack.router, prefix="/api/v1", tags=["lia-fasttrack"])
+    app.include_router(lia_assistant_graph.router, prefix="/api/v1/lia-assistant", tags=["lia-graph"])
+
+    # Task #570 — canonical chat-feedback router (closes audit #569 P0).
+    # Mounts /api/v1/lia/feedback/{thumbs,rating,correction,metrics,by-conversation}.
+    from app.api.v1 import lia_feedback
+    app.include_router(lia_feedback.router, prefix="/api/v1", tags=["lia-feedback"])
 
     # ── Wizard ────────────────────────────────────────────────────────────────
     app.include_router(wizard_suggestions.router, prefix="/api/v1/wizard", tags=["wizard-suggestions"])
@@ -516,7 +489,6 @@ def register_all_routes(app: FastAPI) -> None:
     # ── HITL ──────────────────────────────────────────────────────────────────
     app.include_router(hitl_router, prefix="/api/v1", tags=["hitl"])
     app.include_router(proactive_actions_router, prefix="/api/v1")
-    app.include_router(proactive_hints_router, prefix="/api/v1")  # WT-2022
     app.include_router(agent_memory_router, prefix="/api/v1")
     app.include_router(agent_explainability.router, prefix="/api/v1", tags=["agent-explainability"])
 
@@ -530,9 +502,9 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(agent_studio_quality.router, prefix="/api/v1", tags=["agent-studio-quality"])
     app.include_router(agent_quality_router, prefix="/api/v1", tags=["agent-quality"])
     app.include_router(agent_quality_dashboard_router, prefix="/api/v1", tags=["agent-quality-dashboard"])
-    # ml_predictions_router DELETED 2026-05-24 F10 — duplicate of ml_predictions.router included at L449
+    app.include_router(ml_predictions_router, prefix="/api/v1", tags=["ml-predictions"])
     app.include_router(calibration_dashboard_v2_router, prefix="/api/v1", tags=["calibration-dashboard"])
-    app.include_router(agent_chat_ws_router)
+    app.include_router(agent_chat_ws_router, prefix="/api/v1")
     app.include_router(agent_chat_sse_router, prefix="/api/v1")
 
     # ── WebSocket ─────────────────────────────────────────────────────────────
@@ -541,23 +513,25 @@ def register_all_routes(app: FastAPI) -> None:
     # ── Compliance / LGPD ─────────────────────────────────────────────────────
     app.include_router(lgpd_compliance.router, prefix="/api/v1", tags=["lgpd-compliance"])
     app.include_router(compliance_controls.router, prefix="/api/v1", tags=["compliance-controls"])
-    app.include_router(compliance_report.router, prefix="/api/v1", tags=["compliance-report"])
     app.include_router(compliance_status.router, prefix="/api/v1", tags=["compliance-status"])
     app.include_router(trust_center.router, prefix="/api/v1", tags=["trust-center"])
     app.include_router(audit_logs.router, prefix="/api/v1", tags=["audit-logs"])
     app.include_router(audit_timeline_router)
+    # Task #366 — admin filter for AI decisions by user (actor_user_id column).
+    from app.api.v1 import admin_audit_decisions
+    app.include_router(
+        admin_audit_decisions.router,
+        prefix="/api/v1",
+        tags=["admin-audit-decisions"],
+    )
     app.include_router(data_subject_requests.router, prefix="/api/v1", tags=["data-subject-requests"])
     app.include_router(consent_management.router, prefix="/api/v1", tags=["consent-management"])
     app.include_router(granular_consent_router, prefix="/api/v1", tags=["granular-consent"])
-    app.include_router(admin_consent_router, prefix="/api/v1", tags=["Admin - Consent"])  # T-21c
     app.include_router(data_request.router, prefix="/api/v1", tags=["data-requests"])
     app.include_router(admin_lgpd_router, prefix="/api/v1")
-    app.include_router(incident_response_router, prefix="/api/v1")
     app.include_router(admin_compliance_fairness.router, prefix="/api/v1")
     app.include_router(bias_audit.router, prefix="/api/v1", tags=["bias-audit"])
     app.include_router(admin_bias_audit.router, prefix="/api/v1", tags=["bias-audit-admin"])
-    app.include_router(bias_audit_annual.router, prefix="/api/v1", tags=["bias-audit-annual"])
-    app.include_router(ai_transparency.router, prefix="/api/v1", tags=["ai-transparency"])
     app.include_router(guardrails.router, prefix="/api/v1", tags=["guardrails"])
 
     # ── Policy ────────────────────────────────────────────────────────────────
@@ -567,11 +541,10 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(default_templates.router, prefix="/api/v1", tags=["default-templates"])
     app.include_router(hiring_policy.router, prefix="/api/v1", tags=["hiring-policy"])
 
-    # ── LLM Config (Choose Your AI) ──────────────────────────────────────────
-    app.include_router(llm_config_router_mod.router, prefix="/api/v1", tags=["llm-config"])
-
     # ── ATS / Integrations ────────────────────────────────────────────────────
     app.include_router(ats.router, prefix="/api/v1", tags=["ats"])
+    # Generic webhooks: prefix=/api/v1/webhooks  (company-level subscription CRUD + event catalog)
+    # NOTE: Do NOT add job-status-webhook routes here; they live under /api/v1/job-status-webhooks.
     app.include_router(webhooks.router, prefix="/api/v1", tags=["webhooks"])
     app.include_router(integrations.router, prefix="/api/v1", tags=["integrations"])
     app.include_router(integrations_hub.router, prefix="/api/v1", tags=["integration-hub"])
@@ -603,7 +576,6 @@ def register_all_routes(app: FastAPI) -> None:
 
     # ── Billing, Modules & SaaS ──────────────────────────────────────────────
     app.include_router(billing.router, prefix="/api/v1", tags=["billing"])
-    app.include_router(upgrade_requests.router, prefix="/api/v1", tags=["billing"])
     app.include_router(modules.router, prefix="/api/v1", tags=["modules"])
     app.include_router(ai_consumption.router, prefix="/api/v1", tags=["ai-consumption"])
     app.include_router(ai_consumption.ai_usage_router, prefix="/api/v1", tags=["ai-usage"])
@@ -620,8 +592,6 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(admin_platform.router, prefix="/api/v1", tags=["admin-platform"])
     app.include_router(admin_token_budget.router, prefix="/api/v1", tags=["admin-token-budget"])
     app.include_router(admin_prompts.router, prefix="/api/v1", tags=["admin-prompts"])
-    app.include_router(admin_persona.router, prefix="/api/v1", tags=["admin-persona"])
-    app.include_router(company_ai_persona.router, prefix="/api/v1", tags=["company-ai-persona"])
     app.include_router(admin_cb_router, prefix="/api/v1")
     app.include_router(admin_agents_router, prefix="/api/v1")
     app.include_router(admin_external_router, prefix="/api/v1", tags=["admin-external"])
@@ -647,44 +617,27 @@ def register_all_routes(app: FastAPI) -> None:
     # como template_id e devolve 404. FastAPI resolve rotas na ordem de registro.
     app.include_router(sector_templates_router, prefix="/api/v1", tags=["sector-templates"])
     app.include_router(agent_templates_router, prefix="/api/v1", tags=["agent-templates"])
-    app.include_router(agent_template_catalog_router, prefix="/api/v1", tags=["agent-template-catalog"])
     # — Phase 6: Agent Studio, Sourcing, Digital Twins, Voice Screening
+    app.include_router(sourcing_agents_router, prefix="/api/v1", tags=["sourcing-agents"])
     app.include_router(custom_agents_router, prefix="/api/v1", tags=["custom-agents"])
-    app.include_router(agent_studio_voice_router, prefix="/api/v1", tags=["agent-studio-voice"])
-    app.include_router(agent_studio_whatsapp_router, prefix="/api/v1", tags=["agent-studio-whatsapp"])
-    app.include_router(agent_studio_channels_router, prefix="/api/v1", tags=["agent-studio-channels"])
-    app.include_router(agent_studio_triagem_invite_router, prefix="/api/v1", tags=["agent-studio-triagem-invite"])
     app.include_router(agent_deployments_router, prefix="/api/v1")
     app.include_router(agent_deployments_target_router, prefix="/api/v1")
-    # Onda 3.B2 — /jobs/{id}/agents canonical shortcut
-    app.include_router(jobs_agents_router, prefix="/api/v1")
     app.include_router(agent_approvals_agent_router, prefix="/api/v1")
     app.include_router(agent_approvals_approvals_router, prefix="/api/v1")
-    # webhooks_router DELETED 2026-05-24 F10 — duplicate of webhooks.router included at L569
     app.include_router(agent_marketplace_router, prefix="/api/v1", tags=["agent-marketplace"])
     app.include_router(admin_marketplace_router, prefix="/api/v1", tags=["admin-marketplace"])
     app.include_router(multi_strategy_router, prefix="/api/v1", tags=["multi-strategy"])
     app.include_router(digital_twins_router, prefix="/api/v1", tags=["digital-twins"])
+    app.include_router(manager_alignments_router, prefix="/api/v1", tags=["manager-alignment"])
+    app.include_router(studio_summary_router, prefix="/api/v1", tags=["studio-summary"])
+    app.include_router(job_offers_router, prefix="/api/v1", tags=["job-offers"])
+    app.include_router(hiring_nps_router, prefix="/api/v1", tags=["hiring-nps"])
     app.include_router(voice_screening_router, prefix="/api/v1", tags=["voice-screening"])
     app.include_router(onboarding_router, tags=["onboarding"])
     app.include_router(whatsapp_webhook_router, tags=["whatsapp"])
 
+    app.include_router(candidate_portal_router, prefix="/api/v1", tags=["candidate-self-service"])
+    app.include_router(rh_dashboard_router, prefix="/api/v1", tags=["rh-dashboard"])
     # ── Public (no /api/v1 prefix) ────────────────────────────────────────────
-    # ── Offer Proposals (PR-B) ──────────────────────────────────────────────
-    from app.api.v1.offers import router as _offers_router
-    app.include_router(_offers_router, prefix="/api/v1", tags=["offers"])
-
     app.include_router(candidate_portal.router, tags=["candidate-portal"])
     app.include_router(public_shared_searches.router, prefix="/api", tags=["public-shared-searches"])
-
-    # ── Alert Rule Templates (Sprint 3 catalogos dinamicos 2026-05-21) ──────
-    from app.api.v1.alert_rule_templates import router as _alert_rule_templates_router
-    app.include_router(_alert_rule_templates_router, prefix="/api/v1", tags=["alert-rule-templates"])
-
-    # ── Sprint 2 canonical (catalogos dinamicos) — pipeline_stage_templates ──
-    from app.api.v1 import pipeline_stage_templates as _pipeline_stage_templates_router
-    app.include_router(
-        _pipeline_stage_templates_router.router,
-        prefix="/api/v1",
-        tags=["pipeline-stage-templates"],
-    )

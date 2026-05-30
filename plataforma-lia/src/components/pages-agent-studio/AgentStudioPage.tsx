@@ -1,63 +1,54 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
-import Link from "next/link"
-import { TwinsList, CreateDigitalTwinModal } from "@/components/pages-agent-studio/DigitalTwinComponents"
-import { TemplateGallery, AgentCard as CustomAgentCard, AgentCardSkeleton, AgentDetailsPanel, DeployDialog, AIAgentBuilder, TestDebugPanel, ApprovalsList } from "@/components/pages-agent-studio/custom-agents"
-// UX_AUDIT T4 (2026-05-21): TemplateClonePanel substitui TemplatePreviewModal como
-// entry-point primário do TemplateGallery (clone-first / HubSpot Breeze).
-// TemplatePreviewModal (Sprint B QW#5) preservado como export de custom-agents/
-// para outros entry-points que queiram um confirm-rápido sem o wizard.
-import { TemplateClonePanel } from "@/components/pages-agent-studio/template-clone"
-// Onda 1 F1 (2026-05-27): Sala de Controle = 4ª aba canonical.
-import { StudioControlRoom } from "@/components/pages-agent-studio/control-room"
-import { useCustomAgents, usePendingApprovals } from "@/hooks/agents"
+import {
+  TwinsList,
+  EvaluateWithTwinModal,
+  CreateDigitalTwinModal,
+} from "@/components/pages-agent-studio/DigitalTwinComponents"
+import MultiStrategySearchPanel from "@/components/pages-agent-studio/MultiStrategySearchPanel"
+import CustomAgentsTab from "@/components/pages-agent-studio/CustomAgentsTab"
+import { TemplateGallery, AgentCard as CustomAgentCard, AgentDetailsPanel, DeployDialog, ConversationalCreator, TestDebugPanel, ApprovalsList } from "@/components/pages-agent-studio/custom-agents"
+import { useCustomAgents, useStudioAlerts } from "@/hooks/agents"
 import { useAgentStudioStore } from "@/stores/agent-studio-store"
 import type { CustomAgent, AgentTemplate } from "@/components/pages-agent-studio/custom-agents/types"
-import { QuotaMeter } from "@/components/pages-agent-studio/QuotaMeter"
+import MarketplaceTab from "@/components/pages-agent-studio/MarketplaceTab"
+import { ServiceFunnelView, StudioOnboarding } from "@/components/pages-agent-studio/ServiceFunnelView"
+import type { FunnelServiceData, ServiceSlug, ServiceStatus } from "@/components/pages-agent-studio/ServiceFunnelView"
+import { AlignmentStatusCard } from "@/components/pages-agent-studio/AlignmentStatusCard"
+import { OfferStatusCard } from "@/components/pages-agent-studio/OfferStatusCard"
+import { NpsStatusCard } from "@/components/pages-agent-studio/NpsStatusCard"
+import { useRouter } from "next/navigation"
+import { useLocale } from "next-intl"
 import {
   Bot, Plus, Play, Pause, Briefcase, Database,
   Factory, HeartPulse, ShoppingCart, Code, Truck, Brain,
   ChevronRight, Zap, Target, ArrowRight,
-  Activity, Eye, ThumbsUp, ThumbsDown, RefreshCw,
-  Loader2, Users, Wand2, Store,
-  GraduationCap, BarChart3, Clock, Inbox, Radar
+  Activity, RefreshCw,
+  Loader2, Users, Wand2, Search, Store,
+  GraduationCap, Clock
 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { getSourcingAgentStatusConfig } from "@/lib/agent-studio/status-config"
 import { toast } from "@/lib/toast"
 import { extractErrorMessage } from "@/lib/api/extract-error-message"
-import { buildCreateAgentPayloadFromTemplate, buildAgentAuthHeaders } from "@/lib/agents/create-agent-payload"
 import { Button } from "@/components/ui/button"
 import { BetaBadge } from "@/components/ui/beta-badge"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
-import { PageTabNavigation } from "@/components/ui/page-tab-navigation"
-import { TabSectionHeader } from "@/components/pages-agent-studio/TabSectionHeader"
-import { CreateAgentWizard, inferGoalFromTemplate } from "@/components/pages-agent-studio/create-agent-wizard"
-// Q4.3 Tour interno do Studio (primeira visita)
-import { StudioTour } from "@/components/pages-agent-studio/StudioTour"
-import type { AgentGoal, CreateAgentInitialConfig } from "@/components/pages-agent-studio/create-agent-wizard"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 import { useTranslations } from "next-intl"
-import { useAiPersona } from "@/hooks/company/use-ai-persona"
 
-// SOURCING-LEGACY-EXEMPT: migration comment header (Sprint 7B-3b Part 2 v2 swap concluido)
-// Sprint 7B-3b Part 2 v2 (2026-05-26): swap canonical SourcingAgent -> CustomAgent.
-// Endpoint canonical /custom-agents?category=sourcing (Sprint 7B-3b Part 3b v2). Field access via
-// adapter helpers (runtime_metrics, config.calibration_v). Snapshot SHA pre-edit:
-// eb933818a49dbf1b89b8cb9619cc6cdfd16324d1.
-
-// Adapter helpers para campos legacy sourcing_agents derivados.
-function agentMetrics(agent: CustomAgent) {
-  const rm = (agent.runtime_metrics || {}) as Record<string, unknown>
-  return {
-    profiles_viewed: typeof rm.profiles_viewed === "number" ? rm.profiles_viewed : 0,
-    profiles_approved: typeof rm.profiles_approved === "number" ? rm.profiles_approved : 0,
-    profiles_rejected: typeof rm.profiles_rejected === "number" ? rm.profiles_rejected : 0,
-  }
-}
-function agentCalibrationV(agent: CustomAgent): number {
-  const cfg = (agent.config || {}) as Record<string, unknown>
-  return typeof cfg.calibration_v === "number" ? cfg.calibration_v : 0
+interface SourcingAgent {
+  id: string
+  agent_name: string
+  status: "active" | "paused" | "completed"
+  calibration_v: number
+  job_id: string | null
+  talent_pool_id: string | null
+  search_strategy: Record<string, unknown>
+  preferences: Record<string, unknown>
+  profiles_viewed: number
+  profiles_approved: number
+  profiles_rejected: number
+  created_at: string
 }
 
 interface SectorTemplate {
@@ -75,40 +66,18 @@ const SECTOR_ICONS: Record<string, React.ComponentType<{ className?: string }>> 
   truck: Truck,
 }
 
-// Fase 3 Sprint 1 (2026-05-30): monocromatizado. Antes cada setor tinha cor
-// decorativa própria (amber/rose/violet/cyan/emerald simultâneos) — viola a
-// LIA-OK: 90/10 Rule + "ATS infantil 4 cores" + a regra de exclusividade cyan. Agora todos
-// os setores usam o MESMO tratamento tonal neutro (ícone graphite sobre powder),
-// igual ao TemplateCard. A distinção de setor fica no ícone, não na cor.
-const SECTOR_ICON_STYLE = {
-  bg: "bg-powder dark:bg-lia-bg-tertiary",
-  text: "text-graphite dark:text-lia-text-primary",
+const STATUS_CONFIG_STYLES = {
+  active:    { labelKey: "studio.status.active" as const,    dot: "bg-[#5DA47A]", bg: "bg-[#F0FAF4]", text: "text-[#5DA47A]", pulse: true  },
+  paused:    { labelKey: "studio.status.paused" as const,    dot: "bg-[#D19960]", bg: "bg-[#FEF9F0]", text: "text-[#D19960]", pulse: false },
+  completed: { labelKey: "studio.status.completed" as const, dot: "bg-[#D1D5DB]", bg: "bg-[#F3F4F6]", text: "text-[#9CA3AF]", pulse: false },
 }
 
-// UX-Sprint-A QW#18 Batch 3 (audit 2026-05-21): STATUS_CONFIG_STYLES extraído
-// para lib/agent-studio/status-config.ts canonical (deletadas 3 duplicações).
-// Status labels (i18n) precisam continuar locais — sourcing agents usam
-// studio.status.* namespace. Visual config vem do canonical.
-const STATUS_CONFIG_LABELS = {
-  active: "studio.status.active" as const,
-  paused: "studio.status.paused" as const,
-  completed: "studio.status.completed" as const,
-}
-
-// Fase 3 Sprint 1 (2026-05-30): monocromatizado. Antes cada passo tinha cor
-// decorativa (cyan/violet/amber/emerald) — multicolor sem significado semântico.
-// Agora ícone graphite sobre powder neutro; a sequência é comunicada pelos
-// rótulos "PASSO 1..4" + setas, não pela cor.
-const FLOW_STEP_ICON_STYLE = {
-  color: "text-graphite dark:text-lia-text-primary",
-  bg: "bg-powder dark:bg-lia-bg-tertiary",
-}
-
+// Single lia-cyan for all flow step icons — replaces 4-color palette
 const FLOW_STEPS_CONFIG = [
-  { icon: Target, titleKey: "studio.flowSteps.chooseProfile" as const, descKey: "studio.flowSteps.chooseProfileDesc" as const },
-  { icon: Wand2, titleKey: "studio.flowSteps.configureAgent" as const, descKey: "studio.flowSteps.configureAgentDesc" as const },
+  { icon: Target,       titleKey: "studio.flowSteps.chooseProfile" as const,    descKey: "studio.flowSteps.chooseProfileDesc" as const    },
+  { icon: Wand2,        titleKey: "studio.flowSteps.configureAgent" as const,   descKey: "studio.flowSteps.configureAgentDesc" as const   },
   { icon: GraduationCap, titleKey: "studio.flowSteps.teachByEvaluating" as const, descKey: "studio.flowSteps.teachByEvaluatingDesc" as const },
-  { icon: Zap, titleKey: "studio.flowSteps.receiveCandidates" as const, descKey: "studio.flowSteps.receiveCandidatesDesc" as const },
+  { icon: Zap,          titleKey: "studio.flowSteps.receiveCandidates" as const, descKey: "studio.flowSteps.receiveCandidatesDesc" as const },
 ]
 
 interface AgentStudioPageProps {
@@ -123,104 +92,40 @@ export default function AgentStudioPage({
   onStartCalibration,
 }: AgentStudioPageProps) {
   const t = useTranslations("agents")
-  const { persona: aiPersona } = useAiPersona()
-  const aiAssistantName = aiPersona?.name ?? "assistente"
-  const [agents, setAgents] = useState<CustomAgent[]>([])
+  const router = useRouter()
+  const locale = useLocale()
+  const [agents, setAgents] = useState<SourcingAgent[]>([])
   const [templates, setTemplates] = useState<SectorTemplate[]>([])
+  const [openJobs, setOpenJobs] = useState<{ id: string; title: string; status: string }[]>([])
+  const [studioSummaryServices, setStudioSummaryServices] = useState<Record<string, { status: string; metric?: string }>>({})
   const [isLoading, setIsLoading] = useState(true)
-  // UX_AUDIT_ESTUDIO_AGENTES_2026-05-21 T1+T3+T4: wizard goal-first unico
-  // (substitui as ~9 CTAs "Criar Agente" espalhadas pelas tabs).
-  // T4: aceita initialConfig (template_id + goal) para clone-first do TemplateClonePanel.
-  const [wizardOpen, setWizardOpen] = useState(false)
-  const [wizardInitialGoal, setWizardInitialGoal] = useState<AgentGoal | undefined>(undefined)
-  const [wizardInitialConfig, setWizardInitialConfig] = useState<CreateAgentInitialConfig | undefined>(undefined)
-  const openWizard = (goal?: AgentGoal, config?: CreateAgentInitialConfig) => {
-    setWizardInitialGoal(goal)
-    setWizardInitialConfig(config)
-    setWizardOpen(true)
-  }
-  // UX_AUDIT T4 (2026-05-21): previewTemplate aciona TemplateClonePanel (Sheet lateral).
-  // Sprint B QW#5 (Dialog confirm) preservado em TemplatePreviewModal, mas não montado
-  // a partir do TemplateGallery — o clone-first é o pattern canonical agora.
-  const [previewTemplate, setPreviewTemplate] = useState<AgentTemplate | null>(null)
-  // P1 (Paulo 2026-05-30): "Usar agora" cria o agente direto (sem wizard).
-  // Guard pra evitar duplo-clique disparar 2 POSTs.
-  const [usingTemplateId, setUsingTemplateId] = useState<string | null>(null)
-  // P0-6 audit 2026-05-21: CreateDigitalTwinModal estava orfão (não montada). Wiring canonical.
+  const [showCreateModal, setShowCreateModal] = useState(false)
+  const [evaluatingTwinId, setEvaluatingTwinId] = useState<string | null>(null)
   const [showCreateTwinModal, setShowCreateTwinModal] = useState(false)
-  const [twinsRefreshKey, setTwinsRefreshKey] = useState(0)
+  const [twinListRefreshKey, setTwinListRefreshKey] = useState(0)
   const [deployAgent, setDeployAgent] = useState<CustomAgent | null>(null)
   const [testAgent, setTestAgent] = useState<CustomAgent | null>(null)
   const [detailsAgent, setDetailsAgent] = useState<CustomAgent | null>(null)
   const { agents: customAgents, mutate: mutateCustomAgents } = useCustomAgents()
-  const { selectTemplate } = useAgentStudioStore()
-  // Studio Restructure Fase 2 (2026-05-26 + Onda 0 Fix 3, 2026-05-27): 3 top tabs.
-  // - "my-agents" (default): templates + lista unificada de agentes do usuário
-  //   (captação + personalizados juntos).
-  // - "approvals": ApprovalsList promovido a tab top-level (Wave 0 Fix 3).
-  //   Antes ficava embedded em my-agents — recrutador podia não perceber
-  //   pendências. Badge com count 1-9 ou "9+" sinaliza urgência.
-  // - "digital-twins": TwinsList canonical.
-  // Marketplace deixou de ser tab — virou CTA "Explorar Marketplace" no header,
-  // rota /agents/marketplace renderiza MarketplaceTab standalone.
-  // Onda 1 F1 (2026-05-27): "control-room" entre "approvals" e "digital-twins".
-  type MainTab = "my-agents" | "approvals" | "control-room" | "digital-twins"
-  const [activeTab, setActiveTab] = useState<MainTab>("my-agents")
-
-  // Wave 0 Fix 3 (2026-05-27): contagem de aprovações pendentes pro badge da tab.
-  const { approvals: pendingApprovals } = usePendingApprovals()
-  const pendingCount = pendingApprovals?.length ?? 0
-  // Display rule: 1-9 exato, 10+ vira "9+" (anti-overflow visual + sinal de urgência).
-  const pendingBadgeLabel = pendingCount > 9 ? "9+" : undefined
+  const { alerts, alertCount, twinSummary } = useStudioAlerts()
+  const { selectTemplate, reset: resetStudio } = useAgentStudioStore()
+  const [selectedTemplate, setSelectedTemplate] = useState<SectorTemplate | null>(null)
+  // secondaryView: shown below the funnel when user clicks Advanced Tools links
+  const [secondaryView, setSecondaryView] = useState<"custom" | "marketplace" | "search" | null>(null)
+  const [onboardingDismissed, setOnboardingDismissed] = useState(true)
 
   useEffect(() => {
     loadData()
-  }, [])
-
-  // Studio Restructure Fase 2 (2026-05-26): backward compat para deep-links
-  // legacy. ?tab=marketplace → redirect /agents/marketplace. Outros tabs antigos
-  // colapsam em my-agents OU digital-twins.
-  useEffect(() => {
-    if (typeof window === "undefined") return
-    const url = new URL(window.location.href)
-    const oldTab = url.searchParams.get("tab")
-    if (!oldTab) return
-    if (oldTab === "marketplace") {
-      // Redirect canonical — Marketplace deixou de ser tab.
-      const target = url.pathname.replace(/\/[^/]*$/, "") + "/agents/marketplace"
-      window.location.replace("/agents/marketplace")
-      return
-    }
-    const mapping: Record<string, MainTab> = {
-      "agents": "my-agents",
-      "captacao": "my-agents",
-      "custom": "my-agents",
-      "personalizados": "my-agents",
-      "my-agents": "my-agents",
-      "approvals": "approvals",
-      "aprovacoes": "approvals",
-      "control-room": "control-room",
-      "sala-de-controle": "control-room",
-      "twins": "digital-twins",
-      "gemeos": "digital-twins",
-      "digital-twins": "digital-twins",
-    }
-    const target = mapping[oldTab]
-    if (!target) return
-    setActiveTab(target)
-    if (oldTab !== target) {
-      url.searchParams.set("tab", target)
-      url.searchParams.delete("subTab")
-      window.history.replaceState(window.history.state, "", url.toString())
-    }
+    setOnboardingDismissed(!!localStorage.getItem("studio_onboarding_done"))
   }, [])
 
   const loadData = async () => {
     setIsLoading(true)
     try {
-      const [agentsRes, templatesRes] = await Promise.allSettled([
-        fetch("/api/backend-proxy/custom-agents?category=sourcing"),
+      const [agentsRes, templatesRes, jobsRes] = await Promise.allSettled([
+        fetch("/api/backend-proxy/sourcing-agents"),
         fetch("/api/backend-proxy/agent-templates/sectors"),
+        fetch("/api/backend-proxy/job-vacancies?status=publicada,ao_vivo,rascunho,enriquecida&limit=50", { credentials: "include" }),
       ])
       let agentsData: Record<string, unknown> = {}
       let templatesData: unknown = []
@@ -230,8 +135,37 @@ export default function AgentStudioPage({
       if (templatesRes.status === "fulfilled" && templatesRes.value.ok) {
         try { templatesData = await templatesRes.value.json() } catch { /* */ }
       }
-      setAgents(Array.isArray(agentsData?.agents) ? agentsData.agents as CustomAgent[] : [])
+      setAgents(Array.isArray(agentsData?.agents) ? agentsData.agents as SourcingAgent[] : [])
       setTemplates(Array.isArray(templatesData) ? templatesData as SectorTemplate[] : [])
+      if (jobsRes.status === "fulfilled" && jobsRes.value.ok) {
+        try {
+          const jobsData = await jobsRes.value.json()
+          const rawJobs = Array.isArray(jobsData?.jobs) ? jobsData.jobs : Array.isArray(jobsData) ? jobsData : []
+          const mapped = rawJobs.map((j: { id: string; title?: string; status?: string }) => ({
+            id: String(j.id),
+            title: j.title ?? "Vaga",
+            status: j.status ?? "rascunho",
+          }))
+          setOpenJobs(mapped)
+          // Fetch studio-summary for first live job to get screening status
+          const firstLive = mapped.find((j: { status: string }) => ["publicada", "ao_vivo"].includes(j.status))
+            ?? mapped.find((j: { status: string }) => ["rascunho", "enriquecida"].includes(j.status))
+          if (firstLive) {
+            try {
+              const summaryRes = await fetch(
+                `/api/backend-proxy/studio-summary?job_id=${encodeURIComponent(firstLive.id)}`,
+                { credentials: "include" }
+              )
+              if (summaryRes.ok) {
+                const summaryData = await summaryRes.json()
+                if (summaryData?.services && typeof summaryData.services === "object") {
+                  setStudioSummaryServices(summaryData.services)
+                }
+              }
+            } catch { /* non-blocking */ }
+          }
+        } catch { /* */ }
+      }
     } catch (err) {
       console.error("Failed to load agent studio data:", err)
     } finally {
@@ -242,7 +176,7 @@ export default function AgentStudioPage({
   const handleToggleStatus = async (agentId: string, currentStatus: string) => {
     const action = currentStatus === "active" ? "pause" : "resume"
     try {
-      const res = await fetch(`/api/backend-proxy/custom-agents/${agentId}/${action}`, { method: "POST" })
+      const res = await fetch(`/api/backend-proxy/sourcing-agents/${agentId}/${action}`, { method: "PATCH" })
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}))
         throw new Error(extractErrorMessage(errData, res.status))
@@ -255,612 +189,555 @@ export default function AgentStudioPage({
     }
   }
 
-  // UX_AUDIT T4 (2026-05-21) — clone-first pattern HubSpot Breeze:
-  // template click NÃO cria agente (era POST direto Sprint B QW#5 com Dialog
-  // confirm). Em vez disso abre TemplateClonePanel (Sheet lateral direito) com
-  // preview rico. Sheet → "Clonar e customizar" → CreateAgentWizard com
-  // initialConfig pré-populado, skip pra step 3.
-  // Anti-pattern original (POST silencioso) era sev 4 no diagnóstico Nielsen H#5/H#3.
-  const handleTemplateSelect = (template: AgentTemplate) => {
+  const handleTemplateSelect = async (template: AgentTemplate) => {
     selectTemplate(template)
-    setPreviewTemplate(template)
-  }
-
-  // T4: ao confirmar clone no TemplateClonePanel, fecha o Sheet e abre o wizard
-  // com initialConfig pré-populado. Wizard pula goal+approach (vê initialConfig.templateId)
-  // e abre direto step 3 (Configurar). Nome default "<Nome> (cópia)" — recruiter pode editar.
-  const handleCloneTemplate = (template: AgentTemplate) => {
-    const inferredGoal = inferGoalFromTemplate(template)
-    setPreviewTemplate(null)
-    openWizard(inferredGoal, {
-      goal: inferredGoal,
-      approach: "template",
-      templateId: template.id,
-      name: `${template.name} (cópia)`,
-      description: template.description,
-    })
-  }
-
-  // P1 (Paulo 2026-05-30): "Usar agora" = criação direta com os defaults do
-  // template, SEM passar pelo wizard. Reusa o MESMO contrato de POST do wizard
-  // (buildCreateAgentPayloadFromTemplate — single source of truth). "Ajustar
-  // antes" (handleCloneTemplate) continua abrindo o wizard pré-populado. Os dois
-  // botões agora fazem coisas distintas.
-  const handleUseTemplateNow = async (template: AgentTemplate) => {
-    if (usingTemplateId) return
-    setUsingTemplateId(template.id)
     try {
       const res = await fetch("/api/backend-proxy/custom-agents", {
         method: "POST",
-        headers: buildAgentAuthHeaders(),
-        body: JSON.stringify(buildCreateAgentPayloadFromTemplate(template)),
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: template.name,
+          role: template.description,
+          description: template.description,
+          system_prompt: template.system_prompt,
+          allowed_tools: template.allowed_tools,
+          domain: template.domain,
+          icon: template.icon,
+          max_steps: template.max_steps,
+          temperature: template.temperature,
+          enable_memory: template.enable_memory,
+          context_level: template.context_level,
+          excluded_tools: template.excluded_tools,
+        }),
       })
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}))
-        throw new Error(extractErrorMessage(err, res.status))
-      }
-      const data = await res.json().catch(() => ({}))
-      const createdId = typeof data?.id === "string" ? data.id : null
-      toast.success(
-        t("studio.toast.agentCreated", { name: template.name }),
-        t("studio.toast.agentCreatedFromTemplate"),
-      )
+      if (!res.ok) throw new Error(t("studio.toast.errorCreating"))
+      toast.success(t("studio.toast.agentCreated", { name: template.name }), t("studio.toast.agentCreatedDesc"))
       mutateCustomAgents()
-      loadData()
-      // Leva o recrutador ao agente recém-criado: abre o painel de detalhes se
-      // a lista já tiver o agente; senão a lista atualizada já o mostra. O
-      // calibrate flow é acionado quando há id (mesmo contrato do wizard).
-      if (createdId) onStartCalibration?.(createdId)
-    } catch (e) {
-      const msg =
-        e instanceof Error ? e.message : t("studio.toast.errorCreatingAgent")
-      toast.error(msg, t("studio.toast.tryAgain"))
-    } finally {
-      setUsingTemplateId(null)
-    }
-  }
-
-  // UX_AUDIT T4 (2026-05-21): handleTemplateConfirm removido — antes (Sprint B QW#5)
-  // o TemplatePreviewModal POSTava direto após confirm rápido. Agora o fluxo passa
-  // por TemplateClonePanel → CreateAgentWizard, que faz o POST com customizações.
-  // O TemplatePreviewModal continua exportado de custom-agents/ como componente
-  // disponível para outros entry-points que queiram fluxo confirm-rápido sem wizard.
-
-  // Sprint B QW#15 audit 2026-05-22: Clone canonical (era enterrado em drawer)
-  const handleCloneCustomAgent = async (agent: CustomAgent) => {
-    try {
-      const token = localStorage.getItem("auth_token")
-      const res = await fetch(`/api/backend-proxy/custom-agents/${agent.id}/clone`, {
-        method: "POST",
-        headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-      })
-      if (!res.ok) {
-        const errBody = await res.json().catch(() => ({}))
-        throw new Error(extractErrorMessage(errBody, res.status))
-      }
-      toast.success(t("studio.toast.agentCloned") || "Agente duplicado com sucesso")
-      mutateCustomAgents()
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : (t("studio.toast.errorCloning") || "Erro ao duplicar agente")
-      toast.error(msg)
+      resetStudio()
+      setSecondaryView("custom")
+    } catch {
+      toast.error(t("studio.toast.errorCreating"), t("studio.toast.tryAgainShort"))
     }
   }
 
   const handleCustomAgentToggle = async (agent: CustomAgent) => {
     const newStatus = agent.status === "active" ? "paused" : "active"
     try {
-      const token = localStorage.getItem("auth_token")
       await fetch(`/api/backend-proxy/custom-agents/${agent.id}`, {
         method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: newStatus }),
       })
       toast.success(newStatus === "active" ? t("studio.toast.agentActivated") : t("studio.toast.agentPaused"))
       mutateCustomAgents()
-    } catch (e) {
-      // UX-Sprint-A QW#6 Batch 4 audit 2026-05-21: mensagem real do backend ao invés de genérica
-      const msg = e instanceof Error ? e.message : t("studio.toast.errorStatus")
-      toast.error(msg)
+    } catch {
+      toast.error(t("studio.toast.errorStatus"))
     }
   }
 
-  const totalViewed = agents.reduce((s, a) => s + agentMetrics(a).profiles_viewed, 0)
-  const totalApproved = agents.reduce((s, a) => s + agentMetrics(a).profiles_approved, 0)
-  // Wave B1.4 (2026-05-27): activeCount agrega sourcing + custom; totalCustomExecutions soma execucoes de agents custom.
-  const activeCount = agents.filter(a => a.status === "active").length + customAgents.filter(a => a.status === "active").length
-  const totalCustomExecutions = customAgents.reduce((s, a) => s + (a.total_executions ?? 0), 0)
+  const activeCount = agents.filter(a => a.status === "active").length
+
+  // ── Sourcing panel (embedded in funnel row) ──────────────────────────────
+  const sourcingPanel = (
+    <div className="p-4 space-y-5">
+      {/* How it works (show when no agents) */}
+      {agents.length === 0 && !isLoading && (
+        <div className="rounded-lg border border-[#E5E7EB] bg-white p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <Brain className="w-3.5 h-3.5 text-[#60BED1]" />
+            <span className="text-[10px] font-semibold uppercase tracking-widest text-[#60BED1]">
+              {t("studio.whatIsAgent")}
+            </span>
+          </div>
+          <p className="text-xs text-[#6B7280] mb-3 max-w-2xl">{t("studio.virtualRecruiterDesc")}</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
+            {FLOW_STEPS_CONFIG.map((step, i) => (
+              <div key={i} className="flex items-start gap-3 min-w-0">
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 bg-[#EBF8FB]">
+                  <step.icon className="w-4 h-4 text-[#60BED1]" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5 mb-0.5">
+                    <span className="text-[9px] font-medium text-[#9CA3AF] uppercase tracking-wide whitespace-nowrap">
+                      {t("studio.flowSteps.step")} {i + 1}
+                    </span>
+                    {i < 3 && <ArrowRight className="w-3 h-3 text-[#D1D5DB] hidden xl:block" />}
+                  </div>
+                  <p className="text-xs font-semibold text-[#030712] break-words">{t(step.titleKey)}</p>
+                  <p className="text-[10px] text-[#6B7280] leading-relaxed break-words">{t(step.descKey)}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Templates */}
+      <div>
+        <p className="text-xs font-semibold text-[#030712] mb-2">
+          {agents.length === 0 ? t("studio.templates.startChoosing") : t("studio.templates.createNew")}
+        </p>
+        <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
+          {templates.map(tpl => {
+            const Icon = SECTOR_ICONS[tpl.icon] || Brain
+            return (
+              <button
+                key={tpl.id}
+                onClick={() => { setSelectedTemplate(tpl); setShowCreateModal(true) }}
+                className="group flex flex-col items-center gap-2 p-3 rounded-lg border border-[#E5E7EB] bg-white hover:border-[#60BED1]/40 hover:bg-[#EBF8FB]/30 transition-all cursor-pointer"
+              >
+                <div className="w-9 h-9 rounded-lg flex items-center justify-center bg-[#EBF8FB] transition-transform group-hover:scale-110">
+                  <Icon className="w-5 h-5 text-[#60BED1]" />
+                </div>
+                <p className="text-[10px] font-semibold text-[#030712] text-center line-clamp-1">{tpl.display_name}</p>
+              </button>
+            )
+          })}
+          <button
+            onClick={() => { setSelectedTemplate(null); setShowCreateModal(true) }}
+            className="group flex flex-col items-center gap-2 p-3 rounded-lg border-2 border-dashed border-[#E5E7EB] hover:border-[#60BED1]/40 transition-all cursor-pointer"
+          >
+            <Brain className="w-5 h-5 text-[#60BED1] transition-transform group-hover:scale-110" />
+            <p className="text-[10px] font-semibold text-[#6B7280] text-center">{t("studio.templates.custom")}</p>
+          </button>
+        </div>
+      </div>
+
+      {/* Agents list */}
+      {isLoading ? (
+        <div className="flex items-center justify-center py-10">
+          <Loader2 className="w-5 h-5 animate-spin text-[#9CA3AF]" />
+        </div>
+      ) : agents.length === 0 ? (
+        <div className="flex flex-col items-center py-8 rounded-lg border border-dashed border-[#E5E7EB]">
+          <Bot className="w-7 h-7 text-[#D1D5DB] mb-2" />
+          <p className="text-xs font-medium text-[#6B7280]">{t("studio.noAgentsYet")}</p>
+          <p className="text-[10px] text-[#9CA3AF] mt-1 mb-3">{t("studio.chooseTemplateAbove")}</p>
+          <Button size="sm" onClick={() => setShowCreateModal(true)} className="gap-1.5 bg-[#030712] text-white hover:bg-[#1F2937]">
+            <Plus className="w-3.5 h-3.5" />
+            {t("studio.createFirstAgent")}
+          </Button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          {agents.map(agent => (
+            <AgentCard
+              key={agent.id}
+              agent={agent}
+              onToggleStatus={() => handleToggleStatus(agent.id, agent.status)}
+              onCalibrate={() => onStartCalibration?.(agent.id)}
+              onNavigate={() => {
+                if (agent.talent_pool_id) onNavigateToPool?.(agent.talent_pool_id)
+                else if (agent.job_id) onNavigateToJob?.(agent.job_id)
+                else toast.warning(t("studio.toast.noLinkTitle"), t("studio.toast.noLinkDesc"))
+              }}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+
+  // ── Intake panel (embedded in funnel row) ────────────────────────────────
+  const draftJobs = openJobs.filter(j => ["rascunho", "enriquecida", "ats_importada"].includes(j.status))
+  const liveJobs = openJobs.filter(j => ["publicada", "ao_vivo"].includes(j.status))
+  const intakePanel = (
+    <div className="p-4 space-y-4">
+      {openJobs.length === 0 ? (
+        <div className="text-center py-6 space-y-2">
+          <p className="text-sm text-[#6B7280]">Nenhuma vaga aberta encontrada.</p>
+          <button
+            type="button"
+            onClick={() => router.push(`/${locale}/jobs/new`)}
+            className="flex items-center gap-2 mx-auto text-sm font-medium text-white bg-[#60BED1] hover:bg-[#4fa8bc] rounded-lg px-4 py-2 transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            Criar vaga
+          </button>
+        </div>
+      ) : (
+        <>
+          {liveJobs.length > 0 && (
+            <div className="space-y-1.5">
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-[#5DA47A]">
+                {liveJobs.length} vaga{liveJobs.length !== 1 ? "s" : ""} ativa{liveJobs.length !== 1 ? "s" : ""}
+              </p>
+              {liveJobs.map(j => (
+                <button
+                  key={j.id}
+                  type="button"
+                  onClick={() => router.push(`/${locale}/jobs/${j.id}`)}
+                  className="w-full flex items-center gap-3 rounded-lg border border-[#E5E7EB] hover:border-[#60BED1]/40 px-3 py-2.5 bg-white hover:bg-[#F9FAFB] text-left transition-colors group"
+                >
+                  <div className="w-2 h-2 rounded-full bg-[#5DA47A] flex-shrink-0" />
+                  <span className="flex-1 text-sm text-[#030712] truncate">{j.title}</span>
+                  <ChevronRight className="w-3.5 h-3.5 text-[#9CA3AF] opacity-0 group-hover:opacity-100 transition-opacity" />
+                </button>
+              ))}
+            </div>
+          )}
+          {draftJobs.length > 0 && (
+            <div className="space-y-1.5">
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-[#D19960]">
+                {draftJobs.length} em configuração
+              </p>
+              {draftJobs.map(j => (
+                <button
+                  key={j.id}
+                  type="button"
+                  onClick={() => router.push(`/${locale}/jobs/${j.id}?tab=edit`)}
+                  className="w-full flex items-center gap-3 rounded-lg border border-[#E5E7EB] hover:border-[#D19960]/40 px-3 py-2.5 bg-white hover:bg-[#FEF9F0] text-left transition-colors group"
+                >
+                  <div className="w-2 h-2 rounded-full bg-[#D19960] flex-shrink-0" />
+                  <span className="flex-1 text-sm text-[#030712] truncate">{j.title}</span>
+                  <span className="text-[10px] text-[#D19960] opacity-0 group-hover:opacity-100 transition-opacity">Completar →</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  )
+
+  // ── Alignment panel (embedded in funnel row) ────────────────────────────
+  // Prefer first live job, fall back to first draft — no agent required
+  const firstJobId = liveJobs[0]?.id ?? draftJobs[0]?.id ?? agents.find(a => a.job_id)?.job_id ?? null
+  // All jobs list for multi-job selector in status cards
+  const allJobsList = openJobs.map(j => ({ id: j.id, title: j.title }))
+  const alignmentPanel = (
+    <div className="p-4 space-y-3">
+      <div className="flex items-center gap-2 mb-1">
+        <span className="text-xs font-semibold uppercase tracking-widest text-[#60BED1]">Alinhamento c/ Gestor</span>
+      </div>
+      {firstJobId ? (
+        <AlignmentStatusCard jobId={firstJobId} jobs={allJobsList} />
+      ) : (
+        <p className="text-xs text-[#6B7280]">
+          Crie um agente de prospecção vinculado a uma vaga primeiro.
+        </p>
+      )}
+    </div>
+  )
+
+  // ── Calibration panel (embedded in funnel row) ───────────────────────────
+  const calibrationPanel = (
+    <div className="p-4 space-y-4">
+      <div className="flex items-center gap-2 mb-1">
+        <Users className="w-4 h-4 text-[#60BED1]" />
+        <span className="text-xs font-semibold uppercase tracking-widest text-[#60BED1]">{t("studio.twins.label")}</span>
+      </div>
+      <p className="text-xs text-[#6B7280] max-w-2xl">{t("studio.twins.cloneDesc")}</p>
+      <TwinsList
+        onEvaluate={(id) => setEvaluatingTwinId(id)}
+        onCreateTwin={() => setShowCreateTwinModal(true)}
+        refreshKey={twinListRefreshKey}
+      />
+    </div>
+  )
+
+  // ── Funnel services array ────────────────────────────────────────────────
+  const funnelServices: FunnelServiceData[] = [
+    {
+      slug: "intake",
+      status: liveJobs.length > 0 ? "active" : draftJobs.length > 0 ? "attention" : openJobs.length > 0 ? "configured" : "inactive",
+      metric: openJobs.length > 0 ? `${openJobs.length} vaga${openJobs.length !== 1 ? "s" : ""}` : undefined,
+      panel: intakePanel,
+    },
+    {
+      slug: "alignment",
+      status: firstJobId ? "configured" : "inactive",
+      panel: alignmentPanel,
+    },
+    {
+      slug: "sourcing",
+      status: activeCount > 0 ? "active" : agents.length > 0 ? "configured" : "inactive",
+      metric: agents.length > 0 ? `${activeCount} ${activeCount === 1 ? "ativo" : "ativos"}` : undefined,
+      panel: sourcingPanel,
+    },
+    {
+      slug: "screening",
+      status: (studioSummaryServices.screening?.status as ServiceStatus) ?? (openJobs.length > 0 ? "configured" : "inactive"),
+      metric: studioSummaryServices.screening?.metric,
+    },
+    {
+      slug: "calibration",
+      status: twinSummary.totalTwins > 0
+        ? (alerts.some(a => a.type === "TWIN_LOW_ACCURACY") ? "attention" : "active")
+        : "inactive",
+      metric: twinSummary.totalTwins > 0
+        ? twinSummary.avgAccuracy !== null
+          ? `${twinSummary.avgAccuracy}% acurácia`
+          : `${twinSummary.totalTwins} twin${twinSummary.totalTwins !== 1 ? "s" : ""}`
+        : undefined,
+      panel: calibrationPanel,
+    },
+    {
+      slug: "offer",
+      status: (studioSummaryServices.offer?.status as ServiceStatus) ?? "inactive",
+      metric: studioSummaryServices.offer?.metric,
+      panel: firstJobId ? (
+        <div className="p-4 space-y-3">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-xs font-semibold uppercase tracking-widest text-[#60BED1]">Ofertas</span>
+          </div>
+          <OfferStatusCard jobId={firstJobId} jobs={allJobsList} />
+        </div>
+      ) : (
+        <div className="p-4">
+          <p className="text-xs text-[#6B7280]">Crie uma vaga primeiro para registrar ofertas.</p>
+        </div>
+      ),
+    },
+    {
+      slug: "nps",
+      status: (studioSummaryServices.nps?.status as ServiceStatus) ?? "inactive",
+      metric: studioSummaryServices.nps?.metric,
+      panel: firstJobId ? (
+        <div className="p-4 space-y-3">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-xs font-semibold uppercase tracking-widest text-[#60BED1]">NPS — Satisfação</span>
+          </div>
+          <NpsStatusCard jobId={firstJobId} jobs={allJobsList} />
+        </div>
+      ) : (
+        <div className="p-4">
+          <p className="text-xs text-[#6B7280]">Crie uma vaga primeiro para enviar pesquisas NPS.</p>
+        </div>
+      ),
+    },
+  ]
+
+  const handleFunnelActivate = (slug: ServiceSlug) => {
+    if (slug === "sourcing") setShowCreateModal(true)
+    else if (slug === "calibration") setShowCreateTwinModal(true)
+  }
 
   return (
-    <div id="estudio-main-content" className="flex-1 flex flex-col h-full overflow-hidden bg-lia-bg-primary">
-      {/* UX-Sprint-A QW#9 audit 2026-05-21 (WCAG 2.4.1): skip link para keyboard users
-          pularem header + tabs e ir direto pro main content. Visível só em focus. */}
-      <a
-        href="#estudio-main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:px-3 focus:py-1.5 focus:bg-lia-btn-primary-bg focus:text-lia-btn-primary-text focus:rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lia-btn-primary-bg/30"
-      >
-        Pular para conteúdo
-      </a>
-      <div className="flex-shrink-0 px-4 pt-3 pb-0">
-        <div className="flex items-center justify-between mb-2">
+    <div className="flex-1 flex flex-col h-full overflow-hidden bg-lia-bg-primary">
+      {/* ── Header ─────────────────────────────────────────────────────────── */}
+      <div className="flex-shrink-0 px-4 pt-3 pb-3">
+        <div className="flex items-center justify-between">
           <h1 className="text-lg font-semibold text-lia-text-primary">
             {t("studio.title")}
           </h1>
           <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={loadData}
-              className="gap-2 text-lia-text-secondary hover:text-lia-text-primary"
-              aria-label={t("studio.refresh")}
-              disabled={isLoading}
-            >
-              <RefreshCw className={cn("w-4 h-4", isLoading && "animate-spin")} aria-hidden="true" />
+            <Button variant="ghost" size="sm" onClick={loadData} className="gap-2 text-lia-text-secondary hover:text-lia-text-primary">
+              <RefreshCw className="w-4 h-4" />
             </Button>
-            {/* UX_AUDIT_ESTUDIO_AGENTES_2026-05-21 T1: CTA unico "Criar agente" abre
-                CreateAgentWizard (goal-first onboarding). Substitui o par
-                "Criar com IA" (BUG-12, escondido na tab Custom) + "Criar Agente"
-                (sourcing modal) que confundia o usuario com 2 entry-points
-                diferentes ali no mesmo header. Agora ha 1 CTA -> 1 wizard -> 1 fluxo
-                que internamente cobre IA (T3 hero), templates e custom manual. */}
-            {/* Studio Restructure Fase 2 (2026-05-26): CTA secundário pra Marketplace
-                (substitui a tab antiga). Variant outline DS canonical, sem cyan. */}
-            <Link
-              href="/agents/marketplace"
-              className="inline-flex items-center gap-2 h-9 px-3 rounded-md border border-lia-border-subtle bg-transparent text-sm font-medium text-lia-text-primary hover:bg-lia-bg-tertiary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lia-btn-primary-bg/30"
-              data-testid="header-explore-marketplace-cta"
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setSecondaryView("custom")
+                setTimeout(() => {
+                  document.getElementById("agent-studio-conversational-creator")
+                    ?.scrollIntoView({ behavior: "smooth", block: "start" })
+                }, 80)
+              }}
+              className="gap-2"
             >
-              <Store className="w-4 h-4" aria-hidden="true" />
-              {t("studio.cta.exploreMarketplace")}
-            </Link>
+              <Wand2 className="w-4 h-4" />
+              {t("studio.createWithAI") ?? "Criar com IA"}
+            </Button>
             <Button
               size="sm"
-              onClick={() => openWizard()}
+              onClick={() => setShowCreateModal(true)}
               className="gap-2 bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover"
-              data-testid="header-create-agent-cta"
-              data-tour="studio-create-agent"
             >
               <Plus className="w-4 h-4" />
-              {t("studio.cta.createAgent")}
+              {t("studio.createAgent")}
             </Button>
           </div>
         </div>
-
-        {/* Studio Restructure Fase 2 (2026-05-26): 2 top tabs canonical.
-            Sub-tabs eliminados — my-agents agrega templates + lista unificada. */}
-        <div data-tour="studio-tabs">
-        <PageTabNavigation
-          tabs={[
-            {
-              id: "my-agents",
-              label: t("studio.tabs.myAgents"),
-              icon: Bot,
-              count: agents.length + customAgents.length,
-            },
-            {
-              id: "approvals",
-              label: t("studio.tabs.approvals"),
-              icon: Inbox,
-              count: pendingCount,
-              badgeLabel: pendingBadgeLabel,
-              badgeAccent: "cyan",
-            },
-            // Onda 1 F1 (2026-05-27): Sala de Controle = 4ª aba canonical.
-            {
-              id: "control-room",
-              label: t("studio.tabs.controlRoom"),
-              icon: Radar,
-            },
-            { id: "digital-twins", label: t("studio.tabs.digitalTwins"), icon: Users },
-          ]}
-          activeTab={activeTab}
-          onTabChange={(id) => setActiveTab(id as MainTab)}
-        />
-        </div>
-
-        {/* QuotaMeter (feedforward audit harness 2026-05-23):
-            mostra X / Y por recurso pra cliente ver uso antes de bater limit.
-            Backend já expunha /studio/quota, agora frontend consome.
-            Modelo canonical WeDOTalent pay-first sales-led — CTA é "Falar com
-            Account Manager" via mailto. */}
-        <div data-tour="studio-control-room">
-          <QuotaMeter className="mt-2" />
-        </div>
-
-        {(agents.length > 0 || customAgents.length > 0) && (
-          <div className="flex items-center gap-6 mt-2 mb-1" data-tour="studio-stats">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-status-success animate-pulse" />
-              <span className="text-xs font-medium text-lia-text-secondary">
-                {t("studio.stats.activeAgents", { count: activeCount })}
-              </span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <Eye className="w-3.5 h-3.5 text-lia-text-disabled" />
-              <span className="text-xs text-lia-text-secondary">
-                <span className="font-semibold text-lia-text-primary">{totalViewed}</span> {t("studio.stats.profilesAnalyzed")}
-              </span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <ThumbsUp className="w-3.5 h-3.5 text-status-success" />
-              <span className="text-xs text-lia-text-secondary">
-                <span className="font-semibold text-lia-text-primary">{totalApproved}</span> {t("studio.stats.approved")}
-              </span>
-            </div>
-            {totalViewed > 0 && (
-              <div className="flex items-center gap-1.5">
-                <BarChart3 className="w-3.5 h-3.5 text-lia-text-disabled" />
-                <span className="text-xs text-lia-text-secondary">
-                  <span className="font-semibold text-lia-text-primary">{Math.round((totalApproved / totalViewed) * 100)}%</span> {t("studio.stats.approvalRate")}
-                </span>
-              </div>
-            )}
-            {totalCustomExecutions > 0 && (
-              <div className="flex items-center gap-1.5">
-                <Zap className="w-3.5 h-3.5 text-lia-text-disabled" />
-                <span className="text-xs text-lia-text-secondary">
-                  <span className="font-semibold text-lia-text-primary">{totalCustomExecutions}</span> {t("studio.stats.totalExecutions")}
-                </span>
-              </div>
-            )}
-          </div>
-        )}
       </div>
 
-      <div className="flex-1 overflow-auto px-4 py-4">
-        {activeTab === "my-agents" && (
-          <div className="space-y-8">
-            {/* How It Works — show prominently when no agents */}
-            {agents.length === 0 && !isLoading && (
-              <section className="relative overflow-hidden rounded-xl border border-lia-border-subtle bg-lia-bg-secondary p-6">
-                <div className="relative">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Brain className="w-3.5 h-3.5 text-lia-text-primary" />
-                    <span className="text-micro font-semibold uppercase tracking-wider text-lia-text-primary">
-                      {t("studio.whatIsAgent")}
-                    </span>
-                  </div>
-                  <p className="text-sm font-semibold text-lia-text-primary mb-1" role="heading" aria-level={2}>
-                    {t("studio.virtualRecruiter")}
-                  </p>
-                  <p className="text-xs text-lia-text-secondary mb-4 max-w-2xl">
-                    {t("studio.virtualRecruiterDesc")}
-                  </p>
+      <div className="flex-1 overflow-auto px-4 pb-4 space-y-4">
+        {/* ── Onboarding inline wizard ──────────────────────────────────────── */}
+        {!onboardingDismissed && (
+          <StudioOnboarding
+            openJobCount={openJobs.length}
+            onActivateSourcing={() => setShowCreateModal(true)}
+            onDismiss={() => {
+              localStorage.setItem("studio_onboarding_done", "1")
+              setOnboardingDismissed(true)
+            }}
+          />
+        )}
 
-                  {/* BUG-10: grid responsivo — antes ia direto para 4 colunas em md (768px),
-                      o que cortava textos ("PASS" em vez de "PASSO") quando o chat lateral
-                      ocupa ~360px. Agora só vai para 4 colunas em xl+ (1280px) e usa 2
-                      colunas no intervalo intermediário, permitindo respirar os textos. */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
-                    {FLOW_STEPS_CONFIG.map((step, i) => (
-                      <div key={i} className="flex items-start gap-3 min-w-0">
-                        <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0", FLOW_STEP_ICON_STYLE.bg)}>
-                          <step.icon className={cn("w-4 h-4", FLOW_STEP_ICON_STYLE.color)} />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-1.5 mb-0.5">
-                            <span className="text-micro font-medium text-lia-text-disabled uppercase tracking-wide whitespace-nowrap">{t("studio.flowSteps.step")} {i + 1}</span>
-                            {i < 3 && <ArrowRight className="w-3 h-3 text-lia-text-disabled hidden xl:block" />}
-                          </div>
-                          <p className="text-xs font-semibold text-lia-text-primary break-words">{t(step.titleKey)}</p>
-                          <p className="text-micro text-lia-text-secondary leading-relaxed break-words">{t(step.descKey)}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </section>
-            )}
+        {/* ── Smart alerts banner ───────────────────────────────────────────── */}
+        {alertCount > 0 && (
+          <div className="rounded-xl border border-[#D19960]/40 bg-[#FEF9F0] overflow-hidden">
+            <div className="px-4 py-2.5 flex items-center justify-between border-b border-[#D19960]/20">
+              <span className="text-[10px] font-semibold uppercase tracking-widest text-[#D19960]">
+                {alertCount} alerta{alertCount !== 1 ? "s" : ""} do Studio
+              </span>
+            </div>
+            <ul className="divide-y divide-[#FDE8C8]/60">
+              {alerts.map((alert, i) => (
+                <li key={i} className="flex items-start gap-3 px-4 py-2.5">
+                  <span className={cn(
+                    "mt-0.5 w-1.5 h-1.5 rounded-full flex-shrink-0",
+                    alert.severity === "error" ? "bg-[#D19960]" : "bg-[#D19960]/60"
+                  )} />
+                  <span className="text-xs text-[#4B5563]">{alert.message}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
-            {/* ════════════════════════════════════════════════════════════
-                ZONA 1 — "Comece com um modelo" (Fase 3 Sprint 5, 2026-05-30)
-                Antes havia 2 blocos de template separados (sector tiles + a
-                TemplateGallery, com a lista de agentes ENTRE eles). Confundia:
-                "por que template aparece duas vezes?". Agora unificados sob 1
-                cabeçalho: tiles por setor (atalho rápido) + galeria completa
-                (filtros + busca). Decisão Sprint 5 reorg de galeria.
-                ════════════════════════════════════════════════════════════ */}
+        {/* ── Funnel-first view ─────────────────────────────────────────────── */}
+        <ServiceFunnelView
+          services={funnelServices}
+          onActivate={handleFunnelActivate}
+          onCustomAgents={() => setSecondaryView(v => v === "custom" ? null : "custom")}
+          onMarketplace={() => setSecondaryView(v => v === "marketplace" ? null : "marketplace")}
+          onMarketplaceForSlug={() => setSecondaryView(v => v === "marketplace" ? null : "marketplace")}
+        />
+
+        {/* ── Secondary views (Custom Agents / Marketplace / Search) ────────── */}
+        {secondaryView === "custom" && (
+          <div className="space-y-6 rounded-xl border border-[#E5E7EB] bg-white overflow-hidden p-4">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-semibold uppercase tracking-widest text-[#9CA3AF]">
+                {t("studio.tabs.customAgents")}
+              </span>
+              <button onClick={() => setSecondaryView(null)} className="text-xs text-[#9CA3AF] hover:text-[#6B7280] transition-colors">
+                {t("studio.close") ?? "Fechar"}
+              </button>
+            </div>
+
             <section>
-              <TabSectionHeader
-                className="mb-3"
-                title={t("studio.startWithModel")}
-                subtitle={t("studio.templates.preConfigured")}
-              />
-
-              {/* Atalho por setor (templates pré-configurados por indústria) */}
-              <p className="text-micro font-semibold uppercase tracking-wide text-lia-text-disabled mb-2">
-                {t("studio.bySector")}
-              </p>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-                {templates.map(t => {
-                  const Icon = SECTOR_ICONS[t.icon] || Brain
-                  return (
-                    <button
-                      key={t.id}
-                      onClick={() => openWizard("outro", { prefilledSector: t.id, name: t.display_name, description: t.description })}
-                      className={cn(
-                        "group relative flex flex-col items-center gap-2.5 p-5 rounded-xl border border-lia-border-subtle",
-                        "bg-lia-bg-secondary hover:border-lia-border-medium transition-colors duration-200",
-                        "hover:shadow-lia-md cursor-pointer"
-                      )}
-                    >
-                      <div className={cn(
-                        "w-12 h-12 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110",
-                        SECTOR_ICON_STYLE.bg
-                      )}>
-                        <Icon className={cn("w-6 h-6", SECTOR_ICON_STYLE.text)} />
-                      </div>
-                      <div className="text-center">
-                        <p className="text-xs font-semibold text-lia-text-primary">{t.display_name}</p>
-                        <p className="text-[10px] text-lia-text-secondary mt-0.5 line-clamp-2">{t.description}</p>
-                      </div>
-                    </button>
-                  )
-                })}
-              </div>
-
-              {/* Galeria completa de templates (filtros Tipo/Vertical + busca).
-                  Redesign 2026-05-30: 3 ações distintas no card. "Usar agora" e
-                  "Ajustar antes" abrem o wizard pré-populado (clone-first);
-                  "Ver detalhes" abre o modal de detalhe (handleTemplateSelect). */}
-              <div className="mt-6">
-                <TemplateGallery
-                  onTemplateSelect={handleTemplateSelect}
-                  onTemplateUse={handleUseTemplateNow}
-                  onTemplateCustomize={handleCloneTemplate}
-                />
-              </div>
-
-              {/* Conversational Creator (target do CTA "Criar com IA" — BUG-12).
-                  Permanece na zona de criação: descrever em linguagem natural é
-                  um caminho de "começar" alternativo aos modelos. */}
-              <div id="agent-studio-conversational-creator" className="scroll-mt-4 mt-6">
-                <AIAgentBuilder onAgentCreated={() => mutateCustomAgents()} />
-              </div>
+              <ApprovalsList onReviewed={() => mutateCustomAgents()} />
             </section>
 
-            {/* How it works — compact version when agents exist (UX-Sprint-A QW#14 audit 2026-05-21:
-                mostra apenas quando user tem 1-2 agents ativos — power user com 3+ não precisa de tour). */}
-            {agents.length > 0 && agents.length <= 2 && (
-              <section className="rounded-xl border border-lia-border-subtle bg-lia-bg-secondary p-5">
-                <TabSectionHeader
-                  className="mb-4"
-                  title={t("studio.howItWorks")}
-                  icon={<Brain className="w-4 h-4 text-lia-text-primary" />}
-                />
-                {/* BUG-10: passa para grid responsivo — em telas apertadas (chat
-                    lateral aberto) fica em 2 colunas sem truncar textos; em telas
-                    largas mantém a visual horizontal com setas. */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:flex xl:items-start xl:gap-2">
-                  {FLOW_STEPS_CONFIG.map((step, i) => (
-                    <React.Fragment key={i}>
-                      <div className="xl:flex-1 flex items-start gap-2.5 min-w-0">
-                        <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0", FLOW_STEP_ICON_STYLE.bg)}>
-                          <step.icon className={cn("w-4 h-4", FLOW_STEP_ICON_STYLE.color)} />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="text-xs font-semibold text-lia-text-primary break-words">{t(step.titleKey)}</p>
-                          <p className="text-[10px] text-lia-text-secondary leading-relaxed break-words">{t(step.descKey)}</p>
-                        </div>
-                      </div>
-                      {i < 3 && (
-                        <ArrowRight className="hidden xl:block w-4 h-4 text-lia-text-disabled flex-shrink-0 mt-2" />
-                      )}
-                    </React.Fragment>
-                  ))}
-                </div>
-              </section>
-            )}
-            {/* Pending Approvals: Wave 0 Fix 3 (2026-05-27) promovido a 3a tab top-level.
-                Bloco removido daqui — render movido para activeTab === "approvals". */}
-
-            {/* ════════════════════════════════════════════════════════════
-                ZONA 2 — "Seus agentes" (Fase 3 Sprint 5, 2026-05-30)
-                Unifica os 2 blocos de agente que antes ficavam separados e
-                distantes (sourcing + personalizados). Agora sob 1 cabeçalho,
-                com sub-rótulo de tipo em cada grupo. count = total dos dois.
-                ════════════════════════════════════════════════════════════ */}
             <section>
-              <TabSectionHeader
-                className="mb-3"
-                title={t("studio.yourAgents")}
-                count={agents.length + customAgents.length}
-              />
-
-              {/* Grupo: agentes de captação (sourcing) */}
-              {isLoading ? (
-                <div className="flex items-center justify-center py-16">
-                  <div className="flex flex-col items-center gap-3 text-lia-text-secondary">
-                    <Loader2 className="w-6 h-6 animate-spin" aria-hidden="true" />
-                    <span className="text-xs">{t("studio.loading")}</span>
-                  </div>
-                </div>
-              ) : (agents.length === 0 && customAgents.length === 0) ? (
-                <div className="flex flex-col items-center justify-center py-12 rounded-xl border border-dashed border-lia-border-subtle bg-lia-bg-secondary/50">
-                  <div className="w-14 h-14 rounded-xl bg-lia-bg-tertiary flex items-center justify-center mb-3">
-                    <Bot className="w-7 h-7 text-lia-text-disabled" />
-                  </div>
-                  <p className="text-sm font-medium text-lia-text-secondary">{t("studio.noAgentsYet")}</p>
-                  <p className="text-xs text-lia-text-disabled mt-1 mb-4">
-                    {t("studio.chooseTemplateAbove")}
-                  </p>
-                  <Button
-                    size="sm"
-                    onClick={() => openWizard("sourcing_ativo")}
-                    className="gap-2 bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover"
-                    data-testid="sourcing-empty-create-cta"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    {t("studio.createFirstAgent")}
-                  </Button>
+              <h3 className="text-sm font-semibold text-[#030712] mb-3">
+                {t("studio.myAgents")} {customAgents.length > 0 && `(${customAgents.length})`}
+              </h3>
+              {customAgents.length === 0 ? (
+                <div className="text-center py-8">
+                  <Bot className="w-8 h-8 text-[#D1D5DB] mx-auto mb-2" />
+                  <p className="text-sm text-[#6B7280]">{t("studio.noAgentsYet")}</p>
+                  <p className="text-xs text-[#9CA3AF] mt-1">{t("studio.chooseTemplateOrDescribe")}</p>
                 </div>
               ) : (
-                <div className="space-y-6">
-                  {agents.length > 0 && (
-                    <div>
-                      <p className="text-micro font-semibold uppercase tracking-wide text-lia-text-disabled mb-2">
-                        {t("studio.sourcingAgents")}
-                      </p>
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {agents.map(agent => (
-                          <AgentCard
-                            key={agent.id}
-                            agent={agent}
-                            onToggleStatus={() => handleToggleStatus(agent.id, agent.status)}
-                            onCalibrate={() => onStartCalibration?.(agent.id)}
-                            onNavigate={() => {
-                              const cfg = (agent.config || {}) as Record<string, unknown>
-                              const poolId = typeof cfg.talent_pool_id === "string" ? cfg.talent_pool_id : null
-                              const jId = typeof cfg.job_id === "string" ? cfg.job_id : null
-                              if (poolId) {
-                                onNavigateToPool?.(poolId)
-                              } else if (jId) {
-                                onNavigateToJob?.(jId)
-                              } else {
-                                toast.warning(
-                                  t("studio.toast.noLinkTitle"),
-                                  t("studio.toast.noLinkDesc")
-                                )
-                              }
-                            }}
-                          />
-                        ))}
-                      </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {customAgents.map((agent) => (
+                    <div key={agent.id} onClick={() => setDetailsAgent(agent)} className="cursor-pointer">
+                      <CustomAgentCard
+                        agent={agent}
+                        onTest={() => setTestAgent(agent)}
+                        onDeploy={() => setDeployAgent(agent)}
+                        onToggleStatus={(a) => handleCustomAgentToggle(a)}
+                      />
                     </div>
-                  )}
-
-                  {/* Grupo: agentes personalizados (custom) */}
-                  {customAgents.length > 0 && (
-                    <div>
-                      <p className="text-micro font-semibold uppercase tracking-wide text-lia-text-disabled mb-2">
-                        {t("studio.customAgentsLabel")}
-                      </p>
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                        {customAgents.map((agent) => (
-                          <div
-                            key={agent.id}
-                            role="button"
-                            tabIndex={0}
-                            onClick={() => setDetailsAgent(agent)}
-                            onKeyDown={(e) => {
-                              // UX-Sprint-A QW#11 (WCAG 2.1.1): keyboard accessibility para card
-                              if (e.key === "Enter" || e.key === " ") {
-                                e.preventDefault()
-                                setDetailsAgent(agent)
-                              }
-                            }}
-                            aria-label={`${agent.name} — ver detalhes`}
-                            className="cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lia-btn-primary-bg/30 rounded-xl"
-                          >
-                            <CustomAgentCard
-                              agent={agent}
-                              onTest={() => setTestAgent(agent)}
-                              onDeploy={() => setDeployAgent(agent)}
-                              onToggleStatus={(a) => handleCustomAgentToggle(a)}
-                              onClone={handleCloneCustomAgent}
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                  ))}
                 </div>
               )}
             </section>
 
-            {/* Deploy Dialog */}
-            <DeployDialog
-              agent={deployAgent}
-              open={!!deployAgent}
-              onClose={() => setDeployAgent(null)}
-              onDeployed={() => mutateCustomAgents()}
-            />
+            <TemplateGallery onTemplateSelect={handleTemplateSelect} onCreateManual={() => setShowCreateModal(true)} />
 
-            {/* Test Debug Panel */}
-            <TestDebugPanel
-              agent={testAgent}
-              open={!!testAgent}
-              onClose={() => setTestAgent(null)}
-            />
+            <div id="agent-studio-conversational-creator" className="scroll-mt-4">
+              <ConversationalCreator onAgentCreated={() => mutateCustomAgents()} />
+            </div>
 
-            {/* Agent Details Panel */}
-            <AgentDetailsPanel
-              agent={detailsAgent}
-              open={!!detailsAgent}
-              onClose={() => setDetailsAgent(null)}
-              onDeploy={(a) => { setDetailsAgent(null); setDeployAgent(a) }}
-              onTest={(a) => { setDetailsAgent(null); setTestAgent(a) }}
-              onActivate={(a) => { setDetailsAgent(null); setDeployAgent(a) }}
-            />
-
+            <details className="mt-4">
+              <summary className="text-xs text-[#9CA3AF] cursor-pointer hover:text-[#6B7280]">
+                {t("studio.advancedForm")}
+              </summary>
+              <div className="mt-3">
+                <CustomAgentsTab />
+              </div>
+            </details>
           </div>
         )}
 
-        {/* Wave 0 Fix 3 (2026-05-27): tab Approvals canonical top-level.
-            ApprovalsList encapsula state vazio + lista paginada + ações HITL. */}
-        {activeTab === "approvals" && (
-          <section className="mt-6">
-            <ApprovalsList onReviewed={() => mutateCustomAgents()} />
-          </section>
+        {secondaryView === "marketplace" && (
+          <div className="rounded-xl border border-[#E5E7EB] bg-white overflow-hidden p-4">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-[10px] font-semibold uppercase tracking-widest text-[#9CA3AF]">
+                {t("studio.tabs.marketplace")}
+              </span>
+              <button onClick={() => setSecondaryView(null)} className="text-xs text-[#9CA3AF] hover:text-[#6B7280] transition-colors">
+                {t("studio.close") ?? "Fechar"}
+              </button>
+            </div>
+            <MarketplaceTab />
+          </div>
         )}
 
-        {/* Onda 1 F1 (2026-05-27): Sala de Controle — execuções ao vivo,
-            histórico recente e auditoria LGPD. DecisionTreeDrawer canonical
-            embebido em StudioControlRoom será reutilizado pelas Ondas 2-3. */}
-        {activeTab === "control-room" && <StudioControlRoom />}
-
-        {/* TODO Fase 2: trigger via kanban-card com candidate real. onEvaluate removido pra evitar payload vazio (Wave A P0 #5). */}
-        {activeTab === "digital-twins" && (
-          <TwinsList onCreateTwin={() => setShowCreateTwinModal(true)} refreshKey={twinsRefreshKey} />
+        {secondaryView === "search" && (
+          <div className="rounded-xl border border-[#E5E7EB] bg-white overflow-hidden p-4">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-[10px] font-semibold uppercase tracking-widest text-[#9CA3AF]">
+                {t("studio.tabs.smartSearch")}
+              </span>
+              <button onClick={() => setSecondaryView(null)} className="text-xs text-[#9CA3AF] hover:text-[#6B7280] transition-colors">
+                {t("studio.close") ?? "Fechar"}
+              </button>
+            </div>
+            <MultiStrategySearchPanel />
+          </div>
         )}
-
       </div>
 
-      {/* UX_AUDIT T4 (2026-05-21): TemplateClonePanel substitui TemplatePreviewModal
-          como entry-point primário do TemplateGallery. Sheet lateral direito com
-          preview rico → "Clonar e customizar" abre wizard com initialConfig pré-populado.
-          O TemplatePreviewModal continua exportado de custom-agents/ para outros fluxos. */}
-      <TemplateClonePanel
-        template={previewTemplate}
-        open={previewTemplate !== null}
-        onClose={() => setPreviewTemplate(null)}
-        onClone={handleCloneTemplate}
-      />
-
-      {/* P0-6 audit 2026-05-21: CreateDigitalTwinModal wired canonical (estava orfão). */}
       <CreateDigitalTwinModal
         isOpen={showCreateTwinModal}
         onClose={() => setShowCreateTwinModal(false)}
-        onCreated={() => { setShowCreateTwinModal(false); setTwinsRefreshKey((k) => k + 1) }}
-      />
-
-      {/* UX_AUDIT_ESTUDIO_AGENTES_2026-05-21 T1+T3: wizard goal-first unico.
-          Mounted conditionally (open=wizardOpen) — segue regra "conditional
-          mount" do CLAUDE.md de defense-in-depth contra Rules of Hooks. */}
-      <CreateAgentWizard
-        open={wizardOpen}
-        initialGoal={wizardInitialGoal}
-        initialConfig={wizardInitialConfig}
-        onClose={() => {
-          setWizardOpen(false)
-          setWizardInitialGoal(undefined)
-          setWizardInitialConfig(undefined)
-        }}
-        onCreated={(agentId) => {
-          setWizardOpen(false)
-          setWizardInitialGoal(undefined)
-          setWizardInitialConfig(undefined)
-          mutateCustomAgents()
-          loadData()
-          if (agentId) onStartCalibration?.(agentId)
+        onCreated={() => {
+          setTwinListRefreshKey((k) => k + 1)
+          setShowCreateTwinModal(false)
         }}
       />
 
-      {/* Q4.3 Tour interno — dispara na primeira visita (localStorage flag).
-          Dismissível. Reusa TourSpotlight canonical. */}
-      <StudioTour />
+      {evaluatingTwinId && (
+        <EvaluateWithTwinModal
+          twinId={evaluatingTwinId}
+          candidateProfile={{}}
+          jobContext={{}}
+          isOpen
+          onClose={() => setEvaluatingTwinId(null)}
+        />
+      )}
+
+      {showCreateModal && (
+        <CreateAgentModal
+          initialTemplate={selectedTemplate}
+          onClose={() => { setShowCreateModal(false); setSelectedTemplate(null) }}
+          onCreated={(agentId) => {
+            setShowCreateModal(false)
+            setSelectedTemplate(null)
+            loadData()
+            onStartCalibration?.(agentId)
+          }}
+        />
+      )}
+
+      <DeployDialog
+        agent={deployAgent}
+        open={!!deployAgent}
+        onClose={() => setDeployAgent(null)}
+        onDeployed={() => mutateCustomAgents()}
+      />
+
+      <TestDebugPanel
+        agent={testAgent}
+        open={!!testAgent}
+        onClose={() => setTestAgent(null)}
+      />
+
+      <AgentDetailsPanel
+        agent={detailsAgent}
+        open={!!detailsAgent}
+        onClose={() => setDetailsAgent(null)}
+        onDeploy={(a) => { setDetailsAgent(null); setDeployAgent(a) }}
+        onTest={(a) => { setDetailsAgent(null); setTestAgent(a) }}
+      />
     </div>
   )
 }
@@ -868,47 +745,41 @@ export default function AgentStudioPage({
 function AgentCard({
   agent, onToggleStatus, onCalibrate, onNavigate,
 }: {
-  agent: CustomAgent
+  agent: SourcingAgent
   onToggleStatus: () => void
   onCalibrate: () => void
   onNavigate: () => void
 }) {
   const t = useTranslations("agents")
-  const status = getSourcingAgentStatusConfig(agent.status)
-  const statusLabelKey = STATUS_CONFIG_LABELS[agent.status as keyof typeof STATUS_CONFIG_LABELS] || "studio.status.completed"
-  const strategy = (agent.search_strategy || {}) as { required_skills?: string[]; exclusions?: string[] }
-  const metrics = agentMetrics(agent)
-  const calibrationV = agentCalibrationV(agent)
-  const _agentConfig = (agent.config || {}) as Record<string, unknown>
-  const linkedPoolId = typeof _agentConfig.talent_pool_id === "string" ? _agentConfig.talent_pool_id : null
-  const linkedJobId = typeof _agentConfig.job_id === "string" ? _agentConfig.job_id : null
-  const totalReviewed = metrics.profiles_approved + metrics.profiles_rejected
-  const approvalRate = totalReviewed > 0 ? Math.round((metrics.profiles_approved / totalReviewed) * 100) : 0
+  const status = STATUS_CONFIG_STYLES[agent.status]
+  const strategy = agent.search_strategy as { required_skills?: string[]; exclusions?: string[] }
+  const totalReviewed = agent.profiles_approved + agent.profiles_rejected
+  const approvalRate = totalReviewed > 0 ? Math.round((agent.profiles_approved / totalReviewed) * 100) : 0
 
   return (
     <div className={cn(
       "group relative rounded-xl border border-lia-border-subtle bg-lia-bg-secondary",
-      "hover:border-lia-border-medium hover:shadow-md transition-colors duration-200"
+      "hover:border-lia-border-medium hover:shadow-md transition-all duration-200"
     )}>
       <div className="p-4">
         {/* Header */}
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-powder flex items-center justify-center">
-              <Bot className="w-5 h-5 text-lia-text-primary" />
+            <div className="w-10 h-10 rounded-xl bg-[#EBF8FB] flex items-center justify-center">
+              <Bot className="w-5 h-5 text-[#60BED1]" />
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <p className="text-sm font-semibold text-lia-text-primary">{agent.name}</p>
+                <p className="text-sm font-semibold text-lia-text-primary">{agent.agent_name}</p>
                 <BetaBadge />
               </div>
               <div className="flex items-center gap-2 mt-0.5">
-                <span className="text-xs text-lia-text-secondary">v{calibrationV}</span>
+                <span className="text-[10px] text-lia-text-disabled">v{agent.calibration_v}</span>
                 <span className="text-lia-text-disabled">·</span>
                 <div className="flex items-center gap-1">
                   <Clock className="w-3 h-3 text-lia-text-disabled" />
-                  <span className="text-xs text-lia-text-secondary">
-                    {agent.created_at ? new Date(agent.created_at).toLocaleDateString(undefined, { day: "2-digit", month: "short" }) : ""}
+                  <span className="text-[10px] text-lia-text-disabled">
+                    {new Date(agent.created_at).toLocaleDateString(undefined, { day: "2-digit", month: "short" })}
                   </span>
                 </div>
               </div>
@@ -916,7 +787,7 @@ function AgentCard({
           </div>
           <div className={cn("flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold", status.bg, status.text)}>
             <div className={cn("w-1.5 h-1.5 rounded-full", status.dot, status.pulse && "animate-pulse")} />
-            {t(statusLabelKey)}
+            {t(status.labelKey)}
           </div>
         </div>
 
@@ -929,7 +800,7 @@ function AgentCard({
               </span>
             ))}
             {(strategy.required_skills.length > 4) && (
-              <span className="px-2 py-0.5 rounded-xl bg-lia-bg-tertiary text-micro text-lia-text-secondary">
+              <span className="px-2 py-0.5 rounded-xl bg-lia-bg-tertiary text-[10px] text-lia-text-disabled">
                 +{strategy.required_skills.length - 4}
               </span>
             )}
@@ -939,26 +810,23 @@ function AgentCard({
         {/* Stats Row */}
         <div className="grid grid-cols-3 gap-2 mb-4">
           <div className="flex flex-col items-center p-2 rounded-lg bg-lia-bg-primary">
-            <span className="text-xs font-bold text-lia-text-primary">{metrics.profiles_viewed}</span>
-            <span className="text-xs text-lia-text-secondary uppercase tracking-wider">{t("studio.stats.analyzed")}</span>
+            <span className="text-xs font-bold text-lia-text-primary">{agent.profiles_viewed}</span>
+            <span className="text-[9px] text-lia-text-disabled uppercase tracking-wider">{t("studio.stats.analyzed")}</span>
           </div>
           <div className="flex flex-col items-center p-2 rounded-lg bg-lia-bg-primary">
-            <span className="text-xs font-bold text-status-success">{metrics.profiles_approved}</span>
-            <span className="text-xs text-lia-text-secondary uppercase tracking-wider">{t("studio.stats.approved")}</span>
+            <span className="text-xs font-bold text-[#5DA47A]">{agent.profiles_approved}</span>
+            <span className="text-[9px] text-lia-text-disabled uppercase tracking-wider">{t("studio.stats.approved")}</span>
           </div>
           <div className="flex flex-col items-center p-2 rounded-lg bg-lia-bg-primary">
             <span className="text-xs font-bold text-lia-text-primary">{approvalRate}%</span>
-            <span className="text-xs text-lia-text-secondary uppercase tracking-wider">{t("studio.stats.rate")}</span>
+            <span className="text-[9px] text-lia-text-disabled uppercase tracking-wider">{t("studio.stats.rate")}</span>
           </div>
         </div>
 
         {/* Link indicator */}
-        {(linkedPoolId || linkedJobId) ? (
-          <div
-            className="flex items-center gap-1.5 mb-3 px-2.5 py-1.5 rounded-lg bg-lia-bg-primary border border-lia-border-subtle"
-            title={t("studio.card.linkedTooltip")}
-          >
-            {linkedPoolId ? (
+        {(agent.talent_pool_id || agent.job_id) ? (
+          <div className="flex items-center gap-1.5 mb-3 px-2.5 py-1.5 rounded-lg bg-lia-bg-primary border border-lia-border-subtle">
+            {agent.talent_pool_id ? (
               <>
                 <Database className="w-3 h-3 text-lia-text-disabled" />
                 <span className="text-[10px] text-lia-text-secondary">{t("studio.card.linkedToPool")}</span>
@@ -971,9 +839,9 @@ function AgentCard({
             )}
           </div>
         ) : (
-          <div className="flex items-center gap-1.5 mb-3 px-2.5 py-1.5 rounded-lg bg-status-warning-bg border border-status-warning-border">
-            <Brain className="w-3 h-3 text-status-warning" />
-            <span className="text-[10px] text-status-warning">{t("studio.card.noLink")}</span>
+          <div className="flex items-center gap-1.5 mb-3 px-2.5 py-1.5 rounded-lg bg-[#FEF9F0] border border-[#D19960]/30">
+            <Brain className="w-3 h-3 text-[#D19960]" />
+            <span className="text-[10px] text-[#D19960]">{t("studio.card.noLink")}</span>
           </div>
         )}
 
@@ -990,23 +858,19 @@ function AgentCard({
             {agent.status === "active" ? (
               <Pause className="w-3.5 h-3.5 text-lia-text-secondary" />
             ) : (
-              <Play className="w-3.5 h-3.5 text-status-success" />
+              <Play className="w-3.5 h-3.5 text-emerald-600" />
             )}
           </button>
-          {/* Wave B1.6 (2026-05-27): backend /calibrate aceita apenas category=sourcing.
-              Esconde botao para outras categorias para evitar 404. */}
-          {(agent.category ?? "sourcing") === "sourcing" && (
-            <button
-              onClick={onCalibrate}
-              className="flex-1 flex items-center justify-center gap-1.5 h-8 rounded-lg border border-lia-border-subtle text-xs font-medium text-lia-text-secondary hover:bg-lia-bg-tertiary hover:text-lia-text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lia-btn-primary-bg/30"
-            >
-              <Activity className="w-3.5 h-3.5" />
-              {t("studio.card.recalibrate")}
-            </button>
-          )}
+          <button
+            onClick={onCalibrate}
+            className="flex-1 flex items-center justify-center gap-1.5 h-8 rounded-lg border border-lia-border-subtle text-xs font-medium text-lia-text-secondary hover:bg-lia-bg-tertiary hover:text-lia-text-primary transition-colors"
+          >
+            <Activity className="w-3.5 h-3.5" />
+            {t("studio.card.recalibrate")}
+          </button>
           <button
             onClick={onNavigate}
-            className="flex items-center justify-center gap-1 h-8 px-3 rounded-lg bg-lia-btn-primary-bg text-lia-btn-primary-text text-xs font-medium hover:bg-lia-btn-primary-hover transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lia-btn-primary-bg/30"
+            className="flex items-center justify-center gap-1 h-8 px-3 rounded-lg bg-lia-btn-primary-bg text-lia-btn-primary-text text-xs font-medium hover:bg-lia-btn-primary-hover transition-colors"
           >
             {t("studio.card.view")}
             <ChevronRight className="w-3 h-3" />
@@ -1014,5 +878,221 @@ function AgentCard({
         </div>
       </div>
     </div>
+  )
+}
+
+function CreateAgentModal({ initialTemplate, onClose, onCreated }: {
+  initialTemplate: SectorTemplate | null
+  onClose: () => void
+  onCreated: (agentId: string) => void
+}) {
+  const t = useTranslations("agents")
+  const [agentName, setAgentName] = useState(initialTemplate ? `${initialTemplate.display_name}` : "")
+  const [linkType, setLinkType] = useState<"job" | "pool" | "none">("none")
+  const [linkId, setLinkId] = useState("")
+  const [candidatesPerDay, setCandidatesPerDay] = useState(20)
+  const [notifyFrequency, setNotifyFrequency] = useState("daily")
+  const [isCreating, setIsCreating] = useState(false)
+  const sectorId = initialTemplate?.id || ""
+
+  const [createError, setCreateError] = useState("")
+
+  const handleCreate = async () => {
+    setIsCreating(true)
+    setCreateError("")
+    try {
+      let templateId: string | undefined
+      if (sectorId) {
+        try {
+          const templateRes = await fetch(`/api/backend-proxy/agent-templates/sectors/${sectorId}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ agent_name: agentName }),
+          })
+          if (templateRes.ok) {
+            const templateData = await templateRes.json()
+            templateId = templateData?.template_id
+          }
+        } catch {
+          // template application is optional
+        }
+      }
+
+      const res = await fetch("/api/backend-proxy/sourcing-agents", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          agent_name: agentName,
+          job_id: linkType === "job" ? linkId : null,
+          talent_pool_id: linkType === "pool" ? linkId : null,
+          agent_template_id: templateId || null,
+          preferences: {
+            candidates_per_day: candidatesPerDay,
+            notify_frequency: notifyFrequency,
+            channels: ["internal", "linkedin"],
+          },
+        }),
+      })
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}))
+        throw new Error(extractErrorMessage(errData, res.status))
+      }
+      const data = await res.json()
+      if (data?.agent_id) onCreated(data.agent_id)
+      else onCreated(data?.id || "")
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : t("studio.toast.errorCreating")
+      setCreateError(msg)
+      console.error("Failed to create agent:", err)
+    } finally {
+      setIsCreating(false)
+    }
+  }
+
+  return (
+    <Dialog open onOpenChange={onClose}>
+      <DialogContent className="max-w-lg bg-lia-bg-primary border-lia-border-subtle">
+        <DialogHeader>
+          <DialogTitle className="text-base font-semibold text-lia-text-primary flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500/10 to-violet-500/10 flex items-center justify-center">
+              <Bot className="w-4 h-4 text-wedo-cyan" />
+            </div>
+            {initialTemplate ? t("studio.modal.createTitleWithTemplate", { name: initialTemplate.display_name }) : t("studio.modal.createTitle")}
+          </DialogTitle>
+          <DialogDescription className="sr-only">{t("studio.modal.configureDesc")}</DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-5 py-4">
+          <div>
+            <label className="text-xs font-semibold text-lia-text-primary mb-1.5 block">{t("studio.modal.agentName")}</label>
+            <input
+              type="text"
+              value={agentName}
+              onChange={e => setAgentName(e.target.value)}
+              placeholder={t("studio.modal.agentNamePlaceholder")}
+              className="w-full border border-lia-border-subtle rounded-lg px-3 py-2.5 text-sm bg-lia-bg-secondary text-lia-text-primary placeholder:text-lia-text-disabled focus:outline-none focus:ring-2 focus:ring-wedo-cyan/30 focus:border-wedo-cyan/50"
+            />
+          </div>
+
+          <div>
+            <label className="text-xs font-semibold text-lia-text-primary mb-1.5 block">{t("studio.modal.linkTo")}</label>
+            <div className="flex gap-2">
+              {[
+                { id: "none" as const, label: t("studio.modal.none"), icon: Brain },
+                { id: "job" as const, label: t("studio.modal.job"), icon: Briefcase },
+                { id: "pool" as const, label: t("studio.modal.talentPool"), icon: Database },
+              ].map(opt => (
+                <button
+                  key={opt.id}
+                  onClick={() => setLinkType(opt.id)}
+                  className={cn(
+                    "flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium border transition-all",
+                    linkType === opt.id
+                      ? "border-lia-text-primary bg-lia-bg-tertiary text-lia-text-primary"
+                      : "border-lia-border-subtle text-lia-text-secondary hover:bg-lia-bg-secondary"
+                  )}
+                >
+                  <opt.icon className="w-3.5 h-3.5" />
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+            {linkType === "none" && (
+              <div className="mt-2 px-3 py-2 rounded-lg bg-[#FEF9F0] border border-[#D19960]/30">
+                <p className="text-xs text-[#D19960]">
+                  {t("studio.modal.noLinkWarning")}
+                </p>
+              </div>
+            )}
+            {linkType !== "none" && (
+              <input
+                type="text"
+                value={linkId}
+                onChange={e => setLinkId(e.target.value)}
+                placeholder={linkType === "job" ? t("studio.modal.jobIdPlaceholder") : t("studio.modal.poolIdPlaceholder")}
+                className="mt-2 w-full border border-lia-border-subtle rounded-lg px-3 py-2 text-sm bg-lia-bg-secondary text-lia-text-primary placeholder:text-lia-text-disabled focus:outline-none focus:ring-2 focus:ring-wedo-cyan/30"
+              />
+            )}
+          </div>
+
+          <div>
+            <label className="text-xs font-semibold text-lia-text-primary mb-1.5 block">{t("studio.modal.candidatesPerDay")}</label>
+            <div className="flex gap-2">
+              {[10, 20, 30, 50].map(n => (
+                <button
+                  key={n}
+                  onClick={() => setCandidatesPerDay(n)}
+                  className={cn(
+                    "px-4 py-2 rounded-lg text-xs font-medium border transition-all",
+                    candidatesPerDay === n
+                      ? "border-lia-text-primary bg-lia-bg-tertiary text-lia-text-primary"
+                      : "border-lia-border-subtle text-lia-text-secondary hover:bg-lia-bg-secondary"
+                  )}
+                >
+                  {n}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="text-xs font-semibold text-lia-text-primary mb-1.5 block">{t("studio.modal.notificationFrequency")}</label>
+            <div className="flex gap-2">
+              {[
+                { id: "realtime", label: t("studio.modal.perCandidate") },
+                { id: "daily", label: t("studio.modal.dailySummary") },
+                { id: "weekly", label: t("studio.modal.weeklySummary") },
+              ].map(opt => (
+                <button
+                  key={opt.id}
+                  onClick={() => setNotifyFrequency(opt.id)}
+                  className={cn(
+                    "px-3 py-2 rounded-lg text-xs font-medium border transition-all",
+                    notifyFrequency === opt.id
+                      ? "border-lia-text-primary bg-lia-bg-tertiary text-lia-text-primary"
+                      : "border-lia-border-subtle text-lia-text-secondary hover:bg-lia-bg-secondary"
+                  )}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {createError && (
+          <div className="mx-6 mb-2 px-3 py-2 rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800">
+            <p className="text-xs text-red-700 dark:text-red-400">{createError}</p>
+          </div>
+        )}
+
+        <DialogFooter className="gap-2">
+          <Button
+            variant="outline"
+            onClick={onClose}
+            className="border-lia-border-subtle text-lia-text-secondary hover:bg-lia-bg-secondary"
+          >
+            {t("studio.modal.cancel")}
+          </Button>
+          <Button
+            onClick={handleCreate}
+            disabled={!agentName.trim() || isCreating}
+            className="gap-2 bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover"
+          >
+            {isCreating ? (
+              <>
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                {t("studio.modal.creating")}
+              </>
+            ) : (
+              <>
+                <Zap className="w-3.5 h-3.5" />
+                {t("studio.modal.createAndCalibrate")}
+              </>
+            )}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }
