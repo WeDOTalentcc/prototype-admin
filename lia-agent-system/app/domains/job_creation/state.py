@@ -187,6 +187,9 @@ class JobCreationState(TypedDict, total=False):
     salary_currency: str  # default "BRL"
     benefits: List[str]
     salary_benchmark: Optional[Dict[str, Any]]
+    # Fase 5 — recrutador confirmou a faixa via right_panel_form (salary_node).
+    # Declarado p/ sobreviver ao merge do LangGraph (mesmo motivo de company_id).
+    salary_confirmed: Optional[bool]
 
     # --- F4+F5: Competency + Distribution ---
     seniority_resolved: Optional[str]  # from seniority_resolver
