@@ -2993,18 +2993,21 @@
             "standard": "Standard",
             "full": "Full"
           },
-          "metricsLabel": {
-            "tools": "tools",
-            "maxSteps": "max steps",
-            "context": "context"
+          "depthEyebrow": "Analysis",
+          "depthValue": {
+            "minimal": "Direct",
+            "standard": "Balanced",
+            "full": "In-depth"
           },
+          "stepsValue": "Handles up to {count} steps",
+          "capabilitiesEyebrow": "What it does",
           "alert": {
-            "personalize": "Customize this template before using in production."
+            "personalize": "Adjust it to your process before activating."
           },
           "actions": {
-            "use": "Use template",
-            "customize": "Customize",
-            "preview": "Preview"
+            "use": "Use now",
+            "customize": "Adjust first",
+            "preview": "View details"
           }
         }
       },
@@ -3053,7 +3056,15 @@
       "cloneAndCustomize": "Clone and customize",
       "confirmDeleteTitle": "Delete agent?",
       "delete": "Delete",
-      "untitledAgent": "Untitled agent"
+      "untitledAgent": "Untitled agent",
+      "howItWorksLabel": "How this agent works",
+      "whatItDoesLabel": "What this agent does",
+      "technicalInstructionsToggle": "View technical instructions",
+      "specialtyLabel": "Specialty",
+      "areaLabel": "Area",
+      "depthAnalysisLabel": "Analysis depth",
+      "useAndAdjust": "Use and adjust",
+      "templateDetailTitle": "Agent details"
     },
     "digitalTwin": {
       "active": "Active",

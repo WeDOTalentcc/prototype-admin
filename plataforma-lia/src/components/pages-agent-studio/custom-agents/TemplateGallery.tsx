@@ -4,7 +4,7 @@ import React from "react"
 import * as Icons from "lucide-react"
 import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
-import { buttonStyles, textStyles } from "@/lib/design-tokens"
+import { textStyles } from "@/lib/design-tokens"
 import { useLegacyAgentTemplates } from "@/hooks/agents/use-legacy-agent-templates"
 import { useAgentCategories } from "@/hooks/agents/use-agent-template-catalog"
 import { useAgentStudioStore } from "@/stores/agent-studio-store"
@@ -37,11 +37,31 @@ function matchesVerticalFilter(
 }
 
 interface TemplateGalleryProps {
+  /** "Ver detalhes" — abre o modal de detalhe do template. */
   onTemplateSelect: (template: AgentTemplate) => void
-  onCreateManual: () => void
+  /**
+   * "Usar agora" — fluxo de ativação direta (wizard pré-populado). Defaults
+   * para onTemplateSelect quando não provido.
+   */
+  onTemplateUse?: (template: AgentTemplate) => void
+  /**
+   * "Ajustar antes" — abre o wizard de personalização. Defaults para
+   * onTemplateSelect quando não provido.
+   */
+  onTemplateCustomize?: (template: AgentTemplate) => void
+  /**
+   * Redesign 2026-05-30: o CTA inline "Criar do zero" foi removido do header
+   * (redundante com "Criar agente" no topo + opção manual no wizard). A prop
+   * fica opcional para compatibilidade de chamadores legados.
+   */
+  onCreateManual?: () => void
 }
 
-export function TemplateGallery({ onTemplateSelect, onCreateManual }: TemplateGalleryProps) {
+export function TemplateGallery({
+  onTemplateSelect,
+  onTemplateUse,
+  onTemplateCustomize,
+}: TemplateGalleryProps) {
   const t = useTranslations('agents.customAgents')
   const { activeCategory, setActiveCategory } = useAgentStudioStore()
   // UX-Sprint-A QW#20 Batch 5 (audit 2026-05-21): free-text search local
@@ -76,21 +96,11 @@ export function TemplateGallery({ onTemplateSelect, onCreateManual }: TemplateGa
   return (
     <div className="space-y-5">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className={cn(textStyles.title, "text-lg")}>{t('startWithTemplate')}</h3>
-          <p className={cn(textStyles.caption, "mt-0.5")}>
-            {t('templateHint')}
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={onCreateManual}
-          className={cn(buttonStyles.outline, "text-xs px-3 py-1.5")}
-        >
-          <Icons.Plus className="w-3.5 h-3.5 mr-1.5" />
-          {t('createFromScratch')}
-        </button>
+      <div>
+        <h3 className={cn(textStyles.title, "text-lg")}>{t('startWithTemplate')}</h3>
+        <p className={cn(textStyles.caption, "mt-0.5")}>
+          {t('templateHint')}
+        </p>
       </div>
 
       {/* UX-Sprint-A QW#20 Batch 5 (audit 2026-05-21): search input para filtrar 15 templates */}
@@ -110,8 +120,7 @@ export function TemplateGallery({ onTemplateSelect, onCreateManual }: TemplateGa
       <span className="text-sm font-medium text-lia-text-secondary" data-testid="template-category-label">Tipo:</span>
       <div className="flex flex-wrap items-center gap-1.5" data-testid="template-category-filter">
         {TEMPLATE_CATEGORIES.map((cat) => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const CatIcon = ((Icons as any)[cat.icon] || Icons.LayoutGrid) as React.ComponentType<{ className?: string }>
+          const CatIcon = ((Icons as unknown as Record<string, React.ComponentType<{ className?: string }>>)[cat.icon] || Icons.LayoutGrid)
           const isActive = activeCategory === cat.id
           return (
             <button
@@ -141,8 +150,7 @@ export function TemplateGallery({ onTemplateSelect, onCreateManual }: TemplateGa
         data-testid="template-vertical-filter"
       >
         {VERTICAL_FILTERS.map((vf) => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const VfIcon = ((Icons as any)[vf.icon] || Icons.Layers) as React.ComponentType<{ className?: string }>
+          const VfIcon = ((Icons as unknown as Record<string, React.ComponentType<{ className?: string }>>)[vf.icon] || Icons.Layers)
           const isActive = verticalFilter === vf.id
           return (
             <button
@@ -171,7 +179,9 @@ export function TemplateGallery({ onTemplateSelect, onCreateManual }: TemplateGa
           <TemplateCard
             key={template.id}
             template={template}
-            onSelect={onTemplateSelect}
+            onSelect={onTemplateUse ?? onTemplateSelect}
+            onCustomize={onTemplateCustomize ?? onTemplateSelect}
+            onPreview={onTemplateSelect}
           />
         ))}
       </div>

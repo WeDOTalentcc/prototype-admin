@@ -1,30 +1,30 @@
 "use client"
 
 /**
- * TemplateClonePanel — central Dialog clone-first preview (UX T4 + P1-1).
+ * TemplateClonePanel — modal de detalhe didático do template (redesign 2026-05-30).
  *
- * UX_AUDIT_ESTUDIO_AGENTES_2026-05-21 T4 (linha 281): adota o pattern
- * "clone-first" do HubSpot Breeze. O card de template abre um Dialog
- * central com preview RICO (system_prompt completo + tools + persona +
- * config grid) e CTA "Clonar e customizar" que abre o CreateAgentWizard
- * (T1) já populado com a config do template.
+ * CONTEXTO (Paulo, crítica do recrutador): o modal expunha jargão de engenharia
+ * ("Prompt do sistema", lista de IDs de tools, "Persona / Domínio: screening").
+ * Redesign deixa didático para recrutador, mantendo a info técnica acessível
+ * sob demanda:
  *
- * P1-1 (2026-05-26): Sheet lateral → Dialog central canonical. Paulo
- * apontou inconsistência visual (preview deslizava da direita, fora do
- * pattern dos outros modais Studio). Conversão preserva conteúdo + a11y.
+ *  - "O que este agente faz": bullets de alto nível em PT (summarizeCapabilities),
+ *    NÃO lista de IDs crus de tools.
+ *  - "Como este agente trabalha": config traduzida + o system_prompt técnico
+ *    recolhido em <details> "Ver instruções técnicas".
+ *  - "Especialidade: <categoria PT> · Área: <vertical PT>" — sem Domínio/Categoria
+ *    redundantes nem termos crus em inglês.
+ *  - Config traduzida: "Profundidade da análise" + "Processa até N etapas".
+ *  - CTA "Usar e ajustar" (coerente com o card).
  *
- * O TemplatePreviewModal (Sprint B QW#5) é preservado em
- * `custom-agents/template-preview-modal.tsx` para fluxos rápidos.
+ * Histórico: UX_AUDIT T4 (clone-first HubSpot Breeze) + P1-1 (Dialog central).
  *
- * Acessibilidade (WCAG 2.2 AA):
- * - Dialog (Radix) já provê focus trap + escape key + ARIA modal
- * - DialogTitle/DialogDescription canonical (não silenciamos para sr-only)
- * - Region landmarks com headings semânticos por seção
- * - ScrollArea com keyboard scroll natural
+ * Acessibilidade (WCAG 2.2 AA): Dialog (Radix) provê focus trap + escape + ARIA
+ * modal; DialogTitle/DialogDescription canonical; headings semânticos por seção.
  */
 
 import * as Icons from "lucide-react"
-import { Copy, MessageSquare, Settings, User, Wrench } from "lucide-react"
+import { Copy, Layers, ListChecks, Sparkles } from "lucide-react"
 import { useTranslations } from "next-intl"
 
 import { Button } from "@/components/ui/button"
@@ -38,17 +38,24 @@ import {
 } from "@/components/ui/dialog"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
-import { badgeStyles, textStyles } from "@/lib/design-tokens"
+import { textStyles } from "@/lib/design-tokens"
 import { cn } from "@/lib/utils"
+import { summarizeCapabilities } from "@/lib/agents/tool-capabilities"
 
-import type { AgentTemplate } from "../custom-agents/types"
+import type { AgentTemplate, ContextLevel } from "../custom-agents/types"
 
 interface TemplateClonePanelProps {
   template: AgentTemplate | null
   open: boolean
   onClose: () => void
-  /** Called when user confirms clone — parent opens wizard with template pre-populated. */
+  /** Called when user confirms — parent opens wizard with template pre-populated. */
   onClone: (template: AgentTemplate) => void
+}
+
+const DEPTH_VALUE_KEY: Record<ContextLevel, string> = {
+  minimal: "depthValue.minimal",
+  standard: "depthValue.standard",
+  full: "depthValue.full",
 }
 
 export function TemplateClonePanel({
@@ -58,30 +65,35 @@ export function TemplateClonePanel({
   onClone,
 }: TemplateClonePanelProps) {
   const t = useTranslations("agents.customAgents")
+  const tRich = useTranslations("agents.customAgents.template.rich")
 
   if (!template) return null
 
-  // Lucide icon resolver — same pattern as TemplateCard
+  // Lucide icon resolver — same pattern as TemplateCard.
   const IconComp =
     ((Icons as unknown as Record<string, React.ComponentType<{ className?: string }>>)[
       template.icon
     ] || Icons.Bot)
+
+  const capabilities = summarizeCapabilities(template.allowed_tools)
+  const verticalLabelKey = template.vertical
+    ? `vertical${template.vertical.charAt(0).toUpperCase()}${template.vertical.slice(1)}`
+    : null
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent
         className={cn(
           "max-w-2xl w-full p-0 flex flex-col max-h-[85vh]",
-          // Canonical elevation (P1, alinhado com CreateAgentWizard)
           "bg-lia-bg-primary border border-lia-border-medium shadow-lia-lg rounded-xl"
         )}
         data-testid="template-clone-panel"
       >
-        {/* Header: icon + name + description + tags */}
+        {/* Header: avatar tonal + nome + descrição */}
         <DialogHeader className="px-6 pt-6 pb-4 border-b border-lia-border-subtle">
           <div className="flex items-start gap-3">
             <div
-              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-powder text-graphite"
+              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-powder text-graphite dark:bg-lia-bg-tertiary dark:text-lia-text-primary"
               aria-hidden="true"
             >
               <IconComp className="h-6 w-6" />
@@ -93,149 +105,110 @@ export function TemplateClonePanel({
               <DialogDescription className="mt-1 text-sm text-lia-text-secondary">
                 {template.description}
               </DialogDescription>
-              {template.tags && template.tags.length > 0 && (
-                <div
-                  className="mt-2 flex flex-wrap gap-1.5"
-                  data-testid="template-clone-tags"
-                >
-                  {template.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className={cn(badgeStyles.default, "text-[10px] font-mono")}
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              )}
             </div>
           </div>
         </DialogHeader>
 
-        {/* Scrollable body — rich preview sections */}
+        {/* Body — seções didáticas */}
         <ScrollArea className="flex-1 min-h-0">
           <div className="px-6 py-5 space-y-5">
-            {/* System prompt */}
-            <section data-testid="template-clone-section-prompt">
-              <h3 className="flex items-center gap-2 text-xs font-semibold text-lia-text-secondary uppercase mb-2">
-                <Settings className="h-3.5 w-3.5" aria-hidden="true" />
-                {t("systemPromptLabel") || "Instruções do agente (LLM)"}
-              </h3>
-              <pre
-                className="text-xs whitespace-pre-wrap font-mono bg-lia-bg-tertiary p-3 rounded-md max-h-48 overflow-y-auto text-lia-text-primary leading-relaxed border border-lia-border-subtle"
-                data-testid="template-clone-system-prompt"
-              >
-                {template.system_prompt || "—"}
-              </pre>
-            </section>
-
-            <Separator />
-
-            {/* Allowed tools */}
+            {/* O que este agente faz — capacidades de alto nível */}
             <section data-testid="template-clone-section-tools">
-              <h3 className="flex items-center gap-2 text-xs font-semibold text-lia-text-secondary uppercase mb-2">
-                <Wrench className="h-3.5 w-3.5" aria-hidden="true" />
-                {t("allowedToolsLabel") || "Ferramentas habilitadas"}
-                {template.allowed_tools && (
-                  <span className="ml-1 text-lia-text-disabled normal-case font-normal">
-                    ({template.allowed_tools.length})
-                  </span>
-                )}
+              <h3 className="flex items-center gap-2 text-sm font-semibold text-lia-text-primary mb-2">
+                <ListChecks className="h-4 w-4 text-lia-text-secondary" aria-hidden="true" />
+                {t("whatItDoesLabel")}
               </h3>
-              {template.allowed_tools && template.allowed_tools.length > 0 ? (
-                <div className="flex flex-wrap gap-1.5">
-                  {template.allowed_tools.map((tool) => (
-                    <span
-                      key={tool}
-                      className={cn(badgeStyles.default, "text-[10px] font-mono")}
+              {capabilities.length > 0 ? (
+                <ul className="space-y-1.5">
+                  {capabilities.map((cap) => (
+                    <li
+                      key={cap}
+                      className="flex items-start gap-2 text-sm text-lia-text-secondary"
                     >
-                      {tool}
-                    </span>
+                      <span
+                        className="mt-2 h-1 w-1 shrink-0 rounded-full bg-lia-text-disabled"
+                        aria-hidden="true"
+                      />
+                      <span>{cap}</span>
+                    </li>
                   ))}
-                </div>
+                </ul>
               ) : (
-                <p className="text-xs text-lia-text-disabled italic">
-                  {t("noToolsConfigured") || "Nenhuma ferramenta configurada"}
+                <p className="text-sm text-lia-text-disabled italic">
+                  {t("noToolsConfigured") || "—"}
                 </p>
               )}
             </section>
 
             <Separator />
 
-            {/* Persona / domain */}
+            {/* Especialidade + área */}
             <section data-testid="template-clone-section-persona">
-              <h3 className="flex items-center gap-2 text-xs font-semibold text-lia-text-secondary uppercase mb-2">
-                <User className="h-3.5 w-3.5" aria-hidden="true" />
-                {t("personaLabel") || "Persona / Domínio"}
+              <h3 className="flex items-center gap-2 text-sm font-semibold text-lia-text-primary mb-2">
+                <Sparkles className="h-4 w-4 text-lia-text-secondary" aria-hidden="true" />
+                {t("specialtyLabel")}
               </h3>
-              <p className="text-sm text-lia-text-primary">
-                <span className="font-medium">{t("domainLabel") || "Domínio"}:</span>{" "}
-                {template.domain || "—"}
+              <p className="text-sm text-lia-text-secondary">
+                {t("categories." + template.category) || template.category}
+                {verticalLabelKey && (
+                  <>
+                    {" · "}
+                    <span className="text-lia-text-secondary">
+                      {t("areaLabel")}: {t(verticalLabelKey) || template.vertical}
+                    </span>
+                  </>
+                )}
               </p>
-              <p className="mt-0.5 text-sm text-lia-text-primary">
-                <span className="font-medium">{t("categoryLabel") || "Categoria"}:</span>{" "}
-                {template.category}
-              </p>
-              {template.vertical && (
-                <p
-                  className="mt-0.5 text-sm text-lia-text-primary"
-                  data-testid="template-clone-vertical"
-                >
-                  <span className="font-medium">{t("verticalLabel") || "Vertical"}:</span>{" "}
-                  <span className="inline-flex items-center gap-1 rounded-full bg-powder px-2 py-0.5 text-micro font-medium text-graphite">
-                    {t(`vertical${template.vertical.charAt(0).toUpperCase()}${template.vertical.slice(1)}`) || template.vertical}
-                  </span>
-                </p>
-              )}
             </section>
 
             <Separator />
 
-            {/* Config grid */}
+            {/* Como este agente trabalha — config traduzida + instruções técnicas recolhidas */}
             <section data-testid="template-clone-section-config">
-              <h3 className="flex items-center gap-2 text-xs font-semibold text-lia-text-secondary uppercase mb-2">
-                <MessageSquare className="h-3.5 w-3.5" aria-hidden="true" />
-                {t("configLabel") || "Configuração"}
+              <h3 className="flex items-center gap-2 text-sm font-semibold text-lia-text-primary mb-2">
+                <Layers className="h-4 w-4 text-lia-text-secondary" aria-hidden="true" />
+                {t("howItWorksLabel")}
               </h3>
-              <div className="grid grid-cols-3 gap-2">
-                <div className="rounded-lg bg-lia-bg-tertiary p-2 text-center">
+              <div className="grid grid-cols-2 gap-2">
+                <div className="rounded-lg bg-lia-bg-tertiary p-3">
                   <p className="text-xs text-lia-text-secondary">
-                    {t("maxStepsLabel") || "Max steps"}
+                    {t("depthAnalysisLabel")}
                   </p>
                   <p className="text-sm font-semibold text-lia-text-primary">
-                    {template.max_steps}
+                    {tRich(DEPTH_VALUE_KEY[template.context_level])}
                   </p>
                 </div>
-                <div className="rounded-lg bg-lia-bg-tertiary p-2 text-center">
-                  <p className="text-xs text-lia-text-secondary">
-                    {t("temperatureLabel") || "Temperature"}
-                  </p>
+                <div className="rounded-lg bg-lia-bg-tertiary p-3">
                   <p className="text-sm font-semibold text-lia-text-primary">
-                    {template.temperature}
-                  </p>
-                </div>
-                <div className="rounded-lg bg-lia-bg-tertiary p-2 text-center">
-                  <p className="text-xs text-lia-text-secondary">
-                    {t("contextLevelLabel") || "Context"}
-                  </p>
-                  <p className="text-sm font-semibold text-lia-text-primary">
-                    {template.context_level}
+                    {tRich("stepsValue", { count: template.max_steps })}
                   </p>
                 </div>
               </div>
-              <p className="mt-2 text-[11px] text-lia-text-disabled">
-                {t("memoryLabel") || "Memória habilitada"}:{" "}
-                <span className="font-medium">
-                  {template.enable_memory
-                    ? t("memoryYes") || "Sim"
-                    : t("memoryNo") || "Não"}
-                </span>
-              </p>
+
+              {/* Instruções técnicas (system prompt) — recolhidas por padrão */}
+              <details
+                className="mt-3 group"
+                data-testid="template-clone-section-prompt"
+              >
+                <summary className="cursor-pointer list-none text-xs font-medium text-lia-text-secondary hover:text-lia-text-primary transition-colors flex items-center gap-1.5">
+                  <Icons.ChevronRight
+                    className="h-3.5 w-3.5 transition-transform group-open:rotate-90"
+                    aria-hidden="true"
+                  />
+                  {t("technicalInstructionsToggle")}
+                </summary>
+                <pre
+                  className="mt-2 text-xs whitespace-pre-wrap font-mono bg-lia-bg-tertiary p-3 rounded-md max-h-48 overflow-y-auto text-lia-text-secondary leading-relaxed border border-lia-border-subtle"
+                  data-testid="template-clone-system-prompt"
+                >
+                  {template.system_prompt || "—"}
+                </pre>
+              </details>
             </section>
           </div>
         </ScrollArea>
 
-        {/* Footer: Cancel + Clone CTA */}
+        {/* Footer: Cancelar + Usar e ajustar */}
         <DialogFooter className="px-6 py-4 border-t border-lia-border-subtle flex-row gap-2 sm:justify-between">
           <Button
             variant="outline"
@@ -251,7 +224,7 @@ export function TemplateClonePanel({
             data-testid="template-clone-confirm"
           >
             <Copy className="h-4 w-4" aria-hidden="true" />
-            {t("cloneAndCustomize") || "Clonar e customizar"}
+            {t("useAndAdjust")}
           </Button>
         </DialogFooter>
       </DialogContent>

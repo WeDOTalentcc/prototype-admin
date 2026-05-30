@@ -2993,18 +2993,21 @@
             "standard": "Padrão",
             "full": "Completo"
           },
-          "metricsLabel": {
-            "tools": "ferramentas",
-            "maxSteps": "passos máx.",
-            "context": "contexto"
+          "depthEyebrow": "Análise",
+          "depthValue": {
+            "minimal": "Direta",
+            "standard": "Equilibrada",
+            "full": "Aprofundada"
           },
+          "stepsValue": "Processa até {count} etapas",
+          "capabilitiesEyebrow": "O que faz",
           "alert": {
-            "personalize": "Personalize este template antes de usar em produção."
+            "personalize": "Ajuste ao seu processo antes de ativar."
           },
           "actions": {
-            "use": "Usar template",
-            "customize": "Personalizar",
-            "preview": "Visualizar"
+            "use": "Usar agora",
+            "customize": "Ajustar antes",
+            "preview": "Ver detalhes"
           }
         }
       },
@@ -3053,7 +3056,15 @@
       "cloneAndCustomize": "Clonar e personalizar",
       "confirmDeleteTitle": "Excluir agente?",
       "delete": "Excluir",
-      "untitledAgent": "Agente sem nome"
+      "untitledAgent": "Agente sem nome",
+      "howItWorksLabel": "Como este agente trabalha",
+      "whatItDoesLabel": "O que este agente faz",
+      "technicalInstructionsToggle": "Ver instruções técnicas",
+      "specialtyLabel": "Especialidade",
+      "areaLabel": "Área",
+      "depthAnalysisLabel": "Profundidade da análise",
+      "useAndAdjust": "Usar e ajustar",
+      "templateDetailTitle": "Detalhes do agente"
     },
     "digitalTwin": {
       "active": "Ativo",

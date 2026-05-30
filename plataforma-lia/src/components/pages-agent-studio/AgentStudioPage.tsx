@@ -680,13 +680,13 @@ export default function AgentStudioPage({
             </section>
 
             {/* Template Gallery */}
+            {/* Redesign 2026-05-30: 3 ações distintas no card. "Usar agora" e
+                "Ajustar antes" abrem o wizard pré-populado (clone-first);
+                "Ver detalhes" abre o modal de detalhe (handleTemplateSelect). */}
             <TemplateGallery
               onTemplateSelect={handleTemplateSelect}
-              onCreateManual={() => {
-                // Studio Restructure Fase 2 (2026-05-26): CTA inline de criar
-                // do TemplateGallery delega ao wizard goal-first (goal=outro).
-                openWizard("outro")
-              }}
+              onTemplateUse={handleCloneTemplate}
+              onTemplateCustomize={handleCloneTemplate}
             />
 
             {/* Conversational Creator (target do CTA "Criar com IA" — BUG-12) */}
