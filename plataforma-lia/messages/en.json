@@ -1654,7 +1654,16 @@
     "clearSelection": "Clear selection",
     "menuMore": "More",
     "pipelineInherited": "Pipeline inherited from company",
-    "pipelineCustom": "Custom pipeline"
+    "pipelineCustom": "Custom pipeline",
+    "rejectionCategories": {
+      "business_decision": "Business decision",
+      "qualification": "Qualification",
+      "cultural": "Cultural fit",
+      "logistics": "Logistics",
+      "compensation": "Compensation",
+      "process": "Process",
+      "other": "Other"
+    }
   },
   "pipeline": {
     "title": "Talent Pipeline",

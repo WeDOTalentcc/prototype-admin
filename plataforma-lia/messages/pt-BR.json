@@ -1654,7 +1654,16 @@
     "clearSelection": "Limpar seleção",
     "menuMore": "Mais",
     "pipelineInherited": "Pipeline herdado da empresa",
-    "pipelineCustom": "Pipeline customizado"
+    "pipelineCustom": "Pipeline customizado",
+    "rejectionCategories": {
+      "business_decision": "Decisão de negócio",
+      "qualification": "Qualificação",
+      "cultural": "Fit cultural",
+      "logistics": "Logística",
+      "compensation": "Remuneração",
+      "process": "Processo",
+      "other": "Outros"
+    }
   },
   "pipeline": {
     "title": "Funil de Talentos",
