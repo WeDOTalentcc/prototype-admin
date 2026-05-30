@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { Chip } from "@/components/ui/chip"
 import { CandidatePageHeader } from "@/components/candidate-page/CandidatePageHeader"
@@ -68,7 +69,7 @@ export function CandidatePage({
   candidate,
   mode = "modal",
   isOpen = true,
-  onClose = () => {},
+  onClose,
   onBackToKanban: _onBackToKanban = () => {},
   jobId,
   onSendEmail,
@@ -90,6 +91,8 @@ export function CandidatePage({
   // Behind feature flag ff_candidate_edit (env or runtime). For now: gate via mode only.
   // Edit only enabled in mode=page AND feature flag NEXT_PUBLIC_FF_CANDIDATE_EDIT=true
   const editableInline = mode === "page" && isFeatureEnabled(FF_CANDIDATE_EDIT)
+  const router = useRouter()
+  const handleClose = onClose ?? (mode === "page" ? () => router.back() : () => {})
 
   if (mode === "modal" && !isOpen) return null
   if (!candidate) return null
@@ -123,7 +126,7 @@ export function CandidatePage({
           setShowLiaAnalysisModal={core.setShowLiaAnalysisModal}
           handleAnalysisTransport={() => { /* TODO F8: bind to currently-open analysis when Edit pattern lands */ }}
           getScoreColor={getScoreColor}
-          onClose={onClose}
+          onClose={handleClose}
           onSendEmail={onSendEmail}
           onSendWhatsApp={onSendWhatsApp}
           onSendAgendamento={onSendAgendamento}
