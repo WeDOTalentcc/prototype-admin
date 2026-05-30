@@ -1,7 +1,7 @@
-import { create } from zustand
-import { devtools, persist } from zustand/middleware
-import { registerStoreReset } from ./auth-store
-import type { ParsedEntities, SearchMetadata } from @/components/search/smart-search-input
+import { create } from 'zustand'
+import { devtools } from 'zustand/middleware'
+import { registerStoreReset } from './auth-store'
+import type { ParsedEntities, SearchMetadata } from '@/components/search/smart-search-input'
 
 /**
  * Pagination canonical (Quiet Operator — page size adapta ao viewport).
@@ -27,11 +27,9 @@ export function getInitialDisplayedResultsCount(): number {
   return Math.min(PAGINATION_MAX, Math.max(PAGINATION_MIN, fit))
 }
 
-// TTL de 8h — evita restaurar contexto de busca stale de um dia anterior
-const PERSIST_TTL_MS = 8 * 60 * 60 * 1000
 
-type SearchSource = local | global | hybrid
-type ActiveTab = search | favorites | lists | history | saved-searches | agents
+type SearchSource = 'local' | 'global' | 'hybrid'
+type ActiveTab = 'search' | 'favorites' | 'lists' | 'history' | 'saved-searches' | 'agents'
 
 interface CreditModalsState {
   hybrid: boolean
@@ -63,7 +61,7 @@ interface CandidatesViewState {
   showCrossTabBanner: boolean
   viewingList: { id: string; name: string; color?: string } | null
   sortBy: string
-  sortOrder: asc | desc
+  sortOrder: 'asc' | 'desc'
 }
 
 interface CandidatesSearchState {
@@ -93,7 +91,7 @@ interface CandidatesSearchState {
   isExpandingToGlobal: boolean
   searchExecutionId: number
   searchSortBy: string
-  searchFeedbacks: Record<string, like | dislike>
+  searchFeedbacks: Record<string, 'like' | 'dislike'>
   displayedResultsCount: number
   isLoadingMore: boolean
   showOnlyNew: boolean
@@ -129,7 +127,7 @@ interface CandidatesActions {
   setShowCrossTabBanner: (v: boolean) => void
   setViewingList: (v: { id: string; name: string; color?: string } | null) => void
   setSortBy: (v: string) => void
-  setSortOrder: (v: asc | desc) => void
+  setSortOrder: (v: 'asc' | 'desc') => void
 
   setSearchTerm: (v: string) => void
   setQuickFilters: (v: Set<string> | ((prev: Set<string>) => Set<string>)) => void
@@ -157,7 +155,7 @@ interface CandidatesActions {
   setIsExpandingToGlobal: (v: boolean) => void
   setSearchExecutionId: (v: number | ((prev: number) => number)) => void
   setSearchSortBy: (v: string) => void
-  setSearchFeedbacks: (v: Record<string, like | dislike> | ((prev: Record<string, like | dislike>) => Record<string, like | dislike>)) => void
+  setSearchFeedbacks: (v: Record<string, 'like' | 'dislike'> | ((prev: Record<string, 'like' | 'dislike'>) => Record<string, 'like' | 'dislike'>)) => void
   setDisplayedResultsCount: (v: number) => void
   setIsLoadingMore: (v: boolean) => void
   setShowOnlyNew: (v: boolean) => void
@@ -188,22 +186,22 @@ const initialState: CandidatesFullState = {
   previewCandidate: null,
   showSidePreview: false,
   sidePreviewCandidate: null,
-  liaPromptValue: ,
+  liaPromptValue: '',
   talentConversationId: undefined,
   viewedCandidateIds: new Set<string>(),
   currentPage: 1,
   crossTabFilter: null,
   showCrossTabBanner: false,
   viewingList: null,
-  sortBy: score,
-  sortOrder: desc,
+  sortBy: 'score',
+  sortOrder: 'desc',
 
-  searchTerm: ,
+  searchTerm: '',
   quickFilters: new Set<string>(),
-  activeTab: search,
-  lastSearchQuery: ,
+  activeTab: 'search',
+  lastSearchQuery: '',
   lastSearchEntities: null,
-  lastSearchMode: ,
+  lastSearchMode: '',
   lastSearchMetadata: undefined,
   lastSearchUsedPearch: false,
   hasSearchResults: false,
@@ -215,15 +213,15 @@ const initialState: CandidatesFullState = {
   showExpandGlobalOption: false,
   openCreditModals: { hybrid: false, global: false, email: false, phone: false },
   showEditQueryModal: false,
-  editQueryValue: ,
+  editQueryValue: '',
   showSearchResults: false,
-  searchSource: hybrid,
-  currentSearchSource: local,
+  searchSource: 'hybrid',
+  currentSearchSource: 'local',
   showGlobalExpansionConfirm: false,
   hasSearched: false,
   isExpandingToGlobal: false,
   searchExecutionId: 0,
-  searchSortBy: relevance,
+  searchSortBy: 'relevance',
   searchFeedbacks: {},
   displayedResultsCount: getInitialDisplayedResultsCount(),
   isLoadingMore: false,
@@ -242,7 +240,7 @@ function setOrUpdate<T>(
   actionName: string,
 ) {
   return (v: T | ((prev: T) => T)) => {
-    if (typeof v === function) {
+    if (typeof v === 'function') {
       set((state: CandidatesFullState) => ({ [key]: (v as (prev: T) => T)(state[key] as T) }), false, actionName)
     } else {
       set({ [key]: v } as Partial<CandidatesFullState>, false, actionName)
@@ -252,125 +250,96 @@ function setOrUpdate<T>(
 
 export const useCandidatesStore = create<CandidatesStore>()(
   devtools(
-    persist(
-      (set, get) => ({
-        ...initialState,
+    (set, get) => ({
+      ...initialState,
 
-        setCandidates: (v) => {
-          if (typeof v === function) {
-            set((s) => ({ candidates: v(s.candidates) }), false, candidates/setCandidates)
-          } else {
-            set({ candidates: v }, false, candidates/setCandidates)
-          }
-        },
-        setIsLoading: (v) => set({ isLoading: v }, false, candidates/setIsLoading),
-        setIsSearchActive: (v) => set({ isSearchActive: v }, false, candidates/setIsSearchActive),
+      setCandidates: (v) => {
+        if (typeof v === 'function') {
+          set((s) => ({ candidates: v(s.candidates) }), false, 'candidates/setCandidates')
+        } else {
+          set({ candidates: v }, false, 'candidates/setCandidates')
+        }
+      },
+      setIsLoading: (v) => set({ isLoading: v }, false, 'candidates/setIsLoading'),
+      setIsSearchActive: (v) => set({ isSearchActive: v }, false, 'candidates/setIsSearchActive'),
 
-        setSelectedCandidate: (v) => set({ selectedCandidate: v }, false, view/setSelectedCandidate),
-        setShowPreview: (v) => set({ showPreview: v }, false, view/setShowPreview),
-        setIsPreviewMaximized: (v) => set({ isPreviewMaximized: v }, false, view/setIsPreviewMaximized),
-        setShowCandidatePage: (v) => set({ showCandidatePage: v }, false, view/setShowCandidatePage),
-        setShowCandidatePreview: (v) => set({ showCandidatePreview: v }, false, view/setShowCandidatePreview),
-        setPreviewCandidate: (v) => set({ previewCandidate: v }, false, view/setPreviewCandidate),
-        setShowSidePreview: (v) => set({ showSidePreview: v }, false, view/setShowSidePreview),
-        setSidePreviewCandidate: (v) => set({ sidePreviewCandidate: v }, false, view/setSidePreviewCandidate),
-        setLiaPromptValue: (v) => set({ liaPromptValue: v }, false, view/setLiaPromptValue),
-        setTalentConversationId: (v) => set({ talentConversationId: v }, false, view/setTalentConversationId),
-        setViewedCandidateIds: setOrUpdate<Set<string>>(set, viewedCandidateIds, view/setViewedCandidateIds),
-        setCurrentPage: (v) => set({ currentPage: v }, false, view/setCurrentPage),
-        setCrossTabFilter: (v) => set({ crossTabFilter: v }, false, view/setCrossTabFilter),
-        setShowCrossTabBanner: (v) => set({ showCrossTabBanner: v }, false, view/setShowCrossTabBanner),
-        setViewingList: (v) => set({ viewingList: v }, false, view/setViewingList),
-        setSortBy: (v) => set({ sortBy: v }, false, view/setSortBy),
-        setSortOrder: (v) => set({ sortOrder: v }, false, view/setSortOrder),
+      setSelectedCandidate: (v) => set({ selectedCandidate: v }, false, 'view/setSelectedCandidate'),
+      setShowPreview: (v) => set({ showPreview: v }, false, 'view/setShowPreview'),
+      setIsPreviewMaximized: (v) => set({ isPreviewMaximized: v }, false, 'view/setIsPreviewMaximized'),
+      setShowCandidatePage: (v) => set({ showCandidatePage: v }, false, 'view/setShowCandidatePage'),
+      setShowCandidatePreview: (v) => set({ showCandidatePreview: v }, false, 'view/setShowCandidatePreview'),
+      setPreviewCandidate: (v) => set({ previewCandidate: v }, false, 'view/setPreviewCandidate'),
+      setShowSidePreview: (v) => set({ showSidePreview: v }, false, 'view/setShowSidePreview'),
+      setSidePreviewCandidate: (v) => set({ sidePreviewCandidate: v }, false, 'view/setSidePreviewCandidate'),
+      setLiaPromptValue: (v) => set({ liaPromptValue: v }, false, 'view/setLiaPromptValue'),
+      setTalentConversationId: (v) => set({ talentConversationId: v }, false, 'view/setTalentConversationId'),
+      setViewedCandidateIds: setOrUpdate<Set<string>>(set, 'viewedCandidateIds', 'view/setViewedCandidateIds'),
+      setCurrentPage: (v) => set({ currentPage: v }, false, 'view/setCurrentPage'),
+      setCrossTabFilter: (v) => set({ crossTabFilter: v }, false, 'view/setCrossTabFilter'),
+      setShowCrossTabBanner: (v) => set({ showCrossTabBanner: v }, false, 'view/setShowCrossTabBanner'),
+      setViewingList: (v) => set({ viewingList: v }, false, 'view/setViewingList'),
+      setSortBy: (v) => set({ sortBy: v }, false, 'view/setSortBy'),
+      setSortOrder: (v) => set({ sortOrder: v }, false, 'view/setSortOrder'),
 
-        setSearchTerm: (v) => set({ searchTerm: v }, false, search/setSearchTerm),
-        setQuickFilters: setOrUpdate<Set<string>>(set, quickFilters, search/setQuickFilters),
-        setActiveTab: (v) => set({ activeTab: v }, false, search/setActiveTab),
-        setLastSearchQuery: (v) => set({ lastSearchQuery: v }, false, search/setLastSearchQuery),
-        setLastSearchEntities: (v) => set({ lastSearchEntities: v }, false, search/setLastSearchEntities),
-        setLastSearchMode: (v) => set({ lastSearchMode: v }, false, search/setLastSearchMode),
-        setLastSearchMetadata: (v) => set({ lastSearchMetadata: v }, false, search/setLastSearchMetadata),
-        setLastSearchUsedPearch: (v) => set({ lastSearchUsedPearch: v }, false, search/setLastSearchUsedPearch),
-        setHasSearchResults: (v) => set({ hasSearchResults: v }, false, search/setHasSearchResults),
-        setSearchResultsCount: (v) => set({ searchResultsCount: v }, false, search/setSearchResultsCount),
-        setLocalResultsCount: (v) => set({ localResultsCount: v }, false, search/setLocalResultsCount),
-        setPearchResultsCount: (v) => set({ pearchResultsCount: v }, false, search/setPearchResultsCount),
-        setCreditsUsedInSearch: (v) => set({ creditsUsedInSearch: v }, false, search/setCreditsUsedInSearch),
-        setCreditsRemaining: (v) => set({ creditsRemaining: v }, false, search/setCreditsRemaining),
-        setShowExpandGlobalOption: (v) => set({ showExpandGlobalOption: v }, false, search/setShowExpandGlobalOption),
-        setOpenCreditModals: setOrUpdate<CreditModalsState>(set, openCreditModals, search/setOpenCreditModals),
-        setShowEditQueryModal: (v) => set({ showEditQueryModal: v }, false, search/setShowEditQueryModal),
-        setEditQueryValue: (v) => set({ editQueryValue: v }, false, search/setEditQueryValue),
-        setShowSearchResults: (v) => set({ showSearchResults: v }, false, search/setShowSearchResults),
-        setSearchSource: (v) => set({ searchSource: v }, false, search/setSearchSource),
-        setCurrentSearchSource: (v) => set({ currentSearchSource: v }, false, search/setCurrentSearchSource),
-        setShowGlobalExpansionConfirm: (v) => set({ showGlobalExpansionConfirm: v }, false, search/setShowGlobalExpansionConfirm),
-        setHasSearched: (v) => set({ hasSearched: v }, false, search/setHasSearched),
-        setIsExpandingToGlobal: (v) => set({ isExpandingToGlobal: v }, false, search/setIsExpandingToGlobal),
-        setSearchExecutionId: setOrUpdate<number>(set, searchExecutionId, search/setSearchExecutionId),
-        setSearchSortBy: (v) => set({ searchSortBy: v }, false, search/setSearchSortBy),
-        setSearchFeedbacks: setOrUpdate<Record<string, like | dislike>>(set, searchFeedbacks, search/setSearchFeedbacks),
-        setDisplayedResultsCount: (v) => set({ displayedResultsCount: v }, false, search/setDisplayedResultsCount),
-        setIsLoadingMore: (v) => set({ isLoadingMore: v }, false, search/setIsLoadingMore),
-        setShowOnlyNew: (v) => set({ showOnlyNew: v }, false, search/setShowOnlyNew),
-        setIsDroppingCV: (v) => set({ isDroppingCV: v }, false, search/setIsDroppingCV),
-        setCvUploadLoading: (v) => set({ cvUploadLoading: v }, false, search/setCvUploadLoading),
+      setSearchTerm: (v) => set({ searchTerm: v }, false, 'search/setSearchTerm'),
+      setQuickFilters: setOrUpdate<Set<string>>(set, 'quickFilters', 'search/setQuickFilters'),
+      setActiveTab: (v) => set({ activeTab: v }, false, 'search/setActiveTab'),
+      setLastSearchQuery: (v) => set({ lastSearchQuery: v }, false, 'search/setLastSearchQuery'),
+      setLastSearchEntities: (v) => set({ lastSearchEntities: v }, false, 'search/setLastSearchEntities'),
+      setLastSearchMode: (v) => set({ lastSearchMode: v }, false, 'search/setLastSearchMode'),
+      setLastSearchMetadata: (v) => set({ lastSearchMetadata: v }, false, 'search/setLastSearchMetadata'),
+      setLastSearchUsedPearch: (v) => set({ lastSearchUsedPearch: v }, false, 'search/setLastSearchUsedPearch'),
+      setHasSearchResults: (v) => set({ hasSearchResults: v }, false, 'search/setHasSearchResults'),
+      setSearchResultsCount: (v) => set({ searchResultsCount: v }, false, 'search/setSearchResultsCount'),
+      setLocalResultsCount: (v) => set({ localResultsCount: v }, false, 'search/setLocalResultsCount'),
+      setPearchResultsCount: (v) => set({ pearchResultsCount: v }, false, 'search/setPearchResultsCount'),
+      setCreditsUsedInSearch: (v) => set({ creditsUsedInSearch: v }, false, 'search/setCreditsUsedInSearch'),
+      setCreditsRemaining: (v) => set({ creditsRemaining: v }, false, 'search/setCreditsRemaining'),
+      setShowExpandGlobalOption: (v) => set({ showExpandGlobalOption: v }, false, 'search/setShowExpandGlobalOption'),
+      setOpenCreditModals: setOrUpdate<CreditModalsState>(set, 'openCreditModals', 'search/setOpenCreditModals'),
+      setShowEditQueryModal: (v) => set({ showEditQueryModal: v }, false, 'search/setShowEditQueryModal'),
+      setEditQueryValue: (v) => set({ editQueryValue: v }, false, 'search/setEditQueryValue'),
+      setShowSearchResults: (v) => set({ showSearchResults: v }, false, 'search/setShowSearchResults'),
+      setSearchSource: (v) => set({ searchSource: v }, false, 'search/setSearchSource'),
+      setCurrentSearchSource: (v) => set({ currentSearchSource: v }, false, 'search/setCurrentSearchSource'),
+      setShowGlobalExpansionConfirm: (v) => set({ showGlobalExpansionConfirm: v }, false, 'search/setShowGlobalExpansionConfirm'),
+      setHasSearched: (v) => set({ hasSearched: v }, false, 'search/setHasSearched'),
+      setIsExpandingToGlobal: (v) => set({ isExpandingToGlobal: v }, false, 'search/setIsExpandingToGlobal'),
+      setSearchExecutionId: setOrUpdate<number>(set, 'searchExecutionId', 'search/setSearchExecutionId'),
+      setSearchSortBy: (v) => set({ searchSortBy: v }, false, 'search/setSearchSortBy'),
+      setSearchFeedbacks: setOrUpdate<Record<string, 'like' | 'dislike'>>(set, 'searchFeedbacks', 'search/setSearchFeedbacks'),
+      setDisplayedResultsCount: (v) => set({ displayedResultsCount: v }, false, 'search/setDisplayedResultsCount'),
+      setIsLoadingMore: (v) => set({ isLoadingMore: v }, false, 'search/setIsLoadingMore'),
+      setShowOnlyNew: (v) => set({ showOnlyNew: v }, false, 'search/setShowOnlyNew'),
+      setIsDroppingCV: (v) => set({ isDroppingCV: v }, false, 'search/setIsDroppingCV'),
+      setCvUploadLoading: (v) => set({ cvUploadLoading: v }, false, 'search/setCvUploadLoading'),
 
-        setSelectedCandidates: setOrUpdate<Set<string>>(set, selectedCandidates, selection/setSelectedCandidates),
-        setLastSelectedIndex: (v) => set({ lastSelectedIndex: v }, false, selection/setLastSelectedIndex),
+      setSelectedCandidates: setOrUpdate<Set<string>>(set, 'selectedCandidates', 'selection/setSelectedCandidates'),
+      setLastSelectedIndex: (v) => set({ lastSelectedIndex: v }, false, 'selection/setLastSelectedIndex'),
 
-        toggleCandidateSelection: (candidateId) => {
-          const current = get().selectedCandidates
-          const next = new Set(current)
-          if (next.has(candidateId)) {
-            next.delete(candidateId)
-          } else {
-            next.add(candidateId)
-          }
-          set({ selectedCandidates: next }, false, selection/toggle)
-        },
+      toggleCandidateSelection: (candidateId) => {
+        const current = get().selectedCandidates
+        const next = new Set(current)
+        if (next.has(candidateId)) {
+          next.delete(candidateId)
+        } else {
+          next.add(candidateId)
+        }
+        set({ selectedCandidates: next }, false, 'selection/toggle')
+      },
 
-        selectAllCandidates: (candidateIds) => set({
-          selectedCandidates: new Set(candidateIds),
-        }, false, selection/selectAll),
+      selectAllCandidates: (candidateIds) => set({
+        selectedCandidates: new Set(candidateIds),
+      }, false, 'selection/selectAll'),
 
-        clearSelection: () => set({
-          selectedCandidates: new Set<string>(),
-          lastSelectedIndex: null,
-        }, false, selection/clear),
+      clearSelection: () => set({
+        selectedCandidates: new Set<string>(),
+        lastSelectedIndex: null,
+      }, false, 'selection/clear'),
 
-        resetStore: () => set(initialState, false, candidates/reset),
-      }),
-      {
-        name: lia-candidates-search-context,
-        // Persiste apenas o contexto de busca (strings/numbers/booleans).
-        // Sets (quickFilters, viewedCandidateIds, selectedCandidates) e arrays grandes
-        // (candidates) são excluídos — não são serializáveis de forma confiável via
-        // JSON.stringify e podem conter dados stale ou sensíveis.
-        partialize: (state) => ({
-          lastSearchQuery: state.lastSearchQuery,
-          lastSearchMode: state.lastSearchMode,
-          searchSource: state.searchSource,
-          activeTab: state.activeTab,
-          sortBy: state.sortBy,
-          sortOrder: state.sortOrder,
-          searchSortBy: state.searchSortBy,
-          showOnlyNew: state.showOnlyNew,
-          hasSearched: state.hasSearched,
-          _persistedAt: Date.now(),
-        }),
-        onRehydrateStorage: () => (state) => {
-          if (!state) return
-          // Descarta estado persistido com mais de 8h (evita contexto stale)
-          const persistedAt = (state as any)._persistedAt as number | undefined
-          if (persistedAt && Date.now() - persistedAt > PERSIST_TTL_MS) {
-            useCandidatesStore.getState().resetStore()
-          }
-        },
-      }
-    ),
-    { name: CandidatesStore }
+      resetStore: () => set(initialState, false, 'candidates/reset'),
+    }),
+    { name: 'CandidatesStore' }
   )
 )
 
