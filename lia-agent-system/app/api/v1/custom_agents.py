@@ -63,11 +63,14 @@ async def create_custom_agent(
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     from app.services.quota_enforcement import enforce_quota
-    # Wave C2.1 (2026-05-27): quota_key derivado de body.category — agents
+    # Wave C2.1 (2026-05-27): quota_key derivado do domínio do agente — agents
     # sourcing contam contra quota separada de custom_agents. Fix harness:
     # antes hardcoded "custom_agents" inflava errado quando recruiter criava
     # sourcing agent (que tem pricing/quota distinto).
-    _category = (body.category or "general").lower()
+    # P0 fix 2026-05-30: CreateCustomAgentRequest não tem `category` — o campo
+    # canonical é `domain` (frontend AgentCategory → body.domain). `body.category`
+    # levantava AttributeError → 500 em TODA criação desde Wave C2.1.
+    _category = (body.domain or "general").lower()
     _quota_key = "sourcing_agents" if _category == "sourcing" else "custom_agents"
     await enforce_quota(_quota_key, current_user.company_id, db)
 
