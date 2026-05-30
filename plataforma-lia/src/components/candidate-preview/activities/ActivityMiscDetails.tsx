@@ -8,7 +8,7 @@ import {
   ClipboardCheck, FileText, Code, Gift, UserCheck,
   Shield, Users, Building, Clock, AlertCircle
 } from"lucide-react"
-import { Activity as ActivityData } from"@/data/demo-activities"
+import type { TimelineActivity as ActivityData } from"./ActivityTimeline"
 
 interface ActivityMiscDetailsProps {
   activity: ActivityData & { details: NonNullable<ActivityData['details']> }

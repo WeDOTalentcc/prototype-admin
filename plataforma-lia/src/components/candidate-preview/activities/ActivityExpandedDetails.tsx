@@ -1,7 +1,7 @@
 "use client"
 import React from "react"
 import { ScreeningQuestion, TranscriptionSegment } from "@/components/modals/screening-media-modal"
-import { Activity as ActivityData } from "@/data/demo-activities"
+import type { TimelineActivity as ActivityData } from "./ActivityTimeline"
 import { ActivityCommunicationDetails } from "./ActivityCommunicationDetails"
 import { ActivityEvaluationDetails } from "./ActivityEvaluationDetails"
 import { ActivityMiscDetails } from "./ActivityMiscDetails"

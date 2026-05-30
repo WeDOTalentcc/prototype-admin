@@ -6,7 +6,7 @@ import { Button } from"@/components/ui/button"
 import { Mic, Play, ClipboardCheck, Video } from"lucide-react"
 import { textStyles, cardStyles } from '@/lib/design-tokens'
 import type { ScreeningQuestion, TranscriptionSegment } from"@/components/modals/screening-media-modal"
-import type { Activity as ActivityData } from"@/data/demo-activities"
+import type { TimelineActivity as ActivityData } from"./ActivityTimeline"
 
 interface ActivityScreeningDetailsProps {
   activity: ActivityData & { details: NonNullable<ActivityData['details']> }

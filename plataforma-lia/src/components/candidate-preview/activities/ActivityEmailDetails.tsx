@@ -4,7 +4,7 @@ import React from"react"
 import { Chip } from "@/components/ui/chip"
 import { CheckCircle, Mail } from"lucide-react"
 import { textStyles } from '@/lib/design-tokens'
-import type { Activity as ActivityData } from"@/data/demo-activities"
+import type { TimelineActivity as ActivityData } from"./ActivityTimeline"
 
 interface ActivityEmailDetailsProps {
   activity: ActivityData & { details: NonNullable<ActivityData['details']> }

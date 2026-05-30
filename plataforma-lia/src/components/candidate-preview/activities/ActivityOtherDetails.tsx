@@ -9,7 +9,7 @@ import {
   Building, Clock, Eye, Target, AlertCircle
 } from"lucide-react"
 import { textStyles, cardStyles, badgeStyles, formatScorePercent } from '@/lib/design-tokens'
-import type { Activity as ActivityData } from"@/data/demo-activities"
+import type { TimelineActivity as ActivityData } from"./ActivityTimeline"
 
 interface ActivityOtherDetailsProps {
   activity: ActivityData & { details: NonNullable<ActivityData['details']> }

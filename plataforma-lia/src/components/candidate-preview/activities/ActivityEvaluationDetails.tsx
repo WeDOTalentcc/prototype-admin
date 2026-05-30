@@ -7,7 +7,7 @@ import {
   Brain, Mic, Play, ClipboardCheck, Eye, Video
 } from"lucide-react"
 import { ScreeningQuestion, TranscriptionSegment } from"@/components/modals/screening-media-modal"
-import { Activity as ActivityData } from"@/data/demo-activities"
+import type { TimelineActivity as ActivityData } from"./ActivityTimeline"
 
 interface ActivityEvaluationDetailsProps {
   activity: ActivityData & { details: NonNullable<ActivityData['details']> }

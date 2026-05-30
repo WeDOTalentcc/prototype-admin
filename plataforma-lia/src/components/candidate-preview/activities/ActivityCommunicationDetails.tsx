@@ -5,7 +5,7 @@ import { textStyles } from '@/lib/design-tokens'
 import {
   Calendar, ExternalLink, CheckCircle, Mail
 } from"lucide-react"
-import { Activity as ActivityData } from"@/data/demo-activities"
+import type { TimelineActivity as ActivityData } from"./ActivityTimeline"
 
 interface ActivityCommunicationDetailsProps {
   activity: ActivityData & { details: NonNullable<ActivityData['details']> }
