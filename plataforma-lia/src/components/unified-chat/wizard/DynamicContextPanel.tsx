@@ -110,7 +110,7 @@ export function DynamicContextPanel({
   return (
     <div className="flex flex-col h-full bg-lia-bg-primary">
       {/* Panel header */}
-      <div className="flex items-center justify-between px-4 py-2.5 flex-shrink-0">
+      <div className="flex items-center justify-between px-4 py-2.5 flex-shrink-0 border-b border-lia-border-subtle">
         <h3 className="text-sm font-semibold text-lia-text-primary">
           {STAGE_LABELS[stage] || stage}
         </h3>
@@ -126,13 +126,22 @@ export function DynamicContextPanel({
         )}
       </div>
 
-      {/* Panel content — scrollable, with Suspense + ErrorBoundary */}
+      {/* Panel content — scrollable, with Suspense + ErrorBoundary.
+          Wrapper keyed por stage: re-monta na troca de estágio e toca a
+          transição enter (transform+opacity, ease-out ~200ms, motion-reduce
+          safe). NÃO anima propriedades de layout. */}
       <div className="flex-1 overflow-y-auto">
-        <WizardErrorBoundary>
-          <Suspense fallback={<PanelLoader />}>
-            {renderPanel(stage, data, requiresApproval, onApprove, onReject, onUpdate)}
-          </Suspense>
-        </WizardErrorBoundary>
+        <div
+          key={stage}
+          data-testid="wizard-stage-body"
+          className="h-full animate-in fade-in slide-in-from-right-2 duration-200 ease-out motion-reduce:animate-none"
+        >
+          <WizardErrorBoundary>
+            <Suspense fallback={<PanelLoader />}>
+              {renderPanel(stage, data, requiresApproval, onApprove, onReject, onUpdate)}
+            </Suspense>
+          </WizardErrorBoundary>
+        </div>
       </div>
     </div>
   )

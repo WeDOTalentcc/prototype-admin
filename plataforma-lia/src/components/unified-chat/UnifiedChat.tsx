@@ -1091,10 +1091,13 @@ export function UnifiedChat({
       {hasDynamicPanel && (
         <div
           className={cn(
-            "flex-shrink-0 border-l border-lia-border-subtle overflow-y-auto",
+            // Card inset flutuante (estilo workspace contido): respiro da borda
+            // + do chat; o card arredondado abaixo é a superfície real.
+            "flex-shrink-0 flex p-2",
             effectiveMode === "fullscreen" ? "w-[420px]" : "w-[340px]",
           )}
         >
+          <div className="flex-1 min-w-0 rounded-xl border border-lia-border-subtle bg-lia-bg-primary shadow-lg shadow-black/10 overflow-hidden">
           <DynamicContextPanel
             stage={(dynamicPanel?.stage as WizardStage) ?? null}
             data={dynamicPanel?.data ?? {}}
@@ -1104,6 +1107,7 @@ export function UnifiedChat({
             onClose={closeDynamicPanel}
             onUpdate={(updates) => sendChatMessage(wizardUpdateToMessage(updates))}
           />
+          </div>
         </div>
       )}
 
