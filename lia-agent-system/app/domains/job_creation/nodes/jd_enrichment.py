@@ -133,10 +133,24 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
     # Pos-fix: classifier sempre roda quando jd_enriched=None e nao ha JD
     # estruturada (panel_form/attached). Title eh evidencia auxiliar mas
     # nao gate.
+    # RC2 fix (Paulo 2026-05-30): quando o intake_gate JA aprovou avancar
+    # (intake_approved=True) com titulo+senioridade, o recrutador EXPLICITAMENTE
+    # pediu pra criar a vaga via funil conversacional. Pedir "cole a JD" aqui e
+    # errado — temos material estruturado (titulo, senioridade, modo e, via
+    # Fase 3, confirmed_competencies semeadas) para GERAR a JD. service.enrich
+    # consome confirmed_technical/behavioral (Fase 4) e gera JD consistente sem
+    # inventar conteudo. Sem esse sinal, o guard intent_only disparava ask_for_jd
+    # mesmo no happy path (bug do fluxo robotico — funil nunca gerava a JD).
+    _has_structured_intake = bool(
+        state.get("intake_approved") is True
+        and (state.get("parsed_title") or "").strip()
+        and (state.get("parsed_seniority") or "").strip()
+    )
     _classifier_eligible = (
         not state.get("jd_enriched")  # nunca short-circuit em resume
         and not _has_panel_form
         and not _has_attached
+        and not _has_structured_intake  # RC2: funil aprovado → gera, nao pede JD
     )
 
     # ── Task #1098 + Task #1123 — LLM intent classifier SEMPRE roda ──
