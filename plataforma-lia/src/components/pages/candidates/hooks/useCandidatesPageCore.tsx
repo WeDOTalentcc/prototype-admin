@@ -197,6 +197,7 @@ export function useCandidatesPageCore({
     searchResults, setSearchResults,
     selectedTemplate, setSelectedTemplate,
     searchThreadId, setSearchThreadId,
+    searchFingerprint, setSearchFingerprint,
     creditEstimate, setCreditEstimate,
     pendingSearchRequest, setPendingSearchRequest,
     previewWidth, setPreviewWidth,
@@ -282,6 +283,7 @@ export function useCandidatesPageCore({
     setLastSearchQuery, setLastSearchMode, setActiveSearchTab, setLiaPromptValue, setChatMessages,
     creditsRemaining, setCreditsRemaining,
     searchThreadId, setSearchThreadId,
+    setSearchFingerprint,
     hideViewedCandidatesFilter: hideViewedCandidates.filterCandidates,
     talentFunnel, setSearchResults, setShowSearchResults, setDisplayedResultsCount,
     setCurrentSearchSource, setHasSearched, setLastSearchEntities, setLastSearchMetadata,
@@ -467,6 +469,7 @@ export function useCandidatesPageCore({
   }
 
   return {
+    searchFingerprint,
     activeSearchFilters, activeSearchTab, activeTab, addToListCandidateIds, addToListCandidateNames, bulkJobVacancies,
     candidateListsForModal, candidates, chatMessages, clearAllFilters, clearAllTableFilters, clearCrossTabFilter,
     columnSearchTerm, columnWidths, confirmContactFilterChange, confirmSourceChange, contactModalAction, contactModalCandidate,

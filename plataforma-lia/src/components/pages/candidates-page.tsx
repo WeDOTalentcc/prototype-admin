@@ -48,12 +48,14 @@ import { CandidatesPageHeader } from "@/components/pages/candidates/CandidatesPa
 const CandidatesPageModals = dynamic(() => import("@/components/pages/candidates/CandidatesPageModals").then(m => ({ default: m.CandidatesPageModals })), { ssr: false, loading: () => null })
 import { toast } from "sonner"
 import { ErrorBoundarySection } from "@/components/ui/error-boundary-section"
+import { SearchFingerprintProvider } from "@/components/search/SearchFingerprintContext"
 
 import { LoadingModal as CandidatesLoadingModal } from "@/components/ui/loading"
 const CandidatePreview = dynamic(() => import("@/components/candidate-preview").then(m => ({ default: m.CandidatePreview })), { ssr: false, loading: () => <CandidatesLoadingModal /> })
 
 export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandidateOpened }: { onAddRecentItem?: (item: { id: string; type: 'vaga' | 'chat' | 'candidato'; title: string; subtitle?: string; meta?: Record<string, string | undefined> }) => void; pendingCandidateOpen?: { candidateId: string; candidateName: string } | null; onCandidateOpened?: () => void } = {}) {
   const {
+    searchFingerprint,
     activeSearchFilters, activeSearchTab, activeTab, addToListCandidateIds, addToListCandidateNames, bulkJobVacancies,
     candidateListsForModal, candidates, chatMessages, clearAllFilters, clearAllTableFilters, clearCrossTabFilter,
     columnSearchTerm, columnWidths, confirmContactFilterChange, confirmSourceChange, contactModalAction, contactModalCandidate,
@@ -108,6 +110,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
   } = useCandidatesPageCore({ onAddRecentItem, pendingCandidateOpen, onCandidateOpened })
 
   return (
+    <SearchFingerprintProvider value={searchFingerprint}>
     <ErrorBoundarySection>
     <div className="h-full flex flex-col bg-lia-bg-primary dark:bg-lia-bg-primary overflow-hidden">
       {/* Header Fixo - Título e Tabs */}
@@ -747,5 +750,6 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
       />
     </div>
     </ErrorBoundarySection>
+    </SearchFingerprintProvider>
   )
 }

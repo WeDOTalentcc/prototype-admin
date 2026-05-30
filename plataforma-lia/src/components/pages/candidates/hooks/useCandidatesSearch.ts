@@ -85,6 +85,7 @@ export interface CandidatesSearchContext {
   hasSearched: boolean
   lastSuccessfulQuery: string
   setSearchThreadId: (id: string | undefined) => void
+  setSearchFingerprint: (fp: string | undefined) => void
   searchThreadId: string | undefined
   showExpandGlobalOption: boolean
   setShowExpandGlobalOption: (v: boolean) => void
@@ -144,6 +145,7 @@ export function useCandidatesSearch(ctx: CandidatesSearchContext) {
     hasSearched,
     lastSuccessfulQuery,
     setSearchThreadId,
+    setSearchFingerprint,
     searchThreadId,
     setShowExpandGlobalOption,
     setChatMessages,
@@ -430,6 +432,24 @@ export function useCandidatesSearch(ctx: CandidatesSearchContext) {
 
         // Atualizar estados
         setCandidates(mappedCandidates as unknown as Candidate[])
+        // Fase 2: re-hidrata feedback persistido para os criterios desta busca
+        // (fingerprint). Restaura o tier-sort like/dislike ao recarregar/resgatar a busca.
+        setSearchFingerprint(searchResponse.search_fingerprint)
+        if (searchResponse.search_fingerprint) {
+          try {
+            const _fbResp = await fetch(
+              `/api/backend-proxy/search/feedback/by-search?fingerprint=${encodeURIComponent(searchResponse.search_fingerprint)}`
+            )
+            if (_fbResp.ok) {
+              const _fbData = await _fbResp.json()
+              if (_fbData?.feedbacks && Object.keys(_fbData.feedbacks).length > 0) {
+                setSearchFeedbacks(_fbData.feedbacks as Record<string, 'like' | 'dislike'>)
+              }
+            }
+          } catch (_e) {
+            console.warn('[search] re-hidratacao de feedback falhou (best-effort):', _e)
+          }
+        }
         setCurrentSearchSource('hybrid')
         setSearchResultsCount(searchResponse.total_count || mappedCandidates.length)
         setLocalResultsCount(searchResponse.local_count || localCandidates.length)

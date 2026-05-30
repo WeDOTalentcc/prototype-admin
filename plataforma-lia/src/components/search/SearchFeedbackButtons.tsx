@@ -3,6 +3,7 @@
 import React, { useState } from "react"
 import { ThumbsUp, XCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useSearchFingerprint } from "@/components/search/SearchFingerprintContext"
 
 interface SearchFeedbackButtonsProps {
   candidateId: string
@@ -31,6 +32,8 @@ export function SearchFeedbackButtons({
 }: SearchFeedbackButtonsProps) {
   const [feedback, setFeedback] = useState<'like' | 'dislike' | null>(initialFeedback)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  // Fase 2: fingerprint da busca corrente (ancora o feedback aos criterios)
+  const searchFingerprint = useSearchFingerprint()
 
   const iconSize = size === 'sm' ? 'w-3.5 h-3.5' : 'w-3.5 h-3.5'
   const btnSize = size === 'sm' ? 'w-7 h-7' : 'w-7 h-7'
@@ -56,6 +59,7 @@ export function SearchFeedbackButtons({
           search_query: searchQuery || null,
           candidate_score: candidateScore || null,
           candidate_name: candidateName || null,
+          search_fingerprint: searchFingerprint || null,
         })
       })
 

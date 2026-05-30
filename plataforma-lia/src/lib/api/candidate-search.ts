@@ -117,6 +117,8 @@ export interface SearchResponse {
   search_time_seconds?: number
   warning_message?: string
   can_load_more: boolean
+  // Fase 2: hash dos criterios da busca; ancora feedback/aprendizado (re-hidratacao)
+  search_fingerprint?: string
   is_enriching_contacts?: boolean
   filtered_no_contact?: number
   enrichment_attempted?: number

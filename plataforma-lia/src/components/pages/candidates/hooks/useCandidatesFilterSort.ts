@@ -2,6 +2,52 @@ import React from "react"
 import type { Candidate } from "../types"
 import type { TableFilters } from "@/hooks/candidates/use-candidate-filters"
 
+type FilterMatchCandidate = {
+  skills?: string[]
+  location?: string
+  position?: string
+  current_title?: string
+  current_company?: string
+  level?: string
+  workHistory?: Array<{ company?: string }>
+}
+
+/**
+ * Fase 3: grau de match dos filtros ativos (exatidao da referencia).
+ * Conta quantas CONDICOES de filtro multi-valor o candidato satisfaz
+ * (ex: skills [python, aws] -> 2 se casa as duas). Usado como re-score
+ * DENTRO do conjunto ja filtrado: quem satisfaz mais condicoes sobe.
+ * Espelha a logica de match de useCandidatesFilterSort (includes, case-insensitive).
+ */
+export function countActiveFilterMatches(
+  candidate: FilterMatchCandidate,
+  tableFilters: { skills?: string[]; locations?: string[]; jobTitles?: string[]; companies?: string[]; seniorityLevels?: string[] },
+  advancedFilters: Record<string, string[]>,
+): number {
+  const lc = (s: unknown) => String(s ?? "").toLowerCase()
+  const candSkills = (candidate.skills || []).map(lc)
+  const candLoc = lc(candidate.location)
+  const candTitle = lc(candidate.position || candidate.current_title)
+  const candCompany = lc(candidate.workHistory?.[0]?.company || candidate.current_company)
+  let matches = 0
+  for (const sf of [...(tableFilters.skills || []), ...(advancedFilters.skills || [])]) {
+    if (candSkills.some((cs) => cs.includes(lc(sf)))) matches++
+  }
+  for (const lf of [...(tableFilters.locations || []), ...(advancedFilters.locations || [])]) {
+    if (candLoc.includes(lc(lf))) matches++
+  }
+  for (const tf of [...(tableFilters.jobTitles || []), ...(advancedFilters.job_titles || [])]) {
+    if (candTitle.includes(lc(tf))) matches++
+  }
+  for (const cf of [...(tableFilters.companies || []), ...(advancedFilters.companies || [])]) {
+    if (candCompany.includes(lc(cf))) matches++
+  }
+  for (const sl of (tableFilters.seniorityLevels || [])) {
+    if (candTitle.includes(lc(sl)) || lc(candidate.level).includes(lc(sl))) matches++
+  }
+  return matches
+}
+
 export interface UseCandidatesFilterSortParams {
   candidates: Candidate[]
   searchTerm: string
@@ -380,6 +426,13 @@ export function useCandidatesFilterSort(params: UseCandidatesFilterSortParams) {
         break
     }
     
+    // Fase 3: re-score local por grau de match dos filtros ativos (estavel:
+    // preserva a ordem do switch como desempate; feedback tier abaixo domina).
+    sorted.sort(
+      (a, b) =>
+        countActiveFilterMatches(b as FilterMatchCandidate, tableFilters, advancedFilters) -
+        countActiveFilterMatches(a as FilterMatchCandidate, tableFilters, advancedFilters),
+    )
     const feedbackKeys = Object.keys(searchFeedbacks)
     if (feedbackKeys.length > 0) {
       sorted.sort((a, b) => {
@@ -392,7 +445,7 @@ export function useCandidatesFilterSort(params: UseCandidatesFilterSortParams) {
     }
     
     return sorted.slice(0, displayedResultsCount)
-  }, [sortedCandidates, searchSortBy, displayedResultsCount, searchFeedbacks])
+  }, [sortedCandidates, searchSortBy, displayedResultsCount, searchFeedbacks, tableFilters, advancedFilters])
 
   const visibleCandidates = showSearchResults ? searchDisplayCandidates : paginatedCandidates
 

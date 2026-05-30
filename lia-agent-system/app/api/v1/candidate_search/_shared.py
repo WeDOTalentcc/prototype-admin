@@ -88,6 +88,52 @@ def _generate_fingerprint(name: str, linkedin_url: str | None = None, email: str
     return hashlib.sha256(fingerprint_str.encode()).hexdigest()[:32]
 
 
+# Ignora chaves utilitarias do search_spec que NAO definem a identidade da
+# referencia (estreitam a lista mas nao mudam o "perfil de referencia" da busca).
+_SEARCH_FP_IGNORED_SPEC_KEYS = {
+    "has_email", "has_phone", "has_linkedin",
+    "updated_at_from", "updated_at_to",
+    "last_contacted_from", "last_contacted_to",
+    "registration_date_from", "registration_date_to",
+}
+
+
+def _generate_search_fingerprint(query: str, search_spec: dict | None = None) -> str:
+    """Gera hash estavel dos criterios de UMA busca (query + search_spec).
+
+    Ancora feedback/aprendizado ao CONJUNTO DE CRITERIOS da busca (a "referencia":
+    query em linguagem natural / booleana / JD + filtros mapeados no search_spec),
+    nao a uma vaga nem ao recrutador. Mesmos criterios -> mesmo fingerprint -> o
+    feedback re-hidrata ao re-executar OU resgatar a busca (historico/lista/pool).
+
+    Deterministico: normaliza (trim+lowercase em strings), ordena arrays e chaves,
+    descarta vazios e chaves utilitarias (_SEARCH_FP_IGNORED_SPEC_KEYS).
+    """
+    import hashlib
+    import json
+
+    def _norm(v):
+        if isinstance(v, str):
+            return v.strip().lower()
+        if isinstance(v, (list, tuple, set)):
+            return sorted(
+                _norm(x) for x in v
+                if x is not None and str(x).strip() != ""
+            )
+        if isinstance(v, dict):
+            return {
+                k: _norm(val)
+                for k, val in sorted(v.items())
+                if k not in _SEARCH_FP_IGNORED_SPEC_KEYS
+                and val not in (None, "", [], {})
+            }
+        return v
+
+    payload = {"query": _norm(query or ""), "spec": _norm(search_spec or {})}
+    blob = json.dumps(payload, sort_keys=True, ensure_ascii=False)
+    return hashlib.sha256(blob.encode("utf-8")).hexdigest()[:32]
+
+
 async def _get_job_requirements(
     db: AsyncSession,
     job_id: str
@@ -355,6 +401,7 @@ class SearchResponseDTO(BaseModel):
     should_expand_to_global: bool = Field(default=False)
     expansion_message: str | None = Field(default=None)
     high_adherence_count: int = Field(default=0)
+    search_fingerprint: str | None = Field(default=None, description="Hash estavel dos criterios da busca; ancora feedback/aprendizado")
 
 
 def _build_candidate_data_from_dto(candidate_dto: 'CandidateSearchResultDTO') -> dict[str, Any]:

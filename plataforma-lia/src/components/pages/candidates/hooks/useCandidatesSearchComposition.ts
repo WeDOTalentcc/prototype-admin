@@ -63,6 +63,7 @@ export interface UseCandidatesSearchCompositionParams {
   setCreditsRemaining: (v: number | null) => void
   searchThreadId: string | undefined
   setSearchThreadId: (id: string | undefined) => void
+  setSearchFingerprint: (fp: string | undefined) => void
   hideViewedCandidatesFilter: ReturnType<typeof useHideViewedCandidates>['filterCandidates']
   talentFunnel: ReturnType<typeof useTalentFunnel>
   setSearchResults: Dispatch<SetStateAction<SearchResults>>
@@ -240,6 +241,7 @@ export function useCandidatesSearchComposition(params: UseCandidatesSearchCompos
     hasSearched: params.hasSearched,
     lastSuccessfulQuery: archetypesHook.state.lastSuccessfulQuery,
     setSearchThreadId: params.setSearchThreadId,
+    setSearchFingerprint: params.setSearchFingerprint,
     searchThreadId: params.searchThreadId,
     showExpandGlobalOption: params.showExpandGlobalOption,
     setShowExpandGlobalOption: params.setShowExpandGlobalOption,

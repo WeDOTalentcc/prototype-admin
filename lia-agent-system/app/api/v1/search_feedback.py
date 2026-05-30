@@ -27,6 +27,7 @@ class SubmitFeedbackRequest(WeDoBaseModel):
     candidate_score: float | None = None
     candidate_name: str | None = None
     reason: str | None = None
+    search_fingerprint: str | None = None
 
 
 def get_search_feedback_repo(db: AsyncSession = Depends(get_db)) -> SearchFeedbackRepository:
@@ -65,6 +66,8 @@ company_id: str = Depends(require_company_id)):
             return {"action": "toggled", "feedback": updated.to_dict()}
 
     created = await repo.create({
+        "company_id": company_id,
+        "search_fingerprint": body.search_fingerprint,
         "candidate_id": body.candidate_id,
         "feedback_type": body.feedback_type,
         "job_id": body.job_id,
@@ -75,6 +78,27 @@ company_id: str = Depends(require_company_id)):
         "reason": body.reason,
     })
     return {"action": "created", "feedback": created.to_dict()}
+
+
+@router.get("/by-search", response_model=None)
+async def get_feedback_by_search(
+    request: Request,
+    fingerprint: str,
+    repo: SearchFeedbackRepository = Depends(get_search_feedback_repo),
+    company_id: str = Depends(require_company_id),
+):
+    # Re-hidratacao (Fase 2): {candidate_id: feedback_type} do recrutador para os
+    # criterios desta busca (fingerprint). RLS isola por company.
+    user_id = getattr(request.state, "user_id", None)
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    rows = await repo.list_for_user_and_fingerprint(
+        user_id=user_id, search_fingerprint=fingerprint
+    )
+    return {
+        "feedbacks": {r.candidate_id: r.feedback_type for r in rows},
+        "total": len(rows),
+    }
 
 
 @router.get("/user/all", response_model=None)

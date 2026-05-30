@@ -37,6 +37,7 @@ from ._shared import (
     _build_candidate_data_from_dto,
     _evaluate_candidates_with_rubrics,
     _generate_fingerprint,
+    _generate_search_fingerprint,
     _get_job_requirements,
     _get_match_label,
     _normalize_name,
@@ -117,6 +118,8 @@ company_id: str = Depends(require_company_id)):
     4. Se job_id fornecido, avalia candidatos com rubricas
     """
     try:
+        # Fase 2: fingerprint dos criterios (ancora feedback/aprendizado a esta busca)
+        _search_fp = _generate_search_fingerprint(request.query, request.search_spec)
         hybrid_request = HybridSearchRequest(
             query=request.query,
             thread_id=request.thread_id,
@@ -210,6 +213,7 @@ company_id: str = Depends(require_company_id)):
             return SearchResponseDTO(
                 query=request.query,
                 thread_id=request.thread_id or "",
+                search_fingerprint=_search_fp,
                 candidates=[],
                 local_count=0,
                 pearch_count=0,
@@ -375,6 +379,7 @@ company_id: str = Depends(require_company_id)):
         return SearchResponseDTO(
             query=result.query,
             thread_id=result.thread_id,
+            search_fingerprint=_search_fp,
             candidates=candidates,
             local_count=result.local_count,
             pearch_count=_effective_pearch_count,

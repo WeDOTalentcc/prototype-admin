@@ -94,6 +94,7 @@ export function useCandidatesUIState() {
   })
   const [selectedTemplate, setSelectedTemplate] = useState('')
   const [searchThreadId, setSearchThreadId] = useState<string | undefined>(undefined)
+  const [searchFingerprint, setSearchFingerprint] = useState<string | undefined>(undefined)
   const [creditEstimate, setCreditEstimate] = useState<CreditEstimate | null>(null)
   const [pendingSearchRequest, setPendingSearchRequest] = useState<{
     query: string; entities?: ParsedEntities; mode?: SearchMode; metadata?: SearchMetadata
@@ -166,6 +167,7 @@ export function useCandidatesUIState() {
     searchResults, setSearchResults,
     selectedTemplate, setSelectedTemplate,
     searchThreadId, setSearchThreadId,
+    searchFingerprint, setSearchFingerprint,
     creditEstimate, setCreditEstimate,
     pendingSearchRequest, setPendingSearchRequest,
     // Preview
