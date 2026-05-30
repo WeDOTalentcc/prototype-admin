@@ -140,15 +140,16 @@ Branch Replit: .
 
 - ✅ **Fase 0 — P0-A** contrato (employment_type): commit  (+3 testes TDD).
 - ✅ **Fase 0 — P0-B** salário (salary_range do benchmark): commit  (+3 testes TDD).
-- ⏭️ **PRÓXIMA: Fase 1** — modo de triagem (compact 7 / complete 12 + tempo) como
-  primeira decisão no intake + regra canônica competências↔nº de perguntas.
-- ⬜ Fases 2 (CompetencyBenchmarkService), 3, 4 (inverter jd_enrichment), 5, 6 — pendentes.
+- ✅ **Fase 1** — modo de triagem no intake + SCREENING_MODE_CONFIG canonical: commit `4f2676b79`. (+29 testes TDD)
+  Intake gate captura modo do recrutador; competency_gate pula LLM quando modo já setado.
+- ⏭️ **PRÓXIMA: Fase 2** — CompetencyBenchmarkService (net-new, espelho do MarketBenchmarkService).
+- ⬜ Fases 3, 4 (inverter jd_enrichment), 5, 6 — pendentes.
 
 ### Como retomar (sessão nova)
 1. Abrir Claude Code no projeto.
 2. Colar: "Continue o épico do funil de criação de vaga. Leia o plano em
     no Replit (ssh replit-wedo-0405,
-   branch feat/benefits-prv-canonical). Fase 0 (P0-A+P0-B) está feita e commitada.
-   Comece a Fase 1, seguindo a cascata canonical-fix + lia-testing (TDD) + harness-engineering."
+   branch feat/benefits-prv-canonical). Fases 0 e 1 estão feitas e commitadas.
+   Comece a Fase 2 (CompetencyBenchmarkService), seguindo a cascata canonical-fix + lia-testing (TDD) + harness-engineering."
 3. Disciplina: ler código real no Replit antes de editar; TDD Red→Green; commit atômico
    por fase; stage só os arquivos da fase (agente paralelo ativo no workspace).
