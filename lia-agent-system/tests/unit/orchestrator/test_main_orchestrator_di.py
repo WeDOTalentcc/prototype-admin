@@ -41,7 +41,9 @@ class TestBackwardCompatibility:
 
         assert v2._plan_service is None
         assert v2._fallback_react_service is None
-        assert v2._policy_gate_service is None
+        # WT-2022 P3.1 (2026-05-21): _policy_gate_service auto-instancia V2
+        # default quando não injetado (antes era None) — Phase 0.5 sempre on.
+        assert v2._policy_gate_service is not None
 
 
 class TestServicesInjection:

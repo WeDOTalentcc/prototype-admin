@@ -18,6 +18,20 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
+@pytest.fixture(autouse=True)
+def _isolate_from_tenant_strict_mode(monkeypatch):
+    """Unit isolation (canonical-fix): o producer resolve_tenant_snippet_for_non_react
+    fail-closes em strict-mode sem tenant_context_snippet (hardening T-F).
+    Estes testes exercitam a invocação LLM / addenda / shape — NÃO a
+    resolução de tenant, que é coberta (a) no producer tenant_aware_agent e
+    (b) no teste test_tenant_context_snippet_passed_to_builder (provê snippet
+    explícito). Desliga strict-mode só nesta camada de teste."""
+    monkeypatch.setattr(
+        "app.shared.agents.tenant_aware_agent.is_tenant_strict_mode",
+        lambda: False,
+    )
+
+
 from app.orchestrator.services.fallback_react_service import (
     AGENT_TYPE_LABEL,
     AGENT_USED_LABEL,

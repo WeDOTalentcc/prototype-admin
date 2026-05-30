@@ -31,6 +31,7 @@ def test_global_action_types_match_fe_canonical_list():
         "wizard_step",
         "open_panel",
         "scroll_to",
+        "settings_open_tab",  # WT-2022 Fase 4: bridge chat -> SettingsPageEnhanced
     }
 
 

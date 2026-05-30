@@ -327,7 +327,9 @@ class TestPolicyGateServiceDI:
         gate = PolicyGateService(policy_engine=engine)
         assert gate.underlying_engine is engine
 
-    def test_init_requires_engine(self):
-        """Não há default — engine precisa ser injetado."""
-        with pytest.raises(TypeError):
-            PolicyGateService()  # type: ignore[call-arg]
+    def test_init_without_engine_creates_v2_default(self):
+        """WT-2022 P3.1: engine é OPCIONAL — sem engine, cria V2 default
+        (PolicyEngineService) em vez de exigir injeção. Não levanta
+        TypeError (docstring de PolicyGateService.__init__ confirma)."""
+        gate = PolicyGateService()
+        assert gate is not None

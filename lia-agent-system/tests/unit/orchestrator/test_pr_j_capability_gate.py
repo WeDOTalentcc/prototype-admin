@@ -24,6 +24,26 @@ from app.orchestrator.context.context_adapter import UniversalContext
 from app.orchestrator.execution.main_orchestrator import ChatResponse, MainOrchestrator
 
 
+def _allow_policy_gate():
+    """Mock policy gate que sempre permite — isola do PolicyGateService V2
+    real (auto-instanciado pelo MainOrchestrator desde WT-2022 P3.1), cujo
+    engine faz chamadas async/DB incompatíveis com unit test. O gate é
+    incidental a estes testes (que exercitam a Rail A capability gate)."""
+    gate = MagicMock()
+    gate.validate = AsyncMock(return_value=MagicMock(allowed=True))
+    return gate
+
+
+@pytest.fixture(autouse=True)
+def _enable_v1_delegation(monkeypatch):
+    """WT-2022: Phase 2 V1 delegation está OFF por default
+    (LIA_PHASE_2_V1_ENABLED). Estes testes usam mock_v1.process_request como
+    observável de 'pipeline normal prosseguiu além do gate', então habilitam a
+    delegação V1 explicitamente. O que está sob teste é a Rail A capability
+    gate (bloqueia vs deixa passar), não V1-vs-ReAct."""
+    monkeypatch.setenv("LIA_PHASE_2_V1_ENABLED", "true")
+
+
 # ─── Helpers ──────────────────────────────────────────────────────────────
 
 
@@ -80,7 +100,7 @@ class TestRailACapabilityGateWired:
         NÃO deve chamar process_request do LLM.
         """
         mock_v1 = _make_mock_orchestrator()
-        orch = MainOrchestrator(mock_v1)
+        orch = MainOrchestrator(mock_v1, policy_gate_service=_allow_policy_gate())
         ctx = _make_ctx(intent_hint="add_candidate")
         mock_db = MagicMock()
 
@@ -118,7 +138,7 @@ class TestRailACapabilityGateWired:
     async def test_interview_scheduling_retorna_open_modal(self):
         """interview_scheduling (chat_executable=False) → open_modal sem LLM."""
         mock_v1 = _make_mock_orchestrator()
-        orch = MainOrchestrator(mock_v1)
+        orch = MainOrchestrator(mock_v1, policy_gate_service=_allow_policy_gate())
         ctx = _make_ctx(intent_hint="reschedule_interview")
         mock_db = MagicMock()
 
@@ -147,7 +167,7 @@ class TestRailACapabilityGateWired:
     async def test_navigate_fallback_retorna_navigate_to(self):
         """navigate_fallback (sem modal_id) retorna ui_action=navigate_to."""
         mock_v1 = _make_mock_orchestrator()
-        orch = MainOrchestrator(mock_v1)
+        orch = MainOrchestrator(mock_v1, policy_gate_service=_allow_policy_gate())
         ctx = _make_ctx(intent_hint="list_talent_pools")
         mock_db = MagicMock()
 
@@ -176,7 +196,7 @@ class TestRailACapabilityGateWired:
     async def test_chat_executable_intent_continua_pipeline_normal(self):
         """Quando check_rail_a_capability retorna None, pipeline continua normalmente."""
         mock_v1 = _make_mock_orchestrator()
-        orch = MainOrchestrator(mock_v1)
+        orch = MainOrchestrator(mock_v1, policy_gate_service=_allow_policy_gate())
         ctx = _make_ctx(intent_hint="search_candidates")
         mock_db = MagicMock()
 
@@ -216,7 +236,7 @@ class TestRailACapabilityGateWired:
         o gate é otimização, não guardrail de segurança.
         """
         mock_v1 = _make_mock_orchestrator()
-        orch = MainOrchestrator(mock_v1)
+        orch = MainOrchestrator(mock_v1, policy_gate_service=_allow_policy_gate())
         ctx = _make_ctx(intent_hint="add_candidate")
         mock_db = MagicMock()
 
@@ -252,7 +272,7 @@ class TestRailACapabilityGateWired:
     async def test_mensagem_sem_metadata_nao_aciona_gate(self):
         """Mensagem normal (sem metadata Rail A) não deve chamar o capability check."""
         mock_v1 = _make_mock_orchestrator()
-        orch = MainOrchestrator(mock_v1)
+        orch = MainOrchestrator(mock_v1, policy_gate_service=_allow_policy_gate())
         # ctx SEM metadata (extra vazio)
         ctx = UniversalContext(
             message="buscar candidatos com Python",
@@ -299,7 +319,7 @@ class TestRailACapabilityGateWired:
     async def test_metadata_source_diferente_de_rail_a_nao_aciona_gate(self):
         """Metadata com source != rail_a não deve disparar o capability gate."""
         mock_v1 = _make_mock_orchestrator()
-        orch = MainOrchestrator(mock_v1)
+        orch = MainOrchestrator(mock_v1, policy_gate_service=_allow_policy_gate())
         # ctx com metadata de outra origem
         ctx = _make_ctx(intent_hint="add_candidate", source="other_surface")
         mock_db = MagicMock()
