@@ -98,6 +98,21 @@ function getStoredWidth(): number {
   return DEFAULT_WIDTH;
 }
 
+// Painel lateral redimensionável (pedido Paulo 2026-05-30). Largura própria,
+// persistida com TTL "long" como a do chat.
+const PANEL_WIDTH_KEY = "lia-panel-width";
+const PANEL_DEFAULT_WIDTH = 340;
+const PANEL_MIN_WIDTH = 280;
+const PANEL_MAX_WIDTH = 560;
+
+function getStoredPanelWidth(): number {
+  const stored = getPersisted<number | null>(PANEL_WIDTH_KEY, null);
+  if (typeof stored === "number" && stored >= PANEL_MIN_WIDTH && stored <= PANEL_MAX_WIDTH) {
+    return stored;
+  }
+  return PANEL_DEFAULT_WIDTH;
+}
+
 interface Props {
   renderMode?: "inline" | "overlay";
   initialMode?: ChatMode;
@@ -185,6 +200,35 @@ export function UnifiedChat({
   // Fase 5b — acumula os campos estruturados do painel (ficha viva) para enviar
   // como context.right_panel_form no próximo turno (loop real dos chips).
   const collectedDataRef = useRef<Record<string, unknown>>({});
+
+  // Painel lateral redimensionável (delta-based: robusto a posições absolutas).
+  const [dynamicPanelWidthPx, setDynamicPanelWidthPx] = useState(getStoredPanelWidth);
+  const panelWidthRef = useRef(dynamicPanelWidthPx);
+  const startPanelResize = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    const startX = e.clientX;
+    const startWidth = panelWidthRef.current;
+    const onMove = (ev: MouseEvent) => {
+      // Arrastar para a ESQUERDA (clientX diminui) alarga o painel.
+      const next = Math.min(
+        PANEL_MAX_WIDTH,
+        Math.max(PANEL_MIN_WIDTH, startWidth + (startX - ev.clientX)),
+      );
+      panelWidthRef.current = next;
+      setDynamicPanelWidthPx(next);
+    };
+    const onUp = () => {
+      setPersisted(PANEL_WIDTH_KEY, panelWidthRef.current);
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+      document.removeEventListener("mousemove", onMove);
+      document.removeEventListener("mouseup", onUp);
+    };
+    document.body.style.cursor = "ew-resize";
+    document.body.style.userSelect = "none";
+    document.addEventListener("mousemove", onMove);
+    document.addEventListener("mouseup", onUp);
+  }, []);
 
   useEffect(() => {
     if (!isResizing) return;
@@ -827,7 +871,7 @@ export function UnifiedChat({
   const isInline = renderMode === "inline";
   const effectiveMode: ChatMode = isInline ? "sidebar" : mode;
 
-  const dynamicPanelWidth = hasDynamicPanel ? 340 : 0;
+  const dynamicPanelWidth = hasDynamicPanel ? dynamicPanelWidthPx : 0;
   const inlineWidth = isInline ? sidebarWidthPx + dynamicPanelWidth : undefined;
 
   return (
@@ -1111,13 +1155,19 @@ export function UnifiedChat({
       {/* Split View: DynamicContextPanel — wider in fullscreen to use available space */}
       {hasDynamicPanel && (
         <div
-          className={cn(
-            // Card inset flutuante (estilo workspace contido): respiro da borda
-            // + do chat; o card arredondado abaixo é a superfície real.
-            "flex-shrink-0 flex p-2",
-            effectiveMode === "fullscreen" ? "w-[420px]" : "w-[340px]",
-          )}
+          className="flex-shrink-0 flex p-2 relative"
+          style={{ width: dynamicPanelWidthPx }}
         >
+          {/* Handle de redimensionamento (borda chat/painel) — delta-based */}
+          <div
+            className="absolute left-0 top-0 w-1.5 h-full cursor-ew-resize z-10 group hover:bg-wedo-cyan/20 active:bg-wedo-cyan/30 transition-colors"
+            onMouseDown={startPanelResize}
+            role="separator"
+            aria-orientation="vertical"
+            aria-label="Redimensionar painel"
+          >
+            <div className="absolute left-0.5 top-1/2 -translate-y-1/2 w-0.5 h-8 rounded-full bg-lia-border-subtle group-hover:bg-wedo-cyan transition-colors" />
+          </div>
           <div className="flex-1 min-w-0 rounded-xl border border-lia-border-subtle bg-lia-bg-primary shadow-lg shadow-black/10 overflow-hidden">
           <DynamicContextPanel
             stage={(dynamicPanel?.stage as WizardStage) ?? null}
