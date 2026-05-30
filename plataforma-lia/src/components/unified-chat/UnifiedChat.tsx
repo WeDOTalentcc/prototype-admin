@@ -55,7 +55,6 @@ import {
   SPLIT_STAGES,
 } from "./wizard/DynamicContextPanel";
 import { ProgressiveDisclosure } from "./wizard/ProgressiveDisclosure";
-import { TaskContextBar } from "./wizard/TaskContextBar";
 import { WizardProgressBar } from "./wizard/WizardProgressBar";
 import { PipelineTemplateSuggestion } from "./wizard/PipelineTemplateSuggestion";
 import { WizardPipelineTemplateStagePanel } from "./wizard/WizardPipelineTemplateStagePanel";
@@ -1107,17 +1106,6 @@ export function UnifiedChat({
           onExecuteSlashCommand={handleNewChat}
         />
 
-        {/* E.5: TaskContextBar — shown when wizard is active, below the input */}
-        {wizardActive && activeTaskLabel && (
-          <div className="px-2 pb-2">
-            <TaskContextBar
-              currentAction={activeTaskLabel}
-              onSwitchTask={(taskId) => {
-                void handleSelectSession(taskId)
-              }}
-            />
-          </div>
-        )}
       </div>
 
       {/* Split View: DynamicContextPanel — wider in fullscreen to use available space */}
