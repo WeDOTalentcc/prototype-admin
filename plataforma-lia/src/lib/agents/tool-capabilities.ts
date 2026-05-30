@@ -43,14 +43,27 @@ export const TOOL_CAPABILITY_PT: Record<string, string> = {
  * escolhe um rótulo narrativo por grupo presente (dedup conceitual), em vez de
  * listar muitos verbos soltos. Ordem dos grupos = ordem de exibição dos bullets.
  */
-type CapabilityGroup =
+export type CapabilityGroup =
   | "find"
   | "analyze"
   | "act"
   | "communicate"
   | "report"
 
-const TOOL_GROUP: Record<string, CapabilityGroup> = {
+/**
+ * Ordem canonical dos grupos. Usada tanto pelo resumo (`summarizeCapabilities`)
+ * quanto pelo seletor de ferramentas do form (`CreateCustomAgentModal`), para
+ * que a ordem de exibição seja consistente em todas as surfaces do Studio.
+ */
+export const CAPABILITY_GROUP_ORDER: readonly CapabilityGroup[] = [
+  "find",
+  "analyze",
+  "act",
+  "communicate",
+  "report",
+] as const
+
+export const TOOL_GROUP: Record<string, CapabilityGroup> = {
   search_candidates: "find",
   search_talent_pool: "find",
   list_jobs: "find",
@@ -90,7 +103,6 @@ export function summarizeCapabilities(
 ): string[] {
   if (!tools || tools.length === 0) return []
 
-  const order: CapabilityGroup[] = ["find", "analyze", "act", "communicate", "report"]
   const present = new Set<CapabilityGroup>()
 
   for (const tool of tools) {
@@ -98,7 +110,7 @@ export function summarizeCapabilities(
     if (group) present.add(group)
   }
 
-  const bullets = order
+  const bullets = CAPABILITY_GROUP_ORDER
     .filter((g) => present.has(g))
     .map((g) => GROUP_SUMMARY_PT[g])
 

@@ -1,9 +1,12 @@
 "use client"
 
-import React, { useState, useEffect, useCallback } from "react"
+import React, { useState, useEffect, useCallback, useMemo } from "react"
 import { useTranslations } from "next-intl"
-import { Bot, ChevronRight, Copy, Edit3, ExternalLink, Loader2, MoreVertical, Pause, Play, Plus, Settings, Store, TestTube2, Trash2 } from "lucide-react"
+import { Bot, ChevronRight, Copy, Edit3, ExternalLink, Loader2, MoreVertical, Pause, Play, Plus, Settings, Sliders, Store, TestTube2, Trash2 } from "lucide-react"
 import { cn } from "@/lib/utils"
+// Sprint 4 Fase 3 (Studio Experience) — config humana `/edit`. Ferramentas como
+// checkboxes agrupados em PT (TOOL_GROUP/CAPABILITY_GROUP_ORDER), nunca slug cru.
+import { TOOL_GROUP, CAPABILITY_GROUP_ORDER, type CapabilityGroup } from "@/lib/agents/tool-capabilities"
 import { ConfirmAlertDialog } from "@/components/agent-studio/confirm-alert-dialog"
 import { getCustomAgentStatusConfig } from "@/lib/agent-studio/status-config"
 import { Button } from "@/components/ui/button"
@@ -297,6 +300,50 @@ export default function CustomAgentsTab() {
   )
 }
 
+// Sprint 4 Fase 3 — "Estilo de resposta" amigável mapeia para valores de
+// temperatura que o backend espera. O recrutador NUNCA vê o número; a UI fala
+// "Consistente / Equilibrado / Criativo". Mapeamento bidirecional canonical.
+type ResponseStyle = "consistent" | "balanced" | "creative"
+
+const RESPONSE_STYLE_TO_TEMPERATURE: Record<ResponseStyle, number> = {
+  consistent: 0.2,
+  balanced: 0.5,
+  creative: 0.8,
+}
+
+const RESPONSE_STYLE_ORDER: readonly ResponseStyle[] = ["consistent", "balanced", "creative"] as const
+
+/** Inverte um valor de temperatura numérico no preset mais próximo. */
+function temperatureToResponseStyle(value: number | undefined): ResponseStyle {
+  if (value == null) return "balanced"
+  let closest: ResponseStyle = "balanced"
+  let smallestDelta = Number.POSITIVE_INFINITY
+  for (const style of RESPONSE_STYLE_ORDER) {
+    const delta = Math.abs(RESPONSE_STYLE_TO_TEMPERATURE[style] - value)
+    if (delta < smallestDelta) {
+      smallestDelta = delta
+      closest = style
+    }
+  }
+  return closest
+}
+
+/** i18n key suffix por preset (responseStyleLabel/Desc + ícone semântico). */
+const RESPONSE_STYLE_I18N: Record<ResponseStyle, { label: string; desc: string }> = {
+  consistent: { label: "styleConsistent", desc: "styleConsistentDesc" },
+  balanced: { label: "styleBalanced", desc: "styleBalancedDesc" },
+  creative: { label: "styleCreative", desc: "styleCreativeDesc" },
+}
+
+/** i18n key suffix por grupo de capacidade (cabeçalho do bloco de checkboxes). */
+const CAPABILITY_GROUP_I18N: Record<CapabilityGroup, string> = {
+  find: "groupFind",
+  analyze: "groupAnalyze",
+  act: "groupAct",
+  communicate: "groupCommunicate",
+  report: "groupReport",
+}
+
 export function CreateCustomAgentModal({
   agent, onClose, onSaved,
 }: {
@@ -312,8 +359,15 @@ export function CreateCustomAgentModal({
   const [systemPrompt, setSystemPrompt] = useState(agent?.system_prompt || "")
   const [domain, setDomain] = useState(agent?.domain || "general")
   const [maxSteps, setMaxSteps] = useState(agent?.max_steps || 8)
-  const [temperature, setTemperature] = useState(agent?.temperature || 0.7)
-  const [toolsInput, setToolsInput] = useState((agent?.allowed_tools || []).join(", "))
+  // Estilo de resposta (preset amigável) deriva da temperatura existente ao
+  // editar; no submit volta a número via RESPONSE_STYLE_TO_TEMPERATURE.
+  const [responseStyle, setResponseStyle] = useState<ResponseStyle>(
+    () => temperatureToResponseStyle(agent?.temperature)
+  )
+  // Ferramentas como Set de slugs canonical (checkbox marcado = slug presente).
+  const [selectedTools, setSelectedTools] = useState<Set<string>>(
+    () => new Set(agent?.allowed_tools || [])
+  )
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState("")
   const [availableTools, setAvailableTools] = useState<string[]>([])
@@ -325,11 +379,35 @@ export function CreateCustomAgentModal({
       .catch(() => {})
   }, [])
 
+  const toggleTool = useCallback((slug: string) => {
+    setSelectedTools(prev => {
+      const next = new Set(prev)
+      if (next.has(slug)) next.delete(slug)
+      else next.add(slug)
+      return next
+    })
+  }, [])
+
+  // Universo de tools a oferecer como checkbox: o que o backend expõe (filtrado
+  // ao que tem grupo/rótulo PT conhecido) + tools já marcadas no agente sendo
+  // editado (garante que nada selecionado some). Fallback: catálogo canonical.
+  const toolUniverse = useMemo(() => {
+    const fromBackend = availableTools.filter(slug => TOOL_GROUP[slug])
+    const base = fromBackend.length > 0 ? fromBackend : Object.keys(TOOL_GROUP)
+    const universe = new Set(base)
+    // Preserva tools já atribuídas ao agente mesmo que o backend não as liste.
+    for (const slug of selectedTools) {
+      if (TOOL_GROUP[slug]) universe.add(slug)
+    }
+    return Array.from(universe)
+  }, [availableTools, selectedTools])
+
   const handleSave = async () => {
     setIsSaving(true)
     setError("")
     try {
-      const allowedTools = toolsInput.split(",").map(t => t.trim()).filter(Boolean)
+      // Contrato backend preservado: slug array + número de temperatura, exatos.
+      const allowedTools = Array.from(selectedTools)
       const body = {
         name,
         role,
@@ -338,7 +416,7 @@ export function CreateCustomAgentModal({
         allowed_tools: allowedTools,
         domain,
         max_steps: maxSteps,
-        temperature,
+        temperature: RESPONSE_STYLE_TO_TEMPERATURE[responseStyle],
       }
 
       const url = isEditing
@@ -379,107 +457,162 @@ export function CreateCustomAgentModal({
         <div className="space-y-4 py-2">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-xs font-semibold text-lia-text-primary mb-1 block">{t('name')}</label>
+              <label htmlFor="agent-name" className="text-xs font-semibold text-lia-text-primary mb-1 block">{t('name')}</label>
               <input
+                id="agent-name"
                 type="text" value={name} onChange={e => setName(e.target.value)}
                 placeholder={t('namePlaceholder')}
-                className="w-full border border-lia-border-subtle rounded-lg px-3 py-2 text-sm bg-lia-bg-secondary text-lia-text-primary placeholder:text-lia-text-disabled focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/30"
+                className="w-full border border-lia-border-subtle rounded-md px-3 py-2 text-sm bg-lia-bg-secondary text-lia-text-primary placeholder:text-lia-text-disabled focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/30"
               />
             </div>
             <div>
-              <label className="text-xs font-semibold text-lia-text-primary mb-1 block">{t('role')}</label>
+              <label htmlFor="agent-role" className="text-xs font-semibold text-lia-text-primary mb-1 block">{t('role')}</label>
               <input
+                id="agent-role"
                 type="text" value={role} onChange={e => setRole(e.target.value)}
                 placeholder={t('rolePlaceholder')}
-                className="w-full border border-lia-border-subtle rounded-lg px-3 py-2 text-sm bg-lia-bg-secondary text-lia-text-primary placeholder:text-lia-text-disabled focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/30"
+                className="w-full border border-lia-border-subtle rounded-md px-3 py-2 text-sm bg-lia-bg-secondary text-lia-text-primary placeholder:text-lia-text-disabled focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/30"
               />
             </div>
           </div>
 
           <div>
-            <label className="text-xs font-semibold text-lia-text-primary mb-1 block">{t('description')}</label>
+            <label htmlFor="agent-description" className="text-xs font-semibold text-lia-text-primary mb-1 block">{t('description')}</label>
             <input
+              id="agent-description"
               type="text" value={description} onChange={e => setDescription(e.target.value)}
               placeholder={t('descriptionPlaceholder')}
-              className="w-full border border-lia-border-subtle rounded-lg px-3 py-2 text-sm bg-lia-bg-secondary text-lia-text-primary placeholder:text-lia-text-disabled focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/30"
+              className="w-full border border-lia-border-subtle rounded-md px-3 py-2 text-sm bg-lia-bg-secondary text-lia-text-primary placeholder:text-lia-text-disabled focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/30"
             />
           </div>
 
+          {/* Instruções do agente — antes "System prompt" mono. Humanizado:
+              label + placeholder didáticos, sem fonte mono. Mesmo campo, só UI. */}
           <div>
-            <label className="text-xs font-semibold text-lia-text-primary mb-1 block">{t('systemPrompt')}</label>
+            <label htmlFor="agent-instructions" className="text-xs font-semibold text-lia-text-primary mb-1 block">{t('instructionsLabel')}</label>
             <textarea
+              id="agent-instructions"
               value={systemPrompt} onChange={e => setSystemPrompt(e.target.value)}
-              rows={6}
-              placeholder={t('systemPromptPlaceholder') as string}
-              className="w-full border border-lia-border-subtle rounded-lg px-3 py-2 text-sm bg-lia-bg-secondary text-lia-text-primary placeholder:text-lia-text-disabled focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/30 resize-none font-mono"
+              rows={5}
+              placeholder={t('instructionsPlaceholder') as string}
+              className="w-full border border-lia-border-subtle rounded-md px-3 py-2 text-sm leading-relaxed bg-lia-bg-secondary text-lia-text-primary placeholder:text-lia-text-disabled focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/30 resize-none"
             />
+            <p className="text-[11px] text-lia-text-secondary mt-1.5">{t('instructionsHelp')}</p>
           </div>
 
+          {/* Ferramentas — checkboxes agrupados em PT (read/analyze/act/communicate/report).
+              Slug interno preservado; só o rótulo é PT (tools.<slug> + groupX). */}
+          <fieldset>
+            <legend className="text-xs font-semibold text-lia-text-primary mb-1 block">{t('toolsLabel')}</legend>
+            <p className="text-[11px] text-lia-text-secondary mb-2.5">{t('toolsHelp')}</p>
+            <div className="space-y-3">
+              {CAPABILITY_GROUP_ORDER.map(group => {
+                const groupTools = toolUniverse.filter(slug => TOOL_GROUP[slug] === group)
+                if (groupTools.length === 0) return null
+                return (
+                  <div key={group}>
+                    <p className="text-[10px] font-semibold uppercase tracking-wide text-lia-text-disabled mb-1.5">
+                      {t(CAPABILITY_GROUP_I18N[group])}
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                      {groupTools.map(slug => {
+                        const checked = selectedTools.has(slug)
+                        return (
+                          <label
+                            key={slug}
+                            className={cn(
+                              "flex items-center gap-2 rounded-md border px-3 py-2 text-sm cursor-pointer transition-colors",
+                              checked
+                                ? "border-lia-btn-primary-bg bg-lia-bg-tertiary text-lia-text-primary"
+                                : "border-lia-border-subtle bg-lia-bg-secondary text-lia-text-secondary hover:bg-lia-bg-tertiary"
+                            )}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={checked}
+                              onChange={() => toggleTool(slug)}
+                              className="h-4 w-4 shrink-0 rounded border-lia-border-medium accent-lia-btn-primary-bg"
+                            />
+                            <span>{t(`tools.${slug}`)}</span>
+                          </label>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </fieldset>
+
+          {/* Estilo de resposta — segmented Consistente/Equilibrado/Criativo.
+              Mapeia pra temperatura no submit. Recrutador não vê o número. */}
           <div>
-            <label className="text-xs font-semibold text-lia-text-primary mb-1 block">
-              {t('allowedTools')}
-              {availableTools.length > 0 && (
-                <span className="font-normal text-lia-text-disabled ml-1">({availableTools.length} {t('available')})</span>
-              )}
-            </label>
-            <input
-              type="text" value={toolsInput} onChange={e => setToolsInput(e.target.value)}
-              placeholder="search_candidates, list_jobs, get_candidate_details"
-              className="w-full border border-lia-border-subtle rounded-lg px-3 py-2 text-sm bg-lia-bg-secondary text-lia-text-primary placeholder:text-lia-text-disabled focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/30"
-            />
-            {availableTools.length > 0 && (
-              <div className="flex flex-wrap gap-1 mt-2">
-                {availableTools.slice(0, 10).map(t => (
+            <span className="text-xs font-semibold text-lia-text-primary mb-1 block">{t('responseStyleLabel')}</span>
+            <div role="radiogroup" aria-label={t('responseStyleLabel')} className="grid grid-cols-3 gap-2">
+              {RESPONSE_STYLE_ORDER.map(style => {
+                const active = responseStyle === style
+                return (
                   <button
-                    key={t}
+                    key={style}
                     type="button"
-                    onClick={() => {
-                      const current = toolsInput.split(",").map(s => s.trim()).filter(Boolean)
-                      if (!current.includes(t)) {
-                        setToolsInput([...current, t].join(", "))
-                      }
-                    }}
-                    className="px-2 py-0.5 rounded text-[10px] bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-interactive-active transition-colors cursor-pointer"
+                    role="radio"
+                    aria-checked={active}
+                    onClick={() => setResponseStyle(style)}
+                    title={t(RESPONSE_STYLE_I18N[style].desc)}
+                    className={cn(
+                      "rounded-md border px-3 py-2 text-xs font-medium text-center transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-lia-btn-primary-bg/30",
+                      active
+                        ? "border-lia-btn-primary-bg bg-lia-bg-tertiary text-lia-text-primary"
+                        : "border-lia-border-subtle bg-lia-bg-secondary text-lia-text-secondary hover:bg-lia-bg-tertiary"
+                    )}
                   >
-                    + {t}
+                    {t(RESPONSE_STYLE_I18N[style].label)}
                   </button>
-                ))}
-              </div>
-            )}
+                )
+              })}
+            </div>
+            <p className="text-[11px] text-lia-text-secondary mt-1.5">{t(RESPONSE_STYLE_I18N[responseStyle].desc)}</p>
           </div>
 
-          <div className="grid grid-cols-3 gap-4">
-            <div>
-              <label className="text-xs font-semibold text-lia-text-primary mb-1 block">{t('domainLabel')}</label>
-              <select
-                value={domain} onChange={e => setDomain(e.target.value)}
-                className="w-full border border-lia-border-subtle rounded-lg px-3 py-2 text-sm bg-lia-bg-secondary text-lia-text-primary focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/30"
-              >
-                <option value="general">{t('domainGeneral')}</option>
-                <option value="sourcing">{t('domainSourcing')}</option>
-                <option value="pipeline">{t('domainPipeline')}</option>
-                <option value="analytics">{t('domainAnalytics')}</option>
-                <option value="communication">{t('domainCommunication')}</option>
-                <option value="screening">{t('domainScreening')}</option>
-              </select>
+          {/* Configuração avançada — disclosure recolhido por default. Ajustes
+              que o recrutador raramente toca: área (domain) + limite de ações. */}
+          <details className="rounded-md border border-lia-border-subtle bg-lia-bg-secondary">
+            <summary className="flex items-center gap-2 px-3 py-2.5 text-xs font-semibold text-lia-text-primary cursor-pointer select-none list-none">
+              <Sliders className="w-3.5 h-3.5 text-graphite" />
+              {t('advancedConfig')}
+            </summary>
+            <div className="px-3 pb-3 pt-1 space-y-3 border-t border-lia-border-subtle">
+              <p className="text-[11px] text-lia-text-secondary pt-2">{t('advancedConfigHelp')}</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="agent-domain" className="text-xs font-semibold text-lia-text-primary mb-1 block">{t('domainLabel')}</label>
+                  <select
+                    id="agent-domain"
+                    value={domain} onChange={e => setDomain(e.target.value)}
+                    className="w-full border border-lia-border-subtle rounded-md px-3 py-2 text-sm bg-lia-bg-primary text-lia-text-primary focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/30"
+                  >
+                    <option value="general">{t('domainGeneral')}</option>
+                    <option value="sourcing">{t('domainSourcing')}</option>
+                    <option value="pipeline">{t('domainPipeline')}</option>
+                    <option value="analytics">{t('domainAnalytics')}</option>
+                    <option value="communication">{t('domainCommunication')}</option>
+                    <option value="screening">{t('domainScreening')}</option>
+                  </select>
+                  <p className="text-[11px] text-lia-text-secondary mt-1">{t('domainHelp')}</p>
+                </div>
+                <div>
+                  <label htmlFor="agent-max-steps" className="text-xs font-semibold text-lia-text-primary mb-1 block">{t('maxStepsLabel')}</label>
+                  <input
+                    id="agent-max-steps"
+                    type="number" value={maxSteps} onChange={e => setMaxSteps(Number(e.target.value))}
+                    min={1} max={20}
+                    className="w-full border border-lia-border-subtle rounded-md px-3 py-2 text-sm bg-lia-bg-primary text-lia-text-primary focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/30"
+                  />
+                  <p className="text-[11px] text-lia-text-secondary mt-1">{t('maxStepsHelp')}</p>
+                </div>
+              </div>
             </div>
-            <div>
-              <label className="text-xs font-semibold text-lia-text-primary mb-1 block">{t('maxSteps')}</label>
-              <input
-                type="number" value={maxSteps} onChange={e => setMaxSteps(Number(e.target.value))}
-                min={1} max={20}
-                className="w-full border border-lia-border-subtle rounded-lg px-3 py-2 text-sm bg-lia-bg-secondary text-lia-text-primary focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/30"
-              />
-            </div>
-            <div>
-              <label className="text-xs font-semibold text-lia-text-primary mb-1 block">{t('temperature')}</label>
-              <input
-                type="number" value={temperature} onChange={e => setTemperature(Number(e.target.value))}
-                min={0} max={2} step={0.1}
-                className="w-full border border-lia-border-subtle rounded-lg px-3 py-2 text-sm bg-lia-bg-secondary text-lia-text-primary focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/30"
-              />
-            </div>
-          </div>
+          </details>
 
           {error && (
             <div className="text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/20 rounded-lg px-3 py-2">
