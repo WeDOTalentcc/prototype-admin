@@ -262,6 +262,14 @@ class JobCreationState(TypedDict, total=False):
     intake_salary_suggested: Optional[bool]      # True após sugestão salarial emitida
     intake_gate_seen_user_query: Optional[str]   # evita re-processar mesma msg (anti-loop)
 
+    # --- Fase 3 (2026-05-30): confirmação assistida de competências ---
+    # intake_gate sugere competências (via CompetencyBenchmarkService, Fase 2),
+    # dimensionadas pelo modo; recruiter confirma/edita via painel (Fase 5).
+    # confirmed_* são consumidos pelo jd_enrichment invertido (Fase 4).
+    intake_competencies_suggested: Optional[bool]       # True após sugestão de competências emitida
+    confirmed_technical_competencies: List[Dict[str, Any]]   # [{skill, contexto}] confirmadas
+    confirmed_behavioral_competencies: List[Dict[str, Any]]  # [{competencia, contexto, trait_big_five}]
+
 
 
     # --- Pipeline Template (Sprint Pipeline Templates 2026-05-26 — Opção B) ---

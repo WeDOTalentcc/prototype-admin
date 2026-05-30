@@ -155,6 +155,91 @@ def _safe_fetch_salary(
         return None
 
 
+_COMPETENCY_TIMEOUT_S = 12.0
+
+
+def _suggest_competencies_safe(
+    title: Optional[str],
+    seniority: Optional[str],
+    department: Optional[str],
+    screening_mode: str,
+    company_id: Optional[str],
+) -> Optional[Dict[str, Any]]:
+    """Sugere competencias via CompetencyBenchmarkService (Fase 2). Fail-open.
+
+    Dimensionado pelo modo. company_id do contexto (multi-tenancy). Retorna None
+    em timeout/erro -- a aprovacao NUNCA e bloqueada por falha na sugestao.
+    """
+    from app.domains.job_creation.helpers.async_audit import run_coro_in_threadpool
+
+    try:
+        async def _fetch() -> Optional[Dict[str, Any]]:
+            from app.domains.analytics.services.competency_benchmark_service import (
+                get_competency_benchmark_service,
+            )
+            svc = get_competency_benchmark_service()
+            return await svc.suggest_competencies(
+                title=title or "",
+                seniority=seniority,
+                department=department,
+                screening_mode=screening_mode,
+                company_id=company_id,
+            )
+
+        return run_coro_in_threadpool(_fetch, timeout=_COMPETENCY_TIMEOUT_S)
+    except Exception as exc:  # noqa: BLE001 -- fail-open (nao bloqueia aprovacao)
+        logger.warning(
+            "[JobCreation:intake_gate] competency suggestion failed (fail-open): %s", exc,
+        )
+        return None
+
+
+def _resolve_confirmed_competencies(
+    state: JobCreationState,
+    title: Optional[str],
+    seniority: Optional[str],
+    screening_mode: str,
+) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], Optional[Dict[str, Any]]]:
+    """Resolve competencias confirmadas para o estado de aprovacao.
+
+    Precedencia:
+      1. Edicoes do recruiter via right_panel_form (recognition > recall) -- vencem.
+      2. Sugestao do CompetencyBenchmarkService (accept-all default).
+      3. Fail-open: listas vazias se servico indisponivel (jd_enrichment Fase 4
+         cai no comportamento legado de gerar competencias).
+
+    Retorna (confirmed_technical, confirmed_behavioral, suggestion_payload).
+    suggestion_payload vai ao ws_stage_payload.data.suggestions_data.competencies
+    para o painel renderizar como chips editaveis (Fase 5).
+    """
+    panel = state.get("right_panel_form") or {}
+    panel_tech = panel.get("confirmed_technical_competencies")
+    panel_behav = panel.get("confirmed_behavioral_competencies")
+
+    # 1) Painel tem precedencia quando o recruiter editou.
+    if panel_tech is not None or panel_behav is not None:
+        return (
+            list(panel_tech or []),
+            list(panel_behav or []),
+            None,
+        )
+
+    # 2) Sugestao dimensionada pelo modo.
+    suggestion = _suggest_competencies_safe(
+        title=title,
+        seniority=seniority,
+        department=state.get("parsed_department"),
+        screening_mode=screening_mode,
+        company_id=str(state.get("workspace_id") or state.get("company_id") or "") or None,
+    )
+    if not suggestion:
+        return [], [], None
+
+    technical = list(suggestion.get("technical") or [])
+    behavioral = list(suggestion.get("behavioral") or [])
+    return technical, behavioral, {"technical": technical, "behavioral": behavioral}
+
+
 def _build_permission_message(
     benchmark,
     title: Optional[str],
@@ -392,16 +477,32 @@ def intake_gate_node(state: JobCreationState) -> JobCreationState:
             reply = msg("intake_gate.proceeding_with_mode", title=parsed_title or "a vaga", mode_label=mode_label)
         else:
             reply = msg("intake_gate.proceeding", title=parsed_title or "a vaga")
+
+        # -- Fase 3: confirmacao assistida de competencias (nao-bloqueante) --
+        # Dimensiona pelo modo escolhido; default compact quando ausente
+        # (competency_gate decide o modo final no path sem escolha no intake).
+        eff_mode = base.get("screening_mode") or state.get("screening_mode") or "compact"
+        conf_tech, conf_behav, comp_payload = _resolve_confirmed_competencies(
+            state, parsed_title, parsed_seniority, eff_mode,
+        )
+
+        data: Dict[str, Any] = {"message": reply}
+        if comp_payload:
+            data["suggestions_data"] = {"competencies": comp_payload}
+
         return {
             **state,
             **base,
             "intake_approved": True,
             "requires_approval": False,
+            "intake_competencies_suggested": True,
+            "confirmed_technical_competencies": conf_tech,
+            "confirmed_behavioral_competencies": conf_behav,
             "ws_stage_payload": build_ws_stage_payload(
                 stage="intake",
                 completeness=calculate_completeness("intake"),
                 requires_approval=False,
-                data={"message": reply},
+                data=data,
             ),
         }
 
