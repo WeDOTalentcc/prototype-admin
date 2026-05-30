@@ -530,9 +530,16 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                 setSearchSource(historyItem.source)
               }
               setActiveTab('search')
-              setTimeout(() => {
-                setShowSearchResults(false)
-              }, 100)
+              if (historyItem.fingerprint) {
+                // Fase 4-D: carrega snapshot persistido — zero créditos Pearch
+                executeSearch(historyItem.query, undefined, historyItem.mode, undefined, false, {
+                  _snapshot_fingerprint: historyItem.fingerprint
+                })
+              } else {
+                setTimeout(() => {
+                  setShowSearchResults(false)
+                }, 100)
+              }
             }}
             onSaveAsSearch={(historyItem, name, description) => {
               talentFunnel.saveHistoryAsSearch(historyItem, name, description)

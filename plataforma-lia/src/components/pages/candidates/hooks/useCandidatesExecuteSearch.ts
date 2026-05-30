@@ -203,7 +203,25 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
       // para que possamos recarregar a lista de descartados após refresh.
       let persistedSearchId: string | null = null
 
-      if (mode === 'similar' && metadata) {
+      // Fase 4-D: snapshot path — carrega resultados persistidos sem re-rodar Pearch
+      let _responseFp: string | undefined = undefined
+      const _snapshotFp = (searchSpecOverride?._snapshot_fingerprint as string) || undefined
+      if (_snapshotFp) {
+        _responseFp = _snapshotFp
+        const _snapResp = await fetch(
+          `/api/backend-proxy/candidates/search/snapshot?fingerprint=${encodeURIComponent(_snapshotFp)}`
+        )
+        if (_snapResp.ok) {
+          const _snapData = await _snapResp.json()
+          if (Array.isArray(_snapData?.candidates) && _snapData.candidates.length > 0) {
+            mappedCandidates = _snapData.candidates.map((c: Record<string, unknown>) => mapCandidateToInternal(c))
+            creditsUsed = 0
+            totalCount = _snapData.total_count || mappedCandidates.length
+            pearchCount = _snapData.pearch_count || mappedCandidates.length
+          }
+        }
+        setSearchFingerprint(_snapshotFp)
+      } else if (mode === 'similar' && metadata) {
         const similarUrl = metadata.similarProfileUrl || metadata.similarProfileUrls?.[0]
         if (similarUrl) {
           const response = await fetchWithRetry('/api/backend-proxy/search/candidates/similar', {
@@ -284,6 +302,7 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
         if (searchResponse.thread_id) setSearchThreadId(searchResponse.thread_id)
         // Fase 2: ancora (provider) + re-hidrata feedback pelos criterios desta busca
         if (searchResponse.search_fingerprint) {
+          _responseFp = searchResponse.search_fingerprint
           setSearchFingerprint(searchResponse.search_fingerprint)
           try {
             const _fbResp = await fetch(
@@ -337,6 +356,7 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
         // permitir reidratação na página /candidates após refresh.
         searchId: persistedSearchId,
         discardedCount: filteredCandidates.length,
+        fingerprint: _responseFp,
       })
 
       const localCandidates = mappedCandidates.filter(c => !isGlobalSource(c.source, Boolean(c.pearch_profile_id)))

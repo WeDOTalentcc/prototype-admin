@@ -18,6 +18,7 @@ export interface SearchHistoryItem {
   // (sem email/telefone) via GET /search/{searchId}/discarded.
   searchId?: string | null
   discardedCount?: number
+  fingerprint?: string
 }
 
 export interface SavedSearch {
