@@ -104,15 +104,26 @@ def list_all_prompt_versions(prompts_dir: Path | None = None) -> list[PromptVers
     return results
 
 
+# YAML files in prompts/domains/ that are NOT LLM prompt files (no system_prompt/metadata)
+# and should be skipped by the prompt validator.
+_NON_PROMPT_YAML_FILES: frozenset[str] = frozenset({
+    "automation_templates.yaml",   # Sprint B: template collection (data, not LLM prompt)
+    "onboarding_questions.yaml",   # P2-2: Q&A config for onboarding (data, not LLM prompt)
+})
+
+
 def validate_all_prompts(prompts_dir: Path | None = None) -> dict[str, list[str]]:
     """
     Valida todos os prompts YAML. Retorna dict {filename: [errors]}.
     Dict vazio = todos válidos.
+    Ignora arquivos em _NON_PROMPT_YAML_FILES (config/data YAMLs, não prompts LLM).
     """
     directory = prompts_dir or _PROMPTS_DIR
     issues: dict[str, list[str]] = {}
     try:
         for yaml_file in sorted(directory.glob("*.yaml")):
+            if yaml_file.name in _NON_PROMPT_YAML_FILES:
+                continue
             data = load_prompt_yaml(yaml_file)
             errors = validate_prompt_metadata(data, file_path=yaml_file.name)
             if errors:

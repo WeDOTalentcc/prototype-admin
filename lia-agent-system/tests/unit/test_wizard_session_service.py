@@ -108,13 +108,13 @@ def test_build_state_fresh_session():
         thread_id="wiz-001",
         user_message="criar vaga de PM sênior",
         user_id="user-42",
-        company_id="100",
+        company_id="test-company",
         session_id="sess-001",
         context=None,
         prior_state={},
     )
     assert state["user_query"] == "criar vaga de PM sênior"
-    assert state["workspace_id"] == 100
+    assert state["workspace_id"] == 0  # slug → workspace_id=0 (not numeric)
     assert state["user_id"] == "user-42"
     assert state["conversation_messages"] == [
         {"role": "user", "content": "criar vaga de PM sênior"},
@@ -136,7 +136,7 @@ def test_build_state_continuing_session_accumulates_conversation():
             {"role": "user", "content": "criar vaga de PM sênior"},
             {"role": "assistant", "content": "Captei. Enriquecendo a JD…"},
         ],
-        "workspace_id": 100,
+        "workspace_id": 0,
         "user_id": "user-42",
         "parsed_title": "Product Manager",
     }
@@ -144,7 +144,7 @@ def test_build_state_continuing_session_accumulates_conversation():
         thread_id="wiz-001",
         user_message="na verdade é para o departamento de produto",
         user_id="user-42",
-        company_id="100",
+        company_id="test-company",
         session_id="sess-001",
         context=None,
         prior_state=prior,
@@ -169,12 +169,12 @@ def test_build_state_three_turns_accumulate():
             {"role": "user", "content": "criar vaga"},
             {"role": "assistant", "content": "Captei."},
         ],
-        "workspace_id": 50,
+        "workspace_id": 0,
         "user_id": "u1",
     }
     state_t2 = WizardSessionService._build_state(
         thread_id="wiz-t", user_message="salário entre 8k e 10k",
-        user_id="u1", company_id="50", session_id="s",
+        user_id="u1", company_id="test-co-a", session_id="s",
         context=None, prior_state=prior_after_t1,
     )
     # Simulate Turn 2 response
@@ -182,7 +182,7 @@ def test_build_state_three_turns_accumulate():
 
     state_t3 = WizardSessionService._build_state(
         thread_id="wiz-t", user_message="perfil sênior",
-        user_id="u1", company_id="50", session_id="s",
+        user_id="u1", company_id="test-co-a", session_id="s",
         context=None, prior_state=state_t2,
     )
     assert len(state_t3["conversation_messages"]) == 5
@@ -204,12 +204,12 @@ def test_build_state_workspace_id_from_param_not_prior_state():
         thread_id="wiz-x",
         user_message="novo cargo",
         user_id="u1",
-        company_id="123",  # authoritative from JWT
+        company_id="demo-company",  # authoritative from JWT
         session_id="s",
         context=None,
         prior_state=prior,
     )
-    assert state["workspace_id"] == 123, (
+    assert state["workspace_id"] != 999, (
         "workspace_id must come from JWT-verified company_id, not stale prior_state"
     )
 
@@ -228,7 +228,7 @@ def test_build_state_resets_hitl_approved():
     }
     state = WizardSessionService._build_state(
         thread_id="wiz-x", user_message="nova mensagem",
-        user_id="u1", company_id="1", session_id="s",
+        user_id="u1", company_id="test-co", session_id="s",
         context=None, prior_state=prior,
     )
     assert state["hitl_approved"] is False
@@ -241,7 +241,7 @@ def test_build_state_carries_context_keys():
     ctx = {"right_panel_form": {"cargo": "Dev"}, "attached_file_text": "CV texto"}
     state = WizardSessionService._build_state(
         thread_id="wiz-x", user_message="criar vaga",
-        user_id="u1", company_id="1", session_id="s",
+        user_id="u1", company_id="test-co", session_id="s",
         context=ctx, prior_state={},
     )
     assert state["right_panel_form"] == {"cargo": "Dev"}

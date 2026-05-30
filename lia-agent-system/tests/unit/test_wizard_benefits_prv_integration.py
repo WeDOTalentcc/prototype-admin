@@ -110,20 +110,20 @@ class TestPrefillFromSnapshots:
     def test_basic_salary_prefill(self):
         job = {"salary_range": {"min": 10000, "max": 14000, "currency": "BRL"}}
         result = self.fn(job, {})
-        assert "offered_salary" in result
-        assert float(result["offered_salary"]) == pytest.approx(12000.0)
+        assert "salary" in result
+        assert float(result["salary"]) == pytest.approx(12000.0)
 
     def test_benefits_from_job_snapshot(self):
         job = {"benefits": ["Vale Refeição", "Gympass"]}
         result = self.fn(job, {})
-        names = [b["name"] for b in result["offered_benefits"]]
+        names = [b["name"] for b in result["benefits"]]
         assert "Vale Refeição" in names
         assert "Gympass" in names
 
     def test_benefits_from_dict_benefits(self):
         job = {"benefits": [{"id": "abc", "name": "Plano de Saúde"}]}
         result = self.fn(job, {})
-        assert result["offered_benefits"][0]["name"] == "Plano de Saúde"
+        assert result["benefits"][0]["name"] == "Plano de Saúde"
 
     def test_compensation_policy_merges_extra_benefits(self):
         """Policy benefits not in job.benefits should be appended."""
@@ -137,7 +137,7 @@ class TestPrefillFromSnapshots:
             },
         }
         result = self.fn(job, {})
-        names = [b["name"] for b in result["offered_benefits"]]
+        names = [b["name"] for b in result["benefits"]]
         # Existing benefit preserved
         assert "Vale Refeição" in names
         # New policy benefit added (no duplicate)
@@ -155,10 +155,11 @@ class TestPrefillFromSnapshots:
             },
         }
         result = self.fn(job, {})
-        assert "compensation_policy_snapshot" in result
-        snap = result["compensation_policy_snapshot"]
-        assert snap["id"] == "pol-002"
-        assert snap["name"] == "Bonus Comercial"
+        # Sprint F.4 #42: compensation_policy_snapshot foi descontinuado (canonical-remap).
+        # A função não retorna mais essa chave; info de policy fica em job_data_snapshot (LGPD).
+        assert "compensation_policy_snapshot" not in result
+        # Só currency e start_date retornados quando não há salary nem benefits
+        assert "currency" in result
 
     def test_no_policy_no_snapshot(self):
         result = self.fn({}, {})
@@ -175,9 +176,9 @@ class TestPrefillFromSnapshots:
             },
         }
         result = self.fn(job, {})
-        names = [b["name"] for b in result["offered_benefits"]]
+        names = [b["name"] for b in result["benefits"]]
         assert "Plano de Saúde" in names
-        assert result["offered_benefits"][0].get("source") == "compensation_policy"
+        assert result["benefits"][0].get("source") == "compensation_policy"
 
 
 if __name__ == "__main__":
