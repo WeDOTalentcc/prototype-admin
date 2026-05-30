@@ -29,4 +29,5 @@ from app.shared.observability.tracing import (  # noqa: F401 — explicit re-exp
     finish_span,
     get_recent_traces,
     get_trace_stats,
+    enrich_llm_span,  # UC-P1-07: LLM span enrichment — callers: llm_factory, tests
 )

@@ -19,30 +19,30 @@ class TestScrubPii:
     def test_scrub_remove_email(self):
         text = "Contato: joao.silva@empresa.com.br para mais informações."
         result = _scrub_pii(text)
-        assert "[EMAIL]" in result
+        assert "[EMAIL REMOVIDO]" in result
         assert "@" not in result
 
     def test_scrub_remove_cpf_com_pontuacao(self):
         text = "CPF do candidato: 123.456.789-09"
         result = _scrub_pii(text)
-        assert "[CPF]" in result
+        assert "[CPF REMOVIDO]" in result
         assert "123.456.789-09" not in result
 
     def test_scrub_remove_cpf_sem_pontuacao(self):
         text = "CPF: 12345678909"
         result = _scrub_pii(text)
-        assert "[CPF]" in result
+        assert "[CPF REMOVIDO]" in result
         assert "12345678909" not in result
 
     def test_scrub_remove_telefone_celular(self):
         text = "WhatsApp: 11 9 9999-8888"
         result = _scrub_pii(text)
-        assert "[PHONE]" in result
+        assert "[TELEFONE REMOVIDO]" in result
 
     def test_scrub_remove_telefone_com_ddd_parenteses(self):
         text = "Ligue: (11) 98765-4321"
         result = _scrub_pii(text)
-        assert "[PHONE]" in result
+        assert "[TELEFONE REMOVIDO]" in result
         assert "98765-4321" not in result
 
     def test_scrub_multiplos_pii_em_texto(self):
@@ -52,9 +52,9 @@ class TestScrubPii:
             "Telefone: (21) 99999-1234"
         )
         result = _scrub_pii(text)
-        assert "[EMAIL]" in result
-        assert "[CPF]" in result
-        assert "[PHONE]" in result
+        assert "[EMAIL REMOVIDO]" in result
+        assert "[CPF REMOVIDO]" in result
+        assert "[TELEFONE REMOVIDO]" in result
         assert "@" not in result
         assert "987.654.321-00" not in result
 
@@ -84,7 +84,7 @@ class TestBeforeSend:
         }
         result = _before_send(event, {})
         exc_value = result["exception"]["values"][0]["value"]
-        assert "[EMAIL]" in exc_value
+        assert "[EMAIL REMOVIDO]" in exc_value
         assert "@" not in exc_value
 
     def test_before_send_remove_cpf_de_exception_message(self):
@@ -97,7 +97,7 @@ class TestBeforeSend:
         }
         result = _before_send(event, {})
         exc_value = result["exception"]["values"][0]["value"]
-        assert "[CPF]" in exc_value
+        assert "[CPF REMOVIDO]" in exc_value
         assert "111.222.333-44" not in exc_value
 
     def test_before_send_remove_telefone_de_breadcrumb(self):
@@ -110,7 +110,7 @@ class TestBeforeSend:
         }
         result = _before_send(event, {})
         msg = result["breadcrumbs"]["values"][0]["message"]
-        assert "[PHONE]" in msg
+        assert "[TELEFONE REMOVIDO]" in msg
         assert "98888-7777" not in msg
 
     def test_before_send_evento_none_retorna_none(self):

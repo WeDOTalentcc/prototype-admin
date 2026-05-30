@@ -61,8 +61,12 @@ def _make_provider_class(name: str, text: str = "ok"):
     _name = name
     _text = text
 
+    def _init(self, api_key=None, region=None, **kwargs):
+        pass
+
     cls = type(f"MockProvider_{_name}", (), {
         "_provider_name": _name,
+        "__init__": _init,
     })
 
     async def generate(self, prompt, **kwargs):

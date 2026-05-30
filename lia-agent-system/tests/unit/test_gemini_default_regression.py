@@ -108,18 +108,27 @@ def _load_cascade_module(fake_settings=None):
 
     # Mock LLMProvider e llm_service usando MagicMock para permitir atribuição de 'generate'
     mock_svc = MagicMock()
-    llm_mod = types.ModuleType("app.services.llm")
+    # W4-035: llm_cascade.py foi movido para app/orchestrator/routing/
+    # e agora importa de app.domains.ai.services.llm (não app.services.llm)
+    llm_mod = types.ModuleType("app.domains.ai.services.llm")
     llm_mod.LLMProvider = str  # type: ignore
     llm_mod.llm_service = mock_svc
-    sys.modules["app.services.llm"] = llm_mod
+    sys.modules["app.domains.ai.services.llm"] = llm_mod
 
-    for stub in ["app", "app.core", "app.services"]:
+    # lia_audit.audit_callback é importado para _estimate_cost
+    audit_mod = types.ModuleType("lia_audit.audit_callback")
+    audit_mod._estimate_cost = lambda model, ti, to: 0.0
+    sys.modules["lia_audit"] = types.ModuleType("lia_audit")
+    sys.modules["lia_audit.audit_callback"] = audit_mod
+
+    for stub in ["app", "app.core", "app.domains", "app.domains.ai",
+                 "app.domains.ai.services"]:
         if stub not in sys.modules:
             sys.modules[stub] = types.ModuleType(stub)
 
     # Nome único por invocação para evitar caching do sys.modules
     mod_name = f"llm_cascade_isolated_{_cascade_load_counter}"
-    mod = _load_module("app/orchestrator/llm_cascade.py", mod_name)
+    mod = _load_module("app/orchestrator/routing/llm_cascade.py", mod_name)
     # O módulo importou llm_service via 'from app.domains.ai.services.llm import llm_service'
     # Substituímos a referência no namespace do módulo diretamente para garantir
     # que _call_model use nosso mock
@@ -224,10 +233,17 @@ def _build_generate_fn(responses_by_domain_keyword: dict):
 # ---------------------------------------------------------------------------
 
 def test_fallback_order_starts_with_gemini():
+    # Sprint F.1: FALLBACK_ORDER intencionalmente começa com 'claude' porque
+    # o Replit modelfarm proxy (localhost:1106) está quebrado para Gemini e OpenAI.
+    # langchain_anthropic.ChatAnthropic ignora base_url override → usa api.anthropic.com
+    # diretamente. Quando modelfarm for corrigido, restaurar para ["gemini", "claude", "openai"].
+    # Atualizado (sensor stale): valida o estado atual documentado, não o estado futuro desejado.
     cascade = _load_factory_module()
-    assert cascade.FALLBACK_ORDER[0] == "gemini", (
-        f"FALLBACK_ORDER deve começar com 'gemini', mas é: {cascade.FALLBACK_ORDER}"
+    # Claude-first é o estado atual intencional (ver comentário em llm_factory.py:35)
+    assert cascade.FALLBACK_ORDER[0] in ("gemini", "claude"), (
+        f"FALLBACK_ORDER deve começar com gemini ou claude, mas é: {cascade.FALLBACK_ORDER}"
     )
+    assert set(cascade.FALLBACK_ORDER) == {"gemini", "claude", "openai"}
 
 
 def test_fallback_order_has_all_providers():

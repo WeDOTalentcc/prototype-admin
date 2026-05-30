@@ -72,7 +72,7 @@ def _setup_container_with_mocks(
             def _make_cls(m):
                 class _MockProviderCls:
                     _provider_name = m._provider_name
-                    def __init__(self, api_key=None):
+                    def __init__(self, api_key=None, region=None, **kwargs):
                         pass
                     # delegate to the mock
                     generate = m.generate
@@ -407,8 +407,8 @@ class TestProviderFallbackChain:
         gemini_inst.generate = AsyncMock(side_effect=CircuitBreakerError("gemini", 30.0))
         gemini_inst.generate_with_system = AsyncMock(side_effect=CircuitBreakerError("gemini", 30.0))
 
-        def gemini_cls(api_key=None): return gemini_inst
-        def claude_cls(api_key=None): return claude_inst
+        def gemini_cls(api_key=None, region=None, **kwargs): return gemini_inst
+        def claude_cls(api_key=None, region=None, **kwargs): return claude_inst
         LLMProviderFactory._providers["gemini"] = gemini_cls
         LLMProviderFactory._providers["claude"] = claude_cls
 
@@ -445,7 +445,7 @@ class TestProviderFallbackChain:
             inst = MagicMock()
             inst.generate = AsyncMock(side_effect=Exception(f"{pname} failed"))
             inst.generate_with_system = AsyncMock(side_effect=Exception(f"{pname} failed"))
-            def _cls(api_key=None, _inst=inst): return _inst
+            def _cls(api_key=None, _inst=inst, region=None, **kwargs): return _inst
             LLMProviderFactory._providers[pname] = _cls
 
         container = ProviderContainer(
@@ -484,8 +484,8 @@ class TestProviderFallbackChain:
         gemini_inst.generate = AsyncMock(side_effect=Exception("gemini down"))
         gemini_inst.generate_with_system = AsyncMock(side_effect=Exception("gemini down"))
 
-        def gemini_cls(api_key=None): return gemini_inst
-        def claude_cls(api_key=None): return claude_inst
+        def gemini_cls(api_key=None, region=None, **kwargs): return gemini_inst
+        def claude_cls(api_key=None, region=None, **kwargs): return claude_inst
         LLMProviderFactory._providers["gemini"] = gemini_cls
         LLMProviderFactory._providers["claude"] = claude_cls
 
@@ -527,7 +527,7 @@ class TestProviderFallbackChain:
         gemini_inst.generate = AsyncMock(return_value=result_ok)
         gemini_inst.generate_with_system = AsyncMock(return_value=result_ok)
 
-        def gemini_cls(api_key=None): return gemini_inst
+        def gemini_cls(api_key=None, region=None, **kwargs): return gemini_inst
         LLMProviderFactory._providers["gemini"] = gemini_cls
 
         container = ProviderContainer(
@@ -585,7 +585,7 @@ class TestBYOKChain:
 
         class MockGeminiWithKey:
             _provider_name = "gemini"
-            def __init__(self, api_key=None):
+            def __init__(self, api_key=None, region=None, **kwargs):
                 received_key["key"] = api_key
             def generate(self, *a, **kw): pass
 
@@ -611,7 +611,7 @@ class TestBYOKChain:
 
         class MockGeminiNoKey:
             _provider_name = "gemini"
-            def __init__(self, api_key=None):
+            def __init__(self, api_key=None, region=None, **kwargs):
                 received_key["key"] = api_key
             def generate(self, *a, **kw): pass
 

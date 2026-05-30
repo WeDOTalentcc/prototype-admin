@@ -36,9 +36,14 @@ def _run(coro):
 
 
 def test_rejects_when_company_id_missing():
-    result = _run(save_hiring_policy(rules={"min_interviews_before_offer": 2}, _context=_ctx(None)))
-    assert result["success"] is False
-    assert result["error"] == "company_id_required"
+    # Production updated (canonical multi-tenancy fail-closed):
+    # require_company_id_from_obj now RAISES ToolContextMissingError instead of
+    # returning error dict when company_id is None. This is correct per CLAUDE.md REGRA 4
+    # (fail-closed). Updated sensor matches new contract.
+    from app.tools.context_helpers import ToolContextMissingError
+    import pytest as _pytest
+    with _pytest.raises(ToolContextMissingError):
+        _run(save_hiring_policy(rules={"min_interviews_before_offer": 2}, _context=_ctx(None)))
 
 
 @pytest.mark.parametrize("bad", [{}, None, "string", 42, []])

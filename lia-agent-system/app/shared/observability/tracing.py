@@ -479,3 +479,39 @@ def get_trace_stats() -> dict[str, Any]:
         "by_tier": by_tier,
         "by_service": by_service,
     }
+
+
+def enrich_llm_span(
+    span,
+    *,
+    tenant_id: str | None = None,
+    user_id: str | None = None,
+    model: str | None = None,
+    tokens_used: int | None = None,
+    provider: str | None = None,
+    domain: str | None = None,
+    request_id: str | None = None,
+) -> None:
+    """UC-P1-07: Set LLM context attributes on an OTEL span.
+
+    Fail-safe: never raises, silently ignores None span or failed set_attribute.
+    Re-exported via app.shared.tracing shim for legacy callers.
+    """
+    if span is None:
+        return
+    _ATTR_MAP = {
+        "tenant.id": tenant_id,
+        "user.id": user_id,
+        "llm.model": model,
+        "llm.tokens_used": tokens_used,
+        "llm.provider": provider,
+        "llm.domain": domain,
+        "request.id": request_id,
+    }
+    for attr_key, value in _ATTR_MAP.items():
+        if value is None:
+            continue
+        try:
+            span.set_attribute(attr_key, value)
+        except Exception:
+            pass  # observability must never break business logic
