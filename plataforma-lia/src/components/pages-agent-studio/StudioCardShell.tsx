@@ -30,6 +30,13 @@ import { cardStyles } from "@/lib/design-tokens"
  */
 export type StudioCardShellProps = {
   icon: React.ReactNode
+  /**
+   * Fase 3 Sprint 5 (2026-05-30): override do wrapper do avatar. Default é
+   * `bg-powder` (neutro). Consumidores passam o acento de categoria CONTIDO
+   * (ex: `bg-agent-cat-screening/12`) pra dar identidade ao agente sem colorir
+   * o resto do card. Substitui o `bg-powder` default — não acumula.
+   */
+  iconWrapperClassName?: string
   title: string
   subtitle?: React.ReactNode
   badges?: React.ReactNode
@@ -55,6 +62,7 @@ export type StudioCardShellProps = {
 
 export function StudioCardShell({
   icon,
+  iconWrapperClassName,
   title,
   subtitle,
   badges,
@@ -82,7 +90,10 @@ export function StudioCardShell({
       {/* Header */}
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-2.5 min-w-0">
-          <div className="w-8 h-8 rounded-md bg-powder flex items-center justify-center shrink-0">
+          <div className={cn(
+            "w-8 h-8 rounded-md flex items-center justify-center shrink-0",
+            iconWrapperClassName || "bg-powder",
+          )}>
             {icon}
           </div>
           <div className="min-w-0">

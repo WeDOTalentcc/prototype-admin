@@ -49,6 +49,21 @@ export default {
         'amber-warning':  '#D19960',
         'insight-purple': '#9860D1',
         'alert-magenta':  '#D160AB',
+        // ──────────────────────────────────────────────
+        // AGENT CATEGORY ACCENT — Fase 3 Sprint 5 (2026-05-30, decisão Paulo)
+        // O 10% de cor com propósito (90/10 Rule) CONTIDO ao avatar do agente.
+        // Paleta DESSATURADA / editorial (muted, nunca primárias 500). CYAN
+        // EXCLUÍDO — reservado à assistente da plataforma (white-label).
+        // Single source de mapeamento categoria→token: lib/agent-studio/category-accent.ts.
+        // DESIGN.md "Agent category accent" documenta a regra. Suportam opacity
+        // modifier (bg-agent-cat-screening/12) pro fundo tonal do avatar.
+        // ──────────────────────────────────────────────
+        'agent-cat-screening':     '#5B7290',  // Triagem — slate-blue dessaturado
+        'agent-cat-sourcing':      '#6E9B7E',  // Captação — sage/verde-acinzentado
+        'agent-cat-communication': '#C0795E',  // Comunicação — terracota suave
+        'agent-cat-analytics':     '#8A6E9E',  // Análise — plum dessaturado (NÃO cyan)
+        'agent-cat-jobs':          '#B58A52',  // Vagas — ocre/âmbar-acinzentado
+        'agent-cat-automation':    '#6B6F86',  // Automação — ardósia/steel neutro-frio
         // Alias canonical name → wedo-cyan equivalente (backward compat preservado)
         'lia-cyan':       '#60BED1',
         // ──────────────────────────────────────────────

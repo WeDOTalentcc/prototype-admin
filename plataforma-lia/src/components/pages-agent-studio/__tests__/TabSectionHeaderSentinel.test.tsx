@@ -37,10 +37,15 @@ const ALLOWED_FILES = new Set<string>([
   //   sub-secoes internas do modal ("Veja em acao", "O que faz", "Como
   //   trabalha"), mesmo caso do DecisionTreeDrawer — nao sao headers de tab.
   //   (redesign 2026-05-30 + Fase 3 Sprint 2 conversation preview.)
+  // - AgentSandboxPanel: <h3> sub-heading de um painel inline de teste
+  //   ("Testar agente") dentro do detalhe do agente, nao um header de tab/secao
+  //   da galeria. Mesmo caso do DecisionTreeDrawer/TemplateClonePanel.
+  //   (Fase 3 Sprint 5, 2026-05-30.)
   "StudioEmptyState.tsx",
   "control-room/StudioControlRoom.tsx",
   "decision-tree/DecisionTreeDrawer.tsx",
   "template-clone/TemplateClonePanel.tsx",
+  "custom-agents/AgentSandboxPanel.tsx",
 ])
 
 function listTsxFiles(dir: string): string[] {

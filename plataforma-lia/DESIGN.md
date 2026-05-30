@@ -19,6 +19,12 @@ colors:
   amber-warning: "#D19960"
   insight-purple: "#9860D1"
   alert-magenta: "#D160AB"
+  agent-cat-screening: "#5B7290"
+  agent-cat-sourcing: "#6E9B7E"
+  agent-cat-communication: "#C0795E"
+  agent-cat-analytics: "#8A6E9E"
+  agent-cat-jobs: "#B58A52"
+  agent-cat-automation: "#6B6F86"
   status-success: "#16A34A"
   status-error: "#DC2626"
   status-warning: "#D97706"
@@ -212,6 +218,42 @@ que treina o recrutador a reconhecer a presença da LIA.
 **The Brand Restraint Rule.** Coral Quiet (`#C74446`) é da marca, não do produto.
 Em UI operacional, ele só aparece em destrutivo ou em surfaces brand-adjacent
 (login, materiais de marca).
+
+### Agent category accent (o 10% sancionado do Agent Studio)
+
+No Agent Studio, cada **categoria de RH** de um agente ganha um acento de cor —
+mas **contido ao avatar do agente** (o quadradinho com o ícone/inicial), nunca ao
+card inteiro. Esse é o uso explicitamente sancionado da cor: o "10%" da 90/10
+Rule aplicado pra dar identidade ("cara de agente") sem reintroduzir o multicolor
+saturado que foi removido em 2026-05-30 ("ATS infantil 4 cores").
+
+Regras inquebráveis desse acento:
+
+- **Contido ao avatar.** Só o `bg` tonal (a 12% de opacidade) do avatar + a cor do
+  ícone/inicial. Texto, borda, métricas, botões e o restante do card permanecem
+  em tokens neutros (`lia-*`, graphite, powder). O card no repouso é flat e calmo.
+- **Paleta dessaturada / editorial.** Tons "muted" (slate-blue, sage, terracota,
+  plum, ocre, ardósia), nunca cores primárias 500. A intenção é sofisticada, não
+  "rainbow".
+- **Cyan reservado.** Nenhuma categoria usa cyan — `wedo-cyan` continua exclusivo
+  da assistente da plataforma quando ela age (white-label). Onde uma categoria
+  puxaria azul-ciano (Análise), usamos plum.
+- **`general` é neutro.** A categoria genérica não tem acento (graphite sobre
+  powder), preservando o default calmo do DS.
+
+Paleta canonical (token => categoria):
+
+- `agent-cat-screening` (`#5B7290`, slate-blue): Triagem.
+- `agent-cat-sourcing` (`#6E9B7E`, sage): Captação.
+- `agent-cat-communication` (`#C0795E`, terracota): Comunicação.
+- `agent-cat-analytics` (`#8A6E9E`, plum): Análise.
+- `agent-cat-jobs` (`#B58A52`, ocre): Vagas.
+- `agent-cat-automation` (`#6B6F86`, ardósia): Automação.
+
+Single source do mapeamento: `src/lib/agent-studio/category-accent.ts`. Os tokens
+estão wired em `tailwind.config.ts` (suportam opacity modifier
+`bg-agent-cat-screening/12`). Isso **não viola** a 90/10 Rule nem a Brand
+Restraint Rule: é uma regra nova, documentada, com escopo restrito ao avatar.
 
 ## 3. Typography
 

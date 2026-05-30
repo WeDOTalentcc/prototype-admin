@@ -39,6 +39,8 @@ import { StudioCardShell } from "@/components/pages-agent-studio/StudioCardShell
 import { useAiPersona } from "@/hooks/company/use-ai-persona"
 import type { CustomAgent } from "./types"
 import { safeCategoryKey } from "./types"
+// Fase 3 Sprint 5 (2026-05-30): acento de categoria CONTIDO ao avatar.
+import { categoryAvatarClasses } from "@/lib/agent-studio/category-accent"
 
 interface AgentCardProps {
   agent: CustomAgent
@@ -146,6 +148,9 @@ export function AgentCard({ agent, onTest, onDeploy, onToggleStatus, onClone }: 
   }
   const category = safeCategoryKey(agent.domain)
   const categoryLabel = tCat("categories." + category) || agent.domain || "general"
+  // Fase 3 Sprint 5: avatar ganha o acento da categoria (bg tonal /12 + ícone
+  // no tom). Contido ao avatar — resto do card permanece neutro (90/10 Rule).
+  const avatarAccent = categoryAvatarClasses(category)
 
   // Shell slots — adapter pattern (mirrors AgentPanel).
   const statusBadge = (
@@ -295,7 +300,8 @@ export function AgentCard({ agent, onTest, onDeploy, onToggleStatus, onClone }: 
   return (
     <StudioCardShell
       tone="elevated"
-      icon={<Bot className="w-4 h-4 text-graphite" />}
+      icon={<Bot className={cn("w-4 h-4", avatarAccent.text)} />}
+      iconWrapperClassName={avatarAccent.bg}
       title={displayName}
       statusBadge={statusBadge}
       badges={badges}

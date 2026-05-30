@@ -138,9 +138,29 @@ describe("AgentCard — StudioCardShell canonical contract (Sprint visual 2026-0
     expect(screen.getByText(/activate|pause/)).toBeTruthy()
   })
 
-  it("renderiza icon Bot canonical em wrapper bg-powder w-8 h-8", () => {
+  it("renderiza icon Bot canonical em wrapper w-8 h-8 rounded-md", () => {
     const { container } = renderCard(makeAgent())
-    const iconWrap = container.querySelector(".w-8.h-8.rounded-md.bg-powder")
+    // Fase 3 Sprint 5: o wrapper agora carrega o acento da categoria (não mais
+    // bg-powder fixo). Estrutura w-8 h-8 rounded-md preservada.
+    const iconWrap = container.querySelector(".w-8.h-8.rounded-md")
     expect(iconWrap).not.toBeNull()
+  })
+
+  it("Fase 3 Sprint 5: avatar carrega acento da categoria CONTIDO (só o avatar)", () => {
+    // Agent domain=screening => token agent-cat-screening, bg tonal /12.
+    const { container } = renderCard(makeAgent({ domain: "screening" }))
+    const iconWrap = container.querySelector('[class*="bg-agent-cat-screening/12"]')
+    expect(iconWrap, "avatar deveria ter bg tonal do acento screening").not.toBeNull()
+    // O card raiz (data-testid agent-card-*) NUNCA carrega o acento — só o avatar.
+    // Nenhum elemento com testid agent-card-* tem classe agent-cat-* (acento contido).
+    const cardRootWithAccent = container.querySelector('[data-testid^="agent-card-"][class*="agent-cat-"]')
+    expect(cardRootWithAccent, "o acento deve ficar contido ao avatar, não no card raiz").toBeNull()
+  })
+
+  it("Fase 3 Sprint 5: categoria neutra (general) não pinta acento", () => {
+    const { container } = renderCard(makeAgent({ domain: "general" }))
+    expect(container.querySelector('[class*="agent-cat-"]')).toBeNull()
+    // Volta ao neutro canonical bg-powder.
+    expect(container.querySelector(".w-8.h-8.rounded-md.bg-powder")).not.toBeNull()
   })
 })

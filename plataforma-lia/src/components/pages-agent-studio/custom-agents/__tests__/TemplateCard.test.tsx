@@ -66,4 +66,28 @@ describe("TemplateCard — Sprint visual identity/branding", () => {
     )
     expect(container.innerHTML).not.toContain("popular")
   })
+
+  it("Fase 3 Sprint 5: avatar carrega acento da categoria CONTIDO (só avatar)", () => {
+    // category=screening => token agent-cat-screening no avatar (bg /12 + text).
+    const { container } = render(
+      <TemplateCard template={baseTemplate} onSelect={vi.fn()} />,
+    )
+    expect(container.innerHTML).toContain("bg-agent-cat-screening/12")
+    expect(container.innerHTML).toContain("text-agent-cat-screening")
+    // White-label: nunca cyan no acento de categoria.
+    expect(container.innerHTML).not.toContain("agent-cat-screening cyan")
+    expect(container.innerHTML).not.toContain("bg-wedo-cyan")
+  })
+
+  it("Fase 3 Sprint 5: categoria neutra (general) não pinta acento", () => {
+    const { container } = render(
+      <TemplateCard
+        template={{ ...baseTemplate, category: "general" as AgentTemplate["category"] }}
+        onSelect={vi.fn()}
+      />,
+    )
+    expect(container.innerHTML).not.toContain("agent-cat-")
+    // Volta ao neutro canonical bg-powder no avatar.
+    expect(container.innerHTML).toContain("bg-powder")
+  })
 })

@@ -511,14 +511,25 @@ export default function AgentStudioPage({
               </section>
             )}
 
-            {/* Templates */}
+            {/* ════════════════════════════════════════════════════════════
+                ZONA 1 — "Comece com um modelo" (Fase 3 Sprint 5, 2026-05-30)
+                Antes havia 2 blocos de template separados (sector tiles + a
+                TemplateGallery, com a lista de agentes ENTRE eles). Confundia:
+                "por que template aparece duas vezes?". Agora unificados sob 1
+                cabeçalho: tiles por setor (atalho rápido) + galeria completa
+                (filtros + busca). Decisão Sprint 5 reorg de galeria.
+                ════════════════════════════════════════════════════════════ */}
             <section>
               <TabSectionHeader
                 className="mb-3"
-                title={agents.length === 0 ? t("studio.templates.startChoosing") : t("studio.templates.createNew")}
+                title={t("studio.startWithModel")}
                 subtitle={t("studio.templates.preConfigured")}
               />
 
+              {/* Atalho por setor (templates pré-configurados por indústria) */}
+              <p className="text-micro font-semibold uppercase tracking-wide text-lia-text-disabled mb-2">
+                {t("studio.bySector")}
+              </p>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
                 {templates.map(t => {
                   const Icon = SECTOR_ICONS[t.icon] || Brain
@@ -546,69 +557,25 @@ export default function AgentStudioPage({
                   )
                 })}
               </div>
-            </section>
 
-            {/* Active Agents */}
-            <section>
-              <TabSectionHeader
-                className="mb-3"
-                title={t("studio.sourcingAgents")}
-                count={agents.length}
-              />
+              {/* Galeria completa de templates (filtros Tipo/Vertical + busca).
+                  Redesign 2026-05-30: 3 ações distintas no card. "Usar agora" e
+                  "Ajustar antes" abrem o wizard pré-populado (clone-first);
+                  "Ver detalhes" abre o modal de detalhe (handleTemplateSelect). */}
+              <div className="mt-6">
+                <TemplateGallery
+                  onTemplateSelect={handleTemplateSelect}
+                  onTemplateUse={handleCloneTemplate}
+                  onTemplateCustomize={handleCloneTemplate}
+                />
+              </div>
 
-              {isLoading ? (
-                <div className="flex items-center justify-center py-16">
-                  <div className="flex flex-col items-center gap-3 text-lia-text-secondary">
-                    <Loader2 className="w-6 h-6 animate-spin" aria-hidden="true" />
-                    <span className="text-xs">{t("studio.loading")}</span>
-                  </div>
-                </div>
-              ) : agents.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-12 rounded-xl border border-dashed border-lia-border-subtle bg-lia-bg-secondary/50">
-                  <div className="w-14 h-14 rounded-xl bg-lia-bg-tertiary flex items-center justify-center mb-3">
-                    <Bot className="w-7 h-7 text-lia-text-disabled" />
-                  </div>
-                  <p className="text-sm font-medium text-lia-text-secondary">{t("studio.noAgentsYet")}</p>
-                  <p className="text-xs text-lia-text-disabled mt-1 mb-4">
-                    {t("studio.chooseTemplateAbove")}
-                  </p>
-                  <Button
-                    size="sm"
-                    onClick={() => openWizard("sourcing_ativo")}
-                    className="gap-2 bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover"
-                    data-testid="sourcing-empty-create-cta"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    {t("studio.createFirstAgent")}
-                  </Button>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {agents.map(agent => (
-                    <AgentCard
-                      key={agent.id}
-                      agent={agent}
-                      onToggleStatus={() => handleToggleStatus(agent.id, agent.status)}
-                      onCalibrate={() => onStartCalibration?.(agent.id)}
-                      onNavigate={() => {
-                        const cfg = (agent.config || {}) as Record<string, unknown>
-                        const poolId = typeof cfg.talent_pool_id === "string" ? cfg.talent_pool_id : null
-                        const jId = typeof cfg.job_id === "string" ? cfg.job_id : null
-                        if (poolId) {
-                          onNavigateToPool?.(poolId)
-                        } else if (jId) {
-                          onNavigateToJob?.(jId)
-                        } else {
-                          toast.warning(
-                            t("studio.toast.noLinkTitle"),
-                            t("studio.toast.noLinkDesc")
-                          )
-                        }
-                      }}
-                    />
-                  ))}
-                </div>
-              )}
+              {/* Conversational Creator (target do CTA "Criar com IA" — BUG-12).
+                  Permanece na zona de criação: descrever em linguagem natural é
+                  um caminho de "começar" alternativo aos modelos. */}
+              <div id="agent-studio-conversational-creator" className="scroll-mt-4 mt-6">
+                <AIAgentBuilder onAgentCreated={() => mutateCustomAgents()} />
+              </div>
             </section>
 
             {/* How it works — compact version when agents exist (UX-Sprint-A QW#14 audit 2026-05-21:
@@ -646,64 +613,119 @@ export default function AgentStudioPage({
             {/* Pending Approvals: Wave 0 Fix 3 (2026-05-27) promovido a 3a tab top-level.
                 Bloco removido daqui — render movido para activeTab === "approvals". */}
 
-            {/* My Agents */}
+            {/* ════════════════════════════════════════════════════════════
+                ZONA 2 — "Seus agentes" (Fase 3 Sprint 5, 2026-05-30)
+                Unifica os 2 blocos de agente que antes ficavam separados e
+                distantes (sourcing + personalizados). Agora sob 1 cabeçalho,
+                com sub-rótulo de tipo em cada grupo. count = total dos dois.
+                ════════════════════════════════════════════════════════════ */}
             <section>
               <TabSectionHeader
                 className="mb-3"
-                title={t("studio.customAgentsLabel")}
-                count={customAgents.length}
+                title={t("studio.yourAgents")}
+                count={agents.length + customAgents.length}
               />
-              {customAgents.length === 0 ? (
-                <div className="text-center py-8">
-                  <Bot className="w-8 h-8 text-lia-text-disabled mx-auto mb-2" />
-                  <p className="text-sm text-lia-text-secondary">{t("studio.noAgentsYet")}</p>
-                  <p className="text-xs text-lia-text-disabled mt-1">{t("studio.chooseTemplateOrDescribe", { aiAssistant: aiAssistantName })}</p>
+
+              {/* Grupo: agentes de captação (sourcing) */}
+              {isLoading ? (
+                <div className="flex items-center justify-center py-16">
+                  <div className="flex flex-col items-center gap-3 text-lia-text-secondary">
+                    <Loader2 className="w-6 h-6 animate-spin" aria-hidden="true" />
+                    <span className="text-xs">{t("studio.loading")}</span>
+                  </div>
+                </div>
+              ) : (agents.length === 0 && customAgents.length === 0) ? (
+                <div className="flex flex-col items-center justify-center py-12 rounded-xl border border-dashed border-lia-border-subtle bg-lia-bg-secondary/50">
+                  <div className="w-14 h-14 rounded-xl bg-lia-bg-tertiary flex items-center justify-center mb-3">
+                    <Bot className="w-7 h-7 text-lia-text-disabled" />
+                  </div>
+                  <p className="text-sm font-medium text-lia-text-secondary">{t("studio.noAgentsYet")}</p>
+                  <p className="text-xs text-lia-text-disabled mt-1 mb-4">
+                    {t("studio.chooseTemplateAbove")}
+                  </p>
+                  <Button
+                    size="sm"
+                    onClick={() => openWizard("sourcing_ativo")}
+                    className="gap-2 bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover"
+                    data-testid="sourcing-empty-create-cta"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    {t("studio.createFirstAgent")}
+                  </Button>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {customAgents.map((agent) => (
-                    <div
-                      key={agent.id}
-                      role="button"
-                      tabIndex={0}
-                      onClick={() => setDetailsAgent(agent)}
-                      onKeyDown={(e) => {
-                        // UX-Sprint-A QW#11 (WCAG 2.1.1): keyboard accessibility para card
-                        if (e.key === "Enter" || e.key === " ") {
-                          e.preventDefault()
-                          setDetailsAgent(agent)
-                        }
-                      }}
-                      aria-label={`${agent.name} — ver detalhes`}
-                      className="cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lia-btn-primary-bg/30 rounded-xl"
-                    >
-                      <CustomAgentCard
-                        agent={agent}
-                        onTest={() => setTestAgent(agent)}
-                        onDeploy={() => setDeployAgent(agent)}
-                        onToggleStatus={(a) => handleCustomAgentToggle(a)}
-                        onClone={handleCloneCustomAgent}
-                      />
+                <div className="space-y-6">
+                  {agents.length > 0 && (
+                    <div>
+                      <p className="text-micro font-semibold uppercase tracking-wide text-lia-text-disabled mb-2">
+                        {t("studio.sourcingAgents")}
+                      </p>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {agents.map(agent => (
+                          <AgentCard
+                            key={agent.id}
+                            agent={agent}
+                            onToggleStatus={() => handleToggleStatus(agent.id, agent.status)}
+                            onCalibrate={() => onStartCalibration?.(agent.id)}
+                            onNavigate={() => {
+                              const cfg = (agent.config || {}) as Record<string, unknown>
+                              const poolId = typeof cfg.talent_pool_id === "string" ? cfg.talent_pool_id : null
+                              const jId = typeof cfg.job_id === "string" ? cfg.job_id : null
+                              if (poolId) {
+                                onNavigateToPool?.(poolId)
+                              } else if (jId) {
+                                onNavigateToJob?.(jId)
+                              } else {
+                                toast.warning(
+                                  t("studio.toast.noLinkTitle"),
+                                  t("studio.toast.noLinkDesc")
+                                )
+                              }
+                            }}
+                          />
+                        ))}
+                      </div>
                     </div>
-                  ))}
+                  )}
+
+                  {/* Grupo: agentes personalizados (custom) */}
+                  {customAgents.length > 0 && (
+                    <div>
+                      <p className="text-micro font-semibold uppercase tracking-wide text-lia-text-disabled mb-2">
+                        {t("studio.customAgentsLabel")}
+                      </p>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                        {customAgents.map((agent) => (
+                          <div
+                            key={agent.id}
+                            role="button"
+                            tabIndex={0}
+                            onClick={() => setDetailsAgent(agent)}
+                            onKeyDown={(e) => {
+                              // UX-Sprint-A QW#11 (WCAG 2.1.1): keyboard accessibility para card
+                              if (e.key === "Enter" || e.key === " ") {
+                                e.preventDefault()
+                                setDetailsAgent(agent)
+                              }
+                            }}
+                            aria-label={`${agent.name} — ver detalhes`}
+                            className="cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lia-btn-primary-bg/30 rounded-xl"
+                          >
+                            <CustomAgentCard
+                              agent={agent}
+                              onTest={() => setTestAgent(agent)}
+                              onDeploy={() => setDeployAgent(agent)}
+                              onToggleStatus={(a) => handleCustomAgentToggle(a)}
+                              onClone={handleCloneCustomAgent}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </section>
-
-            {/* Template Gallery */}
-            {/* Redesign 2026-05-30: 3 ações distintas no card. "Usar agora" e
-                "Ajustar antes" abrem o wizard pré-populado (clone-first);
-                "Ver detalhes" abre o modal de detalhe (handleTemplateSelect). */}
-            <TemplateGallery
-              onTemplateSelect={handleTemplateSelect}
-              onTemplateUse={handleCloneTemplate}
-              onTemplateCustomize={handleCloneTemplate}
-            />
-
-            {/* Conversational Creator (target do CTA "Criar com IA" — BUG-12) */}
-            <div id="agent-studio-conversational-creator" className="scroll-mt-4">
-              <AIAgentBuilder onAgentCreated={() => mutateCustomAgents()} />
-            </div>
 
             {/* Deploy Dialog */}
             <DeployDialog

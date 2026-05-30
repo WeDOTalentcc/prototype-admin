@@ -2364,7 +2364,10 @@
         "turnFrom": "Message from"
       },
       "seeInActionLabel": "See it in action",
-      "seeInActionHint": "An example of how this agent runs the conversation."
+      "seeInActionHint": "An example of how this agent runs the conversation.",
+      "startWithModel": "Start with a template",
+      "bySector": "By sector",
+      "yourAgents": "Your agents"
     },
     "status": {
       "active": "Active",
@@ -2989,7 +2992,7 @@
       "instructionsLabel": "What the agent should do",
       "instructionsPlaceholder": "E.g.: Evaluate candidates for engineering roles, prioritizing cloud and backend experience. Be objective and justify every recommendation against the job's criteria.",
       "instructionsHelp": "Write as if you were briefing a fellow recruiter. The clearer the goal and tone, the better the agent works.",
-      "toolsLabel": "What the agent can access",
+      "toolsLabel": "Tools",
       "toolsHelp": "Pick what the agent can look up and do. You can change this anytime.",
       "groupFind": "Find",
       "groupAnalyze": "Analyze",
@@ -3007,7 +3010,7 @@
       "advancedConfig": "Advanced configuration",
       "advancedConfigHelp": "Optional. Fine-tuning most recruiters never need to touch.",
       "domainHelp": "Sets the agent's main area. Leave it on \"General\" if unsure.",
-      "maxStepsLabel": "Action limit per run",
+      "maxStepsLabel": "Max steps",
       "maxStepsHelp": "How many actions the agent can chain before answering. Raise it for more complex tasks.",
       "cancel": "Cancel",
       "testAgent": "Test agent with a message",
@@ -3104,7 +3107,6 @@
       "verticalGeneric": "Generic",
       "templateLoadError": "Could not load templates.",
       "templateLoading": "Loading templates...",
-      "toolsLabel": "Tools",
       "confirmRevertTitle": "Revert to this version?",
       "templatePreviewTitle": "Preview template",
       "templatePreviewDesc": "Review the configuration before creating the agent.",
@@ -3113,7 +3115,6 @@
       "descLabel": "Description",
       "systemPromptLabel": "System prompt",
       "allowedToolsLabel": "Allowed tools",
-      "maxStepsLabel": "Max steps",
       "temperatureLabel": "Temperature",
       "contextLevelLabel": "Context level",
       "creating": "Creating...",

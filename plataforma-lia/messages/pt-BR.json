@@ -2364,7 +2364,10 @@
         "turnFrom": "Mensagem de"
       },
       "seeInActionLabel": "Veja em ação",
-      "seeInActionHint": "Um exemplo de como este agente conduz a conversa."
+      "seeInActionHint": "Um exemplo de como este agente conduz a conversa.",
+      "startWithModel": "Comece com um modelo",
+      "bySector": "Por setor",
+      "yourAgents": "Seus agentes"
     },
     "status": {
       "active": "Ativo",
@@ -2989,7 +2992,7 @@
       "instructionsLabel": "O que o agente deve fazer",
       "instructionsPlaceholder": "Ex.: Avalie candidatos para vagas de engenharia, priorizando experiência com cloud e backend. Seja objetivo e justifique cada recomendação com base nos critérios da vaga.",
       "instructionsHelp": "Escreva como se estivesse orientando um colega de recrutamento. Quanto mais claro o objetivo e o tom, melhor o agente trabalha.",
-      "toolsLabel": "O que o agente pode acessar",
+      "toolsLabel": "Ferramentas",
       "toolsHelp": "Marque o que o agente pode consultar e fazer. Você pode mudar isso a qualquer momento.",
       "groupFind": "Buscar",
       "groupAnalyze": "Analisar",
@@ -3007,7 +3010,7 @@
       "advancedConfig": "Configuração avançada",
       "advancedConfigHelp": "Opcional. Ajustes finos que a maioria dos recrutadores não precisa mexer.",
       "domainHelp": "Define a área principal do agente. Deixe em \"Geral\" se não tiver certeza.",
-      "maxStepsLabel": "Limite de ações por execução",
+      "maxStepsLabel": "Passos máximos",
       "maxStepsHelp": "Quantas ações o agente pode encadear antes de responder. Aumente para tarefas mais complexas.",
       "cancel": "Cancelar",
       "testAgent": "Teste o agente com uma mensagem",
@@ -3104,7 +3107,6 @@
       "verticalGeneric": "Genérico",
       "templateLoadError": "Não foi possível carregar os templates.",
       "templateLoading": "Carregando templates...",
-      "toolsLabel": "Ferramentas",
       "confirmRevertTitle": "Reverter para esta versão?",
       "templatePreviewTitle": "Visualizar template",
       "templatePreviewDesc": "Confira a configuração antes de criar o agente.",
@@ -3113,7 +3115,6 @@
       "descLabel": "Descrição",
       "systemPromptLabel": "Prompt do sistema",
       "allowedToolsLabel": "Ferramentas permitidas",
-      "maxStepsLabel": "Passos máximos",
       "temperatureLabel": "Temperatura",
       "contextLevelLabel": "Nível de contexto",
       "creating": "Criando...",

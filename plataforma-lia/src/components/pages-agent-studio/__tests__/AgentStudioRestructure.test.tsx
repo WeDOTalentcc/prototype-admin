@@ -139,3 +139,37 @@ describe("Studio Restructure Fase 1 — Meus Agentes render", () => {
     expect(screen.getByTestId("stub-twins-list")).toBeTruthy()
   })
 })
+
+/**
+ * Fase 3 Sprint 5 (2026-05-30) — galeria reorganizada em 2 zonas.
+ *
+ * Antes: 2 blocos de template (sector tiles + TemplateGallery) e 2 de agente
+ * (sourcing + custom) intercalados — "por que template aparece 2x?".
+ * Depois: ZONA 1 "Comece com um modelo" (tiles + galeria juntos) + ZONA 2
+ * "Seus agentes" (sourcing + custom unificados sob 1 cabeçalho).
+ */
+describe("Studio Restructure Fase 3 Sprint 5 — galeria em 2 zonas (source-grep)", () => {
+  it("usa o cabeçalho unificado 'startWithModel' (não os 2 títulos antigos de template)", () => {
+    expect(STUDIO_SRC).toMatch(/studio\.startWithModel/)
+    // Os títulos antigos de seção de template (startChoosing/createNew) saíram —
+    // colapsados no header único da zona 1.
+    expect(STUDIO_SRC).not.toMatch(/studio\.templates\.startChoosing/)
+    expect(STUDIO_SRC).not.toMatch(/studio\.templates\.createNew/)
+  })
+
+  it("usa o cabeçalho unificado 'yourAgents' pra zona de agentes", () => {
+    expect(STUDIO_SRC).toMatch(/studio\.yourAgents/)
+  })
+
+  it("count da zona 'Seus agentes' soma sourcing + custom", () => {
+    expect(STUDIO_SRC).toMatch(/agents\.length \+ customAgents\.length/)
+  })
+
+  it("sourcing + custom viram sub-rótulos dentro de uma única <section>", () => {
+    // Os antigos rótulos viram sub-headers (sourcingAgents / customAgentsLabel)
+    // mas agora sob a zona unificada — ainda referenciados como sub-rótulos.
+    expect(STUDIO_SRC).toMatch(/studio\.sourcingAgents/)
+    expect(STUDIO_SRC).toMatch(/studio\.customAgentsLabel/)
+    expect(STUDIO_SRC).toMatch(/studio\.bySector/)
+  })
+})

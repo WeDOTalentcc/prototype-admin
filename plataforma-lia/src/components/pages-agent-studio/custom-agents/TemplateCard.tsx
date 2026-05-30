@@ -8,6 +8,9 @@ import { cn } from "@/lib/utils"
 import { summarizeCapabilities } from "@/lib/agents/tool-capabilities"
 import { AgentConversationPreview } from "../AgentConversationPreview"
 import type { AgentTemplate, ContextLevel } from "./types"
+import { safeCategoryKey } from "./types"
+// Fase 3 Sprint 5 (2026-05-30): acento de categoria CONTIDO ao avatar.
+import { categoryAvatarClasses } from "@/lib/agent-studio/category-accent"
 
 interface TemplateCardProps {
   template: AgentTemplate
@@ -66,6 +69,10 @@ export function TemplateCard({
   // Capacidades de alto nível em PT (2-3 bullets), derivadas das tools.
   const capabilities = summarizeCapabilities(template.allowed_tools)
 
+  // Fase 3 Sprint 5: avatar ganha o acento da categoria (bg tonal /12 + ícone
+  // no tom). Contido ao avatar — resto do card permanece neutro (90/10 Rule).
+  const avatarAccent = categoryAvatarClasses(safeCategoryKey(template.category))
+
   const testIdSuffix = template.id ?? template.name
 
   return (
@@ -82,10 +89,13 @@ export function TemplateCard({
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
           <div
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-powder text-graphite dark:bg-lia-bg-tertiary dark:text-lia-text-primary"
+            className={cn(
+              "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl",
+              avatarAccent.bg,
+            )}
             aria-hidden="true"
           >
-            <IconComponent className="h-5 w-5" />
+            <IconComponent className={cn("h-5 w-5", avatarAccent.text)} />
           </div>
           <div className="min-w-0">
             <h4 className="text-base font-semibold leading-tight text-lia-text-primary truncate">
