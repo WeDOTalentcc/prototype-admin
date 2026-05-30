@@ -2278,7 +2278,8 @@
         "orFromTemplate": "or start from a ready-made template",
         "templateSectionHint": "Pick one and adjust later.",
         "createManualDescription": "Configure every detail yourself: name, instructions, tools and persona. Best for those already familiar with agent concepts.",
-        "approachGroupAriaLabel": "How to create the agent"
+        "approachGroupAriaLabel": "How to create the agent",
+        "capabilitiesLabel": "What it will do"
       },
       "sandbox": {
         "title": "Simulate: {agent}",

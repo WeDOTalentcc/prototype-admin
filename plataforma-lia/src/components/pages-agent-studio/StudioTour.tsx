@@ -1,6 +1,3 @@
-// Q4.3 Tour interno do Agent Studio (2026-05-29) — fecha gap C1 do AUDIT 7
-// ("tour-steps.ts cobre Studio em 1 step de spotlight — não há tour interno
-// guiado").
 //
 // Tour leve, Studio-scoped, para o recrutador de primeira viagem. Reusa o
 // componente canonical TourSpotlight (do onboarding) — sem viewer paralelo —
@@ -39,24 +36,32 @@ const STUDIO_TOUR_STEPS: StudioTourStep[] = [
   {
     id: "sandbox",
     key: "sandbox",
-    selector: "[data-tour='studio-tabs'], [data-tour='studio-create-agent']",
+    // Testar antes de ativar começa na criação do agente.
+    selector: "[data-tour='studio-create-agent']",
     position: "bottom",
   },
   {
     id: "controlRoom",
     key: "controlRoom",
-    selector: "[data-tour='studio-tabs']",
+    // Fase 3 Sprint 1 (2026-05-30): anchor distinto (antes compartilhava
+    // studio-tabs com sandbox + decisionTree). Sala de Controle = monitoramento,
+    // ancora no QuotaMeter (sempre presente). Fallback nas abas.
+    selector: "[data-tour='studio-control-room'], [data-tour='studio-tabs']",
     position: "bottom",
   },
   {
     id: "decisionTree",
     key: "decisionTree",
+    // O raciocínio do agente vive na lista de abas (acessível via detalhe do
+    // agente). Mantém studio-tabs como anchor canonical deste passo.
     selector: "[data-tour='studio-tabs']",
     position: "bottom",
   },
   {
     id: "kpis",
     key: "kpis",
+    // KPIs ancoram na barra de estatísticas (distinta das abas). Fallback nas
+    // abas quando studio-stats ainda não renderiza (sem agentes).
     selector: "[data-tour='studio-stats'], [data-tour='studio-tabs']",
     position: "bottom",
   },

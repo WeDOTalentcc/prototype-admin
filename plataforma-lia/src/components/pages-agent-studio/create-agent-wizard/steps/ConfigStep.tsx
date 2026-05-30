@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Chip } from "@/components/ui/chip"
 import { Textarea } from "@/components/ui/textarea"
 import { useLegacyAgentTemplates } from "@/hooks/agents/use-legacy-agent-templates"
+import { summarizeCapabilities } from "@/lib/agents/tool-capabilities"
 
 import type { AgentApproach, AgentGoal, GeneratedConfigPreview, WizardConfig } from "../types"
 
@@ -105,22 +106,29 @@ export function ConfigStep({
                 />
               </div>
 
-              <div className="flex flex-wrap gap-1">
-                {(aiPreview.suggested_tools ?? []).map((tool) => (
-                  <span
-                    key={tool}
-                    className="rounded-md bg-lia-bg-tertiary px-2 py-0.5 text-[10px] text-lia-text-secondary"
-                  >
-                    {tool}
+              {/* Fase 3 Sprint 1 (2026-05-30): antes exibia slugs crus de tools
+                  (`search_candidates`...) + metadados internos (contexto/passos/temp)
+                  = jargão de dev sem sentido pro recrutador. Agora mostra capacidades
+                  em PT plain-language via summarizeCapabilities (single source of truth).
+                  Metadados internos escondidos: são detalhe de implementação. */}
+              {summarizeCapabilities(aiPreview.suggested_tools ?? []).length > 0 && (
+                <div className="space-y-1">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-lia-text-disabled">
+                    {t("capabilitiesLabel")}
                   </span>
-                ))}
-              </div>
-
-              <div className="flex flex-wrap items-center gap-3 text-[10px] text-lia-text-disabled">
-                <span>contexto: {aiPreview.suggested_context_level ?? "standard"}</span>
-                <span>passos: {aiPreview.suggested_max_steps ?? 8}</span>
-                <span>temp: {aiPreview.suggested_temperature ?? 0.5}</span>
-              </div>
+                  <ul className="space-y-0.5">
+                    {summarizeCapabilities(aiPreview.suggested_tools ?? []).map((capability) => (
+                      <li
+                        key={capability}
+                        className="flex items-start gap-1.5 text-xs text-lia-text-secondary"
+                      >
+                        <span className="mt-1 h-1 w-1 flex-shrink-0 rounded-full bg-lia-text-disabled" aria-hidden="true" />
+                        {capability}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
 
               {aiPreview.reasoning && (
                 <p className="text-[11px] italic text-graphite border-t border-lia-border-subtle pt-2">

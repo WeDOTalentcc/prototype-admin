@@ -74,12 +74,14 @@ const SECTOR_ICONS: Record<string, React.ComponentType<{ className?: string }>> 
   truck: Truck,
 }
 
-const SECTOR_COLORS: Record<string, { bg: string; text: string; accent: string; glow: string }> = {
-  factory: { bg: "bg-amber-50 dark:bg-amber-950/20", text: "text-amber-700 dark:text-amber-400", accent: "bg-amber-500", glow: "shadow-amber-200/50 dark:shadow-amber-900/30" },
-  heart_pulse: { bg: "bg-rose-50 dark:bg-rose-950/20", text: "text-rose-700 dark:text-rose-400", accent: "bg-rose-500", glow: "shadow-rose-200/50 dark:shadow-rose-900/30" },
-  shopping_cart: { bg: "bg-violet-50 dark:bg-violet-950/20", text: "text-violet-700 dark:text-violet-400", accent: "bg-violet-500", glow: "shadow-violet-200/50 dark:shadow-violet-900/30" },
-  code: { bg: "bg-cyan-50 dark:bg-cyan-950/20", text: "text-cyan-700 dark:text-cyan-400", accent: "bg-cyan-500", glow: "shadow-cyan-200/50 dark:shadow-cyan-900/30" },
-  truck: { bg: "bg-emerald-50 dark:bg-emerald-950/20", text: "text-emerald-700 dark:text-emerald-400", accent: "bg-emerald-500", glow: "shadow-emerald-200/50 dark:shadow-emerald-900/30" },
+// Fase 3 Sprint 1 (2026-05-30): monocromatizado. Antes cada setor tinha cor
+// decorativa própria (amber/rose/violet/cyan/emerald simultâneos) — viola a
+// 90/10 Rule + "ATS infantil 4 cores" + LIA Cyan exclusiva da IA. Agora todos
+// os setores usam o MESMO tratamento tonal neutro (ícone graphite sobre powder),
+// igual ao TemplateCard. A distinção de setor fica no ícone, não na cor.
+const SECTOR_ICON_STYLE = {
+  bg: "bg-powder dark:bg-lia-bg-tertiary",
+  text: "text-graphite dark:text-lia-text-primary",
 }
 
 // UX-Sprint-A QW#18 Batch 3 (audit 2026-05-21): STATUS_CONFIG_STYLES extraído
@@ -92,11 +94,20 @@ const STATUS_CONFIG_LABELS = {
   completed: "studio.status.completed" as const,
 }
 
+// Fase 3 Sprint 1 (2026-05-30): monocromatizado. Antes cada passo tinha cor
+// decorativa (cyan/violet/amber/emerald) — multicolor sem significado semântico.
+// Agora ícone graphite sobre powder neutro; a sequência é comunicada pelos
+// rótulos "PASSO 1..4" + setas, não pela cor.
+const FLOW_STEP_ICON_STYLE = {
+  color: "text-graphite dark:text-lia-text-primary",
+  bg: "bg-powder dark:bg-lia-bg-tertiary",
+}
+
 const FLOW_STEPS_CONFIG = [
-  { icon: Target, titleKey: "studio.flowSteps.chooseProfile" as const, descKey: "studio.flowSteps.chooseProfileDesc" as const, color: "text-cyan-600 dark:text-cyan-400", bg: "bg-cyan-50 dark:bg-cyan-950/30" },
-  { icon: Wand2, titleKey: "studio.flowSteps.configureAgent" as const, descKey: "studio.flowSteps.configureAgentDesc" as const, color: "text-violet-600 dark:text-violet-400", bg: "bg-violet-50 dark:bg-violet-950/30" },
-  { icon: GraduationCap, titleKey: "studio.flowSteps.teachByEvaluating" as const, descKey: "studio.flowSteps.teachByEvaluatingDesc" as const, color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-50 dark:bg-amber-950/30" },
-  { icon: Zap, titleKey: "studio.flowSteps.receiveCandidates" as const, descKey: "studio.flowSteps.receiveCandidatesDesc" as const, color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-950/30" },
+  { icon: Target, titleKey: "studio.flowSteps.chooseProfile" as const, descKey: "studio.flowSteps.chooseProfileDesc" as const },
+  { icon: Wand2, titleKey: "studio.flowSteps.configureAgent" as const, descKey: "studio.flowSteps.configureAgentDesc" as const },
+  { icon: GraduationCap, titleKey: "studio.flowSteps.teachByEvaluating" as const, descKey: "studio.flowSteps.teachByEvaluatingDesc" as const },
+  { icon: Zap, titleKey: "studio.flowSteps.receiveCandidates" as const, descKey: "studio.flowSteps.receiveCandidatesDesc" as const },
 ]
 
 interface AgentStudioPageProps {
@@ -412,12 +423,14 @@ export default function AgentStudioPage({
             Backend já expunha /studio/quota, agora frontend consome.
             Modelo canonical WeDOTalent pay-first sales-led — CTA é "Falar com
             Account Manager" via mailto. */}
-        <QuotaMeter className="mt-2" />
+        <div data-tour="studio-control-room">
+          <QuotaMeter className="mt-2" />
+        </div>
 
         {(agents.length > 0 || customAgents.length > 0) && (
           <div className="flex items-center gap-6 mt-2 mb-1" data-tour="studio-stats">
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <div className="w-2 h-2 rounded-full bg-status-success animate-pulse" />
               <span className="text-xs font-medium text-lia-text-secondary">
                 {t("studio.stats.activeAgents", { count: activeCount })}
               </span>
@@ -429,7 +442,7 @@ export default function AgentStudioPage({
               </span>
             </div>
             <div className="flex items-center gap-1.5">
-              <ThumbsUp className="w-3.5 h-3.5 text-emerald-500" />
+              <ThumbsUp className="w-3.5 h-3.5 text-status-success" />
               <span className="text-xs text-lia-text-secondary">
                 <span className="font-semibold text-lia-text-primary">{totalApproved}</span> {t("studio.stats.approved")}
               </span>
@@ -459,7 +472,7 @@ export default function AgentStudioPage({
           <div className="space-y-8">
             {/* How It Works — show prominently when no agents */}
             {agents.length === 0 && !isLoading && (
-              <section className="relative overflow-hidden rounded-xl border border-lia-border-subtle bg-gradient-to-br from-lia-bg-secondary to-lia-bg-primary p-6">
+              <section className="relative overflow-hidden rounded-xl border border-lia-border-subtle bg-lia-bg-secondary p-6">
                 <div className="relative">
                   <div className="flex items-center gap-2 mb-1">
                     <Brain className="w-4 h-4 text-lia-text-primary" />
@@ -481,8 +494,8 @@ export default function AgentStudioPage({
                   <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
                     {FLOW_STEPS_CONFIG.map((step, i) => (
                       <div key={i} className="flex items-start gap-3 min-w-0">
-                        <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0", step.bg)}>
-                          <step.icon className={cn("w-5 h-5", step.color)} />
+                        <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0", FLOW_STEP_ICON_STYLE.bg)}>
+                          <step.icon className={cn("w-5 h-5", FLOW_STEP_ICON_STYLE.color)} />
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-1.5 mb-0.5">
@@ -510,7 +523,6 @@ export default function AgentStudioPage({
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
                 {templates.map(t => {
                   const Icon = SECTOR_ICONS[t.icon] || Brain
-                  const colors = SECTOR_COLORS[t.icon] || SECTOR_COLORS.code
                   return (
                     <button
                       key={t.id}
@@ -518,14 +530,14 @@ export default function AgentStudioPage({
                       className={cn(
                         "group relative flex flex-col items-center gap-2.5 p-5 rounded-xl border border-lia-border-subtle",
                         "bg-lia-bg-secondary hover:border-lia-border-medium transition-colors duration-200",
-                        "hover:shadow-lg cursor-pointer", colors.glow && `hover:${colors.glow}`
+                        "hover:shadow-lia-md cursor-pointer"
                       )}
                     >
                       <div className={cn(
                         "w-12 h-12 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110",
-                        colors.bg
+                        SECTOR_ICON_STYLE.bg
                       )}>
-                        <Icon className={cn("w-6 h-6", colors.text)} />
+                        <Icon className={cn("w-6 h-6", SECTOR_ICON_STYLE.text)} />
                       </div>
                       <div className="text-center">
                         <p className="text-xs font-semibold text-lia-text-primary">{t.display_name}</p>
@@ -554,7 +566,7 @@ export default function AgentStudioPage({
                 </div>
               ) : agents.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 rounded-xl border border-dashed border-lia-border-subtle bg-lia-bg-secondary/50">
-                  <div className="w-14 h-14 rounded-2xl bg-lia-bg-tertiary flex items-center justify-center mb-3">
+                  <div className="w-14 h-14 rounded-xl bg-lia-bg-tertiary flex items-center justify-center mb-3">
                     <Bot className="w-7 h-7 text-lia-text-disabled" />
                   </div>
                   <p className="text-sm font-medium text-lia-text-secondary">{t("studio.noAgentsYet")}</p>
@@ -616,8 +628,8 @@ export default function AgentStudioPage({
                   {FLOW_STEPS_CONFIG.map((step, i) => (
                     <React.Fragment key={i}>
                       <div className="xl:flex-1 flex items-start gap-2.5 min-w-0">
-                        <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0", step.bg)}>
-                          <step.icon className={cn("w-4 h-4", step.color)} />
+                        <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0", FLOW_STEP_ICON_STYLE.bg)}>
+                          <step.icon className={cn("w-4 h-4", FLOW_STEP_ICON_STYLE.color)} />
                         </div>
                         <div className="min-w-0 flex-1">
                           <p className="text-xs font-semibold text-lia-text-primary break-words">{t(step.titleKey)}</p>
@@ -875,7 +887,7 @@ function AgentCard({
             <span className="text-xs text-lia-text-secondary uppercase tracking-wider">{t("studio.stats.analyzed")}</span>
           </div>
           <div className="flex flex-col items-center p-2 rounded-lg bg-lia-bg-primary">
-            <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">{metrics.profiles_approved}</span>
+            <span className="text-xs font-bold text-status-success">{metrics.profiles_approved}</span>
             <span className="text-xs text-lia-text-secondary uppercase tracking-wider">{t("studio.stats.approved")}</span>
           </div>
           <div className="flex flex-col items-center p-2 rounded-lg bg-lia-bg-primary">
@@ -903,9 +915,9 @@ function AgentCard({
             )}
           </div>
         ) : (
-          <div className="flex items-center gap-1.5 mb-3 px-2.5 py-1.5 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800">
-            <Brain className="w-3 h-3 text-amber-500" />
-            <span className="text-[10px] text-amber-700 dark:text-amber-400">{t("studio.card.noLink")}</span>
+          <div className="flex items-center gap-1.5 mb-3 px-2.5 py-1.5 rounded-lg bg-status-warning-bg border border-status-warning-border">
+            <Brain className="w-3 h-3 text-status-warning" />
+            <span className="text-[10px] text-status-warning">{t("studio.card.noLink")}</span>
           </div>
         )}
 
@@ -922,7 +934,7 @@ function AgentCard({
             {agent.status === "active" ? (
               <Pause className="w-3.5 h-3.5 text-lia-text-secondary" />
             ) : (
-              <Play className="w-3.5 h-3.5 text-emerald-600" />
+              <Play className="w-3.5 h-3.5 text-status-success" />
             )}
           </button>
           {/* Wave B1.6 (2026-05-27): backend /calibrate aceita apenas category=sourcing.

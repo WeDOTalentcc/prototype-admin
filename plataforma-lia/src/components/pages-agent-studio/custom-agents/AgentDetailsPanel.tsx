@@ -96,7 +96,10 @@ export function AgentDetailsPanel({ agent, open, onClose, onDeploy, onTest, onSa
               <p className={cn(textStyles.caption, "text-xs")}>{agent.description}</p>
             )}
             <div className="flex flex-wrap gap-1.5">
-              <span className={badgeStyles.cyan}>{domainLabel}</span>
+              {/* Fase 3 Sprint 1 (2026-05-30): domain label era badgeStyles.cyan,
+                  mas cyan é exclusiva de "IA agindo" (DESIGN.md LIA Cyan Exclusivity
+                  Rule). Domínio é metadata neutra → badge default (powder/graphite). */}
+              <span className={badgeStyles.default}>{domainLabel}</span>
               <span className={badgeStyles.default}>{t('contextLabel')}: {agent.context_level}</span>
               <span className={badgeStyles.default}>{agent.max_steps} {t('stepsLabel')}</span>
             </div>
