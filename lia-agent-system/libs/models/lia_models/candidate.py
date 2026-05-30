@@ -630,6 +630,8 @@ class ExternalCandidateProfile(Base):
     
     search_query = Column(Text, nullable=True)
     discovered_by = Column(String(255), nullable=True)
+    # Fase 4 snapshot: fingerprint da busca que trouxe este perfil (LGPD Art. 7 IX)
+    search_fingerprint = Column(String(64), nullable=True, index=True)
     
     promoted_to_candidate_id = Column(UUID(as_uuid=True), nullable=True, index=True)
     promoted_at = Column(DateTime, nullable=True)

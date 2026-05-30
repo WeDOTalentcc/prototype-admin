@@ -66,6 +66,10 @@ from app.shared.resilience.circuit_breaker import (
     get_degraded_response,
 )
 from app.shared.security.require_company_id import require_company_id
+from ._persist import (
+    _persist_pearch_profiles_best_effort,
+    get_suppression_docids,
+)
 
 router = APIRouter()
 
@@ -120,6 +124,10 @@ company_id: str = Depends(require_company_id)):
     try:
         # Fase 2: fingerprint dos criterios (ancora feedback/aprendizado a esta busca)
         _search_fp = _generate_search_fingerprint(request.query, request.search_spec)
+        # Fase 4: supressao de credito -- docids ja conhecidos -> docid_blacklist
+        _suppression_docids: list[str] = []
+        if request.search_pearch:
+            _suppression_docids = await get_suppression_docids(db, company_id)
         hybrid_request = HybridSearchRequest(
             query=request.query,
             thread_id=request.thread_id,
@@ -132,7 +140,7 @@ company_id: str = Depends(require_company_id)):
             show_emails=request.show_emails,
             show_phone_numbers=request.show_phone_numbers,
             job_vacancy_id=request.job_vacancy_id,
-            exclude_candidate_ids=request.exclude_candidate_ids,
+            exclude_candidate_ids=list(request.exclude_candidate_ids or []) + _suppression_docids,
             include_discovered=request.include_discovered
         )
         
@@ -237,6 +245,18 @@ company_id: str = Depends(require_company_id)):
 
         for profile in result.pearch_candidates:
             candidates.append(CandidateSearchResultDTO.from_profile(profile, "pearch"))
+
+        # Fase 4: persist-on-search (fire-and-forget, nao bloqueia resposta)
+        # LGPD Art. 7 IX: interesse legitimo recrutamento. company_id do JWT.
+        if result.pearch_candidates:
+            asyncio.create_task(
+                _persist_pearch_profiles_best_effort(
+                    result.pearch_candidates,
+                    company_id,
+                    _search_fp,
+                    request.query,
+                )
+            )
 
         if _skip_pearch:
             logger.info("[SearchFallback] Pearch circuit open, using Apify search fallback")
