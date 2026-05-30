@@ -31,7 +31,7 @@ class RoutingLearningService:
     ) -> bool:
         """Record a routing correction. Fail-open."""
         # Check flag dynamically to support monkeypatching in tests
-        import app.services.routing_learning_service as _svc_mod
+        import app.domains.analytics.services.routing_learning_service as _svc_mod
         _flag = getattr(_svc_mod, 'USE_ADAPTIVE_ROUTING', USE_ADAPTIVE_ROUTING)
         if not _flag:
             return False

@@ -72,7 +72,7 @@ def test_repos_require_company_id(module_name, class_name, method, args):
     cls = getattr(mod, class_name)
     repo = cls(db=None)
     with pytest.raises(ValueError, match="company_id is required"):
-        asyncio.get_event_loop().run_until_complete(getattr(repo, method)(*args))
+        asyncio.run(getattr(repo, method)(*args))
 
 
 # ─── 4. Imports in registry ────────────────────────────────────────────────────

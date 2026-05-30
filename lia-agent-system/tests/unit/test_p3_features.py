@@ -88,8 +88,14 @@ class TestJDUploadEndpoint:
         async def override_db():
             return AsyncMock()
 
+        from app.shared.security.require_company_id import require_company_id
+
+        async def override_company_id():
+            return str(mock_user.company_id)
+
         app.dependency_overrides[get_current_user_or_demo] = override_auth
         app.dependency_overrides[get_db] = override_db
+        app.dependency_overrides[require_company_id] = override_company_id
 
         return TestClient(app, raise_server_exceptions=False)
 
@@ -228,8 +234,14 @@ class TestJDUploadFairnessGuard:
         async def override_db():
             return AsyncMock()
 
+        from app.shared.security.require_company_id import require_company_id
+
+        async def override_company_id():
+            return str(mock_user.company_id)
+
         app.dependency_overrides[get_current_user_or_demo] = override_auth
         app.dependency_overrides[get_db] = override_db
+        app.dependency_overrides[require_company_id] = override_company_id
         return TestClient(app, raise_server_exceptions=False)
 
     def test_discriminatory_jd_blocked_by_fairness_guard(self, client):

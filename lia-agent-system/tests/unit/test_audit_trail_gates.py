@@ -46,6 +46,30 @@ def _make_sourcing_input():
     )
 
 
+
+
+# ---------------------------------------------------------------------------
+# Autouse fixture: patch get_checkpointer for unit tests that instantiate agents
+# ---------------------------------------------------------------------------
+import pytest as _pytest
+
+@_pytest.fixture(autouse=True)
+def _patch_checkpointer_for_audit_tests():
+    from unittest.mock import patch as _patch, AsyncMock as _AsyncMock
+    with (
+        _patch(
+            "lia_agents_core.langgraph_base.get_checkpointer",
+            return_value=None,
+        ),
+        _patch(
+            "app.shared.agents.tenant_aware_agent.TenantAwareAgentMixin._get_tenant_context_snippet",
+            new_callable=_AsyncMock,
+            return_value="",
+        ),
+    ):
+        yield
+
+
 class TestAuditTrailPipelineHITL:
     """AuditService no gate HITL do PipelineTransitionAgent."""
 
@@ -260,7 +284,7 @@ class TestAuditTrailPIIStripping:
     def test_analysis_service_strips_cv_text(self):
         """analysis_service._analyze_single_candidate deve strip PII do cv_text."""
         import importlib
-        import app.services.analysis_service as mod
+        import app.shared.services.analysis_service as mod
         # Verifica que o código fonte contém a chamada de strip
         import inspect
         src = inspect.getsource(mod.AnalysisService._analyze_single_candidate)
@@ -276,6 +300,6 @@ class TestAuditTrailPIIStripping:
     def test_comparison_service_strips_candidates_summary(self):
         """candidate_comparison_service._generate_llm_analysis deve strip PII."""
         import inspect
-        from app.services import candidate_comparison_service as mod
+        from app.domains.candidates.services import candidate_comparison_service as mod
         src = inspect.getsource(mod.CandidateComparisonService._generate_llm_analysis)
         assert "strip_pii_for_llm_prompt" in src

@@ -20,7 +20,7 @@ class TestRecordCorrectionSuccess(unittest.IsolatedAsyncioTestCase):
         mock_db.add = MagicMock()
         mock_db.commit = AsyncMock()
 
-        with patch("app.services.routing_learning_service.USE_ADAPTIVE_ROUTING", True):
+        with patch("app.domains.analytics.services.routing_learning_service.USE_ADAPTIVE_ROUTING", True):
             from app.shared.services.routing_learning_service import RoutingLearningService
             svc = RoutingLearningService()
             result = await svc.record_correction(
@@ -43,7 +43,7 @@ class TestRecordCorrectionFailOpen(unittest.IsolatedAsyncioTestCase):
         mock_db.add = MagicMock(side_effect=RuntimeError("DB exploded"))
         mock_db.commit = AsyncMock()
 
-        with patch("app.services.routing_learning_service.USE_ADAPTIVE_ROUTING", True):
+        with patch("app.domains.analytics.services.routing_learning_service.USE_ADAPTIVE_ROUTING", True):
             from app.shared.services.routing_learning_service import RoutingLearningService
             svc = RoutingLearningService()
             # Must not raise — fail-open
@@ -62,7 +62,7 @@ class TestRecordCorrectionDisabledFlag(unittest.IsolatedAsyncioTestCase):
 
     async def test_record_correction_disabled_when_flag_false(self):
         mock_db = AsyncMock()
-        with patch("app.services.routing_learning_service.USE_ADAPTIVE_ROUTING", False):
+        with patch("app.domains.analytics.services.routing_learning_service.USE_ADAPTIVE_ROUTING", False):
             from app.shared.services.routing_learning_service import RoutingLearningService
             svc = RoutingLearningService()
             result = await svc.record_correction(
@@ -81,7 +81,7 @@ class TestComputeAdjustmentsNoDb(unittest.IsolatedAsyncioTestCase):
     """test_compute_adjustments_returns_empty_no_db"""
 
     async def test_compute_adjustments_returns_empty_no_db(self):
-        with patch("app.services.routing_learning_service.USE_ADAPTIVE_ROUTING", True):
+        with patch("app.domains.analytics.services.routing_learning_service.USE_ADAPTIVE_ROUTING", True):
             from app.shared.services.routing_learning_service import RoutingLearningService
             svc = RoutingLearningService()
             result = await svc.compute_domain_confidence_adjustments("co-4", db=None)
@@ -104,7 +104,7 @@ class TestComputeAdjustmentsHighError(unittest.IsolatedAsyncioTestCase):
         mock_db = AsyncMock()
         mock_db.execute = AsyncMock(return_value=mock_result)
 
-        with patch("app.services.routing_learning_service.USE_ADAPTIVE_ROUTING", True):
+        with patch("app.domains.analytics.services.routing_learning_service.USE_ADAPTIVE_ROUTING", True):
             with patch.dict("sys.modules", {
                 "app.models.routing_feedback": MagicMock(RoutingFeedback=MagicMock()),
                 "sqlalchemy": MagicMock(),
@@ -118,7 +118,7 @@ class TestComputeAdjustmentsHighError(unittest.IsolatedAsyncioTestCase):
                 mock_db.execute = _mock_execute
 
                 # Patch internal imports so the method uses our mock data
-                with patch("app.services.routing_learning_service.RoutingLearningService.compute_domain_confidence_adjustments") as mock_method:
+                with patch("app.domains.analytics.services.routing_learning_service.RoutingLearningService.compute_domain_confidence_adjustments") as mock_method:
                     # Compute manually using the formula: error_rate=0.5 > 0.3 → max(0.8, 1.0 - 0.5*0.5)=max(0.8,0.75)=0.8
                     error_rate = 10 / 20  # 0.5
                     adjustment = max(0.8, 1.0 - error_rate * 0.5)
@@ -158,7 +158,7 @@ class TestComputeAdjustmentsInsufficientSamples(unittest.IsolatedAsyncioTestCase
         mock_result = MagicMock()
         mock_result.all = MagicMock(return_value=[fake_row])
 
-        with patch("app.services.routing_learning_service.USE_ADAPTIVE_ROUTING", True):
+        with patch("app.domains.analytics.services.routing_learning_service.USE_ADAPTIVE_ROUTING", True):
             from app.shared.services.routing_learning_service import _MIN_SAMPLES
             assert _MIN_SAMPLES == 10
 
@@ -186,7 +186,7 @@ class TestGetCachedAdjustmentsRedisError(unittest.IsolatedAsyncioTestCase):
         svc = RoutingLearningService()
 
         # Patch redis to raise
-        with patch("app.services.routing_learning_service.RoutingLearningService.get_cached_adjustments") as mock_get:
+        with patch("app.domains.analytics.services.routing_learning_service.RoutingLearningService.get_cached_adjustments") as mock_get:
             mock_get.side_effect = Exception("Redis down")
             try:
                 result = await svc.get_cached_adjustments("co-6")

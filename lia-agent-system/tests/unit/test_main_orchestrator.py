@@ -78,6 +78,24 @@ class TestChatResponseFromOrchestratorResult:
         assert resp.agents_consulted == []
 
 
+
+
+# ---------------------------------------------------------------------------
+# Autouse fixture: LIA_PHASE_2_V1_ENABLED kill-switch
+# Phase 2 V1 is disabled via env var in Replit (LIA_PHASE_2_V1_ENABLED=false).
+# Unit tests exercise the Phase 2 path — patch the function to always return
+# True so tests are not gated by production env var state.
+# ---------------------------------------------------------------------------
+@pytest.fixture(autouse=True)
+def _enable_phase_2_v1_for_tests():
+    from unittest.mock import patch as _patch
+    with _patch(
+        "app.orchestrator.execution.main_orchestrator._is_phase_2_v1_enabled",
+        return_value=True,
+    ):
+        yield
+
+
 # ---------------------------------------------------------------------------
 # Phase 2 — process_via_orchestrator (happy path)
 # ---------------------------------------------------------------------------
