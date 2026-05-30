@@ -1015,6 +1015,14 @@ class WizardSessionService:
                     tenant_snippet=(prior_state or {}).get("tenant_context_snippet"),
                 )
                 return (fallback_msg, {}, 0)
+            # Fix Loop 1+2: se o graph pausou em interrupt() dentro de um node,
+            # o result contém state do checkpoint anterior (stale ws_stage_payload).
+            # Extrair a mensagem do interrupt data e injetar como override.
+            _intr_msg = await asyncio.to_thread(
+                wiz_g.get_pending_interrupt_message, thread_id
+            )
+            if _intr_msg and isinstance(result, dict):
+                result = {**result, "_interrupt_msg_override": _intr_msg}
             state = prior_state or {}
             tokens_emitted = 0
             return await cls._post_process_result(
@@ -1228,6 +1236,13 @@ class WizardSessionService:
             )
             return (fallback_msg, {}, tokens_emitted)
 
+        # Fix Loop 1+2: mesma injecao de interrupt override para o path fresh invoke
+        _intr_msg_fresh = await asyncio.to_thread(
+            wiz_g.get_pending_interrupt_message, thread_id
+        )
+        if _intr_msg_fresh and isinstance(result, dict):
+            result = {**result, "_interrupt_msg_override": _intr_msg_fresh}
+
         return await cls._post_process_result(
             result=result,
             state=state,
@@ -1366,6 +1381,15 @@ class WizardSessionService:
         # ``is_wizard_session_active`` reads the checkpointer directly, so
         # there is nothing to mark/clear on each turn. Wizard "doneness" is
         # detected from ``current_stage == "completed"`` in the checkpoint.
+
+        # Fix Loop 1+2: interrupt override tem prioridade maxima — indica que
+        # intake_gate_node chamou interrupt() mid-node e o checkpoint contem
+        # ws_stage_payload stale do node anterior. Ver get_pending_interrupt_message.
+        interrupt_msg_override = (
+            result.get("_interrupt_msg_override") if isinstance(result, dict) else None
+        )
+        if interrupt_msg_override:
+            return (str(interrupt_msg_override), stage_payload, tokens_emitted)
 
         # T2 fix #5 (code review #4): quando o LLM gate (jd_gate_node) acabou
         # de classificar o turno do recrutador, a resposta contextual está em

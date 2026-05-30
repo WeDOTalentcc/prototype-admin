@@ -1056,6 +1056,29 @@ class JobCreationGraph:
         except Exception:
             return False
 
+    def get_pending_interrupt_message(self, thread_id: str):
+        """Extract user-facing message from the first pending interrupt, if any.
+
+        Called after invoke/resume to surface intake_gate_node interrupt data
+        as the visible message when the graph pauses mid-node (stale checkpoint).
+        Fail-open: returns None on any error.
+        """
+        try:
+            config = {"configurable": {"thread_id": thread_id}}
+            snapshot = self._graph.get_state(config)
+            if not snapshot:
+                return None
+            for task in (snapshot.tasks or []):
+                for intr in (getattr(task, "interrupts", None) or []):
+                    val = getattr(intr, "value", None)
+                    if isinstance(val, dict):
+                        data = val.get("data")
+                        if isinstance(data, dict) and data.get("message"):
+                            return str(data["message"])
+            return None
+        except Exception:  # noqa: BLE001
+            return None
+
     def resume_with_message(
         self, thread_id: str, user_message: str
     ) -> JobCreationState:
