@@ -158,6 +158,8 @@ export function useCandidatesSearchComposition(params: UseCandidatesSearchCompos
     pearchSearchOptions: params.pearchSearchOptions,
     searchThreadId: params.searchThreadId,
     setSearchThreadId: params.setSearchThreadId,
+    setSearchFingerprint: params.setSearchFingerprint,
+    setSearchFeedbacks: params.setSearchFeedbacks,
     hideViewedCandidatesFilter: params.hideViewedCandidatesFilter,
     talentFunnel: params.talentFunnel as unknown as { addToHistory: (entry: Record<string, unknown>) => void },
     setCandidates: params.setCandidates,

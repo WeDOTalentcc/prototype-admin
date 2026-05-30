@@ -62,6 +62,8 @@ interface ExecuteSearchDeps {
   pearchSearchOptions: PearchSearchOptions
   searchThreadId: string | undefined
   setSearchThreadId: (id: string | undefined) => void
+  setSearchFingerprint: (fp: string | undefined) => void
+  setSearchFeedbacks: (v: Record<string, 'like' | 'dislike'>) => void
   hideViewedCandidatesFilter: (candidates: Candidate[]) => Candidate[]
   talentFunnel: { addToHistory: (entry: Record<string, unknown>) => void }
   setCandidates: (c: Candidate[]) => void
@@ -161,6 +163,7 @@ export function mapCandidateToInternal(c: Record<string, unknown>): Candidate {
 export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
   const {
     searchSource, pearchSearchOptions, searchThreadId, setSearchThreadId,
+    setSearchFingerprint, setSearchFeedbacks,
     hideViewedCandidatesFilter, talentFunnel,
     setCandidates, setSearchResults, setHasSearchResults, setSearchResultsCount,
     setLocalResultsCount, setPearchResultsCount, setCreditsUsedInSearch, setCreditsRemaining,
@@ -275,6 +278,23 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
           require_emails: pearchSearchOptions.requireEmails, require_phone_numbers: pearchSearchOptions.requirePhoneNumbers
         })
         if (searchResponse.thread_id) setSearchThreadId(searchResponse.thread_id)
+        // Fase 2: ancora (provider) + re-hidrata feedback pelos criterios desta busca
+        if (searchResponse.search_fingerprint) {
+          setSearchFingerprint(searchResponse.search_fingerprint)
+          try {
+            const _fbResp = await fetch(
+              `/api/backend-proxy/search/feedback/by-search?fingerprint=${encodeURIComponent(searchResponse.search_fingerprint)}`
+            )
+            if (_fbResp.ok) {
+              const _fbData = await _fbResp.json()
+              if (_fbData?.feedbacks && Object.keys(_fbData.feedbacks).length > 0) {
+                setSearchFeedbacks(_fbData.feedbacks as Record<string, 'like' | 'dislike'>)
+              }
+            }
+          } catch (_e) {
+            console.warn('[search] re-hidratacao de feedback falhou (best-effort):', _e)
+          }
+        }
         creditsUsed = searchResponse.credits_used
         if (searchResponse.is_enriching_contacts) isEnrichingContacts = true
         filteredNoContact = (searchResponse as { filtered_no_contact?: number }).filtered_no_contact || 0
