@@ -3,6 +3,7 @@
 import React from "react"
 import { cn } from "@/lib/utils"
 import { Brain, Zap, Target } from "lucide-react"
+import { Chip } from "@/components/ui/chip"
 import type { CompetencyData, ScreeningMode } from "../wizard-types"
 
 interface Props {
@@ -119,12 +120,9 @@ export function CompetencyPanel({ data, onUpdate }: Props) {
             </p>
             <div className="flex flex-wrap gap-1.5">
               {techSkills.map((s, i) => (
-                <span
-                  key={i}
-                  className="inline-flex px-2 py-0.5 rounded bg-lia-bg-secondary border border-lia-border-subtle text-xs text-lia-text-primary"
-                >
+                <Chip key={i} density="compact" variant="info">
                   {s.skill}
-                </span>
+                </Chip>
               ))}
             </div>
           </div>
@@ -140,9 +138,9 @@ export function CompetencyPanel({ data, onUpdate }: Props) {
                 <div key={i} className="flex items-center gap-2 text-xs">
                   <span className="text-lia-text-primary">{s.skill}</span>
                   {s.trait && (
-                    <span className="px-1.5 py-0.5 rounded bg-wedo-cyan/10 text-wedo-cyan text-[10px] font-medium">
+                    <Chip density="compact" variant="info" muted>
                       {s.trait}
-                    </span>
+                    </Chip>
                   )}
                 </div>
               ))}
