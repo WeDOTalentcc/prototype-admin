@@ -287,6 +287,41 @@ def _build_permission_message(
     return salary_part
 
 
+def _ficha_data(
+    state: JobCreationState,
+    message: str,
+    extra: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    """Monta o ws_stage_payload.data CUMULATIVO da ficha viva (Fase 5).
+
+    Todas as respostas do intake_gate carregam parsed_* + screening_mode +
+    salary (+ confirmed_* quando existem) no MESMO payload, porque o
+    useWizardFlow (FE) substitui stageData por payload — não faz merge. Sem
+    isso, a ficha viva mostraria zonas OU competências, nunca as duas juntas.
+    """
+    data: Dict[str, Any] = {
+        "message": message,
+        "parsed_title": state.get("parsed_title"),
+        "parsed_seniority": state.get("parsed_seniority"),
+        "parsed_model": state.get("parsed_model"),
+        "parsed_department": state.get("parsed_department"),
+        "parsed_location": state.get("parsed_location"),
+        "parsed_employment_type": state.get("parsed_employment_type"),
+        "screening_mode": state.get("screening_mode"),
+        "salary_min": state.get("salary_min"),
+        "salary_max": state.get("salary_max"),
+        "salary_range": state.get("salary_range"),
+    }
+    _ct = state.get("confirmed_technical_competencies")
+    _cb = state.get("confirmed_behavioral_competencies")
+    if _ct or _cb:
+        data["confirmed_technical_competencies"] = _ct or []
+        data["confirmed_behavioral_competencies"] = _cb or []
+    if extra:
+        data.update(extra)
+    return data
+
+
 def _make_ws_response(
     state: JobCreationState,
     message: str,
@@ -300,7 +335,7 @@ def _make_ws_response(
             stage="intake",
             completeness=calculate_completeness("intake"),
             requires_approval=True,
-            data={"message": message},
+            data=_ficha_data(state, message),
         ),
     }
     if extra_updates:
@@ -486,9 +521,14 @@ def intake_gate_node(state: JobCreationState) -> JobCreationState:
             state, parsed_title, parsed_seniority, eff_mode,
         )
 
-        data: Dict[str, Any] = {"message": reply}
+        _appr_extra: Dict[str, Any] = {
+            "screening_mode": base.get("screening_mode") or eff_mode,
+            "confirmed_technical_competencies": conf_tech,
+            "confirmed_behavioral_competencies": conf_behav,
+        }
         if comp_payload:
-            data["suggestions_data"] = {"competencies": comp_payload}
+            _appr_extra["suggestions_data"] = {"competencies": comp_payload}
+        data = _ficha_data(state, reply, _appr_extra)
 
         return {
             **state,
@@ -517,6 +557,6 @@ def intake_gate_node(state: JobCreationState) -> JobCreationState:
             stage="intake",
             completeness=calculate_completeness("intake"),
             requires_approval=True,
-            data={"message": clarify},
+            data=_ficha_data(state, clarify),
         ),
     }
