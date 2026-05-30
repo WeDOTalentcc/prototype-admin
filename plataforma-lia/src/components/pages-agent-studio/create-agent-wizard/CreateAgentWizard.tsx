@@ -55,6 +55,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { extractErrorMessage } from "@/lib/api/extract-error-message"
+import { buildCreateAgentPayloadFromTemplate } from "@/lib/agents/create-agent-payload"
 import { useLegacyAgentTemplates } from "@/hooks/agents/use-legacy-agent-templates"
 import { toast } from "@/lib/toast"
 import { cn } from "@/lib/utils"
@@ -267,17 +268,9 @@ export function CreateAgentWizard({
         const res = await fetch("/api/backend-proxy/custom-agents", {
           method: "POST",
           headers: buildAuthHeaders(),
-          body: JSON.stringify({
-            name: config.name || tmpl.name,
-            role: tmpl.description,
-            description: tmpl.description,
-            system_prompt: tmpl.system_prompt,
-            allowed_tools: tmpl.allowed_tools,
-            domain: tmpl.domain,
-            context_level: tmpl.context_level,
-            max_steps: tmpl.max_steps,
-            temperature: tmpl.temperature,
-          }),
+          body: JSON.stringify(
+            buildCreateAgentPayloadFromTemplate(tmpl, config.name || tmpl.name),
+          ),
         })
         if (!res.ok) {
           const err = await res.json().catch(() => ({}))

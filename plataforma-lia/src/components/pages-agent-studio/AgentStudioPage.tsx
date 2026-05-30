@@ -27,6 +27,7 @@ import { cn } from "@/lib/utils"
 import { getSourcingAgentStatusConfig } from "@/lib/agent-studio/status-config"
 import { toast } from "@/lib/toast"
 import { extractErrorMessage } from "@/lib/api/extract-error-message"
+import { buildCreateAgentPayloadFromTemplate, buildAgentAuthHeaders } from "@/lib/agents/create-agent-payload"
 import { Button } from "@/components/ui/button"
 import { BetaBadge } from "@/components/ui/beta-badge"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
@@ -142,6 +143,9 @@ export default function AgentStudioPage({
   // Sprint B QW#5 (Dialog confirm) preservado em TemplatePreviewModal, mas não montado
   // a partir do TemplateGallery — o clone-first é o pattern canonical agora.
   const [previewTemplate, setPreviewTemplate] = useState<AgentTemplate | null>(null)
+  // P1 (Paulo 2026-05-30): "Usar agora" cria o agente direto (sem wizard).
+  // Guard pra evitar duplo-clique disparar 2 POSTs.
+  const [usingTemplateId, setUsingTemplateId] = useState<string | null>(null)
   // P0-6 audit 2026-05-21: CreateDigitalTwinModal estava orfão (não montada). Wiring canonical.
   const [showCreateTwinModal, setShowCreateTwinModal] = useState(false)
   const [twinsRefreshKey, setTwinsRefreshKey] = useState(0)
@@ -275,6 +279,45 @@ export default function AgentStudioPage({
       name: `${template.name} (cópia)`,
       description: template.description,
     })
+  }
+
+  // P1 (Paulo 2026-05-30): "Usar agora" = criação direta com os defaults do
+  // template, SEM passar pelo wizard. Reusa o MESMO contrato de POST do wizard
+  // (buildCreateAgentPayloadFromTemplate — single source of truth). "Ajustar
+  // antes" (handleCloneTemplate) continua abrindo o wizard pré-populado. Os dois
+  // botões agora fazem coisas distintas.
+  const handleUseTemplateNow = async (template: AgentTemplate) => {
+    if (usingTemplateId) return
+    setUsingTemplateId(template.id)
+    try {
+      const res = await fetch("/api/backend-proxy/custom-agents", {
+        method: "POST",
+        headers: buildAgentAuthHeaders(),
+        body: JSON.stringify(buildCreateAgentPayloadFromTemplate(template)),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(extractErrorMessage(err, res.status))
+      }
+      const data = await res.json().catch(() => ({}))
+      const createdId = typeof data?.id === "string" ? data.id : null
+      toast.success(
+        t("studio.toast.agentCreated", { name: template.name }),
+        t("studio.toast.agentCreatedFromTemplate"),
+      )
+      mutateCustomAgents()
+      loadData()
+      // Leva o recrutador ao agente recém-criado: abre o painel de detalhes se
+      // a lista já tiver o agente; senão a lista atualizada já o mostra. O
+      // calibrate flow é acionado quando há id (mesmo contrato do wizard).
+      if (createdId) onStartCalibration?.(createdId)
+    } catch (e) {
+      const msg =
+        e instanceof Error ? e.message : t("studio.toast.errorCreatingAgent")
+      toast.error(msg, t("studio.toast.tryAgain"))
+    } finally {
+      setUsingTemplateId(null)
+    }
   }
 
   // UX_AUDIT T4 (2026-05-21): handleTemplateConfirm removido — antes (Sprint B QW#5)
@@ -565,7 +608,7 @@ export default function AgentStudioPage({
               <div className="mt-6">
                 <TemplateGallery
                   onTemplateSelect={handleTemplateSelect}
-                  onTemplateUse={handleCloneTemplate}
+                  onTemplateUse={handleUseTemplateNow}
                   onTemplateCustomize={handleCloneTemplate}
                 />
               </div>

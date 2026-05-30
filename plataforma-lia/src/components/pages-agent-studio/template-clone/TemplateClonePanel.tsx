@@ -110,28 +110,14 @@ export function TemplateClonePanel({
           </div>
         </DialogHeader>
 
-        {/* Body — seções didáticas */}
+        {/* Body — seções didáticas.
+            P4 (Paulo 2026-05-30): a conversa-exemplo NÃO é mais o herói do modal
+            (era redundante com o teaser do card "Veja em ação"). O modal foca no
+            que agrega: o que o agente faz (capacidades), especialidade/área, como
+            trabalha. A conversa vira UMA seção secundária no fim, recolhida. */}
         <ScrollArea className="flex-1 min-h-0">
           <div className="px-6 py-5 space-y-5">
-            {/* Veja em ação — conversa-exemplo (Fase 3 Sprint 2). Primeira seção:
-                comprehension by demonstration > descrição. */}
-            <section data-testid="template-clone-section-conversation">
-              <h3 className="flex items-center gap-2 text-sm font-semibold text-lia-text-primary mb-1">
-                <MessagesSquare className="h-4 w-4 text-lia-text-secondary" aria-hidden="true" />
-                {t("seeInActionLabel")}
-              </h3>
-              <p className="mb-3 text-xs text-lia-text-secondary">
-                {t("seeInActionHint")}
-              </p>
-              <AgentConversationPreview
-                slug={template.slug}
-                category={template.category}
-              />
-            </section>
-
-            <Separator />
-
-            {/* O que este agente faz — capacidades de alto nível */}
+            {/* O que este agente faz — capacidades de alto nível (herói do modal) */}
             <section data-testid="template-clone-section-tools">
               <h3 className="flex items-center gap-2 text-sm font-semibold text-lia-text-primary mb-2">
                 <ListChecks className="h-4 w-4 text-lia-text-secondary" aria-hidden="true" />
@@ -222,6 +208,31 @@ export function TemplateClonePanel({
                 >
                   {template.system_prompt || "—"}
                 </pre>
+              </details>
+            </section>
+
+            <Separator />
+
+            {/* Veja em ação — conversa-exemplo, agora SECUNDÁRIA e recolhida
+                (P4). O teaser curto da conversa já vive no card; aqui ela é só
+                um complemento opcional, não o destaque. */}
+            <section data-testid="template-clone-section-conversation">
+              <details className="group">
+                <summary className="cursor-pointer list-none flex items-center gap-2 text-sm font-semibold text-lia-text-primary hover:text-lia-text-secondary transition-colors">
+                  <Icons.ChevronRight
+                    className="h-3.5 w-3.5 transition-transform group-open:rotate-90 text-lia-text-secondary"
+                    aria-hidden="true"
+                  />
+                  <MessagesSquare className="h-4 w-4 text-lia-text-secondary" aria-hidden="true" />
+                  {t("seeInActionLabel")}
+                </summary>
+                <p className="mt-1 mb-3 text-xs text-lia-text-secondary">
+                  {t("seeInActionHint")}
+                </p>
+                <AgentConversationPreview
+                  slug={template.slug}
+                  category={template.category}
+                />
               </details>
             </section>
           </div>

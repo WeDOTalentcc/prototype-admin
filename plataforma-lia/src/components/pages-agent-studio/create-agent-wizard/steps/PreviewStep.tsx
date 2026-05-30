@@ -2,23 +2,20 @@
 
 import { Bot, CheckCircle2, Heart, Phone, Search, Settings2, Brain } from "lucide-react"
 import * as Icons from "lucide-react"
+import { useTranslations } from "next-intl"
 
 import { useLegacyAgentTemplates } from "@/hooks/agents/use-legacy-agent-templates"
+import { summarizeCapabilities } from "@/lib/agents/tool-capabilities"
 
 import type { AgentApproach, AgentGoal, GeneratedConfigPreview, WizardConfig } from "../types"
 
-const GOAL_LABELS: Record<AgentGoal, { icon: typeof Brain; label: string }> = {
-  triagem_inicial: { icon: Brain, label: "Triagem inicial automatizada" },
-  sourcing_ativo: { icon: Search, label: "Sourcing ativo" },
-  screening_cultural: { icon: Heart, label: "Screening cultural / fit" },
-  voz_whatsapp: { icon: Phone, label: "Triagem por voz ou WhatsApp" },
-  outro: { icon: Settings2, label: "Outro / criar do zero" },
-}
-
-const APPROACH_LABELS: Record<AgentApproach, string> = {
-  ai: "Criar com IA",
-  template: "Template pre-configurado",
-  manual: "Criar custom manual",
+// Ícone por objetivo (o rótulo agora vem do i18n, não hardcoded).
+const GOAL_ICONS: Record<AgentGoal, typeof Brain> = {
+  triagem_inicial: Brain,
+  sourcing_ativo: Search,
+  screening_cultural: Heart,
+  voz_whatsapp: Phone,
+  outro: Settings2,
 }
 
 interface PreviewStepProps {
@@ -28,43 +25,60 @@ interface PreviewStepProps {
   aiPreview: GeneratedConfigPreview | null
 }
 
+/**
+ * PreviewStep — etapa final "Pronto pra criar?" do wizard.
+ *
+ * Redesign 2026-05-30 (Paulo, crítica do recrutador, P2+P3):
+ *  - P2: a nota de rodapé "editor avançado" (jargão) vira "Você pode ajustar
+ *    tudo depois, quando quiser." (i18n).
+ *  - P3: o objetivo reflete o template escolhido (quando há um) ou o objetivo
+ *    real em PT — nunca "Outro / criar do zero". As ferramentas viram
+ *    capacidades de alto nível em PT (summarizeCapabilities), não slugs crus.
+ */
 export function PreviewStep({ goal, approach, config, aiPreview }: PreviewStepProps) {
+  const t = useTranslations("agents.customAgents")
   const { templates: AGENT_TEMPLATES } = useLegacyAgentTemplates()
-  const goalInfo = GOAL_LABELS[goal]
-  const GoalIcon = goalInfo.icon
-  const tmpl = approach === "template" ? AGENT_TEMPLATES.find((t) => t.id === config.templateId) : null
+
+  const GoalIcon = GOAL_ICONS[goal]
+  const tmpl = approach === "template" ? AGENT_TEMPLATES.find((tpl) => tpl.id === config.templateId) : null
   const TmplIcon = tmpl
     ? ((Icons as unknown as Record<string, React.ComponentType<{ className?: string }>>)[tmpl.icon] || Bot)
     : null
 
-  const finalName = config.name || aiPreview?.suggested_name || tmpl?.name || "Novo Agente"
+  const finalName = config.name || aiPreview?.suggested_name || tmpl?.name || t("preview.objectiveLabel")
+
+  // Objetivo legível: quando o usuário escolheu um modelo, o objetivo é o
+  // próprio modelo; senão usa o rótulo PT do objetivo. Nunca "Outro / criar do zero".
+  const objectiveText = tmpl ? tmpl.name : t(`goalLabels.${goal}`)
+
   const tools: string[] =
     approach === "ai"
       ? aiPreview?.suggested_tools ?? []
       : approach === "template"
         ? tmpl?.allowed_tools ?? []
         : []
+  const capabilities = summarizeCapabilities(tools)
 
   return (
     <div className="space-y-4" data-testid="preview-step">
       <div className="flex items-center justify-center py-2">
-        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-500" aria-hidden="true">
+        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-status-success/10 text-status-success" aria-hidden="true">
           <CheckCircle2 className="h-6 w-6" />
         </div>
       </div>
 
       <p className="text-center text-sm text-lia-text-secondary">
-        Confira o resumo antes de criar o agente.
+        {t("preview.intro")}
       </p>
 
       <div className="rounded-xl border border-lia-border-subtle bg-lia-bg-secondary p-5 space-y-3">
         <div className="flex items-center gap-3 pb-3 border-b border-lia-border-subtle">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-powder text-graphite" aria-hidden="true">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-powder text-graphite dark:bg-lia-bg-tertiary dark:text-lia-text-primary" aria-hidden="true">
             {TmplIcon ? <TmplIcon className="h-5 w-5" /> : <Bot className="h-5 w-5" />}
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-sm font-semibold text-lia-text-primary">{finalName}</p>
-            <p className="text-[11px] text-lia-text-disabled">{APPROACH_LABELS[approach]}</p>
+            <p className="text-[11px] text-lia-text-disabled">{t(`approachLabels.${approach}`)}</p>
           </div>
         </div>
 
@@ -72,51 +86,44 @@ export function PreviewStep({ goal, approach, config, aiPreview }: PreviewStepPr
           <div className="flex items-start gap-2">
             <GoalIcon className="h-3.5 w-3.5 text-lia-text-disabled mt-0.5 shrink-0" aria-hidden="true" />
             <div className="min-w-0">
-              <span className="text-lia-text-disabled">Objetivo:</span>{" "}
-              <span className="text-lia-text-primary">{goalInfo.label}</span>
+              <span className="text-lia-text-disabled">{t("preview.objectiveLabel")}:</span>{" "}
+              <span className="text-lia-text-primary">{objectiveText}</span>
             </div>
           </div>
 
           {approach === "ai" && config.aiDescription && (
-            <div className="text-lia-text-secondary italic text-[11px] mt-1">
-              "{config.aiDescription.slice(0, 160)}{config.aiDescription.length > 160 ? "..." : ""}"
-            </div>
+            <p className="text-lia-text-secondary italic text-[11px] mt-1">
+              {config.aiDescription.slice(0, 160)}
+              {config.aiDescription.length > 160 ? "..." : ""}
+            </p>
           )}
 
-          {tools.length > 0 && (
+          {capabilities.length > 0 && (
             <div className="mt-1">
-              <span className="text-lia-text-disabled">Ferramentas:</span>{" "}
-              <span className="text-lia-text-primary">{tools.length} habilitadas</span>
-              <div className="mt-1 flex flex-wrap gap-1">
-                {tools.slice(0, 6).map((tool) => (
-                  <span
-                    key={tool}
-                    className="rounded-md bg-lia-bg-tertiary px-2 py-0.5 text-[10px] text-lia-text-secondary"
+              <p className="text-[10px] uppercase tracking-wide font-semibold text-lia-text-disabled">
+                {t("preview.whatItDoesLabel")}
+              </p>
+              <ul className="mt-1.5 space-y-1">
+                {capabilities.map((cap) => (
+                  <li
+                    key={cap}
+                    className="flex items-start gap-2 text-xs text-lia-text-secondary"
                   >
-                    {tool}
-                  </span>
+                    <span
+                      className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-lia-text-disabled"
+                      aria-hidden="true"
+                    />
+                    <span>{cap}</span>
+                  </li>
                 ))}
-                {tools.length > 6 && (
-                  <span className="text-[10px] text-lia-text-disabled self-center">
-                    +{tools.length - 6} mais
-                  </span>
-                )}
-              </div>
-            </div>
-          )}
-
-          {approach === "ai" && aiPreview && (
-            <div className="grid grid-cols-3 gap-2 pt-2 text-[10px] text-lia-text-disabled">
-              <span>contexto: {aiPreview.suggested_context_level ?? "standard"}</span>
-              <span>passos: {aiPreview.suggested_max_steps ?? 8}</span>
-              <span>temp: {aiPreview.suggested_temperature ?? 0.5}</span>
+              </ul>
             </div>
           )}
         </div>
       </div>
 
       <p className="text-center text-[11px] text-lia-text-disabled">
-        Apos criar, voce podera ajustar todos os campos no editor avancado.
+        {t("preview.adjustLaterNote")}
       </p>
     </div>
   )

@@ -1997,7 +1997,9 @@
         "noLinkDesc": "Este agente não está vinculado a uma vaga ou banco de talentos. Vincule-o para poder navegar.",
         "errorStatus": "Erro ao alterar status",
         "agentCloned": "Agente duplicado com sucesso",
-        "errorCloning": "Erro ao duplicar agente"
+        "errorCloning": "Erro ao duplicar agente",
+        "agentCreatedFromTemplate": "Pronto para uso. Personalize quando quiser.",
+        "errorCreatingAgent": "Erro ao criar agente"
       },
       "modal": {
         "createTitle": "Criar Agente",
@@ -3141,7 +3143,25 @@
       "seeInActionLabel": "Veja em ação",
       "seeInActionHint": "Um exemplo de como este agente conduz a conversa.",
       "showExample": "Ver exemplo",
-      "hideExample": "Ocultar exemplo"
+      "hideExample": "Ocultar exemplo",
+      "preview": {
+        "intro": "Confira o resumo antes de criar o agente.",
+        "objectiveLabel": "Objetivo",
+        "whatItDoesLabel": "O que faz",
+        "adjustLaterNote": "Você pode ajustar tudo depois, quando quiser."
+      },
+      "goalLabels": {
+        "triagem_inicial": "Triagem inicial automatizada",
+        "sourcing_ativo": "Sourcing ativo",
+        "screening_cultural": "Screening cultural e fit",
+        "voz_whatsapp": "Triagem por voz ou WhatsApp",
+        "outro": "Agente personalizado"
+      },
+      "approachLabels": {
+        "ai": "Criado com IA",
+        "template": "A partir de um modelo",
+        "manual": "Configuração manual"
+      }
     },
     "digitalTwin": {
       "active": "Ativo",

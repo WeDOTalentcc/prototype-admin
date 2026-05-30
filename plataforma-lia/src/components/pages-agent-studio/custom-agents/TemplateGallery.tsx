@@ -174,7 +174,9 @@ export function TemplateGallery({
       </div>
 
       {/* Template Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      {/* P5 (Paulo 2026-05-30): 2 colunas no máximo. Os cards agora são ricos
+          (descrição + capacidades + conversa) e respiram melhor em 2 colunas. */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {filtered.map((template) => (
           <TemplateCard
             key={template.id}

@@ -1997,7 +1997,9 @@
         "noLinkDesc": "This agent is not linked to a job or talent pool. Link it to navigate.",
         "errorStatus": "Error changing status",
         "agentCloned": "Agent duplicated successfully",
-        "errorCloning": "Error duplicating agent"
+        "errorCloning": "Error duplicating agent",
+        "agentCreatedFromTemplate": "Ready to use. Customize whenever you want.",
+        "errorCreatingAgent": "Failed to create agent"
       },
       "modal": {
         "createTitle": "Create Agent",
@@ -3141,7 +3143,25 @@
       "seeInActionLabel": "See it in action",
       "seeInActionHint": "An example of how this agent runs the conversation.",
       "showExample": "Show example",
-      "hideExample": "Hide example"
+      "hideExample": "Hide example",
+      "preview": {
+        "intro": "Review the summary before creating the agent.",
+        "objectiveLabel": "Objective",
+        "whatItDoesLabel": "What it does",
+        "adjustLaterNote": "You can adjust everything later, whenever you want."
+      },
+      "goalLabels": {
+        "triagem_inicial": "Automated initial screening",
+        "sourcing_ativo": "Active sourcing",
+        "screening_cultural": "Cultural / fit screening",
+        "voz_whatsapp": "Voice or WhatsApp screening",
+        "outro": "Custom agent"
+      },
+      "approachLabels": {
+        "ai": "Built with AI",
+        "template": "From a template",
+        "manual": "Manual setup"
+      }
     },
     "digitalTwin": {
       "active": "Active",
