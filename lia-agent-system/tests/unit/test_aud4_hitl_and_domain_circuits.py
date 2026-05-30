@@ -14,6 +14,38 @@ from unittest.mock import AsyncMock, MagicMock, patch
 # AUD-4 — Circuit breakers in domain-level ATS clients
 # ---------------------------------------------------------------------------
 
+
+# ---------------------------------------------------------------------------
+# Fixture canônica (Onda 4 / Sprint HITL): patch get_checkpointer para teste
+# unit. Em production APP_ENV, get_checkpointer() levanta RuntimeError antes
+# de initialize_checkpointer_async(). Tests instanciam agentes diretamente →
+# precisam do patch. Padrão: test_langgraph_base_streaming.py (autouse).
+# ---------------------------------------------------------------------------
+@pytest.fixture(autouse=True)
+def _patch_checkpointer_for_unit_tests():
+    """Substitui get_checkpointer() por None e tenant context para todos os testes do módulo.
+
+    Agentes armazenam self._checkpointer = get_checkpointer() no __init__.
+    Tests mockam process() individualmente — o checkpointer real não é usado.
+
+    Também patcha _get_tenant_context_snippet para retornar "" em modo strict:
+    testes de SEG-5/audit usam company_id="c1"/"c2" (slugs inválidos) e não
+    precisam do snippet real — o comportamento testado é o audit log, não o
+    tenant resolution.
+    """
+    from unittest.mock import patch as _patch, AsyncMock as _AsyncMock
+    with (
+        _patch(
+            "lia_agents_core.langgraph_base.get_checkpointer",
+            return_value=None,
+        ),
+        _patch(
+            "app.shared.agents.tenant_aware_agent.TenantAwareAgentMixin._get_tenant_context_snippet",
+            new_callable=_AsyncMock,
+            return_value="",
+        ),
+    ):
+        yield
 class TestDomainATSCircuitBreakers:
     """Domain-level ATS clients must use circuit breakers."""
 
