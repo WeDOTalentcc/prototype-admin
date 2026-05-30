@@ -126,10 +126,18 @@ def _safe_fetch_salary(
     state: JobCreationState,
     title: Optional[str],
     seniority: Optional[str],
-    model: Optional[str],
 ) -> Optional[Dict[str, Any]]:
-    """Fetch salary benchmark. Returns None on timeout/error (fail-open)."""
+    """Fetch salary benchmark. Returns None on timeout/error (fail-open).
+
+    Usa a assinatura canônica de MarketBenchmarkService.search_salary_benchmark
+    (role, seniority, location) — mesma usada por salary.py, jd_enrichment_service,
+    compensation_analysis e os demais consumidores. location vem de parsed_location
+    (mercado nacional quando ausente). Salário de mercado é dado PÚBLICO, não
+    tenant-scoped, então company_id não participa (o produtor não o usa).
+    """
     from app.domains.job_creation.helpers.async_audit import run_coro_in_threadpool
+
+    location = state.get("parsed_location") or None
 
     try:
         async def _fetch() -> Optional[Dict[str, Any]]:
@@ -138,8 +146,7 @@ def _safe_fetch_salary(
             return await svc.search_salary_benchmark(
                 role=title or "",
                 seniority=seniority or "",
-                work_model=model or None,
-                company_id=str(state.get("workspace_id") or state.get("company_id") or ""),
+                location=location,
             )
 
         return run_coro_in_threadpool(_fetch, timeout=_SALARY_TIMEOUT_S)
@@ -322,7 +329,7 @@ def intake_gate_node(state: JobCreationState) -> JobCreationState:
 
     # ═══ Sub-estado 2: Sugestão de salário + permissão ══════════════════════
     if not intake_salary_suggested:
-        benchmark = _safe_fetch_salary(state, parsed_title, parsed_seniority, parsed_model)
+        benchmark = _safe_fetch_salary(state, parsed_title, parsed_seniority)
         permission_msg = _build_permission_message(benchmark, parsed_title, parsed_seniority, parsed_model)
 
         if not resume_msg:
