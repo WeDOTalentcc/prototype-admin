@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState } from "react"
-import { DollarSign, Gift } from "lucide-react"
+import { DollarSign, Gift, CheckCircle2, Edit2 } from "lucide-react"
 import type { SalaryData } from "../wizard-types"
 import { FallbackBanner } from "./FallbackBanner"
 import { AiDegradedModeBanner } from "./AiDegradedModeBanner"
@@ -14,30 +14,45 @@ interface Props {
 export function SalaryPanel({ data, onUpdate }: Props) {
   const d = data as unknown as SalaryData
   const currency = d.salary_currency || "BRL"
-  const fmt = (v: number | null) => v ? `${currency} ${v.toLocaleString("pt-BR")}` : "-"
+  const fmt = (v: number | null | undefined) =>
+    v ? `${currency} ${v.toLocaleString("pt-BR")}` : "-"
+
+  // Fase 5: se salary_confirmed=true (recrutador confirmou via painel ou
+  // right_panel_form), mostra a faixa como confirmada com ajuste como ação secundária.
+  const isConfirmed = Boolean(d.salary_confirmed)
+  const [isAdjusting, setIsAdjusting] = useState(false)
 
   const [min, setMin] = useState(d.salary_min ?? 0)
   const [max, setMax] = useState(d.salary_max ?? 0)
 
-  // Dynamic slider range based on data or benchmark
-  const benchmarkMax = d.benchmark ? Number((d.benchmark as Record<string, unknown>).p90 || (d.benchmark as Record<string, unknown>).max || 50000) : null
+  const benchmarkMax = d.benchmark
+    ? Number(
+        (d.benchmark as Record<string, unknown>).p90 ||
+        (d.benchmark as Record<string, unknown>).max ||
+        50000,
+      )
+    : null
   const sliderMax = Math.max(50000, benchmarkMax ?? 0, (d.salary_max ?? 0) * 1.5)
 
   const handleMinChange = (val: number) => {
     setMin(val)
     onUpdate?.({ salary_min: val })
   }
-
   const handleMaxChange = (val: number) => {
     setMax(val)
     onUpdate?.({ salary_max: val })
   }
+  const handleConfirmAdjust = () => {
+    onUpdate?.({ salary_min: min, salary_max: max })
+    setIsAdjusting(false)
+  }
+
+  const showSliders = !isConfirmed || isAdjusting
 
   return (
     <div className="px-4 py-3 space-y-4">
-      {/* Task #1070 — banner de modo degradado agregado (sessao/tenant). */}
       <AiDegradedModeBanner state={d.ai_degraded_mode ?? null} />
-      {/* Task #1065 — banner de fallback (timeout do benchmark fetch). */}
+
       {d.salary_used_fallback && (
         <div className="-mx-4 -mt-3 [&>div]:mx-0 [&>div]:mt-0 [&>div]:rounded-none [&>div]:border-x-0 [&>div]:border-t-0">
           <FallbackBanner
@@ -57,46 +72,97 @@ export function SalaryPanel({ data, onUpdate }: Props) {
           />
         </div>
       )}
+
       <div>
-        <div className="flex items-center gap-1.5 mb-2">
-          <DollarSign className="w-4 h-4 text-wedo-cyan" />
-          <span className="text-xs font-medium text-lia-text-secondary">Faixa salarial</span>
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-1.5">
+            <DollarSign className="w-4 h-4 text-wedo-cyan" />
+            <span className="text-xs font-medium text-lia-text-secondary">Faixa salarial</span>
+          </div>
+          {/* Fase 5: modo confirmado mostra badge + botão de ajuste secundário */}
+          {isConfirmed && !isAdjusting && (
+            <button
+              data-testid="salary-adjust-btn"
+              onClick={() => setIsAdjusting(true)}
+              className="flex items-center gap-1 text-[10px] text-lia-text-disabled hover:text-wedo-cyan transition-colors"
+            >
+              <Edit2 className="w-3 h-3" />
+              Ajustar
+            </button>
+          )}
         </div>
 
-        {/* Range display */}
-        <div className="flex items-center gap-3 text-sm mb-3">
-          <span className="text-lia-text-primary">{fmt(min || d.salary_min)}</span>
-          <span className="text-lia-text-disabled">—</span>
-          <span className="text-lia-text-primary">{fmt(max || d.salary_max)}</span>
-        </div>
+        {/* Faixa confirmada — exibe como badge verde */}
+        {isConfirmed && !isAdjusting ? (
+          <div
+            data-testid="salary-confirmed-display"
+            className="flex items-center gap-2 p-2.5 rounded-md bg-status-success/10 border border-status-success/30"
+          >
+            <CheckCircle2 className="w-4 h-4 text-status-success shrink-0" />
+            <div>
+              <p className="text-xs font-medium text-status-success">Faixa confirmada</p>
+              <p className="text-sm text-lia-text-primary mt-0.5">
+                {fmt(d.salary_min)} — {fmt(d.salary_max)}
+              </p>
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* Faixa não-confirmada ou em ajuste: display + sliders */}
+            <div className="flex items-center gap-3 text-sm mb-3">
+              <span className="text-lia-text-primary">{fmt(min || d.salary_min)}</span>
+              <span className="text-lia-text-disabled">—</span>
+              <span className="text-lia-text-primary">{fmt(max || d.salary_max)}</span>
+            </div>
 
-        {/* Range sliders */}
-        <div className="space-y-3">
-          <div>
-            <label className="text-[10px] text-lia-text-tertiary">Minimo</label>
-            <input
-              type="range"
-              min={0}
-              max={sliderMax}
-              step={500}
-              value={min || d.salary_min || 0}
-              onChange={(e) => handleMinChange(Number(e.target.value))}
-              className="w-full h-1.5 rounded-full appearance-none bg-lia-bg-tertiary accent-wedo-cyan cursor-pointer"
-            />
-          </div>
-          <div>
-            <label className="text-[10px] text-lia-text-tertiary">Maximo</label>
-            <input
-              type="range"
-              min={0}
-              max={sliderMax}
-              step={500}
-              value={max || d.salary_max || 0}
-              onChange={(e) => handleMaxChange(Number(e.target.value))}
-              className="w-full h-1.5 rounded-full appearance-none bg-lia-bg-tertiary accent-wedo-cyan cursor-pointer"
-            />
-          </div>
-        </div>
+            <div className="space-y-3">
+              <div>
+                <label className="text-[10px] text-lia-text-tertiary">Mínimo</label>
+                <input
+                  data-testid="salary-slider-min"
+                  type="range"
+                  min={0}
+                  max={sliderMax}
+                  step={500}
+                  value={min || d.salary_min || 0}
+                  onChange={(e) => handleMinChange(Number(e.target.value))}
+                  className="w-full h-1.5 rounded-full appearance-none bg-lia-bg-tertiary accent-wedo-cyan cursor-pointer"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] text-lia-text-tertiary">Máximo</label>
+                <input
+                  data-testid="salary-slider-max"
+                  type="range"
+                  min={0}
+                  max={sliderMax}
+                  step={500}
+                  value={max || d.salary_max || 0}
+                  onChange={(e) => handleMaxChange(Number(e.target.value))}
+                  className="w-full h-1.5 rounded-full appearance-none bg-lia-bg-tertiary accent-wedo-cyan cursor-pointer"
+                />
+              </div>
+            </div>
+
+            {isAdjusting && (
+              <div className="flex justify-end gap-2 mt-2">
+                <button
+                  onClick={() => setIsAdjusting(false)}
+                  className="px-2 py-1 text-xs text-lia-text-secondary hover:bg-lia-interactive-hover rounded"
+                >
+                  Cancelar
+                </button>
+                <button
+                  data-testid="salary-confirm-adjust-btn"
+                  onClick={handleConfirmAdjust}
+                  className="px-2 py-1 text-xs text-white bg-wedo-cyan rounded hover:bg-wedo-cyan/90"
+                >
+                  Confirmar ajuste
+                </button>
+              </div>
+            )}
+          </>
+        )}
       </div>
 
       {/* Benchmark */}
@@ -108,7 +174,9 @@ export function SalaryPanel({ data, onUpdate }: Props) {
               <div key={key} className="flex items-center justify-between text-xs">
                 <span className="text-lia-text-secondary capitalize">{key.replace(/_/g, " ")}</span>
                 <span className="text-lia-text-primary font-medium">
-                  {typeof val === "number" ? `${currency} ${val.toLocaleString("pt-BR")}` : String(val)}
+                  {typeof val === "number"
+                    ? `${currency} ${val.toLocaleString("pt-BR")}`
+                    : String(val)}
                 </span>
               </div>
             ))}
@@ -120,11 +188,14 @@ export function SalaryPanel({ data, onUpdate }: Props) {
         <div>
           <div className="flex items-center gap-1.5 mb-1.5">
             <Gift className="w-4 h-4 text-wedo-cyan" />
-            <span className="text-xs font-medium text-lia-text-secondary">Beneficios</span>
+            <span className="text-xs font-medium text-lia-text-secondary">Benefícios</span>
           </div>
           <div className="flex flex-wrap gap-1.5">
             {d.benefits.map((b, i) => (
-              <span key={i} className="px-2 py-0.5 rounded bg-lia-bg-secondary border border-lia-border-subtle text-micro text-lia-text-primary">
+              <span
+                key={i}
+                className="px-2 py-0.5 rounded bg-lia-bg-secondary border border-lia-border-subtle text-micro text-lia-text-primary"
+              >
                 {b}
               </span>
             ))}

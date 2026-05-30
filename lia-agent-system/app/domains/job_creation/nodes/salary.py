@@ -39,6 +39,33 @@ def salary_node(state: JobCreationState) -> JobCreationState:
     t0 = time.time()
     logger.info("[JobCreation:salary] Starting salary validation")
 
+    # ── Fase 5: right_panel_form tem precedência (recrutador editou no painel) ──
+    # Mesmo padrão canônico de intake_gate.py:215.
+    _panel = state.get("right_panel_form") or {}
+    _panel_salary_min = _panel.get("salary_min") or None
+    _panel_salary_max = _panel.get("salary_max") or None
+    # Suporta tanto salary_min/max avulsos quanto salary_range {min, max, currency}
+    _panel_range = _panel.get("salary_range") or {}
+    if isinstance(_panel_range, dict):
+        _panel_salary_min = _panel_salary_min or (_panel_range.get("min") or None)
+        _panel_salary_max = _panel_salary_max or (_panel_range.get("max") or None)
+        if _panel_range.get("currency"):
+            state = {**state, "salary_currency": _panel_range["currency"]}
+
+    _salary_confirmed = False
+    if _panel_salary_min:
+        state = {
+            **state,
+            "salary_min": _panel_salary_min,
+            "salary_max": _panel_salary_max,
+            "salary_confirmed": True,
+        }
+        _salary_confirmed = True
+        logger.info(
+            "[JobCreation:salary] right_panel_form override: min=%s max=%s",
+            _panel_salary_min, _panel_salary_max,
+        )
+
     # ── Fetch benchmark if not already in state ──
     # Task #1062: timeout determinístico (D4 da auditoria #1058). Em timeout
     # o nó pula benchmark gracefully (`salary_benchmark=None`) — recrutador
@@ -165,6 +192,7 @@ def salary_node(state: JobCreationState) -> JobCreationState:
         "stage_history": (state.get("stage_history") or []) + ["salary"],
         "completeness": calculate_completeness("salary"),
         "requires_approval": False,
+        "salary_confirmed": _salary_confirmed,
         "ws_stage_payload": build_ws_stage_payload(
             stage="salary",
             completeness=calculate_completeness("salary"),
@@ -183,6 +211,7 @@ def salary_node(state: JobCreationState) -> JobCreationState:
                 "benchmark": state.get("salary_benchmark"),
                 # Task #1065 — flag de fallback (timeout do benchmark fetch).
                 # Painel renderiza banner pedindo revisão manual da faixa.
+                "salary_confirmed": _salary_confirmed,
                 "salary_used_fallback": salary_used_fallback,
                 # Task #1067 — root-cause label.
                 "salary_fallback_reason": salary_fallback_reason,

@@ -186,6 +186,8 @@ export interface SalaryData {
   salary_fallback_reason?: string | null
   /** Task #1070 — modo degradado agregado (sessao/tenant). */
   ai_degraded_mode?: AiDegradedMode | null
+  /** Fase 5: true quando recrutador confirmou/ajustou a faixa via painel (right_panel_form). */
+  salary_confirmed?: boolean
 }
 
 export interface CompetencyData {
