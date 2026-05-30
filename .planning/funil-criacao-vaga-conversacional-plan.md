@@ -148,17 +148,19 @@ Branch Replit: .
   Ao aprovar, sugere competências (via Fase 2) dimensionadas pelo modo, seed em confirmed_* (accept-all; right_panel_form tem precedência); campos novos no state; fail-open não bloqueia aprovação; gestor/email já eram não-bloqueantes.
 - ✅ **Fase 4** — inverter jd_enrichment (WSI F1): commit `eb82d9b5f`. (+11 testes TDD)
   jd_enrichment consome confirmed_* (Fase 3) e gera JD consistente; override determinístico das competências (sem drift do LLM); quality_score mode-aware (compact 5+2 não penalizado); fallback honra confirmadas; sem confirmed_* → comportamento legado. Stub t1062 atualizado em lockstep.
-- ⬜ **PRÓXIMA: Fase 6** — reconciliar competency/wsi_questions: montar question_distribution a partir das confirmed_* + modo (não re-derivar do JD); gerar N perguntas conforme modo. (Fase 5 painel ficha viva fica deferida — frontend.)
-- ⬜ Fase 5 (painel ficha viva, frontend) — deferida (FASE 6 FE deferida per repo).
+- ✅ **Fase 6** — reconciliar competency/wsi_questions: commit `f768b1722`. (+10 testes TDD)
+  competency_node monta question_distribution + tree das confirmed_* (respeita edições; não re-deriva do YAML); wsi_questions já consome distribution + enriched (confirmadas pós-Fase-4) → gera N = len(téc)+len(comp). Sem confirmadas → legado.
+- ⬜ Fase 5 (painel ficha viva, frontend) — DEFERIDA (frontend).
+- ⬜ Refinamento menor pendente: salary (estágio 6) virar confirmação/validação explícita (faixa já confirmada na Fase 0-B/3) — UX, casa com a Fase 5 FE.
 
 ### Como retomar (sessão nova)
 1. Abrir Claude Code no projeto.
 2. Colar: "Continue o épico do funil de criação de vaga. Leia o plano em
     no Replit (ssh replit-wedo-0405,
-   branch feat/benefits-prv-canonical). Fases 0-4 feitas e commitadas
-   (+ fix do benchmark salarial no intake_gate, commit 101963773).
-   Comece a Fase 6 (reconciliar competency/wsi_questions: question_distribution a partir
-   das confirmed_* + modo; gerar N perguntas conforme modo). Fase 5 (painel FE) deferida.
+   branch feat/benefits-prv-canonical). Fases 0-4 + 6 feitas e commitadas
+   (+ fix do benchmark salarial no intake_gate, commit 101963773). O épico de backend
+   está COMPLETO. Resta apenas a Fase 5 (painel ficha viva — frontend, DEFERIDA) e um
+   refinamento UX menor (salary estágio 6 virar confirmação explícita).
    Cascata canonical-fix + lia-testing (TDD) + harness-engineering."
 3. Disciplina: ler código real no Replit antes de editar; TDD Red→Green; commit atômico
    por fase; stage só os arquivos da fase (agente paralelo ativo no workspace).
