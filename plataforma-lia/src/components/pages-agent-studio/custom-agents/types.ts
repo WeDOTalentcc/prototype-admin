@@ -58,6 +58,12 @@ export type TriggerMode = "manual" | "on_new_candidate" | "on_stage_change" | "s
 
 export interface AgentTemplate {
   id: string
+  /**
+   * Slug canonical do backend (agent_template_catalog.slug), ex "tpl-triagem-tech".
+   * Identificador estável entre versões — usado para lookup de dados curados
+   * (ex: getSampleConversation). `id` é UUID e não serve como chave estável.
+   */
+  slug?: string
   name: string
   description: string
   category: AgentCategory

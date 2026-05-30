@@ -33,9 +33,14 @@ const ALLOWED_FILES = new Set<string>([
   // - StudioControlRoom: composicao propria do Control Room; header proprio.
   // - DecisionTreeDrawer: sub-headings (<h3>) dentro de um Sheet/drawer
   //   accordion, nao sao section headers de tab.
+  // - TemplateClonePanel: modal de detalhe didatico (Dialog). Os <h3> sao
+  //   sub-secoes internas do modal ("Veja em acao", "O que faz", "Como
+  //   trabalha"), mesmo caso do DecisionTreeDrawer — nao sao headers de tab.
+  //   (redesign 2026-05-30 + Fase 3 Sprint 2 conversation preview.)
   "StudioEmptyState.tsx",
   "control-room/StudioControlRoom.tsx",
   "decision-tree/DecisionTreeDrawer.tsx",
+  "template-clone/TemplateClonePanel.tsx",
 ])
 
 function listTsxFiles(dir: string): string[] {

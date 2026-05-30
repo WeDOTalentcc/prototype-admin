@@ -2316,7 +2316,15 @@
           "decisionTree": "Em cada execução você pode abrir o raciocínio do agente — passo a passo, com transparência total sobre o que ele leu e decidiu.",
           "kpis": "Aqui ficam as métricas: quantos perfis analisados, taxa de aprovação, execuções e custo. Tudo à vista."
         }
-      }
+      },
+      "conversationPreview": {
+        "ariaLabel": "Exemplo de conversa",
+        "candidateRole": "Candidato",
+        "agentRole": "Agente",
+        "turnFrom": "Mensagem de"
+      },
+      "seeInActionLabel": "Veja em ação",
+      "seeInActionHint": "Um exemplo de como este agente conduz a conversa."
     },
     "status": {
       "active": "Ativo",
@@ -3065,7 +3073,11 @@
       "areaLabel": "Área",
       "depthAnalysisLabel": "Profundidade da análise",
       "useAndAdjust": "Usar e ajustar",
-      "templateDetailTitle": "Detalhes do agente"
+      "templateDetailTitle": "Detalhes do agente",
+      "seeInActionLabel": "Veja em ação",
+      "seeInActionHint": "Um exemplo de como este agente conduz a conversa.",
+      "showExample": "Ver exemplo",
+      "hideExample": "Ocultar exemplo"
     },
     "digitalTwin": {
       "active": "Ativo",

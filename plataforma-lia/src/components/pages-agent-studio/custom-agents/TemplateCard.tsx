@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl"
 import { badgeStyles, buttonStyles } from "@/lib/design-tokens"
 import { cn } from "@/lib/utils"
 import { summarizeCapabilities } from "@/lib/agents/tool-capabilities"
+import { AgentConversationPreview } from "../AgentConversationPreview"
 import type { AgentTemplate, ContextLevel } from "./types"
 
 interface TemplateCardProps {
@@ -138,6 +139,28 @@ export function TemplateCard({
       <p className="mt-3 text-[11px] leading-snug text-lia-text-secondary">
         {tRich("alert.personalize")}
       </p>
+
+      {/* Veja em ação — conversa-exemplo compact, recolhida por padrão
+          (Fase 3 Sprint 2). Decisão de densidade: o card já é rico (descrição
+          herói + capacidades + metadado). Manter calmo no repouso e revelar a
+          conversa inline sob demanda (sem modal) respeita o "Quiet Operator"
+          e a 90/10. O modal de detalhe mostra a versão full. */}
+      <details className="group mt-3" data-testid={`template-card-conversation-${testIdSuffix}`}>
+        <summary className="flex cursor-pointer list-none items-center gap-1.5 text-[11px] font-medium text-lia-text-secondary transition-colors hover:text-lia-text-primary">
+          <Icons.ChevronRight
+            className="h-3.5 w-3.5 transition-transform group-open:rotate-90"
+            aria-hidden="true"
+          />
+          {t("seeInActionLabel")}
+        </summary>
+        <div className="mt-2">
+          <AgentConversationPreview
+            slug={template.slug}
+            category={template.category}
+            compact
+          />
+        </div>
+      </details>
 
       {/* Ações */}
       <div className="mt-auto pt-4 flex items-center gap-2">

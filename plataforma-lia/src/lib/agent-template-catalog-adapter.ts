@@ -52,6 +52,7 @@ export function mapSectorIdToVertical(
 export function mapCatalogToLegacy(item: AgentTemplateCatalog): AgentTemplate {
   return {
     id: item.id,
+    slug: item.slug,
     name: item.name,
     description: item.description,
     category: item.category_id as LegacyAgentCategory,

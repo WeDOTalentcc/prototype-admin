@@ -10,6 +10,7 @@ import { describe, expect, it, vi } from "vitest"
 import { render, screen, fireEvent } from "@testing-library/react"
 
 vi.mock("next-intl", () => ({
+  useLocale: () => "pt",
   useTranslations: () => (key: string) => key,
 }))
 

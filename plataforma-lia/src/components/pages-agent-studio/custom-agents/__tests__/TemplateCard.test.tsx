@@ -16,6 +16,7 @@ import { TemplateCard } from "../TemplateCard"
 import type { AgentTemplate } from "../types"
 
 vi.mock("next-intl", () => ({
+  useLocale: () => "pt",
   useTranslations: () => (key: string, vars?: Record<string, unknown>) => {
     if (vars && "count" in vars) return `${vars.count} tools`
     return key

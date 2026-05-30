@@ -12,6 +12,7 @@ import { TemplateCard } from "../TemplateCard"
 import type { AgentTemplate } from "../types"
 
 vi.mock("next-intl", () => ({
+  useLocale: () => "pt",
   useTranslations: (ns?: string) => (key: string, vars?: Record<string, unknown>) => {
     // Resolve a string de etapas com o count interpolado.
     if (key === "stepsValue" && vars && "count" in vars) {

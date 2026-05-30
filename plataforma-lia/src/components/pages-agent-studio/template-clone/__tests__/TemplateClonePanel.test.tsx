@@ -22,6 +22,7 @@ import { describe, expect, it, vi } from "vitest"
 import { fireEvent, render, screen } from "@testing-library/react"
 
 vi.mock("next-intl", () => ({
+  useLocale: () => "pt",
   useTranslations: () => (key: string) => key,
 }))
 
@@ -65,7 +66,9 @@ describe("TemplateClonePanel — T4 clone-first preview", () => {
     expect(screen.getByText(TPL.description)).toBeTruthy()
   })
 
-  it("renderiza tags do template como chips", () => {
+  // Redesign 2026-05-30 (didático): o painel não expõe mais tags cruas como
+  // chips. Fase 3 Sprint 2: passa a mostrar a conversa-exemplo em "Veja em ação".
+  it("renderiza a seção 'Veja em ação' com conversa-exemplo (Fase 3 Sprint 2)", () => {
     render(
       <TemplateClonePanel
         template={TPL}
@@ -74,12 +77,14 @@ describe("TemplateClonePanel — T4 clone-first preview", () => {
         onClone={vi.fn()}
       />,
     )
-    const tagsSection = screen.getByTestId("template-clone-tags")
-    expect(tagsSection).toBeTruthy()
-    TPL.tags.forEach((tag) => {
-      // Tag is rendered inside the panel — assert visible text
-      expect(tagsSection.textContent).toContain(tag)
-    })
+    const section = screen.getByTestId("template-clone-section-conversation")
+    expect(section).toBeTruthy()
+    const preview = screen.getByTestId("agent-conversation-preview")
+    expect(preview).toBeTruthy()
+    // Diálogo curado de tpl-triagem-tech (slug do TPL): pelo menos 1 turno.
+    expect(
+      screen.getAllByTestId(/conversation-turn-/).length,
+    ).toBeGreaterThan(0)
   })
 
   it("renderiza system_prompt completo em bloco preformatado", () => {
@@ -96,7 +101,10 @@ describe("TemplateClonePanel — T4 clone-first preview", () => {
     expect(block.textContent).toContain("Você é um agente de triagem")
   })
 
-  it("renderiza allowed_tools como badges (todas as 4)", () => {
+  // Redesign 2026-05-30: a seção "O que faz" mostra capacidades em PT
+  // (summarizeCapabilities), NÃO slugs crus de tools. Asserta que a seção
+  // existe e renderiza ao menos uma capacidade derivada.
+  it("renderiza 'O que faz' com capacidades de alto nível (não slugs)", () => {
     render(
       <TemplateClonePanel
         template={TPL}
@@ -106,9 +114,9 @@ describe("TemplateClonePanel — T4 clone-first preview", () => {
       />,
     )
     const toolsSection = screen.getByTestId("template-clone-section-tools")
-    TPL.allowed_tools.forEach((tool) => {
-      expect(toolsSection.textContent).toContain(tool)
-    })
+    expect(toolsSection).toBeTruthy()
+    // Capacidade derivada renderizada como bullet (não o slug bruto).
+    expect(toolsSection.querySelectorAll("li").length).toBeGreaterThan(0)
   })
 
   it("renderiza persona/domain/category", () => {
@@ -125,7 +133,10 @@ describe("TemplateClonePanel — T4 clone-first preview", () => {
     expect(personaSection.textContent).toContain(TPL.category)
   })
 
-  it("renderiza config grid (max_steps + temperature + context_level + memoria)", () => {
+  // Redesign 2026-05-30: "Como trabalha" traduz config para linguagem de
+  // recrutador (profundidade + nº de etapas) e esconde temperature/context_level
+  // crus. O system_prompt técnico vive recolhido em <details>.
+  it("renderiza 'Como trabalha' com config traduzida + prompt técnico recolhido", () => {
     render(
       <TemplateClonePanel
         template={TPL}
@@ -135,9 +146,14 @@ describe("TemplateClonePanel — T4 clone-first preview", () => {
       />,
     )
     const configSection = screen.getByTestId("template-clone-section-config")
-    expect(configSection.textContent).toContain(String(TPL.max_steps))
-    expect(configSection.textContent).toContain(String(TPL.temperature))
-    expect(configSection.textContent).toContain(TPL.context_level)
+    expect(configSection).toBeTruthy()
+    // O prompt técnico continua acessível sob demanda (recolhido em <details>).
+    const promptDetails = screen.getByTestId("template-clone-section-prompt")
+    expect(promptDetails).toBeTruthy()
+    // E o system_prompt cru segue dentro do bloco recolhido.
+    expect(
+      screen.getByTestId("template-clone-system-prompt").textContent,
+    ).toContain("Você é um agente de triagem")
   })
 
   it("CTA 'Clonar e customizar' dispara onClone com o template", () => {

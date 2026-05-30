@@ -2316,7 +2316,15 @@
           "decisionTree": "For each execution you can open the agent reasoning — step by step, with full transparency on what it read and decided.",
           "kpis": "Here are the metrics: profiles analyzed, approval rate, executions and cost. All in plain sight."
         }
-      }
+      },
+      "conversationPreview": {
+        "ariaLabel": "Sample conversation",
+        "candidateRole": "Candidate",
+        "agentRole": "Agent",
+        "turnFrom": "Message from"
+      },
+      "seeInActionLabel": "See it in action",
+      "seeInActionHint": "An example of how this agent runs the conversation."
     },
     "status": {
       "active": "Active",
@@ -3065,7 +3073,11 @@
       "areaLabel": "Area",
       "depthAnalysisLabel": "Analysis depth",
       "useAndAdjust": "Use and adjust",
-      "templateDetailTitle": "Agent details"
+      "templateDetailTitle": "Agent details",
+      "seeInActionLabel": "See it in action",
+      "seeInActionHint": "An example of how this agent runs the conversation.",
+      "showExample": "Show example",
+      "hideExample": "Hide example"
     },
     "digitalTwin": {
       "active": "Active",
