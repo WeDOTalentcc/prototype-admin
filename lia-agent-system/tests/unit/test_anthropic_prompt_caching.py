@@ -17,7 +17,7 @@ $1.50 → $0.30).
 """
 from __future__ import annotations
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
@@ -92,9 +92,9 @@ class TestCacheControlInSystemMessages:
         mock_response.usage.output_tokens = 5
         mock_response.usage.cache_creation_input_tokens = 0
         mock_response.usage.cache_read_input_tokens = 0
-        mock_client.messages.create.return_value = mock_response
+        mock_client.messages.create = AsyncMock(return_value=mock_response)
 
-        with patch.object(provider, "_get_client", return_value=mock_client):
+        with patch.object(provider, "_get_async_client", return_value=mock_client):
             await provider.generate_with_system("You are X", "Hi", model="claude-sonnet-4-6")
 
         call_kwargs = mock_client.messages.create.call_args.kwargs
@@ -114,9 +114,9 @@ class TestCacheControlInSystemMessages:
         mock_response.usage.output_tokens = 5
         mock_response.usage.cache_creation_input_tokens = 0
         mock_response.usage.cache_read_input_tokens = 0
-        mock_client.messages.create.return_value = mock_response
+        mock_client.messages.create = AsyncMock(return_value=mock_response)
 
-        with patch.object(provider, "_get_client", return_value=mock_client):
+        with patch.object(provider, "_get_async_client", return_value=mock_client):
             await provider.generate_with_tools(
                 messages=[{"role": "user", "content": "Hi"}],
                 tools=[],
@@ -144,9 +144,9 @@ class TestBetaHeaderInAllCalls:
         mock_response.usage.output_tokens = 5
         mock_response.usage.cache_creation_input_tokens = 0
         mock_response.usage.cache_read_input_tokens = 0
-        mock_client.messages.create.return_value = mock_response
+        mock_client.messages.create = AsyncMock(return_value=mock_response)
 
-        with patch.object(provider, "_get_client", return_value=mock_client):
+        with patch.object(provider, "_get_async_client", return_value=mock_client):
             await provider.generate("hi")
 
         call_kwargs = mock_client.messages.create.call_args.kwargs
@@ -166,9 +166,9 @@ class TestBetaHeaderInAllCalls:
         mock_response.usage.output_tokens = 5
         mock_response.usage.cache_creation_input_tokens = 0
         mock_response.usage.cache_read_input_tokens = 0
-        mock_client.messages.create.return_value = mock_response
+        mock_client.messages.create = AsyncMock(return_value=mock_response)
 
-        with patch.object(provider, "_get_client", return_value=mock_client):
+        with patch.object(provider, "_get_async_client", return_value=mock_client):
             await provider.generate_with_system("sys", "user")
 
         call_kwargs = mock_client.messages.create.call_args.kwargs
@@ -191,9 +191,9 @@ class TestResponseUsageIncludesCacheTokens:
         mock_response.usage.output_tokens = 50
         mock_response.usage.cache_creation_input_tokens = 2000
         mock_response.usage.cache_read_input_tokens = 1500
-        mock_client.messages.create.return_value = mock_response
+        mock_client.messages.create = AsyncMock(return_value=mock_response)
 
-        with patch.object(provider, "_get_client", return_value=mock_client):
+        with patch.object(provider, "_get_async_client", return_value=mock_client):
             result = await provider.generate("hi")
 
         assert result.usage["cache_creation_input_tokens"] == 2000

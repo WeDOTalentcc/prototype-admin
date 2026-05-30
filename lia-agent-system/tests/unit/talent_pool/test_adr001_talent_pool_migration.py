@@ -64,7 +64,7 @@ def test_talent_pool_repo_require_company_id_empty_string():
         return await repo.list_pools("")
 
     with pytest.raises(ValueError, match="company_id is required"):
-        asyncio.get_event_loop().run_until_complete(_run())
+        asyncio.run(_run())
 
 
 def test_talent_pool_repo_require_company_id_none():
@@ -76,7 +76,7 @@ def test_talent_pool_repo_require_company_id_none():
         return await repo.get_by_id("some-pool-id", None)
 
     with pytest.raises(ValueError, match="company_id is required"):
-        asyncio.get_event_loop().run_until_complete(_run())
+        asyncio.run(_run())
 
 
 def test_talent_pool_candidate_repo_require_company_id_list():
@@ -88,7 +88,7 @@ def test_talent_pool_candidate_repo_require_company_id_list():
         return await repo.list_by_pool("pool-id", "")
 
     with pytest.raises(ValueError, match="company_id is required"):
-        asyncio.get_event_loop().run_until_complete(_run())
+        asyncio.run(_run())
 
 
 def test_talent_pool_candidate_repo_require_company_id_move():
@@ -105,7 +105,7 @@ def test_talent_pool_candidate_repo_require_company_id_move():
         )
 
     with pytest.raises(ValueError, match="company_id is required"):
-        asyncio.get_event_loop().run_until_complete(_run())
+        asyncio.run(_run())
 
 
 def test_talent_pool_candidate_repo_require_company_id_move_empty():
@@ -122,4 +122,4 @@ def test_talent_pool_candidate_repo_require_company_id_move_empty():
         )
 
     with pytest.raises(ValueError, match="company_id is required"):
-        asyncio.get_event_loop().run_until_complete(_run())
+        asyncio.run(_run())

@@ -33,7 +33,7 @@ class TestMLFeedbackService:
         db = MagicMock()
 
         with patch(
-            "app.services.calibration_service.CalibrationService.record_explicit_feedback",
+            "app.domains.analytics.services.calibration_service.CalibrationService.record_explicit_feedback",
             new_callable=AsyncMock,
         ):
             service = MLFeedbackService()
@@ -57,7 +57,7 @@ class TestMLFeedbackService:
         db = MagicMock()
 
         with patch(
-            "app.services.calibration_service.CalibrationService.record_explicit_feedback",
+            "app.domains.analytics.services.calibration_service.CalibrationService.record_explicit_feedback",
             new_callable=AsyncMock,
             side_effect=RuntimeError("DB error"),
         ):
@@ -138,6 +138,7 @@ class TestMLFeedbackEndpoint:
         from fastapi import FastAPI
         from app.api.v1.ml_feedback import router
         from app.core.database import get_db
+        from app.shared.security.require_company_id import require_company_id
 
         app = FastAPI()
         app.include_router(router, prefix="/api/v1")
@@ -145,7 +146,11 @@ class TestMLFeedbackEndpoint:
         async def mock_db():
             yield MagicMock()
 
+        async def mock_company_id():
+            return COMPANY_ID
+
         app.dependency_overrides[get_db] = mock_db
+        app.dependency_overrides[require_company_id] = mock_company_id
         return app
 
     def test_record_signal_returns_200(self):
@@ -155,7 +160,7 @@ class TestMLFeedbackEndpoint:
         app = self._make_app()
 
         with patch(
-            "app.services.ml_feedback_service.MLFeedbackService.record_signal",
+            "app.domains.analytics.services.ml_feedback_service.MLFeedbackService.record_signal",
             new_callable=AsyncMock,
             return_value=True,
         ):
@@ -187,7 +192,7 @@ class TestMLFeedbackEndpoint:
         )
 
         with patch(
-            "app.services.ml_feedback_service.MLFeedbackService.get_weights_for_job",
+            "app.domains.analytics.services.ml_feedback_service.MLFeedbackService.get_weights_for_job",
             new_callable=AsyncMock,
             return_value=mock_weights,
         ):
@@ -344,7 +349,7 @@ class TestMLFeedbackWiring:
         db = MagicMock()
 
         with patch(
-            "app.services.ml_feedback_service.MLFeedbackService.compute_calibration_adjustment",
+            "app.domains.analytics.services.ml_feedback_service.MLFeedbackService.compute_calibration_adjustment",
             new_callable=AsyncMock,
             return_value=1.5,
         ):

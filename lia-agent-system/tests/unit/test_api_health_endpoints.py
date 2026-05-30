@@ -35,6 +35,33 @@ def _mock_db_override():
     return get_db, override_get_db
 
 
+
+# ---------------------------------------------------------------------------
+# Autouse fixture: prevent rate_limiter from trying Redis (closed loop in unit tests)
+# ---------------------------------------------------------------------------
+
+@pytest.fixture(autouse=True)
+def _mock_rate_limiter_for_tests():
+    # Prevent rate_limiter and tenant_db from using closed async connections
+    from unittest.mock import patch as _patch, AsyncMock as _AsyncMock, MagicMock as _MagicMock
+    from app.main import app as _app
+    from app.core.database import get_tenant_db
+
+    async def _mock_tenant_db():
+        yield _MagicMock()
+
+    _app.dependency_overrides[get_tenant_db] = _mock_tenant_db
+    try:
+        with _patch(
+            "app.middleware.rate_limiter.RateLimiter._get_redis",
+            new_callable=_AsyncMock,
+            return_value=None,
+        ):
+            yield
+    finally:
+        _app.dependency_overrides.pop(get_tenant_db, None)
+
+
 # ---------------------------------------------------------------------------
 # Health básico
 # ---------------------------------------------------------------------------

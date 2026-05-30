@@ -215,12 +215,14 @@ def test_admin_endpoint_returns_200():
     # override is seamless.
     import app.api.v1.admin_agents as aa_mod
     from app.api.v1.admin_agents import require_admin as _req_admin
+    from app.shared.security.require_company_id import require_company_id as _require_cid
 
     isolated_app = FastAPI()
     isolated_app.include_router(aa_mod.router, prefix="/api/v1")
 
-    # Override auth dependency so no real JWT is needed
+    # Override auth dependencies so no real JWT is needed
     isolated_app.dependency_overrides[_req_admin] = lambda: {"sub": "admin"}
+    isolated_app.dependency_overrides[_require_cid] = lambda: "test-company-id" 
 
     with (
         patch(

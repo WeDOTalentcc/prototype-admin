@@ -12,6 +12,25 @@ import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
 
+
+
+# ---------------------------------------------------------------------------
+# Autouse fixture: prevent checkpointer init error + tenant strict mode
+# ---------------------------------------------------------------------------
+
+@pytest.fixture(autouse=True)
+def _patch_checkpointer_and_tenant():
+    from unittest.mock import patch as _patch, AsyncMock as _AsyncMock
+    with (
+        _patch("lia_agents_core.langgraph_base.get_checkpointer", return_value=None),
+        _patch(
+            "app.shared.agents.tenant_aware_agent.TenantAwareAgentMixin._get_tenant_context_snippet",
+            new_callable=_AsyncMock,
+            return_value="",
+        ),
+    ):
+        yield
+
 class FairnessCheckResultStub:
     def __init__(self, is_blocked=False, category=None, blocked_terms=None,
                  educational_message=None, soft_warnings=None):

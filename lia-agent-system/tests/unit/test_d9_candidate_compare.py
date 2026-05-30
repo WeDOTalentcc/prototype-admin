@@ -16,6 +16,7 @@ from fastapi import FastAPI
 def _make_app():
     from app.api.v1.candidate_compare import router
     from app.core.database import get_db
+    from app.shared.security.require_company_id import require_company_id
 
     app = FastAPI()
     app.include_router(router, prefix="/api/v1")
@@ -23,7 +24,11 @@ def _make_app():
     async def mock_db():
         yield MagicMock()
 
+    async def mock_company_id():
+        return COMPANY_ID
+
     app.dependency_overrides[get_db] = mock_db
+    app.dependency_overrides[require_company_id] = mock_company_id
     return app
 
 
@@ -51,7 +56,7 @@ class TestCandidateCompareEndpoint:
         }
 
         with patch(
-            "app.services.candidate_comparison_service.CandidateComparisonService.compare_candidates",
+            "app.domains.candidates.services.candidate_comparison_service.CandidateComparisonService.compare_candidates",
             new_callable=AsyncMock,
             return_value=mock_result,
         ):
@@ -104,7 +109,7 @@ class TestCandidateCompareEndpoint:
         app = _make_app()
 
         with patch(
-            "app.services.candidate_comparison_service.CandidateComparisonService.compare_candidates",
+            "app.domains.candidates.services.candidate_comparison_service.CandidateComparisonService.compare_candidates",
             new_callable=AsyncMock,
             side_effect=RuntimeError("DB unavailable"),
         ):
@@ -136,7 +141,7 @@ class TestCandidateCompareEndpoint:
         }
 
         with patch(
-            "app.services.candidate_comparison_service.CandidateComparisonService.compare_candidates",
+            "app.domains.candidates.services.candidate_comparison_service.CandidateComparisonService.compare_candidates",
             new_callable=AsyncMock,
             return_value=mock_result,
         ):
