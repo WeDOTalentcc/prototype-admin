@@ -47,11 +47,26 @@ export interface QuotaResourceStatus {
   resource: QuotaResource
   active: number
   limit: number
-  /** percentage used (0-100). For unlimited (-1) returns 0. */
-  percent: number
+  /**
+   * Percentage used (0-100).  quando não há limite real configurado
+   * (limit -1 = enterprise/unlimited OU limit 0/ausente = plano sem cota).
+   * Consumers NÃO devem renderizar "100%" pra null — é estado neutro.
+   */
+  percent: number | null
   /** true when limit === -1 (enterprise tier or override) */
   isUnlimited: boolean
-  /** semaphore: green <80%, yellow 80-99%, red >=100% */
+  /**
+   * true quando limit é 0/null/undefined: plano sem cota configurada (trial,
+   * plano sem limite explícito). NÃO é "100% usado" — é "sem limite definido".
+   * Distinto de isUnlimited (que é o opt-in -1 do enterprise).
+   */
+  noLimit: boolean
+  /**
+   * semaphore canonical (escala por uso real, 2026-05-30):
+   *   - green  : 0-74% usado, OU sem limite (unlimited / noLimit). Estado calmo.
+   *   - yellow : 75-94% usado. Atenção (âmbar sutil).
+   *   - red    : 95%+ usado. Crítico — único caso de vermelho.
+   */
   tier: "green" | "yellow" | "red"
 }
 
@@ -63,7 +78,11 @@ export interface UseStudioQuotaResult {
   refetch: () => Promise<void>
 }
 
-function computeStatus(
+/**
+ * Pure status resolver (exported pra unit test direto — pattern
+ * espelha computeTotalTier do use-agents-total-quota).
+ */
+export function computeStatus(
   active: number | null | undefined,
   limit: number | null | undefined,
   resource: QuotaResource,
@@ -73,17 +92,51 @@ function computeStatus(
   //  libs/models/lia_models/agent_quota.py:to_dict).
   // Schema garante Integer non-null no DB, mas fallback path
   // (quota row ausente) ou drift de tipo pode entregar null/undefined.
-  // null/undefined em active → 0 (sem consumo); null/undefined em limit → 0
-  // (mostra 0/0 100% em vez de undefined/undefined NaN%).
   const safeActive = active ?? 0
   const safeLimit = limit ?? 0
+
+  // Enterprise / override explícito: limit -1 = ilimitado.
   if (safeLimit === -1) {
-    return { resource, active: safeActive, limit: safeLimit, percent: 0, isUnlimited: true, tier: "green" }
+    return {
+      resource,
+      active: safeActive,
+      limit: safeLimit,
+      percent: null,
+      isUnlimited: true,
+      noLimit: false,
+      tier: "green",
+    }
   }
-  const percent = safeLimit === 0 ? 100 : Math.min(100, Math.round((safeActive / safeLimit) * 100))
+
+  // Sem limite configurado (limit 0/null/undefined): plano trial ou sem cota.
+  // BUG histórico (fix 2026-05-30): antes retornava percent=100 + tier=red,
+  // mostrando "0/0 100%" em vermelho — falso alarme de "próximo do limite".
+  // Correto: estado neutro "sem limite definido", NÃO dispara warning.
+  if (safeLimit === 0) {
+    return {
+      resource,
+      active: safeActive,
+      limit: safeLimit,
+      percent: null,
+      isUnlimited: false,
+      noLimit: true,
+      tier: "green",
+    }
+  }
+
+  // Limite real configurado: percent 0-100, escala de cor por uso real.
+  const percent = Math.min(100, Math.round((safeActive / safeLimit) * 100))
   const tier: QuotaResourceStatus["tier"] =
-    percent >= 100 ? "red" : percent >= 80 ? "yellow" : "green"
-  return { resource, active: safeActive, limit: safeLimit, percent, isUnlimited: false, tier }
+    percent >= 95 ? "red" : percent >= 75 ? "yellow" : "green"
+  return {
+    resource,
+    active: safeActive,
+    limit: safeLimit,
+    percent,
+    isUnlimited: false,
+    noLimit: false,
+    tier,
+  }
 }
 
 export function useStudioQuota(): UseStudioQuotaResult {

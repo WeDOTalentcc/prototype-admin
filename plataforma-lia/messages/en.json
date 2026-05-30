@@ -2031,6 +2031,7 @@
         "unlimited": "Unlimited · {active} active",
         "warning": "You are close to the limit on a resource.",
         "contactAm": "Talk to your account manager",
+        "noLimit": "No limit set",
         "resources": {
           "custom_agents": "Custom agents",
           "sourcing_agents": "Sourcing agents",
@@ -2038,7 +2039,8 @@
           "campaigns": "Active campaigns"
         },
         "collapsed": {
-          "summary": "{percent}% used"
+          "summary": "{percent}% used",
+          "noLimit": "No limit set"
         }
       },
       "refresh": "Refresh",

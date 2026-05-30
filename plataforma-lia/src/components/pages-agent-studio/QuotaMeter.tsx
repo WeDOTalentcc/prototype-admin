@@ -30,10 +30,12 @@ const RESOURCE_ICONS: Record<QuotaResource, React.ComponentType<{ className?: st
   campaigns: Megaphone,
 }
 
-// Sprint visual 2026-05-26: barras gradient sutil
-//   < 80% → mist neutro (lia-border-subtle equivalente)
-//   80-94% → amber-warning/30
-//   ≥ 95% → coral-quiet/30 (status-error fallback)
+// Escala de cor canonical por uso real (fix 2026-05-30):
+//   green  : 0-74% usado (OU sem limite: unlimited / noLimit) → tokens neutros
+//            lia-* (calmo, sem alarme). Vermelho NÃO entra aqui.
+//   yellow : 75-94% usado → status-warning (âmbar sutil, atenção).
+//   red    : 95%+ usado → status-error. ÚNICO caso de vermelho (crítico real).
+// DESIGN.md 90/10: vermelho é sinal forte, reservado pro estado crítico.
 const TIER_STYLES: Record<QuotaResourceStatus["tier"], { bar: string; text: string; bg: string }> = {
   green: {
     bar: "bg-lia-border-medium/70",
@@ -99,12 +101,17 @@ export function QuotaMeter({ compact = true, className, defaultOpen = false }: Q
     return null
   }
 
-  const hasWarning = resources.some((r) => r.tier !== "green" && !r.isUnlimited)
+  const hasWarning = resources.some((r) => r.tier !== "green")
 
-  // Agregado: pega o maior percent (não-unlimited) pra mostrar no header colapsado.
-  const usedResources = resources.filter((r) => !r.isUnlimited)
-  const summaryPercent = usedResources.length > 0
-    ? Math.max(...usedResources.map((r) => r.percent))
+  // Agregado: pega o maior percent dos recursos COM limite real configurado
+  // (exclui unlimited -1 e noLimit 0). Se nenhum recurso tem cota, header mostra
+  // estado neutro "sem limite" em vez de "0% usado" (fix 0/0 2026-05-30).
+  const limitedResources = resources.filter(
+    (r) => !r.isUnlimited && !r.noLimit && r.percent !== null,
+  )
+  const hasAnyLimit = limitedResources.length > 0
+  const summaryPercent = hasAnyLimit
+    ? Math.max(...limitedResources.map((r) => r.percent ?? 0))
     : 0
 
   return (
@@ -128,7 +135,9 @@ export function QuotaMeter({ compact = true, className, defaultOpen = false }: Q
       >
         <div className="flex items-center gap-3 min-w-0">
           <span className="text-[11px] text-lia-text-secondary truncate">
-            {t("collapsed.summary", { percent: summaryPercent })}
+            {hasAnyLimit
+              ? t("collapsed.summary", { percent: summaryPercent })
+              : t("collapsed.noLimit")}
           </span>
           <span className="text-[10px] text-lia-text-disabled hidden sm:inline">
             {t("plan", { plan: data.plan_code })}
@@ -166,9 +175,14 @@ export function QuotaMeter({ compact = true, className, defaultOpen = false }: Q
             {resources.map((r) => {
               const Icon = RESOURCE_ICONS[r.resource]
               const style = TIER_STYLES[r.tier]
+              // noLimit (0/0) e unlimited (-1) não têm percent/barra; mostram
+              // texto neutro em vez de "0 / 0 100%" vermelho (fix 2026-05-30).
+              const hasLimit = !r.isUnlimited && !r.noLimit && r.percent !== null
               const usageLabel = r.isUnlimited
                 ? t("unlimited", { active: r.active })
-                : `${r.active} / ${r.limit}`
+                : r.noLimit
+                  ? t("noLimit")
+                  : `${r.active} / ${r.limit}`
               return (
                 <div
                   key={r.resource}
@@ -189,13 +203,13 @@ export function QuotaMeter({ compact = true, className, defaultOpen = false }: Q
                     <span className={cn("text-xs font-semibold tabular-nums", style.text)}>
                       {usageLabel}
                     </span>
-                    {!r.isUnlimited && (
+                    {hasLimit && (
                       <span className={cn("text-[10px] tabular-nums", style.text)}>
                         {r.percent}%
                       </span>
                     )}
                   </div>
-                  {!r.isUnlimited && (
+                  {hasLimit && (
                     <div className="h-1 rounded-full bg-lia-bg-tertiary overflow-hidden">
                       <div
                         className={cn("h-full transition-all", style.bar)}

@@ -8,7 +8,7 @@ import { QuotaMeter } from "../QuotaMeter"
 describe("QuotaMeter — i18n canonical contract", () => {
   const REQUIRED_KEYS = [
     "title", "loading", "plan", "regionLabel", "unlimited",
-    "warning", "contactAm",
+    "warning", "contactAm", "noLimit", "collapsed.noLimit",
     "resources.custom_agents", "resources.sourcing_agents",
     "resources.digital_twins", "resources.campaigns",
   ]
