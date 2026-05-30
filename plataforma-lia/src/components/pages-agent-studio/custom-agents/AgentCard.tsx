@@ -35,7 +35,7 @@ import { useToggleAgentChannel } from "@/hooks/agent-studio/use-agent-channel"
 import { StudioCardShell } from "@/components/pages-agent-studio/StudioCardShell"
 // White-label canonical (CLAUDE.md project_white_label_ai_assistant 2026-05-25):
 // agent.name é o nome custom do agente; aiPersona.name é o nome do assistente IA
-// configurado pelo cliente (default "LIA"). Fallback: agent.name → persona → genérico.
+// configurado pelo cliente (nome por tenant). Fallback: agent.name → persona → genérico.
 import { useAiPersona } from "@/hooks/company/use-ai-persona"
 import type { CustomAgent } from "./types"
 import { safeCategoryKey } from "./types"
@@ -116,7 +116,7 @@ export function AgentCard({ agent, onTest, onDeploy, onToggleStatus, onClone }: 
   const t = useTranslations("agents.card")
   // White-label canonical 2026-05-29: persona do cliente como fallback do nome.
   // Se agent.name estiver vazio (edge case durante criação/erro), exibe o nome
-  // do assistente IA configurado em Configurações (default "LIA").
+  // do assistente IA configurado em Configurações (nome por tenant).
   const { persona: aiPersona } = useAiPersona()
   const displayName = agent.name || aiPersona?.name || "Agente"
   // W-Channels-A revisao (2026-05-23): 4 canais canonical independentes

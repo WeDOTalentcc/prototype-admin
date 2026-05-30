@@ -24,7 +24,8 @@ interface TemplateCardProps {
  *
  *  - Descrição = herói: texto completo, sem truncação, hierarquia de destaque.
  *  - Identidade do agente: avatar tonal (powder bg + graphite icon) — dá "cara
- *    de agente". NUNCA cyan (LIA Cyan Exclusivity + white-label Studio).
+ *    de agente". NUNCA cyan (white-label Studio: cor de marca reservada à
+ *    assistente da plataforma quando ela age).
  *  - Metadados traduzidos para valor de recrutador: capacidades em PT
  *    (summarizeCapabilities) + linha discreta "Análise · Processa até N etapas".
  *    Nada de "Ferramentas: 4 / Passos máx: 8 / Contexto: Padrão" (jargão).

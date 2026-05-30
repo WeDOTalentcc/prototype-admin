@@ -23,7 +23,7 @@ export function LearningBadge({ className, iconOnly }: LearningBadgeProps) {
       title={t("tooltip")}
       className={cn(
         "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs",
-        "border-wedo-cyan/40 bg-wedo-cyan/15 text-wedo-cyan",
+        "border-lia-border-medium bg-lia-bg-tertiary text-lia-text-primary",
         className,
       )}
       data-testid="learning-badge"

@@ -38,16 +38,18 @@ export function ApproachStep({ goal, approach, config, onSelect, setConfig }: Ap
   return (
     <div className="space-y-5" role="radiogroup" aria-label={t("approachGroupAriaLabel")}>
       {/* Linha de tranquilidade — remove o medo de errar. Tom Quiet Operator:
-          icone lucide sutil (sem emoji), cyan leve porque a IA monta o agente. */}
-      <div className="flex items-start gap-2 rounded-md bg-wedo-cyan/5 px-3 py-2">
-        <Lightbulb className="mt-0.5 h-3.5 w-3.5 shrink-0 text-wedo-cyan" aria-hidden="true" />
+          icone lucide sutil (sem emoji), acento neutro do DS (white-label Studio). */}
+      <div className="flex items-start gap-2 rounded-md bg-lia-bg-tertiary px-3 py-2">
+        <Lightbulb className="mt-0.5 h-3.5 w-3.5 shrink-0 text-lia-text-primary" aria-hidden="true" />
         <p className="text-xs leading-relaxed text-lia-text-secondary">
           {t("approachReassurance")}
         </p>
       </div>
 
-      {/* Hero "Criar com IA" — opcao recomendada, acento cyan (regra LIA Cyan
-          Exclusivity: cyan = IA presente). */}
+      {/* Hero "Criar com IA" — opcao recomendada. White-label Studio: o destaque
+          de "recomendado" vem do Chip + posição/borda neutra, não da cor de marca.
+          O acento cyan da assistente vive no chat lateral, não embutido nos cards
+          de criação do Studio. */}
       <Card
         role="radio"
         aria-checked={approach === "ai"}
@@ -61,13 +63,13 @@ export function ApproachStep({ goal, approach, config, onSelect, setConfig }: Ap
           }
         }}
         className={cn(
-          "cursor-pointer border-wedo-cyan/30 bg-wedo-cyan/5 transition-shadow duration-200 hover:shadow-lia-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan/40",
-          approach === "ai" && "border-wedo-cyan ring-2 ring-wedo-cyan/30",
+          "cursor-pointer border-lia-border-medium bg-lia-bg-secondary transition-shadow duration-200 hover:shadow-lia-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lia-btn-primary-bg/30",
+          approach === "ai" && "border-pebble ring-2 ring-graphite/20",
         )}
       >
         <CardContent className="space-y-3 p-5">
           <div className="flex items-center gap-2">
-            <Brain className="h-5 w-5 text-wedo-cyan" aria-hidden="true" />
+            <Brain className="h-5 w-5 text-lia-text-primary" aria-hidden="true" />
             {/* Nao usamos <TabSectionHeader> aqui (sentinela Task #1050) porque o
                 titulo eh interno a um card de option do wizard, nao header de tab.
                 Usamos <p> com role="heading" + aria-level pra manter semantica. */}

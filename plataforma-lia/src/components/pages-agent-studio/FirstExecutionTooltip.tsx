@@ -61,7 +61,7 @@ export function FirstExecutionTooltip({
       aria-live="polite"
       data-testid="first-execution-tooltip"
       className={cn(
-        "flex items-start gap-2 rounded-md border border-wedo-cyan/30 bg-wedo-cyan/10 p-3 text-xs",
+        "flex items-start gap-2 rounded-md border border-lia-border-subtle bg-lia-bg-tertiary p-3 text-xs",
         className,
       )}
     >
@@ -75,7 +75,7 @@ export function FirstExecutionTooltip({
         type="button"
         onClick={handleDismiss}
         aria-label={t("dismiss")}
-        className="flex-shrink-0 rounded p-0.5 text-lia-text-tertiary hover:bg-wedo-cyan/15 hover:text-lia-text-primary transition-colors"
+        className="flex-shrink-0 rounded p-0.5 text-lia-text-tertiary hover:bg-lia-bg-elevated hover:text-lia-text-primary transition-colors"
       >
         <X className="h-3.5 w-3.5" />
       </button>

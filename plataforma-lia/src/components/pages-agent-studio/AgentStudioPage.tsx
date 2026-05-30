@@ -76,7 +76,7 @@ const SECTOR_ICONS: Record<string, React.ComponentType<{ className?: string }>> 
 
 // Fase 3 Sprint 1 (2026-05-30): monocromatizado. Antes cada setor tinha cor
 // decorativa própria (amber/rose/violet/cyan/emerald simultâneos) — viola a
-// 90/10 Rule + "ATS infantil 4 cores" + LIA Cyan exclusiva da IA. Agora todos
+// LIA-OK: 90/10 Rule + "ATS infantil 4 cores" + a regra de exclusividade cyan. Agora todos
 // os setores usam o MESMO tratamento tonal neutro (ícone graphite sobre powder),
 // igual ao TemplateCard. A distinção de setor fica no ícone, não na cor.
 const SECTOR_ICON_STYLE = {
@@ -474,8 +474,8 @@ export default function AgentStudioPage({
               <section className="relative overflow-hidden rounded-xl border border-lia-border-subtle bg-lia-bg-secondary p-6">
                 <div className="relative">
                   <div className="flex items-center gap-2 mb-1">
-                    <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
-                    <span className="text-micro font-semibold uppercase tracking-wider text-wedo-cyan">
+                    <Brain className="w-3.5 h-3.5 text-lia-text-primary" />
+                    <span className="text-micro font-semibold uppercase tracking-wider text-lia-text-primary">
                       {t("studio.whatIsAgent")}
                     </span>
                   </div>

@@ -1,12 +1,12 @@
 // Onda 4 F6.1 (2026-05-28) — empty state canonical do Studio.
 //
 // Reusable: Custom Agents tab + qualquer surface que mostre lista vazia.
-// Persona-aware: persona name vem de useAiPersona() (default "LIA").
+// Persona-aware: persona name vem de useAiPersona() (nome configurável por tenant).
 //
 // Decisões de design:
 //   - Card centralizado, sem border-dashed (já tem em outros empty states locais)
 //   - 2 CTAs: explorar marketplace + conversar com persona
-//   - Cyan badge sutil no topo (LIA cyan exclusivo da IA)
+//   - Acento neutro do DS no topo (white-label Studio Fase 3 Sprint 1.5)
 "use client"
 
 import { useRouter, usePathname } from "next/navigation"
@@ -30,7 +30,7 @@ export function StudioEmptyState({
 }: StudioEmptyStateProps) {
   const t = useTranslations("agents.studio.empty")
   const { persona } = useAiPersona()
-  const personaName = persona?.name ?? "LIA"
+  const personaName = persona?.name ?? "assistente"
   const router = useRouter()
   const pathname = usePathname()
 
@@ -57,9 +57,9 @@ export function StudioEmptyState({
       <CardContent className="flex flex-col items-center gap-3 px-6 py-12 text-center">
         <span
           aria-hidden="true"
-          className="text-2xl text-wedo-cyan"
+          className="text-2xl text-lia-text-primary"
         >
-          🩵
+          🤖
         </span>
         <h2 className="font-sans text-base font-semibold text-lia-text-primary">
           {t("title")}

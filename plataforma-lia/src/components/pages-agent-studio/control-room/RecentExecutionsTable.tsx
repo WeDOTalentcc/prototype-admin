@@ -86,12 +86,9 @@ const STATUS_CHIP: Record<
   error: { label: "error", variant: "danger" },
   timeout: { label: "timeout", variant: "warning" },
   cancelled: { label: "cancelled", variant: "neutral" },
-  // Cyan canonical exclusivo da IA — running mantém classNames de fallback.
-  running: {
-    label: "running",
-    variant: "info",
-    className: "!border-wedo-cyan/40 !bg-wedo-cyan/10 !text-wedo-cyan",
-  },
+  // White-label: "running" herda o variant "info" canonical do DS (sem
+  // override de marca).
+  running: { label: "running", variant: "info" },
   queued: { label: "queued", variant: "info" },
 }
 

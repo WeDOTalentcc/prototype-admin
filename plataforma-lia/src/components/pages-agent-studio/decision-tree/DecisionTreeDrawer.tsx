@@ -8,8 +8,13 @@
 //   - onClose: () => void
 //
 // Decisão UX (Paulo, calibrada no plano): híbrido resumido + "Ver detalhes
-// técnicos" expandindo todos os steps. Cyan canonical exclusivo da IA via
-// tokens wedo-cyan-* em tailwind.config.ts.
+// técnicos" expandindo todos os steps.
+//
+// White-label (Fase 3 Sprint 1.5, 2026-05-30): o agente é do CLIENTE; toda
+// identidade visual usa tokens neutros do DS (lia-text-primary / lia-bg-tertiary
+// / lia-border-medium). A hierarquia (avatar, títulos de seção, dot do passo
+// "action") é mantida por tonalidade, não por cor de marca. Cyan permanece
+// exclusivo da assistente da plataforma quando ELA age, fora do Studio.
 "use client"
 
 import * as React from "react"
@@ -48,10 +53,10 @@ const STEP_TYPE_STYLES: Record<
   { dot: string; variant: ChipVariant; chipClassName?: string }
 > = {
   action: {
-    dot: "bg-wedo-cyan",
-    // Cyan canonical exclusivo IA — override do variant info.
+    // White-label: passo "action" usa tonalidade neutra (graphite). O chip
+    // herda o variant "info" canonical do DS, sem override de marca.
+    dot: "bg-lia-text-secondary",
     variant: "info",
-    chipClassName: "!border-wedo-cyan/40 !bg-wedo-cyan/10 !text-wedo-cyan",
   },
   thought: {
     dot: "bg-violet-500",
@@ -132,11 +137,11 @@ export function DecisionTreeBody({ reasoning, agentDisplayName }: DecisionTreeBo
       {/* Header bloco — agente + meta. Onda 5.7: id para aria-describedby do Sheet. */}
       <div
         id="dt-header-meta"
-        className="flex items-start gap-3 rounded-md border border-lia-border-subtle bg-wedo-cyan/5 p-3"
+        className="flex items-start gap-3 rounded-md border border-lia-border-subtle bg-lia-bg-secondary p-3"
       >
         <div
           className={cn(
-            "flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-wedo-cyan text-white",
+            "flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-lia-bg-tertiary text-lia-text-primary",
           )}
           aria-hidden="true"
         >
@@ -161,7 +166,7 @@ export function DecisionTreeBody({ reasoning, agentDisplayName }: DecisionTreeBo
           id="dt-criteria-heading"
           className="mb-2 flex items-center gap-2 text-sm font-semibold text-lia-text-primary"
         >
-          <Brain className="h-4 w-4 text-wedo-cyan" aria-hidden="true" />
+          <Brain className="h-4 w-4 text-lia-text-primary" aria-hidden="true" />
           {t("criteriaTitle")}
         </h3>
         {criteria.length === 0 ? (
@@ -207,7 +212,7 @@ export function DecisionTreeBody({ reasoning, agentDisplayName }: DecisionTreeBo
           id="dt-lgpd-heading"
           className="mb-2 flex items-center gap-2 text-sm font-semibold text-lia-text-primary"
         >
-          <FileLock2 className="h-4 w-4 text-wedo-cyan" aria-hidden="true" />
+          <FileLock2 className="h-4 w-4 text-lia-text-primary" aria-hidden="true" />
           {t("lgpdTitle")}
         </h3>
 

@@ -3,7 +3,7 @@
 // Cobertura:
 //   1. Renderiza copy com personaName customizado
 //   2. CTAs disparam handlers
-//   3. Persona default = "LIA" quando hook null
+//   3. Persona default = "assistente" (neutro, white-label) quando hook null
 import { describe, expect, it, vi } from "vitest"
 import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
@@ -58,11 +58,14 @@ describe("StudioEmptyState", () => {
     expect(sofiaMatches.length).toBeGreaterThanOrEqual(1)
   })
 
-  it("usa default LIA quando persona null", () => {
+  it("usa default neutro 'assistente' quando persona null (white-label)", () => {
+    // White-label Fase 3 Sprint 1.5: sem nome de marca hardcoded no fallback.
+    // O Studio é do cliente; quando não há persona configurada, usamos um termo
+    // genérico em vez de "LIA".
     useAiPersonaMock.mockReturnValue({ persona: null })
     renderInProvider(<StudioEmptyState />)
-    const liaMatches = screen.getAllByText(/LIA/)
-    expect(liaMatches.length).toBeGreaterThanOrEqual(1)
+    const matches = screen.getAllByText(/assistente/)
+    expect(matches.length).toBeGreaterThanOrEqual(1)
   })
 
   it("CTAs disparam handlers customizados", async () => {

@@ -203,11 +203,11 @@ export function LgpdAuditPanel() {
       <CollapsibleTrigger asChild>
         <button
           type="button"
-          className="flex w-full items-center justify-between rounded-md border border-lia-border-subtle bg-lia-bg-elevated px-4 py-3 text-left transition-colors hover:bg-lia-bg-tertiary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan/30"
+          className="flex w-full items-center justify-between rounded-md border border-lia-border-subtle bg-lia-bg-elevated px-4 py-3 text-left transition-colors hover:bg-lia-bg-tertiary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lia-border-medium"
           data-testid="lgpd-audit-toggle"
         >
           <div className="flex items-center gap-2">
-            <FileLock2 className="h-4 w-4 text-wedo-cyan" aria-hidden="true" />
+            <FileLock2 className="h-4 w-4 text-lia-text-primary" aria-hidden="true" />
             <div>
               <div className="text-sm font-semibold text-lia-text-primary">{t("title")}</div>
               <div className="text-xs text-lia-text-tertiary">{t("subtitle")}</div>
