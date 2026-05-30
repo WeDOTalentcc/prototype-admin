@@ -131,3 +131,24 @@ Cada fase passa por: `canonical-fix` (produtor vs consumidor) → `feature-impac
 - jd_enrichment gera JD consistente com competências confirmadas (não as inventa).
 - Fast-path preservado (colar JD pronto continua rápido).
 - Zero regressão nos sensores WSI existentes.
+
+---
+
+## Estado de execução (atualizado 2026-05-30)
+
+Branch Replit: .
+
+- ✅ **Fase 0 — P0-A** contrato (employment_type): commit  (+3 testes TDD).
+- ✅ **Fase 0 — P0-B** salário (salary_range do benchmark): commit  (+3 testes TDD).
+- ⏭️ **PRÓXIMA: Fase 1** — modo de triagem (compact 7 / complete 12 + tempo) como
+  primeira decisão no intake + regra canônica competências↔nº de perguntas.
+- ⬜ Fases 2 (CompetencyBenchmarkService), 3, 4 (inverter jd_enrichment), 5, 6 — pendentes.
+
+### Como retomar (sessão nova)
+1. Abrir Claude Code no projeto.
+2. Colar: "Continue o épico do funil de criação de vaga. Leia o plano em
+    no Replit (ssh replit-wedo-0405,
+   branch feat/benefits-prv-canonical). Fase 0 (P0-A+P0-B) está feita e commitada.
+   Comece a Fase 1, seguindo a cascata canonical-fix + lia-testing (TDD) + harness-engineering."
+3. Disciplina: ler código real no Replit antes de editar; TDD Red→Green; commit atômico
+   por fase; stage só os arquivos da fase (agente paralelo ativo no workspace).
