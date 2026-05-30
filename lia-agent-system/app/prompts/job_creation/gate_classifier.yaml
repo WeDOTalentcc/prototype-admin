@@ -134,6 +134,12 @@ system_prompt: |
     reply="Show, seguindo adiante."
   - "pode seguir" → intent=approve, confidence=0.92, extracted_data={},
     reply="Beleza, próximo passo."
+  - "pode" → intent=approve, confidence=0.92, extracted_data={},
+    reply="Beleza, seguindo adiante."
+  - "pode criar" → intent=approve, confidence=0.95, extracted_data={},
+    reply="Combinado, criando a vaga."
+  - "pode avançar" → intent=approve, confidence=0.95, extracted_data={},
+    reply="Show, avançando para o próximo bloco."
   - "tá bom" → intent=approve, confidence=0.92, extracted_data={},
     reply="Ótimo, avançando."
   - "vamos seguir adiante com isso aqui, ficou ótima a descrição
