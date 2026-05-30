@@ -6,6 +6,15 @@ module Apify
     DEFAULT_PAGES = 2
     MAX_PAGES = 10
 
+    MAX_RETRIES = 3
+    RETRY_BASE_DELAY = 5 # seconds, doubles each attempt
+
+    RETRYABLE_ERRORS = [
+      LinkedinSearchService::TimeoutError,
+      LinkedinSearchService::RunFailedError,
+      LinkedinSearchService::AbortedError
+    ].freeze
+
     ADVANCED_PARAM_KEYS = %i[
       seniority_levels functions company_headcount profile_languages
       first_names last_names company_headquarter_locations
@@ -28,7 +37,7 @@ module Apify
 
     def call
       options = build_search_options
-      result_set = LinkedinSearchService.new.search(**options)
+      result_set = search_with_retry(options)
 
       profiles = create_sourced_profiles(result_set)
       update_sourcing(result_set, profiles)
@@ -36,15 +45,29 @@ module Apify
       { success: true, sourcing_id: @sourcing.id, profiles_count: profiles.size, total_found: result_set.total_count }
     rescue LinkedinSearchService::RateLimitError => e
       handle_rate_limit(e)
-    rescue LinkedinSearchService::TimeoutError => e
-      handle_error("LinkedIn search timed out: #{e.message}")
-    rescue LinkedinSearchService::RunFailedError => e
-      handle_error("LinkedIn search failed: #{e.message}")
+    rescue *RETRYABLE_ERRORS => e
+      handle_error("LinkedIn search failed após #{MAX_RETRIES} tentativas: #{e.message}")
     rescue StandardError => e
       handle_error(e.message)
     end
 
     private
+
+    def search_with_retry(options)
+      attempt = 0
+      begin
+        attempt += 1
+        LinkedinSearchService.new.search(**options)
+      rescue *RETRYABLE_ERRORS => e
+        if attempt < MAX_RETRIES
+          delay = RETRY_BASE_DELAY * (2 ** (attempt - 1))
+          Rails.logger.warn "[Apify::LinkedinSearchExecutor] Tentativa #{attempt}/#{MAX_RETRIES} falhou (#{e.class.name}): #{e.message}. Retry em #{delay}s"
+          sleep delay
+          retry
+        end
+        raise
+      end
+    end
 
     def build_search_options
       options = { mode: search_mode }
