@@ -598,13 +598,22 @@ def test_dual_id_constraint_rejects_garbage_at_runtime() -> None:
     from fastapi.testclient import TestClient
 
     from app.api.v1.activities import router as activities_router
+    from app.shared.security.require_company_id import require_company_id
 
     app = FastAPI()
     app.include_router(activities_router, prefix="/api/v1")
+    # The endpoint also carries a require_company_id tenant gate which,
+    # mounted on a bare app without the auth middleware, would raise 401
+    # *before* FastAPI reaches path-param validation (dependencies run
+    # first). Override it with a benign stub so this test isolates the
+    # behaviour under examination: the dual-ID path-param regex itself.
+    app.dependency_overrides[require_company_id] = lambda: (
+        "00000000-0000-0000-0000-000000000001"
+    )
     client = TestClient(app, raise_server_exceptions=False)
 
-    # Garbage segment must be rejected by the path-param regex BEFORE
-    # any handler / dependency runs.
+    # Garbage segment must be rejected by the path-param regex (a 422),
+    # not silently captured by the item handler.
     resp = client.get("/api/v1/activities/not-a-valid-id")
     assert resp.status_code == 422, (
         f"Expected 422 for non-UUID/non-digit activity_id, got "
