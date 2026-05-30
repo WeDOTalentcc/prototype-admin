@@ -146,17 +146,19 @@ Branch Replit: .
   Sugere competências téc+comp por título/senioridade/depto/modo; dimensionado via SCREENING_MODE_CONFIG (compact 5+2, full 8+4); FairnessGuard P7 filtra; fallback por família de cargo; company_id na cache key.
 - ✅ **Fase 3** — intake_gate confirmação assistida de competências: commit `8b0c9186b`. (+11 testes TDD)
   Ao aprovar, sugere competências (via Fase 2) dimensionadas pelo modo, seed em confirmed_* (accept-all; right_panel_form tem precedência); campos novos no state; fail-open não bloqueia aprovação; gestor/email já eram não-bloqueantes.
-- ⏭️ **PRÓXIMA: Fase 4** — inverter jd_enrichment (WSI F1): consumir confirmed_* em vez de gerar competências do zero. Nó mais central; exige fallback robusto (sem confirmed_* → comportamento legado).
-- ⬜ Fases 5 (painel ficha viva, frontend), 6 (reconciliar competency/wsi_questions) — pendentes.
+- ✅ **Fase 4** — inverter jd_enrichment (WSI F1): commit `eb82d9b5f`. (+11 testes TDD)
+  jd_enrichment consome confirmed_* (Fase 3) e gera JD consistente; override determinístico das competências (sem drift do LLM); quality_score mode-aware (compact 5+2 não penalizado); fallback honra confirmadas; sem confirmed_* → comportamento legado. Stub t1062 atualizado em lockstep.
+- ⬜ **PRÓXIMA: Fase 6** — reconciliar competency/wsi_questions: montar question_distribution a partir das confirmed_* + modo (não re-derivar do JD); gerar N perguntas conforme modo. (Fase 5 painel ficha viva fica deferida — frontend.)
+- ⬜ Fase 5 (painel ficha viva, frontend) — deferida (FASE 6 FE deferida per repo).
 
 ### Como retomar (sessão nova)
 1. Abrir Claude Code no projeto.
 2. Colar: "Continue o épico do funil de criação de vaga. Leia o plano em
     no Replit (ssh replit-wedo-0405,
-   branch feat/benefits-prv-canonical). Fases 0, 1, 2 e 3 estão feitas e commitadas
+   branch feat/benefits-prv-canonical). Fases 0-4 feitas e commitadas
    (+ fix do benchmark salarial no intake_gate, commit 101963773).
-   Comece a Fase 4 (inverter jd_enrichment — consumir confirmed_technical_competencies/
-   confirmed_behavioral_competencies em vez de gerar; fallback ao legado quando ausentes),
-   seguindo a cascata canonical-fix + lia-testing (TDD) + harness-engineering."
+   Comece a Fase 6 (reconciliar competency/wsi_questions: question_distribution a partir
+   das confirmed_* + modo; gerar N perguntas conforme modo). Fase 5 (painel FE) deferida.
+   Cascata canonical-fix + lia-testing (TDD) + harness-engineering."
 3. Disciplina: ler código real no Replit antes de editar; TDD Red→Green; commit atômico
    por fase; stage só os arquivos da fase (agente paralelo ativo no workspace).
