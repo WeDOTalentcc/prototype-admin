@@ -104,7 +104,8 @@ describe("CreateAgentWizard — T1 unificacao de entry-points", () => {
 
   it("usa role=radiogroup com aria-label no step 1", () => {
     open()
-    const group = screen.getByRole("radiogroup", { name: /objetivo do agente/i })
+    // next-intl mock returns the key itself; GoalStep renders aria-label={t("goalAriaLabel")}.
+    const group = screen.getByRole("radiogroup", { name: /goalAriaLabel/i })
     expect(group).toBeTruthy()
   })
 
@@ -175,7 +176,8 @@ describe("CreateAgentWizard — T3 'Criar com IA' hero", () => {
     open({ initialGoal: "triagem_inicial" })
     fireEvent.click(screen.getByTestId("wizard-next-button"))
     await waitFor(() => {
-      expect(screen.getByText(/recomendado/i)).toBeTruthy()
+      // next-intl mock returns the key itself; chip renders t("aiOptionRecommended").
+      expect(screen.getByText(/aiOptionRecommended/i)).toBeTruthy()
     })
   })
 

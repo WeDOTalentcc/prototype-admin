@@ -2263,7 +2263,20 @@
         "yourDescription": "Your description",
         "suggestedConfig": "Suggested configuration",
         "namePlaceholder": "E.g.: Screening Agent",
-        "goalAriaLabel": "Agent goal"
+        "goalAriaLabel": "Agent goal",
+        "approachReassurance": "No need to get it right the first time: you review everything before saving and can edit the agent anytime.",
+        "aiOptionTitle": "Create with AI",
+        "aiOptionRecommended": "Recommended",
+        "aiOptionDescription": "Write in plain language what the agent should do. {assistantName} builds the rest: name, instructions, tools and settings. You review everything before saving.",
+        "aiOptionExample": "E.g.: \"I want an agent that does initial screening of candidates for Engineering roles, prioritizing Python experience and remote availability.\"",
+        "aiOptionExampleLabel": "Example",
+        "aiDescriptionHelper": "The more detail (the role, what to prioritize, the tone), the better the agent turns out.",
+        "aiDescriptionPlaceholder": "Describe the agent you need...",
+        "aiDescriptionAriaLabel": "Agent description to generate with AI",
+        "orFromTemplate": "or start from a ready-made template",
+        "templateSectionHint": "Pick one and adjust later.",
+        "createManualDescription": "Configure every detail yourself: name, instructions, tools and persona. Best for those already familiar with agent concepts.",
+        "approachGroupAriaLabel": "How to create the agent"
       },
       "sandbox": {
         "title": "Simulate: {agent}",

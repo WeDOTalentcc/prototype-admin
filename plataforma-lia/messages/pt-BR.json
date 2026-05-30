@@ -2263,7 +2263,20 @@
         "yourDescription": "Sua descrição",
         "suggestedConfig": "Configuração sugerida",
         "namePlaceholder": "Ex: Agente de Triagem",
-        "goalAriaLabel": "Objetivo do agente"
+        "goalAriaLabel": "Objetivo do agente",
+        "approachReassurance": "Não precisa acertar de primeira: você revisa tudo antes de salvar e pode editar o agente quando quiser.",
+        "aiOptionTitle": "Criar com IA",
+        "aiOptionRecommended": "Recomendado",
+        "aiOptionDescription": "Escreva em português comum o que o agente precisa fazer. A {assistantName} monta o resto: nome, instruções, ferramentas e configurações. Você revisa tudo antes de salvar.",
+        "aiOptionExample": "Ex.: \"Quero um agente que faça a triagem inicial de candidatos para vagas de Engenharia, priorizando experiência com Python e disponibilidade remota.\"",
+        "aiOptionExampleLabel": "Exemplo",
+        "aiDescriptionHelper": "Quanto mais detalhe (a vaga, o que priorizar, o tom), melhor o agente fica.",
+        "aiDescriptionPlaceholder": "Descreva o agente que você precisa...",
+        "aiDescriptionAriaLabel": "Descrição do agente para gerar com IA",
+        "orFromTemplate": "ou comece de um modelo pronto",
+        "templateSectionHint": "Escolha e ajuste depois.",
+        "createManualDescription": "Configure cada detalhe você mesmo: nome, instruções, ferramentas e persona. Indicado para quem já conhece os conceitos de agente.",
+        "approachGroupAriaLabel": "Como criar o agente"
       },
       "sandbox": {
         "title": "Simular: {agent}",
