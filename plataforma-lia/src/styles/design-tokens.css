@@ -674,8 +674,8 @@
 
   /* Textos — alinhados ao DS (ElevenLabs-style) */
   --lia-text-primary:       #000000;                 /* Preto puro — ElevenLabs */
-  --lia-text-secondary:     #6B7280;                 /* gray-500 Tailwind — DS canônico */
-  --lia-text-tertiary:      #9CA3AF;                 /* gray-400 Tailwind — DS canônico */
+  --lia-text-secondary:     #374151;                 /* gray-700 — contraste reforçado (2026-05-30, pedido Paulo) */
+  --lia-text-tertiary:      #6B7280;                 /* gray-500 — hints, mais escuro que gray-400 */
 
   /* Botões neutros — específicos do prompt */
   --lia-btn-neutral:        #F0F0F0;                 /* estado neutro */
