@@ -28,6 +28,53 @@ from app.domains.job_creation.helpers.llm_exceptions import (
 
 logger = logging.getLogger(__name__)
 
+# ── Task #1089 — geração cirúrgica + hard gate de mínimo ─────────────────────
+_BEHAVIORAL_TOPIC_HINTS = (
+    "lideran", "comunica", "colabora", "equipe", "time", "conflito",
+    "pressao", "pressão", "resilien", "adapta", "empatia", "negocia",
+    "feedback", "autonomia", "proativ", "organiza", "prazo", "etica", "ética",
+    "relacion", "influen", "mentor",
+)
+
+
+def _infer_block_from_topic(topic: str) -> str:
+    """Heurística leve (computacional) para classificar o tópico de uma pergunta
+    nova em técnica vs comportamental. O recrutador revisa antes de aprovar."""
+    t = (topic or "").lower()
+    return "behavioral" if any(h in t for h in _BEHAVIORAL_TOPIC_HINTS) else "technical"
+
+
+def _mode_min_total(state: "JobCreationState"):
+    """(mode, mínimo de perguntas TOTAL do modo) — compact=7, full=12."""
+    from app.domains.job_creation.helpers.screening_mode_config import SCREENING_MODE_CONFIG
+    mode = state.get("screening_mode") or "compact"
+    cfg = SCREENING_MODE_CONFIG.get(mode) or SCREENING_MODE_CONFIG["compact"]
+    return mode, cfg["total_questions"]
+
+
+def _surgical_ctx(state: "JobCreationState"):
+    """(generator, enriched, seniority, trait_rankings) p/ geração cirúrgica.
+
+    Retorna (None, None, None, None) quando jd_enriched ausente — o caller faz
+    fail-soft (mantém o pacote + clarify), nunca quebra o gate.
+    """
+    try:
+        from app.domains.job_creation.graph import _get_wsi_generator
+        from app.domains.job_creation.schemas import EnrichedJobDescription
+        jd = state.get("jd_enriched") or {}
+        if not jd:
+            return None, None, None, None
+        enriched = EnrichedJobDescription(**jd)
+        return (
+            _get_wsi_generator(), enriched,
+            state.get("seniority_resolved") or "pleno",
+            state.get("trait_rankings") or [],
+        )
+    except Exception as exc:  # noqa: BLE001 — fail-soft
+        logger.warning("[wsi_questions_gate] surgical ctx unavailable: %s", exc)
+        return None, None, None, None
+
+
 
 def wsi_questions_gate_node(state: JobCreationState) -> JobCreationState:
     """T5 (Task #1087) — gate LLM-based para HITL #2 (wsi_questions).
@@ -231,14 +278,47 @@ def wsi_questions_gate_node(state: JobCreationState) -> JobCreationState:
     }
 
     if intent == "approve_all":
-        next_state["questions_approved"] = True
-        next_state["wsi_regenerate_pending"] = False
-        next_state["wsi_questions_pending_edit"] = None
-        next_state["wsi_questions_pending_add"] = None
-        next_state["gate_clarify_message"] = (
-            output.conversational_reply
-            or "Aprovado! Vou seguir para configurar as perguntas de elegibilidade."
-        )
+        _mode, _min_total = _mode_min_total(state)
+        if total_q < _min_total:
+            # Hard gate: não aprova abaixo do mínimo do modo. Auto-completa as
+            # faltantes (cobrindo competências confirmadas não cobertas) e pede
+            # re-aprovação do pacote completo.
+            _gen, _enr, _sen, _tr = _surgical_ctx(state)
+            _added = []
+            if _gen is not None and _enr is not None:
+                try:
+                    _missing = _gen.generate_missing_questions(
+                        enriched=_enr, seniority=_sen,
+                        existing_questions=current_questions,
+                        screening_mode=_mode, trait_rankings=_tr,
+                    )
+                    _added = [m.model_dump() for m in _missing]
+                except Exception as _ac_exc:  # noqa: BLE001 — fail-soft
+                    logger.warning("[wsi_questions_gate] auto-complete failed: %s", _ac_exc)
+            if _added:
+                _completed = current_questions + _added
+                next_state["wsi_questions"] = _completed
+                next_state["questions_approved"] = None
+                next_state["wsi_regenerate_pending"] = False
+                next_state["gate_clarify_message"] = (
+                    f"O modo {_mode} exige no mínimo {_min_total} perguntas e havia {total_q}. "
+                    f"Completei com {len(_added)} (total {len(_completed)}). Pode revisar e aprovar?"
+                )
+            else:
+                next_state["questions_approved"] = None
+                next_state["gate_clarify_message"] = (
+                    f"O modo {_mode} exige no mínimo {_min_total} perguntas, mas há {total_q}. "
+                    "Quer que eu gere as faltantes ou prefere ajustar?"
+                )
+        else:
+            next_state["questions_approved"] = True
+            next_state["wsi_regenerate_pending"] = False
+            next_state["wsi_questions_pending_edit"] = None
+            next_state["wsi_questions_pending_add"] = None
+            next_state["gate_clarify_message"] = (
+                output.conversational_reply
+                or "Aprovado! Vou seguir para configurar as perguntas de elegibilidade."
+            )
 
     elif intent == "regenerate_all":
         next_state["questions_approved"] = False
@@ -264,18 +344,34 @@ def wsi_questions_gate_node(state: JobCreationState) -> JobCreationState:
                 msg("wsi_questions_gate.edit_question_clarify", total_q=total_q)
             )
         else:
-            next_state["wsi_questions_pending_edit"] = {
-                "question_index": idx,
-                "instruction": instruction,
-            }
-            next_state["wsi_regenerate_pending"] = True
-            next_state["questions_approved"] = False
-            # Limpa pacote para forçar regen completa (Task #1089: cirúrgico).
-            next_state["wsi_questions"] = []
-            next_state["gate_clarify_message"] = (
-                output.conversational_reply
-                or f"Beleza, vou ajustar a pergunta {idx} ({instruction[:60]})."
-            )
+            # Task #1089 — edição CIRÚRGICA: regenera só a pergunta `idx`,
+            # preserva as demais. Mantém a metodologia WSI (mesma validação).
+            _gen, _enr, _sen, _tr = _surgical_ctx(state)
+            _base_q = current_questions[idx - 1]
+            _block = (_base_q.get("block") if isinstance(_base_q, dict) else getattr(_base_q, "block", "technical")) or "technical"
+            _new_q = None
+            if _gen is not None and _enr is not None:
+                _new_q = _gen.generate_single_question(
+                    block=_block, enriched=_enr, seniority=_sen,
+                    directive=instruction, base_question=_base_q, trait_rankings=_tr,
+                )
+            next_state["questions_approved"] = None
+            next_state["wsi_regenerate_pending"] = False
+            next_state["wsi_questions_pending_edit"] = None
+            if _new_q is not None:
+                _updated = list(current_questions)
+                _updated[idx - 1] = _new_q.model_dump()
+                next_state["wsi_questions"] = _updated
+                next_state["gate_clarify_message"] = (
+                    output.conversational_reply
+                    or f"Ajustei a pergunta {idx}. Quer revisar o pacote e aprovar?"
+                )
+            else:
+                # Fail-soft: mantém a original (nunca insere pergunta off-WSI).
+                next_state["gate_clarify_message"] = (
+                    f"Não consegui ajustar a pergunta {idx} mantendo a metodologia WSI. "
+                    "Pode reformular o pedido?"
+                )
 
     elif intent == "add_question":
         topic = str(extracted.get("topic") or "").strip()[:200]
@@ -287,14 +383,35 @@ def wsi_questions_gate_node(state: JobCreationState) -> JobCreationState:
                 msg("wsi_questions_gate.add_question_topic")
             )
         else:
-            next_state["wsi_questions_pending_add"] = {"topic": topic}
-            next_state["wsi_regenerate_pending"] = True
-            next_state["questions_approved"] = False
-            next_state["wsi_questions"] = []
-            next_state["gate_clarify_message"] = (
-                output.conversational_reply
-                or f"Show, vou acrescentar uma pergunta sobre {topic}."
-            )
+            # Task #1089 — adição CIRÚRGICA: gera 1 pergunta nova e INCREMENTA
+            # o pacote (N -> N+1), preservando as existentes.
+            _gen, _enr, _sen, _tr = _surgical_ctx(state)
+            _block = _infer_block_from_topic(topic)
+            _new_q = None
+            if _gen is not None and _enr is not None:
+                _new_q = _gen.generate_single_question(
+                    block=_block, enriched=_enr, seniority=_sen,
+                    directive=topic, base_question=None, trait_rankings=_tr,
+                )
+                if _new_q is None:
+                    try:
+                        _new_q = _gen._fallback_questions(_block, 1)[0]
+                    except Exception:  # noqa: BLE001
+                        _new_q = None
+            next_state["questions_approved"] = None
+            next_state["wsi_regenerate_pending"] = False
+            next_state["wsi_questions_pending_add"] = None
+            if _new_q is not None:
+                _updated = list(current_questions) + [_new_q.model_dump()]
+                next_state["wsi_questions"] = _updated
+                next_state["gate_clarify_message"] = (
+                    output.conversational_reply
+                    or f"Adicionei uma pergunta sobre {topic}. O pacote ficou com {len(_updated)}. Quer aprovar?"
+                )
+            else:
+                next_state["gate_clarify_message"] = (
+                    f"Não consegui gerar a pergunta sobre {topic} agora. Pode tentar de novo?"
+                )
 
     elif intent == "remove_question":
         idx = _valid_index(extracted.get("question_index"))
@@ -312,10 +429,18 @@ def wsi_questions_gate_node(state: JobCreationState) -> JobCreationState:
             # Não aprova nem regenera — aguarda aprovação do pacote reduzido.
             next_state["questions_approved"] = None
             next_state["wsi_regenerate_pending"] = False
-            next_state["gate_clarify_message"] = (
-                output.conversational_reply
-                or f"Removida a pergunta {idx}. O pacote ficou com {len(new_questions)} perguntas — me confirma se posso seguir."
-            )
+            _mode, _min_total = _mode_min_total(state)
+            if len(new_questions) < _min_total:
+                next_state["gate_clarify_message"] = (
+                    f"Removida a pergunta {idx}. O pacote ficou com {len(new_questions)} — "
+                    f"o modo {_mode} pede no mínimo {_min_total}. Quando você aprovar, "
+                    "eu completo as faltantes automaticamente (ou adicione/edite antes)."
+                )
+            else:
+                next_state["gate_clarify_message"] = (
+                    output.conversational_reply
+                    or f"Removida a pergunta {idx}. O pacote ficou com {len(new_questions)} perguntas — me confirma se posso seguir."
+                )
 
     elif intent == "ask_question":
         # Task #1123 — resposta rica via Sonnet (tenant + history-aware).

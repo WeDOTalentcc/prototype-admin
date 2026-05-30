@@ -23,6 +23,9 @@ import logging
 import uuid
 from typing import Any, Dict, List, Literal, Optional
 
+from app.domains.job_creation.helpers.screening_mode_config import (
+    SCREENING_MODE_CONFIG,
+)
 from app.domains.job_creation.schemas import (
     BigFiveExtraction,
     EnrichedJobDescription,
@@ -243,6 +246,93 @@ Responda APENAS com JSON:
     }}
   ]
 }}"""
+
+
+def _build_single_question_prompt(
+    block: Literal["technical", "behavioral"],
+    enriched: "EnrichedJobDescription",
+    seniority: str,
+    directive: str,
+    base_question=None,
+    trait_rankings: Optional[List[Dict]] = None,
+) -> str:
+    """Prompt para gerar/regenerar UMA pergunta CBI (edição ou adição).
+
+    Reusa as REGRAS ABSOLUTAS WSI do _build_questions_prompt (CBI, proibido
+    hipotética/fit-cultural). base_question != None => modo edição (revisar a
+    pergunta existente conforme `directive`); senão => adição sobre o `directive`
+    como tópico.
+    """
+    is_edit = base_question is not None
+    if is_edit:
+        _q_text = _q_attr(base_question, "question", "")
+        directive_block = (
+            f'PERGUNTA ATUAL (revisar mantendo a metodologia):\n"{_q_text}"\n'
+            f"AJUSTE PEDIDO PELO RECRUTADOR: {directive}"
+        )
+    else:
+        directive_block = f"TÓPICO DA NOVA PERGUNTA: {directive}"
+
+    if block == "technical":
+        skills = ", ".join(s.skill for s in enriched.skills_obrigatorias[:12])
+        return f"""Gere UMA única pergunta TÉCNICA de triagem para a vaga abaixo.
+
+REGRAS ABSOLUTAS (metodologia WSI — obrigatórias):
+- CBI: pergunte sobre situações REAIS passadas. PROIBIDO hipotéticas ("o que você faria se...").
+- PROIBIDO perguntas de fit cultural.
+- Calibre a complexidade pela senioridade: {seniority}.
+
+VAGA: {enriched.titulo_padronizado} ({seniority})
+SKILLS DISPONÍVEIS: {skills}
+{directive_block}
+
+Responda APENAS com JSON válido:
+{{
+  "questions": [
+    {{
+      "question": "texto da pergunta CBI",
+      "ideal_answer": "resposta ideal esperada",
+      "skill": "skill avaliada",
+      "bloom_level": 1,
+      "dreyfus_level": 1,
+      "scoring_rubric": {{"1-3": "baixo", "4-6": "médio", "7-9": "alto", "10": "máximo"}}
+    }}
+  ]
+}}"""
+    else:
+        competencies = ", ".join(c.competencia for c in enriched.competencias_comportamentais[:10])
+        return f"""Gere UMA única pergunta COMPORTAMENTAL de triagem para a vaga abaixo.
+
+REGRAS ABSOLUTAS (metodologia WSI — obrigatórias):
+- CBI: pergunte sobre situações REAIS passadas. PROIBIDO hipotéticas.
+- PROIBIDO perguntas de fit cultural.
+- A pergunta avalia um trait Big Five via competência correspondente.
+
+VAGA: {enriched.titulo_padronizado} ({seniority})
+COMPETÊNCIAS DISPONÍVEIS: {competencies}
+{directive_block}
+
+Responda APENAS com JSON válido:
+{{
+  "questions": [
+    {{
+      "question": "texto da pergunta CBI comportamental",
+      "ideal_answer": "resposta ideal esperada",
+      "skill": "competência avaliada",
+      "trait_ocean": "openness|conscientiousness|extraversion|agreeableness|stability",
+      "scoring_rubric": {{"1-3": "baixo", "4-6": "médio", "7-9": "alto", "10": "máximo"}}
+    }}
+  ]
+}}"""
+
+
+def _q_attr(q, field: str, default=None):
+    """Lê um campo de uma pergunta que pode ser dict (model_dump no state) ou GeneratedQuestion."""
+    if q is None:
+        return default
+    if isinstance(q, dict):
+        return q.get(field, default)
+    return getattr(q, field, default)
 
 
 class WSIQuestionGenerator:
@@ -607,3 +697,132 @@ class WSIQuestionGenerator:
                 trait_ocean="stability",
                 weight=1.0 / max(count, 1),
             )]
+
+    def generate_single_question(
+        self,
+        *,
+        block: Literal["technical", "behavioral"],
+        enriched: EnrichedJobDescription,
+        seniority: str,
+        directive: str,
+        base_question: Optional[GeneratedQuestion] = None,
+        trait_rankings: Optional[List[Dict[str, Any]]] = None,
+    ) -> Optional[GeneratedQuestion]:
+        """Gera/regenera UMA pergunta CBI (Task #1089 — geração cirúrgica).
+
+        Edição: base_question != None — regenera aquela pergunta conforme
+        `directive`, preservando block. Adição: base_question None — gera nova
+        pergunta sobre o tópico `directive`.
+
+        A pergunta passa pela MESMA validação WSI (_validate_question) das
+        geradas em lote. Retorna None se falhar validação ou parse — o caller
+        decide (edição mantém a original; adição cai em _fallback_questions).
+        """
+        prompt = _build_single_question_prompt(
+            block, enriched, seniority, directive, base_question, trait_rankings,
+        )
+        llm = self._get_llm(block)
+        try:
+            from app.shared.services.circuit_breaker import (
+                circuit_breaker_call, CircuitBreakerOpenError,
+            )
+            try:
+                response = circuit_breaker_call(
+                    llm.invoke, prompt, circuit_key=f"job_creation:wsi_single_{block}",
+                )
+            except CircuitBreakerOpenError:
+                logger.warning("[WSI:F6] Circuit breaker OPEN (single %s) — None", block)
+                return None
+        except ImportError:
+            response = llm.invoke(prompt)
+
+        try:
+            content = response.content.strip()
+            if content.startswith("```json"):
+                content = content[7:]
+            if content.startswith("```"):
+                content = content[3:]
+            if content.endswith("```"):
+                content = content[:-3]
+            data = json.loads(content.strip())
+            raw = (data.get("questions") or [])
+            if not raw:
+                return None
+            q = raw[0]
+            generated = GeneratedQuestion(
+                question=q.get("question", ""),
+                ideal_answer=q.get("ideal_answer", ""),
+                scoring_rubric=q.get("scoring_rubric", {}),
+                framework="CBI",
+                block=block,
+                competency=block,
+                skill=q.get("skill", "") or _q_attr(base_question, "skill", ""),
+                trait_ocean=q.get("trait_ocean") or _q_attr(base_question, "trait_ocean", None),
+                bloom_level=q.get("bloom_level"),
+                dreyfus_level=q.get("dreyfus_level"),
+                weight=_q_attr(base_question, "weight", 1.0),
+            )
+            if not self._validate_question(generated):
+                logger.warning(
+                    "[WSI:F6] single question rejected by WSI validation: %s",
+                    generated.question[:60],
+                )
+                return None
+            return generated
+        except Exception as exc:  # noqa: BLE001 — fail-soft (caller decide)
+            logger.warning("[WSI:F6] single question generation failed: %s", exc)
+            return None
+
+    def generate_missing_questions(
+        self,
+        *,
+        enriched: EnrichedJobDescription,
+        seniority: str,
+        existing_questions: List[GeneratedQuestion],
+        screening_mode: str,
+        trait_rankings: Optional[List[Dict[str, Any]]] = None,
+    ) -> List[GeneratedQuestion]:
+        """Auto-completa o pacote até o mínimo do modo (Task #1089 / hard gate).
+
+        Compact => 5 téc + 2 comp (7). Full => 8 téc + 4 comp (12). Gera apenas
+        o DÉFICIT por bloco, cobrindo competências confirmadas ainda NÃO cobertas
+        pelas perguntas atuais. Retorna [] quando o pacote já atinge o mínimo.
+        """
+        cfg = SCREENING_MODE_CONFIG.get(screening_mode) or SCREENING_MODE_CONFIG["compact"]
+        target_tech = cfg["technical_competencies"]
+        target_behav = cfg["behavioral_competencies"]
+
+        cur_tech = sum(1 for q in existing_questions if _q_attr(q, "block", "") == "technical")
+        cur_behav = sum(1 for q in existing_questions if _q_attr(q, "block", "") == "behavioral")
+        deficit_tech = max(0, target_tech - cur_tech)
+        deficit_behav = max(0, target_behav - cur_behav)
+        if deficit_tech == 0 and deficit_behav == 0:
+            return []
+
+        missing: List[GeneratedQuestion] = []
+
+        if deficit_tech > 0:
+            covered = {_q_attr(q, "skill", "") for q in existing_questions if _q_attr(q, "block", "") == "technical"}
+            uncovered = [s for s in enriched.skills_obrigatorias if s.skill not in covered]
+            enriched_tech = enriched.model_copy(
+                update={"skills_obrigatorias": uncovered or enriched.skills_obrigatorias}
+            )
+            missing.extend(
+                self._generate_block("technical", enriched_tech, seniority, deficit_tech, trait_rankings or [])
+            )
+
+        if deficit_behav > 0:
+            covered = {_q_attr(q, "skill", "") for q in existing_questions if _q_attr(q, "block", "") == "behavioral"}
+            uncovered = [c for c in enriched.competencias_comportamentais if c.competencia not in covered]
+            enriched_behav = enriched.model_copy(
+                update={"competencias_comportamentais": uncovered or enriched.competencias_comportamentais}
+            )
+            missing.extend(
+                self._generate_block("behavioral", enriched_behav, seniority, deficit_behav, trait_rankings or [])
+            )
+
+        logger.info(
+            "[WSI:F6] auto-complete: +%d téc +%d comp (mode=%s, alvo=%d+%d)",
+            deficit_tech, deficit_behav, screening_mode, target_tech, target_behav,
+        )
+        return missing
