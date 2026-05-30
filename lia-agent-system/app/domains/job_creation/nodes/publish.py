@@ -131,6 +131,9 @@ def publish_node(state: JobCreationState) -> JobCreationState:
                 "work_model": state.get("parsed_model", ""),
                 # P0-A: regime de contratação (coluna employment_type já existe).
                 "employment_type": state.get("parsed_employment_type"),
+                # FASE 5: gestor responsável + email (colunas manager/manager_email já existem).
+                "manager": state.get("parsed_manager_name") or "",
+                "manager_email": state.get("parsed_manager_email") or "",
                 "salary_min": state.get("salary_min"),
                 "salary_max": state.get("salary_max"),
                 "salary_currency": state.get("salary_currency", "BRL"),

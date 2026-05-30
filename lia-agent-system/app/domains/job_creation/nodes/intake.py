@@ -64,6 +64,8 @@ def intake_node(state: JobCreationState) -> JobCreationState:
     parsed_location = state.get("parsed_location")
     parsed_model = state.get("parsed_model")
     parsed_employment_type = state.get("parsed_employment_type")  # P0-A
+    parsed_manager_name = state.get("parsed_manager_name")  # FASE 5
+    parsed_manager_email = state.get("parsed_manager_email")  # FASE 5
     intake_confidence = 0.0
     intake_source = "none"
     try:
@@ -105,6 +107,9 @@ def intake_node(state: JobCreationState) -> JobCreationState:
         parsed_model = parsed_model or _val("work_model")
         # P0-A: regime de contratação (CLT/PJ/...) — schema field contract_type.
         parsed_employment_type = parsed_employment_type or _val("contract_type")
+        # FASE 5 - gestor + email (schema fields manager_name/manager_email).
+        parsed_manager_name = parsed_manager_name or _val("manager_name")
+        parsed_manager_email = parsed_manager_email or _val("manager_email")
         intake_confidence = extraction.overall_confidence
         _title_field = getattr(extraction, "title", None)
         intake_source = (
@@ -145,6 +150,8 @@ def intake_node(state: JobCreationState) -> JobCreationState:
         "parsed_location": parsed_location,
         "parsed_model": parsed_model,
         "parsed_employment_type": parsed_employment_type,
+        "parsed_manager_name": parsed_manager_name,
+        "parsed_manager_email": parsed_manager_email,
         "intake_confidence": intake_confidence,
         "stage_history": (state.get("stage_history") or []) + ["intake"],
         "completeness": calculate_completeness("intake"),
@@ -167,6 +174,8 @@ def intake_node(state: JobCreationState) -> JobCreationState:
                 "parsed_location": parsed_location,
                 "parsed_model": parsed_model,
                 "parsed_employment_type": parsed_employment_type,
+                "parsed_manager_name": parsed_manager_name,
+                "parsed_manager_email": parsed_manager_email,
                 "intake_confidence": intake_confidence,
                 "intake_source": intake_source,
                 # Task #1055 — emite o pipeline_template determinístico já no

@@ -132,6 +132,17 @@ export function wizardUpdateToMessage(updates: Record<string, unknown>): string 
   if ("jd_similar_reuse_id" in updates) return "Reutilizar JD similar: " + String(updates.jd_similar_reuse_id)
   if ("jd_similar_dismissed" in updates) return "Ignorar JD similar, vou digitar manualmente"
   if ("raw_input" in updates) return String(updates.raw_input)
+  // FASE 5 — edicoes de campos da ficha viva (IntakePanel inline edit). O texto
+  // e so o espelho legivel; os valores viajam em context.right_panel_form
+  // (schema keys) e o IntakeExtractor os honra a 0.95. Um campo por edicao.
+  if ("manager_name" in updates) return "Gestor responsavel: " + String(updates.manager_name)
+  if ("manager_email" in updates) return "Email do gestor: " + String(updates.manager_email)
+  if ("contract_type" in updates) return "Tipo de contrato: " + String(updates.contract_type)
+  if ("work_model" in updates) return "Modelo de trabalho: " + String(updates.work_model)
+  if ("department" in updates) return "Departamento: " + String(updates.department)
+  if ("location" in updates) return "Localizacao: " + String(updates.location)
+  if ("title" in updates) return "Titulo da vaga: " + String(updates.title)
+  if ("seniority" in updates) return "Senioridade: " + String(updates.seniority)
   if ("screening_mode" in updates)
     return updates.screening_mode === "compact" ? "Modo compacto (7 perguntas)" : "Modo completo (12 perguntas)"
   if ("sourcing_mode" in updates) {

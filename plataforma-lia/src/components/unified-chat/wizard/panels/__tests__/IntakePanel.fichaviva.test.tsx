@@ -162,3 +162,76 @@ describe("IntakePanel ficha viva — valores objeto não quebram (P0 fix)", () =
     expect(() => render(<IntakePanel data={data} />)).not.toThrow()
   })
 })
+
+
+describe("IntakePanel ficha viva — FASE 5: gestor/email + edicao inline", () => {
+  it("zona enriquecedora mostra gestor + email quando presentes", () => {
+    render(<IntakePanel data={fullData({
+      parsed_manager_name: "Ana Souza",
+      parsed_manager_email: "ana@empresa.com",
+    })} />)
+    const zone = screen.getByTestId("intake-enriching-zone")
+    expect(zone).toHaveTextContent(/Gestor respons/i)
+    expect(zone).toHaveTextContent(/Ana Souza/)
+    expect(zone).toHaveTextContent(/Email do gestor/i)
+    expect(zone).toHaveTextContent(/ana@empresa\.com/)
+  })
+
+  it("gestor ausente mostra acao 'adicionar' (campo editavel, nao some)", () => {
+    render(<IntakePanel data={fullData()} onUpdate={vi.fn()} />)
+    // sem parsed_manager_name → botao de adicionar com testid do editKey
+    expect(screen.getByTestId("add-ficha-manager_name")).toBeInTheDocument()
+  })
+
+  it("editar gestor inline chama onUpdate com schema key manager_name", () => {
+    const onUpdate = vi.fn()
+    render(<IntakePanel data={fullData({ parsed_manager_name: "Ana" })} onUpdate={onUpdate} />)
+    // clica no chip do gestor para editar
+    fireEvent.click(screen.getByText("Ana"))
+    const input = screen.getByTestId("edit-ficha-manager_name") as HTMLInputElement
+    fireEvent.change(input, { target: { value: "Bruno Lima" } })
+    fireEvent.keyDown(input, { key: "Enter" })
+    expect(onUpdate).toHaveBeenCalledWith({ manager_name: "Bruno Lima" })
+  })
+
+  it("email invalido NAO chama onUpdate (validacao)", () => {
+    const onUpdate = vi.fn()
+    render(<IntakePanel data={fullData()} onUpdate={onUpdate} />)
+    fireEvent.click(screen.getByTestId("add-ficha-manager_email"))
+    const input = screen.getByTestId("edit-ficha-manager_email") as HTMLInputElement
+    fireEvent.change(input, { target: { value: "naoehemail" } })
+    fireEvent.keyDown(input, { key: "Enter" })
+    expect(onUpdate).not.toHaveBeenCalled()
+    expect(input).toHaveAttribute("aria-invalid", "true")
+  })
+
+  it("email valido chama onUpdate com manager_email", () => {
+    const onUpdate = vi.fn()
+    render(<IntakePanel data={fullData()} onUpdate={onUpdate} />)
+    fireEvent.click(screen.getByTestId("add-ficha-manager_email"))
+    const input = screen.getByTestId("edit-ficha-manager_email") as HTMLInputElement
+    fireEvent.change(input, { target: { value: "ana@empresa.com" } })
+    fireEvent.keyDown(input, { key: "Enter" })
+    expect(onUpdate).toHaveBeenCalledWith({ manager_email: "ana@empresa.com" })
+  })
+
+  it("editar contrato envia schema key contract_type (nao parsed_employment_type)", () => {
+    const onUpdate = vi.fn()
+    render(<IntakePanel data={fullData()} onUpdate={onUpdate} />)
+    fireEvent.click(screen.getByText("CLT"))
+    const input = screen.getByTestId("edit-ficha-contract_type") as HTMLInputElement
+    fireEvent.change(input, { target: { value: "PJ" } })
+    fireEvent.keyDown(input, { key: "Enter" })
+    expect(onUpdate).toHaveBeenCalledWith({ contract_type: "PJ" })
+  })
+
+  it("Esc cancela edicao sem chamar onUpdate", () => {
+    const onUpdate = vi.fn()
+    render(<IntakePanel data={fullData({ parsed_manager_name: "Ana" })} onUpdate={onUpdate} />)
+    fireEvent.click(screen.getByText("Ana"))
+    const input = screen.getByTestId("edit-ficha-manager_name") as HTMLInputElement
+    fireEvent.change(input, { target: { value: "Outro" } })
+    fireEvent.keyDown(input, { key: "Escape" })
+    expect(onUpdate).not.toHaveBeenCalled()
+  })
+})

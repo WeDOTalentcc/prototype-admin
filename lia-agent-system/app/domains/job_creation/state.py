@@ -131,6 +131,8 @@ class JobCreationState(TypedDict, total=False):
     parsed_location: Optional[str]
     parsed_model: Optional[str]  # remote/hybrid/onsite
     parsed_employment_type: Optional[str]  # CLT/PJ/estagio/temporario/freelancer (P0-A)
+    parsed_manager_name: Optional[str]  # gestor responsavel (FASE 5 ficha viva)
+    parsed_manager_email: Optional[str]  # email do gestor (FASE 5 ficha viva)
     intake_confidence: float
 
     # --- F1: JD Enrichment ---

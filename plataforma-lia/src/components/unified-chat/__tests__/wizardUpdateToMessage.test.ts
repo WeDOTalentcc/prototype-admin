@@ -54,3 +54,26 @@ describe("mergeCollectedData — acumula campos estruturados (Fase 5b)", () => {
     expect(b.confirmed_technical_competencies).toHaveLength(2)
   })
 })
+
+
+describe("wizardUpdateToMessage — FASE 5 campos da ficha viva", () => {
+  it("manager_name → mensagem NL legível", () => {
+    const msg = wizardUpdateToMessage({ manager_name: "Ana Souza" })
+    expect(msg).toMatch(/Ana Souza/)
+    expect(msg).not.toMatch(/wizard_update/)
+  })
+  it("manager_email → mensagem NL legível", () => {
+    const msg = wizardUpdateToMessage({ manager_email: "ana@empresa.com" })
+    expect(msg).toMatch(/ana@empresa\.com/)
+    expect(msg).not.toMatch(/wizard_update/)
+  })
+  it("contract_type / work_model / department / location / title / seniority", () => {
+    expect(wizardUpdateToMessage({ contract_type: "PJ" })).toMatch(/PJ/)
+    expect(wizardUpdateToMessage({ work_model: "remoto" })).toMatch(/remoto/)
+    expect(wizardUpdateToMessage({ department: "Engenharia" })).toMatch(/Engenharia/)
+    expect(wizardUpdateToMessage({ location: "São Paulo" })).toMatch(/São Paulo/)
+    expect(wizardUpdateToMessage({ title: "Dev" })).toMatch(/Dev/)
+    expect(wizardUpdateToMessage({ seniority: "senior" })).toMatch(/senior/)
+  })
+})
+

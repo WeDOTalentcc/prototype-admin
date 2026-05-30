@@ -47,16 +47,103 @@ function fieldText(v: unknown): string {
 }
 
 
-/** Uma linha de campo da ficha: rótulo + valor (Chip success) ou estado pendente. */
-function FichaField({ label, value }: { label: string; value: string }) {
+function isValidEmail(v: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim())
+}
+
+/** Uma linha de campo da ficha: rótulo + valor (Chip success) ou pendente.
+ *
+ * Quando `editKey` é passado, o campo vira inline click-to-edit (mesmo padrão
+ * dos chips de competência e da edição de raw_input): clicar abre input, Enter
+ * salva via onUpdate({ [editKey]: valor }), Esc/blur cancela. `editKey` é o
+ * nome do campo no SCHEMA do backend (manager_name, work_model, contract_type…),
+ * porque o write-back viaja como context.right_panel_form, que o IntakeExtractor
+ * honra a 0.95 de confiança. `type="email"` valida antes de salvar. */
+function FichaField({
+  label,
+  value,
+  editKey,
+  type = "text",
+  onUpdate,
+}: {
+  label: string
+  value: string
+  editKey?: string
+  type?: "text" | "email"
+  onUpdate?: (updates: Record<string, unknown>) => void
+}) {
   const filled = Boolean(value)
+  const editable = Boolean(editKey && onUpdate)
+  const [editing, setEditing] = useState(false)
+  const [draft, setDraft] = useState(value)
+  const [invalid, setInvalid] = useState(false)
+
+  const begin = () => {
+    if (!editable) return
+    setDraft(value)
+    setInvalid(false)
+    setEditing(true)
+  }
+  const commit = () => {
+    const v = draft.trim()
+    if (type === "email" && v && !isValidEmail(v)) {
+      setInvalid(true)
+      return
+    }
+    if (v !== value) onUpdate?.({ [editKey as string]: v })
+    setEditing(false)
+  }
+
+  if (editing) {
+    return (
+      <div className="flex items-center justify-between gap-3 py-1">
+        <span className="text-xs text-lia-text-secondary">{label}</span>
+        <input
+          type={type}
+          value={draft}
+          autoFocus
+          data-testid={`edit-ficha-${editKey}`}
+          onChange={(e) => { setDraft(e.target.value); setInvalid(false) }}
+          onBlur={commit}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") commit()
+            if (e.key === "Escape") setEditing(false)
+          }}
+          aria-label={`Editar ${label}`}
+          aria-invalid={invalid}
+          className={cn(
+            "max-w-[60%] px-2 py-0.5 text-xs rounded bg-lia-bg-tertiary text-lia-text-primary border focus:outline-none",
+            invalid ? "border-status-danger" : "border-wedo-cyan",
+          )}
+        />
+      </div>
+    )
+  }
+
   return (
     <div className="flex items-center justify-between gap-3 py-1">
       <span className="text-xs text-lia-text-secondary">{label}</span>
       {filled ? (
-        <Chip density="compact" variant="success" className="truncate max-w-[60%]">
+        <Chip
+          density="compact"
+          variant="success"
+          className={cn("truncate max-w-[60%]", editable && "cursor-text")}
+          onClick={editable ? begin : undefined}
+          title={editable ? "Clique para editar" : undefined}
+        >
           {value}
         </Chip>
+      ) : editable ? (
+        <button
+          type="button"
+          onClick={begin}
+          data-testid={`add-ficha-${editKey}`}
+          className="flex items-center gap-1 text-micro text-lia-text-disabled hover:text-wedo-cyan transition-colors"
+          aria-label={`Adicionar ${label}`}
+        >
+          <Plus className="w-3 h-3" />
+          adicionar
+        </button>
       ) : (
         <span className="flex items-center gap-1 text-micro text-lia-text-disabled">
           <CircleDashed className="w-3 h-3" />
@@ -217,16 +304,21 @@ export function IntakePanel({ data, onUpdate }: Props) {
 
   // ── Ficha viva: zonas + competências (derivadas de data, sem hooks) ──
   const screeningMode = (data.screening_mode as string) || ""
-  const blockingFields = [
-    { label: "Título", value: fieldText(data.parsed_title) },
-    { label: "Senioridade", value: fieldText(data.parsed_seniority) },
-    { label: "Modelo de trabalho", value: fieldText(data.parsed_model) },
+  // editKey = nome do campo no schema do backend (right_panel_form). Campos sem
+  // editKey ficam display-only (modo de triagem tem affordance própria de chips;
+  // salário tem o SalaryPanel dedicado).
+  const blockingFields: { label: string; value: string; editKey?: string; type?: "text" | "email" }[] = [
+    { label: "Título", value: fieldText(data.parsed_title), editKey: "title" },
+    { label: "Senioridade", value: fieldText(data.parsed_seniority), editKey: "seniority" },
+    { label: "Modelo de trabalho", value: fieldText(data.parsed_model), editKey: "work_model" },
     { label: "Modo de triagem", value: screeningMode ? (MODE_LABEL[screeningMode] || screeningMode) : "" },
   ]
-  const enrichingFields = [
-    { label: "Departamento", value: fieldText(data.parsed_department) },
-    { label: "Localização", value: fieldText(data.parsed_location) },
-    { label: "Contrato", value: fieldText(data.parsed_employment_type) },
+  const enrichingFields: { label: string; value: string; editKey?: string; type?: "text" | "email" }[] = [
+    { label: "Departamento", value: fieldText(data.parsed_department), editKey: "department" },
+    { label: "Localização", value: fieldText(data.parsed_location), editKey: "location" },
+    { label: "Contrato", value: fieldText(data.parsed_employment_type), editKey: "contract_type" },
+    { label: "Gestor responsável", value: fieldText(data.parsed_manager_name), editKey: "manager_name" },
+    { label: "Email do gestor", value: fieldText(data.parsed_manager_email), editKey: "manager_email", type: "email" },
     { label: "Salário", value: salaryText(data) },
   ]
   const hasSignal = Boolean(rawInput) || blockingFields.some((f) => f.value) || enrichingFields.some((f) => f.value)
@@ -289,7 +381,7 @@ export function IntakePanel({ data, onUpdate }: Props) {
         <div data-testid="intake-blocking-zone" className="space-y-1">
           <p className="text-micro font-semibold text-lia-text-disabled uppercase tracking-wider">Falta para avançar</p>
           {blockingFields.map((f) => (
-            <FichaField key={f.label} label={f.label} value={f.value} />
+            <FichaField key={f.label} label={f.label} value={f.value} editKey={f.editKey} type={f.type} onUpdate={onUpdate} />
           ))}
         </div>
       )}
@@ -299,7 +391,7 @@ export function IntakePanel({ data, onUpdate }: Props) {
         <div data-testid="intake-enriching-zone" className="space-y-1 pt-1">
           <p className="text-micro font-medium text-lia-text-disabled uppercase tracking-wide opacity-80">Enriquecer (opcional)</p>
           {enrichingFields.map((f) => (
-            <FichaField key={f.label} label={f.label} value={f.value} />
+            <FichaField key={f.label} label={f.label} value={f.value} editKey={f.editKey} type={f.type} onUpdate={onUpdate} />
           ))}
         </div>
       )}
