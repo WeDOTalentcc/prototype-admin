@@ -1,11 +1,37 @@
 module Apify
   class LinkedinSearchService
     class Profile
+      class ParseError < StandardError; end
+
+      # Campos obrigatorios para criar um SourcedProfile valido.
+      # Ausencia de qualquer um desses = perfil inutilizavel — falhar alto, nao silencio.
+      REQUIRED_FIELDS = {
+        publicIdentifier: "public_identifier",
+        linkedinUrl: "linkedin_url"
+      }.freeze
+
       attr_reader :raw_data
 
       def initialize(data)
         @raw_data = data.deep_symbolize_keys
+        validate!
       end
+
+      def valid?
+        REQUIRED_FIELDS.all? { |key, _| raw_data[key].present? }
+      end
+
+      private
+
+      def validate!
+        missing = REQUIRED_FIELDS.filter_map { |key, label| label unless raw_data[key].present? }
+        return if missing.empty?
+
+        raise ParseError, "Perfil Apify invalido — campos obrigatorios ausentes: #{missing.join(", ")} " \
+                          "(raw keys: #{raw_data.keys.first(10).inspect})"
+      end
+
+      public
 
       def id
         raw_data[:id]

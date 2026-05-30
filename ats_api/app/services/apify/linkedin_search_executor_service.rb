@@ -113,8 +113,11 @@ module Apify
           link_to_sourcing(sourced, profile)
           sourced
         end
+      rescue Apify::LinkedinSearchService::Profile::ParseError => e
+        Rails.logger.warn "[Apify::LinkedinSearchExecutor] Perfil descartado — dados obrigatorios ausentes: #{e.message}"
+        nil
       rescue StandardError => e
-        Rails.logger.error "[Apify::LinkedinSearchExecutor] Failed to process profile #{profile.full_name}: #{e.message}"
+        Rails.logger.error "[Apify::LinkedinSearchExecutor] Falha ao processar perfil #{profile.full_name}: #{e.message}"
         nil
       end
     end

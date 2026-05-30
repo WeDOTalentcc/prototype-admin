@@ -30,8 +30,14 @@ module Sourcings
           user: @user
         )
 
+        unless move.success?
+          raise ActiveRecord::Rollback
+        end
+
         Result.new(success?: true, job: job, applies_created: (move.applies_created || []).size)
-      end
+      end || Result.new(success?: false, error: "Falha ao adicionar candidatos — nenhuma alteracao foi salva")
+    rescue Sourcings::MoveToJobService::BulkApplyError => e
+      Result.new(success?: false, error: e.message)
     end
 
     private

@@ -28,6 +28,10 @@ module Apify
       end
     end
 
+    # Versao pinada do actor Apify. Atualizar via ADR quando o autor publicar
+    # breaking change confirmada. Floating latest = risco de schema drift silencioso.
+    ACTOR_ID = "harvestapi~linkedin-profile-search".freeze
+
     class << self
       def search(**options)
         new.search(**options)
@@ -66,7 +70,7 @@ module Apify
     private
 
     def start_run(query)
-      client.post("acts/harvestapi~linkedin-profile-search/runs", query.to_actor_input)
+      client.post("acts/#{ACTOR_ID}/runs", query.to_actor_input)
     end
 
     def wait_for_completion(run_id)
