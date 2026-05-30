@@ -134,6 +134,16 @@ def publish_node(state: JobCreationState) -> JobCreationState:
                 "salary_min": state.get("salary_min"),
                 "salary_max": state.get("salary_max"),
                 "salary_currency": state.get("salary_currency", "BRL"),
+                # P0-B: coluna canônica salary_range JSON {min,max,currency}.
+                "salary_range": (
+                    {
+                        "min": state.get("salary_min"),
+                        "max": state.get("salary_max"),
+                        "currency": state.get("salary_currency", "BRL"),
+                    }
+                    if state.get("salary_min") is not None
+                    else None
+                ),
                 "benefits": state.get("benefits", []),
                 "technical_requirements": jd.get("skills_obrigatorias", []),
                 "behavioral_competencies": jd.get("competencias_comportamentais", []),

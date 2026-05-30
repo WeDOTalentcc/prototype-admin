@@ -137,6 +137,17 @@ def salary_node(state: JobCreationState) -> JobCreationState:
                 )
             if _benchmark:
                 state = {**state, "salary_benchmark": _benchmark}
+                # P0-B (auditoria 2026-05-29): popular a faixa salarial a partir
+                # do benchmark de mercado quando o recrutador ainda não definiu
+                # uma. Default aceitável — sobrescrevível via painel/chat (Fase 3).
+                # Sem isso a vaga era publicada com salary_min/max=None.
+                if state.get("salary_min") is None and _benchmark.get("min") is not None:
+                    state = {
+                        **state,
+                        "salary_min": _benchmark.get("min"),
+                        "salary_max": _benchmark.get("max"),
+                        "salary_currency": _benchmark.get("currency", "BRL"),
+                    }
                 logger.info(
                     "[JobCreation:salary] benchmark fetched: source=%s conf=%s",
                     _benchmark.get("source"), _benchmark.get("confidence"),
