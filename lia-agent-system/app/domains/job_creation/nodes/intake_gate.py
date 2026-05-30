@@ -76,6 +76,88 @@ def _classify_mode_and_permission(user_msg: str) -> tuple:
     return mode, approved
 
 
+# Campos que o recrutador pode fornecer no passo de permissao (provide_field_data).
+# Whitelist defensiva — so estes sao ingeridos do extracted_data do LLM.
+_PERMISSION_FIELD_KEYS = (
+    "salary_min", "salary_max", "parsed_location", "parsed_employment_type",
+    "parsed_manager_name", "parsed_manager_email", "parsed_department",
+    "parsed_model",
+)
+
+
+def _classify_permission(state: JobCreationState, resume_msg: str):
+    """Classifica a resposta de permissao via LLM gate classifier (canonical).
+
+    Substitui o regex zero-latency (_classify_mode_and_permission) por
+    entendimento de intencao — raiz do fluxo robotico (Paulo 2026-05-30):
+    "acho que vamos trabalhar com salario" deixa de ser falso-approve.
+
+    Fail-open: se o LLM falhar, cai no regex (zero-latency) preservando o
+    comportamento atual para casos claros ("compacto", "pode").
+
+    Returns (intent, extracted_mode, confirmed, field_updates, llm_reply).
+    """
+    try:
+        from app.domains.job_creation.helpers.async_audit import run_coro_in_threadpool
+        from app.domains.job_creation.services.wizard_gate_classifier import (
+            get_wizard_gate_classifier,
+        )
+
+        classifier = get_wizard_gate_classifier()
+        _cid = state.get("workspace_id") or state.get("company_id")
+        _uid = state.get("user_id") or state.get("recruiter_id")
+
+        def _coro():
+            return classifier.classify(
+                user_message=resume_msg,
+                stage="intake_permission",
+                ws_stage_payload=state.get("ws_stage_payload"),
+                tenant_context_snippet=str(state.get("tenant_context_snippet") or ""),
+                hiring_policy_summary=str(state.get("hiring_policy_summary") or ""),
+                company_id=str(_cid) if _cid else None,
+                user_id=str(_uid) if _uid else None,
+            )
+
+        out = run_coro_in_threadpool(_coro, timeout=30.0)
+        intent = out.intent
+        conf = out.confidence or 0.0
+        extracted = out.extracted_data if isinstance(out.extracted_data, dict) else {}
+        reply = out.conversational_reply or ""
+
+        # Confidence floor — re-pergunta sem aprovar nem mutar (igual jd_gate).
+        if conf < 0.7:
+            return ("ask_question", None, False, {}, reply)
+
+        if intent == "approve":
+            return ("approve", None, True, {}, reply)
+        if intent == "select_compact":
+            return ("select_compact", "compact", True, {}, reply)
+        if intent == "select_full":
+            return ("select_full", "full", True, {}, reply)
+        if intent == "provide_field_data":
+            field_updates = {}
+            for k in _PERMISSION_FIELD_KEYS:
+                v = extracted.get(k)
+                if v not in (None, "", []):
+                    field_updates[k] = v
+            # Salario unico: espelha min em max quando so um veio.
+            if "salary_min" in field_updates and "salary_max" not in field_updates:
+                field_updates["salary_max"] = field_updates["salary_min"]
+            return ("provide_field_data", None, False, field_updates, reply)
+        # ask_question / off_topic → re-pergunta, nao aprova.
+        return (intent, None, False, {}, reply)
+    except Exception as exc:  # noqa: BLE001 — fail-open para regex
+        logger.warning(
+            "[JobCreation:intake_gate] LLM permission classify falhou "
+            "(fallback regex): %s", exc,
+        )
+        mode, confirmed = _classify_mode_and_permission(resume_msg)
+        return (
+            "approve" if confirmed else "off_topic",
+            mode, confirmed, {}, "",
+        )
+
+
 def _get_missing(title: Optional[str], seniority: Optional[str], model: Optional[str]) -> List[str]:
     missing = []
     if not title:
@@ -487,12 +569,16 @@ def intake_gate_node(state: JobCreationState) -> JobCreationState:
             "requires_approval": True,
         }
 
-    extracted_mode, confirmed = _classify_mode_and_permission(resume_msg)
+    intent, extracted_mode, confirmed, field_updates, llm_reply = _classify_permission(
+        state, resume_msg,
+    )
 
     elapsed = (time.time() - t0) * 1000
     logger.info(
-        "[JobCreation:intake_gate] permission=%s mode=%s msg=%s (%.0fms)",
-        confirmed, extracted_mode, resume_msg[:40], elapsed,
+        "[JobCreation:intake_gate] intent=%s mode=%s confirmed=%s fields=%s "
+        "msg=%s (%.0fms)",
+        intent, extracted_mode, confirmed, sorted(field_updates.keys()),
+        resume_msg[:40], elapsed,
     )
 
     base = {
@@ -505,6 +591,11 @@ def intake_gate_node(state: JobCreationState) -> JobCreationState:
     }
     if extracted_mode:
         base["screening_mode"] = extracted_mode
+    # provide_field_data — ingere o dado fornecido (salario, localizacao,
+    # gestor, contrato...) no state. NUNCA aprova so porque a frase tinha
+    # "vamos". Re-pergunta o modo/permissao com o dado confirmado.
+    if field_updates:
+        base.update(field_updates)
 
     if confirmed:
         if extracted_mode:
@@ -528,7 +619,7 @@ def intake_gate_node(state: JobCreationState) -> JobCreationState:
         }
         if comp_payload:
             _appr_extra["suggestions_data"] = {"competencies": comp_payload}
-        data = _ficha_data(state, reply, _appr_extra)
+        data = _ficha_data({**state, **base}, reply, _appr_extra)
 
         return {
             **state,
@@ -546,8 +637,10 @@ def intake_gate_node(state: JobCreationState) -> JobCreationState:
             ),
         }
 
-    # Não confirmado → clarifica e aguarda (self-loop via graph re-invoke)
-    clarify = msg("intake_gate.off_topic_redirect")
+    # Nao confirmado (provide_field_data / ask_question / off_topic) →
+    # usa a resposta do LLM (confirma o dado + re-pergunta o modo) e aguarda.
+    # field_updates ja foram mergeados em base → o painel reflete o novo dado.
+    clarify = llm_reply or msg("intake_gate.off_topic_redirect")
     return {
         **state,
         **base,
@@ -557,6 +650,6 @@ def intake_gate_node(state: JobCreationState) -> JobCreationState:
             stage="intake",
             completeness=calculate_completeness("intake"),
             requires_approval=True,
-            data=_ficha_data(state, clarify),
+            data=_ficha_data({**state, **base}, clarify),
         ),
     }

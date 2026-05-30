@@ -77,6 +77,18 @@ STAGE_ALLOWLISTS: dict[str, frozenset[str]] = {
         "ask_clarification",
         "configure_destinations",
     }),
+    # HITL #0 — intake_gate (permissao + modo). Substitui o regex
+    # _classify_mode_and_permission por entendimento de intencao (Paulo
+    # 2026-05-30): "acho que vamos trabalhar com salario" deixa de ser
+    # falso-approve e vira provide_field_data (ingere o dado, nao avanca).
+    "intake_permission": frozenset({
+        "approve",
+        "select_compact",
+        "select_full",
+        "provide_field_data",
+        "ask_question",
+        "off_topic",
+    }),
 }
 
 # Backward-compat alias — o código pré-T4 e a sentinela T2 referem-se a
@@ -144,6 +156,9 @@ try:
             "request_changes",
             "ask_clarification",
             "configure_destinations",
+            # intake_permission (Paulo 2026-05-30) — recrutador forneceu um
+            # DADO (salario, localizacao, contrato, gestor) em vez de aprovar.
+            "provide_field_data",
         ]
         extracted_data: dict[str, Any] = Field(default_factory=dict)
         conversational_reply: str = ""
@@ -201,6 +216,8 @@ class WizardGateClassifier:
         "wsi_questions": "prompts/job_creation/gate_wsi_questions.yaml",
         # T6 (Task #1088)
         "review": "prompts/job_creation/gate_review.yaml",
+        # intake_permission (Paulo 2026-05-30)
+        "intake_permission": "prompts/job_creation/intake_gate_classifier.yaml",
     }
 
     def __init__(self, model: str | None = None) -> None:
