@@ -114,7 +114,7 @@ interface Props {
  * - Auto-scroll, streaming, thinking indicators
  */
 
-function wizardUpdateToMessage(updates: Record<string, unknown>): string {
+export function wizardUpdateToMessage(updates: Record<string, unknown>): string {
   if ("jd_similar_reuse_id" in updates) return "Reutilizar JD similar: " + String(updates.jd_similar_reuse_id)
   if ("jd_similar_dismissed" in updates) return "Ignorar JD similar, vou digitar manualmente"
   if ("raw_input" in updates) return String(updates.raw_input)
@@ -135,7 +135,37 @@ function wizardUpdateToMessage(updates: Record<string, unknown>): string {
   if ("platforms" in updates) return "Plataformas: " + (updates.platforms as string[]).join(", ")
   if ("auto_screen" in updates) return "Auto-triagem: " + (updates.auto_screen ? "ativada" : "desativada")
   if ("questions" in updates) return "Atualizar perguntas de elegibilidade"
+  // Fase 5b — edições de competência no painel (chips). O texto é só o espelho
+  // legível; os dados estruturados viajam em context.right_panel_form e o
+  // backend (intake_gate) lê confirmed_* com precedência sobre a sugestão.
+  if (
+    "confirmed_technical_competencies" in updates ||
+    "confirmed_behavioral_competencies" in updates
+  ) {
+    const tech = ((updates.confirmed_technical_competencies as Array<{ skill?: string }>) ?? [])
+      .map((t) => t.skill)
+      .filter(Boolean)
+    const behav = ((updates.confirmed_behavioral_competencies as Array<{ competencia?: string }>) ?? [])
+      .map((b) => b.competencia)
+      .filter(Boolean)
+    const parts: string[] = []
+    if (tech.length) parts.push("Competências técnicas: " + tech.join(", "))
+    if (behav.length) parts.push("Competências comportamentais: " + behav.join(", "))
+    return parts.length ? "Confirmei as competências. " + parts.join(". ") + "." : "Atualizei as competências."
+  }
   return JSON.stringify({ type: "wizard_update", updates })
+}
+
+/**
+ * Fase 5b — acumula os campos estruturados editados no painel (ficha viva)
+ * para viajarem juntos em context.right_panel_form, mesmo quando editados em
+ * ações separadas. Shallow-merge: a edição mais recente vence por campo.
+ */
+export function mergeCollectedData(
+  prev: Record<string, unknown>,
+  updates: Record<string, unknown>,
+): Record<string, unknown> {
+  return { ...prev, ...updates }
 }
 
 export function UnifiedChat({
@@ -153,6 +183,9 @@ export function UnifiedChat({
   const [sidebarWidthPx, setSidebarWidthPx] = useState(getStoredWidth);
   const [isResizing, setIsResizing] = useState(false);
   const widthRef = useRef(sidebarWidthPx);
+  // Fase 5b — acumula os campos estruturados do painel (ficha viva) para enviar
+  // como context.right_panel_form no próximo turno (loop real dos chips).
+  const collectedDataRef = useRef<Record<string, unknown>>({});
 
   useEffect(() => {
     if (!isResizing) return;
@@ -1105,7 +1138,12 @@ export function UnifiedChat({
             onApprove={() => sendApproval(true)}
             onReject={() => sendApproval(false)}
             onClose={closeDynamicPanel}
-            onUpdate={(updates) => sendChatMessage(wizardUpdateToMessage(updates))}
+            onUpdate={(updates) => {
+              collectedDataRef.current = mergeCollectedData(collectedDataRef.current, updates)
+              sendChatMessage(wizardUpdateToMessage(updates), undefined, undefined, {
+                right_panel_form: collectedDataRef.current,
+              })
+            }}
           />
           </div>
         </div>

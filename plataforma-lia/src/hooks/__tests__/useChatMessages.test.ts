@@ -263,3 +263,19 @@ describe("useChatMessages — REST fallback", () => {
     )
   })
 })
+
+describe("useChatMessages — Fase 5b right_panel_form promotion", () => {
+  it("promove metadata.right_panel_form para context.right_panel_form no wsSend", async () => {
+    const wsSend = vi.fn(() => true)
+    const opts = makeOptions({ isConnected: true, transportMode: "ws", wsSend })
+    const { result } = renderHook(() => useChatMessages(opts))
+    await act(async () => {
+      await result.current.sendMessage("confirmei competências", "wizard", undefined, {
+        right_panel_form: { confirmed_technical_competencies: [{ skill: "Python" }] },
+      })
+    })
+    expect(wsSend).toHaveBeenCalled()
+    const ctx = (wsSend.mock.calls[0] as unknown[])[1] as Record<string, unknown>
+    expect(ctx.right_panel_form).toEqual({ confirmed_technical_competencies: [{ skill: "Python" }] })
+  })
+})

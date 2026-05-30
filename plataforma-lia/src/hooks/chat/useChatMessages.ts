@@ -358,6 +358,12 @@ export function useChatMessages({
       // routing determinístico (FE-H03 do audit enterprise).
       if (metadata) {
         context.metadata = metadata;
+        // Fase 5b — right_panel_form é canal de 1ª classe no contrato do backend
+        // (_CONTEXT_CARRY_KEYS em wizard_session_service). Promove pro top-level
+        // do context para o wizard ler confirmed_* via right_panel_form no state.
+        if (metadata.right_panel_form) {
+          context.right_panel_form = metadata.right_panel_form;
+        }
       }
 
       const pageContext = getPageContext();
