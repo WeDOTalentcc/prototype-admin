@@ -137,3 +137,28 @@ describe("IntakePanel ficha viva — comportamento existente preservado", () => 
     expect(onUpdate).toHaveBeenCalledWith(expect.objectContaining({ raw_input: "Texto novo" }))
   })
 })
+
+describe("IntakePanel ficha viva — valores objeto não quebram (P0 fix)", () => {
+  it("parsed_location como objeto {city,state,country} renderiza sem crash", () => {
+    const data = {
+      raw_input: "dev",
+      parsed_title: "Dev",
+      parsed_seniority: "senior",
+      parsed_model: "remoto",
+      parsed_location: { city: "São Paulo", state: "SP", country: "Brasil" },
+    }
+    expect(() => render(<IntakePanel data={data} />)).not.toThrow()
+    const zone = screen.getByTestId("intake-enriching-zone")
+    expect(zone).toHaveTextContent(/São Paulo/)
+  })
+
+  it("qualquer parsed_* objeto inesperado não quebra", () => {
+    const data = {
+      raw_input: "dev",
+      parsed_title: { foo: "bar" } as unknown as string,
+      parsed_seniority: "pleno",
+      parsed_model: "remoto",
+    }
+    expect(() => render(<IntakePanel data={data} />)).not.toThrow()
+  })
+})

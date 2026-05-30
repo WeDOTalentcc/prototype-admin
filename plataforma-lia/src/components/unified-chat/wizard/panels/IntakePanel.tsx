@@ -30,6 +30,23 @@ function salaryText(data: Record<string, unknown>): string {
   return [fmt(min), fmt(max)].filter(Boolean).join(" – ")
 }
 
+/** Coerção defensiva: qualquer valor (string, objeto {city,state,country}, etc.)
+ * vira string renderável. Evita "Objects are not valid as a React child" quando
+ * o backend manda parsed_location como objeto. */
+function fieldText(v: unknown): string {
+  if (v == null) return ""
+  if (typeof v === "string") return v
+  if (typeof v === "number" || typeof v === "boolean") return String(v)
+  if (typeof v === "object") {
+    const o = v as Record<string, unknown>
+    const located = [o.city, o.state, o.country].filter(Boolean).map(String)
+    if (located.length) return located.join(", ")
+    return Object.values(o).filter((x) => x != null && x !== "").map(String).join(", ")
+  }
+  return String(v)
+}
+
+
 /** Uma linha de campo da ficha: rótulo + valor (Chip success) ou estado pendente. */
 function FichaField({ label, value }: { label: string; value: string }) {
   const filled = Boolean(value)
@@ -173,8 +190,8 @@ export function IntakePanel({ data, onUpdate }: Props) {
   const [editText, setEditText] = useState(rawInput)
 
   const companyId = useAuthStore((s) => (s.user as { company_id?: string } | null)?.company_id || "")
-  const parsedTitle = (data.parsed_title as string) || ""
-  const parsedDepartment = (data.parsed_department as string) || ""
+  const parsedTitle = fieldText(data.parsed_title)
+  const parsedDepartment = fieldText(data.parsed_department)
   const { items: similarJds, loading: jdSimilarLoading, lookup: lookupSimilarJds } = useJdSimilar({ companyId })
 
   useEffect(() => {
@@ -201,15 +218,15 @@ export function IntakePanel({ data, onUpdate }: Props) {
   // ── Ficha viva: zonas + competências (derivadas de data, sem hooks) ──
   const screeningMode = (data.screening_mode as string) || ""
   const blockingFields = [
-    { label: "Título", value: parsedTitle },
-    { label: "Senioridade", value: (data.parsed_seniority as string) || "" },
-    { label: "Modelo de trabalho", value: (data.parsed_model as string) || "" },
+    { label: "Título", value: fieldText(data.parsed_title) },
+    { label: "Senioridade", value: fieldText(data.parsed_seniority) },
+    { label: "Modelo de trabalho", value: fieldText(data.parsed_model) },
     { label: "Modo de triagem", value: screeningMode ? (MODE_LABEL[screeningMode] || screeningMode) : "" },
   ]
   const enrichingFields = [
-    { label: "Departamento", value: parsedDepartment },
-    { label: "Localização", value: (data.parsed_location as string) || "" },
-    { label: "Contrato", value: (data.parsed_employment_type as string) || "" },
+    { label: "Departamento", value: fieldText(data.parsed_department) },
+    { label: "Localização", value: fieldText(data.parsed_location) },
+    { label: "Contrato", value: fieldText(data.parsed_employment_type) },
     { label: "Salário", value: salaryText(data) },
   ]
   const hasSignal = Boolean(rawInput) || blockingFields.some((f) => f.value) || enrichingFields.some((f) => f.value)
