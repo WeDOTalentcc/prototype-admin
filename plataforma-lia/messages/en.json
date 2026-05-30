@@ -2303,6 +2303,46 @@
           "update_candidate_field": "Would update candidate data",
           "create_note": "Would create a note",
           "schedule_interview": "Would schedule an interview"
+        },
+        "inlineTitle": "Test {agent}",
+        "examplesLabel": "Example messages",
+        "emptyHint": "Pick an example above or type a message to see how the agent would respond.",
+        "examples": {
+          "screening": {
+            "seniorPython": "Senior Python candidate",
+            "weakProfile": "Resume without relevant experience",
+            "midGeneralist": "Mid-level generalist candidate"
+          },
+          "sourcing": {
+            "activeSearch": "Find Python devs in São Paulo",
+            "passiveCandidate": "Passive candidate on LinkedIn",
+            "nicheRole": "Hard-to-fill niche role"
+          },
+          "communication": {
+            "interviewInvite": "Invite candidate to an interview",
+            "rejectionFeedback": "Give rejection feedback with empathy",
+            "statusUpdate": "Update candidate on the process"
+          },
+          "analytics": {
+            "funnelHealth": "How healthy is this role's funnel?",
+            "stageBottleneck": "Where is the pipeline bottleneck?",
+            "sourceQuality": "Which source brings the best candidates?"
+          },
+          "job_management": {
+            "draftReview": "Review this job draft",
+            "publishCheck": "Is everything ready to publish?",
+            "requirementsGap": "Are key requirements missing from the job?"
+          },
+          "automation": {
+            "newCandidateFlow": "New candidate applied to the role",
+            "stageChangeFlow": "Candidate moved to interview stage",
+            "scheduledDigest": "Daily pipeline digest"
+          },
+          "general": {
+            "seniorPython": "Senior Python candidate",
+            "weakProfile": "Resume without relevant experience",
+            "midGeneralist": "Mid-level generalist candidate"
+          }
         }
       },
       "tour": {
@@ -7150,6 +7190,36 @@
         "retentionScore": "Team retention score",
         "proactiveAlerts": "Proactive turnover alerts"
       }
+    }
+  },
+  "wizard": {
+    "pipelineTemplate": {
+      "errorNoVacancy": "No vacancy associated. Select a vacancy to apply the template.",
+      "errorToast": "Failed to apply the pipeline template. Please try again.",
+      "appliedToast": "Pipeline template applied successfully.",
+      "suggestionTitle": "Suggested pipeline templates",
+      "suggestionSubtitle": "Choose a template to structure the stages for this vacancy.",
+      "stagesCount": "{count, plural, one {# stage} other {# stages}}",
+      "matchPercent": "{percent}% match",
+      "applyAction": "Apply",
+      "applying": "Applying...",
+      "viewOthers": "View other templates",
+      "skipAction": "Skip"
+    },
+    "pipelineTemplateStage": {
+      "title": "Pipeline templates",
+      "subtitle": "Choose a template to structure the stages for this vacancy.",
+      "stagesCount": "{count, plural, one {# stage} other {# stages}}",
+      "suggestedBadge": "Suggested",
+      "matchPercent": "{percent}% match",
+      "applyTemplate": "Apply template",
+      "applying": "Applying...",
+      "useDefaultPipeline": "Use Company Default",
+      "defaultPipelineInfo": "{count, plural, one {Company default has # stage} other {Company default has # stages}}",
+      "viewAllTemplates": "View all templates",
+      "appliedSuccessToast": "Pipeline template applied successfully.",
+      "applyErrorToast": "Failed to apply template: {error}",
+      "skippedSuccessToast": "Company default pipeline will be used."
     }
   }
 }

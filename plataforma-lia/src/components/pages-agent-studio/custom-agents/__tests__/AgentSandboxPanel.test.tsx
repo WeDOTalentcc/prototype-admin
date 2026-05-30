@@ -1,8 +1,9 @@
 /**
- * Q4.2 Sandbox "Testar antes de ativar" — AgentSandboxPanel contract tests.
+ * Q4.2 Sandbox "Testar antes de ativar" — AgentSandboxPanel + AgentSandboxInline.
  *
- * Garante (AUDIT 7 gap C1):
+ * Garante (AUDIT 7 gap C1 + Fase 3 Sprint 3 inline):
  *  - banner "MODO SIMULAÇÃO" renderiza (cor distinta, role=status)
+ *  - chips de mensagens-exemplo de RH disparam o dry-run num clique (Sprint 3 T3)
  *  - simular chama POST /custom-agents/{id}/dry-run e exibe would_do_actions
  *  - "Enviaria…/Moveria…" aparecem a partir das ações interceptadas
  *  - CTA "Ativar agente" chama onActivate após o recrutador validar
@@ -31,13 +32,14 @@ vi.mock("../../decision-tree/DecisionTreeDrawer", () => ({
   ),
 }))
 
-import { AgentSandboxPanel } from "../AgentSandboxPanel"
+import { AgentSandboxPanel, AgentSandboxInline } from "../AgentSandboxPanel"
 import type { CustomAgent } from "../types"
 
 const AGENT = {
   id: "agent-1",
   name: "Triador",
   domain: "screening",
+  category: "screening",
   description: "",
   context_level: "full",
   max_steps: 8,
@@ -72,13 +74,12 @@ beforeEach(() => {
   })
 })
 
-describe("AgentSandboxPanel", () => {
+describe("AgentSandboxPanel (Dialog wrapper)", () => {
   it("renders the SIMULATION banner with role=status", () => {
     render(<AgentSandboxPanel agent={AGENT} open onClose={() => {}} onActivate={() => {}} />)
     const banner = screen.getByTestId("sandbox-simulation-banner")
     expect(banner).toBeTruthy()
     expect(banner.getAttribute("role")).toBe("status")
-    // key resolve (mock returns key) — banner usa simulationBanner
     expect(banner.textContent).toContain("simulationBanner")
   })
 
@@ -98,20 +99,16 @@ describe("AgentSandboxPanel", () => {
 
     await waitFor(() => expect(screen.getByTestId("sandbox-result")).toBeTruthy())
 
-    // POST hit the dry-run endpoint.
     expect(fetchMock).toHaveBeenCalledWith(
       "/api/backend-proxy/custom-agents/agent-1/dry-run",
       expect.objectContaining({ method: "POST" }),
     )
 
-    // Would-do list rendered with 2 intercepted actions.
     const list = screen.getByTestId("sandbox-would-do-list")
     expect(list.querySelectorAll("li").length).toBe(2)
-    // "Enviaria" verb key resolved via t.has → wouldDoVerb.send_email
     expect(list.textContent).toContain("wouldDoVerb.send_email")
     expect(list.textContent).toContain("wouldDoVerb.move_candidate")
 
-    // Reuse of canonical DecisionTreeBody.
     expect(screen.getByTestId("mock-decision-tree-body")).toBeTruthy()
   })
 
@@ -141,5 +138,52 @@ describe("AgentSandboxPanel", () => {
     fireEvent.change(screen.getByTestId("sandbox-message-input"), { target: { value: "x" } })
     fireEvent.click(screen.getByTestId("sandbox-simulate-button"))
     await waitFor(() => expect(screen.getByTestId("sandbox-no-actions")).toBeTruthy())
+  })
+})
+
+describe("AgentSandboxInline (Fase 3 Sprint 3 — test-as-you-build inline)", () => {
+  it("renders WITHOUT its own Dialog (no nested modal)", () => {
+    const { container } = render(<AgentSandboxInline agent={AGENT} onActivate={() => {}} />)
+    // No Radix dialog role rendered by the inline body itself.
+    expect(container.querySelector('[role="dialog"]')).toBeNull()
+    expect(screen.getByTestId("agent-sandbox-inline")).toBeTruthy()
+    expect(screen.getByTestId("sandbox-simulation-banner")).toBeTruthy()
+  })
+
+  it("renders RH example chips for the agent category", () => {
+    render(<AgentSandboxInline agent={AGENT} onActivate={() => {}} />)
+    const chips = screen.getByTestId("sandbox-example-chips")
+    expect(chips).toBeTruthy()
+    // screening category → 3 curated examples
+    expect(screen.getByTestId("sandbox-example-chip-seniorPython")).toBeTruthy()
+    expect(screen.getByTestId("sandbox-example-chip-weakProfile")).toBeTruthy()
+    expect(screen.getByTestId("sandbox-example-chip-midGeneralist")).toBeTruthy()
+  })
+
+  it("clicking an example chip triggers the dry-run in one click", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => DRY_RUN_RESPONSE })
+    vi.stubGlobal("fetch", fetchMock)
+
+    render(<AgentSandboxInline agent={AGENT} onActivate={() => {}} />)
+    fireEvent.click(screen.getByTestId("sandbox-example-chip-seniorPython"))
+
+    await waitFor(() => expect(screen.getByTestId("sandbox-result")).toBeTruthy())
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/backend-proxy/custom-agents/agent-1/dry-run",
+      expect.objectContaining({ method: "POST" }),
+    )
+    // The chip label was used as the simulation message body.
+    const body = JSON.parse((fetchMock.mock.calls[0][1] as { body: string }).body)
+    expect(body.message).toContain("examples.screening.seniorPython")
+  })
+
+  it("exposes the 'Ativar agente' CTA after a simulation", async () => {
+    const onActivate = vi.fn()
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => DRY_RUN_RESPONSE }))
+    render(<AgentSandboxInline agent={AGENT} onActivate={onActivate} />)
+    fireEvent.click(screen.getByTestId("sandbox-example-chip-weakProfile"))
+    await waitFor(() => expect(screen.getByTestId("sandbox-activate-button")).toBeTruthy())
+    fireEvent.click(screen.getByTestId("sandbox-activate-button"))
+    expect(onActivate).toHaveBeenCalledWith(AGENT)
   })
 })

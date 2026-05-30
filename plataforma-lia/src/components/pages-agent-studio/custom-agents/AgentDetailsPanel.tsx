@@ -2,7 +2,7 @@
 
 import React, { useState } from "react"
 import Link from "next/link"
-import { Bot, Link2, Zap, Calendar, MousePointer, GitBranch, MapPin, Loader2, Copy, Pencil, Activity, FlaskConical } from "lucide-react"
+import { Bot, Link2, Zap, Calendar, MousePointer, GitBranch, MapPin, Loader2, Copy, Pencil, Activity } from "lucide-react"
 import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
 import { cardStyles, badgeStyles, textStyles } from "@/lib/design-tokens"
@@ -13,6 +13,10 @@ import {
 import { useAgentDeployments, useAgentActivities } from "@/hooks/agents"
 import { VersionHistoryPanel } from "./VersionHistoryPanel"
 import { AgentActivityCard } from "./AgentActivityCard"
+// Fase 3 Sprint 3 (2026-05-30): sandbox INLINE — test-as-you-build estilo
+// ElevenLabs. Substitui o modal-sobre-modal (card → detalhe → "Simular" → 2º
+// modal) por um split: config à esquerda, sandbox sempre visível à direita.
+import { AgentSandboxInline } from "./AgentSandboxPanel"
 // White-label canonical 2026-05-29: persona do cliente como fallback do nome
 // quando agent.name está vazio (edge case de erro/criação).
 import { useAiPersona } from "@/hooks/company/use-ai-persona"
@@ -32,13 +36,13 @@ interface AgentDetailsPanelProps {
   onClose: () => void
   onDeploy: (agent: CustomAgent) => void
   onTest: (agent: CustomAgent) => void
-  // Q4.2 Sandbox — abre simulação "testar antes de ativar" (dry-run).
-  onSandbox?: (agent: CustomAgent) => void
+  // Fase 3 Sprint 3: o sandbox inline ativa direto via onActivate (vincula o
+  // agente). Substitui o antigo onSandbox que abria um 2º modal.
+  onActivate?: (agent: CustomAgent) => void
 }
 
-export function AgentDetailsPanel({ agent, open, onClose, onDeploy, onTest, onSandbox }: AgentDetailsPanelProps) {
+export function AgentDetailsPanel({ agent, open, onClose, onDeploy, onTest, onActivate }: AgentDetailsPanelProps) {
   const t = useTranslations('agents.customAgents')
-  const tSandbox = useTranslations('agents.studio.sandbox')
   const tStatus = useTranslations('agents.status')
   // White-label canonical: persona como fallback do nome do agente no header.
   const { persona: aiPersona } = useAiPersona()
@@ -70,196 +74,201 @@ export function AgentDetailsPanel({ agent, open, onClose, onDeploy, onTest, onSa
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle className={cn(textStyles.title, "flex items-center gap-2")}>
-            <Bot className="w-5 h-5 text-graphite" />
-            {agent.name || aiPersona?.name || t('untitledAgent')}
-            <BetaBadge size="sm" />
-            <Link
-              href={`/agent-studio/${agent.id}/edit`}
-              onClick={() => onClose()}
-              className="ml-auto inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium text-lia-text-secondary hover:bg-lia-bg-tertiary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lia-btn-primary-bg/30"
-              aria-label={t('editBtn')}
-              data-testid="agent-details-edit-button"
-            >
-              <Pencil className="w-3.5 h-3.5" />
-              {t('editBtn')}
-            </Link>
-          </DialogTitle>
-        </DialogHeader>
+      <DialogContent className="max-w-[95vw] lg:max-w-4xl max-h-[88vh] overflow-hidden p-0">
+        <div className="grid max-h-[88vh] grid-cols-1 lg:grid-cols-2">
+          {/* ── Coluna esquerda: info + config + deployments + atividade ── */}
+          <div className="flex flex-col overflow-y-auto p-6 lg:border-r lg:border-lia-border-subtle">
+            <DialogHeader>
+              <DialogTitle className={cn(textStyles.title, "flex items-center gap-2")}>
+                <Bot className="w-5 h-5 text-graphite" />
+                {agent.name || aiPersona?.name || t('untitledAgent')}
+                <BetaBadge size="sm" />
+                <Link
+                  href={`/agent-studio/${agent.id}/edit`}
+                  onClick={() => onClose()}
+                  className="ml-auto inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium text-lia-text-secondary hover:bg-lia-bg-tertiary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lia-btn-primary-bg/30"
+                  aria-label={t('editBtn')}
+                  data-testid="agent-details-edit-button"
+                >
+                  <Pencil className="w-3.5 h-3.5" />
+                  {t('editBtn')}
+                </Link>
+              </DialogTitle>
+            </DialogHeader>
 
-        <div className="space-y-4">
-          {/* Info */}
-          <div className="space-y-2">
-            {agent.description && (
-              <p className={cn(textStyles.caption, "text-xs")}>{agent.description}</p>
-            )}
-            <div className="flex flex-wrap gap-1.5">
-              {/* Fase 3 Sprint 1 (2026-05-30): domain label era badgeStyles.cyan,
-                  mas cyan é exclusiva de "IA agindo" (DESIGN.md LIA Cyan Exclusivity
-                  Rule). Domínio é metadata neutra → badge default (powder/graphite). */}
-              <span className={badgeStyles.default}>{domainLabel}</span>
-              <span className={badgeStyles.default}>{t('contextLabel')}: {agent.context_level}</span>
-              <span className={badgeStyles.default}>{agent.max_steps} {t('stepsLabel')}</span>
-            </div>
-            <div className="flex flex-wrap gap-1 pt-1">
-              {agent.allowed_tools.slice(0, 6).map((tool) => (
-                <span key={tool} className={cn(badgeStyles.default, "text-[10px]")}>
-                  {t('tools.' + tool) || tool}
-                </span>
-              ))}
-              {agent.allowed_tools.length > 6 && (
-                <span className={cn(badgeStyles.default, "text-[10px]")}>
-                  +{agent.allowed_tools.length - 6}
-                </span>
-              )}
-            </div>
-          </div>
-
-          {/* Metrics */}
-          <div className={cn(cardStyles.flat, "p-3 flex items-center gap-6")}>
-            <div className="text-center">
-              <p className="text-lg font-bold font-sans text-lia-text-primary">{agent.total_executions}</p>
-              <p className="text-xs text-lia-text-secondary">{t('execLabel')}</p>
-            </div>
-            <div className="text-center">
-              <p className="text-lg font-bold font-sans text-lia-text-primary">
-                {agent.avg_confidence > 0 ? `${(agent.avg_confidence * 100).toFixed(0)}%` : "-"}
-              </p>
-              <p className="text-xs text-lia-text-secondary">{t('confidence')}</p>
-            </div>
-            <div className="text-center">
-              <p className="text-lg font-bold font-sans text-lia-text-primary">{deployments.length}</p>
-              <p className="text-xs text-lia-text-secondary">{t('links')}</p>
-            </div>
-          </div>
-
-          {/* Deployments */}
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <h4 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5">
-                <Link2 className="w-3.5 h-3.5" /> {t('activeDeployments')}
-              </h4>
-              <button
-                type="button"
-                onClick={() => onDeploy(agent)}
-                className="text-[10px] font-medium text-graphite hover:underline"
-              >
-                {t('addLink')}
-              </button>
-            </div>
-
-            {deploymentsLoading ? (
-              <div className="flex items-center gap-2 py-3 text-xs text-lia-text-disabled">
-                <Loader2 className="w-3 h-3 animate-spin" /> {t('loadingLinks')}
-              </div>
-            ) : deployments.length === 0 ? (
-              <div className={cn(cardStyles.flat, "p-3 text-center")}>
-                <MapPin className="w-5 h-5 text-lia-text-disabled mx-auto mb-1" />
-                <p className="text-xs text-lia-text-disabled">
-                  {t('noLinks')}
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-1.5">
-                {deployments.map((dep: { id: string; trigger_mode: string; target_name?: string | null; target_type?: string | null; execution_count?: number; is_active?: boolean }) => (
-                  <div key={dep.id} className={cn(cardStyles.compact, "flex items-center justify-between")}>
-                    <div className="flex items-center gap-2">
-                      {TRIGGER_ICONS[dep.trigger_mode] || <Zap className="w-3 h-3" />}
-                      <div>
-                        <p className="text-xs font-medium text-lia-text-primary">
-                          {dep.target_name || t('targets.' + dep.target_type) || dep.target_type}
-                        </p>
-                        <p className="text-xs text-lia-text-secondary">
-                          {t('triggers.' + dep.trigger_mode) || dep.trigger_mode} · {dep.execution_count} {t('exec')}
-                        </p>
-                      </div>
-                    </div>
-                    <span className={dep.is_active ? badgeStyles.success : badgeStyles.default}>
-                      {dep.is_active ? tStatus('active') : tStatus('paused')}
+            <div className="space-y-4 pt-4">
+              {/* Info */}
+              <div className="space-y-2">
+                {agent.description && (
+                  <p className={cn(textStyles.caption, "text-xs")}>{agent.description}</p>
+                )}
+                <div className="flex flex-wrap gap-1.5">
+                  {/* Fase 3 Sprint 1 (2026-05-30): domain label era badgeStyles.cyan,
+                      mas cyan é exclusiva de "IA agindo" (DESIGN.md Cyan Exclusivity
+                      Rule). Domínio é metadata neutra → badge default (powder/graphite). */}
+                  <span className={badgeStyles.default}>{domainLabel}</span>
+                  <span className={badgeStyles.default}>{t('contextLabel')}: {agent.context_level}</span>
+                  <span className={badgeStyles.default}>{agent.max_steps} {t('stepsLabel')}</span>
+                </div>
+                <div className="flex flex-wrap gap-1 pt-1">
+                  {agent.allowed_tools.slice(0, 6).map((tool) => (
+                    <span key={tool} className={cn(badgeStyles.default, "text-[10px]")}>
+                      {t('tools.' + tool) || tool}
                     </span>
+                  ))}
+                  {agent.allowed_tools.length > 6 && (
+                    <span className={cn(badgeStyles.default, "text-[10px]")}>
+                      +{agent.allowed_tools.length - 6}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Metrics */}
+              <div className={cn(cardStyles.flat, "p-3 flex items-center gap-6")}>
+                <div className="text-center">
+                  <p className="text-lg font-bold font-sans text-lia-text-primary">{agent.total_executions}</p>
+                  <p className="text-xs text-lia-text-secondary">{t('execLabel')}</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-lg font-bold font-sans text-lia-text-primary">
+                    {agent.avg_confidence > 0 ? `${(agent.avg_confidence * 100).toFixed(0)}%` : "-"}
+                  </p>
+                  <p className="text-xs text-lia-text-secondary">{t('confidence')}</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-lg font-bold font-sans text-lia-text-primary">{deployments.length}</p>
+                  <p className="text-xs text-lia-text-secondary">{t('links')}</p>
+                </div>
+              </div>
+
+              {/* Deployments */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5">
+                    <Link2 className="w-3.5 h-3.5" /> {t('activeDeployments')}
+                  </h4>
+                  <button
+                    type="button"
+                    onClick={() => onDeploy(agent)}
+                    className="text-[10px] font-medium text-graphite hover:underline"
+                  >
+                    {t('addLink')}
+                  </button>
+                </div>
+
+                {deploymentsLoading ? (
+                  <div className="flex items-center gap-2 py-3 text-xs text-lia-text-disabled">
+                    <Loader2 className="w-3 h-3 animate-spin" /> {t('loadingLinks')}
                   </div>
-                ))}
+                ) : deployments.length === 0 ? (
+                  <div className={cn(cardStyles.flat, "p-3 text-center")}>
+                    <MapPin className="w-5 h-5 text-lia-text-disabled mx-auto mb-1" />
+                    <p className="text-xs text-lia-text-disabled">
+                      {t('noLinks')}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-1.5">
+                    {deployments.map((dep: { id: string; trigger_mode: string; target_name?: string | null; target_type?: string | null; execution_count?: number; is_active?: boolean }) => (
+                      <div key={dep.id} className={cn(cardStyles.compact, "flex items-center justify-between")}>
+                        <div className="flex items-center gap-2">
+                          {TRIGGER_ICONS[dep.trigger_mode] || <Zap className="w-3 h-3" />}
+                          <div>
+                            <p className="text-xs font-medium text-lia-text-primary">
+                              {dep.target_name || t('targets.' + dep.target_type) || dep.target_type}
+                            </p>
+                            <p className="text-xs text-lia-text-secondary">
+                              {t('triggers.' + dep.trigger_mode) || dep.trigger_mode} · {dep.execution_count} {t('exec')}
+                            </p>
+                          </div>
+                        </div>
+                        <span className={dep.is_active ? badgeStyles.success : badgeStyles.default}>
+                          {dep.is_active ? tStatus('active') : tStatus('paused')}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-            )}
-          </div>
 
-          {/* Activity Timeline (Wave B2.2) */}
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <h4 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5">
-                <Activity className="w-3.5 h-3.5" /> {t('recentActivity')}
-              </h4>
+              {/* Activity Timeline (Wave B2.2) */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5">
+                    <Activity className="w-3.5 h-3.5" /> {t('recentActivity')}
+                  </h4>
+                </div>
+                {activitiesLoading ? (
+                  <div className="flex items-center gap-2 py-3 text-xs text-lia-text-disabled" data-testid="activity-loading">
+                    <Loader2 className="w-3 h-3 animate-spin" /> {t('loadingActivities')}
+                  </div>
+                ) : activitiesError ? (
+                  <div className={cn(cardStyles.flat, "p-3 text-center")} data-testid="activity-error">
+                    <p className="text-xs text-lia-text-disabled">{t('errors.errorLoadingActivities')}</p>
+                  </div>
+                ) : activities.length === 0 ? (
+                  <div className={cn(cardStyles.flat, "p-3 text-center")} data-testid="activity-empty">
+                    <Activity className="w-5 h-5 text-lia-text-disabled mx-auto mb-1" />
+                    <p className="text-xs text-lia-text-disabled">{t('noActivities')}</p>
+                  </div>
+                ) : (
+                  <div className="space-y-0.5 max-h-[220px] overflow-y-auto" data-testid="activity-list">
+                    {activities.slice(0, 10).map((act) => (
+                      <AgentActivityCard key={act.id} activity={act} />
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Version History */}
+              <div className="pt-2 border-t border-lia-border-subtle">
+                <VersionHistoryPanel
+                  agentId={agent.id}
+                  currentVersion={(agent as unknown as { version?: number }).version || 1}
+                  onReverted={() => {
+                  }}
+                />
+              </div>
+
+              {/* Actions secundárias (vincular / clonar / testar avançado) */}
+              <div className="flex flex-wrap gap-2 pt-2 border-t border-lia-border-subtle">
+                <button
+                  type="button"
+                  onClick={() => onDeploy(agent)}
+                  className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-xs font-medium bg-powder text-graphite hover:bg-mist transition-colors"
+                >
+                  {t('linkBtn')}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onTest(agent)}
+                  className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-xs font-medium bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-interactive-active transition-colors"
+                >
+                  {t('testBtn')}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleClone}
+                  disabled={isCloning}
+                  className="inline-flex items-center justify-center gap-1 px-3 py-2 rounded-md text-xs font-medium text-lia-text-secondary hover:bg-lia-bg-tertiary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lia-btn-primary-bg/30"
+                >
+                  <Copy className="w-3.5 h-3.5" />
+                  {isCloning ? t('cloning') : t('clone')}
+                </button>
+              </div>
             </div>
-            {activitiesLoading ? (
-              <div className="flex items-center gap-2 py-3 text-xs text-lia-text-disabled" data-testid="activity-loading">
-                <Loader2 className="w-3 h-3 animate-spin" /> {t('loadingActivities')}
-              </div>
-            ) : activitiesError ? (
-              <div className={cn(cardStyles.flat, "p-3 text-center")} data-testid="activity-error">
-                <p className="text-xs text-lia-text-disabled">{t('errors.errorLoadingActivities')}</p>
-              </div>
-            ) : activities.length === 0 ? (
-              <div className={cn(cardStyles.flat, "p-3 text-center")} data-testid="activity-empty">
-                <Activity className="w-5 h-5 text-lia-text-disabled mx-auto mb-1" />
-                <p className="text-xs text-lia-text-disabled">{t('noActivities')}</p>
-              </div>
-            ) : (
-              <div className="space-y-0.5 max-h-[260px] overflow-y-auto" data-testid="activity-list">
-                {activities.slice(0, 10).map((act) => (
-                  <AgentActivityCard key={act.id} activity={act} />
-                ))}
-              </div>
-            )}
           </div>
 
-          {/* Version History */}
-          <div className="pt-2 border-t border-lia-border-subtle">
-            <VersionHistoryPanel
-              agentId={agent.id}
-              currentVersion={(agent as unknown as { version?: number }).version || 1}
-              onReverted={() => {
+          {/* ── Coluna direita: sandbox INLINE (test-as-you-build) ── */}
+          <div className="flex flex-col overflow-y-auto bg-lia-bg-secondary/40 p-6" data-testid="agent-details-sandbox-column">
+            <AgentSandboxInline
+              agent={agent}
+              onActivate={(a) => {
+                if (onActivate) onActivate(a)
+                else onDeploy(a)
               }}
             />
-          </div>
-
-          {/* Actions */}
-          <div className="flex flex-wrap gap-2 pt-2 border-t border-lia-border-subtle">
-            {onSandbox && (
-              <button
-                type="button"
-                onClick={() => onSandbox(agent)}
-                className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-xs font-medium bg-amber-50 text-amber-800 hover:bg-amber-100 transition-colors dark:bg-amber-950/30 dark:text-amber-200 dark:hover:bg-amber-950/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/40"
-                data-testid="agent-details-sandbox-button"
-              >
-                <FlaskConical className="w-3.5 h-3.5" aria-hidden="true" />
-                {tSandbox('simulateButton')}
-              </button>
-            )}
-            <button
-              type="button"
-              onClick={() => onTest(agent)}
-              className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-xs font-medium bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-interactive-active transition-colors"
-            >
-              {t('testBtn')}
-            </button>
-            <button
-              type="button"
-              onClick={() => onDeploy(agent)}
-              className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-xs font-medium bg-powder text-graphite hover:bg-mist transition-colors"
-            >
-              {t('linkBtn')}
-            </button>
-            <button
-              type="button"
-              onClick={handleClone}
-              disabled={isCloning}
-              className="inline-flex items-center justify-center gap-1 px-3 py-2 rounded-md text-xs font-medium text-lia-text-secondary hover:bg-lia-bg-tertiary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lia-btn-primary-bg/30"
-            >
-              <Copy className="w-3.5 h-3.5" />
-              {isCloning ? t('cloning') : t('clone')}
-            </button>
           </div>
         </div>
       </DialogContent>
