@@ -189,12 +189,15 @@ describe("buildPublishedJobCard", () => {
     })
   })
 
-  it("derives an internal /jobs/<id> link when the backend omits handoff_url", () => {
+  it("não deriva link client-side; confia no producer (handoff_url) — post-mortem dad2bfec4", () => {
+    // Canonical (2026-04-29 + commit dad2bfec4 "remove orphan /jobs URLs"):
+    // não existe rota de página /jobs/<id> (só API proxy), então derivar
+    // client-side gerava 404. O card confia no handoff_url do backend; ausente => null.
     const card = buildPublishedJobCard("done", {
       job_id: 12,
       job_title: "Designer de Produto",
     })
-    expect(card?.url).toBe("/jobs/12")
+    expect(card?.url).toBeNull()
     expect(card?.shareLink).toBeNull()
   })
 
@@ -216,7 +219,7 @@ describe("buildPublishedJobCard", () => {
     expect(card).toEqual({
       jobId: "uuid-abc-123",
       title: "Engenheiro de Dados",
-      url: "/jobs/uuid-abc-123",
+      url: null,
       shareLink: null,
     })
   })
@@ -231,7 +234,7 @@ describe("buildPublishedJobCard", () => {
       job_id: 7,
       job_title: 42 as unknown as string,
     })
-    expect(card).toEqual({ jobId: 7, title: null, url: "/jobs/7", shareLink: null })
+    expect(card).toEqual({ jobId: 7, title: null, url: null, shareLink: null })
   })
 })
 
