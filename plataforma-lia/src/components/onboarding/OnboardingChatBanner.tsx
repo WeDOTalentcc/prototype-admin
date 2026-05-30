@@ -23,6 +23,7 @@
 import { Brain, MessageCircle, Settings, X } from "lucide-react"
 import { useEffect, useState, useCallback } from "react"
 import { useRouter } from "next/navigation"
+import { useLocale } from "next-intl"
 import { useOnboardingFlow } from "@/components/onboarding/useOnboardingFlow"
 
 const DISMISSED_KEY = "lia-onboarding-banner-dismissed"
@@ -35,6 +36,7 @@ interface Props {
 
 export function OnboardingChatBanner({ onOpenChat, className = "" }: Props) {
   const router = useRouter()
+  const locale = useLocale()
   const { needsOnboarding, setupProgress, loading } = useOnboardingFlow()
   const [dismissed, setDismissed] = useState(false)
 
@@ -62,7 +64,7 @@ export function OnboardingChatBanner({ onOpenChat, className = "" }: Props) {
   }, [onOpenChat])
 
   const handleOpenSettings = useCallback(() => {
-    router.push("/configuracoes")
+    router.push(`/${locale}/configuracoes`)
   }, [router])
 
   // Gate: não renderiza se loading, completed, ou dismissed

@@ -191,6 +191,14 @@ export function DashboardApp({ initialPage = "Conversar", children }: DashboardA
   }, [])
 
   useEffect(() => {
+    const handler = () => {
+      setCurrentPage("Conversar")
+    }
+    window.addEventListener("lia:open-onboarding-chat", handler)
+    return () => window.removeEventListener("lia:open-onboarding-chat", handler)
+  }, [])
+
+  useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     if (params.get("page") === "chat-lia") {
       setCurrentPage("Conversar")
