@@ -396,7 +396,7 @@ def intake_gate_node(state: JobCreationState) -> JobCreationState:
         and not _is_initial
         and intake_salary_suggested
         and state.get("intake_approved") is not True
-        and bool(parsed_title and parsed_seniority)  # parsed_model opcional — nao bloqueia WS detection
+        and bool(parsed_title and parsed_seniority and parsed_model)
     ):
         resume_msg = _uq
         logger.info(
@@ -405,7 +405,7 @@ def intake_gate_node(state: JobCreationState) -> JobCreationState:
         )
 
     # ═══ Sub-estado 1: Campos obrigatórios ══════════════════════════════════
-    if not (parsed_title and parsed_seniority):  # parsed_model e opcional — nao bloqueia avanco
+    if not (parsed_title and parsed_seniority and parsed_model):
         missing = _get_missing(parsed_title, parsed_seniority, parsed_model)
         ask_msg = _build_fields_question(parsed_title, missing)
 
@@ -428,8 +428,8 @@ def intake_gate_node(state: JobCreationState) -> JobCreationState:
                     parsed_title, parsed_seniority, parsed_model,
                 )
 
-            # Se ainda faltam campos obrigatorios apos primeira extracao, interrupt de novo
-            if not (parsed_title and parsed_seniority):  # parsed_model opcional
+            # Se ainda faltam campos após primeira extração, interrupt de novo
+            if not (parsed_title and parsed_seniority and parsed_model):
                 missing2 = _get_missing(parsed_title, parsed_seniority, parsed_model)
                 ask_msg2 = _build_fields_question(parsed_title, missing2)
                 interrupt({
