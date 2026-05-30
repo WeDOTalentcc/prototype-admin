@@ -63,6 +63,7 @@ def intake_node(state: JobCreationState) -> JobCreationState:
     parsed_department = state.get("parsed_department")
     parsed_location = state.get("parsed_location")
     parsed_model = state.get("parsed_model")
+    parsed_employment_type = state.get("parsed_employment_type")  # P0-A
     intake_confidence = 0.0
     intake_source = "none"
     try:
@@ -102,6 +103,8 @@ def intake_node(state: JobCreationState) -> JobCreationState:
         # NB: schema field is work_model (remoto/hibrido/presencial),
         # exposed downstream as parsed_model for state continuity.
         parsed_model = parsed_model or _val("work_model")
+        # P0-A: regime de contratação (CLT/PJ/...) — schema field contract_type.
+        parsed_employment_type = parsed_employment_type or _val("contract_type")
         intake_confidence = extraction.overall_confidence
         _title_field = getattr(extraction, "title", None)
         intake_source = (
@@ -141,6 +144,7 @@ def intake_node(state: JobCreationState) -> JobCreationState:
         "parsed_department": parsed_department,
         "parsed_location": parsed_location,
         "parsed_model": parsed_model,
+        "parsed_employment_type": parsed_employment_type,
         "intake_confidence": intake_confidence,
         "stage_history": (state.get("stage_history") or []) + ["intake"],
         "completeness": calculate_completeness("intake"),
@@ -162,6 +166,7 @@ def intake_node(state: JobCreationState) -> JobCreationState:
                 "parsed_department": parsed_department,
                 "parsed_location": parsed_location,
                 "parsed_model": parsed_model,
+                "parsed_employment_type": parsed_employment_type,
                 "intake_confidence": intake_confidence,
                 "intake_source": intake_source,
                 # Task #1055 — emite o pipeline_template determinístico já no

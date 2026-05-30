@@ -130,6 +130,7 @@ class JobCreationState(TypedDict, total=False):
     parsed_seniority: Optional[str]
     parsed_location: Optional[str]
     parsed_model: Optional[str]  # remote/hybrid/onsite
+    parsed_employment_type: Optional[str]  # CLT/PJ/estagio/temporario/freelancer (P0-A)
     intake_confidence: float
 
     # --- F1: JD Enrichment ---
