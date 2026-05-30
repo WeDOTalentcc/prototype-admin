@@ -93,7 +93,6 @@ export function useCandidateFiles(candidate: Record<string, any>) {
       const formData = new FormData()
       formData.append('file', file)
       formData.append('candidate_name', String(candidate.name || 'Candidato'))
-      formData.append('company_id', companyId)
       formData.append('uploaded_by', 'user')
       formData.append('uploaded_by_name', 'Recrutador')
 
