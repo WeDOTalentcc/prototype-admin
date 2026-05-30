@@ -225,7 +225,7 @@ class TestGateNodeCallsInterrupt:
             pass
 
         with patch(
-            "app.domains.job_creation.graph._in_graph_runtime",
+            "app.domains.job_creation.nodes.competency_gate._in_graph_runtime",
             return_value=True,
         ), patch("langgraph.types.interrupt") as mock_interrupt:
             mock_interrupt.side_effect = _StopMarker("interrupt called")

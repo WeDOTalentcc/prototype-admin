@@ -27,6 +27,7 @@ from app.domains.job_creation.helpers.ws_payload_builder import (
 from app.domains.job_creation.helpers.i18n import msg
 # Module-level import so tests can mock: app.domains.job_creation.nodes.intake_gate._in_graph_runtime
 from app.domains.job_creation.internal.utils import _in_graph_runtime
+from app.domains.job_creation.helpers.screening_mode_config import SCREENING_MODE_CONFIG
 
 logger = logging.getLogger(__name__)
 
@@ -46,6 +47,33 @@ _SALARY_TIMEOUT_S = 8.0
 def _is_permission_granted(user_msg: str) -> bool:
     """True se a mensagem contém afirmação clara de permissão em PT-BR."""
     return bool(_AFFIRMATIVE_RE.search(user_msg.strip()))
+
+
+_COMPACT_RE = re.compile(
+    r"\b(compacto?|compact|7\s*q|7\s*perguntas?)\b",
+    re.IGNORECASE | re.UNICODE,
+)
+_FULL_RE = re.compile(
+    r"\b(completo?|completa|full|12\s*q|12\s*perguntas?)\b",
+    re.IGNORECASE | re.UNICODE,
+)
+
+
+def _classify_mode_and_permission(user_msg: str) -> tuple:
+    """Return (screening_mode, approved). Zero-latency regex classifier.
+
+    screening_mode: "compact" | "full" | None
+    approved: True if mode selected OR explicit permission word found
+    """
+    text = user_msg.strip()
+    mode = None
+    if _COMPACT_RE.search(text):
+        mode = "compact"
+    elif _FULL_RE.search(text):
+        mode = "full"
+    # Mode selection implies permission; explicit affirmatives also count
+    approved = bool(mode) or _is_permission_granted(text)
+    return mode, approved
 
 
 def _get_missing(title: Optional[str], seniority: Optional[str], model: Optional[str]) -> List[str]:
@@ -121,15 +149,19 @@ def _safe_fetch_salary(
 
 
 def _build_permission_message(
-    benchmark: Optional[Dict[str, Any]],
+    benchmark,
     title: Optional[str],
     seniority: Optional[str],
     model: Optional[str],
 ) -> str:
-    """Build salary suggestion + permission message."""
+    """Build salary suggestion + mode selection + permission message."""
     title_str = title or "a vaga"
     seniority_str = seniority or ""
     model_str = model or ""
+    compact_q = SCREENING_MODE_CONFIG["compact"]["total_questions"]
+    compact_min = SCREENING_MODE_CONFIG["compact"]["estimated_minutes"]
+    full_q = SCREENING_MODE_CONFIG["full"]["total_questions"]
+    full_min = SCREENING_MODE_CONFIG["full"]["estimated_minutes"]
 
     if benchmark and benchmark.get("min") and benchmark.get("max"):
         sal_min = benchmark["min"]
@@ -139,18 +171,26 @@ def _build_permission_message(
             return f"R$ {v:,.0f}".replace(",", ".")
 
         salary_part = msg(
-            "intake_gate.salary_suggestion",
+            "intake_gate.salary_with_mode",
             title=title_str,
             seniority=seniority_str,
             model=model_str,
             min=_fmt(sal_min),
             max=_fmt(sal_max),
+            compact_q=compact_q,
+            compact_min=compact_min,
+            full_q=full_q,
+            full_min=full_min,
         )
     else:
         salary_part = msg(
-            "intake_gate.salary_fallback",
+            "intake_gate.salary_fallback_with_mode",
             title=title_str,
             seniority=seniority_str,
+            compact_q=compact_q,
+            compact_min=compact_min,
+            full_q=full_q,
+            full_min=full_min,
         )
     return salary_part
 
@@ -320,12 +360,12 @@ def intake_gate_node(state: JobCreationState) -> JobCreationState:
             "requires_approval": True,
         }
 
-    confirmed = _is_permission_granted(resume_msg)
+    extracted_mode, confirmed = _classify_mode_and_permission(resume_msg)
 
     elapsed = (time.time() - t0) * 1000
     logger.info(
-        "[JobCreation:intake_gate] permission=%s msg=%s (%.0fms)",
-        confirmed, resume_msg[:40], elapsed,
+        "[JobCreation:intake_gate] permission=%s mode=%s msg=%s (%.0fms)",
+        confirmed, extracted_mode, resume_msg[:40], elapsed,
     )
 
     base = {
@@ -336,9 +376,15 @@ def intake_gate_node(state: JobCreationState) -> JobCreationState:
         "intake_gate_seen_user_query": resume_msg,
         "current_stage": "intake",
     }
+    if extracted_mode:
+        base["screening_mode"] = extracted_mode
 
     if confirmed:
-        reply = msg("intake_gate.proceeding", title=parsed_title or "a vaga")
+        if extracted_mode:
+            mode_label = "Compacto" if extracted_mode == "compact" else "Completo"
+            reply = msg("intake_gate.proceeding_with_mode", title=parsed_title or "a vaga", mode_label=mode_label)
+        else:
+            reply = msg("intake_gate.proceeding", title=parsed_title or "a vaga")
         return {
             **state,
             **base,

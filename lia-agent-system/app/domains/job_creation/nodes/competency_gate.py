@@ -25,6 +25,8 @@ from app.domains.job_creation.helpers.async_audit import (
 from app.domains.job_creation.helpers.llm_exceptions import (
     classify_llm_exception_reason,
 )
+# Module-level import so tests can mock: app.domains.job_creation.nodes.competency_gate._in_graph_runtime
+from app.domains.job_creation.internal.utils import _in_graph_runtime
 
 logger = logging.getLogger(__name__)
 
@@ -49,13 +51,26 @@ def competency_gate_node(state: JobCreationState) -> JobCreationState:
     + ``seniority_resolved`` truthy + ``screening_mode`` falsy +
     user_query fresh (não processado nesta invocação).
     """
+    # Fase 1: mode confirmed at intake — skip LLM gate entirely.
+    # route_after_competency_gate sees screening_mode set and routes to wsi_questions.
+    if state.get("screening_mode") in ("compact", "full"):
+        mode = state["screening_mode"]
+        mode_label = "Compacto (7 perguntas)" if mode == "compact" else "Completo (12 perguntas)"
+        logger.info("[JobCreation:competency_gate] mode=%s confirmed at intake — skip LLM gate", mode)
+        return {
+            **state,
+            "current_stage": "competency",
+            "gate_clarify_message": f"Modo **{mode_label}** registrado. Gerando as perguntas WSI agora.",
+            "gate_last_intent": "select_compact" if mode == "compact" else "select_full",
+        }
+
     # Deferred imports to avoid circular dependency with graph.py module-level state.
     from app.domains.job_creation.graph import (
         _extract_last_turns,
         _try_meta_helper,
-        _in_graph_runtime,
         _emit_competency_gate_audit,
     )
+    # _in_graph_runtime is available at module level (imported above)
 
     resume_msg = (state.get("gate_resume_message") or "").strip()
     if not resume_msg:
