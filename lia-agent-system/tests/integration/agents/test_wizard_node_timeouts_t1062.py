@@ -96,12 +96,14 @@ class _SlowJdService:
             [],
         )
 
-    def _fallback_enrichment(self, jd_raw, title, seniority):
+    def _fallback_enrichment(self, jd_raw, title, seniority, **kwargs):
+        # Fase 4: assinatura aceita confirmed_technical/confirmed_behavioral
+        # (lockstep com JdEnrichmentService._fallback_enrichment).
         from app.domains.job_creation.services.jd_enrichment import (
             JdEnrichmentService,
         )
         return JdEnrichmentService._fallback_enrichment(
-            self, jd_raw, title, seniority,
+            self, jd_raw, title, seniority, **kwargs,
         )
 
 

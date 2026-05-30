@@ -350,6 +350,10 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
                     title=state.get("parsed_title", ""),
                     seniority=state.get("parsed_seniority", ""),
                     department=state.get("parsed_department", ""),
+                    # Fase 4: consome competencias confirmadas (Fase 3) -> JD consistente.
+                    confirmed_technical=state.get("confirmed_technical_competencies") or None,
+                    confirmed_behavioral=state.get("confirmed_behavioral_competencies") or None,
+                    screening_mode=state.get("screening_mode"),
                 )
                 enriched_obj, jd_quality_score, jd_quality_warnings = _fut.result(
                     timeout=_JD_LLM_TIMEOUT_S
@@ -363,6 +367,8 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
                 jd_raw_safe,
                 state.get("parsed_title", ""),
                 state.get("parsed_seniority", ""),
+                confirmed_technical=state.get("confirmed_technical_competencies") or None,
+                confirmed_behavioral=state.get("confirmed_behavioral_competencies") or None,
             )
             enriched_obj.wsi_quality_warnings.append(
                 msg("jd_enrichment.fallback_warning")
@@ -384,6 +390,8 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
                 jd_raw_safe,
                 state.get("parsed_title", ""),
                 state.get("parsed_seniority", ""),
+                confirmed_technical=state.get("confirmed_technical_competencies") or None,
+                confirmed_behavioral=state.get("confirmed_behavioral_competencies") or None,
             )
             jd_quality_score, jd_quality_warnings = _calc_q(enriched_obj)
             jd_enrichment_used_fallback = True

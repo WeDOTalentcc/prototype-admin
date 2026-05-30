@@ -26,7 +26,14 @@ import logging
 import re
 from typing import List, Tuple
 
-from app.domains.job_creation.schemas import EnrichedJobDescription
+from app.domains.job_creation.schemas import (
+    EnrichedJobDescription,
+    TechnicalSkill,
+    BehavioralCompetency,
+)
+from app.domains.job_creation.helpers.screening_mode_config import (
+    SCREENING_MODE_CONFIG,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -122,18 +129,52 @@ def _build_enrichment_prompt(
     title: str = "",
     seniority: str = "",
     department: str = "",
+    confirmed_technical: list | None = None,
+    confirmed_behavioral: list | None = None,
 ) -> str:
-    """Build the F1.C enrichment prompt from WSI methodology."""
+    """Build the F1.C enrichment prompt from WSI methodology.
+
+    Fase 4 (inversao): quando confirmed_technical/confirmed_behavioral sao
+    fornecidas (competencias confirmadas pelo recrutador na Fase 3), o prompt
+    instrui o LLM a gerar um JD CONSISTENTE com elas, sem inventar/substituir
+    competencias. O servico ainda sobrescreve as listas confirmadas apos o
+    parse (garantia computacional contra drift do LLM).
+    """
+    _has_confirmed = bool(confirmed_technical or confirmed_behavioral)
+    if _has_confirmed:
+        _tech_lines = "\n".join(
+            f"  - {t.get('skill', '')}: {t.get('contexto', '')}"
+            for t in (confirmed_technical or [])
+        ) or "  (nenhuma)"
+        _behav_lines = "\n".join(
+            f"  - {b.get('competencia', '')} [{b.get('trait_big_five', 'conscientiousness')}]: {b.get('contexto', '')}"
+            for b in (confirmed_behavioral or [])
+        ) or "  (nenhuma)"
+        _rule2 = "2. NAO invente nem altere competencias — use EXATAMENTE as confirmadas abaixo"
+        _rule5 = "5. As contagens sao definidas pelas competencias confirmadas (nao force minimos)"
+        _confirmed_block = (
+            "\n\nCOMPETENCIAS JA CONFIRMADAS PELO RECRUTADOR (FIXAS — NAO ALTERE, NAO ADICIONE, NAO REMOVA):\n"
+            "Tecnicas:\n" + _tech_lines + "\n"
+            "Comportamentais:\n" + _behav_lines + "\n\n"
+            "Gere about_role, responsabilidades, skills_desejaveis e context_signals "
+            "CONSISTENTES com essas competencias. Em skills_obrigatorias e "
+            "competencias_comportamentais, retorne EXATAMENTE as competencias confirmadas acima.\n"
+        )
+    else:
+        _rule2 = "2. Adicione skills e competencias que estao implicitas no JD"
+        _rule5 = f"5. Minimos: {MIN_TECHNICAL_SKILLS} skills tecnicas, {MIN_BEHAVIORAL_COMPETENCIES} competencias comportamentais, {MIN_RESPONSIBILITIES} responsabilidades"
+        _confirmed_block = ""
+
     return f"""Voce e um especialista em recrutamento. Analise o JD (Job Description) abaixo e produza uma versao enriquecida e estruturada.
 
 REGRAS:
 1. Mantenha o conteudo original, apenas estruture e enriqueca
-2. Adicione skills e competencias que estao implicitas no JD
+{_rule2}
 3. Classifique cada competencia comportamental pelo trait Big Five correspondente (openness, conscientiousness, extraversion, agreeableness, stability)
 4. Aplique linguagem inclusiva — corrija termos excludentes
-5. Minimos: {MIN_TECHNICAL_SKILLS} skills tecnicas, {MIN_BEHAVIORAL_COMPETENCIES} competencias comportamentais, {MIN_RESPONSIBILITIES} responsabilidades
+{_rule5}
 6. Se o JD for muito curto, enriqueca com base no titulo e senioridade
-
+{_confirmed_block}
 JD ORIGINAL:
 {jd_raw}
 
@@ -169,7 +210,11 @@ Responda APENAS com JSON valido no formato:
 }}"""
 
 
-def calculate_quality_score(enriched: EnrichedJobDescription) -> float:
+def calculate_quality_score(
+    enriched: EnrichedJobDescription,
+    min_technical: int = MIN_TECHNICAL_SKILLS,
+    min_behavioral: int = MIN_BEHAVIORAL_COMPETENCIES,
+) -> tuple[float, list[str]]:
     """F1.B — Deterministic quality score (0-100).
 
     Based on WSI methodology thresholds:
@@ -180,27 +225,27 @@ def calculate_quality_score(enriched: EnrichedJobDescription) -> float:
     score = 0.0
     warnings = []
 
-    # D3: Technical skills (max 30 points)
+    # D3: Technical skills (max 30 points) -- mode-aware (Fase 4)
     n_tech = len(enriched.skills_obrigatorias)
-    if n_tech >= MIN_TECHNICAL_SKILLS:
+    if n_tech >= min_technical:
         score += 30.0
     elif n_tech >= 5:
-        score += 15.0 + (n_tech - 5) * (15.0 / (MIN_TECHNICAL_SKILLS - 5))
-        warnings.append(f"Apenas {n_tech} skills tecnicas (minimo recomendado: {MIN_TECHNICAL_SKILLS})")
+        score += 15.0 + (n_tech - 5) * (15.0 / max(1, min_technical - 5))
+        warnings.append(f"Apenas {n_tech} skills tecnicas (minimo recomendado: {min_technical})")
     else:
         score += n_tech * 3.0
-        warnings.append(f"Skills tecnicas insuficientes: {n_tech}/{MIN_TECHNICAL_SKILLS}")
+        warnings.append(f"Skills tecnicas insuficientes: {n_tech}/{min_technical}")
 
-    # D4: Behavioral competencies (max 25 points)
+    # D4: Behavioral competencies (max 25 points) -- mode-aware (Fase 4)
     n_behav = len(enriched.competencias_comportamentais)
-    if n_behav >= MIN_BEHAVIORAL_COMPETENCIES:
+    if n_behav >= min_behavioral:
         score += 25.0
     elif n_behav >= 2:
-        score += 10.0 + (n_behav - 2) * (15.0 / (MIN_BEHAVIORAL_COMPETENCIES - 2))
-        warnings.append(f"Apenas {n_behav} competencias comportamentais (minimo: {MIN_BEHAVIORAL_COMPETENCIES})")
+        score += 10.0 + (n_behav - 2) * (15.0 / max(1, min_behavioral - 2))
+        warnings.append(f"Apenas {n_behav} competencias comportamentais (minimo: {min_behavioral})")
     else:
         score += n_behav * 5.0
-        warnings.append(f"Competencias comportamentais insuficientes: {n_behav}/{MIN_BEHAVIORAL_COMPETENCIES}")
+        warnings.append(f"Competencias comportamentais insuficientes: {n_behav}/{min_behavioral}")
 
     # Responsibilities (max 20 points)
     n_resp = len(enriched.responsabilidades)
@@ -228,6 +273,75 @@ def calculate_quality_score(enriched: EnrichedJobDescription) -> float:
     return round(min(score, 100.0), 1), warnings
 
 
+def _coerce_technical(items: list | None) -> list:
+    """Converte dicts {skill, contexto} confirmados em TechnicalSkill."""
+    out = []
+    for t in items or []:
+        out.append(TechnicalSkill(
+            skill=t.get("skill", ""),
+            contexto=t.get("contexto", ""),
+        ))
+    return out
+
+
+def _coerce_behavioral(items: list | None) -> list:
+    """Converte dicts {competencia, contexto, trait_big_five} em BehavioralCompetency."""
+    out = []
+    for b in items or []:
+        trait = b.get("trait_big_five") or "conscientiousness"
+        try:
+            out.append(BehavioralCompetency(
+                competencia=b.get("competencia", ""),
+                contexto=b.get("contexto", ""),
+                trait_big_five=trait,
+            ))
+        except Exception:  # noqa: BLE001 -- trait invalido -> default
+            out.append(BehavioralCompetency(
+                competencia=b.get("competencia", ""),
+                contexto=b.get("contexto", ""),
+            ))
+    return out
+
+
+def _apply_confirmed_override(
+    enriched: EnrichedJobDescription,
+    confirmed_technical: list | None,
+    confirmed_behavioral: list | None,
+) -> EnrichedJobDescription:
+    """Fase 4: sobrescreve as competencias com as confirmadas (garantia
+    computacional contra drift do LLM). Mantem o restante do JD gerado.
+    """
+    if confirmed_technical:
+        enriched.skills_obrigatorias = _coerce_technical(confirmed_technical)
+    if confirmed_behavioral:
+        enriched.competencias_comportamentais = _coerce_behavioral(confirmed_behavioral)
+    return enriched
+
+
+def _resolve_quality_thresholds(
+    screening_mode: str | None,
+    confirmed_technical: list | None,
+    confirmed_behavioral: list | None,
+) -> tuple[int, int]:
+    """Thresholds mode-aware para o quality_score (Fase 4).
+
+    - Sem confirmadas: thresholds legados (9/5) -- comportamento original.
+    - Com confirmadas + modo conhecido: targets do modo (SCREENING_MODE_CONFIG).
+    - Com confirmadas + modo desconhecido: as proprias contagens confirmadas
+      (a contagem e decisao do recrutador -- nao penalizar).
+    """
+    has_confirmed = bool(confirmed_technical or confirmed_behavioral)
+    if not has_confirmed:
+        return MIN_TECHNICAL_SKILLS, MIN_BEHAVIORAL_COMPETENCIES
+    if screening_mode in SCREENING_MODE_CONFIG:
+        cfg = SCREENING_MODE_CONFIG[screening_mode]
+        return cfg["technical_competencies"], cfg["behavioral_competencies"]
+    return (
+        max(1, len(confirmed_technical or [])),
+        max(1, len(confirmed_behavioral or [])),
+    )
+
+
 class JdEnrichmentService:
     """F1 — JD enrichment via LLM structured output."""
 
@@ -252,8 +366,17 @@ class JdEnrichmentService:
         title: str = "",
         seniority: str = "",
         department: str = "",
+        confirmed_technical: list | None = None,
+        confirmed_behavioral: list | None = None,
+        screening_mode: str | None = None,
     ) -> tuple[EnrichedJobDescription, float, list[str]]:
         """Enrich a raw JD using LLM.
+
+        Fase 4 (inversao): quando confirmed_technical/confirmed_behavioral sao
+        fornecidas, o JD e gerado CONSISTENTE com elas e as competencias sao
+        sobrescritas verbatim (garantia computacional). quality_score vira
+        mode-aware (thresholds do modo, nao os fixos 9/5). Sem confirmadas,
+        comportamento legado (gera competencias do zero).
 
         Governance layers applied:
         1. Fairness: bias detection on raw JD BEFORE LLM call
@@ -264,12 +387,20 @@ class JdEnrichmentService:
         Returns:
             tuple of (enriched_jd, quality_score, warnings)
         """
+        _min_tech, _min_behav = _resolve_quality_thresholds(
+            screening_mode, confirmed_technical, confirmed_behavioral,
+        )
+
         # --- GOV 1: Pre-LLM fairness check on raw JD ---
         jd_cleaned, pre_corrections = check_fairness(jd_raw)
         if pre_corrections:
             logger.info("[JdEnrichment:Fairness] %d pre-corrections applied", len(pre_corrections))
 
-        prompt = _build_enrichment_prompt(jd_cleaned, title, seniority, department)
+        prompt = _build_enrichment_prompt(
+            jd_cleaned, title, seniority, department,
+            confirmed_technical=confirmed_technical,
+            confirmed_behavioral=confirmed_behavioral,
+        )
 
         # --- GOV 2: Circuit breaker wraps LLM call ---
         try:
@@ -282,9 +413,15 @@ class JdEnrichmentService:
                 )
             except CircuitBreakerOpenError:
                 logger.warning("[JdEnrichment] Circuit breaker OPEN — using fallback")
-                enriched = self._fallback_enrichment(jd_raw, title, seniority)
+                enriched = self._fallback_enrichment(
+                    jd_raw, title, seniority,
+                    confirmed_technical=confirmed_technical,
+                    confirmed_behavioral=confirmed_behavioral,
+                )
                 enriched.wsi_quality_warnings.append("Servico de enriquecimento temporariamente indisponivel")
-                quality_score, warnings = calculate_quality_score(enriched)
+                quality_score, warnings = calculate_quality_score(
+                    enriched, min_technical=_min_tech, min_behavioral=_min_behav,
+                )
                 return enriched, quality_score, warnings
         except ImportError:
             # Circuit breaker not available — direct call
@@ -308,6 +445,11 @@ class JdEnrichmentService:
             logger.warning("[JdEnrichment] LLM parse failed, using fallback: %s", e)
             enriched = self._fallback_enrichment(jd_raw, title, seniority)
 
+        # --- Fase 4: sobrescreve com competencias confirmadas (override) ---
+        enriched = _apply_confirmed_override(
+            enriched, confirmed_technical, confirmed_behavioral,
+        )
+
         # --- GOV 3: Post-LLM fairness check on enriched output ---
         enriched_text = " ".join([
             enriched.about_role,
@@ -320,15 +462,18 @@ class JdEnrichmentService:
         all_corrections = pre_corrections + post_corrections + enriched.fairness_corrections
         enriched.fairness_corrections = list(set(all_corrections))
 
-        quality_score, warnings = calculate_quality_score(enriched)
+        quality_score, warnings = calculate_quality_score(
+            enriched, min_technical=_min_tech, min_behavioral=_min_behav,
+        )
         enriched.wsi_quality_score = quality_score
         enriched.wsi_quality_warnings = warnings
 
         logger.info(
-            "[JdEnrichment] score=%.1f | skills=%d | behavioral=%d | fairness=%d | warnings=%d",
+            "[JdEnrichment] score=%.1f | skills=%d | behavioral=%d | confirmed=%s | fairness=%d | warnings=%d",
             quality_score,
             len(enriched.skills_obrigatorias),
             len(enriched.competencias_comportamentais),
+            bool(confirmed_technical or confirmed_behavioral),
             len(all_corrections),
             len(warnings),
         )
@@ -336,15 +481,24 @@ class JdEnrichmentService:
         return enriched, quality_score, warnings
 
     def _fallback_enrichment(
-        self, jd_raw: str, title: str, seniority: str
+        self,
+        jd_raw: str,
+        title: str,
+        seniority: str,
+        confirmed_technical: list | None = None,
+        confirmed_behavioral: list | None = None,
     ) -> EnrichedJobDescription:
-        """Minimal enrichment when LLM fails."""
+        """Minimal enrichment when LLM fails.
+
+        Fase 4: honra competencias confirmadas (seta verbatim) para que o
+        fallback de timeout/erro no node tambem produza o JD consistente.
+        """
         return EnrichedJobDescription(
             titulo_padronizado=title or "Cargo nao especificado",
             senioridade_confirmada=seniority or "pleno",
             about_role=jd_raw[:200] if jd_raw else "",
             responsabilidades=[],
-            skills_obrigatorias=[],
-            competencias_comportamentais=[],
+            skills_obrigatorias=_coerce_technical(confirmed_technical),
+            competencias_comportamentais=_coerce_behavioral(confirmed_behavioral),
             wsi_quality_warnings=["Enriquecimento por LLM falhou — usando fallback minimo"],
         )
