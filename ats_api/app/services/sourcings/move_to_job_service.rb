@@ -1,5 +1,7 @@
 module Sourcings
   class MoveToJobService
+    BulkApplyError = Class.new(StandardError)
+
     Result = Struct.new(:success?, :applies_created, :skipped, :error, keyword_init: true)
 
     def self.call(sourcing:, job_id:, candidate_ids:, user:)
@@ -23,6 +25,8 @@ module Sourcings
 
       created, skipped = build_applies(job)
       Result.new(success?: true, applies_created: created, skipped: skipped)
+    rescue BulkApplyError => e
+      Result.new(success?: false, error: e.message)
     end
 
     private
@@ -35,25 +39,29 @@ module Sourcings
       created = []
       skipped = []
 
-      @candidate_ids.each do |candidate_id|
-        existing = Apply.find_by(candidate_id: candidate_id, job_id: job.id, account_id: @user.account_id)
-        if existing
-          skipped << candidate_id
-          next
+      ActiveRecord::Base.transaction do
+        @candidate_ids.each do |candidate_id|
+          existing = Apply.find_by(candidate_id: candidate_id, job_id: job.id, account_id: @user.account_id)
+          if existing
+            skipped << candidate_id
+            next
+          end
+
+          apply = Apply.create!(
+            candidate_id: candidate_id,
+            job_id: job.id,
+            account_id: @user.account_id,
+            user_id: @user.id,
+            source: "talent_pool"
+          )
+
+          created << apply.id
         end
-
-        apply = Apply.create(
-          candidate_id: candidate_id,
-          job_id: job.id,
-          account_id: @user.account_id,
-          user_id: @user.id,
-          source: "talent_pool"
-        )
-
-        apply.persisted? ? created << apply.id : skipped << candidate_id
       end
 
       [ created, skipped ]
+    rescue ActiveRecord::RecordInvalid => e
+      raise BulkApplyError, "Falha ao adicionar candidato #{e.record.candidate_id}: #{e.record.errors.full_messages.join(", ")}"
     end
   end
 end
