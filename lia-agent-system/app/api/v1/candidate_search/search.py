@@ -421,3 +421,74 @@ company_id: str = Depends(require_company_id)):
         raise HTTPException(status_code=500, detail=f"Search failed: {str(e)}")
 
 
+
+
+@router.get("/candidates/search/snapshot", response_model=SearchResponseDTO)
+async def get_search_snapshot(
+    fingerprint: str,
+    db: "AsyncSession" = Depends(get_db),
+    company_id: str = Depends(require_company_id),
+):
+    """Fase 4: resgate congelado — retorna perfis Pearch já persistidos pelo fingerprint.
+
+    Carrega de external_candidate_profiles SEM chamar Pearch (zero crédito).
+    Idêntico em estrutura ao POST /candidates, mas congelado no momento da busca original.
+    """
+    import sqlalchemy as sa
+    from lia_models.candidate import ExternalCandidateProfile
+
+    try:
+        result = await db.execute(
+            sa.select(ExternalCandidateProfile)
+            .where(
+                sa.and_(
+                    ExternalCandidateProfile.search_fingerprint == fingerprint,
+                    ExternalCandidateProfile.company_id == company_id,
+                    ExternalCandidateProfile.source == "pearch",
+                )
+            )
+            .order_by(ExternalCandidateProfile.created_at.desc())
+            .limit(100)
+        )
+        rows = result.scalars().all()
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Snapshot retrieval failed: {exc}")
+
+    candidates = []
+    for row in rows:
+        loc_parts = [p for p in [row.location_city, row.location_state, row.location_country] if p]
+        location = ", ".join(loc_parts) if loc_parts else row.location_raw
+
+        candidates.append(
+            CandidateSearchResultDTO(
+                id=str(row.source_profile_id),
+                name=row.name or "",
+                first_name=row.first_name,
+                last_name=row.last_name,
+                headline=row.headline,
+                current_title=row.current_title,
+                current_company=row.current_company,
+                location=location,
+                skills=list(row.skills or []),
+                linkedin_url=row.linkedin_url,
+                has_email=bool(row.has_email),
+                has_phone=bool(row.has_phone),
+                email=row.email,
+                phone=row.phone,
+                picture_url=row.avatar_url,
+                is_discovered=True,
+                is_open_to_work=row.is_open_to_work,
+                total_experience_years=float(row.years_of_experience) if row.years_of_experience else None,
+                source="pearch",
+                summary=row.summary,
+            )
+        )
+
+    return SearchResponseDTO(
+        query=rows[0].search_query or "" if rows else "",
+        search_fingerprint=fingerprint,
+        candidates=candidates,
+        pearch_count=len(candidates),
+        total_count=len(candidates),
+        credits_used=0,  # resgate congelado: zero crédito
+    )

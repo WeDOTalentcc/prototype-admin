@@ -42,12 +42,15 @@ _SAFE_TABLE_RE = re.compile(r"^[a-z][a-z0-9_]{0,62}$")
 _ALLOWED_TTL_TABLES = frozenset([
     "messages", "conversation_messages", "chat_messages",
     "interview_notes", "screening_tasks", "fairness_audit_log",
+    # Fase 4 Pearch: perfis descobertos não-engajados (status != promoted) — TTL 180d
+    "external_candidate_profiles",
 ])
 
 # Default retention windows (days) — maps data type → TTL
 RETENTION_DAYS = {
     "rejected": 90,
     "withdrawn": 90,
+    "pearch_discovered_profiles": 180,  # Fase 4 LGPD Art. 5 e: minimização; 180d sem engajamento
     "chat_messages": 90,       # LGPD Art. 18 — minimização de dados de conversa
     "interview_data": 180,     # Dados de entrevista e notas WSI
     "interview_notes": 180,    # alias kept for backwards compat
@@ -427,7 +430,42 @@ async def run_cleanup(dry_run: bool = True) -> dict:
                     pass
                 logger.warning("LGPD TTL: table %s not found or error: %s", table, exc)
 
-        # 8. Propagate deletion to secondary stores for deleted candidate IDs
+        # 8-bis. external_candidate_profiles — Fase 4 LGPD TTL
+        # Purge apenas status != 'promoted' (promoted virou Candidate, tratado no cascade FK)
+        # Filtra por updated_at (não created_at) — respeita interações recentes (interest signals).
+        try:
+            pearch_cutoff = datetime.utcnow() - timedelta(days=RETENTION_DAYS["pearch_discovered_profiles"])
+            pearch_q = (
+                "SELECT COUNT(*) FROM external_candidate_profiles "
+                "WHERE updated_at < :cutoff AND (status IS NULL OR status != 'promoted')"
+            )
+            pearch_count = (await db.execute(text(pearch_q), {"cutoff": pearch_cutoff})).scalar_one() or 0
+            if pearch_count > 0:
+                logger.info(
+                    "LGPD TTL%s: external_candidate_profiles (pearch) — %d rows older than %d days",
+                    " (dry-run)" if dry_run else "",
+                    pearch_count, RETENTION_DAYS["pearch_discovered_profiles"],
+                )
+                if not dry_run:
+                    await db.execute(
+                        text(
+                            "DELETE FROM external_candidate_profiles "
+                            "WHERE updated_at < :cutoff AND (status IS NULL OR status != 'promoted')"
+                        ),
+                        {"cutoff": pearch_cutoff},
+                    )
+                    await db.commit()
+            summary["pearch_profiles_deleted"] = pearch_count if not dry_run else 0
+            summary["pearch_profiles_would_delete"] = pearch_count if dry_run else 0
+        except Exception as exc:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
+            logger.warning("LGPD TTL: external_candidate_profiles cleanup error: %s", exc)
+            summary.setdefault("errors", []).append(f"pearch_cleanup: {exc}")
+
+                # 8. Propagate deletion to secondary stores for deleted candidate IDs
         if not dry_run and candidates_to_delete:
             deleted_ids = [str(row.id) for row in candidates_to_delete]
             propagation = await _propagate_deletion_to_secondary_stores(

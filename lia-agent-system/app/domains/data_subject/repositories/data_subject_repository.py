@@ -312,6 +312,33 @@ class DataSubjectRepository:
                 )
                 side_effect["action"] = "deletion_scheduled"
                 side_effect["scheduled_deletion_at"] = deletion_at.isoformat()
+
+                # Fase 4 — LGPD Art. 18 VI: cascade erasure de perfis Pearch descobertos
+                # ExternalCandidateProfile não tem FK para Candidate; link é por email.
+                # Deletar imediatamente (não agendar): usuário pediu erasure explicitamente.
+                try:
+                    import sqlalchemy as sa
+                    from lia_models.candidate import ExternalCandidateProfile
+                    subject_email = (request.subject_email or "").strip().lower()
+                    if subject_email:
+                        await self.db.execute(
+                            sa.delete(ExternalCandidateProfile).where(
+                                sa.and_(
+                                    sa.func.lower(ExternalCandidateProfile.email) == subject_email,
+                                    ExternalCandidateProfile.company_id == str(request.company_id),
+                                )
+                            )
+                        )
+                        await self.db.commit()
+                        side_effect["pearch_profiles_erased"] = True
+                except Exception as _erase_exc:
+                    side_effect["pearch_profiles_erased"] = False
+                    side_effect["pearch_erase_warning"] = str(_erase_exc)[:200]
+                    logger.warning(
+                        "Erasure cascade: ExternalCandidateProfile delete failed (non-fatal): %s",
+                        _erase_exc,
+                    )
+
             except Exception as exc:
                 raise DsrExecutorFailedError(
                     f"DSR deletion executor failed for {request.id}: {exc}"
