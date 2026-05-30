@@ -23,21 +23,21 @@ class TestPiiLayer2Applied:
     """Regression — raw_input_safe (PII-stripped) MUST be passed to LLM call."""
 
     def test_jd_raw_safe_used_in_enrich_call(self):
-        """The fix in graph.py:209-243 — jd_raw_safe is what goes to LLM.
+        """The fix in nodes/jd_enrichment.py — jd_raw_safe is what goes to LLM.
 
+        Node was extracted from graph.py to nodes/jd_enrichment.py in PR-10 ONDA 3.
         Why this matters: the previous bug computed raw_input_safe but never
         used it; jd_raw fell back to raw_input (with PII). LGPD Art.46 violation.
         """
-        # We can't easily run the full node here without LangGraph runtime,
-        # but we CAN assert the source code contains the fix anchor.
-        with open("app/domains/job_creation/graph.py") as f:
+        # Node moved from graph.py to nodes/jd_enrichment.py (PR-10 ONDA 3 sub-B).
+        with open("app/domains/job_creation/nodes/jd_enrichment.py") as f:
             src = f.read()
 
         # Anchor must exist exactly — guarantees the fix is in place
         assert "jd_raw=jd_raw_safe," in src, (
-            "Fix: graph.py jd_enrichment_node MUST call service.enrich(jd_raw=jd_raw_safe, ...). "
+            "Fix: nodes/jd_enrichment.py MUST call service.enrich(jd_raw=jd_raw_safe, ...). "
             "Currently passes the original jd_raw (with PII) to the LLM. "
-            "LGPD Art.46 violation. Edit graph.py around line 239."
+            "LGPD Art.46 violation."
         )
 
         # Negative assertion — original buggy line must NOT be present
@@ -48,7 +48,8 @@ class TestPiiLayer2Applied:
         )
 
     def test_pii_strip_helper_is_imported_inside_layer_2(self):
-        with open("app/domains/job_creation/graph.py") as f:
+        # Node moved from graph.py to nodes/jd_enrichment.py (PR-10 ONDA 3 sub-B).
+        with open("app/domains/job_creation/nodes/jd_enrichment.py") as f:
             src = f.read()
         assert "from app.shared.pii_masking import strip_pii_for_llm_prompt" in src, (
             "Fix: PII Layer 2 requires `strip_pii_for_llm_prompt` import. "

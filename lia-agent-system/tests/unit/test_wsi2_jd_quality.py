@@ -196,7 +196,7 @@ class TestTemperaturePerFramework:
         comp = _make_competency("Python", "technical")
         await service._generate_cbi_question(comp)
 
-        mock_llm.claude.bind.assert_called_once_with(temperature=0.7)
+        mock_llm.claude.bind.assert_called_once_with(temperature=0.7, max_tokens=2000)
 
     @pytest.mark.asyncio
     async def test_dreyfus_uses_temperature_075(self):
@@ -217,7 +217,7 @@ class TestTemperaturePerFramework:
         comp = _make_competency("Python", "technical")
         await service._generate_dreyfus_question(comp)
 
-        mock_llm.claude.bind.assert_called_once_with(temperature=0.75)
+        mock_llm.claude.bind.assert_called_once_with(temperature=0.75, max_tokens=2000)
 
     @pytest.mark.asyncio
     async def test_bloom_uses_temperature_075(self):
@@ -238,7 +238,7 @@ class TestTemperaturePerFramework:
         comp = _make_competency("Python", "technical")
         await service._generate_bloom_question(comp)
 
-        mock_llm.claude.bind.assert_called_once_with(temperature=0.75)
+        mock_llm.claude.bind.assert_called_once_with(temperature=0.75, max_tokens=2000)
 
     @pytest.mark.asyncio
     async def test_bigfive_uses_temperature_08(self):
@@ -259,7 +259,7 @@ class TestTemperaturePerFramework:
         comp = _make_competency("Liderança", "behavioral")
         await service._generate_bigfive_question(comp)
 
-        mock_llm.claude.bind.assert_called_once_with(temperature=0.8)
+        mock_llm.claude.bind.assert_called_once_with(temperature=0.8, max_tokens=2000)
 
 
 # ---------------------------------------------------------------------------
