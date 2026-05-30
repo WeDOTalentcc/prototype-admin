@@ -673,17 +673,19 @@ class IntakeExtractor:
         """
         prompt_user = f"Texto do recrutador:\n{masked_input}"
 
-        # langchain-style ChatModel
+        # langchain-style ChatModel.
+        # REGRA 4 (anti-silent-fallback): NÃO engolir o erro do .invoke. Se o
+        # cliente tem .invoke (é langchain), a falha (ex: AuthenticationError
+        # 401, timeout) DEVE propagar para o caller logar a causa real —
+        # antes, o `except: pass` mascarava tudo como "Unknown LLM client
+        # interface", escondendo 401 de chave inválida (debug 2026-05-30).
         if hasattr(llm, "invoke"):
-            try:
-                from langchain_core.messages import SystemMessage, HumanMessage
-                msg = llm.invoke([
-                    SystemMessage(content=_SYSTEM_PROMPT),
-                    HumanMessage(content=prompt_user),
-                ])
-                return getattr(msg, "content", str(msg))
-            except Exception:
-                pass
+            from langchain_core.messages import SystemMessage, HumanMessage
+            msg = llm.invoke([
+                SystemMessage(content=_SYSTEM_PROMPT),
+                HumanMessage(content=prompt_user),
+            ])
+            return getattr(msg, "content", str(msg))
 
         # Anthropic-style client
         if hasattr(llm, "messages") and hasattr(llm.messages, "create"):
