@@ -298,3 +298,46 @@ Cada item: canonical-fix → feature-impact → lia-testing (Red→Green) → fe
 - Threading: PageCore -> candidates-page:169 -> CandidateSearchResultsView -> CandidatesFilterPanel (curto, 2 hops).
 - Botao pill no rodape do painel (reusa tokens lia-btn-primary), so quando ha filtros ativos. i18n candidates.filters.reSearchWithFilters (pt-BR + en).
 - FASE 3 COMPLETA. Falta so Fase 4 (viajar com lista/pool).
+
+### Fase 4 — ACHADO: caso histórico JA COBERTO pela Fase 2
+- Resgatar busca = re-executar (CandidatesSearchModals edit-query:263, LIA chat, archetypes todos chamam executeSearch com mesmos criterios). Histórico guarda query+entities+metadata.
+- Re-executar -> mesmo fingerprint -> re-hidratacao (GET /by-search) roda -> feedback volta. JA FUNCIONA.
+- Gap real restante: CandidateList/TalentPool CONGELADOS (nao re-executam). Ressalvas: (1) listas guardam so candidatos locais UUID; feedback Pearch(docid) nao casa; (2) lista = conjunto curado, nao busca.
+- DECISAO pendente Paulo: implementar fingerprint em lista congelada (baixo valor + caveat ID) OU considerar Fase 4 coberta pela Fase 2.
+
+### Fase 4 — DESCOBERTA ARQUITETURAL (candidate.py:350 CandidateSearch)
+- candidate_searches NAO persiste resultados completos — so analytics (query, filtros, counts, creditos, clicked/contacted ids). Descartados vem de staging separado.
+- Logo: resgatar = re-executar e a unica opcao hoje -> onReExecuteSearch (history-tab.tsx) RE-RODA a busca -> gasta credito. RISCO DO PAULO CONFIRMADO, arquitetural.
+- Fase 4 do jeito certo (resgatar = snapshot congelado, sem re-rodar, sem credito) EXIGE capacidade NOVA: persistir o conjunto completo de resultados por busca (com ids originais preservados p/ casar feedback) + fluxo de load-sem-re-rodar + re-hidratacao.
+- Isso e um PROJETO (maior que Fases 1-3). NAO iniciar no fim da sessao; alinhar escopo.
+- CandidateList curada (handleAddToList importa Pearch->UUID novo) e caso separado, precisa ponte de identidade.
+- Opcao interim p/ o risco de credito: history reopen re-rodar LOCAL-only (gratis) por padrao + confirmar antes de global/Pearch.
+
+### Fase 4 — PESQUISA PEARCH (creditos + armazenamento)
+- Credito: cobra por profile retornado/busca; contatos+analise = extra. Re-rodar re-cobra. Sem endpoint publico get-profile-by-id gratis (so /search pago).
+- Tecnicamente viavel: recebemos profile completo + docid estavel -> guardar PearchSearchResult por busca -> resgate sem re-rodar (sem credito) -> feedback casa por docid. SEM ponte de identidade pro caso snapshot.
+- BLOQUEIO (acao Paulo): TOS de retencao/armazenamento da Pearch NAO e publico. Precisa confirmar com Pearch (f@pearch.ai / contrato platform.pearch.ai): podemos persistir+re-exibir perfis? prazo? restricoes? Questao contratual+LGPD, gating da arquitetura.
+- Se SIM: construir persistencia de snapshot. Se NAO/limitado: TTL ou guard de credito interim (re-run local gratis + confirmar antes de global).
+- Fontes: pearch.ai/pricing, /frequently-asked-questions, github Pearch-ai/mcp_pearch.
+
+---
+## FASE 4 — SPEC EXECUTAVEL (decisoes travadas 2026-05-29)
+
+DECISAO Paulo: persistir TODOS os perfis Pearch pesquisados (modelo "pesquisou = do recrutador").
+Storage existente reaproveitado: external_candidate_profiles (docid=source_profile_id, linkedin_url,
+raw_payload, company_id, RLS JA ativo + 4 policies). Supressao: docid_blacklist JA wirado
+(exclude_candidate_ids -> pearch_service:1263). Hoje a tabela so e populada no IMPORT (import_export.py:219), nao na busca.
+
+### Passos
+1. Migration: add coluna search_fingerprint (String, index) em external_candidate_profiles (down_revision=head atual; checar REGRA 5). RLS ja existe.
+2. Persist-on-search: em pearch_service/_shared apos resultados Pearch, upsert por (company_id, source_profile_id) reusando o builder de ExternalCandidateProfile (import_export.py:219). Tag search_fingerprint. Idempotente (upsert, nao duplica). CUIDADO: hot path de busca — teste + nao bloquear resposta (best-effort/async).
+3. Supressao (B): antes da busca Pearch, query source_profile_id da empresa (opcional: recentes/TTL) -> exclude_candidate_ids -> docid_blacklist. Economiza credito. Toggle de UX? (Paulo decide se sempre-on).
+4. Resgate congelado (A): endpoint GET resultados por search_fingerprint (carrega de external_candidate_profiles, SEM chamar Pearch, SEM credito). Frontend: reabrir historico/lista carrega snapshot (nao re-roda). Re-hidrata feedback por docid (casa: snapshot preserva docid original).
+5. LGPD (OBRIGATORIO — lia-compliance):
+   - Base legal: interesse legitimo recrutamento (docstring + ADR).
+   - Retencao/TTL: purgar perfis nao-engajados apos N meses (definir N). 
+   - Erasure: incluir external_candidate_profiles no cascade de eliminacao do data_subject (Art. 18). Hoje NAO esta.
+   - RLS: ja ativo (isolamento empresa). Manter.
+6. Sensores: teste upsert idempotente; teste supressao (docids excluidos da request); teste resgate carrega sem chamar Pearch (mock); contract test RLS; teste erasure remove perfis.
+
+### Risco: persist-on-search toca o hot path de busca (alta concorrencia). Best-effort + idempotente + nao bloquear a resposta da busca.
