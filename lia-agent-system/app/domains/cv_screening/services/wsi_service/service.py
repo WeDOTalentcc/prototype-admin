@@ -110,7 +110,17 @@ Responda em JSON:
 }}"""
 
         content_str = await self.llm.safe_invoke(prompt, provider="claude")
-        data = json.loads(content_str)
+        # Robustez canonica (2026-05-31): o LLM pode devolver JSON cercado por
+        # markdown; json.loads cru falha com "char 0". Strip defensivo beneficia
+        # toda a plataforma (Settings + automacao + wizard conversacional).
+        _cs = (content_str or "").strip()
+        if _cs.startswith('```'):
+            _parts = _cs.split('```')
+            _cs = _parts[1] if len(_parts) > 1 else ""
+            if _cs.lstrip().lower().startswith("json"):
+                _cs = _cs.lstrip()[4:]
+            _cs = _cs.strip()
+        data = json.loads(_cs)
         
         # Converter para Competency objects
         technical = [

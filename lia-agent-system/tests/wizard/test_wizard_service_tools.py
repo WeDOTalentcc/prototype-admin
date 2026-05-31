@@ -42,22 +42,21 @@ def test_suggest_competencies_rejects_tenant_keys():
 
 
 @pytest.mark.medium
-def test_suggest_competencies_happy_path_passes_company_from_ctx():
+def test_suggest_competencies_happy_path_uses_canonical_adapter():
+    """Consolidação WSI Fase 1: o tool usa o adapter canônico (cv_screening),
+    não mais o fork CompetencyBenchmarkService. Multi-tenancy preservado."""
     captured = {}
 
-    async def _fake_suggest(**kwargs):
-        captured.update(kwargs)
+    def _fake_canonical(*, title, seniority, jd_text="", company_id=None):
+        captured.update(dict(title=title, seniority=seniority, company_id=company_id))
         return {
             "technical": [{"skill": "Python"}, {"skill": "SQL"}],
-            "behavioral": [{"competencia": "Comunicação"}],
-            "is_estimate": False,
+            "behavioral": [{"competencia": "Comunicação", "trait_big_five": "conscientiousness"}],
         }
 
-    fake_svc = SimpleNamespace(suggest_competencies=_fake_suggest)
-
     with patch(
-        "app.domains.analytics.services.competency_benchmark_service.get_competency_benchmark_service",
-        return_value=fake_svc,
+        "app.domains.job_creation.orchestrator.wsi_canonical_adapter.suggest_competencies_canonical",
+        _fake_canonical,
     ):
         res = _handle_suggest_competencies(
             {"parsed_title": "Eng", "parsed_seniority": "Sênior", "screening_mode": "full"},
@@ -66,28 +65,21 @@ def test_suggest_competencies_happy_path_passes_company_from_ctx():
         )
 
     assert not res.error
-    # multi-tenancy: company_id veio do ctx, não do tool_input
-    assert captured["company_id"] == "comp-xyz"
+    assert captured["company_id"] == "comp-xyz"  # multi-tenancy do ctx
     assert captured["title"] == "Eng"
-    assert captured["screening_mode"] == "full"
-    # sugestões armazenadas (não confirmadas)
     assert res.state_updates["suggested_competencies"]["technical"][0]["skill"] == "Python"
     assert "Python" in res.llm_message
 
 
 @pytest.mark.medium
-def test_suggest_competencies_fail_loud_on_service_error():
-    async def _boom(**kwargs):
-        raise RuntimeError("LLM down")
-
-    fake_svc = SimpleNamespace(suggest_competencies=_boom)
+def test_suggest_competencies_fail_loud_when_canonical_none():
+    """Adapter retorna None em falha → tool falha alto (não silent), orienta confirm_competencies."""
     with patch(
-        "app.domains.analytics.services.competency_benchmark_service.get_competency_benchmark_service",
-        return_value=fake_svc,
+        "app.domains.job_creation.orchestrator.wsi_canonical_adapter.suggest_competencies_canonical",
+        lambda **kw: None,
     ):
         res = _handle_suggest_competencies({"parsed_title": "Eng"}, {}, CTX)
     assert res.error
-    # não silent: motivo explícito + caminho alternativo
     assert "confirm_competencies" in res.llm_message
 
 

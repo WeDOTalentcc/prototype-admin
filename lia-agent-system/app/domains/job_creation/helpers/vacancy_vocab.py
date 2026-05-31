@@ -53,9 +53,7 @@ _SENIORITY_MAP = {
     "pleno": "Pleno", "mid": "Pleno", "pl": "Pleno",
     "senior": "Sênior", "sr": "Sênior",
     "especialista": "Especialista", "specialist": "Especialista", "principal": "Especialista",
-    "staff": "Especialista",
     "lead": "Coordenador", "coordenador": "Coordenador", "coordenadora": "Coordenador",
-    "coordinator": "Coordenador",
     "gerente": "Gerente", "manager": "Gerente", "gerencial": "Gerente",
     "diretor": "Diretor", "diretora": "Diretor", "director": "Diretor",
     "head": "Diretor", "vp": "Diretor", "c-level": "Diretor", "cfo": "Diretor",
@@ -102,18 +100,29 @@ def to_canonical_language_level(value: Optional[str]) -> str:
     return _LANG_LEVEL_MAP.get(_norm(value), "Intermediário")
 
 
-# -- match keys (beneficios <-> vaga) --------------------------------------
-# O catalogo de beneficios (CompanyBenefit) guarda senioridade/contrato em EN
-# minusculo (junior, director, c-level, clt, intern) enquanto a vaga usa o
-# vocabulario canonico PT (Junior, Diretor, CLT). Para casar os dois lados,
-# reduz ambos ao mesmo token comparavel: canonical PT + _norm (lower/sem acento).
-def to_match_seniority_key(value: Optional[str]) -> str:
-    """Token comparavel de senioridade (EN catalogo <-> PT vaga). '' se vazio."""
-    canon = to_canonical_seniority(value) or ""
-    return _norm(canon)
+# ── seniority → cv_screening (5 níveis) ──────────────────────────────────
+# Consolidação WSI: o kernel canônico cv_screening.WSIService usa 5 níveis
+# (junior|pleno|senior|lead|executive). Mapeia o vocabulário do wizard p/ ele.
+_CV_SENIORITY_MAP = {
+    "estagiario": "junior", "estagio": "junior", "intern": "junior", "trainee": "junior",
+    "junior": "junior", "jr": "junior",
+    "pleno": "pleno", "mid": "pleno", "pl": "pleno",
+    "senior": "senior", "sr": "senior", "especialista": "senior", "specialist": "senior",
+    "lead": "lead", "coordenador": "lead", "principal": "lead",
+    "gerente": "executive", "manager": "executive", "diretor": "executive",
+    "director": "executive", "head": "executive", "vp": "executive",
+    "c-level": "executive", "ceo": "executive", "cfo": "executive", "cto": "executive",
+}
+
+_CV_VALID = {"junior", "pleno", "senior", "lead", "executive"}
 
 
-def to_match_contract_key(value: Optional[str]) -> str:
-    """Token comparavel de tipo de contrato (EN catalogo <-> PT vaga). '' se vazio."""
-    canon = to_canonical_employment_type(value) or ""
-    return _norm(canon)
+def to_cv_screening_seniority(value: Optional[str]) -> str:
+    """Mapeia senioridade do wizard p/ os 5 níveis do cv_screening.WSIService.
+    Default 'pleno' (mesmo default do serviço canônico)."""
+    if not value:
+        return "pleno"
+    n = _norm(value)
+    if n in _CV_VALID:
+        return n
+    return _CV_SENIORITY_MAP.get(n, "pleno")

@@ -68,39 +68,22 @@ def _handle_suggest_competencies(
     department = state.get("parsed_department")
     screening_mode = state.get("screening_mode") or "compact"
 
-    try:
-        from app.domains.job_creation.helpers.async_audit import (
-            run_coro_in_threadpool,
-        )
-
-        async def _fetch() -> dict[str, Any]:
-            from app.domains.analytics.services.competency_benchmark_service import (
-                get_competency_benchmark_service,
-            )
-            svc = get_competency_benchmark_service()
-            return await svc.suggest_competencies(
-                title=title,
-                seniority=seniority,
-                department=department,
-                screening_mode=screening_mode,
-                company_id=ctx.company_id,
-            )
-
-        suggestion = run_coro_in_threadpool(_fetch, timeout=_COMPETENCY_TIMEOUT_S)
-    except Exception as exc:  # noqa: BLE001
-        logger.warning("[WizardServiceTools] suggest_competencies failed: %s", exc)
-        return ToolResult(
-            llm_message=(
-                f"Não consegui buscar sugestões de competências agora ({exc}). "
-                f"Você pode pedir ao recrutador as competências principais e "
-                f"registrar com confirm_competencies."
-            ),
-            error=True,
-        )
-
+    # Consolidação WSI Fase 1 (2026-05-31): kernel canônico cv_screening.WSIService
+    # via Anticorruption Layer (wsi_canonical_adapter) — NÃO mais o fork
+    # analytics.CompetencyBenchmarkService. Single source of truth (DDD Shared Kernel).
+    from app.domains.job_creation.orchestrator.wsi_canonical_adapter import (
+        suggest_competencies_canonical,
+    )
+    jd_text = state.get("jd_raw") or state.get("raw_input") or ""
+    suggestion = suggest_competencies_canonical(
+        title=title, seniority=seniority, jd_text=jd_text, company_id=ctx.company_id,
+    )
     if not suggestion:
         return ToolResult(
-            llm_message="O serviço não retornou sugestões. Peça as competências ao recrutador.",
+            llm_message=(
+                "Não consegui buscar sugestões de competências agora. Peça as "
+                "competências principais ao recrutador e registre com confirm_competencies."
+            ),
             error=True,
         )
 
