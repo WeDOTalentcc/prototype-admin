@@ -39,6 +39,29 @@ _DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
+
+def _ca_to_sourcing_dict(a) -> dict:
+    """Mapeia um CustomAgent (category='sourcing') para o shape legado consumido
+    pelo frontend (interface SourcingAgent). job_id/talent_pool_id/preferences
+    vivem em config; métricas em runtime_metrics."""
+    cfg = a.config or {}
+    rm = a.runtime_metrics or {}
+    return {
+        "id": str(a.id),
+        "agent_name": a.name,
+        "status": a.status,
+        "calibration_v": rm.get("calibration_v", 0),
+        "job_id": cfg.get("job_id"),
+        "talent_pool_id": cfg.get("talent_pool_id"),
+        "search_strategy": a.search_strategy or {},
+        "preferences": cfg.get("preferences") or a.preferences or {},
+        "profiles_viewed": rm.get("profiles_viewed", 0),
+        "profiles_approved": rm.get("profiles_approved", 0),
+        "profiles_rejected": rm.get("profiles_rejected", 0),
+        "created_at": a.created_at.isoformat() if a.created_at else None,
+    }
+
+
 router = APIRouter(prefix="/sourcing-agents", tags=["Sourcing Agents"])
 
 
@@ -89,7 +112,7 @@ async def list_sourcing_agents(
     db: AsyncSession = Depends(get_db),
 ):
     """List sourcing agents for the current company."""
-    from lia_models.sourcing_agent import SourcingAgent
+    from lia_models.custom_agent import CustomAgent
     from sqlalchemy import select
 
     # Defensive: company_id MUST exist for tenant-scoped listing (ADR multi-tenant).
@@ -107,19 +130,20 @@ async def list_sourcing_agents(
         )
 
     try:
-        query = select(SourcingAgent).where(
-            SourcingAgent.company_id == str(company_id)
+        query = select(CustomAgent).where(
+            CustomAgent.company_id == str(company_id),
+            CustomAgent.category == "sourcing",
         )
-        if job_id:
-            query = query.where(SourcingAgent.job_id == job_id)
-        if talent_pool_id:
-            query = query.where(SourcingAgent.talent_pool_id == talent_pool_id)
         if status:
-            query = query.where(SourcingAgent.status == status)
-
-        query = query.order_by(SourcingAgent.created_at.desc())
+            query = query.where(CustomAgent.status == status)
+        query = query.order_by(CustomAgent.created_at.desc())
         result = await db.execute(query)
-        agents = result.scalars().all()
+        agents = list(result.scalars().all())
+        # job_id/talent_pool_id vivem em config (JSONB) — filtro em Python.
+        if job_id:
+            agents = [a for a in agents if (a.config or {}).get("job_id") == job_id]
+        if talent_pool_id:
+            agents = [a for a in agents if (a.config or {}).get("talent_pool_id") == talent_pool_id]
     except Exception as exc:
         logger.error(
             "sourcing_agents.list_failed company_id=%s job_id=%s talent_pool_id=%s status=%s error=%s",
@@ -136,47 +160,26 @@ async def list_sourcing_agents(
         company_id, len(agents),
     )
 
-    return {"agents": [
-        {
-            "id": str(a.id),
-            "agent_name": a.agent_name,
-            "status": a.status,
-            "calibration_v": a.calibration_v,
-            "job_id": a.job_id,
-            "talent_pool_id": str(a.talent_pool_id) if a.talent_pool_id else None,
-            "search_strategy": a.search_strategy,
-            "preferences": a.preferences,
-            "profiles_viewed": a.profiles_viewed,
-            "profiles_approved": a.profiles_approved,
-            "profiles_rejected": a.profiles_rejected,
-            "created_at": a.created_at.isoformat() if a.created_at else None,
-        }
-        for a in agents
-    ]}
+    return {"agents": [_ca_to_sourcing_dict(a) for a in agents]}
 
 
 @router.get("/{agent_id}")
 async def get_sourcing_agent(agent_id: _DualId, db: AsyncSession = Depends(get_db)):
     """Get details of a specific sourcing agent."""
-    from lia_models.sourcing_agent import SourcingAgent
+    from lia_models.custom_agent import CustomAgent
     from sqlalchemy import select
 
-    result = await db.execute(select(SourcingAgent).where(SourcingAgent.id == agent_id))
+    result = await db.execute(
+        select(CustomAgent).where(
+            CustomAgent.id == agent_id,
+            CustomAgent.category == "sourcing",
+        )
+    )
     agent = result.scalar_one_or_none()
     if not agent:
         raise HTTPException(404, "Agent not found")
 
-    return {
-        "id": str(agent.id),
-        "agent_name": agent.agent_name,
-        "status": agent.status,
-        "calibration_v": agent.calibration_v,
-        "search_strategy": agent.search_strategy,
-        "preferences": agent.preferences,
-        "profiles_viewed": agent.profiles_viewed,
-        "profiles_approved": agent.profiles_approved,
-        "profiles_rejected": agent.profiles_rejected,
-    }
+    return _ca_to_sourcing_dict(agent)
 
 
 @router.post("/{agent_id}/feedback")
@@ -239,10 +242,15 @@ async def get_agent_timeline(
 @router.patch("/{agent_id}/pause")
 async def pause_agent(agent_id: _DualId, db: AsyncSession = Depends(get_db)):
     """Pause a sourcing agent."""
-    from lia_models.sourcing_agent import SourcingAgent
+    from lia_models.custom_agent import CustomAgent
     from sqlalchemy import select
 
-    result = await db.execute(select(SourcingAgent).where(SourcingAgent.id == agent_id))
+    result = await db.execute(
+        select(CustomAgent).where(
+            CustomAgent.id == agent_id,
+            CustomAgent.category == "sourcing",
+        )
+    )
     agent = result.scalar_one_or_none()
     if not agent:
         raise HTTPException(404, "Agent not found")
@@ -255,10 +263,15 @@ async def pause_agent(agent_id: _DualId, db: AsyncSession = Depends(get_db)):
 @router.patch("/{agent_id}/resume")
 async def resume_agent(agent_id: _DualId, db: AsyncSession = Depends(get_db)):
     """Resume a paused sourcing agent."""
-    from lia_models.sourcing_agent import SourcingAgent
+    from lia_models.custom_agent import CustomAgent
     from sqlalchemy import select
 
-    result = await db.execute(select(SourcingAgent).where(SourcingAgent.id == agent_id))
+    result = await db.execute(
+        select(CustomAgent).where(
+            CustomAgent.id == agent_id,
+            CustomAgent.category == "sourcing",
+        )
+    )
     agent = result.scalar_one_or_none()
     if not agent:
         raise HTTPException(404, "Agent not found")
