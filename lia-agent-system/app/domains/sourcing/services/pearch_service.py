@@ -1193,6 +1193,46 @@ class PearchService:
         logger.info(f"Found {len(profiles)} total candidates (local + discovered)")
         return profiles, len(profiles)
     
+    @staticmethod
+    def _dedup_pearch_against_local(local_candidates, pearch_candidates):
+        """G-14: remove candidatos Pearch que ja vieram no resultado local, por
+        IDENTIDADE (linkedin_url normalizado). O docid_blacklist nao cobre isso:
+        docid local = PK do banco, docid Pearch = id do Pearch (namespaces distintos),
+        entao o mesmo humano persistido de uma busca anterior reaparecia duplicado.
+        """
+        def _url(c):
+            try:
+                u = c.get_linkedin_url()
+            except Exception:
+                u = getattr(c, "linkedin_url", None)
+            if not u:
+                return None
+            u = u.strip().lower().rstrip("/")
+            for pfx in ("https://", "http://", "www."):
+                if u.startswith(pfx):
+                    u = u[len(pfx):]
+            u = u.split("?")[0].rstrip("/")
+            return u or None
+
+        local_urls = {x for x in (_url(c) for c in local_candidates) if x}
+        if not local_urls:
+            return pearch_candidates
+
+        deduped = []
+        removed = 0
+        for c in pearch_candidates:
+            n = _url(c)
+            if n and n in local_urls:
+                removed += 1
+                continue
+            deduped.append(c)
+        if removed:
+            logger.info(
+                "[HybridSearch] dedup: %d candidato(s) Pearch removido(s) (ja no resultado local)",
+                removed,
+            )
+        return deduped
+
     async def hybrid_search(
         self,
         db: AsyncSession,
@@ -1349,6 +1389,7 @@ class PearchService:
             try:
                 pearch_response = await self.search_candidates(pearch_request)
                 pearch_candidates = pearch_response.get_candidates()
+                pearch_candidates = self._dedup_pearch_against_local(local_candidates, pearch_candidates)
                 pearch_credits_remaining = pearch_response.credits_remaining
                 pearch_time = (datetime.now() - pearch_start).total_seconds()
             except Exception as e:
