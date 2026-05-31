@@ -294,6 +294,50 @@ def _handle_confirm_responsibilities(
     )
 
 
+def _handle_confirm_languages(
+    state: dict, tool_input: dict, ctx: ToolContext
+) -> ToolResult:
+    """Confirma os idiomas exigidos pela vaga + nível.
+
+    Não-obrigatório. Captura o que o recrutador mencionar (ex.: "inglês avançado")
+    para a coluna `languages` da vaga. Shape canonical: [{language, level, required}].
+    Nível normalizado p/ FE (Básico/Intermediário/Avançado/Fluente/Nativo).
+    """
+    tenant_err = _reject_tenant_keys(tool_input)
+    if tenant_err:
+        return ToolResult(llm_message=tenant_err, error=True)
+    items = tool_input.get("languages")
+    if not isinstance(items, list) or not items:
+        return ToolResult(
+            llm_message="Forneça 'languages' como lista de {language, level}.",
+            error=True,
+        )
+    from app.domains.job_creation.helpers.vacancy_vocab import (
+        to_canonical_language_level,
+    )
+    out: list[dict[str, Any]] = []
+    for it in items:
+        if isinstance(it, dict):
+            lang = str(it.get("language") or it.get("idioma") or it.get("name") or "").strip()
+            level = it.get("level") or it.get("nivel")
+            required = bool(it.get("required", False))
+        else:
+            lang, level, required = str(it).strip(), None, False
+        if lang:
+            out.append({
+                "language": lang[:60],
+                "level": to_canonical_language_level(level),
+                "required": required,
+            })
+    if not out:
+        return ToolResult(llm_message="Nenhum idioma válido fornecido.", error=True)
+    _names = ", ".join(f"{x['language']} ({x['level']})" for x in out)
+    return ToolResult(
+        llm_message=f"Idiomas confirmados: {_names}.",
+        state_updates={"confirmed_languages": out},
+    )
+
+
 def _handle_approve_job_description(
     state: dict, tool_input: dict, ctx: ToolContext
 ) -> ToolResult:
@@ -601,6 +645,36 @@ CONFIRM_RESPONSIBILITIES = WizardTool(
     handler=_handle_confirm_responsibilities,
 )
 
+CONFIRM_LANGUAGES = WizardTool(
+    name="confirm_languages",
+    description=(
+        "Registra os idiomas exigidos pela vaga e o nível (ex.: recrutador diz "
+        "'inglês avançado' → language='Inglês', level='Avançado'). NÃO é "
+        "obrigatório, mas capture sempre que um idioma for mencionado — senão o "
+        "dado se perde. Níveis: Básico/Intermediário/Avançado/Fluente/Nativo."
+    ),
+    input_schema={
+        "type": "object",
+        "properties": {
+            "languages": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "language": {"type": "string"},
+                        "level": {"type": "string"},
+                        "required": {"type": "boolean"},
+                    },
+                    "required": ["language"],
+                },
+            },
+        },
+        "required": ["languages"],
+        "additionalProperties": False,
+    },
+    handler=_handle_confirm_languages,
+)
+
 APPROVE_JOB_DESCRIPTION = WizardTool(
     name="approve_job_description",
     description=(
@@ -665,6 +739,7 @@ PURE_TOOLS: tuple[WizardTool, ...] = (
     SET_SCREENING_MODE,
     CONFIRM_COMPETENCIES,
     CONFIRM_RESPONSIBILITIES,
+    CONFIRM_LANGUAGES,
     APPROVE_JOB_DESCRIPTION,
     SET_SALARY,
     NAVIGATE_TO_JOBS,

@@ -277,6 +277,8 @@ class JobCreationState(TypedDict, total=False):
     # Responsabilidades confirmadas pelo recrutador (item #2 2026-05-31). Não-obrigatório:
     # se ausente, o jd_enrichment gera; se presente, sobrescreve verbatim (Fase 4).
     confirmed_responsibilities: List[str]
+    # Idiomas exigidos (item #3): [{language, level, required}] -> coluna languages.
+    confirmed_languages: List[Dict[str, Any]]
 
 
 

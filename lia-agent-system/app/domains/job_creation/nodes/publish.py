@@ -157,6 +157,8 @@ def publish_node(state: JobCreationState) -> JobCreationState:
                     else None
                 ),
                 "benefits": state.get("benefits", []),
+                # item #3: idiomas confirmados -> coluna languages.
+                "languages": state.get("confirmed_languages") or [],
                 "technical_requirements": jd.get("skills_obrigatorias", []),
                 "behavioral_competencies": jd.get("competencias_comportamentais", []),
                 "responsibilities": jd.get("responsabilidades", []),

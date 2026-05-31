@@ -1039,6 +1039,9 @@ class WizardSessionService:
             # Responsabilidades confirmadas (item #2) — surfacar pro painel.
             if new_state.get("confirmed_responsibilities"):
                 data["confirmed_responsibilities"] = new_state.get("confirmed_responsibilities")
+            # Idiomas confirmados (item #3) — surfacar pro painel.
+            if new_state.get("confirmed_languages"):
+                data["confirmed_languages"] = new_state.get("confirmed_languages")
             # JD enriquecida — surfacar para o painel exibir a descrição.
             if new_state.get("jd_enriched"):
                 data["jd_enriched"] = new_state.get("jd_enriched")

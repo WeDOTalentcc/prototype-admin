@@ -140,6 +140,19 @@ def _build_wizard_state_summary(state: Any) -> str:
     else:
         lines.append("Responsabilidades confirmadas: nenhuma (opcional — o JD gera se não informadas)")
 
+    _langs = state.get("confirmed_languages") or []
+    if _langs:
+        _ln = []
+        for _l in _langs:
+            _name = _l.get("language", "") if isinstance(_l, dict) else str(_l)
+            _lvl = _l.get("level", "") if isinstance(_l, dict) else ""
+            if _name:
+                _ln.append(_name + (" (" + _lvl + ")" if _lvl else ""))
+        if _ln:
+            lines.append("Idiomas exigidos: " + ", ".join(_ln))
+
+
+
     mode = state.get("screening_mode")
     if mode:
         label = "Compacto (7 perguntas)" if mode == "compact" else "Completo (12 perguntas)"

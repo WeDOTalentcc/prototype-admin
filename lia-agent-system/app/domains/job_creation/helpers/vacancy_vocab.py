@@ -80,3 +80,21 @@ def to_canonical_employment_type(value: Optional[str]) -> Optional[str]:
     if not value:
         return value
     return _EMPLOYMENT_MAP.get(_norm(value), value)
+
+
+# ── language level ───────────────────────────────────────────────────────
+# FE (edit-job-modal.tsx): Básico | Intermediário | Avançado | Fluente | Nativo
+_LANG_LEVEL_MAP = {
+    "basico": "Básico", "basic": "Básico", "iniciante": "Básico",
+    "intermediario": "Intermediário", "intermediate": "Intermediário",
+    "avancado": "Avançado", "advanced": "Avançado",
+    "fluente": "Fluente", "fluent": "Fluente",
+    "nativo": "Nativo", "native": "Nativo",
+}
+
+
+def to_canonical_language_level(value: Optional[str]) -> str:
+    """Normaliza o nível de idioma para o vocabulário FE. Default Intermediário."""
+    if not value:
+        return "Intermediário"
+    return _LANG_LEVEL_MAP.get(_norm(value), "Intermediário")

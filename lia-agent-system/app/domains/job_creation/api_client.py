@@ -376,13 +376,17 @@ class JobCreationAPIClient:
             _bp_jsonable(job_data.get("behavioral_competencies") or []),
             default=str, ensure_ascii=False,
         )
+        languages_jsonb = _json.dumps(
+            _bp_jsonable(job_data.get("languages") or []),
+            default=str, ensure_ascii=False,
+        )
 
         # --- LAYER 4: canonical column->param mapping (no positional drift) ---
         _columns = [
             "id", "company_id", "title", "description", "department",
             "location", "work_model", "seniority_level", "requirements",
             "responsibilities", "technical_requirements",
-            "behavioral_competencies", "status",
+            "behavioral_competencies", "languages", "status",
             "employment_type", "manager", "manager_email", "salary_range",
             "created_at", "updated_at",
         ]
@@ -391,7 +395,7 @@ class JobCreationAPIClient:
         _params_raw = [
             str(new_id), str(company_id), title, description, department,
             location, work_model, seniority, skills_list, resp_list,
-            tech_reqs_jsonb, beh_comp_jsonb, "Rascunho",
+            tech_reqs_jsonb, beh_comp_jsonb, languages_jsonb, "Rascunho",
             employment_type, manager, manager_email, salary_range_jsonb,
             _now_utc, _now_utc,
         ]
@@ -419,7 +423,7 @@ class JobCreationAPIClient:
                         )
                         _safe.append(_bp_str(_x) or "")
                 _params.append(_safe)
-            elif _col in ("technical_requirements", "behavioral_competencies", "salary_range"):
+            elif _col in ("technical_requirements", "behavioral_competencies", "languages", "salary_range"):
                 # JSONB columns - must be str (json-encoded) ou None (SQL NULL p/ salary_range)
                 if _val is not None and not isinstance(_val, str):
                     logger.warning(
@@ -464,11 +468,11 @@ class JobCreationAPIClient:
                     INSERT INTO job_vacancies
                     (id, company_id, title, description, department, location,
                      work_model, seniority_level, requirements, responsibilities,
-                     technical_requirements, behavioral_competencies, status,
+                     technical_requirements, behavioral_competencies, languages, status,
                      employment_type, manager, manager_email, salary_range,
                      created_at, updated_at)
                     VALUES
-                    (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s::jsonb, %s::jsonb, %s,
+                    (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s::jsonb, %s::jsonb, %s::jsonb, %s,
                      %s, %s, %s, %s::jsonb,
                      %s, %s)
                     RETURNING id
