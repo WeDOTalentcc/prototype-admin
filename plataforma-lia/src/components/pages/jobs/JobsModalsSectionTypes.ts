@@ -35,10 +35,6 @@ export interface JobsModalsSectionProps {
   showCreateJobModal: boolean
   onCloseCreateJobModal: () => void
 
-  showEditJobModal: boolean
-  onCloseEditJobModal: () => void
-  editingJob: Job | null
-
   showScreeningChannelsModal: boolean
   onCloseScreeningChannelsModal: () => void
   showScreeningSettingsModal: boolean
@@ -71,7 +67,6 @@ export interface JobsModalsSectionProps {
   onSetBackendJobs: React.Dispatch<React.SetStateAction<Job[]>>
   onSetSelectedJob: (job: Job | null) => void
   onSetPreviewJob: (job: Job | null) => void
-  onSetEditingJob: (job: Job | null) => void
   onSetActiveFilter: (filter: string) => void
   onOpenJobCreationChat: (msg?: string) => void
   onSetPendingNavigateJobId: (id: string | null) => void

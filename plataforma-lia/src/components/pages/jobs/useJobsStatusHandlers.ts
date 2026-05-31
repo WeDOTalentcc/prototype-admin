@@ -19,7 +19,6 @@ export function useJobsStatusHandlers(props: JobsModalsSectionProps) {
     onSetBackendJobs,
     onSetSelectedJob,
     onSetPreviewJob,
-    onSetEditingJob,
     onOpenJobCreationChat,
     onSetPendingNavigateJobId,
     onNavigateToCreatedJob,
@@ -29,7 +28,6 @@ export function useJobsStatusHandlers(props: JobsModalsSectionProps) {
     onCloseStatusModal,
     onCloseAssignRecruiterModal,
     onCloseCreateJobModal,
-    onCloseEditJobModal,
   } = props
 
   const handlePause = useCallback(async (data: PauseData) => {
@@ -361,19 +359,6 @@ export function useJobsStatusHandlers(props: JobsModalsSectionProps) {
     }
   }, [onCloseCreateJobModal, onSetPendingNavigateJobId, onRefreshJobs, onNavigateToCreatedJob])
 
-  const handleEditSave = useCallback(async (jobId: string, updates: Record<string, unknown>) => {
-    try {
-      await liaApi.updateJobVacancy(jobId, updates)
-      toast.success('Vaga atualizada com sucesso!')
-      onCloseEditJobModal()
-      onSetEditingJob(null)
-      window.location.reload()
-    } catch (error) {
-      toast.error('Erro ao atualizar vaga. Tente novamente.')
-      throw error
-    }
-  }, [onCloseEditJobModal, onSetEditingJob])
-
   const handleReactivateScreening = useCallback(async () => {
     for (const job of reactivateScreeningJobs) {
       if (job.backendId) {
@@ -404,7 +389,6 @@ export function useJobsStatusHandlers(props: JobsModalsSectionProps) {
     handleAssign,
     handleCreateWithWizard,
     handleJobCreated,
-    handleEditSave,
     handleReactivateScreening,
   }
 }

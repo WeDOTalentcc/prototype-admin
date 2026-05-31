@@ -73,7 +73,7 @@ export function JobsPage(props: JobsPageProps) {
     showUnpublishModal, setShowUnpublishModal, showInsightsModal, setShowInsightsModal,
     showDuplicateModal, setShowDuplicateModal, showStatusModal, setShowStatusModal,
     statusModalMode, showAssignRecruiterModal, setShowAssignRecruiterModal,
-    showCreateJobModal, showEditJobModal, setShowEditJobModal, editingJob,
+    showCreateJobModal,
     showScreeningChannelsModal, setShowScreeningChannelsModal,
     showScreeningSettingsModal, setShowScreeningSettingsModal,
     showScreeningSchedulingModal, setShowScreeningSchedulingModal,
@@ -83,7 +83,7 @@ export function JobsPage(props: JobsPageProps) {
     reactivateEndDate, setReactivateEndDate,
     showWSITutorialModal, setShowWSITutorialModal,
     companyRecruiters, selectedJobsForBatch, dashboardStats,
-    setBackendJobs, setSelectedJob, setPreviewJob, setEditingJob,
+    setBackendJobs, setSelectedJob, setPreviewJob,
     setPendingNavigateJobId, loadBackendJobs, setActivePreviewTab,
     selectedJob, navigateToCreatedJob,
     isExternalSourceFallback,
@@ -226,9 +226,6 @@ export function JobsPage(props: JobsPageProps) {
           onCloseAssignRecruiterModal={() => setShowAssignRecruiterModal(false)}
           showCreateJobModal={showCreateJobModal}
           onCloseCreateJobModal={() => setShowCreateJobModal(false)}
-          showEditJobModal={showEditJobModal}
-          onCloseEditJobModal={() => setShowEditJobModal(false)}
-          editingJob={editingJob}
           showScreeningChannelsModal={showScreeningChannelsModal}
           onCloseScreeningChannelsModal={() => setShowScreeningChannelsModal(false)}
           showScreeningSettingsModal={showScreeningSettingsModal}
@@ -249,7 +246,6 @@ export function JobsPage(props: JobsPageProps) {
           onSetBackendJobs={setBackendJobs}
           onSetSelectedJob={setSelectedJob}
           onSetPreviewJob={setPreviewJob}
-          onSetEditingJob={setEditingJob}
           onSetActiveFilter={setActiveFilter}
           onOpenJobCreationChat={openJobCreationChat}
           onSetPendingNavigateJobId={setPendingNavigateJobId}

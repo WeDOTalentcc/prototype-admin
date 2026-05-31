@@ -68,8 +68,6 @@ interface UseJobsPreviewReturn {
     dashboardPeriod: '1m' | '3m' | '6m' | '9m' | '12m'
     showReport: boolean
     reportJob: Job | null
-    showEditJobModal: boolean
-    editingJob: Job | null
     showCreateJobModal: boolean
     pendingNavigateJobId: string | null
   }
@@ -118,8 +116,6 @@ interface UseJobsPreviewReturn {
     setDashboardPeriod: (v: '1m' | '3m' | '6m' | '9m' | '12m') => void
     setShowReport: (v: boolean) => void
     setReportJob: (v: Job | null) => void
-    setShowEditJobModal: (v: boolean) => void
-    setEditingJob: (v: Job | null) => void
     setShowCreateJobModal: (v: boolean) => void
     setPendingNavigateJobId: (v: string | null) => void
     handleJobPreview: (job: Job) => void
@@ -189,8 +185,6 @@ export function useJobsPreview({ setBackendJobs }: UseJobsPreviewOptions): UseJo
   const [dashboardPeriod, setDashboardPeriod] = useState<'1m' | '3m' | '6m' | '9m' | '12m'>('3m')
   const [showReport, setShowReport] = useState(false)
   const [reportJob, setReportJob] = useState<Job | null>(null)
-  const [showEditJobModal, setShowEditJobModal] = useState(false)
-  const [editingJob, setEditingJob] = useState<Job | null>(null)
   const [showCreateJobModal, setShowCreateJobModal] = useState(false)
   const [pendingNavigateJobId, setPendingNavigateJobId] = useState<string | null>(null)
 
@@ -398,8 +392,7 @@ export function useJobsPreview({ setBackendJobs }: UseJobsPreviewOptions): UseJo
       adjustmentIterations, isGeneratingWSI, pendingAdjustedQuestions, acceptedQuestions,
       wsiGenerationMode, wsiGenerationCompleted, wsiProgressCollapsed, wsiGeneratedCount,
       wsiGenerationStep, wsiDynamicMessage, wsiGenerationContext, activeDashboardModal,
-      showWSITutorialModal, dashboardPeriod, showReport, reportJob, showEditJobModal,
-      editingJob, showCreateJobModal, pendingNavigateJobId,
+      showWSITutorialModal, dashboardPeriod, showReport, reportJob, showCreateJobModal, pendingNavigateJobId,
     },
     actions: {
       setShowJobPreview, setPreviewJob, setActivePreviewTab, setShowFullDescription,
@@ -413,7 +406,7 @@ export function useJobsPreview({ setBackendJobs }: UseJobsPreviewOptions): UseJo
       setIsGeneratingWSI, setPendingAdjustedQuestions, setAcceptedQuestions, setWsiGenerationMode,
       setWsiGenerationCompleted, setWsiProgressCollapsed, setWsiGeneratedCount, setWsiGenerationStep,
       setWsiDynamicMessage, setWsiGenerationContext, setActiveDashboardModal, setShowWSITutorialModal,
-      setDashboardPeriod, setShowReport, setReportJob, setShowEditJobModal, setEditingJob,
+      setDashboardPeriod, setShowReport, setReportJob,
       setShowCreateJobModal, setPendingNavigateJobId, handleJobPreview, handleSaveJobDataSection,
       handleScreeningStatusChange, handleUpdateJobField, handleShowReport, handleCloseReport,
       updateScreeningConfig,
