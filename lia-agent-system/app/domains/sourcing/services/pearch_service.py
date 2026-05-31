@@ -34,8 +34,12 @@ from lia_models.pearch import (
 )
 from app.core.config import settings
 from app.shared.resilience.circuit_breaker import circuit_breaker
+from app.shared.resilience.cache_manager_service import RedisCache
 
 logger = logging.getLogger(__name__)
+
+# G-12: TTL do cache de busca Pearch (sem PII de contato). Default 15min.
+SEARCH_CACHE_TTL = int(os.environ.get("PEARCH_SEARCH_CACHE_TTL", "900"))
 
 
 async def _pearch_search_fallback(self, request, timeout=None):
@@ -135,6 +139,7 @@ class PearchService:
             from app.core.config import settings as _s
             timeout = _s.HTTP_TIMEOUT_PEARCH_SECONDS
         self.timeout = timeout
+        self._search_cache = RedisCache()
 
         if not self.api_key:
             logger.warning("PEARCH_API_KEY not set - external candidate search will not work")
@@ -249,6 +254,50 @@ class PearchService:
             search_request=request
         )
     
+    def _search_cache_key(self, request, company_id) -> str:
+        import hashlib
+        import json as _json
+        material = _json.dumps(
+            {
+                "c": str(company_id),
+                "q": request.query,
+                "t": request.type.value,
+                "ins": request.insights,
+                "fresh": request.high_freshness,
+                "score": request.profile_scoring,
+                "strict": request.strict_filters,
+                "req_em": request.require_emails,
+                "req_ph": request.require_phone_numbers,
+                "req_eo": request.require_phones_or_emails,
+                "filters": request.custom_filters or {},
+                "limit": request.limit,
+                "blacklist": sorted(request.docid_blacklist or []),
+            },
+            sort_keys=True,
+            default=str,
+        )
+        digest = hashlib.sha256(material.encode()).hexdigest()[:32]
+        return f"pearch_search:{company_id}:{digest}"
+
+    def _strip_contact_pii(self, response):
+        # Defesa em profundidade: zero email/telefone no cache, mesmo que o
+        # Pearch retorne algum contato em modo sem-reveal.
+        _CONTACT_FIELDS = (
+            "email", "emails", "phone", "phones", "personal_emails",
+            "business_emails", "phone_numbers", "mobile_phone", "secondary_email",
+        )
+        safe = response.model_copy(deep=True)
+        _profiles = list(safe.candidates)
+        _profiles.extend(r.profile for r in safe.search_results)
+        for prof in _profiles:
+            for f in _CONTACT_FIELDS:
+                if hasattr(prof, f):
+                    try:
+                        setattr(prof, f, None)
+                    except Exception:
+                        pass
+        return safe
+
     @circuit_breaker("pearch", failure_threshold=3, recovery_timeout=15.0, fallback=_pearch_search_fallback)
     @retry(stop=stop_after_attempt(2), wait=wait_exponential(multiplier=1, max=5))
     async def search_candidates(
@@ -306,6 +355,21 @@ class PearchService:
             logger.debug("[PearchService] FairnessGuard check skipped: %s", _fg_exc)
 
         company_id = company_id or getattr(request, "company_id", None)
+
+        # G-12: cache de busca sem PII de contato. Ativo so em modo sem-reveal
+        # (show_emails/show_phone_numbers=False) — nesse modo o Pearch nao
+        # retorna emails/telefones. Hit = 0 creditos. Chave inclui company_id
+        # (isolamento multi-tenant) + parametros que determinam o resultado.
+        _cacheable = bool(company_id) and not request.show_emails and not request.show_phone_numbers
+        _cache_key = self._search_cache_key(request, company_id) if _cacheable else None
+        if _cache_key:
+            try:
+                _cached = await self._search_cache.get(_cache_key)
+                if _cached.hit and _cached.value:
+                    logger.info("[PearchService][cache] HIT — 0 creditos (key=...%s)", _cache_key[-12:])
+                    return PearchSearchResponse.model_validate(_cached.value)
+            except Exception as _ce:
+                logger.debug("[PearchService][cache] get falhou: %s", _ce)
 
         logger.info(f"Searching Pearch AI v2: '{request.query}' (limit={request.limit}, type={request.type})")
         
@@ -369,6 +433,18 @@ class PearchService:
                     result_status="success",
                     response_time_ms=int(search_time * 1000),
                 )
+
+                if _cache_key:
+                    try:
+                        _safe = self._strip_contact_pii(parsed_response)
+                        await self._search_cache.set(
+                            _cache_key,
+                            _safe.model_dump(mode="json"),
+                            ttl_seconds=SEARCH_CACHE_TTL,
+                            source="pearch_search",
+                        )
+                    except Exception as _ce:
+                        logger.debug("[PearchService][cache] set falhou: %s", _ce)
 
                 return parsed_response
         
