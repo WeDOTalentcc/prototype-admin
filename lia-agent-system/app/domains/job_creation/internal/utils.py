@@ -59,6 +59,71 @@ def _min_jd_quality_threshold() -> float:
         return 30.0
 
 
+def _build_wizard_state_summary(state: Any) -> str:
+    """Constrói resumo legível do estado atual do wizard para injetar no meta-helper.
+
+    O bot fica "burro" pós-JD porque recebe só stage_description (1 frase estática).
+    Este resumo dá ao LLM a ficha viva: o que foi preenchido, o que falta, status JD,
+    competências, modo de triagem — para responder "o que falta?" ou perguntas
+    contextuais com precisão.
+    """
+    lines: list[str] = []
+
+    stage = state.get("current_stage") or "desconhecido"
+    lines.append(f"Stage atual: {stage}")
+
+    field_map = {
+        "título do cargo": state.get("parsed_title"),
+        "senioridade": state.get("parsed_seniority"),
+        "modelo de trabalho": state.get("parsed_model"),
+        "departamento": state.get("parsed_department"),
+        "localização": state.get("parsed_location"),
+        "tipo de contrato": state.get("parsed_employment_type"),
+        "gestor responsável": state.get("parsed_manager_name"),
+    }
+    filled = [k for k, v in field_map.items() if v]
+    missing = [k for k, v in field_map.items() if not v]
+    if filled:
+        lines.append("Campos preenchidos: " + ", ".join(
+            f"{k}={field_map[k]!r}" for k in filled
+        ))
+    if missing:
+        lines.append("Campos ainda faltantes: " + ", ".join(missing))
+
+    jd_enriched = state.get("jd_enriched")
+    jd_score = state.get("jd_quality_score")
+    jd_approved = state.get("jd_approved")
+    if jd_enriched:
+        score_str = f", qualidade={jd_score:.0f}/100" if jd_score is not None else ""
+        approved_str = " (aprovada pelo recrutador)" if jd_approved else " (aguardando aprovação do recrutador)"
+        lines.append(f"JD enriquecida: Sim{score_str}{approved_str}")
+    else:
+        lines.append("JD enriquecida: Não (ainda não gerada)")
+
+    tech = state.get("confirmed_technical_competencies") or []
+    behav = state.get("confirmed_behavioral_competencies") or []
+    if tech or behav:
+        lines.append(
+            f"Competências confirmadas: {len(tech)} técnicas, {len(behav)} comportamentais"
+        )
+    else:
+        lines.append("Competências confirmadas: nenhuma ainda (aguardando confirmação)")
+
+    mode = state.get("screening_mode")
+    if mode:
+        label = "Compacto (7 perguntas)" if mode == "compact" else "Completo (12 perguntas)"
+        lines.append(f"Modo de triagem WSI escolhido: {label}")
+    else:
+        lines.append("Modo de triagem WSI: não escolhido ainda")
+
+    sal_min = state.get("salary_min")
+    sal_max = state.get("salary_max")
+    if sal_min or sal_max:
+        lines.append(f"Faixa salarial: R$ {sal_min or '?'} – R$ {sal_max or '?'}")
+
+    return "\n".join(lines)
+
+
 def _try_meta_helper(
     *,
     state: Any,
@@ -78,12 +143,14 @@ def _try_meta_helper(
         from app.domains.job_creation.services.wizard_meta_question_helper import (
             generate_meta_response_sync,
         )
+        wizard_state_summary = _build_wizard_state_summary(state)
         return generate_meta_response_sync(
             stage=stage,
             user_message=user_message,
             tenant_context_snippet=str(state.get("tenant_context_snippet") or ""),
             last_turns=_extract_last_turns(state, n=3),
             stage_description=stage_description,
+            wizard_state_summary=wizard_state_summary,
         )
     except Exception as _exc:
         logger.info("[JobCreation:meta_helper] failed (fail-open): %s", _exc)

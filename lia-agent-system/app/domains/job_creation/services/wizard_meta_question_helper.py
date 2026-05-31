@@ -63,16 +63,19 @@ _SYSTEM_PROMPT = (
     "WeDoTalent. O recrutador está no meio do wizard de criação de "
     "vaga e fez uma pergunta meta (sobre o wizard, sobre o que você "
     "precisa, sobre como decidir alguma coisa) OU mandou uma mensagem "
-    "fora de contexto. Sua tarefa: responder de forma curta (2-4 frases) "
-    "em PT-BR, usando o contexto do tenant, o histórico recente e a "
-    "descrição do stage atual. SEMPRE termine com uma pergunta de "
-    "continuidade ('deseja continuar com X?', 'posso seguir para Y?', "
-    "'quer que eu repita o que estava pedindo?'). NUNCA invente dados da "
-    "vaga, da empresa ou do candidato. NUNCA execute ação — você é só "
-    "geração de texto. NUNCA repita literalmente a última resposta da "
-    "LIA (consulte o histórico para evitar loop). Se o histórico mostra "
-    "que o recrutador já fez esta pergunta, reconheça e ofereça uma "
-    "explicação alternativa ou um caminho diferente."
+    "fora de contexto. Você receberá o ESTADO REAL da vaga (ficha viva) "
+    "com campos preenchidos, campos faltantes, status da JD, competências "
+    "e modo de triagem. USE ESSES DADOS para responder com precisão. "
+    "Por exemplo: se o recrutador perguntar 'o que falta?' ou 'o que você "
+    "precisa?', liste exatamente os campos faltantes da ficha viva. Se a "
+    "JD já foi gerada, reconheça isso na resposta. "
+    "Responda de forma curta (2-4 frases) em PT-BR. "
+    "SEMPRE termine com uma pergunta de continuidade contextual. "
+    "NUNCA invente dados da vaga, da empresa ou do candidato. "
+    "NUNCA execute ação — você é só geração de texto. "
+    "NUNCA repita literalmente a última resposta da LIA (consulte o "
+    "histórico para evitar loop). Se o histórico mostra que o recrutador "
+    "já fez esta pergunta, reconheça e ofereça uma explicação alternativa."
 )
 
 
@@ -83,6 +86,7 @@ def generate_meta_response_sync(
     tenant_context_snippet: str = "",
     last_turns: list[str] | None = None,
     stage_description: str = "",
+    wizard_state_summary: str = "",
 ) -> str | None:
     """Gera resposta conversacional para pergunta meta / off-topic.
 
@@ -129,14 +133,17 @@ def generate_meta_response_sync(
         if _lines:
             turns_block = "\n".join(_lines)[:1200]
 
+    state_block = (wizard_state_summary or "(estado não disponível)")[:800]
     user_block = (
         f"# Stage atual do wizard\n{stage}\n\n"
         f"# Descrição do stage (em uma frase)\n{(stage_description or '(não disponível)')[:300]}\n\n"
+        f"# Estado real da vaga (ficha viva — use isto para responder 'o que falta?')\n{state_block}\n\n"
         f"# Contexto da empresa (tenant)\n{(tenant_context_snippet or '(não disponível)')[:500]}\n\n"
         f"# Histórico recente da conversa\n{turns_block}\n\n"
         f"# Mensagem do recrutador (pergunta meta / off-topic)\n{msg[:1500]}\n\n"
-        "Responda em PT-BR (2-4 frases). Termine com uma pergunta de "
-        "continuidade contextual ao stage."
+        "Responda em PT-BR (2-4 frases). Use o estado real da vaga para responder "
+        "com precisão (ex: se perguntou 'o que falta?', liste os campos faltantes). "
+        "Termine com uma pergunta de continuidade contextual ao stage."
     )
 
     try:
