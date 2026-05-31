@@ -12,8 +12,27 @@ import os
 
 import httpx
 from lia_config.config import settings
+from tenacity import (
+    retry,
+    retry_if_exception_type,
+    stop_after_attempt,
+    wait_exponential,
+)
+
+from app.shared.resilience.circuit_breaker import (
+    CircuitBreakerError,
+    circuit_breaker,
+)
 
 logger = logging.getLogger(__name__)
+
+
+class ApifyError(Exception):
+    """Falha terminal ao executar um actor Apify (apos retries + circuit breaker)."""
+
+
+class ApifyTransientError(ApifyError):
+    """Falha transitoria e retentavel (HTTP 5xx/429, timeout, actor FAILED/ABORTED/TIMED-OUT)."""
 
 APIFY_API_KEY = os.environ.get("APIFY_API_KEY", "")
 APIFY_BASE_URL = "https://api.apify.com/v2"
@@ -41,80 +60,102 @@ class ApifyService:
     
     async def run_apify_actor(self, actor_id: str, input_data: dict) -> dict:
         """
-        Run an Apify actor and wait for results.
-        
-        Args:
-            actor_id: The Apify actor ID (e.g., "voyager/linkedin-company-profile-scraper")
-            input_data: Input parameters for the actor
-            
-        Returns:
-            Dict with actor results or empty dict on failure
+        Executa um actor Apify com retry exponencial + circuit breaker.
+
+        Falha terminal (apos 3 tentativas ou circuito aberto) levanta ApifyError —
+        NAO retorna {} silencioso (REGRA 4 CLAUDE.md: falhar alto em path critico).
+        Sucesso-sem-dados (run sem dataset) retorna {} normalmente — nao e falha.
+
+        Raises:
+            ApifyError: falha terminal apos retries/circuit breaker.
         """
         if not self.api_key:
             logger.error("APIFY_API_KEY not configured")
             return {}
-        
+
+        try:
+            return await self._run_actor_once(actor_id, input_data)
+        except CircuitBreakerError as e:
+            # pii-logs ok: nome de actor/config (nao PII per LGPD Art.5 V)
+            logger.error(f"[Apify] Circuit breaker OPEN for actor {actor_id}: {e}")
+            raise ApifyError(f"Apify circuit open for actor {actor_id}") from e
+
+    @circuit_breaker("apify", failure_threshold=3, recovery_timeout=60.0)
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, max=10),
+        retry=retry_if_exception_type(ApifyTransientError),
+        reraise=True,
+    )
+    async def _run_actor_once(self, actor_id: str, input_data: dict) -> dict:
         run_url = f"{self.base_url}/acts/{actor_id}/runs?token={self.api_key}"
-        
+
         try:
             async with httpx.AsyncClient(timeout=self.timeout) as client:
-                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
+                # pii-logs ok: nome de actor/config (nao PII per LGPD Art.5 V)
                 logger.info(f"Starting Apify actor: {actor_id}")
-                
+
                 run_response = await client.post(
                     run_url,
                     json=input_data,
-                    headers={"Content-Type": "application/json"}
+                    headers={"Content-Type": "application/json"},
                 )
                 run_response.raise_for_status()
                 run_data = run_response.json()
-                
+
                 run_id = run_data.get("data", {}).get("id")
                 if not run_id:
-                    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                     logger.error(f"No run ID returned from actor {actor_id}")
                     return {}
-                
-                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
+
                 logger.info(f"Actor {actor_id} started with run ID: {run_id}")
-                
+
                 status_url = f"{self.base_url}/actor-runs/{run_id}?token={self.api_key}"
                 max_wait_seconds = 300
                 poll_interval = 5
                 elapsed = 0
-                
+
                 while elapsed < max_wait_seconds:
                     await self._sleep(poll_interval)
                     elapsed += poll_interval
-                    
+
                     status_response = await client.get(status_url)
                     status_response.raise_for_status()
                     status_data = status_response.json()
-                    
+
                     status = status_data.get("data", {}).get("status")
                     logger.debug(f"Actor run status: {status}")
-                    
+
                     if status == "SUCCEEDED":
                         dataset_id = status_data.get("data", {}).get("defaultDatasetId")
                         if dataset_id:
                             return await self._get_dataset_items(client, dataset_id)
                         return {}
                     elif status in ["FAILED", "ABORTED", "TIMED-OUT"]:
-                        logger.error(f"Actor run failed with status: {status}")
-                        return {}
-                
-                logger.error(f"Actor run timed out after {max_wait_seconds} seconds")
-                return {}
-                
+                        raise ApifyTransientError(
+                            f"Actor {actor_id} run terminated with status={status}"
+                        )
+
+                raise ApifyTransientError(
+                    f"Actor {actor_id} polling timed out after {max_wait_seconds}s"
+                )
+
         except httpx.HTTPStatusError as e:
-            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
-            logger.error(f"HTTP error running Apify actor {actor_id}: {e.response.status_code} - {e.response.text}")
-            return {}
-        except Exception as e:
-            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
-            logger.error(f"Error running Apify actor {actor_id}: {type(e).__name__}: {e}")
-            return {}
-    
+            sc = e.response.status_code
+            if sc == 429 or sc >= 500:
+                raise ApifyTransientError(
+                    f"Apify HTTP {sc} for actor {actor_id} (retryable)"
+                ) from e
+            # pii-logs ok: nome de actor/config (nao PII per LGPD Art.5 V)
+            logger.error(
+                f"HTTP error running Apify actor {actor_id}: {sc} - {e.response.text[:200]}"
+            )
+            raise ApifyError(f"Apify HTTP {sc} for actor {actor_id}") from e
+        except (httpx.TimeoutException, httpx.ConnectError) as e:
+            raise ApifyTransientError(
+                f"Apify network error for actor {actor_id}: {type(e).__name__}"
+            ) from e
+
     async def _get_dataset_items(self, client: httpx.AsyncClient, dataset_id: str) -> dict:
         """Fetch items from an Apify dataset."""
         try:
@@ -158,7 +199,11 @@ class ApifyService:
             }
         }
         
-        result = await self.run_apify_actor(LINKEDIN_ACTOR_ID, input_data)
+        try:
+            result = await self.run_apify_actor(LINKEDIN_ACTOR_ID, input_data)
+        except ApifyError as _e:
+            logger.warning(f"[Apify] LinkedIn company scrape failed (non-fatal): {_e}")
+            return {}
         
         if result:
             return self._extract_linkedin_culture_data(result)
@@ -192,7 +237,11 @@ class ApifyService:
             }
         }
         
-        result = await self.run_apify_actor(GLASSDOOR_ACTOR_ID, input_data)
+        try:
+            result = await self.run_apify_actor(GLASSDOOR_ACTOR_ID, input_data)
+        except ApifyError as _e:
+            logger.warning(f"[Apify] Glassdoor scrape failed (non-fatal): {_e}")
+            return {}
         
         if result:
             return self._extract_glassdoor_culture_data(result)
