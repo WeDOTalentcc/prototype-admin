@@ -308,6 +308,8 @@ class HybridSearchRequest(BaseModel):
     pearch_limit: int = Field(15, ge=0, le=100, description="Limite de resultados Pearch")
     
     # Opções Pearch
+    require_emails: bool = Field(False, description="Apenas perfis com email (+1 crédito)")
+    require_phone_numbers: bool = Field(False, description="Apenas perfis com telefone (+1 crédito)")
     show_emails: bool = Field(False, description="Mostrar emails (+2 créditos)")
     show_phone_numbers: bool = Field(False, description="Mostrar telefones (+14 créditos)")
     

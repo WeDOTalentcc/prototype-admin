@@ -1333,6 +1333,8 @@ class PearchService:
                 profile_scoring=True,
                 strict_filters=use_strict_filters,
                 custom_filters=custom_filters if custom_filters else None,
+                require_emails=request.require_emails,
+                require_phone_numbers=request.require_phone_numbers,
                 show_emails=request.show_emails,
                 show_phone_numbers=request.show_phone_numbers,
                 limit=request.pearch_limit,
