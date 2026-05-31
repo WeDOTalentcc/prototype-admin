@@ -1,5 +1,5 @@
 import React from "react"
-import { Mail, Phone, Linkedin, Github, Globe } from "lucide-react"
+import { Mail, Phone, Linkedin, Github, Globe, CheckCircle2, AlertTriangle } from "lucide-react"
 import { isGlobalSource } from "@/lib/utils/source-detection"
 import type { Candidate } from "@/components/pages/candidates/types"
 
@@ -7,11 +7,39 @@ type RevealedContacts = Record<string, { email?: string; phone?: string }>
 type OnRevealContact = (candidate: Candidate, type: "email" | "phone") => void
 type TranslateFn = (key: string, values?: Record<string, unknown>) => string
 
+type ContactValidityLite = {
+  email_valid?: boolean | null
+  email_reason?: string | null
+  phone_valid?: boolean | null
+}
+
+function renderValidityBadge(
+  valid: boolean | null | undefined,
+  reason: string | null | undefined,
+  validLabel: string,
+  invalidLabel: string
+): React.ReactNode {
+  if (valid === true) {
+    return <CheckCircle2 className="w-3 h-3 shrink-0 text-status-success" role="img" aria-label={validLabel} />
+  }
+  if (valid === false) {
+    return (
+      <AlertTriangle
+        className="w-3 h-3 shrink-0 text-status-warning"
+        role="img"
+        aria-label={reason ? `${invalidLabel}: ${reason}` : invalidLabel}
+      />
+    )
+  }
+  return null
+}
+
 export function renderEmailCell(
   candidate: Candidate,
   revealedContacts: RevealedContacts,
   onRevealContact: OnRevealContact,
-  t?: TranslateFn
+  t?: TranslateFn,
+  validity?: ContactValidityLite
 ): React.ReactNode {
   const candidateEmail = revealedContacts[candidate.id]?.email || candidate.email
   const canRevealEmail =
@@ -19,7 +47,17 @@ export function renderEmailCell(
     candidate.has_email !== false
 
   if (candidateEmail) {
-    return <span className="text-xs text-lia-text-primary truncate">{candidateEmail}</span>
+    return (
+      <span className="inline-flex items-center gap-1 min-w-0">
+        <span className="text-xs text-lia-text-primary truncate">{candidateEmail}</span>
+        {renderValidityBadge(
+          validity?.email_valid,
+          validity?.email_reason,
+          t ? t('emailVerified') : "E-mail verificado",
+          t ? t('emailUnverified') : "E-mail nao verificado"
+        )}
+      </span>
+    )
   }
 
   if (canRevealEmail) {
@@ -47,7 +85,8 @@ export function renderPhoneCell(
   revealedContacts: RevealedContacts,
   onRevealContact: OnRevealContact,
   fieldKey: "phone" | "mobile_phone" = "phone",
-  t?: TranslateFn
+  t?: TranslateFn,
+  validity?: ContactValidityLite
 ): React.ReactNode {
   const candidatePhone =
     revealedContacts[candidate.id]?.phone ||
@@ -59,7 +98,17 @@ export function renderPhoneCell(
     candidate.has_phone !== false
 
   if (candidatePhone) {
-    return <span className="text-xs text-lia-text-primary">{candidatePhone}</span>
+    return (
+      <span className="inline-flex items-center gap-1 min-w-0">
+        <span className="text-xs text-lia-text-primary">{candidatePhone}</span>
+        {renderValidityBadge(
+          validity?.phone_valid,
+          null,
+          t ? t('phoneValid') : "Telefone valido",
+          t ? t('phoneInvalid') : "Telefone invalido"
+        )}
+      </span>
+    )
   }
 
   if (canRevealPhone) {

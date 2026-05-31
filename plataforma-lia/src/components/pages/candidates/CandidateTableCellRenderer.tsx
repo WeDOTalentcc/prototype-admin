@@ -31,6 +31,7 @@ export interface CellRendererDeps {
   onRevealContact: (candidate: Candidate, type: "email" | "phone") => void
   onToggleExpandedRow: (candidateId: string) => void
   t?: TranslateFn
+  contactValidity?: Record<string, { email_valid?: boolean | null; email_reason?: string | null; phone_valid?: boolean | null }>
 }
 
 export function createCellRenderer(deps: CellRendererDeps) {
@@ -44,6 +45,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
     onRevealContact,
     onToggleExpandedRow,
     t,
+    contactValidity,
   } = deps
 
   const formatDate = (date: string | undefined) => {
@@ -217,7 +219,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
         )
 
       case "email":
-        return renderEmailCell(candidate, revealedContacts, onRevealContact, t)
+        return renderEmailCell(candidate, revealedContacts, onRevealContact, t, contactValidity?.[candidate.id])
 
       case "secondary_email":
         return (
@@ -227,10 +229,10 @@ export function createCellRenderer(deps: CellRendererDeps) {
         )
 
       case "phone":
-        return renderPhoneCell(candidate, revealedContacts, onRevealContact, "phone", t)
+        return renderPhoneCell(candidate, revealedContacts, onRevealContact, "phone", t, contactValidity?.[candidate.id])
 
       case "mobile_phone":
-        return renderPhoneCell(candidate, revealedContacts, onRevealContact, "mobile_phone", t)
+        return renderPhoneCell(candidate, revealedContacts, onRevealContact, "mobile_phone", t, contactValidity?.[candidate.id])
 
       case "secondary_phone":
         return <span className="text-xs text-lia-text-primary">{candidate.secondary_phone || ""}</span>

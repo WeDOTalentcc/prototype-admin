@@ -11,6 +11,7 @@ import type { SearchFilters } from "@/components/search/advanced-filters-modal"
 import type { CommunicationType } from "@/components/modals/unified-communication-modal"
 import type { ParsedCVResponse } from "@/components/cv"
 import { createCellRenderer } from "@/components/pages/candidates/CandidateTableCellRenderer"
+import { useContactValidation } from "@/hooks/candidates/useContactValidation"
 import { useCandidatesColumnConfig } from "./useCandidatesColumnConfig"
 import { useCandidatesFilterSort } from "./useCandidatesFilterSort"
 import { useCandidatesActions } from "./useCandidatesActions"
@@ -165,6 +166,18 @@ export function useCandidatesViewComposition(params: UseCandidatesViewCompositio
   const tCells = useTranslations('candidates.cells')
   const tView = useTranslations('candidates.viewComposition')
 
+  const _contactsToValidate = React.useMemo(() => {
+    const out: { candidate_id: string; email?: string | null; phone?: string | null }[] = []
+    for (const cand of params.candidates) {
+      const rc = params.revealedContacts[cand.id] || {}
+      const email = rc.email || cand.email
+      const phone = rc.phone || cand.phone || cand.mobile_phone
+      if (email || phone) out.push({ candidate_id: cand.id, email: email || null, phone: phone || null })
+    }
+    return out
+  }, [params.candidates, params.revealedContacts])
+  const { validity: _contactValidity } = useContactValidation(_contactsToValidate)
+
   const renderCellValue = createCellRenderer({
     searchFeedbacks: params.searchFeedbacks,
     revealedContacts: params.revealedContacts,
@@ -172,6 +185,7 @@ export function useCandidatesViewComposition(params: UseCandidatesViewCompositio
     viewedCandidateIds: params.viewedCandidateIds,
     expandedRows: params.expandedRows,
     onSearchFeedbackChange: params.handleSearchFeedbackChange,
+    contactValidity: _contactValidity,
     onRevealContact: params.openRevealModal,
     onToggleExpandedRow: (candidateId: string) =>
       params.setExpandedRows(prev => {
