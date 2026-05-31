@@ -865,6 +865,123 @@ class WizardSessionService:
                 audit_exc,
             )
 
+    # ── Orquestrador conversacional (strangler-fig, Paulo 2026-05-31) ────
+    # Caminho alternativo ao pipeline LangGraph: um tool-calling agent
+    # state-aware. Ligado por LIA_WIZARD_ORCHESTRATOR (default OFF). Quando
+    # ON, BYPASSA o graph completamente — lê o state via checkpointer
+    # (mesma fonte do graph), roda o orquestrador, e persiste o state
+    # mutado via update_state. Coexistência: o schema JobCreationState é o
+    # mesmo, então alternar a flag preserva a sessão.
+    @staticmethod
+    def _orchestrator_enabled() -> bool:
+        return os.environ.get(
+            "LIA_WIZARD_ORCHESTRATOR", ""
+        ).strip().lower() in ("1", "true", "yes", "on")
+
+    @classmethod
+    async def _persist_orchestrator_state(
+        cls, thread_id: str, values: dict
+    ) -> bool:
+        """Persiste o state mutado no checkpointer do graph (fonte única).
+
+        Usa ``update_state`` (escreve checkpoint sem rodar nós). Fail-loud:
+        loga WARNING se falhar (o reply já foi gerado; só sinaliza que o
+        state pode não ter persistido — nunca silent).
+        """
+        try:
+            from app.domains.job_creation.graph import get_job_creation_graph
+            wiz_g = get_job_creation_graph()
+            config = {"configurable": {"thread_id": thread_id}}
+            await asyncio.to_thread(wiz_g._graph.update_state, config, values)
+            return True
+        except Exception as exc:  # noqa: BLE001
+            logger.warning(
+                "[WizardOrchestrator] state persist FAILED thread=%s reason=%s "
+                "— reply entregue mas state pode não ter persistido.",
+                thread_id, type(exc).__name__,
+            )
+            return False
+
+    @classmethod
+    async def _process_via_orchestrator(
+        cls,
+        *,
+        thread_id: str,
+        user_message: str,
+        user_id: str | None,
+        company_id: str | None,
+        prior_state: dict,
+        context: dict | None,
+    ) -> tuple[str, dict, int]:
+        """Processa o turno via WizardOrchestrator (bypass do graph)."""
+        from app.domains.job_creation.orchestrator.wizard_orchestrator import (
+            get_wizard_orchestrator,
+        )
+        from app.domains.job_creation.orchestrator.wizard_tools import ToolContext
+        from app.domains.job_creation.helpers.ws_payload_builder import (
+            build_ws_stage_payload,
+        )
+        from app.domains.job_creation.state import calculate_completeness
+
+        state = dict(prior_state or {})
+        # Carrega campos do context (right_panel_form, tenant snippet) p/ o state.
+        for k in _CONTEXT_CARRY_KEYS:
+            if context and context.get(k) is not None:
+                state[k] = context[k]
+
+        ctx = ToolContext(
+            company_id=str(company_id or state.get("company_id") or ""),
+            user_id=user_id,
+            workspace_id=state.get("workspace_id"),
+        )
+        orch = get_wizard_orchestrator()
+        result = await asyncio.to_thread(
+            orch.process_turn,
+            state=state,
+            user_message=user_message,
+            ctx=ctx,
+        )
+
+        new_state = {**state, **result.state_updates}
+        new_state["company_id"] = ctx.company_id
+        # Acumula histórico (mesma estrutura que os nós usam).
+        conv = list(new_state.get("conversation_messages") or [])
+        conv.append({"role": "user", "content": user_message})
+        conv.append({"role": "assistant", "content": result.reply})
+        new_state["conversation_messages"] = conv[-50:]
+
+        await cls._persist_orchestrator_state(thread_id, new_state)
+
+        stage = new_state.get("current_stage") or "intake"
+        try:
+            payload = build_ws_stage_payload(
+                stage=stage,
+                requires_approval=False,
+                data={
+                    "message": result.reply,
+                    "parsed_title": new_state.get("parsed_title"),
+                    "parsed_seniority": new_state.get("parsed_seniority"),
+                    "parsed_model": new_state.get("parsed_model"),
+                    "parsed_department": new_state.get("parsed_department"),
+                    "screening_mode": new_state.get("screening_mode"),
+                    "jd_quality_score": new_state.get("jd_quality_score"),
+                },
+                completeness=calculate_completeness(stage),
+            )
+        except Exception as exc:  # noqa: BLE001 — payload é best-effort
+            logger.warning(
+                "[WizardOrchestrator] payload build failed: %s", exc
+            )
+            payload = {}
+
+        logger.info(
+            "[WizardOrchestrator] turn done thread=%s tools=%s iters=%d "
+            "fairness_blocked=%s error=%s",
+            thread_id, result.tool_calls, result.iterations,
+            result.fairness_blocked, result.error,
+        )
+        return (result.reply, payload, 0)
+
     @classmethod
     async def process_message(
         cls,
@@ -898,6 +1015,22 @@ class WizardSessionService:
         wiz_g = get_job_creation_graph()
 
         prior_state = await cls._get_prior_state(thread_id)
+
+        # ── Orquestrador conversacional (flag LIA_WIZARD_ORCHESTRATOR) ──
+        # Quando ON, bypassa o pipeline LangGraph e roda o tool-calling
+        # agent state-aware. Default OFF — zero impacto em produção.
+        if cls._orchestrator_enabled():
+            logger.info(
+                "[WizardSession] routing via ORCHESTRATOR thread=%s", thread_id,
+            )
+            return await cls._process_via_orchestrator(
+                thread_id=thread_id,
+                user_message=user_message,
+                user_id=user_id,
+                company_id=company_id,
+                prior_state=prior_state,
+                context=context,
+            )
 
         # ── Sprint F.2 (2026-05-20) — Skip supervisor mid-flow ─────────
         # CANONICAL FIX (Option A): when ``prior_state.current_stage`` is

@@ -369,8 +369,23 @@ _default_orchestrator: Optional[WizardOrchestrator] = None
 
 
 def get_wizard_orchestrator() -> WizardOrchestrator:
-    """Singleton accessor — stateless, thread-safe."""
+    """Singleton accessor — stateless, thread-safe.
+
+    O singleton de produção inclui as service-backed tools (I/O via serviços
+    canônicos). A classe ``WizardOrchestrator`` continua desacoplada (tools
+    passadas no construtor) para testes I/O-free; só o accessor força o import
+    do módulo service-backed.
+    """
     global _default_orchestrator  # noqa: PLW0603
     if _default_orchestrator is None:
-        _default_orchestrator = WizardOrchestrator()
+        try:
+            from app.domains.job_creation.orchestrator.wizard_service_tools import (
+                SERVICE_TOOLS,
+            )
+        except Exception as exc:  # noqa: BLE001 — degrada para tools puras
+            logger.warning(
+                "[WizardOrchestrator] service tools indisponíveis: %s", exc
+            )
+            SERVICE_TOOLS = ()
+        _default_orchestrator = WizardOrchestrator(tools=SERVICE_TOOLS)
     return _default_orchestrator
