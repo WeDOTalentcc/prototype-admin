@@ -7201,7 +7201,22 @@
       "understood": "Got it",
       "urlLabel": "Endpoint URL",
       "urlMustBeHttps": "The URL must use HTTPS.",
-      "urlPlaceholder": "https://your-domain.com/webhook"
+      "urlPlaceholder": "https://your-domain.com/webhook",
+      "eventLabels": {
+        "job_created": "Job created",
+        "job_updated": "Job updated",
+        "job_status_changed": "Job status changed",
+        "candidate_created": "Candidate created",
+        "candidate_updated": "Candidate updated",
+        "candidate_enriched": "Candidate enriched",
+        "candidate_hired": "Candidate hired",
+        "candidate_rejected": "Candidate rejected",
+        "candidate_moved": "Candidate moved",
+        "application_created": "Application received",
+        "interview_scheduled": "Interview scheduled",
+        "interview_completed": "Interview completed",
+        "offer_sent": "Offer sent"
+      }
     }
   },
   "publicJob": {
@@ -7624,7 +7639,13 @@
         "on_demand": "On demand"
       },
       "eventPicker": {
-        "title": "Select event"
+        "title": "Select event",
+        "events": {
+          "candidate_added_to_pool": "Candidate added to pool",
+          "candidate_screened": "Candidate screened",
+          "agent_completed_review": "Agent completed review",
+          "weekly_summary": "Weekly summary"
+        }
       },
       "cronBuilder": {
         "title": "Recurring schedule",
@@ -7641,6 +7662,15 @@
           "daily": "Daily",
           "weekly": "Weekly",
           "monthly": "Monthly"
+        },
+        "weekdays": {
+          "0": "Sunday",
+          "1": "Monday",
+          "2": "Tuesday",
+          "3": "Wednesday",
+          "4": "Thursday",
+          "5": "Friday",
+          "6": "Saturday"
         }
       }
     }
@@ -7681,7 +7711,33 @@
       "coming_soon": "Coming soon",
       "provisional_badge": "Provisional",
       "subtitle": "WeDo Talent admin panel.",
-      "title": "Administration"
+      "title": "Administration",
+      "sections": {
+        "fairness": {
+          "title": "Fairness",
+          "description": "Monitor fairness and compliance of AI decisions."
+        },
+        "auditLogs": {
+          "title": "Audit logs",
+          "description": "Complete history of decisions and actions on the platform."
+        },
+        "aiTransparency": {
+          "title": "AI transparency",
+          "description": "Explainability and traceability of AI models."
+        },
+        "policyEngine": {
+          "title": "Policy engine",
+          "description": "Platform governance rules and policies."
+        },
+        "automationRules": {
+          "title": "Automation rules",
+          "description": "Configure platform automations and triggers."
+        },
+        "aiPerformance": {
+          "title": "AI performance",
+          "description": "Model quality and performance metrics."
+        }
+      }
     }
   }
 }

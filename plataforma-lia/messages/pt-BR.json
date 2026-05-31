@@ -7201,7 +7201,22 @@
       "understood": "Entendi",
       "urlLabel": "URL do endpoint",
       "urlMustBeHttps": "A URL deve usar HTTPS.",
-      "urlPlaceholder": "https://seu-dominio.com/webhook"
+      "urlPlaceholder": "https://seu-dominio.com/webhook",
+      "eventLabels": {
+        "job_created": "Vaga criada",
+        "job_updated": "Vaga atualizada",
+        "job_status_changed": "Status da vaga alterado",
+        "candidate_created": "Candidato criado",
+        "candidate_updated": "Candidato atualizado",
+        "candidate_enriched": "Candidato enriquecido",
+        "candidate_hired": "Candidato contratado",
+        "candidate_rejected": "Candidato reprovado",
+        "candidate_moved": "Candidato movido de etapa",
+        "application_created": "Candidatura recebida",
+        "interview_scheduled": "Entrevista agendada",
+        "interview_completed": "Entrevista concluída",
+        "offer_sent": "Oferta enviada"
+      }
     }
   },
   "publicJob": {
@@ -7624,7 +7639,13 @@
         "on_demand": "Sob demanda"
       },
       "eventPicker": {
-        "title": "Selecionar evento"
+        "title": "Selecionar evento",
+        "events": {
+          "candidate_added_to_pool": "Candidato adicionado ao pool",
+          "candidate_screened": "Candidato triado",
+          "agent_completed_review": "Agente concluiu revisão",
+          "weekly_summary": "Resumo semanal"
+        }
       },
       "cronBuilder": {
         "title": "Agendamento recorrente",
@@ -7641,6 +7662,15 @@
           "daily": "Diário",
           "weekly": "Semanal",
           "monthly": "Mensal"
+        },
+        "weekdays": {
+          "0": "Domingo",
+          "1": "Segunda",
+          "2": "Terça",
+          "3": "Quarta",
+          "4": "Quinta",
+          "5": "Sexta",
+          "6": "Sábado"
         }
       }
     }
@@ -7681,7 +7711,33 @@
       "coming_soon": "Em breve",
       "provisional_badge": "Provisório",
       "subtitle": "Painel administrativo da WeDo Talent.",
-      "title": "Administração"
+      "title": "Administração",
+      "sections": {
+        "fairness": {
+          "title": "Equidade & Fairness",
+          "description": "Monitore equidade e conformidade das decisões de IA."
+        },
+        "auditLogs": {
+          "title": "Logs de auditoria",
+          "description": "Histórico completo de decisões e ações na plataforma."
+        },
+        "aiTransparency": {
+          "title": "Transparência de IA",
+          "description": "Explicabilidade e rastreabilidade dos modelos de IA."
+        },
+        "policyEngine": {
+          "title": "Motor de políticas",
+          "description": "Regras e políticas de governança da plataforma."
+        },
+        "automationRules": {
+          "title": "Regras de automação",
+          "description": "Configure automações e gatilhos da plataforma."
+        },
+        "aiPerformance": {
+          "title": "Desempenho de IA",
+          "description": "Métricas de qualidade e performance dos modelos."
+        }
+      }
     }
   }
 }
