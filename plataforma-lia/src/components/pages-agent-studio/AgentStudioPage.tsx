@@ -86,6 +86,16 @@ interface AgentStudioPageProps {
   onStartCalibration?: (agentId: string) => void
 }
 
+const SLUG_TO_MARKETPLACE_CATEGORY: Record<string, string> = {
+  sourcing: "sourcing",
+  screening: "screening",
+  calibration: "screening",
+  alignment: "communication",
+  offer: "communication",
+  nps: "analytics",
+  intake: "general",
+}
+
 export default function AgentStudioPage({
   onNavigateToPool,
   onNavigateToJob,
@@ -112,6 +122,8 @@ export default function AgentStudioPage({
   const [selectedTemplate, setSelectedTemplate] = useState<SectorTemplate | null>(null)
   // secondaryView: shown below the funnel when user clicks Advanced Tools links
   const [secondaryView, setSecondaryView] = useState<"custom" | "marketplace" | "search" | null>(null)
+  // Funnel stage → marketplace category (best-effort; backend filtra por category exata)
+  const [marketplaceCategory, setMarketplaceCategory] = useState("")
   const [onboardingDismissed, setOnboardingDismissed] = useState(true)
 
   useEffect(() => {
@@ -595,7 +607,7 @@ export default function AgentStudioPage({
           onActivate={handleFunnelActivate}
           onCustomAgents={() => setSecondaryView(v => v === "custom" ? null : "custom")}
           onMarketplace={() => setSecondaryView(v => v === "marketplace" ? null : "marketplace")}
-          onMarketplaceForSlug={() => setSecondaryView(v => v === "marketplace" ? null : "marketplace")}
+          onMarketplaceForSlug={(slug) => { setMarketplaceCategory(SLUG_TO_MARKETPLACE_CATEGORY[slug] ?? ""); setSecondaryView("marketplace") }}
         />
 
         {/* ── Secondary views (Custom Agents / Marketplace / Search) ────────── */}
@@ -667,7 +679,7 @@ export default function AgentStudioPage({
                 {t("studio.close") ?? "Fechar"}
               </button>
             </div>
-            <MarketplaceTab />
+            <MarketplaceTab initialCategory={marketplaceCategory} />
           </div>
         )}
 

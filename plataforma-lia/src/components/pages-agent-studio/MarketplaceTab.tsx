@@ -54,7 +54,7 @@ interface Installation {
 
 const CATEGORY_KEYS = ["", "sourcing", "pipeline", "analytics", "communication", "screening", "general"] as const
 
-export default function MarketplaceTab() {
+export default function MarketplaceTab({ initialCategory }: { initialCategory?: string } = {}) {
   const t = useTranslations('agents.marketplace')
   const [activeView, setActiveView] = useState<"browse" | "installed" | "billing">("browse")
 
@@ -85,7 +85,7 @@ export default function MarketplaceTab() {
 
         <TabsContent value="browse" className="mt-4">
           {/* F3 Wave F: onInstallSuccess auto-switch para tab "installed" */}
-          <BrowseMarketplace onInstallSuccess={() => setActiveView("installed")} />
+          <BrowseMarketplace onInstallSuccess={() => setActiveView("installed")} initialCategory={initialCategory} />
         </TabsContent>
         <TabsContent value="installed" className="mt-4">
           <InstalledAgents />
@@ -98,12 +98,13 @@ export default function MarketplaceTab() {
   )
 }
 
-function BrowseMarketplace({ onInstallSuccess }: { onInstallSuccess?: () => void }) {
+function BrowseMarketplace({ onInstallSuccess, initialCategory }: { onInstallSuccess?: () => void; initialCategory?: string }) {
   const t = useTranslations('agents.marketplace')
   const [listings, setListings] = useState<MarketplaceListing[]>([])
   const [total, setTotal] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
-  const [category, setCategory] = useState("")
+  const [category, setCategory] = useState(initialCategory ?? "")
+  useEffect(() => { if (initialCategory !== undefined) setCategory(initialCategory) }, [initialCategory])
   const [search, setSearch] = useState("")
   const [installing, setInstalling] = useState<string | null>(null)
 
