@@ -7285,5 +7285,147 @@
       "applyErrorToast": "Failed to apply template: {error}",
       "skippedSuccessToast": "Company default pipeline will be used."
     }
+  },
+  "triagem": {
+    "completionCard": {
+      "close": "Close",
+      "closeAria": "Close completion screen",
+      "minutesSummary": "{count} minutes",
+      "nextStepsAria": "Next steps",
+      "nextStepsLabel": "Next steps",
+      "questionsAnswered": "{count} questions answered",
+      "thanks": "Thank you, {name}!",
+      "title": "Screening complete"
+    },
+    "confirmationCard": {
+      "ariaLabel": "Submission confirmation",
+      "confirmAria": "Confirm and submit answers",
+      "confirmLabel": "Confirm and submit",
+      "confirmLoading": "Submitting...",
+      "minutesSummary": "{count} minutes",
+      "questionsAnswered": "{count} questions answered",
+      "reviewAria": "Review answers",
+      "reviewLabel": "Review",
+      "subtitle": "Review your answers before submitting.",
+      "title": "Ready to submit?"
+    },
+    "container": {
+      "ariaLabel": "Screening conversation"
+    },
+    "inputBar": {
+      "autoplayOff": "Audio off",
+      "autoplayOffTitle": "Turn on audio autoplay",
+      "autoplayOn": "Audio on",
+      "autoplayOnTitle": "Turn off audio autoplay",
+      "placeholder": "Type your answer...",
+      "sendAria": "Send answer",
+      "textareaAria": "Answer field"
+    },
+    "lgpdFooter": {
+      "privacyPolicy": "Privacy Policy",
+      "privacyPolicyAria": "Open Privacy Policy"
+    },
+    "likertScaleCard": {
+      "defaultLabels": {
+        "agree": "Agree",
+        "disagree": "Disagree",
+        "neutral": "Neutral",
+        "stronglyAgree": "Strongly agree",
+        "stronglyDisagree": "Strongly disagree"
+      },
+      "groupAria": "Agreement scale",
+      "valueAria": "Scale option"
+    },
+    "messageBubble": {
+      "liaMessageAria": "Message from LIA",
+      "myMessageAria": "Your message",
+      "pauseAria": "Pause audio",
+      "playAria": "Play audio"
+    },
+    "messagesList": {
+      "ariaLabel": "Message history"
+    },
+    "multipleChoiceCard": {
+      "groupAria": "Answer options"
+    },
+    "phoneCallDone": {
+      "description": "Your call is complete. Thank you for the conversation!",
+      "title": "Call ended",
+      "voipPrompt": "You can continue the screening here, if you prefer."
+    },
+    "phoneConfirmModal": {
+      "close": "Close",
+      "phoneCtaIdle": "Receive a call",
+      "phoneCtaLoading": "Calling...",
+      "phoneDescription": "Get a call to answer the screening by voice.",
+      "phoneLabel": "Phone number",
+      "phonePlaceholder": "+1 555 000 0000",
+      "phoneTitle": "Screening by call",
+      "whatsappCtaIdle": "Continue on WhatsApp",
+      "whatsappCtaLoading": "Opening...",
+      "whatsappDescription": "Continue the screening on WhatsApp, at your own pace.",
+      "whatsappTitle": "Screening on WhatsApp"
+    },
+    "progressBar": {
+      "of": "of",
+      "progressAria": "{stepLabel} {current} {ofLabel} {total}: {blockName}",
+      "step": "Step"
+    },
+    "voipCallButton": {
+      "callIdle": "Start call",
+      "callIdleAria": "Start voice call",
+      "callIdleTitle": "Start voice call",
+      "connecting": "Connecting...",
+      "connectingAria": "Connecting call",
+      "endCall": "End",
+      "endCallAria": "End call",
+      "endCallTitle": "End call",
+      "errors": {
+        "microphoneUnavailable": "Microphone unavailable. Check your browser permissions.",
+        "networkError": "Connection error. Check your internet and try again.",
+        "voipConnectionError": "Could not connect the call. Please try again.",
+        "voipSessionError": "The voice session was interrupted. Please try again.",
+        "voipStartError": "Could not start the call. Please try again.",
+        "voipStartFailed": "Failed to start the voice call.",
+        "voipUnavailable": "Voice call unavailable right now."
+      },
+      "muteOff": "Unmute microphone",
+      "muteOn": "Mute microphone",
+      "newCall": "New call",
+      "newCallAria": "Start a new call",
+      "newCallTitle": "Start a new call",
+      "retry": "Try again",
+      "retryAria": "Retry the call",
+      "retryTitle": "Try again",
+      "unavailable": "Unavailable",
+      "unavailableAria": "Voice call unavailable",
+      "unavailableTitle": "Voice call unavailable"
+    },
+    "welcomeCard": {
+      "chatStart": "Start with chat",
+      "chatStartAria": "Start screening with chat",
+      "chatStarting": "Starting...",
+      "consentSuffix": ".",
+      "consentText": "I have read and agree to the processing of my data in accordance with the",
+      "defaultWelcome": "Hi! Let's start your screening.",
+      "estimatedTime": "Estimated time:",
+      "greeting": "Hi, {name}!",
+      "logoAlt": "WeDo Talent logo",
+      "minutes": "minutes",
+      "noChannels": "No channels available right now.",
+      "phone": "Call",
+      "phoneAria": "Start screening by call",
+      "privacyFooter": "Your data is handled securely and confidentially.",
+      "privacyFooterAria": "Privacy information",
+      "privacyPolicyLink": "Privacy Policy",
+      "salary": {
+        "from": "From {value}",
+        "upTo": "Up to {value}"
+      },
+      "voice": "Voice",
+      "voiceAria": "Start screening by voice",
+      "whatsapp": "WhatsApp",
+      "whatsappAria": "Start screening on WhatsApp"
+    }
   }
 }

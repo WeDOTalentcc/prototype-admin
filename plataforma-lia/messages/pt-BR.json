@@ -7285,5 +7285,147 @@
       "applyErrorToast": "Erro ao aplicar o template: {error}",
       "skippedSuccessToast": "Pipeline padrão da empresa será utilizado."
     }
+  },
+  "triagem": {
+    "completionCard": {
+      "close": "Fechar",
+      "closeAria": "Fechar tela de conclusão",
+      "minutesSummary": "{count} minutos",
+      "nextStepsAria": "Próximos passos",
+      "nextStepsLabel": "Próximos passos",
+      "questionsAnswered": "{count} perguntas respondidas",
+      "thanks": "Obrigado, {name}!",
+      "title": "Triagem concluída"
+    },
+    "confirmationCard": {
+      "ariaLabel": "Confirmação de envio",
+      "confirmAria": "Confirmar e enviar respostas",
+      "confirmLabel": "Confirmar e enviar",
+      "confirmLoading": "Enviando...",
+      "minutesSummary": "{count} minutos",
+      "questionsAnswered": "{count} perguntas respondidas",
+      "reviewAria": "Revisar respostas",
+      "reviewLabel": "Revisar",
+      "subtitle": "Revise suas respostas antes de enviar.",
+      "title": "Tudo pronto para enviar?"
+    },
+    "container": {
+      "ariaLabel": "Conversa de triagem"
+    },
+    "inputBar": {
+      "autoplayOff": "Áudio desligado",
+      "autoplayOffTitle": "Ativar reprodução automática de áudio",
+      "autoplayOn": "Áudio ligado",
+      "autoplayOnTitle": "Desativar reprodução automática de áudio",
+      "placeholder": "Digite sua resposta...",
+      "sendAria": "Enviar resposta",
+      "textareaAria": "Campo de resposta"
+    },
+    "lgpdFooter": {
+      "privacyPolicy": "Política de Privacidade",
+      "privacyPolicyAria": "Abrir Política de Privacidade"
+    },
+    "likertScaleCard": {
+      "defaultLabels": {
+        "agree": "Concordo",
+        "disagree": "Discordo",
+        "neutral": "Neutro",
+        "stronglyAgree": "Concordo totalmente",
+        "stronglyDisagree": "Discordo totalmente"
+      },
+      "groupAria": "Escala de concordância",
+      "valueAria": "Opção da escala"
+    },
+    "messageBubble": {
+      "liaMessageAria": "Mensagem da LIA",
+      "myMessageAria": "Sua mensagem",
+      "pauseAria": "Pausar áudio",
+      "playAria": "Reproduzir áudio"
+    },
+    "messagesList": {
+      "ariaLabel": "Histórico de mensagens"
+    },
+    "multipleChoiceCard": {
+      "groupAria": "Opções de resposta"
+    },
+    "phoneCallDone": {
+      "description": "Sua chamada foi concluída. Obrigado pela conversa!",
+      "title": "Chamada finalizada",
+      "voipPrompt": "Você pode continuar a triagem por aqui, se preferir."
+    },
+    "phoneConfirmModal": {
+      "close": "Fechar",
+      "phoneCtaIdle": "Receber ligação",
+      "phoneCtaLoading": "Ligando...",
+      "phoneDescription": "Receba uma ligação para responder a triagem por voz.",
+      "phoneLabel": "Número de telefone",
+      "phonePlaceholder": "(11) 99999-9999",
+      "phoneTitle": "Triagem por ligação",
+      "whatsappCtaIdle": "Continuar no WhatsApp",
+      "whatsappCtaLoading": "Abrindo...",
+      "whatsappDescription": "Continue a triagem pelo WhatsApp, no seu tempo.",
+      "whatsappTitle": "Triagem por WhatsApp"
+    },
+    "progressBar": {
+      "of": "de",
+      "progressAria": "{stepLabel} {current} {ofLabel} {total}: {blockName}",
+      "step": "Etapa"
+    },
+    "voipCallButton": {
+      "callIdle": "Iniciar chamada",
+      "callIdleAria": "Iniciar chamada de voz",
+      "callIdleTitle": "Iniciar chamada de voz",
+      "connecting": "Conectando...",
+      "connectingAria": "Conectando chamada",
+      "endCall": "Encerrar",
+      "endCallAria": "Encerrar chamada",
+      "endCallTitle": "Encerrar chamada",
+      "errors": {
+        "microphoneUnavailable": "Microfone indisponível. Verifique as permissões do navegador.",
+        "networkError": "Erro de conexão. Verifique sua internet e tente novamente.",
+        "voipConnectionError": "Não foi possível conectar a chamada. Tente novamente.",
+        "voipSessionError": "A sessão de voz foi interrompida. Tente novamente.",
+        "voipStartError": "Não foi possível iniciar a chamada. Tente novamente.",
+        "voipStartFailed": "Falha ao iniciar a chamada de voz.",
+        "voipUnavailable": "Chamada de voz indisponível no momento."
+      },
+      "muteOff": "Ativar microfone",
+      "muteOn": "Silenciar microfone",
+      "newCall": "Nova chamada",
+      "newCallAria": "Iniciar nova chamada",
+      "newCallTitle": "Iniciar nova chamada",
+      "retry": "Tentar novamente",
+      "retryAria": "Tentar a chamada novamente",
+      "retryTitle": "Tentar novamente",
+      "unavailable": "Indisponível",
+      "unavailableAria": "Chamada de voz indisponível",
+      "unavailableTitle": "Chamada de voz indisponível"
+    },
+    "welcomeCard": {
+      "chatStart": "Começar por chat",
+      "chatStartAria": "Começar triagem por chat",
+      "chatStarting": "Iniciando...",
+      "consentSuffix": ".",
+      "consentText": "Li e concordo com o tratamento dos meus dados conforme a",
+      "defaultWelcome": "Olá! Vamos começar sua triagem.",
+      "estimatedTime": "Tempo estimado:",
+      "greeting": "Olá, {name}!",
+      "logoAlt": "Logo WeDo Talent",
+      "minutes": "minutos",
+      "noChannels": "Nenhum canal disponível no momento.",
+      "phone": "Ligação",
+      "phoneAria": "Iniciar triagem por ligação",
+      "privacyFooter": "Seus dados são tratados com segurança e confidencialidade.",
+      "privacyFooterAria": "Informações de privacidade",
+      "privacyPolicyLink": "Política de Privacidade",
+      "salary": {
+        "from": "A partir de {value}",
+        "upTo": "Até {value}"
+      },
+      "voice": "Voz",
+      "voiceAria": "Iniciar triagem por voz",
+      "whatsapp": "WhatsApp",
+      "whatsappAria": "Iniciar triagem por WhatsApp"
+    }
   }
 }
