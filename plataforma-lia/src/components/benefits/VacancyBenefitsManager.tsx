@@ -48,6 +48,8 @@ interface VacancyBenefitsManagerProps {
   seniorityLevel?: string
   department?: string
   contractType?: string
+  /** false = somente leitura (vaga fora do modo edicao). */
+  editable?: boolean
 }
 
 function coerceName(b: unknown): string {
@@ -127,6 +129,7 @@ export function VacancyBenefitsManager({
   seniorityLevel,
   department,
   contractType,
+  editable = true,
 }: VacancyBenefitsManagerProps) {
   const t = useTranslations("settings.benefits")
   const tv = useTranslations("jobs.vacancyBenefits")
@@ -280,6 +283,7 @@ export function VacancyBenefitsManager({
           <h3 className="text-sm font-semibold text-lia-text-primary">{tv("title")}</h3>
           <p className="text-xs text-lia-text-tertiary">{tv("subtitle")}</p>
         </div>
+        {editable && (
         <div className="flex items-center gap-3">
           <label className="flex items-center gap-1.5 text-xs text-lia-text-secondary cursor-pointer select-none">
             <input
@@ -295,21 +299,24 @@ export function VacancyBenefitsManager({
             {tv("addBenefit")}
           </Button>
         </div>
+        )}
       </div>
 
       {records.length === 0 ? (
         <div className="rounded-md border border-dashed border-lia-border-default p-6 text-center">
           <Gift className="w-5 h-5 mx-auto text-lia-text-disabled mb-2" />
           <p className="text-sm text-lia-text-secondary">{tv("emptyCatalog")}</p>
+          {editable && (
           <Button size="sm" variant="outline" onClick={openCreate} className="mt-3 gap-1.5 text-xs">
             <Plus className="w-3.5 h-3.5" />
             {tv("addBenefit")}
           </Button>
+          )}
         </div>
       ) : (
         <BenefitsList
           benefits={records}
-          isEditingBenefits={true}
+          isEditingBenefits={editable}
           mode="vacancy"
           linkedIds={linkedIds}
           onToggleStatus={toggleLink}

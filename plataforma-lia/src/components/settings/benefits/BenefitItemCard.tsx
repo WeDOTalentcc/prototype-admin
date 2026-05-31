@@ -95,7 +95,7 @@ export const BenefitItemCard = React.memo(function BenefitItemCard({
 
   const isVacancy = mode === "vacancy"
   const toggleChecked = isVacancy ? !!isLinked : benefit.is_active
-  const toggleEditable = isVacancy ? true : isEditingBenefits
+  const toggleEditable = isEditingBenefits
   const suggested = isVacancy && !isLinked && !!(benefit as { matches_vaga?: boolean }).matches_vaga
   const activeClass = (!isVacancy && !benefit.is_active) ? " opacity-60" : ""
   const suggestedClass = suggested ? " ring-1 ring-inset ring-lia-btn-primary-bg/40 bg-lia-btn-primary-bg/5" : ""
