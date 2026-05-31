@@ -228,6 +228,7 @@ from app.api.v1.multi_strategy_search import router as multi_strategy_router
 from app.api.v1.digital_twins import router as digital_twins_router
 from app.api.v1.manager_alignments import router as manager_alignments_router
 from app.api.v1.studio_summary import router as studio_summary_router
+from app.api.v1.agent_template_catalog import router as agent_template_catalog_router
 from app.api.v1.job_offers import router as job_offers_router
 from app.api.v1.hiring_nps import router as hiring_nps_router
 from app.api.v1.voice_screening import router as voice_screening_router
@@ -623,6 +624,7 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(digital_twins_router, prefix="/api/v1", tags=["digital-twins"])
     app.include_router(manager_alignments_router, prefix="/api/v1", tags=["manager-alignment"])
     app.include_router(studio_summary_router, prefix="/api/v1", tags=["studio-summary"])
+    app.include_router(agent_template_catalog_router, prefix="/api/v1", tags=["agent-template-catalog"])
     app.include_router(job_offers_router, prefix="/api/v1", tags=["job-offers"])
     app.include_router(hiring_nps_router, prefix="/api/v1", tags=["hiring-nps"])
     app.include_router(voice_screening_router, prefix="/api/v1", tags=["voice-screening"])
