@@ -395,10 +395,17 @@ class SourcingAgentOrchestrator:
             from lia_agents_core.agent_interface import AgentInput
 
             search_agent = SourcingSearchAgent()
-            output = await search_agent.process(AgentInput(
-                message=query,
-                context={"company_id": agent.company_id, "limit": limit},
-            ))
+            # Calibração: a busca ao vivo (LLM + provider externo) pode travar.
+            # Timeout fail-fast → cai no except → _fallback_db_candidates. Evita
+            # o modal de calibração pendurar (504) quando o provider está lento.
+            import asyncio as _asyncio
+            output = await _asyncio.wait_for(
+                search_agent.process(AgentInput(
+                    message=query,
+                    context={"company_id": agent.company_id, "limit": limit},
+                )),
+                timeout=12,
+            )
             candidates = output.data.get("candidates", [])[:limit]
         except Exception as e:
             logger.warning("[SourcingAgent] SourcingSearchAgent failed, trying DB fallback: %s", e)
