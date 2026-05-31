@@ -17,6 +17,9 @@ from app.domains.job_creation.state import (
 from app.domains.job_creation.helpers.ws_payload_builder import (
     build_ws_stage_payload,
 )
+from app.domains.job_creation.helpers.vacancy_vocab import (
+    to_canonical_work_model, to_canonical_seniority, to_canonical_employment_type,
+)
 from app.domains.job_creation.helpers.i18n import msg
 from app.domains.job_creation.helpers.async_audit import emit_audit_fire_and_forget
 
@@ -127,12 +130,16 @@ def publish_node(state: JobCreationState) -> JobCreationState:
                 "description": jd.get("about_role", ""),
                 # seniority_resolved vem do seniority_resolver node (graph legado);
                 # o orquestrador conversacional seta parsed_seniority. Fallback cobre ambos.
-                "seniority": state.get("seniority_resolved") or state.get("parsed_seniority") or "",
+                # Normaliza para o vocabulario do cadastro (item #3): wizard usa
+                # interno (diretor/pleno), FE espera Diretor/Pleno/Especialista...
+                "seniority": to_canonical_seniority(
+                    state.get("seniority_resolved") or state.get("parsed_seniority") or ""
+                ),
                 "department": state.get("parsed_department", ""),
                 "location": state.get("parsed_location", ""),
-                "work_model": state.get("parsed_model", ""),
+                "work_model": to_canonical_work_model(state.get("parsed_model", "")),
                 # P0-A: regime de contratação (coluna employment_type já existe).
-                "employment_type": state.get("parsed_employment_type"),
+                "employment_type": to_canonical_employment_type(state.get("parsed_employment_type")),
                 # FASE 5: gestor responsável + email (colunas manager/manager_email já existem).
                 "manager": state.get("parsed_manager_name") or "",
                 "manager_email": state.get("parsed_manager_email") or "",
@@ -297,7 +304,7 @@ def publish_node(state: JobCreationState) -> JobCreationState:
                     job_id=str(job_id),
                     title=title,
                     jd_enriched=jd_enriched_payload,
-                    seniority_level=state.get("seniority_resolved") or state.get("parsed_seniority"),
+                    seniority_level=to_canonical_seniority(state.get("seniority_resolved") or state.get("parsed_seniority")),
                     department=state.get("parsed_department"),
                 )
         except Exception as exc:  # pragma: no cover - never block publish
