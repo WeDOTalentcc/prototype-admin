@@ -612,6 +612,29 @@ def intake_gate_node(state: JobCreationState) -> JobCreationState:
             state, parsed_title, parsed_seniority, eff_mode,
         )
 
+        # Problema #2 fix: mostrar competencias que serao usadas na JD
+        # para que o recrutador possa reagir (nao e um gate bloqueante —
+        # o recrutador pode pedir ajuste no jd_gate ou no competency_gate).
+        if conf_tech or conf_behav:
+            _tech_names = [
+                (c.get("skill") or c.get("name") or str(c))
+                for c in (conf_tech or [])[:5]
+            ]
+            _behav_names = [
+                (c.get("competencia") or c.get("name") or str(c))
+                for c in (conf_behav or [])[:4]
+            ]
+            _comp_lines: list[str] = []
+            if _tech_names:
+                _comp_lines.append("🔧 **Técnicas:** " + ", ".join(_tech_names) + ("..." if len(conf_tech) > 5 else ""))
+            if _behav_names:
+                _comp_lines.append("💡 **Comportamentais:** " + ", ".join(_behav_names) + ("..." if len(conf_behav) > 4 else ""))
+            if _comp_lines:
+                reply = reply.rstrip() + (
+                    "\n\nUsarei estas competências para a vaga — você pode ajustar no painel lateral ou me dizer se quer mudar algo após ver a descrição:\n"
+                    + "\n".join(_comp_lines)
+                )
+
         _appr_extra: Dict[str, Any] = {
             "screening_mode": base.get("screening_mode") or eff_mode,
             "confirmed_technical_competencies": conf_tech,
