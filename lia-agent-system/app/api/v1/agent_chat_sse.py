@@ -95,6 +95,30 @@ router = APIRouter(tags=["chat-sse"])
 
 
 _AGENT_TIMEOUT = settings.LLM_TIMEOUT_SECONDS
+
+
+async def _drain_queue_with_keepalive(queue, is_done, next_id, *, poll_s: float = 0.5, keepalive_after_s: float = 15.0):
+    """Drena a fila de eventos SSE emitindo keepalive em silêncio prolongado.
+
+    Harness (sensor de liveness): operações longas do wizard (geração WSI ~100s,
+    JD ~60s) NÃO podem deixar o stream SSE em silêncio — o gateway HTTP derruba a
+    conexão (502). Mesma estratégia do loop principal (format_sse_keepalive), porém
+    com poll curto (responsivo a tokens) + heartbeat throttled a cada
+    keepalive_after_s de silêncio. Extraído do route handler para ser testável.
+    """
+    silent = 0.0
+    while not is_done():
+        try:
+            tok = await asyncio.wait_for(queue.get(), timeout=poll_s)
+            silent = 0.0
+            if tok is not None:
+                yield format_sse_event(tok, next_id())
+        except (asyncio.TimeoutError, TimeoutError):
+            silent += poll_s
+            if silent >= keepalive_after_s:
+                silent = 0.0
+                yield format_sse_keepalive()
+
 _injection_guard = PromptInjectionGuard()
 
 
@@ -420,13 +444,14 @@ company_id: str = Depends(require_company_id)):
                     asyncio.wait_for(_run_wizard(), timeout=_AGENT_TIMEOUT)
                 )
 
-                while not _wiz_task.done():
-                    try:
-                        _tok = await asyncio.wait_for(sse_queue.get(), timeout=0.5)
-                        if _tok is not None:
-                            yield format_sse_event(_tok, next_id())
-                    except asyncio.TimeoutError:
-                        continue
+                # Harness fix (502 WSI/JD): drena a fila COM keepalive em
+                # silêncio prolongado. Operações longas (WSI ~100s) deixavam o
+                # stream mudo → gateway derrubava (502). _drain_queue_with_keepalive
+                # emite : keepalive a cada 15s de silêncio (testável).
+                async for _ev in _drain_queue_with_keepalive(
+                    sse_queue, _wiz_task.done, next_id
+                ):
+                    yield _ev
 
                 _wiz_msg, _wiz_payload, _wiz_tokens = await _wiz_task
 
