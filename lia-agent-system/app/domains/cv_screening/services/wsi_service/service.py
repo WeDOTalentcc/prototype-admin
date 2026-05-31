@@ -25,6 +25,25 @@ from app.domains.ai.services.llm import llm_service
 
 logger = logging.getLogger(__name__)
 
+
+def _wsi_fairness_check(text: str):
+    """FairnessGuard.check lazy + fail-open (Consolidacao WSI Fase 2.3).
+
+    Portado do fork job_creation/nodes/wsi_questions.py para o canonico —
+    single source of truth de fairness. Retorna FairnessCheckResult ou None
+    (fail-open: nunca bloqueia o fluxo se o guard estiver indisponivel). O
+    contador fairness_blocks_total ja e incrementado dentro de .check().
+    """
+    if not text or not text.strip():
+        return None
+    try:
+        from app.shared.compliance.fairness_guard import FairnessGuard
+        return FairnessGuard().check(text)
+    except Exception as exc:  # noqa: BLE001 — fail-open
+        logger.warning("[WSIService] FairnessGuard indisponivel (fail-open): %s", exc)
+        return None
+
+
 class WSIService:
     """
     Serviço completo de aplicação da metodologia WSI.
@@ -172,6 +191,7 @@ Responda em JSON:
         job_description: str | None = None,
         seniority: str | None = None,
         enriched_jd: dict | None = None,
+        collect_dropped: list | None = None,
     ) -> list[WSIQuestion]:
         """
         ETAPA 2: Gera perguntas científicas baseadas em competências.
@@ -205,12 +225,23 @@ Responda em JSON:
                 job_description = jd_context
                 logger.info("WSI F1.C bridge: usando jd_context do enriched_jd para F2.5")
 
-        return await self.question_generator.generate_all(
+        # FairnessGuard pre-check (Fase 2.3) — nao chama LLM se JD enviesado
+        _pre = _wsi_fairness_check(job_description or "")
+        if _pre is not None and _pre.is_blocked:
+            logger.warning(
+                "[WSIService] FairnessGuard PRE-BLOCK: category=%s — skipping LLM",
+                _pre.category,
+            )
+            return []
+
+        questions = await self.question_generator.generate_all(
             competencies,
             mode,
             job_description=job_description,
             seniority=seniority,
         )
+        # Layer 4: fairness scan por-pergunta (drop + audit)
+        return self._apply_fairness_l4(questions, collect_dropped=collect_dropped)
 
     async def generate_from_simple_inputs(
         self,
@@ -220,6 +251,7 @@ Responda em JSON:
         job_description: str | None = None,
         mode: Literal["compact", "full"] = "compact",
         max_questions: int | None = None,
+        collect_dropped: list | None = None,
     ) -> list[WSIQuestion]:
         """Convenience wrapper: converts string skill/behavioral lists into Competency
         objects and delegates to ``generate_screening_questions()``.
@@ -272,6 +304,7 @@ Responda em JSON:
             mode=mode,
             job_description=job_description,
             seniority=_seniority_level if _seniority_level in ("junior", "pleno", "senior", "lead", "executive") else "pleno",
+            collect_dropped=collect_dropped,
         )
         if max_questions is not None and len(questions) > max_questions:
             questions = questions[:max_questions]
@@ -302,6 +335,23 @@ Responda em JSON:
             4: "Bloco 4 - Situacional/Comportamental: perguntas sobre soft skills, liderança, trabalho em equipe",
         }
         block_info = block_context.get(block_id, "Bloco genérico")
+        # FairnessGuard pre-check (Fase 2.3): recusa instrucao discriminatoria
+        # ANTES de chamar o LLM (mesmo guard do bulk + Settings).
+        _pre = _wsi_fairness_check(prompt)
+        if _pre is not None and _pre.is_blocked:
+            logger.warning(
+                "[WSIService] suggest_single_question PRE-BLOCK: category=%s",
+                _pre.category,
+            )
+            return {
+                "success": False,
+                "error": (
+                    "Essa instrucao contem criterio potencialmente discriminatorio "
+                    "e nao pode gerar pergunta de triagem. Reformule focando em "
+                    "competencias e comportamentos observaveis."
+                ),
+                "blocked_category": _pre.category,
+            }
         full_prompt = f"""Você é um especialista em recrutamento usando a metodologia WSI.
 O recrutador pediu para criar uma pergunta de triagem com base nesta instrução:
 
@@ -337,6 +387,21 @@ Retorne APENAS JSON válido:
             logger.error("[WSIService] suggest_single_question failed: %s", exc)
             return {"success": False, "error": "Não foi possível gerar a sugestão. Tente novamente."}
         if data.get("question"):
+            # Layer 4 fairness scan na pergunta gerada (fail-loud, nunca silent)
+            _post = _wsi_fairness_check(data["question"])
+            if _post is not None and _post.is_blocked:
+                logger.warning(
+                    "[WSIService] suggest_single_question L4 BLOCK: category=%s",
+                    _post.category,
+                )
+                return {
+                    "success": False,
+                    "error": (
+                        "A pergunta gerada foi bloqueada pelo filtro de equidade. "
+                        "Tente reformular a instrucao."
+                    ),
+                    "blocked_category": _post.category,
+                }
             return {
                 "success": True,
                 "question": data["question"],
@@ -347,6 +412,36 @@ Retorne APENAS JSON válido:
                 "bloom_level": data.get("bloom_level", 3),
             }
         return {"success": False, "error": "Não foi possível gerar a sugestão. Tente novamente."}
+
+    def _apply_fairness_l4(
+        self, questions: list[WSIQuestion], collect_dropped: list | None = None
+    ) -> list[WSIQuestion]:
+        """Layer-4 fairness scan por-pergunta (Fase 2.3, portado do fork).
+
+        Descarta perguntas enviesadas (FairnessGuard.check.is_blocked), registra
+        em collect_dropped (audit trail) e loga. Fail-open por chamada via
+        _wsi_fairness_check. Enforca compliance NO PRODUTOR (canonico) — Settings
+        E wizard herdam o filtro automaticamente.
+        """
+        kept: list[WSIQuestion] = []
+        for q in questions:
+            text = getattr(q, "question_text", "") or ""
+            res = _wsi_fairness_check(text)
+            if res is not None and res.is_blocked:
+                logger.warning(
+                    "[WSIService] FairnessGuard L4 dropped question: category=%s terms=%s",
+                    res.category, res.blocked_terms,
+                )
+                if collect_dropped is not None:
+                    collect_dropped.append({
+                        "question": text,
+                        "category": res.category,
+                        "blocked_terms": res.blocked_terms,
+                        "message": res.educational_message,
+                    })
+            else:
+                kept.append(q)
+        return kept
 
     @staticmethod
     def _build_competencies_from_enriched_jd(
