@@ -31,11 +31,10 @@ export function renderEmailCell(
           onRevealContact(candidate, "email")
         }}
         className="inline-flex items-center gap-1.5 px-2 py-0.5 text-micro font-medium rounded-full bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-interactive-active dark:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse transition-colors motion-reduce:transition-none"
-        title={t ? t('revealEmailTitle') : "Clique para revelar email (2 créditos)"}
+        title={t ? t('revealEmailTitle') : "Clique para revelar email"}
       >
         <Mail className="w-3 h-3" />
         <span>{t ? t('reveal') : "Revelar"}</span>
-        <span className="opacity-60">{t ? t('emailCredits') : "(2 cr)"}</span>
       </button>
     )
   }
@@ -67,8 +66,8 @@ export function renderPhoneCell(
     const titleText = t
       ? (fieldKey === "mobile_phone" ? t('revealMobileTitle') : t('revealPhoneTitle'))
       : (fieldKey === "mobile_phone"
-        ? "Clique para revelar celular (14 créditos)"
-        : "Clique para revelar telefone (14 créditos)")
+        ? "Clique para revelar celular"
+        : "Clique para revelar telefone")
     return (
       <button
         data-testid={`reveal-phone-btn-${candidate.id}`}
@@ -81,7 +80,6 @@ export function renderPhoneCell(
       >
         <Phone className="w-3 h-3" />
         <span>{t ? t('reveal') : "Revelar"}</span>
-        <span className="opacity-60">{t ? t('phoneCredits') : "(14 cr)"}</span>
       </button>
     )
   }
