@@ -303,7 +303,224 @@ ENRICH_JOB_DESCRIPTION = WizardTool(
 )
 
 
+# ── suggest_salary ───────────────────────────────────────────────────────
+
+
+# Chaves de salário extraídas do output do salary_node (evita poluir o state
+# do orquestrador com current_stage/stage_history/ws_stage_payload do nó).
+_SALARY_RESULT_KEYS = (
+    "salary_min", "salary_max", "salary_currency", "salary_benchmark",
+)
+
+
+def _handle_suggest_salary(
+    state: dict, tool_input: dict, ctx: ToolContext
+) -> ToolResult:
+    """Sugere faixa salarial via benchmark (interno + mercado), DRY pelo salary_node.
+
+    Reusa o ``salary_node`` canonical (benchmark interno via JobInsightsService +
+    mercado via MarketBenchmarkService, combine 70/30). Extrai apenas os campos
+    de salário do output (não importa current_stage/payload do nó). company_id
+    vem do state (workspace_id/company_id), que o caller populou do JWT.
+    """
+    tenant_err = _reject_tenant_keys(tool_input)
+    if tenant_err:
+        return ToolResult(llm_message=tenant_err, error=True)
+
+    if not (state.get("parsed_title")):
+        return ToolResult(
+            llm_message="Preciso do título do cargo para buscar a faixa salarial.",
+            error=True,
+        )
+
+    try:
+        from app.domains.job_creation.nodes.salary import salary_node
+    except Exception as exc:  # noqa: BLE001
+        return ToolResult(
+            llm_message=f"Serviço de salário indisponível agora ({exc}).",
+            error=True,
+        )
+
+    # Garante company_id no state para o benchmark interno (multi-tenancy).
+    node_state = dict(state)
+    if ctx.company_id and not node_state.get("company_id"):
+        node_state["company_id"] = ctx.company_id
+
+    try:
+        result = salary_node(node_state)
+    except Exception as exc:  # noqa: BLE001 — fail-loud, nunca silent
+        logger.warning("[WizardServiceTools] salary_node failed: %s", exc)
+        return ToolResult(
+            llm_message=(
+                f"Não consegui buscar o benchmark salarial agora ({exc}). "
+                f"Você pode pedir a faixa ao recrutador e registrar depois."
+            ),
+            error=True,
+        )
+
+    updates = {k: result.get(k) for k in _SALARY_RESULT_KEYS if result.get(k) is not None}
+    smin = updates.get("salary_min")
+    smax = updates.get("salary_max")
+    currency = updates.get("salary_currency", "BRL")
+    if smin is None and smax is None:
+        return ToolResult(
+            llm_message=(
+                "Não há dados de mercado disponíveis para esse cargo. Peça a "
+                "faixa salarial ao recrutador e registre com set_job_fields "
+                "(ou confirme prosseguir sem faixa)."
+            ),
+        )
+    return ToolResult(
+        llm_message=(
+            f"Faixa salarial de mercado para {state.get('parsed_title')}: "
+            f"{currency} {smin:,.0f} – {currency} {smax:,.0f}. Apresente ao "
+            f"recrutador e pergunte se ele aceita ou quer ajustar."
+        ).replace(",", "."),
+        state_updates=updates,
+    )
+
+
+# ── publish_job ──────────────────────────────────────────────────────────
+
+
+def _handle_publish_job(
+    state: dict, tool_input: dict, ctx: ToolContext
+) -> ToolResult:
+    """Publica a vaga (AÇÃO IRREVERSÍVEL) — DRY pelo publish_node canonical.
+
+    Gate de confirmação: exige ``confirm=true`` no tool_input. Sem confirmação
+    explícita, NÃO publica — instrui o LLM a obter o "sim" do recrutador. Com
+    confirmação, seta ``policy_confirmed_publish=True`` (destrava o PolicyGate
+    HITL do nó) e chama ``publish_node``, que cria a vaga + screening config +
+    publica + gera share link + audit (SOX). Pré-requisito: JD gerada e aprovada.
+    """
+    tenant_err = _reject_tenant_keys(tool_input)
+    if tenant_err:
+        return ToolResult(llm_message=tenant_err, error=True)
+
+    if not state.get("jd_enriched"):
+        return ToolResult(
+            llm_message=(
+                "Não posso publicar sem uma descrição gerada. Gere a JD "
+                "(enrich_job_description) e obtenha a aprovação do recrutador antes."
+            ),
+            error=True,
+        )
+    if state.get("jd_approved") is not True:
+        return ToolResult(
+            llm_message=(
+                "A descrição ainda não foi aprovada pelo recrutador. Confirme a "
+                "aprovação da JD antes de publicar."
+            ),
+            error=True,
+        )
+
+    confirmed = bool(tool_input.get("confirm"))
+    if not confirmed:
+        title = state.get("parsed_title") or "a vaga"
+        return ToolResult(
+            llm_message=(
+                f"Publicar é uma ação irreversível. Confirme explicitamente com "
+                f"o recrutador que ele quer publicar '{title}' agora. Quando ele "
+                f"confirmar, chame publish_job novamente com confirm=true."
+            ),
+        )
+
+    try:
+        from app.domains.job_creation.nodes.publish import publish_node
+    except Exception as exc:  # noqa: BLE001
+        return ToolResult(
+            llm_message=f"Serviço de publicação indisponível agora ({exc}).",
+            error=True,
+        )
+
+    node_state = dict(state)
+    if ctx.company_id and not node_state.get("company_id"):
+        node_state["company_id"] = ctx.company_id
+    # Destrava o PolicyGate HITL do publish_node (confirmação já obtida acima).
+    node_state["policy_confirmed_publish"] = True
+
+    try:
+        result = publish_node(node_state)
+    except Exception as exc:  # noqa: BLE001 — fail-loud
+        logger.warning("[WizardServiceTools] publish_node failed: %s", exc)
+        return ToolResult(
+            llm_message=f"Falha ao publicar a vaga ({exc}). Tente novamente.",
+            error=True,
+        )
+
+    error = result.get("error")
+    job_id = result.get("job_id")
+    share_link = result.get("share_link")
+
+    if error or not job_id:
+        return ToolResult(
+            llm_message=(
+                f"A publicação não foi concluída: {error or 'sem job_id retornado'}. "
+                f"Informe o recrutador e ofereça tentar de novo."
+            ),
+            state_updates={
+                "error": error,
+                "policy_confirmed_publish": True,
+            },
+            error=True,
+        )
+
+    share_part = f" Link de compartilhamento: {share_link}." if share_link else ""
+    return ToolResult(
+        llm_message=(
+            f"Vaga publicada com sucesso! ID {job_id}.{share_part} "
+            f"Avise o recrutador e ofereça os próximos passos (ver candidatos, etc.)."
+        ),
+        state_updates={
+            "job_id": job_id,
+            "job_uid": result.get("job_uid"),
+            "share_link": share_link,
+            "current_stage": "done",
+            "policy_confirmed_publish": True,
+            "error": None,
+        },
+    )
+
+
+SUGGEST_SALARY = WizardTool(
+    name="suggest_salary",
+    description=(
+        "Busca a faixa salarial de mercado para a vaga (benchmark interno da "
+        "empresa + mercado). Use quando o recrutador perguntar sobre salário ou "
+        "ao montar a oferta. Requer ao menos o título. Apresente a faixa e deixe "
+        "o recrutador aceitar ou ajustar (set_job_fields não cobre salário — a "
+        "faixa fica no state do benchmark)."
+    ),
+    input_schema={"type": "object", "properties": {}, "additionalProperties": False},
+    handler=_handle_suggest_salary,
+)
+
+PUBLISH_JOB = WizardTool(
+    name="publish_job",
+    description=(
+        "Publica a vaga. AÇÃO IRREVERSÍVEL — só chame após o recrutador APROVAR "
+        "a descrição e CONFIRMAR explicitamente que quer publicar. Passe "
+        "confirm=true apenas quando tiver a confirmação explícita do recrutador "
+        "no turno. Sem confirm=true, a tool apenas orienta a obter a confirmação."
+    ),
+    input_schema={
+        "type": "object",
+        "properties": {
+            "confirm": {
+                "type": "boolean",
+                "description": "True somente com confirmação explícita do recrutador.",
+            },
+        },
+        "additionalProperties": False,
+    },
+    handler=_handle_publish_job,
+)
+
+
 SERVICE_TOOLS: tuple[WizardTool, ...] = (
     SUGGEST_COMPETENCIES,
     ENRICH_JOB_DESCRIPTION,
+    SUGGEST_SALARY,
+    PUBLISH_JOB,
 )
