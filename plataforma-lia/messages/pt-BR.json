@@ -692,7 +692,9 @@
       "modeFullscreen": "Tela cheia",
       "modeMinimize": "Minimizar",
       "resetPosition": "Redefinir posição",
-      "dragHandle": "Arraste para mover"
+      "dragHandle": "Arraste para mover",
+      "deleteError": "Erro ao excluir",
+      "deleteErrorDescription": "Não foi possível excluir a conversa. Tente novamente."
     },
     "input": {
       "placeholder": "Faça qualquer coisa com a IA...",
@@ -717,7 +719,9 @@
       "clearSearch": "Limpar busca",
       "all": "Todas",
       "noResults": "Nenhuma consulta encontrada",
-      "hint": "Clique para inserir no prompt"
+      "hint": "Clique para inserir no prompt",
+      "dynamicLoading": "Gerando sugestões...",
+      "dynamicTitle": "Sugestões para você"
     },
     "contextPanel": {
       "title": "Contexto da Conversa",
@@ -3558,7 +3562,9 @@
       "positionNotProvided": "Cargo não informado",
       "companyNotProvided": "Empresa não informada",
       "durationYears": "{years} anos",
-      "techStack": "Stack"
+      "techStack": "Stack",
+      "scoreUnavailable": "Score indisponível",
+      "skillsOverflowMore": "+{count} mais"
     },
     "scoreModal": {
       "title": "Nota Geral IA",
@@ -4308,7 +4314,8 @@
           "cat3": "Experiência Prática",
           "cat4": "Gestão de Tempo",
           "cat5": "Objetivos"
-        }
+        },
+        "noChannelsEnabled": "Nenhum canal habilitado"
       },
       "textScreening": {
         "title": "Triagem WSI (Texto)",
@@ -7606,6 +7613,75 @@
       "voiceAria": "Iniciar triagem por voz",
       "whatsapp": "WhatsApp",
       "whatsappAria": "Iniciar triagem por WhatsApp"
+    }
+  },
+  "talentPool": {
+    "schedule": {
+      "typeLabel": "Tipo de agendamento",
+      "types": {
+        "cron": "Agendado (recorrente)",
+        "event_driven": "Por evento",
+        "on_demand": "Sob demanda"
+      },
+      "eventPicker": {
+        "title": "Selecionar evento"
+      },
+      "cronBuilder": {
+        "title": "Agendamento recorrente",
+        "dayLabel": "Dia",
+        "dayOfMonthLabel": "Dia do mês",
+        "dayOfWeekLabel": "Dia da semana",
+        "expressionLabel": "Expressão cron",
+        "hourLabel": "Hora",
+        "minuteLabel": "Minuto",
+        "invalid": "Expressão cron inválida",
+        "presetLabel": "Frequência",
+        "presets": {
+          "custom": "Personalizado",
+          "daily": "Diário",
+          "weekly": "Semanal",
+          "monthly": "Mensal"
+        }
+      }
+    }
+  },
+  "wedo_admin": {
+    "fairness": {
+      "dashboard": {
+        "alert": "Alerta",
+        "alerts": "Alertas",
+        "alertsChart": "Alertas por período",
+        "blocked": "Bloqueado",
+        "blocks": "Bloqueios",
+        "blocksChart": "Bloqueios por período",
+        "categoryColumn": "Categoria",
+        "dateColumn": "Data",
+        "dateLocale": "pt-BR",
+        "description": "Monitoramento de equidade e conformidade das decisões de IA.",
+        "errorLoading": "Erro ao carregar",
+        "errorLoadingData": "Erro ao carregar os dados.",
+        "errorLoadingFairnessData": "Não foi possível carregar os dados de equidade.",
+        "eventsByCategory": "Eventos por categoria",
+        "exportCsv": "Exportar CSV",
+        "exportJson": "Exportar JSON",
+        "noIncidents": "Nenhum incidente",
+        "noIncidentsDesc": "Nenhum incidente de equidade registrado no período.",
+        "period7": "7 dias",
+        "period30": "30 dias",
+        "period90": "90 dias",
+        "period365": "365 dias",
+        "recentIncidents": "Incidentes recentes",
+        "termsColumn": "Termos",
+        "title": "Painel de equidade",
+        "totalEvents": "Total de eventos",
+        "typeColumn": "Tipo"
+      }
+    },
+    "landing": {
+      "coming_soon": "Em breve",
+      "provisional_badge": "Provisório",
+      "subtitle": "Painel administrativo da WeDo Talent.",
+      "title": "Administração"
     }
   }
 }

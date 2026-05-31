@@ -692,7 +692,9 @@
       "modeFullscreen": "Full screen",
       "modeMinimize": "Minimize",
       "resetPosition": "Reset position",
-      "dragHandle": "Drag to move"
+      "dragHandle": "Drag to move",
+      "deleteError": "Error deleting",
+      "deleteErrorDescription": "Could not delete the conversation. Please try again."
     },
     "input": {
       "placeholder": "Ask IA anything...",
@@ -717,7 +719,9 @@
       "clearSearch": "Clear search",
       "all": "All",
       "noResults": "No queries found",
-      "hint": "Click to insert into prompt"
+      "hint": "Click to insert into prompt",
+      "dynamicLoading": "Generating suggestions...",
+      "dynamicTitle": "Suggestions for you"
     },
     "contextPanel": {
       "title": "Conversation Context",
@@ -3558,7 +3562,9 @@
       "positionNotProvided": "Position not provided",
       "companyNotProvided": "Company not provided",
       "durationYears": "{years} years",
-      "techStack": "Stack"
+      "techStack": "Stack",
+      "scoreUnavailable": "Score unavailable",
+      "skillsOverflowMore": "+{count} more"
     },
     "scoreModal": {
       "title": "IA Overall Score",
@@ -4308,7 +4314,8 @@
           "cat3": "Practical Experience",
           "cat4": "Time Management",
           "cat5": "Goals"
-        }
+        },
+        "noChannelsEnabled": "No channels enabled"
       },
       "textScreening": {
         "title": "WSI Screening (Text)",
@@ -7606,6 +7613,75 @@
       "voiceAria": "Start screening by voice",
       "whatsapp": "WhatsApp",
       "whatsappAria": "Start screening on WhatsApp"
+    }
+  },
+  "talentPool": {
+    "schedule": {
+      "typeLabel": "Schedule type",
+      "types": {
+        "cron": "Scheduled (recurring)",
+        "event_driven": "Event-driven",
+        "on_demand": "On demand"
+      },
+      "eventPicker": {
+        "title": "Select event"
+      },
+      "cronBuilder": {
+        "title": "Recurring schedule",
+        "dayLabel": "Day",
+        "dayOfMonthLabel": "Day of month",
+        "dayOfWeekLabel": "Day of week",
+        "expressionLabel": "Cron expression",
+        "hourLabel": "Hour",
+        "minuteLabel": "Minute",
+        "invalid": "Invalid cron expression",
+        "presetLabel": "Frequency",
+        "presets": {
+          "custom": "Custom",
+          "daily": "Daily",
+          "weekly": "Weekly",
+          "monthly": "Monthly"
+        }
+      }
+    }
+  },
+  "wedo_admin": {
+    "fairness": {
+      "dashboard": {
+        "alert": "Alert",
+        "alerts": "Alerts",
+        "alertsChart": "Alerts over time",
+        "blocked": "Blocked",
+        "blocks": "Blocks",
+        "blocksChart": "Blocks over time",
+        "categoryColumn": "Category",
+        "dateColumn": "Date",
+        "dateLocale": "en-US",
+        "description": "Monitoring of fairness and compliance in AI decisions.",
+        "errorLoading": "Error loading",
+        "errorLoadingData": "Error loading data.",
+        "errorLoadingFairnessData": "Could not load fairness data.",
+        "eventsByCategory": "Events by category",
+        "exportCsv": "Export CSV",
+        "exportJson": "Export JSON",
+        "noIncidents": "No incidents",
+        "noIncidentsDesc": "No fairness incidents recorded in this period.",
+        "period7": "7 days",
+        "period30": "30 days",
+        "period90": "90 days",
+        "period365": "365 days",
+        "recentIncidents": "Recent incidents",
+        "termsColumn": "Terms",
+        "title": "Fairness dashboard",
+        "totalEvents": "Total events",
+        "typeColumn": "Type"
+      }
+    },
+    "landing": {
+      "coming_soon": "Coming soon",
+      "provisional_badge": "Provisional",
+      "subtitle": "WeDo Talent admin panel.",
+      "title": "Administration"
     }
   }
 }
