@@ -1373,7 +1373,7 @@ class PearchService:
                 query=request.query,
                 thread_id=request.thread_id,
                 type=request.pearch_type,
-                insights=True,
+                insights=False,  # insights IA por candidato custa ~10s -> busca estourava deadline. On-demand ao abrir candidato.
                 profile_scoring=True,
                 strict_filters=use_strict_filters,
                 custom_filters=custom_filters if custom_filters else None,
