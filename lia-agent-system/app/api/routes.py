@@ -444,7 +444,6 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(consumption.router, prefix="/api/v1", tags=["consumption"])
 
     # ── WSI / Triagem ─────────────────────────────────────────────────────────
-    app.include_router(wsi_endpoints.router, tags=["wsi"])
     app.include_router(wsi_router, tags=["wsi-v1"])
     # P1-5 (audit rev. 15) — endpoint duplicado `POST /wsi-async/invite` removido.
     # Frontend usa só `/api/backend-proxy/communication/send-screening-invite`.
@@ -470,14 +469,12 @@ def register_all_routes(app: FastAPI) -> None:
     # Task #570 — canonical chat-feedback router (closes audit #569 P0).
     # Mounts /api/v1/lia/feedback/{thumbs,rating,correction,metrics,by-conversation}.
     from app.api.v1 import lia_feedback
-    app.include_router(lia_feedback.router, prefix="/api/v1", tags=["lia-feedback"])
 
     # ── Wizard ────────────────────────────────────────────────────────────────
     app.include_router(wizard_suggestions.router, prefix="/api/v1/wizard", tags=["wizard-suggestions"])
     app.include_router(wizard_smart_orchestrator.router, prefix="/api/v1/wizard", tags=["wizard-smart-orchestrator"])
 
     # ── Orchestrator ──────────────────────────────────────────────────────────
-    app.include_router(orchestrator_routes.router)
     app.include_router(orchestrated_job_chat.router, prefix="/api/v1", tags=["orchestrated-job-chat"])
     app.include_router(orchestrated_talent_chat.router, prefix="/api/v1/orchestrator", tags=["orchestrated-talent-chat"])
     app.include_router(orchestrated_jobs_management.router, prefix="/api/v1/orchestrator", tags=["orchestrated-jobs-management"])
@@ -636,4 +633,3 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(rh_dashboard_router, prefix="/api/v1", tags=["rh-dashboard"])
     # ── Public (no /api/v1 prefix) ────────────────────────────────────────────
     app.include_router(candidate_portal.router, tags=["candidate-portal"])
-    app.include_router(public_shared_searches.router, prefix="/api", tags=["public-shared-searches"])
