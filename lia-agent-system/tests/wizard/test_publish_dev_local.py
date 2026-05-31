@@ -135,3 +135,20 @@ def test_get_share_link_local_not_found():
         res = c.get_share_link("missing")
     assert not res.success
     assert "não encontrada" in res.error
+
+
+@pytest.mark.medium
+def test_screening_config_persists_mode_with_empty_questions():
+    """Gap 2026-05-31: screening_config deve gravar o modo mesmo SEM perguntas WSI."""
+    c = _client_devlocal()
+    fake = _FakeConn(fetchone_result=("uid-1",))
+    with patch.object(c, "_devlocal_conn", return_value=fake):
+        res = c.save_screening_config("uid-1", [], "full", [])
+    assert res.success
+    # o jsonb merge inclui screening_mode mesmo com questions=[]
+    sql, params = fake.cursor_obj.executed[0]
+    assert "screening_config" in sql
+    import json as _j
+    payload = _j.loads(params[0])
+    assert payload["screening_mode"] == "full"
+    assert payload["screening_questions"] == []

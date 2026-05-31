@@ -125,7 +125,9 @@ def publish_node(state: JobCreationState) -> JobCreationState:
             job_data = {
                 "title": jd.get("titulo_padronizado", state.get("parsed_title", "")),
                 "description": jd.get("about_role", ""),
-                "seniority": state.get("seniority_resolved", ""),
+                # seniority_resolved vem do seniority_resolver node (graph legado);
+                # o orquestrador conversacional seta parsed_seniority. Fallback cobre ambos.
+                "seniority": state.get("seniority_resolved") or state.get("parsed_seniority") or "",
                 "department": state.get("parsed_department", ""),
                 "location": state.get("parsed_location", ""),
                 "work_model": state.get("parsed_model", ""),
@@ -165,8 +167,11 @@ def publish_node(state: JobCreationState) -> JobCreationState:
             questions = state.get("wsi_questions", [])
             eligibility = state.get("eligibility_questions", [])
             mode = state.get("screening_mode", "compact")
-            if questions:
-                cb_wrap(api.save_screening_config, job_id, questions, mode, eligibility)
+            # Sempre persistir screening_config — mesmo sem perguntas WSI ainda,
+            # o modo de triagem (compact/full) + eligibility do recrutador
+            # precisam ser salvos na vaga (gap detectado 2026-05-31: screening_config
+            # ficava None quando WSI nao gerado, perdendo o modo escolhido).
+            cb_wrap(api.save_screening_config, job_id, questions, mode, eligibility)
 
             # Step 3: Publish to platforms
             platforms = state.get("publish_platforms", ["website"])
@@ -292,7 +297,7 @@ def publish_node(state: JobCreationState) -> JobCreationState:
                     job_id=str(job_id),
                     title=title,
                     jd_enriched=jd_enriched_payload,
-                    seniority_level=state.get("seniority_resolved"),
+                    seniority_level=state.get("seniority_resolved") or state.get("parsed_seniority"),
                     department=state.get("parsed_department"),
                 )
         except Exception as exc:  # pragma: no cover - never block publish
