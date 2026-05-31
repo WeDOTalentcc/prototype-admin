@@ -71,6 +71,8 @@ def evaluate_jd_quality(
     responsibilities: list[str] | None = None,
     technical_skills: list[str] | None = None,
     behavioral_competencies: list[str] | None = None,
+    d3_min: int = 9,
+    d4_min: int = 5,
 ) -> dict[str, Any]:
     """Avalia qualidade do JD em 9 dimensões (D1-D9), score 0-100 + band.
 
@@ -119,7 +121,9 @@ def evaluate_jd_quality(
         "detail": f"{resp_count} responsabilidade(s) — mínimo ideal: 5",
     })
 
-    _D3_MIN_IDEAL = 9
+    # Consolidação WSI Fase 3.3: d3_min parametrizável (mode-aware no wizard;
+    # default 9 = mínimo ideal Full WSI, paridade com /jd-evaluate).
+    _D3_MIN_IDEAL = d3_min
     if tech_count >= _D3_MIN_IDEAL:
         pts_3, st_3 = 15, "sufficient"
     elif tech_count >= 3:
@@ -133,7 +137,7 @@ def evaluate_jd_quality(
         "detail": f"{tech_count} skill(s) técnica(s) — mínimo ideal: {_D3_MIN_IDEAL}",
     })
 
-    _D4_MIN_IDEAL = 5
+    _D4_MIN_IDEAL = d4_min
     if behav_count >= _D4_MIN_IDEAL:
         pts_4, st_4 = 10, "sufficient"
     elif behav_count >= 2:

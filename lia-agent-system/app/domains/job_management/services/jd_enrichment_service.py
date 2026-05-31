@@ -498,24 +498,32 @@ class JdEnrichmentService:
         technical_skills: SectionSuggestions,
         behavioral: SectionSuggestions
     ) -> tuple[float, list[str]]:
-        """Calcula score de qualidade para perguntas WSI."""
-        warnings = []
-        score = 1.0
-        
-        tech_count = len(request.detected_technical_skills or [])
-        behav_count = len(request.detected_behavioral_competencies or [])
-        
-        if tech_count < MIN_TECHNICAL_SKILLS_FOR_WSI:
-            missing = MIN_TECHNICAL_SKILLS_FOR_WSI - tech_count
-            score -= 0.15 * missing
-            warnings.append(f"Faltam {missing} competências técnicas para perguntas WSI de qualidade")
-        
-        if behav_count < MIN_BEHAVIORAL_COMPETENCIES_FOR_WSI:
-            missing = MIN_BEHAVIORAL_COMPETENCIES_FOR_WSI - behav_count
-            score -= 0.2 * missing
-            warnings.append(f"Faltam {missing} competências comportamentais para perguntas WSI de qualidade")
-        
-        return max(0.0, min(1.0, score)), warnings
+        """Score de qualidade WSI — DELEGADO ao canônico 9-dim (Fase 3.3).
+
+        Consolidação WSI: delega a
+        ``cv_screening.services.wsi_service.jd_quality.evaluate_jd_quality``
+        (single source). Retorna 0-1 (escala original desta superfície)
+        derivado do score canônico /100. Mapeia EnrichmentRequest -> inputs.
+        """
+        from app.domains.cv_screening.services.wsi_service.jd_quality import (
+            evaluate_jd_quality,
+        )
+
+        r = evaluate_jd_quality(
+            description=request.raw_input,
+            job_title=request.title,
+            department=request.department,
+            seniority=request.seniority,
+            responsibilities=list(request.detected_responsibilities or []),
+            technical_skills=list(request.detected_technical_skills or []),
+            behavioral_competencies=list(request.detected_behavioral_competencies or []),
+        )
+        warnings = [
+            ind["detail"]
+            for ind in r["indicators"]
+            if ind.get("status") in ("insufficient", "partial")
+        ]
+        return round(r["score"] / 100.0, 2), warnings
     
     def _calculate_completeness(
         self,

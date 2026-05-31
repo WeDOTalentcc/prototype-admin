@@ -228,62 +228,42 @@ def calculate_quality_score(
     min_technical: int = MIN_TECHNICAL_SKILLS,
     min_behavioral: int = MIN_BEHAVIORAL_COMPETENCIES,
 ) -> tuple[float, list[str]]:
-    """F1.B — Deterministic quality score (0-100).
+    """F1.B — quality score (0-100) DELEGADO ao canônico 9-dim (Fase 3.3).
 
-    Based on WSI methodology thresholds:
-    - D3: minimum technical skills
-    - D4: minimum behavioral competencies
-    - Also checks responsibilities, about_role, context signals
+    Consolidação WSI: delega a
+    ``cv_screening.services.wsi_service.jd_quality.evaluate_jd_quality`` —
+    single source de qualidade de JD (mesma função do endpoint /jd-evaluate e
+    do wizard). Mode-aware via ``d3_min``/``d4_min`` (passa os thresholds do
+    modo resolvidos pelo caller; NÃO penaliza modo compact). Mapeia
+    EnrichedJobDescription -> inputs do canônico; warnings derivados dos
+    indicadores insufficient/partial.
+
+    NOTA: o número agora segue a metodologia 9-dim (D1-D9), substituindo o
+    score de completude legado (tech/behav/resp/about/context/fairness). É a
+    consistência desejada (mesmo número do /jd-evaluate de Settings).
     """
-    score = 0.0
-    warnings = []
+    from app.domains.cv_screening.services.wsi_service.jd_quality import (
+        evaluate_jd_quality,
+    )
 
-    # D3: Technical skills (max 30 points) -- mode-aware (Fase 4)
-    n_tech = len(enriched.skills_obrigatorias)
-    if n_tech >= min_technical:
-        score += 30.0
-    elif n_tech >= 5:
-        score += 15.0 + (n_tech - 5) * (15.0 / max(1, min_technical - 5))
-        warnings.append(f"Apenas {n_tech} skills tecnicas (minimo recomendado: {min_technical})")
-    else:
-        score += n_tech * 3.0
-        warnings.append(f"Skills tecnicas insuficientes: {n_tech}/{min_technical}")
-
-    # D4: Behavioral competencies (max 25 points) -- mode-aware (Fase 4)
-    n_behav = len(enriched.competencias_comportamentais)
-    if n_behav >= min_behavioral:
-        score += 25.0
-    elif n_behav >= 2:
-        score += 10.0 + (n_behav - 2) * (15.0 / max(1, min_behavioral - 2))
-        warnings.append(f"Apenas {n_behav} competencias comportamentais (minimo: {min_behavioral})")
-    else:
-        score += n_behav * 5.0
-        warnings.append(f"Competencias comportamentais insuficientes: {n_behav}/{min_behavioral}")
-
-    # Responsibilities (max 20 points)
-    n_resp = len(enriched.responsabilidades)
-    if n_resp >= MIN_RESPONSIBILITIES:
-        score += 20.0
-    else:
-        score += n_resp * (20.0 / MIN_RESPONSIBILITIES)
-        warnings.append(f"Apenas {n_resp} responsabilidades (minimo: {MIN_RESPONSIBILITIES})")
-
-    # About role presence (max 10 points)
-    if enriched.about_role and len(enriched.about_role) > 20:
-        score += 10.0
-
-    # Context signals completeness (max 10 points)
-    signals = enriched.context_signals
-    if signals.nivel_autonomia and signals.nivel_inovacao and signals.nivel_pressao and signals.nivel_colaboracao:
-        score += 10.0
-    else:
-        score += 5.0
-
-    # Fairness corrections bonus (max 5 points)
-    if enriched.fairness_corrections:
-        score += 5.0
-
-    return round(min(score, 100.0), 1), warnings
+    r = evaluate_jd_quality(
+        description=enriched.about_role,
+        job_title=enriched.titulo_padronizado,
+        seniority=enriched.senioridade_confirmada,
+        responsibilities=list(enriched.responsabilidades or []),
+        technical_skills=[s.skill for s in (enriched.skills_obrigatorias or [])],
+        behavioral_competencies=[
+            c.competencia for c in (enriched.competencias_comportamentais or [])
+        ],
+        d3_min=min_technical,
+        d4_min=min_behavioral,
+    )
+    warnings = [
+        ind["detail"]
+        for ind in r["indicators"]
+        if ind.get("status") in ("insufficient", "partial")
+    ]
+    return float(r["score"]), warnings
 
 
 def _coerce_technical(items: list | None) -> list:
