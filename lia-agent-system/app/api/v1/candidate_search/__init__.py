@@ -17,6 +17,7 @@ from .calibration import router as calibration_router
 from .contact import router as contact_router
 from .core_search import router as core_search_router
 from .feedback import router as feedback_router
+from .validation import router as validation_router
 from .jd_search import router as jd_search_router
 from .misc_search import router as misc_search_router
 
@@ -29,6 +30,7 @@ router.include_router(archetypes_router)
 router.include_router(misc_search_router)
 router.include_router(calibration_router)
 router.include_router(feedback_router)
+router.include_router(validation_router)
 
 from ._shared import (  # noqa: F401
     SearchRequestDTO,
