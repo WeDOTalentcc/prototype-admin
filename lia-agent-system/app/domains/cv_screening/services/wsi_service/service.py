@@ -192,6 +192,7 @@ Responda em JSON:
         seniority: str | None = None,
         enriched_jd: dict | None = None,
         collect_dropped: list | None = None,
+        precomputed_selected_traits: list | None = None,
     ) -> list[WSIQuestion]:
         """
         ETAPA 2: Gera perguntas científicas baseadas em competências.
@@ -239,6 +240,7 @@ Responda em JSON:
             mode,
             job_description=job_description,
             seniority=seniority,
+            precomputed_selected_traits=precomputed_selected_traits,
         )
         # Layer 4: fairness scan por-pergunta (drop + audit)
         return self._apply_fairness_l4(questions, collect_dropped=collect_dropped)
@@ -252,6 +254,7 @@ Responda em JSON:
         mode: Literal["compact", "full"] = "compact",
         max_questions: int | None = None,
         collect_dropped: list | None = None,
+        precomputed_selected_traits: list | None = None,
     ) -> list[WSIQuestion]:
         """Convenience wrapper: converts string skill/behavioral lists into Competency
         objects and delegates to ``generate_screening_questions()``.
@@ -305,10 +308,77 @@ Responda em JSON:
             job_description=job_description,
             seniority=_seniority_level if _seniority_level in ("junior", "pleno", "senior", "lead", "executive") else "pleno",
             collect_dropped=collect_dropped,
+            precomputed_selected_traits=precomputed_selected_traits,
         )
         if max_questions is not None and len(questions) > max_questions:
             questions = questions[:max_questions]
         return questions
+
+    async def generate_wsi_package(
+        self,
+        *,
+        skills: list[str],
+        behavioral: list[str] | None = None,
+        seniority: str = "pleno",
+        job_description: str | None = None,
+        mode: Literal["compact", "full"] = "compact",
+        dept_blend=None,
+        collect_dropped: list | None = None,
+    ) -> dict[str, Any]:
+        """Orquestracao canonica unica WSI (Consolidacao Fase 2.4b).
+
+        Produz perguntas + Big Five (profile + trait_rankings F3 rico) num so
+        lugar, extraindo OCEAN UMA vez (sem dupla chamada LLM). Reusada pelo
+        wizard conversacional (bulk). Settings pode continuar usando
+        generate_from_simple_inputs direto.
+
+        dept_blend (Optional[BigFiveBlend], ADR-LGPD-001): quando fornecido,
+        rank_traits usa a formula 3/4-camadas; senao, llm_only (paridade com o
+        bigfive_node atual do wizard).
+
+        Returns dict: {questions: list[WSIQuestion], bigfive_profile: dict|None,
+        trait_rankings: list[dict], dropped: list}.
+        """
+        from .bigfive import rank_traits as _rank_traits, TRAITS as _TRAITS
+
+        _sen = (seniority or "pleno").lower().strip().replace(" ", "_").replace("-", "_")
+
+        behav_list = [b for b in (behavioral or []) if b and b.strip()]
+
+        selected_traits: list = []
+        trait_rankings: list[dict] = []
+        bigfive_profile: dict[str, Any] = {}
+        if job_description:
+            # F2.5 — extracao OCEAN UMA vez (reusada p/ perguntas + painel).
+            ranked = await self.question_generator._extract_ocean_scores(
+                job_description, behav_list
+            )
+            selected_traits = self.question_generator._select_traits_by_seniority(
+                ranked, _sen
+            )
+            # 0-100 -> 0-1 (escala do rank_traits canonico).
+            llm_scores = {t.trait: round(t.score / 100.0, 4) for t in ranked}
+            trait_rankings = _rank_traits(llm_scores, _sen, dept_blend=dept_blend)
+            bigfive_profile = {t: llm_scores.get(t, 0.5) for t in _TRAITS}
+            bigfive_profile["evidences"] = {t.trait: list(t.evidence or []) for t in ranked}
+
+        # Perguntas — reusa traits pre-computados (sem 2a extracao OCEAN quando
+        # job_description presente).
+        questions = await self.generate_from_simple_inputs(
+            skills=skills,
+            behavioral=behav_list,
+            seniority=seniority,
+            job_description=job_description,
+            mode=mode,
+            collect_dropped=collect_dropped,
+            precomputed_selected_traits=(selected_traits if job_description else None),
+        )
+        return {
+            "questions": questions,
+            "bigfive_profile": bigfive_profile or None,
+            "trait_rankings": trait_rankings,
+            "dropped": collect_dropped or [],
+        }
 
     async def suggest_single_question(
         self,

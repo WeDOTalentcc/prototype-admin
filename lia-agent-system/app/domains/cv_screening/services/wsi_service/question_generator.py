@@ -215,6 +215,7 @@ Retorne APENAS JSON válido (sem texto fora do JSON):
         mode: Literal["compact", "full"] = "compact",
         job_description: str | None = None,
         seniority: str | None = None,
+        precomputed_selected_traits: list | None = None,
     ) -> list[WSIQuestion]:
         """
         Gera todas as perguntas para as competências selecionadas.
@@ -277,7 +278,12 @@ Retorne APENAS JSON válido (sem texto fora do JSON):
 
         # F2.5 / F3 / F5 pipeline — quando job_description disponível
         selected_traits: list[OceanTraitScore] = []
-        if job_description:
+        if precomputed_selected_traits is not None:
+            # Fase 2.4b: traits já extraídos pela orquestração canônica
+            # (generate_wsi_package) — evita 2ª chamada LLM de OCEAN.
+            selected_traits = precomputed_selected_traits
+            logger.info(f"WSI F5 using precomputed selected traits ({len(selected_traits)})")
+        elif job_description:
             behav_names = [c.name for c in behavioral]
             ranked = await self._extract_ocean_scores(job_description, behav_names)
             selected_traits = self._select_traits_by_seniority(ranked, seniority or "pleno")
