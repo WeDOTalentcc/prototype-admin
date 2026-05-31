@@ -525,6 +525,12 @@ export default function AgentStudioPage({
   const handleFunnelActivate = (slug: ServiceSlug) => {
     if (slug === "sourcing") setShowCreateModal(true)
     else if (slug === "calibration") setShowCreateTwinModal(true)
+    else if (slug === "screening") {
+      // Screening (triagem) é configurado por vaga — leva à aba de perguntas.
+      router.push(firstJobId ? `/${locale}/jobs/${firstJobId}?tab=edit&section=perguntas` : `/${locale}/jobs`)
+    } else if (slug === "intake") {
+      router.push(`/${locale}/jobs`)
+    }
   }
 
   return (

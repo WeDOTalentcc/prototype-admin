@@ -106,8 +106,11 @@ function ServiceRow({ data, index, isLast, isExpanded, onToggle, onActivate, onM
   const labelKey = `studio.services.${data.slug}` as const
 
   const handleRowClick = () => {
-    if (isInactive) { onActivate(); return }
-    if (hasPanel) onToggle()
+    // Painel sempre expande (mesmo inativo) — revela o card com as ações reais
+    // (solicitar alinhamento, enviar oferta/NPS, criar agente/twin). Só serviços
+    // SEM painel (ex: screening) caem no onActivate.
+    if (hasPanel) { onToggle(); return }
+    if (isInactive) onActivate()
   }
 
   return (
