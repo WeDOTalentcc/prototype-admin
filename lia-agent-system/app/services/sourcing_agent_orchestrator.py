@@ -23,6 +23,10 @@ from typing import Optional
 # SourcingAgentSignal canonical-only fail-closed (Part 1.5 + Part 2 layers 1+2):
 # writes/reads usam custom_agent_id; agent_id legacy é nullable (migration 209).
 from lia_models.sourcing_agent import SourcingAgentSignal  # noqa: E402 imported at module level for consolidation
+from app.domains.hiring_policy.repositories.hiring_policy_repository import (
+    HiringPolicyRepository as JobHiringPolicyRepository,  # alias expected by contract tests
+)
+from app.domains.approvals.repositories.manager_alignment_repository import ManagerAlignmentRepository
 
 logger = logging.getLogger(__name__)
 
@@ -678,4 +682,43 @@ class SourcingAgentOrchestrator:
         }
 
 
+    async def _check_alignment_gate(self, company_id: str, job_vacancy_id: str, db) -> None:
+        """
+        Fail-open gate: raises HTTPException 403 only when policy explicitly requires
+        manager alignment AND no approved alignment exists for this job.
+        On any infra error, logs and allows (fail-open — never blocks sourcing).
+        """
+        try:
+            policy_repo = JobHiringPolicyRepository(db)
+            policy = await policy_repo.get_by_company(company_id)
+            if not policy:
+                return
+            rules = policy.communication_rules or {}
+            if not rules.get("require_manager_alignment"):
+                return
+
+            align_repo = ManagerAlignmentRepository(db)
+            alignments = await align_repo.list_for_job(company_id, job_vacancy_id)
+            approved = [a for a in alignments if a.status == "approved"]
+            if not approved:
+                from fastapi import HTTPException
+                raise HTTPException(
+                    status_code=403,
+                    detail={
+                        "code": "ALIGNMENT_REQUIRED",
+                        "message": "Esta vaga requer aprovação do gestor antes de iniciar o sourcing.",
+                        "job_vacancy_id": job_vacancy_id,
+                    },
+                )
+        except Exception as exc:
+            # Re-raise HTTPException (our own 403) — only swallow infra errors
+            from fastapi import HTTPException as _HTTPException
+            if isinstance(exc, _HTTPException):
+                raise
+            logger.warning(
+                "[AlignmentGate] fail-open — infra error: %s", exc, exc_info=True
+            )
+
+
 sourcing_agent_orchestrator = SourcingAgentOrchestrator()
+

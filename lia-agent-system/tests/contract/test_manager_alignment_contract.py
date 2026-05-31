@@ -94,10 +94,6 @@ class TestManagerAlignmentModelContract:
 # Contract: _check_alignment_gate — gate behaviour
 # ---------------------------------------------------------------------------
 
-@pytest.mark.xfail(
-    reason="_check_alignment_gate not yet implemented in SourcingAgentOrchestrator",
-    strict=False,
-)
 class TestAlignmentGateContract:
 
     def _make_orchestrator(self):
@@ -122,7 +118,7 @@ class TestAlignmentGateContract:
 
         with patch(
             "app.services.sourcing_agent_orchestrator.JobHiringPolicyRepository",
-            return_value=AsyncMock(get_active_policy=AsyncMock(return_value=mock_policy)),
+            return_value=AsyncMock(get_by_company=AsyncMock(return_value=mock_policy)),
         ), patch(
             "app.services.sourcing_agent_orchestrator.ManagerAlignmentRepository",
             return_value=mock_repo,
@@ -148,7 +144,7 @@ class TestAlignmentGateContract:
 
         with patch(
             "app.services.sourcing_agent_orchestrator.JobHiringPolicyRepository",
-            return_value=AsyncMock(get_active_policy=AsyncMock(return_value=mock_policy)),
+            return_value=AsyncMock(get_by_company=AsyncMock(return_value=mock_policy)),
         ), patch(
             "app.services.sourcing_agent_orchestrator.ManagerAlignmentRepository",
             return_value=mock_repo,
@@ -166,7 +162,7 @@ class TestAlignmentGateContract:
 
         with patch(
             "app.services.sourcing_agent_orchestrator.JobHiringPolicyRepository",
-            return_value=AsyncMock(get_active_policy=AsyncMock(return_value=mock_policy)),
+            return_value=AsyncMock(get_by_company=AsyncMock(return_value=mock_policy)),
         ):
             # Should not raise
             await orch._check_alignment_gate("company-1", "job-1", mock_db)
