@@ -8,7 +8,7 @@ from dataclasses import field as dc_field
 from datetime import datetime
 from typing import Any, Literal, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 logger = logging.getLogger(__name__)
 
@@ -180,6 +180,43 @@ class WSIQuestion(BaseModel):
     fallback_used: bool = False
     llm_failure_mode: str | None = None  # LLMFailureMode.value when fallback_used
     llm_error_message: str | None = None  # human-readable when fallback_used
+
+    # ── Consolidação WSI Fase 2 (2026-05-31): campos opcionais de painel ──
+    # Direção B (decisão Paulo): portamos a riqueza por-pergunta do fork
+    # job_creation para o canônico único. Todos OPCIONAIS (default None) →
+    # backward-compat total com o fluxo de análise (ResponseAnalysis continua
+    # sendo a fonte do bloom/dreyfus DEMONSTRADO; estes são os ALVOS de geração).
+    block: Literal["technical", "behavioral"] | None = None  # bloco da triagem
+    skill: str | None = None  # competência/skill alvo (espelha competency p/ painel)
+    bloom_level: int | None = Field(default=None, ge=1, le=6)  # Bloom ALVO da pergunta
+    dreyfus_level: int | None = Field(default=None, ge=1, le=5)  # Dreyfus ALVO
+    ideal_answer: str | None = None  # resposta-modelo (derivada de scoring_criteria.score_5)
+    trait_ocean: str | None = None  # espelho de big_five_mapping p/ contrato do painel
+
+    @model_validator(mode="after")
+    def _derive_panel_fields(self) -> "WSIQuestion":
+        # DRY: deriva os campos baratos a partir do que já existe, sem exigir
+        # que cada builder os preencha. skill↔competency, trait_ocean↔big_five_mapping,
+        # ideal_answer↔scoring_criteria.score_5 (a âncora ideal do CBI).
+        if self.skill is None:
+            self.skill = self.competency
+        if self.trait_ocean is None and self.big_five_mapping:
+            self.trait_ocean = self.big_five_mapping
+        # BigFive: o trait OCEAN é carregado em scoring_criteria["ocean_trait"]
+        # pelo _generate_bigfive_question — espelha p/ o painel.
+        if self.trait_ocean is None and isinstance(self.scoring_criteria, dict):
+            _ot = self.scoring_criteria.get("ocean_trait")
+            if isinstance(_ot, str) and _ot.strip():
+                self.trait_ocean = _ot
+        if self.ideal_answer is None and isinstance(self.scoring_criteria, dict):
+            _score5 = self.scoring_criteria.get("score_5")
+            if isinstance(_score5, str) and _score5.strip():
+                self.ideal_answer = _score5
+        # BigFive são sempre comportamentais; demais frameworks default técnico
+        # quando o builder não setou block explicitamente.
+        if self.block is None:
+            self.block = "behavioral" if self.framework == "BigFive" else "technical"
+        return self
 
 
 class ResponseAnalysis(BaseModel):

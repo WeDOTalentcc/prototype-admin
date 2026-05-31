@@ -24,6 +24,18 @@ from .models import (
 
 logger = logging.getLogger(__name__)
 
+# Consolidação WSI Fase 2 (2026-05-31): alvos Bloom/Dreyfus por senioridade.
+# Bloom (1-6) e Dreyfus (1-5) calibrados pelo nível da vaga — usados como ALVO
+# de geração das perguntas dos respectivos frameworks (o nível DEMONSTRADO
+# continua sendo medido em ResponseAnalysis a partir da resposta do candidato).
+_WSI_BLOOM_TARGET_BY_SENIORITY = {
+    "junior": 3, "pleno": 4, "senior": 5, "lead": 5, "executive": 6,
+}
+_WSI_DREYFUS_TARGET_BY_SENIORITY = {
+    "junior": 2, "pleno": 3, "senior": 4, "lead": 4, "executive": 5,
+}
+
+
 class WSIQuestionGenerator:
     """Gerador de perguntas científicas baseado em frameworks e RAG."""
 
@@ -732,6 +744,7 @@ Responda APENAS em JSON:
             competency=competency.name,
             framework="CBI",
             question_type="contextual",
+            block=competency.type,
             question_text=data.get("question_text") or f"Conte sobre uma situação em que você precisou utilizar {competency.name} para resolver um problema técnico. Qual foi o contexto, sua ação e o resultado obtido?",
             weight=competency.weight,
             expected_signals=data.get("expected_signals", ["Contexto", "Ação", "Resultado"]),
@@ -792,6 +805,10 @@ Responda APENAS em JSON com mesma estrutura anterior."""
             competency=competency.name,
             framework="Dreyfus",
             question_type="autodeclaration",
+            block=competency.type,
+            dreyfus_level=_WSI_DREYFUS_TARGET_BY_SENIORITY.get(
+                (competency.seniority_level or "pleno"), 3
+            ),
             question_text=data.get("question_text") or f"Descreva sua experiência com {competency.name} em projetos reais. De 1 a 5, como você avalia sua proficiência e em que tipo de cenário aplicou?",
             weight=competency.weight,
             expected_signals=data.get("expected_signals", ["Autodeclaração", "Projeto", "Contexto"]),
@@ -862,6 +879,10 @@ Responda APENAS em JSON."""
             competency=competency.name,
             framework="Bloom",
             question_type="microcase",
+            block=competency.type,
+            bloom_level=_WSI_BLOOM_TARGET_BY_SENIORITY.get(
+                (competency.seniority_level or "pleno"), 4
+            ),
             question_text=data.get("question_text") or f"Descreva como você abordaria um desafio técnico envolvendo {competency.name}. Explique sua estratégia, decisões e trade-offs considerados.",
             weight=competency.weight,
             expected_signals=data.get("expected_signals", ["Raciocínio", "Abordagem", "Conhecimento"]),
@@ -990,6 +1011,7 @@ Responda APENAS em JSON."""
             competency=competency.name,
             framework="BigFive",
             question_type="situational",
+            block="behavioral",
             question_text=data.get("question_text") or f"Compartilhe uma situação recente em que você precisou demonstrar {competency.name} em seu trabalho. Como você lidou com o desafio e qual foi o impacto?",
             weight=competency.weight,
             expected_signals=data.get("expected_signals", ["Situação", "Comportamento", "Resultado"]),
