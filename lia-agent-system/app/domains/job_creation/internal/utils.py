@@ -80,7 +80,6 @@ def _build_wizard_state_summary(state: Any) -> str:
         "localização": state.get("parsed_location"),
         "tipo de contrato": state.get("parsed_employment_type"),
         "gestor responsável": state.get("parsed_manager_name"),
-        "email do gestor": state.get("parsed_manager_email"),
     }
     filled = [k for k, v in field_map.items() if v]
     missing = [k for k, v in field_map.items() if not v]
@@ -88,6 +87,12 @@ def _build_wizard_state_summary(state: Any) -> str:
         lines.append("Campos preenchidos: " + ", ".join(
             f"{k}={field_map[k]!r}" for k in filled
         ))
+    # Email do gestor: NUNCA expor o valor ao LLM (LGPD — capturado
+    # deterministicamente no servidor). Mostrar apenas presença/ausência.
+    if state.get("parsed_manager_email"):
+        lines.append("Email do gestor: registrado (capturado automaticamente)")
+    else:
+        missing.append("email do gestor")
     if missing:
         lines.append("Campos ainda faltantes: " + ", ".join(missing))
 
@@ -103,9 +108,28 @@ def _build_wizard_state_summary(state: Any) -> str:
 
     tech = state.get("confirmed_technical_competencies") or []
     behav = state.get("confirmed_behavioral_competencies") or []
+    def _names(items):
+        out = []
+        for it in items:
+            if isinstance(it, dict):
+                n = it.get("skill") or it.get("competencia") or it.get("name")
+            else:
+                n = str(it)
+            if n:
+                out.append(str(n))
+        return out
     if tech or behav:
+        # Listar NOMES (não só contagem) para o LLM conseguir ADICIONAR/REMOVER
+        # competências: ao pedir adicione X, ele reconstrói a lista atual + X
+        # e chama confirm_competencies com o conjunto completo (semântica replace).
+        _tn = _names(tech); _bn = _names(behav)
         lines.append(
-            f"Competências confirmadas: {len(tech)} técnicas, {len(behav)} comportamentais"
+            f"Competências técnicas confirmadas ({len(_tn)}): "
+            + (", ".join(_tn) if _tn else "(nenhuma)")
+        )
+        lines.append(
+            f"Competências comportamentais confirmadas ({len(_bn)}): "
+            + (", ".join(_bn) if _bn else "(nenhuma)")
         )
     else:
         lines.append("Competências confirmadas: nenhuma ainda (aguardando confirmação)")
