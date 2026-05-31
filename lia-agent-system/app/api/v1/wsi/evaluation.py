@@ -53,195 +53,26 @@ async def evaluate_jd(request: JDEvaluateRequest, company_id: str = Depends(requ
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Evaluate job description quality using 9 dimensions (spec F1.B).
     Hard block if score < 30 (band=Crítico). 5 quality bands."""
-    resp_count   = len(request.responsibilities or [])
-    tech_count   = len(request.technical_skills or [])
-    behav_count  = len(request.behavioral_competencies or [])
-    has_seniority = bool(request.seniority)
-    desc = (request.description or "").lower()
-    title = (request.job_title or "").lower()
-    dept = (request.department or "")
-
-    score = 0
-    indicators = []
-
-    title_has_seniority = any(
-        kw in title
-        for keywords in _JD_SENIORITY_KEYWORDS.values()
-        for kw in keywords
+    from app.domains.cv_screening.services.wsi_service.jd_quality import (
+        evaluate_jd_quality,
     )
-    pts_1 = 10 if (title_has_seniority or has_seniority) else 0
-    score += pts_1
-    indicators.append({
-        "dimension": "D1",
-        "label": "Clareza do título",
-        "weight": 10,
-        "earned": pts_1,
-        "status": "sufficient" if pts_1 == 10 else "insufficient",
-        "detail": f"{'Indicador de senioridade detectado' if pts_1 else 'Título sem indicador de senioridade'}",
-    })
-
-    if resp_count >= 5:
-        pts_2 = 15
-        st_2 = "sufficient"
-    elif resp_count >= 2:
-        pts_2 = 7
-        st_2 = "partial"
-    else:
-        pts_2 = 0
-        st_2 = "insufficient"
-    score += pts_2
-    indicators.append({
-        "dimension": "D2",
-        "label": "Responsabilidades",
-        "weight": 15,
-        "earned": pts_2,
-        "count": resp_count,
-        "minimum": 5,
-        "status": st_2,
-        "detail": f"{resp_count} responsabilidade(s) — mínimo ideal: 5",
-    })
-
-    # D3 — Spec Task #43: mínimo ideal = 9 skills técnicas para cobertura Full WSI
-    _D3_MIN_IDEAL = 9
-    if tech_count >= _D3_MIN_IDEAL:
-        pts_3 = 15
-        st_3 = "sufficient"
-    elif tech_count >= 3:
-        pts_3 = 7
-        st_3 = "partial"
-    else:
-        pts_3 = 0
-        st_3 = "insufficient"
-    score += pts_3
-    indicators.append({
-        "dimension": "D3",
-        "label": "Skills técnicas",
-        "weight": 15,
-        "earned": pts_3,
-        "count": tech_count,
-        "minimum": _D3_MIN_IDEAL,
-        "status": st_3,
-        "detail": f"{tech_count} skill(s) técnica(s) — mínimo ideal: {_D3_MIN_IDEAL}",
-    })
-
-    # D4 — Spec Task #43: mínimo ideal = 5 competências comportamentais (1 por trait Big Five)
-    _D4_MIN_IDEAL = 5
-    if behav_count >= _D4_MIN_IDEAL:
-        pts_4 = 10
-        st_4 = "sufficient"
-    elif behav_count >= 2:
-        pts_4 = 5
-        st_4 = "partial"
-    else:
-        pts_4 = 0
-        st_4 = "insufficient"
-    score += pts_4
-    indicators.append({
-        "dimension": "D4",
-        "label": "Comp. comportamentais",
-        "weight": 10,
-        "earned": pts_4,
-        "count": behav_count,
-        "minimum": _D4_MIN_IDEAL,
-        "status": st_4,
-        "detail": f"{behav_count} comportamental(is) — mínimo ideal: {_D4_MIN_IDEAL}",
-    })
-
-    if has_seniority and resp_count >= 3:
-        pts_5 = 15
-        st_5 = "sufficient"
-    elif has_seniority or resp_count >= 2:
-        pts_5 = 7
-        st_5 = "partial"
-    else:
-        pts_5 = 0
-        st_5 = "insufficient"
-    score += pts_5
-    indicators.append({
-        "dimension": "D5",
-        "label": "Consistência senioridade",
-        "weight": 15,
-        "earned": pts_5,
-        "status": st_5,
-        "detail": "Senioridade declarada com responsabilidades compatíveis" if pts_5 == 15 else "Senioridade ou responsabilidades insuficientes para calibração",
-    })
-
-    desc_words = len(desc.split()) if desc else 0
-    has_contradiction = (
-        ("autonomia" in desc and "aprovação" in desc) or
-        ("independente" in desc and "acompanhamento diário" in desc)
+    # Consolidação WSI Fase 3: delega ao canônico único (mesma função que o
+    # wizard conversacional usa). Single source of truth do score 9-dim.
+    _r = evaluate_jd_quality(
+        description=request.description,
+        job_title=request.job_title,
+        department=request.department,
+        seniority=request.seniority,
+        responsibilities=request.responsibilities,
+        technical_skills=request.technical_skills,
+        behavioral_competencies=request.behavioral_competencies,
     )
-    pts_6 = 0 if has_contradiction else (10 if desc_words > 80 else 5)
-    score += pts_6
-    indicators.append({
-        "dimension": "D6",
-        "label": "Ausência de inconsistências",
-        "weight": 10,
-        "earned": pts_6,
-        "status": "insufficient" if has_contradiction else ("sufficient" if pts_6 == 10 else "partial"),
-        "detail": "Contradição detectada (autonomia vs. aprovação)" if has_contradiction else "Sem inconsistências detectadas",
-    })
-
-    has_context = bool(dept) or any(kw in desc for kw in ["empresa", "equipe", "time", "setor", "segmento", "startup", "corporati"])
-    pts_7 = 10 if has_context else 0
-    score += pts_7
-    indicators.append({
-        "dimension": "D7",
-        "label": "Contexto organizacional",
-        "weight": 10,
-        "earned": pts_7,
-        "status": "sufficient" if pts_7 == 10 else "insufficient",
-        "detail": "Contexto de empresa/time/setor presente" if pts_7 else "Sem contexto organizacional (empresa, time, setor)",
-    })
-
-    found_bias = [t for t in _BIAS_TERMS if t in desc or t in title]
-    pts_8 = 0 if found_bias else 10
-    score += pts_8
-    indicators.append({
-        "dimension": "D8",
-        "label": "Linguagem inclusiva",
-        "weight": 10,
-        "earned": pts_8,
-        "status": "insufficient" if found_bias else "sufficient",
-        "detail": f"Termo(s) de viés encontrado(s): {', '.join(found_bias[:3])}" if found_bias else "Linguagem neutra e inclusiva",
-    })
-
-    all_text = " ".join(filter(None, [
-        request.description,
-        " ".join(request.responsibilities or []),
-        " ".join(request.technical_skills or []),
-        " ".join(request.behavioral_competencies or []),
-    ]))
-    total_words = len(all_text.split())
-    pts_9 = 5 if total_words >= 150 else 0
-    score += pts_9
-    indicators.append({
-        "dimension": "D9",
-        "label": "Densidade total",
-        "weight": 5,
-        "earned": pts_9,
-        "word_count": total_words,
-        "minimum": 150,
-        "status": "sufficient" if pts_9 == 5 else "insufficient",
-        "detail": f"{total_words} palavras — mínimo ideal: 150",
-    })
-
-    band_key, band_label = _jd_get_band(score)
-
-    if score >= 85:
-        suggestion = f"JD excelente para {request.job_title}. Perguntas WSI serão altamente calibradas com {tech_count} competências técnicas e {behav_count} comportamentais."
-    elif score >= 70:
-        suggestion = "JD bem estruturado. Perguntas WSI geradas com boa qualidade. Recomenda-se enriquecer contexto organizacional para maximizar precisão."
-    elif score >= 50:
-        missing = []
-        if resp_count < 5: missing.append(f"responsabilidades (tem {resp_count}, ideal ≥5)")
-        if tech_count < 3: missing.append(f"skills técnicas (tem {tech_count}, ideal ≥3)")
-        if behav_count < 2: missing.append(f"comportamentais (tem {behav_count}, ideal ≥2)")
-        suggestion = f"JD adequado mas com lacunas. Melhore: {'; '.join(missing) or 'contexto e densidade'}."
-    elif score >= 30:
-        suggestion = "JD insuficiente para gerar perguntas de alta qualidade. Adicione responsabilidades detalhadas, skills técnicas específicas e senioridade."
-    else:
-        suggestion = "JD crítico — perguntas WSI bloqueadas. Adicione no mínimo: título com senioridade, 2+ responsabilidades, 1+ skill técnica e senioridade definida."
+    score = _r["score"]
+    band_key = _r["band"]
+    band_label = _r["band_label"]
+    indicators = _r["indicators"]
+    suggestion = _r["suggestion"]
+    _details = _r["details"]
 
     if score < 30:
         raise HTTPException(
@@ -253,7 +84,7 @@ async def evaluate_jd(request: JDEvaluateRequest, company_id: str = Depends(requ
                 "max_score": 100,
                 "band": band_key,
                 "band_label": band_label,
-                "indicators": [i.dict() if hasattr(i, 'dict') else i for i in indicators],
+                "indicators": indicators,
                 "can_generate": False,
             }
         )
@@ -267,16 +98,7 @@ async def evaluate_jd(request: JDEvaluateRequest, company_id: str = Depends(requ
         indicators=indicators,
         lia_suggestion=suggestion,
         can_generate=True,
-        details={
-            "responsibilities_count": resp_count,
-            "technical_skills_count": tech_count,
-            "behavioral_competencies_count": behav_count,
-            "seniority_defined": has_seniority,
-            "total_word_count": total_words,
-            "has_context": has_context,
-            "bias_terms_found": found_bias,
-            "has_inconsistency": has_contradiction,
-        }
+        details=_details
     )
 
 

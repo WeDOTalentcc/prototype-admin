@@ -265,49 +265,15 @@ class SuggestQuestionRequest(WeDoBaseModel):
 # JD evaluate constants
 # ---------------------------------------------------------------------------
 
-_JD_SENIORITY_KEYWORDS = {
-    "estagiario": ["estagiário", "estagiaria", "estágio", "trainee"],
-    "junior": ["junior", "júnior", "jr"],
-    "pleno": ["pleno", "pl"],
-    "senior": ["sênior", "senior", "sr"],
-    "lead": ["lead", "líder", "tech lead"],
-    "principal": ["principal", "staff"],
-    "diretor": ["diretor", "diretora", "director"],
-    "vp": ["vp", "vice-presidente", "cxo", "cto", "cpo"],
-}
-_BIAS_TERMS = [
-    "boa aparência",
-    "apresentação pessoal",
-    "jovem",
-    "recém-formado",
-    "native speaker",
-    "universidades de primeira linha",
-    "faculdade de ponta",
-    "perfil adequado",
-    "escola particular",
-    "bairros nobres",
-    "morar próximo",
-    "boa família",
-    "estado civil",
-    "filho",
-    "filha",
-    "casado",
-    "solteiro",
-]
-_JD_BANDS = [
-    (85, "excelente", "Excelente"),
-    (70, "bom", "Bom"),
-    (50, "adequado", "Adequado"),
-    (30, "insuficiente", "Insuficiente"),
-    (0, "critico", "Crítico"),
-]
-
-
-def _jd_get_band(score: int):
-    for threshold, band_key, band_label in _JD_BANDS:
-        if score >= threshold:
-            return band_key, band_label
-    return "critico", "Crítico"
+# Consolidação WSI Fase 3: constantes + lógica JD-quality movidas para o
+# canônico cv_screening (single source). Re-exportadas para compat.
+from app.domains.cv_screening.services.wsi_service.jd_quality import (  # noqa: E402
+    _JD_SENIORITY_KEYWORDS,
+    _BIAS_TERMS,
+    _JD_BANDS,
+    _jd_get_band,
+    evaluate_jd_quality,
+)
 
 
 # ---------------------------------------------------------------------------
