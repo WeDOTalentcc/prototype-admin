@@ -19,8 +19,13 @@ from app.domains.job_creation.orchestrator.wizard_orchestrator import (
 
 @pytest.mark.medium
 def test_orchestrator_flag_default_off(monkeypatch):
+    # Isola o fallback .env (que em dev tem a flag ligada) forçando cache vazio.
     monkeypatch.delenv("LIA_WIZARD_ORCHESTRATOR", raising=False)
-    assert WizardSessionService._orchestrator_enabled() is False
+    WizardSessionService._dotenv_cache = {}
+    try:
+        assert WizardSessionService._orchestrator_enabled() is False
+    finally:
+        WizardSessionService._dotenv_cache = None
 
 
 @pytest.mark.medium
@@ -109,3 +114,81 @@ async def test_process_via_orchestrator_carries_context_fields():
         )
 
     assert seen["tenant"] == "Empresa ACME, setor tech"
+
+
+@pytest.mark.medium
+@pytest.mark.asyncio
+async def test_payload_includes_panel_fields_and_jd():
+    """P1: payload alinhado ao painel — location/manager/email + JD + stage derivado."""
+    fake_result = OrchestratorResult(
+        reply="Pronto!",
+        state_updates={
+            "parsed_title": "Eng Python",
+            "parsed_location": "São Paulo",
+            "parsed_employment_type": "CLT",
+            "parsed_manager_name": "Paulo Moraes",
+            "parsed_manager_email": "paulo@x.com",
+            "jd_enriched": {"titulo_padronizado": "Eng Python Sr"},
+            "jd_quality_score": 88.0,
+            "jd_approved": True,
+        },
+    )
+
+    class _FakeOrch:
+        def process_turn(self, *, state, user_message, ctx):
+            return fake_result
+
+    async def _noop(thread_id, values):
+        return True
+
+    with patch(
+        "app.domains.job_creation.orchestrator.wizard_orchestrator.get_wizard_orchestrator",
+        return_value=_FakeOrch(),
+    ), patch.object(WizardSessionService, "_persist_orchestrator_state", _noop):
+        reply, payload, _ = await WizardSessionService._process_via_orchestrator(
+            thread_id="t", user_message="x", user_id="u", company_id="c",
+            prior_state={}, context=None,
+        )
+
+    d = payload["data"]
+    # campos do painel (antes ausentes)
+    assert d["parsed_location"] == "São Paulo"
+    assert d["parsed_employment_type"] == "CLT"
+    assert d["parsed_manager_name"] == "Paulo Moraes"
+    assert d["parsed_manager_email"] == "paulo@x.com"
+    # JD surfacada
+    assert d["jd_enriched"]["titulo_padronizado"] == "Eng Python Sr"
+    assert d["jd_approved"] is True
+    # stage derivado: jd_enriched presente → jd_enrichment
+    assert payload["stage"] == "jd_enrichment"
+
+
+@pytest.mark.medium
+@pytest.mark.asyncio
+async def test_email_extracted_from_raw_context_bypassing_llm():
+    """P0: email do gestor capturado do texto cru (context) e setado no state."""
+    seen = {}
+
+    class _FakeOrch:
+        def process_turn(self, *, state, user_message, ctx):
+            seen["email_in_state"] = state.get("parsed_manager_email")
+            return OrchestratorResult(reply="ok")
+
+    async def _noop(thread_id, values):
+        seen["persisted_email"] = values.get("parsed_manager_email")
+        return True
+
+    with patch(
+        "app.domains.job_creation.orchestrator.wizard_orchestrator.get_wizard_orchestrator",
+        return_value=_FakeOrch(),
+    ), patch.object(WizardSessionService, "_persist_orchestrator_state", _noop):
+        await WizardSessionService._process_via_orchestrator(
+            thread_id="t",
+            user_message="[EMAIL REMOVIDO]",  # mascarado (o que o LLM veria)
+            user_id="u", company_id="c", prior_state={},
+            context={"_raw_user_message": "gestor é paulo paulo.moraes@wedotalent.cc"},
+        )
+
+    # extraído do raw, disponível ao state ANTES do LLM, e persistido
+    assert seen["email_in_state"] == "paulo.moraes@wedotalent.cc"
+    assert seen["persisted_email"] == "paulo.moraes@wedotalent.cc"

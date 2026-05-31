@@ -36,6 +36,20 @@ def _extract_manager_email(raw_text: str) -> str | None:
     m = _MANAGER_EMAIL_RE.search(raw_text)
     return m.group(0) if m else None
 
+
+def _derive_wizard_stage(state: dict) -> str:
+    """Deriva o stage canonical a partir do progresso do estado.
+
+    O orquestrador é não-linear (não tem máquina de stages rígida), mas o
+    painel lateral é stage-driven. Derivamos o stage do conteúdo do estado
+    para o painel transicionar naturalmente (ficha → JD → publicado).
+    """
+    if state.get("job_id"):
+        return "done"
+    if state.get("jd_enriched"):
+        return "jd_enrichment"
+    return "intake"
+
 # Keys carried forward from context into wizard state
 _CONTEXT_CARRY_KEYS = ("right_panel_form", "attached_file_text", "tenant_context_snippet")
 
@@ -992,6 +1006,10 @@ class WizardSessionService:
 
         new_state = {**state, **result.state_updates}
         new_state["company_id"] = ctx.company_id
+        # Stage derivado do progresso (o painel é stage-driven). Persistido
+        # para o próximo turno e usado no payload.
+        stage = _derive_wizard_stage(new_state)
+        new_state["current_stage"] = stage
         # Acumula histórico (mesma estrutura que os nós usam).
         conv = list(new_state.get("conversation_messages") or [])
         conv.append({"role": "user", "content": user_message})
@@ -1000,20 +1018,31 @@ class WizardSessionService:
 
         await cls._persist_orchestrator_state(thread_id, new_state)
 
-        stage = new_state.get("current_stage") or "intake"
+        # Payload alinhado ao contrato canonical do painel (DRY com _ficha_data
+        # do intake_gate) + campos de gestor + JD enriquecida. O FE substitui
+        # stageData pelo payload (não faz merge) — por isso é cumulativo.
         try:
+            from app.domains.job_creation.nodes.intake_gate import _ficha_data
+            data = _ficha_data(new_state, result.reply)
+            # Gestor (não cobertos por _ficha_data) — painel renderiza estes.
+            data["parsed_manager_name"] = new_state.get("parsed_manager_name")
+            data["parsed_manager_email"] = new_state.get("parsed_manager_email")
+            # JD enriquecida — surfacar para o painel exibir a descrição.
+            if new_state.get("jd_enriched"):
+                data["jd_enriched"] = new_state.get("jd_enriched")
+                data["jd_raw"] = new_state.get("jd_raw") or new_state.get("raw_input")
+                data["quality_score"] = new_state.get("jd_quality_score")
+                data["jd_approved"] = new_state.get("jd_approved")
+                data["jd_enrichment_used_fallback"] = new_state.get(
+                    "jd_enrichment_used_fallback", False
+                )
+            if new_state.get("job_id"):
+                data["job_id"] = new_state.get("job_id")
+                data["share_link"] = new_state.get("share_link")
             payload = build_ws_stage_payload(
                 stage=stage,
-                requires_approval=False,
-                data={
-                    "message": result.reply,
-                    "parsed_title": new_state.get("parsed_title"),
-                    "parsed_seniority": new_state.get("parsed_seniority"),
-                    "parsed_model": new_state.get("parsed_model"),
-                    "parsed_department": new_state.get("parsed_department"),
-                    "screening_mode": new_state.get("screening_mode"),
-                    "jd_quality_score": new_state.get("jd_quality_score"),
-                },
+                requires_approval=bool(new_state.get("requires_approval")),
+                data=data,
                 completeness=calculate_completeness(stage),
             )
         except Exception as exc:  # noqa: BLE001 — payload é best-effort
