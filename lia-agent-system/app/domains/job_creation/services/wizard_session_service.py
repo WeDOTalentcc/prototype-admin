@@ -984,13 +984,12 @@ class WizardSessionService:
         # NÃO — então extraímos do texto cru (context['_raw_user_message'])
         # no servidor e gravamos direto no state, sem nunca enviar ao LLM.
         # Decisão Paulo 2026-05-31 (extração determinística).
-        _raw_msg = (context or {}).get("_raw_user_message") or ""
-        # Diagnóstico LGPD-safe (sem valor) para confirmar o plumbing do raw.
-        logger.info(
-            "[WizardOrchestrator] email diag: raw_present=%s len=%d has_at=%s thread=%s",
-            "_raw_user_message" in (context or {}), len(_raw_msg),
-            ("@" in _raw_msg), thread_id,
-        )
+        # Fonte do texto cru para extrair o email:
+        #  - WS: context['_raw_user_message'] (user_message chega mascarado).
+        #  - SSE: user_message já é cru (SSE não mascara inbound) — fallback.
+        # Cobrir ambos torna a captura robusta ao transporte (root cause do
+        # round 2: SSE não preenchia _raw_user_message → zero capturas).
+        _raw_msg = (context or {}).get("_raw_user_message") or user_message or ""
         _email = _extract_manager_email(_raw_msg)
         if _email:
             state["parsed_manager_email"] = _email

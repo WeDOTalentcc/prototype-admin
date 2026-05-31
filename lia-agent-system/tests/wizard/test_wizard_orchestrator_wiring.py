@@ -192,3 +192,31 @@ async def test_email_extracted_from_raw_context_bypassing_llm():
     # extraído do raw, disponível ao state ANTES do LLM, e persistido
     assert seen["email_in_state"] == "paulo.moraes@wedotalent.cc"
     assert seen["persisted_email"] == "paulo.moraes@wedotalent.cc"
+
+
+@pytest.mark.medium
+@pytest.mark.asyncio
+async def test_email_extracted_from_user_message_sse_path():
+    """SSE não preenche _raw_user_message nem mascara inbound — email vem no
+    próprio user_message. A extração deve cobrir esse caso (fallback)."""
+    seen = {}
+
+    class _FakeOrch:
+        def process_turn(self, *, state, user_message, ctx):
+            seen["email"] = state.get("parsed_manager_email")
+            return OrchestratorResult(reply="ok")
+
+    async def _noop(thread_id, values):
+        return True
+
+    with patch(
+        "app.domains.job_creation.orchestrator.wizard_orchestrator.get_wizard_orchestrator",
+        return_value=_FakeOrch(),
+    ), patch.object(WizardSessionService, "_persist_orchestrator_state", _noop):
+        await WizardSessionService._process_via_orchestrator(
+            thread_id="t",
+            user_message="gestor pedro silva pedro.silva@democompany.com.br",  # raw (SSE)
+            user_id="u", company_id="c", prior_state={},
+            context=None,  # SSE não passa _raw_user_message
+        )
+    assert seen["email"] == "pedro.silva@democompany.com.br"
