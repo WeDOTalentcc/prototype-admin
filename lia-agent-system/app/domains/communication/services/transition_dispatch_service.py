@@ -363,6 +363,8 @@ class TransitionDispatchService:
         if channel == "whatsapp":
             phone = candidate_data.get("mobile_phone") or candidate_data.get("phone")
             if not phone:
+                phone = await self._reveal_contact_for_dispatch(candidate_data, "phone", company_id)
+            if not phone:
                 logger.error(
                     f"No phone number available for candidate {candidate_data.get('candidate_id')}"
                 )
@@ -419,6 +421,8 @@ class TransitionDispatchService:
 
         else:
             email = candidate_data.get("email")
+            if not email:
+                email = await self._reveal_contact_for_dispatch(candidate_data, "email", company_id)
             if not email:
                 logger.error(
                     f"No email available for candidate {candidate_data.get('candidate_id')}"
@@ -477,6 +481,49 @@ class TransitionDispatchService:
                 "ai_personalized": ai_personalized,
                 "error": result.get("error"),
             }
+
+    async def _reveal_contact_for_dispatch(
+        self, candidate_data: dict[str, Any], kind: str, company_id: str | None
+    ) -> str | None:
+        """Auto-reveal lazy no disparo (decisao Paulo): quando o canal precisa de
+        email/telefone e o contato esta ausente, revela via Apify-first -> Pearch
+        fallback e persiste. Falha graciosa: retorna None se nao conseguir, e o guard
+        'sem contato' assume (registra erro, pula candidato). So gasta credito do
+        contato de quem vai realmente receber.
+        """
+        candidate_id = candidate_data.get("candidate_id")
+        if not candidate_id:
+            return None
+        try:
+            from uuid import UUID as _UUID
+
+            from app.domains.sourcing.services.contact_enrichment_service import (
+                get_contact_enrichment_service,
+            )
+
+            svc = get_contact_enrichment_service()
+            result = await svc.enrich_candidate_contact(
+                db=self.db,
+                candidate_id=_UUID(str(candidate_id)),
+                company_id=company_id,
+                force=False,
+            )
+            if not result or not result.get("success"):
+                return None
+            value = result.get("email") if kind == "email" else result.get("phone")
+            if value:
+                candidate_data[kind] = value
+                logger.info(
+                    "[TransitionDispatch] auto-reveal %s ok para candidate=%s",
+                    kind, candidate_id,
+                )
+            return value
+        except Exception as e:
+            logger.warning(
+                "[TransitionDispatch] auto-reveal %s falhou para candidate=%s: %s",
+                kind, candidate_id, e,
+            )
+            return None
 
     async def _load_candidate_data(self, vacancy_candidate_id: str) -> dict[str, Any] | None:
         """Load candidate and vacancy info for template variables."""
