@@ -34,7 +34,7 @@ export const LIA_ASSISTANT_TIPS_DEFAULT: string[] = [
 /** Default options for Pearch (global talent) searches */
 export const DEFAULT_PEARCH_OPTIONS: PearchSearchOptions = {
   searchType: 'fast',
-  limit: 10,  // 10 por pagina: busca rapida + loop de calibracao (Paulo)
+  limit: 15,  // 15 por pagina: enche a tela + loop de calibracao 15 em 15 (Paulo)
   showEmails: false,
   showPhoneNumbers: false,
   highFreshness: false,

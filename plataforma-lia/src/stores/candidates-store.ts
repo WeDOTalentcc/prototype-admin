@@ -19,7 +19,7 @@ const PAGINATION_CHROME = 280
 const PAGINATION_MIN = 10
 const PAGINATION_MAX = 40
 
-export const LOAD_MORE_STEP = 10
+export const LOAD_MORE_STEP = 15
 
 export function getInitialDisplayedResultsCount(): number {
   if (typeof window === "undefined") return PAGINATION_MIN
