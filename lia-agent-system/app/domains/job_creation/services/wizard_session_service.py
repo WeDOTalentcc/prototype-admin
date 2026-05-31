@@ -874,9 +874,28 @@ class WizardSessionService:
     # mesmo, então alternar a flag preserva a sessão.
     @staticmethod
     def _orchestrator_enabled() -> bool:
-        return os.environ.get(
-            "LIA_WIZARD_ORCHESTRATOR", ""
-        ).strip().lower() in ("1", "true", "yes", "on")
+        """Lê a flag de os.environ (prod/Secrets) OU do .env (dev).
+
+        No setup Replit dev, o ``.env`` NÃO é injetado em ``os.environ``
+        (pydantic-settings o lê para o objeto Settings, não para o environ).
+        Para a flag funcionar em dev sem precisar de Secret nem restart com
+        export, fazemos fallback para uma leitura cacheada do ``.env``.
+        Fail-open: qualquer erro → False (orquestrador desligado).
+        """
+        _TRUTHY = ("1", "true", "yes", "on")
+        val = os.environ.get("LIA_WIZARD_ORCHESTRATOR")
+        if val is not None:
+            return val.strip().lower() in _TRUTHY
+        try:
+            from dotenv import dotenv_values  # type: ignore
+            cached = getattr(WizardSessionService, "_dotenv_cache", None)
+            if cached is None:
+                cached = dotenv_values(".env") or {}
+                WizardSessionService._dotenv_cache = cached  # type: ignore[attr-defined]
+            dv = (cached.get("LIA_WIZARD_ORCHESTRATOR") or "").strip().lower()
+            return dv in _TRUTHY
+        except Exception:  # noqa: BLE001 — fail-open
+            return False
 
     @classmethod
     async def _persist_orchestrator_state(
