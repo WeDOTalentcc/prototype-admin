@@ -2369,7 +2369,26 @@
       "seeInActionHint": "An example of how this agent runs the conversation.",
       "startWithModel": "Start with a template",
       "bySector": "By sector",
-      "yourAgents": "Your agents"
+      "yourAgents": "Your agents",
+      "close": "Close",
+      "createWithAI": "Create with AI",
+      "services": {
+        "advanced": "Advanced",
+        "ctaActivate": "Activate"
+      },
+      "onboarding": {
+        "step1Title": "Welcome to the Agent Studio",
+        "step1Desc": "You have {count} open jobs ready for AI agents.",
+        "continue": "Continue",
+        "skip": "Skip",
+        "step2Title": "Activate your first agent",
+        "step2Desc": "The sourcing agent automatically finds candidates for your open jobs.",
+        "activateSourcing": "Activate sourcing",
+        "notNow": "Not now",
+        "step3Title": "All set!",
+        "step3Desc": "Track the service funnel and activate more agents whenever you want.",
+        "done": "Done"
+      }
     },
     "status": {
       "active": "Active",
@@ -3161,7 +3180,8 @@
         "ai": "Built with AI",
         "template": "From a template",
         "manual": "Manual setup"
-      }
+      },
+      "loading": "Loading..."
     },
     "digitalTwin": {
       "active": "Active",

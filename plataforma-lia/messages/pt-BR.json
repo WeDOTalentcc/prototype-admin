@@ -2369,7 +2369,26 @@
       "seeInActionHint": "Um exemplo de como este agente conduz a conversa.",
       "startWithModel": "Comece com um modelo",
       "bySector": "Por setor",
-      "yourAgents": "Seus agentes"
+      "yourAgents": "Seus agentes",
+      "close": "Fechar",
+      "createWithAI": "Criar com IA",
+      "services": {
+        "advanced": "Avançado",
+        "ctaActivate": "Ativar"
+      },
+      "onboarding": {
+        "step1Title": "Bem-vindo ao Estúdio de Agentes",
+        "step1Desc": "Você tem {count} vagas abertas prontas para receber agentes de IA.",
+        "continue": "Continuar",
+        "skip": "Pular",
+        "step2Title": "Ative seu primeiro agente",
+        "step2Desc": "O agente de sourcing busca candidatos automaticamente para suas vagas abertas.",
+        "activateSourcing": "Ativar sourcing",
+        "notNow": "Agora não",
+        "step3Title": "Tudo pronto!",
+        "step3Desc": "Acompanhe o funil de serviços e ative mais agentes quando quiser.",
+        "done": "Concluir"
+      }
     },
     "status": {
       "active": "Ativo",
@@ -3161,7 +3180,8 @@
         "ai": "Criado com IA",
         "template": "A partir de um modelo",
         "manual": "Configuração manual"
-      }
+      },
+      "loading": "Carregando..."
     },
     "digitalTwin": {
       "active": "Ativo",
