@@ -131,6 +131,7 @@ def _build_enrichment_prompt(
     department: str = "",
     confirmed_technical: list | None = None,
     confirmed_behavioral: list | None = None,
+    confirmed_responsibilities: list | None = None,
 ) -> str:
     """Build the F1.C enrichment prompt from WSI methodology.
 
@@ -164,6 +165,18 @@ def _build_enrichment_prompt(
         _rule2 = "2. Adicione skills e competencias que estao implicitas no JD"
         _rule5 = f"5. Minimos: {MIN_TECHNICAL_SKILLS} skills tecnicas, {MIN_BEHAVIORAL_COMPETENCIES} competencias comportamentais, {MIN_RESPONSIBILITIES} responsabilidades"
         _confirmed_block = ""
+
+    # Responsabilidades confirmadas pelo recrutador (independente das competencias):
+    # usar EXATAMENTE estas. O servico tambem sobrescreve apos o parse (garantia).
+    if confirmed_responsibilities:
+        _resp_lines = "\n".join(
+            f"  - {r}" for r in _coerce_responsibilities(confirmed_responsibilities)
+        ) or "  (nenhuma)"
+        _confirmed_block += (
+            "\n\nRESPONSABILIDADES JA DEFINIDAS PELO RECRUTADOR "
+            "(FIXAS — use EXATAMENTE estas em 'responsabilidades', NAO invente outras):\n"
+            + _resp_lines + "\n"
+        )
 
     return f"""Voce e um especialista em recrutamento. Analise o JD (Job Description) abaixo e produza uma versao enriquecida e estruturada.
 
@@ -303,18 +316,36 @@ def _coerce_behavioral(items: list | None) -> list:
     return out
 
 
+def _coerce_responsibilities(items: list | None) -> list:
+    """Converte responsabilidades confirmadas (strings ou dicts) em list[str]."""
+    out: list[str] = []
+    for r in items or []:
+        if isinstance(r, dict):
+            s = r.get("responsabilidade") or r.get("texto") or r.get("text") or r.get("value") or ""
+        else:
+            s = str(r or "")
+        s = s.strip()
+        if s:
+            out.append(s[:500])
+    return out
+
+
 def _apply_confirmed_override(
     enriched: EnrichedJobDescription,
     confirmed_technical: list | None,
     confirmed_behavioral: list | None,
+    confirmed_responsibilities: list | None = None,
 ) -> EnrichedJobDescription:
-    """Fase 4: sobrescreve as competencias com as confirmadas (garantia
-    computacional contra drift do LLM). Mantem o restante do JD gerado.
+    """Fase 4: sobrescreve as competencias (e responsabilidades, quando
+    confirmadas pelo recrutador) com as confirmadas — garantia computacional
+    contra drift do LLM. Mantem o restante do JD gerado.
     """
     if confirmed_technical:
         enriched.skills_obrigatorias = _coerce_technical(confirmed_technical)
     if confirmed_behavioral:
         enriched.competencias_comportamentais = _coerce_behavioral(confirmed_behavioral)
+    if confirmed_responsibilities:
+        enriched.responsabilidades = _coerce_responsibilities(confirmed_responsibilities)
     return enriched
 
 
@@ -368,6 +399,7 @@ class JdEnrichmentService:
         department: str = "",
         confirmed_technical: list | None = None,
         confirmed_behavioral: list | None = None,
+        confirmed_responsibilities: list | None = None,
         screening_mode: str | None = None,
     ) -> tuple[EnrichedJobDescription, float, list[str]]:
         """Enrich a raw JD using LLM.
@@ -400,6 +432,7 @@ class JdEnrichmentService:
             jd_cleaned, title, seniority, department,
             confirmed_technical=confirmed_technical,
             confirmed_behavioral=confirmed_behavioral,
+            confirmed_responsibilities=confirmed_responsibilities,
         )
 
         # --- GOV 2: Circuit breaker wraps LLM call ---
@@ -445,9 +478,10 @@ class JdEnrichmentService:
             logger.warning("[JdEnrichment] LLM parse failed, using fallback: %s", e)
             enriched = self._fallback_enrichment(jd_raw, title, seniority)
 
-        # --- Fase 4: sobrescreve com competencias confirmadas (override) ---
+        # --- Fase 4: sobrescreve com competencias + responsabilidades confirmadas ---
         enriched = _apply_confirmed_override(
             enriched, confirmed_technical, confirmed_behavioral,
+            confirmed_responsibilities,
         )
 
         # --- GOV 3: Post-LLM fairness check on enriched output ---
@@ -487,17 +521,19 @@ class JdEnrichmentService:
         seniority: str,
         confirmed_technical: list | None = None,
         confirmed_behavioral: list | None = None,
+        confirmed_responsibilities: list | None = None,
     ) -> EnrichedJobDescription:
         """Minimal enrichment when LLM fails.
 
-        Fase 4: honra competencias confirmadas (seta verbatim) para que o
-        fallback de timeout/erro no node tambem produza o JD consistente.
+        Fase 4: honra competencias E responsabilidades confirmadas (seta
+        verbatim) para que o fallback de timeout/erro no node tambem produza
+        o JD consistente.
         """
         return EnrichedJobDescription(
             titulo_padronizado=title or "Cargo nao especificado",
             senioridade_confirmada=seniority or "pleno",
             about_role=jd_raw[:200] if jd_raw else "",
-            responsabilidades=[],
+            responsabilidades=_coerce_responsibilities(confirmed_responsibilities),
             skills_obrigatorias=_coerce_technical(confirmed_technical),
             competencias_comportamentais=_coerce_behavioral(confirmed_behavioral),
             wsi_quality_warnings=["Enriquecimento por LLM falhou — usando fallback minimo"],

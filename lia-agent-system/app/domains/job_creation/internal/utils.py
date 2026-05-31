@@ -134,6 +134,12 @@ def _build_wizard_state_summary(state: Any) -> str:
     else:
         lines.append("Competências confirmadas: nenhuma ainda (aguardando confirmação)")
 
+    _resp = state.get("confirmed_responsibilities") or []
+    if _resp:
+        lines.append(f"Responsabilidades confirmadas ({len(_resp)}): " + "; ".join(str(r) for r in _resp))
+    else:
+        lines.append("Responsabilidades confirmadas: nenhuma (opcional — o JD gera se não informadas)")
+
     mode = state.get("screening_mode")
     if mode:
         label = "Compacto (7 perguntas)" if mode == "compact" else "Completo (12 perguntas)"

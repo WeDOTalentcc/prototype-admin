@@ -274,6 +274,9 @@ class JobCreationState(TypedDict, total=False):
     intake_competencies_suggested: Optional[bool]       # True após sugestão de competências emitida
     confirmed_technical_competencies: List[Dict[str, Any]]   # [{skill, contexto}] confirmadas
     confirmed_behavioral_competencies: List[Dict[str, Any]]  # [{competencia, contexto, trait_big_five}]
+    # Responsabilidades confirmadas pelo recrutador (item #2 2026-05-31). Não-obrigatório:
+    # se ausente, o jd_enrichment gera; se presente, sobrescreve verbatim (Fase 4).
+    confirmed_responsibilities: List[str]
 
 
 

@@ -171,6 +171,7 @@ def _handle_enrich_job_description(
     department = state.get("parsed_department") or ""
     confirmed_tech = state.get("confirmed_technical_competencies") or None
     confirmed_behav = state.get("confirmed_behavioral_competencies") or None
+    confirmed_resp = state.get("confirmed_responsibilities") or None
     screening_mode = state.get("screening_mode")
 
     import concurrent.futures as _cf
@@ -201,6 +202,7 @@ def _handle_enrich_job_description(
                 department=department,
                 confirmed_technical=confirmed_tech,
                 confirmed_behavioral=confirmed_behav,
+                confirmed_responsibilities=confirmed_resp,
                 screening_mode=screening_mode,
             )
             enriched_obj, quality_score, warnings = _fut.result(timeout=_JD_TIMEOUT_S)
@@ -211,6 +213,7 @@ def _handle_enrich_job_description(
                 jd_raw, title, seniority,
                 confirmed_technical=confirmed_tech,
                 confirmed_behavioral=confirmed_behav,
+                confirmed_responsibilities=confirmed_resp,
             )
             quality_score, warnings = _calc_q(enriched_obj)
             used_fallback = True
@@ -227,6 +230,7 @@ def _handle_enrich_job_description(
                 jd_raw, title, seniority,
                 confirmed_technical=confirmed_tech,
                 confirmed_behavioral=confirmed_behav,
+                confirmed_responsibilities=confirmed_resp,
             )
             quality_score, warnings = _calc_q(enriched_obj)
             used_fallback = True

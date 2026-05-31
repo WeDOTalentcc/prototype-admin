@@ -1036,6 +1036,9 @@ class WizardSessionService:
             # Gestor (não cobertos por _ficha_data) — painel renderiza estes.
             data["parsed_manager_name"] = new_state.get("parsed_manager_name")
             data["parsed_manager_email"] = new_state.get("parsed_manager_email")
+            # Responsabilidades confirmadas (item #2) — surfacar pro painel.
+            if new_state.get("confirmed_responsibilities"):
+                data["confirmed_responsibilities"] = new_state.get("confirmed_responsibilities")
             # JD enriquecida — surfacar para o painel exibir a descrição.
             if new_state.get("jd_enriched"):
                 data["jd_enriched"] = new_state.get("jd_enriched")

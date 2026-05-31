@@ -262,6 +262,38 @@ def _handle_set_job_fields(
     return ToolResult(llm_message=msg, state_updates=updates)
 
 
+def _handle_confirm_responsibilities(
+    state: dict, tool_input: dict, ctx: ToolContext
+) -> ToolResult:
+    """Confirma as responsabilidades da vaga (lista de strings).
+
+    Não-obrigatório: se o recrutador não fornecer, o jd_enrichment gera (e ele
+    revisa na JD). Se confirmar, são usadas verbatim na descrição (Fase 4).
+    """
+    tenant_err = _reject_tenant_keys(tool_input)
+    if tenant_err:
+        return ToolResult(llm_message=tenant_err, error=True)
+    items = tool_input.get("responsibilities")
+    if not isinstance(items, list) or not items:
+        return ToolResult(
+            llm_message=(
+                "Forneça 'responsibilities' como uma lista de frases de "
+                "responsabilidade."
+            ),
+            error=True,
+        )
+    cleaned = [str(r).strip() for r in items if str(r).strip()]
+    if not cleaned:
+        return ToolResult(llm_message="Nenhuma responsabilidade válida fornecida.", error=True)
+    return ToolResult(
+        llm_message=(
+            f"Responsabilidades confirmadas: {len(cleaned)}. Serão usadas na "
+            f"descrição da vaga."
+        ),
+        state_updates={"confirmed_responsibilities": cleaned},
+    )
+
+
 def _handle_approve_job_description(
     state: dict, tool_input: dict, ctx: ToolContext
 ) -> ToolResult:
@@ -545,6 +577,30 @@ CONFIRM_COMPETENCIES = WizardTool(
     handler=_handle_confirm_competencies,
 )
 
+CONFIRM_RESPONSIBILITIES = WizardTool(
+    name="confirm_responsibilities",
+    description=(
+        "Confirma as responsabilidades/atribuições da vaga (lista de frases). "
+        "Peça as responsabilidades ao recrutador JUNTO com as competências. "
+        "NÃO é obrigatório — se ele não tiver, sugira algumas com base no cargo "
+        "e confirme; ou siga sem (a descrição gera responsabilidades e ele revisa). "
+        "Se confirmadas, são usadas exatamente na descrição."
+    ),
+    input_schema={
+        "type": "object",
+        "properties": {
+            "responsibilities": {
+                "type": "array",
+                "items": {"type": "string"},
+                "description": "Frases de responsabilidade da vaga.",
+            },
+        },
+        "required": ["responsibilities"],
+        "additionalProperties": False,
+    },
+    handler=_handle_confirm_responsibilities,
+)
+
 APPROVE_JOB_DESCRIPTION = WizardTool(
     name="approve_job_description",
     description=(
@@ -608,6 +664,7 @@ PURE_TOOLS: tuple[WizardTool, ...] = (
     SET_JOB_FIELDS,
     SET_SCREENING_MODE,
     CONFIRM_COMPETENCIES,
+    CONFIRM_RESPONSIBILITIES,
     APPROVE_JOB_DESCRIPTION,
     SET_SALARY,
     NAVIGATE_TO_JOBS,
