@@ -513,11 +513,72 @@ class JobCreationAPIClient:
     # -------------------------------------------------------------------
 
     def publish_job(self, job_id: int, platforms: List[str], sourcing_mode: str = "local") -> APIResponse:
-        """Publish job to specified platforms."""
+        """Publish job to specified platforms.
+
+        Dev-local (base_url vazio — Rails fora, FastAPI canonical): ativa a
+        vaga (status Rascunho→Ativa) via JobVacancyLifecycleRepository e marca
+        os flags de plataforma. Mesma lógica do endpoint FastAPI
+        ``/jobs/{id}/publish`` (DRY).
+        """
+        if not self.base_url:
+            return self._publish_job_local(job_id, platforms or [])
         return self._request("POST", f"/api/v1/jobs/{job_id}/publish", json_body={
             "platforms": platforms,
             "sourcing_mode": sourcing_mode,
         })
+
+    def _devlocal_conn(self):
+        """psycopg2 sync connection (dev-local). Mesma DSN do _create_job_local.
+
+        Sync por design: o engine async global (AsyncSessionLocal) tem pool
+        preso ao loop que o criou; múltiplos asyncio.run() em sequência (publish
+        + share_link no mesmo turno) batem em 'Future attached to a different
+        loop'. psycopg2 sync evita isso — padrão canonical dev-local deste arquivo.
+        """
+        import os as _os
+        import psycopg2
+        db_url = _os.environ["DATABASE_URL"]
+        sync_url = db_url.replace("postgresql+asyncpg://", "postgresql://")
+        return psycopg2.connect(sync_url)
+
+    def _publish_job_local(self, job_id, platforms: List[str]) -> APIResponse:
+        """Dev-local publish: status→Ativa + open_date + flags de plataforma."""
+        _p = {str(x).lower() for x in (platforms or [])}
+        try:
+            conn = self._devlocal_conn()
+            try:
+                with conn.cursor() as cur:
+                    cur.execute(
+                        """
+                        UPDATE job_vacancies SET
+                            status = 'Ativa',
+                            open_date = COALESCE(open_date, NOW()),
+                            published_linkedin = %s,
+                            published_website = %s,
+                            published_indeed = %s,
+                            last_published_at = NOW(),
+                            updated_at = NOW()
+                        WHERE id = %s
+                        RETURNING id
+                        """,
+                        (
+                            "linkedin" in _p,
+                            "website" in _p,
+                            "indeed" in _p,
+                            str(job_id),
+                        ),
+                    )
+                    row = cur.fetchone()
+                    conn.commit()
+            finally:
+                conn.close()
+        except Exception as e:  # noqa: BLE001 — fail-loud
+            logger.error("[JobCreationAPI] dev-local publish failed: %s", e, exc_info=True)
+            return APIResponse(success=False, error=f"dev-local publish failed: {e}")
+        if not row:
+            return APIResponse(success=False, error=f"vaga {job_id} não encontrada")
+        logger.info("[JobCreationAPI] dev-local publish OK job=%s status=Ativa", job_id)
+        return APIResponse(success=True, data={"status": "Ativa", "id": str(row[0])})
 
     def unpublish_job(self, job_id: int) -> APIResponse:
         """Unpublish a job."""
@@ -535,11 +596,52 @@ class JobCreationAPIClient:
         eligibility_questions: Optional[List[Dict[str, Any]]] = None,
     ) -> APIResponse:
         """Save WSI screening questions for a job."""
+        if not self.base_url:
+            return self._save_screening_config_local(
+                job_id, questions or [], mode, eligibility_questions or []
+            )
         return self._request("POST", f"/api/v1/jobs/{job_id}/screening_config", json_body={
             "screening_questions": questions,
             "screening_mode": mode,
             "eligibility_questions": eligibility_questions or [],
         })
+
+    def _save_screening_config_local(
+        self, job_id, questions: List[Dict[str, Any]], mode: str,
+        eligibility: List[Dict[str, Any]],
+    ) -> APIResponse:
+        """Dev-local screening persist: merge no screening_config (jsonb)."""
+        import json as _json
+        new_cfg = {
+            "screening_questions": questions,
+            "screening_mode": mode,
+            "eligibility_questions": eligibility,
+        }
+        try:
+            conn = self._devlocal_conn()
+            try:
+                with conn.cursor() as cur:
+                    # merge: preserva chaves existentes + sobrescreve as novas.
+                    cur.execute(
+                        """
+                        UPDATE job_vacancies SET
+                            screening_config = COALESCE(screening_config, '{}'::jsonb) || %s::jsonb,
+                            updated_at = NOW()
+                        WHERE id = %s
+                        RETURNING id
+                        """,
+                        (_json.dumps(new_cfg, ensure_ascii=False), str(job_id)),
+                    )
+                    row = cur.fetchone()
+                    conn.commit()
+            finally:
+                conn.close()
+        except Exception as e:  # noqa: BLE001 — fail-loud
+            logger.error("[JobCreationAPI] dev-local screening_config failed: %s", e, exc_info=True)
+            return APIResponse(success=False, error=f"dev-local screening_config failed: {e}")
+        if not row:
+            return APIResponse(success=False, error=f"vaga {job_id} não encontrada")
+        return APIResponse(success=True, data={"saved": len(questions)})
 
     # -------------------------------------------------------------------
     # Calibration
@@ -590,5 +692,50 @@ class JobCreationAPIClient:
     # -------------------------------------------------------------------
 
     def get_share_link(self, job_id: int) -> APIResponse:
-        """Get the public share link for a published job."""
+        """Get the public share link for a published job.
+
+        Dev-local: gera o public_slug (se ausente) via repo canonical e
+        devolve a URL pública. Mesma forma do endpoint FastAPI
+        ``/job-vacancies/{id}/share-link`` (DRY).
+        """
+        if not self.base_url:
+            return self._get_share_link_local(job_id)
         return self._request("GET", f"/api/v1/jobs/{job_id}/share_link")
+
+    def _get_share_link_local(self, job_id) -> APIResponse:
+        """Dev-local share link: gera public_slug (se ausente) + URL pública."""
+        import secrets as _secrets
+        from app.api.v1.job_vacancies._shared import generate_slug
+        try:
+            conn = self._devlocal_conn()
+            try:
+                with conn.cursor() as cur:
+                    cur.execute(
+                        "SELECT public_slug, title FROM job_vacancies WHERE id = %s",
+                        (str(job_id),),
+                    )
+                    row = cur.fetchone()
+                    if not row:
+                        return APIResponse(success=False, error=f"vaga {job_id} não encontrada")
+                    slug, title = row[0], row[1]
+                    if not slug:
+                        # token curto garante unicidade sem round-trip de checagem.
+                        slug = generate_slug(title or "vaga", _secrets.token_hex(2))
+                        cur.execute(
+                            "UPDATE job_vacancies SET public_slug = %s, updated_at = NOW() WHERE id = %s",
+                            (slug, str(job_id)),
+                        )
+                        conn.commit()
+            finally:
+                conn.close()
+        except Exception as e:  # noqa: BLE001 — fail-loud
+            logger.error("[JobCreationAPI] dev-local share_link failed: %s", e, exc_info=True)
+            return APIResponse(success=False, error=f"dev-local share_link failed: {e}")
+        return APIResponse(
+            success=True,
+            data={
+                "share_link": f"https://app.wedotalent.com/jobs/{slug}",
+                "public_url": f"/vagas/{slug}",
+                "slug": slug,
+            },
+        )
