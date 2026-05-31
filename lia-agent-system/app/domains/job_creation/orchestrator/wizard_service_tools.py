@@ -532,9 +532,187 @@ PUBLISH_JOB = WizardTool(
 )
 
 
+# ── generate_wsi_questions (F2+F3+F6 — metodologia WSI completa) ──────────
+
+
+def _handle_generate_wsi_questions(
+    state: dict, tool_input: dict, ctx: ToolContext
+) -> ToolResult:
+    """Gera as perguntas de triagem WSI (HITL #2), metodologia completa.
+
+    Reusa os nós canônicos (DRY): bigfive_node (F2+F3 → trait_rankings Big Five)
+    + wsi_questions_node (F6 → perguntas CBI com bloom_level/dreyfus_level/
+    trait_ocean + fairness filter + skill classification).
+
+    Frameworks aplicados pelo gerador canônico:
+      - CBI (Competency-Based Interview): situações reais passadas.
+      - Bloom: bloom_level 1-6, calibrado por senioridade.
+      - Dreyfus: dreyfus_level 1-5, calibrado por senioridade.
+      - Big Five: trait_ocean + afinidade trait↔competência (via trait_rankings).
+
+    distribution (nº técnicas/comportamentais) vem das competências confirmadas
+    ou da tabela canônica por senioridade (_get_question_distribution).
+    """
+    tenant_err = _reject_tenant_keys(tool_input)
+    if tenant_err:
+        return ToolResult(llm_message=tenant_err, error=True)
+
+    if not state.get("jd_enriched"):
+        return ToolResult(
+            llm_message=(
+                "Preciso da descrição gerada (enrich_job_description) antes de "
+                "criar as perguntas de triagem."
+            ),
+            error=True,
+        )
+
+    node_state = dict(state)
+    if ctx.company_id and not node_state.get("company_id"):
+        node_state["company_id"] = ctx.company_id
+
+    seniority = (
+        node_state.get("seniority_resolved")
+        or node_state.get("parsed_seniority")
+        or "pleno"
+    )
+    node_state["seniority_resolved"] = seniority
+
+    # F2+F3 — Big Five profile + trait_rankings (metodologia completa, decisão
+    # Paulo). Fail-soft: se falhar, segue sem ponderação Big Five (trait_rankings=[]).
+    try:
+        from app.domains.job_creation.nodes.bigfive import bigfive_node
+        _bf = bigfive_node(node_state)
+        for _k in ("bigfive_profile", "trait_rankings"):
+            if _k in _bf:
+                node_state[_k] = _bf[_k]
+    except Exception as exc:  # noqa: BLE001 — fail-soft
+        logger.warning("[WizardServiceTools] bigfive failed (sem trait weighting): %s", exc)
+        node_state.setdefault("trait_rankings", [])
+
+    # F4+F5 — distribution: das competências confirmadas OU tabela canônica.
+    _tech = node_state.get("confirmed_technical_competencies") or []
+    _behav = node_state.get("confirmed_behavioral_competencies") or []
+    if _tech or _behav:
+        distribution = {"technical": len(_tech), "behavioral": len(_behav)}
+    else:
+        try:
+            from app.domains.job_creation.graph import _get_question_distribution
+            distribution = _get_question_distribution(
+                node_state.get("screening_mode") or "compact", seniority
+            )
+        except Exception:  # noqa: BLE001
+            distribution = {"technical": 5, "behavioral": 2}
+    node_state["question_distribution"] = distribution
+
+    # F6 — gera via nó canônico (inclui fairness filter + skill classification).
+    try:
+        from app.domains.job_creation.nodes.wsi_questions import wsi_questions_node
+        out = wsi_questions_node(node_state)
+    except Exception as exc:  # noqa: BLE001 — fail-loud
+        logger.warning("[WizardServiceTools] wsi_questions_node failed: %s", exc)
+        return ToolResult(
+            llm_message=f"Não consegui gerar as perguntas de triagem agora ({exc}).",
+            error=True,
+        )
+
+    if out.get("error"):
+        return ToolResult(
+            llm_message=f"Geração de perguntas bloqueada: {out.get('error')}.",
+            error=True,
+        )
+    questions = out.get("wsi_questions") or []
+    if not questions:
+        return ToolResult(
+            llm_message="O gerador não retornou perguntas. Tente novamente.",
+            error=True,
+        )
+
+    n_tech = sum(1 for q in questions if (q.get("block") == "technical"))
+    n_behav = len(questions) - n_tech
+    used_fallback = bool(out.get("wsi_questions_used_fallback"))
+    msg = (
+        f"Geradas {len(questions)} perguntas de triagem WSI "
+        f"({n_tech} técnicas + {n_behav} comportamentais), modo "
+        f"{node_state.get('screening_mode') or 'compact'}. Metodologia: CBI "
+        f"(situações reais), níveis Bloom/Dreyfus por senioridade e mapeamento "
+        f"Big Five nas comportamentais."
+    )
+    if used_fallback:
+        msg += (
+            f" Atenção: usei perguntas de reserva (motivo: "
+            f"{out.get('wsi_questions_fallback_reason')}) — recomende revisão extra."
+        )
+    msg += " Apresente um resumo e pergunte se o recrutador aprova ou quer ajustar."
+
+    return ToolResult(
+        llm_message=msg,
+        state_updates={
+            "wsi_questions": questions,
+            "question_distribution": distribution,
+            "trait_rankings": node_state.get("trait_rankings") or [],
+            "bigfive_profile": node_state.get("bigfive_profile"),
+            "seniority_resolved": seniority,
+            "questions_approved": None,  # aguardando HITL #2
+            "wsi_questions_used_fallback": used_fallback,
+        },
+    )
+
+
+def _handle_approve_wsi_questions(
+    state: dict, tool_input: dict, ctx: ToolContext
+) -> ToolResult:
+    """Registra a aprovação das perguntas WSI pelo recrutador (HITL #2)."""
+    tenant_err = _reject_tenant_keys(tool_input)
+    if tenant_err:
+        return ToolResult(llm_message=tenant_err, error=True)
+    if not state.get("wsi_questions"):
+        return ToolResult(
+            llm_message=(
+                "Não há perguntas geradas para aprovar. Gere primeiro com "
+                "generate_wsi_questions."
+            ),
+            error=True,
+        )
+    return ToolResult(
+        llm_message=(
+            "Perguntas de triagem aprovadas pelo recrutador. Serão salvas na "
+            "vaga ao publicar."
+        ),
+        state_updates={"questions_approved": True},
+    )
+
+
+GENERATE_WSI_QUESTIONS = WizardTool(
+    name="generate_wsi_questions",
+    description=(
+        "Gera as perguntas de triagem WSI da vaga (entrevista por competências). "
+        "Use depois da descrição gerada e das competências confirmadas. Aplica a "
+        "metodologia WSI completa: CBI (situações reais), níveis Bloom e Dreyfus "
+        "por senioridade, e mapeamento Big Five nas comportamentais. O número de "
+        "perguntas segue o modo de triagem (compacto/completo). Após gerar, "
+        "apresente ao recrutador para aprovação."
+    ),
+    input_schema={"type": "object", "properties": {}, "additionalProperties": False},
+    handler=_handle_generate_wsi_questions,
+)
+
+APPROVE_WSI_QUESTIONS = WizardTool(
+    name="approve_wsi_questions",
+    description=(
+        "Registra a aprovação das perguntas de triagem WSI pelo recrutador "
+        "(HITL #2). Chame SOMENTE quando ele aprovar explicitamente. As perguntas "
+        "aprovadas são salvas na vaga ao publicar."
+    ),
+    input_schema={"type": "object", "properties": {}, "additionalProperties": False},
+    handler=_handle_approve_wsi_questions,
+)
+
+
 SERVICE_TOOLS: tuple[WizardTool, ...] = (
     SUGGEST_COMPETENCIES,
     ENRICH_JOB_DESCRIPTION,
     SUGGEST_SALARY,
     PUBLISH_JOB,
+    GENERATE_WSI_QUESTIONS,
+    APPROVE_WSI_QUESTIONS,
 )

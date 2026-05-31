@@ -48,6 +48,8 @@ def _derive_wizard_stage(state: dict) -> str:
     # página de vagas quando currentStage == "handoff").
     if state.get("_navigate_to_jobs") or state.get("job_id"):
         return "handoff"
+    if state.get("wsi_questions"):
+        return "wsi_questions"
     if state.get("jd_enriched"):
         return "jd_enrichment"
     return "intake"
@@ -1043,6 +1045,11 @@ class WizardSessionService:
                 data["jd_enrichment_used_fallback"] = new_state.get(
                     "jd_enrichment_used_fallback", False
                 )
+            # Perguntas WSI — surfacar para o WsiQuestionsPanel renderizar.
+            if new_state.get("wsi_questions"):
+                data["wsi_questions"] = new_state.get("wsi_questions")
+                data["questions_approved"] = new_state.get("questions_approved")
+                data["question_distribution"] = new_state.get("question_distribution")
             if new_state.get("job_id"):
                 data["job_id"] = new_state.get("job_id")
                 data["share_link"] = new_state.get("share_link")
