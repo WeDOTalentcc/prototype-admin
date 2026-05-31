@@ -26,7 +26,7 @@ import {
   ChevronRight, Zap, Target, ArrowRight,
   Activity, RefreshCw,
   Loader2, Users, Wand2, Search, Store,
-  GraduationCap, Clock
+  GraduationCap, Clock, Pencil
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { toast } from "@/lib/toast"
@@ -340,6 +340,7 @@ export default function AgentStudioPage({
               agent={agent}
               onToggleStatus={() => handleToggleStatus(agent.id, agent.status)}
               onCalibrate={() => onStartCalibration?.(agent.id)}
+              onEdit={() => router.push(`/${locale}/agent-studio/${agent.id}/edit`)}
               onNavigate={() => {
                 if (agent.talent_pool_id) onNavigateToPool?.(agent.talent_pool_id)
                 else if (agent.job_id) onNavigateToJob?.(agent.job_id)
@@ -761,12 +762,13 @@ export default function AgentStudioPage({
 }
 
 function AgentCard({
-  agent, onToggleStatus, onCalibrate, onNavigate,
+  agent, onToggleStatus, onCalibrate, onNavigate, onEdit,
 }: {
   agent: SourcingAgent
   onToggleStatus: () => void
   onCalibrate: () => void
   onNavigate: () => void
+  onEdit: () => void
 }) {
   const t = useTranslations("agents")
   const status = STATUS_CONFIG_STYLES[agent.status]
@@ -878,6 +880,16 @@ function AgentCard({
             ) : (
               <Play className="w-3.5 h-3.5 text-emerald-600" />
             )}
+          </button>
+          <button
+            onClick={onEdit}
+            className={cn(
+              "flex items-center justify-center w-8 h-8 rounded-lg border border-lia-border-subtle",
+              "hover:bg-lia-bg-tertiary transition-colors"
+            )}
+            title={t("studio.card.edit")}
+          >
+            <Pencil className="w-3.5 h-3.5 text-lia-text-secondary" />
           </button>
           <button
             onClick={onCalibrate}

@@ -252,8 +252,8 @@
   },
   "login": {
     "tagline": "Agentic AI for Recruitment",
-    "heroTitle": "Sign in. <bold>IA</bold> is already<br></br>working for you.",
-    "heroTitlePlain": "Sign in. IA is already working for you.",
+    "heroTitle": "Sign in. We're already working<br></br><bold>for you</bold>.",
+    "heroTitlePlain": "Sign in. We're already working for you.",
     "heroSubtitle": "Global sourcing · Smart screening · Automatic scheduling",
     "heroRecruitment": "Recruitment <accent>simplified</accent>",
     "atsConnect": "Connects to your ATS",
@@ -2012,6 +2012,7 @@
         "view": "View",
         "pause": "Pause",
         "resume": "Resume",
+        "edit": "Edit",
         "linkedTooltip": "Click to open the linked target (job or talent pool)."
       },
       "toast": {

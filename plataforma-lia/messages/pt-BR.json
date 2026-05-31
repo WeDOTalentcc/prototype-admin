@@ -252,8 +252,8 @@
   },
   "login": {
     "tagline": "IA Agêntica para Recrutamento",
-    "heroTitle": "Entre. A <bold>IA</bold> já está<br></br>trabalhando por você.",
-    "heroTitlePlain": "Entre. A IA já está trabalhando por você.",
+    "heroTitle": "Entre. Já estamos trabalhando<br></br><bold>por você</bold>.",
+    "heroTitlePlain": "Entre. Já estamos trabalhando por você.",
     "heroSubtitle": "Sourcing global · Triagem inteligente · Agendamentos automáticos",
     "heroRecruitment": "Recrutamento <accent>simples</accent>",
     "atsConnect": "Conecta ao seu ATS",
@@ -2012,6 +2012,7 @@
         "view": "Ver",
         "pause": "Pausar",
         "resume": "Retomar",
+        "edit": "Editar",
         "linkedTooltip": "Clique para abrir o destino vinculado (vaga ou banco de talentos)."
       },
       "toast": {

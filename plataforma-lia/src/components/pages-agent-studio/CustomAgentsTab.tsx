@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from "react"
 import { useTranslations } from "next-intl"
-import { Bot, ChevronRight, Copy, Edit3, ExternalLink, Loader2, MoreVertical, Pause, Play, Plus, Settings, Sliders, Store, TestTube2, Trash2 } from "lucide-react"
+import { Bot, Brain, Briefcase, ChevronRight, Copy, Database, Edit3, ExternalLink, Loader2, MoreVertical, Pause, Play, Plus, Settings, Sliders, Store, TestTube2, Trash2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 // Sprint 4 Fase 3 (Studio Experience) — config humana `/edit`. Ferramentas como
 // checkboxes agrupados em PT (TOOL_GROUP/CAPABILITY_GROUP_ORDER), nunca slug cru.
@@ -39,6 +39,7 @@ interface CustomAgent {
   updated_at: string | null
   max_steps?: number
   temperature?: number
+  config?: Record<string, unknown>
 }
 
 // UX-Sprint-A QW#18 Batch 3 (audit 2026-05-21): STATUS_CONFIG extraído para
@@ -371,11 +372,41 @@ export function CreateCustomAgentModal({
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState("")
   const [availableTools, setAvailableTools] = useState<string[]>([])
+  const tStudio = useTranslations('agents.studio.modal')
+  const [linkType, setLinkType] = useState<"job" | "pool" | "none">(() => {
+    const cfg = (agent?.config ?? {}) as { job_id?: string | null; talent_pool_id?: string | null }
+    if (cfg.job_id) return "job"
+    if (cfg.talent_pool_id) return "pool"
+    return "none"
+  })
+  const [linkId, setLinkId] = useState<string>(() => {
+    const cfg = (agent?.config ?? {}) as { job_id?: string | null; talent_pool_id?: string | null }
+    return String(cfg.job_id ?? cfg.talent_pool_id ?? "")
+  })
+  const [jobs, setJobs] = useState<Array<{ id: string; title: string }>>([])
+  const [pools, setPools] = useState<Array<{ id: string; name: string }>>([])
 
   useEffect(() => {
     fetch("/api/backend-proxy/custom-agents/available-tools")
       .then(r => r.ok ? r.json() : { tools: [] })
       .then(d => setAvailableTools(d.tools || []))
+      .catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    fetch("/api/backend-proxy/job-vacancies?status=publicada,ao_vivo,rascunho,enriquecida&limit=50", { credentials: "include" })
+      .then(r => r.ok ? r.json() : { jobs: [] })
+      .then(d => {
+        const raw = Array.isArray(d?.jobs) ? d.jobs : Array.isArray(d) ? d : []
+        setJobs(raw.map((j: { id: string; title?: string }) => ({ id: String(j.id), title: j.title ?? "Vaga" })))
+      })
+      .catch(() => {})
+    fetch("/api/backend-proxy/talent-pools", { credentials: "include" })
+      .then(r => r.ok ? r.json() : { pools: [] })
+      .then(d => {
+        const raw = Array.isArray(d?.pools) ? d.pools : Array.isArray(d?.talent_pools) ? d.talent_pools : Array.isArray(d) ? d : []
+        setPools(raw.map((p: { id: string; name?: string }) => ({ id: String(p.id), name: p.name ?? "Banco" })))
+      })
       .catch(() => {})
   }, [])
 
@@ -402,6 +433,19 @@ export function CreateCustomAgentModal({
     return Array.from(universe)
   }, [availableTools, selectedTools])
 
+  // Garante que o vínculo atual apareça como opção mesmo se a vaga/banco
+  // não vier na lista buscada (ex: vaga encerrada) — evita perder o link no save.
+  const jobOptions = useMemo(
+    () => (linkType === "job" && linkId && !jobs.some(j => j.id === linkId)
+      ? [{ id: linkId, title: linkId }, ...jobs] : jobs),
+    [jobs, linkId, linkType],
+  )
+  const poolOptions = useMemo(
+    () => (linkType === "pool" && linkId && !pools.some(p => p.id === linkId)
+      ? [{ id: linkId, name: linkId }, ...pools] : pools),
+    [pools, linkId, linkType],
+  )
+
   const handleSave = async () => {
     setIsSaving(true)
     setError("")
@@ -417,6 +461,11 @@ export function CreateCustomAgentModal({
         domain,
         max_steps: maxSteps,
         temperature: RESPONSE_STYLE_TO_TEMPERATURE[responseStyle],
+        config: {
+          ...(agent?.config ?? {}),
+          job_id: linkType === "job" ? (linkId || null) : null,
+          talent_pool_id: linkType === "pool" ? (linkId || null) : null,
+        },
       }
 
       const url = isEditing
@@ -484,6 +533,57 @@ export function CreateCustomAgentModal({
               placeholder={t('descriptionPlaceholder')}
               className="w-full border border-lia-border-subtle rounded-md px-3 py-2 text-sm bg-lia-bg-secondary text-lia-text-primary placeholder:text-lia-text-disabled focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/30"
             />
+          </div>
+
+          <div>
+            <label className="text-xs font-semibold text-lia-text-primary mb-1 block">{tStudio('linkTo')}</label>
+            <div className="flex gap-2">
+              {[
+                { id: "none" as const, label: tStudio('none'), icon: Brain },
+                { id: "job" as const, label: tStudio('job'), icon: Briefcase },
+                { id: "pool" as const, label: tStudio('talentPool'), icon: Database },
+              ].map(opt => (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => { setLinkType(opt.id); setLinkId("") }}
+                  className={cn(
+                    "flex items-center gap-1.5 px-3 py-2 rounded-md text-xs font-medium border transition-colors",
+                    linkType === opt.id
+                      ? "border-lia-text-primary bg-lia-bg-tertiary text-lia-text-primary"
+                      : "border-lia-border-subtle text-lia-text-secondary hover:bg-lia-bg-secondary"
+                  )}
+                >
+                  <opt.icon className="w-3.5 h-3.5" />
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+            {linkType === "none" && (
+              <div className="mt-2 px-3 py-2 rounded-md bg-[#FEF9F0] border border-[#D19960]/30">
+                <p className="text-xs text-[#D19960]">{tStudio('noLinkWarning')}</p>
+              </div>
+            )}
+            {linkType === "job" && (
+              <select
+                value={linkId}
+                onChange={e => setLinkId(e.target.value)}
+                className="mt-2 w-full border border-lia-border-subtle rounded-md px-3 py-2 text-sm bg-lia-bg-secondary text-lia-text-primary focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/30"
+              >
+                <option value="">{tStudio('jobIdPlaceholder')}</option>
+                {jobOptions.map(j => <option key={j.id} value={j.id}>{j.title}</option>)}
+              </select>
+            )}
+            {linkType === "pool" && (
+              <select
+                value={linkId}
+                onChange={e => setLinkId(e.target.value)}
+                className="mt-2 w-full border border-lia-border-subtle rounded-md px-3 py-2 text-sm bg-lia-bg-secondary text-lia-text-primary focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/30"
+              >
+                <option value="">{tStudio('poolIdPlaceholder')}</option>
+                {poolOptions.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+              </select>
+            )}
           </div>
 
           {/* Instruções do agente — antes "System prompt" mono. Humanizado:

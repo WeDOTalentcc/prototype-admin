@@ -28,6 +28,7 @@ interface EditAgentShape {
   updated_at: string | null
   max_steps?: number
   temperature?: number
+  config?: Record<string, unknown>
 }
 import { cn } from "@/lib/utils"
 import { textStyles } from "@/lib/design-tokens"

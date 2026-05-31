@@ -15,6 +15,7 @@ from app.domains.job_creation.helpers.vacancy_vocab import (
     to_match_contract_key,
     to_match_seniority_key,
 )
+from app.shared.eligibility_matching import matches_department, matches_dimension_list
 
 logger = logging.getLogger(__name__)
 
@@ -88,29 +89,13 @@ class CompanyBenefitRepository:
     def _matches_dimension_list(
         benefit_values: list | None, vaga_key: str, key_fn
     ) -> bool:
-        """True se o beneficio se aplica ao valor da vaga nesta dimensao.
-        Regra: lista vazia/None = aplica a todos; 'all' = curinga; senao casa
-        pelo token normalizado (key_fn) ignorando EN/PT, caixa e acentos."""
-        if not benefit_values:
-            return True
-        if any((v or "").strip().lower() == "all" for v in benefit_values):
-            return True
-        if not vaga_key:
-            return True  # vaga nao informou a dimensao -> nao restringe
-        return any(key_fn(v) == vaga_key for v in benefit_values)
+        """Delega ao util compartilhado (app.shared.eligibility_matching)."""
+        return matches_dimension_list(benefit_values, vaga_key, key_fn)
 
     @staticmethod
     def _matches_department(departments: dict | None, vaga_department: str | None) -> bool:
-        """departments e um dict {nome_dept: bool}. Aplica a todos se vazio ou
-        sem chave ativa; 'all' ativo = curinga; senao casa o dept da vaga."""
-        if not departments or not any(departments.values()):
-            return True
-        if departments.get("all"):
-            return True
-        if not vaga_department:
-            return True
-        target = _norm(vaga_department)
-        return any(enabled and _norm(k) == target for k, enabled in departments.items())
+        """Delega ao util compartilhado (app.shared.eligibility_matching)."""
+        return matches_department(departments, vaga_department)
 
     async def list_matching(
         self,

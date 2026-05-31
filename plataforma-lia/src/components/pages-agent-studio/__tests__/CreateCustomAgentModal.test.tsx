@@ -52,6 +52,18 @@ function mockFetch(saveBodyRef: { current: unknown }) {
         json: async () => ({ tools: AVAILABLE_TOOLS }),
       } as Response
     }
+    if (typeof url === "string" && url.includes("job-vacancies")) {
+      return {
+        ok: true,
+        json: async () => ({ jobs: [{ id: "job-1", title: "Vaga Engenheiro" }, { id: "job-2", title: "Vaga Designer" }] }),
+      } as Response
+    }
+    if (typeof url === "string" && url.includes("talent-pools")) {
+      return {
+        ok: true,
+        json: async () => ({ pools: [{ id: "pool-1", name: "Banco Tech" }] }),
+      } as Response
+    }
     // save (POST/PATCH custom-agents)
     saveBodyRef.current = init?.body ? JSON.parse(init.body as string) : null
     return { ok: true, json: async () => ({ id: "new-agent" }) } as Response
@@ -181,6 +193,54 @@ describe("CreateCustomAgentModal — config humana (Sprint 4)", () => {
     expect(
       screen.getByRole("radio", { name: ptBRMessages.agents.customAgents.styleConsistent }).getAttribute("aria-checked"),
     ).toBe("true")
+  })
+
+  it("editing a sourcing agent with config.job_id pre-selects the linked job", async () => {
+    renderModal({
+      id: "a1",
+      name: "Sourcing",
+      role: "Sourcer",
+      description: null,
+      system_prompt: "Busque talentos.",
+      allowed_tools: [],
+      domain: "sourcing",
+      icon: "bot",
+      status: "active",
+      version: 1,
+      total_executions: 0,
+      avg_confidence: 0,
+      is_marketplace_published: false,
+      created_at: null,
+      updated_at: null,
+      max_steps: 8,
+      temperature: 0.5,
+      config: { job_id: "job-1" },
+    })
+    // The linked job appears as an option and its select is pre-selected.
+    const opt = await screen.findByRole("option", { name: "Vaga Engenheiro" })
+    const select = opt.closest("select") as HTMLSelectElement
+    expect(select.value).toBe("job-1")
+  })
+
+  it("selecting a job link includes config.job_id in the save payload", async () => {
+    renderModal(null)
+    await waitFor(() => screen.getByRole("checkbox", { name: ptBRMessages.agents.customAgents.tools.search_candidates }))
+
+    fireEvent.change(screen.getByLabelText(ptBRMessages.agents.customAgents.name), { target: { value: "Sourcing" } })
+    fireEvent.change(screen.getByLabelText(ptBRMessages.agents.customAgents.role), { target: { value: "Sourcer" } })
+    fireEvent.change(screen.getByLabelText(ptBRMessages.agents.customAgents.instructionsLabel), { target: { value: "Busque." } })
+
+    // Switch link type to "Vaga" and pick a job from the dropdown.
+    fireEvent.click(screen.getByRole("button", { name: ptBRMessages.agents.studio.modal.job }))
+    const opt = await screen.findByRole("option", { name: "Vaga Engenheiro" })
+    const select = opt.closest("select") as HTMLSelectElement
+    fireEvent.change(select, { target: { value: "job-1" } })
+
+    fireEvent.click(screen.getByRole("button", { name: ptBRMessages.agents.customAgents.createAgent }))
+    await waitFor(() => expect(saveBodyRef.current).toBeTruthy())
+    const body = saveBodyRef.current as { config: { job_id: string | null; talent_pool_id: string | null } }
+    expect(body.config.job_id).toBe("job-1")
+    expect(body.config.talent_pool_id).toBeNull()
   })
 
   it("i18n canonical contract: no MISSING_MESSAGE with real pt-BR messages", async () => {
