@@ -42,7 +42,6 @@ from app.api.v1 import (
     auth,
     autocomplete,
     automation,
-    automation_rules,
     automations,
     benefits,
     bias_audit,
@@ -128,7 +127,6 @@ from app.api.v1 import (
     lia_assistant,
     lia_assistant_fasttrack,
     lia_assistant_flags,
-    lia_assistant_graph,
     lia_assistant_learning,
     lia_assistant_vacancy,
     lia_assistant_wizard_stages,
@@ -403,7 +401,6 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(task_monitoring.router, prefix="/api/v1", tags=["task-monitoring"])
     app.include_router(automation.router, prefix="/api/v1", tags=["automation"])
     app.include_router(automations.router, prefix="/api/v1", tags=["automations"])
-    app.include_router(automation_rules.router, prefix="/api/v1", tags=["automation-rules"])
     app.include_router(async_endpoints.router, prefix="/api/v1", tags=["async-jobs"])
 
     # ── Search & Discovery ────────────────────────────────────────────────────
@@ -469,7 +466,6 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(lia_assistant_wizard_stages.router, prefix="/api/v1", tags=["lia-wizard-stages"])
     app.include_router(lia_assistant_vacancy.router, prefix="/api/v1", tags=["lia-vacancy"])
     app.include_router(lia_assistant_fasttrack.router, prefix="/api/v1", tags=["lia-fasttrack"])
-    app.include_router(lia_assistant_graph.router, prefix="/api/v1/lia-assistant", tags=["lia-graph"])
 
     # Task #570 — canonical chat-feedback router (closes audit #569 P0).
     # Mounts /api/v1/lia/feedback/{thumbs,rating,correction,metrics,by-conversation}.
