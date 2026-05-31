@@ -187,44 +187,40 @@ def test_regenerate_forces_regen():
 
 @pytest.mark.medium
 def test_edit_wsi_question_surgical():
+    """Fase 2.4: edit delega ao canônico WSIService.suggest_single_question
+    (via _wsi_suggest_single) — não mais ao fork WSIQuestionGenerator."""
     from app.domains.job_creation.orchestrator import wizard_service_tools as wst
 
-    class _NewQ:
-        def model_dump(self):
-            return {"block": "technical", "question": "T2 reescrita", "bloom_level": 5}
+    captured = {}
 
-    class _FakeGen:
-        def generate_single_question(self, **kw):
-            assert kw["directive"] == "mais específica"
-            assert kw["base_question"] is not None  # edição usa base
-            return _NewQ()
+    def _fake_single(state, *, instruction, block):
+        captured.update(instruction=instruction, block=block)
+        return {"success": True, "question": "T2 reescrita", "skill_targeted": "A", "bloom_level": 5}
 
-    with patch("app.domains.job_creation.services.wsi_question_generator.WSIQuestionGenerator", _FakeGen), \
-         patch("app.domains.job_creation.services.wsi_question_generator.GeneratedQuestion", dict), \
-         patch.object(wst, "_wsi_enriched_seniority_traits", return_value=(object(), "pleno", [])):
+    with patch.object(wst, "_wsi_suggest_single", _fake_single):
         res = wst._handle_edit_wsi_question(
             {"wsi_questions": list(_QS5), "jd_enriched": {"x": 1}},
             {"question_index": 2, "instruction": "mais específica"}, CTX,
         )
     assert not res.error
-    assert res.state_updates["wsi_questions"][1]["question"] == "T2 reescrita"
+    assert captured["instruction"] == "mais específica"
+    q = res.state_updates["wsi_questions"][1]
+    assert q["question"] == "T2 reescrita"
+    assert q["framework"] == "CBI"  # mapeado p/ shape do painel
+    assert q["bloom_level"] == 5
 
 
 @pytest.mark.medium
 def test_add_wsi_question_surgical():
+    """Fase 2.4: add delega ao canônico WSIService.suggest_single_question
+    (via _wsi_suggest_single). block é autoritativo do wizard."""
     from app.domains.job_creation.orchestrator import wizard_service_tools as wst
 
-    class _NewQ:
-        def model_dump(self):
-            return {"block": "behavioral", "question": "nova comportamental"}
+    def _fake_single(state, *, instruction, block):
+        assert block == "behavioral"
+        return {"success": True, "question": "nova comportamental", "skill_targeted": "Resiliência"}
 
-    class _FakeGen:
-        def generate_single_question(self, **kw):
-            assert kw["base_question"] is None  # adição não usa base
-            return _NewQ()
-
-    with patch("app.domains.job_creation.services.wsi_question_generator.WSIQuestionGenerator", _FakeGen), \
-         patch.object(wst, "_wsi_enriched_seniority_traits", return_value=(object(), "pleno", [])):
+    with patch.object(wst, "_wsi_suggest_single", _fake_single):
         res = wst._handle_add_wsi_question(
             {"wsi_questions": list(_QS5), "jd_enriched": {"x": 1}},
             {"block": "behavioral", "instruction": "avalie resiliência"}, CTX,
@@ -232,6 +228,7 @@ def test_add_wsi_question_surgical():
     assert not res.error
     assert len(res.state_updates["wsi_questions"]) == 6
     assert res.state_updates["wsi_questions"][-1]["question"] == "nova comportamental"
+    assert res.state_updates["wsi_questions"][-1]["block"] == "behavioral"
 
 
 @pytest.mark.medium

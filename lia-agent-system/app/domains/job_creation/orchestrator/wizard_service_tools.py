@@ -717,10 +717,82 @@ def _handle_remove_wsi_question(
     )
 
 
+_WSI_SINGLE_TIMEOUT_S = float(os.environ.get("LIA_ORCH_WSI_SINGLE_TIMEOUT_S", "30"))
+
+
+def _comp_names(items, *keys) -> list[str]:
+    """Extrai nomes de competencias do state (list[{skill|competencia|name}])."""
+    out: list[str] = []
+    for it in items or []:
+        if isinstance(it, dict):
+            name = next((str(it[k]).strip() for k in keys if it.get(k)), "")
+        else:
+            name = str(it).strip()
+        if name:
+            out.append(name)
+    return out
+
+
+def _wsi_single_to_panel(res: dict, block: str) -> dict:
+    """Mapeia o output flat de WSIService.suggest_single_question (canonico) para
+    o shape de pergunta que o painel do wizard + ficha viva consomem.
+
+    Consolidacao WSI Fase 2.4: HITL add/edit usa o MESMO canonico que o endpoint
+    de Settings (single source of truth) — fairness (pre-check + L4) ja vem de
+    dentro do canonico (Fase 2.3). O `block` e autoritativo do wizard, nao da
+    categoria inferida pelo LLM.
+    """
+    return {
+        "question": res.get("question", ""),
+        "block": block,
+        "framework": "CBI",
+        "competency": res.get("skill_targeted") or block,
+        "skill": res.get("skill_targeted", ""),
+        "trait_ocean": None,
+        "ideal_answer": "",
+        "scoring_rubric": {},
+        "bloom_level": res.get("bloom_level"),
+        "dreyfus_level": None,
+        "weight": 1.0,
+    }
+
+
+def _wsi_suggest_single(state: dict, *, instruction: str, block: str):
+    """Chama o canonico WSIService.suggest_single_question via bridge sync->async."""
+    from app.domains.cv_screening.services.wsi_service.service import get_wsi_service
+    from app.domains.job_creation.helpers.async_audit import run_coro_in_threadpool
+
+    svc = get_wsi_service()
+    block_id = 4 if block == "behavioral" else 3
+    job_title = state.get("parsed_title") or ""
+    seniority = (
+        state.get("seniority_resolved")
+        or state.get("parsed_seniority")
+        or "pleno"
+    )
+    tech = _comp_names(state.get("confirmed_technical_competencies"), "skill", "name")
+    behav = _comp_names(state.get("confirmed_behavioral_competencies"), "competencia", "name")
+    return run_coro_in_threadpool(
+        lambda: svc.suggest_single_question(
+            prompt=instruction,
+            block_id=block_id,
+            job_title=job_title,
+            seniority=seniority,
+            technical_skills=tech,
+            behavioral_competencies=behav,
+        ),
+        timeout=_WSI_SINGLE_TIMEOUT_S,
+    )
+
+
 def _handle_edit_wsi_question(
     state: dict, tool_input: dict, ctx: ToolContext
 ) -> ToolResult:
-    """Edita UMA pergunta WSI por índice + instrução (geração cirúrgica CBI)."""
+    """Edita UMA pergunta WSI por índice + instrução (canônico cirúrgico, Fase 2.4).
+
+    Delega ao canônico único WSIService.suggest_single_question (mesmo do endpoint
+    Settings). FairnessGuard (pre-check + L4) já vem de dentro do canônico.
+    """
     tenant_err = _reject_tenant_keys(tool_input)
     if tenant_err:
         return ToolResult(llm_message=tenant_err, error=True)
@@ -736,27 +808,17 @@ def _handle_edit_wsi_question(
         return ToolResult(
             llm_message="Diga o que ajustar na pergunta (instruction).", error=True
         )
-    enriched, seniority, traits = _wsi_enriched_seniority_traits(state)
-    if enriched is None:
-        return ToolResult(llm_message="Descrição da vaga indisponível.", error=True)
     target = questions[idx - 1]
-    block = target.get("block") or "technical"
+    block = (target.get("block") if isinstance(target, dict) else None) or "technical"
     try:
-        from app.domains.job_creation.services.wsi_question_generator import (
-            WSIQuestionGenerator, GeneratedQuestion,
-        )
-        gen = WSIQuestionGenerator()
-        base = GeneratedQuestion(**target) if not isinstance(target, GeneratedQuestion) else target
-        new_q = gen.generate_single_question(
-            block=block, enriched=enriched, seniority=seniority,
-            directive=instruction, base_question=base, trait_rankings=traits,
-        )
+        res = _wsi_suggest_single(state, instruction=instruction, block=block)
     except Exception as exc:  # noqa: BLE001 — fail-loud
-        logger.warning("[WizardServiceTools] edit_wsi failed: %s", exc)
+        logger.warning("[WizardServiceTools] edit_wsi (canonical) failed: %s", exc)
         return ToolResult(llm_message=f"Não consegui editar a pergunta ({exc}).", error=True)
-    if new_q is None:
-        return ToolResult(llm_message="A edição não retornou pergunta. Tente reformular.", error=True)
-    questions[idx - 1] = new_q.model_dump()
+    if not res or not res.get("success"):
+        _msg = (res or {}).get("error") or "A edição não retornou pergunta. Tente reformular."
+        return ToolResult(llm_message=_msg, error=True)
+    questions[idx - 1] = _wsi_single_to_panel(res, block)
     return ToolResult(
         llm_message=(
             f"Pergunta {idx} reescrita conforme pedido. Apresente a nova versão e "
@@ -769,7 +831,11 @@ def _handle_edit_wsi_question(
 def _handle_add_wsi_question(
     state: dict, tool_input: dict, ctx: ToolContext
 ) -> ToolResult:
-    """Adiciona UMA pergunta WSI (geração cirúrgica CBI) ao bloco indicado."""
+    """Adiciona UMA pergunta WSI ao bloco indicado (canônico cirúrgico, Fase 2.4).
+
+    Delega ao canônico único WSIService.suggest_single_question (mesmo do endpoint
+    Settings). FairnessGuard (pre-check + L4) já vem de dentro do canônico.
+    """
     tenant_err = _reject_tenant_keys(tool_input)
     if tenant_err:
         return ToolResult(llm_message=tenant_err, error=True)
@@ -785,24 +851,15 @@ def _handle_add_wsi_question(
     instruction = str(tool_input.get("instruction") or "").strip() or (
         f"Gere uma nova pergunta {block} complementar, distinta das existentes."
     )
-    enriched, seniority, traits = _wsi_enriched_seniority_traits(state)
-    if enriched is None:
-        return ToolResult(llm_message="Descrição da vaga indisponível.", error=True)
     try:
-        from app.domains.job_creation.services.wsi_question_generator import (
-            WSIQuestionGenerator,
-        )
-        gen = WSIQuestionGenerator()
-        new_q = gen.generate_single_question(
-            block=block, enriched=enriched, seniority=seniority,
-            directive=instruction, base_question=None, trait_rankings=traits,
-        )
+        res = _wsi_suggest_single(state, instruction=instruction, block=block)
     except Exception as exc:  # noqa: BLE001 — fail-loud
-        logger.warning("[WizardServiceTools] add_wsi failed: %s", exc)
+        logger.warning("[WizardServiceTools] add_wsi (canonical) failed: %s", exc)
         return ToolResult(llm_message=f"Não consegui adicionar a pergunta ({exc}).", error=True)
-    if new_q is None:
-        return ToolResult(llm_message="A geração não retornou pergunta. Tente reformular.", error=True)
-    questions = list(state.get("wsi_questions") or []) + [new_q.model_dump()]
+    if not res or not res.get("success"):
+        _msg = (res or {}).get("error") or "A geração não retornou pergunta. Tente reformular."
+        return ToolResult(llm_message=_msg, error=True)
+    questions = list(state.get("wsi_questions") or []) + [_wsi_single_to_panel(res, block)]
     return ToolResult(
         llm_message=(
             f"Adicionada uma pergunta {block}. O pacote agora tem {len(questions)} "
