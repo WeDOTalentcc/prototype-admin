@@ -12,7 +12,8 @@ export interface SourceDetails {
 const GLOBAL_SOURCE_VARIANTS = new Set([
   'pearch', 'pearch_ai', 'pearch_fast', 'pearch_pro',
   'global', 'external', 'pearch-ai', 'pearch-fast', 'pearch-pro',
-  'sourcing', 'external_search', 'ai_search', 'aisearch'
+  'sourcing', 'external_search', 'ai_search', 'aisearch',
+  'apify_search', 'apify'
 ])
 
 const LOCAL_SOURCE_VARIANTS = new Set([
@@ -58,6 +59,8 @@ const GLOBAL_SOURCE_LABELS: Record<string, { label: string; subtext: string; cre
   'ai_search': { label: 'Busca IA', subtext: 'Encontrado via inteligência artificial', credits: '1 cred + $0.01 Apify/cand' },
   'aisearch': { label: 'Busca IA', subtext: 'Encontrado via inteligência artificial', credits: '1 cred + $0.01 Apify/cand' },
   'sourcing': { label: 'Sourcing', subtext: 'Sourcing externo', credits: '1 cred + $0.01 Apify/cand' },
+  'apify_search': { label: 'Base Global', subtext: 'Busca LinkedIn (Apify)', credits: '$0.01 Apify/cand' },
+  'apify': { label: 'Base Global', subtext: 'Enriquecimento Apify', credits: '$0.01 Apify/cand' },
 }
 
 export function normalizeSourceField(source: string | undefined | null): string {

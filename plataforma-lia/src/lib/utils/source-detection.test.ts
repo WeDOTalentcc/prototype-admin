@@ -39,6 +39,14 @@ describe("isGlobalSource", () => {
     expect(isGlobalSource("pearch_fast")).toBe(true)
   })
 
+  it("returns true for 'apify_search' (fallback Apify nao some do balde global)", () => {
+    expect(isGlobalSource("apify_search")).toBe(true)
+  })
+
+  it("returns true for 'apify' (enriquecimento Apify)", () => {
+    expect(isGlobalSource("apify")).toBe(true)
+  })
+
   it("returns false for 'local'", () => {
     expect(isGlobalSource("local")).toBe(false)
   })
