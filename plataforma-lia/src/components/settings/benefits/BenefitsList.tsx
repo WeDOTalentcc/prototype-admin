@@ -48,6 +48,9 @@ interface BenefitsListProps {
   onEditBenefit: (benefit: BenefitTabRecord) => void
   onCreateBenefitInCategory: (categoryId: string) => void
   onDelete: (benefitId: string) => void
+  /** 'vacancy' reflete o catalogo dentro da vaga (toggle = vincular). */
+  mode?: "catalog" | "vacancy"
+  linkedIds?: Set<string>
 }
 
 export function BenefitsList({
@@ -57,7 +60,12 @@ export function BenefitsList({
   onEditBenefit,
   onCreateBenefitInCategory,
   onDelete,
+  mode = "catalog",
+  linkedIds,
 }: BenefitsListProps) {
+  const isVacancy = mode === "vacancy"
+  const linkedCount = (cbs: BenefitTabRecord[]) =>
+    cbs.filter((b) => b.id && linkedIds?.has(b.id)).length
   const t = useTranslations("settings.benefits")
   const CATEGORY_NAME_KEYS: Record<string, string> = {
     health: "categoryHealth",
@@ -117,7 +125,9 @@ export function BenefitsList({
               </div>
               <div className="flex items-center gap-2">
                 <Chip variant="neutral" className="text-micro">
-                  {t("activeBenefits", { count: categoryBenefits.filter(b => b.is_active).length })}
+                  {isVacancy
+                    ? t("linkedBenefits", { count: linkedCount(categoryBenefits) })
+                    : t("activeBenefits", { count: categoryBenefits.filter(b => b.is_active).length })}
                 </Chip>
                 {isExpanded ? (
                   <ChevronDown className="w-4 h-4 text-lia-text-secondary" />
@@ -156,6 +166,8 @@ export function BenefitsList({
                         onToggleStatus={onToggleStatus}
                         onEdit={onEditBenefit}
                         onDelete={onDelete}
+                        mode={mode}
+                        isLinked={isVacancy && benefit.id ? !!linkedIds?.has(benefit.id) : false}
                       />
                     ))}
                   </div>

@@ -826,6 +826,13 @@
     "screeningToggleAria": "Ativar triagem automática para esta vaga"
   },
   "jobs": {
+    "vacancyBenefits": {
+      "title": "Benefícios da vaga",
+      "subtitle": "Vincule benefícios do catálogo da empresa. Os compatíveis com o nível e a área da vaga aparecem destacados.",
+      "alsoSaveToCatalog": "Também salvar no catálogo da empresa",
+      "addBenefit": "Adicionar benefício",
+      "emptyCatalog": "Nenhum benefício no catálogo da empresa ainda. Crie um para começar."
+    },
     "campaignBadge": {
       "active": "Campanha ativa",
       "paused": "Campanha pausada",
@@ -4857,7 +4864,8 @@
       "addFirst": "Adicionar o primeiro",
       "noNameDefault": "Benefício sem nome",
       "savingShort": "Salvando...",
-      "activeBenefits": "{count} ativos"
+      "activeBenefits": "{count} ativos",
+      "linkedBenefits": "{count} vinculados"
     },
     "dataRequest": {
       "loadingConfig": "Carregando configurações...",

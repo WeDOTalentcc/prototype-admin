@@ -63,8 +63,6 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
     isSaving,
     newRequirement,
     setNewRequirement,
-    newBenefit,
-    setNewBenefit,
     newStage,
     newAccessEmail,
     setNewAccessEmail,
@@ -86,7 +84,6 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
     newInterviewStageType,
     setNewInterviewStageType,
     companyDepartments,
-    companyBenefits,
     showImportQuestionsModal,
     setShowImportQuestionsModal,
     companyDefaultQuestions,
@@ -98,8 +95,6 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
     updateField,
     addRequirement,
     removeRequirement,
-    addBenefit,
-    removeBenefit,
     addStage,
     removeStage,
     addInterviewStage,
@@ -178,11 +173,6 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                 <EditJobModalCompensation
                   formData={formData}
                   setFormData={setFormData}
-                  newBenefit={newBenefit}
-                  setNewBenefit={setNewBenefit}
-                  companyBenefits={companyBenefits}
-                  addBenefit={addBenefit}
-                  removeBenefit={removeBenefit}
                   activeCompensationPolicies={activeCompensationPolicies}
                   onSuggestWithLIA={() => {
                     // INT:005 — open LIA chat pre-filled with compensation suggestion prompt

@@ -23,28 +23,11 @@ import {
 import { inputStyle } from '../edit-job-modal.constants'
 import type { Job } from '../edit-job/edit-job.types'
 import type { CompanyBenefit } from '@/types/benefits'
-import { BenefitFormModal } from '@/components/settings/benefits/BenefitFormModal'
-
-type BenefitItem = string | { id?: string; name: string }
-
-function benefitName(b: BenefitItem): string {
-  return typeof b === 'string' ? b : b.name
-}
-
-function isBenefitAdded(benefits: BenefitItem[], candidate: CompanyBenefit): boolean {
-  return benefits.some(b =>
-    typeof b === 'string' ? b === candidate.name : (b as { id?: string }).id === candidate.id
-  )
-}
+import { VacancyBenefitsManager } from '@/components/benefits/VacancyBenefitsManager'
 
 interface EditJobModalCompensationProps {
   formData: Partial<Job>
   setFormData: React.Dispatch<React.SetStateAction<Partial<Job>>>
-  newBenefit: string
-  setNewBenefit: (v: string) => void
-  companyBenefits: CompanyBenefit[]
-  addBenefit: () => void
-  removeBenefit: (idx: number) => void
   activeCompensationPolicies: { id: string; name: string; policy_type?: string }[]
   /** INT:005 — triggers LIA chat with apply_compensation_policy intent */
   onSuggestWithLIA?: () => void
@@ -53,41 +36,9 @@ interface EditJobModalCompensationProps {
 export function EditJobModalCompensation({
   formData,
   setFormData,
-  newBenefit,
-  setNewBenefit,
-  companyBenefits,
-  addBenefit,
-  removeBenefit,
   activeCompensationPolicies,
   onSuggestWithLIA,
 }: EditJobModalCompensationProps) {
-  const benefits = (formData.benefits || []) as BenefitItem[]
-  const [showBenefitModal, setShowBenefitModal] = useState(false)
-  const [editingBenefit, setEditingBenefit] = useState<Parameters<typeof BenefitFormModal>[0]['editingBenefit']>(null)
-  const [isSavingBenefit, setIsSavingBenefit] = useState(false)
-
-  const handleBenefitSaveToCompany = async (benefit: NonNullable<typeof editingBenefit>) => {
-    setIsSavingBenefit(true)
-    try {
-      const res = await fetch('/api/backend-proxy/company/benefits/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(benefit),
-      })
-      if (res.ok) {
-        const data = await res.json()
-        setFormData(prev => ({
-          ...prev,
-          benefits: [...((prev.benefits || []) as BenefitItem[]), { id: data.id, name: data.name }],
-        }))
-        setShowBenefitModal(false)
-        setEditingBenefit(null)
-      }
-    } finally {
-      setIsSavingBenefit(false)
-    }
-  }
-
   return (
     <section data-testid="edit-job-compensation-section">
       <div className="flex items-center gap-2 mb-4">
@@ -204,116 +155,16 @@ export function EditJobModalCompensation({
         )}
 
         <div>
-          <Label className="text-xs text-lia-text-secondary mb-2 block">Benefícios</Label>
-          <div className="flex flex-wrap gap-2 mb-3">
-            {benefits.map((benefit, idx) => (
-              <Chip
-                key={idx}
-                variant="neutral"
-                className="flex items-center gap-1 py-0.5 px-2 text-xs bg-lia-bg-primary"
-              >
-                <button
-                  onClick={() => removeBenefit(idx)}
-                  className="text-lia-text-secondary hover:text-status-error mr-0.5"
-                  type="button"
-                >
-                  ×
-                </button>
-                {benefitName(benefit)}
-                {companyBenefits.find(cb => cb.name === benefitName(benefit))?.is_highlighted && (
-                  <Heart className="w-3 h-3 text-wedo-magenta fill-pink-500" />
-                )}
-              </Chip>
-            ))}
-          </div>
-          {companyBenefits.length > 0 && (
-            <div className="mb-3">
-              <Label className="text-xs text-lia-text-tertiary mb-1.5 block">Sugestões da empresa</Label>
-              <div className="flex flex-wrap gap-1.5">
-                {companyBenefits.map((benefit) => {
-                  const isAdded = isBenefitAdded(benefits, benefit)
-                  return (
-                    <Chip
-                      key={benefit.id}
-                      variant="neutral"
-                      className={`text-xs px-2 py-0.5 cursor-pointer transition-colors motion-reduce:transition-none ${
-                        isAdded
-                          ? 'bg-lia-bg-tertiary border-lia-btn-primary-bg text-lia-text-primary'
-                          : 'bg-lia-bg-secondary border-lia-border-subtle text-lia-text-secondary hover:bg-lia-interactive-hover hover:border-lia-border-medium hover:text-lia-text-primary'
-                      }`}
-                      onClick={() => {
-                        if (!isAdded) {
-                          setFormData(prev => ({
-                            ...prev,
-                            benefits: [
-                              ...((prev.benefits || []) as BenefitItem[]),
-                              { id: benefit.id, name: benefit.name },
-                            ],
-                          }))
-                        }
-                      }}
-                    >
-                      {isAdded && <CheckCircle className="w-3 h-3 mr-1" />}
-                      {benefit.is_highlighted && <Heart className="w-3 h-3 mr-1 text-wedo-magenta" />}
-                      {benefit.name}
-                      {!isAdded && <Plus className="w-3 h-3 ml-1" />}
-                    </Chip>
-                  )
-                })}
-              </div>
-            </div>
-          )}
-          <div className="flex gap-2">
-            <Input
-              value={newBenefit}
-              onChange={(e) => setNewBenefit(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addBenefit())}
-              className={`${inputStyle} flex-1`}
-              placeholder="Ex: Vale Refeição, Plano de Saúde..."
-            />
-            <Button
-              variant="outline"
-              className="h-10 px-3 text-sm border-lia-btn-primary-bg text-lia-text-primary hover:bg-lia-interactive-hover"
-              onClick={addBenefit}
-            >
-              <Plus className="w-4 h-4 mr-1" />
-              Adicionar
-            </Button>
-            <Button
-              variant="outline"
-              className="h-10 px-3 text-sm border-lia-border-subtle text-lia-text-secondary hover:bg-lia-interactive-hover"
-              title="Cadastrar benefício detalhado e promover para a empresa"
-              onClick={() => {
-                setEditingBenefit({
-                  name: '', description: '', category: 'health', value_type: 'monetary',
-                  applicable_to: [], seniority_levels: [], contract_types: [],
-                  departments: {}, waiting_period_days: 0,
-                  is_mandatory: false, is_active: true, is_highlighted: false,
-                  is_discount: false, order: 0,
-                })
-                setShowBenefitModal(true)
-              }}
-            >
-              <Briefcase className="w-4 h-4 mr-1" />
-              Detalhado
-            </Button>
-          </div>
-          <p className="text-micro text-lia-text-tertiary mt-1">
-            "Detalhado" salva também no cadastro da empresa para reutilizar em outras vagas.
-          </p>
+          <VacancyBenefitsManager
+            benefits={(formData.benefits || []) as unknown[]}
+            onChange={(next) => setFormData(prev => ({ ...prev, benefits: next as unknown as typeof prev.benefits }))}
+            seniorityLevel={formData.seniority as string | undefined}
+            department={formData.department as string | undefined}
+            contractType={(formData as { type?: string }).type}
+          />
         </div>
       </div>
 
-      {/* 3.5: BenefitFormModal em contexto de vaga */}
-      <BenefitFormModal
-        open={showBenefitModal}
-        onOpenChange={(o) => { if (!o) { setShowBenefitModal(false); setEditingBenefit(null) } }}
-        editingBenefit={editingBenefit}
-        setEditingBenefit={setEditingBenefit}
-        isSaving={isSavingBenefit}
-        onSave={handleBenefitSaveToCompany}
-        context="job"
-      />
     </section>
   )
 }

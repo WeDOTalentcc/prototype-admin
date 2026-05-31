@@ -53,6 +53,8 @@ export interface BenefitTabRecord {
   review_frequency_months?: number | null
   next_review_date?: string | null
   provider_cnpj?: string | null
+  // Contexto de vaga: flag servidor (GET /company/benefits/active?with_matches=true).
+  matches_vaga?: boolean | null
 }
 
 export interface BenefitTemplate {

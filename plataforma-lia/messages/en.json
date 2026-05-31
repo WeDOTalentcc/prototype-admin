@@ -826,6 +826,13 @@
     "screeningToggleAria": "Enable automatic screening for this job"
   },
   "jobs": {
+    "vacancyBenefits": {
+      "title": "Job benefits",
+      "subtitle": "Link benefits from the company catalog. Those matching the job level and area are highlighted.",
+      "alsoSaveToCatalog": "Also save to the company catalog",
+      "addBenefit": "Add benefit",
+      "emptyCatalog": "No benefits in the company catalog yet. Create one to get started."
+    },
     "campaignBadge": {
       "active": "Active campaign",
       "paused": "Campaign paused",
@@ -4857,7 +4864,8 @@
       "addFirst": "Add the first one",
       "noNameDefault": "Unnamed benefit",
       "savingShort": "Saving...",
-      "activeBenefits": "{count} active"
+      "activeBenefits": "{count} active",
+      "linkedBenefits": "{count} linked"
     },
     "dataRequest": {
       "loadingConfig": "Loading configurations...",

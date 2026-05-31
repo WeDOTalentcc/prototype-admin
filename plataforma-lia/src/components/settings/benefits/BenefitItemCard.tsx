@@ -28,6 +28,9 @@ interface BenefitItemCardProps {
   onToggleStatus: (benefit: Benefit) => void
   onEdit: (benefit: Benefit) => void
   onDelete: (benefitId: string) => void
+  /** 'vacancy' reflete o catalogo dentro da vaga: toggle = vincular/desvincular. */
+  mode?: "catalog" | "vacancy"
+  isLinked?: boolean
 }
 
 export const BenefitItemCard = React.memo(function BenefitItemCard({
@@ -36,6 +39,8 @@ export const BenefitItemCard = React.memo(function BenefitItemCard({
   onToggleStatus,
   onEdit,
   onDelete,
+  mode = "catalog",
+  isLinked = false,
 }: BenefitItemCardProps) {
   const t = useTranslations("settings.benefits")
 
@@ -88,11 +93,16 @@ export const BenefitItemCard = React.memo(function BenefitItemCard({
     return period ? period.name : `${days} ${t("waiting30").replace(/^\d+\s*/, "").trim() || "days"}`
   }
 
-  const activeClass = !benefit.is_active ?"opacity-60" :""
+  const isVacancy = mode === "vacancy"
+  const toggleChecked = isVacancy ? !!isLinked : benefit.is_active
+  const toggleEditable = isVacancy ? true : isEditingBenefits
+  const suggested = isVacancy && !isLinked && !!(benefit as { matches_vaga?: boolean }).matches_vaga
+  const activeClass = (!isVacancy && !benefit.is_active) ? " opacity-60" : ""
+  const suggestedClass = suggested ? " ring-1 ring-inset ring-lia-btn-primary-bg/40 bg-lia-btn-primary-bg/5" : ""
 
   return (
     <div
-      className={"p-3 flex items-center justify-between hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover/50 transition-colors motion-reduce:transition-none" + activeClass}
+      className={"p-3 flex items-center justify-between hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover/50 transition-colors motion-reduce:transition-none" + activeClass + suggestedClass}
     >
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">
@@ -134,12 +144,12 @@ export const BenefitItemCard = React.memo(function BenefitItemCard({
       </div>
       <div className="flex items-center gap-3 ml-3">
         <Switch
-          checked={benefit.is_active}
+          checked={toggleChecked}
           onCheckedChange={() => onToggleStatus(benefit)}
-          disabled={!isEditingBenefits}
-          className={!isEditingBenefits ?"opacity-60" :""}
+          disabled={!toggleEditable}
+          className={!toggleEditable ?"opacity-60" :""}
         />
-        {isEditingBenefits && (
+        {toggleEditable && (
           <>
             <Button
               variant="ghost"
@@ -150,6 +160,7 @@ export const BenefitItemCard = React.memo(function BenefitItemCard({
             >
               <Pencil className="w-3.5 h-3.5 text-lia-text-secondary" />
             </Button>
+            {!isVacancy && (
             <Button
               variant="ghost"
               size="icon"
@@ -159,6 +170,7 @@ export const BenefitItemCard = React.memo(function BenefitItemCard({
             >
               <Trash2 className="w-3.5 h-3.5" />
             </Button>
+            )}
           </>
         )}
       </div>
