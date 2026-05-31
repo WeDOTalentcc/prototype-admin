@@ -35,10 +35,6 @@ const JobAssignRecruiterModal = dynamic(() => import("@/components/modals/job-as
   ssr: false,
   loading: () => <LoadingModal />,
 })
-const EditJobModal = dynamic(() => import("@/components/modals/edit-job-modal").then(m => ({ default: m.EditJobModal })), {
-  ssr: false,
-  loading: () => <LoadingModal />,
-})
 import { CreateJobModal } from "@/components/modals/create-job-modal"
 import { ScreeningChannelsModal, ScreeningSettingsModal, ScreeningSchedulingModal } from "@/components/screening-config"
 import { WSITutorialModal } from "@/components/pages/jobs/WSITutorialModal"
@@ -60,7 +56,6 @@ export function JobsModalsSection(props: JobsModalsSectionProps) {
     showStatusModal, onCloseStatusModal, statusModalMode,
     showAssignRecruiterModal, onCloseAssignRecruiterModal,
     showCreateJobModal, onCloseCreateJobModal,
-    showEditJobModal, onCloseEditJobModal, editingJob,
     showScreeningChannelsModal, onCloseScreeningChannelsModal,
     showScreeningSettingsModal, onCloseScreeningSettingsModal,
     showScreeningSchedulingModal, onCloseScreeningSchedulingModal,
@@ -68,7 +63,6 @@ export function JobsModalsSection(props: JobsModalsSectionProps) {
     showReactivateScreeningDialog, reactivateScreeningJobs, reactivateEndDate,
     showWSITutorialModal, onCloseWSITutorialModal,
     companyRecruiters,
-    onSetEditingJob,
     onSetReactivateScreeningDialog,
     onSetReactivateScreeningJobs,
     onSetReactivateEndDate,
@@ -83,7 +77,7 @@ export function JobsModalsSection(props: JobsModalsSectionProps) {
   const {
     handlePause, handleCancel, handleActivate, handleStatusNavigate,
     handleAssign, handleCreateWithWizard, handleJobCreated,
-    handleEditSave, handleReactivateScreening,
+    handleReactivateScreening,
   } = useJobsStatusHandlers(props)
 
   const selectedJobs = allJobs.filter(job => selectedJobsForBatch.has(job.id))
@@ -234,16 +228,6 @@ export function JobsModalsSection(props: JobsModalsSectionProps) {
         onClose={onCloseCreateJobModal}
         onCreateWithWizard={handleCreateWithWizard}
         onJobCreated={handleJobCreated}
-      />
-
-      <EditJobModal
-        isOpen={showEditJobModal}
-        onClose={() => {
-          onCloseEditJobModal()
-          onSetEditingJob(null)
-        }}
-        job={editingJob}
-        onSave={handleEditSave}
       />
 
       <ScreeningChannelsModal

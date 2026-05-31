@@ -1,11 +1,11 @@
 """Normalização de vocabulário wizard → cadastro de vaga (item #3, 2026-05-31).
 
 O wizard usa vocabulário INTERNO (EN/minúsculo: hybrid, diretor, estagio) mas o
-cadastro/FE (`edit-job-modal.constants.tsx`) espera vocabulário canônico PT
+cadastro/FE (formulario de vaga, job-edit-tab) espera vocabulário canônico PT
 capitalizado (Híbrido→'híbrido' value, 'Diretor', 'Estágio'). Gravar direto fazia
 o dropdown do cadastro não casar (vaga abria com campo vazio).
 
-Fonte da verdade (FE — plataforma-lia/src/components/modals/edit-job-modal.constants.tsx):
+Fonte da verdade (FE — formulario de cadastro de vaga, plataforma-lia/src/components/jobs/job-edit-tab/):
   WORK_MODELS      = presencial | híbrido | remoto
   SENIORITY_LEVELS = Estágio | Júnior | Pleno | Sênior | Especialista | Coordenador | Gerente | Diretor
   CONTRACT_TYPES   = CLT | PJ | Estágio | Freelancer | Temporário
@@ -126,3 +126,20 @@ def to_cv_screening_seniority(value: Optional[str]) -> str:
     if n in _CV_VALID:
         return n
     return _CV_SENIORITY_MAP.get(n, "pleno")
+
+
+# ── match keys (benefício ↔ dimensão da vaga) ────────────────────────────
+# Chave normalizada p/ casar dimensões de CompanyBenefit com os valores da
+# vaga, ignorando EN/PT, caixa e acentos. Reusa os mapas canônicos acima
+# (single source of truth) + _norm sobre o canônico resultante, garantindo
+# que "jr"/"Júnior" e "clt"/"CLT" colidam na mesma chave de matching.
+def to_match_seniority_key(value: Optional[str]) -> str:
+    if not value:
+        return ""
+    return _norm(to_canonical_seniority(value) or "")
+
+
+def to_match_contract_key(value: Optional[str]) -> str:
+    if not value:
+        return ""
+    return _norm(to_canonical_employment_type(value) or "")
