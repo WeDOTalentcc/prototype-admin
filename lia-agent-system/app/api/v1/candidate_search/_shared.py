@@ -636,6 +636,16 @@ async def enrich_and_filter_candidates(
     company_id: str,
 ) -> list["CandidateSearchResultDTO"]:
     """Multi-tenancy fail-closed: company_id required to scope candidate enrichment lookups."""
+    # Reveal-sob-demanda (Paulo): por padrao NAO enriquece via Apify durante a busca
+    # (lento -> 504 + gasto automatico) nem descarta candidatos sem contato revelado.
+    # Pearch (com require_emails) ja filtra quem TEM contato; o valor e revelado sob
+    # demanda (botao Revelar / auto-reveal no disparo). Eager enrichment atras de flag.
+    from lia_config.config import settings as _settings
+    if not getattr(_settings, "SEARCH_EAGER_CONTACT_ENRICHMENT", False):
+        for _cand in candidates:
+            if not getattr(_cand, "contact_source", None):
+                _cand.contact_source = "pearch" if getattr(_cand, "source", None) == "pearch" else "local"
+        return candidates
     from uuid import UUID as _UUID
     from sqlalchemy import select
     from lia_models.candidate import Candidate

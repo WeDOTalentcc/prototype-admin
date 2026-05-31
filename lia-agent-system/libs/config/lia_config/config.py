@@ -332,6 +332,10 @@ class IntegrationSettings(BaseSettings):
     # Hard deadline da rota POST /api/v1/search/candidates: cobre busca local
     # + chamada Pearch. Acima disso devolvemos resposta degradada (warning).
     SEARCH_CANDIDATES_DEADLINE_SECONDS: float = 18.0
+    # Reveal-sob-demanda (Paulo): por padrao NAO enriquece contato via Apify
+    # durante a busca (era lento -> 504 + gasto Apify automatico) nem descarta
+    # candidatos sem contato revelado. Contato vem sob demanda (botao/auto-reveal).
+    SEARCH_EAGER_CONTACT_ENRICHMENT: bool = False
 
     # Twilio / WhatsApp
     TWILIO_ACCOUNT_SID: str | None = None
