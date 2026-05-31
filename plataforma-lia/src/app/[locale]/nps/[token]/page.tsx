@@ -1,9 +1,10 @@
 import { NpsPageClient } from "./NpsPageClient"
 
 interface Props {
-  params: { token: string }
+  params: Promise<{ token: string }>
 }
 
-export default function NpsPage({ params }: Props) {
-  return <NpsPageClient token={params.token} />
+export default async function NpsPage({ params }: Props) {
+  const { token } = await params
+  return <NpsPageClient token={token} />
 }

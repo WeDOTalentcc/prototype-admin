@@ -27,3 +27,4 @@ export {
   useUpdateDeployment,
   type UpdateDeploymentVars,
 } from "./use-update-deployment"
+export { useStudioAlerts } from "./use-studio-alerts"
