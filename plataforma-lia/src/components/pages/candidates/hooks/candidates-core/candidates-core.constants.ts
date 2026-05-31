@@ -38,7 +38,7 @@ export const DEFAULT_PEARCH_OPTIONS: PearchSearchOptions = {
   showEmails: false,
   showPhoneNumbers: false,
   highFreshness: false,
-  requireEmails: false,
+  requireEmails: true,  // email padrao: sem email nao ha disparo de triagem (decisao Paulo)
   requirePhoneNumbers: false,
 }
 
