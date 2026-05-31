@@ -366,15 +366,29 @@ def _handle_suggest_salary(
         return ToolResult(
             llm_message=(
                 "Não há dados de mercado disponíveis para esse cargo. Peça a "
-                "faixa salarial ao recrutador e registre com set_job_fields "
+                "faixa salarial ao recrutador e registre com set_salary "
                 "(ou confirme prosseguir sem faixa)."
             ),
         )
+    # Fonte/confiança do benchmark — transparência para o recrutador (ele
+    # perguntou 'qual a fonte?'). O benchmark combina dados internos da
+    # empresa + mercado (MarketBenchmarkService).
+    bench = result.get("salary_benchmark") or {}
+    source = bench.get("source") or "mercado + base interna"
+    confidence = bench.get("confidence")
+    sample = bench.get("sample_size")
+    src_parts = [f"fonte: {source}"]
+    if confidence:
+        src_parts.append(f"confiança: {confidence}")
+    if sample:
+        src_parts.append(f"amostra: {sample}")
+    src_str = " (" + ", ".join(src_parts) + ")"
     return ToolResult(
         llm_message=(
             f"Faixa salarial de mercado para {state.get('parsed_title')}: "
-            f"{currency} {smin:,.0f} – {currency} {smax:,.0f}. Apresente ao "
-            f"recrutador e pergunte se ele aceita ou quer ajustar."
+            f"{currency} {smin:,.0f} – {currency} {smax:,.0f}{src_str}. "
+            f"É uma referência — se o recrutador achar fora do mercado, ele "
+            f"pode informar a faixa desejada (use set_salary)."
         ).replace(",", "."),
         state_updates=updates,
     )

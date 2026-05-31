@@ -44,8 +44,10 @@ def _derive_wizard_stage(state: dict) -> str:
     painel lateral é stage-driven. Derivamos o stage do conteúdo do estado
     para o painel transicionar naturalmente (ficha → JD → publicado).
     """
-    if state.get("job_id"):
-        return "done"
+    # Navegação explícita OU pós-publish → handoff (o FE auto-navega para a
+    # página de vagas quando currentStage == "handoff").
+    if state.get("_navigate_to_jobs") or state.get("job_id"):
+        return "handoff"
     if state.get("jd_enriched"):
         return "jd_enrichment"
     return "intake"
@@ -983,6 +985,12 @@ class WizardSessionService:
         # no servidor e gravamos direto no state, sem nunca enviar ao LLM.
         # Decisão Paulo 2026-05-31 (extração determinística).
         _raw_msg = (context or {}).get("_raw_user_message") or ""
+        # Diagnóstico LGPD-safe (sem valor) para confirmar o plumbing do raw.
+        logger.info(
+            "[WizardOrchestrator] email diag: raw_present=%s len=%d has_at=%s thread=%s",
+            "_raw_user_message" in (context or {}), len(_raw_msg),
+            ("@" in _raw_msg), thread_id,
+        )
         _email = _extract_manager_email(_raw_msg)
         if _email:
             state["parsed_manager_email"] = _email
@@ -1039,6 +1047,10 @@ class WizardSessionService:
             if new_state.get("job_id"):
                 data["job_id"] = new_state.get("job_id")
                 data["share_link"] = new_state.get("share_link")
+            # handoff_url para o FE navegar à vaga (auto-nav em stage=handoff).
+            if stage == "handoff":
+                _jid = new_state.get("job_id")
+                data["handoff_url"] = f"/jobs/{_jid}" if _jid else "/jobs"
             payload = build_ws_stage_payload(
                 stage=stage,
                 requires_approval=bool(new_state.get("requires_approval")),

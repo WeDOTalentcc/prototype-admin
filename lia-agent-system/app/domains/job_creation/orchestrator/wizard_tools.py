@@ -374,6 +374,83 @@ def _handle_confirm_competencies(
     )
 
 
+def _handle_set_salary(
+    state: dict, tool_input: dict, ctx: ToolContext
+) -> ToolResult:
+    """Define a faixa salarial manualmente (quando o recrutador informa valores).
+
+    Aceita salary_min / salary_max (inteiros em BRL) e currency opcional.
+    Use quando o recrutador disser a faixa (ex.: '12 a 18k' → min=12000,
+    max=18000). Converta 'k' em milhares ANTES de chamar.
+    """
+    tenant_err = _reject_tenant_keys(tool_input)
+    if tenant_err:
+        return ToolResult(llm_message=tenant_err, error=True)
+
+    smin = tool_input.get("salary_min")
+    smax = tool_input.get("salary_max")
+    currency = (tool_input.get("currency") or "BRL").strip().upper()[:8] or "BRL"
+
+    def _coerce_int(v):
+        if v is None:
+            return None
+        try:
+            return int(round(float(v)))
+        except (TypeError, ValueError):
+            return "ERR"
+
+    smin_i = _coerce_int(smin)
+    smax_i = _coerce_int(smax)
+    if smin_i == "ERR" or smax_i == "ERR":
+        return ToolResult(
+            llm_message="salary_min/salary_max devem ser números (em reais, ex.: 12000).",
+            error=True,
+        )
+    if smin_i is None and smax_i is None:
+        return ToolResult(
+            llm_message="Forneça ao menos salary_min ou salary_max.", error=True
+        )
+    if smin_i is not None and smax_i is not None and smin_i > smax_i:
+        return ToolResult(
+            llm_message="salary_min não pode ser maior que salary_max.", error=True
+        )
+
+    updates: dict[str, Any] = {"salary_currency": currency, "salary_confirmed": True}
+    if smin_i is not None:
+        updates["salary_min"] = smin_i
+    if smax_i is not None:
+        updates["salary_max"] = smax_i
+    if smin_i is not None and smax_i is not None:
+        updates["salary_range"] = {"min": smin_i, "max": smax_i, "currency": currency}
+    return ToolResult(
+        llm_message=(
+            f"Faixa salarial definida: {currency} {smin_i or '?'} – {currency} {smax_i or '?'}."
+        ),
+        state_updates=updates,
+    )
+
+
+def _handle_navigate_to_jobs(
+    state: dict, tool_input: dict, ctx: ToolContext
+) -> ToolResult:
+    """Sinaliza ao frontend para navegar até a página de vagas.
+
+    Use quando o recrutador pedir 'me leve para vagas', 'abrir a vaga',
+    'ver a tabela de vagas'. O frontend auto-navega quando o stage do wizard
+    vira 'handoff' (ponte ui_action canonical).
+    """
+    tenant_err = _reject_tenant_keys(tool_input)
+    if tenant_err:
+        return ToolResult(llm_message=tenant_err, error=True)
+    return ToolResult(
+        llm_message=(
+            "Navegação solicitada — o sistema vai abrir a página de vagas. "
+            "Confirme ao recrutador que está levando-o para lá."
+        ),
+        state_updates={"_navigate_to_jobs": True},
+    )
+
+
 def _handle_get_wizard_status(
     state: dict, tool_input: dict, ctx: ToolContext
 ) -> ToolResult:
@@ -480,6 +557,37 @@ APPROVE_JOB_DESCRIPTION = WizardTool(
     handler=_handle_approve_job_description,
 )
 
+SET_SALARY = WizardTool(
+    name="set_salary",
+    description=(
+        "Define a faixa salarial da vaga quando o recrutador informa os "
+        "valores (ex.: 'entre 12 e 18 mil' → salary_min=12000, salary_max=18000). "
+        "Converta 'k'/'mil' em milhares antes. Use também quando o recrutador "
+        "ajustar a faixa sugerida pelo benchmark."
+    ),
+    input_schema={
+        "type": "object",
+        "properties": {
+            "salary_min": {"type": "number", "description": "Mínimo em reais (ex.: 12000)."},
+            "salary_max": {"type": "number", "description": "Máximo em reais (ex.: 18000)."},
+            "currency": {"type": "string", "description": "Moeda (default BRL)."},
+        },
+        "additionalProperties": False,
+    },
+    handler=_handle_set_salary,
+)
+
+NAVIGATE_TO_JOBS = WizardTool(
+    name="navigate_to_jobs",
+    description=(
+        "Leva o recrutador para a página de vagas (abre a lista/tabela de "
+        "vagas no frontend). Use quando ele pedir para 'ir para vagas', 'abrir "
+        "a vaga', 'ver as vagas' ou após publicar, se ele quiser conferir."
+    ),
+    input_schema={"type": "object", "properties": {}, "additionalProperties": False},
+    handler=_handle_navigate_to_jobs,
+)
+
 GET_WIZARD_STATUS = WizardTool(
     name="get_wizard_status",
     description=(
@@ -501,6 +609,8 @@ PURE_TOOLS: tuple[WizardTool, ...] = (
     SET_SCREENING_MODE,
     CONFIRM_COMPETENCIES,
     APPROVE_JOB_DESCRIPTION,
+    SET_SALARY,
+    NAVIGATE_TO_JOBS,
     GET_WIZARD_STATUS,
 )
 
