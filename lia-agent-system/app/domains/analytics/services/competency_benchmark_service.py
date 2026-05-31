@@ -391,7 +391,14 @@ Responda APENAS com JSON válido (sem markdown, sem explicações):
 
         try:
             prompt = self._build_prompt(title, seniority, department, n_tech, n_behav)
-            response = await llm_service.generate(prompt, provider="gemini")
+            # Provider canonical = claude (async ainvoke). gemini usa o SDK
+            # nativo SINCRONO que quebra o credit-gate seam quando chamado de
+            # dentro de event loop (_enforce_credit_gate_sync called from
+            # running event loop) -> caia sempre no fallback generico em
+            # contexto async (orquestrador/intake_gate). Fix 2026-05-31.
+            import os as _os
+            _provider = _os.environ.get("LIA_COMPETENCY_BENCHMARK_PROVIDER", "claude")
+            response = await llm_service.generate(prompt, provider=_provider)
             parsed = self._parse(response)
             if parsed is None:
                 self.logger.warning(
