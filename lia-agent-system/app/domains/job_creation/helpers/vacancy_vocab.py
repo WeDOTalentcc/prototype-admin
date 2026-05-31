@@ -53,7 +53,9 @@ _SENIORITY_MAP = {
     "pleno": "Pleno", "mid": "Pleno", "pl": "Pleno",
     "senior": "Sênior", "sr": "Sênior",
     "especialista": "Especialista", "specialist": "Especialista", "principal": "Especialista",
+    "staff": "Especialista",
     "lead": "Coordenador", "coordenador": "Coordenador", "coordenadora": "Coordenador",
+    "coordinator": "Coordenador",
     "gerente": "Gerente", "manager": "Gerente", "gerencial": "Gerente",
     "diretor": "Diretor", "diretora": "Diretor", "director": "Diretor",
     "head": "Diretor", "vp": "Diretor", "c-level": "Diretor", "cfo": "Diretor",
@@ -98,3 +100,20 @@ def to_canonical_language_level(value: Optional[str]) -> str:
     if not value:
         return "Intermediário"
     return _LANG_LEVEL_MAP.get(_norm(value), "Intermediário")
+
+
+# -- match keys (beneficios <-> vaga) --------------------------------------
+# O catalogo de beneficios (CompanyBenefit) guarda senioridade/contrato em EN
+# minusculo (junior, director, c-level, clt, intern) enquanto a vaga usa o
+# vocabulario canonico PT (Junior, Diretor, CLT). Para casar os dois lados,
+# reduz ambos ao mesmo token comparavel: canonical PT + _norm (lower/sem acento).
+def to_match_seniority_key(value: Optional[str]) -> str:
+    """Token comparavel de senioridade (EN catalogo <-> PT vaga). '' se vazio."""
+    canon = to_canonical_seniority(value) or ""
+    return _norm(canon)
+
+
+def to_match_contract_key(value: Optional[str]) -> str:
+    """Token comparavel de tipo de contrato (EN catalogo <-> PT vaga). '' se vazio."""
+    canon = to_canonical_employment_type(value) or ""
+    return _norm(canon)

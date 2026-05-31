@@ -187,7 +187,10 @@ class JobCreationState(TypedDict, total=False):
     salary_min: Optional[int]
     salary_max: Optional[int]
     salary_currency: str  # default "BRL"
-    benefits: List[str]
+    # Beneficios da vaga: aceita shape legado (List[str]) e o canonical
+    # VagaBenefit (snapshot+ref) serializado como dict. Normalizado no
+    # boundary (publish_node) via helpers.vaga_benefits.parse_vaga_benefits.
+    benefits: List[Any]
     salary_benchmark: Optional[Dict[str, Any]]
     # Fase 5 — recrutador confirmou a faixa via right_panel_form (salary_node).
     # Declarado p/ sobreviver ao merge do LangGraph (mesmo motivo de company_id).

@@ -10,6 +10,11 @@ from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.company_benefit import DEFAULT_BRAZILIAN_BENEFITS, CompanyBenefit
+from app.domains.job_creation.helpers.vacancy_vocab import (
+    _norm,
+    to_match_contract_key,
+    to_match_seniority_key,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -66,6 +71,74 @@ class CompanyBenefitRepository:
             )
         )
         return result.scalar_one_or_none()
+
+    async def get_by_name_ci(self, company_id: str, name: str) -> CompanyBenefit | None:
+        """Match case-insensitive por nome (dedup do promote-back vaga->catalogo)."""
+        if not name:
+            return None
+        result = await self.db.execute(
+            select(CompanyBenefit).where(
+                CompanyBenefit.company_id == company_id,
+                func.lower(CompanyBenefit.name) == name.strip().lower(),
+            )
+        )
+        return result.scalars().first()
+
+    @staticmethod
+    def _matches_dimension_list(
+        benefit_values: list | None, vaga_key: str, key_fn
+    ) -> bool:
+        """True se o beneficio se aplica ao valor da vaga nesta dimensao.
+        Regra: lista vazia/None = aplica a todos; 'all' = curinga; senao casa
+        pelo token normalizado (key_fn) ignorando EN/PT, caixa e acentos."""
+        if not benefit_values:
+            return True
+        if any((v or "").strip().lower() == "all" for v in benefit_values):
+            return True
+        if not vaga_key:
+            return True  # vaga nao informou a dimensao -> nao restringe
+        return any(key_fn(v) == vaga_key for v in benefit_values)
+
+    @staticmethod
+    def _matches_department(departments: dict | None, vaga_department: str | None) -> bool:
+        """departments e um dict {nome_dept: bool}. Aplica a todos se vazio ou
+        sem chave ativa; 'all' ativo = curinga; senao casa o dept da vaga."""
+        if not departments or not any(departments.values()):
+            return True
+        if departments.get("all"):
+            return True
+        if not vaga_department:
+            return True
+        target = _norm(vaga_department)
+        return any(enabled and _norm(k) == target for k, enabled in departments.items())
+
+    async def list_matching(
+        self,
+        company_id: str,
+        *,
+        seniority_level: str | None = None,
+        department: str | None = None,
+        contract_type: str | None = None,
+        active_only: bool = True,
+    ) -> list[tuple[CompanyBenefit, bool]]:
+        """Lista beneficios ativos da empresa com flag `matches_vaga` por item.
+
+        Nao remove os nao-compativeis (a vaga exibe o catalogo inteiro agrupado
+        por categoria; compativeis vem pre-marcados). matches_vaga = AND de todas
+        as dimensoes informadas. ADR-001: filtro vive no repo, nao na API.
+        """
+        benefits = await self.list_for_company(company_id, active_only=active_only)
+        sen_key = to_match_seniority_key(seniority_level) if seniority_level else ""
+        con_key = to_match_contract_key(contract_type) if contract_type else ""
+        out: list[tuple[CompanyBenefit, bool]] = []
+        for b in benefits:
+            matches = (
+                self._matches_dimension_list(b.seniority_levels, sen_key, to_match_seniority_key)
+                and self._matches_dimension_list(b.contract_types, con_key, to_match_contract_key)
+                and self._matches_department(b.departments, department)
+            )
+            out.append((b, matches))
+        return out
 
     async def create(self, company_id: str, data: dict) -> CompanyBenefit:
         benefit = CompanyBenefit(company_id=company_id, **data)

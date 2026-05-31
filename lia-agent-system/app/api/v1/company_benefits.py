@@ -210,6 +210,8 @@ class CompanyBenefitResponse(BaseModel):
     created_at: str | None = None
     updated_at: str | None = None
     history: list[BenefitHistoryEntry] | None = None
+    # None fora do contexto de vaga; True/False quando consultado com criterios da vaga.
+    matches_vaga: bool | None = None
 
     class Config:
         from_attributes = True
@@ -219,7 +221,7 @@ class CompanyBenefitResponse(BaseModel):
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _to_response(b, history=None) -> CompanyBenefitResponse:
+def _to_response(b, history=None, matches_vaga=None) -> CompanyBenefitResponse:
     subs = getattr(b, "subsidiaries", None)
     if subs and not isinstance(subs, list):
         subs = None
@@ -260,6 +262,7 @@ def _to_response(b, history=None) -> CompanyBenefitResponse:
         created_at=b.created_at.isoformat() if b.created_at else None,
         updated_at=b.updated_at.isoformat() if b.updated_at else None,
         history=history,
+        matches_vaga=matches_vaga,
     )
 
 
@@ -450,6 +453,14 @@ gated_company_id: str = Depends(require_company_id_strict_match("query.company_i
                 s if isinstance(s, dict) else s.model_dump()
                 for s in (payload["subsidiaries"] or [])
             ]
+        # promote-back vaga->catalogo: nao duplica se ja existe (nome case-insensitive)
+        existing = await repo.get_by_name_ci(effective_company_id, benefit.name)
+        if existing is not None:
+            logger.info(
+                "Benefit dedup hit (promote-back) name=%s company=%s",
+                benefit.name, effective_company_id,
+            )
+            return _to_response(existing)
         new_benefit = await repo.create(effective_company_id, payload)
         logger.info(f"Created company benefit: {new_benefit.name} for company: {effective_company_id}")
 
@@ -495,6 +506,9 @@ gated_company_id: str = Depends(require_company_id_strict_match("query.company_i
 async def list_active_company_benefits(
     company_id: str | None = Query(None),
     seniority_level: str | None = Query(None),
+    department: str | None = Query(None),
+    contract_type: str | None = Query(None),
+    with_matches: bool = Query(False),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
 gated_company_id: str = Depends(require_company_id_strict_match("query.company_id"))):
@@ -504,6 +518,17 @@ gated_company_id: str = Depends(require_company_id_strict_match("query.company_i
         if not effective_company_id or effective_company_id in ("default", "unknown"):
             return []
         repo = CompanyBenefitRepository(db)
+        if with_matches or department or contract_type:
+            # vaga: catalogo inteiro com flag matches_vaga (compativeis pre-marcados)
+            pairs = await repo.list_matching(
+                effective_company_id,
+                seniority_level=seniority_level,
+                department=department,
+                contract_type=contract_type,
+                active_only=True,
+            )
+            return [_to_response(b, matches_vaga=flag) for b, flag in pairs]
+        # legado: filtra por senioridade (mantem comportamento de callers antigos)
         benefits = await repo.list_for_company(effective_company_id, active_only=True)
         if seniority_level and seniority_level != "all":
             benefits = [
