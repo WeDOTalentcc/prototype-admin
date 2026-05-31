@@ -183,11 +183,39 @@ class WizardOrchestrator:
 
     # ── LLM client (produção) ──────────────────────────────────────────
     @staticmethod
-    def _build_anthropic_client() -> Optional[Any]:
-        api_key = (
+    def _resolve_anthropic_config(company_id: Optional[str]) -> tuple[Optional[str], Optional[str]]:
+        """Resolve (api_key, base_url) Anthropic POR-TENANT via LLM Factory (BYOK).
+
+        Choose Your AI / BYOK: a chave do tenant (carregada do DB pelo
+        TenantProviderRegistry) tem precedência sobre a chave global. Reusa os
+        helpers canônicos da factory (mesma resolução do create_tracked_llm),
+        então o cérebro de chat do orquestrador passa a honrar a chave/modelo
+        per-tenant + proxy modelfarm. Fail-open para env global.
+        """
+        api_key = None
+        base_url = None
+        try:
+            from app.shared.providers.llm_factory import (
+                _resolve_provider_chain,
+                _resolve_provider_api_key,
+                _resolve_provider_base_url,
+            )
+            _, _, tenant_keys = _resolve_provider_chain(company_id or None)
+            api_key = tenant_keys.get("claude") or _resolve_provider_api_key("claude")
+            base_url = _resolve_provider_base_url("claude")
+        except Exception as exc:  # noqa: BLE001 — fail-open ao env global
+            logger.debug("[WizardOrchestrator] factory resolve failed (fallback env): %s", exc)
+        # Fallback ao env global se a factory não resolveu a chave.
+        api_key = api_key or (
             os.environ.get("AI_INTEGRATIONS_ANTHROPIC_API_KEY")
             or os.environ.get("ANTHROPIC_API_KEY")
         )
+        base_url = base_url or os.environ.get("AI_INTEGRATIONS_ANTHROPIC_BASE_URL")
+        return api_key, base_url
+
+    @classmethod
+    def _build_anthropic_client(cls, company_id: Optional[str] = None) -> Optional[Any]:
+        api_key, base_url = cls._resolve_anthropic_config(company_id)
         if not api_key:
             logger.warning("[WizardOrchestrator] no API key — cannot run")
             return None
@@ -196,7 +224,6 @@ class WizardOrchestrator:
         except ImportError:  # pragma: no cover — dep oficial
             return None
         kwargs: dict[str, Any] = {"api_key": api_key, "timeout": _get_timeout_s()}
-        base_url = os.environ.get("AI_INTEGRATIONS_ANTHROPIC_BASE_URL")
         if base_url:
             kwargs["base_url"] = base_url
         try:
@@ -256,7 +283,7 @@ class WizardOrchestrator:
         except Exception as exc:  # noqa: BLE001 — fail-open: guard não trava fluxo
             logger.debug("[WizardOrchestrator] FairnessGuard failed (open): %s", exc)
 
-        client = llm_client or self._build_anthropic_client()
+        client = llm_client or self._build_anthropic_client(getattr(ctx, "company_id", None))
         if client is None:
             return OrchestratorResult(
                 reply=(
