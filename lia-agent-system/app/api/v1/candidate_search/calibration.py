@@ -530,6 +530,12 @@ company_id: str = Depends(require_company_id)):
             except ValueError:
                 skipped_ids.append(candidate_id)
 
+        # G-11: flush explicito para que erros de integridade do bulk add
+        # aflorem AQUI (virando 500 honesto) em vez de falhar no commit final
+        # do get_tenant_db apos a resposta ja ter sido enviada (falso 200).
+        if added_count > 0:
+            await db.flush()
+
         if added_count > 0 and vacancy:
             try:
                 job_requirements = await repo.get_requirements_by_vacancy(uuid.UUID(vacancy_id))
