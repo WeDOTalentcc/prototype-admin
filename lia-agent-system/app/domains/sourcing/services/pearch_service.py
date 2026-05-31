@@ -399,8 +399,12 @@ class PearchService:
         if request.docid_blacklist:
             payload["docid_blacklist"] = request.docid_blacklist
         
+        # UC-P2-12 fix: hybrid_search chama search_candidates SEM timeout (default None),
+        # e None + 10 quebrava com TypeError -> RetryError -> busca global vazia.
+        # Resolve None para o default ja calculado no __init__ (self.timeout).
+        _timeout = timeout if timeout is not None else self.timeout
         try:
-            async with httpx.AsyncClient(timeout=timeout + 10) as client:
+            async with httpx.AsyncClient(timeout=_timeout + 10) as client:
                 response = await client.post(
                     f"{self.BASE_URL}/search",
                     json=payload,
