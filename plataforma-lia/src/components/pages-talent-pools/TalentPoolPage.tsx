@@ -597,6 +597,7 @@ export function CreatePoolModal({ onClose, onCreated }: CreatePoolModalProps) {
   const [archetypes, setArchetypes] = useState<Array<{ id: string; name: string; seniority_level: string | null }>>([])
   const [selectedArchetypeId, setSelectedArchetypeId] = useState<string | null>(null)
   const [isCreating, setIsCreating] = useState(false)
+  const [createError, setCreateError] = useState<string | null>(null)
   const [isLoadingArchetypes, setIsLoadingArchetypes] = useState(true)
 
   useEffect(() => {
@@ -619,6 +620,7 @@ export function CreatePoolModal({ onClose, onCreated }: CreatePoolModalProps) {
   const handleCreate = async () => {
     if (!name.trim()) return
     setIsCreating(true)
+    setCreateError(null)
     try {
       const res = await fetch("/api/backend-proxy/talent-pools", {
         method:"POST",
@@ -632,10 +634,16 @@ export function CreatePoolModal({ onClose, onCreated }: CreatePoolModalProps) {
         }),
       })
       const data = await res.json()
+      if (!res.ok) {
+        setCreateError("Erro ao criar banco. Tente novamente.")
+        return
+      }
       const newId = data?.data?.id || data?.id
       if (newId) onCreated(newId)
+      else setCreateError("Banco criado mas não foi possível abrir. Recarregue a página.")
     } catch (err) {
       console.error("Failed to create pool:", err)
+      setCreateError("Erro de conexão. Verifique sua internet e tente novamente.")
     } finally {
       setIsCreating(false)
     }
@@ -715,6 +723,9 @@ export function CreatePoolModal({ onClose, onCreated }: CreatePoolModalProps) {
           </div>
         </div>
 
+        {createError && (
+          <p className="text-sm text-red-600 px-1 pb-1">{createError}</p>
+        )}
         <DialogFooter>
           <Button className={buttonStyles.secondary} onClick={onClose}>
             Cancelar

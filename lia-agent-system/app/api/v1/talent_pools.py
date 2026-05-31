@@ -37,6 +37,7 @@ router = APIRouter(prefix="/talent_pools", tags=["Talent Pools"])
 class TalentPoolCreate(WeDoBaseModel):
     name: str
     description: str | None = None
+    ideal_profile_id: str | None = None
     screening_questions: list[dict[str, Any]] | None = None
     screening_config: dict[str, Any] | None = None
     agent_sourcing_enabled: bool = False
@@ -219,6 +220,7 @@ company_id: str = Depends(require_company_id)):
         company_id=company_id,
         name=data.name,
         description=data.description,
+        archetype_id=data.ideal_profile_id,
         screening_questions=data.screening_questions or [],
         screening_config=data.screening_config or {},
         agent_sourcing_enabled=data.agent_sourcing_enabled,
