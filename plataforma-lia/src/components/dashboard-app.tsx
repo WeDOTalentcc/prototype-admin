@@ -50,6 +50,12 @@ const LEGACY_LABEL_MAP: Record<string, DashboardPageLabel> = {
   "Chat LIA": "Conversar",
   "Tarefas": "Decidir",
   "Visão do Funil": "Recrutar",
+  // Lowercase canonical names from backend (CanonicalPage enum) and frontend events
+  "vagas": "Vagas",
+  "funil": "Funil de Talentos",
+  "recrutar": "Recrutar",
+  "configuracoes": "Configurações",
+  "configurações": "Configurações",
 }
 
 /**
