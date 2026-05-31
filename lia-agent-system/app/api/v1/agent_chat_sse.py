@@ -270,10 +270,23 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         logger.debug("[LIA-P03] Agent SSE compliance skipped: %s", e)
 
+    # LGPD (2026-05-31): harmonizar com o WS — mascarar PII no inbound ANTES
+    # de qualquer LLM. O WS faz via pre_compliance; o SSE nao fazia (email/CPF/
+    # telefone iam crus ao LLM). Captura o texto CRU antes do strip para a
+    # captura deterministica do email do gestor no wizard (que grava no state
+    # mas NUNCA envia ao LLM — o LLM ve o content mascarado).
+    _raw_content = content
+    try:
+        from app.shared.pii_masking import strip_pii_for_llm_prompt
+        content = strip_pii_for_llm_prompt(content)
+    except Exception as _pii_exc:
+        logger.warning("[SSEChat] PII strip inbound failed (fail-open): %s", _pii_exc)
+
     active_domain = req.domain or "recruiter_assistant"
     context = req.context or {}
     context.setdefault("company_id", company_id)
     context.setdefault("user_id", user_id)
+    context["_raw_user_message"] = _raw_content
     if req.conversation_id:
         context["conversation_id"] = req.conversation_id
 
