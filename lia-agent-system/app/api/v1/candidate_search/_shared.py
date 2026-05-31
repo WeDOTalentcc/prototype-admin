@@ -573,6 +573,9 @@ class ImportCandidatesRequest(WeDoBaseModel):
     candidates: list[ImportCandidateDTO]
     source_search_query: str | None = None
     add_to_vacancy_id: str | None = None
+    # Salvar exige email (reveal Apify no save). Quando True, salva tambem os
+    # candidatos sem email (escolha explicita do recrutador).
+    save_without_email: bool = False
 
 
 class IdMapping(BaseModel):
@@ -588,6 +591,7 @@ class ImportCandidatesResponse(BaseModel):
     updated_count: int = 0
     imported_ids: list[str]
     skipped_ids: list[str]
+    skipped_no_email_ids: list[str] = Field(default_factory=list)
     mapping: list[IdMapping]
     message: str
 

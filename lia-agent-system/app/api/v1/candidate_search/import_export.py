@@ -111,6 +111,7 @@ company_id: str = Depends(require_company_id)):
     
     imported_ids = []
     skipped_ids = []
+    skipped_no_email_ids = []
     updated_ids = []
     id_mappings = []
     company_id = get_user_company_id(current_user)
@@ -215,6 +216,31 @@ company_id: str = Depends(require_company_id)):
                     "company_keywords": exp.company_keywords or []
                 })
             
+            # Reveal-no-save (Paulo): salvar exige no minimo email. Quando chega sem
+            # email, tenta revelar via Apify (linkedin_url, ~$0.01). Sem email apos reveal:
+            #   - save_without_email=True -> salva mesmo assim (recrutador escolheu)
+            #   - senao -> NAO salva; reporta em skipped_no_email_ids (base nunca tem registro inutil)
+            _resolved_email = candidate_dto.email
+            _resolved_phone = candidate_dto.phone
+            if not _resolved_email and candidate_dto.linkedin_url:
+                try:
+                    from app.domains.sourcing.services.contact_enrichment_service import (
+                        get_contact_enrichment_service,
+                    )
+                    _enrich = get_contact_enrichment_service()
+                    _r = await _enrich.enrich_by_linkedin_url(
+                        candidate_dto.linkedin_url, company_id=company_id
+                    )
+                    if _r and _r.get('success') and _r.get('has_contact'):
+                        _resolved_email = _resolved_email or _r.get('email')
+                        _resolved_phone = _resolved_phone or _r.get('phone')
+                except Exception as _e:
+                    logger.warning('[Import] reveal por linkedin falhou (nao-fatal): %s', _e)
+
+            if not _resolved_email and not request.save_without_email:
+                skipped_no_email_ids.append(candidate_dto.pearch_id)
+                continue
+
             new_id = uuid_lib.uuid4()
             profile = ExternalCandidateProfile(
                 id=new_id,
@@ -230,8 +256,8 @@ company_id: str = Depends(require_company_id)):
                 normalized_name=_normalize_name(candidate_dto.name),
                 first_name=first_name,
                 last_name=last_name,
-                email=candidate_dto.email,
-                phone=candidate_dto.phone,
+                email=_resolved_email,
+                phone=_resolved_phone,
                 avatar_url=candidate_dto.avatar_url,
                 headline=candidate_dto.headline,
                 summary=candidate_dto.summary,
@@ -250,9 +276,9 @@ company_id: str = Depends(require_company_id)):
                 is_open_to_work=candidate_dto.is_open_to_work,
                 is_decision_maker=candidate_dto.is_decision_maker,
                 is_top_universities=candidate_dto.is_top_universities,
-                has_email=bool(candidate_dto.email),
-                has_phone=bool(candidate_dto.phone),
-                contact_revealed=bool(candidate_dto.email or candidate_dto.phone),
+                has_email=bool(_resolved_email),
+                has_phone=bool(_resolved_phone),
+                contact_revealed=bool(_resolved_email or _resolved_phone),
                 fingerprint_hash=fingerprint,
                 status="discovered",
                 search_query=request.source_search_query
@@ -272,6 +298,7 @@ company_id: str = Depends(require_company_id)):
             updated_count=len(updated_ids),
             imported_ids=imported_ids,
             skipped_ids=skipped_ids,
+            skipped_no_email_ids=skipped_no_email_ids,
             mapping=id_mappings,
             message=f"Salvos {len(imported_ids)} candidatos descobertos em staging. {len(updated_ids)} atualizados. {len(skipped_ids)} já existiam."
         )
