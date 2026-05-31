@@ -179,3 +179,57 @@ class TestAlignmentGateContract:
         ):
             # Should not raise — fail-open
             await orch._check_alignment_gate("company-1", "job-1", mock_db)
+
+
+# ---------------------------------------------------------------------------
+# Contract: gate WIRING — _check_alignment_gate é chamado por create_agent
+# Sentinela contra regressão "função definida mas nunca chamada" (CLAUDE.md Onda 2.I.1)
+# ---------------------------------------------------------------------------
+
+class TestAlignmentGateWiring:
+
+    @pytest.mark.asyncio
+    async def test_create_agent_invokes_alignment_gate_when_job_id_present(self):
+        """create_agent DEVE chamar _check_alignment_gate quando job_id é fornecido."""
+        from app.services.sourcing_agent_orchestrator import SourcingAgentOrchestrator
+
+        orch = SourcingAgentOrchestrator.__new__(SourcingAgentOrchestrator)
+        orch._check_alignment_gate = AsyncMock()
+
+        # Aborta cedo logo após o gate para isolar o assert (evita tocar DB real)
+        orch._extract_strategy_from_job = AsyncMock(side_effect=RuntimeError("stop-after-gate"))
+
+        mock_db = AsyncMock()
+        with pytest.raises(RuntimeError, match="stop-after-gate"):
+            await orch.create_agent(
+                company_id="company-1",
+                agent_name="Test Agent",
+                job_id="job-1",
+                db=mock_db,
+            )
+
+        orch._check_alignment_gate.assert_awaited_once_with("company-1", "job-1", mock_db)
+
+    @pytest.mark.asyncio
+    async def test_create_agent_skips_gate_when_no_job_id(self):
+        """Sem job_id (sourcing só por talent_pool), o gate de alinhamento não se aplica."""
+        from app.services.sourcing_agent_orchestrator import SourcingAgentOrchestrator
+
+        orch = SourcingAgentOrchestrator.__new__(SourcingAgentOrchestrator)
+        orch._check_alignment_gate = AsyncMock()
+        orch._extract_strategy_from_job = AsyncMock(side_effect=RuntimeError("should-not-reach"))
+
+        mock_db = AsyncMock()
+        # Sem job_id e sem search_strategy → cai no else (default strategy), não chama extract.
+        # Aborta no próximo side-effect real; o que importa é o gate NÃO ter sido chamado.
+        try:
+            await orch.create_agent(
+                company_id="company-1",
+                agent_name="Test Agent",
+                job_id=None,
+                db=mock_db,
+            )
+        except Exception:
+            pass
+
+        orch._check_alignment_gate.assert_not_awaited()

@@ -68,6 +68,12 @@ class SourcingAgentOrchestrator:
         from lia_models.custom_agent import CustomAgent, CustomAgentStatus
         from lia_models.pool_agent_assignment import PoolAgentAssignment
 
+        # Manager alignment gate (Sprint 12) — bloqueia sourcing quando policy
+        # exige aprovação de gestor e não há alinhamento aprovado para a vaga.
+        # Fail-open por design: erros de infra nunca bloqueiam.
+        if job_id:
+            await self._check_alignment_gate(company_id, job_id, db)
+
         # Extract strategy from JD if not provided (PRESERVADO)
         if not search_strategy and job_id:
             search_strategy = await self._extract_strategy_from_job(job_id, db, company_id=company_id)
