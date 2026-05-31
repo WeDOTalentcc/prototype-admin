@@ -321,10 +321,23 @@ class ApifySearchService:
         )
         return found, records
 
-    def map_to_search_dto(self, profile: dict) -> dict:
+    def map_to_search_dto(self, profile: dict) -> dict | None:
         first = profile.get("first_name", "")
         last = profile.get("last_name", "")
-        name = f"{first} {last}".strip() or profile.get("headline", "Unknown")
+        headline = profile.get("headline")
+        linkedin_url = profile.get("linkedin_url")
+
+        # G-06: perfil sem identidade minima (nome OU headline OU linkedin) e
+        # artefato de scraping Apify, nao um candidato. Descartar em vez de
+        # exibir um card fantasma "Unknown" sem link.
+        if not (first or last or headline or linkedin_url):
+            logger.debug(
+                "[ApifySearch] Perfil descartado (sem identidade): keys=%s",
+                list(profile.keys())[:10],
+            )
+            return None
+
+        name = f"{first} {last}".strip() or headline or "Unknown"
 
         emails = profile.get("emails", [])
         phones = profile.get("phones", [])

@@ -277,6 +277,8 @@ company_id: str = Depends(require_company_id)):
 
                 for _profile in _fb_result.candidates:
                     _dto_data = apify_search_service.map_to_search_dto(_profile)
+                    if _dto_data is None:
+                        continue
                     candidates.append(CandidateSearchResultDTO(**_dto_data))
 
                 _fb_pearch_count = len(_fb_result.candidates)
