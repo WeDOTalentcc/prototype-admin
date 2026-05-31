@@ -535,8 +535,8 @@ PUBLISH_JOB = WizardTool(
 # ── generate_wsi_questions (F2+F3+F6 — metodologia WSI completa) ──────────
 
 
-def _handle_generate_wsi_questions(
-    state: dict, tool_input: dict, ctx: ToolContext
+def _wsi_generate_core(
+    state: dict, tool_input: dict, ctx: ToolContext, force_regen: bool = False
 ) -> ToolResult:
     """Gera as perguntas de triagem WSI (HITL #2), metodologia completa.
 
@@ -569,6 +569,11 @@ def _handle_generate_wsi_questions(
     node_state = dict(state)
     if ctx.company_id and not node_state.get("company_id"):
         node_state["company_id"] = ctx.company_id
+    # Regenerar: força o nó a re-gerar mesmo com wsi_questions/questions_approved
+    # já no state (senão ele short-circuita e devolve o pacote atual).
+    if force_regen:
+        node_state["wsi_regenerate_pending"] = True
+        node_state["questions_approved"] = None
 
     seniority = (
         node_state.get("seniority_resolved")
@@ -658,6 +663,168 @@ def _handle_generate_wsi_questions(
     )
 
 
+def _handle_generate_wsi_questions(
+    state: dict, tool_input: dict, ctx: ToolContext
+) -> ToolResult:
+    """Gera as perguntas WSI (primeira vez)."""
+    return _wsi_generate_core(state, tool_input, ctx, force_regen=False)
+
+
+def _handle_regenerate_wsi_questions(
+    state: dict, tool_input: dict, ctx: ToolContext
+) -> ToolResult:
+    """Regenera TODAS as perguntas WSI do zero (paridade com regenerate_all)."""
+    if not state.get("wsi_questions"):
+        # Sem perguntas ainda — gerar normalmente.
+        return _wsi_generate_core(state, tool_input, ctx, force_regen=False)
+    return _wsi_generate_core(state, tool_input, ctx, force_regen=True)
+
+
+def _wsi_enriched_seniority_traits(state: dict):
+    """Reconstrói EnrichedJobDescription + seniority + trait_rankings do state."""
+    from app.domains.job_creation.schemas import EnrichedJobDescription
+    jd = state.get("jd_enriched") or {}
+    enriched = EnrichedJobDescription(**jd) if jd else None
+    seniority = (
+        state.get("seniority_resolved") or state.get("parsed_seniority") or "pleno"
+    )
+    trait_rankings = state.get("trait_rankings") or []
+    return enriched, seniority, trait_rankings
+
+
+def _valid_q_index(idx, total: int):
+    """Índice 1-based válido (1..total). None se inválido."""
+    try:
+        i = int(idx)
+    except (TypeError, ValueError):
+        return None
+    return i if 1 <= i <= total else None
+
+
+def _handle_remove_wsi_question(
+    state: dict, tool_input: dict, ctx: ToolContext
+) -> ToolResult:
+    """Remove uma pergunta WSI por índice (1-based). Determinístico, sem LLM."""
+    tenant_err = _reject_tenant_keys(tool_input)
+    if tenant_err:
+        return ToolResult(llm_message=tenant_err, error=True)
+    questions = list(state.get("wsi_questions") or [])
+    if not questions:
+        return ToolResult(llm_message="Não há perguntas para remover.", error=True)
+    idx = _valid_q_index(tool_input.get("question_index"), len(questions))
+    if idx is None:
+        return ToolResult(
+            llm_message=(
+                f"Índice inválido. Informe um número de 1 a {len(questions)} "
+                f"(question_index)."
+            ),
+            error=True,
+        )
+    new_questions = questions[: idx - 1] + questions[idx:]
+    return ToolResult(
+        llm_message=(
+            f"Removida a pergunta {idx}. O pacote ficou com {len(new_questions)} "
+            f"perguntas. Confirme se posso seguir ou ajuste mais."
+        ),
+        state_updates={"wsi_questions": new_questions, "questions_approved": None},
+    )
+
+
+def _handle_edit_wsi_question(
+    state: dict, tool_input: dict, ctx: ToolContext
+) -> ToolResult:
+    """Edita UMA pergunta WSI por índice + instrução (geração cirúrgica CBI)."""
+    tenant_err = _reject_tenant_keys(tool_input)
+    if tenant_err:
+        return ToolResult(llm_message=tenant_err, error=True)
+    questions = list(state.get("wsi_questions") or [])
+    idx = _valid_q_index(tool_input.get("question_index"), len(questions))
+    if idx is None:
+        return ToolResult(
+            llm_message=f"Índice inválido. Informe de 1 a {len(questions)} (question_index).",
+            error=True,
+        )
+    instruction = str(tool_input.get("instruction") or "").strip()
+    if not instruction:
+        return ToolResult(
+            llm_message="Diga o que ajustar na pergunta (instruction).", error=True
+        )
+    enriched, seniority, traits = _wsi_enriched_seniority_traits(state)
+    if enriched is None:
+        return ToolResult(llm_message="Descrição da vaga indisponível.", error=True)
+    target = questions[idx - 1]
+    block = target.get("block") or "technical"
+    try:
+        from app.domains.job_creation.services.wsi_question_generator import (
+            WSIQuestionGenerator, GeneratedQuestion,
+        )
+        gen = WSIQuestionGenerator()
+        base = GeneratedQuestion(**target) if not isinstance(target, GeneratedQuestion) else target
+        new_q = gen.generate_single_question(
+            block=block, enriched=enriched, seniority=seniority,
+            directive=instruction, base_question=base, trait_rankings=traits,
+        )
+    except Exception as exc:  # noqa: BLE001 — fail-loud
+        logger.warning("[WizardServiceTools] edit_wsi failed: %s", exc)
+        return ToolResult(llm_message=f"Não consegui editar a pergunta ({exc}).", error=True)
+    if new_q is None:
+        return ToolResult(llm_message="A edição não retornou pergunta. Tente reformular.", error=True)
+    questions[idx - 1] = new_q.model_dump()
+    return ToolResult(
+        llm_message=(
+            f"Pergunta {idx} reescrita conforme pedido. Apresente a nova versão e "
+            f"confirme se está boa."
+        ),
+        state_updates={"wsi_questions": questions, "questions_approved": None},
+    )
+
+
+def _handle_add_wsi_question(
+    state: dict, tool_input: dict, ctx: ToolContext
+) -> ToolResult:
+    """Adiciona UMA pergunta WSI (geração cirúrgica CBI) ao bloco indicado."""
+    tenant_err = _reject_tenant_keys(tool_input)
+    if tenant_err:
+        return ToolResult(llm_message=tenant_err, error=True)
+    if not state.get("wsi_questions"):
+        return ToolResult(
+            llm_message="Gere as perguntas primeiro (generate_wsi_questions).", error=True
+        )
+    block = str(tool_input.get("block") or "technical").strip().lower()
+    if block not in ("technical", "behavioral"):
+        return ToolResult(
+            llm_message="block deve ser 'technical' ou 'behavioral'.", error=True
+        )
+    instruction = str(tool_input.get("instruction") or "").strip() or (
+        f"Gere uma nova pergunta {block} complementar, distinta das existentes."
+    )
+    enriched, seniority, traits = _wsi_enriched_seniority_traits(state)
+    if enriched is None:
+        return ToolResult(llm_message="Descrição da vaga indisponível.", error=True)
+    try:
+        from app.domains.job_creation.services.wsi_question_generator import (
+            WSIQuestionGenerator,
+        )
+        gen = WSIQuestionGenerator()
+        new_q = gen.generate_single_question(
+            block=block, enriched=enriched, seniority=seniority,
+            directive=instruction, base_question=None, trait_rankings=traits,
+        )
+    except Exception as exc:  # noqa: BLE001 — fail-loud
+        logger.warning("[WizardServiceTools] add_wsi failed: %s", exc)
+        return ToolResult(llm_message=f"Não consegui adicionar a pergunta ({exc}).", error=True)
+    if new_q is None:
+        return ToolResult(llm_message="A geração não retornou pergunta. Tente reformular.", error=True)
+    questions = list(state.get("wsi_questions") or []) + [new_q.model_dump()]
+    return ToolResult(
+        llm_message=(
+            f"Adicionada uma pergunta {block}. O pacote agora tem {len(questions)} "
+            f"perguntas. Confirme se posso seguir."
+        ),
+        state_updates={"wsi_questions": questions, "questions_approved": None},
+    )
+
+
 def _handle_approve_wsi_questions(
     state: dict, tool_input: dict, ctx: ToolContext
 ) -> ToolResult:
@@ -696,6 +863,71 @@ GENERATE_WSI_QUESTIONS = WizardTool(
     handler=_handle_generate_wsi_questions,
 )
 
+REGENERATE_WSI_QUESTIONS = WizardTool(
+    name="regenerate_wsi_questions",
+    description=(
+        "Regenera TODAS as perguntas de triagem WSI do zero (quando o recrutador "
+        "não gostou do conjunto e quer um novo). Mantém modo/metodologia."
+    ),
+    input_schema={"type": "object", "properties": {}, "additionalProperties": False},
+    handler=_handle_regenerate_wsi_questions,
+)
+
+REMOVE_WSI_QUESTION = WizardTool(
+    name="remove_wsi_question",
+    description=(
+        "Remove uma pergunta de triagem específica pelo número (question_index, "
+        "1 = primeira). Use quando o recrutador pedir para tirar uma pergunta."
+    ),
+    input_schema={
+        "type": "object",
+        "properties": {
+            "question_index": {"type": "integer", "description": "Número da pergunta (1-based)."},
+        },
+        "required": ["question_index"],
+        "additionalProperties": False,
+    },
+    handler=_handle_remove_wsi_question,
+)
+
+EDIT_WSI_QUESTION = WizardTool(
+    name="edit_wsi_question",
+    description=(
+        "Reescreve UMA pergunta de triagem (por question_index, 1-based) seguindo "
+        "uma instrução do recrutador (ex.: 'deixe mais específica sobre hedge'). "
+        "Mantém a metodologia CBI."
+    ),
+    input_schema={
+        "type": "object",
+        "properties": {
+            "question_index": {"type": "integer", "description": "Número da pergunta (1-based)."},
+            "instruction": {"type": "string", "description": "O que ajustar na pergunta."},
+        },
+        "required": ["question_index", "instruction"],
+        "additionalProperties": False,
+    },
+    handler=_handle_edit_wsi_question,
+)
+
+ADD_WSI_QUESTION = WizardTool(
+    name="add_wsi_question",
+    description=(
+        "Adiciona UMA nova pergunta de triagem ao bloco técnico ou comportamental "
+        "(CBI). Use quando o recrutador pedir mais uma pergunta. Opcionalmente "
+        "passe uma instrução do que ela deve avaliar."
+    ),
+    input_schema={
+        "type": "object",
+        "properties": {
+            "block": {"type": "string", "enum": ["technical", "behavioral"]},
+            "instruction": {"type": "string", "description": "O que a pergunta deve avaliar (opcional)."},
+        },
+        "required": ["block"],
+        "additionalProperties": False,
+    },
+    handler=_handle_add_wsi_question,
+)
+
 APPROVE_WSI_QUESTIONS = WizardTool(
     name="approve_wsi_questions",
     description=(
@@ -714,5 +946,9 @@ SERVICE_TOOLS: tuple[WizardTool, ...] = (
     SUGGEST_SALARY,
     PUBLISH_JOB,
     GENERATE_WSI_QUESTIONS,
+    REGENERATE_WSI_QUESTIONS,
+    REMOVE_WSI_QUESTION,
+    EDIT_WSI_QUESTION,
+    ADD_WSI_QUESTION,
     APPROVE_WSI_QUESTIONS,
 )

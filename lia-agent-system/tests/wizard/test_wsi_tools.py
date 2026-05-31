@@ -135,3 +135,107 @@ def test_approve_wsi_sets_flag():
     res = _handle_approve_wsi_questions({"wsi_questions": _QS}, {}, CTX)
     assert not res.error
     assert res.state_updates["questions_approved"] is True
+
+
+# ── HITL ops: regenerate / remove / edit / add (paridade fluxo antigo) ────
+
+_QS5 = [
+    {"block": "technical", "question": f"T{i}", "bloom_level": 4} for i in range(1, 4)
+] + [
+    {"block": "behavioral", "question": f"B{i}", "trait_ocean": "C"} for i in range(1, 3)
+]
+
+
+@pytest.mark.medium
+def test_remove_wsi_question_splices_1based():
+    from app.domains.job_creation.orchestrator.wizard_service_tools import _handle_remove_wsi_question
+    res = _handle_remove_wsi_question({"wsi_questions": list(_QS5)}, {"question_index": 2}, CTX)
+    assert not res.error
+    qs = res.state_updates["wsi_questions"]
+    assert len(qs) == 4
+    assert qs[0]["question"] == "T1" and qs[1]["question"] == "T3"  # T2 removida
+    assert res.state_updates["questions_approved"] is None
+
+
+@pytest.mark.medium
+def test_remove_wsi_invalid_index():
+    from app.domains.job_creation.orchestrator.wizard_service_tools import _handle_remove_wsi_question
+    res = _handle_remove_wsi_question({"wsi_questions": list(_QS5)}, {"question_index": 99}, CTX)
+    assert res.error and "inválido" in res.llm_message.lower()
+
+
+@pytest.mark.medium
+def test_regenerate_forces_regen():
+    from app.domains.job_creation.orchestrator import wizard_service_tools as wst
+    captured = {}
+
+    def _fake_bigfive(state):
+        return {**state, "trait_rankings": []}
+
+    def _fake_wsi_node(state):
+        captured["force"] = state.get("wsi_regenerate_pending")
+        return {**state, "wsi_questions": list(_QS5)}
+
+    state = {"jd_enriched": {"about_role": "x"}, "wsi_questions": list(_QS5), "questions_approved": True,
+             "confirmed_technical_competencies": [{"skill": "A"}], "confirmed_behavioral_competencies": []}
+    with patch("app.domains.job_creation.nodes.bigfive.bigfive_node", _fake_bigfive), \
+         patch("app.domains.job_creation.nodes.wsi_questions.wsi_questions_node", _fake_wsi_node):
+        res = wst._handle_regenerate_wsi_questions(state, {}, CTX)
+    assert not res.error
+    assert captured["force"] is True  # forçou regeneração
+
+
+@pytest.mark.medium
+def test_edit_wsi_question_surgical():
+    from app.domains.job_creation.orchestrator import wizard_service_tools as wst
+
+    class _NewQ:
+        def model_dump(self):
+            return {"block": "technical", "question": "T2 reescrita", "bloom_level": 5}
+
+    class _FakeGen:
+        def generate_single_question(self, **kw):
+            assert kw["directive"] == "mais específica"
+            assert kw["base_question"] is not None  # edição usa base
+            return _NewQ()
+
+    with patch("app.domains.job_creation.services.wsi_question_generator.WSIQuestionGenerator", _FakeGen), \
+         patch("app.domains.job_creation.services.wsi_question_generator.GeneratedQuestion", dict), \
+         patch.object(wst, "_wsi_enriched_seniority_traits", return_value=(object(), "pleno", [])):
+        res = wst._handle_edit_wsi_question(
+            {"wsi_questions": list(_QS5), "jd_enriched": {"x": 1}},
+            {"question_index": 2, "instruction": "mais específica"}, CTX,
+        )
+    assert not res.error
+    assert res.state_updates["wsi_questions"][1]["question"] == "T2 reescrita"
+
+
+@pytest.mark.medium
+def test_add_wsi_question_surgical():
+    from app.domains.job_creation.orchestrator import wizard_service_tools as wst
+
+    class _NewQ:
+        def model_dump(self):
+            return {"block": "behavioral", "question": "nova comportamental"}
+
+    class _FakeGen:
+        def generate_single_question(self, **kw):
+            assert kw["base_question"] is None  # adição não usa base
+            return _NewQ()
+
+    with patch("app.domains.job_creation.services.wsi_question_generator.WSIQuestionGenerator", _FakeGen), \
+         patch.object(wst, "_wsi_enriched_seniority_traits", return_value=(object(), "pleno", [])):
+        res = wst._handle_add_wsi_question(
+            {"wsi_questions": list(_QS5), "jd_enriched": {"x": 1}},
+            {"block": "behavioral", "instruction": "avalie resiliência"}, CTX,
+        )
+    assert not res.error
+    assert len(res.state_updates["wsi_questions"]) == 6
+    assert res.state_updates["wsi_questions"][-1]["question"] == "nova comportamental"
+
+
+@pytest.mark.medium
+def test_add_wsi_requires_existing():
+    from app.domains.job_creation.orchestrator.wizard_service_tools import _handle_add_wsi_question
+    res = _handle_add_wsi_question({}, {"block": "technical"}, CTX)
+    assert res.error
