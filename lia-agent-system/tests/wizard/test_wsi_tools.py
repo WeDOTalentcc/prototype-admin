@@ -35,93 +35,105 @@ def test_generate_wsi_rejects_tenant_keys():
     assert res.error and "tenant" in res.llm_message.lower()
 
 
+def _fake_pkg_question(**over):
+    from types import SimpleNamespace
+    base = dict(
+        id="q1", question_text="Conte sobre X", block="technical", framework="CBI",
+        competency="Python", skill="Python", trait_ocean=None, ideal_answer="ideal",
+        scoring_criteria={"score_5": "ideal"}, bloom_level=5, dreyfus_level=None,
+        weight=0.9, expected_signals=["a"], needs_manual_review=False, fallback_used=False,
+    )
+    base.update(over)
+    return SimpleNamespace(**base)
+
+
 @pytest.mark.medium
-def test_generate_wsi_happy_path_derives_distribution_from_confirmed():
+def test_generate_wsi_happy_path_uses_canonical_package():
+    """Fase 2.4b: gera via canônico WSIService.generate_wsi_package — perguntas
+    mapeadas p/ shape do painel + bigfive_profile + trait_rankings no state."""
+    from types import SimpleNamespace
+    from app.domains.job_creation.orchestrator import wizard_service_tools as wst
+
+    q = _fake_pkg_question()
     captured = {}
 
-    def _fake_bigfive(state):
-        return {**state, "trait_rankings": [{"trait": "C", "rank": 1}], "bigfive_profile": {"openness": 0.5}}
+    async def _fake_pkg(**kw):
+        captured.update(kw)
+        return {"questions": [q], "bigfive_profile": {"openness": 0.6},
+                "trait_rankings": [{"trait": "openness", "rank": 1}], "dropped": []}
+    fake_svc = SimpleNamespace(generate_wsi_package=_fake_pkg)
 
-    def _fake_wsi_node(state):
-        captured["distribution"] = state.get("question_distribution")
-        captured["seniority"] = state.get("seniority_resolved")
-        captured["trait_rankings"] = state.get("trait_rankings")
-        return {**state, "wsi_questions": _QS}
-
-    state = {
-        "jd_enriched": {"about_role": "x"}, "parsed_seniority": "senior",
-        "screening_mode": "full",
-        "confirmed_technical_competencies": [{"skill": f"T{i}"} for i in range(8)],
-        "confirmed_behavioral_competencies": [{"competencia": f"B{i}"} for i in range(4)],
-    }
-    with patch("app.domains.job_creation.nodes.bigfive.bigfive_node", _fake_bigfive), \
-         patch("app.domains.job_creation.nodes.wsi_questions.wsi_questions_node", _fake_wsi_node):
-        res = _handle_generate_wsi_questions(state, {}, CTX)
+    state = {"jd_enriched": {"about_role": "Engenheiro", "responsabilidades": ["liderar"]},
+             "parsed_seniority": "senior", "screening_mode": "full",
+             "confirmed_technical_competencies": [{"skill": "Python"}],
+             "confirmed_behavioral_competencies": [{"competencia": "Comunicacao"}]}
+    with patch("app.domains.cv_screening.services.wsi_service.service.get_wsi_service", lambda: fake_svc):
+        res = wst._handle_generate_wsi_questions(state, {}, CTX)
 
     assert not res.error
-    # distribution derivada das competências confirmadas (8 + 4)
-    assert captured["distribution"] == {"technical": 8, "behavioral": 4}
+    assert captured["skills"] == ["Python"]
+    assert captured["behavioral"] == ["Comunicacao"]
     assert captured["seniority"] == "senior"
-    # bigfive rodou (full methodology) → trait_rankings disponível
-    assert captured["trait_rankings"] == [{"trait": "C", "rank": 1}]
-    assert res.state_updates["wsi_questions"] == _QS
+    assert captured["mode"] == "full"
+    pq = res.state_updates["wsi_questions"][0]
+    assert pq["question"] == "Conte sobre X"
+    assert pq["block"] == "technical" and pq["bloom_level"] == 5
+    assert res.state_updates["bigfive_profile"] == {"openness": 0.6}
+    assert res.state_updates["trait_rankings"] == [{"trait": "openness", "rank": 1}]
     assert res.state_updates["questions_approved"] is None
     assert "CBI" in res.llm_message
 
 
 @pytest.mark.medium
-def test_generate_wsi_uses_table_when_no_confirmed():
-    captured = {}
+def test_generate_wsi_reports_dropped_equity():
+    """L4 fairness no canônico: perguntas descartadas viram aviso + audit no state."""
+    from types import SimpleNamespace
+    from app.domains.job_creation.orchestrator import wizard_service_tools as wst
 
-    def _fake_bigfive(state):
-        return {**state, "trait_rankings": []}
+    q = _fake_pkg_question(trait_ocean=None)
 
-    def _fake_wsi_node(state):
-        captured["distribution"] = state.get("question_distribution")
-        return {**state, "wsi_questions": _QS}
+    async def _fake_pkg(**kw):
+        if kw.get("collect_dropped") is not None:
+            kw["collect_dropped"].append({"question": "viesada", "category": "gender"})
+        return {"questions": [q], "bigfive_profile": None, "trait_rankings": [], "dropped": []}
+    fake_svc = SimpleNamespace(generate_wsi_package=_fake_pkg)
 
-    state = {"jd_enriched": {"about_role": "x"}, "parsed_seniority": "pleno", "screening_mode": "compact"}
-    with patch("app.domains.job_creation.nodes.bigfive.bigfive_node", _fake_bigfive), \
-         patch("app.domains.job_creation.nodes.wsi_questions.wsi_questions_node", _fake_wsi_node), \
-         patch("app.domains.job_creation.graph._get_question_distribution", return_value={"technical": 5, "behavioral": 2}) as gd:
-        res = _handle_generate_wsi_questions(state, {}, CTX)
+    with patch("app.domains.cv_screening.services.wsi_service.service.get_wsi_service", lambda: fake_svc):
+        res = wst._handle_generate_wsi_questions({"jd_enriched": {"about_role": "x"}}, {}, CTX)
     assert not res.error
-    assert gd.called  # caiu na tabela canônica
-    assert captured["distribution"] == {"technical": 5, "behavioral": 2}
+    assert "equidade" in res.llm_message.lower()
+    assert len(res.state_updates["wsi_dropped_questions"]) == 1
+    assert res.state_updates["wsi_dropped_questions"][0]["category"] == "gender"
 
 
 @pytest.mark.medium
-def test_generate_wsi_bigfive_failsoft():
-    """Se bigfive falhar, segue sem trait weighting (não quebra)."""
-    def _boom(state):
-        raise RuntimeError("bigfive down")
+def test_generate_wsi_fail_loud_on_package_error():
+    """Erro no canônico → fail-loud (ToolResult.error), nunca silent fallback."""
+    from types import SimpleNamespace
+    from app.domains.job_creation.orchestrator import wizard_service_tools as wst
 
-    def _fake_wsi_node(state):
-        return {**state, "wsi_questions": _QS}
+    async def _boom(**kw):
+        raise RuntimeError("LLM down")
+    fake_svc = SimpleNamespace(generate_wsi_package=_boom)
 
-    state = {"jd_enriched": {"about_role": "x"}, "parsed_seniority": "pleno",
-             "confirmed_technical_competencies": [{"skill": "T"}], "confirmed_behavioral_competencies": []}
-    with patch("app.domains.job_creation.nodes.bigfive.bigfive_node", _boom), \
-         patch("app.domains.job_creation.nodes.wsi_questions.wsi_questions_node", _fake_wsi_node):
-        res = _handle_generate_wsi_questions(state, {}, CTX)
-    assert not res.error
-    assert res.state_updates["trait_rankings"] == []
-
-
-@pytest.mark.medium
-def test_generate_wsi_node_error_fail_loud():
-    def _fake_bigfive(state):
-        return {**state, "trait_rankings": []}
-
-    def _fake_wsi_node(state):
-        return {**state, "error": "policy DENY", "wsi_questions": []}
-
-    state = {"jd_enriched": {"about_role": "x"}}
-    with patch("app.domains.job_creation.nodes.bigfive.bigfive_node", _fake_bigfive), \
-         patch("app.domains.job_creation.nodes.wsi_questions.wsi_questions_node", _fake_wsi_node):
-        res = _handle_generate_wsi_questions(state, {}, CTX)
+    with patch("app.domains.cv_screening.services.wsi_service.service.get_wsi_service", lambda: fake_svc):
+        res = wst._handle_generate_wsi_questions({"jd_enriched": {"about_role": "x"}}, {}, CTX)
     assert res.error
-    assert "policy DENY" in res.llm_message
+    assert "tente novamente" in res.llm_message.lower()
+
+
+@pytest.mark.medium
+def test_generate_wsi_empty_questions_fail_loud():
+    from types import SimpleNamespace
+    from app.domains.job_creation.orchestrator import wizard_service_tools as wst
+
+    async def _empty(**kw):
+        return {"questions": [], "bigfive_profile": None, "trait_rankings": [], "dropped": []}
+    fake_svc = SimpleNamespace(generate_wsi_package=_empty)
+
+    with patch("app.domains.cv_screening.services.wsi_service.service.get_wsi_service", lambda: fake_svc):
+        res = wst._handle_generate_wsi_questions({"jd_enriched": {"about_role": "x"}}, {}, CTX)
+    assert res.error
 
 
 @pytest.mark.medium
@@ -165,24 +177,24 @@ def test_remove_wsi_invalid_index():
 
 
 @pytest.mark.medium
-def test_regenerate_forces_regen():
+def test_regenerate_uses_canonical_package():
+    """Fase 2.4b: regenerate também delega ao canônico generate_wsi_package."""
+    from types import SimpleNamespace
     from app.domains.job_creation.orchestrator import wizard_service_tools as wst
-    captured = {}
 
-    def _fake_bigfive(state):
-        return {**state, "trait_rankings": []}
+    q = _fake_pkg_question(question_text="nova", competency="A", skill="A")
 
-    def _fake_wsi_node(state):
-        captured["force"] = state.get("wsi_regenerate_pending")
-        return {**state, "wsi_questions": list(_QS5)}
+    async def _fake_pkg(**kw):
+        return {"questions": [q], "bigfive_profile": None, "trait_rankings": [], "dropped": []}
+    fake_svc = SimpleNamespace(generate_wsi_package=_fake_pkg)
 
     state = {"jd_enriched": {"about_role": "x"}, "wsi_questions": list(_QS5), "questions_approved": True,
              "confirmed_technical_competencies": [{"skill": "A"}], "confirmed_behavioral_competencies": []}
-    with patch("app.domains.job_creation.nodes.bigfive.bigfive_node", _fake_bigfive), \
-         patch("app.domains.job_creation.nodes.wsi_questions.wsi_questions_node", _fake_wsi_node):
+    with patch("app.domains.cv_screening.services.wsi_service.service.get_wsi_service", lambda: fake_svc):
         res = wst._handle_regenerate_wsi_questions(state, {}, CTX)
     assert not res.error
-    assert captured["force"] is True  # forçou regeneração
+    assert res.state_updates["wsi_questions"][0]["question"] == "nova"
+    assert res.state_updates["questions_approved"] is None
 
 
 @pytest.mark.medium
