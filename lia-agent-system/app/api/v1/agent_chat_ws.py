@@ -1127,6 +1127,14 @@ company_id: str = Depends(require_company_id)):
                     # Task #1080: canonical pure derive — no msg["thread_id"] honor.
                     from app.shared.sessions import derive_thread_id as _derive_tid
                     _wiz_thread_id = _derive_tid(company_id, session_id)
+                    # P0 email fix (Paulo 2026-05-31): passa a mensagem CRUA
+                    # (pre-masking) ao wizard para captura deterministica do
+                    # email do gestor no servidor. NUNCA vai ao LLM (o wizard
+                    # extrai via regex e grava no state). content segue mascarado.
+                    try:
+                        context = {**(context or {}), "_raw_user_message": _c3b_result.original_message}
+                    except Exception:
+                        pass
                     _wiz_message, _wiz_payload, _tokens_emitted = await WizardSessionService.process_message(
                         thread_id=_wiz_thread_id,
                         user_message=content,

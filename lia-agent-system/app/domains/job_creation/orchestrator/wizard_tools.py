@@ -200,6 +200,18 @@ _FIELD_TO_STATE_KEY: dict[str, str] = {
 # ── Handlers ─────────────────────────────────────────────────────────────
 
 
+def _is_masked_pii(value: str) -> bool:
+    """Detecta o placeholder de PII mascarada (LGPD strip no inbound).
+
+    O email do gestor é apagado pelo c3b/pii_masking ('[EMAIL REMOVIDO]')
+    ANTES de chegar ao LLM. Se o LLM tentar setar manager_email com o
+    placeholder, ignoramos — o email é capturado deterministicamente do
+    texto cru no servidor (wizard layer), nunca pelo LLM.
+    """
+    v = (value or "").upper()
+    return "REMOVIDO" in v or v.strip().startswith("[")
+
+
 def _handle_set_job_fields(
     state: dict, tool_input: dict, ctx: ToolContext
 ) -> ToolResult:
@@ -220,7 +232,17 @@ def _handle_set_job_fields(
 
     updates: dict[str, Any] = {}
     applied: list[str] = []
+    notes: list[str] = []
     for name, raw in tool_input.items():
+        # Email do gestor mascarado: ignorar (capturado deterministicamente
+        # no servidor). Não erra — apenas informa o LLM para não insistir.
+        if name == "manager_email" and _is_masked_pii(str(raw)):
+            notes.append(
+                "O email do gestor é capturado automaticamente do texto — "
+                "não precisa pedir nem validar formato; se o recrutador "
+                "mencionou um email, já está registrado."
+            )
+            continue
         norm, err = _normalize_field(name, str(raw))
         if err:
             return ToolResult(llm_message=err, error=True)
@@ -228,13 +250,44 @@ def _handle_set_job_fields(
         applied.append(f"{name}={norm!r}")
 
     if not updates:
+        if notes:
+            return ToolResult(llm_message=" ".join(notes))
         return ToolResult(
             llm_message="Nenhum campo fornecido para atualizar.", error=True
         )
 
+    msg = f"Campos atualizados: {', '.join(applied)}."
+    if notes:
+        msg += " " + " ".join(notes)
+    return ToolResult(llm_message=msg, state_updates=updates)
+
+
+def _handle_approve_job_description(
+    state: dict, tool_input: dict, ctx: ToolContext
+) -> ToolResult:
+    """Registra a aprovação da descrição (JD) pelo recrutador (jd_approved=True).
+
+    Pré-requisito: a JD precisa ter sido gerada (enrich_job_description). Sem
+    esta tool, o publish_job nunca destrava — era a causa do loop de
+    'publicação alucinada'. Só chame quando o recrutador aprovar explicitamente.
+    """
+    tenant_err = _reject_tenant_keys(tool_input)
+    if tenant_err:
+        return ToolResult(llm_message=tenant_err, error=True)
+    if not state.get("jd_enriched"):
+        return ToolResult(
+            llm_message=(
+                "Não há descrição gerada para aprovar. Gere a JD primeiro "
+                "(enrich_job_description)."
+            ),
+            error=True,
+        )
     return ToolResult(
-        llm_message=f"Campos atualizados: {', '.join(applied)}.",
-        state_updates=updates,
+        llm_message=(
+            "Descrição aprovada pelo recrutador. Agora você pode publicar a "
+            "vaga (publish_job com confirm=true) quando ele confirmar."
+        ),
+        state_updates={"jd_approved": True},
     )
 
 
@@ -415,6 +468,18 @@ CONFIRM_COMPETENCIES = WizardTool(
     handler=_handle_confirm_competencies,
 )
 
+APPROVE_JOB_DESCRIPTION = WizardTool(
+    name="approve_job_description",
+    description=(
+        "Registra a aprovação da descrição da vaga pelo recrutador. Chame "
+        "SOMENTE quando o recrutador aprovar explicitamente a JD gerada "
+        "('aprovo', 'pode seguir', 'está ótima'). É pré-requisito para "
+        "publicar — sem aprovar, publish_job não funciona."
+    ),
+    input_schema={"type": "object", "properties": {}, "additionalProperties": False},
+    handler=_handle_approve_job_description,
+)
+
 GET_WIZARD_STATUS = WizardTool(
     name="get_wizard_status",
     description=(
@@ -435,6 +500,7 @@ PURE_TOOLS: tuple[WizardTool, ...] = (
     SET_JOB_FIELDS,
     SET_SCREENING_MODE,
     CONFIRM_COMPETENCIES,
+    APPROVE_JOB_DESCRIPTION,
     GET_WIZARD_STATUS,
 )
 

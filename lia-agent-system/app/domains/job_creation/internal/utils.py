@@ -80,6 +80,7 @@ def _build_wizard_state_summary(state: Any) -> str:
         "localização": state.get("parsed_location"),
         "tipo de contrato": state.get("parsed_employment_type"),
         "gestor responsável": state.get("parsed_manager_name"),
+        "email do gestor": state.get("parsed_manager_email"),
     }
     filled = [k for k, v in field_map.items() if v]
     missing = [k for k, v in field_map.items() if not v]

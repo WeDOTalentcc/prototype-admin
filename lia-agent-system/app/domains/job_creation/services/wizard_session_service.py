@@ -18,9 +18,23 @@ from __future__ import annotations
 import asyncio
 import logging
 import os
+import re
 from typing import Any
 
 logger = logging.getLogger(__name__)
+
+# Captura determinística do email do gestor a partir do texto CRU (pré-masking
+# LGPD). Mesmo pattern do pii_masking.EMAIL_PATTERN. Usado APENAS no servidor
+# (wizard layer) — o valor NUNCA é enviado ao LLM (decisão Paulo 2026-05-31).
+_MANAGER_EMAIL_RE = re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b")
+
+
+def _extract_manager_email(raw_text: str) -> str | None:
+    """Extrai o primeiro email válido do texto cru. None se ausente."""
+    if not raw_text:
+        return None
+    m = _MANAGER_EMAIL_RE.search(raw_text)
+    return m.group(0) if m else None
 
 # Keys carried forward from context into wizard state
 _CONTEXT_CARRY_KEYS = ("right_panel_form", "attached_file_text", "tenant_context_snippet")
@@ -947,6 +961,21 @@ class WizardSessionService:
         for k in _CONTEXT_CARRY_KEYS:
             if context and context.get(k) is not None:
                 state[k] = context[k]
+
+        # ── Captura determinística do email do gestor (LGPD) ───────────
+        # O email é apagado pelo c3b/pii_masking ('[EMAIL REMOVIDO]') ANTES
+        # do LLM. O wizard PRECISA do valor (registro do gestor), mas o LLM
+        # NÃO — então extraímos do texto cru (context['_raw_user_message'])
+        # no servidor e gravamos direto no state, sem nunca enviar ao LLM.
+        # Decisão Paulo 2026-05-31 (extração determinística).
+        _raw_msg = (context or {}).get("_raw_user_message") or ""
+        _email = _extract_manager_email(_raw_msg)
+        if _email:
+            state["parsed_manager_email"] = _email
+            logger.info(
+                "[WizardOrchestrator] manager_email capturado deterministicamente "
+                "(len=%d) thread=%s", len(_email), thread_id,
+            )
 
         ctx = ToolContext(
             company_id=str(company_id or state.get("company_id") or ""),
