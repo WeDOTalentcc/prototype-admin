@@ -89,15 +89,18 @@ class TalentPoolCandidateListResponse(BaseModel):
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _jsonapi_pool(pool: TalentPool, assignments_count: int = 0) -> dict:
+def _jsonapi_pool(pool: TalentPool, assignments_count: int = 0, archetype_name: str | None = None) -> dict:
     """Format a TalentPool as a JSONAPI resource object.
 
     Sub-sprint 7B-3a (2026-05-25): inclui assignments_count para TalentPoolsTab badge.
     Count vem de pool_agent_assignments (M2M canonical Sprint 7A).
+    archetype_name: nome legivel do arquetipo vinculado (join em search_archetypes).
     """
     d = pool.to_dict()
     pool_id = d.pop("id")
     d["assignments_count"] = assignments_count
+    d["ideal_profile_name"] = archetype_name
+    d["ideal_profile_id"] = pool.archetype_id  # alias para compatibilidade com frontend
     return {"id": pool_id, "type": "talent_pool", "attributes": d}
 
 
@@ -202,7 +205,22 @@ company_id: str = Depends(require_company_id)):
         rows = (await db.execute(counts_stmt)).all()
         counts_map = {row[0]: row[1] for row in rows}
 
-    return {"data": [_jsonapi_pool(p, counts_map.get(p.id, 0)) for p in pools]}
+    # Batch-lookup archetype names para ideal_profile_name nos cards
+    archetype_ids = [p.archetype_id for p in pools if p.archetype_id]
+    archetype_name_map: dict = {}
+    if archetype_ids:
+        from lia_models.archetype import SearchArchetype
+        arch_rows = (await db.execute(
+            select(SearchArchetype.id, SearchArchetype.name).where(
+                SearchArchetype.id.in_(archetype_ids)
+            )
+        )).all()
+        archetype_name_map = {row[0]: row[1] for row in arch_rows}
+
+    return {"data": [
+        _jsonapi_pool(p, counts_map.get(p.id, 0), archetype_name_map.get(p.archetype_id))
+        for p in pools
+    ]}
 
 
 @router.post("", status_code=201, response_model=TalentPoolResponse)
@@ -229,7 +247,14 @@ company_id: str = Depends(require_company_id)):
     db.add(pool)
     await db.commit()
     await db.refresh(pool)
-    return {"data": _jsonapi_pool(pool)}
+    archetype_name: str | None = None
+    if pool.archetype_id:
+        from lia_models.archetype import SearchArchetype
+        arch = (await db.execute(
+            select(SearchArchetype.name).where(SearchArchetype.id == pool.archetype_id)
+        )).scalar_one_or_none()
+        archetype_name = arch
+    return {"data": _jsonapi_pool(pool, archetype_name=archetype_name)}
 
 
 @router.get("/{pool_id}", response_model=TalentPoolResponse)
@@ -241,7 +266,14 @@ company_id: str = Depends(require_company_id)):
     """Get a single talent pool."""
     company_id = get_user_company_id(current_user)
     pool = await _get_pool_or_404(pool_id, company_id, db)
-    return {"data": _jsonapi_pool(pool)}
+    archetype_name: str | None = None
+    if pool.archetype_id:
+        from lia_models.archetype import SearchArchetype
+        arch = (await db.execute(
+            select(SearchArchetype.name).where(SearchArchetype.id == pool.archetype_id)
+        )).scalar_one_or_none()
+        archetype_name = arch
+    return {"data": _jsonapi_pool(pool, archetype_name=archetype_name)}
 
 
 @router.patch("/{pool_id}")
