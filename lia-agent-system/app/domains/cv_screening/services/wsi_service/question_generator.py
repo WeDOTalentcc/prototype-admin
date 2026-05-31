@@ -141,9 +141,11 @@ RUBRIC DE AVALIAÇÃO:
 - 86–100: O trait é absolutamente crítico; a vaga seria inviável sem ele
 
 REGRAS DE EVIDÊNCIA (OBRIGATÓRIAS):
-- O campo "evidence" deve conter CITAÇÕES LITERAIS do JD — trechos exatos entre aspas duplas
-  Correto:   "evidence": ["\"lidera equipes multidisciplinares em contextos de alta ambiguidade\""]
-  PROIBIDO:  "evidence": ["menciona liderança de equipes"] — paráfrase NÃO é evidência
+- O campo "evidence" deve conter CITAÇÕES LITERAIS do JD — trechos exatos COPIADOS do texto.
+- NUNCA use aspas duplas DENTRO do texto de uma evidência: copie o trecho SEM aspas internas
+  (aspas duplas dentro de strings quebram o JSON). Se o trecho tiver aspas, substitua por aspas simples.
+  Correto:   "evidence": ["lidera equipes multidisciplinares em contextos de alta ambiguidade"]
+  PROIBIDO:  "evidence": ["menciona liderança de equipes"]  (paráfrase NÃO é evidência)
 - Se um trait não tem nenhum trecho literal que o suporte, "evidence" deve ser [] e
   "confidence" deve ser "low" com score ≤ 30
 - NUNCA infira traits a partir do nome da empresa, setor, tecnologias usadas ou cargo —
@@ -168,22 +170,41 @@ JD enriquecido:
 Retorne APENAS JSON válido (sem texto fora do JSON):
 {{
   "big_five_jd": {{
-    "openness":          {{ "score": 0, "evidence": ["\"trecho literal do JD\""], "confidence": "high|medium|low" }},
-    "conscientiousness": {{ "score": 0, "evidence": ["\"trecho literal do JD\""], "confidence": "high|medium|low" }},
-    "extraversion":      {{ "score": 0, "evidence": ["\"trecho literal do JD\""], "confidence": "high|medium|low" }},
-    "agreeableness":     {{ "score": 0, "evidence": ["\"trecho literal do JD\""], "confidence": "high|medium|low" }},
-    "stability":         {{ "score": 0, "evidence": ["\"trecho literal do JD\""], "confidence": "high|medium|low" }}
+    "openness":          {{ "score": 0, "evidence": ["trecho literal do JD sem aspas internas"], "confidence": "high|medium|low" }},
+    "conscientiousness": {{ "score": 0, "evidence": ["trecho literal do JD sem aspas internas"], "confidence": "high|medium|low" }},
+    "extraversion":      {{ "score": 0, "evidence": ["trecho literal do JD sem aspas internas"], "confidence": "high|medium|low" }},
+    "agreeableness":     {{ "score": 0, "evidence": ["trecho literal do JD sem aspas internas"], "confidence": "high|medium|low" }},
+    "stability":         {{ "score": 0, "evidence": ["trecho literal do JD sem aspas internas"], "confidence": "high|medium|low" }}
   }}
 }}"""
-        try:
-            response = await self.llm.safe_invoke(prompt, temperature=0.1, max_tokens=800)
-            # F6.B5 fix (2026-05-20): safe_invoke retorna string (não AIMessage)
-            parsed = safe_json_parse(response, fallback={"big_five_jd": _FALLBACK})
-            data = parsed.get("big_five_jd") or _FALLBACK
-            if not isinstance(data, dict) or not any(t in data for t in _FIVE_TRAITS):
-                data = _FALLBACK
-        except Exception as e:
-            logger.error(f"F2.5 OCEAN extraction failed: {e} — using fallback")
+        # Robustez (2026-05-31): o LLM as vezes devolve JSON malformado (aspas
+        # internas nao escapadas, string truncada). max_tokens maior evita
+        # truncamento; retry 1x antes de cair no neutro (que zera o sinal Big
+        # Five do painel). Fail-loud no log quando o fallback for usado.
+        data = None
+        for _attempt in range(2):
+            _p = prompt if _attempt == 0 else (
+                prompt + "\n\nIMPORTANTE: retorne SOMENTE JSON valido e minificado, "
+                "sem texto fora do JSON e sem aspas duplas dentro de strings."
+            )
+            try:
+                response = await self.llm.safe_invoke(_p, temperature=0.1, max_tokens=1500)
+                parsed = safe_json_parse(response, fallback=None)
+                if isinstance(parsed, dict) and isinstance(parsed.get("big_five_jd"), dict):
+                    _cand = parsed["big_five_jd"]
+                    if any(t in _cand for t in _FIVE_TRAITS):
+                        data = _cand
+                        break
+                logger.warning(
+                    "F2.5 OCEAN parse vazio/invalido (tentativa %d/2)", _attempt + 1
+                )
+            except Exception as e:  # noqa: BLE001
+                logger.warning("F2.5 OCEAN extraction erro (tentativa %d/2): %s", _attempt + 1, e)
+        if data is None:
+            logger.warning(
+                "F2.5 OCEAN: fallback NEUTRO apos 2 tentativas — bigfive_profile "
+                "sera generico (score 60). Sinal Big Five do painel degradado."
+            )
             data = _FALLBACK
 
         result = []
