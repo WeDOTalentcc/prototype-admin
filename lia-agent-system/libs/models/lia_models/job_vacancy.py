@@ -65,6 +65,8 @@ class JobVacancy(Base):
     
     # NEW: Structured bonus range
     bonus_range = Column(JSON, nullable=True)  # {"min": 5000, "max": 8000, "currency": "BRL"}
+    # Verbas variaveis estruturadas (snapshot+ref) — mirror benefits. Migration 230.
+    variable_compensation = Column(JSON, default=list)
     
     benefits = Column(JSON, default=list)
     

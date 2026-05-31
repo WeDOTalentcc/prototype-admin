@@ -223,6 +223,10 @@ class JobCreationAPIClient:
             parse_vaga_benefits as _parse_vb,
             vaga_benefits_to_jsonb as _vb_jsonb,
         )
+        from app.domains.job_creation.helpers.vaga_variable_comp import (
+            parse_vaga_variable_comp as _parse_vc,
+            vaga_variable_comp_to_jsonb as _vc_jsonb,
+        )
         import uuid as _uuid
         import psycopg2
 
@@ -397,13 +401,17 @@ class JobCreationAPIClient:
             _bp_jsonable(_vb_jsonb(_parse_vb(job_data.get("benefits") or []))),
             default=str, ensure_ascii=False,
         )
+        variable_comp_jsonb = _json.dumps(
+            _bp_jsonable(_vc_jsonb(_parse_vc(job_data.get("variable_compensation") or []))),
+            default=str, ensure_ascii=False,
+        )
 
         # --- LAYER 4: canonical column->param mapping (no positional drift) ---
         _columns = [
             "id", "company_id", "title", "description", "department",
             "location", "work_model", "seniority_level", "requirements",
             "responsibilities", "technical_requirements",
-            "behavioral_competencies", "languages", "benefits", "status",
+            "behavioral_competencies", "languages", "benefits", "variable_compensation", "status",
             "employment_type", "manager", "manager_email", "salary_range",
             "created_at", "updated_at",
         ]
@@ -412,7 +420,7 @@ class JobCreationAPIClient:
         _params_raw = [
             str(new_id), str(company_id), title, description, department,
             location, work_model, seniority, skills_list, resp_list,
-            tech_reqs_jsonb, beh_comp_jsonb, languages_jsonb, benefits_jsonb, "Rascunho",
+            tech_reqs_jsonb, beh_comp_jsonb, languages_jsonb, benefits_jsonb, variable_comp_jsonb, "Rascunho",
             employment_type, manager, manager_email, salary_range_jsonb,
             _now_utc, _now_utc,
         ]
@@ -440,7 +448,7 @@ class JobCreationAPIClient:
                         )
                         _safe.append(_bp_str(_x) or "")
                 _params.append(_safe)
-            elif _col in ("technical_requirements", "behavioral_competencies", "languages", "benefits", "salary_range"):
+            elif _col in ("technical_requirements", "behavioral_competencies", "languages", "benefits", "variable_compensation", "salary_range"):
                 # JSONB columns - must be str (json-encoded) ou None (SQL NULL p/ salary_range)
                 if _val is not None and not isinstance(_val, str):
                     logger.warning(
@@ -485,11 +493,11 @@ class JobCreationAPIClient:
                     INSERT INTO job_vacancies
                     (id, company_id, title, description, department, location,
                      work_model, seniority_level, requirements, responsibilities,
-                     technical_requirements, behavioral_competencies, languages, benefits, status,
+                     technical_requirements, behavioral_competencies, languages, benefits, variable_compensation, status,
                      employment_type, manager, manager_email, salary_range,
                      created_at, updated_at)
                     VALUES
-                    (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s::jsonb, %s::jsonb, %s::jsonb, %s::jsonb, %s,
+                    (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s::jsonb, %s::jsonb, %s::jsonb, %s::jsonb, %s::jsonb, %s,
                      %s, %s, %s, %s::jsonb,
                      %s, %s)
                     RETURNING id

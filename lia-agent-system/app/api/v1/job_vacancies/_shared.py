@@ -226,7 +226,8 @@ class JobVacancyCreate(WeDoBaseModel):
     behavioral_competencies: list[dict] | None = []
     salary: str | None = None
     salary_range: dict | None = None
-    benefits: list[str] | None = []
+    benefits: list[str | dict] | None = []
+    variable_compensation: list[str | dict] | None = []
     manager: str | None = None
     manager_email: str | None = None
     recruiter: str | None = None
@@ -274,7 +275,8 @@ class JobVacancyUpdate(WeDoBaseModel):
     salary: str | None = None
     salary_range: dict | None = None
     bonus_range: dict | None = None
-    benefits: list[str] | None = None
+    benefits: list[str | dict] | None = None
+    variable_compensation: list[str | dict] | None = None
     manager: str | None = None
     manager_email: str | None = None
     recruiter: str | None = None
@@ -365,7 +367,8 @@ class JobVacancyResponse(BaseModel):
     salary: str | None = None
     salary_range: dict | None = None
     bonus_range: dict | None = None
-    benefits: list[str] | None = []
+    benefits: list[str | dict] | None = []
+    variable_compensation: list[str | dict] | None = []
     manager: str | None = None
     manager_email: str | None = None
     recruiter: str | None = None
