@@ -191,35 +191,46 @@ company_id: str = Depends(require_company_id)):
             # circuito já estava aberto e caímos no fallback Apify
             # (`_skip_pearch=True`), Pearch não foi tocado — penalizá-lo
             # geraria falso positivo (false-open) no breaker.
+            # Efeitos colaterais (circuit breaker + audit) em BACKGROUND: NAO podem
+            # atrasar a resposta degradada. Quando o Pearch estoura o deadline, o DB/audit
+            # pode estar lento tambem; await aqui empurrava a resposta alem dos 30s do
+            # proxy -> 504 + retries que re-cobram Pearch. Fire-and-forget devolve a
+            # resposta degradada na hora (Task #961 + fix 504).
             _pearch_was_attempted = request.search_pearch and not _skip_pearch
-            if _pearch_was_attempted:
+            _company_id_audit = (
+                getattr(current_user, "company_id", None)
+                or getattr(getattr(current_user, "state", None), "company_id", None)
+            )
+
+            async def _emit_timeout_side_effects():
+                if _pearch_was_attempted:
+                    try:
+                        await PEARCH_CIRCUIT.record_failure()
+                    except Exception as _cb_err:
+                        logger.debug("[search_candidates] PEARCH_CIRCUIT.record_failure failed: %s", _cb_err)
                 try:
-                    await PEARCH_CIRCUIT.record_failure()
-                except Exception as _cb_err:
-                    logger.debug("[search_candidates] PEARCH_CIRCUIT.record_failure failed: %s", _cb_err)
-            # Task #961 — audit explícito do timeout de rota.
+                    import uuid as _uuid
+                    from app.shared.compliance.audit_service import AuditService
+                    await AuditService().log_action(
+                        trace_id=str(_uuid.uuid4()),
+                        company_id=str(_company_id_audit) if _company_id_audit else "unattributed",
+                        action_type="pearch.search.timeout",
+                        actor="api:search_candidates",
+                        target_type="external_api",
+                        target_id="pearch",
+                        metadata={
+                            "source": "route_deadline",
+                            "deadline_seconds": _route_deadline,
+                            "query": request.query,
+                        },
+                    )
+                except Exception as _audit_err:
+                    logger.debug("[search_candidates] timeout audit emit failed: %s", _audit_err)
+
             try:
-                import uuid as _uuid
-                from app.shared.compliance.audit_service import AuditService
-                _company_id_audit = (
-                    getattr(current_user, "company_id", None)
-                    or getattr(getattr(current_user, "state", None), "company_id", None)
-                )
-                await AuditService().log_action(
-                    trace_id=str(_uuid.uuid4()),
-                    company_id=str(_company_id_audit) if _company_id_audit else "unattributed",
-                    action_type="pearch.search.timeout",
-                    actor="api:search_candidates",
-                    target_type="external_api",
-                    target_id="pearch",
-                    metadata={
-                        "source": "route_deadline",
-                        "deadline_seconds": _route_deadline,
-                        "query": request.query,
-                    },
-                )
-            except Exception as _audit_err:
-                logger.debug("[search_candidates] timeout audit emit failed: %s", _audit_err)
+                asyncio.create_task(_emit_timeout_side_effects())
+            except Exception:
+                pass
             return SearchResponseDTO(
                 query=request.query,
                 thread_id=request.thread_id or "",

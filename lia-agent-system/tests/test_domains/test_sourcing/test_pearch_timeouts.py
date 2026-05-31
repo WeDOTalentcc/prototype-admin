@@ -40,3 +40,21 @@ def test_search_route_uses_config_deadline_not_hardcoded():
     assert '"pearch.search.timeout"' in src
     # 5) circuit breaker é alimentado quando search_pearch=True na rota.
     assert "PEARCH_CIRCUIT.record_failure" in src
+
+
+def test_timeout_degraded_response_not_blocked_by_audit():
+    """Fix 504: a resposta degradada do deadline NAO pode esperar o audit/circuit (DB
+    pode estar lento quando o Pearch estoura). Efeitos colaterais vao para background
+    (asyncio.create_task) e a resposta degradada retorna na hora."""
+    import inspect
+    from app.api.v1.candidate_search import search as search_module
+
+    src = inspect.getsource(search_module.search_candidates)
+    # efeitos colaterais do timeout encapsulados e disparados em background
+    assert "_emit_timeout_side_effects" in src
+    assert "asyncio.create_task(_emit_timeout_side_effects())" in src
+    # o audit do timeout vive dentro da funcao de side-effects (nao awaited inline antes do return)
+    _idx_fn = src.index("_emit_timeout_side_effects")
+    _idx_ret = src.index("returning degraded response")
+    # a definicao da funcao de side-effects aparece depois do log de degraded
+    assert _idx_fn > _idx_ret
