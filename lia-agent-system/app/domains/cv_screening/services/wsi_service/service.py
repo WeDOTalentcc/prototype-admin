@@ -6,6 +6,7 @@ import logging
 from typing import Any, Literal
 
 from .models import (
+    safe_json_parse,
     CandidateFeedback,
     Competency,
     CompetencySuggestion,
@@ -275,6 +276,77 @@ Responda em JSON:
         if max_questions is not None and len(questions) > max_questions:
             questions = questions[:max_questions]
         return questions
+
+    async def suggest_single_question(
+        self,
+        *,
+        prompt: str,
+        block_id: int | None = None,
+        job_title: str | None = None,
+        seniority: str | None = None,
+        technical_skills: list[str] | None = None,
+        behavioral_competencies: list[str] | None = None,
+    ) -> dict[str, Any]:
+        """Gera UMA pergunta de triagem a partir de instrução do recrutador (cirúrgica).
+
+        Consolidação WSI Fase 2 (2026-05-31): extraído do endpoint
+        /api/v1/wsi/suggest-question para ser o ÚNICO canônico — reusado por
+        Settings (endpoint) E pelo HITL do wizard conversacional (add/edit
+        pergunta). Single source of truth. Usa o LLM canônico do serviço
+        (self.llm.safe_invoke, provider=claude) + safe_json_parse (robusto a
+        cercas markdown).
+        """
+        block_context = {
+            2: "Bloco 2 - Elegibilidade: perguntas eliminatórias sobre disponibilidade, requisitos mínimos",
+            3: "Bloco 3 - Técnica: perguntas sobre conhecimento técnico, experiência prática",
+            4: "Bloco 4 - Situacional/Comportamental: perguntas sobre soft skills, liderança, trabalho em equipe",
+        }
+        block_info = block_context.get(block_id, "Bloco genérico")
+        full_prompt = f"""Você é um especialista em recrutamento usando a metodologia WSI.
+O recrutador pediu para criar uma pergunta de triagem com base nesta instrução:
+
+INSTRUÇÃO DO RECRUTADOR: "{prompt}"
+
+CONTEXTO:
+- Vaga: {job_title or 'Não especificada'}
+- Senioridade: {seniority or 'Não especificada'}
+- {block_info}
+- Skills técnicas da vaga: {', '.join(technical_skills or []) or 'Não especificadas'}
+- Competências comportamentais: {', '.join(behavioral_competencies or []) or 'Não especificadas'}
+
+REGRAS:
+1. Crie UMA pergunta profissional e bem formulada em português brasileiro
+2. Se a instrução menciona "eliminatória", "disponibilidade" ou requisito obrigatório, marque como eliminatory
+3. Se a instrução menciona skills técnicas, marque como technical
+4. Senão, marque como classificatory/behavioral
+5. A pergunta deve ser clara, direta e adequada para triagem de candidatos
+
+Retorne APENAS JSON válido:
+{{
+  "question": "Texto completo da pergunta em português",
+  "type": "eliminatory|classificatory",
+  "category": "eligibility|technical|behavioral",
+  "block_id": {block_id or 3},
+  "skill_targeted": "competência que a pergunta avalia",
+  "bloom_level": 3
+}}"""
+        try:
+            content = await self.llm.safe_invoke(full_prompt, provider="claude")
+            data = safe_json_parse(content, fallback={})
+        except Exception as exc:  # noqa: BLE001 — fail-loud (nunca silent)
+            logger.error("[WSIService] suggest_single_question failed: %s", exc)
+            return {"success": False, "error": "Não foi possível gerar a sugestão. Tente novamente."}
+        if data.get("question"):
+            return {
+                "success": True,
+                "question": data["question"],
+                "type": data.get("type", "classificatory"),
+                "category": data.get("category", "technical"),
+                "block_id": data.get("block_id", block_id or 3),
+                "skill_targeted": data.get("skill_targeted", ""),
+                "bloom_level": data.get("bloom_level", 3),
+            }
+        return {"success": False, "error": "Não foi possível gerar a sugestão. Tente novamente."}
 
     @staticmethod
     def _build_competencies_from_enriched_jd(

@@ -203,77 +203,24 @@ company_id: str = Depends(require_company_id)):
 
 
 @router.post("/suggest-question", response_model=None)
-async def suggest_question(request: SuggestQuestionRequest, company_id: str = Depends(require_company_id)):
+async def suggest_question(
+    request: SuggestQuestionRequest,
+    company_id: str = Depends(require_company_id),
+    wsi_svc: WSIService = Depends(get_wsi_service),
+):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Generate a single screening question from a recruiter prompt using LLM."""
-    client = await get_anthropic_client()
-
-    block_context = {
-        2: "Bloco 2 - Elegibilidade: perguntas eliminatórias sobre disponibilidade, requisitos mínimos",
-        3: "Bloco 3 - Técnica: perguntas sobre conhecimento técnico, experiência prática",
-        4: "Bloco 4 - Situacional/Comportamental: perguntas sobre soft skills, liderança, trabalho em equipe"
-    }
-
-    block_info = block_context.get(request.block_id, "Bloco genérico")
-
-    prompt = f"""Você é um especialista em recrutamento usando a metodologia WSI.
-O recrutador pediu para criar uma pergunta de triagem com base nesta instrução:
-
-INSTRUÇÃO DO RECRUTADOR: "{request.prompt}"
-
-CONTEXTO:
-- Vaga: {request.job_title or 'Não especificada'}
-- Senioridade: {request.seniority or 'Não especificada'}
-- {block_info}
-- Skills técnicas da vaga: {', '.join(request.technical_skills or []) or 'Não especificadas'}
-- Competências comportamentais: {', '.join(request.behavioral_competencies or []) or 'Não especificadas'}
-
-REGRAS:
-1. Crie UMA pergunta profissional e bem formulada em português brasileiro
-2. Se a instrução menciona "eliminatória", "disponibilidade" ou requisito obrigatório, marque como eliminatory
-3. Se a instrução menciona skills técnicas, marque como technical
-4. Senão, marque como classificatory/behavioral
-5. A pergunta deve ser clara, direta e adequada para triagem de candidatos
-
-Retorne APENAS JSON válido:
-{{
-  "question": "Texto completo da pergunta em português",
-  "type": "eliminatory|classificatory",
-  "category": "eligibility|technical|behavioral",
-  "block_id": {request.block_id or 3},
-  "skill_targeted": "competência que a pergunta avalia",
-  "bloom_level": 3
-}}"""
-
-    if client:
-        response = await _run_anthropic_sync(
-            client,
-            model="claude-sonnet-4-6",
-            max_tokens=512,
-            messages=[{"role": "user", "content": prompt}],
-            timeout=30.0
-        )
-        try:
-            if response is None:
-                raise ValueError("Anthropic call timed out or failed")
-            data = parse_json_response(response.content[0].text, {})
-            if data.get("question"):
-                return {
-                    "success": True,
-                    "question": data["question"],
-                    "type": data.get("type", "classificatory"),
-                    "category": data.get("category", "technical"),
-                    "block_id": data.get("block_id", request.block_id or 3),
-                    "skill_targeted": data.get("skill_targeted", ""),
-                    "bloom_level": data.get("bloom_level", 3)
-                }
-        except Exception as e:
-            logger.error(f"Suggest question failed: {e}")
-
-    return {
-        "success": False,
-        "error": "Não foi possível gerar a sugestão. Tente novamente."
-    }
+    # Consolidação WSI Fase 2 (2026-05-31): delega ao canônico único
+    # WSIService.suggest_single_question (mesmo método usado pelo HITL do
+    # wizard conversacional). Single source of truth.
+    return await wsi_svc.suggest_single_question(
+        prompt=request.prompt,
+        block_id=request.block_id,
+        job_title=request.job_title,
+        seniority=request.seniority,
+        technical_skills=request.technical_skills,
+        behavioral_competencies=request.behavioral_competencies,
+    )
 
 
 @router.post("/questions/save", response_model=None)
