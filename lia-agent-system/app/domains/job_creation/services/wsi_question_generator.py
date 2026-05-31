@@ -401,20 +401,22 @@ class WSIQuestionGenerator:
 
     def rank_traits(
         self,
-        bigfive: BigFiveExtraction,
+        bigfive,
         seniority: str,
         role_archetype: str = "default",
         dept_blend=None,  # Optional[BigFiveBlend] Sprint B Phase 2 Layer 4
-    ) -> List[Dict[str, Any]]:
-        """F3 — Deterministic trait ranking (hybrid formula Sprint B Phase 2).
+    ):
+        """F3 — delega ao canonico cv_screening (Consolidacao WSI Fase 2.4b).
 
-        4-layer (dept_blend.method == dept_blend, >=10 samples, toggle ON):
-          score = 0.40*LLM + 0.20*O*NET + 0.15*CompanyCulture + 0.25*DeptHistory
-        3-layer (dept_blend.method == company_culture):
-          score = 0.40*LLM + 0.35*O*NET + 0.25*CompanyCulture
-        2-layer fallback (dept_blend is None or method == llm_only):
-          score = 0.40*LLM + 0.35*O*NET + 0.25*SeniorityBoost  (original)
+        Single source of truth: a formula F3 (LLM + O*NET + senioridade/dept-blend)
+        agora vive em cv_screening.services.wsi_service.bigfive.rank_traits. Este
+        metodo e um THIN ADAPTER (converte BigFiveExtraction -> dict) mantido ate
+        a Fase 4 deletar o fork. Comportamento identico (mesma formula/pesos).
         """
+        from app.domains.cv_screening.services.wsi_service.bigfive import (
+            rank_traits as _canonical_rank_traits,
+        )
+
         llm_scores = {
             "openness": bigfive.openness,
             "conscientiousness": bigfive.conscientiousness,
@@ -422,61 +424,12 @@ class WSIQuestionGenerator:
             "agreeableness": bigfive.agreeableness,
             "stability": bigfive.stability,
         }
-
-        onet_prior = ONET_PRIOR_PROFILES.get(role_archetype, ONET_PRIOR_PROFILES["default"])
-        boosts = SENIORITY_TRAIT_BOOSTS.get(seniority, {})
-        blend_method = "llm_only"
-        if dept_blend is not None and hasattr(dept_blend, "method"):
-            blend_method = dept_blend.method
-
-        rankings = []
-        for trait in llm_scores:
-            llm_val = llm_scores[trait]
-            onet_val = onet_prior.get(trait, 0.5)
-            boost_val = boosts.get(trait, 0.0)
-
-            if blend_method == "dept_blend" and dept_blend is not None:
-                blend_prior = _get_blend_score(dept_blend, trait)
-                score = (
-                    TRAIT_FORMULA_WEIGHTS_4L["llm"] * llm_val
-                    + TRAIT_FORMULA_WEIGHTS_4L["onet"] * onet_val
-                    + (TRAIT_FORMULA_WEIGHTS_4L["culture"] + TRAIT_FORMULA_WEIGHTS_4L["dept"]) * blend_prior
-                )
-            elif blend_method == "company_culture" and dept_blend is not None:
-                culture_prior = _get_blend_score(dept_blend, trait)
-                score = (
-                    TRAIT_FORMULA_WEIGHTS_3L["llm"] * llm_val
-                    + TRAIT_FORMULA_WEIGHTS_3L["onet"] * onet_val
-                    + TRAIT_FORMULA_WEIGHTS_3L["culture"] * culture_prior
-                )
-            else:
-                score = (
-                    TRAIT_FORMULA_WEIGHTS["llm"] * llm_val
-                    + TRAIT_FORMULA_WEIGHTS["prior"] * onet_val
-                    + TRAIT_FORMULA_WEIGHTS["seniority_boost"] * boost_val
-                )
-
-            rankings.append({
-                "trait": trait,
-                "score": round(score, 4),
-                "llm_score": llm_val,
-                "prior_score": onet_val,
-                "boost": boost_val,
-                "blend_method": blend_method,
-            })
-
-        rankings.sort(key=lambda x: x["score"], reverse=True)
-        total_score = sum(r["score"] for r in rankings) or 1.0
-        for i, r in enumerate(rankings):
-            r["rank"] = i + 1
-            r["weight"] = round(r["score"] / total_score, 4)
-
-        logger.info(
-            "[WSI:F3] Trait ranking (method=%s): %s",
-            blend_method,
-            " > ".join(f"{r['trait']}({r['score']:.3f})" for r in rankings),
+        return _canonical_rank_traits(
+            llm_scores,
+            seniority,
+            role_archetype=role_archetype,
+            dept_blend=dept_blend,
         )
-        return rankings
 
     # -------------------------------------------------------------------
     # F6: Question generation
