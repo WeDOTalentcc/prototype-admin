@@ -235,7 +235,6 @@ export function buildBlocks(
     { key: "manager_approval_for_offer", label: "Aprovação Final de Oferta (gestor precisa aprovar antes de enviar proposta ao candidato)?", value: pr?.manager_approval_for_offer ?? null, type: "boolean", editable: true, block: "policy" },
     { key: "manager_approval_sla_hours", label: "Prazo máximo (horas) para o gestor aprovar uma oferta antes de escalar?", value: pr?.manager_approval_sla_hours ?? null, type: "number", editable: true, block: "policy" },
     { key: "vacancy_approval_required", label: "Abertura de nova vaga precisa de aprovação?", value: pr?.vacancy_approval_required ?? null, type: "boolean", editable: true, block: "policy" },
-    { key: "max_days_in_stage", label: "Máximo de dias que candidato pode ficar em uma etapa?", value: pr?.max_days_in_stage ?? null, type: "text", editable: false, block: "policy" },
     { key: "allowed_days", label: "Em quais dias da semana podemos agendar entrevistas?", value: sr?.allowed_days ?? null, type: "list", editable: true, block: "policy" },
     { key: "allowed_hours", label: "Em qual janela horária podemos agendar entrevistas?", value: hours ? `${hours.start || ""} - ${hours.end || ""}` : null, type: "time-range", editable: true, block: "policy" },
     { key: "default_duration_minutes", label: "Duração padrão das entrevistas (em minutos)?", value: sr?.default_duration_minutes ?? null, type: "number", editable: true, block: "policy" },
