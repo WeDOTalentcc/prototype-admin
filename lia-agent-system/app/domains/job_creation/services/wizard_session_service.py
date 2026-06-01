@@ -1053,9 +1053,17 @@ class WizardSessionService:
                 )
             # Perguntas WSI — surfacar para o WsiQuestionsPanel renderizar.
             if new_state.get("wsi_questions"):
-                data["wsi_questions"] = new_state.get("wsi_questions")
+                # B7 fix (2026-05-31): o painel FE (WsiQuestionsData) lê
+                # `questions` e `distribution` — NÃO `wsi_questions`/
+                # `question_distribution`. Key mismatch fazia o painel mostrar
+                # "0 perguntas" mesmo com a tool tendo gerado. Alinhado ao nó
+                # canônico wsi_questions_node (chave "questions").
+                data["questions"] = new_state.get("wsi_questions")
                 data["questions_approved"] = new_state.get("questions_approved")
-                data["question_distribution"] = new_state.get("question_distribution")
+                data["distribution"] = new_state.get("question_distribution")
+                data["wsi_questions_used_fallback"] = new_state.get(
+                    "wsi_questions_used_fallback", False
+                )
             if new_state.get("job_id"):
                 data["job_id"] = new_state.get("job_id")
                 data["share_link"] = new_state.get("share_link")
