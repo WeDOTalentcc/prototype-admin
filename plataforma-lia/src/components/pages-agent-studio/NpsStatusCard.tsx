@@ -47,7 +47,7 @@ export function NpsStatusCard({ jobId, jobs = [] }: NpsStatusCardProps) {
   // Sync if parent supplies jobId after initial render
   useEffect(() => {
     if (jobId && !selectedJobId) setSelectedJobId(jobId)
-  }, [jobId])
+  }, [jobId, selectedJobId])
 
   const loadSurveys = async (jid: string) => {
     setLoading(true)

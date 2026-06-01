@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { CheckCircle2, Clock, Send, Loader2, XCircle, ChevronDown } from "lucide-react"
+import { useTranslations } from "next-intl"
 
 interface Job {
   id: string
@@ -22,6 +23,7 @@ interface AlignmentState {
 }
 
 export function AlignmentStatusCard({ jobId, jobs = [] }: AlignmentStatusCardProps) {
+  const t = useTranslations("agents")
   const [selectedJobId, setSelectedJobId] = useState<string | null>(jobId)
   const [alignment, setAlignment] = useState<AlignmentState | null>(null)
   const [loading, setLoading] = useState(true)
@@ -34,7 +36,7 @@ export function AlignmentStatusCard({ jobId, jobs = [] }: AlignmentStatusCardPro
   // Sync if parent supplies jobId after initial render
   useEffect(() => {
     if (jobId && !selectedJobId) setSelectedJobId(jobId)
-  }, [jobId])
+  }, [jobId, selectedJobId])
 
   useEffect(() => {
     if (!selectedJobId) { setLoading(false); return }
@@ -204,7 +206,7 @@ export function AlignmentStatusCard({ jobId, jobs = [] }: AlignmentStatusCardPro
               type="text"
               value={name}
               onChange={e => setName(e.target.value)}
-              placeholder="Nome do gestor"
+              placeholder={t("studio.statusCards.managerNamePlaceholder")}
               className="w-full rounded-lg border border-lia-border-subtle px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-lia-border-medium/30 text-lia-text-primary placeholder:text-lia-text-tertiary"
             />
           </div>

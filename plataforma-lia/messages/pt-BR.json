@@ -2452,6 +2452,10 @@
       "yourAgents": "Seus agentes",
       "close": "Fechar",
       "createWithAI": "Criar com IA",
+      "statusCards": {
+        "managerNamePlaceholder": "Nome do gestor",
+        "newOffer": "Nova oferta"
+      },
       "services": {
         "advanced": "Avançado",
         "funnelHeader": "Serviços do Funil",

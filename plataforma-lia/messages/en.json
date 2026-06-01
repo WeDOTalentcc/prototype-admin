@@ -2452,6 +2452,10 @@
       "yourAgents": "Your agents",
       "close": "Close",
       "createWithAI": "Create with AI",
+      "statusCards": {
+        "managerNamePlaceholder": "Manager name",
+        "newOffer": "New offer"
+      },
       "services": {
         "advanced": "Advanced",
         "funnelHeader": "Service funnel",

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { CheckCircle2, Clock, Send, Loader2, XCircle, Plus, ChevronDown } from "lucide-react"
+import { useTranslations } from "next-intl"
 
 interface Job {
   id: string
@@ -41,6 +42,7 @@ const STATUS_ICON: Record<string, React.ReactNode> = {
 }
 
 export function OfferStatusCard({ jobId, jobs = [] }: OfferStatusCardProps) {
+  const t = useTranslations("agents")
   const [selectedJobId, setSelectedJobId] = useState<string | null>(jobId)
   const [offers, setOffers] = useState<Offer[]>([])
   const [loading, setLoading] = useState(true)
@@ -53,7 +55,7 @@ export function OfferStatusCard({ jobId, jobs = [] }: OfferStatusCardProps) {
   // Sync if parent supplies jobId after initial render
   useEffect(() => {
     if (jobId && !selectedJobId) setSelectedJobId(jobId)
-  }, [jobId])
+  }, [jobId, selectedJobId])
 
   const loadOffers = async (jid: string) => {
     setLoading(true)
@@ -163,7 +165,7 @@ export function OfferStatusCard({ jobId, jobs = [] }: OfferStatusCardProps) {
               className="flex items-center gap-2 text-sm font-medium text-white bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover rounded-lg px-4 py-2 transition-colors"
             >
               <Plus className="w-4 h-4" />
-              Nova oferta
+              {t("studio.statusCards.newOffer")}
             </button>
           </div>
         )}
@@ -216,14 +218,14 @@ export function OfferStatusCard({ jobId, jobs = [] }: OfferStatusCardProps) {
               onClick={() => setShowCreate(true)}
               className="text-xs text-lia-text-primary hover:underline"
             >
-              + Nova oferta
+              + {t("studio.statusCards.newOffer")}
             </button>
           </div>
         )}
 
         {showCreate && (
           <div className="rounded-xl border border-lia-border-subtle p-4 space-y-3 bg-lia-bg-elevated">
-            <p className="text-xs font-semibold text-lia-text-primary">Nova oferta</p>
+            <p className="text-xs font-semibold text-lia-text-primary">{t("studio.statusCards.newOffer")}</p>
             <div>
               <label className="block text-micro font-medium text-lia-text-secondary mb-1">ID do candidato *</label>
               <input
