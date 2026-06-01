@@ -32,11 +32,10 @@ import {
   CheckCircle2,
 } from "lucide-react"
 import { textStyles } from "@/lib/design-tokens"
-import { HubLoadingState } from "./_shared"
+import { HubLoadingState, ConfigurableFieldCard } from "./_shared"
 import { apiFetch } from "@/lib/api/api-fetch"
 import { notifyChatOfSettingsUpdate } from "@/lib/api/settings-notify"
 import useCompanyId from "@/hooks/company/useCompanyId"
-import { LiaFieldToggle } from "@/components/settings/LiaFieldToggle"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { AiPersonaPanel } from "@/components/settings/AiPersonaPanel"
 import { Sparkles } from "lucide-react"
@@ -383,33 +382,18 @@ export function LiaFieldsConfigPanel() {
               <h4 className={textStyles.h4}>{category}</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                 {fields.map((field) => (
-                  <div
+                  <ConfigurableFieldCard
                     key={field.key}
-                    className="flex items-center justify-between p-3 bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-subtle rounded-xl"
-                  >
-                    <div className="flex-1 min-w-0 mr-3">
-                      <div className="flex items-center gap-1.5">
-                      <p className="text-sm font-medium text-lia-text-primary truncate">{field.label}</p>
-                      <ToggleBadge type="prompt" />
-                    </div>
-                      <p className="text-xs text-lia-text-secondary truncate" title={field.location}>
-                        {field.location}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {savingFields.has(field.key) && (
-                        <Loader2 className="w-3 h-3 animate-spin text-lia-text-secondary" />
-                      )}
-                      <LiaFieldToggle
-                        fieldKey={field.key}
-                        isActive={config.lia_field_toggles[field.key] ?? false}
-                        currentInstruction={config.lia_instructions[field.key] || ""}
-                        onToggleChange={handleToggleChange}
-                        onInstructionSave={handleInstructionSave}
-                        compact
-                      />
-                    </div>
-                  </div>
+                    label={field.label}
+                    hint={field.location}
+                    showToggle
+                    isActive={config.lia_field_toggles[field.key] ?? false}
+                    onToggleChange={(active) => handleToggleChange(field.key, active)}
+                    instruction={config.lia_instructions[field.key] || ""}
+                    onInstructionSave={(text) => handleInstructionSave(field.key, text)}
+                    isSaving={savingFields.has(field.key)}
+                    placeholder="Instrução opcional para a LIA sobre este campo..."
+                  />
                 ))}
               </div>
             </section>

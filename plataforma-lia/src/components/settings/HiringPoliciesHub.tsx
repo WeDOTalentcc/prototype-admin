@@ -3,25 +3,22 @@
 /**
  * HiringPoliciesHub — Políticas de Recrutamento (estruturada + instruções LIA)
  *
- * P1 dedup (2026-06-01): superfície ESTRUTURADA canônica reusando o bloco
- * "policy" de useCompanySettingsCards + MinhaEmpresaCard (gates tipados).
- * P3b (2026-06-01): seção "Instruções para a LIA" — 11 conceitos narrativos de
- * política (texto livre) que orientam o prompt da LIA. Gravados em
- * CompanyHiringPolicy.policy_instructions (coluna separada dos 5 blocos de gate
- * — invariante de segurança: texto nunca toca slot tipado). Consumidos por
- * build_company_agent_context. Endpoint: PATCH /hiring-policy/instructions.
+ * P1 dedup: superfície ESTRUTURADA canônica (bloco "policy" via MinhaEmpresaCard).
+ * P3b: seção "Instruções para a LIA" — 11 conceitos narrativos (texto livre) em
+ *   CompanyHiringPolicy.policy_instructions (separado dos gates). Consumidos por
+ *   build_company_agent_context. Endpoint PATCH /hiring-policy/instructions.
+ * P3c: instruções renderizadas pelo card unificado ConfigurableFieldCard.
  */
 
 import React from "react"
-import { FileText, RefreshCw, Sparkles, CheckCircle2 } from "lucide-react"
+import { FileText, RefreshCw, Sparkles } from "lucide-react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { useCompanySettingsCards } from "@/hooks/settings/use-company-settings-cards"
 import { MinhaEmpresaCard } from "@/components/settings/MinhaEmpresaCard"
-import { HubHeader, HubLoadingState, HubErrorState } from "./_shared"
+import { HubHeader, HubLoadingState, HubErrorState, ConfigurableFieldCard } from "./_shared"
 import { SettingsEditModeToggle } from "@/components/settings/SettingsEditModeToggle"
 import { useSettingsEditMode } from "@/hooks/settings/useSettingsEditMode"
 import { SETTINGS_QUERY_KEYS, dispatchSettingsUpdate } from "@/hooks/settings/useSettingsBroadcast"
-import { Textarea } from "@/components/ui/textarea"
 
 // ── 11 conceitos narrativos de política (instruções para a LIA) ──────────────
 interface InstructionDef { key: string; label: string; hint: string; placeholder: string }
@@ -65,12 +62,10 @@ export function HiringPoliciesHub() {
     staleTime: 30_000,
   })
 
-  const [localInstr, setLocalInstr] = React.useState<Record<string, string>>({})
   const [savedInstr, setSavedInstr] = React.useState<Record<string, string>>({})
   const [savingInstr, setSavingInstr] = React.useState<Set<string>>(new Set())
 
   const policyBlock = React.useMemo(() => blocks.find((b) => b.key === "policy"), [blocks])
-
   const serverInstr = React.useMemo(
     () => (rawPolicy?.policy_instructions ?? {}) as Record<string, string>,
     [rawPolicy],
@@ -103,12 +98,10 @@ export function HiringPoliciesHub() {
     return () => window.removeEventListener("lia:settings-updated", handler)
   }, [refreshAll])
 
-  const handleInstrBlur = React.useCallback((key: string, value: string) => {
-    const prev = savedInstr[key] !== undefined ? savedInstr[key] : (serverInstr[key] ?? "")
-    if (value === prev) return
+  const saveInstruction = React.useCallback((key: string, value: string) => {
     setSavingInstr((p) => new Set(p).add(key))
     instrMutation.mutate({ key, value })
-  }, [savedInstr, serverInstr, instrMutation])
+  }, [instrMutation])
 
   // ─── EARLY RETURNS — APÓS TODOS OS HOOKS ───
   if (watchdogError) return <HubErrorState message={watchdogError} onRetry={refreshAll} />
@@ -157,7 +150,7 @@ export function HiringPoliciesHub() {
         />
       </div>
 
-      {/* P3b — Instruções narrativas para a LIA (texto livre, fora dos gates) */}
+      {/* P3b/P3c — Instruções narrativas para a LIA (texto livre, fora dos gates) */}
       <div className="rounded-lg border border-lia-border-subtle bg-lia-bg-secondary/40 dark:bg-lia-bg-elevated p-4 space-y-4">
         <div className="flex items-center gap-2">
           <Sparkles className="w-4 h-4 text-wedo-cyan" aria-hidden />
@@ -167,37 +160,21 @@ export function HiringPoliciesHub() {
           Orientações em texto livre que a LIA leva em conta no processo. Não são regras
           automáticas (gates) — são contexto que enriquece as decisões e a comunicação da IA.
         </p>
-        <div className="grid grid-cols-1 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {POLICY_INSTRUCTIONS.map((q) => {
-            const value = localInstr[q.key] !== undefined
-              ? localInstr[q.key]
-              : (savedInstr[q.key] !== undefined ? savedInstr[q.key] : (serverInstr[q.key] ?? ""))
-            const effectivePrev = savedInstr[q.key] !== undefined ? savedInstr[q.key] : (serverInstr[q.key] ?? "")
-            const isSaving = savingInstr.has(q.key)
-            const showSaved = !isSaving && value !== "" && value === effectivePrev
+            const value = savedInstr[q.key] !== undefined ? savedInstr[q.key] : (serverInstr[q.key] ?? "")
             return (
-              <div key={q.key} className="space-y-1.5" data-testid={`instruction-block-${q.key}`}>
-                <div className="flex items-start justify-between gap-2">
-                  <label htmlFor={`instr-${q.key}`} className="text-sm font-medium text-lia-text-primary leading-snug">{q.label}</label>
-                  {showSaved && (
-                    <span className="flex items-center gap-1 text-micro text-status-success shrink-0 mt-0.5" aria-label="Salvo">
-                      <CheckCircle2 className="w-3 h-3" />Salvo
-                    </span>
-                  )}
-                  {isSaving && <span className="text-micro text-lia-text-tertiary shrink-0 mt-0.5">Salvando...</span>}
-                </div>
-                <p className="text-xs text-lia-text-secondary leading-relaxed">{q.hint}</p>
-                <Textarea
-                  id={`instr-${q.key}`}
-                  value={value}
-                  disabled={!isEditing}
-                  onChange={(e) => setLocalInstr((p) => ({ ...p, [q.key]: e.target.value }))}
-                  onBlur={(e) => handleInstrBlur(q.key, e.target.value)}
-                  placeholder={q.placeholder}
-                  rows={3}
-                  className="resize-none text-sm bg-lia-bg-primary border-lia-border-subtle focus:border-lia-border-medium placeholder:text-lia-text-tertiary"
-                />
-              </div>
+              <ConfigurableFieldCard
+                key={q.key}
+                data-testid={`instruction-block-${q.key}`}
+                label={q.label}
+                hint={q.hint}
+                placeholder={q.placeholder}
+                instruction={value}
+                isReadOnly={!isEditing}
+                isSaving={savingInstr.has(q.key)}
+                onInstructionSave={(text) => saveInstruction(q.key, text)}
+              />
             )
           })}
         </div>
