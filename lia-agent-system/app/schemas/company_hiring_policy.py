@@ -3,7 +3,7 @@ Pydantic schemas for CompanyHiringPolicy API.
 """
 from typing import Any
 
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, ValidationError, create_model
 from app.shared.types import WeDoBaseModel
 
 
@@ -133,3 +133,112 @@ class PolicyChatResponse(BaseModel):
     block_completed: bool = False
     all_completed: bool = False
     session_id: str | None = None
+
+
+# ---------------------------------------------------------------------------
+# P0.a — Canonical anti-corruption boundary for hiring-policy block writes
+# ---------------------------------------------------------------------------
+# Audit 2026-06-01: the three write paths (PUT /, PATCH /, PATCH /block) merged
+# ``data: dict[str, Any]`` blindly into typed gate slots. The narrative Políticas
+# UI wrote free-text strings ("Sim"/"Não"/prose) into boolean/int gates; consumers
+# read raw values where the string "Não" is Python-truthy → automations turned ON
+# silently. This boundary is the SINGLE place that validates+coerces a partial
+# block payload before it ever touches the model. Fix at the producer, never the
+# consumer (CLAUDE.md canonical-fix).
+
+BLOCK_SCHEMAS: dict[str, type[BaseModel]] = {
+    "pipeline_rules": PipelineRulesSchema,
+    "scheduling_rules": SchedulingRulesSchema,
+    "communication_rules": CommunicationRulesSchema,
+    "screening_rules": ScreeningRulesSchema,
+    "automation_rules": AutomationRulesSchema,
+}
+
+_BOOL_TRUE_TOKENS = {
+    "sim", "true", "1", "yes", "on", "verdadeiro",
+    "habilitado", "habilitada", "ativo", "ativa", "ativado", "ativada",
+}
+_BOOL_FALSE_TOKENS = {
+    "não", "nao", "false", "0", "no", "off", "falso",
+    "desabilitado", "desabilitada", "inativo", "inativa", "desativado", "desativada",
+    "não definido", "nao definido", "",
+}
+
+
+class PolicyBlockValidationError(ValueError):
+    """Raised when a hiring-policy block payload has wrong-typed/unknown fields.
+
+    Endpoints convert this into HTTP 422 (fail loud, never silently coerce a
+    typed gate from free text)."""
+
+
+def _precoerce_bool(field: str, value: Any) -> bool:
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, (int, float)):
+        return bool(value)
+    if isinstance(value, str):
+        token = value.strip().lower()
+        if token in _BOOL_TRUE_TOKENS:
+            return True
+        if token in _BOOL_FALSE_TOKENS:
+            return False
+        raise PolicyBlockValidationError(
+            f"Campo '{field}' é um gate booleano (Sim/Não), recebeu texto livre {value!r}. "
+            f"→ Fix: enviar true/false (ou Sim/Não). Texto descritivo deve virar uma "
+            f"instrução da LIA (LiaFieldToggle.comment), nunca um gate de automação."
+        )
+    raise PolicyBlockValidationError(
+        f"Campo '{field}' é um gate booleano, recebeu {type(value).__name__}."
+    )
+
+
+def coerce_and_validate_block(block: str, data: dict[str, Any]) -> dict[str, Any]:
+    """Validate + coerce a PARTIAL block payload against its typed schema.
+
+    - Coerces PT-BR "Sim"/"Não" → bool on boolean gate slots.
+    - Lets Pydantic coerce numeric strings ("3" → 3) and enforce Field ranges.
+    - Rejects unknown keys (extra='forbid') so ghost fields never persist.
+    - Returns ONLY the provided keys (partial merge — no defaults injected).
+    - Structural/non-gate blocks (pipeline_templates) pass through untouched.
+    """
+    schema = BLOCK_SCHEMAS.get(block)
+    if schema is None:
+        return data
+    if not isinstance(data, dict):
+        raise PolicyBlockValidationError(
+            f"Bloco '{block}' espera um objeto, recebeu {type(data).__name__}."
+        )
+
+    model_fields = schema.model_fields
+    unknown = set(data) - set(model_fields)
+    if unknown:
+        raise PolicyBlockValidationError(
+            f"Campos desconhecidos no bloco '{block}': {sorted(unknown)}. "
+            f"→ Fix: usar apenas {sorted(model_fields)}."
+        )
+
+    precoerced: dict[str, Any] = {}
+    for key, value in data.items():
+        annotation = model_fields[key].annotation
+        if annotation is bool:
+            precoerced[key] = _precoerce_bool(key, value)
+        else:
+            precoerced[key] = value
+
+    partial_fields = {
+        key: (model_fields[key].annotation, model_fields[key]) for key in precoerced
+    }
+    PartialModel = create_model(
+        f"{schema.__name__}__Partial",
+        __config__=ConfigDict(extra="forbid"),
+        **partial_fields,
+    )
+    try:
+        validated = PartialModel(**precoerced)
+    except ValidationError as exc:
+        raise PolicyBlockValidationError(
+            f"Bloco '{block}' inválido: {exc.errors(include_url=False)}"
+        ) from exc
+
+    return {key: getattr(validated, key) for key in precoerced}

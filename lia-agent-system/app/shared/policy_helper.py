@@ -118,3 +118,67 @@ def get_policy_rule(policy: dict[str, Any], block: str, key: str, default=None):
     if isinstance(block_defaults, dict):
         return block_defaults.get(key, default)
     return default
+
+
+# ---------------------------------------------------------------------------
+# P0.b — Read-path defensive coercion (anti-corruption, defense in depth)
+# ---------------------------------------------------------------------------
+# Even after P0.a blocks new bad writes and P0.c sanitizes existing rows, gate
+# consumers must never trust raw JSON truthiness. The narrative UI corruption
+# stored the string "Não" in boolean gate slots; ``"Não"`` is Python-truthy, so
+# ``if rules.get("auto_screening"):`` silently turned automations ON. These
+# coercers make every gate read fail safe (coerce, fall back to default), never
+# crash. Pair with get_policy_rule() or apply directly on a block value.
+
+_COERCE_TRUE_TOKENS = {
+    "sim", "true", "1", "yes", "on", "verdadeiro",
+    "habilitado", "habilitada", "ativo", "ativa", "ativado", "ativada",
+}
+_COERCE_FALSE_TOKENS = {
+    "não", "nao", "false", "0", "no", "off", "falso",
+    "desabilitado", "desabilitada", "inativo", "inativa", "desativado", "desativada",
+    "não definido", "nao definido", "",
+}
+
+
+def coerce_bool(value: Any, default: bool = False) -> bool:
+    """Coerce a possibly-corrupted policy value to bool. Never raises.
+
+    "Não"/"não definido"/0 -> False; "Sim"/1/True -> True; unknown -> default.
+    """
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, (int, float)):
+        return bool(value)
+    if isinstance(value, str):
+        token = value.strip().lower()
+        if token in _COERCE_TRUE_TOKENS:
+            return True
+        if token in _COERCE_FALSE_TOKENS:
+            return False
+    return default
+
+
+def coerce_int(value: Any, default: int = 0) -> int:
+    """Coerce a possibly-corrupted policy value to int. Never raises."""
+    if isinstance(value, bool):
+        return default
+    if isinstance(value, int):
+        return value
+    if isinstance(value, float):
+        return int(value)
+    if isinstance(value, str):
+        s = value.strip()
+        if s.lstrip("-").isdigit():
+            return int(s)
+    return default
+
+
+def get_policy_bool(policy: dict[str, Any], block: str, key: str, default: bool = False) -> bool:
+    """Read a boolean gate from a policy dict with corruption-safe coercion."""
+    return coerce_bool(get_policy_rule(policy, block, key, default), default)
+
+
+def get_policy_int(policy: dict[str, Any], block: str, key: str, default: int = 0) -> int:
+    """Read an int field from a policy dict with corruption-safe coercion."""
+    return coerce_int(get_policy_rule(policy, block, key, default), default)

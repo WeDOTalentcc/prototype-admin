@@ -30,6 +30,8 @@ from app.models.company_hiring_policy import (
     SCREENING_RULES_DEFAULTS,
 )
 from app.schemas.company_hiring_policy import (
+    PolicyBlockValidationError,
+    coerce_and_validate_block,
     CompanyHiringPolicyBlockUpdate,
     CompanyHiringPolicyResponse,
     CompanyHiringPolicyUpdate,
@@ -87,6 +89,17 @@ def _blocks_completed(policy) -> dict[str, bool]:
     return result
 
 
+def _validate_block_or_422(block: str, data):
+    """P0.a boundary: coerce+validate a block payload, surfacing 422 on bad input.
+
+    Free text in a typed gate slot fails loud instead of corrupting the gate
+    (CLAUDE.md: falhar alto, nunca silenciosamente)."""
+    try:
+        return coerce_and_validate_block(block, data)
+    except PolicyBlockValidationError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
 @router.get("/{company_id}", response_model=CompanyHiringPolicyResponse)
 async def get_policy(company_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)], db: AsyncSession = Depends(get_db), _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
@@ -125,6 +138,9 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
     """Create or update full hiring policy for a company."""
     repo = HiringPolicyRepository(db)
     update_data = payload.model_dump(exclude_none=True)
+    for _block in VALID_BLOCKS:
+        if _block in update_data:
+            update_data[_block] = _validate_block_or_422(_block, update_data[_block])
     effective_user = user_id or payload.updated_by
 
     policy = await repo.upsert(company_id, update_data, VALID_BLOCKS, user_id=effective_user)
@@ -164,6 +180,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
     update_data = payload.model_dump(exclude_none=True)
     for key, value in update_data.items():
         if key in VALID_BLOCKS:
+            value = _validate_block_or_422(key, value)
             existing = getattr(policy, key) or {}
             if isinstance(existing, dict) and isinstance(value, dict):
                 # T-1169: NOVO dict — Column(JSON) puro não rastreia mutação in-place.
@@ -208,12 +225,13 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
     repo = HiringPolicyRepository(db)
     policy = await repo.create_if_missing(company_id, user_id)
 
+    clean_data = _validate_block_or_422(payload.block, payload.data)
     existing = getattr(policy, payload.block) or {}
-    if isinstance(existing, dict) and isinstance(payload.data, dict):
+    if isinstance(existing, dict) and isinstance(clean_data, dict):
         # T-1169: NOVO dict — Column(JSON) puro não rastreia mutação in-place.
-        setattr(policy, payload.block, {**existing, **payload.data})
+        setattr(policy, payload.block, {**existing, **clean_data})
     else:
-        setattr(policy, payload.block, payload.data)
+        setattr(policy, payload.block, clean_data)
 
     policy.updated_by = user_id or payload.updated_by
     policy.updated_at = datetime.utcnow()

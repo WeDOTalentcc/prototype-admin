@@ -254,8 +254,9 @@ async def run_batch(
         # Load salary filter policy
         policy = await get_policy_for_company(company_id, db)
         screening_rules = policy.get("screening_rules", {})
-        salary_filter_enabled: bool = screening_rules.get("salary_expectation_filter", False)
-        salary_tolerance: int = screening_rules.get("salary_tolerance_percent", 15)
+        from app.shared.policy_helper import coerce_bool, coerce_int
+        salary_filter_enabled: bool = coerce_bool(screening_rules.get("salary_expectation_filter", False))
+        salary_tolerance: int = coerce_int(screening_rules.get("salary_tolerance_percent", 15), 15)
         job_salary_range = await _get_job_salary_range(job_id, db) if salary_filter_enabled else None
 
         # Load CalibrationWeight for this tenant (item 12.3)

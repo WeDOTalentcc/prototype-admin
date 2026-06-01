@@ -296,12 +296,13 @@ class PipelineMonitor:
         events: list[PipelineEvent] = []
         try:
             communication_rules = policy.get("communication_rules", {})
-            auto_rejection = communication_rules.get("auto_rejection_feedback", True)
+            from app.shared.policy_helper import coerce_bool, coerce_int
+            auto_rejection = coerce_bool(communication_rules.get("auto_rejection_feedback", True), True)
 
             if auto_rejection:
                 return events
 
-            deadline_hours = communication_rules.get("rejection_feedback_deadline_hours", 48)
+            deadline_hours = coerce_int(communication_rules.get("rejection_feedback_deadline_hours", 48), 48)
             cutoff = datetime.utcnow() - timedelta(hours=deadline_hours)
 
             result = await db.execute(

@@ -656,7 +656,8 @@ async def handle_screening_completed_event(event: PlatformEvent) -> None:
             policy = policy_result.scalar_one_or_none()
 
             if policy and policy.automation_rules:
-                auto_advance = policy.automation_rules.get("auto_stage_advance", False)
+                from app.shared.policy_helper import coerce_bool
+                auto_advance = coerce_bool(policy.automation_rules.get("auto_stage_advance", False))
         except ImportError:
             logger.debug("[EventHandler] CompanyHiringPolicy model not available")
         except Exception as exc:
