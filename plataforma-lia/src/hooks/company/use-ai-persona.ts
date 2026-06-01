@@ -86,6 +86,39 @@ interface UseAiPersonaOptionsResult {
  * estado de erro e bloquear interação — nunca renderizar lista vazia
  * silenciosamente.
  */
+/**
+ * V3.4 (2026-06-01): retry curto em erros TRANSITÓRIOS de gateway (502/503/504)
+ * e falhas de rede. Resolve o "Tom de Voz não carrega" causado por janelas de
+ * reload do uvicorn (--reload) durante desenvolvimento ativo — o 504 transitório
+ * antes "grudava" no estado e exigia refresh manual. Fail-loud preservado: após
+ * `attempts` tentativas, propaga o erro (não mascara falha real). Só para GET.
+ */
+async function fetchWithRetry(
+  url: string,
+  init?: RequestInit,
+  attempts = 3,
+): Promise<Response> {
+  let lastErr: unknown
+  for (let i = 0; i < attempts; i++) {
+    try {
+      const res = await apiFetch(url, init)
+      if ((res.status === 502 || res.status === 503 || res.status === 504) && i < attempts - 1) {
+        await new Promise<void>((r) => setTimeout(r, 400 * (i + 1)))
+        continue
+      }
+      return res
+    } catch (err) {
+      lastErr = err
+      if (i < attempts - 1) {
+        await new Promise<void>((r) => setTimeout(r, 400 * (i + 1)))
+        continue
+      }
+      throw err
+    }
+  }
+  throw lastErr ?? new Error("fetch failed")
+}
+
 export function useAiPersonaOptions(): UseAiPersonaOptionsResult {
   const [options, setOptions] = useState<AiPersonaOptions | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -97,7 +130,7 @@ export function useAiPersonaOptions(): UseAiPersonaOptionsResult {
       setIsLoading(true)
       setError(null)
       try {
-        const res = await apiFetch(
+        const res = await fetchWithRetry(
           "/api/backend-proxy/company-ai-persona/options",
         )
         if (!res.ok) {
@@ -161,7 +194,7 @@ export function useAiPersona(): UseAiPersonaResult {
     setIsLoading(true)
     setError(null)
     try {
-      const res = await apiFetch("/api/backend-proxy/company-ai-persona")
+      const res = await fetchWithRetry("/api/backend-proxy/company-ai-persona")
       if (!res.ok) {
         if (res.status === 404 || res.status === 422) {
           setPersona(DEFAULT_PERSONA)
