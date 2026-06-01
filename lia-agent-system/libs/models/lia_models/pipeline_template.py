@@ -4,6 +4,7 @@ Pipeline Template models for reusable recruitment process stage templates.
 from datetime import datetime
 from typing import List, Optional, Dict, Any
 from sqlalchemy import Column, String, Integer, DateTime, Text, JSON, Boolean
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.dialects.postgresql import UUID
 import uuid
 
@@ -34,6 +35,10 @@ class PipelineTemplate(Base):
     seniority_hint = Column(JSON, nullable=True)
     job_family_hint = Column(JSON, nullable=True)
     is_archived = Column(Boolean, default=False, nullable=False, server_default="false")
+    # Fase A Opção 2 (2026-06-01): configuração de saturação opcional
+    # Capturada no 'Salvar como template' quando o recrutador inclui.
+    # Shape: {threshold_web, threshold_sourcing, unlock_increment, unlock_hours}
+    saturation_config = Column(JSONB, nullable=True, default=None)
     updated_by = Column(String(255), nullable=True)
     
     def __repr__(self):
