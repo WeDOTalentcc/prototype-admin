@@ -31,16 +31,18 @@ const AlertDialogContent = React.forwardRef<
   React.ElementRef<typeof AlertDialogPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Content>
 >(({ className, ...props }, ref) => (
-  <AlertDialogPortal>
-    <AlertDialogOverlay />
-    <AlertDialogPrimitive.Content
+  <AlertDialogPortal container={typeof document !== 'undefined' ? document.body : undefined}>
+    <div className="fixed inset-0 z-backdrop flex items-center justify-center pointer-events-none">
+      <AlertDialogOverlay className="pointer-events-auto" />
+      <AlertDialogPrimitive.Content
       ref={ref}
       className={cn(
- "fixed left-1/2 top-1/2 z-50 grid w-full max-w-lg -translate-x-1/2 -translate-y-1/2 gap-4 border bg-lia-bg-primary p-6 duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 sm:rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle",
+ "relative z-modal grid w-full max-w-lg gap-4 border bg-lia-bg-primary p-6 duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 sm:rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle pointer-events-auto",
         className
       )}
       {...props}
-    />
+      />
+    </div>
   </AlertDialogPortal>
 ))
 AlertDialogContent.displayName = AlertDialogPrimitive.Content.displayName
