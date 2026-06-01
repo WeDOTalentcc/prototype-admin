@@ -331,6 +331,7 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(recruitment_stages.router, prefix="/api/v1/recruitment-stages", tags=["recruitment-stages"])
     app.include_router(recruitment_stages.screening_questions_router, prefix="/api/v1", tags=["screening-questions"])
     app.include_router(pipeline_templates.router, prefix="/api/v1", tags=["pipeline-templates"])
+    app.include_router(pipeline_templates.vacancy_apply_router, prefix="/api/v1", tags=["pipeline-templates", "vacancies"])
     app.include_router(pipeline_policy_router, prefix="/api/v1")
     app.include_router(pipeline_orchestrator_router, prefix="/api/v1")
     app.include_router(pipeline_velocity.router, prefix="/api/v1", tags=["pipeline-velocity"])
