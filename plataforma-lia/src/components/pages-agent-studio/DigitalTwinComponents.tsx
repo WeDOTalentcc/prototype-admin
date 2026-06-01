@@ -461,6 +461,10 @@ export function EvaluateWithTwinModal({
 
   useEffect(() => {
     if (isOpen && twinId) runEvaluation()
+    // Dispara só ao abrir/trocar de twin. candidateProfile/jobContext chegam como
+    // {} inline do parent (ref nova a cada render) — incluí-los retriggaria o
+    // POST /evaluate a cada render. Por isso a dep list é intencionalmente parcial.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, twinId])
 
   const runEvaluation = async () => {
