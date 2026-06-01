@@ -347,6 +347,8 @@ def _handle_suggest_salary(
         )
 
     updates = {k: result.get(k) for k in _SALARY_RESULT_KEYS if result.get(k) is not None}
+    # Marca que a sugestão salarial foi emitida (salário tratado no fluxo).
+    updates["intake_salary_suggested"] = True
     smin = updates.get("salary_min")
     smax = updates.get("salary_max")
     currency = updates.get("salary_currency", "BRL")
@@ -357,6 +359,8 @@ def _handle_suggest_salary(
                 "faixa salarial ao recrutador e registre com set_salary "
                 "(ou confirme prosseguir sem faixa)."
             ),
+            # Sugestão foi emitida (mesmo sem dados) — salário foi tratado.
+            state_updates={"intake_salary_suggested": True},
         )
     # Fonte/confiança do benchmark — transparência para o recrutador (ele
     # perguntou 'qual a fonte?'). O benchmark combina dados internos da
@@ -569,6 +573,31 @@ def _wsi_generate_core(
             llm_message=(
                 "Preciso da descrição gerada (enrich_job_description) antes de "
                 "criar as perguntas de triagem."
+            ),
+            error=True,
+        )
+
+    # Gate computacional (sensor) — salário é etapa esperada do fluxo e NÃO
+    # pode ser pulada silenciosamente antes da triagem. Backstop determinístico
+    # do guia de prompt (que sozinho não era confiável — commit B2 709a4e5ff).
+    # "Tratado" = valores informados, faixa confirmada, sugestão emitida, ou
+    # skip explícito do recrutador (set_salary decline_to_disclose=true).
+    _salary_addressed = bool(
+        state.get("salary_confirmed")
+        or state.get("salary_skipped")
+        or state.get("intake_salary_suggested")
+        or state.get("salary_min") is not None
+        or state.get("salary_max") is not None
+    )
+    if not _salary_addressed:
+        return ToolResult(
+            llm_message=(
+                "Antes de gerar as perguntas de triagem, TRATE O SALÁRIO "
+                "(etapa esperada do fluxo): ofereça a faixa de mercado com "
+                "suggest_salary (informe a fonte). Se o recrutador informar "
+                "valores, registre com set_salary; se ele optar por seguir SEM "
+                "divulgar a faixa, registre com "
+                "set_salary(decline_to_disclose=true). Só depois gere a triagem."
             ),
             error=True,
         )

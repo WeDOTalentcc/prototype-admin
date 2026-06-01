@@ -291,6 +291,13 @@ company_id: str = Depends(require_company_id)):
     if _c3b_pre.fairness_blocked:
         raise HTTPException(status_code=422, detail=_c3b_pre.block_reason or "Solicitação bloqueada por critérios de equidade.")
 
+    # Paridade de transporte (WS/SSE): passa o texto CRU (pré-masking) ao
+    # wizard p/ captura determinística do email do gestor no servidor. NUNCA
+    # vai ao LLM (que vê clean_message); o wizard extrai via regex no state.
+    # Sem isto, o path REST (este endpoint) recebia [EMAIL REMOVIDO] e a
+    # captura falhava silenciosamente (painel "Email do gestor" vazio).
+    page_context["_raw_user_message"] = _c3b_pre.original_message
+
     orch_result = await _get_chat_adapter().process_message(
         user_message=_c3b_pre.clean_message,
         user_id=user_id,

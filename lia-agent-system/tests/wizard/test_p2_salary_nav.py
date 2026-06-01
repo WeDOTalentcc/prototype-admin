@@ -63,3 +63,19 @@ def test_derive_stage_intake_default():
 def test_registry_has_new_tools():
     reg = build_tool_registry()
     assert "set_salary" in reg and "navigate_to_jobs" in reg
+
+
+@pytest.mark.medium
+def test_set_salary_decline_to_disclose_sets_skip_flag():
+    """Recrutador opta por seguir sem divulgar → registra salary_skipped, sem min/max."""
+    r = _handle_set_salary({}, {"decline_to_disclose": True}, CTX)
+    assert not r.error
+    assert r.state_updates.get("salary_skipped") is True
+    assert "salary_min" not in r.state_updates
+
+
+@pytest.mark.medium
+def test_set_salary_decline_bypasses_min_max_requirement():
+    """decline_to_disclose dispensa min/max (não exige a faixa)."""
+    r = _handle_set_salary({}, {"decline_to_disclose": True}, CTX)
+    assert not r.error  # sem 'Forneça ao menos salary_min ou salary_max'

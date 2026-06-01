@@ -195,6 +195,10 @@ class JobCreationState(TypedDict, total=False):
     # Fase 5 — recrutador confirmou a faixa via right_panel_form (salary_node).
     # Declarado p/ sobreviver ao merge do LangGraph (mesmo motivo de company_id).
     salary_confirmed: Optional[bool]
+    # Recrutador optou explicitamente por seguir SEM divulgar faixa
+    # (set_salary decline_to_disclose=true). Conta como 'salário tratado'
+    # no gate de geração de triagem — não é pulo silencioso.
+    salary_skipped: Optional[bool]
 
     # --- F4+F5: Competency + Distribution ---
     seniority_resolved: Optional[str]  # from seniority_resolver

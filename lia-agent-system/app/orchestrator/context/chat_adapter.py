@@ -89,6 +89,14 @@ class ChatAdapter:
         # a known CanonicalPage value.
         from app.shared.canonical_pages import normalize_page
 
+        # Passthrough de chaves internas (prefixo _raw_*) para ctx.extra —
+        # main_orchestrator faz dict(ctx.extra) ao montar o wiz_context, então
+        # _raw_user_message chega ao wizard (captura determinística do email
+        # do gestor). Paridade com o caminho WS/SSE.
+        _extra_passthrough: dict[str, Any] = {}
+        if pc.get("_raw_user_message"):
+            _extra_passthrough["_raw_user_message"] = pc["_raw_user_message"]
+
         ctx = ContextAdapter.from_rest(
             message=user_message,
             user_id=user_id,
@@ -99,6 +107,7 @@ class ChatAdapter:
             entity_type=entity_type,
             selected_candidate_ids=pc.get("candidate_ids"),
             job_context=pc.get("job_context"),
+            **_extra_passthrough,
         )
 
         # Passo 2: ChatRepository remains memory owner until M2

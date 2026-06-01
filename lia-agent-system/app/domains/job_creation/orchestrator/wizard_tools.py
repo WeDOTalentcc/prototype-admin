@@ -463,6 +463,18 @@ def _handle_set_salary(
     if tenant_err:
         return ToolResult(llm_message=tenant_err, error=True)
 
+    # Skip explícito: recrutador optou por seguir SEM divulgar a faixa.
+    # Registra o skip (conta como salário tratado no gate de triagem) sem
+    # exigir min/max.
+    if tool_input.get("decline_to_disclose"):
+        return ToolResult(
+            llm_message=(
+                "Registrado: a vaga seguirá sem divulgar a faixa salarial. "
+                "Podemos avançar para as competências/triagem."
+            ),
+            state_updates={"salary_skipped": True},
+        )
+
     smin = tool_input.get("salary_min")
     smax = tool_input.get("salary_max")
     currency = (tool_input.get("currency") or "BRL").strip().upper()[:8] or "BRL"
@@ -701,6 +713,7 @@ SET_SALARY = WizardTool(
             "salary_min": {"type": "number", "description": "Mínimo em reais (ex.: 12000)."},
             "salary_max": {"type": "number", "description": "Máximo em reais (ex.: 18000)."},
             "currency": {"type": "string", "description": "Moeda (default BRL)."},
+            "decline_to_disclose": {"type": "boolean", "description": "true quando o recrutador opta por seguir SEM divulgar a faixa salarial (registra o skip; dispensa min/max)."},
         },
         "additionalProperties": False,
     },
