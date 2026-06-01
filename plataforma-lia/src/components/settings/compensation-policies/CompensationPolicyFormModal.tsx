@@ -6,15 +6,12 @@ import { X, Plus, Trash2, Info, Lock, ChevronDown, ChevronUp } from "lucide-reac
 import type {
   CompensationPolicyRecord,
   SalaryBand,
-  VariableCompItem,
 } from "./compensation-policies-types"
 import { ChipMultiSelect } from "@/components/settings/_shared"
 import {
   defaultPolicy,
   POLICY_TYPE_OPTIONS,
   SENIORITY_LEVEL_OPTIONS,
-  VARIABLE_KIND_OPTIONS,
-  FREQUENCY_OPTIONS,
   SALARY_LEVEL_ROWS,
 } from "./compensation-policies-types"
 
@@ -22,11 +19,10 @@ import {
 // Sub-tabs
 // ---------------------------------------------------------------------------
 
-type Tab = "bands" | "variable" | "equity" | "eligibility" | "validity"
+type Tab = "bands" | "equity" | "eligibility" | "validity"
 
 const TABS: { id: Tab; label: string }[] = [
   { id: "bands",       label: "Bandas Salariais" },
-  { id: "variable",    label: "Verbas Variáveis" },
   { id: "equity",      label: "Equity" },
   { id: "eligibility", label: "Elegibilidade" },
   { id: "validity",    label: "Vigência & Aprovação" },
@@ -61,6 +57,12 @@ function SalaryBandsTab({
       <p className="text-sm text-lia-text-secondary">
         Defina faixas salariais (Min / Mid / Max) por nível de senioridade. O valor Mid é referência de mercado.
       </p>
+      <div className="flex items-start gap-2 rounded-md border border-lia-border-subtle bg-lia-bg-tertiary/40 p-2.5 text-xs text-lia-text-secondary">
+        <Info className="h-3.5 w-3.5 mt-0.5 shrink-0 text-lia-text-tertiary" />
+        <span>
+          A fonte única das faixas salariais agora é <strong className="text-lia-text-primary">Configurações → Minha Empresa → Faixas Salariais por Nível</strong>, reutilizada pelas verbas (%) e vagas. Editar aqui afeta apenas esta política.
+        </span>
+      </div>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
@@ -119,179 +121,6 @@ function SalaryBandsTab({
       >
         <Plus className="h-4 w-4" /> Adicionar nível
       </button>
-    </div>
-  )
-}
-
-// ---------------------------------------------------------------------------
-// VariableCompTab
-// ---------------------------------------------------------------------------
-
-function VariableCompTab({
-  items,
-  onChange,
-}: {
-  items: VariableCompItem[]
-  onChange: (items: VariableCompItem[]) => void
-}) {
-  const [expandedIdx, setExpandedIdx] = useState<number | null>(null)
-
-  const addItem = (kind: VariableCompItem["kind"]) => {
-    const newItem: VariableCompItem = { kind, name: VARIABLE_KIND_OPTIONS.find(k => k.id === kind)?.label ?? kind }
-    const next = [...items, newItem]
-    onChange(next)
-    setExpandedIdx(next.length - 1)
-  }
-
-  const removeItem = (idx: number) => {
-    onChange(items.filter((_, i) => i !== idx))
-    setExpandedIdx(null)
-  }
-
-  const updateItem = (idx: number, patch: Partial<VariableCompItem>) => {
-    const next = [...items]
-    next[idx] = { ...next[idx], ...patch }
-    onChange(next)
-  }
-
-  return (
-    <div className="space-y-4">
-      <div className="rounded-md border border-status-warning/30 bg-status-warning/5 p-3 text-xs text-lia-text-secondary">
-        <strong className="text-lia-text-primary">Em transição:</strong> as verbas variáveis agora têm um catálogo próprio em
-        <span className="font-medium"> Configurações → Dados da Empresa → Verbas Variáveis</span> — granular por nível, área,
-        contrato e CNPJ, e reutilizável nas vagas. Prefira cadastrar por lá; esta aba será descontinuada.
-      </div>
-      <p className="text-sm text-lia-text-secondary">
-        Adicione verbas variáveis tipadas. Cada verba tem seu próprio schema de cálculo e frequência.
-      </p>
-
-      {/* Add buttons */}
-      <div className="flex flex-wrap gap-2">
-        {VARIABLE_KIND_OPTIONS.map((kind) => (
-          <button
-            key={kind.id}
-            type="button"
-            onClick={() => addItem(kind.id as VariableCompItem["kind"])}
-            className="flex items-center gap-1.5 rounded-full border border-lia-border-default px-3 py-1 text-xs text-lia-text-secondary hover:border-wedo-cyan hover:text-wedo-cyan"
-          >
-            <Plus className="h-3 w-3" /> {kind.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Item list */}
-      <div className="space-y-2">
-        {items.map((item, idx) => {
-          const isOpen = expandedIdx === idx
-          const kindMeta = VARIABLE_KIND_OPTIONS.find((k) => k.id === item.kind)
-          return (
-            <div key={idx} className="rounded-lg border border-lia-border-default overflow-hidden">
-              {/* Row header */}
-              <div
-                className="flex items-center gap-2 px-3 py-2 cursor-pointer bg-lia-bg-elevated hover:bg-lia-bg-tertiary/10"
-                onClick={() => setExpandedIdx(isOpen ? null : idx)}
-                role="button"
-                tabIndex={0}
-                aria-expanded={isOpen}
-                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setExpandedIdx(isOpen ? null : idx) } }}
-              >
-                <span className="rounded-full bg-wedo-cyan/10 px-2 py-0.5 text-micro text-wedo-cyan font-medium">
-                  {kindMeta?.label ?? item.kind}
-                </span>
-                <span className="flex-1 text-sm font-medium text-lia-text-primary">{item.name || "(sem nome)"}</span>
-                {item.frequency && (
-                  <span className="text-xs text-lia-text-secondary">
-                    {FREQUENCY_OPTIONS.find(f => f.id === item.frequency)?.label}
-                  </span>
-                )}
-                {item.max_pct !== undefined && (
-                  <span className="text-xs text-lia-text-secondary">até {item.max_pct}%</span>
-                )}
-                <button
-                  type="button"
-                  onClick={(e) => { e.stopPropagation(); removeItem(idx) }}
-                  className="ml-1 rounded p-1 text-lia-text-secondary hover:text-red-500"
-                >
-                  <Trash2 className="h-3 w-3" />
-                </button>
-                {isOpen ? <ChevronUp className="h-4 w-4 text-lia-text-secondary" /> : <ChevronDown className="h-4 w-4 text-lia-text-secondary" />}
-              </div>
-
-              {/* Expanded form */}
-              {isOpen && (
-                <div className="border-t border-lia-border-default bg-lia-bg-primary/40 p-3 grid grid-cols-2 gap-3">
-                  <div className="col-span-2">
-                    <label className="text-xs text-lia-text-secondary">Nome da verba</label>
-                    <input
-                      className="mt-0.5 w-full rounded border border-lia-border-default bg-lia-bg-elevated px-2 py-1.5 text-sm focus:border-wedo-cyan focus:outline-none"
-                      value={item.name}
-                      onChange={(e) => updateItem(idx, { name: e.target.value })}
-                      placeholder="Ex: PLR Anual 2026"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs text-lia-text-secondary">Base de cálculo</label>
-                    <select
-                      className="mt-0.5 w-full rounded border border-lia-border-default bg-lia-bg-elevated px-2 py-1.5 text-sm focus:border-wedo-cyan focus:outline-none"
-                      value={item.base ?? ""}
-                      onChange={(e) => updateItem(idx, { base: e.target.value })}
-                    >
-                      <option value="">Selecionar</option>
-                      <option value="salary_anual">% do salário anual</option>
-                      <option value="salary_mensal">% do salário mensal</option>
-                      <option value="revenue">% da receita</option>
-                      <option value="result">Resultado financeiro (PPR)</option>
-                      <option value="custom">Custom</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-xs text-lia-text-secondary">Frequência</label>
-                    <select
-                      className="mt-0.5 w-full rounded border border-lia-border-default bg-lia-bg-elevated px-2 py-1.5 text-sm focus:border-wedo-cyan focus:outline-none"
-                      value={item.frequency ?? ""}
-                      onChange={(e) => updateItem(idx, { frequency: e.target.value })}
-                    >
-                      <option value="">Selecionar</option>
-                      {FREQUENCY_OPTIONS.map((f) => (
-                        <option key={f.id} value={f.id}>{f.label}</option>
-                      ))}
-                    </select>
-                  </div>
-                  {item.kind !== "commission" && (
-                    <>
-                      <div>
-                        <label className="text-xs text-lia-text-secondary">% Mínimo</label>
-                        <input
-                          type="number" min={0} max={100}
-                          className="mt-0.5 w-full rounded border border-lia-border-default bg-lia-bg-elevated px-2 py-1.5 text-sm focus:border-wedo-cyan focus:outline-none"
-                          value={item.min_pct ?? ""}
-                          onChange={(e) => updateItem(idx, { min_pct: Number(e.target.value) })}
-                          placeholder="0"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-xs text-lia-text-secondary">% Máximo / Alvo</label>
-                        <input
-                          type="number" min={0} max={500}
-                          className="mt-0.5 w-full rounded border border-lia-border-default bg-lia-bg-elevated px-2 py-1.5 text-sm focus:border-wedo-cyan focus:outline-none"
-                          value={item.max_pct ?? item.value_pct ?? ""}
-                          onChange={(e) => updateItem(idx, { max_pct: Number(e.target.value), value_pct: Number(e.target.value) })}
-                          placeholder="15"
-                        />
-                      </div>
-                    </>
-                  )}
-                </div>
-              )}
-            </div>
-          )
-        })}
-        {items.length === 0 && (
-          <p className="text-center text-sm text-lia-text-secondary py-4">
-            Nenhuma verba variável adicionada. Clique em um tipo acima para começar.
-          </p>
-        )}
-      </div>
     </div>
   )
 }
@@ -618,12 +447,6 @@ export function CompensationPolicyFormModal({
             <SalaryBandsTab
               bands={form.salary_bands}
               onChange={(bands) => patch({ salary_bands: bands })}
-            />
-          )}
-          {activeTab === "variable" && (
-            <VariableCompTab
-              items={form.variable_compensation.items}
-              onChange={(items) => patch({ variable_compensation: { ...form.variable_compensation, items } })}
             />
           )}
           {activeTab === "equity" && (
