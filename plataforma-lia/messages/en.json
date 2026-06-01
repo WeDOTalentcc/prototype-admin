@@ -2455,6 +2455,12 @@
       "services": {
         "advanced": "Advanced",
         "funnelHeader": "Service funnel",
+        "phase": {
+          "opening": "Opening",
+          "attraction": "Attraction",
+          "decision": "Decision",
+          "post": "Post-hire"
+        },
         "ctaActivate": "Activate",
         "ctaOpenJobs": "Open jobs",
         "ctaCreateAgent": "Create agent",
@@ -5589,7 +5595,18 @@
           "jobFamilyHint": "Job family",
           "jobFamilyHintPlaceholder": "e.g. Technology",
           "seniorityHint": "Seniority",
-          "seniorityHintPlaceholder": "e.g. Senior"
+          "seniorityHintPlaceholder": "e.g. Senior",
+          "stageName": "Stage name",
+          "stageNamePlaceholder": "e.g. Technical interview",
+          "stageType": "Type",
+          "slaDays": "SLA (days)",
+          "stageInstructions": "Instructions",
+          "stageInstructionsPlaceholder": "Instructions for this stage (optional)"
+        },
+        "stageType": {
+          "automatic": "Automatic",
+          "manual": "Manual",
+          "hybrid": "Hybrid"
         },
         "hints": {
           "stagesCount_one": "{count} stage",

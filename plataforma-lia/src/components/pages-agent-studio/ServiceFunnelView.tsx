@@ -33,11 +33,20 @@ interface ServiceFunnelViewProps {
   services: FunnelServiceData[]
   defaultExpanded?: ServiceSlug | null
   onActivate?: (slug: ServiceSlug) => void
-  onCustomAgents?: () => void
-  onMarketplace?: () => void
   /** Open marketplace pre-filtered by funnel stage */
   onMarketplaceForSlug?: (slug: ServiceSlug) => void
 }
+
+// ── Funnel phases ────────────────────────────────────────────────────────────
+// Agrupa as 7 etapas em 4 fases do funil de recrutamento → dá estrutura visual
+// em vez de uma lista plana de 7 linhas iguais.
+const PHASE_GROUPS: { key: string; slugs: ServiceSlug[] }[] = [
+  { key: "opening", slugs: ["intake", "alignment"] },
+  { key: "attraction", slugs: ["sourcing", "screening"] },
+  { key: "decision", slugs: ["calibration", "offer"] },
+  { key: "post", slugs: ["nps"] },
+]
+const ORDERED_SLUGS: ServiceSlug[] = PHASE_GROUPS.flatMap(g => g.slugs)
 
 // ── Status dot ─────────────────────────────────────────────────────────────
 // White-label canonical (commit 7b350ed2a): cyan é exclusiva da LIA quando ELA
@@ -93,7 +102,7 @@ const STATUS_TEXT_COLOR: Record<ServiceStatus, string> = {
 
 interface ServiceRowProps {
   data: FunnelServiceData
-  index: number
+  stepNumber: number
   isLast: boolean
   isExpanded: boolean
   onToggle: () => void
@@ -101,7 +110,7 @@ interface ServiceRowProps {
   onMarketplaceForSlug?: () => void
 }
 
-function ServiceRow({ data, index, isLast, isExpanded, onToggle, onActivate, onMarketplaceForSlug }: ServiceRowProps) {
+function ServiceRow({ data, stepNumber, isLast, isExpanded, onToggle, onActivate, onMarketplaceForSlug }: ServiceRowProps) {
   const t = useTranslations("agents")
   const isInactive = data.status === "inactive"
   const hasPanel = Boolean(data.panel)
@@ -143,7 +152,7 @@ function ServiceRow({ data, index, isLast, isExpanded, onToggle, onActivate, onM
               : "bg-lia-bg-tertiary text-lia-text-primary",
           )}
         >
-          {index + 1}
+          {stepNumber}
         </span>
 
         {/* Status dot */}
@@ -186,7 +195,8 @@ function ServiceRow({ data, index, isLast, isExpanded, onToggle, onActivate, onM
             </button>
           )}
           {isInactive ? (
-            <span className="flex items-center gap-1 text-xs font-medium text-lia-text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+            // CTA sempre visível (não escondido em opacity-0) — discoverabilidade.
+            <span className="flex items-center gap-1 text-xs font-medium text-lia-text-tertiary group-hover:text-lia-text-primary transition-colors">
               <Plus className="w-3 h-3" />
               {t(data.ctaKey ?? "studio.services.ctaActivate")}
             </span>
@@ -210,45 +220,12 @@ function ServiceRow({ data, index, isLast, isExpanded, onToggle, onActivate, onM
   )
 }
 
-// ── Advanced tools footer ──────────────────────────────────────────────────
-
-interface AdvancedToolsFooterProps {
-  onCustomAgents: () => void
-  onMarketplace: () => void
-}
-
-function AdvancedToolsFooter({ onCustomAgents, onMarketplace }: AdvancedToolsFooterProps) {
-  const t = useTranslations("agents")
-  return (
-    <div className="flex items-center gap-4 px-4 py-3 border-t border-lia-border-subtle bg-lia-bg-secondary">
-      <span className="text-micro font-semibold uppercase tracking-widest text-lia-text-tertiary mr-1">
-        {t("studio.services.advanced")}
-      </span>
-      <button
-        onClick={onCustomAgents}
-        className="text-xs text-lia-text-secondary hover:text-lia-text-primary transition-colors font-medium"
-      >
-        {t("studio.tabs.customAgents")}
-      </button>
-      <span className="text-lia-border-default">·</span>
-      <button
-        onClick={onMarketplace}
-        className="text-xs text-lia-text-secondary hover:text-lia-text-primary transition-colors font-medium"
-      >
-        {t("studio.tabs.marketplace")}
-      </button>
-    </div>
-  )
-}
-
 // ── Main view ──────────────────────────────────────────────────────────────
 
 export function ServiceFunnelView({
   services,
   defaultExpanded = null,
   onActivate,
-  onCustomAgents,
-  onMarketplace,
   onMarketplaceForSlug,
 }: ServiceFunnelViewProps) {
   const t = useTranslations("agents")
@@ -262,10 +239,9 @@ export function ServiceFunnelView({
     setExpanded(prev => (prev === slug ? null : slug))
   }
 
-  // Split into funnel services vs advanced (custom, marketplace are passed separately)
-  const funnelServices = services.filter(
-    s => !["custom", "marketplace"].includes(s.slug)
-  )
+  const bySlug = new Map(services.map(s => [s.slug, s]))
+  // Last existing slug overall — used to suppress the trailing row border.
+  const lastSlug = [...ORDERED_SLUGS].reverse().find(s => bySlug.has(s))
 
   return (
     <div className="rounded-xl border border-lia-border-subtle bg-lia-bg-elevated overflow-hidden">
@@ -276,27 +252,34 @@ export function ServiceFunnelView({
         </span>
       </div>
 
-      {/* Service rows */}
-      {funnelServices.map((svc, i) => (
-        <ServiceRow
-          key={svc.slug}
-          data={svc}
-          index={i}
-          isLast={i === funnelServices.length - 1 && !onCustomAgents && !onMarketplace}
-          isExpanded={expanded === svc.slug}
-          onToggle={() => handleToggle(svc.slug)}
-          onActivate={() => onActivate?.(svc.slug)}
-          onMarketplaceForSlug={onMarketplaceForSlug ? () => onMarketplaceForSlug(svc.slug) : undefined}
-        />
-      ))}
-
-      {/* Advanced tools footer — only rendered when callbacks are provided */}
-      {(onCustomAgents || onMarketplace) && (
-        <AdvancedToolsFooter
-          onCustomAgents={onCustomAgents ?? (() => {})}
-          onMarketplace={onMarketplace ?? (() => {})}
-        />
-      )}
+      {/* Phase groups */}
+      {PHASE_GROUPS.map(group => {
+        const groupServices = group.slugs
+          .map(slug => bySlug.get(slug))
+          .filter((s): s is FunnelServiceData => Boolean(s))
+        if (groupServices.length === 0) return null
+        return (
+          <div key={group.key}>
+            <div className="px-4 pt-3 pb-1 bg-lia-bg-elevated">
+              <span className="text-micro font-semibold uppercase tracking-wider text-lia-text-tertiary">
+                {t(`studio.services.phase.${group.key}`)}
+              </span>
+            </div>
+            {groupServices.map(svc => (
+              <ServiceRow
+                key={svc.slug}
+                data={svc}
+                stepNumber={ORDERED_SLUGS.indexOf(svc.slug) + 1}
+                isLast={svc.slug === lastSlug}
+                isExpanded={expanded === svc.slug}
+                onToggle={() => handleToggle(svc.slug)}
+                onActivate={() => onActivate?.(svc.slug)}
+                onMarketplaceForSlug={onMarketplaceForSlug ? () => onMarketplaceForSlug(svc.slug) : undefined}
+              />
+            ))}
+          </div>
+        )
+      })}
     </div>
   )
 }
@@ -314,9 +297,9 @@ export function StudioOnboarding({ openJobCount, onActivateSourcing, onDismiss }
   const [step, setStep] = useState(1)
 
   return (
-    <div className="rounded-xl border border-lia-border-subtle bg-lia-bg-secondary p-5 mb-4">
+    <div className="rounded-xl border border-lia-border-subtle bg-lia-bg-secondary px-4 py-3 mb-4">
       {/* Step indicator */}
-      <div className="flex items-center gap-2 mb-3">
+      <div className="flex items-center gap-2 mb-2">
         {[1, 2, 3].map(n => (
           <div key={n} className={cn(
             "h-1 rounded-full transition-all",

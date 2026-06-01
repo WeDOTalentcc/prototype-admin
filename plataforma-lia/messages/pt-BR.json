@@ -2455,6 +2455,12 @@
       "services": {
         "advanced": "Avançado",
         "funnelHeader": "Serviços do Funil",
+        "phase": {
+          "opening": "Abertura",
+          "attraction": "Atração",
+          "decision": "Decisão",
+          "post": "Pós-contratação"
+        },
         "ctaActivate": "Ativar",
         "ctaOpenJobs": "Abrir vagas",
         "ctaCreateAgent": "Criar agente",
@@ -5589,7 +5595,18 @@
           "jobFamilyHint": "Família de cargo",
           "jobFamilyHintPlaceholder": "Ex: Tecnologia",
           "seniorityHint": "Senioridade",
-          "seniorityHintPlaceholder": "Ex: Sênior"
+          "seniorityHintPlaceholder": "Ex: Sênior",
+          "stageName": "Nome da etapa",
+          "stageNamePlaceholder": "Ex: Entrevista técnica",
+          "stageType": "Tipo",
+          "slaDays": "SLA (dias)",
+          "stageInstructions": "Instruções",
+          "stageInstructionsPlaceholder": "Instruções para esta etapa (opcional)"
+        },
+        "stageType": {
+          "automatic": "Automática",
+          "manual": "Manual",
+          "hybrid": "Híbrida"
         },
         "hints": {
           "stagesCount_one": "{count} etapa",
