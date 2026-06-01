@@ -132,6 +132,7 @@ def _build_enrichment_prompt(
     confirmed_technical: list | None = None,
     confirmed_behavioral: list | None = None,
     confirmed_responsibilities: list | None = None,
+    company_context: str = "",
 ) -> str:
     """Build the F1.C enrichment prompt from WSI methodology.
 
@@ -178,6 +179,11 @@ def _build_enrichment_prompt(
             + _resp_lines + "\n"
         )
 
+    _company_block = (
+        "\n\nCONTEXTO DA EMPRESA (use para a secao \"about_company\" e para ancorar o "
+        "tom do JD; NUNCA invente dados que nao estejam aqui):\n" + company_context + "\n"
+        if company_context else ""
+    )
     return f"""Voce e um especialista em recrutamento. Analise o JD (Job Description) abaixo e produza uma versao enriquecida e estruturada.
 
 REGRAS:
@@ -188,6 +194,7 @@ REGRAS:
 {_rule5}
 6. Se o JD for muito curto, enriqueca com base no titulo e senioridade
 {_confirmed_block}
+{_company_block}
 JD ORIGINAL:
 {jd_raw}
 
@@ -200,6 +207,7 @@ Responda APENAS com JSON valido no formato:
   "titulo_padronizado": "titulo normalizado",
   "senioridade_confirmada": "junior|pleno|senior|lead|diretor",
   "about_role": "descricao resumida do papel (2-3 frases)",
+  "about_company": "2-3 frases sobre a empresa, baseado SOMENTE no CONTEXTO DA EMPRESA fornecido; string vazia se nenhum contexto foi dado",
   "responsabilidades": ["resp1", "resp2", ...],
   "skills_obrigatorias": [
     {{"skill": "nome", "contexto": "como e usado no cargo"}}
@@ -381,6 +389,7 @@ class JdEnrichmentService:
         confirmed_behavioral: list | None = None,
         confirmed_responsibilities: list | None = None,
         screening_mode: str | None = None,
+        company_context: str = "",
     ) -> tuple[EnrichedJobDescription, float, list[str]]:
         """Enrich a raw JD using LLM.
 
@@ -413,6 +422,7 @@ class JdEnrichmentService:
             confirmed_technical=confirmed_technical,
             confirmed_behavioral=confirmed_behavioral,
             confirmed_responsibilities=confirmed_responsibilities,
+            company_context=company_context,
         )
 
         # --- GOV 2: Circuit breaker wraps LLM call ---

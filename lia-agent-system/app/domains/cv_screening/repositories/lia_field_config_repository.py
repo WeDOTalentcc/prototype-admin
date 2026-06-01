@@ -17,7 +17,7 @@ class LiaFieldConfigRepository:
         self.db = db
 
     async def list_field_toggles(self, company_uuid: UUID):
-        from lia_models.lia_field_toggle import LiaFieldToggle  # type: ignore
+        from lia_models.lia_field_toggles import LiaFieldToggle  # type: ignore
         result = await self.db.execute(
             select(LiaFieldToggle).where(LiaFieldToggle.company_id == company_uuid)
         )

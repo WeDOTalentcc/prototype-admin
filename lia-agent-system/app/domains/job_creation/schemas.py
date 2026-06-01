@@ -47,6 +47,7 @@ class EnrichedJobDescription(BaseModel):
     titulo_padronizado: str = ""
     senioridade_confirmada: str = ""
     about_role: str = ""
+    about_company: str = ""  # B5b: seção "Sobre a empresa" (grounded em company context)
     responsabilidades: List[str] = Field(default_factory=list)
     skills_obrigatorias: List[TechnicalSkill] = Field(default_factory=list)
     skills_desejaveis: List[str] = Field(default_factory=list)
