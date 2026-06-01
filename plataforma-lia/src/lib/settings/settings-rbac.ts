@@ -63,6 +63,14 @@ export const SETTINGS_HUB_PERMISSIONS: Record<
     recruiter: "edit",
     viewer: "view",
   },
+  // P2 (2026-06-01): hub standalone "Políticas de Recrutamento" — mesma
+  // natureza operacional de recrutamento-lia (admin/manager/recruiter editam).
+  "politicas-recrutamento": {
+    admin: "edit",
+    manager: "edit",
+    recruiter: "edit",
+    viewer: "view",
+  },
   "comunicacao-alertas": {
     admin: "edit",
     manager: "edit",

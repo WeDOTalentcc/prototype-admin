@@ -23,6 +23,8 @@ import { FileText, RefreshCw } from "lucide-react"
 import { useCompanySettingsCards } from "@/hooks/settings/use-company-settings-cards"
 import { MinhaEmpresaCard } from "@/components/settings/MinhaEmpresaCard"
 import { HubHeader, HubLoadingState, HubErrorState } from "./_shared"
+import { SettingsEditModeToggle } from "@/components/settings/SettingsEditModeToggle"
+import { useSettingsEditMode } from "@/hooks/settings/useSettingsEditMode"
 
 export function HiringPoliciesHub() {
   // ─── TODOS OS HOOKS PRIMEIRO (rules-of-hooks, CLAUDE.md) ───
@@ -43,6 +45,9 @@ export function HiringPoliciesHub() {
   } = useCompanySettingsCards()
 
   const [isExpanded, setIsExpanded] = React.useState(true)
+
+  // RBAC edit-mode (P2): read-only por role; default editável para admin/recruiter.
+  const { isEditing } = useSettingsEditMode("politicas-recrutamento")
 
   const policyBlock = React.useMemo(
     () => blocks.find((b) => b.key === "policy"),
@@ -86,13 +91,16 @@ export function HiringPoliciesHub() {
           title="Políticas de Recrutamento"
           description="Regras de triagem, aprovação, agendamento e automação que a LIA aplica no processo seletivo."
         >
-          <button
-            onClick={refreshAll}
-            className="p-1.5 rounded-md hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none"
-            aria-label="Recarregar dados"
-          >
-            <RefreshCw className="w-4 h-4 text-lia-text-secondary" />
-          </button>
+          <div className="flex items-center gap-3">
+            <SettingsEditModeToggle hubId="politicas-recrutamento" />
+            <button
+              onClick={refreshAll}
+              className="p-1.5 rounded-md hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none"
+              aria-label="Recarregar dados"
+            >
+              <RefreshCw className="w-4 h-4 text-lia-text-secondary" />
+            </button>
+          </div>
         </HubHeader>
       </div>
 
@@ -106,7 +114,7 @@ export function HiringPoliciesHub() {
           isSavingField={isSavingField}
           benefits={benefits}
           companyId={companyId}
-          isReadOnly={false}
+          isReadOnly={!isEditing}
           onBenefitsChanged={refreshAll}
           onLogoUploaded={refreshAll}
           onToggle={() => setIsExpanded((v) => !v)}

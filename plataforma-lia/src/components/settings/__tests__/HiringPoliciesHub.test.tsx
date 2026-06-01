@@ -37,6 +37,19 @@ vi.mock("@/components/settings/MinhaEmpresaCard", () => ({
   ),
 }))
 
+const mockEditMode = vi.fn(() => ({
+  isEditing: true,
+  canToggle: true,
+  toggleEditMode: vi.fn(),
+  setEditMode: vi.fn(),
+}))
+vi.mock("@/hooks/settings/useSettingsEditMode", () => ({
+  useSettingsEditMode: () => mockEditMode(),
+}))
+vi.mock("@/components/settings/SettingsEditModeToggle", () => ({
+  SettingsEditModeToggle: () => null,
+}))
+
 import { HiringPoliciesHub } from "../HiringPoliciesHub"
 
 const POLICY_BLOCK = {
@@ -93,6 +106,18 @@ describe("HiringPoliciesHub (structured)", () => {
     expect(card.getAttribute("data-fields")).toBe("2")
     // Standalone hub is editable (no RBAC gate yet — parity with prior behavior)
     expect(card.getAttribute("data-readonly")).toBe("false")
+  })
+
+  test("respects RBAC read-only mode", () => {
+    mockEditMode.mockReturnValueOnce({
+      isEditing: false,
+      canToggle: false,
+      toggleEditMode: vi.fn(),
+      setEditMode: vi.fn(),
+    })
+    mockUseCards.mockReturnValue(baseReturn())
+    render(<HiringPoliciesHub />)
+    expect(screen.getByTestId("policy-card").getAttribute("data-readonly")).toBe("true")
   })
 
   test("does not render non-policy blocks", () => {
