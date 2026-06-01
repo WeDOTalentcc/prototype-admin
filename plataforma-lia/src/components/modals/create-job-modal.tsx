@@ -3,6 +3,7 @@
 import React, { useState } from "react"
 import { Brain, ClipboardList, X, Loader2, AlertCircle } from "lucide-react"
 import { liaApi } from "@/services/lia-api"
+import { usePipelineTemplates } from "@/hooks/pipeline/use-pipeline-templates"
 import { toast } from "sonner"
 
 interface CreateJobModalProps {
@@ -12,7 +13,7 @@ interface CreateJobModalProps {
   onJobCreated?: (jobId: string, jobTitle: string) => void
 }
 
-type ModalStep = "choose" | "manual-form"
+type ModalStep = "choose" | "manual-form" | "choose-pipeline"
 
 interface ManualFormData {
   title: string
@@ -76,6 +77,10 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
   })
   const [errors, setErrors] = useState<FormErrors>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [createdJobId, setCreatedJobId] = useState<string | null>(null)
+  const [isApplyingTemplate, setIsApplyingTemplate] = useState(false)
+
+  const { templates, isLoading: isLoadingTemplates } = usePipelineTemplates()
 
   const resetModal = () => {
     setStep("choose")
@@ -130,12 +135,10 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
         status: "Rascunho",
       })
 
-      toast.success("Vaga criada com sucesso!")
-
       const jobId = response.id
-      const jobTitle = formData.title.trim()
-      handleClose()
-      onJobCreated?.(jobId, jobTitle)
+      setCreatedJobId(jobId)
+      setStep("choose-pipeline")
+      toast.success("Vaga criada! Escolha o pipeline de seleção.")
     } catch (error: unknown) {
       const detail = error instanceof Error ? error.message : "Erro desconhecido"
       toast.error(`Erro ao criar vaga: ${detail}`)
@@ -149,6 +152,34 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
     if (errors[field as keyof FormErrors]) {
       setErrors(prev => ({ ...prev, [field]: undefined }))
     }
+  }
+
+  const handleApplyTemplate = async (templateId: string) => {
+    if (!createdJobId) return
+    setIsApplyingTemplate(true)
+    try {
+      await fetch(`/api/backend-proxy/job-vacancies/${createdJobId}/apply-pipeline-template`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ template_id: templateId, source: "manual_modal" }),
+      })
+      toast.success("Pipeline aplicado com sucesso!")
+    } catch {
+      toast.error("Não foi possível aplicar o template. Configure o pipeline depois nas Configurações da vaga.")
+    } finally {
+      setIsApplyingTemplate(false)
+      const jobTitle = formData.title.trim()
+      handleClose()
+      onJobCreated?.(createdJobId, jobTitle)
+    }
+  }
+
+  const handleSkipPipeline = () => {
+    if (!createdJobId) return
+    const jobTitle = formData.title.trim()
+    handleClose()
+    onJobCreated?.(createdJobId, jobTitle)
   }
 
   if (!isOpen) return null
@@ -170,7 +201,7 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
             id="create-job-modal-title"
             className="text-base font-semibold text-lia-text-primary"
           >
-            {step === "choose" ? "Nova Vaga" : "Criar Vaga Manualmente"}
+            {step === "choose" ? "Nova Vaga" : step === "manual-form" ? "Criar Vaga Manualmente" : "Pipeline de Seleção"}
           </h2>
           <button
             onClick={handleClose}
@@ -373,6 +404,46 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
           )}
         </div>
 
+        {step === "choose-pipeline" && (
+          <div className="space-y-3" role="region" aria-label="Seleção de pipeline">
+            <p className="text-xs text-lia-text-secondary">
+              Escolha um template de pipeline para esta vaga ou use o pipeline padrão da empresa.
+            </p>
+            {isLoadingTemplates ? (
+              <div className="flex justify-center py-8">
+                <Loader2 className="w-4 h-4 animate-spin text-lia-text-tertiary" aria-label="Carregando templates" />
+              </div>
+            ) : templates.length === 0 ? (
+              <p className="text-xs text-lia-text-tertiary text-center py-6">
+                Nenhum template disponível. Você pode criar templates em Configurações → Pipeline.
+              </p>
+            ) : (
+              <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+                {templates.map(template => (
+                  <button
+                    key={template.id}
+                    onClick={() => handleApplyTemplate(template.id)}
+                    disabled={isApplyingTemplate}
+                    className="w-full text-left p-3 rounded-lg border border-lia-border-subtle hover:border-lia-btn-primary-bg hover:bg-lia-btn-primary-bg/5 transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20"
+                    aria-label={`Aplicar template ${template.name}`}
+                  >
+                    <div className="text-sm font-medium text-lia-text-primary">{template.name}</div>
+                    {template.description && (
+                      <div className="text-xs text-lia-text-secondary mt-0.5 line-clamp-1">{template.description}</div>
+                    )}
+                    <div className="text-xs text-lia-text-tertiary mt-1">
+                      {template.stages.length} etapa{template.stages.length !== 1 ? "s" : ""}
+                      {template.department_hint && template.department_hint.length > 0 && (
+                        <span className="ml-2 text-wedo-cyan">· {template.department_hint[0]}</span>
+                      )}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
         {step === "manual-form" && (
           <div className="px-6 py-4 bg-lia-bg-secondary/50 rounded-b-xl flex items-center justify-between">
             <button
@@ -401,6 +472,24 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
           </div>
         )}
       </div>
+
+        {step === "choose-pipeline" && (
+          <div className="px-6 py-4 bg-lia-bg-secondary/50 rounded-b-xl flex items-center justify-between gap-3">
+            <button
+              onClick={handleSkipPipeline}
+              disabled={isApplyingTemplate}
+              className="text-xs text-lia-text-secondary hover:text-lia-text-primary font-medium transition-colors disabled:opacity-50"
+            >
+              Usar pipeline padrão
+            </button>
+            {isApplyingTemplate && (
+              <div className="flex items-center gap-1.5 text-xs text-lia-text-secondary">
+                <Loader2 className="w-3 h-3 animate-spin" />
+                Aplicando...
+              </div>
+            )}
+          </div>
+        )}
     </div>
   )
 }
