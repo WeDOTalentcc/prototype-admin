@@ -89,6 +89,16 @@ export interface JdEnrichmentData {
   jd_enriched: EnrichedJobDescription | null
   quality_score: number
   quality_warnings: string[]
+  /** B5 (2026-05-31): breakdown 9 dimensões (D1-D9) do canônico evaluate_jd_quality. */
+  quality_indicators?: Array<{
+    dimension: string
+    label: string
+    weight: number
+    earned: number
+    status: "sufficient" | "partial" | "insufficient"
+    detail?: string
+  }>
+  quality_band?: string
   /**
    * Task #1065 — `true` quando o nó caiu no fallback determinístico
    * (timeout do LLM ou exception). Painel renderiza banner discreto

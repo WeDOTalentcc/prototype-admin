@@ -1096,10 +1096,39 @@ class WizardSessionService:
                 })
             # JD enriquecida — surfacar para o painel exibir a descrição.
             if new_state.get("jd_enriched"):
-                data["jd_enriched"] = new_state.get("jd_enriched")
+                _jd = new_state.get("jd_enriched") or {}
+                data["jd_enriched"] = _jd
                 data["jd_raw"] = new_state.get("jd_raw") or new_state.get("raw_input")
-                data["quality_score"] = new_state.get("jd_quality_score")
                 data["jd_approved"] = new_state.get("jd_approved")
+                # B5 fix (2026-05-31): 9 dimensões de qualidade (D1-D9) +
+                # band, via o canônico evaluate_jd_quality — MESMO contrato do
+                # endpoint /jd-evaluate de Settings. Antes o painel só recebia
+                # um score consolidado (sem o breakdown). Determinístico.
+                try:
+                    from app.domains.cv_screening.services.wsi_service.jd_quality import (
+                        evaluate_jd_quality,
+                    )
+                    _q = evaluate_jd_quality(
+                        description=_jd.get("about_role"),
+                        job_title=_jd.get("titulo_padronizado"),
+                        seniority=_jd.get("senioridade_confirmada"),
+                        responsibilities=list(_jd.get("responsabilidades") or []),
+                        technical_skills=[
+                            x.get("skill", "") for x in (_jd.get("skills_obrigatorias") or [])
+                        ],
+                        behavioral_competencies=[
+                            x.get("competencia", "")
+                            for x in (_jd.get("competencias_comportamentais") or [])
+                        ],
+                    )
+                    data["quality_score"] = _q["score"]
+                    data["quality_indicators"] = _q["indicators"]
+                    data["quality_band"] = _q["band_label"]
+                except Exception as _q_exc:  # noqa: BLE001 — fallback p/ score simples
+                    logger.warning(
+                        "[WizardOrchestrator] jd 9-dim breakdown falhou: %s", _q_exc
+                    )
+                    data["quality_score"] = new_state.get("jd_quality_score")
                 data["jd_enrichment_used_fallback"] = new_state.get(
                     "jd_enrichment_used_fallback", False
                 )

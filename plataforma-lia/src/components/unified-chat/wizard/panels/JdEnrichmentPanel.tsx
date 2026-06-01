@@ -31,6 +31,7 @@ export function JdEnrichmentPanel({ data, requiresApproval, onApprove, onReject 
   const enriched = d.jd_enriched
   const score = d.quality_score || 0
   const warnings = d.quality_warnings || []
+  const indicators = d.quality_indicators || []
   const badge = getQualityBadge(score)
   const BadgeIcon = badge.icon
 
@@ -80,6 +81,34 @@ export function JdEnrichmentPanel({ data, requiresApproval, onApprove, onReject 
                 </p>
               ))}
             </div>
+          )}
+          {indicators.length > 0 && (
+            <details className="mt-2 group">
+              <summary className="text-xs text-lia-text-secondary cursor-pointer select-none hover:text-lia-text-primary">
+                Ver as {indicators.length} dimensões de qualidade (WSI)
+              </summary>
+              <div className="mt-2 space-y-1">
+                {indicators.map((ind) => {
+                  const dot =
+                    ind.status === "sufficient"
+                      ? "bg-status-success"
+                      : ind.status === "partial"
+                      ? "bg-status-warning"
+                      : "bg-lia-text-disabled"
+                  return (
+                    <div key={ind.dimension} className="flex items-center gap-2 text-[11px]">
+                      <span className={cn("w-1.5 h-1.5 rounded-full flex-shrink-0", dot)} />
+                      <span className="text-lia-text-secondary flex-1 min-w-0 truncate">
+                        {ind.label}
+                      </span>
+                      <span className="text-lia-text-tertiary tabular-nums flex-shrink-0">
+                        {ind.earned}/{ind.weight}
+                      </span>
+                    </div>
+                  )
+                })}
+              </div>
+            </details>
           )}
         </div>
       )}
