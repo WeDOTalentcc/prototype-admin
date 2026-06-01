@@ -176,7 +176,7 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
   const openTransition = useCallback(
     (candidates: KanbanCandidate[], fromStage: string, toStage: string) => {
       if ((toStage === "oferta" || toStage === "offer") && candidates.length > 0 && job?.id) {
-        openOfferReview({ candidateId: String(candidates[0].id), jobId: String(job.id) })
+        openOfferReview({ candidateId: String((candidates[0] as { candidateId?: string; id: string }).candidateId ?? candidates[0].id), jobId: String((job as { backendId?: string })?.backendId ?? job?.id ?? "") })
         return
       }
       openTransitionRaw(candidates, fromStage, toStage)

@@ -112,7 +112,7 @@ export function KanbanBoardSection({ state }: KanbanBoardSectionProps) {
       onRejectFromScreening={handleRejectFromScreening as unknown as Parameters<typeof KanbanColumnRenderer>[0]["onRejectFromScreening"]}
       onManageProposal={(candidate) => {
         const c = candidate as { id: string | number; [key: string]: unknown }
-        openOfferReview({ candidateId: String(c.id), jobId: String(currentJob?.id ?? "") })
+        openOfferReview({ candidateId: String((c as { candidateId?: string; id: string | number }).candidateId ?? c.id), jobId: String((currentJob as { backendId?: string })?.backendId ?? currentJob?.id ?? "") })
       }}
       onInlineRename={handleInlineRename}
       onInlineToggleActive={handleInlineToggleActive}
