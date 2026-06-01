@@ -186,13 +186,21 @@ export function VacancyVariableCompManager({ value, onChange, editable = true, s
     setIsSaving(true)
     try {
       if (modalMode === "edit" && editingId) {
-        onChange(linked.map((entry) => {
-          const eid = entry.component_id ? String(entry.component_id) : INLINE_ID(entry.name)
-          if (eid !== editingId) return entry
-          const merged = snapshot(r, entry.source, entry.component_id)
-          if (entry.source === "catalog") merged.catalog_overrides = { ...r }
-          return merged
-        }))
+        const eidOf = (entry: VagaComp) => entry.component_id ? String(entry.component_id) : INLINE_ID(entry.name)
+        if (linked.some((e) => eidOf(e) === editingId)) {
+          onChange(linked.map((entry) => {
+            if (eidOf(entry) !== editingId) return entry
+            const merged = snapshot(r, entry.source, entry.component_id)
+            if (entry.source === "catalog") merged.catalog_overrides = { ...r }
+            return merged
+          }))
+        } else {
+          // editar item ainda nao vinculado -> vincula com os valores editados
+          const src = editingId.startsWith("inline:") ? "inline" : "catalog"
+          const snap = snapshot(r, src, src === "catalog" ? editingId : null)
+          if (src === "catalog") snap.catalog_overrides = { ...r }
+          onChange([...linked, snap])
+        }
       } else if (alsoSaveToCatalog) {
         const res = await fetch("/api/backend-proxy/company/compensation-components/", {
           method: "POST",

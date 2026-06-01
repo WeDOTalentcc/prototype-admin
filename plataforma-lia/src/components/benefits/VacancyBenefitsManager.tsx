@@ -241,15 +241,21 @@ export function VacancyBenefitsManager({
     setIsSaving(true)
     try {
       if (modalMode === "edit" && editingId) {
-        // edita o item vinculado (override do snapshot; nao altera o catalogo)
-        const next = linked.map((entry) => {
-          const entryId = entry.benefit_id ? String(entry.benefit_id) : INLINE_ID(entry.name)
-          if (entryId !== editingId) return entry
-          const merged = snapshotFromRecord(b, entry.source, entry.benefit_id)
-          if (entry.source === "catalog") merged.catalog_overrides = { ...b }
-          return merged
-        })
-        onChange(next)
+        const eidOf = (entry: VagaBenefit) => entry.benefit_id ? String(entry.benefit_id) : INLINE_ID(entry.name)
+        if (linked.some((e) => eidOf(e) === editingId)) {
+          onChange(linked.map((entry) => {
+            if (eidOf(entry) !== editingId) return entry
+            const merged = snapshotFromRecord(b, entry.source, entry.benefit_id)
+            if (entry.source === "catalog") merged.catalog_overrides = { ...b }
+            return merged
+          }))
+        } else {
+          // editar item ainda nao vinculado -> vincula com os valores editados
+          const src = editingId.startsWith("inline:") ? "inline" : "catalog"
+          const snap = snapshotFromRecord(b, src, src === "catalog" ? editingId : null)
+          if (src === "catalog") snap.catalog_overrides = { ...b }
+          onChange([...linked, snap])
+        }
       } else if (alsoSaveToCatalog) {
         // promote-back: salva no catalogo (dedup case-insensitive no backend) e vincula
         const res = await fetch("/api/backend-proxy/company/benefits/", {
