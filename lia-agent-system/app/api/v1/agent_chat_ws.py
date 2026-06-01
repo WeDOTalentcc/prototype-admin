@@ -1040,8 +1040,8 @@ company_id: str = Depends(require_company_id)):
             # placement: explicit FE intent always wins). Fail-open.
             if active_domain in ("auto", "recruiter_assistant", ""):
                 try:
-                    from app.shared.sessions import is_wizard_session_active
-                    if await is_wizard_session_active(company_id, session_id):
+                    from app.shared.sessions import should_pin_to_wizard
+                    if await should_pin_to_wizard(company_id, session_id, content):
                         logger.info(
                             "[AgentChatWS] wizard_session_pin: session=%s "
                             "company=%s → wizard (Task #1080)",

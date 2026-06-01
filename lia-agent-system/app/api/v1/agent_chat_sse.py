@@ -339,8 +339,8 @@ company_id: str = Depends(require_company_id)):
             # Task #1080: wizard session pin BEFORE router (canonical layer
             # for "this conversation is the wizard"). Mirrors agent_chat_ws.
             try:
-                from app.shared.sessions import is_wizard_session_active
-                if await is_wizard_session_active(company_id, session_id):
+                from app.shared.sessions import should_pin_to_wizard
+                if await should_pin_to_wizard(company_id, session_id, content):
                     logger.info(
                         "[SSEChat] wizard_session_pin: session=%s company=%s "
                         "→ wizard (Task #1080)", session_id, company_id,

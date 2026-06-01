@@ -35,6 +35,8 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import os
+import re
+import unicodedata
 from datetime import datetime, timezone
 import logging
 
@@ -186,3 +188,54 @@ async def is_wizard_session_active(
         return False
     # Active iff there is conversational state OR a non-terminal stage.
     return bool(values.get("conversation_messages") or stage)
+
+
+# Gate de INTENÇÃO de entrada no wizard (fix 2026-05-31): uma SAUDAÇÃO pura
+# ("oi", "bom dia") NUNCA deve reentrar/retomar um wizard ativo — só pedidos
+# relacionados a vaga ou continuações ("sim", "muda a pergunta 3"). Pega só
+# saudações/smalltalk PUROS (ancorado em $), então mensagens com conteúdo
+# ("oi, quero criar uma vaga") passam normalmente. Computacional, sem LLM:
+# risco ZERO de misroutear continuações curtas (que não são saudações).
+_GREETING_RE = re.compile(
+    r"^(oi+|ol[áa]+|opa+|e\s?a[íi]|hey+|hello+|hi+|salve|al[ôo]+|oie+|"
+    r"bom dia|boa tarde|boa noite|tudo bem|tudo certo|tudo bom|tudo joia|"
+    r"como vai|como voc[êe] est[áa]|beleza|blz|fala|fala a[íi]|menu|start|começar)"
+    r"[\s,.!?]*$",
+    re.IGNORECASE,
+)
+
+
+def is_greeting_only(message: str | None) -> bool:
+    """True se a mensagem é uma saudação/smalltalk PURA (sem conteúdo extra).
+
+    Usado pelo gate de entrada do wizard: saudação não resume wizard.
+    Mensagens longas (>30 chars) ou com conteúdo além da saudação retornam False.
+    """
+    if not message:
+        return False
+    text = message.strip()
+    if len(text) > 30:
+        return False
+    # remove emojis / símbolos de borda antes de casar
+    text = "".join(
+        ch for ch in text if not unicodedata.category(ch).startswith(("So", "Sk"))
+    ).strip().lower()
+    if not text:
+        return False
+    return bool(_GREETING_RE.match(text))
+
+
+async def should_pin_to_wizard(
+    company_id: str | None, session_id: str, message: str | None
+) -> bool:
+    """Decide se a mensagem deve ser roteada/pinada ao wizard.
+
+    Canônico (fix 2026-05-31): combina (a) sessão wizard ATIVA e não-stale
+    (is_wizard_session_active, com TTL) + (b) gate de INTENÇÃO — uma saudação
+    pura não resume o wizard mesmo que ativo. Greeting check vem primeiro
+    (barato) para evitar o get_state quando a msg é só "oi".
+    """
+    if is_greeting_only(message):
+        return False
+    return await is_wizard_session_active(company_id, session_id)
+
