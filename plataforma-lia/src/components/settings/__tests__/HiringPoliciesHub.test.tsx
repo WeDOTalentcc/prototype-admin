@@ -1,48 +1,28 @@
 /**
- * HiringPoliciesHub tests — STRUCTURED surface + P3b instructions (2026-06-01)
- *
- * Pins: (1) structured policy block via MinhaEmpresaCard; (2) loading/error/
- * missing-block states; (3) rules-of-hooks rerender; (4) P3b — 11 free-text
- * instruction blocks render and respect RBAC read-only.
+ * HiringPoliciesHub tests — gates-only surface (V2.2, 2026-06-01).
+ * A seção de instruções saiu para LIA & Personalização (PolicyInstructionsGroup).
+ * Aqui o hub renderiza apenas o bloco estruturado de gates via MinhaEmpresaCard.
  */
 import React from "react"
 import { describe, test, expect, vi, beforeEach } from "vitest"
-import { render, screen, waitFor } from "@testing-library/react"
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-
-const mockFetch = vi.fn()
-global.fetch = mockFetch as unknown as typeof fetch
+import { render, screen } from "@testing-library/react"
 
 const mockUseCards = vi.fn()
 vi.mock("@/hooks/settings/use-company-settings-cards", () => ({
   useCompanySettingsCards: () => mockUseCards(),
 }))
-
 const mockEditMode = vi.fn(() => ({ isEditing: true, canToggle: true, toggleEditMode: vi.fn(), setEditMode: vi.fn() }))
 vi.mock("@/hooks/settings/useSettingsEditMode", () => ({ useSettingsEditMode: () => mockEditMode() }))
 vi.mock("@/components/settings/SettingsEditModeToggle", () => ({ SettingsEditModeToggle: () => null }))
-
-vi.mock("@/hooks/settings/useSettingsBroadcast", () => ({
-  SETTINGS_QUERY_KEYS: { hiringPolicy: () => ["hiring-policy"] },
-  dispatchSettingsUpdate: vi.fn(),
-}))
-
 vi.mock("@/components/settings/MinhaEmpresaCard", () => ({
   MinhaEmpresaCard: ({ block, isReadOnly }: { block: { key: string; fields: unknown[] }; isReadOnly: boolean }) => (
-    <div data-testid="policy-card" data-block={block.key} data-fields={block.fields.length} data-readonly={String(isReadOnly)} />
+    <div data-testid="policy-card" data-block={block.key} data-readonly={String(isReadOnly)} />
   ),
 }))
 
 import { HiringPoliciesHub } from "../HiringPoliciesHub"
 
-const POLICY_BLOCK = {
-  key: "policy", title: "Políticas de Recrutamento", iconName: "FileText",
-  fields: [
-    { key: "min_interviews_before_offer", label: "Min?", value: 3, type: "number", editable: true, block: "policy" },
-    { key: "auto_screening", label: "Auto?", value: true, type: "boolean", editable: true, block: "policy" },
-  ],
-  status: "partial", progress: { filled: 2, total: 2, missingLabels: [] },
-}
+const POLICY_BLOCK = { key: "policy", title: "Políticas de Recrutamento", iconName: "FileText", fields: [{ key: "x", label: "X", value: 1, type: "number", editable: true, block: "policy" }], status: "partial", progress: { filled: 1, total: 1, missingLabels: [] } }
 const BASIC_BLOCK = { key: "basic", title: "Perfil", iconName: "Building", fields: [], status: "empty", progress: { filled: 0, total: 0, missingLabels: [] } }
 
 function baseReturn(overrides: Record<string, unknown> = {}) {
@@ -55,78 +35,52 @@ function baseReturn(overrides: Record<string, unknown> = {}) {
   }
 }
 
-function renderHub() {
-  const qc = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } })
-  return render(<QueryClientProvider client={qc}><HiringPoliciesHub /></QueryClientProvider>)
-}
-
-describe("HiringPoliciesHub (structured + instructions)", () => {
+describe("HiringPoliciesHub (gates-only)", () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockEditMode.mockReturnValue({ isEditing: true, canToggle: true, toggleEditMode: vi.fn(), setEditMode: vi.fn() })
-    mockFetch.mockResolvedValue({ ok: true, status: 200, json: async () => ({ policy_instructions: {} }) })
   })
 
-  test("renders the canonical structured policy block", () => {
+  test("renders only the structured policy block", () => {
     mockUseCards.mockReturnValue(baseReturn())
-    renderHub()
+    render(<HiringPoliciesHub />)
     expect(screen.getByText("Políticas de Recrutamento")).toBeTruthy()
-    const card = screen.getByTestId("policy-card")
-    expect(card.getAttribute("data-block")).toBe("policy")
-    expect(card.getAttribute("data-readonly")).toBe("false")
+    expect(screen.getAllByTestId("policy-card")).toHaveLength(1)
+    expect(screen.getByTestId("policy-card").getAttribute("data-readonly")).toBe("false")
   })
 
-  test("P3b: renders all 11 instruction blocks", async () => {
+  test("does NOT render the instructions section (moved to LIA)", () => {
     mockUseCards.mockReturnValue(baseReturn())
-    renderHub()
-    await waitFor(() => {
-      const KEYS = [
-        "screening_criteria", "candidate_feedback_policy", "communication_window",
-        "interview_scheduling_policy", "interview_reminder_policy", "no_show_policy",
-        "salary_negotiation_policy", "remote_work_policy", "data_retention_candidate_policy",
-        "talent_pool_opt_in_policy", "diversity_inclusion_guidelines",
-      ]
-      for (const k of KEYS) {
-        expect(screen.getByTestId(`instruction-block-${k}`), `missing ${k}`).toBeTruthy()
-      }
-    })
+    render(<HiringPoliciesHub />)
+    expect(screen.queryByText(/Instruções para a LIA/i)).toBeNull()
+    expect(screen.queryByTestId("instruction-block-no_show_policy")).toBeNull()
   })
 
-  test("P3b: instruction textareas disabled in read-only mode", async () => {
+  test("respects RBAC read-only", () => {
     mockEditMode.mockReturnValue({ isEditing: false, canToggle: false, toggleEditMode: vi.fn(), setEditMode: vi.fn() })
     mockUseCards.mockReturnValue(baseReturn())
-    renderHub()
-    await waitFor(() => {
-      const ta = screen.getByTestId("instruction-block-no_show_policy").querySelector("textarea")
-      expect(ta?.disabled).toBe(true)
-    })
+    render(<HiringPoliciesHub />)
+    expect(screen.getByTestId("policy-card").getAttribute("data-readonly")).toBe("true")
   })
 
-  test("shows loading state", () => {
+  test("loading + watchdog + missing-block states", () => {
     mockUseCards.mockReturnValue(baseReturn({ loading: true }))
-    renderHub()
+    const { rerender } = render(<HiringPoliciesHub />)
     expect(screen.getByText(/Carregando políticas/i)).toBeTruthy()
-  })
-
-  test("shows error on watchdog error", () => {
-    mockUseCards.mockReturnValue(baseReturn({ watchdogError: "Falha de rede" }))
-    renderHub()
-    expect(screen.getByText(/Falha de rede/i)).toBeTruthy()
-  })
-
-  test("shows error when policy block missing", () => {
+    mockUseCards.mockReturnValue(baseReturn({ watchdogError: "Falha" }))
+    rerender(<HiringPoliciesHub />)
+    expect(screen.getByText(/Falha/i)).toBeTruthy()
     mockUseCards.mockReturnValue(baseReturn({ blocks: [BASIC_BLOCK] }))
-    renderHub()
+    rerender(<HiringPoliciesHub />)
     expect(screen.getByText(/Bloco de políticas não encontrado/i)).toBeTruthy()
   })
 
   test("rules-of-hooks: rerender loading→loaded→loading without throw", () => {
     mockUseCards.mockReturnValue(baseReturn({ loading: true }))
-    const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } })
-    const { rerender } = render(<QueryClientProvider client={qc}><HiringPoliciesHub /></QueryClientProvider>)
+    const { rerender } = render(<HiringPoliciesHub />)
     mockUseCards.mockReturnValue(baseReturn())
-    expect(() => rerender(<QueryClientProvider client={qc}><HiringPoliciesHub /></QueryClientProvider>)).not.toThrow()
+    expect(() => rerender(<HiringPoliciesHub />)).not.toThrow()
     mockUseCards.mockReturnValue(baseReturn({ loading: true }))
-    expect(() => rerender(<QueryClientProvider client={qc}><HiringPoliciesHub /></QueryClientProvider>)).not.toThrow()
+    expect(() => rerender(<HiringPoliciesHub />)).not.toThrow()
   })
 })

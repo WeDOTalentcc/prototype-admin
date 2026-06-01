@@ -44,6 +44,7 @@ import {
   type LiaFieldKey,
 } from "@/hooks/company/use-company-lia-instructions"
 import { LiaImpactSummary } from "@/components/settings/LiaImpactSummary"
+import { PolicyInstructionsGroup } from "@/components/settings/PolicyInstructionsGroup"
 
 interface LiaFieldsConfig {
   lia_field_toggles: Partial<Record<LiaFieldKey, boolean>>
@@ -398,6 +399,10 @@ export function LiaFieldsConfigPanel() {
               </div>
             </section>
           ))}
+
+          {/* V2.2 — instruções de PROCESSO (7), ao lado dos campos da empresa.
+              Store distinto (policy_instructions), mas mesma superfície de UI. */}
+          <PolicyInstructionsGroup />
         </TabsContent>
 
         <TabsContent value="ai-persona" className="mt-4">

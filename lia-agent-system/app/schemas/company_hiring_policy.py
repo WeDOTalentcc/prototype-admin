@@ -261,30 +261,22 @@ def coerce_and_validate_block(block: str, data: dict[str, Any]) -> dict[str, Any
 POLICY_INSTRUCTION_KEYS: set[str] = {
     "screening_criteria",
     "candidate_feedback_policy",
-    "communication_window",
     "interview_scheduling_policy",
     "interview_reminder_policy",
     "no_show_policy",
-    "salary_negotiation_policy",
-    "remote_work_policy",
     "data_retention_candidate_policy",
     "talent_pool_opt_in_policy",
-    "diversity_inclusion_guidelines",
 }
 
 # Human-readable labels (PT-BR) used to title each instruction in the prompt.
 POLICY_INSTRUCTION_LABELS: dict[str, str] = {
     "screening_criteria": "Critérios mínimos de triagem",
     "candidate_feedback_policy": "Política de feedback a candidatos reprovados",
-    "communication_window": "Janela de envio de comunicações (LGPD)",
     "interview_scheduling_policy": "Regras de agendamento de entrevistas",
     "interview_reminder_policy": "Lembretes de entrevista",
     "no_show_policy": "Política de no-show",
-    "salary_negotiation_policy": "Flexibilidade / negociação salarial",
-    "remote_work_policy": "Política de trabalho remoto",
     "data_retention_candidate_policy": "Retenção de dados de candidatos (LGPD)",
     "talent_pool_opt_in_policy": "Convite ao banco de talentos (opt-in)",
-    "diversity_inclusion_guidelines": "Diretrizes de diversidade e inclusão",
 }
 
 
