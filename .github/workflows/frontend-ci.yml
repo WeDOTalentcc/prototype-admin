@@ -185,15 +185,13 @@ jobs:
         working-directory: plataforma-lia
         run: npm run sensor:tokens:blocking
 
-      - name: Studio hardcoded hex sensor (warn-only desde 2026-06-01)
+      - name: Studio hardcoded hex sensor (BLOCKING desde 2026-06-01)
         # Sensor harness 2026-06-01: cor hex CRUA em pages-agent-studio/
         # (ex.: bg-[#60BED1]) escapa do sensor de tokens legados e do de cyan —
         # foi assim que o redesign do funil reintroduziu ~120 cores fora do DS.
-        # Baseline 9 (callouts laranja em DigitalTwinComponents+CustomAgentsTab).
-        # Promover a sensor:studio-hex:blocking quando baseline=0.
-        continue-on-error: true
+        # Baseline atingiu 0 (migracao dos callouts laranja) -> promovido a blocking.
         working-directory: plataforma-lia
-        run: npm run sensor:studio-hex
+        run: npm run sensor:studio-hex:blocking
 
       - name: Schema sync sensor TS<->Python (BLOCKING desde 2026-05-26)
         # Sensor harness 2026-05-26 (tasks 7+8 blocking promotion).

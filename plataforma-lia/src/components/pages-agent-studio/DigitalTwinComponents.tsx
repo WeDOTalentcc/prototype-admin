@@ -284,14 +284,14 @@ export function CreateDigitalTwinModal({ isOpen, onClose, onCreated }: CreateDig
             </div>
 
             {preview.decisions_found === 0 ? (
-              <div className="rounded-md bg-[#FEF9F0] border border-[#D19960]/30 p-3">
-                <p className="text-sm text-[#D19960] font-medium">{t("preview.noDataTitle")}</p>
-                <p className="text-xs text-[#D19960]">{t("preview.noDataDesc")}</p>
+              <div className="rounded-md bg-wedo-orange/10 border border-wedo-orange/30 p-3">
+                <p className="text-sm text-wedo-orange font-medium">{t("preview.noDataTitle")}</p>
+                <p className="text-xs text-wedo-orange">{t("preview.noDataDesc")}</p>
               </div>
             ) : (
               <>
                 {!preview.has_enough && (
-                  <p className="text-xs text-[#D19960]">{t("preview.lowDataWarning", { count: preview.decisions_found })}</p>
+                  <p className="text-xs text-wedo-orange">{t("preview.lowDataWarning", { count: preview.decisions_found })}</p>
                 )}
                 <div>
                   <p className={textStyles.bodySmall + " font-semibold mb-1.5"}>{t("preview.examplesTitle")}</p>
@@ -762,7 +762,7 @@ export function EvaluateCandidateWithTwinModal({
                 <Chip className="bg-amber-50 text-amber-700">{t("fairnessFlagged")}</Chip>
               )}
               {evaluation.needs_manual_review && (
-                <p className="text-xs text-[#D19960]">{t("needsReview")}</p>
+                <p className="text-xs text-wedo-orange">{t("needsReview")}</p>
               )}
             </div>
           )}

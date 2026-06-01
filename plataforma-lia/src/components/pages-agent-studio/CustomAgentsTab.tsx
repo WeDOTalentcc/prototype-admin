@@ -177,10 +177,10 @@ export default function CustomAgentsTab() {
                       </div>
                       <div>
                         <p className="text-sm font-semibold text-lia-text-primary">{agent.name || aiPersona?.name || t('untitledAgent')}</p>
-                        <p className="text-[10px] text-lia-text-secondary">{agent.role}</p>
+                        <p className="text-micro text-lia-text-secondary">{agent.role}</p>
                       </div>
                     </div>
-                    <div className={cn("flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold", statusConf.bg, statusConf.text)}>
+                    <div className={cn("flex items-center gap-1.5 px-2.5 py-1 rounded-full text-micro font-semibold", statusConf.bg, statusConf.text)}>
                       <div className={cn("w-1.5 h-1.5 rounded-full", statusConf.dot)} />
                       {t(STATUS_LABELS[agent.status as keyof typeof STATUS_LABELS])}
                     </div>
@@ -193,12 +193,12 @@ export default function CustomAgentsTab() {
                   {agent.allowed_tools.length > 0 && (
                     <div className="flex flex-wrap gap-1 mb-3">
                       {agent.allowed_tools.slice(0, 3).map((tool, i) => (
-                        <span key={i} className="px-2 py-0.5 rounded-xl bg-lia-bg-tertiary text-[10px] font-medium text-lia-text-secondary">
+                        <span key={i} className="px-2 py-0.5 rounded-xl bg-lia-bg-tertiary text-micro font-medium text-lia-text-secondary">
                           {tool}
                         </span>
                       ))}
                       {agent.allowed_tools.length > 3 && (
-                        <span className="px-2 py-0.5 rounded-xl bg-lia-bg-tertiary text-[10px] text-lia-text-disabled">
+                        <span className="px-2 py-0.5 rounded-xl bg-lia-bg-tertiary text-micro text-lia-text-disabled">
                           +{agent.allowed_tools.length - 3}
                         </span>
                       )}
@@ -208,22 +208,22 @@ export default function CustomAgentsTab() {
                   <div className="grid grid-cols-3 gap-2 mb-3">
                     <div className="flex flex-col items-center p-2 rounded-lg bg-lia-bg-primary">
                       <span className="text-xs font-bold text-lia-text-primary">{agent.total_executions}</span>
-                      <span className="text-[9px] text-lia-text-disabled uppercase">{t('executions')}</span>
+                      <span className="text-micro text-lia-text-disabled uppercase">{t('executions')}</span>
                     </div>
                     <div className="flex flex-col items-center p-2 rounded-lg bg-lia-bg-primary">
                       <span className="text-xs font-bold text-lia-text-primary">v{agent.version}</span>
-                      <span className="text-[9px] text-lia-text-disabled uppercase">{t('version')}</span>
+                      <span className="text-micro text-lia-text-disabled uppercase">{t('version')}</span>
                     </div>
                     <div className="flex flex-col items-center p-2 rounded-lg bg-lia-bg-primary">
                       <span className="text-xs font-bold text-lia-text-primary">{agent.domain}</span>
-                      <span className="text-[9px] text-lia-text-disabled uppercase">{t('domain')}</span>
+                      <span className="text-micro text-lia-text-disabled uppercase">{t('domain')}</span>
                     </div>
                   </div>
 
                   {agent.is_marketplace_published && (
                     <div className="flex items-center gap-1.5 mb-3 px-2.5 py-1.5 rounded-lg bg-violet-50 dark:bg-violet-950/20 border border-violet-200 dark:border-violet-800">
                       <Store className="w-3 h-3 text-violet-500" />
-                      <span className="text-[10px] text-violet-700 dark:text-violet-400 font-medium">{t('publishedMarketplace')}</span>
+                      <span className="text-micro text-violet-700 dark:text-violet-400 font-medium">{t('publishedMarketplace')}</span>
                     </div>
                   )}
 
@@ -637,8 +637,8 @@ export function CreateCustomAgentModal({
               ))}
             </div>
             {linkType === "none" && (
-              <div className="mt-2 px-3 py-2 rounded-md bg-[#FEF9F0] border border-[#D19960]/30">
-                <p className="text-xs text-[#D19960]">{tStudio('noLinkWarning')}</p>
+              <div className="mt-2 px-3 py-2 rounded-md bg-wedo-orange/10 border border-wedo-orange/30">
+                <p className="text-xs text-wedo-orange">{tStudio('noLinkWarning')}</p>
               </div>
             )}
             {linkType === "job" && (
@@ -736,7 +736,7 @@ export function CreateCustomAgentModal({
                 if (groupTools.length === 0) return null
                 return (
                   <div key={group}>
-                    <p className="text-[10px] font-semibold uppercase tracking-wide text-lia-text-disabled mb-1.5">
+                    <p className="text-micro font-semibold uppercase tracking-wide text-lia-text-disabled mb-1.5">
                       {t(CAPABILITY_GROUP_I18N[group])}
                     </p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
@@ -930,7 +930,7 @@ function TestAgentModal({ agent, onClose }: { agent: CustomAgent; onClose: () =>
             <div className="rounded-lg border border-lia-border-subtle bg-lia-bg-secondary p-4">
               <div className="flex items-center gap-1.5 mb-2">
                 <Bot className="w-3.5 h-3.5 text-graphite" />
-                <span className="text-[10px] font-semibold text-lia-text-secondary uppercase">{t('agentResponse')}</span>
+                <span className="text-micro font-semibold text-lia-text-secondary uppercase">{t('agentResponse')}</span>
               </div>
               <p className="text-sm text-lia-text-primary whitespace-pre-wrap">{response}</p>
             </div>
