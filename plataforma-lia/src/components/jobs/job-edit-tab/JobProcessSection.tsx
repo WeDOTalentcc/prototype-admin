@@ -3,9 +3,10 @@
 import React from"react"
 import { Card, CardContent } from"@/components/ui/card"
 import {
-  Brain, ChevronUp, ChevronDown, Clock, Lock, Loader2, Plus, Settings, Target, Trash2,
+  Brain, ChevronUp, ChevronDown, Clock, Layers, Lock, Loader2, Plus, Settings, Target, Trash2,
 } from"lucide-react"
 import { inputClass, groupHeaderClass, getCategoryBadge } from"./job-edit-tab.constants"
+import type { PipelineTemplateFull } from"@/hooks/pipeline/use-pipeline-templates"
 
 interface Stage {
   name?: string
@@ -31,6 +32,12 @@ interface JobProcessSectionProps {
   removeStage: (index: number) => void
   updateStage: (index: number, field: string, value: unknown) => void
   moveStage: (index: number, direction:"up" |"down") => void
+  // Fase 5 Unify: template selector
+  vacancyId?: string
+  templates?: PipelineTemplateFull[]
+  isLoadingTemplates?: boolean
+  isApplyingTemplate?: boolean
+  onApplyTemplate?: (templateId: string) => void
 }
 
 export function JobProcessSection({
@@ -44,6 +51,11 @@ export function JobProcessSection({
   removeStage,
   updateStage,
   moveStage,
+  vacancyId,
+  templates,
+  isLoadingTemplates,
+  isApplyingTemplate,
+  onApplyTemplate,
 }: JobProcessSectionProps) {
   return (
     <div className="space-y-5">
@@ -56,7 +68,31 @@ export function JobProcessSection({
             <div className="flex items-center gap-1 ml-auto"><Brain className="w-3 h-3 text-wedo-cyan" /><span className="text-wedo-cyan"><strong>LIA</strong> auxilia</span></div>
           </div>
         </div>
-        <h3 className={groupHeaderClass}>Etapas do Processo</h3>
+        <div className="flex items-center justify-between">
+          <h3 className={groupHeaderClass}>Etapas do Processo</h3>
+          {vacancyId && onApplyTemplate && templates && templates.length > 0 && (
+            <div className="flex items-center gap-2">
+              {isApplyingTemplate && <Loader2 className="w-3 h-3 animate-spin text-lia-text-tertiary" />}
+              <select
+                onChange={e => { if (e.target.value) onApplyTemplate(e.target.value) }}
+                disabled={isApplyingTemplate}
+                defaultValue=""
+                className="text-xs py-1 px-2 rounded-lg border border-lia-border-subtle bg-lia-bg-primary text-lia-text-secondary hover:border-lia-border-medium disabled:opacity-50 focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20"
+                aria-label="Selecionar template de pipeline"
+              >
+                <option value="" disabled>
+                  <Layers className="inline w-3 h-3 mr-1" />
+                  Aplicar template...
+                </option>
+                {templates.map(t => (
+                  <option key={t.id} value={t.id}>
+                    {t.name} ({t.stages.length} etapas)
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+        </div>
         {loadingCompanyPipeline && rawStages.length === 0 ? (
           <Card className="border border-lia-border-subtle">
             <CardContent className="p-4">

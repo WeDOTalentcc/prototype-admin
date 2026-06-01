@@ -4,6 +4,7 @@ import { useState, useRef } from "react"
 import { useSearchParams } from "next/navigation"
 import { toast } from "sonner"
 import { getCompanyPipelineStages, LIA_ASSISTED_STAGES, LIA_ASSISTED_STAGE_NAMES } from "@/lib/recruitment-stages"
+import { usePipelineTemplates } from "@/hooks/pipeline/use-pipeline-templates"
 import { useCompanyPipeline } from "@/hooks/company/use-company-pipeline"
 import { useScreeningConfig } from "@/hooks/recruitment/useScreeningConfig"
 import { SECTIONS, SWITCH_FIELDS, countFilledFields } from "./job-edit-tab.constants"
@@ -44,6 +45,11 @@ export function useJobEditTab({
 
   const { pipeline: companyPipelineFallback, loading: loadingCompanyPipeline } =
     useCompanyPipeline()
+
+  // Fase 5 Unify: template selector na seção Processo
+  const vacancyId = String(job?.backendId || (job as any)?.jobId || job?.id || "")
+  const { templates, isLoading: isLoadingTemplates } = usePipelineTemplates()
+  const [isApplyingTemplate, setIsApplyingTemplate] = useState(false)
 
   const { config: screeningConfig } = useScreeningConfig(
     (job?.backendId || job?.jobId || null) as string | number | null
@@ -261,6 +267,25 @@ export function useJobEditTab({
   // (addLanguage / removeLanguage / updateLanguage remain inline in the JSX
   //  because they depend on the local `langs` derived from jobEditForm)
 
+  const applyTemplate = async (templateId: string) => {
+    if (!vacancyId) return
+    setIsApplyingTemplate(true)
+    try {
+      await fetch(`/api/backend-proxy/job-vacancies/${vacancyId}/apply-pipeline-template`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ template_id: templateId, source: "manual_modal" }),
+      })
+      toast.success("Template de pipeline aplicado com sucesso!")
+      onJobUpdate?.({ is_pipeline_customized: false })
+    } catch {
+      toast.error("Erro ao aplicar template. Tente novamente.")
+    } finally {
+      setIsApplyingTemplate(false)
+    }
+  }
+
   return {
     // state
     activeSection,
@@ -292,5 +317,11 @@ export function useJobEditTab({
     toggleStageActive,
     LIA_ASSISTED_STAGES,
     LIA_ASSISTED_STAGE_NAMES,
+    // Fase 5: template selector
+    vacancyId,
+    templates,
+    isLoadingTemplates,
+    isApplyingTemplate,
+    applyTemplate,
   }
 }

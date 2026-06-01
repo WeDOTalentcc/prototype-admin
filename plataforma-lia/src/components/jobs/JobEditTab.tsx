@@ -64,6 +64,11 @@ export function JobEditTab({
     moveStage,
     LIA_ASSISTED_STAGES,
     LIA_ASSISTED_STAGE_NAMES,
+    vacancyId,
+    templates,
+    isLoadingTemplates,
+    isApplyingTemplate,
+    applyTemplate,
   } = useJobEditTab({
     jobEditForm,
     setJobEditForm,
@@ -280,6 +285,11 @@ export function JobEditTab({
                   removeStage={removeStage}
                   updateStage={updateStage}
                   moveStage={moveStage}
+                  vacancyId={vacancyId}
+                  templates={templates}
+                  isLoadingTemplates={isLoadingTemplates}
+                  isApplyingTemplate={isApplyingTemplate}
+                  onApplyTemplate={applyTemplate}
                 />
               )}
 
