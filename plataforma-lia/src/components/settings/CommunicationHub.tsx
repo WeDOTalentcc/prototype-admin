@@ -13,7 +13,7 @@
  */
 
 import React, { useEffect } from "react"
-import { Mail, PenTool, Bell, FlaskConical } from "lucide-react"
+import { Mail, PenTool, Bell } from "lucide-react"
 import { useTranslations } from "next-intl"
 import { tabStyles } from '@/lib/design-tokens'
 import type { CommunicationHubProps } from './communication-hub/CommunicationHub.types'
@@ -21,7 +21,6 @@ import { useCommunicationHub } from './communication-hub/useCommunicationHub'
 import { TemplatesTab } from './communication-hub/TemplatesTab'
 import { SignatureTab } from './communication-hub/SignatureTab'
 import { AlertPreferencesPanel } from './AlertPreferencesPanel'
-import { ABTestingTab } from './communication-hub/ABTestingTab'
 
 export function CommunicationHub({ activeSubsection, visibleTabs, stacked }: CommunicationHubProps) {
   const t = useTranslations("settings")
@@ -36,7 +35,6 @@ export function CommunicationHub({ activeSubsection, visibleTabs, stacked }: Com
     { id: 'templates', label: t("communication.tabTemplates"), icon: Mail },
     { id: 'signature', label: t("communication.tabSignature"), icon: PenTool },
     { id: 'alerts', label: t("communication.tabAlerts"), icon: Bell },
-    { id: 'abtesting', label: t("communication.tabAbTesting"), icon: FlaskConical },
   ]
 
   const tabs = visibleTabs ? allTabs.filter(tab => visibleTabs.includes(tab.id)) : allTabs
@@ -92,8 +90,6 @@ export function CommunicationHub({ activeSubsection, visibleTabs, stacked }: Com
         return (
           <AlertPreferencesPanel />
         )
-      case 'abtesting':
-        return <ABTestingTab />
       default:
         return null
     }
