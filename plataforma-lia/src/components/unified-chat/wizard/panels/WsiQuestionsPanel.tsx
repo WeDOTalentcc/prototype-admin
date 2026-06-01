@@ -16,9 +16,9 @@ interface Props {
 
 const FRAMEWORK_COLORS: Record<string, string> = {
   CBI: "bg-wedo-cyan/10 text-wedo-cyan",
-  Bloom: "bg-purple-100 text-purple-700",
-  Dreyfus: "bg-amber-100 text-amber-700",
-  BigFive: "bg-blue-100 text-blue-700",
+  Bloom: "bg-wedo-purple/10 text-wedo-purple",
+  Dreyfus: "bg-wedo-magenta/10 text-wedo-magenta",
+  BigFive: "bg-wedo-green/10 text-wedo-green",
 }
 
 /**
@@ -105,10 +105,10 @@ export function WsiQuestionsPanel({ data, requiresApproval, onApprove, onReject 
       <div className="px-4 py-3">
         <div className="flex items-center gap-3 text-xs">
           <span className="text-lia-text-secondary">
-            {questions.length} perguntas {isAtMinimum && `(min: ${minQuestions})`}
+            {questions.length} perguntas {isAtMinimum && `(mín: ${minQuestions})`}
           </span>
           <span className="w-px h-3 bg-lia-border-subtle" />
-          <span className="text-lia-text-secondary">{techCount} tecnicas</span>
+          <span className="text-lia-text-secondary">{techCount} técnicas</span>
           <span className="w-px h-3 bg-lia-border-subtle" />
           <span className="text-lia-text-secondary">{behavCount} comportamentais</span>
         </div>
@@ -219,7 +219,7 @@ function QuestionCard({
               {question.framework}
             </span>
             <span className="px-1.5 py-0.5 rounded bg-lia-bg-secondary text-[10px] text-lia-text-secondary">
-              {question.block === "technical" ? "Tecnica" : "Comportamental"}
+              {question.block === "technical" ? "Técnica" : "Comportamental"}
             </span>
             {question.needs_manual_review && (
               <span
