@@ -53,3 +53,16 @@ def matches_subsidiaries(subsidiaries, vaga_subsidiary=None, vaga_cnpj=None) -> 
         if tgt_cnpj and _digits(s.get("cnpj")) == tgt_cnpj:
             return True
     return False
+
+
+def matches_area(areas, vaga_area=None) -> bool:
+    """areas = tokens livres de area de negocio. Vazio/None = aplica a todas.
+    Se a vaga nao informar area, nao restringe. Senao casa por token normalizado."""
+    if not areas:
+        return True
+    if any((a or "").strip().lower() == "all" for a in areas):
+        return True
+    if not vaga_area:
+        return True
+    target = _norm(vaga_area)
+    return any(_norm(a) == target for a in areas)

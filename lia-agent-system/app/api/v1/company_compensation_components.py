@@ -46,6 +46,7 @@ class CompensationComponentCreate(WeDoBaseModel):
     seniority_levels: list[str] = Field(default_factory=list)
     contract_types: list[str] = Field(default_factory=list)
     departments: dict | None = None
+    area: list[str] = Field(default_factory=list)
     subsidiaries: list | None = None
     valid_from: str | None = None
     valid_until: str | None = None
@@ -72,6 +73,7 @@ class CompensationComponentUpdate(WeDoBaseModel):
     seniority_levels: list[str] | None = None
     contract_types: list[str] | None = None
     departments: dict | None = None
+    area: list[str] | None = None
     subsidiaries: list | None = None
     valid_from: str | None = None
     valid_until: str | None = None
@@ -100,6 +102,7 @@ class CompensationComponentResponse(BaseModel):
     seniority_levels: list | None = None
     contract_types: list | None = None
     departments: dict | None = None
+    area: list | None = None
     subsidiaries: list | None = None
     valid_from: str | None = None
     valid_until: str | None = None
@@ -148,6 +151,7 @@ def _to_response(c, matches_vaga=None) -> CompensationComponentResponse:
         contract_types=c.contract_types,
         departments=deps if isinstance(deps, dict) else None,
         subsidiaries=c.subsidiaries if isinstance(c.subsidiaries, list) else None,
+        area=c.area if isinstance(c.area, list) else None,
         valid_from=c.valid_from.isoformat() if getattr(c, "valid_from", None) else None,
         valid_until=c.valid_until.isoformat() if getattr(c, "valid_until", None) else None,
         is_active=c.is_active,
@@ -197,6 +201,7 @@ async def list_active_components(
     contract_type: str | None = Query(None),
     subsidiary: str | None = Query(None),
     cnpj: str | None = Query(None),
+    area: str | None = Query(None),
     with_matches: bool = Query(False),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
@@ -208,7 +213,7 @@ async def list_active_components(
         if not eff or eff in ("default", "unknown"):
             return []
         repo = CompensationComponentRepository(db)
-        if with_matches or department or contract_type or seniority_level or subsidiary or cnpj:
+        if with_matches or department or contract_type or seniority_level or subsidiary or cnpj or area:
             pairs = await repo.list_matching(
                 eff,
                 seniority_level=seniority_level,
@@ -216,6 +221,7 @@ async def list_active_components(
                 contract_type=contract_type,
                 subsidiary=subsidiary,
                 subsidiary_cnpj=cnpj,
+                area=area,
                 active_only=True,
             )
             return [_to_response(c, matches_vaga=flag) for c, flag in pairs]
