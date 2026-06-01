@@ -65,9 +65,6 @@ vi.mock("@/components/settings/communication-hub/TemplatesTab", () => ({
 vi.mock("@/components/settings/communication-hub/SignatureTab", () => ({
   SignatureTab: () => <div data-testid="signature-tab-stub" />,
 }))
-vi.mock("@/components/settings/communication-hub/ScheduleTab", () => ({
-  ScheduleTab: () => <div data-testid="schedule-tab-stub" />,
-}))
 vi.mock("@/components/settings/AlertPreferencesPanel", () => ({
   AlertPreferencesPanel: () => <div data-testid="alert-preferences-stub" />,
 }))
@@ -92,7 +89,7 @@ describe("CommunicationHub — smoke rerender (rules-of-hooks + mount)", () => {
 
   it("rerenderiza entre activeSubsections sem lançar (detecta rules-of-hooks regression)", () => {
     const { rerender, unmount } = render(<CommunicationHub activeSubsection="templates" />)
-    rerender(<CommunicationHub activeSubsection="schedule" />)
+    rerender(<CommunicationHub activeSubsection="signature" />)
     rerender(<CommunicationHub activeSubsection="alerts" />)
     rerender(<CommunicationHub activeSubsection="abtesting" />)
     unmount()
