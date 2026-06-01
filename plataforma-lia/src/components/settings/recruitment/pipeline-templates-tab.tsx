@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react"
 import { useTranslations } from "next-intl"
 import {
+  Maximize2,
   Plus,
   Edit,
   Copy,
@@ -52,6 +53,7 @@ import {
 
 import { usePipelineTemplates, type PipelineTemplateFull, type PipelineStage } from "@/hooks/pipeline/use-pipeline-templates"
 import { useCompanyPipeline } from "@/hooks/company/use-company-pipeline"
+import { PipelineTemplateSheetEditor } from "./PipelineTemplateSheetEditor"
 
 type StageType = "automatic" | "manual" | "hybrid"
 
@@ -203,6 +205,12 @@ function SortableStage({ stage, index, onUpdate, onRemove, tFields, tStageType, 
           />
         </div>
       </div>
+
+      <PipelineTemplateSheetEditor
+        templateId={sheetTemplateId}
+        open={sheetOpen}
+        onOpenChange={setSheetOpen}
+      />
     </div>
   )
 }
@@ -275,6 +283,8 @@ export function PipelineTemplatesTab({ onSettingsChange }: { onSettingsChange?: 
   } = usePipelineTemplates()
 
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [sheetOpen, setSheetOpen] = useState(false)
+  const [sheetTemplateId, setSheetTemplateId] = useState<string | null>(null)
   const [draft, setDraft] = useState<EditorDraft>(EMPTY_DRAFT)
   const [isDirty, setIsDirty] = useState(false)
   const [confirmArchive, setConfirmArchive] = useState<string | null>(null)
@@ -329,6 +339,11 @@ export function PipelineTemplatesTab({ onSettingsChange }: { onSettingsChange?: 
       }))
     setDraft({ ...EMPTY_DRAFT, name: t("newTemplateDefaultName"), stages })
     setIsDirty(true)
+  }
+
+  function openSheetEditor(id: string) {
+    setSheetTemplateId(id)
+    setSheetOpen(true)
   }
 
   function handleNew() {
@@ -573,11 +588,12 @@ export function PipelineTemplatesTab({ onSettingsChange }: { onSettingsChange?: 
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleSelect(tpl.id)}
-                          aria-label={tActions("edit")}
+                          onClick={() => openSheetEditor(tpl.id)}
+                          aria-label="Editar pipeline completo"
+                          title="Editar etapas e sub-statuses"
                           className="h-7 w-7 p-0"
                         >
-                          <Edit className="w-3.5 h-3.5" />
+                          <Maximize2 className="w-3.5 h-3.5" />
                         </Button>
                         <Button
                           variant="ghost"
