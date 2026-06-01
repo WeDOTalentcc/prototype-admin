@@ -229,12 +229,13 @@ export function LiaEditor({
     Placeholder.configure({ placeholder }),
   ]
 
-  const allExtensions = (extraExtensions
+  const allExtensions = extraExtensions
     ? [...defaultExtensions, ...extraExtensions]
-    : defaultExtensions) as AnyExtension[]
+    : defaultExtensions
 
   const editor = useEditor({
-    extensions: allExtensions,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    extensions: allExtensions as any,
     content,
     editable: !disabled,
     // T-1167 (Bug "Algo deu errado / Tiptap Error: SSR has been detected") —
