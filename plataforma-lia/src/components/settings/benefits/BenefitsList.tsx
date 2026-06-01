@@ -105,7 +105,7 @@ export function BenefitsList({
             className={`${cardStyles.default} dark:border-lia-border-subtle/50 dark:bg-lia-bg-secondary/80 backdrop-blur-sm rounded-md overflow-hidden`}
           >
             <div
-              className={`flex items-center justify-between p-3 cursor-pointer transition-colors motion-reduce:transition-none ${category.bgColor}`}
+              className={`flex items-center justify-between p-3 cursor-pointer transition-colors motion-reduce:transition-none bg-lia-bg-secondary/60 dark:bg-lia-bg-secondary/40`}
               onClick={() => toggleCategory(category.id)}
               role="button"
               tabIndex={0}
@@ -114,7 +114,7 @@ export function BenefitsList({
             >
               <div className="flex items-center gap-2">
                 <div className="p-1.5 rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary">
-                  <CategoryIcon className={`w-4 h-4 ${category.color}`} />
+                  <CategoryIcon className="w-4 h-4 text-lia-text-secondary" />
                 </div>
                 <div>
                   <h3 className={textStyles.title}>{t(CATEGORY_NAME_KEYS[category.id] || "noDescription")}</h3>

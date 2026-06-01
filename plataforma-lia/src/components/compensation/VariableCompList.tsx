@@ -51,7 +51,7 @@ export function VariableCompList({
         return (
           <Card key={group.id} className={`${cardStyles.default} dark:border-lia-border-subtle/50 dark:bg-lia-bg-secondary/80 rounded-md overflow-hidden`}>
             <div
-              className={`flex items-center justify-between p-3 cursor-pointer transition-colors ${group.bgColor}`}
+              className={`flex items-center justify-between p-3 cursor-pointer transition-colors bg-lia-bg-secondary/60 dark:bg-lia-bg-secondary/40`}
               onClick={() => toggleGroup(group.id)}
               role="button"
               tabIndex={0}
@@ -60,7 +60,7 @@ export function VariableCompList({
             >
               <div className="flex items-center gap-2">
                 <div className="p-1.5 rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary">
-                  <Icon className={`w-4 h-4 ${group.color}`} />
+                  <Icon className="w-4 h-4 text-lia-text-secondary" />
                 </div>
                 <div>
                   <h3 className={textStyles.title}>{group.label}</h3>
