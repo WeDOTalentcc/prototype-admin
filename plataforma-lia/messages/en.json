@@ -5575,7 +5575,8 @@
           "clone": "Clone",
           "delete": "Delete",
           "edit": "Edit",
-          "save": "Save"
+          "save": "Save",
+          "removeStage": "Remove stage"
         },
         "confirmArchive": "Are you sure you want to archive this template?",
         "confirmArchiveTitle": "Archive template",
