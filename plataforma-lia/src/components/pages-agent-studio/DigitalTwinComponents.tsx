@@ -121,6 +121,9 @@ export function CreateDigitalTwinModal({ isOpen, onClose, onCreated }: CreateDig
   const [preview, setPreview] = useState<ScanPreview | null>(null)
   const [isCreating, setIsCreating] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  // LGPD: consentimento explícito ANTES da criação (gate). Twins indexam PII de
+  // candidatos (diagnóstico P0-4) → consent não pode ser footnote passiva.
+  const [hasAcceptedDisclosure, setHasAcceptedDisclosure] = useState(false)
 
   const authHeaders = (): Record<string, string> => {
     const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null
@@ -149,6 +152,7 @@ export function CreateDigitalTwinModal({ isOpen, onClose, onCreated }: CreateDig
   const reset = () => {
     setStep("select"); setSelectedId(""); setTwinName(""); setSpecialty("")
     setDescription(""); setMonthsBack(12); setPreview(null); setError(null); setIsCreating(false)
+    setHasAcceptedDisclosure(false)
   }
   const handleClose = () => { reset(); onClose() }
 
@@ -190,18 +194,37 @@ export function CreateDigitalTwinModal({ isOpen, onClose, onCreated }: CreateDig
     finally { setIsCreating(false) }
   }
 
-  const lgpdFootnote = (
-    <details className="text-[11px] text-lia-text-disabled mt-1">
-      <summary className="cursor-pointer flex items-center gap-1 list-none select-none">
-        <Info className="w-3 h-3 shrink-0" aria-hidden="true" />
-        <span>{t("lgpd.footnote")} <span className="underline">{t("lgpd.learnMore")}</span></span>
-      </summary>
-      <div className="mt-1 pl-4 space-y-1 text-lia-text-secondary">
-        <p>{t("lgpd.detail.indexing")}</p>
-        <p>{t("lgpd.detail.storage")}</p>
-        <p>{t("lgpd.detail.confirmation")}</p>
+  // Gate de consentimento LGPD explícito: resumo Art. 6/11/18 sempre visível +
+  // detalhe completo em Collapsible (neutro DS, sem amber alarmista) + botão
+  // "Confirmo" que libera o formulário de criação. Restaurado (era footnote
+  // passiva) — twins indexam PII (P0-4 do diagnóstico).
+  const consentGate = (
+    <div className="space-y-4 py-2">
+      <Collapsible defaultOpen={false} className="group">
+        <CollapsibleTrigger className="w-full text-left p-3 rounded-md bg-lia-bg-tertiary border border-lia-border-medium hover:bg-lia-bg-secondary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lia-btn-primary-bg/30">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-start gap-2">
+              <Info className="w-4 h-4 text-lia-text-secondary flex-shrink-0 mt-0.5" aria-hidden="true" />
+              <span className="text-sm text-lia-text-primary">{t("lgpd.summary")}</span>
+            </div>
+            <ChevronDown className="w-4 h-4 text-lia-text-secondary flex-shrink-0 mt-0.5 transition-transform group-data-[state=open]:rotate-180" aria-hidden="true" />
+          </div>
+        </CollapsibleTrigger>
+        <CollapsibleContent className="mt-2 p-3 bg-lia-bg-secondary rounded-md border border-lia-border-subtle text-sm text-lia-text-secondary space-y-2">
+          <p className="leading-relaxed">{t("lgpd.detail.indexing")}</p>
+          <p className="leading-relaxed">{t("lgpd.detail.storage")}</p>
+          <p className="leading-relaxed">{t("lgpd.detail.confirmation")}</p>
+        </CollapsibleContent>
+      </Collapsible>
+      <div className="flex justify-end gap-2 pt-2">
+        <Button className={buttonStyles.secondary} onClick={handleClose} aria-label={t("lgpd.cancelAria")}>
+          {t("cancel")}
+        </Button>
+        <Button onClick={() => setHasAcceptedDisclosure(true)} className={buttonStyles.primary} aria-label={t("lgpd.confirmAria")}>
+          {t("lgpd.confirmButton")}
+        </Button>
       </div>
-    </details>
+    </div>
   )
 
   return (
@@ -217,6 +240,9 @@ export function CreateDigitalTwinModal({ isOpen, onClose, onCreated }: CreateDig
           </DialogDescription>
         </DialogHeader>
 
+        {!hasAcceptedDisclosure && consentGate}
+
+        {hasAcceptedDisclosure && (<>
         {step === "select" && (
           <div className="space-y-4 py-2">
             <div className={formStyles.fieldGroup}>
@@ -250,9 +276,7 @@ export function CreateDigitalTwinModal({ isOpen, onClose, onCreated }: CreateDig
               </select>
             </div>
 
-            {error && <p className="text-sm text-red-600">{error}</p>}
-            {lgpdFootnote}
-          </div>
+            {error && <p className="text-sm text-red-600">{error}</p>}          </div>
         )}
 
         {step === "scanning" && (
@@ -312,8 +336,6 @@ export function CreateDigitalTwinModal({ isOpen, onClose, onCreated }: CreateDig
                 </p>
               </>
             )}
-
-            {lgpdFootnote}
           </div>
         )}
 
@@ -339,6 +361,7 @@ export function CreateDigitalTwinModal({ isOpen, onClose, onCreated }: CreateDig
             </>
           )}
         </DialogFooter>
+        </>)}
       </DialogContent>
     </Dialog>
   )
