@@ -311,7 +311,6 @@ export function IntakePanel({ data, onUpdate }: Props) {
     { label: "Título", value: fieldText(data.parsed_title), editKey: "title" },
     { label: "Senioridade", value: fieldText(data.parsed_seniority), editKey: "seniority" },
     { label: "Modelo de trabalho", value: fieldText(data.parsed_model), editKey: "work_model" },
-    { label: "Modo de triagem", value: screeningMode ? (MODE_LABEL[screeningMode] || screeningMode) : "" },
   ]
   const enrichingFields: { label: string; value: string; editKey?: string; type?: "text" | "email" }[] = [
     { label: "Departamento", value: fieldText(data.parsed_department), editKey: "department" },
@@ -320,6 +319,7 @@ export function IntakePanel({ data, onUpdate }: Props) {
     { label: "Gestor responsável", value: fieldText(data.parsed_manager_name), editKey: "manager_name" },
     { label: "Email do gestor", value: fieldText(data.parsed_manager_email), editKey: "manager_email", type: "email" },
     { label: "Salário", value: salaryText(data) },
+    { label: "Modo de triagem", value: screeningMode ? (MODE_LABEL[screeningMode] || screeningMode) : "" },
   ]
   const hasSignal = Boolean(rawInput) || blockingFields.some((f) => f.value) || enrichingFields.some((f) => f.value)
 
