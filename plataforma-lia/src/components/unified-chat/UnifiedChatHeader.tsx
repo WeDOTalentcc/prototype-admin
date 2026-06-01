@@ -73,7 +73,7 @@ export function UnifiedChatHeader({
 }: Props) {
   const t = useTranslations('chat.header')
   const [showModeMenu, setShowModeMenu] = useState(false)
-  const [showOptionsMenu, setShowOptionsMenu] = useState(false)
+  const [optionsAnchor, setOptionsAnchor] = useState<"title" | "more" | null>(null)
   const [isRenaming, setIsRenaming] = useState(false)
   const [renameValue, setRenameValue] = useState("")
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
@@ -99,7 +99,7 @@ export function UnifiedChatHeader({
   const handleStartRename = () => {
     setRenameValue(title)
     setIsRenaming(true)
-    setShowOptionsMenu(false)
+    setOptionsAnchor(null)
   }
 
   const handleFinishRename = () => {
@@ -121,7 +121,7 @@ export function UnifiedChatHeader({
   }
 
   const handleDelete = () => {
-    setShowOptionsMenu(false)
+    setOptionsAnchor(null)
     setShowDeleteDialog(true)
   }
 
@@ -156,6 +156,55 @@ export function UnifiedChatHeader({
     return null
   }
 
+  // Conversation options menu (rename + delete). Anchored to whichever
+  // trigger opened it: the title button (left) or the kebab (right).
+  // Single source of truth for the menu body so both triggers stay in sync.
+  const renderConversationMenu = (align: "left" | "right") => (
+    <>
+      <div className="fixed inset-0 z-40" onClick={() => setOptionsAnchor(null)} />
+      <div
+        className={cn(
+          "absolute top-full mt-1 z-50 w-44 rounded-md border border-lia-border-subtle bg-lia-bg-primary py-1",
+          align === "left" ? "left-0" : "right-0",
+        )}
+      >
+        <button
+          onClick={handleStartRename}
+          className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-lia-text-secondary hover:bg-lia-bg-secondary"
+        >
+          <Pencil className="w-3.5 h-3.5" />
+          {t('rename')}
+        </button>
+        <div className="my-1 border-t border-lia-border-subtle" />
+        <button
+          onClick={handleDelete}
+          className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-status-error hover:bg-lia-bg-secondary"
+        >
+          <Trash2 className="w-3.5 h-3.5" />
+          {t('delete')}
+        </button>
+      </div>
+    </>
+  )
+
+  // Conversation title acting as the menu trigger. The dropdown opens
+  // anchored to the title (left), so it visually belongs to "LIA / <name>"
+  // instead of floating to the opposite corner of the header.
+  const renderTitleButton = (maxWidthClass: string) => (
+    <div className="relative">
+      <button
+        onClick={() => setOptionsAnchor(optionsAnchor === "title" ? null : "title")}
+        className="flex items-center gap-1 min-w-0 group"
+      >
+        <span className={cn("text-sm font-medium text-lia-text-primary truncate", maxWidthClass)}>
+          {title}
+        </span>
+        <ChevronDown className="w-3 h-3 text-lia-text-disabled group-hover:text-lia-text-secondary flex-shrink-0" />
+      </button>
+      {optionsAnchor === "title" && renderConversationMenu("left")}
+    </div>
+  )
+
   return (
     <div className="flex items-center justify-between px-4 py-2.5 flex-shrink-0 bg-lia-bg-primary">
       <div className="flex items-center gap-2 min-w-0">
@@ -167,34 +216,10 @@ export function UnifiedChatHeader({
               LIA
             </span>
             <span className="text-sm text-lia-text-disabled">/</span>
-            {isRenaming ? (
-              renderTitle()
-            ) : (
-              <button
-                onClick={() => setShowOptionsMenu(!showOptionsMenu)}
-                className="flex items-center gap-1 min-w-0 group"
-              >
-                <span className="text-sm text-lia-text-primary font-medium truncate max-w-[200px]">
-                  {title}
-                </span>
-                <ChevronDown className="w-3 h-3 text-lia-text-disabled group-hover:text-lia-text-secondary flex-shrink-0" />
-              </button>
-            )}
+            {isRenaming ? renderTitle() : renderTitleButton("max-w-[200px]")}
           </div>
         ) : (
-          isRenaming ? (
-            renderTitle()
-          ) : (
-            <button
-              onClick={() => setShowOptionsMenu(!showOptionsMenu)}
-              className="flex items-center gap-1 min-w-0 group"
-            >
-              <span className="text-sm font-medium text-lia-text-primary truncate max-w-[160px]">
-                {title}
-              </span>
-              <ChevronDown className="w-3 h-3 text-lia-text-disabled group-hover:text-lia-text-secondary flex-shrink-0" />
-            </button>
-          )
+          isRenaming ? renderTitle() : renderTitleButton("max-w-[160px]")
         )}
 
         {isConnected && (
@@ -325,7 +350,7 @@ export function UnifiedChatHeader({
 
         <div className="relative">
           <button
-            onClick={() => setShowOptionsMenu(!showOptionsMenu)}
+            onClick={() => setOptionsAnchor(optionsAnchor === "more" ? null : "more")}
             className="p-1.5 rounded-md text-lia-border-strong hover:text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
             title={t('options')}
             aria-label={t('optionsLabel')}
@@ -333,28 +358,7 @@ export function UnifiedChatHeader({
             <MoreHorizontal className="w-4 h-4" />
           </button>
 
-          {showOptionsMenu && (
-            <>
-              <div className="fixed inset-0 z-40" onClick={() => setShowOptionsMenu(false)} />
-              <div className="absolute right-0 top-full mt-1 z-50 w-44 rounded-md border border-lia-border-subtle bg-lia-bg-primary py-1">
-                <button
-                  onClick={handleStartRename}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-lia-text-secondary hover:bg-lia-bg-secondary"
-                >
-                  <Pencil className="w-3.5 h-3.5" />
-                  {t('rename')}
-                </button>
-                <div className="my-1 border-t border-lia-border-subtle" />
-                <button
-                  onClick={handleDelete}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-status-error hover:bg-lia-bg-secondary"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                  {t('delete')}
-                </button>
-              </div>
-            </>
-          )}
+          {optionsAnchor === "more" && renderConversationMenu("right")}
         </div>
       </div>
 
