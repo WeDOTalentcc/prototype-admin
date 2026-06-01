@@ -229,9 +229,9 @@ export function LiaEditor({
     Placeholder.configure({ placeholder }),
   ]
 
-  const allExtensions = extraExtensions
+  const allExtensions = (extraExtensions
     ? [...defaultExtensions, ...extraExtensions]
-    : defaultExtensions
+    : defaultExtensions) as AnyExtension[]
 
   const editor = useEditor({
     extensions: allExtensions,
