@@ -1,60 +1,101 @@
 "use client"
 
 /**
- * HiringPoliciesHub — Políticas de Recrutamento (superfície ESTRUTURADA canônica)
+ * HiringPoliciesHub — Políticas de Recrutamento (estruturada + instruções LIA)
  *
- * P1 dedup (2026-06-01): substitui a versão narrativa (18 Textareas livres) por
- * controles TIPADOS, reusando o bloco "policy" de useCompanySettingsCards +
- * MinhaEmpresaCard. Motivo: os consumidores backend são gates tipados (bool/int)
- * e a UI narrativa gravava strings que o boundary P0.a agora rejeita (422).
- * Decisão "estruturado vence" (plano aprovado 2026-06-01).
- *
- * - Mesma fonte de dados (CompanyHiringPolicy) e mesmos editores inline de
- *   Minha Empresa — agora num único lugar canônico (grupo PROCESSO do menu).
- * - O bloco "policy" foi REMOVIDO de MinhaEmpresaHub para eliminar a duplicação.
- * - Os 14 campos narrativos-puros (screening_criteria, no_show_policy, D&I,
- *   data_retention, etc.) ficam deferidos ao P3, onde viram instruções da LIA
- *   (LiaFieldToggle.comment) — fora de slots de gate. Dado preservado no banco;
- *   a versão narrativa permanece no histórico git para reuso no P3.
+ * P1 dedup (2026-06-01): superfície ESTRUTURADA canônica reusando o bloco
+ * "policy" de useCompanySettingsCards + MinhaEmpresaCard (gates tipados).
+ * P3b (2026-06-01): seção "Instruções para a LIA" — 11 conceitos narrativos de
+ * política (texto livre) que orientam o prompt da LIA. Gravados em
+ * CompanyHiringPolicy.policy_instructions (coluna separada dos 5 blocos de gate
+ * — invariante de segurança: texto nunca toca slot tipado). Consumidos por
+ * build_company_agent_context. Endpoint: PATCH /hiring-policy/instructions.
  */
 
 import React from "react"
-import { FileText, RefreshCw } from "lucide-react"
+import { FileText, RefreshCw, Sparkles, CheckCircle2 } from "lucide-react"
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { useCompanySettingsCards } from "@/hooks/settings/use-company-settings-cards"
 import { MinhaEmpresaCard } from "@/components/settings/MinhaEmpresaCard"
 import { HubHeader, HubLoadingState, HubErrorState } from "./_shared"
 import { SettingsEditModeToggle } from "@/components/settings/SettingsEditModeToggle"
 import { useSettingsEditMode } from "@/hooks/settings/useSettingsEditMode"
+import { SETTINGS_QUERY_KEYS, dispatchSettingsUpdate } from "@/hooks/settings/useSettingsBroadcast"
+import { Textarea } from "@/components/ui/textarea"
+
+// ── 11 conceitos narrativos de política (instruções para a LIA) ──────────────
+interface InstructionDef { key: string; label: string; hint: string; placeholder: string }
+const POLICY_INSTRUCTIONS: InstructionDef[] = [
+  { key: "screening_criteria", label: "Critérios mínimos de triagem", hint: "Requisitos de formação, experiência ou comportamento que a LIA usa como filtro.", placeholder: "Ex: Mínimo 3 anos em gestão de projetos, inglês avançado..." },
+  { key: "candidate_feedback_policy", label: "Feedback a candidatos reprovados", hint: "Nível de transparência com candidatos não avançados.", placeholder: "Ex: Reprovados recebem e-mail genérico; quem chegou à entrevista recebe feedback personalizado..." },
+  { key: "communication_window", label: "Janela de envio de comunicações (LGPD)", hint: "Dias/horários em que a LIA pode enviar mensagens automáticas.", placeholder: "Ex: Seg a sex, 8h–18h. Sábados até 12h para urgências..." },
+  { key: "interview_scheduling_policy", label: "Regras de agendamento de entrevistas", hint: "Como a LIA propõe e confirma horários.", placeholder: "Ex: LIA envia 3 opções; confirmação automática; cancelamento com 12h..." },
+  { key: "interview_reminder_policy", label: "Lembretes de entrevista", hint: "Antecedência e canais dos lembretes.", placeholder: "Ex: 24h antes por e-mail e 2h antes por WhatsApp..." },
+  { key: "no_show_policy", label: "Política de no-show", hint: "Fluxo de recontato e quando reprovar.", placeholder: "Ex: Recontato por e-mail e WhatsApp; sem resposta em 48h → Reprovado..." },
+  { key: "salary_negotiation_policy", label: "Flexibilidade / negociação salarial", hint: "Limites para a LIA orientar expectativas.", placeholder: "Ex: Até 10% acima do base; benefícios fixos..." },
+  { key: "remote_work_policy", label: "Política de trabalho remoto", hint: "Modelo de trabalho que a LIA informa aos candidatos.", placeholder: "Ex: Híbrido 3x presencial em SP; TI pode ser 100% remoto..." },
+  { key: "data_retention_candidate_policy", label: "Retenção de dados de candidatos (LGPD)", hint: "Prazo de retenção (LGPD Art. 7).", placeholder: "Ex: 12 meses para quem foi à entrevista; 6 meses para triagem; depois anonimizar..." },
+  { key: "talent_pool_opt_in_policy", label: "Convite ao banco de talentos (opt-in)", hint: "Quando a LIA convida reprovados para o pool.", placeholder: "Ex: Quem chegou à entrevista recebe convite com clareza sobre como sair..." },
+  { key: "diversity_inclusion_guidelines", label: "Diretrizes de diversidade e inclusão", hint: "Políticas afirmativas e grupos prioritários.", placeholder: "Ex: Priorizar PcD, mulheres em tech e pessoas negras; sinalizar se o funil não reflete..." },
+]
+
+interface RawPolicy { policy_instructions?: Record<string, string>; [k: string]: unknown }
+
+async function fetchRawPolicy(): Promise<RawPolicy | null> {
+  const res = await fetch("/api/backend-proxy/hiring-policy")
+  if (res.ok) return res.json()
+  return null
+}
 
 export function HiringPoliciesHub() {
   // ─── TODOS OS HOOKS PRIMEIRO (rules-of-hooks, CLAUDE.md) ───
   const {
-    blocks,
-    benefits,
-    companyId,
-    loading,
-    error,
-    recentlyUpdated,
-    editingField,
-    isSavingField,
-    startEditing,
-    cancelEditing,
-    saveField,
-    refreshAll,
-    watchdogError,
+    blocks, benefits, companyId, loading, error,
+    recentlyUpdated, editingField, isSavingField,
+    startEditing, cancelEditing, saveField, refreshAll, watchdogError,
   } = useCompanySettingsCards()
 
   const [isExpanded, setIsExpanded] = React.useState(true)
-
-  // RBAC edit-mode (P2): read-only por role; default editável para admin/recruiter.
   const { isEditing } = useSettingsEditMode("politicas-recrutamento")
+  const queryClient = useQueryClient()
 
-  const policyBlock = React.useMemo(
-    () => blocks.find((b) => b.key === "policy"),
-    [blocks],
+  const { data: rawPolicy } = useQuery({
+    queryKey: SETTINGS_QUERY_KEYS.hiringPolicy(),
+    queryFn: fetchRawPolicy,
+    staleTime: 30_000,
+  })
+
+  const [localInstr, setLocalInstr] = React.useState<Record<string, string>>({})
+  const [savedInstr, setSavedInstr] = React.useState<Record<string, string>>({})
+  const [savingInstr, setSavingInstr] = React.useState<Set<string>>(new Set())
+
+  const policyBlock = React.useMemo(() => blocks.find((b) => b.key === "policy"), [blocks])
+
+  const serverInstr = React.useMemo(
+    () => (rawPolicy?.policy_instructions ?? {}) as Record<string, string>,
+    [rawPolicy],
   )
 
-  // Card no chat dispara `lia:settings-updated` ao salvar — re-fetch.
+  const instrMutation = useMutation({
+    mutationFn: async ({ key, value }: { key: string; value: string }) => {
+      const res = await fetch("/api/backend-proxy/hiring-policy/instructions", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ instructions: { [key]: value } }),
+      })
+      if (!res.ok) throw new Error("Falha ao salvar instrução")
+    },
+    onSuccess: (_d, { key, value }) => {
+      setSavedInstr((p) => ({ ...p, [key]: value }))
+      setSavingInstr((p) => { const n = new Set(p); n.delete(key); return n })
+      queryClient.invalidateQueries({ queryKey: SETTINGS_QUERY_KEYS.hiringPolicy() })
+      dispatchSettingsUpdate({ actionId: "save_policy_instruction", section: "hiring_policies", field: key, source: "ui", ts: Date.now() })
+    },
+    onError: (_e, { key }) => {
+      setSavingInstr((p) => { const n = new Set(p); n.delete(key); return n })
+    },
+  })
+
   React.useEffect(() => {
     if (typeof window === "undefined") return
     const handler = () => refreshAll()
@@ -62,21 +103,17 @@ export function HiringPoliciesHub() {
     return () => window.removeEventListener("lia:settings-updated", handler)
   }, [refreshAll])
 
+  const handleInstrBlur = React.useCallback((key: string, value: string) => {
+    const prev = savedInstr[key] !== undefined ? savedInstr[key] : (serverInstr[key] ?? "")
+    if (value === prev) return
+    setSavingInstr((p) => new Set(p).add(key))
+    instrMutation.mutate({ key, value })
+  }, [savedInstr, serverInstr, instrMutation])
+
   // ─── EARLY RETURNS — APÓS TODOS OS HOOKS ───
-  if (watchdogError) {
-    return <HubErrorState message={watchdogError} onRetry={refreshAll} />
-  }
-  if (loading) {
-    return <HubLoadingState message="Carregando políticas de recrutamento..." />
-  }
-  if (!policyBlock) {
-    return (
-      <HubErrorState
-        message="Bloco de políticas não encontrado. Tente recarregar."
-        onRetry={refreshAll}
-      />
-    )
-  }
+  if (watchdogError) return <HubErrorState message={watchdogError} onRetry={refreshAll} />
+  if (loading) return <HubLoadingState message="Carregando políticas de recrutamento..." />
+  if (!policyBlock) return <HubErrorState message="Bloco de políticas não encontrado. Tente recarregar." onRetry={refreshAll} />
 
   return (
     <div className="flex flex-col h-full space-y-4">
@@ -89,15 +126,11 @@ export function HiringPoliciesHub() {
       <div>
         <HubHeader
           title="Políticas de Recrutamento"
-          description="Regras de triagem, aprovação, agendamento e automação que a LIA aplica no processo seletivo."
+          description="Regras tipadas (triagem, aprovação, agendamento, automação) e instruções de texto livre que a LIA aplica no processo seletivo."
         >
           <div className="flex items-center gap-3">
             <SettingsEditModeToggle hubId="politicas-recrutamento" />
-            <button
-              onClick={refreshAll}
-              className="p-1.5 rounded-md hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none"
-              aria-label="Recarregar dados"
-            >
+            <button onClick={refreshAll} className="p-1.5 rounded-md hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none" aria-label="Recarregar dados">
               <RefreshCw className="w-4 h-4 text-lia-text-secondary" />
             </button>
           </div>
@@ -122,6 +155,52 @@ export function HiringPoliciesHub() {
           onCancelEditing={cancelEditing}
           onSaveField={saveField}
         />
+      </div>
+
+      {/* P3b — Instruções narrativas para a LIA (texto livre, fora dos gates) */}
+      <div className="rounded-lg border border-lia-border-subtle bg-lia-bg-secondary/40 dark:bg-lia-bg-elevated p-4 space-y-4">
+        <div className="flex items-center gap-2">
+          <Sparkles className="w-4 h-4 text-wedo-cyan" aria-hidden />
+          <h3 className="text-sm font-semibold text-lia-text-primary">Instruções para a LIA</h3>
+        </div>
+        <p className="text-xs text-lia-text-secondary leading-relaxed">
+          Orientações em texto livre que a LIA leva em conta no processo. Não são regras
+          automáticas (gates) — são contexto que enriquece as decisões e a comunicação da IA.
+        </p>
+        <div className="grid grid-cols-1 gap-4">
+          {POLICY_INSTRUCTIONS.map((q) => {
+            const value = localInstr[q.key] !== undefined
+              ? localInstr[q.key]
+              : (savedInstr[q.key] !== undefined ? savedInstr[q.key] : (serverInstr[q.key] ?? ""))
+            const effectivePrev = savedInstr[q.key] !== undefined ? savedInstr[q.key] : (serverInstr[q.key] ?? "")
+            const isSaving = savingInstr.has(q.key)
+            const showSaved = !isSaving && value !== "" && value === effectivePrev
+            return (
+              <div key={q.key} className="space-y-1.5" data-testid={`instruction-block-${q.key}`}>
+                <div className="flex items-start justify-between gap-2">
+                  <label htmlFor={`instr-${q.key}`} className="text-sm font-medium text-lia-text-primary leading-snug">{q.label}</label>
+                  {showSaved && (
+                    <span className="flex items-center gap-1 text-micro text-status-success shrink-0 mt-0.5" aria-label="Salvo">
+                      <CheckCircle2 className="w-3 h-3" />Salvo
+                    </span>
+                  )}
+                  {isSaving && <span className="text-micro text-lia-text-tertiary shrink-0 mt-0.5">Salvando...</span>}
+                </div>
+                <p className="text-xs text-lia-text-secondary leading-relaxed">{q.hint}</p>
+                <Textarea
+                  id={`instr-${q.key}`}
+                  value={value}
+                  disabled={!isEditing}
+                  onChange={(e) => setLocalInstr((p) => ({ ...p, [q.key]: e.target.value }))}
+                  onBlur={(e) => handleInstrBlur(q.key, e.target.value)}
+                  placeholder={q.placeholder}
+                  rows={3}
+                  className="resize-none text-sm bg-lia-bg-primary border-lia-border-subtle focus:border-lia-border-medium placeholder:text-lia-text-tertiary"
+                />
+              </div>
+            )
+          })}
+        </div>
       </div>
     </div>
   )

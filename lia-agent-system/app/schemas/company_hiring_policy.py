@@ -95,6 +95,7 @@ class CompanyHiringPolicyResponse(BaseModel):
     communication_rules: dict[str, Any]
     screening_rules: dict[str, Any]
     automation_rules: dict[str, Any]
+    policy_instructions: dict[str, Any] = Field(default_factory=dict)
     pipeline_templates: list[dict[str, Any]]
     learned_patterns: list[dict[str, Any]]
     setup_progress: int
@@ -247,3 +248,75 @@ def coerce_and_validate_block(block: str, data: dict[str, Any]) -> dict[str, Any
         ) from exc
 
     return {key: getattr(validated, key) for key in precoerced}
+
+
+# ---------------------------------------------------------------------------
+# P3b — Policy narrative instructions (free-text prompt hints, NOT gates)
+# ---------------------------------------------------------------------------
+# The 11 genuinely-narrative policy concepts that were reclassified out of the
+# typed gate blocks. Stored in CompanyHiringPolicy.policy_instructions (separate
+# JSON column) and injected into the LIA system prompt by build_company_agent_context.
+# They never feed an if/gate — only the prompt. Safety invariant preserved.
+
+POLICY_INSTRUCTION_KEYS: set[str] = {
+    "screening_criteria",
+    "candidate_feedback_policy",
+    "communication_window",
+    "interview_scheduling_policy",
+    "interview_reminder_policy",
+    "no_show_policy",
+    "salary_negotiation_policy",
+    "remote_work_policy",
+    "data_retention_candidate_policy",
+    "talent_pool_opt_in_policy",
+    "diversity_inclusion_guidelines",
+}
+
+# Human-readable labels (PT-BR) used to title each instruction in the prompt.
+POLICY_INSTRUCTION_LABELS: dict[str, str] = {
+    "screening_criteria": "Critérios mínimos de triagem",
+    "candidate_feedback_policy": "Política de feedback a candidatos reprovados",
+    "communication_window": "Janela de envio de comunicações (LGPD)",
+    "interview_scheduling_policy": "Regras de agendamento de entrevistas",
+    "interview_reminder_policy": "Lembretes de entrevista",
+    "no_show_policy": "Política de no-show",
+    "salary_negotiation_policy": "Flexibilidade / negociação salarial",
+    "remote_work_policy": "Política de trabalho remoto",
+    "data_retention_candidate_policy": "Retenção de dados de candidatos (LGPD)",
+    "talent_pool_opt_in_policy": "Convite ao banco de talentos (opt-in)",
+    "diversity_inclusion_guidelines": "Diretrizes de diversidade e inclusão",
+}
+
+
+class PolicyInstructionsUpdate(WeDoBaseModel):
+    instructions: dict[str, str] = Field(..., description="Mapa {conceito: texto livre}")
+    updated_by: str | None = None
+
+
+def validate_policy_instructions(data: dict[str, Any]) -> dict[str, str]:
+    """Validate a partial policy-instructions payload (free text per concept).
+
+    Rejects unknown keys (only POLICY_INSTRUCTION_KEYS allowed) and coerces each
+    value to a stripped string. Raises PolicyBlockValidationError (-> HTTP 422).
+    """
+    if not isinstance(data, dict):
+        raise PolicyBlockValidationError(
+            f"Instruções de política esperam objeto, recebido {type(data).__name__}."
+        )
+    unknown = set(data) - POLICY_INSTRUCTION_KEYS
+    if unknown:
+        raise PolicyBlockValidationError(
+            f"Conceitos de instrução desconhecidos: {sorted(unknown)}. "
+            f"→ Fix: usar apenas {sorted(POLICY_INSTRUCTION_KEYS)}."
+        )
+    cleaned: dict[str, str] = {}
+    for key, value in data.items():
+        if value is None:
+            cleaned[key] = ""
+        elif isinstance(value, str):
+            cleaned[key] = value.strip()
+        else:
+            raise PolicyBlockValidationError(
+                f"Instrução '{key}' deve ser texto, recebeu {type(value).__name__}."
+            )
+    return cleaned
