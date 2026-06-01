@@ -117,7 +117,16 @@ export function getHubPermission(
   role: string | null | undefined,
 ): SettingsPermission {
   if (!role) return "hidden"
-  const validRole = role as SettingsRole
+  // wedotalent_admin (staff WeDOTalent, vem do JWT — ver auth-service.ts) é
+  // superset de admin em toda a plataforma. O idioma canônico no resto do código
+  // é `role === "admin" || role === "wedotalent_admin"` (CatalogsManagementSection,
+  // AuditLogsDrillDown, LiaFieldsConfigPanel). Esta matriz era a ÚNICA exceção que
+  // esquecia esse role — fazendo getHubPermission cair em "hidden" → canEditHub=false
+  // → SettingsEditModeToggle some → read-only forçado em TODOS os hubs (bug 2026-06-01).
+  // Normaliza para admin antes do lookup (fail-secure preservado: role desconhecida
+  // continua "hidden").
+  const normalizedRole = role === "wedotalent_admin" ? "admin" : role
+  const validRole = normalizedRole as SettingsRole
   const hubPermissions = SETTINGS_HUB_PERMISSIONS[hubId as SettingsSectionId]
   if (!hubPermissions) return "hidden"
   return hubPermissions[validRole] ?? "hidden"

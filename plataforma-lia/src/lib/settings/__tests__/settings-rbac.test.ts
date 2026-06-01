@@ -83,3 +83,26 @@ describe("settings-rbac — P2-3 matrix completude", () => {
     expect(getHubPermission("unknown-hub", "admin")).toBe("hidden")
   })
 })
+
+
+describe("settings-rbac — wedotalent_admin (staff WeDOTalent) é admin-equivalente", () => {
+  // Bug 2026-06-01 (Paulo): o toggle "Modo edição" sumia em Minha Empresa e em
+  // todos os hubs. Causa: a matriz só conhece admin|manager|recruiter|viewer e
+  // NÃO lista wedotalent_admin (role de staff WeDOTalent, do JWT). getHubPermission
+  // caía em "hidden" → canEditHub=false → SettingsEditModeToggle retorna null.
+  // O resto do código já trata `role === "admin" || role === "wedotalent_admin"`.
+  it("wedotalent_admin pode editar TODOS os hubs (superset de admin)", () => {
+    for (const hub of ALL_HUBS) {
+      expect(canEditHub(hub, "wedotalent_admin")).toBe(true)
+    }
+  })
+
+  it("wedotalent_admin → minha-empresa = edit (regressão: toggle não pode sumir)", () => {
+    expect(getHubPermission("minha-empresa", "wedotalent_admin")).toBe("edit")
+    expect(canEditHub("minha-empresa", "wedotalent_admin")).toBe(true)
+  })
+
+  it("role desconhecida continua hidden (fail-secure preservado)", () => {
+    expect(getHubPermission("minha-empresa", "hacker")).toBe("hidden")
+  })
+})
