@@ -120,7 +120,6 @@ export function BenefitsTab() {
             <Plus className="w-3.5 h-3.5" />
             {t("newBenefit")}
           </Button>
-        </div>
       </HubHeader>
 
       <BenefitsList
