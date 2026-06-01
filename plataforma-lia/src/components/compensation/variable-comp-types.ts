@@ -28,6 +28,7 @@ export interface VariableCompRecord {
   spec?: Record<string, unknown> | null
   seniority_levels?: string[]
   contract_types?: string[]
+  area?: string[]
   departments?: Record<string, unknown>
   subsidiaries?: Array<{ name: string; cnpj?: string | null }>
   valid_from?: string | null
@@ -85,6 +86,7 @@ export const defaultComponent: VariableCompRecord = {
   spec: {},
   seniority_levels: [],
   contract_types: [],
+  area: [],
   departments: {},
   subsidiaries: [],
   valid_from: null,

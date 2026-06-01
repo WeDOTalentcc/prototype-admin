@@ -3,14 +3,16 @@
 /**
  * EligibilityScopeEditor — editor canonico de escopo de elegibilidade.
  *
- * Senioridade (niveis canonicos) + tipos de contrato + departamentos. Compartilhado
- * por verbas variaveis (CompensationComponent) e, futuramente, beneficios + PRV
- * (Rule of Three). Departments armazenados como dict { nomeDept: true } — shape que
- * o matcher do backend (app/shared/eligibility_matching.matches_department) consome
- * (compara nome normalizado da vaga). Vazio em qualquer dimensao = aplica a todos.
+ * Senioridade (niveis canonicos) + tipos de contrato + departamentos + AREA (tokens
+ * livres). Compartilhado por verbas variaveis, faixas salariais e (futuro) beneficios
+ * (Rule of Three). Departments = dict { nomeDept: true } (shape do matcher backend).
+ * Vazio em qualquer dimensao = aplica a todos. showSeniority=false p/ faixa salarial
+ * (onde o nivel e identidade, escolhido fora do editor).
  */
+import { useState } from "react"
 import { Label } from "@/components/ui/label"
-import { Loader2 } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import { Loader2, X, Plus } from "lucide-react"
 import { ChipMultiSelect } from "./ChipMultiSelect"
 import {
   SENIORITY_SCOPE_OPTIONS,
@@ -21,6 +23,7 @@ export interface EligibilityScopeValue {
   seniority_levels?: string[]
   contract_types?: string[]
   departments?: Record<string, unknown>
+  area?: string[]
 }
 
 export interface EligibilityScopeEditorProps<T extends EligibilityScopeValue> {
@@ -28,6 +31,7 @@ export interface EligibilityScopeEditorProps<T extends EligibilityScopeValue> {
   onChange: (patch: Partial<EligibilityScopeValue>) => void
   departments: { id: string; name: string }[]
   deptsLoading?: boolean
+  showSeniority?: boolean
 }
 
 const labelCls = "text-xs mb-1 block text-lia-text-secondary"
@@ -47,8 +51,11 @@ export function EligibilityScopeEditor<T extends EligibilityScopeValue>({
   onChange,
   departments,
   deptsLoading,
+  showSeniority = true,
 }: EligibilityScopeEditorProps<T>) {
   const selected = selectedDeptNames(value.departments)
+  const [areaDraft, setAreaDraft] = useState("")
+  const areas = value.area || []
 
   const toggleDept = (name: string) => {
     const next: Record<string, true> = {}
@@ -59,18 +66,30 @@ export function EligibilityScopeEditor<T extends EligibilityScopeValue>({
     onChange({ departments: next })
   }
 
+  const addArea = () => {
+    const v = areaDraft.trim()
+    if (!v || areas.some((a) => a.toLowerCase() === v.toLowerCase())) {
+      setAreaDraft("")
+      return
+    }
+    onChange({ area: [...areas, v] })
+    setAreaDraft("")
+  }
+
   return (
     <div className="space-y-3">
-      <div>
-        <Label className={labelCls}>Senioridade aplicável</Label>
-        <ChipMultiSelect
-          options={SENIORITY_SCOPE_OPTIONS}
-          value={value.seniority_levels || []}
-          onChange={(next) => onChange({ seniority_levels: next })}
-          ariaLabel="Senioridade aplicável"
-          allOptionId="all"
-        />
-      </div>
+      {showSeniority && (
+        <div>
+          <Label className={labelCls}>Senioridade aplicável</Label>
+          <ChipMultiSelect
+            options={SENIORITY_SCOPE_OPTIONS}
+            value={value.seniority_levels || []}
+            onChange={(next) => onChange({ seniority_levels: next })}
+            ariaLabel="Senioridade aplicável"
+            allOptionId="all"
+          />
+        </div>
+      )}
 
       <div>
         <Label className={labelCls}>Tipos de contrato</Label>
@@ -121,6 +140,41 @@ export function EligibilityScopeEditor<T extends EligibilityScopeValue>({
             })}
           </div>
         )}
+      </div>
+
+      <div>
+        <Label className={labelCls}>Áreas de negócio (opcional)</Label>
+        <p className="text-xs text-lia-text-tertiary mb-2">
+          Dimensão separada de departamento. Deixe vazio para aplicar a todas as áreas.
+        </p>
+        {areas.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mb-2" role="group" aria-label="Áreas selecionadas">
+            {areas.map((a) => (
+              <span key={a} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs border border-lia-btn-primary-bg bg-lia-bg-tertiary text-lia-text-primary">
+                {a}
+                <button type="button" onClick={() => onChange({ area: areas.filter((x) => x !== a) })} aria-label={`Remover área ${a}`}>
+                  <X size={12} />
+                </button>
+              </span>
+            ))}
+          </div>
+        )}
+        <div className="flex gap-2">
+          <Input
+            value={areaDraft}
+            onChange={(e) => setAreaDraft(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addArea() } }}
+            placeholder="Ex: Tecnologia, Comercial"
+            className="flex-1 rounded-md text-sm"
+          />
+          <button
+            type="button"
+            onClick={addArea}
+            className="inline-flex items-center gap-1 text-xs text-lia-btn-primary-bg hover:underline px-2"
+          >
+            <Plus size={14} /> Adicionar
+          </button>
+        </div>
       </div>
     </div>
   )
