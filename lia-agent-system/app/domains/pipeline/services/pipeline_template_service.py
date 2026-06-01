@@ -115,22 +115,37 @@ APPLY_VALID_SOURCES = {
 def translate_template_stages_to_interview_stages(
     template_stages: list[dict[str, Any]],
 ) -> list[dict[str, Any]]:
-    """Translate PipelineTemplate.stages shape into JobVacancy.interview_stages shape.
+    """Fase 1 Unify (2026-06-01): dual-write CanonicalPipelineStage → interview_stages.
 
-    Espelha 1-pra-1 a função frontend applyPipelineTemplate em useEditJob.ts:185.
-    Mantém invariant até unificarmos via server-side apply.
+    Grava os campos canônicos (name, sla_days, type sem rename) E os aliases legados
+    (stageName, sla, automated) para compatibilidade com consumidores existentes
+    (kanban, frontend legado) enquanto a migração de consumidores acontece gradualmente.
+
+    Canonical shape (app/shared/types.py → CanonicalPipelineStage):
+        name, order, type (automatic|manual|hybrid), sla_days, instructions
+
+    Legacy compat (removível após migrar kanban p/ 'name'):
+        stageName = name, sla = sla_days, type "automated" = "automatic"
+
+    Invariant: função frontend applyPipelineTemplate (useEditJob.ts) deve ser
+    atualizada em lockstep para usar 'name' em vez de 'stageName' na Fase 2.
     """
     out: list[dict[str, Any]] = []
-    for idx, s in enumerate(template_stages or []):
-        t = s.get("type", "manual")
-        # frontend mapeia automatic -> automated por convenção legada
-        if t == "automatic":
-            t = "automated"
+    for idx, stage in enumerate(template_stages or []):
+        stage_type = stage.get("type", "manual")
+        name = stage.get("name")
+        sla_days_val = stage.get("sla_days")
+        order = stage.get("order", idx + 1)
         out.append({
-            "stageName": s.get("name"),
-            "order": s.get("order", idx + 1),
-            "sla": s.get("sla_days"),
-            "type": t,
+            # ── Canonical fields (CanonicalPipelineStage) ──────────────────
+            "name": name,
+            "order": order,
+            "type": stage_type,           # mantém "automatic" sem rename
+            "sla_days": sla_days_val,
+            "instructions": stage.get("instructions"),
+            # ── Legacy compat (dual-write — remover após migrar kanban) ────
+            "stageName": name,            # alias de name (kanban espera)
+            "sla": sla_days_val,          # alias de sla_days (legado)
         })
     return out
 
