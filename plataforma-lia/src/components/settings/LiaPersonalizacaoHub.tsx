@@ -14,13 +14,12 @@
  */
 
 import React, { useState } from "react"
-import { Brain } from "lucide-react"
 import { AiPersonaPanel } from "./AiPersonaPanel"
 import { HiringPoliciesHub } from "./HiringPoliciesHub"
 import { LiaFieldsConfigPanel } from "./LiaFieldsConfigPanel"
 import { LearningLoopsPanel } from "./LearningLoopsPanel"
 import { LiaImpactSummary } from "./lia/LiaImpactSummary"
-import { HubHeader } from "./_shared"
+import { tabStyles } from "@/lib/design-tokens"
 
 const TABS = [
   { id: "persona", label: "Persona da IA" },
@@ -42,22 +41,13 @@ export function LiaPersonalizacaoHub({ activeSubsection }: LiaPersonalizacaoHubP
 
   return (
     <div className="space-y-4" data-testid="hub-lia-personalizacao">
-      <HubHeader
-        title="Comportamento da LIA"
-        description="Persona, regras de processo, instrucoes por campo, learning loops e visibilidade — tudo que governa como a LIA atua."
-      />
-
-      {/* Tab nav */}
-      <div className="flex gap-1 border-b border-lia-border-subtle dark:border-lia-border-subtle mb-4">
+      {/* Tab nav — pill style canonico */}
+      <div className={tabStyles.pillContainer}>
         {TABS.map(tab => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`px-4 py-2 text-sm font-medium rounded-t transition-colors ${
-              activeTab === tab.id
-                ? "bg-lia-bg-tertiary dark:bg-lia-bg-elevated text-lia-text-primary border-b-2 border-lia-btn-primary-bg"
-                : "text-lia-text-secondary hover:text-lia-text-primary hover:bg-lia-bg-secondary"
-            }`}
+            className={activeTab === tab.id ? tabStyles.pillActive : tabStyles.pill}
           >
             {tab.label}
           </button>
