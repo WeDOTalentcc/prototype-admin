@@ -225,8 +225,32 @@ def is_greeting_only(message: str | None) -> bool:
     return bool(_GREETING_RE.match(text))
 
 
+# Tags de ação estruturadas do FE para superfícies NÃO-wizard (Configurações /
+# dados da empresa). São sinais determinísticos do chat de Configurações — não
+# podem ser sequestrados por um wizard de vaga ativo/recente. Espelha o
+# short-circuit de `[action:...]` já honrado pelo fast_router.
+_NON_WIZARD_ACTION_TAGS = (
+    "[action:prefill_section]",
+    "[action:configure_",
+    "[action:analyze_website]",
+    "[action:process_document]",
+)
+
+
+def _is_non_wizard_action(message: str | None) -> bool:
+    """True se a mensagem começa com uma tag de ação de Configurações."""
+    if not message:
+        return False
+    head = message.lstrip().lower()
+    return any(head.startswith(tag) for tag in _NON_WIZARD_ACTION_TAGS)
+
+
 async def should_pin_to_wizard(
-    company_id: str | None, session_id: str, message: str | None
+    company_id: str | None,
+    session_id: str,
+    message: str | None,
+    *,
+    domain_hint: str | None = None,
 ) -> bool:
     """Decide se a mensagem deve ser roteada/pinada ao wizard.
 
@@ -234,8 +258,20 @@ async def should_pin_to_wizard(
     (is_wizard_session_active, com TTL) + (b) gate de INTENÇÃO — uma saudação
     pura não resume o wizard mesmo que ativo. Greeting check vem primeiro
     (barato) para evitar o get_state quando a msg é só "oi".
+
+    Fix 2026-06-01: intenção explícita do FE para um domínio NÃO-wizard vence
+    o pin implícito (mesma regra já aplicada ao `domain` hard no transport).
+    Sem isso, após abrir um wizard de vaga, o chat de Configurações ficava
+    sequestrado por até 2h (TTL) e os saves de empresa via chat nunca
+    chegavam ao agente `company_settings`. Cobre dois sinais:
+      (a) `domain_hint` (metadata do FE, ex.: "company_settings");
+      (b) tag de ação estruturada na mensagem (turno 1 do deeplink).
     """
     if is_greeting_only(message):
+        return False
+    if domain_hint and domain_hint != "wizard":
+        return False
+    if _is_non_wizard_action(message):
         return False
     return await is_wizard_session_active(company_id, session_id)
 

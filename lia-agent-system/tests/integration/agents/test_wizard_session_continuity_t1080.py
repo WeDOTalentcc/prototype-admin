@@ -164,7 +164,7 @@ def test_s4_cascaded_router_no_longer_imports_wizard_session_service():
     """
     router_path = (
         Path(__file__).resolve().parents[3]
-        / "app" / "orchestrator" / "cascaded_router.py"
+        / "app" / "orchestrator" / "routing" / "cascaded_router.py"
     )
     src = _read_source(router_path)
     assert "from app.domains.job_creation.services.wizard_session_service" not in src, (
@@ -246,7 +246,7 @@ def test_s6_sse_handler_owns_the_wizard_pin():
         / "app" / "api" / "v1" / "agent_chat_sse.py"
     )
     src = _read_source(sse_path)
-    assert "is_wizard_session_active" in src
+    assert "should_pin_to_wizard" in src
     assert "wizard_session_pin" in src
 
 

@@ -340,7 +340,8 @@ company_id: str = Depends(require_company_id)):
             # for "this conversation is the wizard"). Mirrors agent_chat_ws.
             try:
                 from app.shared.sessions import should_pin_to_wizard
-                if await should_pin_to_wizard(company_id, session_id, content):
+                _settings_hint = (context.get("metadata") or {}).get("domain_hint")
+                if await should_pin_to_wizard(company_id, session_id, content, domain_hint=_settings_hint):
                     logger.info(
                         "[SSEChat] wizard_session_pin: session=%s company=%s "
                         "→ wizard (Task #1080)", session_id, company_id,

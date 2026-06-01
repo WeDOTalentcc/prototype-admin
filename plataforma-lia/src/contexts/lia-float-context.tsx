@@ -628,12 +628,25 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
       // PANEL_TYPE_TO_DOMAIN_HINT above for the mapping rationale. Caller
       // can override by passing explicit metadata.domain_hint.
       const activePanelType = dynamicPanelRef.current?.panelType;
+      const panelHint = activePanelType
+        ? PANEL_TYPE_TO_DOMAIN_HINT[activePanelType]
+        : undefined;
+      const ctxType = chatContextTypeRef.current;
+      const ctxHint = CONTEXT_TYPE_TO_DOMAIN_HINT[ctxType];
       // Resolution chain: dynamicPanel → chatContextType → undefined (default routing).
       // panelType wins because it's a more specific signal (active wizard panel etc).
+      //
+      // EXCEÇÃO (fix 2026-06-01): `settings_config` é um contexto explícito de
+      // tela cheia (o usuário abriu o chat de Configurações). Ele DEVE vencer um
+      // painel de wizard que "ficou preso" de um fluxo de criação de vaga
+      // anterior — senão os saves de empresa via chat eram sequestrados pro
+      // agente `wizard` (que não tem save_company_field) e nunca persistiam.
+      // Nos demais contextos o painel mantém prioridade (roteamento mid-wizard,
+      // guard 2026-04-29 wizard-domain-hint-leak).
       const hintDomain =
-        (activePanelType && PANEL_TYPE_TO_DOMAIN_HINT[activePanelType]) ||
-        CONTEXT_TYPE_TO_DOMAIN_HINT[chatContextTypeRef.current] ||
-        undefined;
+        ctxType === "settings_config"
+          ? ctxHint || panelHint || undefined
+          : panelHint || ctxHint || undefined;
 
       const enrichedMetadata =
         hintDomain && !metadata?.domain_hint
