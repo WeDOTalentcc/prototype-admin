@@ -111,12 +111,13 @@ export function VacancyVariableCompManager({ value, onChange, editable = true, s
       if (seniorityLevel) qs.set("seniority_level", seniorityLevel)
       if (department) qs.set("department", department)
       if (contractType) qs.set("contract_type", contractType)
-      const res = await fetch(`/api/backend-proxy/company/compensation-components/active?${qs.toString()}`)
+      const res = await fetch(`/api/backend-proxy/company/compensation-components/active?${qs.toString()}`, { signal: AbortSignal.timeout(12000) })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const json = await res.json()
       return Array.isArray(json) ? json : json?.data || []
     },
     staleTime: 30_000,
+    retry: 1,
   })
 
   const linkedCatalogIds = useMemo(() => new Set(linked.filter((c) => c.component_id).map((c) => String(c.component_id))), [linked])

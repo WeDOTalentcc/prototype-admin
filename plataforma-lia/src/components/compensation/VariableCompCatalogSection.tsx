@@ -21,12 +21,13 @@ export function VariableCompCatalogSection() {
   const { data: items = [], isLoading } = useQuery<VariableCompRecord[]>({
     queryKey: ["company-comp-components"],
     queryFn: async () => {
-      const res = await fetch(`${BASE}/`)
+      const res = await fetch(`${BASE}/`, { signal: AbortSignal.timeout(12000) })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const json = await res.json()
       return Array.isArray(json) ? json : json?.data || []
     },
     staleTime: 30_000,
+    retry: 1,
   })
 
   const [editing, setEditing] = useState<VariableCompRecord | null>(null)

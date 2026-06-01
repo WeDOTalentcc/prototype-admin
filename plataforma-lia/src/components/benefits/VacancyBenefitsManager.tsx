@@ -147,12 +147,13 @@ export function VacancyBenefitsManager({
       if (seniorityLevel) qs.set("seniority_level", seniorityLevel)
       if (department) qs.set("department", department)
       if (contractType) qs.set("contract_type", contractType)
-      const res = await fetch(`/api/backend-proxy/company/benefits/active?${qs.toString()}`)
+      const res = await fetch(`/api/backend-proxy/company/benefits/active?${qs.toString()}`, { signal: AbortSignal.timeout(12000) })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const json = await res.json()
       return Array.isArray(json) ? json : json?.data || []
     },
     staleTime: 30_000,
+    retry: 1,
   })
 
   // ids de catalogo vinculados + nomes inline vinculados
