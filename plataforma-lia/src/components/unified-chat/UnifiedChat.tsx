@@ -24,6 +24,7 @@ import {
 import { useAuthStore } from "@/stores/auth-store";
 import { useChatStateStore } from "@/stores/chat-state-store";
 import { useRecentItemsStore } from "@/stores/recent-items-store";
+import { useUIPreferencesStore, type LiaRecentItem } from "@/stores/ui-preferences-store";
 import { Maximize2, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
@@ -211,6 +212,8 @@ export function UnifiedChat({
   // Fase 5b — acumula os campos estruturados do painel (ficha viva) para enviar
   // como context.right_panel_form no próximo turno (loop real dos chips).
   const collectedDataRef = useRef<Record<string, unknown>>({});
+  // Tracks the first user message text for naming the conversation in history
+  const firstUserMessageRef = useRef<string>("");
 
   // Painel lateral redimensionável (delta-based: robusto a posições absolutas).
   const [dynamicPanelWidthPx, setDynamicPanelWidthPx] = useState(getStoredPanelWidth);
@@ -487,6 +490,21 @@ export function UnifiedChat({
     setPersisted(MODE_STORAGE_KEY, mode);
   }, [mode]);
 
+  // Register conversation in SwitchTaskModal history when ID is established
+  useEffect(() => {
+    if (!chatConversationId) {
+      firstUserMessageRef.current = "";
+      return;
+    }
+    const store = useUIPreferencesStore.getState();
+    const existing = store.liaRecentItems;
+    const idx = existing.findIndex((i: LiaRecentItem) => i.id === chatConversationId);
+    if (idx >= 0) return;
+    const title = firstUserMessageRef.current.slice(0, 80) || "Conversa";
+    const item: LiaRecentItem = { id: chatConversationId, type: "chat", title, timestamp: Date.now() };
+    store.setLiaRecentItems([item, ...existing].slice(0, 20));
+  }, [chatConversationId]);
+
   const handleSend = useCallback(() => {
     const text = inputText.trim();
     if (!text) return;
@@ -566,6 +584,7 @@ export function UnifiedChat({
       setAttachedFile(null);
       return;
     }
+    if (!firstUserMessageRef.current) firstUserMessageRef.current = text;
     sendChatMessage(text);
     setInputText("");
     setAttachedFile(null);
