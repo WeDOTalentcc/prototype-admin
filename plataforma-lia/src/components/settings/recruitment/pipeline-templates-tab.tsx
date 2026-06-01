@@ -206,11 +206,6 @@ function SortableStage({ stage, index, onUpdate, onRemove, tFields, tStageType, 
         </div>
       </div>
 
-      <PipelineTemplateSheetEditor
-        templateId={sheetTemplateId}
-        open={sheetOpen}
-        onOpenChange={setSheetOpen}
-      />
     </div>
   )
 }
@@ -793,6 +788,11 @@ export function PipelineTemplatesTab({ onSettingsChange }: { onSettingsChange?: 
         destructive
         onConfirm={() => confirmDelete && handleDelete(confirmDelete)}
         onCancel={() => setConfirmDelete(null)}
+      />
+      <PipelineTemplateSheetEditor
+        templateId={sheetTemplateId}
+        open={sheetOpen}
+        onOpenChange={setSheetOpen}
       />
     </div>
   )
