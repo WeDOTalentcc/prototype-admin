@@ -6,6 +6,14 @@ export interface TemplateVariableOptions {
   HTMLAttributes: Record<string, string>
 }
 
+declare module "@tiptap/react" {
+  interface Commands<ReturnType> {
+    templateVariable: {
+      insertVariable: (name: string) => ReturnType
+    }
+  }
+}
+
 declare module "@tiptap/core" {
   interface Commands<ReturnType> {
     templateVariable: {
