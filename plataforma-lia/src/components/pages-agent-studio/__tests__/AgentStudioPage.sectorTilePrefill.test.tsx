@@ -1,16 +1,18 @@
 /**
- * Sprint 5 — AgentStudioPage decommission do showCreateModal (path #3).
+ * AgentStudioPage — sentinela do entry-point "Criar agente" (sector tile + custom).
  *
- * Verifica que o estado legado `showCreateModal` + `setSelectedTemplate`
- * + função inline `CreateAgentModal` foram removidos. O sector tile click
- * agora abre o wizard canonical (CreateAgentWizard) via `openWizard(...)`
- * com `initialConfig.prefilledSector` + name derivado.
+ * Histórico: o overhaul do Estúdio de Agentes (Fase 2) removeu a função inline
+ * `CreateAgentModal` (path #3 antigo) e consolidou a criação de sourcing agent
+ * no modal canonical `<CreateCustomAgentModal sourcingCreate />`. O clique no
+ * sector tile define `selectedTemplate` + abre `showCreateModal`; o template
+ * selecionado é entregue ao modal via `initialTemplate={selectedTemplate}`.
+ *
+ * Este teste pina:
+ *   (a) a remoção definitiva do código morto antigo (regressão: não pode voltar);
+ *   (b) o wiring atual do entry-point de criação.
  *
  * Pattern: source-level static assertions (canonical do
  * AgentStudioPage.tabsNoSearch.test.tsx). Evita overhead de mount.
- *
- * Plan ref: AGENT_STUDIO_IMPLEMENTATION_PLAN.md §6 Sprint 5 +
- * AGENT_STUDIO_DEEP_AUDIT.md A.7 (consolidação dos 6 entry-points).
  */
 import { describe, it, expect } from "vitest"
 import { readFileSync } from "node:fs"
@@ -18,36 +20,38 @@ import { join } from "node:path"
 
 const STUDIO_PATH = join(__dirname, "..", "AgentStudioPage.tsx")
 
-describe("AgentStudioPage — Sprint 5 decommission CreateAgentModal", () => {
+describe("AgentStudioPage — entry-point de criação (sector tile + custom)", () => {
   const src = readFileSync(STUDIO_PATH, "utf-8")
 
-  it("não declara state showCreateModal", () => {
-    expect(src).not.toMatch(/\[\s*showCreateModal\s*,\s*setShowCreateModal\s*\]/)
-  })
+  // --- (a) Código morto antigo removido (guarda de regressão) ---
 
-  it("não chama setShowCreateModal em lugar nenhum", () => {
-    expect(src).not.toMatch(/setShowCreateModal\s*\(/)
-  })
-
-  it("não declara state selectedTemplate (era exclusivo do modal antigo)", () => {
-    expect(src).not.toMatch(
-      /\[\s*selectedTemplate\s*,\s*setSelectedTemplate\s*\]/,
-    )
-  })
-
-  it("não define função inline CreateAgentModal", () => {
+  it("não define função inline CreateAgentModal (removida no overhaul Fase 2)", () => {
     expect(src).not.toMatch(/function\s+CreateAgentModal\s*\(/)
   })
 
-  it("sector tile onClick chama openWizard (não setShowCreateModal)", () => {
-    // Pattern canonical pós-Sprint 5: button do sector tile invoca openWizard
-    // com prefilledSector. Match permissivo (qualquer assinatura openWizard
-    // dentro do map dos templates) — mas garante que showCreateModal sumiu.
-    expect(src).toMatch(/openWizard\s*\(/)
+  it("não importa DialogFooter (era usado apenas pelo modal inline removido)", () => {
+    expect(src).not.toMatch(/\bDialogFooter\b/)
   })
 
-  it("import de DialogFooter (era usado apenas pelo modal removido) foi removido", () => {
-    // DialogFooter era usado SÓ no CreateAgentModal interno (linhas 1137/1162).
-    expect(src).not.toMatch(/\bDialogFooter\b/)
+  // --- (b) Wiring atual do entry-point de criação ---
+
+  it("monta o modal canonical CreateCustomAgentModal com flag sourcingCreate", () => {
+    expect(src).toMatch(/<CreateCustomAgentModal[\s\S]*?sourcingCreate/)
+  })
+
+  it("entrega o template selecionado ao modal via initialTemplate={selectedTemplate}", () => {
+    expect(src).toMatch(/initialTemplate=\{selectedTemplate\}/)
+  })
+
+  it("clique no sector tile define selectedTemplate(tpl) e abre showCreateModal", () => {
+    expect(src).toMatch(
+      /setSelectedTemplate\(tpl\)\s*;\s*setShowCreateModal\(true\)/,
+    )
+  })
+
+  it("botão de agente custom abre showCreateModal sem template (selectedTemplate null)", () => {
+    expect(src).toMatch(
+      /setSelectedTemplate\(null\)\s*;\s*setShowCreateModal\(true\)/,
+    )
   })
 })

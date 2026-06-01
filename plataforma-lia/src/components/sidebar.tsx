@@ -124,6 +124,7 @@ const BASE_MENU_SECTIONS: MenuSection[] = [
         label: "Recrutar",
         isCore: true,
         navigateOnClick: true,
+        alwaysExpanded: true,
         subItems: [
           { icon: Briefcase, label: "Vagas", isCore: true },
           {
@@ -273,6 +274,10 @@ const MenuItem = React.memo(({
     }
   }, [hasSubItems, canAccess, onNavigate, item.label, item.moduleId, item.navigateOnClick])
 
+  // When alwaysExpanded is set, sub-items stay visible regardless of the
+  // collapse state — the chevron is hidden since there is nothing to toggle.
+  const expanded = item.alwaysExpanded || isExpanded
+
   const isActive = currentPage === item.label || (hasSubItems && item.subItems?.some(sub => sub.label === currentPage))
 
   return (
@@ -319,7 +324,7 @@ const MenuItem = React.memo(({
                   {t('labels.premium')}
                 </span>
               )}
-              {hasSubItems && (
+              {hasSubItems && !item.alwaysExpanded && (
                 <span
                   ref={chevronRef}
                   role="button"
@@ -336,7 +341,7 @@ const MenuItem = React.memo(({
       </button>
 
       {/* SubItems */}
-      {hasSubItems && isExpanded && shouldShowContent && (
+      {hasSubItems && expanded && shouldShowContent && (
         <div className="ml-4 mt-1 space-y-0.5">
           {(item.maxVisibleSubItems
             ? item.subItems!.slice(0, item.maxVisibleSubItems)

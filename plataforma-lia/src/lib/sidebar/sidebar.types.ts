@@ -41,6 +41,8 @@ export interface MenuItemType {
   navKey?: string
   /** If true, clicking navigates to the parent page AND expands sub-items */
   navigateOnClick?: boolean
+  /** If true, sub-items are always visible (no expand/collapse chevron) */
+  alwaysExpanded?: boolean
   /** Maximum visible sub-items before "ver todos" link (default: unlimited) */
   maxVisibleSubItems?: number
   /** Label for "see all" link when sub-items exceed maxVisibleSubItems */
