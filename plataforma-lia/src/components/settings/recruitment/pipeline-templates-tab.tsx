@@ -51,6 +51,7 @@ import {
 } from "@/components/ui/dialog"
 
 import { usePipelineTemplates, type PipelineTemplateFull, type PipelineStage } from "@/hooks/pipeline/use-pipeline-templates"
+import { useCompanyPipeline } from "@/hooks/company/use-company-pipeline"
 
 type StageType = "automatic" | "manual" | "hybrid"
 
@@ -259,6 +260,8 @@ export function PipelineTemplatesTab({ onSettingsChange }: { onSettingsChange?: 
   const tStageType = useTranslations("settings.recruitment.pipelineTemplates.stageType")
   const tHints = useTranslations("settings.recruitment.pipelineTemplates.hints")
 
+  const { pipeline: companyPipeline } = useCompanyPipeline()
+
   const {
     templates,
     isLoading,
@@ -307,6 +310,25 @@ export function PipelineTemplatesTab({ onSettingsChange }: { onSettingsChange?: 
     setSelectedId(id)
     const tpl = templates.find((x) => x.id === id) ?? null
     loadTemplateIntoEditor(tpl)
+  }
+
+  function handleNewFromPadrao() {
+    if (isDirty && !window.confirm(t("unsavedConfirm"))) return
+    if (!companyPipeline || companyPipeline.length === 0) {
+      handleNew(); return
+    }
+    setSelectedId(null)
+    const stages = companyPipeline
+      .filter((s: any) => s.stageCategory !== "system")
+      .map((s: any, i: number) => ({
+        name: s.name || s.stageName,
+        order: s.order || i + 1,
+        type: (s.liaAssisted ? "hybrid" : "manual") as StageType,
+        sla_days: s.slaDays ?? s.defaultSlaDays ?? 3,
+        instructions: "",
+      }))
+    setDraft({ ...EMPTY_DRAFT, name: t("newTemplateDefaultName"), stages })
+    setIsDirty(true)
   }
 
   function handleNew() {
@@ -449,10 +471,22 @@ export function PipelineTemplatesTab({ onSettingsChange }: { onSettingsChange?: 
           <h2 className="text-base font-semibold text-lia-text-primary">{t("title")}</h2>
           <p className="text-sm text-lia-text-secondary mt-1 max-w-2xl">{t("subtitle")}</p>
         </div>
-        <Button onClick={handleNew} className="gap-2">
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            className="gap-2 text-xs h-9"
+            onClick={handleNewFromPadrao}
+            disabled={!companyPipeline || companyPipeline.length === 0}
+            title="Pré-preenche o editor com as etapas do pipeline padrão da empresa"
+          >
+            <Copy className="w-3.5 h-3.5" />
+            A partir do Padrão
+          </Button>
+          <Button onClick={handleNew} className="gap-2">
           <Plus className="w-4 h-4" />
           {t("newTemplate")}
         </Button>
+        </div>
       </div>
 
       {error && (
