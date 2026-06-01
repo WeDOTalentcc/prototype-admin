@@ -82,7 +82,9 @@ export function MinhaEmpresaHub({ activeSubsection }: MinhaEmpresaHubProps = {})
   }
 
   const pendingSections = React.useMemo(
-    () => blocks.filter((b) => b.progress.total > 0 && b.progress.filled < b.progress.total),
+    // P1 dedup (2026-06-01): bloco "policy" migrou para o hub standalone
+    // "Políticas de Recrutamento". Excluído daqui para não duplicar.
+    () => blocks.filter((b) => b.key !== "policy" && b.progress.total > 0 && b.progress.filled < b.progress.total),
     [blocks],
   )
   const totalPendingFields = React.useMemo(
@@ -280,7 +282,7 @@ export function MinhaEmpresaHub({ activeSubsection }: MinhaEmpresaHubProps = {})
       )}
 
       <div className="grid grid-cols-1 gap-4">
-        {blocks.map((block) => (
+        {blocks.filter((b) => b.key !== "policy").map((block) => (
           <MinhaEmpresaCard
             key={block.key}
             block={block}
