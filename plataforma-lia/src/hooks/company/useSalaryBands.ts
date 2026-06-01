@@ -44,6 +44,30 @@ export function useSalaryBands() {
   })
 }
 
+/** A faixa que CASA o escopo da vaga (nivel + departamento/contrato) — p/ derivar R$. */
+export function useResolvedSalaryBand(
+  seniorityLevel?: string,
+  department?: string,
+  contractType?: string,
+) {
+  return useQuery<SalaryBandRow | null>({
+    queryKey: ["company-salary-band-resolve", seniorityLevel || "", department || "", contractType || ""],
+    enabled: !!seniorityLevel,
+    queryFn: async () => {
+      const qs = new URLSearchParams()
+      if (seniorityLevel) qs.set("seniority_level", seniorityLevel)
+      if (department) qs.set("department", department)
+      if (contractType) qs.set("contract_type", contractType)
+      const res = await fetch(`${BASE}/resolve?${qs.toString()}`, { signal: AbortSignal.timeout(12000) })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const json = await res.json()
+      return json || null
+    },
+    staleTime: 30_000,
+    retry: 1,
+  })
+}
+
 /** {nivel: {min,mid,max,currency}} — faixa-base por nivel (preview de R$ da verba). */
 export function useSalaryBandMap() {
   return useQuery<Record<string, BandLite>>({

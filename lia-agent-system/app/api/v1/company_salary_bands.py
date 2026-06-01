@@ -149,6 +149,39 @@ async def get_band_map(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.get("/resolve", response_model=SalaryBandResponse | None)
+async def resolve_band(
+    company_id: str | None = Query(None),
+    seniority_level: str | None = Query(None),
+    department: str | None = Query(None),
+    contract_type: str | None = Query(None),
+    subsidiary: str | None = Query(None),
+    cnpj: str | None = Query(None),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user_or_demo),
+    gated_company_id: str = Depends(require_company_id_strict_match("query.company_id")),
+):
+    """A faixa que CASA o escopo da vaga (nivel + departamento/contrato/filial).
+    Consumido pela vaga p/ derivar o R$ das verbas (% x faixa). None se nao casar."""
+    try:
+        eff = gated_company_id
+        if not eff or eff in ("default", "unknown") or not seniority_level:
+            return None
+        repo = SalaryBandRepository(db)
+        b = await repo.match_band(
+            eff,
+            seniority_level=seniority_level,
+            department=department,
+            contract_type=contract_type,
+            subsidiary=subsidiary,
+            subsidiary_cnpj=cnpj,
+        )
+        return _to_response(b) if b else None
+    except Exception as e:
+        logger.error(f"Error resolving salary band: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.get("/", response_model=list[SalaryBandResponse])
 async def list_salary_bands(
     company_id: str | None = Query(None),

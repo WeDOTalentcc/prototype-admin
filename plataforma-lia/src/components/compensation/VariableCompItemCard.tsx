@@ -16,6 +16,7 @@ interface VariableCompItemCardProps {
   onDelete: (id: string) => void
   mode?: "catalog" | "vacancy"
   isLinked?: boolean
+  derivedRs?: string
 }
 
 function freqLabel(f?: string | null): string {
@@ -31,6 +32,7 @@ export const VariableCompItemCard = React.memo(function VariableCompItemCard({
   onDelete,
   mode = "catalog",
   isLinked = false,
+  derivedRs,
 }: VariableCompItemCardProps) {
   const isVacancy = mode === "vacancy"
   const toggleChecked = isVacancy ? !!isLinked : component.is_active !== false
@@ -53,6 +55,7 @@ export const VariableCompItemCard = React.memo(function VariableCompItemCard({
           <span className="flex items-center gap-1">
             <DollarSign className="w-3.5 h-3.5" />
             {formatCompTarget(component)}
+            {derivedRs ? <span className="text-lia-text-primary"> · {derivedRs}</span> : null}
           </span>
           {component.frequency && (
             <span className="flex items-center gap-1">

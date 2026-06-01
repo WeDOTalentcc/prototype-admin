@@ -4,16 +4,19 @@
  * VacancyVariableCompManager — reflete o catalogo de Remuneracao Variavel
  * (Configuracoes) dentro da vaga. Reusa VariableCompList (mode="vacancy"):
  * lista agrupada por tipo, vincular/desvincular, compativeis (matches_vaga)
- * destacados, criar inline + promover ao catalogo. Strings PT hardcoded
- * (consistente com compensation-policies).
+ * destacados, criar inline + promover ao catalogo. Mostra o R$ DERIVADO de cada
+ * verba (% x faixa salarial que casa o nivel/departamento da vaga). Strings PT.
  */
 import React, { useMemo, useState } from "react"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
-import { Plus, Coins, Loader2, AlertCircle } from "lucide-react"
+import { Plus, Coins, Loader2, AlertCircle, Layers } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { VariableCompList } from "./VariableCompList"
 import { VariableCompFormModal } from "./VariableCompFormModal"
-import { defaultComponent, type VariableCompRecord } from "./variable-comp-types"
+import { defaultComponent, FREQUENCY_OPTIONS, type VariableCompRecord } from "./variable-comp-types"
+import { useResolvedSalaryBand } from "@/hooks/company/useSalaryBands"
+import { resolveForBand, fmtBRL } from "@/lib/compensation/resolve"
+import { seniorityLabel } from "@/lib/compensation/seniority-levels"
 
 type VagaComp = {
   component_id?: string | null
@@ -97,6 +100,11 @@ function recordFromInline(vc: VagaComp): VariableCompRecord {
   }
 }
 
+function freqLabel(f?: string | null): string {
+  if (!f) return ""
+  return FREQUENCY_OPTIONS.find((o) => o.id === f)?.label?.toLowerCase() || ""
+}
+
 export function VacancyVariableCompManager({ value, onChange, editable = true, seniorityLevel, department, contractType }: VacancyVariableCompManagerProps) {
   const queryClient = useQueryClient()
   const linked = useMemo<VagaComp[]>(
@@ -120,6 +128,9 @@ export function VacancyVariableCompManager({ value, onChange, editable = true, s
     retry: 1,
   })
 
+  // Faixa salarial que casa o escopo da vaga -> deriva o R$ de cada verba (% x faixa).
+  const { data: band } = useResolvedSalaryBand(seniorityLevel, department, contractType)
+
   const linkedCatalogIds = useMemo(() => new Set(linked.filter((c) => c.component_id).map((c) => String(c.component_id))), [linked])
   const catalogIds = useMemo(() => new Set(catalog.map((r) => String(r.id))), [catalog])
   const inlineLinked = useMemo(() => linked.filter((c) => !c.component_id || !catalogIds.has(String(c.component_id))), [linked, catalogIds])
@@ -128,6 +139,21 @@ export function VacancyVariableCompManager({ value, onChange, editable = true, s
     () => [...catalog.map(recordFromCatalog), ...inlineLinked.map(recordFromInline)],
     [catalog, inlineLinked],
   )
+
+  // R$ derivado por verba (chave = id||name), usando a faixa que casa a vaga.
+  const rsByKey = useMemo(() => {
+    const m: Record<string, string> = {}
+    if (!band) return m
+    for (const r of records) {
+      const res = resolveForBand(r, band)
+      if (res.basis !== "undefined" && (res.min !== null || res.max !== null)) {
+        const f = freqLabel(r.frequency)
+        m[r.id || r.name] = `${fmtBRL(res.min, res.currency)}–${fmtBRL(res.max, res.currency)}${f ? ` / ${f}` : ""}`
+      }
+    }
+    return m
+  }, [band, records])
+
   const linkedIds = useMemo(() => {
     const ids = new Set<string>(linkedCatalogIds)
     inlineLinked.forEach((c) => ids.add(INLINE_ID(c.name)))
@@ -195,7 +221,6 @@ export function VacancyVariableCompManager({ value, onChange, editable = true, s
             return merged
           }))
         } else {
-          // editar item ainda nao vinculado -> vincula com os valores editados
           const src = editingId.startsWith("inline:") ? "inline" : "catalog"
           const snap = snapshot(r, src, src === "catalog" ? editingId : null)
           if (src === "catalog") snap.catalog_overrides = { ...r }
@@ -252,6 +277,18 @@ export function VacancyVariableCompManager({ value, onChange, editable = true, s
         )}
       </div>
 
+      {band && (band.min != null || band.max != null) && (
+        <div className="flex items-center gap-2 mb-3 px-3 py-2 rounded-md border border-lia-border-subtle bg-lia-bg-tertiary/40 text-xs text-lia-text-secondary">
+          <Layers className="w-3.5 h-3.5 text-lia-text-tertiary" />
+          <span>
+            Faixa salarial do nível <strong className="text-lia-text-primary">{seniorityLevel ? seniorityLabel(seniorityLevel) : "—"}</strong>
+            {": "}
+            <span className="text-lia-text-primary tabular-nums">{fmtBRL(band.min ?? null, band.currency || "BRL")} – {fmtBRL(band.max ?? null, band.currency || "BRL")}</span>
+            {" — base do R$ derivado das verbas (%)."}
+          </span>
+        </div>
+      )}
+
       {records.length === 0 ? (
         <div className="rounded-md border border-dashed border-lia-border-default p-6 text-center">
           <Coins className="w-5 h-5 mx-auto text-lia-text-disabled mb-2" />
@@ -264,6 +301,7 @@ export function VacancyVariableCompManager({ value, onChange, editable = true, s
           isEditing={editable}
           mode="vacancy"
           linkedIds={linkedIds}
+          rsByKey={rsByKey}
           onToggle={toggleLink}
           onEdit={openEdit}
           onCreateInKind={(k) => openCreate(k)}

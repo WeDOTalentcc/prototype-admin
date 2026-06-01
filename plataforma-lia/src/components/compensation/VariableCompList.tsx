@@ -18,6 +18,7 @@ interface VariableCompListProps {
   onDelete: (id: string) => void
   mode?: "catalog" | "vacancy"
   linkedIds?: Set<string>
+  rsByKey?: Record<string, string>
 }
 
 export function VariableCompList({
@@ -29,6 +30,7 @@ export function VariableCompList({
   onDelete,
   mode = "catalog",
   linkedIds,
+  rsByKey,
 }: VariableCompListProps) {
   const isVacancy = mode === "vacancy"
   const [expanded, setExpanded] = React.useState<string[]>(COMP_KIND_GROUPS.map((g) => g.id))
@@ -101,6 +103,7 @@ export function VariableCompList({
                         onDelete={onDelete}
                         mode={mode}
                         isLinked={isVacancy && c.id ? !!linkedIds?.has(c.id) : false}
+                        derivedRs={rsByKey?.[c.id || c.name]}
                       />
                     ))}
                   </div>
