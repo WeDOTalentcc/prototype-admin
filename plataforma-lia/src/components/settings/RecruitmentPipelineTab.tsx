@@ -1,10 +1,10 @@
 "use client"
 
-import React from"react"
+import React, { useState } from"react"
 import { Card, CardContent, CardHeader } from"@/components/ui/card"
 import { Chip } from "@/components/ui/chip"
 import {
-  Save, CheckCircle, AlertCircle,
+  Layers, Save, CheckCircle, AlertCircle,
   Loader2, Pencil
 } from"lucide-react"
 import {
@@ -15,6 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useTranslations } from "next-intl"
 import { textStyles, actionButtonStyles } from '@/lib/design-tokens'
 import { useRecruitmentHub } from './useRecruitmentHub'
+import { usePipelineTemplates } from '@/hooks/pipeline/use-pipeline-templates'
 
 export function RecruitmentPipelineTab() {
   const t = useTranslations("settings")
@@ -31,6 +32,40 @@ export function RecruitmentPipelineTab() {
   const onCancelEdit = hub.handleCancelEdit
   const onSave = hub.saveRecruitmentStages
   const onToggleSubStatus = hub.handleToggleSubStatus
+  // Fase 4 Unify: Salvar como template
+  const { createTemplate } = usePipelineTemplates()
+  const [showSaveForm, setShowSaveForm] = useState(false)
+  const [templateName, setTemplateName] = useState('')
+  const [isSavingTemplate, setIsSavingTemplate] = useState(false)
+
+  const handleSaveAsTemplate = async () => {
+    const trimmed = templateName.trim()
+    if (!trimmed || isSavingTemplate) return
+    setIsSavingTemplate(true)
+    try {
+      // Mapeia RecruitmentStage → PipelineStage (schema canônico)
+      const activeStages = recruitmentStages.filter(s => s.isActive)
+      const stages = activeStages.map((s, idx) => ({
+        name: (s as any).display_name || s.name,
+        order: (s as any).order ?? idx + 1,
+        type: (() => {
+          const ab = (s as any).action_behavior || ''
+          if (ab === 'screening' || ab === 'intake' || ab === 'trigger') return 'automatic' as const
+          if (ab === 'proactive') return 'hybrid' as const
+          return 'manual' as const
+        })(),
+        sla_days: (s as any).sla ?? 3,
+      }))
+      await createTemplate({ name: trimmed, stages })
+      setShowSaveForm(false)
+      setTemplateName('')
+    } catch {
+      // createTemplate já exibe toast de erro
+    } finally {
+      setIsSavingTemplate(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className="space-y-6">
@@ -114,14 +149,56 @@ export function RecruitmentPipelineTab() {
               </button>
             </>
           ) : (
-            <button
-              data-testid="pipeline-edit-start"
-              onClick={onStartEdit}
-              className={actionButtonStyles.smOutline}
-            >
-              <Pencil className={actionButtonStyles.icon} />
-              {t("recruitment.pipeline.edit")}
-            </button>
+            <div className="flex items-center gap-2">
+              {showSaveForm ? (
+                <>
+                  <input
+                    type="text"
+                    value={templateName}
+                    onChange={e => setTemplateName(e.target.value)}
+                    placeholder="Nome do template..."
+                    aria-label="Nome do template"
+                    className="text-xs px-2.5 py-1.5 rounded-lg border border-lia-border-subtle bg-lia-bg-primary text-lia-text-primary placeholder:text-lia-text-disabled focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 w-44"
+                    onKeyDown={e => {
+                      if (e.key === 'Enter') handleSaveAsTemplate()
+                      if (e.key === 'Escape') { setShowSaveForm(false); setTemplateName('') }
+                    }}
+                    autoFocus
+                  />
+                  <button
+                    onClick={handleSaveAsTemplate}
+                    disabled={!templateName.trim() || isSavingTemplate}
+                    className={actionButtonStyles.smPrimary}
+                  >
+                    {isSavingTemplate ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Salvar'}
+                  </button>
+                  <button
+                    onClick={() => { setShowSaveForm(false); setTemplateName('') }}
+                    className={actionButtonStyles.smSecondary}
+                  >
+                    Cancelar
+                  </button>
+                </>
+              ) : (
+                <button
+                  data-testid="pipeline-save-as-template"
+                  onClick={() => setShowSaveForm(true)}
+                  className={actionButtonStyles.smOutline}
+                  title="Criar template reutilizável a partir deste pipeline"
+                >
+                  <Layers className={actionButtonStyles.icon} />
+                  Salvar como template
+                </button>
+              )}
+              <button
+                data-testid="pipeline-edit-start"
+                onClick={onStartEdit}
+                className={actionButtonStyles.smOutline}
+              >
+                <Pencil className={actionButtonStyles.icon} />
+                {t("recruitment.pipeline.edit")}
+              </button>
+            </div>
           )}
         </div>
       </div>
