@@ -10,6 +10,9 @@ from app.shared.types import WeDoBaseModel
 class PipelineRulesSchema(BaseModel):
     min_interviews_before_offer: int = Field(default=2, ge=1, le=10)
     manager_approval_for_offer: bool = Field(default=True)
+    # P3a (2026-06-01): reclassificados de campos narrativos -> gates tipados.
+    manager_approval_sla_hours: int = Field(default=24, ge=1, le=720)
+    vacancy_approval_required: bool = Field(default=False)
     max_days_in_stage: dict[str, int] = Field(default_factory=dict)
 
 
@@ -31,6 +34,8 @@ class ScreeningRulesSchema(BaseModel):
     salary_expectation_filter: bool = Field(default=False)
     salary_tolerance_percent: int = Field(default=15, ge=0, le=100)
     experience_policy: str = Field(default="per_job")
+    # P3a (2026-06-01): reclassificado de campo narrativo -> gate tipado.
+    minimum_compatibility_score: int = Field(default=0, ge=0, le=100)
     default_screening_questions: list[str] = Field(default_factory=list)
 
 

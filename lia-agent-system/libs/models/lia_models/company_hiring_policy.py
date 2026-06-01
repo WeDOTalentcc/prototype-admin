@@ -25,6 +25,8 @@ from lia_config.database import Base
 PIPELINE_RULES_DEFAULTS = {
     "min_interviews_before_offer": 2,
     "manager_approval_for_offer": True,
+    "manager_approval_sla_hours": 24,   # P3a — reclassificado de narrativo
+    "vacancy_approval_required": False,  # P3a — reclassificado de narrativo
     "max_days_in_stage": {},
 }
 
@@ -44,6 +46,7 @@ COMMUNICATION_RULES_DEFAULTS = {
 
 SCREENING_RULES_DEFAULTS = {
     "experience_policy": "per_job",
+    "minimum_compatibility_score": 0,   # P3a — reclassificado de narrativo (0 = sem corte)
     "default_screening_questions": [],
 }
 

@@ -98,3 +98,24 @@ def test_unknown_block_passes_through_untouched():
     """pipeline_templates / structural blocks are not scalar-gate vectors."""
     payload = {"name": "Default", "stages": ["triagem"]}
     assert coerce_and_validate_block("pipeline_templates", payload) == payload
+
+
+# --- P3a: 3 narrative fields reclassified as typed gates --------------------
+def test_p3a_manager_approval_sla_hours_int_gate():
+    out = coerce_and_validate_block("pipeline_rules", {"manager_approval_sla_hours": "48"})
+    assert out == {"manager_approval_sla_hours": 48}
+
+
+def test_p3a_vacancy_approval_required_bool_gate():
+    out = coerce_and_validate_block("pipeline_rules", {"vacancy_approval_required": "Sim"})
+    assert out == {"vacancy_approval_required": True}
+
+
+def test_p3a_minimum_compatibility_score_int_gate():
+    out = coerce_and_validate_block("screening_rules", {"minimum_compatibility_score": "65"})
+    assert out == {"minimum_compatibility_score": 65}
+
+
+def test_p3a_min_compat_out_of_range_rejected():
+    with pytest.raises(PolicyBlockValidationError):
+        coerce_and_validate_block("screening_rules", {"minimum_compatibility_score": 150})
