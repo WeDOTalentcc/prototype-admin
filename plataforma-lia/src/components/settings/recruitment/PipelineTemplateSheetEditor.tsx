@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useCallback, useEffect } from "react"
-import { Loader2, Save, X } from "lucide-react"
+import { Loader2, Save, Upload, X } from "lucide-react"
 import { toast } from "sonner"
 import {
   Sheet,
@@ -16,6 +16,7 @@ import {
 } from "@/components/settings/RecruitmentJourneyConfig"
 import type { RecruitmentStage, SubStatus } from "@/components/settings/recruitment-journey.types"
 import { usePipelineTemplates } from "@/hooks/pipeline/use-pipeline-templates"
+import { apiFetch } from "@/lib/api/api-fetch"
 
 // ─── Conversores shape ────────────────────────────────────────────────────────
 
@@ -113,6 +114,51 @@ export function PipelineTemplateSheetEditor({
 
   const [localStages, setLocalStages] = useState<RecruitmentStage[]>([])
   const [saving, setSaving] = useState(false)
+  const [applyingPadrao, setApplyingPadrao] = useState(false)
+
+  // Fase D Opcao 2: aplica template como Padrao da empresa
+  // Usa PUT /api/backend-proxy/company-pipeline com os stages do template
+  const handleApplyAsPadrao = async () => {
+    if (!template) return
+    const confirmed = window.confirm(
+      `Aplicar "${template.name}" como pipeline padr\u00e3o da empresa?\n\n` +
+      `Isso substituir\u00e1 as etapas do Pipeline > Padr\u00e3o.\n` +
+      `Os sub-statuses existentes ser\u00e3o preservados nas etapas mantidas.`
+    )
+    if (!confirmed) return
+    setApplyingPadrao(true)
+    try {
+      // Converte stages do template -> payload do PUT /company-pipeline
+      const stagesPayload = localStages.map((s: any, idx: number) => ({
+        id: undefined,  // criacao/match por nome
+        name: s.name,
+        display_name: s.display_name || s.name,
+        stage_order: idx + 1,
+        color: s.color || undefined,
+        icon: s.icon || undefined,
+        sla_hours: s.sla ? s.sla * 24 : null,
+        is_active: s.isActive !== false,
+        description: s.notes || s.description || '',
+        action_behavior: (s as any).action_behavior || 'passive',
+        default_channel: (s as any).default_channel || 'email',
+      }))
+      const res = await apiFetch('/api/backend-proxy/company-pipeline', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ stages: stagesPayload }),
+      })
+      if (res.ok) {
+        toast.success(`Pipeline Padr\u00e3o atualizado com o template "${template.name}"!`)
+        onOpenChange(false)
+      } else {
+        toast.error('Erro ao aplicar template. Tente novamente.')
+      }
+    } catch {
+      toast.error('Erro ao aplicar template. Tente novamente.')
+    } finally {
+      setApplyingPadrao(false)
+    }
+  }
 
   // Sincroniza stages locais quando o template muda
   useEffect(() => {
@@ -174,6 +220,20 @@ export function PipelineTemplateSheetEditor({
               </SheetDescription>
             </div>
             <div className="flex items-center gap-2 flex-none">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleApplyAsPadrao}
+                disabled={saving || applyingPadrao || !template}
+                title="Substituir o Pipeline Padr\u00e3o da empresa pelas etapas deste template"
+              >
+                {applyingPadrao ? (
+                  <Loader2 className="w-4 h-4 mr-1 animate-spin" aria-hidden />
+                ) : (
+                  <Upload className="w-4 h-4 mr-1" aria-hidden />
+                )}
+                Aplicar como Padr\u00e3o
+              </Button>
               <Button
                 variant="outline"
                 size="sm"
