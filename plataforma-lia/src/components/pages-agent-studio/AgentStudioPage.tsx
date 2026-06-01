@@ -22,7 +22,7 @@ import { NpsStatusCard } from "@/components/pages-agent-studio/NpsStatusCard"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useLocale } from "next-intl"
 import { PageTabNavigation, type PageTab } from "@/components/ui/page-tab-navigation"
-import { AgentControlCenter } from "@/components/agent-control-center"
+import { StudioControlRoom } from "@/components/pages-agent-studio/control-room"
 import { usePendingApprovals } from "@/hooks/agents/use-approvals"
 import {
   Bot, Plus, Play, Pause, Briefcase, Database,
@@ -687,10 +687,13 @@ export default function AgentStudioPage({
         )}
 
         {/* ── Operação (centro de controle) ─────────────────────────────────── */}
+        {/* Restaura a "Sala de Controle" removida no redesign do funil: agentes
+            ao vivo + histórico + auditoria LGPD + digest + reasoning drawer.
+            ApprovalsList no topo traz o sistema de aprovação de volta ao Studio. */}
         {activeTab === "operacao" && (
           <div className="space-y-4">
             <ApprovalsList onReviewed={() => mutateCustomAgents()} />
-            <AgentControlCenter />
+            <StudioControlRoom />
           </div>
         )}
 
