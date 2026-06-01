@@ -1,38 +1,33 @@
-"""SalaryBand model — faixa salarial canonica por nivel de senioridade.
+"""SalaryBand model — faixa salarial canonica GRANULAR.
 
-FONTE UNICA da faixa salarial (R$) por nivel, definida UMA vez por empresa em
-Configuracoes. Antes a faixa vivia presa em compensation_policies.salary_bands
-(JSONB, policy-centric) e duplicada inline em job_vacancies.salary_range. Aqui
-ela vira entidade de primeira classe que:
-  - a verba variavel (CompensationComponent, % do salario) referencia por nivel p/
-    derivar R$ = % x banda[nivel] (sem redigitar faixa em cada verba);
-  - a vaga usa como default do salary_range do seu nivel;
-  - o PRV (CompensationPolicy) le ao inves de ser dono de uma copia.
+FONTE UNICA da faixa salarial (R$) por nivel + escopo organizacional, definida em
+Configuracoes. Mesmo cadastro granular de CompanyBenefit/CompensationComponent: alem
+do nivel (level), escopo por contrato, departamento, AREA e filial/CNPJ + vigencia +
+moeda. Varias faixas por nivel sao permitidas (ex.: Senior-Vendas-SP != Senior-Eng-RJ);
+a UI agrupa por nivel. A verba (%) deriva R$ da faixa que CASA o escopo (motor
+compensation_resolution_service). Substitui as bandas que viviam presas no PRV.
 
-Multi-tenant via company_id. UNIQUE(company_id, level) — uma banda por nivel.
+Multi-tenant via company_id. SEM unique(company,level) — multiplas faixas por nivel.
 """
 import uuid
 from datetime import datetime
-from sqlalchemy import Column, String, Integer, DateTime, Boolean, Float, Date, UniqueConstraint
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Column, String, Integer, DateTime, Boolean, Float, Date, ARRAY
+from sqlalchemy.dialects.postgresql import UUID, JSONB
 
 from lia_config.database import Base
 
 
 class SalaryBand(Base):
-    """Faixa salarial canonica por nivel (min/mid/max) de uma empresa."""
+    """Faixa salarial canonica (min/mid/max) por nivel + escopo organizacional."""
     __tablename__ = "salary_bands"
-    __table_args__ = (
-        UniqueConstraint("company_id", "level", name="uq_salary_bands_company_level"),
-        {"extend_existing": True},
-    )
+    __table_args__ = {"extend_existing": True}
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     company_id = Column(String(255), nullable=False, index=True)
 
-    # Identificador canonico do nivel (ver app/shared/seniority_levels.py)
+    # Identidade de senioridade (ver app/shared/seniority_levels.py)
     level = Column(String(50), nullable=False)
-    label = Column(String(100), nullable=True)  # snapshot do rotulo humano (opcional)
+    label = Column(String(100), nullable=True)
 
     # Faixa salarial mensal (R$). mid = referencia de mercado (opcional).
     min = Column(Float, nullable=True)
@@ -40,7 +35,16 @@ class SalaryBand(Base):
     max = Column(Float, nullable=True)
     currency = Column(String(10), default="BRL")
 
-    # Vigencia (informativa nesta fase)
+    # Escopo organizacional granular (paridade com CompensationComponent + area)
+    contract_types = Column(ARRAY(String), nullable=True, default=list)
+    departments = Column(JSONB, nullable=True, default=dict)        # {nome_dept: bool} | {"all": true}
+    area = Column(ARRAY(String), nullable=True, default=list)       # areas de negocio (tokens livres)
+    subsidiaries = Column(JSONB, nullable=True, default=list)       # [{"name","cnpj"}, ...]
+
+    # Vigencia
+    valid_from = Column(Date, nullable=True)
+    valid_until = Column(Date, nullable=True)
+    # legado (Fase 0, nao usado pela UI nova)
     effective_from = Column(Date, nullable=True)
     effective_until = Column(Date, nullable=True)
 
