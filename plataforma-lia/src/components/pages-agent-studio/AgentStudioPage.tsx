@@ -6,7 +6,6 @@ import {
   EvaluateWithTwinModal,
   CreateDigitalTwinModal,
 } from "@/components/pages-agent-studio/DigitalTwinComponents"
-import MultiStrategySearchPanel from "@/components/pages-agent-studio/MultiStrategySearchPanel"
 import CustomAgentsTab, { CreateCustomAgentModal } from "@/components/pages-agent-studio/CustomAgentsTab"
 import { TemplateGallery, AgentCard as CustomAgentCard, AgentDetailsPanel, DeployDialog, ConversationalCreator, TestDebugPanel, ApprovalsList } from "@/components/pages-agent-studio/custom-agents"
 import { StudioCardShell } from "@/components/pages-agent-studio/StudioCardShell"
@@ -20,14 +19,17 @@ import type { FunnelServiceData, ServiceSlug, ServiceStatus } from "@/components
 import { AlignmentStatusCard } from "@/components/pages-agent-studio/AlignmentStatusCard"
 import { OfferStatusCard } from "@/components/pages-agent-studio/OfferStatusCard"
 import { NpsStatusCard } from "@/components/pages-agent-studio/NpsStatusCard"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useLocale } from "next-intl"
+import { PageTabNavigation, type PageTab } from "@/components/ui/page-tab-navigation"
+import { AgentControlCenter } from "@/components/agent-control-center"
+import { usePendingApprovals } from "@/hooks/agents/use-approvals"
 import {
   Bot, Plus, Play, Pause, Briefcase, Database,
   Factory, HeartPulse, ShoppingCart, Code, Truck, Brain,
   ChevronRight, Zap, Target, ArrowRight,
-  Activity, RefreshCw,
-  Loader2, Users, Wand2, Search, Store,
+  Activity, RefreshCw, Workflow,
+  Loader2, Users, Wand2, Store,
   GraduationCap, Pencil
 } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -98,6 +100,24 @@ const SLUG_TO_MARKETPLACE_CATEGORY: Record<string, string> = {
   intake: "general",
 }
 
+// ── Top-level navigation tabs (equal-weight) ────────────────────────────────
+// URL-driven via ?tab=. Aliases keep legacy deep links working (the old tab
+// layout linked ?tab=control-room / sala-de-controle before the funnel redesign).
+type StudioTab = "funil" | "operacao" | "personalizados" | "marketplace" | "gemeos"
+
+const TAB_ALIASES: Record<string, StudioTab> = {
+  funil: "funil", funnel: "funil",
+  operacao: "operacao", operations: "operacao",
+  "control-room": "operacao", "sala-de-controle": "operacao",
+  personalizados: "personalizados", custom: "personalizados", "my-agents": "personalizados",
+  marketplace: "marketplace",
+  gemeos: "gemeos", "digital-twins": "gemeos", twins: "gemeos",
+}
+
+function normalizeTab(raw: string | null): StudioTab {
+  return (raw ? TAB_ALIASES[raw] : undefined) ?? "funil"
+}
+
 export default function AgentStudioPage({
   onNavigateToPool,
   onNavigateToJob,
@@ -123,8 +143,20 @@ export default function AgentStudioPage({
   const { selectTemplate, reset: resetStudio } = useAgentStudioStore()
   const [selectedTemplate, setSelectedTemplate] = useState<SectorTemplate | null>(null)
   const [previewTemplate, setPreviewTemplate] = useState<AgentTemplate | null>(null)
-  // secondaryView: shown below the funnel when user clicks Advanced Tools links
-  const [secondaryView, setSecondaryView] = useState<"custom" | "marketplace" | "search" | null>(null)
+  // Top-level navigation — URL-driven (?tab=) so deep links + back/forward work.
+  const searchParams = useSearchParams()
+  const [activeTab, setActiveTabState] = useState<StudioTab>(() => normalizeTab(searchParams.get("tab")))
+  useEffect(() => {
+    const next = normalizeTab(searchParams.get("tab"))
+    setActiveTabState(prev => (prev === next ? prev : next))
+  }, [searchParams])
+  const setActiveTab = (id: StudioTab) => {
+    setActiveTabState(id)
+    const sp = new URLSearchParams(Array.from(searchParams.entries()))
+    sp.set("tab", id)
+    router.replace(`?${sp.toString()}`, { scroll: false })
+  }
+  const { total: pendingApprovals } = usePendingApprovals()
   // Funnel stage → marketplace category (best-effort; backend filtra por category exata)
   const [marketplaceCategory, setMarketplaceCategory] = useState("")
   const [onboardingDismissed, setOnboardingDismissed] = useState(true)
@@ -230,7 +262,7 @@ export default function AgentStudioPage({
       toast.success(t("studio.toast.agentCreated", { name: template.name }), t("studio.toast.agentCreatedDesc"))
       mutateCustomAgents()
       resetStudio()
-      setSecondaryView("custom")
+      setActiveTab("personalizados")
     } catch {
       toast.error(t("studio.toast.errorCreating"), t("studio.toast.tryAgainShort"))
     }
@@ -554,6 +586,14 @@ export default function AgentStudioPage({
     }
   }
 
+  const studioTabs: PageTab[] = [
+    { id: "funil", label: t("studio.tabs.funnel"), icon: Workflow },
+    { id: "operacao", label: t("studio.tabs.operations"), icon: Activity, count: pendingApprovals },
+    { id: "personalizados", label: t("studio.tabs.customAgents"), icon: Bot, count: customAgents.length },
+    { id: "marketplace", label: t("studio.tabs.marketplace"), icon: Store },
+    { id: "gemeos", label: t("studio.tabs.twins"), icon: Users },
+  ]
+
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden bg-lia-bg-primary">
       {/* ── Header ─────────────────────────────────────────────────────────── */}
@@ -570,7 +610,7 @@ export default function AgentStudioPage({
               variant="outline"
               size="sm"
               onClick={() => {
-                setSecondaryView("custom")
+                setActiveTab("personalizados")
                 setTimeout(() => {
                   document.getElementById("agent-studio-conversational-creator")
                     ?.scrollIntoView({ behavior: "smooth", block: "start" })
@@ -593,66 +633,70 @@ export default function AgentStudioPage({
         </div>
       </div>
 
+      {/* ── Equal-weight tab navigation (URL-driven) ──────────────────────── */}
+      <div className="flex-shrink-0 px-4 pb-2">
+        <PageTabNavigation
+          tabs={studioTabs}
+          activeTab={activeTab}
+          onTabChange={(id) => setActiveTab(id as StudioTab)}
+        />
+      </div>
+
       <div className="flex-1 overflow-auto px-4 pb-4 space-y-4">
-        {/* ── Onboarding inline wizard ──────────────────────────────────────── */}
-        {!onboardingDismissed && (
-          <StudioOnboarding
-            openJobCount={openJobs.length}
-            onActivateSourcing={() => setShowCreateModal(true)}
-            onDismiss={() => {
-              localStorage.setItem("studio_onboarding_done", "1")
-              setOnboardingDismissed(true)
-            }}
-          />
+        {/* ── Funil ─────────────────────────────────────────────────────────── */}
+        {activeTab === "funil" && (
+          <>
+            {!onboardingDismissed && (
+              <StudioOnboarding
+                openJobCount={openJobs.length}
+                onActivateSourcing={() => setShowCreateModal(true)}
+                onDismiss={() => {
+                  localStorage.setItem("studio_onboarding_done", "1")
+                  setOnboardingDismissed(true)
+                }}
+              />
+            )}
+
+            {alertCount > 0 && (
+              <div className="rounded-xl border border-wedo-orange/40 bg-wedo-orange/10 overflow-hidden">
+                <div className="px-4 py-2.5 flex items-center justify-between border-b border-wedo-orange/20">
+                  <span className="text-micro font-semibold uppercase tracking-widest text-wedo-orange">
+                    {alertCount} alerta{alertCount !== 1 ? "s" : ""} do Studio
+                  </span>
+                </div>
+                <ul className="divide-y divide-wedo-orange/20">
+                  {alerts.map((alert, i) => (
+                    <li key={i} className="flex items-start gap-3 px-4 py-2.5">
+                      <span className={cn(
+                        "mt-0.5 w-1.5 h-1.5 rounded-full flex-shrink-0",
+                        alert.severity === "error" ? "bg-wedo-orange" : "bg-wedo-orange/60"
+                      )} />
+                      <span className="text-xs text-lia-text-secondary">{alert.message}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            <ServiceFunnelView
+              services={funnelServices}
+              onActivate={handleFunnelActivate}
+              onMarketplaceForSlug={(slug) => { setMarketplaceCategory(SLUG_TO_MARKETPLACE_CATEGORY[slug] ?? ""); setActiveTab("marketplace") }}
+            />
+          </>
         )}
 
-        {/* ── Smart alerts banner ───────────────────────────────────────────── */}
-        {alertCount > 0 && (
-          <div className="rounded-xl border border-wedo-orange/40 bg-wedo-orange/10 overflow-hidden">
-            <div className="px-4 py-2.5 flex items-center justify-between border-b border-wedo-orange/20">
-              <span className="text-micro font-semibold uppercase tracking-widest text-wedo-orange">
-                {alertCount} alerta{alertCount !== 1 ? "s" : ""} do Studio
-              </span>
-            </div>
-            <ul className="divide-y divide-[#FDE8C8]/60">
-              {alerts.map((alert, i) => (
-                <li key={i} className="flex items-start gap-3 px-4 py-2.5">
-                  <span className={cn(
-                    "mt-0.5 w-1.5 h-1.5 rounded-full flex-shrink-0",
-                    alert.severity === "error" ? "bg-wedo-orange" : "bg-wedo-orange/60"
-                  )} />
-                  <span className="text-xs text-lia-text-secondary">{alert.message}</span>
-                </li>
-              ))}
-            </ul>
+        {/* ── Operação (centro de controle) ─────────────────────────────────── */}
+        {activeTab === "operacao" && (
+          <div className="space-y-4">
+            <ApprovalsList onReviewed={() => mutateCustomAgents()} />
+            <AgentControlCenter />
           </div>
         )}
 
-        {/* ── Funnel-first view ─────────────────────────────────────────────── */}
-        <ServiceFunnelView
-          services={funnelServices}
-          onActivate={handleFunnelActivate}
-          onCustomAgents={() => setSecondaryView(v => v === "custom" ? null : "custom")}
-          onMarketplace={() => setSecondaryView(v => v === "marketplace" ? null : "marketplace")}
-          onMarketplaceForSlug={(slug) => { setMarketplaceCategory(SLUG_TO_MARKETPLACE_CATEGORY[slug] ?? ""); setSecondaryView("marketplace") }}
-        />
-
-        {/* ── Secondary views (Custom Agents / Marketplace / Search) ────────── */}
-        {secondaryView === "custom" && (
-          <div className="space-y-6 rounded-xl border border-lia-border-subtle bg-lia-bg-elevated overflow-hidden p-4">
-            <div className="flex items-center justify-between">
-              <span className="text-micro font-semibold uppercase tracking-widest text-lia-text-tertiary">
-                {t("studio.tabs.customAgents")}
-              </span>
-              <button onClick={() => setSecondaryView(null)} className="text-xs text-lia-text-tertiary hover:text-lia-text-tertiary transition-colors">
-                {t("studio.close") ?? "Fechar"}
-              </button>
-            </div>
-
-            <section>
-              <ApprovalsList onReviewed={() => mutateCustomAgents()} />
-            </section>
-
+        {/* ── Personalizados ────────────────────────────────────────────────── */}
+        {activeTab === "personalizados" && (
+          <div className="space-y-6">
             <section>
               <TabSectionHeader title={t("studio.myAgents")} count={customAgents.length} className="mb-3" />
               {customAgents.length === 0 ? (
@@ -689,7 +733,7 @@ export default function AgentStudioPage({
             </div>
 
             <details className="mt-4">
-              <summary className="text-xs text-lia-text-tertiary cursor-pointer hover:text-lia-text-tertiary">
+              <summary className="text-xs text-lia-text-tertiary cursor-pointer hover:text-lia-text-secondary">
                 {t("studio.advancedForm")}
               </summary>
               <div className="mt-3">
@@ -699,31 +743,24 @@ export default function AgentStudioPage({
           </div>
         )}
 
-        {secondaryView === "marketplace" && (
-          <div className="rounded-xl border border-lia-border-subtle bg-lia-bg-elevated overflow-hidden p-4">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-micro font-semibold uppercase tracking-widest text-lia-text-tertiary">
-                {t("studio.tabs.marketplace")}
-              </span>
-              <button onClick={() => setSecondaryView(null)} className="text-xs text-lia-text-tertiary hover:text-lia-text-tertiary transition-colors">
-                {t("studio.close") ?? "Fechar"}
-              </button>
-            </div>
-            <MarketplaceTab initialCategory={marketplaceCategory} />
-          </div>
+        {/* ── Marketplace ───────────────────────────────────────────────────── */}
+        {activeTab === "marketplace" && (
+          <MarketplaceTab initialCategory={marketplaceCategory} />
         )}
 
-        {secondaryView === "search" && (
-          <div className="rounded-xl border border-lia-border-subtle bg-lia-bg-elevated overflow-hidden p-4">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-micro font-semibold uppercase tracking-widest text-lia-text-tertiary">
-                {t("studio.tabs.smartSearch")}
-              </span>
-              <button onClick={() => setSecondaryView(null)} className="text-xs text-lia-text-tertiary hover:text-lia-text-tertiary transition-colors">
-                {t("studio.close") ?? "Fechar"}
-              </button>
-            </div>
-            <MultiStrategySearchPanel />
+        {/* ── Gêmeos Digitais ───────────────────────────────────────────────── */}
+        {activeTab === "gemeos" && (
+          <div className="space-y-4">
+            <TabSectionHeader
+              title={t("studio.twins.label")}
+              subtitle={t("studio.twins.cloneDesc")}
+              count={twinSummary.totalTwins}
+            />
+            <TwinsList
+              onEvaluate={(id) => setEvaluatingTwinId(id)}
+              onCreateTwin={() => setShowCreateTwinModal(true)}
+              refreshKey={twinListRefreshKey}
+            />
           </div>
         )}
       </div>
