@@ -33,6 +33,8 @@ interface ProxyConfig<M extends HttpMethod> {
   onResponse?: (data: unknown) => unknown
   /** Optional Zod schema to validate the request body for non-GET/DELETE methods. Returns 400 on failure. */
   bodySchema?: ZodSchema<unknown>
+  /** Override the default 10s proxy timeout for slow endpoints (e.g. AI search). In ms. */
+  timeoutMs?: number
 }
 
 function resolvePath(
@@ -99,6 +101,7 @@ export function createProxyHandlers<M extends HttpMethod = "GET">(
     defaultParams,
     onResponse,
     bodySchema,
+    timeoutMs = 10000,
   } = config
 
   const hasParams = backendPath.includes(":")
@@ -175,7 +178,7 @@ export function createProxyHandlers<M extends HttpMethod = "GET">(
           }
         }
 
-        const response = await fetch(url, { ...fetchOptions, signal: AbortSignal.timeout(10000) })
+        const response = await fetch(url, { ...fetchOptions, signal: AbortSignal.timeout(timeoutMs) })
 
         if (!response.ok) {
           // Pass the backend response through verbatim — preserve status, body
