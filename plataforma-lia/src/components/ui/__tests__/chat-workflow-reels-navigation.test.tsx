@@ -150,16 +150,16 @@ describe("MODAL_OVERRIDES — mapa de modais diretos", () => {
     expect(MODAL_OVERRIDES["add-candidate"]).toBe("add_candidate");
   });
 
-  it("tem exatamente 3 entradas (add-candidate, create-job, job-template)", () => {
-    expect(Object.keys(MODAL_OVERRIDES)).toHaveLength(3);
+  it("tem exatamente 2 entradas (add-candidate, create-job)", () => {
+    expect(Object.keys(MODAL_OVERRIDES)).toHaveLength(2);
   });
 
-  it("inclui create-job → create_job (W1-3: abre CreateJobModal)", () => {
+  it("inclui create-job → create_job (abre CreateJobModal)", () => {
     expect(MODAL_OVERRIDES["create-job"]).toBe("create_job");
   });
 
-  it("inclui job-template → create_job (W1-3: usa mesmo modal com step template)", () => {
-    expect(MODAL_OVERRIDES["job-template"]).toBe("create_job");
+  it("NÃO inclui job-template: 'Usar modelo' vai direto pra conversa (create_from_template)", () => {
+    expect(MODAL_OVERRIDES["job-template"]).toBeUndefined();
   });
 });
 
@@ -280,7 +280,7 @@ describe("ChatWorkflowReels — W1-3: create-job abre modal, não chama onSelect
     spyDispatch.mockRestore();
   });
 
-  it("clicar em 'Usar modelo' (com modal_id) dispara lia:open_modal com create_job", () => {
+  it("clicar em 'Usar modelo' inicia conversa via onSelect (create_from_template), sem modal", () => {
     const onSelect = vi.fn();
     mockRouterPush.mockClear();
 
@@ -297,9 +297,13 @@ describe("ChatWorkflowReels — W1-3: create-job abre modal, não chama onSelect
     const card = screen.getByRole("button", { name: /Usar modelo/i });
     fireEvent.click(card);
 
-    // W1-3: job-template also fires lia:open_modal with modal_id="create_job"
-    expect(dispatchedEvents.some((e) => e.detail?.modal_id === "create_job")).toBe(true);
-    expect(onSelect).not.toHaveBeenCalled();
+    // job-template NÃO está em MODAL_OVERRIDES → fallback onSelect(command, metadata).
+    expect(dispatchedEvents.some((e) => e.detail?.modal_id === "create_job")).toBe(false);
+    expect(onSelect).toHaveBeenCalledTimes(1);
+    expect(onSelect.mock.calls[0][1]).toMatchObject({
+      card_id: "job-template",
+      intent_hint: "create_from_template",
+    });
     expect(mockRouterPush).not.toHaveBeenCalled();
 
     spyDispatch.mockRestore();

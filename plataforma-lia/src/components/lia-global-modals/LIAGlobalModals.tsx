@@ -101,11 +101,21 @@ export function LIAGlobalModals() {
         router.push(page)
         return null
       })()}
-      {/* W1-3: 1.1 Criar vaga + 1.2 Modelo — CreateJobModal. Wizard navigates to funil. */}
+      {/* Card 1.1 (Criar vaga) → CreateJobModal. "Criar em conversa" inicia o
+          fluxo conversacional canônico via `lia:prefill-message` (mesmo
+          mecanismo do DonePanel "Criar outra vaga" + lia-float-context). O
+          orchestrator roteia "Criar nova vaga" → job_management/create_job. */}
       <CreateJobModal
         isOpen={createJob.isOpen}
         onClose={createJob.close}
-        onCreateWithWizard={() => { createJob.close(); router.push("/funil-de-talentos") }}
+        onCreateWithWizard={() => {
+          createJob.close()
+          window.dispatchEvent(
+            new CustomEvent("lia:prefill-message", {
+              detail: { message: "Criar nova vaga" },
+            }),
+          )
+        }}
       />
     </>
   )

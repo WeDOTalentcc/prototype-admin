@@ -162,14 +162,15 @@ export const COMING_SOON_CARDS = new Set<string>([]);
 /**
  * PR-Q1 / W1-3: Cards que abrem modal diretamente (sem detour pelo chat).
  * Valor = modal_id reconhecido por LIAGlobalModals via lia:open_modal event.
- * W1-3: create-job + job-template → CreateJobModal (escolhe wizard ou manual).
+ * create-job → CreateJobModal (escolhe "Criar em conversa" ou manual).
+ * job-template NÃO entra aqui: vai direto pra conversa (command
+ * "Criar vaga a partir de template" → orchestrator create_from_template),
+ * pois criar-a-partir-de-modelo não tem caminho manual.
  */
 export const MODAL_OVERRIDES: Record<string, string> = {
   "add-candidate": "add_candidate",
-  /** W1-3: Criar vaga abre CreateJobModal (step choose → wizard ou manual). */
+  /** Criar vaga abre CreateJobModal (step choose → conversa ou manual). */
   "create-job": "create_job",
-  /** W1-3: Usar modelo abre o mesmo modal com opção de template na escolha. */
-  "job-template": "create_job",
 };
 
 export function buildSuggestionMetadata(

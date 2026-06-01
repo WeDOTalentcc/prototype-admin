@@ -191,22 +191,22 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
               <div className="grid grid-cols-2 gap-3">
                 <button
                   onClick={handleChooseWizard}
-                  className="bg-lia-bg-primary border border-lia-border-subtle rounded-xl p-4 text-left transition-all motion-reduce:transition-none duration-150 hover:shadow-lia-default hover:-translate-y-0.5 hover:border-lia-border-medium cursor-pointer group"
+                  className="bg-lia-bg-primary border border-lia-border-subtle rounded-xl p-4 text-left transition-[border-color,box-shadow,transform] motion-reduce:transition-none duration-150 hover:shadow-lia-default hover:-translate-y-0.5 hover:border-lia-border-medium cursor-pointer group"
                 >
                   <div className="w-10 h-10 rounded-lg bg-wedo-cyan/10 flex items-center justify-center mb-3">
                     <Brain className="w-5 h-5 text-wedo-cyan" />
                   </div>
                   <h3 className="text-sm font-semibold text-lia-text-primary mb-1">
-                    Criar com a LIA
+                    Criar em conversa
                   </h3>
                   <p className="text-xs text-lia-text-secondary">
-                    A LIA guia você no processo
+                    Crie a vaga conversando, passo a passo
                   </p>
                 </button>
 
                 <button
                   onClick={handleChooseManual}
-                  className="bg-lia-bg-primary border border-lia-border-subtle rounded-xl p-4 text-left transition-all motion-reduce:transition-none duration-150 hover:shadow-lia-default hover:-translate-y-0.5 hover:border-lia-border-medium cursor-pointer group"
+                  className="bg-lia-bg-primary border border-lia-border-subtle rounded-xl p-4 text-left transition-[border-color,box-shadow,transform] motion-reduce:transition-none duration-150 hover:shadow-lia-default hover:-translate-y-0.5 hover:border-lia-border-medium cursor-pointer group"
                 >
                   <div className="w-10 h-10 rounded-lg bg-lia-bg-tertiary flex items-center justify-center mb-3">
                     <ClipboardList className="w-5 h-5 text-lia-text-secondary" />
