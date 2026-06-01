@@ -19,6 +19,7 @@ CANONICAL_SENIORITY_LEVELS: list[dict[str, str]] = [
     {"id": "senior", "label": "Sênior"},
     {"id": "staff", "label": "Staff"},
     {"id": "principal", "label": "Principal"},
+    {"id": "coordinator", "label": "Coordenador"},
     {"id": "manager", "label": "Gerente"},
     {"id": "director", "label": "Diretor"},
     {"id": "c-level", "label": "C-Level"},
