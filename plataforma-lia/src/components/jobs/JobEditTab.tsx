@@ -69,6 +69,8 @@ export function JobEditTab({
     isLoadingTemplates,
     isApplyingTemplate,
     applyTemplate,
+    saveStagesAsTemplate,
+    isSavingAsTemplate,
   } = useJobEditTab({
     jobEditForm,
     setJobEditForm,
@@ -290,6 +292,8 @@ export function JobEditTab({
                   isLoadingTemplates={isLoadingTemplates}
                   isApplyingTemplate={isApplyingTemplate}
                   onApplyTemplate={applyTemplate}
+                  onSaveAsTemplate={saveStagesAsTemplate}
+                  isSavingAsTemplate={isSavingAsTemplate}
                 />
               )}
 

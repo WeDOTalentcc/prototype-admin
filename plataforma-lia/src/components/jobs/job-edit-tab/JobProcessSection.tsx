@@ -1,6 +1,6 @@
 "use client"
 
-import React from"react"
+import React, { useState } from"react"
 import { Card, CardContent } from"@/components/ui/card"
 import {
   Brain, ChevronUp, ChevronDown, Clock, Layers, Lock, Loader2, Plus, Settings, Target, Trash2,
@@ -38,6 +38,9 @@ interface JobProcessSectionProps {
   isLoadingTemplates?: boolean
   isApplyingTemplate?: boolean
   onApplyTemplate?: (templateId: string) => void
+  // Fase 4 Unify: salvar como template
+  onSaveAsTemplate?: (name: string) => Promise<void>
+  isSavingAsTemplate?: boolean
 }
 
 export function JobProcessSection({
@@ -56,7 +59,12 @@ export function JobProcessSection({
   isLoadingTemplates,
   isApplyingTemplate,
   onApplyTemplate,
+  onSaveAsTemplate,
+  isSavingAsTemplate,
 }: JobProcessSectionProps) {
+  const [showSaveForm, setShowSaveForm] = useState(false)
+  const [saveTemplateName, setSaveTemplateName] = useState('')
+
   return (
     <div className="space-y-5">
       <div>
@@ -91,6 +99,43 @@ export function JobProcessSection({
                 ))}
               </select>
             </div>
+          )}
+          {vacancyId && onSaveAsTemplate && (
+            showSaveForm ? (
+              <>
+                <input
+                  type="text"
+                  value={saveTemplateName}
+                  onChange={e => setSaveTemplateName(e.target.value)}
+                  placeholder="Nome do template..."
+                  aria-label="Nome do template"
+                  className="text-xs px-2 py-1 rounded-lg border border-lia-border-subtle bg-lia-bg-primary text-lia-text-primary placeholder:text-lia-text-disabled focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20 w-36"
+                  onKeyDown={e => {
+                    if (e.key === "Enter") { onSaveAsTemplate(saveTemplateName).then(() => { setShowSaveForm(false); setSaveTemplateName("") }) }
+                    if (e.key === "Escape") { setShowSaveForm(false); setSaveTemplateName("") }
+                  }}
+                  autoFocus
+                />
+                <button
+                  onClick={() => onSaveAsTemplate(saveTemplateName).then(() => { setShowSaveForm(false); setSaveTemplateName("") })}
+                  disabled={!saveTemplateName.trim() || isSavingAsTemplate}
+                  className="text-xs px-2 py-1 rounded-lg bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover disabled:opacity-50"
+                >
+                  {isSavingAsTemplate ? <Loader2 className="w-3 h-3 animate-spin inline" /> : "Salvar"}
+                </button>
+                <button onClick={() => { setShowSaveForm(false); setSaveTemplateName("") }} className="text-xs text-lia-text-secondary hover:text-lia-text-primary px-1">✕</button>
+              </>
+            ) : (
+              <button
+                data-testid="job-save-stages-as-template"
+                onClick={() => setShowSaveForm(true)}
+                title="Salvar etapas como template reutilizável"
+                className="text-xs text-lia-text-secondary hover:text-lia-btn-primary-bg flex items-center gap-1 transition-colors whitespace-nowrap"
+              >
+                <Layers className="w-3 h-3" />
+                Salvar como template
+              </button>
+            )
           )}
         </div>
         {loadingCompanyPipeline && rawStages.length === 0 ? (
