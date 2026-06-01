@@ -62,6 +62,8 @@ export interface HiringPolicyData {
 interface PipelineRules {
   min_interviews_before_offer?: number
   manager_approval_for_offer?: boolean
+  manager_approval_sla_hours?: number
+  vacancy_approval_required?: boolean
   max_days_in_stage?: Record<string, number>
 }
 
@@ -90,6 +92,7 @@ interface ScreeningRules {
   salary_expectation_filter?: boolean
   salary_tolerance_percent?: number
   experience_policy?: string
+  minimum_compatibility_score?: number
   default_screening_questions?: string[]
 }
 
@@ -230,6 +233,8 @@ export function buildBlocks(
   const policyFields: CardField[] = [
     { key: "min_interviews_before_offer", label: "Quantas entrevistas mínimas antes de fazer oferta?", value: pr?.min_interviews_before_offer ?? null, type: "number", editable: true, block: "policy" },
     { key: "manager_approval_for_offer", label: "Aprovação Final de Oferta (gestor precisa aprovar antes de enviar proposta ao candidato)?", value: pr?.manager_approval_for_offer ?? null, type: "boolean", editable: true, block: "policy" },
+    { key: "manager_approval_sla_hours", label: "Prazo máximo (horas) para o gestor aprovar uma oferta antes de escalar?", value: pr?.manager_approval_sla_hours ?? null, type: "number", editable: true, block: "policy" },
+    { key: "vacancy_approval_required", label: "Abertura de nova vaga precisa de aprovação?", value: pr?.vacancy_approval_required ?? null, type: "boolean", editable: true, block: "policy" },
     { key: "max_days_in_stage", label: "Máximo de dias que candidato pode ficar em uma etapa?", value: pr?.max_days_in_stage ?? null, type: "text", editable: false, block: "policy" },
     { key: "allowed_days", label: "Em quais dias da semana podemos agendar entrevistas?", value: sr?.allowed_days ?? null, type: "list", editable: true, block: "policy" },
     { key: "allowed_hours", label: "Em qual janela horária podemos agendar entrevistas?", value: hours ? `${hours.start || ""} - ${hours.end || ""}` : null, type: "time-range", editable: true, block: "policy" },
@@ -241,6 +246,7 @@ export function buildBlocks(
     { key: "salary_expectation_filter", label: "Filtrar candidatos fora da faixa salarial automaticamente?", value: scr?.salary_expectation_filter ?? null, type: "boolean", editable: true, block: "policy" },
     { key: "salary_tolerance_percent", label: "Tolerância (em %) entre pretensão salarial e teto da vaga?", value: scr?.salary_tolerance_percent ?? null, type: "number", editable: true, block: "policy" },
     { key: "experience_policy", label: "Mínimo de experiência: por vaga ou política da empresa?", value: scr?.experience_policy ?? null, type: "text", editable: true, block: "policy" },
+    { key: "minimum_compatibility_score", label: "Pontuação mínima de compatibilidade para avançar (%)? (0 = sem corte)", value: scr?.minimum_compatibility_score ?? null, type: "number", editable: true, block: "policy" },
     { key: "auto_screening", label: "Triagem inicial dos candidatos deve ser automática?", value: ar?.auto_screening ?? null, type: "boolean", editable: true, block: "policy" },
     { key: "auto_scheduling", label: "Agendamento de entrevistas totalmente automático? (em breve)", value: ar?.auto_scheduling ?? null, type: "boolean", editable: false, block: "policy" },
     { key: "auto_stage_advance", label: "Candidatos avançam etapas automaticamente quando elegíveis?", value: ar?.auto_stage_advance ?? null, type: "boolean", editable: true, block: "policy" },
