@@ -145,7 +145,7 @@ export const SUGGESTION_HINTS: Record<
 export const NAVIGATION_OVERRIDES: Record<string, string> = {
   /** Créditos IA = Consumo: deep-link direto para a seção consumo (redirect /ai-credits mantido p/ bookmarks legados). */
   "ai-credits": "/configuracoes?section=consumo",
-  "hiring-policy": "/configuracoes?section=politicas-recrutamento",
+  "hiring-policy": "/configuracoes?section=lia-personalizacao",  // V4: Politicas virou aba Regras do hub Comportamento da LIA
   "email-templates": "/configuracoes?section=templates-assinatura",
   /** PR-Q1: Banco de talentos tem página dedicada. */
   "talent-pool": "/bancos-de-talentos",

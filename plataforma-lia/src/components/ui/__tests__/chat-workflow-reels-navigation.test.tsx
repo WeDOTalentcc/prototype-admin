@@ -130,8 +130,8 @@ describe("NAVIGATION_OVERRIDES — mapa de navegação direta", () => {
     expect(NAVIGATION_OVERRIDES["ai-credits"]).toBe("/configuracoes?section=consumo");
   });
 
-  it("inclui hiring-policy → /configuracoes?section=politicas-recrutamento", () => {
-    expect(NAVIGATION_OVERRIDES["hiring-policy"]).toBe("/configuracoes?section=politicas-recrutamento");
+  it("inclui hiring-policy → /configuracoes?section=lia-personalizacao", () => {
+    expect(NAVIGATION_OVERRIDES["hiring-policy"]).toBe("/configuracoes?section=lia-personalizacao");
   });
 
   it("inclui email-templates → /configuracoes?section=templates-assinatura", () => {

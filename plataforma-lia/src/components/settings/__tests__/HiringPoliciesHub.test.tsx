@@ -66,7 +66,7 @@ describe("HiringPoliciesHub (gates-only)", () => {
   test("loading + watchdog + missing-block states", () => {
     mockUseCards.mockReturnValue(baseReturn({ loading: true }))
     const { rerender } = render(<HiringPoliciesHub />)
-    expect(screen.getByText(/Carregando políticas/i)).toBeTruthy()
+    expect(screen.getByText(/Carregando regras/i)).toBeTruthy()
     mockUseCards.mockReturnValue(baseReturn({ watchdogError: "Falha" }))
     rerender(<HiringPoliciesHub />)
     expect(screen.getByText(/Falha/i)).toBeTruthy()

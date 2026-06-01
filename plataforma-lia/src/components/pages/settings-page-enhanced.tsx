@@ -30,7 +30,6 @@ const SECTION_ICON_COLORS: Record<string, string> = {
   'lia-personalizacao': 'text-cyan-500',
   'fairness-compliance': 'text-violet-400',
   'consumo': 'text-teal-500',
-  'politicas-recrutamento': 'text-orange-500',
 }
 
 
@@ -44,7 +43,6 @@ const IntegrationsHub = dynamic(() => import("@/components/settings/Integrations
 const UsuariosDepartamentosHub = dynamic(() => import("@/components/settings/UsuariosDepartamentosHub").then(m => ({ default: m.UsuariosDepartamentosHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando usuários..." /> })
 const FairnessComplianceHub = dynamic(() => import("@/components/settings/FairnessComplianceHub").then(m => ({ default: m.FairnessComplianceHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando compliance..." /> })
 const ConsumoHub = dynamic(() => import("@/components/settings/ConsumoHub").then(m => ({ default: m.ConsumoHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando consumo..." /> })
-const HiringPoliciesHub = dynamic(() => import("@/components/settings/HiringPoliciesHub").then(m => ({ default: m.HiringPoliciesHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando políticas..." /> })
 const LiaPersonalizacaoHub = dynamic(() => import("@/components/settings/LiaPersonalizacaoHub").then(m => ({ default: m.LiaPersonalizacaoHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando LIA..." /> })
 
 import { textStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
@@ -223,18 +221,6 @@ const getDefaultSections = (): SettingsSection[] => [
     estimatedTime: 0,
     group: 'plataforma' as const,
   },
-  {
-    id: 'politicas-recrutamento',
-    title: 'Políticas de Recrutamento',
-    description: 'Triagem, aprovação, comunicação, LGPD e D&I',
-    icon: FileText,
-    status: 'incomplete',
-    priority: 'high',
-    category: 'advanced',
-    estimatedTime: 15,
-    dependencies: ['minha-empresa'],
-    group: 'processo' as const,
-  },
 ]
 
 const settingsSections: SettingsSection[] = getDefaultSections()
@@ -311,7 +297,6 @@ export default function SettingsPageEnhanced() {
     'fairness-compliance': 0,
     'consumo': 0,
     'lia-personalizacao': 0,
-    'politicas-recrutamento': 0,
   })
 
   const [subsectionCompletion, setSubsectionCompletion] = useState<Record<string, boolean>>({})
@@ -365,7 +350,6 @@ export default function SettingsPageEnhanced() {
           'fairness-compliance': data.sections['fairness-compliance'] ?? prev['fairness-compliance'],
           'consumo': data.sections['ai-credits'] ?? data.sections['consumo'] ?? prev['consumo'],
           'lia-personalizacao': data.sections['lia-personalizacao'] ?? prev['lia-personalizacao'],
-          'politicas-recrutamento': data.sections['politicas-recrutamento'] ?? data.sections['recrutamento-lia'] ?? prev['politicas-recrutamento'],
         }))
       }
       
@@ -491,7 +475,7 @@ export default function SettingsPageEnhanced() {
       case 'comunicacao-alertas':
         return (
           <ErrorBoundarySection>
-            <CommunicationHub activeSubsection="alerts" visibleTabs={['schedule', 'alerts', 'abtesting']} />
+            <CommunicationHub activeSubsection="alerts" visibleTabs={['alerts']} />
           </ErrorBoundarySection>
         )
       case 'usuarios-departamentos':
@@ -516,12 +500,6 @@ export default function SettingsPageEnhanced() {
         return (
           <ErrorBoundarySection>
             <ConsumoHub />
-          </ErrorBoundarySection>
-        )
-      case 'politicas-recrutamento':
-        return (
-          <ErrorBoundarySection>
-            <HiringPoliciesHub />
           </ErrorBoundarySection>
         )
       default:

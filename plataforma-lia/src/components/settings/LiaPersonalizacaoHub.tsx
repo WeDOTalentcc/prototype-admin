@@ -16,6 +16,7 @@
 import React, { useState } from "react"
 import { Brain } from "lucide-react"
 import { AiPersonaPanel } from "./AiPersonaPanel"
+import { HiringPoliciesHub } from "./HiringPoliciesHub"
 import { LiaFieldsConfigPanel } from "./LiaFieldsConfigPanel"
 import { LearningLoopsPanel } from "./LearningLoopsPanel"
 import { LiaImpactSummary } from "./lia/LiaImpactSummary"
@@ -23,6 +24,7 @@ import { HubHeader } from "./_shared"
 
 const TABS = [
   { id: "persona", label: "Persona da IA" },
+  { id: "regras", label: "Regras" },
   { id: "instrucoes-lia", label: "Instrucoes por Campo" },
   { id: "learning-loops", label: "Learning Loops" },
   { id: "visibilidade", label: "Visibilidade" },
@@ -41,8 +43,8 @@ export function LiaPersonalizacaoHub({ activeSubsection }: LiaPersonalizacaoHubP
   return (
     <div className="space-y-4" data-testid="hub-lia-personalizacao">
       <HubHeader
-        title="LIA & Personalizacao"
-        description="Configure a persona da IA, instrucoes por campo e retroalimentacao do modelo"
+        title="Comportamento da LIA"
+        description="Persona, regras de processo, instrucoes por campo, learning loops e visibilidade — tudo que governa como a LIA atua."
       />
 
       {/* Tab nav */}
@@ -64,6 +66,7 @@ export function LiaPersonalizacaoHub({ activeSubsection }: LiaPersonalizacaoHubP
 
       {/* Tab content */}
       {activeTab === "persona" && <AiPersonaPanel />}
+      {activeTab === "regras" && <HiringPoliciesHub embedded />}
       {activeTab === "instrucoes-lia" && <LiaFieldsConfigPanel />}
       {activeTab === "learning-loops" && <LearningLoopsPanel />}
       {activeTab === "visibilidade" && <LiaImpactSummary />}
