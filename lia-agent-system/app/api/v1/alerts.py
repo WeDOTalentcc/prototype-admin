@@ -394,24 +394,41 @@ _company_gate: str = Depends(require_company_id)):
             user_id=user_id,
         )
 
-        if preferences:
-            return {
-                "preferences": [pref.to_dict() for pref in preferences],
-                "user_id": user_id,
-                "company_id": company_id
-            }
+        # V3.2 (2026-06-01): SEMPRE mescla o catálogo canônico (nomes/descrições
+        # amigáveis + conjunto completo) com as preferências armazenadas (overrides
+        # do usuário: is_enabled/threshold/channels/cooldown). Antes retornava só
+        # as armazenadas — uma empresa com 1 pref órfã (ex: dsr_overdue) via só ela,
+        # com a CHAVE CRUA (o model AlertPreference não tem name/description).
+        stored_by_type = {p.alert_type: p.to_dict() for p in preferences}
+        merged: list[dict] = []
+        catalog_types: set[str] = set()
+        for cat in DEFAULT_ALERT_PREFERENCES:
+            at = cat["alert_type"]
+            catalog_types.add(at)
+            entry = {"id": None, "company_id": company_id, "user_id": user_id, **cat}
+            stored = stored_by_type.get(at)
+            if stored:
+                entry["id"] = stored.get("id")
+                if stored.get("is_enabled") is not None:
+                    entry["is_enabled"] = stored["is_enabled"]
+                if stored.get("threshold") is not None:
+                    entry["threshold"] = stored["threshold"]
+                if stored.get("channels"):
+                    entry["channels"] = stored["channels"]
+                if stored.get("cooldown_hours") is not None:
+                    entry["cooldown_hours"] = stored["cooldown_hours"]
+            merged.append(entry)
 
-        default_prefs = []
-        for pref in DEFAULT_ALERT_PREFERENCES:
-            default_prefs.append({
-                "id": None,
-                "company_id": company_id,
-                "user_id": user_id,
-                **pref
-            })
+        # Tipos armazenados fora do catálogo (legado) — incluir com nome de fallback
+        # para nunca renderizar chave crua na UI.
+        for at, stored in stored_by_type.items():
+            if at not in catalog_types:
+                stored.setdefault("name", at)
+                stored.setdefault("description", "")
+                merged.append(stored)
 
         return {
-            "preferences": default_prefs,
+            "preferences": merged,
             "user_id": user_id,
             "company_id": company_id
         }
