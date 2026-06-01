@@ -1949,6 +1949,20 @@
       "chooseTemplateAbove": "Choose a template above to create your first sourcing agent",
       "chooseTemplateOrDescribe": "Choose a template below or describe to IA what you need",
       "twins": {
+        "evaluateCandidate": {
+          "title": "Evaluate {name} with a twin",
+          "subtitle": "See how a specialist would assess this candidate.",
+          "pickTwin": "Choose the twin",
+          "pickTwinPlaceholder": "Select a specialist",
+          "noTwins": "No twins created yet.",
+          "evaluating": "Evaluating…",
+          "decisionApproved": "Would approve",
+          "decisionRejected": "Would reject",
+          "decisionMaybe": "Maybe",
+          "fairnessFlagged": "⚠ Possible bias — review",
+          "needsReview": "Human review recommended.",
+          "close": "Close"
+        },
         "cloneReasoning": "Clone the reasoning of your best evaluators",
         "cloneDesc": "Capture how a team specialist evaluates candidates. The Digital Twin learns the criteria and works as an automatic 'second opinion' in screening.",
         "label": "Digital Twins",
@@ -1962,6 +1976,36 @@
           "noExperience": "No historical decisions indexed yet."
         },
         "createModal": {
+          "namePrefill": "{name}'s Twin",
+          "specialist": {
+            "label": "Whose twin is this?",
+            "placeholder": "Select a team specialist",
+            "help": "The twin learns from this person's real decisions.",
+            "empty": "No specialists available yet."
+          },
+          "period": {
+            "label": "Analyze decisions from the last",
+            "months": "{n} months"
+          },
+          "scan": {
+            "title": "Analyzing decisions…",
+            "cta": "Analyze decisions",
+            "error": "Couldn't analyze right now. Please try again."
+          },
+          "preview": {
+            "foundCount": "We found {count} decisions by {name}",
+            "approved": "approvals",
+            "rejected": "rejections",
+            "examplesTitle": "Examples the twin learned from",
+            "reasoningInferred": "Reasoning is AI-inferred from outcomes — the twin reflects human decisions.",
+            "biasAuditedBadge": "✓ Bias-audited",
+            "biasFlagged": "⚠ Possible bias — review",
+            "confirmButton": "Confirm and create twin",
+            "back": "Back",
+            "lowDataWarning": "Few decisions ({count}). The twin works, but with less precision.",
+            "noDataTitle": "Not enough decisions",
+            "noDataDesc": "Choose another specialist or record decisions first."
+          },
           "title": "Create Digital Twin",
           "subtitle": "Capture the evaluation pattern of an expert.",
           "nameLabel": "Digital Twin name",
@@ -1987,6 +2031,8 @@
           "fileTooLargeTitle": "File too large",
           "fileTooLargeDesc": "The selected file exceeds the 10MB limit.",
           "lgpd": {
+            "footnote": "We index historical decisions to train the twin (LGPD).",
+            "learnMore": "learn more",
             "summary": "LGPD Art. 6, 11 and 18: we index historical decisions to train the Digital Twin.",
             "detail": {
               "indexing": "This feature indexes historical decisions (approvals, rejections, comments) from the selected evaluators to train the model. Data is processed internally and never shared with third parties.",
@@ -2406,7 +2452,18 @@
       "createWithAI": "Create with AI",
       "services": {
         "advanced": "Advanced",
-        "ctaActivate": "Activate"
+        "ctaActivate": "Activate",
+        "intake": "Jobs",
+        "alignment": "Manager alignment",
+        "sourcing": "Sourcing",
+        "screening": "Screening",
+        "calibration": "Calibration",
+        "offer": "Offers",
+        "nps": "Satisfaction (NPS)",
+        "statusActive": "Active",
+        "statusConfigured": "Configured",
+        "statusAttention": "Attention",
+        "statusInactive": "Inactive"
       },
       "onboarding": {
         "step1Title": "Welcome to the Agent Studio",

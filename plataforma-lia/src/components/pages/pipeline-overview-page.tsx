@@ -30,6 +30,7 @@ import {
   Radio,
   Archive,
   Database,
+  Users2,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Chip } from "@/components/ui/chip"
@@ -102,6 +103,11 @@ const BulkImportModal = dynamic(
 )
 const AtsImportSuggestionCard = dynamic(
   () => import("@/components/jobs/AtsImportSuggestionCard").then(m => ({ default: m.AtsImportSuggestionCard })),
+  { ssr: false }
+)
+// Twin "second opinion" entry point from the candidate card.
+const EvaluateCandidateWithTwinModal = dynamic(
+  () => import("@/components/pages-agent-studio/DigitalTwinComponents").then(m => ({ default: m.EvaluateCandidateWithTwinModal })),
   { ssr: false }
 )
 
@@ -350,7 +356,7 @@ function calculateGeneralScore(candidate: CandidateItem): number | null {
   return Math.round(scores.reduce((a, b) => a + b, 0) / scores.length)
 }
 
-type ModalType = "geral" | "triagem" | "cv" | "tecnico" | "ingles" | "b5" | null
+type ModalType = "geral" | "triagem" | "cv" | "tecnico" | "ingles" | "b5" | "twin" | null
 
 export function PipelineOverviewPage() {
   const tOverview = useTranslations("pipelineOverview")
@@ -1186,6 +1192,24 @@ export function PipelineOverviewPage() {
             candidate={candidateItemToRecord(modalCandidate)}
           />
         )}
+        {activeModal === "twin" && modalCandidate && (
+          <EvaluateCandidateWithTwinModal
+            isOpen={true}
+            onClose={handleCloseModal}
+            candidateName={modalCandidate.name}
+            candidateProfile={{
+              name: modalCandidate.name,
+              role_name: modalCandidate.vacancy_title || undefined,
+              lia_score: modalCandidate.lia_score ?? undefined,
+              match_percentage: modalCandidate.match_percentage ?? undefined,
+            }}
+            jobContext={{
+              title: modalCandidate.vacancy_title || undefined,
+              level: modalCandidate.vacancy_level || undefined,
+              department: modalCandidate.vacancy_department || undefined,
+            }}
+          />
+        )}
       </div>
       {/* Phase A — Job publish modal mounted inline (not /jobs/{id} navigation). */}
       {showPublishModal && previewVacancy && (
@@ -1584,7 +1608,20 @@ function PipelineCandidateCard({
         )}
       </div>
 
-      <div className="flex-shrink-0 border-l border-lia-border-subtle pl-3">
+      <div className="flex-shrink-0 border-l border-lia-border-subtle pl-3 flex items-center gap-2">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); onOpenScoreModal(candidate, "twin") }}
+              className="flex items-center cursor-pointer hover:scale-105 transition-transform rounded-full"
+              aria-label="Avaliar com gêmeo digital"
+            >
+              <Users2 className="w-3.5 h-3.5 text-wedo-cyan" strokeWidth={2} />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="top" className="text-xs">Avaliar com gêmeo digital</TooltipContent>
+        </Tooltip>
         {visibleScores.length > 0 ? (
           <div className="flex items-center gap-1.5">
             {visibleScores.map(({ id, icon: Icon, value, label }) => (

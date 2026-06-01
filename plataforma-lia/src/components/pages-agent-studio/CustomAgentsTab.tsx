@@ -40,6 +40,8 @@ interface CustomAgent {
   max_steps?: number
   temperature?: number
   config?: Record<string, unknown>
+  category?: string
+  preferences?: Record<string, unknown>
 }
 
 // UX-Sprint-A QW#18 Batch 3 (audit 2026-05-21): STATUS_CONFIG extraído para
@@ -346,15 +348,18 @@ const CAPABILITY_GROUP_I18N: Record<CapabilityGroup, string> = {
 }
 
 export function CreateCustomAgentModal({
-  agent, onClose, onSaved,
+  agent, onClose, onSaved, sourcingCreate, initialTemplate,
 }: {
   agent: CustomAgent | null
   onClose: () => void
-  onSaved: () => void
+  onSaved: (agentId?: string) => void
+  sourcingCreate?: boolean
+  initialTemplate?: { id: string; display_name: string } | null
 }) {
   const t = useTranslations('agents.customAgents')
   const isEditing = !!agent
-  const [name, setName] = useState(agent?.name || "")
+  const isSourcing = agent?.category === "sourcing" || !!sourcingCreate
+  const [name, setName] = useState(agent?.name || initialTemplate?.display_name || "")
   const [role, setRole] = useState(agent?.role || "")
   const [description, setDescription] = useState(agent?.description || "")
   const [systemPrompt, setSystemPrompt] = useState(agent?.system_prompt || "")
@@ -385,6 +390,12 @@ export function CreateCustomAgentModal({
   })
   const [jobs, setJobs] = useState<Array<{ id: string; title: string }>>([])
   const [pools, setPools] = useState<Array<{ id: string; name: string }>>([])
+  const [candidatesPerDay, setCandidatesPerDay] = useState<number>(
+    () => ((agent?.preferences ?? {}) as { candidates_per_day?: number }).candidates_per_day ?? 20,
+  )
+  const [notifyFrequency, setNotifyFrequency] = useState<string>(
+    () => ((agent?.preferences ?? {}) as { notify_frequency?: string }).notify_frequency ?? "daily",
+  )
 
   useEffect(() => {
     fetch("/api/backend-proxy/custom-agents/available-tools")
@@ -452,6 +463,65 @@ export function CreateCustomAgentModal({
     try {
       // Contrato backend preservado: slug array + número de temperatura, exatos.
       const allowedTools = Array.from(selectedTools)
+
+      // F2: sourcing create routes through the orchestrator (search-strategy setup +
+      // sector template), then applies the rich behaviour fields via PATCH. Keeps the
+      // single modal experience for create + edit.
+      if (sourcingCreate && !isEditing) {
+        let templateId: string | undefined
+        if (initialTemplate?.id) {
+          try {
+            const tr = await fetch(`/api/backend-proxy/agent-templates/sectors/${initialTemplate.id}`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ agent_name: name }),
+            })
+            if (tr.ok) templateId = (await tr.json())?.template_id
+          } catch { /* template application is optional */ }
+        }
+        const createRes = await fetch("/api/backend-proxy/sourcing-agents", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            agent_name: name,
+            job_id: linkType === "job" ? (linkId || null) : null,
+            talent_pool_id: linkType === "pool" ? (linkId || null) : null,
+            agent_template_id: templateId || null,
+            preferences: {
+              candidates_per_day: candidatesPerDay,
+              notify_frequency: notifyFrequency,
+              channels: ["internal", "linkedin"],
+            },
+          }),
+        })
+        if (!createRes.ok) {
+          const errData = await createRes.json().catch(() => ({ detail: createRes.statusText }))
+          throw new Error(errData?.detail || `Error ${createRes.status}`)
+        }
+        const created = await createRes.json()
+        const newId: string = created?.agent_id || created?.id || ""
+        if (newId) {
+          const patch: Record<string, unknown> = {
+            domain,
+            max_steps: maxSteps,
+            temperature: RESPONSE_STYLE_TO_TEMPERATURE[responseStyle],
+          }
+          if (role.trim()) patch.role = role.trim()
+          if (description.trim()) patch.description = description.trim()
+          if (systemPrompt.trim().length >= 10) patch.system_prompt = systemPrompt.trim()
+          if (allowedTools.length) patch.allowed_tools = allowedTools
+          try {
+            await fetch(`/api/backend-proxy/custom-agents/${newId}`, {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(patch),
+            })
+          } catch { /* behaviour fields are an enhancement; agent already created */ }
+        }
+        onSaved(newId)
+        return
+      }
+
       const body = {
         name,
         role,
@@ -466,6 +536,13 @@ export function CreateCustomAgentModal({
           job_id: linkType === "job" ? (linkId || null) : null,
           talent_pool_id: linkType === "pool" ? (linkId || null) : null,
         },
+        ...(isSourcing
+          ? { preferences: {
+              ...((agent?.preferences as Record<string, unknown>) ?? {}),
+              candidates_per_day: candidatesPerDay,
+              notify_frequency: notifyFrequency,
+            } }
+          : {}),
       }
 
       const url = isEditing
@@ -586,6 +663,54 @@ export function CreateCustomAgentModal({
             )}
           </div>
 
+          {isSourcing && (
+            <div>
+              <label className="text-xs font-semibold text-lia-text-primary mb-1.5 block">{tStudio("candidatesPerDay")}</label>
+              <div className="flex gap-2">
+                {[10, 20, 30, 50].map((n) => (
+                  <button
+                    key={n}
+                    type="button"
+                    onClick={() => setCandidatesPerDay(n)}
+                    className={cn(
+                      "px-4 py-2 rounded-md text-xs font-medium border transition-colors",
+                      candidatesPerDay === n
+                        ? "border-lia-text-primary bg-lia-bg-tertiary text-lia-text-primary"
+                        : "border-lia-border-subtle text-lia-text-secondary hover:bg-lia-bg-secondary"
+                    )}
+                  >
+                    {n}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          {isSourcing && (
+            <div>
+              <label className="text-xs font-semibold text-lia-text-primary mb-1.5 block">{tStudio("notificationFrequency")}</label>
+              <div className="flex gap-2">
+                {[
+                  { id: "realtime", label: tStudio("perCandidate") },
+                  { id: "daily", label: tStudio("dailySummary") },
+                  { id: "weekly", label: tStudio("weeklySummary") },
+                ].map((opt) => (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    onClick={() => setNotifyFrequency(opt.id)}
+                    className={cn(
+                      "px-3 py-2 rounded-md text-xs font-medium border transition-colors",
+                      notifyFrequency === opt.id
+                        ? "border-lia-text-primary bg-lia-bg-tertiary text-lia-text-primary"
+                        : "border-lia-border-subtle text-lia-text-secondary hover:bg-lia-bg-secondary"
+                    )}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
           {/* Instruções do agente — antes "System prompt" mono. Humanizado:
               label + placeholder didáticos, sem fonte mono. Mesmo campo, só UI. */}
           <div>
@@ -725,7 +850,7 @@ export function CreateCustomAgentModal({
           <Button variant="ghost" onClick={onClose} disabled={isSaving}>{t('cancel')}</Button>
           <Button
             onClick={handleSave}
-            disabled={isSaving || !name || !role || !systemPrompt}
+            disabled={isSaving || !name || (!sourcingCreate && (!role || !systemPrompt))}
             className="bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover"
           >
             {isSaving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}

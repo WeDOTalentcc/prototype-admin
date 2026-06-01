@@ -38,6 +38,9 @@ class UpdateCustomAgentRequest(WeDoBaseModel):
     context_level: Optional[str] = Field(None, pattern="^(full|standard|minimal)$")
     excluded_tools: Optional[list[str]] = None
     status: Optional[str] = Field(None, pattern="^(draft|active|paused|archived)$")
+    # F2 (2026-06-01): sourcing cadence (candidates_per_day, notify_frequency, channels).
+    # Persisted to CustomAgent.preferences (JSONB) via generic setattr in update_agent.
+    preferences: Optional[dict[str, Any]] = None
 
 
 class CustomAgentResponse(BaseModel):
@@ -64,6 +67,8 @@ class CustomAgentResponse(BaseModel):
     avg_confidence: float = 0.0
     last_executed_at: Optional[str] = None
     is_marketplace_published: bool = False
+    category: Optional[str] = None
+    preferences: Optional[dict[str, Any]] = None
     created_at: Optional[str] = None
     updated_at: Optional[str] = None
 

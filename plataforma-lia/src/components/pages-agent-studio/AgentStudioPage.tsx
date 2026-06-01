@@ -7,7 +7,7 @@ import {
   CreateDigitalTwinModal,
 } from "@/components/pages-agent-studio/DigitalTwinComponents"
 import MultiStrategySearchPanel from "@/components/pages-agent-studio/MultiStrategySearchPanel"
-import CustomAgentsTab from "@/components/pages-agent-studio/CustomAgentsTab"
+import CustomAgentsTab, { CreateCustomAgentModal } from "@/components/pages-agent-studio/CustomAgentsTab"
 import { TemplateGallery, AgentCard as CustomAgentCard, AgentDetailsPanel, DeployDialog, ConversationalCreator, TestDebugPanel, ApprovalsList } from "@/components/pages-agent-studio/custom-agents"
 import { useCustomAgents, useStudioAlerts } from "@/hooks/agents"
 import { useAgentStudioStore } from "@/stores/agent-studio-store"
@@ -725,14 +725,16 @@ export default function AgentStudioPage({
       )}
 
       {showCreateModal && (
-        <CreateAgentModal
+        <CreateCustomAgentModal
+          agent={null}
+          sourcingCreate
           initialTemplate={selectedTemplate}
           onClose={() => { setShowCreateModal(false); setSelectedTemplate(null) }}
-          onCreated={(agentId) => {
+          onSaved={(agentId) => {
             setShowCreateModal(false)
             setSelectedTemplate(null)
             loadData()
-            onStartCalibration?.(agentId)
+            if (agentId) onStartCalibration?.(agentId)
           }}
         />
       )}

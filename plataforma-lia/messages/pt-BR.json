@@ -1949,6 +1949,20 @@
       "chooseTemplateAbove": "Escolha um template acima para criar seu primeiro agente de sourcing",
       "chooseTemplateOrDescribe": "Escolha um template abaixo ou descreva para a IA o que você precisa",
       "twins": {
+        "evaluateCandidate": {
+          "title": "Avaliar {name} com um gêmeo",
+          "subtitle": "Veja como um especialista avaliaria este candidato.",
+          "pickTwin": "Escolha o gêmeo",
+          "pickTwinPlaceholder": "Selecione um especialista",
+          "noTwins": "Nenhum gêmeo criado ainda.",
+          "evaluating": "Avaliando…",
+          "decisionApproved": "Aprovaria",
+          "decisionRejected": "Rejeitaria",
+          "decisionMaybe": "Talvez",
+          "fairnessFlagged": "⚠ Possível viés — revisar",
+          "needsReview": "Recomenda revisão humana.",
+          "close": "Fechar"
+        },
         "cloneReasoning": "Clone o raciocínio dos seus melhores avaliadores",
         "cloneDesc": "Capture como um especialista da equipe avalia candidatos. O Digital Twin aprende os critérios e funciona como uma \"segunda opinião\" automática na triagem.",
         "label": "Gêmeos Digitais",
@@ -1962,6 +1976,36 @@
           "noExperience": "Sem decisões históricas indexadas ainda."
         },
         "createModal": {
+          "namePrefill": "Gêmeo de {name}",
+          "specialist": {
+            "label": "De quem é este gêmeo?",
+            "placeholder": "Selecione um especialista do time",
+            "help": "O gêmeo aprende com as decisões reais desta pessoa.",
+            "empty": "Nenhum especialista disponível ainda."
+          },
+          "period": {
+            "label": "Analisar decisões dos últimos",
+            "months": "{n} meses"
+          },
+          "scan": {
+            "title": "Analisando as decisões…",
+            "cta": "Analisar decisões",
+            "error": "Não foi possível analisar agora. Tente novamente."
+          },
+          "preview": {
+            "foundCount": "Encontramos {count} decisões de {name}",
+            "approved": "aprovações",
+            "rejected": "rejeições",
+            "examplesTitle": "Exemplos que o gêmeo aprendeu",
+            "reasoningInferred": "O raciocínio é inferido por IA a partir dos resultados — o gêmeo reflete decisões humanas.",
+            "biasAuditedBadge": "✓ Auditado contra viés",
+            "biasFlagged": "⚠ Possível viés — revisar",
+            "confirmButton": "Confirmar e criar gêmeo",
+            "back": "Voltar",
+            "lowDataWarning": "Poucas decisões ({count}). O gêmeo funciona, mas com menos precisão.",
+            "noDataTitle": "Sem decisões suficientes",
+            "noDataDesc": "Escolha outro especialista ou registre decisões primeiro."
+          },
           "title": "Criar Gêmeo Digital",
           "subtitle": "Capture o padrão de avaliação de um especialista.",
           "nameLabel": "Nome do Gêmeo Digital",
@@ -1987,6 +2031,8 @@
           "fileTooLargeTitle": "Arquivo muito grande",
           "fileTooLargeDesc": "O arquivo selecionado excede o limite de 10MB.",
           "lgpd": {
+            "footnote": "Indexamos decisões históricas para treinar o gêmeo (LGPD).",
+            "learnMore": "saiba mais",
             "summary": "LGPD Art. 6, 11 e 18: indexamos decisões históricas para treinar o Gêmeo Digital.",
             "detail": {
               "indexing": "Esta funcionalidade indexa decisões históricas (aprovações, rejeições, comentários) dos avaliadores selecionados para treinar o modelo. Dados são processados internamente e nunca compartilhados com terceiros.",
@@ -2406,7 +2452,18 @@
       "createWithAI": "Criar com IA",
       "services": {
         "advanced": "Avançado",
-        "ctaActivate": "Ativar"
+        "ctaActivate": "Ativar",
+        "intake": "Vagas",
+        "alignment": "Alinhamento c/ gestor",
+        "sourcing": "Captação",
+        "screening": "Triagem",
+        "calibration": "Calibração",
+        "offer": "Ofertas",
+        "nps": "Satisfação (NPS)",
+        "statusActive": "Ativo",
+        "statusConfigured": "Configurado",
+        "statusAttention": "Atenção",
+        "statusInactive": "Inativo"
       },
       "onboarding": {
         "step1Title": "Bem-vindo ao Estúdio de Agentes",

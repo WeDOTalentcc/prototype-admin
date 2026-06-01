@@ -37,48 +37,32 @@ class TwinKnowledgeIndexer:
         twin_id: str,
         company_id: str,
         months_back: int = 12,
+        evaluator_email: Optional[str] = None,
         db=None,
     ) -> int:
         """
-        Index past hiring decisions from the ATS into the twin's corpus.
+        Index past decisions from vacancy_candidates into the twin's corpus.
 
-        Searches for candidates with reviewer_notes/feedback in the ATS,
-        maps their status to approved/rejected, and generates embeddings.
+        2026-06-01 (audit): swapped from the non-existent `applies` table to the
+        live `vacancy_candidates` (the table recruiters actually write to). When
+        `evaluator_email` is given, scopes to that person's decisions (added_by =
+        email; human_reviewer_id is 0% populated here). `notes` is empty, so the
+        reasoning text is SYNTHESIZED from status + candidate profile.
 
+        Multi-tenancy: company_id comes from the caller (JWT), never the payload.
         Returns number of decisions indexed.
         """
-        # ADR-001-EXEMPT: cross-domain Rails-owned tables (applies, candidates,
-        # jobs) — schema not modeled in lia_models; canonical CandidateRepository
-        # does not cover this analytics-style join. Sprint backlog: lift to
-        # ATSAnalyticsRepository when the cross-domain repo lands.
-        query = sql_text("""
-            SELECT
-                a.candidate_id,
-                a.status,
-                a.reviewer_notes,
-                c.name,
-                c.role_name,
-                c.technical_skills,
-                c.years_of_experience,
-                j.title as job_title
-            FROM applies a
-            JOIN candidates c ON c.id = a.candidate_id
-            JOIN jobs j ON j.id = a.job_id
-            WHERE a.company_id = :company_id
-              AND a.reviewer_notes IS NOT NULL
-              AND a.reviewer_notes != ''
-              AND a.created_at >= NOW() - make_interval(months => :months)
-            LIMIT 2000
-        """)
-
+        sql = self._ats_decision_sql(bool(evaluator_email))
+        params = {"company_id": company_id, "months": months_back, "limit": 2000}
+        if evaluator_email:
+            params["evaluator_email"] = evaluator_email
+        # ADR-001-EXEMPT: cross-table analytics read (vacancy_candidates + candidates
+        # + job_vacancies); canonical repos do not cover this twin-corpus join.
         try:
-            result = await db.execute(query, {
-                "company_id": company_id,
-                "months": months_back,
-            })
+            result = await db.execute(sql_text(sql), params)
             rows = result.fetchall()
         except Exception as e:
-            logger.warning("[TwinIndexer] ATS query failed, trying simplified: %s", e)
+            logger.warning("[TwinIndexer] vacancy_candidates query failed: %s", e)
             rows = []
 
         from app.domains.agent_studio.repositories.digital_twin_repository import (
@@ -92,22 +76,12 @@ class TwinKnowledgeIndexer:
             if not decision:
                 continue
 
-            # P0-4(b) audit 2026-05-21: LGPD Art. 7/11 — sem PII direta no embed.
-            # 'name' removido do candidate_snapshot. candidate_id mantido para JIT lookup
-            # (que respeitará erasure via cascade na Wave 2). reviewer_notes embedado mas
-            # idealmente passaria por PII strip server-side antes (Wave 2).
-            candidate_snapshot = {
-                "candidate_id": str(row.candidate_id),  # ref, não PII
-                "role_name": row.role_name,
-                "technical_skills": row.technical_skills or [],
-                "years_of_experience": row.years_of_experience,
-            }
-
+            snapshot, reasoning = self._synthesize_decision(row, decision)
             text_for_embedding = (
-                f"Decisão: {decision}\n"
+                f"Decis\u00e3o: {decision}\n"
                 f"Cargo: {row.job_title}\n"
-                f"Perfil: {json.dumps(candidate_snapshot, ensure_ascii=False)}\n"
-                f"Raciocínio: {row.reviewer_notes}"
+                f"Perfil: {json.dumps(snapshot, ensure_ascii=False)}\n"
+                f"Racioc\u00ednio: {reasoning}"
             )
             embedding = await self._embed(text_for_embedding)
 
@@ -115,8 +89,8 @@ class TwinKnowledgeIndexer:
                 id=uuid.uuid4(),
                 twin_id=twin_id,
                 decision=decision,
-                reasoning=row.reviewer_notes or "",
-                candidate_snapshot=candidate_snapshot,
+                reasoning=reasoning,
+                candidate_snapshot=snapshot,
                 job_snapshot={"title": row.job_title},
                 embedding=embedding,
                 source="ats_history",
@@ -126,13 +100,117 @@ class TwinKnowledgeIndexer:
 
         if indexed > 0:
             await db.commit()
-            await repo.update_decision_count(
-                twin_id=twin_id, company_id=company_id
-            )
+            await repo.update_decision_count(twin_id=twin_id, company_id=company_id)
             await db.commit()
 
-        logger.info("[TwinIndexer] twin=%s indexed %d decisions from ATS", twin_id, indexed)
+        logger.info("[TwinIndexer] twin=%s indexed %d decisions from vacancy_candidates", twin_id, indexed)
         return indexed
+
+    @staticmethod
+    def _ats_decision_sql(filter_evaluator: bool) -> str:
+        """Shared decision query over vacancy_candidates (the live ATS table).
+
+        `notes` is empty in this DB so no rationale column is selected (reasoning is
+        synthesized downstream). `added_by` holds the evaluator EMAIL.
+        """
+        evaluator_clause = "AND vc.added_by = :evaluator_email" if filter_evaluator else ""
+        return f"""
+            SELECT
+                vc.candidate_id,
+                vc.status,
+                vc.added_by,
+                vc.lia_score,
+                vc.match_percentage,
+                vc.created_at,
+                c.current_title,
+                c.technical_skills,
+                c.years_of_experience,
+                j.title AS job_title
+            FROM vacancy_candidates vc
+            JOIN candidates c ON c.id = vc.candidate_id
+            LEFT JOIN job_vacancies j ON j.id = vc.vacancy_id
+            WHERE vc.company_id = :company_id
+              AND vc.status IN ('approved','hired','offer','rejected','not_selected')
+              AND vc.created_at >= NOW() - make_interval(months => :months)
+              {evaluator_clause}
+            ORDER BY vc.created_at DESC
+            LIMIT :limit
+        """
+
+    @staticmethod
+    def _synthesize_decision(row, decision: str):
+        """PII-safe candidate snapshot + synthesized reasoning (notes is empty).
+
+        LGPD: no direct PII (no name) in the embedded corpus; candidate_id kept as a
+        reference for JIT lookup (erasure-cascade safe).
+        """
+        skills = list(row.technical_skills or [])
+        snapshot = {
+            "candidate_id": str(row.candidate_id),
+            "current_title": row.current_title,
+            "technical_skills": skills,
+            "years_of_experience": row.years_of_experience,
+        }
+        decision_pt = "aprovou" if decision == "approved" else "rejeitou"
+        parts = [
+            f"{decision_pt} para {row.job_title or 'a vaga'}",
+            f"perfil: {row.current_title or 'n/d'}",
+            f"{row.years_of_experience} anos" if row.years_of_experience is not None else None,
+            f"skills: {', '.join(skills[:6])}" if skills else None,
+            f"score IA {row.lia_score}" if row.lia_score is not None else None,
+            f"match {row.match_percentage}%" if row.match_percentage is not None else None,
+        ]
+        reasoning = " \u2014 ".join([p for p in parts if p])
+        return snapshot, reasoning
+
+    async def scan_ats_history_preview(
+        self,
+        company_id: str,
+        evaluator_email: Optional[str],
+        months_back: int = 12,
+        sample_size: int = 5,
+        db=None,
+    ) -> dict:
+        """Read-only dry run: count + sample an evaluator's decisions WITHOUT
+        embedding or persisting. Powers the create-modal preview (B2).
+        """
+        sql = self._ats_decision_sql(bool(evaluator_email))
+        params = {"company_id": company_id, "months": months_back, "limit": 2000}
+        if evaluator_email:
+            params["evaluator_email"] = evaluator_email
+        # ADR-001-EXEMPT: read-only analytics join (see _ats_decision_sql).
+        try:
+            rows = (await db.execute(sql_text(sql), params)).fetchall()
+        except Exception as e:
+            logger.warning("[TwinIndexer] scan-preview query failed: %s", e)
+            rows = []
+
+        approved = rejected = 0
+        samples: list[dict] = []
+        for row in rows:
+            decision = self._map_status(row.status)
+            if not decision:
+                continue
+            if decision == "approved":
+                approved += 1
+            else:
+                rejected += 1
+            if len(samples) < sample_size:
+                _snapshot, reasoning = self._synthesize_decision(row, decision)
+                samples.append({
+                    "decision": decision,
+                    "role": row.current_title or row.job_title,
+                    "skills": list(row.technical_skills or [])[:5],
+                    "summary": reasoning,
+                })
+        total = approved + rejected
+        return {
+            "decisions_found": total,
+            "approved_count": approved,
+            "rejected_count": rejected,
+            "sample_decisions": samples,
+            "has_enough": total >= 5,
+        }
 
     async def index_from_audio(
         self,
@@ -300,8 +378,8 @@ class TwinKnowledgeIndexer:
 
     @staticmethod
     def _map_status(status: str) -> Optional[str]:
-        APPROVED = {"hired", "offer_accepted", "passed_interview", "shortlisted", "approved"}
-        REJECTED = {"rejected", "disqualified", "failed_screening", "declined"}
+        APPROVED = {"hired", "offer_accepted", "passed_interview", "shortlisted", "approved", "offer"}
+        REJECTED = {"rejected", "disqualified", "failed_screening", "declined", "not_selected"}
         if status in APPROVED:
             return "approved"
         if status in REJECTED:

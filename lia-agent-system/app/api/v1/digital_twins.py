@@ -46,6 +46,88 @@ class ManualDecisionRequest(WeDoBaseModel):
     job_snapshot: Optional[dict] = None
 
 
+class ScanPreviewRequest(WeDoBaseModel):
+    sme_user_id: str = Field(..., min_length=1)
+    months_back: int = Field(default=12, ge=1, le=36)
+
+
+async def _resolve_evaluator(db, sme_user_id, company_id):
+    """Resolve a twin SME's user_id (UUID) -> (email, name).
+
+    vacancy_candidates.added_by stores the plaintext email, so the twin corpus is
+    indexed by email. Returns (None, None) when unset / not found. company_id keeps
+    the lookup tenant-scoped.
+    """
+    if not sme_user_id:
+        return None, None
+    try:
+        import uuid as _uuid
+        from app.domains.company.repositories.user_repository import UserRepository
+        repo = UserRepository(db)
+        user = await repo.get_by_id(_uuid.UUID(str(sme_user_id)), company_id)
+        if user:
+            return user.email, user.name
+    except Exception as e:
+        logger.warning("[DigitalTwin] resolve evaluator failed for %s: %s", sme_user_id, e)
+    return None, None
+
+
+@router.post("/scan-preview")
+async def scan_preview(
+    body: ScanPreviewRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_tenant_db),
+    company_id: str = Depends(require_company_id),
+):
+    """Read-only dry run for the create modal: scan an evaluator's historical
+    decisions and return counts + samples. Creates no twin, persists nothing.
+    """
+    evaluator_email, evaluator_name = await _resolve_evaluator(db, body.sme_user_id, company_id)
+    if not evaluator_email:
+        raise HTTPException(status_code=404, detail="Especialista nao encontrado.")
+
+    from app.services.twin_knowledge_indexer import twin_knowledge_indexer
+    result = await twin_knowledge_indexer.scan_ats_history_preview(
+        company_id=company_id,
+        evaluator_email=evaluator_email,
+        months_back=body.months_back,
+        db=db,
+    )
+    result["evaluator_name"] = evaluator_name
+
+    # B5 fairness: audit the synthesized reasonings for discriminatory language.
+    # LGPD R7: only over the criteria TEXT, never protected attributes.
+    from app.shared.compliance.fairness_guard import FairnessGuard
+    _fg = FairnessGuard()
+    _flags: list[str] = []
+    for _sample in result.get("sample_decisions", []):
+        _chk = _fg.check(_sample.get("summary", ""))
+        if _chk.is_blocked:
+            _flags.extend(_chk.blocked_terms)
+    result["bias_audit"] = {"passed": len(_flags) == 0, "flags": sorted(set(_flags))}
+
+    # LGPD Art. 20 disclosure trail (read-only scan of historical decisions).
+    try:
+        from app.domains.agent_studio._audit_helper import studio_audit
+        await studio_audit(
+            company_id=company_id,
+            action="studio_twin_scan_preview",
+            decision="scanned",
+            reasoning=[
+                f"Evaluator: {evaluator_name}",
+                f"Months: {body.months_back}",
+                f"Decisions found: {result.get('decisions_found', 0)}",
+            ],
+            actor_user_id=str(current_user.id),
+            target_id=str(body.sme_user_id),
+            target_type="digital_twin",
+        )
+    except Exception:
+        logger.warning("studio_audit twin_scan_preview failed", exc_info=True)
+
+    return result
+
+
 @router.post("")
 async def create_twin(
     body: CreateTwinRequest,
@@ -67,6 +149,10 @@ company_id: str = Depends(require_company_id)):
     # e tem fallback literal "unknown" que vaza cross-tenant ou viola FK.
     # Fix harness audit 2026-05-23 — anti-pattern detectado em audit deep.
     await enforce_quota("digital_twins", company_id, db)
+
+    # 2026-06-01: scope ATS indexing to the SME's OWN decisions
+    # (vacancy_candidates.added_by stores the plaintext email).
+    evaluator_email, _evaluator_name = await _resolve_evaluator(db, body.sme_user_id, company_id)
 
     twin = DigitalTwin(
         id=str(uuid.uuid4()),
@@ -95,6 +181,7 @@ company_id: str = Depends(require_company_id)):
             twin_id=str(twin.id),
             company_id=company_id,
             months_back=body.months_back,
+            evaluator_email=evaluator_email,
             db=db,
         )
     except Exception as idx_exc:
@@ -261,9 +348,16 @@ company_id: str = Depends(require_company_id)):
         twin_id=twin_id,
         candidate_profile=body.candidate_profile,
         job_context=body.job_context,
+        company_id=company_id,
         k=body.k,
         db=db,
     )
+
+    # B5 fairness gate (CLAUDE.md FAR-2): a twin clones human decisions, so its
+    # reasoning can carry the evaluator's bias. Flag (não silenciar) + força revisão humana.
+    from app.shared.compliance.fairness_guard import FairnessGuard
+    _fg_eval = FairnessGuard().check(evaluation.reasoning or "")
+    fairness_flagged = _fg_eval.is_blocked
 
     # P0-3 chunk 2 audit 2026-05-21: twin evaluation trail (LGPD Art. 20 — automated decision)
     try:
@@ -300,7 +394,9 @@ company_id: str = Depends(require_company_id)):
         # REGRA 4 anti-silent-fallback (audit 2026-05-27): propaga falha LLM explícita
         "evaluation_failed": evaluation.evaluation_failed,
         "failure_reason": evaluation.failure_reason,
-        "needs_manual_review": evaluation.needs_manual_review,
+        "needs_manual_review": evaluation.needs_manual_review or fairness_flagged,
+        "fairness_flagged": fairness_flagged,
+        "fairness_category": _fg_eval.category,
         "supporting_examples": [
             {
                 "decision": ex["decision"],

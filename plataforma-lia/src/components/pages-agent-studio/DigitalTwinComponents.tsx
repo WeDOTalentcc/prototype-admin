@@ -41,6 +41,11 @@ interface TwinEvaluation {
     reasoning: string
     similarity: number
   }>
+  fairness_flagged?: boolean
+  fairness_category?: string | null
+  needs_manual_review?: boolean
+  evaluation_failed?: boolean
+  failure_reason?: string | null
 }
 
 // P0 rewrite 2026-05-26 (Paulo): página Gêmeos Digitais agora segue layout canonical
@@ -93,91 +98,115 @@ interface CreateDigitalTwinModalProps {
   onCreated?: () => void
 }
 
+type ScanSample = { decision: string; role: string | null; skills: string[]; summary: string }
+type ScanPreview = {
+  evaluator_name?: string
+  decisions_found: number
+  approved_count: number
+  rejected_count: number
+  sample_decisions: ScanSample[]
+  has_enough: boolean
+  bias_audit?: { passed: boolean; flags: string[] }
+}
+
 export function CreateDigitalTwinModal({ isOpen, onClose, onCreated }: CreateDigitalTwinModalProps) {
   const t = useTranslations("agents.studio.twins.createModal")
+  const [step, setStep] = useState<"select" | "scanning" | "preview">("select")
+  const [specialists, setSpecialists] = useState<Array<{ id: string; name: string; email: string; role: string }>>([])
+  const [selectedId, setSelectedId] = useState("")
   const [twinName, setTwinName] = useState("")
   const [specialty, setSpecialty] = useState("")
   const [description, setDescription] = useState("")
-  const [decisionsFile, setDecisionsFile] = useState<File | null>(null)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  // Wave 3 #17 audit 2026-05-22: LGPD disclosure step antes do form de criação.
-  const [hasAcceptedDisclosure, setHasAcceptedDisclosure] = useState(false)
-  const fileInputRef = React.useRef<HTMLInputElement>(null)
+  const [monthsBack, setMonthsBack] = useState(12)
+  const [preview, setPreview] = useState<ScanPreview | null>(null)
+  const [isCreating, setIsCreating] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const handleClose = () => {
-    setTwinName("")
-    setSpecialty("")
-    setDescription("")
-    setDecisionsFile(null)
-    setHasAcceptedDisclosure(false)
-    onClose()
+  const authHeaders = (): Record<string, string> => {
+    const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null
+    const h: Record<string, string> = { "Content-Type": "application/json" }
+    if (token) h.Authorization = `Bearer ${token}`
+    return h
   }
 
-  const MAX_FILE_SIZE = 5 * 1024 * 1024
+  useEffect(() => {
+    if (!isOpen) return
+    fetch("/api/backend-proxy/company/users/list", { headers: authHeaders(), credentials: "include" })
+      .then((r) => (r.ok ? r.json() : { users: [] }))
+      .then((d) => {
+        const us = Array.isArray(d?.users) ? d.users : []
+        setSpecialists(
+          us
+            .filter((u: { email?: string }) => (u.email || "").includes("@"))
+            .map((u: { id: string; name: string; email: string; role: string }) => ({
+              id: String(u.id), name: u.name, email: u.email, role: u.role,
+            })),
+        )
+      })
+      .catch(() => {})
+  }, [isOpen])
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] ?? null
-    if (file && file.size > MAX_FILE_SIZE) {
-      toast.error(t("fileTooLargeTitle"), t("fileTooLargeDesc"))
-      if (fileInputRef.current) fileInputRef.current.value = ""
-      return
-    }
-    setDecisionsFile(file)
+  const reset = () => {
+    setStep("select"); setSelectedId(""); setTwinName(""); setSpecialty("")
+    setDescription(""); setMonthsBack(12); setPreview(null); setError(null); setIsCreating(false)
   }
+  const handleClose = () => { reset(); onClose() }
 
-  const handleRemoveFile = () => {
-    setDecisionsFile(null)
-    if (fileInputRef.current) fileInputRef.current.value = ""
-  }
-
-  const readFileAsText = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader()
-      reader.onload = () => resolve(reader.result as string)
-      reader.onerror = reject
-      reader.readAsText(file)
-    })
-  }
-
-  const handleSubmit = async () => {
-    if (!twinName.trim()) return
-    setIsSubmitting(true)
+  const handleScan = async () => {
+    if (!selectedId) return
+    setError(null); setStep("scanning")
     try {
-      let decisionsData: string | null = null
-      if (decisionsFile) {
-        decisionsData = await readFileAsText(decisionsFile)
-      }
+      const res = await fetch("/api/backend-proxy/digital-twins/scan-preview", {
+        method: "POST", headers: authHeaders(), credentials: "include",
+        body: JSON.stringify({ sme_user_id: selectedId, months_back: monthsBack }),
+      })
+      if (!res.ok) throw new Error(String(res.status))
+      const data: ScanPreview = await res.json()
+      setPreview(data)
+      if (!twinName.trim() && data.evaluator_name) setTwinName(t("namePrefill", { name: data.evaluator_name }))
+      setStep("preview")
+    } catch {
+      setError(t("scan.error")); setStep("select")
+    }
+  }
 
+  const handleCreate = async () => {
+    if (!selectedId || !twinName.trim()) return
+    setIsCreating(true)
+    try {
       const res = await fetch("/api/backend-proxy/digital-twins", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method: "POST", headers: authHeaders(), credentials: "include",
         body: JSON.stringify({
           twin_name: twinName.trim(),
-          specialties: specialty
-            .split(",")
-            .map((s) => s.trim())
-            .filter(Boolean),
+          sme_user_id: selectedId,
+          specialties: specialty.split(",").map((x) => x.trim()).filter(Boolean),
           description: description.trim() || null,
-          decisions_data: decisionsData,
+          months_back: monthsBack,
         }),
       })
-      if (res.ok) {
-        toast.success(t("successTitle"), t("successDesc"))
-        handleClose()
-        onCreated?.()
-      } else {
-        toast.error(t("errorTitle"), t("errorDesc"))
-      }
-    } catch {
-      toast.error(t("errorTitle"), t("errorDesc"))
-    } finally {
-      setIsSubmitting(false)
-    }
+      if (res.ok) { toast.success(t("successTitle"), t("successDesc")); handleClose(); onCreated?.() }
+      else { toast.error(t("errorTitle"), t("errorDesc")) }
+    } catch { toast.error(t("errorTitle"), t("errorDesc")) }
+    finally { setIsCreating(false) }
   }
+
+  const lgpdFootnote = (
+    <details className="text-[11px] text-lia-text-disabled mt-1">
+      <summary className="cursor-pointer flex items-center gap-1 list-none select-none">
+        <Info className="w-3 h-3 shrink-0" aria-hidden="true" />
+        <span>{t("lgpd.footnote")} <span className="underline">{t("lgpd.learnMore")}</span></span>
+      </summary>
+      <div className="mt-1 pl-4 space-y-1 text-lia-text-secondary">
+        <p>{t("lgpd.detail.indexing")}</p>
+        <p>{t("lgpd.detail.storage")}</p>
+        <p>{t("lgpd.detail.confirmation")}</p>
+      </div>
+    </details>
+  )
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-lg bg-lia-bg-primary border-lia-border-subtle max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className={textStyles.h3}>
             <Users2 className="w-5 h-5 inline mr-2 text-graphite" />
@@ -188,160 +217,128 @@ export function CreateDigitalTwinModal({ isOpen, onClose, onCreated }: CreateDig
           </DialogDescription>
         </DialogHeader>
 
-        {!hasAcceptedDisclosure ? (
-          // P0 rewrite 2026-05-26 (Paulo): LGPD agora é Collapsible neutro DS.
-          // Summary 1 linha visível default + click expande pro texto completo.
-          // Compliance preservada (todo conteúdo Art. 6 + 11 + 18 acessível ao expandir).
-          // Visual amber/yellow alarmista substituído por tokens canonical mist/graphite.
+        {step === "select" && (
           <div className="space-y-4 py-2">
-            <Collapsible defaultOpen={false} className="group">
-              <CollapsibleTrigger className="w-full text-left p-3 rounded-md bg-lia-bg-tertiary border border-lia-border-medium hover:bg-lia-bg-secondary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lia-btn-primary-bg/30">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-start gap-2">
-                    <Info className="w-4 h-4 text-lia-text-secondary flex-shrink-0 mt-0.5" aria-hidden="true" />
-                    <span className="text-sm text-lia-text-primary">
-                      {t("lgpd.summary")}
-                    </span>
-                  </div>
-                  <ChevronDown className="w-4 h-4 text-lia-text-secondary flex-shrink-0 mt-0.5 transition-transform group-data-[state=open]:rotate-180" aria-hidden="true" />
-                </div>
-              </CollapsibleTrigger>
-              <CollapsibleContent className="mt-2 p-3 bg-lia-bg-secondary rounded-md border border-lia-border-subtle text-sm text-lia-text-secondary space-y-2">
-                <p className="leading-relaxed">{t("lgpd.detail.indexing")}</p>
-                <p className="leading-relaxed">{t("lgpd.detail.storage")}</p>
-                <p className="leading-relaxed">{t("lgpd.detail.confirmation")}</p>
-              </CollapsibleContent>
-            </Collapsible>
-            <div className="flex justify-end gap-2 pt-2">
-              <Button
-                className={buttonStyles.secondary}
-                onClick={handleClose}
-                aria-label={t("lgpd.cancelAria")}
+            <div className={formStyles.fieldGroup}>
+              <label className={formStyles.labelRequired}>{t("specialist.label")}</label>
+              <select
+                className={inputStyles.default + " w-full"}
+                value={selectedId}
+                onChange={(e) => setSelectedId(e.target.value)}
               >
-                {t("cancel")}
-              </Button>
-              <Button
-                onClick={() => setHasAcceptedDisclosure(true)}
-                className={buttonStyles.primary}
-                aria-label={t("lgpd.confirmAria")}
+                <option value="">{t("specialist.placeholder")}</option>
+                {specialists.map((sp) => (
+                  <option key={sp.id} value={sp.id}>{sp.name} {sp.role ? "— " + sp.role : ""}</option>
+                ))}
+              </select>
+              <p className={formStyles.helperText}>
+                <Info className="w-3 h-3 inline mr-1" />
+                {specialists.length === 0 ? t("specialist.empty") : t("specialist.help")}
+              </p>
+            </div>
+
+            <div className={formStyles.fieldGroup}>
+              <label className={formStyles.label}>{t("period.label")}</label>
+              <select
+                className={inputStyles.default + " w-full"}
+                value={monthsBack}
+                onChange={(e) => setMonthsBack(Number(e.target.value))}
               >
-                {t("lgpd.confirmButton")}
-              </Button>
+                <option value={6}>{t("period.months", { n: 6 })}</option>
+                <option value={12}>{t("period.months", { n: 12 })}</option>
+                <option value={24}>{t("period.months", { n: 24 })}</option>
+              </select>
             </div>
-          </div>
-        ) : (
-        <div className="space-y-4 py-2">
-          <div className={formStyles.fieldGroup}>
-            <label className={formStyles.labelRequired}>{t("nameLabel")}</label>
-            <input
-              className={inputStyles.default + " w-full"}
-              placeholder={t("namePlaceholder")}
-              value={twinName}
-              onChange={(e) => setTwinName(e.target.value)}
-            />
-            <p className={formStyles.helperText}>
-              <Info className="w-3 h-3 inline mr-1" />
-              {t("nameHelp")}
-            </p>
-          </div>
 
-          <div className={formStyles.fieldGroup}>
-            <label className={formStyles.label}>{t("specialtyLabel")}</label>
-            <input
-              className={inputStyles.default + " w-full"}
-              placeholder={t("specialtyPlaceholder")}
-              value={specialty}
-              onChange={(e) => setSpecialty(e.target.value)}
-            />
-            <p className={formStyles.helperText}>
-              <Info className="w-3 h-3 inline mr-1" />
-              {t("specialtyHelp")}
-            </p>
+            {error && <p className="text-sm text-red-600">{error}</p>}
+            {lgpdFootnote}
           </div>
-
-          <div className={formStyles.fieldGroup}>
-            <label className={formStyles.label}>{t("descLabel")}</label>
-            <textarea
-              className={inputStyles.default + " w-full min-h-[80px] resize-none"}
-              placeholder={t("descPlaceholder")}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              rows={3}
-            />
-            <p className={formStyles.helperText}>
-              <Info className="w-3 h-3 inline mr-1" />
-              {t("descHelp")}
-            </p>
-          </div>
-
-          <div className={formStyles.fieldGroup}>
-            <label className={formStyles.label}>{t("decisionsLabel")}</label>
-            <div
-              className="relative rounded-lg border-2 border-dashed border-lia-border-default hover:border-pebble transition-colors p-4 cursor-pointer bg-lia-bg-secondary"
-              onClick={() => fileInputRef.current?.click()}
-            >
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".csv,.json,.txt"
-                onChange={handleFileChange}
-                className="hidden"
-              />
-              {decisionsFile ? (
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <FileText className="w-4 h-4 text-graphite shrink-0" />
-                    <span className={`${textStyles.bodySmall} truncate`}>{decisionsFile.name}</span>
-                    <span className={textStyles.caption}>
-                      ({(decisionsFile.size / 1024).toFixed(1)} KB)
-                    </span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={(e) => { e.stopPropagation(); handleRemoveFile() }}
-                    className="p-1 rounded hover:bg-lia-bg-tertiary"
-                  >
-                    <X className="w-3.5 h-3.5 text-lia-text-secondary" />
-                  </button>
-                </div>
-              ) : (
-                <div className="flex flex-col items-center gap-1.5 py-1">
-                  <Upload className="w-5 h-5 text-slate" />
-                  <p className={textStyles.bodySmall}>{t("decisionsUploadCta")}</p>
-                  <p className={textStyles.caption}>{t("decisionsFormats")}</p>
-                </div>
-              )}
-            </div>
-            <p className={formStyles.helperText}>
-              <Info className="w-3 h-3 inline mr-1" />
-              {t("decisionsHelp")}
-            </p>
-          </div>
-        </div>
         )}
 
-        {hasAcceptedDisclosure && <DialogFooter>
-          <Button className={buttonStyles.secondary} onClick={handleClose}>
-            {t("cancel")}
-          </Button>
-          <Button
-            className={buttonStyles.primary}
-            onClick={handleSubmit}
-            disabled={!twinName.trim() || isSubmitting}
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
-                {t("creating")}
-              </>
+        {step === "scanning" && (
+          <div className="flex flex-col items-center justify-center gap-3 py-12">
+            <Users2 className="w-8 h-8 text-graphite animate-pulse" />
+            <p className={textStyles.bodySmall}>{t("scan.title")}</p>
+          </div>
+        )}
+
+        {step === "preview" && preview && (
+          <div className="space-y-4 py-2">
+            <div className="rounded-lg border border-lia-border-subtle bg-lia-bg-secondary p-4 space-y-2">
+              <p className={textStyles.bodySmall}>
+                {t("preview.foundCount", { count: preview.decisions_found, name: preview.evaluator_name || "" })}
+              </p>
+              <div className="flex items-center gap-4">
+                <span className="inline-flex items-center gap-1 text-sm text-lia-text-secondary">
+                  <ThumbsUp className="w-3.5 h-3.5 text-emerald-600" /> {preview.approved_count} {t("preview.approved")}
+                </span>
+                <span className="inline-flex items-center gap-1 text-sm text-lia-text-secondary">
+                  <ThumbsDown className="w-3.5 h-3.5 text-rose-500" /> {preview.rejected_count} {t("preview.rejected")}
+                </span>
+              </div>
+              {preview.bias_audit && (
+                preview.bias_audit.passed
+                  ? <Chip className="bg-emerald-50 text-emerald-700">{t("preview.biasAuditedBadge")}</Chip>
+                  : <Chip className="bg-amber-50 text-amber-700">{t("preview.biasFlagged")}</Chip>
+              )}
+            </div>
+
+            {preview.decisions_found === 0 ? (
+              <div className="rounded-md bg-[#FEF9F0] border border-[#D19960]/30 p-3">
+                <p className="text-sm text-[#D19960] font-medium">{t("preview.noDataTitle")}</p>
+                <p className="text-xs text-[#D19960]">{t("preview.noDataDesc")}</p>
+              </div>
             ) : (
               <>
-                <Plus className="w-4 h-4 mr-1.5" />
-                {t("create")}
+                {!preview.has_enough && (
+                  <p className="text-xs text-[#D19960]">{t("preview.lowDataWarning", { count: preview.decisions_found })}</p>
+                )}
+                <div>
+                  <p className={textStyles.bodySmall + " font-semibold mb-1.5"}>{t("preview.examplesTitle")}</p>
+                  <div className="space-y-1.5">
+                    {preview.sample_decisions.map((sp, i) => (
+                      <div key={i} className="flex items-start gap-2 text-xs text-lia-text-secondary rounded-md border border-lia-border-subtle p-2">
+                        {sp.decision === "approved"
+                          ? <ThumbsUp className="w-3.5 h-3.5 text-emerald-600 mt-0.5 shrink-0" />
+                          : <ThumbsDown className="w-3.5 h-3.5 text-rose-500 mt-0.5 shrink-0" />}
+                        <span>{sp.summary}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <p className="text-[11px] italic text-lia-text-disabled">
+                  <Info className="w-3 h-3 inline mr-1" />
+                  {t("preview.reasoningInferred")}
+                </p>
               </>
             )}
-          </Button>
-        </DialogFooter>}
+
+            {lgpdFootnote}
+          </div>
+        )}
+
+        <DialogFooter>
+          {step === "select" && (
+            <>
+              <Button className={buttonStyles.secondary} onClick={handleClose}>{t("cancel")}</Button>
+              <Button className={buttonStyles.primary} onClick={handleScan} disabled={!selectedId}>
+                {t("scan.cta")}
+              </Button>
+            </>
+          )}
+          {step === "preview" && (
+            <>
+              <Button className={buttonStyles.secondary} onClick={() => setStep("select")}>{t("preview.back")}</Button>
+              <Button
+                className={buttonStyles.primary}
+                onClick={handleCreate}
+                disabled={!twinName.trim() || isCreating || (preview?.decisions_found ?? 0) === 0}
+              >
+                {isCreating ? (<><Loader2 className="w-4 h-4 mr-1.5 animate-spin" />{t("creating")}</>) : (<><Plus className="w-4 h-4 mr-1.5" />{t("preview.confirmButton")}</>)}
+              </Button>
+            </>
+          )}
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   )
@@ -651,5 +648,130 @@ export function TwinsList({ onEvaluate, onCreateTwin, refreshKey = 0 }: TwinsLis
         </>
       )}
     </div>
+  )
+}
+
+
+interface EvaluateCandidateWithTwinModalProps {
+  isOpen: boolean
+  onClose: () => void
+  candidateName: string
+  candidateProfile: Record<string, unknown>
+  jobContext: Record<string, unknown>
+}
+
+// "Second opinion" entry point used from the candidate card in the pipeline.
+// Lists the company twins, lets the recruiter pick one, and shows how that
+// specialist's twin would evaluate this candidate (with fairness flag).
+export function EvaluateCandidateWithTwinModal({
+  isOpen, onClose, candidateName, candidateProfile, jobContext,
+}: EvaluateCandidateWithTwinModalProps) {
+  const t = useTranslations("agents.studio.twins.evaluateCandidate")
+  const [twins, setTwins] = useState<Array<{ id: string; twin_name: string }>>([])
+  const [twinId, setTwinId] = useState("")
+  const [evaluation, setEvaluation] = useState<TwinEvaluation | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+
+  const authHeaders = (): Record<string, string> => {
+    const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null
+    const h: Record<string, string> = { "Content-Type": "application/json" }
+    if (token) h.Authorization = `Bearer ${token}`
+    return h
+  }
+
+  useEffect(() => {
+    if (!isOpen) return
+    setEvaluation(null); setTwinId("")
+    fetch("/api/backend-proxy/digital-twins", { headers: authHeaders(), credentials: "include" })
+      .then((r) => (r.ok ? r.json() : { twins: [] }))
+      .then((d) => {
+        const arr = Array.isArray(d?.twins) ? d.twins : Array.isArray(d) ? d : []
+        setTwins(arr.map((x: { id?: string; twin_id?: string; twin_name?: string; name?: string }) => ({
+          id: String(x.id ?? x.twin_id), twin_name: x.twin_name ?? x.name ?? "",
+        })))
+      })
+      .catch(() => {})
+  }, [isOpen])
+
+  const runEval = async (id: string) => {
+    setIsLoading(true); setEvaluation(null)
+    try {
+      const res = await fetch(`/api/backend-proxy/digital-twins/${id}/evaluate`, {
+        method: "POST", headers: authHeaders(), credentials: "include",
+        body: JSON.stringify({ candidate_profile: candidateProfile, job_context: jobContext, k: 5 }),
+      })
+      setEvaluation(await res.json())
+    } catch {
+      /* surfaced via empty state */
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const decisionLabel = (d?: string) =>
+    d === "approved" ? t("decisionApproved") : d === "rejected" ? t("decisionRejected") : t("decisionMaybe")
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-lg bg-lia-bg-primary border-lia-border-subtle max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className={textStyles.h3}>
+            <Users2 className="w-5 h-5 inline mr-2 text-graphite" />
+            {t("title", { name: candidateName })}
+          </DialogTitle>
+          <DialogDescription className="text-sm text-lia-text-secondary">{t("subtitle")}</DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4 py-2">
+          <div className={formStyles.fieldGroup}>
+            <label className={formStyles.label}>{t("pickTwin")}</label>
+            <select
+              className={inputStyles.default + " w-full"}
+              value={twinId}
+              onChange={(e) => { setTwinId(e.target.value); if (e.target.value) runEval(e.target.value) }}
+            >
+              <option value="">{t("pickTwinPlaceholder")}</option>
+              {twins.map((tw) => (
+                <option key={tw.id} value={tw.id}>{tw.twin_name}</option>
+              ))}
+            </select>
+            {twins.length === 0 && <p className={formStyles.helperText}>{t("noTwins")}</p>}
+          </div>
+
+          {isLoading && (
+            <div className="flex items-center gap-2 text-sm text-lia-text-secondary">
+              <Loader2 className="w-4 h-4 animate-spin" /> {t("evaluating")}
+            </div>
+          )}
+
+          {evaluation && !isLoading && (
+            <div className="rounded-lg border border-lia-border-subtle bg-lia-bg-secondary p-4 space-y-2">
+              <div className="flex items-center gap-2">
+                {evaluation.decision === "approved"
+                  ? <ThumbsUp className="w-4 h-4 text-emerald-600" />
+                  : evaluation.decision === "rejected"
+                    ? <ThumbsDown className="w-4 h-4 text-rose-500" />
+                    : <Info className="w-4 h-4 text-lia-text-secondary" />}
+                <span className="font-semibold text-lia-text-primary">{decisionLabel(evaluation.decision)}</span>
+                <span className="text-sm text-lia-text-secondary">
+                  · {evaluation.score}/100 · {Math.round((evaluation.confidence || 0) * 100)}%
+                </span>
+              </div>
+              {evaluation.reasoning && <p className="text-sm text-lia-text-secondary">{evaluation.reasoning}</p>}
+              {evaluation.fairness_flagged && (
+                <Chip className="bg-amber-50 text-amber-700">{t("fairnessFlagged")}</Chip>
+              )}
+              {evaluation.needs_manual_review && (
+                <p className="text-xs text-[#D19960]">{t("needsReview")}</p>
+              )}
+            </div>
+          )}
+        </div>
+
+        <DialogFooter>
+          <Button className={buttonStyles.secondary} onClick={onClose}>{t("close")}</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }

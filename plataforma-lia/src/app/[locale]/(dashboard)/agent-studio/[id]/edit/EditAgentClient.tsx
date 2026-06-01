@@ -29,6 +29,8 @@ interface EditAgentShape {
   max_steps?: number
   temperature?: number
   config?: Record<string, unknown>
+  category?: string
+  preferences?: Record<string, unknown>
 }
 import { cn } from "@/lib/utils"
 import { textStyles } from "@/lib/design-tokens"
