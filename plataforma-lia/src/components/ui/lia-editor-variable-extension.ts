@@ -1,12 +1,12 @@
 "use client"
 
-import { Node, mergeAttributes } from "@tiptap/react"
+import { Node, mergeAttributes } from "@tiptap/core"
 
 export interface TemplateVariableOptions {
   HTMLAttributes: Record<string, string>
 }
 
-declare module "@tiptap/react" {
+declare module "@tiptap/core" {
   interface Commands<ReturnType> {
     templateVariable: {
       insertVariable: (name: string) => ReturnType
