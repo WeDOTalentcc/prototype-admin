@@ -89,13 +89,13 @@ export function AlignmentStatusCard({ jobId, jobs = [] }: AlignmentStatusCardPro
         <select
           value={selectedJobId ?? ""}
           onChange={e => setSelectedJobId(e.target.value)}
-          className="w-full appearance-none rounded-lg border border-[#E5E7EB] bg-white px-3 py-2 pr-8 text-xs text-[#030712] focus:outline-none focus:ring-2 focus:ring-[#60BED1]/30"
+          className="w-full appearance-none rounded-lg border border-lia-border-subtle bg-lia-bg-elevated px-3 py-2 pr-8 text-xs text-lia-text-primary focus:outline-none focus:ring-2 focus:ring-lia-border-medium/30"
         >
           {jobs.map(j => (
             <option key={j.id} value={j.id}>{j.title || j.id.slice(0, 16) + "…"}</option>
           ))}
         </select>
-        <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#9CA3AF]" />
+        <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-lia-text-tertiary" />
       </div>
     </div>
   ) : null
@@ -104,7 +104,7 @@ export function AlignmentStatusCard({ jobId, jobs = [] }: AlignmentStatusCardPro
     return (
       <div>
         {jobSelector}
-        <div className="p-4 flex items-center gap-2 text-[#9CA3AF]">
+        <div className="p-4 flex items-center gap-2 text-lia-text-tertiary">
           <Loader2 className="w-4 h-4 animate-spin" />
           <span className="text-xs">Verificando alinhamentos...</span>
         </div>
@@ -122,27 +122,27 @@ export function AlignmentStatusCard({ jobId, jobs = [] }: AlignmentStatusCardPro
       <div>
         {jobSelector}
         <div className="p-4 space-y-3">
-          <div className="flex items-center gap-3 rounded-xl border border-[#E5E7EB] p-3.5 bg-[#F9FAFB]">
+          <div className="flex items-center gap-3 rounded-xl border border-lia-border-subtle p-3.5 bg-lia-bg-secondary">
             <div className="flex-shrink-0">
-              {isApproved && <CheckCircle2 className="w-5 h-5 text-[#5DA47A]" />}
-              {isPending && <Clock className="w-5 h-5 text-[#D19960]" />}
-              {(isRejected || isExpired) && <XCircle className="w-5 h-5 text-[#9CA3AF]" />}
+              {isApproved && <CheckCircle2 className="w-5 h-5 text-wedo-green" />}
+              {isPending && <Clock className="w-5 h-5 text-wedo-orange" />}
+              {(isRejected || isExpired) && <XCircle className="w-5 h-5 text-lia-text-tertiary" />}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-[#030712]">
+              <p className="text-sm font-medium text-lia-text-primary">
                 {isApproved && "Vaga aprovada pelo gestor"}
                 {isPending && "Aguardando resposta do gestor"}
                 {isRejected && "Não aprovada pelo gestor"}
                 {isExpired && "Link expirado"}
               </p>
-              <p className="text-xs text-[#6B7280] truncate">{alignment.manager_email}</p>
+              <p className="text-xs text-lia-text-tertiary truncate">{alignment.manager_email}</p>
             </div>
           </div>
 
           {isPending && alignment.public_url && (
-            <div className="rounded-lg border border-[#E5E7EB] p-3 bg-white">
-              <p className="text-xs text-[#6B7280] mb-1">Link de alinhamento:</p>
-              <p className="text-xs font-mono text-[#4B5563] break-all select-all">
+            <div className="rounded-lg border border-lia-border-subtle p-3 bg-lia-bg-elevated">
+              <p className="text-xs text-lia-text-tertiary mb-1">Link de alinhamento:</p>
+              <p className="text-xs font-mono text-lia-text-secondary break-all select-all">
                 {typeof window !== "undefined" ? `${window.location.origin}${alignment.public_url}` : alignment.public_url}
               </p>
             </div>
@@ -152,7 +152,7 @@ export function AlignmentStatusCard({ jobId, jobs = [] }: AlignmentStatusCardPro
             <button
               type="button"
               onClick={() => { setAlignment(null); setShowForm(true) }}
-              className="text-xs text-[#60BED1] hover:underline"
+              className="text-xs text-lia-text-primary hover:underline"
             >
               Enviar novo pedido
             </button>
@@ -167,13 +167,13 @@ export function AlignmentStatusCard({ jobId, jobs = [] }: AlignmentStatusCardPro
       <div>
         {jobSelector}
         <div className="p-4 space-y-3">
-          <p className="text-xs text-[#6B7280] max-w-md">
+          <p className="text-xs text-lia-text-tertiary max-w-md">
             Solicite a aprovação do gestor antes de iniciar a prospecção. Um link de alinhamento será enviado para o e-mail indicado.
           </p>
           <button
             type="button"
             onClick={() => setShowForm(true)}
-            className="flex items-center gap-2 text-sm font-medium text-white bg-[#60BED1] hover:bg-[#4fa8bc] rounded-lg px-4 py-2 transition-colors"
+            className="flex items-center gap-2 text-sm font-medium text-white bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover rounded-lg px-4 py-2 transition-colors"
           >
             <Send className="w-4 h-4" />
             Solicitar alinhamento
@@ -189,35 +189,35 @@ export function AlignmentStatusCard({ jobId, jobs = [] }: AlignmentStatusCardPro
       <div className="p-4 space-y-4">
         <div className="space-y-3">
           <div>
-            <label className="block text-xs font-medium text-[#4B5563] mb-1">E-mail do gestor *</label>
+            <label className="block text-xs font-medium text-lia-text-secondary mb-1">E-mail do gestor *</label>
             <input
               type="email"
               value={email}
               onChange={e => setEmail(e.target.value)}
               placeholder="gestor@empresa.com"
-              className="w-full rounded-lg border border-[#E5E7EB] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#60BED1]/30 text-[#030712] placeholder:text-[#9CA3AF]"
+              className="w-full rounded-lg border border-lia-border-subtle px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-lia-border-medium/30 text-lia-text-primary placeholder:text-lia-text-tertiary"
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#4B5563] mb-1">Nome (opcional)</label>
+            <label className="block text-xs font-medium text-lia-text-secondary mb-1">Nome (opcional)</label>
             <input
               type="text"
               value={name}
               onChange={e => setName(e.target.value)}
               placeholder="Nome do gestor"
-              className="w-full rounded-lg border border-[#E5E7EB] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#60BED1]/30 text-[#030712] placeholder:text-[#9CA3AF]"
+              className="w-full rounded-lg border border-lia-border-subtle px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-lia-border-medium/30 text-lia-text-primary placeholder:text-lia-text-tertiary"
             />
           </div>
         </div>
 
-        {error && <p className="text-xs text-[#EF4444]">{error}</p>}
+        {error && <p className="text-xs text-status-error">{error}</p>}
 
         <div className="flex gap-2">
           <button
             type="button"
             disabled={actionLoading || !email}
             onClick={handleRequest}
-            className="flex items-center gap-2 text-sm font-medium text-white bg-[#60BED1] hover:bg-[#4fa8bc] rounded-lg px-4 py-2 transition-colors disabled:opacity-50"
+            className="flex items-center gap-2 text-sm font-medium text-white bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover rounded-lg px-4 py-2 transition-colors disabled:opacity-50"
           >
             {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
             Enviar link
@@ -225,7 +225,7 @@ export function AlignmentStatusCard({ jobId, jobs = [] }: AlignmentStatusCardPro
           <button
             type="button"
             onClick={() => setShowForm(false)}
-            className="text-sm text-[#6B7280] hover:text-[#030712] px-3 py-2 transition-colors"
+            className="text-sm text-lia-text-tertiary hover:text-lia-text-primary px-3 py-2 transition-colors"
           >
             Cancelar
           </button>

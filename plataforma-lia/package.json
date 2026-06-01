@@ -58,6 +58,8 @@
     "sensor:lia-sync:blocking": "python3 scripts/check_lia_field_definitions_sync.py --blocking",
     "sensor:tokens": "node scripts/check_canonical_tailwind_tokens.mjs",
     "sensor:tokens:blocking": "node scripts/check_canonical_tailwind_tokens.mjs --blocking",
+    "sensor:studio-hex": "node scripts/check_no_hardcoded_hex_in_studio.mjs",
+    "sensor:studio-hex:blocking": "node scripts/check_no_hardcoded_hex_in_studio.mjs --blocking",
     "lint:no-conflict-markers": "python3 scripts/check_no_conflict_markers.py"
   },
   "dependencies": {

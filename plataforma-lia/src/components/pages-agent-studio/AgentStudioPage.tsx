@@ -13,7 +13,6 @@ import { TemplatePreviewModal } from "@/components/pages-agent-studio/custom-age
 import { useCustomAgents, useStudioAlerts } from "@/hooks/agents"
 import { useAgentStudioStore } from "@/stores/agent-studio-store"
 import type { CustomAgent, AgentTemplate } from "@/components/pages-agent-studio/custom-agents/types"
-import MarketplaceTab from "@/components/pages-agent-studio/MarketplaceTab"
 import { ServiceFunnelView, StudioOnboarding } from "@/components/pages-agent-studio/ServiceFunnelView"
 import type { FunnelServiceData, ServiceSlug, ServiceStatus } from "@/components/pages-agent-studio/ServiceFunnelView"
 import { AlignmentStatusCard } from "@/components/pages-agent-studio/AlignmentStatusCard"
@@ -157,8 +156,6 @@ export default function AgentStudioPage({
     router.replace(`?${sp.toString()}`, { scroll: false })
   }
   const { total: pendingApprovals } = usePendingApprovals()
-  // Funnel stage → marketplace category (best-effort; backend filtra por category exata)
-  const [marketplaceCategory, setMarketplaceCategory] = useState("")
   const [onboardingDismissed, setOnboardingDismissed] = useState(true)
 
   useEffect(() => {
@@ -603,7 +600,7 @@ export default function AgentStudioPage({
             {t("studio.title")}
           </h1>
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" onClick={loadData} className="gap-2 text-lia-text-secondary hover:text-lia-text-primary">
+            <Button variant="ghost" size="sm" onClick={loadData} aria-label={t("studio.refresh")} className="gap-2 text-lia-text-secondary hover:text-lia-text-primary">
               <RefreshCw className="w-4 h-4" />
             </Button>
             <Button
@@ -638,7 +635,12 @@ export default function AgentStudioPage({
         <PageTabNavigation
           tabs={studioTabs}
           activeTab={activeTab}
-          onTabChange={(id) => setActiveTab(id as StudioTab)}
+          onTabChange={(id) => {
+            // Marketplace é uma rota canônica própria (/agents/marketplace),
+            // não um painel inline do Studio — navega em vez de virar tab.
+            if (id === "marketplace") { router.push(`/${locale}/agents/marketplace`); return }
+            setActiveTab(id as StudioTab)
+          }}
         />
       </div>
 
@@ -681,7 +683,10 @@ export default function AgentStudioPage({
             <ServiceFunnelView
               services={funnelServices}
               onActivate={handleFunnelActivate}
-              onMarketplaceForSlug={(slug) => { setMarketplaceCategory(SLUG_TO_MARKETPLACE_CATEGORY[slug] ?? ""); setActiveTab("marketplace") }}
+              onMarketplaceForSlug={(slug) => {
+                const cat = SLUG_TO_MARKETPLACE_CATEGORY[slug] ?? ""
+                router.push(`/${locale}/agents/marketplace${cat ? `?category=${cat}` : ""}`)
+              }}
             />
           </>
         )}
@@ -746,10 +751,7 @@ export default function AgentStudioPage({
           </div>
         )}
 
-        {/* ── Marketplace ───────────────────────────────────────────────────── */}
-        {activeTab === "marketplace" && (
-          <MarketplaceTab initialCategory={marketplaceCategory} />
-        )}
+        {/* Marketplace não é painel inline — a nav navega para /agents/marketplace. */}
 
         {/* ── Gêmeos Digitais ───────────────────────────────────────────────── */}
         {activeTab === "gemeos" && (

@@ -29,9 +29,9 @@ const RESPONDENT_LABEL: Record<string, string> = {
 }
 
 const STATUS_COLOR: Record<string, string> = {
-  pending: "text-[#D19960]",
-  responded: "text-[#5DA47A]",
-  expired: "text-[#9CA3AF]",
+  pending: "text-wedo-orange",
+  responded: "text-wedo-green",
+  expired: "text-lia-text-tertiary",
 }
 
 export function NpsStatusCard({ jobId, jobs = [] }: NpsStatusCardProps) {
@@ -106,13 +106,13 @@ export function NpsStatusCard({ jobId, jobs = [] }: NpsStatusCardProps) {
         <select
           value={selectedJobId ?? ""}
           onChange={e => setSelectedJobId(e.target.value)}
-          className="w-full appearance-none rounded-lg border border-[#E5E7EB] bg-white px-3 py-2 pr-8 text-xs text-[#030712] focus:outline-none focus:ring-2 focus:ring-[#60BED1]/30"
+          className="w-full appearance-none rounded-lg border border-lia-border-subtle bg-lia-bg-elevated px-3 py-2 pr-8 text-xs text-lia-text-primary focus:outline-none focus:ring-2 focus:ring-lia-border-medium/30"
         >
           {jobs.map(j => (
             <option key={j.id} value={j.id}>{j.title || j.id.slice(0, 16) + "…"}</option>
           ))}
         </select>
-        <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#9CA3AF]" />
+        <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-lia-text-tertiary" />
       </div>
     </div>
   ) : null
@@ -121,7 +121,7 @@ export function NpsStatusCard({ jobId, jobs = [] }: NpsStatusCardProps) {
     return (
       <div>
         {jobSelector}
-        <div className="p-4 flex items-center gap-2 text-[#9CA3AF]">
+        <div className="p-4 flex items-center gap-2 text-lia-text-tertiary">
           <Loader2 className="w-4 h-4 animate-spin" />
           <span className="text-xs">Carregando pesquisas...</span>
         </div>
@@ -139,11 +139,11 @@ export function NpsStatusCard({ jobId, jobs = [] }: NpsStatusCardProps) {
       {jobSelector}
       <div className="p-4 space-y-3">
         {surveys.length > 0 && avgScore && (
-          <div className="flex items-center gap-3 rounded-xl border border-[#E5E7EB] p-3 bg-[#F9FAFB]">
-            <Star className="w-5 h-5 text-[#D19960] flex-shrink-0" />
+          <div className="flex items-center gap-3 rounded-xl border border-lia-border-subtle p-3 bg-lia-bg-secondary">
+            <Star className="w-5 h-5 text-wedo-orange flex-shrink-0" />
             <div>
-              <p className="text-sm font-semibold text-[#030712]">{avgScore}/10 média NPS</p>
-              <p className="text-[10px] text-[#9CA3AF]">
+              <p className="text-sm font-semibold text-lia-text-primary">{avgScore}/10 média NPS</p>
+              <p className="text-micro text-lia-text-tertiary">
                 {respondedSurveys.length} de {surveys.length} respondidas
               </p>
             </div>
@@ -152,13 +152,13 @@ export function NpsStatusCard({ jobId, jobs = [] }: NpsStatusCardProps) {
 
         {surveys.length === 0 && !showForm && (
           <div className="space-y-2">
-            <p className="text-xs text-[#6B7280] max-w-md">
+            <p className="text-xs text-lia-text-tertiary max-w-md">
               Envie pesquisas de satisfação para candidatos e gestores após o processo de contratação.
             </p>
             <button
               type="button"
               onClick={() => setShowForm(true)}
-              className="flex items-center gap-2 text-sm font-medium text-white bg-[#60BED1] hover:bg-[#4fa8bc] rounded-lg px-4 py-2 transition-colors"
+              className="flex items-center gap-2 text-sm font-medium text-white bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover rounded-lg px-4 py-2 transition-colors"
             >
               <Send className="w-4 h-4" />
               Enviar pesquisa NPS
@@ -171,13 +171,13 @@ export function NpsStatusCard({ jobId, jobs = [] }: NpsStatusCardProps) {
             {surveys.slice(0, 5).map(s => (
               <div
                 key={s.id}
-                className="flex items-center gap-3 rounded-lg border border-[#E5E7EB] px-3 py-2 bg-white"
+                className="flex items-center gap-3 rounded-lg border border-lia-border-subtle px-3 py-2 bg-lia-bg-elevated"
               >
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium text-[#030712] truncate">
+                  <p className="text-xs font-medium text-lia-text-primary truncate">
                     {RESPONDENT_LABEL[s.respondent_type] ?? s.respondent_type} — {s.respondent_email}
                   </p>
-                  <p className={`text-[10px] ${STATUS_COLOR[s.status] ?? "text-[#9CA3AF]"}`}>
+                  <p className={`text-micro ${STATUS_COLOR[s.status] ?? "text-lia-text-tertiary"}`}>
                     {s.status === "responded" && s.score !== null
                       ? `Nota ${s.score}/10`
                       : s.status === "pending"
@@ -190,7 +190,7 @@ export function NpsStatusCard({ jobId, jobs = [] }: NpsStatusCardProps) {
             <button
               type="button"
               onClick={() => setShowForm(true)}
-              className="text-xs text-[#60BED1] hover:underline"
+              className="text-xs text-lia-text-primary hover:underline"
             >
               + Enviar nova pesquisa
             </button>
@@ -198,8 +198,8 @@ export function NpsStatusCard({ jobId, jobs = [] }: NpsStatusCardProps) {
         )}
 
         {showForm && (
-          <div className="rounded-xl border border-[#E5E7EB] p-4 space-y-3 bg-white">
-            <p className="text-xs font-semibold text-[#030712]">Nova pesquisa NPS</p>
+          <div className="rounded-xl border border-lia-border-subtle p-4 space-y-3 bg-lia-bg-elevated">
+            <p className="text-xs font-semibold text-lia-text-primary">Nova pesquisa NPS</p>
 
             <div className="flex gap-2">
               {(["candidate", "manager"] as const).map(t => (
@@ -209,8 +209,8 @@ export function NpsStatusCard({ jobId, jobs = [] }: NpsStatusCardProps) {
                   onClick={() => setType(t)}
                   className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-colors border
                     ${type === t
-                      ? "bg-[#60BED1] text-white border-[#60BED1]"
-                      : "bg-white text-[#6B7280] border-[#E5E7EB] hover:border-[#60BED1]/40"}`}
+                      ? "bg-lia-btn-primary-bg text-white border-lia-border-medium"
+                      : "bg-lia-bg-elevated text-lia-text-tertiary border-lia-border-subtle hover:border-lia-border-medium/40"}`}
                 >
                   {RESPONDENT_LABEL[t]}
                 </button>
@@ -218,24 +218,24 @@ export function NpsStatusCard({ jobId, jobs = [] }: NpsStatusCardProps) {
             </div>
 
             <div>
-              <label className="block text-[10px] font-medium text-[#4B5563] mb-1">E-mail *</label>
+              <label className="block text-micro font-medium text-lia-text-secondary mb-1">E-mail *</label>
               <input
                 type="email"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 placeholder={type === "candidate" ? "candidato@email.com" : "gestor@empresa.com"}
-                className="w-full rounded-lg border border-[#E5E7EB] px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#60BED1]/30 text-[#030712] placeholder:text-[#9CA3AF]"
+                className="w-full rounded-lg border border-lia-border-subtle px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-lia-border-medium/30 text-lia-text-primary placeholder:text-lia-text-tertiary"
               />
             </div>
 
-            {error && <p className="text-[10px] text-[#EF4444]">{error}</p>}
+            {error && <p className="text-micro text-status-error">{error}</p>}
 
             <div className="flex gap-2">
               <button
                 type="button"
                 disabled={!email.trim() || actionLoading}
                 onClick={handleSend}
-                className="flex items-center gap-1.5 text-xs font-medium text-white bg-[#60BED1] hover:bg-[#4fa8bc] rounded-lg px-3 py-2 transition-colors disabled:opacity-50"
+                className="flex items-center gap-1.5 text-xs font-medium text-white bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover rounded-lg px-3 py-2 transition-colors disabled:opacity-50"
               >
                 {actionLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Send className="w-3 h-3" />}
                 Enviar link
@@ -243,7 +243,7 @@ export function NpsStatusCard({ jobId, jobs = [] }: NpsStatusCardProps) {
               <button
                 type="button"
                 onClick={() => { setShowForm(false); setError(null) }}
-                className="text-xs text-[#6B7280] hover:text-[#030712] px-3 py-2 transition-colors"
+                className="text-xs text-lia-text-tertiary hover:text-lia-text-primary px-3 py-2 transition-colors"
               >
                 Cancelar
               </button>

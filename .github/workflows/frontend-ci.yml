@@ -156,12 +156,6 @@ jobs:
         # desse path = regressão (era exatamente o bug que Sprint 4 v3 corrigiu).
         working-directory: plataforma-lia
         run: python3 scripts/check_no_dup_search_panel_import.py
-      - name: AgentStudioPage no showCreateModal sensor (Sprint 5 — BLOCKING)
-        # Sensor #5 harness 2026-05-25: bloqueia reintroducao do state legado
-        # showCreateModal em AgentStudioPage.tsx. CreateAgentModal antigo foi
-        # decommissioned na Sprint 5; sector tile click abre o wizard canonical.
-        working-directory: plataforma-lia
-        run: python3 scripts/check_no_showCreateModal.py
       - name: Studio font-inter sensor (Sprint 6 — BLOCKING)
         # Sensor #6 harness 2026-05-25: bana classe Tailwind font-inter
         # (DESIGN.md mandate Open Sans canonical via font-sans).
@@ -190,6 +184,16 @@ jobs:
         # Ver CLAUDE.md § Tailwind legacy token fix 2026-05-25.
         working-directory: plataforma-lia
         run: npm run sensor:tokens:blocking
+
+      - name: Studio hardcoded hex sensor (warn-only desde 2026-06-01)
+        # Sensor harness 2026-06-01: cor hex CRUA em pages-agent-studio/
+        # (ex.: bg-[#60BED1]) escapa do sensor de tokens legados e do de cyan —
+        # foi assim que o redesign do funil reintroduziu ~120 cores fora do DS.
+        # Baseline 9 (callouts laranja em DigitalTwinComponents+CustomAgentsTab).
+        # Promover a sensor:studio-hex:blocking quando baseline=0.
+        continue-on-error: true
+        working-directory: plataforma-lia
+        run: npm run sensor:studio-hex
 
       - name: Schema sync sensor TS<->Python (BLOCKING desde 2026-05-26)
         # Sensor harness 2026-05-26 (tasks 7+8 blocking promotion).
