@@ -62,6 +62,37 @@ def _ca_to_sourcing_dict(a) -> dict:
     }
 
 
+def _require_company(current_user) -> str:
+    """company_id do JWT (multi-tenancy). 400 se usuário sem empresa — NUNCA do payload."""
+    cid = getattr(current_user, "company_id", None)
+    if not cid:
+        logger.warning(
+            "sourcing_agents.denied_no_company user_id=%s",
+            getattr(current_user, "id", "unknown"),
+        )
+        raise HTTPException(400, "Usuário sem empresa associada.")
+    return str(cid)
+
+
+async def _require_owned_agent(agent_id: str, company_id: str, db: AsyncSession):
+    """Resolve um sourcing agent garantindo posse pelo tenant (multi-tenancy / LGPD).
+    Cross-tenant = 404 (inexistente para o caller) — fecha o takeover por ID."""
+    from lia_models.custom_agent import CustomAgent
+    from sqlalchemy import select
+
+    result = await db.execute(
+        select(CustomAgent).where(
+            CustomAgent.id == agent_id,
+            CustomAgent.category == "sourcing",
+            CustomAgent.company_id == company_id,
+        )
+    )
+    agent = result.scalar_one_or_none()
+    if not agent:
+        raise HTTPException(404, "Agent not found")
+    return agent
+
+
 router = APIRouter(prefix="/sourcing-agents", tags=["Sourcing Agents"])
 
 
@@ -164,21 +195,13 @@ async def list_sourcing_agents(
 
 
 @router.get("/{agent_id}")
-async def get_sourcing_agent(agent_id: _DualId, db: AsyncSession = Depends(get_db)):
-    """Get details of a specific sourcing agent."""
-    from lia_models.custom_agent import CustomAgent
-    from sqlalchemy import select
-
-    result = await db.execute(
-        select(CustomAgent).where(
-            CustomAgent.id == agent_id,
-            CustomAgent.category == "sourcing",
-        )
-    )
-    agent = result.scalar_one_or_none()
-    if not agent:
-        raise HTTPException(404, "Agent not found")
-
+async def get_sourcing_agent(
+    agent_id: _DualId,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Get details of a specific sourcing agent (tenant-scoped)."""
+    agent = await _require_owned_agent(agent_id, _require_company(current_user), db)
     return _ca_to_sourcing_dict(agent)
 
 
@@ -186,12 +209,14 @@ async def get_sourcing_agent(agent_id: _DualId, db: AsyncSession = Depends(get_d
 async def submit_feedback(
     agent_id: _DualId,
     body: FeedbackRequest,
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """
     Process recruiter feedback (approve/reject) on a candidate.
     Triggers strategy recalibration.
     """
+    await _require_owned_agent(agent_id, _require_company(current_user), db)
     from app.services.sourcing_agent_orchestrator import sourcing_agent_orchestrator
     result = await sourcing_agent_orchestrator.process_feedback(
         agent_id=agent_id,
@@ -215,9 +240,11 @@ async def submit_feedback(
 async def get_calibration_candidates(
     agent_id: _DualId,
     limit: int = 10,
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Get candidates for the Big Card calibration modal."""
+    """Get candidates for the Big Card calibration modal (tenant-scoped)."""
+    await _require_owned_agent(agent_id, _require_company(current_user), db)
     from app.services.sourcing_agent_orchestrator import sourcing_agent_orchestrator
     candidates = await sourcing_agent_orchestrator.get_calibration_candidates(
         agent_id=agent_id, limit=limit, db=db,
@@ -229,9 +256,11 @@ async def get_calibration_candidates(
 async def get_agent_timeline(
     agent_id: _DualId,
     limit: int = 20,
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Get activity timeline for the Agents tab."""
+    """Get activity timeline for the Agents tab (tenant-scoped)."""
+    await _require_owned_agent(agent_id, _require_company(current_user), db)
     from app.services.sourcing_agent_orchestrator import sourcing_agent_orchestrator
     timeline = await sourcing_agent_orchestrator.get_agent_timeline(
         agent_id=agent_id, limit=limit, db=db,
@@ -240,42 +269,26 @@ async def get_agent_timeline(
 
 
 @router.patch("/{agent_id}/pause")
-async def pause_agent(agent_id: _DualId, db: AsyncSession = Depends(get_db)):
-    """Pause a sourcing agent."""
-    from lia_models.custom_agent import CustomAgent
-    from sqlalchemy import select
-
-    result = await db.execute(
-        select(CustomAgent).where(
-            CustomAgent.id == agent_id,
-            CustomAgent.category == "sourcing",
-        )
-    )
-    agent = result.scalar_one_or_none()
-    if not agent:
-        raise HTTPException(404, "Agent not found")
-
+async def pause_agent(
+    agent_id: _DualId,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Pause a sourcing agent (tenant-scoped)."""
+    agent = await _require_owned_agent(agent_id, _require_company(current_user), db)
     agent.status = "paused"
     await db.commit()
     return {"status": "paused"}
 
 
 @router.patch("/{agent_id}/resume")
-async def resume_agent(agent_id: _DualId, db: AsyncSession = Depends(get_db)):
-    """Resume a paused sourcing agent."""
-    from lia_models.custom_agent import CustomAgent
-    from sqlalchemy import select
-
-    result = await db.execute(
-        select(CustomAgent).where(
-            CustomAgent.id == agent_id,
-            CustomAgent.category == "sourcing",
-        )
-    )
-    agent = result.scalar_one_or_none()
-    if not agent:
-        raise HTTPException(404, "Agent not found")
-
+async def resume_agent(
+    agent_id: _DualId,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Resume a paused sourcing agent (tenant-scoped)."""
+    agent = await _require_owned_agent(agent_id, _require_company(current_user), db)
     agent.status = "active"
     await db.commit()
     return {"status": "active"}
