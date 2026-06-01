@@ -67,37 +67,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 logger = logging.getLogger(__name__)
 
 
-async def _build_policy_instructions_section(
-    company_id: str, db: AsyncSession
-) -> str:
-    """Render non-empty CompanyHiringPolicy.policy_instructions as a prompt block.
-
-    Never raises — returns empty string on any failure so a misconfigured tenant
-    cannot break an agent invocation."""
-    try:
-        from app.schemas.company_hiring_policy import POLICY_INSTRUCTION_LABELS
-        from app.shared.policy_helper import get_company_policy
-
-        policy = await get_company_policy(company_id, db)
-        instructions = (policy or {}).get("policy_instructions") or {}
-        if not isinstance(instructions, dict) or not instructions:
-            return ""
-        lines: list[str] = []
-        for key, label in POLICY_INSTRUCTION_LABELS.items():
-            text = str(instructions.get(key) or "").strip()
-            if text:
-                lines.append(f"- **{label}**: {text}")
-        if not lines:
-            return ""
-        return "## Políticas de Recrutamento (instruções do recrutador)\n" + "\n".join(lines)
-    except Exception as exc:
-        logger.warning(
-            "[lia_agent_context_builder] policy_instructions section failed for "
-            "company_id=%s: %s", company_id, exc, exc_info=True,
-        )
-        return ""
-
-
 async def build_company_agent_context(
     company_id: str,
     db: AsyncSession,
@@ -136,13 +105,6 @@ async def build_company_agent_context(
         svc = LiaFieldConfigService(db)
         result = await svc.get_field_config(company_id, job_context)
         context = result.context_prompt or ""
-
-        # P3b (2026-06-01): anexa instruções narrativas de política (texto livre
-        # editado em Configurações → Políticas de Recrutamento). Consumidor
-        # canônico — toda LIA que monta prompt via este helper passa a respeitá-las.
-        policy_section = await _build_policy_instructions_section(company_id, db)
-        if policy_section:
-            context = f"{context}\n\n{policy_section}" if context else policy_section
         return context
     except Exception as exc:
         # Degraded mode: log + return empty. The agent will run with a

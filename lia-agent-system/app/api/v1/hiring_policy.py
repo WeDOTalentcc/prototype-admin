@@ -31,9 +31,7 @@ from app.models.company_hiring_policy import (
 )
 from app.schemas.company_hiring_policy import (
     PolicyBlockValidationError,
-    PolicyInstructionsUpdate,
     coerce_and_validate_block,
-    validate_policy_instructions,
     CompanyHiringPolicyBlockUpdate,
     CompanyHiringPolicyResponse,
     CompanyHiringPolicyUpdate,
@@ -252,33 +250,6 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
         logger.warning(f"Policy sync failed for {company_id}: {e}")
 
     return response_dict
-
-
-@router.patch("/{company_id}/instructions", response_model=CompanyHiringPolicyResponse)
-async def update_policy_instructions(
-    company_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
-    payload: PolicyInstructionsUpdate,
-    user_id: str | None = Query(None),
-    db: AsyncSession = Depends(get_tenant_db),
-_company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
-    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
-    """P3b: merge free-text policy instructions (prompt hints). SEPARADO dos 5
-    blocos de gate — texto livre nunca toca um slot tipado (invariante de segurança)."""
-    try:
-        clean = validate_policy_instructions(payload.instructions)
-    except PolicyBlockValidationError as exc:
-        raise HTTPException(status_code=422, detail=str(exc)) from exc
-
-    repo = HiringPolicyRepository(db)
-    policy = await repo.create_if_missing(company_id, user_id)
-    existing = policy.policy_instructions or {}
-    # T-1169: NOVO dict — Column(JSON) puro não rastreia mutação in-place.
-    policy.policy_instructions = {**existing, **clean}
-    policy.updated_by = user_id or payload.updated_by
-    policy.updated_at = datetime.utcnow()
-    await repo.flush()
-    invalidate_policy_cache(company_id)
-    return policy.to_dict()
 
 
 @router.get("/{company_id}/progress", response_model=PolicyProgressResponse)
