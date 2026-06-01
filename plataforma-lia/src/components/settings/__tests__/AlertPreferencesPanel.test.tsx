@@ -23,22 +23,22 @@ const FIXTURE_PREFS: AlertPreference[] = [
   {
     id: "pref-1",
     user_id: "user-1",
-    alert_type: "time_to_hire_critical",
-    name: "Time to Hire Crítico",
-    description: "Alerta quando time to hire ultrapassa limite",
+    alert_type: "candidate_no_interaction",
+    name: "Candidato Sem Interação",
+    description: "Alerta para candidatos sem contato há mais de 5 dias",
     is_enabled: true,
-    threshold: 45,
+    threshold: 5,
     channels: { email: true, bell: true, teams: false, whatsapp: false },
     cooldown_hours: 24,
   },
   {
     id: "pref-2",
     user_id: "user-1",
-    alert_type: "nps_declining",
-    name: "NPS em Declínio",
-    description: "Alerta quando NPS cai abaixo do limite",
+    alert_type: "candidates_stagnant",
+    name: "Candidatos Estagnados",
+    description: "Candidatos parados na mesma etapa por muito tempo",
     is_enabled: false,
-    threshold: 75,
+    threshold: 10,
     channels: { email: false, bell: true, teams: false, whatsapp: false },
     cooldown_hours: 24,
   },
@@ -101,25 +101,25 @@ describe("AlertPreferencesPanel", () => {
   test("renders all canonical preferences with title", () => {
     renderPanel()
     expect(screen.getByText("Preferências de Alertas")).toBeTruthy()
-    expect(screen.getByText("Time to Hire Crítico")).toBeTruthy()
-    expect(screen.getByText("NPS em Declínio")).toBeTruthy()
+    expect(screen.getByText("Candidato Sem Interação")).toBeTruthy()
+    expect(screen.getByText("Candidatos Estagnados")).toBeTruthy()
   })
 
   test("clicking toggle calls updatePreference (PUT /alerts/preferences)", async () => {
     renderPanel()
-    const toggle = screen.getByTestId("alert-pref-toggle-time_to_hire_critical")
+    const toggle = screen.getByTestId("alert-pref-toggle-candidate_no_interaction")
     fireEvent.click(toggle)
     await waitFor(() => {
       expect(updatePreferenceMock).toHaveBeenCalledTimes(1)
     })
     const [pref, updates] = updatePreferenceMock.mock.calls[0]
-    expect(pref.alert_type).toBe("time_to_hire_critical")
+    expect(pref.alert_type).toBe("candidate_no_interaction")
     expect(updates).toEqual({ is_enabled: false })
   })
 
   test("update payload NEVER contains company_id (REGRA 2)", async () => {
     renderPanel()
-    const toggle = screen.getByTestId("alert-pref-toggle-nps_declining")
+    const toggle = screen.getByTestId("alert-pref-toggle-candidates_stagnant")
     fireEvent.click(toggle)
     await waitFor(() => {
       expect(updatePreferenceMock).toHaveBeenCalledTimes(1)
@@ -132,7 +132,7 @@ describe("AlertPreferencesPanel", () => {
   test("save failure renders explicit error banner (REGRA 4)", async () => {
     updatePreferenceMock.mockRejectedValueOnce(new Error("HTTP 500: backend down"))
     renderPanel()
-    const toggle = screen.getByTestId("alert-pref-toggle-time_to_hire_critical")
+    const toggle = screen.getByTestId("alert-pref-toggle-candidate_no_interaction")
     fireEvent.click(toggle)
     await waitFor(() => {
       const banner = screen.getByTestId("alert-preferences-error")
