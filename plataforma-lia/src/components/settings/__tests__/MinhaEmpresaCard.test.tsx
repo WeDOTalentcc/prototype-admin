@@ -23,9 +23,6 @@ vi.mock("@/components/settings/benefits/BenefitsListSection", () => ({
 vi.mock("@/components/settings/WorkforceHubContent", () => ({
   WorkforceHubContent: () => <div data-testid="workforce-stub" />,
 }))
-vi.mock("@/components/settings/compensation-policies/CompensationPoliciesListSection", () => ({
-  CompensationPoliciesListSection: () => <div data-testid="comp-policies-stub" />,
-}))
 vi.mock("@/components/settings/SectionUploadDropZone", () => ({
   SectionUploadDropZone: () => <div data-testid="upload-zone-stub" />,
 }))
