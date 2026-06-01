@@ -1,0 +1,19 @@
+# Build cache — rebuilt durante o deploy (economiza ~2GB)
+plataforma-lia/.next/cache
+
+# node_modules — reinstalado pelo build command (economiza ~2.5GB)
+plataforma-lia/node_modules
+
+# Python cache
+lia-agent-system/__pycache__
+lia-agent-system/**/__pycache__
+lia-agent-system/**/*.pyc
+
+# Rails — nao faz parte do deploy
+ats_api
+
+# Dev artifacts
+plataforma-lia/.storybook
+plataforma-lia/out
+**/.DS_Store
+**/._*
