@@ -2452,6 +2452,7 @@
       "createWithAI": "Create with AI",
       "services": {
         "advanced": "Advanced",
+        "funnelHeader": "Service funnel",
         "ctaActivate": "Activate",
         "ctaOpenJobs": "Open jobs",
         "ctaCreateAgent": "Create agent",

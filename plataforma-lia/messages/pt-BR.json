@@ -2452,6 +2452,7 @@
       "createWithAI": "Criar com IA",
       "services": {
         "advanced": "Avançado",
+        "funnelHeader": "Serviços do Funil",
         "ctaActivate": "Ativar",
         "ctaOpenJobs": "Abrir vagas",
         "ctaCreateAgent": "Criar agente",

@@ -35,6 +35,7 @@ import { toast } from "@/lib/toast"
 import { extractErrorMessage } from "@/lib/api/extract-error-message"
 import { Button } from "@/components/ui/button"
 import { BetaBadge } from "@/components/ui/beta-badge"
+import { TabSectionHeader } from "@/components/pages-agent-studio/TabSectionHeader"
 import { useTranslations } from "next-intl"
 
 interface SourcingAgent {
@@ -68,9 +69,9 @@ const SECTOR_ICONS: Record<string, React.ComponentType<{ className?: string }>> 
 }
 
 const STATUS_CONFIG_STYLES = {
-  active:    { labelKey: "studio.status.active" as const,    dot: "bg-[#5DA47A]", bg: "bg-[#F0FAF4]", text: "text-[#5DA47A]", pulse: true  },
-  paused:    { labelKey: "studio.status.paused" as const,    dot: "bg-[#D19960]", bg: "bg-[#FEF9F0]", text: "text-[#D19960]", pulse: false },
-  completed: { labelKey: "studio.status.completed" as const, dot: "bg-[#D1D5DB]", bg: "bg-[#F3F4F6]", text: "text-[#9CA3AF]", pulse: false },
+  active:    { labelKey: "studio.status.active" as const,    dot: "bg-wedo-green", bg: "bg-wedo-green/10", text: "text-wedo-green", pulse: true  },
+  paused:    { labelKey: "studio.status.paused" as const,    dot: "bg-wedo-orange", bg: "bg-wedo-orange/10", text: "text-wedo-orange", pulse: false },
+  completed: { labelKey: "studio.status.completed" as const, dot: "bg-lia-border-default", bg: "bg-lia-bg-tertiary", text: "text-lia-text-tertiary", pulse: false },
 }
 
 // Single lia-cyan for all flow step icons — replaces 4-color palette
@@ -262,29 +263,29 @@ export default function AgentStudioPage({
     <div className="p-4 space-y-5">
       {/* How it works (show when no agents) */}
       {agents.length === 0 && !isLoading && (
-        <div className="rounded-lg border border-[#E5E7EB] bg-white p-4">
+        <div className="rounded-lg border border-lia-border-subtle bg-lia-bg-elevated p-4">
           <div className="flex items-center gap-2 mb-2">
-            <Brain className="w-3.5 h-3.5 text-[#60BED1]" />
-            <span className="text-[10px] font-semibold uppercase tracking-widest text-[#60BED1]">
+            <Brain className="w-3.5 h-3.5 text-lia-text-primary" />
+            <span className="text-micro font-semibold uppercase tracking-widest text-lia-text-primary">
               {t("studio.whatIsAgent")}
             </span>
           </div>
-          <p className="text-xs text-[#6B7280] mb-3 max-w-2xl">{t("studio.virtualRecruiterDesc")}</p>
+          <p className="text-xs text-lia-text-tertiary mb-3 max-w-2xl">{t("studio.virtualRecruiterDesc")}</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
             {FLOW_STEPS_CONFIG.map((step, i) => (
               <div key={i} className="flex items-start gap-3 min-w-0">
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 bg-[#EBF8FB]">
-                  <step.icon className="w-4 h-4 text-[#60BED1]" />
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 bg-lia-bg-tertiary">
+                  <step.icon className="w-4 h-4 text-lia-text-primary" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1.5 mb-0.5">
-                    <span className="text-[9px] font-medium text-[#9CA3AF] uppercase tracking-wide whitespace-nowrap">
+                    <span className="text-micro font-medium text-lia-text-tertiary uppercase tracking-wide whitespace-nowrap">
                       {t("studio.flowSteps.step")} {i + 1}
                     </span>
-                    {i < 3 && <ArrowRight className="w-3 h-3 text-[#D1D5DB] hidden xl:block" />}
+                    {i < 3 && <ArrowRight className="w-3 h-3 text-lia-border-default hidden xl:block" />}
                   </div>
-                  <p className="text-xs font-semibold text-[#030712] break-words">{t(step.titleKey)}</p>
-                  <p className="text-[10px] text-[#6B7280] leading-relaxed break-words">{t(step.descKey)}</p>
+                  <p className="text-xs font-semibold text-lia-text-primary break-words">{t(step.titleKey)}</p>
+                  <p className="text-micro text-lia-text-tertiary leading-relaxed break-words">{t(step.descKey)}</p>
                 </div>
               </div>
             ))}
@@ -294,7 +295,7 @@ export default function AgentStudioPage({
 
       {/* Templates */}
       <div>
-        <p className="text-xs font-semibold text-[#030712] mb-2">
+        <p className="text-xs font-semibold text-lia-text-primary mb-2">
           {agents.length === 0 ? t("studio.templates.startChoosing") : t("studio.templates.createNew")}
         </p>
         <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
@@ -304,21 +305,21 @@ export default function AgentStudioPage({
               <button
                 key={tpl.id}
                 onClick={() => { setSelectedTemplate(tpl); setShowCreateModal(true) }}
-                className="group flex flex-col items-center gap-2 p-3 rounded-lg border border-[#E5E7EB] bg-white hover:border-[#60BED1]/40 hover:bg-[#EBF8FB]/30 transition-all cursor-pointer"
+                className="group flex flex-col items-center gap-2 p-3 rounded-lg border border-lia-border-subtle bg-lia-bg-elevated hover:border-lia-border-medium/40 hover:bg-lia-bg-tertiary/30 transition-colors cursor-pointer"
               >
-                <div className="w-9 h-9 rounded-lg flex items-center justify-center bg-[#EBF8FB] transition-transform group-hover:scale-110">
-                  <Icon className="w-5 h-5 text-[#60BED1]" />
+                <div className="w-9 h-9 rounded-lg flex items-center justify-center bg-lia-bg-tertiary transition-transform group-hover:scale-110">
+                  <Icon className="w-5 h-5 text-lia-text-primary" />
                 </div>
-                <p className="text-[10px] font-semibold text-[#030712] text-center line-clamp-1">{tpl.display_name}</p>
+                <p className="text-micro font-semibold text-lia-text-primary text-center line-clamp-1">{tpl.display_name}</p>
               </button>
             )
           })}
           <button
             onClick={() => { setSelectedTemplate(null); setShowCreateModal(true) }}
-            className="group flex flex-col items-center gap-2 p-3 rounded-lg border-2 border-dashed border-[#E5E7EB] hover:border-[#60BED1]/40 transition-all cursor-pointer"
+            className="group flex flex-col items-center gap-2 p-3 rounded-lg border-2 border-dashed border-lia-border-subtle hover:border-lia-border-medium/40 transition-colors cursor-pointer"
           >
-            <Brain className="w-5 h-5 text-[#60BED1] transition-transform group-hover:scale-110" />
-            <p className="text-[10px] font-semibold text-[#6B7280] text-center">{t("studio.templates.custom")}</p>
+            <Brain className="w-5 h-5 text-lia-text-primary transition-transform group-hover:scale-110" />
+            <p className="text-micro font-semibold text-lia-text-tertiary text-center">{t("studio.templates.custom")}</p>
           </button>
         </div>
       </div>
@@ -326,14 +327,14 @@ export default function AgentStudioPage({
       {/* Agents list */}
       {isLoading ? (
         <div className="flex items-center justify-center py-10">
-          <Loader2 className="w-5 h-5 animate-spin text-[#9CA3AF]" />
+          <Loader2 className="w-5 h-5 animate-spin text-lia-text-tertiary" />
         </div>
       ) : agents.length === 0 ? (
-        <div className="flex flex-col items-center py-8 rounded-lg border border-dashed border-[#E5E7EB]">
-          <Bot className="w-7 h-7 text-[#D1D5DB] mb-2" />
-          <p className="text-xs font-medium text-[#6B7280]">{t("studio.noAgentsYet")}</p>
-          <p className="text-[10px] text-[#9CA3AF] mt-1 mb-3">{t("studio.chooseTemplateAbove")}</p>
-          <Button size="sm" onClick={() => setShowCreateModal(true)} className="gap-1.5 bg-[#030712] text-white hover:bg-[#1F2937]">
+        <div className="flex flex-col items-center py-8 rounded-lg border border-dashed border-lia-border-subtle">
+          <Bot className="w-7 h-7 text-lia-border-default mb-2" />
+          <p className="text-xs font-medium text-lia-text-tertiary">{t("studio.noAgentsYet")}</p>
+          <p className="text-micro text-lia-text-tertiary mt-1 mb-3">{t("studio.chooseTemplateAbove")}</p>
+          <Button size="sm" onClick={() => setShowCreateModal(true)} className="gap-1.5 bg-lia-btn-primary-bg text-white hover:bg-lia-btn-primary-hover">
             <Plus className="w-3.5 h-3.5" />
             {t("studio.createFirstAgent")}
           </Button>
@@ -366,11 +367,11 @@ export default function AgentStudioPage({
     <div className="p-4 space-y-4">
       {openJobs.length === 0 ? (
         <div className="text-center py-6 space-y-2">
-          <p className="text-sm text-[#6B7280]">Nenhuma vaga aberta encontrada.</p>
+          <p className="text-sm text-lia-text-tertiary">Nenhuma vaga aberta encontrada.</p>
           <button
             type="button"
             onClick={() => router.push(`/${locale}/jobs/new`)}
-            className="flex items-center gap-2 mx-auto text-sm font-medium text-white bg-[#60BED1] hover:bg-[#4fa8bc] rounded-lg px-4 py-2 transition-colors"
+            className="flex items-center gap-2 mx-auto text-sm font-medium text-white bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover rounded-lg px-4 py-2 transition-colors"
           >
             <Plus className="w-4 h-4" />
             Criar vaga
@@ -380,7 +381,7 @@ export default function AgentStudioPage({
         <>
           {liveJobs.length > 0 && (
             <div className="space-y-1.5">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-[#5DA47A]">
+              <p className="text-micro font-semibold uppercase tracking-widest text-wedo-green">
                 {liveJobs.length} vaga{liveJobs.length !== 1 ? "s" : ""} ativa{liveJobs.length !== 1 ? "s" : ""}
               </p>
               {liveJobs.map(j => (
@@ -388,18 +389,18 @@ export default function AgentStudioPage({
                   key={j.id}
                   type="button"
                   onClick={() => router.push(`/${locale}/jobs/${j.id}`)}
-                  className="w-full flex items-center gap-3 rounded-lg border border-[#E5E7EB] hover:border-[#60BED1]/40 px-3 py-2.5 bg-white hover:bg-[#F9FAFB] text-left transition-colors group"
+                  className="w-full flex items-center gap-3 rounded-lg border border-lia-border-subtle hover:border-lia-border-medium/40 px-3 py-2.5 bg-lia-bg-elevated hover:bg-lia-bg-secondary text-left transition-colors group"
                 >
-                  <div className="w-2 h-2 rounded-full bg-[#5DA47A] flex-shrink-0" />
-                  <span className="flex-1 text-sm text-[#030712] truncate">{j.title}</span>
-                  <ChevronRight className="w-3.5 h-3.5 text-[#9CA3AF] opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="w-2 h-2 rounded-full bg-wedo-green flex-shrink-0" />
+                  <span className="flex-1 text-sm text-lia-text-primary truncate">{j.title}</span>
+                  <ChevronRight className="w-3.5 h-3.5 text-lia-text-tertiary opacity-0 group-hover:opacity-100 transition-opacity" />
                 </button>
               ))}
             </div>
           )}
           {draftJobs.length > 0 && (
             <div className="space-y-1.5">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-[#D19960]">
+              <p className="text-micro font-semibold uppercase tracking-widest text-wedo-orange">
                 {draftJobs.length} em configuração
               </p>
               {draftJobs.map(j => (
@@ -407,11 +408,11 @@ export default function AgentStudioPage({
                   key={j.id}
                   type="button"
                   onClick={() => router.push(`/${locale}/jobs/${j.id}?tab=edit`)}
-                  className="w-full flex items-center gap-3 rounded-lg border border-[#E5E7EB] hover:border-[#D19960]/40 px-3 py-2.5 bg-white hover:bg-[#FEF9F0] text-left transition-colors group"
+                  className="w-full flex items-center gap-3 rounded-lg border border-lia-border-subtle hover:border-wedo-orange/40 px-3 py-2.5 bg-lia-bg-elevated hover:bg-wedo-orange/10 text-left transition-colors group"
                 >
-                  <div className="w-2 h-2 rounded-full bg-[#D19960] flex-shrink-0" />
-                  <span className="flex-1 text-sm text-[#030712] truncate">{j.title}</span>
-                  <span className="text-[10px] text-[#D19960] opacity-0 group-hover:opacity-100 transition-opacity">Completar →</span>
+                  <div className="w-2 h-2 rounded-full bg-wedo-orange flex-shrink-0" />
+                  <span className="flex-1 text-sm text-lia-text-primary truncate">{j.title}</span>
+                  <span className="text-micro text-wedo-orange opacity-0 group-hover:opacity-100 transition-opacity">Completar →</span>
                 </button>
               ))}
             </div>
@@ -429,12 +430,12 @@ export default function AgentStudioPage({
   const alignmentPanel = (
     <div className="p-4 space-y-3">
       <div className="flex items-center gap-2 mb-1">
-        <span className="text-xs font-semibold uppercase tracking-widest text-[#60BED1]">Alinhamento c/ Gestor</span>
+        <span className="text-xs font-semibold uppercase tracking-widest text-lia-text-primary">Alinhamento c/ Gestor</span>
       </div>
       {firstJobId ? (
         <AlignmentStatusCard jobId={firstJobId} jobs={allJobsList} />
       ) : (
-        <p className="text-xs text-[#6B7280]">
+        <p className="text-xs text-lia-text-tertiary">
           Crie um agente de prospecção vinculado a uma vaga primeiro.
         </p>
       )}
@@ -445,10 +446,10 @@ export default function AgentStudioPage({
   const calibrationPanel = (
     <div className="p-4 space-y-4">
       <div className="flex items-center gap-2 mb-1">
-        <Users className="w-4 h-4 text-[#60BED1]" />
-        <span className="text-xs font-semibold uppercase tracking-widest text-[#60BED1]">{t("studio.twins.label")}</span>
+        <Users className="w-4 h-4 text-lia-text-primary" />
+        <span className="text-xs font-semibold uppercase tracking-widest text-lia-text-primary">{t("studio.twins.label")}</span>
       </div>
-      <p className="text-xs text-[#6B7280] max-w-2xl">{t("studio.twins.cloneDesc")}</p>
+      <p className="text-xs text-lia-text-tertiary max-w-2xl">{t("studio.twins.cloneDesc")}</p>
       <TwinsList
         onEvaluate={(id) => setEvaluatingTwinId(id)}
         onCreateTwin={() => setShowCreateTwinModal(true)}
@@ -506,13 +507,13 @@ export default function AgentStudioPage({
       panel: firstJobId ? (
         <div className="p-4 space-y-3">
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs font-semibold uppercase tracking-widest text-[#60BED1]">Ofertas</span>
+            <span className="text-xs font-semibold uppercase tracking-widest text-lia-text-primary">Ofertas</span>
           </div>
           <OfferStatusCard jobId={firstJobId} jobs={allJobsList} />
         </div>
       ) : (
         <div className="p-4">
-          <p className="text-xs text-[#6B7280]">Crie uma vaga primeiro para registrar ofertas.</p>
+          <p className="text-xs text-lia-text-tertiary">Crie uma vaga primeiro para registrar ofertas.</p>
         </div>
       ),
     },
@@ -524,13 +525,13 @@ export default function AgentStudioPage({
       panel: firstJobId ? (
         <div className="p-4 space-y-3">
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs font-semibold uppercase tracking-widest text-[#60BED1]">NPS — Satisfação</span>
+            <span className="text-xs font-semibold uppercase tracking-widest text-lia-text-primary">NPS — Satisfação</span>
           </div>
           <NpsStatusCard jobId={firstJobId} jobs={allJobsList} />
         </div>
       ) : (
         <div className="p-4">
-          <p className="text-xs text-[#6B7280]">Crie uma vaga primeiro para enviar pesquisas NPS.</p>
+          <p className="text-xs text-lia-text-tertiary">Crie uma vaga primeiro para enviar pesquisas NPS.</p>
         </div>
       ),
     },
@@ -607,9 +608,9 @@ export default function AgentStudioPage({
 
         {/* ── Smart alerts banner ───────────────────────────────────────────── */}
         {alertCount > 0 && (
-          <div className="rounded-xl border border-[#D19960]/40 bg-[#FEF9F0] overflow-hidden">
-            <div className="px-4 py-2.5 flex items-center justify-between border-b border-[#D19960]/20">
-              <span className="text-[10px] font-semibold uppercase tracking-widest text-[#D19960]">
+          <div className="rounded-xl border border-wedo-orange/40 bg-wedo-orange/10 overflow-hidden">
+            <div className="px-4 py-2.5 flex items-center justify-between border-b border-wedo-orange/20">
+              <span className="text-micro font-semibold uppercase tracking-widest text-wedo-orange">
                 {alertCount} alerta{alertCount !== 1 ? "s" : ""} do Studio
               </span>
             </div>
@@ -618,9 +619,9 @@ export default function AgentStudioPage({
                 <li key={i} className="flex items-start gap-3 px-4 py-2.5">
                   <span className={cn(
                     "mt-0.5 w-1.5 h-1.5 rounded-full flex-shrink-0",
-                    alert.severity === "error" ? "bg-[#D19960]" : "bg-[#D19960]/60"
+                    alert.severity === "error" ? "bg-wedo-orange" : "bg-wedo-orange/60"
                   )} />
-                  <span className="text-xs text-[#4B5563]">{alert.message}</span>
+                  <span className="text-xs text-lia-text-secondary">{alert.message}</span>
                 </li>
               ))}
             </ul>
@@ -638,12 +639,12 @@ export default function AgentStudioPage({
 
         {/* ── Secondary views (Custom Agents / Marketplace / Search) ────────── */}
         {secondaryView === "custom" && (
-          <div className="space-y-6 rounded-xl border border-[#E5E7EB] bg-white overflow-hidden p-4">
+          <div className="space-y-6 rounded-xl border border-lia-border-subtle bg-lia-bg-elevated overflow-hidden p-4">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-semibold uppercase tracking-widest text-[#9CA3AF]">
+              <span className="text-micro font-semibold uppercase tracking-widest text-lia-text-tertiary">
                 {t("studio.tabs.customAgents")}
               </span>
-              <button onClick={() => setSecondaryView(null)} className="text-xs text-[#9CA3AF] hover:text-[#6B7280] transition-colors">
+              <button onClick={() => setSecondaryView(null)} className="text-xs text-lia-text-tertiary hover:text-lia-text-tertiary transition-colors">
                 {t("studio.close") ?? "Fechar"}
               </button>
             </div>
@@ -653,14 +654,12 @@ export default function AgentStudioPage({
             </section>
 
             <section>
-              <h3 className="text-sm font-semibold text-[#030712] mb-3">
-                {t("studio.myAgents")} {customAgents.length > 0 && `(${customAgents.length})`}
-              </h3>
+              <TabSectionHeader title={t("studio.myAgents")} count={customAgents.length} className="mb-3" />
               {customAgents.length === 0 ? (
                 <div className="text-center py-8">
-                  <Bot className="w-8 h-8 text-[#D1D5DB] mx-auto mb-2" />
-                  <p className="text-sm text-[#6B7280]">{t("studio.noAgentsYet")}</p>
-                  <p className="text-xs text-[#9CA3AF] mt-1">{t("studio.chooseTemplateOrDescribe")}</p>
+                  <Bot className="w-8 h-8 text-lia-border-default mx-auto mb-2" />
+                  <p className="text-sm text-lia-text-tertiary">{t("studio.noAgentsYet")}</p>
+                  <p className="text-xs text-lia-text-tertiary mt-1">{t("studio.chooseTemplateOrDescribe")}</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -690,7 +689,7 @@ export default function AgentStudioPage({
             </div>
 
             <details className="mt-4">
-              <summary className="text-xs text-[#9CA3AF] cursor-pointer hover:text-[#6B7280]">
+              <summary className="text-xs text-lia-text-tertiary cursor-pointer hover:text-lia-text-tertiary">
                 {t("studio.advancedForm")}
               </summary>
               <div className="mt-3">
@@ -701,12 +700,12 @@ export default function AgentStudioPage({
         )}
 
         {secondaryView === "marketplace" && (
-          <div className="rounded-xl border border-[#E5E7EB] bg-white overflow-hidden p-4">
+          <div className="rounded-xl border border-lia-border-subtle bg-lia-bg-elevated overflow-hidden p-4">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-[10px] font-semibold uppercase tracking-widest text-[#9CA3AF]">
+              <span className="text-micro font-semibold uppercase tracking-widest text-lia-text-tertiary">
                 {t("studio.tabs.marketplace")}
               </span>
-              <button onClick={() => setSecondaryView(null)} className="text-xs text-[#9CA3AF] hover:text-[#6B7280] transition-colors">
+              <button onClick={() => setSecondaryView(null)} className="text-xs text-lia-text-tertiary hover:text-lia-text-tertiary transition-colors">
                 {t("studio.close") ?? "Fechar"}
               </button>
             </div>
@@ -715,12 +714,12 @@ export default function AgentStudioPage({
         )}
 
         {secondaryView === "search" && (
-          <div className="rounded-xl border border-[#E5E7EB] bg-white overflow-hidden p-4">
+          <div className="rounded-xl border border-lia-border-subtle bg-lia-bg-elevated overflow-hidden p-4">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-[10px] font-semibold uppercase tracking-widest text-[#9CA3AF]">
+              <span className="text-micro font-semibold uppercase tracking-widest text-lia-text-tertiary">
                 {t("studio.tabs.smartSearch")}
               </span>
-              <button onClick={() => setSecondaryView(null)} className="text-xs text-[#9CA3AF] hover:text-[#6B7280] transition-colors">
+              <button onClick={() => setSecondaryView(null)} className="text-xs text-lia-text-tertiary hover:text-lia-text-tertiary transition-colors">
                 {t("studio.close") ?? "Fechar"}
               </button>
             </div>
@@ -812,7 +811,7 @@ function AgentCard({
   const approvalRate = totalReviewed > 0 ? Math.round((agent.profiles_approved / totalReviewed) * 100) : 0
 
   const statusBadge = (
-    <span className={cn("inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold", status.bg, status.text)}>
+    <span className={cn("inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-micro font-semibold", status.bg, status.text)}>
       <span className={cn("w-1.5 h-1.5 rounded-full", status.dot, status.pulse && "animate-pulse")} />
       {t(status.labelKey)}
     </span>
@@ -822,15 +821,15 @@ function AgentCard({
     <div className="grid grid-cols-3 gap-2">
       <div className="flex flex-col items-center p-2 rounded-md bg-lia-bg-primary">
         <span className="text-xs font-bold text-lia-text-primary">{agent.profiles_viewed}</span>
-        <span className="text-[9px] text-lia-text-disabled uppercase tracking-wider">{t("studio.stats.analyzed")}</span>
+        <span className="text-micro text-lia-text-disabled uppercase tracking-wider">{t("studio.stats.analyzed")}</span>
       </div>
       <div className="flex flex-col items-center p-2 rounded-md bg-lia-bg-primary">
         <span className="text-xs font-bold text-emerald-600">{agent.profiles_approved}</span>
-        <span className="text-[9px] text-lia-text-disabled uppercase tracking-wider">{t("studio.stats.approved")}</span>
+        <span className="text-micro text-lia-text-disabled uppercase tracking-wider">{t("studio.stats.approved")}</span>
       </div>
       <div className="flex flex-col items-center p-2 rounded-md bg-lia-bg-primary">
         <span className="text-xs font-bold text-lia-text-primary">{approvalRate}%</span>
-        <span className="text-[9px] text-lia-text-disabled uppercase tracking-wider">{t("studio.stats.rate")}</span>
+        <span className="text-micro text-lia-text-disabled uppercase tracking-wider">{t("studio.stats.rate")}</span>
       </div>
     </div>
   )
@@ -838,10 +837,10 @@ function AgentCard({
   const chipsSlot = strategy.required_skills?.length ? (
     <div className="flex flex-wrap gap-1">
       {strategy.required_skills.slice(0, 4).map((skill, i) => (
-        <span key={i} className="px-2 py-0.5 rounded-md bg-lia-bg-tertiary text-[10px] font-medium text-lia-text-secondary">{skill}</span>
+        <span key={i} className="px-2 py-0.5 rounded-md bg-lia-bg-tertiary text-micro font-medium text-lia-text-secondary">{skill}</span>
       ))}
       {strategy.required_skills.length > 4 && (
-        <span className="px-2 py-0.5 rounded-md bg-lia-bg-tertiary text-[10px] text-lia-text-disabled">+{strategy.required_skills.length - 4}</span>
+        <span className="px-2 py-0.5 rounded-md bg-lia-bg-tertiary text-micro text-lia-text-disabled">+{strategy.required_skills.length - 4}</span>
       )}
     </div>
   ) : undefined
@@ -851,22 +850,22 @@ function AgentCard({
       "flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border",
       (agent.talent_pool_id || agent.job_id)
         ? "bg-lia-bg-primary border-lia-border-subtle"
-        : "bg-[#FEF9F0] border-[#D19960]/30",
+        : "bg-wedo-orange/10 border-wedo-orange/30",
     )}>
       {agent.talent_pool_id ? (
         <>
           <Database className="w-3 h-3 text-lia-text-disabled" />
-          <span className="text-[10px] text-lia-text-secondary">{t("studio.card.linkedToPool")}</span>
+          <span className="text-micro text-lia-text-secondary">{t("studio.card.linkedToPool")}</span>
         </>
       ) : agent.job_id ? (
         <>
           <Briefcase className="w-3 h-3 text-lia-text-disabled" />
-          <span className="text-[10px] text-lia-text-secondary">{t("studio.card.linkedToJob")}</span>
+          <span className="text-micro text-lia-text-secondary">{t("studio.card.linkedToJob")}</span>
         </>
       ) : (
         <>
-          <Brain className="w-3 h-3 text-[#D19960]" />
-          <span className="text-[10px] text-[#D19960]">{t("studio.card.noLink")}</span>
+          <Brain className="w-3 h-3 text-wedo-orange" />
+          <span className="text-micro text-wedo-orange">{t("studio.card.noLink")}</span>
         </>
       )}
     </div>
