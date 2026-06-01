@@ -29,3 +29,27 @@ def matches_department(departments, vaga_department) -> bool:
         return True
     target = _norm(vaga_department)
     return any(enabled and _norm(k) == target for k, enabled in departments.items())
+
+
+def _digits(s) -> str:
+    return "".join(ch for ch in (s or "") if ch.isdigit())
+
+
+def matches_subsidiaries(subsidiaries, vaga_subsidiary=None, vaga_cnpj=None) -> bool:
+    """subsidiaries = [{"name","cnpj"}]. Vazio/None = aplica a todas as entidades.
+    Se a vaga nao informar filial/CNPJ, nao restringe. Senao casa por nome
+    normalizado OU CNPJ (so digitos)."""
+    if not subsidiaries or not isinstance(subsidiaries, list):
+        return True
+    if not vaga_subsidiary and not vaga_cnpj:
+        return True
+    tgt_name = _norm(vaga_subsidiary) if vaga_subsidiary else ""
+    tgt_cnpj = _digits(vaga_cnpj) if vaga_cnpj else ""
+    for s in subsidiaries:
+        if not isinstance(s, dict):
+            continue
+        if tgt_name and _norm(s.get("name")) == tgt_name:
+            return True
+        if tgt_cnpj and _digits(s.get("cnpj")) == tgt_cnpj:
+            return True
+    return False

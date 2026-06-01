@@ -195,6 +195,8 @@ async def list_active_components(
     seniority_level: str | None = Query(None),
     department: str | None = Query(None),
     contract_type: str | None = Query(None),
+    subsidiary: str | None = Query(None),
+    cnpj: str | None = Query(None),
     with_matches: bool = Query(False),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
@@ -206,12 +208,14 @@ async def list_active_components(
         if not eff or eff in ("default", "unknown"):
             return []
         repo = CompensationComponentRepository(db)
-        if with_matches or department or contract_type or seniority_level:
+        if with_matches or department or contract_type or seniority_level or subsidiary or cnpj:
             pairs = await repo.list_matching(
                 eff,
                 seniority_level=seniority_level,
                 department=department,
                 contract_type=contract_type,
+                subsidiary=subsidiary,
+                subsidiary_cnpj=cnpj,
                 active_only=True,
             )
             return [_to_response(c, matches_vaga=flag) for c, flag in pairs]
