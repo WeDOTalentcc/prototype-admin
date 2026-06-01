@@ -14,7 +14,7 @@ Imports absolutos: `from app.shared.types import JobIdParam, WeDoBaseModel`.
 NÃO importar de _shared.py dos sub-packages (job_vacancies/_shared, etc.) —
 shared types vivem aqui, no nível de app/shared/, acima dos domains.
 """
-from typing import Annotated
+from typing import Annotated, Literal, TypedDict
 
 from fastapi import Path
 from pydantic import BaseModel, ConfigDict
@@ -125,3 +125,54 @@ class WeDoBaseModel(BaseModel):
         # impede atribuições silenciosas em runtime (defesa em profundidade).
         validate_assignment=True,
     )
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Pipeline Stage — Schema Canônico (Fase 1 Unify, 2026-06-01)
+# ─────────────────────────────────────────────────────────────────────────────
+class CanonicalPipelineStage(TypedDict, total=False):
+    """Schema canônico de stage de pipeline — fonte única entre:
+
+    - ``pipeline_templates.stages`` — onde stages vivem como template
+    - ``job_vacancy.interview_stages`` — instância copy-on-write por vaga
+    - ``RecruitmentStage`` (DB) — o Padrão rico da empresa (sistema)
+
+    **Campos obrigatórios** (marcados no TypedDict mas controlados por validação):
+    - ``name``: nome da etapa
+    - ``order``: posição na sequência (>= 1)
+    - ``type``: tipo de automação — ``automatic | manual | hybrid``
+    - ``sla_days``: prazo em dias para a etapa
+
+    **Campos opcionais** (ricos — Fase Unify futura):
+    - ``instructions``: instruções para o recrutador/candidato
+    - ``description``, ``color``, ``icon``: UI enrichment
+    - ``action_behavior``: ``passive | proactive | trigger``
+    - ``is_system``: etapa do sistema (não pode ser deletada pela empresa)
+
+    **Campos de compat legada** (dual-write durante migração):
+    - ``stageName``: alias de ``name`` — kanban e código legado esperam este campo
+    - ``sla``: alias de ``sla_days`` — legado do translate anterior (pré-Unify)
+
+    O translate ``translate_template_stages_to_interview_stages`` escreve AMBOS
+    os pares (name+stageName, sla_days+sla) para compat total enquanto consumidores
+    legados são atualizados gradualmente. Ver REGRA: Falhar alto, nunca silencioso.
+    """
+
+    # Core fields
+    name: str
+    order: int
+    type: Literal["automatic", "manual", "hybrid"]
+    sla_days: int
+    instructions: str
+
+    # Rich fields (optional, Fase Unify)
+    description: str
+    color: str
+    icon: str
+    action_behavior: str
+    is_system: bool
+
+    # Legacy compat (dual-write — remover quando kanban migrar p/ name)
+    stageName: str   # = name
+    sla: int         # = sla_days
+
