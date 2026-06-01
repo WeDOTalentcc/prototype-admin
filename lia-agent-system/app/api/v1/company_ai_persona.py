@@ -208,14 +208,18 @@ async def update_company_ai_persona(
     summary="Catálogo canonical de tons + constraints de nome (UI)",
 )
 async def get_ai_persona_options(
-    company_id: str = Depends(require_company_id),
     _user: User = Depends(get_current_active_user),
 ) -> AiPersonaOptionsResponse:
     """Catálogo completo para a UI da tab "Personalidade da IA".
 
-    NÃO é per-tenant — é catálogo WeDOTalent-wide. Mas exige JWT válido
-    (require_company_id) para consistência com o resto do recurso e para
-    evitar exposição não-autenticada de blocklist + instruções textuais.
+    NÃO é per-tenant — é catálogo WeDOTalent-wide (mesmas opções de tom +
+    constraints de nome para toda a plataforma). Por isso exige apenas
+    autenticação (get_current_active_user), NÃO company_id.
+
+    V2.1 fix (2026-06-01): removido require_company_id — era exigência indevida
+    num catálogo tenant-agnóstico e quebrava o carregamento dos tons ("Não foi
+    possível carregar as opções de tom") em sessões cujo JWT não resolve
+    company_id. get_current_active_user já barra acesso anônimo.
 
     Audit 2026-05-24 F3.2: criado para eliminar drift backend↔frontend
     causado por TONE_OPTIONS hardcoded em AiPersonaPanel.tsx.
