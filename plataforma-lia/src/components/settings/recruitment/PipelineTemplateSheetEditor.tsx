@@ -38,7 +38,7 @@ function richToRecruitmentStage(s: any, idx: number): RecruitmentStage {
     icon: s.icon,
     action_behavior: s.action_behavior,
     default_channel: s.default_channel,
-    stageCategory: s.stage_category,
+    stage_category: s.stage_category,
     sub_statuses: (s.sub_statuses || []).map((ss: any, si: number): SubStatus => ({
       id: ss.id || `ss-${idx}-${si}`,
       stage_id: s.id || `tpl-stage-${idx}`,
