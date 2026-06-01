@@ -233,6 +233,8 @@ export interface ScreeningQuestion {
   weight: number
   approved?: boolean
   edited_text?: string
+  // Fase 2/3: pergunta pouco ancorada no JD (validador WSI F6.8.1) — painel sinaliza.
+  needs_manual_review?: boolean
 }
 
 export interface EligibilityData {

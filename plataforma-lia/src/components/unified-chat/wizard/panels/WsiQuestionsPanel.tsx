@@ -2,7 +2,7 @@
 
 import React, { useRef, useState } from "react"
 import { cn } from "@/lib/utils"
-import { Check, Edit2, GripVertical, RefreshCw, Trash2, ChevronDown, ChevronUp } from "lucide-react"
+import { Check, Edit2, GripVertical, RefreshCw, Trash2, ChevronDown, ChevronUp, AlertTriangle } from "lucide-react"
 import type { WsiQuestionsData, ScreeningQuestion } from "../wizard-types"
 import { FallbackBanner } from "./FallbackBanner"
 import { AiDegradedModeBanner } from "./AiDegradedModeBanner"
@@ -221,6 +221,15 @@ function QuestionCard({
             <span className="px-1.5 py-0.5 rounded bg-lia-bg-secondary text-[10px] text-lia-text-secondary">
               {question.block === "technical" ? "Tecnica" : "Comportamental"}
             </span>
+            {question.needs_manual_review && (
+              <span
+                className="px-1.5 py-0.5 rounded bg-status-warning/10 text-[10px] text-status-warning font-medium inline-flex items-center gap-0.5"
+                title="Pergunta pouco ancorada no JD — revise antes de aprovar"
+              >
+                <AlertTriangle className="w-2.5 h-2.5" aria-hidden="true" />
+                Revisar
+              </span>
+            )}
             {question.trait_ocean && (
               <span className="px-1.5 py-0.5 rounded bg-wedo-cyan/10 text-[10px] text-wedo-cyan font-medium">
                 {question.trait_ocean}
