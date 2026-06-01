@@ -13,12 +13,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.salary_band import SalaryBand
 from app.domains.job_creation.helpers.vacancy_vocab import (
-    _norm,
     to_match_contract_key,
     to_match_seniority_key,
 )
 from app.shared.eligibility_matching import (
-    matches_area,
     matches_department,
     matches_dimension_list,
     matches_subsidiaries,
@@ -97,8 +95,6 @@ class SalaryBandRepository:
             score += 1
         if b.departments and any((b.departments or {}).values()):
             score += 1
-        if b.area:
-            score += 1
         if b.subsidiaries:
             score += 1
         return score
@@ -110,7 +106,6 @@ class SalaryBandRepository:
         seniority_level: str,
         department: str | None = None,
         contract_type: str | None = None,
-        area: str | None = None,
         subsidiary: str | None = None,
         subsidiary_cnpj: str | None = None,
     ) -> SalaryBand | None:
@@ -120,13 +115,11 @@ class SalaryBandRepository:
         bands = await self.list_for_company(company_id, active_only=True)
         sen_key = to_match_seniority_key(seniority_level) if seniority_level else ""
         con_key = to_match_contract_key(contract_type) if contract_type else ""
-        area_key = _norm(area) if area else ""
         matched = [
             b for b in bands
             if to_match_seniority_key(b.level) == sen_key
             and matches_dimension_list(b.contract_types, con_key, to_match_contract_key)
             and matches_department(b.departments, department)
-            and matches_dimension_list(b.area, area_key, _norm)
             and matches_subsidiaries(b.subsidiaries, subsidiary, subsidiary_cnpj)
         ]
         if not matched:

@@ -52,7 +52,6 @@ class CompensationComponent(Base):
     contract_types = Column(ARRAY(String), nullable=True, default=list)
     departments = Column(JSONB, nullable=True, default=dict)        # {nome_dept: bool} ou {"all": true}
     subsidiaries = Column(JSONB, nullable=True, default=list)       # [{"name","cnpj"}, ...]
-    area = Column(ARRAY(String), nullable=True, default=list)      # areas de negocio (tokens livres)
 
     # Vigencia
     valid_from = Column(Date, nullable=True)

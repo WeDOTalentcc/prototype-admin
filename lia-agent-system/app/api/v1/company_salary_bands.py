@@ -36,7 +36,6 @@ class SalaryBandCreate(WeDoBaseModel):
     currency: str = "BRL"
     contract_types: list[str] = Field(default_factory=list)
     departments: dict | None = None
-    area: list[str] = Field(default_factory=list)
     subsidiaries: list | None = None
     valid_from: str | None = None
     valid_until: str | None = None
@@ -53,7 +52,6 @@ class SalaryBandUpdate(WeDoBaseModel):
     currency: str | None = None
     contract_types: list[str] | None = None
     departments: dict | None = None
-    area: list[str] | None = None
     subsidiaries: list | None = None
     valid_from: str | None = None
     valid_until: str | None = None
@@ -72,7 +70,6 @@ class SalaryBandResponse(BaseModel):
     currency: str | None = None
     contract_types: list | None = None
     departments: dict | None = None
-    area: list | None = None
     subsidiaries: list | None = None
     valid_from: str | None = None
     valid_until: str | None = None
@@ -107,7 +104,6 @@ def _to_response(b) -> SalaryBandResponse:
         currency=b.currency,
         contract_types=b.contract_types if isinstance(b.contract_types, list) else None,
         departments=deps if isinstance(deps, dict) else None,
-        area=b.area if isinstance(b.area, list) else None,
         subsidiaries=b.subsidiaries if isinstance(b.subsidiaries, list) else None,
         valid_from=b.valid_from.isoformat() if getattr(b, "valid_from", None) else None,
         valid_until=b.valid_until.isoformat() if getattr(b, "valid_until", None) else None,

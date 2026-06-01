@@ -1,13 +1,12 @@
 """Sentinela — matcher de elegibilidade cobre TODAS as colunas de escopo da verba.
 
-Fase 5a + V2. Pinam matches_subsidiaries (filial/CNPJ) e matches_area (area de
-negocio, dimensao separada de depto). Sentinela de harness: se alguem adicionar uma
-nova coluna de escopo em CompensationComponent sem liga-la no list_matching, falha
-(evita ghost field como subsidiaries/area foram).
+Fase 5a. Pinam matches_subsidiaries (filial/CNPJ). Sentinela de harness: se alguem
+adicionar uma nova coluna de escopo em CompensationComponent sem liga-la no
+list_matching, falha (evita ghost field como subsidiaries foi).
 """
 import inspect
 
-from app.shared.eligibility_matching import matches_area, matches_subsidiaries
+from app.shared.eligibility_matching import matches_subsidiaries
 
 
 # ── subsidiaries (filial / CNPJ) ──────────────────────────────────────────
@@ -36,29 +35,6 @@ def test_subsidiary_no_match():
     assert matches_subsidiaries(subs, "Filial RJ", "22222222000122") is False
 
 
-# ── area (dimensao separada de departamento) ──────────────────────────────
-def test_empty_area_applies_to_all():
-    assert matches_area([], "Tecnologia") is True
-    assert matches_area(None, "Comercial") is True
-
-
-def test_vaga_without_area_not_restricted():
-    assert matches_area(["Tecnologia"], None) is True
-
-
-def test_area_match_normalized():
-    assert matches_area(["Tecnologia", "Comercial"], "tecnologia") is True
-    assert matches_area(["Tecnologia"], "TECNOLOGIA") is True
-
-
-def test_area_no_match():
-    assert matches_area(["Tecnologia"], "Financeiro") is False
-
-
-def test_area_all_wildcard():
-    assert matches_area(["all"], "qualquer") is True
-
-
 # ── sentinela de cobertura ────────────────────────────────────────────────
 def test_harness_sentinel_every_scope_column_has_matcher_in_list_matching():
     from app.domains.company.repositories.compensation_component_repository import (
@@ -67,7 +43,7 @@ def test_harness_sentinel_every_scope_column_has_matcher_in_list_matching():
     from app.models.compensation_component import CompensationComponent
 
     # Colunas de escopo conhecidas (atualize JUNTO com o matcher ao adicionar dimensao).
-    scope_columns = {"seniority_levels", "contract_types", "departments", "area", "subsidiaries"}
+    scope_columns = {"seniority_levels", "contract_types", "departments", "subsidiaries"}
     model_columns = {c.name for c in CompensationComponent.__table__.columns}
     assert scope_columns <= model_columns, (
         f"Colunas de escopo ausentes no modelo: {scope_columns - model_columns}"

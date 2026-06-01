@@ -21,7 +21,6 @@ function scopeSummary(b: SalaryBandRow): string {
   const parts: string[] = []
   const deps = b.departments && typeof b.departments === "object" ? Object.keys(b.departments).filter((k) => (b.departments as Record<string, unknown>)[k]) : []
   if (deps.length) parts.push(deps.join(", "))
-  if (b.area?.length) parts.push(b.area.join(", "))
   if (b.contract_types?.length) parts.push(b.contract_types.join(", "))
   if (b.subsidiaries?.length) parts.push(`${b.subsidiaries.length} filial(is)`)
   return parts.length ? parts.join(" · ") : "Todos"

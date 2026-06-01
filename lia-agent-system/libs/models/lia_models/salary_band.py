@@ -38,7 +38,6 @@ class SalaryBand(Base):
     # Escopo organizacional granular (paridade com CompensationComponent + area)
     contract_types = Column(ARRAY(String), nullable=True, default=list)
     departments = Column(JSONB, nullable=True, default=dict)        # {nome_dept: bool} | {"all": true}
-    area = Column(ARRAY(String), nullable=True, default=list)       # areas de negocio (tokens livres)
     subsidiaries = Column(JSONB, nullable=True, default=list)       # [{"name","cnpj"}, ...]
 
     # Vigencia

@@ -20,7 +20,6 @@ from app.domains.job_creation.helpers.vacancy_vocab import (
     to_match_seniority_key,
 )
 from app.shared.eligibility_matching import (
-    matches_area,
     matches_department,
     matches_dimension_list,
     matches_subsidiaries,
@@ -129,7 +128,6 @@ class CompensationComponentRepository:
         contract_type: str | None = None,
         subsidiary: str | None = None,
         subsidiary_cnpj: str | None = None,
-        area: str | None = None,
         active_only: bool = True,
     ) -> list[tuple[CompensationComponent, bool]]:
         """Lista componentes ativos com flag matches_vaga por item (AND das
@@ -145,7 +143,6 @@ class CompensationComponentRepository:
                 and matches_dimension_list(c.contract_types, con_key, to_match_contract_key)
                 and matches_department(c.departments, department)
                 and matches_subsidiaries(c.subsidiaries, subsidiary, subsidiary_cnpj)
-                and matches_area(c.area, area)
             )
             out.append((c, ok))
         return out
