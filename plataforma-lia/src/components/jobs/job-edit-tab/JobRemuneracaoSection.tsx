@@ -53,29 +53,6 @@ export function JobRemuneracaoSection({
         </Card>
       </div>
       <div>
-        <h3 className={groupHeaderClass}>Bônus / Variável</h3>
-        <Card className="border border-lia-border-subtle">
-          <CardContent className="p-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className={labelClass}>Mínimo</label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-lia-text-tertiary">{CURRENCY_SYMBOL}</span>
-                  <input type="number" className={`${inputClass(!isEditing)} pl-9`} value={(jobEditForm.bonusMin as string) || ""} onChange={(e) => updateField("bonusMin", e.target.value)} disabled={!isEditing} placeholder="0,00" />
-                </div>
-              </div>
-              <div>
-                <label className={labelClass}>Máximo</label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-lia-text-tertiary">{CURRENCY_SYMBOL}</span>
-                  <input type="number" className={`${inputClass(!isEditing)} pl-9`} value={(jobEditForm.bonusMax as string) || ""} onChange={(e) => updateField("bonusMax", e.target.value)} disabled={!isEditing} placeholder="0,00" />
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-      <div>
         <VacancyVariableCompManager
           value={(jobEditForm.variable_compensation as unknown[]) || []}
           onChange={(next) => updateField("variable_compensation", next)}
