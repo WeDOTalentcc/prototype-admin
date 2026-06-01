@@ -21,6 +21,11 @@ vi.mock("@/hooks/company/use-ai-persona", () => ({
 const mockFetch = vi.fn()
 beforeEach(() => {
   mockFetch.mockReset()
+  // Default: CreateDigitalTwinModal busca a lista de usuários no open (useEffect).
+  // Sem um default, fetch() devolve undefined e `.then` quebra antes de qualquer
+  // asserção. Testes que precisam de payload específico usam mockResolvedValueOnce
+  // (consumido primeiro; este default cobre as chamadas restantes).
+  mockFetch.mockResolvedValue({ ok: true, json: async () => ({ users: [], twins: [] }) } as Response)
   global.fetch = mockFetch as unknown as typeof fetch
 })
 
