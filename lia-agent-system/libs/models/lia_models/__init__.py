@@ -47,6 +47,7 @@ from lia_models.company import (
 )
 from lia_models.compensation_policy import CompensationPolicy
 from lia_models.compensation_component import CompensationComponent, CompensationComponentHistory
+from lia_models.salary_band import SalaryBand
 from lia_models.company_culture import (
     CompanyCultureProfile,
     CultureAnalysisJob
@@ -461,6 +462,7 @@ __all__ = [
     "CompensationPolicy",
     "CompensationComponent",
     "CompensationComponentHistory",
+    "SalaryBand",
     "CompanyCultureProfile",
     "CultureAnalysisJob",
     "HiringPlan",
