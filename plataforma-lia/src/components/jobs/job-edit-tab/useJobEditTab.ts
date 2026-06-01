@@ -267,6 +267,32 @@ export function useJobEditTab({
   // (addLanguage / removeLanguage / updateLanguage remain inline in the JSX
   //  because they depend on the local `langs` derived from jobEditForm)
 
+  const [isSavingAsTemplate, setIsSavingAsTemplate] = useState(false)
+
+  const saveStagesAsTemplate = async (templateName: string) => {
+    const trimmed = templateName.trim()
+    if (!trimmed || isSavingAsTemplate) return
+    setIsSavingAsTemplate(true)
+    try {
+      const mappedStages = stages
+        .filter(s => s.stageCategory !== "system")
+        .map((s, idx) => ({
+          name: (s as any).name || s.stageName,
+          order: s.order || idx + 1,
+          type: (["automatic", "manual", "hybrid"].includes(s.type)
+            ? s.type
+            : "manual") as "automatic" | "manual" | "hybrid",
+          sla_days: s.slaDays ?? (s as any).sla_days ?? 3,
+        }))
+      await createTemplate({ name: trimmed, stages: mappedStages })
+      toast.success("Template salvo com sucesso!")
+    } catch {
+      toast.error("Erro ao salvar template. Tente novamente.")
+    } finally {
+      setIsSavingAsTemplate(false)
+    }
+  }
+
   const applyTemplate = async (templateId: string) => {
     if (!vacancyId) return
     setIsApplyingTemplate(true)
@@ -319,6 +345,8 @@ export function useJobEditTab({
     LIA_ASSISTED_STAGE_NAMES,
     // Fase 5: template selector
     vacancyId,
+    saveStagesAsTemplate,
+    isSavingAsTemplate,
     templates,
     isLoadingTemplates,
     isApplyingTemplate,
