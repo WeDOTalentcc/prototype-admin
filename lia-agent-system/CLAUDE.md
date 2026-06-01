@@ -1070,3 +1070,51 @@ ai_persona_validator.py (SINGLE SOURCE OF TRUTH)
 - Panel: `plataforma-lia/src/components/settings/AiPersonaPanel.tsx`
 - Audit: 2026-05-24 F3.2 (canonical-fix + harness-engineering + lia-testing cascade)
 
+
+
+## Remuneração canônica — faixa por nível é fonte única (registrado 2026-06-01)
+
+**Contexto:** o modal de verba só expunha tipo/faixa/frequência; faltavam nível, depto,
+filial/CNPJ e vigência (o modelo `compensation_components` já tinha as colunas, o form não).
+A faixa salarial vivia presa em `compensation_policies.salary_bands` (JSONB) e duplicada
+inline em `job_vacancies.salary_range`; o "% do salário" da verba nunca virava R$. Níveis de
+senioridade eram strings livres divergentes (PRV 8, benefits 10).
+
+### Regras canônicas
+
+1. **`SalaryBand` (tabela `salary_bands`) é a FONTE ÚNICA da faixa por nível.** Definida uma
+   vez em Configurações → Minha Empresa → Faixas Salariais por Nível
+   (`SalaryBandsSection.tsx`, endpoint `/company/salary-bands`). PRV e vaga **leem**, não são
+   donos. Não recriar faixa em JSONB de política nem inline na vaga.
+
+2. **Verba (%) NUNCA guarda R$ — deriva.** O único ponto de multiplicação é
+   `app/domains/company/services/compensation_resolution_service.py`
+   (`R$ = % / 100 × SalaryBand[nível]`). Frontend tem espelho de preview em
+   `src/lib/compensation/resolve.ts` (mantê-los em sincronia).
+
+3. **Níveis de senioridade têm fonte única.** Backend: `app/shared/seniority_levels.py`.
+   Espelho TS: `plataforma-lia/src/lib/compensation/seniority-levels.ts`. Proibido recriar
+   lista hardcoded. Sensor: `scripts/check_seniority_levels_sync.py --blocking`.
+
+4. **Proibido ghost scoping field.** Toda coluna de escopo/elegibilidade de um modelo DEVE
+   ser (a) exposta no form de cadastro E (b) honrada pelo matcher
+   (`app/shared/eligibility_matching.py`). `subsidiaries` foi ghost até 2026-06-01.
+   Sentinela: `tests/unit/test_eligibility_matching_subsidiaries.py` quebra se uma coluna de
+   escopo nova não for lida no `list_matching`.
+
+5. **Editores de escopo/vigência são compartilhados (DRY).**
+   `plataforma-lia/src/components/settings/_shared/{EligibilityScopeEditor,VigenciaSubsidiariesEditor}.tsx`.
+   `departments` = dict `{nomeDept: true}` (shape que o matcher consome por nome normalizado).
+
+6. **Fairness/LGPD:** escopo só por nível/depto/filial/contrato — NUNCA por atributo protegido
+   (raça, gênero, idade, religião). O backend já bloqueia elegibilidade por atributo protegido.
+
+### Sensores ativos
+- `scripts/check_seniority_levels_sync.py` — sincronia TS↔PY dos níveis (self-guard contra falso-verde).
+- `tests/unit/test_compensation_resolution_service.py` — motor % → R$ (11 testes).
+- `tests/unit/test_eligibility_matching_subsidiaries.py` — matcher + sentinela de cobertura de escopo.
+
+### Dívida registrada
+- Nenhum agente LIA / geração de JD lê remuneração ainda (só vaga/oferta consomem o catálogo).
+  Ver `IA_LAYER_BENEFITS_PRV_AUDIT.md`. Benefits ainda usa editores próprios (migrar para os
+  `_shared` numa próxima — Rule of Three já satisfeito por verba + PRV).
