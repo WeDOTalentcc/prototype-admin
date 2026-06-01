@@ -11,7 +11,6 @@ import {
   ChevronDown, ChevronUp, Download, RefreshCw, Loader2
 } from"lucide-react"
 import { SmartImportZone } from"./SmartImportZone"
-import { LiaFieldToggle, defaultLiaFieldExamples } from"./LiaFieldToggle"
 import { textStyles, cardStyles, badgeStyles, buttonStyles, actionButtonStyles } from '@/lib/design-tokens'
 import { monthKeys, monthLabels, getPositionTotal } from"./useGoalsPlanningHub"
 import type { UseGoalsPlanningHubReturn } from"./useGoalsPlanningHub"
@@ -25,12 +24,10 @@ export function WorkforceSection({ hub }: WorkforceSectionProps) {
   const t = useTranslations("settings.workforce")
   const {
     selectedYear, setSelectedYear,
-    liaInstructions, liaToggles,
     departments, departmentsLoaded,
     saving,
     isEditingWorkforce, setIsEditingWorkforce,
     fetchWorkforceData, saveWorkforceData, saveDepartmentPositions,
-    handleLiaToggleChange, handleLiaInstructionSave,
     workforceStats, toggleDepartmentExpand,
     addDepartment, addPositionToDepartment,
     updatePositionSalary, updatePositionName,
@@ -62,18 +59,6 @@ export function WorkforceSection({ hub }: WorkforceSectionProps) {
                     {t("synchronized")}
                   </Chip>
                 )}
-                <div className="flex items-center gap-2 ml-2">
-                  <LiaFieldToggle
-                    fieldKey="headcount_planning"
-                    isActive={liaToggles.headcount_planning ?? false}
-                    currentInstruction={liaInstructions.headcount_planning || ''}
-                    examples={defaultLiaFieldExamples.headcount_planning}
-                    onToggleChange={handleLiaToggleChange}
-                    onInstructionSave={handleLiaInstructionSave}
-                    compact
-                  />
-                  <span className={textStyles.caption}>{t("consumedByLia")}</span>
-                </div>
               </CardTitle>
               <p className={`${textStyles.description} mt-1`}>
                 {t("departmentsDesc")}

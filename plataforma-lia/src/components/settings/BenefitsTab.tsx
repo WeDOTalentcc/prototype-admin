@@ -16,7 +16,6 @@ import {
   badgeStyles,
   actionButtonStyles,
 } from "@/lib/design-tokens"
-import { LiaFieldToggle, defaultLiaFieldExamples } from "./LiaFieldToggle"
 import { BenefitFormModal } from "./benefits/BenefitFormModal"
 import { BenefitTemplateModal } from "./benefits/BenefitTemplateModal"
 import { BenefitsList } from "./benefits/BenefitsList"
@@ -69,19 +68,6 @@ export function BenefitsTab() {
       )}
 
       <HubHeader title={t("title")} description={t("description")}>
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-3">
-            <LiaFieldToggle
-              fieldKey="benefits"
-              isActive={hub.liaToggles.benefits ?? true}
-              currentInstruction={hub.liaInstructions.benefits || ""}
-              examples={defaultLiaFieldExamples.benefits}
-              onToggleChange={hub.handleLiaToggleChange}
-              onInstructionSave={hub.handleLiaInstructionSave}
-              compact
-            />
-            <span className="text-xs text-lia-text-secondary">{t("consumedByLia")}</span>
-          </div>
           {!hub.isEditingBenefits ? (
             <button onClick={hub.handleEnterEditMode} className={actionButtonStyles.smOutline}>
               <Pencil className={actionButtonStyles.icon} />

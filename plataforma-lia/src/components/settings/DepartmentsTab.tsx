@@ -10,7 +10,6 @@ import {
   AlertCircle,
   Loader2,
 } from "lucide-react";
-import { LiaFieldToggle, defaultLiaFieldExamples } from './LiaFieldToggle';
 import {
   type Department,
   type DepartmentMember,
@@ -149,15 +148,6 @@ export function DepartmentsTab({
           <div>
             <h3 className="flex items-center gap-2 text-base-ui font-semibold text-lia-text-primary">
               {t('title')}
-              <LiaFieldToggle
-                fieldKey="departments"
-                isActive={companyData.lia_field_toggles?.departments ?? true}
-                currentInstruction={companyData.lia_instructions?.departments || ''}
-                examples={defaultLiaFieldExamples.departments}
-                onToggleChange={updateLiaToggle}
-                onInstructionSave={updateLiaInstruction}
-                compact
-              />
             </h3>
             <p className="text-xs text-lia-text-secondary">
               {t('description')}
