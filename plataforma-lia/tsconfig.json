@@ -51,6 +51,10 @@
     "out",
     "mockup-sandbox",
     "**/*.stories.ts",
-    "**/*.stories.tsx"
+    "**/*.stories.tsx",
+    "vitest.config.ts",
+    "vitest.config.mts",
+    "vitest.setup.ts",
+    "vitest.setup.mts"
   ]
 }
