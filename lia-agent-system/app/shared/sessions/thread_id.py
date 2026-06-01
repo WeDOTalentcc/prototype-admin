@@ -34,6 +34,8 @@ from __future__ import annotations
 
 import asyncio
 import hashlib
+import os
+from datetime import datetime, timezone
 import logging
 
 logger = logging.getLogger(__name__)
@@ -45,6 +47,14 @@ _ANON_TOKEN = "anon"
 # 32 bits for UUIDs and prone to prefix collisions for slug-based ids.
 # Birthday-bound: ~2^32 distinct tenants before 50% collision risk.
 _COMPANY_TOKEN_LEN = 16
+
+
+# Staleness do wizard (fix 2026-05-31): um wizard ABANDONADO (usuário saiu
+# no meio) deixa o checkpoint não-terminal. Sem expiração ele sequestra
+# mensagens não-relacionadas ("oi") em logins futuros. Restaura o TTL que
+# antes vivia num marker Redis (2h), removido na migração p/ checkpoint
+# direto. Configurável via env. 0 = desliga o gate (comportamento legado).
+_WIZARD_SESSION_TTL_HOURS = float(os.environ.get("LIA_WIZARD_SESSION_TTL_HOURS", "2"))
 
 
 def _company_token(company_id: str) -> str:
@@ -133,6 +143,29 @@ async def is_wizard_session_active(
 
     if snapshot is None:
         return False
+
+    # Staleness gate — wizard abandonado não deve sequestrar mensagens
+    # futuras. Usa o created_at do próprio checkpoint (sem infra extra).
+    if _WIZARD_SESSION_TTL_HOURS > 0:
+        try:
+            _created = getattr(snapshot, "created_at", None)
+            if _created:
+                _ts = datetime.fromisoformat(str(_created).replace("Z", "+00:00"))
+                if _ts.tzinfo is None:
+                    _ts = _ts.replace(tzinfo=timezone.utc)
+                _age_h = (datetime.now(timezone.utc) - _ts).total_seconds() / 3600.0
+                if _age_h > _WIZARD_SESSION_TTL_HOURS:
+                    logger.info(
+                        "[is_wizard_session_active] checkpoint stale (%.1fh > %.1fh) "
+                        "thread=%s — inativo (wizard abandonado, não sequestra chat).",
+                        _age_h, _WIZARD_SESSION_TTL_HOURS, thread_id,
+                    )
+                    return False
+        except Exception as _stale_exc:  # noqa: BLE001 — fail-open
+            logger.debug(
+                "[is_wizard_session_active] staleness parse falhou (%s) — ignorando",
+                _stale_exc,
+            )
 
     # Task #1094 — sessão pausada em ``langgraph.types.interrupt()`` conta
     # como ATIVA mesmo que o values esteja vazio (raro: ocorreria se um
