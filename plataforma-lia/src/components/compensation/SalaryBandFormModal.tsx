@@ -35,7 +35,7 @@ export function SalaryBandFormModal({ open, onOpenChange, editing, setEditing, i
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[720px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{b.id ? "Editar faixa salarial" : "Nova faixa salarial"}</DialogTitle>
         </DialogHeader>
