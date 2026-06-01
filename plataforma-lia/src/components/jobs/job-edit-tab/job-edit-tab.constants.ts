@@ -45,7 +45,7 @@ export const SECTIONS = [
     title: "Remuneração",
     icon: DollarSign,
     description: "Salário, bônus e benefícios",
-    fields: ["salaryMin", "salaryMax", "bonusMin", "bonusMax", "benefits"],
+    fields: ["salaryMin", "salaryMax", "bonusMin", "bonusMax", "benefits", "variable_compensation"],
   },
 ]
 

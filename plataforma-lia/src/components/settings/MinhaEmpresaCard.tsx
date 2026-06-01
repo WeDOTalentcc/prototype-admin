@@ -13,6 +13,7 @@ import { BenefitsListSection } from "./benefits/BenefitsListSection"
 import type { CompanyBenefit } from "@/types/benefits"
 import { WorkforceHubContent } from "./WorkforceHubContent"
 import { CompensationPoliciesListSection } from "./compensation-policies/CompensationPoliciesListSection"
+import { VariableCompCatalogSection } from "@/components/compensation/VariableCompCatalogSection"
 import { SectionUploadDropZone, type TargetSection } from "./SectionUploadDropZone"
 import { LogoUploadField } from "./LogoUploadField"
 import { InteractiveSurface } from "@/components/ui/interactive-surface"
@@ -341,8 +342,9 @@ export function MinhaEmpresaCard({
             <WorkforceHubContent />
           )}
           {block.key === "documents" && (
-            <div className="mt-3">
+            <div className="mt-3 space-y-6">
               <CompensationPoliciesListSection />
+              <VariableCompCatalogSection />
             </div>
           )}
           {block.key !== "workforce" && (

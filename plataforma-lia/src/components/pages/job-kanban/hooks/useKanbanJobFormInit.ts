@@ -33,6 +33,7 @@ export function useKanbanJobFormInit(currentJob: Record<string, unknown> | null)
       bonusMin: (currentJob.bonusRange as Record<string,unknown>|undefined)?.min || (currentJob.bonus_range as Record<string,unknown>|undefined)?.min || '',
       bonusMax: (currentJob.bonusRange as Record<string,unknown>|undefined)?.max || (currentJob.bonus_range as Record<string,unknown>|undefined)?.max || '',
       benefits: currentJob.benefits || [],
+      variable_compensation: (currentJob as Record<string, unknown>).variable_compensation || [],
       targetAudience: currentJob.targetAudience || '',
       targetSector: currentJob.targetSector || '',
       targetSegment: currentJob.targetSegment || '',

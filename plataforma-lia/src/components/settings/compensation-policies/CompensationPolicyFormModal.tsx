@@ -156,6 +156,11 @@ function VariableCompTab({
 
   return (
     <div className="space-y-4">
+      <div className="rounded-md border border-status-warning/30 bg-status-warning/5 p-3 text-xs text-lia-text-secondary">
+        <strong className="text-lia-text-primary">Em transição:</strong> as verbas variáveis agora têm um catálogo próprio em
+        <span className="font-medium"> Configurações → Dados da Empresa → Verbas Variáveis</span> — granular por nível, área,
+        contrato e CNPJ, e reutilizável nas vagas. Prefira cadastrar por lá; esta aba será descontinuada.
+      </div>
       <p className="text-sm text-lia-text-secondary">
         Adicione verbas variáveis tipadas. Cada verba tem seu próprio schema de cálculo e frequência.
       </p>

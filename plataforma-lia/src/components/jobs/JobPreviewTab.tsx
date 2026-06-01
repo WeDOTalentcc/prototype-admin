@@ -17,6 +17,7 @@ import {
 } from"lucide-react"
 import { Chip } from "@/components/ui/chip"
 import { BenefitBadgeList } from"@/components/benefits/BenefitBadgeList"
+import { kindLabel } from "@/components/compensation/variable-comp-types"
 import { toCompanyBenefit, type CompanyBenefit } from"@/types/benefits"
 
 interface JobPreviewTabProps {
@@ -243,6 +244,19 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
               <span className="text-micro font-medium text-lia-text-primary">
                 {formatCurrency(bonusMin)}{bonusMax ? ` - ${formatCurrency(bonusMax)}` :""}
               </span>
+            </div>
+          )}
+          {Array.isArray((job as { variable_compensation?: unknown[] }).variable_compensation) &&
+            ((job as { variable_compensation?: unknown[] }).variable_compensation as unknown[]).length > 0 && (
+            <div>
+              <span className="text-micro text-lia-text-secondary block mb-1">Remuneração variável:</span>
+              <div className="flex flex-wrap gap-1.5">
+                {((job as { variable_compensation?: Array<Record<string, unknown>> }).variable_compensation || []).map((vc, i) => (
+                  <span key={i} className="inline-flex items-center gap-1 rounded-full bg-lia-bg-secondary border border-lia-border-subtle px-2 py-0.5 text-micro text-lia-text-primary">
+                    <span className="text-lia-text-tertiary">{kindLabel(String(vc.kind || "bonus"))}:</span> {String(vc.name || "")}
+                  </span>
+                ))}
+              </div>
             </div>
           )}
           {normalizedBenefits.length > 0 && (

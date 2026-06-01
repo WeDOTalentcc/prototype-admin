@@ -12,6 +12,7 @@ import {
 } from "./job-edit-tab.constants"
 import { ScreeningBadge } from "./ScreeningBadge"
 import { VacancyBenefitsManager } from "@/components/benefits/VacancyBenefitsManager"
+import { VacancyVariableCompManager } from "@/components/compensation/VacancyVariableCompManager"
 
 interface JobRemuneracaoSectionProps {
   jobEditForm: Record<string, unknown>
@@ -73,6 +74,16 @@ export function JobRemuneracaoSection({
             </div>
           </CardContent>
         </Card>
+      </div>
+      <div>
+        <VacancyVariableCompManager
+          value={(jobEditForm.variable_compensation as unknown[]) || []}
+          onChange={(next) => updateField("variable_compensation", next)}
+          editable={isEditing}
+          seniorityLevel={jobEditForm.level as string | undefined}
+          department={jobEditForm.department as string | undefined}
+          contractType={jobEditForm.type as string | undefined}
+        />
       </div>
       <div>
         <VacancyBenefitsManager
