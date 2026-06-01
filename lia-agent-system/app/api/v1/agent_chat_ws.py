@@ -60,6 +60,41 @@ logger = logging.getLogger(__name__)
 router = APIRouter(tags=["websocket"])
 
 
+async def _persist_chat_turn(
+    conversation_id: str | None,
+    company_id: str | None,
+    user_content: str,
+    assistant_content: str,
+) -> None:
+    """B9 (2026-05-31): persiste o turno (user+assistant) no store canônico de
+    conversations, para sobreviver à navegação/reload.
+
+    O caminho WS streamava a resposta sem persistir → loadHistory
+    (/conversations/{id}) não via as respostas da IA (só as do usuário). RLS-aware
+    via set_tenant_context (conversations tem RLS por company_id). Fail-open: a
+    persistência NUNCA derruba o chat.
+    """
+    if not (conversation_id and company_id and assistant_content):
+        return
+    try:
+        from app.core.database import AsyncSessionLocal, set_tenant_context
+        from app.domains.recruiter_assistant.services.conversation_memory import (
+            conversation_memory,
+        )
+        async with AsyncSessionLocal() as _db:
+            await set_tenant_context(_db, str(company_id))
+            if user_content:
+                await conversation_memory.add_message(
+                    _db, str(conversation_id), "user", user_content
+                )
+            await conversation_memory.add_message(
+                _db, str(conversation_id), "assistant", assistant_content
+            )
+            await _db.commit()
+    except Exception as _exc:  # noqa: BLE001 — fail-open
+        logger.warning("[AgentChatWS] persist chat turn falhou (fail-open): %s", _exc)
+
+
 def _strip_thought_tags(text: str) -> str:
     """Remove <thought>...</thought> XML tags from LLM output."""
     import re
@@ -1154,6 +1189,9 @@ company_id: str = Depends(require_company_id)):
                     ))
                     conversation_history.append({"role": "user", "content": content})
                     conversation_history.append({"role": "assistant", "content": _wiz_clean})
+                    await _persist_chat_turn(
+                        (context or {}).get("conversation_id"), company_id, content, _wiz_clean
+                    )
 
                     # ws_stage_payload -> panel update event (Onda 2 PLAN_FIX_wizard_memory_loss
                     # 2026-05-10: include thread_id explicitly so FE persists session)
@@ -1296,6 +1334,9 @@ company_id: str = Depends(require_company_id)):
 
                 conversation_history.append({"role": "user", "content": content})
                 conversation_history.append({"role": "assistant", "content": clean_message})
+                await _persist_chat_turn(
+                    (context or {}).get("conversation_id"), company_id, content, clean_message
+                )
 
                 _panel_meta = (output.metadata or {}).get("panel_update")
                 if _panel_meta and isinstance(_panel_meta, dict):
