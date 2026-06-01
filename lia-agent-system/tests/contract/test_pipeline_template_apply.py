@@ -5,9 +5,10 @@ Sprint Pipeline Templates Afya 2026-05-26 — Fase 4.1 (TDD canonical green).
 Garante:
 1. apply_to_vacancy copy-on-write: vacancy.interview_stages é replaced pela
    translação canonical do template.stages.
-2. Translação canonical via translate_template_stages_to_interview_stages:
-   - {name, order, type, sla_days, instructions} → {stageName, order, sla, type}
-   - type "automatic" → "automated" (convenção legada)
+2. Translação dual-write (Fase 1 Unify, 2026-06-01) via translate_template_stages_to_interview_stages:
+   - Canonical: {name, order, type, sla_days, instructions} (CanonicalPipelineStage)
+   - Legacy compat: {stageName=name, sla=sla_days} preservados para kanban
+   - type "automatic" permanece "automatic" (sem rename para "automated")
 3. usage_count incrementa em 1.
 4. is_pipeline_customized=False após apply.
 5. Cross-tenant: template de A + vacancy de B (e vice-versa) → retorna None.
@@ -42,14 +43,24 @@ COMPANY_B = "company-b-apply"
 
 
 def test_translate_automatic_to_automated():
+    """Fase 1 Unify dual-write (2026-06-01): 'automatic' NÃO é renomeado para
+    'automated' — type permanece canônico. Dual-write grava name+stageName
+    e sla_days+sla para compat retroativa com kanban.
+    """
     out = translate_template_stages_to_interview_stages(
         [{"name": "Triagem", "order": 1, "type": "automatic", "sla_days": 2}]
     )
     assert len(out) == 1
-    assert out[0]["stageName"] == "Triagem"
+    # ── Canonical fields (CanonicalPipelineStage) ─────────────────────────
+    assert out[0]["name"] == "Triagem", "canonical 'name' ausente"
+    assert out[0]["type"] == "automatic", (
+        "Fase 1 Unify: 'automatic' NÃO deve mais ser renomeado para 'automated'"
+    )
+    assert out[0]["sla_days"] == 2, "canonical 'sla_days' ausente"
     assert out[0]["order"] == 1
-    assert out[0]["type"] == "automated", "automatic MUST map to automated"
-    assert out[0]["sla"] == 2
+    # ── Legacy compat (dual-write — remover quando kanban migrar p/ 'name') ─
+    assert out[0]["stageName"] == "Triagem", "legacy 'stageName' ausente (kanban depende)"
+    assert out[0]["sla"] == 2, "legacy 'sla' ausente (compat legada)"
 
 
 def test_translate_manual_preserved():
@@ -67,14 +78,31 @@ def test_translate_hybrid_preserved():
 
 
 def test_translate_field_mapping_canonical():
-    """Pin canonical mapping: {name, order, sla_days} → {stageName, order, sla}."""
+    """Fase 1 Unify dual-write: shape de saída tem AMBOS canonical + legacy aliases.
+
+    Canonical (CanonicalPipelineStage): name, order, type, sla_days, instructions.
+    Legacy compat (dual-write): stageName=name, sla=sla_days.
+    Remover as legacy keys daqui quando kanban migrar p/ 'name'.
+    """
     out = translate_template_stages_to_interview_stages(
         [{"name": "X", "order": 1, "type": "manual", "sla_days": 7, "instructions": "do it"}]
     )
     s = out[0]
-    assert set(s.keys()) == {"stageName", "order", "sla", "type"}, (
-        f"Translation MUST output canonical 4-field shape; got {set(s.keys())}"
-    )
+    # Canonical fields obrigatórios
+    assert "name" in s, "canonical field 'name' ausente"
+    assert "order" in s, "canonical field 'order' ausente"
+    assert "type" in s, "canonical field 'type' ausente"
+    assert "sla_days" in s, "canonical field 'sla_days' ausente"
+    assert "instructions" in s, "canonical field 'instructions' ausente"
+    # Legacy compat (dual-write)
+    assert "stageName" in s, "legacy 'stageName' ausente (kanban depende)"
+    assert "sla" in s, "legacy 'sla' ausente (compat legada)"
+    # Valores corretos
+    assert s["name"] == "X"
+    assert s["stageName"] == "X"          # alias de name
+    assert s["sla_days"] == 7
+    assert s["sla"] == 7                  # alias de sla_days
+    assert s["instructions"] == "do it"
 
 
 def test_translate_empty_list():
@@ -170,11 +198,17 @@ async def test_apply_copy_on_write_replaces_interview_stages():
     assert result["template_id"] == str(template_id)
     assert result["stages_applied"] == 2
 
-    # vacancy.interview_stages MUST be replaced with translated stages
+    # vacancy.interview_stages MUST be replaced with translated stages (dual-write)
     assert len(vacancy.interview_stages) == 2
-    assert vacancy.interview_stages[0]["stageName"] == "S1"
-    assert vacancy.interview_stages[0]["type"] == "automated"
+    # Canonical fields (CanonicalPipelineStage)
+    assert vacancy.interview_stages[0]["name"] == "S1"
+    assert vacancy.interview_stages[0]["type"] == "automatic", (
+        "Fase 1 Unify: 'automatic' NÃO renomeia para 'automated'"
+    )
     assert vacancy.interview_stages[1]["type"] == "manual"
+    # Legacy compat (dual-write — kanban ainda depende)
+    assert vacancy.interview_stages[0]["stageName"] == "S1"
+    assert vacancy.interview_stages[1]["stageName"] == "S2"
 
 
 @pytest.mark.asyncio
