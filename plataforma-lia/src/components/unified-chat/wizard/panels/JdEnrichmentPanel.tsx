@@ -134,6 +134,14 @@ export function JdEnrichmentPanel({ data, requiresApproval, onApprove, onReject 
               </p>
             </div>
           )}
+          {enriched.about_company && (
+            <div>
+              <p className="text-xs font-medium text-lia-text-secondary mb-1">Sobre a empresa</p>
+              <p className="text-sm text-lia-text-primary leading-relaxed">
+                {enriched.about_company}
+              </p>
+            </div>
+          )}
 
           {/* Skills obrigatorias */}
           {enriched.skills_obrigatorias?.length > 0 && (

@@ -131,6 +131,7 @@ export interface EnrichedJobDescription {
   titulo_padronizado: string
   senioridade_confirmada: string
   about_role: string
+  about_company?: string
   responsabilidades: string[]
   skills_obrigatorias: TechnicalSkill[]
   skills_desejaveis: string[]

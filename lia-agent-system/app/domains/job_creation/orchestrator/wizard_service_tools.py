@@ -187,6 +187,7 @@ def _handle_enrich_job_description(
                 confirmed_behavioral=confirmed_behav,
                 confirmed_responsibilities=confirmed_resp,
                 screening_mode=screening_mode,
+                company_context=state.get("company_context", ""),
             )
             enriched_obj, quality_score, warnings = _fut.result(timeout=_JD_TIMEOUT_S)
     except _cf.TimeoutError:

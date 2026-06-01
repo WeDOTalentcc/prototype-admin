@@ -1044,6 +1044,31 @@ class WizardSessionService:
             workspace_id=state.get("workspace_id"),
         )
         orch = get_wizard_orchestrator()
+        # B5b: pré-busca o company context (missão/valores filtrados por toggle)
+        # AQUI no loop async — DB async NÃO funciona dentro do thread do
+        # process_turn (MissingGreenlet). Cacheia no state (1x por sessão); o
+        # enrich tool lê state['company_context'] e injeta no JD (about_company).
+        if "company_context" not in state and ctx.company_id:
+            try:
+                from app.core.database import AsyncSessionLocal
+                from app.shared.services.lia_agent_context_builder import (
+                    build_company_agent_context,
+                )
+                async with AsyncSessionLocal() as _cc_db:
+                    state["company_context"] = await build_company_agent_context(
+                        company_id=ctx.company_id,
+                        db=_cc_db,
+                        job_context={
+                            "title": state.get("parsed_title", ""),
+                            "department": state.get("parsed_department", ""),
+                            "seniority": state.get("parsed_seniority", ""),
+                        },
+                    ) or ""
+            except Exception as _cc_exc:  # noqa: BLE001 — fail-open
+                logger.warning(
+                    "[WizardOrchestrator] company_context fetch falhou: %s", _cc_exc
+                )
+                state["company_context"] = ""
         result = await asyncio.to_thread(
             orch.process_turn,
             state=state,
