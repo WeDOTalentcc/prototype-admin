@@ -1118,3 +1118,23 @@ senioridade eram strings livres divergentes (PRV 8, benefits 10).
 - Nenhum agente LIA / geração de JD lê remuneração ainda (só vaga/oferta consomem o catálogo).
   Ver `IA_LAYER_BENEFITS_PRV_AUDIT.md`. Benefits ainda usa editores próprios (migrar para os
   `_shared` numa próxima — Rule of Three já satisfeito por verba + PRV).
+
+### Adendo V2 (2026-06-01) — faixa granular + PRV removido
+
+- **A faixa salarial agora é GRANULAR (catálogo)**, igual benefícios/verbas: além do
+  nível, escopo por `contract_types`, `departments`, **`area`** (dimensão separada de
+  departamento) e `subsidiaries` (filial/CNPJ) + vigência + moeda. Múltiplas faixas por
+  nível (ex.: Sênior-Vendas ≠ Sênior-Eng). `SalaryBandRepository.match_band` escolhe a
+  mais específica que casa o escopo; `get_band_map` dá a faixa-base por nível para o
+  preview da verba (`/company/salary-bands/map`).
+- **`area` é a 5ª dimensão de escopo** (tokens livres), em `salary_bands` E
+  `compensation_components`. Matcher: `eligibility_matching.matches_area`. A sentinela
+  `tests/unit/test_eligibility_matching_subsidiaries.py` agora exige `area` ligada no
+  `list_matching` (anti-ghost).
+- **PRV removido.** O modal "Nova Política de Remuneração" + seção + rotas de proxy foram
+  deletados (`settings/compensation-policies/`). A tabela `compensation_policies` foi
+  PRESERVADA no banco (dado histórico). Bandas e verbas vivem só nos catálogos canônicos.
+  Equity é um `kind` de verba. Aprovação/versionamento do PRV foi descontinuado (governança
+  é feature transversal, se necessária no futuro).
+- **Editor compartilhado** `_shared/EligibilityScopeEditor` ganhou `area` (chips) + prop
+  `showSeniority` (faixa esconde senioridade, pois o nível é identidade da faixa).
