@@ -37,6 +37,34 @@ def _extract_manager_email(raw_text: str) -> str | None:
     return m.group(0) if m else None
 
 
+def _competency_tree_for_panel(state: dict) -> list[dict]:
+    """Monta competency_tree (shape do CompetencyPanel FE) das competências do
+    state. Usa confirmadas; se ainda não confirmadas, cai nas sugeridas (para o
+    recrutador ver/ajustar). B3 fix — alinha ao nó canônico competency.py."""
+    sugg = state.get("suggested_competencies") or {}
+    tech = state.get("confirmed_technical_competencies") or sugg.get("technical") or []
+    behav = state.get("confirmed_behavioral_competencies") or sugg.get("behavioral") or []
+    tree: list[dict] = []
+    for s_ in tech:
+        if isinstance(s_, dict):
+            name = s_.get("skill") or s_.get("name") or ""
+            ctx = s_.get("contexto", "")
+        else:
+            name, ctx = str(s_), ""
+        if name:
+            tree.append({"skill": name, "contexto": ctx, "block": "technical"})
+    for c_ in behav:
+        if isinstance(c_, dict):
+            name = c_.get("competencia") or c_.get("skill") or c_.get("name") or ""
+            ctx = c_.get("contexto", "")
+            trait = c_.get("trait_big_five", "") or c_.get("trait_ocean", "")
+        else:
+            name, ctx, trait = str(c_), "", ""
+        if name:
+            tree.append({"skill": name, "contexto": ctx, "block": "behavioral", "trait": trait})
+    return tree
+
+
 def _derive_wizard_stage(state: dict) -> str:
     """Deriva o stage canonical a partir do progresso do estado.
 
@@ -52,6 +80,16 @@ def _derive_wizard_stage(state: dict) -> str:
         return "wsi_questions"
     if state.get("jd_enriched"):
         return "jd_enrichment"
+    # B3 fix (2026-05-31): stage "competency" — quando há competências
+    # sugeridas/confirmadas (mas JD ainda não gerada), o painel mostra o
+    # CompetencyPanel (add/remove). Antes o orquestrador pulava direto de
+    # intake p/ jd_enrichment e o painel de competências nunca aparecia.
+    if (
+        state.get("confirmed_technical_competencies")
+        or state.get("confirmed_behavioral_competencies")
+        or state.get("suggested_competencies")
+    ):
+        return "competency"
     return "intake"
 
 # Keys carried forward from context into wizard state
@@ -1042,6 +1080,20 @@ class WizardSessionService:
             # Idiomas confirmados (item #3) — surfacar pro painel.
             if new_state.get("confirmed_languages"):
                 data["confirmed_languages"] = new_state.get("confirmed_languages")
+            # B3 fix: competency_tree p/ o CompetencyPanel (add/remove).
+            _ctree = _competency_tree_for_panel(new_state)
+            if _ctree:
+                data["competency_tree"] = _ctree
+                data["seniority"] = (
+                    new_state.get("seniority_resolved")
+                    or new_state.get("parsed_seniority")
+                    or ""
+                )
+                data["seniority_display"] = data["seniority"]
+                data.setdefault("distribution", {
+                    "technical": sum(1 for x in _ctree if x["block"] == "technical"),
+                    "behavioral": sum(1 for x in _ctree if x["block"] == "behavioral"),
+                })
             # JD enriquecida — surfacar para o painel exibir a descrição.
             if new_state.get("jd_enriched"):
                 data["jd_enriched"] = new_state.get("jd_enriched")
