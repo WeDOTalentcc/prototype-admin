@@ -44,17 +44,41 @@ export function RecruitmentPipelineTab() {
     setIsSavingTemplate(true)
     try {
       // Mapeia RecruitmentStage → PipelineStage (schema canônico)
+      // Fase B Opcao 2: schema rico com sub-statuses embutidos
       const activeStages = recruitmentStages.filter(s => s.isActive)
-      const stages = activeStages.map((s, idx) => ({
-        name: (s as any).display_name || s.name,
-        order: (s as any).order ?? idx + 1,
+      const stages = activeStages.map((s: any, idx: number) => ({
+        name: s.name,
+        display_name: s.display_name || s.name,
+        order: s.order ?? idx + 1,
+        color: s.color || null,
+        icon: s.icon || null,
+        stage_category: s.stageCategory || s.stage_category || 'custom',
+        action_behavior: s.action_behavior || 'passive',
+        default_channel: s.default_channel || 'email',
+        sla_hours: s.sla ? s.sla * 24 : null,
+        is_initial: false,
+        is_final: ['hired', 'rejected'].includes(s.name),
+        is_rejection: s.name === 'rejected',
+        is_hired: s.name === 'hired',
+        description: s.notes || s.description || '',
+        sub_statuses: (s.sub_statuses || []).map((ss: any) => ({
+          name: ss.name,
+          display_name: ss.display_name,
+          order: ss.sub_status_order ?? ss.order ?? 0,
+          color: ss.color || null,
+          icon: ss.icon || null,
+          is_default: ss.is_default ?? false,
+          is_waiting: ss.is_waiting ?? false,
+          waiting_for: ss.waiting_for || null,
+          sla_hours: ss.sla_hours || null,
+        })),
         type: (() => {
-          const ab = (s as any).action_behavior || ''
+          const ab = s.action_behavior || ''
           if (ab === 'screening' || ab === 'intake' || ab === 'trigger') return 'automatic' as const
           if (ab === 'proactive') return 'hybrid' as const
           return 'manual' as const
         })(),
-        sla_days: (s as any).sla ?? 3,
+        sla_days: s.sla ?? 3,
       }))
       await createTemplate({ name: trimmed, stages })
       setShowSaveForm(false)
