@@ -48,7 +48,7 @@ export function useJobEditTab({
 
   // Fase 5 Unify: template selector na seção Processo
   const vacancyId = String(job?.backendId || (job as any)?.jobId || job?.id || "")
-  const { templates, isLoading: isLoadingTemplates } = usePipelineTemplates()
+  const { templates, isLoading: isLoadingTemplates, createTemplate } = usePipelineTemplates()
   const [isApplyingTemplate, setIsApplyingTemplate] = useState(false)
 
   const { config: screeningConfig } = useScreeningConfig(
