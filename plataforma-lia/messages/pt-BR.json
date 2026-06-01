@@ -2453,6 +2453,10 @@
       "services": {
         "advanced": "Avançado",
         "ctaActivate": "Ativar",
+        "ctaOpenJobs": "Abrir vagas",
+        "ctaCreateAgent": "Criar agente",
+        "ctaConfigure": "Configurar",
+        "ctaCreateTwin": "Criar gêmeo",
         "intake": "Vagas",
         "alignment": "Alinhamento c/ gestor",
         "sourcing": "Captação",

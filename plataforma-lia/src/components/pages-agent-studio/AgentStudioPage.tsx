@@ -9,6 +9,8 @@ import {
 import MultiStrategySearchPanel from "@/components/pages-agent-studio/MultiStrategySearchPanel"
 import CustomAgentsTab, { CreateCustomAgentModal } from "@/components/pages-agent-studio/CustomAgentsTab"
 import { TemplateGallery, AgentCard as CustomAgentCard, AgentDetailsPanel, DeployDialog, ConversationalCreator, TestDebugPanel, ApprovalsList } from "@/components/pages-agent-studio/custom-agents"
+import { StudioCardShell } from "@/components/pages-agent-studio/StudioCardShell"
+import { TemplatePreviewModal } from "@/components/pages-agent-studio/custom-agents/template-preview-modal"
 import { useCustomAgents, useStudioAlerts } from "@/hooks/agents"
 import { useAgentStudioStore } from "@/stores/agent-studio-store"
 import type { CustomAgent, AgentTemplate } from "@/components/pages-agent-studio/custom-agents/types"
@@ -26,7 +28,7 @@ import {
   ChevronRight, Zap, Target, ArrowRight,
   Activity, RefreshCw,
   Loader2, Users, Wand2, Search, Store,
-  GraduationCap, Clock, Pencil
+  GraduationCap, Pencil
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { toast } from "@/lib/toast"
@@ -120,6 +122,7 @@ export default function AgentStudioPage({
   const { alerts, alertCount, twinSummary } = useStudioAlerts()
   const { selectTemplate, reset: resetStudio } = useAgentStudioStore()
   const [selectedTemplate, setSelectedTemplate] = useState<SectorTemplate | null>(null)
+  const [previewTemplate, setPreviewTemplate] = useState<AgentTemplate | null>(null)
   // secondaryView: shown below the funnel when user clicks Advanced Tools links
   const [secondaryView, setSecondaryView] = useState<"custom" | "marketplace" | "search" | null>(null)
   // Funnel stage → marketplace category (best-effort; backend filtra por category exata)
@@ -201,7 +204,7 @@ export default function AgentStudioPage({
     }
   }
 
-  const handleTemplateSelect = async (template: AgentTemplate) => {
+  const handleTemplateUse = async (template: AgentTemplate) => {
     selectTemplate(template)
     try {
       const res = await fetch("/api/backend-proxy/custom-agents", {
@@ -232,6 +235,10 @@ export default function AgentStudioPage({
       toast.error(t("studio.toast.errorCreating"), t("studio.toast.tryAgainShort"))
     }
   }
+
+  // "Ver detalhes" / "Ajustar antes" abrem o preview (revisar + ajustar nome) em vez
+  // de criar direto. "Usar agora" cria via handleTemplateUse.
+  const handleTemplatePreview = (template: AgentTemplate) => setPreviewTemplate(template)
 
   const handleCustomAgentToggle = async (agent: CustomAgent) => {
     const newStatus = agent.status === "active" ? "paused" : "active"
@@ -455,28 +462,33 @@ export default function AgentStudioPage({
   const funnelServices: FunnelServiceData[] = [
     {
       slug: "intake",
+      ctaKey: "studio.services.ctaOpenJobs",
       status: liveJobs.length > 0 ? "active" : draftJobs.length > 0 ? "attention" : openJobs.length > 0 ? "configured" : "inactive",
       metric: openJobs.length > 0 ? `${openJobs.length} vaga${openJobs.length !== 1 ? "s" : ""}` : undefined,
       panel: intakePanel,
     },
     {
       slug: "alignment",
+      ctaKey: "studio.services.ctaCreateAgent",
       status: firstJobId ? "configured" : "inactive",
       panel: alignmentPanel,
     },
     {
       slug: "sourcing",
+      ctaKey: "studio.services.ctaCreateAgent",
       status: activeCount > 0 ? "active" : agents.length > 0 ? "configured" : "inactive",
       metric: agents.length > 0 ? `${activeCount} ${activeCount === 1 ? "ativo" : "ativos"}` : undefined,
       panel: sourcingPanel,
     },
     {
       slug: "screening",
+      ctaKey: "studio.services.ctaConfigure",
       status: (studioSummaryServices.screening?.status as ServiceStatus) ?? (openJobs.length > 0 ? "configured" : "inactive"),
       metric: studioSummaryServices.screening?.metric,
     },
     {
       slug: "calibration",
+      ctaKey: "studio.services.ctaCreateTwin",
       status: twinSummary.totalTwins > 0
         ? (alerts.some(a => a.type === "TWIN_LOW_ACCURACY") ? "attention" : "active")
         : "inactive",
@@ -489,6 +501,7 @@ export default function AgentStudioPage({
     },
     {
       slug: "offer",
+      ctaKey: "studio.services.ctaOpenJobs",
       status: (studioSummaryServices.offer?.status as ServiceStatus) ?? "inactive",
       metric: studioSummaryServices.offer?.metric,
       panel: firstJobId ? (
@@ -506,6 +519,7 @@ export default function AgentStudioPage({
     },
     {
       slug: "nps",
+      ctaKey: "studio.services.ctaOpenJobs",
       status: (studioSummaryServices.nps?.status as ServiceStatus) ?? "inactive",
       metric: studioSummaryServices.nps?.metric,
       panel: firstJobId ? (
@@ -531,6 +545,12 @@ export default function AgentStudioPage({
       router.push(firstJobId ? `/${locale}/jobs/${firstJobId}?tab=edit&section=perguntas` : `/${locale}/jobs`)
     } else if (slug === "intake") {
       router.push(`/${locale}/jobs`)
+    } else if (slug === "alignment") {
+      // Alinhamento exige um agente de captação vinculado a uma vaga → abre a criação.
+      setShowCreateModal(true)
+    } else if (slug === "offer" || slug === "nps") {
+      // Oferta/NPS exigem uma vaga publicada → leva à vaga (ou à lista).
+      router.push(firstJobId ? `/${locale}/jobs/${firstJobId}` : `/${locale}/jobs`)
     }
   }
 
@@ -659,7 +679,12 @@ export default function AgentStudioPage({
               )}
             </section>
 
-            <TemplateGallery onTemplateSelect={handleTemplateSelect} onCreateManual={() => setShowCreateModal(true)} />
+            <TemplateGallery
+              onTemplateSelect={handleTemplatePreview}
+              onTemplateUse={handleTemplateUse}
+              onTemplateCustomize={handleTemplatePreview}
+              onCreateManual={() => setShowCreateModal(true)}
+            />
 
             <div id="agent-studio-conversational-creator" className="scroll-mt-4">
               <ConversationalCreator onAgentCreated={() => mutateCustomAgents()} />
@@ -739,6 +764,15 @@ export default function AgentStudioPage({
         />
       )}
 
+      {previewTemplate && (
+        <TemplatePreviewModal
+          template={previewTemplate}
+          open={true}
+          onOpenChange={(o) => { if (!o) setPreviewTemplate(null) }}
+          onConfirm={async (tpl) => { await handleTemplateUse(tpl); setPreviewTemplate(null) }}
+        />
+      )}
+
       <DeployDialog
         agent={deployAgent}
         open={!!deployAgent}
@@ -778,138 +812,117 @@ function AgentCard({
   const totalReviewed = agent.profiles_approved + agent.profiles_rejected
   const approvalRate = totalReviewed > 0 ? Math.round((agent.profiles_approved / totalReviewed) * 100) : 0
 
-  return (
-    <div className={cn(
-      "group relative rounded-xl border border-lia-border-subtle bg-lia-bg-secondary",
-      "hover:border-lia-border-medium hover:shadow-md transition-all duration-200"
-    )}>
-      <div className="p-4">
-        {/* Header */}
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#EBF8FB] flex items-center justify-center">
-              <Bot className="w-5 h-5 text-[#60BED1]" />
-            </div>
-            <div>
-              <div className="flex items-center gap-1.5">
-                <p className="text-sm font-semibold text-lia-text-primary">{agent.agent_name}</p>
-                <BetaBadge />
-              </div>
-              <div className="flex items-center gap-2 mt-0.5">
-                <span className="text-[10px] text-lia-text-disabled">v{agent.calibration_v}</span>
-                <span className="text-lia-text-disabled">·</span>
-                <div className="flex items-center gap-1">
-                  <Clock className="w-3 h-3 text-lia-text-disabled" />
-                  <span className="text-[10px] text-lia-text-disabled">
-                    {new Date(agent.created_at).toLocaleDateString(undefined, { day: "2-digit", month: "short" })}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className={cn("flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold", status.bg, status.text)}>
-            <div className={cn("w-1.5 h-1.5 rounded-full", status.dot, status.pulse && "animate-pulse")} />
-            {t(status.labelKey)}
-          </div>
-        </div>
+  const statusBadge = (
+    <span className={cn("inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold", status.bg, status.text)}>
+      <span className={cn("w-1.5 h-1.5 rounded-full", status.dot, status.pulse && "animate-pulse")} />
+      {t(status.labelKey)}
+    </span>
+  )
 
-        {/* Strategy Pills */}
-        {strategy.required_skills?.length ? (
-          <div className="flex flex-wrap gap-1 mb-3">
-            {strategy.required_skills.slice(0, 4).map((skill, i) => (
-              <span key={i} className="px-2 py-0.5 rounded-xl bg-lia-bg-tertiary text-[10px] font-medium text-lia-text-secondary">
-                {skill}
-              </span>
-            ))}
-            {(strategy.required_skills.length > 4) && (
-              <span className="px-2 py-0.5 rounded-xl bg-lia-bg-tertiary text-[10px] text-lia-text-disabled">
-                +{strategy.required_skills.length - 4}
-              </span>
-            )}
-          </div>
-        ) : null}
-
-        {/* Stats Row */}
-        <div className="grid grid-cols-3 gap-2 mb-4">
-          <div className="flex flex-col items-center p-2 rounded-lg bg-lia-bg-primary">
-            <span className="text-xs font-bold text-lia-text-primary">{agent.profiles_viewed}</span>
-            <span className="text-[9px] text-lia-text-disabled uppercase tracking-wider">{t("studio.stats.analyzed")}</span>
-          </div>
-          <div className="flex flex-col items-center p-2 rounded-lg bg-lia-bg-primary">
-            <span className="text-xs font-bold text-[#5DA47A]">{agent.profiles_approved}</span>
-            <span className="text-[9px] text-lia-text-disabled uppercase tracking-wider">{t("studio.stats.approved")}</span>
-          </div>
-          <div className="flex flex-col items-center p-2 rounded-lg bg-lia-bg-primary">
-            <span className="text-xs font-bold text-lia-text-primary">{approvalRate}%</span>
-            <span className="text-[9px] text-lia-text-disabled uppercase tracking-wider">{t("studio.stats.rate")}</span>
-          </div>
-        </div>
-
-        {/* Link indicator */}
-        {(agent.talent_pool_id || agent.job_id) ? (
-          <div className="flex items-center gap-1.5 mb-3 px-2.5 py-1.5 rounded-lg bg-lia-bg-primary border border-lia-border-subtle">
-            {agent.talent_pool_id ? (
-              <>
-                <Database className="w-3 h-3 text-lia-text-disabled" />
-                <span className="text-[10px] text-lia-text-secondary">{t("studio.card.linkedToPool")}</span>
-              </>
-            ) : (
-              <>
-                <Briefcase className="w-3 h-3 text-lia-text-disabled" />
-                <span className="text-[10px] text-lia-text-secondary">{t("studio.card.linkedToJob")}</span>
-              </>
-            )}
-          </div>
-        ) : (
-          <div className="flex items-center gap-1.5 mb-3 px-2.5 py-1.5 rounded-lg bg-[#FEF9F0] border border-[#D19960]/30">
-            <Brain className="w-3 h-3 text-[#D19960]" />
-            <span className="text-[10px] text-[#D19960]">{t("studio.card.noLink")}</span>
-          </div>
-        )}
-
-        {/* Actions */}
-        <div className="flex items-center gap-2 pt-3 border-t border-lia-border-subtle">
-          <button
-            onClick={onToggleStatus}
-            className={cn(
-              "flex items-center justify-center w-8 h-8 rounded-lg border border-lia-border-subtle",
-              "hover:bg-lia-bg-tertiary transition-colors"
-            )}
-            title={agent.status === "active" ? t("studio.card.pause") : t("studio.card.resume")}
-          >
-            {agent.status === "active" ? (
-              <Pause className="w-3.5 h-3.5 text-lia-text-secondary" />
-            ) : (
-              <Play className="w-3.5 h-3.5 text-emerald-600" />
-            )}
-          </button>
-          <button
-            onClick={onEdit}
-            className={cn(
-              "flex items-center justify-center w-8 h-8 rounded-lg border border-lia-border-subtle",
-              "hover:bg-lia-bg-tertiary transition-colors"
-            )}
-            title={t("studio.card.edit")}
-          >
-            <Pencil className="w-3.5 h-3.5 text-lia-text-secondary" />
-          </button>
-          <button
-            onClick={onCalibrate}
-            className="flex-1 flex items-center justify-center gap-1.5 h-8 rounded-lg border border-lia-border-subtle text-xs font-medium text-lia-text-secondary hover:bg-lia-bg-tertiary hover:text-lia-text-primary transition-colors"
-          >
-            <Activity className="w-3.5 h-3.5" />
-            {t("studio.card.recalibrate")}
-          </button>
-          <button
-            onClick={onNavigate}
-            className="flex items-center justify-center gap-1 h-8 px-3 rounded-lg bg-lia-btn-primary-bg text-lia-btn-primary-text text-xs font-medium hover:bg-lia-btn-primary-hover transition-colors"
-          >
-            {t("studio.card.view")}
-            <ChevronRight className="w-3 h-3" />
-          </button>
-        </div>
+  const metricsSlot = (
+    <div className="grid grid-cols-3 gap-2">
+      <div className="flex flex-col items-center p-2 rounded-md bg-lia-bg-primary">
+        <span className="text-xs font-bold text-lia-text-primary">{agent.profiles_viewed}</span>
+        <span className="text-[9px] text-lia-text-disabled uppercase tracking-wider">{t("studio.stats.analyzed")}</span>
+      </div>
+      <div className="flex flex-col items-center p-2 rounded-md bg-lia-bg-primary">
+        <span className="text-xs font-bold text-emerald-600">{agent.profiles_approved}</span>
+        <span className="text-[9px] text-lia-text-disabled uppercase tracking-wider">{t("studio.stats.approved")}</span>
+      </div>
+      <div className="flex flex-col items-center p-2 rounded-md bg-lia-bg-primary">
+        <span className="text-xs font-bold text-lia-text-primary">{approvalRate}%</span>
+        <span className="text-[9px] text-lia-text-disabled uppercase tracking-wider">{t("studio.stats.rate")}</span>
       </div>
     </div>
+  )
+
+  const chipsSlot = strategy.required_skills?.length ? (
+    <div className="flex flex-wrap gap-1">
+      {strategy.required_skills.slice(0, 4).map((skill, i) => (
+        <span key={i} className="px-2 py-0.5 rounded-md bg-lia-bg-tertiary text-[10px] font-medium text-lia-text-secondary">{skill}</span>
+      ))}
+      {strategy.required_skills.length > 4 && (
+        <span className="px-2 py-0.5 rounded-md bg-lia-bg-tertiary text-[10px] text-lia-text-disabled">+{strategy.required_skills.length - 4}</span>
+      )}
+    </div>
+  ) : undefined
+
+  const alertSlot = (
+    <div className={cn(
+      "flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border",
+      (agent.talent_pool_id || agent.job_id)
+        ? "bg-lia-bg-primary border-lia-border-subtle"
+        : "bg-[#FEF9F0] border-[#D19960]/30",
+    )}>
+      {agent.talent_pool_id ? (
+        <>
+          <Database className="w-3 h-3 text-lia-text-disabled" />
+          <span className="text-[10px] text-lia-text-secondary">{t("studio.card.linkedToPool")}</span>
+        </>
+      ) : agent.job_id ? (
+        <>
+          <Briefcase className="w-3 h-3 text-lia-text-disabled" />
+          <span className="text-[10px] text-lia-text-secondary">{t("studio.card.linkedToJob")}</span>
+        </>
+      ) : (
+        <>
+          <Brain className="w-3 h-3 text-[#D19960]" />
+          <span className="text-[10px] text-[#D19960]">{t("studio.card.noLink")}</span>
+        </>
+      )}
+    </div>
+  )
+
+  const actionsSlot = (
+    <div className="flex items-center gap-2 w-full">
+      <button
+        onClick={onToggleStatus}
+        className="flex items-center justify-center w-8 h-8 rounded-md border border-lia-border-subtle hover:bg-lia-bg-tertiary transition-colors"
+        title={agent.status === "active" ? t("studio.card.pause") : t("studio.card.resume")}
+      >
+        {agent.status === "active" ? (
+          <Pause className="w-3.5 h-3.5 text-lia-text-secondary" />
+        ) : (
+          <Play className="w-3.5 h-3.5 text-emerald-600" />
+        )}
+      </button>
+      <button
+        onClick={onEdit}
+        className="flex items-center justify-center w-8 h-8 rounded-md border border-lia-border-subtle hover:bg-lia-bg-tertiary transition-colors"
+        title={t("studio.card.edit")}
+      >
+        <Pencil className="w-3.5 h-3.5 text-lia-text-secondary" />
+      </button>
+      <button
+        onClick={onCalibrate}
+        className="flex-1 flex items-center justify-center gap-1.5 h-8 rounded-md border border-lia-border-subtle text-xs font-medium text-lia-text-secondary hover:bg-lia-bg-tertiary hover:text-lia-text-primary transition-colors"
+      >
+        <Activity className="w-3.5 h-3.5" />
+        {t("studio.card.recalibrate")}
+      </button>
+      <button
+        onClick={onNavigate}
+        className="flex items-center justify-center gap-1 h-8 px-3 rounded-md bg-lia-btn-primary-bg text-lia-btn-primary-text text-xs font-medium hover:bg-lia-btn-primary-hover transition-colors"
+      >
+        {t("studio.card.view")}
+        <ChevronRight className="w-3 h-3" />
+      </button>
+    </div>
+  )
+
+  return (
+    <StudioCardShell
+      tone="elevated"
+      icon={<Bot className="w-4 h-4 text-graphite" />}
+      title={agent.agent_name}
+      subtitle={`v${agent.calibration_v} \u00b7 ${new Date(agent.created_at).toLocaleDateString(undefined, { day: "2-digit", month: "short" })}`}
+      badges={<BetaBadge />}
+      statusBadge={statusBadge}
+      metricsSlot={metricsSlot}
+      alertSlot={alertSlot}
+      chipsSlot={chipsSlot}
+      actionsSlot={actionsSlot}
+    />
   )
 }
 

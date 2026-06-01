@@ -186,7 +186,7 @@ function ServiceRow({ data, index, isLast, isExpanded, onToggle, onActivate, onM
           {isInactive ? (
             <span className="flex items-center gap-1 text-xs font-medium text-[#60BED1] opacity-0 group-hover:opacity-100 transition-opacity">
               <Plus className="w-3 h-3" />
-              {t("studio.services.ctaActivate")}
+              {t(data.ctaKey ?? "studio.services.ctaActivate")}
             </span>
           ) : hasPanel ? (
             isExpanded
