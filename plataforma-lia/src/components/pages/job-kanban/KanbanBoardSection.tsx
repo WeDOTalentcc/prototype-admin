@@ -11,6 +11,7 @@ import { KanbanColumnRenderer } from "@/components/pages/job-kanban/KanbanColumn
 import { AddColumnPopover } from "@/components/pages/job-kanban/AddColumnPopover"
 import { JobFairnessBlockBanner } from "@/components/jobs/JobFairnessBlockBanner"
 import type { KanbanPageCoreState } from "@/components/pages/job-kanban/hooks/useKanbanPageCore"
+import { useOfferReviewFlow } from "@/hooks/offers/useOfferReviewFlow"
 
 const CandidatePreview = dynamic(() => import("@/components/candidate-preview").then(m => ({ default: m.CandidatePreview })), { ssr: false, loading: () => <LoadingModal /> })
 
@@ -20,6 +21,7 @@ interface KanbanBoardSectionProps {
 
 export function KanbanBoardSection({ state }: KanbanBoardSectionProps) {
   const t = useTranslations('kanban')
+  const { openOfferReview } = useOfferReviewFlow()
   const {
     dynamicStages, setDynamicStages, candidatesData, setCandidatesData,
     isLoadingCandidates, hasMounted, searchQuery,
@@ -109,7 +111,8 @@ export function KanbanBoardSection({ state }: KanbanBoardSectionProps) {
       onApproveFromScreening={handleApproveFromScreening as unknown as Parameters<typeof KanbanColumnRenderer>[0]["onApproveFromScreening"]}
       onRejectFromScreening={handleRejectFromScreening as unknown as Parameters<typeof KanbanColumnRenderer>[0]["onRejectFromScreening"]}
       onManageProposal={(candidate) => {
-        openTransition([candidate as unknown as Parameters<typeof openTransition>[0][number]], "offer", "hired")
+        const c = candidate as { id: string | number; [key: string]: unknown }
+        openOfferReview({ candidateId: String(c.id), jobId: String(currentJob?.id ?? "") })
       }}
       onInlineRename={handleInlineRename}
       onInlineToggleActive={handleInlineToggleActive}
