@@ -36,7 +36,7 @@ export const VariableCompItemCard = React.memo(function VariableCompItemCard({
   const toggleChecked = isVacancy ? !!isLinked : component.is_active !== false
   const suggested = isVacancy && !isLinked && !!component.matches_vaga
   const dimClass = !isVacancy && component.is_active === false ? " opacity-60" : ""
-  const suggestedClass = suggested ? " ring-1 ring-inset ring-lia-btn-primary-bg/40 bg-lia-btn-primary-bg/5" : ""
+  const suggestedClass = suggested ? " bg-lia-btn-primary-bg/5" : ""
 
   return (
     <div className={"p-3 flex items-center justify-between hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover/50 transition-colors motion-reduce:transition-none" + dimClass + suggestedClass}>
@@ -44,6 +44,7 @@ export const VariableCompItemCard = React.memo(function VariableCompItemCard({
         <div className="flex items-center gap-2 mb-1">
           <h4 className={textStyles.subtitle + " truncate"}>{component.name}</h4>
           {component.is_highlighted && <Star className="w-3.5 h-3.5 text-status-warning fill-yellow-500" />}
+          {suggested && <Chip variant="neutral" className="text-micro">Sugerido</Chip>}
         </div>
         {component.description && (
           <p className={textStyles.description + " truncate mb-1.5"}>{component.description}</p>

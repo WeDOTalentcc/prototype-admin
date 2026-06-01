@@ -230,7 +230,7 @@ export function VacancyVariableCompManager({ value, onChange, editable = true, s
     <div>
       <div className="flex items-center justify-between mb-3">
         <div>
-          <h3 className="text-sm font-semibold text-lia-text-primary">Remuneração Variável</h3>
+          <h3 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wider">Remuneração Variável</h3>
           <p className="text-xs text-lia-text-tertiary">Vincule verbas do catálogo da empresa. Compatíveis com o nível e a área da vaga aparecem destacados.</p>
         </div>
         {editable && (

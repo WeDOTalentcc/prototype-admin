@@ -98,7 +98,7 @@ export const BenefitItemCard = React.memo(function BenefitItemCard({
   const toggleEditable = isEditingBenefits
   const suggested = isVacancy && !isLinked && !!(benefit as { matches_vaga?: boolean }).matches_vaga
   const activeClass = (!isVacancy && !benefit.is_active) ? " opacity-60" : ""
-  const suggestedClass = suggested ? " ring-1 ring-inset ring-lia-btn-primary-bg/40 bg-lia-btn-primary-bg/5" : ""
+  const suggestedClass = suggested ? " bg-lia-btn-primary-bg/5" : ""
 
   return (
     <div
@@ -112,6 +112,7 @@ export const BenefitItemCard = React.memo(function BenefitItemCard({
           {benefit.is_highlighted && (
             <Star className="w-3.5 h-3.5 text-status-warning fill-yellow-500" />
           )}
+          {suggested && <Chip variant="neutral" className="text-micro">Sugerido</Chip>}
           {benefit.is_mandatory && (
             <Chip variant="neutral" muted className="text-micro">{t("mandatory")}</Chip>
           )}

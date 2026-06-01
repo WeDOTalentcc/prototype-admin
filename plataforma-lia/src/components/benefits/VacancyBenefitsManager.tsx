@@ -281,7 +281,7 @@ export function VacancyBenefitsManager({
     <div>
       <div className="flex items-center justify-between mb-3">
         <div>
-          <h3 className="text-sm font-semibold text-lia-text-primary">{tv("title")}</h3>
+          <h3 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wider">{tv("title")}</h3>
           <p className="text-xs text-lia-text-tertiary">{tv("subtitle")}</p>
         </div>
         {editable && (
