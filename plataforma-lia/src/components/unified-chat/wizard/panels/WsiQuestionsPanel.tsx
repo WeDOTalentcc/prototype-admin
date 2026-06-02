@@ -12,6 +12,7 @@ interface Props {
   requiresApproval: boolean
   onApprove?: () => void
   onReject?: () => void
+  onToggleApprove?: (index: number) => void
 }
 
 const FRAMEWORK_COLORS: Record<string, string> = {
@@ -25,7 +26,7 @@ const FRAMEWORK_COLORS: Record<string, string> = {
  * WsiQuestionsPanel — F6 HITL approval panel.
  * Shows generated questions as cards. Recruiter can approve/edit/regenerate each.
  */
-export function WsiQuestionsPanel({ data, requiresApproval, onApprove, onReject }: Props) {
+export function WsiQuestionsPanel({ data, requiresApproval, onApprove, onReject, onToggleApprove }: Props) {
   const d = data as unknown as WsiQuestionsData
   const questions = d.questions || []
   const mode = d.screening_mode
@@ -78,10 +79,47 @@ export function WsiQuestionsPanel({ data, requiresApproval, onApprove, onReject 
     }))
   }
 
+  // Distribuicao minima por modo (tabela F5 da metodologia WSI)
+  const MIN_DISTRIBUTION: Record<string, Record<string, { technical: number; behavioral: number }>> = {
+    compact: {
+      estagiario: { technical: 5, behavioral: 2 },
+      junior: { technical: 5, behavioral: 2 },
+      pleno: { technical: 5, behavioral: 2 },
+      senior: { technical: 4, behavioral: 3 },
+      principal: { technical: 4, behavioral: 3 },
+      staff: { technical: 4, behavioral: 3 },
+      lead: { technical: 3, behavioral: 4 },
+      diretor: { technical: 3, behavioral: 4 },
+    },
+    full: {
+      estagiario: { technical: 9, behavioral: 3 },
+      junior: { technical: 9, behavioral: 3 },
+      pleno: { technical: 8, behavioral: 4 },
+      senior: { technical: 7, behavioral: 5 },
+      principal: { technical: 7, behavioral: 5 },
+      staff: { technical: 7, behavioral: 5 },
+      lead: { technical: 7, behavioral: 5 },
+      diretor: { technical: 7, behavioral: 5 },
+    },
+  }
+
+  const screeningMode = (d.screening_mode || "compact").toLowerCase()
+  const seniority = (d.seniority_level || "pleno").toLowerCase()
+  const minDist =
+    MIN_DISTRIBUTION[screeningMode]?.[seniority] ??
+    MIN_DISTRIBUTION[screeningMode]?.["pleno"] ??
+    { technical: 5, behavioral: 2 }
+
   const techCount = questions.filter((q) => q.block === "technical").length
   const behavCount = questions.filter((q) => q.block === "behavioral").length
   const minQuestions = mode === "compact" ? 7 : 12
   const isAtMinimum = questions.length <= minQuestions
+
+  const approvedTech = questions.filter((q) => q.approved && q.block === "technical").length
+  const approvedBehavioral = questions.filter((q) => q.approved && q.block === "behavioral").length
+  const approvedTotal = questions.filter((q) => q.approved).length
+
+  const canAdvance = approvedTech >= minDist.technical && approvedBehavioral >= minDist.behavioral
 
   return (
     <div className="flex flex-col">
@@ -117,6 +155,22 @@ export function WsiQuestionsPanel({ data, requiresApproval, onApprove, onReject 
             Modo {mode === "compact" ? "Compacto" : "Completo"}
           </span>
         )}
+        {/* Progresso de aprovacao individual */}
+        {questions.length > 0 && (
+          <div className="flex items-center gap-3 text-xs text-lia-text-secondary mt-1.5">
+            <span className={approvedTotal === questions.length ? "text-green-600 font-medium" : ""}>
+              {approvedTotal}/{questions.length} aprovadas
+            </span>
+            <span className="w-px h-3 bg-lia-border-subtle" />
+            <span className={approvedTech >= minDist.technical ? "text-green-600" : "text-amber-600"}>
+              {approvedTech}/{minDist.technical} tecnicas
+            </span>
+            <span className="w-px h-3 bg-lia-border-subtle" />
+            <span className={approvedBehavioral >= minDist.behavioral ? "text-green-600" : "text-amber-600"}>
+              {approvedBehavioral}/{minDist.behavioral} comportamentais
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Question cards */}
@@ -131,6 +185,9 @@ export function WsiQuestionsPanel({ data, requiresApproval, onApprove, onReject 
             onEdit={handleEditQuestion}
             onRegenerate={handleRegenerateQuestion}
             onRemove={isAtMinimum ? undefined : handleRemoveQuestion}
+            isTechAtMin={techCount <= minDist.technical}
+            isBehavioralAtMin={behavCount <= minDist.behavioral}
+            onToggleApprove={onToggleApprove}
             onDragStart={handleDragStart}
             onDragOver={handleDragOver}
             onDrop={handleDrop}
@@ -149,8 +206,17 @@ export function WsiQuestionsPanel({ data, requiresApproval, onApprove, onReject 
             Regenerar
           </button>
           <button
-            onClick={onApprove}
-            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md bg-wedo-cyan text-white text-sm font-medium hover:bg-wedo-cyan/90 transition-colors motion-reduce:transition-none"
+            onClick={() => {
+              if (!canAdvance) return
+              onApprove?.()
+            }}
+            disabled={!canAdvance}
+            title={
+              !canAdvance
+                ? `Faltam ${Math.max(0, minDist.technical - approvedTech)} tecnicas e ${Math.max(0, minDist.behavioral - approvedBehavioral)} comportamentais aprovadas`
+                : "Confirmar todas as perguntas e avancar"
+            }
+            className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-colors motion-reduce:transition-none ${canAdvance ? "bg-wedo-cyan text-white hover:bg-wedo-cyan/90" : "bg-wedo-cyan/40 text-white cursor-not-allowed"}`}
           >
             <Check className="w-3.5 h-3.5" />
             Aprovar todas
@@ -169,6 +235,9 @@ function QuestionCard({
   onEdit,
   onRegenerate,
   onRemove,
+  isTechAtMin,
+  isBehavioralAtMin,
+  onToggleApprove,
   onDragStart,
   onDragOver,
   onDrop,
@@ -180,6 +249,9 @@ function QuestionCard({
   onEdit?: (index: number, newText: string) => void
   onRegenerate?: (index: number) => void
   onRemove?: (index: number) => void
+  isTechAtMin?: boolean
+  isBehavioralAtMin?: boolean
+  onToggleApprove?: (index: number) => void
   onDragStart?: (index: number) => void
   onDragOver?: (e: React.DragEvent) => void
   onDrop?: (index: number) => void
@@ -207,9 +279,25 @@ function QuestionCard({
           className="w-3.5 h-3.5 text-lia-text-disabled opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 mt-1 pointer-events-none"
           aria-hidden="true"
         />
-        <span className="flex-shrink-0 w-5 h-5 rounded-full bg-lia-bg-secondary flex items-center justify-center text-[10px] font-medium text-lia-text-secondary mt-0.5">
-          {index + 1}
-        </span>
+        <button
+          onClick={(e) => {
+            e.stopPropagation()
+            onToggleApprove?.(index)
+          }}
+          className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center transition-colors motion-reduce:transition-none mt-0.5 ${
+            question.approved
+              ? "bg-green-100 text-green-600 hover:bg-green-200"
+              : "bg-lia-bg-secondary text-lia-text-secondary hover:bg-green-50 hover:text-green-600"
+          }`}
+          title={question.approved ? "Desaprovar esta pergunta" : "Aprovar esta pergunta"}
+          aria-label={question.approved ? `Desaprovar pergunta ${index + 1}` : `Aprovar pergunta ${index + 1}`}
+        >
+          {question.approved ? (
+            <Check className="w-3 h-3" />
+          ) : (
+            <span className="text-[10px] font-medium">{index + 1}</span>
+          )}
+        </button>
         <div className="flex-1 min-w-0">
           <p className="text-sm text-lia-text-primary leading-snug">
             {question.question}
@@ -285,15 +373,33 @@ function QuestionCard({
               <RefreshCw className="w-3 h-3" />
               Regenerar
             </button>
-            <button
-              onClick={() => onRemove?.(index)}
-              disabled={!onRemove}
-              className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-medium transition-colors motion-reduce:transition-none disabled:opacity-30 disabled:cursor-not-allowed text-status-error hover:bg-status-error/10 disabled:hover:bg-transparent"
-              aria-label={`Remover pergunta ${index + 1}`}
-            >
-              <Trash2 className="w-3 h-3" />
-              Remover
-            </button>
+            {(() => {
+              const isTech = question.block === "technical"
+              const atBlockMin = isTech ? isTechAtMin : isBehavioralAtMin
+              if (!onRemove || atBlockMin) {
+                return (
+                  <button
+                    onClick={() => onRegenerate?.(index)}
+                    className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-medium text-wedo-cyan hover:bg-wedo-cyan/10 transition-colors motion-reduce:transition-none"
+                    title="No minimo da metodologia - clique para substituir por nova pergunta"
+                    aria-label={`Substituir pergunta ${index + 1}`}
+                  >
+                    <RefreshCw className="w-3 h-3" />
+                    Substituir
+                  </button>
+                )
+              }
+              return (
+                <button
+                  onClick={() => onRemove(index)}
+                  className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-medium transition-colors motion-reduce:transition-none text-status-error hover:bg-status-error/10"
+                  aria-label={`Remover pergunta ${index + 1}`}
+                >
+                  <Trash2 className="w-3 h-3" />
+                  Remover
+                </button>
+              )
+            })()}
           </div>
         </div>
       )}
