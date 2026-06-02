@@ -113,3 +113,49 @@ make smoke  # requires uvicorn rodando em localhost:8001
 
 Adicionar endpoints conhecidos como falsos positivos: editar `SKIP_ENDPOINTS` em `tests/contract/test_endpoint_smoke.py` com motivo + ticket.
 
+
+## Operational scripts
+
+### `bootstrap_admin_user.py` — admin de login por e-mail/senha
+
+Cria (ou atualiza, idempotente) um usuário **admin com senha** na tabela de
+autenticação `users` (a mesma que `POST /api/v1/auth/login` consulta — NÃO
+`client_users`). Use quando a plataforma roda em modo e-mail/senha (WorkOS SSO
+desligado) e não há usuário válido para login.
+
+O usuário criado tem `role=admin`, `is_active=true`, `company_id` da empresa
+canônica e `password_hash` gerado pelo utilitário canônico (`app/auth/security.py`).
+Re-rodar com a mesma `ADMIN_BOOTSTRAP_EMAIL` atualiza a senha do mesmo usuário.
+
+**Secrets / variáveis de ambiente** (nunca hardcoded):
+
+| Variável                     | Obrigatória | Default                                  |
+| ---------------------------- | ----------- | ---------------------------------------- |
+| `ADMIN_BOOTSTRAP_EMAIL`      | sim         | —                                        |
+| `ADMIN_BOOTSTRAP_PASSWORD`   | sim         | — (mín. 8 caracteres)                    |
+| `ADMIN_BOOTSTRAP_NAME`       | não         | `Platform Admin`                         |
+| `ADMIN_BOOTSTRAP_COMPANY_ID` | não         | `00000000-0000-4000-a000-000000000001` (Demo Company) |
+
+**Rodar em dev** (usa a `DATABASE_URL` configurada):
+
+```bash
+cd lia-agent-system
+export ADMIN_BOOTSTRAP_EMAIL="owner@example.com"
+export ADMIN_BOOTSTRAP_PASSWORD="uma-senha-forte"
+python -m scripts.bootstrap_admin_user
+```
+
+**Rodar contra produção (one-off):** aponte `DATABASE_URL` para o banco de
+produção apenas nesta invocação. Defina os secrets de e-mail/senha do admin no
+painel de Secrets do deployment (ou exporte-os no shell de produção) — eles
+nunca devem ir para o código.
+
+```bash
+DATABASE_URL="<prod-database-url>" \
+ADMIN_BOOTSTRAP_EMAIL="owner@example.com" \
+ADMIN_BOOTSTRAP_PASSWORD="uma-senha-forte" \
+python -m scripts.bootstrap_admin_user
+```
+
+Depois de rodar, faça login no site publicado pelo formulário normal de
+e-mail/senha com essas credenciais — você chega no dashboard.
