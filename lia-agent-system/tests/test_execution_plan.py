@@ -253,10 +253,18 @@ class TestPlanDetector:
         assert plan is not None
         assert plan.detected_pattern == "filtrar_e_reportar"
 
-    def test_criar_vaga_e_publicar(self):
+    def test_criar_vaga_e_publicar_NUNCA_vira_plano(self):
+        """Task #1211 (INVIOLÁVEL): criação de vaga é SEMPRE e SÓ o wizard
+        canônico. O padrão `criar_vaga_e_publicar` (que tinha um step
+        `create_job` proibido) foi removido — uma frase composta de criação
+        NÃO pode produzir um ExecutionPlan, senão o Plan & Execute criaria a
+        vaga fora do wizard. A continuidade pós-wizard é tratada pelo
+        orchestrator (offer + confirmação), não por um plano de criação.
+        """
         plan = self.detector.detect("criar vaga e publicar no ATS")
-        assert plan is not None
-        assert plan.detected_pattern == "criar_vaga_e_publicar"
+        assert plan is None, (
+            "criação de vaga jamais pode virar plano — deve cair no wizard"
+        )
 
     def test_analisar_e_planejar(self):
         plan = self.detector.detect("analisar funil e planejar ações")
@@ -333,9 +341,55 @@ class TestPlanDetector:
         assert stats["total_matches"] == 1
 
     def test_list_patterns(self):
+        # Task #1211: the catalog grows over time, so assert meaningful
+        # properties instead of a brittle hard count.
+        from app.shared.execution.plan_detector import PLAN_PATTERNS
+
         patterns = self.detector.list_patterns()
-        assert len(patterns) == 12
+        assert len(patterns) == len(PLAN_PATTERNS)
         assert all("name" in p and "description" in p for p in patterns)
+        names = [p["name"] for p in patterns]
+        assert len(names) == len(set(names)), "pattern names must be unique"
+
+    def test_no_plan_pattern_creates_a_job(self):
+        """INVIOLABLE (Task #1211): Plan & Execute must NEVER create a job.
+
+        Job creation is exclusively the canonical wizard. The removed
+        'criar_vaga_e_publicar' pattern (step create_job) must not return.
+        """
+        from app.shared.execution.plan_detector import (
+            JOB_CREATION_ACTION_IDS,
+            PLAN_PATTERNS,
+        )
+
+        offenders = [
+            f"{p.name} -> {s.domain_id}.{s.action_id}"
+            for p in PLAN_PATTERNS
+            for s in p.pipeline
+            if s.action_id in JOB_CREATION_ACTION_IDS
+        ]
+        assert offenders == [], (
+            "No plan pattern may create a job; found: " + "; ".join(offenders)
+        )
+        assert "criar_vaga_e_publicar" not in [p.name for p in PLAN_PATTERNS]
+
+    def test_creation_guard_raises_on_forbidden_step(self):
+        from app.shared.execution.plan_detector import (
+            JobCreationInPlanError,
+            PipelineStep,
+            PlanPattern,
+            _assert_no_creation_steps,
+        )
+
+        bad = [
+            PlanPattern(
+                name="bad",
+                patterns=[r"x"],
+                pipeline=[PipelineStep(domain_id="job_management", action_id="create_job")],
+            )
+        ]
+        with pytest.raises(JobCreationInPlanError):
+            _assert_no_creation_steps(bad)
 
     def test_case_insensitive(self):
         plan = self.detector.detect("BUSCAR candidatos Python E COMPARAR")

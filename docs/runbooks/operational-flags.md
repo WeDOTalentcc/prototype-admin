@@ -45,6 +45,31 @@ Setar via Doppler (preferido) ou env var direto. Validação cobre `production`,
 
 ---
 
+## 2b. Plan & Execute Activation (`LIA_V2_USE_PLAN_SERVICE`) — Task #1211
+
+| Flag | Default | Quando usar |
+|---|---|---|
+| `LIA_V2_USE_PLAN_SERVICE` | OFF (`false`) | Liga o path **Plan & Execute** (Phase 1.3) no `MainOrchestrator` para requests multi-step que NÃO são criação de vaga. |
+
+**O que liga:** `_is_plan_service_enabled()` (`app/orchestrator/execution/main_orchestrator.py`) lê `LIA_V2_USE_PLAN_SERVICE ∈ {1,true,yes}`. Quando ON, a Phase 1.3 detecta um `ExecutionPlan` (via `plan_detector`) e o executa com `PlanExecutor(domain_registry=DomainRegistry(), domain_workflow=DomainWorkflow())` — registry REAL (espelha `agent_chat_ws` + legacy). Antes da Task #1211 o orchestrator instanciava `PlanExecutor()` sem registry, e **todo** task retornava `DomainResponse.success_response("... no domain registry")` — um *fake success* silencioso. Isso foi corrigido (T003).
+
+**INVIOLÁVEL — criação de vaga é SEMPRE e SÓ o wizard canônico:**
+- O Plan & Execute **NUNCA** cria uma vaga. O padrão `criar_vaga_e_publicar` (que continha o step proibido `create_job` → tool `create_job_vacancy`) foi **removido** do `plan_detector` (T002).
+- Guard de import-time `_assert_no_creation_steps(PLAN_PATTERNS)` + `JOB_CREATION_ACTION_IDS` (`plan_detector.py`) faz o módulo **falhar alto** se qualquer pattern futuro reintroduzir um step de criação. Sentinelas: `tests/test_execution_plan.py::test_no_plan_pattern_creates_a_job`, `::test_creation_guard_raises_on_forbidden_step`, `::test_criar_vaga_e_publicar_NUNCA_vira_plano`.
+- Phase 1.4 (wizard) roda **ANTES** da Phase 1.3. O bootstrap do wizard (`_try_wizard_canonical`) agora também usa `detect_job_creation` (`app/orchestrator/routing/job_creation_disambiguator.py`), que captura frases compostas que o substring `_WIZARD_START_PATTERNS` perdia — ex.: `"criar a vaga e publicar"` (tem `"criar a vaga"`, não `"criar vaga"`). Sem isso, a frase vazaria para a Phase 1.3.
+
+**Continuidade pós-wizard (opcional, conversacional):**
+- Numa request composta (`"criar a vaga e publicar"`), o wizard cria a vaga **sozinho**; a parte restante (`publicar`) é estacionada via `store_continuation` (`app/orchestrator/routing/post_wizard_continuation.py`, TTL 60min, reusa `pending_action_store`).
+- Ao atingir um stage terminal (`done`/`completed`/`finished`/`handoff`), a LIA **OFERECE** proativamente a etapa restante no chat (texto puro, sem botões — alinha com a preferência "chat é a interface").
+- A execução só acontece no **turno seguinte**, mediante confirmação natural PT-BR, classificada por `classify_confirmation` (`app/orchestrator/routing/confirmation_classifier.py`, negativos têm precedência). `_handle_post_wizard_continuation` (Phase 0-pre) executa continuações **já conectadas** (publish/sync → `ats_integration.sync_job`) via o mesmo path Plan & Execute, vinculado ao `job_id` criado.
+- Continuações **não conectadas** retornam um sinal explícito ("ainda não está conectada para execução automática") — **NUNCA** um fake success.
+
+**Canary W3-023:** com a flag ON em `production`/`staging`, `_is_plan_service_enabled()` emite `log.info("[W3-023 CANARY] LIA_V2_USE_PLAN_SERVICE=true ativo …")` como breadcrumb no Sentry. Quando o count estabilizar `>0` por 1 sprint sem regressão, considerar flip do default. Promoção planejada (UC-P3-14): 2026-07-01.
+
+**Rollback:** `LIA_V2_USE_PLAN_SERVICE=false` (ou ausente) — Phase 1.3 vira no-op e o orchestrator segue o path legacy (wizard + agentes), sem impacto na criação de vaga.
+
+---
+
 ## 3. Ambiente E2E (Task #1079)
 
 A suíte Playwright (`pw-cenario-A → D`) reusa o `dev-server` já em pé — nenhum cenário spawna seu próprio webServer.

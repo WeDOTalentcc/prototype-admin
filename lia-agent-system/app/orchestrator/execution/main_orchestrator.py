@@ -582,6 +582,25 @@ class MainOrchestrator:
             except Exception as _cap_exc:
                 logger.debug("[MainOrchestrator] Rail A capability gate skipped: %s", _cap_exc)
 
+            # ── Phase 0-pre: Post-wizard continuity (Task #1211) ────────────
+            # Runs BEFORE Phase 0 so a recruiter's natural-language reply to the
+            # continuity OFFER ("sim, pode publicar" / "agora não") is handled by
+            # the dedicated continuation handler — never swallowed by Phase 0 or
+            # re-routed into the wizard.
+            try:
+                _cont_response = await self._handle_post_wizard_continuation(
+                    ctx, conv_id, db, conv
+                )
+                if _cont_response is not None:
+                    if _soft_warnings and not _cont_response.fairness_warnings:
+                        _cont_response.fairness_warnings = _soft_warnings
+                    return _cont_response
+            except Exception as _cont_exc:
+                logger.warning(
+                    "[LIA-Continuity] post-wizard continuation skipped: %s",
+                    _cont_exc,
+                )
+
             # ── Phase 0: PendingAction ──────────────────────────────────────
             pending_response = await self._handle_pending_action(ctx, conv_id)
             if pending_response is not None:
@@ -733,7 +752,19 @@ class MainOrchestrator:
                     _detected_plan = _plan_detector.detect(ctx.message)
 
                     if _detected_plan is not None:
-                        _plan_executor = PlanExecutor()
+                        # Task #1211: wire the REAL domain registry + workflow so
+                        # tasks dispatch to live domains. Without these,
+                        # PlanExecutor._execute_task falls into the no-registry
+                        # branch and returns synthetic success for every task
+                        # ("...executed (no domain registry)") — a silent fake
+                        # success. Mirrors agent_chat_ws.py and legacy/orchestrator.
+                        from app.domains.registry import DomainRegistry
+                        from app.domains.workflow import DomainWorkflow
+
+                        _plan_executor = PlanExecutor(
+                            domain_registry=DomainRegistry(),
+                            domain_workflow=DomainWorkflow(),
+                        )
                         _pe_company_id = getattr(ctx, "company_id", None)
                         _pe_user_id = str(getattr(ctx, "user_id", "system") or "system")
 
@@ -1316,6 +1347,153 @@ class MainOrchestrator:
             )
 
     # ------------------------------------------------------------------
+    # Phase 0-pre — Post-wizard continuity (Task #1211)
+    # ------------------------------------------------------------------
+
+    async def _handle_post_wizard_continuation(
+        self, ctx: UniversalContext, conv_id: str, db: Any, conv: Any = None
+    ) -> ChatResponse | None:
+        """Handle the recruiter's reply to a post-wizard continuity OFFER.
+
+        Only fires when a continuation is parked AND already offered
+        (``awaiting_confirmation``). Classifies the free-text PT-BR reply:
+          • ``no``  → acknowledge, drop the continuation;
+          • ``ambiguous`` → re-ask, keep it pending;
+          • ``yes`` + connected → execute via the canonical Plan & Execute path
+            (real domain registry) bound to the created ``job_id``;
+          • ``yes`` + not-connected → explicit "ainda não conectado" (NEVER a
+            fake success).
+
+        INVIOLABLE: this NEVER creates a job — it only runs already-connected
+        follow-ups (ATS publish/sync) on the job the wizard already created.
+        """
+        from app.orchestrator.routing.confirmation_classifier import (
+            classify_confirmation,
+        )
+        from app.orchestrator.routing.post_wizard_continuation import (
+            clear_continuation,
+            dispatch_for,
+            get_continuation,
+        )
+
+        state = get_continuation(conv_id)
+        if state is None or not state.awaiting_confirmation:
+            return None
+
+        decision = classify_confirmation(ctx.message)
+        logger.info(
+            "[LIA-Continuity] offer reply classified=%s conv=%s kind=%s",
+            decision, conv_id, (state.collected_params or {}).get("continuation_kind"),
+        )
+
+        def _finish(content: str, *, intent: str, executed: bool,
+                    structured: dict[str, Any] | None = None) -> ChatResponse:
+            if conv and not ctx.skip_memory_persist:
+                try:
+                    import asyncio as _aio
+                    _aio.ensure_future(
+                        self._persist_response(
+                            ctx, conv_id, conv, {"response": content}, db
+                        )
+                    )
+                except Exception as _pexc:
+                    logger.debug("[LIA-Continuity] persist skipped: %s", _pexc)
+            return ChatResponse(
+                success=True,
+                content=content,
+                agent_used="post_wizard_continuation",
+                confidence=0.95,
+                intent_detected=intent,
+                conversation_id=conv_id,
+                action_executed=executed,
+                structured_data=structured,
+            )
+
+        if decision == "ambiguous":
+            # Keep the offer pending; ask one clear yes/no question.
+            return _finish(
+                "Só pra confirmar: quer que eu siga com essa etapa agora? "
+                "Responda *sim* ou *agora não*.",
+                intent="continuation_clarify",
+                executed=False,
+            )
+
+        if decision == "no":
+            clear_continuation(conv_id)
+            return _finish(
+                "Combinado — a vaga fica como está por enquanto. "
+                "Quando quiser seguir, é só me avisar.",
+                intent="continuation_declined",
+                executed=False,
+            )
+
+        # decision == "yes" — consume the continuation regardless of outcome.
+        params = dict(state.collected_params or {})
+        connected = bool(params.get("continuation_connected"))
+        dispatch = dispatch_for(params.get("continuation_kind"))
+        job_id = params.get("job_id")
+        clear_continuation(conv_id)
+
+        if not connected or not dispatch:
+            # Explicit signal — never pretend an unconnected step ran.
+            return _finish(
+                "Essa etapa ainda não está conectada para execução automática, "
+                "então não vou marcá-la como concluída — por enquanto você "
+                "precisa fazê-la manualmente. Posso ajudar em mais alguma coisa?",
+                intent="continuation_not_connected",
+                executed=False,
+            )
+
+        domain_id, action_id, label = dispatch
+
+        # Execute through the canonical Plan & Execute path with the REAL domain
+        # registry (no fake success) — single follow-up task on the created job.
+        from app.domains.registry import DomainRegistry
+        from app.domains.workflow import DomainWorkflow
+        from app.shared.execution.execution_plan import AgentTask, ExecutionPlan
+        from app.shared.execution.plan_executor import PlanExecutor
+
+        _plan = ExecutionPlan(plan_id=f"continuation_{conv_id}")
+        _plan.detected_pattern = f"post_wizard_{params.get('continuation_kind')}"
+        _plan.add_task(
+            AgentTask(
+                task_id="task_0",
+                domain_id=domain_id,
+                action_id=action_id,
+                params={"job_id": job_id} if job_id else {},
+            )
+        )
+        _company_id = getattr(ctx, "company_id", None)
+        _executor = PlanExecutor(
+            domain_registry=DomainRegistry(),
+            domain_workflow=DomainWorkflow(),
+        )
+        _completed = await _executor.execute(
+            _plan,
+            user_id=str(getattr(ctx, "user_id", "system") or "system"),
+            session_id=conv_id or "",
+            tenant_id=str(_company_id) if _company_id else None,
+            base_context={"job_id": job_id} if job_id else None,
+        )
+        _domain_resp = _executor.build_consolidated_response(_completed)
+        logger.info(
+            "[LIA-Continuity] continuation executed kind=%s job_id=%s status=%s",
+            params.get("continuation_kind"), job_id, _completed.status.value,
+        )
+        return _finish(
+            _domain_resp.message,
+            intent="continuation_executed",
+            executed=True,
+            structured={
+                "plan_id": _completed.plan_id,
+                "pattern": _completed.detected_pattern,
+                "status": _completed.status.value,
+                "continuation_kind": params.get("continuation_kind"),
+                "job_id": job_id,
+            },
+        )
+
+    # ------------------------------------------------------------------
     # Phase 0 — PendingAction
     # ------------------------------------------------------------------
 
@@ -1325,6 +1503,15 @@ class MainOrchestrator:
     ) -> ChatResponse | None:
         pending = pending_action_store.get(conv_id)
         if not pending:
+            return None
+        # Task #1211: post-wizard continuation pendings are owned exclusively by
+        # _handle_post_wizard_continuation (runs BEFORE this phase). Skip them
+        # here so Phase 0 never mistakes a parked continuation for a
+        # param-collection / confirmation flow and hijacks the wizard turns.
+        from app.orchestrator.routing.post_wizard_continuation import (
+            CONTINUATION_INTENT,
+        )
+        if pending.intent == CONTINUATION_INTENT:
             return None
 
         candidates = ctx.candidates or []
@@ -1781,6 +1968,14 @@ class MainOrchestrator:
         from app.domains.job_creation.services.wizard_session_service import (
             WizardSessionService,
         )
+        from app.orchestrator.routing.job_creation_disambiguator import (
+            detect_job_creation,
+        )
+        from app.orchestrator.routing.post_wizard_continuation import (
+            build_offer_message,
+            mark_offered,
+            store_continuation,
+        )
 
         message_text = (ctx.message or "").strip()
         if not message_text:
@@ -1805,12 +2000,37 @@ class MainOrchestrator:
         # isso marca a sessão para o pin assumir nos turnos seguintes.
         if not is_wizard_turn:
             _msg_lower = message_text.lower()
-            if any(p in _msg_lower for p in self._WIZARD_START_PATTERNS):
+            # Task #1211: detect_job_creation ALSO catches composite phrasings the
+            # substring patterns miss — e.g. "criar a vaga e publicar" (has
+            # "criar a vaga", not "criar vaga") which would otherwise leak into
+            # Phase 1.3 Plan & Execute. Job creation must ALWAYS land in the wizard.
+            _creation = detect_job_creation(message_text)
+            if any(p in _msg_lower for p in self._WIZARD_START_PATTERNS) or (
+                _creation is not None and _creation.is_creation
+            ):
                 is_wizard_turn = True
                 logger.info(
-                    "[MainOrchestrator] Wizard bootstrap (turno 1): pattern match "
-                    "session=%s company=%s", session_id, company_id,
+                    "[MainOrchestrator] Wizard bootstrap (turno 1): match "
+                    "session=%s company=%s composite=%s",
+                    session_id, company_id,
+                    bool(_creation and _creation.continuation_text),
                 )
+                # Park the optional composite continuation (e.g. "...e publicar")
+                # so LIA can OFFER it once the wizard finishes. The wizard still
+                # creates the job ALONE — nothing is executed now.
+                if _creation is not None and _creation.continuation_text:
+                    try:
+                        store_continuation(
+                            conv_id or session_id,
+                            company_id,
+                            _creation,
+                            message_text,
+                        )
+                    except Exception as _store_exc:
+                        logger.debug(
+                            "[LIA-Continuity] store_continuation skipped: %s",
+                            _store_exc,
+                        )
 
         if not is_wizard_turn:
             return None
@@ -1844,6 +2064,33 @@ class MainOrchestrator:
         )
 
         recruiter_msg = recruiter_msg or "Vaga em criação — vamos seguir."
+
+        # ── Post-wizard continuity OFFER (Task #1211) ──────────────────────
+        # When the wizard reaches a terminal stage and a composite continuation
+        # was parked at bootstrap, LIA proactively OFFERS the remaining task in
+        # the chat (conversational, no buttons). Execution happens only on the
+        # recruiter's natural-language confirmation, on the NEXT turn, via
+        # _handle_post_wizard_continuation. The wizard already created the job.
+        try:
+            _stage = (ws_stage_payload or {}).get("stage", "")
+            _DONE_STAGES = {"done", "completed", "finished", "handoff"}
+            if _stage in _DONE_STAGES:
+                _job_id = None
+                if ws_stage_payload:
+                    _job_id = ws_stage_payload.get("job_vacancy_id") or (
+                        ws_stage_payload.get("data") or {}
+                    ).get("job_id")
+                _offered = mark_offered(conv_id, _job_id)
+                if _offered is not None:
+                    recruiter_msg = recruiter_msg + build_offer_message(_offered)
+                    logger.info(
+                        "[LIA-Continuity] offer surfaced conv=%s stage=%s job_id=%s",
+                        conv_id, _stage, _job_id,
+                    )
+        except Exception as _offer_exc:
+            logger.debug(
+                "[LIA-Continuity] post-wizard offer skipped: %s", _offer_exc
+            )
 
         # Persist response to conversation memory (espelha Phase 0/1)
         if conv and not ctx.skip_memory_persist:

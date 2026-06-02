@@ -9,6 +9,26 @@ from app.shared.execution.execution_plan import AgentTask, ExecutionPlan
 logger = logging.getLogger(__name__)
 
 
+# ── INVIOLABLE (Task #1211) ──────────────────────────────────────────────────
+# Action ids that PERSIST a new job/vacancy. Plan & Execute must NEVER run any
+# of these — job creation is exclusively the canonical wizard. The import-time
+# guard _assert_no_creation_steps() raises if any PlanPattern references one.
+JOB_CREATION_ACTION_IDS: frozenset[str] = frozenset(
+    {
+        "create_job",
+        "create_jobs",
+        "create_vacancy",
+        "create_job_vacancy",
+        "create_requisition",
+        "new_job",
+    }
+)
+
+
+class JobCreationInPlanError(RuntimeError):
+    """Raised at import time if a PlanPattern would create a job (forbidden)."""
+
+
 @dataclass
 class PipelineStep:
     domain_id: str
@@ -97,18 +117,15 @@ PLAN_PATTERNS: list[PlanPattern] = [
         ],
         description="Filtrar candidatos e gerar relatório",
     ),
-    PlanPattern(
-        name="criar_vaga_e_publicar",
-        patterns=[
-            r"cri(?:ar|e)\s+(?:a\s+)?vaga\s+e\s+(public|sinc)",
-            r"nova\s+vaga\s+.*\s+e\s+(public|sinc)",
-        ],
-        pipeline=[
-            PipelineStep(domain_id="job_management", action_id="create_job"),
-            PipelineStep(domain_id="ats_integration", action_id="sync_job", context_from="task_0.job_id"),
-        ],
-        description="Criar vaga e publicar/sincronizar com ATS",
-    ),
+    # NOTE (Task #1211 — INVIOLABLE): There is intentionally NO plan pattern
+    # that creates a job. Job creation is ALWAYS and ONLY the canonical wizard.
+    # The former "criar_vaga_e_publicar" pattern (step action_id="create_job")
+    # was removed because it persisted a real draft vacancy, bypassing the
+    # wizard. The composite request "criar a vaga e publicar" is now caught by
+    # the wizard bootstrap (MainOrchestrator._try_wizard_canonical via
+    # job_creation_disambiguator); the "...e publicar" half is offered as a
+    # post-wizard continuation once the wizard finishes. The import-time guard
+    # _assert_no_creation_steps() below enforces this invariant (fail loud).
     PlanPattern(
         name="analisar_e_planejar",
         patterns=[
@@ -344,6 +361,28 @@ PLAN_PATTERNS: list[PlanPattern] = [
         description="Fechamento mensal de recrutamento",
     ),
 ]
+
+
+def _assert_no_creation_steps(patterns: list[PlanPattern]) -> None:
+    """Fail loud (Task #1211) if any PlanPattern would create a job.
+
+    Plan & Execute is forbidden from persisting a vacancy — that is exclusively
+    the canonical wizard. Runs at import time so a forbidden step can never ship.
+    """
+    offenders: list[str] = []
+    for pattern in patterns:
+        for step in pattern.pipeline:
+            if step.action_id in JOB_CREATION_ACTION_IDS:
+                offenders.append(f"{pattern.name} -> {step.domain_id}.{step.action_id}")
+    if offenders:
+        raise JobCreationInPlanError(
+            "Plan & Execute must NEVER create a job (Task #1211 inviolable rule). "
+            "Job creation is exclusively the canonical wizard. Forbidden steps: "
+            + "; ".join(offenders)
+        )
+
+
+_assert_no_creation_steps(PLAN_PATTERNS)
 
 
 class PlanDetector:
