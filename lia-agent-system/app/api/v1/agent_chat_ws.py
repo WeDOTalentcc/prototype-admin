@@ -14,7 +14,7 @@ Protocolo de mensagens (JSON):
     { "type": "token", "content": "..." }  — streaming de token (futuro)
     { "type": "message", "content": "...", "confidence": 0.9 }  — resposta final
     { "type": "panel_update", "panel_type": "...", "panel_data": {...}, "panel_title": "...", "action": "open|update|close" }
-    { "type": "background_task_update", "task_id": "...", "task_type": "sourcing|screening|communication|analysis", "label": "...", "status": "running|completed|failed", "progress": 0-100, "message": "..." }
+    { "type": "background_task_update", "task_id": "...", "task_type": "sourcing|screening|communication|analysis", "label": "...", "status": "running|completed|failed|deferred", "progress": 0-100, "message": "..." }
     { "type": "error", "message": "..." }
     { "type": "pong" }
 
@@ -169,7 +169,9 @@ async def send_background_task_update(
     """Send a background_task_update event to the frontend via WebSocket.
 
     task_type: one of sourcing, screening, communication, analysis
-    status: "running" | "completed" | "failed"
+    status: "running" | "completed" | "failed" | "deferred"
+        ("deferred" = honest P&E→agent handoff: step belongs to a continuous
+        agent and was NOT executed — Task #1222)
     progress: 0-100 (optional, only for running tasks)
     """
     try:
