@@ -45,6 +45,175 @@ MIN_BEHAVIORAL_COMPETENCIES_FOR_WSI = 5
 MIN_RESPONSIBILITIES = 5
 
 
+def _extract_skill_names(items: Any) -> list[str]:
+    """Extrai nomes de uma coluna estruturada (technical_requirements /
+    behavioral_competencies) que pode conter strings ou dicts.
+
+    Aceita as chaves canônicas usadas pelos diferentes writers do projeto:
+    ``name`` (writer do wizard via ``_normalize_skills_to_objects``),
+    ``technology``/``skill`` e ``competency`` (model comment legado).
+    """
+    names: list[str] = []
+    for item in items or []:
+        if isinstance(item, str):
+            value = item
+        elif isinstance(item, dict):
+            value = (
+                item.get("name")
+                or item.get("technology")
+                or item.get("skill")
+                or item.get("competency")
+                or item.get("value")
+                or ""
+            )
+        else:
+            value = str(item)
+        value = (value or "").strip()
+        if value:
+            names.append(value)
+    return names
+
+
+def _merge_section_items(section: "SectionSuggestions") -> list[str]:
+    """Funde ``detected_items`` + valores das ``suggestions`` de uma seção,
+    deduplicando case-insensitive e preservando a ordem (detectados primeiro).
+    """
+    merged: list[str] = []
+    seen: set[str] = set()
+    candidates = list(section.detected_items or []) + [
+        s.value for s in (section.suggestions or [])
+    ]
+    for raw in candidates:
+        value = (raw or "").strip()
+        key = value.lower()
+        if not key or key in seen:
+            continue
+        seen.add(key)
+        merged.append(value)
+    return merged
+
+
+def _compose_enriched_jd_text(
+    *,
+    title: str,
+    seniority: str | None,
+    department: str | None,
+    location: str | None,
+    work_model: str | None,
+    original_description: str | None,
+    responsibilities: list[str],
+    technical_skills: list[str],
+    behavioral_competencies: list[str],
+) -> str:
+    """Monta a descrição enriquecida (PT-BR, markdown) a partir das seções."""
+    lines: list[str] = [f"# {title}"]
+    meta = [m for m in (seniority, department, location, work_model) if m]
+    if meta:
+        lines.append(" · ".join(meta))
+    if original_description and original_description.strip():
+        lines.append("\n## Sobre a vaga\n" + original_description.strip())
+    if responsibilities:
+        lines.append("\n## Responsabilidades")
+        lines.extend(f"- {r}" for r in responsibilities)
+    if technical_skills:
+        lines.append("\n## Competências Técnicas")
+        lines.extend(f"- {t}" for t in technical_skills)
+    if behavioral_competencies:
+        lines.append("\n## Competências Comportamentais")
+        lines.extend(f"- {b}" for b in behavioral_competencies)
+    return "\n".join(lines)
+
+
+def build_wsi_persistence_payload(
+    enriched: "EnrichedJobDescription",
+    *,
+    original_description: str | None = None,
+) -> dict[str, Any]:
+    """Transforma um ``EnrichedJobDescription`` (detectados + sugestões) no
+    payload determinístico de persistência da vaga.
+
+    Funde detectados + sugestões por seção, calcula a qualidade WSI canônica
+    (``evaluate_jd_quality``, single source) e aplica o gate de mínimos
+    (9 técnicas + 5 comportamentais). É puro: não toca DB nem rede.
+    """
+    from app.domains.cv_screening.services.wsi_service.jd_quality import (
+        evaluate_jd_quality,
+    )
+    from app.domains.job_management.services.job_vacancy_service import (
+        JobVacancyService,
+    )
+
+    responsibilities = _merge_section_items(enriched.responsibilities)
+    technical = _merge_section_items(enriched.technical_skills)
+    behavioral = _merge_section_items(enriched.behavioral_competencies)
+
+    quality = evaluate_jd_quality(
+        description=original_description,
+        job_title=enriched.title,
+        department=enriched.department,
+        seniority=enriched.seniority,
+        responsibilities=responsibilities,
+        technical_skills=technical,
+        behavioral_competencies=behavioral,
+        d3_min=MIN_TECHNICAL_SKILLS_FOR_WSI,
+        d4_min=MIN_BEHAVIORAL_COMPETENCIES_FOR_WSI,
+    )
+    max_score = float(quality.get("max_score") or 100) or 100.0
+    wsi_quality_score = round(float(quality.get("score", 0)) / max_score, 4)
+    warnings = [
+        ind["detail"]
+        for ind in quality.get("indicators", [])
+        if ind.get("status") in ("insufficient", "partial") and ind.get("detail")
+    ]
+
+    meets_wsi_minimums = (
+        len(technical) >= MIN_TECHNICAL_SKILLS_FOR_WSI
+        and len(behavioral) >= MIN_BEHAVIORAL_COMPETENCIES_FOR_WSI
+    )
+
+    generated_jd_text = _compose_enriched_jd_text(
+        title=enriched.title,
+        seniority=enriched.seniority,
+        department=enriched.department,
+        location=enriched.location,
+        work_model=enriched.work_model,
+        original_description=original_description,
+        responsibilities=responsibilities,
+        technical_skills=technical,
+        behavioral_competencies=behavioral,
+    )
+
+    enriched_jd_blob = {
+        "description": generated_jd_text,
+        "responsibilities": responsibilities,
+        "technical_skills": technical,
+        "behavioral_competencies": behavioral,
+        "generated_jd_text": generated_jd_text,
+        "wsi_quality_score": wsi_quality_score,
+        "wsi_quality_warnings": warnings,
+        "meets_wsi_minimums": meets_wsi_minimums,
+        "source_description": original_description,
+        "updated_at": datetime.utcnow().isoformat(),
+    }
+
+    return {
+        "responsibilities": responsibilities,
+        "technical_skills": technical,
+        "behavioral_competencies": behavioral,
+        "technical_requirements_objects": JobVacancyService._normalize_skills_to_objects(
+            technical
+        ),
+        "behavioral_competencies_objects": JobVacancyService._normalize_skills_to_objects(
+            behavioral
+        ),
+        "meets_wsi_minimums": meets_wsi_minimums,
+        "wsi_quality_score": wsi_quality_score,
+        "wsi_quality_warnings": warnings,
+        "generated_jd_text": generated_jd_text,
+        "enriched_jd": enriched_jd_blob,
+    }
+
+
 class JdEnrichmentService:
     """
     Serviço de enriquecimento de Job Description.
@@ -150,6 +319,165 @@ class JdEnrichmentService:
                 summary_message="Erro ao enriquecer o Job Description. Tente novamente."
             )
     
+    async def enrich_and_persist_vacancy(
+        self,
+        job_vacancy_id: str,
+        company_id: str,
+        db: AsyncSession,
+    ) -> "JdEnrichmentPersistResult":
+        """Enriquece a JD de uma vaga REAL e persiste o resultado na vaga.
+
+        Carrega a vaga (fail-alto se ausente), enriquece a partir dos campos
+        atuais, aplica o gate de mínimos WSI (9 técnicas + 5 comportamentais)
+        e — somente quando os mínimos são atingidos — grava as colunas
+        estruturadas (``technical_requirements``, ``behavioral_competencies``,
+        ``responsibilities``, ``description``) e o blob ``enriched_jd``.
+
+        Quando os mínimos NÃO são atingidos, NÃO persiste (não enriquece "no
+        vácuo") e retorna ``persisted=False`` com mensagem explícita do que
+        falta. Erros de input (company_id ausente, UUID inválido, vaga
+        inexistente) levantam ``ValueError`` — falha alto, sem fake success.
+        """
+        from app.schemas.jd_enrichment import JdEnrichmentPersistResult
+
+        if not company_id or not str(company_id).strip():
+            raise ValueError("company_id é obrigatório para enrich_and_persist_vacancy")
+        if not job_vacancy_id or not str(job_vacancy_id).strip():
+            raise ValueError("job_vacancy_id é obrigatório para enrich_and_persist_vacancy")
+
+        import uuid as _uuid
+
+        from app.domains.job_management.repositories.job_vacancy_crud_repository import (
+            JobVacancyCRUDRepository,
+        )
+
+        try:
+            vacancy_uuid = _uuid.UUID(str(job_vacancy_id))
+        except (ValueError, TypeError) as exc:
+            raise ValueError(
+                f"job_vacancy_id inválido (esperado UUID): {job_vacancy_id!r}"
+            ) from exc
+
+        repo = JobVacancyCRUDRepository(db)
+        vacancy = await repo.get_vacancy_by_id_and_company(vacancy_uuid, company_id)
+        if vacancy is None:
+            raise ValueError(
+                f"Vaga {job_vacancy_id} não encontrada para a empresa {company_id}"
+            )
+
+        salary_range = getattr(vacancy, "salary_range", None) or {}
+        request = EnrichmentRequest(
+            company_id=str(company_id),
+            job_draft_id=str(vacancy.id),
+            title=vacancy.title or "",
+            department=getattr(vacancy, "department", None),
+            seniority=getattr(vacancy, "seniority_level", None),
+            location=getattr(vacancy, "location", None),
+            work_model=getattr(vacancy, "work_model", None),
+            detected_responsibilities=list(getattr(vacancy, "responsibilities", None) or []),
+            detected_technical_skills=_extract_skill_names(
+                getattr(vacancy, "technical_requirements", None)
+            ),
+            detected_behavioral_competencies=_extract_skill_names(
+                getattr(vacancy, "behavioral_competencies", None)
+            ),
+            salary_min=salary_range.get("min") if isinstance(salary_range, dict) else None,
+            salary_max=salary_range.get("max") if isinstance(salary_range, dict) else None,
+            raw_input=getattr(vacancy, "description", None),
+        )
+
+        response = await self.enrich_job_description(request, db)
+        if not response.success or response.enriched_jd is None:
+            return JdEnrichmentPersistResult(
+                success=False,
+                persisted=False,
+                meets_wsi_minimums=False,
+                job_vacancy_id=str(vacancy.id),
+                message=response.summary_message
+                or "Falha ao enriquecer o Job Description.",
+                error=response.error,
+            )
+
+        payload = build_wsi_persistence_payload(
+            response.enriched_jd,
+            original_description=getattr(vacancy, "description", None),
+        )
+
+        technical = payload["technical_skills"]
+        behavioral = payload["behavioral_competencies"]
+        responsibilities = payload["responsibilities"]
+        meets = payload["meets_wsi_minimums"]
+
+        if not meets:
+            missing_tech = max(0, MIN_TECHNICAL_SKILLS_FOR_WSI - len(technical))
+            missing_behav = max(0, MIN_BEHAVIORAL_COMPETENCIES_FOR_WSI - len(behavioral))
+            parts: list[str] = []
+            if missing_tech:
+                parts.append(f"{missing_tech} competência(s) técnica(s)")
+            if missing_behav:
+                parts.append(f"{missing_behav} competência(s) comportamental(is)")
+            faltam = " e ".join(parts) if parts else "dados mínimos"
+            message = (
+                f"Não enriqueci a vaga ainda: faltam {faltam} para atingir o mínimo "
+                f"de qualidade WSI ({MIN_TECHNICAL_SKILLS_FOR_WSI} técnicas + "
+                f"{MIN_BEHAVIORAL_COMPETENCIES_FOR_WSI} comportamentais). "
+                "Me diga mais sobre a vaga para eu completar."
+            )
+            self.logger.info(
+                "enrich_and_persist_vacancy: mínimos WSI não atingidos para vaga %s "
+                "(tech=%d/%d, behav=%d/%d) — não persistindo",
+                vacancy.id,
+                len(technical),
+                MIN_TECHNICAL_SKILLS_FOR_WSI,
+                len(behavioral),
+                MIN_BEHAVIORAL_COMPETENCIES_FOR_WSI,
+            )
+            return JdEnrichmentPersistResult(
+                success=True,
+                persisted=False,
+                meets_wsi_minimums=False,
+                job_vacancy_id=str(vacancy.id),
+                technical_count=len(technical),
+                behavioral_count=len(behavioral),
+                responsibilities_count=len(responsibilities),
+                wsi_quality_score=payload["wsi_quality_score"],
+                wsi_quality_warnings=payload["wsi_quality_warnings"],
+                message=message,
+            )
+
+        vacancy.technical_requirements = payload["technical_requirements_objects"]
+        vacancy.behavioral_competencies = payload["behavioral_competencies_objects"]
+        vacancy.responsibilities = responsibilities
+        vacancy.description = payload["generated_jd_text"]
+        vacancy.enriched_jd = payload["enriched_jd"]
+        vacancy.updated_at = datetime.utcnow()
+
+        await repo.flush_and_refresh(vacancy)
+        await db.commit()
+
+        self.logger.info(
+            "enrich_and_persist_vacancy: vaga %s enriquecida e persistida "
+            "(tech=%d, behav=%d, resp=%d, wsi=%.2f)",
+            vacancy.id,
+            len(technical),
+            len(behavioral),
+            len(responsibilities),
+            payload["wsi_quality_score"] or 0.0,
+        )
+
+        return JdEnrichmentPersistResult(
+            success=True,
+            persisted=True,
+            meets_wsi_minimums=True,
+            job_vacancy_id=str(vacancy.id),
+            technical_count=len(technical),
+            behavioral_count=len(behavioral),
+            responsibilities_count=len(responsibilities),
+            wsi_quality_score=payload["wsi_quality_score"],
+            wsi_quality_warnings=payload["wsi_quality_warnings"],
+            message="Job Description enriquecida e salva na vaga.",
+        )
+
     def _empty_section(self, name: str, title: str) -> SectionSuggestions:
         """Retorna uma seção vazia."""
         return SectionSuggestions(section_name=name, section_title=title)

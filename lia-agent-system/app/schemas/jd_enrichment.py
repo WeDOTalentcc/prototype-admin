@@ -280,6 +280,27 @@ class EnrichmentResponse(BaseModel):
     error: str | None = None
 
 
+class JdEnrichmentPersistResult(BaseModel):
+    """Resultado da operação enrich + persist sobre uma vaga real.
+
+    Distingue entre ``persisted`` (gravou colunas estruturadas + ``enriched_jd``
+    na vaga) e ``meets_wsi_minimums`` (atingiu 9 técnicas + 5 comportamentais).
+    Quando os mínimos NÃO são atingidos, ``persisted`` é False e ``message``
+    explica o que falta — o enriquecimento NÃO grava "no vácuo".
+    """
+    success: bool
+    persisted: bool
+    meets_wsi_minimums: bool
+    job_vacancy_id: str
+    technical_count: int = 0
+    behavioral_count: int = 0
+    responsibilities_count: int = 0
+    wsi_quality_score: float | None = None
+    wsi_quality_warnings: list[str] = Field(default_factory=list)
+    message: str = ""
+    error: str | None = None
+
+
 class SuggestionAcceptanceRequest(WeDoBaseModel):
     """Request para aceitar/rejeitar sugestões."""
     job_draft_id: str
