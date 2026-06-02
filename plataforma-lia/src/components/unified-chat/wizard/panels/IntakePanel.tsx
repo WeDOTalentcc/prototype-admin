@@ -97,7 +97,7 @@ function FichaField({
   if (editing) {
     return (
       <div className="flex items-center justify-between gap-3 py-1">
-        <span className="text-xs text-lia-text-secondary">{label}</span>
+        <span className="text-xs text-lia-text-primary">{label}</span>
         <input
           type={type}
           value={draft}
@@ -122,10 +122,10 @@ function FichaField({
 
   return (
     <div className="flex items-center justify-between gap-3 py-1">
-      <span className="text-xs text-lia-text-secondary">{label}</span>
+      <span className="text-xs text-lia-text-primary">{label}</span>
       {filled ? (
         <Chip
-          density="compact"
+          density="relaxed"
           variant="success"
           className={cn("truncate max-w-[60%]", editable && "cursor-text")}
           onClick={editable ? begin : undefined}
@@ -198,7 +198,7 @@ function CompetencyChipGroup({
 
   return (
     <div className="space-y-1.5">
-      <span className="text-micro font-medium text-lia-text-disabled uppercase tracking-wide">{label}</span>
+      <span className="text-micro font-medium text-lia-text-secondary uppercase tracking-wide">{label}</span>
       <div className="flex flex-wrap gap-1.5">
         {items.map((it, i) =>
           editingIdx === i ? (
@@ -219,7 +219,7 @@ function CompetencyChipGroup({
           ) : (
             <span key={i} className="inline-flex items-center">
               <Chip
-                density="compact"
+                density="relaxed"
                 variant="info"
                 className="cursor-text"
                 onClick={() => startEdit(i)}
@@ -379,7 +379,7 @@ export function IntakePanel({ data, onUpdate }: Props) {
       {/* ── Ficha viva: zona bloqueante ── */}
       {hasSignal && (
         <div data-testid="intake-blocking-zone" className="space-y-1">
-          <p className="text-micro font-semibold text-lia-text-disabled uppercase tracking-wider">Falta para avançar</p>
+          <p className="text-micro font-semibold text-lia-text-secondary uppercase tracking-wider">Falta para avançar</p>
           {blockingFields.map((f) => (
             <FichaField key={f.label} label={f.label} value={f.value} editKey={f.editKey} type={f.type} onUpdate={onUpdate} />
           ))}
@@ -389,7 +389,7 @@ export function IntakePanel({ data, onUpdate }: Props) {
       {/* ── Ficha viva: zona enriquecedora ── */}
       {hasSignal && (
         <div data-testid="intake-enriching-zone" className="space-y-1 pt-1">
-          <p className="text-micro font-medium text-lia-text-disabled uppercase tracking-wide opacity-80">Enriquecer (opcional)</p>
+          <p className="text-micro font-medium text-lia-text-secondary uppercase tracking-wide">Enriquecer (opcional)</p>
           {enrichingFields.map((f) => (
             <FichaField key={f.label} label={f.label} value={f.value} editKey={f.editKey} type={f.type} onUpdate={onUpdate} />
           ))}
@@ -399,7 +399,7 @@ export function IntakePanel({ data, onUpdate }: Props) {
       {/* ── Competências confirmadas/sugeridas ── */}
       {hasCompetencies && (
         <div data-testid="intake-competencies" className="space-y-3 pt-1 border-t border-lia-border-subtle">
-          <p className="text-micro font-semibold text-lia-text-disabled uppercase tracking-wider pt-3">Competências</p>
+          <p className="text-micro font-semibold text-lia-text-secondary uppercase tracking-wider pt-3">Competências</p>
           <CompetencyChipGroup
             label="Técnicas"
             items={technical}
