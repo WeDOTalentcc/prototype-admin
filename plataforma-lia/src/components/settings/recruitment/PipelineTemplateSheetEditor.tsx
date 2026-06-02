@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useCallback, useEffect } from "react"
-import { Loader2, Pencil, Save, Trash2, Upload, X } from "lucide-react"
+import { ChevronDown, ChevronRight, Loader2, Pencil, Save, Trash2, Upload, X } from "lucide-react"
 import { toast } from "sonner"
 import {
   Sheet,
@@ -117,6 +117,16 @@ export function PipelineTemplateSheetEditor({
   const [editingName, setEditingName] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)
+
+  // Saturação: extraída do template ou vazia
+  const [saturation, setSaturation] = useState<{
+    threshold_web: number
+    threshold_sourcing: number
+    unlock_increment: number
+    unlock_hours: number
+    enabled: boolean
+  } | null>(null)
+  const [showSaturation, setShowSaturation] = useState(false)
   const [saving, setSaving] = useState(false)
   const [applyingPadrao, setApplyingPadrao] = useState(false)
 
@@ -207,9 +217,18 @@ export function PipelineTemplateSheetEditor({
     if (template) {
       setLocalStages((template.stages || []).map(richToRecruitmentStage))
       setLocalName(template.name || "")
+      const sc = (template as any).saturation_config
+      setSaturation(sc ? {
+        threshold_web: sc.threshold_web ?? 50,
+        threshold_sourcing: sc.threshold_sourcing ?? 200,
+        unlock_increment: sc.unlock_increment ?? 10,
+        unlock_hours: sc.unlock_hours ?? 24,
+        enabled: true,
+      } : null)
     } else {
       setLocalStages([])
       setLocalName("")
+      setSaturation(null)
     }
   }, [template?.id])
 
@@ -233,7 +252,16 @@ export function PipelineTemplateSheetEditor({
     setSaving(true)
     try {
       const richStages = localStages.map(recruitmentToRichStage)
-      await updateTemplate(templateId, { stages: richStages as any, name: localName.trim() || template?.name || "Template" })
+      await updateTemplate(templateId, {
+        stages: richStages as any,
+        name: localName.trim() || template?.name || "Template",
+        ...(saturation?.enabled ? { saturation_config: {
+          threshold_web: saturation.threshold_web,
+          threshold_sourcing: saturation.threshold_sourcing,
+          unlock_increment: saturation.unlock_increment,
+          unlock_hours: saturation.unlock_hours,
+        } } : { saturation_config: null }),
+      })
       toast.success("Template salvo com sucesso!")
       onSaved?.()
       onOpenChange(false)
@@ -352,6 +380,69 @@ export function PipelineTemplateSheetEditor({
               <Loader2 className="w-6 h-6 animate-spin text-lia-text-tertiary" />
             </div>
           ) : (
+            {/* Card de configuração de saturação (opcional) */}
+            <div className="mb-6 border border-lia-border-subtle rounded-xl overflow-hidden">
+              <button
+                className="w-full flex items-center justify-between px-4 py-3 bg-lia-bg-secondary/50 hover:bg-lia-bg-secondary text-sm font-medium text-lia-text-primary transition-colors"
+                onClick={() => setShowSaturation(!showSaturation)}
+                type="button"
+              >
+                <span className="flex items-center gap-2">
+                  Configuração de Volume (Saturação)
+                  {saturation?.enabled && (
+                    <span className="text-xs text-wedo-cyan font-normal">incluída no template</span>
+                  )}
+                </span>
+                {showSaturation
+                  ? <ChevronDown className="w-4 h-4 text-lia-text-secondary" />
+                  : <ChevronRight className="w-4 h-4 text-lia-text-secondary" />}
+              </button>
+              {showSaturation && (
+                <div className="px-4 py-4 space-y-4 bg-lia-bg-primary">
+                  <p className="text-xs text-lia-text-secondary">
+                    Quando ativada, esta configuração é aplicada junto com o template no Pipeline Padrão.
+                  </p>
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={saturation?.enabled ?? false}
+                      onChange={e => {
+                        if (e.target.checked) {
+                          setSaturation({ threshold_web: 50, threshold_sourcing: 200, unlock_increment: 10, unlock_hours: 24, enabled: true })
+                        } else {
+                          setSaturation(null)
+                        }
+                      }}
+                      className="w-4 h-4 rounded accent-wedo-cyan"
+                    />
+                    <span className="text-sm text-lia-text-primary">Incluir no template</span>
+                  </label>
+                  {saturation?.enabled && (
+                    <div className="grid grid-cols-2 gap-3">
+                      {([
+                        { key: 'threshold_web' as const, label: 'Máx. candidatos web', hint: 'Bloqueia sourcing web após este número' },
+                        { key: 'threshold_sourcing' as const, label: 'Máx. em sourcing', hint: 'Bloqueia sourcing ativo após este número' },
+                        { key: 'unlock_increment' as const, label: 'Desbloquear por vez', hint: '+N candidatos por desbloqueio' },
+                        { key: 'unlock_hours' as const, label: 'Horas entre desbloqueios', hint: 'Intervalo de desbloqueio' },
+                      ] as const).map(({ key, label, hint }) => (
+                        <div key={key} className="space-y-1">
+                          <label className="text-xs font-medium text-lia-text-primary">{label}</label>
+                          <input
+                            type="number"
+                            min={1}
+                            value={saturation[key]}
+                            onChange={e => setSaturation(prev => prev ? { ...prev, [key]: Number(e.target.value) } : prev)}
+                            className="w-full px-2.5 py-1.5 text-sm rounded-lg border border-lia-border-subtle bg-lia-bg-primary text-lia-text-primary focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20"
+                          />
+                          <p className="text-xs text-lia-text-tertiary">{hint}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
             <RecruitmentJourneyConfig
               stages={localStages}
               onChange={setLocalStages}
