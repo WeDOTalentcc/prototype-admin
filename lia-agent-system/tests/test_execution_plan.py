@@ -238,20 +238,10 @@ class TestPlanDetector:
         assert plan is not None
         assert plan.detected_pattern == "gerar_jd_e_avaliar"
 
-    def test_triagem_e_agendar(self):
-        plan = self.detector.detect("triar candidatos e agendar entrevista")
-        assert plan is not None
-        assert plan.detected_pattern == "triagem_e_agendar"
-
     def test_avaliar_e_notificar(self):
         plan = self.detector.detect("avaliar candidato e notificar resultado")
         assert plan is not None
         assert plan.detected_pattern == "avaliar_e_notificar"
-
-    def test_filtrar_e_reportar(self):
-        plan = self.detector.detect("filtrar candidatos e gerar relatório")
-        assert plan is not None
-        assert plan.detected_pattern == "filtrar_e_reportar"
 
     def test_criar_vaga_e_publicar_NUNCA_vira_plano(self):
         """Task #1211 (INVIOLÁVEL): criação de vaga é SEMPRE e SÓ o wizard
@@ -285,11 +275,6 @@ class TestPlanDetector:
         plan = self.detector.detect("buscar candidatos java e triar")
         assert plan is not None
         assert plan.detected_pattern == "buscar_e_triar"
-
-    def test_relatorio_e_exportar(self):
-        plan = self.detector.detect("gerar relatório e exportar em PDF")
-        assert plan is not None
-        assert plan.detected_pattern == "relatorio_e_exportar"
 
     def test_no_match_simple_query(self):
         plan = self.detector.detect("buscar candidatos python")
@@ -350,6 +335,51 @@ class TestPlanDetector:
         assert all("name" in p and "description" in p for p in patterns)
         names = [p["name"] for p in patterns]
         assert len(names) == len(set(names)), "pattern names must be unique"
+
+    def test_removed_patterns_are_gone(self):
+        """Task #1222: triagem/onboarding viram agentes contínuos; relatórios
+        não são P&E one-shot. Esses 4 patterns foram REMOVIDOS e não podem voltar
+        como plano P&E (handoff honesto via agent_handoff em vez de fake)."""
+        names = {p.name for p in PLAN_PATTERNS}
+        removed = {
+            "triagem_e_agendar",
+            "onboarding_pipeline",
+            "filtrar_e_reportar",
+            "relatorio_e_exportar",
+        }
+        leaked = names & removed
+        assert leaked == set(), f"padrões removidos reapareceram: {leaked}"
+
+    def test_canonical_pattern_set_is_fixed(self):
+        """Sentinela do conjunto canônico de patterns P&E remanescente. Mudar
+        este conjunto (add/remove) exige atualizar este teste de propósito — é o
+        registro compartilhado de que as flow tasks (#1226–#1229) dependem."""
+        expected = {
+            "buscar_e_comparar",
+            "buscar_top_e_detalhar",
+            "gerar_jd_e_avaliar",
+            "avaliar_e_notificar",
+            "analisar_e_planejar",
+            "agendar_e_lembrar",
+            "mover_e_notificar",
+            "buscar_e_triar",
+            "adicionar_analisar_wsi",
+            "upload_cadastrar_triar",
+            "launch_job_sourcing",
+            "close_stale_jobs",
+            "screening_campaign",
+            "full_hiring_launch",
+            "weekly_report",
+            "candidate_nurturing",
+            "interview_prep_pack",
+            "talent_pool_build",
+            "end_of_month_closure",
+        }
+        actual = {p.name for p in PLAN_PATTERNS}
+        assert actual == expected, (
+            "conjunto canônico de patterns mudou — atualize este teste de propósito. "
+            f"faltando={expected - actual} extra={actual - expected}"
+        )
 
     def test_no_plan_pattern_creates_a_job(self):
         """INVIOLABLE (Task #1211): Plan & Execute must NEVER create a job.
@@ -436,6 +466,35 @@ class TestPlanExecutor:
         assert result.tasks[0].status == TaskStatus.COMPLETED
         assert isinstance(result.tasks[0].result, DomainResponse)
 
+    @pytest.mark.asyncio
+    async def test_deferred_agent_step_never_fakes_success(self, executor):
+        """Task #1222: a CONTINUOUS-agent step (triagem/WSI) must hand off
+        honestly — never a fake success — even on the no-registry fallback path
+        that would otherwise return success for any action."""
+        from app.shared.execution.agent_handoff import HANDOFF_METADATA_KEY
+
+        plan = ExecutionPlan()
+        plan.add_task(AgentTask(task_id="task_0", domain_id="cv_screening",
+                                action_id="run_wsi_screening"))
+        result = await executor.execute(plan)
+
+        task = result.tasks[0]
+        assert task.status == TaskStatus.FAILED  # did NOT execute
+        assert isinstance(task.result, DomainResponse)
+        assert task.result.success is False
+        meta = task.result.metadata[HANDOFF_METADATA_KEY]
+        assert meta["kind"] == "triagem_wsi"
+        assert meta["executed"] is False
+
+    @pytest.mark.asyncio
+    async def test_discrete_step_still_executes(self, executor):
+        """Counterpart: a discrete (non-deferred) action still runs normally."""
+        plan = ExecutionPlan()
+        plan.add_task(AgentTask(task_id="task_0", domain_id="automation",
+                                action_id="move_candidate_stage"))
+        result = await executor.execute(plan)
+        assert result.tasks[0].status == TaskStatus.COMPLETED
+
     def test_build_consolidated_response_success(self, executor):
         plan = ExecutionPlan(plan_id="test")
         plan.detected_pattern = "buscar_e_comparar"
@@ -457,6 +516,33 @@ class TestPlanExecutor:
         plan.add_task(t)
         response = executor.build_consolidated_response(plan)
         assert response.success is False
+
+    def test_build_consolidated_response_handoff_is_not_fake_success(self, executor):
+        """Task #1222: a plan where a discrete step completed but a continuous
+        step handed off must NOT yield success=True (even if status is PARTIAL).
+        The handoff is surfaced in metadata so the LIA can be honest."""
+        from app.shared.execution.agent_handoff import (
+            HANDOFF_METADATA_KEY,
+            build_handoff_response,
+        )
+
+        plan = ExecutionPlan()
+        plan.detected_pattern = "buscar_e_triar"
+        plan.status = PlanStatus.PARTIAL
+        done = AgentTask(task_id="t0", domain_id="sourcing", action_id="search",
+                         status=TaskStatus.COMPLETED)
+        done.result = DomainResponse.success_response(message="Found 5 candidates")
+        deferred = AgentTask(task_id="t1", domain_id="cv_screening",
+                             action_id="run_wsi_screening", status=TaskStatus.FAILED)
+        deferred.result = build_handoff_response("cv_screening", "run_wsi_screening")
+        plan.add_task(done)
+        plan.add_task(deferred)
+
+        response = executor.build_consolidated_response(plan)
+        assert response.success is False
+        assert response.error == HANDOFF_METADATA_KEY
+        assert len(response.metadata["agent_handoffs"]) == 1
+        assert response.metadata["agent_handoffs"][0]["executed"] is False
 
     def test_resolve_context_path_from_context_data(self, executor):
         plan = ExecutionPlan()

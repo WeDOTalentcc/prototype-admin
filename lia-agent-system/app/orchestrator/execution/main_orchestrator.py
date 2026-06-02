@@ -786,17 +786,24 @@ class MainOrchestrator:
                             except Exception as _pe_exc:
                                 logger.warning("[LIA-P&E] memory persist failed: %s", _pe_exc)
 
+                        # Task #1222: derive success/action_executed from the REAL
+                        # plan result — never hardcode True. When a step handed off
+                        # to a continuous agent (honest handoff), the consolidated
+                        # response is success=False, so the envelope must NOT claim
+                        # the action was executed.
+                        _plan_handoffs = (_plan_domain_resp.metadata or {}).get("agent_handoffs", [])
                         _plan_resp = ChatResponse(
-                            success=True,
+                            success=_plan_domain_resp.success,
                             content=_plan_text,
                             intent_detected="plan_execute",
                             conversation_id=conv_id,
-                            action_executed=True,
+                            action_executed=_plan_domain_resp.success,
                             structured_data={
                                 "plan_id": _completed_plan.plan_id,
                                 "pattern": _completed_plan.detected_pattern,
                                 "tasks": len(_completed_plan.tasks),
                                 "status": _completed_plan.status.value,
+                                "agent_handoffs": _plan_handoffs,
                             },
                         )
                         if _soft_warnings:

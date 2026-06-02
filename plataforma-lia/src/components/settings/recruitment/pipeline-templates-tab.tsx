@@ -1,214 +1,22 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useState } from "react"
 import { useTranslations } from "next-intl"
-import {
-  Maximize2,
-  Plus,
-  Edit,
-  Copy,
-  Archive,
-  Trash2,
-  Save,
-  X,
-  GripVertical,
-  Layers,
-  Sparkles,
-} from "lucide-react"
-import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  type DragEndEvent,
-} from "@dnd-kit/core"
-import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  useSortable,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable"
-import { CSS } from "@dnd-kit/utilities"
+import { Archive, Copy, Layers, Loader2, Maximize2, Plus, Sparkles, Trash2 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Switch } from "@/components/ui/switch"
 import { Chip } from "@/components/ui/chip"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog"
 
-import { usePipelineTemplates, type PipelineTemplateFull, type PipelineStage } from "@/hooks/pipeline/use-pipeline-templates"
+import { usePipelineTemplates } from "@/hooks/pipeline/use-pipeline-templates"
 import { useCompanyPipeline } from "@/hooks/company/use-company-pipeline"
 import { PipelineTemplateSheetEditor } from "./PipelineTemplateSheetEditor"
 
-type StageType = "automatic" | "manual" | "hybrid"
-
-interface EditorDraft {
-  id: string | null
-  name: string
-  description: string
-  is_default: boolean
-  is_active: boolean
-  is_archived: boolean
-  department_hint: string[]
-  seniority_hint: string[]
-  job_family_hint: string[]
-  stages: PipelineStage[]
-}
-
-const EMPTY_DRAFT: EditorDraft = {
-  id: null,
-  name: "",
-  description: "",
-  is_default: false,
-  is_active: true,
-  is_archived: false,
-  department_hint: [],
-  seniority_hint: [],
-  job_family_hint: [],
-  stages: [],
-}
-
-function parseCsv(input: string): string[] {
-  return input
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean)
-}
-
-function toCsv(arr: string[] | undefined | null): string {
-  return (arr ?? []).join(", ")
-}
-
-function templateToDraft(tpl: PipelineTemplateFull): EditorDraft {
-  return {
-    id: tpl.id,
-    name: tpl.name,
-    description: tpl.description ?? "",
-    is_default: tpl.is_default,
-    is_active: tpl.is_active,
-    is_archived: tpl.is_archived ?? false,
-    department_hint: tpl.department_hint ?? [],
-    seniority_hint: tpl.seniority_hint ?? [],
-    job_family_hint: tpl.job_family_hint ?? [],
-    stages: (tpl.stages ?? []).map((s, i) => ({
-      name: s.name,
-      order: s.order ?? i + 1,
-      type: (s.type as StageType) ?? "manual",
-      sla_days: s.sla_days ?? 0,
-      instructions: s.instructions ?? "",
-    })),
-  }
-}
-
-interface SortableStageProps {
-  stage: PipelineStage
-  index: number
-  onUpdate: (idx: number, patch: Partial<PipelineStage>) => void
-  onRemove: (idx: number) => void
-  tFields: (k: string) => string
-  tStageType: (k: string) => string
-  tActions: (k: string) => string
-}
-
-function SortableStage({ stage, index, onUpdate, onRemove, tFields, tStageType, tActions }: SortableStageProps) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-    id: String(index),
-  })
-  const style: React.CSSProperties = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-  }
-  return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className="flex items-start gap-3 p-3 border border-lia-border-subtle rounded-md bg-lia-bg-primary"
-    >
-      <button
-        type="button"
-        className="mt-2 cursor-grab text-lia-text-tertiary hover:text-lia-text-secondary"
-        {...attributes}
-        {...listeners}
-        aria-label="Drag handle"
-      >
-        <GripVertical className="w-4 h-4" />
-      </button>
-      <div className="flex-1 grid grid-cols-1 md:grid-cols-12 gap-3">
-        <div className="md:col-span-5">
-          <Label className="text-xs">{tFields("stageName")}</Label>
-          <Input
-            value={stage.name}
-            onChange={(e) => onUpdate(index, { name: e.target.value })}
-            placeholder={tFields("stageNamePlaceholder")}
-          />
-        </div>
-        <div className="md:col-span-3">
-          <Label className="text-xs">{tFields("stageType")}</Label>
-          <Select
-            value={stage.type}
-            onValueChange={(v) => onUpdate(index, { type: v as StageType })}
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="automatic">{tStageType("automatic")}</SelectItem>
-              <SelectItem value="manual">{tStageType("manual")}</SelectItem>
-              <SelectItem value="hybrid">{tStageType("hybrid")}</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="md:col-span-2">
-          <Label className="text-xs">{tFields("slaDays")}</Label>
-          <Input
-            type="number"
-            min={0}
-            value={stage.sla_days}
-            onChange={(e) => onUpdate(index, { sla_days: Number(e.target.value) || 0 })}
-          />
-        </div>
-        <div className="md:col-span-2 flex items-end justify-end">
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => onRemove(index)}
-            className="text-status-error hover:bg-status-error/10"
-            aria-label={tActions("removeStage")}
-          >
-            <Trash2 className="w-4 h-4" />
-          </Button>
-        </div>
-        <div className="md:col-span-12">
-          <Label className="text-xs">{tFields("stageInstructions")}</Label>
-          <Textarea
-            value={stage.instructions ?? ""}
-            onChange={(e) => onUpdate(index, { instructions: e.target.value })}
-            rows={2}
-            placeholder={tFields("stageInstructionsPlaceholder")}
-          />
-        </div>
-      </div>
-
-    </div>
-  )
-}
+// ─── ConfirmDialog ────────────────────────────────────────────────────────────
 
 interface ConfirmDialogProps {
   open: boolean
@@ -221,120 +29,60 @@ interface ConfirmDialogProps {
   onCancel: () => void
 }
 
-function ConfirmDialog({
-  open,
-  title,
-  description,
-  confirmLabel,
-  cancelLabel,
-  destructive,
-  onConfirm,
-  onCancel,
-}: ConfirmDialogProps) {
+function ConfirmDialog({ open, title, description, confirmLabel, cancelLabel, destructive, onConfirm, onCancel }: ConfirmDialogProps) {
   return (
-    <Dialog open={open} onOpenChange={(o) => { if (!o) onCancel() }}>
+    <Dialog open={open} onOpenChange={(v) => { if (!v) onCancel() }}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          <Button variant="outline" onClick={onCancel}>
-            {cancelLabel}
-          </Button>
-          <Button
-            variant={destructive ? "destructive" : "primary"}
-            onClick={onConfirm}
-          >
-            {confirmLabel}
-          </Button>
+          <Button variant="outline" onClick={onCancel}>{cancelLabel}</Button>
+          <Button variant={destructive ? "destructive" : "default"} onClick={onConfirm}>{confirmLabel}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   )
 }
 
-export function PipelineTemplatesTab({ onSettingsChange }: { onSettingsChange?: (changed: boolean) => void }) {
-  const t = useTranslations("settings.recruitment.pipelineTemplates")
-  const tActions = useTranslations("settings.recruitment.pipelineTemplates.actions")
-  const tFields = useTranslations("settings.recruitment.pipelineTemplates.fields")
-  const tStates = useTranslations("settings.recruitment.pipelineTemplates.states")
-  const tEmpty = useTranslations("settings.recruitment.pipelineTemplates.empty")
-  const tStageType = useTranslations("settings.recruitment.pipelineTemplates.stageType")
-  const tHints = useTranslations("settings.recruitment.pipelineTemplates.hints")
+// ─── PipelineTemplatesTab ─────────────────────────────────────────────────────
 
-  const { pipeline: companyPipeline } = useCompanyPipeline()
+export function PipelineTemplatesTab({ onSettingsChange }: { onSettingsChange?: (changed: boolean) => void }) {
+  const t       = useTranslations("settings.recruitment.pipelineTemplates")
+  const tEmpty  = useTranslations("settings.recruitment.pipelineTemplates.empty")
+  const tHints  = useTranslations("settings.recruitment.pipelineTemplates.hints")
+  const tStates = useTranslations("settings.recruitment.pipelineTemplates.states")
+  const tActions = useTranslations("settings.recruitment.pipelineTemplates.actions")
 
   const {
     templates,
     isLoading,
-    error,
+    error: loadError,
     createTemplate,
-    updateTemplate,
     cloneTemplate,
     archiveTemplate,
     deleteTemplate,
     seedDefaults,
   } = usePipelineTemplates()
 
-  const [selectedId, setSelectedId] = useState<string | null>(null)
-  const [sheetOpen, setSheetOpen] = useState(false)
-  const [sheetTemplateId, setSheetTemplateId] = useState<string | null>(null)
-  const [draft, setDraft] = useState<EditorDraft>(EMPTY_DRAFT)
-  const [isDirty, setIsDirty] = useState(false)
-  const [confirmArchive, setConfirmArchive] = useState<string | null>(null)
-  const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
+  const { pipeline: companyPipeline } = useCompanyPipeline()
+
+  // ── estado ──────────────────────────────────────────────────────────────────
   const [busy, setBusy] = useState(false)
+  const [confirmArchive, setConfirmArchive] = useState<string | null>(null)
+  const [confirmDelete, setConfirmDelete]   = useState<string | null>(null)
 
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
-  )
+  // Sheet editor
+  const [sheetOpen, setSheetOpen]           = useState(false)
+  const [sheetTemplateId, setSheetTemplateId] = useState<string | null>(null)
 
-  const selectedTemplate = useMemo(
-    () => templates.find((t) => t.id === selectedId) ?? null,
-    [templates, selectedId]
-  )
+  // Inline form para novo template
+  const [showNewForm, setShowNewForm]       = useState(false)
+  const [newTemplateName, setNewTemplateName] = useState("")
+  const [creatingNew, setCreatingNew]       = useState(false)
 
-  function markDirty() {
-    setIsDirty(true)
-    onSettingsChange?.(true)
-  }
-
-  function loadTemplateIntoEditor(tpl: PipelineTemplateFull | null) {
-    if (!tpl) {
-      setDraft(EMPTY_DRAFT)
-    } else {
-      setDraft(templateToDraft(tpl))
-    }
-    setIsDirty(false)
-  }
-
-  function handleSelect(id: string) {
-    if (isDirty && !window.confirm(t("unsavedConfirm"))) return
-    setSelectedId(id)
-    const tpl = templates.find((x) => x.id === id) ?? null
-    loadTemplateIntoEditor(tpl)
-  }
-
-  function handleNewFromPadrao() {
-    if (isDirty && !window.confirm(t("unsavedConfirm"))) return
-    if (!companyPipeline || companyPipeline.length === 0) {
-      handleNew(); return
-    }
-    setSelectedId(null)
-    const stages = companyPipeline
-      .filter((s: any) => s.stageCategory !== "system")
-      .map((s: any, i: number) => ({
-        name: s.name || s.stageName,
-        order: s.order || i + 1,
-        type: (s.liaAssisted ? "hybrid" : "manual") as StageType,
-        sla_days: s.slaDays ?? s.defaultSlaDays ?? 3,
-        instructions: "",
-      }))
-    setDraft({ ...EMPTY_DRAFT, name: t("newTemplateDefaultName"), stages })
-    setIsDirty(true)
-  }
+  // ── handlers ────────────────────────────────────────────────────────────────
 
   function openSheetEditor(id: string) {
     setSheetTemplateId(id)
@@ -342,10 +90,84 @@ export function PipelineTemplatesTab({ onSettingsChange }: { onSettingsChange?: 
   }
 
   function handleNew() {
-    if (isDirty && !window.confirm(t("unsavedConfirm"))) return
-    setSelectedId(null)
-    setDraft({ ...EMPTY_DRAFT, name: t("newTemplateDefaultName") })
-    setIsDirty(true)
+    setShowNewForm(true)
+    setNewTemplateName("")
+  }
+
+  async function handleCreateNew(name: string) {
+    const trimmed = name.trim()
+    if (!trimmed) return
+    setCreatingNew(true)
+    try {
+      const created = await createTemplate({ name: trimmed, stages: [] })
+      if (created) {
+        setShowNewForm(false)
+        setNewTemplateName("")
+        openSheetEditor(created.id)
+        onSettingsChange?.(true)
+      }
+    } finally {
+      setCreatingNew(false)
+    }
+  }
+
+  async function handleNewFromPadrao() {
+    if (!companyPipeline || companyPipeline.length === 0) {
+      handleNew()
+      return
+    }
+    const stages = (companyPipeline as any[])
+      .filter((s) => s.stageCategory !== "system")
+      .map((s, idx) => ({
+        name: s.name || s.stageName,
+        display_name: s.display_name || s.stageName,
+        order: idx + 1,
+        type: (s.liaAssisted ? "hybrid" : "manual") as "automatic" | "manual" | "hybrid",
+        sla_days: s.slaDays ?? s.defaultSlaDays ?? 3,
+        instructions: "",
+      }))
+    setBusy(true)
+    try {
+      const created = await createTemplate({ name: t("newTemplateDefaultName"), stages })
+      if (created) {
+        openSheetEditor(created.id)
+        onSettingsChange?.(true)
+      }
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function handleClone(id: string) {
+    setBusy(true)
+    try {
+      const cloned = await cloneTemplate(id)
+      if (cloned) openSheetEditor(cloned.id)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function handleArchive(id: string) {
+    setBusy(true)
+    try {
+      await archiveTemplate(id)
+      onSettingsChange?.(true)
+    } finally {
+      setBusy(false)
+      setConfirmArchive(null)
+    }
+  }
+
+  async function handleDelete(id: string) {
+    setBusy(true)
+    try {
+      await deleteTemplate(id)
+      onSettingsChange?.(true)
+    } finally {
+      setBusy(false)
+      setConfirmDelete(null)
+    }
   }
 
   async function handleSeedDefaults() {
@@ -357,157 +179,68 @@ export function PipelineTemplatesTab({ onSettingsChange }: { onSettingsChange?: 
     }
   }
 
-  async function handleSave() {
-    if (!draft.name.trim() || draft.stages.length === 0) return
-    try {
-      setBusy(true)
-      const payload = {
-        name: draft.name.trim(),
-        description: draft.description.trim() || null,
-        is_default: draft.is_default,
-        is_active: draft.is_active,
-        department_hint: draft.department_hint,
-        seniority_hint: draft.seniority_hint,
-        job_family_hint: draft.job_family_hint,
-        stages: draft.stages.map((s, i) => ({ ...s, order: i + 1 })),
-      }
-      if (draft.id) {
-        const updated = await updateTemplate(draft.id, payload)
-        if (updated) loadTemplateIntoEditor(updated)
-      } else {
-        const created = await createTemplate(payload)
-        if (created) {
-          setSelectedId(created.id)
-          loadTemplateIntoEditor(created)
-        }
-      }
-      setIsDirty(false)
-      onSettingsChange?.(false)
-    } finally {
-      setBusy(false)
-    }
-  }
-
-  async function handleClone(id: string) {
-    try {
-      setBusy(true)
-      const cloned = await cloneTemplate(id)
-      if (cloned) {
-        setSelectedId(cloned.id)
-        loadTemplateIntoEditor(cloned)
-      }
-    } finally {
-      setBusy(false)
-    }
-  }
-
-  async function handleArchive(id: string) {
-    try {
-      setBusy(true)
-      await archiveTemplate(id)
-      if (selectedId === id) {
-        setSelectedId(null)
-        loadTemplateIntoEditor(null)
-      }
-    } finally {
-      setConfirmArchive(null)
-      setBusy(false)
-    }
-  }
-
-  async function handleDelete(id: string) {
-    try {
-      setBusy(true)
-      await deleteTemplate(id)
-      if (selectedId === id) {
-        setSelectedId(null)
-        loadTemplateIntoEditor(null)
-      }
-    } finally {
-      setConfirmDelete(null)
-      setBusy(false)
-    }
-  }
-
-  function updateStage(idx: number, patch: Partial<PipelineStage>) {
-    setDraft((d) => ({
-      ...d,
-      stages: d.stages.map((s, i) => (i === idx ? { ...s, ...patch } : s)),
-    }))
-    markDirty()
-  }
-
-  function addStage() {
-    setDraft((d) => ({
-      ...d,
-      stages: [
-        ...d.stages,
-        {
-          name: t("newStageDefaultName"),
-          order: d.stages.length + 1,
-          type: "manual",
-          sla_days: 0,
-          instructions: "",
-        },
-      ],
-    }))
-    markDirty()
-  }
-
-  function removeStage(idx: number) {
-    setDraft((d) => ({
-      ...d,
-      stages: d.stages.filter((_, i) => i !== idx),
-    }))
-    markDirty()
-  }
-
-  function handleDragEnd(event: DragEndEvent) {
-    const { active, over } = event
-    if (!over || active.id === over.id) return
-    const from = Number(active.id)
-    const to = Number(over.id)
-    setDraft((d) => ({
-      ...d,
-      stages: arrayMove(d.stages, from, to).map((s, i) => ({ ...s, order: i + 1 })),
-    }))
-    markDirty()
-  }
-
+  // ── render ──────────────────────────────────────────────────────────────────
   return (
     <div className="space-y-4">
+      {/* Cabeçalho */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <h2 className="text-base font-semibold text-lia-text-primary">{t("title")}</h2>
           <p className="text-sm text-lia-text-secondary mt-1 max-w-2xl">{t("subtitle")}</p>
         </div>
+
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            className="gap-2 text-xs h-9"
-            onClick={handleNewFromPadrao}
-            disabled={!companyPipeline || companyPipeline.length === 0}
-            title="Pré-preenche o editor com as etapas do pipeline padrão da empresa"
-          >
-            <Copy className="w-3.5 h-3.5" />
-            A partir do Padrão
-          </Button>
-          <Button onClick={handleNew} className="gap-2">
-          <Plus className="w-4 h-4" />
-          {t("newTemplate")}
-        </Button>
+          {showNewForm ? (
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                value={newTemplateName}
+                onChange={(e) => setNewTemplateName(e.target.value)}
+                placeholder="Nome do template..."
+                autoFocus
+                className="text-xs px-2.5 py-1.5 rounded-lg border border-lia-border-subtle bg-lia-bg-primary text-lia-text-primary placeholder:text-lia-text-disabled focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 w-44"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleCreateNew(newTemplateName)
+                  if (e.key === "Escape") { setShowNewForm(false); setNewTemplateName("") }
+                }}
+              />
+              <Button size="sm" onClick={() => handleCreateNew(newTemplateName)} disabled={!newTemplateName.trim() || creatingNew} className="h-8">
+                {creatingNew ? <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" /> : "Criar"}
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => { setShowNewForm(false); setNewTemplateName("") }} className="h-8">
+                Cancelar
+              </Button>
+            </div>
+          ) : (
+            <>
+              <Button
+                variant="outline"
+                className="gap-2 text-xs h-9"
+                onClick={handleNewFromPadrao}
+                disabled={busy || !companyPipeline || companyPipeline.length === 0}
+                title="Criar template pré-preenchido com as etapas do Pipeline Padrão da empresa"
+              >
+                <Copy className="w-3.5 h-3.5" />
+                A partir do Padrão
+              </Button>
+              <Button onClick={handleNew} className="gap-2" disabled={busy}>
+                <Plus className="w-4 h-4" />
+                {t("newTemplate")}
+              </Button>
+            </>
+          )}
         </div>
       </div>
 
-      {error && (
+      {/* Banner de erro */}
+      {loadError && (
         <Card className="border-status-error/30 bg-status-error/5">
-          <CardContent className="p-4 text-sm text-status-error">
-            {t("loadError")}
-          </CardContent>
+          <CardContent className="p-4 text-sm text-status-error">{t("loadError")}</CardContent>
         </Card>
       )}
 
-      {!isLoading && templates.length === 0 && !error ? (
+      {/* Estado vazio */}
+      {!isLoading && templates.length === 0 && !loadError ? (
         <Card>
           <CardContent className="p-10 text-center space-y-4">
             <Layers className="w-12 h-12 mx-auto opacity-30" />
@@ -528,248 +261,123 @@ export function PipelineTemplatesTab({ onSettingsChange }: { onSettingsChange?: 
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-          {/* List */}
-          <div className="lg:col-span-5 space-y-3">
-            {isLoading && (
-              <Card><CardContent className="p-4 text-sm text-lia-text-secondary">{t("loading")}</CardContent></Card>
-            )}
-            {templates.map((tpl) => {
-              const isSelected = tpl.id === selectedId
-              const hintBadges = [
-                ...(tpl.department_hint ?? []),
-                ...(tpl.seniority_hint ?? []),
-                ...(tpl.job_family_hint ?? []),
-              ].slice(0, 3)
-              const stageCount = (tpl.stages ?? []).length
-              const usage = tpl.usage_count ?? 0
-              return (
-                <Card
-                  key={tpl.id}
-                  className={cn(
-                    "cursor-pointer transition-colors",
-                    isSelected ? "border-lia-btn-primary-bg ring-1 ring-lia-btn-primary-bg" : "hover:border-lia-border-strong"
-                  )}
-                  onClick={() => handleSelect(tpl.id)}
-                >
-                  <CardContent className="p-4 space-y-3">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex-1 min-w-0">
+        /* Lista full-width (sem dual-card) */
+        <div className="space-y-3">
+          {isLoading && (
+            <Card>
+              <CardContent className="p-4 text-sm text-lia-text-secondary flex items-center gap-2">
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                {t("loading")}
+              </CardContent>
+            </Card>
+          )}
+
+          {templates.map((tpl) => {
+            const hintBadges = [
+              ...(tpl.department_hint ?? []),
+              ...(tpl.seniority_hint ?? []),
+              ...(tpl.job_family_hint ?? []),
+            ].slice(0, 4)
+            const stageCount = (tpl.stages ?? []).length
+            const usage = tpl.usage_count ?? 0
+            const isActive = sheetTemplateId === tpl.id && sheetOpen
+
+            return (
+              <Card
+                key={tpl.id}
+                className={cn(
+                  "transition-colors cursor-pointer",
+                  isActive ? "border-lia-btn-primary-bg ring-1 ring-lia-btn-primary-bg" : "hover:border-lia-border-strong"
+                )}
+                onClick={() => openSheetEditor(tpl.id)}
+              >
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between gap-4">
+                    {/* Info */}
+                    <div className="flex-1 min-w-0 space-y-1.5">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <h3 className="font-medium text-lia-text-primary truncate">{tpl.name}</h3>
-                        {tpl.description && (
-                          <p className="text-sm text-lia-text-secondary line-clamp-2 mt-0.5">{tpl.description}</p>
+                        <Chip variant={tpl.is_archived ? "neutral" : "success"}>
+                          {tpl.is_archived ? tStates("archived") : tStates("active")}
+                        </Chip>
+                        {tpl.is_default && (
+                          <Chip variant="neutral" className="text-xs">Padrão</Chip>
                         )}
                       </div>
-                      <Chip variant={tpl.is_archived ? "neutral" : "success"}>
-                        {tpl.is_archived ? tStates("archived") : tStates("active")}
-                      </Chip>
-                    </div>
-
-                    {hintBadges.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5">
+                      {tpl.description && (
+                        <p className="text-sm text-lia-text-secondary line-clamp-1">{tpl.description}</p>
+                      )}
+                      <div className="flex items-center gap-3 flex-wrap">
+                        <span className="text-xs text-lia-text-tertiary">
+                          {stageCount === 1
+                            ? tHints("stagesCount_one", { count: stageCount })
+                            : tHints("stagesCount_other", { count: stageCount })}
+                          {" · "}
+                          {usage === 1
+                            ? tHints("usageCount_one", { count: usage })
+                            : tHints("usageCount_other", { count: usage })}
+                        </span>
                         {hintBadges.map((h, i) => (
                           <Chip key={`${h}-${i}`} variant="neutral" className="text-xs">{h}</Chip>
                         ))}
                       </div>
-                    )}
+                    </div>
 
-                    <div className="flex items-center justify-between text-xs text-lia-text-secondary">
-                      <span>
-                        {stageCount === 1 ? tHints("stagesCount_one", { count: stageCount }) : tHints("stagesCount_other", { count: stageCount })}
-                        {" · "}
-                        {usage === 1 ? tHints("usageCount_one", { count: usage }) : tHints("usageCount_other", { count: usage })}
-                      </span>
-                      <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                    {/* Acões */}
+                    <div className="flex items-center gap-1 flex-none" onClick={(e) => e.stopPropagation()}>
+                      <Button
+                        variant="ghost" size="sm"
+                        onClick={() => openSheetEditor(tpl.id)}
+                        aria-label="Editar pipeline completo"
+                        title="Editar etapas, sub-statuses, SLA e comportamento"
+                        className="h-8 w-8 p-0"
+                      >
+                        <Maximize2 className="w-3.5 h-3.5" />
+                      </Button>
+                      <Button
+                        variant="ghost" size="sm"
+                        disabled={busy}
+                        onClick={() => handleClone(tpl.id)}
+                        aria-label={tActions("clone")}
+                        title={tActions("clone")}
+                        className="h-8 w-8 p-0"
+                      >
+                        <Copy className="w-3.5 h-3.5" />
+                      </Button>
+                      {!tpl.is_archived && (
                         <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => openSheetEditor(tpl.id)}
-                          aria-label="Editar pipeline completo"
-                          title="Editar etapas e sub-statuses"
-                          className="h-7 w-7 p-0"
-                        >
-                          <Maximize2 className="w-3.5 h-3.5" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
+                          variant="ghost" size="sm"
                           disabled={busy}
-                          onClick={() => handleClone(tpl.id)}
-                          aria-label={tActions("clone")}
-                          className="h-7 w-7 p-0"
-                        >
-                          <Copy className="w-3.5 h-3.5" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          disabled={busy || tpl.is_archived}
                           onClick={() => setConfirmArchive(tpl.id)}
                           aria-label={tActions("archive")}
-                          className="h-7 w-7 p-0"
+                          title={tActions("archive")}
+                          className="h-8 w-8 p-0"
                         >
                           <Archive className="w-3.5 h-3.5" />
                         </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              )
-            })}
-          </div>
-
-          {/* Editor */}
-          <div className="lg:col-span-7">
-            <Card>
-              <CardContent className="p-5 space-y-5">
-                {!draft.id && !isDirty ? (
-                  <div className="text-center py-10 text-sm text-lia-text-secondary">
-                    {t("selectOrCreate")}
-                  </div>
-                ) : (
-                  <>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="md:col-span-2">
-                        <Label>{tFields("name")}</Label>
-                        <Input
-                          value={draft.name}
-                          onChange={(e) => { setDraft((d) => ({ ...d, name: e.target.value })); markDirty() }}
-                          placeholder={tFields("namePlaceholder")}
-                        />
-                      </div>
-                      <div className="md:col-span-2">
-                        <Label>{tFields("description")}</Label>
-                        <Textarea
-                          value={draft.description}
-                          onChange={(e) => { setDraft((d) => ({ ...d, description: e.target.value })); markDirty() }}
-                          rows={2}
-                        />
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <Switch
-                          checked={draft.is_default}
-                          onCheckedChange={(v) => { setDraft((d) => ({ ...d, is_default: v })); markDirty() }}
-                        />
-                        <Label className="cursor-pointer">{tFields("isDefault")}</Label>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <Switch
-                          checked={draft.is_active}
-                          onCheckedChange={(v) => { setDraft((d) => ({ ...d, is_active: v })); markDirty() }}
-                        />
-                        <Label className="cursor-pointer">{tFields("isActive")}</Label>
-                      </div>
-
-                      <div className="md:col-span-2">
-                        <Label>{tFields("departmentHint")}</Label>
-                        <Input
-                          value={toCsv(draft.department_hint)}
-                          onChange={(e) => { setDraft((d) => ({ ...d, department_hint: parseCsv(e.target.value) })); markDirty() }}
-                          placeholder={tFields("departmentHintPlaceholder")}
-                        />
-                        <p className="text-xs text-lia-text-tertiary mt-1">{tFields("csvHelp")}</p>
-                      </div>
-                      <div>
-                        <Label>{tFields("seniorityHint")}</Label>
-                        <Input
-                          value={toCsv(draft.seniority_hint)}
-                          onChange={(e) => { setDraft((d) => ({ ...d, seniority_hint: parseCsv(e.target.value) })); markDirty() }}
-                          placeholder={tFields("seniorityHintPlaceholder")}
-                        />
-                      </div>
-                      <div>
-                        <Label>{tFields("jobFamilyHint")}</Label>
-                        <Input
-                          value={toCsv(draft.job_family_hint)}
-                          onChange={(e) => { setDraft((d) => ({ ...d, job_family_hint: parseCsv(e.target.value) })); markDirty() }}
-                          placeholder={tFields("jobFamilyHintPlaceholder")}
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <div className="flex items-center justify-between mb-3">
-                        <h3 className="text-sm font-semibold">{t("stagesHeading")}</h3>
-                        <Button type="button" variant="outline" size="sm" onClick={addStage} className="gap-1.5">
-                          <Plus className="w-3.5 h-3.5" />
-                          {tActions("addStage")}
+                      )}
+                      {!tpl.is_default && (
+                        <Button
+                          variant="ghost" size="sm"
+                          disabled={busy}
+                          onClick={() => setConfirmDelete(tpl.id)}
+                          aria-label={tActions("delete")}
+                          title={tActions("delete")}
+                          className="h-8 w-8 p-0 text-status-error hover:bg-status-error/10"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
                         </Button>
-                      </div>
-                      {draft.stages.length === 0 ? (
-                        <p className="text-sm text-lia-text-secondary py-6 text-center border border-dashed rounded-md">
-                          {t("noStages")}
-                        </p>
-                      ) : (
-                        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                          <SortableContext
-                            items={draft.stages.map((_, i) => String(i))}
-                            strategy={verticalListSortingStrategy}
-                          >
-                            <div className="space-y-2">
-                              {draft.stages.map((stage, idx) => (
-                                <SortableStage
-                                  key={`${idx}-${stage.name}`}
-                                  stage={stage}
-                                  index={idx}
-                                  onUpdate={updateStage}
-                                  onRemove={removeStage}
-                                  tFields={tFields}
-                                  tStageType={tStageType}
-                                  tActions={tActions}
-                                />
-                              ))}
-                            </div>
-                          </SortableContext>
-                        </DndContext>
                       )}
                     </div>
-
-                    <div className="flex items-center justify-between pt-2 border-t border-lia-border-subtle">
-                      <div>
-                        {selectedTemplate && !selectedTemplate.is_default && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            disabled={busy}
-                            onClick={() => setConfirmDelete(selectedTemplate.id)}
-                            className="text-status-error hover:bg-status-error/10 gap-1.5"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                            {tActions("delete")}
-                          </Button>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="outline"
-                          onClick={() => {
-                            loadTemplateIntoEditor(selectedTemplate)
-                            onSettingsChange?.(false)
-                          }}
-                          disabled={busy || !isDirty}
-                          className="gap-1.5"
-                        >
-                          <X className="w-3.5 h-3.5" />
-                          {tActions("cancel")}
-                        </Button>
-                        <Button
-                          onClick={handleSave}
-                          disabled={busy || !isDirty || !draft.name.trim() || draft.stages.length === 0}
-                          className="gap-1.5"
-                        >
-                          <Save className="w-3.5 h-3.5" />
-                          {tActions("save")}
-                        </Button>
-                      </div>
-                    </div>
-                  </>
-                )}
-              </CardContent>
-            </Card>
-          </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )
+          })}
         </div>
       )}
 
+      {/* Diálogos de confirmação */}
       <ConfirmDialog
         open={!!confirmArchive}
         title={t("confirmArchiveTitle")}
@@ -789,6 +397,8 @@ export function PipelineTemplatesTab({ onSettingsChange }: { onSettingsChange?: 
         onConfirm={() => confirmDelete && handleDelete(confirmDelete)}
         onCancel={() => setConfirmDelete(null)}
       />
+
+      {/* Sheet editor full-screen */}
       <PipelineTemplateSheetEditor
         templateId={sheetTemplateId}
         open={sheetOpen}

@@ -8,6 +8,7 @@ from typing import Any
 
 
 from app.domains.base import DomainContext, DomainResponse
+from app.shared.execution.agent_handoff import HANDOFF_METADATA_KEY, build_handoff_response
 from app.shared.execution.execution_plan import AgentTask, ExecutionPlan, PlanStatus, TaskStatus
 
 logger = logging.getLogger(__name__)
@@ -228,6 +229,25 @@ class PlanExecutor:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.debug(f"Executing task {task.task_id}: {task.domain_id}.{task.action_id}")
 
+        # ── Honest handoff guard (Task #1222) ────────────────────────────────
+        # Some steps map to CONTINUOUS, monetizable agents (triagem/WSI, sourcing
+        # contínuo, onboarding) that are not available yet. The P&E executor must
+        # NEVER run — or fake — these. Hand off honestly and stop here, so even
+        # the no-registry fallback below can't produce a false success.
+        handoff = build_handoff_response(task.domain_id, task.action_id)
+        if handoff is not None:
+            logger.info(
+                f"Task {task.task_id} ({task.domain_id}.{task.action_id}) handed off "
+                f"to a continuous agent (not yet available) — not executed."
+            )
+            plan.update_task_result(
+                task.task_id,
+                result=handoff,
+                success=False,
+                error="agent_handoff: etapa contínua pertence a um agente ainda não disponível",
+            )
+            return
+
         resolved_params = dict(task.params)
         for param_key, context_path in task.context_mappings.items():
             value = self._resolve_context_path(context_path, plan)
@@ -422,12 +442,44 @@ class PlanExecutor:
                 msg += f": {task.error[:100]}"
             messages.append(msg)
 
-        combined_message = f"Plano '{plan.detected_pattern}' executado:\n" + "\n".join(messages)
+        # ── Honest handoff propagation (Task #1222) ──────────────────────────
+        # If any step handed off to a continuous agent, the plan did NOT fully
+        # execute its intended action. Never let the consolidated envelope claim
+        # success=True (even on PARTIAL) — that would be a fake success to the
+        # consumer. Surface the handoff explicitly so the LIA can be honest, and
+        # never headline the message with "executado" when nothing fully ran.
+        handoffs = [
+            task.result.metadata[HANDOFF_METADATA_KEY]
+            for task in plan.tasks
+            if isinstance(task.result, DomainResponse)
+            and task.result.metadata
+            and HANDOFF_METADATA_KEY in task.result.metadata
+        ]
+
+        if handoffs:
+            _header = f"Plano '{plan.detected_pattern}' — etapa(s) encaminhada(s) a um agente"
+        elif plan.status == PlanStatus.PARTIAL:
+            _header = f"Plano '{plan.detected_pattern}' parcialmente executado"
+        elif plan.status == PlanStatus.FAILED:
+            _header = f"Plano '{plan.detected_pattern}' não executado"
+        else:
+            _header = f"Plano '{plan.detected_pattern}' executado"
+        combined_message = f"{_header}:\n" + "\n".join(messages)
 
         combined_data: dict[str, Any] = {}
         for task in plan.tasks:
             if task.result and isinstance(task.result, DomainResponse) and task.result.data:
                 combined_data[task.task_id] = task.result.data
+
+        if handoffs:
+            return DomainResponse.error_response(
+                error="agent_handoff",
+                message=combined_message,
+                metadata={
+                    "execution_plan": plan.get_summary(),
+                    "agent_handoffs": handoffs,
+                },
+            )
 
         if plan.status in (PlanStatus.COMPLETED, PlanStatus.PARTIAL):
             return DomainResponse.success_response(

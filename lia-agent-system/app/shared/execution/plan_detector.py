@@ -82,18 +82,10 @@ PLAN_PATTERNS: list[PlanPattern] = [
         ],
         description="Gerar JD e avaliar candidatos contra ela",
     ),
-    PlanPattern(
-        name="triagem_e_agendar",
-        patterns=[
-            r"tri(?:ar|agem)\s+.*\s+e\s+agendar?",
-            r"avali(?:ar|a[cç][aã]o)\s+.*\s+e\s+agendar?\s+entrevista",
-        ],
-        pipeline=[
-            PipelineStep(domain_id="cv_screening", action_id="screen_candidates"),
-            PipelineStep(domain_id="interview_scheduling", action_id="schedule_interview", context_from="task_0.approved_ids"),
-        ],
-        description="Triar candidatos e agendar entrevistas para aprovados",
-    ),
+    # NOTE (Task #1222): the former "triagem_e_agendar" pattern was removed.
+    # Triagem (WSI screening) is a CONTINUOUS, monetizable agent, not a one-shot
+    # Plan & Execute action. When a flow reaches a triagem step it must hand off
+    # honestly (see app/shared/execution/agent_handoff.py) — never fake success.
     PlanPattern(
         name="avaliar_e_notificar",
         patterns=[
@@ -105,18 +97,9 @@ PLAN_PATTERNS: list[PlanPattern] = [
         ],
         description="Avaliar candidato e notificar sobre resultado",
     ),
-    PlanPattern(
-        name="filtrar_e_reportar",
-        patterns=[
-            r"filtr(?:ar|o)\s+.*\s+e\s+(gerar?\s+relat[oó]rio|report)",
-            r"buscar?\s+.*\s+e\s+gerar?\s+relat[oó]rio",
-        ],
-        pipeline=[
-            PipelineStep(domain_id="sourcing", action_id="filter_candidates"),
-            PipelineStep(domain_id="analytics", action_id="generate_report", context_from="task_0.filtered_data"),
-        ],
-        description="Filtrar candidatos e gerar relatório",
-    ),
+    # NOTE (Task #1222): the former "filtrar_e_reportar" pattern was removed.
+    # Relatórios não são ações one-shot do Plan & Execute (pertencem a dashboards
+    # / agente de analytics). Removido junto com "relatorio_e_exportar".
     # NOTE (Task #1211 — INVIOLABLE): There is intentionally NO plan pattern
     # that creates a job. Job creation is ALWAYS and ONLY the canonical wizard.
     # The former "criar_vaga_e_publicar" pattern (step action_id="create_job")
@@ -173,18 +156,8 @@ PLAN_PATTERNS: list[PlanPattern] = [
         ],
         description="Buscar candidatos e triar automaticamente",
     ),
-    PlanPattern(
-        name="relatorio_e_exportar",
-        patterns=[
-            r"gerar?\s+relat[oó]rio\s+e\s+export",
-            r"relat[oó]rio\s+.*\s+e\s+export",
-        ],
-        pipeline=[
-            PipelineStep(domain_id="analytics", action_id="generate_report"),
-            PipelineStep(domain_id="analytics", action_id="export_report", context_from="task_0.report_data"),
-        ],
-        description="Gerar relatório e exportar",
-    ),
+    # NOTE (Task #1222): the former "relatorio_e_exportar" pattern was removed
+    # (see "filtrar_e_reportar" note above) — relatórios não são P&E one-shot.
     PlanPattern(
         name="adicionar_analisar_wsi",
         patterns=[
@@ -259,21 +232,10 @@ PLAN_PATTERNS: list[PlanPattern] = [
         ],
         description="Campanha de triagem em lote",
     ),
-    PlanPattern(
-        name="onboarding_pipeline",
-        patterns=[
-            r"onboarding\s+(pipeline|flow|completo)",
-            r"preparar?\s+onboarding",
-            r"iniciar?\s+processo\s+de\s+admiss[aã]o",
-            r"day.?1\s+e\s+documentos",
-        ],
-        pipeline=[
-            PipelineStep(domain_id="communication", action_id="request_onboarding_documents"),
-            PipelineStep(domain_id="interview_scheduling", action_id="schedule_day_one", context_from="task_0.candidate_id"),
-            PipelineStep(domain_id="communication", action_id="notify_team_new_hire", context_from="task_0.candidate_id"),
-        ],
-        description="Pipeline completo de onboarding",
-    ),
+    # NOTE (Task #1222): the former "onboarding_pipeline" pattern was removed.
+    # Onboarding é um fluxo CONTÍNUO/multi-etapa (documentos, Day-1, avisos ao
+    # time) que pertence a um agente do Studio, não a uma ação one-shot do P&E.
+    # Handoff honesto via app/shared/execution/agent_handoff.py.
     PlanPattern(
         name="full_hiring_launch",
         patterns=[

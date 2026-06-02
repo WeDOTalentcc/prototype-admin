@@ -83,16 +83,10 @@ class PlanTemplateRegistry:
                 {"task_id": "update_status", "domain_id": "job_management", "action_id": "mark_screening_sent", "depends_on": ["send_wsi"], "is_critical": False},
             ]
         },
-        "onboarding_pipeline": {
-            "name": "Pipeline de Onboarding",
-            "description": "Prepara candidato aprovado: documentos, agenda Day-1, notifica equipe",
-            "steps": [
-                {"task_id": "collect_docs", "domain_id": "communication", "action_id": "request_onboarding_documents", "is_critical": True},
-                {"task_id": "schedule_day1", "domain_id": "interview_scheduling", "action_id": "schedule_day_one", "depends_on": ["collect_docs"], "is_critical": False},
-                {"task_id": "notify_team", "domain_id": "communication", "action_id": "notify_team_new_hire", "depends_on": ["schedule_day1"], "is_critical": False},
-                {"task_id": "update_stage", "domain_id": "job_management", "action_id": "mark_hired", "depends_on": ["collect_docs"], "is_critical": True},
-            ]
-        },
+        # NOTE (Task #1222): the "onboarding_pipeline" template was removed.
+        # Onboarding é um fluxo contínuo/multi-etapa que pertence a um agente do
+        # Studio, não a um template one-shot do Plan & Execute. Handoff honesto
+        # via app/shared/execution/agent_handoff.py.
         "full_hiring_launch": {
             "name": "Lancamento Completo de Vaga",
             "description": "Cria, enriquece, publica e inicia sourcing de uma nova vaga",

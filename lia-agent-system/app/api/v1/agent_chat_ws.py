@@ -1046,14 +1046,28 @@ company_id: str = Depends(require_company_id)):
                         source="plan_executor",
                         execution_plan=_executed.get_summary(),
                     ))
+                    # Task #1222: never report a fake success. When a step handed
+                    # off to a continuous agent (or the plan failed), the
+                    # consolidated response is success=False — reflect that
+                    # honestly in the background channel instead of "com sucesso".
+                    _plan_ok = bool(_consolidated.success)
+                    _plan_has_handoff = bool(
+                        (_consolidated.metadata or {}).get("agent_handoffs")
+                    )
+                    if _plan_has_handoff:
+                        _bg_status, _bg_message = "deferred", "Etapa encaminhada a um agente"
+                    elif _plan_ok:
+                        _bg_status, _bg_message = "completed", "Plano executado com sucesso"
+                    else:
+                        _bg_status, _bg_message = "failed", "Plano não concluído"
                     await send_background_task_update(
                         session_id=session_id,
                         task_id=_plan_task_id,
                         task_type="analysis",
                         label=_detected_plan.detected_pattern or "Plano multi-step",
-                        status="completed",
+                        status=_bg_status,
                         progress=100,
-                        message="Plano executado com sucesso",
+                        message=_bg_message,
                     )
                     _plan_handled = True
             except Exception as _plan_exc:
