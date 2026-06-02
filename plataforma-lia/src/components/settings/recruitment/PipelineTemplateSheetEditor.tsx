@@ -152,7 +152,7 @@ export function PipelineTemplateSheetEditor({
         body: JSON.stringify({ stages: stagesPayload }),
       })
       if (res.ok) {
-        // Sincroniza sub-statuses canonicos nas stages novas/recriadas
+        // 1. Sincroniza sub-statuses canonicos nas stages novas/recriadas
         try {
           await apiFetch('/api/backend-proxy/recruitment-stages/sync-canonical', {
             method: 'POST',
@@ -160,7 +160,35 @@ export function PipelineTemplateSheetEditor({
             body: JSON.stringify({}),
           })
         } catch {
-          // nao bloqueia — sub-statuses canonicos sao adicionados em background
+          // nao bloqueia
+        }
+        // 2. Upsert sub-statuses customizados do template nas stages da empresa
+        try {
+          const templateSubStatuses = localStages
+            .filter((st: any) => (st.sub_statuses || []).length > 0)
+            .map((st: any) => ({
+              stage_name: st.name,
+              sub_statuses: (st.sub_statuses || []).map((ss: any) => ({
+                name: ss.name,
+                display_name: ss.display_name,
+                order: ss.sub_status_order ?? ss.order ?? 0,
+                color: ss.color || null,
+                icon: ss.icon || null,
+                is_default: ss.is_default ?? false,
+                is_waiting: ss.is_waiting ?? false,
+                waiting_for: ss.waiting_for || null,
+                sla_hours: ss.sla_hours || null,
+              })),
+            }))
+          if (templateSubStatuses.length > 0) {
+            await apiFetch('/api/backend-proxy/recruitment-stages/apply-template-sub-statuses', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ stages: templateSubStatuses }),
+            })
+          }
+        } catch {
+          // nao bloqueia — sub-statuses customizados podem ser adicionados manualmente
         }
         toast.success(`Pipeline Padr\u00e3o atualizado com o template "${template.name}"!`)
         onOpenChange(false)

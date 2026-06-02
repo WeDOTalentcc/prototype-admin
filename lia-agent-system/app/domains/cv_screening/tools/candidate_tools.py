@@ -10,6 +10,7 @@ Provides function calling capabilities for:
 All tools support tenant scoping via ToolExecutionContext for multi-tenancy security.
 """
 import logging
+import re
 from types import SimpleNamespace
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, Optional
@@ -32,6 +33,16 @@ logger = logging.getLogger(__name__)
 def _extract_context(kwargs: dict[str, Any]) -> Optional["ToolExecutionContext"]:
     """Extract and remove _context from kwargs if present."""
     return kwargs.pop("_context", None)
+
+
+# Pragmatic e-mail format check (presence of local@domain.tld). Mirrors the
+# "formato + presença" requirement of Task #1224 without pulling the heavy
+# email-validator dependency into the tool path.
+_EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+
+
+def _is_valid_email(email: Any) -> bool:
+    return bool(email and isinstance(email, str) and _EMAIL_RE.match(email.strip()))
 
 
 async def update_candidate_stage(
@@ -220,7 +231,53 @@ async def add_candidate_to_vacancy(
                     "message": f"Candidato não encontrado: {candidate_id}",
                     "error": "candidate_not_found"
                 }
-            
+
+            # Task #1224: candidate must have a valid e-mail before entering a
+            # vacancy pipeline (downstream comms / scheduling rely on it).
+            # Fail loud — never create a VacancyCandidate without a reachable
+            # contact.
+            candidate_email = getattr(candidate, "email", None)
+            if not candidate_email or not str(candidate_email).strip():
+                return {
+                    "success": False,
+                    "message": "Candidato sem e-mail cadastrado — não é possível adicioná-lo à vaga.",
+                    "error": "missing_email"
+                }
+            if not _is_valid_email(candidate_email):
+                return {
+                    "success": False,
+                    "message": f"E-mail do candidato é inválido: {candidate_email}",
+                    "error": "invalid_email"
+                }
+
+            # Task #1224: FairnessGuard C1 on recruiter-provided notes BEFORE
+            # any write. Discriminatory annotations must never be persisted.
+            if notes and notes.strip():
+                from app.shared.compliance import scoring_safeguards as _ss
+                _fg, _unavail = _ss.run_fairness_check(notes)
+                if _unavail or (_fg and _fg.is_blocked):
+                    _fg = _fg or type(
+                        "FR", (), {"is_blocked": True, "category": "unavailable",
+                                   "educational_message": "fairness guard unavailable"}
+                    )()
+                    await _ss.log_scoring_decision(
+                        company_id=company_id,
+                        agent_name="add_candidate_to_vacancy",
+                        decision_type="fairness_block",
+                        action="fairness_block",
+                        decision="blocked",
+                        reasoning=[f"FairnessGuard: category={_fg.category}",
+                                   _fg.educational_message or ""],
+                        criteria_used=["fairness_guard"],
+                        candidate_id=candidate_id, job_vacancy_id=job_id,
+                        human_review_required=True,
+                    )
+                    return {
+                        "success": False,
+                        "message": _fg.educational_message or "Notas bloqueadas por viés.",
+                        "error": "fairness_block"
+                    }
+
             job_result = await db.execute(
                 select(JobVacancy).where(
                     and_(
@@ -289,7 +346,22 @@ async def add_candidate_to_vacancy(
             
             # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.info(f"✅ Created VacancyCandidate: {candidate_id} -> {job_title}")
-            
+
+            # Task #1224: durable audit of the candidate-movement decision
+            # (repudiation guarantee — actor/tenant/timestamp/action).
+            # Best-effort: never block the write on audit failure.
+            from app.shared.compliance import scoring_safeguards as _ss
+            await _ss.log_scoring_decision(
+                company_id=company_id,
+                agent_name="add_candidate_to_vacancy",
+                decision_type="candidate_movement",
+                action="add_candidate_to_vacancy",
+                decision="added",
+                reasoning=[f"Candidato adicionado à vaga na etapa '{initial_stage}'"],
+                criteria_used=["manual_add"],
+                candidate_id=candidate_id, job_vacancy_id=job_id,
+            )
+
             return {
                 "success": True,
                 "message": f"✅ {candidate_name} foi adicionado à vaga '{job_title}' na etapa '{initial_stage}'.",

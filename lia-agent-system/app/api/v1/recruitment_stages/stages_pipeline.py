@@ -10,7 +10,7 @@ import uuid
 import logging
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Body, Depends, HTTPException, Query
 
 from ._shared import (
     CANONICAL_SUB_STATUSES,
@@ -156,6 +156,81 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         logger.error("[sync_canonical] error: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
+
+
+
+@router.post("/apply-template-sub-statuses", response_model=None)
+async def apply_template_sub_statuses(
+    payload: dict = Body(...),
+    current_user: User = Depends(require_admin_or_recruiter),
+    stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
+    sub_status_repo: SubStatusRepository = Depends(get_sub_status_repo),
+company_id: str = Depends(require_company_id)):
+    """Upsert sub-statuses do template nas etapas da empresa.
+
+    Chamado após PUT /company-pipeline + sync-canonical quando um template
+    é aplicado como Padrão. Garante que sub-statuses customizados do template
+    sejam recriados nas etapas da empresa.
+
+    Body: { "stages": [{ "stage_name": str, "sub_statuses": [...] }] }
+    Cada sub_status: { name, display_name, order, color, icon,
+                       is_default, is_waiting, waiting_for, sla_hours }
+
+    Multi-tenancy: todas as operações filtradas por company_id do JWT.
+    Idempotente: skip se sub_status.name já existe na stage.
+    """
+    try:
+        effective_company_id = get_user_company_id(current_user)
+        stages_payload = payload.get("stages", [])
+        upserted_total = 0
+
+        for stage_data in stages_payload:
+            stage_name = stage_data.get("stage_name", "")
+            sub_statuses = stage_data.get("sub_statuses", [])
+            if not stage_name or not sub_statuses:
+                continue
+
+            stage = await stage_repo.get_by_name(effective_company_id, stage_name)
+            if not stage:
+                logger.debug("[apply_template_sub_statuses] stage %r não encontrada, skip", stage_name)
+                continue
+
+            existing_names = await sub_status_repo.get_existing_names_for_stage(stage.id)
+            next_order = await sub_status_repo.get_max_order_for_stage(stage.id)
+
+            for ss in sub_statuses:
+                ss_name = ss.get("name", "")
+                if not ss_name or ss_name in existing_names:
+                    continue
+                await sub_status_repo.create_no_commit({
+                    "stage_id": stage.id,
+                    "company_id": effective_company_id,
+                    "sub_status_order": ss.get("order", next_order),
+                    "name": ss_name,
+                    "display_name": ss.get("display_name", ss_name),
+                    "color": ss.get("color"),
+                    "icon": ss.get("icon"),
+                    "is_default": ss.get("is_default", False),
+                    "is_waiting": ss.get("is_waiting", False),
+                    "waiting_for": ss.get("waiting_for"),
+                    "sla_hours": ss.get("sla_hours"),
+                    "is_active": True,
+                })
+                next_order += 1
+                upserted_total += 1
+
+        await sub_status_repo.commit()
+        logger.info(
+            "[apply_template_sub_statuses] company=%s upserted=%d sub-statuses",
+            effective_company_id, upserted_total,
+        )
+        return {"success": True, "upserted": upserted_total}
+
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.error("[apply_template_sub_statuses] error: %s", exc, exc_info=True)
+        raise HTTPException(status_code=500, detail="Erro ao aplicar sub-statuses do template")
 
 
 @router.get("/company-pipeline", response_model=None)
