@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useCallback, useEffect } from "react"
-import { Loader2, Save, Upload, X } from "lucide-react"
+import { Loader2, Pencil, Save, Trash2, Upload, X } from "lucide-react"
 import { toast } from "sonner"
 import {
   Sheet,
@@ -109,10 +109,14 @@ export function PipelineTemplateSheetEditor({
   onOpenChange,
   onSaved,
 }: PipelineTemplateSheetEditorProps) {
-  const { templates, updateTemplate } = usePipelineTemplates()
+  const { templates, updateTemplate, deleteTemplate } = usePipelineTemplates()
   const template = templates.find((t) => t.id === templateId) ?? null
 
   const [localStages, setLocalStages] = useState<RecruitmentStage[]>([])
+  const [localName, setLocalName] = useState<string>("")
+  const [editingName, setEditingName] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const [saving, setSaving] = useState(false)
   const [applyingPadrao, setApplyingPadrao] = useState(false)
 
@@ -160,12 +164,14 @@ export function PipelineTemplateSheetEditor({
     }
   }
 
-  // Sincroniza stages locais quando o template muda
+  // Sincroniza stages e nome locais quando o template muda
   useEffect(() => {
     if (template) {
       setLocalStages((template.stages || []).map(richToRecruitmentStage))
+      setLocalName(template.name || "")
     } else {
       setLocalStages([])
+      setLocalName("")
     }
   }, [template?.id])
 
@@ -189,7 +195,7 @@ export function PipelineTemplateSheetEditor({
     setSaving(true)
     try {
       const richStages = localStages.map(recruitmentToRichStage)
-      await updateTemplate(templateId, { stages: richStages as any, name: template?.name ?? "Template" })
+      await updateTemplate(templateId, { stages: richStages as any, name: localName.trim() || template?.name || "Template" })
       toast.success("Template salvo com sucesso!")
       onSaved?.()
       onOpenChange(false)
@@ -197,6 +203,21 @@ export function PipelineTemplateSheetEditor({
       toast.error("Erro ao salvar template. Tente novamente.")
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!templateId) return
+    setDeleting(true)
+    try {
+      await deleteTemplate(templateId)
+      toast.success("Template excluído.")
+      onOpenChange(false)
+    } catch {
+      toast.error("Erro ao excluir template.")
+    } finally {
+      setDeleting(false)
+      setConfirmDelete(false)
     }
   }
 
@@ -211,9 +232,29 @@ export function PipelineTemplateSheetEditor({
         <SheetHeader className="px-6 py-4 border-b border-lia-border-subtle flex-none">
           <div className="flex items-center justify-between gap-4">
             <div className="min-w-0">
-              <SheetTitle className="text-lg font-semibold text-lia-text-primary truncate">
-                {template?.name ?? "Template"}
-              </SheetTitle>
+              {editingName ? (
+                <input
+                  value={localName}
+                  onChange={(e) => setLocalName(e.target.value)}
+                  onBlur={() => setEditingName(false)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") setEditingName(false)
+                    if (e.key === "Escape") { setLocalName(template?.name || ""); setEditingName(false) }
+                  }}
+                  autoFocus
+                  aria-label="Nome do template"
+                  className="text-lg font-semibold bg-transparent border-b border-lia-btn-primary-bg outline-none text-lia-text-primary w-full max-w-xs"
+                />
+              ) : (
+                <SheetTitle
+                  className="text-lg font-semibold text-lia-text-primary truncate cursor-text group flex items-center gap-1.5"
+                  onClick={() => setEditingName(true)}
+                  title="Clique para renomear"
+                >
+                  {localName || template?.name ?? "Template"}
+                  <Pencil className="w-3 h-3 opacity-0 group-hover:opacity-40 transition-opacity" />
+                </SheetTitle>
+              )}
               <SheetDescription className="text-sm text-lia-text-secondary mt-0.5">
                 {localStages.length} etapa{localStages.length !== 1 ? "s" : ""} —
                 arraste para reordenar, edite SLA e sub-statuses
@@ -233,6 +274,16 @@ export function PipelineTemplateSheetEditor({
                   <Upload className="w-4 h-4 mr-1" aria-hidden />
                 )}
                 Aplicar como Padr\u00e3o
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setConfirmDelete(true)}
+                disabled={saving || applyingPadrao || deleting || !template}
+                title="Excluir este template"
+                className="text-status-error hover:bg-status-error/10 mr-1"
+              >
+                <Trash2 className="w-4 h-4" aria-hidden />
               </Button>
               <Button
                 variant="outline"
@@ -273,5 +324,37 @@ export function PipelineTemplateSheetEditor({
         </div>
       </SheetContent>
     </Sheet>
+
+    {/* Dialog de confirmação de exclusão */}
+    {confirmDelete && (
+      <div
+        className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40"
+        onClick={() => setConfirmDelete(false)}
+      >
+        <div
+          className="bg-lia-bg-primary rounded-xl shadow-lg p-6 max-w-sm w-full mx-4 space-y-4"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <h2 className="text-base font-semibold text-lia-text-primary">Excluir template?</h2>
+          <p className="text-sm text-lia-text-secondary">
+            O template <strong>{localName || template?.name}</strong> será excluído permanentemente.
+            Vagas que já usaram este template mantêm seus pipelines.
+          </p>
+          <div className="flex items-center justify-end gap-2">
+            <Button variant="outline" size="sm" onClick={() => setConfirmDelete(false)} disabled={deleting}>
+              Cancelar
+            </Button>
+            <Button
+              size="sm"
+              onClick={handleDelete}
+              disabled={deleting}
+              className="bg-status-error hover:bg-status-error/90 text-white"
+            >
+              {deleting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Excluir"}
+            </Button>
+          </div>
+        </div>
+      </div>
+    )}
   )
 }
