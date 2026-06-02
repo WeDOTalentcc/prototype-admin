@@ -42,6 +42,23 @@ logger = logging.getLogger(__name__)
 SEARCH_CACHE_TTL = int(os.environ.get("PEARCH_SEARCH_CACHE_TTL", "900"))
 
 
+def _profile_has_email(profile: Any) -> bool:
+    """Task #1219 — True se o perfil TEM email (modo require_emails).
+
+    Cobre os dois modos do Pearch: com ``show_emails=False`` ele não retorna a
+    string do email mas sinaliza ``has_emails=True``; com reveal ligado os
+    campos ``emails``/``best_*_email`` vêm preenchidos. Candidatos locais setam
+    ``has_emails`` a partir de ``Candidate.email is not None``. Usado como rede
+    de segurança para garantir "só candidatos com email" no resultado final.
+    """
+    return bool(
+        getattr(profile, "has_emails", None)
+        or getattr(profile, "emails", None)
+        or getattr(profile, "best_personal_email", None)
+        or getattr(profile, "best_business_email", None)
+    )
+
+
 async def _pearch_search_fallback(self, request, timeout=None):
     """Fallback quando circuit breaker do Pearch está aberto.
 
@@ -1254,12 +1271,17 @@ class PearchService:
         """
         logger.info(f"Starting hybrid search: '{request.query}'")
         
+        import time as _time
         start_time = datetime.now()
+        _loop_start_monotonic = _time.monotonic()
         local_candidates = []
         pearch_candidates = []
         pearch_credits_used = None
         pearch_credits_remaining = None
         warning_message = None
+        # Task #1219 — diagnósticos do loop de completude (modo require_emails)
+        _filtered_no_contact = 0
+        _sources_exhausted = False
         
         # 1. Busca local
         if request.search_local_first:
@@ -1336,6 +1358,10 @@ class PearchService:
                 limit=request.local_limit,
                 exclude_ids=[int(id) for id in request.exclude_candidate_ids if id.isdigit()],
                 include_discovered=request.include_discovered,
+                # Task #1219 — no modo "Híbrida com email" o pool local também é
+                # pré-filtrado a quem TEM email (DB-level). Cobre a tabela
+                # Candidate; o pós-filtro abaixo cobre staging/discovered.
+                require_email=request.require_emails,
                 industries=industries,
                 funding_stages=funding_stages,
                 company_hq_countries=company_hq_countries,
@@ -1346,6 +1372,10 @@ class PearchService:
                 timezones=timezones,
                 timezone_pattern=timezone_pattern
             )
+            if request.require_emails:
+                _before = len(local_candidates)
+                local_candidates = [c for c in local_candidates if _profile_has_email(c)]
+                _filtered_no_contact += _before - len(local_candidates)
             local_time = (datetime.now() - local_start).total_seconds()
         else:
             local_time = 0
@@ -1391,10 +1421,29 @@ class PearchService:
             
             pearch_start = datetime.now()
             try:
-                pearch_response = await self.search_candidates(pearch_request)
-                pearch_candidates = pearch_response.get_candidates()
-                pearch_candidates = self._dedup_pearch_against_local(local_candidates, pearch_candidates)
-                pearch_credits_remaining = pearch_response.credits_remaining
+                if request.require_emails:
+                    # Task #1219 — modo "Híbrida com email": loop de completude.
+                    # Alvo combinado = pearch_limit. O pool local (já filtrado a
+                    # quem tem email) conta para o alvo; a Pearch completa o
+                    # restante percorrendo páginas adicionais até atingir o alvo
+                    # ou esgotar fontes (guardrails: deadline interno + max_pages).
+                    _target = max(0, request.pearch_limit - len(local_candidates))
+                    pearch_candidates, _loop_diag = await self._accumulate_pearch_with_emails(
+                        base_request=pearch_request,
+                        target=_target,
+                        loop_start_monotonic=_loop_start_monotonic,
+                    )
+                    pearch_candidates = self._dedup_pearch_against_local(local_candidates, pearch_candidates)
+                    pearch_credits_remaining = _loop_diag.get("credits_remaining")
+                    _filtered_no_contact += _loop_diag.get("filtered_no_email", 0)
+                    _sources_exhausted = _loop_diag.get("sources_exhausted", False)
+                    if _loop_diag.get("error_message"):
+                        warning_message = _loop_diag["error_message"]
+                else:
+                    pearch_response = await self.search_candidates(pearch_request)
+                    pearch_candidates = pearch_response.get_candidates()
+                    pearch_candidates = self._dedup_pearch_against_local(local_candidates, pearch_candidates)
+                    pearch_credits_remaining = pearch_response.credits_remaining
                 pearch_time = (datetime.now() - pearch_start).total_seconds()
             except Exception as e:
                 logger.error(f"Pearch search failed: {e}")
@@ -1415,14 +1464,138 @@ class PearchService:
             local_search_time=local_time,
             pearch_search_time=pearch_time,
             status="completed",
-            warning_message=warning_message
+            warning_message=warning_message,
+            filtered_no_contact=_filtered_no_contact,
+            sources_exhausted=_sources_exhausted,
         )
-    
+
+    async def _accumulate_pearch_with_emails(
+        self,
+        base_request: PearchSearchRequest,
+        target: int,
+        loop_start_monotonic: float,
+    ) -> tuple[list, dict]:
+        """Task #1219 — loop de completude: acumula candidatos Pearch COM email.
+
+        Percorre páginas da Pearch (mesmo ``thread_id`` + ``docid_blacklist``
+        crescente) até acumular ``target`` candidatos com email ou esgotar as
+        fontes. Filtra cada página a quem TEM email (``_profile_has_email``).
+
+        Guardrails (sem loop infinito, sem fake success):
+          - deadline interno (``SEARCH_HYBRID_EMAIL_LOOP_DEADLINE_SECONDS``),
+            menor que o deadline da rota — para honrar resultado parcial;
+          - teto de páginas (``SEARCH_HYBRID_EMAIL_MAX_PAGES``);
+          - parada em erro/429 (search_candidates já roteia 429 p/ fallback);
+          - parada quando uma página não traz NENHUM docid novo (esgotamento).
+
+        Retorna ``(candidatos[:target], diagnostics)``. ``diagnostics`` inclui
+        ``filtered_no_email``, ``sources_exhausted``, ``credits_remaining``,
+        ``pages`` e ``stop_reason``.
+        """
+        import time as _time
+
+        accumulated: list = []
+        seen_docids: set[str] = set(base_request.docid_blacklist or [])
+        diagnostics: dict = {
+            "pages": 0,
+            "filtered_no_email": 0,
+            "sources_exhausted": False,
+            "credits_remaining": None,
+            "stop_reason": None,
+            "error_message": None,
+        }
+
+        if target <= 0:
+            diagnostics["stop_reason"] = "target_reached"
+            return accumulated, diagnostics
+
+        max_pages = max(1, int(settings.SEARCH_HYBRID_EMAIL_MAX_PAGES))
+        deadline = loop_start_monotonic + float(
+            settings.SEARCH_HYBRID_EMAIL_LOOP_DEADLINE_SECONDS
+        )
+        thread_id = base_request.thread_id
+
+        while len(accumulated) < target:
+            if diagnostics["pages"] >= max_pages:
+                diagnostics["stop_reason"] = "max_pages"
+                break
+            now = _time.monotonic()
+            if now >= deadline:
+                diagnostics["stop_reason"] = "deadline"
+                break
+
+            # Pede um pouco mais que o restante para compensar a atrição do
+            # filtro de email server-side; cada chamada respeita o orçamento
+            # de tempo restante do loop (per-page timeout).
+            remaining = target - len(accumulated)
+            page_limit = min(max(remaining * 2, 5), 50)
+            per_page_timeout = max(1.0, deadline - now)
+
+            page_request = base_request.model_copy(update={
+                "thread_id": thread_id,
+                "limit": page_limit,
+                "docid_blacklist": list(seen_docids),
+            })
+
+            try:
+                resp = await self.search_candidates(
+                    page_request, timeout=per_page_timeout
+                )
+            except Exception as e:  # noqa: BLE001 — parada graciosa, parcial honesto
+                logger.warning(
+                    "[HybridEmailLoop] página %d falhou (%s) — devolvendo parcial",
+                    diagnostics["pages"], e,
+                )
+                diagnostics["stop_reason"] = "error"
+                diagnostics["error_message"] = f"Busca externa interrompida: {e}"
+                break
+
+            diagnostics["pages"] += 1
+            if resp.credits_remaining is not None:
+                diagnostics["credits_remaining"] = resp.credits_remaining
+            thread_id = resp.thread_id or thread_id
+            diagnostics["thread_id"] = thread_id
+
+            page_candidates = resp.get_candidates()
+            new_this_page = 0
+            for c in page_candidates:
+                docid = getattr(c, "docid", None)
+                if docid and docid in seen_docids:
+                    continue
+                if docid:
+                    seen_docids.add(docid)
+                new_this_page += 1
+                if _profile_has_email(c):
+                    accumulated.append(c)
+                else:
+                    diagnostics["filtered_no_email"] += 1
+
+            # Esgotamento: página não trouxe nenhum docid novo.
+            if new_this_page == 0:
+                diagnostics["sources_exhausted"] = True
+                diagnostics["stop_reason"] = diagnostics["stop_reason"] or "exhausted"
+                break
+
+        if len(accumulated) >= target and not diagnostics["stop_reason"]:
+            diagnostics["stop_reason"] = "target_reached"
+
+        logger.info(
+            "[HybridEmailLoop] alvo=%d obtidos=%d páginas=%d filtrados_sem_email=%d "
+            "esgotado=%s motivo=%s",
+            target, len(accumulated), diagnostics["pages"],
+            diagnostics["filtered_no_email"], diagnostics["sources_exhausted"],
+            diagnostics["stop_reason"],
+        )
+        return accumulated[:target], diagnostics
+
     async def refine_search(
         self,
         thread_id: str,
         additional_query: str,
-        limit: int | None = None
+        limit: int | None = None,
+        require_emails: bool = False,
+        require_phone_numbers: bool = False,
+        docid_blacklist: list[str] | None = None,
     ) -> PearchSearchResponse:
         """
         Refina uma busca existente usando o thread_id.
@@ -1431,18 +1604,49 @@ class PearchService:
             thread_id: ID do thread da busca anterior
             additional_query: Critérios adicionais ou alterações
             limit: Novo limite (opcional, para pedir mais resultados)
+            require_emails: Task #1219 — quando True, completa o incremento
+                percorrendo páginas até atingir ``limit`` candidatos COM email
+                (load-more do modo "Híbrida com email").
+            require_phone_numbers: encaminhado ao Pearch.
+            docid_blacklist: docids já exibidos (não repetir no incremento).
         
         Returns:
             PearchSearchResponse com resultados refinados
         """
+        import time as _time
+
         request = PearchSearchRequest(
             query=additional_query,
             thread_id=thread_id,
             type=SearchType.FAST,
             insights=True,
             profile_scoring=True,
-            limit=limit or 10
+            limit=limit or 10,
+            require_emails=require_emails,
+            require_phone_numbers=require_phone_numbers,
+            docid_blacklist=docid_blacklist or [],
         )
+
+        # Task #1219 — load-more em modo email: completa o incremento usando o
+        # mesmo loop de completude da busca híbrida (mantém a garantia de "só
+        # com email" + guardrails). Reaproveita a forma da resposta Pearch.
+        if require_emails:
+            target = limit or 10
+            accumulated, diag = await self._accumulate_pearch_with_emails(
+                base_request=request,
+                target=target,
+                loop_start_monotonic=_time.monotonic(),
+            )
+            return PearchSearchResponse(
+                uuid="refine-email-loop",
+                thread_id=diag.get("thread_id") or thread_id,
+                query=additional_query,
+                status="completed",
+                total_estimate=len(accumulated),
+                credits_remaining=diag.get("credits_remaining"),
+                search_results=[],
+                candidates=accumulated,
+            )
         
         return await self.search_candidates(request)
 

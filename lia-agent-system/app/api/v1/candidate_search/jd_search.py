@@ -160,6 +160,9 @@ async def refine_search(
     thread_id: str = Query(..., description="Thread ID da busca anterior"),
     additional_query: str = Query(..., description="Critérios adicionais"),
     limit: int | None = Query(None, ge=1, le=50),
+    require_emails: bool = Query(False, description="Task #1219 — load-more do modo 'Híbrida com email': completa o incremento só com candidatos COM email"),
+    require_phone_numbers: bool = Query(False, description="Apenas perfis com telefone"),
+    docid_blacklist: str | None = Query(None, description="docids já exibidos (CSV) — não repetir no incremento"),
     db: AsyncSession = Depends(get_db)
 ,
     pearch_svc: PearchService = Depends(get_pearch_service),
@@ -171,10 +174,17 @@ company_id: str = Depends(require_company_id)):
     Use para adicionar critérios ou pedir mais resultados sem custo completo.
     """
     try:
+        _blacklist = (
+            [d.strip() for d in docid_blacklist.split(",") if d.strip()]
+            if docid_blacklist else None
+        )
         result = await pearch_svc.refine_search(
             thread_id=thread_id,
             additional_query=additional_query,
-            limit=limit
+            limit=limit,
+            require_emails=require_emails,
+            require_phone_numbers=require_phone_numbers,
+            docid_blacklist=_blacklist,
         )
         
         candidates = [
@@ -183,6 +193,17 @@ company_id: str = Depends(require_company_id)):
         ]
         
         candidates = await enrich_and_filter_candidates(db, candidates, company_id=company_id)
+
+        # Task #1219 — load-more em modo email: NUNCA devolver candidato sem
+        # email no incremento (rede de segurança igual à da busca inicial).
+        _filtered_no_contact = 0
+        if require_emails:
+            _before = len(candidates)
+            candidates = [
+                c for c in candidates
+                if getattr(c, "has_email", False) or getattr(c, "email", None)
+            ]
+            _filtered_no_contact = _before - len(candidates)
         
         return SearchResponseDTO(
             query=additional_query,
@@ -191,7 +212,8 @@ company_id: str = Depends(require_company_id)):
             pearch_count=len(candidates),
             total_count=len(candidates),
             credits_remaining=result.credits_remaining,
-            search_time_seconds=result.search_time_seconds
+            search_time_seconds=result.search_time_seconds,
+            filtered_no_contact=_filtered_no_contact,
         )
     
     except ValueError as e:

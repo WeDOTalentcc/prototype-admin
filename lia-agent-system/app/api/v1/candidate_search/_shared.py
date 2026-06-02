@@ -402,6 +402,10 @@ class SearchResponseDTO(BaseModel):
     expansion_message: str | None = Field(default=None)
     high_adherence_count: int = Field(default=0)
     search_fingerprint: str | None = Field(default=None, description="Hash estavel dos criterios da busca; ancora feedback/aprendizado")
+    # Task #1219 — diagnósticos honestos do modo "Híbrida com email".
+    filtered_no_contact: int = Field(default=0, description="Candidatos descartados por não terem email (modo require_emails)")
+    sources_exhausted: bool = Field(default=False, description="Fontes (local+Pearch) esgotaram antes de atingir o alvo de candidatos com email")
+    enrichment_attempted: int = Field(default=0, description="Candidatos para os quais houve tentativa de enriquecimento de contato")
 
 
 def _build_candidate_data_from_dto(candidate_dto: 'CandidateSearchResultDTO') -> dict[str, Any]:

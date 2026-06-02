@@ -352,7 +352,20 @@ company_id: str = Depends(require_company_id)):
             _apify_fallback_warning = get_degraded_response("pearch")
         
         candidates = await enrich_and_filter_candidates(db, candidates, company_id=company_id)
-        
+
+        # Task #1219 — garantia final "só candidatos com email" no modo
+        # "Híbrida com email". Rede de segurança que cobre TODOS os caminhos
+        # (incl. fallback Apify), não só o pool local/Pearch já filtrado em
+        # hybrid_search. Os descartados aqui somam ao diagnóstico honesto.
+        _extra_no_contact = 0
+        if request.require_emails:
+            _before_email_filter = len(candidates)
+            candidates = [
+                c for c in candidates
+                if getattr(c, "has_email", False) or getattr(c, "email", None)
+            ]
+            _extra_no_contact = _before_email_filter - len(candidates)
+
         # Rubric evaluation if job_id is provided
         if request.job_id and candidates:
             try:
@@ -410,6 +423,13 @@ company_id: str = Depends(require_company_id)):
         _effective_pearch_count = result.pearch_count + _fb_pearch_count
         _effective_search_time = (result.local_search_time or 0) + (result.pearch_search_time or 0) + _fb_search_time
         _effective_can_load_more = (result.pearch_count >= request.pearch_limit) or _fb_can_load_more
+        # Task #1219 — diagnósticos honestos do modo "Híbrida com email".
+        _filtered_no_contact = (getattr(result, "filtered_no_contact", 0) or 0) + _extra_no_contact
+        _sources_exhausted = getattr(result, "sources_exhausted", False) or False
+        # Em modo require_emails, se as fontes esgotaram não há mais o que
+        # carregar — evita "Carregar mais" que retornaria vazio.
+        if request.require_emails and _sources_exhausted:
+            _effective_can_load_more = False
 
         return SearchResponseDTO(
             query=result.query,
@@ -425,7 +445,10 @@ company_id: str = Depends(require_company_id)):
             can_load_more=_effective_can_load_more,
             should_expand_to_global=should_expand,
             expansion_message=expansion_message,
-            high_adherence_count=high_adherence_count
+            high_adherence_count=high_adherence_count,
+            filtered_no_contact=_filtered_no_contact,
+            sources_exhausted=_sources_exhausted,
+            enrichment_attempted=getattr(result, "enrichment_attempted", 0) or 0,
         )
     
     except HTTPException:

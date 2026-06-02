@@ -122,6 +122,10 @@ export interface SearchResponse {
   is_enriching_contacts?: boolean
   filtered_no_contact?: number
   enrichment_attempted?: number
+  // Task #1219 — modo "Híbrida com email": fontes (local+Pearch) esgotaram
+  // antes de atingir o alvo de candidatos com email. Backend já zera
+  // can_load_more nesse caso; o campo permite UI honesta opcional.
+  sources_exhausted?: boolean
   // Task #400: lista detalhada dos candidatos descartados pelo backend porque
   // o enriquecimento (Apify) não retornou email nem telefone — usada na UI
   // para visualização e exportação CSV.
@@ -362,7 +366,12 @@ export async function getCreditBalance(): Promise<CreditBalance> {
 export async function refineSearch(
   thread_id: string,
   additional_query: string,
-  limit?: number
+  limit?: number,
+  options?: {
+    requireEmails?: boolean
+    requirePhoneNumbers?: boolean
+    docidBlacklist?: string[]
+  }
 ): Promise<SearchResponse> {
   const params = new URLSearchParams({
     thread_id,
@@ -371,6 +380,18 @@ export async function refineSearch(
 
   if (limit) {
     params.set("limit", limit.toString())
+  }
+
+  // Task #1219 — load-more do modo "Híbrida com email": propaga require_emails
+  // para o backend completar o incremento só com candidatos COM email.
+  if (options?.requireEmails) {
+    params.set("require_emails", "true")
+  }
+  if (options?.requirePhoneNumbers) {
+    params.set("require_phone_numbers", "true")
+  }
+  if (options?.docidBlacklist && options.docidBlacklist.length > 0) {
+    params.set("docid_blacklist", options.docidBlacklist.join(","))
   }
 
   const response = await fetch(

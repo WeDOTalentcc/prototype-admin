@@ -337,6 +337,14 @@ class IntegrationSettings(BaseSettings):
     # candidatos sem contato revelado. Contato vem sob demanda (botao/auto-reveal).
     SEARCH_EAGER_CONTACT_ENRICHMENT: bool = False
 
+    # Task #1219 — busca "Híbrida com email" (require_emails=True) roda um loop de
+    # completude: combina pool local + páginas adicionais da Pearch até acumular
+    # o alvo (pearch_limit) de candidatos COM email, ou até esgotar fontes.
+    # Guardrails: deadline interno (< deadline da rota) + teto de páginas.
+    # O loop só dispara quando require_emails=True; demais modos seguem 1 lote.
+    SEARCH_HYBRID_EMAIL_LOOP_DEADLINE_SECONDS: float = 14.0
+    SEARCH_HYBRID_EMAIL_MAX_PAGES: int = 4
+
     # Twilio / WhatsApp
     TWILIO_ACCOUNT_SID: str | None = None
     TWILIO_AUTH_TOKEN: str | None = None

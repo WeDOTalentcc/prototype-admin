@@ -352,7 +352,16 @@ class HybridSearchResponse(BaseModel):
     
     # Mensagem de aviso (custo de créditos, etc.)
     warning_message: Optional[str] = None
-    
+
+    # Task #1219 — diagnósticos do loop de completude "Híbrida com email".
+    # filtered_no_contact: candidatos descartados por NÃO terem email (modo
+    # require_emails). sources_exhausted: True quando as fontes (local + Pearch)
+    # acabaram antes de atingir o alvo. enrichment_attempted: nº de candidatos
+    # para os quais houve tentativa de enriquecimento de contato.
+    filtered_no_contact: int = 0
+    sources_exhausted: bool = False
+    enrichment_attempted: int = 0
+
     def get_all_candidates(self) -> List[CandidateProfile]:
         """Retorna todos os candidatos combinados."""
         return self.local_candidates + self.pearch_candidates
