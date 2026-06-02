@@ -261,7 +261,7 @@ export function PipelineTemplateSheetEditor({
                   onClick={() => setEditingName(true)}
                   title="Clique para renomear"
                 >
-                  {localName || template?.name ?? "Template"}
+                  {(localName || template?.name) ?? "Template"}
                   <Pencil className="w-3 h-3 opacity-0 group-hover:opacity-40 transition-opacity" />
                 </SheetTitle>
               )}
