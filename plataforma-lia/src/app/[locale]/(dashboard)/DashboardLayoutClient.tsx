@@ -54,9 +54,16 @@ export default function DashboardLayoutClient({
   return (
     <QueryClientProvider client={queryClient}>
       <DashboardApp initialPage={initialPage}>
-        <OnboardingChatBanner onOpenChat={() => window.dispatchEvent(new CustomEvent("lia:open-onboarding-chat", { detail: {} }))} />
-        <AutomationFromChatBridge />
-        {children}
+        <div className="flex h-full min-h-0 flex-col">
+          <OnboardingChatBanner
+            className="shrink-0"
+            onOpenChat={() => window.dispatchEvent(new CustomEvent("lia:open-onboarding-chat", { detail: {} }))}
+          />
+          <AutomationFromChatBridge />
+          <div className="min-h-0 flex-1 overflow-hidden">
+            {children}
+          </div>
+        </div>
       </DashboardApp>
       {process.env.NODE_ENV === "development" && (
         <ReactQueryDevtools initialIsOpen={false} />
