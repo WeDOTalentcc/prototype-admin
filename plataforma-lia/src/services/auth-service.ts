@@ -3,6 +3,8 @@ const SESSION_API_URL = '/api/auth/session'
 const WORKOS_SSO_URL = '/api/auth/workos/sso'
 const WORKOS_SESSION_URL = '/api/auth/workos/session'
 
+const ME_REQUEST_TIMEOUT_MS = 12000
+
 export type AuthMethod = 'jwt' | 'sso' | 'dev-auto-login'
 
 /**
@@ -221,6 +223,7 @@ class AuthService {
     const response = await fetch(`${SESSION_API_URL}/refresh`, {
       method: 'POST',
       credentials: 'include',
+      signal: AbortSignal.timeout(ME_REQUEST_TIMEOUT_MS),
     })
 
     if (!response.ok) {
@@ -243,6 +246,7 @@ class AuthService {
         'Content-Type': 'application/json',
       },
       credentials: 'include',
+      signal: AbortSignal.timeout(ME_REQUEST_TIMEOUT_MS),
     })
 
     if (!response.ok) {

@@ -5,6 +5,8 @@ import { cookies } from 'next/headers'
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8001'
 
+const BACKEND_REQUEST_TIMEOUT_MS = 20000
+
 function isSecureContext(request: NextRequest): boolean {
   const proto = request.headers.get('x-forwarded-proto')
   return proto === 'https' || process.env.NODE_ENV === 'production'
@@ -30,6 +32,7 @@ export async function POST(request: NextRequest) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ refresh_token: refreshTokenCookie.value }),
+      signal: AbortSignal.timeout(BACKEND_REQUEST_TIMEOUT_MS),
     })
 
     if (!backendResponse.ok) {

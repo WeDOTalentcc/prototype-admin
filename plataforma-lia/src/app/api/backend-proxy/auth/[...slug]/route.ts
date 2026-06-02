@@ -6,6 +6,8 @@ import { z } from 'zod'
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8001'
 
+const BACKEND_REQUEST_TIMEOUT_MS = 20000
+
 function unwrapFastAPI(data: unknown): unknown {
   if (data && typeof data === 'object' && 'ok' in data && 'data' in data) {
     return (data as Record<string, unknown>).data
@@ -26,6 +28,7 @@ export async function GET(
     const response = await fetch(backendUrl, {
       method: 'GET',
       headers: getAuthHeaders(request),
+      signal: AbortSignal.timeout(BACKEND_REQUEST_TIMEOUT_MS),
     })
 
     if (!response.ok) {
