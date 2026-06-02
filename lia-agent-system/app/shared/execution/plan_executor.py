@@ -342,8 +342,17 @@ class PlanExecutor:
         return None
 
     def _build_task_query(self, task: AgentTask, params: dict[str, Any]) -> str:
-        parts = [task.action_id.replace("_", " ")]
+        # Task #1204 (Step 5): quando a task carrega ``original_query`` (mensagem
+        # natural do recrutador), usamos ela como base em vez do sintético
+        # "create job" — assim o domínio recebe o detalhe real (título,
+        # senioridade, etc.) em vez de uma casca vazia. A chave é meta e não
+        # entra na listagem "key: value".
+        raw_query = params.get("original_query") or params.get("raw_request")
+        base = raw_query.strip() if isinstance(raw_query, str) and raw_query.strip() else task.action_id.replace("_", " ")
+        parts = [base]
         for key, value in params.items():
+            if key in ("original_query", "raw_request"):
+                continue
             if isinstance(value, (list, tuple)) and len(value) > 3:
                 parts.append(f"{key}: {len(value)} itens")
             elif value is not None:
