@@ -25,7 +25,6 @@ import { useAuthStore } from "@/stores/auth-store";
 import { useChatStateStore } from "@/stores/chat-state-store";
 import { useRecentItemsStore } from "@/stores/recent-items-store";
 import { useUIPreferencesStore, type LiaRecentItem } from "@/stores/ui-preferences-store";
-import { Maximize2, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import type React from "react";
@@ -203,8 +202,7 @@ export function UnifiedChat({
   const [inputText, setInputText] = useState("");
   const [attachedFile, setAttachedFile] = useState<File | null>(null);
   const [showSwitchTask, setShowSwitchTask] = useState(false);
-  const [showFullscreenHint, setShowFullscreenHint] = useState(false);
-  const fullscreenHintShown = useRef(false);
+  const autoFullscreenDone = useRef(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [sidebarWidthPx, setSidebarWidthPx] = useState(getStoredWidth);
   const [isResizing, setIsResizing] = useState(false);
@@ -808,20 +806,6 @@ export function UnifiedChat({
   const currentModeRef = useRef(mode);
   currentModeRef.current = mode;
 
-  // Suggest fullscreen once when wizard starts in non-fullscreen mode
-  useEffect(() => {
-    if (
-      dynamicPanel?.stage === "intake" &&
-      mode !== "fullscreen" &&
-      renderMode !== "inline" &&
-      !fullscreenHintShown.current
-    ) {
-      fullscreenHintShown.current = true;
-      setShowFullscreenHint(true);
-      const timer = setTimeout(() => setShowFullscreenHint(false), 7000);
-      return () => clearTimeout(timer);
-    }
-  }, [dynamicPanel?.stage, mode, renderMode]);
 
   // Onda 4-P2-4 (2026-05-24): removidas 5 emissões workflow:* (started,
   // updated, completed, failed, thinking) que eram DEAD EMISSIONS. Audit
@@ -870,6 +854,24 @@ export function UnifiedChat({
     },
     [close, open],
   );
+
+  // Wizard de alto esforco (criar vaga) sai do chat lateral e vai para a
+  // tela cheia automaticamente -- uma vez por sessao de wizard. Enterprise
+  // pattern (Salesforce/Jira/HubSpot): chat lateral e entry point; a criacao
+  // estruturada acontece no canvas dedicado. handleModeChange("fullscreen")
+  // ja e o bridge canonico (close() + lia:navigate-chat-page) -- nao criamos
+  // rota concorrente. Respeita renderMode "inline" (chat embutido nao migra).
+  useEffect(() => {
+    if (
+      dynamicPanel?.stage === "intake" &&
+      mode !== "fullscreen" &&
+      renderMode !== "inline" &&
+      !autoFullscreenDone.current
+    ) {
+      autoFullscreenDone.current = true;
+      handleModeChange("fullscreen");
+    }
+  }, [dynamicPanel?.stage, mode, renderMode, handleModeChange]);
 
   const handleFileButtonClick = useCallback(() => {
     fileInputRef.current?.click();
@@ -1130,36 +1132,6 @@ export function UnifiedChat({
               chatMessages.filter((m) => m.sender === "user").length
             }
           />
-        )}
-
-        {/* Fullscreen suggestion hint (once when wizard starts in non-fullscreen) */}
-        {showFullscreenHint && (
-          <div className="px-4 pb-1">
-            <div className="flex items-center justify-between px-3 py-2 rounded-md border border-lia-border-subtle bg-lia-bg-secondary">
-              <span className="text-xs text-lia-text-secondary">
-                Tela cheia melhora a experiência do wizard
-              </span>
-              <div className="flex items-center gap-1 ml-2 flex-shrink-0">
-                <button
-                  onClick={() => {
-                    handleModeChange("fullscreen");
-                    setShowFullscreenHint(false);
-                  }}
-                  className="flex items-center gap-1 text-xs font-medium text-lia-text-primary px-2 py-0.5 rounded-md hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
-                >
-                  <Maximize2 className="w-3 h-3" aria-hidden="true" />
-                  Tela cheia
-                </button>
-                <button
-                  onClick={() => setShowFullscreenHint(false)}
-                  className="p-0.5 text-lia-text-disabled hover:text-lia-text-secondary transition-colors motion-reduce:transition-none"
-                  aria-label="Fechar sugestão"
-                >
-                  <X className="w-3 h-3" aria-hidden="true" />
-                </button>
-              </div>
-            </div>
-          </div>
         )}
 
         {/* Input */}

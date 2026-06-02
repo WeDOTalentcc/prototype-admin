@@ -221,9 +221,17 @@ async def get_optional_current_user(
 
 
 def _is_dev_environment() -> bool:
-    """Check whether the app is running in development mode."""
+    """Check whether the app is running in development mode.
+
+    Gating uses APP_ENV (the canonical Settings field). The legacy
+    ``ENVIRONMENT`` attribute is NOT a Settings field (model_config uses
+    extra="ignore"), so ``getattr(settings, "ENVIRONMENT", "development")``
+    always returned ``"development"`` — which left the demo-user fallback
+    active even in production. APP_ENV is set to ``"production"`` by the
+    deployment run command, so this correctly disables demo auth in prod.
+    """
     from app.core.config import settings as _app_settings
-    return getattr(_app_settings, "ENVIRONMENT", "development") == "development"
+    return _app_settings.APP_ENV == "development"
 
 
 async def _heal_legacy_demo_company_id(user, db) -> None:
@@ -381,8 +389,7 @@ async def get_current_user_or_demo(
             return rails_user
 
     # Multi-tenancy: only allow demo user in development
-    from app.core.config import settings as app_settings
-    if getattr(app_settings, "ENVIRONMENT", "development") != "development":
+    if not _is_dev_environment():
         raise HTTPException(
             status_code=401,
             detail="Authentication required"

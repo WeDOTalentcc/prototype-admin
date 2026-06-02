@@ -1,8 +1,8 @@
 import { createProxyHandlers } from "@/lib/api/proxy-handler"
 
-export const { dynamic, GET, POST } = createProxyHandlers({
+export const { dynamic, GET, PUT } = createProxyHandlers({
   backendPath: "/api/v1/company/salary-bands/",
-  methods: ["GET", "POST"],
+  methods: ["GET", "PUT"],
   auth: true,
   backendTarget: "fastapi",
 })

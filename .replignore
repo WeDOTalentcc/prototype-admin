@@ -17,3 +17,16 @@ plataforma-lia/.storybook
 plataforma-lia/out
 **/.DS_Store
 **/._*
+
+# Caches de package managers (~3GB)
+.cache/ms-playwright
+.cache/uv
+.cache/pip
+.cache/pnpm
+
+# Uploads e artifacts de dev
+attached_assets
+artifacts
+
+# node_modules root-level
+node_modules

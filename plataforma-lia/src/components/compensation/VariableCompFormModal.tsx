@@ -1,6 +1,6 @@
 "use client"
 
-import React from "react"
+import React, { useMemo } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -9,9 +9,9 @@ import { Button } from "@/components/ui/button"
 import { Loader2, Calculator } from "lucide-react"
 import { COMP_KIND_OPTIONS, FREQUENCY_OPTIONS, type VariableCompRecord } from "./variable-comp-types"
 import { EligibilityScopeEditor, VigenciaSubsidiariesEditor } from "@/components/settings/_shared"
-import { useSalaryBandMap } from "@/hooks/company/useSalaryBands"
+import { useSalaryBands } from "@/hooks/company/useSalaryBands"
 import { useDepartmentsList } from "@/hooks/settings/useDepartmentsList"
-import { resolveForBand, fmtBRL } from "@/lib/compensation/resolve"
+import { resolveForBand, bandMapFromList, fmtBRL } from "@/lib/compensation/resolve"
 import { seniorityLabel } from "@/lib/compensation/seniority-levels"
 
 interface VariableCompFormModalProps {
@@ -30,8 +30,9 @@ const sectionTitle = "text-xs font-semibold uppercase tracking-wide text-lia-tex
 
 export function VariableCompFormModal({ open, onOpenChange, editing, setEditing, isSaving, onSave }: VariableCompFormModalProps) {
   // Hooks SEMPRE no topo (rules-of-hooks), antes de qualquer early return.
-  const { data: bandMap = {} } = useSalaryBandMap()
+  const { data: bands = [] } = useSalaryBands()
   const { departments, loading: deptsLoading } = useDepartmentsList()
+  const bandMap = useMemo(() => bandMapFromList(bands), [bands])
 
   if (!editing) return null
   const c = editing
