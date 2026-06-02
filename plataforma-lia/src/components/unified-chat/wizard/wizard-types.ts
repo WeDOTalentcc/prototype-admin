@@ -222,6 +222,13 @@ export interface WsiQuestionsData {
   questions: ScreeningQuestion[]
   screening_mode: ScreeningMode | null
   distribution: { technical: number; behavioral: number } | null
+  /** Nivel de senioridade da vaga - usado no gate de minimos metodologicos WSI. */
+  seniority_level?: string | null
+  /** Lacuna de distribuicao - quantas perguntas faltam por bloco para atingir o minimo. */
+  distribution_gap?: {
+    tech: { current: number; required: number };
+    behavioral: { current: number; required: number };
+  } | null
   /** Task #1065 — `true` quando o nó caiu no fallback (timeout LLM → CBI mínimo). */
   wsi_questions_used_fallback?: boolean
   /** Task #1067 — root-cause label do fallback. */

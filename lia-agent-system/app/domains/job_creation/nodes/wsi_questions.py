@@ -285,6 +285,56 @@ def wsi_questions_node(state: JobCreationState) -> JobCreationState:
         )
         # On failure, keep all questions (don't lose recruiter's work)
 
+
+    # ── Gate de distribuição mínima (metodologia WSI, Tarefa 3) ──
+    # Valida que questions_data contém pelo menos o mínimo de perguntas técnicas
+    # e comportamentais definido pela tabela de distribuição (_get_question_distribution).
+    # Quando insuficiente registra distribution_gap no stage_data para o painel
+    # renderizar um aviso de revisão ANTES de aprovar.
+    _distribution_gap: Dict[str, Any] | None = None
+    try:
+        from app.domains.job_creation.graph import _get_question_distribution as _gqd
+        _dist_mode = state.get("screening_mode", "compact") or "compact"
+        _dist_seniority = state.get("seniority_resolved", "pleno") or "pleno"
+        _expected_dist = _gqd(_dist_mode, _dist_seniority)
+        _min_tech = _expected_dist.get("technical", 0)
+        _min_behav = _expected_dist.get("behavioral", 0)
+
+        _tech_count = sum(
+            1 for q in questions_data
+            if isinstance(q, dict) and q.get("block") in ("technical", "tecnica")
+        )
+        _behav_count = sum(
+            1 for q in questions_data
+            if isinstance(q, dict) and q.get("block") in ("behavioral", "comportamental")
+        )
+
+        if _tech_count < _min_tech or _behav_count < _min_behav:
+            _distribution_gap = {
+                "tech": {"current": _tech_count, "required": _min_tech},
+                "behavioral": {"current": _behav_count, "required": _min_behav},
+                "mode": _dist_mode,
+                "seniority": _dist_seniority,
+            }
+            logger.warning(
+                "[JobCreation:wsi_questions] distribution below minimum — "
+                "tech %d/%d behavioral %d/%d (mode=%s seniority=%s)",
+                _tech_count, _min_tech,
+                _behav_count, _min_behav,
+                _dist_mode, _dist_seniority,
+                extra={
+                    "tech_current": _tech_count,
+                    "tech_required": _min_tech,
+                    "behavioral_current": _behav_count,
+                    "behavioral_required": _min_behav,
+                },
+            )
+    except Exception as _dist_exc:
+        logger.warning(
+            "[JobCreation:wsi_questions] distribution gate failed (fail-open): %s",
+            _dist_exc,
+        )
+
     # Build ws_stage_payload data — include fairness_warning when questions were dropped
     _wsi_stage_data: Dict[str, Any] = {
         # Task #1099 — invariant: data.message obrigatório (parametrizada
@@ -325,6 +375,8 @@ def wsi_questions_node(state: JobCreationState) -> JobCreationState:
             "dropped_count": len(_wsi_dropped),
         }
         _wsi_stage_data["dropped_questions"] = _wsi_dropped
+    if _distribution_gap:
+        _wsi_stage_data["distribution_gap"] = _distribution_gap
 
     updates: Dict[str, Any] = {
         "current_stage": "wsi_questions",

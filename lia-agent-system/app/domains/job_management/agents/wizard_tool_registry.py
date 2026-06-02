@@ -1513,6 +1513,145 @@ TOOL_DEFINITIONS.append(
 )
 
 
+
+@tool_handler("wizard")
+async def _wrap_update_competencies(**kwargs):
+    """Update competencies (add/remove technical or behavioral) in the wizard competency stage.
+
+    Modifies confirmed_technical_competencies and confirmed_behavioral_competencies
+    persisted on the job draft so competency_node re-derives competency_tree on
+    the next graph invocation.
+
+    Multi-tenancy: company_id required via ContextVar JWT (@tool_handler).
+    """
+    company_id = kwargs.get("company_id")
+    vacancy_id = kwargs.get("vacancy_id")
+
+    add_technical = [s.strip() for s in (kwargs.get("add_technical") or []) if s and s.strip()]
+    remove_technical = [s.strip().lower() for s in (kwargs.get("remove_technical") or []) if s and s.strip()]
+    add_behavioral = [s.strip() for s in (kwargs.get("add_behavioral") or []) if s and s.strip()]
+    remove_behavioral = [s.strip().lower() for s in (kwargs.get("remove_behavioral") or []) if s and s.strip()]
+
+    if not any([add_technical, remove_technical, add_behavioral, remove_behavioral]):
+        return {
+            "is_error": True,
+            "error": "At least one of add_technical, remove_technical, add_behavioral, remove_behavioral must be non-empty.",
+        }
+
+    job = await _load_vacancy_or_error(vacancy_id, company_id)
+    if isinstance(job, dict):
+        return job
+
+    try:
+        from app.domains.job_management.repositories.job_vacancy_crud_repository import JobVacancyCrudRepository
+
+        async with AsyncSessionLocal() as db:
+            repo = JobVacancyCrudRepository(db)
+            curr_tech = list(getattr(job, "confirmed_technical_competencies", None) or [])
+            curr_behav = list(getattr(job, "confirmed_behavioral_competencies", None) or [])
+
+            # Apply removals (case-insensitive match by skill/competencia name)
+            if remove_technical:
+                curr_tech = [c for c in curr_tech if c.get("skill", "").lower() not in remove_technical]
+            if remove_behavioral:
+                curr_behav = [c for c in curr_behav if c.get("competencia", "").lower() not in remove_behavioral]
+
+            # Apply additions (avoid duplicates)
+            existing_tech_names = {c.get("skill", "").lower() for c in curr_tech}
+            for skill_name in add_technical:
+                if skill_name.lower() not in existing_tech_names:
+                    curr_tech.append({"skill": skill_name, "contexto": ""})
+                    existing_tech_names.add(skill_name.lower())
+
+            existing_behav_names = {c.get("competencia", "").lower() for c in curr_behav}
+            for comp_name in add_behavioral:
+                if comp_name.lower() not in existing_behav_names:
+                    curr_behav.append({"competencia": comp_name, "contexto": "", "trait_big_five": ""})
+                    existing_behav_names.add(comp_name.lower())
+
+            # Persist updates
+            await repo.update_fields(
+                vacancy_id=str(job.id),
+                company_id=company_id,
+                fields={
+                    "confirmed_technical_competencies": curr_tech,
+                    "confirmed_behavioral_competencies": curr_behav,
+                },
+            )
+            await db.commit()
+
+        n_tech = len(curr_tech)
+        n_behav = len(curr_behav)
+        added = len(add_technical) + len(add_behavioral)
+        removed = len(remove_technical) + len(remove_behavioral)
+
+        return {
+            "is_error": False,
+            "vacancy_id": str(job.id),
+            "technical_count": n_tech,
+            "behavioral_count": n_behav,
+            "added": added,
+            "removed": removed,
+            "confirmed_technical_competencies": curr_tech,
+            "confirmed_behavioral_competencies": curr_behav,
+            "message": (
+                f"Competencias atualizadas: {added} adicionadas, {removed} removidas. "
+                f"Total: {n_tech} tecnicas + {n_behav} comportamentais."
+            ),
+        }
+    except Exception as e:
+        logger.error(f"[wizard_tools] update_competencies error: {e}", exc_info=True)
+        return {"is_error": True, "error": str(e)}
+
+
+TOOL_DEFINITIONS.append(
+    ToolDefinition(
+        name="update_competencies",
+        description=(
+            "Adiciona ou remove competencias tecnicas ou comportamentais do perfil de competencias da vaga. "
+            "Use quando o recrutador pedir para adicionar, remover ou ajustar competencias durante a etapa "
+            "de revisao de competencias. Persiste as competencias confirmadas e sinaliza o wizard para "
+            "re-derivar a arvore de competencias."
+        ),
+        parameters={
+            "type": "object",
+            "properties": {
+                "company_id": {
+                    "type": "string",
+                    "description": "ID da empresa (obrigatorio, vem do contexto JWT)",
+                },
+                "vacancy_id": {
+                    "type": "string",
+                    "description": "ID da vaga (UUID). Obrigatorio para persistir.",
+                },
+                "add_technical": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "description": "Lista de competencias tecnicas a adicionar",
+                },
+                "remove_technical": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "description": "Lista de competencias tecnicas a remover (match por nome, case-insensitive)",
+                },
+                "add_behavioral": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "description": "Lista de competencias comportamentais a adicionar",
+                },
+                "remove_behavioral": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "description": "Lista de competencias comportamentais a remover (match por nome, case-insensitive)",
+                },
+            },
+            "required": ["company_id"],
+        },
+        output_schema=ToolOutput,
+        function=_wrap_update_competencies,
+    )
+)
+
 _TOOL_MAP: dict[str, ToolDefinition] = {t.name: t for t in TOOL_DEFINITIONS}
 
 # --- STAGE_TOOLS canonical allowlist ---------------------------------------
@@ -1543,7 +1682,7 @@ STAGE_TOOLS: dict[str, list[str]] = {
     "jd_enrichment": ["generate_enriched_jd", "get_job_suggestions", "get_company_config", "save_job_draft", "check_job_draft_health"],
     "pipeline_template": ["suggest_pipeline_stage_templates", "apply_pipeline_stage_template_to_vacancy", "create_custom_pipeline_stage_template"],
     "salary": ["get_salary_benchmarks", "search_salary_benchmark", "validate_job_fields", "save_job_draft", "check_job_draft_health"],
-    "competency": ["validate_job_requirements", "get_job_suggestions", "validate_job_fields", "save_job_draft", "suggest_eligibility_templates", "apply_eligibility_template_to_vacancy", "create_custom_eligibility_template"],
+    "competency": ["validate_job_requirements", "get_job_suggestions", "validate_job_fields", "save_job_draft", "suggest_eligibility_templates", "apply_eligibility_template_to_vacancy", "create_custom_eligibility_template", "update_competencies"],
     "wsi_questions": ["validate_job_requirements", "validate_job_fields", "save_job_draft", "generate_screening_questions", "suggest_eligibility_templates", "apply_eligibility_template_to_vacancy", "create_custom_eligibility_template"],
     "review": ["validate_job_requirements", "save_job_draft", "validate_job_fields", "check_job_draft_health", "generate_report", "publish_vacancy", "change_vacancy_status", "suggest_pipeline_stage_templates", "apply_pipeline_stage_template_to_vacancy", "create_custom_pipeline_stage_template"],
     "publish": ["validate_job_requirements", "save_job_draft", "validate_job_fields", "check_job_draft_health", "generate_report", "publish_vacancy", "change_vacancy_status", "suggest_pipeline_stage_templates", "apply_pipeline_stage_template_to_vacancy", "create_custom_pipeline_stage_template"],

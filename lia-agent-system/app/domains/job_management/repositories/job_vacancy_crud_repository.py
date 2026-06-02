@@ -902,6 +902,61 @@ class JobVacancyCRUDRepository:
         )
         return [dict(r) for r in result.mappings().fetchall()]
 
+
+    async def update_fields(
+        self,
+        vacancy_id: str,
+        company_id: str,
+        fields: dict,
+    ) -> bool:
+        """Update arbitrary JSONB/scalar fields on a job vacancy.
+
+        Multi-tenancy: company_id validated via _require_company_id fail-closed.
+        Used by wizard tools (update_competencies) to persist confirmed
+        competency lists without a full draft save cycle.
+
+        Args:
+            vacancy_id: UUID of the job vacancy.
+            company_id: Company scope (from JWT context).
+            fields: Dict of column_name -> value to update.
+                    Allowed columns whitelist enforced server-side.
+
+        Returns:
+            True if the row was found and updated, False otherwise.
+        """
+        import json as _json
+        from sqlalchemy import text as _text
+
+        _ALLOWED_FIELDS = frozenset({
+            "confirmed_technical_competencies",
+            "confirmed_behavioral_competencies",
+            "competency_tree",
+            "question_distribution",
+        })
+
+        safe_fields = {k: v for k, v in fields.items() if k in _ALLOWED_FIELDS}
+        if not safe_fields:
+            return False
+
+        cid = self._require_company_id(company_id)
+
+        # Build SET clause dynamically (only whitelisted fields)
+        set_clauses = ", ".join(f"{col} = :{col}" for col in safe_fields)
+        params = {"vacancy_id": vacancy_id, "company_id": cid}
+        for col, val in safe_fields.items():
+            # Serialize lists/dicts to JSON string for JSONB columns
+            params[col] = _json.dumps(val, ensure_ascii=False) if isinstance(val, (list, dict)) else val
+
+        result = await self.db.execute(
+            _text(
+                f"UPDATE job_vacancies SET {set_clauses}, updated_at = NOW() "
+                "WHERE id = :vacancy_id AND company_id = :company_id "
+                "RETURNING id"
+            ),
+            params,
+        )
+        return result.fetchone() is not None
+
 # Backwards-compatible alias: callers in app/domains/analytics + app/domains/sourcing
 # import "JobVacancyCrudRepository" (PascalCase) — pre-existing in the codebase.
 # Real class name is JobVacancyCRUDRepository (all-caps CRUD). Alias avoids
