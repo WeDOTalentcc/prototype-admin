@@ -1306,8 +1306,84 @@ async def ensure_job_templates_indexes():
     logger.info("Job templates indexes verified successfully")
 
 
+async def ensure_lia_app_role():
+    """Ensure the non-login RLS role ``lia_app`` exists with its grants (idempotent).
+
+    Every tenant-scoped request runs under ``SET ROLE lia_app`` (see
+    ``get_tenant_db``). That role is a *cluster-level* object, not a schema
+    object: it is created by migrations 068/237 but is NOT carried over by
+    logical restores / branch operations (``pg_dump`` omits roles and their
+    grants). A production database restored from such a dump keeps
+    ``alembic_version`` at head yet loses the role, so ``alembic upgrade head``
+    becomes a no-op and never recreates it — and every authenticated request
+    then fails with ``role "lia_app" does not exist``.
+
+    Re-asserting the role on every startup makes the application self-heal
+    regardless of how the database was provisioned, instead of relying on a
+    one-time migration that cannot re-run. It is a safe no-op where the role
+    already exists (e.g. development). Requires the connecting user to have
+    CREATEROLE (``neondb_owner`` in prod, ``postgres`` in dev both qualify).
+    """
+    async with engine.begin() as conn:
+        # Race-safe across simultaneously-starting instances: if two replicas
+        # both pass the existence check, the loser would otherwise abort with
+        # duplicate_object — swallow it so every replica boots cleanly.
+        await conn.execute(text(
+            """
+            DO $$
+            BEGIN
+                CREATE ROLE lia_app NOLOGIN NOSUPERUSER;
+            EXCEPTION
+                WHEN duplicate_object THEN NULL;
+            END $$;
+            """
+        ))
+        await conn.execute(text("GRANT USAGE ON SCHEMA public TO lia_app"))
+        await conn.execute(text(
+            "GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO lia_app"
+        ))
+        await conn.execute(text(
+            "GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO lia_app"
+        ))
+        await conn.execute(text(
+            """
+            DO $$
+            BEGIN
+                IF EXISTS (SELECT 1 FROM pg_proc WHERE proname = 'app_current_company_id') THEN
+                    EXECUTE 'GRANT EXECUTE ON FUNCTION app_current_company_id() TO lia_app';
+                END IF;
+            END $$;
+            """
+        ))
+        await conn.execute(text(
+            "ALTER DEFAULT PRIVILEGES IN SCHEMA public "
+            "GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO lia_app"
+        ))
+        await conn.execute(text(
+            "ALTER DEFAULT PRIVILEGES IN SCHEMA public "
+            "GRANT USAGE, SELECT ON SEQUENCES TO lia_app"
+        ))
+        # The connecting application user must be a member of lia_app so it can
+        # ``SET ROLE lia_app`` at request time.
+        await conn.execute(text(
+            """
+            DO $$
+            DECLARE
+                app_user TEXT := current_user;
+            BEGIN
+                EXECUTE format('GRANT lia_app TO %I', app_user);
+            END $$;
+            """
+        ))
+    logger.info("RLS role lia_app verified/created successfully")
+
+
 async def init_db():
     """Initialize database tables."""
+    # Re-assert the RLS role FIRST so tenant-scoped requests can SET ROLE lia_app
+    # even on a database that lost the cluster-level role (e.g. after a restore).
+    await ensure_lia_app_role()
+
     async with engine.begin() as conn:
         try:
             await conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
