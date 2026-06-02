@@ -388,25 +388,11 @@ class PlanDetector:
                 if len(parts) == 2:
                     context_mappings[parts[1]] = step.context_from
 
-            task_params: dict[str, Any] = {}
-            # Task #1204 (Step 5): a tarefa de criação de vaga perdia a mensagem
-            # original — ``_build_task_query`` montava só "create job" e o
-            # detalhe do recrutador (título, senioridade, etc.) era descartado
-            # antes de chegar na ação. Carregamos ``original_query`` na 1ª task
-            # de criação para que o domínio extraia os detalhes reais. Escopo
-            # confinado ao create_job p/ não alterar o query das demais tasks.
-            if (
-                i == 0
-                and step.domain_id == "job_management"
-                and step.action_id == "create_job"
-            ):
-                task_params["original_query"] = original_query
-
             task = AgentTask(
                 task_id=task_id,
                 domain_id=step.domain_id,
                 action_id=step.action_id,
-                params=task_params,
+                params={},
                 depends_on=depends_on,
                 context_mappings=context_mappings,
             )

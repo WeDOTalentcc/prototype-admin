@@ -134,15 +134,6 @@ class LLMSettings(BaseSettings):
     ROUTER_FAST_CONFIDENCE_THRESHOLD: float = 0.7
     ROUTER_CONFIDENCE_THRESHOLD: float = 0.80
 
-    # Job creation disambiguation (Task #1204)
-    # Gating for choosing quick_create vs guided_wizard vs create_and_search.
-    # A path is auto-routed only when confidence >= CONFIDENCE and the gap to the
-    # runner-up >= GAP; otherwise LIA asks the recruiter to choose. The behavior
-    # is itself gated by the JOB_CREATION_DISAMBIG_ENABLED flag (default OFF).
-    JOB_CREATION_DISAMBIG_ENABLED: bool = False
-    JOB_CREATION_DISAMBIG_CONFIDENCE_THRESHOLD: float = 0.70
-    JOB_CREATION_DISAMBIG_GAP_THRESHOLD: float = 0.15
-
     # Embedding provider configuration — Task #134
     # Supported values: "gemini" (default, 768-dim), "openai" (768-dim via dimensions param)
     EMBEDDING_DEFAULT_PROVIDER: str = "gemini"
