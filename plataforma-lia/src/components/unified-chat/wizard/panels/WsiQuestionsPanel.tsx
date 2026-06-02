@@ -173,6 +173,25 @@ export function WsiQuestionsPanel({ data, requiresApproval, onApprove, onReject,
         )}
       </div>
 
+      {/* Aviso de distribuicao abaixo do minimo metodologico WSI (dado vindo do backend). */}
+      {d.distribution_gap && (
+        <div className="mx-4 mb-2 flex items-start gap-2 rounded-md border border-status-warning/30 bg-status-warning/10 px-3 py-2 text-xs text-status-warning">
+          <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" aria-hidden="true" />
+          <div>
+            <p className="font-medium">Distribuicao abaixo do minimo da metodologia WSI</p>
+            <p className="mt-0.5">
+              {d.distribution_gap.tech.current < d.distribution_gap.tech.required && (
+                <>Tecnicas: {d.distribution_gap.tech.current}/{d.distribution_gap.tech.required}. </>
+              )}
+              {d.distribution_gap.behavioral.current < d.distribution_gap.behavioral.required && (
+                <>Comportamentais: {d.distribution_gap.behavioral.current}/{d.distribution_gap.behavioral.required}. </>
+              )}
+              Gere ou substitua perguntas para atingir o minimo antes de aprovar.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Question cards */}
       <div className="px-4 py-3 space-y-2" role="list">
         {questions.map((q, idx) => (

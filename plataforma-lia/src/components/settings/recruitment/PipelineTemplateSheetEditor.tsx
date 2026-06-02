@@ -232,6 +232,7 @@ export function PipelineTemplateSheetEditor({
   }
 
   return (
+    <>
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="right"
@@ -366,5 +367,6 @@ export function PipelineTemplateSheetEditor({
         </div>
       </div>
     )}
+    </>
   )
 }
