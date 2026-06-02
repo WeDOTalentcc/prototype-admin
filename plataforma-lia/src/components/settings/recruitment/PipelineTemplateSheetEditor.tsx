@@ -152,6 +152,16 @@ export function PipelineTemplateSheetEditor({
         body: JSON.stringify({ stages: stagesPayload }),
       })
       if (res.ok) {
+        // Sincroniza sub-statuses canonicos nas stages novas/recriadas
+        try {
+          await apiFetch('/api/backend-proxy/recruitment-stages/sync-canonical', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({}),
+          })
+        } catch {
+          // nao bloqueia — sub-statuses canonicos sao adicionados em background
+        }
         toast.success(`Pipeline Padr\u00e3o atualizado com o template "${template.name}"!`)
         onOpenChange(false)
       } else {
