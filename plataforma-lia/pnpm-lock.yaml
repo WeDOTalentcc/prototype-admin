@@ -148,6 +148,9 @@ importers:
       '@testing-library/dom':
         specifier: ^10.4.1
         version: 10.4.1
+      '@tiptap/core':
+        specifier: 3.22.4
+        version: 3.22.4(@tiptap/pm@3.22.4)
       '@tiptap/extension-link':
         specifier: ^3.22.3
         version: 3.22.4(@tiptap/core@3.22.4(@tiptap/pm@3.22.4))(@tiptap/pm@3.22.4)

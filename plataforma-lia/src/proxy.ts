@@ -154,7 +154,31 @@ export async function proxy(request: NextRequest) {
     const preferredLocale = (locales as readonly string[]).includes(cookieLocale ?? '')
       ? (cookieLocale as string)
       : defaultLocale
-    return NextResponse.redirect(new URL(`/${preferredLocale}/`, base))
+    // Rewrite (not redirect) so GET / returns 200 for the deploy health-check,
+    // while still enforcing auth. Serve the dashboard only when a session is
+    // actually VALID (signature/expiry checked, not mere cookie presence);
+    // otherwise serve the public login page. Use /<locale> without a trailing
+    // slash to avoid Next's 308 trailing-slash normalization.
+    let authenticated = false
+    if (DEV_AUTO_LOGIN) {
+      authenticated = Boolean(await getDevToken())
+    } else {
+      const workosSession = request.cookies.get('workos_session')?.value
+      if (workosSession) {
+        const sessionData = verifyAndDecodeSession(workosSession)
+        authenticated = Boolean(sessionData?.accessToken)
+      }
+      if (!authenticated) {
+        const accessToken = request.cookies.get('lia_access_token')?.value
+        if (accessToken && accessToken !== '_sso_session_') {
+          authenticated = Boolean(await verifyJwt(accessToken))
+        }
+      }
+    }
+    const target = authenticated
+      ? `/${preferredLocale}`
+      : `/${preferredLocale}/login`
+    return NextResponse.rewrite(new URL(target, base))
   }
 
   if (isStaticOrApiPath(pathname)) {
