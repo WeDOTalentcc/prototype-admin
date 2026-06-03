@@ -347,6 +347,12 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
         isClarification?: boolean;
         ui_action?: string;
         ui_action_params?: Record<string, unknown>;
+        agent_activity?: Array<{
+          kind: string;
+          name: string;
+          status: string;
+          durationMs?: number;
+        }>;
       },
     ) => {
       const msg: LiaChatMessage = {
@@ -363,6 +369,12 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
       }
       if (extras?.isClarification) {
         msg.isClarification = true;
+      }
+      if (extras?.agent_activity && extras.agent_activity.length > 0) {
+        msg.metadata = {
+          ...(msg.metadata ?? {}),
+          agent_activity: extras.agent_activity,
+        };
       }
       setChatMessages((prev) => [...prev, msg]);
 

@@ -114,6 +114,11 @@ export function useChatSocket({
   // useChatMessages tira snapshot antes do wsSend e checa após N segundos —
   // se o tick não mudou, o send foi engolido e ele cai pro REST.
   const wsEventTickRef = useRef(0);
+  // Gap #3: snapshot da atividade do turno atual; anexada a metadata da
+  // mensagem final e limpa a cada `message`.
+  const agentActivityBufferRef = useRef<
+    Array<{ kind: string; name: string; status: string; durationMs?: number }>
+  >([]);
 
   useEffect(() => {
     // BUG-AUDIT #277 / H2a+H4: o ws-token pode demorar (cold-start backend do
@@ -370,6 +375,23 @@ export function useChatSocket({
               ? `\ud83d\udd27 ${_name}\u2026`
               : `\u2713 ${_name}`;
         setThinkingSteps((prev) => [...prev, label]);
+        if (event.type === "tool_finished") {
+          agentActivityBufferRef.current.push({
+            kind: "tool",
+            name: _name,
+            status: (actEvent.status as string) === "error" ? "error" : "ok",
+            durationMs:
+              typeof actEvent.duration_ms === "number"
+                ? (actEvent.duration_ms as number)
+                : undefined,
+          });
+        } else if (event.type === "reasoning_step") {
+          agentActivityBufferRef.current.push({
+            kind: "reasoning",
+            name: (actEvent.label as string) || "",
+            status: "ok",
+          });
+        }
         if (typeof window !== "undefined") {
           window.dispatchEvent(
             new CustomEvent("lia:agent-activity", { detail: { ...actEvent } }),
@@ -412,10 +434,16 @@ export function useChatSocket({
             typeof eventRec.ui_action_params === "object"
               ? (eventRec.ui_action_params as Record<string, unknown>)
               : undefined;
+          const _activity = agentActivityBufferRef.current;
           const extras =
-            uiAction || uiActionParams
-              ? { ui_action: uiAction, ui_action_params: uiActionParams }
+            uiAction || uiActionParams || _activity.length
+              ? {
+                  ui_action: uiAction,
+                  ui_action_params: uiActionParams,
+                  agent_activity: _activity.length ? [..._activity] : undefined,
+                }
               : undefined;
+          agentActivityBufferRef.current = [];
           onCompleteRef.current?.(event.content, execPlan, extras);
         }
         break;

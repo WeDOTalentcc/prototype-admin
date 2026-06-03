@@ -8,6 +8,7 @@ import { PlanProgressCard, type ExecutionPlanData } from "@/components/chat/plan
 import FlowStepMessage from "@/components/unified-chat/FlowStepMessage"
 import { ThinkingStepsCard } from "./ThinkingStepsCard"
 import { AgentActivityTimeline } from "./AgentActivityTimeline"
+import { AgentActivitySummary } from "./AgentActivitySummary"
 import { OutreachCard } from "./OutreachCard"
 import { WizardPublishedJobCard } from "./wizard/WizardPublishedJobCard"
 import { WizardPipelineTemplateCard } from "./wizard/WizardPipelineTemplateCard"
@@ -347,6 +348,20 @@ export function UnifiedMessageList({
                     plan={message.executionPlan as unknown as ExecutionPlanData}
                   />
                 )}
+
+                {/* Agent activity summary (Fase 3 / Gap #3) — persistente */}
+                {isLia &&
+                  Array.isArray(
+                    (meta as Record<string, unknown> | undefined)?.agent_activity,
+                  ) &&
+                  ((meta as Record<string, unknown>).agent_activity as unknown[])
+                    .length > 0 && (
+                    <AgentActivitySummary
+                      items={
+                        (meta as Record<string, unknown>).agent_activity as never
+                      }
+                    />
+                  )}
 
                 {/* Flow steps (workflow visual) */}
                 {hasFlowSteps && (
