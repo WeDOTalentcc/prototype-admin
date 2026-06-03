@@ -72,3 +72,35 @@ def test_no_signal_no_invention():
     )
     assert sen is None and inf is False
     assert name is None and sug is False
+
+
+# ── #8 departamento tenant-aware (auditoria 2026-06-03) ──────────────────────
+from app.domains.job_creation.nodes.intake import _match_department
+
+
+def test_match_department_finance():
+    depts = ["Finanças", "Marketing", "Pesquisa e Desenvolvimento", "Tecnologia"]
+    assert _match_department("Diretor Financeiro", depts) == "Finanças"
+
+
+def test_match_department_research_clinic():
+    depts = ["Finanças", "Pesquisa e Desenvolvimento", "Marketing"]
+    assert _match_department("Diretor de Pesquisa Clínica", depts) == "Pesquisa e Desenvolvimento"
+
+
+def test_match_department_does_not_match_seniority_to_diretoria():
+    # "Diretor" é senioridade, não departamento — não pode casar com "Diretoria".
+    depts = ["Diretoria", "Finanças"]
+    assert _match_department("Diretor Financeiro", depts) == "Finanças"
+
+
+def test_match_department_no_good_match_returns_none():
+    # Cliente não tem depto correspondente → não inventa (LIA pergunta).
+    depts = ["Finanças", "Marketing"]
+    assert _match_department("Engenheiro de Dados", depts) is None
+
+
+def test_match_department_empty_inputs():
+    assert _match_department("", ["Finanças"]) is None
+    assert _match_department("Diretor Financeiro", []) is None
+    assert _match_department("Diretor Financeiro", None) is None

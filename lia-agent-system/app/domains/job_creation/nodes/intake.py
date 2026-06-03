@@ -9,6 +9,8 @@ Pre-F1: Parse user input via IntakeExtractor (LLM + regex fallback).
 import logging
 import re
 import time
+import unicodedata
+from difflib import SequenceMatcher
 from typing import Any, Dict
 
 from app.domains.job_creation.state import (
@@ -20,6 +22,7 @@ from app.domains.job_creation.helpers.ws_payload_builder import (
 )
 from app.domains.job_creation.helpers.i18n import msg
 from app.domains.job_creation.helpers.intake_audit import emit_intake_audit
+from app.domains.job_creation.helpers.async_audit import run_coro_in_threadpool
 from app.domains.job_creation.services.seniority_resolver import (
     _infer_from_title,
     SENIORITY_DISPLAY_NAMES,
@@ -60,6 +63,79 @@ def _derive_name_from_email(email: str | None) -> str | None:
     if not words:
         return None
     return " ".join(words)
+
+
+# Audit 2026-06-03 (#8 departamento tenant-aware): casar o título contra os
+# departamentos REAIS do cliente (nunca inventar um que ele não tem). Tokens de
+# senioridade são removidos do título antes do match — assim "Diretor
+# Financeiro" casa com "Finanças", não com um eventual departamento "Diretoria".
+_SENIORITY_TOKENS = {
+    "diretor", "diretora", "diretoria", "gerente", "coordenador", "coordenadora",
+    "analista", "assistente", "estagiario", "estagiaria", "junior", "pleno",
+    "senior", "especialista", "head", "lead", "supervisor", "supervisora",
+    "chefe", "presidente", "tecnico", "tecnica", "auxiliar", "trainee",
+    "vp", "ceo", "cto", "cfo", "coo", "cmo",
+}
+_DEPT_STOPWORDS = {"de", "da", "do", "e", "das", "dos"}
+
+
+def _norm_txt(value: str) -> str:
+    return (
+        unicodedata.normalize("NFKD", value or "")
+        .encode("ascii", "ignore")
+        .decode("ascii")
+        .lower()
+    )
+
+
+def _dept_tokens(value: str, *, drop_seniority: bool = False) -> list:
+    toks = [
+        t for t in re.split(r"[^a-z0-9]+", _norm_txt(value))
+        if len(t) >= 3 and t not in _DEPT_STOPWORDS
+    ]
+    if drop_seniority:
+        toks = [t for t in toks if t not in _SENIORITY_TOKENS]
+    return toks
+
+
+def _tok_sim(a: str, b: str) -> float:
+    if a == b:
+        return 1.0
+    n = min(len(a), len(b))
+    if n >= 4:
+        cp = 0
+        for x, y in zip(a, b):
+            if x == y:
+                cp += 1
+            else:
+                break
+        if cp >= 4:
+            return 0.85
+    return SequenceMatcher(None, a, b).ratio()
+
+
+def _match_department(title, dept_names, threshold: float = 0.8):
+    """Casa o título contra a lista de departamentos REAIS do cliente. Retorna o
+    nome do depto (original) com melhor match acima do threshold, ou None —
+    nunca inventa um departamento que o cliente não tem (tenant-aware).
+    """
+    if not title or not dept_names:
+        return None
+    title_toks = _dept_tokens(title, drop_seniority=True)
+    if not title_toks:
+        return None
+    best, best_score = None, 0.0
+    for name in dept_names:
+        dtoks = _dept_tokens(name)
+        if not dtoks:
+            continue
+        score = max(
+            (_tok_sim(dt, tt) for dt in dtoks for tt in title_toks),
+            default=0.0,
+        )
+        if score > best_score:
+            best, best_score = name, score
+    return best if best_score >= threshold else None
 
 
 def _derive_intake_suggestions(
@@ -211,6 +287,42 @@ def intake_node(state: JobCreationState) -> JobCreationState:
         parsed_manager_email=parsed_manager_email,
     )
 
+    # Audit 2026-06-03 (#8 departamento tenant-aware): quando o departamento não
+    # veio, casa o título contra os departamentos REAIS do cliente (DB, guardado
+    # por timeout + fail-open). Nunca inventa um depto que o cliente não tem.
+    department_inferred_from_title = False
+    if not parsed_department and parsed_title:
+        _company_id = str(state.get("workspace_id") or state.get("company_id") or "")
+        if _company_id:
+            try:
+                async def _load_company_departments():
+                    from uuid import UUID
+                    from app.core.database import AsyncSessionLocal
+                    from app.domains.company.repositories.department_repository import (
+                        DepartmentRepository,
+                    )
+                    async with AsyncSessionLocal() as _db:
+                        rows = await DepartmentRepository(_db).list_active_for_company(
+                            UUID(_company_id)
+                        )
+                        return [r.name for r in rows if getattr(r, "name", None)]
+
+                _dept_names = run_coro_in_threadpool(
+                    _load_company_departments, timeout=2.0
+                ) or []
+                _matched_dept = _match_department(parsed_title, _dept_names)
+                if _matched_dept:
+                    parsed_department = _matched_dept
+                    department_inferred_from_title = True
+                    logger.info(
+                        "[JobCreation:intake] departamento deduzido do titulo "
+                        "%s -> %s (match tenant-aware)", parsed_title, _matched_dept,
+                    )
+            except Exception as _dept_exc:
+                logger.warning(
+                    "[JobCreation:intake] dept inference fail-open: %s", _dept_exc,
+                )
+
     # WT-2022 P0.C: LGPD Art. 20 audit trail para decisao automatizada de
     # intake extraction. Delegado a emit_intake_audit (helper canonical em
     # app/domains/job_creation/helpers/intake_audit.py) — 70 LOC inline
@@ -244,6 +356,11 @@ def intake_node(state: JobCreationState) -> JobCreationState:
             f"Pelo email, o gestor parece ser **{parsed_manager_name}** -- "
             f"confirme ou corrija."
         )
+    if department_inferred_from_title and parsed_department:
+        _deduction_notes.append(
+            f"Pela area do titulo, deduzi o departamento **{parsed_department}** -- "
+            f"confirme ou ajuste."
+        )
     intake_message = _base_intake_msg
     if _deduction_notes:
         intake_message = _base_intake_msg + " " + " ".join(_deduction_notes)
@@ -262,6 +379,7 @@ def intake_node(state: JobCreationState) -> JobCreationState:
         "intake_confidence": intake_confidence,
         "seniority_inferred_from_title": seniority_inferred_from_title,
         "manager_name_suggested_from_email": manager_name_suggested_from_email,
+        "department_inferred_from_title": department_inferred_from_title,
         "stage_history": (state.get("stage_history") or []) + ["intake"],
         "completeness": calculate_completeness("intake"),
         "requires_approval": False,
@@ -285,6 +403,7 @@ def intake_node(state: JobCreationState) -> JobCreationState:
                 "intake_source": intake_source,
                 "seniority_inferred_from_title": seniority_inferred_from_title,
                 "manager_name_suggested_from_email": manager_name_suggested_from_email,
+                "department_inferred_from_title": department_inferred_from_title,
                 # Task #1055 — emite o pipeline_template determinístico já no
                 # turno de intake para que o WizardPipelineTemplateCard apareça
                 # mesmo se a chamada de culture-stack ou Gemini falhar depois.
