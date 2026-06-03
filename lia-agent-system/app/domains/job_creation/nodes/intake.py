@@ -7,6 +7,7 @@ Pre-F1: Parse user input via IntakeExtractor (LLM + regex fallback).
 """
 
 import logging
+import re
 import time
 from typing import Any, Dict
 
@@ -19,9 +20,77 @@ from app.domains.job_creation.helpers.ws_payload_builder import (
 )
 from app.domains.job_creation.helpers.i18n import msg
 from app.domains.job_creation.helpers.intake_audit import emit_intake_audit
+from app.domains.job_creation.services.seniority_resolver import (
+    _infer_from_title,
+    SENIORITY_DISPLAY_NAMES,
+)
 
 logger = logging.getLogger(__name__)
 
+
+# Audit 2026-06-03 (#2 + #8): derivacao deterministica no intake. Principio:
+# derivar de SINAL REAL (titulo digitado, prefixo do email), pre-preencher como
+# SUGESTAO e sinalizar proveniencia -- nunca alucinar (vide bug "Carlos Mendes").
+# O recrutador confirma/corrige; estes campos sao sugestoes, nao fatos.
+_GENERIC_MAILBOX_PREFIXES = {
+    "rh", "contato", "vagas", "noreply", "no-reply", "jobs", "recrutamento",
+    "talent", "talentos", "recruiting", "hr", "careers", "carreiras", "admin",
+    "info", "atendimento", "suporte", "comercial",
+}
+
+
+def _derive_name_from_email(email: str | None) -> str | None:
+    """Deriva um nome-candidato do prefixo do email (paulo.moraes@x -> Paulo Moraes).
+
+    Heuristica conservadora: usa so o local-part antes do @, separa por . _ -,
+    descarta tokens numericos e mailboxes genericas (rh@, contato@...). Retorna
+    None quando nao da um nome plausivel -- a LIA entao PERGUNTA em vez de inventar.
+    """
+    if not email or "@" not in email:
+        return None
+    local = email.split("@", 1)[0].strip().lower()
+    parts = [t for t in re.split(r"[._\-]+", local) if t and not t.isdigit()]
+    if (
+        not parts
+        or local in _GENERIC_MAILBOX_PREFIXES
+        or parts[0] in _GENERIC_MAILBOX_PREFIXES
+    ):
+        return None
+    words = [t.capitalize() for t in parts if len(t) >= 2]
+    if not words:
+        return None
+    return " ".join(words)
+
+
+def _derive_intake_suggestions(
+    *,
+    parsed_title: str | None,
+    parsed_seniority: str | None,
+    parsed_manager_name: str | None,
+    parsed_manager_email: str | None,
+):
+    """Pre-preenche senioridade (do titulo) e nome do gestor (do email) quando
+    ausentes, a partir de sinais determinísticos. Nao sobrescreve valor explicito.
+
+    Retorna (seniority, seniority_inferred, manager_name, name_suggested).
+    """
+    seniority = parsed_seniority
+    seniority_inferred = False
+    if not seniority and parsed_title:
+        level, conf = _infer_from_title(parsed_title)
+        if level and conf >= 0.8:
+            seniority = SENIORITY_DISPLAY_NAMES.get(level, level)
+            seniority_inferred = True
+
+    manager_name = parsed_manager_name
+    name_suggested = False
+    if not manager_name and parsed_manager_email:
+        derived = _derive_name_from_email(parsed_manager_email)
+        if derived:
+            manager_name = derived
+            name_suggested = True
+
+    return seniority, seniority_inferred, manager_name, name_suggested
 
 def intake_node(state: JobCreationState) -> JobCreationState:
     """Pre-F1: Parse user input via IntakeExtractor (LLM + regex fallback).
@@ -126,6 +195,22 @@ def intake_node(state: JobCreationState) -> JobCreationState:
             "[JobCreation:intake] F3-1 extraction failed (fail-open): %s", _ex_exc,
         )
 
+    # Audit 2026-06-03 (#2 + #8): derivacao deterministica (senioridade do titulo,
+    # nome do gestor do email). Roda fora do try para valer mesmo se a extracao
+    # LLM falhou. Pre-preenche como SUGESTAO + flags de proveniencia (a LIA avisa
+    # que deduziu, e o recrutador confirma/corrige).
+    (
+        parsed_seniority,
+        seniority_inferred_from_title,
+        parsed_manager_name,
+        manager_name_suggested_from_email,
+    ) = _derive_intake_suggestions(
+        parsed_title=parsed_title,
+        parsed_seniority=parsed_seniority,
+        parsed_manager_name=parsed_manager_name,
+        parsed_manager_email=parsed_manager_email,
+    )
+
     # WT-2022 P0.C: LGPD Art. 20 audit trail para decisao automatizada de
     # intake extraction. Delegado a emit_intake_audit (helper canonical em
     # app/domains/job_creation/helpers/intake_audit.py) — 70 LOC inline
@@ -141,6 +226,28 @@ def intake_node(state: JobCreationState) -> JobCreationState:
         parsed_model=parsed_model,
     )
 
+    # Audit 2026-06-03: transparencia -- quando algo foi deduzido, a LIA avisa
+    # explicitamente na mensagem (chega ao chat via stage_data.message).
+    _base_intake_msg = (
+        msg("intake.captured", parsed_title=parsed_title)
+        if parsed_title
+        else msg("intake.ask_for_title")
+    )
+    _deduction_notes = []
+    if seniority_inferred_from_title and parsed_seniority:
+        _deduction_notes.append(
+            f"Deduzi a senioridade **{parsed_seniority}** pela nomenclatura do "
+            f"titulo -- ajuste se nao for o caso."
+        )
+    if manager_name_suggested_from_email and parsed_manager_name:
+        _deduction_notes.append(
+            f"Pelo email, o gestor parece ser **{parsed_manager_name}** -- "
+            f"confirme ou corrija."
+        )
+    intake_message = _base_intake_msg
+    if _deduction_notes:
+        intake_message = _base_intake_msg + " " + " ".join(_deduction_notes)
+
     updates: Dict[str, Any] = {
         "current_stage": "intake",
         "raw_input": query,
@@ -153,6 +260,8 @@ def intake_node(state: JobCreationState) -> JobCreationState:
         "parsed_manager_name": parsed_manager_name,
         "parsed_manager_email": parsed_manager_email,
         "intake_confidence": intake_confidence,
+        "seniority_inferred_from_title": seniority_inferred_from_title,
+        "manager_name_suggested_from_email": manager_name_suggested_from_email,
         "stage_history": (state.get("stage_history") or []) + ["intake"],
         "completeness": calculate_completeness("intake"),
         "requires_approval": False,
@@ -162,11 +271,7 @@ def intake_node(state: JobCreationState) -> JobCreationState:
             requires_approval=False,
             data={
                 # Task #1099 — invariant: data.message obrigatório.
-                "message": (
-                    msg("intake.captured", parsed_title=parsed_title)
-                    if parsed_title
-                    else msg("intake.ask_for_title")
-                ),
+                "message": intake_message,
                 "raw_input": query,
                 "parsed_title": parsed_title,
                 "parsed_seniority": parsed_seniority,
@@ -178,6 +283,8 @@ def intake_node(state: JobCreationState) -> JobCreationState:
                 "parsed_manager_email": parsed_manager_email,
                 "intake_confidence": intake_confidence,
                 "intake_source": intake_source,
+                "seniority_inferred_from_title": seniority_inferred_from_title,
+                "manager_name_suggested_from_email": manager_name_suggested_from_email,
                 # Task #1055 — emite o pipeline_template determinístico já no
                 # turno de intake para que o WizardPipelineTemplateCard apareça
                 # mesmo se a chamada de culture-stack ou Gemini falhar depois.
