@@ -60,7 +60,7 @@ atrás de flag.
   propagar node-a-node. Flag `LIA_WS_ASTREAM` (default OFF) + fallback automático para ainvoke.
 - Cascade obrigatória: `feature-impact` (cross-agent, blast-radius alto).
 
-### Fase 3 — Polish FE: timeline colapsável estilo Manus
+### Fase 3 — Polish FE: timeline estilo Manus  ✅ FEITA (2026-06-03)
 - `AgentActivityTimeline` agrupando reasoning_step + tool_started/finished. Estados
   live→done colapsado. Smoke test rerender (Rules-of-Hooks).
 
