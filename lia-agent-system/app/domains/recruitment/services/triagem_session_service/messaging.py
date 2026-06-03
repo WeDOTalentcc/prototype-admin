@@ -29,6 +29,8 @@ from .conversation import (
 )
 from .scoring import _score_response_deterministic
 from .voice import _generate_tts_audio
+from . import eligibility_phase
+from sqlalchemy.orm.attributes import flag_modified
 
 logger = logging.getLogger(__name__)
 
@@ -57,12 +59,15 @@ async def process_message(
 
     use_voice = voice_mode if voice_mode is not None else session.voice_mode
 
+    _meta0 = session.metadata_json or {}
+    _in_elig = eligibility_phase.is_active(_meta0.get("eligibility") or {})
+    _msg_block = 999 if _in_elig else session.current_block
     candidate_msg = TriagemMessage(
         session_id=session.id,
         sender="candidate",
         content=content,
         message_type=message_type,
-        wsi_block=session.current_block,
+        wsi_block=_msg_block,
     )
     db.add(candidate_msg)
     await db.flush()
@@ -103,6 +108,37 @@ async def _generate_lia_response(
     db: AsyncSession, session: TriagemSession, candidate_content: str
 ) -> dict[str, Any]:
     repo = TriagemSessionRepository(db)
+    _meta = session.metadata_json or {}
+    _elig = _meta.get("eligibility") or {}
+    if eligibility_phase.is_active(_elig):
+        _new_elig, _resp = eligibility_phase.advance(_elig, candidate_content)
+        _meta["eligibility"] = _new_elig
+        if _resp.get("talent_pool"):
+            _meta["eligibility_outcome"] = "talent_pool"
+        session.metadata_json = _meta
+        flag_modified(session, "metadata_json")
+        await db.flush()
+        if _resp.get("talent_pool"):
+            return {
+                "content": _resp.get("content", ""),
+                "type": "eligibility_talent_pool",
+                "question_id": None,
+                "is_pre_completion": True,
+            }
+        if _resp.get("eligibility_done"):
+            _blocks = _get_session_blocks(session)
+            _fb = _blocks[0]
+            _fq = _fb["questions"][0]
+            return {
+                "content": f"Perfeito! Agora vamos a entrevista. Vamos comecar pela etapa de {_fb['name']}: {_fq}",
+                "type": "question",
+                "question_id": "block_0_q_0",
+            }
+        return {
+            "content": _resp.get("content", ""),
+            "type": _resp.get("type", "question"),
+            "question_id": f"eligibility_{_new_elig.get('index', 0)}",
+        }
     candidate_msgs = await repo.list_candidate_messages_for_session(session.id)
     candidate_count = len(candidate_msgs)
 
