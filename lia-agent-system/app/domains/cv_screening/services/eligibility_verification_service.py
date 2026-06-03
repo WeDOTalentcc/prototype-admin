@@ -374,21 +374,32 @@ class EligibilityVerificationService:
         job_data: dict[str, Any]
     ) -> list[EligibilityQuestion]:
         """Extract eligibility questions from job vacancy data."""
-        questions = []
-        
-        eligibility_data = job_data.get("eligibility_questions", [])
-        
+        questions: list[EligibilityQuestion] = []
+
+        # canonical-fix (Epico Elegibilidade 2026-06-03): parse UNICO via
+        # EligibilityQuestionItem, que normaliza os 4 shapes historicos
+        # (wizard required_answer / job-edit disqualify_on_fail /
+        # catalogo eliminatory|eliminatoryAnswer / legado question_text).
+        from app.schemas.eligibility_question_item import EligibilityQuestionItem
+
+        eligibility_data = job_data.get("eligibility_questions", []) or []
+
         for q in eligibility_data:
+            if not isinstance(q, dict):
+                continue
+            item = EligibilityQuestionItem(**q)
+            if not item.question:
+                continue
             questions.append(EligibilityQuestion(
-                id=str(q.get("id", "")),
-                question_text=q.get("question_text", q.get("text", "")),
-                question_type=q.get("question_type", q.get("type", "text")),
-                options=q.get("options"),
-                is_eliminatory=q.get("is_eliminatory", False),
-                expected_answer=q.get("expected_answer"),
-                category=q.get("category", "default")
+                id=item.id,
+                question_text=item.question,
+                question_type=item.question_type,
+                options=item.options,
+                is_eliminatory=item.is_eliminatory,
+                expected_answer=item.expected_answer,
+                category=item.category,
             ))
-        
+
         return questions
 
 
