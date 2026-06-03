@@ -1515,9 +1515,11 @@ Camada 4: campos sensíveis → [FIELD_MASKED]
 
 Função: strip_pii_for_llm_prompt (global)
 PIIMaskingFilter: filtro global de logs
-Presidio: opt-in para detecção avançada
+Presidio: NER (PERSON/EMAIL/PHONE/NRP) LIGADO POR PADRÃO
+  (LLM_PROMPT_PRESIDIO_ENABLED=true; modelo pt_core_news_sm)
 
-Regra absoluta: O LLM NUNCA vê dados pessoais reais
+Objetivo: minimizar PII real enviada ao LLM — best-effort por regex +
+  NER (não é garantia absoluta; ver trade-off no apêndice D-10)
 Demasking: dados restaurados na response final ao recrutador
 Audit: dados mascarados no registro (nunca reais)
 ```
@@ -1840,8 +1842,8 @@ Princípios aplicados:
      "Dado sensível - não sincronizar"
   3. Feedback: PipelineFeedbackTool._remove_score_references
      Strip scores numéricos do feedback ao candidato
-  4. PII Masking: 4 camadas pré-LLM
-     LLM nunca vê dados reais
+  4. PII Masking: regex + NER Presidio pré-LLM
+     PII real minimizada antes do LLM (best-effort; nome ligado por padrão)
   5. ToonService: anonymize=True para visualização anônima
 ```
 
