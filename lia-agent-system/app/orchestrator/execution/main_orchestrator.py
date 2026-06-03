@@ -25,7 +25,7 @@ import uuid
 from collections.abc import Callable
 from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from app.shared.observability.tracing import trace_span
 from app.shared.chat_types import StructuredDataAdapter
@@ -171,6 +171,15 @@ class ChatResponse(BaseModel):
     agent_used: str = "main_orchestrator"
     agents_consulted: list[str] = Field(default_factory=list)
     intent_detected: str = "general"
+
+    @field_validator("intent_detected", mode="before")
+    @classmethod
+    def _coerce_intent_detected(cls, v: object) -> str:
+        # OrchestratorIntentResult é str-like (__str__ -> intent_id) mas a
+        # validação string_type do Pydantic rejeita o objeto. Coage pra string.
+        # Fix canonical 2026-06-03: single point, protege todos os call sites
+        # (ex.: from_action_result com intent=pending.intent objeto).
+        return str(v) if v is not None else "general"
     confidence: float = 1.0
     structured_data: dict[str, Any] | None = None
     suggested_prompts: list[str] = Field(default_factory=list)
