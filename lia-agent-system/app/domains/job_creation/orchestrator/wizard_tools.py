@@ -450,6 +450,138 @@ def _handle_confirm_competencies(
     )
 
 
+def _handle_update_competencies(
+    state: dict, tool_input: dict, ctx: ToolContext
+) -> ToolResult:
+    """Adiciona/remove competências via DELTAS (sem reenviar a lista inteira).
+
+    Lê as listas atuais do state (confirmadas, com fallback para as sugeridas —
+    mesmo padrão de ``_competency_tree_for_panel``), aplica remoções (match
+    case-insensitive por nome) e adições (append sem duplicar), e grava as
+    listas completas em ``confirmed_*`` via ``state_updates`` — o que faz o
+    painel lateral refletir a mudança no mesmo turno.
+
+    Shape canonical (igual a ``_handle_confirm_competencies``): técnicas =
+    [{"skill": ...}], comportamentais = [{"competencia": ...}]. Preserva
+    ``contexto``/``trait_big_five`` de itens já existentes em formato dict.
+    """
+    tenant_err = _reject_tenant_keys(tool_input)
+    if tenant_err:
+        return ToolResult(llm_message=tenant_err, error=True)
+
+    def _coerce_delta(items: Any, label: str) -> tuple[list[str], Optional[str]]:
+        if items is None:
+            return [], None
+        if not isinstance(items, list):
+            return [], f"'{label}' deve ser uma lista de nomes (strings)."
+        out: list[str] = []
+        for it in items:
+            if not isinstance(it, str):
+                return [], f"'{label}' deve conter apenas nomes (strings)."
+            name = it.strip()
+            if name:
+                out.append(name)
+        return out, None
+
+    add_tech, e1 = _coerce_delta(tool_input.get("add_technical"), "add_technical")
+    if e1:
+        return ToolResult(llm_message=e1, error=True)
+    rem_tech, e2 = _coerce_delta(tool_input.get("remove_technical"), "remove_technical")
+    if e2:
+        return ToolResult(llm_message=e2, error=True)
+    add_behav, e3 = _coerce_delta(tool_input.get("add_behavioral"), "add_behavioral")
+    if e3:
+        return ToolResult(llm_message=e3, error=True)
+    rem_behav, e4 = _coerce_delta(tool_input.get("remove_behavioral"), "remove_behavioral")
+    if e4:
+        return ToolResult(llm_message=e4, error=True)
+
+    if not (add_tech or rem_tech or add_behav or rem_behav):
+        return ToolResult(
+            llm_message="Informe ao menos uma competência para adicionar ou remover.",
+            error=True,
+        )
+
+    sugg = state.get("suggested_competencies") or {}
+    cur_tech = (
+        state.get("confirmed_technical_competencies")
+        or sugg.get("technical")
+        or []
+    )
+    cur_behav = (
+        state.get("confirmed_behavioral_competencies")
+        or sugg.get("behavioral")
+        or []
+    )
+
+    def _name_of(item: Any) -> str:
+        if isinstance(item, dict):
+            return str(
+                item.get("skill")
+                or item.get("competencia")
+                or item.get("name")
+                or ""
+            ).strip()
+        return str(item).strip()
+
+    def _normalize_tech(item: Any) -> dict:
+        if isinstance(item, dict):
+            d = {"skill": _name_of(item)}
+            if item.get("contexto"):
+                d["contexto"] = item["contexto"]
+            return d
+        return {"skill": str(item).strip(), "contexto": ""}
+
+    def _normalize_behav(item: Any) -> dict:
+        if isinstance(item, dict):
+            d = {"competencia": _name_of(item)}
+            d["contexto"] = item.get("contexto", "") or ""
+            d["trait_big_five"] = (
+                item.get("trait_big_five", "")
+                or item.get("trait_ocean", "")
+                or ""
+            )
+            return d
+        return {"competencia": str(item).strip(), "contexto": "", "trait_big_five": ""}
+
+    def _apply(current, removals, additions, normalize, new_item):
+        rem_lc = {r.lower() for r in removals}
+        result = [
+            normalize(it)
+            for it in current
+            if _name_of(it) and _name_of(it).lower() not in rem_lc
+        ]
+        existing_lc = {d.get("skill") or d.get("competencia") for d in result}
+        existing_lc = {str(x).lower() for x in existing_lc if x}
+        for name in additions:
+            if name.lower() not in existing_lc:
+                result.append(new_item(name))
+                existing_lc.add(name.lower())
+        return result
+
+    tech = _apply(
+        cur_tech, rem_tech, add_tech, _normalize_tech,
+        lambda n: {"skill": n, "contexto": ""},
+    )
+    behav = _apply(
+        cur_behav, rem_behav, add_behav, _normalize_behav,
+        lambda n: {"competencia": n, "contexto": "", "trait_big_five": ""},
+    )
+
+    return ToolResult(
+        llm_message=(
+            f"Competências atualizadas: +{len(add_tech)}/-{len(rem_tech)} "
+            f"técnicas, +{len(add_behav)}/-{len(rem_behav)} comportamentais. "
+            f"Agora: {len(tech)} técnicas, {len(behav)} comportamentais."
+        ),
+        state_updates={
+            "confirmed_technical_competencies": tech,
+            "confirmed_behavioral_competencies": behav,
+            "intake_competencies_suggested": True,
+        },
+    )
+
+
 def _handle_set_salary(
     state: dict, tool_input: dict, ctx: ToolContext
 ) -> ToolResult:
@@ -633,6 +765,29 @@ CONFIRM_COMPETENCIES = WizardTool(
     handler=_handle_confirm_competencies,
 )
 
+UPDATE_COMPETENCIES = WizardTool(
+    name="update_competencies",
+    description=(
+        "Adiciona ou remove competências específicas SEM precisar reenviar a "
+        "lista inteira. Use quando o recrutador pedir para ADICIONAR ('inclua "
+        "X', 'adicione Y') ou REMOVER ('tira Z', 'remove W') competências. "
+        "Forneça apenas os deltas: add_technical, remove_technical, "
+        "add_behavioral, remove_behavioral (listas de nomes). Para confirmar a "
+        "lista inteira do zero, use confirm_competencies."
+    ),
+    input_schema={
+        "type": "object",
+        "properties": {
+            "add_technical": {"type": "array", "items": {"type": "string"}, "description": "Competências técnicas a adicionar."},
+            "remove_technical": {"type": "array", "items": {"type": "string"}, "description": "Competências técnicas a remover (match por nome)."},
+            "add_behavioral": {"type": "array", "items": {"type": "string"}, "description": "Competências comportamentais a adicionar."},
+            "remove_behavioral": {"type": "array", "items": {"type": "string"}, "description": "Competências comportamentais a remover (match por nome)."},
+        },
+        "additionalProperties": False,
+    },
+    handler=_handle_update_competencies,
+)
+
 CONFIRM_RESPONSIBILITIES = WizardTool(
     name="confirm_responsibilities",
     description=(
@@ -751,6 +906,7 @@ PURE_TOOLS: tuple[WizardTool, ...] = (
     SET_JOB_FIELDS,
     SET_SCREENING_MODE,
     CONFIRM_COMPETENCIES,
+    UPDATE_COMPETENCIES,
     CONFIRM_RESPONSIBILITIES,
     CONFIRM_LANGUAGES,
     APPROVE_JOB_DESCRIPTION,
