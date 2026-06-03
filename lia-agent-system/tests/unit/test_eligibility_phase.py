@@ -91,3 +91,24 @@ class TestReconsiderationReconsider:
         state, resp = ep.advance(state, "nao")  # confirma errado -> talent pool
         assert resp.get("talent_pool") is True
         assert state["phase"] == ep.PHASE_TALENT_POOL
+
+
+class TestOutcome:
+    def test_active_state_no_outcome(self):
+        state = ep.build_eligibility_state([JOBEDIT_Q])
+        assert ep.outcome(state) is None
+
+    def test_complete_outcome(self):
+        state = ep.build_eligibility_state([WIZARD_Q])
+        state, _ = ep.advance(state, "sim")  # unica pergunta passou -> complete
+        assert ep.outcome(state) == "complete"
+
+    def test_talent_pool_outcome(self):
+        state = ep.build_eligibility_state([JOBEDIT_Q])
+        state, _ = ep.advance(state, "nao")
+        state, _ = ep.advance(state, "1")  # manter -> talent pool
+        assert ep.outcome(state) == "talent_pool"
+
+    def test_empty_state_none(self):
+        assert ep.outcome({}) is None
+        assert ep.outcome(None) is None

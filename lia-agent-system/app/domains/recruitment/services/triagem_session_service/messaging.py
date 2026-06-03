@@ -110,6 +110,19 @@ async def _generate_lia_response(
     repo = TriagemSessionRepository(db)
     _meta = session.metadata_json or {}
     _elig = _meta.get("eligibility") or {}
+    if eligibility_phase.outcome(_elig) == "talent_pool":
+        # candidato eliminado na elegibilidade — NAO inicia WSI; encerra com
+        # mensagem de banco de talentos (sessao nao avanca para a entrevista).
+        return {
+            "content": (
+                "Como conversamos, seu perfil foi adicionado ao nosso banco de "
+                "talentos para oportunidades futuras compativeis. Obrigada pelo "
+                "interesse!"
+            ),
+            "type": "eligibility_talent_pool",
+            "question_id": None,
+            "is_pre_completion": True,
+        }
     if eligibility_phase.is_active(_elig):
         _new_elig, _resp = eligibility_phase.advance(_elig, candidate_content)
         _meta["eligibility"] = _new_elig

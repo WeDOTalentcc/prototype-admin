@@ -60,6 +60,23 @@ def is_active(state: dict[str, Any] | None) -> bool:
     return state.get("phase") not in _TERMINAL
 
 
+def outcome(state: dict[str, Any] | None) -> str | None:
+    """Desfecho terminal da fase: "talent_pool" | "complete" | None (ainda ativa).
+
+    Usado pela casca (messaging) para impedir que um candidato eliminado caia
+    no WSI: apos talent_pool, is_active()==False, entao sem este guard a
+    proxima mensagem iniciaria a entrevista.
+    """
+    if not state:
+        return None
+    phase = state.get("phase")
+    if phase == PHASE_TALENT_POOL:
+        return "talent_pool"
+    if phase == PHASE_COMPLETE:
+        return "complete"
+    return None
+
+
 def current_question_text(state: dict[str, Any] | None) -> str | None:
     """Texto da pergunta de elegibilidade atual (para start_session)."""
     if not is_active(state):
