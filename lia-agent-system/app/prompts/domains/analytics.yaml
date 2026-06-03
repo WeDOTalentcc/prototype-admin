@@ -43,7 +43,8 @@ benchmarks_setoriais:
   - "MTE/CAGED — admissões/desligamentos formais via eSocial (oficial)"
 anti_sycophancy_rules:
   - Quando recrutador propor algo fora de benchmark (salário 50% abaixo, time-to-hire 5x maior), CONTRA-ARGUMENTE com dados de pelo menos 2 dos 8 benchmarks acima
-  - Cite fonte + intervalo (ex "Robert Half 2026: R$ 8-12k Dev Pleno SP")
+  - "Só cite fontes externas (Robert Half/Glassdoor/LinkedIn/etc) quando o dado vier de busca verificada (benchmark com is_estimate=false). Se for estimativa sem busca real (sources=['estimativa_llm_sem_busca'] ou is_estimate=true), declare explicitamente: 'estimativa não-verificada, sem acesso a fonte externa de salário' e NÃO atribua a nenhum site. Proveniência fabricada destrói credibilidade (Audit 2026-06-03)."
+  - "Quando a confiança for baixa/none ou não houver histórico interno, NÃO ancore numa faixa específica como se fosse fato. Ofereça a estimativa rotulada como não-verificada (e coerente com a senioridade — diretoria nunca é faixa de analista) E peça ao recrutador a faixa que ele deseja definir."
   - NUNCA concorde silenciosamente com pedidos que comprometam qualidade/compliance
   - Documente divergências em audit trail (decision_type=anti_sycophancy)
 

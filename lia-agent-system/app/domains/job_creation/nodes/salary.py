@@ -168,7 +168,21 @@ def salary_node(state: JobCreationState) -> JobCreationState:
                 # do benchmark de mercado quando o recrutador ainda não definiu
                 # uma. Default aceitável — sobrescrevível via painel/chat (Fase 3).
                 # Sem isso a vaga era publicada com salary_min/max=None.
-                if state.get("salary_min") is None and _benchmark.get("min") is not None:
+                # Audit 2026-06-03 (P0): so ancora a faixa quando o benchmark e
+                # VERIFICADO (busca real + confianca alta/media). Estimativa sem
+                # fonte (is_estimate / confidence low/none) NAO vira faixa "de
+                # fato" -- a LIA pede a faixa ao recrutador. Antes, qualquer
+                # estimativa (incl. R$6-12k para diretoria) era anchorada.
+                _bench_conf = (_benchmark.get("confidence") or "").lower()
+                _bench_verified = (
+                    not _benchmark.get("is_estimate", False)
+                    and _bench_conf in ("high", "medium")
+                )
+                if (
+                    state.get("salary_min") is None
+                    and _benchmark.get("min") is not None
+                    and _bench_verified
+                ):
                     state = {
                         **state,
                         "salary_min": _benchmark.get("min"),

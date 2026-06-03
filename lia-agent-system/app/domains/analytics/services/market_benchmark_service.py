@@ -261,22 +261,50 @@ Regras:
         seniority: str | None = None
     ) -> dict[str, Any]:
         """Return default salary estimate when parsing fails."""
+        # Audit 2026-06-03 (P0): faixa default por senioridade com matching por
+        # alias (PT/EN/acentos). Antes, "Diretoria" nao casava com a chave
+        # "diretor" e caia no fallback de analista (6000, 12000) -- R$6-12k para
+        # uma Diretoria. Agora alias resolve diretoria/c-level/etc; senioridade
+        # desconhecida vira confidence="none" (consumidor pede input, nao ancora).
         base_salaries = {
-            "júnior": (4000, 7000),
             "junior": (4000, 7000),
             "pleno": (7000, 12000),
-            "sênior": (12000, 20000),
             "senior": (12000, 20000),
-            "especialista": (18000, 30000),
             "staff": (18000, 30000),
-            "gerente": (15000, 30000),
+            "principal": (20000, 35000),
+            "coordinator": (10000, 18000),
             "manager": (15000, 30000),
-            "diretor": (25000, 50000),
             "director": (25000, 50000),
+            "c-level": (35000, 80000),
         }
-        
-        seniority_key = (seniority or "pleno").lower()
-        min_sal, max_sal = base_salaries.get(seniority_key, (6000, 12000))
+        # Ordem: do mais senior pro mais junior, para "diretoria" casar com
+        # director antes de um match parcial mais fraco.
+        seniority_aliases = {
+            "c-level": ["c-level", "clevel", "cto", "ceo", "cfo", "coo", "cmo",
+                        "vp", "vice-presid", "presidente", "chief"],
+            "director": ["diretor", "diretoria", "director", "head"],
+            "manager": ["gerente", "manager", "gestor"],
+            "coordinator": ["coorden", "coordinator"],
+            "principal": ["principal", "especialista", "specialist"],
+            "staff": ["staff"],
+            "senior": ["senior", "sênior", "sr."],
+            "pleno": ["pleno", "mid-level", "mid level"],
+            "junior": ["junior", "júnior", "jr", "trainee", "estagi"],
+        }
+        raw_seniority = (seniority or "").lower()
+        matched_key = None
+        for canonical_key, aliases in seniority_aliases.items():
+            if any(alias in raw_seniority for alias in aliases):
+                matched_key = canonical_key
+                break
+
+        if matched_key:
+            min_sal, max_sal = base_salaries[matched_key]
+            default_confidence = "low"
+        else:
+            # Senioridade desconhecida: NAO ancora faixa de analista como fato.
+            min_sal, max_sal = base_salaries["pleno"]
+            default_confidence = "none"
         
         tech_keywords = ["desenvolvedor", "developer", "engenheiro", "engineer", 
                         "data", "machine learning", "devops", "cloud", "arquiteto"]
@@ -291,7 +319,7 @@ Regras:
                 "max": max_sal,
                 "median": (min_sal + max_sal) // 2,
                 "sources_found": [],
-                "confidence": "low",
+                "confidence": default_confidence,
                 "trend": "estável",
                 "notes": "Estimativa padrão baseada em médias do mercado"
             },
@@ -359,26 +387,36 @@ Regras:
             
             data = parsed.get("data", {})
             
-            sources = data.get("sources_found", [])
-            if not sources and search_results.get("results"):
-                sources = list(set(
-                    r.get("source") 
-                    for r in search_results.get("results", [])[:3] 
-                    if r.get("source")
+            # Audit 2026-06-03 (P0): proveniencia honesta, fail-loud. Sem busca
+            # web real (is_estimate=True ou zero resultados), o numero veio do
+            # conhecimento parametrico do LLM -- NUNCA atribuir a Glassdoor/
+            # LinkedIn/etc. A LIA deve declarar "estimativa nao-verificada".
+            is_estimate = bool(parsed.get("llm_fallback", False))
+            real_results = search_results.get("results") or []
+            if is_estimate or not real_results:
+                sources = ["estimativa_llm_sem_busca"]
+                confidence = "low"
+                is_estimate = True
+            else:
+                sources = data.get("sources_found", []) or list(set(
+                    r.get("source") for r in real_results[:3] if r.get("source")
                 ))
-            
+                sources = sources or ["estimativa_llm_sem_busca"]
+                confidence = data.get("confidence", "low")
+
             result = {
                 "min": data.get("min"),
                 "max": data.get("max"),
                 "median": data.get("median"),
-                "sources": sources or ["estimativa interna"],
+                "sources": sources,
                 "search_date": datetime.utcnow().strftime("%Y-%m-%d"),
                 "disclaimer": self.DISCLAIMER,
-                "confidence": data.get("confidence", "low"),
+                "confidence": confidence,
                 "trend": data.get("trend", "estável"),
                 "currency": "BRL",
                 "notes": data.get("notes"),
-                "is_estimate": parsed.get("llm_fallback", False)
+                "is_estimate": is_estimate,
+                "unverified": is_estimate,
             }
             
             self.cache.set(cache_key, result)
