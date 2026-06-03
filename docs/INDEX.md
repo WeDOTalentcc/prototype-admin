@@ -142,6 +142,7 @@ docs/
 | [roadmap/PLANO_IMPLEMENTACAO_GOLIVE.md](./roadmap/PLANO_IMPLEMENTACAO_GOLIVE.md) | Plano go-live |
 | [roadmap/PLANO_IMPLEMENTACAO_WIZARD.md](./roadmap/PLANO_IMPLEMENTACAO_WIZARD.md) | Plano wizard |
 | [roadmap/DEPLOYMENT_GUIDE.md](./roadmap/DEPLOYMENT_GUIDE.md) | Guia de deploy |
+| [operations/dois-ambientes-develop-main.md](./operations/dois-ambientes-develop-main.md) | Guia operacional dos 2 ambientes publicados (`develop`/testes + `main`/produção) via GitHub `prototype` + ritual de promoção |
 | [roadmap/FUTURAS_FEATURES_PARA_IRMOS.md](./roadmap/FUTURAS_FEATURES_PARA_IRMOS.md) | Features futuras |
 | [roadmap/TODO.md](./roadmap/TODO.md) | Lista de tarefas |
 
