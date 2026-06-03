@@ -9,6 +9,7 @@ libs/config (lia_config.database). Migration helpers remain here.
 """
 import logging
 from collections.abc import AsyncGenerator
+from contextlib import asynccontextmanager
 
 import sqlalchemy as sa
 
@@ -1523,3 +1524,26 @@ async def add_wsi_session_version_columns():
             await conn.execute(text("CREATE INDEX IF NOT EXISTS idx_wsi_sessions_qsv ON wsi_sessions(job_vacancy_id, question_set_version)"))
         except Exception as e:
             logger.warning(f"Could not add wsi_sessions version columns: {e}")
+
+
+@asynccontextmanager
+async def tenant_session(company_id: str) -> "AsyncGenerator":
+    """Sessao async com contexto RLS (app.company_id) JA setado.
+
+    USE em tools/jobs/loops que rodam FORA de um request HTTP (onde o middleware
+    nao roda). Sem isso, RLS — habilitado e FORCED em ~241 tabelas — ve
+    app_current_company_id()=NULL e BLOQUEIA todas as linhas (retorna 0) mesmo
+    com dados no banco. Foi a root cause do "chat nao ve vagas/candidatos"
+    (agentic loop LIA-A04, 2026-06-03).
+
+    Padrao canonical (espelha get_tenant_db, mas parametrizado por company_id):
+        async with tenant_session(company_id) as db:
+            rows = (await db.execute(select(Model))).scalars().all()
+
+    Se company_id vier vazio, abre sessao sem setar contexto (RLS continua
+    bloqueando — fail-closed, nunca vaza cross-tenant).
+    """
+    async with AsyncSessionLocal() as session:
+        if company_id:
+            await set_tenant_context(session, str(company_id))
+        yield session
