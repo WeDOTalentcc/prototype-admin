@@ -260,6 +260,34 @@ async def start_session(db: AsyncSession, token: str, voice_mode: bool | None = 
     session = await repo.get_session_by_token(token)
     if not session:
         return {"error": "not_found"}
+    # SEG-4 (Epico Elegibilidade Fase D): gate de consentimento LGPD no BACKEND
+    # antes de iniciar a triagem. Antes so havia checkbox no frontend (nunca
+    # verificado no servidor). Produtor canonico: ConsentCheckerService.
+    if session.status == "invited" and session.candidate_id and session.company_id:
+        try:
+            from app.domains.lgpd.services.consent_checker_service import (
+                ConsentCheckerService,
+            )
+            _consent = await ConsentCheckerService(db).check_candidate_consent(
+                candidate_id=session.candidate_id,
+                company_id=session.company_id,
+                purpose="ai_screening",
+            )
+            if not _consent.allowed:
+                logger.warning(
+                    "[Triagem][SEG-4] consentimento negado candidate=%s reason=%s",
+                    session.candidate_id, getattr(_consent, "reason", None),
+                )
+                return {
+                    "error": "lgpd_consent_revoked",
+                    "reason": getattr(_consent, "reason", None),
+                    "session": session.to_dict(),
+                }
+        except Exception as _consent_exc:
+            logger.error(
+                "[Triagem][SEG-4] consent check falhou (prosseguindo p/ disponibilidade): %s",
+                _consent_exc, exc_info=True,
+            )
 
     if session.status == "invited":
         session.status = "started"

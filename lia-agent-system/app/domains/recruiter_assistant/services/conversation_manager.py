@@ -1134,6 +1134,27 @@ class ConversationManager:
             logger.info(f"[SCREENING] Job {job_vacancy_id} not found, using default questions")
             return default_questions
         
+        # canonical-fix (Epico Elegibilidade Fase C, decisao Paulo #1): perguntas
+        # de ELEGIBILIDADE (job.eligibility_questions) vem PRIMEIRO, como eliminatorias,
+        # normalizadas pelo PRODUTOR UNICO. WhatsApp passa a ler o campo canonico
+        # (antes lia apenas job.screening_questions e ignorava elegibilidade).
+        eligibility_questions: list[dict[str, Any]] = []
+        try:
+            for _q in eligibility_service.get_eligibility_questions_from_job(
+                {"eligibility_questions": getattr(job, "eligibility_questions", None) or []}
+            ):
+                if not _q.is_eliminatory:
+                    continue
+                eligibility_questions.append({
+                    "question": _q.question_text,
+                    "is_eliminatory": True,
+                    "expected_answer": _q.expected_answer,
+                    "category": _q.category,
+                    "type": _q.question_type,
+                    "options": _q.options,
+                })
+        except Exception as _exc:
+            logger.warning(f"[SCREENING_META] eligibility load failed for {job_vacancy_id}: {_exc}")
         if job.screening_questions and len(job.screening_questions) > 0:
             questions = []
             for q in job.screening_questions:
@@ -1196,9 +1217,11 @@ class ConversationManager:
             if questions:
                 eliminatory_count = sum(1 for q in questions if q.get("is_eliminatory"))
                 logger.info(f"[SCREENING_META] Using {len(questions)} questions ({eliminatory_count} eliminatory) for job {job_vacancy_id}")
-                return questions
+                return eligibility_questions + questions
         
         logger.info(f"[SCREENING_META] No screening questions configured for job {job_vacancy_id}, using defaults")
+        if eligibility_questions:
+            return eligibility_questions + default_questions
         return default_questions
     
     async def _parse_cv(self, media_data: dict[str, Any], company_id: str | None = None) -> dict[str, Any]:
