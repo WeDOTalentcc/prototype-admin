@@ -15,6 +15,7 @@ import asyncio
 import json
 import logging
 import os
+import time
 from app.shared.compliance.c3b_layer import (  # W3-014 (2026-05-23)
     pre_compliance as _c3b_pre,
     post_compliance as _c3b_post,
@@ -24,6 +25,19 @@ from app.shared.compliance.c3b_layer import (  # W3-014 (2026-05-23)
 from app.shared.observability.tracing import trace_span
 
 logger = logging.getLogger(__name__)
+
+
+async def _emit_activity(event: dict) -> None:
+    """Empurra evento de atividade ao vivo (tool_started/finished) pelo callback
+    de streaming do LLM (ContextVar setado pelo transporte SSE/WS). Fail-safe:
+    no-op quando não há callback (ex.: REST puro). #1 orquestrador 2026-06-03."""
+    try:
+        from app.domains.ai.services.llm import _llm_streaming_callback
+        cb = _llm_streaming_callback.get(None)
+        if cb is not None:
+            await cb(event)
+    except Exception:
+        pass
 
 
 # Sprint 9.2 (NS-5 latency fix, 2026-05-24): agentic LLM timeout configurable.
@@ -250,6 +264,10 @@ class AgenticLoop:
                     "parameters": tc.parameters,
                 })
 
+                # #1 (2026-06-03): atividade ao vivo p/ o timeline do chat.
+                await _emit_activity({"type": "tool_started", "name": tc.name})
+                _tool_t0 = time.monotonic()
+                _tool_status = "ok"
                 try:
                     result = await asyncio.wait_for(
                         self._tool_executor.execute(
@@ -264,6 +282,7 @@ class AgenticLoop:
                         result.to_llm_content() if result else "Tool returned no result."
                     )
                 except Exception as exc:
+                    _tool_status = "error"
                     logger.warning(
                         "[LIA-A04] Tool %s execution failed: %s", tc.name, exc
                     )
@@ -271,6 +290,12 @@ class AgenticLoop:
                         {"error": f"Tool {tc.name} failed: {str(exc)[:200]}"},
                         ensure_ascii=False,
                     )
+                await _emit_activity({
+                    "type": "tool_finished",
+                    "name": tc.name,
+                    "status": _tool_status,
+                    "duration_ms": int((time.monotonic() - _tool_t0) * 1000),
+                })
 
                 # Append assistant + tool-result messages for the next iteration.
                 # The format depends on the provider:
