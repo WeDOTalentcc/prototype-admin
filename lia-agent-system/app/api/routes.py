@@ -70,6 +70,7 @@ from app.api.v1 import (
     company_compensation_components,
     company_salary_bands,
     company_assessments,
+    company_ai_persona,
     company_culture,
     company_culture_config,
     company_departments,
@@ -87,6 +88,7 @@ from app.api.v1 import (
     digest,
     drift,
     early_warning,
+    eligibility_question_templates,
     email,
     email_templates,
     experience_highlights,
@@ -123,6 +125,7 @@ from app.api.v1 import (
     journey_intelligence,
     journey_mapping,
     kanban_assistant,
+    learning_loops_config,
     learning_outcomes,
     learning_patterns,
     lgpd_compliance,
@@ -389,6 +392,9 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(lia_field_toggles.router, prefix="/api/v1", tags=["field-toggles"])
     app.include_router(company_culture.router, prefix="/api/v1", tags=["company-culture"])
     app.include_router(company_culture_config.router, prefix="/api/v1", tags=["company"])
+    app.include_router(company_ai_persona.router, prefix="/api/v1", tags=["company-ai-persona"])
+    app.include_router(eligibility_question_templates.router, prefix="/api/v1", tags=["eligibility-question-templates"])
+    app.include_router(learning_loops_config.router, prefix="/api/v1", tags=["learning-loops"])
     app.include_router(company_departments.router, prefix="/api/v1", tags=["company"])
     app.include_router(company_assessments.router, prefix="/api/v1", tags=["company"])
     app.include_router(company_benefits.router, prefix="/api/v1", tags=["company-benefits"])
