@@ -198,6 +198,10 @@ async def _invoke_orchestrator_legacy(
             orch_context["page_type"] = page_context["page_type"]
         if page_context.get("job_context"):
             orch_context["job_context"] = page_context["job_context"]
+        # P0.1 (2026-06-03): estado-da-tela vivo -> agente global abre ciente
+        # do conjunto de trabalho atual (page_type + counts + filtros + ids).
+        if page_context.get("view_context"):
+            orch_context["view_context"] = page_context["view_context"]
 
     result = await _orch.process_request(
         user_id=user_id,

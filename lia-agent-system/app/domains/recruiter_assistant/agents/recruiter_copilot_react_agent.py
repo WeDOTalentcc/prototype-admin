@@ -99,7 +99,13 @@ class RecruiterCopilotReActAgent(
 
     def _get_runtime_domain_instructions(self, input: AgentInput) -> str:
         try:
+            from app.orchestrator.context.view_context import format_view_context
             ctx = input.context or {}
+            # P0.1: estado-da-tela vivo no prompt (chat abre ciente da visao atual).
+            _view_block = format_view_context(ctx.get("view_context"))
+            _stage = ctx.get("stage_context", "") or ""
+            if _view_block:
+                _stage = (_view_block + "\n\n" + _stage).strip()
             return self._compose_runtime_prompt(
                 input,
                 agent_type="recruiter_assistant",
@@ -107,7 +113,7 @@ class RecruiterCopilotReActAgent(
                 few_shot_examples=COPILOT_FEW_SHOT_EXAMPLES,
                 reasoning_template=COPILOT_REASONING_PROMPT,
                 memory_summary=ctx.get("memory_summary", ""),
-                stage_context=ctx.get("stage_context", ""),
+                stage_context=_stage,
             ).text
         except Exception as exc:
             logger.warning(
