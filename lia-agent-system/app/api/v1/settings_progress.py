@@ -113,11 +113,15 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
             (automations_score * 0.30)
         )
 
-        communication_score = 100
-        email_templates_complete = True
-        notification_rules_complete = True
+        # P1-2 (auditoria Configuracoes): score real (antes hardcoded 100).
+        # communication = ha templates de comunicacao configurados.
+        communication_score = 100 if template_count >= 1 else 0
+        email_templates_complete = template_count >= 1
+        notification_rules_complete = template_count >= 1
 
-        goals_planning_score = 100
+        # goals-planning = ha plano de headcount/workforce ativo (P1-2).
+        hiring_plan_count = await repo.count_active_hiring_plans(company_uuid) if company_uuid else 0
+        goals_planning_score = 100 if hiring_plan_count >= 1 else 0
 
         # Global search
         settings = await repo.get_global_search_settings(company_uuid) if company_uuid else None

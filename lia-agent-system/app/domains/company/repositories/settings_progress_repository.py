@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.company import Approver, Benefit, CompanyProfile, Department, GlobalSearchSettings
 from app.models.recruitment_journey import RecruitmentAutomation, RecruitmentSLA, RecruitmentTemplate
+from lia_models.workforce import HiringPlan
 
 logger = logging.getLogger(__name__)
 
@@ -82,6 +83,15 @@ class SettingsProgressRepository:
             select(func.count(RecruitmentAutomation.id)).where(
                 RecruitmentAutomation.company_id == company_id,
                 RecruitmentAutomation.is_enabled,
+            )
+        )
+        return result.scalar() or 0
+
+    async def count_active_hiring_plans(self, company_id) -> int:
+        result = await self.db.execute(
+            select(func.count(HiringPlan.id)).where(
+                HiringPlan.company_id == company_id,
+                HiringPlan.is_active.is_(True),
             )
         )
         return result.scalar() or 0
