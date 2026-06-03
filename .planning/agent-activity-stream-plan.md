@@ -79,3 +79,30 @@ Já entregue: test_plan_progress_contract.py (Fase 0).
 ## Débito técnico de harness
 - context["streaming_callback"] (agent_chat_ws.py:~143) é código morto → remover na Fase 1.
 - StreamingCallback acoplado à flag LIA_WS_TOKEN_STREAMING impede tool events → desacoplar (Fase 1).
+
+---
+
+## ADENDO CRÍTICO — caminho REAL do chat é o ORQUESTRADOR (REST), não o WS (descoberto 2026-06-03)
+
+**Descoberta:** o display construído (Fase 0-3) foi instrumentado no caminho **WS/`LangGraphReActBase`** (`StreamingCallback`). Mas o chat de produção (3 estados: flutuante/lateral/full, todos via `LiaChatMessageList`) roda por **REST → `MainOrchestrator`** (`channel=rest` nos logs, `ACT-DBG`=0). Logo o `StreamingCallback` instrumentado NUNCA dispara nesse caminho. O FE (timeline + sumário nos 3 estados) está correto, mas o backend não emitia eventos pelo caminho certo.
+
+**Arquitetura do caminho real:**
+- `chat.py POST /chat` (linha 249) → JSON não-streaming (o que o chat usa hoje).
+- `chat.py POST /chat/stream` (linha 977) → SSE (`StreamingResponse text/event-stream`, linha 1093) — EXISTE, FE não usa.
+- `MainOrchestrator.process(streaming_callback=...)` → Fase 1 ActionExecutor / Fase 1.5 `AgenticLoop` / Fase 2 ReAct.
+- Tools executadas no **`app/orchestrator/execution/agentic_loop.py`** (`AgenticLoop.run`, exec na linha ~255 `self._tool_executor.execute`).
+- LLM com tools em `app/domains/ai/services/llm.py:_generate_with_tools_claude` (linha 611); streaming opt-in via ContextVar **`_llm_streaming_callback`** (linha 44) — quando setado, faz `client.messages.stream()` e empurra `{"type":"token",...}`.
+
+**Bug pré-existente corrigido (não era nosso):** `ChatResponse.intent_detected` (str) recebia `OrchestratorIntentResult` em `from_action_result` → `ValidationError string_type` → "dificuldade para processar" (caminho pending-action pós-clarificação). Fix: `field_validator(mode="before")` coage via `str()` em `main_orchestrator.py`. Commit auto-checkpoint.
+
+### Phase 1 ✅ FEITA (commit 88c6bce27)
+`AgenticLoop` emite `tool_started`/`tool_finished` por tool (helper `_emit_activity` lê o ContextVar `_llm_streaming_callback` e empurra; fail-safe no-op em REST). 3 contract tests (`tests/contract/test_agentic_loop_activity.py`). ACT-DBG temp removido.
+
+### Phase 2 ⏳ PENDENTE (transporte — gating pra Paulo VER ao vivo)
+Hoje o chat usa `POST /chat` (JSON) → `_llm_streaming_callback` não é setado → emits da Phase 1 viram no-op → nada aparece ao vivo. Necessário:
+1. **FE usar `/chat/stream` (SSE)** em vez de `/chat` (JSON) pra esse chat (`useChatTransport`/`useChatSocket` ou a chamada REST do float). Decisão: WS (`agent_chat_ws`, que JÁ usa StreamingCallback) OU SSE (`/chat/stream`, orquestrador). Como o chat real é orquestrador, **SSE `/chat/stream` é o caminho coerente**.
+2. **Setar `_llm_streaming_callback` ContextVar** nesse caminho (modelo: `agent_chat_sse.py:534` já faz). Garantir que o `_streaming_callback` do `/chat/stream` (chat.py:~920) é setado no ContextVar antes do `main_orch.process`.
+3. **FE consumir os eventos** — `useChatSocket` já trata `tool_started/finished/reasoning_step` (Fase 1 FE) e dispara `lia:agent-activity` → `AgentActivityTimeline` (já montado nos 3 estados). Confirmar que o transporte SSE do float passa pelo `useChatSocket` (que faz o dispatch).
+4. **reasoning_step**: o texto já streama como tokens via `_generate_with_tools_claude`; opcional emitir `reasoning_step` explícito antes de cada batch de tools.
+
+**Risco/esforço Phase 2:** médio-alto (toca transporte FE + wiring ContextVar). Não fazer no fim de sessão longa — merece execução focada + verificação no preview.
