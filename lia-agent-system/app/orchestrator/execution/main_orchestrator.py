@@ -2386,8 +2386,6 @@ class MainOrchestrator:
         _cache_key = await self._try_cache_lookup(ctx, conv_id, streaming_callback)
         if isinstance(_cache_key, ChatResponse):
             return _cache_key
-        if streaming_callback:
-            orchestrator_context["streaming_callback"] = streaming_callback
 
         # LIA-M01: Memory already setup in process() — only setup here if running standalone
         if conv is None and not ctx.skip_memory_persist:

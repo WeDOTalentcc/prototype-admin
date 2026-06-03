@@ -530,7 +530,6 @@ company_id: str = Depends(require_company_id)):
                     step=event.get("step", 0),
                 ))
 
-        context["streaming_callback"] = _streaming_callback
 
         # === Audit 2026-05-24 P1: propagar streaming_callback ate _generate_with_tools_claude ===
         # ContextVar canonical (sibling de _current_company_id). Set antes de agent.process,

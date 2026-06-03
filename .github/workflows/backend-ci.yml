@@ -89,3 +89,18 @@ jobs:
             tests/api/test_custom_agents_timeline.py \
             --no-cov --tb=short
 
+      - name: WS event contract + activity-stream tests (sensor warn, tests BLOCKING)
+        # Epico atividade da IA (2026-06-03). Sensor cross-stack BE serialize_* <->
+        # FE StreamingEventType (warn-only, baseline 0). Contract tests BLOCKING.
+        working-directory: lia-agent-system
+        env:
+          APP_ENV: development
+        run: |
+          python3 scripts/check_ws_event_contract.py || true
+          python3 -m pytest \
+            tests/contract/test_plan_progress_contract.py \
+            tests/contract/test_streaming_callback_tool_events.py \
+            tests/contract/test_reasoning_streaming.py \
+            tests/contract/test_run_graph_streaming.py \
+            --no-cov --tb=short -q
+
