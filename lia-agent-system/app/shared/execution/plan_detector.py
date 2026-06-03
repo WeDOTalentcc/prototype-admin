@@ -73,8 +73,8 @@ PLAN_PATTERNS: list[PlanPattern] = [
     PlanPattern(
         name="gerar_jd_e_avaliar",
         patterns=[
-            r"gerar?\s+(?:a\s+)?(?:jd|descri[cç][aã]o)\s+e\s+(avali|tria)",
-            r"cri(?:ar|e)\s+(?:a\s+)?descri[cç][aã]o\s+e\s+(avali|tria)",
+            r"ger(?:ar|e)\s+(?:a\s+)?(?:jd|descri[cç][aã]o)\b.*?\s+e\s+(avali|tria)",
+            r"cri(?:ar|e)\s+(?:a\s+)?descri[cç][aã]o\b.*?\s+e\s+(avali|tria)",
         ],
         pipeline=[
             PipelineStep(domain_id="job_management", action_id="generate_jd"),

@@ -41,6 +41,7 @@ from app.shared.compliance.fairness_guard import FairnessGuard
 # level so tests can patch them via ``patch.object(discrete_actions, ...)``.
 from app.domains.cv_screening.services.cv_scoring_service import CVScoringService
 from app.domains.cv_screening.tools.candidate_tools import add_candidate_to_vacancy
+from app.domains.job_management.services.jd_enrichment_service import JdEnrichmentService
 from app.domains.sourcing.services.pearch_service import PearchService
 
 logger = logging.getLogger(__name__)
@@ -824,4 +825,289 @@ async def handle_add_approved_to_vacancy(
         data=data,
         domain_id="cv_screening",
         action_id="add_approved_to_vacancy",
+    )
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Task #1228 — Gerar/enriquecer JD e avaliar (item 2)
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+async def _enrich_and_persist_jd(company_id: str, vacancy_id: str) -> Any:
+    """Open a tenant-scoped session and REUSE the canonical WSI primitive
+    ``JdEnrichmentService.enrich_and_persist_vacancy``.
+
+    The primitive embeds the WSI minimums gate (9 técnicas + 5 comportamentais)
+    and fail-alto on a missing/invalid vacancy — this wrapper never re-implements
+    those rules, it only owns the session lifecycle so the handler stays thin.
+    """
+    from lia_config.database import AsyncSessionLocal
+
+    async with AsyncSessionLocal() as session:
+        return await JdEnrichmentService().enrich_and_persist_vacancy(
+            job_vacancy_id=str(vacancy_id),
+            company_id=str(company_id),
+            db=session,
+        )
+
+
+async def _get_candidate_for_scoring(company_id: str, candidate_id: str) -> dict[str, Any] | None:
+    """Tenant-scoped fetch of a candidate's data for standalone BARS scoring.
+
+    Returns ``None`` when the candidate does not exist FOR THIS TENANT so the
+    caller surfaces an honest clarification instead of scoring a cross-tenant id.
+    SECURITY: ``candidate_id`` is untrusted (LLM/client) — the ``company_id``
+    filter is what blocks cross-tenant evaluation.
+    """
+    if not company_id or not candidate_id:
+        return None
+    try:
+        from sqlalchemy import text
+
+        from lia_config.database import AsyncSessionLocal
+
+        async with AsyncSessionLocal() as session:
+            result = await session.execute(
+                text(
+                    """
+                    SELECT id, name, current_title, summary, resume_text,
+                           technical_skills, soft_skills, total_experience_years,
+                           location_city, location_state, self_introduction
+                    FROM candidates
+                    WHERE id = :cid AND company_id = :company_id
+                    LIMIT 1
+                    """
+                ),
+                {"cid": str(candidate_id), "company_id": str(company_id)},
+            )
+            row = result.fetchone()
+            if not row:
+                return None
+            return {
+                "id": str(row[0]),
+                "name": row[1] or "Candidato",
+                "title": row[2],
+                "summary": row[3],
+                "resume_text": row[4],
+                "skills": list(row[5] or []),
+                "soft_skills": list(row[6] or []),
+                "total_experience_years": row[7],
+                "location": " ".join(x for x in [row[8], row[9]] if x) or None,
+                "self_introduction": row[10],
+            }
+    except Exception as exc:  # pragma: no cover - defensive
+        logger.error("Candidate lookup for scoring failed: %s", exc, exc_info=True)
+        return None
+
+
+@register_discrete_handler("job_management", "generate_jd")
+async def handle_generate_jd(params: dict[str, Any], actx: ActionContext) -> DomainResponse:
+    """Generate→enrich→PERSIST a real vacancy's JD via the canonical WSI primitive.
+
+    INVIOLÁVEL (#1211): este handler NUNCA cria vaga — ele só enriquece uma vaga
+    EXISTENTE (exige ``vacancy_id``). HONESTO: sem vaga → clarification; mínimos
+    WSI não atingidos → clarification explicando o que falta (``persisted=False``,
+    o serviço NÃO grava "no vácuo"); persistido → success + emite ``jd_data`` (com
+    ``vacancy_id``) para encadear no ``evaluate_against_jd``.
+    """
+    company_id = actx.company_id or actx.tenant_id
+    if not company_id:
+        return DomainResponse.error_response(
+            error="missing_tenant_context",
+            message="Não consegui identificar a empresa para enriquecer a JD.",
+            domain_id="job_management",
+            action_id="generate_jd",
+        )
+
+    vacancy_id = _pick(params, actx, "vacancy_id", "job_id")
+    if not vacancy_id:
+        return DomainResponse.clarification_response(
+            question=(
+                "Para gerar e enriquecer a descrição (JD) eu preciso saber QUAL vaga. "
+                "Qual vaga você quer enriquecer?"
+            ),
+            domain_id="job_management",
+            action_id="generate_jd",
+        )
+
+    try:
+        result = await _enrich_and_persist_jd(company_id=str(company_id), vacancy_id=str(vacancy_id))
+    except ValueError as exc:
+        # fail-alto do primitivo (id inválido / vaga inexistente) — honesto
+        return DomainResponse.error_response(
+            error="jd_enrichment_invalid",
+            message="Não encontrei essa vaga na sua empresa para enriquecer. Pode confirmar qual vaga?",
+            domain_id="job_management",
+            action_id="generate_jd",
+            metadata={"detail": str(exc)},
+        )
+    except Exception as exc:
+        logger.error("P&E generate_jd enrich_and_persist failed: %s", exc, exc_info=True)
+        return DomainResponse.error_response(
+            error="jd_enrichment_failed",
+            message="Não consegui enriquecer a JD agora. Tente novamente em instantes.",
+            domain_id="job_management",
+            action_id="generate_jd",
+        )
+
+    jd_data = {
+        "vacancy_id": result.job_vacancy_id or str(vacancy_id),
+        "persisted": result.persisted,
+        "meets_wsi_minimums": result.meets_wsi_minimums,
+        "wsi_quality_score": result.wsi_quality_score,
+        "technical_count": result.technical_count,
+        "behavioral_count": result.behavioral_count,
+        "responsibilities_count": result.responsibilities_count,
+    }
+
+    if not result.success:
+        return DomainResponse.error_response(
+            error=result.error or "jd_enrichment_failed",
+            message=result.message or "Não foi possível enriquecer a JD desta vaga.",
+            data={"jd_data": jd_data},
+            domain_id="job_management",
+            action_id="generate_jd",
+        )
+
+    if not result.persisted:
+        # mínimos WSI não atingidos: honesto, pede mais info (não finge sucesso)
+        return DomainResponse.clarification_response(
+            question=(
+                result.message
+                or "A descrição ainda não atingiu os mínimos WSI (9 competências técnicas "
+                "e 5 comportamentais). Pode me dar mais detalhes da vaga?"
+            ),
+            data={"jd_data": jd_data},
+            domain_id="job_management",
+            action_id="generate_jd",
+        )
+
+    return DomainResponse.success_response(
+        message=result.message or "JD enriquecida e salva na vaga.",
+        data={"jd_data": jd_data},
+        metadata={"wsi_quality_score": result.wsi_quality_score},
+        domain_id="job_management",
+        action_id="generate_jd",
+    )
+
+
+@register_discrete_handler("cv_screening", "evaluate_against_jd")
+async def handle_evaluate_against_jd(
+    params: dict[str, Any], actx: ActionContext
+) -> DomainResponse:
+    """Evaluate candidate(s) against the (enriched) vacancy JD via the canonical
+    ``score_candidate_standalone`` — the MESMO primitivo do item 1 (BARS dry-run +
+    FairnessGuard C1 + tenant fail-closed + audit já embutidos). Resolve a vaga do
+    ``jd_data`` encadeado ou dos params; pega candidatos do contexto (dicts) OU
+    carrega por id tenant-scoped. Retorna o payload BARS no padrão do modal de CV
+    (``evaluations``) + ranking. HONESTO: sem vaga/candidato → clarification;
+    nenhum candidato pontuado → erro (nunca finge sucesso)."""
+    company_id = actx.company_id or actx.tenant_id
+    if not company_id:
+        return DomainResponse.error_response(
+            error="missing_tenant_context",
+            message="Não consegui identificar a empresa para avaliar o candidato.",
+            domain_id="cv_screening",
+            action_id="evaluate_against_jd",
+        )
+
+    jd_data = params.get("jd_data") if isinstance(params.get("jd_data"), dict) else {}
+    vacancy_id = jd_data.get("vacancy_id") or _pick(params, actx, "vacancy_id", "job_id")
+    if not vacancy_id:
+        return DomainResponse.clarification_response(
+            question="Contra qual vaga devo avaliar o(s) candidato(s)?",
+            domain_id="cv_screening",
+            action_id="evaluate_against_jd",
+        )
+
+    raw = _pick(params, actx, "candidates")
+    candidates: list[Any] = list(raw) if isinstance(raw, list) else []
+    if not candidates:
+        raw_ids = _pick(params, actx, "candidate_ids", "candidate_id")
+        if isinstance(raw_ids, str):
+            ids = [raw_ids]
+        elif isinstance(raw_ids, (list, tuple)):
+            ids = [str(x) for x in raw_ids if x]
+        elif raw_ids is not None:
+            ids = [str(raw_ids)]
+        else:
+            ids = []
+        for cid in ids:
+            cand = await _get_candidate_for_scoring(str(company_id), str(cid))
+            if cand:
+                candidates.append(cand)
+
+    if not candidates:
+        return DomainResponse.clarification_response(
+            question="Qual candidato você quer avaliar contra essa vaga?",
+            domain_id="cv_screening",
+            action_id="evaluate_against_jd",
+        )
+
+    service = CVScoringService()
+    scored: list[dict[str, Any]] = []
+    evaluations: list[dict[str, Any]] = []
+    for cand in candidates:
+        cand_id = _attr(cand, "id") or _attr(cand, "candidate_id")
+        cand_name = _attr(cand, "name") or "Candidato"
+        try:
+            result = await service.score_candidate_standalone(
+                candidate_data=cand if isinstance(cand, dict) else dict(cand),
+                vacancy_id=str(vacancy_id),
+                company_id=str(company_id),
+                db=None,
+            )
+        except Exception as exc:
+            logger.error("P&E evaluate score_candidate_standalone failed: %s", exc, exc_info=True)
+            result = None
+        if not result or not result.get("success"):
+            scored.append(
+                {
+                    "candidate_id": cand_id,
+                    "candidate_name": cand_name,
+                    "success": False,
+                    "error": (result or {}).get("error", "scoring_failed"),
+                }
+            )
+            continue
+        evaluations.append(result)
+        scored.append(
+            {
+                "candidate_id": result.get("candidate_id") or cand_id,
+                "candidate_name": result.get("candidate_name") or cand_name,
+                "rubric_score": result.get("rubric_score"),
+                "cv_fit": result.get("cv_fit"),
+                "recommendation": result.get("recommendation"),
+                "sub_status": result.get("sub_status"),
+                "approved": result.get("sub_status") == "cv_approved",
+                "success": True,
+                "evaluation": result,
+            }
+        )
+
+    ranked = sorted(
+        scored,
+        key=lambda r: (r.get("rubric_score") if isinstance(r.get("rubric_score"), (int, float)) else -1),
+        reverse=True,
+    )
+    if not any(r.get("success") for r in ranked):
+        return DomainResponse.error_response(
+            error="evaluation_failed",
+            message="Não consegui avaliar o(s) candidato(s) contra essa vaga agora.",
+            data={"ranking": ranked, "vacancy_id": vacancy_id},
+            domain_id="cv_screening",
+            action_id="evaluate_against_jd",
+        )
+
+    message = _build_ranking_message(ranked, job_title=_pick(params, actx, "job_title"))
+    return DomainResponse.success_response(
+        message=message,
+        data={
+            "ranking": ranked,
+            "evaluations": evaluations,
+            "vacancy_id": vacancy_id,
+            "job_id": vacancy_id,
+        },
+        domain_id="cv_screening",
+        action_id="evaluate_against_jd",
     )
