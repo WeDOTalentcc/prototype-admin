@@ -72,3 +72,22 @@ describe("WsiQuestionsPanel — harness fixes (audit 2026-06-03)", () => {
     expect(p.className).not.toContain("text-sm")
   })
 })
+
+describe("WsiQuestionsPanel — Regenerar/Substituir fundidos (audit 2026-06-03 #4)", () => {
+  it("não exibe 'Substituir' (fundido em 'Regenerar')", () => {
+    const questions = Array.from({ length: 3 }, (_, i) => ({
+      question: `Pergunta ${i + 1}`,
+      ideal_answer: "x", scoring_rubric: {}, framework: "CBI" as const,
+      block: "technical" as const, skill: "S", weight: 1, approved: false,
+    }))
+    render(
+      <WsiQuestionsPanel
+        data={{ questions, screening_mode: "compact", distribution: null, seniority_level: "pleno" }}
+        requiresApproval={true}
+      />,
+    )
+    fireEvent.click(screen.getByText(/Pergunta 1/))
+    expect(screen.queryByRole("button", { name: /Substituir/i })).not.toBeInTheDocument()
+    expect(screen.getByRole("button", { name: /Regenerar/i })).toBeInTheDocument()
+  })
+})

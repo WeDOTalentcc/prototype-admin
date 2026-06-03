@@ -404,17 +404,11 @@ function QuestionCard({
               const isTech = question.block === "technical"
               const atBlockMin = isTech ? isTechAtMin : isBehavioralAtMin
               if (!onRemove || atBlockMin) {
-                return (
-                  <button
-                    onClick={() => onRegenerate?.(index)}
-                    className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-medium text-wedo-cyan hover:bg-wedo-cyan/10 transition-colors motion-reduce:transition-none"
-                    title="No minimo da metodologia - clique para substituir por nova pergunta"
-                    aria-label={`Substituir pergunta ${index + 1}`}
-                  >
-                    <RefreshCw className="w-3 h-3" />
-                    Substituir
-                  </button>
-                )
+                // Audit 2026-06-03 (#4): "Substituir" era idêntico a "Regenerar"
+                // (mesmo handler onRegenerate). Fundido — só "Regenerar". No
+                // mínimo da metodologia não há "Remover"; Regenerar já cobre
+                // trocar a pergunta.
+                return null
               }
               return (
                 <button
