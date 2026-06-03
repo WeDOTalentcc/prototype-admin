@@ -36,6 +36,15 @@ def _get_chat_adapter():
         _chat_adapter = ChatAdapter(main_orchestrator=_main_orch)
     return _chat_adapter
 
+
+# Audit 2026-06-03 (#6): bound de duracao do path REST do chat. O path WS ja
+# envolvia o orquestrador em asyncio.wait_for (_AGENT_TIMEOUT); o REST nao, e
+# uma chamada pendurada (resume re-rodando classifier/regeneracao) virava 502
+# OPACO do gateway da plataforma ("Erro do servidor HTTP 502"). Configuravel
+# via env; default 90s (abaixo do timeout tipico de gateway -> 504 estruturado
+# chega ao usuario antes do 502).
+_CHAT_ORCH_TIMEOUT_S = float(os.getenv("LIA_CHAT_ORCH_TIMEOUT_SECONDS", "90"))
+
 from app.domains.chat.repositories.chat_repository import ChatRepository
 from app.orchestrator.action_executor import (
     ACTIONABLE_INTENTS,
@@ -298,14 +307,29 @@ company_id: str = Depends(require_company_id)):
     # captura falhava silenciosamente (painel "Email do gestor" vazio).
     page_context["_raw_user_message"] = _c3b_pre.original_message
 
-    orch_result = await _get_chat_adapter().process_message(
-        user_message=_c3b_pre.clean_message,
-        user_id=user_id,
-        company_id=str(current_user.company_id) if current_user.company_id else "",
-        conversation_id=conversation_id,
-        page_context=page_context,
-        db=repo.db,
-    )
+    # Audit 2026-06-03 (#6): falha-loud com 504 estruturado em vez de pendurar
+    # ate o gateway devolver 502 opaco.
+    try:
+        orch_result = await asyncio.wait_for(
+            _get_chat_adapter().process_message(
+                user_message=_c3b_pre.clean_message,
+                user_id=user_id,
+                company_id=str(current_user.company_id) if current_user.company_id else "",
+                conversation_id=conversation_id,
+                page_context=page_context,
+                db=repo.db,
+            ),
+            timeout=_CHAT_ORCH_TIMEOUT_S,
+        )
+    except asyncio.TimeoutError:
+        logger.error(
+            "chat.orchestrator_timeout user_id=%s conversation_id=%s after %.0fs",
+            user_id, conversation_id, _CHAT_ORCH_TIMEOUT_S,
+        )
+        raise HTTPException(
+            status_code=504,
+            detail="A LIA demorou mais que o esperado para responder. Tente novamente.",
+        )
     lia_response = (orch_result.get("response") or "").strip()
     detected_intent = orch_result.get("intent") or ""
     detected_entities = orch_result.get("entities") or {}
@@ -521,14 +545,28 @@ company_id: str = Depends(require_company_id)):
         "created_at": conversation.created_at,
     }
 
-    orch_result = await _get_chat_adapter().process_message(
-        user_message=augmented_content,
-        user_id=user_id,
-        company_id=str(current_user.company_id) if current_user.company_id else "",
-        conversation_id=conversation_id,
-        page_context=None,
-        db=repo.db,
-    )
+    # Audit 2026-06-03 (#6): mesmo bound de duracao do path sem anexos.
+    try:
+        orch_result = await asyncio.wait_for(
+            _get_chat_adapter().process_message(
+                user_message=augmented_content,
+                user_id=user_id,
+                company_id=str(current_user.company_id) if current_user.company_id else "",
+                conversation_id=conversation_id,
+                page_context=None,
+                db=repo.db,
+            ),
+            timeout=_CHAT_ORCH_TIMEOUT_S,
+        )
+    except asyncio.TimeoutError:
+        logger.error(
+            "chat.orchestrator_timeout(attachments) user_id=%s conversation_id=%s after %.0fs",
+            user_id, conversation_id, _CHAT_ORCH_TIMEOUT_S,
+        )
+        raise HTTPException(
+            status_code=504,
+            detail="A LIA demorou mais que o esperado para responder. Tente novamente.",
+        )
     lia_response = orch_result["response"]
 
     if lia_response:
