@@ -1148,3 +1148,65 @@ senioridade eram strings livres divergentes (PRV 8, benefits 10).
   é feature transversal, se necessária no futuro).
 - **Editor compartilhado** `_shared/EligibilityScopeEditor` ganhou `area` (chips) + prop
   `showSeniority` (faixa esconde senioridade, pois o nível é identidade da faixa).
+
+
+## WS event contract — atividade do agente no chat (registrado 2026-06-03)
+
+**Contexto:** épico "display de atividade da IA estilo Replit/Manus" (plano em
+`.planning/agent-activity-stream-plan.md`). O chat unificado mostra o que o agente
+faz em tempo real (tool-calls, plano multi-step, raciocínio). Defeito histórico de
+harness: eventos WS divergiam entre backend (produtor) e frontend (consumidor) sem
+sensor — ex.: `_ws_plan_progress` comparava contra `plan_complete`/`plan_error`
+(nomes que o `PlanExecutor` nunca emite — ele emite `plan_completed`/`step_*`),
+deixando status preso em "running" e progress em 0 (Fase 0, fix 2026-06-03).
+
+### Regras canônicas
+
+1. **Todo evento WS é serializado por um helper `serialize_*` em
+   `app/shared/chat_event_serializer.py`** (single source of truth). PROIBIDO
+   emitir `{"type": "..."}` inline novo nos handlers — adicione um `serialize_*`.
+   (Exceções legadas inline: `plan_progress`, `wizard_stage`, `clarification`,
+   `ping`/`pong`, `approval_*` — não criar mais desse tipo.)
+
+2. **Nomes do produtor são canônicos; consumidores nunca renomeiam.** O produtor
+   (`PlanExecutor._emit`, `StreamingCallback`) define o nome do evento. O consumidor
+   (handler WS, mapper) alinha aos nomes do produtor — nunca o contrário. Quando
+   precisar traduzir, faça num helper puro testável (ex.:
+   `app/shared/execution/plan_progress_mapper.py`).
+
+3. **Todo evento `serialize_*` novo precisa de contraparte no frontend:** adicionar
+   ao union `StreamingEventType` em
+   `plataforma-lia/src/hooks/ai/use-agent-streaming.ts` E tratar em
+   `plataforma-lia/src/hooks/chat/useChatSocket.ts` (ou registrar em `IGNORED` do
+   sensor com motivo). Direção checada: backend → frontend.
+
+4. **Atividade do agente (Fase 1):** `StreamingCallback`
+   (`libs/agents-core/lia_agents_core/streaming_callback.py`) emite `tool_started`
+   /`tool_finished` via `on_tool_start`/`on_tool_end`/`on_tool_error` — disparam
+   durante o `ainvoke` (não exige `astream`). Args/resultados passam por `mask_pii`
+   + truncate. O frontend renderiza no `AgentActivityTimeline`
+   (`plataforma-lia/src/components/unified-chat/AgentActivityTimeline.tsx`) via o
+   window event `lia:agent-activity` (idioma `wizard_stage`/`hitl:*`).
+
+### Sensores ativos
+
+- **`lia-agent-system/scripts/check_ws_event_contract.py`** (computacional,
+  warn-only; `--blocking` opt-in). Cross-stack: confere que todo evento
+  `serialize_event("X", ...)` existe no union `StreamingEventType` do frontend.
+  Baseline 2026-06-03: **0 violations** (11 eventos backend ↔ 15 no union FE).
+  Mensagem de erro com fix embutido pro LLM.
+- **`tests/contract/test_plan_progress_contract.py`** (6 testes) — pina nomes
+  produtor↔consumidor do plan_progress + regressão dos nomes buggados.
+- **`tests/contract/test_streaming_callback_tool_events.py`** (5 testes) — pina que
+  os handlers de tool emitem `tool_started`/`tool_finished` com os campos certos.
+- **`AgentActivityTimeline.test.tsx`** (5 vitest) — comportamento + contrato i18n
+  (`chat.agentActivity`, sem MISSING_MESSAGE) + mount/unmount.
+
+### Débito aberto
+
+- `astream_events` (Fase 2) para emitir `reasoning_step` ao vivo (texto de
+  raciocínio) — atrás de flag `LIA_WS_ASTREAM`, fallback `ainvoke`, exige
+  feature-impact cross-agent (runner compartilhado).
+- Linhas vestigiais `context["streaming_callback"] = ...` em `agent_chat_sse.py` e
+  `main_orchestrator.py:2390` são write-only/dead (no SSE o `_streaming_callback` é
+  consumido via ContextVar `_llm_streaming_callback`, só a linha de context é morta).

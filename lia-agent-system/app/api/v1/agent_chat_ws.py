@@ -1252,17 +1252,11 @@ company_id: str = Depends(require_company_id)):
                 ))
                 continue
 
-            # E7: injeta streaming_callback no context antes de construir agent_input
-            async def _thinking_callback_pre(event: dict) -> None:
-                """Retransmite evento thinking do ReAct loop para o cliente WebSocket."""
-                try:
-                    await ws_mgr.send_to_session(session_id, serialize_thinking(
-                        content=event.get("thought", ""),
-                        step=event.get("step", 0),
-                    ))
-                except Exception:
-                    pass  # fail-silent
-            context["streaming_callback"] = _thinking_callback_pre
+            # Nota (2026-06-03): bloco _thinking_callback_pre removido — era dead code
+            # (nenhum consumidor lia context["streaming_callback"], e o WS nunca setava
+            # o ContextVar _llm_streaming_callback como o SSE faz). O streaming do WS
+            # vem do StreamingCallback LangChain (langgraph_react_base.py), que agora
+            # também emite tool_started/tool_finished (Fase 1).
 
             agent_input = _build_agent_input(
                 content=content,
