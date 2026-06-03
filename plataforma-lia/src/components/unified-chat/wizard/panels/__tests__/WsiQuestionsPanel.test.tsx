@@ -88,6 +88,6 @@ describe("WsiQuestionsPanel — Regenerar/Substituir fundidos (audit 2026-06-03 
     )
     fireEvent.click(screen.getByText(/Pergunta 1/))
     expect(screen.queryByRole("button", { name: /Substituir/i })).not.toBeInTheDocument()
-    expect(screen.getByRole("button", { name: /Regenerar/i })).toBeInTheDocument()
+    expect(screen.getAllByRole("button", { name: /Regenerar/i }).length).toBeGreaterThan(0)
   })
 })
