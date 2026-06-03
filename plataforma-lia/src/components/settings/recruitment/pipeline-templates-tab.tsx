@@ -39,7 +39,7 @@ function ConfirmDialog({ open, title, description, confirmLabel, cancelLabel, de
         </DialogHeader>
         <DialogFooter>
           <Button variant="outline" onClick={onCancel}>{cancelLabel}</Button>
-          <Button variant={destructive ? "destructive" : "default"} onClick={onConfirm}>{confirmLabel}</Button>
+          <Button variant={destructive ? "destructive" : "primary"} onClick={onConfirm}>{confirmLabel}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
