@@ -1503,26 +1503,106 @@ Pontos de integração:
   - RAG pipeline (L3)
 ```
 
-### PII Masking — 4 Camadas
+### PII Masking — Arquitetura (defesa em profundidade, ADR-006)
+
+Base legal: **LGPD Art. 12** (minimização/anonimização) + **EU AI Act Art. 13**
+(transparência). Princípio: minimizar a PII REAL que chega ao LLM e aos logs.
+**Não é garantia absoluta** — é best-effort em múltiplas camadas (ver trade-off
+no apêndice D-10).
+
+#### Onde roda no fluxo (3 pontos de aplicação)
 
 ```
-Arquivo: app/shared/pii_masking.py
+                         ┌─────────────────────────────────────────────┐
+  recrutador/candidato   │ 1. ENTRADA — agent_chat_ws.py / agent_chat_sse.py
+   (texto livre)  ──────▶│    C3b pre_compliance() [app/shared/compliance/c3b_layer.py]
+                         │    ordem: HateSpeechGuard → strip_pii_for_llm_prompt
+                         │           → PromptInjectionGuard → FairnessGuard L3
+                         └───────────────┬─────────────────────────────┘
+                                         ▼  (texto já limpo)
+                         CascadedRouter / MainOrchestrator  → escolhe agente
+                                         ▼
+                         ┌─────────────────────────────────────────────┐
+                         │ 2. AGENTE — LangGraphReActBase               │
+                         │    _sanitize_messages_pii() reaplica         │
+                         │    strip_pii_for_llm_prompt em CADA mensagem  │
+                         │    do histórico antes do grafo LLM            │
+                         │    (default _enable_pii_strip=True nos 16     │
+                         │     ReActAgents canônicos) ───────▶ LLM call  │
+                         └───────────────┬─────────────────────────────┘
+                                         ▼
+                         C3b post_compliance() → FactChecker + AuditService
+                                         ▼  resposta ao usuário
 
-Camada 1: CPF → [CPF_MASKED]
-Camada 2: nome → [NAME_1], [NAME_2], etc.
-Camada 3: endereço → [ADDR_MASKED]
-Camada 4: campos sensíveis → [FIELD_MASKED]
-
-Função: strip_pii_for_llm_prompt (global)
-PIIMaskingFilter: filtro global de logs
-Presidio: NER (PERSON/EMAIL/PHONE/NRP) LIGADO POR PADRÃO
-  (LLM_PROMPT_PRESIDIO_ENABLED=true; modelo pt_core_news_sm)
-
-Objetivo: minimizar PII real enviada ao LLM — best-effort por regex +
-  NER (não é garantia absoluta; ver trade-off no apêndice D-10)
-Demasking: dados restaurados na response final ao recrutador
-Audit: dados mascarados no registro (nunca reais)
+  3. LOGS (transversal) — install_global_pii_masking() em app/main.py (startup)
+     instala PIIMaskingFilter no root logger + TODOS os handlers → mascara
+     CPF/email/telefone/nome em msg, args e exc_info de QUALQUER log do processo.
 ```
+
+- **Ponto 1 (orquestrador/entrada):** todo texto inbound do chat passa pelo C3b
+  `pre_compliance` ANTES do roteamento. O PII strip roda depois do HateSpeechGuard
+  e antes do PromptInjectionGuard/FairnessGuard. É aqui que o roteador e os
+  prompts já recebem texto sem PII.
+- **Ponto 2 (agente):** segunda passada defensiva. `LangGraphReActBase`
+  (`libs/agents-core/lia_agents_core/langgraph_react_base.py`) sanitiza o histórico
+  de mensagens antes de montar o estado inicial do grafo. Cobre também callsites
+  manuais em domínios (voz, comparação de candidatos, feedback, JD enrichment etc.).
+- **Ponto 3 (logs):** independente do fluxo de chat — protege accountability
+  (LGPD Art. 46): nenhum log/stack-trace vaza PII mesmo em erro.
+
+#### Camadas internas de `strip_pii_for_llm_prompt` (app/shared/pii_masking.py)
+
+Ordem real de execução (não confundir com numeração histórica):
+
+```
+Layer 0  — UUID v4 shield: troca tenant_id/job_id por sentinela opaca \x00UUIDn\x00
+           (evita que PHONE_BR_PATTERN destrua UUIDs); restaurado no fim.
+Layer 4  — NER Presidio PRIMEIRO: mascara NOME (PERSON)/EMAIL/PHONE/NRP via spaCy
+           PT-BR (pt_core_news_sm). Roda antes do regex para não re-embrulhar
+           placeholders ("[[LOCATION REMOVIDO] REMOVIDO]").
+Layer 1  — Regex determinístico (backstop): CPF, email, telefone, RG, CNPJ.
+Layer 3  — Quasi-identificadores: ano de formatura, idade explícita, endereço/bairro.
+Layer 0' — restaura os UUIDs blindados.
+```
+
+Placeholders reais: `[CPF REMOVIDO]`, `[EMAIL REMOVIDO]`, `[TELEFONE REMOVIDO]`,
+`[RG REMOVIDO]`, `[CNPJ REMOVIDO]`, `[ANO_FORMATURA REMOVIDO]`, `[IDADE REMOVIDA]`,
+`[ENDEREÇO REMOVIDO]`, e `[PERSON REMOVIDO]` (NER).
+
+#### Demasking — NÃO há restauração de PII real
+
+- **Mascaramento de PII é one-way.** Nome/CPF/email mascarados NÃO voltam à resposta.
+  A única coisa reversível é o **UUID shield** (sentinela interna, restaurada no
+  fim da própria função — invisível ao LLM).
+- Quando a lógica interna determinística precisa do valor real (ex.: extrair o email
+  do gestor no wizard), ela usa o `_raw_user_message` guardado no contexto — esse
+  valor **não** é enviado ao LLM; só o `clean_message` vai para o modelo.
+
+#### Componentes relacionados (não confundir papéis)
+
+| Componente | Arquivo | Papel |
+|---|---|---|
+| `strip_pii_for_llm_prompt` | `app/shared/pii_masking.py` | Strip de PII pré-LLM (camadas acima) |
+| `PIIMaskingFilter` / `install_global_pii_masking` | idem | Filtro global de logs (Ponto 3) |
+| C3b `pre/post_compliance` | `app/shared/compliance/c3b_layer.py` | Gate de entrada/saída do chat (Ponto 1) |
+| `LangGraphReActBase._sanitize_messages_pii` | `libs/agents-core/...` | Guard automático por agente (Ponto 2) |
+| `ToonService` (anonymize) | domínio analytics | **Apresentação**: "Candidato X" na UI — NÃO é o masker de fluxo |
+| `ats_pii_filter` | `app/domains/ats_integration/.../ats_pii_filter.py` | Payloads de SAÍDA p/ ATS externo + checagem de consent |
+
+#### Flags de configuração
+
+| Env | Default | Efeito |
+|---|---|---|
+| `LLM_PROMPT_PII_STRIPPING_ENABLED` | `true` | Master switch do strip pré-LLM |
+| `LLM_PROMPT_PRESIDIO_ENABLED` | `true` | Liga a camada NER (mascaramento de NOME) |
+| `LLM_PROMPT_PRESIDIO_ENTITIES` | `PERSON,EMAIL_ADDRESS,PHONE_NUMBER,NRP` | Entidades NER (LOCATION/DATE_TIME fora p/ não mascarar skills como "React") |
+| `LLM_PROMPT_PRESIDIO_LANG` / `_SPACY_MODEL` | `pt` / `pt_core_news_sm` | Idioma + modelo spaCy |
+
+**Fail-loud:** se o modelo NER não carregar (deps faltando em prod) ou falhar em
+runtime, a falha loga **CRITICAL** (latch one-shot) — o nome pode vazar sem máscara,
+então é alarme visível, NUNCA fallback silencioso. **Deploy:** Presidio + modelo PT
+são instalados via `pip install -r requirements.txt`; é preciso **republicar** para
+o mascaramento de nome valer em produção.
 
 ### FactChecker — 4 Tipos de Verificação
 
