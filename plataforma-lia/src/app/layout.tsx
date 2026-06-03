@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Open_Sans, Source_Serif_4 } from "next/font/google";
 import "./globals.css";
+import { EnvironmentBadge } from "@/components/layout/EnvironmentBadge";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -45,6 +46,7 @@ export default function RootLayout({
         className={`${inter.variable} ${openSans.variable} ${sourceSerif4.variable} antialiased`}
         suppressHydrationWarning
       >
+        <EnvironmentBadge />
         {children}
       </body>
     </html>
