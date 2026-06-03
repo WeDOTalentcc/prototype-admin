@@ -93,17 +93,16 @@ async def parse_and_create_candidate(
         from app.models.candidate import Candidate
 
         async with AsyncSessionLocal() as db:
-            # Duplicate check — skip creation if email already exists
+            # Duplicate check — skip creation if email already exists.
+            # Task #1229: scope the uniqueness check by company_id when the
+            # caller injected a tenant context, so the same e-mail can exist in
+            # different tenants (defense-in-depth on top of Postgres RLS).
             if parsed.email:
-                # TENANT-EXEMPT: tool invoked via tool_registry; tenant boundary
-                # enforced by Postgres RLS (Task #1143). TODO(harness): add
-                # Candidate.company_id == company_id filter (passed from
-                # tool_handler kwargs) to enforce per-tenant email uniqueness.
+                dup_conditions = [func.lower(Candidate.email) == parsed.email.lower()]
+                if company_id:
+                    dup_conditions.append(Candidate.company_id == company_id)
                 dup = await db.execute(
-                # TENANT-EXEMPT: see above — RLS + tool_registry tenant context.
-                    select(Candidate).where(
-                        func.lower(Candidate.email) == parsed.email.lower()
-                    )
+                    select(Candidate).where(*dup_conditions)
                 )
                 existing = dup.scalar_one_or_none()
                 if existing:
@@ -128,6 +127,10 @@ async def parse_and_create_candidate(
 
             new_candidate = Candidate(
                 id=uuid.uuid4(),
+                # Task #1229: persist tenant ownership so the candidate is
+                # isolated per company (RLS + explicit column) — was previously
+                # created with a NULL company_id (cross-tenant leak risk).
+                company_id=company_id,
                 name=parsed.full_name or "Candidato sem nome",
                 email=parsed.email,
                 phone=parsed.phone,

@@ -41,6 +41,9 @@ from app.shared.compliance.fairness_guard import FairnessGuard
 # level so tests can patch them via ``patch.object(discrete_actions, ...)``.
 from app.domains.cv_screening.services.cv_scoring_service import CVScoringService
 from app.domains.cv_screening.tools.candidate_tools import add_candidate_to_vacancy
+from app.domains.cv_screening.tools.cv_upload_tool import (
+    parse_and_create_candidate as _parse_and_create_candidate_primitive,
+)
 from app.domains.job_management.services.jd_enrichment_service import JdEnrichmentService
 from app.domains.sourcing.services.pearch_service import PearchService
 
@@ -825,6 +828,154 @@ async def handle_add_approved_to_vacancy(
         data=data,
         domain_id="cv_screening",
         action_id="add_approved_to_vacancy",
+    )
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Task #1229 — Upload, cadastrar e handoff de triagem (item 5)
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+@register_discrete_handler("cv_screening", "parse_and_create_candidate")
+async def handle_parse_and_create_candidate(
+    params: dict[str, Any], actx: ActionContext
+) -> DomainResponse:
+    """Parse an uploaded/pasted CV and create the Candidate by REUSING the
+    canonical primitive ``cv_upload_tool.parse_and_create_candidate`` (which
+    AI-parses the CV and persists the Candidate tenant-scoped via the injected
+    ``_context.company_id``). HONEST: no CV text → clarification; no tenant →
+    error; primitive failure → error (NEVER faked). Emits ``candidate_id`` /
+    ``candidate_name`` so the next step (``add_to_vacancy``) can chain.
+    INVIOLÁVEL (#1211): never creates a job."""
+    company_id = actx.company_id or actx.tenant_id
+    if not company_id:
+        return DomainResponse.error_response(
+            error="missing_tenant_context",
+            message="Não consegui identificar a empresa para cadastrar o candidato.",
+            domain_id="cv_screening",
+            action_id="parse_and_create_candidate",
+        )
+
+    cv_text = _pick(params, actx, "cv_text", "resume_text", "cv", "raw_text", "text")
+    if not cv_text or not str(cv_text).strip():
+        return DomainResponse.clarification_response(
+            question=(
+                "Para cadastrar o candidato eu preciso do CV. Envie o arquivo ou "
+                "cole o texto do currículo aqui no chat."
+            ),
+            domain_id="cv_screening",
+            action_id="parse_and_create_candidate",
+        )
+
+    vacancy_id = _pick(params, actx, "vacancy_id", "job_id")
+    vacancy_title = _pick(params, actx, "vacancy_title", "job_title")
+
+    ctx_obj = _DiscreteToolContext(company_id=str(company_id), user_id=actx.user_id)
+    try:
+        result = await _parse_and_create_candidate_primitive(
+            cv_text=str(cv_text),
+            vacancy_title=str(vacancy_title) if vacancy_title else None,
+            vacancy_id=str(vacancy_id) if vacancy_id else None,
+            source="cv_upload",
+            _context=ctx_obj,
+        )
+    except Exception as exc:
+        logger.error("P&E parse_and_create_candidate failed: %s", exc, exc_info=True)
+        result = {"success": False, "error": "parse_create_failed"}
+
+    if not result or not result.get("success"):
+        return DomainResponse.error_response(
+            error=(result or {}).get("error", "parse_create_failed"),
+            message=(result or {}).get("message")
+            or "Não consegui cadastrar o candidato a partir do CV.",
+            domain_id="cv_screening",
+            action_id="parse_and_create_candidate",
+        )
+
+    data = {
+        "candidate_id": result.get("candidate_id"),
+        "candidate_name": result.get("candidate_name"),
+        "vacancy_id": vacancy_id,
+        "job_id": vacancy_id,
+        "duplicate": result.get("duplicate", False),
+    }
+    return DomainResponse.success_response(
+        message=result.get("message") or "Candidato cadastrado a partir do CV.",
+        data=data,
+        domain_id="cv_screening",
+        action_id="parse_and_create_candidate",
+    )
+
+
+@register_discrete_handler("cv_screening", "add_to_vacancy")
+async def handle_add_to_vacancy(
+    params: dict[str, Any], actx: ActionContext
+) -> DomainResponse:
+    """Add the just-created candidate to the vacancy by REUSING the HARDENED
+    ``add_candidate_to_vacancy`` (email validation + FairnessGuard C1 on notes +
+    tenant scoping + cross_tenant guard + candidate_movement audit are already
+    embedded). Chains ``candidate_id`` from ``parse_and_create_candidate``.
+    HONEST: missing candidate/vacancy → clarification; missing/invalid email or
+    cross-tenant → surfaces the tool's EXPLICIT error (NEVER faked). The
+    candidate enters at the classification stage ("Triagem"). INVIOLÁVEL
+    (#1211): never creates a job."""
+    company_id = actx.company_id or actx.tenant_id
+    if not company_id:
+        return DomainResponse.error_response(
+            error="missing_tenant_context",
+            message="Não consegui identificar a empresa para adicionar o candidato à vaga.",
+            domain_id="cv_screening",
+            action_id="add_to_vacancy",
+        )
+
+    candidate_id = _pick(params, actx, "candidate_id")
+    job_id = _pick(params, actx, "job_id", "vacancy_id")
+    if not candidate_id or not job_id:
+        return DomainResponse.clarification_response(
+            question=(
+                "Para adicionar à vaga eu preciso do candidato e da vaga. "
+                "Qual candidato e em qual vaga?"
+            ),
+            domain_id="cv_screening",
+            action_id="add_to_vacancy",
+        )
+
+    ctx_obj = _DiscreteToolContext(company_id=str(company_id), user_id=actx.user_id)
+    try:
+        res = await add_candidate_to_vacancy(
+            candidate_id=str(candidate_id),
+            job_id=str(job_id),
+            initial_stage="Triagem",
+            source="cv_upload",
+            _context=ctx_obj,
+        )
+    except Exception as exc:
+        logger.error("P&E add_to_vacancy failed: %s", exc, exc_info=True)
+        res = {"success": False, "error": "add_failed"}
+
+    if not res or not res.get("success"):
+        return DomainResponse.error_response(
+            error=(res or {}).get("error", "add_failed"),
+            message=(res or {}).get("message")
+            or "Não consegui adicionar o candidato à vaga.",
+            domain_id="cv_screening",
+            action_id="add_to_vacancy",
+        )
+
+    inner = res.get("data") or {}
+    data = {
+        "candidate_id": candidate_id,
+        "candidate_name": inner.get("candidate_name"),
+        "job_id": job_id,
+        "vacancy_id": job_id,
+        "stage": inner.get("stage", "Triagem"),
+    }
+    return DomainResponse.success_response(
+        message=res.get("message")
+        or "Candidato adicionado à vaga na etapa Triagem.",
+        data=data,
+        domain_id="cv_screening",
+        action_id="add_to_vacancy",
     )
 
 

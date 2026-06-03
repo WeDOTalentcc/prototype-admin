@@ -200,6 +200,13 @@ PLAN_PATTERNS: list[PlanPattern] = [
             r"cri[ae]\s+(?:o\s+)?candidato\s+.*\s+e\s+(tria[r]?|screen|wsi)",
             r"registra[r]?\s+(?:o\s+)?candidato\s+.*\s+e\s+(dispara[r]?|tria[r]?|screen|wsi)",
             r"parse[ia]?\s+(?:o\s+)?cv\s+.*\s+e\s+(cadastr|tria|adiciona)",
+            # Task #1229: imperativos naturais PT-BR adicionais (additivo — não
+            # remover/alterar os patterns acima). Cobrem "faça/suba" e a forma
+            # "registrar/criar o candidato e <fazer> triagem" sem token extra.
+            r"fa[cç]a\s+(?:o\s+)?upload\s+.*\s+e\s+(cadastr|registr|tria)",
+            r"registra[r]?\s+(?:o\s+)?candidato\s+e\s+(dispara[r]?|tria[r]?|fa[cç][ae]r?\s+(?:a\s+)?triagem|screen|wsi)",
+            r"cri[ae]\s+(?:o\s+)?candidato\s+.*\s+e\s+(fa[cç][ae]r?\s+(?:a\s+)?triagem|tria[r]?|screen|wsi)",
+            r"sub[ae]\s+(?:o\s+)?cv.*\s+(cadastr|registr).*\s+(tria|wsi|screen)",
         ],
         pipeline=[
             PipelineStep(domain_id="cv_screening", action_id="parse_and_create_candidate"),
