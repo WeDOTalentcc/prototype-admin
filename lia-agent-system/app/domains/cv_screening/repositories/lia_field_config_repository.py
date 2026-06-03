@@ -10,6 +10,7 @@ from uuid import UUID
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 
 class LiaFieldConfigRepository:
@@ -25,8 +26,23 @@ class LiaFieldConfigRepository:
 
     async def get_company_profile(self, company_uuid: UUID):
         from app.models.company import CompanyProfile
+        # Eager-load ORM relationships consumed as canonical LIA field_keys
+        # (departments, benefits) plus the other CompanyProfile relationships.
+        # A blind getattr on these in LiaFieldConfigService._get_company_value
+        # would otherwise trigger an async lazy-load outside the active
+        # greenlet -> sqlalchemy.exc.MissingGreenlet, which is swallowed by
+        # build_company_agent_context and silently empties the toggle-filtered
+        # company context delivered to every agent. selectinload fixes it at
+        # the producer (canonical-fix: load eagerly, do not lazy-load).
         result = await self.db.execute(
-            select(CompanyProfile).where(CompanyProfile.id == company_uuid)
+            select(CompanyProfile)
+            .where(CompanyProfile.id == company_uuid)
+            .options(
+                selectinload(CompanyProfile.departments),
+                selectinload(CompanyProfile.benefits),
+                selectinload(CompanyProfile.culture_values),
+                selectinload(CompanyProfile.compensation_policies),
+            )
         )
         return result.scalar_one_or_none()
 

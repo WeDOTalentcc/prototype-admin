@@ -18,7 +18,7 @@ from typing import Any
 from uuid import UUID
 
 from app.domains.cv_screening.repositories.lia_field_config_repository import LiaFieldConfigRepository
-from sqlalchemy import select
+from sqlalchemy import inspect as sa_inspect, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from lia_models.company import CompanyProfile
@@ -317,6 +317,26 @@ class LiaFieldConfigService:
             return None
         
         if hasattr(profile, field_key):
+            # Defense-in-depth (canonical-fix REGRA 4): never trigger an async
+            # lazy-load from here. If field_key maps to an ORM relationship that
+            # was NOT eager-loaded by the repository, getattr would emit IO
+            # outside the greenlet -> MissingGreenlet, which the caller swallows
+            # and silently empties the company context. Return None gracefully
+            # so a future relationship that misses the selectinload degrades
+            # honestly (skips that field) instead of nuking the whole context.
+            try:
+                unloaded = sa_inspect(profile).unloaded
+            except Exception:
+                unloaded = set()
+            if field_key in unloaded:
+                logger.warning(
+                    "[lia_field_config] relationship %r is unloaded for company "
+                    "profile; add selectinload(%s) to "
+                    "LiaFieldConfigRepository.get_company_profile to surface it. "
+                    "Skipping to avoid lazy-load MissingGreenlet.",
+                    field_key, field_key,
+                )
+                return None
             return getattr(profile, field_key)
         
         if profile.additional_data and field_key in profile.additional_data:
@@ -601,6 +621,13 @@ class LiaFieldConfigService:
             if isinstance(value[0], dict):
                 items = [str(v.get("competency", v.get("name", str(v)))) for v in value[:5]]
                 return ", ".join(items) + ("..." if len(value) > 5 else "")
+            # ORM rows (e.g. Department/Benefit relationships) expose a `name`
+            # attribute; render that instead of the useless object repr that
+            # would otherwise leak `<...Department object at 0x...>` into the
+            # LLM prompt now that the relationships are eagerly loaded.
+            if hasattr(value[0], "name"):
+                items = [str(getattr(v, "name", str(v))) for v in value[:10]]
+                return ", ".join(items) + ("..." if len(value) > 10 else "")
             return ", ".join(str(v) for v in value[:10]) + ("..." if len(value) > 10 else "")
         if isinstance(value, dict):
             if "min" in value and "max" in value:
