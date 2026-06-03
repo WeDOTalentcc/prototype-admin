@@ -10,17 +10,16 @@ This is the same ghost-setting class the canonical helper
 ``build_company_agent_context`` / ``LiaFieldConfigService`` closes elsewhere.
 
 Gate contract (mirrors test_offer_approval_gate.py model):
-- Toggle OFF for a canonical culture field  → field MUST be omitted from the
+- Toggle OFF for a canonical culture field  -> field MUST be omitted from the
   tool response ``data`` dict (fail-closed for the toggle).
-- Toggle ON  for a canonical culture field  → field present with company value.
+- Toggle ON  for a canonical culture field  -> field present with company value.
 
 The handler is decorated with ``@tool_handler("cv_screening")`` which injects
-``company_id`` from the ``_current_company_id`` ContextVar — the test sets it
+``company_id`` from the ``_current_company_id`` ContextVar -- the test sets it
 directly rather than going through the auth middleware.
 """
 from __future__ import annotations
 
-import uuid
 from contextlib import asynccontextmanager
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -33,16 +32,16 @@ _COMPANY_ID = "00000000-0000-0000-0000-000000000042"
 def _make_culture():
     """A fully-populated CompanyCultureProfile-like object."""
     culture = MagicMock()
-    culture.mission = "Nossa missão é X"
-    culture.vision = "Nossa visão é Y"
-    culture.values = ["Integridade", "Excelência"]
+    culture.mission = "Nossa missao e X"
+    culture.vision = "Nossa visao e Y"
+    culture.values = ["Integridade", "Excelencia"]
     culture.evp_bullets = ["EVP 1", "EVP 2"]
     culture.core_competencies = ["Comp A"]
     culture.culture_description = "Cultura colaborativa"
     culture.industry = "Tecnologia"
     culture.work_model = "hybrid"
     culture.leadership_style = "servant"
-    culture.team_dynamics = "ágil"
+    culture.team_dynamics = "agil"
     culture.dei_initiatives = ["DEI 1"]
     culture.tech_stack = ["Python"]
     culture.default_languages = ["pt-BR"]
@@ -50,11 +49,10 @@ def _make_culture():
 
 
 def _make_field_config_result(active: set[str], inactive: set[str]):
-    """Mimic LiaFieldConfigResult.active_fields keyed by field_key."""
+    """Mimic LiaFieldConfigResult.active_fields / all_fields keyed by field_key."""
     result = MagicMock()
     result.active_fields = {k: MagicMock(is_active=True) for k in active}
     result.inactive_fields = {k: MagicMock(is_active=False) for k in inactive}
-    # all_fields keyed by field_key → FieldConfig-like with .is_active
     all_fields = {}
     for k in active:
         all_fields[k] = MagicMock(is_active=True)
@@ -76,14 +74,14 @@ def _set_tenant_contextvar():
 
 @pytest.mark.asyncio
 async def test_mission_off_omitted_values_on_present():
-    """mission toggle OFF → omitted; values toggle ON → present."""
+    """mission toggle OFF -> omitted; values toggle ON -> present."""
     from app.domains.cv_screening.agents import pipeline_tool_registry as mod
 
     culture = _make_culture()
     repo = AsyncMock()
     repo.get_for_company = AsyncMock(return_value=culture)
 
-    # mission OFF, values ON (rest ON so we isolate the mission case)
+    # mission OFF, everything else ON so we isolate the mission case.
     active = {
         "vision", "values", "evp_bullets", "core_competencies",
         "industry", "work_model", "leadership_style", "team_dynamics",
@@ -116,6 +114,6 @@ async def test_mission_off_omitted_values_on_present():
     assert "mission" not in data or not data.get("mission"), (
         f"mission toggle is OFF but tool still injected it: {data.get('mission')!r}"
     )
-    assert data.get("values") == ["Integridade", "Excelência"], (
+    assert data.get("values") == ["Integridade", "Excelencia"], (
         f"values toggle is ON but tool omitted/altered it: {data.get('values')!r}"
     )

@@ -1002,24 +1002,69 @@ async def _wrap_get_company_culture(**kwargs):
                     "message": "Perfil cultural não configurado para esta empresa.",
                 }
 
+            # ── Ghost-bypass fix (audit 2026-05-21 P0-1, reintroduced 2026-05-22) ──
+            # Each canonical culture field is gated by its lia_field_toggle
+            # ("Instruções LIA por Campo"). A field is injected into the tool
+            # result ONLY when its toggle is_active. Fail-closed for the
+            # toggle: if the gate lookup fails we OMIT the gated fields rather
+            # than leak raw values that bypass the recruiter opt-out.
+            # CLAUDE.md → "lia_field_toggles canonical pattern".
+            from app.domains.cv_screening.services.lia_field_config_service import (
+                LiaFieldConfigService,
+            )
+
+            active_field_keys: set[str] = set()
+            try:
+                fc_result = await LiaFieldConfigService(session).get_field_config(
+                    company_id
+                )
+                active_field_keys = {
+                    fk
+                    for fk, cfg in fc_result.all_fields.items()
+                    if getattr(cfg, "is_active", False)
+                }
+            except Exception as gate_exc:  # noqa: BLE001 — fail-closed on gate
+                logger.warning(
+                    "[pipeline_tools] get_company_culture toggle gate failed "
+                    "company=%s; omitting gated culture fields. reason=%s",
+                    company_id, gate_exc, exc_info=True,
+                )
+
+            # Map: tool response key → (canonical toggle field_key, raw value).
+            # Keys whose toggle is OFF are skipped (ghost-bypass closed).
+            _gated = {
+                "mission": ("mission", culture.mission),
+                "vision": ("vision", culture.vision),
+                "values": ("values", culture.values or []),
+                "evp_bullets": ("evp_bullets", culture.evp_bullets or []),
+                "core_competencies": ("core_competencies", culture.core_competencies or []),
+                "industry": ("industry", culture.industry),
+                "work_model": ("work_model", culture.work_model),
+                "leadership_style": ("leadership_style", culture.leadership_style),
+                "team_dynamics": ("team_dynamics", culture.team_dynamics),
+                "dei_initiatives": ("dei_initiatives", culture.dei_initiatives),
+                "tech_stack": ("tech_stack", culture.tech_stack or []),
+                "default_languages": ("default_languages", culture.default_languages or []),
+            }
+
+            data: dict[str, Any] = {}
+            for resp_key, (toggle_key, value) in _gated.items():
+                if toggle_key in active_field_keys:
+                    data[resp_key] = value
+
+            # culture_description is not a canonical lia_field_toggle field;
+            # it carries no per-field opt-out and is always returned.
+            data["culture_description"] = culture.culture_description
+
             return {
                 "success": True,
-                "data": {
-                    "mission": culture.mission,
-                    "vision": culture.vision,
-                    "values": culture.values or [],
-                    "evp_bullets": culture.evp_bullets or [],
-                    "core_competencies": culture.core_competencies or [],
-                    "culture_description": culture.culture_description,
-                    "industry": culture.industry,
-                    "work_model": culture.work_model,
-                    "leadership_style": culture.leadership_style,
-                    "team_dynamics": culture.team_dynamics,
-                    "dei_initiatives": culture.dei_initiatives,
-                    "tech_stack": culture.tech_stack or [],
-                    "default_languages": culture.default_languages or [],
-                },
-                "message": f"Perfil cultural carregado ({len(culture.values or [])} valores, {len(culture.evp_bullets or [])} EVP bullets).",
+                "data": data,
+                "message": (
+                    f"Perfil cultural carregado "
+                    f"({len(data.get('values') or [])} valores, "
+                    f"{len(data.get('evp_bullets') or [])} EVP bullets; "
+                    f"{len(active_field_keys)} campos ativos respeitando toggles)."
+                ),
             }
     except Exception as e:
         logger.error("[pipeline_tools] get_company_culture failed: %s", e, exc_info=True)
