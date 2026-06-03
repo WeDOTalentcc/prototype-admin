@@ -36,6 +36,13 @@ from app.services.notification_service import notification_service
 from app.shared.compliance.audit_service import AuditService
 from app.shared.compliance.fairness_guard import FairnessGuard
 
+# Task #1227 — buscar/pontuar/adicionar reuses these canonical primitives (each
+# already embeds tenant scoping + FairnessGuard + audit). Imported at module
+# level so tests can patch them via ``patch.object(discrete_actions, ...)``.
+from app.domains.cv_screening.services.cv_scoring_service import CVScoringService
+from app.domains.cv_screening.tools.candidate_tools import add_candidate_to_vacancy
+from app.domains.sourcing.services.pearch_service import PearchService
+
 logger = logging.getLogger(__name__)
 
 
@@ -49,6 +56,18 @@ class ActionContext:
     tenant_id: str | None
     raw_query: str = ""
     base_context: dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class _DiscreteToolContext:
+    """Minimal `_context` object for tools that require company_id + user_id.
+
+    Tenant identity comes ONLY from the resolved :class:`ActionContext` (server
+    side), never from client-provided params.
+    """
+
+    company_id: str | None
+    user_id: str
 
 
 DiscreteHandler = Callable[[dict[str, Any], ActionContext], Awaitable[DomainResponse]]
@@ -415,4 +434,394 @@ async def handle_send_notification(params: dict[str, Any], actx: ActionContext) 
         metadata=metadata,
         domain_id="communication",
         action_id="send_notification",
+    )
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Task #1227 — Buscar, pontuar e adicionar (item 1)
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+def _attr(obj: Any, key: str, default: Any = None) -> Any:
+    """Read ``key`` from a dict OR an attribute object (Pearch CandidateProfile)."""
+    if isinstance(obj, dict):
+        return obj.get(key, default)
+    return getattr(obj, key, default)
+
+
+async def _get_vacancy_jd(company_id: str, vacancy_id: str) -> dict[str, Any] | None:
+    """Tenant-scoped fetch of a vacancy's enriched JD (title/description/location).
+
+    Returns ``None`` when the vacancy does not exist for this tenant — the caller
+    surfaces an honest "vaga não encontrada" instead of guessing.
+    """
+    if not company_id or not vacancy_id:
+        return None
+    try:
+        from sqlalchemy import text
+
+        from lia_config.database import AsyncSessionLocal
+
+        async with AsyncSessionLocal() as session:
+            result = await session.execute(
+                text(
+                    """
+                    SELECT title, description, location
+                    FROM job_vacancies
+                    WHERE id = :vid AND company_id = :cid
+                    LIMIT 1
+                    """
+                ),
+                {"vid": str(vacancy_id), "cid": str(company_id)},
+            )
+            row = result.fetchone()
+            if not row:
+                return None
+            return {"title": row[0], "description": row[1], "location": row[2]}
+    except Exception as exc:  # pragma: no cover - defensive
+        logger.error("Vacancy JD lookup failed: %s", exc, exc_info=True)
+        return None
+
+
+def _profile_to_candidate(p: Any) -> dict[str, Any]:
+    """Normalise a Pearch ``CandidateProfile`` (or dict) into candidate_data for
+    standalone scoring. ``id`` = ``docid`` (DB PK for local/discovered; Pearch id
+    for externals — the latter honestly fail at add-time, never faked)."""
+    name = (
+        _attr(p, "name")
+        or " ".join(x for x in [_attr(p, "first_name"), _attr(p, "last_name")] if x)
+        or "Candidato"
+    )
+    emails = _attr(p, "emails") or []
+    email = (
+        _attr(p, "best_personal_email")
+        or _attr(p, "best_business_email")
+        or (emails[0] if emails else None)
+    )
+    score = _attr(p, "match_score")
+    if score is None:
+        raw = _attr(p, "score")
+        score = (raw / 4) * 100 if isinstance(raw, (int, float)) else None
+    return {
+        "id": _attr(p, "docid"),
+        "name": name,
+        "title": _attr(p, "current_title") or _attr(p, "title"),
+        "skills": list(_attr(p, "skills") or []),
+        "experiences": list(_attr(p, "experiences") or []),
+        "education": list(_attr(p, "education") or []),
+        "total_experience_years": _attr(p, "total_experience_years"),
+        "summary": _attr(p, "summary"),
+        "email": email,
+        "location": _attr(p, "location"),
+        "match_score": score,
+        "is_discovered": bool(_attr(p, "is_discovered", False)),
+    }
+
+
+@register_discrete_handler("sourcing", "search_candidates")
+async def handle_search_candidates(
+    params: dict[str, Any], actx: ActionContext
+) -> DomainResponse:
+    """Search candidates for a vacancy via the canonical, tenant-scoped Pearch
+    service. Dual-mode: with a ``vacancy_id`` it searches by the enriched JD;
+    otherwise it falls back to a free-text query (keeps buscar_e_comparar /
+    buscar_e_triar working). Emits BOTH ``candidates`` (for scoring) and
+    ``candidate_ids`` (for the legacy compare/screen chains). HONEST: no vacancy
+    and no query → clarification; no results → empty success (never faked)."""
+    company_id = actx.company_id or actx.tenant_id
+    if not company_id:
+        return DomainResponse.error_response(
+            error="missing_tenant_context",
+            message="Não consegui identificar a empresa para a busca.",
+            domain_id="sourcing",
+            action_id="search_candidates",
+        )
+
+    vacancy_id = _pick(params, actx, "vacancy_id", "job_id")
+    location = _pick(params, actx, "location")
+    limit = _pick(params, actx, "limit") or 20
+    job_title = None
+    job_description = None
+    if vacancy_id:
+        jd = await _get_vacancy_jd(str(company_id), str(vacancy_id))
+        if not jd:
+            return DomainResponse.error_response(
+                error="job_not_found",
+                message="Não encontrei essa vaga na sua empresa. Pode confirmar qual vaga?",
+                domain_id="sourcing",
+                action_id="search_candidates",
+            )
+        job_title = jd.get("title")
+        job_description = jd.get("description") or jd.get("title")
+        location = location or jd.get("location")
+
+    query = job_description or _pick(params, actx, "query", "raw_query") or (actx.raw_query or "")
+    if not query or not str(query).strip():
+        return DomainResponse.clarification_response(
+            question=(
+                "Para buscar candidatos eu preciso de uma vaga ou de uma descrição/termo "
+                "de busca. Qual vaga ou perfil você quer buscar?"
+            ),
+            domain_id="sourcing",
+            action_id="search_candidates",
+        )
+
+    try:
+        service = PearchService()
+        resp = await service.search_by_job_description(
+            job_description=str(query),
+            location=str(location) if location else None,
+            limit=int(limit),
+            company_id=str(company_id),
+        )
+    except Exception as exc:
+        logger.error("P&E search_candidates Pearch call failed: %s", exc, exc_info=True)
+        return DomainResponse.error_response(
+            error="search_failed",
+            message="Não consegui concluir a busca de candidatos agora. Tente novamente em instantes.",
+            domain_id="sourcing",
+            action_id="search_candidates",
+        )
+
+    profiles: list[Any] = []
+    if resp is not None:
+        getter = getattr(resp, "get_candidates", None)
+        profiles = getter() if callable(getter) else (getattr(resp, "candidates", None) or [])
+    candidates = [_profile_to_candidate(p) for p in profiles]
+    candidate_ids = [c["id"] for c in candidates if c.get("id")]
+    data = {
+        "candidates": candidates,
+        "candidate_ids": candidate_ids,
+        "vacancy_id": vacancy_id,
+        "job_id": vacancy_id,
+        "job_title": job_title,
+    }
+    if not candidates:
+        return DomainResponse.success_response(
+            message="Não encontrei candidatos para essa busca. Quer ajustar os critérios ou a vaga?",
+            data=data,
+            domain_id="sourcing",
+            action_id="search_candidates",
+        )
+    return DomainResponse.success_response(
+        message=f"Encontrei {len(candidates)} candidato(s) para a busca.",
+        data=data,
+        domain_id="sourcing",
+        action_id="search_candidates",
+    )
+
+
+def _build_ranking_message(ranked: list[dict[str, Any]], job_title: str | None = None) -> str:
+    """Single chat message with the score ranking (ranking_plus_card UX)."""
+    header = "🏅 **Ranking dos candidatos**"
+    if job_title:
+        header += f" — vaga *{job_title}*"
+    lines = [header, ""]
+    rank = 0
+    for r in ranked:
+        if not r.get("success"):
+            continue
+        rank += 1
+        score = r.get("rubric_score")
+        score_txt = f"{int(round(score))}%" if isinstance(score, (int, float)) else "—"
+        fit = r.get("cv_fit") or "—"
+        reco = r.get("recommendation") or "—"
+        mark = " ✅" if r.get("approved") else ""
+        lines.append(
+            f"{rank}. **{r.get('candidate_name') or 'Candidato'}** — "
+            f"{score_txt} · Fit: {fit} · {reco}{mark}"
+        )
+    failed_n = sum(1 for r in ranked if not r.get("success"))
+    if failed_n:
+        lines.append("")
+        lines.append(f"_{failed_n} candidato(s) não puderam ser pontuados._")
+    return "\n".join(lines)
+
+
+@register_discrete_handler("cv_screening", "score_candidates")
+async def handle_score_candidates(
+    params: dict[str, Any], actx: ActionContext
+) -> DomainResponse:
+    """Score each searched candidate via the canonical ``score_candidate_standalone``
+    (BARS dry-run + FairnessGuard C1 + tenant fail-closed + audit are already
+    embedded). Ranks by ``rubric_score`` and marks approved by REUSING the
+    service's classification (``sub_status == "cv_approved"``) — never
+    re-implements a threshold. HONEST: no candidates → error."""
+    company_id = actx.company_id or actx.tenant_id
+    if not company_id:
+        return DomainResponse.error_response(
+            error="missing_tenant_context",
+            message="Não consegui identificar a empresa para pontuar os candidatos.",
+            domain_id="cv_screening",
+            action_id="score_candidates",
+        )
+
+    vacancy_id = _pick(params, actx, "vacancy_id", "job_id")
+    if not vacancy_id:
+        return DomainResponse.clarification_response(
+            question="Para qual vaga devo pontuar os candidatos?",
+            domain_id="cv_screening",
+            action_id="score_candidates",
+        )
+
+    raw = _pick(params, actx, "candidates")
+    candidates = raw if isinstance(raw, list) else []
+    if not candidates:
+        return DomainResponse.error_response(
+            error="no_candidates",
+            message="Não há candidatos para pontuar — faça uma busca primeiro.",
+            domain_id="cv_screening",
+            action_id="score_candidates",
+        )
+
+    service = CVScoringService()
+    scored: list[dict[str, Any]] = []
+    for cand in candidates:
+        cand_id = _attr(cand, "id") or _attr(cand, "candidate_id")
+        cand_name = _attr(cand, "name") or "Candidato"
+        try:
+            result = await service.score_candidate_standalone(
+                candidate_data=cand if isinstance(cand, dict) else dict(cand),
+                vacancy_id=str(vacancy_id),
+                company_id=str(company_id),
+                db=None,
+            )
+        except Exception as exc:
+            logger.error("P&E score_candidate_standalone failed: %s", exc, exc_info=True)
+            result = None
+        if not result or not result.get("success"):
+            scored.append(
+                {
+                    "candidate_id": cand_id,
+                    "candidate_name": cand_name,
+                    "success": False,
+                    "error": (result or {}).get("error", "scoring_failed"),
+                }
+            )
+            continue
+        scored.append(
+            {
+                "candidate_id": result.get("candidate_id") or cand_id,
+                "candidate_name": result.get("candidate_name") or cand_name,
+                "rubric_score": result.get("rubric_score"),
+                "cv_fit": result.get("cv_fit"),
+                "recommendation": result.get("recommendation"),
+                "sub_status": result.get("sub_status"),
+                "approved": result.get("sub_status") == "cv_approved",
+                "success": True,
+                "evaluation": result,
+            }
+        )
+
+    ranked = sorted(
+        scored,
+        key=lambda r: (r.get("rubric_score") if isinstance(r.get("rubric_score"), (int, float)) else -1),
+        reverse=True,
+    )
+    if not any(r.get("success") for r in ranked):
+        return DomainResponse.error_response(
+            error="scoring_failed",
+            message="Não consegui pontuar os candidatos agora.",
+            data={"ranking": ranked},
+            domain_id="cv_screening",
+            action_id="score_candidates",
+        )
+
+    approved_ids = [
+        r["candidate_id"] for r in ranked if r.get("approved") and r.get("candidate_id")
+    ]
+    message = _build_ranking_message(ranked, job_title=_pick(params, actx, "job_title"))
+    if approved_ids:
+        message += f"\n\n{len(approved_ids)} aprovado(s) na triagem por currículo."
+    return DomainResponse.success_response(
+        message=message,
+        data={
+            "ranking": ranked,
+            "approved_candidate_ids": approved_ids,
+            "vacancy_id": vacancy_id,
+            "job_id": vacancy_id,
+        },
+        domain_id="cv_screening",
+        action_id="score_candidates",
+    )
+
+
+@register_discrete_handler("cv_screening", "add_approved_to_vacancy")
+async def handle_add_approved_to_vacancy(
+    params: dict[str, Any], actx: ActionContext
+) -> DomainResponse:
+    """Add the approved candidates to the vacancy via the canonical
+    ``add_candidate_to_vacancy`` (email validation + FairnessGuard C1 on notes +
+    tenant scoping + candidate_movement audit are already embedded). HONEST: no
+    ids → clarification; reports added/failures per candidate, NEVER faked.
+
+    Gated: only dispatched after a natural PT-BR confirmation (see
+    ``pe_add_to_vacancy_continuation``). INVIOLÁVEL (#1211): never creates a job."""
+    company_id = actx.company_id or actx.tenant_id
+    if not company_id:
+        return DomainResponse.error_response(
+            error="missing_tenant_context",
+            message="Não consegui identificar a empresa para adicionar os candidatos à vaga.",
+            domain_id="cv_screening",
+            action_id="add_approved_to_vacancy",
+        )
+
+    job_id = _pick(params, actx, "job_id", "vacancy_id")
+    raw_ids = _pick(params, actx, "approved_candidate_ids", "candidate_ids")
+    if isinstance(raw_ids, str):
+        approved_ids = [raw_ids]
+    elif isinstance(raw_ids, (list, tuple)):
+        approved_ids = [str(x) for x in raw_ids if x]
+    else:
+        approved_ids = []
+
+    if not job_id or not approved_ids:
+        return DomainResponse.clarification_response(
+            question=(
+                "Para adicionar à vaga eu preciso da vaga e de quais candidatos aprovados "
+                "adicionar. Quais candidatos e em qual vaga?"
+            ),
+            domain_id="cv_screening",
+            action_id="add_approved_to_vacancy",
+        )
+
+    ctx_obj = _DiscreteToolContext(company_id=str(company_id), user_id=actx.user_id)
+    added: list[str] = []
+    failures: list[dict[str, Any]] = []
+    for cid in approved_ids:
+        try:
+            res = await add_candidate_to_vacancy(
+                candidate_id=str(cid),
+                job_id=str(job_id),
+                initial_stage="Triagem",
+                source="sourcing",
+                _context=ctx_obj,
+            )
+        except Exception as exc:
+            logger.error("P&E add_candidate_to_vacancy failed: %s", exc, exc_info=True)
+            res = {"success": False, "error": "add_failed"}
+        if res and res.get("success"):
+            added.append(str(cid))
+        else:
+            failures.append(
+                {"candidate_id": str(cid), "error": (res or {}).get("error", "unknown")}
+            )
+
+    data = {"added": added, "failures": failures, "job_id": job_id}
+    if not added:
+        return DomainResponse.error_response(
+            error="add_failed",
+            message="Não consegui adicionar os candidatos aprovados à vaga.",
+            data=data,
+            domain_id="cv_screening",
+            action_id="add_approved_to_vacancy",
+        )
+    msg = f"Adicionei {len(added)} candidato(s) aprovado(s) à vaga (etapa Triagem)."
+    if failures:
+        msg += f" {len(failures)} não pôde(puderam) ser adicionado(s)."
+    return DomainResponse.success_response(
+        message=msg,
+        data=data,
+        domain_id="cv_screening",
+        action_id="add_approved_to_vacancy",
     )

@@ -601,6 +601,24 @@ class MainOrchestrator:
                     _cont_exc,
                 )
 
+            # ── Phase 0-pre: P&E add-to-vacancy continuity (Task #1227) ──────
+            # Mirrors post-wizard continuity: the recruiter's natural PT-BR reply
+            # to the "quer que eu adicione os aprovados?" OFFER is handled here,
+            # BEFORE Phase 0, so it is never swallowed as a generic param flow.
+            try:
+                _add_cont_response = await self._handle_pe_add_to_vacancy_continuation(
+                    ctx, conv_id, db, conv
+                )
+                if _add_cont_response is not None:
+                    if _soft_warnings and not _add_cont_response.fairness_warnings:
+                        _add_cont_response.fairness_warnings = _soft_warnings
+                    return _add_cont_response
+            except Exception as _add_cont_exc:
+                logger.warning(
+                    "[LIA-P&E] add-to-vacancy continuation skipped: %s",
+                    _add_cont_exc,
+                )
+
             # ── Phase 0: PendingAction ──────────────────────────────────────
             pending_response = await self._handle_pending_action(ctx, conv_id)
             if pending_response is not None:
@@ -777,6 +795,41 @@ class MainOrchestrator:
 
                         _plan_domain_resp = _plan_executor.build_consolidated_response(_completed_plan)
                         _plan_text = _plan_domain_resp.message
+
+                        # Task #1227: after "buscar_pontuar_e_adicionar" (search +
+                        # score), adding the approved candidates to the vacancy is a
+                        # state-changing step gated behind a natural PT-BR
+                        # confirmation (chat-first). Park the offer keyed by
+                        # conversation and OFFER it in the same LIA message. Only
+                        # fires when there ARE approved candidates AND a vacancy —
+                        # otherwise no offer (honest, never a fake pending).
+                        if _completed_plan.detected_pattern == "buscar_pontuar_e_adicionar":
+                            try:
+                                from app.orchestrator.routing.pe_add_to_vacancy_continuation import (
+                                    build_add_offer_message,
+                                    store_add_offer,
+                                )
+
+                                _approved_ids = (
+                                    _completed_plan.get_context("task_1.approved_candidate_ids")
+                                    or []
+                                )
+                                _add_job_id = _completed_plan.get_context("task_1.job_id")
+                                _offer = store_add_offer(
+                                    conv_id,
+                                    str(_pe_company_id) if _pe_company_id else None,
+                                    _add_job_id,
+                                    _approved_ids,
+                                )
+                                if _offer is not None:
+                                    _plan_text = _plan_text + build_add_offer_message(
+                                        len(_offer.collected_params["approved_candidate_ids"])
+                                    )
+                            except Exception as _offer_exc:
+                                logger.warning(
+                                    "[LIA-P&E] add-to-vacancy offer skipped: %s",
+                                    _offer_exc,
+                                )
 
                         if conv and not ctx.skip_memory_persist:
                             try:
@@ -1501,6 +1554,135 @@ class MainOrchestrator:
         )
 
     # ------------------------------------------------------------------
+    # Phase 0-pre — P&E add-to-vacancy continuity (Task #1227)
+    # ------------------------------------------------------------------
+
+    async def _handle_pe_add_to_vacancy_continuation(
+        self, ctx: UniversalContext, conv_id: str, db: Any, conv: Any = None
+    ) -> ChatResponse | None:
+        """Handle the recruiter's reply to the "add approved to vacancy" OFFER.
+
+        Only fires when a ``pe_add_to_vacancy`` continuation is parked AND
+        awaiting confirmation (set by Phase 1.3 after scoring). Classifies the
+        free-text PT-BR reply:
+          • ``no``  → acknowledge, drop the offer;
+          • ``ambiguous`` → re-ask, keep it pending;
+          • ``yes`` → execute ``cv_screening.add_approved_to_vacancy`` via the
+            canonical Plan & Execute path (real domain registry — no fake
+            success), scoped to the parked ``job_id`` + approved ids.
+
+        INVIOLABLE (#1211): never creates a job — only adds existing candidates
+        to the existing vacancy.
+        """
+        from app.orchestrator.routing.confirmation_classifier import (
+            classify_confirmation,
+        )
+        from app.orchestrator.routing.pe_add_to_vacancy_continuation import (
+            clear_add_continuation,
+            get_add_continuation,
+        )
+
+        state = get_add_continuation(conv_id)
+        if state is None or not state.awaiting_confirmation:
+            return None
+
+        decision = classify_confirmation(ctx.message)
+        logger.info(
+            "[LIA-P&E] add-to-vacancy offer reply classified=%s conv=%s",
+            decision, conv_id,
+        )
+
+        def _finish(content: str, *, intent: str, executed: bool,
+                    structured: dict[str, Any] | None = None) -> ChatResponse:
+            if conv and not ctx.skip_memory_persist:
+                try:
+                    import asyncio as _aio
+                    _aio.ensure_future(
+                        self._persist_response(
+                            ctx, conv_id, conv, {"response": content}, db
+                        )
+                    )
+                except Exception as _pexc:
+                    logger.debug("[LIA-P&E] add continuation persist skipped: %s", _pexc)
+            return ChatResponse(
+                success=True,
+                content=content,
+                agent_used="pe_add_to_vacancy_continuation",
+                confidence=0.95,
+                intent_detected=intent,
+                conversation_id=conv_id,
+                action_executed=executed,
+                structured_data=structured,
+            )
+
+        if decision == "ambiguous":
+            return _finish(
+                "Só pra confirmar: quer que eu adicione os aprovados à vaga agora? "
+                "Responda *sim* ou *agora não*.",
+                intent="add_to_vacancy_clarify",
+                executed=False,
+            )
+
+        if decision == "no":
+            clear_add_continuation(conv_id)
+            return _finish(
+                "Combinado — não vou adicionar ninguém por enquanto. "
+                "Quando quiser, é só me avisar.",
+                intent="add_to_vacancy_declined",
+                executed=False,
+            )
+
+        # decision == "yes" — consume the offer and execute the real add.
+        params = dict(state.collected_params or {})
+        job_id = params.get("job_id")
+        approved_ids = list(params.get("approved_candidate_ids") or [])
+        clear_add_continuation(conv_id)
+
+        from app.domains.registry import DomainRegistry
+        from app.domains.workflow import DomainWorkflow
+        from app.shared.execution.execution_plan import AgentTask, ExecutionPlan
+        from app.shared.execution.plan_executor import PlanExecutor
+
+        _plan = ExecutionPlan(plan_id=f"add_to_vacancy_{conv_id}")
+        _plan.detected_pattern = "pe_add_to_vacancy"
+        _plan.add_task(
+            AgentTask(
+                task_id="task_0",
+                domain_id="cv_screening",
+                action_id="add_approved_to_vacancy",
+                params={"job_id": job_id, "approved_candidate_ids": approved_ids},
+            )
+        )
+        _company_id = getattr(ctx, "company_id", None)
+        _executor = PlanExecutor(
+            domain_registry=DomainRegistry(),
+            domain_workflow=DomainWorkflow(),
+        )
+        _completed = await _executor.execute(
+            _plan,
+            user_id=str(getattr(ctx, "user_id", "system") or "system"),
+            session_id=conv_id or "",
+            tenant_id=str(_company_id) if _company_id else None,
+            base_context={"job_id": job_id, "approved_candidate_ids": approved_ids},
+        )
+        _domain_resp = _executor.build_consolidated_response(_completed)
+        logger.info(
+            "[LIA-P&E] add-to-vacancy executed job_id=%s count=%d status=%s",
+            job_id, len(approved_ids), _completed.status.value,
+        )
+        return _finish(
+            _domain_resp.message,
+            intent="add_to_vacancy_executed",
+            executed=_domain_resp.success,
+            structured={
+                "plan_id": _completed.plan_id,
+                "pattern": _completed.detected_pattern,
+                "status": _completed.status.value,
+                "job_id": job_id,
+            },
+        )
+
+    # ------------------------------------------------------------------
     # Phase 0 — PendingAction
     # ------------------------------------------------------------------
 
@@ -1515,10 +1697,15 @@ class MainOrchestrator:
         # _handle_post_wizard_continuation (runs BEFORE this phase). Skip them
         # here so Phase 0 never mistakes a parked continuation for a
         # param-collection / confirmation flow and hijacks the wizard turns.
+        # Task #1227: same for the P&E add-to-vacancy continuation, owned by
+        # _handle_pe_add_to_vacancy_continuation (also runs BEFORE this phase).
         from app.orchestrator.routing.post_wizard_continuation import (
             CONTINUATION_INTENT,
         )
-        if pending.intent == CONTINUATION_INTENT:
+        from app.orchestrator.routing.pe_add_to_vacancy_continuation import (
+            ADD_CONTINUATION_INTENT,
+        )
+        if pending.intent in (CONTINUATION_INTENT, ADD_CONTINUATION_INTENT):
             return None
 
         candidates = ctx.candidates or []

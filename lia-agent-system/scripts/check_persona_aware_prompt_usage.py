@@ -36,6 +36,12 @@ CANONICAL_CALLERS = [
     "app/api/v1/interview_notes.py",
     "app/api/v1/lia_profile_analysis.py",
     "app/api/v1/candidate_search/misc_search.py",
+    # 2026-06-02: orquestradores (caminho DEFAULT do chat). Fix anterior
+    # (8b3ef6f44, 2026-05-24) cobriu 7 callers REST mas omitiu os 3 orquestradores
+    # que montam o system prompt da conversa principal.
+    "app/orchestrator/execution/main_orchestrator.py",
+    "app/orchestrator/services/fallback_react_service.py",
+    "app/orchestrator/legacy/orchestrator.py",
 ]
 
 # Exemptions — pattern próprio canonical já wired.

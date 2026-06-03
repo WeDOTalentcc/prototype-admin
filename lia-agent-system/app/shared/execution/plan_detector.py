@@ -156,6 +156,24 @@ PLAN_PATTERNS: list[PlanPattern] = [
         ],
         description="Buscar candidatos e triar automaticamente",
     ),
+    PlanPattern(
+        # Task #1227 — Buscar, pontuar (BARS dry-run) e propor adicionar os
+        # aprovados à vaga. "pontu" é o discriminante (não colide com
+        # comparar/triar/avaliar). A adição final é gated por confirmação PT-BR
+        # (pe_add_to_vacancy_continuation), por isso NÃO entra no pipeline aqui.
+        name="buscar_pontuar_e_adicionar",
+        patterns=[
+            r"bus[cq]\w*\s+.*\s+e\s+pontu",
+            r"encontr\w*\s+.*\s+e\s+pontu",
+            r"pesquis\w*\s+.*\s+e\s+pontu",
+            r"pontu\w*\s+.*\s+e\s+adicion",
+        ],
+        pipeline=[
+            PipelineStep(domain_id="sourcing", action_id="search_candidates"),
+            PipelineStep(domain_id="cv_screening", action_id="score_candidates", context_from="task_0.candidates"),
+        ],
+        description="Buscar candidatos, pontuar (BARS) e propor adicionar os aprovados à vaga",
+    ),
     # NOTE (Task #1222): the former "relatorio_e_exportar" pattern was removed
     # (see "filtrar_e_reportar" note above) — relatórios não são P&E one-shot.
     PlanPattern(
