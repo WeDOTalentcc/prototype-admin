@@ -987,6 +987,15 @@ company_id: str = Depends(require_company_id)):
                     )
 
                     _plan_task_id = f"plan-{session_id[:8]}"
+                    # Fase 0 (2026-06-03): canonical plan_progress status/progress.
+                    # PlanExecutor emits plan_started/step_*/plan_completed; the old
+                    # inline check compared against plan_complete/plan_error (names
+                    # never emitted) so status stuck on "running" and progress on 0.
+                    from app.shared.execution.plan_progress_mapper import (
+                        map_plan_event,
+                        new_plan_progress_state,
+                    )
+                    _plan_progress_state = new_plan_progress_state()
 
                     async def _ws_plan_progress(event_type: str, data: dict) -> None:
                         try:
@@ -995,16 +1004,15 @@ company_id: str = Depends(require_company_id)):
                                 "event": event_type,
                                 **data,
                             })
-                            _progress = data.get("progress", 0)
-                            _label = data.get("label", _detected_plan.detected_pattern or "Plano multi-step")
-                            _status = "completed" if event_type == "plan_complete" else ("failed" if event_type == "plan_error" else "running")
+                            _frame = map_plan_event(event_type, data, _plan_progress_state)
+                            _label = data.get("label") or _detected_plan.detected_pattern or "Plano multi-step"
                             await send_background_task_update(
                                 session_id=session_id,
                                 task_id=_plan_task_id,
                                 task_type="analysis",
                                 label=_label,
-                                status=_status,
-                                progress=_progress,
+                                status=_frame["status"],
+                                progress=_frame["progress"],
                                 message=data.get("message", ""),
                             )
                         except Exception:

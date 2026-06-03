@@ -29,6 +29,7 @@ from .completion import _trigger_post_completion
 from .scoring import _calculate_final_score, _score_response_deterministic
 from .voice import _generate_tts_audio
 from .wsi_blocks import _load_or_generate_blocks
+from . import eligibility_phase
 
 logger = logging.getLogger(__name__)
 
@@ -201,6 +202,11 @@ async def create_session(
         "show_salary": show_salary,
         "show_benefits": show_benefits,
     }
+    elig_state = eligibility_phase.build_eligibility_state(
+        getattr(job, "eligibility_questions", None) or []
+    )
+    if elig_state:
+        session_meta["eligibility"] = elig_state
     if not qs_id and not qs_version:
         session_meta["question_source"] = "fallback"
     else:
@@ -266,9 +272,19 @@ async def start_session(db: AsyncSession, token: str, voice_mode: bool | None = 
     use_voice = voice_mode if voice_mode is not None else session.voice_mode
 
     active_blocks = _get_session_blocks(session)
-    first_block = active_blocks[0]
-    first_question = first_block["questions"][0]
-    transition = f"Vamos começar pela etapa de **{first_block['name']}**.\n\n{first_question}"
+    _elig = (session.metadata_json or {}).get("eligibility") or {}
+    if eligibility_phase.is_active(_elig):
+        _eq = eligibility_phase.current_question_text(_elig)
+        transition = (
+            "Antes de comecarmos, preciso confirmar alguns requisitos da vaga.\n\n"
+            f"{_eq}"
+        )
+        _first_qid = "eligibility_0"
+    else:
+        first_block = active_blocks[0]
+        first_question = first_block["questions"][0]
+        transition = f"Vamos comecar pela etapa de **{first_block['name']}**.\n\n{first_question}"
+        _first_qid = "block_0_q_0"
 
     audio_b64 = None
     if use_voice:
@@ -280,7 +296,7 @@ async def start_session(db: AsyncSession, token: str, voice_mode: bool | None = 
         content=transition,
         message_type="question",
         wsi_block=0,
-        wsi_question_id="block_0_q_0",
+        wsi_question_id=_first_qid,
         audio_base64=audio_b64,
     )
     db.add(lia_msg)
