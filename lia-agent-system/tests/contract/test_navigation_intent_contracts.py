@@ -110,8 +110,12 @@ class TestNavigationIntentDetector:
         assert result.confidence >= 0.65
 
     def test_detect_candidatos_keywords(self):
+        # CR-3 (2026-06-03): "listar candidatos" agora e data-read veto
+        # (agente global federado responde inline) -- ver
+        # test_navigation_intent_yields_to_data_query.py. Navegacao genuina
+        # de candidatos usa "ver/mostrar", que continua deflectando pro Funil.
         from app.orchestrator.context.navigation_intent import detect_navigation_intent
-        result = detect_navigation_intent("listar candidatos disponíveis")
+        result = detect_navigation_intent("ver os candidatos disponíveis")
         assert result.page in ("Funil de Talentos",)
         assert result.confidence >= 0.65
 

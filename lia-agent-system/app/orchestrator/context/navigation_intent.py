@@ -126,6 +126,29 @@ _WIZARD_CREATION_KEYWORDS = re.compile(
     re.IGNORECASE,
 )
 
+# CR-3 fix (2026-06-03) -- data-read query veto.
+#
+# Quando user pede pra LER/CONSULTAR dados (resumir/listar/"quais sao minhas
+# vagas|candidatos"), o agente global federado deve CONSULTAR e responder
+# inline (tem list_jobs/list_candidates). NAO deflectar pra navegacao.
+# Leitura de dados tem precedencia sobre sugestao de navegacao.
+#
+# Bug historico: transcript Paulo 2026-06-03 -- "resuma minhas vagas" e
+# "voce consegue listar as vagas que tenho?" eram deflectadas pra page=Vagas
+# (conf 0.84/0.63) em vez de listar as vagas reais.
+#
+# NAO confundir com navegacao genuina (ver/mostrar pagina, me leva pra) --
+# essas continuam deflectando (BUG-18). So verbos de LEITURA vetam.
+#
+# Sensor: tests/contract/test_navigation_intent_yields_to_data_query.py
+_DATA_READ_KEYWORDS = re.compile(
+    r"(?:^|\b)(resum[ae]|resumir|resumo|list[ae]r?|"
+    r"quais\b.*\b(?:vagas?|candidatos?|posi[çc][õo]es|"
+    r"requisi[çc][õo]es|talentos?))",
+    re.IGNORECASE,
+)
+
+
 _PATTERNS: list[tuple[list[tuple[str, float]], str, str]] = [
     # ([(keyword, weight), ...], page_name, hint_text)
     # weight: 1.0 = strong action phrase, 0.3 = generic/ambiguous word
@@ -225,6 +248,21 @@ class NavigationIntentDetector:
             return NavigationIntentResult(
                 page=None, confidence=0.0, hint=None,
                 matched_pattern="cr2_wizard_creation_veto",
+            )
+
+        # CR-3 fix (2026-06-03) -- data-read query veto. Quando user pede
+        # pra LER/CONSULTAR dados (resumir/listar/quais sao minhas vagas|
+        # candidatos), o agente global federado consulta e responde inline.
+        # NAO deflectar pra navegacao (leitura tem precedencia).
+        if _DATA_READ_KEYWORDS.search(text):
+            logger.info(
+                "[NavigationIntent] CR-3 veto: data-read keyword detected in "
+                "%r -- yielding to federated agent (no deflection)",
+                text[:80],
+            )
+            return NavigationIntentResult(
+                page=None, confidence=0.0, hint=None,
+                matched_pattern="cr3_data_read_veto",
             )
 
         # BUG-18: imperativos de navegação ("me leva pra vagas", "abra a página X",
