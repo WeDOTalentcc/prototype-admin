@@ -947,7 +947,7 @@ async def _wrap_get_company_completion(**kwargs: Any) -> dict[str, Any]:
 
     sections_status = {
         "institutional": {"label": "Dados Institucionais", "filled": 0, "total": 8},
-        "culture": {"label": "Cultura & EVP", "filled": 0, "total": 10},
+        "culture": {"label": "Cultura & EVP", "filled": 0, "total": 13},
         "tech_stack": {"label": "Tech Stack", "filled": 0, "total": 3},
         "benefits": {"label": "Beneficios", "filled": 0, "total": 1},
         "seniority": {"label": "Niveis & Remuneracao", "filled": 0, "total": 3},
@@ -959,8 +959,11 @@ async def _wrap_get_company_completion(**kwargs: Any) -> dict[str, Any]:
     sections_status["institutional"]["filled"] = sum(1 for f in inst_fields if profile.get(f))
 
     culture = data.get("culture", {})
+    # P1-10 (auditoria Configuracoes): incluir os 3 campos preenchiveis na UI de
+    # Cultura que nao eram contados (usuario preenchia e o % de completude nao subia).
     culture_fields = ["mission", "vision", "values", "core_competencies", "evp_bullets",
-                      "work_model", "employment_types", "team_dynamics", "leadership_style", "dei_initiatives"]
+                      "work_model", "employment_types", "team_dynamics", "leadership_style", "dei_initiatives",
+                      "sustainability", "social_impact", "growth_opportunities"]
     sections_status["culture"]["filled"] = sum(1 for f in culture_fields if culture.get(f))
 
     tech_fields = ["tech_stack", "engineering_culture", "default_languages"]
