@@ -223,6 +223,14 @@ class AutomationScheduler:
             )
             
             self.scheduler.add_job(
+                self.run_proactive_alerts,
+                IntervalTrigger(hours=1),
+                id="proactive_alerts",
+                name="Proactive threshold alerts per company (P0-3)",
+                replace_existing=True
+            )
+
+            self.scheduler.add_job(
                 self.run_learning_automation,
                 IntervalTrigger(hours=6),
                 id="learning_automation",
@@ -852,6 +860,46 @@ Equipe de Recrutamento
         except Exception as e:
             logger.error(f"❌ [Scheduler] Error in pipeline_monitor: {e}")
     
+    async def run_proactive_alerts(self):
+        """P0-3 (auditoria Configuracoes): dispara ProactiveAlertService autonomamente.
+
+        Antes os 15 tipos de alerta configuraveis so rodavam se o recrutador
+        digitasse no chat. Agora roda 1x/hora para 1 admin representativo de cada
+        empresa (cooldown por-usuario em _can_send_alert evita spam entre runs).
+        """
+        logger.info("[Scheduler] Running proactive_alerts job")
+        try:
+            from sqlalchemy import func
+            from app.auth.models import User, UserRole
+            from app.domains.automation.services.proactive_alert_service import (
+                proactive_alert_service,
+            )
+            async with async_session_factory() as db:
+                # TENANT-EXEMPT: cron system-wide; check_all_conditions reaplica company_id por tenant
+                result = await db.execute(
+                    select(User.company_id, func.min(User.id))
+                    .where(
+                        User.role == UserRole.admin,
+                        User.is_active.is_(True),
+                        User.company_id.isnot(None),
+                    )
+                    .group_by(User.company_id)
+                )
+                pairs = result.all()
+                logger.info(f"[Scheduler] proactive_alerts: {len(pairs)} empresas")
+                for company_id, user_id in pairs:
+                    try:
+                        await proactive_alert_service.check_all_conditions(
+                            user_id=str(user_id),
+                            company_id=str(company_id),
+                            db=db,
+                        )
+                    except Exception as e:
+                        await db.rollback()
+                        logger.error(f"[Scheduler] proactive_alerts company={company_id} falhou: {e}")
+        except Exception as e:
+            logger.error(f"[Scheduler] Error in proactive_alerts: {e}")
+
     async def run_learning_automation(self):
         """Run learning automation: pattern detection and skill promotion for all companies."""
         logger.info("🔍 [Scheduler] Running learning_automation job")

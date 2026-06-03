@@ -384,6 +384,7 @@ def _ensure_agents_loaded() -> None:
         from app.domains.recruiter_assistant.agents.talent_funnel_react_agent import TalentFunnelReActAgent  # noqa: F401
         from app.domains.recruiter_assistant.agents.kanban_react_agent import KanbanReActAgent  # noqa: F401
         from app.domains.recruiter_assistant.agents.jobs_mgmt_react_agent import JobsManagementReActAgent  # noqa: F401
+        from app.domains.recruiter_assistant.agents.recruiter_copilot_react_agent import RecruiterCopilotReActAgent  # noqa: F401  # chat global federado
         from app.domains.hiring_policy.agents.policy_react_agent import PolicyReActAgent  # noqa: F401
         from app.domains.pipeline.agents.pipeline_transition_agent import PipelineTransitionAgent  # noqa: F401
         from app.domains.analytics.agents.analytics_react_agent import AnalyticsReActAgent  # noqa: F401

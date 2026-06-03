@@ -18,8 +18,8 @@ branches como dois ambientes ao vivo. Por isso são necessários **dois Repls**:
 
 | Repl | Papel | Branch que segue | Domínio (fase posterior) |
 |---|---|---|---|
-| **Este Repl** | desenvolvimento / testes (workspace sempre mais novo; publicado = ambiente de testes) | `develop` | `dev.prototype.wedotalent.cc` |
-| **Repl forkado** | "produção" / consumo dos devs | `main` | `demo.prototype.wedotalent.cc` |
+| **Este Repl** | desenvolvimento / testes (workspace sempre mais novo; publicado = ambiente de testes) | `develop` | `demo.prototype.wedotalent.cc` |
+| **Repl forkado** | "produção" / consumo dos devs (código na versão final) | `main` | `dev.prototype.wedotalent.cc` |
 
 **Princípio central:** existe **um único código-fonte vivendo no GitHub**
 (`WeDOTalentcc/prototype`), com duas branches. O que fica sincronizado é o
@@ -218,15 +218,16 @@ Resposta (exemplo, valores ilustrativos):
 ## 6. (Fase posterior) Domínios customizados
 
 Depois de confirmar o mapeamento com o time:
-1. Anexe `dev.prototype.wedotalent.cc` ao Repl de **dev** e
-   `demo.prototype.wedotalent.cc` ao Repl de **produção** (Publishing → Custom
-   domain), e configure o DNS.
+1. Anexe `demo.prototype.wedotalent.cc` ao Repl de **dev/testes** (`develop`) e
+   `dev.prototype.wedotalent.cc` ao Repl de **produção/consumo** (`main`)
+   (Publishing → Custom domain), e configure o DNS.
 2. Acrescente cada novo domínio ao `CORS_ORIGINS` e aos *redirects/callbacks* do
    WorkOS do ambiente correspondente.
 3. Revalide o login em cada domínio.
 
-> **Decisão a confirmar:** `dev.prototype` → `develop` e `demo.prototype` →
-> `main`, ou invertido? É só etiqueta de endereço — não muda código.
+> **Mapeamento confirmado pelo time:** `dev.prototype` → `main` (ambiente do
+> time de devs, código na versão final) e `demo.prototype` → `develop` (ambiente
+> de testes). É só etiqueta de endereço — não muda código.
 
 ---
 

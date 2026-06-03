@@ -622,7 +622,9 @@ class DomainWorkflow:
         "job_management": ["wizard", "jobs_management"],
         "cv_screening": ["pipeline"],
         "hiring_policy": ["policy"],
-        "recruiter_assistant": ["talent", "kanban"],
+        # CR (2026-06-03): chat global federado (vagas+candidatos+pipeline)
+        # -- fix "chat cego" (recruiter_copilot tem list_jobs+list_candidates).
+        "recruiter_assistant": ["recruiter_copilot"],
         "sourcing": ["sourcing"],
         "communication": ["communication"],
         "analytics": ["analytics"],
