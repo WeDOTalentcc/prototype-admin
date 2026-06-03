@@ -31,6 +31,9 @@ export type StreamingEventType =
   | 'clarification'
   | 'panel_update'
   | 'background_task_update'
+  | 'tool_started'
+  | 'tool_finished'
+  | 'reasoning_step'
 
 export type StreamingEvent = TransportEvent & {
   type: StreamingEventType

@@ -135,5 +135,6 @@ intake_gate:
   proceeding: "Ótimo! Processando a criação de **{title}**..."
   off_topic_redirect: "Para avançar, é só confirmar que posso criar a vaga (ex: \"pode criar\", \"sim\" ou \"pode avançar\"). Quer algum ajuste antes?"
   salary_with_mode: "Para **{title}** ({seniority}, {model}), o mercado pratica em torno de **{min}\u2013{max}/mês**.\n\nComo prefere a triagem?\n\u2022 **Compacto** \u2014 {compact_q} perguntas (~{compact_min} min)\n\u2022 **Completo** \u2014 {full_q} perguntas (~{full_min} min)\n\nMe confirma o modo e posso criar!"
+  salary_estimate_with_mode: "Para **{title}** ({seniority}, {model}), uma estimativa de referência (não-verificada, sem fonte externa confirmada) seria em torno de **{min}\u2013{max}/mês** — vale validar com sua pesquisa.\n\nComo prefere a triagem?\n\u2022 **Compacto** \u2014 {compact_q} perguntas (~{compact_min} min)\n\u2022 **Completo** \u2014 {full_q} perguntas (~{full_min} min)\n\nMe confirma o modo e posso criar!"
   salary_fallback_with_mode: "Para **{title}** ({seniority}), não tenho dados de mercado disponíveis.\n\nComo prefere a triagem?\n\u2022 **Compacto** \u2014 {compact_q} perguntas (~{compact_min} min)\n\u2022 **Completo** \u2014 {full_q} perguntas (~{full_min} min)\n\nMe confirma o modo e posso criar!"
   proceeding_with_mode: "Modo **{mode_label}** registrado. Criando **{title}**..."

@@ -344,8 +344,16 @@ def _build_permission_message(
         def _fmt(v: float) -> str:
             return f"R$ {v:,.0f}".replace(",", ".")
 
+        # Audit 2026-06-03: proveniência honesta na frase do salário. Quando o
+        # benchmark é estimativa não-verificada (sem busca real → is_estimate),
+        # NÃO afirmar "o mercado pratica" — rotular como estimativa de referência.
+        _sal_msg_key = (
+            "intake_gate.salary_estimate_with_mode"
+            if benchmark.get("is_estimate")
+            else "intake_gate.salary_with_mode"
+        )
         salary_part = msg(
-            "intake_gate.salary_with_mode",
+            _sal_msg_key,
             title=title_str,
             seniority=seniority_str,
             model=model_str,

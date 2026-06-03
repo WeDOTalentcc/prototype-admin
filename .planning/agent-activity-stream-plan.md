@@ -42,7 +42,7 @@ atrás de flag.
 - Sensor: `tests/contract/test_plan_progress_contract.py` (6 testes, verde). Pina nomes
   produtor↔mapper + regressão dos nomes buggados.
 
-### Fase 1 — Eventos de tool-call (fundação, baixo risco)
+### Fase 1 — Eventos de tool-call  ✅ FEITA (2026-06-03)
 - Estender `StreamingCallback` (libs/agents-core/lia_agents_core/streaming_callback.py):
   `on_tool_start`→`tool_started`, `on_tool_end`→`tool_finished`, `on_tool_error`,
   `on_agent_action`/`on_chain_start`→`reasoning_step`.

@@ -184,6 +184,9 @@ export function useChatSocket({
       "plan_progress",
       "panel_update",
       "background_task_update",
+      "tool_started",
+      "tool_finished",
+      "reasoning_step",
     ]);
     if (RESPONSE_RELEVANT_EVENTS.has(event.type)) {
       wsEventTickRef.current += 1;
@@ -347,6 +350,31 @@ export function useChatSocket({
           }
           return [...prev, taskUpdate];
         });
+        break;
+      }
+
+      case "tool_started":
+      case "tool_finished":
+      case "reasoning_step": {
+        // Fase 1 (2026-06-03): live agent activity. Push a readable line into
+        // the existing thinking surface AND dispatch a decoupled window event
+        // (`lia:agent-activity`) that the Fase 3 timeline component subscribes
+        // to. Mirrors the wizard_stage / hitl:* window-event idiom.
+        const actEvent = event as unknown as Record<string, unknown>;
+        setIsThinking(true);
+        const _name = (actEvent.name as string) || "ferramenta";
+        const label =
+          event.type === "reasoning_step"
+            ? (actEvent.label as string) || "Raciocinando\u2026"
+            : event.type === "tool_started"
+              ? `\ud83d\udd27 ${_name}\u2026`
+              : `\u2713 ${_name}`;
+        setThinkingSteps((prev) => [...prev, label]);
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(
+            new CustomEvent("lia:agent-activity", { detail: { ...actEvent } }),
+          );
+        }
         break;
       }
 
