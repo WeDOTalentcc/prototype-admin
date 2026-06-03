@@ -14,11 +14,12 @@ import { ChatBubbleBase } from "@/components/chat/chat-bubble-base"
 import { HITLConfirmCard } from "@/components/lia-float/HITLConfirmCard"
 import { MessageFeedback } from "@/components/chat/message-feedback"
 import { PlanProgressCard, type ExecutionPlanData } from "@/components/chat/plan-progress-card"
+import { AgentActivityTimeline } from "@/components/unified-chat/AgentActivityTimeline"
+import { AgentActivitySummary } from "@/components/unified-chat/AgentActivitySummary"
 import { LIAIcon } from "@/components/ui/lia-icon"
 import { type FloatMessage } from "@/hooks/chat/use-float-conversation"
 import { cleanAgentResponse, parseChatMarkdown, escapeHtml } from "@/lib/chat-format"
 import { sanitizeHtml } from "@/lib/sanitize"
-import { ThinkingDots } from "@/components/ui/thinking-dots"
 import { QuickReplies, type QuickReplyPreset } from "@/components/onboarding/QuickReplies"
 
 export interface LiaChatMessageListProps {
@@ -218,20 +219,9 @@ function EmptyState({ scope, contextPage, onChipClick }: { scope: string; contex
 }
 
 function ThinkingIndicator() {
-  return (
-    <ChatBubbleBase
-      sender="lia"
-      hideTimestamp
-      hideLabel
-    >
-      <div className="flex items-center gap-1.5 mb-0.5">
-        <span className="text-xs font-semibold text-lia-text-primary font-['Inter',sans-serif]">LIA</span>
-      </div>
-      <span className="flex gap-1 items-center h-5">
-        <ThinkingDots dotClassName="bg-wedo-cyan" size="md" />
-      </span>
-    </ChatBubbleBase>
-  )
+  // 2026-06-03: timeline de atividade ao vivo (window event lia:agent-activity).
+  // Cai pro ThinkingStepsCard quando ainda não há atividade estruturada.
+  return <AgentActivityTimeline fallbackSteps={[]} />
 }
 
 function RichContent({ html, className }: { html: string; className?: string }) {
@@ -296,6 +286,18 @@ function MessageBubble({ msg, conversationId, onQuickReply }: { msg: FloatMessag
       {!isUser && msg.executionPlan && (
         <PlanProgressCard plan={msg.executionPlan as unknown as ExecutionPlanData} />
       )}
+      {!isUser &&
+        Array.isArray(
+          (msg.metadata as Record<string, unknown> | undefined)?.agent_activity,
+        ) &&
+        ((msg.metadata as Record<string, unknown>).agent_activity as unknown[])
+          .length > 0 && (
+          <AgentActivitySummary
+            items={
+              (msg.metadata as Record<string, unknown>).agent_activity as never
+            }
+          />
+        )}
       {/* Sprint B.6 (P2-2): renderiza quick replies inline quando backend
           marca a mensagem com metadata.quick_reply_preset. Só pra LIA. */}
       {!isUser && quickReplyPreset && (

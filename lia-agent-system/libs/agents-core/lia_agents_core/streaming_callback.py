@@ -242,6 +242,8 @@ class StreamingCallback(BaseCallbackHandler):
         return text[:limit] + ("\u2026" if len(text) > limit else "")
 
     def _schedule_send(self, data: Dict[str, Any]) -> None:
+        logger.info("[ACT-DBG] schedule type=%s session=%s",
+                    (data or {}).get("type"), self.session_id)  # TEMP-DEBUG remover
         """
         Agenda envio do payload ao WebSocket no event loop correto.
 
@@ -269,6 +271,8 @@ class StreamingCallback(BaseCallbackHandler):
         try:
             from app.api.v1.ws_manager import ws_manager
             await ws_manager.send_to_session(self.session_id, data)
+            logger.info("[ACT-DBG] sent OK type=%s session=%s",
+                        (data or {}).get("type"), self.session_id)  # TEMP-DEBUG remover
         except Exception as exc:
             logger.debug(
                 "[StreamingCallback] send error session=%s: %s", self.session_id, exc
