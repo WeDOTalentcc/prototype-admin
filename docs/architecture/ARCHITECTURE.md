@@ -553,6 +553,21 @@ plataforma-lia/
 
 ---
 
+### 6.6 Roteamento context-aware (T-1165)
+
+`useNavigationIntent` (`plataforma-lia/src/hooks/shared/use-navigation-intent.ts`) é o único caller que decide se `lia:navigation-hint` deve ser disparado, via helper puro `resolveNavigationIntentMode(raw, pathname)`:
+
+- (a) já em `/chat` + alvo em `CHAT_FIRST_TARGET_PAGES` (atualmente só `"Vagas"`) → `page=null` (supressão, fluxo segue no chat);
+- (b) outra rota → `mode="ask"`.
+
+`UnifiedChat.tsx` forwarda `result.mode` no `detail` do CustomEvent; `DashboardApp` ramifica em `detail.mode === "ask"`, posta uma mensagem da LIA no chat propondo a transição, e classifica a resposta livre PT-BR do recrutador via `classifyNavConfirmation` (positivos "sim/vamos/pode/bora/claro/ok/manda/fechou/...", negativos "não/agora não/depois/deixa pra lá/cancela/...", com negativos tendo precedência sobre tokens positivos como "pode" em "pode esperar"). Só `yes` dispara `router.push`; `no` posta ack ("Combinado — seguimos por aqui."); ambíguo deixa a proposta pendente até a próxima mensagem.
+
+`useWizardFlow` emite o mesmo hint `{page:"Vagas", mode:"ask", hint:"wizard:<stage>"}` quando `currentStage` transita para uma `SPLIT_STAGE` (review/publish/calibration/handoff/done/scheduling); transições dentro do mesmo stage não re-emitem (guard via `useRef`). Callers legacy (`useProactiveActionRouter`, `TourController`, `DonePanel`, `BibliotecaLiaRouteClient`, `NavigationHintCard`) que não setam `mode` continuam no caminho `navigate` direto.
+
+**Sentinelas:** `src/hooks/__tests__/use-navigation-intent.context.test.ts` (5 cenários do helper puro) + `src/components/__tests__/classify-nav-confirmation.test.ts` (positivos/negativos/ambíguos exaustivo) + E2E `e2e/tests/wizard/20-roteamento-split-view-coerente.spec.ts` (3 cenários: A=intent em /chat não empurra; B=ask + "pode ir" → push; B'=ask + "agora não" → ack).
+
+---
+
 ## 7. Chat & Conversation Layer
 
 ### 7.1 Visão geral
