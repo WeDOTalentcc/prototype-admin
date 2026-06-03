@@ -637,6 +637,40 @@ class NotificationService:
                             logger.info(f"📧 Email notification sent to {recipient_email}")
                         else:
                             logger.warning(f"No email found for user {user_id}, skipping email channel")
+
+                    elif channel == NotificationChannel.WHATSAPP:
+                        # P0-2 (auditoria Configuracoes): canal WhatsApp de alertas
+                        # internos. User nao possui telefone hoje; envia SO se um
+                        # recipient_phone vier em data. NUNCA ignorar em silencio
+                        # (REGRA 4): loga aviso + marca failed. Future-proof p/ quando
+                        # houver coleta de telefone do recrutador.
+                        recipient_phone = data.get("recipient_phone") if data else None
+                        if recipient_phone:
+                            try:
+                                from app.domains.communication.services.whatsapp_service import (
+                                    WhatsAppService,
+                                )
+                                _wa = WhatsAppService()
+                                await _wa.send_message(
+                                    to_phone=recipient_phone,
+                                    message=f"{title}\n\n{message}",
+                                )
+                                results["sent_to"].append(channel.value)
+                                logger.info(f"WhatsApp alert sent to {recipient_phone}")
+                            except Exception as _wa_exc:
+                                logger.error(f"WhatsApp alert send failed: {_wa_exc}")
+                                results["failed"].append({"channel": channel.value, "error": str(_wa_exc)})
+                        else:
+                            logger.warning(
+                                "WhatsApp alert solicitado mas recrutador sem telefone "
+                                "(User sem campo phone); canal ignorado para user %s. "
+                                "Habilitar exige coleta de telefone do recrutador.",
+                                user_id,
+                            )
+                            results["failed"].append({
+                                "channel": channel.value,
+                                "error": "no recipient_phone (recruiter phone not collected)",
+                            })
                         
                 except Exception as e:
                     logger.error(f"Failed to send to channel {channel}: {e}")
