@@ -64,6 +64,10 @@ const eslintConfig = [...compat.extends("next/core-web-vitals", "next/typescript
       {
         "selector": "JSXAttribute[name.name='className'][value.value=/bg-wedo-apoio/]",
         "message": "[WeDo DS] Token wedo-apoio-* está deprecated. Use tokens lia-* ou status-* equivalentes"
+      },
+      {
+        "selector": "JSXElement[openingElement.name.name='button'] JSXElement[openingElement.name.name='button']",
+        "message": "[a11y/hydration] <button> nao pode conter outro <button> (HTML invalido -> hydration mismatch). Use <div role='button' tabIndex={0} onClick onKeyDown> no container externo, ou mova o botao interno pra fora. Auditoria 2026-06-03 (#7 WsiQuestionsPanel)."
       }
     ],
   },
