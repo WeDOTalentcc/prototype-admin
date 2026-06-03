@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils"
 import { PlanProgressCard, type ExecutionPlanData } from "@/components/chat/plan-progress-card"
 import FlowStepMessage from "@/components/unified-chat/FlowStepMessage"
 import { ThinkingStepsCard } from "./ThinkingStepsCard"
+import { AgentActivityTimeline } from "./AgentActivityTimeline"
 import { OutreachCard } from "./OutreachCard"
 import { WizardPublishedJobCard } from "./wizard/WizardPublishedJobCard"
 import { WizardPipelineTemplateCard } from "./wizard/WizardPipelineTemplateCard"
@@ -493,7 +494,7 @@ export function UnifiedMessageList({
       {/* Live task feed (Manus-style) — steps if available, spinner fallback */}
       {isThinking && !streamingContent && (
         <div className="group">
-          <ThinkingStepsCard steps={thinkingSteps} />
+          <AgentActivityTimeline fallbackSteps={thinkingSteps} />
         </div>
       )}
 

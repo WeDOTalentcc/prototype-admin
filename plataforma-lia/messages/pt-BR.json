@@ -284,6 +284,10 @@
     "redirecting": "Aguarde, carregando seu workspace..."
   },
   "chat": {
+    "agentActivity": {
+      "working": "Trabalhando",
+      "actions": "{count, plural, one {# ação} other {# ações}}"
+    },
     "messageActions": {
       "copyTitle": "Copiar",
       "copyAriaLabel": "Copiar resposta",

@@ -284,6 +284,10 @@
     "redirecting": "Please wait, loading your workspace..."
   },
   "chat": {
+    "agentActivity": {
+      "working": "Working",
+      "actions": "{count, plural, one {# action} other {# actions}}"
+    },
     "messageActions": {
       "copyTitle": "Copy",
       "copyAriaLabel": "Copy response",
