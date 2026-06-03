@@ -92,7 +92,7 @@ class TestCreateCompanyBenefitAuditLog:
                 company_id=COMPANY_ID,
                 db=AsyncMock(),
                 current_user=_make_user(),
-                _company_gate=COMPANY_ID,
+                gated_company_id=COMPANY_ID,
             )
 
         assert mock_audit_instance.log_action.called, (
@@ -137,7 +137,7 @@ class TestCreateCompanyBenefitAuditLog:
                 company_id=COMPANY_ID,
                 db=AsyncMock(),
                 current_user=_make_user(),
-                _company_gate=COMPANY_ID,
+                gated_company_id=COMPANY_ID,
             )
 
         assert result.name == "Gympass", (

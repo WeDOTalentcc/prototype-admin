@@ -89,7 +89,7 @@ async def test_fairness_guard_is_called_on_put_culture_profile():
             data=data,
             repo=repo,
             current_user=current_user,
-            _company_gate=_company_id_str(),
+            tenant_company_id=_company_id_str(),
         )
 
     assert MockFG.called, "T1: FairnessGuard deve ser instanciado no PUT handler"
@@ -128,7 +128,7 @@ async def test_discriminatory_text_raises_422():
                 data=data,
                 repo=repo,
                 current_user=current_user,
-                _company_gate=_company_id_str(),
+                tenant_company_id=_company_id_str(),
             )
 
     assert exc_info.value.status_code == 422, (
@@ -169,7 +169,7 @@ async def test_fairness_guard_exception_does_not_block_save():
             data=data,
             repo=repo,
             current_user=current_user,
-            _company_gate=_company_id_str(),
+            tenant_company_id=_company_id_str(),
         )
 
     assert result is not None, "T3: save deve ocorrer mesmo com FairnessGuard em falha"
@@ -209,7 +209,7 @@ async def test_audit_log_action_called_after_save():
             data=data,
             repo=repo,
             current_user=current_user,
-            _company_gate=_company_id_str(),
+            tenant_company_id=_company_id_str(),
         )
 
     assert MockAS.called, "T4: AuditService deve ser instanciado"
@@ -258,7 +258,7 @@ async def test_audit_failure_does_not_block_save():
             data=data,
             repo=repo,
             current_user=current_user,
-            _company_gate=_company_id_str(),
+            tenant_company_id=_company_id_str(),
         )
 
     assert result is not None, "T5: resultado valido mesmo com audit falhando"
@@ -303,7 +303,7 @@ async def test_clean_text_passes_through():
             data=data,
             repo=repo,
             current_user=current_user,
-            _company_gate=_company_id_str(),
+            tenant_company_id=_company_id_str(),
         )
 
     assert result is not None, "T6: texto limpo deve salvar normalmente"

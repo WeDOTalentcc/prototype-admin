@@ -49,7 +49,6 @@ def _call_options_handler() -> AiPersonaOptionsResponse:
     **não usa** o user/company id — só lê catálogo estático.
     """
     coro = get_ai_persona_options(
-        company_id="00000000-0000-0000-0000-000000000000",
         _user=None,  # type: ignore[arg-type]  # handler ignora; só serve pra forçar JWT
     )
     return asyncio.get_event_loop().run_until_complete(coro)
@@ -76,14 +75,11 @@ def test_options_handler_requires_auth():
     get_current_active_user). Source-level assertion porque setup do
     TestClient com JWT exige mais infra que vale o custo."""
     src = inspect.getsource(get_ai_persona_options)
-    assert "require_company_id" in src, (
-        "get_ai_persona_options perdeu Depends(require_company_id). "
-        "Endpoint exige JWT válido — sem o gate, anônimos veem catálogo "
-        "completo + blocklist de marcas IA terceiras (sinal pra atacante)."
-    )
     assert "get_current_active_user" in src, (
         "get_ai_persona_options perdeu Depends(get_current_active_user). "
-        "Consistência com os outros 2 handlers do mesmo recurso."
+        "Catálogo é tenant-agnóstico (V2.1) mas continua exigindo JWT válido — "
+        "sem o gate, anônimos veem catálogo completo + blocklist de marcas IA "
+        "terceiras (sinal pra atacante)."
     )
 
 
