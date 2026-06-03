@@ -83,9 +83,9 @@ export function JdEnrichmentPanel({ data, requiresApproval, onApprove, onReject 
             </div>
           )}
           {indicators.length > 0 && (
-            <details className="mt-2 group">
+            <details open className="mt-2 group">
               <summary className="text-xs text-lia-text-secondary cursor-pointer select-none hover:text-lia-text-primary">
-                Ver as {indicators.length} dimensões de qualidade (WSI)
+                {indicators.length} dimensões de qualidade (WSI)
               </summary>
               <div className="mt-2 space-y-1">
                 {indicators.map((ind) => {

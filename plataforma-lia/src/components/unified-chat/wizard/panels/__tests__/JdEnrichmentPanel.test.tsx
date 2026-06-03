@@ -93,3 +93,50 @@ describe("JdEnrichmentPanel — canonical idle state (awaiting_jd_input)", () =>
     expect(screen.getByText("Senior Backend Engineer")).toBeInTheDocument()
   })
 })
+
+/**
+ * Audit 2026-06-03 (#5): as 9 dimensões de qualidade (WSI) ficavam escondidas
+ * atrás de <details> sem `open`. Paulo quer o breakdown visível por padrão —
+ * é o conteúdo de valor do painel. Fix de 1 token: <details open>.
+ */
+describe("JdEnrichmentPanel — dimensões de qualidade expandidas (audit #5)", () => {
+  const enrichedWithIndicators = {
+    jd_raw: "Senior Backend Engineer",
+    jd_enriched: {
+      titulo_padronizado: "Senior Backend Engineer",
+      senioridade_confirmada: "Senior",
+      about_role: "Build backend services",
+      responsabilidades: [],
+      skills_obrigatorias: [],
+      skills_desejaveis: [],
+      competencias_comportamentais: [],
+      context_signals: {
+        nivel_autonomia: "alto",
+        nivel_inovacao: "medio",
+        nivel_pressao: "medio",
+        nivel_colaboracao: "medio",
+      },
+      alteracoes_realizadas: [],
+      fairness_corrections: [],
+      wsi_quality_score: 87,
+      wsi_quality_warnings: [],
+    },
+    quality_score: 87,
+    quality_warnings: [],
+    quality_indicators: [
+      { dimension: "clareza", label: "Clareza do papel", weight: 10, earned: 9, status: "sufficient" as const },
+      { dimension: "skills", label: "Skills obrigatorias", weight: 10, earned: 8, status: "partial" as const },
+    ],
+    message: "JD enriquecida.",
+  }
+
+  it("renderiza o breakdown das dimensoes aberto (details[open]) por padrao", () => {
+    const { container } = render(
+      <JdEnrichmentPanel data={enrichedWithIndicators} requiresApproval={true} />,
+    )
+    const details = container.querySelector("details")
+    expect(details).toBeTruthy()
+    expect(details?.hasAttribute("open")).toBe(true)
+    expect(screen.getByText("Clareza do papel")).toBeInTheDocument()
+  })
+})
