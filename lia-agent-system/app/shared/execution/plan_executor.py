@@ -9,6 +9,7 @@ from typing import Any
 
 from app.domains.base import DomainContext, DomainResponse
 from app.shared.execution.agent_handoff import HANDOFF_METADATA_KEY, build_handoff_response
+from app.shared.execution.discrete_actions import ActionContext, get_discrete_handler
 from app.shared.execution.execution_plan import AgentTask, ExecutionPlan, PlanStatus, TaskStatus
 
 logger = logging.getLogger(__name__)
@@ -260,6 +261,58 @@ class PlanExecutor:
         ctx_data["task_id"] = task.task_id
 
         try:
+            # ── Discrete handler path (Task #1226) ───────────────────────────
+            # Some steps map to discrete, one-shot actions (move candidate,
+            # notify team) that MUST run through the compliant services instead
+            # of the lossy keyword-matching DomainWorkflow re-derivation. When a
+            # handler is registered for (domain_id, action_id), execute it
+            # directly and inject its result into the plan context for chaining.
+            discrete_handler = get_discrete_handler(task.domain_id, task.action_id)
+            if discrete_handler is not None:
+                actx = ActionContext(
+                    company_id=ctx_data.get("company_id") or tenant_id,
+                    user_id=user_id,
+                    session_id=session_id,
+                    tenant_id=tenant_id,
+                    raw_query=(
+                        getattr(plan, "original_query", None)
+                        or ctx_data.get("original_query")
+                        or ctx_data.get("query")
+                        or ""
+                    ),
+                    base_context=ctx_data,
+                )
+                try:
+                    response = await asyncio.wait_for(
+                        discrete_handler(resolved_params, actx),
+                        timeout=TASK_TIMEOUT_SECONDS,
+                    )
+                except TimeoutError:
+                    logger.warning(
+                        f"Discrete task {task.task_id} timed out after {TASK_TIMEOUT_SECONDS}s"
+                    )
+                    plan.update_task_result(
+                        task.task_id,
+                        result=None,
+                        success=False,
+                        error=f"Task timed out after {TASK_TIMEOUT_SECONDS}s",
+                    )
+                    return
+
+                plan.update_task_result(
+                    task.task_id,
+                    result=response,
+                    success=response.success,
+                    error=response.error,
+                )
+                if response.success and response.data:
+                    result_data = (
+                        response.data if isinstance(response.data, dict) else {"result": response.data}
+                    )
+                    for key, value in result_data.items():
+                        plan.inject_context(f"{task.task_id}.{key}", value)
+                return
+
             if self._domain_registry and self._domain_workflow:
                 domain = self._domain_registry.get_instance(task.domain_id)
                 if domain:
