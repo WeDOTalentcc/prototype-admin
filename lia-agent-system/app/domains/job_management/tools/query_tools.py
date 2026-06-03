@@ -146,7 +146,6 @@ async def search_jobs(
                 }
                 jobs_list.append(job_data)
             
-            logger.info("[search_jobs DIAG] retornando total=%d company=%s status=%s", len(jobs_list), company_id, status)
             return {
                 "success": True,
                 "message": f"✅ Encontradas {len(jobs_list)} vagas.",
