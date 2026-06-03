@@ -923,21 +923,51 @@ class MainOrchestrator:
                             agent_name="phase15_agentic_loop",
                             company_id_raw=_loop_company_id,
                         )
-                        _phase15_system_prompt = SystemPromptBuilder.build(
-                            agent_type="orchestrator",
-                            tenant_context_snippet=_phase15_tenant_snippet,
-                            user_name=getattr(ctx, "user_name", "") or "",
-                            user_role=getattr(ctx, "user_role", "") or "",
-                            conversation_summary=ctx.extra.get(
-                                "conversation_summary", ""
-                            ) or "",
-                            conversation_history=ctx.extra.get(
-                                "conversation_history"
-                            ),
-                            context_page=getattr(ctx, "context_page", "general")
-                            or "general",
-                            entity_type=getattr(ctx, "entity_type", None),
-                        )
+                        _persona_cid = _loop_company_id
+                        if _persona_cid:
+                            from app.shared.prompts.persona_aware_prompt import (
+                                build_system_prompt_with_persona,
+                            )
+                            from lia_config.database import AsyncSessionLocal
+                            async with AsyncSessionLocal() as _persona_db:
+                                _phase15_system_prompt = (
+                                    await build_system_prompt_with_persona(
+                                        company_id=str(_persona_cid),
+                                        db=_persona_db,
+                                        agent_type="orchestrator",
+                                        tenant_context_snippet=_phase15_tenant_snippet,
+                                        user_name=getattr(ctx, "user_name", "") or "",
+                                        user_role=getattr(ctx, "user_role", "") or "",
+                                        conversation_summary=ctx.extra.get(
+                                            "conversation_summary", ""
+                                        ) or "",
+                                        conversation_history=ctx.extra.get(
+                                            "conversation_history"
+                                        ),
+                                        context_page=getattr(
+                                            ctx, "context_page", "general"
+                                        )
+                                        or "general",
+                                        entity_type=getattr(ctx, "entity_type", None),
+                                    )
+                                )
+                        else:
+                            _phase15_system_prompt = SystemPromptBuilder.build(
+                                ai_persona=None,
+                                agent_type="orchestrator",
+                                tenant_context_snippet=_phase15_tenant_snippet,
+                                user_name=getattr(ctx, "user_name", "") or "",
+                                user_role=getattr(ctx, "user_role", "") or "",
+                                conversation_summary=ctx.extra.get(
+                                    "conversation_summary", ""
+                                ) or "",
+                                conversation_history=ctx.extra.get(
+                                    "conversation_history"
+                                ),
+                                context_page=getattr(ctx, "context_page", "general")
+                                or "general",
+                                entity_type=getattr(ctx, "entity_type", None),
+                            )
                     except Exception as _sp_exc:
                         # Fail-loud in log; agentic loop continues with empty prompt
                         # (no worse than pre-Sprint-1.4 behaviour).

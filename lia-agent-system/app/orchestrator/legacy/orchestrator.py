@@ -453,19 +453,43 @@ class Orchestrator:
                 agent_name="orchestrator_v1",
                 company_id_raw=ctx.get("company_id"),
             )
-            system_prompt = SystemPromptBuilder.build(
-                agent_type="orchestrator",
-                tenant_context_snippet=_tenant_snippet,
-                user_name=ctx.get("user_name", ""),
-                user_role=ctx.get("user_role", ""),
-                conversation_summary=ctx.get("conversation_summary", ""),
-                conversation_history=ctx.get("conversation_history"),
-                context_page=ctx.get("context_page", "general"),
-                entity_type=ctx.get("entity_type"),
-                intent=intent,
-                entities=entities,
-                extra_instructions=extra,
-            )
+            _persona_cid = ctx.get("company_id")
+            if _persona_cid:
+                from app.shared.prompts.persona_aware_prompt import (
+                    build_system_prompt_with_persona,
+                )
+                from lia_config.database import AsyncSessionLocal
+                async with AsyncSessionLocal() as _persona_db:
+                    system_prompt = await build_system_prompt_with_persona(
+                        company_id=str(_persona_cid),
+                        db=_persona_db,
+                        agent_type="orchestrator",
+                        tenant_context_snippet=_tenant_snippet,
+                        user_name=ctx.get("user_name", ""),
+                        user_role=ctx.get("user_role", ""),
+                        conversation_summary=ctx.get("conversation_summary", ""),
+                        conversation_history=ctx.get("conversation_history"),
+                        context_page=ctx.get("context_page", "general"),
+                        entity_type=ctx.get("entity_type"),
+                        intent=intent,
+                        entities=entities,
+                        extra_instructions=extra,
+                    )
+            else:
+                system_prompt = SystemPromptBuilder.build(
+                    ai_persona=None,
+                    agent_type="orchestrator",
+                    tenant_context_snippet=_tenant_snippet,
+                    user_name=ctx.get("user_name", ""),
+                    user_role=ctx.get("user_role", ""),
+                    conversation_summary=ctx.get("conversation_summary", ""),
+                    conversation_history=ctx.get("conversation_history"),
+                    context_page=ctx.get("context_page", "general"),
+                    entity_type=ctx.get("entity_type"),
+                    intent=intent,
+                    entities=entities,
+                    extra_instructions=extra,
+                )
             # LIA-M03: Include conversation history as real message turns
             messages = [("system", system_prompt)]
 

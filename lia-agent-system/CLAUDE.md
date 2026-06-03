@@ -932,11 +932,21 @@ O helper:
 ### Sensor canonical
 
 `scripts/check_persona_aware_prompt_usage.py` — AST checker. Lista
-`CANONICAL_CALLERS` (7 arquivos) — cada uma DEVE só chamar `SystemPromptBuilder.build`
+`CANONICAL_CALLERS` (10 arquivos) — cada uma DEVE só chamar `SystemPromptBuilder.build`
 com `ai_persona=` no kwarg, OU usar o helper canonical. `EXEMPT_CALLERS`
 documenta as 2 exceções pattern-próprio (Agent Studio `custom_agent_runtime.py`,
-voice `voice_system_prompt.py`). Baseline 2026-05-24: **0 violations** em 7
+voice `voice_system_prompt.py`). Baseline 2026-06-02: **0 violations** em 10
 callers canonical.
+
+> **Orquestradores = caminho DEFAULT do chat (registrado 2026-06-02).** O fix
+> de 2026-05-24 cobriu 7 callers REST mas omitiu os 3 orquestradores que montam
+> o system prompt da conversa principal: `app/orchestrator/execution/main_orchestrator.py`
+> (Phase 1.5 agentic loop), `app/orchestrator/services/fallback_react_service.py`
+> (`_invoke_llm`) e `app/orchestrator/legacy/orchestrator.py` (`_handle_directly`).
+> Estes 3 são o caminho mais comum do chat e DEVEM usar
+> `build_system_prompt_with_persona` — não `SystemPromptBuilder.build` direto.
+> Quando não há `company_id` (sem tenant), passar `ai_persona=None` explícito
+> (honesto + sensor-clean). O sensor cobre os 3.
 
 Rodar: `python scripts/check_persona_aware_prompt_usage.py` (exit 0/1).
 Adicionar a `pre-commit` + CI workflow `backend-ci.yml` em sprint próxima.
