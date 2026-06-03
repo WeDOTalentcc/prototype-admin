@@ -79,6 +79,12 @@ async def search_jobs(
         from app.models.job_vacancy import JobVacancy
         
         async with AsyncSessionLocal() as db:
+            # P0-RLS (2026-06-03): seta o GUC app.company_id na transacao.
+            # Sem isso, no contexto do agentic loop (sem middleware RLS) a
+            # policy `company_id = app_current_company_id()` retorna NULL e
+            # BLOQUEIA todas as linhas -> "0 vagas" mesmo com 101 no banco.
+            from app.core.database import set_tenant_context
+            await set_tenant_context(db, company_id)
             # TENANT-EXEMPT: dynamic builder — conditions[0] is always
             # JobVacancy.company_id == company_id (line below). AST sensor
             # cannot trace upstream tenant gate.
@@ -140,6 +146,7 @@ async def search_jobs(
                 }
                 jobs_list.append(job_data)
             
+            logger.info("[search_jobs DIAG] retornando total=%d company=%s status=%s", len(jobs_list), company_id, status)
             return {
                 "success": True,
                 "message": f"✅ Encontradas {len(jobs_list)} vagas.",
