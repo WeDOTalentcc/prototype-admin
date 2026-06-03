@@ -118,6 +118,9 @@ PUBLIC_PATHS = {
     "/api/v1/health/performance",
     "/api/v1/health/",
     "/api/v1/health/langgraph",
+    # Task #1250: env isolation diagnostic — masked, credential-free; used for
+    # post-publish curl validation that develop/main use separate DB/Redis.
+    "/api/v1/health/environment",
     "/api/v1/navigation-intent",
     # Calendar OAuth callbacks — provider redirects do not carry Bearer tokens;
     # CSRF protection is enforced via HMAC-signed state parameter in each callback handler.

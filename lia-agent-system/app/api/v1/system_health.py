@@ -13,9 +13,11 @@ Covers all critical services:
 
 Returns 200 if all critical components are healthy, 503 otherwise.
 """
+import hashlib
 import logging
 import os
 from datetime import datetime
+from urllib.parse import urlsplit
 
 from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
@@ -542,6 +544,112 @@ async def health_rls(db: AsyncSession = Depends(get_db)):
     if missing:
         return JSONResponse(status_code=503, content=payload)
     return JSONResponse(status_code=200, content=payload)
+
+
+# ─── Task #1250: environment isolation diagnostic ────────────────────────
+# Confirma rapidamente (sem expor credenciais) que cada ambiente publicado
+# (develop vs main) usa banco e Redis próprios. Ver guia operacional
+# docs/operations/dois-ambientes-develop-main.md §Validação pós-publish.
+def _mask_host(host: str | None) -> str | None:
+    """Mask a hostname keeping just enough to distinguish environments.
+
+    Hosts are not credentials, but we still partially redact them so the
+    endpoint never echoes a full connection target verbatim. Short hosts
+    (e.g. ``localhost``) are reduced to a prefix + ``***``.
+    """
+    if not host:
+        return None
+    if len(host) <= 8:
+        return f"{host[0]}***"
+    return f"{host[:3]}***{host[-6:]}"
+
+
+def _connection_fingerprint(host: str | None, port: int | None, name: str | None) -> str | None:
+    """Non-reversible identity hash of a backend (host:port/name).
+
+    Computed over the *target* only — NEVER over the password/credentials —
+    so two environments pointing at the same physical DB/Redis produce the
+    same fingerprint even if their roles/passwords differ. A matching
+    fingerprint across develop and main means isolation is broken.
+    """
+    if not host and not name:
+        return None
+    identity = f"{host or ''}:{port or ''}/{name or ''}"
+    return hashlib.sha256(identity.encode("utf-8")).hexdigest()[:12]
+
+
+def _describe_connection(url: str | None) -> dict:
+    """Return a credential-free description of a connection URL.
+
+    Reports the backend scheme, masked host, port, target name (DB name or
+    Redis db index) and a non-reversible fingerprint. NEVER includes the
+    user, password, or full connection string.
+    """
+    if not url:
+        return {"configured": False}
+    try:
+        parts = urlsplit(url)
+        host = parts.hostname
+        port = parts.port
+        name = (parts.path or "").lstrip("/") or None
+        return {
+            "configured": True,
+            "backend": parts.scheme or None,
+            "host_masked": _mask_host(host),
+            "port": port,
+            "name": name,
+            "fingerprint": _connection_fingerprint(host, port, name),
+        }
+    except Exception:
+        # Never leak the raw URL (it carries credentials) on parse failure.
+        return {"configured": True, "error": "unparseable connection string"}
+
+
+@router.get("/health/environment", response_model=None)
+async def environment_diagnostic():
+    # multi-tenancy: public endpoint (health) — no tenant data, no secrets
+    """
+    Task #1250 — Confirma que cada ambiente usa banco e secrets próprios.
+
+    Reporta ``APP_ENV`` e um identificador NÃO-sensível do Postgres e do
+    Redis em uso (backend, host mascarado, porta, nome/índice e um
+    fingerprint não-reversível). NUNCA expõe usuário, senha ou a connection
+    string completa.
+
+    Uso: após publicar develop e main, compare os ``fingerprint`` — se forem
+    iguais, os dois ambientes apontam para o MESMO banco/Redis (isolação
+    quebrada). Ver docs/operations/dois-ambientes-develop-main.md.
+
+    Returns:
+        200 sempre (diagnóstico informativo, não é probe de liveness).
+    """
+    # Mirror the engine's resolution: env var wins, else the settings default.
+    database_url = os.getenv("DATABASE_URL") or _settings_default("DATABASE_URL")
+    redis_url = os.getenv("REDIS_URL") or _settings_default("REDIS_URL")
+
+    return JSONResponse(
+        status_code=200,
+        content={
+            "app_env": os.getenv("APP_ENV", "development"),
+            "version": os.getenv("APP_VERSION", "1.0.0"),
+            "database": _describe_connection(database_url),
+            "redis": _describe_connection(redis_url),
+            "timestamp": datetime.utcnow().isoformat(),
+        },
+    )
+
+
+def _settings_default(key: str) -> str | None:
+    """Best-effort fallback to the pydantic settings default for a URL key.
+
+    Avoids importing settings at module load; only used when the env var is
+    absent (e.g. local dev without explicit secrets).
+    """
+    try:
+        from lia_config.config import settings
+        return getattr(settings, key, None)
+    except Exception:
+        return None
 
 
 @router.get("/performance", response_model=None)

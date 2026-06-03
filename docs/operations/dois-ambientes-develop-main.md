@@ -124,6 +124,59 @@ como *redirect/callback* permitido, senão o login quebra:
 > (um agente de task não publica). A config de deploy já está pronta no
 > `.replit` (`deploymentTarget = "vm"`).
 
+### Passo 9 — Validar a isolação banco/secrets após publicar
+
+> ⚠️ Este é o passo **mais crítico**: se os dois ambientes apontarem para o
+> mesmo Postgres/Redis por engano, quebrar o ambiente de testes derruba o de
+> "produção".
+
+Existe um endpoint de diagnóstico que reporta o ambiente e um identificador
+**não-sensível** do banco e do Redis em uso — **sem expor credenciais** (nunca
+mostra usuário, senha ou a connection string completa):
+
+```bash
+# Em cada ambiente publicado (troque pela URL real):
+curl https://<url-dev>/api/v1/health/environment
+curl https://<url-prod>/api/v1/health/environment
+```
+
+Resposta (exemplo, valores ilustrativos):
+
+```jsonc
+{
+  "app_env": "production",
+  "version": "1.0.0",
+  "database": {
+    "configured": true,
+    "backend": "postgresql+asyncpg",
+    "host_masked": "ep-***n.tech",  // host parcialmente mascarado
+    "port": 5432,
+    "name": "neondb",
+    "fingerprint": "79cbab53aae8"   // hash não-reversível de host:port/nome
+  },
+  "redis": {
+    "configured": true,
+    "backend": "redis",
+    "host_masked": "red***ternal",
+    "port": 6379,
+    "name": "0",
+    "fingerprint": "8d8bb058abe5"
+  },
+  "timestamp": "2026-06-03T12:00:00.000000"
+}
+```
+
+**Como ler:**
+- `app_env` deve ser `development` no Repl de dev e `production` no Repl de prod.
+- Compare o `fingerprint` de `database` (e de `redis`) entre os dois ambientes:
+  - **fingerprints DIFERENTES** → ✅ bancos isolados (correto).
+  - **fingerprints IGUAIS** → ⛔ os dois ambientes usam o MESMO banco/Redis —
+    a isolação está quebrada; corrija a `DATABASE_URL`/`REDIS_URL` do ambiente
+    afetado **antes** de continuar (ver Passos 5 e 6).
+- O `fingerprint` é calculado sobre `host:port/nome` (o alvo), **não** sobre as
+  credenciais — então dois ambientes que apontam para o mesmo banco físico
+  batem mesmo que usem usuário/senha diferentes.
+
 ---
 
 ## 4. 🔁 Ritual de promover `develop → main` (dia a dia)
