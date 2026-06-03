@@ -12,7 +12,7 @@
  * reintroduzida, criar tab novo aqui + endpoint /api/communication/sent-log.
  */
 
-import React, { useEffect } from "react"
+import React from "react"
 import { Mail, PenTool, Bell } from "lucide-react"
 import { useTranslations } from "next-intl"
 import { tabStyles } from '@/lib/design-tokens'
@@ -26,10 +26,6 @@ export function CommunicationHub({ activeSubsection, visibleTabs, stacked }: Com
   const t = useTranslations("settings")
   const hub = useCommunicationHub(activeSubsection)
 
-  useEffect(() => {
-    hub.fetchData()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
 
   const allTabs = [
     { id: 'templates', label: t("communication.tabTemplates"), icon: Mail },
