@@ -1,10 +1,12 @@
 # Fluxo Técnico Completo — Plataforma LIA Alpha 1
 
-**Data:** 31/03/2026  
-**Versão:** 1.0  
+**Data:** 03/06/2026 (auditoria de código vs. documentação)  
+**Versão:** 1.1  
 **Escopo:** Fluxo end-to-end Alpha 1 — desde Login até Scheduling/Feedback  
 **Formato:** Diagrama passo-a-passo por macro-etapa (estilo "11 STEPS" do WSI)  
 **Referência:** `ANALISE_ROADMAP_ALPHA1_vs_CODIGO.md` v6.3 (complementar)
+
+> ⚠ **Nota de auditoria (v1.1):** este documento foi auditado contra o código real do `lia-agent-system` em 03/06/2026. Correções de nomes de classe, caminhos de arquivo e contagens foram aplicadas ao longo do texto. Divergências que requerem decisão de produto/engenharia (não corrigíveis só no doc) estão consolidadas no apêndice **[Divergências & Gaps (auditoria 03/06/2026)](#divergências--gaps-auditoria-03062026)** no final do documento, e servem de base para tarefas futuras de correção. **Este PR é documentação apenas — nenhum código de produção foi alterado.**
 
 > 📋 **Checklists do time no final do documento:** [MVP — Roadmap Alpha 1](#checklist-pragmático-mvp--roadmap-alpha-1) (devs, PO, QA) · [Product Readiness — Go-Live](#checklist-product-readiness--go-live) (Ops, PM, Suporte, Legal, Billing).
 
@@ -42,7 +44,7 @@ Cada macro-etapa do Alpha 1 (E1–E9B) é apresentada como um diagrama técnico 
 |--------|-----------------|---------|--------------|
 | Ag.0 | MainOrchestrator | orchestrator | Gemini (produção) |
 | Ag.2 | SourcingReActAgent | sourcing | Gemini |
-| Ag.3 | TriagemCurricular (CV Screening) | cv_screening | Gemini |
+| Ag.3 | CV Screening — `WSIScreeningPipeline` / `PipelineReActAgent` (NÃO existe classe "TriagemCurricular"; ver D-09) | cv_screening | Gemini |
 | Ag.4 | WSIInterviewGraph | cv_screening | Gemini |
 | Ag.5 | WSIService (scoring) | cv_screening | Determinístico (sem LLM) |
 | Ag.6 | InterviewGraph | interview_scheduling | Gemini |
@@ -51,7 +53,9 @@ Cada macro-etapa do Alpha 1 (E1–E9B) é apresentada como um diagrama técnico 
 | — | WSIQuestionGenerator / WSIScreeningQuestionGenerator | cv_screening | Gemini |
 | — | WSIScreeningPipeline | cv_screening | Gemini |
 | — | WSIVoiceOrchestrator | cv_screening | Gemini + Deepgram |
-| — | JobDescriptionGeneratorService | job_management | Claude (Anthropic) |
+| — | JobDescriptionGeneratorService (`jd_generator_service.py`) | job_management | Claude (Anthropic) |
+
+> **Nota de auditoria:** esta tabela é um subconjunto curado para o fluxo Alpha 1. O inventário canônico tem **16 ReActAgents** (sentinela `tests/integration/agents/test_tenant_aware_rollout_t_d.py`): 14 em `ALL_REACT_AGENTS_RUNTIME_PATH` + `CandidateSelfServiceAgent` e `PipelineTransitionAgent`. Os rótulos `Ag.x` deste doc são didáticos e não mapeiam 1:1 para os registries reais.
 
 ---
 
@@ -68,7 +72,7 @@ Para facilitar a leitura por qualquer pessoa — mesmo sem conhecimento da arqui
 | **Serviço** | Um componente que executa uma função específica, geralmente sem raciocínio autônomo. Recebe um input, processa e devolve um resultado. | `JobDescriptionGeneratorService` (gera descrição de vaga), `WSIService` (calcula scores de triagem) |
 | **Tool (Ferramenta)** | Uma ação atômica que um agente pode executar. É como uma "mão" do agente — ele decide quando e como usar cada tool. | `search_candidates` (buscar), `send_email` (enviar email), `schedule_interview` (agendar) |
 | **Capability (Capacidade)** | Um módulo transversal que é injetado automaticamente em agentes e serviços para adicionar comportamentos de proteção ou inteligência. Não age sozinho — é uma camada que enriquece quem o usa. | FairnessGuard (anti-viés), PII Masking (proteção de dados), AuditTrail (registro auditável) |
-| **Orquestrador** | O componente central que recebe todas as requisições e decide qual domínio/agente deve processá-las. É o "recepcionista" que direciona cada pedido ao especialista certo. | `DomainOrchestrator` + `CascadedRouter` (6 camadas de roteamento) |
+| **Orquestrador** | O componente central que recebe todas as requisições e decide qual domínio/agente deve processá-las. É o "recepcionista" que direciona cada pedido ao especialista certo. | `MainOrchestrator` + `CascadedRouter` (6 camadas de roteamento). Obs.: "DomainOrchestrator" é um nome conceitual deste doc — NÃO existe classe com esse nome (ver D-01) |
 | **Graph (Grafo)** | Um fluxo de trabalho estruturado em etapas (nós) conectadas. Diferente do agente ReAct que raciocina livremente, o graph segue uma sequência definida de passos. | `WSIInterviewGraph` (8 estágios da entrevista WSI), `InterviewGraph` (6 nós do agendamento) |
 | **Pipeline** | Uma sequência de processamento onde o output de uma etapa alimenta a próxima. Usado para processar dados em cadeia. | `WSIScreeningPipeline` (triagem curricular em cadeia) |
 | **Registry** | O catálogo centralizado de agentes. Quando o orquestrador precisa de um especialista, consulta o registry para encontrá-lo pelo nome. | `"sourcing"` → SourcingReActAgent, `"wizard"` → WizardReActAgent |
@@ -77,12 +81,12 @@ Para facilitar a leitura por qualquer pessoa — mesmo sem conhecimento da arqui
 
 | Componente | Tipo | O que faz | Em linguagem simples |
 |------------|------|-----------|----------------------|
-| **DomainOrchestrator** | Orquestrador | Recebe toda requisição e roteia para o domínio correto usando 6 camadas de cache/análise | "Recepcionista inteligente" — entende o que você pediu e direciona ao especialista certo |
+| **MainOrchestrator** (doc antigo: "DomainOrchestrator") | Orquestrador | Recebe toda requisição e roteia para o domínio correto usando 6 camadas de cache/análise. NÃO existe classe `DomainOrchestrator` — o orquestrador real é `MainOrchestrator` (`app/orchestrator/execution/main_orchestrator.py`) + `CascadedRouter` (ver D-01) | "Recepcionista inteligente" — entende o que você pediu e direciona ao especialista certo |
 | **CascadedRouter** | Serviço (dentro do Orquestrador) | 6 camadas de roteamento: memória → cache local → cache Redis → busca vetorial → regex → LLM | "GPS de requisições" — tenta o caminho mais rápido primeiro, escala para análise mais profunda se necessário |
 | **FairnessGuard** | Capability (3 camadas) | L1: bloqueia viés explícito (350+ padrões). L2: alerta viés implícito. L3: análise semântica por LLM | "Guardião de equidade" — impede que a IA discrimine por gênero, idade, etnia ou qualquer categoria protegida |
-| **PII Masking** | Capability (4 camadas) | Remove dados pessoais antes de enviar ao LLM: CPF, nome, endereço, campos sensíveis | "Protetor de privacidade" — a IA nunca vê dados pessoais reais do candidato |
-| **AuditTrail** | Capability | Registra toda decisão de forma imutável (append-only), com retenção de 2-5 anos (SOX) | "Cartório digital" — tudo que a IA decide fica registrado e não pode ser alterado |
-| **FactChecker** | Capability | Verifica claims do LLM: experiência, certificações, períodos, habilidades | "Verificador de fatos" — confere se o que a IA diz é coerente com os dados reais |
+| **PII Masking** | Capability (multicamadas) | Remove dados pessoais antes de enviar ao LLM: regex direto (CPF, email, telefone, RG, CNPJ), quase-identificadores (idade/ano de formatura/endereço) e NER via Presidio (opt-in, mascara nome). Mascaramento de nome depende do Presidio habilitado (ver D-10) | "Protetor de privacidade" — a IA nunca vê dados pessoais reais do candidato |
+| **AuditTrail** | Capability | Registra toda decisão de forma imutável (append-only); retenção por tipo de evento, até 7 anos para tipos SOX (ver D-07) | "Cartório digital" — tudo que a IA decide fica registrado e não pode ser alterado |
+| **FactChecker** | Capability | Verifica claims do LLM: salário, contagem de candidatos, percentuais e datas (métodos `_check_*`; ver D-04) | "Verificador de fatos" — confere se o que a IA diz é coerente com os dados reais |
 | **BiasAuditSnapshot** | Capability | Aplica Four-Fifths Rule: detecta se um grupo demográfico é aprovado <80% em relação a outro | "Auditor estatístico" — detecta discriminação numérica mesmo que ninguém a tenha intencionado |
 | **ConfidenceNode** | Capability | Calibra scores para serem comparáveis entre candidatos e vagas diferentes | "Calibrador de notas" — garante que um 8 em uma vaga signifique o mesmo que um 8 em outra |
 | **LearningLoop** | Capability | Observa silenciosamente quando o recrutador aceita, modifica ou rejeita sugestões da IA e aprende com isso | "Aprendiz silencioso" — a IA melhora sem pedir feedback explícito |
@@ -217,12 +221,12 @@ JD com problemas e a LIA não consumir JD com problemas))           │
     PromptInjectionGuard ativado
 
  3  EnhancedAgentMixin._setup_enhanced()
-    16 capabilities injetadas automaticamente:
-    FairnessGuard (3 layers) | PII Masking (4 layers)
-    AuditTrail | BiasAuditSnapshot | ConfidenceNode
-    AntiSycophancy (FULL variant) | WorkingMemory | CircuitBreaker
-    LearningLoop | TemplateLearning | PredictiveAnalytics
-    SemanticSearch | ConversationMemory
+    4 capabilities CENTRAIS injetadas pelo mixin: Memory,
+    Autonomy/Guardrails, Learning, Compliance (+ 3 categorias
+    de tools). Camadas como FairnessGuard, PII Masking, AuditTrail,
+    BiasAuditSnapshot, ConfidenceNode, AntiSycophancy, CircuitBreaker,
+    SemanticSearch e ConversationMemory atuam no fluxo via serviços
+    próprios — NÃO são "16 capabilities" do mixin (ver D-05)
 
  4  FairnessGuard filtra ANTES do LLM
     🔒 L1 Explicit: Regex ~350 patterns em 13 categorias
@@ -800,7 +804,7 @@ NA VAGA RECRUTADOR PODE DISPARAR TRIAGEM APÓS aprovação DO PERFIL NA COLUNA F
 │    calcula o score final SEM usar LLM (zero custo, zero latência)            │
 │    com normalização por dificuldade do roteiro                               │
 │  • O FactChecker [Capability verificador de fatos] valida as                 │
-│    respostas: experiência declarada, certificações, períodos                 │
+│    respostas: salário, contagem de candidatos, percentuais, datas (ver D-04) │
 │  • O BiasAuditSnapshot [Capability auditor estatístico] aplica               │
 │    Four-Fifths Rule para detectar discriminação numérica                     │
 │  • Ao final, a LIA gera um parecer com recomendação:                         │
@@ -831,11 +835,17 @@ NA VAGA RECRUTADOR PODE DISPARAR TRIAGEM APÓS aprovação DO PERFIL NA COLUNA F
     PromptInjectionGuard ativado
 
  3  EnhancedAgentMixin._setup_enhanced()
-    16 capabilities injetadas automaticamente:
-    FairnessGuard (3 layers) | PII Masking (4 layers)
-    AuditTrail | BiasAuditSnapshot | ConfidenceNode
-    AntiSycophancy | WorkingMemory | CircuitBreaker
-    LearningLoop | Calibration | ScoreNormalization | ModelDrift
+    4 capabilities CENTRAIS injetadas automaticamente pelo mixin
+    (libs/agents-core/lia_agents_core/enhanced_agent_mixin.py):
+    (1) Memory — working + long-term (_get_memory_context)
+    (2) Autonomy/Guardrails — AutonomyEngine (_resolve_guardrails)
+    (3) Learning — LearningExtractor (_post_loop_learning)
+    (4) Compliance — FairnessGuard pre-check (_fairness_pre_check)
+    + 3 categorias de tools compartilhadas (Insight/Proactive/Predictive)
+    PII Masking, AuditTrail, BiasAuditSnapshot, ConfidenceNode,
+    CircuitBreaker e ScoreNormalization atuam no fluxo, mas via
+    camadas/serviços próprios — NÃO são "16 capabilities" do mixin
+    (ver apêndice Divergências & Gaps, item D-05)
 
  4  FairnessGuard filtra ANTES do LLM
     3 camadas: (1) Regex → bloqueia "rejeitar por idade"
@@ -864,10 +874,12 @@ NA VAGA RECRUTADOR PODE DISPARAR TRIAGEM APÓS aprovação DO PERFIL NA COLUNA F
     Temperature: 0.3 (LLM_AGENT_TEMPERATURE)
 
  8  FactChecker verifica APÓS o LLM
-    🔒 4 tipos: experiência declarada, certificações,
-    período na empresa, habilidades técnicas
+    🔒 4 verificações reais (métodos _check_* em fact_checker.py):
+    salário, contagem de candidatos, percentuais, datas
     Claim inconsistente → flag para revisão
     enable_fact_checker=True por default
+    (tipos "experiência/certificações/período/habilidades" de
+     versões anteriores NÃO batem com o código — ver D-04)
 
  9  ConfidenceNode calibra + BiasAuditSnapshot
     Score calibrado para comparabilidade real
@@ -1340,7 +1352,8 @@ PARECER DA LIA - WSI TEM TEMPLATE DETERMINISTICO ONDE VARIAVEIS SAO SUBSTITUIDAS
 ### Policy Engine — Motor de Políticas por Setor
 
 ```
-Arquivo: app/services/policy_engine_service.py
+Arquivo: app/domains/policy/services/policy_engine_service.py
+Classe: PolicyEngineService (constante ALPHA1_SECTOR_RULES no mesmo módulo)
 
 ALPHA1_SECTOR_RULES — Regras por setor:
 ┌──────────────────────────────────────────────────────────────────────────────┐
@@ -1373,7 +1386,16 @@ Padrão de 3 Estados: CLOSED → OPEN → HALF_OPEN → CLOSED
   OPEN: todas rejeitadas com CircuitBreakerError + retry_after
   HALF_OPEN: permite chamadas limitadas para testar recuperação
 
-14 circuits pré-configurados:
+Circuits pré-configurados — ATENÇÃO (auditoria 03/06/2026): o código
+define ~22 circuits, NÃO 14. Nomes reais em circuit_breaker.py:
+  anthropic, openai, deepseek, gemini, pearch, apify, apify_search,
+  workos, merge, google_calendar, gupy, pandape, mailgun, resend,
+  iugu, vindi, twilio_voice, gemini_live, deepgram, openmic, rails_api
+NÃO existe circuit "sendgrid" (substituído por "mailgun"; ver replit.md
+"Mailgun primary / Resend fallback"). "llm_react_reason" é criado
+por-ReAct em runtime, não no config default. A tabela legada abaixo
+está DESATUALIZADA nos valores e na lista (ver D-06):
+
 ┌──────────────────────────────────────────────────────────────────────────────┐
 │  Circuit         │ Failures │ Recovery │ Success │ Timeout │ Tier      │
 │─────────────────┼──────────┼──────────┼─────────┼─────────┼───────────│
@@ -1504,14 +1526,19 @@ Audit: dados mascarados no registro (nunca reais)
 ```
 Arquivo: app/shared/compliance/fact_checker.py
 
-Tipo 1: Experiência declarada — claims vs dados de contexto
-Tipo 2: Certificações — validade técnica
-Tipo 3: Período na empresa — coerência temporal
-Tipo 4: Habilidades técnicas — relevância para a vaga
+4 verificações IMPLEMENTADAS (métodos _check_* em fact_checker.py):
+Tipo 1: Salário — faixas salariais plausíveis (_check_salary_claims)
+Tipo 2: Contagem de candidatos — números coerentes (_check_candidate_counts)
+Tipo 3: Percentuais — valores no range 0-100 (_check_percentage_claims)
+Tipo 4: Datas — janelas temporais de recrutamento (_check_date_claims)
 
-Integração: DomainWorkflow._post_check (enable_fact_checker=True por default)
+Integração: DomainWorkflow._post_check (app/domains/workflow.py;
+  enable_fact_checker=True por default)
 Claim inconsistente → flag para revisão
-V5: verificações granulares adicionais (salary, count, %, date)
+Métodos verify_* granulares + registry de validadores por domínio
+NOTA: os tipos "experiência declarada / certificações / período /
+  habilidades técnicas" de versões anteriores deste doc NÃO
+  correspondem aos métodos do código (ver D-04)
 
 Pontos de integração:
   - wsi_questions.py (valida claims nas perguntas)
@@ -1540,9 +1567,13 @@ BiasAuditSnapshot:
 ```
 Arquivo: app/shared/compliance/audit_service.py
 
+Classe: AuditService | Métodos: log_decision, log_output, log_decision_in_session
 8 decision types registráveis
 Append-only: registros NUNCA podem ser alterados
-Retenção: 730-1825 dias (SOX — ~2-5 anos)
+Retenção: RETENTION_PERIODS por tipo de evento — até 2555 dias (7 anos)
+  para SOX (ex.: company_settings_change=2555); demais tipos variam
+  (≈730-1825 dias). A faixa "2-5 anos" de versões anteriores
+  subestima os tipos SOX de 7 anos (ver D-07)
 record_human_review: registra overrides humanos
 
 O que é registrado:
@@ -1599,7 +1630,8 @@ Etapas ativas: E2, E3, E4, E6, E7, E9
 ### 3. Routing Adaptativo
 
 ```
-Arquivo: app/services/routing_learning_service.py
+Arquivo: app/domains/analytics/services/routing_learning_service.py
+  (também em app/shared/services/routing_learning_service.py)
 Mecanismo: Quando recrutador corrige roteamento, ajusta multipliers
 Range: 0.8x (muitos erros) a 1.2x (alta precisão) por domínio
 Método: compute_domain_confidence_adjustments(company_id, db)
@@ -1621,7 +1653,7 @@ Etapas ativas: E2, E6, E9
 ### 5. Calibration
 
 ```
-Arquivo: app/services/calibration_service.py
+Arquivo: app/domains/analytics/services/calibration_service.py
 Mecanismo: Dual feedback
   Explícito: thumbs up/down do recrutador
   Implícito: avançar candidato low-score = sinal positivo
@@ -1660,7 +1692,8 @@ Etapas ativas: E2, E4
 ### 8. Model Drift
 
 ```
-Arquivo: app/services/model_drift_service.py
+Arquivo: app/shared/observability/model_drift_service.py
+  (também em app/domains/ai/services/ e app/shared/services/)
 4 dimensões monitoradas (janela de 7 dias):
   Score Drift: variação > 0.5 pts
   Approval Drift: variação > 10 p.p.
@@ -1702,7 +1735,8 @@ Etapas ativas: E2, E3, E4
 ### 11. Voice Analysis
 
 ```
-Arquivo: app/services/voice_service.py
+Arquivo: app/domains/cv_screening/services/voice_service.py
+  (também em app/domains/voice/services/ e app/shared/services/)
 STT Providers: Deepgram (primário), Whisper (fallback)
 TTS Provider: OpenAI (voice="nova")
 Uso: Triagem WSI por voz — candidato responde por áudio
@@ -1731,7 +1765,12 @@ Etapas ativas: E4, E8, E9A, E9B
 ### Consent Flow
 
 ```
-Arquivo: app/api/v1/lgpd.py + communication_optout.py
+Arquivo: NÃO existe app/api/v1/lgpd.py. Os fluxos LGPD vivem em:
+  app/api/v1/lgpd_compliance.py, app/api/v1/admin_lgpd.py,
+  app/api/v1/data_subject_requests.py, app/api/v1/data_request.py,
+  app/api/public/candidate_portal.py (portal público)
+  + app/api/v1/communication_optout.py (opt-out HMAC)
+  + domínio app/domains/lgpd/ (repos + services) (ver D-08)
 
 1. Consentimento para triagem WSI:
    WelcomeCard com checkbox explícito obrigatório
@@ -1754,14 +1793,15 @@ Arquivo: app/api/v1/lgpd.py + communication_optout.py
 ### DSR — Data Subject Requests
 
 ```
-Endpoints LGPD (api/v1/lgpd.py):
-  GET /api/v1/lgpd/data-export/{candidate_id} — export completo
-  DELETE /api/v1/lgpd/data-delete/{candidate_id} — anonymize/delete
-  GET /api/v1/lgpd/consent/{candidate_id} — consultar consentimentos
-  POST /api/v1/lgpd/consent — registrar consentimento
+Endpoints DSR (em data_subject_requests.py / data_request.py /
+candidate_portal.py — NÃO em api/v1/lgpd.py):
+  Export, delete/anonymize e consulta de consentimento existem,
+  mas os caminhos exatos divergem dos listados em versões anteriores
+  (ex.: o módulo `lgpd.py` não existe). Confirmar rotas finais
+  contra o código antes de citar (ver D-08).
   Portal público: /portal/data-request/[token]
 
-Status: Endpoints existem ○ (pendente integração completa)
+Status: Endpoints existem ○ (pendente integração completa do portal)
 ```
 
 ### Data Minimization
@@ -1822,7 +1862,8 @@ Princípios aplicados:
 │    Etapas: E4 (busca de candidatos)                                          │
 │    FG: L1+L2+L3 | PII: ativo | Audit: ●                                    │
 │                                                                               │
-│  Ag.3 TriagemCurricular (CV Screening)                                        │
+│  Ag.3 CV Screening — WSIScreeningPipeline / PipelineReActAgent                │
+│    (NÃO existe classe "TriagemCurricular"; ver D-09)                          │
 │    Domínio: cv_screening                                                      │
 │    LLM: Gemini                                                                │
 │    Etapas: E4 (triagem curricular na busca)                                  │
@@ -1903,8 +1944,10 @@ Princípios aplicados:
 │    Registry: "kanban" | Domínio: recruiter_assistant | LLM: Gemini           │
 │    Tools: 22 (maior número) | Etapas: E5, E8 (Kanban board)                 │
 │                                                                               │
-│  TalentReActAgent                                                             │
-│    Registry: "talent" | Domínio: recruiter_assistant | LLM: Gemini           │
+│  TalentFunnelReActAgent                                                       │
+│    Classe: TalentFunnelReActAgent (talent_funnel_react_agent.py)             │
+│    Registry: "talent_funnel" | Domínio: recruiter_assistant | LLM: Gemini    │
+│    NÃO existe "TalentReActAgent" nem registry "talent" (ver D-02)            │
 │    Tools: 13 | Stages: discovery → analysis → action_planning               │
 │    Etapas: E4 (funil de talentos)                                            │
 │                                                                               │
@@ -2054,7 +2097,7 @@ Sem isso o MVP não pode subir.
 
 #### Governança — Policy Engine, CircuitBreaker, PromptInjection, AntiSycophancy
 - [ ] **(MVP) Policy Engine — `ALPHA1_SECTOR_RULES` carregado para 6 setores** (tech, financeiro, saude, rpo, varejo, logistica) com autonomia/HITL/L3/rate limit/escalation por setor.
-- [ ] **(MVP) Os 14 circuits do CircuitBreaker (anthropic, openai, gemini, pearch, workos, merge, google_calendar, gupy, pandape, sendgrid, resend, iugu, vindi, llm_react_reason) com mensagem PT-BR de degraded mode.**
+- [ ] **(MVP) Os ~22 circuits do CircuitBreaker (anthropic, openai, deepseek, gemini, pearch, apify, apify_search, workos, merge, google_calendar, gupy, pandape, mailgun, resend, iugu, vindi, twilio_voice, gemini_live, deepgram, openmic, rails_api — NÃO existe "sendgrid"; ver D-06) com mensagem PT-BR de degraded mode.**
 - [ ] **(MVP) Anti-Sycophancy — 3 variantes (OPERATIONAL, FULL, ORCHESTRATOR) injetadas nos system prompts dos agentes corretos** (Crença #11 do Manifesto WeDOTalent).
 - [ ] **(novo) Feature flags / rollout por setor** — habilitar/desabilitar regras por tech/financeiro/saúde/RPO conforme `ALPHA1_SECTOR_RULES` sem precisar de deploy.
 
@@ -2106,7 +2149,7 @@ Cada item usa `- [ ]` (markdown checkbox). Itens vindos desta consolidação tê
 - [ ] **(novo) SLO/SLA por etapa definidos e publicados** — pelo menos: P95 latência E7 (triagem WSI), disponibilidade E1 (login), P95 E4 (busca), P95 E6 (envio de email). Sem isso, suporte e comercial não conseguem prometer nada.
 - [ ] **(novo) On-call rotation + escalation policy ativa** — quem é chamado de madrugada, qual a ferramenta de paging (PagerDuty/Opsgenie), qual o tempo de resposta esperado.
 - [ ] **(novo) Incident response: template de post-mortem + war-room runbook + comunicação ao cliente** — formato padrão para escrever post-mortem público sem entrar em pânico.
-- [ ] **(novo) Runbooks operacionais por circuit breaker** — um runbook curto ("o que fazer quando o circuit X abre") para cada um dos 14 circuits: anthropic, openai, gemini, pearch, workos, merge, google_calendar, gupy, pandape, sendgrid, resend, iugu, vindi, llm_react_reason.
+- [ ] **(novo) Runbooks operacionais por circuit breaker** — um runbook curto ("o que fazer quando o circuit X abre") para cada um dos ~22 circuits reais (anthropic, openai, deepseek, gemini, pearch, apify, apify_search, workos, merge, google_calendar, gupy, pandape, mailgun, resend, iugu, vindi, twilio_voice, gemini_live, deepgram, openmic, rails_api; ver D-06 — "sendgrid" não existe).
 - [ ] **(novo) Runbook de recuperação WSI** — passo-a-passo para retomar checkpoint WSI interrompido (PostgresSaver) e re-engajar candidato sem perder a sessão.
 - [ ] **(novo) Disaster Recovery: RTO/RPO definidos + teste periódico de restore** — não basta ter backup, precisa ter o ensaio. Sem isso o cliente não confia no SLA.
 - [ ] **(novo) Logs centralizados — agregador único, retenção definida e busca rápida** — hoje os logs estão por workflow; em produção precisam estar agregados (ex: Loki, ELK, Datadog) com retenção compatível com a tabela LGPD (audit 730-1825d, logs comunicação 365d).
@@ -2148,4 +2191,30 @@ Cada item usa `- [ ]` (markdown checkbox). Itens vindos desta consolidação tê
 ---
 ---
 
-*Documento gerado a partir do código real do lia-agent-system (Replit) e documentação specs existente. Complementa o `ANALISE_ROADMAP_ALPHA1_vs_CODIGO.md` com nível de detalhe técnico passo-a-passo por etapa. Última atualização de status: 31/03/2026.*
+## Divergências & Gaps (auditoria 03/06/2026)
+
+> Apêndice gerado pela auditoria de código de 03/06/2026 (Task de documentação). Lista as divergências entre o que este documento afirmava e o que o código do `lia-agent-system` realmente faz. **Cada item é base para uma tarefa futura** — algumas exigem correção apenas no doc (já aplicada nesta v1.1, marcada ✅ Doc corrigido), outras exigem decisão de produto/engenharia (marcada ⚠ Requer decisão).
+>
+> Severidade: **Alta** = induz a erro em entendimento de arquitetura/segurança; **Média** = nome/caminho incorreto que quebra navegação no código; **Baixa** = imprecisão menor.
+
+| ID | Componente | O que o doc dizia | O que o código faz | Severidade | Status |
+|----|-----------|-------------------|--------------------|------------|--------|
+| **D-01** | Orquestrador | Classe `DomainOrchestrator` | NÃO existe classe `DomainOrchestrator`. O orquestrador real é `MainOrchestrator` (`app/orchestrator/execution/main_orchestrator.py`) + `CascadedRouter`. "DomainOrchestrator" era nome conceitual | Média | ✅ Doc corrigido |
+| **D-02** | Funil de Talentos | `TalentReActAgent`, registry `"talent"` | Classe real `TalentFunnelReActAgent` (`talent_funnel_react_agent.py`), registry `"talent_funnel"` | Média | ✅ Doc corrigido |
+| **D-03** | Inventário de agentes | Rótulos `Ag.0–Ag.8` como mapa completo | Inventário canônico = **16 ReActAgents** (sentinela `test_tenant_aware_rollout_t_d.py`): 14 em `ALL_REACT_AGENTS_RUNTIME_PATH` + `CandidateSelfServiceAgent` + `PipelineTransitionAgent`. Os `Ag.x` são didáticos | Baixa | ✅ Doc corrigido (nota adicionada) |
+| **D-04** | FactChecker | 4 tipos: experiência declarada, certificações, período na empresa, habilidades técnicas | 4 verificações reais (`_check_*` em `app/shared/compliance/fact_checker.py`): **salário, contagem de candidatos, percentuais, datas** + `verify_*` granulares + registry de validadores por domínio | Alta | ✅ Doc corrigido |
+| **D-05** | EnhancedAgentMixin | "16 capabilities injetadas automaticamente" | 4 capabilities centrais no mixin (`libs/agents-core/lia_agents_core/enhanced_agent_mixin.py`): **Memory, Autonomy/Guardrails, Learning, Compliance** + 3 categorias de tools. PII Masking/AuditTrail/CircuitBreaker etc. atuam por camadas próprias, não como "16 capabilities" do mixin | Alta | ✅ Doc corrigido |
+| **D-06** | CircuitBreaker | "14 circuits pré-configurados", incluindo `sendgrid` | `circuit_breaker.py` define **~22 circuits**: anthropic, openai, deepseek, gemini, pearch, apify, apify_search, workos, merge, google_calendar, gupy, pandape, mailgun, resend, iugu, vindi, twilio_voice, gemini_live, deepgram, openmic, rails_api. **Não existe `sendgrid`** (→ `mailgun`); `llm_react_reason` é per-ReAct em runtime. A tabela de valores no doc não foi reauditada célula a célula | Alta | ⚠ Requer decisão (reauditar valores da tabela) |
+| **D-07** | AuditTrail (retenção) | "730–1825 dias (~2–5 anos)" | `RETENTION_PERIODS` por tipo de evento, até **2555 dias (7 anos)** para tipos SOX (ex.: `company_settings_change`). A faixa antiga subestimava os tipos de 7 anos | Média | ✅ Doc corrigido |
+| **D-08** | LGPD / DSR | Endpoints em `app/api/v1/lgpd.py` | **Não existe `app/api/v1/lgpd.py`**. Os fluxos LGPD vivem em `lgpd_compliance.py`, `admin_lgpd.py`, `data_subject_requests.py`, `data_request.py`, `app/api/public/candidate_portal.py`, `communication_optout.py` + domínio `app/domains/lgpd/`. Os caminhos/verbos exatos das rotas DSR precisam ser confirmados contra o código antes de citar | Alta | ⚠ Requer decisão (mapear rotas DSR finais) |
+| **D-09** | Ag.3 (CV Screening) | Classe `TriagemCurricular` | Não existe classe `TriagemCurricular`. CV screening usa `WSIScreeningPipeline` / `PipelineReActAgent` | Média | ✅ Doc corrigido |
+| **D-10** | PII Masking | "4 camadas (CPF, nome, endereço, campos sensíveis)" | Camadas: regex direto (CPF/email/telefone/RG/CNPJ), quase-identificadores (idade/ano de formatura/endereço) e NER via Presidio (**opt-in**). Mascaramento de **nome** depende do Presidio habilitado — não é garantido por padrão | Média | ⚠ Requer decisão (confirmar default de Presidio em prod) |
+| **D-11** | Caminhos de serviços de Intelligence | `app/services/{routing_learning,calibration,model_drift,voice}_service.py` | Os módulos vivem em domínios/shared: `app/domains/analytics/services/` (routing_learning, calibration), `app/shared/observability/` (model_drift, com cópias em `app/domains/ai/services/` e `app/shared/services/`), `app/domains/cv_screening/services/` (voice). Há **duplicação de módulos** entre `app/domains/*` e `app/shared/services/*` | Média | ⚠ Requer decisão (consolidar duplicatas) |
+| **D-12** | PolicyEngine | `app/services/policy_engine_service.py`, classe `PolicyEngine` | `app/domains/policy/services/policy_engine_service.py`, classe `PolicyEngineService` (com `ALPHA1_SECTOR_RULES` + `fairness_layer3_enabled` por setor) | Média | ✅ Doc corrigido |
+
+**Itens que exigem follow-up de engenharia (não resolvíveis só no doc):** D-06 (reauditar valores da tabela de circuits), D-08 (mapear rotas DSR finais), D-10 (confirmar default do Presidio em produção), D-11 (consolidar módulos duplicados entre `app/domains/*` e `app/shared/services/*`).
+
+---
+---
+
+*Documento gerado a partir do código real do lia-agent-system (Replit) e documentação specs existente. Complementa o `ANALISE_ROADMAP_ALPHA1_vs_CODIGO.md` com nível de detalhe técnico passo-a-passo por etapa. Última atualização de status: 03/06/2026 (auditoria de código — v1.1).*
