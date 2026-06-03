@@ -2,7 +2,7 @@
 
 import React, { useRef, useState } from "react"
 import { cn } from "@/lib/utils"
-import { Check, Edit2, GripVertical, RefreshCw, Trash2, ChevronDown, ChevronUp, AlertTriangle } from "lucide-react"
+import { Check, GripVertical, RefreshCw, Trash2, ChevronDown, ChevronUp, AlertTriangle } from "lucide-react"
 import type { WsiQuestionsData, ScreeningQuestion } from "../wizard-types"
 import { FallbackBanner } from "./FallbackBanner"
 import { AiDegradedModeBanner } from "./AiDegradedModeBanner"
@@ -36,12 +36,16 @@ export function WsiQuestionsPanel({ data, requiresApproval, onApprove, onReject,
   // drop handler can pair it with the target index without re-rendering.
   const dragSourceRef = useRef<number | null>(null)
 
-  // B.4: Individual question actions
-  const handleEditQuestion = (index: number, newText: string) => {
-    // Dispatches event for chat to handle (sends edit to backend)
-    window.dispatchEvent(new CustomEvent("lia:wizard-edit-question", {
-      detail: { index, newText },
-    }))
+  // Audit 2026-06-03 (#4a): aprovacao por pergunta e estado de UI otimista
+  // local. O backend so recebe o conjunto aprovado no "Aprovar todas" final
+  // (1 toggle por clique, sem round-trip ao LLM). Antes, onToggleApprove nunca
+  // era plugado pelo pai e o contador ficava preso em 0/N.
+  const [localApproved, setLocalApproved] = useState<Record<number, boolean>>({})
+  const isApproved = (index: number): boolean =>
+    localApproved[index] ?? !!questions[index]?.approved
+  const handleToggleApprove = (index: number) => {
+    setLocalApproved((prev) => ({ ...prev, [index]: !isApproved(index) }))
+    onToggleApprove?.(index)
   }
 
   const handleRegenerateQuestion = (index: number) => {
@@ -115,9 +119,9 @@ export function WsiQuestionsPanel({ data, requiresApproval, onApprove, onReject,
   const minQuestions = mode === "compact" ? 7 : 12
   const isAtMinimum = questions.length <= minQuestions
 
-  const approvedTech = questions.filter((q) => q.approved && q.block === "technical").length
-  const approvedBehavioral = questions.filter((q) => q.approved && q.block === "behavioral").length
-  const approvedTotal = questions.filter((q) => q.approved).length
+  const approvedTech = questions.filter((q, i) => isApproved(i) && q.block === "technical").length
+  const approvedBehavioral = questions.filter((q, i) => isApproved(i) && q.block === "behavioral").length
+  const approvedTotal = questions.filter((_q, i) => isApproved(i)).length
 
   const canAdvance = approvedTech >= minDist.technical && approvedBehavioral >= minDist.behavioral
 
@@ -199,14 +203,14 @@ export function WsiQuestionsPanel({ data, requiresApproval, onApprove, onReject,
             key={idx}
             index={idx}
             question={q}
+            approved={isApproved(idx)}
             isExpanded={expandedId === idx}
             onToggle={() => setExpandedId(expandedId === idx ? null : idx)}
-            onEdit={handleEditQuestion}
             onRegenerate={handleRegenerateQuestion}
             onRemove={isAtMinimum ? undefined : handleRemoveQuestion}
             isTechAtMin={techCount <= minDist.technical}
             isBehavioralAtMin={behavCount <= minDist.behavioral}
-            onToggleApprove={onToggleApprove}
+            onToggleApprove={handleToggleApprove}
             onDragStart={handleDragStart}
             onDragOver={handleDragOver}
             onDrop={handleDrop}
@@ -249,9 +253,9 @@ export function WsiQuestionsPanel({ data, requiresApproval, onApprove, onReject,
 function QuestionCard({
   index,
   question,
+  approved,
   isExpanded,
   onToggle,
-  onEdit,
   onRegenerate,
   onRemove,
   isTechAtMin,
@@ -263,9 +267,9 @@ function QuestionCard({
 }: {
   index: number
   question: ScreeningQuestion
+  approved: boolean
   isExpanded: boolean
   onToggle: () => void
-  onEdit?: (index: number, newText: string) => void
   onRegenerate?: (index: number) => void
   onRemove?: (index: number) => void
   isTechAtMin?: boolean
@@ -287,10 +291,20 @@ function QuestionCard({
       data-testid={`wsi-question-row-${index}`}
       className="group rounded-md border border-lia-border-subtle overflow-hidden"
     >
-      {/* Card header */}
-      <button
+      {/* Card header — Audit 2026-06-03 (#7): era <button>, mas continha o
+          botao Aprovar (button-in-button = HTML invalido -> hydration error).
+          Agora e <div role="button"> com suporte a teclado. */}
+      <div
+        role="button"
+        tabIndex={0}
         onClick={onToggle}
-        className="w-full flex items-start gap-2 px-3 py-2 text-left hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none"
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault()
+            onToggle()
+          }
+        }}
+        className="w-full flex items-start gap-2 px-3 py-2 text-left hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none cursor-pointer"
       >
         {/* Onda 33: drag handle visible only on hover; pointer-events-none so it
             doesn't swallow the toggle click — drag is on the wrapper div. */}
@@ -299,26 +313,27 @@ function QuestionCard({
           aria-hidden="true"
         />
         <button
+          type="button"
           onClick={(e) => {
             e.stopPropagation()
             onToggleApprove?.(index)
           }}
           className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center transition-colors motion-reduce:transition-none mt-0.5 ${
-            question.approved
+            approved
               ? "bg-green-100 text-green-600 hover:bg-green-200"
               : "bg-lia-bg-secondary text-lia-text-secondary hover:bg-green-50 hover:text-green-600"
           }`}
-          title={question.approved ? "Desaprovar esta pergunta" : "Aprovar esta pergunta"}
-          aria-label={question.approved ? `Desaprovar pergunta ${index + 1}` : `Aprovar pergunta ${index + 1}`}
+          title={approved ? "Desaprovar esta pergunta" : "Aprovar esta pergunta"}
+          aria-label={approved ? `Desaprovar pergunta ${index + 1}` : `Aprovar pergunta ${index + 1}`}
         >
-          {question.approved ? (
+          {approved ? (
             <Check className="w-3 h-3" />
           ) : (
             <span className="text-[10px] font-medium">{index + 1}</span>
           )}
         </button>
         <div className="flex-1 min-w-0">
-          <p className="text-sm text-lia-text-primary leading-snug">
+          <p className="text-[13px] text-lia-text-primary leading-relaxed">
             {question.question}
           </p>
           <div className="flex items-center gap-1.5 mt-1">
@@ -349,7 +364,7 @@ function QuestionCard({
         ) : (
           <ChevronDown className="w-4 h-4 text-lia-text-disabled flex-shrink-0 mt-1" />
         )}
-      </button>
+      </div>
 
       {/* Expanded details */}
       {isExpanded && (
@@ -378,13 +393,6 @@ function QuestionCard({
 
           {/* Individual question actions */}
           <div className="flex items-center gap-1.5 pt-1.5 border-t border-lia-border-subtle mt-1.5">
-            <button
-              onClick={() => onEdit?.(index, question.question)}
-              className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-medium text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
-            >
-              <Edit2 className="w-3 h-3" />
-              Editar
-            </button>
             <button
               onClick={() => onRegenerate?.(index)}
               className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-medium text-wedo-cyan hover:bg-wedo-cyan/10 transition-colors motion-reduce:transition-none"
