@@ -27,6 +27,22 @@ from lia_agents_core.checkpointer import get_checkpointer
 
 logger = logging.getLogger(__name__)
 
+
+def _extract_ai_text(message: Any) -> str:
+    """Extract plain text from a LangChain AIMessage (str or content blocks)."""
+    content = getattr(message, "content", "")
+    if isinstance(content, str):
+        return content.strip()
+    if isinstance(content, list):
+        parts = []
+        for block in content:
+            if isinstance(block, dict) and block.get("type") == "text":
+                parts.append(str(block.get("text", "")))
+            elif isinstance(block, str):
+                parts.append(block)
+        return " ".join(parts).strip()
+    return ""
+
 try:
     from langgraph.graph import StateGraph, START, END
     _HAS_LANGGRAPH = True
@@ -120,8 +136,71 @@ class LangGraphBase(BaseAgent, ABC):
         if callbacks:
             config["callbacks"] = callbacks
 
+        # Fase 2 (2026-06-03): optional live reasoning via astream. Default OFF —
+        # when LIA_WS_ASTREAM is unset/false behavior is identical to the single
+        # ainvoke below. When on (and a StreamingCallback is present) we stream
+        # state snapshots and emit a reasoning_step for each intermediate
+        # AIMessage that carries tool_calls. Any failure falls back to ainvoke,
+        # so production behavior is never worse than before.
+        import os
+
+        _astream_on = (os.getenv("LIA_WS_ASTREAM", "") or "").strip().lower() in (
+            "1", "true", "yes", "on",
+        )
+        if (
+            _astream_on
+            and streaming_callback is not None
+            and hasattr(compiled, "astream")
+        ):
+            try:
+                return await self._run_graph_streaming(
+                    compiled, initial_state, config, streaming_callback
+                )
+            except Exception as exc:
+                logger.warning(
+                    "[%s] astream path falhou, fallback ainvoke: %s",
+                    self.__class__.__name__, exc,
+                )
+
         result = await compiled.ainvoke(initial_state, config=config)
         return result
+
+    async def _run_graph_streaming(
+        self,
+        compiled: Any,
+        initial_state: Dict[str, Any],
+        config: Dict[str, Any],
+        streaming_callback: Any,
+    ) -> Dict[str, Any]:
+        """Run the graph via astream(stream_mode="values"), emitting a
+        reasoning_step for each intermediate AIMessage that carries tool_calls.
+        Returns the final state (last values chunk), equivalent to ainvoke.
+        """
+        final_state: Optional[Dict[str, Any]] = None
+        emitted: set = set()
+        async for chunk in compiled.astream(
+            initial_state, config=config, stream_mode="values"
+        ):
+            final_state = chunk
+            if not isinstance(chunk, dict):
+                continue
+            for m in chunk.get("messages", []) or []:
+                is_ai = (
+                    getattr(m, "type", "") == "ai"
+                    or m.__class__.__name__ == "AIMessage"
+                )
+                if not is_ai or not getattr(m, "tool_calls", None):
+                    continue
+                mid = getattr(m, "id", None) or id(m)
+                if mid in emitted:
+                    continue
+                emitted.add(mid)
+                text = _extract_ai_text(m)
+                if text and hasattr(streaming_callback, "emit_reasoning_step"):
+                    streaming_callback.emit_reasoning_step(text)
+        if final_state is None:
+            return await compiled.ainvoke(initial_state, config=config)
+        return final_state
 
     @abstractmethod
     async def process(self, input: AgentInput) -> AgentOutput:

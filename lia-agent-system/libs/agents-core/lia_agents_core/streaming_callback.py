@@ -201,6 +201,22 @@ class StreamingCallback(BaseCallbackHandler):
         except Exception as exc:
             logger.debug("[StreamingCallback] tool_error send falhou: %s", exc)
 
+    def emit_reasoning_step(self, label: str, detail: str = "") -> None:
+        """Fase 2: emit a reasoning_step event (intermediate agent thought).
+
+        Called by LangGraphBase._run_graph_streaming when LIA_WS_ASTREAM is on.
+        Text is PII-masked + truncated via _summarize. No-op on empty text.
+        """
+        try:
+            from app.shared.chat_event_serializer import serialize_reasoning_step
+            text = self._summarize(label)
+            if text:
+                self._schedule_send(
+                    serialize_reasoning_step(label=text, detail=detail or "")
+                )
+        except Exception as exc:
+            logger.debug("[StreamingCallback] reasoning_step send falhou: %s", exc)
+
     @staticmethod
     def _tool_name(serialized: Any, kwargs: Dict[str, Any]) -> str:
         try:
