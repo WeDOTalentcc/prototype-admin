@@ -46,6 +46,17 @@ def _make_benefit(name: str = "Vale Refeição"):
     b.is_active = True
     b.is_highlighted = False
     b.order = 0
+    # Campos serializados por _to_response()->CompanyBenefitResponse.
+    # MagicMock retorna filhos truthy para atributos nao-setados, o que
+    # passa pelo gate getattr() e quebra a validacao do response model
+    # (provider_cnpj str | None recebe MagicMock; *_date.isoformat() idem).
+    # Setar None explicito espelha o estado real do model SQLAlchemy.
+    b.provider_cnpj = None
+    b.subsidiaries = None
+    b.valid_from = None
+    b.valid_until = None
+    b.review_frequency_months = None
+    b.next_review_date = None
     b.created_at = None
     b.updated_at = None
     return b
