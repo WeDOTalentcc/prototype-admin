@@ -6,7 +6,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { HubHeader } from "@/components/settings/_shared"
 import { CreditosIaTab } from "./consumo/CreditosIaTab"
 import { PearchTab } from "./consumo/PearchTab"
-import { BillingTab } from "./consumo/BillingTab"
 import { AgentesTab } from "./consumo/AgentesTab"
 import { ConsumptionDrilldownModal } from "./consumo/ConsumptionDrilldownModal"
 
@@ -73,11 +72,10 @@ export function ConsumoHub() {
         description="Créditos de IA, buscas Pearch, atividade dos agentes e faturamento."
       />
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-4 max-w-lg">
+        <TabsList className="grid w-full grid-cols-3 max-w-lg">
           <TabsTrigger value="ia">Créditos IA</TabsTrigger>
           <TabsTrigger value="pearch">Pearch</TabsTrigger>
           <TabsTrigger value="agentes">Agentes</TabsTrigger>
-          <TabsTrigger value="billing">Billing</TabsTrigger>
         </TabsList>
         <TabsContent value="ia" className="mt-6">
           <CreditosIaTab onOpenDrilldown={openDrilldown} />
@@ -87,9 +85,6 @@ export function ConsumoHub() {
         </TabsContent>
         <TabsContent value="agentes" className="mt-6">
           <AgentesTab onOpenDrilldown={openDrilldown} />
-        </TabsContent>
-        <TabsContent value="billing" className="mt-6">
-          <BillingTab />
         </TabsContent>
       </Tabs>
 
