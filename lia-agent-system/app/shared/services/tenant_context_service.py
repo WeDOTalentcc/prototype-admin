@@ -33,6 +33,7 @@ class TenantContext:
     ml_models_active: list[str] | None = None  # ["wsi_scoring", "time_to_fill"]
     pipeline_stages: list[str] | None = None  # ["Triagem", "Entrevista RH", "Proposta"]
     custom_persona: str | None = None  # tenant-specific LIA persona override
+    lia_filtered_prompt: str = ""  # rich company context filtered by lia_field_toggles (produtor único)
 
     def to_prompt_snippet(self) -> str:
         parts = [
@@ -78,6 +79,14 @@ class TenantContext:
         # Custom persona
         if self.custom_persona:
             parts.append(f"Persona customizada do tenant: {self.custom_persona}")
+
+        # Produtor único: rich company context filtered by lia_field_toggles
+        # (mirrors AggregatedContext.lia_filtered_prompt). Separator emitted only
+        # when there IS content, so we never leave a hanging section.
+        if self.lia_filtered_prompt:
+            parts.append("")
+            parts.append("---")
+            parts.append(self.lia_filtered_prompt)
 
         return "\n".join(parts)
 
@@ -172,6 +181,17 @@ class TenantContextService:
                 custom_persona = getattr(company, "lia_persona_override", None)
 
             if company:
+                # Produtor único: bloco rico de empresa filtrado por lia_field_toggles,
+                # injetado em TODO react agent + orquestrador via to_prompt_snippet().
+                # Espelha AggregatedContext.lia_filtered_prompt. Helper nunca raise.
+                from app.shared.services.lia_agent_context_builder import (
+                    build_company_agent_context,
+                )
+                lia_filtered_prompt = await build_company_agent_context(
+                    company_id=company_id,
+                    db=db,
+                    job_context=None,  # title/department indisponíveis aqui; helper tolera None
+                )
                 return TenantContext(
                     company_id=company_id,
                     company_name=getattr(company, "name", "sua empresa"),
@@ -185,6 +205,7 @@ class TenantContextService:
                     ml_models_active=ml_models,
                     pipeline_stages=pipeline_stages,
                     custom_persona=custom_persona,
+                    lia_filtered_prompt=lia_filtered_prompt,
                 )
         except Exception as exc:
             logger.debug("[TenantContextService] fallback defaults: %s", exc)

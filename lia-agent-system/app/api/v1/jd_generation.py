@@ -10,6 +10,7 @@ from app.domains.ai.services.jd_parser_service import jd_parser_service
 from app.domains.job_management.services.jd_generator_service import jd_generator_service
 from app.shared.compliance.audit_service import AuditService, get_audit_service
 from app.shared.compliance.fairness_guard_middleware import check_fairness
+from app.core.database import AsyncSessionLocal
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
 
@@ -228,6 +229,24 @@ company_id: str = Depends(require_company_id)):
             _culture_parts.append("EVP/Proposta de Valor: " + "; ".join(request.evp_bullets))
         if _culture_parts:
             job_data["company_culture"] = "\n".join(_culture_parts)
+        # Produtor único: contexto rico de empresa filtrado por lia_field_toggles,
+        # alinhando o JD standalone com o wizard. Endpoint não tem db; abre sessão.
+        from app.shared.services.lia_agent_context_builder import (
+            build_company_agent_context,
+        )
+        try:
+            async with AsyncSessionLocal() as _cc_db:
+                _company_ctx = await build_company_agent_context(
+                    company_id=company_id, db=_cc_db, job_context=None,
+                ) or ""
+        except Exception as _cc_exc:
+            logger.warning("[generate_jd] company_context falhou: %s", _cc_exc)
+            _company_ctx = ""
+        if _company_ctx:
+            _existing = job_data.get("company_culture") or ""
+            job_data["company_culture"] = (
+                (_existing + "\n\n" + _company_ctx).strip() if _existing else _company_ctx
+            )
         result = await jd_generator_service.generate_full_description(
             job_data=job_data,
             company_id=company_id,
