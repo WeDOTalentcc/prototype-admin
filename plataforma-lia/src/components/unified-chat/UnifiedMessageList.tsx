@@ -11,6 +11,14 @@ import { OutreachCard } from "./OutreachCard"
 import { WizardPublishedJobCard } from "./wizard/WizardPublishedJobCard"
 import { WizardPipelineTemplateCard } from "./wizard/WizardPipelineTemplateCard"
 import { WebsiteProposalCard } from "./WebsiteProposalCard"
+import { CandidateProfileCard, type CandidateProfileActionId } from "./candidate/CandidateProfileCard"
+import { CandidateEvaluationCard } from "./candidate/CandidateEvaluationCard"
+import {
+  CANDIDATE_PROFILE_CARD_TYPE,
+  CANDIDATE_EVALUATION_CARD_TYPE,
+  type CandidateProfileCardData,
+  type CandidateEvaluationCardData,
+} from "./candidate/candidate-card-data"
 import type { PipelineTemplateCardData, PipelineTemplateOption, WizardPublishedJobCardData } from "./wizard/wizard-plan-card"
 import { renderMarkdown } from "@/lib/render-markdown"
 import { submitThumbsFeedback } from "@/services/lia-api/feedback-api"
@@ -301,6 +309,10 @@ export function UnifiedMessageList({
           meta?.type === "wizard_template_select" && meta?.templateCard != null
         const hasWebsiteProposal =
           meta?.type === "website_proposal" && meta?.websiteProposal != null
+        const hasCandidateProfile =
+          meta?.type === CANDIDATE_PROFILE_CARD_TYPE && meta?.candidate != null
+        const hasCandidateEvaluation =
+          meta?.type === CANDIDATE_EVALUATION_CARD_TYPE && meta?.evaluation != null
 
         return (
           <div
@@ -409,6 +421,35 @@ export function UnifiedMessageList({
                 {hasPublishedJob && (
                   <WizardPublishedJobCard
                     data={meta!.publishedJob as WizardPublishedJobCardData}
+                  />
+                )}
+
+                {/* Candidate profile card — surfaced when LIA brings a
+                    candidate into focus. Backend-driven (meta.type), same
+                    pattern as outreach/website_proposal. Optional shortcuts
+                    only render when the surface wires `onCandidateAction`. */}
+                {hasCandidateProfile && (
+                  <CandidateProfileCard
+                    raw={meta!.candidate}
+                    onAction={
+                      meta!.onCandidateAction as
+                        | ((action: CandidateProfileActionId, data: CandidateProfileCardData) => void)
+                        | undefined
+                    }
+                  />
+                )}
+
+                {/* Candidate evaluation card — BARS / CV-screening result
+                    consuming the canonical `_build_screening_result` schema.
+                    Shows the "não salva" seal for non-persisted dry-runs. */}
+                {hasCandidateEvaluation && (
+                  <CandidateEvaluationCard
+                    raw={meta!.evaluation}
+                    onViewReport={
+                      meta!.onViewEvaluationReport as
+                        | ((data: CandidateEvaluationCardData) => void)
+                        | undefined
+                    }
                   />
                 )}
 
