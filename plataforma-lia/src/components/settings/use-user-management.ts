@@ -157,6 +157,7 @@ export function useUserManagement() {
             email: formData.email,
             name: formData.name,
             role: mapRoleToApi(formData.role),
+            department_id: formData.department_id || null,
             permissions: formData.permissions || []
           })
         })
@@ -181,6 +182,7 @@ export function useUserManagement() {
             name: formData.name,
             role: mapRoleToApi(formData.role),
             status: formData.status === 'active' ? 'active' : 'inactive',
+            department_id: formData.department_id || null,
             permissions: formData.permissions || []
           })
         })

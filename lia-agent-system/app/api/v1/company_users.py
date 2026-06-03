@@ -166,6 +166,7 @@ async def create_user(
             "invitation_token": invitation_token,
             "invitation_sent_at": datetime.utcnow(),
             "permissions": data.permissions or [],
+            "department_id": data.department_id,
         })
 
         invitation_link = f"{FRONTEND_URL}/aceitar-convite?token={invitation_token}"
