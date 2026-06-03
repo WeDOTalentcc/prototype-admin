@@ -67,6 +67,7 @@ async def create_department(
     company_id: str = Query(...),
     data: DepartmentCreate = None,
     dept_repo: DepartmentRepository = Depends(get_department_repo),
+    current_user: User = Depends(get_current_user_or_demo),
 _company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Create a new department."""
@@ -83,7 +84,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         department = await dept_repo.create(dept_data)
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Created department: {department.name}")
-        await AuditService().log_action(trace_id=str(uuid.uuid4()), company_id=company_id, action_type="department_create", actor="system", target_id=str(department.id), target_type="department")  # P1-W2-06
+        await AuditService().log_action(trace_id=str(uuid.uuid4()), company_id=company_id, action_type="department_create", actor=str(getattr(current_user, "id", "system")), target_id=str(department.id), target_type="department")  # P1-W2-06
         return department
     except HTTPException:
         raise
@@ -112,7 +113,7 @@ current_user: User = Depends(get_current_user_or_demo),
             raise HTTPException(status_code=404, detail="Department not found")
         # Sprint 7.2 RBAC: mutation gate
         await assert_mutation_allowed(department, current_user, resource_label="departamento")
-        await AuditService().log_action(trace_id=str(uuid.uuid4()), company_id=company_id, action_type="department_update", actor="system", target_id=str(department_id), target_type="department")  # P1-W2-06
+        await AuditService().log_action(trace_id=str(uuid.uuid4()), company_id=company_id, action_type="department_update", actor=str(getattr(current_user, "id", "system")), target_id=str(department_id), target_type="department")  # P1-W2-06
         return department
     except HTTPException:
         raise
@@ -142,7 +143,7 @@ async def delete_department(
         )
         if not deleted:
             raise HTTPException(status_code=404, detail="Department not found")
-        await AuditService().log_action(trace_id=str(uuid.uuid4()), company_id=company_id, action_type="department_delete", actor="system", target_id=str(department_id), target_type="department")  # P1-W2-06
+        await AuditService().log_action(trace_id=str(uuid.uuid4()), company_id=company_id, action_type="department_delete", actor=str(getattr(current_user, "id", "system")), target_id=str(department_id), target_type="department")  # P1-W2-06
         return {"success": True, "message": "Department deleted"}
     except HTTPException:
         raise
