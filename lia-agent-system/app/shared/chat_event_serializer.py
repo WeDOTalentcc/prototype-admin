@@ -213,6 +213,35 @@ def serialize_background_task_update(
     )
 
 
+def serialize_tool_started(
+    name: str, args: str = "", tool_id: str = ""
+) -> dict[str, Any]:
+    return serialize_event(
+        "tool_started", name=name, args=args or None, tool_id=tool_id or None
+    )
+
+
+def serialize_tool_finished(
+    name: str,
+    status: str = "ok",
+    duration_ms: int | None = None,
+    result: str = "",
+    tool_id: str = "",
+) -> dict[str, Any]:
+    return serialize_event(
+        "tool_finished",
+        name=name,
+        status=status,
+        duration_ms=duration_ms,
+        result=result or None,
+        tool_id=tool_id or None,
+    )
+
+
+def serialize_reasoning_step(label: str, detail: str = "") -> dict[str, Any]:
+    return serialize_event("reasoning_step", label=label, detail=detail or None)
+
+
 def serialize_connected(session_id: str, domain: str = "") -> ConnectedEvent:
     return serialize_event("connected", session_id=session_id, domain=domain)
 

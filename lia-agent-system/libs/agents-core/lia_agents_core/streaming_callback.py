@@ -70,6 +70,8 @@ class StreamingCallback(BaseCallbackHandler):
         self._token_buffer: List[str] = []
         self._tokens_sent = 0
         self._start_time = time.time()
+        # run_id -> (tool_name, start_epoch) for tool duration tracking (Fase 1)
+        self._tool_starts: Dict[Any, tuple] = {}
 
     def on_llm_new_token(
         self,
@@ -137,6 +139,91 @@ class StreamingCallback(BaseCallbackHandler):
             "type": "error",
             "message": "Erro durante geração de resposta.",
         })
+
+    # ── Tool / activity events (Fase 1) ────────────────────────────────────────
+    # LangChain fires these during ainvoke (no astream needed). Payloads come
+    # from app.shared.chat_event_serializer (single source of truth — never an
+    # inline {"type": ...} dict).
+    def on_tool_start(
+        self,
+        serialized: Dict[str, Any],
+        input_str: str,
+        *,
+        run_id: UUID = None,
+        parent_run_id: Optional[UUID] = None,
+        **kwargs: Any,
+    ) -> None:
+        name = self._tool_name(serialized, kwargs)
+        self._tool_starts[run_id] = (name, time.time())
+        try:
+            from app.shared.chat_event_serializer import serialize_tool_started
+            self._schedule_send(serialize_tool_started(
+                name=name, args=self._summarize(input_str), tool_id=str(run_id or ""),
+            ))
+        except Exception as exc:
+            logger.debug("[StreamingCallback] tool_started send falhou: %s", exc)
+
+    def on_tool_end(
+        self,
+        output: Any,
+        *,
+        run_id: UUID = None,
+        parent_run_id: Optional[UUID] = None,
+        **kwargs: Any,
+    ) -> None:
+        name, started = self._tool_starts.pop(run_id, (None, None))
+        duration_ms = int((time.time() - started) * 1000) if started else None
+        try:
+            from app.shared.chat_event_serializer import serialize_tool_finished
+            self._schedule_send(serialize_tool_finished(
+                name=name or "tool", status="ok", duration_ms=duration_ms,
+                result=self._summarize(output), tool_id=str(run_id or ""),
+            ))
+        except Exception as exc:
+            logger.debug("[StreamingCallback] tool_finished send falhou: %s", exc)
+
+    def on_tool_error(
+        self,
+        error: Union[Exception, KeyboardInterrupt],
+        *,
+        run_id: UUID = None,
+        parent_run_id: Optional[UUID] = None,
+        **kwargs: Any,
+    ) -> None:
+        name, started = self._tool_starts.pop(run_id, (None, None))
+        duration_ms = int((time.time() - started) * 1000) if started else None
+        try:
+            from app.shared.chat_event_serializer import serialize_tool_finished
+            self._schedule_send(serialize_tool_finished(
+                name=name or "tool", status="error", duration_ms=duration_ms,
+                result=self._summarize(str(error)), tool_id=str(run_id or ""),
+            ))
+        except Exception as exc:
+            logger.debug("[StreamingCallback] tool_error send falhou: %s", exc)
+
+    @staticmethod
+    def _tool_name(serialized: Any, kwargs: Dict[str, Any]) -> str:
+        try:
+            if isinstance(serialized, dict):
+                _n = serialized.get("name")
+                if _n:
+                    return str(_n)
+        except Exception:
+            pass
+        return str(kwargs.get("name") or "tool")
+
+    def _summarize(self, value: Any, limit: int = 200) -> str:
+        try:
+            text = value if isinstance(value, str) else str(value)
+        except Exception:
+            return ""
+        try:
+            from app.shared.pii_masking import mask_pii
+            text = mask_pii(text)
+        except Exception:
+            pass
+        text = text.strip()
+        return text[:limit] + ("\u2026" if len(text) > limit else "")
 
     def _schedule_send(self, data: Dict[str, Any]) -> None:
         """
