@@ -237,13 +237,19 @@ export default function SettingsPageEnhanced() {
   const [activeSubsection, setActiveSubsection] = useState<string>('')
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['minha-empresa']))
 
-  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(() => {
+  // Init determinístico (igual no SSR e no primeiro render do cliente) para evitar
+  // hydration mismatch. A preferência salva em localStorage é aplicada após a
+  // montagem, no useEffect abaixo — nunca durante o primeiro render.
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(
+    () => new Set(SECTION_GROUPS.filter(g => g.defaultExpanded).map(g => g.id))
+  )
+
+  useEffect(() => {
     try {
-      const saved = typeof window !== 'undefined' ? localStorage.getItem('settings-groups-expanded') : null
-      if (saved) return new Set(JSON.parse(saved) as string[])
+      const saved = localStorage.getItem('settings-groups-expanded')
+      if (saved) setExpandedGroups(new Set(JSON.parse(saved) as string[]))
     } catch {}
-    return new Set(SECTION_GROUPS.filter(g => g.defaultExpanded).map(g => g.id))
-  })
+  }, [])
 
   const toggleGroupExpanded = useCallback((groupId: string) => {
     setExpandedGroups(prev => {
