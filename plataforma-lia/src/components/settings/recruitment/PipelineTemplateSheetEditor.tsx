@@ -380,6 +380,7 @@ export function PipelineTemplateSheetEditor({
               <Loader2 className="w-6 h-6 animate-spin text-lia-text-tertiary" />
             </div>
           ) : (
+            <>
             {/* Card de configuração de saturação (opcional) */}
             <div className="mb-6 border border-lia-border-subtle rounded-xl overflow-hidden">
               <button
@@ -450,6 +451,7 @@ export function PipelineTemplateSheetEditor({
               hideHeader
               onToggleSubStatus={handleToggleSubStatus}
             />
+            </>
           )}
         </div>
       </SheetContent>
