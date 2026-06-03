@@ -83,6 +83,10 @@ class TestCreateCompanyBenefitAuditLog:
 
         mock_benefit = _make_benefit()
         mock_repo = AsyncMock()
+        # dedup pre-check (promote-back): None => segue para repo.create.
+        # Sem isto, AsyncMock truthy faz o handler retornar _to_response(existing)
+        # com o mock cru e nunca exercita o save/audit.
+        mock_repo.get_by_name_ci = AsyncMock(return_value=None)
         mock_repo.create = AsyncMock(return_value=mock_benefit)
 
         mock_audit_instance = AsyncMock()
@@ -128,6 +132,8 @@ class TestCreateCompanyBenefitAuditLog:
 
         mock_benefit = _make_benefit("Gympass")
         mock_repo = AsyncMock()
+        # dedup pre-check (promote-back): None => segue para repo.create.
+        mock_repo.get_by_name_ci = AsyncMock(return_value=None)
         mock_repo.create = AsyncMock(return_value=mock_benefit)
 
         mock_audit_instance = AsyncMock()
