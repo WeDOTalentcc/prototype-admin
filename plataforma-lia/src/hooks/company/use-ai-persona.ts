@@ -24,21 +24,6 @@ export type AiPersonaTone =
   | "formal_amigavel"
   | "empatico"
 
-/**
- * @deprecated F3.2 audit 2026-05-24 — use `useAiPersonaOptions()` para
- * obter o catálogo canonical do backend. Esta constante existia como
- * espelho local de CANONICAL_AI_TONES (backend) e criava drift garantido.
- * Mantida temporariamente para não quebrar consumidores que ainda não
- * migraram. Próxima sprint: remover quando 0 imports remanescentes.
- */
-export const CANONICAL_TONES: AiPersonaTone[] = [
-  "profissional",
-  "amigavel",
-  "formal",
-  "casual",
-  "formal_amigavel",
-  "empatico",
-]
 
 // ---------------------------------------------------------------------------
 // useAiPersonaOptions — catálogo canonical (tons + name constraints)
