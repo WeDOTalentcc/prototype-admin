@@ -102,3 +102,30 @@ def format_view_context(view_context: dict[str, Any] | None) -> str:
         "a esta visão):"
     )
     return header + "\n" + "\n".join(lines)
+
+
+def view_context_from_context(ctx: dict | None) -> dict | None:
+    """Deriva um view_context a partir do context bruto do agente.
+
+    Prefere ctx['view_context'] (rico, quando o FE enviar). Se ausente,
+    SINTETIZA a partir dos sinais que o FE JA envia hoje (getPageContext em
+    useChatMessages.ts): page_type, job_vacancy_id, candidate_id. Assim o
+    chat global ja abre ciente da tela SEM exigir mudanca de frontend.
+    Retorna None se nao houver nenhum sinal (REGRA 4: nao inventa).
+    """
+    if not ctx or not isinstance(ctx, dict):
+        return None
+    explicit = ctx.get("view_context")
+    if isinstance(explicit, dict) and explicit:
+        return explicit
+    synth: dict = {}
+    if ctx.get("page_type"):
+        synth["page_type"] = ctx["page_type"]
+    visible: list[str] = []
+    if ctx.get("job_vacancy_id"):
+        visible.append(str(ctx["job_vacancy_id"]))
+    if ctx.get("candidate_id"):
+        visible.append(str(ctx["candidate_id"]))
+    if visible:
+        synth["visible_ids"] = visible
+    return synth or None

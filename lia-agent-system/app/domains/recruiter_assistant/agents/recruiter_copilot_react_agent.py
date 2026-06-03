@@ -99,10 +99,14 @@ class RecruiterCopilotReActAgent(
 
     def _get_runtime_domain_instructions(self, input: AgentInput) -> str:
         try:
-            from app.orchestrator.context.view_context import format_view_context
+            from app.orchestrator.context.view_context import (
+                format_view_context,
+                view_context_from_context,
+            )
             ctx = input.context or {}
             # P0.1: estado-da-tela vivo no prompt (chat abre ciente da visao atual).
-            _view_block = format_view_context(ctx.get("view_context"))
+            # Sintetiza view_context dos sinais que o FE JA envia (page_type, ids).
+            _view_block = format_view_context(view_context_from_context(ctx))
             _stage = ctx.get("stage_context", "") or ""
             if _view_block:
                 _stage = (_view_block + "\n\n" + _stage).strip()
