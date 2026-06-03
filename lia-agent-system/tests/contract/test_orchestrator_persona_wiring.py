@@ -54,6 +54,10 @@ async def test_fallback_react_applies_tenant_persona():
 
     ctx = {
         "company_id": "co-test",
+        # snippet pré-resolvido: o resolver canonical retorna "hit" sem
+        # levantar MissingTenantContextError em strict-mode (foco do teste
+        # é o wiring de persona, não a resolução de tenant snippet).
+        "tenant_context_snippet": "empresa de teste",
         "user_name": "Paulo",
         "user_role": "Recrutador",
         "conversation_summary": "",
