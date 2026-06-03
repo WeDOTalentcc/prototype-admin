@@ -7,6 +7,7 @@ import { X, Save, User, Briefcase, Shield } from "lucide-react"
 import { textStyles } from '@/lib/design-tokens'
 import type { UserData } from './user-management-types'
 import { useTranslations } from "next-intl"
+import { mapRoleToApi } from "./use-user-management"
 import { useAuth } from "@/contexts/auth-context"
 import { SalaryGrantConfirmDialog } from "./SalaryGrantConfirmDialog"
 import { SensitivePiiGrantConfirmDialog } from "./SensitivePiiGrantConfirmDialog"
@@ -188,15 +189,21 @@ export function UserForm({ isCreating, formData, setFormData, onSave, onCancel, 
 
               <div>
                 <label className={textStyles.label + " block mb-1.5"}>{t('roleFunction')}</label>
-                <input
-                  type="text"
+                {/* P1-5 (auditoria Configuracoes): select canonical em vez de input texto
+                    com fuzzy match silencioso. value normalizado via mapRoleToApi p/ casar
+                    no modo edicao (canonical/label/vazio->viewer). */}
+                <select
                   data-field="role"
                   data-testid="user-field-role"
-                  value={formData.role || ''}
+                  value={mapRoleToApi(formData.role)}
                   onChange={(e) => setFormData(prev => ({ ...prev, role: e.target.value }))}
                   className={inputClass}
-                  placeholder={t('rolePlaceholder')}
-                />
+                >
+                  <option value="admin">{t('roleAdmin')}</option>
+                  <option value="manager">{t('roleManager')}</option>
+                  <option value="recruiter">{t('roleRecruiter')}</option>
+                  <option value="viewer">{t('roleViewer')}</option>
+                </select>
               </div>
 
               <div>

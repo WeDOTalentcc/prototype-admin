@@ -9,7 +9,7 @@ import type { UserData } from './user-management-types'
 import { apiFetch } from '@/lib/api/api-fetch'
 import { notifyChatOfSettingsUpdate } from '@/lib/api/settings-notify'
 
-function mapRoleToApi(role?: string): string {
+export function mapRoleToApi(role?: string): string {
   if (!role) return 'viewer'
   const lower = role.toLowerCase()
   if (lower === 'admin' || lower.includes('admin')) return 'admin'
