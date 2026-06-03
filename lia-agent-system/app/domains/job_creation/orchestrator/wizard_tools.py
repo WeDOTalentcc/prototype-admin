@@ -503,16 +503,19 @@ def _handle_update_competencies(
         )
 
     sugg = state.get("suggested_competencies") or {}
-    cur_tech = (
-        state.get("confirmed_technical_competencies")
-        or sugg.get("technical")
-        or []
-    )
-    cur_behav = (
-        state.get("confirmed_behavioral_competencies")
-        or sugg.get("behavioral")
-        or []
-    )
+    # Base das listas para o delta: distinguir "chave ausente" (nunca confirmada
+    # → fallback para sugeridas) de "chave presente porém vazia" (recrutador
+    # removeu tudo → base permanece vazia). Usar ``or`` direto sobre as listas
+    # confirmadas trataria ``[]`` como falsy e ressuscitaria as sugeridas,
+    # quebrando a semântica de delta (item removido voltava no próximo turno).
+    if "confirmed_technical_competencies" in state:
+        cur_tech = state.get("confirmed_technical_competencies") or []
+    else:
+        cur_tech = sugg.get("technical") or []
+    if "confirmed_behavioral_competencies" in state:
+        cur_behav = state.get("confirmed_behavioral_competencies") or []
+    else:
+        cur_behav = sugg.get("behavioral") or []
 
     def _name_of(item: Any) -> str:
         if isinstance(item, dict):

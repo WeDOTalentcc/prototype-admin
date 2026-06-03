@@ -112,3 +112,58 @@ def test_duplicate_add_does_not_duplicate():
     tech = res.state_updates["confirmed_technical_competencies"]
     names = [t["skill"].lower() for t in tech]
     assert names.count("python") == 1
+
+
+def test_confirmed_empty_list_does_not_fall_back_to_suggested():
+    """Regressão: lista confirmada explicitamente vazia (recrutador removeu
+    tudo) NÃO deve cair para ``suggested_competencies``. A base do delta
+    permanece vazia, então um add não ressuscita as sugeridas."""
+    state = {
+        "confirmed_technical_competencies": [],
+        "confirmed_behavioral_competencies": [],
+        "suggested_competencies": {
+            "technical": [{"skill": "SQL"}],
+            "behavioral": [{"competencia": "Empatia"}],
+        },
+    }
+    res = _handle_update_competencies(
+        state, {"add_technical": ["Go"]}, CTX
+    )
+    assert res.error is False
+    tech = res.state_updates["confirmed_technical_competencies"]
+    names = _names(tech, "skill")
+    # base vazia preservada → só o item adicionado, sem ressuscitar SQL
+    assert names == ["Go"]
+    # comportamentais confirmadas vazias continuam vazias (não voltam sugeridas)
+    behav = res.state_updates["confirmed_behavioral_competencies"]
+    assert behav == []
+
+
+def test_remove_all_then_add_does_not_resurrect_removed_items():
+    """Regressão (delta entre turnos): remover tudo e depois adicionar um item
+    não deve trazer de volta os itens removidos via fallback de sugeridas."""
+    # Turno 1: estado com confirmadas + sugeridas; remove a única confirmada.
+    state = {
+        "confirmed_technical_competencies": [{"skill": "Java"}],
+        "suggested_competencies": {"technical": [{"skill": "Java"}, {"skill": "SQL"}]},
+    }
+    res1 = _handle_update_competencies(
+        state, {"remove_technical": ["java"]}, CTX
+    )
+    assert res1.error is False
+    assert res1.state_updates["confirmed_technical_competencies"] == []
+
+    # Turno 2: aplica o state_updates (confirmadas agora == []) e adiciona Python.
+    state2 = {
+        **state,
+        "confirmed_technical_competencies": res1.state_updates[
+            "confirmed_technical_competencies"
+        ],
+    }
+    res2 = _handle_update_competencies(
+        state2, {"add_technical": ["Python"]}, CTX
+    )
+    assert res2.error is False
+    names = _names(res2.state_updates["confirmed_technical_competencies"], "skill")
+    # Java (removido) NÃO ressuscita; SQL (sugerida) NÃO aparece; só Python.
+    assert names == ["Python"]
