@@ -15,6 +15,7 @@ import { AnalyzeWebsiteModal } from "@/components/settings/AnalyzeWebsiteModal"
 import { useLiaChatContext } from "@/contexts/lia-float-context"
 import type { ProposedSaves } from "@/lib/website-proposal-mapper"
 import { buildWebsiteProposalMessage } from "@/components/unified-chat/website-proposal-injector"
+import { toast } from "sonner"
 import { textStyles } from "@/lib/design-tokens"
 import { Globe } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
@@ -124,6 +125,7 @@ export function MinhaEmpresaHub({ activeSubsection }: MinhaEmpresaHubProps = {})
   const handleProposed = React.useCallback(
     ({ proposed, companyId: cid }: { proposed: ProposedSaves; companyId: string }) => {
       setChatMessages((prev) => [...prev, buildWebsiteProposalMessage(proposed, cid)])
+      toast.success("Proposta gerada — confira no chat ao lado. 💬")
     },
     [setChatMessages],
   )
