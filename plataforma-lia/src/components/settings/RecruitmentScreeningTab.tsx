@@ -19,6 +19,7 @@ import {
 } from "@/hooks/screening/use-eligibility-templates"
 import { EligibilityTemplatesManager } from "./EligibilityTemplatesManager"
 import { useTranslations } from "next-intl"
+import { useAuth } from "@/contexts/auth-context"
 import { textStyles, actionButtonStyles } from '@/lib/design-tokens'
 import { useRecruitmentHub, type NewQuestionForm } from './useRecruitmentHub'
 import { InteractiveSurface } from "@/components/ui/interactive-surface"
@@ -30,6 +31,11 @@ export function RecruitmentScreeningTab() {
 
   const t = useTranslations("settings")
   const hub = useRecruitmentHub('screening')
+  // P1-18 (auditoria Configuracoes): isAdmin/currentUserId reais do contexto
+  // auth (antes hardcoded true/null — todo usuario virava admin nos templates).
+  const { user } = useAuth()
+  const isAdmin = user?.role === "admin" || user?.role === "wedotalent_admin"
+  const currentUserId = user?.email ?? null
   const error = hub.error
   const successMessage = hub.successMessage
   const questions = hub.questions
@@ -202,8 +208,8 @@ export function RecruitmentScreeningTab() {
       </Card>
 
       <EligibilityTemplatesManager
-        isAdmin={true}
-        currentUserId={null}
+        isAdmin={isAdmin}
+        currentUserId={currentUserId}
       />
     </div>
   )
