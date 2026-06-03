@@ -6,7 +6,7 @@
 **Formato:** Diagrama passo-a-passo por macro-etapa (estilo "11 STEPS" do WSI)  
 **Referência:** `ANALISE_ROADMAP_ALPHA1_vs_CODIGO.md` v6.3 (complementar)
 
-> ⚠ **Nota de auditoria (v1.1):** este documento foi auditado contra o código real do `lia-agent-system` em 03/06/2026. Correções de nomes de classe, caminhos de arquivo e contagens foram aplicadas ao longo do texto. Divergências que requerem decisão de produto/engenharia (não corrigíveis só no doc) estão consolidadas no apêndice **[Divergências & Gaps (auditoria 03/06/2026)](#divergências--gaps-auditoria-03062026)** no final do documento, e servem de base para tarefas futuras de correção. **Este PR é documentação apenas — nenhum código de produção foi alterado.**
+> ⚠ **Nota de auditoria (v1.1):** este documento foi auditado contra o código real do `lia-agent-system` em 03/06/2026. Correções de nomes de classe, caminhos de arquivo e contagens foram aplicadas ao longo do texto. Divergências que requerem decisão de produto/engenharia (não corrigíveis só no doc) estão consolidadas no apêndice **[Divergências & Gaps (auditoria 03/06/2026)](#divergências--gaps-auditoria-03062026)** no final do documento, e servem de base para tarefas futuras de correção. **Atualização (03/06/2026 — "resolver tudo"):** os 4 gaps que estavam abertos no apêndice foram resolvidos. O D-10 (mascaramento de nome via Presidio) exigiu alteração de código em `lia-agent-system` (`app/shared/pii_masking.py` + `requirements.txt` + teste); D-06/D-08/D-11 foram resolvidos no doc. Ver apêndice para detalhes.**
 
 > 📋 **Checklists do time no final do documento:** [MVP — Roadmap Alpha 1](#checklist-pragmático-mvp--roadmap-alpha-1) (devs, PO, QA) · [Product Readiness — Go-Live](#checklist-product-readiness--go-live) (Ops, PM, Suporte, Legal, Billing).
 
@@ -20,7 +20,7 @@ Cada macro-etapa do Alpha 1 (E1–E9B) é apresentada como um diagrama técnico 
 2. **O roteamento** — DomainOrchestrator, CascadedRouter (6 tiers), domínio destino
 3. **Os mixins/capabilities injetados** — EnhancedAgentMixin, AuditTrail, WorkingMemory, etc.
 4. **FairnessGuard** — quais camadas (L1 explicit, L2 implicit, L3 semantic) atuam ANTES e DEPOIS do LLM
-5. **PII Masking** — 4 camadas pré-LLM (CPF, nome, endereço, campos sensíveis)
+5. **PII Masking** — regex (CPF/email/telefone/RG/CNPJ) + quasi-identificadores + NER Presidio que mascara **nome (PERSON)**, ligado por padrão (modelo PT `pt_core_news_sm`)
 6. **Processamento** — qual agente/serviço, qual LLM, qual graph/loop
 7. **FactChecker** — 4 tipos de verificação pós-LLM
 8. **ConfidenceNode + BiasAuditSnapshot** — calibração, Four-Fifths Rule
@@ -84,7 +84,7 @@ Para facilitar a leitura por qualquer pessoa — mesmo sem conhecimento da arqui
 | **MainOrchestrator** (doc antigo: "DomainOrchestrator") | Orquestrador | Recebe toda requisição e roteia para o domínio correto usando 6 camadas de cache/análise. NÃO existe classe `DomainOrchestrator` — o orquestrador real é `MainOrchestrator` (`app/orchestrator/execution/main_orchestrator.py`) + `CascadedRouter` (ver D-01) | "Recepcionista inteligente" — entende o que você pediu e direciona ao especialista certo |
 | **CascadedRouter** | Serviço (dentro do Orquestrador) | 6 camadas de roteamento: memória → cache local → cache Redis → busca vetorial → regex → LLM | "GPS de requisições" — tenta o caminho mais rápido primeiro, escala para análise mais profunda se necessário |
 | **FairnessGuard** | Capability (3 camadas) | L1: bloqueia viés explícito (350+ padrões). L2: alerta viés implícito. L3: análise semântica por LLM | "Guardião de equidade" — impede que a IA discrimine por gênero, idade, etnia ou qualquer categoria protegida |
-| **PII Masking** | Capability (multicamadas) | Remove dados pessoais antes de enviar ao LLM: regex direto (CPF, email, telefone, RG, CNPJ), quase-identificadores (idade/ano de formatura/endereço) e NER via Presidio (opt-in, mascara nome). Mascaramento de nome depende do Presidio habilitado (ver D-10) | "Protetor de privacidade" — a IA nunca vê dados pessoais reais do candidato |
+| **PII Masking** | Capability (multicamadas) | Remove dados pessoais antes de enviar ao LLM: regex direto (CPF, email, telefone, RG, CNPJ), quase-identificadores (idade/ano de formatura/endereço) e NER via Presidio que mascara **nome (PERSON)** — ligado por padrão (modelo PT `pt_core_news_sm`; configurável via `LLM_PROMPT_PRESIDIO_ENABLED` / `LLM_PROMPT_PRESIDIO_ENTITIES`). Ver D-10 | "Protetor de privacidade" — identificadores diretos do candidato (incl. nome) são mascarados antes do LLM |
 | **AuditTrail** | Capability | Registra toda decisão de forma imutável (append-only); retenção por tipo de evento, até 7 anos para tipos SOX (ver D-07) | "Cartório digital" — tudo que a IA decide fica registrado e não pode ser alterado |
 | **FactChecker** | Capability | Verifica claims do LLM: salário, contagem de candidatos, percentuais e datas (métodos `_check_*`; ver D-04) | "Verificador de fatos" — confere se o que a IA diz é coerente com os dados reais |
 | **BiasAuditSnapshot** | Capability | Aplica Four-Fifths Rule: detecta se um grupo demográfico é aprovado <80% em relação a outro | "Auditor estatístico" — detecta discriminação numérica mesmo que ninguém a tenha intencionado |
@@ -238,10 +238,11 @@ JD com problemas e a LIA não consumir JD com problemas))           │
     Input + Output check via check_fairness em jd_generation.py
 
  5  PII Masking remove dados sensíveis
-    4 camadas pré-LLM: CPF → [CPF_MASKED]
-    nome → [NAME_1] | endereço → [ADDR_MASKED]
-    Campos sensíveis strip via strip_pii_for_llm_prompt
-    O LLM NUNCA vê dados pessoais reais
+    NER Presidio (nome → [PERSON REMOVIDO], default ON) +
+    regex (CPF → [CPF REMOVIDO], email, telefone, RG, CNPJ) +
+    quasi-identificadores (idade/ano formatura/endereço)
+    strip_pii_for_llm_prompt aplicado antes do prompt
+    Identificadores diretos do candidato (incl. nome) são mascarados
 
 CONTINUA DAQUI - ENRIQUECIMENTO DO JD COM LLM QUE SEGUE PROMPT DEFINIDO POR NOS
  6  JobDescriptionGeneratorService processa (Claude LLM)
@@ -1793,15 +1794,40 @@ Arquivo: NÃO existe app/api/v1/lgpd.py. Os fluxos LGPD vivem em:
 ### DSR — Data Subject Requests
 
 ```
-Endpoints DSR (em data_subject_requests.py / data_request.py /
-candidate_portal.py — NÃO em api/v1/lgpd.py):
-  Export, delete/anonymize e consulta de consentimento existem,
-  mas os caminhos exatos divergem dos listados em versões anteriores
-  (ex.: o módulo `lgpd.py` não existe). Confirmar rotas finais
-  contra o código antes de citar (ver D-08).
-  Portal público: /portal/data-request/[token]
+Rotas DSR reais (auditadas 03/06/2026). NÃO existe app/api/v1/lgpd.py —
+mas existe o PREFIXO /api/v1/lgpd (em lgpd_compliance.py). Mapa por arquivo:
 
-Status: Endpoints existem ○ (pendente integração completa do portal)
+  data_subject_requests.py — prefixo /api/v1/data-subject-requests
+    POST /                        criar pedido — REQUER JWT; company_id vem do
+                                  JWT (payload data.company_id IGNORADO,
+                                  anti cross-tenant) + rate-limit por IP
+    GET  /track/{request_id}      acompanhar status — REQUER JWT; tenant-scoped
+                                  via get_by_id_and_company + RLS
+    GET  / | GET /{request_id}    listar / detalhar (interno)
+    PUT  /{request_id}/assign | /verify-identity | /process |
+         /complete | /reject      ciclo de atendimento do DSR
+    Tipos (schemas/data_subject_requests.py): ACCESS, CORRECTION,
+    DELETION, PORTABILITY, OBJECTION, RESTRICTION, EXPLANATION (Art. 18)
+
+  candidate_portal.py — prefixo /api/public/portal/data-request
+    GET /{token} · POST /{token}/request-otp · /verify-otp ·
+    /submit · /upload   (portal do titular por token + OTP)
+
+  data_request.py — prefixo /api/v1/data-requests
+    Config recrutador-side de COLETA de dados (config/templates/fields/
+    triggers por vaga/WhatsApp) — não é o canal DSR do titular.
+
+  lgpd_compliance.py — prefixo /api/v1/lgpd
+    /stats · /dpo* · /breaches* (ANPD) · /decisions* (revisão humana
+    de decisão automatizada) · /schedule-deletion · /run-cleanup
+
+  communication_optout.py — /api/v1/communication/unsubscribe/{token}
+    opt-out de email com token HMAC-assinado
+
+  Portabilidade (Art. 18 V): dsr_export_service.generate_portability_json.
+
+Status: endpoints implementados ●. Integração ponta-a-ponta do portal
+público (/portal/data-request/[token]) ainda NÃO verificada E2E — ver checklist.
 ```
 
 ### Data Minimization
@@ -2104,7 +2130,7 @@ Sem isso o MVP não pode subir.
 #### LGPD — Consent, DSR técnico, Data Min, Retenção
 - [ ] **(MVP) Consentimento WSI obrigatório no WelcomeCard** — botão desabilitado até checkbox marcado, `ConsentEvent` auditável registrado.
 - [ ] **(MVP) Opt-out HMAC-signed em 100% dos emails** com `ConsentEvent` registrando revogação.
-- [ ] **(○) DSR endpoints (`/api/v1/lgpd/data-export`, `data-delete`, `consent`) integrados ao portal público** (linha 1762: "○ pendente integração completa"). (ver também: Product Readiness · Legal & Compliance)
+- [ ] **(○) Portal público DSR (`/api/public/portal/data-request/{token}`) verificado E2E** — rotas DSR reais: `POST /api/v1/data-subject-requests` + `GET /.../track/{id}` (ambas requerem JWT) e o portal do titular por token+OTP (ver seção transversal LGPD/DSR). Atenção: os caminhos `/api/v1/lgpd/data-export|data-delete|consent` **NÃO existem**. (ver também: Product Readiness · Legal & Compliance)
 - [ ] **(MVP) Data Minimization aplicada em ICS, ATS sync, feedback, PII Masking, ToonService anonymize.**
 - [ ] **(novo) Verificação automática dos prazos da tabela "Retenção por Tipo de Dado"** — sem isso é só promessa.
 - [ ] **(novo · Observabilidade básica) Prometheus dashboards por etapa + alertas configurados** — base para qualquer SLA. (ver também: Product Readiness · Confiabilidade & Operação)
@@ -2204,15 +2230,15 @@ Cada item usa `- [ ]` (markdown checkbox). Itens vindos desta consolidação tê
 | **D-03** | Inventário de agentes | Rótulos `Ag.0–Ag.8` como mapa completo | Inventário canônico = **16 ReActAgents** (sentinela `test_tenant_aware_rollout_t_d.py`): 14 em `ALL_REACT_AGENTS_RUNTIME_PATH` + `CandidateSelfServiceAgent` + `PipelineTransitionAgent`. Os `Ag.x` são didáticos | Baixa | ✅ Doc corrigido (nota adicionada) |
 | **D-04** | FactChecker | 4 tipos: experiência declarada, certificações, período na empresa, habilidades técnicas | 4 verificações reais (`_check_*` em `app/shared/compliance/fact_checker.py`): **salário, contagem de candidatos, percentuais, datas** + `verify_*` granulares + registry de validadores por domínio | Alta | ✅ Doc corrigido |
 | **D-05** | EnhancedAgentMixin | "16 capabilities injetadas automaticamente" | 4 capabilities centrais no mixin (`libs/agents-core/lia_agents_core/enhanced_agent_mixin.py`): **Memory, Autonomy/Guardrails, Learning, Compliance** + 3 categorias de tools. PII Masking/AuditTrail/CircuitBreaker etc. atuam por camadas próprias, não como "16 capabilities" do mixin | Alta | ✅ Doc corrigido |
-| **D-06** | CircuitBreaker | "14 circuits pré-configurados", incluindo `sendgrid` | `circuit_breaker.py` define **~22 circuits**: anthropic, openai, deepseek, gemini, pearch, apify, apify_search, workos, merge, google_calendar, gupy, pandape, mailgun, resend, iugu, vindi, twilio_voice, gemini_live, deepgram, openmic, rails_api. **Não existe `sendgrid`** (→ `mailgun`); `llm_react_reason` é per-ReAct em runtime. A tabela de valores no doc não foi reauditada célula a célula | Alta | ⚠ Requer decisão (reauditar valores da tabela) |
+| **D-06** | CircuitBreaker | "14 circuits pré-configurados", incluindo `sendgrid` | `circuit_breaker.py` define **21 circuits**: anthropic, openai, deepseek, gemini, pearch, apify, apify_search, workos, merge, google_calendar, gupy, pandape, mailgun, resend, iugu, vindi, twilio_voice, gemini_live, deepgram, openmic, rails_api. **Não existe `sendgrid`** (→ `mailgun`); `llm_react_reason` é per-ReAct em runtime. Valores inline reauditados (LLMs 5/30s/60s; pearch+apify 3/60s/30s; apify_search 3/120s/300s; workos 5/30s/15s) — conferem | Alta | ✅ Resolvido (03/06/2026) |
 | **D-07** | AuditTrail (retenção) | "730–1825 dias (~2–5 anos)" | `RETENTION_PERIODS` por tipo de evento, até **2555 dias (7 anos)** para tipos SOX (ex.: `company_settings_change`). A faixa antiga subestimava os tipos de 7 anos | Média | ✅ Doc corrigido |
-| **D-08** | LGPD / DSR | Endpoints em `app/api/v1/lgpd.py` | **Não existe `app/api/v1/lgpd.py`**. Os fluxos LGPD vivem em `lgpd_compliance.py`, `admin_lgpd.py`, `data_subject_requests.py`, `data_request.py`, `app/api/public/candidate_portal.py`, `communication_optout.py` + domínio `app/domains/lgpd/`. Os caminhos/verbos exatos das rotas DSR precisam ser confirmados contra o código antes de citar | Alta | ⚠ Requer decisão (mapear rotas DSR finais) |
+| **D-08** | LGPD / DSR | Endpoints em `app/api/v1/lgpd.py` | **Não existe `app/api/v1/lgpd.py`**. Os fluxos LGPD vivem em `lgpd_compliance.py`, `admin_lgpd.py`, `data_subject_requests.py`, `data_request.py`, `app/api/public/candidate_portal.py`, `communication_optout.py` + domínio `app/domains/lgpd/`. Os caminhos/verbos exatos das rotas DSR estão mapeados na seção transversal LGPD/DSR deste doc | Alta | ✅ Resolvido (03/06/2026) |
 | **D-09** | Ag.3 (CV Screening) | Classe `TriagemCurricular` | Não existe classe `TriagemCurricular`. CV screening usa `WSIScreeningPipeline` / `PipelineReActAgent` | Média | ✅ Doc corrigido |
-| **D-10** | PII Masking | "4 camadas (CPF, nome, endereço, campos sensíveis)" | Camadas: regex direto (CPF/email/telefone/RG/CNPJ), quase-identificadores (idade/ano de formatura/endereço) e NER via Presidio (**opt-in**). Mascaramento de **nome** depende do Presidio habilitado — não é garantido por padrão | Média | ⚠ Requer decisão (confirmar default de Presidio em prod) |
-| **D-11** | Caminhos de serviços de Intelligence | `app/services/{routing_learning,calibration,model_drift,voice}_service.py` | Os módulos vivem em domínios/shared: `app/domains/analytics/services/` (routing_learning, calibration), `app/shared/observability/` (model_drift, com cópias em `app/domains/ai/services/` e `app/shared/services/`), `app/domains/cv_screening/services/` (voice). Há **duplicação de módulos** entre `app/domains/*` e `app/shared/services/*` | Média | ⚠ Requer decisão (consolidar duplicatas) |
+| **D-10** | PII Masking | "4 camadas (CPF, nome, endereço, campos sensíveis)" | Camadas: regex direto (CPF/email/telefone/RG/CNPJ), quase-identificadores (idade/ano de formatura/endereço) e NER via Presidio. Mascaramento de **nome** (PERSON) agora ligado por padrão via Presidio + modelo spaCy PT (`pt_core_news_sm`, declarado em `requirements.txt`). **Bug corrigido:** `AnalyzerEngine()` sem `nlp_engine` tentava o modelo inglês e falhava em silêncio → nome nunca era mascarado mesmo com a flag ON; agora o `NlpEngineProvider` carrega o modelo PT e a falha de carga loga CRITICAL. Entidades configuráveis via `LLM_PROMPT_PRESIDIO_ENTITIES` (LOCATION/DATE_TIME fora do default p/ não mascarar skills). Teste: `tests/unit/test_pii_presidio_name_masking.py` | Média | ✅ Resolvido (03/06/2026) |
+| **D-11** | Caminhos de serviços de Intelligence | `app/services/{routing_learning,calibration,model_drift,voice}_service.py` | Os módulos vivem em domínios/shared: `app/domains/analytics/services/` (routing_learning, calibration), `app/shared/observability/` (model_drift, com cópias em `app/domains/ai/services/` e `app/shared/services/`), `app/domains/cv_screening/services/` (voice). Os arquivos em `app/shared/services/*` e `app/shared/observability/*` são **shims de re-export** (2-3 linhas, marcados R-005.2/R-056) apontando para o canônico em `app/domains/*` — backward-compat intencional, NÃO duplicação divergente. `calibration_service` (analytics) e os vários `*voice_service` (cv_screening / voice / communication) são serviços DISTINTOS, não cópias | Média | ✅ Resolvido (doc — shims intencionais) |
 | **D-12** | PolicyEngine | `app/services/policy_engine_service.py`, classe `PolicyEngine` | `app/domains/policy/services/policy_engine_service.py`, classe `PolicyEngineService` (com `ALPHA1_SECTOR_RULES` + `fairness_layer3_enabled` por setor) | Média | ✅ Doc corrigido |
 
-**Itens que exigem follow-up de engenharia (não resolvíveis só no doc):** D-06 (reauditar valores da tabela de circuits), D-08 (mapear rotas DSR finais), D-10 (confirmar default do Presidio em produção), D-11 (consolidar módulos duplicados entre `app/domains/*` e `app/shared/services/*`).
+**Status de follow-up (atualizado 03/06/2026 — "resolver tudo"):** D-06 ✅ (21 circuits; valores inline reauditados), D-08 ✅ (rotas DSR mapeadas na seção LGPD), D-10 ✅ (mascaramento de nome via Presidio + `pt_core_news_sm` ligado por padrão; deps declaradas; teste em `tests/unit/test_pii_presidio_name_masking.py`), D-11 ✅ doc (os "duplicados" em `app/shared/services/*` são shims de re-export intencionais para o canônico em `app/domains/*`). **Trade-off conhecido do D-10:** o modelo PT pequeno ocasionalmente mascara termos capitalizados (skills/títulos) como PERSON; o nome do candidato é sempre mascarado (prioridade LGPD). `LOCATION`/`DATE_TIME` ficam fora do default para preservar a qualidade da triagem (ativáveis via `LLM_PROMPT_PRESIDIO_ENTITIES` para privacidade máxima).
 
 ---
 ---

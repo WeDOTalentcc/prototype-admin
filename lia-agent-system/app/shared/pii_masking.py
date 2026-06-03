@@ -241,8 +241,11 @@ def strip_pii_for_llm_prompt(text: str) -> str:
       - Layer 1: Regex direto (CPF, email, telefone, RG, CNPJ)
       - Layer 3 basic: Quasi-identificadores (ano de formatura, idade explícita,
         referências de endereço)
-      - Layer 4: NER via Microsoft Presidio (opt-in, requer LLM_PROMPT_PRESIDIO_ENABLED=true
-        e pacote presidio-analyzer instalado)
+      - Layer 4: NER via Microsoft Presidio para mascarar NOME (PERSON), LOCATION
+        e demais entidades não capturadas por regex. Ligada por padrão
+        (LLM_PROMPT_PRESIDIO_ENABLED, padrão: true) usando o modelo spaCy PT-BR
+        pt_core_news_sm. Se o modelo não estiver disponível, a falha é logada em
+        CRITICAL (nome vaza sem máscara) — não é um fallback silencioso.
 
     Controlado pela env LLM_PROMPT_PII_STRIPPING_ENABLED (padrão: true).
 
@@ -270,11 +273,14 @@ def strip_pii_for_llm_prompt(text: str) -> str:
 
     result = _UUID_V4_PATTERN.sub(_shield, text)
 
-    # Layer 1 + Layer 3: regex patterns
+    # Layer 4 (NER) PRIMEIRO: Presidio mascara NOME (PERSON)/LOCATION sobre o
+    # texto ainda "cru" (UUIDs já blindados). Roda ANTES dos regexes para não
+    # re-embrulhar placeholders já mascarados (evita "[[LOCATION REMOVIDO] REMOVIDO]").
+    result = _presidio_layer4_strip(result)
+    # Layer 1 + Layer 3: regex determinístico como backstop (CPF/email/telefone/
+    # RG/CNPJ + quasi-identificadores) — captura o que o NER não pegou.
     for pattern, replacement in _LLM_PROMPT_PII_PATTERNS:
         result = pattern.sub(replacement, result)
-    # Layer 4: Presidio NER (opt-in)
-    result = _presidio_layer4_strip(result)
 
     # ── Restaura UUIDs ──
     for token, uid in _uuid_map.items():
@@ -282,43 +288,104 @@ def strip_pii_for_llm_prompt(text: str) -> str:
     return result
 
 
-_PRESIDIO_ENABLED = _os.environ.get("LLM_PROMPT_PRESIDIO_ENABLED", "false").lower() == "true"
+_PRESIDIO_ENABLED = _os.environ.get("LLM_PROMPT_PRESIDIO_ENABLED", "true").lower() == "true"
+
+# Modelo spaCy NER usado pelo Presidio. PT-BR por padrão (currículos brasileiros).
+# DEVE estar declarado em requirements.txt — sem ele o AnalyzerEngine default tenta
+# baixar o modelo inglês em runtime, falha (ambiente externally-managed) e o nome
+# do candidato NÃO é mascarado (vazamento silencioso para o LLM).
+_PRESIDIO_LANG = _os.environ.get("LLM_PROMPT_PRESIDIO_LANG", "pt").lower()
+_PRESIDIO_SPACY_MODEL = _os.environ.get(
+    "LLM_PROMPT_PRESIDIO_SPACY_MODEL", "pt_core_news_sm"
+)
 
 _presidio_analyzer_instance = None  # lazy singleton
+_presidio_load_failed = False  # evita re-tentar (e re-logar CRITICAL) a cada chamada
+_presidio_runtime_fail_logged = False  # latch one-shot p/ falha de runtime do NER
 
 
 def _get_presidio_analyzer():
-    """Retorna AnalyzerEngine do Presidio (lazy, fail-safe)."""
-    global _presidio_analyzer_instance
-    if _presidio_analyzer_instance is not None:
+    """Retorna AnalyzerEngine do Presidio configurado com o modelo NER PT.
+
+    Fail-safe quanto a NÃO derrubar a aplicação, mas fail-LOUD quanto a
+    observabilidade: se o Presidio estiver habilitado e a carga falhar, loga
+    CRITICAL — porque nesse estado o nome do candidato vaza sem máscara para o
+    LLM, e isso precisa ser detectável (não pode passar como debug silencioso).
+    """
+    global _presidio_analyzer_instance, _presidio_load_failed
+    if _presidio_analyzer_instance is not None or _presidio_load_failed:
         return _presidio_analyzer_instance
+    log = logging.getLogger(__name__)
     try:
         from presidio_analyzer import AnalyzerEngine
-        _presidio_analyzer_instance = AnalyzerEngine()
-        logging.getLogger(__name__).info("[PII-L4] Presidio AnalyzerEngine carregado")
-    except ImportError:
-        logging.getLogger(__name__).debug(
-            "[PII-L4] presidio_analyzer não instalado — Layer 4 desabilitada. "
-            "Instale com: pip install presidio-analyzer"
+        from presidio_analyzer.nlp_engine import NlpEngineProvider
+
+        nlp_engine = NlpEngineProvider(
+            nlp_configuration={
+                "nlp_engine_name": "spacy",
+                "models": [
+                    {"lang_code": _PRESIDIO_LANG, "model_name": _PRESIDIO_SPACY_MODEL}
+                ],
+            }
+        ).create_engine()
+        _presidio_analyzer_instance = AnalyzerEngine(
+            nlp_engine=nlp_engine,
+            supported_languages=[_PRESIDIO_LANG],
+        )
+        log.info(
+            "[PII-L4] Presidio AnalyzerEngine carregado (lang=%s, model=%s)",
+            _PRESIDIO_LANG,
+            _PRESIDIO_SPACY_MODEL,
+        )
+    except ImportError as exc:
+        _presidio_load_failed = True
+        log.critical(
+            "[PII-L4] presidio_analyzer indisponível (%s) — Layer 4 (mascaramento "
+            "de NOME via NER) DESLIGADA enquanto LLM_PROMPT_PRESIDIO_ENABLED=true. "
+            "Nomes de candidatos NÃO serão mascarados antes do LLM. Declare "
+            "presidio-analyzer + %s em requirements.txt.",
+            exc,
+            _PRESIDIO_SPACY_MODEL,
         )
         _presidio_analyzer_instance = None
     except Exception as exc:
-        logging.getLogger(__name__).debug("[PII-L4] Presidio init falhou: %s", exc)
+        _presidio_load_failed = True
+        log.critical(
+            "[PII-L4] Falha ao inicializar Presidio (%s) — mascaramento de NOME "
+            "DESLIGADO apesar de LLM_PROMPT_PRESIDIO_ENABLED=true. Verifique se o "
+            "modelo spaCy '%s' está instalado.",
+            exc,
+            _PRESIDIO_SPACY_MODEL,
+        )
         _presidio_analyzer_instance = None
     return _presidio_analyzer_instance
 
 
-# Entidades Presidio a remover (subconjunto relevante para currículos BR)
+# Entidades Presidio a remover (configurável via LLM_PROMPT_PRESIDIO_ENTITIES).
+# O default foca nos identificadores diretos de privacidade — NOME (PERSON) é o
+# gap real do D-10; EMAIL/PHONE são redundantes com o regex mas inofensivos; NRP
+# = nationality/religion/political group (proxy de classe protegida).
+# LOCATION e DATE_TIME ficam FORA do default de propósito: o modelo PT pequeno
+# (pt_core_news_sm) rotula erroneamente skills/tecnologias como LOCATION
+# (ex.: "React" → LOCATION), o que removeria informação útil da triagem.
+# Modo privacidade máxima (mascara cidade/datas também):
+#   LLM_PROMPT_PRESIDIO_ENTITIES="PERSON,EMAIL_ADDRESS,PHONE_NUMBER,NRP,LOCATION,DATE_TIME"
+_DEFAULT_PRESIDIO_ENTITIES = ["PERSON", "EMAIL_ADDRESS", "PHONE_NUMBER", "NRP"]
 _PRESIDIO_ENTITIES = [
-    "PERSON", "EMAIL_ADDRESS", "PHONE_NUMBER", "LOCATION",
-    "DATE_TIME", "NRP",  # NRP = nationality/religion/political group
+    e.strip()
+    for e in _os.environ.get(
+        "LLM_PROMPT_PRESIDIO_ENTITIES", ",".join(_DEFAULT_PRESIDIO_ENTITIES)
+    ).split(",")
+    if e.strip()
 ]
 
 
 def _presidio_layer4_strip(text: str) -> str:
     """Aplica NER Presidio para remover entidades PII não capturadas por regex.
 
-    Fail-safe: retorna texto original em qualquer erro ou se Presidio não disponível.
+    Resiliente (não derruba o request) mas NÃO silencioso: se o Presidio estiver
+    habilitado e a máscara falhar em runtime, o NOME pode vazar sem máscara para
+    o LLM — então a primeira falha loga CRITICAL (depois ERROR), não DEBUG.
     """
     if not _PRESIDIO_ENABLED or not text:
         return text
@@ -329,15 +396,8 @@ def _presidio_layer4_strip(text: str) -> str:
         results = analyzer.analyze(
             text=text,
             entities=_PRESIDIO_ENTITIES,
-            language="pt",
+            language=_PRESIDIO_LANG,
         )
-        if not results:
-            # Tentar fallback em inglês (currículos em inglês)
-            results = analyzer.analyze(
-                text=text,
-                entities=_PRESIDIO_ENTITIES,
-                language="en",
-            )
         if not results:
             return text
         # Substituir de trás para frente para preservar índices
@@ -347,5 +407,16 @@ def _presidio_layer4_strip(text: str) -> str:
             redacted[r.start:r.end] = list(placeholder)
         return "".join(redacted)
     except Exception as exc:
-        logging.getLogger(__name__).debug("[PII-L4] Presidio strip falhou (fail-safe): %s", exc)
+        global _presidio_runtime_fail_logged
+        log = logging.getLogger(__name__)
+        if not _presidio_runtime_fail_logged:
+            _presidio_runtime_fail_logged = True
+            log.critical(
+                "[PII-L4] Presidio falhou em RUNTIME (%s) — NOME do candidato pode "
+                "vazar sem máscara para o LLM enquanto LLM_PROMPT_PRESIDIO_ENABLED=true. "
+                "Investigue o NER (log único; falhas seguintes logam ERROR).",
+                exc,
+            )
+        else:
+            log.error("[PII-L4] Presidio strip falhou novamente em runtime: %s", exc)
         return text

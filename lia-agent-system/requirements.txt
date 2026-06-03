@@ -116,3 +116,10 @@ ddtrace>=4.8.0,<5.0
 # PDF export for compliance reports (admin_compliance_fairness.py)
 # Requires Cairo/Pango system libs; lazy-imported to avoid crash if missing
 weasyprint>=60.0
+
+# PII NER masking (LGPD Art.12) — Layer 4 de strip_pii_for_llm_prompt mascara
+# NOME (PERSON)/LOCATION antes do LLM. presidio-analyzer puxa spacy; o modelo
+# PT-BR pt_core_news_sm é OBRIGATÓRIO (sem ele o AnalyzerEngine tenta baixar o
+# modelo inglês em runtime, falha e o nome vaza sem máscara). Ver app/shared/pii_masking.py.
+presidio-analyzer==2.2.362
+pt-core-news-sm @ https://github.com/explosion/spacy-models/releases/download/pt_core_news_sm-3.8.0/pt_core_news_sm-3.8.0-py3-none-any.whl
