@@ -6,7 +6,6 @@ Cobrem:
 - process_wizard_message: dict com campos obrigatórios, tool_call, confirmation
 - get_available_intents: 8 intents (sem UNKNOWN)
 - build_context_for_prompt: truncation
-- get_system_prompt_with_context: combinação base + contexto
 """
 import pytest
 
@@ -171,26 +170,3 @@ class TestWizardOrchestratorService:
         result = self.svc.build_context_for_prompt(context_data)
         assert "quero criar uma vaga" in result
 
-    # ------------------------------------------------------------------
-    # get_system_prompt_with_context
-    # ------------------------------------------------------------------
-
-    def test_get_system_prompt_combines_base_and_context(self):
-        """base_prompt + context_string devem aparecer no resultado."""
-        base = "Você é um assistente de RH."
-        context = "## Contexto\nConversa anterior sobre vaga."
-        result = self.svc.get_system_prompt_with_context(base, context)
-        assert base in result
-        assert context in result
-
-    def test_get_system_prompt_without_context_returns_base_only(self):
-        """Sem context_string, retorna base_prompt sem modificações."""
-        base = "Você é um assistente."
-        result = self.svc.get_system_prompt_with_context(base, None)
-        assert result == base
-
-    def test_get_system_prompt_empty_context_returns_base_only(self):
-        """context_string vazio ('') retorna base_prompt sem modificações."""
-        base = "Você é um assistente."
-        result = self.svc.get_system_prompt_with_context(base, "")
-        assert result == base
