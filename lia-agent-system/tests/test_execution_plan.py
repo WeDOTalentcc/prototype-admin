@@ -363,6 +363,7 @@ class TestPlanDetector:
             "agendar_e_lembrar",
             "mover_e_notificar",
             "buscar_e_triar",
+            "buscar_pontuar_e_adicionar",
             "adicionar_analisar_wsi",
             "upload_cadastrar_triar",
             "launch_job_sourcing",
@@ -488,12 +489,36 @@ class TestPlanExecutor:
 
     @pytest.mark.asyncio
     async def test_discrete_step_still_executes(self, executor):
-        """Counterpart: a discrete (non-deferred) action still runs normally."""
+        """Counterpart: a discrete (non-deferred) action runs through its compliant
+        handler — it is NOT intercepted by the agent-handoff path. With valid params
+        + tenant context (compliant services stubbed) it completes honestly.
+
+        (Task #1226 hardened the handler to require candidate + stage; an empty
+        call now returns a clarification instead of a stubbed success.)"""
+        from unittest.mock import AsyncMock, MagicMock, patch
+
+        guard = MagicMock()
+        guard.check_with_layer3 = AsyncMock(return_value=MagicMock(is_blocked=False))
+        guard.log_check = AsyncMock()
+        service = MagicMock()
+        service.transition_candidate = AsyncMock(return_value=None)
+        audit = MagicMock()
+        audit.log_decision = AsyncMock()
+
         plan = ExecutionPlan()
-        plan.add_task(AgentTask(task_id="task_0", domain_id="automation",
-                                action_id="move_candidate_stage"))
-        result = await executor.execute(plan)
+        plan.add_task(AgentTask(
+            task_id="task_0", domain_id="automation",
+            action_id="move_candidate_stage",
+            params={"to_stage": "entrevista", "candidate_id": "vc-1"},
+        ))
+
+        with patch("app.shared.execution.discrete_actions.FairnessGuard", return_value=guard), \
+             patch("app.shared.execution.discrete_actions.PipelineStageService", return_value=service), \
+             patch("app.shared.execution.discrete_actions.AuditService", return_value=audit):
+            result = await executor.execute(plan, base_context={"company_id": "comp-1"})
+
         assert result.tasks[0].status == TaskStatus.COMPLETED
+        service.transition_candidate.assert_awaited_once()
 
     def test_build_consolidated_response_success(self, executor):
         plan = ExecutionPlan(plan_id="test")
