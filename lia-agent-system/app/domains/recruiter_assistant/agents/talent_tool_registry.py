@@ -56,17 +56,35 @@ async def _wrap_search_candidates(**kwargs: Any) -> dict[str, Any]:
         results = data["results"]
         total = data["total"]
     except Exception as e:
+        # REGRA 4 (fail-loud): erro de DB NAO pode parecer "0 resultados".
         logger.warning(f"[talent_tools] search_candidates DB error: {e}")
+        return {
+            "success": False,
+            "errored": True,
+            "data": {"query": query, "filters": filters, "candidates_found": 0, "results": []},
+            "message": "Nao consegui consultar candidatos agora (erro interno). Tente de novo em instantes.",
+        }
 
+    data_block = {
+        "query": query,
+        "filters": filters,
+        "candidates_found": total,
+        "results": results,
+    }
+    message = f"Busca realizada. {total} candidatos encontrados para '{query}'."
+    # P0.2: 0-resultados -> sinal estruturado de relaxamento (agente relaxa + oferece opcoes).
+    if total == 0:
+        from app.orchestrator.context.empty_result_guidance import build_empty_result_guidance
+        _applied = dict(filters) if isinstance(filters, dict) else {}
+        if query:
+            _applied["busca_textual"] = query
+        _guidance = build_empty_result_guidance("candidato", _applied)
+        data_block["empty_guidance"] = _guidance
+        message = _guidance["guidance"]
     return {
         "success": True,
-        "data": {
-            "query": query,
-            "filters": filters,
-            "candidates_found": total,
-            "results": results,
-        },
-        "message": f"Busca realizada. {total} candidatos encontrados para '{query}'.",
+        "data": data_block,
+        "message": message,
     }
 
 

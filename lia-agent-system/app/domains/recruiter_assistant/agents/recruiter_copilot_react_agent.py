@@ -46,7 +46,7 @@ COPILOT_DOMAIN_SPECIFIC = (
     "Acoes de escrita (mover candidatos entre etapas, pausar/reabrir vaga) sao "
     "permitidas, mas passam por confirmacao humana (HITL) antes de efetivar.\n\n"
     "Se uma ferramenta falhar ou nao retornar dados, DIGA isso claramente "
-    "('nao consegui consultar agora') — jamais invente um resultado vazio."
+    "('nao consegui consultar agora') — jamais invente um resultado vazio. Se uma BUSCA retornar 0 resultados, NAO pare em 'nada encontrado': relaxe o filtro mais restritivo, rode a busca de novo e ofereca as opcoes com a contagem de cada uma (ex.: 'sem o filtro X sao N candidatos'), deixando o recrutador escolher."
 )
 
 COPILOT_FEW_SHOT_EXAMPLES = (
