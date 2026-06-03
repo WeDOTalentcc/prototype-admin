@@ -530,6 +530,54 @@ PUBLISH_JOB = WizardTool(
 _WSI_BULK_TIMEOUT_S = float(os.environ.get("LIA_ORCH_WSI_BULK_TIMEOUT_S", "150"))
 
 
+def _wsi_distribution_status(state: dict) -> dict:
+    """Conta perguntas WSI por bloco e compara com o mínimo metodológico.
+
+    Single source of truth do gate de distribuição no caminho live (orquestrador):
+    reusado por :func:`_handle_approve_wsi_questions` (gate fail-closed) e pelo
+    payload do ``WsiQuestionsPanel`` (banner). Critério de bloco alinhado ao nó
+    canônico ``wsi_questions_node`` e a ``_wsi_question_to_panel`` (campo ``block``
+    ∈ {"technical", "behavioral"}); comportamental = total − técnicas.
+
+    Fail-open: se ``_get_question_distribution`` falhar, os mínimos viram 0 e
+    ``gap`` fica None — nunca trava o fluxo por erro de tabela/import.
+    """
+    questions = state.get("wsi_questions") or []
+    tech_count = sum(
+        1 for q in questions
+        if isinstance(q, dict) and q.get("block") in ("technical", "tecnica")
+    )
+    behavioral_count = len(questions) - tech_count
+
+    mode = (state.get("screening_mode") or "compact").lower()
+    seniority = (
+        state.get("seniority_resolved") or state.get("parsed_seniority") or "pleno"
+    ).lower()
+    try:
+        from app.domains.job_creation.graph import _get_question_distribution
+        expected = _get_question_distribution(mode, seniority) or {}
+        min_tech = int(expected.get("technical", 0))
+        min_behavioral = int(expected.get("behavioral", 0))
+    except Exception:  # noqa: BLE001 — fail-open (gate nunca trava por erro de tabela)
+        min_tech = min_behavioral = 0
+
+    gap = None
+    if (min_tech and tech_count < min_tech) or (
+        min_behavioral and behavioral_count < min_behavioral
+    ):
+        gap = {
+            "tech": {"current": tech_count, "required": min_tech},
+            "behavioral": {"current": behavioral_count, "required": min_behavioral},
+        }
+    return {
+        "tech_count": tech_count,
+        "behavioral_count": behavioral_count,
+        "min_tech": min_tech,
+        "min_behavioral": min_behavioral,
+        "gap": gap,
+    }
+
+
 def _wsi_question_to_panel(q) -> dict:
     """Mapeia WSIQuestion canonico (cv_screening) -> shape do painel/ficha viva
     do wizard. Consolidacao WSI Fase 2.4b: a riqueza por-pergunta
@@ -918,6 +966,34 @@ def _handle_approve_wsi_questions(
             llm_message=(
                 "Não há perguntas geradas para aprovar. Gere primeiro com "
                 "generate_wsi_questions."
+            ),
+            error=True,
+        )
+    # Gate fail-closed: a metodologia WSI exige um mínimo de perguntas técnicas
+    # E comportamentais (tabela por modo × senioridade). O FE já bloqueia, mas é
+    # bypassável — este é o gate AUTORITATIVO server-side no caminho live.
+    _dist = _wsi_distribution_status(state)
+    if _dist["gap"]:
+        g = _dist["gap"]
+        falta_tech = max(0, g["tech"]["required"] - g["tech"]["current"])
+        falta_behav = max(0, g["behavioral"]["required"] - g["behavioral"]["current"])
+        partes = []
+        if falta_tech:
+            partes.append(
+                f"{falta_tech} técnica(s) (tem {g['tech']['current']}, "
+                f"mínimo {g['tech']['required']})"
+            )
+        if falta_behav:
+            partes.append(
+                f"{falta_behav} comportamental(is) (tem {g['behavioral']['current']}, "
+                f"mínimo {g['behavioral']['required']})"
+            )
+        return ToolResult(
+            llm_message=(
+                "Ainda não dá para aprovar: a metodologia WSI exige mais "
+                + " e ".join(partes)
+                + ". Gere as perguntas que faltam (add_wsi_question) ou substitua "
+                "antes de aprovar."
             ),
             error=True,
         )

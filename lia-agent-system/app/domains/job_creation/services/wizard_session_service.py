@@ -1170,6 +1170,21 @@ class WizardSessionService:
                 data["wsi_questions_used_fallback"] = new_state.get(
                     "wsi_questions_used_fallback", False
                 )
+                # Gate de distribuição (mesma lógica do approve_wsi_questions,
+                # fail-open): popula distribution_gap para o banner do
+                # WsiQuestionsPanel disparar também no caminho live.
+                try:
+                    from app.domains.job_creation.orchestrator.wizard_service_tools import (
+                        _wsi_distribution_status,
+                    )
+                    _ds = _wsi_distribution_status(new_state)
+                    if _ds["gap"]:
+                        data["distribution_gap"] = _ds["gap"]
+                except Exception as _dg_exc:  # noqa: BLE001 — banner é best-effort
+                    logger.debug(
+                        "[WizardOrchestrator] distribution_gap calc falhou: %s",
+                        _dg_exc,
+                    )
             if new_state.get("job_id"):
                 data["job_id"] = new_state.get("job_id")
                 data["share_link"] = new_state.get("share_link")
