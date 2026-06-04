@@ -1,4 +1,15 @@
 {
+  "rrp": {
+    "why": "why?",
+    "hide": "hide",
+    "confidenceLine": "Confidence: {level} — {basis}",
+    "unverifiedDefault": "Unverified estimate.",
+    "weight": "(weight {pct}%)",
+    "sources": "{count, plural, one {# source} other {# sources}}",
+    "showingOf": "Showing {shown} of {total}",
+    "unsupportedBlock": "(unsupported block in this version)",
+    "blockError": "(couldn't display this block)"
+  },
   "workflowRail": {
     "createJob": {
       "label": "Create job",

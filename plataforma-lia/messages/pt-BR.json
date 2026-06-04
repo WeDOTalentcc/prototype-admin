@@ -1,4 +1,15 @@
 {
+  "rrp": {
+    "why": "por quê?",
+    "hide": "ocultar",
+    "confidenceLine": "Confiança: {level} — {basis}",
+    "unverifiedDefault": "Estimativa não-verificada.",
+    "weight": "(peso {pct}%)",
+    "sources": "{count, plural, one {# fonte} other {# fontes}}",
+    "showingOf": "Mostrando {shown} de {total}",
+    "unsupportedBlock": "(bloco não suportado nesta versão)",
+    "blockError": "(não consegui exibir este bloco)"
+  },
   "workflowRail": {
     "createJob": {
       "label": "Criar vaga",

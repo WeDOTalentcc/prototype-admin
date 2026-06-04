@@ -2,11 +2,11 @@
 
 // src/components/unified-chat/ResponseBlockRenderer.tsx
 // Rich Response Protocol — renderer único dos blocos tipados (Fase 0 slice).
-// Compartilhável pelos renderers de chat. Exaustivo por `kind` + fallback de
-// kind desconhecido (AD6: backend pode emitir kind que o FE ainda não conhece →
-// degradar, NUNCA throw). score baixo = neutro/mudo (decisão fairness, não vermelho).
+// Exaustivo por `kind` + fallback de kind desconhecido (AD6: nunca throw).
+// score baixo = neutro/mudo (fairness, não vermelho). i18n via useTranslations('rrp').
 
 import React, { useState } from "react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { renderMarkdown } from "@/lib/render-markdown";
 import type {
@@ -41,6 +41,7 @@ function ProseView({ block }: { block: ProseBlock }) {
 }
 
 function ScoreExplainerView({ block }: { block: ScoreExplainerBlock }) {
+  const t = useTranslations("rrp");
   const [open, setOpen] = useState(false);
   return (
     <div className="rounded-lg border border-lia-border-subtle bg-lia-bg-secondary p-3">
@@ -61,7 +62,7 @@ function ScoreExplainerView({ block }: { block: ScoreExplainerBlock }) {
         >
           {block.score_label} {Math.round(block.score)}% ·{" "}
           <span className="font-normal text-lia-text-tertiary">
-            {open ? "ocultar" : "por quê?"}
+            {open ? t("hide") : t("why")}
           </span>
         </span>
       </button>
@@ -69,12 +70,15 @@ function ScoreExplainerView({ block }: { block: ScoreExplainerBlock }) {
         <div className="mt-2 space-y-1.5 border-t border-lia-border-subtle pt-2">
           {block.confidence_basis ? (
             <p className="text-xs text-lia-text-tertiary">
-              Confiança: {block.confidence} — {block.confidence_basis}
+              {t("confidenceLine", {
+                level: block.confidence,
+                basis: block.confidence_basis,
+              })}
             </p>
           ) : null}
           {block.unverified ? (
             <p className="text-xs italic text-lia-text-tertiary">
-              ⚠ {block.provenance_note || "Estimativa não-verificada."}
+              ⚠ {block.provenance_note || t("unverifiedDefault")}
             </p>
           ) : null}
           <ul className="space-y-1">
@@ -97,7 +101,7 @@ function ScoreExplainerView({ block }: { block: ScoreExplainerBlock }) {
                   {f.detail ? ` — ${f.detail}` : ""}
                   <span className="text-lia-text-tertiary">
                     {" "}
-                    (peso {Math.round(f.weight * 100)}%)
+                    {t("weight", { pct: Math.round(f.weight * 100) })}
                   </span>
                 </span>
               </li>
@@ -110,6 +114,7 @@ function ScoreExplainerView({ block }: { block: ScoreExplainerBlock }) {
 }
 
 function EvidenceStackView({ block }: { block: EvidenceStackBlock }) {
+  const t = useTranslations("rrp");
   const [open, setOpen] = useState(false);
   const n = block.count || block.items.length;
   if (!block.items || block.items.length === 0) return null;
@@ -121,7 +126,7 @@ function EvidenceStackView({ block }: { block: EvidenceStackBlock }) {
         aria-expanded={open}
         className="text-xs text-lia-text-secondary"
       >
-        📎 {n} fonte{n > 1 ? "s" : ""} {open ? "▲" : "▼"}
+        📎 {t("sources", { count: n })} {open ? "▲" : "▼"}
       </button>
       {open && (
         <ul className="mt-1.5 space-y-1">
@@ -139,6 +144,7 @@ function EvidenceStackView({ block }: { block: EvidenceStackBlock }) {
 }
 
 function ComparisonTableView({ block }: { block: ComparisonTableBlock }) {
+  const t = useTranslations("rrp");
   return (
     <div className="overflow-x-auto rounded-lg border border-lia-border-subtle">
       {block.title ? (
@@ -196,7 +202,7 @@ function ComparisonTableView({ block }: { block: ComparisonTableBlock }) {
       </table>
       {block.total_count > block.shown_count ? (
         <p className="px-2 py-1 text-[11px] text-lia-text-tertiary">
-          Mostrando {block.shown_count} de {block.total_count}
+          {t("showingOf", { shown: block.shown_count, total: block.total_count })}
         </p>
       ) : null}
     </div>
@@ -204,6 +210,7 @@ function ComparisonTableView({ block }: { block: ComparisonTableBlock }) {
 }
 
 function RenderOne({ block }: { block: ResponseBlock }) {
+  const t = useTranslations("rrp");
   switch (block.kind) {
     case "prose":
       return <ProseView block={block} />;
@@ -217,7 +224,7 @@ function RenderOne({ block }: { block: ResponseBlock }) {
       // AD6: kind desconhecido (skew de deploy FE/BE) → fallback, nunca throw.
       return (
         <p className="text-xs italic text-lia-text-tertiary">
-          (bloco não suportado nesta versão)
+          {t("unsupportedBlock")}
         </p>
       );
   }
@@ -228,6 +235,7 @@ export function ResponseBlockRenderer({
 }: {
   blocks?: ResponseBlock[] | null;
 }) {
+  const t = useTranslations("rrp");
   if (!blocks || blocks.length === 0) return null;
   return (
     <div className="mt-2 space-y-2">
@@ -235,13 +243,9 @@ export function ResponseBlockRenderer({
         try {
           return <RenderOne key={block.block_id || i} block={block} />;
         } catch {
-          // error boundary leve por bloco — um card quebrado não derruba a lista
           return (
-            <p
-              key={i}
-              className="text-xs italic text-lia-text-tertiary"
-            >
-              (não consegui exibir este bloco)
+            <p key={i} className="text-xs italic text-lia-text-tertiary">
+              {t("blockError")}
             </p>
           );
         }
