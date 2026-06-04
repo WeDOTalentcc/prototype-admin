@@ -198,7 +198,7 @@ export function PipelineTemplatesTab({ onSettingsChange }: { onSettingsChange?: 
                 onChange={(e) => setNewTemplateName(e.target.value)}
                 placeholder="Nome do template..."
                 autoFocus
-                className="text-xs px-2.5 py-1.5 rounded-lg border border-lia-border-subtle bg-lia-bg-primary text-lia-text-primary placeholder:text-lia-text-disabled focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 w-44"
+                className="text-xs px-2.5 py-1.5 rounded-md border border-lia-border-subtle bg-lia-bg-primary text-lia-text-primary placeholder:text-lia-text-disabled focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 w-44"
                 onKeyDown={(e) => {
                   if (e.key === "Enter") handleCreateNew(newTemplateName)
                   if (e.key === "Escape") { setShowNewForm(false); setNewTemplateName("") }
