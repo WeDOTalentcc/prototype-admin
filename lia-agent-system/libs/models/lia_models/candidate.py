@@ -459,6 +459,10 @@ class VacancyCandidate(Base):
     
     status = Column(String(50), default="sourced", index=True)
     stage = Column(String(50), default="initial", index=True)
+    # Structural link to RecruitmentStage (Task #1303). Nullable for legacy rows
+    # that only carry the textual `stage`. New transitions populate this so the
+    # SLA detector can join by id instead of fragile name matching.
+    recruitment_stage_id = Column(UUID(as_uuid=True), nullable=True, index=True)
     previous_status = Column(String(50), nullable=True)
     
     added_by = Column(String(255), nullable=True)

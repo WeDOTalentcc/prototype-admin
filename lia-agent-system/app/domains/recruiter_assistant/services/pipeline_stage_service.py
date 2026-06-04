@@ -184,6 +184,9 @@ class PipelineStageService:
                 to_sub_status_obj = next((s for s in sub_statuses if s.is_default), None)
             
             vacancy_candidate.stage = to_stage
+            # Task #1303: persist the structural stage link so the SLA detector
+            # can join by id instead of fragile name matching.
+            vacancy_candidate.recruitment_stage_id = to_stage_obj.id
             vacancy_candidate.status = to_sub_status or (to_sub_status_obj.name if to_sub_status_obj else "default")
             vacancy_candidate.updated_at = datetime.utcnow()
             if from_stage != to_stage:

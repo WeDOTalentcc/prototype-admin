@@ -978,8 +978,14 @@ class SlaNearExpirationDetector(BaseDetector):
     Vinculacao preditiva (Task #1296): o SLA vem de RecruitmentStage.sla_hours
     (config real por etapa/tenant), NAO de constante hardcoded. Para cada
     VacancyCandidate ativo, calcula elapsed = now - stage_entered_at e compara
-    com o sla_hours da etapa (match por nome). Conta quem esta entre threshold%
-    e 100% (perto de estourar, ainda dentro do prazo).
+    com o sla_hours da etapa. Conta quem esta entre threshold% e 100% (perto de
+    estourar, ainda dentro do prazo).
+
+    Vinculacao robusta por id (Task #1303): a etapa do candidato e resolvida por
+    VacancyCandidate.recruitment_stage_id (join estavel por identificador) quando
+    presente; o match por NOME so e usado como fallback para registros legados
+    sem o vinculo. Isso evita que divergencias de nomenclatura (acentuacao,
+    maiusculas, renomeacao) silenciosamente desliguem o alerta.
 
     Per-tenant override (AlertPreference.alert_type='sla_near_expiration'):
     - threshold: % do SLA decorrido para alertar (default 80).
@@ -1011,21 +1017,32 @@ class SlaNearExpirationDetector(BaseDetector):
         threshold = cfg.threshold if cfg.threshold is not None else 80
         try:
             stage_rows = await db.execute(
-                select(RecruitmentStage.name, RecruitmentStage.sla_hours).where(
+                select(
+                    RecruitmentStage.id,
+                    RecruitmentStage.name,
+                    RecruitmentStage.sla_hours,
+                ).where(
                     RecruitmentStage.company_id == company_id,
                     RecruitmentStage.sla_hours.isnot(None),
                 )
             )
-            sla_by_stage = {
-                name: int(sla)
-                for name, sla in stage_rows.all()
-                if sla and int(sla) > 0
-            }
+            # Task #1303: index the SLA both by stage id (robust, preferred) and
+            # by name (legacy fallback for rows without recruitment_stage_id).
+            sla_by_stage_id: dict[str, int] = {}
+            sla_by_stage: dict[str, int] = {}
+            for stage_id, name, sla in stage_rows.all():
+                if not sla or int(sla) <= 0:
+                    continue
+                hours = int(sla)
+                if stage_id is not None:
+                    sla_by_stage_id[str(stage_id)] = hours
+                if name:
+                    sla_by_stage[name] = hours
         except Exception as exc:
             logger.debug("SlaNearExpirationDetector stage query failed: %s", exc)
             return []
 
-        if not sla_by_stage:
+        if not sla_by_stage_id and not sla_by_stage:
             # Tenant nao configurou SLA por etapa: nada a checar (sem fake).
             return []
 
@@ -1049,7 +1066,14 @@ class SlaNearExpirationDetector(BaseDetector):
         now = datetime.utcnow()
         near = []
         for cand in candidates:
-            sla_hours = sla_by_stage.get(getattr(cand, "stage", None))
+            # Prefer the structural stage link (Task #1303); fall back to the
+            # textual stage name only for legacy rows without the id binding.
+            sla_hours = None
+            stage_id = getattr(cand, "recruitment_stage_id", None)
+            if stage_id is not None:
+                sla_hours = sla_by_stage_id.get(str(stage_id))
+            if not sla_hours:
+                sla_hours = sla_by_stage.get(getattr(cand, "stage", None))
             if not sla_hours:
                 continue
             entered = getattr(cand, "stage_entered_at", None)

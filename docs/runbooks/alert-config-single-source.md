@@ -61,7 +61,12 @@ enable/threshold/cooldown/canais de alerta. O leitor canônico é
   janela de 90 dias; exige amostra mínima (≥20) para não alertar em funil vazio.
 - `sla_near_expiration` (detector): vinculação preditiva — o SLA vem de
   `RecruitmentStage.sla_hours` (config real por etapa/tenant, **não** constante);
-  alerta candidatos entre `threshold%` e 100% do prazo na etapa atual.
+  alerta candidatos entre `threshold%` e 100% do prazo na etapa atual. A etapa do
+  candidato é resolvida por `VacancyCandidate.recruitment_stage_id` (join estável
+  por id, **Task #1303**) quando presente; o match por **nome**
+  (`stage` ↔ `RecruitmentStage.name`) é apenas fallback para registros legados sem
+  o vínculo — evita que divergência de nomenclatura (acento/maiúsculas/renomeação)
+  desligue silenciosamente o alerta.
 - `interview_not_confirmed`: `Interview.confirmation_status=='pending'` com
   `start_time` nas próximas `threshold` horas.
 - `feedback_pending`: entrevistas com `end_time` há `threshold`+ horas, sem
