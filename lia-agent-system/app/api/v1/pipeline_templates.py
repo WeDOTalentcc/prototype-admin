@@ -343,14 +343,16 @@ async def delete_pipeline_template(
 )
 async def archive_pipeline_template(
     template_id: _DualId,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(get_current_user_or_demo),
     company_id: str = Depends(require_company_id),
 ):
     """Archive canonical — set is_archived=True (distinct from soft_delete is_active=False).
 
     Templates arquivados continuam visíveis em analytics histórico mas somem do seletor
-    de aplicar. Emite audit log canonical.
+    de aplicar. Emite audit log canonical ATÔMICO: o audit row é gravado na MESMA
+    sessão da mutação (in-session) e o commit único do get_tenant_db persiste
+    template + audit atomicamente (fail-CLOSED — sem save sem trail).
     """
     try:
         template_uuid = uuid.UUID(template_id)
@@ -373,11 +375,16 @@ async def archive_pipeline_template(
 async def clone_pipeline_template(
     template_id: _DualId,
     new_name: str | None = Query(None),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(get_current_user_or_demo),
     company_id: str = Depends(require_company_id),
 ):
-    """Clone an existing template (admin/wedotalent_admin only)."""
+    """Clone an existing template (admin/wedotalent_admin only).
+
+    Audit log canonical ATÔMICO: o audit row é gravado na MESMA sessão da
+    mutação (in-session) e o commit único do get_tenant_db persiste o clone +
+    audit atomicamente (fail-CLOSED — sem save sem trail).
+    """
     try:
         template_uuid = uuid.UUID(template_id)
     except ValueError:

@@ -182,7 +182,7 @@ async def test_apply_copy_on_write_replaces_interview_stages():
     service, _ = _build_service_with_mocks(template, vacancy)
 
     with patch(
-        "app.domains.pipeline.services.pipeline_template_service.audit_service.log_decision",
+        "app.domains.pipeline.services.pipeline_template_service.audit_service.log_decision_in_session",
         new_callable=AsyncMock,
     ):
         result = await service.apply_to_vacancy(
@@ -221,7 +221,7 @@ async def test_apply_increments_usage_count_by_one():
     service, _ = _build_service_with_mocks(template, vacancy)
 
     with patch(
-        "app.domains.pipeline.services.pipeline_template_service.audit_service.log_decision",
+        "app.domains.pipeline.services.pipeline_template_service.audit_service.log_decision_in_session",
         new_callable=AsyncMock,
     ):
         result = await service.apply_to_vacancy(
@@ -246,7 +246,7 @@ async def test_apply_resets_is_pipeline_customized_to_false():
     service, _ = _build_service_with_mocks(template, vacancy)
 
     with patch(
-        "app.domains.pipeline.services.pipeline_template_service.audit_service.log_decision",
+        "app.domains.pipeline.services.pipeline_template_service.audit_service.log_decision_in_session",
         new_callable=AsyncMock,
     ):
         await service.apply_to_vacancy(
@@ -275,7 +275,7 @@ async def test_apply_returns_none_when_template_not_found():
     service, _ = _build_service_with_mocks(template_mock=None, vacancy_mock=_make_vacancy_mock(vacancy_id))
 
     with patch(
-        "app.domains.pipeline.services.pipeline_template_service.audit_service.log_decision",
+        "app.domains.pipeline.services.pipeline_template_service.audit_service.log_decision_in_session",
         new_callable=AsyncMock,
     ):
         result = await service.apply_to_vacancy(
@@ -298,7 +298,7 @@ async def test_apply_returns_none_when_vacancy_not_found():
     service, _ = _build_service_with_mocks(template_mock=template, vacancy_mock=None)
 
     with patch(
-        "app.domains.pipeline.services.pipeline_template_service.audit_service.log_decision",
+        "app.domains.pipeline.services.pipeline_template_service.audit_service.log_decision_in_session",
         new_callable=AsyncMock,
     ):
         result = await service.apply_to_vacancy(
@@ -354,7 +354,7 @@ async def test_apply_accepts_all_canonical_sources(source):
     service, _ = _build_service_with_mocks(template, vacancy)
 
     with patch(
-        "app.domains.pipeline.services.pipeline_template_service.audit_service.log_decision",
+        "app.domains.pipeline.services.pipeline_template_service.audit_service.log_decision_in_session",
         new_callable=AsyncMock,
     ):
         result = await service.apply_to_vacancy(
@@ -382,7 +382,7 @@ async def test_apply_emits_audit_with_canonical_fields():
     service, _ = _build_service_with_mocks(template, vacancy)
 
     with patch(
-        "app.domains.pipeline.services.pipeline_template_service.audit_service.log_decision",
+        "app.domains.pipeline.services.pipeline_template_service.audit_service.log_decision_in_session",
         new_callable=AsyncMock,
     ) as mock_audit:
         await service.apply_to_vacancy(
@@ -394,6 +394,11 @@ async def test_apply_emits_audit_with_canonical_fields():
         )
 
     assert mock_audit.call_count == 1
+    # Sentinela atomicidade (#1286): o audit row compartilha a sessão da
+    # mutação (self.db) via log_decision_in_session — commit único get_tenant_db.
+    assert mock_audit.call_args.args[0] is service.db, (
+        "audit row MUST share the mutation session (single transaction)"
+    )
     kwargs = mock_audit.call_args.kwargs
 
     assert kwargs["company_id"] == COMPANY_A

@@ -220,6 +220,7 @@ class PipelineTemplateService:
             company_id=company_id,
             actor=updated_by,
             template=template,
+            in_session=True,
         )
         _inc_mutation(company_id, "archived")
         return template
@@ -241,6 +242,7 @@ class PipelineTemplateService:
             actor=created_by,
             template=cloned,
             extra_reasoning=[f"cloned_from_id: {original.id}", f"cloned_from_name: {original.name}"],
+            in_session=True,
         )
         _inc_mutation(company_id, "cloned")
         return cloned
@@ -302,6 +304,7 @@ class PipelineTemplateService:
                 f"source: {source}",
                 f"stages_applied: {len(new_stages)}",
             ],
+            in_session=True,
         )
 
         _inc_apply(company_id, source)
