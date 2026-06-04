@@ -326,6 +326,12 @@ export default function SettingsPageEnhanced() {
         setIsCollapsed(false)
       } else {
         setIsLocked(saved === 'true')
+        // Restaura a última largura escolhida (recolhida vs expandida) por hover,
+        // independente do lock — mesmo padrão de `settings-sidebar-locked`.
+        const savedCollapsed = localStorage.getItem('settings-sidebar-collapsed')
+        if (savedCollapsed !== null) {
+          setIsCollapsed(savedCollapsed === 'true')
+        }
       }
     } catch {}
   }, [])
@@ -338,8 +344,14 @@ export default function SettingsPageEnhanced() {
     })
   }, [])
 
-  const expandSettings = useCallback(() => setIsCollapsed(false), [])
-  const collapseSettings = useCallback(() => setIsCollapsed(true), [])
+  const expandSettings = useCallback(() => {
+    setIsCollapsed(false)
+    try { localStorage.setItem('settings-sidebar-collapsed', 'false') } catch {}
+  }, [])
+  const collapseSettings = useCallback(() => {
+    setIsCollapsed(true)
+    try { localStorage.setItem('settings-sidebar-collapsed', 'true') } catch {}
+  }, [])
 
   const {
     handleMouseEnter: handleSettingsMouseEnter,
