@@ -114,6 +114,10 @@ class JobCreationState(TypedDict, total=False):
     auth_token: str
     language: str  # default "pt-BR"
 
+    # --- Create-from-source (PR-A) ---
+    seed_source: Optional[Dict[str, Any]]      # {"type","id","name"} of the chosen template/vacancy
+    seed_provenance: Dict[str, Any]            # per-field provenance for the review surface
+
     # --- Current stage ---
     current_stage: WizardStage
     stage_history: List[WizardStage]

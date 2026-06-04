@@ -1408,6 +1408,23 @@ class WizardSessionService:
             prior_state=prior_state,
         )
 
+        # ── Create-from-source seeding (PR-A5b — fresh session only) ──
+        # If the recruiter started the wizard from a template/vacancy, the
+        # source descriptor arrives in context["seed_source"]. Build the
+        # seed via the canonical producer + merge it into the fresh state
+        # (user input on later turns wins — precedence handled by the mapper).
+        # Only on a brand-new session: never re-seed a continuing turn.
+        seed_source = (context or {}).get("seed_source")
+        if seed_source and not prior_state and company_id:
+            from app.core.database import AsyncSessionLocal
+            from app.domains.job_creation.helpers.seed_session import (
+                seed_initial_state,
+            )
+            async with AsyncSessionLocal() as _seed_db:
+                await seed_initial_state(
+                    state, seed_source, str(company_id), _seed_db
+                )
+
         # ── Manager preferences injection (GUIDE — fail-open) ──────────
         # Only on the first message of a session (when manager_email is known)
         # to avoid overwriting state already set by the user in later turns.
