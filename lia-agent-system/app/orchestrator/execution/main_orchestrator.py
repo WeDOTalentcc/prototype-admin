@@ -194,6 +194,7 @@ class ChatResponse(BaseModel):
     needs_params: bool = False
     pending_action_id: str | None = None
     fairness_warnings: list[str] = Field(default_factory=list)
+    response_blocks: list[dict[str, Any]] | None = None
     from_cache: bool = False
     # CLAUDE.md REGRA 4 (anti-silent-fallback) canonical fields.
     # When success=False, these populate to expose the real error to
@@ -222,6 +223,7 @@ class ChatResponse(BaseModel):
             conversation_id=conv_id,
             ui_action=result.get("ui_action"),
             ui_action_params=result.get("ui_action_params"),
+            response_blocks=(result.get("response_blocks") or _structured.get("response_blocks")),
         )
 
     @classmethod

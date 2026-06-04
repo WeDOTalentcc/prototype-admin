@@ -647,9 +647,48 @@ class RecruiterAssistantDomain(ComplianceDomainPrompt):
         else:
             msg = "Candidatos não encontrados para comparação."
 
+        _rrp_blocks = []
+        if candidates:
+            from app.shared.rrp_blocks import (
+                ComparisonTableBlock, ComparisonColumn, ComparisonRow,
+            )
+
+            def _num(v):
+                try:
+                    return float(v) if v is not None else None
+                except (TypeError, ValueError):
+                    return None
+
+            _table = ComparisonTableBlock(
+                block_id="comparison_table:compare_candidates:"
+                + "-".join(str(c.get("id")) for c in candidates),
+                role="support", layout="wide",
+                title="Comparacao de candidatos", entity_type="candidate",
+                columns=[
+                    ComparisonColumn(key="name", label="Candidato", type="text"),
+                    ComparisonColumn(key="lia_score", label="LIA", type="score"),
+                    ComparisonColumn(key="match_pct", label="Match", type="score"),
+                    ComparisonColumn(key="stage", label="Etapa", type="text"),
+                ],
+                rows=[
+                    ComparisonRow(
+                        entity_id=str(c.get("id")),
+                        cells={
+                            "name": c.get("name") or ("ID " + str(c.get("id"))),
+                            "lia_score": _num(c.get("lia_score")),
+                            "match_pct": _num(c.get("match_pct")),
+                            "stage": c.get("stage") or "-",
+                        },
+                    )
+                    for c in candidates
+                ],
+                total_count=len(candidates), shown_count=len(candidates),
+            )
+            _rrp_blocks = [_table.model_dump(mode="json")]
+
         return DomainResponse.success_response(
             message=msg,
-            data={"action_id": "compare_candidates", "candidates": candidates},
+            data={"action_id": "compare_candidates", "candidates": candidates, "response_blocks": _rrp_blocks},
             domain_id=self.domain_id, action_id="compare_candidates",
         )
 
