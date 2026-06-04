@@ -120,6 +120,34 @@ def test_approval_required_emitted(monkeypatch):
     assert appr[0]["pending_id"] == "pa-1"
 
 
+def test_keepalive_on_long_silence(monkeypatch):
+    # Silencio prolongado do orchestrator (ex: WSI ~100s sem token) deve emitir
+    # keepalive e NAO abortar com 'stream timeout' antes do hard cap.
+    result = types.SimpleNamespace(
+        content="ok", success=True, needs_params=False, needs_confirmation=False
+    )
+
+    class _SlowOrch:
+        async def process(self, ctx, db, streaming_callback=None):
+            await asyncio.sleep(0.25)
+            return result
+
+    monkeypatch.setattr(chat_mod, "get_main_orchestrator", lambda: _SlowOrch())
+    chunks = asyncio.run(
+        _collect(
+            chat_mod._sse_via_orchestrator(
+                "conv-1", "wsi longo", [], _FakeRepo(), _conv(), company_id="c1",
+                keepalive_after_s=0.05, hard_timeout_s=5.0,
+            )
+        )
+    )
+    assert any(": keepalive" in c for c in chunks), (
+        "silencio prolongado deve emitir keepalive (502 fix)")
+    assert any("[DONE]" in c for c in chunks), "deve completar, nao abortar por timeout"
+    assert not any('"stream timeout"' in c or "'stream timeout'" in c for c in chunks)
+    assert any(f.get("token") == "ok" for f in _frames(chunks))
+
+
 def test_chatpage_path_unchanged(monkeypatch):
     # emit_structured default (False): chat-page intocado -> sem frames estruturados novos.
     result = types.SimpleNamespace(

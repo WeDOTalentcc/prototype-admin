@@ -956,6 +956,8 @@ async def _sse_via_orchestrator(
     tenant_context_snippet: str = "",
     view_context: "dict[str, Any] | None" = None,
     emit_structured: bool = False,
+    keepalive_after_s: float = 15.0,
+    hard_timeout_s: float = 180.0,
 ) -> AsyncGenerator[str, None]:
     """Fase 3: SSE via MainOrchestrator (unified pipeline) — LIA-P05.
 
@@ -1011,14 +1013,22 @@ async def _sse_via_orchestrator(
 
     task = _asyncio.create_task(_run_orchestrator())
 
+    _silent_s = 0.0
     try:
         while True:
             try:
-                item = await _asyncio.wait_for(sse_queue.get(), timeout=60.0)
+                item = await _asyncio.wait_for(sse_queue.get(), timeout=keepalive_after_s)
             except _asyncio.TimeoutError:
-                yield f"data: {json.dumps({'error': 'stream timeout'})}\n\n"
-                task.cancel()
-                return
+                _silent_s += keepalive_after_s
+                if _silent_s >= hard_timeout_s:
+                    yield f"data: {json.dumps({'error': 'stream timeout'})}\n\n"
+                    task.cancel()
+                    return
+                # 502 fix: heartbeat em silencio prolongado (ops longas tipo WSI ~100s)
+                # mantem a conexao viva; o caminho antigo (timeout 60s -> abort) derrubava.
+                yield ": keepalive\n\n"
+                continue
+            _silent_s = 0.0
 
             if "_error" in item:
                 yield f"data: {json.dumps({'error': item['_error']})}\n\n"
