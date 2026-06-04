@@ -132,6 +132,7 @@ async def _generate_lia_response(
         flag_modified(session, "metadata_json")
         await db.flush()
         if _resp.get("talent_pool"):
+            await _mark_eligibility_rejected_for_session(db, session)
             return {
                 "content": _resp.get("content", ""),
                 "type": "eligibility_talent_pool",
@@ -286,3 +287,19 @@ def _pre_completion_response(session: TriagemSession, total_questions: int) -> d
     }
 
 
+async def _mark_eligibility_rejected_for_session(db, session) -> None:
+    """Talent pool (decisao Paulo 2026): candidato reprovado em elegibilidade ->
+    VacancyCandidate.status = rejected. Best-effort; nao bloqueia o fluxo."""
+    try:
+        if not (session.candidate_id and session.job_id and session.company_id):
+            return
+        from app.domains.candidates.repositories.vacancy_candidate_repository import (
+            VacancyCandidateRepository,
+        )
+        await VacancyCandidateRepository(db).mark_eligibility_rejected(
+            candidate_id=str(session.candidate_id),
+            vacancy_id=str(session.job_id),
+            company_id=str(session.company_id),
+        )
+    except Exception as exc:
+        logger.warning("[Triagem] mark_eligibility_rejected falhou: %s", exc)

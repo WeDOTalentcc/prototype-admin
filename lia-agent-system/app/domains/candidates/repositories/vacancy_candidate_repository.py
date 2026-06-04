@@ -136,6 +136,29 @@ class VacancyCandidateRepository:
         )
         return result.scalar_one_or_none()
 
+    async def mark_eligibility_rejected(
+        self,
+        candidate_id: str | UUID,
+        vacancy_id: str | UUID,
+        company_id: str | UUID,
+        reason: str = "eligibility_failed",
+    ) -> bool:
+        """Talent pool: marca o VacancyCandidate como rejected quando o candidato
+        reprova pergunta eliminatoria de elegibilidade. Idempotente."""
+        vc = await self.get_by_vacancy_candidate_and_company(
+            vacancy_id, candidate_id, company_id
+        )
+        if not vc:
+            return False
+        if vc.status == "rejected":
+            return True
+        vc.previous_status = vc.status
+        vc.status = "rejected"
+        _note = f"[elegibilidade] reprovado em pergunta eliminatoria ({reason})"
+        vc.notes = f"{vc.notes}\n{_note}".strip() if vc.notes else _note
+        await self.update(vc)
+        return True
+
     async def list_awaiting_screening_for_vacancy(
         self,
         vacancy_id: str | UUID,
