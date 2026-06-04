@@ -15,6 +15,7 @@ import {
 import { buttonVariants } from "@/components/ui/button";
 import type { ChatSuggestionMetadata } from "@/components/ui/chat-workflow-reels";
 import { useLiaChatContext, useLiaFloat } from "@/contexts/lia-float-context";
+import { fullscreenTransitionEvents } from "./mode-transition";
 import { useNavigationIntent } from "@/hooks/shared/use-navigation-intent";
 import { cn } from "@/lib/utils";
 import {
@@ -836,20 +837,17 @@ export function UnifiedChat({
       );
       if (newMode === "fullscreen") {
         close();
-        window.dispatchEvent(
-          new CustomEvent("lia:navigate-chat-page", { detail: {} }),
-        );
-      } else if (newMode === "floating") {
+      } else {
         open();
-      } else if (newMode === "sidebar") {
-        open();
-        if (prevMode === "fullscreen") {
-          window.dispatchEvent(
-            new CustomEvent("lia:leave-fullscreen-chat", {
-              detail: { targetMode: newMode },
-            }),
-          );
-        }
+      }
+      // Transicao de/para a TELA CHEIA (pagina "Conversar"). Regra unica e
+      // testavel (mode-transition.ts): entrar -> lia:navigate-chat-page;
+      // SAIR para qualquer modo -> lia:leave-fullscreen-chat.
+      // Bug 2026-06-04: o caminho floating nao disparava o leave, entao a
+      // ChatPageFullscreen ficava montada (hasInlineChat=true) e o chat
+      // renderizava quebrado dentro do container relative da pagina.
+      for (const ev of fullscreenTransitionEvents(prevMode, newMode)) {
+        window.dispatchEvent(new CustomEvent(ev.type, { detail: ev.detail }));
       }
     },
     [close, open],
