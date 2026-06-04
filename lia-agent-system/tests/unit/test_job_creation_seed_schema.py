@@ -2,7 +2,7 @@
 import pytest
 from pydantic import ValidationError
 
-from app.domains.job_creation.schemas.job_creation_seed import (
+from app.domains.job_creation.schemas import (
     ALWAYS_FRESH_FIELDS,
     FieldProvenance,
     JobCreationSeed,
