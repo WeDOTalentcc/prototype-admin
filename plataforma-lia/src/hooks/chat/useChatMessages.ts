@@ -380,6 +380,10 @@ export function useChatMessages({
           domain || "recruiter_assistant",
           context,
           conversationId,
+          // 0.3a: fallback de transporte — esgotou SSE, reenvia via REST.
+          () => {
+            void sendViaRest(content, domain || "recruiter_assistant", context);
+          },
         );
         return;
       }
@@ -417,6 +421,10 @@ export function useChatMessages({
           domain || "recruiter_assistant",
           context,
           conversationId,
+          // 0.3a: fallback de transporte — esgotou SSE, reenvia via REST.
+          () => {
+            void sendViaRest(content, domain || "recruiter_assistant", context);
+          },
         );
         return;
       }

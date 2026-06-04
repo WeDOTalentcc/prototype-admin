@@ -200,3 +200,9 @@ Toda ui_action que o BE pode emitir (contrato em src/lib/api/kanban-assistant.ts
 Acoes acopladas a uma superficie (ex: modais de candidatos) que precisam ser acionaveis de qualquer tela viram GLOBAIS via padrao navega+re-emite (mirror de settings_open_tab em useUIAction): router.push pra superficie dona + re-emite lia:unhandled_ui_action pro handler page-specific. Nao duplicar modais.
 
 Sensor (computacional, warn-only): scripts/check_ui_action_handlers.py. Baseline 2026-06-04: 2 ghosts conhecidos (compare_jobs, start_candidate_wizard) — follow-up no dominio jobs/wizard. Promover a --blocking quando baseline=0.
+
+
+## 0.3a — Transporte do chat: SSE deve cair pro REST ao esgotar (registrado 2026-06-04)
+
+Os transportes do chat (WS, SSE, REST) degradam com graca. O path WS, ao falhar/timeout, reenvia via sendViaRest (useChatMessages). O path SSE, ao esgotar maxSseFailures, DEVE fazer o mesmo: sendMessageViaSSE recebe onExhausted?: () => void e o caller passa () => sendViaRest(content, domain, context). Nunca terminar num erro duro sem tentar o REST quando NEXT_PUBLIC_CHAT_TRANSPORT=sse estiver ligada.
+Sensor (estrutural): src/hooks/chat/__tests__/useChatTransport.sse-fallback.test.ts.

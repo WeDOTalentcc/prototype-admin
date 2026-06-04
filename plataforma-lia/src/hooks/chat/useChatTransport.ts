@@ -118,6 +118,7 @@ export interface UseChatTransportResult {
     domain?: string,
     context?: Record<string, unknown>,
     conversationId?: string | null,
+    onExhausted?: () => void,
   ) => void
 }
 
@@ -401,6 +402,7 @@ export function useChatTransport(
       domain = "recruiter_assistant",
       context: Record<string, unknown> = {},
       conversationId: string | null = null,
+      onExhausted?: () => void,
     ) => {
       if (sseAbortRef.current) {
         sseAbortRef.current.abort()
@@ -519,6 +521,11 @@ export function useChatTransport(
                 () => attemptSSE(attempt + 1),
                 retryDelay,
               )
+            } else if (onExhausted) {
+              // 0.3a: esgotou SSE -> fallback de transporte (reenvia via REST no caller).
+              setIsStreaming(false)
+              setError(null)
+              onExhausted?.()
             } else {
               setIsStreaming(false)
               setError(
