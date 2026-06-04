@@ -312,7 +312,31 @@ export default function SettingsPageEnhanced() {
   const [progressLoading, setProgressLoading] = useState<boolean>(true)
   
   const [isCollapsed, setIsCollapsed] = useState(true)
+  // Init determinístico (igual no SSR e no primeiro render do cliente) para
+  // evitar hydration mismatch. A preferência de "fixado" salva em localStorage
+  // é aplicada após a montagem, no useEffect abaixo — nunca no primeiro render.
   const [isLocked, setIsLocked] = useState(false)
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('settings-sidebar-locked')
+      if (saved === null) {
+        // Primeira visita: abre a barra fixada para reduzir custo de descoberta.
+        setIsLocked(true)
+        setIsCollapsed(false)
+      } else {
+        setIsLocked(saved === 'true')
+      }
+    } catch {}
+  }, [])
+
+  const toggleLocked = useCallback(() => {
+    setIsLocked(prev => {
+      const next = !prev
+      try { localStorage.setItem('settings-sidebar-locked', String(next)) } catch {}
+      return next
+    })
+  }, [])
 
   const expandSettings = useCallback(() => setIsCollapsed(false), [])
   const collapseSettings = useCallback(() => setIsCollapsed(true), [])
@@ -557,7 +581,7 @@ export default function SettingsPageEnhanced() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setIsLocked(!isLocked)}
+                  onClick={toggleLocked}
                   className="h-6 w-6 p-0 flex-shrink-0"
                   title={isLocked ?"Desbloquear menu" :"Bloquear menu expandido"}
                 >
