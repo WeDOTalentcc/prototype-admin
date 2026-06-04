@@ -456,7 +456,14 @@ class Settings(
         """
         import os
 
-        if self.APP_ENV == "production":
+        # APP_ENV nao e confiavel sozinho: o workspace Replit de DEV pode ter
+        # APP_ENV=production setado como Secret. Sinal robusto de dev: estar no
+        # workspace de edicao do Replit (REPLIT_DEV_DOMAIN presente) e NAO num
+        # Replit Deployment. Producao real (Cloud Run) nao tem env REPLIT_*.
+        on_replit_workspace = bool(os.getenv("REPLIT_DEV_DOMAIN")) and not os.getenv(
+            "REPLIT_DEPLOYMENT"
+        )
+        if self.APP_ENV == "production" and not on_replit_workspace:
             return self
         if os.getenv("LIA_DEV_ALLOW_REMOTE_REDIS", "").strip().lower() in (
             "1",
