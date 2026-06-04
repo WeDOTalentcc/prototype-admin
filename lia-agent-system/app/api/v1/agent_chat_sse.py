@@ -38,6 +38,9 @@ from app.shared.chat_event_serializer import (
     serialize_thinking,
     serialize_token,
     serialize_token_done,
+    serialize_tool_started,
+    serialize_tool_finished,
+    serialize_reasoning_step,
 )
 from app.shared.prompt_injection import PromptInjectionGuard
 from app.shared.pii_masking import mask_pii
@@ -524,6 +527,26 @@ company_id: str = Depends(require_company_id)):
                 await sse_queue.put(serialize_token(_safe_token))
             elif event_type == "token_done":
                 await sse_queue.put(serialize_token_done(event.get("tokens_sent", token_count)))
+            elif event_type == "tool_started":
+                # SSE-e2e Fase B: repassa preservando shape (não achata em thinking)
+                await sse_queue.put(serialize_tool_started(
+                    name=event.get("name", "tool"),
+                    args=event.get("args", ""),
+                    tool_id=event.get("tool_id", ""),
+                ))
+            elif event_type == "tool_finished":
+                await sse_queue.put(serialize_tool_finished(
+                    name=event.get("name", "tool"),
+                    status=event.get("status", "ok"),
+                    duration_ms=event.get("duration_ms"),
+                    result=event.get("result", ""),
+                    tool_id=event.get("tool_id", ""),
+                ))
+            elif event_type == "reasoning_step":
+                await sse_queue.put(serialize_reasoning_step(
+                    label=event.get("label", ""),
+                    detail=event.get("detail", ""),
+                ))
             else:
                 await sse_queue.put(serialize_thinking(
                     content=event.get("thought", event.get("content", "")),
