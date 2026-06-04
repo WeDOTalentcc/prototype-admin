@@ -697,6 +697,18 @@ class LLMService:
                     request_kwargs["thinking"] = {"type": "enabled", "budget_tokens": _budget}
                     if request_kwargs.get("max_tokens", 0) <= _budget:
                         request_kwargs["max_tokens"] = _budget + max_tokens
+                    # Claude pensa em ingles por default; os cards de raciocinio
+                    # sao mostrados ao recrutador (PT-BR). Instrui o thinking a
+                    # ser em portugues, conciso, frases curtas (= cards limpos).
+                    _think_lang = (
+                        "\n\n[Formato do seu raciocinio] Pense SEMPRE em portugues brasileiro, "
+                        "em frases curtas e diretas (cada frase vira um card visivel para "
+                        "o recrutador). Sem markdown no raciocinio."
+                    )
+                    if request_kwargs.get("system"):
+                        request_kwargs["system"] = request_kwargs["system"] + _think_lang
+                    else:
+                        request_kwargs["system"] = _think_lang.strip()
                     logger.info(f"[LLM-STREAM] extended thinking ON (budget={_budget})")
                     async with client.messages.stream(**request_kwargs) as stream:
                         _think_buf = ""
