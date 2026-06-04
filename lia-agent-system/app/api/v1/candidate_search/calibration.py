@@ -514,6 +514,10 @@ company_id: str = Depends(require_company_id)):
                     uuid.UUID(vacancy_id), uuid.UUID(candidate_id)
                 )
                 if existing is None:
+                    from app.shared.services.stage_id_resolver import resolve_recruitment_stage_id
+                    initial_stage_id = await resolve_recruitment_stage_id(
+                        db, str(vacancy_company_id), "initial"
+                    )
                     new_vc = VacancyCandidate(
                         vacancy_id=uuid.UUID(vacancy_id),
                         candidate_id=uuid.UUID(candidate_id),
@@ -521,7 +525,8 @@ company_id: str = Depends(require_company_id)):
                         source=request.source,
                         added_by=request.added_by,
                         status="sourced",
-                        stage="initial"
+                        stage="initial",
+                        recruitment_stage_id=initial_stage_id
                     )
                     await repo.create_vacancy_candidate(new_vc)
                     added_count += 1

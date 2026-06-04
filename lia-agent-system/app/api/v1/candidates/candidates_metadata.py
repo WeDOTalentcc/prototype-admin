@@ -526,6 +526,12 @@ company_id: str = Depends(require_company_id)):
         if vacancy_candidate:
             vacancy_candidate.stage = new_stage
             vacancy_candidate.status = new_status
+            # Task #1306: also persist the structural stage link so the SLA
+            # detector can join by id instead of fragile name matching.
+            from app.shared.services.stage_id_resolver import resolve_recruitment_stage_id
+            vacancy_candidate.recruitment_stage_id = await resolve_recruitment_stage_id(
+                vc_repo.db, str(vacancy_candidate.company_id), new_stage
+            )
             vacancy_candidate.updated_at = datetime.utcnow()
             if request.reason:
                 vacancy_candidate.notes = (vacancy_candidate.notes or "") + f"\n[Triagem] {request.reason}"

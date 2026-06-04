@@ -115,6 +115,12 @@ async def update_candidate_stage(
                     previous_stage = vacancy_candidate.stage or "N/A"
                     vacancy_candidate.stage = target_stage
                     vacancy_candidate.status = target_stage.lower().replace(" ", "_")
+                    # Task #1306: also persist the structural stage link so the
+                    # SLA detector can join by id instead of fragile name match.
+                    from app.shared.services.stage_id_resolver import resolve_recruitment_stage_id
+                    vacancy_candidate.recruitment_stage_id = await resolve_recruitment_stage_id(
+                        db, str(vacancy_candidate.company_id), target_stage
+                    )
                     vacancy_candidate.updated_at = datetime.utcnow()
                 else:
                     # TENANT-EXEMPT: INTENTIONAL cross-tenant probe. After the
@@ -325,12 +331,20 @@ async def add_candidate_to_vacancy(
                     "error": "candidate_already_in_vacancy"
                 }
             
+            # Task #1306: resolve the structural stage link at creation so the
+            # SLA detector can join by id instead of fragile name matching.
+            from app.shared.services.stage_id_resolver import resolve_recruitment_stage_id
+            initial_stage_id = await resolve_recruitment_stage_id(
+                db, str(company_id), initial_stage
+            )
+
             vacancy_candidate = VacancyCandidate(
                 vacancy_id=UUID(job_id),
                 candidate_id=UUID(candidate_id),
                 company_id=company_id,
                 source=source or "manual",
                 stage=initial_stage,
+                recruitment_stage_id=initial_stage_id,
                 status="sourced",
                 added_by=user_id,
                 notes=notes,

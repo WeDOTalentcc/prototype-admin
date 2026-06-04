@@ -305,6 +305,12 @@ async def register_hire(
                 vc.previous_status = vc.stage
                 vc.status = "hired"
                 vc.stage = "hired"
+                # Task #1306: also persist the structural stage link so the SLA
+                # detector can join by id instead of fragile name matching.
+                from app.shared.services.stage_id_resolver import resolve_recruitment_stage_id
+                vc.recruitment_stage_id = await resolve_recruitment_stage_id(
+                    db, str(vc.company_id), "hired"
+                )
                 if notes:
                     vc.notes = notes
 

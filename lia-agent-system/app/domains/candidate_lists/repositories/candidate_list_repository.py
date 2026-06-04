@@ -266,12 +266,22 @@ class CandidateListRepository:
     ) -> VacancyCandidate:
         """Insert a new VacancyCandidate (no commit — caller commits)."""
         now = datetime.utcnow()
+        # Task #1306: record the structural stage link so SLA detection can join
+        # by id instead of fragile name matching.
+        from app.shared.services.stage_id_resolver import (
+            resolve_recruitment_stage_id,
+        )
+
+        recruitment_stage_id = await resolve_recruitment_stage_id(
+            self.db, str(company_id), "sourcing"
+        )
         vc = VacancyCandidate(
             id=uuid.uuid4(),
             company_id=company_id,
             job_vacancy_id=job_vacancy_id,
             candidate_id=candidate_id,
             stage="sourcing",
+            recruitment_stage_id=recruitment_stage_id,
             sub_status="sourced",
             source="list",
             is_active=True,

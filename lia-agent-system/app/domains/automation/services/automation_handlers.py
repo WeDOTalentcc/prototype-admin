@@ -1202,6 +1202,12 @@ async def process_screening_queue(
 
             vc.status = "screening"
             vc.stage = "screening"
+            # Task #1306: also persist the structural stage link so the SLA
+            # detector can join by id instead of fragile name matching.
+            from app.shared.services.stage_id_resolver import resolve_recruitment_stage_id
+            vc.recruitment_stage_id = await resolve_recruitment_stage_id(
+                db, str(vc.company_id), "screening"
+            )
             vc.notes = (vc.notes or "") + "\n[Auto] Promovido da fila de espera"
 
             conversation = await whatsapp_repo.get_latest_awaiting_screening_for_candidate_vacancy(
@@ -1339,6 +1345,12 @@ async def handle_recruiter_override_approve(
 
     vc.status = "screening"
     vc.stage = "screening"
+    # Task #1306: also persist the structural stage link so the SLA detector
+    # can join by id instead of fragile name matching.
+    from app.shared.services.stage_id_resolver import resolve_recruitment_stage_id
+    vc.recruitment_stage_id = await resolve_recruitment_stage_id(
+        db, str(vc.company_id), "screening"
+    )
     vc.notes = (vc.notes or "") + "\n[Override] Priorizado manualmente pelo recrutador"
 
     additional = dict(vc.additional_data or {})

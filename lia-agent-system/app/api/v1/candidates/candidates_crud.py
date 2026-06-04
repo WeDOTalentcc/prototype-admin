@@ -748,6 +748,12 @@ async def update_candidate_stage(
         previous_stage = vacancy_candidate.stage or "unknown"
         lia_score_at_transition = vacancy_candidate.lia_score
         vacancy_candidate.stage = stage_data.stage
+        # Task #1306: also persist the structural stage link so the SLA detector
+        # can join by id instead of fragile name matching.
+        from app.shared.services.stage_id_resolver import resolve_recruitment_stage_id
+        vacancy_candidate.recruitment_stage_id = await resolve_recruitment_stage_id(
+            vc_repo.db, str(vacancy_candidate.company_id), stage_data.stage
+        )
         if is_rejection:
             vacancy_candidate.rejected_by_human = True
             vacancy_candidate.human_reviewer_id = stage_data.user_id

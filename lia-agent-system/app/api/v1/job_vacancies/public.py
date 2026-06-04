@@ -428,6 +428,14 @@ company_id: str = Depends(require_company_id)):
         import secrets as _secrets
         screening_token = _secrets.token_urlsafe(32)
 
+        # Task #1306: resolve the structural stage link at creation so the SLA
+        # detector can join by id instead of fragile name matching.
+        from app.shared.services.stage_id_resolver import resolve_recruitment_stage_id
+        _apply_stage_id = await resolve_recruitment_stage_id(
+            repo.get_session(),
+            str(job.company_id) if job.company_id else None,
+            "pending_gate1",
+        )
         vacancy_candidate = VacancyCandidate(
             id=uuid_lib.uuid4(),
             vacancy_id=job.id,
@@ -439,6 +447,7 @@ company_id: str = Depends(require_company_id)):
             match_percentage=candidate.skills_match_percentage,
             status=candidate_status,
             stage="pending_gate1",
+            recruitment_stage_id=_apply_stage_id,
             additional_data={
                 "screening_invite_token": screening_token,
                 "applied_at": datetime.utcnow().isoformat(),

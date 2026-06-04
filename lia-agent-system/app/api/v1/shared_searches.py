@@ -878,12 +878,23 @@ company_id: str = Depends(require_company_id)):
 
             notes = feedback_comments.get(candidate_id) if data.include_notes else None
 
+            # Task #1306: record the structural stage link so SLA detection can
+            # join by id instead of fragile name matching.
+            from app.shared.services.stage_id_resolver import (
+                resolve_recruitment_stage_id,
+            )
+
+            recruitment_stage_id = await resolve_recruitment_stage_id(
+                repo.db, str(company_uuid), "sourcing"
+            )
+
             new_vacancy_candidate = VacancyCandidate(
                 id=uuid.uuid4(),
                 company_id=company_uuid,
                 job_vacancy_id=job_uuid,
                 candidate_id=candidate_id,
                 stage="sourcing",
+                recruitment_stage_id=recruitment_stage_id,
                 sub_status="sourced",
                 source="shared_search",
                 notes=notes,

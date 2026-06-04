@@ -121,6 +121,10 @@ class ApplicationRepository:
         stage: str,
         additional_data: "dict | None" = None,
     ) -> VacancyCandidate:
+        # Task #1306: resolve the structural stage link at creation so the SLA
+        # detector can join by id instead of fragile name matching.
+        from app.shared.services.stage_id_resolver import resolve_recruitment_stage_id
+        stage_id = await resolve_recruitment_stage_id(self.db, str(company_id), stage)
         vacancy_candidate = VacancyCandidate(
             id=uuid.uuid4(),
             vacancy_id=uuid.UUID(vacancy_id),
@@ -131,6 +135,7 @@ class ApplicationRepository:
             match_percentage=match_percentage,
             status=status,
             stage=stage,
+            recruitment_stage_id=stage_id,
             additional_data=additional_data or {},
         )
         self.db.add(vacancy_candidate)

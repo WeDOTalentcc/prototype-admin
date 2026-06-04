@@ -321,6 +321,12 @@ async def add_to_vacancy(
                     ),
                 }
 
+            # Task #1306: resolve the structural stage link at creation so the
+            # SLA detector can join by id instead of fragile name matching.
+            from app.shared.services.stage_id_resolver import resolve_recruitment_stage_id
+            initial_stage_id = await resolve_recruitment_stage_id(
+                db, str(company_id), initial_stage
+            )
             vc = VacancyCandidate(
                 id=uuid.uuid4(),
                 vacancy_id=UUID(job_id),
@@ -328,6 +334,7 @@ async def add_to_vacancy(
                 company_id=company_id,
                 source=source,
                 stage=initial_stage,
+                recruitment_stage_id=initial_stage_id,
                 status="sourced",
                 added_by=user_id,
                 created_at=datetime.utcnow(),

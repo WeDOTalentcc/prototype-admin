@@ -224,7 +224,14 @@ class JobCloneService:
             await db.flush()
             
             if include_candidates and source_candidates:
+                from app.shared.services.stage_id_resolver import resolve_recruitment_stage_id
                 for src_candidate in source_candidates:
+                    cloned_stage = src_candidate.stage if not candidate_status_override else "initial"
+                    # Task #1306: resolve the structural stage link for the cloned
+                    # row so the SLA detector can join by id, not just by name.
+                    cloned_stage_id = await resolve_recruitment_stage_id(
+                        db, str(src_candidate.company_id), cloned_stage
+                    )
                     new_vc = VacancyCandidate(
                         id=uuid.uuid4(),
                         vacancy_id=new_job.id,
@@ -234,7 +241,8 @@ class JobCloneService:
                         lia_score=src_candidate.lia_score,
                         match_percentage=src_candidate.match_percentage,
                         status=candidate_status_override or src_candidate.status,
-                        stage=src_candidate.stage if not candidate_status_override else "initial",
+                        stage=cloned_stage,
+                        recruitment_stage_id=cloned_stage_id,
                         added_by=created_by or src_candidate.added_by,
                         notes=f"Duplicado da vaga {source_job.title}",
                         additional_data={
