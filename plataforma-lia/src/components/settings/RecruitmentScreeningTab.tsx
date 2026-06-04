@@ -18,6 +18,8 @@ import {
   type QuestionCategory,
 } from "@/hooks/screening/use-eligibility-templates"
 import { EligibilityTemplatesManager } from "./EligibilityTemplatesManager"
+import { ConfigurableFieldCard } from "./_shared"
+import { useLiaFieldTogglesForSection } from "@/hooks/settings/useLiaFieldTogglesForSection"
 import { useTranslations } from "next-intl"
 import { useAuth } from "@/contexts/auth-context"
 import { textStyles, actionButtonStyles } from '@/lib/design-tokens'
@@ -31,6 +33,8 @@ export function RecruitmentScreeningTab() {
 
   const t = useTranslations("settings")
   const hub = useRecruitmentHub('screening')
+  const liaScreening = useLiaFieldTogglesForSection(["eligibility_questions"])
+  const screeningLiaField = liaScreening.fields[0]
   // P1-18 (auditoria Configuracoes): isAdmin/currentUserId reais do contexto
   // auth (antes hardcoded true/null — todo usuario virava admin nos templates).
   const { user } = useAuth()
@@ -62,6 +66,19 @@ export function RecruitmentScreeningTab() {
   const isQuestionAlreadyAdded = hub.isQuestionAlreadyAdded
   return (
     <div className="space-y-6">
+      {screeningLiaField && (
+        <ConfigurableFieldCard
+          label={screeningLiaField.label}
+          hint={screeningLiaField.hint}
+          instruction={screeningLiaField.instruction}
+          onInstructionSave={screeningLiaField.onInstructionSave}
+          showToggle
+          isActive={screeningLiaField.isActive}
+          onToggleChange={screeningLiaField.onToggleChange}
+          isSaving={screeningLiaField.isSaving}
+          isReadOnly={!isEditingQuestions}
+        />
+      )}
       {error && (
         <div className="px-2 py-1.5 rounded-full flex items-center gap-2 bg-status-error/10 border border-status-error/30 text-status-error">
           <AlertCircle className="w-4 h-4" />

@@ -78,7 +78,6 @@ export function MinhaEmpresaHub({ activeSubsection }: MinhaEmpresaHubProps = {})
     tech: "tech_stack",
     benefits: "benefits",
     workforce: "workforce",
-    policy: "policy",
     documents: "compensation",
   }
 
