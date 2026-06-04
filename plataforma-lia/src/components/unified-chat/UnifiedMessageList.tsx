@@ -30,6 +30,7 @@ import { useTypewriter } from "@/hooks/chat/useTypewriter"
 import { WIZARD_PLAN_MESSAGE_ID } from "./wizard/wizard-plan-card"
 import { NavigationHintCard } from "./NavigationHintCard"
 import { ProactiveSuggestionCard } from "./ProactiveSuggestionCard"
+import { ResponseBlockRenderer } from "./ResponseBlockRenderer"
 import { PROACTIVE_HINTS_MESSAGE_TYPE } from "./proactive-suggestion-injector"
 import type { ProactiveHint } from "@/hooks/proactive/use-proactive-hints"
 import { TastingInsightCard } from "./TastingInsightCard"
@@ -440,6 +441,10 @@ export function UnifiedMessageList({
                   <ProactiveSuggestionCard
                     hints={meta!.proactiveHints as ProactiveHint[]}
                   />
+                )}
+
+                {message.response_blocks && message.response_blocks.length > 0 && (
+                  <ResponseBlockRenderer blocks={message.response_blocks} />
                 )}
 
                 {hasTastingInsights && (

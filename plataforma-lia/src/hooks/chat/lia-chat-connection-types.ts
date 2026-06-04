@@ -9,6 +9,8 @@ export interface LiaChatClarificationOption {
   value: string;
 }
 
+import type { ResponseBlock } from "@/types/rrp-blocks";
+
 export interface LiaChatMessage {
   id: string;
   sender: "lia" | "user" | "system";
@@ -34,6 +36,8 @@ export interface LiaChatMessage {
    */
   thumbs?: "up" | "down" | null;
   feedbackText?: string | null;
+  /** Rich Response Protocol — blocos tipados renderizados pelo ResponseBlockRenderer. */
+  response_blocks?: ResponseBlock[];
 }
 
 export interface HITLPending {
