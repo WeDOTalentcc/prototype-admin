@@ -19,6 +19,25 @@ from pydantic import AliasChoices, Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # ---------------------------------------------------------------------------
+# Dev guard de quota de Redis remoto (ex.: Upstash free 500k cmd/mes).
+# Em desenvolvimento, REDIS_URL remoto e redirecionado para o redis-server
+# local (que o workflow `lia-backend` ja sobe) para nao consumir a quota
+# do Redis gerenciado. Fix no produtor: cobre app + Celery + consumidores.
+# ---------------------------------------------------------------------------
+_LOCAL_REDIS_HOSTS = {"localhost", "127.0.0.1", "::1", ""}
+
+
+def _redis_host_is_local(url: str) -> bool:
+    """True se a URL Redis aponta para um host local (nao consome quota remota)."""
+    try:
+        from urllib.parse import urlparse
+
+        host = (urlparse(url).hostname or "").lower()
+    except Exception:
+        return False
+    return host in _LOCAL_REDIS_HOSTS
+
+# ---------------------------------------------------------------------------
 # 1. Database
 # ---------------------------------------------------------------------------
 
@@ -420,6 +439,48 @@ class Settings(
                 "SECRET_KEY deve ser configurado via variável de ambiente em produção. "
                 "Defina SECRET_KEY=<valor seguro> no seu .env ou nas variáveis de ambiente."
             )
+        return self
+
+    @model_validator(mode="after")
+    def _redirect_redis_url_in_dev(self):
+        """Dev guard: impede que desenvolvimento consuma a quota do Redis remoto.
+
+        Quando APP_ENV != "production" e REDIS_URL aponta para host remoto
+        (ex.: Upstash, free tier 500k cmd/mes), redireciona para o
+        redis-server local que o workflow `lia-backend` ja sobe
+        (redis://localhost:6379/0). Cobre app + Celery + todos os
+        consumidores de settings.REDIS_URL de uma vez (fix no produtor).
+
+        Escape hatch: LIA_DEV_ALLOW_REMOTE_REDIS=true forca o remoto em dev.
+        Producao (APP_ENV=production) nunca e afetada.
+        """
+        import os
+
+        if self.APP_ENV == "production":
+            return self
+        if os.getenv("LIA_DEV_ALLOW_REMOTE_REDIS", "").strip().lower() in (
+            "1",
+            "true",
+            "yes",
+            "on",
+        ):
+            return self
+        if _redis_host_is_local(self.REDIS_URL):
+            return self
+
+        import logging
+        from urllib.parse import urlparse
+
+        remote_host = urlparse(self.REDIS_URL).hostname or "?"
+        logging.getLogger(__name__).warning(
+            "[Redis] DEV GUARD: REDIS_URL aponta p/ host remoto (%s) em APP_ENV=%s; "
+            "redirecionando p/ redis://localhost:6379/0 para NAO consumir quota "
+            "remota em desenvolvimento. Para forcar o remoto, set "
+            "LIA_DEV_ALLOW_REMOTE_REDIS=true.",
+            remote_host,
+            self.APP_ENV,
+        )
+        self.REDIS_URL = "redis://localhost:6379/0"
         return self
 
     model_config = SettingsConfigDict(
