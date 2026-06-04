@@ -91,7 +91,7 @@ export function SubStatusPanel({ stage, isEditMode, onToggleSubStatus }: SubStat
                   disabled={togglingId === `default-${ss.id}`}
                   aria-label={ss.is_default ? t("removeDefault", { name: ss.display_name }) : t("setDefault", { name: ss.display_name })}
                   title={ss.is_default ? t("removeDefaultShort") : t("setDefaultShort")}
-                  className="p-0.5 rounded-xl hover:bg-lia-bg-tertiary dark:hover:bg-lia-border-medium transition-colors motion-reduce:transition-none"
+                  className="p-0.5 rounded-md hover:bg-lia-bg-tertiary dark:hover:bg-lia-border-medium transition-colors motion-reduce:transition-none"
                   data-testid={`sub-status-default-toggle-${ss.id}`}
                   type="button"
                 >

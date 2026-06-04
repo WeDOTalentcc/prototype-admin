@@ -154,7 +154,7 @@ export function SortableStageCard({
           {canDrag ? (
             <button
               {...attributes} {...listeners}
-              className="mt-1 cursor-grab active:cursor-grabbing p-1 rounded-xl hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse transition-colors motion-reduce:transition-none"
+              className="mt-1 cursor-grab active:cursor-grabbing p-1 rounded-md hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse transition-colors motion-reduce:transition-none"
               aria-label={t('dragToReorder')}
             >
               <GripVertical className="h-5 w-5 text-lia-text-tertiary" />
