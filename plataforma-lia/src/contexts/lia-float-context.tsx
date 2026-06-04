@@ -7,6 +7,8 @@ import {
   type PanelUpdateEvent,
   type TransportMode,
   formatMessageTime,
+  createMessageId,
+  dedupeAppend,
 } from "@/hooks/chat/lia-chat-connection-types";
 import type { FloatMessage } from "@/hooks/chat/use-float-conversation";
 import { useLiaChatConnection } from "@/hooks/chat/use-lia-chat-connection";
@@ -307,7 +309,7 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
   const sharedMessages = chatMessages;
   const setSharedMessages = setChatMessages;
   const addSharedMessage = useCallback((msg: FloatMessage) => {
-    setChatMessages((prev) => [...prev, msg]);
+    setChatMessages((prev) => dedupeAppend(prev, msg));
   }, []);
 
   const [chatContextType, setChatContextType] =
@@ -356,7 +358,7 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
       },
     ) => {
       const msg: LiaChatMessage = {
-        id: `lia-${Date.now()}`,
+        id: createMessageId("lia"),
         sender: "lia" as const,
         content,
         timestamp: formatMessageTime(),
@@ -376,7 +378,7 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
           agent_activity: extras.agent_activity,
         };
       }
-      setChatMessages((prev) => [...prev, msg]);
+      setChatMessages((prev) => dedupeAppend(prev, msg));
 
       // PR-D — handler unificado de UIActions. Se o tipo for global,
       // useUIAction trata. Senão, re-emite via `lia:unhandled_ui_action`
@@ -459,7 +461,7 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
   }, [chatConversationId]);
 
   const addChatMessage = useCallback((msg: LiaChatMessage) => {
-    setChatMessages((prev) => [...prev, msg]);
+    setChatMessages((prev) => dedupeAppend(prev, msg));
   }, []);
 
   // Bidirectional sync (Task #712 + Paulo 2026-05-21): UI saves in any settings
@@ -549,7 +551,7 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
       // follow-up wire ainda pendente: POSTar pro backend pra LIA reagir
       // proativamente no próximo turno).
       if (!note.metadata?.silent) {
-        setChatMessages((prev) => [...prev, note]);
+        setChatMessages((prev) => dedupeAppend(prev, note));
       }
     };
     window.addEventListener("lia:settings-updated", onUpdated);
@@ -629,7 +631,7 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
       metadata?: Record<string, unknown>,
     ) => {
       addChatMessage({
-        id: `user-${Date.now()}`,
+        id: createMessageId("user"),
         sender: "user",
         content,
         timestamp: formatMessageTime(),
@@ -698,7 +700,7 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
     ) => {
       const ts = formatMessageTime();
       addChatMessage({
-        id: `user-${Date.now()}`,
+        id: createMessageId("user"),
         sender: "user",
         content: message,
         timestamp: ts,
@@ -713,7 +715,7 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
       }
       const metadata = options?.extractResponseMetadata?.(response);
       addChatMessage({
-        id: `lia-${Date.now()}`,
+        id: createMessageId("lia"),
         sender: "lia",
         content: response.content,
         timestamp: formatMessageTime(),
