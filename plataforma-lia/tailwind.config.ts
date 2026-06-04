@@ -244,10 +244,14 @@ export default {
         }
       },
       borderRadius: {
-        // WeDo DS canonical — 2026-03-29
-        // cards/modals: rounded-xl (12px)
-        // inputs/badges: rounded-lg (8px)
-        // interactive chips/pills: rounded-full
+        // WeDo DS canonical (Fundação DS — fonte-da-verdade = código)
+        // cards/modais:            rounded-xl  (12px, = default Tailwind 0.75rem)
+        // botões/inputs/selects:   rounded-md  (calc(var(--radius) - 2px))
+        // chips/badges/pílulas:    rounded-full
+        // interfaces imersivas (chat expandido, login): rounded-2xl
+        // NUNCA sobrescrever o raio em <Button> (sm/lg já resolvem rounded-md).
+        // Paleta: usar SEMPRE tokens status-*/wedo-*/lia-* — NUNCA cores cruas do
+        // Tailwind (amber-50, emerald-600, purple-100, blue-50, red-200…).
         // DEFAULT Tailwind values preserved below
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 2px)',

@@ -7,7 +7,7 @@ Plataforma LIA (Learning Intelligence Assistant) is an AI-powered recruitment an
 - Separação Backend/Frontend: Manter estruturas de back e front completamente separadas (API REST/GraphQL no backend, SPA no frontend)
 - Componentização: Priorizar componentes reutilizáveis e modulares, evitar código monolítico
 - Preparação para Migração: Estruturar código pensando em possível conversão para Vue.js + Nuxt (frontend) e Ruby on Rails (backend)
-- Border Radius: Seguir DS v4.2.2 — rounded-md (8px) padrão universal para botões/inputs/cards/modais, rounded-xl (16px) para interfaces imersivas (chat, login), rounded-full (pill) para badges/skills/avatars.
+- Border Radius (fonte-da-verdade = código): cards/modais = `rounded-xl` (12px); botões/inputs/selects = `rounded-md`; chips/badges/pílulas = `rounded-full`. Interfaces imersivas (chat expandido, login) podem usar `rounded-2xl`. NUNCA sobrescrever o raio em `<Button>`. Paleta SEMPRE via tokens `status-*`/`wedo-*`/`lia-*` — cores cruas do Tailwind (`amber-50`, `emerald-600`, `purple-100`, `blue-50`, `red-200`…) são proibidas quando há token equivalente. Detalhe completo na seção **Design System — Fundação**.
 - Chat é a interface principal - O recrutador interage com a LIA através de conversa natural, NÃO através de botões
 - LIA pergunta, recrutador responde - Quando uma etapa está completa, a LIA PERGUNTA se quer avançar. O recrutador RESPONDE no chat (ex: "sim", "vamos", "pode avançar")
 - Painéis são suporte visual - Os painéis laterais mostram informações e permitem edição, mas a navegação e decisões são feitas via chat
@@ -60,6 +60,43 @@ Plataforma LIA (Learning Intelligence Assistant) is an AI-powered recruitment an
 - **Bootstrap cobertura Anthropic (Bug D / base_url injection)** — `_inject_anthropic_env` (`lia-agent-system/app/shared/llm_bootstrap.py`) DEVE sobrescrever `base_url` quando o caller (ou o wrapper `langchain_anthropic.ChatAnthropic`) já passou o default upstream `https://api.anthropic.com` — senão o cliente bate direto na Anthropic (401 com a wrapper key em dev/staging), root cause real do "IA degradada (qualidade ~20%)" em 100% dos turnos do wizard. **Helper `_is_default_anthropic_base_url`, callsites cobertos, 5 sentinelas e runbook:** [`docs/runbooks/task-1161-three-bugs.md`](./docs/runbooks/task-1161-three-bugs.md) §"Bug A — Addendum Task #1164".
 - **Wizard E2E — 3 bugs bloqueantes (Bug A base_url · Bug B checkpointer async · Bug C culture leak/validator)** — três regressões resolvidas com sentinelas offline AST-validadas. Pontos inegociáveis: (A) `_inject_anthropic_env` injeta `AI_INTEGRATIONS_ANTHROPIC_BASE_URL` fora do gate `api_key`; (B) o catch de `aresume_with_message` loga/captura exceção ANTES de qualquer silent fallback (o `NotImplementedError` do `PostgresSaver` sync era engolido), com fallback async-capable só em dev; (C) endpoints `/api/v1/company/culture-*` nunca vazam `str(e)` e o `CompanyCultureProfileBase` normaliza os campos `list[str]` via `field_validator(mode="before")`. **Fixes detalhados, sentinelas e runbook:** [`docs/runbooks/task-1161-three-bugs.md`](./docs/runbooks/task-1161-three-bugs.md).
 - **Audit obrigatório nos 3 domínios Interview + Offer (T-1157)** — todo `async def` público mutativo em `app/domains/{interview_scheduling,interview_intelligence,offer}/services/*.py` DEVE chamar `AuditService.log_decision[_in_session]` (SOX 7-year para offer; LGPD Art.46 para transcription), e as rotas mutating devem repassar `company_id=` para a camada inferior. Padrão ratchet via baselines (regressão NOVA quebra a build). **CRÍTICO `self_scheduling_public.py`:** o middleware usa `PUBLIC_REGEX_PATHS` com regex EXPLÍCITA para os 2 paths públicos por token — NUNCA prefixo amplo `/api/v1/scheduling/link/` em `PUBLIC_PREFIXES` (auth-bypass de sub-rotas futuras). **Sentinelas AST, property tests, baselines e runbook:** [`docs/runbooks/audit-interview-offer.md`](./docs/runbooks/audit-interview-offer.md).
+
+# Design System — Fundação
+
+> **Fonte-da-verdade = código.** Onde doc e código divergirem, o código (componentes em `plataforma-lia/src/components/ui/`, tokens em `tailwind.config.ts` + `design-tokens.css`/`design-tokens.ts`) vence. A skill `design-standardize` e este resumo descrevem o MESMO padrão.
+
+## Raio (border-radius)
+
+| Elemento | Classe |
+|---|---|
+| Cards, modais, dialogs | `rounded-xl` (12px) |
+| Botões, inputs, selects, textareas, dropdowns | `rounded-md` |
+| Chips, badges, pílulas, avatars | `rounded-full` |
+| Interfaces imersivas (chat expandido, login) | `rounded-2xl` |
+
+**Inegociável:** NUNCA sobrescrever o raio em `<Button>` (variantes `sm`/`lg` já resolvem `rounded-md`). `rounded-sm`/`rounded-lg` em botões/inputs são proibidos.
+
+## Paleta — SEMPRE tokens, NUNCA cores cruas do Tailwind
+
+Cores cruas do Tailwind (`amber-50`, `emerald-600`, `purple-100`, `blue-50`, `red-200`, `green-700`…) são **proibidas** quando há token equivalente. Usar:
+
+- **Status semântico:** `status-success` (#16A34A), `status-error` (#DC2626), `status-warning` (#D97706) + variantes `*-bg`/`*-border` (CSS vars). Opacidade via `/10`, `/20` (ex.: `bg-status-success/10`).
+- **Acento IA/LIA (exclusivo):** `wedo-cyan` (#60BED1), `wedo-cyan-dark` (#4DA8BB). Cyan NUNCA em botões — só em ícones/badges/acento de IA.
+- **Paleta `wedo-*` (acento 10%):** `wedo-green` (#5DA47A), `wedo-green-light` (#A8D5B7), `wedo-green-pastel` (#A8D5B7), `wedo-green-bright` (#60D186), `wedo-orange` (#D19960), `wedo-purple` (#9860D1), `wedo-magenta` (#D160AB), `wedo-amber` (#F59E0B) + `wedo-amber-light`, `wedo-coral` (#E87575). Todas suportam opacity modifiers.
+- **Superfícies/texto/borda:** tokens `lia-*` (`lia-bg-*`, `lia-text-*`, `lia-border-*`) — dark mode automático via CSS vars. Aliases legados (`lia-surface`/`lia-border`/`lia-primary`/`lia-muted`) existem só por compat; preferir o canonical.
+
+## Componentes canônicos (qual usar)
+
+| Necessidade | Componente | Raio/Tokens |
+|---|---|---|
+| Campo de formulário (label + controle + hint + erro) | `FormField` (`ui/form-field.tsx`) envolvendo `Input`/`Textarea`/`Select` | controle `rounded-md`; injeta `htmlFor`/`id`/`aria-*` |
+| Pílula de status | `StatusPill` (`ui/status-pill.tsx`) | `rounded-full` + `status-*`; use `withDot`/`icon` (daltonismo) |
+| Chip/badge genérico | `Chip` (`ui/chip.tsx`) / `Badge` (`ui/badge.tsx`) | `rounded-full` |
+| Bloco de alerta/aviso | `Callout` (`ui/callout.tsx`) | `rounded-md` + `status-*`/`wedo-cyan`; ícone semântico |
+| KPI/número de dashboard | `Metric` (`ui/metric.tsx`) ou `textStyles.kpi*`/`textStyles.metric*` | `font-data` (Inter) + `tabular-nums` |
+| Checkbox/radio | `Checkbox` (`ui/checkbox.tsx`) / `radio-group` | tokens `lia-*` |
+
+**KPIs numéricos:** padrão ÚNICO = fonte de dados **Inter** (`font-data`) + `tabular-nums`. Nunca usar `font-sans` (Open Sans) em números. Consumir via `<Metric />` ou `textStyles.metric*`/`textStyles.kpi*`.
 
 # External Dependencies
 

@@ -232,10 +232,17 @@ export const textStyles = {
   label: "font-sans text-xs font-medium text-lia-text-primary dark:text-lia-text-primary",
   labelSmall: "font-sans text-micro font-medium text-lia-text-primary dark:text-lia-text-primary",
   
-  // v4: Métricas com Inter
-  metric: "font-sans text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary tabular-nums",
-  metricLarge: "font-sans text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary tabular-nums",
-  metricSmall: "font-sans text-xs font-medium text-lia-text-primary dark:text-lia-text-primary tabular-nums",
+  // Fundação DS: KPIs/métricas usam SEMPRE a fonte de dados Inter (`font-data`)
+  // + `tabular-nums`. Padrão único — Consumo/Compliance não devem divergir.
+  // Para um componente pronto (valor + label + hint), prefira <Metric />.
+  metric: "font-data text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary tabular-nums",
+  metricLarge: "font-data text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary tabular-nums",
+  metricSmall: "font-data text-xs font-medium text-lia-text-primary dark:text-lia-text-primary tabular-nums",
+
+  // Fundação DS: escala de KPI de dashboard (valor isolado, sem label).
+  kpi: "font-data text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary tabular-nums leading-none",
+  kpiLarge: "font-data text-4xl font-bold text-lia-text-primary dark:text-lia-text-primary tabular-nums leading-none",
+  kpiSmall: "font-data text-lg font-semibold text-lia-text-primary dark:text-lia-text-primary tabular-nums leading-none",
   
   // DS v4.1: Sidebar com Open Sans (Source Serif 4 removido)
   sidebarTitle: "font-sans text-base-ui font-semibold text-lia-text-primary dark:text-lia-text-primary",
