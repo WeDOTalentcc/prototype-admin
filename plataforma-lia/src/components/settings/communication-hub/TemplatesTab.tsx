@@ -266,7 +266,7 @@ export function TemplatesTab({
                       <Button
                         variant="outline" size="sm"
                         onClick={() => setEditingTemplate({ ...selectedTemplate })}
-                        className="rounded-full py-1.5 px-2 text-xs border-lia-btn-primary-bg text-lia-text-primary hover:bg-lia-bg-secondary dark:border-lia-border-subtle dark:hover:bg-lia-btn-primary-bg"
+                        className="py-1.5 px-2 text-xs border-lia-btn-primary-bg text-lia-text-primary hover:bg-lia-bg-secondary dark:border-lia-border-subtle dark:hover:bg-lia-btn-primary-bg"
                       >
                         <Edit className="w-3.5 h-3.5 mr-1" />
                         {t("edit")}
@@ -366,7 +366,7 @@ export function TemplatesTab({
                         <Button
                           onClick={handleAdjustWithAI}
                           disabled={isGenerating || !aiPrompt.trim()}
-                          className="gap-1.5 rounded-md py-2 px-3 text-xs min-w-[100px] hover:bg-lia-btn-primary-hover disabled:bg-lia-border-medium dark:hover:bg-lia-interactive-active dark:disabled:bg-lia-border-medium"
+                          className="gap-1.5 py-2 px-3 text-xs min-w-[100px] hover:bg-lia-btn-primary-hover disabled:bg-lia-border-medium dark:hover:bg-lia-interactive-active dark:disabled:bg-lia-border-medium"
                         >
                           {isGenerating ? (
                             <><Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />{t("adjusting")}</>
@@ -401,7 +401,7 @@ export function TemplatesTab({
                               <p className="text-xs text-lia-text-secondary">{t("reviewChanges")}</p>
                             </div>
                           </div>
-                          <Button variant="ghost" size="sm" onClick={handleCancelAIAdjustment} className="rounded-md">
+                          <Button variant="ghost" size="sm" onClick={handleCancelAIAdjustment}>
                             <X className="w-4 h-4" />
                           </Button>
                         </div>
