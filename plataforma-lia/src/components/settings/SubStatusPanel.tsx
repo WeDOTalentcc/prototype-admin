@@ -98,7 +98,7 @@ export function SubStatusPanel({ stage, isEditMode, onToggleSubStatus }: SubStat
                   {togglingId === `default-${ss.id}` ? (
                     <Loader2 className="h-3 w-3 animate-spin motion-reduce:animate-none text-lia-text-tertiary" />
                   ) : ss.is_default ? (
-                    <Star className="h-3 w-3 text-status-warning fill-amber-400" />
+                    <Star className="h-3 w-3 text-status-warning fill-current" />
                   ) : (
                     <Star className="h-3 w-3 text-lia-text-disabled hover:text-status-warning" />
                   )}
@@ -117,7 +117,7 @@ export function SubStatusPanel({ stage, isEditMode, onToggleSubStatus }: SubStat
               )}
 
               {!canManage && ss.is_default && (
-                <Star className="h-3 w-3 text-status-warning fill-amber-400 flex-shrink-0" />
+                <Star className="h-3 w-3 text-status-warning fill-current flex-shrink-0" />
               )}
             </div>
           ))}

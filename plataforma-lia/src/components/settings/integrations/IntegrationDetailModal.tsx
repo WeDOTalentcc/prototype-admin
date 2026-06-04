@@ -283,13 +283,13 @@ export function IntegrationDetailModal({
           </div>
 
           {isAiProvider && integration.id === "openai" && resolvedStatus !== "connected" && (
-            <div className={cn(cardStyles.flat, "flex items-start gap-3 px-4 py-3 border border-amber-300/50 dark:border-amber-500/30 bg-amber-50/50 dark:bg-amber-950/20")}>
-              <Mic className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+            <div className={cn(cardStyles.flat, "flex items-start gap-3 px-4 py-3 border border-status-warning-border-light bg-status-warning-bg")}>
+              <Mic className="w-4 h-4 text-status-warning flex-shrink-0 mt-0.5" />
               <div>
-                <p className={cn(textStyles.label, "text-amber-800 dark:text-amber-300")}>
+                <p className={cn(textStyles.label, "text-status-warning")}>
                   Necessário para voz nas triagens
                 </p>
-                <p className={cn(textStyles.description, "mt-1 text-amber-700/80 dark:text-amber-400/70")}>
+                <p className={cn(textStyles.description, "mt-1 text-status-warning/80")}>
                   A transcrição de áudio dos candidatos (Whisper) e a voz da LIA (TTS) dependem da OpenAI. Sem esta chave, as triagens funcionam apenas por texto.
                 </p>
               </div>
@@ -297,9 +297,9 @@ export function IntegrationDetailModal({
           )}
 
           {isAiProvider && integration.id === "openai" && resolvedStatus === "connected" && (
-            <div className={cn(cardStyles.flat, "flex items-start gap-3 px-4 py-3 border border-emerald-300/50 dark:border-emerald-500/30 bg-emerald-50/50 dark:bg-emerald-950/20")}>
-              <Mic className="w-4 h-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0 mt-0.5" />
-              <p className={cn(textStyles.description, "text-emerald-700 dark:text-emerald-400")}>
+            <div className={cn(cardStyles.flat, "flex items-start gap-3 px-4 py-3 border border-status-success/30 bg-status-success-bg")}>
+              <Mic className="w-4 h-4 text-status-success flex-shrink-0 mt-0.5" />
+              <p className={cn(textStyles.description, "text-status-success")}>
                 Transcrição (Whisper) e voz da LIA (TTS) habilitados para triagens.
               </p>
             </div>

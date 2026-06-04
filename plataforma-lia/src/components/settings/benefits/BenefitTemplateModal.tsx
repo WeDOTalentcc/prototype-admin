@@ -217,7 +217,7 @@ export function BenefitTemplateModal({
                                   {template.name}
                                 </h4>
                                 {template.is_popular && (
-                                  <Star className="w-3 h-3 text-status-warning fill-yellow-500 flex-shrink-0" />
+                                  <Star className="w-3 h-3 text-status-warning fill-current flex-shrink-0" />
                                 )}
                               </div>
                               <p className={`${textStyles.caption} truncate`}>

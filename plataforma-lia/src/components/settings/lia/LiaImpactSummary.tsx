@@ -186,7 +186,7 @@ export function LiaImpactSummary() {
   if (isLoading) {
     return (
       <div className="py-6 flex justify-center">
-        <span className="text-xs text-gray-400">Carregando...</span>
+        <span className="text-xs text-lia-text-disabled">Carregando...</span>
       </div>
     )
   }
@@ -195,8 +195,8 @@ export function LiaImpactSummary() {
     <div className="space-y-8" data-testid="lia-impact-summary-panel">
       {/* Header */}
       <div>
-        <h3 className="text-sm font-semibold text-gray-800">O que a LIA está usando agora</h3>
-        <p className="text-xs text-gray-500 mt-0.5">
+        <h3 className="text-sm font-semibold text-lia-text-primary">O que a LIA está usando agora</h3>
+        <p className="text-xs text-lia-text-tertiary mt-0.5">
           Transparência sobre os dados enviados para o sistema de IA nas interações com candidatos.
         </p>
       </div>
@@ -204,16 +204,16 @@ export function LiaImpactSummary() {
       {/* ── Section A: Campos LIA ativos ────────────────────────────────── */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-semibold text-gray-700">Campos do perfil enviados à IA</span>
-          <span className="text-xs text-gray-400">
+          <span className="text-xs font-semibold text-lia-text-primary">Campos do perfil enviados à IA</span>
+          <span className="text-xs text-lia-text-disabled">
             {activeCount} / {totalCanonical} ativos
           </span>
         </div>
 
         {/* Overall progress bar */}
-        <div className="h-1.5 rounded-full bg-gray-100 overflow-hidden">
+        <div className="h-1.5 rounded-full bg-lia-bg-tertiary overflow-hidden">
           <div
-            className="h-full rounded-full bg-gray-700 transition-[width] duration-300"
+            className="h-full rounded-full bg-lia-text-secondary transition-[width] duration-300"
             style={{ width: `${(activeCount / totalCanonical) * 100}%` }}
             aria-valuenow={activeCount}
             aria-valuemax={totalCanonical}
@@ -226,10 +226,10 @@ export function LiaImpactSummary() {
         <div className="space-y-1.5 pt-1">
           {categories.map((cat) => (
             <div key={cat.id} className="flex items-center gap-2 text-[11px]">
-              <div className="w-36 text-gray-500 truncate shrink-0">{cat.label}</div>
-              <div className="flex-1 h-1 rounded-full bg-gray-100 overflow-hidden">
+              <div className="w-36 text-lia-text-tertiary truncate shrink-0">{cat.label}</div>
+              <div className="flex-1 h-1 rounded-full bg-lia-bg-tertiary overflow-hidden">
                 <div
-                  className="h-full rounded-full bg-gray-400 transition-[width] duration-300"
+                  className="h-full rounded-full bg-lia-text-tertiary transition-[width] duration-300"
                   style={{
                     width:
                       cat.totalCount > 0
@@ -238,7 +238,7 @@ export function LiaImpactSummary() {
                   }}
                 />
               </div>
-              <div className="w-10 text-right text-gray-400 shrink-0">
+              <div className="w-10 text-right text-lia-text-disabled shrink-0">
                 {cat.activeCount}/{cat.totalCount}
               </div>
             </div>
@@ -248,23 +248,23 @@ export function LiaImpactSummary() {
 
       {/* ── Section B: Perfil da empresa ─────────────────────────────────── */}
       <div className="space-y-2">
-        <span className="text-xs font-semibold text-gray-700">Dados do perfil que a LIA conhece</span>
+        <span className="text-xs font-semibold text-lia-text-primary">Dados do perfil que a LIA conhece</span>
         <div className="space-y-1.5 pt-0.5">
           {profileSections.map((section) => (
             <div key={section.id} className="flex items-center gap-2 text-xs">
               <span
-                className={section.isFilled ? "text-gray-500" : "text-gray-300"}
+                className={section.isFilled ? "text-lia-text-tertiary" : "text-lia-text-disabled"}
                 aria-hidden="true"
               >
                 {section.isFilled ? "●" : "○"}
               </span>
-              <span className={section.isFilled ? "text-gray-700" : "text-gray-400"}>
+              <span className={section.isFilled ? "text-lia-text-secondary" : "text-lia-text-disabled"}>
                 {section.label}
               </span>
               {section.isFilled && section.detail ? (
-                <span className="text-gray-400 text-[10px]">{section.detail}</span>
+                <span className="text-lia-text-disabled text-[10px]">{section.detail}</span>
               ) : !section.isFilled ? (
-                <span className="text-gray-300 italic text-[10px]">— não preenchido</span>
+                <span className="text-lia-text-disabled italic text-[10px]">— não preenchido</span>
               ) : null}
             </div>
           ))}
@@ -274,9 +274,9 @@ export function LiaImpactSummary() {
       {/* ── Section C: Learning Loops ──────────────────────────────────── */}
       <div className="space-y-2">
         <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-gray-700">Capacidades de aprendizado</span>
+          <span className="text-xs font-semibold text-lia-text-primary">Capacidades de aprendizado</span>
           {!masterLoopEnabled && (
-            <span className="text-[10px] text-gray-400 italic">(desativadas — chave mestre off)</span>
+            <span className="text-[10px] text-lia-text-disabled italic">(desativadas — chave mestre off)</span>
           )}
         </div>
         <div className="space-y-1.5 pt-0.5">
@@ -285,14 +285,14 @@ export function LiaImpactSummary() {
             return (
               <div key={key} className="flex items-center gap-2 text-xs">
                 <span
-                  className={enabled ? "text-gray-500" : "text-gray-300"}
+                  className={enabled ? "text-lia-text-tertiary" : "text-lia-text-disabled"}
                   aria-hidden="true"
                 >
                   {enabled ? "●" : "○"}
                 </span>
-                <span className={enabled ? "text-gray-700" : "text-gray-400"}>{label}</span>
+                <span className={enabled ? "text-lia-text-secondary" : "text-lia-text-disabled"}>{label}</span>
                 {!enabled && (
-                  <span className="ml-auto text-[10px] text-gray-300 shrink-0">inativo</span>
+                  <span className="ml-auto text-[10px] text-lia-text-disabled shrink-0">inativo</span>
                 )}
               </div>
             )
