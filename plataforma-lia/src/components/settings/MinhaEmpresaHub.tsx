@@ -9,6 +9,7 @@ import { useTranslations } from "next-intl"
 import { useCompanySettingsCards } from "@/hooks/settings/use-company-settings-cards"
 import { useSettingsConversational } from "@/hooks/settings/use-settings-conversational"
 import { MinhaEmpresaCard } from "@/components/settings/MinhaEmpresaCard"
+import { CultureApprovalBanner } from "@/components/settings/CultureApprovalBanner"
 import { LearningLoopsPanel } from "@/components/settings/LearningLoopsPanel"
 import { LiaFieldsConfigPanel } from "@/components/settings/LiaFieldsConfigPanel"
 import { AnalyzeWebsiteModal } from "@/components/settings/AnalyzeWebsiteModal"
@@ -184,6 +185,8 @@ export function MinhaEmpresaHub({ activeSubsection }: MinhaEmpresaHubProps = {})
           <span>{error || successMessage}</span>
         </div>
       )}
+
+      <CultureApprovalBanner companyId={companyId} />
 
       <div>
         <HubHeader title={t("title")} description={t("description")}>
