@@ -896,6 +896,7 @@ async def _sse_via_orchestrator(
     user_role: str = "",
     company_id: str = "",
     tenant_context_snippet: str = "",
+    view_context: "dict[str, Any] | None" = None,
 ) -> AsyncGenerator[str, None]:
     """Fase 3: SSE via MainOrchestrator (unified pipeline) — LIA-P05."""
     import asyncio as _asyncio
@@ -921,6 +922,7 @@ async def _sse_via_orchestrator(
         user_name=user_name,
         user_role=user_role,
         tenant_context_snippet=tenant_context_snippet,
+        view_context=view_context,
     )
 
     async def _run_orchestrator():
@@ -993,6 +995,8 @@ company_id: str = Depends(require_company_id)):
     body = await request.json()
     user_content: str = body.get("content", "").strip()
     conversation_id: str | None = body.get("conversation_id")
+    # Fase B P0.1: estado-da-tela enviado pelo FE no corpo do SSE.
+    view_context = body.get("view_context") or body.get("page_context")
 
     if not user_content:
         raise HTTPException(status_code=422, detail="content is required")
@@ -1088,6 +1092,7 @@ company_id: str = Depends(require_company_id)):
             user_role=str(getattr(current_user, "role", "")) or "",
             company_id=_company_id,
             tenant_context_snippet=_tenant_snippet,
+            view_context=view_context,
         )
     )
     return StreamingResponse(

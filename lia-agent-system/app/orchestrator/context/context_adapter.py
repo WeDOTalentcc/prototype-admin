@@ -89,6 +89,9 @@ class UniversalContext(BaseModel):
     search_context: dict[str, Any] | None = None
     target_job: dict[str, Any] | None = None
     extra: dict[str, Any] = {}
+    # Fase B P0.1 (consciencia de tela): estado-da-tela vivo (page_type +
+    # counts + filtros + ids visiveis) que o supervisor injeta no system prompt.
+    view_context: dict[str, Any] | None = None
 
     # Flag: skip memory persistence (Passo 2 Path A — ChatRepository remains owner until M2)
     skip_memory_persist: bool = False
@@ -365,3 +368,46 @@ class ContextAdapter:
                 f"company:{company_id} — {exc}. Allowing (graceful degradation)."
             )
             return True
+
+
+
+def render_view_context(vc: "dict[str, Any] | None") -> str:
+    """Fase B P0.1: renderiza o view_context (estado da tela) em snippet de prompt.
+
+    Funcao PURA (deterministica) -> testavel sem DB/loop. Vazio/None -> "" (sem
+    snippet). O supervisor (Phase 1.5) appenda isso ao system prompt pra abrir
+    ciente do que o recrutador ve agora, sem pedir que ele repita.
+    """
+    if not vc or not isinstance(vc, dict):
+        return ""
+    lines: list[str] = [
+        "## Contexto da tela atual (o que o recrutador esta vendo agora)",
+    ]
+    pt = vc.get("page_type")
+    if pt:
+        lines.append(f"- Tela: {pt}")
+    job = vc.get("job_title") or vc.get("job_id") or vc.get("job_vacancy_id")
+    if job:
+        lines.append(f"- Vaga atual: {job}")
+    counts = vc.get("counts")
+    if isinstance(counts, dict):
+        cs = ", ".join(f"{k}={v}" for k, v in counts.items() if v not in (None, ""))
+        if cs:
+            lines.append(f"- Contagens: {cs}")
+    filters = vc.get("filters")
+    if isinstance(filters, dict):
+        fs = ", ".join(
+            f"{k}={v}" for k, v in filters.items() if v not in (None, "", [], {})
+        )
+        if fs:
+            lines.append(f"- Filtros ativos: {fs}")
+    vis = vc.get("visible_ids") or vc.get("candidate_ids")
+    if isinstance(vis, list) and vis:
+        lines.append(f"- Itens visiveis na tela: {len(vis)}")
+    if len(lines) <= 1:
+        return ""
+    lines.append(
+        "Use este contexto para responder direto, sem pedir que o recrutador "
+        "repita o que ja esta na tela."
+    )
+    return "\n".join(lines)

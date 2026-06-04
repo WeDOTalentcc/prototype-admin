@@ -987,6 +987,17 @@ class MainOrchestrator:
                             exc_info=True,
                         )
 
+                    # Fase B P0.1 (2026-06-04): injeta o contexto da tela
+                    # (view_context) no system prompt -> supervisor abre ciente
+                    # do que o recrutador ve agora (page_type + counts + filtros).
+                    try:
+                        from app.orchestrator.context.context_adapter import render_view_context
+                        _vc_snip = render_view_context(getattr(ctx, "view_context", None))
+                        if _vc_snip:
+                            _phase15_system_prompt = (_phase15_system_prompt or "") + "\n\n" + _vc_snip
+                    except Exception:
+                        pass
+
                     # Bug obs #1 fix (2026-05-24): PREPEND greeting/ambiguous rule
                     # ANTES do persona+tools list. LLM perde focus em prompts
                     # 50K+ tokens longos — colocar regra no topo + bottom
