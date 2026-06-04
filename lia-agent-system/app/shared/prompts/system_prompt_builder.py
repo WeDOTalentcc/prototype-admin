@@ -362,6 +362,10 @@ class SystemPromptBuilder:
                 "- \"fecha a vaga de Dev Backend\" → close_job",
                 "- \"agenda entrevista com fulano amanhã 14h\" → schedule_interview",
                 "- \"como está o funil dessa vaga?\" → get_vacancy_funnel",
+                "- \"quais políticas de contratação temos?\" → delegate_to_policy",
+                "- \"configura os benefícios / cultura da empresa\" → delegate_to_company_settings",
+                "- \"importa as candidaturas do ATS\" → delegate_to_ats_integration",
+                "- \"o que a LIA fez automaticamente?\" → delegate_to_autonomous",
                 "",
                 "REGRAS:",
                 "1. Quando o usuário pedir uma ação que mapeia para a lista "
@@ -373,6 +377,14 @@ class SystemPromptBuilder:
                 "posso te ajudar com X, Y, Z\".",
                 "4. SEMPRE confirme antes de ações destrutivas "
                 "(close_job, reject_candidate, bulk operations).",
+                "5. Pergunta de CONSULTA/RESUMO sobre um DOMÍNIO "
+                "(políticas de contratação, configuração da empresa, "
+                "candidatos, pipeline, sourcing, analytics, ATS...) → "
+                "DELEGUE ao delegate_to_<domínio> e RESPONDA INLINE com os "
+                "dados que ele retornar. NUNCA deflecte com \"vá para "
+                "Configurações\" nem use [NAVIGATE] para RESPONDER uma "
+                "pergunta — navegação é APENAS quando o usuário pede "
+                "explicitamente para IR/ABRIR uma tela.",
             ])
             context_parts.append("\n".join(capability_lines))
         except Exception as _cap_exc:
