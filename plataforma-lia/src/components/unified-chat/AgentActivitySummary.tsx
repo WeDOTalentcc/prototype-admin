@@ -10,7 +10,8 @@
 
 import React, { useMemo, useState } from "react"
 import { ChevronDown, ChevronRight, CheckCircle2, XCircle, Brain } from "lucide-react"
-import { useTranslations } from "next-intl"
+import { useTranslations, useLocale } from "next-intl"
+import { phaseLabel, toolLabel } from "./activity-labels"
 
 export interface AgentActivityItem {
   kind: string // "tool" | "reasoning"
@@ -23,10 +24,6 @@ interface AgentActivitySummaryProps {
   items: AgentActivityItem[]
 }
 
-function humanize(name: string): string {
-  return name.replace(/[_-]+/g, " ").trim()
-}
-
 function fmt(ms?: number): string {
   if (ms == null) return ""
   return ms >= 1000 ? `${(ms / 1000).toFixed(1)}s` : `${ms}ms`
@@ -34,6 +31,7 @@ function fmt(ms?: number): string {
 
 export function AgentActivitySummary({ items }: AgentActivitySummaryProps) {
   const t = useTranslations("chat.agentActivity")
+  const locale = useLocale()
   const [open, setOpen] = useState(false)
   const totalMs = useMemo(
     () => items.reduce((sum, i) => sum + (i.durationMs || 0), 0),
@@ -77,7 +75,9 @@ export function AgentActivitySummary({ items }: AgentActivitySummaryProps) {
                 <CheckCircle2 className="w-3 h-3 text-status-success shrink-0" />
               )}
               <span className="truncate">
-                {item.kind === "tool" ? humanize(item.name) : item.name}
+                {item.kind === "tool"
+                  ? toolLabel(item.name, locale)
+                  : phaseLabel(item.name, locale)}
               </span>
               {item.durationMs != null && (
                 <span className="ml-auto tabular-nums">{fmt(item.durationMs)}</span>

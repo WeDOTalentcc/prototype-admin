@@ -64,7 +64,8 @@ def _phase_label(key: str) -> str:
 
 
 async def _emit_phase(key: str) -> None:
-    await _emit_activity({"type": "reasoning_step", "label": _phase_label(key)})
+    # Emite a CHAVE da fase; o FE localiza (reativo ao toggle PT/EN, page-agnostic).
+    await _emit_activity({"type": "reasoning_step", "label": key})
 
 
 # Sprint 9.2 (NS-5 latency fix, 2026-05-24): agentic LLM timeout configurable.

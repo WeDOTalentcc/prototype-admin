@@ -18,8 +18,9 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react"
 import { Loader2, CheckCircle2, XCircle, Brain } from "lucide-react"
-import { useTranslations } from "next-intl"
+import { useTranslations, useLocale } from "next-intl"
 import { ThinkingStepsCard } from "./ThinkingStepsCard"
+import { phaseLabel, toolLabel } from "./activity-labels"
 
 interface ActivityItem {
   id: string
@@ -38,10 +39,6 @@ interface AgentActivityTimelineProps {
 
 const REASONING_REVEAL_MS = 450
 
-function humanizeTool(name: string): string {
-  return name.replace(/[_-]+/g, " ").trim()
-}
-
 function formatMs(ms: number): string {
   return ms >= 1000 ? `${(ms / 1000).toFixed(1)}s` : `${ms}ms`
 }
@@ -51,6 +48,7 @@ export function AgentActivityTimeline({
   showFallback = true,
 }: AgentActivityTimelineProps) {
   const t = useTranslations("chat.agentActivity")
+  const locale = useLocale()
   const [items, setItems] = useState<ActivityItem[]>([])
   const reasoningQueueRef = useRef<ActivityItem[]>([])
   const drainTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -164,7 +162,9 @@ export function AgentActivityTimeline({
               <CheckCircle2 className="w-3.5 h-3.5 text-status-success shrink-0" />
             )}
             <span className="truncate">
-              {item.kind === "tool" ? humanizeTool(item.name) : item.name}
+              {item.kind === "tool"
+                ? toolLabel(item.name, locale)
+                : phaseLabel(item.name, locale)}
             </span>
             {item.durationMs != null && (
               <span className="ml-auto tabular-nums text-lia-text-secondary">
