@@ -30,7 +30,8 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import type React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { requestRegeneration } from "@/services/lia-api/feedback-api";
+import { requestRegeneration, reportImplicitSignal } from "@/services/lia-api/feedback-api";
+import { classifyImplicitSignal } from "./implicit-feedback-detect";
 import { deleteChatConversation } from "./deleteChatConversation";
 import { UnifiedChatEmptyState } from "./UnifiedChatEmptyState";
 import { UnifiedChatHeader } from "./UnifiedChatHeader";
@@ -733,6 +734,39 @@ export function UnifiedChat({
       return;
     }
     if (!firstUserMessageRef.current) firstUserMessageRef.current = text;
+
+    // Task #1299 — IMPLICIT feedback capture (outside the wizard only). Compare
+    // the just-sent message against the prior LIA answer to detect an edited
+    // reuse (correction_delta) or a topic switch away from a substantive answer
+    // (abandonment). Fire-and-forget telemetry: the backend re-applies the
+    // FairnessGuard gate + conservative criterion and is the authoritative
+    // decision point; a network blip here must never affect the chat send.
+    if (!dynamicPanel && chatSessionId) {
+      const priorLia = [...chatMessages]
+        .reverse()
+        .find((m) => m.sender === "lia" && (m.content ?? "").trim().length > 0);
+      if (priorLia) {
+        const signal = classifyImplicitSignal(priorLia.content, text);
+        if (signal === "correction_delta") {
+          void reportImplicitSignal("correction_delta", {
+            sessionId: chatSessionId,
+            messageId: priorLia.id,
+            originalResponse: priorLia.content,
+            usedText: text,
+            messageContext: { lia_response: priorLia.content },
+          }).catch(() => {});
+        } else if (signal === "abandonment") {
+          void reportImplicitSignal("abandonment", {
+            sessionId: chatSessionId,
+            messageId: priorLia.id,
+            abandonedResponse: priorLia.content,
+            nextUserMessage: text,
+            messageContext: { lia_response: priorLia.content },
+          }).catch(() => {});
+        }
+      }
+    }
+
     sendChatMessage(text);
     setInputText("");
     setAttachedFile(null);
@@ -759,7 +793,7 @@ export function UnifiedChat({
         );
       }
     });
-  }, [inputText, sendChatMessage, detectNavIntent, handleSlashCommand]);
+  }, [inputText, sendChatMessage, detectNavIntent, handleSlashCommand, dynamicPanel, chatSessionId, chatMessages]);
 
   const handleSuggestionClick = useCallback(
     (prompt: string, metadata?: ChatSuggestionMetadata) => {

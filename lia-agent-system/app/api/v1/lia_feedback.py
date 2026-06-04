@@ -139,6 +139,34 @@ class ConversationFeedbackResponse(WeDoBaseModel):
     items: list[MessageFeedbackEntry]
 
 
+class ImplicitSignalRequest(WeDoBaseModel):
+    """Task #1299 — frontend-detected implicit signal.
+
+    Only ``correction_delta`` and ``abandonment`` arrive here; ``regeneration``
+    is captured server-side in ``/regenerate``. The backend is the gatekeeper:
+    it re-applies the FairnessGuard gate and (for abandonment) the conservative
+    criterion + engagement check before anything is persisted.
+    """
+    session_id: str = Field(..., min_length=1)
+    message_id: str = Field(..., min_length=1, description="LIA message the signal is about")
+    signal_type: str = Field(..., pattern="^(correction_delta|abandonment)$")
+    # correction_delta payload
+    original_response: str | None = Field(default=None, max_length=20000)
+    used_text: str | None = Field(default=None, max_length=20000)
+    # abandonment payload
+    abandoned_response: str | None = Field(default=None, max_length=20000)
+    next_user_message: str | None = Field(default=None, max_length=20000)
+    message_context: MessageContextPayload | None = None
+
+
+class ImplicitSignalAck(WeDoBaseModel):
+    model_config = ConfigDict(extra="forbid")
+    persisted: bool
+    signal_type: str
+    signal_id: str | None = None
+    skipped_reason: str | None = None
+
+
 # ─── Helpers ──────────────────────────────────────────────────────────────
 
 
@@ -502,8 +530,119 @@ async def regenerate_response(
         extra_reasoning=[f"prior_user_message_id={prior.id}"],
     )
 
+    # Task #1299: regeneration is a strong IMPLICIT NEGATIVE signal. Capture it
+    # server-side (the most reliable hook) into the same learning store as
+    # explicit feedback. Defensive — a learning-loop hiccup must NEVER break the
+    # regenerate handshake the recruiter is waiting on.
+    try:
+        from app.shared.learning.implicit_feedback_service import (
+            implicit_feedback_service,
+        )
+
+        _md = assistant_row.extra_data or {}
+        await implicit_feedback_service.capture_regeneration(
+            db=db,
+            company_id=company_id,
+            user_id=str(current_user.id),
+            session_id=body.session_id,
+            superseded_message_id=str(assistant_row.id),
+            superseded_response=assistant_row.content or "",
+            prior_user_message=prior.content or "",
+            intent=_md.get("intent"),
+            stage=_md.get("stage"),
+            trace_id=_md.get("trace_id"),
+            confidence_at_generation=_md.get("confidence_score"),
+        )
+    except Exception:
+        logger.exception(
+            "Task #1299: implicit regeneration signal capture failed (non-fatal)"
+        )
+
     return RegenerateResponse(
         user_message=prior.content,
         prior_message_id=str(prior.id),
         regenerate_of=str(assistant_row.id),
+    )
+
+
+@feedback_router.post(
+    "/implicit", response_model=ImplicitSignalAck, status_code=200
+)
+async def submit_implicit_signal(
+    body: ImplicitSignalRequest,
+    current_user: User = Depends(get_current_user_or_demo),
+    company_id: str = Depends(require_company_id),
+    db: AsyncSession = Depends(get_db),
+) -> ImplicitSignalAck:
+    """Task #1299: frontend-detected implicit signal (correction_delta /
+    abandonment).
+
+    ``company_id`` / ``user_id`` are derived from the authenticated user (never
+    the body — IDOR-safe). The service is the gatekeeper: FairnessGuard gate for
+    both, plus the conservative criterion + explicit-engagement check for
+    abandonment. ``persisted=False`` with a ``skipped_reason`` is a normal,
+    non-error outcome (e.g. criterion not met).
+    """
+    from app.shared.learning.implicit_feedback_service import (
+        implicit_feedback_service,
+    )
+
+    ctx = body.message_context.model_dump() if body.message_context else {}
+    intent = ctx.get("intent")
+    stage = ctx.get("stage")
+    trace_id = ctx.get("trace_id") if isinstance(ctx, dict) else None
+    confidence = ctx.get("confidence_score") if isinstance(ctx, dict) else None
+
+    try:
+        if body.signal_type == "correction_delta":
+            result = await implicit_feedback_service.capture_correction_delta(
+                db=db,
+                company_id=company_id,
+                user_id=str(current_user.id),
+                session_id=body.session_id,
+                source_message_id=body.message_id,
+                original_response=body.original_response or "",
+                used_text=body.used_text or "",
+                intent=intent,
+                stage=stage,
+                trace_id=trace_id,
+                confidence_at_generation=confidence,
+            )
+        else:  # abandonment (schema-validated to one of the two)
+            result = await implicit_feedback_service.capture_abandonment(
+                db=db,
+                company_id=company_id,
+                user_id=str(current_user.id),
+                session_id=body.session_id,
+                abandoned_message_id=body.message_id,
+                abandoned_response=body.abandoned_response or "",
+                next_user_message=body.next_user_message or "",
+                intent=intent,
+                stage=stage,
+                trace_id=trace_id,
+                confidence_at_generation=confidence,
+            )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception("Failed to record implicit signal")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to record implicit signal: {e}"
+        )
+
+    if result.persisted:
+        await _audit_feedback_action(
+            company_id=company_id,
+            user_id=str(current_user.id),
+            action=f"implicit_{result.signal_type}",
+            decision="recorded",
+            session_id=body.session_id,
+            message_id=body.message_id,
+        )
+
+    return ImplicitSignalAck(
+        persisted=result.persisted,
+        signal_type=result.signal_type,
+        signal_id=result.signal_id,
+        skipped_reason=result.skipped_reason,
     )

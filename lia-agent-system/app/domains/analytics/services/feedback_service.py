@@ -119,6 +119,79 @@ class FeedbackService:
             if should_close and db:
                 await db.close()
     
+    async def record_implicit_negative(
+        self,
+        session_id: str,
+        company_id: str,
+        user_id: str,
+        signal_type: str,
+        message_context: dict,
+        db: AsyncSession | None = None,
+    ) -> InteractionFeedback:
+        """Task #1299: persist an IMPLICIT negative signal into the SAME
+        ``interaction_feedback`` table + learning-pattern path used by the
+        explicit thumbs/rating/correction loop, WITHOUT setting ``thumbs`` /
+        ``rating`` (so explicit satisfaction metrics stay clean).
+
+        The row is tagged ``feedback_category="implicit_<signal_type>"`` for
+        analytics buckets, and a transient ``_implicit_negative`` marker makes
+        ``_update_patterns_from_feedback`` demote the matching pattern
+        (``negative_feedback_count`` + ``example_bad_responses``).
+
+        Args:
+            signal_type: "regeneration" | "correction_delta" | "abandonment".
+            message_context: same shape as ``record_feedback`` (carries
+                message_id / user_message / lia_response / intent / stage).
+
+        Returns:
+            The created InteractionFeedback row.
+        """
+        should_close = db is None
+        if db is None:
+            db = AsyncSessionLocal()
+
+        try:
+            feedback = InteractionFeedback(
+                id=uuid4(),
+                session_id=session_id,
+                company_id=UUID(company_id),
+                user_id=user_id,
+                message_id=message_context.get("message_id"),
+                user_message=message_context.get("user_message"),
+                lia_response=message_context.get("lia_response"),
+                intent=message_context.get("intent"),
+                stage=message_context.get("stage"),
+                response_time_ms=message_context.get("response_time_ms"),
+                tools_used=message_context.get("tools_used", []),
+                confidence_score=message_context.get("confidence_score"),
+                feedback_category=f"implicit_{signal_type}",
+            )
+            # Transient marker (NOT a column) → _update_patterns_from_feedback
+            # treats this as a negative without touching thumbs/rating.
+            feedback._implicit_negative = True
+
+            db.add(feedback)
+            await db.commit()
+            await db.refresh(feedback)
+            # refresh() reloads from DB and drops the transient attribute — re-set it.
+            feedback._implicit_negative = True
+
+            self.logger.info(
+                "Recorded implicit negative (%s) for session %s message_id=%s",
+                signal_type, session_id, message_context.get("message_id"),
+            )
+
+            await self._update_patterns_from_feedback(feedback, db)
+            return feedback
+        except Exception as e:
+            if db:
+                await db.rollback()
+            self.logger.error(f"Error recording implicit negative: {e}")
+            raise
+        finally:
+            if should_close and db:
+                await db.close()
+
     async def _update_patterns_from_feedback(
         self,
         feedback: InteractionFeedback,
@@ -149,7 +222,12 @@ class FeedbackService:
             is_negative = (
                 feedback.thumbs == "down" or 
                 (feedback.rating is not None and feedback.rating <= 2) or
-                feedback.correction is not None
+                feedback.correction is not None or
+                # Task #1299: implicit negative signals (regeneration /
+                # correction-delta) carry no thumbs/rating — they tag a
+                # transient marker so they still demote the pattern WITHOUT
+                # polluting the explicit thumbs/satisfaction metrics.
+                getattr(feedback, "_implicit_negative", False)
             )
             
             if pattern:
