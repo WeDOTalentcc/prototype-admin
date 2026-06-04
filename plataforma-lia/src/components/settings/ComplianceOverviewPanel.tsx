@@ -153,7 +153,7 @@ export function ComplianceOverviewPanel({ onNavigateToSubsection }: Props = {}) 
                 </div>
                 <div>
                   <p className="text-xs text-lia-text-secondary">{metric.title}</p>
-                  <p className="text-2xl font-semibold text-lia-text-primary">{metric.value}</p>
+                  <p className={textStyles.kpi}>{metric.value}</p>
                 </div>
                 <p className="text-xs text-lia-text-secondary leading-snug">{metric.context}</p>
                 {metric.subsectionLink && onNavigateToSubsection && (

@@ -6,6 +6,7 @@ import {
   X, Search, UserPlus, Info, ExternalLink, CheckCircle
 } from "lucide-react"
 import { textStyles } from '@/lib/design-tokens'
+import { cn } from '@/lib/utils'
 import { useUserManagement } from './use-user-management'
 import { UserForm } from './user-form'
 // Bug 2 fix (2026-05-25): departments LIFTED to UsuariosDepartamentosHub parent
@@ -152,13 +153,13 @@ export function UserManagement({ departments: hubDepartments = [], onDepartmentC
         </Card>
         <Card className="rounded-md">
           <CardContent className="p-3 text-center">
-            <div className="text-2xl font-semibold text-status-success dark:text-status-success">{stats.active}</div>
+            <div className={cn(textStyles.metricLarge, "text-status-success dark:text-status-success")}>{stats.active}</div>
             <div className={textStyles.description}>{t('activeUsers')}</div>
           </CardContent>
         </Card>
         <Card className="rounded-md">
           <CardContent className="p-3 text-center">
-            <div className="text-2xl font-semibold text-wedo-purple dark:text-wedo-purple">{stats.managers}</div>
+            <div className={cn(textStyles.metricLarge, "text-wedo-purple dark:text-wedo-purple")}>{stats.managers}</div>
             <div className={textStyles.description}>{t('managers')}</div>
           </CardContent>
         </Card>
@@ -173,7 +174,7 @@ export function UserManagement({ departments: hubDepartments = [], onDepartmentC
             placeholder={t('searchPlaceholder')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-8 pr-3 py-1.5 text-xs border border-lia-border-default rounded-xl focus:ring-1 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg dark:bg-lia-bg-elevated dark:border-lia-border-default"
+            className="w-full pl-8 pr-3 py-1.5 text-xs border border-lia-border-default rounded-md focus:ring-1 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg dark:bg-lia-bg-elevated dark:border-lia-border-default"
           />
         </div>
 
@@ -181,7 +182,7 @@ export function UserManagement({ departments: hubDepartments = [], onDepartmentC
           data-testid="users-department-filter"
           value={departmentFilter}
           onChange={(e) => setDepartmentFilter(e.target.value)}
-          className="px-2 py-1.5 text-xs border border-lia-border-default rounded-xl focus:ring-1 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg dark:bg-lia-bg-elevated dark:border-lia-border-default"
+          className="px-2 py-1.5 text-xs border border-lia-border-default rounded-md focus:ring-1 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg dark:bg-lia-bg-elevated dark:border-lia-border-default"
         >
           <option value="all">{t('allDepartments')}</option>
           {departments.map(dept => (
@@ -193,7 +194,7 @@ export function UserManagement({ departments: hubDepartments = [], onDepartmentC
           data-testid="users-status-filter"
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-2 py-1.5 text-xs border border-lia-border-default rounded-xl focus:ring-1 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg dark:bg-lia-bg-elevated dark:border-lia-border-default"
+          className="px-2 py-1.5 text-xs border border-lia-border-default rounded-md focus:ring-1 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg dark:bg-lia-bg-elevated dark:border-lia-border-default"
         >
           <option value="all">{t('allStatuses')}</option>
           <option value="active">{t('statusActive')}</option>

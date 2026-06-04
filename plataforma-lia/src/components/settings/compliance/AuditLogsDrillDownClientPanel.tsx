@@ -46,7 +46,7 @@ const CATEGORY_FILTERS = [
 
 const CATEGORY_BADGE: Record<string, string> = {
   data_access: "bg-wedo-cyan/10 text-wedo-cyan",
-  user_management: "bg-purple-100 text-purple-800",
+  user_management: "bg-wedo-purple/10 text-wedo-purple",
   authentication: "bg-muted text-muted-foreground",
   configuration: "bg-status-warning/10 text-status-warning",
   ai_decision: "bg-cyan-100 text-cyan-800",
@@ -102,7 +102,7 @@ export function AuditLogsDrillDownClientPanel() {
     return (
       <Card className="border-status-warning-border-light bg-status-warning-bg">
         <CardContent className="p-4 flex items-start gap-3">
-          <Shield className="w-5 h-5 text-amber-600 mt-0.5" />
+          <Shield className="w-5 h-5 text-status-warning mt-0.5" />
           <div>
             <p className={textStyles.subtitle}>{t("notAdminTitle")}</p>
             <p className={`${textStyles.description} mt-1`}>
@@ -129,7 +129,7 @@ export function AuditLogsDrillDownClientPanel() {
             data-testid="audit-category-filter"
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
-            className="px-2 py-1.5 text-xs border border-lia-border-subtle rounded-xl bg-lia-bg-primary"
+            className="px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary"
           >
             {CATEGORY_FILTERS.map((opt) => (
               <option key={opt.value} value={opt.value}>
@@ -153,7 +153,7 @@ export function AuditLogsDrillDownClientPanel() {
         </div>
 
         {error && (
-          <div className="flex items-center gap-2 p-2 rounded-xl bg-status-error/10 border border-status-error/30 text-status-error text-xs">
+          <div className="flex items-center gap-2 p-2 rounded-md bg-status-error/10 border border-status-error/30 text-status-error text-xs">
             <AlertCircle className="w-3.5 h-3.5" />
             {error}
           </div>

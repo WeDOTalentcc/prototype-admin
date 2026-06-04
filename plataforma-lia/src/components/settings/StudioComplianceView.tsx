@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Bot, ShieldCheck, AlertTriangle, Activity, TrendingDown, Loader2 } from "lucide-react"
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts"
 import { textStyles, cardStyles } from "@/lib/design-tokens"
+import { cn } from "@/lib/utils"
 import { HubHeader, HubLoadingState, HubErrorState } from "./_shared"
 import { CHART_GRID, CHART_LIA, CHART_DANGER } from "@/lib/chart-colors"
 import { apiFetch } from "@/lib/api/api-fetch"
@@ -87,17 +88,17 @@ export function StudioComplianceView() {
               <Activity className="w-4 h-4 text-lia-text-secondary" />
               <span className="text-xs text-lia-text-secondary">{t("executions")}</span>
             </div>
-            <p className="text-2xl font-bold font-sans text-lia-text-primary">{data.total_executions}</p>
+            <p className={textStyles.kpi}>{data.total_executions}</p>
           </CardContent>
         </Card>
 
         <Card className={cardStyles.default}>
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-1">
-              <ShieldCheck className="w-4 h-4 text-emerald-500" />
+              <ShieldCheck className="w-4 h-4 text-status-success" />
               <span className="text-xs text-lia-text-secondary">{t("approved")}</span>
             </div>
-            <p className="text-2xl font-bold font-sans text-emerald-600">
+            <p className={cn(textStyles.kpi, "text-status-success")}>
               {Math.max(0, (data.total_executions ?? 0) - (data.blocked_executions ?? 0))}
             </p>
           </CardContent>
@@ -109,7 +110,7 @@ export function StudioComplianceView() {
               <AlertTriangle className="w-4 h-4 text-status-warning" />
               <span className="text-xs text-lia-text-secondary">{t("blocked")}</span>
             </div>
-            <p className="text-2xl font-bold font-sans text-status-warning">{data.blocked_executions}</p>
+            <p className={cn(textStyles.kpi, "text-status-warning")}>{data.blocked_executions}</p>
             <p className="text-[10px] text-lia-text-disabled mt-0.5">{t("blockedPctOfTotal", { pct: data.block_rate_pct })}</p>
           </CardContent>
         </Card>
@@ -120,7 +121,7 @@ export function StudioComplianceView() {
               <Bot className="w-4 h-4 text-wedo-cyan-dark" />
               <span className="text-xs text-lia-text-secondary">{t("activeAgents")}</span>
             </div>
-            <p className="text-2xl font-bold font-sans text-lia-text-primary">{data.active_agents}</p>
+            <p className={textStyles.kpi}>{data.active_agents}</p>
             <p className="text-[10px] text-lia-text-disabled mt-0.5">
               {t("avgConfidence", { pct: (data.avg_confidence * 100).toFixed(0) })}
             </p>

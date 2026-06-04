@@ -692,7 +692,7 @@ function SummaryCard({
   return (
     <div className={cn(cardStyles.default, "p-3")}>
       <div className={textStyles.subtitleMuted}>{label}</div>
-      <div className={cn("mt-1 font-mono text-xl font-semibold", color)}>{value}</div>
+      <div className={cn("mt-1 font-data tabular-nums text-xl font-semibold", color)}>{value}</div>
     </div>
   )
 }

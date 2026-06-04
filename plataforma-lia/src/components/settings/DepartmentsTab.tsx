@@ -251,13 +251,13 @@ export function DepartmentsTab({
         )}
 
         {successMessage && (
-          <div className="bg-status-success/10 border border-status-success/30 rounded-xl p-2 flex items-center gap-2 text-status-success text-xs">
+          <div className="bg-status-success/10 border border-status-success/30 rounded-md p-2 flex items-center gap-2 text-status-success text-xs">
             <CheckCircle className="w-3.5 h-3.5" />
             {successMessage}
           </div>
         )}
         {error && (
-          <div className="bg-status-error/10 border border-status-error/30 rounded-xl p-2 flex items-center gap-2 text-status-error text-xs">
+          <div className="bg-status-error/10 border border-status-error/30 rounded-md p-2 flex items-center gap-2 text-status-error text-xs">
             <AlertCircle className="w-3.5 h-3.5" />
             {error}
           </div>
