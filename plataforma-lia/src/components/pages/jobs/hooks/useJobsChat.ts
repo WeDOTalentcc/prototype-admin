@@ -50,6 +50,12 @@ interface UseJobsChatOptions {
   onChatOpened?: () => void;
   pendingChatOpen?: { mode: "general" | "job-creation" } | null;
   setActiveFilter?: (filter: string) => void;
+  /**
+   * Abre o JobCompareModal (ui_action `compare_jobs` do produtor BE
+   * jobs_management_assistant_service). Recebe job_ids opcionais; sem ids usa a
+   * selecao atual. Sem este callback a acao seria descartada em silencio (ghost).
+   */
+  openCompareModal?: (jobIds?: number[]) => void;
   loadBackendJobs: () => Promise<void>;
 }
 
@@ -92,6 +98,7 @@ export function useJobsChat({
   onChatOpened,
   pendingChatOpen,
   setActiveFilter,
+  openCompareModal,
   loadBackendJobs,
 }: UseJobsChatOptions): UseJobsChatReturn {
   const { companyId: resolvedCompanyId } = useCompanyId();
@@ -347,6 +354,9 @@ export function useJobsChat({
           response.ui_action_params?.filter
         ) {
           setActiveFilter?.(response.ui_action_params.filter);
+        } else if (response.ui_action === "compare_jobs") {
+          const ids = response.ui_action_params?.job_ids;
+          openCompareModal?.(Array.isArray(ids) ? ids : undefined);
         }
       } catch {
         const responseContent = processLocalJobCommand(command, jobs);
@@ -371,6 +381,7 @@ export function useJobsChat({
       loadBackendJobs,
       openJobCreationChat,
       setActiveFilter,
+      openCompareModal,
       resolvedCompanyId,
     ],
   );
@@ -388,9 +399,12 @@ export function useJobsChat({
         typeof params?.filter === "string"
       ) {
         setActiveFilter?.(params.filter);
+      } else if (action === "compare_jobs") {
+        const ids = params?.job_ids;
+        openCompareModal?.(Array.isArray(ids) ? (ids as number[]) : undefined);
       }
     },
-    [openJobCreationChat, setActiveFilter],
+    [openJobCreationChat, setActiveFilter, openCompareModal],
   );
 
   useUnhandledUIActionListener(handleJobsUIAction);

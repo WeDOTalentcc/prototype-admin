@@ -209,7 +209,7 @@ export interface OrchestratedJobChatResponse {
     label: string
     candidate_ids?: string[]
   }>
-  ui_action?: 'start_job_wizard' | 'start_candidate_wizard' | 'move_candidate' | null
+  ui_action?: 'start_job_wizard' | 'move_candidate' | null
   ui_action_params?: {
     initial_message?: string
     [key: string]: unknown

@@ -107,6 +107,7 @@ export function useJobsPageCore(props: JobsPageProps) {
     onChatOpened,
     pendingChatOpen,
     setActiveFilter: filtersActions.setActiveFilter,
+    openCompareModal: bulkActions.requestJobCompare,
     loadBackendJobs,
   })
 

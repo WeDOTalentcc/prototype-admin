@@ -215,6 +215,18 @@ jobs:
         working-directory: plataforma-lia
         run: python3 scripts/check_wizard_panel_idle_signals.py
 
+      - name: Anti-ghost ui_action sensor (BLOCKING desde 2026-06-04)
+        # Sensor harness P0.2 (2026-06-04): toda ui_action declarada no
+        # contrato BE->FE (src/lib/api/kanban-assistant.ts) DEVE ter handler
+        # FE (global em useUIAction ou case/=== num handler page-specific).
+        # Acao sem handler = ghost descartada em silencio (mesma classe do
+        # lia_field_toggles ghost-setting). Baseline atingiu 0 em 2026-06-04
+        # apos wire de compare_jobs (-> JobCompareModal via useJobsChat) e
+        # remocao do start_candidate_wizard morto -> promovido a --blocking.
+        # Ver scripts/check_ui_action_handlers.py.
+        working-directory: plataforma-lia
+        run: python3 scripts/check_ui_action_handlers.py --blocking
+
       - name: Unit & Component tests
         run: npx vitest run --reporter=verbose
 

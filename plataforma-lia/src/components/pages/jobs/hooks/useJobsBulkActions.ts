@@ -60,6 +60,7 @@ interface UseJobsBulkActionsReturn {
     toggleUrgentJob: (jobId: number) => Promise<void>
     toggleFavoriteJob: (jobId: number) => void
     handleJobCompare: () => void
+    requestJobCompare: (jobIds?: number[]) => void
     handleJobPublish: () => void
     handleJobInsights: () => void
     handleJobDuplicate: () => void
@@ -184,10 +185,19 @@ export function useJobsBulkActions({
   // -------------------------------------------------------------------------
   // Modal triggers for bulk actions
   // -------------------------------------------------------------------------
-  const handleJobCompare = () => {
+  const requestJobCompare = (jobIds?: number[]) => {
+    // ui_action `compare_jobs` (produtor: jobs_management_assistant_service) pode
+    // trazer job_ids explicitos; senao usa a selecao atual. Sempre exige >= 2 vagas.
+    if (jobIds && jobIds.length >= 2) {
+      setSelectedJobsForBatch(new Set(jobIds))
+      setShowCompareModal(true)
+      return
+    }
     if (selectedJobsForBatch.size < 2) { toast.error("Selecione pelo menos 2 vagas para comparar"); return }
     setShowCompareModal(true)
   }
+
+  const handleJobCompare = () => requestJobCompare()
 
   const handleJobPublish = () => setShowPublishModal(true)
   const handleJobInsights = () => setShowInsightsModal(true)
@@ -223,7 +233,7 @@ export function useJobsBulkActions({
       setShowInsightsModal, setShowDuplicateModal, setShowStatusModal, setShowAssignRecruiterModal,
       setShowReactivateScreeningDialog, setReactivateScreeningJobs, setReactivateEndDate,
       selectAllJobs, deselectAllJobs, toggleJobSelection, togglePinJob, toggleUrgentJob,
-      toggleFavoriteJob, handleJobCompare, handleJobPublish, handleJobInsights, handleJobDuplicate,
+      toggleFavoriteJob, handleJobCompare, requestJobCompare, handleJobPublish, handleJobInsights, handleJobDuplicate,
       handleJobToggleStatus, handleJobAssignRecruiter, getSelectedJobsHaveActiveStatus,
     },
   }
