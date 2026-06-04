@@ -1,6 +1,7 @@
 "use client"
 
-import React, { useMemo } from "react"
+import React, { useMemo, useState, useRef, useEffect } from "react"
+import { useTypewriter } from "@/hooks/chat/useTypewriter"
 import { useAuthStore } from "@/stores/auth-store"
 import {
   Brain, Clock, Loader2, User, Sun, AlertTriangle, Users, Plus, FileText,
@@ -46,6 +47,24 @@ export function LiaChatMessageList({
   hitlPending, sendApproval, isStreaming, streamingContent,
   conversationId, messagesEndRef,
 }: LiaChatMessageListProps) {
+  // Typewriter (2026-06-04): the LLM provider delivers each answer in a
+  // burst (no real token streaming — measured), so we reveal the freshly
+  // arrived LIA message char-by-char for the progressive feel. Only the
+  // message that lands right as streaming ends animates; history is instant.
+  const [animateId, setAnimateId] = useState<string | null>(null)
+  const prevStreamingRef = useRef(false)
+  useEffect(() => {
+    if (prevStreamingRef.current && !isStreaming) {
+      for (let i = messages.length - 1; i >= 0; i--) {
+        if (messages[i].sender === "lia") {
+          setAnimateId(messages[i].id)
+          break
+        }
+      }
+    }
+    prevStreamingRef.current = isStreaming
+  }, [isStreaming, messages])
+
   if (showHistory) {
     return (
       <div className="flex-1 overflow-y-auto px-4 py-3 space-y-1">
@@ -95,7 +114,7 @@ export function LiaChatMessageList({
             // only sees msg.sender of type "lia" | "user".
             .filter((msg): msg is FloatMessage & { sender: "lia" | "user" } => msg.sender !== "system")
             .map(msg => (
-              <MessageBubble key={msg.id} msg={msg} conversationId={conversationId} onQuickReply={handleChipSend} />
+              <MessageBubble key={msg.id} msg={msg} conversationId={conversationId} onQuickReply={handleChipSend} animate={msg.id === animateId} />
             ))}
           {hitlPending && (
             <ChatBubbleBase
@@ -251,17 +270,24 @@ function StreamingBubble({ content }: { content: string }) {
   )
 }
 
-function MessageBubble({ msg, conversationId, onQuickReply }: { msg: FloatMessage & { sender: "lia" | "user" }; conversationId: string | null; onQuickReply?: (text: string) => void }) {
+function MessageBubble({ msg, conversationId, onQuickReply, animate = false }: { msg: FloatMessage & { sender: "lia" | "user" }; conversationId: string | null; onQuickReply?: (text: string) => void; animate?: boolean }) {
   const authUser = useAuthStore((s) => s.user)
   const userDisplayName = authUser?.name || authUser?.email || "Usuário"
   const isUser = msg.sender === "user"
   const quickReplyPreset = msg.metadata?.quick_reply_preset as QuickReplyPreset | undefined
 
+  // Typewriter reveal for LIA messages flagged `animate`; others render full.
+  const _liaText = useMemo(
+    () => (isUser ? "" : cleanAgentResponse(msg.content)),
+    [msg.content, isUser],
+  )
+  const { displayed: _liaDisplayed } = useTypewriter(_liaText, {
+    enabled: animate && !isUser,
+  })
   const renderedHtml = useMemo(() => {
     if (isUser) return escapeHtml(msg.content).replace(/\n/g, "<br/>")
-    const cleaned = cleanAgentResponse(msg.content)
-    return parseChatMarkdown(cleaned)
-  }, [msg.content, isUser])
+    return parseChatMarkdown(_liaDisplayed)
+  }, [msg.content, isUser, _liaDisplayed])
 
   return (
     <ChatBubbleBase
