@@ -14,6 +14,8 @@ from contextvars import ContextVar
 from typing import AsyncGenerator
 import sqlalchemy as sa
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
+from sqlalchemy import event
+from sqlalchemy import text as _sa_text
 from sqlalchemy.orm import declarative_base
 
 from lia_config.config import settings
@@ -77,6 +79,34 @@ AsyncSessionLocal = async_sessionmaker(
     autocommit=False,
     autoflush=False,
 )
+
+
+# ---------------------------------------------------------------------------
+# Producer fix RLS (2026-06-04) — canonical-fix #3 (fix no produtor).
+#
+# Root cause: ~226 tools do agentic loop (LIA-A04) abrem AsyncSessionLocal CRU,
+# fora do middleware HTTP get_db, sem setar o GUC app.company_id. RLS habilitado
+# + FORCED em ~241 tabelas ve app_current_company_id()=NULL e BLOQUEIA tudo ->
+# a tool retorna 0 ("chat nao ve vagas/candidatos"). get_db ja resolvia isso no
+# produtor para o caminho HTTP; este listener replica a MESMA logica para TODA
+# transacao do app (inclui sessoes cruas em tools/jobs/loops), de uma vez +
+# futuras. set_config(is_local=true) e TX-scoped: limpo no fim da transacao
+# (sem vazamento entre tenants no pool). No-op quando o contextvar esta vazio
+# (jobs cross-tenant legitimos seguem status quo; RLS fail-closed).
+# ---------------------------------------------------------------------------
+@event.listens_for(engine.sync_engine, "begin")
+def _inject_tenant_guc_on_begin(conn):
+    cid = _get_current_company_id()
+    if not cid:
+        return
+    try:
+        conn.execute(
+            _sa_text("SELECT set_config('app.company_id', :cid, true)"),
+            {"cid": str(cid)},
+        )
+    except Exception as exc:  # fail-closed: sem GUC, RLS bloqueia (nunca vaza)
+        logger.warning("[RLS] auto-inject app.company_id no begin falhou: %s", exc)
+
 
 # Declarative base for all SQLAlchemy models
 Base = declarative_base()
