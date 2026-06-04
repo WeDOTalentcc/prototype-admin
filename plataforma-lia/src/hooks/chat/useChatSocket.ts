@@ -1,4 +1,5 @@
 "use client";
+import type { ResponseBlock } from "@/types/rrp-blocks";
 
 /**
  * useChatSocket — WebSocket connection management and event handling for LIA chat.
@@ -435,12 +436,16 @@ export function useChatSocket({
               ? (eventRec.ui_action_params as Record<string, unknown>)
               : undefined;
           const _activity = agentActivityBufferRef.current;
+          const responseBlocks = Array.isArray(eventRec.response_blocks)
+            ? (eventRec.response_blocks as ResponseBlock[])
+            : undefined;
           const extras =
-            uiAction || uiActionParams || _activity.length
+            uiAction || uiActionParams || _activity.length || responseBlocks
               ? {
                   ui_action: uiAction,
                   ui_action_params: uiActionParams,
                   agent_activity: _activity.length ? [..._activity] : undefined,
+                  response_blocks: responseBlocks,
                 }
               : undefined;
           agentActivityBufferRef.current = [];

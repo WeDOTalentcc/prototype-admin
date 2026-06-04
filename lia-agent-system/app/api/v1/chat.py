@@ -390,6 +390,10 @@ company_id: str = Depends(require_company_id)):
             if _ui_action_params:
                 msg_metadata["ui_action_params"] = _ui_action_params
 
+        _response_blocks = orch_result.get("response_blocks")
+        if _response_blocks:
+            msg_metadata["response_blocks"] = _response_blocks
+
         # Item 2: action_metadata removed — MainOrchestrator handles actions
 
         # M2: MainOrchestrator._persist_response already committed via same db session
@@ -917,6 +921,7 @@ def _orchestrator_result_to_frames(result, conversation_id):
             confidence=float(_get("confidence", 0.0) or 0.0),
             domain=_get("agent_used", "") or "",
             source="orchestrator",
+            response_blocks=_get("response_blocks"),
             actions=actions or None,
             navigation=navigation,
             fairness_warnings=fairness or None,

@@ -141,6 +141,7 @@ def serialize_message(
     execution_plan: dict | None = None,
     conversation_id: str | None = None,
     tool_results: list | None = None,
+    response_blocks: list | None = None,
 ) -> MessageEvent:
     payload = serialize_event(
         "message",
@@ -167,6 +168,8 @@ def serialize_message(
     # introducing a new frame type. Additive field; existing consumers ignore.
     if tool_results:
         payload["tool_results"] = tool_results
+    if response_blocks:
+        payload["response_blocks"] = response_blocks
     return payload  # type: ignore[return-value]
 
 

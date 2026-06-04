@@ -1,4 +1,5 @@
 "use client";
+import type { ResponseBlock } from "@/types/rrp-blocks";
 
 import {
   type BackgroundTaskEvent,
@@ -377,6 +378,11 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
           ...(msg.metadata ?? {}),
           agent_activity: extras.agent_activity,
         };
+      }
+      const _rb = (extras as { response_blocks?: ResponseBlock[] } | undefined)
+        ?.response_blocks;
+      if (_rb && _rb.length > 0) {
+        msg.response_blocks = _rb;
       }
       setChatMessages((prev) => dedupeAppend(prev, msg));
 

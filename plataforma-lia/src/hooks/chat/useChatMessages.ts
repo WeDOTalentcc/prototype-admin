@@ -1,4 +1,5 @@
 "use client";
+import type { ResponseBlock } from "@/types/rrp-blocks";
 
 /**
  * useChatMessages — Conversation init, history loading, message sending, and approval.
@@ -301,9 +302,20 @@ export function useChatMessages({
             typeof dataRec.ui_action_params === "object"
               ? (dataRec.ui_action_params as Record<string, unknown>)
               : undefined;
+          const _rbRaw =
+            dataRec.response_blocks ??
+            (dataRec.message_metadata as Record<string, unknown> | undefined)
+              ?.response_blocks;
+          const responseBlocks = Array.isArray(_rbRaw)
+            ? (_rbRaw as ResponseBlock[])
+            : undefined;
           const extras =
-            uiAction || uiActionParams
-              ? { ui_action: uiAction, ui_action_params: uiActionParams }
+            uiAction || uiActionParams || responseBlocks
+              ? {
+                  ui_action: uiAction,
+                  ui_action_params: uiActionParams,
+                  response_blocks: responseBlocks,
+                }
               : undefined;
           onCompleteRef.current?.(data.content, undefined, extras);
         } else if (!pendingAction?.awaiting_confirmation) {
