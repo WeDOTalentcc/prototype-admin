@@ -32,6 +32,8 @@
     "test:eval": "playwright test e2e/tests/lia-capability-eval/ --config=e2e/tests/lia-capability-eval/eval.config.ts",
     "test:eval:domain": "playwright test e2e/tests/lia-capability-eval/ --config=e2e/tests/lia-capability-eval/eval.config.ts",
     "test:audit:chat-format": "vitest run src/lib/__tests__/chat-format.audit.test.ts --reporter=verbose",
+    "test:ds-settings": "vitest run --project=unit-colocated src/components/settings/ds-guard.test.ts",
+    "test:ds-settings:update": "UPDATE_DS_GUARD_BASELINE=1 vitest run --project=unit-colocated src/components/settings/ds-guard.test.ts",
     "test": "vitest run --project=unit --project=unit-colocated --project=hooks --project=components",
     "test:watch": "vitest --project=unit --project=unit-colocated --project=hooks --project=components",
     "test:coverage": "vitest run --project=unit --project=unit-colocated --project=hooks --project=components --coverage",

@@ -1,0 +1,93 @@
+{
+  "AiPersonaPanel.tsx": {
+    "raw-tailwind-color": 16
+  },
+  "ApproverSection.tsx": {
+    "button-rounded-override": 1
+  },
+  "BenefitsTab.tsx": {
+    "button-rounded-override": 1
+  },
+  "DataFieldsPanel.tsx": {
+    "field-rounded-override": 3,
+    "raw-tailwind-color": 10
+  },
+  "DepartmentFormCard.tsx": {
+    "field-rounded-override": 6
+  },
+  "DepartmentGrid.tsx": {
+    "button-rounded-override": 2
+  },
+  "LearningLoopsPanel.tsx": {
+    "raw-tailwind-color": 14
+  },
+  "LiaFieldsConfigPanel.tsx": {
+    "field-rounded-override": 2,
+    "raw-tailwind-color": 31
+  },
+  "MemberSection.tsx": {
+    "field-rounded-override": 7
+  },
+  "RecruitmentJourneyConfig.tsx": {
+    "button-rounded-override": 1
+  },
+  "RecruitmentPipelineTab.tsx": {
+    "field-rounded-override": 1
+  },
+  "RecruitmentScreeningTab.tsx": {
+    "field-rounded-override": 1
+  },
+  "StageCard.tsx": {
+    "field-rounded-override": 5
+  },
+  "StudioComplianceView.tsx": {
+    "raw-tailwind-color": 2
+  },
+  "communication-hub/SignatureTab.tsx": {
+    "field-rounded-override": 1
+  },
+  "communication-hub/TemplatesTab.tsx": {
+    "field-rounded-override": 3,
+    "button-rounded-override": 2
+  },
+  "compliance/AuditLogsDrillDownClientPanel.tsx": {
+    "field-rounded-override": 1,
+    "raw-tailwind-color": 3
+  },
+  "consumo/BudgetAlertsList.tsx": {
+    "raw-tailwind-color": 23
+  },
+  "governance/policy-engine/BusinessRuleFormModal.tsx": {
+    "field-rounded-override": 2
+  },
+  "governance/policy-engine/EscalationRuleFormModal.tsx": {
+    "field-rounded-override": 3
+  },
+  "governance/policy-engine/RateLimitRuleFormModal.tsx": {
+    "field-rounded-override": 1
+  },
+  "integrations/IntegrationDetailModal.tsx": {
+    "raw-tailwind-color": 18
+  },
+  "integrations/integration-data.ts": {
+    "raw-tailwind-color": 18
+  },
+  "recruitment/PipelineTemplateSheetEditor.tsx": {
+    "field-rounded-override": 1
+  },
+  "recruitment/assessment-tab.tsx": {
+    "field-rounded-override": 1
+  },
+  "recruitment/nps-tab.tsx": {
+    "field-rounded-override": 3
+  },
+  "recruitment/pipeline-templates-tab.tsx": {
+    "field-rounded-override": 1
+  },
+  "user-form.tsx": {
+    "field-rounded-override": 4
+  },
+  "user-management.tsx": {
+    "field-rounded-override": 3
+  }
+}
