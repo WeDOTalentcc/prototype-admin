@@ -40,6 +40,33 @@ async def _emit_activity(event: dict) -> None:
         pass
 
 
+# Passos de fase localizados (2026-06-04): cards de raciocinio estilo Manus no
+# idioma da plataforma. O thinking bruto do Claude e sempre ingles; aqui
+# emitimos passos ancorados nas fases REAIS no locale enviado pelo FE.
+from contextvars import ContextVar as _ContextVar
+_activity_locale: _ContextVar = _ContextVar("_activity_locale", default="pt")
+_ACTIVITY_PHASE_LABELS = {
+    "pt": {
+        "understanding": "Entendendo sua solicitação",
+        "composing": "Preparando a resposta",
+    },
+    "en": {
+        "understanding": "Understanding your request",
+        "composing": "Composing the response",
+    },
+}
+
+
+def _phase_label(key: str) -> str:
+    loc = (_activity_locale.get() or "pt").lower()
+    lang = "en" if loc.startswith("en") else "pt"
+    return _ACTIVITY_PHASE_LABELS.get(lang, _ACTIVITY_PHASE_LABELS["pt"]).get(key, key)
+
+
+async def _emit_phase(key: str) -> None:
+    await _emit_activity({"type": "reasoning_step", "label": _phase_label(key)})
+
+
 # Sprint 9.2 (NS-5 latency fix, 2026-05-24): agentic LLM timeout configurable.
 # Default 60s (was 30s — too tight for Claude API with full tool schema in
 # slow-network periods). Env override LIA_AGENTIC_LLM_TIMEOUT_SECONDS for
@@ -244,6 +271,9 @@ class AgenticLoop:
 
         tool_calls_made: list[dict] = []
 
+        # Card de fase: entendendo a solicitação (localizado).
+        await _emit_phase("understanding")
+
         for iteration in range(max_iter):
             # --- Call LLM with tool schemas (retry transient overload) ---
             llm_response = None
@@ -317,6 +347,8 @@ class AgenticLoop:
 
             # --- If LLM responded with text (no tool call), done ---
             if not llm_response.is_tool_call:
+                # Card de fase: preparando a resposta (localizado).
+                await _emit_phase("composing")
                 # W3-014 (2026-05-23): c3b post_compliance · FactChecker + audit log
                 # antes de retornar pro caller. Fail-safe (não bloqueia em error).
                 _final_response = llm_response.text_response or ""

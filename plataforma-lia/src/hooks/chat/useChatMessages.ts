@@ -9,6 +9,7 @@
 
 import { useRecentItemsStore } from "@/stores/recent-items-store";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useLocale } from "next-intl";
 import type {
   HITLPending,
   LiaChatMessage,
@@ -339,6 +340,7 @@ export function useChatMessages({
     return 8000;
   }, []);
 
+  const locale = useLocale();
   const sendMessage = useCallback(
     async (
       content: string,
@@ -370,6 +372,8 @@ export function useChatMessages({
 
       const pageContext = getPageContext();
       Object.assign(context, pageContext);
+      // locale ativo da plataforma (PT/EN) -> cards de fase localizados
+      Object.assign(context, { locale });
 
       // SSE-e2e Fase C (2026-06-04): atrás da flag NEXT_PUBLIC_CHAT_TRANSPORT=sse,
       // roteia o turno por SSE ponta-a-ponta (POST /chat/{id}/stream) para tokens +
@@ -442,6 +446,7 @@ export function useChatMessages({
       sessionId,
       conversationId,
       getPageContext,
+      locale,
       sendMessageViaSSE,
       setIsThinking,
       sendViaRest,
