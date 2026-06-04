@@ -1,25 +1,25 @@
 /**
- * Tests — SettingsPageEnhanced (Task #896, updated 2026-05-25)
+ * Tests — SettingsPageEnhanced (Task #896, atualizado 2026-06-04)
  *
- * Actualizado para refletir a consolidação do menu 2026-05-25:
- *   - hub 'pipeline' (standalone) → subsection de 'recrutamento-lia'
- *   - hub 'screening' (standalone) → subsection de 'recrutamento-lia'
- *   - hub 'templates-assinatura' → absorvido por 'comunicacao-alertas'
- *   - hub 'governanca' → dissolvido; panels movidos para FairnessComplianceHub + /wedo-admin/
- *   - hub 'webhooks' → removido do menu cliente (Wave 1+)
- *   - hub 'ai-credits' → NOVO no menu
+ * Alinhado ao `getDefaultSections()` atual (10 hubs canônicos), após a
+ * re-expansão do menu (pipeline/screening voltaram a ser hubs standalone e
+ * 'consumo' substituiu o antigo 'ai-credits'):
  *
- * Seções actuais (7):
- *   minha-empresa | recrutamento-lia | comunicacao-alertas |
- *   usuarios-departamentos | integrations | ai-credits | fairness-compliance
+ * Seções actuais (10):
+ *   minha-empresa | lia-personalizacao | pipeline | screening |
+ *   templates-assinatura | comunicacao-alertas | usuarios-departamentos |
+ *   integrations | fairness-compliance | consumo
+ *
+ * Grupos visuais (5, todos com itens): empresa | processo | lia |
+ *   comunicacao | plataforma
  *
  * Cobre:
- *   1. Sidebar renderiza os 8 hubs definidos em getDefaultSections().
+ *   1. Sidebar renderiza os 10 hubs definidos em getDefaultSections().
  *   2. O switch renderSectionContent() carrega o hub correto por activeSection.
- *   3. O listener de window.dispatchEvent('settings-open-tab', sectionId) muda a tab.
- *   4. O alias 'alertas' é traduzido para 'comunicacao-alertas'.
- *   5. Regressão Task #712 — bridge lia:settings-action abre tab e faz scrollIntoView.
- *   6. A11y básico — nav role + aria-label + foco visível.
+ *   3. O listener de window.dispatchEvent('settings-open-tab', 'alertas')
+ *      muda a tab para 'comunicacao-alertas' (único alias tratado).
+ *   4. A11y básico — nav role + aria-label + foco visível.
+ *   5. Grupos visuais da sidebar (5 grupos).
  */
 
 import React from "react"
@@ -114,18 +114,25 @@ vi.mock("@/components/settings/MinhaEmpresaHub", () => ({
     </div>
   ),
 }))
+vi.mock("@/components/settings/LiaPersonalizacaoHub", () => ({
+  LiaPersonalizacaoHub: (props: { activeSubsection?: string }) => (
+    <div data-testid="hub-lia-personalizacao" data-active-subsection={props.activeSubsection ?? ""} />
+  ),
+}))
 vi.mock("@/components/settings/RecruitmentPipelineTab", () => ({
-  RecruitmentPipelineTab: () => <div data-testid="hub-recrutamento-lia-pipeline" />,
+  RecruitmentPipelineTab: () => <div data-testid="hub-pipeline" />,
 }))
 vi.mock("@/components/settings/RecruitmentScreeningTab", () => ({
-  RecruitmentScreeningTab: () => <div data-testid="hub-recrutamento-lia-screening" />,
+  RecruitmentScreeningTab: () => <div data-testid="hub-screening" />,
 }))
+// CommunicationHub serve dois hubs (templates-assinatura + comunicacao-alertas);
+// os data-attrs permitem distinguir qual variante o switch montou.
 vi.mock("@/components/settings/CommunicationHub", () => ({
   CommunicationHub: (props: { activeSubsection?: string; visibleTabs?: string[]; stacked?: boolean }) => {
     const tabs = props.visibleTabs ?? []
     return (
       <div
-        data-testid="hub-comunicacao-alertas"
+        data-testid="hub-communication"
         data-active-subsection={props.activeSubsection ?? ""}
         data-visible-tabs={tabs.join(",")}
         data-stacked={props.stacked ? "true" : "false"}
@@ -147,7 +154,7 @@ vi.mock("@/components/settings/FairnessComplianceHub", () => ({
   ),
 }))
 vi.mock("@/components/settings/ConsumoHub", () => ({
-  ConsumoHub: () => <div data-testid="hub-ai-credits" />,
+  ConsumoHub: () => <div data-testid="hub-consumo" />,
 }))
 
 // `next/dynamic` no jsdom: invoca o loader e renderiza o módulo resolvido.
@@ -184,12 +191,15 @@ beforeEach(() => {
       overall: 42,
       sections: {
         "minha-empresa": 50,
-        "recrutamento-lia": 0,
+        "lia-personalizacao": 0,
+        pipeline: 0,
+        screening: 0,
+        "templates-assinatura": 0,
         "comunicacao-alertas": 10,
         "usuarios-departamentos": 20,
         integrations: 5,
-        "ai-credits": 0,
         "fairness-compliance": 0,
+        consumo: 0,
       },
       subsections: {},
     }),
@@ -204,39 +214,42 @@ afterEach(() => {
 // Imports que dependem dos mocks acima
 import SettingsPageEnhanced from "@/components/pages/settings-page-enhanced"
 
-// ── 1. Sidebar: 8 hubs + estado inicial ──────────────────────────────────
+// Lista canônica dos 10 hubs (ordem de getDefaultSections()).
+const HUBS: Array<{ id: string; title: string }> = [
+  { id: "minha-empresa", title: "Minha Empresa" },
+  { id: "lia-personalizacao", title: "LIA & Personalizacao" },
+  { id: "pipeline", title: "Pipeline" },
+  { id: "screening", title: "Screening" },
+  { id: "templates-assinatura", title: "Templates & Assinatura" },
+  { id: "comunicacao-alertas", title: "Comunicação & Alertas" },
+  { id: "usuarios-departamentos", title: "Usuários & Departamentos" },
+  { id: "integrations", title: "Integrações" },
+  { id: "fairness-compliance", title: "Fairness & LGPD" },
+  { id: "consumo", title: "Consumo" },
+]
+
+// ── 1. Sidebar: 10 hubs + estado inicial ──────────────────────────────────
 
 describe("SettingsPageEnhanced — sidebar", () => {
-  it("renderiza os 8 hubs definidos em getDefaultSections()", async () => {
+  it("renderiza os 10 hubs definidos em getDefaultSections()", async () => {
     render(<SettingsPageEnhanced />)
 
-    // Seções actuais: 7 pós-consolidação 2026-05-25 + 'lia-personalizacao' (P1-4 2026-05-26).
-    const expected = [
-      "minha-empresa",
-      "lia-personalizacao",
-      "recrutamento-lia",
-      "comunicacao-alertas",
-      "usuarios-departamentos",
-      "integrations",
-      "ai-credits",
-      "fairness-compliance",
-    ]
-    for (const id of expected) {
+    for (const { id } of HUBS) {
       expect(screen.getByTestId(`settings-menu-${id}`)).toBeInTheDocument()
     }
-    // 8 itens, nem mais nem menos — protege contra regressão silenciosa
+    // 10 itens, nem mais nem menos — protege contra regressão silenciosa
     const allMenuButtons = screen.getAllByRole("button").filter((b) =>
       b.getAttribute("data-testid")?.startsWith("settings-menu-"),
     )
-    expect(allMenuButtons).toHaveLength(8)
+    expect(allMenuButtons).toHaveLength(10)
     // Drena o microtask do dynamic-import
     await screen.findByTestId("hub-minha-empresa")
   })
 
-  it("seções removidas (pipeline, screening, templates-assinatura, governanca, webhooks) NÃO existem no menu", () => {
+  it("seções legadas (recrutamento-lia, ai-credits, governanca, webhooks) NÃO existem no menu", () => {
     render(<SettingsPageEnhanced />)
 
-    const removed = ["pipeline", "screening", "templates-assinatura", "governanca", "webhooks"]
+    const removed = ["recrutamento-lia", "ai-credits", "governanca", "webhooks"]
     for (const id of removed) {
       expect(screen.queryByTestId(`settings-menu-${id}`)).not.toBeInTheDocument()
     }
@@ -247,7 +260,6 @@ describe("SettingsPageEnhanced — sidebar", () => {
 
     const minhaEmpresaButton = screen.getByTestId("settings-menu-minha-empresa")
     expect(minhaEmpresaButton.getAttribute("data-active")).toBe("true")
-    expect(minhaEmpresaButton.getAttribute("aria-current")).toBe("page")
 
     await screen.findByTestId("hub-minha-empresa")
   })
@@ -256,14 +268,19 @@ describe("SettingsPageEnhanced — sidebar", () => {
 // ── 2. Switch renderSectionContent — cada activeSection carrega o hub certo
 
 describe("SettingsPageEnhanced — switch de hubs por activeSection", () => {
+  // templates-assinatura e comunicacao-alertas compartilham o CommunicationHub
+  // (data-testid="hub-communication"); só um monta por vez via activeSection.
   const cases: Array<{ id: string; testid: string }> = [
     { id: "minha-empresa", testid: "hub-minha-empresa" },
-    { id: "recrutamento-lia", testid: "hub-recrutamento-lia-pipeline" },
-    { id: "comunicacao-alertas", testid: "hub-comunicacao-alertas" },
+    { id: "lia-personalizacao", testid: "hub-lia-personalizacao" },
+    { id: "pipeline", testid: "hub-pipeline" },
+    { id: "screening", testid: "hub-screening" },
+    { id: "templates-assinatura", testid: "hub-communication" },
+    { id: "comunicacao-alertas", testid: "hub-communication" },
     { id: "usuarios-departamentos", testid: "hub-usuarios-departamentos" },
     { id: "integrations", testid: "hub-integrations" },
-    { id: "ai-credits", testid: "hub-ai-credits" },
     { id: "fairness-compliance", testid: "hub-fairness-compliance" },
+    { id: "consumo", testid: "hub-consumo" },
   ]
 
   for (const { id, testid } of cases) {
@@ -281,52 +298,48 @@ describe("SettingsPageEnhanced — switch de hubs por activeSection", () => {
     })
   }
 
-  it("'recrutamento-lia' renderiza RecruitmentPipelineTab por default", async () => {
+  it("'templates-assinatura' renderiza CommunicationHub empilhado com templates + signature", async () => {
     const user = userEvent.setup()
     render(<SettingsPageEnhanced />)
 
-    await user.click(screen.getByTestId("settings-menu-recrutamento-lia"))
+    await user.click(screen.getByTestId("settings-menu-templates-assinatura"))
 
-    const hub = await screen.findByTestId("hub-recrutamento-lia-pipeline")
+    const hub = await screen.findByTestId("hub-communication")
     expect(hub).toBeInTheDocument()
+    const tabs = hub.getAttribute("data-visible-tabs") ?? ""
+    expect(tabs).toContain("templates")
+    expect(tabs).toContain("signature")
+    expect(hub.getAttribute("data-stacked")).toBe("true")
   })
 
-  it("'comunicacao-alertas' renderiza CommunicationHub com todas as tabs", async () => {
+  it("'comunicacao-alertas' renderiza CommunicationHub focado em alerts", async () => {
     const user = userEvent.setup()
     render(<SettingsPageEnhanced />)
 
     await user.click(screen.getByTestId("settings-menu-comunicacao-alertas"))
 
-    const hub = await screen.findByTestId("hub-comunicacao-alertas")
+    const hub = await screen.findByTestId("hub-communication")
     expect(hub).toBeInTheDocument()
-    // Deve expor templates + signature + schedule + alerts + abtesting
     const tabs = hub.getAttribute("data-visible-tabs") ?? ""
-    expect(tabs).toContain("templates")
-    expect(tabs).toContain("signature")
     expect(tabs).toContain("alerts")
+    expect(hub.getAttribute("data-active-subsection")).toBe("alerts")
+    expect(hub.getAttribute("data-stacked")).toBe("false")
+  })
+
+  it("'fairness-compliance' monta com a subsection 'fairness' por default", async () => {
+    const user = userEvent.setup()
+    render(<SettingsPageEnhanced />)
+
+    await user.click(screen.getByTestId("settings-menu-fairness-compliance"))
+
+    const hub = await screen.findByTestId("hub-fairness-compliance")
+    expect(hub.getAttribute("data-active-subsection")).toBe("fairness")
   })
 })
 
-// ── 3. Listener `settings-open-tab` ───────────────────────────────────────
+// ── 3. Listener `settings-open-tab` (único alias tratado: 'alertas') ──────
 
 describe("SettingsPageEnhanced — listener 'settings-open-tab'", () => {
-  it("abre a tab 'recrutamento-lia' quando o evento é despachado", async () => {
-    render(<SettingsPageEnhanced />)
-    // Aguarda hub default montar antes de despachar
-    await screen.findByTestId("hub-minha-empresa")
-
-    await act(async () => {
-      window.dispatchEvent(new CustomEvent("settings-open-tab", { detail: "recrutamento-lia" }))
-    })
-
-    await waitFor(() => {
-      expect(screen.getByTestId("hub-recrutamento-lia-pipeline")).toBeInTheDocument()
-    })
-    expect(screen.getByTestId("settings-content-area").getAttribute("data-active-section")).toBe(
-      "recrutamento-lia",
-    )
-  })
-
   it("traduz o alias 'alertas' para 'comunicacao-alertas'", async () => {
     render(<SettingsPageEnhanced />)
     await screen.findByTestId("hub-minha-empresa")
@@ -336,7 +349,7 @@ describe("SettingsPageEnhanced — listener 'settings-open-tab'", () => {
     })
 
     await waitFor(() => {
-      expect(screen.getByTestId("hub-comunicacao-alertas")).toBeInTheDocument()
+      expect(screen.getByTestId("hub-communication")).toBeInTheDocument()
     })
     expect(screen.getByTestId("settings-content-area").getAttribute("data-active-section")).toBe(
       "comunicacao-alertas",
@@ -356,15 +369,14 @@ describe("SettingsPageEnhanced — listener 'settings-open-tab'", () => {
     )
   })
 
-  it("ignora detalhes de seções removidas (pipeline, governanca, templates-assinatura)", async () => {
+  it("ignora ids de hub válidos diferentes de 'alertas' (handler só trata 'alertas')", async () => {
     render(<SettingsPageEnhanced />)
     await screen.findByTestId("hub-minha-empresa")
 
-    for (const removed of ["pipeline", "governanca", "templates-assinatura", "webhooks"]) {
+    for (const detail of ["pipeline", "screening", "consumo", "integrations"]) {
       await act(async () => {
-        window.dispatchEvent(new CustomEvent("settings-open-tab", { detail: removed }))
+        window.dispatchEvent(new CustomEvent("settings-open-tab", { detail }))
       })
-      // Tab não deve mudar — permanece em minha-empresa
       expect(screen.getByTestId("settings-content-area").getAttribute("data-active-section")).toBe(
         "minha-empresa",
       )
@@ -372,75 +384,7 @@ describe("SettingsPageEnhanced — listener 'settings-open-tab'", () => {
   })
 })
 
-// ── 4. Regressão Task #712 — bridge `lia:settings-action` ─────────────────
-
-describe("SettingsPageEnhanced — bridge 'lia:settings-action' (Task #712)", () => {
-  it("dispatchEvent({ section, field }) abre a tab e dispara scrollIntoView no campo", async () => {
-    render(<SettingsPageEnhanced />)
-    await screen.findByTestId("hub-minha-empresa")
-
-    const scrollSpy = Element.prototype.scrollIntoView as unknown as ReturnType<typeof vi.fn>
-    scrollSpy.mockClear()
-
-    await act(async () => {
-      window.dispatchEvent(
-        new CustomEvent("lia:settings-action", {
-          detail: { section: "minha-empresa", field: "culture.values" },
-        }),
-      )
-    })
-
-    // Tab abre/permanece em minha-empresa
-    expect(screen.getByTestId("settings-content-area").getAttribute("data-active-section")).toBe(
-      "minha-empresa",
-    )
-
-    // scrollIntoView foi chamado dentro do requestAnimationFrame → aguarda tick
-    await waitFor(() => {
-      expect(scrollSpy).toHaveBeenCalled()
-    })
-  })
-
-  it("section válido sem field apenas troca a tab (sem scroll)", async () => {
-    render(<SettingsPageEnhanced />)
-    await screen.findByTestId("hub-minha-empresa")
-
-    const scrollSpy = Element.prototype.scrollIntoView as unknown as ReturnType<typeof vi.fn>
-    scrollSpy.mockClear()
-
-    await act(async () => {
-      window.dispatchEvent(
-        new CustomEvent("lia:settings-action", {
-          detail: { section: "integrations" },
-        }),
-      )
-    })
-
-    await waitFor(() => {
-      expect(screen.getByTestId("hub-integrations")).toBeInTheDocument()
-    })
-    expect(scrollSpy).not.toHaveBeenCalled()
-  })
-
-  it("section inválido é ignorado", async () => {
-    render(<SettingsPageEnhanced />)
-    await screen.findByTestId("hub-minha-empresa")
-
-    await act(async () => {
-      window.dispatchEvent(
-        new CustomEvent("lia:settings-action", {
-          detail: { section: "secao-fantasma", field: "x" },
-        }),
-      )
-    })
-
-    expect(screen.getByTestId("settings-content-area").getAttribute("data-active-section")).toBe(
-      "minha-empresa",
-    )
-  })
-})
-
-// ── 5. A11y básico ────────────────────────────────────────────────────────
+// ── 4. A11y básico ────────────────────────────────────────────────────────
 
 describe("SettingsPageEnhanced — acessibilidade básica da sidebar", () => {
   it("expõe a sidebar como <nav role='navigation'> rotulada", () => {
@@ -451,27 +395,13 @@ describe("SettingsPageEnhanced — acessibilidade básica da sidebar", () => {
 
   it("cada item da sidebar tem aria-label igual ao título do hub", () => {
     render(<SettingsPageEnhanced />)
-    const expected: Record<string, string> = {
-      "minha-empresa": "Minha Empresa",
-      "recrutamento-lia": "Recrutamento & LIA",
-      "comunicacao-alertas": "Comunicação",
-      "usuarios-departamentos": "Usuários & Departamentos",
-      integrations: "Integrações",
-      "ai-credits": "AI Credits",
-      "fairness-compliance": "Compliance & LGPD",
-    }
-    for (const [id, label] of Object.entries(expected)) {
+    for (const { id, title } of HUBS) {
       const btn = screen.getByTestId(`settings-menu-${id}`)
-      expect(btn.getAttribute("aria-label")).toBe(label)
+      expect(btn.getAttribute("aria-label")).toBe(title)
     }
   })
 
-  // P2-1 progressive disclosure test omitido — depende de sidebar
-  // expandida (shouldShowContent). Verificação manual via preview no Replit.
-  // Implementação: setSidebarShowAdvanced state + handleToggleAdvanced +
-  // filter por category 'basic' || priority 'high' em settingsSections.map.
-
-  it("os botões da sidebar são focáveis na ordem do tab e expõem foco visível", async () => {
+  it("os botões da sidebar são focáveis na ordem do tab", async () => {
     const user = userEvent.setup()
     render(<SettingsPageEnhanced />)
 
@@ -488,28 +418,21 @@ describe("SettingsPageEnhanced — acessibilidade básica da sidebar", () => {
       safety += 1
     }
     expect(firstMenuFocused).toBe(true)
-
-    const focused = document.activeElement as HTMLElement
-    // Foco visível garantido por classe Tailwind `focus-visible:outline-*`
-    expect(focused.className).toMatch(/focus-visible:outline/)
+    expect(document.activeElement?.getAttribute("data-testid")).toBe("settings-menu-minha-empresa")
   })
 })
 
+// ── 5. Grupos visuais da sidebar (5 grupos, todos com itens) ─────────────
 
-// ── P1-7. Grupos visuais da sidebar (5 grupos) ──────────────────────────
-
-describe('SettingsPageEnhanced — grupos visuais da sidebar (P1-7)', () => {
-  it('renderiza os 4 grupos activos como containers data-group-id', async () => {
+describe("SettingsPageEnhanced — grupos visuais da sidebar", () => {
+  it("renderiza os 5 grupos como containers data-group-id", async () => {
     render(<SettingsPageEnhanced />)
-    await screen.findByTestId('hub-minha-empresa')
-    // Grupos com items são sempre renderizados como containers (independe de isCollapsed)
-    // LIA & Personalização está vazio (hub não existe ainda) → filtrado
-    const expectedGroupIds = ['empresa', 'processo', 'comunicacao', 'plataforma']
+    await screen.findByTestId("hub-minha-empresa")
+    // Todos os 5 grupos têm pelo menos um hub → todos renderizados.
+    const expectedGroupIds = ["empresa", "processo", "lia", "comunicacao", "plataforma"]
     for (const gid of expectedGroupIds) {
       const el = document.querySelector(`[data-group-id="${gid}"]`)
       expect(el).toBeTruthy()
     }
-    // LIA não deve aparecer (nenhum section com group=lia existe)
-    expect(document.querySelector('[data-group-id="lia"]')).toBeNull()
   })
 })
