@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl"
 import { Archive, Copy, Layers, Loader2, Maximize2, Plus, Sparkles, Trash2 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
+import { textStyles } from "@/lib/design-tokens"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Chip } from "@/components/ui/chip"
@@ -185,7 +186,7 @@ export function PipelineTemplatesTab({ onSettingsChange }: { onSettingsChange?: 
       {/* Cabeçalho */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h2 className="text-base font-semibold text-lia-text-primary">{t("title")}</h2>
+          <h2 className={textStyles.titleLarge}>{t("title")}</h2>
           <p className="text-sm text-lia-text-secondary mt-1 max-w-2xl">{t("subtitle")}</p>
         </div>
 
@@ -245,7 +246,7 @@ export function PipelineTemplatesTab({ onSettingsChange }: { onSettingsChange?: 
           <CardContent className="p-10 text-center space-y-4">
             <Layers className="w-12 h-12 mx-auto opacity-30" />
             <div>
-              <h3 className="text-lg font-medium">{tEmpty("title")}</h3>
+              <h3 className={textStyles.titleLarge}>{tEmpty("title")}</h3>
               <p className="text-sm text-lia-text-secondary mt-1">{tEmpty("description")}</p>
             </div>
             <div className="flex items-center justify-center gap-3">
@@ -296,7 +297,7 @@ export function PipelineTemplatesTab({ onSettingsChange }: { onSettingsChange?: 
                     {/* Info */}
                     <div className="flex-1 min-w-0 space-y-1.5">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="font-medium text-lia-text-primary truncate">{tpl.name}</h3>
+                        <h3 className={cn(textStyles.h4, "truncate")}>{tpl.name}</h3>
                         <Chip variant={tpl.is_archived ? "neutral" : "success"}>
                           {tpl.is_archived ? tStates("archived") : tStates("active")}
                         </Chip>

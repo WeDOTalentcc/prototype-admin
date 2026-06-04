@@ -274,10 +274,11 @@ export function createProxyHandlers<M extends HttpMethod = "GET">(
           error instanceof DOMException &&
           (error.name === "TimeoutError" || error.name === "AbortError")
         if (isTimeout) {
+          const timeoutSeconds = Math.round(timeoutMs / 1000)
           return NextResponse.json(
             {
               error: "Backend timeout",
-              detail: "Backend did not respond within 30s",
+              detail: `Backend did not respond within ${timeoutSeconds}s`,
               path: backendPath,
               method,
             },

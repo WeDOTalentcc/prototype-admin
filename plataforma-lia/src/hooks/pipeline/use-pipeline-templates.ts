@@ -2,6 +2,7 @@
 
 import { useCallback } from "react"
 import useSWR from "swr"
+import { toast } from "sonner"
 
 export interface PipelineStage {
   name: string
@@ -97,7 +98,15 @@ export function usePipelineTemplates() {
         await mutate()
         return created
       } catch (err) {
-        console.error("[pipeline-templates] create failed", err)
+        // console.warn (nao console.error) para evitar o overlay "Console Error"
+        // cru do Next em dev; o usuario recebe uma mensagem amigavel via toast.
+        console.warn("[pipeline-templates] create failed", err)
+        const isTimeout = err instanceof Error && /\b504\b|timeout/i.test(err.message)
+        toast.error(
+          isTimeout
+            ? "O servidor demorou para responder ao salvar o template. Tente novamente em instantes."
+            : "Não foi possível salvar o template. Tente novamente."
+        )
         return null
       }
     },
