@@ -487,7 +487,13 @@ class Settings(
             remote_host,
             self.APP_ENV,
         )
-        self.REDIS_URL = "redis://localhost:6379/0"
+        local_url = "redis://localhost:6379/0"
+        self.REDIS_URL = local_url
+        # ~18 consumidores leem os.getenv("REDIS_URL") direto (bypass de
+        # settings.REDIS_URL): get_redis, rate_limiter, response_cache_service,
+        # hitl_service, etc. Reescrever o env garante que TODOS usem o Redis
+        # local em dev. Seguro: so ocorre fora de producao.
+        os.environ["REDIS_URL"] = local_url
         return self
 
     model_config = SettingsConfigDict(
