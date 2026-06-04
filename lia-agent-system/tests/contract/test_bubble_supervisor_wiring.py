@@ -30,3 +30,25 @@ def test_supervisor_branch_after_wizard():
     assert flag_pos > wizard_pos, (
         "o desvio pro supervisor deve vir DEPOIS do branch wizard para preservar "
         "o wizard na bolha (Task #1080 / divergencia #2 do parity audit)")
+
+
+_WS = (
+    Path(__file__).resolve().parents[2] / "app" / "api" / "v1" / "agent_chat_ws.py"
+)
+
+
+def test_ws_bubble_via_supervisor_flag_wired():
+    src = _WS.read_text(encoding="utf-8")
+    assert "LIA_BUBBLE_VIA_SUPERVISOR" in src, (
+        "flag nao lida em agent_chat_ws -> bolha primaria (WS) nunca roteia pro supervisor")
+    assert "_orchestrator_result_to_frames" in src, (
+        "WS deve reusar o produtor unico de serializacao, nao reimplementar")
+    assert "get_main_orchestrator" in src, "desvio WS deve chamar o MainOrchestrator"
+
+
+def test_ws_supervisor_branch_after_wizard():
+    src = _WS.read_text(encoding="utf-8")
+    flag_pos = src.index("LIA_BUBBLE_VIA_SUPERVISOR")
+    wizard_pos = src.index('active_domain == "wizard"')
+    assert flag_pos > wizard_pos, (
+        "desvio WS deve vir DEPOIS do branch wizard (preserva wizard na bolha)")

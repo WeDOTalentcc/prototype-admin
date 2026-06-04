@@ -1246,6 +1246,79 @@ company_id: str = Depends(require_company_id)):
                 if _wizard_canonical_handled:
                     continue  # canonical handled — skip ReAct loop
 
+            # Fase 3 (consolidacao): bolha PRIMARIA (WS) roteada pro MainOrchestrator
+            # quando LIA_BUBBLE_VIA_SUPERVISOR=true (default OFF). Apos o wizard
+            # (preserva wizard na bolha). Mesmo padrao do agent_chat_sse (item 6).
+            import os as _os_bvs
+            _bubble_via_supervisor = _os_bvs.getenv(
+                "LIA_BUBBLE_VIA_SUPERVISOR", "false"
+            ).lower() in ("true", "1")
+            if _bubble_via_supervisor and active_domain != "wizard":
+                try:
+                    from app.api.v1.chat import (
+                        _build_supervisor_context,
+                        _orchestrator_result_to_frames,
+                    )
+                    from app.core.database import AsyncSessionLocal
+                    from app.orchestrator.execution.main_orchestrator import (
+                        get_main_orchestrator,
+                    )
+                    from app.shared.chat_event_serializer import serialize_token
+
+                    async def _ws_orch_cb(event: dict) -> None:
+                        # best-effort live typing + pass-through tool/reasoning (P0.3).
+                        # O frame `message` terminal (produtor unico) garante o render.
+                        try:
+                            _et = event.get("type", "")
+                            if _et == "token" and event.get("content"):
+                                _c = event["content"]
+                                await ws_mgr.send_to_session(
+                                    session_id,
+                                    serialize_token(
+                                        mask_pii(_c) if isinstance(_c, str) else _c
+                                    ),
+                                )
+                            elif _et in (
+                                "tool_started", "tool_finished",
+                                "reasoning_step", "panel_update",
+                            ):
+                                await ws_mgr.send_to_session(session_id, event)
+                        except Exception:
+                            pass
+
+                    _conv_id = (context or {}).get("conversation_id")
+                    _sup_ctx = _build_supervisor_context(
+                        content=content,
+                        context=context,
+                        company_id=company_id,
+                        user_id=user_id,
+                        conversation_id=_conv_id or session_id,
+                    )
+                    async with AsyncSessionLocal() as _orch_db:
+                        _sup_result = await asyncio.wait_for(
+                            get_main_orchestrator().process(
+                                _sup_ctx, _orch_db, streaming_callback=_ws_orch_cb
+                            ),
+                            timeout=_AGENT_TIMEOUT,
+                        )
+                    _sup_text = mask_pii(getattr(_sup_result, "content", "") or "")
+                    conversation_history.append({"role": "user", "content": content})
+                    conversation_history.append(
+                        {"role": "assistant", "content": _sup_text}
+                    )
+                    await _persist_chat_turn(_conv_id, company_id, content, _sup_text)
+                    for _frame in _orchestrator_result_to_frames(_sup_result, _conv_id):
+                        await ws_mgr.send_to_session(session_id, _frame)
+                except Exception as _sup_exc:
+                    logger.error(
+                        "[AgentChatWS] Supervisor path crashed session=%s: %s",
+                        session_id, _sup_exc, exc_info=True,
+                    )
+                    await ws_mgr.send_to_session(session_id, serialize_error(
+                        "Erro interno ao processar sua mensagem.", "supervisor_error",
+                    ))
+                continue
+
             agent = _get_agent(active_domain)
             if agent is None:
                 await ws_mgr.send_to_session(session_id, serialize_error(
