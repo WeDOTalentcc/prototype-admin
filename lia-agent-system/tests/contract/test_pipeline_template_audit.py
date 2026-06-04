@@ -101,13 +101,18 @@ def _canonical_audit_assertions(call_kwargs, *, action: str, actor: str, templat
 
 @pytest.mark.asyncio
 async def test_create_emits_audit_canonical():
+    """create() emite audit ATÔMICO: log_decision_in_session na MESMA sessão
+    da mutação (self.db), com commit único delegado ao get_tenant_db."""
     template = _make_template_mock(name="NewTemplate")
     service = _build_service(template_mock=template)
 
     with patch(
+        "app.domains.pipeline.services.pipeline_template_service.audit_service.log_decision_in_session",
+        new_callable=AsyncMock,
+    ) as mock_audit, patch(
         "app.domains.pipeline.services.pipeline_template_service.audit_service.log_decision",
         new_callable=AsyncMock,
-    ) as mock_audit:
+    ) as mock_independent:
         result = await service.create(
             COMPANY_A,
             {"name": "NewTemplate", "stages": []},
@@ -115,6 +120,13 @@ async def test_create_emits_audit_canonical():
         )
 
     assert mock_audit.call_count == 1, "audit MUST be emitted exactly once per create"
+    assert mock_independent.call_count == 0, (
+        "create MUST NOT open a separate audit session (atomic path only)"
+    )
+    # Sentinela atomicidade: a sessão do audit é a MESMA da mutação (self.db).
+    assert mock_audit.call_args.args[0] is service.db, (
+        "audit row MUST share the mutation session (single transaction)"
+    )
     _canonical_audit_assertions(
         mock_audit.call_args.kwargs,
         action="pipeline_template_created",
@@ -130,13 +142,17 @@ async def test_create_emits_audit_canonical():
 
 @pytest.mark.asyncio
 async def test_update_emits_audit_canonical_with_fields_updated_reasoning():
+    """update() emite audit ATÔMICO na MESMA sessão da mutação (self.db)."""
     template = _make_template_mock(name="Existing")
     service = _build_service(template_mock=template)
 
     with patch(
+        "app.domains.pipeline.services.pipeline_template_service.audit_service.log_decision_in_session",
+        new_callable=AsyncMock,
+    ) as mock_audit, patch(
         "app.domains.pipeline.services.pipeline_template_service.audit_service.log_decision",
         new_callable=AsyncMock,
-    ) as mock_audit:
+    ) as mock_independent:
         await service.update(
             template.id,
             COMPANY_A,
@@ -145,6 +161,13 @@ async def test_update_emits_audit_canonical_with_fields_updated_reasoning():
         )
 
     assert mock_audit.call_count == 1
+    assert mock_independent.call_count == 0, (
+        "update MUST NOT open a separate audit session (atomic path only)"
+    )
+    # Sentinela atomicidade: a sessão do audit é a MESMA da mutação (self.db).
+    assert mock_audit.call_args.args[0] is service.db, (
+        "audit row MUST share the mutation session (single transaction)"
+    )
     kwargs = mock_audit.call_args.kwargs
     _canonical_audit_assertions(
         kwargs,
@@ -164,15 +187,19 @@ async def test_update_skips_audit_when_template_not_found():
     service = _build_service(template_mock=None)
 
     with patch(
+        "app.domains.pipeline.services.pipeline_template_service.audit_service.log_decision_in_session",
+        new_callable=AsyncMock,
+    ) as mock_audit, patch(
         "app.domains.pipeline.services.pipeline_template_service.audit_service.log_decision",
         new_callable=AsyncMock,
-    ) as mock_audit:
+    ) as mock_independent:
         result = await service.update(
             uuid.uuid4(), COMPANY_A, {"name": "X"}, updated_by="u"
         )
 
     assert result is None
     assert mock_audit.call_count == 0, "audit MUST NOT fire for non-existent template"
+    assert mock_independent.call_count == 0
 
 
 # ---------------------------------------------------------------------------
@@ -276,27 +303,27 @@ async def test_apply_to_vacancy_emits_audit_canonical():
 
 
 @pytest.mark.asyncio
-async def test_audit_failure_does_not_block_create():
-    """Resilience canonical: audit raise → log.error mas service retorna template.
+async def test_create_audit_failure_propagates_atomic():
+    """ATÔMICO (fail-CLOSED): create grava template + audit na MESMA sessão e o
+    commit é único (get_tenant_db). Se o audit falhar, a exceção PROPAGA — o
+    get_tenant_db faz rollback do template junto. Não existe save sem trail.
 
-    Justificativa: mutation já está commitada no DB quando audit roda. Falhar
-    a mutation só porque audit caiu = data loss (write feito, response 500).
+    (Antes da atomicidade o audit rodava em conexão separada e o erro era
+    engolido; com sessão compartilhada engolir seria incoerente — a sessão já
+    estaria poisoned e o commit do route falharia de forma opaca.)
     """
     template = _make_template_mock(name="X")
     service = _build_service(template_mock=template)
 
     with patch(
-        "app.domains.pipeline.services.pipeline_template_service.audit_service.log_decision",
+        "app.domains.pipeline.services.pipeline_template_service.audit_service.log_decision_in_session",
         new_callable=AsyncMock,
         side_effect=RuntimeError("audit DB down"),
     ):
-        # Should NOT raise — service swallows audit failure
-        result = await service.create(
-            COMPANY_A, {"name": "X", "stages": []}, created_by="u@x"
-        )
-
-    assert result is not None
-    assert result.name == "X"
+        with pytest.raises(RuntimeError, match="audit DB down"):
+            await service.create(
+                COMPANY_A, {"name": "X", "stages": []}, created_by="u@x"
+            )
 
 
 @pytest.mark.asyncio

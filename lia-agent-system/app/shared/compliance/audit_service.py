@@ -338,6 +338,7 @@ class AuditService:
         confidence: float | None = None,
         human_review_required: bool = False,
         criteria_ignored: list[str] | None = None,
+        actor_user_id: str | None = None,
     ) -> AuditLog:
         """PR4 (Task #1004) — Insert an AuditLog row USING the caller's
         session, WITHOUT committing. Lets the caller commit business
@@ -345,7 +346,12 @@ class AuditService:
         for the outcome row (fail-CLOSED transactional rollback).
 
         Tenant binding is the caller's responsibility (already done by
-        ``audit_company_change`` when opening the shared session)."""
+        ``audit_company_change`` when opening the shared session).
+
+        ``actor_user_id`` is persisted into ``session_id`` (Task #366
+        column-promotion workaround — mirrors ``_log_decision_impl``) so the
+        in-session path keeps the same audit fields as the independent-session
+        ``log_decision`` (consumed by ``get_decisions_by_user``)."""
         canonical_type = DECISION_TYPE_MAPPING.get(decision_type.lower())
         if canonical_type is None:
             try:
@@ -379,6 +385,10 @@ class AuditService:
             confidence=confidence,
             human_review_required=human_review_required,
             retention_until=retention_until,
+            # Task #366 column-promotion workaround — actor stored in
+            # session_id until a dedicated column is promoted (mirrors
+            # _log_decision_impl so both audit paths populate the same field).
+            session_id=actor_user_id,
         )
         session.add(audit_log)
         await session.flush()
