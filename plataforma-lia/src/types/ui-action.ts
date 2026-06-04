@@ -78,6 +78,21 @@ export type GlobalUIAction =
         subsection?: string;
         field?: string;
       };
+    }
+  | {
+      // P0.2 (2026-06-04) anti-ghost: acoes de candidatos globalizadas.
+      // Vivem na superficie funil-de-talentos; useUIAction navega pra la e
+      // re-emite pro handler page-specific (useLIAQuickActions).
+      type: "open_communication_modal";
+      params?: { candidate_id?: string };
+    }
+  | {
+      type: "open_schedule_modal";
+      params?: Record<string, never>;
+    }
+  | {
+      type: "open_screening_modal";
+      params?: { candidate_id?: string };
     };
 
 /**
@@ -94,6 +109,9 @@ export const GLOBAL_UI_ACTION_TYPES: readonly GlobalUIActionType[] = [
   "open_panel",
   "scroll_to",
   "settings_open_tab",
+  "open_communication_modal",
+  "open_schedule_modal",
+  "open_screening_modal",
 ] as const;
 
 export function isGlobalUIActionType(type: string): type is GlobalUIActionType {

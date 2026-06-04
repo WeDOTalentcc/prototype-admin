@@ -191,3 +191,12 @@ export function JdEnrichmentPanel({ data, ... }: Props) {
 - **Producer-side**: `build_ws_stage_payload` raise ValueError se `data.message` faltar (Task #1099 invariant) — garante que toda copy contextual existe.
 - **Consumer-side**: idle state pula badge + loading timer — recrutador ve copy direta do agente, nao mensagem ambigua "demorando".
 - **CI**: sensor estatico bloqueia regressao se backend adicionar novo `awaiting_*_input` sem mapping no script + panel handler.
+
+
+## P0.2 — Acoes do chat (ui_action) nao podem ser ghost (registrado 2026-06-04)
+
+Toda ui_action que o BE pode emitir (contrato em src/lib/api/kanban-assistant.ts) DEVE ter handler no FE: registrada em GLOBAL_UI_ACTION_TYPES (src/types/ui-action.ts, tratada por useUIAction) OU com case/=== num handler page-specific. Acao declarada sem handler = ghost (descartada em silencio quando emitida fora da tela dona) = mentira pro usuario (mesma classe do lia_field_toggles ghost-setting).
+
+Acoes acopladas a uma superficie (ex: modais de candidatos) que precisam ser acionaveis de qualquer tela viram GLOBAIS via padrao navega+re-emite (mirror de settings_open_tab em useUIAction): router.push pra superficie dona + re-emite lia:unhandled_ui_action pro handler page-specific. Nao duplicar modais.
+
+Sensor (computacional, warn-only): scripts/check_ui_action_handlers.py. Baseline 2026-06-04: 2 ghosts conhecidos (compare_jobs, start_candidate_wizard) — follow-up no dominio jobs/wizard. Promover a --blocking quando baseline=0.

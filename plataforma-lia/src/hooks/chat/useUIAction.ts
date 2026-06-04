@@ -184,6 +184,24 @@ export function useUIAction(): UseUIActionReturn {
           return true;
         }
 
+        case "open_communication_modal":
+        case "open_schedule_modal":
+        case "open_screening_modal": {
+          // P0.2 (2026-06-04) anti-ghost: estas acoes vivem na superficie de
+          // candidatos (funil-de-talentos) e operam sobre os selecionados la.
+          // Global entry-point (mirror de settings_open_tab): navega pra
+          // superficie e re-emite pro handler page-specific (useLIAQuickActions)
+          // tratar — sem duplicar modais e sem descartar em silencio.
+          if (typeof window === "undefined") return false;
+          router.push("/funil-de-talentos");
+          window.dispatchEvent(
+            new CustomEvent(UNHANDLED_UI_ACTION_EVENT, {
+              detail: { action, params },
+            }),
+          );
+          return true;
+        }
+
         default:
           // exhaustiveness: caso TS deixe escapar um tipo, runtime falha-soft.
           return false;
