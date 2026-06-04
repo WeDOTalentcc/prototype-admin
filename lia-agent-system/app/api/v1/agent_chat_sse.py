@@ -629,6 +629,16 @@ company_id: str = Depends(require_company_id)):
                 pass
         agent_task.add_done_callback(_cleanup_stream_ctx)
 
+        # Harness sensor (2026-06-04): per-frame timing to localize SSE
+        # delivery buffering (backend streams incrementally vs downstream
+        # burst). OFF by default. Activate: env LIA_SSE_TIMING_LOG=1 OR touch
+        # /tmp/lia_sse_timing_on (flips a running uvicorn without a restart).
+        _sse_timing = (
+            os.getenv("LIA_SSE_TIMING_LOG", "").lower() in ("1", "true", "yes")
+            or os.path.exists("/tmp/lia_sse_timing_on")
+        )
+        _t_stream0 = asyncio.get_event_loop().time()
+
         try:
             while True:
                 try:
@@ -704,6 +714,17 @@ company_id: str = Depends(require_company_id)):
                         )
                     break
                 else:
+                    if _sse_timing:
+                        _ft = (
+                            item.get("type", "?")
+                            if isinstance(item, dict)
+                            else "?"
+                        )
+                        logger.info(
+                            "[SSE-TIMING] yield frame type=%s at +%.2fs",
+                            _ft,
+                            asyncio.get_event_loop().time() - _t_stream0,
+                        )
                     yield format_sse_event(item, next_id())
         finally:
             if not agent_task.done():
