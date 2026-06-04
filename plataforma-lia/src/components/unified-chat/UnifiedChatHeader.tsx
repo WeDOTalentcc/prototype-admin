@@ -178,6 +178,24 @@ export function UnifiedChatHeader({
           align === "left" ? "left-0" : "right-0",
         )}
       >
+        {/* Floating mode (360px) — "Trocar conversa" is tucked into this menu
+            instead of a dedicated header icon to declutter the cramped header.
+            Sidebar/fullscreen keep the standalone icon. */}
+        {mode === "floating" && onSwitchTask && (
+          <>
+            <button
+              onClick={() => {
+                onSwitchTask()
+                setOptionsAnchor(null)
+              }}
+              className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-lia-text-secondary hover:bg-lia-bg-secondary"
+            >
+              <ArrowRightLeft className="w-3.5 h-3.5" />
+              {t('switchChatLabel')}
+            </button>
+            <div className="my-1 border-t border-lia-border-subtle" />
+          </>
+        )}
         <button
           onClick={handleStartRename}
           className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-lia-text-secondary hover:bg-lia-bg-secondary"
@@ -229,13 +247,13 @@ export function UnifiedChatHeader({
             {isRenaming ? renderTitle() : renderTitleButton("max-w-[200px]")}
           </div>
         ) : (
-          isRenaming ? renderTitle() : renderTitleButton("max-w-[160px]")
+          isRenaming ? renderTitle() : renderTitleButton(mode === "floating" ? "max-w-[120px]" : "max-w-[160px]")
         )}
 
         {isConnected && (
           <span className="w-1.5 h-1.5 rounded-full bg-status-success flex-shrink-0" title={t('connected')} />
         )}
-        {transportMode && (
+        {transportMode && mode !== "floating" && (
           <TransportModeIndicator transportMode={transportMode} isReconnecting={isReconnecting} />
         )}
 
@@ -283,7 +301,7 @@ export function UnifiedChatHeader({
         )}
       </div>
 
-      <div className="flex items-center gap-0.5">
+      <div className={cn("flex items-center", mode === "floating" ? "gap-1" : "gap-0.5")}>
         <button
           onClick={onNewChat}
           className="p-1.5 rounded-md text-lia-border-strong hover:text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
@@ -293,7 +311,7 @@ export function UnifiedChatHeader({
           <Plus className="w-4 h-4" />
         </button>
 
-        {onSwitchTask && (
+        {onSwitchTask && mode !== "floating" && (
           <button
             onClick={onSwitchTask}
             className="p-1.5 rounded-md text-lia-border-strong hover:text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"

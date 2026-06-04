@@ -1222,3 +1222,27 @@ Todo transporte do chat (REST, SSE, WebSocket) DEVE extrair o estado-da-tela que
 Sem isso o agente fica cego ao estado da tela (P0.1: "voce tem N na visao atual"). Fix sempre no PRODUTOR (o handler do transporte), nunca no consumidor.
 Sensor (computacional, AST): tests/contract/test_ws_sse_context_parity.py.
 Irmao pendente (mesmo bug): send_message_with_attachments passa page_context=None — precisa Form "context" no endpoint + wiring FE.
+
+## Ghost-context approval gate — contexto auto-gerado precisa de aprovação humana (registrado 2026-06-04)
+
+**Contexto (Fase 5.1, P0 governança LGPD/bias):** o "Context Center" gera um `CompanyCultureProfile` automaticamente via scrape de website + LLM (`source="auto"`). Esse perfil alimentava o system prompt dos agentes (Big Five blend em `bigfive_service`, tool `get_company_culture` do CV screening) **sem nenhuma aprovação humana** — irmão do ghost-setting `lia_field_toggles` e da proveniência fabricada (REGRA 4). Contexto auto-gerado não-revisado alimentando decisão de candidato = risco LGPD/bias.
+
+### Regra canônica
+
+**Todo contexto auto-gerado (scrape/LLM) que alimenta o system prompt de um agente DEVE passar por aprovação humana antes de ativar. Auto-save sem gate = ghost-context = proibido.**
+
+### Como aplica (CompanyCultureProfile)
+
+1. **Gate único no produtor de leitura-de-agente:** `CultureProfileRepository.get_for_agent_context(company_id)` retorna o profile só se `source != 'auto'` (humano: manual/onboarding/inline-edit) **OU** `is_approved=True` (auto aprovado). Auto pendente é **withheld** (retorna None → agente cai em fallback gracioso). UI/aprovação usam `get_for_company()` (vê pendentes).
+2. **Consumidores de agente usam o método gateado**, NUNCA `get_for_company` cru: `bigfive_service._get_culture_profile` e `pipeline_tool_registry.get_company_culture`.
+3. **Produtor reseta aprovação:** toda nova análise auto (`run_culture_analysis_job`) grava `is_approved=False` — re-scrape regenera conteúdo, exige re-aprovação.
+4. **HITL endpoints:** `PATCH /company-culture/{company_id}/approve` e `/reject` (`set_approval`), multi-tenant via `require_company_id_strict_match`. Estado exposto no `CompanyCultureProfileResponse` (`is_approved`, `approved_at`).
+5. **Campos:** `company_culture_profiles.is_approved` (BOOLEAN NOT NULL DEFAULT false) + `approved_at` + `approved_by_user_id` (migration 241). Decisão de produto 2026-06-04: gate estrito — perfis auto existentes nascem pendentes (sem clientes em produção ainda; fazer o correto).
+
+### Sensor
+
+`tests/contract/test_culture_profile_approval_gate.py` — pina o contrato do gate (auto pendente withheld; auto aprovado servido; manual/onboarding/inline sempre servidos; None passthrough). Pure unit (mock `get_for_company`).
+
+### Ao criar nova fonte de contexto auto-gerado
+
+Replicar o padrão: estado inicial `pending_approval`/`is_approved=False`, gate no método de leitura-de-agente (não no repo cru que a UI usa), endpoint HITL de aprovação, reset em regeneração, contract test do gate.

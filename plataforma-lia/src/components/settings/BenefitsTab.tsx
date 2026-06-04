@@ -22,11 +22,14 @@ import { BenefitsList } from "./benefits/BenefitsList"
 import { useBenefitsTab } from "./benefits/useBenefitsTab"
 import { defaultBenefit } from "./benefits/benefits-types"
 import type { BenefitTemplate } from "./benefits/benefits-types"
-import { HubHeader } from "./_shared"
+import { HubHeader, ConfigurableFieldCard } from "./_shared"
+import { useLiaFieldTogglesForSection } from "@/hooks/settings/useLiaFieldTogglesForSection"
 
 export function BenefitsTab() {
   const t = useTranslations("settings.benefits")
   const hub = useBenefitsTab()
+  const liaBenefits = useLiaFieldTogglesForSection(["benefits"])
+  const benefitsLiaField = liaBenefits.fields[0]
 
   const templatesByCategory = hub.filteredTemplates.reduce<Record<string, BenefitTemplate[]>>(
     (acc, template) => {
@@ -121,6 +124,20 @@ export function BenefitsTab() {
             {t("newBenefit")}
           </Button>
       </HubHeader>
+
+      {benefitsLiaField && (
+        <ConfigurableFieldCard
+          label={benefitsLiaField.label}
+          hint={benefitsLiaField.hint}
+          instruction={benefitsLiaField.instruction}
+          onInstructionSave={benefitsLiaField.onInstructionSave}
+          showToggle
+          isActive={benefitsLiaField.isActive}
+          onToggleChange={benefitsLiaField.onToggleChange}
+          isSaving={benefitsLiaField.isSaving}
+          isReadOnly={!hub.isEditingBenefits}
+        />
+      )}
 
       <BenefitsList
         benefits={hub.benefits}
