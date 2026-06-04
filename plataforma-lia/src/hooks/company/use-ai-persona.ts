@@ -8,7 +8,8 @@
  */
 "use client"
 
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useState } from "react"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { apiFetch } from "@/lib/api/api-fetch"
 
 export interface AiPersona {
@@ -105,46 +106,30 @@ async function fetchWithRetry(
 }
 
 export function useAiPersonaOptions(): UseAiPersonaOptionsResult {
-  const [options, setOptions] = useState<AiPersonaOptions | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    let cancelled = false
-    const fetchOptions = async () => {
-      setIsLoading(true)
-      setError(null)
-      try {
-        const res = await fetchWithRetry(
-          "/api/backend-proxy/company-ai-persona/options",
+  const { data, isLoading, error } = useQuery<AiPersonaOptions>({
+    queryKey: ["company-ai-persona", "options"],
+    queryFn: async () => {
+      const res = await fetchWithRetry(
+        "/api/backend-proxy/company-ai-persona/options",
+      )
+      if (!res.ok) {
+        throw new Error(
+          `Falha ao carregar catalogo de tons (HTTP ${res.status})`,
         )
-        if (!res.ok) {
-          throw new Error(
-            `Falha ao carregar catálogo de tons (HTTP ${res.status})`,
-          )
-        }
-        const data = (await res.json()) as AiPersonaOptions
-        if (!cancelled) setOptions(data)
-      } catch (err) {
-        if (!cancelled) {
-          setError(
-            err instanceof Error
-              ? err.message
-              : "Falha ao carregar catálogo de tons",
-          )
-          setOptions(null)
-        }
-      } finally {
-        if (!cancelled) setIsLoading(false)
       }
-    }
-    void fetchOptions()
-    return () => {
-      cancelled = true
-    }
-  }, [])
-
-  return { options, isLoading, error }
+      return (await res.json()) as AiPersonaOptions
+    },
+    staleTime: 5 * 60_000,
+  })
+  return {
+    options: data ?? null,
+    isLoading,
+    error: error
+      ? error instanceof Error
+        ? error.message
+        : "Falha ao carregar catalogo de tons"
+      : null,
+  }
 }
 
 export interface AiPersonaValidationError {
@@ -167,101 +152,109 @@ interface UseAiPersonaResult {
 const DEFAULT_PERSONA: AiPersona = { name: "LIA", tone: "profissional" }
 
 export function useAiPersona(): UseAiPersonaResult {
-  const [persona, setPersona] = useState<AiPersona | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [isSaving, setIsSaving] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const queryClient = useQueryClient()
   const [validationErrors, setValidationErrors] = useState<
     AiPersonaValidationError[]
   >([])
+  const [saveError, setSaveError] = useState<string | null>(null)
 
-  const reload = useCallback(async () => {
-    setIsLoading(true)
-    setError(null)
-    try {
+  const {
+    data,
+    isLoading,
+    error: queryError,
+    refetch,
+  } = useQuery<AiPersona>({
+    queryKey: ["company-ai-persona"],
+    queryFn: async () => {
       const res = await fetchWithRetry("/api/backend-proxy/company-ai-persona")
       if (!res.ok) {
-        if (res.status === 404 || res.status === 422) {
-          setPersona(DEFAULT_PERSONA)
-          return
-        }
+        if (res.status === 404 || res.status === 422) return DEFAULT_PERSONA
         throw new Error(`Falha ao carregar persona (HTTP ${res.status})`)
       }
-      const data = (await res.json()) as AiPersona
-      setPersona(data)
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Falha ao carregar persona",
-      )
-      setPersona(DEFAULT_PERSONA)
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
+      return (await res.json()) as AiPersona
+    },
+  })
 
-  useEffect(() => {
-    void reload()
-  }, [reload])
+  const reload = useCallback(async () => {
+    await refetch()
+  }, [refetch])
+
+  const mutation = useMutation<AiPersona, Error, Partial<AiPersona>>({
+    mutationFn: async (patch) => {
+      const res = await apiFetch("/api/backend-proxy/company-ai-persona", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(patch),
+      })
+      if (res.status === 422) {
+        const body = await res.json().catch(() => null)
+        const detail = body?.detail
+        const errors: AiPersonaValidationError[] = detail?.errors ?? [
+          { code: "unknown", message: "Erro de validacao" },
+        ]
+        const e = new Error("validation") as Error & {
+          validationErrors?: AiPersonaValidationError[]
+        }
+        e.validationErrors = errors
+        throw e
+      }
+      if (!res.ok) {
+        throw new Error(`Falha ao salvar (HTTP ${res.status})`)
+      }
+      return (await res.json()) as AiPersona
+    },
+    onSuccess: (saved, patch) => {
+      queryClient.setQueryData(["company-ai-persona"], saved)
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(
+          new CustomEvent("lia:settings-updated", {
+            detail: {
+              section: "ai_persona",
+              actionId: "configure_ai_persona",
+              field: Object.keys(patch).join("+"),
+              value: saved,
+              source: "ui",
+              ts: Date.now(),
+            },
+          }),
+        )
+      }
+    },
+  })
 
   const update = useCallback(
     async (patch: Partial<AiPersona>): Promise<boolean> => {
-      setIsSaving(true)
-      setError(null)
       setValidationErrors([])
+      setSaveError(null)
       try {
-        const res = await apiFetch("/api/backend-proxy/company-ai-persona", {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(patch),
-        })
-        if (res.status === 422) {
-          // Validator backend: detail.errors[] estruturado em PT-BR.
-          const body = await res.json().catch(() => null)
-          const detail = body?.detail
-          const errors: AiPersonaValidationError[] =
-            detail?.errors ?? [
-              { code: "unknown", message: "Erro de validação" },
-            ]
-          setValidationErrors(errors)
-          return false
-        }
-        if (!res.ok) {
-          throw new Error(`Falha ao salvar (HTTP ${res.status})`)
-        }
-        const data = (await res.json()) as AiPersona
-        setPersona(data)
-        // Bidirectional sync: pode disparar lia:settings-updated pra LIA
-        // chat reagir (alinhado com pattern P0-1 do hook canonical).
-        if (typeof window !== "undefined") {
-          window.dispatchEvent(
-            new CustomEvent("lia:settings-updated", {
-              detail: {
-                section: "ai_persona",
-                actionId: "configure_ai_persona",
-                field: Object.keys(patch).join("+"),
-                value: data,
-                source: "ui",
-                ts: Date.now(),
-              },
-            }),
-          )
-        }
+        await mutation.mutateAsync(patch)
         return true
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Falha ao salvar")
+        const ve = (err as { validationErrors?: AiPersonaValidationError[] })
+          .validationErrors
+        if (ve) {
+          setValidationErrors(ve)
+          return false
+        }
+        setSaveError(err instanceof Error ? err.message : "Falha ao salvar")
         return false
-      } finally {
-        setIsSaving(false)
       }
     },
-    [],
+    [mutation],
   )
+
+  const persona = data ?? (queryError ? DEFAULT_PERSONA : null)
+  const loadError = queryError
+    ? queryError instanceof Error
+      ? queryError.message
+      : "Falha ao carregar persona"
+    : null
 
   return {
     persona,
     isLoading,
-    isSaving,
-    error,
+    isSaving: mutation.isPending,
+    error: saveError ?? loadError,
     validationErrors,
     reload,
     update,
