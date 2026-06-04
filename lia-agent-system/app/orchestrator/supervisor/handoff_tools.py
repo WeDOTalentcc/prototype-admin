@@ -108,6 +108,13 @@ async def delegate_to_domain(
             user_id=user_id or "",
         )
         output = await agent.process(agent_input)
+        _ok = not bool(getattr(output, "error", None))
+        _msg = getattr(output, "message", "") or ""
+        logger.info(
+            "[supervisor] handoff -> %s | success=%s | msg_len=%d | tool_results=%d | preview=%r",
+            agent_domain, _ok, len(_msg),
+            len(getattr(output, "tool_results", []) or []), _msg[:160],
+        )
         return {
             "success": not bool(getattr(output, "error", None)),
             "message": getattr(output, "message", "") or "",
