@@ -1,8 +1,8 @@
 // Onda 4 F5 (2026-05-28) — lista de alertas de orcamento.
 //
 // Renderiza alerts do endpoint /ai-consumption/budget-alerts (Onda 4 B3).
-// Severity: info (azul) / warning (amber) / critical (red) com border-l-4
-// canonical.
+// Severity: info (wedo-cyan) / warning (status-warning) / critical (status-error)
+// com border-l-4 canonical via tokens do Design System.
 //
 // CF-B B1 (2026-05-29): error state com retry (nao silenciar falha de fetch).
 // CF-B B2 (2026-05-29): limite renderizado em TOKENS via resolveBudgetLimitTokens
@@ -34,18 +34,18 @@ const SEVERITY_CLASS: Record<
 > = {
   info: {
     wrap:
-      "border-l-4 border-blue-500 bg-blue-50 dark:bg-blue-950/30 text-blue-900 dark:text-blue-100",
-    icon: "text-blue-500",
+      "border-l-4 border-wedo-cyan bg-wedo-cyan/10 text-lia-text-primary",
+    icon: "text-wedo-cyan-dark dark:text-wedo-cyan",
   },
   warning: {
     wrap:
-      "border-l-4 border-amber-500 bg-amber-50 dark:bg-amber-950/30 text-amber-900 dark:text-amber-100",
-    icon: "text-amber-500",
+      "border-l-4 border-status-warning bg-status-warning/10 text-lia-text-primary",
+    icon: "text-status-warning",
   },
   critical: {
     wrap:
-      "border-l-4 border-red-500 bg-red-50 dark:bg-red-950/30 text-red-900 dark:text-red-100",
-    icon: "text-red-500",
+      "border-l-4 border-status-error bg-status-error/10 text-lia-text-primary",
+    icon: "text-status-error",
   },
 }
 
@@ -79,7 +79,7 @@ export function BudgetAlertsList({ onViewExecutions }: BudgetAlertsListProps) {
         </h3>
         <div
           role="alert"
-          className="flex flex-col items-start gap-2 rounded-md border-l-4 border-red-500 bg-red-50 p-3 text-sm text-red-900 dark:bg-red-950/30 dark:text-red-100"
+          className="flex flex-col items-start gap-2 rounded-md border-l-4 border-status-error bg-status-error/10 p-3 text-sm text-lia-text-primary"
         >
           <p className="font-medium">{t("error.title")}</p>
           <Button
