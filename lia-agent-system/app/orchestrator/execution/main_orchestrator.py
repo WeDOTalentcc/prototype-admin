@@ -255,6 +255,24 @@ class ChatResponse(BaseModel):
 # MainOrchestrator
 # ---------------------------------------------------------------------------
 
+# -- Phase 1 -> Agentic fall-through (2026-06-04, harness GUIDE computacional) --
+# Acoes onde, se o Phase 1 ActionExecutor nao tem o param obrigatorio, e melhor
+# DEFERIR ao agentic loop (Phase 1.5) -- o LLM extrai o criterio do NL e chama a
+# tool -- em vez de devolver needs_params e PERGUNTAR. Restrito a allowlist para
+# nao afetar acoes que legitimamente exigem param (ex: agendar entrevista).
+PREFER_AGENTIC_ON_MISSING_PARAMS: frozenset = frozenset({"search_candidates"})
+
+
+def _defer_needs_params_to_agentic(action_response) -> bool:
+    """True quando o Phase 1 retornou needs_params para uma acao 'prefer-agentic'
+    -> deve cair pro agentic loop em vez de perguntar o param. Canonical-fix:
+    ponto unico de decisao, puro e testavel."""
+    return bool(getattr(action_response, "needs_params", False)) and (
+        getattr(action_response, "action_type", None)
+        in PREFER_AGENTIC_ON_MISSING_PARAMS
+    )
+
+
 class MainOrchestrator:
     """
     Entry point único consolidado para todas as mensagens da LIA.
@@ -697,15 +715,24 @@ class MainOrchestrator:
             # ── Phase 1: ActionExecutor ────────────────────────────────────
             action_response = await self._try_action_executor(ctx, conv_id)
             if action_response is not None:
-                # LIA-M02: Persist Phase 1 response to conversation memory
-                if conv and not ctx.skip_memory_persist:
-                    try:
-                        await self._persist_response(ctx, conv_id, conv, {"response": action_response.content}, db)
-                    except Exception as e:
-                        logger.warning("[LIA-M02] Phase 1 memory persist failed: %s", e)
-                if _soft_warnings and not action_response.fairness_warnings:
-                    action_response.fairness_warnings = _soft_warnings
-                return action_response
+                if _defer_needs_params_to_agentic(action_response):
+                    # #3 (2026-06-04): em vez de PERGUNTAR o criterio, deixa o
+                    # agentic loop (Phase 1.5) extrair do NL e chamar a tool.
+                    logger.info(
+                        "[Phase1->Agentic] needs_params para '%s' -- deferindo ao "
+                        "agentic loop (extrai do NL) em vez de pedir param. user=%s",
+                        action_response.action_type, getattr(ctx, "user_id", None),
+                    )
+                else:
+                    # LIA-M02: Persist Phase 1 response to conversation memory
+                    if conv and not ctx.skip_memory_persist:
+                        try:
+                            await self._persist_response(ctx, conv_id, conv, {"response": action_response.content}, db)
+                        except Exception as e:
+                            logger.warning("[LIA-M02] Phase 1 memory persist failed: %s", e)
+                    if _soft_warnings and not action_response.fairness_warnings:
+                        action_response.fairness_warnings = _soft_warnings
+                    return action_response
 
             # ── Phase 1.4: Wizard Canonical Executor (Task #1055) ──────────
             # Canonical REST/SSE delegation to WizardSessionService — espelha
