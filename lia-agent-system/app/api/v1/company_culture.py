@@ -148,6 +148,8 @@ async def run_culture_analysis(
                 "agreeableness_score": big_five.get("agreeableness", 50),
                 "stability_score": big_five.get("stability", 50),
                 "source": "auto",
+                # Fase 5.1: every fresh auto analysis is pending human approval.
+                "is_approved": False,
                 "confidence_score": analysis_result.get("confidence", 0.7),
                 "raw_llm_response": analysis_result.get("raw_response"),
                 "industry": analysis_result.get("industry"),
@@ -470,6 +472,60 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         # Task #1161 (Bug C): full traceback + no internal leak.
         logger.exception("Error fetching job status")
+        raise HTTPException(status_code=500, detail="internal error") from e
+
+
+@router.patch("/{company_id}/approve", response_model=CompanyCultureProfileResponse)
+async def approve_culture_profile(
+    company_id: uuid.UUID,
+    repo: CultureProfileRepository = Depends(get_culture_profile_repo),
+    current_user: User = Depends(get_current_user_or_demo),
+    tenant_company_id: str = Depends(require_company_id_strict_match("path.company_id")),
+):
+    """Fase 5.1 HITL gate (2026-06-04): approve the company's auto-generated culture
+    profile so it may feed agent prompts. Auto profiles (scrape+LLM) are WITHHELD
+    from agents until approved here — ghost-context gate (LGPD/bias governance).
+    Multi-tenancy: company_id from URL MUST match JWT (strict gate, 403 on mismatch)."""
+    try:
+        effective_company_id = uuid.UUID(tenant_company_id)
+        profile = await repo.set_approval(
+            effective_company_id,
+            approved=True,
+            user_id=getattr(current_user, "id", None),
+        )
+        if not profile:
+            raise HTTPException(status_code=404, detail="Culture profile not found.")
+        return profile
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception("Error approving culture profile")
+        raise HTTPException(status_code=500, detail="internal error") from e
+
+
+@router.patch("/{company_id}/reject", response_model=CompanyCultureProfileResponse)
+async def reject_culture_profile(
+    company_id: uuid.UUID,
+    repo: CultureProfileRepository = Depends(get_culture_profile_repo),
+    current_user: User = Depends(get_current_user_or_demo),
+    tenant_company_id: str = Depends(require_company_id_strict_match("path.company_id")),
+):
+    """Fase 5.1 HITL gate: reject an auto-generated culture profile (keeps it
+    withheld from agents). Recorded so the UI reflects that it was reviewed."""
+    try:
+        effective_company_id = uuid.UUID(tenant_company_id)
+        profile = await repo.set_approval(
+            effective_company_id,
+            approved=False,
+            user_id=getattr(current_user, "id", None),
+        )
+        if not profile:
+            raise HTTPException(status_code=404, detail="Culture profile not found.")
+        return profile
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception("Error rejecting culture profile")
         raise HTTPException(status_code=500, detail="internal error") from e
 
 

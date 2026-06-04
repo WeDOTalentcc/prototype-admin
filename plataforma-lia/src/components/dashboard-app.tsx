@@ -27,7 +27,7 @@ import { useLiaFloat } from "@/contexts/lia-float-context"
 import { LiaSplitPanel } from "@/components/lia-float/LiaSplitPanel"
 import { DashboardChatPanel } from "@/components/unified-chat"
 import { GlobalSearchModal } from "@/components/global-search-modal"
-import { ProactiveHintsBadge } from "@/components/proactive/ProactiveHintsBadge"  // WT-2022
+import { useProactiveHintsInChat } from "@/hooks/proactive/use-proactive-hints-in-chat"  // WT-2022 (chat-first)
 import { PipelineOverviewPage } from "@/components/pages/pipeline-overview-page"
 import { ModulesPage } from "@/components/pages/modules-page"
 import {
@@ -122,6 +122,10 @@ export function DashboardApp({ initialPage = "Conversar", children }: DashboardA
   const { recentItems, addRecentItem, removeRecentItem, clearAll: clearRecentItems } = useRecentItems()
   const { open: openFloat, splitView, setContextPage } = useLiaFloat()
   const { chatMessages, setChatMessages } = useLiaChatContext()
+
+  // WT-2022 — sugestões proativas scheduler-driven entram como mensagem
+  // conversacional + cards no chat unificado (aposenta o dropdown da lâmpada).
+  useProactiveHintsInChat()
   const locale = useLocale()
 
   // Task #1165 — pending navigation proposal. Set when a `lia:navigation-hint`
@@ -471,10 +475,6 @@ export function DashboardApp({ initialPage = "Conversar", children }: DashboardA
       />
 
       <main id="main-content" className="flex-1 flex flex-col overflow-hidden relative" aria-label={currentPage}>
-        {/* WT-2022 Camada IA Proativa: scheduler-driven hints (1x/hora) */}
-        <div className="absolute top-3 right-3 z-40 pointer-events-auto">
-          <ProactiveHintsBadge />
-        </div>
         <div className="flex-1 min-h-0 overflow-hidden flex">
           <div className="flex-1 min-w-0 overflow-hidden">
             {children ?? renderCurrentPage()}

@@ -1003,7 +1003,8 @@ async def _wrap_get_company_culture(**kwargs):
                     "message": f"company_id inválido: {company_id}",
                 }
 
-            culture = await repo.get_for_company(cid_uuid)
+            # Fase 5.1 gate: unapproved auto culture is withheld from the agent.
+            culture = await repo.get_for_agent_context(cid_uuid)
             if not culture:
                 return {
                     "success": False,

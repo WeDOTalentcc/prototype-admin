@@ -50,3 +50,36 @@ class CultureProfileRepository:
         await self.db.commit()
         await self.db.refresh(cp)
         return cp
+
+    async def get_for_agent_context(
+        self, company_id: UUID
+    ) -> CompanyCultureProfile | None:
+        """Approval gate (Fase 5.1, 2026-06-04). Return the culture profile ONLY
+        when eligible to feed agent prompts: human-authored (source != 'auto') OR
+        an auto profile a human has approved (is_approved). Auto profiles pending
+        approval are WITHHELD — ghost-context gate (LGPD/bias). UI/approval flows
+        must call get_for_company() to see pending profiles."""
+        profile = await self.get_for_company(company_id)
+        if profile is None:
+            return None
+        if getattr(profile, "source", None) == "auto" and not getattr(
+            profile, "is_approved", False
+        ):
+            return None
+        return profile
+
+    async def set_approval(
+        self, company_id: UUID, *, approved: bool, user_id: UUID | None = None
+    ) -> CompanyCultureProfile | None:
+        """Approve/reject the company's auto culture profile (HITL gate)."""
+        from datetime import datetime
+
+        cp = await self.get_for_company(company_id)
+        if cp is None:
+            return None
+        cp.is_approved = approved
+        cp.approved_at = datetime.utcnow() if approved else None
+        cp.approved_by_user_id = user_id if approved else None
+        await self.db.commit()
+        await self.db.refresh(cp)
+        return cp

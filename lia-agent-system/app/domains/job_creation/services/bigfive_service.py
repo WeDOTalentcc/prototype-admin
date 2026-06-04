@@ -146,7 +146,8 @@ class BigFiveDepartmentService:
 
         try:
             repo = CultureProfileRepository(self.db)
-            return await repo.get_for_company(_company_uuid)
+            # Fase 5.1 gate: only approved/human-authored culture feeds the blend.
+            return await repo.get_for_agent_context(_company_uuid)
         except SQLAlchemyError as exc:
             logger.warning(
                 "[BigFiveSvc] culture profile DB error: %s", str(exc)[:100],

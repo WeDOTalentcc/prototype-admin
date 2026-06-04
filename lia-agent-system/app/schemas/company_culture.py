@@ -140,6 +140,8 @@ class CompanyCultureProfileResponse(CompanyCultureProfileBase):
     company_id: UUID
     source: str
     confidence_score: float
+    is_approved: bool = False
+    approved_at: datetime | None = None
     last_analysis_at: datetime
     created_at: datetime
     updated_at: datetime
