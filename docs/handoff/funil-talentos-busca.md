@@ -166,6 +166,38 @@ flowchart LR
 | 3b | **Card "Sugestão"** (fallback quando o ghost não casa com o prefixo) | `SSIModeNatural.tsx:288-313` | mesmo endpoint `enhance-prompt` |
 | 4 | **Score de completude + alertas** | via `analyze` | `POST /api/backend-proxy/search-assistant/analyze` → 5 critérios: cargo, localização, anos de experiência, skills, indústria |
 
+#### 4.1.1 ⚙️ Determinístico vs 🤖 LLM — a verdade da camada de assistência
+
+> ⚠️ **Mito a derrubar:** olhando a UI, parece que "tudo é IA preditiva". **Não é.** Dos 4 elementos de assistência, **apenas o ghost text (enhance-prompt) usa LLM**. Os outros três são **100% determinísticos** (dicionários estáticos + regex + contagem). Replicar isso **não** exige modelo de ML — exige portar as listas e as regras.
+
+| Elemento | Mecanismo | Usa LLM? | Implementação |
+|---|---|---|---|
+| **1. Autocomplete** | prefixo/containment sobre taxonomias estáticas | ❌ **Determinístico** | `get_predictive_suggestions` (`search_assistant.py:494`) |
+| **2. Tags de entidade** (`parse-query`) | regex + listas estáticas + `confidence` incremental | ❌ **Determinístico** | `parse_search_query` (`jd_search.py:304`) |
+| **3. Ghost text / Sugestão** (`enhance-prompt`) | LLM (Gemini via `llm_service`), persona de sourcing | ✅ **LLM** | `misc_search.py:291` |
+| **4. Completude + alertas** (`analyze`) | 5 critérios booleanos → `score = preenchidos/5×100` | ❌ **Determinístico** | `analyze_search` (`search_assistant.py:345`) |
+
+**1. Autocomplete — determinístico (dicionário + prefixo).** `get_predictive_suggestions` percorre, **nesta ordem**, e retorna **no máx. 8** itens (`search_assistant.py:506-571`):
+1. `AUTOCOMPLETE_TEMPLATES` — casa por `template["pattern"] in query_lower` **ou** `last_word.startswith(pattern[:3])`. É daqui que saem expansões como `sap → "Consultor SAP MM/SD/FI-CO"`, `abap → "ABAP OO"`, `dev → "Desenvolvedor Backend/Frontend/Full Stack"`, `data → "Data Scientist/Engineer/Analyst"`.
+2. `JOB_TITLES_TAXONOMY` · 3. `SKILLS_TAXONOMY` · 4. `LOCATIONS_TAXONOMY` · 5. `INDUSTRIES_TAXONOMY` — todas por `title.lower().startswith(last_word)` (prefixo da **última palavra**).
+
+> 🔴 **NÃO é predição/ML.** Não há análise de contexto, embedding nem ranking aprendido. "Tech Lead", "SAP S/4HANA" etc. **vêm de listas hardcoded**, não de inferência. Disparo no front com **debounce ~400ms** e **mín. 2 chars** na última palavra. Endpoints irmãos (mesma natureza determinística): `/suggestions` (`BEST_PRACTICES` + taxonomias, ordenado por `popularity_score` fixo) e `/synonyms` (lookup em `SYNONYM_MAP`).
+
+**2. Tags de entidade — determinístico (regex + listas).** `parse-query` extrai 5 grupos de entidades por regex/listas estáticas e soma **`confidence` incremental** (`jd_search.py:304-623`):
+- **Cargo** (`job_title`), **Localização** (cidades + UF), **Senioridade/Anos** (aliases + `\d+ anos`), **Skills** (lista de ~centenas de termos; `+0.2`, máx. 8), **Setor/Indústria** (regex por vertical; `+0.15`, primeiro match).
+- **Normalização canônica:** `js`→`JavaScript`, `ts`→`TypeScript`, `nodejs`→`Node.js`, `k8s`→`Kubernetes`, `ml`→`Machine Learning`, `inglês fluente`→`Inglês Avançado`. `confidence` é **somatório capado em 1.0** (não é probabilidade de modelo). Se faltar grupo, devolve `suggestions[]` textuais ("Especifique o cargo…").
+
+**3. Ghost text / Sugestão — LLM (o único cérebro de verdade).** `enhance-prompt` (`misc_search.py:291`) chama o **LLM (Gemini via `llm_service`)** com uma **persona de sourcing/recrutamento** e retorna:
+- `enhanced_query` — a busca reescrita/completada (**~200 chars máx.**), que vira o **ghost text inline** (sufixo cinza; **Tab** aceita) quando casa com o prefixo, ou o **Card "Sugestão"** (fallback) quando não casa.
+- `explanation` (por que melhorou) + `suggestions[]` com `{label, value, category}`.
+- **Gating no front:** só aparece se **confiança > 0.6**. É **aqui** — e só aqui — que mora a "inteligência" de inferir o perfil ideal a partir de texto incompleto.
+
+**4. Completude + alertas — determinístico (5 critérios × 20 pts).** `analyze` calcula `calculate_completeness` sobre exatamente **5 chaves** — `job_title`, `location`, `years_experience`, `skills`, `industry` — cada preenchida vale **20 pts** → `score = (preenchidos/5)×100` (`search_assistant.py:146-166`). `analyze_search_quality` (`:169-227`) gera alertas por regra fixa:
+- **`broad_search`** (WARNING) se `completeness < 40`.
+- **`restrictive_search`** (INFO) se `completeness == 100` **e** `len(query) > 100`.
+- **`ambiguous_term`** (INFO) para termos vagos hardcoded (`dev`, `analista`, `gerente`, `engineer`) quando não há especificador.
+- **`synonym_suggestion`** (INFO) via `SYNONYM_MAP` (ex.: sugere `node/react/vue` ao ver `javascript`).
+
 **Submit:** monta `SearchRequest` com `query` + `search_spec` (entidades) + flags de fonte/contato (payload completo em §14).
 
 **Backend:** `POST /api/v1/search/candidates` (`search.py:105`). Gera `search_fingerprint` → busca multi-fonte → enriquece → rankeia.
@@ -271,7 +303,9 @@ Sort (Match Score · Mais recentes…) · filtros de tabela · config de colunas
 
 ### 5.4 Por linha
 
-Nome, título/empresa atual, **badge de fonte** (Local/Pearch), **score** (match de vaga ou similaridade), status de contato (revelado/bloqueado), **⭐ favoritar** (§9), ação "adicionar à lista" (§8).
+Nome, título/empresa atual, **badge de fonte** (Local/Pearch), **score** (match de vaga ou similaridade), status de contato (revelado/bloqueado), **👍/✖ feedback de busca** (Like/Dislike — §5.8), **⭐ favoritar** (§9), ação "adicionar à lista" (§8).
+
+> ⚠️ **Não confundir** os dois marcadores por linha: **⭐ Favoritar** (§9, bookmark privado persistido por usuário) é **diferente** de **👍/✖ Like/Dislike** (§5.8, sinal de qualidade que **calibra o ranking**). Detalhe e comparação completa em §5.8.
 
 ### 5.5 Candidatos descartados
 
@@ -287,6 +321,59 @@ Candidatos filtrados por falta de email/telefone (quando `require_*` ligado) **n
 - **Ocultar (`onHide`)** é por usuário/tenant: remove da visão atual sem apagar o candidato.
 - **WSI Screening em lote** dispara a triagem apenas para candidatos elegíveis do tenant (escopo `company_id`).
 - **Descartados nunca são silenciados** (§5.5): contagem sempre visível — transparência sobre o efeito dos filtros de contato.
+
+---
+
+## 5.8 Like / Dislike (Search Feedback)
+
+> **O que é:** um sinal **👍 Like / ✖ Dislike** por candidato, na própria linha do resultado, que diz à LIA *"este perfil é (ir)relevante para ESTA busca"*. Diferente de ⭐ Favoritar (bookmark) e de Ocultar/Descartar (sumir da visão), o feedback **calibra o ranking**: likes sobem, dislikes descem candidatos parecidos em buscas com os **mesmos critérios**.
+
+### 5.8.1 UI
+
+- Componente: `plataforma-lia/src/components/search/SearchFeedbackButtons.tsx` — **👍 `ThumbsUp` / ✖ `XCircle`** por linha, com **update otimista** (pinta o estado antes da resposta e reverte em erro).
+- Renderizado na coluna `"feedback"` da tabela via `CandidateTableCellRenderer.tsx`.
+- POST para o proxy `POST /api/backend-proxy/search/feedback` (→ backend `POST /api/v1/search/feedback/`).
+- Na **re-hidratação** de uma busca (reabrir do Histórico / re-executar), o front chama `GET /api/backend-proxy/search/feedback/by-search?fingerprint=…` e re-pinta os 👍/✖ que o recrutador já deu **para aquele conjunto de critérios**.
+
+### 5.8.2 Endpoints (`search_feedback.py`, prefix `/search/feedback`)
+
+| Método | Rota | Função |
+|---|---|---|
+| `POST` | `/search/feedback/` | Cria/alterna/remove o feedback (toggle — ver 5.8.4). Body: `candidate_id`, `feedback_type` (`like`\|`dislike`), `search_fingerprint?`, `job_id?`, `search_query?`, `candidate_score?`, `candidate_name?`, `reason?` |
+| `GET` | `/search/feedback/by-search?fingerprint=` | Re-hidratação: `{ feedbacks: {candidate_id: feedback_type}, total }` do usuário para aquele fingerprint |
+| `GET` | `/search/feedback/user/all?job_id=` | Todos os feedbacks do usuário (opcionalmente por vaga) |
+| `GET` | `/search/feedback/{job_id}` | Feedbacks de uma vaga + agregados `{likes, dislikes}` |
+| `DELETE` | `/search/feedback/{feedback_id}` | Remove um feedback do próprio usuário |
+
+### 5.8.3 Tabela `search_feedbacks`
+
+Modelo: `lia-agent-system/app/models/search_feedback.py` (`libs/models/lia_models/search_feedback.py`). Colunas-chave: `id`, **`company_id`** (RLS), `candidate_id`, `job_id?`, `user_id`, `search_query?`, **`search_fingerprint?`**, `feedback_type` (`like`\|`dislike`), `candidate_score?`, `candidate_name?`, `reason?`, timestamps.
+- **RLS por `company_id`:** migração `222_add_company_id_rls_search_feedbacks` (deny-by-default; `company_id` casa `app_current_company_id()::text`).
+- **Ancoragem por fingerprint:** migração `225_add_search_fingerprint_to_search_feedbacks` adiciona `search_fingerprint` (a "Fase 2"). O fingerprint = `SHA256[:32]` dos **critérios da busca** (query + filtros), gerado no backend (`_generate_search_fingerprint`). É isso que faz o like **valer para aquele contexto de busca**, não globalmente.
+
+### 5.8.4 Lógica de toggle (idempotente por usuário+candidato)
+
+O `POST` resolve o estado existente por **`user_id` + `candidate_id` (+`job_id`)** e decide (`search_feedback.py:48-80`):
+- **Mesmo tipo** do que já existe → **remove** (`{action: "removed"}`). Clicar 👍 de novo desfaz o 👍.
+- **Tipo diferente** → **alterna** (`{action: "toggled"}`). De 👍 para ✖ atualiza no lugar.
+- **Não existia** → **cria** (`{action: "created"}`).
+
+> ⚠️ **Nuance importante:** o toggle é chaveado por `user_id+candidate_id+job_id`, **enquanto a re-hidratação (`/by-search`)** é chaveada por `user_id+search_fingerprint`. Ou seja: o feedback é gravado por candidato, mas **reapresentado por contexto de busca**.
+
+### 5.8.5 Efeito no ranking (+2.5 / −2.5) e o loop adaptativo
+
+- `LIAScoreService._get_calibration_adjustment` aplica **+2.5 pts por like** e **−2.5 pts por dislike**, com a calibração total **capada em ±5** (`lia_score_service.py`). Os feedbacks do contexto atual entram via `load_search_feedback_for_ranking` (resolvendo pelo mesmo fingerprint).
+- **Loop adaptativo (`ml_feedback_service`):** acumula o histórico de feedback para derivar `compute_calibration_adjustment` e `compute_job_weights` (ajuste de pesos por vaga, faixa **±30%**) — ou seja, com volume, a plataforma aprende **quais critérios** o recrutador valoriza naquela vaga e re-pondera o ranking, não só soma ±2.5 por candidato.
+- ⚠️ `app/shared/services/ml_feedback_service.py` é um **shim** que delega para `app/domains/analytics/services` (ver §19, dupla implementação).
+
+### 5.8.6 📋 Favoritos × Like/Dislike × Ocultar/Descartados (não confundir)
+
+| Mecanismo | O que faz | Persistência | Escopo | Impacto no ranking |
+|---|---|---|---|---|
+| **⭐ Favoritos** (§9) | Bookmark de candidatos de interesse | Backend (`favorites`/Rails) | Por usuário, tenant-gated | **Nenhum** (só organiza) |
+| **👍/✖ Like/Dislike** (§5.8) | Sinal de qualidade do resultado | Backend (`search_feedbacks`, RLS) | Por usuário, ancorado ao **fingerprint** | **Sim:** ±2.5 (cap ±5) + loop adaptativo (pesos ±30%) |
+| **Ocultar (`onHide`)** (§5.7) | Some da visão atual | Por usuário/tenant | Sessão/visão | Remove da lista (não recalibra) |
+| **Descartados** (§5.5) | Filtrados por falta de contato (`require_*`) | `candidate_searches.discarded_candidates` (JSONB) | Por busca | Excluídos do resultado (regra de honestidade, não preferência) |
 
 ---
 
@@ -380,12 +467,74 @@ A troca para Híbrida/Global **abre modal de confirmação de custo** (`AlertDia
 
 ## 11. Ranking & scoring
 
-1. **Similaridade vetorial (pgvector):** `1 - (embedding <=> :embedding::vector)` (cosine) — `hybrid_search_service.py:173,256`.
-2. **Hybrid score:** `alpha * vector_score + (1-alpha) * text_score` — `hybrid_search_service.py:87-89`.
-3. **WRF (Weighted Reciprocal Fusion):** `score = Σ [ weight_i / (k + rank_i) ]`, `k=60` default e **dinâmico por confiança** (`wrf_dynamic_k_service.py`). Alta confiança → peso semântico 0.65; baixa → textual 0.70.
-4. **Classificação de vaga por LLM (post-filter):** `LLMJobClassificationService` (Gemini Flash) marca `COMPATIBLE`/`INCOMPATIBLE`; fallback heurístico por `INCOMPATIBLE_AREAS`.
-5. **Corte de relevância:** `EsScoreDropAnalyzer` (tolerância por `qualification_level`: 40%/55%/70%).
-6. **Rubric scoring (quando há `job_id`/JD):** `Exceeds=95`, `Meets=75`, `Partial=40`, `Missing=0`; pesos `Essential=3×`, `Important=2×`, `Nice=1×`. `Score = Σ(peso×pontos) / Σ(peso×95) × 100`, cap 99.
+> **Pipeline ponta-a-ponta:** o texto vira candidatos rankeados em **6 estágios**. Os estágios 1–4 são **busca/fusão** (sempre rodam); o estágio 6 (**BARS/rubric**) **só roda quando há `job_id`/JD**. Cada estágio tem parâmetros reais abaixo — replicar exige portar os números, não só o conceito.
+
+```mermaid
+flowchart TD
+    Q[query + search_spec] --> A[1. Transformação<br/>embedding + full-text + filtros]
+    A --> B[2. Fetch local + Pearch<br/>threshold 0.75 · loop de emails]
+    B --> C[3. Fusão WRF<br/>alpha + k dinâmicos]
+    C --> D[4. Classificação LLM<br/>compatível? + fallback heurístico]
+    D --> E[5. Corte de relevância<br/>EsScoreDropAnalyzer]
+    E -->|tem job_id/JD| F[6. BARS / rubric<br/>match score 0-99]
+    E -->|sem job_id| G[ranking por hybrid/similaridade]
+    F --> R[tabela de resultados]
+    G --> R
+```
+
+### 11.1 Estágio 1 — Transformação do texto (query → sinais)
+
+A mesma query alimenta **três representações** combinadas no estágio de fusão:
+- **Semântica (pgvector):** embedding da query; similaridade = `1 - (embedding <=> :embedding::vector)` (cosine). **Threshold semântico padrão `0.75`** (`rag_pipeline_service.py` — `_DEFAULT_SEMANTIC_THRESHOLD`); só entram candidatos com `similaridade >= 0.75`.
+- **Textual (full-text/BM25-like):** `ts_rank` com `plainto_tsquery` sobre `name + summary + skills`.
+- **Filtros estruturados:** o `search_spec` (entidades das tags, §4.1) vira `EXISTS`/`IN`/`ILIKE`/`overlap` (`pearch_service.py::search_local_candidates`) — ex.: `industries` por operador de sobreposição, `funding_stages`/`institution_tiers`/`timezones` por subquery.
+
+### 11.2 Estágio 2 — Fetch local + Pearch + dedup
+
+- **Local:** RAG híbrido (semântica + textual) sobre PostgreSQL/pgvector + Elasticsearch.
+- **Pearch (se `search_pearch=true`):** quando `require_emails` está ligado, roda o **loop de completude** `_accumulate_pearch_with_emails` (`pearch_service.py`): pagina com `docid_blacklist` + `thread_id` até atingir o `target` de candidatos **com email**, buscando `page_limit = min(max(restantes×2, 5), 50)` por página (compensa a atrição do filtro). Guardas: `SEARCH_HYBRID_EMAIL_MAX_PAGES` e `SEARCH_HYBRID_EMAIL_LOOP_DEADLINE_SECONDS`.
+- **Dedup:** `_dedup_pearch_against_local` + suppression de até **500 docids** (§4.6e).
+
+### 11.3 Estágio 3 — Fusão (alpha dinâmico + WRF com k dinâmico)
+
+**Hybrid score (blend semântico×textual):** `hybrid_score = alpha × semantic + (1-alpha) × bm25`. O **`alpha` é dinâmico por tipo de termo** (`rag_pipeline_service.py::_detect_query_type`):
+
+| Tipo de query | alpha (peso semântico) | Racional |
+|---|---|---|
+| Tech/cargo (keywords técnicas) | **0.3** (BM25 domina) | termo exato importa mais |
+| Comportamental | **0.7** (semântica domina) | intenção/contexto importam |
+| Default | **0.5** | equilíbrio |
+
+**WRF (Weighted Reciprocal Fusion)** funde os rankings ES × pgvector: `score = w_es × 1/(k + rank_es) + w_pgv × 1/(k + rank_pgv)` (`wrf_dynamic_k_service.py:107-109`). **Pesos por `qualification_level`:** alta → ES 0.6 / PGV 0.4; média → 0.5 / 0.5; baixa → ES 0.4 / PGV 0.6.
+
+**`k` é dinâmico** (controla recall × precisão; base: alta=25, média=45, baixa=70):
+- **Precisão (↓ k):** se `top_avg >= 0.75` → `k = max(10, base×0.7)`; também reduz se o cluster é apertado (`spread < 0.05`).
+- **Recall (↑ k):** se `top_avg <= 0.35` → `k = min(100, base×1.4)`.
+
+### 11.4 Estágio 4 — Classificação de compatibilidade por LLM
+
+`LLMJobClassificationService` (**Gemini Flash** via `generate_with_fallback`) marca cada candidato `compatible: true/false` (post-filter). **Fallback heurístico** `_heuristic_check` por `INCOMPATIBLE_AREAS` (ex.: bloqueia `saúde × tecnologia`) por detecção de área via keywords — usado quando o LLM falha.
+
+### 11.5 Estágio 5 — Corte de relevância (`EsScoreDropAnalyzer`)
+
+`es_analyzer.py` corta a cauda irrelevante por **dois critérios**:
+- **Drop adaptativo:** mantém quem tem `score >= top_score × (1 - threshold)`, com `threshold` por `qualification_level` — **alta 40% · média 55% · baixa 70%**.
+- **Queda abrupta:** se a diferença entre dois candidatos vizinhos no ranking ultrapassa `média + 2σ`, fixa o `steep_drop_index` como corte (se for mais restritivo que o adaptativo).
+
+### 11.6 Estágio 6 — BARS / rubric scoring (**só com `job_id`/JD**)
+
+> 🎯 **Onde BARS se aplica:** **avaliação de CV contra os requisitos de uma vaga** (fluxo JD ou busca com `job_id`). Produz o **Match Score (0–99)** + `match_summary`. **Onde NÃO se aplica:** a busca textual/semântica inicial (estágios 1–3), a fusão WRF, e os scores de **WSI / comportamental / cultural fit** — que são pipelines **separados** (§ `lia_score_service` faz o ranking unificado combinando rubricas, WSI, prereq e recência com pesos distintos).
+
+`RubricEvaluationService` (`rubric_evaluation_service.py`) usa **BARS (Behaviorally Anchored Rating Scale)**:
+- **Escala (pontos):** `Exceeds=100` · `Meets=75` · `Partial=40` · `Missing=0`.
+- **Peso por prioridade:** `Essential=3×` · `Important=2×` · `Nice-to-have=1×`.
+- **Multiplicador por evidência:** `Explícita=1.0` · `Implícita=0.7` · `Inferida=0.3`.
+- **Fórmula:** `Score = Σ(pontos × evidência × prioridade) / Σ(100 × prioridade) × 100`, **cap 99.0** (100 fica reservado a override manual). Falhar um requisito **Essential** zera o score (exclusão).
+- **Regra "DO NOT INFER"** (`:335-342`): o avaliador não inventa o que não está no CV; override do recrutador via `strict_filters=false` ou ajuste do `search_spec`.
+
+### 11.7 Ranking unificado (LIA Score) e calibração por feedback
+
+Quando há dados, `LIAScoreService` combina os sinais num **Ranking Score** ponderado por **disponibilidade de dados** (`rubricas/wsi/big_five/prereq/recency`) × `completeness_factor`, e aplica um **ajuste de calibração** (faixa **−5 a +5**) que **inclui o like/dislike do recrutador** (§5.8): `+2.5` por like, `−2.5` por dislike (`load_search_feedback_for_ranking` + `_get_calibration_adjustment`). Detalhe do efeito e do loop adaptativo (`ml_feedback_service`) em **§5.8**.
 
 ## 12. Integrações externas (Pearch + Apify)
 
@@ -513,6 +662,10 @@ A troca para Híbrida/Global **abre modal de confirmação de custo** (`AlertDia
 | 19 | Add de perfil externo → **`ConvertToCandidateJob`** | Listas | perfil externo vira Candidate | `list_relationship_job.rb` |
 | 20 | Compartilhar via **token** (`SharedSearch`) | Listas/Share | acesso por link | `shared_search.rb:27` |
 | 21 | Favoritos **per-user**, `UniqueConstraint(candidate_id,user_id)`, pin primeiro | Favoritos | marcador privado | `candidate_favorites_repository.py:72,84` |
+| 22 | Assistência: **só o ghost text (`enhance-prompt`) usa LLM**; autocomplete/tags/completude são **determinísticos** (dicionário/regex/contagem) | Busca Natural | matar a suposição de "tudo é IA preditiva" | `search_assistant.py:345,494`, `misc_search.py:291` |
+| 23 | **BARS/rubric só com `job_id`/JD** (Match 0–99, cap 99); não roda na busca textual/semântica nem no WSI | Ranking (JD) | escopo correto do rubric | `rubric_evaluation_service.py` |
+| 24 | **Like/Dislike calibra o ranking** (+2.5/−2.5, cap ±5) + loop adaptativo (pesos ±30%); ancorado por **fingerprint** | Resultados/Ranking | feedback do recrutador re-pondera busca | `lia_score_service.py`, `search_feedback.py` |
+| 25 | Feedback de busca: **toggle por `user_id+candidate_id+job_id`**, re-hidratação por `user_id+fingerprint`; RLS por `company_id` | Resultados | sinal por candidato, reapresentado por contexto | `search_feedback.py:48-101`, migrações 222/225 |
 
 ## 18. Checklist de replicação em outro ambiente
 
@@ -535,9 +688,12 @@ A troca para Híbrida/Global **abre modal de confirmação de custo** (`AlertDia
 - 🟡 **`search_pearch` default `false`** no lib (`candidate-search.ts:234`) — Híbrida/Global precisam ligar explicitamente, senão a busca vira Local silenciosamente.
 - 🟡 **Saldo insuficiente não bloqueia** (#2): replicar isso significa aceitar custo de fornecedor não debitado — decida a política.
 - 🟡 **Tamanho da base Pearch inconsistente:** UI afirma **800M+** (`SSIModeNatural.tsx:185-186`), log de health cita **190M+** (`candidates_search.py:216`). Alinhar a fonte do número.
+- 🟡 **Autocomplete parece "IA preditiva", mas é determinístico** (dicionário/prefixo, §4.1.1). A UI sugere inteligência contextual; na prática só o ghost text (`enhance-prompt`) usa LLM. Decidir se a expectativa de produto bate com a implementação (ou investir em autocomplete realmente contextual).
+- 🟡 **Dupla implementação de serviços** — alguns serviços têm cópia em `app/shared/services` (shim) e a implementação real em `app/domains/*/services` (ex.: `ml_feedback_service` → `app/domains/analytics/services`; padrão similar em `cv_screening`). Definir a **fonte-da-verdade** ao replicar para não portar o shim achando que é a lógica.
+- 🟡 **Feedback de busca: toggle por candidato, re-hidratação por fingerprint** (§5.8.4) — chaves diferentes. Um like dado numa busca aparece re-hidratado **só** em buscas com o **mesmo fingerprint** (mesmos critérios); mudou o filtro, muda o fingerprint e o like não reaparece (embora continue gravado por candidato). Confirmar se é o comportamento desejado de produto.
 - 🟢 **LinkedIn ≠ fonte selecionável:** é Apify por baixo, só como fallback de circuit breaker.
 - 🟢 **`candidate_searches` é RLS-EXEMPT** (metadado per-user) — intencional; confirme que os candidatos apontados continuam guardados por `company_id`.
 
 ---
 
-*Documento de handoff — escopo: tipos de busca + abas de gestão (Histórico, Buscas Salvas, Listas, Favoritos), agora com regras de negócio detalhadas por funcionalidade (§4.6, §5.7, §6.1, §7.1, §8.1, §9.1) e quadro-resumo consolidado (§17). Banco de Talentos será adicionado quando finalizado.*
+*Documento de handoff — escopo: tipos de busca + abas de gestão (Histórico, Buscas Salvas, Listas, Favoritos), agora com regras de negócio detalhadas por funcionalidade (§4.6, §5.7, §6.1, §7.1, §8.1, §9.1), a mecânica determinística-vs-LLM da camada de assistência (§4.1.1), o pipeline de ranking ponta-a-ponta com parâmetros reais (§11), o Like/Dislike (Search Feedback, §5.8) e o quadro-resumo consolidado (§17). Banco de Talentos será adicionado quando finalizado.*
