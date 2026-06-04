@@ -16,7 +16,8 @@ import {
   Send, Bell, Palette, Lightbulb, TrendingDown, Activity, RotateCcw,
   ChevronLeft, FastForward, SkipForward, RefreshCw, Zap as Lightning,
   MousePointer, Compass, HelpCircle, Rocket,
-  ChevronDown, ChevronUp, Lock, Unlock, Circle, Plug, Shield
+  ChevronDown, ChevronUp, Lock, Unlock, Circle, Plug, Shield,
+  PanelLeftClose, PanelLeftOpen
 } from"lucide-react"
 
 const SECTION_ICON_COLORS: Record<string, string> = {
@@ -356,32 +357,38 @@ export default function SettingsPageEnhanced() {
   const [overallProgress, setOverallProgress] = useState<number>(0)
   const [progressLoading, setProgressLoading] = useState<boolean>(true)
   
-  const [isCollapsed, setIsCollapsed] = useState(true)
+  // `isCollapsed` é a PREFERÊNCIA EXPLÍCITA de repouso da barra (rail só de
+  // ícones vs. expandida). É a única coisa que persiste — o hover passou a ser
+  // apenas uma prévia temporária (`isPeeking`) que NUNCA grava em localStorage.
   // Init determinístico (igual no SSR e no primeiro render do cliente) para
-  // evitar hydration mismatch. A preferência de "fixado" salva em localStorage
-  // é aplicada após a montagem, no useEffect abaixo — nunca no primeiro render.
+  // evitar hydration mismatch: a preferência salva é aplicada após a montagem,
+  // no useEffect abaixo — nunca no primeiro render.
+  const [isCollapsed, setIsCollapsed] = useState(true)
   const [isLocked, setIsLocked] = useState(false)
+  // Prévia temporária por hover — não persiste. Só tem efeito quando a barra
+  // está em repouso recolhida e o hover está habilitado (não fixada).
+  const [isPeeking, setIsPeeking] = useState(false)
 
   useEffect(() => {
     try {
       const saved = localStorage.getItem('settings-sidebar-locked')
-      if (saved === null) {
-        // Primeira visita: abre a barra fixada para reduzir custo de descoberta.
+      const savedCollapsed = localStorage.getItem('settings-sidebar-collapsed')
+      if (saved === null && savedCollapsed === null) {
+        // Primeira visita: abre a barra expandida e fixada para reduzir custo
+        // de descoberta.
         setIsLocked(true)
         setIsCollapsed(false)
       } else {
-        setIsLocked(saved === 'true')
-        // Restaura a última largura escolhida (recolhida vs expandida) por hover,
-        // independente do lock — mesmo padrão de `settings-sidebar-locked`.
-        const savedCollapsed = localStorage.getItem('settings-sidebar-collapsed')
-        if (savedCollapsed !== null) {
-          setIsCollapsed(savedCollapsed === 'true')
-        }
+        if (saved !== null) setIsLocked(saved === 'true')
+        // Restaura a escolha explícita de recolhido vs. expandido feita pelo
+        // usuário (toggle dedicado), independente do lock.
+        if (savedCollapsed !== null) setIsCollapsed(savedCollapsed === 'true')
       }
     } catch {}
   }, [])
 
   const toggleLocked = useCallback(() => {
+    setIsPeeking(false)
     setIsLocked(prev => {
       const next = !prev
       try { localStorage.setItem('settings-sidebar-locked', String(next)) } catch {}
@@ -389,22 +396,25 @@ export default function SettingsPageEnhanced() {
     })
   }, [])
 
-  const expandSettings = useCallback(() => {
-    setIsCollapsed(false)
-    try { localStorage.setItem('settings-sidebar-collapsed', 'false') } catch {}
-  }, [])
-  const collapseSettings = useCallback(() => {
-    setIsCollapsed(true)
-    try { localStorage.setItem('settings-sidebar-collapsed', 'true') } catch {}
+  // Toggle EXPLÍCITO de recolher/expandir — define a preferência de repouso e
+  // persiste. Diferente do hover (prévia), esta escolha é estável entre sessões.
+  const toggleCollapsed = useCallback(() => {
+    setIsPeeking(false)
+    setIsCollapsed(prev => {
+      const next = !prev
+      try { localStorage.setItem('settings-sidebar-collapsed', String(next)) } catch {}
+      return next
+    })
   }, [])
 
   const {
     handleMouseEnter: handleSettingsMouseEnter,
     handleMouseLeave: handleSettingsMouseLeave,
   } = useHoverDebounce({
-    onExpand: expandSettings,
-    onCollapse: collapseSettings,
-    isEnabled: !isLocked,
+    onExpand: () => setIsPeeking(true),
+    onCollapse: () => setIsPeeking(false),
+    // Hover só faz prévia quando a barra está em repouso recolhida e não fixada.
+    isEnabled: !isLocked && isCollapsed,
   })
 
 
@@ -607,14 +617,17 @@ export default function SettingsPageEnhanced() {
     }
   }
 
-  const shouldShowContent = !isCollapsed || isLocked
+  // Largura real da barra: expande quando o repouso é expandido OU quando há
+  // prévia de hover (peek). `isPeeking` só é true quando recolhida + não fixada.
+  const isRailExpanded = !isCollapsed || isPeeking
+  const shouldShowContent = isRailExpanded
 
   return (
     <>
     <div className="flex h-screen bg-lia-bg-primary dark:bg-lia-bg-primary overflow-hidden">
       <aside 
         className={`
-          ${isCollapsed && !isLocked ? 'w-16' : 'w-64'}
+          ${isRailExpanded ? 'w-64' : 'w-16'}
           transition-[width,colors] duration-300 ease-in-out motion-reduce:transition-none
           flex-shrink-0
         `}
@@ -622,8 +635,8 @@ export default function SettingsPageEnhanced() {
         onMouseLeave={handleSettingsMouseLeave}
       >
         <Card className="h-full m-3 border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary backdrop-blur-sm rounded-xl overflow-hidden flex flex-col">
-          <div className={`p-4 dark:border-lia-border-subtle ${isCollapsed && !isLocked ? 'px-2' : ''}`}>
-            <div className="flex items-center gap-3 mb-4">
+          <div className={`p-4 dark:border-lia-border-subtle ${!isRailExpanded ? 'px-2' : ''}`}>
+            <div className={`flex items-center gap-3 mb-4 ${!shouldShowContent ? 'flex-col' : ''}`}>
               <div className="w-10 h-10 bg-lia-bg-tertiary dark:bg-lia-bg-elevated text-lia-text-primary rounded-lg flex items-center justify-center flex-shrink-0">
                 <Settings className="w-5 h-5" />
               </div>
@@ -634,15 +647,44 @@ export default function SettingsPageEnhanced() {
                   </h1>
                 </div>
               )}
-              {shouldShowContent && (
+              {shouldShowContent ? (
+                <div className="flex items-center gap-1 flex-shrink-0">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={toggleCollapsed}
+                    className="h-6 w-6 p-0"
+                    data-testid="settings-sidebar-collapse-toggle"
+                    aria-label={isCollapsed ? "Expandir menu" : "Recolher menu para ícones"}
+                    title={isCollapsed ? "Expandir menu" : "Recolher menu para ícones"}
+                  >
+                    {isCollapsed
+                      ? <PanelLeftOpen className="w-3 h-3" />
+                      : <PanelLeftClose className="w-3 h-3" />}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={toggleLocked}
+                    className="h-6 w-6 p-0"
+                    data-testid="settings-sidebar-lock-toggle"
+                    aria-label={isLocked ? "Desbloquear menu (permitir prévia ao passar o mouse)" : "Fixar menu (sem prévia ao passar o mouse)"}
+                    title={isLocked ? "Desbloquear menu (permitir prévia ao passar o mouse)" : "Fixar menu (sem prévia ao passar o mouse)"}
+                  >
+                    {isLocked ? <Lock className="w-3 h-3" /> : <Unlock className="w-3 h-3" />}
+                  </Button>
+                </div>
+              ) : (
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={toggleLocked}
+                  onClick={toggleCollapsed}
                   className="h-6 w-6 p-0 flex-shrink-0"
-                  title={isLocked ?"Desbloquear menu" :"Bloquear menu expandido"}
+                  data-testid="settings-sidebar-collapse-toggle"
+                  aria-label="Expandir menu"
+                  title="Expandir menu"
                 >
-                  {isLocked ? <Lock className="w-3 h-3" /> : <Unlock className="w-3 h-3" />}
+                  <PanelLeftOpen className="w-3 h-3" />
                 </Button>
               )}
             </div>

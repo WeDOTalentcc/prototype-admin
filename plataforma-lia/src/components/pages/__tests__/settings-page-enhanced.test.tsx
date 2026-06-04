@@ -516,3 +516,69 @@ describe("SettingsPageEnhanced — grupos visuais da sidebar", () => {
     }
   })
 })
+
+// ── 6. Toggle explícito de recolher/expandir (Task #1279) ─────────────────
+//
+// A barra agora tem um controle dedicado de "recolher para ícones" separado do
+// lock. A ESCOLHA EXPLÍCITA (toggle) é o que persiste em localStorage; o hover
+// é só uma prévia temporária. Estes testes blindam:
+//   - existência do toggle dedicado (separado do lock);
+//   - clicar recolhe e persiste em `settings-sidebar-collapsed`;
+//   - a escolha de recolhido salva é respeitada em sessões seguintes.
+
+describe("SettingsPageEnhanced — toggle explícito de recolher/expandir", () => {
+  beforeEach(() => {
+    try {
+      localStorage.clear()
+    } catch {}
+  })
+  afterEach(() => {
+    try {
+      localStorage.clear()
+    } catch {}
+  })
+
+  it("expõe um toggle dedicado de recolher, separado do lock", async () => {
+    render(<SettingsPageEnhanced />)
+    await screen.findByTestId("hub-minha-empresa")
+
+    expect(screen.getByTestId("settings-sidebar-collapse-toggle")).toBeInTheDocument()
+    expect(screen.getByTestId("settings-sidebar-lock-toggle")).toBeInTheDocument()
+  })
+
+  it("clicar no toggle recolhe a barra e persiste a escolha explícita", async () => {
+    const user = userEvent.setup()
+    render(<SettingsPageEnhanced />)
+    await screen.findByTestId("hub-minha-empresa")
+
+    const collapseToggle = screen.getByTestId("settings-sidebar-collapse-toggle")
+    expect(collapseToggle.getAttribute("aria-label")).toBe("Recolher menu para ícones")
+
+    await user.click(collapseToggle)
+
+    await waitFor(() => {
+      expect(localStorage.getItem("settings-sidebar-collapsed")).toBe("true")
+    })
+    // Recolhida → o toggle passa a oferecer "Expandir menu".
+    await waitFor(() => {
+      expect(
+        screen.getByTestId("settings-sidebar-collapse-toggle").getAttribute("aria-label"),
+      ).toBe("Expandir menu")
+    })
+  })
+
+  it("respeita a escolha de recolhido salva em sessões anteriores", async () => {
+    localStorage.setItem("settings-sidebar-locked", "true")
+    localStorage.setItem("settings-sidebar-collapsed", "true")
+
+    render(<SettingsPageEnhanced />)
+    await screen.findByTestId("hub-minha-empresa")
+
+    // Em repouso recolhida, o toggle dedicado oferece "Expandir menu".
+    await waitFor(() => {
+      expect(
+        screen.getByTestId("settings-sidebar-collapse-toggle").getAttribute("aria-label"),
+      ).toBe("Expandir menu")
+    })
+  })
+})
