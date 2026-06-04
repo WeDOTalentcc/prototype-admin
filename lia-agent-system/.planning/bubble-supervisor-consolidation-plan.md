@@ -158,3 +158,51 @@ agent_chat_sse/ws — eles devem convergir para este produtor.
   (88c6bce27) a confirmar live.
 - Depois: FASE 3 (agent_chat_ws, +HITL/wizard_stage/plan_progress) e FASE 4/5 (validar
   live, flag default on, aposentar CascadedRouter->1-agente).
+
+
+---
+
+## AUDITORIA DO PONTO DE INSERCAO — item 6 (agent_chat_sse) (2026-06-04, read-only)
+
+Estrutura do `event_generator()` em agent_chat_sse.py (handler sse_chat_stream, L237):
+- setup L236-318: auth, injection guard, fairness, PII strip, `active_domain`, `context`
+  (company_id/user_id/conversation_id/_raw_user_message).
+- `_route_domain_async` L339-365: **wizard pin** (L347 should_pin_to_wizard -> "wizard")
+  OU CascadedRouter (L357) -> resolved_domain.
+- budget + routing em paralelo L367; subagent expand L382-390; tenant_context_snippet L392-414.
+- **RAMO WIZARD** L417-506: WizardSessionService -> serializa (panel_update + message) -> `return`.
+- **RAMO AGENTE** L508-665: `_get_agent(resolved_domain)` -> `_streaming_callback` (L521,
+  serializa token/token_done/tool_started/tool_finished/reasoning_step + alimenta sse_queue)
+  -> set `_llm_streaming_callback` ContextVar (L561) -> `_build_agent_input` (L563) ->
+  `agent.process` (L575) -> loop drain+keepalive (L595-665) -> serializa `output`
+  (output.message/.confidence/.actions[.dict()]/.navigation.dict()/.state_updates/
+  .metadata[panel_update,fairness_warnings,tokens_used]).
+
+### PONTO DE INSERCAO: L506->508 (apos wizard retornar, antes do ramo agente)
+Quando `LIA_BUBBLE_VIA_SUPERVISOR=true` (default OFF) e resolved_domain NAO e wizard,
+trocar o "cerebro": `MainOrchestrator.process` no lugar de `_get_agent + agent.process`.
+
+ABORDAGEM B (escolhida — coerente com a arquitetura da bolha):
+- `_run_orchestrator()` substitui `_run_agent()`: monta `UniversalContext`
+  (message=content, company_id, user_id, conversation_id=req.conversation_id or session_id,
+  tenant_context_snippet=context[...], view_context=context [P0.1 ganho]), abre
+  AsyncSessionLocal, chama `main_orch.process(ctx, db, streaming_callback=_streaming_callback)`,
+  poe `{"_done": True, "_orch_result": result}` na sse_queue.
+- REUSA o `_streaming_callback` da bolha (tokens/tools = item 4) + o loop drain+keepalive.
+- No `_done`, serializa via `_orchestrator_result_to_frames` (importado de chat.py — produtor
+  unico do item 1) com framing da bolha (format_sse_event + next_id).
+
+### Por que resolve outros itens de graca
+- **Wizard (#2/item5)**: pin acontece ANTES (L347) e o ramo wizard retorna (L506) -> o desvio
+  so pega caminho NAO-wizard. Sem divergencia, sem esforco.
+- **tool_* (#5/item4)**: `_streaming_callback` da bolha ja serializa tool_started/finished.
+- **view_context (P0.1)**: a bolha passa `context` (getPageContext do FE) -> agora vira
+  view_context do supervisor (hoje so ia pro agente roteado).
+
+### Riscos que SO validam LIVE (headless nao roda domain agents/checkpointer)
+1. **Memoria/historico**: bolha passa `conversation_history=[]` (L569) e mantem estado via
+   checkpointer/thread; MainOrchestrator usa conversation_id+repo. Mapeio
+   `req.conversation_id or session_id`. Validar continuidade de conversa live.
+2. **Persistencia**: deixar o MainOrchestrator persistir (nao duplicar add_ai_message).
+3. **Roteamento/delegacao real**: so observavel no preview (Paulo) + /tmp/lia-backend-stdout.log.
+Por isso: flag default OFF, TDD cobre apenas o DESVIO (mock do main_orch), validacao = Fase 4.
