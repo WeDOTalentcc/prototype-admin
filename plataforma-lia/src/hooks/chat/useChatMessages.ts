@@ -369,6 +369,21 @@ export function useChatMessages({
       const pageContext = getPageContext();
       Object.assign(context, pageContext);
 
+      // SSE-e2e Fase C (2026-06-04): atrás da flag NEXT_PUBLIC_CHAT_TRANSPORT=sse,
+      // roteia o turno por SSE ponta-a-ponta (POST /chat/{id}/stream) para tokens +
+      // tool_started/finished ao vivo. Flag ausente/off = comportamento atual
+      // (WS/REST) 100% intocado. Reversível removendo a flag no Secret.
+      if (process.env.NEXT_PUBLIC_CHAT_TRANSPORT === "sse") {
+        sendMessageViaSSE(
+          sessionId,
+          content,
+          domain || "recruiter_assistant",
+          context,
+          conversationId,
+        );
+        return;
+      }
+
       if (isConnected && transportMode === "ws") {
         // Task #383 (F2): tira snapshot do tick ANTES do send. Se nenhum evento
         // WS chegar dentro do timeout, caímos pro REST + bolha de aviso.
