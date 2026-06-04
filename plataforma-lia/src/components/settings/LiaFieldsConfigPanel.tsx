@@ -363,7 +363,7 @@ export function LiaFieldsConfigPanel() {
             </button>
           </div>
 
-          <div className="rounded-md bg-gray-50 border border-gray-100 px-3 py-2 mb-2 text-xs text-gray-500">
+          <div className="rounded-md bg-lia-bg-secondary border border-lia-border-subtle px-3 py-2 mb-2 text-xs text-lia-text-tertiary">
             <ToggleBadge type="prompt" />{" "}
             quando ativado, este campo é enviado como contexto para a IA.{" "}
             Desativar oculta o dado do sistema de IA.

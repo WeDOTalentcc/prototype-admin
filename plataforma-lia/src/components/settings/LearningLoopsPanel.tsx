@@ -394,7 +394,7 @@ export function LearningLoopsPanel() {
           </div>
         )}
 
-        <div className="rounded-md bg-gray-50 border border-gray-100 px-3 py-2 mb-4 text-xs text-gray-500">
+        <div className="rounded-md bg-lia-bg-secondary border border-lia-border-subtle px-3 py-2 mb-4 text-xs text-lia-text-tertiary">
           <ToggleBadge type="gate" />{" "}
           funcionalidade desativada completamente quando desligado.{" "}
           A IA não pode usar este recurso.
