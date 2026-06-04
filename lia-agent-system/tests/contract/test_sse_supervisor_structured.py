@@ -158,3 +158,19 @@ def test_chatpage_path_unchanged(monkeypatch):
     assert not any(
         f.get("type") in ("message", "clarification", "approval_required") for f in frames
     ), "sem emit_structured, chat-page nao deve receber frames estruturados novos"
+
+
+def test_build_supervisor_context_maps_conversation_and_view_context():
+    # Fase 2 item 6: helper puro que monta o UniversalContext para rotear a bolha
+    # pelo MainOrchestrator. conversation_id mapeado; view_context = context da bolha.
+    ctx = chat_mod._build_supervisor_context(
+        content="oi",
+        context={"foo": "bar", "tenant_context_snippet": "T"},
+        company_id="c1",
+        user_id="u1",
+        conversation_id="conv-9",
+    )
+    assert ctx.conversation_id == "conv-9"
+    assert ctx.company_id == "c1"
+    assert ctx.view_context == {"foo": "bar", "tenant_context_snippet": "T"}
+    assert ctx.tenant_context_snippet == "T"
