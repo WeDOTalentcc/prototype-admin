@@ -942,6 +942,21 @@ def _orchestrator_result_to_frames(result, conversation_id):
     return frames
 
 
+def _build_supervisor_context(*, content, context, company_id, user_id, conversation_id):
+    """Fase 2 item 6 (consolidacao bolha->supervisor): monta o UniversalContext
+    para rotear a bolha pelo MainOrchestrator. view_context recebe o context da
+    bolha (getPageContext do FE) -> P0.1 passa a valer na bolha tambem. Puro."""
+    _ctx = context or {}
+    return UniversalContext(
+        message=content,
+        user_id=user_id or "",
+        company_id=company_id,
+        conversation_id=conversation_id,
+        tenant_context_snippet=_ctx.get("tenant_context_snippet", "") or "",
+        view_context=_ctx,
+    )
+
+
 async def _sse_via_orchestrator(
     conversation_id: str,
     user_message: str,

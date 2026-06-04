@@ -49,7 +49,7 @@ const CATEGORY_BADGE: Record<string, string> = {
   user_management: "bg-wedo-purple/10 text-wedo-purple",
   authentication: "bg-muted text-muted-foreground",
   configuration: "bg-status-warning/10 text-status-warning",
-  ai_decision: "bg-cyan-100 text-cyan-800",
+  ai_decision: "bg-wedo-magenta/10 text-wedo-magenta",
 }
 
 export function AuditLogsDrillDownClientPanel() {

@@ -505,10 +505,15 @@ company_id: str = Depends(require_company_id)):
             if _wizard_handled:
                 return
 
+        import os as _os_bvs
+        _bubble_via_supervisor = _os_bvs.getenv(
+            "LIA_BUBBLE_VIA_SUPERVISOR", "false"
+        ).lower() in ("true", "1")
+
         from app.api.v1.agent_chat_ws import _get_agent, _build_agent_input
 
-        agent = _get_agent(resolved_domain)
-        if agent is None:
+        agent = None if _bubble_via_supervisor else _get_agent(resolved_domain)
+        if not _bubble_via_supervisor and agent is None:
             yield format_sse_event(
                 serialize_error(f"Agente '{resolved_domain}' indisponível.", "agent_unavailable"),
                 next_id(),
@@ -560,17 +565,47 @@ company_id: str = Depends(require_company_id)):
         from app.domains.ai.services.llm import _llm_streaming_callback
         _llm_stream_token = _llm_streaming_callback.set(_streaming_callback)
 
-        agent_input = _build_agent_input(
-            content=content,
-            context=context,
-            session_id=session_id,
-            company_id=company_id,
-            user_id=user_id,
-            conversation_history=[],
-        )
+        async def _run_via_supervisor():
+            # Fase 2 item 6: bolha roteada pro MainOrchestrator (LIA_BUBBLE_VIA_SUPERVISOR).
+            # Reusa _streaming_callback (tokens/tools) + o loop drain+keepalive abaixo.
+            try:
+                from app.api.v1.chat import _build_supervisor_context
+                from app.core.database import AsyncSessionLocal
+                from app.orchestrator.execution.main_orchestrator import (
+                    get_main_orchestrator,
+                )
+
+                _sup_ctx = _build_supervisor_context(
+                    content=content,
+                    context=context,
+                    company_id=company_id,
+                    user_id=user_id,
+                    conversation_id=req.conversation_id or session_id,
+                )
+                async with AsyncSessionLocal() as _orch_db:
+                    _result = await asyncio.wait_for(
+                        get_main_orchestrator().process(
+                            _sup_ctx, _orch_db, streaming_callback=_streaming_callback
+                        ),
+                        timeout=_AGENT_TIMEOUT,
+                    )
+                await sse_queue.put({"_done": True, "_orch_result": _result})
+            except TimeoutError:
+                await sse_queue.put({"_done": True, "_error": "timeout"})
+            except Exception as exc:
+                logger.error("[SSEChat] Supervisor error session=%s: %s", session_id, exc, exc_info=True)
+                await sse_queue.put({"_done": True, "_error": str(exc)})
 
         async def _run_agent():
             try:
+                agent_input = _build_agent_input(
+                    content=content,
+                    context=context,
+                    session_id=session_id,
+                    company_id=company_id,
+                    user_id=user_id,
+                    conversation_history=[],
+                )
                 output = await asyncio.wait_for(
                     agent.process(agent_input),
                     timeout=_AGENT_TIMEOUT,
@@ -582,7 +617,9 @@ company_id: str = Depends(require_company_id)):
                 logger.error("[SSEChat] Agent error session=%s: %s", session_id, exc, exc_info=True)
                 await sse_queue.put({"_done": True, "_error": str(exc)})
 
-        agent_task = asyncio.create_task(_run_agent())
+        agent_task = asyncio.create_task(
+            _run_via_supervisor() if _bubble_via_supervisor else _run_agent()
+        )
 
         # Garantir reset do ContextVar quando task encerrar (success/error/cancel)
         def _cleanup_stream_ctx(_t):
@@ -614,6 +651,14 @@ company_id: str = Depends(require_company_id)):
                             serialize_error("Erro interno ao processar sua mensagem."),
                             next_id(),
                         )
+                    elif item.get("_orch_result") is not None:
+                        # Fase 2 item 6: serializa o ChatResponse do MainOrchestrator
+                        # via produtor unico (paridade com o ramo agente).
+                        from app.api.v1.chat import _orchestrator_result_to_frames
+                        for _frame in _orchestrator_result_to_frames(
+                            item["_orch_result"], req.conversation_id
+                        ):
+                            yield format_sse_event(_frame, next_id())
                     else:
                         output = item["_output"]
                         tokens_used = output.metadata.get("tokens_used", 0) if output.metadata else 0
