@@ -37,7 +37,7 @@ interface IntegrationStatusData {
   teams?: { configured?: boolean }
 }
 
-const ATS_PROVIDER_MAP: Record<string, string> = { gupy: "gupy", pandape: "pandape" }
+const ATS_PROVIDER_MAP: Record<string, string> = { gupy: "gupy", pandape: "pandape", merge: "merge" }  // P1-13 audit: merge e provider ATS valido (backend SUPPORTED_PROVIDERS)
 const AI_PROVIDER_MAP: Record<string, string> = { gemini: "gemini", claude: "claude", openai: "openai" }
 
 export function useIntegrationsData() {
