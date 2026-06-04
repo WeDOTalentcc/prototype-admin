@@ -838,9 +838,11 @@ class PipelineStuckDetector(BaseDetector):
             logger.warning("PipelineStuckDetector import failed: %s", exc)
             return []
 
-        try:
-            company_uuid = UUID(company_id)
-        except ValueError:
+        # JobVacancy.company_id é String(255) (Python-owned table) — filtrar como
+        # string canônica. Converter p/ UUID quebrava o operador varchar=uuid no
+        # Postgres, caía no except e o detector NUNCA disparava (mesmo bug do
+        # AICreditsLowDetector, Task #1296/#1302). Ver lia_models/job_vacancy.py.
+        if not isinstance(company_id, str) or not company_id:
             return []
 
         stuck_days = cfg.threshold if cfg.threshold is not None else self.STUCK_DAYS
@@ -849,7 +851,7 @@ class PipelineStuckDetector(BaseDetector):
         try:
             result = await db.execute(
                 select(JobVacancy).where(
-                    JobVacancy.company_id == company_uuid,
+                    JobVacancy.company_id == company_id,
                     JobVacancy.status.in_(["screening", "triagem", "in_progress"]),
                     JobVacancy.updated_at <= cutoff,
                 ).limit(10)
