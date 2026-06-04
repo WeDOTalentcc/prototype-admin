@@ -46,6 +46,7 @@ const ConsumoHub = dynamic(() => import("@/components/settings/ConsumoHub").then
 const LiaPersonalizacaoHub = dynamic(() => import("@/components/settings/LiaPersonalizacaoHub").then(m => ({ default: m.LiaPersonalizacaoHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando LIA..." /> })
 
 import { textStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip"
 import { useHoverDebounce } from '@/lib/sidebar/useHoverDebounce'
 import { ErrorBoundarySection } from"@/components/ui/error-boundary-section"
 import { useCompanyId } from"@/hooks/company/useCompanyId"
@@ -589,7 +590,8 @@ export default function SettingsPageEnhanced() {
           </div>
 
           <div className="flex-1 overflow-y-auto p-3">
-            <nav className="space-y-0">
+            <TooltipProvider delayDuration={150}>
+            <nav className="space-y-0" aria-label="Configurações">
               {(() => {
                 const grouped = SECTION_GROUPS.map(g => ({
                   ...g,
@@ -611,16 +613,16 @@ export default function SettingsPageEnhanced() {
                         }
                       </button>
                     )}
-                    {expandedGroups.has(grp.id) && grp.sections.map((section) => {
+                    {(!shouldShowContent || expandedGroups.has(grp.id)) && grp.sections.map((section) => {
                 const IconComponent = section.icon
                 const isExpanded = expandedSections.has(section.id)
                 const isActive = activeSection === section.id
 
-                return (
-                  <div key={section.id}>
+                const sectionButton = (
                     <button
                       data-testid={`settings-menu-${section.id}`}
                       data-active={isActive && !activeSubsection}
+                      aria-label={section.title}
                       onClick={() => {
                         setActiveSection(section.id)
                         setActiveSubsection('')
@@ -632,8 +634,7 @@ export default function SettingsPageEnhanced() {
                         isActive && !activeSubsection
                           ? 'bg-lia-bg-tertiary dark:bg-lia-bg-elevated text-lia-text-primary'
                           : 'hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse/50 text-lia-text-secondary'
-                      } ${isCollapsed && !isLocked ? 'justify-center' : ''}`}
-                      title={isCollapsed && !isLocked ? section.title : ''}
+                      } ${!shouldShowContent ? 'justify-center' : ''}`}
                     >
                       <IconComponent className={`w-4 h-4 flex-shrink-0 ${SECTION_ICON_COLORS[section.id] || ''}`} />
                       {shouldShowContent && (
@@ -657,6 +658,16 @@ export default function SettingsPageEnhanced() {
                         </>
                       )}
                     </button>
+                )
+
+                return (
+                  <div key={section.id}>
+                    {shouldShowContent ? sectionButton : (
+                      <Tooltip>
+                        <TooltipTrigger asChild>{sectionButton}</TooltipTrigger>
+                        <TooltipContent side="right">{section.title}</TooltipContent>
+                      </Tooltip>
+                    )}
 
                     {shouldShowContent && isExpanded && section.subsections && (
                       <div className="ml-6 mt-1 space-y-1 border-l-2 border-lia-border-subtle dark:border-lia-border-subtle pl-2">
@@ -695,6 +706,7 @@ export default function SettingsPageEnhanced() {
                 ))
               })()}
             </nav>
+            </TooltipProvider>
 
           </div>
         </Card>
