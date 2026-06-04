@@ -6652,6 +6652,15 @@
           "communication_channels": "Canais de Comunicação",
           "import_spreadsheet": "Importar Planilha"
         }
+      },
+      "cultureApproval": {
+        "title": "Perfil de cultura gerado automaticamente — pendente de aprovação",
+        "description": "Este perfil foi extraído do site por IA e ainda não foi revisado. Aprove para a LIA usá-lo no contexto dos agentes, ou rejeite para mantê-lo fora.",
+        "approve": "Aprovar",
+        "reject": "Rejeitar",
+        "approvedToast": "Perfil de cultura aprovado — a LIA já pode usá-lo.",
+        "rejectedToast": "Perfil de cultura rejeitado — segue fora do contexto dos agentes.",
+        "errorToast": "Não foi possível atualizar a aprovação. Tente novamente."
       }
     },
     "minhaEmpresaCard": {

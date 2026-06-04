@@ -6652,6 +6652,15 @@
           "communication_channels": "Communication Channels",
           "import_spreadsheet": "Import Spreadsheet"
         }
+      },
+      "cultureApproval": {
+        "title": "Auto-generated culture profile — pending approval",
+        "description": "This profile was extracted from your website by AI and hasn't been reviewed yet. Approve it so LIA can use it in agent context, or reject to keep it out.",
+        "approve": "Approve",
+        "reject": "Reject",
+        "approvedToast": "Culture profile approved — LIA can use it now.",
+        "rejectedToast": "Culture profile rejected — it stays out of agent context.",
+        "errorToast": "Couldn't update approval. Please try again."
       }
     },
     "minhaEmpresaCard": {
