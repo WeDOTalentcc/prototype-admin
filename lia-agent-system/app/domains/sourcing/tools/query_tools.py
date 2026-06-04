@@ -30,6 +30,37 @@ def _extract_context(kwargs: dict[str, Any]) -> Optional["ToolExecutionContext"]
     return kwargs.pop("_context", None)
 
 
+def _format_search_candidates_result(candidates_list: list, applied_filters: dict) -> dict:
+    """P0.2 (autocorrecao 0-resultados): formata resultado de search_candidates.
+
+    Em 0-resultados, anexa sinal ESTRUTURADO de relaxamento via
+    build_empty_result_guidance (produtor unico, reuso) -> a LIA relaxa 1 filtro e
+    oferece opcoes, nunca beco sem saida (REGRA 4). Funcao PURA -> testavel sem DB.
+    """
+    if not candidates_list:
+        from app.orchestrator.context.empty_result_guidance import (
+            build_empty_result_guidance,
+        )
+        g = build_empty_result_guidance("candidato", applied_filters)
+        return {
+            "success": True,
+            "message": g.get("guidance")
+            or "Nenhum candidato encontrado com esses criterios.",
+            "data": {"total": 0, "candidates": [], **g},
+        }
+    return {
+        "success": True,
+        "message": f"✅ Encontrados {len(candidates_list)} candidatos.",
+        "data": {
+            "total": len(candidates_list),
+            "candidates": candidates_list,
+            "filters_applied": {
+                k: v for k, v in (applied_filters or {}).items() if v not in (None, "", [], {})
+            },
+        },
+    }
+
+
 async def search_candidates(
     skills: list[str] | None = None,
     min_experience_years: int | None = None,
@@ -160,21 +191,15 @@ async def search_candidates(
                 }
                 candidates_list.append(candidate_data)
             
-            return {
-                "success": True,
-                "message": f"✅ Encontrados {len(candidates_list)} candidatos.",
-                "data": {
-                    "total": len(candidates_list),
-                    "candidates": candidates_list,
-                    "filters_applied": {
-                        "skills": skills,
-                        "seniority": seniority,
-                        "min_score": min_score,
-                        "location": location,
-                        "status": status
-                    }
-                }
-            }
+            return _format_search_candidates_result(candidates_list, {
+                "skills": skills,
+                "seniority": seniority,
+                "min_score": min_score,
+                "location": location,
+                "status": status,
+                "min_experience_years": min_experience_years,
+                "language": language,
+            })
             
     except Exception as e:
         logger.error(f"❌ Error searching candidates: {e}", exc_info=True)
