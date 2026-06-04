@@ -884,6 +884,64 @@ async def _sse_event_generator(
 
 
 
+def _orchestrator_result_to_frames(result, conversation_id):
+    """Fase 2 (consolidacao bolha->supervisor): serializa os campos ricos do
+    ChatResponse do MainOrchestrator em frames de evento, para paridade com a
+    bolha (agent_chat_sse/ws). Helper puro -- sem I/O.
+
+    Mapeia: actions/fairness_warnings/ui_action -> frame `message` rico;
+    needs_params -> `clarification`; needs_confirmation -> `approval_required`.
+    """
+    from app.shared.chat_event_serializer import serialize_message
+
+    def _get(name, default=None):
+        if isinstance(result, dict):
+            return result.get(name, default)
+        return getattr(result, name, default)
+
+    content = _get("content", "") or _get("message", "") or ""
+    actions = _get("actions") or []
+    fairness = _get("fairness_warnings") or []
+    ui_action = _get("ui_action")
+    navigation = None
+    if ui_action:
+        navigation = {
+            "ui_action": ui_action,
+            "ui_action_params": _get("ui_action_params") or {},
+        }
+
+    frames: list[dict] = [
+        serialize_message(
+            content=content,
+            confidence=float(_get("confidence", 0.0) or 0.0),
+            domain=_get("agent_used", "") or "",
+            source="orchestrator",
+            actions=actions or None,
+            navigation=navigation,
+            fairness_warnings=fairness or None,
+            conversation_id=conversation_id,
+        )
+    ]
+    if _get("needs_params"):
+        frames.append(
+            {
+                "type": "clarification",
+                "question": content,
+                "options": _get("suggested_prompts") or [],
+            }
+        )
+    if _get("needs_confirmation"):
+        frames.append(
+            {
+                "type": "approval_required",
+                "pending_id": _get("pending_action_id") or "",
+                "description": content,
+                "action": _get("action_type") or "",
+            }
+        )
+    return frames
+
+
 async def _sse_via_orchestrator(
     conversation_id: str,
     user_message: str,
@@ -897,9 +955,18 @@ async def _sse_via_orchestrator(
     company_id: str = "",
     tenant_context_snippet: str = "",
     view_context: "dict[str, Any] | None" = None,
+    emit_structured: bool = False,
 ) -> AsyncGenerator[str, None]:
-    """Fase 3: SSE via MainOrchestrator (unified pipeline) — LIA-P05."""
+    """Fase 3: SSE via MainOrchestrator (unified pipeline) — LIA-P05.
+
+    emit_structured=True (caminho bolha, Fase 2 consolidacao): serializa os
+    campos ricos do ChatResponse (message/clarification/approval_required) e
+    repassa tool_started/finished/reasoning_step/panel_update. Default False
+    mantem o chat-page intocado (so token/[DONE]/error).
+    """
     import asyncio as _asyncio
+
+    from app.shared.chat_event_serializer import serialize_token
 
     main_orch = get_main_orchestrator()
     sse_queue: _asyncio.Queue = _asyncio.Queue()
@@ -910,9 +977,19 @@ async def _sse_via_orchestrator(
         if ev_type == "token" and event.get("content"):
             token = event["content"]
             full_response_parts.append(token)
-            await sse_queue.put({"token": token})
+            await sse_queue.put(
+                serialize_token(token) if emit_structured else {"token": token}
+            )
         elif ev_type == "token_done":
             await sse_queue.put({"_token_done": True})
+        elif emit_structured and ev_type in (
+            "tool_started",
+            "tool_finished",
+            "reasoning_step",
+            "panel_update",
+        ):
+            # Pass-through P0.3 activity stream + paineis emitidos pelo orchestrator.
+            await sse_queue.put(event)
 
     ctx = UniversalContext(
         message=user_message,
@@ -947,16 +1024,26 @@ async def _sse_via_orchestrator(
                 yield f"data: {json.dumps({'error': item['_error']})}\n\n"
                 return
             if "_done" in item:
+                result_obj = item.get("_result")
                 if not full_response_parts:
-                    result_obj = item.get("_result")
+                    # Bug fix: ChatResponse expoe `.content` (main_orchestrator.py),
+                    # nao `.message` — o fallback antigo emitia vazio sem streaming.
                     text = ""
-                    if result_obj and hasattr(result_obj, "message"):
-                        text = result_obj.message or ""
-                    elif isinstance(result_obj, dict):
-                        text = result_obj.get("message", "")
+                    if isinstance(result_obj, dict):
+                        text = result_obj.get("content") or result_obj.get("message") or ""
+                    elif result_obj is not None:
+                        text = (
+                            getattr(result_obj, "content", "")
+                            or getattr(result_obj, "message", "")
+                            or ""
+                        )
                     if text:
-                        yield f"data: {json.dumps({'token': text})}\n\n"
+                        _tok = serialize_token(text) if emit_structured else {"token": text}
+                        yield f"data: {json.dumps(_tok, ensure_ascii=False)}\n\n"
                         full_response_parts.append(text)
+                if emit_structured and result_obj is not None:
+                    for _frame in _orchestrator_result_to_frames(result_obj, conversation_id):
+                        yield f"data: {json.dumps(_frame, ensure_ascii=False)}\n\n"
                 break
             if "_token_done" in item:
                 continue
