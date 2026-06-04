@@ -26,13 +26,13 @@ export function SignatureTab({
   return (
     <div className="space-y-4">
       {successMessage && (
-        <div className="px-2 py-1.5 rounded-xl flex items-center gap-2 bg-status-success/15 border border-status-success/30 text-status-success dark:bg-status-success dark:border-status-success/30 dark:text-status-success">
+        <div className="px-2 py-1.5 rounded-full flex items-center gap-2 bg-status-success/15 border border-status-success/30 text-status-success dark:bg-status-success dark:border-status-success/30 dark:text-status-success">
           <CheckCircle className="w-3.5 h-3.5 text-status-success dark:text-status-success" />
           <span className="text-xs">{successMessage}</span>
         </div>
       )}
       {error && (
-        <div className="bg-status-error/10 border border-status-error/30 text-status-error px-2 py-1.5 rounded-xl flex items-center gap-2">
+        <div className="bg-status-error/10 border border-status-error/30 text-status-error px-2 py-1.5 rounded-full flex items-center gap-2">
           <AlertCircle className="w-3.5 h-3.5" />
           <span className="text-xs">{error}</span>
         </div>
@@ -76,7 +76,7 @@ export function SignatureTab({
               onChange={(e) => setSignature(e.target.value)}
               rows={5}
               disabled={!isEditingSignature}
-              className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary focus:ring-2 focus:outline-none font-mono disabled:bg-lia-bg-secondary disabled:text-lia-text-secondary"
+              className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary focus:ring-2 focus:outline-none font-mono disabled:bg-lia-bg-secondary disabled:text-lia-text-secondary"
             />
           </div>
           <div>

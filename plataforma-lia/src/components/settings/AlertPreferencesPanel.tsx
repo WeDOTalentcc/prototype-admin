@@ -91,7 +91,7 @@ export function AlertPreferencesPanel() {
       {/* Success banner */}
       {successFor && (
         <div
-          className="px-2 py-1.5 rounded-xl flex items-center gap-2 bg-status-success/15 border border-status-success/30 text-status-success"
+          className="px-2 py-1.5 rounded-full flex items-center gap-2 bg-status-success/15 border border-status-success/30 text-status-success"
           role="status"
         >
           <CheckCircle className="w-3.5 h-3.5" />
@@ -102,7 +102,7 @@ export function AlertPreferencesPanel() {
       {/* Error banner — explicit per REGRA 4 (no silent fallback) */}
       {(loadError || saveError) && (
         <div
-          className="bg-status-error/10 border border-status-error/30 text-status-error px-2 py-1.5 rounded-xl flex items-center gap-2"
+          className="bg-status-error/10 border border-status-error/30 text-status-error px-2 py-1.5 rounded-full flex items-center gap-2"
           role="alert"
           data-testid="alert-preferences-error"
         >

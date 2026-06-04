@@ -66,13 +66,13 @@ export function TemplatesTab({
   return (
     <div className="space-y-4">
       {successMessage && (
-        <div className="px-2 py-1.5 rounded-xl flex items-center gap-2 bg-status-success/10 border border-status-success/30 text-status-success dark:bg-status-success/20 dark:border-status-success/30 dark:text-status-success">
+        <div className="px-2 py-1.5 rounded-full flex items-center gap-2 bg-status-success/10 border border-status-success/30 text-status-success dark:bg-status-success/20 dark:border-status-success/30 dark:text-status-success">
           <CheckCircle className="w-4 h-4" />
           <span>{successMessage}</span>
         </div>
       )}
       {error && (
-        <div className="bg-status-error/10 border border-status-error/30 text-status-error px-2 py-1.5 rounded-xl flex items-center gap-2">
+        <div className="bg-status-error/10 border border-status-error/30 text-status-error px-2 py-1.5 rounded-full flex items-center gap-2">
           <AlertCircle className="w-4 h-4" />
           <span>{error}</span>
         </div>
@@ -80,7 +80,7 @@ export function TemplatesTab({
 
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h3 className={textStyles.h4}>{t("title")}</h3>
+          <h3 className={textStyles.h2}>{t("title")}</h3>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3">
@@ -183,7 +183,7 @@ export function TemplatesTab({
                       <AccordionTrigger className="px-3 py-2.5 hover:no-underline hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover/50">
                         <div className="flex items-center gap-2 text-left">
                           <span className="text-lg">{group.icon}</span>
-                          <span className="text-xs font-semibold text-lia-text-primary">{group.label}</span>
+                          <span className={textStyles.subtitle}>{group.label}</span>
                           <Chip variant="neutral" className="text-micro ml-1">{groupTemplates.length}</Chip>
                         </div>
                       </AccordionTrigger>
@@ -250,7 +250,7 @@ export function TemplatesTab({
             {selectedTemplate ? (
               <>
                 <div className="flex items-center justify-between">
-                  <h3 className={textStyles.h4}>{editingTemplate ? t("editingTemplate") : t("viewing")}</h3>
+                  <h3 className={textStyles.h3}>{editingTemplate ? t("editingTemplate") : t("viewing")}</h3>
                   <div className="flex items-center gap-2">
                     {editingTemplate ? (
                       <>
@@ -279,13 +279,13 @@ export function TemplatesTab({
                   <CardContent className="p-3 space-y-3">
                     {channelFilter === 'email' && (
                       <div>
-                        <label className="block text-micro font-medium text-lia-text-secondary mb-1">{t("subjectLabel")}</label>
+                        <label className={`block ${textStyles.labelSmall} mb-1`}>{t("subjectLabel")}</label>
                         {editingTemplate ? (
                           <input
                             type="text"
                             value={editingTemplate.subject}
                             onChange={(e) => setEditingTemplate(prev => prev ? { ...prev, subject: e.target.value } : null)}
-                            className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary focus:ring-2 focus:outline-none"
+                            className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary focus:ring-2 focus:outline-none"
                           />
                         ) : (
                           <p className="text-xs text-lia-text-primary bg-lia-bg-secondary rounded-full px-2 py-1.5">{selectedTemplate.subject}</p>
@@ -294,7 +294,7 @@ export function TemplatesTab({
                     )}
                     <div>
                       <div className="flex items-center justify-between mb-1">
-                        <label className="block text-micro font-medium text-lia-text-secondary">
+                        <label className={`block ${textStyles.labelSmall}`}>
                           {channelFilter === 'email' ? t("emailBodyLabel") : t("whatsappMessageLabel")}
                         </label>
                         {editingTemplate && (
@@ -307,7 +307,7 @@ export function TemplatesTab({
                           value={editingTemplate.body}
                           onChange={(e) => setEditingTemplate(prev => prev ? { ...prev, body: e.target.value } : null)}
                           rows={10}
-                          className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary focus:ring-2 focus:outline-none font-mono"
+                          className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary focus:ring-2 focus:outline-none font-mono"
                         />
                       ) : channelFilter === 'whatsapp' ? (
                         <div className="rounded-md p-3 bg-whatsapp-bg">
@@ -329,7 +329,7 @@ export function TemplatesTab({
                       )}
                     </div>
                     <div>
-                      <label className="block text-micro font-medium text-lia-text-secondary mb-1">{t("availableVariables")}</label>
+                      <label className={`block ${textStyles.labelSmall} mb-1`}>{t("availableVariables")}</label>
                       <div className="flex flex-wrap gap-1">
                         {selectedTemplate.variables.map((v) => (
                           <Chip key={v} variant="neutral" className="text-micro font-mono rounded-full border-lia-border-default text-lia-text-primary dark:border-lia-border-default">
@@ -361,7 +361,7 @@ export function TemplatesTab({
                           onKeyDown={(e) => e.key === 'Enter' && !isGenerating && aiPrompt.trim() && handleAdjustWithAI()}
                           placeholder={t("aiPlaceholder")}
                           disabled={isGenerating}
-                          className="flex-1 px-3 py-2 text-xs border border-lia-border-subtle rounded-xl bg-lia-bg-primary focus:ring-2 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg focus:outline-none disabled:bg-lia-bg-secondary disabled:text-lia-text-tertiary dark:bg-lia-bg-secondary dark:border-lia-border-subtle dark:focus:ring-lia-border-subtle/10 dark:focus:border-lia-border-subtle"
+                          className="flex-1 px-3 py-2 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg focus:outline-none disabled:bg-lia-bg-secondary disabled:text-lia-text-tertiary dark:bg-lia-bg-secondary dark:border-lia-border-subtle dark:focus:ring-lia-border-subtle/10 dark:focus:border-lia-border-subtle"
                         />
                         <Button
                           onClick={handleAdjustWithAI}
@@ -442,8 +442,8 @@ export function TemplatesTab({
                         </div>
                       </CardContent>
                       <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle p-4 flex items-center justify-end gap-3">
-                        <Button variant="outline" onClick={handleCancelAIAdjustment} className="rounded-xl px-4 py-2 text-xs">{t("cancel")}</Button>
-                        <Button onClick={handleConfirmAIAdjustment} className="rounded-xl px-4 py-2 text-xs gap-1.5 hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active">
+                        <Button variant="outline" onClick={handleCancelAIAdjustment} className="px-4 py-2 text-xs">{t("cancel")}</Button>
+                        <Button onClick={handleConfirmAIAdjustment} className="px-4 py-2 text-xs gap-1.5 hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active">
                           <Check className="w-3.5 h-3.5" />
                           {t("applyAdjustments")}
                         </Button>
