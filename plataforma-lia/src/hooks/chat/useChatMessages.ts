@@ -36,6 +36,8 @@ export interface UseChatMessagesOptions {
     domain?: string,
     context?: Record<string, unknown>,
     conversationId?: string | null,
+    // 0.3a: callback de fallback SSE->REST ao esgotar retries.
+    onExhausted?: () => void,
   ) => void;
   /** Task #383 (F2): tick contador de eventos WS — usado pelo watchdog que cai
    *  pra REST quando o `wsSend` é aceito mas nenhum evento chega de volta. */
