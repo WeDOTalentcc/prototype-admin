@@ -6,7 +6,6 @@ import { Copy, Plus, ThumbsUp, ThumbsDown, RotateCcw } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { PlanProgressCard, type ExecutionPlanData } from "@/components/chat/plan-progress-card"
 import FlowStepMessage from "@/components/unified-chat/FlowStepMessage"
-import { ThinkingStepsCard } from "./ThinkingStepsCard"
 import { AgentActivityTimeline } from "./AgentActivityTimeline"
 import { AgentActivitySummary } from "./AgentActivitySummary"
 import { OutreachCard } from "./OutreachCard"
@@ -333,6 +332,18 @@ export function UnifiedMessageList({
     enabled: _newestLiaId != null,
   })
 
+  // Live activity lifecycle (2026-06-04): decouple the timeline's mount from the
+  // raw isThinking/isStreaming flags. They flip to false the instant the
+  // `message` event lands, which used to yank the live timeline mid-turn (hard
+  // cut). We turn `liveActive` ON when the turn starts and let the timeline tell
+  // us when it has finished its graceful terminal frame (`onFinished`), so the
+  // box settles into "✓ N ações" and hands off to the persistent summary instead
+  // of disappearing abruptly.
+  const [liveActive, setLiveActive] = useState(false)
+  useEffect(() => {
+    if (isThinking || isStreaming) setLiveActive(true)
+  }, [isThinking, isStreaming])
+
   return (
     <div
       ref={containerRef}
@@ -404,13 +415,18 @@ export function UnifiedMessageList({
                   />
                 )}
 
-                {/* Agent activity summary (Fase 3 / Gap #3) — persistente */}
+                {/* Agent activity summary (Fase 3 / Gap #3) — persistente.
+                    Enquanto a timeline ao vivo ainda exibe o frame terminal
+                    "✓ N ações" da mensagem mais recente (liveActive), suprimimos
+                    o resumo no balão para não duplicar — ele assume o lugar
+                    assim que a timeline conclui o hand-off (onFinished). */}
                 {isLia &&
                   Array.isArray(
                     (meta as Record<string, unknown> | undefined)?.agent_activity,
                   ) &&
                   ((meta as Record<string, unknown>).agent_activity as unknown[])
-                    .length > 0 && (
+                    .length > 0 &&
+                  !(message.id === _newestLiaId && liveActive) && (
                     <AgentActivitySummary
                       items={
                         (meta as Record<string, unknown>).agent_activity as never
@@ -561,13 +577,18 @@ export function UnifiedMessageList({
       })}
 
       {/* Streaming indicator */}
-      {/* Live task feed (Manus) — cards um-a-um; persiste durante a resposta;
-          colapsa no AgentActivitySummary ao terminar o turno. */}
-      {(isThinking || isStreaming) && (
+      {/* Live task feed (Manus) — timeline única e contínua que morfa: pensa →
+          revela passos um-a-um (cadência adaptativa) → frame terminal
+          "✓ N ações" → conclui e cede ao AgentActivitySummary persistente.
+          `completed` dispara o encerramento gracioso (sem corte brusco);
+          `onFinished` desmonta a timeline só depois do hand-off. */}
+      {liveActive && (
         <div className="group">
           <AgentActivityTimeline
             fallbackSteps={thinkingSteps}
             showFallback={isThinking && !streamingContent}
+            completed={!isThinking && !isStreaming}
+            onFinished={() => setLiveActive(false)}
           />
         </div>
       )}

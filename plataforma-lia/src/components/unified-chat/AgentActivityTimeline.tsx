@@ -4,16 +4,26 @@
  * AgentActivityTimeline — live "what is the AI doing" feed (Fase 3, Manus-style).
  *
  * Subscribes to the decoupled `lia:agent-activity` window events emitted by
- * useChatSocket (Fase 1) and renders a rich timeline of tool calls as they run:
- * a spinner while a tool is running, ✓/✗ + duration when it finishes, and
- * reasoning step labels.
+ * useChatSocket (Fase 1) and renders ONE continuous, morphing timeline of the
+ * turn: a paced reveal of reasoning + tool steps while the agent works, then a
+ * graceful terminal "✓ N ações · Ts" frame that docks into the persistent
+ * AgentActivitySummary in the message bubble.
  *
- * 2026-06-04: reasoning steps are revealed one-by-one (paced) for the Manus
- * "constant movement" feel even when they arrive grouped; tools render
- * immediately (natural execution timing). `showFallback=false` makes it render
- * nothing when empty (so it can stay mounted alongside a streaming answer
- * without a stray spinner). The parent collapses it into AgentActivitySummary
- * ("N ações") once the turn completes.
+ * 2026-06-04 (timeline continuity pass): the four-box "substitution" feel is
+ * gone — a single container morphs through the whole lifecycle.
+ *
+ * - Reveal is a single adaptive-cadence queue (reasoning + tools): the more
+ *   steps are waiting, the faster they appear, so a grouped burst never loses
+ *   the race against the final answer, while a lone step still gets a calm beat.
+ * - Each step is shown exactly once in its current state, so sub-second tools no
+ *   longer flicker running → done; genuinely slow tools still animate spinner →
+ *   ✓ in place.
+ * - `completed` (driven by the parent on the `message` event) fast-forwards any
+ *   still-queued steps (nothing is lost), settles a lingering spinner, shows the
+ *   terminal frame, then fires `onFinished` after a short grace so the parent
+ *   unmounts gracefully instead of yanking the box mid-turn.
+ * - `showFallback=false` makes it render nothing when empty (so it can stay
+ *   mounted alongside a streaming answer without a stray spinner).
  */
 
 import React, { useEffect, useMemo, useRef, useState } from "react"
@@ -35,9 +45,26 @@ interface AgentActivityTimelineProps {
   /** When false and there are no items yet, render nothing (no stray spinner)
    *  — used while the answer is already streaming. Default true (back-compat). */
   showFallback?: boolean
+  /** Turn finished — drain remaining queued steps, settle a running spinner,
+   *  show the terminal "concluído" frame, then call onFinished after a short
+   *  grace. Optional so legacy callers (lia-float) keep the old live behavior. */
+  completed?: boolean
+  /** Fired once the terminal frame has shown, so the parent can unmount the live
+   *  timeline gracefully (instead of yanking it on the `message` event). */
+  onFinished?: () => void
 }
 
-const REASONING_REVEAL_MS = 450
+// Adaptive cadence (ms between reveals) keyed on how many steps are waiting.
+const REVEAL_SLOW_MS = 420
+const REVEAL_MID_MS = 240
+const REVEAL_FAST_MS = 110
+const FINISH_GRACE_MS = 750
+
+function revealDelay(queueLen: number): number {
+  if (queueLen > 6) return REVEAL_FAST_MS
+  if (queueLen > 3) return REVEAL_MID_MS
+  return REVEAL_SLOW_MS
+}
 
 function formatMs(ms: number): string {
   return ms >= 1000 ? `${(ms / 1000).toFixed(1)}s` : `${ms}ms`
@@ -46,91 +73,204 @@ function formatMs(ms: number): string {
 export function AgentActivityTimeline({
   fallbackSteps,
   showFallback = true,
+  completed = false,
+  onFinished,
 }: AgentActivityTimelineProps) {
   const t = useTranslations("chat.agentActivity")
   const locale = useLocale()
   const [items, setItems] = useState<ActivityItem[]>([])
-  const reasoningQueueRef = useRef<ActivityItem[]>([])
-  const drainTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const [phase, setPhase] = useState<"active" | "done">("active")
+
+  const queueRef = useRef<ActivityItem[]>([])
+  const seenToolIdsRef = useRef<Set<string>>(new Set())
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const finishTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const phaseRef = useRef<"active" | "done">("active")
+  const onFinishedRef = useRef(onFinished)
 
   useEffect(() => {
-    function startDrain() {
-      if (drainTimerRef.current) return
-      drainTimerRef.current = setInterval(() => {
-        const next = reasoningQueueRef.current.shift()
-        if (next) {
-          setItems((prev) => [...prev, next])
-        } else if (drainTimerRef.current) {
-          clearInterval(drainTimerRef.current)
-          drainTimerRef.current = null
+    onFinishedRef.current = onFinished
+  }, [onFinished])
+
+  useEffect(() => {
+    function drainOne() {
+      const next = queueRef.current.shift()
+      if (next) setItems((prev) => [...prev, next])
+      if (queueRef.current.length > 0) {
+        timerRef.current = setTimeout(
+          drainOne,
+          revealDelay(queueRef.current.length),
+        )
+      } else {
+        timerRef.current = null
+      }
+    }
+
+    function scheduleDrain() {
+      if (timerRef.current) return
+      timerRef.current = setTimeout(drainOne, revealDelay(queueRef.current.length))
+    }
+
+    function applyToolFinish(
+      id: string,
+      name: string,
+      status: "ok" | "error",
+      durationMs?: number,
+    ) {
+      // Still waiting in the queue → settle it there so it reveals already-done.
+      const queued = queueRef.current.find((i) => i.id === id)
+      if (queued) {
+        queued.status = status
+        queued.durationMs = durationMs
+        return
+      }
+      // Already visible → patch in place (spinner → ✓). Append if the finish
+      // somehow arrived without a start (defensive, never fake a missing step).
+      setItems((prev) => {
+        const idx = prev.findIndex((i) => i.id === id)
+        if (idx < 0) {
+          return [...prev, { id, kind: "tool", name, status, durationMs }]
         }
-      }, REASONING_REVEAL_MS)
+        const updated = [...prev]
+        updated[idx] = { ...updated[idx], status, durationMs }
+        return updated
+      })
     }
 
     function onActivity(e: Event) {
-      const detail = (e as CustomEvent).detail as Record<string, unknown> | undefined
+      const detail = (e as CustomEvent).detail as
+        | Record<string, unknown>
+        | undefined
       if (!detail || !detail.type) return
       const type = String(detail.type)
+
+      // Turn already concluded (terminal frame showing): drop late trailing
+      // events of THIS turn — the persistent AgentActivitySummary owns the final
+      // record, and resetting here would cancel the pending onFinished hand-off
+      // (stuck box). A genuinely NEW turn always flips `completed` true→false
+      // first, which fully resets us via the effect below before events arrive.
+      if (phaseRef.current === "done") return
+
       const id = String(detail.tool_id || detail.name || `${type}-${Date.now()}`)
       const name = String(detail.name || "tool")
 
       if (type === "reasoning_step") {
-        // Paced reveal — one card every REASONING_REVEAL_MS (constant movement).
-        reasoningQueueRef.current.push({
-          id: `reason-${id}-${reasoningQueueRef.current.length}`,
+        queueRef.current.push({
+          id: `reason-${id}-${queueRef.current.length}-${Date.now()}`,
           kind: "reasoning",
           name: String(detail.label || ""),
           status: "ok",
         })
-        startDrain()
+        scheduleDrain()
         return
       }
 
-      // Tools: immediate (natural execution timing — spinner → ✓).
-      setItems((prev) => {
-        if (type === "tool_started") {
-          if (prev.some((i) => i.id === id)) return prev
-          return [...prev, { id, kind: "tool", name, status: "running" }]
-        }
-        if (type === "tool_finished") {
-          const next: ActivityItem = {
-            id,
-            kind: "tool",
-            name,
-            status: detail.status === "error" ? "error" : "ok",
-            durationMs:
-              typeof detail.duration_ms === "number" ? detail.duration_ms : undefined,
-          }
-          const idx = prev.findIndex((i) => i.id === id)
-          if (idx >= 0) {
-            const updated = [...prev]
-            updated[idx] = next
-            return updated
-          }
-          return [...prev, next]
-        }
-        return prev
-      })
+      if (type === "tool_started") {
+        if (seenToolIdsRef.current.has(id)) return
+        seenToolIdsRef.current.add(id)
+        queueRef.current.push({ id, kind: "tool", name, status: "running" })
+        scheduleDrain()
+        return
+      }
+
+      if (type === "tool_finished") {
+        seenToolIdsRef.current.add(id)
+        applyToolFinish(
+          id,
+          name,
+          detail.status === "error" ? "error" : "ok",
+          typeof detail.duration_ms === "number"
+            ? (detail.duration_ms as number)
+            : undefined,
+        )
+        return
+      }
     }
 
     window.addEventListener("lia:agent-activity", onActivity)
     return () => {
       window.removeEventListener("lia:agent-activity", onActivity)
-      if (drainTimerRef.current) {
-        clearInterval(drainTimerRef.current)
-        drainTimerRef.current = null
+      if (timerRef.current) {
+        clearTimeout(timerRef.current)
+        timerRef.current = null
+      }
+      if (finishTimerRef.current) {
+        clearTimeout(finishTimerRef.current)
+        finishTimerRef.current = null
       }
     }
   }, [])
+
+  // Graceful conclusion / re-activation, driven by the parent `completed` flag.
+  useEffect(() => {
+    if (completed) {
+      if (phaseRef.current === "done") return
+      // Fast-forward: reveal everything still queued so no reasoning step is
+      // lost to the race with the final answer.
+      if (timerRef.current) {
+        clearTimeout(timerRef.current)
+        timerRef.current = null
+      }
+      if (queueRef.current.length > 0) {
+        const rest = queueRef.current.splice(0)
+        setItems((prev) => [...prev, ...rest])
+      }
+      // Settle any tool still spinning at turn end (no stuck spinner).
+      setItems((prev) =>
+        prev.some((i) => i.status === "running")
+          ? prev.map((i) =>
+              i.status === "running" ? { ...i, status: "ok" } : i,
+            )
+          : prev,
+      )
+      phaseRef.current = "done"
+      setPhase("done")
+      finishTimerRef.current = setTimeout(() => {
+        finishTimerRef.current = null
+        onFinishedRef.current?.()
+      }, FINISH_GRACE_MS)
+    } else {
+      // (Re)entering an active turn.
+      if (finishTimerRef.current) {
+        clearTimeout(finishTimerRef.current)
+        finishTimerRef.current = null
+      }
+      if (phaseRef.current === "done") {
+        // Coming out of a concluded turn — e.g. a rapid back-to-back send that
+        // flips `completed` true→false before the grace window ended. Full reset
+        // (items + queue + seen ids + pending reveal) so the previous turn's
+        // steps never bleed into the new one.
+        if (timerRef.current) {
+          clearTimeout(timerRef.current)
+          timerRef.current = null
+        }
+        queueRef.current = []
+        seenToolIdsRef.current.clear()
+        setItems([])
+        phaseRef.current = "active"
+        setPhase("active")
+      }
+    }
+  }, [completed])
 
   const toolCount = useMemo(
     () => items.filter((i) => i.kind === "tool").length,
     [items],
   )
+  const totalMs = useMemo(
+    () => items.reduce((sum, i) => sum + (i.durationMs || 0), 0),
+    [items],
+  )
 
   if (items.length === 0) {
-    return showFallback ? <ThinkingStepsCard steps={fallbackSteps} /> : null
+    // Empty: show the unified "thinking" fallback while genuinely working;
+    // render nothing once settled or while the answer already streams.
+    return showFallback && phase === "active" ? (
+      <ThinkingStepsCard steps={fallbackSteps} />
+    ) : null
   }
+
+  const isDone = phase === "done"
 
   return (
     <div
@@ -139,10 +279,19 @@ export function AgentActivityTimeline({
       aria-live="polite"
     >
       <div className="flex items-center gap-2 mb-2">
-        <Loader2 className="w-4 h-4 text-wedo-cyan animate-spin motion-reduce:animate-none shrink-0" />
+        {isDone ? (
+          <CheckCircle2 className="w-4 h-4 text-status-success shrink-0" />
+        ) : (
+          <Loader2 className="w-4 h-4 text-wedo-cyan animate-spin motion-reduce:animate-none shrink-0" />
+        )}
         <span className="text-xs font-medium text-lia-text-primary">
-          {t("working")}
-          {toolCount > 0 ? ` · ${t("actions", { count: toolCount })}` : ""}
+          {isDone
+            ? `${t("actions", { count: items.length })}${
+                totalMs > 0 ? ` · ${formatMs(totalMs)}` : ""
+              }`
+            : `${t("working")}${
+                toolCount > 0 ? ` · ${t("actions", { count: toolCount })}` : ""
+              }`}
         </span>
       </div>
 
