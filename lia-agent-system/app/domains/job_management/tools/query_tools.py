@@ -31,6 +31,38 @@ def _extract_context(kwargs: dict[str, Any]) -> Optional["ToolExecutionContext"]
     return kwargs.pop("_context", None)
 
 
+def _format_search_jobs_result(jobs_list: list, applied_filters: dict) -> dict:
+    """P0.2 (autocorrecao 0-resultados): formata resultado de search_jobs.
+
+    Em 0-resultados, anexa sinal ESTRUTURADO de relaxamento via
+    build_empty_result_guidance (helper puro) -> a LIA relaxa 1 filtro e oferece
+    opcoes com contagem, nunca beco sem saida (extensao da REGRA 4 anti-fallback
+    silencioso). Funcao PURA -> testavel sem DB.
+    """
+    if not jobs_list:
+        from app.orchestrator.context.empty_result_guidance import (
+            build_empty_result_guidance,
+        )
+        g = build_empty_result_guidance("vaga", applied_filters)
+        return {
+            "success": True,
+            "message": g.get("guidance")
+            or "Nenhuma vaga encontrada com esses criterios.",
+            "data": {"total": 0, "jobs": [], **g},
+        }
+    return {
+        "success": True,
+        "message": f"✅ Encontradas {len(jobs_list)} vagas.",
+        "data": {
+            "total": len(jobs_list),
+            "jobs": jobs_list,
+            "filters_applied": {
+                k: v for k, v in (applied_filters or {}).items() if v not in (None, "")
+            },
+        },
+    }
+
+
 async def search_jobs(
     status: str | None = None,
     department: str | None = None,
@@ -146,20 +178,15 @@ async def search_jobs(
                 }
                 jobs_list.append(job_data)
             
-            return {
-                "success": True,
-                "message": f"✅ Encontradas {len(jobs_list)} vagas.",
-                "data": {
-                    "total": len(jobs_list),
-                    "jobs": jobs_list,
-                    "filters_applied": {
-                        "status": status,
-                        "department": department,
-                        "seniority": seniority,
-                        "work_model": work_model
-                    }
-                }
-            }
+            return _format_search_jobs_result(jobs_list, {
+                "status": status,
+                "department": department,
+                "seniority": seniority,
+                "work_model": work_model,
+                "recruiter_id": recruiter_id,
+                "created_after": created_after,
+                "created_before": created_before,
+            })
             
     except Exception as e:
         logger.error(f"❌ Error searching jobs: {e}", exc_info=True)
