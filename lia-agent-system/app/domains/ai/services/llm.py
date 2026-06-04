@@ -49,6 +49,21 @@ Type: Optional[Callable[[dict], Awaitable[None]]]
 When set, _generate_with_tools_claude streams text deltas via callback({"type": "token", "content": delta}).
 """
 
+
+def _mask_stream_text(text: str) -> str:
+    """Mascara PII num chunk de texto streamado ANTES de ir ao cliente.
+    Masking no PRODUTOR (canonical-fix) → todo transporte (SSE/WS) sai seguro,
+    sem repetir fix-no-consumidor. DÉBITO: mask por-delta não pega PII que
+    atravessa fronteira de token; a resposta final é re-mascarada na camada JSON.
+    Fail-safe: em erro, retorna o texto original (nunca quebra o stream)."""
+    if not text:
+        return text
+    try:
+        from app.shared.pii_masking import mask_pii
+        return mask_pii(text)
+    except Exception:
+        return text
+
 # === Audit 2026-05-24 (P1 fix): cache em chamadas LLM tool-calling idempotentes ===
 # Reduz top-15 latencies de 5-13s para ~ms em cache hits. Safety: só cacheia
 # responses text-only (sem tool_calls — esses têm side effects e devem rodar
@@ -640,7 +655,7 @@ class LLMService:
                     async for text_delta in stream.text_stream:
                         if text_delta:
                             try:
-                                await _stream_cb({"type": "token", "content": text_delta})
+                                await _stream_cb({"type": "token", "content": _mask_stream_text(text_delta)})
                             except Exception as _cb_err:
                                 logger.warning(f"[LLM-STREAM] callback error (continuing): {_cb_err}")
                     final_message = await stream.get_final_message()
