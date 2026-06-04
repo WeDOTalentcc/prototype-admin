@@ -929,7 +929,7 @@ class CompanyUserResponse(BaseModel):
     role: str
     is_active: bool
     active_jobs_count: int
-    performance_score: int
+    performance_score: int | None = None  # P2-5: nao fabricar (era hash ficticio)
 
 
 class CompanyUsersListResponse(BaseModel):

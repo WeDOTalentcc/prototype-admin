@@ -377,7 +377,8 @@ company_id: str = Depends(require_company_id)):
         user_responses = []
         for user in users:
             active_jobs_count = jobs_by_email.get(user.email, 0)
-            performance_score = 85 + (hash(str(user.id)) % 15)
+            # P2-5: sem fonte real de performance — nao fabricar valor ficticio
+            performance_score = None
             user_responses.append(CompanyUserResponse(
                 id=str(user.id),
                 name=user.name,
