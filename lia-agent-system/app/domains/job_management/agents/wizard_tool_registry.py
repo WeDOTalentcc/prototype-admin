@@ -1652,6 +1652,151 @@ TOOL_DEFINITIONS.append(
     )
 )
 
+
+
+# === list_job_creation_sources (create-from-source agentic flow) ============
+# Recrutador: "criar vaga a partir de um modelo/vaga existente". A LIA usa
+# esta tool para listar as fontes candidatas (vagas existentes + arquetipos)
+# e desambiguar conversacionalmente. Requisito firme (Paulo): TODO item de
+# vaga inclui o ID e o recrutador (e gestor) para o recrutador identificar.
+@tool_handler("wizard")
+async def _wrap_list_job_creation_sources(**kwargs: Any) -> dict[str, Any]:
+    """Lista fontes para criar uma nova vaga: vagas existentes + arquetipos.
+
+    Multi-tenancy: company_id vem do ContextVar JWT (@tool_handler). NUNCA do
+    payload da LLM. Reusa repositorios canonical (ADR-001: zero SQL inline).
+
+    Cada item de vaga carrega obrigatoriamente id + recruiter (+ gestor) para
+    o recrutador desambiguar qual vaga clonar.
+    """
+    from app.core.database import AsyncSessionLocal
+    from app.domains.job_management.repositories.job_vacancy_crud_repository import (
+        JobVacancyCRUDRepository,
+    )
+    from app.domains.job_management.services.job_template_service import (
+        JobTemplateService,
+    )
+
+    company_id = kwargs.get("company_id")
+    if not company_id:
+        return {
+            "success": False,
+            "needs_manual_review": True,
+            "message": "company_id ausente do contexto JWT — operação bloqueada.",
+        }
+
+    query = (kwargs.get("query") or "").strip()
+
+    sources: list[dict[str, Any]] = []
+
+    async with AsyncSessionLocal() as db:
+        vac_repo = JobVacancyCRUDRepository(db)
+
+        # ── Vagas existentes ──────────────────────────────────────────────
+        if query:
+            # search_for_summary_by_criteria casa por título (cargo) E gestor.
+            vacancy_rows = await vac_repo.search_for_summary_by_criteria(
+                company_id=company_id,
+                criteria={"cargo": query, "gestor": query},
+                limit=10,
+            )
+            if not vacancy_rows:
+                # Sem match no cargo+gestor combinado: tenta só por gestor
+                # (recrutador pode ter digitado apenas o nome do gestor).
+                vacancy_rows = await vac_repo.search_for_summary_by_criteria(
+                    company_id=company_id,
+                    criteria={"gestor": query},
+                    limit=10,
+                )
+        else:
+            vacancy_rows = await vac_repo.list_vacancies(
+                company_id=company_id, limit=10
+            )
+
+        for v in vacancy_rows:
+            sources.append({
+                "type": "vacancy",
+                "id": str(v.id),
+                "job_id": v.job_id,
+                "title": v.title,
+                "recruiter": v.recruiter,
+                "manager": v.manager,
+                "department": v.department,
+                "status": v.status,
+            })
+
+        # ── Arquetipos (templates de vaga) ────────────────────────────────
+        template_company_id = None
+        try:
+            template_company_id = (
+                uuid.UUID(company_id) if isinstance(company_id, str) else company_id
+            )
+        except (ValueError, TypeError):
+            template_company_id = None
+
+        templates = await JobTemplateService(db).get_templates(
+            company_id=template_company_id,
+            include_system=True,
+            limit=8,
+        )
+
+    if query:
+        q_lower = query.lower()
+        templates = [
+            t for t in templates if q_lower in (t.title or "").lower()
+        ] or templates
+
+    for t in templates:
+        sources.append({
+            "type": "template",
+            "id": str(t.id),
+            "title": t.title,
+            "seniority": t.seniority,
+            "category": t.category,
+            "is_system": t.is_system,
+        })
+
+    n_vac = sum(1 for s in sources if s["type"] == "vacancy")
+    n_tpl = sum(1 for s in sources if s["type"] == "template")
+    return {
+        "success": True,
+        "data": {"sources": sources, "query": query or None},
+        "message": (
+            f"{len(sources)} fontes (vagas + arquétipos): "
+            f"{n_vac} vaga(s) + {n_tpl} arquétipo(s)."
+        ),
+    }
+
+
+TOOL_DEFINITIONS.append(
+    ToolDefinition(
+        name="list_job_creation_sources",
+        description=(
+            "Lista fontes para criar uma nova vaga a partir de algo existente: "
+            "vagas já criadas na empresa + arquétipos (templates) do catálogo. "
+            "Use quando o recrutador pedir para criar vaga 'a partir de um "
+            "modelo', 'igual a vaga X', 'baseada na vaga do gestor Y'. Cada "
+            "vaga retornada inclui id, recrutador e gestor para desambiguação."
+        ),
+        parameters={
+            "type": "object",
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "description": (
+                        "Termo livre: cargo, título da vaga, ou nome do gestor. "
+                        "Opcional — sem termo retorna as fontes mais recentes."
+                    ),
+                },
+            },
+            "required": [],
+        },
+        output_schema=ToolOutput,
+        function=_wrap_list_job_creation_sources,
+    )
+)
+
+
 _TOOL_MAP: dict[str, ToolDefinition] = {t.name: t for t in TOOL_DEFINITIONS}
 
 # --- STAGE_TOOLS canonical allowlist ---------------------------------------
@@ -1678,7 +1823,7 @@ _TOOL_MAP: dict[str, ToolDefinition] = {t.name: t for t in TOOL_DEFINITIONS}
 # --------------------------------------------------------------------------
 STAGE_TOOLS: dict[str, list[str]] = {
     # Creation stages (alinhados com WizardStage Literal canonical):
-    "intake": ["validate_job_requirements", "validate_job_fields", "get_job_suggestions", "get_company_config", "save_job_draft", "check_job_draft_health", "suggest_pipeline_stage_templates", "apply_pipeline_stage_template_to_vacancy", "create_custom_pipeline_stage_template"],
+    "intake": ["list_job_creation_sources", "validate_job_requirements", "validate_job_fields", "get_job_suggestions", "get_company_config", "save_job_draft", "check_job_draft_health", "suggest_pipeline_stage_templates", "apply_pipeline_stage_template_to_vacancy", "create_custom_pipeline_stage_template"],
     "jd_enrichment": ["generate_enriched_jd", "get_job_suggestions", "get_company_config", "save_job_draft", "check_job_draft_health"],
     "pipeline_template": ["suggest_pipeline_stage_templates", "apply_pipeline_stage_template_to_vacancy", "create_custom_pipeline_stage_template"],
     "salary": ["get_salary_benchmarks", "search_salary_benchmark", "validate_job_fields", "save_job_draft", "check_job_draft_health"],
