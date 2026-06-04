@@ -123,19 +123,18 @@ class DepartmentRepository:
         self,
         dept_id: UUID,
         company_id: UUID | None = None,
+        include_inactive: bool = False,
     ) -> list[DepartmentMember]:
         """List active members of a department. Multi-tenancy defense-in-depth
         via company_id filter quando passado (REGRA ZERO + harness B.1)."""
         # TENANT-EXEMPT: dynamic builder — DepartmentMember.company_id == company_id
         # é appended conditionally below quando company_id passado.
-        query = (
-            select(DepartmentMember)
-            .where(
-                DepartmentMember.department_id == dept_id,
-                DepartmentMember.is_active,
-            )
-            .order_by(DepartmentMember.order, DepartmentMember.name)
+        query = select(DepartmentMember).where(
+            DepartmentMember.department_id == dept_id,
         )
+        if not include_inactive:
+            query = query.where(DepartmentMember.is_active)
+        query = query.order_by(DepartmentMember.order, DepartmentMember.name)
         if company_id:
             query = query.where(DepartmentMember.company_id == company_id)
         result = await self.db.execute(query)

@@ -165,11 +165,9 @@ company_id: str = Depends(require_company_id)):
         if not department:
             raise HTTPException(status_code=404, detail="Department not found")
 
-        members = await dept_repo.list_members(department_id)
-        if include_inactive:
-            # list_members filters active; for include_inactive we need raw query
-            # Delegate to db via a broader query — acceptable since dept exists
-            pass
+        members = await dept_repo.list_members(
+            department_id, include_inactive=include_inactive
+        )
         return members
     except HTTPException:
         raise
