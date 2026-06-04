@@ -1474,6 +1474,14 @@ async def _wrap_rag_search(**kwargs) -> dict:
                 "summary": (getattr(r, "summary", "") or "")[:200],
                 "id": str(getattr(r, "id", "")),
             })
+        if not candidates:
+            from app.orchestrator.context.empty_result_guidance import build_empty_result_guidance
+            _g = build_empty_result_guidance("candidato", {"query": query})
+            return {
+                "success": True,
+                "data": {"candidates": [], "total": 0, "search_type": "hybrid_rag", **_g},
+                "message": _g.get("guidance") or "Nenhum candidato via busca semantica com esse criterio.",
+            }
         return {
             "success": True,
             "data": {"candidates": candidates, "total": result.total_found, "search_type": "hybrid_rag"},

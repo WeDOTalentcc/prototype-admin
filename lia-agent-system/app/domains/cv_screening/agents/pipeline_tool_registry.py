@@ -938,6 +938,15 @@ async def _wrap_search_talent_pool(**kwargs):
             )
             candidates = [dict(r) for r in rows.mappings()]
 
+            if not candidates:
+                from app.orchestrator.context.empty_result_guidance import build_empty_result_guidance
+                _g = build_empty_result_guidance("candidato", {"skills": skills, "location": location, "query": query})
+                return {
+                    "success": True,
+                    "data": {"candidates": [], "total": 0, "pool_filter": {"skills": skills, "location": location, "query": query}, **_g},
+                    "message": _g.get("guidance") or "Nenhum candidato no talent pool com esses criterios.",
+                }
+
             return {
                 "success": True,
                 "data": {
