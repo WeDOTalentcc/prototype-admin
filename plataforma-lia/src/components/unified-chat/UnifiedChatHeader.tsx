@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from "react"
 import {
   Brain, X, Maximize2, PanelRight, MessageSquare, Minimize2,
   Plus, MoreHorizontal, ChevronDown, Pencil, Trash2, ArrowRightLeft,
-  CheckCircle2, Briefcase
+  CheckCircle2, Briefcase, CornerDownRight
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useTranslations } from 'next-intl'
@@ -52,6 +52,14 @@ interface Props {
   showOpenJobButton?: boolean
   /** Fired when the user clicks the "Ver vaga" shortcut. */
   onOpenJob?: () => void
+  /**
+   * Task #1291 — when true (floating mode only, after the window has been
+   * dragged away from its dock), render a discreet "back to corner" button
+   * that returns the floating window to the bottom-right corner.
+   */
+  showResetFloatingButton?: boolean
+  /** Fired when the user clicks the "back to corner" button. */
+  onResetFloatingPosition?: () => void
 }
 
 export function UnifiedChatHeader({
@@ -70,6 +78,8 @@ export function UnifiedChatHeader({
   autoSaveLabel,
   showOpenJobButton,
   onOpenJob,
+  showResetFloatingButton,
+  onResetFloatingPosition,
 }: Props) {
   const t = useTranslations('chat.header')
   const [showModeMenu, setShowModeMenu] = useState(false)
@@ -291,6 +301,21 @@ export function UnifiedChatHeader({
             aria-label={t('switchChatLabel')}
           >
             <ArrowRightLeft className="w-4 h-4" />
+          </button>
+        )}
+
+        {/* Task #1291 — "back to corner": only shown in floating mode once the
+            window has been dragged away from its dock. Returns it to the
+            bottom-right corner (its original position). */}
+        {showResetFloatingButton && onResetFloatingPosition && (
+          <button
+            onClick={onResetFloatingPosition}
+            className="p-1.5 rounded-md text-lia-border-strong hover:text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
+            title="Voltar ao canto"
+            aria-label="Voltar a janela flutuante ao canto inferior direito"
+            data-testid="floating-reset-button"
+          >
+            <CornerDownRight className="w-4 h-4" />
           </button>
         )}
 

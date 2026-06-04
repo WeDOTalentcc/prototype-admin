@@ -65,6 +65,15 @@ import { useWizardIntegration } from "./wizard/useWizardIntegration";
 import { formatWizardSavedLabel } from "./wizard/wizard-saved-label";
 import { STAGE_PILL_LABELS, type WizardStage } from "./wizard/wizard-types";
 import { getPersisted, setPersisted } from "@/lib/lia-persistence";
+import {
+  ARROW_STEP,
+  ARROW_STEP_LARGE,
+  FLOATING_DRAG_THRESHOLD,
+  FLOATING_RESET_EVENT,
+  clampFloatingPosition,
+  defaultFloatingPosition,
+  type Point,
+} from "./floating-position";
 
 const DEFINIR_REGEX = /^\/(?:definir|glossario|glossário)(?:\s+(.+))?$/i;
 
@@ -208,6 +217,25 @@ export function UnifiedChat({
   const [sidebarWidthPx, setSidebarWidthPx] = useState(getStoredWidth);
   const [isResizing, setIsResizing] = useState(false);
   const widthRef = useRef(sidebarWidthPx);
+
+  // Task #1291 — floating window drag position. `null` means "docked at the
+  // default bottom-right corner" (rendered via `bottom-4 right-4`). A non-null
+  // value is an explicit top-left applied via inline style. The position is
+  // intentionally EPHEMERAL: it lives only in component state, never in
+  // localStorage. Because UnifiedChat stays mounted across soft navigation
+  // (the provider sits above the router), dragging survives page changes; a
+  // full reload remounts the component and resets back to the corner.
+  const [floatingPosition, setFloatingPosition] = useState<Point | null>(null);
+  const [isFloatingDragging, setIsFloatingDragging] = useState(false);
+  const floatingContainerRef = useRef<HTMLDivElement>(null);
+  const floatingDragRef = useRef<{
+    startX: number;
+    startY: number;
+    baseX: number;
+    baseY: number;
+    moved: boolean;
+  } | null>(null);
+  const resetFloatingPosition = useCallback(() => setFloatingPosition(null), []);
   // Fase 5b — acumula os campos estruturados do painel (ficha viva) para enviar
   // como context.right_panel_form no próximo turno (loop real dos chips).
   const collectedDataRef = useRef<Record<string, unknown>>({});
@@ -269,6 +297,127 @@ export function UnifiedChat({
       document.removeEventListener("mouseup", handleMouseUp);
     };
   }, [isResizing]);
+
+  // Task #1291 — keep the floating window visible after the browser is
+  // resized: re-clamp a custom position back inside the viewport.
+  useEffect(() => {
+    const handleResize = () => {
+      setFloatingPosition((prev) => {
+        if (!prev) return prev;
+        const next = clampFloatingPosition(prev);
+        if (next.x === prev.x && next.y === prev.y) return prev;
+        return next;
+      });
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // Task #1291 — global reset hook (mirrors the bubble). Any surface can
+  // dispatch FLOATING_RESET_EVENT to dock the window back at the corner.
+  useEffect(() => {
+    const handleReset = () => setFloatingPosition(null);
+    window.addEventListener(FLOATING_RESET_EVENT, handleReset);
+    return () => window.removeEventListener(FLOATING_RESET_EVENT, handleReset);
+  }, []);
+
+  // Task #1291 — drag the floating window by its header. We use document-level
+  // listeners (not setPointerCapture) so clicks on the header's own buttons
+  // keep working; the drag only engages once the pointer crosses the movement
+  // threshold, so a plain click never moves the window.
+  const handleFloatingHeaderPointerDown = useCallback(
+    (e: React.PointerEvent) => {
+      if (e.button !== 0) return;
+      // Ignore interactive controls inside the header (buttons, inputs, links,
+      // menu items) so their clicks/typing are never hijacked by a drag.
+      if (
+        (e.target as HTMLElement).closest(
+          "button, input, textarea, a, select, [role='menuitem'], [contenteditable='true']",
+        )
+      ) {
+        return;
+      }
+      const rect = floatingContainerRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      floatingDragRef.current = {
+        startX: e.clientX,
+        startY: e.clientY,
+        baseX: rect.left,
+        baseY: rect.top,
+        moved: false,
+      };
+
+      const handleMove = (ev: PointerEvent) => {
+        const drag = floatingDragRef.current;
+        if (!drag) return;
+        const dx = ev.clientX - drag.startX;
+        const dy = ev.clientY - drag.startY;
+        if (
+          !drag.moved &&
+          (Math.abs(dx) > FLOATING_DRAG_THRESHOLD ||
+            Math.abs(dy) > FLOATING_DRAG_THRESHOLD)
+        ) {
+          drag.moved = true;
+          setIsFloatingDragging(true);
+          document.body.style.userSelect = "none";
+        }
+        if (!drag.moved) return;
+        setFloatingPosition(
+          clampFloatingPosition({ x: drag.baseX + dx, y: drag.baseY + dy }),
+        );
+      };
+      const handleUp = () => {
+        floatingDragRef.current = null;
+        setIsFloatingDragging(false);
+        document.body.style.userSelect = "";
+        document.removeEventListener("pointermove", handleMove);
+        document.removeEventListener("pointerup", handleUp);
+        document.removeEventListener("pointercancel", handleUp);
+      };
+      document.addEventListener("pointermove", handleMove);
+      document.addEventListener("pointerup", handleUp);
+      document.addEventListener("pointercancel", handleUp);
+    },
+    [],
+  );
+
+  // Task #1291 — keyboard accessibility: move the focused header/handle with
+  // the arrow keys (Shift = larger step), mirroring the bubble.
+  const handleFloatingHeaderKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      // Don't steal arrows from controls inside the header (rename input etc).
+      if (
+        (e.target as HTMLElement).closest(
+          "button, input, textarea, a, select, [contenteditable='true']",
+        )
+      ) {
+        return;
+      }
+      const arrowMap: Record<string, [number, number]> = {
+        ArrowUp: [0, -1],
+        ArrowDown: [0, 1],
+        ArrowLeft: [-1, 0],
+        ArrowRight: [1, 0],
+      };
+      const delta = arrowMap[e.key];
+      if (!delta) return;
+      e.preventDefault();
+      const step = e.shiftKey ? ARROW_STEP_LARGE : ARROW_STEP;
+      setFloatingPosition((prev) => {
+        const base =
+          prev ??
+          defaultFloatingPosition({
+            width: window.innerWidth,
+            height: window.innerHeight,
+          });
+        return clampFloatingPosition({
+          x: base.x + delta[0] * step,
+          y: base.y + delta[1] * step,
+        });
+      });
+    },
+    [],
+  );
 
   const authUser = useAuthStore((s) => s.user);
   const tc = useTranslations("common");
@@ -904,8 +1053,22 @@ export function UnifiedChat({
   const dynamicPanelWidth = hasDynamicPanel ? dynamicPanelWidthPx : 0;
   const inlineWidth = isInline ? sidebarWidthPx + dynamicPanelWidth : undefined;
 
+  // Task #1291 — when the floating window has been dragged, drop the static
+  // `bottom-4 right-4` dock and drive position from inline `left/top` instead.
+  const isFloating = !isInline && mode === "floating";
+  const hasCustomFloatingPos = isFloating && floatingPosition !== null;
+  const floatingStyle: React.CSSProperties | undefined = hasCustomFloatingPos
+    ? {
+        left: `${floatingPosition!.x}px`,
+        top: `${floatingPosition!.y}px`,
+        right: "auto",
+        bottom: "auto",
+      }
+    : undefined;
+
   return (
     <div
+      ref={floatingContainerRef}
       className={cn(
         "flex bg-lia-bg-primary relative overflow-hidden",
         isInline
@@ -914,7 +1077,10 @@ export function UnifiedChat({
             ? "fixed inset-0 z-50"
             : mode === "sidebar"
               ? "fixed top-2 right-2 bottom-2 z-40 border border-lia-border-subtle rounded-md"
-              : "fixed bottom-4 right-4 w-[360px] h-[520px] z-30 rounded-md border border-lia-border-subtle",
+              : cn(
+                  "fixed w-[360px] h-[520px] z-30 rounded-md border border-lia-border-subtle",
+                  !hasCustomFloatingPos && "bottom-4 right-4",
+                ),
         className,
       )}
       style={
@@ -922,7 +1088,7 @@ export function UnifiedChat({
           ? { width: `${inlineWidth}px` }
           : !isInline && mode === "sidebar"
             ? { width: `${sidebarWidthPx + dynamicPanelWidth}px` }
-            : undefined
+            : floatingStyle
       }
       data-chat-mode={effectiveMode}
       data-render-mode={renderMode}
@@ -940,30 +1106,46 @@ export function UnifiedChat({
       )}
       {/* Chat column */}
       <div className="flex flex-col flex-1 min-w-0">
-        {/* Header */}
-        <UnifiedChatHeader
-          mode={effectiveMode}
-          onModeChange={handleModeChange}
-          onClose={close}
-          onNewChat={handleNewChat}
-          onSwitchTask={() => setShowSwitchTask(true)}
-          conversationTitle={conversationTitle}
-          isConnected={chatIsConnected}
-          transportMode={chatTransportMode}
-          isReconnecting={chatIsReconnecting}
-          onDelete={handleDeleteConversation}
-          activeTaskLabel={activeTaskLabel}
-          autoSaveLabel={wizardSavedLabel}
-          showOpenJobButton={
-            wizardActive &&
-            !hasDynamicPanel &&
-            !!lastDynamicPanelRef.current &&
-            SPLIT_STAGES.includes(
-              lastDynamicPanelRef.current.stage as WizardStage,
-            )
-          }
-          onOpenJob={reopenLastPanel}
-        />
+        {/* Header — in floating mode it doubles as the drag handle. */}
+        <div
+          onPointerDown={isFloating ? handleFloatingHeaderPointerDown : undefined}
+          onKeyDown={isFloating ? handleFloatingHeaderKeyDown : undefined}
+          tabIndex={isFloating ? 0 : undefined}
+          role={isFloating ? "toolbar" : undefined}
+          aria-label={isFloating ? "Arrastar janela da LIA (use as setas para mover)" : undefined}
+          data-testid={isFloating ? "floating-drag-handle" : undefined}
+          className={cn(
+            isFloating &&
+              "touch-none select-none cursor-grab focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan/50 focus-visible:ring-inset",
+            isFloatingDragging && "cursor-grabbing",
+          )}
+        >
+          <UnifiedChatHeader
+            mode={effectiveMode}
+            onModeChange={handleModeChange}
+            onClose={close}
+            onNewChat={handleNewChat}
+            onSwitchTask={() => setShowSwitchTask(true)}
+            conversationTitle={conversationTitle}
+            isConnected={chatIsConnected}
+            transportMode={chatTransportMode}
+            isReconnecting={chatIsReconnecting}
+            onDelete={handleDeleteConversation}
+            activeTaskLabel={activeTaskLabel}
+            autoSaveLabel={wizardSavedLabel}
+            showResetFloatingButton={hasCustomFloatingPos}
+            onResetFloatingPosition={resetFloatingPosition}
+            showOpenJobButton={
+              wizardActive &&
+              !hasDynamicPanel &&
+              !!lastDynamicPanelRef.current &&
+              SPLIT_STAGES.includes(
+                lastDynamicPanelRef.current.stage as WizardStage,
+              )
+            }
+            onOpenJob={reopenLastPanel}
+          />
+        </div>
 
         {/* Wizard progress bar — sticky at the top of the feed while the
             "Criar nova vaga" wizard is active. Mounts on the first
