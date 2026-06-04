@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useMemo, useState, useRef, useEffect } from "react"
+import React, { useMemo, useState } from "react"
 import { useTypewriter } from "@/hooks/chat/useTypewriter"
 import { useAuthStore } from "@/stores/auth-store"
 import {
@@ -51,19 +51,6 @@ export function LiaChatMessageList({
   // burst (no real token streaming — measured), so we reveal the freshly
   // arrived LIA message char-by-char for the progressive feel. Only the
   // message that lands right as streaming ends animates; history is instant.
-  const [animateId, setAnimateId] = useState<string | null>(null)
-  const prevStreamingRef = useRef(false)
-  useEffect(() => {
-    if (prevStreamingRef.current && !isStreaming) {
-      for (let i = messages.length - 1; i >= 0; i--) {
-        if (messages[i].sender === "lia") {
-          setAnimateId(messages[i].id)
-          break
-        }
-      }
-    }
-    prevStreamingRef.current = isStreaming
-  }, [isStreaming, messages])
 
   if (showHistory) {
     return (
@@ -108,14 +95,24 @@ export function LiaChatMessageList({
         <EmptyState scope={currentScope} contextPage={contextPage} onChipClick={handleChipSend} />
       ) : (
         <>
-          {messages
-            // G5 canonical (2026-05-24): system messages are backstage hints
-            // for LIA, never user-facing. Filter before map so MessageBubble
-            // only sees msg.sender of type "lia" | "user".
-            .filter((msg): msg is FloatMessage & { sender: "lia" | "user" } => msg.sender !== "system")
-            .map(msg => (
-              <MessageBubble key={msg.id} msg={msg} conversationId={conversationId} onQuickReply={handleChipSend} animate={msg.id === animateId} />
-            ))}
+          {(() => {
+            const _visible = messages.filter(
+              (msg): msg is FloatMessage & { sender: "lia" | "user" } =>
+                msg.sender !== "system",
+            )
+            // Newest LIA message animates (typewriter); decided at mount.
+            const _lastLiaId =
+              [..._visible].reverse().find((m) => m.sender === "lia")?.id ?? null
+            return _visible.map((msg) => (
+              <MessageBubble
+                key={msg.id}
+                msg={msg}
+                conversationId={conversationId}
+                onQuickReply={handleChipSend}
+                animate={msg.id === _lastLiaId}
+              />
+            ))
+          })()}
           {hitlPending && (
             <ChatBubbleBase
               sender="lia"
@@ -277,12 +274,16 @@ function MessageBubble({ msg, conversationId, onQuickReply, animate = false }: {
   const quickReplyPreset = msg.metadata?.quick_reply_preset as QuickReplyPreset | undefined
 
   // Typewriter reveal for LIA messages flagged `animate`; others render full.
+  // Capture at mount: only the message newest WHEN IT MOUNTS types out (from
+  // char 0 -> no flash). Later re-renders that flip `animate` don't restart it;
+  // history messages mount with animate=false -> render instantly.
+  const [shouldAnimate] = useState(() => animate && !isUser)
   const _liaText = useMemo(
     () => (isUser ? "" : cleanAgentResponse(msg.content)),
     [msg.content, isUser],
   )
   const { displayed: _liaDisplayed } = useTypewriter(_liaText, {
-    enabled: animate && !isUser,
+    enabled: shouldAnimate,
   })
   const renderedHtml = useMemo(() => {
     if (isUser) return escapeHtml(msg.content).replace(/\n/g, "<br/>")
