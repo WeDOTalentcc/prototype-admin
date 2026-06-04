@@ -7546,6 +7546,7 @@
       },
       "internalMobility": {
         "talentMatching": "Internal talent matching",
+        "readinessScore": "Promotion readiness score",
         "developmentPlan": "Individual development plan",
         "successionMapping": "Succession mapping"
       },
