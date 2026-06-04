@@ -563,10 +563,6 @@ company_id: str = Depends(require_company_id)):
         # ContextVar canonical (sibling de _current_company_id). Set antes de agent.process,
         # reset depois (mesmo padrao do RuntimeContext).
         from app.domains.ai.services.llm import _llm_streaming_callback
-        # Locale p/ cards de fase localizados (PT/EN). Setado antes do
-        # create_task p/ propagar pro task do orquestrador (snapshot de ctx).
-        from app.orchestrator.execution.agentic_loop import _activity_locale
-        _loc_token = _activity_locale.set(str(context.get("locale") or "pt"))
         _llm_stream_token = _llm_streaming_callback.set(_streaming_callback)
 
         async def _run_via_supervisor():
@@ -629,10 +625,6 @@ company_id: str = Depends(require_company_id)):
         def _cleanup_stream_ctx(_t):
             try:
                 _llm_streaming_callback.reset(_llm_stream_token)
-            except Exception:
-                pass
-            try:
-                _activity_locale.reset(_loc_token)
             except Exception:
                 pass
         agent_task.add_done_callback(_cleanup_stream_ctx)

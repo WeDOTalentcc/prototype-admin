@@ -40,29 +40,8 @@ async def _emit_activity(event: dict) -> None:
         pass
 
 
-# Passos de fase localizados (2026-06-04): cards de raciocinio estilo Manus no
-# idioma da plataforma. O thinking bruto do Claude e sempre ingles; aqui
-# emitimos passos ancorados nas fases REAIS no locale enviado pelo FE.
-from contextvars import ContextVar as _ContextVar
-_activity_locale: _ContextVar = _ContextVar("_activity_locale", default="pt")
-_ACTIVITY_PHASE_LABELS = {
-    "pt": {
-        "understanding": "Entendendo sua solicitação",
-        "composing": "Preparando a resposta",
-    },
-    "en": {
-        "understanding": "Understanding your request",
-        "composing": "Composing the response",
-    },
-}
-
-
-def _phase_label(key: str) -> str:
-    loc = (_activity_locale.get() or "pt").lower()
-    lang = "en" if loc.startswith("en") else "pt"
-    return _ACTIVITY_PHASE_LABELS.get(lang, _ACTIVITY_PHASE_LABELS["pt"]).get(key, key)
-
-
+# Passos de fase (2026-06-04): emite a CHAVE da fase ('understanding'/'composing'
+# /nome de tool); o FE localiza (PT/EN reativo ao toggle) via activity-labels.ts.
 async def _emit_phase(key: str) -> None:
     # Emite a CHAVE da fase; o FE localiza (reativo ao toggle PT/EN, page-agnostic).
     await _emit_activity({"type": "reasoning_step", "label": key})
