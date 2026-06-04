@@ -37,6 +37,7 @@ import { apiFetch } from "@/lib/api/api-fetch"
 import { notifyChatOfSettingsUpdate } from "@/lib/api/settings-notify"
 import useCompanyId from "@/hooks/company/useCompanyId"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Button } from "@/components/ui/button"
 import {
   LIA_FIELD_DEFINITIONS,
   type LiaFieldKey,
@@ -89,12 +90,12 @@ function ToggleBadge({ type }: { type: "gate" | "prompt" }) {
       label: "Gate",
       title:
         "Gate de funcionalidade — quando desativado, a IA não pode usar este recurso (fail-closed).",
-      className: "bg-amber-50 text-amber-700 border border-amber-200",
+      className: "bg-status-warning/10 text-status-warning border border-status-warning/30",
     },
     prompt: {
       label: "Prompt",
       title: "Injeção em prompt — quando ativado, este campo é incluído no contexto da IA.",
-      className: "bg-blue-50 text-blue-700 border border-blue-200",
+      className: "bg-wedo-cyan/10 text-wedo-cyan-dark border border-wedo-cyan/30",
     },
   }
   const c = config[type]
@@ -297,9 +298,9 @@ export function LiaFieldsConfigPanel() {
       <LiaImpactSummary toggles={config.lia_field_toggles} />
 
       {error && (
-        <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
-          <AlertCircle className="w-5 h-5 text-red-600 shrink-0" />
-          <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
+        <div className="flex items-center gap-2 p-3 bg-status-error/10 border border-status-error/30 rounded-xl">
+          <AlertCircle className="w-5 h-5 text-status-error shrink-0" />
+          <p className="text-sm text-status-error">{error}</p>
         </div>
       )}
 
@@ -548,12 +549,12 @@ function TenantOverrideYamlEditor() {
   return (
     <div className="space-y-4">
       <div className="flex items-start gap-3 p-4 bg-status-warning-bg rounded-xl border border-status-warning-border">
-        <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+        <AlertCircle className="w-5 h-5 text-status-warning shrink-0 mt-0.5" />
         <div className="space-y-1">
-          <p className="text-sm font-medium text-amber-900 dark:text-amber-200">
+          <p className="text-sm font-medium text-status-warning">
             {t("tenantOverride.title", { default: "Tenant Override (YAML)" })}
           </p>
-          <p className="text-xs text-amber-800 dark:text-amber-300">
+          <p className="text-xs text-status-warning">
             {t("tenantOverride.disclaimer", {
               default:
                 "Modificações em tenant overrides são per-empresa e hot-reload em até 30 segundos. Backup automático mantido. Reverter via Delete.",
@@ -570,7 +571,7 @@ function TenantOverrideYamlEditor() {
         {isLoadingList ? (
           <Loader2 className="w-4 h-4 animate-spin text-lia-text-secondary" />
         ) : listError ? (
-          <p className="text-xs text-red-600">{listError}</p>
+          <p className="text-xs text-status-error">{listError}</p>
         ) : overrides.length === 0 ? (
           <p className="text-xs text-lia-text-secondary italic">
             {t("tenantOverride.empty", {
@@ -605,7 +606,7 @@ function TenantOverrideYamlEditor() {
             onChange={(e) => setSelectedPath(e.target.value)}
             disabled={isFetchingContent || isSaving || isDeleting}
             data-testid="select-yaml-path"
-            className="flex-1 px-3 py-1.5 text-sm bg-lia-bg-primary border border-lia-border-default rounded-lg text-lia-text-primary"
+            className="flex-1 px-3 py-1.5 text-sm bg-lia-bg-primary border border-lia-border-default rounded-md text-lia-text-primary"
           >
             {CANONICAL_YAML_PATHS.map((p) => (
               <option key={p} value={p}>
@@ -632,22 +633,22 @@ function TenantOverrideYamlEditor() {
             data-testid="yaml-editor"
             spellCheck={false}
             rows={18}
-            className="w-full p-3 font-mono text-xs bg-lia-bg-primary border border-lia-border-default rounded-xl text-lia-text-primary"
+            className="w-full p-3 font-mono text-xs bg-lia-bg-primary border border-lia-border-default rounded-md text-lia-text-primary"
             placeholder="metadata:\n  version: 1.0.0-tenant\n..."
           />
         )}
 
         {editorError && (
-          <div className="flex items-start gap-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
-            <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
-            <p className="text-xs text-red-700 dark:text-red-300">{editorError}</p>
+          <div className="flex items-start gap-2 p-3 bg-status-error/10 border border-status-error/30 rounded-xl">
+            <AlertCircle className="w-4 h-4 text-status-error shrink-0 mt-0.5" />
+            <p className="text-xs text-status-error">{editorError}</p>
           </div>
         )}
 
         {savedAt && (
-          <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl">
-            <CheckCircle2 className="w-4 h-4 text-green-600 shrink-0" />
-            <p className="text-xs text-green-700 dark:text-green-300">
+          <div className="flex items-center gap-2 p-3 bg-status-success/10 border border-status-success/30 rounded-xl">
+            <CheckCircle2 className="w-4 h-4 text-status-success shrink-0" />
+            <p className="text-xs text-status-success">
               {t("tenantOverride.saved", { default: "Salvo em" })}{" "}
               {new Date(savedAt).toLocaleString()}
             </p>
@@ -657,7 +658,7 @@ function TenantOverrideYamlEditor() {
         {warnings.length > 0 && (
           <ul className="space-y-1">
             {warnings.map((w, idx) => (
-              <li key={idx} className="text-xs text-amber-700 dark:text-amber-300 flex items-start gap-1">
+              <li key={idx} className="text-xs text-status-warning flex items-start gap-1">
                 <AlertCircle className="w-3 h-3 shrink-0 mt-0.5" />
                 {w}
               </li>
@@ -667,23 +668,24 @@ function TenantOverrideYamlEditor() {
 
         <div className="flex items-center justify-end gap-2 pt-2">
           {hasExistingOverride && (
-            <button
+            <Button
               type="button"
+              variant="destructive"
+              size="sm"
               onClick={handleDelete}
               disabled={isDeleting || isSaving || isFetchingContent}
               data-testid="delete-btn"
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border border-red-200 text-red-700 hover:bg-red-50 disabled:opacity-50"
             >
               {isDeleting ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
               {t("tenantOverride.delete", { default: "Remover override" })}
-            </button>
+            </Button>
           )}
-          <button
+          <Button
             type="button"
+            size="sm"
             onClick={handleSave}
             disabled={!isDirty || isSaving || isFetchingContent || isDeleting}
             data-testid="save-btn"
-            className="flex items-center gap-1.5 px-4 py-1.5 text-xs rounded-lg bg-lia-btn-primary-bg text-white hover:opacity-90 disabled:opacity-50"
           >
             {isSaving ? (
               <Loader2 className="w-3 h-3 animate-spin" />
@@ -695,7 +697,7 @@ function TenantOverrideYamlEditor() {
             {hasExistingOverride
               ? t("tenantOverride.save", { default: "Salvar override" })
               : t("tenantOverride.create", { default: "Criar override" })}
-          </button>
+          </Button>
         </div>
       </section>
     </div>

@@ -123,7 +123,7 @@ function InlineFieldEditor({
         </button>
         <button
           onClick={onCancel}
-          className="p-0.5 rounded-xl hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
+          className="p-0.5 rounded-md hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
         >
           <X className="w-3 h-3 text-lia-text-tertiary" />
         </button>
@@ -154,7 +154,7 @@ function InlineFieldEditor({
       <button
         onClick={handleSave}
         disabled={isSaving}
-        className="p-0.5 rounded-xl hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
+        className="p-0.5 rounded-md hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
       >
         {isSaving ? (
           <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none text-lia-text-tertiary" />
@@ -164,7 +164,7 @@ function InlineFieldEditor({
       </button>
       <button
         onClick={onCancel}
-        className="p-0.5 rounded-xl hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
+        className="p-0.5 rounded-md hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
       >
         <X className="w-3 h-3 text-lia-text-tertiary" />
       </button>

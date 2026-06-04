@@ -99,15 +99,15 @@ export function AiPersonaPanel() {
       </div>
 
       {error && (
-        <div className="rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 p-3 flex items-start gap-2">
-          <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
-          <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
+        <div className="rounded-xl bg-status-error/10 border border-status-error/30 p-3 flex items-start gap-2">
+          <AlertCircle className="w-4 h-4 text-status-error shrink-0 mt-0.5" />
+          <p className="text-sm text-status-error">{error}</p>
         </div>
       )}
 
       {savedFeedback && (
         <div className="rounded-xl bg-status-success-bg border border-status-success/20 p-3 flex items-start gap-2">
-          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+          <CheckCircle2 className="w-4 h-4 text-status-success shrink-0 mt-0.5" />
           <p className="text-sm text-status-success">
             {savedFeedback}
           </p>
@@ -158,9 +158,9 @@ export function AiPersonaPanel() {
             ))}
           </div>
         ) : optionsError || !options ? (
-          <div className="rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 p-3 flex items-start gap-2">
-            <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
-            <p className="text-sm text-red-700 dark:text-red-300">
+          <div className="rounded-xl bg-status-error/10 border border-status-error/30 p-3 flex items-start gap-2">
+            <AlertCircle className="w-4 h-4 text-status-error shrink-0 mt-0.5" />
+            <p className="text-sm text-status-error">
               Não foi possível carregar as opções de tom. Recarregue a página
               para tentar novamente.
             </p>
@@ -236,7 +236,7 @@ export function AiPersonaPanel() {
 
       {/* Compliance imutável */}
       <div className="rounded-xl bg-lia-bg-tertiary border border-lia-border-default p-4 flex items-start gap-3">
-        <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+        <ShieldCheck className="w-5 h-5 text-status-success shrink-0 mt-0.5" />
         <div className="space-y-1">
           <p className="text-sm font-medium">Compliance imutável</p>
           <p className="text-xs text-lia-text-secondary">

@@ -11,6 +11,7 @@
 import React, { useState, useEffect, useCallback } from "react"
 import { Brain, BookOpen, BarChart2, FileText, AlertCircle, X, Loader2 } from "lucide-react"
 import { textStyles } from "@/lib/design-tokens"
+import { Button } from "@/components/ui/button"
 import { HubLoadingState } from "./_shared"
 import useCompanyId from "@/hooks/company/useCompanyId"
 import { notifyChatOfSettingsUpdate } from "@/lib/api/settings-notify"
@@ -155,18 +156,12 @@ function DisclosureModal({
           {text}
         </p>
         <div className="flex justify-end gap-3">
-          <button
-            onClick={onCancel}
-            className="px-4 py-2 rounded-lg text-sm font-medium text-lia-text-secondary hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-elevated border border-lia-border-subtle transition-colors"
-          >
+          <Button variant="outline" onClick={onCancel}>
             Cancelar
-          </button>
-          <button
-            onClick={onConfirm}
-            className="px-4 py-2 rounded-lg text-sm font-medium bg-lia-btn-primary-bg text-lia-btn-primary-text hover:opacity-90 transition-opacity"
-          >
+          </Button>
+          <Button onClick={onConfirm}>
             Confirmo — Ativar
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -179,12 +174,12 @@ function ToggleBadge({ type }: { type: "gate" | "prompt" }) {
       label: "Gate",
       title:
         "Gate de funcionalidade — quando desativado, a IA não pode usar este recurso (fail-closed).",
-      className: "bg-amber-50 text-amber-700 border border-amber-200",
+      className: "bg-status-warning/10 text-status-warning border border-status-warning/30",
     },
     prompt: {
       label: "Prompt",
       title: "Injeção em prompt — quando ativado, este campo é incluído no contexto da IA.",
-      className: "bg-blue-50 text-blue-700 border border-blue-200",
+      className: "bg-wedo-cyan/10 text-wedo-cyan-dark border border-wedo-cyan/30",
     },
   }
   const c = config[type]
@@ -385,7 +380,7 @@ export function LearningLoopsPanel() {
             aria-live="polite"
             data-testid="learning-loops-backend-unavailable"
           >
-            <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+            <AlertCircle className="w-5 h-5 text-status-warning shrink-0 mt-0.5" />
             <p className="text-sm text-status-warning">
               Não foi possível carregar configurações salvas. Exibindo defaults da plataforma — recarregue em alguns instantes.
             </p>
@@ -393,9 +388,9 @@ export function LearningLoopsPanel() {
         )}
 
         {error && (
-          <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
-            <AlertCircle className="w-5 h-5 text-red-600 shrink-0" />
-            <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
+          <div className="flex items-center gap-2 p-3 bg-status-error/10 border border-status-error/30 rounded-xl">
+            <AlertCircle className="w-5 h-5 text-status-error shrink-0" />
+            <p className="text-sm text-status-error">{error}</p>
           </div>
         )}
 
