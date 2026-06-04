@@ -1330,6 +1330,36 @@ class MainOrchestrator:
                         # Sprint 14.4: enrich suggested_prompts when empty + page known
                         _enrich_suggested_prompts(_resp, ctx)
                         return _resp
+
+                    # Canonical (2026-06-04): transient provider overload
+                    # (HTTP 529). Don't blame the user's phrasing for a
+                    # provider outage — return an honest, overload-specific
+                    # message instead of the generic V1 fallback. (REGRA-4.)
+                    if (
+                        _agentic_result
+                        and _agentic_result.get("failure_reason")
+                        == "provider_overloaded"
+                    ):
+                        logger.warning(
+                            "[MainOrchestrator] Agentic loop provider-overloaded "
+                            "after retries — honest fail (user=%s company=%s).",
+                            getattr(ctx, "user_id", None), ctx.company_id,
+                        )
+                        return ChatResponse(
+                            success=False,
+                            content=(
+                                "Os servidores de IA estão sobrecarregados neste "
+                                "instante. Pode tentar de novo em alguns segundos? "
+                                "Sua pergunta está ok — é só uma instabilidade "
+                                "temporária do provedor."
+                            ),
+                            agent_used="agentic_loop",
+                            confidence=0.0,
+                            intent_detected="provider_overloaded",
+                            conversation_id=conv_id,
+                            error_code="PROVIDER_OVERLOADED",
+                            error_category="transient",
+                        )
                 except Exception as exc:
                     logger.debug("[LIA-A04] Agentic loop skipped: %s", exc)
 

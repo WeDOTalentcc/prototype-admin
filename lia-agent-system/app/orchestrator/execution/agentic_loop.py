@@ -58,6 +58,42 @@ _AGENTIC_LLM_TIMEOUT_SECONDS = _resolve_agentic_llm_timeout()
 
 MAX_TOOL_ITERATIONS = int(os.getenv("LIA_MAX_TOOL_ITERATIONS", "3"))
 
+# Canonical (2026-06-04): transient provider-overload resilience.
+# A single Anthropic/Vertex `overloaded_error` (HTTP 529) is RETRYABLE —
+# burning the whole iteration budget on it (old `break`) degraded UX into a
+# misleading "reformule a pergunta". We retry the SAME LLM call with bounded
+# exponential backoff; on persistent overload we flag
+# `failure_reason="provider_overloaded"` so the orchestrator returns an
+# honest, overload-specific message (REGRA-4 honesty).
+_AGENTIC_OVERLOAD_RETRIES = int(os.getenv("LIA_AGENTIC_OVERLOAD_RETRIES", "2"))
+_AGENTIC_OVERLOAD_BACKOFF_BASE = float(
+    os.getenv("LIA_AGENTIC_OVERLOAD_BACKOFF_BASE", "0.6")
+)
+_TRANSIENT_PROVIDER_MARKERS = (
+    "overloaded_error",
+    "overloaded",
+    "rate_limit",
+    "rate limit",
+    "service unavailable",
+    "service_unavailable",
+    "internal server error",
+    "internal_server_error",
+    "temporarily unavailable",
+    "try again later",
+)
+
+
+def _is_transient_provider_error(exc: BaseException) -> bool:
+    """True when `exc` is a retryable provider hiccup (overload/429/503/5xx).
+
+    Detection is by message substring (provider-agnostic, no SDK import
+    coupling). A false positive costs only a bounded retry (benign); a false
+    negative degrades UX into the misleading generic fallback — so we err
+    toward retrying.
+    """
+    s = str(exc).lower()
+    return any(marker in s for marker in _TRANSIENT_PROVIDER_MARKERS)
+
 
 class AgenticLoop:
     """Executes user queries using LLM function calling with registered tools."""
@@ -209,30 +245,75 @@ class AgenticLoop:
         tool_calls_made: list[dict] = []
 
         for iteration in range(max_iter):
-            # --- Call LLM with tool schemas ---
-            try:
-                _t_llm_start = asyncio.get_event_loop().time()
-                llm_response = await asyncio.wait_for(
-                    self._llm_service.generate_with_tools(
-                        messages=messages,
-                        tools=tool_schemas,
-                        provider=provider,
-                        system_prompt=system_prompt or None,
-                    ),
-                    timeout=_AGENTIC_LLM_TIMEOUT_SECONDS,
-                )
-            except asyncio.TimeoutError:
-                _t_elapsed = asyncio.get_event_loop().time() - _t_llm_start
-                logger.warning(
-                    "[LIA-A04] LLM tool-call timed out (iter %d, provider=%s, "
-                    "elapsed=%.1fs, limit=%.1fs). Falling through to Phase 2 V1 — "
-                    "if frequent, bump LIA_AGENTIC_LLM_TIMEOUT_SECONDS env.",
-                    iteration, provider, _t_elapsed, _AGENTIC_LLM_TIMEOUT_SECONDS,
-                )
-                break
-            except Exception as exc:
-                logger.warning("[LIA-A04] LLM tool-call failed: %s", exc)
-                break
+            # --- Call LLM with tool schemas (retry transient overload) ---
+            llm_response = None
+            for _attempt in range(_AGENTIC_OVERLOAD_RETRIES + 1):
+                try:
+                    _t_llm_start = asyncio.get_event_loop().time()
+                    llm_response = await asyncio.wait_for(
+                        self._llm_service.generate_with_tools(
+                            messages=messages,
+                            tools=tool_schemas,
+                            provider=provider,
+                            system_prompt=system_prompt or None,
+                        ),
+                        timeout=_AGENTIC_LLM_TIMEOUT_SECONDS,
+                    )
+                    break
+                except asyncio.TimeoutError:
+                    _t_elapsed = asyncio.get_event_loop().time() - _t_llm_start
+                    logger.warning(
+                        "[LIA-A04] LLM tool-call timed out (iter %d, provider=%s, "
+                        "elapsed=%.1fs, limit=%.1fs). Falling through to Phase 2 V1 — "
+                        "if frequent, bump LIA_AGENTIC_LLM_TIMEOUT_SECONDS env.",
+                        iteration, provider, _t_elapsed, _AGENTIC_LLM_TIMEOUT_SECONDS,
+                    )
+                    return {
+                        "response": None,
+                        "tool_calls_made": tool_calls_made,
+                        "iterations": iteration + 1,
+                        "failure_reason": "llm_timeout",
+                    }
+                except Exception as exc:
+                    _transient = _is_transient_provider_error(exc)
+                    if _transient and _attempt < _AGENTIC_OVERLOAD_RETRIES:
+                        _backoff = _AGENTIC_OVERLOAD_BACKOFF_BASE * (2 ** _attempt)
+                        logger.warning(
+                            "[LIA-A04] transient provider error (iter %d, attempt "
+                            "%d/%d) — retrying in %.1fs: %s",
+                            iteration, _attempt + 1,
+                            _AGENTIC_OVERLOAD_RETRIES + 1, _backoff, exc,
+                        )
+                        await asyncio.sleep(_backoff)
+                        continue
+                    if _transient:
+                        logger.warning(
+                            "[LIA-A04] provider overloaded after %d attempts — "
+                            "returning honest overload signal: %s",
+                            _attempt + 1, exc,
+                        )
+                        return {
+                            "response": None,
+                            "tool_calls_made": tool_calls_made,
+                            "iterations": iteration + 1,
+                            "failure_reason": "provider_overloaded",
+                        }
+                    logger.warning("[LIA-A04] LLM tool-call failed: %s", exc)
+                    return {
+                        "response": None,
+                        "tool_calls_made": tool_calls_made,
+                        "iterations": iteration + 1,
+                        "failure_reason": "llm_error",
+                    }
+
+            if llm_response is None:
+                # Defensive: retries exhausted without a returnable branch.
+                return {
+                    "response": None,
+                    "tool_calls_made": tool_calls_made,
+                    "iterations": iteration + 1,
+                    "failure_reason": "provider_overloaded",
+                }
 
             # --- If LLM responded with text (no tool call), done ---
             if not llm_response.is_tool_call:
