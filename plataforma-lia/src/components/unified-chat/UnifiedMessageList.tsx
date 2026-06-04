@@ -28,6 +28,9 @@ import type { LiaChatMessage } from "@/hooks/chat/use-lia-chat-connection"
 import { useTypewriter } from "@/hooks/chat/useTypewriter"
 import { WIZARD_PLAN_MESSAGE_ID } from "./wizard/wizard-plan-card"
 import { NavigationHintCard } from "./NavigationHintCard"
+import { ProactiveSuggestionCard } from "./ProactiveSuggestionCard"
+import { PROACTIVE_HINTS_MESSAGE_TYPE } from "./proactive-suggestion-injector"
+import type { ProactiveHint } from "@/hooks/proactive/use-proactive-hints"
 import { TastingInsightCard } from "./TastingInsightCard"
 import { WeeklyDigestChatMessage } from "@/components/notifications/weekly-digest-chat-message"
 import type { WeeklyDigestData } from "@/components/notifications/weekly-digest-notification"
@@ -334,6 +337,9 @@ export function UnifiedMessageList({
           meta?.type === CANDIDATE_PROFILE_CARD_TYPE && meta?.candidate != null
         const hasCandidateEvaluation =
           meta?.type === CANDIDATE_EVALUATION_CARD_TYPE && meta?.evaluation != null
+        const hasProactiveHints =
+          meta?.type === PROACTIVE_HINTS_MESSAGE_TYPE &&
+          Array.isArray(meta?.proactiveHints)
 
         return (
           <div
@@ -399,6 +405,15 @@ export function UnifiedMessageList({
                 {hasNavHint && (
                   <NavigationHintCard
                     hint={meta!.navigation_hint as { page: string; entity_id?: string }}
+                  />
+                )}
+
+                {/* Proactive suggestion cards (WT-2022) — scheduler-driven
+                    hints surfaced conversationally, replacing the retired
+                    ProactiveHintsBadge dropdown. */}
+                {hasProactiveHints && (
+                  <ProactiveSuggestionCard
+                    hints={meta!.proactiveHints as ProactiveHint[]}
                   />
                 )}
 
@@ -516,6 +531,17 @@ export function UnifiedMessageList({
       })}
 
       {/* Streaming indicator */}
+      {/* Live task feed (Manus) — cards um-a-um; persiste durante a resposta;
+          colapsa no AgentActivitySummary ao terminar o turno. */}
+      {(isThinking || isStreaming) && (
+        <div className="group">
+          <AgentActivityTimeline
+            fallbackSteps={thinkingSteps}
+            showFallback={isThinking && !streamingContent}
+          />
+        </div>
+      )}
+
       {isStreaming && streamingContent && (
         <div className="group">
           <div className="max-w-[90%]">
@@ -526,13 +552,6 @@ export function UnifiedMessageList({
               }}
             />
           </div>
-        </div>
-      )}
-
-      {/* Live task feed (Manus-style) — steps if available, spinner fallback */}
-      {isThinking && !streamingContent && (
-        <div className="group">
-          <AgentActivityTimeline fallbackSteps={thinkingSteps} />
         </div>
       )}
 

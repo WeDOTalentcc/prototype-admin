@@ -127,9 +127,13 @@ export function LiaChatMessageList({
             </ChatBubbleBase>
           )}
           {isStreaming && !hitlPending && (
-            streamingContent
-              ? <StreamingBubble content={streamingContent} />
-              : <ThinkingIndicator />
+            <>
+              {/* timeline persiste (cards um-a-um) durante a resposta */}
+              <ThinkingIndicator showFallback={!streamingContent} />
+              {streamingContent && (
+                <StreamingBubble content={streamingContent} />
+              )}
+            </>
           )}
         </>
       )}
@@ -234,10 +238,12 @@ function EmptyState({ scope, contextPage, onChipClick }: { scope: string; contex
   )
 }
 
-function ThinkingIndicator() {
+function ThinkingIndicator({ showFallback = true }: { showFallback?: boolean }) {
   // 2026-06-03: timeline de atividade ao vivo (window event lia:agent-activity).
   // Cai pro ThinkingStepsCard quando ainda não há atividade estruturada.
-  return <AgentActivityTimeline fallbackSteps={[]} />
+  // 2026-06-04: showFallback=false mantém os cards visíveis durante a resposta
+  // (sem spinner vazio).
+  return <AgentActivityTimeline fallbackSteps={[]} showFallback={showFallback} />
 }
 
 function RichContent({ html, className }: { html: string; className?: string }) {

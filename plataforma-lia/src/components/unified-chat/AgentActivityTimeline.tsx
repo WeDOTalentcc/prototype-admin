@@ -8,13 +8,15 @@
  * a spinner while a tool is running, ✓/✗ + duration when it finishes, and
  * reasoning step labels.
  *
- * State resets naturally per turn: the parent only mounts this while
- * `isThinking` is true, so a fresh mount = a fresh turn (no manual reset / done
- * event needed). When there is no structured activity yet it falls back to the
- * existing <ThinkingStepsCard> so there is zero regression for plain spinners.
+ * 2026-06-04: reasoning steps are revealed one-by-one (paced) for the Manus
+ * "constant movement" feel even when they arrive grouped; tools render
+ * immediately (natural execution timing). `showFallback=false` makes it render
+ * nothing when empty (so it can stay mounted alongside a streaming answer
+ * without a stray spinner). The parent collapses it into AgentActivitySummary
+ * ("N ações") once the turn completes.
  */
 
-import React, { useEffect, useMemo, useState } from "react"
+import React, { useEffect, useMemo, useRef, useState } from "react"
 import { Loader2, CheckCircle2, XCircle, Brain } from "lucide-react"
 import { useTranslations } from "next-intl"
 import { ThinkingStepsCard } from "./ThinkingStepsCard"
@@ -29,7 +31,12 @@ interface ActivityItem {
 
 interface AgentActivityTimelineProps {
   fallbackSteps: string[]
+  /** When false and there are no items yet, render nothing (no stray spinner)
+   *  — used while the answer is already streaming. Default true (back-compat). */
+  showFallback?: boolean
 }
+
+const REASONING_REVEAL_MS = 450
 
 function humanizeTool(name: string): string {
   return name.replace(/[_-]+/g, " ").trim()
@@ -39,11 +46,29 @@ function formatMs(ms: number): string {
   return ms >= 1000 ? `${(ms / 1000).toFixed(1)}s` : `${ms}ms`
 }
 
-export function AgentActivityTimeline({ fallbackSteps }: AgentActivityTimelineProps) {
+export function AgentActivityTimeline({
+  fallbackSteps,
+  showFallback = true,
+}: AgentActivityTimelineProps) {
   const t = useTranslations("chat.agentActivity")
   const [items, setItems] = useState<ActivityItem[]>([])
+  const reasoningQueueRef = useRef<ActivityItem[]>([])
+  const drainTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   useEffect(() => {
+    function startDrain() {
+      if (drainTimerRef.current) return
+      drainTimerRef.current = setInterval(() => {
+        const next = reasoningQueueRef.current.shift()
+        if (next) {
+          setItems((prev) => [...prev, next])
+        } else if (drainTimerRef.current) {
+          clearInterval(drainTimerRef.current)
+          drainTimerRef.current = null
+        }
+      }, REASONING_REVEAL_MS)
+    }
+
     function onActivity(e: Event) {
       const detail = (e as CustomEvent).detail as Record<string, unknown> | undefined
       if (!detail || !detail.type) return
@@ -51,6 +76,19 @@ export function AgentActivityTimeline({ fallbackSteps }: AgentActivityTimelinePr
       const id = String(detail.tool_id || detail.name || `${type}-${Date.now()}`)
       const name = String(detail.name || "tool")
 
+      if (type === "reasoning_step") {
+        // Paced reveal — one card every REASONING_REVEAL_MS (constant movement).
+        reasoningQueueRef.current.push({
+          id: `reason-${id}-${reasoningQueueRef.current.length}`,
+          kind: "reasoning",
+          name: String(detail.label || ""),
+          status: "ok",
+        })
+        startDrain()
+        return
+      }
+
+      // Tools: immediate (natural execution timing — spinner → ✓).
       setItems((prev) => {
         if (type === "tool_started") {
           if (prev.some((i) => i.id === id)) return prev
@@ -73,23 +111,18 @@ export function AgentActivityTimeline({ fallbackSteps }: AgentActivityTimelinePr
           }
           return [...prev, next]
         }
-        if (type === "reasoning_step") {
-          return [
-            ...prev,
-            {
-              id: `reason-${prev.length}`,
-              kind: "reasoning",
-              name: String(detail.label || ""),
-              status: "ok",
-            },
-          ]
-        }
         return prev
       })
     }
 
     window.addEventListener("lia:agent-activity", onActivity)
-    return () => window.removeEventListener("lia:agent-activity", onActivity)
+    return () => {
+      window.removeEventListener("lia:agent-activity", onActivity)
+      if (drainTimerRef.current) {
+        clearInterval(drainTimerRef.current)
+        drainTimerRef.current = null
+      }
+    }
   }, [])
 
   const toolCount = useMemo(
@@ -98,7 +131,7 @@ export function AgentActivityTimeline({ fallbackSteps }: AgentActivityTimelinePr
   )
 
   if (items.length === 0) {
-    return <ThinkingStepsCard steps={fallbackSteps} />
+    return showFallback ? <ThinkingStepsCard steps={fallbackSteps} /> : null
   }
 
   return (
