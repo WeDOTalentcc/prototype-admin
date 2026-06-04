@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect, useRef, useState } from "react"
+import React, { useEffect, useMemo, useRef, useState } from "react"
 import { useTranslations } from "next-intl"
 import { Copy, Plus, ThumbsUp, ThumbsDown, RotateCcw } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -25,6 +25,7 @@ import type { PipelineTemplateCardData, PipelineTemplateOption, WizardPublishedJ
 import { renderMarkdown } from "@/lib/render-markdown"
 import { submitThumbsFeedback } from "@/services/lia-api/feedback-api"
 import type { LiaChatMessage } from "@/hooks/chat/use-lia-chat-connection"
+import { useTypewriter } from "@/hooks/chat/useTypewriter"
 import { WIZARD_PLAN_MESSAGE_ID } from "./wizard/wizard-plan-card"
 import { NavigationHintCard } from "./NavigationHintCard"
 import { TastingInsightCard } from "./TastingInsightCard"
@@ -285,6 +286,24 @@ export function UnifiedMessageList({
     bottomRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages.length, streamingContent, isThinking])
 
+  // Typewriter (2026-06-04): o provider entrega a resposta num burst (sem
+  // streaming incremental real). Revelamos a mensagem LIA mais recente
+  // char-a-char (efeito Manus). Dirigido pelo conteudo da msg mais nova, entao
+  // funciona tanto pra append novo quanto pra update in-place.
+  const _newestLiaId = useMemo(() => {
+    for (let i = messages.length - 1; i >= 0; i--) {
+      if (messages[i].sender === "lia") return messages[i].id
+    }
+    return null
+  }, [messages])
+  const _newestLiaContent = useMemo(
+    () => messages.find((m) => m.id === _newestLiaId)?.content ?? "",
+    [messages, _newestLiaId],
+  )
+  const { displayed: _newestLiaDisplayed } = useTypewriter(_newestLiaContent, {
+    enabled: _newestLiaId != null,
+  })
+
   return (
     <div
       ref={containerRef}
@@ -337,7 +356,11 @@ export function UnifiedMessageList({
                 <div
                   className="text-[13px] leading-relaxed text-lia-text-primary lia-markdown-content"
                   dangerouslySetInnerHTML={{
-                    __html: renderMarkdown(message.content),
+                    __html: renderMarkdown(
+                      message.id === _newestLiaId
+                        ? _newestLiaDisplayed
+                        : message.content,
+                    ),
                   }}
                 />
                 )}

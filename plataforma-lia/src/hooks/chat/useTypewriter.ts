@@ -29,11 +29,9 @@ export function useTypewriter(
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   useEffect(() => {
-    const reducedMotion =
-      typeof window !== "undefined" &&
-      window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches === true
-
-    if (!enabled || reducedMotion || text.length === 0) {
+    // NOTE (debito): prefers-reduced-motion respeito sera reintroduzido como
+    // setting; removido por ora para nao desabilitar silenciosamente a animacao.
+    if (!enabled || text.length === 0) {
       setCount(text.length)
       return
     }

@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useMemo, useState } from "react"
+import React, { useMemo } from "react"
 import { useTypewriter } from "@/hooks/chat/useTypewriter"
 import { useAuthStore } from "@/stores/auth-store"
 import {
@@ -274,16 +274,12 @@ function MessageBubble({ msg, conversationId, onQuickReply, animate = false }: {
   const quickReplyPreset = msg.metadata?.quick_reply_preset as QuickReplyPreset | undefined
 
   // Typewriter reveal for LIA messages flagged `animate`; others render full.
-  // Capture at mount: only the message newest WHEN IT MOUNTS types out (from
-  // char 0 -> no flash). Later re-renders that flip `animate` don't restart it;
-  // history messages mount with animate=false -> render instantly.
-  const [shouldAnimate] = useState(() => animate && !isUser)
   const _liaText = useMemo(
     () => (isUser ? "" : cleanAgentResponse(msg.content)),
     [msg.content, isUser],
   )
   const { displayed: _liaDisplayed } = useTypewriter(_liaText, {
-    enabled: shouldAnimate,
+    enabled: animate && !isUser,
   })
   const renderedHtml = useMemo(() => {
     if (isUser) return escapeHtml(msg.content).replace(/\n/g, "<br/>")
