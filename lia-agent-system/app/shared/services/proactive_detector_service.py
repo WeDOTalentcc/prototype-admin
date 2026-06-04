@@ -951,6 +951,17 @@ class ProactiveDetectorService:
                 per_detector_count[detector.name] = -2  # skip sentinel (vs -1 error)
                 continue
 
+            # G9 fix (2026-06-04): a deteccao e read-only. Um detector anterior
+            # (ou o load de overrides/comm_settings) pode ter batido numa query
+            # que falhou e foi engolida, deixando a transacao asyncpg abortada
+            # (InFailedSQLTransactionError). Rollback aqui limpa esse estado SEM
+            # descartar nada que importe (nenhum write aconteceu ainda) e impede
+            # a falha de cascatear para este detector e para o persist abaixo.
+            try:
+                await db.rollback()
+            except Exception:
+                pass
+
             try:
                 override = tenant_overrides.get(detector.name)
                 hints = await detector.detect(db, company_id, override=override)
@@ -970,6 +981,14 @@ class ProactiveDetectorService:
                     exc,
                 )
                 per_detector_count[detector.name] = -1
+
+        # Transacao limpa para a fase de escrita, independente do ultimo detector
+        # (ver comentario G9 acima). Sem isto, o SELECT de dedup do persist morria
+        # com InFailedSQLTransactionError — a causa real da lampada sempre vazia.
+        try:
+            await db.rollback()
+        except Exception:
+            pass
 
         persisted = await self._persist_hints(db, all_hints)
 
@@ -1081,8 +1100,22 @@ class ProactiveDetectorService:
                     exc,
                 )
 
-        # Commit responsabilidade do caller (task / endpoint). Mantemos a
-        # transacao aberta para que o caller controle isolation.
+        # G9 fix (2026-06-04): commit aqui (fail-loud). Antes o contrato era
+        # "caller commits" — mas o piggyback do MonitoringLoop roda numa sessao
+        # fresca e saia do `async with` SEM commit, descartando os INSERTs. O
+        # celery batch (proactive.detect_hints_hourly) ainda commita no fim; com
+        # persist commitando por company, aquele commit vira no-op idempotente
+        # e cada company fica duravel antes do proximo run.
+        try:
+            await db.commit()
+        except Exception as exc:
+            self.logger.error(
+                "ProactiveDetector persist commit failed (%d hints lost): %s",
+                persisted,
+                exc,
+            )
+            await db.rollback()
+            raise
         return persisted
 
 
