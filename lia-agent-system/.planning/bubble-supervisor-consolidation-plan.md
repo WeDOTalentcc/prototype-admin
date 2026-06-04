@@ -206,3 +206,32 @@ ABORDAGEM B (escolhida — coerente com a arquitetura da bolha):
 2. **Persistencia**: deixar o MainOrchestrator persistir (nao duplicar add_ai_message).
 3. **Roteamento/delegacao real**: so observavel no preview (Paulo) + /tmp/lia-backend-stdout.log.
 Por isso: flag default OFF, TDD cobre apenas o DESVIO (mock do main_orch), validacao = Fase 4.
+
+
+---
+
+## PROGRESSO FASE 3 (2026-06-04, commit 63746351f)
+
+✅ Desvio no `agent_chat_ws` (WS PRIMARIO da bolha) pro MainOrchestrator, atras de
+`LIA_BUBBLE_VIA_SUPERVISOR` (default OFF), APOS o branch wizard (preserva wizard).
+Reusa `_build_supervisor_context` + `_orchestrator_result_to_frames` (produtor unico).
+
+Diferenca do WS vs SSE: o WS NAO usa o ContextVar `_llm_streaming_callback` (comentario
+L1256-1260). Por isso o desvio fornece callback proprio `_ws_orch_cb` que envia tokens via
+`ws_mgr.send_to_session(serialize_token(...))` (best-effort live typing) + pass-through
+tool_*/reasoning/panel (P0.3). O frame `message` terminal do produtor unico garante o
+render correto mesmo se o shape do token divergir no FE. Persistencia + conversation_history
+no padrao do WS; `continue` (e loop, nao return).
+
+Sensor: `test_bubble_supervisor_wiring.py` +2 (WS flag wired + desvio after wizard).
+Verify: ast.parse + asserts estruturais. Suite completa em background (ambiente ~13min).
+
+### A confirmar LIVE (Fase 4)
+- Shape do token no FE da bolha WS: o wizard usa `{"type":"token","delta":...}`; o serialize_token
+  usa `{"type":"token","content":...}`. Se o FE so entende `delta`, o live-typing do supervisor
+  nao aparece (mas o `message` terminal renderiza). Alinhar FE OU emitir `delta` no _ws_orch_cb.
+- Roteamento/delegacao real, continuidade de memoria, nao-duplicacao de persistencia.
+
+### Restante
+- FASE 4: Paulo liga a flag no preview, valida WS+SSE.
+- FASE 5: flag default ON; aposentar CascadedRouter->1-agente (vira sub-delegacao via handoff).
