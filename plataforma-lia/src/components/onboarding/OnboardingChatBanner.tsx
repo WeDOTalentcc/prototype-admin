@@ -3,12 +3,14 @@
 /**
  * OnboardingChatBanner — P2-2 Sprint B.1 entry point.
  *
- * Banner cyan que aparece no topo do dashboard quando recrutador
- * tem setup_progress < threshold (canonical 80%) e não dispensou.
+ * Card de onboarding (Callout variante `info`) que aparece no topo do dashboard
+ * quando o recrutador tem setup_progress < threshold (canonical 80%) e não
+ * dispensou. Cyan é usado APENAS como acento de IA/LIA (ícone, superfície/borda
+ * sutil do Callout e o texto "{progress}% completo") — nunca em botões.
  *
  * 3 CTAs:
- *   1. "Configure via chat" → abre chat LIA com modo onboarding
- *   2. "Prefiro formulário" → navega pra /configuracoes
+ *   1. "Configure via chat" → abre chat LIA com modo onboarding (Button primary)
+ *   2. "Prefiro formulário" → navega pra /configuracoes (Button outline)
  *   3. "Dispensar" → marca dismissed em localStorage (não reaparece)
  *
  * Persistence: localStorage "lia-onboarding-banner-dismissed" + reset
@@ -25,6 +27,8 @@ import { useEffect, useState, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { useLocale } from "next-intl"
 import { useOnboardingFlow } from "@/components/onboarding/useOnboardingFlow"
+import { Callout } from "@/components/ui/callout"
+import { Button } from "@/components/ui/button"
 
 const DISMISSED_KEY = "lia-onboarding-banner-dismissed"
 const RESHOW_PROGRESS_THRESHOLD = 50  // se cair abaixo, re-show
@@ -73,57 +77,60 @@ export function OnboardingChatBanner({ onOpenChat, className = "" }: Props) {
   const progress = setupProgress ?? 0
 
   return (
-    <div
+    <Callout
+      variant="info"
       data-testid="onboarding-chat-banner"
-      className={`rounded-xl border border-wedo-cyan/40 bg-gradient-to-r from-wedo-cyan/10 to-transparent dark:from-wedo-cyan/15 p-4 ${className}`}
       role="region"
       aria-label="Banner de onboarding conversacional"
+      className={`rounded-xl p-4 ${className}`}
+      icon={
+        <Brain className="h-5 w-5 text-wedo-cyan" aria-hidden="true" />
+      }
+      title={
+        <span className="flex items-start justify-between gap-2">
+          <span>Configure sua empresa em 15 minutos via chat</span>
+          <button
+            type="button"
+            onClick={handleDismiss}
+            data-testid="banner-dismiss"
+            aria-label="Dispensar banner"
+            className="shrink-0 text-lia-text-secondary hover:text-lia-text-primary"
+          >
+            <X className="h-4 w-4" aria-hidden="true" />
+          </button>
+        </span>
+      }
     >
-      <div className="flex items-start gap-3">
-        <Brain className="w-5 h-5 text-wedo-cyan shrink-0 mt-0.5" aria-hidden="true" />
-        <div className="flex-1 space-y-2">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-lia-text-primary">
-              Configure sua empresa em 15 minutos via chat
-            </h3>
-            <button
-              type="button"
-              onClick={handleDismiss}
-              data-testid="banner-dismiss"
-              aria-label="Dispensar banner"
-              className="text-lia-text-secondary hover:text-lia-text-primary"
-            >
-              <X className="w-4 h-4" aria-hidden="true" />
-            </button>
-          </div>
-          <p className="text-xs text-lia-text-secondary leading-snug">
-            A LIA conversa com você e configura tudo automaticamente. Mais rápido que preencher 80+ campos sozinho.
-            <span className="ml-2 text-wedo-cyan font-medium">
-              {progress}% completo
-            </span>
-          </p>
-          <div className="flex flex-wrap gap-2 pt-1">
-            <button
-              type="button"
-              onClick={handleOpenChat}
-              data-testid="banner-open-chat"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-wedo-cyan text-white text-xs font-medium hover:bg-wedo-cyan/90 transition-colors motion-reduce:transition-none"
-            >
-              <MessageCircle className="w-3.5 h-3.5" aria-hidden="true" />
-              Configure via chat
-            </button>
-            <button
-              type="button"
-              onClick={handleOpenSettings}
-              data-testid="banner-open-settings"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-lia-bg-primary border border-lia-border-default text-xs text-lia-text-primary hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none"
-            >
-              <Settings className="w-3.5 h-3.5" aria-hidden="true" />
-              Prefiro formulário
-            </button>
-          </div>
+      <div className="space-y-2">
+        <p className="text-xs leading-snug text-lia-text-secondary">
+          A LIA conversa com você e configura tudo automaticamente. Mais rápido que preencher 80+ campos sozinho.
+          <span className="ml-2 font-medium text-wedo-cyan">
+            {progress}% completo
+          </span>
+        </p>
+        <div className="flex flex-wrap gap-2 pt-1">
+          <Button
+            type="button"
+            variant="primary"
+            size="sm"
+            onClick={handleOpenChat}
+            data-testid="banner-open-chat"
+          >
+            <MessageCircle aria-hidden="true" />
+            Configure via chat
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleOpenSettings}
+            data-testid="banner-open-settings"
+          >
+            <Settings aria-hidden="true" />
+            Prefiro formulário
+          </Button>
         </div>
       </div>
-    </div>
+    </Callout>
   )
 }
