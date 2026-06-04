@@ -118,7 +118,7 @@ async def search_candidates(
                 conditions.append(Candidate.seniority_level == seniority)
             
             if location:
-                conditions.append(Candidate.location.ilike(f"%{location}%"))
+                conditions.append(Candidate.location_city.ilike(f"%{location}%"))
             
             if min_score is not None and hasattr(Candidate, 'lia_score'):
                 conditions.append(Candidate.lia_score >= min_score)
@@ -158,7 +158,7 @@ async def search_candidates(
                     c for c in candidates 
                     if any(
                         skill.lower() in skills_lower 
-                        for skill in (getattr(c, 'skills', []) or [])
+                        for skill in (getattr(c, 'technical_skills', []) or [])
                     )
                 ]
             
@@ -186,7 +186,7 @@ async def search_candidates(
                     "lia_score": getattr(c, 'lia_score', None),
                     "wsi_score": getattr(c, 'wsi_score', None),
                     "years_experience": getattr(c, 'years_experience', None),
-                    "skills": getattr(c, 'skills', []) or [],
+                    "skills": getattr(c, 'technical_skills', []) or [],
                     "available_immediately": getattr(c, 'available_immediately', None),
                 }
                 candidates_list.append(candidate_data)
@@ -283,7 +283,7 @@ async def rank_candidates(
                     "status": getattr(c, 'status', None),
                     "lia_score": lia_score,
                     "wsi_score": getattr(c, 'wsi_score', None),
-                    "skills": getattr(c, 'skills', []) or [],
+                    "skills": getattr(c, 'technical_skills', []) or [],
                     "es_rank": es_rank,
                     "pgv_rank": pgv_rank,
                 })
@@ -530,7 +530,7 @@ async def get_candidate_stats(
             
             skills_count = {}
             for c in candidates:
-                for skill in (getattr(c, 'skills', []) or []):
+                for skill in (getattr(c, 'technical_skills', []) or []):
                     skills_count[skill] = skills_count.get(skill, 0) + 1
             
             top_skills = sorted(skills_count.items(), key=lambda x: x[1], reverse=True)[:10]
