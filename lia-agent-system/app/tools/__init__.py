@@ -135,6 +135,20 @@ def initialize_tools() -> None:
     # ficam ausentes do tool_registry e o tool_executor retorna tool_not_found.
     # Sentinela: tests/integration/agents/test_company_settings_no_regression.py
     register_company_settings_tools()
+
+    # Fase A (supervisor A2, 2026-06-04): handoff tools delegate_to_<dominio>,
+    # GATED por flag. Default OFF -> zero mudanca no chat live. Quando
+    # LIA_SUPERVISOR_HANDOFF=true, expoe os 10 handoffs ao supervisor (LIA-A04)
+    # p/ teste no preview. Curadoria dos ~20 globais + aposentadoria do fallback
+    # Phase-2 = incrementos seguintes. Sensor: tests/contract/test_supervisor_handoff_federation.
+    import os as _os_hf
+    if _os_hf.getenv("LIA_SUPERVISOR_HANDOFF", "false").lower() in ("true", "1"):
+        from app.orchestrator.supervisor.handoff_tools import register_handoff_tools
+        _n_hf = register_handoff_tools()
+        import logging as _lg_hf
+        _lg_hf.getLogger(__name__).info(
+            "[supervisor] LIA_SUPERVISOR_HANDOFF=on -- %d handoff tools registradas", _n_hf
+        )
     
     import logging
     logger = logging.getLogger(__name__)
