@@ -384,6 +384,86 @@ describe("SettingsPageEnhanced — listener 'settings-open-tab'", () => {
   })
 })
 
+// ── 3b. Listener `lia:settings-action` (atalho do chat — Task #1277) ───────
+
+describe("SettingsPageEnhanced — listener 'lia:settings-action'", () => {
+  it("abre a section informada entre os 10 hubs", async () => {
+    render(<SettingsPageEnhanced />)
+    await screen.findByTestId("hub-minha-empresa")
+
+    await act(async () => {
+      window.dispatchEvent(
+        new CustomEvent("lia:settings-action", {
+          detail: { actionId: "settings_open_tab", section: "integrations", source: "chat" },
+        }),
+      )
+    })
+
+    await waitFor(() => {
+      expect(screen.getByTestId("settings-content-area").getAttribute("data-active-section")).toBe(
+        "integrations",
+      )
+    })
+  })
+
+  it("resolve o alias de section ('alertas' → 'comunicacao-alertas')", async () => {
+    render(<SettingsPageEnhanced />)
+    await screen.findByTestId("hub-minha-empresa")
+
+    await act(async () => {
+      window.dispatchEvent(
+        new CustomEvent("lia:settings-action", {
+          detail: { section: "alertas", source: "chat" },
+        }),
+      )
+    })
+
+    await waitFor(() => {
+      expect(screen.getByTestId("settings-content-area").getAttribute("data-active-section")).toBe(
+        "comunicacao-alertas",
+      )
+    })
+  })
+
+  it("quando 'field' é informado, rola até o campo (scrollIntoView)", async () => {
+    const scrollSpy = Element.prototype.scrollIntoView as ReturnType<typeof vi.fn>
+    scrollSpy.mockClear()
+    render(<SettingsPageEnhanced />)
+    await screen.findByTestId("hub-minha-empresa")
+
+    await act(async () => {
+      window.dispatchEvent(
+        new CustomEvent("lia:settings-action", {
+          detail: { section: "minha-empresa", field: "culture.values", source: "chat" },
+        }),
+      )
+    })
+
+    await waitFor(() => {
+      expect(scrollSpy).toHaveBeenCalled()
+    })
+    const fieldEl = document.querySelector('[data-field="culture.values"]') as HTMLElement | null
+    expect(fieldEl).toBeTruthy()
+  })
+
+  it("ignora section inválida sem trocar a aba", async () => {
+    render(<SettingsPageEnhanced />)
+    await screen.findByTestId("hub-minha-empresa")
+
+    await act(async () => {
+      window.dispatchEvent(
+        new CustomEvent("lia:settings-action", {
+          detail: { section: "secao-fantasma", source: "chat" },
+        }),
+      )
+    })
+
+    expect(screen.getByTestId("settings-content-area").getAttribute("data-active-section")).toBe(
+      "minha-empresa",
+    )
+  })
+})
+
 // ── 4. A11y básico ────────────────────────────────────────────────────────
 
 describe("SettingsPageEnhanced — acessibilidade básica da sidebar", () => {

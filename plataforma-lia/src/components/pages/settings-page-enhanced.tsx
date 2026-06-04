@@ -50,6 +50,7 @@ import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/comp
 import { useHoverDebounce } from '@/lib/sidebar/useHoverDebounce'
 import { ErrorBoundarySection } from"@/components/ui/error-boundary-section"
 import { useCompanyId } from"@/hooks/company/useCompanyId"
+import { SETTINGS_SECTION_ALIASES } from "@/lib/settings/resolve-settings-target"
 
 interface SettingsSubsection {
   id: string
@@ -276,6 +277,50 @@ export default function SettingsPageEnhanced() {
     }
     window.addEventListener('settings-open-tab', handler)
     return () => window.removeEventListener('settings-open-tab', handler)
+  }, [])
+
+  // Task #1277 — reconecta o atalho do chat (`lia:settings-action`).
+  // O hook `useUIAction` (settings_open_tab) dispara este CustomEvent com
+  // `{ section, subsection, field }`. Aqui abrimos a aba correta entre os 10
+  // hubs canônicos e, se houver `field`, rolamos até ele dentro do hub.
+  // Sem este listener, o atalho fica quebrado (regressão da antiga Task #712).
+  useEffect(() => {
+    const actionHandler = (e: Event) => {
+      const detail = ((e as CustomEvent).detail || {}) as {
+        section?: string
+        subsection?: string
+        field?: string
+      }
+      const rawSection = detail.section
+      if (typeof rawSection !== 'string' || !rawSection) return
+      // Aplica os mesmos aliases do deep-link (`alertas → comunicacao-alertas`).
+      const section = SETTINGS_SECTION_ALIASES[rawSection] ?? rawSection
+      const known = settingsSections.find((s) => s.id === section)
+      if (!known) return // section inválida → ignora sem trocar a aba
+      setActiveSection(section)
+      setActiveSubsection(
+        typeof detail.subsection === 'string' ? detail.subsection : '',
+      )
+      setExpandedSections((prev) => new Set([...Array.from(prev), section]))
+      setExpandedGroups((prev) => new Set(prev).add(known.group))
+
+      const field = detail.field
+      if (typeof field === 'string' && field && typeof window !== 'undefined') {
+        // Espera o hub montar (next paint) antes de procurar o campo.
+        window.requestAnimationFrame(() => {
+          const el = (document.querySelector(`[data-field="${field}"]`) ||
+            document.querySelector(`[n="${field}"]`)) as HTMLElement | null
+          if (!el) return
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          el.dataset.recentlyHighlighted = 'true'
+          window.setTimeout(() => {
+            delete el.dataset.recentlyHighlighted
+          }, 3000)
+        })
+      }
+    }
+    window.addEventListener('lia:settings-action', actionHandler)
+    return () => window.removeEventListener('lia:settings-action', actionHandler)
   }, [])
 
   // Deep-link: /configuracoes?section=<id> abre a secao diretamente.
