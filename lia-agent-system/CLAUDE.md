@@ -1210,3 +1210,15 @@ deixando status preso em "running" e progress em 0 (Fase 0, fix 2026-06-03).
 - Linhas vestigiais `context["streaming_callback"] = ...` em `agent_chat_sse.py` e
   `main_orchestrator.py:2390` são write-only/dead (no SSE o `_streaming_callback` é
   consumido via ContextVar `_llm_streaming_callback`, só a linha de context é morta).
+
+
+## P0.1 — Paridade WS/SSE/REST de view-context (registrado 2026-06-04)
+
+Todo transporte do chat (REST, SSE, WebSocket) DEVE extrair o estado-da-tela que o FE envia e threadar ao orquestrador. NUNCA descartar silenciosamente.
+- REST: page_context = message_data.context or {}  -> passa page_context= ao adapter.
+- SSE: view_context = body.get("view_context") or body.get("page_context")  -> passa view_context=.
+- WS: page_context = data.get("context") or {}  -> _invoke_orchestrator_legacy(page_context=...).
+
+Sem isso o agente fica cego ao estado da tela (P0.1: "voce tem N na visao atual"). Fix sempre no PRODUTOR (o handler do transporte), nunca no consumidor.
+Sensor (computacional, AST): tests/contract/test_ws_sse_context_parity.py.
+Irmao pendente (mesmo bug): send_message_with_attachments passa page_context=None — precisa Form "context" no endpoint + wiring FE.

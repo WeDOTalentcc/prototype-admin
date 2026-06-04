@@ -734,6 +734,7 @@ company_id: str = Depends(require_company_id)):
             if data["type"] == "message":
                 conversation_id = data.get("conversation_id")
                 user_content = data["content"]
+                page_context = data.get("context") or {}
 
                 # LIA-P02: Compliance enforcement for legacy WebSocket
                 try:
@@ -765,11 +766,11 @@ company_id: str = Depends(require_company_id)):
 
                 # Run LIA via Orchestrator + ReAct agents
                 ws_orch = await _invoke_orchestrator_legacy(
-
                     user_message=user_content,
                     user_id=user_id,
                     conversation_id=conversation_id,
                     company_id=company_id,
+                    page_context=page_context,
                 )
                 lia_response = ws_orch["response"]
 
