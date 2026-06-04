@@ -23,6 +23,7 @@ import { ModuleUpsell } from "@/components/module-access/module-upsell"
 import { hasModuleAccess } from "@/utils/license-manager"
 import { useAuth } from "@/contexts/auth-context"
 import { useRecentItems, type RecentItem } from "@/hooks/shared/use-recent-items"
+import { getPersisted } from "@/lib/lia-persistence"
 import { useLiaFloat } from "@/contexts/lia-float-context"
 import { LiaSplitPanel } from "@/components/lia-float/LiaSplitPanel"
 import { DashboardChatPanel } from "@/components/unified-chat"
@@ -167,7 +168,7 @@ export function DashboardApp({ initialPage = "Conversar", children }: DashboardA
     setContextPage(currentPage)
     if (currentPage !== "Conversar") {
       setPendingChatConversationId(null)
-      const stored = localStorage.getItem("lia-chat-mode")
+      const stored = getPersisted<string>("lia-chat-mode", "sidebar")
       const currentMode = stored === "floating" ? "floating" : "sidebar"
       window.dispatchEvent(new CustomEvent("lia:chat-mode-changed", { detail: { mode: currentMode } }))
       openFloat()

@@ -4,6 +4,8 @@ import React, { useRef, useState } from "react"
 import { useTranslations } from "next-intl"
 import { Paperclip, MessageSquare, ClipboardPaste, Loader2, X } from "lucide-react"
 import { WorkforceSection } from "./WorkforceSection"
+import { ConfigurableFieldCard } from "./_shared"
+import { useLiaFieldTogglesForSection } from "@/hooks/settings/useLiaFieldTogglesForSection"
 import { useGoalsPlanningHub } from "./useGoalsPlanningHub"
 import { useSettingsConversational } from "@/hooks/settings/use-settings-conversational"
 import { textStyles, cardStyles } from "@/lib/design-tokens"
@@ -24,6 +26,8 @@ export function WorkforceHubContent() {
   const t = useTranslations("settings.workforce")
   const hub = useGoalsPlanningHub({ activeSubsection: "workforce" })
   const { triggerAction, sendChatPrompt } = useSettingsConversational()
+  const liaWorkforce = useLiaFieldTogglesForSection(["headcount_planning"])
+  const workforceLiaField = liaWorkforce.fields[0]
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState<string | null>(null)
@@ -101,6 +105,18 @@ export function WorkforceHubContent() {
 
   return (
     <div className="space-y-3">
+      {workforceLiaField && (
+        <ConfigurableFieldCard
+          label={workforceLiaField.label}
+          hint={workforceLiaField.hint}
+          instruction={workforceLiaField.instruction}
+          onInstructionSave={workforceLiaField.onInstructionSave}
+          showToggle
+          isActive={workforceLiaField.isActive}
+          onToggleChange={workforceLiaField.onToggleChange}
+          isSaving={workforceLiaField.isSaving}
+        />
+      )}
       <div
         className={`${cardStyles.flat} rounded-md border border-lia-border-subtle dark:border-lia-border-default p-3`}
       >

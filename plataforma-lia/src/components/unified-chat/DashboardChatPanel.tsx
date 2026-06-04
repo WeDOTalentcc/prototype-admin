@@ -4,12 +4,13 @@ import React, { useEffect, useState } from "react"
 import { useLiaFloat } from "@/contexts/lia-float-context"
 import { UnifiedChat } from "./UnifiedChat"
 import type { ChatMode } from "./unified-chat-types"
+import { getPersisted } from "@/lib/lia-persistence"
 
 export function DashboardChatPanel() {
   const { isOpen, hasInlineChat } = useLiaFloat()
   const [chatMode, setChatMode] = useState<ChatMode>(() => {
     if (typeof window === "undefined") return "sidebar"
-    const stored = localStorage.getItem("lia-chat-mode")
+    const stored = getPersisted<string>("lia-chat-mode", "sidebar")
     if (stored === "floating") return "floating"
     return "sidebar"
   })

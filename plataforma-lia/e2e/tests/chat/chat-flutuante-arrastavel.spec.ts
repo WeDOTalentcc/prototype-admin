@@ -27,11 +27,20 @@ const CONTAINER = '[data-render-mode="overlay"][data-chat-mode="floating"]';
  * Garante que a janela flutuante esteja montada: força o modo "floating" no
  * localStorage ANTES de qualquer script de página, navega para uma rota de
  * dashboard (não-"Conversar", que auto-abre o chat) e espera o handle real.
+ *
+ * O modo é gravado no MESMO formato canônico (envelope com TTL) que
+ * `setPersisted`/`getPersisted` usam — todos os readers (dashboard-app,
+ * UnifiedChatConditional, DashboardChatPanel, UnifiedChat) leem via
+ * `getPersisted`, então o modo "floating" sobrevive a soft-nav e reload.
  */
 async function openFloatingWindow(page: Page): Promise<void> {
   await page.addInitScript(() => {
     try {
-      localStorage.setItem('lia-chat-mode', 'floating');
+      const wrapper = {
+        value: 'floating',
+        expiresAt: Date.now() + 90 * 24 * 60 * 60 * 1000,
+      };
+      localStorage.setItem('lia-chat-mode', JSON.stringify(wrapper));
     } catch {
       /* ignore */
     }
@@ -161,20 +170,10 @@ test.describe('Chat Flutuante Arrastável (UnifiedChat real)', () => {
     // O provider do chat vive acima do router, então o componente NÃO remonta
     // e a posição arrastada (estado efêmero em memória) deve sobreviver.
     //
-    // Reafirmamos o modo "floating" no localStorage cru ANTES do clique: ao
-    // montar, o UnifiedChat consome (via getPersisted) o valor cru legacy que
-    // o addInitScript gravou, então o effect de troca de página em
-    // dashboard-app — que lê `localStorage.getItem("lia-chat-mode") === "floating"`
-    // de forma crua — despacharia "sidebar" e desmontaria a janela flutuante.
-    // Garantir o modo aqui isola o que está sob teste: a PERSISTÊNCIA DA POSIÇÃO
-    // através de uma navegação soft (o componente não remonta).
-    await page.evaluate(() => {
-      try {
-        localStorage.setItem('lia-chat-mode', 'floating');
-      } catch {
-        /* ignore */
-      }
-    });
+    // O modo "floating" persiste sozinho: leitura e escrita usam o MESMO
+    // formato canônico (`getPersisted`/`setPersisted`), então o effect de troca
+    // de página em dashboard-app lê "floating" e a janela flutuante permanece
+    // montada — sem precisar reafirmar o modo no localStorage antes do clique.
     await page.getByRole('button', { name: 'Decidir', exact: true }).first().click();
     await page.waitForURL(/\/tasks(\b|\/|$)/, { timeout: 15_000 });
     await page.locator(HANDLE).first().waitFor({ state: 'visible', timeout: 15_000 });
