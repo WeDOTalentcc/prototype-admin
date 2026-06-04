@@ -536,7 +536,7 @@ company_id: str = Depends(require_company_id)):
                 # SSE-e2e Fase B: repassa preservando shape (não achata em thinking)
                 await sse_queue.put(serialize_tool_started(
                     name=event.get("name", "tool"),
-                    args=event.get("args", ""),
+                    args=mask_pii(str(event.get("args") or "")),
                     tool_id=event.get("tool_id", ""),
                 ))
             elif event_type == "tool_finished":
@@ -544,13 +544,13 @@ company_id: str = Depends(require_company_id)):
                     name=event.get("name", "tool"),
                     status=event.get("status", "ok"),
                     duration_ms=event.get("duration_ms"),
-                    result=event.get("result", ""),
+                    result=mask_pii(str(event.get("result") or "")),
                     tool_id=event.get("tool_id", ""),
                 ))
             elif event_type == "reasoning_step":
                 await sse_queue.put(serialize_reasoning_step(
                     label=event.get("label", ""),
-                    detail=event.get("detail", ""),
+                    detail=mask_pii(str(event.get("detail") or "")),
                 ))
             else:
                 await sse_queue.put(serialize_thinking(
@@ -633,9 +633,10 @@ company_id: str = Depends(require_company_id)):
         # delivery buffering (backend streams incrementally vs downstream
         # burst). OFF by default. Activate: env LIA_SSE_TIMING_LOG=1 OR touch
         # /tmp/lia_sse_timing_on (flips a running uvicorn without a restart).
+        import os as _os_sse
         _sse_timing = (
-            os.getenv("LIA_SSE_TIMING_LOG", "").lower() in ("1", "true", "yes")
-            or os.path.exists("/tmp/lia_sse_timing_on")
+            _os_sse.getenv("LIA_SSE_TIMING_LOG", "").lower() in ("1", "true", "yes")
+            or _os_sse.path.exists("/tmp/lia_sse_timing_on")
         )
         _t_stream0 = asyncio.get_event_loop().time()
 
