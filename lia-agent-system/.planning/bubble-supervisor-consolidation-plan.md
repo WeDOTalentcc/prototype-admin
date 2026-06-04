@@ -114,3 +114,47 @@ FASE 3 (WS): + HITL (approval_required/confirmed), wizard_stage, plan_progress, 
 Sensor computacional que falha se um campo novo de `ChatResponse` (main_orchestrator.py)
 nao tiver mapeamento correspondente no serializer do `_sse_via_orchestrator` — previne
 recidiva do gap "supervisor produz mas nao serializa". (warn -> blocking quando baseline=0.)
+
+
+---
+
+## PROGRESSO FASE 2 (2026-06-04)
+
+Itens de NUCLEO feitos (melhoram o supervisor; default deixa o chat-page intocado):
+- ✅ **Item 1 — serializacao estruturada** (commit `5c98d61b0`). `_sse_via_orchestrator`
+  ganhou `emit_structured: bool = False`. Quando True (caminho bolha), helper puro
+  `_orchestrator_result_to_frames(result, conversation_id)` serializa o ChatResponse em
+  frames de paridade: `message` rico (actions/fairness/navigation via ui_action),
+  `clarification` (needs_params), `approval_required` (needs_confirmation). Tokens em
+  shape canonico + pass-through de tool_started/finished/reasoning_step/panel_update
+  (P0.3). **Bug P1 corrigido**: lia `.content` (era `.message`). Default False =
+  chat-page intocado. 5 testes deterministicos.
+- ✅ **Item 2 — keepalive 502-fix** (commit `3f9ce02b0`). Loop antigo abortava apos 60s
+  de silencio; WSI ~100s derrubava. Agora poll `keepalive_after_s`(15s)→`: keepalive`,
+  aborta so apos `hard_timeout_s`(180s). 6o teste.
+
+Sensor (feedback): `tests/contract/test_sse_supervisor_structured.py` (6 testes,
+orchestrator mockado, roda headless). Regressao: test_chat_orchestrator_timeout +
+test_sse_passthrough + test_reasoning_streaming verdes. APP BOOT OK (1863 rotas).
+
+### GUIDE (feedforward) — produtor unico de serializacao do supervisor
+`_orchestrator_result_to_frames` (chat.py) e o PONTO UNICO que serializa o ChatResponse
+do MainOrchestrator em eventos de stream. Ao adicionar um campo de UI ao ChatResponse
+(main_orchestrator.py:168) que a bolha precise renderizar, mapeie-o AQUI (e cubra com
+um teste em test_sse_supervisor_structured.py). Nao reimplementar serializacao no
+agent_chat_sse/ws — eles devem convergir para este produtor.
+
+### Itens RESTANTES da Fase 2 (proxima etapa — VALIDACAO LIVE)
+- **Item 6 — flag-gate da bolha** (`LIA_BUBBLE_VIA_SUPERVISOR`, default OFF): em
+  agent_chat_sse, APOS o wizard pin (preserva wizard na bolha, evita divergencia #2),
+  desviar o caminho auto/recruiter do CascadedRouter+agent.process para
+  `MainOrchestrator.process` quando flag ON. Mapping session_id->conversation_id.
+  Reusa o `_streaming_callback` da bolha (ja serializa tokens/tools = cobre item 4).
+  RISCO: muda o transporte da bolha — infra testavel headless (mock), mas comportamento
+  real (roteamento/delegacao) so valida LIVE (armadilha: headless nao roda domain agents
+  /checkpointer). Default OFF = zero risco em prod; Paulo liga no preview (Fase 4).
+- **Item 5 — wizard pin**: EVITADO pelo design do item 6 (desvio acontece depois do pin).
+- **Item 4 — tool_* P0.3**: pass-through ja feito no _sse_via_orchestrator; producer
+  (88c6bce27) a confirmar live.
+- Depois: FASE 3 (agent_chat_ws, +HITL/wizard_stage/plan_progress) e FASE 4/5 (validar
+  live, flag default on, aposentar CascadedRouter->1-agente).
