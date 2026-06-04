@@ -443,7 +443,7 @@ export function useChatTransport(
       }
 
       const attemptSSE = (attempt: number) => {
-        fetch(`${API_BASE_URL}/api/v1/chat/${sseSessionId}/stream`, {
+        fetch(`/api/backend-proxy/chat/${sseSessionId}/stream`, {
           method: "POST",
           headers: {
             ...headers,
