@@ -1282,6 +1282,7 @@ export function UnifiedChat({
             isThinking={chatIsThinking}
             thinkingSteps={chatThinkingSteps}
             userName={userName}
+            conversationId={chatConversationId}
             onChipClick={(value) => sendChatMessage(value)}
             onRegenerate={handleRegenerate}
           />

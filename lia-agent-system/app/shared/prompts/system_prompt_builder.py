@@ -180,6 +180,7 @@ class SystemPromptBuilder:
         intent: str = "",
         entities: dict[str, Any] | None = None,
         extra_instructions: str = "",
+        learned_examples: str = "",
         ai_persona: dict[str, str] | None = None,
     ) -> str:
         """Build the full system prompt.
@@ -446,6 +447,13 @@ class SystemPromptBuilder:
 
         if extra_instructions:
             sections.append(f"\n## Instruções Adicionais\n{extra_instructions}")
+
+        # Task #1297 — feedback learning loop: injeta exemplos de respostas
+        # boas/ruins aprendidos do feedback real do tenant (👍/👎/correção).
+        # Append-only, escopado por company_id, fail-open (vazio = sem seção).
+        # Fecha o gap "padrões aprendidos só consumidos pelo wizard".
+        if learned_examples:
+            sections.append(learned_examples)
 
         return "\n".join(sections)
 

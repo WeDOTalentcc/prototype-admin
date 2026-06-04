@@ -65,43 +65,6 @@ def _mask_stream_text(text: str) -> str:
         return text
 
 
-def _extended_thinking_enabled() -> bool:
-    """Flag (2026-06-04): streama o extended-thinking do Claude como reasoning
-    cards (efeito Manus). OFF por default; liga via env LIA_EXTENDED_THINKING=1
-    ou sentinela /tmp/lia_extended_thinking_on (sem Secret/restart em dev).
-    """
-    return (
-        os.getenv("LIA_EXTENDED_THINKING", "").lower() in ("1", "true", "yes")
-        or os.path.exists("/tmp/lia_extended_thinking_on")
-    )
-
-
-def _extended_thinking_budget() -> int:
-    try:
-        return max(1024, int(os.getenv("LIA_EXTENDED_THINKING_BUDGET", "2000")))
-    except (TypeError, ValueError):
-        return 2000
-
-
-def _drain_thinking_steps(buf: str) -> tuple[str, list[str]]:
-    """Quebra o thinking acumulado em passos emitiveis (fronteira de frase/linha).
-    Retorna (buffer_restante, passos): o fragmento final incompleto fica buffered;
-    fragmentos curtos (<12 chars) sao descartados (ruido). Cada passo <= 200 chars.
-    """
-    out: list[str] = []
-    cur = ""
-    n = len(buf)
-    for i in range(n):
-        ch = buf[i]
-        cur += ch
-        nxt = buf[i + 1] if i + 1 < n else ""
-        if ch == "\n" or (ch in ".!?" and nxt in (" ", "\n")):
-            out.append(cur)
-            cur = ""
-    steps = [seg.strip()[:200] for seg in out if len(seg.strip()) >= 12]
-    return cur, steps
-
-
 # === Audit 2026-05-24 (P1 fix): cache em chamadas LLM tool-calling idempotentes ===
 # Reduz top-15 latencies de 5-13s para ~ms em cache hits. Safety: só cacheia
 # responses text-only (sem tool_calls — esses têm side effects e devem rodar
@@ -689,65 +652,14 @@ class LLMService:
             if _stream_cb is not None:
                 # Streaming path: emit text deltas via callback durante geracao
                 logger.info(f"[LLM-STREAM] Streaming mode (callback presente)")
-                if _extended_thinking_enabled():
-                    # Extended thinking: itera eventos crus pra capturar
-                    # thinking_delta (text_stream nao os expoe) e emite cada
-                    # trecho como reasoning_step (cards Manus) + os tokens.
-                    _budget = _extended_thinking_budget()
-                    request_kwargs["thinking"] = {"type": "enabled", "budget_tokens": _budget}
-                    if request_kwargs.get("max_tokens", 0) <= _budget:
-                        request_kwargs["max_tokens"] = _budget + max_tokens
-                    # Claude pensa em ingles por default; os cards de raciocinio
-                    # sao mostrados ao recrutador (PT-BR). Instrui o thinking a
-                    # ser em portugues, conciso, frases curtas (= cards limpos).
-                    _think_lang = (
-                        "\n\n[Formato do seu raciocinio] Pense SEMPRE em portugues brasileiro, "
-                        "em frases curtas e diretas (cada frase vira um card visivel para "
-                        "o recrutador). Sem markdown no raciocinio."
-                    )
-                    if request_kwargs.get("system"):
-                        request_kwargs["system"] = request_kwargs["system"] + _think_lang
-                    else:
-                        request_kwargs["system"] = _think_lang.strip()
-                    logger.info(f"[LLM-STREAM] extended thinking ON (budget={_budget})")
-                    async with client.messages.stream(**request_kwargs) as stream:
-                        _think_buf = ""
-                        async for _ev in stream:
-                            if getattr(_ev, "type", "") != "content_block_delta":
-                                continue
-                            _d = getattr(_ev, "delta", None)
-                            _dt = getattr(_d, "type", "")
-                            if _dt == "text_delta":
-                                _txt = getattr(_d, "text", "")
-                                if _txt:
-                                    try:
-                                        await _stream_cb({"type": "token", "content": _mask_stream_text(_txt)})
-                                    except Exception as _cb_err:
-                                        logger.warning(f"[LLM-STREAM] callback error (continuing): {_cb_err}")
-                            elif _dt == "thinking_delta":
-                                _think_buf += getattr(_d, "thinking", "")
-                                _think_buf, _steps = _drain_thinking_steps(_think_buf)
-                                for _step in _steps:
-                                    try:
-                                        await _stream_cb({"type": "reasoning_step", "label": _step})
-                                    except Exception:
-                                        pass
-                        _tail = _think_buf.strip()
-                        if len(_tail) >= 12:
+                async with client.messages.stream(**request_kwargs) as stream:
+                    async for text_delta in stream.text_stream:
+                        if text_delta:
                             try:
-                                await _stream_cb({"type": "reasoning_step", "label": _tail[:200]})
-                            except Exception:
-                                pass
-                        final_message = await stream.get_final_message()
-                else:
-                    async with client.messages.stream(**request_kwargs) as stream:
-                        async for text_delta in stream.text_stream:
-                            if text_delta:
-                                try:
-                                    await _stream_cb({"type": "token", "content": _mask_stream_text(text_delta)})
-                                except Exception as _cb_err:
-                                    logger.warning(f"[LLM-STREAM] callback error (continuing): {_cb_err}")
-                        final_message = await stream.get_final_message()
+                                await _stream_cb({"type": "token", "content": _mask_stream_text(text_delta)})
+                            except Exception as _cb_err:
+                                logger.warning(f"[LLM-STREAM] callback error (continuing): {_cb_err}")
+                    final_message = await stream.get_final_message()
                 # Notifica fim
                 try:
                     await _stream_cb({"type": "token_done"})

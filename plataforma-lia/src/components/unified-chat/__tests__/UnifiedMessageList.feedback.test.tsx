@@ -69,6 +69,8 @@ vi.mock("@/components/notifications/weekly-digest-chat-message", () => ({
 
 import { UnifiedMessageList } from "../UnifiedMessageList"
 import type { LiaChatMessage } from "@/hooks/chat/use-lia-chat-connection"
+import { submitThumbsFeedback } from "@/services/lia-api/feedback-api"
+import { toast } from "@/lib/toast"
 
 function makeMessages(): LiaChatMessage[] {
   return [
@@ -158,5 +160,53 @@ describe("UnifiedMessageList — message actions (Task #570)", () => {
     const regenBtn = screen.getByRole("button", { name: "regenerateAriaLabel" })
     fireEvent.click(regenBtn)
     expect(onRegenerate).toHaveBeenCalledWith("a-1")
+  })
+
+  it("persists thumbs-up via conversationId and forwards the lia_response context (Task #1297)", () => {
+    // Root-cause guard: the conversationId prop MUST reach the action row so
+    // the POST actually fires, and the captured LIA text must travel as
+    // message_context so the backend can learn from the real answer.
+    vi.mocked(submitThumbsFeedback).mockClear()
+    render(
+      <UnifiedMessageList
+        mode="sidebar"
+        messages={makeMessages()}
+        isStreaming={false}
+        streamingContent=""
+        isThinking={false}
+        thinkingSteps={[]}
+        userName="Test"
+        conversationId="conv-1"
+      />,
+    )
+
+    fireEvent.click(screen.getByRole("button", { name: "helpfulAriaLabel" }))
+    expect(submitThumbsFeedback).toHaveBeenCalledWith("conv-1", "a-1", "up", {
+      messageContext: { lia_response: "Aqui vai o status do pipeline." },
+    })
+  })
+
+  it("fails loud (toast.error, no network call) when conversationId is missing (Task #1297)", () => {
+    // canonical-fix: no silent fallback. Without a conversationId we cannot
+    // persist, so the user is told instead of being shown a fake optimistic
+    // success that never reaches the backend (the original dead-capture bug).
+    vi.mocked(submitThumbsFeedback).mockClear()
+    vi.mocked(toast.error).mockClear()
+    render(
+      <UnifiedMessageList
+        mode="sidebar"
+        messages={makeMessages()}
+        isStreaming={false}
+        streamingContent=""
+        isThinking={false}
+        thinkingSteps={[]}
+        userName="Test"
+        conversationId={null}
+      />,
+    )
+
+    fireEvent.click(screen.getByRole("button", { name: "helpfulAriaLabel" }))
+    expect(submitThumbsFeedback).not.toHaveBeenCalled()
+    expect(toast.error).toHaveBeenCalled()
   })
 })

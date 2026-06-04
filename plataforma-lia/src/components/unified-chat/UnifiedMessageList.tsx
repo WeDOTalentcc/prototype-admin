@@ -24,6 +24,7 @@ import {
 import type { PipelineTemplateCardData, PipelineTemplateOption, WizardPublishedJobCardData } from "./wizard/wizard-plan-card"
 import { renderMarkdown } from "@/lib/render-markdown"
 import { submitThumbsFeedback } from "@/services/lia-api/feedback-api"
+import { toast } from "@/lib/toast"
 import type { LiaChatMessage } from "@/hooks/chat/use-lia-chat-connection"
 import { useTypewriter } from "@/hooks/chat/useTypewriter"
 import { WIZARD_PLAN_MESSAGE_ID } from "./wizard/wizard-plan-card"
@@ -113,24 +114,41 @@ function MessageActions({
 
   const handleThumbsUp = () => {
     if (thumbsState === "up") return
-    setThumbsState("up")
-    if (conversationId) {
-      submitThumbsFeedback(conversationId, messageId, "up").catch(() => {
-        setThumbsState(initialThumbs ?? null)
-      })
+    // Task #1297 fail-loud: sem conversationId não há como persistir — avisa o
+    // usuário em vez de fingir sucesso com estado só-otimista (canonical-fix:
+    // proibido silent fallback). Era O bug da captura morta (id nunca chegava).
+    if (!conversationId) {
+      toast.error(t('feedbackErrorToast'))
+      return
     }
+    setThumbsState("up")
+    submitThumbsFeedback(conversationId, messageId, "up", {
+      messageContext: { lia_response: content },
+    })
+      .then(() => {
+        toast.success(t('feedbackThanksToast'))
+      })
+      .catch(() => {
+        setThumbsState(initialThumbs ?? null)
+        toast.error(t('feedbackErrorToast'))
+      })
   }
 
   const handleThumbsDownClick = () => {
     // Record the immediate "down" signal once; the popover collects extra
     // qualitative context (category / free text) which is sent on submit.
     if (thumbsState !== "down") {
-      setThumbsState("down")
-      if (conversationId) {
-        submitThumbsFeedback(conversationId, messageId, "down").catch(() => {
-          setThumbsState(initialThumbs ?? null)
-        })
+      if (!conversationId) {
+        toast.error(t('feedbackErrorToast'))
+        return
       }
+      setThumbsState("down")
+      submitThumbsFeedback(conversationId, messageId, "down", {
+        messageContext: { lia_response: content },
+      }).catch(() => {
+        setThumbsState(initialThumbs ?? null)
+        toast.error(t('feedbackErrorToast'))
+      })
     }
     setDownOpen(true)
   }
@@ -140,10 +158,17 @@ function MessageActions({
       submitThumbsFeedback(conversationId, messageId, "down", {
         category: downCategory ?? undefined,
         feedbackText: downText.trim() || undefined,
-      }).catch(() => {
-        // Swallow: the "down" signal was already persisted on the first click;
-        // a follow-up failure shouldn't roll back the user's rating.
+        messageContext: { lia_response: content },
       })
+        .then(() => {
+          toast.success(t('feedbackThanksToast'))
+        })
+        .catch(() => {
+          // The "down" signal was already persisted on the first click, so we
+          // don't roll back the rating — but surface the follow-up failure so
+          // the user knows the extra detail didn't save (fail-loud).
+          toast.error(t('feedbackErrorToast'))
+        })
     }
     setDownOpen(false)
   }

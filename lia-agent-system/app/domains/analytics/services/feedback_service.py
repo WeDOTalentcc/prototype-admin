@@ -124,11 +124,18 @@ class FeedbackService:
         feedback: InteractionFeedback,
         db: AsyncSession
     ) -> None:
-        """Update learning patterns based on new feedback."""
+        """Update learning patterns based on new feedback.
+
+        Task #1297: o early-return original ``if not feedback.intent: return``
+        matava 100% da aprendizagem do chat — os polegares 👍/👎 não carregam
+        ``intent`` no contexto, então NENHUM padrão era gerado (tabela
+        ``learning_patterns`` vazia apesar de 14k+ mensagens). Agora geramos
+        o padrão mesmo sem intent: ``_generate_pattern_key`` já degrada para
+        ``"general"``, criando um sinal agregado por tenant que ainda captura
+        bons/maus exemplos de resposta. Mantém-se a granularidade por intent
+        quando o contexto o fornece.
+        """
         try:
-            if not feedback.intent:
-                return
-            
             pattern_key = self._generate_pattern_key(feedback)
             company_id = feedback.company_id
             
@@ -288,7 +295,15 @@ class FeedbackService:
             
             relevant = []
             for pattern in all_patterns:
-                if pattern.pattern_type == "intent" and intent in (pattern.pattern_key or ""):
+                # Task #1297: padrões "general" (feedback sem intent explícito —
+                # o caso comum dos polegares no chat) são sempre relevantes;
+                # representam preferência agregada do tenant aplicável a
+                # qualquer turno conversacional.
+                if (pattern.pattern_key or "") == "general":
+                    relevant.append(pattern)
+                    continue
+
+                if pattern.pattern_type == "intent" and intent and intent in (pattern.pattern_key or ""):
                     relevant.append(pattern)
                     continue
                 
@@ -542,6 +557,60 @@ class FeedbackService:
             "response_style_hints": response_hints[:2],
             "average_success_rate": sum(p.success_rate for p in patterns) / len(patterns),
         }
+
+    async def get_learned_examples_block(
+        self,
+        intent: str,
+        user_message: str,
+        company_id: str,
+        db: AsyncSession | None = None,
+    ) -> str:
+        """Task #1297: formata os exemplos bons/ruins aprendidos do feedback
+        real do tenant numa seção de prompt pronta para injeção.
+
+        Fecha o gap "padrões aprendidos só consumidos pelo wizard": este bloco
+        é injetado pelo helper canônico ``build_system_prompt_with_persona``,
+        então TODOS os caminhos de chat (geral + agentes ReAct) passam a
+        respeitar o feedback do recrutador, não só o wizard de criação de vaga.
+
+        Fail-open: retorna ``""`` em qualquer erro ou ausência de padrões —
+        nunca bloqueia a geração de resposta.
+        """
+        try:
+            context = await self.get_pattern_context_for_response(
+                intent=intent or "",
+                user_message=user_message or "",
+                company_id=company_id,
+                db=db,
+            )
+        except Exception as e:
+            self.logger.warning(f"get_learned_examples_block failed: {e}")
+            return ""
+
+        if not context.get("has_patterns"):
+            return ""
+
+        good = context.get("good_response_examples") or []
+        bad = context.get("bad_response_examples") or []
+        hints = context.get("response_style_hints") or []
+        if not (good or bad or hints):
+            return ""
+
+        lines: list[str] = [
+            "\n## Aprendizado do Feedback do Recrutador",
+            "Estes exemplos vêm do feedback real (👍/👎/correção) deste cliente. "
+            "Use-os para calibrar o estilo e o conteúdo da sua resposta.",
+        ]
+        if good:
+            lines.append("\n### Respostas bem avaliadas (espelhe o estilo):")
+            lines.extend(f"- {ex}" for ex in good)
+        if bad:
+            lines.append("\n### Respostas mal avaliadas (evite este padrão):")
+            lines.extend(f"- {ex}" for ex in bad)
+        if hints:
+            lines.append("\n### Preferências de estilo:")
+            lines.extend(f"- {h}" for h in hints)
+        return "\n".join(lines)
 
 
 feedback_service = FeedbackService()
