@@ -1,8 +1,8 @@
-"""Fase A slice (supervisor A2): delegate_to_pipeline handoff tool.
+"""Fase A (supervisor A2): handoff tools delegate_to_<dominio>.
 
-Prova o padrao de delegacao hierarquica: o supervisor (agentic_loop) chama um
-handoff tool que delega a um domain sub-agent via AgentRegistry.process(AgentInput)
-e devolve dado estruturado. Determinístico: mocka AgentRegistry (sem DB/loop/pool).
+Padrao de delegacao hierarquica: o supervisor (agentic_loop) chama um handoff tool
+que delega a um domain sub-agent via AgentRegistry.process(AgentInput) e devolve dado
+estruturado. Determinístico: mocka AgentRegistry (sem DB/loop/pool).
 """
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -62,13 +62,18 @@ async def test_delegate_unregistered_domain_fail_loud():
     assert result["unavailable"] is True
 
 
-def test_register_handoff_tools_registers_delegate_to_pipeline():
-    from app.orchestrator.supervisor.handoff_tools import register_handoff_tools
+def test_register_handoff_tools_registers_all_curated_domains():
+    from app.orchestrator.supervisor.handoff_tools import (
+        register_handoff_tools, DOMAINS, handoff_tool_name,
+    )
     from app.tools.registry import tool_registry
 
-    register_handoff_tools()
-    tool = tool_registry.get_tool("delegate_to_pipeline")
-    assert tool is not None
-    assert "orchestrator" in tool.allowed_agents
-    schema = getattr(tool, "parameters", None) or getattr(tool, "parameters_schema", None)
-    assert "task" in (schema or {}).get("required", [])
+    n = register_handoff_tools()
+    assert n == len(DOMAINS) and n >= 10
+    for domain in DOMAINS:
+        tool = tool_registry.get_tool(handoff_tool_name(domain))
+        assert tool is not None, f"{domain} nao registrado"
+        assert "orchestrator" in tool.allowed_agents
+        schema = getattr(tool, "parameters", None) or getattr(tool, "parameters_schema", None)
+        assert "task" in (schema or {}).get("required", [])
+    assert tool_registry.get_tool("delegate_to_pipeline") is not None
