@@ -235,3 +235,124 @@ def test_resolve_alert_channels_preserves_in_app_surfaces():
     assert "email" in out and "bell" in out and "chat" in out
     # nada marcado => fail-safe (não perde o alerta; regra ainda enabled aqui).
     assert _resolve_alert_channels({}) == ["bell", "chat"]
+
+
+# =============================================================================
+# 7. Cobertura 15/15 (Task #1296): toda regra do catálogo tem gerador real
+# =============================================================================
+def test_catalog_alert_types_have_generator():
+    """Toda alert_type do catálogo da UI (DEFAULT_ALERT_PREFERENCES) DEVE ser
+    honrada por um gerador: um detector canônico (via _DETECTOR_ALERT_TYPE_MAP)
+    ou o MonitoringLoop. Task #1296 fechou as 9 regras órfãs — nenhum ghost
+    setting pode reaparecer."""
+    from app.shared.services.proactive_detector_service import (
+        _DETECTOR_ALERT_TYPE_MAP,
+    )
+
+    catalog_list = _literal_assignment(
+        REPO_ROOT / "app" / "api" / "v1" / "alerts.py",
+        "DEFAULT_ALERT_PREFERENCES",
+    )
+    catalog_types = {row["alert_type"] for row in catalog_list}
+    detector_types = set(_DETECTOR_ALERT_TYPE_MAP.values())
+
+    # sla_near_expiration é honrado tanto por detector quanto pelo MonitoringLoop.
+    uncovered = catalog_types - detector_types
+    assert not uncovered, (
+        f"alert_types do catálogo da UI sem gerador (regra órfã): {uncovered}. "
+        "Cada regra exibida na tela precisa de detector/loop que a honre."
+    )
+
+
+def test_nine_orphan_detectors_registered():
+    """Os 9 detectores criados na Task #1296 DEVEM estar registrados em
+    ProactiveDetectorService.detectors (sem isso, a config da UI vira ghost
+    setting de novo)."""
+    from app.shared.services.proactive_detector_service import (
+        ProactiveDetectorService,
+    )
+
+    expected = {
+        "conversion_rate_low",
+        "sla_near_expiration",
+        "interview_not_confirmed",
+        "feedback_pending",
+        "offers_pending_long",
+        "tasks_overdue",
+        "email_delivery_low",
+        "ideal_candidate_found",
+        "ats_sync_failed",
+    }
+    registered = {d.name for d in ProactiveDetectorService().detectors}
+    missing = expected - registered
+    assert not missing, f"detectores Task #1296 não registrados: {missing}"
+
+
+def test_orphan_detectors_disabled_gate_returns_empty():
+    """Fail-fast: quando o tenant desabilita a regra (is_enabled=False), o
+    detector retorna [] ANTES de qualquer query (respeita o toggle da UI)."""
+    from app.shared.services.proactive_detector_service import (
+        AtsSyncFailedDetector,
+        ConversionRateLowDetector,
+        IdealCandidateFoundDetector,
+        TasksOverdueDetector,
+        TenantThresholdOverride,
+    )
+
+    disabled = TenantThresholdOverride(is_enabled=False, source="tenant")
+
+    class _ExplodingSession:
+        async def scalar(self, *a, **k):  # pragma: no cover - não deve rodar
+            raise AssertionError("query rodou com regra desabilitada")
+
+        async def execute(self, *a, **k):  # pragma: no cover - não deve rodar
+            raise AssertionError("query rodou com regra desabilitada")
+
+    db = _ExplodingSession()
+    for det in (
+        ConversionRateLowDetector(),
+        TasksOverdueDetector(),
+        IdealCandidateFoundDetector(),
+        AtsSyncFailedDetector(),
+    ):
+        out = asyncio.run(det.detect(db, "company-xyz", disabled))
+        assert out == [], det.name
+
+
+# =============================================================================
+# 8. Regressão (Task #1296): tenant filter de AI credits aceita company_id string
+# =============================================================================
+def test_ai_credits_detector_accepts_string_company_id():
+    """AiCreditsBalance.company_id é String(64). O detector NÃO pode converter
+    company_id para UUID (operador varchar=uuid quebra no Postgres → except →
+    detector nunca dispara, matando também o forecast preditivo). Um company_id
+    não-UUID ('demo_company') deve produzir hint quando o saldo está baixo."""
+    from app.shared.services.proactive_detector_service import (
+        AICreditsLowDetector,
+        TenantThresholdOverride,
+    )
+
+    class _Balance:
+        monthly_limit = 1000
+        current_usage = 900  # 90% usado → abaixo de 20% restante
+
+    class _ScalarResult:
+        def scalar_one_or_none(self):
+            return _Balance()
+
+    class _FakeSession:
+        async def execute(self, *a, **k):
+            return _ScalarResult()
+
+        async def scalar(self, *a, **k):
+            # forecast: sem consumo histórico → forecast None (fail-defensive)
+            return 0
+
+    override = TenantThresholdOverride(
+        is_enabled=True, threshold=20, source="tenant"
+    )
+    out = asyncio.run(
+        AICreditsLowDetector().detect(_FakeSession(), "demo_company", override)
+    )
+    assert len(out) == 1, "detector deve disparar com company_id string não-UUID"
+    assert out[0]["title"] == "AI Credits baixo"

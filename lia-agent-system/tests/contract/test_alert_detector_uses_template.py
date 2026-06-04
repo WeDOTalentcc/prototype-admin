@@ -354,7 +354,8 @@ async def test_orchestrator_fallback_when_load_fails(fake_db) -> None:
                 d.detect = AsyncMock(return_value=[])
             summary = await service.run_for_company(fake_db, COMPANY_ID)
 
-    assert summary["detectors_run"] == 6
+    # Conta dinâmica: todos os detectores registrados rodam mesmo no fallback.
+    assert summary["detectors_run"] == len(service.detectors)
     assert summary["tenant_overrides_loaded"] == 0
 
 

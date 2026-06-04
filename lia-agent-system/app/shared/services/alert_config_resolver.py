@@ -90,10 +90,11 @@ class AlertConfigResolution:
 # DEFAULT_ALERT_PREFERENCES (catálogo exibido na UI). O sentinel
 # test_alert_config_single_source trava qualquer drift.
 #
-# Cobertura: SÓ os alert_types consumidos por geradores proativos
-# (6 detectors + sla_near_expiration do MonitoringLoop). O catálogo da UI tem
-# mais types (sem gerador ainda); esses ficam fora deste registro até existir
-# um gerador que os honre.
+# Cobertura: TODOS os 15 alert_types do catálogo da UI têm gerador (Task #1296
+# fechou as 9 regras órfãs — vide proactive_detector_service.py + a matriz 15/15
+# em docs/runbooks/alert-config-single-source.md). Cada alert_type aqui é
+# honrado por um detector canônico (ou pelo MonitoringLoop, no caso do
+# sla_near_expiration legado por-dias).
 # ---------------------------------------------------------------------------
 ALERT_CONFIG_DEFAULTS: dict[str, AlertConfigDefault] = {
     "company_profile_incomplete": AlertConfigDefault(
@@ -122,6 +123,40 @@ ALERT_CONFIG_DEFAULTS: dict[str, AlertConfigDefault] = {
     ),
     "sla_near_expiration": AlertConfigDefault(
         is_enabled=True, threshold=80, cooldown_hours=12,
+        channels={"email": True, "bell": True, "teams": True, "whatsapp": False},
+    ),
+    # Task #1296 — 8 regras órfãs ganharam detector canônico (sla_near_expiration
+    # já existia acima). Valores espelham 1-1 DEFAULT_ALERT_PREFERENCES.
+    "conversion_rate_low": AlertConfigDefault(
+        is_enabled=True, threshold=2, cooldown_hours=48,
+        channels={"email": True, "bell": True, "teams": False, "whatsapp": False},
+    ),
+    "interview_not_confirmed": AlertConfigDefault(
+        is_enabled=True, threshold=24, cooldown_hours=12,
+        channels={"email": True, "bell": True, "teams": True, "whatsapp": True},
+    ),
+    "feedback_pending": AlertConfigDefault(
+        is_enabled=False, threshold=48, cooldown_hours=24,
+        channels={"email": True, "bell": True, "teams": False, "whatsapp": False},
+    ),
+    "offers_pending_long": AlertConfigDefault(
+        is_enabled=True, threshold=72, cooldown_hours=24,
+        channels={"email": True, "bell": True, "teams": True, "whatsapp": True},
+    ),
+    "tasks_overdue": AlertConfigDefault(
+        is_enabled=True, threshold=5, cooldown_hours=8,
+        channels={"email": True, "bell": True, "teams": True, "whatsapp": False},
+    ),
+    "email_delivery_low": AlertConfigDefault(
+        is_enabled=True, threshold=80, cooldown_hours=24,
+        channels={"email": False, "bell": True, "teams": False, "whatsapp": False},
+    ),
+    "ideal_candidate_found": AlertConfigDefault(
+        is_enabled=True, threshold=90, cooldown_hours=0,
+        channels={"email": True, "bell": True, "teams": True, "whatsapp": True},
+    ),
+    "ats_sync_failed": AlertConfigDefault(
+        is_enabled=True, threshold=3, cooldown_hours=2,
         channels={"email": True, "bell": True, "teams": True, "whatsapp": False},
     ),
 }
