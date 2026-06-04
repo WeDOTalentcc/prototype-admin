@@ -82,6 +82,8 @@ class ProactiveAlert:
     metadata: dict[str, Any] = field(default_factory=dict)
     resolved: bool = False
     resolved_at: datetime | None = None
+    # Task #1295: canais canônicos (AlertPreference). Default = surfaces in-app.
+    channels: list[str] = field(default_factory=lambda: ["bell", "chat"])
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -110,6 +112,23 @@ EXTENDED_OPEN_DAYS = 45
 BOTTLENECK_THRESHOLD = 0.6
 MIN_CANDIDATES_FOR_BOTTLENECK = 5
 DEFAULT_CHECK_INTERVAL_SECONDS = 3600
+
+
+def _resolve_alert_channels(cfg_channels: dict[str, bool] | None) -> list[str]:
+    """Task #1295: dict de canais canônico (AlertPreference) -> lista p/ notificação.
+
+    Preserva os surfaces in-app: quando 'bell' está ativo, também surface no
+    'chat' (briefing). Fail-safe para ['bell','chat'] se nada estiver marcado,
+    para não perder o alerta silenciosamente (a regra ainda está ENABLED aqui).
+    """
+    from app.shared.services.alert_config_resolver import channels_to_list
+
+    chans = channels_to_list(cfg_channels)
+    if "bell" in chans and "chat" not in chans:
+        chans = chans + ["chat"]
+    if not chans:
+        chans = ["bell", "chat"]
+    return chans
 
 
 class MonitoringLoop:
@@ -717,9 +736,28 @@ class MonitoringLoop:
     async def _check_stale_candidates(self, company_id: str) -> list[ProactiveAlert]:
         from lia_config.database import AsyncSessionLocal
         from sqlalchemy import text
+        from app.shared.services.alert_config_resolver import resolve_alert_config
 
         alerts: list[ProactiveAlert] = []
         async with AsyncSessionLocal() as session:
+            # Task #1295: honra a config canônica da tela Configurações →
+            # Comunicação & Alertas (AlertPreference). Regra desligada = NADA.
+            cfg = await resolve_alert_config(
+                session, company_id, "candidate_no_interaction"
+            )
+            if not cfg.is_enabled:
+                logger.info(
+                    "Stale candidates: alert candidate_no_interaction disabled "
+                    "for company=%s — skipping", company_id,
+                )
+                return alerts
+
+            # threshold (dias) vem da UI; tiers escalam a partir dele.
+            min_days = cfg.threshold or STALE_DAYS_LOW
+            tier_medium = min_days * 2
+            tier_high = min_days * 3
+            channels = _resolve_alert_channels(cfg.channels)
+
             try:
                 result = await session.execute(text("""
                     SELECT vc.candidate_id, vc.stage, vc.vacancy_id,
@@ -731,10 +769,10 @@ class MonitoringLoop:
                     LEFT JOIN job_vacancies jv ON jv.id = vc.vacancy_id
                     WHERE vc.company_id = :company_id
                       AND vc.stage NOT IN ('Contratado', 'Rejeitado', 'Desistiu')
-                      AND vc.updated_at < NOW() - INTERVAL '5 days'
+                      AND vc.updated_at < NOW() - (:min_days * INTERVAL '1 day')
                     ORDER BY vc.updated_at ASC
                     LIMIT 50
-                """), {"company_id": company_id})
+                """), {"company_id": company_id, "min_days": min_days})
                 rows = result.fetchall()
             except Exception as exc:
                 logger.warning("Stale candidates check failed: %s", exc)
@@ -742,9 +780,9 @@ class MonitoringLoop:
 
         for row in rows:
             days_idle = int(row[5] or 0)
-            if days_idle >= STALE_DAYS_HIGH:
+            if days_idle >= tier_high:
                 severity = AlertSeverity.HIGH
-            elif days_idle >= STALE_DAYS_MEDIUM:
+            elif days_idle >= tier_medium:
                 severity = AlertSeverity.MEDIUM
             else:
                 severity = AlertSeverity.LOW
@@ -764,6 +802,7 @@ class MonitoringLoop:
                 job_id=str(row[2]),
                 job_title=row[4],
                 metadata={"days_idle": days_idle, "stage": row[1]},
+                channels=channels,
             ))
         return alerts
 
@@ -771,9 +810,24 @@ class MonitoringLoop:
         # ADR-001 W1-004-C: migrated from raw SQL (session+text) to JobVacancyCrudRepository
         from lia_config.database import AsyncSessionLocal
         from app.domains.job_management.repositories.job_vacancy_crud_repository import JobVacancyCrudRepository
+        from app.shared.services.alert_config_resolver import resolve_alert_config
 
         alerts: list[ProactiveAlert] = []
         async with AsyncSessionLocal() as session:
+            # Task #1295: honra o toggle/canais da regra sla_near_expiration da
+            # tela Configurações. O threshold de % do SLA da UI não se aplica ao
+            # cálculo por dias deste check (semântica distinta — fora de escopo);
+            # só enable + canais são wired aqui.
+            cfg = await resolve_alert_config(
+                session, company_id, "sla_near_expiration"
+            )
+            if not cfg.is_enabled:
+                logger.info(
+                    "SLA risk: alert sla_near_expiration disabled for "
+                    "company=%s — skipping", company_id,
+                )
+                return alerts
+            channels = _resolve_alert_channels(cfg.channels)
             try:
                 repo = JobVacancyCrudRepository(session)
                 raw_rows = await repo.get_jobs_near_deadline(company_id=company_id, days_ahead=7)
@@ -810,6 +864,7 @@ class MonitoringLoop:
                 job_id=str(row[0]),
                 job_title=row[1],
                 metadata={"days_remaining": days_remaining, "deadline": str(row[2])},
+                channels=channels,
             ))
         return alerts
 
@@ -979,7 +1034,9 @@ class MonitoringLoop:
                     source_trigger=alert.category.value,
                     related_job_id=alert.job_id,
                     related_candidate_id=alert.candidate_id,
-                    channels=["bell", "chat"],
+                    # Task #1295: canais canônicos por-alerta (AlertPreference),
+                    # não mais hardcoded — honra a tela Configurações.
+                    channels=alert.channels or ["bell", "chat"],
                     metadata=alert.metadata,
                     expires_in_hours=24,
                 )

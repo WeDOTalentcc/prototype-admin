@@ -16,10 +16,10 @@ candidato-especificas).
 DETECTORS:
 - CompanyProfileCompletionDetector - profile_completion_percentage < 80
 - DSROverdueDetector              - sla_deadline em < 24h e status pending
-- CandidateStaleDetector          - 7+ dias sem feedback no candidato
+- CandidateStaleDetector          - 5+ dias sem feedback no candidato
 - WorkforcePlanStaleDetector      - last_updated > 30 dias atras
 - AICreditsLowDetector            - balance < 20% do plano contratado
-- PipelineStuckDetector           - vagas em screening > 14 dias
+- PipelineStuckDetector           - vagas em screening > 10 dias
 
 PER-TENANT THRESHOLDS (Wave 2 P0.A1+A2 fix, 2026-05-22):
 ========================================================
@@ -81,6 +81,14 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
+# Fonte-única-da-verdade de defaults + helper de canais (Task #1295). Tanto os
+# defaults do detector quanto o MonitoringLoop derivam deste registro, que
+# espelha 1-1 o catálogo da UI (DEFAULT_ALERT_PREFERENCES).
+from app.shared.services.alert_config_resolver import (  # noqa: E402
+    ALERT_CONFIG_DEFAULTS,
+    channels_to_list,
+)
+
 
 # ---------------------------------------------------------------------------
 # Severity normalization
@@ -140,27 +148,31 @@ class TenantThresholdOverride:
 
 
 # Per-detector default override quando tenant nao tem AlertPreference row.
-# Threshold semantica deve bater com classe constant correspondente.
-_DEFAULT_TENANT_OVERRIDE: dict[str, TenantThresholdOverride] = {
-    "company_profile_completion": TenantThresholdOverride(
-        is_enabled=True, threshold=80, cooldown_hours=24 * 7
-    ),
-    "dsr_overdue": TenantThresholdOverride(
-        is_enabled=True, threshold=24, cooldown_hours=12
-    ),
-    "candidate_stale": TenantThresholdOverride(
-        is_enabled=True, threshold=7, cooldown_hours=24
-    ),
-    "workforce_plan_stale": TenantThresholdOverride(
-        is_enabled=True, threshold=30, cooldown_hours=24 * 14
-    ),
-    "ai_credits_low": TenantThresholdOverride(
-        is_enabled=True, threshold=20, cooldown_hours=12
-    ),
-    "pipeline_stuck": TenantThresholdOverride(
-        is_enabled=True, threshold=14, cooldown_hours=24 * 3
-    ),
-}
+#
+# Task #1295: derivado da fonte-única-da-verdade ALERT_CONFIG_DEFAULTS (que
+# espelha o catálogo da UI) via _DETECTOR_ALERT_TYPE_MAP. Antes os valores eram
+# literais e divergiam da UI (candidate_stale=7 vs 5, pipeline_stuck=14 vs 10).
+# O sentinel test_alert_config_single_source trava qualquer drift futuro.
+def _build_default_tenant_overrides() -> dict[str, TenantThresholdOverride]:
+    out: dict[str, TenantThresholdOverride] = {}
+    for detector_name, alert_type in _DETECTOR_ALERT_TYPE_MAP.items():
+        d = ALERT_CONFIG_DEFAULTS.get(alert_type)
+        if d is None:
+            out[detector_name] = TenantThresholdOverride()
+            continue
+        out[detector_name] = TenantThresholdOverride(
+            is_enabled=d.is_enabled,
+            threshold=d.threshold,
+            cooldown_hours=d.cooldown_hours,
+            channels=dict(d.channels),
+            source="default",
+        )
+    return out
+
+
+_DEFAULT_TENANT_OVERRIDE: dict[str, TenantThresholdOverride] = (
+    _build_default_tenant_overrides()
+)
 
 
 def _emit_threshold_source_metric(alert_type: str, source: str) -> None:
@@ -443,14 +455,14 @@ class CandidateStaleDetector(BaseDetector):
     """Trigger quando candidato esta N+ dias sem feedback / mudanca de estagio.
 
     Per-tenant override (AlertPreference.alert_type='candidate_no_interaction'):
-    - threshold: dias sem update para considerar stale (default 7)
+    - threshold: dias sem update para considerar stale (default 5, espelha UI)
     - cooldown_hours: dedup gate (default 24)
     """
 
     name = "candidate_stale"
     severity = "medium"
 
-    STALE_DAYS = 7
+    STALE_DAYS = 5
     BATCH_SIZE = 50
 
     async def detect(self, db, company_id, override=None):
@@ -710,14 +722,14 @@ class PipelineStuckDetector(BaseDetector):
     """Trigger quando vagas estao paradas em screening > N dias.
 
     Per-tenant override (AlertPreference.alert_type='candidates_stagnant'):
-    - threshold: dias parados para considerar stuck (default 14)
+    - threshold: dias parados para considerar stuck (default 10, espelha UI)
     - cooldown_hours: dedup gate (default 24*3=72)
     """
 
     name = "pipeline_stuck"
     severity = "medium"
 
-    STUCK_DAYS = 14
+    STUCK_DAYS = 10
 
     async def detect(self, db, company_id, override=None):
         cfg = self._resolve_override(override)
@@ -822,9 +834,12 @@ class ProactiveDetectorService:
 
             from app.models.alert import AlertPreference
         except Exception as exc:
+            # Task #1295 (fail-loud): import quebrado NÃO pode passar silencioso.
+            # Emite metric source="error" p/ distinguir de "tenant sem config".
             self.logger.warning(
                 "AlertPreference import failed (using all defaults): %s", exc
             )
+            _emit_threshold_source_metric("__load_overrides__", "error")
             return overrides
 
         try:
@@ -835,12 +850,20 @@ class ProactiveDetectorService:
             )
             rows = list(result.scalars().all())
         except Exception as exc:
-            # Table may not exist yet em alguns ambientes; fall back para defaults.
-            self.logger.debug(
-                "AlertPreference query failed for company=%s: %s",
+            # Task #1295 (fail-loud, canonical-fix): um erro de DB ao carregar a
+            # config NÃO é o mesmo que "tenant sem config". Antes isto caía em
+            # logger.debug (silencioso) e mascarava indisponibilidade como
+            # "sem override". Eleva para WARNING + metric source="error" para
+            # ficar observável. O batch ainda roda com defaults (fail-open
+            # deliberado — ver test_orchestrator_fallback_when_load_fails), mas
+            # de forma RASTREÁVEL, nunca silenciosa.
+            self.logger.warning(
+                "AlertPreference query failed for company=%s: %s — "
+                "rodando detectors com defaults (source=error, fail-open)",
                 company_id,
                 exc,
             )
+            _emit_threshold_source_metric("__load_overrides__", "error")
             return overrides
 
         # Inverte _DETECTOR_ALERT_TYPE_MAP: alert_type -> detector.name.
@@ -912,45 +935,15 @@ class ProactiveDetectorService:
             )
             tenant_overrides = {}
 
-        # WT-2022 Wave 2 P0.ALR-1+2 (2026-05-22): wire de
-        # communication_settings.alerts[].enabled — antes esses 5 toggles UI
-        # gravavam no DB mas o detector NAO consultava (ghost setting).
-        try:
-            from app.shared.services.communication_settings_consumer import (
-                get_company_communication_settings,
-                is_alert_enabled,
-                get_alert_channel,
-                inc_communication_skip,
-            )
-            comm_settings = await get_company_communication_settings(db, company_id)
-        except Exception as exc:
-            self.logger.warning(
-                "ProactiveDetector: failed to load tenant comm_settings for %s, "
-                "all detectors run with default-enabled (fail-safe): %s",
-                company_id, exc,
-            )
-            comm_settings = {}
-
-            def is_alert_enabled(_s, _id):  # type: ignore[no-redef]
-                return True
-
-            def get_alert_channel(_s, _id, default="email"):  # type: ignore[no-redef]
-                return default
-
-            def inc_communication_skip(_r):  # type: ignore[no-redef]
-                return None
-
+        # Task #1295: o gate de enable/canal é canônico via AlertPreference
+        # (carregado em tenant_overrides acima). O wire antigo de
+        # communication_settings.alerts[] era um ghost setting (alert_id nunca
+        # batia com detector.name -> sempre True) e o channel caía sempre em
+        # "email". REMOVIDO: enable vem de cfg.is_enabled (dentro de detect()),
+        # canais vêm de cfg.channels (AlertPreference). communication_settings
+        # mantém SÓ seu papel real (janela de envio / assinatura / LGPD),
+        # consumido pelos dispatchers, não pelo gate de detecção.
         for detector in self.detectors:
-            # WT-2022 Wave 2 P0.ALR-1: gate per tenant — toggle off pula detector.
-            if not is_alert_enabled(comm_settings, detector.name):
-                self.logger.info(
-                    "Detector %s disabled by tenant settings company=%s — skipping",
-                    detector.name, company_id,
-                )
-                inc_communication_skip("alert_disabled")
-                per_detector_count[detector.name] = -2  # skip sentinel (vs -1 error)
-                continue
-
             # G9 fix (2026-06-04): a deteccao e read-only. Um detector anterior
             # (ou o load de overrides/comm_settings) pode ter batido numa query
             # que falhou e foi engolida, deixando a transacao asyncpg abortada
@@ -964,12 +957,23 @@ class ProactiveDetectorService:
 
             try:
                 override = tenant_overrides.get(detector.name)
+                # Task #1295: override efetivo (tenant OU default canônico) — a
+                # fonte dos canais que vão no hint. Espelha o que detect() resolve
+                # internamente via _resolve_override.
+                effective = (
+                    override
+                    if (override is not None and override.source == "tenant")
+                    else _DEFAULT_TENANT_OVERRIDE.get(
+                        detector.name, TenantThresholdOverride()
+                    )
+                )
                 hints = await detector.detect(db, company_id, override=override)
                 for hint in hints:
                     hint["detector"] = detector.name
                     hint["company_id"] = company_id
-                    # WT-2022 Wave 2 P0.ALR-2: anexa channel preferido tenant.
-                    hint["channel"] = get_alert_channel(comm_settings, detector.name)
+                    # Canais canônicos de AlertPreference (dict). Detector pode ter
+                    # setado explicitamente; senão herda do override efetivo.
+                    hint.setdefault("channels", dict(effective.channels))
                 all_hints.extend(hints)
                 per_detector_count[detector.name] = len(hints)
             except Exception as exc:
@@ -1058,6 +1062,9 @@ class ProactiveDetectorService:
                     "action_params": hint.get("action_params") or {},
                     "source": "proactive_detector_scheduler",
                     "detector": detector_name,
+                    # Task #1295: canais canônicos (AlertPreference) persistidos
+                    # como lista para os dispatchers downstream (email/teams/...).
+                    "channels": channels_to_list(hint.get("channels")),
                 },
                 auto_executable=False,
                 trigger_reason=detector_name,
