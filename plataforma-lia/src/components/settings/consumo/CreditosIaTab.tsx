@@ -163,7 +163,7 @@ function parseData<T>(raw: { data?: T; usage_by_day?: T; usage_by_agent?: T } | 
 function MonthlyUsageAlert({ percentage }: { percentage: number }) {
   if (percentage >= 100) {
     return (
-      <div className="flex items-center gap-2 rounded-lg border border-status-error/30 bg-status-error/10 px-4 py-3 text-sm text-status-error">
+      <div className="flex items-center gap-2 rounded-md border border-status-error/30 bg-status-error/10 px-4 py-3 text-sm text-status-error">
         <AlertTriangle className="h-4 w-4 shrink-0" />
         <span>
           <strong>Limite atingido:</strong> O consumo de IA atingiu 100% do limite mensal.
@@ -173,7 +173,7 @@ function MonthlyUsageAlert({ percentage }: { percentage: number }) {
   }
   if (percentage >= 80) {
     return (
-      <div className="flex items-center gap-2 rounded-lg border border-status-warning/30 bg-status-warning/10 px-4 py-3 text-sm text-status-warning">
+      <div className="flex items-center gap-2 rounded-md border border-status-warning/30 bg-status-warning/10 px-4 py-3 text-sm text-status-warning">
         <AlertTriangle className="h-4 w-4 shrink-0" />
         <span>
           <strong>Atenção:</strong> {percentage.toFixed(0)}% do limite mensal de IA utilizado.
