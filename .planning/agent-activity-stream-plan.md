@@ -106,3 +106,51 @@ Hoje o chat usa `POST /chat` (JSON) → `_llm_streaming_callback` não é setado
 4. **reasoning_step**: o texto já streama como tokens via `_generate_with_tools_claude`; opcional emitir `reasoning_step` explícito antes de cada batch de tools.
 
 **Risco/esforço Phase 2:** médio-alto (toca transporte FE + wiring ContextVar). Não fazer no fim de sessão longa — merece execução focada + verificação no preview.
+
+---
+
+# PLANO SSE PONTA-A-PONTA (enterprise) — display de atividade da IA ao vivo (2026-06-04)
+
+> Resultado da auditoria de 3 agentes (FE transport, backend SSE, compliance) sob harness-engineering + canonical-fix + compliance-risk. Abordagem B (push WS lateral) foi DESCARTADA empiricamente (ws_keys=[], sem WS aberta). SSE-e2e é o único caminho viável.
+
+## DESCOBERTA-CHAVE
+O FE (`useChatTransport.sendMessageViaSSE`) já mira **`POST /api/v1/chat/{session_id}/stream` = `agent_chat_sse.py:233`** — NÃO o `chat.py:/chat/stream`. Esse endpoint JÁ seta o ContextVar `_llm_streaming_callback` (liga tokens + emits do AgenticLoop) e JÁ aplica `mask_pii` em token. Trabalho é menor do que parecia.
+
+## Cenário (file:line)
+- FE consumo SSE pronto: `hooks/chat/useChatTransport.ts:397-542` (`sendMessageViaSSE`, fetch+ReadableStream, endpoint `/api/v1/chat/{id}/stream`). Switch de eventos `useChatSocket.ts:175-489` trata token/message/tool_started/finished/reasoning_step + dispara `lia:agent-activity` (`:395-399`) — roda idêntico em SSE e WS.
+- FE gap: `useChatMessages.ts:372-409` — branch SSE é dead code (`transportMode` nunca = "sse"; só "ws"/"disconnected"). `sendMessageViaSSE` nunca é chamado.
+- Backend pronto: `agent_chat_sse.py:233` (`/chat/{session_id}/stream`), seta ContextVar (~534-538), mask_pii em token (~523).
+- Backend gap: `agent_chat_sse.py:518-531` `_streaming_callback` achata tudo ≠ token em `serialize_thinking` → perde shape de tool_started/finished.
+- Produtor de eventos: `agentic_loop.py:_emit_activity` (~30) emite tool_started/finished (só metadata: name/status/duration — sem PII hoje). Tokens: `llm.py:_generate_with_tools_claude:643` (delta CRU, sem mask_pii no produtor).
+- AgentActivityTimeline montado: `LiaChatMessageList.tsx:224` (3 estados).
+
+## FASES (compliance-first, cada uma verificável no preview + reversível)
+
+### Fase A — PII no produtor (P0, canonical-fix) [BACKEND]
+- Mover `mask_pii` para o PRODUTOR: token em `llm.py:643` (antes do `_stream_cb`) + qualquer conteúdo em `_emit_activity` (`agentic_loop.py`). Garante que TODOS os transportes (chat.py SSE, agent_chat_sse, futuro) saem mascarados — não repetir fix-no-consumidor.
+- `_emit_activity`: NUNCA emitir `tc.parameters`/`tool_result_content` crus. Só name/status/duration (já é assim — pinar com teste).
+- Red test: `tests/contract/test_stream_pii_masking.py` — stream com CPF/telefone no texto → assert nenhum dígito cru sai. + paridade: texto concatenado dos `token` == saída mascarada do JSON.
+
+### Fase B — repassar activity events no SSE [BACKEND]
+- `agent_chat_sse.py:_streaming_callback`: adicionar branch que repassa `tool_started/finished/reasoning_step` preservando shape (via `serialize_*` do `chat_event_serializer`), em vez de achatar em `thinking`.
+- Red test: `tests/contract/test_sse_passthrough.py` — callback recebe `{type:tool_started,name:X}` → assert sai no SSE com type+name (não vira thinking).
+
+### Fase C — FE rotear pra SSE (atrás de flag) [FRONTEND]
+- `useChatMessages.ts:sendMessage`: chamar `sendMessageViaSSE(...)` quando `NEXT_PUBLIC_CHAT_TRANSPORT=sse` (env), SEM depender de `transportMode==="sse"`. REST permanece fallback default (flag off = comportamento atual intocado).
+- Adicionar fallback SSE→REST em `useChatTransport.ts:522` (hoje só emite error ao esgotar retry).
+- Validar no preview: auth (ws-token presente), buffering em dev, frame `message` terminal idêntico ao WS, domain default.
+
+### Fase D — verificação + sensores (harness) [AMBOS]
+- Preview nos 3 estados: tokens incrementais + chips de tool (🔧→✓ + duração) + message final.
+- Sensores: (1) contract stream↔JSON parity pós-mask; (2) sensor estático: todo emit de token/tool em `*sse*.py` + `_emit_activity` passa por mask_pii; (3) red test PII.
+
+### Fase E (opcional) — reasoning_step ao vivo
+- AgenticLoop emitir `_emit_activity({type:reasoning_step,...})` antes de cada batch de tools (não existe hoje). Texto via mask_pii.
+
+## Riscos (mitigação)
+- Formato terminal: SSE precisa emitir frame `message` idêntico ao WS senão `onMessageComplete` não dispara (bolha final some). → Fase B/C garantir `serialize_message` final.
+- Auth: SSE bate direto no backend (não via proxy) — depende do ws-token. → validar; fallback REST.
+- post_compliance pós-stream: hoje no-op de redação (ok). Se virar redator → streaming o contorna → exigirá hold-back. DÉBITO documentado.
+- Flag default OFF → zero impacto no chat atual até validarmos.
+
+## Ordem: A → B → C → D (→ E opcional). Flag mantém o chat atual intocado até a validação.
