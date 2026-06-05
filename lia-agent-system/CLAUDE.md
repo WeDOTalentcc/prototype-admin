@@ -1246,3 +1246,24 @@ Irmao pendente (mesmo bug): send_message_with_attachments passa page_context=Non
 ### Ao criar nova fonte de contexto auto-gerado
 
 Replicar o padrão: estado inicial `pending_approval`/`is_approved=False`, gate no método de leitura-de-agente (não no repo cru que a UI usa), endpoint HITL de aprovação, reset em regeneração, contract test do gate.
+
+## Criar vaga a partir de fonte — produtor único (registrado 2026-06-04)
+
+Recrutador cria vaga pelo chat a partir de uma fonte (arquétipo `JobTemplate` OU vaga existente `JobVacancy`), pré-preenchendo o grafo de criação. Experiência agêntica: a LIA geral (`recruiter_copilot`) conduz a identificação; NÃO é formulário.
+
+### Regras canônicas (GUIDES)
+1. **Produtor único de seed:** todo seed de criação passa por `app/domains/job_creation/services/job_seed_builder_service.py::JobSeedBuilderService`. Proibido grafo/orchestrator montarem seed isolado. Schema canônico = `JobCreationSeed` em `app/domains/job_creation/schemas.py` (é MÓDULO — NUNCA criar dir `schemas/`, shadowa o módulo e quebra imports).
+2. **`simulated:True` / `str(<ORM>)` proibido** em handler de produção (era o fake `apply_template` em `recruiter_assistant/services/wizard_action_executor.py` — dead code).
+3. **`ALWAYS_FRESH_FIELDS`** (manager_name/email, headcount, deadline, cost_center) NUNCA herdados de fonte.
+4. **Proveniência honesta:** `FieldProvenance.source_type` flipa pra `user`/`derived` em edit/regen; salário herdado = `needs_review=True`. Badge nunca mente.
+5. **Chat `duplicar_vaga`** usa `JobCloneService.clone_from_template` (Rascunho + `FIELDS_TO_CLONE`), NUNCA SQL inline com `status='Ativa'`.
+6. **Identificação SEMPRE mostra ID da vaga + recrutador** (desambiguação). Tool `list_job_creation_sources`.
+7. **Seed só em sessão fresca:** `wizard_session_service` lê `context["seed_source"]` em `not prior_state`. A diretiva `start_wizard_seeded` (de `start_creation_from_source`) é consumida no `main_orchestrator` via `_start_seeded_wizard` (helper ÚNICO, dedup com `_try_wizard_canonical`).
+
+### Sensores ativos
+- `tests/unit/test_job_creation_seed_schema.py`, `test_job_seed_builder.py`, `test_seed_apply.py`, `test_seed_session.py`, `test_list_job_creation_sources.py`
+- `tests/contract/test_create_from_source_wiring.py` (tool/federação/guard), `test_seeded_wizard_directive_wiring.py` (regressão + happy + dedup)
+- `tests/unit/test_duplicate_job_canonical.py` (anti SQL-inline + anti 'Ativa')
+
+### Reuso (não duplicar)
+`JobCloneService` (`FIELDS_TO_CLONE`, `clone_from_template`), `search_for_summary_by_criteria` (busca por gestor), `JobTemplateService.get_templates`.

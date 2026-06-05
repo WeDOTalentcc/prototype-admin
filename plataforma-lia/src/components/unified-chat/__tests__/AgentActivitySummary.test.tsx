@@ -32,10 +32,10 @@ describe("AgentActivitySummary", () => {
     renderWithIntl(<AgentActivitySummary items={ITEMS} />)
     // collapsed: shows count, total duration (1200+800=2000ms -> 2.0s)
     expect(screen.getByText(/2/)).toBeInTheDocument()
-    // tool names hidden until expanded
-    expect(screen.queryByText(/search candidates/i)).not.toBeInTheDocument()
+    // tool names hidden until expanded (localizados em PT pelo locale do provider)
+    expect(screen.queryByText(/buscando candidatos/i)).not.toBeInTheDocument()
     fireEvent.click(screen.getByRole("button"))
-    expect(screen.getByText(/search candidates/i)).toBeInTheDocument()
+    expect(screen.getByText(/buscando candidatos/i)).toBeInTheDocument()
     expect(screen.getByText(/rank cvs/i)).toBeInTheDocument()
   })
 

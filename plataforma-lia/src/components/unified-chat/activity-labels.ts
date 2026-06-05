@@ -8,6 +8,17 @@
  * de locale no request).
  */
 
+import type { LucideIcon } from "lucide-react"
+import {
+  Search,
+  ListOrdered,
+  BarChart3,
+  List,
+  FileText,
+  Lightbulb,
+  Wrench,
+} from "lucide-react"
+
 type LangMap = Record<string, Record<string, string>>
 
 const PHASE_LABELS: LangMap = {
@@ -69,4 +80,51 @@ export function phaseLabel(key: string, locale: string): string {
 /** Localized label for a tool name (falls back to a humanized name). */
 export function toolLabel(name: string, locale: string): string {
   return TOOL_LABELS[langOf(locale)]?.[name] ?? humanize(name)
+}
+
+/**
+ * Ícone semântico por TIPO de ação (estilo Replit/Manus): cada ferramenta mostra
+ * um ícone que comunica o que está acontecendo (busca = lupa, estatística =
+ * gráfico, listagem = lista…), em vez de um check genérico para tudo. O estado
+ * (ativo/concluído/erro) é comunicado pela cor no componente que renderiza.
+ */
+const TOOL_ICONS: Record<string, LucideIcon> = {
+  search_candidates: Search,
+  search_jobs: Search,
+  rank_candidates: ListOrdered,
+  get_candidate_stats: BarChart3,
+  get_job_quality_metrics: BarChart3,
+  get_job_benchmark: BarChart3,
+  get_job_velocity: BarChart3,
+  list_candidates: List,
+  list_candidates_by_stage: List,
+  list_jobs: List,
+  get_job_details: FileText,
+  get_job_suggestions: Lightbulb,
+}
+
+/** Heurística para tools não mapeadas explicitamente (cobre nomes futuros). */
+function toolIconByHeuristic(name: string): LucideIcon | undefined {
+  const n = name.toLowerCase()
+  if (n.startsWith("search") || n.includes("find")) return Search
+  if (n.startsWith("rank")) return ListOrdered
+  if (n.startsWith("list")) return List
+  if (
+    n.includes("stats") ||
+    n.includes("metric") ||
+    n.includes("benchmark") ||
+    n.includes("velocity") ||
+    n.includes("quality") ||
+    n.includes("analytics")
+  )
+    return BarChart3
+  if (n.includes("suggestion") || n.includes("recommend")) return Lightbulb
+  if (n.includes("detail") || n.includes("get_") || n.includes("read"))
+    return FileText
+  return undefined
+}
+
+/** Componente de ícone lucide para o TIPO de ferramenta (fallback: Wrench). */
+export function toolIcon(name: string): LucideIcon {
+  return TOOL_ICONS[name] ?? toolIconByHeuristic(name) ?? Wrench
 }

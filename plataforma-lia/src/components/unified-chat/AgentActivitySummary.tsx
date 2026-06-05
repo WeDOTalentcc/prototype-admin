@@ -10,10 +10,10 @@
  */
 
 import React, { useMemo, useState } from "react"
-import { ChevronDown, ChevronRight, CheckCircle2, XCircle, Brain, Sparkles } from "lucide-react"
+import { ChevronDown, ChevronRight, XCircle, Brain, Sparkles } from "lucide-react"
 import { useTranslations, useLocale } from "next-intl"
 import { cn } from "@/lib/utils"
-import { phaseLabel, toolLabel } from "./activity-labels"
+import { phaseLabel, toolLabel, toolIcon } from "./activity-labels"
 
 export interface AgentActivityItem {
   kind: string // "tool" | "reasoning"
@@ -65,7 +65,9 @@ export function AgentActivitySummary({ items }: AgentActivitySummaryProps) {
 
       {open && (
         <ul className="px-3 pb-2.5 pt-0.5 space-y-1.5 border-t border-lia-border-subtle/60 animate-in fade-in slide-in-from-top-1 duration-200">
-          {items.map((item, idx) => (
+          {items.map((item, idx) => {
+            const ToolIcon = toolIcon(item.name)
+            return (
             <li
               key={`${item.name}-${idx}`}
               className={cn(
@@ -78,7 +80,7 @@ export function AgentActivitySummary({ items }: AgentActivitySummaryProps) {
               ) : item.status === "error" ? (
                 <XCircle className="w-3.5 h-3.5 text-status-error shrink-0" />
               ) : (
-                <CheckCircle2 className="w-3.5 h-3.5 text-status-success shrink-0" />
+                <ToolIcon className="w-3.5 h-3.5 text-lia-text-secondary shrink-0" />
               )}
               <span className="truncate">
                 {item.kind === "tool"
@@ -89,7 +91,8 @@ export function AgentActivitySummary({ items }: AgentActivitySummaryProps) {
                 <span className="ml-auto tabular-nums">{fmt(item.durationMs)}</span>
               )}
             </li>
-          ))}
+            )
+          })}
         </ul>
       )}
     </div>

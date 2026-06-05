@@ -342,7 +342,8 @@
       "thinking": "Thinking",
       "reasoning": "Reasoning",
       "actions": "{count, plural, one {# action} other {# actions}}",
-      "steps": "{count, plural, one {# step} other {# steps}}"
+      "steps": "{count, plural, one {# step} other {# steps}}",
+      "done": "{count, plural, one {# done} other {# done}}"
     },
     "messageActions": {
       "copyTitle": "Copy",

@@ -1,9 +1,8 @@
 "use client"
 
-import React from "react"
-import { CheckCircle2, Loader2, Sparkles } from "lucide-react"
+import React, { useState } from "react"
+import { Brain, Sparkles, ChevronRight, ChevronDown } from "lucide-react"
 import { useTranslations, useLocale } from "next-intl"
-import { cn } from "@/lib/utils"
 import { phaseLabel } from "./activity-labels"
 
 interface ThinkingStepsCardProps {
@@ -24,6 +23,7 @@ function ThinkingDots() {
 export function ThinkingStepsCard({ steps }: ThinkingStepsCardProps) {
   const t = useTranslations("chat.agentActivity")
   const locale = useLocale()
+  const [showCompleted, setShowCompleted] = useState(false)
 
   if (!steps || steps.length === 0) {
     return (
@@ -39,37 +39,56 @@ export function ThinkingStepsCard({ steps }: ThinkingStepsCardProps) {
     )
   }
 
+  // Linha em foco (Replit/Manus): só o último passo fica em destaque; os
+  // anteriores recuam para um contador discreto, expansível sob demanda.
+  const lastIndex = steps.length - 1
+  const completed = steps.slice(0, lastIndex)
+  const active = steps[lastIndex]
+
   return (
     <div className="animate-fade-in-up rounded-md border border-lia-border-subtle bg-lia-bg-secondary px-3 py-2.5 max-w-[85%] space-y-1.5">
-      {steps.map((step, i) => {
-        const isActive = i === steps.length - 1
-
-        return (
-          <div key={i} className="flex items-start gap-2">
-            {isActive ? (
-              <Loader2
-                className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 animate-spin text-wedo-cyan motion-reduce:animate-none"
-                aria-hidden="true"
-              />
+      {completed.length > 0 && (
+        <>
+          <button
+            type="button"
+            onClick={() => setShowCompleted((o) => !o)}
+            aria-expanded={showCompleted}
+            className="flex items-center gap-1 text-[11px] text-lia-text-secondary hover:text-lia-text-primary transition-colors motion-reduce:transition-none"
+          >
+            {showCompleted ? (
+              <ChevronDown className="w-3 h-3 shrink-0" />
             ) : (
-              <CheckCircle2
-                className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-status-success"
-                aria-hidden="true"
-              />
+              <ChevronRight className="w-3 h-3 shrink-0" />
             )}
-            <span
-              className={cn(
-                "text-xs leading-5",
-                isActive
-                  ? "text-lia-text-primary font-medium"
-                  : "text-lia-text-secondary"
-              )}
-            >
-              {phaseLabel(step, locale)}
-            </span>
-          </div>
-        )
-      })}
+            <span>{t("done", { count: completed.length })}</span>
+          </button>
+          {showCompleted && (
+            <div className="space-y-1.5 ml-1.5 border-l border-lia-border-subtle/60 pl-2 animate-in fade-in slide-in-from-top-1 duration-200">
+              {completed.map((step, i) => (
+                <div key={i} className="flex items-start gap-2">
+                  <Brain
+                    className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-lia-text-secondary"
+                    aria-hidden="true"
+                  />
+                  <span className="text-xs leading-5 text-lia-text-secondary">
+                    {phaseLabel(step, locale)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+
+      <div className="flex items-start gap-2">
+        <Brain
+          className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 animate-pulse text-wedo-cyan motion-reduce:animate-none"
+          aria-hidden="true"
+        />
+        <span className="text-xs leading-5 text-lia-text-primary font-medium">
+          {phaseLabel(active, locale)}
+        </span>
+      </div>
     </div>
   )
 }
