@@ -172,7 +172,7 @@ export function OpinionCard({ opinion, isExpanded, onToggle, type, copiedItemId,
               </h5>
               <div className="grid grid-cols-2 gap-1.5">
                 {Object.entries(opinion.score_breakdown as Record<string, unknown>).map(([key, value]) => (
-                  value !== null && value !== undefined && (
+                  key !== 'f11_report' && (typeof value === 'number' || typeof value === 'string') && (
                     <div key={key} className="flex items-center justify-between text-micro bg-lia-bg-secondary rounded-full px-2 py-1">
                       <span className="text-lia-text-secondary capitalize">{key.replace(/_/g, ' ')}</span>
                       <span className="font-medium text-lia-text-primary">{typeof value === 'number' ? `${Math.round(value)}%` : String(value)}</span>
@@ -282,6 +282,40 @@ export function OpinionCard({ opinion, isExpanded, onToggle, type, copiedItemId,
               <p className={`${textStyles.caption} text-status-warning`}>{String(opinion.recruiter_notes)}</p>
             </div>
           )}
+
+          {(() => {
+            const f11 = (opinion.score_breakdown as Record<string, unknown> | undefined)?.f11_report as Record<string, unknown> | undefined
+            if (!f11) return null
+            const flags = ((f11.attention_flags as unknown[] | undefined) || []).filter((x) => typeof x === 'string') as string[]
+            const confRaw = typeof f11.decision_confidence === 'number' ? (f11.decision_confidence as number) : null
+            const conf = confRaw === null ? '' : ` (${Math.round(confRaw <= 1 ? confRaw * 100 : confRaw)}%)`
+            return (
+              <div className="bg-lia-bg-secondary rounded-xl p-2 border border-lia-border-subtle">
+                <h5 className={`${textStyles.label} mb-1 flex items-center gap-1`}>
+                  <Target className="w-3 h-3 text-wedo-cyan" />
+                  Relatório WSI (consultor)
+                </h5>
+                {!!f11.classification_label && (
+                  <p className={`${textStyles.caption} text-lia-text-secondary`}>Classificação: {String(f11.classification_label)}</p>
+                )}
+                {!!f11.decision_result && (
+                  <p className={`${textStyles.caption} text-lia-text-secondary`}>Decisão: {String(f11.decision_result)}{conf}</p>
+                )}
+                {!!f11.decision_reason && (
+                  <p className={`${textStyles.caption} text-lia-text-secondary`}>{String(f11.decision_reason)}</p>
+                )}
+                {flags.length > 0 && (
+                  <ul className="mt-1 space-y-0.5">
+                    {flags.map((fl: string, i: number) => (
+                      <li key={`flag-${i}`} className={`${textStyles.caption} text-status-warning flex items-start gap-1`}>
+                        <AlertCircle className="w-3 h-3 mt-0.5" />{fl}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )
+          })()}
 
           {!!opinion.recruiter_override && (
             <div className="bg-wedo-purple/10 rounded-xl p-2 border border-wedo-purple/30">

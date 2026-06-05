@@ -697,6 +697,37 @@ async def get_f11_report(session_id: str, db: AsyncSession = Depends(get_db), co
                 logger.warning(f"F11-3: falha ao persistir cache do relatório: {_cache_err}")
                 await db.rollback()
 
+        # Débito 3 — espelhar subset do relatório F11 no parecer WSI (score_breakdown),
+        # para o card exibir o relatório completo. Sem SQL inline: via OpinionsRepository.
+        try:
+            from uuid import UUID as _UUID
+            from app.domains.opinions.repositories.opinions_repository import (
+                OpinionsRepository,
+            )
+            _repo = OpinionsRepository(db)
+            _cid = cand_id if isinstance(cand_id, _UUID) else _UUID(str(cand_id))
+            _jv = str(jv_id) if jv_id else None
+            _rd = report.model_dump()
+            _subset = {
+                k: _rd.get(k)
+                for k in (
+                    "classification", "classification_label", "gates",
+                    "decision_result", "decision_confidence", "decision_reason",
+                    "strengths", "gaps", "attention_flags", "generated_at",
+                )
+            }
+            for _op in await _repo.get_current_by_candidate(_cid, company_id):
+                _op_jv = str(_op.job_vacancy_id) if _op.job_vacancy_id else None
+                if _op.opinion_type == "wsi" and _op_jv == _jv:
+                    _sb = dict(_op.score_breakdown or {})
+                    _sb["f11_report"] = _subset
+                    _op.score_breakdown = _sb
+                    await _repo.update(_op)
+                    break
+        except Exception as _fold_err:
+            logger.warning(f"F11 fold into WSI opinion skipped: {_fold_err}")
+            await db.rollback()
+
         return report
 
     except HTTPException:
@@ -725,7 +756,7 @@ company_id: str = Depends(require_company_id)):
                 r.id            AS result_id,
                 r.candidate_id,
                 COALESCE(c.name, 'Candidato') AS candidate_name,
-                COALESCE(c.current_position, '') AS candidate_title,
+                COALESCE(c.current_title, '') AS candidate_title,
                 r.overall_wsi,
                 r.technical_wsi,
                 r.behavioral_wsi,
@@ -734,10 +765,10 @@ company_id: str = Depends(require_company_id)):
                 r.created_at
             FROM wsi_results r
             LEFT JOIN wsi_sessions s ON s.id = r.session_id
-            LEFT JOIN candidates c   ON c.id::text = r.candidate_id
+            LEFT JOIN candidates c   ON c.id = r.candidate_id
             INNER JOIN job_vacancies jv ON jv.id = r.job_vacancy_id
-            WHERE r.job_vacancy_id = :jv_id
-              AND jv.company_id = :company_id
+            WHERE r.job_vacancy_id::text = :jv_id
+              AND jv.company_id::text = :company_id
             ORDER BY r.overall_wsi DESC, r.created_at DESC
         """), {"jv_id": job_vacancy_id, "company_id": company_id})
         rows = rows_r.fetchall()
@@ -767,9 +798,9 @@ company_id: str = Depends(require_company_id)):
                 "candidate_id": str(row[1]),
                 "candidate_name": row[2],
                 "candidate_title": row[3],
-                "overall_wsi": round(score * 2, 2),        # /5 → /10
-                "technical_wsi": round(float(row[5]) * 2, 2),
-                "behavioral_wsi": round(float(row[6]) * 2, 2),
+                "overall_wsi": round(score, 2),
+                "technical_wsi": round(float(row[5]), 2),
+                "behavioral_wsi": round(float(row[6]), 2),
                 "classification": row[7] or "regular",
                 "percentile": percentile,
                 "screening_type": row[8] or "text",
@@ -780,9 +811,9 @@ company_id: str = Depends(require_company_id)):
             "job_vacancy_id": job_vacancy_id,
             "total_screened": total,
             "averages": {
-                "overall":    round(sum(overall_vals) / total * 2, 2),
-                "technical":  round(sum(tech_vals) / total * 2, 2),
-                "behavioral": round(sum(behav_vals) / total * 2, 2),
+                "overall":    round(sum(overall_vals) / total, 2),
+                "technical":  round(sum(tech_vals) / total, 2),
+                "behavioral": round(sum(behav_vals) / total, 2),
             },
             "ranking": ranking,
         }
@@ -818,7 +849,7 @@ company_id: str = Depends(require_company_id)):
 
         cand_r = await db.execute(text("""
             SELECT id, overall_wsi FROM wsi_results
-            WHERE candidate_id = :cid AND job_vacancy_id = :jv_id
+            WHERE candidate_id::text = :cid AND job_vacancy_id::text = :jv_id
             ORDER BY created_at DESC LIMIT 1
         """), {"cid": candidate_id, "jv_id": job_vacancy_id})
         cand_row = cand_r.fetchone()
@@ -830,7 +861,7 @@ company_id: str = Depends(require_company_id)):
 
         total_r = await db.execute(text("""
             SELECT COUNT(*), SUM(CASE WHEN overall_wsi > :score THEN 1 ELSE 0 END)
-            FROM wsi_results WHERE job_vacancy_id = :jv_id
+            FROM wsi_results WHERE job_vacancy_id::text = :jv_id
         """), {"jv_id": job_vacancy_id, "score": cand_score})
         total_row = total_r.fetchone()
         total = int(total_row[0]) if total_row else 1
@@ -843,7 +874,7 @@ company_id: str = Depends(require_company_id)):
             "ranked": True,
             "rank": rank,
             "total": total,
-            "overall_wsi": round(cand_score * 2, 2),
+            "overall_wsi": round(cand_score, 2),
         }
     except HTTPException:
         raise
