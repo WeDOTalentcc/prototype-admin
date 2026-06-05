@@ -34,8 +34,8 @@ import {
 import { textStyles } from "@/lib/design-tokens"
 import { HubLoadingState, ConfigurableFieldCard } from "./_shared"
 import { apiFetch } from "@/lib/api/api-fetch"
+import { useAllLiaFieldToggles } from "@/hooks/settings/useLiaFieldTogglesForSection"
 import { notifyChatOfSettingsUpdate } from "@/lib/api/settings-notify"
-import useCompanyId from "@/hooks/company/useCompanyId"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import {
@@ -43,16 +43,6 @@ import {
   type LiaFieldKey,
 } from "@/hooks/company/use-company-lia-instructions"
 import { LiaImpactSummary } from "@/components/settings/LiaImpactSummary"
-
-interface LiaFieldsConfig {
-  lia_field_toggles: Partial<Record<LiaFieldKey, boolean>>
-  lia_instructions: Partial<Record<LiaFieldKey, string>>
-}
-
-const DEFAULT_CONFIG: LiaFieldsConfig = {
-  lia_field_toggles: {},
-  lia_instructions: {},
-}
 
 // T-13 — Canonical YAML paths permitidos (alinhado com backend _ALLOWED_PATH_PREFIXES).
 const CANONICAL_YAML_PATHS = [
@@ -86,7 +76,6 @@ interface TenantOverrideListResponse {
 
 export function LiaFieldsConfigPanel() {
   const t = useTranslations("settings.liaFields")
-  const { companyId, isLoading: isLoadingCompany } = useCompanyId()
   // E1 (audit 2026-05-21): only WeDOTalent staff (role wedotalent_admin) can
   // see / edit the raw YAML tenant override tab. Customer-end users — even
   // their org-level admin — must not have access. This is defense-in-depth:
@@ -98,140 +87,33 @@ export function LiaFieldsConfigPanel() {
   // include "wedotalent_admin" canonical (backend role from C1). Type-safe
   // comparison replaces the legacy string cast workaround.
   const canSeeRawYaml = user?.role === "wedotalent_admin"
-  const [config, setConfig] = useState<LiaFieldsConfig>(DEFAULT_CONFIG)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [savingFields, setSavingFields] = useState<Set<string>>(new Set())
+  const lia = useAllLiaFieldToggles()
 
-  const fetchConfig = useCallback(async () => {
-    if (!companyId) return
-    setIsLoading(true)
-    setError(null)
-    try {
-      const res = await apiFetch(
-        `/api/backend-proxy/company/${encodeURIComponent(companyId)}/field-toggles`,
-      )
-      if (!res.ok) {
-        if (res.status === 404 || res.status === 422) {
-          setConfig(DEFAULT_CONFIG)
-          return
-        }
-        throw new Error(`Failed to fetch config: ${res.status}`)
-      }
-      const data = await res.json()
-      // Backend canonical: data.toggles (Record<string,bool>) + data.comments (Record<string,str|null>)
-      // Filter null comments — schema FieldToggleResponse permite comment=null
-      const instructions: Record<string, string> = {}
-      for (const [k, v] of Object.entries(data.comments || {})) {
-        if (typeof v === "string" && v.trim()) instructions[k] = v
-      }
-      setConfig({
-        lia_field_toggles: data.toggles || {},
-        lia_instructions: instructions,
-      })
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Falha ao carregar configurações LIA")
-      setConfig(DEFAULT_CONFIG)
-    } finally {
-      setIsLoading(false)
-    }
-  }, [companyId])
+  const handleToggleChange = (fieldKey: string, isActive: boolean) =>
+    lia.saveToggle(fieldKey, isActive)
 
-  useEffect(() => {
-    if (!isLoadingCompany && companyId) {
-      fetchConfig()
-    } else if (!isLoadingCompany && !companyId) {
-      setConfig(DEFAULT_CONFIG)
-      setIsLoading(false)
-    }
-  }, [fetchConfig, isLoadingCompany, companyId])
-
-  const persistConfig = useCallback(
-    async (next: LiaFieldsConfig, fieldKey: string) => {
-      if (!companyId) return
-      setSavingFields((prev) => new Set(prev).add(fieldKey))
-      try {
-        const res = await apiFetch(
-          `/api/backend-proxy/company/${encodeURIComponent(companyId)}/field-toggles`,
-          {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              toggles: next.lia_field_toggles,
-              comments: next.lia_instructions,
-            }),
-          },
-        )
-        if (!res.ok) throw new Error(`Save failed: ${res.status}`)
-        setConfig(next)
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Falha ao salvar configuração LIA")
-      } finally {
-        setSavingFields((prev) => {
-          const n = new Set(prev)
-          n.delete(fieldKey)
-          return n
-        })
-      }
-    },
-    [companyId],
-  )
-
-  const handleToggleChange = useCallback(
-    (fieldKey: string, isActive: boolean) => {
-      const next: LiaFieldsConfig = {
-        ...config,
-        lia_field_toggles: { ...config.lia_field_toggles, [fieldKey]: isActive },
-      }
-      persistConfig(next, fieldKey)
-    },
-    [config, persistConfig],
-  )
-
-  const handleInstructionSave = useCallback(
-    (fieldKey: string, instruction: string) => {
-      const next: LiaFieldsConfig = {
-        ...config,
-        lia_instructions: { ...config.lia_instructions, [fieldKey]: instruction },
-      }
-      persistConfig(next, fieldKey)
-    },
-    [config, persistConfig],
-  )
+  const handleInstructionSave = (fieldKey: string, instruction: string) =>
+    lia.saveInstruction(fieldKey, instruction)
 
   // P2-7 (audit 2026-05-26): batch operations sobre os 34 toggles.
-  // Reset = default canonical (toggle ON, instrucao vazia). Useful pra
-  // recrutador que customizou demais e quer voltar ao baseline.
-  const handleClearAllInstructions = useCallback(() => {
+  const handleClearAllInstructions = () => {
     if (typeof window !== "undefined" && !window.confirm(
       "Limpar TODAS as instruções customizadas dos 34 campos LIA? Esta ação não pode ser desfeita. Os toggles ON/OFF permanecem como estão.",
     )) {
       return
     }
-    const next: LiaFieldsConfig = {
-      ...config,
-      lia_instructions: {},
-    }
-    persistConfig(next, "__batch_clear_instructions__")
-  }, [config, persistConfig])
+    lia.clearAllInstructions()
+  }
 
-  const handleBatchToggleAll = useCallback((targetState: boolean) => {
+  const handleBatchToggleAll = (targetState: boolean) => {
     const action = targetState ? "ativar" : "desativar"
     if (typeof window !== "undefined" && !window.confirm(
       `${action.charAt(0).toUpperCase() + action.slice(1)} TODOS os 34 toggles de campos LIA? Instruções customizadas permanecem inalteradas.`,
     )) {
       return
     }
-    const allToggles: Partial<Record<LiaFieldKey, boolean>> = {}
-    for (const key of Object.keys(LIA_FIELD_DEFINITIONS) as LiaFieldKey[]) {
-      allToggles[key] = targetState
-    }
-    const next: LiaFieldsConfig = {
-      ...config,
-      lia_field_toggles: allToggles,
-    }
-    persistConfig(next, "__batch_toggle_all__")
-  }, [config, persistConfig])
+    lia.toggleAll(targetState)
+  }
 
   const fieldsByCategory = React.useMemo(() => {
     const groups: Record<string, Array<{ key: LiaFieldKey; label: string; location: string }>> = {}
@@ -244,7 +126,7 @@ export function LiaFieldsConfigPanel() {
     return groups
   }, [])
 
-  if (isLoadingCompany || isLoading) {
+  if (lia.isLoading) {
     return <HubLoadingState />
   }
 
@@ -269,12 +151,12 @@ export function LiaFieldsConfigPanel() {
 
       {/* P1-9 (audit 2026-05-26): visualiza diferencial competitivo invisível —
           quantos campos canonical a LIA consome + exemplos por campo. */}
-      <LiaImpactSummary toggles={config.lia_field_toggles} />
+      <LiaImpactSummary toggles={lia.toggles} />
 
-      {error && (
+      {lia.error && (
         <div className="flex items-center gap-2 p-3 bg-status-error/10 border border-status-error/30 rounded-xl">
           <AlertCircle className="w-5 h-5 text-status-error shrink-0" />
-          <p className="text-sm text-status-error">{error}</p>
+          <p className="text-sm text-status-error">{lia.error}</p>
         </div>
       )}
 
@@ -354,11 +236,11 @@ export function LiaFieldsConfigPanel() {
                     label={field.label}
                     hint={field.location}
                     showToggle
-                    isActive={config.lia_field_toggles[field.key] ?? false}
+                    isActive={lia.toggles[field.key] ?? false}
                     onToggleChange={(active) => handleToggleChange(field.key, active)}
-                    instruction={config.lia_instructions[field.key] || ""}
+                    instruction={lia.comments[field.key] || ""}
                     onInstructionSave={(text) => handleInstructionSave(field.key, text)}
-                    isSaving={savingFields.has(field.key)}
+                    isSaving={lia.savingKeys.has(field.key)}
                     placeholder="Instrução opcional para a LIA sobre este campo..."
                   />
                 ))}
