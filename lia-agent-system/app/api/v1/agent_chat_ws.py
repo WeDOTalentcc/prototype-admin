@@ -1457,6 +1457,7 @@ company_id: str = Depends(require_company_id)):
                     # canonical save tools, refreshing settings cards without
                     # full-page reload.
                     tool_results=output.tool_results or None,
+                    response_blocks=(output.metadata or {}).get("response_blocks"),
                 ))
 
             except TimeoutError:

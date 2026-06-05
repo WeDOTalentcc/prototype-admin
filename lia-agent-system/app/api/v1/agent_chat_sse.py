@@ -711,6 +711,9 @@ company_id: str = Depends(require_company_id)):
                                 navigation=output.navigation.dict() if output.navigation else None,
                                 state_updates=output.state_updates or None,
                                 fairness_warnings=fairness_warnings or None,
+                                response_blocks=(output.metadata or {}).get(
+                                    "response_blocks"
+                                ),
                                 conversation_id=req.conversation_id,
                             ),
                             next_id(),
