@@ -232,10 +232,47 @@ async def _compare_candidates(params: dict[str, Any], context: dict[str, Any]):
                 "skills": skills, "location": loc,
             })
 
+        _rrp_blocks = []
+        if compared:
+            from app.shared.rrp_blocks import (
+                ComparisonTableBlock, ComparisonColumn, ComparisonRow,
+            )
+            _table = ComparisonTableBlock(
+                block_id="comparison_table:compare_candidates:"
+                + "-".join(str(c.get("id")) for c in compared),
+                role="support", layout="wide",
+                title="Comparacao de candidatos", entity_type="candidate",
+                columns=[
+                    ComparisonColumn(key="name", label="Candidato", type="text"),
+                    ComparisonColumn(key="title", label="Cargo", type="text"),
+                    ComparisonColumn(key="seniority", label="Senioridade", type="text"),
+                    ComparisonColumn(key="experience", label="Experiencia", type="text"),
+                    ComparisonColumn(key="skills", label="Skills", type="text"),
+                    ComparisonColumn(key="location", label="Local", type="text"),
+                ],
+                rows=[
+                    ComparisonRow(
+                        entity_id=str(c.get("id")),
+                        cells={
+                            "name": c.get("name") or ("ID " + str(c.get("id"))),
+                            "title": c.get("title") or "-",
+                            "seniority": c.get("seniority") or "-",
+                            "experience": (str(c.get("experience")) + " anos")
+                            if c.get("experience") else "-",
+                            "skills": c.get("skills") or [],
+                            "location": c.get("location") or "-",
+                        },
+                    )
+                    for c in compared
+                ],
+                total_count=len(compared), shown_count=len(compared),
+            )
+            _rrp_blocks = [_table.model_dump(mode="json")]
+
         return ActionResult(
             status="executed",
             message="\n".join(lines),
-            data={"candidates": compared},
+            data={"candidates": compared, "response_blocks": _rrp_blocks},
             action_type="compare_candidates",
         )
     except Exception as e:

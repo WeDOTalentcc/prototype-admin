@@ -242,6 +242,7 @@ class ChatResponse(BaseModel):
             intent_detected=intent,
             confidence=1.0,
             structured_data=action_result.data,
+            response_blocks=((action_result.data or {}).get("response_blocks")),
             suggested_prompts=suggested_prompts or [],
             conversation_id=conv_id,
             action_executed=action_result.status == "executed",

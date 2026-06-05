@@ -72,3 +72,19 @@ def test_backward_compat_no_blocks():
     assert not any(
         isinstance(f, dict) and "response_blocks" in f for f in frames
     ), "frame nao deveria ter response_blocks quando nao ha blocos"
+
+
+def test_lift_from_action_result():
+    """from_action_result (path da produtora canonical sourcing_actions via
+    ActionExecutor) tambem eleva response_blocks de action_result.data."""
+    from app.orchestrator.action_executor import ActionResult
+
+    ar = ActionResult(
+        status="executed",
+        message="Comparei os candidatos",
+        data={"candidates": [], "response_blocks": [_BLOCK]},
+        action_type="compare_candidates",
+    )
+    cr = ChatResponse.from_action_result(ar, intent="comparar_candidatos", conv_id="c1")
+    assert cr.response_blocks, "from_action_result deveria elevar response_blocks"
+    assert cr.response_blocks[0]["kind"] == "comparison_table"
