@@ -477,6 +477,8 @@ async def _persist_wsi_results(
                 analysis_id=analysis_id,
                 session_id=wsi_session_id,
                 question_id=question_id,
+                candidate_id=session.candidate_id,
+                job_vacancy_id=session.job_id,
                 competency=competency,
                 response_text=response_text,
                 autodeclaration_score=score_0_10,

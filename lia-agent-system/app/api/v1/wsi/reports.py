@@ -20,7 +20,7 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.domains.cv_screening.services.wsi_deterministic_scorer import (
+from app.domains.cv_screening.constants.wsi_scale import (
     GATE_G3_THRESHOLD as _GATE_G3_THRESHOLD_CANONICAL,
 )
 from app.domains.cv_screening.services.wsi_deterministic_scorer import (
@@ -53,7 +53,7 @@ router = APIRouter()
 # ---------------------------------------------------------------------------
 
 _GATE_G3_THRESHOLD = _GATE_G3_THRESHOLD_CANONICAL
-_GATE_G4_THRESHOLD = 1.5   # /5 scale (= 3.0/10)
+_GATE_G4_THRESHOLD = 3.0   # /10 scale (audit P1-1 tail 2026-06-05)
 _INJECTION_KEYWORDS = ["ignore", "esquece", "esqueça", "novo prompt", "sys:", "system:", "jailbreak", "prompt injection"]
 
 _SENIORITY_WEIGHTS = SENIORITY_WEIGHTS
@@ -145,7 +145,7 @@ def _build_attention_flags(analyses: list[dict], gates: GateStatus) -> list[str]
     low_star = sum(1 for a in analyses if sum(a.get("star", {}).values()) <= 1)
     if low_star >= 2:
         flags.append(f"{low_star} respostas com STAR incompleto")
-    critical_gaps = [a for a in analyses if a.get("is_critical") and a.get("final_score", 5) < 3.0]
+    critical_gaps = [a for a in analyses if a.get("is_critical") and a.get("final_score", 10) < 6.0]
     if critical_gaps:
         flags.append(f"{len(critical_gaps)} competência(s) crítica(s) abaixo do esperado")
     return flags
@@ -163,26 +163,26 @@ def _compute_decision_confidence(
     if (
         "G2" in failed_gates
         or llm_fallback_count >= 2
-        or score_variance > 2.0
+        or score_variance > 4.0
     ):
         return "baixa", True
 
-    if overall_wsi >= 4.5 and not failed_gates:
+    if overall_wsi >= 9.0 and not failed_gates:
         return "alta", False
 
     if failed_gates and clear_reject_gates.intersection(failed_gates) and not ambiguous_gates.intersection(failed_gates):
         return "alta", False
 
-    if 3.0 <= overall_wsi < 3.75:
+    if 6.0 <= overall_wsi < 7.5:
         return "media", True
 
-    if 3.75 <= overall_wsi < 4.5 and not failed_gates:
+    if 7.5 <= overall_wsi < 9.0 and not failed_gates:
         return "media", False
 
     if failed_gates and ambiguous_gates.issuperset(failed_gates):
         return "media", True
 
-    return "media", overall_wsi < 3.75
+    return "media", overall_wsi < 7.5
 
 
 def _f11_fallback_questions(gaps: list[dict[str, Any]]) -> list[CBIQuestion]:
@@ -239,7 +239,7 @@ async def _generate_cbi_questions_llm(
     from app.shared.providers.llm_factory import get_provider_for_tenant
 
     gaps_formatted = "\n".join(
-        f"[{g.get('severity','MÉDIO')}] {g.get('competency','')} ({g.get('type','técnico')}) — score {g.get('score',0):.1f}/5 — sinais ausentes: {g.get('missing_signals','n/a')}"
+        f"[{g.get('severity','MÉDIO')}] {g.get('competency','')} ({g.get('type','técnico')}) — score {g.get('score',0):.1f}/10 — sinais ausentes: {g.get('missing_signals','n/a')}"
         for g in gaps[:3]
     ) or "Nenhum gap crítico identificado — perguntas de aprofundamento"
 
@@ -567,7 +567,7 @@ async def get_f11_report(session_id: str, db: AsyncSession = Depends(get_db), co
             g2_prompt_injection=not g2_failed,
             g2_detail=f"{injection_count} tentativa(s) de manipulação detectada(s)" if g2_failed else "Sem injeção de prompt detectada",
             g3_wsi_tecnico=not g3_failed,
-            g3_detail=f"WSI Técnico {tech_wsi:.2f}/5 {'< limiar 2.0 — reprovado' if g3_failed else '≥ limiar 2.0 — aprovado'}",
+            g3_detail=f"WSI Técnico {tech_wsi:.2f}/10 {'< limiar 4.0 — reprovado' if g3_failed else '≥ limiar 4.0 — aprovado'}",
             g4_skill_critica=not g4_failed,
             g4_detail="Skill crítica com score abaixo do mínimo absoluto" if g4_failed else "Nenhuma skill crítica abaixo do mínimo",
             g5_engajamento=not g5_failed,
@@ -594,15 +594,15 @@ async def get_f11_report(session_id: str, db: AsyncSession = Depends(get_db), co
             decision_result = "REPROVADO"
             gate_reasons = [gate_labels.get(g, g) for g in failed_gates]
             decision_reason = f"Gate(s) ativado(s): {', '.join(gate_reasons)}"
-        elif overall_wsi >= 3.75:
+        elif overall_wsi >= 7.5:
             decision_result = "APROVADO"
             decision_reason = None
-        elif overall_wsi >= 3.0:
+        elif overall_wsi >= 6.0:
             decision_result = "EM_AVALIACAO"
-            decision_reason = f"Score WSI {overall_wsi:.2f}/5 requer revisão humana (faixa 3.0–3.74)"
+            decision_reason = f"Score WSI {overall_wsi:.2f}/10 requer revisão humana (faixa 6.0–7.49)"
         else:
             decision_result = "REPROVADO"
-            decision_reason = f"Score WSI {overall_wsi:.2f}/5 abaixo do mínimo (< 3.0)"
+            decision_reason = f"Score WSI {overall_wsi:.2f}/10 abaixo do mínimo (< 6.0)"
 
         decision_confidence, human_review_required = _compute_decision_confidence(
             overall_wsi=overall_wsi,
@@ -613,19 +613,19 @@ async def get_f11_report(session_id: str, db: AsyncSession = Depends(get_db), co
 
         sorted_analyses = sorted(analyses_list, key=lambda x: x["final_score"], reverse=True)
         strengths = [
-            f"{a['competency']} — {a['final_score']:.1f}/5"
+            f"{a['competency']} — {a['final_score']:.1f}/10"
             for a in sorted_analyses[:3]
-            if a["final_score"] >= 3.5
+            if a["final_score"] >= 7.0
         ]
 
         gap_items = [
-            a for a in sorted_analyses if a["final_score"] < 3.0 and a["final_score"] > 0.0
+            a for a in sorted_analyses if a["final_score"] < 6.0 and a["final_score"] > 0.0
         ]
         gap_items.sort(key=lambda x: x["final_score"])
         gaps = []
         for a in gap_items[:3]:
-            delta = 3.0 - a["final_score"]
-            severity = "ALTO" if delta >= 1.5 else ("MÉDIO" if delta >= 0.75 else "BAIXO")
+            delta = 6.0 - a["final_score"]
+            severity = "ALTO" if delta >= 3.0 else ("MÉDIO" if delta >= 1.5 else "BAIXO")
             gaps.append({
                 "competency": a["competency"],
                 "type": a["question_type"],
