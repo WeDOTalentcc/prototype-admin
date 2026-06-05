@@ -136,9 +136,17 @@ class CompetencyBenchmarkService:
         return hashlib.md5("|".join(key_parts).encode()).hexdigest()
 
     # ── dimensionamento pelo modo ───────────────────────────────────────────
-    def _target_counts(self, screening_mode: str) -> tuple[int, int]:
-        cfg = SCREENING_MODE_CONFIG.get(screening_mode) or SCREENING_MODE_CONFIG["compact"]
-        return cfg["technical_competencies"], cfg["behavioral_competencies"]
+    def _target_counts(
+        self, screening_mode: str, seniority: str | None = None
+    ) -> tuple[int, int]:
+        # Per-senioridade (YAML canonical) -- audit 2026-06-05 #3. Antes usava
+        # SCREENING_MODE_CONFIG (por modo: full=8+4), divergindo do validador
+        # (por senioridade: full/senior=7+5) -> causava a 13a pergunta.
+        from app.domains.job_creation.helpers.wsi_distribution import (
+            block_distribution,
+        )
+        dist = block_distribution(screening_mode, seniority or "pleno")
+        return dist["technical"], dist["behavioral"]
 
     # ── prompt WSI-grounded ─────────────────────────────────────────────────
     def _build_prompt(
@@ -369,7 +377,7 @@ Responda APENAS com JSON válido (sem markdown, sem explicações):
               "is_estimate": bool, "filtered_count": int,
             }
         """
-        n_tech, n_behav = self._target_counts(screening_mode)
+        n_tech, n_behav = self._target_counts(screening_mode, seniority)
 
         cache_key = self._generate_cache_key(
             "competency",

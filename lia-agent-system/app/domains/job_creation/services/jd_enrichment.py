@@ -341,6 +341,7 @@ def _resolve_quality_thresholds(
     screening_mode: str | None,
     confirmed_technical: list | None,
     confirmed_behavioral: list | None,
+    seniority: str | None = None,
 ) -> tuple[int, int]:
     """Thresholds mode-aware para o quality_score (Fase 4).
 
@@ -353,8 +354,12 @@ def _resolve_quality_thresholds(
     if not has_confirmed:
         return MIN_TECHNICAL_SKILLS, MIN_BEHAVIORAL_COMPETENCIES
     if screening_mode in SCREENING_MODE_CONFIG:
-        cfg = SCREENING_MODE_CONFIG[screening_mode]
-        return cfg["technical_competencies"], cfg["behavioral_competencies"]
+        # Per-senioridade (YAML canonical) -- audit 2026-06-05 #3.
+        from app.domains.job_creation.helpers.wsi_distribution import (
+            block_distribution,
+        )
+        dist = block_distribution(screening_mode, seniority or "pleno")
+        return dist["technical"], dist["behavioral"]
     return (
         max(1, len(confirmed_technical or [])),
         max(1, len(confirmed_behavioral or [])),
@@ -409,7 +414,7 @@ class JdEnrichmentService:
             tuple of (enriched_jd, quality_score, warnings)
         """
         _min_tech, _min_behav = _resolve_quality_thresholds(
-            screening_mode, confirmed_technical, confirmed_behavioral,
+            screening_mode, confirmed_technical, confirmed_behavioral, seniority,
         )
 
         # --- GOV 1: Pre-LLM fairness check on raw JD ---

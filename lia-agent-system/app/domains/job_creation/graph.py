@@ -659,19 +659,12 @@ def _get_question_distribution(mode: str, seniority: str) -> Dict[str, int]:
     Os valores devem bater com a methodology exatamente; nao mude o YAML
     sem atualizar o doc + test sentinel.
     """
-    distributions = _load_wsi_question_distributions()
-    table = distributions.get(mode if mode == "compact" else "full", {})
-    seniority_key = (
-        seniority.lower()
-        .replace("sênior", "senior")
-        .replace("júnior", "junior")
-        .replace("estágio", "estagiario")
-        .replace("estagiário", "estagiario")
+    # Delegado ao helper canonical (audit 2026-06-05 #3) -- fonte UNICA do
+    # split por bloco. Comportamento identico (mesmo YAML + normalizacao).
+    from app.domains.job_creation.helpers.wsi_distribution import (
+        block_distribution,
     )
-    return table.get(
-        seniority_key,
-        table.get("pleno", {"technical": 5, "behavioral": 2}),
-    )
+    return block_distribution(mode, seniority)
 
 
 def _build_readiness_check(state: JobCreationState) -> Dict[str, Any]:

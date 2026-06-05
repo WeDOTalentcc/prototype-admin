@@ -737,13 +737,19 @@ class WSIQuestionGenerator:
     ) -> List[GeneratedQuestion]:
         """Auto-completa o pacote até o mínimo do modo (Task #1089 / hard gate).
 
-        Compact => 5 téc + 2 comp (7). Full => 8 téc + 4 comp (12). Gera apenas
+        Alvos per-senioridade (YAML canonical via block_distribution -- audit
+        2026-06-05 #3; ex.: full/senior => 7 téc + 5 comp). Gera apenas
         o DÉFICIT por bloco, cobrindo competências confirmadas ainda NÃO cobertas
         pelas perguntas atuais. Retorna [] quando o pacote já atinge o mínimo.
         """
-        cfg = SCREENING_MODE_CONFIG.get(screening_mode) or SCREENING_MODE_CONFIG["compact"]
-        target_tech = cfg["technical_competencies"]
-        target_behav = cfg["behavioral_competencies"]
+        # Per-senioridade (YAML canonical) -- audit 2026-06-05 #3. Alinha com
+        # o validador (_get_question_distribution); antes 8+4 por modo divergia.
+        from app.domains.job_creation.helpers.wsi_distribution import (
+            block_distribution,
+        )
+        _dist = block_distribution(screening_mode, seniority)
+        target_tech = _dist["technical"]
+        target_behav = _dist["behavioral"]
 
         cur_tech = sum(1 for q in existing_questions if _q_attr(q, "block", "") == "technical")
         cur_behav = sum(1 for q in existing_questions if _q_attr(q, "block", "") == "behavioral")
