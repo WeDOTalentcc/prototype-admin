@@ -39,6 +39,7 @@ interface CandidatePreviewProps {
   onSchedule?: (candidate: Record<string, unknown>) => void
   onAddToList?: (candidate: Record<string, unknown>) => void
   jobId?: string
+  searchCriteria?: Record<string, unknown> | null
   onCandidateUpdated?: () => void
 }
 
@@ -67,6 +68,7 @@ export function CandidatePreview({
   onSchedule,
   onAddToList,
   jobId,
+  searchCriteria,
   onCandidateUpdated,
 }: CandidatePreviewProps) {
   const core = useCandidatePreviewCore(candidate, jobId)
@@ -234,6 +236,7 @@ export function CandidatePreview({
             hasSalaryData={hasSalaryData}
             hasAddressData={hasAddressData}
             getAddressString={getAddressString}
+            searchCriteria={searchCriteria}
           />
         )}
 

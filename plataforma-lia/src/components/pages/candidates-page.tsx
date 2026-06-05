@@ -38,6 +38,7 @@ import { SavedSearchesTab } from "@/components/talent-funnel-tabs/saved-searches
 import { ListsTab } from "@/components/talent-funnel-tabs/lists-tab"
 import TalentPoolsTab from "@/components/pages-candidates/TalentPoolsTab"
 import { CandidateSearchResultsView } from "@/components/pages/candidates/CandidateSearchResultsView"
+import { BulkRevealModal } from "@/components/pages/candidates/BulkRevealModal"
 import type { Candidate } from "@/components/pages/candidates/types"
 import type { CandidatesPageModalsProps } from "@/components/pages/candidates/CandidatesPageModals.types"
 import { liaApi } from "@/services/lia-api"
@@ -57,6 +58,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
   const {
     searchFingerprint,
     handleReSearchWithFilters,
+    bulkReveal,
     activeSearchFilters, activeSearchTab, activeTab, addToListCandidateIds, addToListCandidateNames, bulkJobVacancies,
     candidateListsForModal, candidates, chatMessages, clearAllFilters, clearAllTableFilters, clearCrossTabFilter,
     columnSearchTerm, columnWidths, confirmContactFilterChange, confirmSourceChange, contactModalAction, contactModalCandidate,
@@ -199,6 +201,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
               setShowShareSearchModal(true)
             }}
             onBulkEmail={handleBulkEmail}
+            onBulkReveal={() => bulkReveal.open(candidates.filter(c => selectedCandidatesForBatch.has(c.id)))}
             onBulkWSIScreening={handleBulkWSIScreening}
             onToggleFavoriteBatch={() => {
               selectedCandidatesForBatch.forEach(id => talentFunnel.toggleFavoriteCandidate(id))
@@ -380,6 +383,15 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                 <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle h-[calc(100vh-6rem)] overflow-hidden">
                   <CandidatePreview
                     candidate={previewCandidate as unknown as Record<string, unknown>}
+                    searchCriteria={
+                      (tableFilters.skills.length || tableFilters.seniorityLevels.length || tableFilters.locations.length)
+                        ? {
+                            required_skills: tableFilters.skills,
+                            seniority_levels: tableFilters.seniorityLevels,
+                            locations: tableFilters.locations,
+                          }
+                        : null
+                    }
                     isOpen={showCandidatePreview}
                     onClose={handleCloseCandidatePreview}
                     isMaximized={isPreviewMaximized}
@@ -592,6 +604,14 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
         )}
 
       </div>
+
+      <BulkRevealModal
+        isOpen={bulkReveal.showModal}
+        onClose={bulkReveal.close}
+        onConfirm={bulkReveal.confirm}
+        candidateCount={bulkReveal.candidates.length}
+        isRevealing={bulkReveal.isRevealing}
+      />
 
       {/* Modals - extracted to CandidatesPageModals */}
       <CandidatesPageModals
