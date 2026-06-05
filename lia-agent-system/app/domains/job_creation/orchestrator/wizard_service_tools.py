@@ -650,6 +650,23 @@ def _wsi_generate_core(
             error=True,
         )
 
+    # Gate computacional (#2 audit 2026-06-05): o MODO de triagem
+    # (compact/full) NAO pode ser escolhido pelo sistema silenciosamente.
+    # Antes caia em default "compact" implicito -> a LIA pulava a pergunta e
+    # o recrutador tinha que cobrar. Forca perguntar quando nao definido via
+    # set_screening_mode (a menos que seja regeneracao, ja com modo setado).
+    if not force_regen and not state.get("screening_mode"):
+        return ToolResult(
+            llm_message=(
+                "Antes de gerar a triagem, PERGUNTE ao recrutador qual o "
+                "MODO de triagem WSI e registre com set_screening_mode: "
+                "'compact' (7 perguntas, ~10 min, triagem rapida) ou "
+                "'full' (12 perguntas, ~18 min, avaliacao aprofundada). "
+                "Nao escolha por ele."
+            ),
+            error=True,
+        )
+
     jd = state.get("jd_enriched") or {}
     # job_description p/ extracao OCEAN — PII masked (paridade com o fork).
     _parts = [jd.get("about_role") or "", " ".join(jd.get("responsabilidades") or [])]
