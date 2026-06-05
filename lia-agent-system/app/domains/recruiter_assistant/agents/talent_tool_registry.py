@@ -751,7 +751,7 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
     ),
     ToolDefinition(
         name="rank_candidates",
-        description="Rankeia candidatos por score de fit para uma vaga especifica, usando criterios objetivos.",
+        description="Rankeia (ordena) os candidatos de uma vaga por score de fit/LIA e retorna uma TABELA RICA de ranking (com o porque de cada nota e as fontes). Use SEMPRE que o recrutador pedir para rankear, ordenar, ou ver os melhores/top candidatos de uma vaga. Se a vaga foi citada por nome, resolva o vacancy_id antes e entao chame esta tool.",
         parameters={
             "type": "object",
             "properties": {
