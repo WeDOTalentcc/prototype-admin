@@ -125,7 +125,7 @@ async def _rank_candidates(params: dict[str, Any], context: dict[str, Any]):
         async with AsyncSessionLocal() as db:
             sql = """
                 SELECT c.id, c.name, c.current_title, c.seniority_level,
-                       vc.stage, vc.score, vc.lia_score,
+                       vc.stage, vc.lia_score,
                        lo.id AS opinion_id, lo.score AS op_score,
                        lo.recommendation AS op_rec, lo.summary AS op_summary,
                        lo.strengths AS op_strengths, lo.concerns AS op_concerns,
@@ -140,7 +140,7 @@ async def _rank_candidates(params: dict[str, Any], context: dict[str, Any]):
             if company_id:
                 sql += " AND vc.company_id = :co"
                 bind["co"] = str(company_id)
-            sql += " ORDER BY COALESCE(vc.lia_score, vc.score, 0) DESC LIMIT :lim"
+            sql += " ORDER BY COALESCE(vc.lia_score, 0) DESC LIMIT :lim"
             result = await db.execute(text(sql), bind)
             rows = result.fetchall()
 
@@ -169,7 +169,7 @@ async def _rank_candidates(params: dict[str, Any], context: dict[str, Any]):
         _evidence = []
         for i, row in enumerate(rows, 1):
             cid = str(row.id)
-            score = row.op_score if row.op_score is not None else (row.lia_score or row.score or 0)
+            score = row.op_score if row.op_score is not None else (row.lia_score or 0)
             try:
                 score = float(score)
             except (TypeError, ValueError):
@@ -642,7 +642,7 @@ async def _export_candidates(params: dict[str, Any], context: dict[str, Any]):
             if job_id:
                 export_sql = """
                     SELECT c.name, c.email, c.phone, c.current_title, c.current_company,
-                           vc.stage, vc.score, vc.lia_score
+                           vc.stage, vc.lia_score
                     FROM vacancy_candidates vc
                     JOIN candidates c ON c.id = vc.candidate_id
                     WHERE vc.vacancy_id = CAST(:jid AS uuid)
@@ -656,7 +656,7 @@ async def _export_candidates(params: dict[str, Any], context: dict[str, Any]):
             elif company_id:
                 result = await db.execute(text("""
                     SELECT DISTINCT c.name, c.email, c.phone, c.current_title, c.current_company,
-                           vc.stage, vc.score, vc.lia_score
+                           vc.stage, vc.lia_score
                     FROM vacancy_candidates vc
                     JOIN candidates c ON c.id = vc.candidate_id
                     WHERE vc.company_id = :co
@@ -685,7 +685,7 @@ async def _export_candidates(params: dict[str, Any], context: dict[str, Any]):
             exported.append({
                 "name": row.name, "email": row.email, "phone": row.phone,
                 "title": row.current_title, "company": row.current_company,
-                "stage": row.stage, "score": row.lia_score or row.score,
+                "stage": row.stage, "score": row.lia_score,
             })
 
         return ActionResult(
