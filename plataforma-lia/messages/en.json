@@ -42,6 +42,8 @@
     }
   },
   "rrp": {
+    "funnelTotal": "Total: {count}",
+    "funnelConversion": "Conversion: {pct}%",
     "why": "why?",
     "hide": "hide",
     "confidenceLine": "Confidence: {level} — {basis}",

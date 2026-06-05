@@ -85,3 +85,43 @@ describe("ResponseBlockRenderer — state-aware (AD7) + i18n", () => {
     expect(container.textContent).toBe("")
   })
 })
+
+
+const FUNNEL: ResponseBlock = {
+  kind: "funnel",
+  block_id: "funnel:pipeline:Diretor",
+  role: "support",
+  layout: "wide",
+  state: "ready",
+  title: "Pipeline (Diretor Juridico)",
+  stages: [
+    { label: "Triagem", count: 12 },
+    { label: "Entrevista", count: 5 },
+    { label: "Contratado", count: 1 },
+  ],
+  total: 18,
+  conversion_rate: 5.6,
+}
+
+describe("ResponseBlockRenderer — funnel (Fase 1)", () => {
+  it("renderiza etapas + contagens nos 3 estados", () => {
+    for (const mode of ["fullscreen", "sidebar", "floating"]) {
+      const { unmount } = renderWith([FUNNEL], mode)
+      expect(screen.getByText("Triagem")).toBeTruthy()
+      expect(screen.getByText("Entrevista")).toBeTruthy()
+      expect(screen.getByText("12")).toBeTruthy()
+      unmount()
+    }
+  })
+
+  it("mostra total e conversao localizados", () => {
+    renderWith([FUNNEL], "fullscreen")
+    expect(screen.getByText(/Total: 18/)).toBeTruthy()
+    expect(screen.getByText(/Convers/)).toBeTruthy()
+  })
+
+  it("i18n: zero MISSING_MESSAGE no funnel", () => {
+    const { errors } = renderWith([FUNNEL], "sidebar")
+    expect(errors.filter((e) => e.includes("MISSING_MESSAGE"))).toEqual([])
+  })
+})

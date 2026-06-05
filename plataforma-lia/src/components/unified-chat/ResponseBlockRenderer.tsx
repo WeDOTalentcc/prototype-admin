@@ -16,6 +16,7 @@ import type {
   ComparisonTableBlock,
   ScoreExplainerBlock,
   EvidenceStackBlock,
+  FunnelBlock,
   ScoreFactor,
 } from "@/types/rrp-blocks";
 
@@ -287,6 +288,43 @@ function ComparisonTableView({
   );
 }
 
+function FunnelView({ block }: { block: FunnelBlock }) {
+  const t = useTranslations("rrp");
+  const max = Math.max(1, ...block.stages.map((s) => s.count));
+  return (
+    <div className="rounded-lg border border-lia-border-subtle bg-lia-bg-secondary p-3">
+      <p className="mb-2 text-sm font-medium text-lia-text-primary">
+        {block.title}
+      </p>
+      <div className="space-y-1.5">
+        {block.stages.map((s, i) => {
+          const pct = Math.round((s.count / max) * 100);
+          return (
+            <div key={i} className="flex items-center gap-2">
+              <span className="w-28 shrink-0 truncate text-xs text-lia-text-secondary">
+                {s.label}
+              </span>
+              <div className="relative h-5 flex-1 overflow-hidden rounded bg-lia-border-subtle/40">
+                <div
+                  className="h-full rounded bg-wedo-cyan/60"
+                  style={{ width: `${Math.max(pct, 4)}%` }}
+                />
+              </div>
+              <span className="w-8 shrink-0 text-right text-xs font-medium tabular-nums text-lia-text-primary">
+                {s.count}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+      <div className="mt-2 flex justify-between border-t border-lia-border-subtle pt-2 text-xs text-lia-text-tertiary">
+        <span>{t("funnelTotal", { count: block.total })}</span>
+        <span>{t("funnelConversion", { pct: block.conversion_rate })}</span>
+      </div>
+    </div>
+  );
+}
+
 function RenderOne({
   block,
   narrow,
@@ -304,6 +342,8 @@ function RenderOne({
       return <EvidenceStackView block={block} />;
     case "comparison_table":
       return <ComparisonTableView block={block} narrow={narrow} />;
+    case "funnel":
+      return <FunnelView block={block} />;
     default:
       // AD6: kind desconhecido (skew de deploy FE/BE) → fallback, nunca throw.
       return (

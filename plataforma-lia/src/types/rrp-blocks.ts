@@ -104,12 +104,27 @@ export interface ComparisonTableBlock extends BaseBlock {
   shown_count: number;
 }
 
+// ── funnel (pipeline) ─────────────────────────────────────────────────────────
+export interface FunnelStage {
+  label: string;
+  count: number;
+}
+
+export interface FunnelBlock extends BaseBlock {
+  kind: "funnel";
+  title: string;
+  stages: FunnelStage[];
+  total: number;
+  conversion_rate: number;
+}
+
 // ── União discriminada ────────────────────────────────────────────────────────
 export type ResponseBlock =
   | ProseBlock
   | ComparisonTableBlock
   | ScoreExplainerBlock
-  | EvidenceStackBlock;
+  | EvidenceStackBlock
+  | FunnelBlock;
 
 export type ResponseBlockKind = ResponseBlock["kind"];
 
