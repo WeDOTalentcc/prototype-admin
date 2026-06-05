@@ -1361,6 +1361,33 @@ class MainOrchestrator:
                         provider=_agentic_provider,
                     )
 
+                    # Step C (2026-06-04): consome a diretiva surfaçada por um
+                    # tool result. ADITIVO — só dispara quando um tool retornou
+                    # ``ui_action == "start_wizard_seeded"`` (ex.:
+                    # start_creation_from_source). Em turno de chat NORMAL o
+                    # campo é None e nada muda. O recrutador entra direto no
+                    # wizard semeado a partir do template, em vez do texto cru.
+                    _directive = (_agentic_result or {}).get("tool_directive")
+                    if (
+                        _directive
+                        and _directive.get("ui_action") == "start_wizard_seeded"
+                        and _directive.get("seed_source")
+                    ):
+                        logger.info(
+                            "[MainOrchestrator] tool directive start_wizard_seeded "
+                            "consumida (session=%s seed=%s) — desviando para o "
+                            "wizard semeado.",
+                            conv_id, _directive.get("seed_source"),
+                        )
+                        _seeded_resp = await self._start_seeded_wizard(
+                            ctx, conv_id, conv, db,
+                            seed_source=_directive["seed_source"],
+                        )
+                        if _soft_warnings and not _seeded_resp.fairness_warnings:
+                            _seeded_resp.fairness_warnings = _soft_warnings
+                        _enrich_suggested_prompts(_seeded_resp, ctx)
+                        return _seeded_resp
+
                     if _agentic_result and _agentic_result.get("response"):
                         logger.info(
                             "[LIA-A04] Agentic loop resolved in %d iterations with %d tool calls",
@@ -2414,10 +2441,50 @@ class MainOrchestrator:
             return None
 
         # ── Delegação canônica para WizardSessionService ──
+        # Delegação canônica ÚNICA via _start_seeded_wizard — reusa o mesmo
+        # helper que a diretiva ``start_wizard_seeded`` consome (Step B dedup,
+        # 2026-06-04). Sem seed_source para o caminho bootstrap/continuação.
+        return await self._start_seeded_wizard(ctx, conv_id, conv, db, seed_source=None)
+
+    async def _start_seeded_wizard(
+        self,
+        ctx: UniversalContext,
+        conv_id: str,
+        conv: Any,
+        db: Any,
+        seed_source: "dict | None" = None,
+    ) -> ChatResponse:
+        """Canonical: delega ao ``WizardSessionService`` e empacota a resposta.
+
+        ÚNICA implementação da delegação wizard + construção de resposta usada
+        por DOIS caminhos (single source of truth — CLAUDE.md canonical-fix):
+
+          1. ``_try_wizard_canonical`` (bootstrap turno-1 / continuação pin) —
+             chama com ``seed_source=None``.
+          2. Diretiva ``start_wizard_seeded`` surfaçada por um tool result no
+             agentic loop (``start_creation_from_source``) — chama com
+             ``seed_source={"type":"template","id":...}`` para SEMEAR uma
+             sessão FRESH a partir do arquétipo. ``process_message`` lê
+             ``context["seed_source"]`` no bootstrap da sessão.
+
+        Multi-tenancy: ``company_id`` do ``ctx`` (JWT), NUNCA do payload.
+        """
+        from app.domains.job_creation.services.wizard_session_service import (
+            WizardSessionService,
+        )
+        from app.orchestrator.routing.post_wizard_continuation import (
+            build_offer_message,
+            mark_offered,
+        )
+        from app.shared.sessions import derive_thread_id
+
+        message_text = (ctx.message or "").strip()
+        company_id = str(ctx.company_id) if ctx.company_id else None
+        session_id = conv_id or str(uuid.uuid4())
+
         # Task #1080: thread_id derivado pelo helper canônico puro
         # (app.shared.sessions.derive_thread_id), única fonte de verdade
         # cross-transport (WS / SSE / REST orchestrator).
-        from app.shared.sessions import derive_thread_id
         thread_id = derive_thread_id(company_id, session_id)
 
         # context dict espelha o que agent_chat_ws.py monta — mantém paridade
@@ -2429,6 +2496,16 @@ class MainOrchestrator:
         if getattr(ctx, "tenant_context_snippet", ""):
             wiz_context.setdefault(
                 "tenant_context_snippet", ctx.tenant_context_snippet
+            )
+        # Diretiva create-from-source (2026-06-04): injeta seed_source para o
+        # produtor canônico (WizardSessionService.seed_initial_state) semear o
+        # state FRESH a partir do template. Sobrescreve sempre — é a intenção
+        # explícita do recrutador para este turno.
+        if seed_source:
+            wiz_context["seed_source"] = seed_source
+            logger.info(
+                "[MainOrchestrator] seeded-wizard start: session=%s seed=%s",
+                session_id, seed_source,
             )
 
         recruiter_msg, ws_stage_payload, _tokens = await WizardSessionService.process_message(
@@ -2497,10 +2574,11 @@ class MainOrchestrator:
 
         logger.info(
             "[MainOrchestrator] Wizard canonical executor: session=%s thread=%s "
-            "stage=%s payload=%s",
+            "stage=%s payload=%s seeded=%s",
             session_id, thread_id,
             (ws_stage_payload or {}).get("stage", "?"),
             "yes" if ws_stage_payload else "no",
+            "yes" if seed_source else "no",
         )
 
         return ChatResponse(

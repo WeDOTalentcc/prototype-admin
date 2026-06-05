@@ -102,6 +102,46 @@ def _is_transient_provider_error(exc: BaseException) -> bool:
     return any(marker in s for marker in _TRANSIENT_PROVIDER_MARKERS)
 
 
+# UI actions a agentic tool result may carry that the orchestrator must ACT on
+# (vs. merely feed back to the LLM as text). Additive surfacing: only these
+# directives are promoted to ``run()``'s ``tool_directive`` return field.
+_ACTIONABLE_TOOL_UI_ACTIONS: frozenset[str] = frozenset({"start_wizard_seeded"})
+
+
+def _extract_tool_directive(result: object) -> "dict | None":
+    """Pure helper: surface an actionable UI directive from a ToolResult.
+
+    The orchestrator's agentic loop captures only ``tool_calls_made`` (name +
+    params) — it never inspects tool *results*. Some tools (e.g.
+    ``start_creation_from_source``) return a directive in
+    ``result.result["data"]["ui_action"]`` that the orchestrator must consume
+    to drive the UX (here: seed a fresh wizard session). This helper extracts
+    that directive WITHOUT coupling to any specific tool.
+
+    Returns ``None`` unless the result succeeded AND carries a recognized
+    ``data.ui_action`` in ``_ACTIONABLE_TOOL_UI_ACTIONS``. Defensive: any shape
+    mismatch yields ``None`` (never raises), so a normal tool result NEVER
+    produces a directive — this keeps the consume path strictly additive.
+    """
+    if result is None:
+        return None
+    if not getattr(result, "success", False):
+        return None
+    payload = getattr(result, "result", None)
+    if not isinstance(payload, dict):
+        return None
+    data = payload.get("data")
+    if not isinstance(data, dict):
+        return None
+    ui_action = data.get("ui_action")
+    if ui_action not in _ACTIONABLE_TOOL_UI_ACTIONS:
+        return None
+    return {
+        "ui_action": ui_action,
+        "seed_source": data.get("seed_source"),
+    }
+
+
 class AgenticLoop:
     """Executes user queries using LLM function calling with registered tools."""
 
@@ -250,6 +290,10 @@ class AgenticLoop:
             )
 
         tool_calls_made: list[dict] = []
+        # Additive (2026-06-04): last actionable UI directive surfaced by a tool
+        # result (e.g. start_creation_from_source -> start_wizard_seeded). Stays
+        # None for normal turns; consumed by main_orchestrator after run().
+        tool_directive: "dict | None" = None
 
         # Card de fase: entendendo a solicitação (localizado).
         await _emit_phase("understanding")
@@ -283,6 +327,7 @@ class AgenticLoop:
                         "tool_calls_made": tool_calls_made,
                         "iterations": iteration + 1,
                         "failure_reason": "llm_timeout",
+                        "tool_directive": tool_directive,
                     }
                 except Exception as exc:
                     _transient = _is_transient_provider_error(exc)
@@ -307,6 +352,7 @@ class AgenticLoop:
                             "tool_calls_made": tool_calls_made,
                             "iterations": iteration + 1,
                             "failure_reason": "provider_overloaded",
+                            "tool_directive": tool_directive,
                         }
                     logger.warning("[LIA-A04] LLM tool-call failed: %s", exc)
                     return {
@@ -314,6 +360,7 @@ class AgenticLoop:
                         "tool_calls_made": tool_calls_made,
                         "iterations": iteration + 1,
                         "failure_reason": "llm_error",
+                        "tool_directive": tool_directive,
                     }
 
             if llm_response is None:
@@ -323,6 +370,7 @@ class AgenticLoop:
                     "tool_calls_made": tool_calls_made,
                     "iterations": iteration + 1,
                     "failure_reason": "provider_overloaded",
+                    "tool_directive": tool_directive,
                 }
 
             # --- If LLM responded with text (no tool call), done ---
@@ -348,6 +396,7 @@ class AgenticLoop:
                     "response": _final_response,
                     "tool_calls_made": tool_calls_made,
                     "iterations": iteration + 1,
+                    "tool_directive": tool_directive,
                 }
 
             # --- Execute each requested tool call ---
@@ -374,6 +423,13 @@ class AgenticLoop:
                     tool_result_content = (
                         result.to_llm_content() if result else "Tool returned no result."
                     )
+                    # Additive: capture the LAST actionable UI directive a tool
+                    # result carries (e.g. start_wizard_seeded). Defensive —
+                    # None for normal results, never raises (REGRA-4 fail-loud
+                    # is N/A here: the LLM still gets the result via content).
+                    _directive = _extract_tool_directive(result)
+                    if _directive is not None:
+                        tool_directive = _directive
                 except Exception as exc:
                     _tool_status = "error"
                     logger.warning(
@@ -445,6 +501,7 @@ class AgenticLoop:
             "response": None,
             "tool_calls_made": tool_calls_made,
             "iterations": max_iter,
+            "tool_directive": tool_directive,
         }
 
 
