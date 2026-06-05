@@ -12,7 +12,7 @@ import React, { useState, useEffect, useCallback } from "react"
 import { Brain, BookOpen, BarChart2, FileText, AlertCircle, X, Loader2 } from "lucide-react"
 import { textStyles } from "@/lib/design-tokens"
 import { Button } from "@/components/ui/button"
-import { HubLoadingState } from "./_shared"
+import { HubLoadingState, StatusBadge } from "./_shared"
 import useCompanyId from "@/hooks/company/useCompanyId"
 import { notifyChatOfSettingsUpdate } from "@/lib/api/settings-notify"
 
@@ -168,32 +168,6 @@ function DisclosureModal({
   )
 }
 
-function ToggleBadge({ type }: { type: "gate" | "prompt" }) {
-  const config = {
-    gate: {
-      label: "Gate",
-      title:
-        "Gate de funcionalidade — quando desativado, a IA não pode usar este recurso (fail-closed).",
-      className: "bg-status-warning/10 text-status-warning border border-status-warning/30",
-    },
-    prompt: {
-      label: "Prompt",
-      title: "Injeção em prompt — quando ativado, este campo é incluído no contexto da IA.",
-      className: "bg-wedo-cyan/10 text-wedo-cyan-dark border border-wedo-cyan/30",
-    },
-  }
-  const c = config[type]
-  return (
-    <span
-      title={c.title}
-      className={`inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-medium cursor-help ${c.className}`}
-    >
-      {c.label}
-    </span>
-  )
-}
-
-
 function ToggleCard({
   def,
   value,
@@ -221,7 +195,7 @@ function ToggleCard({
         <div className="min-w-0">
           <div className="flex items-center gap-1.5">
             <p className={`${textStyles.label} text-lia-text-primary`}>{def.label}</p>
-            <ToggleBadge type="gate" />
+            <StatusBadge active={value} title="Recurso de aprendizado — quando inativo, a IA não usa este mecanismo (fail-closed)." />
           </div>
           <p className={`${textStyles.description} text-lia-text-tertiary mt-0.5 leading-relaxed`}>
             {def.description}
@@ -395,9 +369,8 @@ export function LearningLoopsPanel() {
         )}
 
         <div className="rounded-md bg-lia-bg-secondary border border-lia-border-subtle px-3 py-2 mb-4 text-xs text-lia-text-tertiary">
-          <ToggleBadge type="gate" />{" "}
-          funcionalidade desativada completamente quando desligado.{" "}
-          A IA não pode usar este recurso.
+          <span className="font-medium text-lia-text-secondary">Inativo</span> desliga a
+          funcionalidade completamente — a IA não pode usar este recurso (fail-closed).
         </div>
 
         <div className={`space-y-2 ${isLoading ? "pointer-events-none" : ""}`}>

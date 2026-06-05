@@ -85,32 +85,6 @@ interface TenantOverrideListResponse {
   overrides: TenantOverrideEntry[]
 }
 
-function ToggleBadge({ type }: { type: "gate" | "prompt" }) {
-  const config = {
-    gate: {
-      label: "Gate",
-      title:
-        "Gate de funcionalidade — quando desativado, a IA não pode usar este recurso (fail-closed).",
-      className: "bg-status-warning/10 text-status-warning border border-status-warning/30",
-    },
-    prompt: {
-      label: "Prompt",
-      title: "Injeção em prompt — quando ativado, este campo é incluído no contexto da IA.",
-      className: "bg-wedo-cyan/10 text-wedo-cyan-dark border border-wedo-cyan/30",
-    },
-  }
-  const c = config[type]
-  return (
-    <span
-      title={c.title}
-      className={`inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-medium cursor-help ${c.className}`}
-    >
-      {c.label}
-    </span>
-  )
-}
-
-
 export function LiaFieldsConfigPanel() {
   const t = useTranslations("settings.liaFields")
   const { companyId, isLoading: isLoadingCompany } = useCompanyId()
@@ -367,9 +341,10 @@ export function LiaFieldsConfigPanel() {
           </div>
 
           <div className="rounded-md bg-lia-bg-secondary border border-lia-border-subtle px-3 py-2 mb-2 text-xs text-lia-text-tertiary">
-            <ToggleBadge type="prompt" />{" "}
-            quando ativado, este campo é enviado como contexto para a IA.{" "}
-            Desativar oculta o dado do sistema de IA.
+            <span className="font-medium text-lia-text-secondary">Ativo</span>: o campo é
+            enviado como contexto para a IA.{" "}
+            <span className="font-medium text-lia-text-secondary">Inativo</span>: o dado é
+            ocultado e a LIA usa uma estratégia de fallback.
           </div>
 
           {Object.entries(fieldsByCategory).map(([category, fields]) => (
@@ -405,7 +380,6 @@ export function LiaFieldsConfigPanel() {
     </div>
   )
 }
-
 
 // ---------------------------------------------------------------------------
 // T-13 — Tenant Override YAML editor (sub-component)
