@@ -60,8 +60,18 @@ const REVEAL_SLOW_MS = 420
 const REVEAL_MID_MS = 240
 const REVEAL_FAST_MS = 110
 const FINISH_GRACE_MS = 750
+// When the turn already completed we keep revealing remaining steps one-by-one
+// (the live, "written-out" feel) — the parent holds the answer until we hand
+// off — but on a tighter, budgeted cadence so the answer is never delayed long.
+const COMPLETION_REVEAL_MS = 300
 
-function revealDelay(queueLen: number): number {
+function revealDelay(queueLen: number, finishing = false): number {
+  if (finishing) {
+    return Math.max(
+      REVEAL_FAST_MS,
+      Math.min(COMPLETION_REVEAL_MS, Math.floor(900 / Math.max(1, queueLen))),
+    )
+  }
   if (queueLen > 6) return REVEAL_FAST_MS
   if (queueLen > 3) return REVEAL_MID_MS
   return REVEAL_SLOW_MS
@@ -87,7 +97,10 @@ export function AgentActivityTimeline({
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const finishTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const phaseRef = useRef<"active" | "done">("active")
-  const hadItemsRef = useRef(false)
+  const completedRef = useRef(false)
+  const everHadItemsRef = useRef(false)
+  const scheduleDrainRef = useRef<(() => void) | null>(null)
+  const finalizeRef = useRef<(() => void) | null>(null)
   const onFinishedRef = useRef(onFinished)
 
   useEffect(() => {
@@ -95,23 +108,54 @@ export function AgentActivityTimeline({
   }, [onFinished])
 
   useEffect(() => {
+    function finalize() {
+      if (phaseRef.current === "done") return
+      // Settle any tool still spinning at turn end (no stuck spinner).
+      setItems((prev) =>
+        prev.some((i) => i.status === "running")
+          ? prev.map((i) =>
+              i.status === "running" ? { ...i, status: "ok" } : i,
+            )
+          : prev,
+      )
+      phaseRef.current = "done"
+      setPhase("done")
+      // A turn with no steps has no terminal frame worth holding — hand off
+      // almost immediately (the parent holds the answer during this grace, so a
+      // long blank for a bare reply would feel like a stall).
+      const grace = everHadItemsRef.current ? FINISH_GRACE_MS : 120
+      finishTimerRef.current = setTimeout(() => {
+        finishTimerRef.current = null
+        onFinishedRef.current?.()
+      }, grace)
+    }
+    finalizeRef.current = finalize
+
     function drainOne() {
       const next = queueRef.current.shift()
       if (next) setItems((prev) => [...prev, next])
       if (queueRef.current.length > 0) {
         timerRef.current = setTimeout(
           drainOne,
-          revealDelay(queueRef.current.length),
+          revealDelay(queueRef.current.length, completedRef.current),
         )
       } else {
         timerRef.current = null
+        // Queue fully revealed. If the turn already completed, the parent is
+        // holding the answer for us — so now show the terminal frame and hand off
+        // (this is what lets even a fast turn play its steps out one-by-one).
+        if (completedRef.current) finalize()
       }
     }
 
     function scheduleDrain() {
       if (timerRef.current) return
-      timerRef.current = setTimeout(drainOne, revealDelay(queueRef.current.length))
+      timerRef.current = setTimeout(
+        drainOne,
+        revealDelay(queueRef.current.length, completedRef.current),
+      )
     }
+    scheduleDrainRef.current = scheduleDrain
 
     function applyToolFinish(
       id: string,
@@ -157,6 +201,7 @@ export function AgentActivityTimeline({
       const name = String(detail.name || "tool")
 
       if (type === "reasoning_step") {
+        everHadItemsRef.current = true
         queueRef.current.push({
           id: `reason-${id}-${queueRef.current.length}-${Date.now()}`,
           kind: "reasoning",
@@ -170,6 +215,7 @@ export function AgentActivityTimeline({
       if (type === "tool_started") {
         if (seenToolIdsRef.current.has(id)) return
         seenToolIdsRef.current.add(id)
+        everHadItemsRef.current = true
         queueRef.current.push({ id, kind: "tool", name, status: "running" })
         scheduleDrain()
         return
@@ -207,52 +253,40 @@ export function AgentActivityTimeline({
   useEffect(() => {
     if (completed) {
       if (phaseRef.current === "done") return
-      // A turn with no reasoning/tool steps has no terminal frame worth holding,
-      // so hand off almost immediately (the parent holds the answer during this
-      // grace — a long blank for a bare reply would feel like a stall).
-      const hadAny = hadItemsRef.current || queueRef.current.length > 0
-      const grace = hadAny ? FINISH_GRACE_MS : 120
-      // Fast-forward: reveal everything still queued so no reasoning step is
-      // lost to the race with the final answer.
-      if (timerRef.current) {
-        clearTimeout(timerRef.current)
-        timerRef.current = null
-      }
+      completedRef.current = true
+      // DON'T fast-forward/dump the queue. The parent now holds the answer until
+      // our `onFinished`, so we have time to keep revealing the remaining steps
+      // one at a time (the live, "written-out" feel the user wants) and only then
+      // show the terminal frame and hand off. If the drain loop is already
+      // running it will finalize itself when the queue empties; if there's
+      // nothing left to reveal, finalize right away.
       if (queueRef.current.length > 0) {
-        const rest = queueRef.current.splice(0)
-        setItems((prev) => [...prev, ...rest])
+        scheduleDrainRef.current?.()
+      } else if (!timerRef.current) {
+        finalizeRef.current?.()
       }
-      // Settle any tool still spinning at turn end (no stuck spinner).
-      setItems((prev) =>
-        prev.some((i) => i.status === "running")
-          ? prev.map((i) =>
-              i.status === "running" ? { ...i, status: "ok" } : i,
-            )
-          : prev,
-      )
-      phaseRef.current = "done"
-      setPhase("done")
-      finishTimerRef.current = setTimeout(() => {
-        finishTimerRef.current = null
-        onFinishedRef.current?.()
-      }, grace)
     } else {
       // (Re)entering an active turn.
+      const wasCompleted = completedRef.current
+      completedRef.current = false
       if (finishTimerRef.current) {
         clearTimeout(finishTimerRef.current)
         finishTimerRef.current = null
       }
-      if (phaseRef.current === "done") {
-        // Coming out of a concluded turn — e.g. a rapid back-to-back send that
-        // flips `completed` true→false before the grace window ended. Full reset
-        // (items + queue + seen ids + pending reveal) so the previous turn's
-        // steps never bleed into the new one.
+      if (wasCompleted) {
+        // Coming out of a turn that had already completed — e.g. a rapid
+        // back-to-back send that flips `completed` true→false. This covers BOTH
+        // the fully-concluded case (phase "done") AND the case where the prior
+        // turn was still pacing out its queued steps (phase still "active"): in
+        // either case a full reset (items + queue + seen ids + pending reveal)
+        // is required so the previous turn's steps never bleed into the new one.
         if (timerRef.current) {
           clearTimeout(timerRef.current)
           timerRef.current = null
         }
         queueRef.current = []
         seenToolIdsRef.current.clear()
+        everHadItemsRef.current = false
         setItems([])
         phaseRef.current = "active"
         setPhase("active")
@@ -268,8 +302,6 @@ export function AgentActivityTimeline({
     () => items.reduce((sum, i) => sum + (i.durationMs || 0), 0),
     [items],
   )
-  // Keep the completed-effect's grace decision in sync with revealed steps.
-  hadItemsRef.current = items.length > 0
 
   if (items.length === 0) {
     // Empty: show the unified "thinking" fallback while genuinely working;

@@ -345,12 +345,14 @@ export function UnifiedMessageList({
     if (isThinking || isStreaming) setLiveActive(true)
   }, [isThinking, isStreaming])
   // Failsafe: `liveActive` is normally cleared by the timeline's `onFinished`
-  // hand-off. If that signal never arrives (e.g. the turn ends without the
+  // hand-off (which paces out any remaining reasoning steps one-by-one before
+  // firing). If that signal never arrives (e.g. the turn ends without the
   // timeline mounting), the held answer would stay hidden forever — so once the
-  // raw turn flags are both off, force the reveal after a short ceiling.
+  // raw turn flags are both off, force the reveal after a generous ceiling that
+  // comfortably outlasts a normal paced hand-off and only rescues a stuck UI.
   useEffect(() => {
     if (!liveActive || isThinking || isStreaming) return
-    const t = setTimeout(() => setLiveActive(false), 1500)
+    const t = setTimeout(() => setLiveActive(false), 3000)
     return () => clearTimeout(t)
   }, [liveActive, isThinking, isStreaming])
 

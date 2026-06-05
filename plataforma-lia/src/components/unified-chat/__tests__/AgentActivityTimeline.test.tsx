@@ -121,7 +121,7 @@ describe("AgentActivityTimeline", () => {
   })
 
   describe("graceful conclusion (completed → onFinished)", () => {
-    it("fast-forwards still-queued steps, shows terminal frame, then calls onFinished after grace", () => {
+    it("paces still-queued steps out one-by-one after completion (no dump), then calls onFinished after they drain + grace", () => {
       const onFinished = vi.fn()
       const view = renderWithIntl(
         <AgentActivityTimeline
@@ -133,7 +133,7 @@ describe("AgentActivityTimeline", () => {
       emit({ type: "reasoning_step", label: "Passo um" })
       emit({ type: "reasoning_step", label: "Passo dois" })
       emit({ type: "reasoning_step", label: "Passo três" })
-      // turn ends before the queue has fully drained
+      // turn ends before the queue has drained
       view.rerender(
         wrap(
           <AgentActivityTimeline
@@ -143,13 +143,18 @@ describe("AgentActivityTimeline", () => {
           />,
         ),
       )
-      // nothing lost: all queued steps flushed immediately
+      // NOT dumped synchronously — the held answer gives the timeline room to
+      // play the remaining steps out one at a time (the "written-out" feel).
+      expect(screen.queryByText("Passo um")).not.toBeInTheDocument()
+      // first step appears on its cadence beat, the rest still pending
+      tick(500)
       expect(screen.getByText("Passo um")).toBeInTheDocument()
+      expect(screen.queryByText("Passo três")).not.toBeInTheDocument()
+      // hand-off only after every step has been revealed + the grace window
+      expect(onFinished).not.toHaveBeenCalled()
+      tick(2000)
       expect(screen.getByText("Passo dois")).toBeInTheDocument()
       expect(screen.getByText("Passo três")).toBeInTheDocument()
-      // hand-off is delayed by the grace window
-      expect(onFinished).not.toHaveBeenCalled()
-      tick(800)
       expect(onFinished).toHaveBeenCalledTimes(1)
     })
 
@@ -193,6 +198,50 @@ describe("AgentActivityTimeline", () => {
       expect(screen.getByText("Turno dois passo")).toBeInTheDocument()
       // the stale onFinished from turn 1 was cancelled (no premature hand-off)
       tick(800)
+      expect(onFinished).not.toHaveBeenCalled()
+    })
+
+    it("new turn that starts while the previous turn is still draining does not mix old steps in", () => {
+      const onFinished = vi.fn()
+      const view = renderWithIntl(
+        <AgentActivityTimeline
+          fallbackSteps={[]}
+          completed={false}
+          onFinished={onFinished}
+        />,
+      )
+      // turn 1 queues several steps but they have NOT all been revealed yet
+      emit({ type: "reasoning_step", label: "Velho passo um" })
+      emit({ type: "reasoning_step", label: "Velho passo dois" })
+      emit({ type: "reasoning_step", label: "Velho passo três" })
+      // turn 1 concludes — pacing begins (queue still draining, phase NOT yet done)
+      view.rerender(
+        wrap(
+          <AgentActivityTimeline
+            fallbackSteps={[]}
+            completed={true}
+            onFinished={onFinished}
+          />,
+        ),
+      )
+      // a brand-new turn starts mid-drain (before the queue empties / grace fires)
+      view.rerender(
+        wrap(
+          <AgentActivityTimeline
+            fallbackSteps={[]}
+            completed={false}
+            onFinished={onFinished}
+          />,
+        ),
+      )
+      // full reset: none of turn 1's queued steps survive into turn 2
+      emit({ type: "reasoning_step", label: "Novo passo" })
+      tick(2000)
+      expect(screen.queryByText("Velho passo um")).not.toBeInTheDocument()
+      expect(screen.queryByText("Velho passo dois")).not.toBeInTheDocument()
+      expect(screen.queryByText("Velho passo três")).not.toBeInTheDocument()
+      expect(screen.getByText("Novo passo")).toBeInTheDocument()
+      // the stale onFinished from turn 1 was cancelled (no premature hand-off)
       expect(onFinished).not.toHaveBeenCalled()
     })
 
