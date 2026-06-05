@@ -32,6 +32,8 @@ _DECISION_TYPE_MAP = {
 from app.domains.communication.services.email_service import EmailService
 from app.models.job_vacancy import JobVacancy
 from app.shared.security.require_company_id import require_company_id
+from sqlalchemy import select as _sa_select
+from app.models.candidate import VacancyCandidate as _VacancyCandidate
 from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
@@ -363,6 +365,29 @@ company_id: str = Depends(require_company_id)):
                     })
                     additional_data["job_assignments"] = job_assignments
                     candidate.additional_data = additional_data
+
+                # P0-1 (audit 2026-06-05): grava o LINK canônico em
+                # vacancy_candidates (o board + a contagem leem daqui). Antes só
+                # escrevia o blob inerte acima (ghost write ignorado pela UI).
+                _vc_exists = await repo.db.execute(
+                    _sa_select(_VacancyCandidate).where(
+                        _VacancyCandidate.vacancy_id == uuid.UUID(request.job_vacancy_id),
+                        _VacancyCandidate.candidate_id == uuid.UUID(candidate_id),
+                    )
+                )
+                if _vc_exists.scalar_one_or_none() is None:
+                    repo.db.add(_VacancyCandidate(
+                        id=uuid.uuid4(),
+                        vacancy_id=uuid.UUID(request.job_vacancy_id),
+                        candidate_id=uuid.UUID(candidate_id),
+                        company_id=company_id,
+                        source="manual_assign",
+                        stage="sourcing",
+                        status="sourced",
+                        lia_score=getattr(candidate, "lia_score", None),
+                        created_at=datetime.utcnow(),
+                        updated_at=datetime.utcnow(),
+                    ))
 
                 candidate.updated_at = datetime.utcnow()
                 candidate.last_activity_at = datetime.utcnow()

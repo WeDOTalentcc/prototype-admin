@@ -440,7 +440,7 @@ async def _persist_wsi_results(
         block_type = rs.get("block_type", "behavioral")
         competency = rs.get("competency", "general")
         raw_score = float(rs.get("score", 6.0))
-        score_1_5 = max(1.0, min(5.0, round(raw_score / 2.0, 2)))
+        score_0_10 = max(0.0, min(10.0, round(raw_score, 2)))
         question_text = rs.get("question_text") or f"Questão {seq} — {competency}"
         response_text = rs.get("response_text") or ""
 
@@ -466,9 +466,9 @@ async def _persist_wsi_results(
         except Exception as exc:
             logger.warning(f"[Triagem] wsi_questions insert failed (seq={seq}): {exc}")
             if block_type == "technical":
-                technical_scores.append(score_1_5)
+                technical_scores.append(score_0_10)
             else:
-                behavioral_scores.append(score_1_5)
+                behavioral_scores.append(score_0_10)
             continue
 
         analysis_id = str(uuid.uuid4())
@@ -479,36 +479,41 @@ async def _persist_wsi_results(
                 question_id=question_id,
                 competency=competency,
                 response_text=response_text,
-                autodeclaration_score=score_1_5,
-                context_score=score_1_5,
+                autodeclaration_score=score_0_10,
+                context_score=score_0_10,
                 bloom_level=max(1, min(5, rs.get("bloom_level", 2))),
                 dreyfus_level=max(1, min(5, rs.get("dreyfus_level", 2))),
                 evidences_json=json.dumps(rs.get("evidences", [])),
                 red_flags_json=json.dumps(rs.get("red_flags", [])),
                 consistency_penalty=0.0,
-                final_score=score_1_5,
+                final_score=score_0_10,
                 justification=rs.get("justification", "Score calculado a partir da resposta no chat web"),
             )
         except Exception as exc:
             logger.warning(f"[Triagem] wsi_response_analyses insert failed (seq={seq}): {exc}")
 
         if block_type == "technical":
-            technical_scores.append(score_1_5)
+            technical_scores.append(score_0_10)
         else:
-            behavioral_scores.append(score_1_5)
+            behavioral_scores.append(score_0_10)
 
-    tech_wsi = max(1.0, min(5.0, round(sum(technical_scores) / len(technical_scores), 2))) if technical_scores else max(1.0, min(5.0, round(score_val / 2.0, 2)))
-    beh_wsi = max(1.0, min(5.0, round(sum(behavioral_scores) / len(behavioral_scores), 2))) if behavioral_scores else max(1.0, min(5.0, round(score_val / 2.0, 2)))
-    overall_wsi = max(1.0, min(5.0, round(score_val / 2.0, 2)))
+    tech_wsi = max(0.0, min(10.0, round(sum(technical_scores) / len(technical_scores), 2))) if technical_scores else max(0.0, min(10.0, round(score_val, 2)))
+    beh_wsi = max(0.0, min(10.0, round(sum(behavioral_scores) / len(behavioral_scores), 2))) if behavioral_scores else max(0.0, min(10.0, round(score_val, 2)))
+    overall_wsi = max(0.0, min(10.0, round(score_val, 2)))
 
-    if overall_wsi >= 4.5:
+    # P1-1 (audit 2026-06-05): bandas em escala 0-10 (CHECK aceita
+    # excepcional/excelente/alto/medio/abaixo_da_media/regular/baixo; FE colore
+    # excepcional..abaixo_da_media). 3-tier visual do FE: verde>=7.5, amarelo>=6.
+    if overall_wsi >= 9.0:
+        wsi_classification = "excepcional"
+    elif overall_wsi >= 7.5:
         wsi_classification = "excelente"
-    elif overall_wsi >= 3.75:
+    elif overall_wsi >= 6.0:
         wsi_classification = "alto"
-    elif overall_wsi >= 2.75:
+    elif overall_wsi >= 4.5:
         wsi_classification = "medio"
-    elif overall_wsi >= 2.0:
-        wsi_classification = "regular"
+    elif overall_wsi >= 3.0:
+        wsi_classification = "abaixo_da_media"
     else:
         wsi_classification = "baixo"
 

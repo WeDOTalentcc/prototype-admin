@@ -260,6 +260,30 @@ class VacancyCandidateRepository:
             )
         return company_id
 
+    async def list_candidate_ids_for_vacancy(
+        self, vacancy_id: str, company_id: str
+    ) -> list[str]:
+        """P0-1: candidate_ids vinculados a uma vaga (company-scoped, fail-closed).
+
+        Usado para escopar list_candidates por vaga (board do Kanban) reusando o
+        path `ids=` existente — board e candidates_count passam a ler a MESMA
+        fonte canônica (vacancy_candidates). Vaga sem links → lista vazia.
+        """
+        from sqlalchemy import text as sa_text
+        cid = self._require_company_id(company_id)
+        rows = await self.db.execute(
+            sa_text(
+                """
+                SELECT vc.candidate_id
+                FROM vacancy_candidates vc
+                WHERE vc.vacancy_id::text = :vid AND vc.company_id = :cid
+                ORDER BY vc.lia_score DESC NULLS LAST, vc.created_at DESC
+                """
+            ),
+            {"vid": vacancy_id, "cid": cid},
+        )
+        return [str(r[0]) for r in rows.fetchall()]
+
     async def list_for_talent_funnel(
         self,
         company_id: str,

@@ -71,7 +71,11 @@ function isPublicPath(strippedPathname: string): boolean {
 
 function isPublicApiPath(pathname: string): boolean {
   if (PUBLIC_API_PATHS.some(p => pathname.startsWith(p))) return true
-  if (pathname.startsWith('/api/v1')) return true
+  // P1-5 (audit 2026-06-05): REMOVIDO `if (pathname.startsWith('/api/v1')) return true`.
+  // A regra blanket marcava TODO /api/v1 como público → o middleware encaminhava
+  // sem Bearer → backend 401 (quebrava agendar entrevista / gerar e-mail LIA).
+  // Fluxos públicos reais usam prefixos dedicados (/api/auth, /api/public-proxy,
+  // /api/portal) já listados em PUBLIC_API_PATHS.
   return false
 }
 

@@ -39,7 +39,7 @@ async function forward(
 
   let upstream: Response
   try {
-    upstream = await fetch(`${BACKEND_URL}/api/wsi/${suffix}${search}`, {
+    upstream = await fetch(`${BACKEND_URL}/api/v1/wsi/${suffix}${search}`, {
       method,
       headers: { ...auth, "Content-Type": "application/json" },
       ...(body ? { body } : {}),
@@ -52,11 +52,24 @@ async function forward(
   }
 
   const text = await upstream.text()
+  const ct = upstream.headers.get("content-type") || "application/json"
+  // Unwrap do envelope do backend ({ok, data, meta}) — espelha o
+  // createProxyHandlers (proxy-handler.ts). O front consome o shape interno.
+  if (upstream.ok && ct.includes("application/json")) {
+    try {
+      const parsed = JSON.parse(text)
+      if (parsed && typeof parsed === "object" && "ok" in parsed && "data" in parsed) {
+        return NextResponse.json((parsed as Record<string, unknown>).data, {
+          status: upstream.status,
+        })
+      }
+    } catch {
+      // não-JSON / parse falhou → passthrough abaixo
+    }
+  }
   return new NextResponse(text, {
     status: upstream.status,
-    headers: {
-      "Content-Type": upstream.headers.get("content-type") || "application/json",
-    },
+    headers: { "Content-Type": ct },
   })
 }
 

@@ -469,7 +469,9 @@ company_id: str = Depends(require_company_id)):
             "languages": job_vacancy.languages,
             "behavioral_competencies": job_vacancy.behavioral_competencies,
             "interview_stages": job_vacancy.interview_stages,
-            "screening_questions": job_vacancy.screening_questions,
+            # P1-4 (audit 2026-06-05): preview lê esta coluna; wizard/grafo grava
+            # em screening_config["screening_questions"]. Fallback p/ nao vir vazio.
+            "screening_questions": job_vacancy.screening_questions or (job_vacancy.screening_config or {}).get("screening_questions") or [],
             "disabled_eligibility_question_ids": job_vacancy.disabled_eligibility_question_ids or [],
             "timeline": job_vacancy.timeline,
             "governance_rules": job_vacancy.governance_rules,
@@ -637,6 +639,24 @@ company_id: str = Depends(require_company_id)):
                 elif user_email in jv_access_list or user_id in (jv.access_list or []):
                     job_vacancies.append(jv)
 
+        # P1-2: métricas reais por vaga (Candidatos / Funil / Performance LIA) —
+        # batch aggregate de vacancy_candidates + wsi_sessions + interviews
+        # (UMA query GROUP BY por fonte, sem N+1). Substitui o antigo
+        # generate_lia_metrics() que fabricava números com random.uniform.
+        _metrics_by_vaga = await repo.aggregate_list_metrics(
+            [str(jv.id) for jv in job_vacancies], company_id
+        )
+        _empty_metrics = {
+            "candidates_count": 0,
+            "funnel_data": {
+                "total": 0, "screening": 0, "interview": 0, "final": 0, "hired": 0,
+            },
+            "lia_metrics": {
+                "pipeline_lia": 0, "triagens_agendadas": 0, "triagens_realizadas": 0,
+                "sem_resposta": 0, "entrevistas_agendadas": 0,
+            },
+        }
+
         return {
             "total": len(job_vacancies),
             "skip": skip,
@@ -677,8 +697,9 @@ company_id: str = Depends(require_company_id)):
                     "created_at": jv.created_at.isoformat() if hasattr(jv.created_at, "isoformat") else None,
                     "updated_at": jv.updated_at.isoformat() if hasattr(jv.updated_at, "isoformat") else None,
                     "deadline": jv.deadline.isoformat() if hasattr(jv, "deadline") and jv.deadline else None,
-                    "funnel_data": jv.funnel_data,
-                    "lia_metrics": jv.lia_metrics or generate_lia_metrics(jv.funnel_data),
+                    "candidates_count": _metrics_by_vaga.get(str(jv.id), _empty_metrics)["candidates_count"],
+                    "funnel_data": _metrics_by_vaga.get(str(jv.id), _empty_metrics)["funnel_data"],
+                    "lia_metrics": _metrics_by_vaga.get(str(jv.id), _empty_metrics)["lia_metrics"],
                     "nps": jv.nps,
                     "budget": jv.budget,
                     "budget_used": jv.budget_used,
@@ -689,7 +710,7 @@ company_id: str = Depends(require_company_id)):
                     "approval_status": jv.approval_status,
                     "tags": jv.tags or [],
                     "salary": jv.salary,
-                    "screening_questions": jv.screening_questions or [],
+                    "screening_questions": jv.screening_questions or (jv.screening_config or {}).get("screening_questions") or [],  # P1-4: fallback forma wizard
                     "interview_stages": jv.interview_stages or [],
                     "eligibility_questions": jv.eligibility_questions or [],
                     "disabled_eligibility_question_ids": jv.disabled_eligibility_question_ids or [],

@@ -70,7 +70,7 @@ export async function wsiGetSession(sessionId: string): Promise<WSISessionRespon
 }
 
 export async function wsiGetCandidateResults(candidateId: string, limit: number = 10): Promise<WSIResultsResponse> {
-  const response = await fetch(`/api/backend-proxy/api/wsi/results/candidate/${candidateId}?limit=${limit}`, {
+  const response = await fetch(`/api/backend-proxy/api/wsi/results/${candidateId}?limit=${limit}`, {
     headers: getAuthHeaders(),
   })
   if (!response.ok) await throwLiaApiError(response, 'Failed to get candidate WSI results')

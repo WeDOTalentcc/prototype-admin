@@ -388,12 +388,14 @@ async def list_candidates(
     source: str | None = None,
     seniority: str | None = None,
     ids: str | None = None,
+    vacancy_id: str | None = None,
     offset: int = Query(default=0, ge=0),
     skip: int = Query(default=0, ge=0),
     limit: int = Query(default=50, le=200),
     sort_by: str | None = None,
     sort_order: str | None = None,
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
+    vacancy_candidate_repo: VacancyCandidateRepository = Depends(get_vacancy_candidate_repo),
     rails_adapter: RailsAdapter = Depends(get_rails_adapter),
     current_user: User = Depends(get_current_user_or_demo),
     company_id: str = Depends(require_company_id),
@@ -403,7 +405,7 @@ async def list_candidates(
     """List candidates. When RAILS_API_URL is configured, tries Rails first then falls back to local DB."""
     # Only call Rails when explicitly enabled — avoids adapter's own DB fallback
     # bypassing endpoint-level filters and authorization.
-    if RAILS_ENABLED:
+    if RAILS_ENABLED and not vacancy_id:
         try:
             page = (offset or skip) // limit + 1 if limit else 1
             rails_items = await rails_adapter.list_candidates_from_rails_only(
@@ -441,7 +443,17 @@ async def list_candidates(
             if not id_list:
                 id_list = None
 
+        # P0-1 (audit 2026-06-05): quando vacancy_id é passado, escopar a lista
+        # aos candidatos vinculados à vaga (vacancy_candidates), via o path `ids=`.
+        # Antes o board do Kanban lia a lista GLOBAL (sem filtro de vaga).
         effective_skip = offset if offset > 0 else skip
+        if vacancy_id:
+            vc_ids = await vacancy_candidate_repo.list_candidate_ids_for_vacancy(
+                vacancy_id, company_id
+            )
+            if not vc_ids:
+                return {"total": 0, "skip": effective_skip, "limit": limit, "source": "local", "items": []}
+            id_list = [i for i in id_list if i in set(vc_ids)] if id_list else vc_ids
         total = await candidate_repo.count_candidates(
             search=search, status=status, source=source, seniority=seniority, ids=id_list,
         )

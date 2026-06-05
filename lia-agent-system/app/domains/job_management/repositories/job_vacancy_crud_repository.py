@@ -9,6 +9,29 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.job_vacancy import JobVacancy
 
 
+# -- P1-2: classificacao de funil (pura, testavel) --------------------------
+# Mapeia o ``stage`` de vacancy_candidates para o bucket do funil consumido
+# pelo FE ({screening, interview, final, hired}). Stages de sourcing/rejected
+# ficam só no ``total``. Sensor: tests/unit/test_funnel_stage_classification.py
+_FUNNEL_SCREENING_STAGES = {"screening", "triagem"}
+_FUNNEL_FINAL_STAGES = {"offer", "final", "oferta"}
+_FUNNEL_HIRED_STAGES = {"hired", "contratado"}
+
+
+def classify_funnel_stage(stage):
+    """stage (str|None) -> 'screening'|'interview'|'final'|'hired'|None."""
+    s = (stage or "").strip().lower()
+    if s in _FUNNEL_SCREENING_STAGES:
+        return "screening"
+    if s == "entrevista" or s.startswith("interview"):
+        return "interview"
+    if s in _FUNNEL_FINAL_STAGES:
+        return "final"
+    if s in _FUNNEL_HIRED_STAGES:
+        return "hired"
+    return None
+
+
 class JobVacancyCRUDRepository:
     def __init__(self, db: AsyncSession):
         self.db = db
@@ -588,6 +611,117 @@ class JobVacancyCRUDRepository:
             "avg_time_to_hire": round(float(data.get("avg_ttf") or 0), 1),
             "fill_rate": round(closed / total * 100, 1) if total > 0 else 0.0,
         }
+
+    async def aggregate_list_metrics(
+        self,
+        vacancy_ids: list[str],
+        company_id: str,
+    ) -> dict[str, dict]:
+        """P1-2: métricas reais por vaga para a lista de Gestão de Vagas.
+
+        Substitui ``generate_lia_metrics`` (que FABRICAVA números com
+        ``random.uniform`` — proibido pela regra de proveniência honesta do
+        CLAUDE.md). Agrega 3 fontes canônicas company-scoped, cada uma em UMA
+        query GROUP BY (sem N+1):
+          - ``vacancy_candidates`` por stage  -> candidates_count + funnel_data
+          - ``wsi_sessions``       por status -> triagens_*/sem_resposta
+          - ``interviews``         por status -> entrevistas_agendadas
+
+        Retorna ``{vacancy_id: {candidates_count, funnel_data, lia_metrics}}``.
+        Vaga sem dados -> ausente do dict (caller usa defaults zerados).
+
+        Multi-tenancy: company_id validado via _require_company_id fail-closed.
+        ``wsi_sessions`` não tem company_id -> JOIN job_vacancies p/ escopar.
+        """
+        from sqlalchemy import text as _text
+
+        cid = self._require_company_id(company_id)
+        if not vacancy_ids:
+            return {}
+
+        def _blank() -> dict:
+            return {
+                "candidates_count": 0,
+                "funnel_data": {
+                    "total": 0, "screening": 0, "interview": 0,
+                    "final": 0, "hired": 0,
+                },
+                "lia_metrics": {
+                    "pipeline_lia": 0,
+                    "triagens_agendadas": 0,
+                    "triagens_realizadas": 0,
+                    "sem_resposta": 0,
+                    "entrevistas_agendadas": 0,
+                },
+            }
+
+        out: dict[str, dict] = {}
+
+        # (1) vacancy_candidates -> candidates_count + funnel buckets (por stage)
+        vc_rows = await self.db.execute(
+            _text("""
+                SELECT CAST(vacancy_id AS text) AS vid, stage, COUNT(*) AS cnt
+                FROM vacancy_candidates
+                WHERE vacancy_id = ANY(CAST(:ids AS uuid[]))
+                  AND company_id = :cid
+                GROUP BY vacancy_id, stage
+            """),
+            {"ids": vacancy_ids, "cid": cid},
+        )
+        for r in vc_rows.mappings():
+            vid = str(r["vid"])
+            cnt = int(r["cnt"] or 0)
+            entry = out.setdefault(vid, _blank())
+            entry["candidates_count"] += cnt
+            entry["funnel_data"]["total"] += cnt
+            entry["lia_metrics"]["pipeline_lia"] += cnt
+            bucket = classify_funnel_stage(r["stage"])
+            if bucket:
+                entry["funnel_data"][bucket] += cnt
+
+        # (2) wsi_sessions -> triagens agendadas/realizadas + sem_resposta
+        wsi_rows = await self.db.execute(
+            _text("""
+                SELECT CAST(s.job_vacancy_id AS text) AS vid, s.status, COUNT(*) AS cnt
+                FROM wsi_sessions s
+                JOIN job_vacancies jv ON jv.id = s.job_vacancy_id
+                WHERE s.job_vacancy_id = ANY(CAST(:ids AS uuid[]))
+                  AND jv.company_id = :cid
+                GROUP BY s.job_vacancy_id, s.status
+            """),
+            {"ids": vacancy_ids, "cid": cid},
+        )
+        for r in wsi_rows.mappings():
+            vid = str(r["vid"])
+            status = (r["status"] or "").lower()
+            cnt = int(r["cnt"] or 0)
+            lm = out.setdefault(vid, _blank())["lia_metrics"]
+            if status == "completed":
+                lm["triagens_realizadas"] += cnt
+                lm["triagens_agendadas"] += cnt
+            elif status == "in_progress":
+                lm["triagens_agendadas"] += cnt
+            elif status == "cancelled":
+                lm["sem_resposta"] += cnt
+
+        # (3) interviews -> entrevistas agendadas (scheduled = não-cancelada)
+        iv_rows = await self.db.execute(
+            _text("""
+                SELECT CAST(job_vacancy_id AS text) AS vid, COUNT(*) AS cnt
+                FROM interviews
+                WHERE job_vacancy_id = ANY(CAST(:ids AS uuid[]))
+                  AND company_id = :cid
+                  AND (status IS NULL OR status <> 'cancelled')
+                GROUP BY job_vacancy_id
+            """),
+            {"ids": vacancy_ids, "cid": cid},
+        )
+        for r in iv_rows.mappings():
+            vid = str(r["vid"])
+            cnt = int(r["cnt"] or 0)
+            out.setdefault(vid, _blank())["lia_metrics"]["entrevistas_agendadas"] += cnt
+
+        return out
 
     async def compare_jobs_by_ids(
         self,

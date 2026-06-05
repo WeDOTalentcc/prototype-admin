@@ -11,7 +11,6 @@ __all__ = [
     "ADHERENCE_THRESHOLD",
     "VALID_SCREENING_STATUSES",
     # helpers
-    "generate_lia_metrics",
     "_calculate_days_between",
     "_is_job_at_risk",
     "derive_screening_status",
@@ -84,38 +83,6 @@ VALID_SCREENING_STATUSES = {"not_configured", "not_started", "active", "paused",
 # HELPER FUNCTIONS
 # =============================================
 
-def generate_lia_metrics(funnel_data: dict | None) -> dict:
-    """Generate LIA performance metrics based on funnel data."""
-    import random
-
-    if not funnel_data:
-        return {
-            "pipeline_lia": 0,
-            "triagens_agendadas": 0,
-            "triagens_realizadas": 0,
-            "sem_resposta": 0,
-            "entrevistas_agendadas": 0
-        }
-
-    total = funnel_data.get("total", 0)
-    screening = funnel_data.get("screening", 0)
-    interview = funnel_data.get("interview", 0)
-
-    pipeline_base = int(total * random.uniform(0.75, 0.95)) if total > 0 else 0
-    triagens_agendadas = int(screening * random.uniform(0.60, 0.85)) if screening > 0 else 0
-    triagens_realizadas = int(triagens_agendadas * random.uniform(0.70, 0.90)) if triagens_agendadas > 0 else 0
-    sem_resposta = int(total * random.uniform(0.10, 0.25)) if total > 0 else 0
-    entrevistas_agendadas = int(interview * random.uniform(0.70, 0.90)) if interview > 0 else 0
-
-    return {
-        "pipeline_lia": pipeline_base,
-        "triagens_agendadas": triagens_agendadas,
-        "triagens_realizadas": triagens_realizadas,
-        "sem_resposta": sem_resposta,
-        "entrevistas_agendadas": entrevistas_agendadas
-    }
-
-
 def _calculate_days_between(start_date: datetime | None, end_date: datetime | None) -> int:
     """Calculate days between two dates, handling None values."""
     if not start_date or not end_date:
@@ -161,7 +128,15 @@ def derive_screening_status(screening_config: dict) -> str:
     if status.get("enabled", False):
         return "active"
 
-    has_config = bool(screening_config.get("wsi_skills")) or bool(screening_config.get("settings"))
+    # P1-3 (audit 2026-06-05): a forma do wizard/grafo grava screening_questions
+    # (sem wsi_skills/settings). Sem isto, vaga configurada pelo chat aparece
+    # como "Configurar" (not_configured). derive_screening_status é o produtor
+    # único do sinal — fix aqui conserta lista + detalhe + preview de uma vez.
+    has_config = (
+        bool(screening_config.get("wsi_skills"))
+        or bool(screening_config.get("settings"))
+        or bool(screening_config.get("screening_questions"))
+    )
     if has_config:
         return "not_started"
 

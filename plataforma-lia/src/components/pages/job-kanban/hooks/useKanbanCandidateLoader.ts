@@ -51,7 +51,9 @@ export function useKanbanCandidateLoader({
   // Carregar candidatos reais do backend
   useEffect(() => {
     setIsLoadingCandidates(true)
-    liaApi.listCandidates(undefined, undefined, 0, 200)
+    // P0-1 (audit 2026-06-05): escopa o board aos candidatos DA VAGA
+    // (vacancy_candidates) em vez da lista global de 200.
+    liaApi.listCandidates(undefined, undefined, 0, 200, (job as Record<string, unknown>)?.id as string | undefined)
       .then(response => {
         try {
           if (!response.items || response.items.length === 0) { setIsLoadingCandidates(false); return }
@@ -177,8 +179,8 @@ export function useKanbanCandidateLoader({
         }
       })
       .catch(() => { setIsLoadingCandidates(false) })
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: run only on mount to load candidates once
-  }, [])
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- re-roda quando a vaga (id) muda para reescopar o board
+  }, [(job as Record<string, unknown>)?.id])
 
   return {
     state: { isLoadingCandidates, hasMounted, isClient },
