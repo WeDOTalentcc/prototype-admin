@@ -202,3 +202,36 @@ def build_pipeline_funnel_block(
         conversion_rate=float(conversion_rate),
     )
     return [blk.model_dump(mode="json")]
+
+
+def build_candidate_card_block(row: dict) -> list[dict]:
+    """candidate_card de UM candidato. row: id, name, title, seniority,
+    location, experience, skills(list), + OPCIONAIS de parecer:
+    score, recommendation, summary, opinion_id.
+    Score/recommendation/summary so quando ha LiaOpinion (opinion_id) — senao
+    unverified=True (proveniencia honesta, sem numero fabricado)."""
+    from app.shared.rrp_blocks import CandidateCardBlock
+
+    cid = str(row.get("id"))
+    has_op = row.get("opinion_id") is not None
+    score = _num(row.get("score")) if has_op else None
+    blk = CandidateCardBlock(
+        block_id="candidate_card:" + cid,
+        role="answer",
+        layout="inline",
+        candidate_id=cid,
+        name=row.get("name") or ("ID " + cid),
+        title=row.get("title"),
+        seniority=row.get("seniority"),
+        location=row.get("location"),
+        experience_years=(
+            int(row["experience"]) if row.get("experience") is not None else None
+        ),
+        top_skills=(row.get("skills") or [])[:5],
+        score=(max(0.0, min(100.0, score)) if score is not None else None),
+        score_label="Score LIA" if has_op else None,
+        recommendation=row.get("recommendation") if has_op else None,
+        summary=row.get("summary") if has_op else None,
+        unverified=not has_op,
+    )
+    return [blk.model_dump(mode="json")]

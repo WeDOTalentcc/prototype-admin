@@ -150,6 +150,42 @@ async def _wrap_view_candidate_profile(**kwargs: Any) -> dict[str, Any]:
     except Exception as e:
         logger.warning(f"[talent_tools] view_candidate_profile DB error: {e}")
 
+    _rrp_blocks: list = []
+    try:
+        from sqlalchemy import text as _sa_text
+        from app.shared.rrp_ranking_builder import build_candidate_card_block
+        async with AsyncSessionLocal() as _db:
+            _r = await _db.execute(_sa_text(
+                "SELECT c.id, c.name, c.current_title, c.seniority_level, "
+                "c.years_of_experience, c.technical_skills, c.location_city, "
+                "c.location_state, o.id AS opinion_id, o.score, o.recommendation, "
+                "o.summary FROM candidates c "
+                "LEFT JOIN lia_opinions o ON o.candidate_id = c.id "
+                "AND o.company_id = CAST(:co AS varchar) AND o.is_current = true "
+                "WHERE c.id = CAST(:cid AS uuid) AND EXISTS (SELECT 1 FROM "
+                "vacancy_candidates vc WHERE vc.candidate_id = c.id AND "
+                "vc.company_id = CAST(:co AS varchar)) LIMIT 1"
+            ), {"cid": str(candidate_id), "co": str(company_id)})
+            _m = _r.mappings().first()
+        if _m:
+            _sk = _m["technical_skills"]
+            _loc = (
+                f"{_m['location_city'] or ''}/{_m['location_state'] or ''}".strip("/")
+                or None
+            )
+            _rrp_blocks = build_candidate_card_block({
+                "id": str(_m["id"]), "name": _m["name"],
+                "title": _m["current_title"], "seniority": _m["seniority_level"],
+                "experience": _m["years_of_experience"],
+                "skills": (_sk if isinstance(_sk, list) else []),
+                "location": _loc, "score": _m["score"],
+                "recommendation": _m["recommendation"],
+                "summary": _m["summary"], "opinion_id": _m["opinion_id"],
+            })
+    except Exception as _e:
+        logger.warning(f"[talent_tools] candidate_card skipped: {_e}")
+    if _rrp_blocks:
+        profile = {**profile, "response_blocks": _rrp_blocks}
     return {
         "success": True,
         "data": profile,

@@ -144,6 +144,24 @@ class FunnelBlock(_BlockBase):
     conversion_rate: float = 0.0
 
 
+class CandidateCardBlock(_BlockBase):
+    kind: Literal["candidate_card"] = "candidate_card"
+    role: BlockRole = "answer"
+    layout: BlockLayout = "inline"
+    candidate_id: str
+    name: str
+    title: str | None = None
+    seniority: str | None = None
+    location: str | None = None
+    experience_years: int | None = None
+    top_skills: list[str] = Field(default_factory=list)
+    score: float | None = None
+    score_label: str | None = None
+    recommendation: str | None = None
+    summary: str | None = None
+    unverified: bool = False
+
+
 ResponseBlock = Annotated[
     Union[
         ProseBlock,
@@ -151,6 +169,7 @@ ResponseBlock = Annotated[
         ScoreExplainerBlock,
         EvidenceStackBlock,
         FunnelBlock,
+        CandidateCardBlock,
     ],
     Field(discriminator="kind"),
 ]
@@ -161,6 +180,7 @@ _KIND_MAP: dict[str, type[BaseModel]] = {
     "score_explainer": ScoreExplainerBlock,
     "evidence_stack": EvidenceStackBlock,
     "funnel": FunnelBlock,
+    "candidate_card": CandidateCardBlock,
 }
 
 
