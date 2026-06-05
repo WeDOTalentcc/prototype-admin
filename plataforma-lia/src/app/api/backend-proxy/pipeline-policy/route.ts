@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
+import { getAuthHeaders } from '@/lib/api/auth-headers'
 import { resolveCompanyId } from '@/lib/api/resolve-company-id'
 const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8001'
 
@@ -24,7 +25,7 @@ export async function GET(request: NextRequest) {
 
     const response = await fetch(backendUrl, {
       method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(request),
     })
 
     if (!response.ok) {
