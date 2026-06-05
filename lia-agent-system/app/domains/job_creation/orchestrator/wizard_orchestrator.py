@@ -56,6 +56,36 @@ from app.domains.job_creation.orchestrator.wizard_tools import (
 logger = logging.getLogger(__name__)
 
 
+# Anti-silent-degradation sensor (harness, 2026-06-05): canary counter para o
+# caso em que o LLM produz ZERO texto em TODAS as iterações do turno e o reply
+# cai no fallback genérico ("Certo! Como deseja seguir?"). Esse era um defeito
+# INVISÍVEL — o turno respondia HTTP 200 com texto plausível enquanto o painel
+# não abria e o recrutador via uma resposta sem sentido (custou um debug longo).
+# Agora a anomalia é OBSERVÁVEL: WARNING sempre + (quando prometheus_client está
+# disponível) counter ``wizard_empty_reply_fallback_total`` para alarme.
+# Mesmo pattern canonical de lia_voice_wsi_persist_total (wsi_pipeline.py).
+try:
+    from prometheus_client import REGISTRY as _PROM_REGISTRY
+    from prometheus_client import Counter as _PromCounter
+
+    _EMPTY_REPLY_METRIC_NAME = "wizard_empty_reply_fallback_total"
+    _existing_empty_reply = getattr(
+        _PROM_REGISTRY, "_names_to_collectors", {}
+    ).get(_EMPTY_REPLY_METRIC_NAME)
+    if _existing_empty_reply is not None:
+        _EMPTY_REPLY_COUNTER = _existing_empty_reply
+    else:
+        _EMPTY_REPLY_COUNTER = _PromCounter(
+            _EMPTY_REPLY_METRIC_NAME,
+            "WizardOrchestrator turns whose LLM produced no text across all "
+            "iterations and fell back to the generic reply (harness 2026-06-05).",
+        )
+    _EMPTY_REPLY_METRICS_AVAILABLE = True
+except (ImportError, ValueError):  # pragma: no cover — prometheus opcional
+    _EMPTY_REPLY_COUNTER = None
+    _EMPTY_REPLY_METRICS_AVAILABLE = False
+
+
 _DEFAULT_MODEL = os.environ.get("LIA_WIZARD_ORCHESTRATOR_MODEL", CANONICAL_SONNET_MODEL)
 
 
@@ -400,6 +430,31 @@ class WizardOrchestrator:
             # mesmo que a iteração final venha vazia.
             if not tool_uses:
                 reply = " ".join(accumulated_text).strip()
+                if not reply:
+                    # Anomalia: o LLM não emitiu texto em NENHUMA iteração.
+                    # Mantemos o fallback genérico (UX), mas a tornamos
+                    # OBSERVÁVEL — antes era um silent-degradation que custava
+                    # debug longo (reply sem sentido, painel não abre).
+                    _thread = "n/a"
+                    try:
+                        _thread = str(
+                            (state or {}).get("thread_id")
+                            or (state or {}).get("session_id")
+                            or "n/a"
+                        )
+                    except Exception:  # noqa: BLE001 — telemetria nunca derruba
+                        _thread = "n/a"
+                    logger.warning(
+                        "[WizardOrchestrator] empty-reply fallback: LLM produced "
+                        "no text across %d iter(s) thread=%s tools_called=%s — "
+                        "using generic fallback",
+                        iteration, _thread, tool_calls,
+                    )
+                    if _EMPTY_REPLY_COUNTER is not None:
+                        try:
+                            _EMPTY_REPLY_COUNTER.inc()
+                        except Exception:  # noqa: BLE001 — métrica é best-effort
+                            pass
                 return OrchestratorResult(
                     reply=reply or "Certo! Como deseja seguir?",
                     state_updates=accumulated_updates,
