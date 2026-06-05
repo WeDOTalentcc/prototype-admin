@@ -17,6 +17,7 @@ import type {
   ScoreExplainerBlock,
   EvidenceStackBlock,
   FunnelBlock,
+  CandidateCardBlock,
   ScoreFactor,
 } from "@/types/rrp-blocks";
 
@@ -329,6 +330,69 @@ function FunnelView({ block }: { block: FunnelBlock }) {
   );
 }
 
+function CandidateCardView({ block }: { block: CandidateCardBlock }) {
+  const t = useTranslations("rrp");
+  const meta = [
+    block.title,
+    block.seniority,
+    block.location,
+    block.experience_years != null
+      ? t("candidateYears", { count: block.experience_years })
+      : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+  return (
+    <div className="rounded-lg border border-lia-border-subtle bg-lia-bg-secondary p-3">
+      <div className="flex items-start justify-between gap-2">
+        <span className="text-sm font-medium text-lia-text-primary">
+          {block.name}
+        </span>
+        {block.score != null ? (
+          <span
+            className={cn(
+              "shrink-0 text-sm font-semibold tabular-nums",
+              scoreTone(block.score),
+            )}
+          >
+            {block.score_label} {Math.round(block.score)}%
+          </span>
+        ) : null}
+      </div>
+      {meta ? (
+        <p className="mt-0.5 text-xs text-lia-text-tertiary">{meta}</p>
+      ) : null}
+      {block.recommendation ? (
+        <span className="mt-1.5 inline-block rounded-full bg-wedo-cyan/15 px-2 py-0.5 text-xs font-medium text-wedo-cyan">
+          {block.recommendation}
+        </span>
+      ) : null}
+      {block.top_skills.length > 0 ? (
+        <div className="mt-2 flex flex-wrap gap-1">
+          {block.top_skills.map((s, i) => (
+            <span
+              key={i}
+              className="rounded bg-lia-border-subtle/40 px-1.5 py-0.5 text-xs text-lia-text-secondary"
+            >
+              {s}
+            </span>
+          ))}
+        </div>
+      ) : null}
+      {block.summary ? (
+        <p className="mt-2 text-xs leading-relaxed text-lia-text-secondary">
+          {block.summary}
+        </p>
+      ) : null}
+      {block.unverified ? (
+        <p className="mt-1.5 text-xs italic text-lia-text-tertiary">
+          {t("candidateUnverified")}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
 function RenderOne({
   block,
   narrow,
@@ -348,6 +412,8 @@ function RenderOne({
       return <ComparisonTableView block={block} narrow={narrow} />;
     case "funnel":
       return <FunnelView block={block} />;
+    case "candidate_card":
+      return <CandidateCardView block={block} />;
     default:
       // AD6: kind desconhecido (skew de deploy FE/BE) → fallback, nunca throw.
       return (

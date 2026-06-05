@@ -135,3 +135,54 @@ describe("ResponseBlockRenderer — funnel (Fase 1)", () => {
     expect(screen.queryByText("interview_manager")).toBeNull()
   })
 })
+
+
+const CANDIDATE_CARD: ResponseBlock = {
+  kind: "candidate_card",
+  block_id: "candidate_card:abc",
+  role: "answer",
+  layout: "inline",
+  state: "ready",
+  candidate_id: "abc",
+  name: "Felipe Almeida",
+  title: "CFO",
+  seniority: "Pleno",
+  location: "São Paulo/SP",
+  experience_years: 6,
+  top_skills: ["Oracle", "Power BI", "SAP FI"],
+  score: 92,
+  score_label: "Score LIA",
+  recommendation: "Altamente Recomendado",
+  summary: "Forte em financeiro.",
+  unverified: false,
+}
+
+describe("ResponseBlockRenderer — candidate_card (Fase 1)", () => {
+  it("renderiza nome, meta, skills, score e recomendacao", () => {
+    renderWith([CANDIDATE_CARD], "fullscreen")
+    expect(screen.getByText("Felipe Almeida")).toBeTruthy()
+    expect(screen.getByText("Oracle")).toBeTruthy()
+    expect(screen.getByText(/92%/)).toBeTruthy()
+    expect(screen.getByText("Altamente Recomendado")).toBeTruthy()
+  })
+
+  it("sem parecer: mostra nota de nao-verificado e sem score", () => {
+    const unv: ResponseBlock = {
+      ...CANDIDATE_CARD,
+      score: null,
+      score_label: null,
+      recommendation: null,
+      summary: null,
+      unverified: true,
+    }
+    renderWith([unv], "sidebar")
+    expect(screen.getByText("Felipe Almeida")).toBeTruthy()
+    expect(screen.queryByText(/92%/)).toBeNull()
+    expect(screen.getByText("Sem parecer LIA ainda")).toBeTruthy()
+  })
+
+  it("i18n: zero MISSING_MESSAGE no candidate_card", () => {
+    const { errors } = renderWith([CANDIDATE_CARD], "floating")
+    expect(errors.filter((e) => e.includes("MISSING_MESSAGE"))).toEqual([])
+  })
+})

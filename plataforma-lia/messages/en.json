@@ -42,6 +42,8 @@
     }
   },
   "rrp": {
+    "candidateYears": "{count} yrs",
+    "candidateUnverified": "No LIA opinion yet",
     "funnelTotal": "Total: {count}",
     "funnelConversion": "Conversion: {pct}%",
     "why": "why?",

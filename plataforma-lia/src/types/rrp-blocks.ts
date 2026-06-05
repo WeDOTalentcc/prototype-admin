@@ -118,13 +118,31 @@ export interface FunnelBlock extends BaseBlock {
   conversion_rate: number;
 }
 
+// ── candidate_card (perfil inline) ────────────────────────────────────────────
+export interface CandidateCardBlock extends BaseBlock {
+  kind: "candidate_card";
+  candidate_id: string;
+  name: string;
+  title?: string | null;
+  seniority?: string | null;
+  location?: string | null;
+  experience_years?: number | null;
+  top_skills: string[];
+  score?: number | null;
+  score_label?: string | null;
+  recommendation?: string | null;
+  summary?: string | null;
+  unverified: boolean;
+}
+
 // ── União discriminada ────────────────────────────────────────────────────────
 export type ResponseBlock =
   | ProseBlock
   | ComparisonTableBlock
   | ScoreExplainerBlock
   | EvidenceStackBlock
-  | FunnelBlock;
+  | FunnelBlock
+  | CandidateCardBlock;
 
 export type ResponseBlockKind = ResponseBlock["kind"];
 
