@@ -1797,6 +1797,144 @@ TOOL_DEFINITIONS.append(
 )
 
 
+
+# === start_creation_from_source (create-from-source agentic glue) ===========
+# Decisao Paulo (Opcao A, camada A2): o recruiter_copilot conduz a
+# identificacao da fonte via list_job_creation_sources e, ao recrutador
+# escolher, chama esta tool com o id. Ela EMITE a diretiva canonical
+# (ui_action='start_wizard_seeded') que semeia uma sessao FRESH do wizard via
+# WizardSessionService.seed_initial_state (context["seed_source"]).
+#
+# Multi-tenancy: company_id vem do ContextVar JWT (@tool_handler). NUNCA do
+# payload da LLM. Audit canonical (create-canonical-agent / ACH-026) registra a
+# acao significativa.
+#
+# WIRING (seam): a tool nao starta a sessao sozinha — ela carece do
+# session_id/thread_id do chat (o exec_context do agentic loop so propaga
+# user_id + company_id). Ela retorna a DIRETIVA; o caller (orchestrator) e quem
+# chama process_message com seed_source no context. Ver relatorio do handoff.
+@tool_handler("wizard")
+async def _wrap_start_creation_from_source(**kwargs: Any) -> dict[str, Any]:
+    """Inicia a criacao de uma vaga a partir de uma fonte (template | vacancy).
+
+    - ``source_type='template'`` -> emite a diretiva ``start_wizard_seeded`` com
+      ``seed_source={type:'template', id:<source_id>}``. O produtor canonical
+      (``seed_initial_state``) ja sabe semear o state fresh a partir de template.
+    - ``source_type='vacancy'`` -> producer ainda NAO wired. Retorna mensagem
+      honesta (sem fabricar) e oferece o caminho de template (CLAUDE.md REGRA 4
+      anti-silent-fallback + proveniencia honesta).
+
+    Multi-tenancy: company_id do ContextVar JWT (@tool_handler), nunca do payload.
+    """
+    company_id = kwargs.get("company_id")
+    if not company_id:
+        return {
+            "success": False,
+            "needs_manual_review": True,
+            "message": "company_id ausente do contexto JWT — operação bloqueada.",
+        }
+
+    source_type = (kwargs.get("source_type") or "").strip().lower()
+    source_id = (kwargs.get("source_id") or "").strip()
+
+    if source_type not in ("template", "vacancy"):
+        return {
+            "success": False,
+            "message": (
+                "source_type inválido. Use 'template' (arquétipo) ou 'vacancy' "
+                "(vaga existente). Liste as fontes com list_job_creation_sources."
+            ),
+        }
+    if not source_id:
+        return {
+            "success": False,
+            "message": (
+                "source_id ausente. Liste as fontes com "
+                "list_job_creation_sources e escolha o id desejado."
+            ),
+        }
+
+    # Audit canonical da acao significativa (ACH-026). Fire-and-forget,
+    # fail-open: nunca bloqueia a UX por falha de telemetria.
+    try:
+        import asyncio as _asyncio
+
+        from app.shared.compliance.audit_service import AuditService
+
+        _asyncio.create_task(AuditService().log_decision(  # AUDIT-NO-DEMO: job creation glue (sem decisao de candidato; LGPD Art.20 N/A)
+            company_id=str(company_id),
+            agent_name="wizard:start_creation_from_source",
+            decision_type="wizard_create_from_source",
+            action="start_creation_from_source",
+            decision=f"seed_{source_type}",
+            reasoning=[
+                f"source_type={source_type}",
+                f"source_id={source_id}",
+            ],
+            criteria_used=["create_from_source", f"source:{source_type}"],
+        ))
+    except Exception as _audit_exc:  # noqa: BLE001
+        logger.debug(
+            "[start_creation_from_source] audit skipped: %s", _audit_exc,
+        )
+
+    if source_type == "vacancy":
+        # Producer de "clonar vaga existente" ainda nao wired — honesto.
+        return {
+            "success": True,
+            "data": {"not_yet": True},
+            "message": (
+                "Criar a partir de uma vaga existente chega em breve. Posso "
+                "usar um arquétipo (template) agora?"
+            ),
+        }
+
+    # template -> diretiva canonical que semeia uma sessao FRESH do wizard.
+    return {
+        "success": True,
+        "data": {
+            "ui_action": "start_wizard_seeded",
+            "seed_source": {"type": "template", "id": source_id},
+        },
+        "message": (
+            "Pronto — vou abrir o assistente de criação já partindo desse "
+            "arquétipo. Me confirme o título e seguimos."
+        ),
+    }
+
+
+TOOL_DEFINITIONS.append(
+    ToolDefinition(
+        name="start_creation_from_source",
+        description=(
+            "Inicia a criação de uma NOVA vaga a partir de uma fonte escolhida "
+            "pelo recrutador: um arquétipo (template) ou uma vaga existente. "
+            "Use DEPOIS de list_job_creation_sources, quando o recrutador "
+            "indicar qual fonte usar (pelo id). 'template' abre o assistente já "
+            "semeado; 'vacancy' ainda não está disponível (avise honestamente "
+            "e ofereça um arquétipo)."
+        ),
+        parameters={
+            "type": "object",
+            "properties": {
+                "source_type": {
+                    "type": "string",
+                    "enum": ["template", "vacancy"],
+                    "description": "Tipo da fonte: 'template' (arquétipo) ou 'vacancy' (vaga existente).",
+                },
+                "source_id": {
+                    "type": "string",
+                    "description": "id da fonte escolhida (vindo de list_job_creation_sources).",
+                },
+            },
+            "required": ["source_type", "source_id"],
+        },
+        output_schema=ToolOutput,
+        function=_wrap_start_creation_from_source,
+    )
+)
+
+
 _TOOL_MAP: dict[str, ToolDefinition] = {t.name: t for t in TOOL_DEFINITIONS}
 
 # --- STAGE_TOOLS canonical allowlist ---------------------------------------
@@ -1823,7 +1961,7 @@ _TOOL_MAP: dict[str, ToolDefinition] = {t.name: t for t in TOOL_DEFINITIONS}
 # --------------------------------------------------------------------------
 STAGE_TOOLS: dict[str, list[str]] = {
     # Creation stages (alinhados com WizardStage Literal canonical):
-    "intake": ["list_job_creation_sources", "validate_job_requirements", "validate_job_fields", "get_job_suggestions", "get_company_config", "save_job_draft", "check_job_draft_health", "suggest_pipeline_stage_templates", "apply_pipeline_stage_template_to_vacancy", "create_custom_pipeline_stage_template"],
+    "intake": ["list_job_creation_sources", "start_creation_from_source", "validate_job_requirements", "validate_job_fields", "get_job_suggestions", "get_company_config", "save_job_draft", "check_job_draft_health", "suggest_pipeline_stage_templates", "apply_pipeline_stage_template_to_vacancy", "create_custom_pipeline_stage_template"],
     "jd_enrichment": ["generate_enriched_jd", "get_job_suggestions", "get_company_config", "save_job_draft", "check_job_draft_health"],
     "pipeline_template": ["suggest_pipeline_stage_templates", "apply_pipeline_stage_template_to_vacancy", "create_custom_pipeline_stage_template"],
     "salary": ["get_salary_benchmarks", "search_salary_benchmark", "validate_job_fields", "save_job_draft", "check_job_draft_health"],
