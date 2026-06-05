@@ -275,6 +275,70 @@ def _defer_needs_params_to_agentic(action_response) -> bool:
     )
 
 
+
+# Frases que indicam criar vaga A PARTIR DE uma fonte (template/vaga existente).
+# Conservador de proposito: so DEFERE o bootstrap do wizard vazio quando ha
+# sinal CLARO de "a partir de fonte" — caso contrario, "criar vaga"/"nova vaga"
+# segue bootstrapando exatamente como hoje (sem regressao). GUIDE feedforward
+# computacional (CLAUDE.md harness): impede o wizard vazio de engolir o turno
+# em que o recruiter_copilot deveria identificar a fonte (Phase 1.5).
+_CREATE_FROM_SOURCE_PATTERNS: tuple[str, ...] = (
+    "a partir de",
+    "a partir da",
+    "usar modelo",
+    "usar um modelo",
+    "usar template",
+    "usar um template",
+    "usando modelo",
+    "usando um modelo",
+    "usando template",
+    "usando um template",
+    "usar arquetipo",
+    "usar um arquetipo",
+    "usando arquetipo",
+    "usando um arquetipo",
+    "usar arquétipo",
+    "usar um arquétipo",
+    "usando arquétipo",
+    "usando um arquétipo",
+    "arquetipo",
+    "arquétipo",
+    "vaga existente",
+    "vaga ja existente",
+    "vaga já existente",
+    "baseada na vaga",
+    "baseada no modelo",
+    "baseada no template",
+    "baseado na vaga",
+    "baseado no modelo",
+    "igual a vaga",
+    "igual à vaga",
+    "como a vaga",
+    "clonar vaga",
+    "clonar a vaga",
+    "duplicar vaga",
+    "duplicar a vaga",
+)
+
+
+def _is_create_from_source(message: str) -> bool:
+    """True quando a mensagem pede criar vaga A PARTIR DE uma fonte existente.
+
+    GUIDE (feedforward, computacional). Quando True, ``_try_wizard_canonical``
+    NAO bootstrapa o wizard vazio no turno 1 — deixa cair para a Phase 1.5
+    (agentic loop), onde o ``recruiter_copilot`` chama ``list_job_creation_sources``
+    + ``start_creation_from_source`` para identificar a fonte. Quando False,
+    "criar vaga"/"nova vaga" seguem bootstrapando como hoje (sem regressao).
+
+    Conservador: exige um padrao CLARO de "a partir de fonte"; nao basta a
+    intencao de criar.
+    """
+    if not message:
+        return False
+    _m = message.lower()
+    return any(p in _m for p in _CREATE_FROM_SOURCE_PATTERNS)
+
+
 class MainOrchestrator:
     """
     Entry point único consolidado para todas as mensagens da LIA.
@@ -2308,7 +2372,18 @@ class MainOrchestrator:
             # "criar a vaga", not "criar vaga") which would otherwise leak into
             # Phase 1.3 Plan & Execute. Job creation must ALWAYS land in the wizard.
             _creation = detect_job_creation(message_text)
-            if any(p in _msg_lower for p in self._WIZARD_START_PATTERNS) or (
+            # GUIDE (2026-06-04): se a intencao e criar A PARTIR DE uma fonte
+            # (template/vaga existente), NAO bootstrapa o wizard vazio — deixa
+            # cair pra Phase 1.5 (recruiter_copilot identifica a fonte via
+            # list_job_creation_sources + start_creation_from_source). "criar
+            # vaga"/"nova vaga" simples seguem bootstrapando como hoje.
+            if _is_create_from_source(message_text):
+                logger.info(
+                    "[MainOrchestrator] create-from-source detectado — defere "
+                    "bootstrap do wizard vazio para Phase 1.5 (session=%s).",
+                    session_id,
+                )
+            elif any(p in _msg_lower for p in self._WIZARD_START_PATTERNS) or (
                 _creation is not None and _creation.is_creation
             ):
                 is_wizard_turn = True

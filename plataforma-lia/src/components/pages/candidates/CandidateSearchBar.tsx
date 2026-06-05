@@ -10,6 +10,7 @@
 import React, { lazy, Suspense } from "react"
 import { FileUp, Loader2 } from "lucide-react"
 import { LiaPromptHeader } from "@/components/ui/lia-prompt-header"
+import { useDynamicGreeting } from "@/hooks/ui/use-dynamic-greeting"
 import { useTranslations } from "next-intl"
 import type { ParsedEntities } from "@/components/search/smart-search-input"
 import type { SearchMode, SearchSource, SearchMetadata } from "@/components/search/smart-search-input"
@@ -75,11 +76,12 @@ export function CandidateSearchBar({
   onRequirePhoneNumbersChange,
 }: CandidateSearchBarProps) {
   const t = useTranslations('candidates')
+  const funnelGreeting = useDynamicGreeting('funnel', t('searchBar.defaultTitle'))
   return (
     <div data-testid="candidate-search-bar" className="min-h-[60vh] flex flex-col items-center justify-center py-8">
       <div className="w-full max-w-3xl mx-auto flex flex-col">
         <LiaPromptHeader
-          title={isSearchActive ? t('searchBar.searchingTitle') : t('searchBar.defaultTitle')}
+          title={isSearchActive ? t('searchBar.searchingTitle') : funnelGreeting}
           isAnimating={isSearchActive}
         />
 

@@ -6,6 +6,7 @@ import {
 } from "@/components/ui/chat-workflow-reels";
 import type { ChatContextType } from "@/contexts/lia-float-context";
 import { cn } from "@/lib/utils";
+import { useDynamicGreeting } from "@/hooks/ui/use-dynamic-greeting";
 import { Brain, Building, FileSpreadsheet, Globe } from "lucide-react";
 import { useTranslations } from "next-intl";
 import React from "react";
@@ -42,6 +43,7 @@ export function UnifiedChatEmptyState({
   const isCompact = mode === "sidebar" || mode === "floating";
   const t = useTranslations("chat");
   const tSettings = useTranslations("chat.emptyState.settings");
+  const greeting = useDynamicGreeting("chat", t("greeting"));
 
   if (contextType === "settings_config") {
     return (
@@ -129,7 +131,7 @@ export function UnifiedChatEmptyState({
           isCompact ? "text-base" : "text-xl",
         )}
       >
-        {t("greeting")}
+        {greeting}
       </h2>
 
       <div

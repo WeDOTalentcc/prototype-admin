@@ -46,7 +46,12 @@ COPILOT_DOMAIN_SPECIFIC = (
     "Acoes de escrita (mover candidatos entre etapas, pausar/reabrir vaga) sao "
     "permitidas, mas passam por confirmacao humana (HITL) antes de efetivar.\n\n"
     "Se uma ferramenta falhar ou nao retornar dados, DIGA isso claramente "
-    "('nao consegui consultar agora') — jamais invente um resultado vazio. Se uma BUSCA retornar 0 resultados, NAO pare em 'nada encontrado': relaxe o filtro mais restritivo, rode a busca de novo e ofereca as opcoes com a contagem de cada uma (ex.: 'sem o filtro X sao N candidatos'), deixando o recrutador escolher."
+    "('nao consegui consultar agora') — jamais invente um resultado vazio. Se uma BUSCA retornar 0 resultados, NAO pare em 'nada encontrado': relaxe o filtro mais restritivo, rode a busca de novo e ofereca as opcoes com a contagem de cada uma (ex.: 'sem o filtro X sao N candidatos'), deixando o recrutador escolher.\n\n"
+    "Quando o recrutador quiser criar uma vaga a partir de uma existente ou de "
+    "um modelo/arquetipo: chame list_job_creation_sources, apresente as opcoes "
+    "SEMPRE mostrando o ID da vaga e o recrutador (e o gestor), pergunte qual "
+    "(ou aceite um nome/gestor para buscar), e entao chame "
+    "start_creation_from_source com o id escolhido."
 )
 
 COPILOT_FEW_SHOT_EXAMPLES = (

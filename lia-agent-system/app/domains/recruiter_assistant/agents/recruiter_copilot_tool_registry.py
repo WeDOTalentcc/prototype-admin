@@ -45,6 +45,10 @@ _FEDERATION_SPEC: list[tuple[str, str]] = [
     ("kanban", "batch_move_candidates"),
     ("jobs", "pause_job"),
     ("jobs", "reopen_job"),
+    # --- Criar vaga a partir de fonte (P1) — glue agentic (Opcao A / A2) ---
+    # recruiter_copilot conduz a identificacao da fonte e dispara a semente.
+    ("wizard", "list_job_creation_sources"),
+    ("wizard", "start_creation_from_source"),
 ]
 
 
@@ -58,10 +62,14 @@ def _source_maps() -> dict[str, dict[str, ToolDefinition]]:
     from app.domains.recruiter_assistant.agents.talent_tool_registry import (
         get_talent_tools,
     )
+    from app.domains.job_management.agents.wizard_tool_registry import (
+        get_wizard_tools,
+    )
     return {
         "jobs": {t.name: t for t in get_jobs_mgmt_tools()},
         "talent": {t.name: t for t in get_talent_tools()},
         "kanban": {t.name: t for t in get_kanban_tools()},
+        "wizard": {t.name: t for t in get_wizard_tools()},
     }
 
 
