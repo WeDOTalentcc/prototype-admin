@@ -12,6 +12,7 @@ for hiring managers, including:
 - Final recommendation
 """
 import logging
+import uuid
 from datetime import datetime
 from enum import Enum, StrEnum
 from typing import Any
@@ -52,6 +53,11 @@ class DataSourceType(StrEnum):
     BIG_FIVE = "big_five"
     WSI = "wsi"
     TECHNICAL_TEST = "technical_test"
+
+
+class ParecerGenerationError(Exception):
+    """Levantada quando a geração de seções do parecer falha.
+    Fail-loud: NUNCA cair em fallback degradado silencioso (CLAUDE.md REGRA 4)."""
 
 
 class CandidateReportService:
@@ -130,6 +136,22 @@ class CandidateReportService:
             screening_data=screening_data
         )
         
+        qualification_matrix = None
+        if job is not None:
+            try:
+                from app.domains.analytics.services.criteria_derivation import (
+                    derive_from_job,
+                )
+                qm = derive_from_job(
+                    self._build_job_dict(job),
+                    self._build_candidate_dict(candidate),
+                    None,
+                )
+                qualification_matrix = qm.model_dump()
+            except Exception as _qm_err:
+                # Matriz é enriquecimento; ausência (None) é honesta, não fabricada.
+                logger.warning(f"qualification_matrix derivation skipped: {_qm_err}")
+
         parecer = {
             "id": f"parecer_{candidate_id}_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}",
             "version": "2.0",
@@ -154,6 +176,7 @@ class CandidateReportService:
             "data_profile": self._get_data_profile(available_data),
             "recommendation": recommendation,
             "lia_score": await self._calculate_lia_score(candidate, job, screening_data),
+            "qualification_matrix": qualification_matrix,
         }
         
         return parecer
@@ -526,8 +549,19 @@ Resumo: {interview_data.get('summary', 'N/A')}"""
                 "label_behavioral": WSI_DIMENSION_LABELS["behavioral"],
             })
         except Exception as e:
-            logger.error(f"Error generating parecer sections: {e}")
-            result = self._generate_fallback_sections(candidate, available_data)
+            request_id = uuid.uuid4().hex[:12]
+            logger.error(
+                "Parecer sections generation failed — failing loud (no silent fallback)",
+                extra={
+                    "request_id": request_id,
+                    "candidate_id": str(getattr(candidate, "id", "")),
+                    "error": str(e),
+                },
+                exc_info=True,
+            )
+            raise ParecerGenerationError(
+                f"Falha ao gerar seções do parecer (request_id={request_id})"
+            ) from e
         
         if not has_behavioral and "competencias_comportamentais" in result:
             del result["competencias_comportamentais"]
@@ -578,47 +612,31 @@ Resumo: {interview_data.get('summary', 'N/A')}"""
 
         return result
     
-    def _generate_fallback_sections(
-        self, 
-        candidate: Candidate,
-        available_data: dict[str, bool]
-    ) -> dict[str, Any]:
-        """Generate fallback sections when AI fails."""
+    def _build_candidate_dict(self, candidate) -> dict[str, Any]:
+        """Adapta o ORM Candidate para o dict puro consumido por criteria_derivation."""
         return {
-            "resumo_executivo": {
-                "texto": f"{candidate.name} é um profissional com experiência em {candidate.current_title or 'sua área'}.",
-                "highlights": [
-                    f"Cargo atual: {candidate.current_title or 'N/A'}",
-                    f"Empresa: {candidate.current_company or 'N/A'}",
-                ]
-            },
-            "experiencia_profissional": {
-                "analise": "Análise detalhada não disponível devido a erro no processamento.",
-                "anos_experiencia": candidate.years_of_experience or 0,
-                "progressao_carreira": "não_determinado",
-                "empresas_relevantes": [candidate.current_company] if candidate.current_company else [],
-                "gaps": []
-            },
-            "competencias_tecnicas": {
-                "skills_destacados": candidate.technical_skills or [],
-                "nivel_geral": candidate.seniority_level or "não_determinado",
-                "areas_expertise": [],
-                "gaps_tecnicos": [],
-                "score": 50
-            },
-            "pontos_fortes_e_atencao": {
-                "pontos_fortes": ["Perfil em análise"],
-                "pontos_atencao": ["Dados limitados para avaliação completa"],
-                "diferenciais": []
-            },
-            "recomendacao_final": {
-                "score": 50,
-                "acao_sugerida": "CONSIDERAR",
-                "justificativa": "Avaliação baseada em dados limitados. Recomenda-se coletar mais informações.",
-                "proximos_passos": ["Coletar mais dados do candidato", "Realizar triagem"]
-            }
+            "technical_skills": list(getattr(candidate, "technical_skills", None) or []),
+            "seniority_level": getattr(candidate, "seniority_level", None),
+            "years_of_experience": getattr(candidate, "years_of_experience", None),
+            "location_city": getattr(candidate, "location_city", None),
+            "location_state": getattr(candidate, "location_state", None),
+            "location_country": getattr(candidate, "location_country", None),
+            "languages": getattr(candidate, "languages", None),
+            "current_title": getattr(candidate, "current_title", None),
         }
-    
+
+    def _build_job_dict(self, job) -> dict[str, Any]:
+        """Adapta o ORM JobVacancy para o dict puro consumido por criteria_derivation."""
+        if not job:
+            return {}
+        return {
+            "technical_requirements": getattr(job, "technical_requirements", None) or [],
+            "languages": getattr(job, "languages", None) or [],
+            "behavioral_competencies": getattr(job, "behavioral_competencies", None) or [],
+            "requirements": getattr(job, "requirements", None) or [],
+        }
+
+
     async def _get_wsi_data(self, db: AsyncSession, candidate_id: str) -> dict | None:
         """Get WSI data for candidate."""
         candidate = await self._get_candidate(db, candidate_id)
