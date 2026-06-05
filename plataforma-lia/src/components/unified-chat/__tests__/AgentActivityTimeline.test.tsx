@@ -59,9 +59,33 @@ describe("AgentActivityTimeline", () => {
     vi.useRealTimers()
   })
 
-  it("renders fallback ThinkingStepsCard when there is no structured activity", () => {
+  it("fallback vazio: mostra ThinkingStepsCard (pensando)", () => {
+    renderWithIntl(<AgentActivityTimeline fallbackSteps={[]} />)
+    expect(screen.getByTestId("fallback")).toHaveTextContent("0")
+  })
+
+  it("fallback com passos: deriva lista (NAO usa ThinkingStepsCard cru)", () => {
     renderWithIntl(<AgentActivityTimeline fallbackSteps={["a", "b"]} />)
-    expect(screen.getByTestId("fallback")).toHaveTextContent("2")
+    expect(screen.queryByTestId("fallback")).toBeNull()
+    expect(screen.getByText("a")).toBeTruthy()
+  })
+
+  it("fallback localiza tool names (search_jobs -> Buscando vagas) + revela progressivo", () => {
+    const { container } = renderWithIntl(
+      <AgentActivityTimeline
+        fallbackSteps={["\ud83d\udd27 search_jobs\u2026", "\u2713 search_jobs", "\ud83d\udd27 get_job_details\u2026"]}
+        showFallback
+        completed={false}
+      />,
+    )
+    // localizado, nunca o codigo cru, nunca o card estatico
+    expect(screen.getByText(/Buscando vagas/)).toBeTruthy()
+    expect(screen.queryByText("search_jobs")).toBeNull()
+    expect(screen.queryByTestId("fallback")).toBeNull()
+    // revela progressivo (1 -> mais apos o tick)
+    const before = container.querySelectorAll("li").length
+    tick()
+    expect(container.querySelectorAll("li").length).toBeGreaterThanOrEqual(before)
   })
 
   it("renders nothing when empty and showFallback is false (answer streaming)", () => {

@@ -161,6 +161,43 @@ function revealDelay(queueLen: number, finishing = false): number {
   return REVEAL_SLOW_MS
 }
 
+const _FB_TOOL_START = /^\ud83d\udd27\s*/
+const _FB_TOOL_DONE = /^\u2713\s*/
+
+// Deriva ActivityItem[] dos fallbackSteps crus (thinkingSteps) — usado
+// quando os window events (lia:agent-activity) nao chegaram (corrida sem
+// replay). Reusa o MESMO render (ActivityLine -> toolLabel/phaseLabel) pra
+// localizar (search_jobs -> "Buscando vagas") e dar o look do morphing.
+// Agrupa "tool…" + "✓ tool" no MESMO item (running -> ok).
+function deriveItemsFromFallback(steps: string[]): ActivityItem[] {
+  const out: ActivityItem[] = []
+  const toolIdx = new Map<string, number>()
+  for (const raw of steps) {
+    const step = (raw ?? "").trim()
+    if (!step) continue
+    if (_FB_TOOL_START.test(step)) {
+      const name = step.replace(_FB_TOOL_START, "").replace(/\u2026$/, "").trim()
+      if (!name) continue
+      if (!toolIdx.has(name)) {
+        toolIdx.set(name, out.length)
+        out.push({ id: `fb-tool-${name}`, kind: "tool", name, status: "running" })
+      }
+    } else if (_FB_TOOL_DONE.test(step)) {
+      const name = step.replace(_FB_TOOL_DONE, "").trim()
+      if (!name) continue
+      const at = toolIdx.get(name)
+      if (at != null) out[at].status = "ok"
+      else {
+        toolIdx.set(name, out.length)
+        out.push({ id: `fb-tool-${name}`, kind: "tool", name, status: "ok" })
+      }
+    } else {
+      out.push({ id: `fb-reason-${out.length}`, kind: "reasoning", name: step, status: "ok" })
+    }
+  }
+  return out
+}
+
 function formatMs(ms: number): string {
   return ms >= 1000 ? `${(ms / 1000).toFixed(1)}s` : `${ms}ms`
 }
@@ -387,12 +424,52 @@ export function AgentActivityTimeline({
     }
   }, [completed])
 
+  // Fallback robusto (2026-06-05): window events nao tem replay; se o
+  // timeline montou depois deles, `items` fica vazio. Em vez do card
+  // estatico cru (PT/EN misturado), derivamos do fallbackSteps (React
+  // state, sempre captura) e revelamos 1-a-1 com o MESMO ActivityLine
+  // (localizado + pulse). O caminho estruturado (items) sempre vence —
+  // isto so renderiza enquanto items.length === 0.
+  const fbItems = React.useMemo(
+    () => deriveItemsFromFallback(fallbackSteps),
+    [fallbackSteps],
+  )
+  const [fbReveal, setFbReveal] = useState(0)
+  useEffect(() => {
+    if (fbItems.length === 0) {
+      if (fbReveal !== 0) setFbReveal(0)
+      return
+    }
+    if (fbReveal + 1 >= fbItems.length) return
+    const tmr = setTimeout(
+      () => setFbReveal((n) => n + 1),
+      revealDelay(fbItems.length - fbReveal),
+    )
+    return () => clearTimeout(tmr)
+  }, [fbItems, fbReveal])
+
   if (items.length === 0) {
-    // Empty: show the unified "thinking" fallback while genuinely working;
-    // render nothing once settled or while the answer already streams.
-    return showFallback && phase === "active" ? (
-      <ThinkingStepsCard steps={fallbackSteps} />
-    ) : null
+    if (!(showFallback && phase === "active")) return null
+    // Sem itens estruturados: deriva do fallbackSteps (localizado +
+    // progressivo). Se nem isso houver, o card "pensando…" cobre o vazio.
+    if (fbItems.length === 0) return <ThinkingStepsCard steps={fallbackSteps} />
+    const revealed = fbItems.slice(0, fbReveal + 1)
+    return (
+      <ul
+        className="space-y-1.5 animate-in fade-in slide-in-from-bottom-1 duration-200"
+        role="status"
+        aria-live="polite"
+      >
+        {revealed.map((item, idx) => (
+          <ActivityLine
+            key={item.id}
+            item={item}
+            spotlight={idx === revealed.length - 1}
+            locale={locale}
+          />
+        ))}
+      </ul>
+    )
   }
 
   const isDone = phase === "done"
