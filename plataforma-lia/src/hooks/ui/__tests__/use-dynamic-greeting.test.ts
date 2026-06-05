@@ -160,6 +160,36 @@ describe("useDynamicGreeting — chat contextual interpolado", () => {
   })
 })
 
+describe("useDynamicGreeting — chat curado (sem briefing)", () => {
+  // Ramo CURADO do hook (linhas ~69-76): sem template ICU, a string é montada à
+  // mão — uma quebra de prefixo/pool passaria despercebida pelo teste puro.
+  const periodGreetings = ["Bom dia", "Boa tarde", "Boa noite"]
+
+  it("ramo named: prefixa saudação de período + nome antes da frase do pool curatedNamed", () => {
+    mockUser = { name: "Ana" }
+    mockBriefing = null
+
+    const phrase = renderGreeting("chat", "fallback")
+
+    // Prefixo "{saudação de período}, {nome}. " (a saudação varia com a hora).
+    expect(periodGreetings.some((g) => phrase.startsWith(`${g}, Ana. `))).toBe(true)
+    // Seguido de uma frase do pool curatedNamed (aqui um único item).
+    expect(phrase.endsWith("Por onde começamos?")).toBe(true)
+    expect(phrase).not.toBe("fallback")
+  })
+
+  it("ramo plain: sem nome retorna frase do pool curated sem prefixo", () => {
+    mockUser = null
+    mockBriefing = null
+
+    const phrase = renderGreeting("chat", "fallback")
+
+    expect(phrase).toBe("Como posso ajudar hoje?")
+    // Sem prefixo de saudação/nome (não há vírgula da forma "Saudação, Nome.").
+    expect(phrase).not.toContain(",")
+  })
+})
+
 describe("useDynamicGreeting — funnel contextual interpolado", () => {
   it("vagas abertas + candidatos a contatar: interpola ambas as contagens", () => {
     mockBriefing = emptyBriefing()
