@@ -99,10 +99,12 @@ function ScoreExplainerView({ block }: { block: ScoreExplainerBlock }) {
                 <span className="flex-1">
                   <span className="text-lia-text-primary">{f.label}</span>
                   {f.detail ? ` — ${f.detail}` : ""}
-                  <span className="text-lia-text-tertiary">
-                    {" "}
-                    {t("weight", { pct: Math.round(f.weight * 100) })}
-                  </span>
+                  {f.weight > 0 ? (
+                    <span className="text-lia-text-tertiary">
+                      {" "}
+                      {t("weight", { pct: Math.round(f.weight * 100) })}
+                    </span>
+                  ) : null}
                 </span>
               </li>
             ))}
