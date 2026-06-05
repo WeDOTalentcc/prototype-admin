@@ -121,3 +121,13 @@ def test_rich_fields_user_value_wins():
     state = {"eligibility_questions": [{"id": "x", "question": "do recrutador"}]}
     apply_seed_to_state(state, seed)
     assert state["eligibility_questions"][0]["question"] == "do recrutador"
+
+
+def test_wsi_questions_parked_not_live_key():
+    """PR-B2b: WSI da origem vai p/ estacionamento (seed_wsi_questions), NAO
+    p/ a chave live wsi_questions — senao o node pegaria sem perguntar."""
+    seed = _seed(wsi_questions=[{"id": "1", "question": "Q da origem"}])
+    state: dict = {}
+    apply_seed_to_state(state, seed)
+    assert state["seed_wsi_questions"][0]["question"] == "Q da origem"
+    assert "wsi_questions" not in state

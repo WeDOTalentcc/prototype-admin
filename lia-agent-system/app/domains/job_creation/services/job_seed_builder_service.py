@@ -222,6 +222,12 @@ class JobSeedBuilderService:
             "eligibility_questions",
             list(getattr(vac, "eligibility_questions", None) or []),
         )
+        # WSI: perguntas de triagem da vaga origem. Vao p/ estacionamento; o
+        # wsi_questions_node pergunta ao recrutador (reaproveitar/gerar). PR-B2b.
+        mark(
+            "wsi_questions",
+            list(getattr(vac, "screening_questions", None) or []),
+        )
 
         return JobCreationSeed(
             **fields,

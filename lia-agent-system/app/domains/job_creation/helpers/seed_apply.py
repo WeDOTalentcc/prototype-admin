@@ -84,6 +84,10 @@ def apply_seed_to_state(
         "technical_competencies": "confirmed_technical_competencies",
         "behavioral_competencies": "confirmed_behavioral_competencies",
         "eligibility_questions": "eligibility_questions",
+        # WSI vai p/ chave de ESTACIONAMENTO (seed_wsi_questions), NAO
+        # wsi_questions: o wsi_questions_node decide reaproveitar/gerar
+        # perguntando ao recrutador (PR-B2b). Mapear direto pularia a escolha.
+        "wsi_questions": "seed_wsi_questions",
     }
     for _seed_field, _state_field in _RICH_MAP.items():
         _val = getattr(seed, _seed_field, None)

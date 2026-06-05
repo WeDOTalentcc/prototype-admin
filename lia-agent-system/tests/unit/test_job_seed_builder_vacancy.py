@@ -117,3 +117,12 @@ async def test_maps_competencies_and_eligibility():
     assert any(c["skill"] == "Python" for c in seed.technical_competencies)
     assert seed.behavioral_competencies[0]["competencia"] == "Lideranca"
     assert seed.eligibility_questions[0]["question"] == "Tem CNH?"
+
+
+@pytest.mark.asyncio
+async def test_maps_wsi_questions_to_seed_field():
+    svc = _svc_with(_vac(
+        screening_questions=[{"id": "1", "question": "Conte sobre X", "weight": 5}]
+    ))
+    seed = await svc.build_seed_from_vacancy(uuid.uuid4(), company_id="co-1")
+    assert seed.wsi_questions[0]["question"] == "Conte sobre X"

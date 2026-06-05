@@ -193,6 +193,10 @@ class JobCreationSeed(WeDoBaseModel):
     technical_competencies: List[Dict[str, Any]] = []
     behavioral_competencies: List[Dict[str, Any]] = []
     eligibility_questions: List[Dict[str, Any]] = []
+    # PR-B2b: perguntas WSI da vaga origem. apply_seed_to_state as ESTACIONA em
+    # state['seed_wsi_questions'] (NAO wsi_questions): o wsi_questions_node
+    # pergunta ao recrutador (reaproveitar/gerar) reusando o gate de aprovacao.
+    wsi_questions: List[Dict[str, Any]] = []
 
     provenance: Dict[str, FieldProvenance] = {}
     source: Optional[SourceDescriptor] = None
