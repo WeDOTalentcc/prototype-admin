@@ -251,7 +251,7 @@ class CandidateListRepository:
         result = await self.db.execute(
             select(VacancyCandidate).where(
                 and_(
-                    VacancyCandidate.job_vacancy_id == job_vacancy_id,
+                    VacancyCandidate.vacancy_id == job_vacancy_id,
                     VacancyCandidate.candidate_id == candidate_id,
                 )
             )
@@ -278,13 +278,12 @@ class CandidateListRepository:
         vc = VacancyCandidate(
             id=uuid.uuid4(),
             company_id=company_id,
-            job_vacancy_id=job_vacancy_id,
+            vacancy_id=job_vacancy_id,
             candidate_id=candidate_id,
             stage="sourcing",
             recruitment_stage_id=recruitment_stage_id,
-            sub_status="sourced",
+            status="sourced",
             source="list",
-            is_active=True,
             created_at=now,
             updated_at=now,
         )

@@ -186,7 +186,7 @@ class SharedSearchRepository:
         result = await self.db.execute(
             select(VacancyCandidate).where(
                 and_(
-                    VacancyCandidate.job_vacancy_id == job_vacancy_id,
+                    VacancyCandidate.vacancy_id == job_vacancy_id,
                     VacancyCandidate.candidate_id == candidate_id,
                 )
             )

@@ -891,14 +891,13 @@ company_id: str = Depends(require_company_id)):
             new_vacancy_candidate = VacancyCandidate(
                 id=uuid.uuid4(),
                 company_id=company_uuid,
-                job_vacancy_id=job_uuid,
+                vacancy_id=job_uuid,
                 candidate_id=candidate_id,
                 stage="sourcing",
                 recruitment_stage_id=recruitment_stage_id,
-                sub_status="sourced",
+                status="sourced",
                 source="shared_search",
                 notes=notes,
-                is_active=True,
                 created_at=datetime.utcnow(),
                 updated_at=datetime.utcnow()
             )
