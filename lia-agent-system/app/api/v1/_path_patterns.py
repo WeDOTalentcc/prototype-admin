@@ -75,3 +75,11 @@ __all__ = [
     "DUAL_ID_PATH_PATTERN",
     "reorder_collection_before_item",
 ]
+
+# Candidato com id LOCAL (UUID/bigint) OU id externo de sourcing
+# (ex.: pearch slug "paul-criswell-7583691"). Para rotas que aceitam
+# candidatos GLOBAIS nao-persistidos (ex.: experience-highlights), onde
+# DUAL_ID_PATH_PATTERN rejeitaria o slug com 422. A precedencia sobre rotas
+# estaticas irmas (/generate, /batch-generate) e garantida por
+# reorder_collection_before_item, NAO por este pattern.
+CANDIDATE_OR_SOURCING_ID_PATTERN = r"^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
