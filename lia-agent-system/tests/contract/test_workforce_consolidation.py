@@ -44,7 +44,7 @@ async def test_chat_import_delegates_to_canonical_producer():
     producer.assert_awaited_once()
     assert producer.await_args.kwargs["items"] == plan_data
     assert producer.await_args.kwargs["source"] == "chat"
-    assert cp.upsert_workforce_plan.called  # Sistema C preserved
+    assert not cp.upsert_workforce_plan.called  # Sistema C removido (Fase 3)
     assert result["data"]["headcounts_created"] == 2
 
 

@@ -831,19 +831,11 @@ async def _import_workforce_plan_impl(
     total_hires = sum(item.get("quantity", 0) for item in plan_data if isinstance(item, dict))
     departments = list(set(item.get("department", "N/A") for item in plan_data if isinstance(item, dict)))
 
-    # PR4: usa session injetada; captura `before` (plano anterior) para
-    # payload canônico SOX. Migrado para repo (ADR-001 Wave C-2 Agent D).
-    repo = CompanyProfileRepository(db=session)
-    _wf = await repo.get_workforce_plan(company_id)
-    before_plan: Any = _wf["workforce_plan"] if _wf else None
-
-    plan_json = json.dumps(plan_data, ensure_ascii=False)
-    await repo.upsert_workforce_plan(company_id, plan_json, session=session)
-
+    # Track B / Fase 3: Sistema C (JSON blob em CompanyProfile.additional_data)
+    # removido — era redundante e sem consumidor de leitura. PlannedHeadcount
+    # (Store B) e o canonical; o audit abaixo registra o resumo do import.
     # Sistema B (canonical): grava PlannedHeadcount via produtor unico
-    # (headcount_import_service), que resolve department NAME -> FK. Antes este
-    # loop gravava department_id=None (fragmentacao Track B / Fase 2). Sistema C
-    # (JSON acima) permanece como before-state de auditoria SOX.
+    # (headcount_import_service), que resolve department NAME -> FK.
     wf_summary: dict[str, Any] = {}
     try:
         wf_summary = await import_planned_headcounts(
@@ -865,7 +857,7 @@ async def _import_workforce_plan_impl(
                 "Falha ao gravar o planejamento de headcount. Os dados nao "
                 "foram salvos corretamente; tente novamente."
             ),
-            "_before": {"workforce_plan": before_plan},
+            "_before": None,
             "_after": None,
         }
 
@@ -890,8 +882,13 @@ async def _import_workforce_plan_impl(
             "unresolved_departments": unresolved,
         },
         "message": msg,
-        "_before": {"workforce_plan": before_plan},
-        "_after": {"workforce_plan": plan_data, "total_hires": total_hires},
+        "_before": None,
+        "_after": {
+            "headcounts_created": wf_summary.get("created", 0),
+            "departments": departments,
+            "total_hires": total_hires,
+            "unresolved_departments": unresolved,
+        },
     }
 
 
