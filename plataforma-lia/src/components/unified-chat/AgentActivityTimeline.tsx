@@ -27,14 +27,7 @@
  */
 
 import React, { useEffect, useMemo, useRef, useState } from "react"
-import {
-  Loader2,
-  CheckCircle2,
-  XCircle,
-  Brain,
-  ChevronRight,
-  ChevronDown,
-} from "lucide-react"
+import { Loader2, CheckCircle2, XCircle, Brain } from "lucide-react"
 import { useTranslations, useLocale } from "next-intl"
 import { cn } from "@/lib/utils"
 import { ThinkingStepsCard } from "./ThinkingStepsCard"
@@ -195,9 +188,6 @@ export function AgentActivityTimeline({
   const scheduleDrainRef = useRef<(() => void) | null>(null)
   const finalizeRef = useRef<(() => void) | null>(null)
   const onFinishedRef = useRef(onFinished)
-  // Estilo Replit: enquanto trabalha, as ações concluídas recuam para um contador
-  // discreto ("N concluídas"), que o usuário pode expandir. Default recolhido.
-  const [showCompleted, setShowCompleted] = useState(false)
 
   useEffect(() => {
     onFinishedRef.current = onFinished
@@ -415,13 +405,13 @@ export function AgentActivityTimeline({
   }
 
   const isDone = phase === "done"
-  // Linha em foco (Replit/Manus): enquanto roda, só a ÚLTIMA ação revelada fica em
-  // destaque; as anteriores recuam para o contador discreto. No frame terminal
-  // (isDone) a trilha completa é exibida brevemente antes de docar no resumo
-  // persistente (AgentActivitySummary), que é a pílula colapsada do histórico.
+  // Estilo Replit/Manus: enquanto roda, TODOS os passos revelados ficam
+  // empilhados (um abaixo do outro) sob o cabeçalho, dando a sensação de
+  // evolução em tempo real. Só a ÚLTIMA linha recebe o spotlight (texto primário
+  // + cyan pulsante); as anteriores já viram "concluídas" (ícone-por-tipo
+  // esmaecido). No frame terminal (isDone) a trilha completa é exibida sem
+  // spotlight, logo antes de colapsar na pílula persistente (AgentActivitySummary).
   const activeIndex = isDone ? -1 : items.length - 1
-  const completedItems = isDone ? [] : items.slice(0, activeIndex)
-  const spotlightItem = isDone ? null : items[activeIndex]
 
   return (
     <div
@@ -446,60 +436,16 @@ export function AgentActivityTimeline({
         </span>
       </div>
 
-      {isDone ? (
-        <ul className="space-y-1.5">
-          {items.map((item) => (
-            <ActivityLine
-              key={item.id}
-              item={item}
-              spotlight={false}
-              locale={locale}
-            />
-          ))}
-        </ul>
-      ) : (
-        <div className="space-y-1.5">
-          {completedItems.length > 0 && (
-            <>
-              <button
-                type="button"
-                onClick={() => setShowCompleted((o) => !o)}
-                aria-expanded={showCompleted}
-                className="flex items-center gap-1 text-[11px] text-lia-text-secondary hover:text-lia-text-primary transition-colors motion-reduce:transition-none"
-              >
-                {showCompleted ? (
-                  <ChevronDown className="w-3 h-3 shrink-0" />
-                ) : (
-                  <ChevronRight className="w-3 h-3 shrink-0" />
-                )}
-                <span>{t("done", { count: completedItems.length })}</span>
-              </button>
-              {showCompleted && (
-                <ul className="space-y-1.5 ml-1.5 border-l border-lia-border-subtle/60 pl-2 animate-in fade-in slide-in-from-top-1 duration-200">
-                  {completedItems.map((item) => (
-                    <ActivityLine
-                      key={item.id}
-                      item={item}
-                      spotlight={false}
-                      locale={locale}
-                    />
-                  ))}
-                </ul>
-              )}
-            </>
-          )}
-          {spotlightItem && (
-            <ul>
-              <ActivityLine
-                key={spotlightItem.id}
-                item={spotlightItem}
-                spotlight
-                locale={locale}
-              />
-            </ul>
-          )}
-        </div>
-      )}
+      <ul className="space-y-1.5">
+        {items.map((item, idx) => (
+          <ActivityLine
+            key={item.id}
+            item={item}
+            spotlight={!isDone && idx === activeIndex}
+            locale={locale}
+          />
+        ))}
+      </ul>
     </div>
   )
 }

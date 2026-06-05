@@ -1,6 +1,6 @@
 import React from "react"
 import { describe, it, expect } from "vitest"
-import { render, screen, fireEvent } from "@testing-library/react"
+import { render, screen } from "@testing-library/react"
 import { NextIntlClientProvider } from "next-intl"
 import ptBR from "../../../../messages/pt-BR.json"
 import { ThinkingStepsCard } from "../ThinkingStepsCard"
@@ -17,17 +17,12 @@ function renderWithIntl(ui: React.ReactNode, locale = "pt") {
 }
 
 describe("ThinkingStepsCard", () => {
-  it("destaca o passo atual em PT e recolhe os concluídos (nunca mostra inglês cru)", () => {
+  it("empilha os passos em PT (todos visíveis, evolução), nunca em inglês cru", () => {
     renderWithIntl(<ThinkingStepsCard steps={["understanding", "composing"]} />)
-    // último passo = em foco (visível)
-    expect(screen.getByText("Preparando a resposta")).toBeInTheDocument()
-    // passos anteriores recuam para o contador discreto (escondidos até expandir)
-    expect(
-      screen.queryByText("Entendendo sua solicitação"),
-    ).not.toBeInTheDocument()
-    // expandir o contador revela o concluído, já localizado
-    fireEvent.click(screen.getByRole("button"))
+    // todos os passos revelados ficam visíveis, um abaixo do outro
     expect(screen.getByText("Entendendo sua solicitação")).toBeInTheDocument()
+    expect(screen.getByText("Preparando a resposta")).toBeInTheDocument()
+    // localizados — nada de chave crua vazando
     expect(screen.queryByText("understanding")).not.toBeInTheDocument()
     expect(screen.queryByText("composing")).not.toBeInTheDocument()
   })
@@ -37,14 +32,8 @@ describe("ThinkingStepsCard", () => {
       <ThinkingStepsCard steps={["understanding", "composing"]} />,
       "en",
     )
-    // passo atual em foco
-    expect(screen.getByText("Composing the response")).toBeInTheDocument()
-    // concluído escondido até expandir
-    expect(
-      screen.queryByText("Understanding your request"),
-    ).not.toBeInTheDocument()
-    fireEvent.click(screen.getByRole("button"))
     expect(screen.getByText("Understanding your request")).toBeInTheDocument()
+    expect(screen.getByText("Composing the response")).toBeInTheDocument()
   })
 
   it("mantém texto livre/desconhecido como fallback seguro", () => {
