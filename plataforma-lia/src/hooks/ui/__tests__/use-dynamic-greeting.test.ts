@@ -87,6 +87,31 @@ function renderGreeting(surface: GreetingSurface, fallback: string): string {
   return result.current
 }
 
+// Render com um conjunto de mensagens customizado (pools multi-item para
+// exercitar a rotação `index % pool.length`).
+function renderGreetingWithMessages(
+  customMessages: Record<string, unknown>,
+  surface: GreetingSurface,
+  fallback: string,
+): string {
+  function customWrapper({ children }: { children: React.ReactNode }) {
+    return React.createElement(
+      NextIntlClientProvider,
+      {
+        locale: "pt-BR",
+        messages: customMessages,
+        onError: () => {},
+        getMessageFallback: ({ key }: { key: string }) => key,
+      },
+      children,
+    )
+  }
+  const { result } = renderHook(() => useDynamicGreeting(surface, fallback), {
+    wrapper: customWrapper,
+  })
+  return result.current
+}
+
 function emptyBriefing(): MockBriefing {
   return {
     pipeline_summary: {
@@ -187,6 +212,78 @@ describe("useDynamicGreeting — chat curado (sem briefing)", () => {
     expect(phrase).toBe("Como posso ajudar hoje?")
     // Sem prefixo de saudação/nome (não há vírgula da forma "Saudação, Nome.").
     expect(phrase).not.toContain(",")
+  })
+})
+
+describe("useDynamicGreeting — rotação dos pools curados (index % pool.length)", () => {
+  // Os pools curados rotacionam: o hook seleciona `pool[index % pool.length]`,
+  // onde `index` deriva do seed (Math.random) fixado por montagem. Com pools de
+  // 1 item (resto dos testes) a rotação NUNCA é exercida — uma regressão que
+  // sempre escolhe o índice 0, ou quebra o módulo, passaria silenciosa. Aqui
+  // usamos pools com vários itens e fixamos o seed via Math.random para afirmar
+  // a entrada exata selecionada.
+  const PLAIN_POOL = ["Como posso ajudar?", "O que vamos resolver?", "Por onde começamos hoje?"]
+  const NAMED_POOL = ["Vamos ao trabalho.", "Pronto para começar?", "Bora produzir."]
+  const periodGreetings = ["Bom dia", "Boa tarde", "Boa noite"]
+
+  const rotationMessages = {
+    dynamicGreetings: {
+      timeOfDay: { morning: "Bom dia", afternoon: "Boa tarde", evening: "Boa noite" },
+      chat: {
+        curated: PLAIN_POOL,
+        curatedNamed: NAMED_POOL,
+        context: messages.dynamicGreetings.chat.context,
+      },
+    },
+  }
+
+  let randomSpy: ReturnType<typeof vi.spyOn> | null = null
+
+  afterEach(() => {
+    randomSpy?.mockRestore()
+    randomSpy = null
+  })
+
+  // seed = floor(r * 100000); índice escolhido = seed % pool.length.
+  // 0.5 e 0.25 são frações binárias exatas → seed determinístico (sem float drift).
+  it("ramo plain: seed 50000 → 50000 % 3 = 2 → terceira frase do pool", () => {
+    mockUser = null
+    mockBriefing = null
+    randomSpy = vi.spyOn(Math, "random").mockReturnValue(0.5) // seed = 50000
+
+    const phrase = renderGreetingWithMessages(rotationMessages, "chat", "fallback")
+    // 50000 % 3 === 2 (módulo embrulha um índice maior que o pool de volta).
+    expect(phrase).toBe(PLAIN_POOL[2])
+  })
+
+  it("ramo plain: seed diferente seleciona outra entrada (rotação real)", () => {
+    mockUser = null
+    mockBriefing = null
+    randomSpy = vi.spyOn(Math, "random").mockReturnValue(0.25) // seed = 25000
+
+    const phrase = renderGreetingWithMessages(rotationMessages, "chat", "fallback")
+    // 25000 % 3 === 1 → entrada distinta da do teste anterior (não é o índice 0).
+    expect(phrase).toBe(PLAIN_POOL[1])
+  })
+
+  it("ramo named: seed 50000 → 50000 % 3 = 2 → terceira frase, prefixada por saudação + nome", () => {
+    mockUser = { name: "Ana" }
+    mockBriefing = null
+    randomSpy = vi.spyOn(Math, "random").mockReturnValue(0.5) // seed = 50000
+
+    const phrase = renderGreetingWithMessages(rotationMessages, "chat", "fallback")
+    expect(periodGreetings.some((g) => phrase.startsWith(`${g}, Ana. `))).toBe(true)
+    expect(phrase.endsWith(NAMED_POOL[2])).toBe(true)
+  })
+
+  it("ramo named: seed diferente seleciona outra entrada do curatedNamed", () => {
+    mockUser = { name: "Ana" }
+    mockBriefing = null
+    randomSpy = vi.spyOn(Math, "random").mockReturnValue(0.25) // seed = 25000
+
+    const phrase = renderGreetingWithMessages(rotationMessages, "chat", "fallback")
+    // 25000 % 3 === 1 → entrada distinta (não índice 0), provando a rotação nomeada.
+    expect(phrase.endsWith(NAMED_POOL[1])).toBe(true)
   })
 })
 
