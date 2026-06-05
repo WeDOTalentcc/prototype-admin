@@ -64,12 +64,15 @@ _CANONICAL_SOURCES: dict[str, tuple[str, str]] = {
     "analytics": ("app.domains.analytics.agents.analytics_tool_registry", "get_analytics_tools"),
     "ats_integration": ("app.domains.ats_integration.agents.ats_integration_tool_registry", "get_ats_integration_tools"),
     "automation": ("app.domains.automation.agents.automation_tool_registry", "get_automation_tools"),
-    "autonomous": ("app.domains.autonomous.agents.autonomous_tool_registry", "get_autonomous_tools"),
     "communication": ("app.domains.communication.agents.communication_tool_registry", "get_communication_tools"),
     "company_settings": ("app.domains.company_settings.agents.company_tool_registry", "get_company_settings_tools"),
     "policy": ("app.domains.hiring_policy.agents.policy_tool_registry", "get_policy_tools"),
     "sourcing": ("app.domains.sourcing.agents.sourcing_tool_registry", "get_sourcing_tools"),
     "talent_pool": ("app.domains.talent_pool.agents.talent_pool_tool_registry", "get_talent_pool_tools"),
+    # autonomous = MENOR prioridade: re-implementa tools de outros dominios
+    # (_wrap_auto_*) p/ execucao autonoma. Em colisao de nome, o dominio
+    # CANONICO vence (first-wins na ordem). Fase 5 reconciliacao.
+    "autonomous": ("app.domains.autonomous.agents.autonomous_tool_registry", "get_autonomous_tools"),
 }
 
 

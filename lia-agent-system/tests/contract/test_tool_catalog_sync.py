@@ -95,3 +95,14 @@ def test_governanca_capturada():
     cat = build_tool_catalog()
     if "batch_move_candidates" in cat:
         assert cat["batch_move_candidates"].affects_candidate_decision is True
+
+
+def test_autonomous_nunca_vence_colisao():
+    """autonomous re-implementa tools de outros dominios; em colisao de nome o
+    dominio CANONICO deve ser a fonte primaria (autonomous = menor prioridade)."""
+    cat = build_tool_catalog()
+    for name, m in cat.items():
+        if len(m.source_registries) > 1 and "autonomous" in m.source_registries:
+            assert m.source_registries[0] != "autonomous", (
+                f"{name}: autonomous nao deveria ser primaria (regs: {m.source_registries})"
+            )
