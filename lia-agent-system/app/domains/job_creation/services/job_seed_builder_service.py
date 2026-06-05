@@ -228,6 +228,11 @@ class JobSeedBuilderService:
             "wsi_questions",
             list(getattr(vac, "screening_questions", None) or []),
         )
+        # JD enriquecida EXATA da vaga origem (item 3). needs_review: e um clone,
+        # recrutador confirma no HITL #1. O jd_enrichment_node reusa (guard).
+        _enr = getattr(vac, "enriched_jd", None)
+        if isinstance(_enr, dict) and _enr:
+            mark("jd_enriched", _enr, needs_review=True)
 
         return JobCreationSeed(
             **fields,

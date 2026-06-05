@@ -333,6 +333,23 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
         jd_enriched_dict = state["jd_enriched"]
         jd_quality_score = state.get("jd_quality_score", 0.0)
         jd_quality_warnings = state.get("jd_quality_warnings", [])
+        # PR-B2 item 3 (clone): JD reaproveitada da vaga origem chega SEM
+        # quality_score (a vaga nao persiste o score). Recalcula deterministico
+        # p/ o painel nao exibir 0. Fail-open: se reconstruir o objeto falhar,
+        # mantem o score do state.
+        if not jd_quality_score:
+            try:
+                from app.domains.job_creation.schemas import EnrichedJobDescription
+                from app.domains.job_creation.services.jd_enrichment import (
+                    calculate_quality_score as _calc_q_reuse,
+                )
+                _eobj = EnrichedJobDescription(**jd_enriched_dict)
+                jd_quality_score, jd_quality_warnings = _calc_q_reuse(_eobj)
+            except Exception as _q_reuse_exc:  # noqa: BLE001 — fail-open
+                logger.warning(
+                    "[JobCreation:jd_enrichment] quality recompute on reuse "
+                    "failed (fail-open): %s", _q_reuse_exc,
+                )
     else:
         # Call JdEnrichmentService (F1.C LLM enrichment)
         # IMPORTANT — pass jd_raw_safe (PII-stripped), NOT jd_raw original.

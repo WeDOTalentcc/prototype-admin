@@ -131,3 +131,19 @@ def test_wsi_questions_parked_not_live_key():
     apply_seed_to_state(state, seed)
     assert state["seed_wsi_questions"][0]["question"] == "Q da origem"
     assert "wsi_questions" not in state
+
+
+def test_jd_enriched_mapped_to_live_key():
+    """PR-B2 item 3: jd_enriched do seed -> state['jd_enriched'] (chave live);
+    o jd_enrichment_node tem reuse-guard e apresenta no HITL #1."""
+    seed = _seed(jd_enriched={"titulo_padronizado": "X", "about_role": "y"})
+    state: dict = {}
+    apply_seed_to_state(state, seed)
+    assert state["jd_enriched"]["titulo_padronizado"] == "X"
+
+
+def test_jd_enriched_user_value_wins():
+    seed = _seed(jd_enriched={"titulo_padronizado": "do seed"})
+    state = {"jd_enriched": {"titulo_padronizado": "do recrutador"}}
+    apply_seed_to_state(state, seed)
+    assert state["jd_enriched"]["titulo_padronizado"] == "do recrutador"

@@ -88,6 +88,9 @@ def apply_seed_to_state(
         # wsi_questions: o wsi_questions_node decide reaproveitar/gerar
         # perguntando ao recrutador (PR-B2b). Mapear direto pularia a escolha.
         "wsi_questions": "seed_wsi_questions",
+        # JD enriquecida EXATA -> chave live; jd_enrichment_node tem reuse-guard
+        # (usa se presente) e apresenta no HITL #1 p/ revisao (item 3).
+        "jd_enriched": "jd_enriched",
     }
     for _seed_field, _state_field in _RICH_MAP.items():
         _val = getattr(seed, _seed_field, None)

@@ -126,3 +126,13 @@ async def test_maps_wsi_questions_to_seed_field():
     ))
     seed = await svc.build_seed_from_vacancy(uuid.uuid4(), company_id="co-1")
     assert seed.wsi_questions[0]["question"] == "Conte sobre X"
+
+
+@pytest.mark.asyncio
+async def test_maps_enriched_jd_exact():
+    svc = _svc_with(_vac(
+        enriched_jd={"titulo_padronizado": "Eng de Dados Sr", "about_role": "..."}
+    ))
+    seed = await svc.build_seed_from_vacancy(uuid.uuid4(), company_id="co-1")
+    assert seed.jd_enriched["titulo_padronizado"] == "Eng de Dados Sr"
+    assert seed.provenance["jd_enriched"].needs_review is True

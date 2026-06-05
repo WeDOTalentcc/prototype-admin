@@ -197,6 +197,10 @@ class JobCreationSeed(WeDoBaseModel):
     # state['seed_wsi_questions'] (NAO wsi_questions): o wsi_questions_node
     # pergunta ao recrutador (reaproveitar/gerar) reusando o gate de aprovacao.
     wsi_questions: List[Dict[str, Any]] = []
+    # PR-B2 item 3 (clone): JD enriquecida EXATA da vaga origem. apply mapeia
+    # p/ state['jd_enriched']; o jd_enrichment_node ja tem reuse-guard (usa se
+    # presente, pula geracao) e apresenta no HITL #1 p/ revisao.
+    jd_enriched: Optional[Dict[str, Any]] = None
 
     provenance: Dict[str, FieldProvenance] = {}
     source: Optional[SourceDescriptor] = None
