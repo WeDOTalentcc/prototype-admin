@@ -6749,8 +6749,6 @@
         "benefitsHint": "Envie o manual de benefícios",
         "policyLabel": "Políticas de Recrutamento",
         "policyHint": "Envie o documento de políticas de RH",
-        "workforceLabel": "Workforce Planning",
-        "workforceHint": "Envie o organograma da empresa",
         "documentsLabel": "Remuneração Variável",
         "documentsHint": "Envie a política de PRV / remuneração variável"
       }
@@ -6775,7 +6773,6 @@
       "importDescription": "Envie sua planilha de headcount ou descreva no chat — a LIA estrutura o planejamento.",
       "headcountPlanning": "Planejamento de Headcount {year}",
       "synchronized": "Sincronizado",
-      "consumedByLia": "Consumido pela LIA",
       "departmentsDesc": "Departamentos e posições planejadas para o período.",
       "export": "Exportar",
       "edit": "Editar",
@@ -6793,20 +6790,8 @@
       "positionPlaceholder": "Ex: Desenvolvedor(a) Backend Sênior",
       "addPosition": "Adicionar posição",
       "addDepartment": "Adicionar departamento",
-      "uploadFailed": "Falha ao enviar o arquivo. Tente novamente.",
-      "spreadsheetPrompt": "Anexei a planilha {fileName}. Pode estruturar nosso planejamento de workforce a partir dela?",
       "describePrompt": "Quero descrever nosso planejamento de workforce. Pode me ajudar a estruturar?",
-      "pastePromptPrefix": "Aqui estão os dados do nosso planejamento:",
-      "howToSend": "Como enviar seus dados",
-      "pathsExplanation": "Escolha o caminho mais conveniente:",
-      "attachSpreadsheet": "Anexar planilha",
-      "describeInChat": "Descrever no chat",
-      "pasteData": "Colar dados",
-      "pasteDialogTitle": "Colar dados do planejamento",
-      "closeDialog": "Fechar",
-      "pasteDialogDesc": "Cole os dados de headcount (planilha, tabela ou texto livre).",
-      "pastePlaceholder": "Cole aqui os dados do planejamento...",
-      "sendToLia": "Enviar para a LIA"
+      "preferChat": "Prefere conversar? Peça à LIA no chat"
     },
     "documentUpload": {
       "errors": {

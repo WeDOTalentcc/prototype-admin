@@ -18,9 +18,10 @@ import type { MonthlyPlanning } from"./goalsPlanningConstants"
 
 interface WorkforceSectionProps {
   hub: UseGoalsPlanningHubReturn
+  chatAffordance?: React.ReactNode
 }
 
-export function WorkforceSection({ hub }: WorkforceSectionProps) {
+export function WorkforceSection({ hub, chatAffordance }: WorkforceSectionProps) {
   const t = useTranslations("settings.workforce")
   const {
     selectedYear, setSelectedYear,
@@ -45,6 +46,10 @@ export function WorkforceSection({ hub }: WorkforceSectionProps) {
         onImportSuccess={fetchWorkforceData}
         disabled={!isEditingWorkforce}
       />
+
+      {chatAffordance ? (
+        <div className="flex justify-center -mt-1">{chatAffordance}</div>
+      ) : null}
 
       <Card className={cardStyles.default}>
         <CardHeader className="pb-2">

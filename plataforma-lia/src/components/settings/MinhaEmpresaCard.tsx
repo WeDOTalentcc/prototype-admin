@@ -36,7 +36,9 @@ const BLOCK_UPLOAD: Record<string, SectionUploadConfig | undefined> = {
   tech: { targetSection: "tech_stack", documentType: "tech_doc", sectionLabelKey: "techLabel", hintKey: "techHint" },
   benefits: { targetSection: "benefits", documentType: "handbook", sectionLabelKey: "benefitsLabel", hintKey: "benefitsHint" },
   policy: { targetSection: "policy", documentType: "handbook", sectionLabelKey: "policyLabel", hintKey: "policyHint" },
-  workforce: { targetSection: "workforce", documentType: "org_chart", sectionLabelKey: "workforceLabel", hintKey: "workforceHint" },
+  // workforce: organograma upload removed — it never structured department
+  // hierarchy (generic process_uploaded_document only). Import lives in the
+  // canonical SmartImportZone inside WorkforceHubContent. See plan.
   documents: { targetSection: "compensation", documentType: "compensation", sectionLabelKey: "documentsLabel", hintKey: "documentsHint" },
 }
 

@@ -6749,8 +6749,6 @@
         "benefitsHint": "Upload the benefits handbook",
         "policyLabel": "Recruitment Policies",
         "policyHint": "Upload the HR policies document",
-        "workforceLabel": "Workforce Planning",
-        "workforceHint": "Upload the company org chart",
         "documentsLabel": "Variable Compensation",
         "documentsHint": "Upload the variable compensation policy"
       }
@@ -6775,7 +6773,6 @@
       "importDescription": "Upload your headcount spreadsheet or describe it in chat — LIA structures the plan.",
       "headcountPlanning": "Headcount Planning {year}",
       "synchronized": "Synchronized",
-      "consumedByLia": "Consumed by LIA",
       "departmentsDesc": "Departments and positions planned for the period.",
       "export": "Export",
       "edit": "Edit",
@@ -6793,20 +6790,8 @@
       "positionPlaceholder": "e.g. Senior Backend Developer",
       "addPosition": "Add position",
       "addDepartment": "Add department",
-      "uploadFailed": "Failed to upload the file. Please try again.",
-      "spreadsheetPrompt": "I attached the spreadsheet {fileName}. Can you structure our workforce plan from it?",
       "describePrompt": "I want to describe our workforce plan. Can you help me structure it?",
-      "pastePromptPrefix": "Here is our planning data:",
-      "howToSend": "How to send your data",
-      "pathsExplanation": "Choose the most convenient path:",
-      "attachSpreadsheet": "Attach spreadsheet",
-      "describeInChat": "Describe in chat",
-      "pasteData": "Paste data",
-      "pasteDialogTitle": "Paste planning data",
-      "closeDialog": "Close",
-      "pasteDialogDesc": "Paste your headcount data (spreadsheet, table or free text).",
-      "pastePlaceholder": "Paste planning data here...",
-      "sendToLia": "Send to LIA"
+      "preferChat": "Prefer to talk? Ask LIA in chat"
     },
     "documentUpload": {
       "errors": {
