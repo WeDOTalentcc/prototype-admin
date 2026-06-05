@@ -1,0 +1,87 @@
+// Sensor RRP — state-aware (AD7) + contrato i18n do ResponseBlockRenderer.
+// AD16: testa a FUNCAO de resolucao (layout × mode), nao screenshot.
+//   - fullscreen: comparison_table renderiza como <table> (wide)
+//   - sidebar/floating: transpoe (sem <table>) — degradacao sem scroll-h
+//   - i18n: zero MISSING_MESSAGE nas chaves rrp.* (usa messages/pt-BR.json real)
+import { describe, expect, it } from "vitest"
+import { render, screen } from "@testing-library/react"
+import { NextIntlClientProvider } from "next-intl"
+import React from "react"
+
+import { ResponseBlockRenderer } from "../ResponseBlockRenderer"
+import ptBR from "../../../../messages/pt-BR.json"
+import type { ResponseBlock } from "@/types/rrp-blocks"
+
+const TABLE: ResponseBlock = {
+  kind: "comparison_table",
+  block_id: "comparison_table:rank:job1",
+  role: "support",
+  layout: "wide",
+  state: "ready",
+  title: "Ranking de candidatos",
+  entity_type: "candidate",
+  columns: [
+    { key: "name", label: "Candidato", type: "text", sortable: true },
+    { key: "score", label: "Score LIA", type: "score", sortable: true },
+  ],
+  rows: [
+    {
+      entity_id: "1",
+      cells: { name: "Ana", score: 92 },
+      score_block_id: null,
+      highlight: "top",
+    },
+    {
+      entity_id: "2",
+      cells: { name: "Bruno", score: 64 },
+      score_block_id: null,
+      highlight: null,
+    },
+  ],
+  default_sort: null,
+  total_count: 5,
+  shown_count: 2,
+}
+
+function renderWith(blocks: ResponseBlock[], mode?: string) {
+  const errors: string[] = []
+  const utils = render(
+    <NextIntlClientProvider
+      locale="pt"
+      messages={ptBR as unknown as Record<string, unknown>}
+      onError={(e) => errors.push(String((e as { code?: string }).code || e.message))}
+    >
+      <ResponseBlockRenderer blocks={blocks} mode={mode} />
+    </NextIntlClientProvider>,
+  )
+  return { ...utils, errors }
+}
+
+describe("ResponseBlockRenderer — state-aware (AD7) + i18n", () => {
+  it("fullscreen: comparison_table renderiza como <table>", () => {
+    const { container } = renderWith([TABLE], "fullscreen")
+    expect(container.querySelector("table")).toBeTruthy()
+    expect(screen.getByText("Ana")).toBeTruthy()
+  })
+
+  it("sidebar: comparison_table transpoe (sem <table>)", () => {
+    const { container } = renderWith([TABLE], "sidebar")
+    expect(container.querySelector("table")).toBeNull()
+    expect(screen.getByText("Ana")).toBeTruthy()
+  })
+
+  it("floating: comparison_table transpoe (sem <table>)", () => {
+    const { container } = renderWith([TABLE], "floating")
+    expect(container.querySelector("table")).toBeNull()
+  })
+
+  it("i18n: zero MISSING_MESSAGE nas chaves rrp.* (showingOf etc)", () => {
+    const { errors } = renderWith([TABLE], "sidebar")
+    expect(errors.filter((e) => e.includes("MISSING_MESSAGE"))).toEqual([])
+  })
+
+  it("blocks vazio/nulo nao quebra", () => {
+    const { container } = renderWith([], "fullscreen")
+    expect(container.textContent).toBe("")
+  })
+})
