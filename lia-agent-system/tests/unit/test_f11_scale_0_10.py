@@ -45,3 +45,33 @@ def test_variance_threshold_is_0_10():
 def test_clear_reject_gate_high_confidence():
     # gate de rejeicao clara (G3) -> alta confianca na decisao de reprovar
     assert _compute_decision_confidence(8.0, ["G3"], 0, 1.0) == ("alta", False)
+
+
+import pathlib
+
+_REPORTS_SRC = (
+    pathlib.Path(__file__).resolve().parents[2]
+    / "app" / "api" / "v1" / "wsi" / "reports.py"
+)
+
+
+def test_no_inline_ddl_in_request_path():
+    """Item 2 — o ALTER TABLE inline (criava f11_report_json no hot path,
+    adquiria lock ACCESS EXCLUSIVE e derrubava o endpoint sob concorrência) foi
+    removido. A coluna vem da migration 244; cache-read é graceful."""
+    src = _REPORTS_SRC.read_text(encoding="utf-8")
+    # Assinatura da DDL executável (não pega menções em comentário).
+    assert "ADD COLUMN IF NOT EXISTS f11_report_json" not in src, (
+        "DDL inline (ALTER TABLE ... ADD COLUMN) no request path de reports.py — "
+        "use migração alembic. ALTER no hot path adquire lock e derruba o endpoint."
+    )
+
+
+def test_no_weight_based_critical_heuristic():
+    """Item 3 — q[5] é o PESO (CHECK 0-1), não expressa criticalidade. O antigo
+    `float(q[5]) >= 1.5` era sempre-falso e enganoso."""
+    src = _REPORTS_SRC.read_text(encoding="utf-8")
+    assert "float(q[5]) >= 1.5" not in src, (
+        "heurística de crítico baseada em peso reintroduzida — peso (0-1) não "
+        "expressa criticalidade; use scoring_criteria.is_critical explícito."
+    )

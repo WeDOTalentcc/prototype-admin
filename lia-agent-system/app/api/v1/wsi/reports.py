@@ -370,25 +370,28 @@ async def get_f11_report(session_id: str, db: AsyncSession = Depends(get_db), co
     Spec: WSI_METHODOLOGY_COMPLETE_v2.md sections 11.1–11.5.
     """
     try:
-        # F11-3 — garantir que a coluna de cache existe (idempotente)
+        # F11-3 — cache: lê o relatório pré-gerado se existir. A coluna
+        # f11_report_json é criada pela migration 244 (o ALTER TABLE inline foi
+        # REMOVIDO daqui: adquiria lock ACCESS EXCLUSIVE em wsi_results e, sob
+        # leitura concorrente, falhava + derrubava o endpoint inteiro com 500).
+        # Cache-read graceful: sem a migração, loga + rollback (limpa a transação
+        # envenenada pelo UndefinedColumn) e regenera, em vez de 500.
         try:
-            await db.execute(text(
-                "ALTER TABLE wsi_results ADD COLUMN IF NOT EXISTS f11_report_json JSONB"
-            ))
-        except Exception:
+            cache_r = await db.execute(text("""
+                SELECT f11_report_json FROM wsi_results
+                WHERE session_id = :sid AND f11_report_json IS NOT NULL
+                ORDER BY created_at DESC LIMIT 1
+            """), {"sid": session_id})
+            cached = cache_r.fetchone()
+            if cached and cached[0]:
+                report = F11ReportResponse(**cached[0])
+                report.already_generated = True
+                return report
+        except Exception as _cache_read_err:
+            logger.warning(
+                f"[F11] cache-read indisponível, regenerando: {_cache_read_err}"
+            )
             await db.rollback()
-
-        # F11-3 — verificar cache antes de regenerar
-        cache_r = await db.execute(text("""
-            SELECT f11_report_json FROM wsi_results
-            WHERE session_id = :sid AND f11_report_json IS NOT NULL
-            ORDER BY created_at DESC LIMIT 1
-        """), {"sid": session_id})
-        cached = cache_r.fetchone()
-        if cached and cached[0]:
-            report = F11ReportResponse(**cached[0])
-            report.already_generated = True
-            return report
 
         sess_r = await db.execute(text("""
             SELECT s.id, s.candidate_id, s.job_vacancy_id, s.screening_type, s.mode,
@@ -469,7 +472,12 @@ async def get_f11_report(session_id: str, db: AsyncSession = Depends(get_db), co
             if q and q_scoring.get("is_critical") is not None:
                 q_is_critical = bool(q_scoring["is_critical"])
             else:
-                q_is_critical = float(q[5]) >= 1.5 if q else False
+                # q[5] é o PESO da pergunta (CHECK 0-1) — NÃO expressa criticalidade
+                # (o produtor grava weight=1.0 fixo; nenhum peso > 1.0 é possível, o
+                # antigo `>= 1.5` era sempre-falso). Sem is_critical explícito no
+                # scoring_criteria, não inferir crítico do peso: default False
+                # (G4 só dispara em skill marcada crítica de forma explícita).
+                q_is_critical = False
 
             bloom_exp_info = BLOOM_LEVELS.get(q_bloom_expected, BLOOM_LEVELS[3])
             dreyfus_exp_info = DREYFUS_LEVELS.get(q_dreyfus_expected, DREYFUS_LEVELS[3])
