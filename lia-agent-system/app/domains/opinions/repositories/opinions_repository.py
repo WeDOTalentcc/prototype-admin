@@ -528,6 +528,110 @@ class OpinionsRepository:
             CURRENT_TIMESTAMP
     """
 
+    async def create_parecer_opinion(
+        self,
+        *,
+        candidate_id: str,
+        job_vacancy_id: str | None,
+        company_id: str,
+        score: float | None,
+        recommendation: str | None,
+        summary: str | None,
+        score_breakdown: dict,
+        strengths: list,
+        concerns: list,
+        gaps: list,
+        matched_skills: list,
+        missing_skills: list,
+        next_steps: list,
+    ) -> str:
+        """Cria um parecer (LiaOpinion opinion_type='general') com versao atomica.
+
+        Espelha create_wsi_opinion_with_atomic_version: arquiva os pareceres
+        correntes do escopo (candidato, vaga, empresa) e insere a nova versao
+        computando COALESCE(MAX(version),0)+1 no MESMO statement (race-safe).
+        score_breakdown carrega a qualification_matrix + secoes do parecer.
+
+        Multi-tenancy: company_id DEVE vir do JWT (Depends(require_company_id)),
+        nunca do payload — validado fail-closed via _require_company_id.
+        """
+        self._require_company_id(company_id)
+        if not candidate_id:
+            raise ValueError("candidate_id required")
+
+        import json as _json
+        import uuid as _uuid
+
+        opinion_id = str(_uuid.uuid4())
+
+        await self.db.execute(
+            text(self._ARCHIVE_PARECER_OPINIONS_SQL),
+            {
+                "candidate_id": candidate_id,
+                "company_id": company_id,
+                "job_vacancy_id": job_vacancy_id,
+            },
+        )
+        await self.db.execute(
+            text(self._INSERT_PARECER_OPINION_ATOMIC_SQL),
+            {
+                "id": opinion_id,
+                "candidate_id": candidate_id,
+                "job_vacancy_id": job_vacancy_id,
+                "company_id": company_id,
+                "score": score,
+                "recommendation": recommendation,
+                "summary": summary,
+                "score_breakdown": _json.dumps(score_breakdown or {}),
+                "strengths": _json.dumps(strengths or []),
+                "concerns": _json.dumps(concerns or []),
+                "gaps": _json.dumps(gaps or []),
+                "matched_skills": _json.dumps(matched_skills or []),
+                "missing_skills": _json.dumps(missing_skills or []),
+                "next_steps": _json.dumps(next_steps or []),
+            },
+        )
+        return opinion_id
+
+    _ARCHIVE_PARECER_OPINIONS_SQL: str = """
+        UPDATE lia_opinions
+        SET is_current = false
+        WHERE candidate_id = :candidate_id
+          AND opinion_type = 'general'
+          AND company_id = :company_id
+          AND is_current = true
+          AND (
+            (:job_vacancy_id IS NULL AND job_vacancy_id IS NULL)
+            OR job_vacancy_id = :job_vacancy_id
+          )
+    """
+
+    _INSERT_PARECER_OPINION_ATOMIC_SQL: str = """
+        INSERT INTO lia_opinions (
+            id, candidate_id, job_vacancy_id, company_id, opinion_type, source,
+            score, recommendation, summary, score_breakdown,
+            strengths, concerns, gaps, matched_skills, missing_skills,
+            next_steps, is_current, version, created_at, updated_at
+        )
+        SELECT
+            :id, :candidate_id, :job_vacancy_id, :company_id, 'general', 'cv_analysis',
+            :score, :recommendation, :summary, :score_breakdown::jsonb,
+            :strengths::jsonb, :concerns::jsonb, :gaps::jsonb,
+            :matched_skills::jsonb, :missing_skills::jsonb, :next_steps::jsonb,
+            true,
+            COALESCE((
+                SELECT MAX(version) FROM lia_opinions
+                WHERE candidate_id = :candidate_id
+                  AND opinion_type = 'general'
+                  AND company_id = :company_id
+                  AND (
+                    (:job_vacancy_id IS NULL AND job_vacancy_id IS NULL)
+                    OR job_vacancy_id = :job_vacancy_id
+                  )
+            ), 0) + 1,
+            CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+    """
+
     @staticmethod
     def _require_company_id(company_id: str | None) -> None:
         """Multi-tenancy fail-closed guard (ADR-001 canonical anatomy)."""
