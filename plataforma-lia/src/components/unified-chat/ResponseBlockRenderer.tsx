@@ -3,7 +3,8 @@
 // src/components/unified-chat/ResponseBlockRenderer.tsx
 // Rich Response Protocol — renderer único dos blocos tipados (Fase 0 slice).
 // Exaustivo por `kind` + fallback de kind desconhecido (AD6: nunca throw).
-// score baixo = neutro/mudo (fairness, não vermelho). i18n via useTranslations('rrp').
+// State-aware (AD7): comparison_table transpõe em sidebar/floating (sem scroll-h).
+// score baixo = neutro/mudo (fairness). i18n via useTranslations('rrp').
 
 import React, { useState } from "react";
 import { useTranslations } from "next-intl";
@@ -17,6 +18,8 @@ import type {
   EvidenceStackBlock,
   ScoreFactor,
 } from "@/types/rrp-blocks";
+
+type TFn = ReturnType<typeof useTranslations>;
 
 function scoreTone(score: number): string {
   // Fairness/LGPD: baixo = neutro/mudo (NÃO vermelho).
@@ -145,8 +148,71 @@ function EvidenceStackView({ block }: { block: EvidenceStackBlock }) {
   );
 }
 
-function ComparisonTableView({ block }: { block: ComparisonTableBlock }) {
-  const t = useTranslations("rrp");
+function scoreCellValue(v: unknown): React.ReactNode {
+  if (typeof v === "number") {
+    return (
+      <span className={cn("font-semibold tabular-nums", scoreTone(v))}>
+        {Math.round(v)}%
+      </span>
+    );
+  }
+  return formatCell(v);
+}
+
+// AD7: variante estreita (sidebar/floating) — transpõe a tabela em cards
+// empilhados (candidato = card; coluna = label:valor), sem scroll horizontal.
+function ComparisonTableNarrow({
+  block,
+  t,
+}: {
+  block: ComparisonTableBlock;
+  t: TFn;
+}) {
+  return (
+    <div className="space-y-2">
+      {block.title ? (
+        <div className="text-xs font-medium text-lia-text-secondary">
+          {block.title}
+        </div>
+      ) : null}
+      {block.rows.map((row) => (
+        <div
+          key={row.entity_id}
+          className={cn(
+            "rounded-lg border border-lia-border-subtle p-2",
+            row.highlight === "top" || row.highlight === "attention"
+              ? "bg-lia-bg-secondary"
+              : "",
+          )}
+        >
+          {block.columns.map((c) => (
+            <div key={c.key} className="flex justify-between gap-2 py-0.5 text-xs">
+              <span className="text-lia-text-tertiary">{c.label}</span>
+              <span className="text-right text-lia-text-primary">
+                {c.type === "score"
+                  ? scoreCellValue(row.cells[c.key])
+                  : formatCell(row.cells[c.key])}
+              </span>
+            </div>
+          ))}
+        </div>
+      ))}
+      {block.total_count > block.shown_count ? (
+        <p className="text-[11px] text-lia-text-tertiary">
+          {t("showingOf", { shown: block.shown_count, total: block.total_count })}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+function ComparisonTableWide({
+  block,
+  t,
+}: {
+  block: ComparisonTableBlock;
+  t: TFn;
+}) {
   return (
     <div className="overflow-x-auto rounded-lg border border-lia-border-subtle">
       {block.title ? (
@@ -174,30 +240,25 @@ function ComparisonTableView({ block }: { block: ComparisonTableBlock }) {
               key={row.entity_id}
               className={cn(
                 "border-b border-lia-border-subtle last:border-0",
-                row.highlight === "attention" && "bg-lia-bg-secondary",
+                (row.highlight === "attention" || row.highlight === "top") &&
+                  "bg-lia-bg-secondary",
               )}
             >
-              {block.columns.map((c) => {
-                const v = row.cells[c.key];
-                if (c.type === "score" && typeof v === "number") {
-                  return (
-                    <td
-                      key={c.key}
-                      className={cn(
-                        "px-2 py-1.5 font-semibold tabular-nums",
-                        scoreTone(v),
-                      )}
-                    >
-                      {Math.round(v)}%
-                    </td>
-                  );
-                }
-                return (
-                  <td key={c.key} className="px-2 py-1.5 text-lia-text-primary">
-                    {formatCell(v)}
-                  </td>
-                );
-              })}
+              {block.columns.map((c) => (
+                <td
+                  key={c.key}
+                  className={cn(
+                    "px-2 py-1.5",
+                    c.type === "score"
+                      ? ""
+                      : "text-lia-text-primary",
+                  )}
+                >
+                  {c.type === "score"
+                    ? scoreCellValue(row.cells[c.key])
+                    : formatCell(row.cells[c.key])}
+                </td>
+              ))}
             </tr>
           ))}
         </tbody>
@@ -211,7 +272,28 @@ function ComparisonTableView({ block }: { block: ComparisonTableBlock }) {
   );
 }
 
-function RenderOne({ block }: { block: ResponseBlock }) {
+function ComparisonTableView({
+  block,
+  narrow,
+}: {
+  block: ComparisonTableBlock;
+  narrow: boolean;
+}) {
+  const t = useTranslations("rrp");
+  return narrow ? (
+    <ComparisonTableNarrow block={block} t={t} />
+  ) : (
+    <ComparisonTableWide block={block} t={t} />
+  );
+}
+
+function RenderOne({
+  block,
+  narrow,
+}: {
+  block: ResponseBlock;
+  narrow: boolean;
+}) {
   const t = useTranslations("rrp");
   switch (block.kind) {
     case "prose":
@@ -221,7 +303,7 @@ function RenderOne({ block }: { block: ResponseBlock }) {
     case "evidence_stack":
       return <EvidenceStackView block={block} />;
     case "comparison_table":
-      return <ComparisonTableView block={block} />;
+      return <ComparisonTableView block={block} narrow={narrow} />;
     default:
       // AD6: kind desconhecido (skew de deploy FE/BE) → fallback, nunca throw.
       return (
@@ -234,16 +316,21 @@ function RenderOne({ block }: { block: ResponseBlock }) {
 
 export function ResponseBlockRenderer({
   blocks,
+  mode,
 }: {
   blocks?: ResponseBlock[] | null;
+  mode?: string;
 }) {
   const t = useTranslations("rrp");
   if (!blocks || blocks.length === 0) return null;
+  const narrow = mode === "sidebar" || mode === "floating";
   return (
     <div className="mt-2 space-y-2">
       {blocks.map((block, i) => {
         try {
-          return <RenderOne key={block.block_id || i} block={block} />;
+          return (
+            <RenderOne key={block.block_id || i} block={block} narrow={narrow} />
+          );
         } catch {
           return (
             <p key={i} className="text-xs italic text-lia-text-tertiary">

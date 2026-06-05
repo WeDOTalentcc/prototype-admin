@@ -484,7 +484,7 @@ export function UnifiedMessageList({
                 )}
 
                 {message.response_blocks && message.response_blocks.length > 0 && (
-                  <ResponseBlockRenderer blocks={message.response_blocks} />
+                  <ResponseBlockRenderer blocks={message.response_blocks} mode={mode} />
                 )}
 
                 {hasTastingInsights && (
