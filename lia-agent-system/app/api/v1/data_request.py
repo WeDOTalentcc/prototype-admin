@@ -300,7 +300,7 @@ def _data_request_to_response(dr) -> DataRequestResponse:
 @router.get("", response_model=DataRequestListResponse)
 async def list_data_requests(
     vacancy_id: UUID | None = Query(None, description="Filter by vacancy ID"),
-    candidate_id: UUID | None = Query(None, description="Filter by candidate ID"),
+    candidate_id: str | None = Query(None, description="Filter by candidate ID (UUID/local id; ids globais nao-UUID retornam vazio)"),
     status: str | None = Query(None, description="Filter by status"),
     db: AsyncSession = Depends(get_db),
 company_id: str = Depends(require_company_id)):
@@ -324,9 +324,19 @@ company_id: str = Depends(require_company_id)):
                 raise HTTPException(status_code=400, detail=f"Invalid status: {status}")
         
         if candidate_id:
-            requests = await data_request_service.get_candidate_data_requests(
-                db, candidate_id, status_enum, include_expired=True
-            )
+            # Candidatos globais (pearch) carregam id sintetico nao-UUID e nao
+            # possuem data requests locais. Aceitar str e retornar vazio em vez
+            # de 422/500 (canonical: fail-soft p/ candidato nao-persistido).
+            try:
+                _cid = UUID(candidate_id)
+            except (ValueError, TypeError):
+                _cid = None
+            if _cid is None:
+                requests = []
+            else:
+                requests = await data_request_service.get_candidate_data_requests(
+                    db, _cid, status_enum, include_expired=True
+                )
         elif vacancy_id:
             requests = await data_request_service.get_vacancy_data_requests(
                 db, vacancy_id, status_enum
