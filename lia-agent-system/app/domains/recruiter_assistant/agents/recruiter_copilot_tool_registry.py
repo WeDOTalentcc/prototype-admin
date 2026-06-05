@@ -41,6 +41,8 @@ _FEDERATION_SPEC: list[tuple[str, str]] = [
     # --- Leitura de pipeline (P0) ---
     ("kanban", "get_pipeline_summary"),
     ("kanban", "list_stage_candidates"),
+    # --- Leitura de headcount (Track B) — torna o plano consumivel pelo chat ---
+    ("workforce", "get_workforce_plan_summary"),
     # --- Acoes de escrita (P1) — HITL/audit herdados do registry de origem ---
     ("kanban", "batch_move_candidates"),
     ("jobs", "pause_job"),
@@ -65,11 +67,15 @@ def _source_maps() -> dict[str, dict[str, ToolDefinition]]:
     from app.domains.job_management.agents.wizard_tool_registry import (
         get_wizard_tools,
     )
+    from app.domains.workforce.agents.workforce_tool_registry import (
+        get_workforce_tools,
+    )
     return {
         "jobs": {t.name: t for t in get_jobs_mgmt_tools()},
         "talent": {t.name: t for t in get_talent_tools()},
         "kanban": {t.name: t for t in get_kanban_tools()},
         "wizard": {t.name: t for t in get_wizard_tools()},
+        "workforce": {t.name: t for t in get_workforce_tools()},
     }
 
 
