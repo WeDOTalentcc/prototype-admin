@@ -24,7 +24,7 @@
         "interviewsToday": "{greeting}, {name}. Você tem {count, plural, one {# entrevista} other {# entrevistas}} hoje.",
         "candidatesToContact": "{greeting}, {name}. {count, plural, one {# candidato precisa} other {# candidatos precisam}} de contato hoje.",
         "offersPending": "{greeting}, {name}. {count, plural, one {# proposta aguarda} other {# propostas aguardam}} sua decisão.",
-        "allClear": "{greeting}, {name}. Tudo em dia — vamos adiantar algo?"
+        "allClear": "{greeting}, {name}. Tudo em dia. Vamos adiantar algo?"
       }
     },
     "funnel": {
@@ -36,8 +36,8 @@
       ],
       "context": {
         "openJobsAndContacts": "Você tem {jobs, plural, one {# vaga aberta} other {# vagas abertas}} e {contacts, plural, one {# candidato a contatar} other {# candidatos a contatar}}. Por onde começamos?",
-        "openJobs": "Você tem {count, plural, one {# vaga aberta} other {# vagas abertas}} — quer que eu encontre candidatos?",
-        "candidatesToContact": "{count, plural, one {# candidato aguarda} other {# candidatos aguardam}} contato — ou busque um novo perfil."
+        "openJobs": "Você tem {count, plural, one {# vaga aberta} other {# vagas abertas}}. Quer que eu encontre candidatos?",
+        "candidatesToContact": "{count, plural, one {# candidato aguarda} other {# candidatos aguardam}} contato. Ou busque um novo perfil."
       }
     }
   },

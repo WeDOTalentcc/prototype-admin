@@ -24,7 +24,7 @@
         "interviewsToday": "{greeting}, {name}. You have {count, plural, one {# interview} other {# interviews}} today.",
         "candidatesToContact": "{greeting}, {name}. {count, plural, one {# candidate needs} other {# candidates need}} contact today.",
         "offersPending": "{greeting}, {name}. {count, plural, one {# offer is} other {# offers are}} awaiting your decision.",
-        "allClear": "{greeting}, {name}. All caught up — want to get ahead on something?"
+        "allClear": "{greeting}, {name}. All caught up. Want to get ahead on something?"
       }
     },
     "funnel": {
@@ -36,8 +36,8 @@
       ],
       "context": {
         "openJobsAndContacts": "You have {jobs, plural, one {# open job} other {# open jobs}} and {contacts, plural, one {# candidate to contact} other {# candidates to contact}}. Where do we start?",
-        "openJobs": "You have {count, plural, one {# open job} other {# open jobs}} — want me to find candidates?",
-        "candidatesToContact": "{count, plural, one {# candidate is} other {# candidates are}} awaiting contact — or search a new profile."
+        "openJobs": "You have {count, plural, one {# open job} other {# open jobs}}. Want me to find candidates?",
+        "candidatesToContact": "{count, plural, one {# candidate is} other {# candidates are}} awaiting contact. Or search a new profile."
       }
     }
   },
