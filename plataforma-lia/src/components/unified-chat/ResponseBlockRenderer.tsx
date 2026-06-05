@@ -101,31 +101,45 @@ function ScoreExplainerView({ block }: { block: ScoreExplainerBlock }) {
               ⚠ {block.provenance_note || t("unverifiedDefault")}
             </p>
           ) : null}
-          <ul className="space-y-1">
+          <ul className="space-y-1.5">
             {block.factors.map((f: ScoreFactor, i: number) => (
-              <li
-                key={i}
-                className="flex items-start gap-2 text-xs text-lia-text-secondary"
-              >
+              <li key={i} className="flex items-center gap-2 text-xs">
                 <span
-                  className={
+                  className={cn(
+                    "w-3 shrink-0 text-center font-semibold",
                     f.contribution === "+"
                       ? "text-wedo-cyan"
-                      : "text-lia-text-tertiary"
-                  }
+                      : "text-lia-text-tertiary",
+                  )}
                 >
                   {f.contribution}
                 </span>
-                <span className="flex-1">
+                <span className="min-w-0 flex-1 truncate text-lia-text-secondary">
                   <span className="text-lia-text-primary">{f.label}</span>
-                  {f.detail ? ` — ${f.detail}` : ""}
-                  {f.weight > 0 ? (
-                    <span className="text-lia-text-tertiary">
-                      {" "}
-                      {t("weight", { pct: Math.round(f.weight * 100) })}
-                    </span>
+                  {f.detail ? (
+                    <span className="text-lia-text-tertiary">: {f.detail}</span>
                   ) : null}
                 </span>
+                {f.weight > 0 ? (
+                  <span className="flex shrink-0 items-center gap-1.5">
+                    <span className="relative h-1 w-8 overflow-hidden rounded-full bg-lia-border-subtle/50">
+                      <span
+                        className={cn(
+                          "absolute inset-y-0 left-0 rounded-full",
+                          f.contribution === "+"
+                            ? "bg-wedo-cyan/70"
+                            : "bg-lia-text-tertiary/40",
+                        )}
+                        style={{
+                          width: `${Math.max(Math.round(f.weight * 100), 4)}%`,
+                        }}
+                      />
+                    </span>
+                    <span className="tabular-nums text-lia-text-tertiary">
+                      {Math.round(f.weight * 100)}%
+                    </span>
+                  </span>
+                ) : null}
               </li>
             ))}
           </ul>
@@ -320,6 +334,8 @@ function FunnelView({ block }: { block: FunnelBlock }) {
   const ts = useTranslations("settings.recruitment.journey.defaultStageNames");
   const stageLabel = (code: string) => (ts.has(code) ? ts(code) : code);
   const max = Math.max(1, ...block.stages.map((s) => s.count));
+  // retencao relativa ao topo do funil (1a etapa = 100%).
+  const top = block.stages[0]?.count ?? 0;
   return (
     <div className="rounded-lg border border-lia-border-subtle bg-lia-bg-secondary p-3">
       <p className="mb-2 text-sm font-medium text-lia-text-primary">
@@ -339,8 +355,15 @@ function FunnelView({ block }: { block: FunnelBlock }) {
                   style={{ width: `${Math.max(pct, 4)}%` }}
                 />
               </div>
-              <span className="w-8 shrink-0 text-right text-xs font-medium tabular-nums text-lia-text-primary">
-                {s.count}
+              <span className="w-16 shrink-0 text-right text-xs tabular-nums">
+                <span className="font-medium text-lia-text-primary">
+                  {s.count}
+                </span>
+                {top > 0 ? (
+                  <span className="text-lia-text-tertiary">
+                    {" "}· {Math.round((s.count / top) * 100)}%
+                  </span>
+                ) : null}
               </span>
             </div>
           );

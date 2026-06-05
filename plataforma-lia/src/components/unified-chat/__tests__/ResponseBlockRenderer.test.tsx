@@ -114,10 +114,12 @@ describe("ResponseBlockRenderer — funnel (Fase 1)", () => {
     }
   })
 
-  it("mostra total e conversao localizados", () => {
+  it("mostra total, conversao e retencao % por etapa", () => {
     renderWith([FUNNEL], "fullscreen")
     expect(screen.getByText(/Total: 18/)).toBeTruthy()
     expect(screen.getByText(/Convers/)).toBeTruthy()
+    // Entrevista 5 / topo 12 = 42% de retencao
+    expect(screen.getByText(/42%/)).toBeTruthy()
   })
 
   it("i18n: zero MISSING_MESSAGE no funnel", () => {
@@ -210,5 +212,50 @@ describe("ResponseBlockRenderer — expand chevron (AD8 suggest_chat_mode)", () 
   it("bloco inline (candidate_card) em sidebar NAO mostra CTA", () => {
     renderWith([CANDIDATE_CARD], "sidebar")
     expect(screen.queryByText(/Expandir em tela cheia/)).toBeNull()
+  })
+})
+
+
+const SCORE_EXPLAINER: ResponseBlock = {
+  kind: "score_explainer",
+  block_id: "score_explainer:rank:1",
+  role: "support",
+  layout: "inline",
+  state: "ready",
+  subject_id: "1",
+  subject_label: "Ana",
+  score: 92,
+  score_label: "Score LIA",
+  confidence: "high",
+  confidence_basis: "Parecer LIA consolidado",
+  factors: [
+    {
+      label: "Experiencia solida",
+      weight: 0.4,
+      contribution: "+",
+      detail: "8 anos",
+      evidence_refs: [],
+    },
+    { label: "Gap de ingles", weight: 0.2, contribution: "-", evidence_refs: [] },
+  ],
+  summary: "",
+  unverified: false,
+}
+
+describe("ResponseBlockRenderer — score_explainer (Fase 2: factor bars)", () => {
+  it("colapsado mostra subject + por que; expande mostra fatores com peso", () => {
+    renderWith([SCORE_EXPLAINER], "fullscreen")
+    expect(screen.getByText("Ana")).toBeTruthy()
+    fireEvent.click(screen.getByText(/por qu/i))
+    expect(screen.getByText("Experiencia solida")).toBeTruthy()
+    // peso renderizado como %
+    expect(screen.getByText("40%")).toBeTruthy()
+  })
+
+  it("score baixo nao usa vermelho (fairness) — tom neutro", () => {
+    const low: ResponseBlock = { ...SCORE_EXPLAINER, score: 55 }
+    const { container } = renderWith([low], "fullscreen")
+    // nenhuma classe de erro/vermelho aplicada ao score
+    expect(container.querySelector(".text-status-error")).toBeNull()
   })
 })
