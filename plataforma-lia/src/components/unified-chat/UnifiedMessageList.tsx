@@ -336,9 +336,20 @@ export function UnifiedMessageList({
   // box settles into "✓ N ações" and hands off to the persistent summary instead
   // of disappearing abruptly.
   const [liveActive, setLiveActive] = useState(false)
+  // Bug fix (2026-06-05): id da LIA msg mais nova QUANDO o turno comecou.
+  // Sem isso, durante o pensando de uma nova pergunta o _newestLiaId ainda
+  // aponta pra resposta ANTERIOR -> ela some e volta no fim. So a resposta
+  // NOVA (id != baseline) deve ser segurada; a anterior fica visivel.
+  const _heldBaselineRef = useRef<string | null>(null)
   useEffect(() => {
-    if (isThinking || isStreaming) setLiveActive(true)
-  }, [isThinking, isStreaming])
+    if (isThinking || isStreaming) {
+      if (!liveActive) _heldBaselineRef.current = _newestLiaId ?? null
+      setLiveActive(true)
+    }
+  }, [isThinking, isStreaming, liveActive, _newestLiaId])
+  useEffect(() => {
+    if (!liveActive) _heldBaselineRef.current = null
+  }, [liveActive])
   // Failsafe: `liveActive` is normally cleared by the timeline's `onFinished`
   // hand-off (which paces out any remaining reasoning steps one-by-one before
   // firing). If that signal never arrives (e.g. the turn ends without the
@@ -438,7 +449,7 @@ export function UnifiedMessageList({
                     ) &&
                       ((meta as Record<string, unknown>).agent_activity as unknown[])
                         .length > 0 &&
-                      !(message.id === _newestLiaId && liveActive) && (
+                      !(message.id === _newestLiaId && liveActive && message.id !== _heldBaselineRef.current) && (
                         <div className="mb-2">
                           <AgentActivitySummary
                             items={
@@ -451,7 +462,7 @@ export function UnifiedMessageList({
                     {/* Answer — held while the newest turn's live reasoning is
                         still showing, so the text types out AFTER it settles
                         instead of competing with the reasoning card. */}
-                    {!(message.id === _newestLiaId && liveActive) && (
+                    {!(message.id === _newestLiaId && liveActive && message.id !== _heldBaselineRef.current) && (
                       <div
                         className="text-[13px] leading-relaxed text-lia-text-primary lia-markdown-content"
                         dangerouslySetInnerHTML={{
