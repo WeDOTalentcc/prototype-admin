@@ -133,3 +133,51 @@ def build_candidate_ranking_blocks(job_id: str, rows: list[dict]) -> list[dict]:
     for b in explainers + evidence:
         blocks.append(b.model_dump(mode="json"))
     return blocks
+
+
+def build_candidate_comparison_blocks(candidates: list[dict]) -> list[dict]:
+    """comparison_table de PERFIL (sem score) — candidatos lado a lado.
+    candidates: dicts com id, name, title, seniority, experience, skills(list), location."""
+    from app.shared.rrp_blocks import (
+        ComparisonColumn,
+        ComparisonRow,
+        ComparisonTableBlock,
+    )
+
+    if not candidates:
+        return []
+    rows = [
+        ComparisonRow(
+            entity_id=str(c.get("id")),
+            cells={
+                "name": c.get("name") or ("ID " + str(c.get("id"))),
+                "title": c.get("title") or "-",
+                "seniority": c.get("seniority") or "-",
+                "experience": (str(c.get("experience")) + " anos")
+                if c.get("experience") else "-",
+                "skills": c.get("skills") or [],
+                "location": c.get("location") or "-",
+            },
+        )
+        for c in candidates
+    ]
+    table = ComparisonTableBlock(
+        block_id="comparison_table:compare_candidates:"
+        + "-".join(str(c.get("id")) for c in candidates),
+        role="support",
+        layout="wide",
+        title="Comparacao de candidatos",
+        entity_type="candidate",
+        columns=[
+            ComparisonColumn(key="name", label="Candidato", type="text"),
+            ComparisonColumn(key="title", label="Cargo", type="text"),
+            ComparisonColumn(key="seniority", label="Senioridade", type="text"),
+            ComparisonColumn(key="experience", label="Experiencia", type="text"),
+            ComparisonColumn(key="skills", label="Skills", type="text"),
+            ComparisonColumn(key="location", label="Local", type="text"),
+        ],
+        rows=rows,
+        total_count=len(candidates),
+        shown_count=len(candidates),
+    )
+    return [table.model_dump(mode="json")]

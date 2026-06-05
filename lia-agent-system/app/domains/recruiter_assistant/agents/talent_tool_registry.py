@@ -159,9 +159,41 @@ async def _wrap_view_candidate_profile(**kwargs: Any) -> dict[str, Any]:
 
 @tool_handler("talent")
 async def _wrap_compare_candidates(**kwargs: Any) -> dict[str, Any]:
-    """Compare 2+ candidates side by side."""
+    """Compare 2+ candidates side by side (perfil) + emite comparison_table (RRP)."""
     candidate_ids = kwargs.get("candidate_ids", [])
+    company_id = kwargs.get("company_id", "")
     logger.info(f"[talent_tools] compare_candidates called: candidates={len(candidate_ids)}")
+    _compared: list = []
+    _rrp_blocks: list = []
+    if len(candidate_ids) >= 2:
+        try:
+            from sqlalchemy import text as _sa_text
+            from app.shared.rrp_ranking_builder import build_candidate_comparison_blocks
+            _ids = [str(c) for c in candidate_ids[:5]]
+            _ph = ", ".join(f"CAST(:c{i} AS uuid)" for i in range(len(_ids)))
+            _bp = {f"c{i}": v for i, v in enumerate(_ids)}
+            _bp["co"] = str(company_id)
+            async with AsyncSessionLocal() as db:
+                _rows = await db.execute(_sa_text(
+                    "SELECT c.id, c.name, c.current_title, c.seniority_level, "
+                    "c.years_of_experience, c.technical_skills, c.location_city, "
+                    "c.location_state FROM candidates c "
+                    f"WHERE c.id IN ({_ph}) AND EXISTS (SELECT 1 FROM vacancy_candidates "
+                    "vc WHERE vc.candidate_id = c.id AND vc.company_id = :co)"
+                ), _bp)
+                for m in _rows.mappings():
+                    _sk = m["technical_skills"]
+                    _loc = f"{m['location_city'] or ''}/{m['location_state'] or ''}".strip("/") or "-"
+                    _compared.append({
+                        "id": str(m["id"]), "name": m["name"],
+                        "title": m["current_title"], "seniority": m["seniority_level"],
+                        "experience": m["years_of_experience"],
+                        "skills": (_sk[:5] if isinstance(_sk, list) else []),
+                        "location": _loc,
+                    })
+            _rrp_blocks = build_candidate_comparison_blocks(_compared)
+        except Exception as _e:
+            logger.warning(f"[talent_tools] compare_candidates RRP skipped: {_e}")
     return {
         "success": True,
         "data": {
@@ -169,8 +201,10 @@ async def _wrap_compare_candidates(**kwargs: Any) -> dict[str, Any]:
             "comparison_count": len(candidate_ids),
             "comparison_complete": True,
             "dimensions": ["skills", "experience", "score", "fit"],
+            "candidates": _compared,
+            "response_blocks": _rrp_blocks or None,
         },
-        "message": f"Comparacao de {len(candidate_ids)} candidatos concluida.",
+        "message": f"Comparacao de {len(_compared) or len(candidate_ids)} candidatos concluida.",
     }
 
 @tool_handler("talent")
