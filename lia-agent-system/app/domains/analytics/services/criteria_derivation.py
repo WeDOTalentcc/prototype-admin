@@ -388,3 +388,45 @@ def derive_from_job(
         criteria.append(_crit(f"req:{_norm(req)[:40]}", str(req), "must_have", ev))
 
     return QualificationMatrix.build(mode="grouped", criteria=criteria, generated_with_llm=False)
+
+
+def apply_llm_verdicts(
+    matrix: QualificationMatrix,
+    verdicts: dict[str, dict],
+) -> QualificationMatrix:
+    """Mescla veredictos do LLM nos critérios status='unknown' (passo de resíduo).
+
+    NÃO toca em critérios já avaliados deterministicamente (met/partial/not_met) —
+    só resolve os 'unknown'. As invariantes de honestidade são reforçadas pelos
+    validators de QualificationCriterion (status='partial' ⇒ is_inference=True;
+    provenance='none' ⇒ status='unknown'), então um veredicto fabricado pelo LLM
+    (ex.: 'met' sem fonte) é automaticamente rebaixado para 'unknown'.
+
+    verdicts: {criterion_id: {status, explanation, provenance, is_inference, confidence}}
+    """
+    new_criteria: list[QualificationCriterion] = []
+    for c in matrix.criteria:
+        v = verdicts.get(c.id)
+        if c.status == "unknown" and v:
+            new_criteria.append(
+                QualificationCriterion(
+                    id=c.id,
+                    label=c.label,
+                    group=c.group,  # type: ignore[arg-type]
+                    status=v.get("status", "unknown"),
+                    explanation=v.get("explanation", c.explanation),
+                    provenance=v.get("provenance", "none"),
+                    is_inference=bool(v.get("is_inference", False)),
+                    confidence=float(v.get("confidence", 0.0) or 0.0),
+                    source_ref=c.source_ref,
+                )
+            )
+        else:
+            new_criteria.append(c)
+    return QualificationMatrix.build(
+        mode=matrix.mode,
+        criteria=new_criteria,
+        generated_with_llm=True,
+        degraded=matrix.degraded,
+        degraded_reason=matrix.degraded_reason,
+    )

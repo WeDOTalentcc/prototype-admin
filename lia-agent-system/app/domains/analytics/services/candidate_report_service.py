@@ -147,6 +147,7 @@ class CandidateReportService:
                     self._build_candidate_dict(candidate),
                     None,
                 )
+                qm = await self._resolve_matrix_unknowns(qm, candidate, job)
                 qualification_matrix = qm.model_dump()
             except Exception as _qm_err:
                 # Matriz é enriquecimento; ausência (None) é honesta, não fabricada.
@@ -635,6 +636,71 @@ Resumo: {interview_data.get('summary', 'N/A')}"""
             "behavioral_competencies": getattr(job, "behavioral_competencies", None) or [],
             "requirements": getattr(job, "requirements", None) or [],
         }
+
+    async def _resolve_matrix_unknowns(self, qm, candidate, job):
+        """Passo LLM (resíduo): resolve critérios status='unknown' (comportamental,
+        requisitos textuais, eligibility sem resposta). Provenance-honesto.
+
+        Falha do LLM => degraded=True EXPLÍCITO (não silencioso); os critérios
+        determinísticos são preservados. Sucesso => generated_with_llm=True.
+        """
+        from app.domains.analytics.services.criteria_derivation import apply_llm_verdicts
+
+        unknowns = [c for c in qm.criteria if c.status == "unknown"]
+        if not unknowns:
+            return qm
+        try:
+            verdicts = await self._llm_evaluate_criteria(unknowns, candidate, job)
+            return apply_llm_verdicts(qm, verdicts)
+        except Exception:
+            logger.error("LLM criteria evaluation failed", exc_info=True)
+            qm.degraded = True
+            qm.degraded_reason = "llm_evaluation_failed"
+            return qm
+
+    async def _llm_evaluate_criteria(self, unknowns, candidate, job) -> dict[str, dict]:
+        """Avalia critérios 'unknown' via LLM com contrato de honestidade estrito.
+
+        Retorna {criterion_id: {status, explanation, provenance, is_inference, confidence}}.
+        Contrato: 'met' exige evidência citada; 'partial' ⇒ is_inference=true; sem
+        evidência ⇒ 'unknown'/provenance='none'. NUNCA fabricar.
+        """
+        evidence = {
+            "nome": candidate.name,
+            "cargo_atual": candidate.current_title or "N/A",
+            "skills": ", ".join(candidate.technical_skills or []) if candidate.technical_skills else "N/A",
+            "anos_experiencia": candidate.years_of_experience or "N/A",
+            "vaga": getattr(job, "title", "N/A") if job else "N/A",
+        }
+        criteria_lines = "\n".join(
+            f"- id={c.id} | {c.label} ({c.group})" for c in unknowns
+        )
+        prompt = ChatPromptTemplate.from_messages([
+            ("system",
+             "Você avalia, de forma factual e SEM VIÉS, se um candidato atende a "
+             "critérios de uma vaga, retornando JSON. Regras inquebráveis:\n"
+             "1) status ∈ {met, partial, not_met, unknown}.\n"
+             "2) 'met' SÓ com evidência explícita; informe provenance ∈ "
+             "{resume, profile, screening, wsi}.\n"
+             "3) 'partial' = inferido mas NÃO explícito ⇒ is_inference=true e a "
+             "explanation deve nomear a inferência.\n"
+             "4) Sem evidência ⇒ status='unknown', provenance='none'. NUNCA invente.\n"
+             "5) Não use dados sensíveis (gênero/raça/idade/religião) na decisão.\n"
+             'Retorne {{"verdicts": [{{"id": "...", "status": "...", '
+             '"explanation": "...", "provenance": "...", "is_inference": false, '
+             '"confidence": 0.0}}]}}'),
+            ("user",
+             "EVIDÊNCIA DO CANDIDATO:\n{evidence}\n\nCRITÉRIOS A AVALIAR:\n{criteria}"),
+        ])
+        llm = llm_service.get_audited_model()
+        chain = prompt | llm | JsonOutputParser()
+        result = await chain.ainvoke({"evidence": str(evidence), "criteria": criteria_lines})
+        out: dict[str, dict] = {}
+        for v in (result.get("verdicts") or []):
+            cid = v.get("id")
+            if cid:
+                out[cid] = v
+        return out
 
 
     async def _get_wsi_data(self, db: AsyncSession, candidate_id: str) -> dict | None:
