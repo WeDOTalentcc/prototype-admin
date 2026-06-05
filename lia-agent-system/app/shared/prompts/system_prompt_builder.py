@@ -398,6 +398,23 @@ class SystemPromptBuilder:
                 exc_info=True,
             )
 
+        # ADR-008: single source of truth for the THREE job creation modes
+        # (do zero / template / vaga existente). Registry-derived block shared
+        # verbatim with WizardOrchestrator + the meta-question helper, so no
+        # surface can drift into a contradictory self-knowledge answer.
+        try:
+            from app.shared.capabilities import render_creation_modes_block
+            modes_block = render_creation_modes_block()
+            if modes_block and modes_block.strip():
+                context_parts.append(modes_block)
+        except Exception as _modes_exc:
+            import logging as _log
+            _log.getLogger(__name__).error(
+                "[ADR-008] failed to render creation modes block: %s",
+                _modes_exc,
+                exc_info=True,
+            )
+
         if conversation_summary:
             context_parts.append(f"### Resumo da Conversa Anterior\n{conversation_summary}")
 

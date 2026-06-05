@@ -134,15 +134,31 @@ def generate_meta_response_sync(
             turns_block = "\n".join(_lines)[:1200]
 
     state_block = (wizard_state_summary or "(estado não disponível)")[:800]
+
+    # ADR-008: ground "consegue criar a partir de existente/template/zero?"
+    # answers in the registry-derived creation modes — same truth the wizard and
+    # the orchestrator prompts carry. Fail-open: no block if the view raises.
+    modes_block = ""
+    try:
+        from app.shared.capabilities import render_creation_modes_block
+        modes_block = render_creation_modes_block()
+    except Exception as exc:  # noqa: BLE001 — meta helper must stay fail-open
+        logger.debug("[WizardMetaHelper] creation modes block skipped: %s", exc)
+
     user_block = (
         f"# Stage atual do wizard\n{stage}\n\n"
         f"# Descrição do stage (em uma frase)\n{(stage_description or '(não disponível)')[:300]}\n\n"
         f"# Estado real da vaga (ficha viva — use isto para responder 'o que falta?')\n{state_block}\n\n"
+        f"# O que a LIA CONSEGUE criar (fonte da verdade — use para 'consegue criar a partir de...?')\n"
+        f"{modes_block or '(não disponível)'}\n\n"
         f"# Contexto da empresa (tenant)\n{(tenant_context_snippet or '(não disponível)')[:500]}\n\n"
         f"# Histórico recente da conversa\n{turns_block}\n\n"
         f"# Mensagem do recrutador (pergunta meta / off-topic)\n{msg[:1500]}\n\n"
         "Responda em PT-BR (2-4 frases). Use o estado real da vaga para responder "
         "com precisão (ex: se perguntou 'o que falta?', liste os campos faltantes). "
+        "Se a pergunta for sobre o que você consegue criar (do zero / template / "
+        "vaga existente), responda pelos modos de criação acima — NUNCA diga que "
+        "só sabe criar do zero. "
         "Termine com uma pergunta de continuidade contextual ao stage."
     )
 

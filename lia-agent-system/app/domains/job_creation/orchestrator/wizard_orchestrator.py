@@ -264,8 +264,22 @@ class WizardOrchestrator:
         tenant_block = (
             f"\n\n## Contexto da empresa\n{tenant[:600]}" if tenant else ""
         )
+        # ADR-008: creation-modes capability is derived from the registries via
+        # the shared view — the wizard no longer hardcodes (or omits) what it can
+        # create. Same wording as SystemPromptBuilder + the meta helper, so the
+        # answer to "consegue criar a partir de existente/template/zero?" is one
+        # truth everywhere. Fail-open: no block if the view raises.
+        modes_block = ""
+        try:
+            from app.shared.capabilities import render_creation_modes_block
+            rendered = render_creation_modes_block()
+            if rendered and rendered.strip():
+                modes_block = f"\n\n## Capacidades de criação\n{rendered}"
+        except Exception as exc:  # noqa: BLE001 — never break the wizard turn
+            logger.debug("[WizardOrchestrator] creation modes block skipped: %s", exc)
         return (
-            f"{_SYSTEM_PROMPT_BASE}\n\n"
+            f"{_SYSTEM_PROMPT_BASE}"
+            f"{modes_block}\n\n"
             f"## Estado real da vaga (ficha viva)\n{ficha}"
             f"{tenant_block}"
         )
