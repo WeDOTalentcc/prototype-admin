@@ -51,7 +51,7 @@ async def test_maps_fields_and_provenance():
     assert seed.responsibilities == ["Desenhar APIs", "Mentorar"]
     assert seed.source.type == "template"
     assert seed.provenance["title"].source_type == "template"
-    assert seed.coverage_total == 12
+    assert seed.coverage_total == 14
     assert seed.coverage_filled >= 8
 
 

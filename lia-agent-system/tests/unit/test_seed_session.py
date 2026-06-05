@@ -20,6 +20,11 @@ _PRODUCER = (
     "JobSeedBuilderService.build_seed_from_template"
 )
 
+_VACANCY_PRODUCER = (
+    "app.domains.job_creation.helpers.seed_session."
+    "JobSeedBuilderService.build_seed_from_vacancy"
+)
+
 
 def _seed() -> JobCreationSeed:
     return JobCreationSeed(
@@ -66,14 +71,39 @@ async def test_none_source_leaves_state_unchanged():
     assert out == {"foo": "bar"}
 
 
-async def test_vacancy_source_not_yet_wired_no_crash():
-    state = {"foo": "bar"}
-    with patch(_PRODUCER, new=AsyncMock()) as mock_build:
+async def test_vacancy_source_populates_state():
+    """PR-B1: vacancy source agora despacha para build_seed_from_vacancy e
+    semeia o state (antes era no-op \'chega em breve\')."""
+    vac_seed = JobCreationSeed(
+        title="Eng de Dados Senior",
+        seniority="senior",
+        work_model="remoto",
+        department="Tecnologia",
+        location="Sao Paulo, SP",
+        employment_type="CLT",
+        salary_min=14000,
+        salary_max=20000,
+        provenance={
+            "salary_min": FieldProvenance(
+                source_type="vacancy",
+                source_id="v1",
+                source_name="Vaga X",
+                needs_review=True,
+            ),
+        },
+        source=SourceDescriptor(type="vacancy", id="v1", name="Vaga X"),
+    )
+    state: dict = {}
+    with patch(_VACANCY_PRODUCER, new=AsyncMock(return_value=vac_seed)) as mock_build:
         out = await seed_initial_state(
             state, {"type": "vacancy", "id": "v1"}, "company-1", db=object()
         )
-    mock_build.assert_not_awaited()  # producer not called for vacancy
-    assert out == {"foo": "bar"}  # unchanged
+    mock_build.assert_awaited_once()  # vacancy producer IS called now
+    assert out is state
+    assert state["parsed_title"] == "Eng de Dados Senior"
+    assert state["parsed_location"] == "Sao Paulo, SP"
+    assert state["parsed_employment_type"] == "CLT"
+    assert state["seed_source"] == {"type": "vacancy", "id": "v1", "name": "Vaga X"}
 
 
 async def test_producer_permission_error_fails_soft():

@@ -51,15 +51,17 @@ async def seed_initial_state(
         logger.info("seed source missing id (type=%s) — skipping seed", stype)
         return initial_state
 
-    if stype != "template":
-        # build_seed_from_vacancy does not exist yet (later PR). Do not fabricate.
-        logger.info("seed source type %s not yet wired — skipping seed", stype)
+    if stype not in ("template", "vacancy"):
+        # Tipo desconhecido — nao fabricar. Segue sem seed (no-op logado).
+        logger.info("seed source type %s not wired — skipping seed", stype)
         return initial_state
 
     try:
-        seed = await JobSeedBuilderService(db).build_seed_from_template(
-            sid, company_id
-        )
+        builder = JobSeedBuilderService(db)
+        if stype == "vacancy":
+            seed = await builder.build_seed_from_vacancy(sid, company_id)
+        else:
+            seed = await builder.build_seed_from_template(sid, company_id)
     except (ValueError, PermissionError) as exc:
         # Unknown template / cross-tenant template: fail soft, do not crash the
         # session. The recruiter just proceeds without a seed.

@@ -175,6 +175,8 @@ class JobCreationSeed(WeDoBaseModel):
     seniority: Optional[str] = None
     work_model: Optional[str] = None
     department: Optional[str] = None
+    location: Optional[str] = None
+    employment_type: Optional[str] = None
     salary_min: Optional[float] = None
     salary_max: Optional[float] = None
     skills: List[str] = []

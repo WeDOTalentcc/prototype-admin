@@ -23,6 +23,8 @@ _SEED_TO_STATE = {
     "seniority": "parsed_seniority",
     "work_model": "parsed_model",
     "department": "parsed_department",
+    "location": "parsed_location",
+    "employment_type": "parsed_employment_type",
     "salary_min": "salary_min",
     "salary_max": "salary_max",
 }

@@ -1878,23 +1878,16 @@ async def _wrap_start_creation_from_source(**kwargs: Any) -> dict[str, Any]:
             "[start_creation_from_source] audit skipped: %s", _audit_exc,
         )
 
-    if source_type == "vacancy":
-        # Producer de "clonar vaga existente" ainda nao wired — honesto.
-        return {
-            "success": True,
-            "data": {"not_yet": True},
-            "message": (
-                "Criar a partir de uma vaga existente chega em breve. Posso "
-                "usar um arquétipo (template) agora?"
-            ),
-        }
-
-    # template -> diretiva canonical que semeia uma sessao FRESH do wizard.
+    # template | vacancy -> diretiva canonical que semeia uma sessao FRESH do
+    # wizard. O produtor (seed_initial_state) sabe semear AMBOS: template (PR-A)
+    # e vacancy (PR-B1 — intake + salario needs_review + JD text; reuso rico
+    # WSI/competencias vem no PR-B2). Fecha o ghost: a tool oferecia vaga e antes
+    # retornava "chega em breve" (beco sem saida).
     return {
         "success": True,
         "data": {
             "ui_action": "start_wizard_seeded",
-            "seed_source": {"type": "template", "id": source_id},
+            "seed_source": {"type": source_type, "id": source_id},
         },
         "message": (
             "Pronto — vou abrir o assistente de criação já partindo desse "

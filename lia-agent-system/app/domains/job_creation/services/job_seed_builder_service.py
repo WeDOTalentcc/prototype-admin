@@ -33,6 +33,8 @@ _SEEDABLE_FIELDS = [
     "seniority",
     "work_model",
     "department",
+    "location",
+    "employment_type",
     "salary_min",
     "salary_max",
     "skills",
@@ -57,12 +59,35 @@ def _skill_names(raw: Any) -> list[str]:
     return out
 
 
+def _vacancy_skill_names(raw: Any) -> list[str]:
+    """JobVacancy.technical_requirements e JSON: list[{technology|skill|name}]."""
+    out: list[str] = []
+    for item in raw or []:
+        if isinstance(item, str):
+            out.append(item)
+        elif isinstance(item, dict):
+            name = (
+                item.get("technology")
+                or item.get("skill")
+                or item.get("name")
+                or item.get("nome")
+            )
+            if name:
+                out.append(str(name))
+    return out
+
+
 class JobSeedBuilderService:
     """Produces a JobCreationSeed from a source. Single source of truth."""
 
     def __init__(self, db: AsyncSession):
         self.db = db
         self._templates = JobTemplateService(db)
+        # Import local p/ evitar ciclo (mesmo padrao das tools de vaga).
+        from app.domains.job_management.repositories.job_vacancy_crud_repository import (
+            JobVacancyCRUDRepository,
+        )
+        self._vacancies = JobVacancyCRUDRepository(db)
 
     @trace_span("job_seed.build_from_template")
     async def build_seed_from_template(
@@ -112,6 +137,69 @@ class JobSeedBuilderService:
             **fields,
             provenance=prov,
             source=SourceDescriptor(type="template", id=str(tpl.id), name=name),
+            coverage_filled=sum(1 for k in _SEEDABLE_FIELDS if k in fields),
+            coverage_total=len(_SEEDABLE_FIELDS),
+        )
+
+    @trace_span("job_seed.build_from_vacancy")
+    async def build_seed_from_vacancy(
+        self, vacancy_id: str | uuid_mod.UUID, company_id: str
+    ) -> JobCreationSeed:
+        """Clona uma vaga existente em JobCreationSeed (PR-B1, decisao Paulo
+        2026-06-05: conservador). Campos de intake + salario (needs_review) +
+        JD text. Reuso rico (enriched_jd/WSI/competencias/elegibilidade) e o
+        PR-B2 (precisa de guard por-no mantendo os gates de fairness)."""
+        vac = await self._vacancies.get_by_id_strict_company(
+            str(vacancy_id), str(company_id)
+        )
+        if vac is None:
+            # get_by_id_strict_company devolve None p/ inexistente E cross-tenant
+            # (opaco — nao vaza existencia). Fail-loud canonical (REGRA 4).
+            raise ValueError(
+                f"Vaga {vacancy_id} nao encontrada no escopo da empresa"
+            )
+
+        name = vac.title
+        prov: dict[str, FieldProvenance] = {}
+        fields: dict[str, Any] = {}
+
+        def mark(key: str, value: Any, needs_review: bool = False) -> None:
+            if value in (None, "", [], {}):
+                return
+            fields[key] = value
+            prov[key] = FieldProvenance(
+                source_type="vacancy",
+                source_id=str(vac.id),
+                source_name=name,
+                needs_review=needs_review,
+            )
+
+        mark("title", vac.title)
+        mark("seniority", getattr(vac, "seniority_level", None))
+        mark("work_model", getattr(vac, "work_model", None))
+        mark("department", getattr(vac, "department", None))
+        mark("location", getattr(vac, "location", None))
+        mark("employment_type", getattr(vac, "employment_type", None))
+        mark("description", getattr(vac, "description", None))
+        mark("responsibilities", list(getattr(vac, "responsibilities", None) or []))
+        # requirements no model e ARRAY(String); o seed carrega str (Optional[str]).
+        _reqs = getattr(vac, "requirements", None) or []
+        if isinstance(_reqs, (list, tuple)):
+            _reqs = "\n".join(str(r) for r in _reqs if r)
+        mark("requirements", _reqs)
+        # skills: technical_requirements e [{technology,...}] — PR-B1 leva so os
+        # nomes; o detalhe estruturado e reuso rico do PR-B2.
+        mark("skills", _vacancy_skill_names(getattr(vac, "technical_requirements", None)))
+        # salario: salary_range JSON {min,max} -> needs_review (proveniencia honesta).
+        _sr = getattr(vac, "salary_range", None) or {}
+        if isinstance(_sr, dict):
+            mark("salary_min", _sr.get("min"), needs_review=True)
+            mark("salary_max", _sr.get("max"), needs_review=True)
+
+        return JobCreationSeed(
+            **fields,
+            provenance=prov,
+            source=SourceDescriptor(type="vacancy", id=str(vac.id), name=name),
             coverage_filled=sum(1 for k in _SEEDABLE_FIELDS if k in fields),
             coverage_total=len(_SEEDABLE_FIELDS),
         )
