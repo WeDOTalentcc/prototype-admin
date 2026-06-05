@@ -128,12 +128,29 @@ class ComparisonTableBlock(_BlockBase):
 
 
 # ── União discriminada ───────────────────────────────────────────────────────
+class FunnelStage(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    label: str
+    count: int
+
+
+class FunnelBlock(_BlockBase):
+    kind: Literal["funnel"] = "funnel"
+    role: BlockRole = "support"
+    layout: BlockLayout = "wide"
+    title: str
+    stages: list[FunnelStage] = Field(default_factory=list)
+    total: int = 0
+    conversion_rate: float = 0.0
+
+
 ResponseBlock = Annotated[
     Union[
         ProseBlock,
         ComparisonTableBlock,
         ScoreExplainerBlock,
         EvidenceStackBlock,
+        FunnelBlock,
     ],
     Field(discriminator="kind"),
 ]
@@ -143,6 +160,7 @@ _KIND_MAP: dict[str, type[BaseModel]] = {
     "comparison_table": ComparisonTableBlock,
     "score_explainer": ScoreExplainerBlock,
     "evidence_stack": EvidenceStackBlock,
+    "funnel": FunnelBlock,
 }
 
 

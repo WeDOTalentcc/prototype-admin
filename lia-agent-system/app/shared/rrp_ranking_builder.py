@@ -181,3 +181,24 @@ def build_candidate_comparison_blocks(candidates: list[dict]) -> list[dict]:
         shown_count=len(candidates),
     )
     return [table.model_dump(mode="json")]
+
+
+def build_pipeline_funnel_block(
+    title: str, stages: dict, total: int = 0, conversion_rate: float = 0.0
+) -> list[dict]:
+    """funnel de pipeline a partir de {etapa: contagem}."""
+    from app.shared.rrp_blocks import FunnelBlock, FunnelStage
+
+    if not stages:
+        return []
+    fstages = [FunnelStage(label=str(k), count=int(v)) for k, v in stages.items()]
+    blk = FunnelBlock(
+        block_id="funnel:pipeline:" + str(title),
+        role="support",
+        layout="wide",
+        title=str(title),
+        stages=fstages,
+        total=int(total),
+        conversion_rate=float(conversion_rate),
+    )
+    return [blk.model_dump(mode="json")]

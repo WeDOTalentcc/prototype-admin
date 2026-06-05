@@ -426,10 +426,21 @@ async def _wrap_get_pipeline_summary(**kwargs: Any) -> dict[str, Any]:
         logger.warning(f"[kanban_tools] get_pipeline_summary DB error: {e}")
 
     conversion = round(hired / total * 100, 1) if total > 0 else 0.0
+    _rrp_blocks = []
+    try:
+        if stages:
+            from app.shared.rrp_ranking_builder import build_pipeline_funnel_block
+            _rrp_blocks = build_pipeline_funnel_block(
+                f"Pipeline ({vacancy_id or 'todas as vagas'})",
+                stages, total, conversion,
+            )
+    except Exception as _e:
+        logger.warning(f"[kanban_tools] funnel block skipped: {_e}")
     return {
         "success": True,
         "data": {"vacancy_id": vacancy_id or "all", "total_candidates": total,
-                 "stages": stages, "conversion_rate": conversion},
+                 "stages": stages, "conversion_rate": conversion,
+                 "response_blocks": _rrp_blocks or None},
         "message": f"Pipeline: {total} candidatos distribuidos em {len(stages)} etapas. Conversao: {conversion}%.",
     }
 
