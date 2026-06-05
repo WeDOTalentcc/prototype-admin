@@ -125,6 +125,7 @@ interface LiaFloatState {
 interface LiaFloatContextType extends LiaFloatState {
   open: (conversationId?: string) => void;
   close: () => void;
+  enterFullscreen: () => void;
   toggle: () => void;
   expand: () => void;
   collapse: () => void;
@@ -768,6 +769,25 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
     }));
   }, []);
 
+  // Transição NÃO-destrutiva para TELA CHEIA (página "Conversar").
+  //
+  // Bug 2026-06-05: o wizard escalava pra fullscreen via `handleModeChange`
+  // (UnifiedChat), que chamava `close()`. Mas `close()` é o DISMISS canônico —
+  // zera `entityContext` + `dynamicPanel`. Zerar `dynamicPanel` derruba o gate
+  // `hasDynamicPanel` → o painel do wizard fechava a cada interação.
+  //
+  // O overlay flutuante já some sozinho em `mode === "fullscreen"` (UnifiedChat
+  // retorna null pro overlay nesse modo), então `close()` ali era redundante
+  // pra esconder E destrutivo pro painel. `enterFullscreen` apenas baixa
+  // `isOpen` (esconde o overlay) PRESERVANDO `dynamicPanel` + `entityContext`,
+  // que a tela cheia lê do MESMO float context compartilhado.
+  //
+  // Invariante: `close()` (dismiss do usuário) CONTINUA zerando tudo — só este
+  // caminho de transição muda. Skill canônica: harness-engineering [guide].
+  const enterFullscreen = useCallback(() => {
+    setState((prev) => ({ ...prev, isOpen: false }));
+  }, []);
+
   const toggle = useCallback(() => {
     setState((prev) => ({ ...prev, isOpen: !prev.isOpen }));
   }, []);
@@ -911,6 +931,7 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
       ...state,
       open,
       close,
+      enterFullscreen,
       toggle,
       expand,
       collapse,
@@ -972,6 +993,7 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
       state,
       open,
       close,
+      enterFullscreen,
       toggle,
       expand,
       collapse,

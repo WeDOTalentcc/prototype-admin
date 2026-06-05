@@ -124,6 +124,19 @@ function getStoredPanelWidth(): number {
   return PANEL_DEFAULT_WIDTH;
 }
 
+// Guarda de auto-escalada pra tela cheia — ESCOPO POR CONVERSA, NÍVEL DE MÓDULO.
+//
+// Bug 2026-06-05 (defesa em profundidade): a escalada bolha→fullscreen deve
+// disparar NO MÁXIMO uma vez por sessão de wizard. Um `useRef(false)` por
+// instância NÃO basta: ao navegar pra página "Conversar", `UnifiedChatConditional`
+// troca o branch renderizado de <UnifiedChat>, REMONTANDO o componente — o ref
+// reseta pra false e a escalada re-dispara no próximo turno (fechando o painel
+// recém-preservado). Um Set keyed por conversationId persiste através do
+// remount, garantindo o disparo único de verdade.
+//
+// Skill canônica: harness-engineering [guide computacional remount-safe].
+const _autoFullscreenConversations = new Set<string>();
+
 interface Props {
   renderMode?: "inline" | "overlay";
   initialMode?: ChatMode;
@@ -428,6 +441,7 @@ export function UnifiedChat({
     isOpen,
     open,
     close,
+    enterFullscreen,
     contextPage,
     dynamicPanel,
     openDynamicPanel,
@@ -1019,7 +1033,11 @@ export function UnifiedChat({
         }),
       );
       if (newMode === "fullscreen") {
-        close();
+        // Transição NÃO-destrutiva: esconde o overlay flutuante SEM zerar
+        // `dynamicPanel`/`entityContext`. Usar `close()` aqui (dismiss canônico)
+        // derrubava o painel do wizard a cada escalada pra tela cheia
+        // (bug 2026-06-05). O overlay já some sozinho em mode === "fullscreen".
+        enterFullscreen();
       } else {
         open();
       }
@@ -1033,7 +1051,7 @@ export function UnifiedChat({
         window.dispatchEvent(new CustomEvent(ev.type, { detail: ev.detail }));
       }
     },
-    [close, open],
+    [close, enterFullscreen, open],
   );
 
   // Wizard de alto esforco (criar vaga) sai do chat lateral/bolha e vai para a
@@ -1052,17 +1070,24 @@ export function UnifiedChat({
   // (lia:navigate-chat-page) carrega a mesma conversa.
   const _autoFsStage = dynamicPanel?.stage;
   useEffect(() => {
+    // Guarda remount-safe: a chave é a conversa do wizard (estável entre o
+    // unmount/mount provocado pelo swap de branch em UnifiedChatConditional).
+    // Sem conversa ainda → cai no ref por instância como fallback.
+    const guardKey = chatConversationId ?? "__no_conversation__";
+    const alreadyEscalated =
+      _autoFullscreenConversations.has(guardKey) || autoFullscreenDone.current;
     if (
       !!_autoFsStage &&
       SPLIT_STAGES.includes(_autoFsStage as WizardStage) &&
       mode !== "fullscreen" &&
       renderMode !== "inline" &&
-      !autoFullscreenDone.current
+      !alreadyEscalated
     ) {
       autoFullscreenDone.current = true;
+      _autoFullscreenConversations.add(guardKey);
       handleModeChange("fullscreen");
     }
-  }, [_autoFsStage, mode, renderMode, handleModeChange]);
+  }, [_autoFsStage, mode, renderMode, chatConversationId, handleModeChange]);
 
   const handleFileButtonClick = useCallback(() => {
     fileInputRef.current?.click();
