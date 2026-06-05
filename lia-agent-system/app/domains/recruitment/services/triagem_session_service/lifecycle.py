@@ -284,10 +284,18 @@ async def start_session(db: AsyncSession, token: str, voice_mode: bool | None = 
                     "session": session.to_dict(),
                 }
         except Exception as _consent_exc:
+            # P1 (audit 2026-06-05 #13): FAIL-CLOSED. Se a verificacao de consent
+            # lanca, NAO prosseguir — bloquear a sessao (LGPD: nao iniciar triagem
+            # com IA sem consent verificado no servidor). Antes caia atraves => fail-open.
             logger.error(
-                "[Triagem][SEG-4] consent check falhou (prosseguindo p/ disponibilidade): %s",
+                "[Triagem][SEG-4] consent check falhou — fail-closed (sessao BLOQUEADA): %s",
                 _consent_exc, exc_info=True,
             )
+            return {
+                "error": "lgpd_consent_check_failed",
+                "reason": "Falha ao verificar consentimento; sessao bloqueada por seguranca (LGPD).",
+                "session": session.to_dict(),
+            }
 
     if session.status == "invited":
         session.status = "started"
