@@ -14,15 +14,15 @@ import { CHART_GRID, CHART_LIA, CHART_DANGER } from "@/lib/chart-colors"
 import { apiFetch } from "@/lib/api/api-fetch"
 
 interface StudioComplianceData {
-  period_days: number
-  total_executions: number
-  blocked_executions: number
-  block_rate_pct: number
-  avg_confidence: number
-  active_agents: number
-  by_status: Record<string, number>
-  top_blocked_agents: Array<{ agent_id: string; agent_name: string; blocked_count: number }>
-  trend: Array<{ day: string; executions: number; blocked: number }>
+  period_days?: number
+  total_executions?: number
+  blocked_executions?: number
+  block_rate_pct?: number
+  avg_confidence?: number
+  active_agents?: number
+  by_status?: Record<string, number>
+  top_blocked_agents?: Array<{ agent_id: string; agent_name: string; blocked_count: number }>
+  trend?: Array<{ day: string; executions: number; blocked: number }>
 }
 
 export function StudioComplianceView() {
@@ -64,6 +64,14 @@ export function StudioComplianceView() {
 
   if (!data) return null
 
+  const trend = data.trend ?? []
+  const topBlockedAgents = data.top_blocked_agents ?? []
+  const totalExecutions = data.total_executions ?? 0
+  const blockedExecutions = data.blocked_executions ?? 0
+  const blockRatePct = data.block_rate_pct ?? 0
+  const activeAgents = data.active_agents ?? 0
+  const avgConfidence = data.avg_confidence ?? 0
+
   return (
     <div className="space-y-4" data-testid="studio-compliance-view">
       {/* Header with period selector */}
@@ -88,7 +96,7 @@ export function StudioComplianceView() {
               <Activity className="w-4 h-4 text-lia-text-secondary" />
               <span className="text-xs text-lia-text-secondary">{t("executions")}</span>
             </div>
-            <p className={textStyles.kpi}>{data.total_executions}</p>
+            <p className={textStyles.kpi}>{totalExecutions}</p>
           </CardContent>
         </Card>
 
@@ -99,7 +107,7 @@ export function StudioComplianceView() {
               <span className="text-xs text-lia-text-secondary">{t("approved")}</span>
             </div>
             <p className={cn(textStyles.kpi, "text-status-success")}>
-              {Math.max(0, (data.total_executions ?? 0) - (data.blocked_executions ?? 0))}
+              {Math.max(0, totalExecutions - blockedExecutions)}
             </p>
           </CardContent>
         </Card>
@@ -110,8 +118,8 @@ export function StudioComplianceView() {
               <AlertTriangle className="w-4 h-4 text-status-warning" />
               <span className="text-xs text-lia-text-secondary">{t("blocked")}</span>
             </div>
-            <p className={cn(textStyles.kpi, "text-status-warning")}>{data.blocked_executions}</p>
-            <p className="text-[10px] text-lia-text-disabled mt-0.5">{t("blockedPctOfTotal", { pct: data.block_rate_pct })}</p>
+            <p className={cn(textStyles.kpi, "text-status-warning")}>{blockedExecutions}</p>
+            <p className="text-[10px] text-lia-text-disabled mt-0.5">{t("blockedPctOfTotal", { pct: blockRatePct })}</p>
           </CardContent>
         </Card>
 
@@ -121,23 +129,23 @@ export function StudioComplianceView() {
               <Bot className="w-4 h-4 text-wedo-cyan-dark" />
               <span className="text-xs text-lia-text-secondary">{t("activeAgents")}</span>
             </div>
-            <p className={textStyles.kpi}>{data.active_agents}</p>
+            <p className={textStyles.kpi}>{activeAgents}</p>
             <p className="text-[10px] text-lia-text-disabled mt-0.5">
-              {t("avgConfidence", { pct: (data.avg_confidence * 100).toFixed(0) })}
+              {t("avgConfidence", { pct: (avgConfidence * 100).toFixed(0) })}
             </p>
           </CardContent>
         </Card>
       </div>
 
       {/* Trend chart */}
-      {data.trend.length > 0 && (
+      {trend.length > 0 && (
         <Card className={cardStyles.default}>
           <CardHeader>
             <CardTitle className="text-sm">{t("executionsByDay")}</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={240}>
-              <LineChart data={data.trend}>
+              <LineChart data={trend}>
                 <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID} />
                 <XAxis dataKey="day" tick={{ fontSize: 11 }} />
                 <YAxis tick={{ fontSize: 11 }} />
@@ -151,7 +159,7 @@ export function StudioComplianceView() {
       )}
 
       {/* Top blocked agents */}
-      {data.top_blocked_agents.length > 0 && (
+      {topBlockedAgents.length > 0 && (
         <Card className={cardStyles.default}>
           <CardHeader>
             <CardTitle className="text-sm flex items-center gap-2">
@@ -161,7 +169,7 @@ export function StudioComplianceView() {
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              {data.top_blocked_agents.map((a, i) => (
+              {topBlockedAgents.map((a, i) => (
                 <div key={a.agent_id} className="flex items-center justify-between text-sm">
                   <div className="flex items-center gap-2">
                     <span className="text-xs text-lia-text-disabled font-sans">{i + 1}.</span>
@@ -178,7 +186,7 @@ export function StudioComplianceView() {
       )}
 
       {/* Empty state */}
-      {data.total_executions === 0 && (
+      {totalExecutions === 0 && (
         <Card className={cardStyles.default}>
           <CardContent className="py-8 text-center">
             <Bot className="w-10 h-10 text-lia-text-disabled mx-auto mb-3" />
