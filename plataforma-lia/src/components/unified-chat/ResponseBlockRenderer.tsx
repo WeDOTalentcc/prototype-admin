@@ -424,6 +424,25 @@ function RenderOne({
   }
 }
 
+function ExpandHint() {
+  const t = useTranslations("rrp");
+  return (
+    <button
+      type="button"
+      onClick={() =>
+        window.dispatchEvent(
+          new CustomEvent("lia:request-chat-mode", {
+            detail: { mode: "fullscreen" },
+          }),
+        )
+      }
+      className="mt-1 flex items-center gap-1 text-xs text-wedo-cyan hover:underline"
+    >
+      {t("expandFullscreen")} →
+    </button>
+  );
+}
+
 export function ResponseBlockRenderer({
   blocks,
   mode,
@@ -437,9 +456,13 @@ export function ResponseBlockRenderer({
   return (
     <div className="mt-2 space-y-2">
       {blocks.map((block, i) => {
+        const wide = block.layout === "wide" || block.layout === "panel";
         try {
           return (
-            <RenderOne key={block.block_id || i} block={block} narrow={narrow} />
+            <div key={block.block_id || i}>
+              <RenderOne block={block} narrow={narrow} />
+              {narrow && wide ? <ExpandHint /> : null}
+            </div>
           );
         } catch {
           return (

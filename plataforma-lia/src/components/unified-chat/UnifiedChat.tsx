@@ -1054,6 +1054,18 @@ export function UnifiedChat({
     [close, enterFullscreen, open],
   );
 
+  // RRP (AD8): blocos wide/panel pedem expansao p/ tela cheia via evento.
+  // handleModeChange e o bridge canonico (setMode + persist + transicoes);
+  // o renderer (deeply nested) nao o alcanca por prop, entao usa evento.
+  useEffect(() => {
+    const onRequest = (e: Event) => {
+      const next = (e as CustomEvent).detail?.mode as ChatMode | undefined;
+      if (next) handleModeChange(next);
+    };
+    window.addEventListener("lia:request-chat-mode", onRequest);
+    return () => window.removeEventListener("lia:request-chat-mode", onRequest);
+  }, [handleModeChange]);
+
   // Wizard de alto esforco (criar vaga) sai do chat lateral/bolha e vai para a
   // tela cheia automaticamente -- uma vez por sessao de wizard. Enterprise
   // pattern (Salesforce/Jira/HubSpot): chat lateral e entry point; a criacao

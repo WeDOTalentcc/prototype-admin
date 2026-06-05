@@ -42,6 +42,7 @@
     }
   },
   "rrp": {
+    "expandFullscreen": "Expand to fullscreen",
     "candidateYears": "{count} yrs",
     "candidateUnverified": "No LIA opinion yet",
     "funnelTotal": "Total: {count}",

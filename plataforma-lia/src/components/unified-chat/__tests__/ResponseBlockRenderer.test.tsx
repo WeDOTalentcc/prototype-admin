@@ -4,7 +4,7 @@
 //   - sidebar/floating: transpoe (sem <table>) — degradacao sem scroll-h
 //   - i18n: zero MISSING_MESSAGE nas chaves rrp.* (usa messages/pt-BR.json real)
 import { describe, expect, it } from "vitest"
-import { render, screen } from "@testing-library/react"
+import { render, screen, fireEvent } from "@testing-library/react"
 import { NextIntlClientProvider } from "next-intl"
 import React from "react"
 
@@ -184,5 +184,31 @@ describe("ResponseBlockRenderer — candidate_card (Fase 1)", () => {
   it("i18n: zero MISSING_MESSAGE no candidate_card", () => {
     const { errors } = renderWith([CANDIDATE_CARD], "floating")
     expect(errors.filter((e) => e.includes("MISSING_MESSAGE"))).toEqual([])
+  })
+})
+
+
+describe("ResponseBlockRenderer — expand chevron (AD8 suggest_chat_mode)", () => {
+  it("bloco wide em sidebar mostra CTA e dispara lia:request-chat-mode", () => {
+    const events: (string | undefined)[] = []
+    const handler = (e: Event) =>
+      events.push((e as CustomEvent).detail?.mode as string | undefined)
+    window.addEventListener("lia:request-chat-mode", handler)
+    renderWith([TABLE], "sidebar")
+    const btn = screen.getByText(/Expandir em tela cheia/)
+    expect(btn).toBeTruthy()
+    fireEvent.click(btn)
+    window.removeEventListener("lia:request-chat-mode", handler)
+    expect(events).toContain("fullscreen")
+  })
+
+  it("bloco wide em fullscreen NAO mostra CTA", () => {
+    renderWith([TABLE], "fullscreen")
+    expect(screen.queryByText(/Expandir em tela cheia/)).toBeNull()
+  })
+
+  it("bloco inline (candidate_card) em sidebar NAO mostra CTA", () => {
+    renderWith([CANDIDATE_CARD], "sidebar")
+    expect(screen.queryByText(/Expandir em tela cheia/)).toBeNull()
   })
 })

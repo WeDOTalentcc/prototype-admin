@@ -42,6 +42,7 @@
     }
   },
   "rrp": {
+    "expandFullscreen": "Expandir em tela cheia",
     "candidateYears": "{count} anos",
     "candidateUnverified": "Sem parecer LIA ainda",
     "funnelTotal": "Total: {count}",
