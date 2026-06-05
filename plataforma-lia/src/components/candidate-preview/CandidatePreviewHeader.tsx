@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { textStyles, previewChipVariants } from '@/lib/design-tokens'
+import { formatDate as formatDateUtil } from '@/lib/format-utils'
 import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -208,15 +209,8 @@ export function CandidatePreviewHeader({
   onOpenFullPage,
   onClose,
 }: CandidatePreviewHeaderProps) {
-  const formatDate = (dateStr: string | Date | null | undefined): string => {
-    if (!dateStr) return ''
-    try {
-      const date = new Date(dateStr as string | number)
-      return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })
-    } catch {
-      return ''
-    }
-  }
+  const formatDate = (dateStr: string | Date | null | undefined): string =>
+    formatDateUtil(dateStr, { day: '2-digit', month: 'short', year: 'numeric' })
 
   const lastContactedAt = c.last_contacted_at || c.lastContactedAt
   const updatedAt = c.updated_at || c.updatedAt

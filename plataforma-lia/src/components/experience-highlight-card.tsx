@@ -1,12 +1,15 @@
 "use client"
 
-import { useState, useEffect, useCallback, useRef, useMemo } from "react"
+import { useMemo } from "react"
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { useCurrentCompany } from "@/hooks/company/use-current-company"
-import { Brain, RefreshCw, AlertCircle } from "lucide-react"
+import { Brain, RefreshCw, AlertCircle, Sparkles } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { formatDate } from "@/lib/format-utils"
+import { CANDIDATE_AI_QUERY_KEYS } from "@/hooks/candidates/candidate-ai-query-keys"
 
 interface ExperienceHighlightCardProps {
   candidate: {
@@ -46,12 +49,8 @@ export function ExperienceHighlightCard({ candidate, companyId: companyIdProp }:
   const { companyId: currentCompanyId } = useCurrentCompany()
   const companyId = companyIdProp || currentCompanyId || ''
   const hasCompany = Boolean(companyId)
-  const [highlight, setHighlight] = useState<HighlightData | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
-  const [isRegenerating, setIsRegenerating] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const fetchedRef = useRef<string | null>(null)
-  const abortRef = useRef<AbortController | null>(null)
+  const candidateId = candidate?.id || ''
+  const queryClient = useQueryClient()
 
   const currentTitle = candidate.current_title || candidate.currentTitle
   const currentCompany = candidate.current_company || candidate.currentCompany
@@ -72,100 +71,67 @@ export function ExperienceHighlightCard({ candidate, companyId: companyIdProp }:
     .filter(Boolean)
     .join(", ")
 
-  const fetchOrGenerateHighlight = useCallback(async (forceRegenerate = false) => {
-    if (!candidate?.id || !hasCompany) return
+  // GET do cache — NUNCA auto-gera (gerar dispara LLM e causa o storm de 502).
+  // 404 = "ainda não gerado" → resolve para null, não é erro.
+  const {
+    data: highlight,
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery<HighlightData | null>({
+    queryKey: CANDIDATE_AI_QUERY_KEYS.experienceHighlight(candidateId, companyId),
+    queryFn: async () => {
+      const res = await fetch(
+        `/api/backend-proxy/experience-highlights/${candidateId}?company_id=${encodeURIComponent(companyId)}`
+      )
+      if (res.status === 404) return null
+      if (!res.ok) throw new Error('Falha ao carregar resumo')
+      return res.json()
+    },
+    enabled: Boolean(candidateId) && hasCompany,
+    retry: false,
+    staleTime: 5 * 60 * 1000,
+  })
 
-    if (!forceRegenerate && fetchedRef.current === candidate.id) return
-
-    if (abortRef.current) {
-      abortRef.current.abort()
-    }
-    const controller = new AbortController()
-    abortRef.current = controller
-
-    if (forceRegenerate) {
-      setIsRegenerating(true)
-    } else {
-      setIsLoading(true)
-    }
-    setError(null)
-
-    try {
-      if (!forceRegenerate) {
-        const cacheResponse = await fetch(
-          `/api/backend-proxy/experience-highlights/${candidate.id}?company_id=${companyId}`,
-          { signal: controller.signal }
-        )
-        
-        if (cacheResponse.ok) {
-          const data = await cacheResponse.json()
-          setHighlight(data)
-          setIsLoading(false)
-          fetchedRef.current = candidate.id
-          return
-        }
-      }
-
-      const generateResponse = await fetch(
-        `/api/backend-proxy/experience-highlights/generate?company_id=${companyId}`,
+  // Geração/regeneração é user-initiated (CTA ou botão regenerar).
+  const generateMutation = useMutation<HighlightData, Error, { force: boolean }>({
+    mutationFn: async ({ force }) => {
+      const res = await fetch(
+        `/api/backend-proxy/experience-highlights/generate?company_id=${encodeURIComponent(companyId)}`,
         {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            candidate_id: candidate.id,
+            candidate_id: candidateId,
             candidate_name: candidate.name,
             current_title: currentTitle,
             current_company: currentCompany,
-            location: location,
+            location,
             years_of_experience: yearsOfExperience,
             technical_skills: technicalSkills,
             work_history: workHistory,
-            force_regenerate: forceRegenerate,
+            force_regenerate: force,
           }),
-          signal: controller.signal,
         }
       )
+      if (!res.ok) throw new Error('Não foi possível gerar o resumo')
+      return res.json()
+    },
+    onSuccess: (data) => {
+      queryClient.setQueryData(
+        CANDIDATE_AI_QUERY_KEYS.experienceHighlight(candidateId, companyId),
+        data
+      )
+    },
+  })
 
-      if (!generateResponse.ok) {
-        throw new Error('Failed to generate highlight')
-      }
+  if (!candidateId) return null
 
-      const data = await generateResponse.json()
-      setHighlight(data)
-      fetchedRef.current = candidate.id
-    } catch (err: unknown) {
-      if (err instanceof DOMException && err.name === 'AbortError') return
-      setError('Não foi possível gerar o resumo')
-    } finally {
-      setIsLoading(false)
-      setIsRegenerating(false)
-    }
-  }, [candidate?.id, candidate?.name, currentTitle, currentCompany, location, yearsOfExperience, technicalSkills, workHistory, companyId])
+  const isGenerating = generateMutation.isPending
+  const hasValidHighlight = Boolean(highlight?.highlight_text?.trim())
 
-  useEffect(() => {
-    if (candidate?.id && fetchedRef.current !== candidate.id) {
-      fetchOrGenerateHighlight()
-    }
-
-    return () => {
-      if (abortRef.current) {
-        abortRef.current.abort()
-      }
-    }
-  }, [candidate?.id, fetchOrGenerateHighlight])
-
-  const handleRegenerate = () => {
-    fetchedRef.current = null
-    fetchOrGenerateHighlight(true)
-  }
-
-  if (!candidate?.id) {
-    return null
-  }
-
-  if (isLoading) {
+  // Carregando o cache ou gerando.
+  if (isLoading || isGenerating) {
     return (
       <Card className="bg-lia-bg-primary border border-lia-border-subtle p-4 mb-4">
         <div className="flex items-start gap-3">
@@ -179,21 +145,17 @@ export function ExperienceHighlightCard({ candidate, companyId: companyIdProp }:
     )
   }
 
-  if (error && !highlight) {
+  // Erro ao carregar o cache (não-404) ou ao gerar — falha alto, com retry.
+  if ((isError || generateMutation.isError) && !hasValidHighlight) {
+    const retry = isError
+      ? () => refetch()
+      : () => generateMutation.mutate({ force: false })
     return (
       <Card className="bg-lia-bg-primary border border-lia-border-subtle p-4 mb-4">
         <div className="flex items-center gap-3 text-lia-text-secondary">
           <AlertCircle className="h-5 w-5 flex-shrink-0 text-status-warning" />
-          <span className="text-sm">{error}</span>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              fetchedRef.current = null
-              fetchOrGenerateHighlight()
-            }}
-            className="ml-auto text-xs"
-          >
+          <span className="text-sm">Não foi possível gerar o resumo</span>
+          <Button variant="ghost" size="sm" onClick={retry} className="ml-auto text-xs">
             Tentar novamente
           </Button>
         </div>
@@ -201,42 +163,58 @@ export function ExperienceHighlightCard({ candidate, companyId: companyIdProp }:
     )
   }
 
-  if (!highlight) {
-    return null
+  // Ainda não gerado (404/vazio) — CTA explícito, sem auto-gerar.
+  if (!hasValidHighlight) {
+    return (
+      <Card className="bg-lia-bg-primary border border-lia-border-subtle p-3 mb-4">
+        <div className="flex items-center gap-2">
+          <Brain className="h-4 w-4 text-wedo-cyan flex-shrink-0" />
+          <span className="text-xs text-lia-text-secondary flex-1">
+            Resumo do perfil ainda não gerado
+          </span>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => generateMutation.mutate({ force: false })}
+            className="h-6 gap-1 text-xs text-wedo-cyan hover:text-wedo-cyan"
+          >
+            <Sparkles className="h-3 w-3" />
+            Gerar resumo
+          </Button>
+        </div>
+      </Card>
+    )
   }
 
-  const formatGeneratedDate = (dateStr: string) => {
-    try {
-      const date = new Date(dateStr)
-      return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })
-    } catch {
-      return ''
-    }
-  }
+  const generatedLabel = formatDate(highlight!.generated_at)
 
   return (
     <Card className="bg-lia-bg-primary border border-lia-border-subtle p-3 mb-4">
       <div className="flex items-start gap-2">
         <Brain className="h-4 w-4 text-wedo-cyan flex-shrink-0 mt-0.5" />
         <p className="text-xs font-medium text-lia-text-primary leading-relaxed flex-1">
-          {highlight.highlight_text}
+          {highlight!.highlight_text}
         </p>
       </div>
       <div className="flex items-center justify-between mt-2">
-        <p className="text-micro text-lia-text-secondary">
-          Gerado pela LIA em {formatGeneratedDate(highlight.generated_at)}
-        </p>
+        {generatedLabel ? (
+          <p className="text-micro text-lia-text-secondary">
+            Gerado pela LIA em {generatedLabel}
+          </p>
+        ) : (
+          <span />
+        )}
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={handleRegenerate}
-                disabled={isRegenerating}
+                onClick={() => generateMutation.mutate({ force: true })}
+                disabled={isGenerating}
                 className="h-5 w-5 p-0 text-lia-text-secondary hover:text-lia-text-primary"
               >
-                <RefreshCw className={`h-3 w-3 ${isRegenerating ? 'animate-spin motion-reduce:animate-none' : ''}`} />
+                <RefreshCw className={`h-3 w-3 ${isGenerating ? 'animate-spin motion-reduce:animate-none' : ''}`} />
               </Button>
             </TooltipTrigger>
             <TooltipContent className="text-xs py-1 px-2">
