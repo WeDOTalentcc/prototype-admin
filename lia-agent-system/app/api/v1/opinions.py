@@ -108,6 +108,7 @@ company_id: str = Depends(require_company_id)):
             recommendation=op.recommendation,
             summary=op.summary,
             archetype=op.archetype,
+            score_breakdown=op.score_breakdown or {},
             job_vacancy_id=op.job_vacancy_id,
             job_vacancy_title=job_title,
             created_at=op.created_at,

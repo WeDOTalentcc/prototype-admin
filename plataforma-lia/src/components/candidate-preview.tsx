@@ -69,7 +69,7 @@ export function CandidatePreview({
   jobId,
   onCandidateUpdated,
 }: CandidatePreviewProps) {
-  const core = useCandidatePreviewCore(candidate)
+  const core = useCandidatePreviewCore(candidate, jobId)
   const {
     activeTab, setActiveTab,
     showLiaModal, setShowLiaModal,

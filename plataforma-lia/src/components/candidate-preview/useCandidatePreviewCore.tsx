@@ -12,7 +12,7 @@ interface LiaChatMessage {
   timestamp: Date
 }
 
-export function useCandidatePreviewCore(candidate: Record<string, unknown> | null) {
+export function useCandidatePreviewCore(candidate: Record<string, unknown> | null, jobId?: string) {
   const { companyId } = useCurrentCompany()
   const [activeTab, setActiveTab] = useState<'profile' | 'activities' | 'files' | 'opinions'>('profile')
   const [showLiaModal, setShowLiaModal] = useState(false)
@@ -233,6 +233,23 @@ const candidateId = candidate?.id as string | undefined
     setIsAnalyzingWithLia(true)
 
     try {
+      // Vaga em contexto -> parecer job-directed (gera + persiste a matriz de qualificacao).
+      if (jobId) {
+        const parecerRes = await fetch(
+          `/api/backend-proxy/opinions/candidate/${candidateId}/parecer?company_id=${encodeURIComponent(companyId)}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ job_vacancy_id: jobId }),
+          }
+        )
+        if (!parecerRes.ok) throw new Error('Falha ao gerar parecer')
+        setLastAnalysisDate(new Date())
+        await fetchOpinionsSummary()
+        toast.success("Parecer gerado", { description: "A LIA gerou um novo parecer para o candidato." })
+        return
+      }
+
       const c = candidate as Record<string, unknown>
       const candidateInput = {
         id: c.id,
