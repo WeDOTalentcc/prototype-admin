@@ -182,6 +182,7 @@ async def _wrap_rank_candidates(**kwargs: Any) -> dict[str, Any]:
     logger.info(f"[talent_tools] rank_candidates called: vacancy={vacancy_id} criteria={criteria}")
 
     ranking = []
+    _rrp_blocks: list = []
     try:
         async with AsyncSessionLocal() as db:
             repo = VacancyCandidateRepository(db)
@@ -190,6 +191,34 @@ async def _wrap_rank_candidates(**kwargs: Any) -> dict[str, Any]:
                 company_id=company_id,
                 criteria=criteria,
             )
+            # AD3 (RRP): enriquece com pareceres + monta blocos ricos (moat).
+            try:
+                from sqlalchemy import text as _sa_text
+                from app.shared.rrp_ranking_builder import build_candidate_ranking_blocks
+                _op_rows = await db.execute(_sa_text(
+                    "SELECT candidate_id, id, recommendation, summary, strengths, "
+                    "concerns, wsi_screening_id FROM lia_opinions "
+                    "WHERE job_vacancy_id::text = :vid AND company_id = :cid "
+                    "AND is_current = true"
+                ), {"vid": vacancy_id, "cid": company_id})
+                _op_map = {str(m["candidate_id"]): m for m in _op_rows.mappings()}
+                _norm = []
+                for _r in ranking:
+                    _cid = str(_r.get("candidate_id"))
+                    _op = _op_map.get(_cid, {})
+                    _norm.append({
+                        "id": _cid, "name": _r.get("name"),
+                        "score": _r.get("lia_score"), "stage": _r.get("stage"),
+                        "recommendation": _op.get("recommendation"),
+                        "summary": _op.get("summary"),
+                        "strengths": _op.get("strengths"),
+                        "concerns": _op.get("concerns"),
+                        "opinion_id": _op.get("id"),
+                        "wsi_id": _op.get("wsi_screening_id"),
+                    })
+                _rrp_blocks = build_candidate_ranking_blocks(vacancy_id, _norm)
+            except Exception as _rrp_exc:
+                logger.warning(f"[talent_tools] rank_candidates RRP blocks skipped: {_rrp_exc}")
     except Exception as e:
         logger.warning(f"[talent_tools] rank_candidates DB error: {e}")
 
@@ -201,6 +230,7 @@ async def _wrap_rank_candidates(**kwargs: Any) -> dict[str, Any]:
             "ranking_generated": True,
             "ranked_count": len(ranking),
             "ranking": ranking,
+            "response_blocks": _rrp_blocks or None,
         },
         "message": f"Ranking gerado: {len(ranking)} candidatos para a vaga {vacancy_id} (criterio: {criteria}).",
     }
