@@ -36,11 +36,18 @@ both map to the ``learning_patterns`` table via ``extend_existing=True``:
 
 The intelligent_cache String columns win in the shared Table metadata, so the
 INSERT binds ``company_id`` (and ``confidence``) as VARCHAR against the real
-UUID/double-precision columns → ``asyncpg DatatypeMismatchError``. The error is
-swallowed by ``_update_patterns_from_feedback``'s broad ``except`` (after a
-rollback that expires the feedback row), and the capture method then raises
-``MissingGreenlet`` on the expired attribute. Net effect: implicit (and
-explicit) ``learning_patterns`` demotion silently never happens in production.
+UUID/double-precision columns → ``asyncpg DatatypeMismatchError``. The rollback
+in ``_update_patterns_from_feedback``'s ``except`` expires the just-committed
+feedback row.
+
+Task #1326 (observability) made that failure ATTRIBUTABLE: the broad ``except``
+no longer swallows the error silently — it emits a structured root-cause log +
+``sentry_sdk.capture_exception`` and returns ``False``; the capture method then
+restores the committed feedback id (no DB round-trip) and returns an HONEST
+result (``persisted=True``, the feedback row DID commit) instead of crashing
+with the secondary ``MissingGreenlet``. So these two tests no longer xfail on
+MissingGreenlet — they xfail purely because the ``learning_patterns`` demotion
+itself still does not happen (negative_feedback_count stays 0).
 
 Resolving the mapper conflict belongs to the separate "Audit all model shims
 for mapper conflicts" task. The two regeneration/correction tests are marked

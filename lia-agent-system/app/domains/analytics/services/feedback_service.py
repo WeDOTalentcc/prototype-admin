@@ -105,9 +105,16 @@ class FeedbackService:
                 f"Recorded {feedback_type} feedback for session {session_id}, "
                 f"message_id={message_context.get('message_id')}"
             )
-            
-            await self._update_patterns_from_feedback(feedback, db)
-            
+
+            # Task #1326: snapshot the committed id BEFORE the learning-pattern
+            # write — a failure there rolls back and EXPIRES `feedback`, so the
+            # caller reading `feedback.id` would otherwise trigger a sync
+            # lazy-load → MissingGreenlet.
+            feedback_id = feedback.id
+            pattern_ok = await self._update_patterns_from_feedback(feedback, db)
+            if not pattern_ok:
+                self._restore_committed_feedback_id(feedback, feedback_id)
+
             return feedback
             
         except Exception as e:
@@ -181,7 +188,16 @@ class FeedbackService:
                 signal_type, session_id, message_context.get("message_id"),
             )
 
-            await self._update_patterns_from_feedback(feedback, db)
+            # Task #1326: snapshot the committed id BEFORE the learning-pattern
+            # write. The implicit-feedback caller (capture_regeneration /
+            # capture_correction_delta) reads ``fb.id`` — a pattern-write
+            # failure rolls back and EXPIRES this row, so without the snapshot
+            # restore the caller would crash with MissingGreenlet instead of
+            # getting an honest result (the feedback row itself DID commit).
+            feedback_id = feedback.id
+            pattern_ok = await self._update_patterns_from_feedback(feedback, db)
+            if not pattern_ok:
+                self._restore_committed_feedback_id(feedback, feedback_id)
             return feedback
         except Exception as e:
             if db:
@@ -196,7 +212,7 @@ class FeedbackService:
         self,
         feedback: InteractionFeedback,
         db: AsyncSession
-    ) -> None:
+    ) -> bool:
         """Update learning patterns based on new feedback.
 
         Task #1297: o early-return original ``if not feedback.intent: return``
@@ -207,11 +223,29 @@ class FeedbackService:
         ``"general"``, criando um sinal agregado por tenant que ainda captura
         bons/maus exemplos de resposta. Mantém-se a granularidade por intent
         quando o contexto o fornece.
+
+        Task #1326 (observabilidade): uma falha na escrita de
+        ``learning_patterns`` (ex.: o conflito de mapper UUID-vs-String que
+        bloqueia o INSERT) NÃO pode mais ser engolida silenciosamente. O
+        ``except`` faz rollback, mas agora emite um log estruturado com a causa
+        raiz + ``sentry_sdk.capture_exception`` (sinal atribuível) e RETORNA
+        ``False`` em vez de ``None``. O caller usa esse retorno para devolver um
+        resultado honesto (a feedback row JÁ commitada permanece) sem disparar
+        o ``MissingGreenlet`` secundário do atributo expirado pelo rollback.
+        Sucesso retorna ``True``.
         """
+        # Snapshot identifying fields BEFORE any rollback can expire the ORM
+        # instance — the failure reporter must never touch the (possibly
+        # expired) `feedback` object, or it would itself raise MissingGreenlet
+        # (a sync lazy-load outside the greenlet), masking the real DB error.
+        pattern_key = "?"
+        company_id = None
+        feedback_id_snapshot = None
         try:
             pattern_key = self._generate_pattern_key(feedback)
             company_id = feedback.company_id
-            
+            feedback_id_snapshot = feedback.id
+
             repo = FeedbackRepository(db)
             pattern = await repo.find_active_pattern(company_id, pattern_key)
             
@@ -267,14 +301,85 @@ class FeedbackService:
                 db.add(pattern)
             
             await db.commit()
-            
+            return True
+
         except Exception as e:
             try:
                 await db.rollback()
             except Exception:
                 pass
-            self.logger.error(f"Error updating patterns from feedback: {e}")
-    
+            self._report_pattern_write_failure(
+                e, company_id, pattern_key, feedback_id_snapshot
+            )
+            return False
+
+    def _report_pattern_write_failure(
+        self,
+        exc: Exception,
+        company_id: Any,
+        pattern_key: str,
+        feedback_id: Any,
+    ) -> None:
+        """Task #1326: surface a learning-pattern write failure as a clear,
+        attributable signal (structured error log with the root cause +
+        Sentry capture) instead of a swallowed log line.
+
+        Receives ONLY pre-rollback snapshots (never the live ORM instance), so
+        it cannot itself trigger a sync lazy-load → ``MissingGreenlet`` that
+        would mask the real DB error.
+        """
+        self.logger.error(
+            "[FeedbackLearning] learning_patterns write FAILED — pattern "
+            "demotion/promotion LOST (root_cause=%s: %s) company=%s "
+            "pattern_key=%s feedback_id=%s",
+            type(exc).__name__,
+            exc,
+            company_id,
+            pattern_key,
+            feedback_id,
+            exc_info=True,
+        )
+        try:  # best-effort — Sentry is optional and must never block the path
+            import sentry_sdk
+
+            sentry_sdk.capture_exception(
+                exc,
+                tags={
+                    "alert_type": "feedback_learning_pattern_write_failed",
+                    "company_id": str(company_id) if company_id else "unknown",
+                    "pattern_key": pattern_key,
+                },
+            )
+        except Exception as sentry_exc:  # pragma: no cover - defensive
+            self.logger.debug(
+                "[FeedbackLearning] Sentry capture unavailable: %s", sentry_exc
+            )
+
+    def _restore_committed_feedback_id(
+        self, feedback: InteractionFeedback, feedback_id: Any
+    ) -> None:
+        """Task #1326: re-populate the committed ``id`` on a feedback row that a
+        failed learning-pattern write rolled back (and thus EXPIRED), WITHOUT a
+        DB round-trip.
+
+        The interaction_feedback row itself committed before the pattern write,
+        so the id is valid. We restore it via ``set_committed_value`` (no SQL)
+        so callers can read ``feedback.id`` without a sync lazy-load
+        (MissingGreenlet) and without depending on RLS tenant context that the
+        rollback dropped. Best-effort: never raises into the happy path.
+        """
+        if feedback_id is None:
+            return
+        try:
+            from sqlalchemy.orm.attributes import set_committed_value
+
+            set_committed_value(feedback, "id", feedback_id)
+        except Exception as exc:  # pragma: no cover - defensive
+            self.logger.debug(
+                "[FeedbackLearning] could not restore committed feedback id: %s",
+                exc,
+            )
+
     def _generate_pattern_key(self, feedback: InteractionFeedback) -> str:
         """Generate a unique pattern key from feedback context."""
         parts = []
@@ -307,7 +412,13 @@ class FeedbackService:
             
             for feedback in unprocessed:
                 try:
-                    await self._update_patterns_from_feedback(feedback, db)
+                    # Task #1326: only mark processed when the pattern write
+                    # actually committed — a failed write now returns False
+                    # (attributable log + Sentry) instead of raising, so we
+                    # must not flag a row processed when its learning never
+                    # happened.
+                    if not await self._update_patterns_from_feedback(feedback, db):
+                        continue
                     feedback.processed = True
                     processed_count += 1
                     patterns_updated += 1
