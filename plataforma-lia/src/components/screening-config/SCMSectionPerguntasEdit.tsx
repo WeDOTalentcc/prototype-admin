@@ -47,7 +47,7 @@ export function SCMSectionPerguntasEdit({
   handleAddCustomQuestion, handleRemoveCustomQuestion, handleUpdateCustomQuestion,
   handleToggleBankQuestion, handleToggleCompanyDefault, handleUpdateBankQuestion,
   handleGenerateWSI, isGeneratingWSI,
-  isEditingScreening, resetScreeningEditing,
+  isEditingScreening, resetScreeningEditing, handleSaveRoteiro,
   wsiDynamicMessage, wsiGeneratedCount, wsiGenerationCompleted, wsiGenerationContext,
   wsiGenerationMode, wsiGenerationStep, wsiProgressCollapsed, setWsiProgressCollapsed,
   wsiSummaryExpanded, setWsiSummaryExpanded,
@@ -560,57 +560,11 @@ export function SCMSectionPerguntasEdit({
           Cancelar
         </Button>
         <div className="flex items-center gap-2">
-          <Button size="sm" className="h-7 text-micro px-4 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text" onClick={async () => {
-            const screeningQs = Array.isArray(job.screeningQuestions) ? job.screeningQuestions : []
-            const existingCount = screeningQs.length
-            const acceptedCount = Object.values(generatedQuestions).flat().filter((q: ScreeningQuestionItem) => acceptedQuestions.has(q.id)).length
-            const totalQuestions = existingCount + acceptedCount
-            if (totalQuestions === 0) { toast.error('Selecione pelo menos uma pergunta antes de salvar o roteiro.'); return }
-            if (totalQuestions < 3) { toast.error('O roteiro precisa ter no mínimo 3 perguntas. Atualmente: ' + totalQuestions); return }
-            try {
-              const jobId = job.backendId || job.jobId || String(job.id)
-              const existingQuestions = screeningQs.map((q: ScreeningQuestionItem) => ({ id: q.id, text: q.question || q.text, category: q.category, type: q.type, weight: q.weight, skill_targeted: q.skill_targeted, block_id: q.block_id }))
-              const acceptedGenerated: ScreeningQuestionItem[] = []
-              Object.values(generatedQuestions).forEach((blockQs: ScreeningQuestionItem[]) => {
-                blockQs.forEach((q: ScreeningQuestionItem) => { if (acceptedQuestions.has(q.id)) { acceptedGenerated.push({ id: q.id, text: q.question || q.text, category: q.category, type: q.type, weight: q.weight || 0.75, skill_targeted: q.skill_targeted, block_id: q.block_id }) } })
-              })
-              const allQuestions = [...existingQuestions, ...acceptedGenerated]
-              const response = await fetch('/api/backend-proxy/wsi/questions/save', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ job_id: jobId, questions: allQuestions, source: 'manual_save' }) })
-              if (response.ok) {
-                const newScreeningQuestions = [...screeningQs, ...Object.values(generatedQuestions).flat().filter((q: ScreeningQuestionItem) => acceptedQuestions.has(q.id)).map((q: ScreeningQuestionItem) => ({ ...q, question: q.question || q.text, generated: undefined }))]
-                onJobUpdate?.({ ...job, screeningQuestions: newScreeningQuestions })
-                toast.success(`Roteiro salvo com sucesso! ${allQuestions.length} perguntas salvas.`)
-                resetScreeningEditing()
-              } else { toast.error('Erro ao salvar roteiro. Tente novamente.') }
-            } catch { toast.error('Erro ao salvar roteiro. Tente novamente.') }
-          }}>
+          <Button size="sm" className="h-7 text-micro px-4 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text" onClick={() => handleSaveRoteiro(false)}>
             <CheckCircle className="w-3 h-3 mr-1" />Salvar Alterações
           </Button>
           {(job.screeningStatus !== 'active') && (
-            <Button size="sm" className="h-7 text-micro px-4 bg-status-success hover:bg-status-success text-white" onClick={async () => {
-              const screeningQs2 = Array.isArray(job.screeningQuestions) ? job.screeningQuestions : []
-              const existingCount = screeningQs2.length
-              const acceptedCount = Object.values(generatedQuestions).flat().filter((q: ScreeningQuestionItem) => acceptedQuestions.has(q.id)).length
-              const totalQuestions = existingCount + acceptedCount
-              if (totalQuestions === 0) { toast.error('Selecione pelo menos uma pergunta antes de ativar a triagem.'); return }
-              if (totalQuestions < 3) { toast.error('O roteiro precisa ter no mínimo 3 perguntas para ativar. Atualmente: ' + totalQuestions); return }
-              try {
-                const jobId = job.backendId || job.jobId || String(job.id)
-                const existingQuestions = screeningQs2.map((q: ScreeningQuestionItem) => ({ id: q.id, text: q.question || q.text, category: q.category, type: q.type, weight: q.weight, skill_targeted: q.skill_targeted, block_id: q.block_id }))
-                const acceptedGenerated: ScreeningQuestionItem[] = []
-                Object.values(generatedQuestions).forEach((blockQs: ScreeningQuestionItem[]) => {
-                  blockQs.forEach((q: ScreeningQuestionItem) => { if (acceptedQuestions.has(q.id)) { acceptedGenerated.push({ id: q.id, text: q.question || q.text, category: q.category, type: q.type, weight: q.weight || 0.75, skill_targeted: q.skill_targeted, block_id: q.block_id }) } })
-                })
-                const allQuestions = [...existingQuestions, ...acceptedGenerated]
-                const response = await fetch('/api/backend-proxy/wsi/questions/save', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ job_id: jobId, questions: allQuestions, source: 'manual_save' }) })
-                if (response.ok) {
-                  const newScreeningQuestions = [...screeningQs2, ...Object.values(generatedQuestions).flat().filter((q: ScreeningQuestionItem) => acceptedQuestions.has(q.id)).map((q: ScreeningQuestionItem) => ({ ...q, question: q.question || q.text, generated: undefined }))]
-                  onJobUpdate?.({ ...job, screeningQuestions: newScreeningQuestions, screeningStatus: 'active' })
-                  toast.success(`Roteiro salvo e triagem ativada! ${allQuestions.length} perguntas configuradas.`)
-                  resetScreeningEditing()
-                } else { toast.error('Erro ao salvar roteiro. Tente novamente.') }
-              } catch { toast.error('Erro ao salvar roteiro. Tente novamente.') }
-            }}>
+            <Button size="sm" className="h-7 text-micro px-4 bg-status-success hover:bg-status-success text-white" onClick={() => handleSaveRoteiro(true)}>
               <Play className="w-3 h-3 mr-1" />Salvar e Ativar
             </Button>
           )}

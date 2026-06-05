@@ -13,6 +13,9 @@ import { useScreeningConfig, limitToApprovalPreset, approvalPresetToLimit, type 
 import { CompanyBankQuestions } from '../CompanyBankQuestions'
 import { CustomQuestions } from '../CustomQuestions'
 import type { CustomQuestion } from '../CustomQuestions'
+import type { ScreeningQuestionItem } from '../SCMScreeningTypes'
+import { useEligibilityTemplates, flattenTemplates } from '@/hooks/screening/use-eligibility-templates'
+import { buildScreeningExtrasPayload, screeningExtrasToRoteiroItems, type BankCatalogQuestion } from './buildScreeningExtrasPayload'
 import { WSI_BLOCKS, WSI_AUTOMATIC_MESSAGES, formatMessageWithVariables } from '@/constants/wsi-blocks'
 import { getBloomComplexity, getEstimatedTime, getBloomLabelPTBR, getDreyfusLabelPTBR } from '@/components/jobs/jobsPageConstants'
 import { normalizeTechnicalRequirement } from '@/lib/wsi/normalize-technical-requirement'
@@ -603,6 +606,87 @@ export function useScreeningConfigManagerCore({ job, onJobUpdate, onFormUpdate, 
   }
 
 
+  // Catalogo do banco de perguntas (mesma fonte de CompanyBankQuestions) para
+  // resolver IDs selecionados ao persistir. canonical-fix 2026-06-05 (P0-1/P0-2).
+  const { templates: _eligibilityTemplates } = useEligibilityTemplates({ includeMaster: true })
+  const _bankCatalog: BankCatalogQuestion[] = React.useMemo(
+    () =>
+      flattenTemplates(_eligibilityTemplates)
+        .filter((q) => !q.isSystemDefault)
+        .map((q) => ({
+          id: q.id,
+          question: q.question,
+          is_eliminatory: !!q.eliminatory,
+          expected_answer: q.eliminatoryAnswer != null ? String(q.eliminatoryAnswer) : undefined,
+        })),
+    [_eligibilityTemplates],
+  )
+
+  // Save unico do roteiro de perguntas (dedup dos 2 botoes + wiring dos extras).
+  // P0-1: extras (custom + banco selecionado) deixavam de persistir (ghost feature).
+  // P0-2: split semantico character -> is_eliminatory (eliminatoria->eligibility_questions,
+  // classificatoria->screening_questions). Decisao Paulo 2026-06-05.
+  const handleSaveRoteiro = async (activate: boolean): Promise<void> => {
+    const screeningQs = (Array.isArray(job?.screeningQuestions) ? job?.screeningQuestions : []) as ScreeningQuestionItem[]
+
+    const extras = buildScreeningExtrasPayload({
+      customQuestions,
+      selectedBankQuestions,
+      bankQuestionOverrides,
+      bankCatalog: _bankCatalog,
+    })
+    const extraRoteiroItems = screeningExtrasToRoteiroItems(extras.screening_questions)
+
+    const acceptedGenerated: ScreeningQuestionItem[] = []
+    Object.values(generatedQuestions).forEach((blockQs: ScreeningQuestionItem[]) => {
+      blockQs.forEach((q: ScreeningQuestionItem) => {
+        if (acceptedQuestions.has(q.id)) {
+          acceptedGenerated.push({ id: q.id, text: q.question || q.text, category: q.category, type: q.type, weight: q.weight || 0.75, skill_targeted: q.skill_targeted, block_id: q.block_id })
+        }
+      })
+    })
+
+    const totalQuestions = screeningQs.length + acceptedGenerated.length + extraRoteiroItems.length + extras.eligibility_questions.length
+    if (totalQuestions === 0) { toast.error('Selecione pelo menos uma pergunta antes de salvar o roteiro.'); return }
+    if (totalQuestions < 3) { toast.error('O roteiro precisa ter no minimo 3 perguntas. Atualmente: ' + totalQuestions); return }
+
+    try {
+      const jobId = job?.backendId || job?.jobId || String(job?.id)
+      const existingQuestions = screeningQs.map((q) => ({ id: q.id, text: q.question || q.text, category: q.category, type: q.type, weight: q.weight, skill_targeted: q.skill_targeted, block_id: q.block_id }))
+      const allQuestions = [
+        ...existingQuestions,
+        ...acceptedGenerated.map((q) => ({ id: q.id, text: q.text, category: q.category, type: q.type, weight: q.weight, skill_targeted: q.skill_targeted, block_id: q.block_id })),
+        ...extraRoteiroItems,
+      ]
+      const response = await fetch('/api/backend-proxy/wsi/questions/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ job_id: jobId, questions: allQuestions, source: 'manual_save' }),
+      })
+      if (!response.ok) { toast.error('Erro ao salvar roteiro. Tente novamente.'); return }
+
+      // Persiste extras eliminatorios em eligibility_questions (merge com existentes).
+      if (extras.eligibility_questions.length > 0) {
+        const jobExisting = (job ?? {}) as { eligibility_questions?: unknown[] }
+        const existingElig = Array.isArray(jobExisting.eligibility_questions) ? jobExisting.eligibility_questions : []
+        await fetch(`/api/backend-proxy/job-vacancies/${jobId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ eligibility_questions: [...existingElig, ...extras.eligibility_questions] }),
+        })
+      }
+
+      const newScreeningQuestions = [...screeningQs, ...acceptedGenerated.map((q) => ({ ...q, question: q.question || q.text, generated: undefined }))]
+      onJobUpdate?.({ ...job, screeningQuestions: newScreeningQuestions, ...(activate ? { screeningStatus: 'active' } : {}) })
+      toast.success(activate ? `Roteiro salvo e triagem ativada! ${allQuestions.length} perguntas configuradas.` : `Roteiro salvo com sucesso! ${allQuestions.length} perguntas salvas.`)
+      // Limpa extras ja persistidos para evitar reenvio duplicado em novo save.
+      setCustomQuestions([])
+      setSelectedBankQuestions([])
+      setBankQuestionOverrides({})
+      resetScreeningEditing()
+    } catch { toast.error('Erro ao salvar roteiro. Tente novamente.') }
+  }
+
   return {
     job,
     onJobUpdate,
@@ -656,6 +740,7 @@ export function useScreeningConfigManagerCore({ job, onJobUpdate, onFormUpdate, 
     jdDone,
     questionsDone,
     resetScreeningEditing,
+    handleSaveRoteiro,
     selectedBankQuestions,
     setAcceptedQuestions,
     setActiveSection,
