@@ -42,6 +42,7 @@
     }
   },
   "rrp": {
+    "showMore": "Show more ({count})",
     "expandFullscreen": "Expand to fullscreen",
     "candidateYears": "{count} yrs",
     "candidateUnverified": "No LIA opinion yet",

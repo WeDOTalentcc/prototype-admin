@@ -259,3 +259,51 @@ describe("ResponseBlockRenderer — score_explainer (Fase 2: factor bars)", () =
     expect(container.querySelector(".text-status-error")).toBeNull()
   })
 })
+
+
+function makeCard(id: string, name: string): ResponseBlock {
+  return {
+    kind: "candidate_card",
+    block_id: "candidate_card:" + id,
+    role: "answer",
+    layout: "inline",
+    state: "ready",
+    candidate_id: id,
+    name,
+    top_skills: [],
+    unverified: true,
+  }
+}
+
+describe("ResponseBlockRenderer — AD5 + AD4 (estados, ordem, budget)", () => {
+  it("AD5: state=loading mostra skeleton, nao o conteudo", () => {
+    const loading: ResponseBlock = { ...makeCard("1", "Oculto"), state: "loading" }
+    renderWith([loading], "fullscreen")
+    expect(screen.getByTestId("block-skeleton")).toBeTruthy()
+    expect(screen.queryByText("Oculto")).toBeNull()
+  })
+
+  it("AD5: state=error mostra fallback, nunca quebra", () => {
+    const err: ResponseBlock = { ...makeCard("1", "Oculto"), state: "error" }
+    renderWith([err], "fullscreen")
+    expect(screen.queryByText("Oculto")).toBeNull()
+    expect(screen.queryByTestId("block-skeleton")).toBeNull()
+  })
+
+  it("AD4 answer-first: role=answer renderiza antes de role=support", () => {
+    // entrada com support primeiro; saida deve por o answer (card) antes
+    const { container } = renderWith([TABLE, makeCard("9", "Felipe Almeida")], "fullscreen")
+    const txt = container.textContent || ""
+    expect(txt.indexOf("Felipe Almeida")).toBeLessThan(txt.indexOf("Ranking de candidatos"))
+  })
+
+  it("AD4 budget: passa do limite no sidebar -> 'Ver mais (N)' + expande", () => {
+    const many = Array.from({ length: 8 }, (_, i) => makeCard(String(i), "Cand " + i))
+    renderWith(many, "sidebar")
+    // budget narrow = 6 -> esconde 2
+    expect(screen.getByText(/Ver mais \(2\)/)).toBeTruthy()
+    expect(screen.queryByText("Cand 7")).toBeNull()
+    fireEvent.click(screen.getByText(/Ver mais \(2\)/))
+    expect(screen.getByText("Cand 7")).toBeTruthy()
+  })
+})

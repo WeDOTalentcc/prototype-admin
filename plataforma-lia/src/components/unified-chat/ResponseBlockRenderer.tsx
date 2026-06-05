@@ -449,6 +449,30 @@ function CandidateCardView({ block }: { block: CandidateCardBlock }) {
   );
 }
 
+// AD5: skeleton de carregamento (state='loading') — placeholder shimmer.
+function BlockSkeleton() {
+  return (
+    <div
+      data-testid="block-skeleton"
+      className="space-y-1.5 rounded-lg border border-lia-border-subtle bg-lia-bg-secondary p-3"
+      aria-hidden="true"
+    >
+      <div className="h-3 w-1/3 animate-pulse rounded bg-lia-border-subtle/60 motion-reduce:animate-none" />
+      <div className="h-3 w-2/3 animate-pulse rounded bg-lia-border-subtle/40 motion-reduce:animate-none" />
+      <div className="h-3 w-1/2 animate-pulse rounded bg-lia-border-subtle/40 motion-reduce:animate-none" />
+    </div>
+  );
+}
+
+// AD5: estado de erro do bloco (state='error') — nunca quebra o chat.
+function BlockErrorView({ t }: { t: TFn }) {
+  return (
+    <p className="rounded-lg border border-lia-border-subtle bg-lia-bg-secondary p-2 text-xs italic text-lia-text-tertiary">
+      {t("blockError")}
+    </p>
+  );
+}
+
 function RenderOne({
   block,
   narrow,
@@ -457,6 +481,8 @@ function RenderOne({
   narrow: boolean;
 }) {
   const t = useTranslations("rrp");
+  if (block.state === "error") return <BlockErrorView t={t} />;
+  if (block.state === "loading") return <BlockSkeleton />;
   switch (block.kind) {
     case "prose":
       return <ProseView block={block} />;
@@ -499,6 +525,14 @@ function ExpandHint() {
   );
 }
 
+// AD4: answer-first. role ordena; sort estavel preserva a ordem do produtor.
+const ROLE_RANK: Record<string, number> = {
+  answer: 0,
+  support: 1,
+  evidence: 2,
+  action: 3,
+};
+
 export function ResponseBlockRenderer({
   blocks,
   mode,
@@ -507,15 +541,31 @@ export function ResponseBlockRenderer({
   mode?: string;
 }) {
   const t = useTranslations("rrp");
+  const [showAll, setShowAll] = useState(false);
   if (!blocks || blocks.length === 0) return null;
   const narrow = mode === "sidebar" || mode === "floating";
+  const ordered = [...blocks].sort(
+    (a, b) => (ROLE_RANK[a.role] ?? 9) - (ROLE_RANK[b.role] ?? 9),
+  );
+  // AD4 block budget: evita 'muro de cards'. Generoso p/ NAO esconder o moat
+  // (rank emite ~7 blocos colapsados); so corta muro real. Ajustavel pos-live.
+  const budget = narrow ? 6 : 12;
+  const visible = showAll ? ordered : ordered.slice(0, budget);
+  const hidden = ordered.length - visible.length;
   return (
     <div className="mt-2 space-y-2">
-      {blocks.map((block, i) => {
+      {visible.map((block, i) => {
         const wide = block.layout === "wide" || block.layout === "panel";
         try {
           return (
-            <div key={block.block_id || i}>
+            <div
+              key={block.block_id || i}
+              className="animate-in fade-in slide-in-from-bottom-2 duration-300 motion-reduce:animate-none"
+              style={{
+                animationDelay: `${Math.min(i, 6) * 50}ms`,
+                animationFillMode: "backwards",
+              }}
+            >
               <RenderOne block={block} narrow={narrow} />
               {narrow && wide ? <ExpandHint /> : null}
             </div>
@@ -528,6 +578,15 @@ export function ResponseBlockRenderer({
           );
         }
       })}
+      {hidden > 0 && !showAll ? (
+        <button
+          type="button"
+          onClick={() => setShowAll(true)}
+          className="text-xs text-wedo-cyan hover:underline"
+        >
+          {t("showMore", { count: hidden })}
+        </button>
+      ) : null}
     </div>
   );
 }
