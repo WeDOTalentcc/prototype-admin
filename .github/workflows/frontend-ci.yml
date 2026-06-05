@@ -98,6 +98,15 @@ jobs:
         # Ver scripts/check_no_legacy_useSourcingAgents.mjs.
         run: node scripts/check_no_legacy_useSourcingAgents.mjs
 
+      - name: Proxy auth sensor (BLOCKING desde 2026-06-05)
+        # Detecta proxies em backend-proxy/*/route.ts que chamam o backend
+        # (BACKEND_URL + fetch) sem encaminhar auth (getAuthHeaders /
+        # Authorization / createProxyHandlers). Raiz do bug do reveal
+        # (2026-06-05): proxy bespoke sem Bearer -> backend respondia
+        # 'No Bearer token'. Baseline 0 apos triagem dos 45 (4 exempt + 41 Bearer).
+        # Honra marker `// proxy-auth-exempt: <motivo>` p/ endpoints publicos.
+        run: node scripts/check_proxy_auth.mjs --blocking
+
 
       - name: Multi-tenancy gate sensor (Phase F, warn-only)
         # Walks app/api/v1/*.py and warns on routes missing
