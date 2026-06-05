@@ -46,7 +46,7 @@ export function ThinkingStepsCard({ steps }: ThinkingStepsCardProps) {
 
   return (
     <div
-      className="animate-fade-in-up rounded-md border border-lia-border-subtle bg-lia-bg-secondary px-3 py-2.5 max-w-[85%] space-y-1.5"
+      className="animate-fade-in-up space-y-1.5"
       role="status"
       aria-live="polite"
     >

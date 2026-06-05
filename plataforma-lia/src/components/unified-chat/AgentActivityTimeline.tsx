@@ -26,12 +26,12 @@
  *   mounted alongside a streaming answer without a stray spinner).
  */
 
-import React, { useEffect, useMemo, useRef, useState } from "react"
-import { Loader2, CheckCircle2, XCircle, Brain } from "lucide-react"
-import { useTranslations, useLocale } from "next-intl"
+import React, { useEffect, useRef, useState } from "react"
+import { XCircle } from "lucide-react"
+import { useLocale } from "next-intl"
 import { cn } from "@/lib/utils"
 import { ThinkingStepsCard } from "./ThinkingStepsCard"
-import { phaseLabel, toolLabel, toolIcon } from "./activity-labels"
+import { phaseLabel, toolLabel, toolIcon, phaseIcon } from "./activity-labels"
 
 interface ActivityItem {
   id: string
@@ -60,8 +60,9 @@ function ActivityLineIcon({
     return <XCircle className={cn(base, "text-status-error")} aria-hidden="true" />
   }
   if (item.kind === "reasoning") {
+    const PhaseIcon = phaseIcon(item.name)
     return (
-      <Brain
+      <PhaseIcon
         className={cn(
           base,
           spotlight
@@ -170,7 +171,6 @@ export function AgentActivityTimeline({
   completed = false,
   onFinished,
 }: AgentActivityTimelineProps) {
-  const t = useTranslations("chat.agentActivity")
   const locale = useLocale()
   const [items, setItems] = useState<ActivityItem[]>([])
   const [phase, setPhase] = useState<"active" | "done">("active")
@@ -387,15 +387,6 @@ export function AgentActivityTimeline({
     }
   }, [completed])
 
-  const toolCount = useMemo(
-    () => items.filter((i) => i.kind === "tool").length,
-    [items],
-  )
-  const totalMs = useMemo(
-    () => items.reduce((sum, i) => sum + (i.durationMs || 0), 0),
-    [items],
-  )
-
   if (items.length === 0) {
     // Empty: show the unified "thinking" fallback while genuinely working;
     // render nothing once settled or while the answer already streams.
@@ -405,47 +396,29 @@ export function AgentActivityTimeline({
   }
 
   const isDone = phase === "done"
-  // Estilo Replit/Manus: enquanto roda, TODOS os passos revelados ficam
-  // empilhados (um abaixo do outro) sob o cabeçalho, dando a sensação de
-  // evolução em tempo real. Só a ÚLTIMA linha recebe o spotlight (texto primário
-  // + cyan pulsante); as anteriores já viram "concluídas" (ícone-por-tipo
-  // esmaecido). No frame terminal (isDone) a trilha completa é exibida sem
-  // spotlight, logo antes de colapsar na pílula persistente (AgentActivitySummary).
+  // Estilo Replit: enquanto roda, TODOS os passos revelados ficam empilhados (um
+  // abaixo do outro), soltos no fluxo do chat (sem card/cabeçalho), dando a
+  // sensação de evolução em tempo real. Só a ÚLTIMA linha recebe o spotlight
+  // (texto primário + cyan pulsante); as anteriores já viram "concluídas"
+  // (ícone-por-tipo esmaecido). No frame terminal (isDone) a trilha completa é
+  // exibida sem spotlight, logo antes de colapsar na pílula persistente
+  // (AgentActivitySummary).
   const activeIndex = isDone ? -1 : items.length - 1
 
   return (
-    <div
-      className="rounded-xl border border-lia-border-subtle bg-lia-bg-tertiary p-3 animate-in fade-in slide-in-from-bottom-1 duration-200"
+    <ul
+      className="space-y-1.5 animate-in fade-in slide-in-from-bottom-1 duration-200"
       role="status"
       aria-live="polite"
     >
-      <div className="flex items-center gap-2 mb-2.5">
-        {isDone ? (
-          <CheckCircle2 className="w-4 h-4 text-status-success shrink-0" />
-        ) : (
-          <Loader2 className="w-4 h-4 text-wedo-cyan animate-spin motion-reduce:animate-none shrink-0" />
-        )}
-        <span className="text-xs font-medium text-lia-text-primary">
-          {isDone
-            ? `${t("reasoning")} · ${t("steps", { count: items.length })}${
-                totalMs > 0 ? ` · ${formatMs(totalMs)}` : ""
-              }`
-            : `${t("working")}${
-                toolCount > 0 ? ` · ${t("actions", { count: toolCount })}` : ""
-              }`}
-        </span>
-      </div>
-
-      <ul className="space-y-1.5">
-        {items.map((item, idx) => (
-          <ActivityLine
-            key={item.id}
-            item={item}
-            spotlight={!isDone && idx === activeIndex}
-            locale={locale}
-          />
-        ))}
-      </ul>
-    </div>
+      {items.map((item, idx) => (
+        <ActivityLine
+          key={item.id}
+          item={item}
+          spotlight={!isDone && idx === activeIndex}
+          locale={locale}
+        />
+      ))}
+    </ul>
   )
 }

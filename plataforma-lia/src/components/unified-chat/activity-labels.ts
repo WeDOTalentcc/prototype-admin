@@ -17,6 +17,14 @@ import {
   FileText,
   Lightbulb,
   Wrench,
+  Brain,
+  PenLine,
+  Terminal,
+  Calendar,
+  Mail,
+  Users,
+  Briefcase,
+  Save,
 } from "lucide-react"
 
 type LangMap = Record<string, Record<string, string>>
@@ -83,6 +91,21 @@ export function toolLabel(name: string, locale: string): string {
 }
 
 /**
+ * Ícone semântico por FASE de raciocínio (estilo Replit): "entender" e "compor"
+ * recebem ícones distintos, em vez de um cérebro genérico pra tudo. Fallback:
+ * cérebro (raciocínio).
+ */
+const PHASE_ICONS: Record<string, LucideIcon> = {
+  understanding: Brain,
+  composing: PenLine,
+}
+
+/** Componente de ícone lucide para a FASE de raciocínio (fallback: Brain). */
+export function phaseIcon(key: string): LucideIcon {
+  return PHASE_ICONS[key] ?? Brain
+}
+
+/**
  * Ícone semântico por TIPO de ação (estilo Replit/Manus): cada ferramenta mostra
  * um ícone que comunica o que está acontecendo (busca = lupa, estatística =
  * gráfico, listagem = lista…), em vez de um check genérico para tudo. O estado
@@ -119,7 +142,56 @@ function toolIconByHeuristic(name: string): LucideIcon | undefined {
   )
     return BarChart3
   if (n.includes("suggestion") || n.includes("recommend")) return Lightbulb
-  if (n.includes("detail") || n.includes("get_") || n.includes("read"))
+  if (
+    n.includes("schedule") ||
+    n.includes("interview") ||
+    n.includes("calendar") ||
+    n.includes("meeting") ||
+    n.includes("availability")
+  )
+    return Calendar
+  if (
+    n.includes("message") ||
+    n.includes("email") ||
+    n.includes("mail") ||
+    n.includes("notify") ||
+    n.includes("send")
+  )
+    return Mail
+  if (
+    n.includes("run") ||
+    n.includes("exec") ||
+    n.includes("command") ||
+    n.includes("shell") ||
+    n.includes("code") ||
+    n.includes("script")
+  )
+    return Terminal
+  if (
+    n.includes("job") ||
+    n.includes("vaga") ||
+    n.includes("requisition") ||
+    n.includes("position") ||
+    n.includes("vacancy")
+  )
+    return Briefcase
+  if (n.includes("candidate") || n.includes("talent") || n.includes("people"))
+    return Users
+  if (
+    n.includes("save") ||
+    n.includes("create") ||
+    n.includes("update") ||
+    n.includes("publish") ||
+    n.includes("sync") ||
+    n.includes("import")
+  )
+    return Save
+  if (
+    n.includes("detail") ||
+    n.includes("get_") ||
+    n.includes("read") ||
+    n.includes("fetch")
+  )
     return FileText
   return undefined
 }

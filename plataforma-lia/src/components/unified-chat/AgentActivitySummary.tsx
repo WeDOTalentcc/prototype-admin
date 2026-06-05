@@ -1,19 +1,20 @@
 "use client"
 
 /**
- * AgentActivitySummary — persistent, collapsible record of agent activity for a
- * completed turn (Fase 3 / Gap #3). Unlike AgentActivityTimeline (live, unmounts
- * at turn end), this renders inside the finished assistant message from the
- * activity snapshot buffered into `message.metadata.agent_activity`, so the
- * reasoning trail stays in history (Replit/Manus-style) and expands to the full
- * step list on click — never a mute "N ações" that vanishes.
+ * AgentActivitySummary — registro persistente e clean (estilo Replit) da
+ * atividade do agente num turno concluído. Diferente da AgentActivityTimeline
+ * (ao vivo, desmonta no fim do turno), renderiza dentro da mensagem finalizada
+ * a partir do snapshot em `message.metadata.agent_activity`, mantendo a trilha
+ * no histórico. Colapsado: ícones-prévia das ações + contagem (sem card, sem a
+ * palavra "Raciocínio"); clica e expande a lista completa.
  */
 
 import React, { useMemo, useState } from "react"
-import { ChevronDown, ChevronRight, XCircle, Brain, Sparkles } from "lucide-react"
+import { ChevronDown, ChevronRight, XCircle } from "lucide-react"
+import type { LucideIcon } from "lucide-react"
 import { useTranslations, useLocale } from "next-intl"
 import { cn } from "@/lib/utils"
-import { phaseLabel, toolLabel, toolIcon } from "./activity-labels"
+import { phaseLabel, toolLabel, toolIcon, phaseIcon } from "./activity-labels"
 
 export interface AgentActivityItem {
   kind: string // "tool" | "reasoning"
@@ -26,9 +27,18 @@ interface AgentActivitySummaryProps {
   items: AgentActivityItem[]
 }
 
+const MAX_PREVIEW_ICONS = 4
+
 function fmt(ms?: number): string {
   if (ms == null) return ""
   return ms >= 1000 ? `${(ms / 1000).toFixed(1)}s` : `${ms}ms`
+}
+
+/** Ícone por TIPO (erro = X vermelho, fase = ícone de raciocínio, tool = ícone
+ *  por tipo). O estado é comunicado pela cor no componente que renderiza. */
+function iconFor(item: AgentActivityItem): LucideIcon {
+  if (item.status === "error") return XCircle
+  return item.kind === "reasoning" ? phaseIcon(item.name) : toolIcon(item.name)
 }
 
 export function AgentActivitySummary({ items }: AgentActivitySummaryProps) {
@@ -39,58 +49,85 @@ export function AgentActivitySummary({ items }: AgentActivitySummaryProps) {
     () => items.reduce((sum, i) => sum + (i.durationMs || 0), 0),
     [items],
   )
+  // Só ferramentas → "N ações"; mistura com raciocínio → "N passos".
+  const allTools = useMemo(
+    () => items.length > 0 && items.every((i) => i.kind === "tool"),
+    [items],
+  )
 
   if (!items.length) return null
 
+  const countLabel = allTools
+    ? t("actions", { count: items.length })
+    : t("steps", { count: items.length })
+  const preview = items.slice(0, MAX_PREVIEW_ICONS)
+
   return (
-    <div className="mt-2 rounded-md border border-lia-border-subtle bg-lia-bg-secondary/40 overflow-hidden">
+    <div className="mt-1.5">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
-        className="flex w-full items-center gap-2 px-2.5 py-1.5 text-xs text-lia-text-secondary hover:bg-lia-bg-tertiary/60 hover:text-lia-text-primary transition-colors motion-reduce:transition-none"
+        className="group flex items-center gap-1.5 -mx-1.5 rounded-md px-1.5 py-1 text-xs text-lia-text-secondary hover:bg-lia-bg-secondary/60 hover:text-lia-text-primary transition-colors motion-reduce:transition-none"
       >
         {open ? (
           <ChevronDown className="w-3.5 h-3.5 shrink-0" />
         ) : (
           <ChevronRight className="w-3.5 h-3.5 shrink-0" />
         )}
-        <Sparkles className="w-3.5 h-3.5 text-wedo-cyan shrink-0" />
-        <span className="font-medium text-lia-text-primary">{t("reasoning")}</span>
-        <span className="text-lia-text-secondary">
-          · {t("steps", { count: items.length })}
+        {!open && (
+          <span className="flex items-center gap-1" aria-hidden="true">
+            {preview.map((item, idx) => {
+              const Icon = iconFor(item)
+              return (
+                <Icon
+                  key={`${item.name}-${idx}`}
+                  className={cn(
+                    "w-3.5 h-3.5 shrink-0",
+                    item.status === "error"
+                      ? "text-status-error"
+                      : "text-lia-text-secondary",
+                  )}
+                />
+              )
+            })}
+          </span>
+        )}
+        <span>
+          {countLabel}
           {totalMs > 0 ? ` · ${fmt(totalMs)}` : ""}
         </span>
       </button>
 
       {open && (
-        <ul className="px-3 pb-2.5 pt-0.5 space-y-1.5 border-t border-lia-border-subtle/60 animate-in fade-in slide-in-from-top-1 duration-200">
+        <ul className="mt-1 space-y-1.5 pl-5 animate-in fade-in slide-in-from-top-1 duration-200">
           {items.map((item, idx) => {
-            const ToolIcon = toolIcon(item.name)
+            const Icon = iconFor(item)
             return (
-            <li
-              key={`${item.name}-${idx}`}
-              className={cn(
-                "flex items-center gap-2 text-xs text-lia-text-secondary",
-                idx === 0 && "pt-1.5",
-              )}
-            >
-              {item.kind === "reasoning" ? (
-                <Brain className="w-3.5 h-3.5 text-lia-text-secondary shrink-0" />
-              ) : item.status === "error" ? (
-                <XCircle className="w-3.5 h-3.5 text-status-error shrink-0" />
-              ) : (
-                <ToolIcon className="w-3.5 h-3.5 text-lia-text-secondary shrink-0" />
-              )}
-              <span className="truncate">
-                {item.kind === "tool"
-                  ? toolLabel(item.name, locale)
-                  : phaseLabel(item.name, locale)}
-              </span>
-              {item.durationMs != null && (
-                <span className="ml-auto tabular-nums">{fmt(item.durationMs)}</span>
-              )}
-            </li>
+              <li
+                key={`${item.name}-${idx}`}
+                className="flex items-center gap-2 text-xs text-lia-text-secondary"
+              >
+                <Icon
+                  className={cn(
+                    "w-3.5 h-3.5 shrink-0",
+                    item.status === "error"
+                      ? "text-status-error"
+                      : "text-lia-text-secondary",
+                  )}
+                  aria-hidden="true"
+                />
+                <span className="truncate">
+                  {item.kind === "tool"
+                    ? toolLabel(item.name, locale)
+                    : phaseLabel(item.name, locale)}
+                </span>
+                {item.durationMs != null && (
+                  <span className="ml-auto tabular-nums">
+                    {fmt(item.durationMs)}
+                  </span>
+                )}
+              </li>
             )
           })}
         </ul>

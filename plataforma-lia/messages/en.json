@@ -338,9 +338,7 @@
   },
   "chat": {
     "agentActivity": {
-      "working": "Working",
       "thinking": "Thinking",
-      "reasoning": "Reasoning",
       "actions": "{count, plural, one {# action} other {# actions}}",
       "steps": "{count, plural, one {# step} other {# steps}}"
     },
