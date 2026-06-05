@@ -26,7 +26,7 @@ const FRAMEWORK_COLORS: Record<string, string> = {
  * WsiQuestionsPanel — F6 HITL approval panel.
  * Shows generated questions as cards. Recruiter can approve/edit/regenerate each.
  */
-export function WsiQuestionsPanel({ data, requiresApproval, onApprove, onReject, onToggleApprove }: Props) {
+export function WsiQuestionsPanel({ data, requiresApproval, onApprove, onToggleApprove }: Props) {
   const d = data as unknown as WsiQuestionsData
   const questions = d.questions || []
   const mode = d.screening_mode
@@ -222,11 +222,13 @@ export function WsiQuestionsPanel({ data, requiresApproval, onApprove, onReject,
       {requiresApproval && questions.length > 0 && (
         <div className="flex-shrink-0 px-4 py-3 border-t border-lia-border-subtle bg-lia-bg-primary flex items-center gap-2">
           <button
-            onClick={onReject}
+            onClick={() =>
+              window.dispatchEvent(new CustomEvent("lia:wizard-regenerate-all"))
+            }
             className="flex items-center gap-1.5 px-3 py-2 rounded-md border border-lia-border-subtle text-sm font-medium text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
           >
             <RefreshCw className="w-3.5 h-3.5" />
-            Regenerar
+            Gerar novas
           </button>
           <button
             onClick={() => {

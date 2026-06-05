@@ -228,12 +228,21 @@ export function useWizardIntegration({
       sendMessage(`Tentar novamente: ${label}`)
     }
 
+    // Botao "Gerar novas" (todas) do WsiQuestionsPanel (item 2 polish
+    // 2026-06-05). Caminho PROVADO sendMessage->classifier (mesmo dos
+    // per-question), NAO sendApproval — que no-opa sem hitlRef no estagio do
+    // wizard. O wsi_questions_gate classifica como regenerate_all.
+    function handleRegenerateAll() {
+      sendMessage("Regenerar todas as perguntas de triagem")
+    }
+
     const c1 = onCustomEvent("lia:wizard-edit-question", handleEditQuestion)
     const c2 = onCustomEvent("lia:wizard-regenerate-question", handleRegenerateQuestion)
     const c3 = onCustomEvent("lia:wizard-remove-question", handleRemoveQuestion)
     const c4 = onCustomEvent("lia:wizard-reorder-questions", handleReorderQuestions)
     const c5 = onCustomEvent("lia:wizard-retry-stage", handleRetryStage)
-    return () => { c1(); c2(); c3(); c4(); c5() }
+    const c6 = onCustomEvent("lia:wizard-regenerate-all", handleRegenerateAll)
+    return () => { c1(); c2(); c3(); c4(); c5(); c6() }
   }, [isWizardActive, sendMessage])
 
   // Prefill message listener (used by DonePanel "Criar outra vaga")
