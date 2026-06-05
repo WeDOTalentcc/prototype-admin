@@ -1,7 +1,9 @@
 import { describe, it, expect, vi } from "vitest"
 import { render, screen } from "@testing-library/react"
+import { NextIntlClientProvider } from "next-intl"
 import { KanbanCard } from "../KanbanCard"
 import type { KanbanItem } from "../types"
+import ptBRMessages from "../../../../../messages/pt-BR.json"
 
 const baseItem: KanbanItem = {
   id: "1",
@@ -30,14 +32,16 @@ const infoLabels = {
 
 function renderCard(item: KanbanItem) {
   return render(
-    <KanbanCard
-      item={item}
-      index={0}
-      onClick={vi.fn()}
-      isDragDisabled
-      funnelLabels={funnelLabels}
-      infoLabels={infoLabels}
-    />,
+    <NextIntlClientProvider locale="pt-BR" messages={ptBRMessages}>
+      <KanbanCard
+        item={item}
+        index={0}
+        onClick={vi.fn()}
+        isDragDisabled
+        funnelLabels={funnelLabels}
+        infoLabels={infoLabels}
+      />
+    </NextIntlClientProvider>,
   )
 }
 
