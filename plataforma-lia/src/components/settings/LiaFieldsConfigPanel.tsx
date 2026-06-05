@@ -33,7 +33,6 @@ import {
 } from "lucide-react"
 import { textStyles } from "@/lib/design-tokens"
 import { HubLoadingState, ConfigurableFieldCard } from "./_shared"
-import { LiaImpactSummary } from "./lia/LiaImpactSummary"
 import { apiFetch } from "@/lib/api/api-fetch"
 import { notifyChatOfSettingsUpdate } from "@/lib/api/settings-notify"
 import useCompanyId from "@/hooks/company/useCompanyId"
@@ -303,8 +302,6 @@ export function LiaFieldsConfigPanel() {
         </TabsList>
 
         <TabsContent value="fields" className="space-y-6 mt-4">
-          {/* Fase 5.4: resumo global no topo (absorve a antiga aba Visibilidade) */}
-          <LiaImpactSummary />
           {/* P2-7 (audit 2026-05-26): batch actions bar — opera sobre todos
               os 34 toggles de uma vez. Confirmacao via window.confirm. */}
           <div
