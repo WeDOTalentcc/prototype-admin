@@ -11,6 +11,7 @@ import { EditQueryModal } from "@/components/pages/candidates/EditQueryModal"
 import { PreviewSuggestionModal } from "@/components/pages/candidates/PreviewSuggestionModal"
 import { DeleteArchetypeModal } from "@/components/pages/candidates/DeleteArchetypeModal"
 import { UnsavedPearchWarningModal } from "@/components/modals/unsaved-pearch-warning-modal"
+import { useNavGuardStore } from "@/stores/nav-guard-store"
 import dynamic from "next/dynamic"
 import { toast } from "sonner"
 import type { CandidatesPageModalsProps, ModalArchetype, ModalChatMessage } from "./CandidatesPageModals.types"
@@ -236,7 +237,7 @@ export function CandidatesSearchModals(props: CandidatesSearchModalsProps) {
 
       <UnsavedPearchWarningModal
         isOpen={p.showUnsavedWarningModal}
-        onClose={() => { p.setShowUnsavedWarningModal(false); p.setPendingTabChange(null) }}
+        onClose={() => { p.setShowUnsavedWarningModal(false); p.setPendingTabChange(null); useNavGuardStore.getState().clear() }}
         onSaveAndExit={p.handleSaveAllAndExit}
         onExitWithoutSaving={p.handleExitWithoutSaving}
         unsavedCount={p.unsavedPearchCandidates.length}

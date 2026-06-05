@@ -3,6 +3,7 @@
 import { useState, Suspense, useEffect, useRef } from "react"
 import React from "react"
 import { useRouter, usePathname } from "next/navigation"
+import { useNavGuardStore } from "@/stores/nav-guard-store"
 import { useLocale } from "next-intl"
 import { useLiaChatContext } from "@/contexts/lia-float-context"
 import { useKeyboardShortcuts } from "@/hooks/shared/use-keyboard-shortcuts"
@@ -340,12 +341,21 @@ export function DashboardApp({ initialPage = "Conversar", children }: DashboardA
       return
     }
     const normalized = normalizePageLabel(page)
-    setCurrentPage(normalized)
-
-    const route = pathFromLabel(normalized)
-    if (route) {
-      router.push(`/${locale}${route}`)
+    const proceed = () => {
+      setCurrentPage(normalized)
+      const route = pathFromLabel(normalized)
+      if (route) {
+        router.push(`/${locale}${route}`)
+      }
     }
+    // #6 guard: pagina ativa (ex.: funil com candidatos globais nao salvos)
+    // registra um guard; se ativo, adiamos a navegacao ate o usuario confirmar.
+    const navGuard = useNavGuardStore.getState()
+    if (navGuard.active) {
+      navGuard.requestLeave(proceed)
+      return
+    }
+    proceed()
   }
 
   const handleRecentItemClick = (item: RecentItem) => {

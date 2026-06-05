@@ -4,6 +4,7 @@ import React from "react"
 import type { Candidate } from "../types"
 import { toast } from "sonner"
 import { isGlobalSource } from "@/lib/utils/source-detection"
+import { useNavGuardStore } from "@/stores/nav-guard-store"
 
 interface CandidateExperience {
   company?: string
@@ -429,6 +430,10 @@ export function useCandidatesActions(ctx: CandidatesActionsContext) {
       setCandidates([])
       setShowSearchResults(false)
       setShowUnsavedWarningModal(false)
+      {
+        const pp = useNavGuardStore.getState().pendingProceed
+        if (pp) { useNavGuardStore.getState().clear(); pp() }
+      }
       if (ctx.pendingTabChange) {
         setActiveTab(ctx.pendingTabChange!)
         setPendingTabChange(null)
@@ -447,6 +452,10 @@ export function useCandidatesActions(ctx: CandidatesActionsContext) {
     setCandidates([])
     setShowSearchResults(false)
     setShowUnsavedWarningModal(false)
+    {
+      const pp = useNavGuardStore.getState().pendingProceed
+      if (pp) { useNavGuardStore.getState().clear(); pp() }
+    }
     if (ctx.pendingTabChange) {
       setActiveTab(ctx.pendingTabChange!)
       setPendingTabChange(null)

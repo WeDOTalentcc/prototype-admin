@@ -20,6 +20,8 @@ import { useCandidatesViewState } from "@/hooks/candidates/use-candidates-view-s
 import type { Candidate } from "@/components/pages/candidates/types"
 
 import { useCandidatesUIState } from "./useCandidatesUIState"
+import { useNavGuardStore } from "@/stores/nav-guard-store"
+import { useUnsavedChanges } from "@/hooks/shared/useUnsavedChanges"
 import { useCandidatesNavigation } from "./useCandidatesNavigation"
 import { useCandidatesPageEffects } from "./useCandidatesPageEffects"
 import { useCandidatesSearchComposition } from "./useCandidatesSearchComposition"
@@ -252,6 +254,20 @@ export function useCandidatesPageCore({
 
   const unsavedPearchCandidates = candidates.filter(c => c.source === 'pearch')
   const hasUnsavedPearchCandidates = unsavedPearchCandidates.length > 0 && showSearchResults
+
+  // #6 guard de saida (candidatos globais nao salvos). Registra no nav-guard-store;
+  // o handleNavigate central (dashboard-app) consulta antes de sair da rota.
+  // useUnsavedChanges cobre fechar/recarregar a aba (beforeunload).
+  const setNavGuardActive = useNavGuardStore(s => s.setActive)
+  const pendingLeaveProceed = useNavGuardStore(s => s.pendingProceed)
+  useUnsavedChanges(hasUnsavedPearchCandidates)
+  useEffect(() => {
+    setNavGuardActive(hasUnsavedPearchCandidates)
+    return () => setNavGuardActive(false)
+  }, [hasUnsavedPearchCandidates, setNavGuardActive])
+  useEffect(() => {
+    if (pendingLeaveProceed) setShowUnsavedWarningModal(true)
+  }, [pendingLeaveProceed, setShowUnsavedWarningModal])
   const searchTemplates = SEARCH_TEMPLATES
   const [itemsPerPage] = useState(50)
   const tableContainerRef = useRef<HTMLDivElement>(null)
