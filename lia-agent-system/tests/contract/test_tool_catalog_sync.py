@@ -16,15 +16,23 @@ from app.shared.tool_catalog import (
 
 
 def test_catalog_cobre_todos_os_tools_dos_registries_canonicos():
-    """Zero órfão: todo tool dos _CANONICAL_SOURCES está no catálogo."""
-    import importlib
+    """Zero órfão: todo tool das fontes carregadas está no catálogo."""
+    from app.shared.tool_catalog import _load_sources
 
     cat = build_tool_catalog()
-    for key, (mod_path, fn_name) in _CANONICAL_SOURCES.items():
-        module = importlib.import_module(mod_path)
-        for td in getattr(module, fn_name)():
+    for key, tools in _load_sources().items():
+        for td in tools:
             assert td.name in cat, f"tool {td.name} ({key}) ausente do catálogo"
             assert key in cat[td.name].source_registries
+
+
+def test_todas_fontes_canonicas_carregam():
+    """Regressao: toda fonte declarada em _CANONICAL_SOURCES deve importar."""
+    from app.shared.tool_catalog import _CANONICAL_SOURCES, _load_sources
+
+    loaded = _load_sources()
+    missing = set(_CANONICAL_SOURCES) - set(loaded)
+    assert not missing, f"fontes que falharam ao carregar: {missing}"
 
 
 def test_meta_shape_valido():

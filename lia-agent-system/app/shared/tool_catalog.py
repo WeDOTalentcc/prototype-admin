@@ -61,6 +61,15 @@ _CANONICAL_SOURCES: dict[str, tuple[str, str]] = {
         "app.domains.workforce.agents.workforce_tool_registry",
         "get_workforce_tools",
     ),
+    "analytics": ("app.domains.analytics.agents.analytics_tool_registry", "get_analytics_tools"),
+    "ats_integration": ("app.domains.ats_integration.agents.ats_integration_tool_registry", "get_ats_integration_tools"),
+    "automation": ("app.domains.automation.agents.automation_tool_registry", "get_automation_tools"),
+    "autonomous": ("app.domains.autonomous.agents.autonomous_tool_registry", "get_autonomous_tools"),
+    "communication": ("app.domains.communication.agents.communication_tool_registry", "get_communication_tools"),
+    "company_settings": ("app.domains.company_settings.agents.company_tool_registry", "get_company_settings_tools"),
+    "policy": ("app.domains.hiring_policy.agents.policy_tool_registry", "get_policy_tools"),
+    "sourcing": ("app.domains.sourcing.agents.sourcing_tool_registry", "get_sourcing_tools"),
+    "talent_pool": ("app.domains.talent_pool.agents.talent_pool_tool_registry", "get_talent_pool_tools"),
 }
 
 
@@ -83,6 +92,26 @@ def _scope_overlay() -> dict[str, str]:
     return overlay
 
 
+def _load_sources() -> dict[str, list]:
+    """Importa cada registry de _CANONICAL_SOURCES defensivamente.
+
+    Falha de um registry NAO derruba o catalogo (degrada + loga; o sensor
+    test_todas_fontes_canonicas_carregam pega regressao). Retorna
+    {key: [ToolDefinition]}.
+    """
+    import logging
+
+    log = logging.getLogger(__name__)
+    out: dict[str, list] = {}
+    for key, (mod_path, fn_name) in _CANONICAL_SOURCES.items():
+        try:
+            module = importlib.import_module(mod_path)
+            out[key] = list(getattr(module, fn_name)())
+        except Exception as exc:
+            log.warning("[tool_catalog] fonte %r falhou ao carregar: %s", key, exc)
+    return out
+
+
 def build_tool_catalog() -> dict[str, ToolMeta]:
     """Produtor único: deriva ToolMeta de todos os _CANONICAL_SOURCES.
 
@@ -91,9 +120,8 @@ def build_tool_catalog() -> dict[str, ToolMeta]:
     """
     overlay = _scope_overlay()
     out: dict[str, ToolMeta] = {}
-    for key, (mod_path, fn_name) in _CANONICAL_SOURCES.items():
-        module = importlib.import_module(mod_path)
-        for td in getattr(module, fn_name)():
+    for key, tools in _load_sources().items():
+        for td in tools:
             existing = out.get(td.name)
             if existing is not None:
                 if key not in existing.source_registries:
