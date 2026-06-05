@@ -30,6 +30,21 @@ function scoreTone(score: number): string {
   return "text-lia-text-tertiary";
 }
 
+// Cor da mini-barra de score (familia cyan; baixo = mudo, fairness).
+function scoreBarTone(score: number): string {
+  if (score >= 85) return "bg-wedo-cyan";
+  if (score >= 70) return "bg-wedo-cyan/50";
+  return "bg-lia-text-tertiary/40";
+}
+
+// Iniciais p/ avatar do candidato (1-2 letras).
+function initials(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "?";
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
 function formatCell(v: unknown): string {
   if (v === null || v === undefined) return "—";
   if (Array.isArray(v)) return v.join(", ");
@@ -152,9 +167,18 @@ function EvidenceStackView({ block }: { block: EvidenceStackBlock }) {
 
 function scoreCellValue(v: unknown): React.ReactNode {
   if (typeof v === "number") {
+    const pct = Math.max(0, Math.min(100, v));
     return (
-      <span className={cn("font-semibold tabular-nums", scoreTone(v))}>
-        {Math.round(v)}%
+      <span className="flex items-center gap-1.5">
+        <span className="relative h-1.5 w-10 shrink-0 overflow-hidden rounded-full bg-lia-border-subtle/50">
+          <span
+            className={cn("absolute inset-y-0 left-0 rounded-full", scoreBarTone(pct))}
+            style={{ width: `${Math.max(pct, 3)}%` }}
+          />
+        </span>
+        <span className={cn("tabular-nums font-semibold", scoreTone(pct))}>
+          {Math.round(pct)}
+        </span>
       </span>
     );
   }
@@ -344,24 +368,33 @@ function CandidateCardView({ block }: { block: CandidateCardBlock }) {
     .join(" · ");
   return (
     <div className="rounded-lg border border-lia-border-subtle bg-lia-bg-secondary p-3">
-      <div className="flex items-start justify-between gap-2">
-        <span className="text-sm font-medium text-lia-text-primary">
-          {block.name}
+      <div className="flex items-start gap-2.5">
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-wedo-cyan/10 text-xs font-semibold text-wedo-cyan">
+          {initials(block.name)}
         </span>
-        {block.score != null ? (
-          <span
-            className={cn(
-              "shrink-0 text-sm font-semibold tabular-nums",
-              scoreTone(block.score),
-            )}
-          >
-            {block.score_label} {Math.round(block.score)}%
-          </span>
-        ) : null}
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-2">
+            <span className="truncate text-sm font-semibold text-lia-text-primary">
+              {block.name}
+            </span>
+            {block.score != null ? (
+              <span
+                className={cn(
+                  "shrink-0 text-sm font-semibold tabular-nums",
+                  scoreTone(block.score),
+                )}
+              >
+                {Math.round(block.score)}%
+              </span>
+            ) : null}
+          </div>
+          {meta ? (
+            <p className="mt-0.5 truncate text-xs text-lia-text-tertiary">
+              {meta}
+            </p>
+          ) : null}
+        </div>
       </div>
-      {meta ? (
-        <p className="mt-0.5 text-xs text-lia-text-tertiary">{meta}</p>
-      ) : null}
       {block.recommendation ? (
         <span className="mt-1.5 inline-block rounded-full bg-wedo-cyan/15 px-2 py-0.5 text-xs font-medium text-wedo-cyan">
           {block.recommendation}
