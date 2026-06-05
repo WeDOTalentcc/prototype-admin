@@ -82,27 +82,42 @@ def _extract_map_values(src: str, var_name: str) -> set[str]:
 
 
 def _extract_default_override_keys(src: str) -> set[str]:
-    """Parse _DEFAULT_TENANT_OVERRIDE keys (which are detector names)."""
+    """Parse _DEFAULT_TENANT_OVERRIDE keys (detector names).
+
+    Suporta dois formatos:
+      1. Dict literal estatico: _DEFAULT_TENANT_OVERRIDE = {"name": ...}.
+      2. Builder dinamico: _DEFAULT_TENANT_OVERRIDE = _build_default_tenant_overrides()
+         — a funcao itera _DETECTOR_ALERT_TYPE_MAP.items() e cria um override por
+         detector, entao a cobertura == chaves do map POR CONSTRUCAO.
+    (Fix 2026-06-05: sensor era stale apos refactor do epico de detectores p/ builder.)
+    """
+    def _from_value(value):
+        if isinstance(value, ast.Dict):
+            return {
+                k.value
+                for k in value.keys
+                if isinstance(k, ast.Constant) and isinstance(k.value, str)
+            }
+        if (
+            isinstance(value, ast.Call)
+            and isinstance(value.func, ast.Name)
+            and value.func.id == "_build_default_tenant_overrides"
+        ):
+            return _extract_map_keys(src, "_DETECTOR_ALERT_TYPE_MAP")
+        return None
+
     tree = ast.parse(src)
     for node in ast.walk(tree):
         if isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name) and node.target.id == "_DEFAULT_TENANT_OVERRIDE":
-            value = node.value
-            if isinstance(value, ast.Dict):
-                out: set[str] = set()
-                for k in value.keys:
-                    if isinstance(k, ast.Constant) and isinstance(k.value, str):
-                        out.add(k.value)
-                return out
+            r = _from_value(node.value)
+            if r is not None:
+                return r
         if isinstance(node, ast.Assign):
             for target in node.targets:
                 if isinstance(target, ast.Name) and target.id == "_DEFAULT_TENANT_OVERRIDE":
-                    value = node.value
-                    if isinstance(value, ast.Dict):
-                        out2: set[str] = set()
-                        for k in value.keys:
-                            if isinstance(k, ast.Constant) and isinstance(k.value, str):
-                                out2.add(k.value)
-                        return out2
+                    r = _from_value(node.value)
+                    if r is not None:
+                        return r
     return set()
 
 
