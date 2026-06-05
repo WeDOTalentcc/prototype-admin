@@ -457,6 +457,16 @@ class AgenticLoop:
                     _blocks = _extract_response_blocks(result)
                     if _blocks:
                         response_blocks_acc.extend(_blocks)
+                        # Anti-renarracao (computacional): a tool ja exibiu os
+                        # dados em blocos ricos. Alimenta o LLM com uma nota
+                        # curta em vez do payload, p/ ele NAO repetir a
+                        # tabela/scores em prosa (tabela + texto duplicado).
+                        tool_result_content = (
+                            f"[{len(_blocks)} bloco(s) visual(is) rico(s) ja "
+                            f"exibido(s) ao usuario (tabela/scores/fontes). De "
+                            f"apenas 1 frase curta de enquadramento; NAO repita "
+                            f"os dados em texto.]"
+                        )
                 except Exception as exc:
                     _tool_status = "error"
                     logger.warning(
