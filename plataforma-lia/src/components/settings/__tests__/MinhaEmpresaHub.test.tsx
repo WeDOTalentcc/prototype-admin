@@ -59,6 +59,11 @@ vi.mock("@/components/settings/AnalyzeWebsiteModal", () => ({
   AnalyzeWebsiteModal: () => null,
 }))
 
+vi.mock("@/components/settings/CultureApprovalBanner", () => ({
+  // Fase 5.1 (outra sessao) trouxe React Query; mock evita 'No QueryClient'
+  CultureApprovalBanner: () => null,
+}))
+
 vi.mock("@/components/settings/SettingsEditModeToggle", () => ({
   SettingsEditModeToggle: () => <div data-testid="settings-edit-mode-toggle-mock" />,
 }))

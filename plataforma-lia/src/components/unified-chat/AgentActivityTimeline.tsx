@@ -29,6 +29,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react"
 import { Loader2, CheckCircle2, XCircle, Brain } from "lucide-react"
 import { useTranslations, useLocale } from "next-intl"
+import { cn } from "@/lib/utils"
 import { ThinkingStepsCard } from "./ThinkingStepsCard"
 import { phaseLabel, toolLabel } from "./activity-labels"
 
@@ -86,6 +87,7 @@ export function AgentActivityTimeline({
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const finishTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const phaseRef = useRef<"active" | "done">("active")
+  const hadItemsRef = useRef(false)
   const onFinishedRef = useRef(onFinished)
 
   useEffect(() => {
@@ -205,6 +207,11 @@ export function AgentActivityTimeline({
   useEffect(() => {
     if (completed) {
       if (phaseRef.current === "done") return
+      // A turn with no reasoning/tool steps has no terminal frame worth holding,
+      // so hand off almost immediately (the parent holds the answer during this
+      // grace — a long blank for a bare reply would feel like a stall).
+      const hadAny = hadItemsRef.current || queueRef.current.length > 0
+      const grace = hadAny ? FINISH_GRACE_MS : 120
       // Fast-forward: reveal everything still queued so no reasoning step is
       // lost to the race with the final answer.
       if (timerRef.current) {
@@ -228,7 +235,7 @@ export function AgentActivityTimeline({
       finishTimerRef.current = setTimeout(() => {
         finishTimerRef.current = null
         onFinishedRef.current?.()
-      }, FINISH_GRACE_MS)
+      }, grace)
     } else {
       // (Re)entering an active turn.
       if (finishTimerRef.current) {
@@ -261,6 +268,8 @@ export function AgentActivityTimeline({
     () => items.reduce((sum, i) => sum + (i.durationMs || 0), 0),
     [items],
   )
+  // Keep the completed-effect's grace decision in sync with revealed steps.
+  hadItemsRef.current = items.length > 0
 
   if (items.length === 0) {
     // Empty: show the unified "thinking" fallback while genuinely working;
@@ -271,6 +280,10 @@ export function AgentActivityTimeline({
   }
 
   const isDone = phase === "done"
+  // The active line is the last revealed step while the turn is still running —
+  // it gets the spotlight (primary text + live icon) so the user reads one phrase
+  // at a time, while completed steps recede into a calm muted stack above it.
+  const activeIndex = isDone ? -1 : items.length - 1
 
   return (
     <div
@@ -278,7 +291,7 @@ export function AgentActivityTimeline({
       role="status"
       aria-live="polite"
     >
-      <div className="flex items-center gap-2 mb-2">
+      <div className="flex items-center gap-2 mb-2.5">
         {isDone ? (
           <CheckCircle2 className="w-4 h-4 text-status-success shrink-0" />
         ) : (
@@ -286,7 +299,7 @@ export function AgentActivityTimeline({
         )}
         <span className="text-xs font-medium text-lia-text-primary">
           {isDone
-            ? `${t("actions", { count: items.length })}${
+            ? `${t("reasoning")} · ${t("steps", { count: items.length })}${
                 totalMs > 0 ? ` · ${formatMs(totalMs)}` : ""
               }`
             : `${t("working")}${
@@ -296,32 +309,47 @@ export function AgentActivityTimeline({
       </div>
 
       <ul className="space-y-1.5">
-        {items.map((item) => (
-          <li
-            key={item.id}
-            className="flex items-center gap-2 text-xs text-lia-text-secondary animate-in fade-in slide-in-from-left-1 duration-200"
-          >
-            {item.kind === "reasoning" ? (
-              <Brain className="w-3.5 h-3.5 text-lia-text-secondary shrink-0" />
-            ) : item.status === "running" ? (
-              <Loader2 className="w-3.5 h-3.5 text-wedo-cyan animate-spin motion-reduce:animate-none shrink-0" />
-            ) : item.status === "error" ? (
-              <XCircle className="w-3.5 h-3.5 text-status-error shrink-0" />
-            ) : (
-              <CheckCircle2 className="w-3.5 h-3.5 text-status-success shrink-0" />
-            )}
-            <span className="truncate">
-              {item.kind === "tool"
-                ? toolLabel(item.name, locale)
-                : phaseLabel(item.name, locale)}
-            </span>
-            {item.durationMs != null && (
-              <span className="ml-auto tabular-nums text-lia-text-secondary">
-                {formatMs(item.durationMs)}
+        {items.map((item, idx) => {
+          const isActive = idx === activeIndex
+          return (
+            <li
+              key={item.id}
+              className={cn(
+                "flex items-center gap-2 text-xs animate-in fade-in slide-in-from-left-1 duration-200",
+                isActive
+                  ? "text-lia-text-primary font-medium"
+                  : "text-lia-text-secondary",
+              )}
+            >
+              {item.kind === "reasoning" ? (
+                <Brain
+                  className={cn(
+                    "w-3.5 h-3.5 shrink-0",
+                    isActive
+                      ? "text-wedo-cyan animate-pulse motion-reduce:animate-none"
+                      : "text-lia-text-secondary",
+                  )}
+                />
+              ) : item.status === "running" ? (
+                <Loader2 className="w-3.5 h-3.5 text-wedo-cyan animate-spin motion-reduce:animate-none shrink-0" />
+              ) : item.status === "error" ? (
+                <XCircle className="w-3.5 h-3.5 text-status-error shrink-0" />
+              ) : (
+                <CheckCircle2 className="w-3.5 h-3.5 text-status-success shrink-0" />
+              )}
+              <span className="truncate">
+                {item.kind === "tool"
+                  ? toolLabel(item.name, locale)
+                  : phaseLabel(item.name, locale)}
               </span>
-            )}
-          </li>
-        ))}
+              {item.durationMs != null && (
+                <span className="ml-auto tabular-nums text-lia-text-secondary">
+                  {formatMs(item.durationMs)}
+                </span>
+              )}
+            </li>
+          )
+        })}
       </ul>
     </div>
   )

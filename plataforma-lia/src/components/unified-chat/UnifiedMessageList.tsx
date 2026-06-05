@@ -328,9 +328,10 @@ export function UnifiedMessageList({
     () => messages.find((m) => m.id === _newestLiaId)?.content ?? "",
     [messages, _newestLiaId],
   )
-  const { displayed: _newestLiaDisplayed } = useTypewriter(_newestLiaContent, {
-    enabled: _newestLiaId != null,
-  })
+  // Gate the reveal on `liveActive` (set below): while the live reasoning
+  // timeline is still showing, the answer is held back so the recruiter reads
+  // the reasoning FIRST and the answer types out AFTER it settles (Replit-style).
+  // enabled flips false→true on hand-off, which restarts the typewriter from 0.
 
   // Live activity lifecycle (2026-06-04): decouple the timeline's mount from the
   // raw isThinking/isStreaming flags. They flip to false the instant the
@@ -343,6 +344,19 @@ export function UnifiedMessageList({
   useEffect(() => {
     if (isThinking || isStreaming) setLiveActive(true)
   }, [isThinking, isStreaming])
+  // Failsafe: `liveActive` is normally cleared by the timeline's `onFinished`
+  // hand-off. If that signal never arrives (e.g. the turn ends without the
+  // timeline mounting), the held answer would stay hidden forever — so once the
+  // raw turn flags are both off, force the reveal after a short ceiling.
+  useEffect(() => {
+    if (!liveActive || isThinking || isStreaming) return
+    const t = setTimeout(() => setLiveActive(false), 1500)
+    return () => clearTimeout(t)
+  }, [liveActive, isThinking, isStreaming])
+
+  const { displayed: _newestLiaDisplayed } = useTypewriter(_newestLiaContent, {
+    enabled: _newestLiaId != null && !liveActive,
+  })
 
   return (
     <div
@@ -396,16 +410,43 @@ export function UnifiedMessageList({
                     recruiterName={meta!.recruiterName as string | undefined}
                   />
                 ) : (
-                <div
-                  className="text-[13px] leading-relaxed text-lia-text-primary lia-markdown-content"
-                  dangerouslySetInnerHTML={{
-                    __html: renderMarkdown(
-                      message.id === _newestLiaId
-                        ? _newestLiaDisplayed
-                        : message.content,
-                    ),
-                  }}
-                />
+                  <>
+                    {/* Reasoning record ABOVE the answer (Replit/Manus-style):
+                        a fixed, expandable trail of what LIA did, so the turn
+                        reads reasoning-first / answer-after. Suppressed for the
+                        newest turn while the live timeline still owns the
+                        hand-off (onFinished), to avoid duplicating it. */}
+                    {Array.isArray(
+                      (meta as Record<string, unknown> | undefined)?.agent_activity,
+                    ) &&
+                      ((meta as Record<string, unknown>).agent_activity as unknown[])
+                        .length > 0 &&
+                      !(message.id === _newestLiaId && liveActive) && (
+                        <div className="mb-2">
+                          <AgentActivitySummary
+                            items={
+                              (meta as Record<string, unknown>).agent_activity as never
+                            }
+                          />
+                        </div>
+                      )}
+
+                    {/* Answer — held while the newest turn's live reasoning is
+                        still showing, so the text types out AFTER it settles
+                        instead of competing with the reasoning card. */}
+                    {!(message.id === _newestLiaId && liveActive) && (
+                      <div
+                        className="text-[13px] leading-relaxed text-lia-text-primary lia-markdown-content"
+                        dangerouslySetInnerHTML={{
+                          __html: renderMarkdown(
+                            message.id === _newestLiaId
+                              ? _newestLiaDisplayed
+                              : message.content,
+                          ),
+                        }}
+                      />
+                    )}
+                  </>
                 )}
 
                 {/* Execution plan */}
@@ -414,25 +455,6 @@ export function UnifiedMessageList({
                     plan={message.executionPlan as unknown as ExecutionPlanData}
                   />
                 )}
-
-                {/* Agent activity summary (Fase 3 / Gap #3) — persistente.
-                    Enquanto a timeline ao vivo ainda exibe o frame terminal
-                    "✓ N ações" da mensagem mais recente (liveActive), suprimimos
-                    o resumo no balão para não duplicar — ele assume o lugar
-                    assim que a timeline conclui o hand-off (onFinished). */}
-                {isLia &&
-                  Array.isArray(
-                    (meta as Record<string, unknown> | undefined)?.agent_activity,
-                  ) &&
-                  ((meta as Record<string, unknown>).agent_activity as unknown[])
-                    .length > 0 &&
-                  !(message.id === _newestLiaId && liveActive) && (
-                    <AgentActivitySummary
-                      items={
-                        (meta as Record<string, unknown>).agent_activity as never
-                      }
-                    />
-                  )}
 
                 {/* Flow steps (workflow visual) */}
                 {hasFlowSteps && (
