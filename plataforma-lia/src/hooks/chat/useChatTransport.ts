@@ -86,6 +86,56 @@ export function maybeDispatchSettingsUpdated(event: TransportEvent): void {
   }
 }
 
+// FE-1 (wizard panel SSE parity) — Bridge the wizard panel signal to the
+// `lia:wizard-stage-payload` window event from the SSE/WS transport, mirroring
+// useChatSocket.ts (WS) and useChatMessages.ts (REST) 1:1 so the dynamic panel
+// opens regardless of transport. Backend (commit 54f2d48d) ships the signal in
+// TWO shapes over this stream:
+//   1. a top-level `wizard_stage` frame (mirrors the WS frame); and
+//   2. nested as `ws_stage_payload` on the structured `message` frame (bubble).
+// Dedup: the same logical payload (thread_id:stage:completeness) is fired at
+// most once even if it arrives via both shapes.
+let _lastWizardStageKey: string | null = null
+
+function dispatchWizardStagePayload(src: Record<string, unknown>): void {
+  const stage = src.stage
+  if (typeof stage !== "string" || stage.length === 0) return // incompleto — ignora
+  const threadId = src.thread_id
+  const completeness = (src.completeness as number) ?? 0
+  const key = `${String(threadId ?? "")}:${stage}:${completeness}`
+  if (key === _lastWizardStageKey) return // dedup — já despachado este payload
+  _lastWizardStageKey = key
+  window.dispatchEvent(
+    new CustomEvent("lia:wizard-stage-payload", {
+      detail: {
+        type: "wizard_stage",
+        thread_id: threadId,
+        stage,
+        data: (src.data as Record<string, unknown>) || {},
+        completeness,
+        requires_approval: Boolean(src.requires_approval),
+      },
+    }),
+  )
+}
+
+export function maybeDispatchWizardStage(event: TransportEvent): void {
+  if (typeof window === "undefined") return
+  // chat-page path — dedicated top-level SSE/WS frame IS the payload.
+  if (event.type === "wizard_stage") {
+    dispatchWizardStagePayload(event as unknown as Record<string, unknown>)
+    return
+  }
+  // bubble path — nested inside the structured message frame.
+  if (event.type === "message") {
+    const nested = (event as unknown as Record<string, unknown>)
+      .ws_stage_payload
+    if (nested && typeof nested === "object") {
+      dispatchWizardStagePayload(nested as Record<string, unknown>)
+    }
+  }
+}
+
 export interface UseChatTransportOptions {
   autoReconnect?: boolean
   maxReconnectAttempts?: number
@@ -206,6 +256,10 @@ export function useChatTransport(
     // Out-of-band: never fires for UI-originated saves (those carry
     // `source: "ui"` and are handled by the existing origin guard).
     maybeDispatchSettingsUpdated(event)
+
+    // FE-1 — open the wizard side-panel from the SSE/WS transport, at parity
+    // with the WS (useChatSocket.ts) and REST (useChatMessages.ts) paths.
+    maybeDispatchWizardStage(event)
 
     switch (event.type) {
       case "thinking":

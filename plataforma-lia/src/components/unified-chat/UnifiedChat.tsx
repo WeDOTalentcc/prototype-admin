@@ -1036,15 +1036,25 @@ export function UnifiedChat({
     [close, open],
   );
 
-  // Wizard de alto esforco (criar vaga) sai do chat lateral e vai para a
+  // Wizard de alto esforco (criar vaga) sai do chat lateral/bolha e vai para a
   // tela cheia automaticamente -- uma vez por sessao de wizard. Enterprise
   // pattern (Salesforce/Jira/HubSpot): chat lateral e entry point; a criacao
   // estruturada acontece no canvas dedicado. handleModeChange("fullscreen")
   // ja e o bridge canonico (close() + lia:navigate-chat-page) -- nao criamos
   // rota concorrente. Respeita renderMode "inline" (chat embutido nao migra).
+  //
+  // FE-3 (2026-06-05): dispara no PRIMEIRO stage que precisa do painel lateral
+  // (qualquer SPLIT_STAGE), nao apenas "intake". O wizard pode iniciar/retomar
+  // em estagios diferentes via SSE/WS (ex.: jd_gate/jd_enrichment) e a bolha
+  // precisa escalar pra tela cheia em todos esses casos -- o painel HITL so
+  // renderiza com o layout completo. A continuidade da conversa e preservada
+  // porque chatConversationId e compartilhado no lia-float-context e o bridge
+  // (lia:navigate-chat-page) carrega a mesma conversa.
+  const _autoFsStage = dynamicPanel?.stage;
   useEffect(() => {
     if (
-      dynamicPanel?.stage === "intake" &&
+      !!_autoFsStage &&
+      SPLIT_STAGES.includes(_autoFsStage as WizardStage) &&
       mode !== "fullscreen" &&
       renderMode !== "inline" &&
       !autoFullscreenDone.current
@@ -1052,7 +1062,7 @@ export function UnifiedChat({
       autoFullscreenDone.current = true;
       handleModeChange("fullscreen");
     }
-  }, [dynamicPanel?.stage, mode, renderMode, handleModeChange]);
+  }, [_autoFsStage, mode, renderMode, handleModeChange]);
 
   const handleFileButtonClick = useCallback(() => {
     fileInputRef.current?.click();

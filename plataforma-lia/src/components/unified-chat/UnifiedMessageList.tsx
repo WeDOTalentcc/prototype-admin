@@ -309,11 +309,6 @@ export function UnifiedMessageList({
   const containerRef = useRef<HTMLDivElement>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
 
-  // Auto-scroll to bottom on new messages
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" })
-  }, [messages.length, streamingContent, isThinking])
-
   // Typewriter (2026-06-04): o provider entrega a resposta num burst (sem
   // streaming incremental real). Revelamos a mensagem LIA mais recente
   // char-a-char (efeito Manus). Dirigido pelo conteudo da msg mais nova, entao
@@ -359,6 +354,26 @@ export function UnifiedMessageList({
   const { displayed: _newestLiaDisplayed } = useTypewriter(_newestLiaContent, {
     enabled: _newestLiaId != null && !liveActive,
   })
+
+  // Auto-scroll to bottom (FE-2 2026-06-05): track the typewriter reveal
+  // (`_newestLiaDisplayed`) and `liveActive` so the view follows each typed
+  // chunk — not just new messages / raw streaming flags. Declared AFTER the
+  // typewriter so it can depend on its output (no early return between hooks).
+  // `behavior: "auto"` while content is revealing avoids smooth-scroll fighting
+  // the rapid per-char updates; smooth otherwise for a calm settle.
+  const _isRevealing = _newestLiaId != null && !liveActive
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({
+      behavior: _isRevealing ? "auto" : "smooth",
+    })
+  }, [
+    messages.length,
+    streamingContent,
+    isThinking,
+    _newestLiaDisplayed,
+    liveActive,
+    _isRevealing,
+  ])
 
   return (
     <div
