@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react"
-import { Brain, Sparkles } from "lucide-react"
+import { Brain } from "lucide-react"
 import { useTranslations, useLocale } from "next-intl"
 import { phaseLabel } from "./activity-labels"
 
@@ -31,7 +31,7 @@ export function ThinkingStepsCard({ steps }: ThinkingStepsCardProps) {
         role="status"
         aria-live="polite"
       >
-        <Sparkles className="w-3.5 h-3.5 text-wedo-cyan animate-pulse motion-reduce:animate-none shrink-0" aria-hidden="true" />
+        <Brain className="w-3.5 h-3.5 text-wedo-cyan animate-pulse motion-reduce:animate-none shrink-0" aria-hidden="true" />
         <span className="text-xs text-lia-text-secondary">{t("thinking")}</span>
         <ThinkingDots />
       </div>
