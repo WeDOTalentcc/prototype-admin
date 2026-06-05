@@ -348,6 +348,12 @@ class WizardOrchestrator:
         working_state = dict(state)
         accumulated_updates: dict[str, Any] = {}
         tool_calls: list[str] = []
+        # Acumula o texto emitido em QUALQUER iteração. O modelo pode emitir
+        # texto + tool_use no MESMO turno (ex.: "Registrei o título" + chamada
+        # a set_job_fields); sem acumular, esse texto se perderia quando o loop
+        # executa a tool e continua, e a iteração seguinte (vazia) cairia no
+        # fallback genérico. Ver TDD test_wizard_orchestrator_text_accumulation.
+        accumulated_text: list[str] = []
         max_iters = _get_max_iterations()
 
         for iteration in range(1, max_iters + 1):
@@ -386,10 +392,14 @@ class WizardOrchestrator:
                 for b in content_blocks
                 if getattr(b, "type", None) == "text"
             ]
+            accumulated_text.extend(p for p in text_parts if p)
 
             # Sem tool_use → turno termina com a resposta textual do modelo.
+            # Usa o texto ACUMULADO (não só o desta iteração): se o modelo
+            # falou + chamou tool numa iteração anterior, esse texto persiste
+            # mesmo que a iteração final venha vazia.
             if not tool_uses:
-                reply = " ".join(p for p in text_parts if p).strip()
+                reply = " ".join(accumulated_text).strip()
                 return OrchestratorResult(
                     reply=reply or "Certo! Como deseja seguir?",
                     state_updates=accumulated_updates,
