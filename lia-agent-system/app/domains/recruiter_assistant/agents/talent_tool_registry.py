@@ -133,6 +133,7 @@ async def _wrap_view_candidate_profile(**kwargs: Any) -> dict[str, Any]:
     logger.info(f"[talent_tools] view_candidate_profile called for candidate={candidate_id}")
 
     profile: dict[str, Any] = {"candidate_id": candidate_id, "profile_loaded": False}
+    profile_error: str | None = None
     try:
         async with AsyncSessionLocal() as db:
             repo = CandidateRepository(db)
@@ -148,7 +149,13 @@ async def _wrap_view_candidate_profile(**kwargs: Any) -> dict[str, Any]:
             }
         profile = data
     except Exception as e:
-        logger.warning(f"[talent_tools] view_candidate_profile DB error: {e}")
+        # REGRA 4: NUNCA mascarar falha de path crítico como success silencioso.
+        # Falhar explícito com flag + needs_manual_review (Opção B).
+        logger.error(
+            f"[talent_tools] view_candidate_profile DB error: {e}",
+            exc_info=True,
+        )
+        profile_error = str(e)
 
     _rrp_blocks: list = []
     try:
@@ -186,6 +193,21 @@ async def _wrap_view_candidate_profile(**kwargs: Any) -> dict[str, Any]:
         logger.warning(f"[talent_tools] candidate_card skipped: {_e}")
     if _rrp_blocks:
         profile = {**profile, "response_blocks": _rrp_blocks}
+    if profile_error is not None:
+        # Carregamento do perfil falhou: reportar honestamente (REGRA 4).
+        return {
+            "success": False,
+            "data": {
+                **profile,
+                "profile_loaded": False,
+                "needs_manual_review": True,
+                "error": profile_error,
+            },
+            "message": (
+                f"Falha ao carregar o perfil completo do candidato "
+                f"{candidate_id}: {profile_error}"
+            ),
+        }
     return {
         "success": True,
         "data": profile,

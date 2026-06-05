@@ -723,21 +723,22 @@ class CandidateRepository:
 
         edu_rows = await self.db.execute(
             sa_text("""
-                SELECT institution, degree, field_of_study, start_year, end_year, is_current
+                SELECT institution, degree, field_of_study, start_date, end_date, is_completed
                 FROM candidate_education
                 WHERE candidate_id = :cid
-                ORDER BY end_year DESC NULLS FIRST, start_year DESC NULLS FIRST
+                ORDER BY end_date DESC NULLS FIRST, start_date DESC NULLS FIRST
             """),
             {"cid": candidate_id},
         )
         education = []
         for r in edu_rows.mappings():
-            end_label = "atual" if r["is_current"] else (r["end_year"] or "?")
+            # is_completed=False => curso em andamento => "atual"
+            end_label = (r["end_date"] or "?") if r["is_completed"] else "atual"
             education.append({
                 "institution": r["institution"],
                 "degree": r["degree"],
                 "field_of_study": r["field_of_study"],
-                "period": f"{r['start_year'] or '?'} - {end_label}",
+                "period": f"{r['start_date'] or '?'} - {end_label}",
             })
 
         return {
