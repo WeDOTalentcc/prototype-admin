@@ -1038,6 +1038,43 @@ class WizardSessionService:
                 "(len=%d) thread=%s", len(_email), thread_id,
             )
 
+        # ── Captura determinISTICa do NOME do gestor (audit 2026-06-05) ─────
+        # Mesma razao do email (decisao Paulo 2026-05-31, estendida): por LGPD
+        # o nome e mascarado (Presidio PERSON) ANTES do LLM, que entao o
+        # INVENTA a cada turno (Carlos Mendes -> Ricardo Almeida...).
+        # Capturamos do texto CRU no servidor -- NUNCA pelo LLM. Fontes:
+        # (1) texto cru ("o gestor e Paulo Moraes" / correcao "nao e X e Y"),
+        # (2) derivacao do email (paulo.moraes@ -> Paulo Moraes). Sugestao a
+        # confirmar. Corre a cada turno: a correcao vence; sem sinal, mantem.
+        from app.domains.job_creation.helpers.manager_identity import (
+            derive_name_from_email,
+            extract_manager_name_from_text,
+        )
+        _mgr_hint = False
+        for _m in reversed(state.get("conversation_messages") or []):
+            if _m.get("role") == "assistant":
+                _c = (_m.get("content") or "").lower()
+                _mgr_hint = (
+                    "nome do gestor" in _c
+                    or "gestor responsavel" in _c
+                    or "gestor responsável" in _c
+                    or "quem e o gestor" in _c
+                    or "quem é o gestor" in _c
+                )
+                break
+        _mgr_name = extract_manager_name_from_text(
+            _raw_msg, manager_context_hint=_mgr_hint
+        )
+        if not _mgr_name and _email:
+            _mgr_name = derive_name_from_email(_email)
+        if _mgr_name:
+            state["parsed_manager_name"] = _mgr_name
+            state["manager_name_suggested"] = True
+            logger.info(
+                "[WizardOrchestrator] manager_name capturado deterministicamente "
+                "(len=%d) thread=%s", len(_mgr_name), thread_id,
+            )
+
         ctx = ToolContext(
             company_id=str(company_id or state.get("company_id") or ""),
             user_id=user_id,

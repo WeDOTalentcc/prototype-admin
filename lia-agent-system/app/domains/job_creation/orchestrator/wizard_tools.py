@@ -140,9 +140,13 @@ _EMPLOYMENT_NORMALIZE: dict[str, str] = {
 
 # Campos de intake que set_job_fields aceita. Cada um mapeia para a chave
 # canonical do JobCreationState.
+# manager_name NAO entra aqui: e capturado deterministicamente no servidor
+# (wizard layer), NUNCA pelo LLM -- ele nao ve o nome (mascarado por LGPD) e
+# o inventava (audit 2026-06-05). manager_email idem (ignorado quando
+# mascarado, capturado no servidor).
 _SETTABLE_JOB_FIELDS: frozenset[str] = frozenset({
     "title", "department", "seniority", "location", "model",
-    "employment_type", "manager_name", "manager_email",
+    "employment_type", "manager_email",
 })
 
 _EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
@@ -220,6 +224,18 @@ def _handle_set_job_fields(
     if tenant_err:
         return ToolResult(llm_message=tenant_err, error=True)
 
+    # Nome do gestor e capturado deterministicamente no servidor (audit
+    # 2026-06-05) -- NUNCA pelo LLM (ele nao ve o nome, mascarado por LGPD, e
+    # inventava). Se o LLM tentar setar, ignora silenciosamente com nota.
+    _server_managed_note = None
+    if "manager_name" in tool_input:
+        tool_input = {k: v for k, v in tool_input.items() if k != "manager_name"}
+        _server_managed_note = (
+            "O nome do gestor e capturado automaticamente do texto -- nao "
+            "precisa setar nem inventar; confira a ficha viva para ver o que "
+            "foi registrado."
+        )
+
     unknown = [k for k in tool_input if k not in _SETTABLE_JOB_FIELDS]
     if unknown:
         return ToolResult(
@@ -249,6 +265,8 @@ def _handle_set_job_fields(
         updates[_FIELD_TO_STATE_KEY[name]] = norm
         applied.append(f"{name}={norm!r}")
 
+    if _server_managed_note:
+        notes.append(_server_managed_note)
     if not updates:
         if notes:
             return ToolResult(llm_message=" ".join(notes))
@@ -715,8 +733,7 @@ SET_JOB_FIELDS = WizardTool(
             "location": {"type": "string", "description": "Localização (cidade/estado)."},
             "model": {"type": "string", "description": "Modelo: remoto, híbrido ou presencial."},
             "employment_type": {"type": "string", "description": "Contrato: CLT, PJ, estágio, temporário, freelancer."},
-            "manager_name": {"type": "string", "description": "Nome do gestor responsável."},
-            "manager_email": {"type": "string", "description": "Email do gestor responsável."},
+            "manager_email": {"type": "string", "description": "Email do gestor responsável (capturado automaticamente do texto; opcional)."},
         },
         "additionalProperties": False,
     },

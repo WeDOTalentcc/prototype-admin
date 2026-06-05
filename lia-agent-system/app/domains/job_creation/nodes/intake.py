@@ -43,26 +43,12 @@ _GENERIC_MAILBOX_PREFIXES = {
 
 
 def _derive_name_from_email(email: str | None) -> str | None:
-    """Deriva um nome-candidato do prefixo do email (paulo.moraes@x -> Paulo Moraes).
-
-    Heuristica conservadora: usa so o local-part antes do @, separa por . _ -,
-    descarta tokens numericos e mailboxes genericas (rh@, contato@...). Retorna
-    None quando nao da um nome plausivel -- a LIA entao PERGUNTA em vez de inventar.
-    """
-    if not email or "@" not in email:
-        return None
-    local = email.split("@", 1)[0].strip().lower()
-    parts = [t for t in re.split(r"[._\-]+", local) if t and not t.isdigit()]
-    if (
-        not parts
-        or local in _GENERIC_MAILBOX_PREFIXES
-        or parts[0] in _GENERIC_MAILBOX_PREFIXES
-    ):
-        return None
-    words = [t.capitalize() for t in parts if len(t) >= 2]
-    if not words:
-        return None
-    return " ".join(words)
+    """Delega ao helper canonical (helpers.manager_identity). Antes havia copia
+    local -- unificado no audit 2026-06-05 (uma fonte da verdade)."""
+    from app.domains.job_creation.helpers.manager_identity import (
+        derive_name_from_email,
+    )
+    return derive_name_from_email(email)
 
 
 # Audit 2026-06-03 (#8 departamento tenant-aware): casar o título contra os
