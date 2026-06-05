@@ -15,6 +15,7 @@ from fastapi.responses import StreamingResponse
 
 from app.domains.workforce.dependencies import get_workforce_repo
 from app.domains.workforce.repositories.workforce_repository import WorkforceRepository
+from app.domains.workforce.services.headcount_import_service import import_planned_headcounts
 from app.models.workforce import WorkforceEntry
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 from app.schemas.workforce import (
@@ -927,168 +928,100 @@ async def parse_workforce_import_file(file: UploadFile) -> list[dict[str, str]]:
 @router.get("/entries/import/template", response_model=None)
 async def download_workforce_entries_import_template(company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
-    """Download CSV template for workforce entries import."""
+    """Download CSV template for headcount planning import (Store B / PlannedHeadcount)."""
     try:
-        headers = ["department", "month", "year", "planned", "actual", "notes"]
-
+        headers = ["department", "position", "headcount", "month", "year", "salary_min", "salary_max", "notes"]
         csv_content = ",".join(headers) + "\n"
-        csv_content += "Tecnologia,Jan,2025,5,4,Team expansion\n"
-        csv_content += "Tecnologia,Fev,2025,4,3,Q1 hires\n"
-        csv_content += "Comercial,Jan,2025,3,3,Sales growth\n"
-        csv_content += "Comercial,Fev,2025,2,2,New market\n"
-        csv_content += "RH,Jan,2025,1,1,Support team\n"
+        csv_content += "Tecnologia,Desenvolvedor(a) Backend Senior,2,3,2025,12000,18000,Expansao do time\n"
+        csv_content += "Tecnologia,Engenheiro(a) de Dados,1,5,2025,14000,20000,Nova frente de dados\n"
+        csv_content += "Comercial,Executivo(a) de Vendas,3,2,2025,6000,10000,Crescimento de vendas\n"
+        csv_content += "RH,Analista de RH,1,1,2025,5000,7000,Suporte ao time\n"
 
         buffer = io.BytesIO(csv_content.encode("utf-8"))
         buffer.seek(0)
-
         return StreamingResponse(
             buffer,
             media_type="text/csv",
-            headers={"Content-Disposition": "attachment; filename=workforce_entries_import_template.csv"},
+            headers={"Content-Disposition": "attachment; filename=workforce_planning_import_template.csv"},
         )
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error generating workforce entries import template: {e}")
+        logger.error(f"Error generating workforce planning import template: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/entries/import", response_model=WorkforceEntryImportResponse)
+@router.post("/entries/import", response_model=None)
 async def import_workforce_entries(
     file: UploadFile = File(...),
+    preview: bool = Query(False),
     repo: WorkforceRepository = Depends(get_workforce_repo),
     company_id: str = Depends(require_company_id),
 ):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
-    # WT-2022 P0.WORK fix: removed query-param company_id (anti-pattern). JWT-only.
-    """
-    Simple import for workforce entries from Excel/CSV.
-    Expected columns: department, month, year, planned, actual, notes
+    """Import headcount planning from Excel/CSV into Store B (PlannedHeadcount).
+
+    Track B / Fase 2: previously wrote a parallel WorkforceEntry store that was
+    never rendered in the UI. Now funnels through the canonical producer
+    (headcount_import_service) so imports land in PlannedHeadcount — the same
+    store the settings table renders. `preview=true` parses ONLY (no write); the
+    confirm POST (no preview flag) performs the write.
+
+    Expected columns: department, position, headcount, month, year, salary_min,
+    salary_max, notes.
     """
     try:
-        logger.info(f"Starting workforce entries import from file: {file.filename}")
-
         rows = await parse_workforce_import_file(file)
-
         if not rows:
-            return WorkforceEntryImportResponse(
-                success=False,
-                imported_count=0,
-                error_count=0,
-                errors=[{"message": "No data found in file"}],
-                items=[],
-            )
+            if preview:
+                return {"headers": [], "rows": [], "total_rows": 0}
+            return {
+                "success": False,
+                "imported_count": 0,
+                "error_count": 0,
+                "errors": [{"message": "No data found in file"}],
+                "items": [],
+            }
 
-        imported_items = []
-        errors = []
+        # Lowercase header keys so the import is case-insensitive.
+        items = [
+            {(k or "").strip().lower(): v for k, v in row.items()}
+            for row in rows
+        ]
 
-        current_year = datetime.now().year
+        if preview:
+            return {
+                "headers": list(items[0].keys()) if items else [],
+                "rows": items[:5],
+                "total_rows": len(items),
+            }
 
-        for idx, row in enumerate(rows, start=2):
-            row_errors = []
-
-            department = row.get("department", "").strip()
-            month_str = row.get("month", "").strip()
-            year_str = row.get("year", "").strip()
-            planned_str = row.get("planned", "").strip()
-
-            if not department:
-                row_errors.append(f"Row {idx}: Missing required field department")
-            if not month_str:
-                row_errors.append(f"Row {idx}: Missing required field month")
-
-            planned = 0
-            if planned_str:
-                try:
-                    planned = int(float(planned_str))
-                except ValueError:
-                    row_errors.append(f"Row {idx}: planned must be a number")
-
-            actual = 0
-            actual_str = row.get("actual", "").strip()
-            if actual_str:
-                try:
-                    actual = int(float(actual_str))
-                except ValueError:
-                    row_errors.append(f"Row {idx}: actual must be a number")
-
-            year = current_year
-            if year_str:
-                try:
-                    year = int(float(year_str))
-                except ValueError:
-                    row_errors.append(f"Row {idx}: year must be a number")
-
-            notes = row.get("notes", "").strip() or None
-
-            if row_errors:
-                errors.append({"row": idx, "data": row, "errors": row_errors})
-                continue
-
-            month_capitalized = month_str.capitalize() if month_str else month_str
-
-            existing = await repo.get_workforce_entry(
-                year, month_capitalized, department, company_id=company_id
-            )
-
-            if existing:
-                await repo.update_workforce_entry(existing, planned, actual, notes)
-                imported_items.append({
-                    "id": str(existing.id),
-                    "department": existing.department,
-                    "month": existing.month,
-                    "year": existing.year,
-                    "planned": existing.planned,
-                    "actual": existing.actual,
-                    "notes": notes,
-                    "row": idx,
-                    "action": "updated",
-                })
-            else:
-                entry_data = {
-                    "company_id": company_id,
-                    "department": department,
-                    "month": month_capitalized,
-                    "year": year,
-                    "planned": planned,
-                    "actual": actual,
-                    "notes": notes,
-                    "is_active": True,
-                }
-                try:
-                    entry = await repo.create_workforce_entry(entry_data)
-                    imported_items.append({
-                        "id": str(entry.id),
-                        "department": entry.department,
-                        "month": entry.month,
-                        "year": entry.year,
-                        "planned": entry.planned,
-                        "actual": entry.actual,
-                        "notes": notes,
-                        "row": idx,
-                        "action": "created",
-                    })
-                except Exception as flush_error:
-                    errors.append({
-                        "row": idx,
-                        "data": row,
-                        "errors": [f"Row {idx}: Database error - {str(flush_error)}"],
-                    })
-
-        if imported_items:
-            await repo.commit()
-            logger.info(f"Imported {len(imported_items)} workforce entries successfully")
-
-        return WorkforceEntryImportResponse(
-            success=len(errors) == 0,
-            imported_count=len(imported_items),
-            error_count=len(errors),
-            errors=errors,
-            items=imported_items,
+        summary = await import_planned_headcounts(
+            session=repo.db,
+            company_id=company_id,
+            items=items,
+            source="csv_import",
         )
+        created = summary.get("created", 0)
+        unresolved = summary.get("unresolved_departments") or []
+        message = f"{created} posicao(oes) planejada(s) importada(s)."
+        if unresolved:
+            message += " Departamentos sem vinculo (nao cadastrados): " + ", ".join(unresolved) + "."
+        logger.info(
+            "[workforce] CSV import created %s planned headcounts for company %s",
+            created, company_id,
+        )
+        return {
+            "success": True,
+            "imported_count": created,
+            "error_count": 0,
+            "errors": [],
+            "items": [],
+            "unresolved_departments": unresolved,
+            "message": message,
+        }
     except HTTPException:
         raise
     except Exception as e:
-        await repo.rollback()
-        logger.error(f"Error importing workforce entries: {e}")
+        logger.error(f"Error importing workforce planning: {e}")
         raise HTTPException(status_code=500, detail=str(e))
