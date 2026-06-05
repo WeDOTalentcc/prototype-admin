@@ -124,4 +124,14 @@ describe("ResponseBlockRenderer — funnel (Fase 1)", () => {
     const { errors } = renderWith([FUNNEL], "sidebar")
     expect(errors.filter((e) => e.includes("MISSING_MESSAGE"))).toEqual([])
   })
+
+  it("localiza codigo de etapa canonico (interview_manager -> label PT)", () => {
+    const coded: ResponseBlock = {
+      ...FUNNEL,
+      stages: [{ label: "interview_manager", count: 7 }],
+    }
+    renderWith([coded], "fullscreen")
+    expect(screen.getByText("Entrevista com Gestor")).toBeTruthy()
+    expect(screen.queryByText("interview_manager")).toBeNull()
+  })
 })

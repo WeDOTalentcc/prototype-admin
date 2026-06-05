@@ -290,6 +290,10 @@ function ComparisonTableView({
 
 function FunnelView({ block }: { block: FunnelBlock }) {
   const t = useTranslations("rrp");
+  // labels de etapa: reusa o mapa canonico de nomes de etapa (PT/EN);
+  // fallback p/ o proprio valor (etapas custom/seedadas ja legiveis).
+  const ts = useTranslations("settings.recruitment.journey.defaultStageNames");
+  const stageLabel = (code: string) => (ts.has(code) ? ts(code) : code);
   const max = Math.max(1, ...block.stages.map((s) => s.count));
   return (
     <div className="rounded-lg border border-lia-border-subtle bg-lia-bg-secondary p-3">
@@ -302,7 +306,7 @@ function FunnelView({ block }: { block: FunnelBlock }) {
           return (
             <div key={i} className="flex items-center gap-2">
               <span className="w-28 shrink-0 truncate text-xs text-lia-text-secondary">
-                {s.label}
+                {stageLabel(s.label)}
               </span>
               <div className="relative h-5 flex-1 overflow-hidden rounded bg-lia-border-subtle/40">
                 <div
