@@ -88,10 +88,7 @@ export function CandidatePreview({
     expandedOpinionId, setExpandedOpinionId,
     opinionsHistory,
     isLoadingHistory,
-    savedAnalyses, setSavedAnalyses,
-    isLoadingAnalyses,
-    opinionsSubTab, setOpinionsSubTab,
-    expandedAnalysisId, setExpandedAnalysisId,
+    isErrorHistory, retryOpinionsHistory,
     showUpdateOpinionAlert, setShowUpdateOpinionAlert,
     showInsufficientDataModal, setShowInsufficientDataModal,
     dataRequirements,
@@ -103,8 +100,6 @@ export function CandidatePreview({
     bigFiveModalOpen, setBigFiveModalOpen,
     bigFiveModalCandidate, setBigFiveModalCandidate,
     copiedItemId,
-    analysisToDelete, setAnalysisToDelete,
-    isDeletingAnalysis,
     sendLiaMessage,
     generateNewOpinion,
     handleAnalyzeWithLia,
@@ -113,8 +108,6 @@ export function CandidatePreview({
     generateShortId,
     cleanTextForCopy,
     handleCopyOpinion,
-    handleCopyAnalysis,
-    handleDeleteAnalysis,
     formatCurrency,
     getLanguagesData,
     hasSalaryData,
@@ -142,7 +135,7 @@ export function CandidatePreview({
     { id: 'profile', label: 'Perfil Completo', icon: UserCheck },
     { id: 'activities', label: 'Atividades', icon: Activity },
     { id: 'files', label: 'Arquivos', icon: FileText },
-    { id: 'opinions', label: 'Pareceres e Análises', icon: Brain, badge: ((opinionsData as unknown as {total_opinions?: number} | undefined)?.total_opinions || 0) + ((savedAnalyses as unknown as {total_analyses?: number} | undefined)?.total_analyses || 0) }
+    { id: 'opinions', label: 'Pareceres e Análises', icon: Brain, badge: ((opinionsData as unknown as {total_opinions?: number} | undefined)?.total_opinions || 0) }
   ]
 
   const liaActions = [
@@ -261,22 +254,14 @@ export function CandidatePreview({
 
         {activeTab === 'opinions' && (
           <CandidateOpinionsTab
-            opinionsSubTab={opinionsSubTab}
-            setOpinionsSubTab={setOpinionsSubTab as never}
             opinionsHistory={opinionsHistory}
             isLoadingHistory={isLoadingHistory}
-            savedAnalyses={savedAnalyses}
-            isLoadingAnalyses={isLoadingAnalyses}
+            isErrorHistory={isErrorHistory}
+            onRetryHistory={retryOpinionsHistory}
             expandedOpinionId={expandedOpinionId as never}
             setExpandedOpinionId={setExpandedOpinionId as never}
-            expandedAnalysisId={expandedAnalysisId}
-            setExpandedAnalysisId={setExpandedAnalysisId as never}
-            analysisToDelete={analysisToDelete as never}
-            setAnalysisToDelete={setAnalysisToDelete as never}
             copiedItemId={copiedItemId}
             handleCopyOpinion={handleCopyOpinion as never}
-            handleCopyAnalysis={handleCopyAnalysis}
-            cleanTextForCopy={cleanTextForCopy}
           />
         )}
       </div>
@@ -303,10 +288,6 @@ export function CandidatePreview({
         setShowUpdateOpinionAlert={setShowUpdateOpinionAlert}
         lastOpinionDate={lastOpinionDate}
         generateNewOpinion={generateNewOpinion}
-        analysisToDelete={analysisToDelete}
-        setAnalysisToDelete={setAnalysisToDelete}
-        isDeletingAnalysis={isDeletingAnalysis}
-        handleDeleteAnalysis={handleDeleteAnalysis}
         showInsufficientDataModal={showInsufficientDataModal}
         setShowInsufficientDataModal={setShowInsufficientDataModal}
         dataRequirements={dataRequirements}

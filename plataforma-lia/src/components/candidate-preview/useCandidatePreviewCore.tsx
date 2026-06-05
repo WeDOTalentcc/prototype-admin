@@ -38,10 +38,6 @@ export function useCandidatePreviewCore(candidate: Record<string, unknown> | nul
   const [opinionsHistory, setOpinionsHistory] = useState<Record<string, unknown>[]>([])
   const [isLoadingHistory, setIsLoadingHistory] = useState(false)
 
-  const [savedAnalyses, setSavedAnalyses] = useState<{ total_analyses: number; analyses: Record<string, unknown>[] } | null>(null)
-  const [isLoadingAnalyses, setIsLoadingAnalyses] = useState(false)
-  const [opinionsSubTab, setOpinionsSubTab] = useState<'pareceres' | 'analises'>('pareceres')
-  const [expandedAnalysisId, setExpandedAnalysisId] = useState<string | null>(null)
 
   const [showUpdateOpinionAlert, setShowUpdateOpinionAlert] = useState(false)
   const [showInsufficientDataModal, setShowInsufficientDataModal] = useState(false)
@@ -65,8 +61,6 @@ export function useCandidatePreviewCore(candidate: Record<string, unknown> | nul
   const [bigFiveModalCandidate, setBigFiveModalCandidate] = useState<Record<string, unknown> | null>(null)
 
   const [copiedItemId, setCopiedItemId] = useState<string | null>(null)
-  const [analysisToDelete, setAnalysisToDelete] = useState<Record<string, unknown> | null>(null)
-  const [isDeletingAnalysis, setIsDeletingAnalysis] = useState(false)
 
   const lastFetchedHistoryCandidateRef = useRef<string | null>(null)
 const candidateId = candidate?.id as string | undefined
@@ -86,21 +80,6 @@ const candidateId = candidate?.id as string | undefined
     }
   }, [candidateId, companyId])
 
-  const fetchSavedAnalyses = useCallback(async () => {
-    if (!candidateId || !companyId) return
-    setIsLoadingAnalyses(true)
-    try {
-      const response = await fetch(`/api/backend-proxy/lia/profile-analysis/candidate/${candidateId}?company_id=${encodeURIComponent(companyId)}`)
-      if (response.ok) {
-        const data = await response.json()
-        setSavedAnalyses(data)
-      }
-    } catch {
-    } finally {
-      setIsLoadingAnalyses(false)
-    }
-  }, [candidateId, companyId])
-
   const fetchOpinionsHistory = useCallback(async () => {
     if (!candidateId || !companyId) return
 
@@ -110,24 +89,33 @@ const candidateId = candidate?.id as string | undefined
 
     lastFetchedHistoryCandidateRef.current = candidateId
     setIsLoadingHistory(true)
+    setIsErrorHistory(false)
     try {
       const response = await fetch(`/api/backend-proxy/opinions/candidate/${candidateId}/history?company_id=${encodeURIComponent(companyId)}`)
       if (response.ok) {
         const data = await response.json()
         setOpinionsHistory(data)
+      } else {
+        setIsErrorHistory(true)
       }
     } catch {
+      setIsErrorHistory(true)
     } finally {
       setIsLoadingHistory(false)
     }
   }, [candidateId, companyId, opinionsHistory.length])
 
+  const retryOpinionsHistory = useCallback(() => {
+    lastFetchedHistoryCandidateRef.current = null
+    setIsErrorHistory(false)
+    fetchOpinionsHistory()
+  }, [fetchOpinionsHistory])
+
   useEffect(() => {
     if (candidateId) {
       fetchOpinionsSummary()
-      fetchSavedAnalyses()
     }
-  }, [candidateId, fetchOpinionsSummary, fetchSavedAnalyses])
+  }, [candidateId, fetchOpinionsSummary])
 
   useEffect(() => {
     if (activeTab === 'opinions' && candidateId) {
@@ -443,65 +431,6 @@ const candidateId = candidate?.id as string | undefined
     }
   }
 
-  const handleCopyAnalysis = async (analysis: Record<string, unknown>) => {
-    const c = candidate as Record<string, unknown>
-    const analysisLabels: Record<string, string> = {
-      'bullet_points': 'Pontos-chave',
-      'short_paragraph': 'Resumo',
-      'detailed_bullets': 'Análise Detalhada'
-    }
-
-    let textToCopy = `ANÁLISE IA - ${c.name || c.nome}\n`
-    textToCopy += `Tipo: ${analysisLabels[String(analysis.analysis_type)] || analysis.analysis_type}\n`
-    textToCopy += `Data: ${analysis.created_at ? new Date(String(analysis.created_at)).toLocaleDateString('pt-BR') : ''}\n`
-    textToCopy += `\n`
-    textToCopy += cleanTextForCopy(String(analysis.content || ''))
-
-    try {
-      await navigator.clipboard.writeText(textToCopy)
-      setCopiedItemId(`analysis-${analysis.id}`)
-      setTimeout(() => setCopiedItemId(null), 2000)
-    } catch {
-    }
-  }
-
-  const handleDeleteAnalysis = async (analysis: Record<string, unknown>) => {
-    if (!companyId) return
-    setIsDeletingAnalysis(true)
-    try {
-      const c = candidate as Record<string, unknown>
-      const cId = c.id || c.candidate_id
-      const response = await fetch(`/api/backend-proxy/lia/profile-analysis/${cId}/${analysis.analysis_type}?company_id=${encodeURIComponent(companyId)}`, {
-        method: 'DELETE',
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to delete analysis')
-      }
-
-      setSavedAnalyses((prev) => {
-        if (!prev) return null
-        const analysisType = analysis.analysis_type as string
-        const filtered = prev.analyses.filter(
-          (a: Record<string, unknown>) => a.analysis_type !== analysisType
-        )
-        return {
-          ...prev,
-          analyses: filtered,
-          total_analyses: filtered.length,
-        }
-      })
-      setAnalysisToDelete(null)
-      setExpandedAnalysisId(null)
-
-      toast.success("Análise removida", { description: "A análise foi removida com sucesso." })
-    } catch {
-      toast.error("Erro ao remover", { description: "Não foi possível remover a análise." })
-    } finally {
-      setIsDeletingAnalysis(false)
-    }
-  }
-
   const formatCurrency = (value: number | string | null | undefined, currency: string = 'BRL'): string => {
     if (value === null || value === undefined || value === '') return 'Não informado'
     const numValue = typeof value === 'string' ? parseFloat(value) : value
@@ -610,10 +539,7 @@ const candidateId = candidate?.id as string | undefined
     expandedOpinionId, setExpandedOpinionId,
     opinionsHistory,
     isLoadingHistory,
-    savedAnalyses, setSavedAnalyses,
-    isLoadingAnalyses,
-    opinionsSubTab, setOpinionsSubTab,
-    expandedAnalysisId, setExpandedAnalysisId,
+    isErrorHistory, retryOpinionsHistory,
     showUpdateOpinionAlert, setShowUpdateOpinionAlert,
     showInsufficientDataModal, setShowInsufficientDataModal,
     dataRequirements,
@@ -625,8 +551,6 @@ const candidateId = candidate?.id as string | undefined
     bigFiveModalOpen, setBigFiveModalOpen,
     bigFiveModalCandidate, setBigFiveModalCandidate,
     copiedItemId, setCopiedItemId,
-    analysisToDelete, setAnalysisToDelete,
-    isDeletingAnalysis,
     sendLiaMessage,
     generateNewOpinion,
     handleAnalyzeWithLia,
@@ -635,8 +559,6 @@ const candidateId = candidate?.id as string | undefined
     generateShortId,
     cleanTextForCopy,
     handleCopyOpinion,
-    handleCopyAnalysis,
-    handleDeleteAnalysis,
     formatCurrency,
     getLanguagesData,
     hasSalaryData,
@@ -644,6 +566,5 @@ const candidateId = candidate?.id as string | undefined
     getAddressString,
     hasAdditionalDetails,
     fetchOpinionsSummary,
-    fetchSavedAnalyses,
   }
 }

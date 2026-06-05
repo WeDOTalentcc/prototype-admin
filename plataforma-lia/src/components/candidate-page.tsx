@@ -216,22 +216,14 @@ export function CandidatePage({
 
             {core.activeTab === "opinions" && (
               <CandidateOpinionsTab
-                opinionsSubTab={core.opinionsSubTab}
-                setOpinionsSubTab={core.setOpinionsSubTab as never}
                 opinionsHistory={core.opinionsHistory}
                 isLoadingHistory={core.isLoadingHistory}
-                savedAnalyses={core.savedAnalyses}
-                isLoadingAnalyses={core.isLoadingAnalyses}
+                isErrorHistory={core.isErrorHistory}
+                onRetryHistory={core.retryOpinionsHistory}
                 expandedOpinionId={core.expandedOpinionId as never}
                 setExpandedOpinionId={core.setExpandedOpinionId as never}
-                expandedAnalysisId={core.expandedAnalysisId}
-                setExpandedAnalysisId={core.setExpandedAnalysisId as never}
-                analysisToDelete={core.analysisToDelete as never}
-                setAnalysisToDelete={core.setAnalysisToDelete as never}
                 copiedItemId={core.copiedItemId}
                 handleCopyOpinion={core.handleCopyOpinion as never}
-                handleCopyAnalysis={core.handleCopyAnalysis}
-                cleanTextForCopy={core.cleanTextForCopy}
               />
             )}
               </div>
@@ -269,10 +261,6 @@ export function CandidatePage({
           setShowUpdateOpinionAlert={core.setShowUpdateOpinionAlert}
           lastOpinionDate={core.lastOpinionDate}
           generateNewOpinion={core.generateNewOpinion}
-          analysisToDelete={core.analysisToDelete as never}
-          setAnalysisToDelete={core.setAnalysisToDelete as never}
-          isDeletingAnalysis={core.isDeletingAnalysis}
-          handleDeleteAnalysis={core.handleDeleteAnalysis}
           showInsufficientDataModal={core.showInsufficientDataModal}
           setShowInsufficientDataModal={core.setShowInsufficientDataModal}
           dataRequirements={core.dataRequirements}

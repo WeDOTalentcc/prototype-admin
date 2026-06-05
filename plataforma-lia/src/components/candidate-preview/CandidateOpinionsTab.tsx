@@ -7,26 +7,14 @@ import { FileText, AlertCircle } from "lucide-react"
 import { OpinionCard } from "@/components/candidate-preview/OpinionCard"
 
 interface CandidateOpinionsTabProps {
-  // Mantidos no contrato por compatibilidade com o caller; a subtab "Análises"
-  // (genérica) foi aposentada — a tab agora é só a lista de Pareceres IA.
-  opinionsSubTab?: string
-  setOpinionsSubTab?: (tab: string) => void
   opinionsHistory: Record<string, any>[]
   isLoadingHistory: boolean
   isErrorHistory?: boolean
   onRetryHistory?: () => void
-  savedAnalyses?: { total_analyses: number; analyses: Record<string, unknown>[] } | null | undefined
-  isLoadingAnalyses?: boolean
   expandedOpinionId: unknown
   setExpandedOpinionId: (id: unknown) => void
-  expandedAnalysisId?: string | null
-  setExpandedAnalysisId?: (id: string | null) => void
-  analysisToDelete?: unknown
-  setAnalysisToDelete?: (analysis: unknown) => void
   copiedItemId: string | null
   handleCopyOpinion: (opinion: Record<string, any>) => void
-  handleCopyAnalysis?: (analysis: Record<string, any>) => void
-  cleanTextForCopy?: (text: string) => string
 }
 
 export function CandidateOpinionsTab({

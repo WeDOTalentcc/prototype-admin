@@ -72,10 +72,6 @@ interface CandidatePreviewModalsProps {
   setShowUpdateOpinionAlert: (v: boolean) => void
   lastOpinionDate: Date | null
   generateNewOpinion: () => void
-  analysisToDelete: Record<string, unknown> | null
-  setAnalysisToDelete: (v: Record<string, unknown> | null) => void
-  isDeletingAnalysis: boolean
-  handleDeleteAnalysis: (analysis: Record<string, unknown>) => void
   showInsufficientDataModal: boolean
   setShowInsufficientDataModal: (v: boolean) => void
   dataRequirements: DataRequirement[]
@@ -117,10 +113,6 @@ export function CandidatePreviewModals({
   setShowUpdateOpinionAlert,
   lastOpinionDate,
   generateNewOpinion,
-  analysisToDelete,
-  setAnalysisToDelete,
-  isDeletingAnalysis,
-  handleDeleteAnalysis,
   showInsufficientDataModal,
   setShowInsufficientDataModal,
   dataRequirements,
@@ -178,31 +170,6 @@ export function CandidatePreviewModals({
               className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-xs text-white"
             >
               Gerar Novo Parecer
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-      
-      <AlertDialog open={!!analysisToDelete} onOpenChange={(open: boolean) => !open && setAnalysisToDelete(null)}>
-        <AlertDialogContent className="bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl">
-          <AlertDialogHeader>
-            <AlertDialogTitle className={textStyles.title}>
-              Remover Análise
-            </AlertDialogTitle>
-            <AlertDialogDescription className={textStyles.bodySmall}>
-              Esta ação irá remover permanentemente esta análise. Deseja continuar?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="text-xs" disabled={isDeletingAnalysis}>
-              Cancelar
-            </AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={() => analysisToDelete && handleDeleteAnalysis(analysisToDelete)}
-              className="bg-status-error hover:bg-status-error text-xs text-white"
-              disabled={isDeletingAnalysis}
-            >
-              {isDeletingAnalysis ? 'Removendo...' : 'Remover Definitivamente'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
