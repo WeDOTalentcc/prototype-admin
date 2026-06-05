@@ -2,8 +2,9 @@
 
 import React from "react"
 import { CheckCircle2, Loader2, Sparkles } from "lucide-react"
-import { useTranslations } from "next-intl"
+import { useTranslations, useLocale } from "next-intl"
 import { cn } from "@/lib/utils"
+import { phaseLabel } from "./activity-labels"
 
 interface ThinkingStepsCardProps {
   steps: string[]
@@ -22,6 +23,7 @@ function ThinkingDots() {
 
 export function ThinkingStepsCard({ steps }: ThinkingStepsCardProps) {
   const t = useTranslations("chat.agentActivity")
+  const locale = useLocale()
 
   if (!steps || steps.length === 0) {
     return (
@@ -63,7 +65,7 @@ export function ThinkingStepsCard({ steps }: ThinkingStepsCardProps) {
                   : "text-lia-text-secondary"
               )}
             >
-              {step}
+              {phaseLabel(step, locale)}
             </span>
           </div>
         )

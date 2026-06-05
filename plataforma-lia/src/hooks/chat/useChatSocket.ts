@@ -102,6 +102,13 @@ export function useChatSocket({
   >([]);
   const [activePlanId, setActivePlanId] = useState<string | null>(null);
   const [thinkingSteps, setThinkingSteps] = useState<string[]>([]);
+  // (2026-06-05) Marca de fim-de-turno: começa `true` para que a PRIMEIRA
+  // atividade de cada turno LIMPE os passos do turno anterior (antes não havia
+  // reset → "understanding/composing" acumulavam entre turnos e dentro do turno
+  // a cada iteração do agentic_loop). Vira `false` na 1ª atividade do turno e
+  // volta a `true` no `message`/`error`. Não limpamos no fim do turno para o
+  // card persistir durante o hand-off gracioso até o próximo turno começar.
+  const turnClosedRef = useRef(true);
   const [isThinking, setIsThinking] = useState(false);
   const [fairnessWarnings, setFairnessWarnings] = useState<string[]>([]);
   const [backgroundTasks, setBackgroundTasks] = useState<BackgroundTaskEvent[]>(
@@ -201,7 +208,13 @@ export function useChatSocket({
       case "thinking":
         setIsThinking(true);
         if (event.content) {
-          setThinkingSteps((prev) => [...prev, event.content as string]);
+          const _content = event.content as string;
+          const _reset = turnClosedRef.current;
+          if (_reset) turnClosedRef.current = false;
+          setThinkingSteps((prev) => {
+            const base = _reset ? [] : prev;
+            return base.includes(_content) ? base : [...base, _content];
+          });
         }
         break;
 
@@ -375,7 +388,15 @@ export function useChatSocket({
             : event.type === "tool_started"
               ? `\ud83d\udd27 ${_name}\u2026`
               : `\u2713 ${_name}`;
-        setThinkingSteps((prev) => [...prev, label]);
+        // Reset no 1º passo de um novo turno + dedupe: o agentic_loop reemite
+        // a mesma fase ("understanding"/"composing") a cada iteração; sem isto
+        // o card mostrava as fases repetidas N vezes e acumuladas entre turnos.
+        const _resetTurn = turnClosedRef.current;
+        if (_resetTurn) turnClosedRef.current = false;
+        setThinkingSteps((prev) => {
+          const base = _resetTurn ? [] : prev;
+          return base.includes(label) ? base : [...base, label];
+        });
         if (event.type === "tool_finished") {
           agentActivityBufferRef.current.push({
             kind: "tool",
@@ -387,11 +408,21 @@ export function useChatSocket({
                 : undefined,
           });
         } else if (event.type === "reasoning_step") {
-          agentActivityBufferRef.current.push({
-            kind: "reasoning",
-            name: (actEvent.label as string) || "",
-            status: "ok",
-          });
+          // Dedupe por fase no buffer persistido (vira message.metadata.
+          // agent_activity -> AgentActivitySummary): o agentic_loop reemite a
+          // mesma fase a cada iteração; sem isto o resumo histórico repetia
+          // "understanding"/"composing" N vezes. Buffer é resetado por turno.
+          const _phase = (actEvent.label as string) || "";
+          const _dup = agentActivityBufferRef.current.some(
+            (a) => a.kind === "reasoning" && a.name === _phase,
+          );
+          if (!_dup) {
+            agentActivityBufferRef.current.push({
+              kind: "reasoning",
+              name: _phase,
+              status: "ok",
+            });
+          }
         }
         if (typeof window !== "undefined") {
           window.dispatchEvent(
@@ -403,6 +434,7 @@ export function useChatSocket({
 
       case "message":
         setIsThinking(false);
+        turnClosedRef.current = true;
         hitlRef.current = null;
         setHitlPending(null);
         if (
@@ -459,12 +491,14 @@ export function useChatSocket({
         // ficava preso ligado quando o stream quebrava antes do primeiro
         // evento "message".
         setIsThinking(false);
+        turnClosedRef.current = true;
         break;
 
       case "clarification": {
         // Tier 8 fallback from cascaded_router — backend sends:
         // { type: "clarification", question: string, options: string[] | {label,value}[] }
         setIsThinking(false);
+        turnClosedRef.current = true;
         const evt = event as unknown as {
           question?: string;
           options?: Array<string | { label?: string; value?: string }>;

@@ -7,6 +7,9 @@ import {
   ChevronDown, ChevronUp, Pencil, Check, X, Loader2,
 } from "lucide-react"
 import type { CardBlock, CardField } from "@/hooks/settings/use-company-settings-cards"
+import { Switch } from "@/components/ui/switch"
+import { useLiaFieldTogglesForSection } from "@/hooks/settings/useLiaFieldTogglesForSection"
+import { LIA_FIELD_DEFINITIONS, type LiaFieldKey } from "@/hooks/company/use-company-lia-instructions"
 import { textStyles } from "@/lib/design-tokens"
 import type { LucideIcon } from "lucide-react"
 import { BenefitsListSection } from "./benefits/BenefitsListSection"
@@ -199,6 +202,14 @@ interface MinhaEmpresaCardProps {
   onSaveField: (block: string, field: string, value: unknown) => void
 }
 
+// Fase 4.2 colocation: toggle on/off "a LIA usa este dado?" ao lado de cada campo.
+const ALL_LIA_KEYS = Object.keys(LIA_FIELD_DEFINITIONS) as LiaFieldKey[]
+const LIA_KEY_ALIAS: Record<string, LiaFieldKey> = { name: "trade_name", size: "company_size" }
+function toLiaKey(fieldKey: string): LiaFieldKey | null {
+  const k = (LIA_KEY_ALIAS[fieldKey] ?? fieldKey) as LiaFieldKey
+  return k in LIA_FIELD_DEFINITIONS ? k : null
+}
+
 export function MinhaEmpresaCard({
   block,
   IconComp,
@@ -217,6 +228,11 @@ export function MinhaEmpresaCard({
   onSaveField,
 }: MinhaEmpresaCardProps) {
   const t = useTranslations("settings.minhaEmpresaCard")
+  const liaToggles = useLiaFieldTogglesForSection(ALL_LIA_KEYS)
+  const liaByKey = React.useMemo(
+    () => new Map(liaToggles.fields.map((f) => [f.key as string, f])),
+    [liaToggles.fields],
+  )
 
   const formatFieldValue = (value: unknown): string => {
     if (value === null || value === undefined || value === "") return t("valueNotDefined")
@@ -367,6 +383,8 @@ export function MinhaEmpresaCard({
                 editingField?.block === block.key &&
                 editingField?.field === field.key
               const isUpdated = recentlyUpdated.has(field.key)
+              const liaKey = toLiaKey(field.key)
+              const liaCtrl = liaKey ? liaByKey.get(liaKey) : undefined
 
               // P1.13 audit 2026-05-20: campo Logo usa upload de arquivo canonical
               if (isLogoField) {
@@ -413,6 +431,15 @@ export function MinhaEmpresaCard({
                     />
                   ) : (
                     <div className="flex items-center gap-1 min-w-0">
+                      {liaCtrl ? (
+                        <Switch
+                          checked={liaCtrl.isActive}
+                          onCheckedChange={liaCtrl.onToggleChange}
+                          disabled={isReadOnly}
+                          aria-label={`A LIA usa ${field.label}`}
+                          className="scale-90 shrink-0"
+                        />
+                      ) : null}
                       <span
                         className={`${textStyles.metricSmall} text-right truncate max-w-[320px] transition-colors motion-reduce:transition-none duration-300 ${
                           isUpdated ? "text-status-success" : ""

@@ -94,6 +94,9 @@ export function AgentActivityTimeline({
 
   const queueRef = useRef<ActivityItem[]>([])
   const seenToolIdsRef = useRef<Set<string>>(new Set())
+  // Fases de raciocínio já vistas neste turno (dedupe — o agentic_loop reemite
+  // "understanding"/"composing" a cada iteração). Resetado junto com os tools.
+  const seenPhasesRef = useRef<Set<string>>(new Set())
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const finishTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const phaseRef = useRef<"active" | "done">("active")
@@ -201,11 +204,17 @@ export function AgentActivityTimeline({
       const name = String(detail.name || "tool")
 
       if (type === "reasoning_step") {
+        const phaseKey = String(detail.label || "")
+        // Dedupe: cada fase aparece UMA vez por turno (já enfileirada/revelada
+        // OU já vista). seenPhasesRef cobre o caso de a fase reaparecer depois
+        // de já ter sido drenada da fila para os items.
+        if (seenPhasesRef.current.has(phaseKey)) return
+        seenPhasesRef.current.add(phaseKey)
         everHadItemsRef.current = true
         queueRef.current.push({
           id: `reason-${id}-${queueRef.current.length}-${Date.now()}`,
           kind: "reasoning",
-          name: String(detail.label || ""),
+          name: phaseKey,
           status: "ok",
         })
         scheduleDrain()
@@ -286,6 +295,7 @@ export function AgentActivityTimeline({
         }
         queueRef.current = []
         seenToolIdsRef.current.clear()
+        seenPhasesRef.current.clear()
         everHadItemsRef.current = false
         setItems([])
         phaseRef.current = "active"

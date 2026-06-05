@@ -7,6 +7,8 @@ import logging
 from datetime import datetime
 from typing import Any
 
+from app.core.database import AsyncSessionLocal
+from app.domains.job_management.services.job_clone_service import job_clone_service
 from app.orchestrator.action_handlers._handler_hooks import log_action_audit, sync_to_rails
 
 logger = logging.getLogger(__name__)
@@ -149,35 +151,39 @@ async def _close_job(params: dict[str, Any], context: dict[str, Any]):
 
 
 async def _duplicate_job(params: dict[str, Any], context: dict[str, Any]):
+    """Duplicate a vacancy via the canonical JobCloneService.
+
+    Canonical-fix (ADR-001 + T-1166): this handler MUST NOT reimplement cloning
+    with raw inline SQL. `JobCloneService.clone_from_template` is the single
+    producer — it clones job DATA only (no candidates), creates the copy as a
+    DRAFT (status Rascunho, never auto-published as active), and copies the full canonical
+    FIELDS_TO_CLONE set (incl. `responsibilities`, `technical_requirements`,
+    `languages`, `behavioral_competencies`, `screening_questions`,
+    `interview_stages`, ...). Reusing it keeps a single source of truth and
+    avoids the broken short-field/auto-publish copy this handler used to build.
+    """
     from app.orchestrator.action_executor import ActionResult
     try:
-        import uuid as uuid_mod
-
-        from sqlalchemy import text
-
-        from app.core.database import AsyncSessionLocal
-
         job_id = params.get("job_id", "")
-        new_title = params.get("new_title", "")
+        new_title = params.get("new_title", "") or None
         job_title = params.get("job_title", "a vaga")
         company_id = context.get("company_id") if context else None
+        created_by = context.get("user_id") if context else None
+
+        if not company_id:
+            return ActionResult(
+                status="error",
+                message="Empresa não identificada para duplicar a vaga.",
+                error_detail="company_id ausente no contexto (multi-tenancy)",
+                action_type="duplicate_job",
+            )
 
         async with AsyncSessionLocal() as db:
-            select_sql = """
-                SELECT title, company_id, department, location, work_model,
-                       employment_type, seniority_level, description, requirements,
-                       salary, salary_range, benefits, priority, recruiter,
-                       recruiter_email, manager, manager_email, tags
-                FROM job_vacancies
-                WHERE id = CAST(:job_id AS uuid)
-            """
-            select_bind: dict[str, Any] = {"job_id": job_id}
-            if company_id:
-                select_sql += " AND company_id = :co"
-                select_bind["co"] = str(company_id)
-            original = await db.execute(text(select_sql), select_bind)
-            row = original.fetchone()
-            if not row:
+            # Resolve the source vacancy (id, job_id, or title) within the tenant.
+            source = await job_clone_service.get_job_by_id_or_title(
+                db, str(job_id), str(company_id)
+            )
+            if not source:
                 return ActionResult(
                     status="error",
                     message="Vaga original não encontrada",
@@ -185,48 +191,42 @@ async def _duplicate_job(params: dict[str, Any], context: dict[str, Any]):
                     action_type="duplicate_job",
                 )
 
-            new_id = str(uuid_mod.uuid4())
-            final_title = new_title if new_title else f"{row.title} (Cópia)"
+            result = await job_clone_service.clone_from_template(
+                db=db,
+                source_job_id=source.id,
+                company_id=str(company_id),
+                new_title=new_title,
+                created_by=created_by,
+            )
 
-            await db.execute(text("""
-                INSERT INTO job_vacancies (
-                    id, title, company_id, department, location, work_model,
-                    employment_type, seniority_level, description, requirements,
-                    salary, salary_range, benefits, priority, recruiter,
-                    recruiter_email, manager, manager_email, tags,
-                    status, created_at, updated_at
-                ) VALUES (
-                    CAST(:new_id AS uuid), :title, :company_id, :department, :location, :work_model,
-                    :employment_type, :seniority_level, :description, :requirements,
-                    :salary, :salary_range, :benefits, :priority, :recruiter,
-                    :recruiter_email, :manager, :manager_email, :tags,
-                    'Ativa', NOW(), NOW()
-                )
-            """), {
-                "new_id": new_id, "title": final_title,
-                "company_id": row.company_id, "department": row.department,
-                "location": row.location, "work_model": row.work_model,
-                "employment_type": row.employment_type, "seniority_level": row.seniority_level,
-                "description": row.description, "requirements": row.requirements,
-                "salary": row.salary, "salary_range": row.salary_range,
-                "benefits": row.benefits, "priority": row.priority,
-                "recruiter": row.recruiter, "recruiter_email": row.recruiter_email,
-                "manager": row.manager, "manager_email": row.manager_email,
-                "tags": row.tags,
-            })
-            await db.commit()
+        if not result.get("success"):
+            return ActionResult(
+                status="error",
+                message="Erro ao duplicar a vaga.",
+                error_detail=result.get("error") or "Falha ao clonar a vaga (produtor canonical).",
+                action_type="duplicate_job",
+            )
+
+        created = result.get("created_job") or {}
+        new_id = created.get("id")
+        final_title = created.get("title")
+        new_status = created.get("status")
 
         await log_action_audit("duplicate_job", company_id, job_vacancy_id=new_id)
         await sync_to_rails("job_created", "job", new_id)
 
         return ActionResult(
             status="executed",
-            message=f"Vaga **{job_title}** duplicada com sucesso. Nova vaga: **{final_title}**.",
+            message=(
+                f"Vaga **{job_title}** duplicada com sucesso. "
+                f"Nova vaga (rascunho): **{final_title}**."
+            ),
             data={
-                "job_id": job_id,
+                "job_id": str(source.id),
                 "new_job_id": new_id,
                 "job_title": job_title,
                 "new_title": final_title,
+                "status": new_status,
                 "duplicated_at": datetime.utcnow().isoformat(),
                 "simulated": False,
             },
