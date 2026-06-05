@@ -481,8 +481,8 @@ class OpinionsRepository:
           AND company_id = :company_id
           AND is_current = true
           AND (
-            (:job_vacancy_id IS NULL AND job_vacancy_id IS NULL)
-            OR job_vacancy_id = :job_vacancy_id
+            (CAST(:job_vacancy_id AS uuid) IS NULL AND job_vacancy_id IS NULL)
+            OR job_vacancy_id = CAST(:job_vacancy_id AS uuid)
           )
     """
 
@@ -496,8 +496,8 @@ class OpinionsRepository:
         SELECT
             :id,
             :candidate_id,
-            :job_vacancy_id,
-            :company_id,
+            CAST(:job_vacancy_id AS uuid),
+            CAST(:company_id AS varchar),
             'wsi',
             'wsi_screening',
             :score,
@@ -505,13 +505,13 @@ class OpinionsRepository:
             :archetype,
             :recommendation,
             :summary,
-            :score_breakdown::jsonb,
-            :strengths::jsonb,
-            :concerns::jsonb,
-            :gaps::jsonb,
-            :matched_skills::jsonb,
-            :missing_skills::jsonb,
-            :next_steps::jsonb,
+            CAST(:score_breakdown AS jsonb),
+            CAST(:strengths AS jsonb),
+            CAST(:concerns AS jsonb),
+            CAST(:gaps AS jsonb),
+            CAST(:matched_skills AS jsonb),
+            CAST(:missing_skills AS jsonb),
+            CAST(:next_steps AS jsonb),
             true,
             COALESCE((
                 SELECT MAX(version)
@@ -520,8 +520,8 @@ class OpinionsRepository:
                   AND opinion_type = 'wsi'
                   AND company_id = :company_id
                   AND (
-                    (:job_vacancy_id IS NULL AND job_vacancy_id IS NULL)
-                    OR job_vacancy_id = :job_vacancy_id
+                    (CAST(:job_vacancy_id AS uuid) IS NULL AND job_vacancy_id IS NULL)
+                    OR job_vacancy_id = CAST(:job_vacancy_id AS uuid)
                   )
             ), 0) + 1,
             CURRENT_TIMESTAMP,
@@ -601,8 +601,8 @@ class OpinionsRepository:
           AND company_id = :company_id
           AND is_current = true
           AND (
-            (:job_vacancy_id IS NULL AND job_vacancy_id IS NULL)
-            OR job_vacancy_id = :job_vacancy_id
+            (CAST(:job_vacancy_id AS uuid) IS NULL AND job_vacancy_id IS NULL)
+            OR job_vacancy_id = CAST(:job_vacancy_id AS uuid)
           )
     """
 
@@ -614,10 +614,10 @@ class OpinionsRepository:
             next_steps, is_current, version, created_at, updated_at
         )
         SELECT
-            :id, :candidate_id, :job_vacancy_id, :company_id, 'general', 'cv_analysis',
-            :score, :recommendation, :summary, :score_breakdown::jsonb,
-            :strengths::jsonb, :concerns::jsonb, :gaps::jsonb,
-            :matched_skills::jsonb, :missing_skills::jsonb, :next_steps::jsonb,
+            :id, :candidate_id, CAST(:job_vacancy_id AS uuid), CAST(:company_id AS varchar), 'general', 'cv_analysis',
+            :score, :recommendation, :summary, CAST(:score_breakdown AS jsonb),
+            CAST(:strengths AS jsonb), CAST(:concerns AS jsonb), CAST(:gaps AS jsonb),
+            CAST(:matched_skills AS jsonb), CAST(:missing_skills AS jsonb), CAST(:next_steps AS jsonb),
             true,
             COALESCE((
                 SELECT MAX(version) FROM lia_opinions
@@ -625,8 +625,8 @@ class OpinionsRepository:
                   AND opinion_type = 'general'
                   AND company_id = :company_id
                   AND (
-                    (:job_vacancy_id IS NULL AND job_vacancy_id IS NULL)
-                    OR job_vacancy_id = :job_vacancy_id
+                    (CAST(:job_vacancy_id AS uuid) IS NULL AND job_vacancy_id IS NULL)
+                    OR job_vacancy_id = CAST(:job_vacancy_id AS uuid)
                   )
             ), 0) + 1,
             CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
