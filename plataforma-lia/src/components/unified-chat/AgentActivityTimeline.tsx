@@ -202,6 +202,23 @@ function formatMs(ms: number): string {
   return ms >= 1000 ? `${(ms / 1000).toFixed(1)}s` : `${ms}ms`
 }
 
+// Indicador 'processando' persistente (Paulo 2026-06-05): enquanto o turno
+// esta ativo SEMPRE ha movimento — inclusive quando os passos ja revelaram
+// e a LIA esta compondo a resposta. <div> (nao <li>) p/ nao afetar listas.
+function WorkingDots() {
+  return (
+    <div className="flex items-center gap-1 pl-5 pt-1" aria-hidden="true">
+      {[0, 150, 300].map((d) => (
+        <span
+          key={d}
+          className="h-1 w-1 animate-bounce rounded-full bg-wedo-cyan/70 motion-reduce:animate-none"
+          style={{ animationDelay: `${d}ms` }}
+        />
+      ))}
+    </div>
+  );
+}
+
 export function AgentActivityTimeline({
   fallbackSteps,
   showFallback = true,
@@ -455,20 +472,19 @@ export function AgentActivityTimeline({
     if (fbItems.length === 0) return <ThinkingStepsCard steps={fallbackSteps} />
     const revealed = fbItems.slice(0, fbReveal + 1)
     return (
-      <ul
-        className="space-y-1.5 animate-in fade-in slide-in-from-bottom-1 duration-200"
-        role="status"
-        aria-live="polite"
-      >
-        {revealed.map((item, idx) => (
-          <ActivityLine
-            key={item.id}
-            item={item}
-            spotlight={idx === revealed.length - 1}
-            locale={locale}
-          />
-        ))}
-      </ul>
+      <div className="animate-in fade-in slide-in-from-bottom-1 duration-200">
+        <ul className="space-y-1.5" role="status" aria-live="polite">
+          {revealed.map((item, idx) => (
+            <ActivityLine
+              key={item.id}
+              item={item}
+              spotlight={idx === revealed.length - 1}
+              locale={locale}
+            />
+          ))}
+        </ul>
+        <WorkingDots />
+      </div>
     )
   }
 
@@ -483,19 +499,18 @@ export function AgentActivityTimeline({
   const activeIndex = isDone ? -1 : items.length - 1
 
   return (
-    <ul
-      className="space-y-1.5 animate-in fade-in slide-in-from-bottom-1 duration-200"
-      role="status"
-      aria-live="polite"
-    >
-      {items.map((item, idx) => (
-        <ActivityLine
-          key={item.id}
-          item={item}
-          spotlight={!isDone && idx === activeIndex}
-          locale={locale}
-        />
-      ))}
-    </ul>
+    <div className="animate-in fade-in slide-in-from-bottom-1 duration-200">
+      <ul className="space-y-1.5" role="status" aria-live="polite">
+        {items.map((item, idx) => (
+          <ActivityLine
+            key={item.id}
+            item={item}
+            spotlight={!isDone && idx === activeIndex}
+            locale={locale}
+          />
+        ))}
+      </ul>
+      {!isDone && <WorkingDots />}
+    </div>
   )
 }
