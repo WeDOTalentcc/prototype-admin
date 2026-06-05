@@ -58,9 +58,13 @@ function buildDegradedTooltip(
 
 /**
  * WizardProgressBar — compact step indicator for the wizard.
- * Shows the same 6 visible stages the chat-feed plan card uses
- * (single source of truth: `PLAN_VISIBLE_STAGES` in `wizard-plan-card`).
- * Design: wedo-cyan accent, lia-border-subtle, Open Sans.
+ *
+ * Audit 2026-06-05 (#5): a barra agora reflete a ETAPA do fluxo
+ * (Etapa X de Y → largura = X/Y), NÃO a completude da ficha. Antes usava
+ * `completeness` (% de campos preenchidos), o que mostrava ~50% mesmo já na
+ * etapa de finalização (confunde o recrutador). O contador de etapas usa o
+ * mesmo plano visível do plan-card (`PLAN_VISIBLE_STAGES` — single source of
+ * truth). Design: wedo-cyan accent, lia-border-subtle, Open Sans.
  */
 export function WizardProgressBar({ currentStage, completeness, stageHistory, degradedStages, compact = false, onCancelWizard }: Props) {
   if (!currentStage) return null
@@ -84,26 +88,27 @@ export function WizardProgressBar({ currentStage, completeness, stageHistory, de
     (s) => !PLAN_VISIBLE_STAGES.includes(s),
   )
 
-  if (compact) {
-    // Find the recruiter's position within the *visible* plan so the
-    // counter ("Etapa X de Y") matches the dots view above; collapse
-    // hidden backend stages into the surrounding visible step.
-    const visibleIdx = (() => {
-      const direct = PLAN_VISIBLE_STAGES.indexOf(currentStage)
-      if (direct >= 0) return direct
-      // current stage is hidden — pick the latest visible stage that
-      // already started (or 0 if we're still before the first one).
-      let last = -1
-      for (let i = 0; i < PLAN_VISIBLE_STAGES.length; i++) {
-        if (STAGE_ORDER.indexOf(PLAN_VISIBLE_STAGES[i]) <= currentIdx) last = i
-      }
-      return Math.max(last, 0)
-    })()
-    const total = PLAN_VISIBLE_STAGES.length
-    const stepNumber = visibleIdx + 1
-    const label = STAGE_LABELS[currentStage]
-    const summary = `Etapa ${stepNumber} de ${total} · ${label}`
+  // ── Progresso por ETAPA (audit 2026-06-05 #5) ───────────────────────────
+  // Posição do recrutador dentro do plano VISÍVEL (mesmo contador do plan
+  // card). Stages "ocultos" do backend (salary/bigfive/handoff) colapsam na
+  // etapa visível mais recente já iniciada — assim a finalização cai em N/N
+  // (≈100%), não em meio da barra.
+  const visibleStepIdx = (() => {
+    const direct = PLAN_VISIBLE_STAGES.indexOf(currentStage)
+    if (direct >= 0) return direct
+    let last = -1
+    for (let i = 0; i < PLAN_VISIBLE_STAGES.length; i++) {
+      if (STAGE_ORDER.indexOf(PLAN_VISIBLE_STAGES[i]) <= currentIdx) last = i
+    }
+    return Math.max(last, 0)
+  })()
+  const stepTotal = PLAN_VISIBLE_STAGES.length
+  const stepNumber = visibleStepIdx + 1
+  const stepLabel = STAGE_LABELS[currentStage]
+  const stepSummary = `Etapa ${stepNumber} de ${stepTotal} · ${stepLabel}`
+  const stepProgressPct = Math.round((stepNumber / stepTotal) * 100)
 
+  if (compact) {
     const compactDegradedTitle =
       totalDegradedCount > 0
         ? `${totalDegradedCount} etapa${totalDegradedCount === 1 ? "" : "s"} em modo degradado: ${allDegradedStages
@@ -113,12 +118,14 @@ export function WizardProgressBar({ currentStage, completeness, stageHistory, de
     return (
       <div
         className="px-3 py-2 bg-lia-bg-primary"
-        aria-label={`Wizard de criação de vaga: ${summary}`}
+        aria-label={`Wizard de criação de vaga: ${stepSummary}`}
         data-degraded-count={totalDegradedCount}
+        data-step-number={stepNumber}
+        data-step-total={stepTotal}
       >
         <div className="flex items-center justify-between gap-2 mb-1.5">
           <span className="text-[11px] font-medium text-wedo-cyan truncate">
-            {summary}
+            {stepSummary}
           </span>
           <div className="flex items-center gap-1.5 flex-shrink-0">
             {totalDegradedCount > 0 && (
@@ -134,7 +141,7 @@ export function WizardProgressBar({ currentStage, completeness, stageHistory, de
               </span>
             )}
             <span className="text-[11px] text-lia-text-tertiary tabular-nums">
-              {Math.round(completeness * 100)}%
+              {stepNumber}/{stepTotal}
             </span>
             {onCancelWizard && (
               <button
@@ -152,8 +159,8 @@ export function WizardProgressBar({ currentStage, completeness, stageHistory, de
         </div>
         <div className="h-1 rounded-full bg-lia-bg-secondary overflow-hidden">
           <div
-            className="h-full rounded-full bg-wedo-cyan transition-all duration-500 ease-out motion-reduce:transition-none"
-            style={{ width: `${Math.round(completeness * 100)}%` }}
+            className="h-full rounded-full bg-wedo-cyan transition-[width] duration-500 ease-out motion-reduce:transition-none"
+            style={{ width: `${stepProgressPct}%` }}
           />
         </div>
       </div>
@@ -164,25 +171,37 @@ export function WizardProgressBar({ currentStage, completeness, stageHistory, de
     <div
       className="px-4 py-2.5 bg-lia-bg-primary"
       data-degraded-count={totalDegradedCount}
+      data-step-number={stepNumber}
+      data-step-total={stepTotal}
     >
-      {onCancelWizard && (
-        <div className="flex items-center justify-end mb-1.5">
-          <button
-            type="button"
-            onClick={onCancelWizard}
-            data-testid="wizard-cancel-button"
-            className="inline-flex items-center gap-1 text-[11px] text-lia-text-tertiary hover:text-status-error transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-status-error rounded px-1 py-0.5"
-          >
-            <X className="w-3 h-3" aria-hidden="true" />
-            Cancelar wizard
-          </button>
+      {/* Cabeçalho da etapa (audit #5): "Etapa X de Y · Nome" + Cancelar. */}
+      <div className="flex items-center justify-between gap-2 mb-1.5">
+        <span className="text-[11px] font-medium text-wedo-cyan truncate">
+          {stepSummary}
+        </span>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <span className="text-[11px] text-lia-text-tertiary tabular-nums">
+            {stepNumber}/{stepTotal}
+          </span>
+          {onCancelWizard && (
+            <button
+              type="button"
+              onClick={onCancelWizard}
+              data-testid="wizard-cancel-button"
+              className="inline-flex items-center gap-1 text-[11px] text-lia-text-tertiary hover:text-status-error transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-status-error rounded px-1 py-0.5"
+            >
+              <X className="w-3 h-3" aria-hidden="true" />
+              Cancelar wizard
+            </button>
+          )}
         </div>
-      )}
-      {/* Progress bar */}
+      </div>
+
+      {/* Progress bar — largura por ETAPA (não por completude da ficha). */}
       <div className="h-1 rounded-full bg-lia-bg-secondary mb-2.5 overflow-hidden">
         <div
-          className="h-full rounded-full bg-wedo-cyan transition-all duration-500 ease-out motion-reduce:transition-none"
-          style={{ width: `${Math.round(completeness * 100)}%` }}
+          className="h-full rounded-full bg-wedo-cyan transition-[width] duration-500 ease-out motion-reduce:transition-none"
+          style={{ width: `${stepProgressPct}%` }}
         />
       </div>
 
