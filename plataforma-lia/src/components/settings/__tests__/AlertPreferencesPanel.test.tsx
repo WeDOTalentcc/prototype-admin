@@ -42,6 +42,17 @@ const FIXTURE_PREFS: AlertPreference[] = [
     channels: { email: false, bell: true, teams: false, whatsapp: false },
     cooldown_hours: 24,
   },
+  {
+    id: "pref-3",
+    user_id: "user-1",
+    alert_type: "interview_not_confirmed",
+    name: "Entrevista Não Confirmada",
+    description: "Lembrete antes de entrevistas sem confirmação",
+    is_enabled: true,
+    threshold: 24,
+    channels: { email: true, bell: true, teams: true, whatsapp: true },
+    cooldown_hours: 12,
+  },
 ]
 
 const MESSAGES = {
@@ -57,6 +68,14 @@ const MESSAGES = {
         channelInApp: "App",
         channelTeams: "Teams",
         channelWhatsapp: "WhatsApp",
+        groupRecruiter: "Alertas para o recrutador",
+        groupRecruiterHint: "Notificações internas",
+        groupCandidate: "Alertas para o candidato",
+        groupCandidateHint: "Mensagens ao candidato",
+        channelsLabel: "Enviar por",
+        cooldownLabel: "Repetir no máximo a cada",
+        cooldownUnit: "h",
+        disabledHint: "Ative para configurar",
         toggleAria: "Ativar/desativar {type}",
         thresholdAria: "Limite para {type}",
         cooldownAria: "Cooldown em horas para {type}",
@@ -127,6 +146,27 @@ describe("AlertPreferencesPanel", () => {
     const [, updates] = updatePreferenceMock.mock.calls[0]
     // updates é AlertPreferenceUpdate — sem company_id
     expect(updates).not.toHaveProperty("company_id")
+  })
+
+  test("WhatsApp channel only applies to candidate-facing alerts", () => {
+    renderPanel()
+    // Recrutador (candidate_no_interaction): sem WhatsApp; tem e-mail/app/teams.
+    expect(
+      screen.queryByTestId("alert-pref-channel-candidate_no_interaction-whatsapp")
+    ).toBeNull()
+    expect(
+      screen.getByTestId("alert-pref-channel-candidate_no_interaction-bell")
+    ).toBeTruthy()
+    // Candidato (interview_not_confirmed): tem WhatsApp e e-mail; sem canais internos.
+    expect(
+      screen.getByTestId("alert-pref-channel-interview_not_confirmed-whatsapp")
+    ).toBeTruthy()
+    expect(
+      screen.queryByTestId("alert-pref-channel-interview_not_confirmed-teams")
+    ).toBeNull()
+    expect(
+      screen.queryByTestId("alert-pref-channel-interview_not_confirmed-bell")
+    ).toBeNull()
   })
 
   test("save failure renders explicit error banner (REGRA 4)", async () => {
