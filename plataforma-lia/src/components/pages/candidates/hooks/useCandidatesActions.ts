@@ -3,6 +3,7 @@
 import React from "react"
 import type { Candidate } from "../types"
 import { toast } from "sonner"
+import { isGlobalSource } from "@/lib/utils/source-detection"
 
 interface CandidateExperience {
   company?: string
@@ -28,6 +29,7 @@ interface CandidateExperience {
 
 export interface CandidatesActionsContext {
   candidates: Candidate[]
+  revealedContacts: Record<string, Record<string, string>>
   setCandidates: (v: Candidate[]) => void
   activeTab: string
   setActiveTab: (v: string) => void
@@ -62,6 +64,7 @@ export interface CandidatesActionsContext {
 export function useCandidatesActions(ctx: CandidatesActionsContext) {
   const {
     candidates,
+    revealedContacts,
     setCandidates,
     activeTab,
     setActiveTab,
@@ -83,7 +86,7 @@ export function useCandidatesActions(ctx: CandidatesActionsContext) {
   // Salvar candidatos Pearch selecionados na base local
   const handleSaveToLocalBase = async () => {
     const selectedPearchCandidates = candidates.filter(
-      c => selectedCandidatesForBatch.has(c.id) && c.source === 'pearch'
+      c => selectedCandidatesForBatch.has(c.id) && isGlobalSource(c.source, !!c.pearch_profile_id)
     )
 
     if (selectedPearchCandidates.length === 0) {
@@ -101,8 +104,8 @@ export function useCandidatesActions(ctx: CandidatesActionsContext) {
           first_name: c.name?.split(' ')[0] || null,
           last_name: c.name?.split(' ').slice(1).join(' ') || null,
           middle_name: c.middle_name || null,
-          email: c.email || null,
-          phone: c.phone || null,
+          email: revealedContacts[c.id]?.email ?? c.email ?? null,
+          phone: revealedContacts[c.id]?.phone ?? c.phone ?? null,
           linkedin_url: c.linkedin_url || null,
           avatar_url: c.avatar_url || null,
           current_title: c.current_title || null,
@@ -166,7 +169,22 @@ export function useCandidatesActions(ctx: CandidatesActionsContext) {
 
       const result = await response.json()
 
-      toast.success("Candidatos salvos na base!", { description: result.message })
+      // Optimistic rastro: flip saved rows to local so the "Fonte" column shows
+      // the Home icon (Base Local, no credit cost) instead of the Globe. The
+      // recruiter can now see exactly which candidates were saved; the row stays
+      // even though the selection clears. Mirrors server state after import.
+      const savedIds = new Set(selectedPearchCandidates.map(c => c.id))
+      setCandidates(
+        candidates.map(c =>
+          savedIds.has(c.id) ? { ...c, source: 'local', enrichment_source: 'local', email: revealedContacts[c.id]?.email ?? c.email, phone: revealedContacts[c.id]?.phone ?? c.phone } : c
+        )
+      )
+
+      toast.success("Candidatos salvos na base!", {
+        description:
+          result.message ||
+          `${selectedPearchCandidates.length} candidato(s) agora na sua base — veja o ícone de casa na coluna Fonte.`,
+      })
 
       // Limpar seleção após salvar
       deselectAllCandidates()
@@ -207,8 +225,8 @@ export function useCandidatesActions(ctx: CandidatesActionsContext) {
           first_name: c.name?.split(' ')[0] || null,
           last_name: c.name?.split(' ').slice(1).join(' ') || null,
           middle_name: c.middle_name || null,
-          email: c.email || null,
-          phone: c.phone || null,
+          email: revealedContacts[c.id]?.email ?? c.email ?? null,
+          phone: revealedContacts[c.id]?.phone ?? c.phone ?? null,
           linkedin_url: c.linkedin_url || null,
           avatar_url: c.avatar_url || null,
           current_title: c.current_title || null,
@@ -340,8 +358,8 @@ export function useCandidatesActions(ctx: CandidatesActionsContext) {
           first_name: c.name?.split(' ')[0] || null,
           last_name: c.name?.split(' ').slice(1).join(' ') || null,
           middle_name: c.middle_name || null,
-          email: c.email || null,
-          phone: c.phone || null,
+          email: revealedContacts[c.id]?.email ?? c.email ?? null,
+          phone: revealedContacts[c.id]?.phone ?? c.phone ?? null,
           linkedin_url: c.linkedin_url || null,
           avatar_url: c.avatar_url || null,
           current_title: c.current_title || null,

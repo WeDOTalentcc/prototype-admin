@@ -156,7 +156,7 @@ interface CandidatesActions {
   setSearchExecutionId: (v: number | ((prev: number) => number)) => void
   setSearchSortBy: (v: string) => void
   setSearchFeedbacks: (v: Record<string, 'like' | 'dislike'> | ((prev: Record<string, 'like' | 'dislike'>) => Record<string, 'like' | 'dislike'>)) => void
-  setDisplayedResultsCount: (v: number) => void
+  setDisplayedResultsCount: (v: number | ((prev: number) => number)) => void
   setIsLoadingMore: (v: boolean) => void
   setShowOnlyNew: (v: boolean) => void
   setIsDroppingCV: (v: boolean) => void
@@ -308,7 +308,7 @@ export const useCandidatesStore = create<CandidatesStore>()(
       setSearchExecutionId: setOrUpdate<number>(set, 'searchExecutionId', 'search/setSearchExecutionId'),
       setSearchSortBy: (v) => set({ searchSortBy: v }, false, 'search/setSearchSortBy'),
       setSearchFeedbacks: setOrUpdate<Record<string, 'like' | 'dislike'>>(set, 'searchFeedbacks', 'search/setSearchFeedbacks'),
-      setDisplayedResultsCount: (v) => set({ displayedResultsCount: v }, false, 'search/setDisplayedResultsCount'),
+      setDisplayedResultsCount: setOrUpdate<number>(set, 'displayedResultsCount', 'search/setDisplayedResultsCount'),
       setIsLoadingMore: (v) => set({ isLoadingMore: v }, false, 'search/setIsLoadingMore'),
       setShowOnlyNew: (v) => set({ showOnlyNew: v }, false, 'search/setShowOnlyNew'),
       setIsDroppingCV: (v) => set({ isDroppingCV: v }, false, 'search/setIsDroppingCV'),

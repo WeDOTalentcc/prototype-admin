@@ -93,9 +93,77 @@ export function useRevealContact({
     }
   }
 
+  // ── Bulk reveal (selecionados na barra de ações) ──────────────────────────
+  const [showBulkRevealModal, setShowBulkRevealModal] = useState(false)
+  const [bulkRevealCandidates, setBulkRevealCandidates] = useState<Candidate[]>([])
+  const [isBulkRevealing, setIsBulkRevealing] = useState(false)
+
+  const openBulkRevealModal = (candidatesToReveal: Candidate[]) => {
+    setBulkRevealCandidates(candidatesToReveal)
+    setShowBulkRevealModal(true)
+  }
+
+  // Reuses the single-candidate reveal endpoint per candidate/type. The backend
+  // only charges for contacts that actually exist, so unavailable ones are free.
+  const handleBulkReveal = async (types: Array<"email" | "phone">) => {
+    if (!bulkRevealCandidates.length || !types.length) return
+    setIsBulkRevealing(true)
+    let revealed = 0
+    let unavailable = 0
+    try {
+      for (const cand of bulkRevealCandidates) {
+        for (const type of types) {
+          if (revealedContacts[cand.id]?.[type]) continue
+          try {
+            const response = await fetch('/api/backend-proxy/search/reveal/', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                candidate_id: cand.id,
+                candidate_name: cand.name,
+                reveal_type: type,
+                linkedin_slug: cand.linkedin_url?.split('/in/')?.[1]?.replace('/', '') || null,
+              }),
+            })
+            const data = await response.json()
+            if (data.success) {
+              const value = type === 'email' ? data.email : data.phone
+              setRevealedContacts(prev => ({
+                ...prev,
+                [cand.id]: { ...prev[cand.id], [type]: value },
+              }))
+              if (data.credits_remaining !== undefined && data.credits_remaining !== null) {
+                setCreditsRemaining(() => data.credits_remaining)
+              }
+              revealed++
+            } else {
+              unavailable++
+            }
+          } catch {
+            unavailable++
+          }
+        }
+      }
+      setShowBulkRevealModal(false)
+      if (revealed > 0) {
+        toast.success(`${revealed} contato(s) revelado(s)`, {
+          description: unavailable ? `${unavailable} indisponível(is) - sem cobrança.` : undefined,
+          duration: 5000,
+        })
+      } else {
+        toast.error("Nenhum contato disponível", {
+          description: "Os candidatos selecionados não tinham os contatos escolhidos.",
+          duration: 5000,
+        })
+      }
+    } finally {
+      setIsBulkRevealing(false)
+    }
+  }
+
   return {
-    state: { showRevealModal, revealCandidate, revealType, revealedContacts, isRevealing },
-    actions: { setShowRevealModal, setRevealCandidate, setRevealType, setRevealedContacts, openRevealModal, handleRevealContact },
+    state: { showRevealModal, revealCandidate, revealType, revealedContacts, isRevealing, showBulkRevealModal, bulkRevealCandidates, isBulkRevealing },
+    actions: { setShowRevealModal, setRevealCandidate, setRevealType, setRevealedContacts, openRevealModal, handleRevealContact, openBulkRevealModal, handleBulkReveal, setShowBulkRevealModal },
   }
 }
 

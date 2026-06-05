@@ -37,6 +37,7 @@ export function useCandidatePreviewCore(candidate: Record<string, unknown> | nul
   const [expandedOpinionId, setExpandedOpinionId] = useState<string | null>(null)
   const [opinionsHistory, setOpinionsHistory] = useState<Record<string, unknown>[]>([])
   const [isLoadingHistory, setIsLoadingHistory] = useState(false)
+  const [isErrorHistory, setIsErrorHistory] = useState(false)
 
 
   const [showUpdateOpinionAlert, setShowUpdateOpinionAlert] = useState(false)

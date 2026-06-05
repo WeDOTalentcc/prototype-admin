@@ -49,9 +49,6 @@ export function useCandidatesNavigation({
   lastSearchQuery,
   searchSource,
   setSearchSource,
-  searchExecutionId,
-  lastSearchEntities,
-  setTableFilters,
   candidates,
   pendingCandidateOpen,
   onCandidateOpened,
@@ -110,24 +107,13 @@ export function useCandidatesNavigation({
     }
   }, [pendingCandidateOpen, candidates, onCandidateOpened, setPreviewCandidate, setShowCandidatePreview])
 
-  // Auto-populate tableFilters from entities returned by the last search
-  useEffect(() => {
-    if (searchExecutionId > 0) {
-      const e = lastSearchEntities
-      const yearsExp = e?.years_experience
-      const parsedYears = typeof yearsExp === 'string' ? parseInt(yearsExp, 10) : yearsExp
-      setTableFilters(prev => ({
-        ...prev,
-        locations: e?.location ? [e.location] : [],
-        jobTitles: e?.job_title ? [e.job_title] : [],
-        skills: e?.skills?.length ? e.skills : [],
-        industries: e?.industry ? [e.industry] : [],
-        seniorityLevels: e?.seniority ? [e.seniority] : [],
-        minExperience: parsedYears !== undefined && !isNaN(parsedYears) ? parsedYears : undefined,
-        companies: e?.company ? [e.company] : [],
-      }))
-    }
-  }, [searchExecutionId, lastSearchEntities, setTableFilters])
+  // P0 fix (2026-06-05): search entities are NOT auto-applied as client-side
+  // tableFilters. Global-sourced candidates carry literal location/seniority
+  // strings (e.g. "San Francisco", "Senior PM") that never substring-match the
+  // search terms ("Brasil"/"Pleno"), which silently filtered ALL results to
+  // zero ("Sem resultados" until the user cleared filters). The search context
+  // is already shown read-only in SearchResultsHeader; the table-filter panel is
+  // user-driven only. Fix at the producer per CLAUDE.md canonical-fix.
 
   const consumeCandidatesFilterData = useNavigationStore(s => s.consumeCandidatesFilterData)
 

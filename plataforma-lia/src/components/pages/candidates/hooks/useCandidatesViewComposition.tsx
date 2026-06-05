@@ -219,6 +219,7 @@ export function useCandidatesViewComposition(params: UseCandidatesViewCompositio
 
   const candidatesActions = useCandidatesActions({
     candidates: params.candidates,
+    revealedContacts: params.revealedContacts,
     setCandidates: params.setCandidates,
     activeTab: params.activeTab,
     setActiveTab: (v: string) => params.setActiveTab(v as 'search' | 'history' | 'favorites' | 'lists' | 'saved-searches' | 'agents'),

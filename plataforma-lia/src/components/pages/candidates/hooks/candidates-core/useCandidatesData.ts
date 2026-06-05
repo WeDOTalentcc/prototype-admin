@@ -126,13 +126,16 @@ export function useCandidatesData({
 
   // ── Mark a candidate as viewed ────────────────────────────────────────────
   const markCandidateAsViewed = async (candidateId: string, source = 'profile') => {
+    // Optimistic local mark FIRST: the eye indicator must not depend on the
+    // server POST, which 404s for global-sourced (Pearch) candidates not yet in
+    // the local DB. Persisting viewed-state server-side is best-effort.
+    onViewedIdsChange(prev => new Set([...prev, candidateId]))
     try {
       await fetch(`/api/backend-proxy/candidates/${candidateId}/viewed`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ source }),
       })
-      onViewedIdsChange(prev => new Set([...prev, candidateId]))
     } catch {}
   }
 

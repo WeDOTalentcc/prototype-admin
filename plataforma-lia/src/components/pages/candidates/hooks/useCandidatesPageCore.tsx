@@ -12,6 +12,7 @@ import { useLoadingWatchdog } from "@/hooks/shared/use-loading-watchdog"
 import { useGlobalSearchSettings } from "@/hooks/search/useGlobalSearchSettings"
 import { useHideViewedCandidates } from "@/hooks/candidates/useHideViewedCandidates"
 import { useCandidateFilters, getDefaultTableFilters } from "@/hooks/candidates/use-candidate-filters"
+import { isGlobalSource } from "@/lib/utils/source-detection"
 import { useCandidateSelection } from "@/hooks/candidates/use-candidate-selection"
 import { useTalentFunnel } from "@/hooks/candidates/use-talent-funnel"
 import { useCandidatesSearchState } from "@/hooks/candidates/use-candidates-search-state"
@@ -353,8 +354,16 @@ export function useCandidatesPageCore({
       buildFiltersFromTags, loadArchetypesFromBackend, executeArchetypeSearch,
     },
   } = archetypesHook
-  const { showRevealModal, revealCandidate, revealType, revealedContacts, isRevealing } = revealContactHook.state
-  const { setShowRevealModal, setRevealCandidate, setRevealType, setRevealedContacts, openRevealModal, handleRevealContact } = revealContactHook.actions
+  const { showRevealModal, revealCandidate, revealType, revealedContacts, isRevealing, showBulkRevealModal, bulkRevealCandidates, isBulkRevealing } = revealContactHook.state
+  const { setShowRevealModal, setRevealCandidate, setRevealType, setRevealedContacts, openRevealModal, handleRevealContact, openBulkRevealModal, handleBulkReveal, setShowBulkRevealModal } = revealContactHook.actions
+  const bulkReveal = {
+    showModal: showBulkRevealModal,
+    candidates: bulkRevealCandidates,
+    isRevealing: isBulkRevealing,
+    open: openBulkRevealModal,
+    confirm: handleBulkReveal,
+    close: () => setShowBulkRevealModal(false),
+  }
   const handleCVDrop = cvHandlers.handleCVDrop
   const handleCVDragOver = cvHandlers.handleCVDragOver
   const handleCVDragLeave = cvHandlers.handleCVDragLeave
@@ -449,7 +458,7 @@ export function useCandidatesPageCore({
   const handleExitWithoutSaving = candidatesActions.handleExitWithoutSaving
 
   const selectedPearchCount = candidates.filter(
-    c => selectedCandidatesForBatch.has(c.id) && c.source === 'pearch'
+    c => selectedCandidatesForBatch.has(c.id) && isGlobalSource(c.source, !!c.pearch_profile_id)
   ).length
 
   const {
@@ -485,6 +494,7 @@ export function useCandidatesPageCore({
   }
 
   return {
+    bulkReveal,
     searchFingerprint,
     handleReSearchWithFilters,
     activeSearchFilters, activeSearchTab, activeTab, addToListCandidateIds, addToListCandidateNames, bulkJobVacancies,

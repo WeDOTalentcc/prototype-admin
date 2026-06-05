@@ -7,7 +7,7 @@ import { CrossTabFilterBanner } from "./CrossTabFilterBanner"
 import { ViewingListBanner } from "./ViewingListBanner"
 import { ColumnConfigSidebar } from "./ColumnConfigSidebar"
 import { BulkActionsBar } from "@/components/ui/bulk-actions-bar"
-import { Briefcase, List, Share2, Mail, ClipboardCheck, Star, EyeOff, Database } from "lucide-react"
+import { Briefcase, List, Share2, Mail, ClipboardCheck, Star, EyeOff, Database, Eye } from "lucide-react"
 import { CandidatesFilterPanel } from "./CandidatesFilterPanel"
 import { SearchControlsBar } from "./SearchControlsBar"
 import { ActiveFiltersBadge } from "./ActiveFiltersBadge"
@@ -37,6 +37,7 @@ export interface CandidateSearchResultsViewProps {
   candidates: Candidate[]
   onShareSearch: () => void
   onBulkEmail: () => void
+  onBulkReveal: () => void
   onBulkWSIScreening: () => void
   onToggleFavoriteBatch: () => void
   onHideBatch: () => void
@@ -170,6 +171,7 @@ export function CandidateSearchResultsView({
   candidates,
   onShareSearch,
   onBulkEmail,
+  onBulkReveal,
   onBulkWSIScreening,
   onToggleFavoriteBatch,
   onHideBatch,
@@ -344,6 +346,12 @@ export function CandidateSearchResultsView({
             label: t('results.message'),
             icon: <Mail className="w-3.5 h-3.5 text-lia-text-secondary" />,
             onClick: onBulkEmail,
+          },
+          {
+            id: 'reveal_contacts',
+            label: `Revelar (${selectedCandidatesForBatch.size})`,
+            icon: <Eye className="w-3.5 h-3.5 text-lia-text-secondary" />,
+            onClick: onBulkReveal,
           },
           {
             id: 'wsi_screening',

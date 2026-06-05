@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState } from "react"
-import { ThumbsUp, XCircle } from "lucide-react"
+import { ThumbsUp, ThumbsDown } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useSearchFingerprint } from "@/components/search/SearchFingerprintContext"
 
@@ -83,7 +83,8 @@ export function SearchFeedbackButtons({
         className={cn(
           btnSize,
           "rounded-full flex items-center justify-center hover:opacity-80 transition-opacity motion-reduce:transition-none",
-          isSubmitting && "opacity-50 pointer-events-none"
+          isSubmitting && "opacity-50 pointer-events-none",
+          feedback === 'like' ? "ring-2 ring-white/80 scale-110" : feedback === 'dislike' ? "opacity-40" : ""
         , "bg-lia-btn-primary-hover")}
         title="Aprovar candidato"
       >
@@ -95,11 +96,12 @@ export function SearchFeedbackButtons({
         className={cn(
           btnSize,
           "rounded-full flex items-center justify-center hover:opacity-80 transition-opacity motion-reduce:transition-none bg-wedo-coral",
-          isSubmitting && "opacity-50 pointer-events-none"
+          isSubmitting && "opacity-50 pointer-events-none",
+          feedback === 'dislike' ? "ring-2 ring-white/80 scale-110" : feedback === 'like' ? "opacity-40" : ""
         )}
         title="Reprovar candidato"
       >
-        <XCircle className={cn(iconSize, "text-white")} strokeWidth={2} />
+        <ThumbsDown className={cn(iconSize, "text-white")} strokeWidth={2} />
       </button>
     </div>
   )
