@@ -252,7 +252,7 @@ class WizardOrchestrator:
             logger.warning("[WizardOrchestrator] client init failed: %s", exc)
             return None
 
-    def _build_system_prompt(self, state: dict) -> str:
+    def _build_system_prompt(self, state: dict, company_id: Optional[str] = None) -> str:
         try:
             from app.domains.job_creation.internal.utils import (
                 _build_wizard_state_summary,
@@ -271,8 +271,18 @@ class WizardOrchestrator:
         # truth everywhere. Fail-open: no block if the view raises.
         modes_block = ""
         try:
-            from app.shared.capabilities import render_creation_modes_block
-            rendered = render_creation_modes_block()
+            from app.shared.capabilities import (
+                get_tenant_allowed_creation_actions,
+                render_creation_modes_block,
+            )
+            # Task #1324: scope the claimed creation modes to this tenant's
+            # permitted actions (tool_permissions.yaml). None → all-modes default.
+            _allowed = (
+                get_tenant_allowed_creation_actions(company_id)
+                if company_id
+                else None
+            )
+            rendered = render_creation_modes_block(allowed_actions=_allowed)
             if rendered and rendered.strip():
                 modes_block = f"\n\n## Capacidades de criação\n{rendered}"
         except Exception as exc:  # noqa: BLE001 — never break the wizard turn
@@ -327,7 +337,9 @@ class WizardOrchestrator:
                 error=True,
             )
 
-        system_prompt = self._build_system_prompt(state)
+        system_prompt = self._build_system_prompt(
+            state, company_id=getattr(ctx, "company_id", None)
+        )
         tool_schemas = [t.anthropic_schema() for t in self._registry.values()]
         messages: list[dict[str, Any]] = _extract_history_messages(state)
         messages.append({"role": "user", "content": msg})

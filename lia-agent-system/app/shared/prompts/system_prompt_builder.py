@@ -169,6 +169,7 @@ class SystemPromptBuilder:
     def build(
         *,
         agent_type: str = "orchestrator",
+        company_id: str | None = None,
         tenant_context_snippet: str = "",
         user_name: str = "",
         user_role: str = "",
@@ -403,8 +404,19 @@ class SystemPromptBuilder:
         # verbatim with WizardOrchestrator + the meta-question helper, so no
         # surface can drift into a contradictory self-knowledge answer.
         try:
-            from app.shared.capabilities import render_creation_modes_block
-            modes_block = render_creation_modes_block()
+            from app.shared.capabilities import (
+                get_tenant_allowed_creation_actions,
+                render_creation_modes_block,
+            )
+            # Task #1324: tailor the claimed creation modes to what THIS tenant is
+            # permitted to use (derived from tool_permissions.yaml). None when no
+            # company_id → conservative all-modes default (legacy callers).
+            _allowed = (
+                get_tenant_allowed_creation_actions(company_id)
+                if company_id
+                else None
+            )
+            modes_block = render_creation_modes_block(allowed_actions=_allowed)
             if modes_block and modes_block.strip():
                 context_parts.append(modes_block)
         except Exception as _modes_exc:

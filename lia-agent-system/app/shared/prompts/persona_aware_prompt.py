@@ -110,8 +110,13 @@ async def build_system_prompt_with_persona(
     # `user_message` é um hint só para matching de padrões; não é kwarg do builder.
     builder_kwargs.pop("user_message", None)
 
+    # Task #1324: company_id reaches the builder so the claimed creation modes
+    # are tailored to this tenant's permitted actions. ``pop`` first to avoid a
+    # duplicate-kwarg TypeError if a caller already passed it via builder_kwargs.
+    builder_kwargs.pop("company_id", None)
     return SystemPromptBuilder.build(
         ai_persona=persona,
+        company_id=company_id,
         learned_examples=learned_examples,
         **builder_kwargs,
     )

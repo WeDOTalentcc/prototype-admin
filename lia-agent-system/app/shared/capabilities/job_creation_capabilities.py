@@ -147,6 +147,71 @@ def get_creation_modes(
     return modes
 
 
+def get_tenant_allowed_creation_actions(
+    tenant_id: str | None,
+) -> frozenset[str] | None:
+    """Derive the creation intent ids a tenant may use, for prompt scoping.
+
+    The creation modes are backed by intent ids (see ``_MODE_SPECS``). Only some
+    of those intents are gated by ``tool_permissions.yaml`` — today just
+    ``create_job`` lives there; ``create_from_template``, ``clone_job``,
+    ``duplicate_job``, ``guided_wizard`` ... have NO tool-permission
+    representation and therefore are NOT tenant-gateable.
+
+    To stay HONEST (and never re-introduce the "LIA only knows how to create from
+    scratch" drift), this returns the set passed as ``allowed_actions`` to
+    :func:`get_creation_modes` / :func:`render_creation_modes_block`:
+
+        {backing intents tool_permissions does NOT gate}
+        ∪ {gated backing intents the tenant actually permits}
+
+    So a mode only disappears when ALL of its backing intents are gateable AND
+    the tenant has them removed (e.g. via a ``tenants:`` override). A tenant on
+    the default config gets every intent back, so the rendered block is identical
+    to the unscoped default.
+
+    Returns ``None`` (no scoping → conservative all-modes default) when there is
+    nothing to gate or when permissions cannot be resolved. Fail-open by
+    contract: this feeds prompt construction and must never raise.
+    """
+    try:
+        from app.tools.tool_permissions_loader import get_permissions
+
+        all_intents = frozenset(
+            i for _key, _label, _desc, intents in _MODE_SPECS for i in intents
+        )
+
+        scopes = ("talent_funnel", "job_table", "in_job", "global", "universal")
+
+        # Vocabulary of intents tool_permissions is even ABLE to gate: those that
+        # appear as a tool somewhere in the GLOBAL config. Intents outside this
+        # vocabulary are not tenant-gateable and must always stay available.
+        global_cfg = get_permissions(None)
+        gateable: set[str] = set()
+        for scope in scopes:
+            gateable |= global_cfg.get_tools(scope, "all")
+        gateable &= all_intents
+
+        if not gateable:
+            # tool_permissions cannot gate any creation intent → no scoping.
+            return None
+
+        tenant_cfg = get_permissions(tenant_id)
+        tenant_tools: set[str] = set()
+        for scope in scopes:
+            tenant_tools |= tenant_cfg.get_tools(scope, "all")
+
+        allowed = {
+            i for i in all_intents if (i not in gateable) or (i in tenant_tools)
+        }
+        return frozenset(allowed)
+    except Exception as exc:  # noqa: BLE001 — never break prompt construction
+        logger.debug(
+            "[capabilities] could not derive tenant creation actions: %s", exc
+        )
+        return None
+
+
 # Canonical marker used by the anti-drift sentinel and the prompt post-processor
 # to recognise a registry-derived creation-modes block.
 CREATION_MODES_HEADING = "### Modos de criação de vaga"

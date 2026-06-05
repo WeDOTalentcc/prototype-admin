@@ -11,6 +11,7 @@ from app.shared.capabilities.job_creation_capabilities import (
     CreationMode,
     answer_can_create_question,
     get_creation_modes,
+    get_tenant_allowed_creation_actions,
     render_creation_modes_block,
 )
 
@@ -18,5 +19,6 @@ __all__ = [
     "CreationMode",
     "answer_can_create_question",
     "get_creation_modes",
+    "get_tenant_allowed_creation_actions",
     "render_creation_modes_block",
 ]

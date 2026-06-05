@@ -7,7 +7,6 @@
  * - Persona: nome + tom da IA (AiPersonaPanel)
  * - Instrucoes por campo: 34 toggles de campo + instrucoes custom (LiaFieldsConfigPanel)
  * - Learning Loops: retroalimentacao do modelo (LearningLoopsPanel)
- * - Visibilidade: transparencia sobre dados enviados para a IA (LiaImpactSummary)
  *
  * Group: "lia" (P1-7 sidebar reorganization — 2026-05-27)
  * P1-9: tab "Visibilidade" adicionada (2026-05-27) — recruiter transparency panel.
@@ -17,14 +16,12 @@ import React, { useState } from "react"
 import { AiPersonaPanel } from "./AiPersonaPanel"
 import { LiaFieldsConfigPanel } from "./LiaFieldsConfigPanel"
 import { LearningLoopsPanel } from "./LearningLoopsPanel"
-import { LiaImpactSummary } from "./lia/LiaImpactSummary"
 import { tabStyles } from "@/lib/design-tokens"
 
 const TABS = [
   { id: "persona", label: "Persona da IA" },
   { id: "instrucoes-lia", label: "Instrucoes por Campo" },
   { id: "learning-loops", label: "Learning Loops" },
-  { id: "visibilidade", label: "Visibilidade" },
 ] as const
 
 type TabId = typeof TABS[number]["id"]
@@ -56,7 +53,6 @@ export function LiaPersonalizacaoHub({ activeSubsection }: LiaPersonalizacaoHubP
       {activeTab === "persona" && <AiPersonaPanel />}
       {activeTab === "instrucoes-lia" && <LiaFieldsConfigPanel />}
       {activeTab === "learning-loops" && <LearningLoopsPanel />}
-      {activeTab === "visibilidade" && <LiaImpactSummary />}
     </div>
   )
 }

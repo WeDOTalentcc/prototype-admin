@@ -1058,6 +1058,11 @@ class MainOrchestrator:
                             _phase15_system_prompt = SystemPromptBuilder.build(
                                 ai_persona=None,
                                 agent_type="orchestrator",
+                                company_id=(
+                                    str(_loop_company_id)
+                                    if _loop_company_id
+                                    else None
+                                ),
                                 tenant_context_snippet=_phase15_tenant_snippet,
                                 user_name=getattr(ctx, "user_name", "") or "",
                                 user_role=getattr(ctx, "user_role", "") or "",
