@@ -120,6 +120,36 @@ describe("FE-1 — transport→UI wizard bridge (lia:wizard-stage-payload)", () 
     expect(listener).toHaveBeenCalledTimes(1)
   })
 
+  // Live chat-page SSE shape — agent_chat_sse.py emits the wizard ONLY as a
+  // `panel_update` frame (panel_type "wizard_stage"); panel_title carries the
+  // stage string and panel_data carries the inner `data` dict. Without this
+  // branch the wizard side-panel never opens on the full chat-page SSE path.
+  test("dispatches from a panel_update frame (chat-page SSE path)", () => {
+    maybeDispatchWizardStage({
+      type: "panel_update",
+      panel_type: "wizard_stage",
+      panel_title: "competencias",
+      panel_data: { questions: ["q1"], dropped_questions: [] },
+      action: "open",
+    } as unknown as TransportEvent)
+    expect(listener).toHaveBeenCalledTimes(1)
+    const detail = (listener.mock.calls[0][0] as CustomEvent).detail
+    expect(detail.type).toBe("wizard_stage")
+    expect(detail.stage).toBe("competencias")
+    expect(detail.data).toEqual({ questions: ["q1"], dropped_questions: [] })
+  })
+
+  test("does NOT dispatch for a panel_update of a non-wizard panel_type", () => {
+    maybeDispatchWizardStage({
+      type: "panel_update",
+      panel_type: "candidate_detail",
+      panel_title: "Some Candidate",
+      panel_data: { id: 1 },
+      action: "open",
+    } as unknown as TransportEvent)
+    expect(listener).not.toHaveBeenCalled()
+  })
+
   // Structural guard — handleParsedEvent must wire the bridge.
   test("handleParsedEvent calls maybeDispatchWizardStage", () => {
     expect(SRC).toMatch(/maybeDispatchWizardStage\(event\)/)

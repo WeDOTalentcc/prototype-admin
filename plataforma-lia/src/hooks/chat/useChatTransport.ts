@@ -89,12 +89,17 @@ export function maybeDispatchSettingsUpdated(event: TransportEvent): void {
 // FE-1 (wizard panel SSE parity) — Bridge the wizard panel signal to the
 // `lia:wizard-stage-payload` window event from the SSE/WS transport, mirroring
 // useChatSocket.ts (WS) and useChatMessages.ts (REST) 1:1 so the dynamic panel
-// opens regardless of transport. Backend (commit 54f2d48d) ships the signal in
-// TWO shapes over this stream:
-//   1. a top-level `wizard_stage` frame (mirrors the WS frame); and
-//   2. nested as `ws_stage_payload` on the structured `message` frame (bubble).
+// opens regardless of transport. Backend ships the signal in THREE shapes over
+// this stream:
+//   1. a top-level `wizard_stage` frame (mirrors the WS frame, commit 54f2d48d);
+//   2. nested as `ws_stage_payload` on the structured `message` frame (bubble);
+//   3. a `panel_update` frame with `panel_type:"wizard_stage"` — the ONLY shape
+//      the live chat-page SSE backend (agent_chat_sse.py) emits for the wizard.
+//      There `panel_title` carries the `stage` string and `panel_data` carries
+//      the inner `data` dict (`serialize_panel_update`), so we re-shape it back
+//      into the canonical payload before dispatch.
 // Dedup: the same logical payload (thread_id:stage:completeness) is fired at
-// most once even if it arrives via both shapes.
+// most once even if it arrives via more than one shape.
 let _lastWizardStageKey: string | null = null
 
 function dispatchWizardStagePayload(src: Record<string, unknown>): void {
@@ -132,6 +137,26 @@ export function maybeDispatchWizardStage(event: TransportEvent): void {
       .ws_stage_payload
     if (nested && typeof nested === "object") {
       dispatchWizardStagePayload(nested as Record<string, unknown>)
+    }
+    return
+  }
+  // chat-page SSE path — agent_chat_sse.py emits the wizard as a `panel_update`
+  // frame (panel_type "wizard_stage"), never a bare `wizard_stage` frame. Mirror
+  // the WS hook's bridge: re-shape panel_title→stage + panel_data→data into the
+  // canonical payload. (thread_id/completeness/requires_approval are not on this
+  // frame; dispatchWizardStagePayload defaults them — the panel opens regardless.)
+  if (event.type === "panel_update") {
+    const pe = event as unknown as Record<string, unknown>
+    if (pe.panel_type === "wizard_stage") {
+      const stage = pe.panel_title
+      const data = pe.panel_data
+      dispatchWizardStagePayload({
+        stage,
+        thread_id: pe.thread_id,
+        data: data && typeof data === "object" ? data : {},
+        completeness: pe.completeness,
+        requires_approval: pe.requires_approval,
+      })
     }
   }
 }
