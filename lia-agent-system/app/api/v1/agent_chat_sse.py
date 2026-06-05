@@ -473,6 +473,8 @@ company_id: str = Depends(require_company_id)):
                             panel_data=_wiz_payload.get("data", _wiz_payload),
                             panel_title=_wiz_payload.get("stage", "wizard"),
                             action="open",
+                            thread_id=_wiz_thread_id,
+                            completeness=_wiz_payload.get("completeness"),
                         ),
                         next_id(),
                     )

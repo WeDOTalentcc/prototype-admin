@@ -194,13 +194,23 @@ def serialize_panel_update(
     panel_data: dict[str, Any],
     panel_title: str = "",
     action: str = "open",
+    thread_id: str | None = None,
+    completeness: float | None = None,
 ) -> PanelUpdateEvent:
+    # thread_id + completeness sao opcionais e so aparecem no frame quando
+    # fornecidos (serialize_event descarta None). Necessarios para o wizard:
+    # o FE deduplica panel_update(wizard_stage) por chave
+    # thread_id:stage:completeness; sem eles, dois turnos do MESMO stage
+    # colapsam na mesma chave e a ponte que injeta o stage e suprimida no 2o
+    # turno -> painel do wizard fecha. Ver fix 2026-06-05.
     return serialize_event(
         "panel_update",
         panel_type=panel_type,
         panel_data=panel_data,
         panel_title=panel_title,
         action=action,
+        thread_id=thread_id,
+        completeness=completeness,
     )
 
 

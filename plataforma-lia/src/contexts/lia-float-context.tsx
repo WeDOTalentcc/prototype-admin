@@ -398,6 +398,15 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
   );
 
   const handlePanelUpdate = useCallback((event: PanelUpdateEvent) => {
+    // Fonte unica (fix 2026-06-05 wizard panel close): o painel do wizard e
+    // propriedade EXCLUSIVA da ponte lia:wizard-stage-payload, que chama
+    // openDynamicPanel COM o campo stage. handlePanelUpdate grava um shape SEM
+    // stage; se ele processar um frame panel_type wizard_stage, derruba o gate
+    // hasDynamicPanel (SPLIT_STAGES.includes(undefined)) no 2o turno do mesmo
+    // stage -- justamente quando maybeDispatchWizardStage foi deduplicada.
+    // Ignorar aqui = single source of truth. Sensor:
+    // __tests__/lia-float-wizard-panel-stage.test.ts.
+    if (event.panel_type === "wizard_stage") return
     if (event.action === "open" || event.action === "update") {
       setState((prev) => ({
         ...prev,
