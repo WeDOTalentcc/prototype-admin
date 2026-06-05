@@ -1423,6 +1423,7 @@ class MainOrchestrator:
                                 "tool_calls": _agentic_result.get("tool_calls_made", []),
                                 "iterations": _agentic_result.get("iterations", 0),
                             },
+                            response_blocks=_agentic_result.get("response_blocks"),
                         )
                         if _soft_warnings:
                             _resp.fairness_warnings = _soft_warnings

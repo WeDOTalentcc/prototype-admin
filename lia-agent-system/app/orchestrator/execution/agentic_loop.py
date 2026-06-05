@@ -108,6 +108,27 @@ def _is_transient_provider_error(exc: BaseException) -> bool:
 _ACTIONABLE_TOOL_UI_ACTIONS: frozenset[str] = frozenset({"start_wizard_seeded"})
 
 
+def _extract_response_blocks(result: object) -> list:
+    """Pure helper: surface response_blocks (RRP) from a ToolResult.
+
+    AD3: tools-as-renderers podem retornar blocos ricos em
+    ``result.result["data"]["response_blocks"]``. O loop acumula e
+    promove no return. Defensivo — shape mismatch -> []; nunca raise.
+    """
+    if result is None:
+        return []
+    if not getattr(result, "success", False):
+        return []
+    payload = getattr(result, "result", None)
+    if not isinstance(payload, dict):
+        return []
+    data = payload.get("data")
+    if not isinstance(data, dict):
+        return []
+    blocks = data.get("response_blocks")
+    return blocks if isinstance(blocks, list) else []
+
+
 def _extract_tool_directive(result: object) -> "dict | None":
     """Pure helper: surface an actionable UI directive from a ToolResult.
 
@@ -294,6 +315,8 @@ class AgenticLoop:
         # result (e.g. start_creation_from_source -> start_wizard_seeded). Stays
         # None for normal turns; consumed by main_orchestrator after run().
         tool_directive: "dict | None" = None
+        # AD3: acumula response_blocks (RRP) emitidos por tools-as-renderers.
+        response_blocks_acc: list = []
 
         # Card de fase: entendendo a solicitação (localizado).
         await _emit_phase("understanding")
@@ -397,6 +420,7 @@ class AgenticLoop:
                     "tool_calls_made": tool_calls_made,
                     "iterations": iteration + 1,
                     "tool_directive": tool_directive,
+                    "response_blocks": response_blocks_acc or None,
                 }
 
             # --- Execute each requested tool call ---
@@ -430,6 +454,9 @@ class AgenticLoop:
                     _directive = _extract_tool_directive(result)
                     if _directive is not None:
                         tool_directive = _directive
+                    _blocks = _extract_response_blocks(result)
+                    if _blocks:
+                        response_blocks_acc.extend(_blocks)
                 except Exception as exc:
                     _tool_status = "error"
                     logger.warning(
