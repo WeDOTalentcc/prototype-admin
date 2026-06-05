@@ -56,6 +56,19 @@ export function UnifiedChatInput({
   const [isDragOver, setIsDragOver] = useState(false)
   const isBusy = isStreaming || isCreating
 
+  // Devolve o foco ao campo assim que a LIA termina de responder. O textarea
+  // fica `disabled` enquanto isBusy (streaming/creating); ao desabilitar, o
+  // browser tira o foco e NÃO o devolve sozinho ao reabilitar — por isso o
+  // recrutador precisava clicar de novo. Refocamos só na transição
+  // ocupado -> ocioso (não no mount) para não roubar foco indevidamente.
+  const wasBusyRef = useRef(false)
+  useEffect(() => {
+    if (wasBusyRef.current && !isBusy && !isDisabled) {
+      textareaRef.current?.focus()
+    }
+    wasBusyRef.current = isBusy
+  }, [isBusy, isDisabled])
+
   // --- @mention autocomplete ---
   const onInsertMention = useCallback((triggerStart: number, mentionToken: string) => {
     setInputText(prev => {
