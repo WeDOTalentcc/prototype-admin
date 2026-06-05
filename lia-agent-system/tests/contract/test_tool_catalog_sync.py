@@ -72,3 +72,18 @@ def test_get_tools_for_scope_inclui_global():
 def test_toolmeta_extra_forbid():
     with pytest.raises(ValidationError):
         ToolMeta(name="x", domain="d", bogus=1)
+
+
+def test_read_tools_nao_marcadas_write():
+    """Regressao: side_effects e lista; read tools nao podem virar write."""
+    cat = build_tool_catalog()
+    for n in ["list_jobs", "view_job_details", "get_pipeline_summary", "view_candidate_profile"]:
+        if n in cat:
+            assert cat[n].permission == "read", f"{n} deveria ser read"
+
+
+def test_governanca_capturada():
+    """batch_move_candidates afeta decisao de candidato (HITL/fairness)."""
+    cat = build_tool_catalog()
+    if "batch_move_candidates" in cat:
+        assert cat["batch_move_candidates"].affects_candidate_decision is True

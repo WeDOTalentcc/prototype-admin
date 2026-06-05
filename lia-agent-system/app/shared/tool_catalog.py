@@ -33,6 +33,8 @@ class ToolMeta(BaseModel):
     permission: str = "read"  # read|write (derivado de side_effects)
     requires_company_id: bool = True
     touches_pii: bool = False
+    affects_candidate_decision: bool = False
+    requires_human_review: bool = False
     version: str = "1.0"
     source_registries: list[str] = Field(default_factory=list)
 
@@ -103,9 +105,17 @@ def build_tool_catalog() -> dict[str, ToolMeta]:
                 domain=str(getattr(td, "owner_team", "") or key),
                 scope=scope or "GLOBAL",
                 scope_inferred=scope is None,
-                permission="write" if getattr(td, "side_effects", None) else "read",
+                permission="write"
+            if "write" in (getattr(td, "side_effects", None) or [])
+            else "read",
                 requires_company_id=bool(getattr(td, "requires_company_id", True)),
                 touches_pii=bool(getattr(td, "touches_pii", False)),
+                affects_candidate_decision=bool(
+                    getattr(td, "affects_candidate_decision", False)
+                ),
+                requires_human_review=bool(
+                    getattr(td, "requires_human_review", False)
+                ),
                 version=str(getattr(td, "version", "1.0")),
                 source_registries=[key],
             )
