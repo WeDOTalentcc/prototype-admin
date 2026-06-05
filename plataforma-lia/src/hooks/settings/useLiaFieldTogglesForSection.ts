@@ -17,14 +17,13 @@
  * migração dos hubs tocar useSettingsBroadcast.
  */
 
-import { useMemo, useState } from "react"
+import { useState } from "react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { apiFetch } from "@/lib/api/api-fetch"
 import { useCompanyId } from "@/hooks/company/useCompanyId"
 import { dispatchSettingsUpdate } from "@/hooks/settings/useSettingsBroadcast"
 import {
   LIA_FIELD_DEFINITIONS,
-  type LiaFieldKey,
 } from "@/hooks/company/use-company-lia-instructions"
 
 export interface FieldTogglesState {
@@ -54,119 +53,6 @@ async function fetchFieldToggles(companyId: string): Promise<FieldTogglesState> 
     comments,
   }
 }
-
-/** Props prontas para o ConfigurableFieldCard de cada campo da seção. */
-export interface SectionFieldCard {
-  key: LiaFieldKey
-  label: string
-  hint: string
-  isActive: boolean
-  instruction: string
-  isSaving: boolean
-  onToggleChange: (active: boolean) => void
-  onInstructionSave: (text: string) => void
-}
-
-export interface UseLiaFieldTogglesForSectionResult {
-  fields: SectionFieldCard[]
-  isLoading: boolean
-  error: string | null
-}
-
-interface SavePayload {
-  next: FieldTogglesState
-  field: string
-}
-
-export function useLiaFieldTogglesForSection(
-  sectionKeys: LiaFieldKey[],
-): UseLiaFieldTogglesForSectionResult {
-  const { companyId, isLoading: isLoadingCompany } = useCompanyId()
-  const queryClient = useQueryClient()
-
-  const query = useQuery({
-    queryKey: liaFieldTogglesKey(companyId),
-    queryFn: () => fetchFieldToggles(companyId as string),
-    enabled: !!companyId,
-    staleTime: 30_000,
-  })
-
-  const state: FieldTogglesState = useMemo(
-    () => query.data ?? { toggles: {}, comments: {} },
-    [query.data],
-  )
-
-  const mutation = useMutation({
-    mutationFn: async ({ next }: SavePayload) => {
-      if (!companyId) throw new Error("companyId ausente")
-      const res = await apiFetch(
-        `/api/backend-proxy/company/${encodeURIComponent(companyId)}/field-toggles`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ toggles: next.toggles, comments: next.comments }),
-        },
-      )
-      if (!res.ok) throw new Error(`Falha ao salvar field-toggles: ${res.status}`)
-      return next
-    },
-    onMutate: async ({ next }: SavePayload) => {
-      const key = liaFieldTogglesKey(companyId)
-      await queryClient.cancelQueries({ queryKey: key })
-      const prev = queryClient.getQueryData<FieldTogglesState>(key)
-      queryClient.setQueryData(key, next)
-      return { prev }
-    },
-    onError: (_err, _vars, ctx) => {
-      if (ctx?.prev) queryClient.setQueryData(liaFieldTogglesKey(companyId), ctx.prev)
-    },
-    onSuccess: (_data, { field }: SavePayload) => {
-      dispatchSettingsUpdate({
-        actionId: "save_lia_field_toggle",
-        section: "lia_personalizacao",
-        field,
-        source: "ui",
-        ts: Date.now(),
-      })
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: liaFieldTogglesKey(companyId) })
-    },
-  })
-
-  const { mutate, isPending } = mutation
-
-  const fields = useMemo<SectionFieldCard[]>(() => {
-    return sectionKeys.map((key) => {
-      const def = LIA_FIELD_DEFINITIONS[key] as { label: string; location: string } | undefined
-      return {
-        key,
-        label: def?.label ?? key,
-        hint: def?.location ?? "",
-        isActive: state.toggles[key] !== false, // default ON quando ausente
-        instruction: state.comments[key] ?? "",
-        isSaving: isPending,
-        onToggleChange: (active: boolean) =>
-          mutate({
-            next: { toggles: { ...state.toggles, [key]: active }, comments: state.comments },
-            field: key,
-          }),
-        onInstructionSave: (text: string) =>
-          mutate({
-            next: { toggles: state.toggles, comments: { ...state.comments, [key]: text } },
-            field: key,
-          }),
-      }
-    })
-  }, [sectionKeys, state, mutate, isPending])
-
-  return {
-    fields,
-    isLoading: isLoadingCompany || query.isLoading,
-    error: query.error ? (query.error as Error).message : null,
-  }
-}
-
 
 /**
  * useAllLiaFieldToggles — Fase 5.3: camada de dados React Query do painel central
