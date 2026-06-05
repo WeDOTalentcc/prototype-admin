@@ -14,7 +14,7 @@ import json
 import logging
 import uuid
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -231,6 +231,15 @@ async def save_questions(
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Save screening questions for a job vacancy."""
+    # P0 (audit 2026-06-05): valida ownership do job_id contra o company_id do JWT
+    # ANTES de qualquer escrita. job_screening_questions/screening_question_sets nao
+    # tem RLS — este e o gate multi-tenant canonico (fail-closed no produtor).
+    # FORA do try/except abaixo: senao o HTTPException 404 seria engolido pelo fallback.
+    from app.domains.job_management.repositories.job_vacancy_crud_repository import (
+        JobVacancyCrudRepository,
+    )
+    if not await JobVacancyCrudRepository(db).owned_by_company(request.job_id, company_id):
+        raise HTTPException(status_code=404, detail="Vaga nao encontrada para esta empresa.")
     try:
         for q in request.questions:
             q_id = q.get("id", f"q_{uuid.uuid4().hex[:12]}")

@@ -272,6 +272,26 @@ class JobVacancyCRUDRepository:
         )
         return result.scalar_one_or_none()
 
+    async def owned_by_company(self, identifier: str, company_id) -> bool:
+        """True se existe vaga desta company cujo id (UUID) OU job_id casa com identifier.
+
+        Gate de ownership para writes que recebem o identificador do payload
+        (ex: POST /wsi/questions/save). job_screening_questions e
+        screening_question_sets nao tem RLS — este e o ponto canonico de
+        validacao multi-tenant (audit 2026-06-05, P0 cross-tenant write).
+        """
+        conditions = [JobVacancy.job_id == identifier]
+        try:
+            conditions.append(JobVacancy.id == UUID(str(identifier)))
+        except (ValueError, AttributeError, TypeError):
+            pass
+        result = await self.db.execute(
+            select(JobVacancy.id)
+            .where(JobVacancy.company_id == company_id, or_(*conditions))
+            .limit(1)
+        )
+        return result.scalar_one_or_none() is not None
+
     async def search_by_title_ilike(self, title_pattern: str, company_id):
         result = await self.db.execute(
             select(JobVacancy).where(
