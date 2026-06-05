@@ -196,6 +196,33 @@ class JobSeedBuilderService:
             mark("salary_min", _sr.get("min"), needs_review=True)
             mark("salary_max", _sr.get("max"), needs_review=True)
 
+        # PR-B2a (clone rico): competencias + elegibilidade estruturadas. Shapes
+        # alinhados ao que competency_node/eligibility_node esperam. mark() pula
+        # listas vazias. Os gates de aprovacao continuam ativos (conservador).
+        _tech = [
+            {
+                "skill": t.get("technology") or t.get("skill") or "",
+                "contexto": t.get("level", "") or t.get("category", ""),
+            }
+            for t in (getattr(vac, "technical_requirements", None) or [])
+            if isinstance(t, dict) and (t.get("technology") or t.get("skill"))
+        ]
+        mark("technical_competencies", _tech)
+        _behav = [
+            {
+                "competencia": b.get("competency") or b.get("competencia") or "",
+                "contexto": "",
+                "trait_big_five": b.get("trait_big_five", ""),
+            }
+            for b in (getattr(vac, "behavioral_competencies", None) or [])
+            if isinstance(b, dict) and (b.get("competency") or b.get("competencia"))
+        ]
+        mark("behavioral_competencies", _behav)
+        mark(
+            "eligibility_questions",
+            list(getattr(vac, "eligibility_questions", None) or []),
+        )
+
         return JobCreationSeed(
             **fields,
             provenance=prov,

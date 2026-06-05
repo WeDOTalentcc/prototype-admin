@@ -77,6 +77,24 @@ def apply_seed_to_state(
                     "needs_review": False,
                 }
 
+    # Rich clone (PR-B2a): competencias + elegibilidade. competency_node
+    # (_has_confirmed) e eligibility_node ja reusam quando presentes; os gates de
+    # aprovacao continuam disparando (conservador). Precedencia user > seed.
+    _RICH_MAP = {
+        "technical_competencies": "confirmed_technical_competencies",
+        "behavioral_competencies": "confirmed_behavioral_competencies",
+        "eligibility_questions": "eligibility_questions",
+    }
+    for _seed_field, _state_field in _RICH_MAP.items():
+        _val = getattr(seed, _seed_field, None)
+        if not _val:
+            continue
+        if state.get(_state_field):  # user / prior value wins
+            continue
+        state[_state_field] = _val
+        if _seed_field in seed.provenance:
+            prov[_state_field] = seed.provenance[_seed_field].model_dump()
+
     if seed.source is not None:
         state["seed_source"] = seed.source.model_dump()
     if prov:

@@ -93,3 +93,31 @@ def test_empty_seed_is_noop_safe():
     # no flat fields set, but seed_source recorded
     assert state["seed_source"]["id"] == "t"
     assert "parsed_title" not in state
+
+
+def test_rich_fields_mapped_to_state():
+    """PR-B2a: competencias + elegibilidade do seed caem nas chaves de state
+    que competency_node (_has_confirmed) e eligibility_node ja reusam."""
+    seed = _seed(
+        technical_competencies=[{"skill": "Python", "contexto": "Avancado"}],
+        behavioral_competencies=[
+            {"competencia": "Lideranca", "contexto": "", "trait_big_five": ""}
+        ],
+        eligibility_questions=[
+            {"id": "1", "question": "Tem CNH?", "is_eliminatory": True}
+        ],
+    )
+    state: dict = {}
+    apply_seed_to_state(state, seed)
+    assert state["confirmed_technical_competencies"] == [
+        {"skill": "Python", "contexto": "Avancado"}
+    ]
+    assert state["confirmed_behavioral_competencies"][0]["competencia"] == "Lideranca"
+    assert state["eligibility_questions"][0]["question"] == "Tem CNH?"
+
+
+def test_rich_fields_user_value_wins():
+    seed = _seed(eligibility_questions=[{"id": "1", "question": "do seed"}])
+    state = {"eligibility_questions": [{"id": "x", "question": "do recrutador"}]}
+    apply_seed_to_state(state, seed)
+    assert state["eligibility_questions"][0]["question"] == "do recrutador"

@@ -102,3 +102,18 @@ async def test_vacancy_requirements_array_becomes_text():
     # requirements (ARRAY no model) vira str no seed (campo Optional[str])
     assert isinstance(seed.requirements, str)
     assert "Python" in seed.requirements
+
+
+@pytest.mark.asyncio
+async def test_maps_competencies_and_eligibility():
+    svc = _svc_with(_vac(
+        behavioral_competencies=[{"competency": "Lideranca", "weight": "Essencial"}],
+        eligibility_questions=[
+            {"id": "1", "question": "Tem CNH?", "is_eliminatory": True}
+        ],
+    ))
+    seed = await svc.build_seed_from_vacancy(uuid.uuid4(), company_id="co-1")
+    # technical_competencies derivadas de technical_requirements (technology)
+    assert any(c["skill"] == "Python" for c in seed.technical_competencies)
+    assert seed.behavioral_competencies[0]["competencia"] == "Lideranca"
+    assert seed.eligibility_questions[0]["question"] == "Tem CNH?"

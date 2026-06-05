@@ -5,7 +5,7 @@ Aligns with WSI methodology F1-F6 outputs.
 EnrichedJobDescription matches the output schema from WSI_FLOW_PONTA_A_PONTA.md F1.C.
 """
 
-from typing import Dict, List, Literal, Optional
+from typing import Any, Dict, List, Literal, Optional
 
 from pydantic import BaseModel, Field
 
@@ -185,6 +185,14 @@ class JobCreationSeed(WeDoBaseModel):
     nice_to_have: Optional[str] = None
     description: Optional[str] = None
     pipeline_template_id: Optional[str] = None
+    # PR-B2a (clone rico): competencias + elegibilidade estruturadas. Mapeadas
+    # por apply_seed_to_state em confirmed_*_competencies / eligibility_questions,
+    # que competency_node (_has_confirmed) e eligibility_node ja reusam. Os gates
+    # de aprovacao continuam disparando (conservador). NAO entram em
+    # _SEEDABLE_FIELDS (coverage = metrica de intake, igual ao template).
+    technical_competencies: List[Dict[str, Any]] = []
+    behavioral_competencies: List[Dict[str, Any]] = []
+    eligibility_questions: List[Dict[str, Any]] = []
 
     provenance: Dict[str, FieldProvenance] = {}
     source: Optional[SourceDescriptor] = None
