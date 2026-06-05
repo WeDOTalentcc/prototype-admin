@@ -17,7 +17,6 @@ import { toast } from "sonner"
 import dynamic from"next/dynamic"
 import type { CandidateData } from"./ProfileTabTypes"
 
-const LiaAnalysisModal = dynamic(() => import("@/components/modals/lia-analysis-modal").then(m => ({ default: m.LiaAnalysisModal })), { ssr: false })
 
 type ContactFieldKind = "email" | "phone"
 
@@ -192,9 +191,6 @@ interface CandidatePreviewHeaderProps {
   c: CandidateData
   candidate: Record<string, unknown>
   generateShortId: (name: string, id?: string) => string
-  showLiaAnalysisModal: boolean
-  setShowLiaAnalysisModal: (v: boolean) => void
-  handleAnalysisTransport: (analysis: { type: string; content: string; candidate_id: string }) => void
   onOpenFullPage?: (candidate: Record<string, unknown>) => void
   onClose: () => void
 }
@@ -203,9 +199,6 @@ export function CandidatePreviewHeader({
   c,
   candidate,
   generateShortId,
-  showLiaAnalysisModal,
-  setShowLiaAnalysisModal,
-  handleAnalysisTransport,
   onOpenFullPage,
   onClose,
 }: CandidatePreviewHeaderProps) {
@@ -323,23 +316,6 @@ export function CandidatePreviewHeader({
         </div>
 
         <div className="flex items-center gap-1 flex-shrink-0">
-          <LiaAnalysisModal
-            isOpen={showLiaAnalysisModal}
-            onOpen={() => setShowLiaAnalysisModal(true)}
-            onClose={() => setShowLiaAnalysisModal(false)}
-            candidate={c}
-            onTransportToOpinions={handleAnalysisTransport}
-          >
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 w-8 p-0 hover:bg-lia-bg-tertiary border border-lia-border-default rounded-md flex-shrink-0"
-              title="Análises IA"
-            >
-              <Brain className="w-5 h-5 text-wedo-cyan" />
-            </Button>
-          </LiaAnalysisModal>
-
           <Tooltip>
             <TooltipTrigger asChild>
               <Button

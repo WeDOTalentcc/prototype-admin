@@ -122,9 +122,6 @@ export function CandidatePage({
         <CandidatePageHeader
           _candidate={c as Parameters<typeof CandidatePageHeader>[0]["_candidate"]}
           liaScore={liaScore}
-          showLiaAnalysisModal={core.showLiaAnalysisModal}
-          setShowLiaAnalysisModal={core.setShowLiaAnalysisModal}
-          handleAnalysisTransport={() => { /* TODO F8: bind to currently-open analysis when Edit pattern lands */ }}
           getScoreColor={getScoreColor}
           onClose={handleClose}
           onSendEmail={onSendEmail}

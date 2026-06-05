@@ -47,7 +47,6 @@ export function useCandidatePreviewCore(candidate: Record<string, unknown> | nul
   const [showInsufficientDataModal, setShowInsufficientDataModal] = useState(false)
   const [dataRequirements, setDataRequirements] = useState<DataRequirement[]>([])
   const [lastOpinionDate, setLastOpinionDate] = useState<Date | null>(null)
-  const [showLiaAnalysisModal, setShowLiaAnalysisModal] = useState(false)
 
   const [screeningModalOpen, setScreeningModalOpen] = useState(false)
   const [screeningModalData, setScreeningModalData] = useState<{
@@ -101,39 +100,6 @@ const candidateId = candidate?.id as string | undefined
       setIsLoadingAnalyses(false)
     }
   }, [candidateId, companyId])
-
-  const saveAnalysisToBackend = async (analysis: { type: string; content: string; candidate_id: string }) => {
-    if (!companyId) return false
-    try {
-      const response = await fetch(`/api/backend-proxy/lia/profile-analysis/save?company_id=${encodeURIComponent(companyId)}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          candidate_id: analysis.candidate_id,
-          analysis_type: analysis.type,
-          content: analysis.content,
-          candidate_name: (candidate as Record<string, unknown>)?.name || (candidate as Record<string, unknown>)?.nome,
-        })
-      })
-
-      if (response.ok) {
-        await fetchSavedAnalyses()
-        return true
-      }
-      return false
-    } catch {
-      return false
-    }
-  }
-
-  const handleAnalysisTransport = async (analysis: { type: string; content: string; candidate_id: string }) => {
-    const success = await saveAnalysisToBackend(analysis)
-    if (success) {
-      toast.success("Análise salva", { description: "A análise foi adicionada à aba Pareceres e Análises" })
-    } else {
-      toast.error("Erro ao salvar", { description: "Não foi possível salvar a análise. Tente novamente." })
-    }
-  }
 
   const fetchOpinionsHistory = useCallback(async () => {
     if (!candidateId || !companyId) return
@@ -652,7 +618,6 @@ const candidateId = candidate?.id as string | undefined
     showInsufficientDataModal, setShowInsufficientDataModal,
     dataRequirements,
     lastOpinionDate,
-    showLiaAnalysisModal, setShowLiaAnalysisModal,
     screeningModalOpen, setScreeningModalOpen,
     screeningModalData, setScreeningModalData,
     discModalOpen, setDiscModalOpen,
@@ -672,7 +637,6 @@ const candidateId = candidate?.id as string | undefined
     handleCopyOpinion,
     handleCopyAnalysis,
     handleDeleteAnalysis,
-    handleAnalysisTransport,
     formatCurrency,
     getLanguagesData,
     hasSalaryData,

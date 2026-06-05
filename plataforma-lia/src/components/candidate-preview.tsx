@@ -96,7 +96,6 @@ export function CandidatePreview({
     showInsufficientDataModal, setShowInsufficientDataModal,
     dataRequirements,
     lastOpinionDate,
-    showLiaAnalysisModal, setShowLiaAnalysisModal,
     screeningModalOpen, setScreeningModalOpen,
     screeningModalData, setScreeningModalData,
     discModalOpen, setDiscModalOpen,
@@ -116,7 +115,6 @@ export function CandidatePreview({
     handleCopyOpinion,
     handleCopyAnalysis,
     handleDeleteAnalysis,
-    handleAnalysisTransport,
     formatCurrency,
     getLanguagesData,
     hasSalaryData,
@@ -164,9 +162,6 @@ export function CandidatePreview({
             c={c}
             candidate={candidate}
             generateShortId={generateShortId}
-            showLiaAnalysisModal={showLiaAnalysisModal}
-            setShowLiaAnalysisModal={setShowLiaAnalysisModal}
-            handleAnalysisTransport={handleAnalysisTransport as (analysis: { type: string; content: string; candidate_id: string }) => void}
             onOpenFullPage={onOpenFullPage}
             onClose={onClose}
           />
