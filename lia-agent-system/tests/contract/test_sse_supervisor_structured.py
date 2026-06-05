@@ -174,3 +174,88 @@ def test_build_supervisor_context_maps_conversation_and_view_context():
     assert ctx.company_id == "c1"
     assert ctx.view_context == {"foo": "bar", "tenant_context_snippet": "T"}
     assert ctx.tenant_context_snippet == "T"
+
+
+# ---------------------------------------------------------------------------
+# Task #1090 — ws_stage_payload no SSE (canonical-fix: serializar no produtor
+# unico, nao por transporte). Sem isso, o painel do wizard nao abre no chat-page
+# e a IA "mente" que abriu. Mirror do evento WS (agent_chat_ws.py:1228) e do
+# REST (chat.py message_metadata.ws_stage_payload).
+# ---------------------------------------------------------------------------
+
+_WIZARD_PAYLOAD = {
+    "type": "wizard_stage",
+    "thread_id": "t",
+    "stage": "jd_gate",
+    "job_vacancy_id": "job-1",
+    "data": {"foo": "bar"},
+}
+
+
+def _wizard_stage_frames(frames):
+    """Frames SSE que carregam o sinal do painel do wizard."""
+    return [f for f in frames if f.get("type") == "wizard_stage" or "ws_stage_payload" in f]
+
+
+def test_sse_carries_ws_stage_payload_chatpage_path(monkeypatch):
+    # emit_structured=False (chat-page): o sinal do painel DEVE chegar mesmo assim.
+    result = types.SimpleNamespace(
+        content="Vamos criar a vaga", success=True,
+        structured_data={"ws_stage_payload": dict(_WIZARD_PAYLOAD)},
+        needs_params=False, needs_confirmation=False,
+    )
+    frames = _run(_FakeOrch(result), monkeypatch, msg="criar vaga")
+    wiz = _wizard_stage_frames(frames)
+    assert wiz, (
+        "REGRESSAO: SSE deve carregar ws_stage_payload (sinal que abre o painel "
+        "do wizard). Sem ele o painel nao abre e a IA mente 'painel aberto'. "
+        "Ver canonical-fix: serializar no produtor unico (serialize_message), "
+        "nao por transporte."
+    )
+    assert wiz[0].get("stage") == "jd_gate"
+    assert wiz[0].get("job_vacancy_id") == "job-1"
+    # token streaming preservado (ADITIVO): conteudo continua chegando.
+    assert any(f.get("token") == "Vamos criar a vaga" for f in frames)
+
+
+def test_sse_carries_ws_stage_payload_bubble_path(monkeypatch):
+    # emit_structured=True (bolha): tambem carrega ws_stage_payload (objetivo).
+    result = types.SimpleNamespace(
+        content="Vamos criar a vaga", success=True,
+        structured_data={"ws_stage_payload": dict(_WIZARD_PAYLOAD)},
+        needs_params=False, needs_confirmation=False,
+    )
+    frames = _run(_FakeOrch(result), monkeypatch, emit_structured=True, msg="criar vaga")
+    wiz = _wizard_stage_frames(frames)
+    assert wiz, (
+        "REGRESSAO: SSE (bolha) deve carregar ws_stage_payload. "
+        "Ver canonical-fix: serializar no produtor unico, nao por transporte."
+    )
+    # Na bolha o payload viaja DENTRO do frame `message` estruturado
+    # (serialize_message anexa ws_stage_payload); no chat-page e um frame
+    # dedicado top-level. Aceita ambos os shapes.
+    f = wiz[0]
+    nested = f.get("ws_stage_payload") or f
+    assert nested.get("stage") == "jd_gate"
+
+
+def test_sse_no_spurious_wizard_frame_when_absent(monkeypatch):
+    # Regressao: ChatResponse normal (sem ws_stage_payload) NAO emite frame wizard
+    # espurio e segue streaming token + [DONE] como antes.
+    result = types.SimpleNamespace(
+        content="texto normal", success=True, structured_data=None,
+        needs_params=False, needs_confirmation=False,
+    )
+    monkeypatch.setattr(chat_mod, "get_main_orchestrator", lambda: _FakeOrch(result))
+    chunks = asyncio.run(
+        _collect(
+            chat_mod._sse_via_orchestrator(
+                "conv-1", "oi", [], _FakeRepo(), _conv(), company_id="c1",
+            )
+        )
+    )
+    frames = _frames(chunks)
+    assert not _wizard_stage_frames(frames), (
+        "sem ws_stage_payload nao deve emitir frame wizard espurio")
+    assert any(f.get("token") == "texto normal" for f in frames)
+    assert any("[DONE]" in c for c in chunks)

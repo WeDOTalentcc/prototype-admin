@@ -915,6 +915,13 @@ def _orchestrator_result_to_frames(result, conversation_id):
             "ui_action_params": _get("ui_action_params") or {},
         }
 
+    # Task #1090 — extrai ws_stage_payload de structured_data (espelha o REST,
+    # chat.py:450 message_metadata.ws_stage_payload) para que o frame `message`
+    # estruturado carregue o sinal que abre o painel do wizard. Sem isto o painel
+    # nao abre na bolha. canonical-fix: serializado no produtor unico.
+    _structured = _get("structured_data") or {}
+    ws_stage_payload = _structured.get("ws_stage_payload") if isinstance(_structured, dict) else None
+
     frames: list[dict] = [
         serialize_message(
             content=content,
@@ -926,6 +933,7 @@ def _orchestrator_result_to_frames(result, conversation_id):
             navigation=navigation,
             fairness_warnings=fairness or None,
             conversation_id=conversation_id,
+            ws_stage_payload=ws_stage_payload,
         )
     ]
     if _get("needs_params"):
@@ -1072,6 +1080,24 @@ async def _sse_via_orchestrator(
                         _tok = serialize_token(text) if emit_structured else {"token": text}
                         yield f"data: {json.dumps(_tok, ensure_ascii=False)}\n\n"
                         full_response_parts.append(text)
+                # Task #1090 — sinal do painel do wizard (canonical-fix).
+                # O orchestrator empacota ws_stage_payload (type=wizard_stage,
+                # thread_id, stage, **payload) em structured_data. No caminho
+                # chat-page (emit_structured=False) so emitimos token+[DONE], entao
+                # o painel nunca abria. Emite-se aqui um frame dedicado espelhando
+                # o evento WS (agent_chat_ws.py:1228) para o consumidor SSE abrir o
+                # painel. No caminho bolha (emit_structured=True) o payload ja vai
+                # dentro do frame `message` estruturado (serialize_message), entao
+                # nao duplicamos. ADITIVO: nunca remove/altera o streaming de token.
+                if not emit_structured and result_obj is not None:
+                    _sd = (
+                        result_obj.get("structured_data")
+                        if isinstance(result_obj, dict)
+                        else getattr(result_obj, "structured_data", None)
+                    ) or {}
+                    _wsp = _sd.get("ws_stage_payload") if isinstance(_sd, dict) else None
+                    if _wsp:
+                        yield f"data: {json.dumps(_wsp, ensure_ascii=False)}\n\n"
                 if emit_structured and result_obj is not None:
                     for _frame in _orchestrator_result_to_frames(result_obj, conversation_id):
                         yield f"data: {json.dumps(_frame, ensure_ascii=False)}\n\n"

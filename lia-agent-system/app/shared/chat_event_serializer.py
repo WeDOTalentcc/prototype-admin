@@ -56,6 +56,7 @@ class MessageEvent(TypedDict):
     fairness_warnings: NotRequired[list]
     execution_plan: NotRequired[dict]
     conversation_id: NotRequired[str]
+    ws_stage_payload: NotRequired[dict]
 
 
 class ErrorEvent(TypedDict):
@@ -142,6 +143,7 @@ def serialize_message(
     conversation_id: str | None = None,
     tool_results: list | None = None,
     response_blocks: list | None = None,
+    ws_stage_payload: dict | None = None,
 ) -> MessageEvent:
     payload = serialize_event(
         "message",
@@ -170,6 +172,13 @@ def serialize_message(
         payload["tool_results"] = tool_results
     if response_blocks:
         payload["response_blocks"] = response_blocks
+    # Task #1090 — wizard side-panel signal (canonical-fix: produtor unico).
+    # O orchestrator empacota ws_stage_payload (type=wizard_stage, thread_id,
+    # stage, **payload) em structured_data. Anexa-lo aqui garante paridade de
+    # transporte: WS, REST (message_metadata) e SSE carregam o MESMO sinal e o
+    # FE abre o painel. Aditivo; consumidores antigos ignoram o campo extra.
+    if ws_stage_payload:
+        payload["ws_stage_payload"] = ws_stage_payload
     return payload  # type: ignore[return-value]
 
 
