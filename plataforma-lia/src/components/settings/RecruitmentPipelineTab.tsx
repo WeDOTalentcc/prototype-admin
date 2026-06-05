@@ -14,15 +14,11 @@ import { PipelineTemplatesTab } from "@/components/settings/recruitment/pipeline
 import { useTranslations } from "next-intl"
 import { textStyles, actionButtonStyles, tabStyles } from '@/lib/design-tokens'
 import { useRecruitmentHub } from './useRecruitmentHub'
-import { ConfigurableFieldCard } from "./_shared"
-import { useLiaFieldTogglesForSection } from "@/hooks/settings/useLiaFieldTogglesForSection"
 import { usePipelineTemplates } from '@/hooks/pipeline/use-pipeline-templates'
 
 export function RecruitmentPipelineTab() {
   const t = useTranslations("settings")
   const hub = useRecruitmentHub('pipeline')
-  const liaPipeline = useLiaFieldTogglesForSection(["pipeline"])
-  const pipelineLiaField = liaPipeline.fields[0]
   const loading = hub.loading
   const error = hub.error
   const successMessage = hub.successMessage
@@ -115,19 +111,6 @@ export function RecruitmentPipelineTab() {
 
   return (
     <div className="w-full" data-testid="pipeline-tab-root">
-      {pipelineLiaField && (
-        <ConfigurableFieldCard
-          label={pipelineLiaField.label}
-          hint={pipelineLiaField.hint}
-          instruction={pipelineLiaField.instruction}
-          onInstructionSave={pipelineLiaField.onInstructionSave}
-          showToggle
-          isActive={pipelineLiaField.isActive}
-          onToggleChange={pipelineLiaField.onToggleChange}
-          isSaving={pipelineLiaField.isSaving}
-          isReadOnly={!isEditingPipeline}
-        />
-      )}
       <div className={`${tabStyles.pillContainer} mb-4`} role="tablist">
         <button
           type="button"
