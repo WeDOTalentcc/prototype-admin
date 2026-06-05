@@ -154,4 +154,47 @@ describe("FE-1 — transport→UI wizard bridge (lia:wizard-stage-payload)", () 
   test("handleParsedEvent calls maybeDispatchWizardStage", () => {
     expect(SRC).toMatch(/maybeDispatchWizardStage\(event\)/)
   })
+
+  // Fix 2026-06-05 (painel congelado): dois turnos do MESMO stage com data
+  // DIFERENTE precisam re-despachar para o painel atualizar. A chave de dedup
+  // passou a ser sensivel ao conteudo (hash de data); antes era
+  // thread:stage:completeness, constante dentro do stage (completeness e
+  // por-stage), entao o painel congelava no 1o payload (intake "Aguardando").
+  test("re-dispatches same stage when data changes (intake gathering fields)", () => {
+    const base = {
+      type: "wizard_stage",
+      thread_id: "t-fresh",
+      stage: "intake",
+      completeness: 0,
+      requires_approval: true,
+    }
+    maybeDispatchWizardStage({
+      ...base,
+      data: { message: "ok", parsed_title: "Diretor" },
+    } as unknown as TransportEvent)
+    maybeDispatchWizardStage({
+      ...base,
+      data: { message: "ok", parsed_title: "Diretor", parsed_seniority: "C-level" },
+    } as unknown as TransportEvent)
+    expect(listener).toHaveBeenCalledTimes(2)
+    const last = (listener.mock.calls[1][0] as CustomEvent).detail
+    expect(last.data.parsed_seniority).toBe("C-level")
+  })
+
+  test("still dedups byte-identical data on the same stage", () => {
+    const f = {
+      type: "wizard_stage",
+      thread_id: "t-same",
+      stage: "intake",
+      completeness: 0,
+      requires_approval: true,
+      data: { message: "ok", parsed_title: "X" },
+    }
+    maybeDispatchWizardStage(f as unknown as TransportEvent)
+    maybeDispatchWizardStage({
+      ...f,
+      data: { message: "ok", parsed_title: "X" },
+    } as unknown as TransportEvent)
+    expect(listener).toHaveBeenCalledTimes(1)
+  })
 })

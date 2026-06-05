@@ -102,13 +102,32 @@ export function maybeDispatchSettingsUpdated(event: TransportEvent): void {
 // most once even if it arrives via more than one shape.
 let _lastWizardStageKey: string | null = null
 
+// Hash estável (djb2) de string — barato, determinístico, sem deps. Torna a
+// chave de dedup SENSÍVEL AO CONTEÚDO (fix 2026-06-05 painel congelado).
+function _djb2(input: string): number {
+  let h = 5381
+  for (let i = 0; i < input.length; i++) h = ((h << 5) + h + input.charCodeAt(i)) | 0
+  return h
+}
+
 function dispatchWizardStagePayload(src: Record<string, unknown>): void {
   const stage = src.stage
   if (typeof stage !== "string" || stage.length === 0) return // incompleto — ignora
   const threadId = src.thread_id
   const completeness = (src.completeness as number) ?? 0
-  const key = `${String(threadId ?? "")}:${stage}:${completeness}`
-  if (key === _lastWizardStageKey) return // dedup — já despachado este payload
+  const data = (src.data as Record<string, unknown>) || {}
+  const requiresApproval = Boolean(src.requires_approval)
+  // Dedup SENSÍVEL AO CONTEÚDO: hash de data + requires_approval. Cross-shape
+  // duplicates (mesmo payload via WS+SSE+REST) têm data idêntica -> mesma chave
+  // -> deduplica. NOVO turno do MESMO stage tem data diferente -> re-despacha.
+  // A chave antiga (thread_id:stage:completeness) era constante dentro de um
+  // stage (completeness e por-stage em calculate_completeness), entao congelava
+  // o painel no 1o payload (ex.: intake mostrava "Aguardando" mesmo apos o
+  // recrutador informar titulo/senioridade). Sensor: useChatTransport.wizard-bridge.
+  let dataHash = 0
+  try { dataHash = _djb2(JSON.stringify(data)) } catch { dataHash = 0 }
+  const key = `${String(threadId ?? "")}:${stage}:${completeness}:${dataHash}:${requiresApproval}`
+  if (key === _lastWizardStageKey) return // dedup — payload idêntico já despachado
   _lastWizardStageKey = key
   window.dispatchEvent(
     new CustomEvent("lia:wizard-stage-payload", {
@@ -116,9 +135,9 @@ function dispatchWizardStagePayload(src: Record<string, unknown>): void {
         type: "wizard_stage",
         thread_id: threadId,
         stage,
-        data: (src.data as Record<string, unknown>) || {},
+        data,
         completeness,
-        requires_approval: Boolean(src.requires_approval),
+        requires_approval: requiresApproval,
       },
     }),
   )
