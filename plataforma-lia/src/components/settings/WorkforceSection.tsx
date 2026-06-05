@@ -28,7 +28,7 @@ export function WorkforceSection({ hub, chatAffordance }: WorkforceSectionProps)
     departments, departmentsLoaded,
     saving,
     isEditingWorkforce, setIsEditingWorkforce,
-    fetchWorkforceData, saveWorkforceData, saveDepartmentPositions,
+    fetchHeadcountsForYear, saveDepartmentPositions,
     workforceStats, toggleDepartmentExpand,
     addDepartment, addPositionToDepartment,
     updatePositionSalary, updatePositionName,
@@ -42,8 +42,8 @@ export function WorkforceSection({ hub, chatAffordance }: WorkforceSectionProps)
         description={t("importDescription")}
         importEndpoint="/api/backend-proxy/workforce/entries/import"
         templateDownloadEndpoint="/api/backend-proxy/workforce/entries/import/template"
-        expectedFields={["department","month","year","planned","actual"]}
-        onImportSuccess={fetchWorkforceData}
+        expectedFields={["department","position","headcount","month","year"]}
+        onImportSuccess={() => fetchHeadcountsForYear(selectedYear)}
         disabled={!isEditingWorkforce}
       />
 
