@@ -1,3 +1,4 @@
+// proxy-auth-exempt: confirmacao via token capability (link enviado ao candidato); candidato nao-autenticado
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'

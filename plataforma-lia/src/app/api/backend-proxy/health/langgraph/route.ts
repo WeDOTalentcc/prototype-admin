@@ -1,3 +1,4 @@
+// proxy-auth-exempt: health check publico (langgraph liveness, gated por X-Admin-Key), sem dado de tenant
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
 

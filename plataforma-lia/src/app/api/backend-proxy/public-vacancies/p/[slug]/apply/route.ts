@@ -1,3 +1,4 @@
+// proxy-auth-exempt: aplicacao publica de candidato via slug; candidato nao-autenticado; consent LGPD no body
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
