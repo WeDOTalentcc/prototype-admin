@@ -249,6 +249,20 @@ company_id: str = Depends(require_company_id)):
             update_data['permissions'] = user.permissions
         update_data['updated_at'] = datetime.utcnow()
 
+        # A7-BE: PII/grant fields require tenant admin (LGPD Art. 6 III / Art. 5 II).
+        # Single source of truth: users table. Gate mirrors client_users pattern but lives here.
+        _pii_grant_fields = ("can_view_salary", "can_view_sensitive_pii", "pii_field_visibility")
+        if any(f in update_data for f in _pii_grant_fields):
+            _cur_role = getattr(current_user, "role", None) if current_user else None
+            if _cur_role not in (UserRole.admin, UserRole.wedotalent_admin):
+                raise HTTPException(
+                    status_code=403,
+                    detail="Apenas administradores podem alterar visibilidade de PII",
+                )
+            if update_data.get("pii_field_visibility") is not None:
+                from app.api.v1.pii_visibility_defaults import validate_pii_field_override
+                validate_pii_field_override(update_data["pii_field_visibility"])
+
         user = await user_repo.update(user_uuid, update_data, company_id=company_id)
         logger.info(f"Updated user: {user.id} with permissions: {user.permissions}")
         await AuditService().log_action(trace_id=str(uuid.uuid4()), company_id=company_id, action_type="user_update", actor=str(getattr(current_user, "id", "system")), target_id=str(user.id), target_type="user")  # P1-W2-06

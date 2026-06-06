@@ -495,7 +495,6 @@ company_id: str = Depends(require_company_id)):
         # Plan canonical: ~/.claude/plans/jolly-roaming-moler.md
         can_view_salary_change = None
         can_view_sensitive_pii_change = None
-        pii_field_visibility_change = None
         actor_role = current_user.get("role") if isinstance(current_user, dict) else getattr(current_user, "role", None)
         actor_role_str = actor_role.value if hasattr(actor_role, "value") else str(actor_role) if actor_role else ""
 
@@ -507,22 +506,10 @@ company_id: str = Depends(require_company_id)):
                         detail=f"Only tenant admin can grant {grant_field}",
                     )
 
-        if "pii_field_visibility" in update_data:
-            if actor_role_str not in ("admin", "wedotalent_admin"):
-                raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN,
-                    detail="Only tenant admin can set pii_field_visibility",
-                )
-
         if "can_view_salary" in update_data:
             can_view_salary_change = update_data.pop("can_view_salary")
         if "can_view_sensitive_pii" in update_data:
             can_view_sensitive_pii_change = update_data.pop("can_view_sensitive_pii")
-        if "pii_field_visibility" in update_data:
-            pii_field_visibility_change = update_data.pop("pii_field_visibility")
-        if pii_field_visibility_change is not None:
-            from app.api.v1.pii_visibility_defaults import validate_pii_field_override
-            validate_pii_field_override(pii_field_visibility_change)
 
         for field, value in update_data.items():
             setattr(user, field, value)
@@ -566,33 +553,6 @@ company_id: str = Depends(require_company_id)):
                     "[client_users] can_view_salary sync to users failed (non-blocking): %s", sync_exc
                 )
 
-        # Sprint A6 RBAC (2026-06-06): SYNC pii_field_visibility -> users.pii_field_visibility (JSONB).
-        # LGPD Art. 6 III minimizacao. Tenant admin only.
-        if pii_field_visibility_change is not None and user.user_id:
-            import json as _json
-            try:
-                await repo.db.execute(
-                    _sa_text("UPDATE users SET pii_field_visibility = CAST(:v AS jsonb) WHERE id = :uid"),
-                    {"v": _json.dumps(pii_field_visibility_change), "uid": str(user.user_id)},
-                )
-                from app.shared.compliance.audit_service import AuditService
-                _audit = AuditService()
-                _actor_id = current_user.get("user_id") if isinstance(current_user, dict) else getattr(current_user, "id", None)
-                _actor_email = current_user.get("email") if isinstance(current_user, dict) else getattr(current_user, "email", None)
-                await _audit.log_user_provisioning(
-                    company_id=client_id,
-                    actor=str(_actor_email or _actor_id or "system"),
-                    action="pii_field_override_change",
-                    target_user_id=str(user.user_id),
-                    target_user_email=user.email,
-                    details={"pii_field_visibility": pii_field_visibility_change},
-                )
-            except HTTPException:
-                raise
-            except Exception as sync_exc:
-                logger.warning(
-                    "[client_users] pii_field_visibility sync to users failed (non-blocking): %s", sync_exc
-                )
 
         # Sprint 2 RBAC (2026-05-25): SYNC client_users.department_id → users.department_id (auth table).
         # Filter logic em app/api/v1/job_vacancies/crud.py:list_job_vacancies usa users.department_id.
