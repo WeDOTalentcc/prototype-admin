@@ -9,13 +9,22 @@ interface ThinkingStepsCardProps {
   steps: string[]
 }
 
-/** Animated "thinking..." dots — gives the empty/initial state a live pulse. */
-function ThinkingDots() {
+/**
+ * ActivityDots — reticências animadas ("três pontos piscando") indicando
+ * processamento ATIVO. Inline, pensado para ir ao final da linha/frase em foco
+ * (Paulo 2026-06-06: deixar o reasoning mais dinâmico e mostrar que "ainda está
+ * processando" na própria linha, não num bloco separado embaixo). Produtor
+ * único do visual — reutilizado pela AgentActivityTimeline (DRY).
+ */
+export function ActivityDots({ className }: { className?: string }) {
   return (
-    <span className="inline-flex gap-0.5 items-center" aria-hidden="true">
-      <span className="w-1 h-1 rounded-full bg-wedo-cyan/70 animate-bounce [animation-delay:-0.3s] motion-reduce:animate-none" />
-      <span className="w-1 h-1 rounded-full bg-wedo-cyan/70 animate-bounce [animation-delay:-0.15s] motion-reduce:animate-none" />
-      <span className="w-1 h-1 rounded-full bg-wedo-cyan/70 animate-bounce motion-reduce:animate-none" />
+    <span
+      className={`inline-flex gap-0.5 items-center ${className ?? ""}`}
+      aria-hidden="true"
+    >
+      <span className="w-1 h-1 rounded-full bg-wedo-cyan animate-bounce [animation-delay:-0.3s] motion-reduce:animate-none" />
+      <span className="w-1 h-1 rounded-full bg-wedo-cyan animate-bounce [animation-delay:-0.15s] motion-reduce:animate-none" />
+      <span className="w-1 h-1 rounded-full bg-wedo-cyan animate-bounce motion-reduce:animate-none" />
     </span>
   )
 }
@@ -33,7 +42,7 @@ export function ThinkingStepsCard({ steps }: ThinkingStepsCardProps) {
       >
         <Brain className="w-3.5 h-3.5 text-wedo-cyan animate-pulse motion-reduce:animate-none shrink-0" aria-hidden="true" />
         <span className="text-xs text-lia-text-secondary">{t("thinking")}</span>
-        <ThinkingDots />
+        <ActivityDots />
       </div>
     )
   }

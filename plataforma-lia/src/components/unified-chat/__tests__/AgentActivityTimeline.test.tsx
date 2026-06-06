@@ -10,6 +10,10 @@ vi.mock("../ThinkingStepsCard", () => ({
   ThinkingStepsCard: ({ steps }: { steps: string[] }) => (
     <div data-testid="fallback">{steps.length}</div>
   ),
+  // Indicador de processamento inline na linha em foco — stub com testid para o
+  // sensor de "linha ativa pulsa" (Paulo 2026-06-06). O visual real é validado
+  // por pixel; aqui pinamos só a presença/ausência por estado (ativo/concluído).
+  ActivityDots: () => <span data-testid="activity-dots" aria-hidden="true" />,
 }))
 
 function renderWithIntl(ui: React.ReactNode, onError?: (e: unknown) => void) {
@@ -142,6 +146,36 @@ describe("AgentActivityTimeline", () => {
     tick()
     expect(screen.getByText(/fast tool/i)).toBeInTheDocument()
     expect(screen.getByText("90ms")).toBeInTheDocument()
+  })
+
+  it("destaca a linha em foco com o indicador de processamento (ActivityDots) e o remove ao concluir o turno", () => {
+    const onFinished = vi.fn()
+    const view = renderWithIntl(
+      <AgentActivityTimeline
+        fallbackSteps={[]}
+        completed={false}
+        onFinished={onFinished}
+      />,
+    )
+    emit({ type: "reasoning_step", label: "Analisando a vaga" })
+    tick()
+    // linha ativa: passo revelado + indicador "ainda processando" NA própria
+    // linha (não num bloco solto embaixo) — o pedido do Paulo.
+    expect(screen.getByText("Analisando a vaga")).toBeInTheDocument()
+    expect(screen.getByTestId("activity-dots")).toBeInTheDocument()
+    // turno conclui → frame terminal (done) → sem indicador de processamento
+    view.rerender(
+      wrap(
+        <AgentActivityTimeline
+          fallbackSteps={[]}
+          completed={true}
+          onFinished={onFinished}
+        />,
+      ),
+    )
+    tick(2000)
+    expect(onFinished).toHaveBeenCalledTimes(1)
+    expect(screen.queryByTestId("activity-dots")).not.toBeInTheDocument()
   })
 
   describe("graceful conclusion (completed → onFinished)", () => {

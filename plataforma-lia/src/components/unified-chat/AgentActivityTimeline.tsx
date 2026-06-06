@@ -30,7 +30,7 @@ import React, { useEffect, useRef, useState } from "react"
 import { XCircle } from "lucide-react"
 import { useLocale } from "next-intl"
 import { cn } from "@/lib/utils"
-import { ThinkingStepsCard } from "./ThinkingStepsCard"
+import { ThinkingStepsCard, ActivityDots } from "./ThinkingStepsCard"
 import { phaseLabel, toolLabel, toolIcon, phaseIcon } from "./activity-labels"
 
 interface ActivityItem {
@@ -116,6 +116,7 @@ function ActivityLine({
           ? toolLabel(item.name, locale)
           : phaseLabel(item.name, locale)}
       </span>
+      {spotlight && <ActivityDots className="shrink-0" />}
       {item.durationMs != null && (
         <span className="ml-auto tabular-nums text-lia-text-secondary">
           {formatMs(item.durationMs)}
@@ -200,23 +201,6 @@ function deriveItemsFromFallback(steps: string[]): ActivityItem[] {
 
 function formatMs(ms: number): string {
   return ms >= 1000 ? `${(ms / 1000).toFixed(1)}s` : `${ms}ms`
-}
-
-// Indicador 'processando' persistente (Paulo 2026-06-05): enquanto o turno
-// esta ativo SEMPRE ha movimento — inclusive quando os passos ja revelaram
-// e a LIA esta compondo a resposta. <div> (nao <li>) p/ nao afetar listas.
-function WorkingDots() {
-  return (
-    <div className="flex items-center gap-1 pl-5 pt-1" aria-hidden="true">
-      {[0, 150, 300].map((d) => (
-        <span
-          key={d}
-          className="h-1 w-1 animate-bounce rounded-full bg-wedo-cyan/70 motion-reduce:animate-none"
-          style={{ animationDelay: `${d}ms` }}
-        />
-      ))}
-    </div>
-  );
 }
 
 export function AgentActivityTimeline({
@@ -483,7 +467,6 @@ export function AgentActivityTimeline({
             />
           ))}
         </ul>
-        <WorkingDots />
       </div>
     )
   }
@@ -510,7 +493,6 @@ export function AgentActivityTimeline({
           />
         ))}
       </ul>
-      {!isDone && <WorkingDots />}
     </div>
   )
 }
