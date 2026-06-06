@@ -165,3 +165,22 @@ def get_tools_for_scope(scope: str) -> list[str]:
     from app.tools.scope_config import get_tools_for_scope as _bounded
     _sc = str(scope).lower()
     return sorted(set(_bounded(_sc)) | set(_bounded("global")))
+
+
+def get_scoped_tool_definitions(scope: str) -> list:
+    """ToolDefinitions (de TODOS os 14 registries via _load_sources) filtradas pelo
+    escopo BOUNDED (get_tools_for_scope, que delega scope_config) + GLOBAL. Para o
+    agente federado carregar ~30 tools/turno em vez das 179. Dedup por nome (1o
+    registry vence). Fase 2 do plano de consolidacao (agente federado unico).
+
+    Retorna objetos ToolDefinition (o caller converte via
+    tool_definition_to_langchain_tool). Defensivo: usa o que _load_sources carregou.
+    """
+    allowed_lower = {n.lower() for n in get_tools_for_scope(scope)}
+    by_name: dict[str, object] = {}
+    for _key, defs in _load_sources().items():
+        for td in defs:
+            nm = getattr(td, "name", None)
+            if nm and nm.lower() in allowed_lower and nm not in by_name:
+                by_name[nm] = td
+    return list(by_name.values())
