@@ -45,6 +45,21 @@ class JobVacancyCRUDRepository:
         count_result = await self.db.execute(count_stmt)
         return count_result.scalar() or 0
 
+    async def count_by_status(self, company_id: str) -> dict[str, int]:
+        """Contagem ACURADA de vagas por status (company-scoped). A IA narrava
+        números ERRADOS (ex: '2 ativas' em vez de 6) porque contava da lista
+        TRUNCADA por limit; este breakdown vem de um GROUP BY real. Bug live
+        Paulo 2026-06-06 (103 total vs UI 50; ativas 2 vs 6)."""
+        if not company_id:
+            return {}
+        stmt = (
+            select(JobVacancy.status, func.count(JobVacancy.id))
+            .where(JobVacancy.company_id == company_id)
+            .group_by(JobVacancy.status)
+        )
+        result = await self.db.execute(stmt)
+        return {str(st): int(ct) for st, ct in result.all() if st}
+
     async def search_vacancies(self, search_filter, offset: int, page_size: int):
         # TENANT-EXEMPT: dynamic builder — see search_count above.
         stmt = (

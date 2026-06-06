@@ -109,6 +109,7 @@ async def _wrap_list_jobs(**kwargs: Any) -> dict[str, Any]:
 
     jobs: list[dict] = []
     total = 0
+    status_breakdown: dict[str, int] = {}
     try:
         async with AsyncSessionLocal() as db:
             repo = JobVacancyCrudRepository(db)
@@ -120,19 +121,30 @@ async def _wrap_list_jobs(**kwargs: Any) -> dict[str, Any]:
             )
             jobs = result["jobs"]
             total = result["total"]
+            try:
+                status_breakdown = await repo.count_by_status(company_id)
+            except Exception:
+                status_breakdown = {}
     except Exception as e:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[jobs_mgmt_tools] list_jobs DB error: {e}")
 
+    _bd = ", ".join(
+        f"{k}: {v}" for k, v in sorted(status_breakdown.items(), key=lambda x: -x[1])
+    )
     return {
         "success": True,
         "data": {
             "status_filter": status,
             "department_filter": department,
             "total_jobs": total,
+            "status_breakdown": status_breakdown,
             "jobs": jobs,
         },
-        "message": f"{total} vagas encontradas (status={status}, departamento={department}).",
+        "message": (
+            f"{total} vagas no total -- por status: {_bd}." if _bd
+            else f"{total} vagas encontradas (status={status}, departamento={department})."
+        ),
     }
 
 
