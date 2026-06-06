@@ -1927,6 +1927,7 @@
       "openWsi": "Configurar WSI",
       "openApproval": "Revisar aprovação",
       "openPublish": "Publicar vaga",
+      "openStatus": "Gerenciar status",
       "openKanban": "Abrir kanban",
       "openClosed": "Ver encerramento"
     },

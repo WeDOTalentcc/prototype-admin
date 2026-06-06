@@ -1927,6 +1927,7 @@
       "openWsi": "Configure WSI",
       "openApproval": "Review approval",
       "openPublish": "Publish job",
+      "openStatus": "Manage status",
       "openKanban": "Open kanban",
       "openClosed": "View closure"
     },
