@@ -1,10 +1,10 @@
 "use client"
 
-import React from "react"
+import React, { useState } from "react"
 import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 import { Card, CardContent } from "@/components/ui/card"
-import { Brain, Clock, GripVertical, Lock, Trash2 } from "lucide-react"
+import { Brain, ChevronDown, ChevronRight, Clock, Database, GripVertical, ListChecks, Lock, Trash2 } from "lucide-react"
 import { inputClass, getCategoryBadge } from "./job-edit-tab.constants"
 import type { Stage } from "./JobProcessSection"
 
@@ -47,6 +47,12 @@ export function JobProcessStageCard({
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: sortableId, disabled: !isEditing || !canReorder })
   const style = { transform: CSS.Transform.toString(transform), transition }
+
+  // #5 Fase 1: sub-status + campos de coleta herdados da empresa (read-only).
+  const [showInherited, setShowInherited] = useState(false)
+  const subStatuses = stage.subStatuses ?? []
+  const dataFields = stage.dataFields ?? []
+  const hasInherited = subStatuses.length > 0 || dataFields.length > 0
 
   return (
     <div ref={setNodeRef} style={style} data-testid={`job-process-stage-card-${index}`}>
@@ -154,6 +160,61 @@ export function JobProcessStageCard({
               )}
             </div>
           </div>
+
+          {hasInherited && (
+            <div className="mt-2 pt-2 border-t border-lia-border-subtle">
+              <button
+                type="button"
+                onClick={() => setShowInherited(v => !v)}
+                aria-expanded={showInherited}
+                className="flex items-center gap-1.5 text-micro text-lia-text-tertiary hover:text-lia-text-secondary"
+              >
+                {showInherited ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+                <span>Sub-status e coleta</span>
+                <span className="text-lia-text-disabled">
+                  ({subStatuses.length} sub-status · {dataFields.length} campos · herdado)
+                </span>
+              </button>
+              {showInherited && (
+                <div className="mt-2 space-y-2 pl-4">
+                  {subStatuses.length > 0 && (
+                    <div className="flex items-start gap-1.5">
+                      <ListChecks className="w-3 h-3 mt-0.5 text-lia-text-tertiary shrink-0" />
+                      <div className="flex flex-wrap gap-1">
+                        {subStatuses.map((ss, i) => (
+                          <span
+                            key={ss.id || ss.name || i}
+                            className="inline-flex items-center px-1.5 py-0.5 rounded text-micro bg-lia-bg-secondary text-lia-text-secondary"
+                          >
+                            {ss.display_name || ss.name}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {dataFields.length > 0 && (
+                    <div className="flex items-start gap-1.5">
+                      <Database className="w-3 h-3 mt-0.5 text-lia-text-tertiary shrink-0" />
+                      <div className="flex flex-wrap gap-1">
+                        {dataFields.map((df, i) => (
+                          <span
+                            key={df.id || i}
+                            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-micro bg-lia-bg-secondary text-lia-text-secondary"
+                          >
+                            {df.displayName}
+                            {df.required && <span className="text-status-warning">*</span>}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  <p className="text-micro text-lia-text-disabled">
+                    Herdado da empresa — editar em Configurações › Jornada de Recrutamento.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

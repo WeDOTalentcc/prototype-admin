@@ -8,6 +8,7 @@
  */
 import { useState, useEffect } from "react"
 import { LIA_ASSISTED_STAGES, LIA_ASSISTED_STAGE_NAMES } from "@/lib/recruitment-stages"
+import type { SubStatusOption, StageDataField } from "@/components/settings/recruitment-journey.types"
 
 export interface CompanyPipelineStageLocal {
   stageName: string
@@ -21,6 +22,9 @@ export interface CompanyPipelineStageLocal {
   slaDays?: number
   defaultSlaDays?: number
   liaAssisted?: boolean
+  // #5: sub-status e campos de coleta herdados da empresa (read-only no editor da vaga)
+  subStatuses?: SubStatusOption[]
+  dataFields?: StageDataField[]
 }
 
 interface UseCompanyPipelineResult {
@@ -56,6 +60,12 @@ export function useCompanyPipeline(): UseCompanyPipelineResult {
                   liaAssisted:
                     LIA_ASSISTED_STAGES.includes(s.name as string) ||
                     LIA_ASSISTED_STAGE_NAMES.includes((s.display_name || "") as string),
+                  subStatuses: Array.isArray(s.sub_statuses)
+                    ? (s.sub_statuses as SubStatusOption[])
+                    : undefined,
+                  dataFields: Array.isArray(s.data_fields)
+                    ? (s.data_fields as StageDataField[])
+                    : undefined,
                 }))
             )
           }

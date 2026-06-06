@@ -14,7 +14,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import { render, screen } from "@testing-library/react"
+import { render, screen, fireEvent } from "@testing-library/react"
 import "@testing-library/jest-dom/vitest"
 import { JobProcessSection } from "../JobProcessSection"
 
@@ -46,7 +46,6 @@ function makeProps(overrides: Record<string, unknown> = {}) {
     onSaveAsTemplate,
     isSavingAsTemplate: false,
     ...overrides,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } as any
 }
 
@@ -81,6 +80,36 @@ describe("JobProcessSection — aplicar template exige confirmação (#2)", () =
     render(<JobProcessSection {...makeProps({ isEditing: true })} />)
     expect(onApplyTemplate).not.toHaveBeenCalled()
     expect(screen.queryByText("Aplicar template de pipeline?")).not.toBeInTheDocument()
+  })
+})
+
+describe("JobProcessSection — sub-status/coleta herdados read-only (#5 Fase 1)", () => {
+  const stagesWithInherited = [
+    {
+      stageName: "Triagem",
+      name: "screening",
+      stageCategory: "system",
+      subStatuses: [{ name: "aguardando", display_name: "Aguardando retorno" }],
+      dataFields: [{ id: "cpf", displayName: "CPF", category: "document", required: true, auto_collect: false }],
+    },
+  ]
+
+  it("mostra o acordeão de herança com a contagem", () => {
+    render(<JobProcessSection {...makeProps({ isEditing: false, stages: stagesWithInherited })} />)
+    expect(screen.getByText(/1 sub-status · 1 campos · herdado/)).toBeInTheDocument()
+  })
+
+  it("expande e revela sub-status e campo herdados", () => {
+    render(<JobProcessSection {...makeProps({ isEditing: false, stages: stagesWithInherited })} />)
+    fireEvent.click(screen.getByText("Sub-status e coleta"))
+    expect(screen.getByText("Aguardando retorno")).toBeInTheDocument()
+    expect(screen.getByText("CPF")).toBeInTheDocument()
+    expect(screen.getByText(/Herdado da empresa/)).toBeInTheDocument()
+  })
+
+  it("não mostra o acordeão quando a etapa não tem herança", () => {
+    render(<JobProcessSection {...makeProps({ isEditing: false, stages: [{ stageName: "Funil", name: "funnel", stageCategory: "system" }] })} />)
+    expect(screen.queryByText("Sub-status e coleta")).not.toBeInTheDocument()
   })
 })
 

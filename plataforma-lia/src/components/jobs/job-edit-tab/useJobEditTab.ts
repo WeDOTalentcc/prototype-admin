@@ -107,6 +107,22 @@ export function useJobEditTab({
       ? rawStages
       : (companyPipelineFallback as StageItem[] | null) ?? localFallback
 
+  // #5 Fase 1: herança de sub-status + campos de coleta da empresa, por NOME da etapa.
+  // O editor da vaga exibe (read-only) o que cada etapa carrega da Jornada da empresa.
+  // Etapa com override próprio (subStatuses/dataFields já no interviewStages) tem precedência.
+  const inheritedByName = new Map<string, Pick<StageItem, "subStatuses" | "dataFields">>()
+  const companyStagesForInherit = (((companyPipelineFallback as StageItem[] | null) ?? localFallback) as StageItem[])
+  for (const cs of companyStagesForInherit) {
+    const key = cs.name || cs.stageName
+    if (key) inheritedByName.set(key, { subStatuses: cs.subStatuses, dataFields: cs.dataFields })
+  }
+  const enrichedStages: StageItem[] = stages.map((s) => {
+    if (s.subStatuses || s.dataFields) return s
+    const inh = inheritedByName.get(s.name || s.stageName || "")
+    if (!inh || (!inh.subStatuses && !inh.dataFields)) return s
+    return { ...s, subStatuses: inh.subStatuses, dataFields: inh.dataFields }
+  })
+
   // ── helpers ────────────────────────────────────────────────────────────────
   const updateField = (field: string, value: unknown) => {
     setJobEditForm((prev) => ({ ...prev, [field]: value }))
@@ -320,7 +336,7 @@ export function useJobEditTab({
     isEditing,
     filled,
     total,
-    stages,
+    stages: enrichedStages,
     rawStages,
     loadingCompanyPipeline,
     screeningCompletion,

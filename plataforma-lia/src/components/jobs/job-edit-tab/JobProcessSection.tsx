@@ -14,6 +14,7 @@ import {
 } from"@dnd-kit/sortable"
 import { groupHeaderClass } from"./job-edit-tab.constants"
 import type { PipelineTemplateFull } from"@/hooks/pipeline/use-pipeline-templates"
+import type { SubStatusOption, StageDataField } from"@/components/settings/recruitment-journey.types"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from"@/components/ui/select"
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -32,6 +33,8 @@ export interface Stage {
   liaAssisted?: boolean
   slaDays?: number
   defaultSlaDays?: number
+  subStatuses?: SubStatusOption[]
+  dataFields?: StageDataField[]
 }
 
 interface JobProcessSectionProps {
