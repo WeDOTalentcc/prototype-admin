@@ -137,6 +137,10 @@ export const JDEvaluationHeader = React.memo(function JDEvaluationHeader({
                 </span>
               )}
             </div>
+            <p className="text-micro text-lia-text-tertiary leading-relaxed">
+              Mede os campos estruturados (responsabilidades, competências e
+              critérios D1–D9), não o texto livre da descrição enriquecida (LIA).
+            </p>
             {evaluation.lia_suggestion && (
               <div className={cn(
                 "text-micro px-2.5 py-2 rounded-md border leading-relaxed",
