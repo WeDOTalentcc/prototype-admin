@@ -71,10 +71,14 @@ def test_write_tools_marcadas_por_side_effects():
 
 
 def test_get_tools_for_scope_inclui_global():
-    cat = build_tool_catalog()
-    global_names = {m.name for m in cat.values() if m.scope == "GLOBAL"}
+    # Fix 2026-06-06: get_tools_for_scope DELEGA ao scope_config (bounded). GLOBAL =
+    # o set bounded do YAML, NAO os 166 scope_inferred-default do catalogo. O escopo
+    # agora ESTREITA de verdade (anti-pattern de ~166 corrigido).
+    from app.tools.scope_config import get_tools_for_scope as _bounded
+    global_bounded = set(_bounded("global"))
     scoped = set(get_tools_for_scope("TALENT_FUNNEL"))
-    assert global_names <= scoped, "GLOBAL deve estar sempre disponível"
+    assert global_bounded <= scoped, "GLOBAL (bounded) deve estar sempre disponivel"
+    assert len(scoped) <= 60, f"escopo deve ser bounded (<=60), got {len(scoped)}"
 
 
 def test_toolmeta_extra_forbid():

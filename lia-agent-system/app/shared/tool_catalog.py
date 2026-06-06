@@ -154,6 +154,14 @@ def build_tool_catalog() -> dict[str, ToolMeta]:
 
 
 def get_tools_for_scope(scope: str) -> list[str]:
-    """Nomes de tools cujo scope == `scope` OU GLOBAL (sempre disponíveis)."""
-    cat = build_tool_catalog()
-    return [m.name for m in cat.values() if m.scope in (scope, "GLOBAL")]
+    """Nomes de tools BOUNDED para o scope (DELEGA ao scope_config, fonte unica) + GLOBAL.
+
+    Fix 2026-06-06: a versao anterior filtrava por ToolMeta.scope do catalogo, mas
+    166 de 179 tools defaultam a scope GLOBAL (scope_inferred) + havia case mismatch
+    (lowercase vs UPPERCASE) e retornava ~166 (NAO estreitava = anti-pattern). O scope
+    bounded vem do YAML de permissoes via app.tools.scope_config (talent_funnel=26,
+    job_table=19, in_job=26, global=10). Uma fonte da verdade; GLOBAL sempre incluido.
+    """
+    from app.tools.scope_config import get_tools_for_scope as _bounded
+    _sc = str(scope).lower()
+    return sorted(set(_bounded(_sc)) | set(_bounded("global")))
