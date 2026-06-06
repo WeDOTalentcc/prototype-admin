@@ -44,6 +44,8 @@ from app.schemas.envelope import ResponseEnvelope, ok_envelope
 from app.shared.rbac.mutation_gate import assert_mutation_allowed
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+from app.shared.rbac.pii_field_resolver import resolve_pii_field_visibility
+from app.shared.rbac.pii_field_catalog import field_group
 from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
 
 def _assert_tenant_scope(candidate, current_user) -> None:
@@ -250,6 +252,43 @@ def _redact_sensitive_pii_for_user(candidate_dict: dict, current_user) -> dict:
     return candidate_dict
 
 
+def apply_pii_field_visibility(candidate_dict: dict, current_user, role_defaults: dict | None = None) -> dict:
+    """Field-level PII redaction (2026-06-06). Replaces the 2-bucket Sprint 5/8 grants.
+
+    Precedence (per field): user override > role default > legacy bucket > show. LGPD Art. 6 III.
+    Mutates AND returns. Preserves legacy UI flags salary_masked / sensitive_pii_masked.
+    """
+    effective = resolve_pii_field_visibility(current_user, role_defaults or {})
+    any_salary_masked = False
+    any_sensitive_masked = False
+    for field, can_view in effective.items():
+        if can_view:
+            continue
+        if field in candidate_dict:
+            existing = candidate_dict[field]
+            candidate_dict[field] = [] if isinstance(existing, list) else None
+        if field_group(field) == "salary":
+            any_salary_masked = True
+        else:
+            any_sensitive_masked = True
+    candidate_dict["salary_masked"] = any_salary_masked
+    candidate_dict["sensitive_pii_masked"] = any_sensitive_masked
+    return candidate_dict
+
+
+async def _load_role_pii_defaults(company_id: str) -> dict:
+    """Load per-role PII visibility defaults for a company. Returns {} if unset/missing."""
+    from app.core.database import AsyncSessionLocal
+    from app.domains.hiring_policy.repositories.hiring_policy_repository import HiringPolicyRepository
+    try:
+        async with AsyncSessionLocal() as db:
+            policy = await HiringPolicyRepository(db).get_by_company(company_id)
+        return (getattr(policy, "pii_visibility_defaults", None) or {}) if policy else {}
+    except Exception:
+        logger.warning("[A4] failed loading pii_visibility_defaults for company %s", company_id, exc_info=True)
+        return {}
+
+
 async def _audit_pii_access(current_user, candidate_id: str, company_id: str) -> None:
     """Log SOXAuditLog when privileged user accesses unmasked PII (LGPD Art. 37 V).
 
@@ -403,6 +442,10 @@ async def list_candidates(
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     # Sprint 2 Phase 4 RBAC: dept scope filter via current_user.department_id (soft-launch).
     """List candidates. When RAILS_API_URL is configured, tries Rails first then falls back to local DB."""
+    logger.info(
+        f"[FUNIL-DEBUG] ENTRY vacancy_id={vacancy_id!r} status={status!r} "
+        f"skip={skip} offset={offset} limit={limit} company={company_id!r}"
+    )  # TEMP debug funil-zero 2026-06-06 (remover apos diagnostico)
     # Only call Rails when explicitly enabled — avoids adapter's own DB fallback
     # bypassing endpoint-level filters and authorization.
     if RAILS_ENABLED and not vacancy_id:
@@ -463,14 +506,16 @@ async def list_candidates(
         )
         # Sprint 2 Phase 4 RBAC: dept scope filter (soft-launch). No-op when user has no dept_id.
         candidates = await _filter_candidates_by_dept_scope(candidates, current_user)
-        # Sprint 5 + Sprint 8 RBAC: redact PII fields when user lacks grants.
+        # A4 field-level PII redaction: replaces 2-bucket Sprint 5/8 grants.
+        role_defaults = await _load_role_pii_defaults(company_id)
         items = [
-            _redact_sensitive_pii_for_user(
-                _redact_salary_for_user(_serialize_candidate(c), current_user),
-                current_user,
-            )
+            apply_pii_field_visibility(_serialize_candidate(c), current_user, role_defaults)
             for c in candidates
         ]
+        logger.info(
+            f"[FUNIL-DEBUG] RETURN vacancy_id={vacancy_id!r} total={total} "
+            f"items={len(items)}"
+        )  # TEMP debug funil-zero 2026-06-06 (remover apos diagnostico)
         return {
             "total": total,
             "skip": effective_skip,
@@ -518,12 +563,10 @@ async def get_candidate(
         visible = await _filter_candidates_by_dept_scope([candidate], current_user)
         if not visible:
             raise HTTPException(status_code=404, detail="Candidate not found")
-        # Sprint 5 + Sprint 8 RBAC: redact financial + sensitive PII + audit (LGPD).
-        serialized = _redact_sensitive_pii_for_user(
-            _redact_salary_for_user(
-                _serialize_candidate(candidate, full=True), current_user,
-            ),
-            current_user,
+        # A4 field-level PII redaction: replaces 2-bucket Sprint 5/8 grants.
+        role_defaults = await _load_role_pii_defaults(company_id)
+        serialized = apply_pii_field_visibility(
+            _serialize_candidate(candidate, full=True), current_user, role_defaults
         )
         await _audit_pii_access(current_user, candidate_id, company_id)
         return ok_envelope(serialized, meta={"source": "local"})
