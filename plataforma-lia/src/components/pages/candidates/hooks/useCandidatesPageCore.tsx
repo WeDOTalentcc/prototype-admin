@@ -22,6 +22,7 @@ import type { Candidate } from "@/components/pages/candidates/types"
 import { useCandidatesUIState } from "./useCandidatesUIState"
 import { useNavGuardStore } from "@/stores/nav-guard-store"
 import { useUnsavedChanges } from "@/hooks/shared/useUnsavedChanges"
+import { useUnsavedBackGuard } from "@/hooks/shared/useUnsavedBackGuard"
 import { useCandidatesNavigation } from "./useCandidatesNavigation"
 import { useCandidatesPageEffects } from "./useCandidatesPageEffects"
 import { useCandidatesSearchComposition } from "./useCandidatesSearchComposition"
@@ -261,6 +262,7 @@ export function useCandidatesPageCore({
   const setNavGuardActive = useNavGuardStore(s => s.setActive)
   const pendingLeaveProceed = useNavGuardStore(s => s.pendingProceed)
   useUnsavedChanges(hasUnsavedPearchCandidates)
+  useUnsavedBackGuard(hasUnsavedPearchCandidates)
   useEffect(() => {
     setNavGuardActive(hasUnsavedPearchCandidates)
     return () => setNavGuardActive(false)
