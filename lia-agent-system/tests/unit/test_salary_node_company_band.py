@@ -22,9 +22,12 @@ def _base_state(**kwargs):
     }
 
 
-def _call_node(state, *, band=None, benchmark=None):
+def _call_node(state, *, band=None, benchmark=None, toggle_active=True):
     from app.domains.job_creation.nodes.salary import salary_node
     with patch(
+        "app.domains.job_creation.nodes.salary._salary_ranges_toggle_active",
+        return_value=toggle_active,
+    ) as m_toggle, patch(
         "app.domains.job_creation.nodes.salary._resolve_company_salary_band",
         return_value=band,
     ) as m_band, patch(
@@ -77,6 +80,24 @@ class TestSalaryNodeCompanyBand:
         m_bench.assert_called_once()
         assert result["salary_min"] == 12000
         assert result["salary_max"] == 18000
+        assert result.get("salary_provenance") != "company_salary_band"
+
+    def test_toggle_off_skips_band_uses_benchmark(self):
+        """Toggle 'salary_ranges' OFF nas Instrucoes da LIA -> nao usa a banda da
+        empresa; cai no benchmark de mercado (fallback canonico)."""
+        state = _base_state(salary_min=None, salary_max=None)
+        result, m_band, m_bench = _call_node(
+            state,
+            toggle_active=False,
+            band={"min": 35000, "max": 40000, "currency": "BRL"},
+            benchmark={
+                "min": 12000, "max": 18000, "currency": "BRL",
+                "confidence": "high", "is_estimate": False, "source": "market",
+            },
+        )
+        m_band.assert_not_called()  # toggle OFF -> nem resolve a banda
+        m_bench.assert_called_once()  # cai no benchmark
+        assert result["salary_min"] == 12000
         assert result.get("salary_provenance") != "company_salary_band"
 
     def test_right_panel_form_wins_over_band(self):

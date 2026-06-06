@@ -76,6 +76,49 @@ def _resolve_company_salary_band(state: JobCreationState) -> Optional[Dict[str, 
     return run_coro_in_threadpool(_resolve, timeout=_BAND_TIMEOUT_S)
 
 
+def _salary_ranges_toggle_active(state: JobCreationState) -> bool:
+    """Respeita o toggle 'salary_ranges' das Instrucoes da LIA (Configuracoes).
+
+    Semantica do LiaFieldToggle: is_active=False => a LIA NAO consome a faixa
+    CONFIGURADA da empresa (usa fallback job_history/market_benchmark). Ausente
+    (sem row) ou True => ativo. Erro/sem company => fail-open (ativo) p/ nao
+    bloquear a sugestao. Gateia SO o wizard (a heranca live nas telas e outra
+    decisao, por escolha do Paulo 2026-06-06).
+    """
+    company_id = str(state.get("workspace_id") or state.get("company_id") or "")
+    if not company_id or company_id in ("default", "unknown"):
+        return True
+
+    async def _read():
+        import uuid as _uuid
+
+        from sqlalchemy import select as _select
+
+        from app.core.database import AsyncSessionLocal
+        from app.models.lia_field_toggles import LiaFieldToggle
+
+        try:
+            _cid = _uuid.UUID(company_id)
+        except ValueError:
+            return True
+        async with AsyncSessionLocal() as _db:
+            val = (
+                await _db.execute(
+                    _select(LiaFieldToggle.is_active).where(
+                        LiaFieldToggle.company_id == _cid,
+                        LiaFieldToggle.field_key == "salary_ranges",
+                    )
+                )
+            ).scalar_one_or_none()
+        return val is not False  # None (sem row) ou True => ativo
+
+    _TG_TIMEOUT_S = float(__import__("os").environ.get("LIA_SALARY_BAND_TIMEOUT_S", "10"))
+    try:
+        return run_coro_in_threadpool(_read, timeout=_TG_TIMEOUT_S)
+    except Exception:  # fail-open
+        return True
+
+
 def salary_node(state: JobCreationState) -> JobCreationState:
     """Validate salary range vs company band, then market benchmark.
 
@@ -125,8 +168,14 @@ def salary_node(state: JobCreationState) -> JobCreationState:
     # Audit 2026-06-06: a faixa cadastrada em Configurações é POLÍTICA da empresa
     # (fonte verificada), não estimativa. Só resolve quando o recrutador ainda
     # não confirmou (right_panel_form vence) e não há faixa no state.
+    # Respeita o toggle "salary_ranges" das Instrucoes da LIA: OFF => pula a
+    # banda da empresa e cai no benchmark (fallback canonico do FIELD_FALLBACK_CONFIG).
     salary_from_band = False
-    if not _salary_confirmed and state.get("salary_min") is None:
+    if (
+        not _salary_confirmed
+        and state.get("salary_min") is None
+        and _salary_ranges_toggle_active(state)
+    ):
         try:
             _band = _resolve_company_salary_band(state)
         except Exception as _band_exc:  # fail-open — cai no benchmark
