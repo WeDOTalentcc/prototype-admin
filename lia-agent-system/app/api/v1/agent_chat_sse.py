@@ -637,12 +637,30 @@ company_id: str = Depends(require_company_id)):
                             logger.warning("[SSEChat] entity resolve (fail-open): %s", _ee)
                 except Exception as _he:
                     logger.warning("[SSEChat] memoria load (fail-open): %s", _he)
-                _eff_content = content
+                # bloqueador-1 MEMORIA (v2): embute historico recente como TEXTO no
+                # content — SEM injetar mensagens separadas (que causava 'multiple
+                # non-consecutive system messages'). bloqueador-2: + hint de entidade.
+                _ctx_prefix = ""
+                if _hist:
+                    _lines = []
+                    for _m in _hist[-6:]:
+                        _r = "Recrutador" if _m.get("role") == "user" else "LIA"
+                        _c = (_m.get("content") or "")[:300]
+                        if _c:
+                            _lines.append(f"{_r}: {_c}")
+                    if _lines:
+                        _ctx_prefix = (
+                            "Historico recente desta conversa (use p/ resolver "
+                            "referencias como 'ja disse'/'esse'/'ele'):\n"
+                            + "\n".join(_lines) + "\n\n"
+                        )
+                _eff_content = (
+                    (_ctx_prefix + "Mensagem atual do recrutador: " + content)
+                    if _ctx_prefix else content
+                )
                 if _ehint:
-                    # bloqueador-2: injeta a entidade resolvida no proprio content
-                    # (o LLM sempre ve a mensagem) — bypassa a alucinacao de match.
                     _eff_content = (
-                        content
+                        _eff_content
                         + "\n\n[Contexto resolvido pelo sistema — use EXATAMENTE isto, "
                         + "NAO invente outro nome/titulo:\n" + _ehint + "]"
                     )
