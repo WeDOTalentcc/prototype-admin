@@ -7,6 +7,11 @@ import {
 } from"lucide-react"
 import { inputClass, groupHeaderClass, getCategoryBadge } from"./job-edit-tab.constants"
 import type { PipelineTemplateFull } from"@/hooks/pipeline/use-pipeline-templates"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from"@/components/ui/select"
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from"@/components/ui/alert-dialog"
 
 interface Stage {
   name?: string
@@ -64,6 +69,9 @@ export function JobProcessSection({
 }: JobProcessSectionProps) {
   const [showSaveForm, setShowSaveForm] = useState(false)
   const [saveTemplateName, setSaveTemplateName] = useState('')
+  // Confirmação obrigatória: aplicar template substitui as etapas atuais (destrutivo)
+  const [pendingTemplateId, setPendingTemplateId] = useState<string | null>(null)
+  const pendingTemplate = templates?.find(t => t.id === pendingTemplateId) ?? null
 
   return (
     <div className="space-y-5">
@@ -78,29 +86,32 @@ export function JobProcessSection({
         </div>
         <div className="flex items-center justify-between">
           <h3 className={groupHeaderClass}>Etapas do Processo</h3>
-          {vacancyId && onApplyTemplate && templates && templates.length > 0 && (
+          {isEditing && vacancyId && onApplyTemplate && templates && templates.length > 0 && (
             <div className="flex items-center gap-2">
               {isApplyingTemplate && <Loader2 className="w-3 h-3 animate-spin text-lia-text-tertiary" />}
-              <select
-                onChange={e => { if (e.target.value) onApplyTemplate(e.target.value) }}
+              <Select
                 disabled={isApplyingTemplate}
-                defaultValue=""
-                className="text-xs py-1 px-2 rounded-lg border border-lia-border-subtle bg-lia-bg-primary text-lia-text-secondary hover:border-lia-border-medium disabled:opacity-50 focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20"
-                aria-label="Selecionar template de pipeline"
+                value=""
+                onValueChange={value => { if (value) setPendingTemplateId(value) }}
               >
-                <option value="" disabled>
-                  <Layers className="inline w-3 h-3 mr-1" />
-                  Aplicar template...
-                </option>
-                {templates.map(t => (
-                  <option key={t.id} value={t.id}>
-                    {t.name} ({t.stages.length} etapas)
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger
+                  className="h-8 w-auto gap-1.5 text-xs px-2 py-1 text-lia-text-secondary"
+                  aria-label="Selecionar template de pipeline"
+                >
+                  <Layers className="w-3 h-3 text-lia-text-tertiary" />
+                  <SelectValue placeholder="Aplicar template..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {templates.map(t => (
+                    <SelectItem key={t.id} value={t.id} className="text-xs">
+                      {t.name} ({t.stages.length} etapas)
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           )}
-          {vacancyId && onSaveAsTemplate && (
+          {isEditing && vacancyId && onSaveAsTemplate && (
             showSaveForm ? (
               <>
                 <input
@@ -301,6 +312,33 @@ export function JobProcessSection({
           </button>
         )}
       </div>
+
+      <AlertDialog
+        open={pendingTemplateId !== null}
+        onOpenChange={open => { if (!open) setPendingTemplateId(null) }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Aplicar template de pipeline?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Isto substitui as {stages.length} {stages.length === 1 ?"etapa atual" :"etapas atuais"} desta vaga
+              {pendingTemplate ? ` pelas etapas do template "${pendingTemplate.name}"` :" pelas etapas do template selecionado"}.
+              Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setPendingTemplateId(null)}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (pendingTemplateId && onApplyTemplate) onApplyTemplate(pendingTemplateId)
+                setPendingTemplateId(null)
+              }}
+            >
+              Aplicar template
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
