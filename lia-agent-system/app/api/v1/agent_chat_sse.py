@@ -578,6 +578,7 @@ company_id: str = Depends(require_company_id)):
             reset_sse_frame_sink as _reset_sse_sink,
         )
         _sse_sink_token = _set_sse_sink(_sse_frame_push)
+        logger.info("[SSE-SINK-DBG] sink registrado session=%s", session_id)
 
         async def _run_via_supervisor():
             # Fase 2 item 6: bolha roteada pro MainOrchestrator (LIA_BUBBLE_VIA_SUPERVISOR).
@@ -775,6 +776,24 @@ company_id: str = Depends(require_company_id)):
                                 pass
 
                         clean_message = mask_pii(_strip_react_json(output.message or ""))
+                        # FIX-NAVIGATE-LEAK (Fase 0): [NAVIGATE:...] vazava como
+                        # texto no SSE (so o orquestrador passava pelo helper
+                        # canonico). Reusa _extract_navigate_marker -> strip +
+                        # ui_action navigate_to (mesmo contrato do FE).
+                        _nav_ui_action = None
+                        _nav_ui_params = None
+                        try:
+                            from app.orchestrator.context.chat_adapter import (
+                                _extract_navigate_marker,
+                            )
+                            _nav = _extract_navigate_marker(clean_message)
+                            if _nav is not None:
+                                clean_message, _np, _npar = _nav
+                                if _np != "general":
+                                    _nav_ui_action = "navigate_to"
+                                    _nav_ui_params = {"page": _np, **_npar}
+                        except Exception:
+                            pass
 
                         panel_meta = (output.metadata or {}).get("panel_update")
                         if panel_meta and isinstance(panel_meta, dict):
@@ -803,6 +822,8 @@ company_id: str = Depends(require_company_id)):
                                 response_blocks=(output.metadata or {}).get(
                                     "response_blocks"
                                 ),
+                                ui_action=_nav_ui_action,
+                                ui_action_params=_nav_ui_params,
                                 conversation_id=req.conversation_id,
                             ),
                             next_id(),

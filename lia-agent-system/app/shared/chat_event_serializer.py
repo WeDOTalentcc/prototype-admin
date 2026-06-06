@@ -143,6 +143,8 @@ def serialize_message(
     conversation_id: str | None = None,
     tool_results: list | None = None,
     response_blocks: list | None = None,
+    ui_action: str | None = None,
+    ui_action_params: dict | None = None,
     ws_stage_payload: dict | None = None,
 ) -> MessageEvent:
     payload = serialize_event(
@@ -172,6 +174,12 @@ def serialize_message(
         payload["tool_results"] = tool_results
     if response_blocks:
         payload["response_blocks"] = response_blocks
+    # FIX-NAVIGATE-LEAK (Fase 0): contrato de navegacao do FE = ui_action/
+    # ui_action_params (useChatSocket/useChatMessages PR-D). Paridade c/ orquestrador.
+    if ui_action:
+        payload["ui_action"] = ui_action
+    if ui_action_params:
+        payload["ui_action_params"] = ui_action_params
     # Task #1090 — wizard side-panel signal (canonical-fix: produtor unico).
     # O orchestrator empacota ws_stage_payload (type=wizard_stage, thread_id,
     # stage, **payload) em structured_data. Anexa-lo aqui garante paridade de
