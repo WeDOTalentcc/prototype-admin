@@ -108,7 +108,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
                 (candidate as unknown as Record<string, unknown>).match_score as number || candidate.lia_score || candidate.score
               }
               initialFeedback={searchFeedbacks[candidate.id] || null}
-              onFeedbackChange={onSearchFeedbackChange as any}
+              onFeedbackChange={(id, fb) => onSearchFeedbackChange(candidate.id, candidate.name, fb)}
               size="sm"
               alwaysVisible={hasFeedback}
             />
