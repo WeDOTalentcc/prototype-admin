@@ -177,10 +177,12 @@ export function JobInfoGeralSection({
                   disabled={!isEditing}
                 />
               </div>
-              <div>
-                <label className={labelClass}>Localização<ScreeningBadge /></label>
-                <input type="text" className={inputClass(!isEditing)} value={(jobEditForm.location as string) || ""} onChange={(e) => updateField("location", e.target.value)} disabled={!isEditing} placeholder="Ex: São Paulo, SP" />
-              </div>
+              {jobEditForm.workModel !== "remoto" && (
+                <div>
+                  <label className={labelClass}>Endereço<ScreeningBadge /></label>
+                  <input type="text" className={inputClass(!isEditing)} value={(jobEditForm.location as string) || ""} onChange={(e) => updateField("location", e.target.value)} disabled={!isEditing} placeholder="Ex: Av. Paulista, 1000 - Bela Vista, São Paulo" />
+                </div>
+              )}
               <div>
                 <label className={labelClass}>Cidade<ScreeningBadge /></label>
                 <RemoteCombobox
@@ -444,28 +446,6 @@ export function JobInfoGeralSection({
                   </div>
                 </>
               )}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div>
-        <h3 className={groupHeaderClass}>Mercado-Alvo</h3>
-        <Card className="border border-lia-border-subtle">
-          <CardContent className="p-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className={labelClass}>Setor</label>
-                <input type="text" className={inputClass(!isEditing)} value={(jobEditForm.targetSector as string) || ""} onChange={(e) => updateField("targetSector", e.target.value)} disabled={!isEditing} placeholder="Ex: Tecnologia" />
-              </div>
-              <div>
-                <label className={labelClass}>Segmento</label>
-                <input type="text" className={inputClass(!isEditing)} value={(jobEditForm.targetSegment as string) || ""} onChange={(e) => updateField("targetSegment", e.target.value)} disabled={!isEditing} placeholder="Ex: Fintechs" />
-              </div>
-              <div className="col-span-2">
-                <label className={labelClass}>Público-Alvo</label>
-                <textarea className={`${inputClass(!isEditing)} resize-none`} rows={2} value={(jobEditForm.targetAudience as string) || ""} onChange={(e) => updateField("targetAudience", e.target.value)} disabled={!isEditing} placeholder="Descreva o perfil ideal do candidato..." />
-              </div>
             </div>
           </CardContent>
         </Card>
