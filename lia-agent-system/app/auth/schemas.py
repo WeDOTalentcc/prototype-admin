@@ -104,6 +104,11 @@ class UserManagementResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
+    # A7-BE: expose PII/grant fields for admin display (mirrors UserResponse).
+    can_view_salary: bool | None = None
+    can_view_sensitive_pii: bool | None = None
+    pii_field_visibility: dict[str, bool] | None = None
+
     class Config:
         from_attributes = True
 
