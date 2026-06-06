@@ -215,3 +215,25 @@ export function enrichStagesWithSubStatuses(
     subStatuses: subStatusMap[stage.name] ?? stage.subStatuses,
   }))
 }
+
+/**
+ * #5 Fase 2: sobrepõe o override de sub-status POR VAGA sobre o mapa da empresa.
+ * Override vive em job.interview_stages[].subStatuses (persistido no JSON da vaga).
+ * Etapa sem override mantém o default herdado da empresa.
+ * Consumer-first: chamado nos call sites do kanban ANTES de enrichStagesWithSubStatuses,
+ * para que o seletor de sub-status da transição reflita a customização da vaga.
+ */
+export function applyVacancyStageOverrides(
+  subStatusMap: Record<string, SubStatusOption[]>,
+  jobInterviewStages?: Array<{ name?: string; stageName?: string; subStatuses?: SubStatusOption[] }>
+): Record<string, SubStatusOption[]> {
+  if (!Array.isArray(jobInterviewStages) || jobInterviewStages.length === 0) return subStatusMap
+  const merged = { ...subStatusMap }
+  for (const st of jobInterviewStages) {
+    const key = st?.name || st?.stageName
+    if (key && Array.isArray(st.subStatuses) && st.subStatuses.length > 0) {
+      merged[key] = st.subStatuses
+    }
+  }
+  return merged
+}
