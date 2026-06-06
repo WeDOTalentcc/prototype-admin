@@ -21,6 +21,7 @@ import {
   formatDateValue,
 } from "./job-edit-tab.constants"
 import { ScreeningBadge } from "./ScreeningBadge"
+import { screeningToggleState } from "./screeningToggle"
 import { LiaEditor } from "@/components/ui/lia-editor"
 import { sanitizeHtml } from "@/lib/sanitize"
 import { RemoteCombobox, type RemoteComboboxOption } from "@/components/ui/remote-combobox"
@@ -68,6 +69,12 @@ export function JobInfoGeralSection({
 }: JobInfoGeralSectionProps) {
   const [departmentQuery, setDepartmentQuery] = React.useState("")
   const [cityQuery, setCityQuery] = React.useState("")
+  const [screeningStatusLocal, setScreeningStatusLocal] = React.useState<string>(
+    (job?.screeningStatus as string) || "not_configured"
+  )
+  React.useEffect(() => {
+    setScreeningStatusLocal((job?.screeningStatus as string) || "not_configured")
+  }, [job?.screeningStatus])
 
   const { options: statusOptions, isLoading: statusLoading } = useJobStatuses()
   const { options: priorityOptions, isLoading: priorityLoading } = useJobPriorities()
@@ -77,6 +84,26 @@ export function JobInfoGeralSection({
   const { options: seniorityOptions, isLoading: seniorityLoading } = useJobSeniorities()
   const { options: departmentOptions, isLoading: departmentLoading } = useDepartmentsSearch(departmentQuery)
   const { options: cityOptions, isLoading: cityLoading } = useCitiesSearch(cityQuery)
+
+  const handleToggleScreening = async (on: boolean) => {
+    const newStatus = on ? "active" : "paused"
+    const prev = screeningStatusLocal
+    setScreeningStatusLocal(newStatus)
+    const jid = String((job?.backendId as string) || (job?.id as string) || "")
+    try {
+      const res = await fetch(`/api/backend-proxy/job-vacancies/${jid}/screening-status`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ screening_status: newStatus }),
+      })
+      if (!res.ok) throw new Error(String(res.status))
+      toast.success(on ? "Triagem ativada" : "Triagem pausada")
+    } catch {
+      setScreeningStatusLocal(prev)
+      toast.error("Não foi possível alterar a triagem. Tente novamente.")
+    }
+  }
 
   return (
     <div className="space-y-5">
@@ -129,27 +156,27 @@ export function JobInfoGeralSection({
               </div>
               <div>
                 <label className={labelClass}>Triagem</label>
-                <div
-                  className={`w-full px-3 py-2 text-xs rounded-md border cursor-pointer transition-colors hover:bg-lia-interactive-hover ${
-                    (job?.screeningStatus || "not_configured") === "active"
-                      ? "border-status-success/30 bg-status-success/10/50 text-status-success dark:border-status-success/30 dark:bg-status-success/20"
-                      : (job?.screeningStatus || "not_configured") === "paused"
-                      ? "border-status-warning/30 bg-status-warning/10/50 text-status-warning dark:border-status-warning/30 dark:bg-status-warning/20"
-                      : (job?.screeningStatus || "not_configured") === "completed"
-                      ? "border-wedo-cyan/30 bg-wedo-cyan/10/50 text-wedo-cyan-dark dark:border-wedo-cyan/30"
-                      : "border-lia-border-subtle bg-lia-bg-secondary text-lia-text-secondary"
-                  }`}
-                  onClick={() => setActiveSection("configuracoes")}
-                  title="Clique para ir às Configurações de Triagem"
-                >
-                  {(() => {
-                    const s = (job?.screeningStatus || "not_configured") as ScreeningStatus
-                    const icons: Record<ScreeningStatus, string> = {
-                      active: "●", paused: "◉", completed: "✓", not_started: "○", not_configured: "○",
-                    }
-                    return `${icons[s]} ${SCREENING_STATUS_LABELS[s]}`
-                  })()}
-                </div>
+                {(() => {
+                  const st = screeningToggleState(screeningStatusLocal)
+                  if (st.mode === "toggle") {
+                    return (
+                      <div className="flex items-center gap-2 h-[38px] px-3 py-2 rounded-md border border-lia-border-subtle bg-lia-bg-primary">
+                        <Switch checked={st.checked} onCheckedChange={handleToggleScreening} className="data-[state=checked]:bg-status-success" />
+                        <span className="text-xs text-lia-text-secondary">{st.checked ? "● Ativa" : "◉ Pausada"}</span>
+                      </div>
+                    )
+                  }
+                  if (st.mode === "readonly") {
+                    return (
+                      <div className="w-full px-3 py-2 text-xs rounded-md border border-wedo-cyan/30 bg-wedo-cyan/10 text-wedo-cyan-dark">✓ Concluída</div>
+                    )
+                  }
+                  return (
+                    <button type="button" onClick={() => setActiveSection("configuracoes")} className="w-full px-3 py-2 text-xs rounded-md border border-lia-border-subtle bg-lia-bg-secondary text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors text-left" title="Configurar a triagem desta vaga">
+                    ○ Configurar triagem
+                    </button>
+                  )
+                })()}
               </div>
             </div>
           </CardContent>
