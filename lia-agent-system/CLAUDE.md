@@ -26,6 +26,8 @@ Estas regras vêm do CLAUDE.md global do usuário. **Aplicam a 100% do código.*
 3. **Fairness**: prompts que rankam/filtram candidatos DEVEM passar por `FairnessGuard`. Pattern canônico em `app/domains/communication/agents/communication_react_agent.py` (FAR-2, ACH-026).
 4. **Secrets**: zero hardcoded. Tudo via env vars + Pydantic Settings.
 
+> **⚠️ RLS é INERTE em runtime — o app conecta como superuser (`postgres`).** Postgres ignora Row-Level Security para superusers, então TODO o RLS do projeto (068 deny-by-default em ~250 tabelas, `job_vacancies`, etc.) **não protege contra as queries do próprio app**. A proteção multi-tenant REAL é a **regra #1 acima** (camada de aplicação): `company_id` do JWT + filtro em toda query + ownership gates (ex: `JobVacancyCrudRepository.owned_by_company`) + `_require_company_id` nos repos. **NUNCA** confie em RLS — nem em comentário `# RLS-EXEMPT: transitive via ...` — como proteção enquanto o app for superuser. RLS só ativa para cliente NÃO-superuser (role `lia_app` / Rails) usando `SET app.company_id`; migrar o app para role não-superuser é um épico separado (pré-req do C8 RLS da auditoria). Diagnóstico: `python3 scripts/check_rls_runtime_role.py` (sensor `tests/contract/test_rls_runtime_role.py`). (audit C8 2026-06-05)
+
 ## Anti-patterns proibidos (sensores existentes detectam)
 
 | Anti-pattern | Por quê | Sensor |
