@@ -266,7 +266,13 @@ company_id: str = Depends(require_company_id)):
             )
             logger.info(f"Saved question set version for job {request.job_id}")
         except Exception as version_err:
-            logger.warning(f"Failed to save question set version: {version_err}")
+            # Audit C9/#1 (2026-06-05): o set versionado NAO e opcional.
+            # save_question_set faz o db.commit() de flat+set juntos; se falhar,
+            # o flat fica uncommitted. Rollback descarta tudo e propaga a falha
+            # em vez de mascarar com success:True (orfao flat sem set versionado).
+            logger.error(f"Failed to save question set version (rolling back): {version_err}")
+            await db.rollback()
+            return {"success": False, "error": f"version_save_failed: {version_err}"}
         return {"success": True, "saved_count": len(request.questions)}
     except Exception as e:
         logger.error(f"Failed to save questions: {e}")
@@ -320,7 +326,11 @@ company_id: str = Depends(require_company_id)):
                 )
                 logger.info(f"Saved question set version for job {request.job_id}")
             except Exception as version_err:
-                logger.warning(f"Failed to save question set version: {version_err}")
+                # Audit C9/#1 (2026-06-05): set versionado NAO e opcional (mesma
+                # transacao do flat). Rollback + propaga a falha em vez de success:True.
+                logger.error(f"Failed to save question set version (rolling back): {version_err}")
+                await db.rollback()
+                return {"success": False, "error": f"version_save_failed: {version_err}"}
             return {"success": True, "saved_count": len(request.questions)}
         except Exception as e2:
             logger.error(f"Failed even after table creation: {e2}")
