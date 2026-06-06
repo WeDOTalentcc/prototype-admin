@@ -496,13 +496,17 @@ function RenderOne({
       return <FunnelView block={block} />;
     case "candidate_card":
       return <CandidateCardView block={block} />;
-    default:
+    default: {
       // AD6: kind desconhecido (skew de deploy FE/BE) → fallback, nunca throw.
+      // Exhaustiveness compile-time: kind novo na union ResponseBlock sem case
+      // faz `block` deixar de ser `never` aqui -> tsc quebra o build (AD6 completo).
+      const _never: never = block;
       return (
         <p className="text-xs italic text-lia-text-tertiary">
           {t("unsupportedBlock")}
         </p>
       );
+    }
   }
 }
 
