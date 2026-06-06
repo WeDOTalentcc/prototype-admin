@@ -422,10 +422,9 @@ class LiaFieldConfigService:
             "values": "values",
             "evp_bullets": "evp_bullets",
             "core_competencies": "core_competencies",
-            # behavioral_competencies shares the same source column, whose own
-            # model docstring reads "Behavioral competencies extracted from
-            # website" (closes the last narrative ghost, audit 2026-06-06).
-            "behavioral_competencies": "core_competencies",
+            # behavioral_competencies tem coluna propria (decisao Paulo E2:
+            # fonte DISTINTA de core_competencies, audit 2026-06-06).
+            "behavioral_competencies": "behavioral_competencies",
             "locations": "locations",
             "work_model": "work_model",
             "growth_opportunities": "growth_opportunities",

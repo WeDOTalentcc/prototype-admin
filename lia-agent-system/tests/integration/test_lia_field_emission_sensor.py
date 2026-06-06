@@ -88,7 +88,7 @@ EXPECTED_EMISSION = {
     "values": "SENTINELVALUE",
     "evp_bullets": "SENTINELEVP",
     "core_competencies": "SENTINELCORECOMP",
-    "behavioral_competencies": "SENTINELCORECOMP",  # shares core_competencies col
+    "behavioral_competencies": "SENTINELBEHAV",
     "locations": "SENTINELLOC",
     "tech_stack": "SENTINELTECH",
     "default_languages": "SENTINELLANG",
@@ -129,14 +129,14 @@ async def fully_seeded_company(db):
             "(id, company_id, website_url, is_approved, "
             " mission, vision, work_model, growth_opportunities, team_dynamics, "
             " leadership_style, dei_initiatives, sustainability, social_impact, "
-            " engineering_culture, values, evp_bullets, core_competencies, "
+            " engineering_culture, values, evp_bullets, core_competencies, behavioral_competencies, "
             " locations, tech_stack, default_languages, "
             " openness_score, conscientiousness_score, extraversion_score, "
             " agreeableness_score, stability_score) "
             "VALUES (:id, :cid, :url, TRUE, "
             " :mission, :vision, :wm, :growth, :team, "
             " :lead, :dei, :sust, :social, "
-            " :eng, ARRAY['SENTINELVALUE'], ARRAY['SENTINELEVP'], ARRAY['SENTINELCORECOMP'], "
+            " :eng, ARRAY['SENTINELVALUE'], ARRAY['SENTINELEVP'], ARRAY['SENTINELCORECOMP'], ARRAY['SENTINELBEHAV'], "
             " ARRAY['SENTINELLOC'], ARRAY['SENTINELTECH'], ARRAY['SENTINELLANG'], "
             " 77, 60, 55, 50, 65)"
         ),

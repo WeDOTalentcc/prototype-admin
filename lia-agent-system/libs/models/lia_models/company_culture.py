@@ -27,6 +27,7 @@ class CompanyCultureProfile(Base):
     values = Column(ARRAY(String), nullable=False, server_default="{}", default=list)
     evp_bullets = Column(ARRAY(String), nullable=False, server_default="{}", default=list)
     core_competencies = Column(ARRAY(String), nullable=False, server_default="{}", default=list)  # Behavioral competencies extracted from website
+    behavioral_competencies = Column(ARRAY(String), nullable=False, server_default="{}", default=list)  # E2: fonte distinta de core_competencies (decisao Paulo 2026-06-06)
     culture_description = Column(Text, nullable=True)
     
     website_url = Column(String(500), nullable=False)
