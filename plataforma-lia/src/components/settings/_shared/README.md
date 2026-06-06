@@ -100,8 +100,13 @@ Quando uma seção é salva com sucesso, despachar o evento canônico:
 ```ts
 import { dispatchSettingsUpdate } from "@/hooks/settings/useSettingsBroadcast"
 
-// no onSuccess da mutation:
-dispatchSettingsUpdate({ section: "company", source: "ui" })
+// no onSuccess da mutation (os 4 campos sao obrigatorios):
+dispatchSettingsUpdate({
+  actionId: "configure_culture", // id da acao (string descritiva)
+  section: "culture",            // secao canonica salva
+  source: "ui",                  // "ui" impede o proprio listener de reagir
+  ts: Date.now(),
+})
 ```
 
 O chat da LIA escuta esse evento para atualizar seu contexto automaticamente.

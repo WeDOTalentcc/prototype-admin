@@ -66,7 +66,12 @@ export function CultureApprovalBanner({ companyId }: { companyId: string | null 
         queryKey: SETTINGS_QUERY_KEYS.settingsProgress(),
       })
       // source: "ui" prevents this hook's own broadcast listener from reacting.
-      dispatchSettingsUpdate({ section: "company", source: "ui" })
+      dispatchSettingsUpdate({
+        actionId: "approve_culture_profile",
+        section: "culture",
+        source: "ui",
+        ts: Date.now(),
+      })
       toast.success(decision === "approve" ? t("approvedToast") : t("rejectedToast"))
     },
     onError: () => toast.error(t("errorToast")),
