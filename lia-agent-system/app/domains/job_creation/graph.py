@@ -975,6 +975,12 @@ def create_job_creation_graph(
 # Singleton access (same pattern as SchedulingGraph)
 # ---------------------------------------------------------------------------
 
+# Audit C1/#11 (2026-06-05): ceiling explicito de recursao do wizard.
+# LangGraph usa 25 implicito; o caminho HITL com loop-backs cabe folgado em
+# ~15 super-steps por invoke, entao 50 da headroom mantendo o guard anti-runaway.
+WIZARD_RECURSION_LIMIT = 50
+
+
 class JobCreationGraph:
     _instance = None
     _graph = None
@@ -1003,7 +1009,7 @@ class JobCreationGraph:
             Updated state after graph execution (may END at HITL points).
         """
         config = {"configurable": {"thread_id": thread_id}}
-        return self._graph.invoke(state, config=config)
+        return self._graph.invoke(state, config={**config, "recursion_limit": WIZARD_RECURSION_LIMIT})
 
     def resume(
         self,
@@ -1028,7 +1034,7 @@ class JobCreationGraph:
             return self.resume_with_message(thread_id, str(user_msg))
         merged = {**prior_state, **updates}
         config = {"configurable": {"thread_id": thread_id}}
-        return self._graph.invoke(merged, config=config)
+        return self._graph.invoke(merged, config={**config, "recursion_limit": WIZARD_RECURSION_LIMIT})
 
     def is_interrupted(self, thread_id: str) -> bool:
         """Task #1094 — True se o graph para esse thread está pausado em
@@ -1086,7 +1092,7 @@ class JobCreationGraph:
         from langgraph.types import Command
         config = {"configurable": {"thread_id": thread_id}}
         return self._graph.invoke(
-            Command(resume=str(user_message or "")), config=config
+            Command(resume=str(user_message or "")), config={**config, "recursion_limit": WIZARD_RECURSION_LIMIT}
         )
 
     async def aresume_with_message(
@@ -1097,7 +1103,7 @@ class JobCreationGraph:
         from langgraph.types import Command
         config = {"configurable": {"thread_id": thread_id}}
         return await self._graph.ainvoke(
-            Command(resume=str(user_message or "")), config=config
+            Command(resume=str(user_message or "")), config={**config, "recursion_limit": WIZARD_RECURSION_LIMIT}
         )
 
 
