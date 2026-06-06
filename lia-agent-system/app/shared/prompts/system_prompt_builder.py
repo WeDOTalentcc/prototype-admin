@@ -303,6 +303,12 @@ class SystemPromptBuilder:
                 'contexto/hint (nunca invente um id). Ex: abra a vaga de '
                 'Diretor Juridico (id no hint) -> Abrindo a vaga! '
                 '[NAVIGATE:vaga_detalhe:<id-exato>].',
+                '7. Para abrir uma ABA ou SECAO especifica, acrescente '
+                'query ao marker com ?chave=valor (e &chave2=valor2 p/ '
+                'multiplas). Ex: configuracoes na secao de beneficios -> '
+                '[NAVIGATE:configuracoes?section=beneficios]; editar a '
+                'descricao de uma vaga -> '
+                '[NAVIGATE:vaga_detalhe:<id>?tab=edit&section=descricao].',
             ])
             context_parts.append("\n".join(nav_lines))
         except Exception as _nav_exc:
