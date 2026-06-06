@@ -2,8 +2,8 @@ import React from "react"
 import { Mail, Phone, Linkedin, Github, Globe, CheckCircle2, AlertTriangle } from "lucide-react"
 import { isGlobalSource } from "@/lib/utils/source-detection"
 import type { Candidate } from "@/components/pages/candidates/types"
+import type { RevealedContacts } from "@/stores/candidates-store"
 
-type RevealedContacts = Record<string, { email?: string; phone?: string }>
 type OnRevealContact = (candidate: Candidate, type: "email" | "phone") => void
 type TranslateFn = (key: string, values?: Record<string, unknown>) => string
 

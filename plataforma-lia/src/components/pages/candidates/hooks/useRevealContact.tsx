@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import type { Candidate } from "@/components/pages/candidates/types"
+import { useCandidatesStore } from "@/stores/candidates-store"
 import { toast } from "sonner"
 
 export function useRevealContact({
@@ -12,7 +13,10 @@ export function useRevealContact({
   const [showRevealModal, setShowRevealModal] = useState(false)
   const [revealCandidate, setRevealCandidate] = useState<Candidate | null>(null)
   const [revealType, setRevealType] = useState<"email" | "phone">("email")
-  const [revealedContacts, setRevealedContacts] = useState<Record<string, { email?: string; phone?: string }>>({})
+  // SSOT (P2 #5): revealedContacts vive no candidates-store, espelhando searchFeedbacks.
+  // Produtor escreve via updater funcional com merge; consumidores recebem por prop.
+  const revealedContacts = useCandidatesStore((s) => s.revealedContacts)
+  const setRevealedContacts = useCandidatesStore((s) => s.setRevealedContacts)
   const [isRevealing, setIsRevealing] = useState(false)
 
   const openRevealModal = (candidate: Candidate, type: "email" | "phone") => {

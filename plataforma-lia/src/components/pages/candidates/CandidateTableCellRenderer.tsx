@@ -10,6 +10,7 @@ import {
 import { SearchFeedbackButtons } from "@/components/search/SearchFeedbackButtons"
 import { textStyles } from "@/lib/design-tokens"
 import type { Candidate } from "@/components/pages/candidates/types"
+import type { RevealedContacts } from "@/stores/candidates-store"
 import { renderSourceCell } from "./cells/SourceCell"
 import { renderMatchScoreCell, renderLiaScoreCell } from "./cells/ScoreCells"
 import { renderEmailCell, renderPhoneCell, renderLinkedinCell, renderGithubCell, renderPortfolioCell } from "./cells/ContactCells"
@@ -19,7 +20,7 @@ type TranslateFn = (key: string, values?: Record<string, unknown>) => string
 
 export interface CellRendererDeps {
   searchFeedbacks: Record<string, "like" | "dislike">
-  revealedContacts: Record<string, { email?: string; phone?: string }>
+  revealedContacts: RevealedContacts
   searchQuery: string
   viewedCandidateIds: Set<string>
   expandedRows: Set<string>

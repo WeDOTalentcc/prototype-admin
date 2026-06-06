@@ -19,6 +19,7 @@ import { useCandidatesInteractions } from "./useCandidatesInteractions"
 import { useCandidatesLIAHandlers } from "./useCandidatesLIAHandlers"
 import { mapCandidateToInternal as _mapCandidateToInternal } from "./useCandidatesExecuteSearch"
 import type { Candidate } from "@/components/pages/candidates/types"
+import type { RevealedContacts } from "@/stores/candidates-store"
 import type { ChatMessage, PearchSearchOptions } from "./candidates-core"
 import type { SearchTab } from "./useCandidatesUIState"
 import type { TableFilters } from "@/hooks/candidates/use-candidate-filters"
@@ -89,7 +90,7 @@ export interface UseCandidatesViewCompositionParams {
   hasUnsavedPearchCandidates: boolean
   unsavedPearchCandidates: Candidate[]
   lastSearchQuery: string
-  revealedContacts: Record<string, Record<string, string>>
+  revealedContacts: RevealedContacts
   expandedRows: Set<string>
   setExpandedRows: Dispatch<SetStateAction<Set<string>>>
   isPreviewMaximized: boolean

@@ -5,6 +5,7 @@ import type { Candidate } from "../types"
 import { toast } from "sonner"
 import { isGlobalSource } from "@/lib/utils/source-detection"
 import { useNavGuardStore } from "@/stores/nav-guard-store"
+import type { RevealedContacts } from "@/stores/candidates-store"
 
 interface CandidateExperience {
   company?: string
@@ -30,7 +31,7 @@ interface CandidateExperience {
 
 export interface CandidatesActionsContext {
   candidates: Candidate[]
-  revealedContacts: Record<string, Record<string, string>>
+  revealedContacts: RevealedContacts
   setCandidates: (v: Candidate[]) => void
   activeTab: string
   setActiveTab: (v: string) => void
