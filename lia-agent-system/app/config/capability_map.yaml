@@ -55,9 +55,11 @@ capabilities:
   # ── Wave 1 PR-Q2: job entity resolution for VERIFICAR cards ──────────────
   close_job:
     chat_executable: true
+    requires_confirmation: true   # HITL: encerrar vaga é destrutivo (decisão Paulo 2026-06-06)
     entity_required:
       - type: job
         param: job_id
+    modal_id: close_vacancy
     navigate_fallback: /jobs?status=open
 
   generate_job_report:
@@ -65,6 +67,7 @@ capabilities:
     entity_required:
       - type: job
         param: job_id
+    modal_id: job_report
     navigate_fallback: /analytics
 
   # ── Wave 1 PR-Q3: canonical intents for analytics/WSI cards ─────────────
@@ -162,3 +165,86 @@ capabilities:
       - type: template
         param: template_id
     navigate_fallback: /templates
+
+  # ── Fase B (2026-06-06): set curado de modais globais abríveis pela LIA ──
+  # Decisão Paulo: ~18 modais globais (read-only abrem direto; destrutivos
+  # com requires_confirmation=true → o modal confirma a ação, HITL).
+  # open_ui(capability) valida + retorna ui_action=open_modal. Os ~110 modais
+  # internos de página ficam de fora (não-globais) — promoção caso-a-caso.
+
+  view_profile:
+    chat_executable: false       # modal de perfil > resumo no chat
+    entity_required:
+      - type: candidate
+        param: candidate_id
+    modal_id: profile
+    navigate_fallback: /funil-de-talentos
+
+  job_insights:
+    chat_executable: false
+    entity_required:
+      - type: job
+        param: job_id
+    modal_id: job_insights
+    navigate_fallback: /jobs
+
+  compare_jobs:
+    chat_executable: false
+    entity_required: []
+    modal_id: job_compare
+    navigate_fallback: /jobs
+
+  view_score:
+    chat_executable: false
+    entity_required:
+      - type: candidate
+        param: candidate_id
+    modal_id: general_score
+    navigate_fallback: /funil-de-talentos
+
+  view_bigfive:
+    chat_executable: false
+    entity_required:
+      - type: candidate
+        param: candidate_id
+    modal_id: big_five
+    navigate_fallback: /funil-de-talentos
+
+  change_job_status:
+    chat_executable: false
+    requires_confirmation: true   # HITL: mudança de status de vaga
+    entity_required:
+      - type: job
+        param: job_id
+    modal_id: job_status
+    navigate_fallback: /jobs
+
+  bulk_action:
+    chat_executable: false
+    requires_confirmation: true   # HITL: ação em massa (potencialmente destrutiva)
+    entity_required: []
+    modal_id: bulk_action
+    navigate_fallback: /funil-de-talentos
+
+  send_communication:
+    chat_executable: false
+    requires_confirmation: true   # HITL: envio de comunicação a candidato(s)
+    entity_required: []
+    modal_id: unified_communication
+    navigate_fallback: /central-comunicacao
+
+  assign_recruiter:
+    chat_executable: false
+    requires_confirmation: true   # HITL: reatribuir responsável da vaga
+    entity_required:
+      - type: job
+        param: job_id
+    modal_id: job_assign_recruiter
+    navigate_fallback: /jobs
+
+  data_request:
+    chat_executable: false
+    requires_confirmation: true   # HITL: solicitação de dados (LGPD)
+    entity_required: []
+    modal_id: data_request
+    navigate_fallback: /trust

@@ -29,6 +29,7 @@ class Capability:
     entity_required: list[EntityRequirement] = field(default_factory=list)
     modal_id: str | None = None
     navigate_fallback: str | None = None
+    requires_confirmation: bool = False   # HITL: ação destrutiva/mutante
 
 
 class CapabilityMapService:
@@ -50,6 +51,7 @@ class CapabilityMapService:
                 entity_required=entity_required,
                 modal_id=cfg.get("modal_id"),
                 navigate_fallback=cfg.get("navigate_fallback"),
+                requires_confirmation=cfg.get("requires_confirmation", False),
             )
         return result
 
@@ -76,3 +78,10 @@ class CapabilityMapService:
     def get_navigate_fallback(cls, intent: str) -> str | None:
         cap = cls.get(intent)
         return cap.navigate_fallback if cap else None
+
+    @classmethod
+    def requires_confirmation(cls, intent: str) -> bool:
+        """HITL: True se a capability é destrutiva/mutante e o modal deve
+        confirmar a ação antes de efetivá-la (decisão Paulo 2026-06-06)."""
+        cap = cls.get(intent)
+        return cap.requires_confirmation if cap else False

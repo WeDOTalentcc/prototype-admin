@@ -190,3 +190,71 @@ class TestCapabilityMapWave4Intents:
         assert cap.navigate_fallback is not None
         assert "contratacao" in cap.navigate_fallback or "visao" in cap.navigate_fallback
 
+
+class TestCapabilityMapFaseB:
+    """Fase B (2026-06-06): set curado de modais globais + campo HITL.
+
+    Sensor computacional: garante que (1) read-only modals abrem direto
+    (requires_confirmation=False), (2) destrutivos exigem confirmação,
+    (3) toda capability global nova tem modal_id."""
+
+    READONLY_MODALS = [
+        ("view_profile", "profile", "candidate"),
+        ("job_insights", "job_insights", "job"),
+        ("compare_jobs", "job_compare", None),
+        ("view_score", "general_score", "candidate"),
+        ("view_bigfive", "big_five", "candidate"),
+        ("generate_job_report", "job_report", "job"),
+    ]
+    DESTRUCTIVE_MODALS = [
+        ("close_job", "close_vacancy", "job"),
+        ("change_job_status", "job_status", "job"),
+        ("bulk_action", "bulk_action", None),
+        ("send_communication", "unified_communication", None),
+        ("assign_recruiter", "job_assign_recruiter", "job"),
+        ("data_request", "data_request", None),
+    ]
+
+    def test_requires_confirmation_defaults_false(self):
+        """Capabilities read-only legadas continuam sem confirmação."""
+        cap = CapabilityMapService.get("search_candidates")
+        assert cap is not None
+        assert cap.requires_confirmation is False
+
+    def test_readonly_modals_present_and_direct(self):
+        for intent, modal_id, ent in self.READONLY_MODALS:
+            cap = CapabilityMapService.get(intent)
+            assert cap is not None, f"capability '{intent}' ausente (Fase B)"
+            assert cap.modal_id == modal_id, (
+                f"'{intent}'.modal_id deve ser '{modal_id}', achou {cap.modal_id!r}"
+            )
+            assert cap.requires_confirmation is False, (
+                f"'{intent}' é read-only — abre direto, sem confirmação"
+            )
+            if ent:
+                types = [r.type for r in cap.entity_required]
+                assert ent in types, f"'{intent}' deve exigir entidade {ent}"
+
+    def test_destructive_modals_require_confirmation(self):
+        for intent, modal_id, ent in self.DESTRUCTIVE_MODALS:
+            cap = CapabilityMapService.get(intent)
+            assert cap is not None, f"capability '{intent}' ausente (Fase B)"
+            assert cap.modal_id == modal_id, (
+                f"'{intent}'.modal_id deve ser '{modal_id}', achou {cap.modal_id!r}"
+            )
+            assert cap.requires_confirmation is True, (
+                f"'{intent}' é destrutivo/mutante — DEVE ter requires_confirmation=true (HITL)"
+            )
+            assert CapabilityMapService.requires_confirmation(intent) is True
+            if ent:
+                types = [r.type for r in cap.entity_required]
+                assert ent in types, f"'{intent}' deve exigir entidade {ent}"
+
+    def test_requires_confirmation_is_bool_everywhere(self):
+        for intent, cap in CapabilityMapService.load().items():
+            assert isinstance(cap.requires_confirmation, bool), (
+                f"'{intent}'.requires_confirmation deve ser bool"
+            )
+
+    def test_confirmation_helper_unknown_intent_false(self):
+        assert CapabilityMapService.requires_confirmation("xyz_unknown") is False
