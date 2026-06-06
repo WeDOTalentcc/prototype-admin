@@ -613,6 +613,16 @@ company_id: str = Depends(require_company_id)):
 
         async def _run_agent():
             try:
+                # Fase 2 (flag LIA_FEDERATED_SCOPED_TOOLS): seta o escopo do turno na
+                # contextvar p/ o federado carregar tools escopadas (~30 vs 179). Fail-open.
+                try:
+                    import os as _os_sc
+                    if (_os_sc.getenv("LIA_FEDERATED_SCOPED_TOOLS", "") or "").strip().lower() in ("1", "true", "yes", "on"):
+                        from app.tools.scope_config import scope_for_context, set_active_scope
+                        _pg = context.get("page_type") or (context.get("view_context") or {}).get("page_type")
+                        set_active_scope(scope_for_context(_pg, resolved_domain))
+                except Exception:
+                    pass
                 # Bloqueador-1 MEMORIA (canonical-fix): a bolha bypassava o produtor
                 # unico conversation_memory (passava conversation_history=[] ->
                 # agente dizia "primeira mensagem"). Agora carrega historico do MESMO

@@ -348,3 +348,28 @@ def scope_for_context(
         if sc is not None:
             return sc
     return PromptScope.GLOBAL
+
+
+# -- Fase 2 (2026-06-06): escopo ATIVO do turno via contextvar (async-task-local,
+# evita race no agente federado singleton; padrao tipo _current_company_id). O SSE
+# seta via scope_for_context; o federado le no _get_tools/_get_compiled_graph. --
+import contextvars as _contextvars
+
+_active_scope: "_contextvars.ContextVar" = _contextvars.ContextVar(
+    "lia_active_scope", default=None
+)
+
+
+def set_active_scope(scope) -> None:
+    """Seta o escopo ativo do turno (chamado pelo transporte, ex: SSE)."""
+    _active_scope.set(scope)
+
+
+def get_active_scope():
+    """Le o escopo ativo do turno (None se nao setado)."""
+    return _active_scope.get()
+
+
+def reset_active_scope() -> None:
+    """Limpa o escopo ativo (fim do turno)."""
+    _active_scope.set(None)

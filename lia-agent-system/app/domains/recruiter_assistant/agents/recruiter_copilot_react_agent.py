@@ -33,6 +33,38 @@ from app.shared.services.confidence_policy_service import confidence_policy_serv
 
 logger = logging.getLogger(__name__)
 
+# -- Fase 2 (2026-06-06): escopo dinamico de tools no agente federado --
+import os as _os
+import threading as _threading
+
+_SCOPE_BUILD_LOCK = _threading.Lock()
+
+
+def _scoped_tools_enabled() -> bool:
+    """Flag LIA_FEDERATED_SCOPED_TOOLS: on = federado carrega o subconjunto ESCOPADO
+    (~30 tools/turno) em vez do set fixo. Off = comportamento atual identico."""
+    return (_os.getenv("LIA_FEDERATED_SCOPED_TOOLS", "") or "").strip().lower() in (
+        "1", "true", "yes", "on",
+    )
+
+
+def _resolve_scoped_tool_defs(default_factory):
+    """Tool-defs do turno: flag on + escopo ativo (contextvar) -> subconjunto escopado
+    de TODOS os dominios; senao -> default_factory() (set federado). Fail-open."""
+    if _scoped_tools_enabled():
+        try:
+            from app.tools.scope_config import get_active_scope
+            scope = get_active_scope()
+            if scope is not None:
+                from app.shared.tool_catalog import get_scoped_tool_definitions
+                _sc = scope.value if hasattr(scope, "value") else str(scope)
+                scoped = get_scoped_tool_definitions(_sc)
+                if scoped:
+                    return scoped
+        except Exception as _e:
+            logger.warning("[RecruiterCopilot] scoped tool defs fallback: %s", _e)
+    return default_factory()
+
 
 COPILOT_DOMAIN_SPECIFIC = (
     "Voce e a LIA no chat lateral global da plataforma WeDOTalent — o copiloto "
@@ -176,19 +208,47 @@ class RecruiterCopilotReActAgent(
         return list(self._all_tool_names)
 
     def _get_tool_contracts(self) -> list:
-        """Ativa GovernanceToolNode (HITL/audit) para o set federado."""
+        """Ativa GovernanceToolNode (HITL/audit). Fase 2: escopado quando flag on."""
         try:
-            return get_recruiter_copilot_tools()
+            return _resolve_scoped_tool_defs(get_recruiter_copilot_tools)
         except Exception:
             return []
 
     def _get_tools(self) -> list:
         from lia_agents_core.tool_adapter import tool_definition_to_langchain_tool
-        tool_defs = get_recruiter_copilot_tools() + self._get_all_enhanced_tools()
-        # wire-B (2026-06-06): o tee de response_blocks agora e canonico no
-        # converter tool_definition_to_langchain_tool (vale p/ TODOS os agentes).
-        # Removido o tee manual daqui p/ evitar double-append no sink.
+        tool_defs = _resolve_scoped_tool_defs(
+            lambda: get_recruiter_copilot_tools() + self._get_all_enhanced_tools()
+        )
+        # wire-B: tee de response_blocks e canonico no converter (todos os agentes).
         return [tool_definition_to_langchain_tool(td) for td in tool_defs]
+
+    def _get_compiled_graph(self):
+        """Fase 2: flag on + escopo ativo -> cacheia 1 grafo compilado POR ESCOPO
+        (a base cacheia self._compiled single/build-once, que nao serve p/ tools que
+        mudam por turno). Reusa o build da base (sem replicar) via reset-and-capture
+        sob lock. Flag off / sem escopo = comportamento da base."""
+        if not _scoped_tools_enabled():
+            return super()._get_compiled_graph()
+        try:
+            from app.tools.scope_config import get_active_scope
+            scope = get_active_scope()
+        except Exception:
+            scope = None
+        if scope is None:
+            return super()._get_compiled_graph()
+        key = scope.value if hasattr(scope, "value") else str(scope)
+        cache = self.__dict__.setdefault("_compiled_by_scope", {})
+        g = cache.get(key)
+        if g is not None:
+            return g
+        with _SCOPE_BUILD_LOCK:
+            g = cache.get(key)
+            if g is None:
+                self._compiled = None
+                g = super()._get_compiled_graph()
+                cache[key] = g
+                self._compiled = None
+            return g
 
     def _state_to_output(self, state: dict, input: AgentInput) -> AgentOutput:
         messages = state.get("messages", [])
