@@ -7,6 +7,7 @@ import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react"
 import { toast } from "sonner"
 import type { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime"
 import { classifyPercentageScore } from "@/lib/score-utils"
+import { buildSavedSearchPayload } from "@/components/pages/candidates/saved-search-utils"
 import type { SearchFilters } from "@/components/search/advanced-filters-modal"
 import type { CommunicationType } from "@/components/modals/unified-communication-modal"
 import type { ParsedCVResponse } from "@/components/cv"
@@ -382,9 +383,15 @@ export function useCandidatesViewComposition(params: UseCandidatesViewCompositio
   }
 
   const saveCurrentSearch = () => {
-    sessionStorage.setItem(
-      'current-search-data',
-      JSON.stringify({ name: `${tView('searchNamePrefix')} ${new Date().toLocaleDateString()}`, searchTerm: params.searchTerm, quickFilters: Array.from(params.quickFilters), timestamp: new Date().toISOString() })
+    // P1-7: persiste no produtor canonico (addSavedSearch) que a aba Buscas
+    // Salvas le — antes gravava em sessionStorage('current-search-data') morto.
+    params.talentFunnel.addSavedSearch(
+      buildSavedSearchPayload({
+        searchTerm: params.searchTerm,
+        quickFilters: Array.from(params.quickFilters),
+        dateLabel: new Date().toLocaleDateString(),
+        namePrefix: tView('searchNamePrefix'),
+      })
     )
     params.setActiveTab('saved-searches')
     toast.success(tView('searchSaved'), { description: tView('candidatesFound', { count: filterSort.sortedCandidates.length }) })

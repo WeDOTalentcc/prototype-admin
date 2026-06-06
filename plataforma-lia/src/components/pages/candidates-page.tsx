@@ -580,9 +580,9 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
               setSearchSource(search.source)
               setActiveTab('search')
               talentFunnel.incrementSavedSearchUsage(search.id)
-              setTimeout(() => {
-                setShowSearchResults(false)
-              }, 100)
+              // P1-7/lacuna: executar de fato a busca salva (antes so escondia
+              // os resultados, nunca rodava executeSearch).
+              executeSearch(search.query, undefined, search.mode, undefined, search.source !== 'local')
             }}
             onAddSearch={(search) => {
               talentFunnel.addSavedSearch(search)
