@@ -307,6 +307,7 @@ export function UnifiedMessageList({
   onRegenerate,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
+  const contentRef = useRef<HTMLDivElement>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
 
   // Typewriter (2026-06-04): o provider entrega a resposta num burst (sem
@@ -386,12 +387,37 @@ export function UnifiedMessageList({
     _isRevealing,
   ])
 
+  // Auto-scroll robusto (2026-06-06): o reasoning timeline (AgentActivityTimeline)
+  // revela passos via setTimeout INTERNO — esse crescimento NAO e dependencia do
+  // efeito de scroll acima, entao enquanto a IA "constroi" (fase de raciocinio) a
+  // view nao acompanhava (Paulo: "o chat nao sobe quando esta construindo"). Um
+  // ResizeObserver no conteudo segue QUALQUER crescimento de altura e fixa no fim
+  // — desde que o usuario JA esteja perto do fim (≤120px), respeitando quem rolou
+  // pra cima pra reler durante o turno. Cobre reasoning, blocos RRP e typewriter.
+  // (jsdom nao tem ResizeObserver → feature-guard mantem os testes verdes.)
+  useEffect(() => {
+    if (typeof ResizeObserver === "undefined") return
+    const container = containerRef.current
+    const content = contentRef.current
+    if (!container || !content) return
+    const ro = new ResizeObserver(() => {
+      const distanceFromBottom =
+        container.scrollHeight - container.scrollTop - container.clientHeight
+      if (distanceFromBottom <= 120) {
+        bottomRef.current?.scrollIntoView({ behavior: "auto" })
+      }
+    })
+    ro.observe(content)
+    return () => ro.disconnect()
+  }, [])
+
   return (
     <div
       ref={containerRef}
       className="flex-1 overflow-y-auto"
     >
       <div
+        ref={contentRef}
         className={cn(
           "px-4 py-4 space-y-4",
           mode === "fullscreen" ? "max-w-[720px] mx-auto w-full" : ""
