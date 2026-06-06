@@ -62,6 +62,8 @@ class EmbeddingService:
         self,
         text: str,
         provider: str | None = None,
+        *,
+        mask_names: bool = False,
     ) -> list[float]:
         """Generate embedding for text.
 
@@ -85,6 +87,13 @@ class EmbeddingService:
                 pass
             default_prov = EmbeddingProviderFactory.get_default()
             return [0.0] * default_prov.dimensions
+
+        # LGPD (audit 2026-06-06): redige PII ANTES de cache/API no
+        # chokepoint -- nenhum caller pode esquecer. Estruturada sempre
+        # (CPF/email/tel/etc); nomes (Presidio NER) quando mask_names=True
+        # (superficies de candidato/conversa). Default False = base segura.
+        from app.shared.pii_masking import strip_pii_for_llm_prompt
+        text = strip_pii_for_llm_prompt(text, mask_names=mask_names)
 
         ck = self._cache_key(text, provider)
         cached = self._cache_get(ck)
@@ -128,6 +137,8 @@ class EmbeddingService:
         self,
         text: str,
         provider: str | None = None,
+        *,
+        mask_names: bool = False,
     ) -> tuple[list[float], str, str]:
         """Generate embedding and return (vector, provider_name, model_name).
 
@@ -143,6 +154,13 @@ class EmbeddingService:
                 default_prov.provider_name,
                 default_prov.default_model,
             )
+
+        # LGPD (audit 2026-06-06): redige PII ANTES de cache/API no
+        # chokepoint -- nenhum caller pode esquecer. Estruturada sempre
+        # (CPF/email/tel/etc); nomes (Presidio NER) quando mask_names=True
+        # (superficies de candidato/conversa). Default False = base segura.
+        from app.shared.pii_masking import strip_pii_for_llm_prompt
+        text = strip_pii_for_llm_prompt(text, mask_names=mask_names)
 
         tracer = get_tracer()
         async with tracer.start_span("embedding.api_call", attributes={
@@ -165,6 +183,8 @@ class EmbeddingService:
         self,
         texts: list[str],
         provider: str | None = None,
+        *,
+        mask_names: bool = False,
     ) -> list[list[float]]:
         """Generate embeddings for multiple texts.
 
@@ -179,6 +199,13 @@ class EmbeddingService:
 
         if not texts:
             return []
+
+        # LGPD (audit 2026-06-06): redige PII ANTES de cache/API no
+        # chokepoint -- nenhum caller pode esquecer. Estruturada sempre
+        # (CPF/email/tel/etc); nomes (Presidio NER) quando mask_names=True
+        # (superficies de candidato/conversa). Default False = base segura.
+        from app.shared.pii_masking import strip_pii_for_llm_prompt
+        texts = [strip_pii_for_llm_prompt(t, mask_names=mask_names) for t in texts]
 
         tracer = get_tracer()
         try:
@@ -209,6 +236,8 @@ class EmbeddingService:
         self,
         texts: list[str],
         provider: str | None = None,
+        *,
+        mask_names: bool = False,
     ) -> tuple[list[list[float]], str, str]:
         """Generate batch embeddings and return (vectors, provider_name, model_name)."""
         from app.shared.providers.embedding_factory import EmbeddingProviderFactory
@@ -216,6 +245,13 @@ class EmbeddingService:
         if not texts:
             default_prov = EmbeddingProviderFactory.get_default()
             return [], default_prov.provider_name, default_prov.default_model
+
+        # LGPD (audit 2026-06-06): redige PII ANTES de cache/API no
+        # chokepoint -- nenhum caller pode esquecer. Estruturada sempre
+        # (CPF/email/tel/etc); nomes (Presidio NER) quando mask_names=True
+        # (superficies de candidato/conversa). Default False = base segura.
+        from app.shared.pii_masking import strip_pii_for_llm_prompt
+        texts = [strip_pii_for_llm_prompt(t, mask_names=mask_names) for t in texts]
 
         tracer = get_tracer()
         async with tracer.start_span("embedding.api_call", attributes={
