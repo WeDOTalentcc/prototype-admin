@@ -4,6 +4,12 @@ Movido de graph.py durante refactor estrutural ONDA 3 sub-sprint B+C.
 Mantém comportamento byte-identical via tests de regressão.
 
 Validate salary range vs market benchmark (Phase 2C-1).
+
+Audit 2026-06-06 — faixa da EMPRESA tem precedência sobre o benchmark de
+mercado. A faixa cadastrada em Configurações → Faixas Salariais por Nível é
+política da empresa (fonte verificada), não estimativa. Resolve por nível +
+departamento + contrato ANTES de buscar mercado; mercado vira fallback.
+Precedência: right_panel_form (recrutador) > banda da empresa > benchmark.
 """
 
 import logging
@@ -24,11 +30,59 @@ from app.domains.job_creation.helpers.async_audit import run_coro_in_threadpool
 logger = logging.getLogger(__name__)
 
 
+def _resolve_company_salary_band(state: JobCreationState) -> Optional[Dict[str, Any]]:
+    """Resolve a faixa salarial CADASTRADA da empresa pro escopo da vaga.
+
+    Fonte: Configurações → Faixas Salariais por Nível (SalaryBand). Casa por
+    nível + departamento + contrato via SalaryBandRepository.match_band (mesmo
+    matcher do endpoint /company/salary-bands/resolve). Política da empresa =
+    fonte verificada, tem precedência sobre o benchmark de mercado.
+
+    Retorna {"min", "max", "currency"} ou None (sem banda / sem contexto /
+    falha — fail-open: o caller cai no benchmark).
+    """
+    seniority = state.get("seniority_resolved") or state.get("parsed_seniority") or ""
+    company_id = str(state.get("workspace_id") or state.get("company_id") or "")
+    if not company_id or company_id in ("default", "unknown") or not seniority:
+        return None
+
+    department = state.get("parsed_department") or None
+    contract_type = state.get("parsed_employment_type") or None
+
+    _BAND_TIMEOUT_S = float(__import__("os").environ.get("LIA_SALARY_BAND_TIMEOUT_S", "10"))
+
+    async def _resolve():
+        from app.core.database import AsyncSessionLocal
+        from app.domains.company.repositories.salary_band_repository import (
+            SalaryBandRepository,
+        )
+
+        async with AsyncSessionLocal() as _db:
+            repo = SalaryBandRepository(_db)
+            band = await repo.match_band(
+                company_id,
+                seniority_level=seniority,
+                department=department,
+                contract_type=contract_type,
+            )
+            if band is None or band.min is None:
+                return None
+            return {
+                "min": band.min,
+                "max": band.max,
+                "currency": band.currency or "BRL",
+            }
+
+    return run_coro_in_threadpool(_resolve, timeout=_BAND_TIMEOUT_S)
+
+
 def salary_node(state: JobCreationState) -> JobCreationState:
-    """Validate salary range vs market benchmark.
+    """Validate salary range vs company band, then market benchmark.
 
     Phase 2C-1: now actively fetches benchmark from internal + market sources
     and combines via MarketBenchmarkService.combine_with_internal() (peso 70/30).
+    Audit 2026-06-06: a faixa cadastrada da empresa (SalaryBand) tem precedência
+    sobre o benchmark de mercado — mercado só é consultado quando não há banda.
     """
     # Lazy import of helpers defined in graph.py (avoids circular import).
     from app.domains.job_creation.graph import (  # noqa: E402
@@ -59,6 +113,7 @@ def salary_node(state: JobCreationState) -> JobCreationState:
             "salary_min": _panel_salary_min,
             "salary_max": _panel_salary_max,
             "salary_confirmed": True,
+            "salary_provenance": "manual",
         }
         _salary_confirmed = True
         logger.info(
@@ -66,10 +121,39 @@ def salary_node(state: JobCreationState) -> JobCreationState:
             _panel_salary_min, _panel_salary_max,
         )
 
+    # ── Banda salarial da empresa tem precedência sobre o benchmark de mercado ──
+    # Audit 2026-06-06: a faixa cadastrada em Configurações é POLÍTICA da empresa
+    # (fonte verificada), não estimativa. Só resolve quando o recrutador ainda
+    # não confirmou (right_panel_form vence) e não há faixa no state.
+    salary_from_band = False
+    if not _salary_confirmed and state.get("salary_min") is None:
+        try:
+            _band = _resolve_company_salary_band(state)
+        except Exception as _band_exc:  # fail-open — cai no benchmark
+            logger.warning(
+                "[JobCreation:salary] company band resolve failed (fail-open): %s",
+                _band_exc,
+            )
+            _band = None
+        if _band and _band.get("min") is not None:
+            state = {
+                **state,
+                "salary_min": _band.get("min"),
+                "salary_max": _band.get("max"),
+                "salary_currency": _band.get("currency") or "BRL",
+                "salary_provenance": "company_salary_band",
+            }
+            salary_from_band = True
+            logger.info(
+                "[JobCreation:salary] filled from company salary band: min=%s max=%s",
+                _band.get("min"), _band.get("max"),
+            )
+
     # ── Fetch benchmark if not already in state ──
     # Task #1062: timeout determinístico (D4 da auditoria #1058). Em timeout
     # o nó pula benchmark gracefully (`salary_benchmark=None`) — recrutador
     # pode preencher manualmente sem travar o wizard.
+    # Audit 2026-06-06: não busca mercado quando a banda da empresa já preencheu.
     _SALARY_TIMEOUT_S = float(__import__("os").environ.get(
         "LIA_SALARY_TIMEOUT_S", "45"
     ))
@@ -78,7 +162,7 @@ def salary_node(state: JobCreationState) -> JobCreationState:
     salary_used_fallback = False
     # Task #1067 — root-cause label propagado pro painel.
     salary_fallback_reason: Optional[str] = None
-    if not state.get("salary_benchmark"):
+    if not state.get("salary_benchmark") and not salary_from_band:
         try:
             # PR-14 (2026-05-26): substituido _asyncio.run() + ThreadPoolExecutor
             # local por helper canonical run_coro_in_threadpool(). _cf_sl mantido
@@ -188,6 +272,7 @@ def salary_node(state: JobCreationState) -> JobCreationState:
                         "salary_min": _benchmark.get("min"),
                         "salary_max": _benchmark.get("max"),
                         "salary_currency": _benchmark.get("currency", "BRL"),
+                        "salary_provenance": "market_benchmark",
                     }
                 logger.info(
                     "[JobCreation:salary] benchmark fetched: source=%s conf=%s",
@@ -221,6 +306,9 @@ def salary_node(state: JobCreationState) -> JobCreationState:
                 "salary_min": state.get("salary_min"),
                 "salary_max": state.get("salary_max"),
                 "salary_currency": state.get("salary_currency", "BRL"),
+                # Audit 2026-06-06 — origem da faixa (company_salary_band |
+                # market_benchmark | manual) p/ o painel rotular a proveniência.
+                "salary_provenance": state.get("salary_provenance"),
                 "benefits": state.get("benefits", []),
                 "benchmark": state.get("salary_benchmark"),
                 # Task #1065 — flag de fallback (timeout do benchmark fetch).
