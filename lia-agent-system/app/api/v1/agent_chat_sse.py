@@ -600,18 +600,60 @@ company_id: str = Depends(require_company_id)):
 
         async def _run_agent():
             try:
+                # Bloqueador-1 MEMORIA (canonical-fix): a bolha bypassava o produtor
+                # unico conversation_memory (passava conversation_history=[] ->
+                # agente dizia "primeira mensagem"). Agora carrega historico do MESMO
+                # servico que o chat-page usa + persiste o turno. Fail-open: falha de
+                # memoria nao derruba a resposta.
+                from app.domains.recruiter_assistant.services.conversation_memory import (
+                    conversation_memory as _cmem,
+                )
+                _hist: list = []
+                _cid = req.conversation_id or session_id
+                try:
+                    async with AsyncSessionLocal() as _mdb:
+                        _conv = None
+                        if req.conversation_id:
+                            _conv = await _cmem.get_conversation(
+                                _mdb, req.conversation_id, include_messages=False
+                            )
+                        if _conv is None:
+                            _conv = await _cmem.get_or_create_conversation(
+                                _mdb, user_id=user_id, company_id=company_id,
+                                context_type="chat_bubble",
+                            )
+                            await _mdb.commit()
+                        _cid = str(_conv.id)
+                        _hctx = await _cmem.get_context_for_llm(
+                            _mdb, _cid, max_messages=20
+                        )
+                        _hist = _hctx.get("messages", []) or []
+                except Exception as _he:
+                    logger.warning("[SSEChat] memoria load (fail-open): %s", _he)
                 agent_input = _build_agent_input(
                     content=content,
                     context=context,
                     session_id=session_id,
                     company_id=company_id,
                     user_id=user_id,
-                    conversation_history=[],
+                    conversation_history=_hist,
                 )
                 output = await asyncio.wait_for(
                     agent.process(agent_input),
                     timeout=_AGENT_TIMEOUT,
                 )
+                try:
+                    async with AsyncSessionLocal() as _pdb:
+                        await _cmem.add_message(
+                            _pdb, conversation_id=_cid, role="user", content=content
+                        )
+                        await _cmem.add_message(
+                            _pdb, conversation_id=_cid, role="assistant",
+                            content=output.message or "",
+                        )
+                        await _pdb.commit()
+                except Exception as _pe:
+                    logger.warning("[SSEChat] memoria persist (fail-open): %s", _pe)
                 await sse_queue.put({"_done": True, "_output": output})
             except TimeoutError:
                 await sse_queue.put({"_done": True, "_error": "timeout"})
