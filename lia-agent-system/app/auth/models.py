@@ -88,6 +88,10 @@ class User(EncryptedFieldMixin, Base):
     # secondary contacts. Distinct from can_view_salary (financial PII).
     can_view_sensitive_pii = Column(Boolean, default=True, nullable=False, server_default=text("true"))
 
+    # Per-field PII visibility override (2026-06-06). Partial map {field: bool}.
+    # Unset field falls through to role default -> legacy bucket -> show.
+    pii_field_visibility = Column(JSONB, nullable=True)
+
     @validates("company_id")
     def _validate_company_id(self, _key: str, value):  # noqa: ANN001
         """Fail-LOUD on non-UUID writes to ``company_id``.

@@ -91,6 +91,9 @@ class CompanyHiringPolicy(Base):
     communication_rules = Column(JSON, default=lambda: COMMUNICATION_RULES_DEFAULTS.copy())
     screening_rules = Column(JSON, default=lambda: SCREENING_RULES_DEFAULTS.copy())
     automation_rules = Column(JSON, default=lambda: AUTOMATION_RULES_DEFAULTS.copy())
+
+    # Per-role PII visibility defaults (2026-06-06): {role: {field: bool}}.
+    pii_visibility_defaults = Column(JSON, default=lambda: {})
     # P3b (2026-06-01): instruções narrativas do recrutador por conceito de
     # política (texto livre que orienta a LIA). SEPARADO dos 5 blocos de gate —
     # nunca alimenta um if/gate, só o system prompt. Invariante de segurança.
