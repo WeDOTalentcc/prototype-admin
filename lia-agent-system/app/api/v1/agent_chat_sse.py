@@ -305,7 +305,7 @@ company_id: str = Depends(require_company_id)):
     _raw_content = content
     try:
         from app.shared.pii_masking import strip_pii_for_llm_prompt
-        content = strip_pii_for_llm_prompt(content)
+        content = strip_pii_for_llm_prompt(content, mask_names=False)  # chat do recrutador: preserva nome/titulo p/ busca; CPF/email/tel seguem mascarados
     except Exception as _pii_exc:
         logger.warning("[SSEChat] PII strip inbound failed (fail-open): %s", _pii_exc)
 

@@ -232,7 +232,7 @@ _LLM_PROMPT_PII_PATTERNS: list[tuple[Pattern, str]] = [
 ]
 
 
-def strip_pii_for_llm_prompt(text: str) -> str:
+def strip_pii_for_llm_prompt(text: str, mask_names: bool = True) -> str:
     """Remove PII e quasi-identificadores de texto antes de enviar ao LLM.
 
     Aplica até 4 camadas:
@@ -273,10 +273,12 @@ def strip_pii_for_llm_prompt(text: str) -> str:
 
     result = _UUID_V4_PATTERN.sub(_shield, text)
 
-    # Layer 4 (NER) PRIMEIRO: Presidio mascara NOME (PERSON)/LOCATION sobre o
-    # texto ainda "cru" (UUIDs já blindados). Roda ANTES dos regexes para não
-    # re-embrulhar placeholders já mascarados (evita "[[LOCATION REMOVIDO] REMOVIDO]").
-    result = _presidio_layer4_strip(result)
+    # Layer 4 (NER): Presidio mascara NOME (PERSON)/LOCATION. mask_names=False
+    # PULA esta camada (chat do recrutador: nome/titulo sao NECESSARIOS e
+    # AUTORIZADOS; falso-positivo tratava 'Diretor Juridico' como PERSON).
+    # CPF/email/telefone (Layer 1/3 regex) seguem mascarados.
+    if mask_names:
+        result = _presidio_layer4_strip(result)
     # Layer 1 + Layer 3: regex determinístico como backstop (CPF/email/telefone/
     # RG/CNPJ + quasi-identificadores) — captura o que o NER não pegou.
     for pattern, replacement in _LLM_PROMPT_PII_PATTERNS:
