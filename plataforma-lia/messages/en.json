@@ -3620,7 +3620,7 @@
     },
     "loadMore": {
       "loading": "Loading...",
-      "loadMoreCandidates": "Load 10 more candidates",
+      "loadMoreCandidates": "Load {count} more candidates",
       "showingOf": "{displayed} of {total} candidates",
       "allLoaded": "All {total} candidates loaded"
     },
