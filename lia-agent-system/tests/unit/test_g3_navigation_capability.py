@@ -183,3 +183,13 @@ def test_navegacao_navega_direto_sem_perguntar():
     'posso te levar?' (so pergunta se a decisao for da IA)."""
     prompt = SystemPromptBuilder.build(agent_type="orchestrator")
     assert "navegue DIRETO" in prompt
+
+
+def test_navegacao_nao_oferece_quando_nao_pedido():
+    """Over-nav P2 (2026-06-06): o agente NAO deve oferecer/perguntar 'posso
+    te levar para X?' nem navegar para responder pergunta de DADOS -- so quando
+    o usuario pede explicitamente. (Paulo: oferta de navegacao nao-solicitada
+    e indevida; a decisao de trocar de tela e do usuario.)"""
+    prompt = SystemPromptBuilder.build(agent_type="orchestrator")
+    assert "NUNCA OFERECA navegar" in prompt
+    assert "NAO e pedido" in prompt

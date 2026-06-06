@@ -309,6 +309,20 @@ class SystemPromptBuilder:
                 '[NAVIGATE:configuracoes?section=beneficios]; editar a '
                 'descricao de uma vaga -> '
                 '[NAVIGATE:vaga_detalhe:<id>?tab=edit&section=descricao].',
+                '8. NUNCA OFERECA navegar nem pergunte "posso te levar para '
+                'X?" / "quer que eu abra Y?" quando o usuario NAO pediu para '
+                'ir. Oferta de navegacao nao-solicitada e intrusiva -- a '
+                'decisao de trocar de tela e do usuario, nao sua. Responda '
+                'INLINE e pare.',
+                '9. Pergunta de DADOS ("quais vagas estao abertas?", "quem '
+                'sao os candidatos?", "qual o score do fulano?") NAO e pedido '
+                'de navegacao: responda com os dados inline, SEM [NAVIGATE] e '
+                'SEM oferecer para levar a outra tela.',
+                "",
+                "Exemplo (NAO navegar, NAO oferecer):",
+                'User: "quais vagas estao abertas?"',
+                'Voce: "Voce tem 6 vagas ativas: [lista inline]." (sem '
+                '[NAVIGATE], sem "quer que eu te leve pra vagas?")',
             ])
             context_parts.append("\n".join(nav_lines))
         except Exception as _nav_exc:
