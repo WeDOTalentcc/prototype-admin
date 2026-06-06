@@ -38,6 +38,11 @@ class ClientUserUpdate(WeDoBaseModel):
     # RBAC Sprint 8 (2026-05-26): sensitive PII grant (LGPD Art. 5 II).
     # Covers CPF + DoB + address + secondary contacts. Tenant admin only.
     can_view_sensitive_pii: bool | None = Field(None, description="Grant: allow this user to view sensitive PII (CPF, DoB, address, secondary contacts). Tenant admin only.")
+    # RBAC Sprint A6 (2026-06-06): per-user flat PII field visibility override.
+    # Allows tenant admin to restrict/grant visibility of specific PII fields per user,
+    # overriding role-level defaults from pii_visibility_defaults. Persisted in users.pii_field_visibility.
+    # LGPD Art. 6 III minimizacao. Tenant admin only.
+    pii_field_visibility: dict[str, bool] | None = Field(None, description="Per-user PII field visibility override map {field: bool}. Tenant admin only.")
 
 
 class AcceptInvitationRequest(WeDoBaseModel):

@@ -68,6 +68,15 @@ def validate_pii_defaults(defaults: dict) -> None:
                 )
 
 
+def validate_pii_field_override(value: dict) -> None:
+    """Raise HTTPException(422) if a per-user override map has invalid field/value. Pure."""
+    for field, v in value.items():
+        if field not in _VALID_FIELDS:
+            raise HTTPException(status_code=422, detail=f"Invalid PII field: {field!r}")
+        if not isinstance(v, bool):
+            raise HTTPException(status_code=422, detail=f"Value for {field!r} must be boolean")
+
+
 # ---------------------------------------------------------------------------
 # Endpoints
 # ---------------------------------------------------------------------------
