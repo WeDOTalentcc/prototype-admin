@@ -325,6 +325,36 @@ class SystemPromptBuilder:
                 '[NAVIGATE], sem "quer que eu te leve pra vagas?")',
             ])
             context_parts.append("\n".join(nav_lines))
+            # B4 (2026-06-06): seção de telas/modais DERIVADA do capability_map
+            # (DRY — não hand-maintain). A LIA tem a tool open_ui p/ abrir
+            # modais (display) ou navegar pro surface das ações.
+            from app.shared.services.capability_map_service import (
+                CapabilityMapService,
+            )
+            _caps = CapabilityMapService.load()
+            _modal_caps = [(i, c) for i, c in _caps.items() if c.modal_id]
+            _nav_caps = [
+                (i, c) for i, c in _caps.items()
+                if c.navigate_page and not c.modal_id
+            ]
+            if _modal_caps or _nav_caps:
+                ui_lines = [
+                    "### Capabilities — Abrir telas e modais",
+                    "Use a tool **open_ui(capability, entity_ids)** quando o "
+                    "usuário pedir para ABRIR/VER algo. open_ui valida e abre "
+                    "o modal (display) OU navega pro surface da ação. Passe os "
+                    "ids do contexto (candidate_id/job_id) — NUNCA invente.",
+                    "",
+                    "Abrem MODAL (visualização):",
+                ]
+                for intent, _c in _modal_caps:
+                    ui_lines.append(f"- `{intent}`")
+                ui_lines.append("")
+                ui_lines.append("Levam ao SURFACE (ação acontece na tela, com confirmação):")
+                for intent, _c in _nav_caps:
+                    _hint = " (precisa confirmação)" if _c.requires_confirmation else ""
+                    ui_lines.append(f"- `{intent}`{_hint}")
+                context_parts.append("\n".join(ui_lines))
         except Exception as _nav_exc:
             import logging as _log
             _log.getLogger(__name__).error(

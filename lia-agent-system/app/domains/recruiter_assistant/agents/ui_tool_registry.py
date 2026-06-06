@@ -28,6 +28,21 @@ from app.shared.tool_handler import tool_handler
 
 logger = logging.getLogger(__name__)
 
+# Papéis privilegiados (staff WeDOTalent) sempre passam pelo role-gate.
+_PRIVILEGED_ROLES = {"admin", "wedotalent_admin", "superadmin"}
+
+
+def _role_allows(required_role: str, user_role: str | None) -> bool:
+    """Role-gate fail-closed: cap restrita a um papel só passa se o user
+    tem esse papel (ou é privilegiado). Sem role conhecido → nega (a cap
+    restrita não vaza p/ quem não tem permissão)."""
+    role = (user_role or "").strip().lower()
+    if not role:
+        return False
+    if role in _PRIVILEGED_ROLES:
+        return True
+    return role == required_role.strip().lower()
+
 
 def _ui_capabilities() -> dict[str, Any]:
     """Capabilities acionáveis via open_ui: têm modal_id (abre modal) OU
@@ -75,6 +90,17 @@ async def _wrap_open_ui(**kwargs: Any) -> dict[str, Any]:
                 f"Disponíveis: {', '.join(known)}."
             ),
             "data": {"navigate_fallback": None},
+        }
+    # Role-gate (decisão Paulo): cap restrita exige papel. Fail-closed.
+    # Dormant até uma cap staff declarar required_role + tool_handler
+    # injetar user_role no contexto. user_role NÃO vem da LLM.
+    if cap.required_role and not _role_allows(cap.required_role, kwargs.get("user_role")):
+        return {
+            "success": False,
+            "message": (
+                "Essa tela é restrita à equipe WeDOTalent — seu perfil não "
+                "tem permissão de acesso."
+            ),
         }
     if not cap.modal_id:
         # Sem modal → navega pro surface (a ação/seleção vive na página, com

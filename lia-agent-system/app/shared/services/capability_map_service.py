@@ -31,6 +31,7 @@ class Capability:
     navigate_fallback: str | None = None
     requires_confirmation: bool = False   # HITL: ação destrutiva/mutante
     navigate_page: str | None = None   # canonical page p/ navegar (sem modal)
+    required_role: str | None = None   # role-gate: papel exigido (None=todos)
 
 
 class CapabilityMapService:
@@ -54,6 +55,7 @@ class CapabilityMapService:
                 navigate_fallback=cfg.get("navigate_fallback"),
                 requires_confirmation=cfg.get("requires_confirmation", False),
                 navigate_page=cfg.get("navigate_page"),
+                required_role=cfg.get("required_role"),
             )
         return result
 

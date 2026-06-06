@@ -193,3 +193,14 @@ def test_navegacao_nao_oferece_quando_nao_pedido():
     prompt = SystemPromptBuilder.build(agent_type="orchestrator")
     assert "NUNCA OFERECA navegar" in prompt
     assert "NAO e pedido" in prompt
+
+
+def test_b4_modal_capabilities_section_present():
+    """B4 (2026-06-06): prompt ensina a tool open_ui + lista capabilities
+    DERIVADAS do capability_map (modal vs surface)."""
+    prompt = SystemPromptBuilder.build(agent_type="orchestrator")
+    assert "### Capabilities — Abrir telas e modais" in prompt
+    assert "open_ui(" in prompt
+    # capability de modal (display) e de navegação aparecem
+    assert "`view_score`" in prompt
+    assert "`close_job`" in prompt

@@ -12,7 +12,11 @@ from __future__ import annotations
 import pytest
 
 from app.middleware.auth_enforcement import _current_company_id
-from app.domains.recruiter_assistant.agents.ui_tool_registry import _wrap_open_ui
+from app.domains.recruiter_assistant.agents.ui_tool_registry import (
+    _wrap_open_ui,
+    _ui_capabilities,
+    _role_allows,
+)
 from app.domains.recruiter_assistant.agents.recruiter_copilot_tool_registry import (
     get_recruiter_copilot_tool_names,
 )
@@ -108,3 +112,36 @@ class TestOpenUiFederationAndLoop:
             success = True
             result = {"data": {"foo": "bar"}}
         assert _extract_tool_directive(_R()) is None
+
+
+class TestOpenUiSafetyInvariants:
+    """Fase D: pin do design de segurança (HITL estrutural + role-gate)."""
+
+    def test_role_allows_fail_closed(self):
+        # Sem role → nega cap restrita (não vaza tela staff).
+        assert _role_allows("wedotalent_admin", None) is False
+        assert _role_allows("wedotalent_admin", "") is False
+        # Papel exato passa.
+        assert _role_allows("wedotalent_admin", "wedotalent_admin") is True
+        # Papel diferente nega.
+        assert _role_allows("wedotalent_admin", "recruiter") is False
+        # Privilegiado sempre passa.
+        assert _role_allows("wedotalent_admin", "admin") is True
+
+    @pytest.mark.asyncio
+    async def test_open_ui_never_executes_only_opens_or_navigates(self, _tenant):
+        """INVARIANTE HITL: open_ui só EMITE open_modal ou navigate_to —
+        nunca executa mutação. A ação destrutiva fica sempre atrás da
+        confirmação do modal/página (open_ui é abrir/navegar, não mutar)."""
+        # ids amplos p/ satisfazer os entity_required comuns.
+        ids = {"candidate_id": "c1", "job_id": "j1", "stage_target": "entrevista"}
+        for intent in _ui_capabilities().keys():
+            r = await _wrap_open_ui(capability=intent, entity_ids=ids)
+            # needs_params/denial NÃO é violação; o invariante é: QUANDO abre,
+            # só emite open_modal/navigate_to — nunca um ui_action de mutação.
+            if r.get("success") and isinstance(r.get("data"), dict) and r["data"].get("ui_action"):
+                ui = r["data"]["ui_action"]
+                assert ui in ("open_modal", "navigate_to"), (
+                    f"open_ui('{intent}') emitiu '{ui}' — só pode abrir/navegar, "
+                    f"NUNCA executar mutação (HITL fica no modal/página)"
+                )
