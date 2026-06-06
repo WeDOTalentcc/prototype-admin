@@ -42,8 +42,7 @@ interface LIAAnalysis {
 
 export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalProps) {
   const [activeTab, setActiveTab] = useState("basic")
-  const [isAnalyzing, setIsAnalyzing] = useState(false)
-  const [liaAnalysis, setLiaAnalysis] = useState<LIAAnalysis | null>(null)
+  const [liaAnalysis] = useState<LIAAnalysis | null>(null)
   const [skills, setSkills] = useState<string[]>([])
   const [newSkill, setNewSkill] = useState("")
 
@@ -85,32 +84,8 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
     setSkills(skills.filter(s => s !== skill))
   }
 
-  const handleLIAAnalysis = async () => {
-    setIsAnalyzing(true)
-
-    // Simular análise da LIA
-    setTimeout(() => {
-      setLiaAnalysis({
-        score: Math.floor(Math.random() * 30) + 70,
-        fitScore: Math.floor(Math.random() * 30) + 70,
-        strengths: ["Experiência sólida na área","Habilidades técnicas alinhadas","Boa formação acadêmica"
-        ],
-        improvements: ["Verificar disponibilidade para início","Alinhar expectativa salarial"
-        ],
-        recommendation:"Candidato com alto potencial. Recomendo prosseguir com entrevista.",
-        suggestedSkills: ["React","TypeScript","Node.js","AWS"],
-        culturalFit: 85,
-        technicalFit: 88,
-        softSkills: {
-          communication: 82,
-          teamwork: 87,
-          leadership: 75,
-          problemSolving: 90
-        }
-      })
-      setIsAnalyzing(false)
-    }, 2000)
-  }
+  // P0-2: handleLIAAnalysis (analise fabricada via Math.random) removido.
+  // Nao apresentar IA falsa; a analise real ocorre na ficha do candidato.
 
   const handleSubmit = () => {
     const newCandidate = {
@@ -147,7 +122,6 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
       about:""
     })
     setSkills([])
-    setLiaAnalysis(null)
     setActiveTab("basic")
 
     onClose()
@@ -162,7 +136,7 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
             Adicionar Novo Candidato
           </DialogTitle>
           <DialogDescription>
-            Cadastre um novo candidato no funil de talentos. A LIA irá analisar automaticamente o perfil.
+            Cadastre um novo candidato no funil de talentos.
           </DialogDescription>
         </DialogHeader>
 
@@ -515,21 +489,8 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                       <LIAIcon size="lg" className="mx-auto mb-4 opacity-50" />
                       <h3 className="text-lg font-semibold mb-2 text-lia-text-primary">Análise Inteligente com LIA</h3>
                       <p className="text-sm text-lia-text-primary mb-4">
-                        A LIA irá analisar o perfil do candidato e fornecer insights valiosos
+                        A análise da LIA fica disponível na ficha do candidato após o cadastro.
                       </p>
-                      <Button onClick={handleLIAAnalysis} disabled={isAnalyzing}>
-                        {isAnalyzing ? (
-                          <>
-                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin motion-reduce:animate-none mr-2" />
-                            Analisando...
-                          </>
-                        ) : (
-                          <>
-                            <Brain className="w-4 h-4 mr-2 text-wedo-cyan" />
-                            Iniciar Análise
-                          </>
-                        )}
-                      </Button>
                     </div>
                   </CardContent>
                 </Card>
