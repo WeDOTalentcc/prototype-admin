@@ -175,6 +175,7 @@ export function ExperienceHighlightCard({ candidate, companyId: companyIdProp }:
           <Button
             variant="ghost"
             size="sm"
+            disabled={!hasCompany}
             onClick={() => generateMutation.mutate({ force: false })}
             className="h-6 gap-1 text-xs text-wedo-cyan hover:text-wedo-cyan"
           >
