@@ -191,6 +191,15 @@ def tool_definition_to_langchain_tool(td: ToolContract) -> Any:
         ) from exc
 
     fn = td.function
+    # wire-B canonical (2026-06-06): tee response_blocks de TODA tool pro
+    # rrp_block_sink ANTES da stringificacao do StructuredTool, p/ que os
+    # domain agents (talent/jobs/kanban) — nao so o federado — preservem os
+    # blocks. Defensivo: tee_tool_function nunca levanta nem altera o retorno.
+    try:
+        from app.shared.rrp_block_sink import tee_tool_function
+        fn = tee_tool_function(fn)
+    except Exception:
+        pass
     name = td.name
     description = td.description or f"Executa {name}"
 

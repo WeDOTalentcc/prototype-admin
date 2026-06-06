@@ -183,18 +183,11 @@ class RecruiterCopilotReActAgent(
             return []
 
     def _get_tools(self) -> list:
-        import dataclasses
         from lia_agents_core.tool_adapter import tool_definition_to_langchain_tool
-        from app.shared.rrp_block_sink import tee_tool_function
         tool_defs = get_recruiter_copilot_tools() + self._get_all_enhanced_tools()
-        # wire-B (2026-06-05): tee response_blocks de cada tool result pro sink
-        # (caminho B/bolha; o caminho A usa AD3). Defensivo: replace pode falhar.
-        def _maybe_tee(td):
-            try:
-                return dataclasses.replace(td, function=tee_tool_function(td.function))
-            except Exception:
-                return td
-        tool_defs = [_maybe_tee(td) for td in tool_defs]
+        # wire-B (2026-06-06): o tee de response_blocks agora e canonico no
+        # converter tool_definition_to_langchain_tool (vale p/ TODOS os agentes).
+        # Removido o tee manual daqui p/ evitar double-append no sink.
         return [tool_definition_to_langchain_tool(td) for td in tool_defs]
 
     def _state_to_output(self, state: dict, input: AgentInput) -> AgentOutput:
@@ -257,14 +250,10 @@ class RecruiterCopilotReActAgent(
         if _hitl_response is not None:
             return _hitl_response
 
-        from app.shared.rrp_block_sink import drain_sink, reset_sink
-
-        reset_sink()
-        _output = await self._process_langgraph(input)
-        _blocks = drain_sink()
-        if _blocks:
-            _output.metadata = {**(_output.metadata or {}), "response_blocks": _blocks}
-        return _output
+        # wire-B (2026-06-06): reset/drain do sink agora e canonico em
+        # LangGraphReActBase._process_langgraph (vale p/ TODOS os domain agents).
+        # Removido daqui p/ evitar double-drain.
+        return await self._process_langgraph(input)
 
     async def get_status(self) -> dict:
         return {

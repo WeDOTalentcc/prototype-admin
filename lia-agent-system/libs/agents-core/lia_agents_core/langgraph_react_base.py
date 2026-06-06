@@ -167,6 +167,15 @@ class LangGraphReActBase(LangGraphBase):
         """
         from app.shared.compliance.audit_callback import AuditCallback
 
+        # wire-B canonical (2026-06-06): zera o sink de response_blocks no inicio
+        # do turno (drenado abaixo apos _state_to_output). Universal — TODOS os
+        # domain agents passam por _process_langgraph. Ver app/shared/rrp_block_sink.
+        try:
+            from app.shared.rrp_block_sink import reset_sink
+            reset_sink()
+        except Exception:
+            pass
+
         audit_callback = AuditCallback(
             user_id=str(input.user_id or "system"),
             company_id=str(input.company_id or ""),
@@ -298,6 +307,23 @@ class LangGraphReActBase(LangGraphBase):
         _duration = _time.monotonic() - _t0
 
         output = self._state_to_output(result, input)
+
+        # wire-B canonical (2026-06-06): drena response_blocks tee'd pelas tools
+        # (via tool_definition_to_langchain_tool) pro metadata → SSE/WS serializa
+        # → FE renderiza cards/tabelas/funis. Consumo unico no fim do turno.
+        try:
+            from app.shared.rrp_block_sink import drain_sink
+            _rrp_blocks = drain_sink()
+            if _rrp_blocks:
+                output.metadata = {
+                    **(output.metadata or {}),
+                    "response_blocks": (
+                        (output.metadata or {}).get("response_blocks") or []
+                    )
+                    + _rrp_blocks,
+                }
+        except Exception as _drain_exc:
+            logger.debug("[%s] rrp drain falhou (fail-open): %s", self.__class__.__name__, _drain_exc)
 
         # --- Post-loop learning (EnhancedAgentMixin) ---
         if hasattr(self, "_post_loop_learning"):
