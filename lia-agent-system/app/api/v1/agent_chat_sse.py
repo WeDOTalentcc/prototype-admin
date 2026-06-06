@@ -638,58 +638,8 @@ company_id: str = Depends(require_company_id)):
                         set_active_scope(scope_for_context(_pg, resolved_domain))
                 except Exception:
                     pass
-                # Bloqueador-1 MEMORIA (canonical-fix): a bolha bypassava o produtor
-                # unico conversation_memory (passava conversation_history=[] ->
-                # agente dizia "primeira mensagem"). Agora carrega historico do MESMO
-                # servico que o chat-page usa + persiste o turno. Fail-open: falha de
-                # memoria nao derruba a resposta.
-                from app.domains.recruiter_assistant.services.conversation_memory import (
-                    conversation_memory as _cmem,
-                )
-                _hist: list = []
-                _ehint = ""
-                _cid = req.conversation_id or session_id
-                try:
-                    async with AsyncSessionLocal() as _mdb:
-                        _conv = None
-                        if req.conversation_id:
-                            _conv = await _cmem.get_conversation(
-                                _mdb, req.conversation_id, include_messages=False
-                            )
-                        if _conv is None:
-                            _conv = await _cmem.get_or_create_conversation(
-                                _mdb, user_id=user_id, company_id=company_id,
-                                context_type="chat_bubble",
-                            )
-                            await _mdb.commit()
-                        _cid = str(_conv.id)
-                        _hctx = await _cmem.get_context_for_llm(
-                            _mdb, _cid, max_messages=20
-                        )
-                        _hist = _hctx.get("messages", []) or []
-                        try:
-                            from app.shared.entity_resolver import resolve_named_entities
-                            _hist_text = "\n".join(
-                                str(_m.get("content") or "")[:300]
-                                for _m in (_hist[-6:] if _hist else [])
-                                if _m.get("content")
-                            )
-                            _ent = await resolve_named_entities(
-                                content, company_id, _mdb, history_text=_hist_text
-                            )
-                            _ehint = _ent.get("hint") or ""
-                            try:
-                                from app.shared.entity_resolver import set_active_vacancy, set_active_candidate
-                                _jb = _ent.get("jobs") or []
-                                set_active_vacancy(_jb[0][0] if _jb else "")
-                                _cd = _ent.get("candidates") or []
-                                set_active_candidate(_cd[0][0] if len(_cd) == 1 else "")
-                            except Exception:
-                                pass
-                        except Exception as _ee:
-                            logger.warning("[SSEChat] entity resolve (fail-open): %s", _ee)
-                except Exception as _he:
-                    logger.warning("[SSEChat] memoria load (fail-open): %s", _he)
+                # memoria-load + entity-resolve ICADOS p/ ANTES do branch
+                # (shared agente+supervisor); _hist/_ehint/_cid/_cmem vem do escopo externo
                 # bloqueador-1 MEMORIA (v2): embute historico recente como TEXTO no
                 # content — SEM injetar mensagens separadas (que causava 'multiple
                 # non-consecutive system messages'). bloqueador-2: + hint de entidade.
@@ -747,6 +697,65 @@ company_id: str = Depends(require_company_id)):
             except Exception as exc:
                 logger.error("[SSEChat] Agent error session=%s: %s", session_id, exc, exc_info=True)
                 await sse_queue.put({"_done": True, "_error": str(exc)})
+
+        # === Shared (refactor 2026-06-06): memoria-load + entity-resolve ANTES
+        # do dispatch -> TANTO agente QUANTO supervisor herdam active_vacancy/
+        # active_candidate (dor 'achar vaga/candidato por nome'). create_task copia
+        # o context -> as tasks herdam os contextvars setados aqui. Cada trilha
+        # consome o que precisa: agente monta _eff_content; supervisor mantem a
+        # propria memoria (so ganha os contextvars).
+        # Bloqueador-1 MEMORIA (canonical-fix): a bolha bypassava o produtor
+        # unico conversation_memory (passava conversation_history=[] ->
+        # agente dizia "primeira mensagem"). Agora carrega historico do MESMO
+        # servico que o chat-page usa + persiste o turno. Fail-open: falha de
+        # memoria nao derruba a resposta.
+        from app.domains.recruiter_assistant.services.conversation_memory import (
+            conversation_memory as _cmem,
+        )
+        _hist: list = []
+        _ehint = ""
+        _cid = req.conversation_id or session_id
+        try:
+            async with AsyncSessionLocal() as _mdb:
+                _conv = None
+                if req.conversation_id:
+                    _conv = await _cmem.get_conversation(
+                        _mdb, req.conversation_id, include_messages=False
+                    )
+                if _conv is None:
+                    _conv = await _cmem.get_or_create_conversation(
+                        _mdb, user_id=user_id, company_id=company_id,
+                        context_type="chat_bubble",
+                    )
+                    await _mdb.commit()
+                _cid = str(_conv.id)
+                _hctx = await _cmem.get_context_for_llm(
+                    _mdb, _cid, max_messages=20
+                )
+                _hist = _hctx.get("messages", []) or []
+                try:
+                    from app.shared.entity_resolver import resolve_named_entities
+                    _hist_text = "\n".join(
+                        str(_m.get("content") or "")[:300]
+                        for _m in (_hist[-6:] if _hist else [])
+                        if _m.get("content")
+                    )
+                    _ent = await resolve_named_entities(
+                        content, company_id, _mdb, history_text=_hist_text
+                    )
+                    _ehint = _ent.get("hint") or ""
+                    try:
+                        from app.shared.entity_resolver import set_active_vacancy, set_active_candidate
+                        _jb = _ent.get("jobs") or []
+                        set_active_vacancy(_jb[0][0] if _jb else "")
+                        _cd = _ent.get("candidates") or []
+                        set_active_candidate(_cd[0][0] if len(_cd) == 1 else "")
+                    except Exception:
+                        pass
+                except Exception as _ee:
+                    logger.warning("[SSEChat] entity resolve (fail-open): %s", _ee)
+        except Exception as _he:
+            logger.warning("[SSEChat] memoria load (fail-open): %s", _he)
 
         agent_task = asyncio.create_task(
             _run_via_supervisor() if _bubble_via_supervisor else _run_agent()
