@@ -55,10 +55,10 @@ describe("canonicalPageToUrl — mapa page->rota (fix 404 navigate_to)", () => {
     ).toBe("/pt/funil-de-talentos/candidato/abc123");
   });
 
-  it("pages sem URL canônica retornam null (falha-soft, não 404)", () => {
-    expect(canonicalPageToUrl(CANONICAL_PAGES.PIPELINE_KANBAN, "pt")).toBeNull();
-    expect(canonicalPageToUrl(CANONICAL_PAGES.DASHBOARD, "pt")).toBeNull();
+  it("só GENERAL e detalhes-sem-id retornam null (falha-soft, não 404)", () => {
     expect(canonicalPageToUrl(CANONICAL_PAGES.GENERAL, "pt")).toBeNull();
+    expect(canonicalPageToUrl(CANONICAL_PAGES.VAGA_DETALHE, "pt")).toBeNull();
+    expect(canonicalPageToUrl(CANONICAL_PAGES.CANDIDATO_DETALHE, "pt")).toBeNull();
   });
 
   it("round-trip: a URL gerada volta pra mesma canonical page", () => {
@@ -75,5 +75,60 @@ describe("canonicalPageToUrl — mapa page->rota (fix 404 navigate_to)", () => {
     expect(routeToCanonicalPage(detailUrl as string)).toBe(
       CANONICAL_PAGES.VAGA_DETALHE,
     );
+  });
+});
+
+
+/**
+ * Fase A (2026-06-06): navegação universal da LIA. Toda página exposta ao
+ * recrutador precisa de rota real (senão o agente promete e o FE não cumpre).
+ * dashboard→home (DashboardApp), pipeline_kanban→/recrutar (visão global do
+ * pipeline), + 3 páginas extra (decisão Paulo 2026-06-06).
+ */
+describe("Fase A — cobertura completa de páginas (navegação universal LIA)", () => {
+  it("dashboard resolve pra home /{loc}/ (DashboardApp é a home)", () => {
+    expect(canonicalPageToUrl(CANONICAL_PAGES.DASHBOARD, "pt")).toBe("/pt/");
+  });
+
+  it("pipeline_kanban resolve pra /recrutar (visão global do pipeline)", () => {
+    expect(canonicalPageToUrl(CANONICAL_PAGES.PIPELINE_KANBAN, "pt")).toBe(
+      "/pt/recrutar",
+    );
+  });
+
+  it("páginas extra expostas têm rota real", () => {
+    expect(canonicalPageToUrl(CANONICAL_PAGES.AGENTS_MARKETPLACE, "pt")).toBe(
+      "/pt/agents/marketplace",
+    );
+    expect(canonicalPageToUrl(CANONICAL_PAGES.AI_CREDITS, "pt")).toBe(
+      "/pt/configuracoes/ai-credits",
+    );
+    expect(canonicalPageToUrl(CANONICAL_PAGES.INTEGRACOES_ATS, "pt")).toBe(
+      "/pt/integracoes-ats",
+    );
+  });
+
+  it("round-trip das páginas extra (URL volta pra mesma canonical)", () => {
+    for (const p of [
+      CANONICAL_PAGES.AGENTS_MARKETPLACE,
+      CANONICAL_PAGES.AI_CREDITS,
+      CANONICAL_PAGES.INTEGRACOES_ATS,
+    ]) {
+      const url = canonicalPageToUrl(p, "pt");
+      expect(url).not.toBeNull();
+      expect(routeToCanonicalPage(url as string)).toBe(p);
+    }
+  });
+
+  it("INVARIANTE: toda página exposta (não-detalhe, não-general) tem rota não-null", () => {
+    const needsId = new Set<string>([
+      CANONICAL_PAGES.VAGA_DETALHE,
+      CANONICAL_PAGES.CANDIDATO_DETALHE,
+    ]);
+    for (const page of Object.values(CANONICAL_PAGES)) {
+      if (page === CANONICAL_PAGES.GENERAL) continue;
+      if (needsId.has(page)) continue;
+      expect(canonicalPageToUrl(page, "pt")).not.toBeNull();
+    }
   });
 });

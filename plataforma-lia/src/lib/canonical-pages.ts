@@ -31,6 +31,9 @@ export const CANONICAL_PAGES = {
   TASKS: "tasks",
   CHAT: "chat",
   TRUST: "trust",
+  AGENTS_MARKETPLACE: "agents_marketplace",
+  AI_CREDITS: "ai_credits",
+  INTEGRACOES_ATS: "integracoes_ats",
   GENERAL: "general",
 } as const
 
@@ -71,6 +74,12 @@ export function routeToCanonicalPage(pathname: string): CanonicalPageValue {
     return CANONICAL_PAGES.DASHBOARD
   }
   if (path.includes("/recrutar")) return CANONICAL_PAGES.RECRUTAR
+  // Fase A: ai-credits ANTES de configuracoes (a sub-rota contem o prefixo).
+  if (path.includes("/ai-credits")) return CANONICAL_PAGES.AI_CREDITS
+  if (path.includes("/integracoes-ats")) return CANONICAL_PAGES.INTEGRACOES_ATS
+  if (path.includes("/agents/marketplace") || path.includes("/marketplace")) {
+    return CANONICAL_PAGES.AGENTS_MARKETPLACE
+  }
   if (path.includes("/configuracoes") || path.includes("/minha-empresa") || path.includes("/company-settings") || path.includes("/settings")) {
     return CANONICAL_PAGES.CONFIGURACOES
   }
@@ -115,15 +124,20 @@ export function canonicalPageToUrl(page: CanonicalPageValue, locale: string = "p
     case CANONICAL_PAGES.TASKS:               return `${base}/tasks`
     case CANONICAL_PAGES.CHAT:                return `${base}/chat`
     case CANONICAL_PAGES.TRUST:               return `${base}/trust`
+    // Fase A (2026-06-06): dashboard É a home (DashboardApp); pipeline_kanban
+    // → visão global do pipeline (/recrutar = PipelineOverviewPage).
+    case CANONICAL_PAGES.DASHBOARD:           return `${base}/`
+    case CANONICAL_PAGES.PIPELINE_KANBAN:     return `${base}/recrutar`
+    case CANONICAL_PAGES.AGENTS_MARKETPLACE:  return `${base}/agents/marketplace`
+    case CANONICAL_PAGES.AI_CREDITS:          return `${base}/configuracoes/ai-credits`
+    case CANONICAL_PAGES.INTEGRACOES_ATS:     return `${base}/integracoes-ats`
     // Detail pages: navegáveis SE houver id (mirror do backend
     // [NAVIGATE:page:id]). Sem id não há URL canônica de "land here".
     case CANONICAL_PAGES.VAGA_DETALHE:
       return id ? `${base}/jobs/${id}` : null
     case CANONICAL_PAGES.CANDIDATO_DETALHE:
       return id ? `${base}/funil-de-talentos/candidato/${id}` : null
-    // Kanban / dashboard / general: sem URL canônica de navegação direta.
-    case CANONICAL_PAGES.PIPELINE_KANBAN:
-    case CANONICAL_PAGES.DASHBOARD:
+    // general: sentinel sem URL canônica de navegação direta.
     case CANONICAL_PAGES.GENERAL:
     default:
       return null
@@ -153,6 +167,9 @@ export function canonicalPageLabel(page: CanonicalPageValue): string {
     case CANONICAL_PAGES.TASKS:               return "Tarefas"
     case CANONICAL_PAGES.CHAT:                return "Chat"
     case CANONICAL_PAGES.TRUST:               return "Trust Center"
+    case CANONICAL_PAGES.AGENTS_MARKETPLACE:  return "Marketplace de Agentes"
+    case CANONICAL_PAGES.AI_CREDITS:          return "Créditos de IA"
+    case CANONICAL_PAGES.INTEGRACOES_ATS:     return "Integrações ATS"
     case CANONICAL_PAGES.GENERAL:             return "Geral"
     default:                                  return "Geral"
   }
