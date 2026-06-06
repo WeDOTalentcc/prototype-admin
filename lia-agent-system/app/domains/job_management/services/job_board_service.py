@@ -76,44 +76,30 @@ class JobBoardService:
                 "job_title": job.title,
             }
         
-        try:
-            self._prepare_linkedin_job_data(job)
-            
-            post_id = f"li_{uuid.uuid4().hex[:12]}"
-            
-            job.published_linkedin = True
-            job.linkedin_post_id = post_id
-            job.last_published_at = datetime.utcnow()
-            await db.commit()
-            
-            logger.info(f"✅ Job {job.id} published to LinkedIn with post_id: {post_id}")
-            
-            return {
-                "success": True,
-                "mock": False,
-                "message": f"Job '{job.title}' published to LinkedIn successfully",
-                "post_id": post_id,
-                "platform": "linkedin",
-                "job_id": str(job.id),
-                "job_title": job.title,
-                "published_at": job.last_published_at.isoformat(),
-                "job_url": f"https://www.linkedin.com/jobs/view/{post_id}"
-            }
-            
-        except Exception as e:
-            try:
-                await db.rollback()
-            except Exception:
-                pass
-            logger.error(f"❌ Error publishing to LinkedIn: {e}")
-            return {
-                "success": False,
-                "mock": False,
-                "message": f"Error publishing to LinkedIn: {str(e)}",
-                "platform": "linkedin",
-                "job_id": str(job.id)
-            }
-    
+        # Onda 2E (audit 2026-06-06): proveniencia honesta. Credenciais configuradas NAO
+        # significam integracao real — a LinkedIn Job Posting API exige aprovacao de partner
+        # (Talent Solutions) e NAO ha chamada HTTP real implementada. NAO fabricar post_id/URL
+        # nem marcar a vaga como publicada (era falso-positivo de publicacao).
+        logger.warning(
+            "[JobBoardService] LinkedIn Job Posting API nao implementada (requer partner approval) "
+            "— job_id=%s retornando not_implemented sem fabricar publicacao.",
+            job.id,
+        )
+        return {
+            "success": False,
+            "status": "not_implemented",
+            "error": "not_implemented",
+            "message": (
+                "Publicacao direta no LinkedIn ainda nao esta disponivel: a LinkedIn Job Posting "
+                "API exige aprovacao de partner (Talent Solutions). As credenciais estao "
+                "configuradas, mas a integracao de publicacao ainda nao foi implementada — "
+                "nenhuma vaga foi publicada."
+            ),
+            "platform": "linkedin",
+            "job_id": str(job.id),
+            "job_title": job.title,
+        }
+
     async def publish_to_indeed(
         self, 
         job: JobVacancy, 
