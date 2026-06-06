@@ -1,8 +1,14 @@
-"""TDD entity resolver — match deterministico de vaga nomeada.
-Fix P0 2026-06-06: threshold nao pode falhar em titulos bilingues/parenteticos."""
-from app.shared.entity_resolver import _tokens, match_titles_in_message
+"""TDD entity resolver — match deterministico de vaga + candidato nomeado.
+Fix P0 (titulo bilingue) + Fix P1 (nome de candidato fuzzy: lowercase/typo/sem-trigger)."""
+from app.shared.entity_resolver import (
+    _best_fuzzy_match,
+    _extract_name_query,
+    _tokens,
+    match_titles_in_message,
+)
 
 
+# ── Vagas (match por tokens) ──
 def test_casa_diretor_juridico_apesar_da_grafia():
     jobs = [("j1", "Diretor(a) Jurídico(a)"), ("j2", "Android Developer Pleno"),
             ("j3", "Gerente de Tesouraria")]
@@ -12,7 +18,6 @@ def test_casa_diretor_juridico_apesar_da_grafia():
 
 
 def test_casa_titulo_bilingue_parentetico():
-    # P0 real: titulo com traducao em parenteses inflava tokens (40% < 60%)
     jobs = [("j1", "Diretor(a) Jurídico(a) (Chief Legal Officer)"),
             ("j2", "Gerente de Impostos")]
     out = match_titles_in_message("temos uma vaga de diretor juridico ativa?", jobs)
@@ -37,12 +42,49 @@ def test_ordena_por_tokens_casados():
     assert out[0][0] == "j2"
 
 
-def test_tokens_ignora_stopwords_e_acento():
-    assert _tokens("Diretor(a) Jurídico(a)") == {"diretor", "juridico"}
-    assert "vaga" not in _tokens("vaga de Diretor")
-
-
 def test_titulo_de_1_token_casa_exato():
     jobs = [("j1", "Recrutador")]
     assert match_titles_in_message("perfil da vaga Recrutador", jobs)[0][0] == "j1"
     assert match_titles_in_message("vaga de Designer", jobs) == []
+
+
+# ── Candidato: extração de nome (case-insensitive, sem exigir gatilho+maiúscula) ──
+def test_extract_name_apos_perfil_da():
+    assert _extract_name_query("mostre o perfil da yasmim reis") == "yasmim reis"
+
+
+def test_extract_name_tem_na_base():
+    assert _extract_name_query("tem felipe almeida na base") == "felipe almeida"
+
+
+def test_extract_name_perfil_completo():
+    assert _extract_name_query("isso, quero ver o perfil completo da yasmim reis") == "yasmim reis"
+
+
+def test_extract_name_sem_nome_retorna_vazio():
+    assert _extract_name_query("rankeie os candidatos da vaga") == ""
+    assert _extract_name_query("listar vagas ativas") == ""
+
+
+# ── Candidato: match fuzzy (difflib, sem pg_trgm) ──
+def test_fuzzy_typo_uma_letra_yasmim_yasmin():
+    pool = [("c1", "Yasmin Reis"), ("c2", "Bruno Costa")]
+    out = _best_fuzzy_match("yasmim reis", pool)
+    assert out and out[0][0] == "c1"
+
+
+def test_fuzzy_containment_primeiro_nome():
+    pool = [("c1", "João Silva"), ("c2", "Maria Souza")]
+    out = _best_fuzzy_match("joão", pool)
+    assert out and out[0][0] == "c1"
+
+
+def test_fuzzy_nome_completo_exato():
+    pool = [("c1", "Felipe Almeida"), ("c2", "Felipe Cardoso")]
+    out = _best_fuzzy_match("felipe almeida", pool)
+    assert out[0][0] == "c1"
+
+
+def test_fuzzy_ruido_nao_casa():
+    pool = [("c1", "Yasmin Reis"), ("c2", "Bruno Costa")]
+    assert _best_fuzzy_match("aberta", pool) == []

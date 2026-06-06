@@ -3,9 +3,7 @@
 O LLM (mesmo Sonnet) alucina o match de entidade — pediu "Diretor Jurídico",
 narrou "Engenheiro de Software" com as 103 vagas na mão. Em vez de confiar no
 raciocínio do LLM, resolvemos a vaga/candidato NOMEADO via DB (company-scoped,
-fuzzy por tokens) e injetamos um hint FORTE no prompt. Computacional >
-inferencial (harness — quando o LLM erra de forma sistemática, escora com guide
-computacional).
+fuzzy) e injetamos um hint FORTE no prompt. Computacional > inferencial (harness).
 
 Multi-tenancy: company_id sempre do contexto (nunca payload). Falha → hint vazio
 (fail-open: nunca derruba o turno).
@@ -14,6 +12,7 @@ from __future__ import annotations
 
 import re
 import unicodedata
+from difflib import SequenceMatcher
 from typing import Any
 
 _STOPWORDS = {
@@ -37,9 +36,69 @@ def _tokens(s: str) -> set[str]:
     return {t for t in _norm(s).split() if len(t) > 2 and t not in _STOPWORDS}
 
 
+# ── Resolução de candidato por NOME (fuzzy, sem pg_trgm) ──
+# Fix P1 2026-06-06: o extractor antigo exigia gatilho + Capitalizado + de/do,
+# falhando em "tem felipe almeida na base" (sem gatilho/lowercase) e "perfil da
+# yasmim reis" (typo + "da"). Agora: extração case-insensitive + match fuzzy
+# (difflib) que tolera typo de 1 letra, sem depender de pg_trgm.
+_NAME_TRIGGER = re.compile(
+    r"(?:perfil|candidat[oa]s?|fit|abrir|ver|veja|mostr\w+|quem|sobre|tem)\b(.*)",
+    re.IGNORECASE | re.DOTALL,
+)
+_NAME_NA_BASE = re.compile(r"(.+?)\s+na\s+base\b", re.IGNORECASE)
+_NAME_NOISE = {"base", "completo", "favor", "agora"}
+
+
+def _extract_name_query(message: str) -> str:
+    """Extrai a sequência de nome de candidato referida (sem exigir gatilho+
+    maiúscula+de/do como antes). Filtra stopwords/ruído. '' se nada parecer nome.
+    Função PURA."""
+    if not message:
+        return ""
+    region = ""
+    m = _NAME_NA_BASE.search(message)
+    if m:
+        region = m.group(1)
+    else:
+        m = _NAME_TRIGGER.search(message)
+        if m:
+            region = m.group(1)
+    toks = [
+        t for t in region.split()
+        if _norm(t) not in _STOPWORDS
+        and _norm(t) not in _NAME_NOISE
+        and len(_norm(t)) >= 2
+    ]
+    return " ".join(toks[:4])
+
+
+def _best_fuzzy_match(
+    query: str, names: list[tuple[str, str]], threshold: float = 0.72
+) -> list[tuple[str, str]]:
+    """names: [(id, name)]. Casa por (a) containment de TODAS as palavras da query
+    no nome (score 1.0 — pega 1º nome e nome exato) ou (b) similaridade difflib
+    >= threshold (tolera typo de 1 letra). Ordena por score desc. Função PURA."""
+    q = _norm(query)
+    qwords = [w for w in q.split() if w]
+    if not qwords:
+        return []
+    scored: list[tuple[float, str, str]] = []
+    for _id, name in names:
+        n = _norm(name)
+        if not n:
+            continue
+        contained = all(w in n for w in qwords)
+        score = 1.0 if contained else SequenceMatcher(None, q, n).ratio()
+        if score >= threshold:
+            scored.append((score, _id, name))
+    scored.sort(key=lambda x: -x[0])
+    return [(i, nm) for _, i, nm in scored]
+
+
 def match_titles_in_message(message: str, items: list[tuple[str, str]]) -> list[tuple[str, str]]:
-    """items: [(id, title)]. Retorna os cujo TÍTULO tem >=60% dos tokens (>=1)
-    presentes na mensagem. Ordena por nº de tokens casados (desc). Função PURA."""
+    """items: [(id, title)]. Retorna os títulos que compartilham >=2 tokens
+    significativos com a mensagem (ou título de 1 token batido exato). Ordena por
+    nº de tokens casados (desc). Função PURA."""
     mtok = _tokens(message)
     if not mtok:
         return []
@@ -50,10 +109,8 @@ def match_titles_in_message(message: str, items: list[tuple[str, str]]) -> list[
             continue
         overlap = ttok & mtok
         # Fix P0 2026-06-06: antes exigia 60% dos tokens do TITULO, o que falhava
-        # em titulos bilingues/parenteticos — ex "Diretor(a) Juridico(a) (Chief Legal
-        # Officer)" (5 tokens) vs "diretor juridico" (2) = 40% < 60% -> nao casava a
-        # vaga que existe. Agora basta interseccao de 2 tokens significativos (ou
-        # titulo de 1 token batido exato).
+        # em titulos bilingues/parenteticos. Agora basta interseccao de 2 tokens
+        # significativos (ou titulo de 1 token batido exato).
         if len(overlap) >= 2 or (len(ttok) == 1 and len(overlap) >= 1):
             scored.append((len(overlap), _id, title))
     scored.sort(key=lambda x: -x[0])
@@ -91,35 +148,35 @@ async def resolve_named_entities(message: str, company_id: str, db: Any) -> dict
     except Exception:
         pass
 
-    # ── Candidatos: extrai sequencia Capitalizada (nome) e busca por nome ──
+    # ── Candidatos: extrai nome (case-insensitive) e casa fuzzy (difflib) ──
     try:
-        m = re.search(
-            r"(?:perfil|candidat[oa]|fit)\s+(?:d[eo]\s+|completo\s+d[eo]\s+)?"
-            r"([A-ZÀ-Ý][\wÀ-ÿ]+(?:\s+[A-ZÀ-Ý][\wÀ-ÿ]+){0,3})",
-            message,
-        )
-        name = m.group(1).strip() if m else ""
-        if name and len(_tokens(name)) >= 1:
-            like = "%" + "%".join(name.split()) + "%"
+        name_q = _extract_name_query(message)
+        words = [w for w in _norm(name_q).split() if len(w) >= 2]
+        if name_q and words:
+            like = " OR ".join(f"name ILIKE :w{i}" for i in range(len(words)))
+            params: dict = {"co": str(company_id)}
+            for i, w in enumerate(words):
+                params[f"w{i}"] = f"%{w}%"
             r = await db.execute(
                 _t(
                     "SELECT id, name FROM candidates "
-                    "WHERE company_id = CAST(:co AS varchar) AND name ILIKE :lk "
-                    "LIMIT 5"
+                    "WHERE company_id = CAST(:co AS varchar) "
+                    f"AND ({like}) LIMIT 40"
                 ),
-                {"co": str(company_id), "lk": like},
+                params,
             )
-            cands = [(str(x["id"]), x["name"]) for x in r.mappings()]
+            pool = [(str(x["id"]), x["name"]) for x in r.mappings()]
+            cands = _best_fuzzy_match(name_q, pool)[:5]
             result["candidates"] = cands
             if cands:
                 hints.append(
-                    "CANDIDATO(S) referido(s): "
+                    "CANDIDATO(S) referido(s) (use EXATAMENTE este id): "
                     + "; ".join(f"'{n}' (id={i})" for i, n in cands)
                 )
-            elif name:
+            else:
                 hints.append(
-                    f"NAO existe candidato com nome ~'{name}' na base (diga isso; "
-                    "NAO liste todos nem invente)."
+                    f"NAO existe candidato com nome ~'{name_q}' na base "
+                    "(diga isso claramente; NAO liste todos nem invente)."
                 )
     except Exception:
         pass
