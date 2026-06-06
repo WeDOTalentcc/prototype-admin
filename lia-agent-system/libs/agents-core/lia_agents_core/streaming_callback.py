@@ -14,9 +14,10 @@ Uso nos agentes LangGraph nativos (Fase 3):
     await agent.astream(input, config={"callbacks": [callback]})
 """
 import asyncio
+import contextvars
 import logging
 import time
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Awaitable, Callable, Dict, List, Optional, Union
 from uuid import UUID
 
 from app.shared.pii_masking import get_masked_logger
@@ -34,6 +35,32 @@ except ImportError:
         _LANGCHAIN_AVAILABLE = False
 
 logger = get_masked_logger(__name__)
+
+# wire-B (2026-06-06): transporte SSE para eventos de atividade.
+# O StreamingCallback emite tool_started/tool_finished/reasoning_step só pro
+# ws_manager (_send). O chat lateral ao vivo roda em SSE e nao escutava nada
+# disso -> "Pensando" estatico. O handler SSE registra um sink (contextvar,
+# espelha _llm_streaming_callback) e _send repassa os frames de atividade.
+_SSE_FORWARD_TYPES = {"tool_started", "tool_finished", "reasoning_step"}
+_sse_frame_sink: contextvars.ContextVar[Optional[Callable[[Dict[str, Any]], Awaitable[None]]]] = (
+    contextvars.ContextVar("_sse_frame_sink", default=None)
+)
+
+
+def set_sse_frame_sink(fn: Callable[[Dict[str, Any]], Awaitable[None]]) -> Any:
+    """Registra o sink SSE (async callable que recebe um frame ja serializado).
+
+    Retorna o token p/ reset (chamar reset_sse_frame_sink no cleanup do turno).
+    """
+    return _sse_frame_sink.set(fn)
+
+
+def reset_sse_frame_sink(token: Any) -> None:
+    """Limpa o sink SSE. Defensivo: nunca levanta."""
+    try:
+        _sse_frame_sink.reset(token)
+    except Exception:
+        pass
 
 
 class StreamingCallback(BaseCallbackHandler):
@@ -265,7 +292,7 @@ class StreamingCallback(BaseCallbackHandler):
                 )
 
     async def _send(self, data: Dict[str, Any]) -> None:
-        """Envia dados ao WebSocket via ws_manager."""
+        """Entrega o frame ao WS (ws_manager) e, em SSE, ao sink registrado."""
         try:
             from app.api.v1.ws_manager import ws_manager
             await ws_manager.send_to_session(self.session_id, data)
@@ -273,3 +300,13 @@ class StreamingCallback(BaseCallbackHandler):
             logger.debug(
                 "[StreamingCallback] send error session=%s: %s", self.session_id, exc
             )
+        # wire-B (2026-06-06): repassa frames de ATIVIDADE pro transporte SSE.
+        # Transport-agnostic num unico ponto-produtor. Tokens NAO sao repassados
+        # (o SSE serializa a mensagem final pelo seu proprio caminho).
+        try:
+            if isinstance(data, dict) and data.get("type") in _SSE_FORWARD_TYPES:
+                _sink = _sse_frame_sink.get(None)
+                if _sink is not None:
+                    await _sink(data)
+        except Exception as exc:
+            logger.debug("[StreamingCallback] sse sink forward falhou: %s", exc)

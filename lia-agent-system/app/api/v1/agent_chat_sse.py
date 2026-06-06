@@ -567,6 +567,18 @@ company_id: str = Depends(require_company_id)):
         from app.domains.ai.services.llm import _llm_streaming_callback
         _llm_stream_token = _llm_streaming_callback.set(_streaming_callback)
 
+        # wire-B (2026-06-06): registra sink SSE p/ os frames de ATIVIDADE
+        # (tool_started/tool_finished/reasoning_step) emitidos pelo
+        # StreamingCallback dos domain agents — que antes so iam pro ws_manager
+        # (chat lateral SSE ficava com "Pensando" estatico).
+        async def _sse_frame_push(_frame: dict) -> None:
+            await sse_queue.put(_frame)
+        from lia_agents_core.streaming_callback import (
+            set_sse_frame_sink as _set_sse_sink,
+            reset_sse_frame_sink as _reset_sse_sink,
+        )
+        _sse_sink_token = _set_sse_sink(_sse_frame_push)
+
         async def _run_via_supervisor():
             # Fase 2 item 6: bolha roteada pro MainOrchestrator (LIA_BUBBLE_VIA_SUPERVISOR).
             # Reusa _streaming_callback (tokens/tools) + o loop drain+keepalive abaixo.
@@ -705,6 +717,7 @@ company_id: str = Depends(require_company_id)):
                 _llm_streaming_callback.reset(_llm_stream_token)
             except Exception:
                 pass
+            _reset_sse_sink(_sse_sink_token)
         agent_task.add_done_callback(_cleanup_stream_ctx)
 
         # Harness sensor (2026-06-04): per-frame timing to localize SSE
