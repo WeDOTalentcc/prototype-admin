@@ -377,6 +377,14 @@ export function useCandidatesFilterSort(params: UseCandidatesFilterSortParams) {
       bValue = b.liaAnalysis?.score || b.score
     }
 
+    if (sortBy === 'match_score') {
+      // P1-4: a coluna "Match" exibe candidate.score; o id 'match_score' nao
+      // existe no objeto Candidate. Mapeia para o score real para a ordenacao
+      // por header funcionar (antes caia em a['match_score']=undefined = no-op).
+      aValue = a.lia_score ?? a.score ?? 0
+      bValue = b.lia_score ?? b.score ?? 0
+    }
+
     if (typeof aValue === 'string') {
       aValue = aValue.toLowerCase()
       bValue = (bValue as string).toLowerCase()

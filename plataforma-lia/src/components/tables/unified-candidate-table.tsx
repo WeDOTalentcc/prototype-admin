@@ -110,7 +110,7 @@ export function UnifiedCandidateTable({
       let bValue: unknown
       const field = activeSort.field
 
-      if (field === 'score' || field === 'lia_score') {
+      if (field === 'score' || field === 'lia_score' || field === 'match_score') {
         aValue = (a.liaAnalysis?.score || a.lia_score || a.score || 0)
         bValue = (b.liaAnalysis?.score || b.lia_score || b.score || 0)
       } else if (field === 'candidate' || field === 'name') {

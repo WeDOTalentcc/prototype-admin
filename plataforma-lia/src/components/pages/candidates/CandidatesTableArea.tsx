@@ -207,7 +207,7 @@ export function CandidatesTableArea({
                 selectedIds={selectedCandidatesForBatch}
                 pinnedIds={pinnedCandidates}
                 favoriteIds={favorites}
-                sortConfig={sortBy ? { field: sortBy, direction: sortOrder } : undefined}
+                sortConfig={(showSearchResults || !sortBy) ? undefined : { field: sortBy, direction: sortOrder }}
                 isLoading={false}
                 emptyMessage={t('table.emptyMessage')}
                 showCheckboxes={true}
