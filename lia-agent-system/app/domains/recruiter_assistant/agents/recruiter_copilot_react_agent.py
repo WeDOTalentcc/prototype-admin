@@ -148,6 +148,13 @@ class RecruiterCopilotReActAgent(
 
     def __init__(self) -> None:
         super().__init__()
+        # PII fix (2026-06-05): o input-strip da base (LIA-C04) apagava nomes/
+        # titulos que o RECRUTADOR digita ('Felipe Almeida', 'Diretor Juridico')
+        # antes do LLM -> [PERSON REMOVIDO] -> busca por entidade quebrava. No
+        # chat do recrutador o nome e NECESSARIO + AUTORIZADO (multi-tenancy) +
+        # output continua mascarado + candidato ja vai ao LLM no screening. Logo
+        # input-strip aqui e contraproducente. Output masking permanece.
+        self._enable_pii_strip = False
         self._memory_service = WorkingMemoryService()
         self._all_tool_names = [t.name for t in get_recruiter_copilot_tools()]
         self._setup_enhanced(domain="recruiter_copilot")
