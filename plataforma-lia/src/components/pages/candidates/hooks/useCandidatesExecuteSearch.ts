@@ -116,7 +116,7 @@ export function mapCandidateToInternal(c: Record<string, unknown>): Candidate {
     position: (c.headline as string) || (c.current_title as string) || '',
     monthlySalary: 0,
     workModel: 'remoto' as const,
-    score: c.match_score ? Math.round((c.match_score as number) * 25) : ((c.score as number) || 75),
+    score: typeof c.score === 'number' ? Math.round(c.score as number) : 0,  // P1-2: score real, sem 75 fabricado
     contractType: 'CLT' as const,
     linkedin: (c.linkedin_url as string) || '',
     avatar: (c.avatar_url as string) || (c.picture_url as string),
@@ -139,7 +139,7 @@ export function mapCandidateToInternal(c: Record<string, unknown>): Candidate {
       endDate: (edu.end_date as string) || '',
     })),
     liaAnalysis: {
-      score: c.match_score ? Math.round((c.match_score as number) * 25) : ((c.score as number) || 75),
+      score: typeof c.score === 'number' ? Math.round(c.score as number) : 0,  // P1-2: score real, sem 75 fabricado
       strengths: c.match_reasoning ? [c.match_reasoning as string] : [],
       concerns: [],
       recommendation: (c.match_reasoning as string) || (c.match_summary as string) || '',

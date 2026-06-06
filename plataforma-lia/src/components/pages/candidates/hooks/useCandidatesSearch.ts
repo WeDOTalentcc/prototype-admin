@@ -364,7 +364,7 @@ export function useCandidatesSearch(ctx: CandidatesSearchContext) {
             position: c.headline || c.current_title || '',
             monthlySalary: 0,
             workModel: 'remoto' as const,
-            score: c.match_score ? Math.round(c.match_score * 25) : 75,
+            score: typeof c.score === 'number' ? Math.round(c.score) : 0,  // P1-2: score real, sem 75 fabricado
             contractType: 'CLT' as const,
             linkedin: c.linkedin_url || '',
             avatar: c.avatar_url || c.picture_url,
@@ -405,7 +405,7 @@ export function useCandidatesSearch(ctx: CandidatesSearchContext) {
               endDate: edu.end_date || ''
             })),
             liaAnalysis: {
-              score: c.match_score ? Math.round(c.match_score * 25) : 75,
+              score: typeof c.score === 'number' ? Math.round(c.score) : 0,  // P1-2: score real, sem 75 fabricado
               strengths: c.match_reasoning ? [c.match_reasoning] : [],
               concerns: [],
               recommendation: c.match_reasoning || ''

@@ -97,7 +97,7 @@ export function useCandidatesCVHandlers(ctx: CandidatesCVHandlersContext) {
           position: c.current_title || 'Não especificado',
           location: c.location || 'Não especificado',
           workModel: 'remoto' as 'remoto' | 'híbrido' | 'presencial',
-          score: c.score || 75,
+          score: typeof c.score === 'number' ? c.score : 0,  // P1-2: sem 75 fabricado
           skills: c.skills || [],
           experience: c.total_experience_years || 0,
           education: 'Não informado',
