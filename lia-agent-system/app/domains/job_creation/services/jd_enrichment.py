@@ -495,6 +495,11 @@ class JdEnrichmentService:
             enriched, min_technical=_min_tech, min_behavioral=_min_behav,
         )
         enriched.wsi_quality_score = quality_score
+        # Audit C9/#15 (2026-06-05): NAO sobrescrever — preserva markers de
+        # falha (fallback de parse / circuit breaker) que sinalizam que o
+        # enrich nao foi confiavel. Merge-dedup mantendo a ordem.
+        _prior_warnings = list(enriched.wsi_quality_warnings or [])
+        warnings = list(dict.fromkeys([*_prior_warnings, *warnings]))
         enriched.wsi_quality_warnings = warnings
 
         logger.info(
