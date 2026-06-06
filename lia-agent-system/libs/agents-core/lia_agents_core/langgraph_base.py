@@ -43,6 +43,17 @@ def _extract_ai_text(message: Any) -> str:
         return " ".join(parts).strip()
     return ""
 
+
+def _messages_for_continuation(messages, has_prior_state):
+    """Turno de continuacao (checkpointer ja tem estado): remove SystemMessage(s)
+    do input novo. O checkpointer preserva o System do turno 1; re-injetar geraria
+    system messages nao-consecutivos (Anthropic rejeita). Turno 1 (sem estado):
+    retorna inalterado. Fix P0 2026-06-06."""
+    if not has_prior_state:
+        return messages
+    return [m for m in (messages or []) if type(m).__name__ != "SystemMessage"]
+
+
 try:
     from langgraph.graph import StateGraph, START, END
     _HAS_LANGGRAPH = True
@@ -132,6 +143,25 @@ class LangGraphBase(BaseAgent, ABC):
             "configurable": {"thread_id": _thread_key},
             "recursion_limit": max_iter * 2 + 1,
         }
+        # P0 fix (2026-06-06): em turno de continuacao o checkpointer (thread=
+        # session::domain) ja tem o SystemMessage do turno 1. A base re-injeta
+        # [System, Human] todo turno; o reducer add_messages APENDA o novo System
+        # -> system nao-consecutivos -> "Received multiple non-consecutive system
+        # messages" (quebrava todo turno apos o 1o). Remove o System do input novo
+        # quando o thread ja tem estado (o checkpointer preserva o original).
+        try:
+            _prior_state = await compiled.aget_state(config)
+            _has_prior = bool(
+                getattr(_prior_state, "values", None)
+                and _prior_state.values.get("messages")
+            )
+        except Exception:
+            _has_prior = False
+        if _has_prior:
+            initial_state = {
+                **initial_state,
+                "messages": _messages_for_continuation(initial_state.get("messages"), True),
+            }
         callbacks = [cb for cb in [audit_callback, streaming_callback] if cb is not None]
         if callbacks:
             config["callbacks"] = callbacks
