@@ -34,6 +34,8 @@ export const CANONICAL_PAGES = {
   AGENTS_MARKETPLACE: "agents_marketplace",
   AI_CREDITS: "ai_credits",
   INTEGRACOES_ATS: "integracoes_ats",
+  TEMPLATES: "templates",
+  MODULOS: "modulos",
   GENERAL: "general",
 } as const
 
@@ -126,7 +128,12 @@ export function canonicalPageToUrl(page: CanonicalPageValue, locale: string = "p
     case CANONICAL_PAGES.TRUST:               return `${base}/trust`
     // Fase A (2026-06-06): dashboard É a home (DashboardApp); pipeline_kanban
     // → visão global do pipeline (/recrutar = PipelineOverviewPage).
-    case CANONICAL_PAGES.DASHBOARD:           return `${base}/`
+    // Fase A.2: abas SEM rota (in-shell) → deep-link ?view=<label> que o
+    // DashboardApp lê e converte em setCurrentPage. dashboard = métricas
+    // (aba Indicadores), NÃO a home (que abre em Decidir).
+    case CANONICAL_PAGES.DASHBOARD:           return `${base}/?view=Indicadores`
+    case CANONICAL_PAGES.TEMPLATES:           return `${base}/?view=Templates`
+    case CANONICAL_PAGES.MODULOS:             return `${base}/?view=${encodeURIComponent("Módulos")}`
     case CANONICAL_PAGES.PIPELINE_KANBAN:     return `${base}/recrutar`
     case CANONICAL_PAGES.AGENTS_MARKETPLACE:  return `${base}/agents/marketplace`
     case CANONICAL_PAGES.AI_CREDITS:          return `${base}/configuracoes/ai-credits`
@@ -170,6 +177,8 @@ export function canonicalPageLabel(page: CanonicalPageValue): string {
     case CANONICAL_PAGES.AGENTS_MARKETPLACE:  return "Marketplace de Agentes"
     case CANONICAL_PAGES.AI_CREDITS:          return "Créditos de IA"
     case CANONICAL_PAGES.INTEGRACOES_ATS:     return "Integrações ATS"
+    case CANONICAL_PAGES.TEMPLATES:           return "Templates"
+    case CANONICAL_PAGES.MODULOS:             return "Módulos"
     case CANONICAL_PAGES.GENERAL:             return "Geral"
     default:                                  return "Geral"
   }

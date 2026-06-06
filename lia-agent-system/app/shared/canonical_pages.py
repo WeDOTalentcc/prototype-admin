@@ -46,6 +46,8 @@ class CanonicalPage(StrEnum):
     AGENTS_MARKETPLACE = "agents_marketplace"  # marketplace de agentes IA
     AI_CREDITS = "ai_credits"                # créditos de IA (sub de config)
     INTEGRACOES_ATS = "integracoes_ats"      # integrações com ATS externos
+    TEMPLATES = "templates"                  # biblioteca de templates (in-shell)
+    MODULOS = "modulos"                      # módulos / planos (in-shell)
     GENERAL = "general"                      # fallback only
 
 
@@ -131,6 +133,12 @@ PAGE_DESCRIPTIONS_PT_BR: dict[CanonicalPage, str] = {
     CanonicalPage.INTEGRACOES_ATS: (
         "O usuário está em Integrações ATS — conexão com sistemas de recrutamento externos (importação de vagas e candidatos)."
     ),
+    CanonicalPage.TEMPLATES: (
+        "O usuário está na página de Templates — modelos reutilizáveis de email, descrição de vaga e critérios de avaliação."
+    ),
+    CanonicalPage.MODULOS: (
+        "O usuário está na página de Módulos — planos, licenças e recursos contratados da plataforma."
+    ),
     CanonicalPage.GENERAL: (
         "O usuário não está em uma página específica identificada — "
         "responda de forma genérica e ofereça ajuda navegação."
@@ -162,6 +170,8 @@ PAGE_SHORT_LABELS_PT_BR: dict[CanonicalPage, str] = {
     CanonicalPage.AGENTS_MARKETPLACE: "marketplace de agentes",
     CanonicalPage.AI_CREDITS: "créditos de IA",
     CanonicalPage.INTEGRACOES_ATS: "integrações ATS",
+    CanonicalPage.TEMPLATES: "templates",
+    CanonicalPage.MODULOS: "módulos / planos",
 }
 
 
@@ -362,6 +372,15 @@ PAGE_SUGGESTED_PROMPTS_PT_BR: dict[CanonicalPage, list[str]] = {
         "Conectar um novo ATS",
         "Status das integrações ativas",
         "Importar vagas do ATS",
+    ],
+    CanonicalPage.TEMPLATES: [
+        "Ver templates de email",
+        "Criar novo template",
+        "Modelos de descrição de vaga",
+    ],
+    CanonicalPage.MODULOS: [
+        "Quais módulos tenho ativos?",
+        "O que está incluído no meu plano?",
     ],
     # GENERAL intencionalmente AUSENTE — função retorna [] quando page=GENERAL
     # para evitar prompts genéricos sem contexto útil.

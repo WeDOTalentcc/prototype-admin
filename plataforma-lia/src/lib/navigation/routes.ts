@@ -75,3 +75,23 @@ export function pathFromLabel(label: string): PagePath | undefined {
 export function labelFromPath(path: string): PageLabel | undefined {
   return PATH_TO_LABEL[path]
 }
+
+/**
+ * Fase A.2 (2026-06-06): deep-link de navegação in-shell. Mapeia o param
+ * `?view=<label>` para um DashboardPageLabel válido. Usado pela LIA para
+ * navegar às abas SEM rota própria (Indicadores, Templates, Módulos) — o
+ * DashboardApp lê este param no mount + em mudança de searchParams.
+ * Retorna undefined para param ausente/desconhecido (falha-soft).
+ */
+export function pageLabelFromViewParam(
+  raw: string | null | undefined,
+): DashboardPageLabel | undefined {
+  if (!raw) return undefined
+  let decoded = raw
+  try {
+    decoded = decodeURIComponent(raw)
+  } catch {
+    decoded = raw
+  }
+  return isDashboardPageLabel(decoded) ? (decoded as DashboardPageLabel) : undefined
+}

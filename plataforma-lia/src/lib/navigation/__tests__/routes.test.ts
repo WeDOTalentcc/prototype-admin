@@ -4,6 +4,7 @@ import {
   SPA_ONLY_PAGE_LABELS,
   isDashboardPageLabel,
   labelFromPath,
+  pageLabelFromViewParam,
   pathFromLabel,
 } from "@/lib/navigation/routes"
 
@@ -40,5 +41,24 @@ describe("navigation/routes", () => {
     expect(isDashboardPageLabel("Painel de Controle")).toBe(false)
     expect(isDashboardPageLabel("Página Inexistente")).toBe(false)
     expect(isDashboardPageLabel("")).toBe(false)
+  })
+})
+
+
+describe("navigation/routes — pageLabelFromViewParam (deep-link in-shell)", () => {
+  it("resolve labels SPA-only válidos (com e sem encode)", () => {
+    expect(pageLabelFromViewParam("Indicadores")).toBe("Indicadores")
+    expect(pageLabelFromViewParam("Templates")).toBe("Templates")
+    expect(pageLabelFromViewParam(encodeURIComponent("Módulos"))).toBe("Módulos")
+  })
+
+  it("resolve também labels com rota (são DashboardPageLabel válidos)", () => {
+    expect(pageLabelFromViewParam("Vagas")).toBe("Vagas")
+  })
+
+  it("undefined p/ ausente/desconhecido (falha-soft)", () => {
+    expect(pageLabelFromViewParam(null)).toBeUndefined()
+    expect(pageLabelFromViewParam("")).toBeUndefined()
+    expect(pageLabelFromViewParam("Pagina Fake")).toBeUndefined()
   })
 })

@@ -86,8 +86,19 @@ describe("canonicalPageToUrl — mapa page->rota (fix 404 navigate_to)", () => {
  * pipeline), + 3 páginas extra (decisão Paulo 2026-06-06).
  */
 describe("Fase A — cobertura completa de páginas (navegação universal LIA)", () => {
-  it("dashboard resolve pra home /{loc}/ (DashboardApp é a home)", () => {
-    expect(canonicalPageToUrl(CANONICAL_PAGES.DASHBOARD, "pt")).toBe("/pt/");
+  it("dashboard deep-linka a aba Indicadores (?view=), não a home crua", () => {
+    expect(canonicalPageToUrl(CANONICAL_PAGES.DASHBOARD, "pt")).toBe(
+      "/pt/?view=Indicadores",
+    );
+  });
+
+  it("templates/modulos (abas in-shell) deep-linkam via ?view=", () => {
+    expect(canonicalPageToUrl(CANONICAL_PAGES.TEMPLATES, "pt")).toBe(
+      "/pt/?view=Templates",
+    );
+    expect(canonicalPageToUrl(CANONICAL_PAGES.MODULOS, "pt")).toBe(
+      "/pt/?view=M%C3%B3dulos",
+    );
   });
 
   it("pipeline_kanban resolve pra /recrutar (visão global do pipeline)", () => {

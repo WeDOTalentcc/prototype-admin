@@ -2,7 +2,7 @@
 
 import { useState, Suspense, useEffect, useRef } from "react"
 import React from "react"
-import { useRouter, usePathname } from "next/navigation"
+import { useRouter, usePathname, useSearchParams } from "next/navigation"
 import { useNavGuardStore } from "@/stores/nav-guard-store"
 import { useLocale } from "next-intl"
 import { useLiaChatContext } from "@/contexts/lia-float-context"
@@ -35,6 +35,7 @@ import { ModulesPage } from "@/components/pages/modules-page"
 import {
   pathFromLabel,
   isDashboardPageLabel,
+  pageLabelFromViewParam,
   type DashboardPageLabel,
 } from "@/lib/navigation/routes"
 
@@ -121,6 +122,7 @@ export function DashboardApp({ initialPage = "Conversar", children }: DashboardA
   const { isAuthenticated, user, logout } = useAuth()
   const router = useRouter()
   const pathname = usePathname()
+  const searchParams = useSearchParams()
   const { recentItems, addRecentItem, removeRecentItem, clearAll: clearRecentItems } = useRecentItems()
   const { open: openFloat, splitView, setContextPage } = useLiaFloat()
   const { chatMessages, setChatMessages } = useLiaChatContext()
@@ -231,6 +233,24 @@ export function DashboardApp({ initialPage = "Conversar", children }: DashboardA
     window.addEventListener("lia:leave-fullscreen-chat", handler)
     return () => window.removeEventListener("lia:leave-fullscreen-chat", handler)
   }, [currentPage])
+
+  // Fase A.2 (2026-06-06): deep-link in-shell da LIA. canonicalPageToUrl
+  // emite `/?view=<label>` p/ abas SEM rota própria (Indicadores,
+  // Templates, Módulos). Lemos o param e trocamos a aba diretamente —
+  // depois limpamos o param p/ não re-disparar em refresh/navegação.
+  useEffect(() => {
+    const viewLabel = pageLabelFromViewParam(searchParams.get("view"))
+    if (!viewLabel) return
+    setCurrentPage(viewLabel)
+    const params = new URLSearchParams(window.location.search)
+    params.delete("view")
+    const qs = params.toString()
+    window.history.replaceState(
+      {},
+      "",
+      window.location.pathname + (qs ? `?${qs}` : ""),
+    )
+  }, [searchParams])
 
   // Handle navigation hints from UnifiedChat / proactive router / wizard.
   //
