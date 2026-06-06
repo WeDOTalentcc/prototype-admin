@@ -33,6 +33,7 @@ Usage:
     handler.addFilter(PIIMaskingFilter())
 """
 import logging
+import os
 import re
 from re import Pattern
 
@@ -100,6 +101,26 @@ def mask_pii(text: str) -> str:
     for token, uid in _uuid_map.items():
         masked = masked.replace(token, uid)
     return masked
+
+
+# Saida do chat do RECRUTADOR: por decisao de produto (Paulo 2026-06-06), o
+# recrutador AUTENTICADO ve CPF/email/telefone (necessario pro recrutamento; o
+# dado ja e visivel pra ele na plataforma; LGPD Art. 7 II legitimo interesse).
+# Default = PRESERVAR. Masking opt-in (futuro: config per-user na tela de
+# cadastro) via LIA_RECRUITER_CHAT_MASK_PII=true. LOGS continuam mascarados
+# (PIIMaskingFilter / mask_pii em logs sao independentes desta funcao).
+_RECRUITER_CHAT_MASK_PII = os.environ.get(
+    "LIA_RECRUITER_CHAT_MASK_PII", "false"
+).strip().lower() in ("1", "true", "yes", "on")
+
+
+def mask_pii_outbound(text):
+    """Masking de PII na SAIDA do chat do recrutador. Default: passthrough
+    (preserva -- recrutador autorizado ve). Mascara so se opt-in
+    (LIA_RECRUITER_CHAT_MASK_PII). Para LOGS, use mask_pii direto."""
+    if not text or not isinstance(text, str) or not _RECRUITER_CHAT_MASK_PII:
+        return text
+    return mask_pii(text)
 
 
 def mask_phone_preserve_tail(phone: str | None) -> str | None:

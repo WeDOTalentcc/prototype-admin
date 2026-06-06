@@ -47,7 +47,7 @@ from app.shared.chat_event_serializer import (
     serialize_thinking,
 )
 from app.shared.prompt_injection import PromptInjectionGuard
-from app.shared.pii_masking import mask_pii
+from app.shared.pii_masking import mask_pii_outbound
 from app.shared.robustness.security_patterns import check_input_security, get_block_response
 from app.shared.compliance.fairness_guard import FairnessGuard
 from app.shared.compliance.c3b_layer import pre_compliance, post_compliance, ComplianceContext
@@ -1180,7 +1180,7 @@ company_id: str = Depends(require_company_id)):
                                 "type": "token",
                                 "session_id": session_id,
                                 "domain": "wizard",
-                                "delta": mask_pii(_chunk) if isinstance(_chunk, str) else _chunk,
+                                "delta": mask_pii_outbound(_chunk) if isinstance(_chunk, str) else _chunk,
                             })
                         except Exception:
                             pass  # fail-silent — streaming não bloqueia
@@ -1206,7 +1206,7 @@ company_id: str = Depends(require_company_id)):
                         on_token=_wiz_on_token,
                     )
 
-                    _wiz_clean = mask_pii(_strip_react_json(_wiz_message or ""))
+                    _wiz_clean = mask_pii_outbound(_strip_react_json(_wiz_message or ""))
                     await ws_mgr.send_to_session(session_id, serialize_message(
                         content=_wiz_clean,
                         confidence=0.95,
@@ -1275,7 +1275,7 @@ company_id: str = Depends(require_company_id)):
                                 await ws_mgr.send_to_session(
                                     session_id,
                                     serialize_token(
-                                        mask_pii(_c) if isinstance(_c, str) else _c
+                                        mask_pii_outbound(_c) if isinstance(_c, str) else _c
                                     ),
                                 )
                             elif _et in (
@@ -1301,7 +1301,7 @@ company_id: str = Depends(require_company_id)):
                             ),
                             timeout=_AGENT_TIMEOUT,
                         )
-                    _sup_text = mask_pii(getattr(_sup_result, "content", "") or "")
+                    _sup_text = mask_pii_outbound(getattr(_sup_result, "content", "") or "")
                     conversation_history.append({"role": "user", "content": content})
                     conversation_history.append(
                         {"role": "assistant", "content": _sup_text}
@@ -1412,7 +1412,7 @@ company_id: str = Depends(require_company_id)):
                     except Exception as _inc_exc:
                         logger.warning("[AgentChatWS] increment_usage falhou: %s", _inc_exc)
 
-                clean_message = mask_pii(_strip_react_json(output.message or ""))
+                clean_message = mask_pii_outbound(_strip_react_json(output.message or ""))
 
                 _c3b_ctx = ComplianceContext(
                     company_id=company_id or "",

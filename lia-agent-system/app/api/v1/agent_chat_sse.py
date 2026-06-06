@@ -43,7 +43,7 @@ from app.shared.chat_event_serializer import (
     serialize_reasoning_step,
 )
 from app.shared.prompt_injection import PromptInjectionGuard
-from app.shared.pii_masking import mask_pii
+from app.shared.pii_masking import mask_pii_outbound
 from app.domains.credits.services.token_budget_service import (
     check_budget,
     get_plan_for_company,
@@ -427,7 +427,7 @@ company_id: str = Depends(require_company_id)):
                 async def _wiz_on_token(_chunk: str) -> None:
                     nonlocal token_count
                     token_count += 1
-                    _safe = mask_pii(_chunk) if isinstance(_chunk, str) else _chunk
+                    _safe = mask_pii_outbound(_chunk) if isinstance(_chunk, str) else _chunk
                     await sse_queue.put(serialize_token(_safe))
 
                 # Task #1080: canonical pure derive (no context dict honor).
@@ -464,7 +464,7 @@ company_id: str = Depends(require_company_id)):
                     if _tok is not None:
                         yield format_sse_event(_tok, next_id())
 
-                _wiz_clean = mask_pii(_strip_react_json(_wiz_msg or ""))
+                _wiz_clean = mask_pii_outbound(_strip_react_json(_wiz_msg or ""))
 
                 if _wiz_payload and isinstance(_wiz_payload, dict):
                     yield format_sse_event(
@@ -542,7 +542,7 @@ company_id: str = Depends(require_company_id)):
             event_type = event.get("type", "")
             if event_type == "token" and event.get("content"):
                 token_count += 1
-                _safe_token = mask_pii(event["content"]) if isinstance(event["content"], str) else event["content"]
+                _safe_token = mask_pii_outbound(event["content"]) if isinstance(event["content"], str) else event["content"]
                 await sse_queue.put(serialize_token(_safe_token))
             elif event_type == "token_done":
                 await sse_queue.put(serialize_token_done(event.get("tokens_sent", token_count)))
@@ -550,7 +550,7 @@ company_id: str = Depends(require_company_id)):
                 # SSE-e2e Fase B: repassa preservando shape (não achata em thinking)
                 await sse_queue.put(serialize_tool_started(
                     name=event.get("name", "tool"),
-                    args=mask_pii(str(event.get("args") or "")),
+                    args=mask_pii_outbound(str(event.get("args") or "")),
                     tool_id=event.get("tool_id", ""),
                 ))
             elif event_type == "tool_finished":
@@ -558,13 +558,13 @@ company_id: str = Depends(require_company_id)):
                     name=event.get("name", "tool"),
                     status=event.get("status", "ok"),
                     duration_ms=event.get("duration_ms"),
-                    result=mask_pii(str(event.get("result") or "")),
+                    result=mask_pii_outbound(str(event.get("result") or "")),
                     tool_id=event.get("tool_id", ""),
                 ))
             elif event_type == "reasoning_step":
                 await sse_queue.put(serialize_reasoning_step(
                     label=event.get("label", ""),
-                    detail=mask_pii(str(event.get("detail") or "")),
+                    detail=mask_pii_outbound(str(event.get("detail") or "")),
                 ))
             else:
                 await sse_queue.put(serialize_thinking(
@@ -813,7 +813,7 @@ company_id: str = Depends(require_company_id)):
                             except Exception:
                                 pass
 
-                        clean_message = mask_pii(_strip_react_json(output.message or ""))
+                        clean_message = mask_pii_outbound(_strip_react_json(output.message or ""))
                         # FIX-NAVIGATE-LEAK (Fase 0): [NAVIGATE:...] vazava como
                         # texto no SSE (so o orquestrador passava pelo helper
                         # canonico). Reusa _extract_navigate_marker -> strip +

@@ -158,3 +158,26 @@ class TestInstallGlobalPiiMasking:
         root = logging.getLogger()
         pii_filters = [f for f in root.filters if isinstance(f, PIIMaskingFilter)]
         assert len(pii_filters) == 1
+
+
+def test_mask_pii_outbound_preserva_por_default():
+    """Fix PII-contato (2026-06-06): saida do chat do recrutador preserva
+    CPF/email/telefone por default (recrutador autorizado ve)."""
+    from app.shared.pii_masking import mask_pii_outbound
+    txt = "Felipe Almeida, CPF 123.456.789-00, email felipe@x.com, fone (11) 98765-4321"
+    assert mask_pii_outbound(txt) == txt
+
+
+def test_mask_pii_outbound_mascara_quando_opt_in(monkeypatch):
+    """Opt-in (config per-user futura / flag) mascara."""
+    import app.shared.pii_masking as pii
+    monkeypatch.setattr(pii, "_RECRUITER_CHAT_MASK_PII", True)
+    out = pii.mask_pii_outbound("CPF 123.456.789-00 e email x@y.com")
+    assert "123.456.789-00" not in out
+    assert "x@y.com" not in out
+
+
+def test_mask_pii_outbound_nao_str_passthrough():
+    from app.shared.pii_masking import mask_pii_outbound
+    assert mask_pii_outbound(None) is None
+    assert mask_pii_outbound("") == ""
