@@ -1,13 +1,17 @@
 "use client"
 
 import { useState, useEffect, useRef } from"react"
+import { useRouter } from "next/navigation"
+import { useLocale } from "next-intl"
+import { navigationCatalog } from "@/lib/navigation/navigation-commands"
+import { useCommandCatalog } from "@/hooks/lia/use-command-catalog"
 import { Button } from"@/components/ui/button"
 import { Card, CardContent } from"@/components/ui/card"
 import { Chip } from "@/components/ui/chip"
 import {
   Search, X, Filter, User, Briefcase, MessageSquare, BarChart3,
   FileText, Clock, Star, ChevronRight, Zap, Calendar, MapPin,
-  Mail, Phone, BookOpen, Settings, ArrowRight, Brain
+  Mail, Phone, BookOpen, Settings, ArrowRight, Brain, Compass, Sparkles
 } from"lucide-react"
 
 interface SearchResult {
@@ -122,6 +126,34 @@ export function GlobalSearchModal({ isOpen, onClose, onNavigate }: GlobalSearchM
   const [isLoading, setIsLoading] = useState(false)
   const [selectedType, setSelectedType] = useState<string>("all")
   const [showAISuggestions, setShowAISuggestions] = useState(true)
+  const router = useRouter()
+  const locale = useLocale()
+  const { data: actionCatalog } = useCommandCatalog()
+
+  // Fase 2 Cmd+K: catálogo de comandos = navegação (Fase 1, canonical-pages)
+  // + ações (Fase 2, capability_map). Navegação → router.push; ação → LIA.
+  const commandList = [
+    ...navigationCatalog(locale).map((n) => ({
+      id: `nav-${n.page}`,
+      label: `Ir para ${n.label}`,
+      hint: "Navegar",
+      icon: Compass,
+      run: () => router.push(n.url),
+    })),
+    ...(actionCatalog ?? []).map((a) => ({
+      id: `action-${a.intent}`,
+      label: a.label,
+      hint: a.requires_confirmation ? "Confirma na tela" : "Pedir à LIA",
+      icon: Sparkles,
+      run: () =>
+        window.dispatchEvent(
+          new CustomEvent("lia:prefill-message", { detail: { message: a.label } }),
+        ),
+    })),
+  ]
+  const filteredCommands = query.trim()
+    ? commandList.filter((c) => c.label.toLowerCase().includes(query.toLowerCase()))
+    : commandList
   const inputRef = useRef<HTMLInputElement>(null)
 
   const searchTypes = [
@@ -130,7 +162,8 @@ export function GlobalSearchModal({ isOpen, onClose, onNavigate }: GlobalSearchM
     { id:"job", label:"Vagas", icon: Briefcase, count: results.filter(r => r.type ==="job").length },
     { id:"conversation", label:"Conversas", icon: MessageSquare, count: results.filter(r => r.type ==="conversation").length },
     { id:"document", label:"Documentos", icon: FileText, count: results.filter(r => r.type ==="document").length },
-    { id:"automation", label:"Automações", icon: Zap, count: results.filter(r => r.type ==="automation").length }
+    { id:"automation", label:"Automações", icon: Zap, count: results.filter(r => r.type ==="automation").length },
+    { id:"command", label:"Comandos", icon: Compass, count: commandList.length }
   ]
 
   // Simulate search with debounce
@@ -290,8 +323,34 @@ export function GlobalSearchModal({ isOpen, onClose, onNavigate }: GlobalSearchM
 
         {/* Content */}
         <div className="max-h-[340px] overflow-y-auto bg-lia-bg-secondary dark:bg-lia-bg-primary/50">
+          {/* Fase 2 Cmd+K: aba Comandos (navegação + ações) */}
+          {selectedType === "command" && (
+            <div className="p-3 space-y-1">
+              <div className="flex items-center gap-2 mb-2">
+                <Compass className="w-3.5 h-3.5 text-wedo-cyan" />
+                <span className="text-xs font-medium text-lia-text-primary">Comandos da LIA</span>
+              </div>
+              {filteredCommands.map((c) => {
+                const Icon = c.icon
+                return (
+                  <button
+                    key={c.id}
+                    onClick={() => { c.run(); onClose() }}
+                    className="w-full flex items-center gap-2 p-2 text-left text-sm text-lia-text-primary hover:bg-lia-bg-primary dark:hover:bg-lia-btn-primary-hover rounded-lg transition-colors motion-reduce:transition-none border border-transparent hover:border-lia-border-subtle"
+                  >
+                    <Icon className="w-3.5 h-3.5 text-lia-text-secondary shrink-0" />
+                    <span className="flex-1 truncate">{c.label}</span>
+                    <span className="text-xs text-lia-text-secondary">{c.hint}</span>
+                  </button>
+                )
+              })}
+              {filteredCommands.length === 0 && (
+                <p className="text-xs text-lia-text-secondary p-2">Nenhum comando para &quot;{query}&quot;.</p>
+              )}
+            </div>
+          )}
           {/* AI Suggestions */}
-          {showAISuggestions && (
+          {showAISuggestions && selectedType !== "command" && (
             <div className="p-3">
               <div className="flex items-center gap-2 mb-2">
                 <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
@@ -315,7 +374,7 @@ export function GlobalSearchModal({ isOpen, onClose, onNavigate }: GlobalSearchM
           )}
 
           {/* Search Results */}
-          {results.length > 0 && (
+          {results.length > 0 && selectedType !== "command" && (
             <div className="p-4 space-y-2">
               {results.map((result) => {
                 const IconComponent = getTypeIcon(result.type)
@@ -387,7 +446,7 @@ export function GlobalSearchModal({ isOpen, onClose, onNavigate }: GlobalSearchM
           )}
 
           {/* No Results */}
-          {query && !isLoading && results.length === 0 && (
+          {query && !isLoading && results.length === 0 && selectedType !== "command" && (
             <div className="p-8 text-center">
               <Search className="w-12 h-12 text-lia-text-secondary mx-auto mb-4" />
               <h3 className="text-lg font-medium text-lia-text-primary mb-2">
