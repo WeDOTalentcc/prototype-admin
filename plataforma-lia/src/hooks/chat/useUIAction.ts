@@ -28,7 +28,11 @@ import {
   type UnhandledUIActionEventDetail,
   isGlobalUIActionType,
 } from "@/types/ui-action";
-import { useRouter } from "next/navigation";
+import {
+  type CanonicalPageValue,
+  canonicalPageToUrl,
+} from "@/lib/canonical-pages";
+import { useParams, useRouter } from "next/navigation";
 import { useCallback } from "react";
 
 interface UseUIActionReturn {
@@ -56,6 +60,9 @@ interface UseUIActionReturn {
 
 export function useUIAction(): UseUIActionReturn {
   const router = useRouter();
+  const params = useParams();
+  const locale =
+    typeof params?.locale === "string" && params.locale ? params.locale : "pt";
 
   const dispatch = useCallback(
     (action: string, params: Record<string, unknown> = {}): boolean => {
@@ -66,11 +73,22 @@ export function useUIAction(): UseUIActionReturn {
         case "navigate_to": {
           const page = params.page;
           if (typeof page !== "string" || !page) return false;
+          const id =
+            typeof params.id === "string" && params.id ? params.id : undefined;
+          // canonical-fix: traduz a page canônica -> rota real pela fonte
+          // única (canonical-pages.ts, mirror do backend canonical_pages.py).
+          // Antes empurrava o nome cru ("vagas") -> /pt/vagas = 404 (a lista
+          // real é /jobs; /vagas só tem [slug]). Cobre TODOS os slugs
+          // divergentes (funil_talentos -> /funil-de-talentos, etc.).
+          let url = canonicalPageToUrl(page as CanonicalPageValue, locale, id);
+          // Sem URL canônica (kanban/dashboard/general, detalhe sem id, ou
+          // page desconhecida): falha-soft como não-global (re-emitida pra
+          // handler page-specific) em vez de empurrar nome cru e dar 404.
+          if (!url) return false;
           const query = params.query as Record<string, string> | undefined;
-          let url = page;
           if (query && typeof query === "object") {
             const search = new URLSearchParams(query).toString();
-            if (search) url = `${page}?${search}`;
+            if (search) url = `${url}?${search}`;
           }
           router.push(url);
           return true;
@@ -207,7 +225,7 @@ export function useUIAction(): UseUIActionReturn {
           return false;
       }
     },
-    [router],
+    [router, locale],
   );
 
   const dispatchOrEmit = useCallback(

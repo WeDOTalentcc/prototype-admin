@@ -99,7 +99,7 @@ export function routeToCanonicalPage(pathname: string): CanonicalPageValue {
  * Returns null when the canonical page has no canonical URL (e.g. HOME
  * which is locale-root, or detail pages which require an id).
  */
-export function canonicalPageToUrl(page: CanonicalPageValue, locale: string = "pt"): string | null {
+export function canonicalPageToUrl(page: CanonicalPageValue, locale: string = "pt", id?: string): string | null {
   const base = `/${locale}`
   switch (page) {
     case CANONICAL_PAGES.HOME:                return `${base}/`
@@ -115,9 +115,13 @@ export function canonicalPageToUrl(page: CanonicalPageValue, locale: string = "p
     case CANONICAL_PAGES.TASKS:               return `${base}/tasks`
     case CANONICAL_PAGES.CHAT:                return `${base}/chat`
     case CANONICAL_PAGES.TRUST:               return `${base}/trust`
-    // Detail / kanban pages have no canonical "land here" URL.
+    // Detail pages: navegáveis SE houver id (mirror do backend
+    // [NAVIGATE:page:id]). Sem id não há URL canônica de "land here".
     case CANONICAL_PAGES.VAGA_DETALHE:
+      return id ? `${base}/jobs/${id}` : null
     case CANONICAL_PAGES.CANDIDATO_DETALHE:
+      return id ? `${base}/funil-de-talentos/candidato/${id}` : null
+    // Kanban / dashboard / general: sem URL canônica de navegação direta.
     case CANONICAL_PAGES.PIPELINE_KANBAN:
     case CANONICAL_PAGES.DASHBOARD:
     case CANONICAL_PAGES.GENERAL:
