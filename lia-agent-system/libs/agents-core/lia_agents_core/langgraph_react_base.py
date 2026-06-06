@@ -76,7 +76,18 @@ class LangGraphReActBase(LangGraphBase):
                     msg_type = msg.__class__.__name__
                     # Apenas HumanMessage e AIMessage — SystemMessage preservado
                     if msg_type in ("HumanMessage", "AIMessage"):
-                        stripped = strip_pii_for_llm_prompt(msg.content)
+                        # Chat do recrutador: NOME de candidato/vaga é
+                        # NECESSÁRIO e AUTORIZADO (mesmo tenant, propósito
+                        # legítimo de recrutamento -- LGPD Art. 7º II / 10).
+                        # mask_names=False preserva o nome (senão "Felipe
+                        # Almeida"/"Diretor Jurídico" viravam "[PERSON REMOVIDO]"
+                        # e identificação/busca quebravam -- transcript Paulo
+                        # 2026-06-06); CPF/email/telefone seguem mascarados
+                        # (layers regex). Consistente com o SSE inbound
+                        # (agent_chat_sse: strip_pii_for_llm_prompt(mask_names=False)).
+                        stripped = strip_pii_for_llm_prompt(
+                            msg.content, mask_names=False
+                        )
                         if stripped != msg.content:
                             _pii_logger.warning(
                                 "[LIA-C04][%s] PII removido de %s domain=%s",
@@ -314,6 +325,7 @@ class LangGraphReActBase(LangGraphBase):
         try:
             from app.shared.rrp_block_sink import drain_sink
             _rrp_blocks = drain_sink()
+            logger.info("[RRP-DRAIN-DBG] %s drained=%d blocks", self.__class__.__name__, len(_rrp_blocks or []))
             if _rrp_blocks:
                 output.metadata = {
                     **(output.metadata or {}),
