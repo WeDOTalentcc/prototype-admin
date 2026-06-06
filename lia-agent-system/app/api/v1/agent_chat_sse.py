@@ -514,7 +514,19 @@ company_id: str = Depends(require_company_id)):
 
         from app.api.v1.agent_chat_ws import _get_agent, _build_agent_input
 
-        agent = None if _bubble_via_supervisor else _get_agent(resolved_domain)
+        # Fase 4 (LIA_FEDERATED_PRIMARY): a bolha roteia pro federado unico
+        # (escopado) em vez dos agentes de dominio isolados. Off = atual.
+        try:
+            from app.tools.scope_config import federated_primary_enabled as _fed_primary
+            _use_federated = (not _bubble_via_supervisor) and _fed_primary()
+        except Exception:
+            _use_federated = False
+        if _bubble_via_supervisor:
+            agent = None
+        elif _use_federated:
+            agent = _get_agent("recruiter_copilot")
+        else:
+            agent = _get_agent(resolved_domain)
         if not _bubble_via_supervisor and agent is None:
             yield format_sse_event(
                 serialize_error(f"Agente '{resolved_domain}' indisponível.", "agent_unavailable"),
@@ -613,12 +625,15 @@ company_id: str = Depends(require_company_id)):
 
         async def _run_agent():
             try:
-                # Fase 2 (flag LIA_FEDERATED_SCOPED_TOOLS): seta o escopo do turno na
-                # contextvar p/ o federado carregar tools escopadas (~30 vs 179). Fail-open.
+                # Fase 2/4: seta o escopo do turno na contextvar p/ o federado carregar
+                # tools escopadas (~30 vs 179). Ativo se SCOPED_TOOLS ou PRIMARY. Fail-open.
                 try:
-                    import os as _os_sc
-                    if (_os_sc.getenv("LIA_FEDERATED_SCOPED_TOOLS", "") or "").strip().lower() in ("1", "true", "yes", "on"):
-                        from app.tools.scope_config import scope_for_context, set_active_scope
+                    from app.tools.scope_config import (
+                        federated_scoping_enabled,
+                        scope_for_context,
+                        set_active_scope,
+                    )
+                    if federated_scoping_enabled():
                         _pg = context.get("page_type") or (context.get("view_context") or {}).get("page_type")
                         set_active_scope(scope_for_context(_pg, resolved_domain))
                 except Exception:

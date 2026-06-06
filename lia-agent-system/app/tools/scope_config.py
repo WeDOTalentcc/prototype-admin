@@ -373,3 +373,22 @@ def get_active_scope():
 def reset_active_scope() -> None:
     """Limpa o escopo ativo (fim do turno)."""
     _active_scope.set(None)
+
+
+import os as _os_flags
+
+
+def _flag(name: str) -> bool:
+    return (_os_flags.getenv(name, "") or "").strip().lower() in ("1", "true", "yes", "on")
+
+
+def federated_primary_enabled() -> bool:
+    """Fase 4: LIA_FEDERATED_PRIMARY on -> a bolha roteia pro agente federado unico
+    (em vez dos agentes de dominio isolados)."""
+    return _flag("LIA_FEDERATED_PRIMARY")
+
+
+def federated_scoping_enabled() -> bool:
+    """Escopo dinamico de tools ativo se LIA_FEDERATED_SCOPED_TOOLS OU
+    LIA_FEDERATED_PRIMARY (primario IMPLICA escopo — senao seriam 179 tools)."""
+    return _flag("LIA_FEDERATED_SCOPED_TOOLS") or _flag("LIA_FEDERATED_PRIMARY")

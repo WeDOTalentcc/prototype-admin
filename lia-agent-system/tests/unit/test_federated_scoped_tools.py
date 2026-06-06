@@ -18,10 +18,12 @@ class _D:
 
 @pytest.fixture(autouse=True)
 def _clean():
-    os.environ.pop("LIA_FEDERATED_SCOPED_TOOLS", None)
+    for _v in ("LIA_FEDERATED_SCOPED_TOOLS", "LIA_FEDERATED_PRIMARY"):
+        os.environ.pop(_v, None)
     reset_active_scope()
     yield
-    os.environ.pop("LIA_FEDERATED_SCOPED_TOOLS", None)
+    for _v in ("LIA_FEDERATED_SCOPED_TOOLS", "LIA_FEDERATED_PRIMARY"):
+        os.environ.pop(_v, None)
     reset_active_scope()
 
 
@@ -57,3 +59,15 @@ def test_scope_guidance_injetavel_nao_vazia():
         add = get_scope_system_prompt_addition(sc)
         assert add and len(add) > 100, f"{sc.value} guidance vazia/curta"
         assert "PODE" in add, f"{sc.value} sem secao de capabilities/restrictions"
+
+
+
+def test_flags_primary_implica_scoping():
+    """Fase 4: LIA_FEDERATED_PRIMARY off por default; on -> implica escopo dinamico."""
+    from app.tools.scope_config import federated_primary_enabled, federated_scoping_enabled
+    assert not federated_primary_enabled() and not federated_scoping_enabled()
+    os.environ["LIA_FEDERATED_SCOPED_TOOLS"] = "true"
+    assert federated_scoping_enabled() and not federated_primary_enabled()
+    os.environ.pop("LIA_FEDERATED_SCOPED_TOOLS", None)
+    os.environ["LIA_FEDERATED_PRIMARY"] = "true"
+    assert federated_primary_enabled() and federated_scoping_enabled(), "PRIMARY implica scoping"

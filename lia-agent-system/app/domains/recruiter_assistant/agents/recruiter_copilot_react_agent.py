@@ -41,11 +41,13 @@ _SCOPE_BUILD_LOCK = _threading.Lock()
 
 
 def _scoped_tools_enabled() -> bool:
-    """Flag LIA_FEDERATED_SCOPED_TOOLS: on = federado carrega o subconjunto ESCOPADO
-    (~30 tools/turno) em vez do set fixo. Off = comportamento atual identico."""
-    return (_os.getenv("LIA_FEDERATED_SCOPED_TOOLS", "") or "").strip().lower() in (
-        "1", "true", "yes", "on",
-    )
+    """Escopo dinamico ativo se LIA_FEDERATED_SCOPED_TOOLS OU LIA_FEDERATED_PRIMARY
+    (Fase 4: primario implica escopo). Off = comportamento atual identico."""
+    try:
+        from app.tools.scope_config import federated_scoping_enabled
+        return federated_scoping_enabled()
+    except Exception:
+        return False
 
 
 def _resolve_scoped_tool_defs(default_factory):
