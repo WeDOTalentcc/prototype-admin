@@ -2,6 +2,7 @@
 Pearch AI integration service for candidate search (API v2).
 Based on https://apidocs.pearch.ai/reference/post_v2-search
 """
+import asyncio
 import logging
 import os
 from datetime import datetime
@@ -40,6 +41,14 @@ logger = logging.getLogger(__name__)
 
 # G-12: TTL do cache de busca Pearch (sem PII de contato). Default 15min.
 SEARCH_CACHE_TTL = int(os.environ.get("PEARCH_SEARCH_CACHE_TTL", "900"))
+
+
+# P1-11: deadline interno da chamada Pearch (caminho non-email). Menor que o
+# deadline da rota (SEARCH_CANDIDATES_DEADLINE_SECONDS) para que um Pearch lento
+# vire um TimeoutError CAPTURADO aqui (preservando os candidatos LOCAIS ja
+# encontrados) em vez de estourar o deadline da rota e cancelar a coroutine
+# inteira (que zerava ate os locais).
+_PEARCH_CALL_DEADLINE_SECONDS = float(os.getenv("PEARCH_CALL_DEADLINE_SECONDS", "12.0"))
 
 
 def _profile_has_email(profile: Any) -> bool:
@@ -1459,7 +1468,10 @@ class PearchService:
                     if _loop_diag.get("error_message"):
                         warning_message = _loop_diag["error_message"]
                 else:
-                    pearch_response = await self.search_candidates(pearch_request)
+                    pearch_response = await asyncio.wait_for(
+                        self.search_candidates(pearch_request),
+                        timeout=_PEARCH_CALL_DEADLINE_SECONDS,
+                    )
                     pearch_candidates = pearch_response.get_candidates()
                     pearch_candidates = self._dedup_pearch_against_local(local_candidates, pearch_candidates)
                     pearch_credits_remaining = pearch_response.credits_remaining
