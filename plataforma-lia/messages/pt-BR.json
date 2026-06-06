@@ -4642,7 +4642,38 @@
       "salaryGrantConfirmBodyRevoke": "Esta pessoa não poderá mais visualizar dados salariais. Deseja confirmar?",
       "salaryGrantConfirmActionGrant": "Conceder",
       "salaryGrantConfirmActionRevoke": "Revogar",
-      "salaryGrantConfirmCancel": "Cancelar"
+      "salaryGrantConfirmCancel": "Cancelar",
+      "piiVisibility": {
+        "title": "Visibilidade de dados sensíveis (PII)",
+        "subtitle": "Defina quais campos este usuário pode ver. Herdado segue o padrão do papel.",
+        "roleDefaultsTitle": "Visibilidade de PII por papel",
+        "roleDefaultsSubtitle": "Padrão por papel. O override por usuário acima tem prioridade.",
+        "groupSalary": "Remuneração",
+        "groupSensitive": "Dados sensíveis",
+        "stateInherited": "Herdado",
+        "stateShow": "Ver",
+        "stateHide": "Ocultar",
+        "fields": {
+          "current_salary": "Salário atual",
+          "desired_salary_min": "Pretensão salarial (mín.)",
+          "desired_salary_max": "Pretensão salarial (máx.)",
+          "salary_expectation_clt": "Pretensão CLT",
+          "salary_expectation_pj": "Pretensão PJ",
+          "salary_expectation_freelance": "Pretensão freelance",
+          "cpf": "CPF",
+          "date_of_birth": "Data de nascimento",
+          "address_street": "Endereço (rua)",
+          "address_number": "Endereço (número)",
+          "address_zip": "CEP",
+          "address_complement": "Complemento",
+          "secondary_email": "E-mail secundário",
+          "secondary_phone": "Telefone secundário",
+          "personal_emails": "E-mails pessoais",
+          "business_emails": "E-mails comerciais",
+          "best_personal_email": "Melhor e-mail pessoal",
+          "best_business_email": "Melhor e-mail comercial"
+        }
+      }
     },
     "departments": {
       "title": "Departamentos",

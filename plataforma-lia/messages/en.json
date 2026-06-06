@@ -4642,7 +4642,38 @@
       "salaryGrantConfirmBodyRevoke": "This person will no longer be able to view salary data. Confirm?",
       "salaryGrantConfirmActionGrant": "Grant",
       "salaryGrantConfirmActionRevoke": "Revoke",
-      "salaryGrantConfirmCancel": "Cancel"
+      "salaryGrantConfirmCancel": "Cancel",
+      "piiVisibility": {
+        "title": "Sensitive data visibility (PII)",
+        "subtitle": "Choose which fields this user can see. Inherited follows the role default.",
+        "roleDefaultsTitle": "PII visibility by role",
+        "roleDefaultsSubtitle": "Per-role default. The per-user override above takes precedence.",
+        "groupSalary": "Compensation",
+        "groupSensitive": "Sensitive data",
+        "stateInherited": "Inherited",
+        "stateShow": "Show",
+        "stateHide": "Hide",
+        "fields": {
+          "current_salary": "Current salary",
+          "desired_salary_min": "Desired salary (min)",
+          "desired_salary_max": "Desired salary (max)",
+          "salary_expectation_clt": "Salary expectation (CLT)",
+          "salary_expectation_pj": "Salary expectation (PJ)",
+          "salary_expectation_freelance": "Salary expectation (freelance)",
+          "cpf": "Tax ID (CPF)",
+          "date_of_birth": "Date of birth",
+          "address_street": "Address (street)",
+          "address_number": "Address (number)",
+          "address_zip": "ZIP code",
+          "address_complement": "Address (complement)",
+          "secondary_email": "Secondary email",
+          "secondary_phone": "Secondary phone",
+          "personal_emails": "Personal emails",
+          "business_emails": "Business emails",
+          "best_personal_email": "Best personal email",
+          "best_business_email": "Best business email"
+        }
+      }
     },
     "departments": {
       "title": "Departments",
