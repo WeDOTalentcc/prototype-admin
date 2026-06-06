@@ -35,6 +35,7 @@ logger = logging.getLogger(__name__)
 class DataSource(StrEnum):
     """Source of data used by AI agents."""
     COMPANY_CONFIG = "company_config"
+    DEPARTMENT_CONFIG = "department_config"
     JOB_HISTORY = "job_history"
     MARKET_BENCHMARK = "market_benchmark"
     ROLE_INFERENCE = "role_inference"
@@ -200,6 +201,7 @@ class LiaFieldConfigService:
         toggles = await self._load_toggles(company_uuid)
         company_profile = await self._load_company_profile(company_uuid)
         culture_profile = await self._load_culture_profile(company_uuid)
+        department_profile = await self._load_department(company_uuid, job_context)
         job_history = await self._load_job_history(company_id)
         
         all_fields: dict[str, FieldConfig] = {}
@@ -219,13 +221,18 @@ class LiaFieldConfigService:
             fallback_strategies = FIELD_FALLBACK_CONFIG.get(field_key, ["skip"])
             
             company_value = self._get_company_value(field_key, company_profile, culture_profile)
+            # Cadeia de heranca: departamento.defaults vence o valor da empresa.
+            dept_value = self._get_department_value(field_key, department_profile)
+            value_from_dept = dept_value is not None
+            if value_from_dept:
+                company_value = dept_value
             
             fallback_value = None
             data_source = DataSource.NOT_AVAILABLE
             confidence = 0.0
             
             if is_active and company_value is not None:
-                data_source = DataSource.COMPANY_CONFIG
+                data_source = DataSource.DEPARTMENT_CONFIG if value_from_dept else DataSource.COMPANY_CONFIG
                 confidence = 1.0
             elif not is_active:
                 fallback_value, data_source, confidence = self._resolve_fallback(
@@ -292,6 +299,27 @@ class LiaFieldConfigService:
     async def _load_culture_profile(self, company_uuid: UUID):
         """Load CompanyCultureProfile — home of the narrative fields. FASE 0."""
         return await LiaFieldConfigRepository(self.db).get_culture_profile(company_uuid)
+
+    async def _load_department(self, company_uuid: UUID, job_context: dict[str, Any] | None):
+        """Carrega o Department (por nome exato) p/ defaults por-departamento.
+        Cadeia de heranca: departamento > empresa. FASE 1 (audit 2026-06-06)."""
+        dept_name = (job_context or {}).get("department") if job_context else None
+        if not dept_name:
+            return None
+        return await LiaFieldConfigRepository(self.db).get_department_by_name(
+            company_uuid, str(dept_name)
+        )
+
+    def _get_department_value(self, field_key: str, department: Any) -> Any:
+        """Le um default por-departamento de Department.defaults (JSONB). Retorna
+        None se ausente/vazio (entao o valor da empresa e usado). FASE 1."""
+        if department is None:
+            return None
+        defaults = getattr(department, "defaults", None) or {}
+        if not isinstance(defaults, dict):
+            return None
+        val = defaults.get(field_key)
+        return val if val else None
     
     async def _load_job_history(self, company_id: str, limit: int = 20) -> list[dict[str, Any]]:
         """Load recent job history for pattern analysis."""
@@ -599,6 +627,7 @@ class LiaFieldConfigService:
         """Generate human-readable explanation of data source."""
         explanations = {
             DataSource.COMPANY_CONFIG: "Configurado pela empresa nas Configurações",
+            DataSource.DEPARTMENT_CONFIG: "Configurado para o departamento desta vaga",
             DataSource.JOB_HISTORY: "Baseado no histórico de vagas da empresa",
             DataSource.MARKET_BENCHMARK: "Benchmark de mercado para o setor/função",
             DataSource.ROLE_INFERENCE: "Inferido a partir do título e senioridade",

@@ -60,6 +60,18 @@ class LiaFieldConfigRepository:
         )
         return result.scalars().first()
 
+    async def get_department_by_name(self, company_uuid: UUID, name: str):
+        """Department por nome exato (cadeia de heranca departamento>empresa). FASE 1."""
+        from app.models.company import Department  # type: ignore
+        result = await self.db.execute(
+            select(Department).where(
+                Department.company_id == company_uuid,
+                Department.name == name,
+                Department.is_active.is_(True),
+            )
+        )
+        return result.scalars().first()
+
     async def list_recent_jobs_for_company(
         self,
         *,

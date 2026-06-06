@@ -165,6 +165,12 @@ class Department(Base):
     order = Column(Integer, default=0)
     
     hiring_priority = Column(String(50), default="normal")
+
+    # Defaults/template por departamento (work_model, pipeline_template_id,
+    # tech_stack, employment_types, ...). Cadeia de heranca: a criacao de vaga
+    # resolve departamento.defaults[campo] > empresa. JSONB extensivel sem
+    # migration por campo (FASE 1, audit 2026-06-06).
+    defaults = Column(JSONB, nullable=False, server_default="{}", default=dict)
     
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
