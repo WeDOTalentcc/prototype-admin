@@ -636,7 +636,7 @@ code (idênticos).
 Único path canônico de criação de vaga conversacional via REST:
 **`POST /api/v1/wizard/smart-orchestrate`** (`app/api/v1/wizard_smart_orchestrator.py:152`).
 
-**Mirrors the WS pattern** em `agent_chat_ws.py:1108` (canonical wizard via WebSocket). Mesmo `WizardSessionService.process_message()` + mesmo `JobCreationGraph` (12 stages: intake → jd_enrichment → bigfive → salary → competency → wsi_questions → eligibility → review → publish → calibration → handoff → done).
+**Mirrors the WS pattern** em `agent_chat_ws.py:1108` (canonical wizard via WebSocket). Mesmo `WizardSessionService.process_message()` + mesmo `JobCreationGraph` (12 stages: intake → jd_enrichment → pipeline_template → bigfive → salary → competency → wsi_questions → eligibility → review → publish → calibration → handoff → done).
 
 **Dois modos** no SmartOrchestrateRequest, mutuamente exclusivos:
 
@@ -654,6 +654,15 @@ code (idênticos).
 - TestClient + AsyncMock têm flakiness ocasional por event-loop cleanup; follow-up migrar pra `httpx.AsyncClient`.
 
 **Endpoint legacy deprecado:** `POST /chat/message` com `domain="wizard"` retornava `internal_error` por NameErrors em helpers nunca implementados. Aposentado pelo refactor 2026-05-20. Frontend nunca chamou esse path.
+
+### Triagem & elegibilidade — produtores canônicos (audit C6 2026-06-05)
+
+**Sistema de triagem canônico:** `TriagemSessionService`
+(`app/domains/recruitment/services/triagem_session_service/`). `WSIInterviewGraph` (`app/domains/cv_screening/agents/wsi_interview_graph.py`) é **legacy em aposentadoria** — canibalizar HITL + consent gate + checkpointing pro canônico. NÃO adicionar feature nova ao grafo WSI.
+
+**Elegibilidade — shape + parser únicos:** toda pergunta eliminatória segue `EligibilityQuestionItem` (`app/schemas/eligibility_question_item.py`): `{id, question, question_type, options, is_eliminatory, expected_answer, category, order}`. O ÚNICO parser é `EligibilityVerificationService.get_eligibility_questions_from_job()` (`app/domains/cv_screening/services/eligibility_verification_service.py`) — delega ao `model_validator` do `EligibilityQuestionItem`, que normaliza os 4 shapes legados (wizard `required_answer`; edição `disqualify_on_fail`/`expected_answer`; catálogo `eliminatory`/`eliminatoryAnswer`; extractor `question_text`/`is_eliminatory`). NUNCA ler `job.eligibility_questions` cru nem reimplementar matching/reconsideração: o produtor já faz reconsideração 2x + talent pool + FairnessGuard (CLT 373-A / LGPD Art.20). Elegibilidade roda ANTES do WSI (eliminatória). Detalhe completo no CLAUDE.md global ("Eligibility question canonical shape").
+
+**Sensores:** `tests/contract/test_eligibility_producer_contract.py` + `tests/unit/test_eligibility_phase.py`. Qualquer produtor novo (FE/BE) grava/lê no shape canônico — divergência de shape = regressão.
 
 ### Bateria 9 — Wizard canonical E2E sensors (Sprint H/I)
 
