@@ -14,7 +14,8 @@ import {
 } from "lucide-react"
 import { type QuickAction, defaultCandidateActions } from "@/components/ui/quick-action-chips"
 import { type CommandItem, defaultCommands } from "@/components/ui/command-palette"
-import { buildNavigationCommands } from "@/lib/navigation/navigation-commands"
+import { buildNavigationCommands, buildActionCommands } from "@/lib/navigation/navigation-commands"
+import { useCommandCatalog } from "@/hooks/lia/use-command-catalog"
 import {
   CandidateSummaryCard, JobSummaryCard, WSIScoreCard,
   CompensationSummaryCard, InterviewConfirmationCard,
@@ -34,6 +35,7 @@ export function useChatPageCore({ initialConversationId }: { initialConversation
   const searchParams = useSearchParams()
   const router = useRouter()
   const locale = useLocale()
+  const { data: commandCatalog } = useCommandCatalog()
   const conversationType = searchParams?.get('conversation') || 'empty'
   const initialConversation = conversationType === 'empty' ? emptyConversation : modernConversation
 
@@ -386,6 +388,8 @@ export function useChatPageCore({ initialConversationId }: { initialConversation
     // Fase 1: comandos de navegação DERIVADOS de canonical-pages.ts (DRY,
     // zero drift). Categoria 'Navegação' do Ctrl+/ — "/list de navegação".
     ...buildNavigationCommands({ locale, navigate: (url) => router.push(url) }),
+    // Fase 2: comandos de AÇÃO derivados do capability_map (backend catalog).
+    ...buildActionCommands(commandCatalog ?? [], handleSendMessage),
     ...defaultCommands({
       onSchedule: handleScheduleInterview,
       onEvaluate: handleEvaluateFit,

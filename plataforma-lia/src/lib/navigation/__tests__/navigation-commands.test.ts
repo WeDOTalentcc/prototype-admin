@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from "vitest"
 import {
   navigationCatalog,
   buildNavigationCommands,
+  buildActionCommands,
 } from "@/lib/navigation/navigation-commands"
 import { CANONICAL_PAGES, canonicalPageToUrl } from "@/lib/canonical-pages"
 
@@ -49,5 +50,28 @@ describe("Fase 1 — buildNavigationCommands (CommandPalette)", () => {
     expect(vagas).toBeDefined()
     vagas!.onSelect()
     expect(navigate).toHaveBeenCalledWith("/pt/jobs")
+  })
+})
+
+
+describe("Fase 2 — buildActionCommands (catálogo do capability_map)", () => {
+  it("gera CommandItem categoria actions, id action-, onSelect manda label à LIA", () => {
+    const sendMessage = vi.fn()
+    const items = [
+      { intent: "compare_candidates", label: "Comparar candidatos" },
+      { intent: "close_job", label: "Encerrar vaga", requires_confirmation: true },
+    ]
+    const cmds = buildActionCommands(items, sendMessage)
+    expect(cmds).toHaveLength(2)
+    expect(cmds[0].id).toBe("action-compare_candidates")
+    expect(cmds[0].category).toBe("actions")
+    cmds[0].onSelect()
+    expect(sendMessage).toHaveBeenCalledWith("Comparar candidatos")
+    // destrutivo sinaliza confirmação
+    expect(cmds[1].description).toContain("confirma")
+  })
+
+  it("lista vazia → nenhum comando (sem crash)", () => {
+    expect(buildActionCommands([], () => {})).toEqual([])
   })
 })

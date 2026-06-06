@@ -1,5 +1,5 @@
 import React from "react"
-import { Compass } from "lucide-react"
+import { Compass, Sparkles } from "lucide-react"
 import {
   CANONICAL_PAGES,
   canonicalPageToUrl,
@@ -47,5 +47,34 @@ export function buildNavigationCommands(opts: {
     icon: <Compass className="w-4 h-4" />,
     category: "navigation" as const,
     onSelect: () => opts.navigate(item.url),
+  }))
+}
+
+
+/**
+ * Fase 2 (2026-06-06): comandos de AÇÃO derivados do catálogo do backend
+ * (capability_map, via useCommandCatalog). onSelect manda o label como mensagem
+ * pra LIA, que roteia para a capability (abre modal / navega / confirma HITL).
+ */
+export interface CatalogActionItem {
+  intent: string
+  label: string
+  category?: string
+  requires_confirmation?: boolean
+}
+
+export function buildActionCommands(
+  items: CatalogActionItem[],
+  sendMessage: (text: string) => void,
+): CommandItem[] {
+  return items.map((item) => ({
+    id: `action-${item.intent}`,
+    label: item.label,
+    description: item.requires_confirmation
+      ? "Abre com confirmação na tela"
+      : "Pedir à LIA",
+    icon: <Sparkles className="w-4 h-4" />,
+    category: "actions" as const,
+    onSelect: () => sendMessage(item.label),
   }))
 }
