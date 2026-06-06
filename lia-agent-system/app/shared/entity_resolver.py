@@ -49,8 +49,12 @@ def match_titles_in_message(message: str, items: list[tuple[str, str]]) -> list[
         if not ttok:
             continue
         overlap = ttok & mtok
-        need = max(1, round(len(ttok) * 0.6))
-        if len(overlap) >= need:
+        # Fix P0 2026-06-06: antes exigia 60% dos tokens do TITULO, o que falhava
+        # em titulos bilingues/parenteticos — ex "Diretor(a) Juridico(a) (Chief Legal
+        # Officer)" (5 tokens) vs "diretor juridico" (2) = 40% < 60% -> nao casava a
+        # vaga que existe. Agora basta interseccao de 2 tokens significativos (ou
+        # titulo de 1 token batido exato).
+        if len(overlap) >= 2 or (len(ttok) == 1 and len(overlap) >= 1):
             scored.append((len(overlap), _id, title))
     scored.sort(key=lambda x: -x[0])
     return [(i, t) for _, i, t in scored]
