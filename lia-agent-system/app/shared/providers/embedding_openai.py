@@ -71,11 +71,23 @@ class OpenAIEmbeddingProvider(EmbeddingProviderABC):
         if self._client is None:
             from openai import OpenAI
 
-            api_key = os.environ.get("AI_INTEGRATIONS_OPENAI_API_KEY")
+            # Embedding P2 (audit 2026-06-06): aceitar OPENAI_API_KEY como
+            # fallback ao Replit AI Integration. O proxy gemini rejeita
+            # batchEmbedContents (INVALID_ENDPOINT) -> o openai e o provider
+            # funcional de fato, e a chave canonica OPENAI_API_KEY ja esta
+            # provisionada no ambiente. Sem AI_INTEGRATIONS_OPENAI_BASE_URL o
+            # SDK usa api.openai.com (direto). Alinha com o design "OpenAI
+            # text-embedding-3-small primario" (vector_semantic_cache/rag).
+            api_key = os.environ.get("AI_INTEGRATIONS_OPENAI_API_KEY") or os.environ.get(
+                "OPENAI_API_KEY"
+            )
             base_url = os.environ.get("AI_INTEGRATIONS_OPENAI_BASE_URL")
 
             if not api_key:
-                raise ValueError("AI_INTEGRATIONS_OPENAI_API_KEY not configured")
+                raise ValueError(
+                    "Nenhuma chave OpenAI configurada "
+                    "(AI_INTEGRATIONS_OPENAI_API_KEY ou OPENAI_API_KEY)"
+                )
 
             kwargs = {"api_key": api_key}
             if base_url:
