@@ -8,6 +8,7 @@ Service for managing data request operations including:
 - Managing templates and fields
 """
 import logging
+import os
 from datetime import datetime, timedelta
 from typing import Any
 from uuid import UUID
@@ -133,32 +134,130 @@ class DataRequestService:
         if not candidate:
             raise ValueError(f"Candidate {data_request.candidate_id} not found")
         
+        # Envio REAL via dispatcher canônico (substitui o stub que marcava "enviado"
+        # sem despachar). Import lazy p/ evitar ciclo de import.
+        from app.domains.communication.services.communication_dispatcher import (
+            communication_dispatcher,
+        )
+        from app.domains.communication.services.data_request_whatsapp_service import (
+            DataRequestWhatsAppService,
+        )
+
         results = {}
         now = datetime.utcnow()
-        
+
         if "email" in channels:
-            try:
-                results["email"] = {"success": True, "sent_at": now.isoformat()}
-                data_request.sent_via_email = True
-                data_request.email_sent_at = now
-                logger.info(f"Email notification sent for data request {data_request_id}")
-            except Exception as e:
-                logger.error(f"Failed to send email for data request {data_request_id}: {e}")
-                results["email"] = {"success": False, "error": str(e)}
-        
+            candidate_email = getattr(candidate, "email", None)
+            if not candidate_email:
+                # Falha alta e explícita — nunca marcar como enviado sem destinatário.
+                results["email"] = {"success": False, "error": "candidate_no_email"}
+                logger.warning(
+                    "Data request %s: candidato sem email, notificação por email pulada",
+                    data_request_id,
+                )
+            else:
+                portal_url = self._build_portal_url(data_request.token)
+                subject, body_html, body_text = self._build_data_request_email(
+                    candidate_name=getattr(candidate, "name", None) or "",
+                    portal_url=portal_url,
+                    is_blocking=bool(data_request.is_blocking),
+                )
+                try:
+                    send_result = communication_dispatcher.send_email(
+                        to_email=candidate_email,
+                        subject=subject,
+                        body_html=body_html,
+                        body_text=body_text,
+                    )
+                except Exception as e:
+                    logger.error(
+                        "Failed to send email for data request %s: %s",
+                        data_request_id, e, exc_info=True,
+                    )
+                    send_result = {"success": False, "error": str(e)}
+                ok = bool(send_result.get("success"))
+                results["email"] = {
+                    "success": ok,
+                    "sent_at": now.isoformat() if ok else None,
+                    "provider": send_result.get("provider"),
+                    "error": send_result.get("error"),
+                }
+                if ok:
+                    data_request.sent_via_email = True
+                    data_request.email_sent_at = now
+
         if "whatsapp" in channels:
-            try:
-                results["whatsapp"] = {"success": True, "sent_at": now.isoformat()}
-                data_request.sent_via_whatsapp = True
-                data_request.whatsapp_sent_at = now
-                logger.info(f"WhatsApp notification sent for data request {data_request_id}")
-            except Exception as e:
-                logger.error(f"Failed to send WhatsApp for data request {data_request_id}: {e}")
-                results["whatsapp"] = {"success": False, "error": str(e)}
-        
+            candidate_phone = getattr(candidate, "phone", None)
+            if not candidate_phone:
+                results["whatsapp"] = {"success": False, "error": "candidate_no_phone"}
+                logger.warning(
+                    "Data request %s: candidato sem telefone, coleta WhatsApp pulada",
+                    data_request_id,
+                )
+            else:
+                # Delega ao fluxo canônico de coleta por WhatsApp (LGPD/consent/conversa).
+                try:
+                    ok = await DataRequestWhatsAppService().start_collection(
+                        db, data_request_id, candidate_phone
+                    )
+                except Exception as e:
+                    logger.error(
+                        "Failed to start WhatsApp collection for data request %s: %s",
+                        data_request_id, e, exc_info=True,
+                    )
+                    ok = False
+                results["whatsapp"] = {
+                    "success": bool(ok),
+                    "sent_at": now.isoformat() if ok else None,
+                }
+                if ok:
+                    data_request.sent_via_whatsapp = True
+                    data_request.whatsapp_sent_at = now
+
         await db.commit()
-        
+
         return results
+
+    @staticmethod
+    def _build_portal_url(token: str) -> str:
+        """Monta o link público do portal de preenchimento (com token)."""
+        base = (
+            os.getenv("PUBLIC_APP_URL")
+            or os.getenv("APP_BASE_URL")
+            or "https://app.wedotalent.cc"
+        ).rstrip("/")
+        return f"{base}/pt/portal/data-request/{token}"
+
+    @staticmethod
+    def _build_data_request_email(
+        candidate_name: str,
+        portal_url: str,
+        is_blocking: bool,
+    ) -> tuple[str, str, str]:
+        """Conteúdo canônico do email de solicitação de dados (subject, html, text)."""
+        first_name = (candidate_name or "").split(" ")[0] if candidate_name else ""
+        greeting = f"Olá {first_name}!" if first_name else "Olá!"
+        subject = "Solicitação de informações — processo seletivo"
+        body_text = (
+            f"{greeting}\n\n"
+            "Para dar continuidade ao seu processo seletivo, precisamos de algumas "
+            "informações e documentos. Acesse o link seguro abaixo para enviar:\n\n"
+            f"{portal_url}\n\n"
+            "Seus dados são tratados conforme a LGPD e usados exclusivamente para este "
+            "processo seletivo.\n"
+        )
+        body_html = (
+            f"<p>{greeting}</p>"
+            "<p>Para dar continuidade ao seu processo seletivo, precisamos de algumas "
+            "informações e documentos. Clique no botão abaixo para enviar com segurança:</p>"
+            f'<p><a href="{portal_url}" '
+            'style="display:inline-block;padding:10px 18px;background:#0F62FE;color:#fff;'
+            'text-decoration:none;border-radius:8px">Enviar minhas informações</a></p>'
+            f'<p style="font-size:12px;color:#666">Ou copie o link: {portal_url}</p>'
+            '<p style="font-size:12px;color:#666">Seus dados são tratados conforme a LGPD '
+            "e usados exclusivamente para este processo seletivo.</p>"
+        )
+        return subject, body_html, body_text
     
     async def resend_notification(
         self,
