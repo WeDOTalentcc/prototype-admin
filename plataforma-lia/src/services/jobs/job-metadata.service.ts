@@ -80,23 +80,15 @@ export async function fetchDepartments(_search?: string): Promise<RemoteOption[]
   return unwrap(raw)
 }
 
-// ── Cities ──────────────────────────────────────────────────────────────────
-// TEMPORÁRIO (Onda 1): FastAPI nunca teve tabela global de cidades (era do Rails).
-// Dataset global (IBGE Brasil + países) entra na Onda 2. Lista mínima por enquanto.
-const TEMP_CITIES: RemoteOption[] = [
-  "São Paulo, SP", "Rio de Janeiro, RJ", "Belo Horizonte, MG", "Brasília, DF",
-  "Curitiba, PR", "Porto Alegre, RS", "Salvador, BA", "Recife, PE",
-  "Fortaleza, CE", "Florianópolis, SC", "Campinas, SP", "Goiânia, GO",
-  "Manaus, AM", "Belém, PA", "Vitória, ES", "Natal, RN",
-  "João Pessoa, PB", "Maceió, AL", "Teresina, PI", "São Luís, MA",
-  "Campo Grande, MS", "Cuiabá, MT", "Aracaju, SE", "Palmas, TO",
-  "Porto Velho, RO", "Boa Vista, RR", "Rio Branco, AC", "Macapá, AP",
-].map((name) => ({ id: name, name }))
-
+// ── Cities ──────────────────────────────────────────────
+// Onda 2B (audit 2026-06-06): dataset global IBGE (5.571 municipios) servido pelo
+// FastAPI em /api/v1/cities, via proxy. Substitui a lista temporaria da Onda 1.
 export async function fetchCities(search?: string): Promise<RemoteOption[]> {
-  const q = (search || "").trim().toLowerCase()
-  if (!q) return TEMP_CITIES
-  return TEMP_CITIES.filter((c) => c.name.toLowerCase().includes(q))
+  const raw = await getJson<JsonApiList<RemoteOption> | RemoteOption[]>(
+    `${PROXY_BASE}/cities`,
+    search ? { search } : undefined,
+  )
+  return unwrap(raw)
 }
 
 // ── User search (recruiter/manager picker — aba Pessoas) ─────────────────────

@@ -28,6 +28,7 @@ from app.api.v1 import (
     admin_platform,
     admin_token_budget,
     affirmative,
+    cities,
     agent_explainability,
     agent_monitoring,
     ai_consumption,
@@ -312,6 +313,7 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(experience_highlights.router, prefix="/api/v1", tags=["experience-highlights"])
     app.include_router(big_five.router, prefix="/api/v1", tags=["big-five"])
     app.include_router(affirmative.router, prefix="/api/v1", tags=["affirmative"])
+    app.include_router(cities.router, prefix="/api/v1", tags=["cities"])
 
     # ── Jobs ──────────────────────────────────────────────────────────────────
     app.include_router(job_vacancies.router, prefix="/api/v1", tags=["job_vacancies"])
