@@ -29,6 +29,19 @@ logger = logging.getLogger(__name__)
 
 _fairness_guard = FairnessGuard()
 
+# 2-table P2 (audit 2026-06-06): quando uma tool emite response_blocks (ranking/
+# comparacao/perfil), os dados JA aparecem como bloco visual rico. Este hint,
+# co-locado no RESULT da tool (os agentes de dominio NAO usam system_prompt_builder,
+# entao prompt-rule nao os alcanca de forma confiavel), instrui o LLM a NAO
+# duplicar os dados como tabela markdown no texto. Produtor unico do texto.
+_RRP_NARRATE_HINT = (
+    "FORMATO: estes dados JA estao sendo exibidos ao usuario como um bloco visual "
+    "rico (ranking/comparacao/perfil com score, etapa e parecer). NAO repita os "
+    "dados como tabela markdown nem lista longa no texto -- o bloco e a fonte "
+    "visual unica. Escreva apenas uma narrativa CURTA: 1-2 frases de destaque + "
+    "recomendacao."
+)
+
 
 @tool_handler("talent")
 async def _wrap_search_candidates(**kwargs: Any) -> dict[str, Any]:
@@ -203,7 +216,7 @@ async def _wrap_view_candidate_profile(**kwargs: Any) -> dict[str, Any]:
     except Exception as _e:
         logger.warning(f"[talent_tools] candidate_card skipped: {_e}")
     if _rrp_blocks:
-        profile = {**profile, "response_blocks": _rrp_blocks}
+        profile = {**profile, "response_blocks": _rrp_blocks, "render_hint": _RRP_NARRATE_HINT}
     if profile_error is not None:
         # Carregamento do perfil falhou: reportar honestamente (REGRA 4).
         return {
@@ -280,6 +293,7 @@ async def _wrap_compare_candidates(**kwargs: Any) -> dict[str, Any]:
             "dimensions": ["skills", "experience", "score", "fit"],
             "candidates": _compared,
             "response_blocks": _rrp_blocks or None,
+            "render_hint": _RRP_NARRATE_HINT if _rrp_blocks else None,
         },
         "message": f"Comparacao de {len(_compared) or len(candidate_ids)} candidatos concluida.",
     }
@@ -344,6 +358,7 @@ async def _wrap_rank_candidates(**kwargs: Any) -> dict[str, Any]:
             "ranked_count": len(ranking),
             "ranking": ranking,
             "response_blocks": _rrp_blocks or None,
+            "render_hint": _RRP_NARRATE_HINT if _rrp_blocks else None,
         },
         "message": f"Ranking gerado: {len(ranking)} candidatos para a vaga {vacancy_id} (criterio: {criteria}).",
     }
