@@ -113,6 +113,53 @@ describe("JobProcessSection — sub-status/coleta herdados read-only (#5 Fase 1)
   })
 })
 
+describe("JobProcessSection — override de sub-status por vaga (#5 Fase 2b)", () => {
+  const overrideStage = (updateStage: ReturnType<typeof vi.fn>) => ({
+    isEditing: true,
+    updateStage,
+    stages: [
+      {
+        stageName: "Triagem",
+        name: "screening",
+        stageCategory: "system",
+        _inheritedSubStatuses: [
+          { name: "a", display_name: "Sub A" },
+          { name: "b", display_name: "Sub B" },
+        ],
+        subStatuses: [{ name: "a", display_name: "Sub A" }], // override: só A
+        _subStatusesOverridden: true,
+      },
+    ],
+  })
+
+  it("em edição mostra checkboxes da lista herdada + 'Restaurar herança' quando personalizado", () => {
+    const updateStage = vi.fn()
+    render(<JobProcessSection {...makeProps(overrideStage(updateStage))} />)
+    fireEvent.click(screen.getByText("Sub-status e coleta"))
+    const checkboxes = screen.getAllByRole("checkbox")
+    expect(checkboxes).toHaveLength(2)
+    expect((checkboxes[0] as HTMLInputElement).checked).toBe(true)  // A incluído
+    expect((checkboxes[1] as HTMLInputElement).checked).toBe(false) // B excluído
+    expect(screen.getByText("Restaurar herança")).toBeInTheDocument()
+  })
+
+  it("clicar 'Restaurar herança' grava subStatuses=undefined", () => {
+    const updateStage = vi.fn()
+    render(<JobProcessSection {...makeProps(overrideStage(updateStage))} />)
+    fireEvent.click(screen.getByText("Sub-status e coleta"))
+    fireEvent.click(screen.getByText("Restaurar herança"))
+    expect(updateStage).toHaveBeenCalledWith(0, "subStatuses", undefined)
+  })
+
+  it("marcar o sub-status que faltava (todos marcados) volta a herdar (undefined)", () => {
+    const updateStage = vi.fn()
+    render(<JobProcessSection {...makeProps(overrideStage(updateStage))} />)
+    fireEvent.click(screen.getByText("Sub-status e coleta"))
+    fireEvent.click(screen.getAllByRole("checkbox")[1]) // marca B → A+B = todos → herdar
+    expect(updateStage).toHaveBeenCalledWith(0, "subStatuses", undefined)
+  })
+})
+
 describe("JobProcessSection — reordenar por arrastar (#4)", () => {
   const stages = [
     { stageName: "Triagem", name: "screening", stageCategory: "system", isReorderable: false },

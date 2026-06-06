@@ -35,6 +35,8 @@ export interface Stage {
   defaultSlaDays?: number
   subStatuses?: SubStatusOption[]
   dataFields?: StageDataField[]
+  _inheritedSubStatuses?: SubStatusOption[]
+  _subStatusesOverridden?: boolean
 }
 
 interface JobProcessSectionProps {

@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Brain, ChevronDown, ChevronRight, Clock, Database, GripVertical, ListChecks, Lock, Trash2 } from "lucide-react"
 import { inputClass, getCategoryBadge } from "./job-edit-tab.constants"
 import type { Stage } from "./JobProcessSection"
+import type { SubStatusOption } from "@/components/settings/recruitment-journey.types"
 
 interface JobProcessStageCardProps {
   stage: Stage
@@ -48,11 +49,29 @@ export function JobProcessStageCard({
     useSortable({ id: sortableId, disabled: !isEditing || !canReorder })
   const style = { transform: CSS.Transform.toString(transform), transition }
 
-  // #5 Fase 1: sub-status + campos de coleta herdados da empresa (read-only).
+  // #5: sub-status (override por vaga) + campos de coleta (read-only, Fase 3).
   const [showInherited, setShowInherited] = useState(false)
-  const subStatuses = stage.subStatuses ?? []
+  const inheritedSub: SubStatusOption[] = stage._inheritedSubStatuses ?? []
+  const effectiveSub: SubStatusOption[] = stage.subStatuses ?? []
+  const isSubOverridden = stage._subStatusesOverridden === true
   const dataFields = stage.dataFields ?? []
-  const hasInherited = subStatuses.length > 0 || dataFields.length > 0
+  const hasInherited = inheritedSub.length > 0 || effectiveSub.length > 0 || dataFields.length > 0
+
+  const isSubIncluded = (name?: string) => effectiveSub.some(s => s.name === name)
+  // Toggle de inclusão por vaga: grava o subconjunto em interviewStages.subStatuses.
+  // Tudo marcado (ou nada) = volta a herdar (subStatuses=undefined).
+  const toggleSub = (ss: SubStatusOption) => {
+    const nextNames = isSubIncluded(ss.name)
+      ? effectiveSub.filter(s => s.name !== ss.name).map(s => s.name)
+      : [...effectiveSub.map(s => s.name), ss.name]
+    const ordered = inheritedSub.filter(s => nextNames.includes(s.name))
+    if (ordered.length === 0 || ordered.length === inheritedSub.length) {
+      updateStage(index, "subStatuses", undefined)
+    } else {
+      updateStage(index, "subStatuses", ordered)
+    }
+  }
+  const restoreInheritedSub = () => updateStage(index, "subStatuses", undefined)
 
   return (
     <div ref={setNodeRef} style={style} data-testid={`job-process-stage-card-${index}`}>
@@ -172,26 +191,62 @@ export function JobProcessStageCard({
                 {showInherited ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
                 <span>Sub-status e coleta</span>
                 <span className="text-lia-text-disabled">
-                  ({subStatuses.length} sub-status · {dataFields.length} campos · herdado)
+                  ({effectiveSub.length} sub-status · {dataFields.length} campos · {isSubOverridden ? "personalizado" : "herdado"})
                 </span>
               </button>
               {showInherited && (
                 <div className="mt-2 space-y-2 pl-4">
-                  {subStatuses.length > 0 && (
-                    <div className="flex items-start gap-1.5">
-                      <ListChecks className="w-3 h-3 mt-0.5 text-lia-text-tertiary shrink-0" />
-                      <div className="flex flex-wrap gap-1">
-                        {subStatuses.map((ss, i) => (
-                          <span
-                            key={ss.id || ss.name || i}
-                            className="inline-flex items-center px-1.5 py-0.5 rounded text-micro bg-lia-bg-secondary text-lia-text-secondary"
+                  {/* Sub-status: editável por vaga (override) em modo de edição */}
+                  {isEditing && inheritedSub.length > 0 ? (
+                    <div className="space-y-1.5">
+                      <div className="flex items-center gap-1.5">
+                        <ListChecks className="w-3 h-3 text-lia-text-tertiary shrink-0" />
+                        <span className="text-micro text-lia-text-secondary font-medium">Sub-status nesta vaga</span>
+                        {isSubOverridden && (
+                          <button
+                            type="button"
+                            onClick={restoreInheritedSub}
+                            className="text-micro text-lia-btn-primary-bg hover:underline ml-1"
                           >
+                            Restaurar herança
+                          </button>
+                        )}
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        {inheritedSub.map((ss, i) => (
+                          <label
+                            key={ss.id || ss.name || i}
+                            className="flex items-center gap-1.5 text-micro text-lia-text-secondary cursor-pointer"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={isSubIncluded(ss.name)}
+                              onChange={() => toggleSub(ss)}
+                              className="w-3 h-3 accent-lia-btn-primary-bg"
+                            />
                             {ss.display_name || ss.name}
-                          </span>
+                          </label>
                         ))}
                       </div>
                     </div>
+                  ) : (
+                    effectiveSub.length > 0 && (
+                      <div className="flex items-start gap-1.5">
+                        <ListChecks className="w-3 h-3 mt-0.5 text-lia-text-tertiary shrink-0" />
+                        <div className="flex flex-wrap gap-1">
+                          {effectiveSub.map((ss, i) => (
+                            <span
+                              key={ss.id || ss.name || i}
+                              className="inline-flex items-center px-1.5 py-0.5 rounded text-micro bg-lia-bg-secondary text-lia-text-secondary"
+                            >
+                              {ss.display_name || ss.name}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )
                   )}
+                  {/* Coleta de dados: read-only (edição vem na Fase 3) */}
                   {dataFields.length > 0 && (
                     <div className="flex items-start gap-1.5">
                       <Database className="w-3 h-3 mt-0.5 text-lia-text-tertiary shrink-0" />
@@ -209,7 +264,9 @@ export function JobProcessStageCard({
                     </div>
                   )}
                   <p className="text-micro text-lia-text-disabled">
-                    Herdado da empresa — editar em Configurações › Jornada de Recrutamento.
+                    {isSubOverridden
+                      ? "Sub-status personalizado para esta vaga."
+                      : "Herdado da empresa — editar em Configurações › Jornada de Recrutamento."}
                   </p>
                 </div>
               )}

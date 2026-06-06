@@ -116,11 +116,23 @@ export function useJobEditTab({
     const key = cs.name || cs.stageName
     if (key) inheritedByName.set(key, { subStatuses: cs.subStatuses, dataFields: cs.dataFields })
   }
+  // override por vaga só conta quando vem do interviewStages persistido (rawStages),
+  // não do fallback da empresa (que carrega subStatuses da própria empresa = herança).
+  const hasRaw = rawStages.length > 0
   const enrichedStages: StageItem[] = stages.map((s) => {
-    if (s.subStatuses || s.dataFields) return s
     const inh = inheritedByName.get(s.name || s.stageName || "")
-    if (!inh || (!inh.subStatuses && !inh.dataFields)) return s
-    return { ...s, subStatuses: inh.subStatuses, dataFields: inh.dataFields }
+    const inheritedSub = inh?.subStatuses
+    const inheritedData = inh?.dataFields
+    const subOverridden = hasRaw && Array.isArray(s.subStatuses)
+    return {
+      ...s,
+      // efetivo p/ display/consumo: override próprio senão herdado
+      subStatuses: subOverridden ? s.subStatuses : inheritedSub,
+      dataFields: (hasRaw && s.dataFields) ? s.dataFields : inheritedData,
+      // transientes do editor (não persistem)
+      _inheritedSubStatuses: inheritedSub,
+      _subStatusesOverridden: subOverridden,
+    }
   })
 
   // ── helpers ────────────────────────────────────────────────────────────────
