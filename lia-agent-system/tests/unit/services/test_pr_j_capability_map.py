@@ -199,7 +199,6 @@ class TestCapabilityMapFaseB:
     (3) toda capability global nova tem modal_id."""
 
     READONLY_MODALS = [
-        ("view_profile", "profile", "candidate"),
         ("job_insights", "job_insights", "job"),
         ("compare_jobs", "job_compare", None),
         ("view_score", "general_score", "candidate"),
@@ -258,3 +257,14 @@ class TestCapabilityMapFaseB:
 
     def test_confirmation_helper_unknown_intent_false(self):
         assert CapabilityMapService.requires_confirmation("xyz_unknown") is False
+
+    def test_view_profile_is_navigate_only_not_modal(self):
+        """Correção: perfil de candidato NAVEGA (não abre profile-modal,
+        que é o perfil do usuário logado). Sem modal_id, com fallback."""
+        cap = CapabilityMapService.get("view_profile")
+        assert cap is not None
+        assert cap.modal_id is None, (
+            "view_profile NÃO deve ter modal_id (profile-modal é do usuário, não do candidato) — perfil de candidato é navegação"
+        )
+        assert cap.navigate_fallback is not None
+

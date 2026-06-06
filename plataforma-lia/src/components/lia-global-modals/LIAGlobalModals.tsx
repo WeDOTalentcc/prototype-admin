@@ -8,6 +8,7 @@ import { InterviewSchedulingModal } from "@/components/ui/interview-scheduling-m
 import { CandidateCompareModal } from "@/components/modals/candidate-compare-modal"
 import { useModalOpenListener } from "@/hooks/chat/useModalOpenListener"
 import { useOfferReviewFlow } from "@/hooks/offers/useOfferReviewFlow"
+import { LiaEntityModalHost } from "@/components/lia-global-modals/LiaEntityModalHost"
 
 /**
  * LIAGlobalModals — listens for `lia:open_modal` events (dispatched by useUIAction)
@@ -117,6 +118,10 @@ export function LIAGlobalModals() {
           )
         }}
       />
+
+      {/* Fase B3: modais que precisam do objeto completo (candidato/vaga)
+          abertos pela LIA via open_ui — resolve id→objeto e monta. */}
+      <LiaEntityModalHost />
     </>
   )
 }

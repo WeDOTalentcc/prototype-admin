@@ -173,11 +173,14 @@ capabilities:
   # internos de página ficam de fora (não-globais) — promoção caso-a-caso.
 
   view_profile:
-    chat_executable: false       # modal de perfil > resumo no chat
+    chat_executable: false
+    # Correção 2026-06-06: perfil de CANDIDATO = navegar p/ a página
+    # /funil-de-talentos/candidato/{id}. O 'profile-modal' é o perfil do
+    # USUÁRIO logado (SSO/email), NÃO do candidato. Sem modal_id → open_ui
+    # não oferece; o agente usa [NAVIGATE:candidato_detalhe:id] (Fase A).
     entity_required:
       - type: candidate
         param: candidate_id
-    modal_id: profile
     navigate_fallback: /funil-de-talentos
 
   job_insights:
