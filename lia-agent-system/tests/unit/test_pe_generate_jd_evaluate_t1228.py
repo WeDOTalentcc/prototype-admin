@@ -4,7 +4,7 @@ Task #1228 — Fluxo P&E "Gerar/enriquecer JD e avaliar (item 2)".
 Sentinelas do caminho REAL (não delegate/fake) dos discrete handlers do
 PlanExecutor para o pattern `gerar_jd_e_avaliar`:
 
-  1. job_management.generate_jd REUSA `JdEnrichmentService.enrich_and_persist_vacancy`
+  1. job_management.generate_jd REUSA `JobManagementJdEnrichmentService.enrich_and_persist_vacancy`
      tenant-scoped e, quando persiste, emite `jd_data` (com vacancy_id) p/ chaining.
   2. generate_jd sem vaga → clarification honesta (não chama o primitivo).
   3. generate_jd com mínimos WSI NÃO atingidos → clarification honesta
@@ -158,7 +158,7 @@ async def test_enrich_wrapper_reuses_canonical_primitive_tenant_scoped():
     acm.__aenter__ = AsyncMock(return_value=session)
     acm.__aexit__ = AsyncMock(return_value=False)
 
-    with patch.object(da, "JdEnrichmentService", return_value=svc_instance), \
+    with patch.object(da, "JobManagementJdEnrichmentService", return_value=svc_instance), \
          patch("lia_config.database.AsyncSessionLocal", MagicMock(return_value=acm)):
         await da._enrich_and_persist_jd(company_id="co-1228", vacancy_id="job-1228")
 

@@ -10,7 +10,7 @@ from typing import Any
 from uuid import UUID
 
 
-from app.domains.job_management.services.jd_enrichment_service import JdEnrichmentService
+from app.domains.job_management.services.jd_enrichment_service import JobManagementJdEnrichmentService
 from app.schemas.jd_enrichment import EnrichmentRequest
 from app.domains.company.services.company_configuration_service import CompanyConfigurationService
 from app.shared.services.config_completeness_service import ConfigCompletenessService
@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 market_benchmark_service = MarketBenchmarkService()
 config_completeness_service = ConfigCompletenessService()
 company_configuration_service = CompanyConfigurationService()
-jd_enrichment_service = JdEnrichmentService()
+jd_enrichment_service = JobManagementJdEnrichmentService()
 
 
 async def search_salary_benchmark(
