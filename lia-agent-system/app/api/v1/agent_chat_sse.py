@@ -806,9 +806,41 @@ company_id: str = Depends(require_company_id)):
                     elif item.get("_orch_result") is not None:
                         # Fase 2 item 6: serializa o ChatResponse do MainOrchestrator
                         # via produtor unico (paridade com o ramo agente).
+                        _orch = item["_orch_result"]
+                        # FIX-C3B-SUP (2026-06-06): paridade de GOVERNANCA com o ramo
+                        # agente -> post_compliance (FactChecker + audit LGPD da SAIDA)
+                        # faltava na trilha supervisor (MainOrchestrator faz FairnessGuard
+                        # no INPUT, nao post_compliance no OUTPUT). + mask_pii_outbound
+                        # (passthrough p/ recrutador; mascara se flag). Fail-open.
+                        try:
+                            _is_d = isinstance(_orch, dict)
+                            _gm = (lambda k: _orch.get(k) if _is_d else getattr(_orch, k, None))
+                            _msg = _gm("content") or _gm("message") or ""
+                            if _msg:
+                                from app.shared.compliance.c3b_layer import (
+                                    ComplianceContext,
+                                    post_compliance,
+                                )
+                                _ctx_sup = ComplianceContext(
+                                    company_id=company_id or "",
+                                    user_id=user_id,
+                                    session_id=session_id,
+                                    domain=resolved_domain,
+                                    agent_id="supervisor",
+                                    original_message=_raw_content,
+                                    fairness_flags=[],
+                                )
+                                _checked = await post_compliance(mask_pii_outbound(_msg), _ctx_sup)
+                                _fld = "content" if _gm("content") else "message"
+                                if _is_d:
+                                    _orch[_fld] = _checked
+                                else:
+                                    setattr(_orch, _fld, _checked)
+                        except Exception as _csup:
+                            logger.warning("[SSEChat] supervisor post_compliance skipped (fail-open): %s", _csup)
                         from app.api.v1.chat import _orchestrator_result_to_frames
                         for _frame in _orchestrator_result_to_frames(
-                            item["_orch_result"], req.conversation_id
+                            _orch, req.conversation_id
                         ):
                             yield format_sse_event(_frame, next_id())
                     else:
