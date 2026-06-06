@@ -30,6 +30,7 @@ export function useKanbanJobFormInit(currentJob: Record<string, unknown> | null)
       deadlineClosing: currentJob.deadlineClosing || '',
       salaryMin: (currentJob.salaryRange as Record<string,unknown>|undefined)?.min || currentJob.salaryMin || '',
       salaryMax: (currentJob.salaryRange as Record<string,unknown>|undefined)?.max || currentJob.salaryMax || '',
+      salaryUndisclosed: (currentJob.salaryRange as Record<string,unknown>|undefined)?.undisclosed || (currentJob as Record<string,unknown>).salaryUndisclosed || false,
       bonusMin: (currentJob.bonusRange as Record<string,unknown>|undefined)?.min || (currentJob.bonus_range as Record<string,unknown>|undefined)?.min || '',
       bonusMax: (currentJob.bonusRange as Record<string,unknown>|undefined)?.max || (currentJob.bonus_range as Record<string,unknown>|undefined)?.max || '',
       benefits: currentJob.benefits || [],

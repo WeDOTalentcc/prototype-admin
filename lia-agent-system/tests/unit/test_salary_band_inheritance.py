@@ -88,3 +88,22 @@ class TestResolveInheritedSalaryRanges:
 
 def _salary_empty(sr):
     return not sr or (not sr.get("min") and not sr.get("max"))
+
+
+class TestUndisclosedSalary:
+    """'A combinar' (undisclosed) vence a heranca da empresa — nao herda banda."""
+
+    @pytest.mark.asyncio
+    async def test_undisclosed_salary_not_overwritten_by_band(self):
+        from unittest.mock import AsyncMock, patch
+
+        from app.api.v1.job_vacancies._shared import resolve_inherited_salary_ranges
+
+        v = _vaga(seniority_level="junior", salary_range={"undisclosed": True, "min": None, "max": None})
+        with patch(
+            "app.domains.company.repositories.salary_band_repository.SalaryBandRepository.list_for_company",
+            new=AsyncMock(return_value=[_Band("junior", 4000, 8000)]),
+        ):
+            await resolve_inherited_salary_ranges(db=None, company_id="cid-1", vacancies=[v])
+        assert v.salary_range.get("undisclosed") is True
+        assert not v.salary_range.get("min"), "'A combinar' nao pode herdar a banda da empresa"

@@ -74,7 +74,8 @@ export function useKanbanJobEditing(ctx: KanbanJobEditingContext) {
             updates['salary_range'] = {
               min: jobEditForm.salaryMin ? Number(jobEditForm.salaryMin) : null,
               max: jobEditForm.salaryMax ? Number(jobEditForm.salaryMax) : null,
-              currency: 'BRL'
+              currency: 'BRL',
+              undisclosed: !!jobEditForm.salaryUndisclosed
             }
           }
           return

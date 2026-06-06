@@ -1,20 +1,17 @@
 /**
- * Sensor: JobRemuneracaoSection — faixa salarial HERDADA da empresa + override.
+ * Sensor: JobRemuneracaoSection — faixa salarial HERDADA da empresa + override
+ * + "A combinar" (nao divulgar).
  *
  * Skill: harness-engineering (sensor) + lia-testing.
  *
  * Audit 2026-06-06 (Paulo): a faixa salarial (min/max) da vaga deve ser
  * IMPORTADA da empresa (Configuracoes -> Faixas Salariais por Nivel), casada
- * pelo nivel + departamento que a vaga ja conhece — como Remuneracao Variavel
- * e Beneficios ja fazem. Decisoes: (1) Herdado + override; (2) fallback no
- * benchmark de mercado quando nao ha banda.
+ * pelo nivel + departamento que a vaga ja conhece. Decisoes: (1) Herdado +
+ * override; (2) fallback no benchmark de mercado quando nao ha banda; (3) o
+ * recrutador pode marcar "A combinar" (nao divulgar) mesmo havendo banda.
  *
- * Trava:
- *  - banda casa -> faixa HERDADA (travada) + badge "Herdado da empresa".
- *  - "Personalizar" destrava p/ editar (override) semeando os valores da banda.
- *  - sem banda + estimativa de mercado -> sugestao rotulada "estimativa".
- *  - sem banda + sem mercado -> manual (comportamento legado).
- *  - valores != banda -> "personalizada" + "Restaurar faixa da empresa".
+ * Edge resolvido (2026-06-06): badge desambiguado ("Faixa herdada da empresa")
+ * p/ nao colidir com o badge de PIPELINE "Herdado da empresa" (KanbanJobHeader).
  */
 
 import { describe, it, expect, vi, beforeEach } from "vitest"
@@ -76,7 +73,7 @@ describe("JobRemuneracaoSection — faixa herdada da empresa", () => {
   it("banda casa + faixa vazia -> HERDADO travado com valor da banda", () => {
     setBand(JR_BAND)
     renderSection({ salaryMin: "", salaryMax: "" })
-    expect(screen.getByText(/Herdado da empresa/i)).toBeInTheDocument()
+    expect(screen.getByText(/Faixa herdada da empresa/i)).toBeInTheDocument()
     const inputs = screen.getAllByRole("spinbutton") as HTMLInputElement[]
     expect(inputs[0]).toHaveValue(4000)
     expect(inputs[0]).toBeDisabled()
@@ -107,7 +104,7 @@ describe("JobRemuneracaoSection — faixa herdada da empresa", () => {
     setBand(null)
     setMarket(null)
     renderSection({ salaryMin: "9000", salaryMax: "12000" })
-    expect(screen.queryByText(/Herdado da empresa/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/Faixa herdada da empresa/i)).not.toBeInTheDocument()
     const inputs = screen.getAllByRole("spinbutton") as HTMLInputElement[]
     expect(inputs[0]).toHaveValue(9000)
     expect(inputs[0]).not.toBeDisabled()
@@ -120,5 +117,25 @@ describe("JobRemuneracaoSection — faixa herdada da empresa", () => {
     expect(screen.getByText(/Restaurar faixa da empresa/i)).toBeInTheDocument()
     const inputs = screen.getAllByRole("spinbutton") as HTMLInputElement[]
     expect(inputs[0]).not.toBeDisabled()
+  })
+
+  it("A combinar (undisclosed) -> NAO herda, mostra 'A combinar', inputs travados", () => {
+    setBand(JR_BAND) // banda existe, mas recrutador marcou A combinar
+    renderSection({ salaryUndisclosed: true, salaryMin: "", salaryMax: "" })
+    expect(screen.getByText("A combinar")).toBeInTheDocument()
+    expect(screen.queryByText(/Faixa herdada da empresa/i)).not.toBeInTheDocument()
+    const inputs = screen.getAllByRole("spinbutton") as HTMLInputElement[]
+    expect(inputs[0]).toBeDisabled()
+    // checkbox marcado
+    expect(screen.getByRole("checkbox")).toBeChecked()
+  })
+
+  it("marcar 'Nao divulgar faixa' seta o flag e limpa a faixa", () => {
+    setBand(JR_BAND)
+    const { updateField } = renderSection({ salaryMin: "4000", salaryMax: "8000" })
+    fireEvent.click(screen.getByRole("checkbox"))
+    expect(updateField).toHaveBeenCalledWith("salaryUndisclosed", true)
+    expect(updateField).toHaveBeenCalledWith("salaryMin", "")
+    expect(updateField).toHaveBeenCalledWith("salaryMax", "")
   })
 })

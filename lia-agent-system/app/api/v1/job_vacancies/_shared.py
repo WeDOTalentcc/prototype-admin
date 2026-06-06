@@ -593,6 +593,8 @@ JOB_ID_PATH_PATTERN = DUAL_ID_PATH_PATTERN
 def _salary_range_is_empty(sr) -> bool:
     if not sr or not isinstance(sr, dict):
         return True
+    if sr.get("undisclosed"):  # "A combinar" explicito — nao herda da empresa
+        return False
     return not sr.get("min") and not sr.get("max")
 
 
