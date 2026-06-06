@@ -144,6 +144,16 @@ jobs:
         # Ver plataforma-lia/scripts/check_rrp_blocks_sync.py.
         run: npm run lint:rrp-sync:blocking
 
+      - name: proxy-unwrap sensor (RATCHET desde 2026-06-06)
+        # Flag proxies backend-proxy/*/route.ts hand-rolled (res.text()
+        # passthrough) que NAO desembrulham o ResponseEnvelopeMiddleware
+        # do FastAPI ({ok,data,meta}). Sem unwrap o FE le data.data aninhado
+        # (bug 'Banco criado mas nao foi possivel abrir' em talent-pools;
+        # mesma classe da Task #1167 jd/wsi). Baseline 71 (debito legado).
+        # Ratchet: novas rotas devem usar createProxyHandlers/unwrapEnvelope
+        # (a 72a quebra). Ver scripts/check_proxy_unwrap.mjs.
+        run: npm run lint:proxy-unwrap:ratchet
+
       - name: Candidate canonical axis sensors (WSI 0-10 + LGPD field policy) BLOCKING
         # F6 ADR-001/002. WSI 0-10 (Task #512): bloqueia /100 em candidate-* surfaces.
         # LGPD: bloqueia EditableField/updateField em campos LGPD-sensiveis
