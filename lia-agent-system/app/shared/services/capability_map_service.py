@@ -32,6 +32,7 @@ class Capability:
     requires_confirmation: bool = False   # HITL: ação destrutiva/mutante
     navigate_page: str | None = None   # canonical page p/ navegar (sem modal)
     required_role: str | None = None   # role-gate: papel exigido (None=todos)
+    label: str | None = None   # rótulo p/ catálogo de comandos (Ctrl+/); None=oculto
 
 
 class CapabilityMapService:
@@ -56,6 +57,7 @@ class CapabilityMapService:
                 requires_confirmation=cfg.get("requires_confirmation", False),
                 navigate_page=cfg.get("navigate_page"),
                 required_role=cfg.get("required_role"),
+                label=cfg.get("label"),
             )
         return result
 

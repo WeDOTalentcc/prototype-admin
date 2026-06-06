@@ -7,12 +7,14 @@
 capabilities:
 
   add_candidate:
+    label: "Adicionar candidato"
     chat_executable: false   # AddCandidateModal (3 abas) > chat loop de 5 perguntas
     entity_required: []
     modal_id: add_candidate
     navigate_fallback: /funil-de-talentos
 
   search_candidates:
+    label: "Buscar candidatos"
     chat_executable: true
     entity_required: []
     navigate_fallback: /funil-de-talentos
@@ -29,6 +31,7 @@ capabilities:
 
   # ── PR-CAL: schedule_interview — Card 4.1 opens InterviewSchedulingModal ─────
   schedule_interview:
+    label: "Agendar entrevista"
     chat_executable: false   # modal > AI stub (SIMULATION_STUB is AI-layer only)
     entity_required:
       - type: candidate
@@ -37,6 +40,7 @@ capabilities:
     navigate_fallback: /visao-do-funil?view=entrevistas
 
   reschedule_interview:
+    label: "Reagendar entrevista"
     chat_executable: true
     entity_required:
       - type: candidate
@@ -45,6 +49,7 @@ capabilities:
     navigate_fallback: /visao-do-funil?view=entrevistas
 
   compare_candidates:
+    label: "Comparar candidatos"
     chat_executable: true
     entity_required:
       - type: job
@@ -54,6 +59,7 @@ capabilities:
 
   # ── Wave 1 PR-Q2: job entity resolution for VERIFICAR cards ──────────────
   close_job:
+    label: "Encerrar vaga"
     chat_executable: true
     requires_confirmation: true   # HITL: encerrar vaga é destrutivo (decisão Paulo 2026-06-06)
     entity_required:
@@ -63,6 +69,7 @@ capabilities:
     navigate_fallback: /jobs?status=open
 
   generate_job_report:
+    label: "Gerar relatório da vaga"
     chat_executable: true
     entity_required:
       - type: job
@@ -88,6 +95,7 @@ capabilities:
 
   # ── Wave 4 PR-B + PR-C: Offer + Hire actions ────────────────────────────
   send_offer:
+    label: "Enviar oferta"
     chat_executable: false   # opens OfferReviewModal; HITL review before send
     entity_required:
       - type: candidate
@@ -185,6 +193,7 @@ capabilities:
     navigate_fallback: /funil-de-talentos
 
   job_insights:
+    label: "Ver insights da vaga"
     chat_executable: false
     entity_required:
       - type: job
@@ -193,12 +202,14 @@ capabilities:
     navigate_fallback: /jobs
 
   compare_jobs:
+    label: "Comparar vagas"
     chat_executable: false
     entity_required: []
     navigate_page: vagas          # comparar exige seleção multi-vaga (na lista)
     navigate_fallback: /jobs
 
   view_score:
+    label: "Ver score do candidato"
     chat_executable: false
     entity_required:
       - type: candidate
@@ -207,6 +218,7 @@ capabilities:
     navigate_fallback: /funil-de-talentos
 
   view_bigfive:
+    label: "Ver perfil Big Five"
     chat_executable: false
     entity_required:
       - type: candidate
@@ -215,6 +227,7 @@ capabilities:
     navigate_fallback: /funil-de-talentos
 
   change_job_status:
+    label: "Mudar status da vaga"
     chat_executable: false
     requires_confirmation: true   # HITL: mudança de status de vaga
     entity_required:
@@ -224,6 +237,7 @@ capabilities:
     navigate_fallback: /jobs
 
   bulk_action:
+    label: "Ação em massa"
     chat_executable: false
     requires_confirmation: true   # HITL: ação em massa (potencialmente destrutiva)
     entity_required: []
@@ -231,6 +245,7 @@ capabilities:
     navigate_fallback: /funil-de-talentos
 
   send_communication:
+    label: "Enviar comunicação"
     chat_executable: false
     requires_confirmation: true   # HITL: envio de comunicação a candidato(s)
     entity_required: []
@@ -238,6 +253,7 @@ capabilities:
     navigate_fallback: /central-comunicacao
 
   assign_recruiter:
+    label: "Atribuir recrutador"
     chat_executable: false
     requires_confirmation: true   # HITL: reatribuir responsável da vaga
     entity_required:
@@ -247,6 +263,7 @@ capabilities:
     navigate_fallback: /jobs
 
   data_request:
+    label: "Solicitar dados (LGPD)"
     chat_executable: false
     requires_confirmation: true   # HITL: solicitação de dados (LGPD)
     entity_required: []

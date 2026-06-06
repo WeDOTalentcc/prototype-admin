@@ -25,6 +25,7 @@ from .conversational import router as _conversational_router
 from .insights import router as _insights_router
 
 # --- This package's sub-routers ---
+from .command_catalog import router as _command_catalog_router
 from .suggestion_click import router as _suggestion_click_router
 from .suggestions import router as _suggestions_router
 from .wizard import router as _wizard_router
@@ -53,6 +54,9 @@ router.include_router(_conversational_router)
 
 # Onda 4-Fase8 P1-3 Fase 2 (2026-05-24): canonical click logging
 router.include_router(_suggestion_click_router)
+
+# Fase 2 (2026-06-06): catálogo de comandos acionáveis (Ctrl+/ + Cmd+K)
+router.include_router(_command_catalog_router)
 
 __all__ = [
     "router",
