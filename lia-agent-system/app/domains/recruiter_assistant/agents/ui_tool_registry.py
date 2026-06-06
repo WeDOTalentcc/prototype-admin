@@ -29,12 +29,13 @@ from app.shared.tool_handler import tool_handler
 logger = logging.getLogger(__name__)
 
 
-def _modal_capabilities() -> dict[str, Any]:
-    """Capabilities que têm modal_id (abríveis via open_ui). DRY com o yaml."""
+def _ui_capabilities() -> dict[str, Any]:
+    """Capabilities acionáveis via open_ui: têm modal_id (abre modal) OU
+    navigate_page (navega pro surface onde a ação/seleção vive). DRY c/ yaml."""
     return {
         intent: cap
         for intent, cap in CapabilityMapService.load().items()
-        if cap.modal_id
+        if cap.modal_id or cap.navigate_page
     }
 
 
@@ -65,16 +66,39 @@ async def _wrap_open_ui(**kwargs: Any) -> dict[str, Any]:
         entity_ids = {}
 
     cap = CapabilityMapService.get(capability)
-    if cap is None or not cap.modal_id:
-        # Falha ALTO honesta (REGRA 4) — não inventar modal. Oferece fallback.
-        known = sorted(_modal_capabilities().keys())
+    if cap is None:
+        known = sorted(_ui_capabilities().keys())
         return {
             "success": False,
             "message": (
-                f"Não conheço um modal para '{capability}'. "
-                f"Capabilities com modal disponíveis: {', '.join(known)}."
+                f"Não conheço a capability '{capability}'. "
+                f"Disponíveis: {', '.join(known)}."
             ),
-            "data": {"navigate_fallback": cap.navigate_fallback if cap else None},
+            "data": {"navigate_fallback": None},
+        }
+    if not cap.modal_id:
+        # Sem modal → navega pro surface (a ação/seleção vive na página, com
+        # seu handler + confirmação = HITL preservado). Não duplica a lógica
+        # de mutação da página no chat (CLAUDE.md single-source).
+        if cap.navigate_page:
+            nav_id = None
+            for req in cap.entity_required:
+                v = entity_ids.get(req.param)
+                if v:
+                    nav_id = v
+                    break
+            params: dict[str, Any] = {"page": cap.navigate_page}
+            if nav_id:
+                params["id"] = nav_id
+            return {
+                "success": True,
+                "data": {"ui_action": "navigate_to", "ui_action_params": params},
+                "message": "Te levando pra lá — você conclui a ação na tela.",
+            }
+        return {
+            "success": False,
+            "message": f"'{capability}' não tem modal nem destino de navegação.",
+            "data": {"navigate_fallback": cap.navigate_fallback},
         }
 
     # Valida entidades exigidas (presença) — entity company-scoped no fetch do FE.
@@ -125,7 +149,7 @@ async def _wrap_open_ui(**kwargs: Any) -> dict[str, Any]:
 
 
 def _build_open_ui_definition() -> ToolDefinition:
-    caps = _modal_capabilities()
+    caps = _ui_capabilities()
     enum_caps = sorted(caps.keys())
     desc_lines = [
         "Abre um modal/painel da plataforma para o recrutador. Use quando o "

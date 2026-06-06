@@ -192,30 +192,39 @@ class TestCapabilityMapWave4Intents:
 
 
 class TestCapabilityMapFaseB:
-    """Fase B (2026-06-06): set curado de modais globais + campo HITL.
+    """Fase B (2026-06-06): set curado de capabilities globais + HITL + navegação.
 
-    Sensor computacional: garante que (1) read-only modals abrem direto
-    (requires_confirmation=False), (2) destrutivos exigem confirmação,
-    (3) toda capability global nova tem modal_id."""
+    open_ui é a tool UNIFICADA: capability com modal_id abre modal (display via
+    host fetch id→objeto); sem modal_id mas com navigate_page navega pro surface
+    (a ação/seleção-acoplada vive na página, com seu handler + confirmação = HITL
+    preservado, sem duplicar a lógica de mutação no chat — CLAUDE.md single-source).
+    """
 
+    # Capabilities que ABREM MODAL (display-only via LiaEntityModalHost).
     READONLY_MODALS = [
-        ("job_insights", "job_insights", "job"),
-        ("compare_jobs", "job_compare", None),
         ("view_score", "general_score", "candidate"),
         ("view_bigfive", "big_five", "candidate"),
         ("generate_job_report", "job_report", "job"),
     ]
-    DESTRUCTIVE_MODALS = [
-        ("close_job", "close_vacancy", "job"),
-        ("change_job_status", "job_status", "job"),
-        ("bulk_action", "bulk_action", None),
-        ("send_communication", "unified_communication", None),
-        ("assign_recruiter", "job_assign_recruiter", "job"),
-        ("data_request", "data_request", None),
+
+    # Capabilities que NAVEGAM pro surface. (intent, navigate_page, destrutivo?)
+    NAVIGATE_CAPS = [
+        ("view_profile", "candidato_detalhe", False),
+        ("close_job", "vaga_detalhe", True),
+        ("change_job_status", "vaga_detalhe", True),
+        ("assign_recruiter", "vaga_detalhe", True),
+        ("job_insights", "vaga_detalhe", False),
+        ("compare_jobs", "vagas", False),
+        ("bulk_action", "funil_talentos", True),
+        ("data_request", "funil_talentos", True),
+        ("send_communication", "central_comunicacao", True),
     ]
+    VALID_PAGES = {
+        "candidato_detalhe", "vaga_detalhe", "vagas",
+        "funil_talentos", "central_comunicacao", "trust",
+    }
 
     def test_requires_confirmation_defaults_false(self):
-        """Capabilities read-only legadas continuam sem confirmação."""
         cap = CapabilityMapService.get("search_candidates")
         assert cap is not None
         assert cap.requires_confirmation is False
@@ -227,44 +236,43 @@ class TestCapabilityMapFaseB:
             assert cap.modal_id == modal_id, (
                 f"'{intent}'.modal_id deve ser '{modal_id}', achou {cap.modal_id!r}"
             )
-            assert cap.requires_confirmation is False, (
-                f"'{intent}' é read-only — abre direto, sem confirmação"
-            )
+            assert cap.requires_confirmation is False
             if ent:
                 types = [r.type for r in cap.entity_required]
-                assert ent in types, f"'{intent}' deve exigir entidade {ent}"
+                assert ent in types
 
-    def test_destructive_modals_require_confirmation(self):
-        for intent, modal_id, ent in self.DESTRUCTIVE_MODALS:
+    def test_navigate_caps_no_modal_have_page(self):
+        """Acoplados a ação/seleção: SEM modal_id, COM navigate_page canonical.
+        Re-implementar o handler no chat duplicaria a página (anti-pattern)."""
+        for intent, page, _destructive in self.NAVIGATE_CAPS:
             cap = CapabilityMapService.get(intent)
-            assert cap is not None, f"capability '{intent}' ausente (Fase B)"
-            assert cap.modal_id == modal_id, (
-                f"'{intent}'.modal_id deve ser '{modal_id}', achou {cap.modal_id!r}"
+            assert cap is not None, f"capability '{intent}' ausente"
+            assert cap.modal_id is None, (
+                f"'{intent}' é navigate-to-surface — NÃO deve ter modal_id"
             )
-            assert cap.requires_confirmation is True, (
-                f"'{intent}' é destrutivo/mutante — DEVE ter requires_confirmation=true (HITL)"
+            assert cap.navigate_page == page, (
+                f"'{intent}'.navigate_page deve ser '{page}', achou {cap.navigate_page!r}"
             )
-            assert CapabilityMapService.requires_confirmation(intent) is True
-            if ent:
-                types = [r.type for r in cap.entity_required]
-                assert ent in types, f"'{intent}' deve exigir entidade {ent}"
+            assert cap.navigate_page in self.VALID_PAGES
+
+    def test_destructive_navigate_caps_keep_confirmation(self):
+        """Destrutivos mantêm requires_confirmation=True (HITL na página)."""
+        for intent, _page, destructive in self.NAVIGATE_CAPS:
+            if destructive:
+                assert CapabilityMapService.requires_confirmation(intent) is True, (
+                    f"'{intent}' é destrutivo — requires_confirmation deve ser True"
+                )
 
     def test_requires_confirmation_is_bool_everywhere(self):
         for intent, cap in CapabilityMapService.load().items():
-            assert isinstance(cap.requires_confirmation, bool), (
-                f"'{intent}'.requires_confirmation deve ser bool"
-            )
+            assert isinstance(cap.requires_confirmation, bool)
 
     def test_confirmation_helper_unknown_intent_false(self):
         assert CapabilityMapService.requires_confirmation("xyz_unknown") is False
 
-    def test_view_profile_is_navigate_only_not_modal(self):
-        """Correção: perfil de candidato NAVEGA (não abre profile-modal,
-        que é o perfil do usuário logado). Sem modal_id, com fallback."""
+    def test_view_profile_navigates_to_candidate_not_user_modal(self):
+        """Perfil de CANDIDATO navega p/ a página (profile-modal é do usuário)."""
         cap = CapabilityMapService.get("view_profile")
         assert cap is not None
-        assert cap.modal_id is None, (
-            "view_profile NÃO deve ter modal_id (profile-modal é do usuário, não do candidato) — perfil de candidato é navegação"
-        )
-        assert cap.navigate_fallback is not None
-
+        assert cap.modal_id is None
+        assert cap.navigate_page == "candidato_detalhe"

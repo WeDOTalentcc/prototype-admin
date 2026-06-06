@@ -32,28 +32,29 @@ def _tenant():
 class TestOpenUiTool:
     @pytest.mark.asyncio
     async def test_readonly_opens_directly(self, _tenant):
-        r = await _wrap_open_ui(capability="view_profile", entity_ids={"candidate_id": "c1"})
+        r = await _wrap_open_ui(capability="view_score", entity_ids={"candidate_id": "c1"})
         assert r["success"] is True
         params = r["data"]["ui_action_params"]
         assert r["data"]["ui_action"] == "open_modal"
-        assert params["modal_id"] == "profile"
+        assert params["modal_id"] == "general_score"
         assert params["requires_confirmation"] is False
         assert params["data"]["candidate_id"] == "c1"
         # company_id autoritativo do JWT, não do payload da LLM
         assert params["data"]["company_id"] == "test-company-uuid"
 
     @pytest.mark.asyncio
-    async def test_destructive_flags_confirmation(self, _tenant):
+    async def test_destructive_navigates_to_surface(self, _tenant):
+        # close_job é ação-acoplada → open_ui NAVEGA pra vaga (ação + HITL lá)
         r = await _wrap_open_ui(capability="close_job", entity_ids={"job_id": "j1"})
         assert r["success"] is True
+        assert r["data"]["ui_action"] == "navigate_to"
         params = r["data"]["ui_action_params"]
-        assert params["modal_id"] == "close_vacancy"
-        assert params["requires_confirmation"] is True
-        assert params["data"]["requires_confirmation"] is True
+        assert params["page"] == "vaga_detalhe"
+        assert params["id"] == "j1"
 
     @pytest.mark.asyncio
     async def test_missing_entity_needs_params(self, _tenant):
-        r = await _wrap_open_ui(capability="view_profile", entity_ids={})
+        r = await _wrap_open_ui(capability="view_score", entity_ids={})
         assert r["success"] is False
         assert r.get("needs_params") is True
         assert "candidate_id" in r["data"]["missing_params"]
@@ -65,10 +66,12 @@ class TestOpenUiTool:
         assert "não conheço" in r["message"].lower() or "modal" in r["message"].lower()
 
     @pytest.mark.asyncio
-    async def test_no_entity_required_ok(self, _tenant):
+    async def test_navigate_cap_no_entity_ok(self, _tenant):
+        # bulk_action exige seleção → navega pro funil (sem id)
         r = await _wrap_open_ui(capability="bulk_action", entity_ids={})
         assert r["success"] is True
-        assert r["data"]["ui_action_params"]["modal_id"] == "bulk_action"
+        assert r["data"]["ui_action"] == "navigate_to"
+        assert r["data"]["ui_action_params"]["page"] == "funil_talentos"
 
     @pytest.mark.asyncio
     async def test_no_company_blocked(self):

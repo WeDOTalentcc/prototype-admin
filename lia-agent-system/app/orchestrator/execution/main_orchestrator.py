@@ -1419,8 +1419,11 @@ class MainOrchestrator:
                         # Aditivo: None em turno normal.
                         _modal_ui_action = None
                         _modal_ui_params = None
-                        if _directive and _directive.get("ui_action") == "open_modal":
-                            _modal_ui_action = "open_modal"
+                        if _directive and _directive.get("ui_action") in (
+                            "open_modal",
+                            "navigate_to",
+                        ):
+                            _modal_ui_action = _directive.get("ui_action")
                             _modal_ui_params = _directive.get("ui_action_params")
                         _resp = ChatResponse(
                             success=True,

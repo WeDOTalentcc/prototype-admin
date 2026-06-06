@@ -30,6 +30,7 @@ class Capability:
     modal_id: str | None = None
     navigate_fallback: str | None = None
     requires_confirmation: bool = False   # HITL: ação destrutiva/mutante
+    navigate_page: str | None = None   # canonical page p/ navegar (sem modal)
 
 
 class CapabilityMapService:
@@ -52,6 +53,7 @@ class CapabilityMapService:
                 modal_id=cfg.get("modal_id"),
                 navigate_fallback=cfg.get("navigate_fallback"),
                 requires_confirmation=cfg.get("requires_confirmation", False),
+                navigate_page=cfg.get("navigate_page"),
             )
         return result
 
