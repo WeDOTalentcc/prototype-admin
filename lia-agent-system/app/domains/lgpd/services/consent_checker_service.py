@@ -68,6 +68,9 @@ class ConsentCheckerService:
         "voice_screening",
         # P1 ticket #3 (2026-05-23): WhatsApp interaction granular consent.
         "whatsapp_screening",
+        # Onda 2C.3 (audit 2026-06-06): autodeclaração/laudo de ação afirmativa é dado
+        # SENSÍVEL (raça/PCD/etc) — consent granular fail-closed antes do upload.
+        "affirmative_verification",
     ]
 
     # Mapeamento de finalidade de IA para consent_type do LGPDConsent.
@@ -82,6 +85,7 @@ class ConsentCheckerService:
         # revoga chat; audit trail diferenciado).
         "voice_screening": "VOICE_SCREENING",
         "whatsapp_screening": "WHATSAPP_INTERACTION",
+        "affirmative_verification": "AFFIRMATIVE_SENSITIVE_DATA",
     }
 
     def __init__(self, db: AsyncSession):
