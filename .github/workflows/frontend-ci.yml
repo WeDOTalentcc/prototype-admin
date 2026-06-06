@@ -136,6 +136,14 @@ jobs:
         # regressão sem bloquear o pipeline com débito pré-existente.
         run: npm run lint:i18n:ratchet
 
+      - name: RRP block schema-sync sensor TS<->Python (BLOCKING desde 2026-06-05)
+        # Verifica que rrp_blocks.py (Pydantic) e rrp-blocks.ts (TS mirror)
+        # declaram os mesmos kinds + enums (BlockRole/Layout/State). Drift =
+        # backend emite kind que o renderer nao conhece (fallback AD6, nunca
+        # renderiza o bloco rico). Baseline 0 na criacao (2026-06-05).
+        # Ver plataforma-lia/scripts/check_rrp_blocks_sync.py.
+        run: npm run lint:rrp-sync:blocking
+
       - name: Candidate canonical axis sensors (WSI 0-10 + LGPD field policy) BLOCKING
         # F6 ADR-001/002. WSI 0-10 (Task #512): bloqueia /100 em candidate-* surfaces.
         # LGPD: bloqueia EditableField/updateField em campos LGPD-sensiveis
