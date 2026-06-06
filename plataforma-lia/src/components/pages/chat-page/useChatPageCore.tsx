@@ -1,7 +1,8 @@
 "use client"
 
 import { useState, useCallback, useEffect, useMemo, useRef } from "react"
-import { useSearchParams } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
+import { useLocale } from "next-intl"
 import { useChatLayout } from "@/hooks/chat/useChatLayout"
 import { useUIActions } from "@/hooks/ui/useUIActions"
 import { promoteCandidateToBase } from "@/lib/api/candidate-search"
@@ -13,6 +14,7 @@ import {
 } from "lucide-react"
 import { type QuickAction, defaultCandidateActions } from "@/components/ui/quick-action-chips"
 import { type CommandItem, defaultCommands } from "@/components/ui/command-palette"
+import { buildNavigationCommands } from "@/lib/navigation/navigation-commands"
 import {
   CandidateSummaryCard, JobSummaryCard, WSIScoreCard,
   CompensationSummaryCard, InterviewConfirmationCard,
@@ -30,6 +32,8 @@ import { toast } from "sonner"
 
 export function useChatPageCore({ initialConversationId }: { initialConversationId?: string | null } = {}) {
   const searchParams = useSearchParams()
+  const router = useRouter()
+  const locale = useLocale()
   const conversationType = searchParams?.get('conversation') || 'empty'
   const initialConversation = conversationType === 'empty' ? emptyConversation : modernConversation
 
@@ -379,6 +383,9 @@ export function useChatPageCore({ initialConversationId }: { initialConversation
 
   // ── Command Palette items ────────────────────────────────────────────────
   const commandItems: CommandItem[] = [
+    // Fase 1: comandos de navegação DERIVADOS de canonical-pages.ts (DRY,
+    // zero drift). Categoria 'Navegação' do Ctrl+/ — "/list de navegação".
+    ...buildNavigationCommands({ locale, navigate: (url) => router.push(url) }),
     ...defaultCommands({
       onSchedule: handleScheduleInterview,
       onEvaluate: handleEvaluateFit,

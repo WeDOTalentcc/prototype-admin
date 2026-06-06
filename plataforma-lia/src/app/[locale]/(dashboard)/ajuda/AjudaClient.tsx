@@ -1,6 +1,7 @@
 "use client"
 
-import { Brain, BookOpen, Users, Code, FileText, Clock, ChevronLeft, HelpCircle, Lightbulb, Target, CheckCircle, Fingerprint, AlertTriangle, MessageSquare, TrendingUp, Shield } from"lucide-react"
+import { Brain, BookOpen, Users, Code, FileText, Clock, ChevronLeft, HelpCircle, Lightbulb, Target, CheckCircle, Fingerprint, AlertTriangle, MessageSquare, TrendingUp, Shield, Compass } from"lucide-react"
+import { navigationCatalog } from "@/lib/navigation/navigation-commands"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
 import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
@@ -62,6 +63,26 @@ export default function AjudaPage() {
         </div>
 
         <div className="space-y-6">
+          <Card className="border-lia-border-subtle">
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-2">
+                <Compass className="w-5 h-5 text-lia-text-primary" />
+                <CardTitle className="text-lg font-semibold text-lia-text-primary">Navegar com a LIA</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="text-lia-text-secondary space-y-3">
+              <p>Peça à LIA no chat para te levar a qualquer página — ou digite <span className="font-mono text-lia-text-primary">Ctrl + /</span> para ver os comandos. Exemplos:</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {navigationCatalog().map((item) => (
+                  <div key={item.page} className="flex items-center gap-2 rounded-md border border-lia-border-subtle px-3 py-2">
+                    <Compass className="w-3.5 h-3.5 text-wedo-cyan shrink-0" />
+                    <span className="text-sm text-lia-text-primary">&quot;me leve para {item.label}&quot;</span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
           <Card className="border-lia-border-subtle">
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
