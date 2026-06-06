@@ -139,7 +139,10 @@ class TestRunGraphCallbacks:
 
         call_kwargs = mock_compiled.ainvoke.call_args
         config = call_kwargs[1].get("config") or call_kwargs[0][1]
-        assert config["configurable"]["thread_id"] == "my-session-abc"
+        # Canonical thread_id format (commit a7d756097, P0 chat hang fix):
+        # "session::domain" — each (session, domain) pair gets its own
+        # checkpointer namespace. ConcreteBase.domain_name == "test".
+        assert config["configurable"]["thread_id"] == "my-session-abc::test"
 
 
 # ---------------------------------------------------------------------------
