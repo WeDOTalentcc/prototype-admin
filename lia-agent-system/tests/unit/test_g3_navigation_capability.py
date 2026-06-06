@@ -54,7 +54,7 @@ class TestExtractNavigateMarker:
         text = "Te levando para Configurações! 🚀 [NAVIGATE:configuracoes]"
         result = _extract_navigate_marker(text)
         assert result is not None
-        clean, page = result
+        clean, page, _params = result
         assert page == "configuracoes"
         assert "[NAVIGATE:" not in clean
         assert "Te levando" in clean
@@ -63,7 +63,7 @@ class TestExtractNavigateMarker:
         text = "Vou pra Funil [NAVIGATE: funil_talentos ]"
         result = _extract_navigate_marker(text)
         assert result is not None
-        clean, page = result
+        clean, page, _params = result
         assert page == "funil_talentos"
         assert "[NAVIGATE:" not in clean
 
@@ -71,7 +71,7 @@ class TestExtractNavigateMarker:
         text = "OK [navigate:vagas]"
         result = _extract_navigate_marker(text)
         assert result is not None
-        _, page = result
+        _, page, _params = result
         assert page == "vagas"
 
     def test_marker_with_legacy_alias(self):
@@ -79,7 +79,7 @@ class TestExtractNavigateMarker:
         text = "Indo pro kanban [NAVIGATE:kanban]"
         result = _extract_navigate_marker(text)
         assert result is not None
-        clean, page = result
+        clean, page, _params = result
         # Legacy 'kanban' → canonical 'pipeline_kanban'
         assert page == CanonicalPage.PIPELINE_KANBAN.value
         assert "[NAVIGATE:" not in clean
@@ -94,7 +94,7 @@ class TestExtractNavigateMarker:
         result = _extract_navigate_marker(text)
         # Marker stripped, but page is GENERAL (caller skips ui_action)
         assert result is not None
-        clean, page = result
+        clean, page, _params = result
         assert page == CanonicalPage.GENERAL.value
         assert "[NAVIGATE:" not in clean
 
@@ -167,3 +167,19 @@ class TestChatAdapterPromotesMarker:
         assert "[NAVIGATE:" not in result["response"]
         # GENERAL → no ui_action (silently degraded)
         assert "ui_action" not in result or result.get("ui_action") != "navigate_to"
+
+
+
+def test_navegacao_id_form_vaga_especifica():
+    """Fix #6 (2026-06-06): abrir VAGA/CANDIDATO especifico precisa da forma
+    com id no prompt -- senao o agente nao abre a vaga certa (so a lista)."""
+    prompt = SystemPromptBuilder.build(agent_type="orchestrator")
+    assert "[NAVIGATE:vaga_detalhe:<id>]" in prompt
+    assert "candidato_detalhe:<id>" in prompt
+
+
+def test_navegacao_navega_direto_sem_perguntar():
+    """Fix #5 (2026-06-06): pedido explicito -> navegar DIRETO, sem
+    'posso te levar?' (so pergunta se a decisao for da IA)."""
+    prompt = SystemPromptBuilder.build(agent_type="orchestrator")
+    assert "navegue DIRETO" in prompt

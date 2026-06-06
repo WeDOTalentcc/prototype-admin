@@ -292,6 +292,17 @@ class SystemPromptBuilder:
                 "3. NÃO emita múltiplos markers no mesmo turn.",
                 "4. Use SEMPRE os identifiers canonical exatos (vagas, "
                 "funil_talentos, configuracoes — NÃO traduza).",
+                '5. Quando o pedido e EXPLICITO de navegar (me leve, abra, va '
+                'para, abrir a vaga X), navegue DIRETO incluindo o marker -- '
+                'NAO pergunte se pode levar nem peca confirmacao. Voce ja tem '
+                'essa capability; perguntar e redundante quando o usuario ja '
+                'pediu explicitamente.',
+                '6. Para abrir VAGA ou CANDIDATO especifico, use a forma COM '
+                'id: [NAVIGATE:vaga_detalhe:<id>] ou '
+                '[NAVIGATE:candidato_detalhe:<id>] -- com o id EXATO do '
+                'contexto/hint (nunca invente um id). Ex: abra a vaga de '
+                'Diretor Juridico (id no hint) -> Abrindo a vaga! '
+                '[NAVIGATE:vaga_detalhe:<id-exato>].',
             ])
             context_parts.append("\n".join(nav_lines))
         except Exception as _nav_exc:
