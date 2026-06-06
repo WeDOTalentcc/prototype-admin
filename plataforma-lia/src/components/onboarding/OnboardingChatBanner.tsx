@@ -11,7 +11,11 @@
  * 3 CTAs:
  *   1. "Configure via chat" → abre chat LIA com modo onboarding (Button primary)
  *   2. "Prefiro formulário" → navega pra /configuracoes (Button outline)
- *   3. "Dispensar" → marca dismissed em localStorage (não reaparece)
+ *   3. "Dispensar" → marca dismissed em localStorage (não reaparece). Botão "X"
+ *      ancorado no canto superior direito do card.
+ *
+ * Layout compacto: subtítulo + CTAs na mesma linha (frase à esquerda, botões
+ * à direita), padding reduzido para minimizar a altura do card.
  *
  * Persistence: localStorage "lia-onboarding-banner-dismissed" + reset
  * automático se setup_progress cair abaixo de 50% (regressão = re-show).
@@ -69,7 +73,7 @@ export function OnboardingChatBanner({ onOpenChat, className = "" }: Props) {
 
   const handleOpenSettings = useCallback(() => {
     router.push(`/${locale}/configuracoes`)
-  }, [router])
+  }, [router, locale])
 
   // Gate: não renderiza se loading, completed, ou dismissed
   if (loading || !needsOnboarding || dismissed) return null
@@ -82,33 +86,33 @@ export function OnboardingChatBanner({ onOpenChat, className = "" }: Props) {
       data-testid="onboarding-chat-banner"
       role="region"
       aria-label="Banner de onboarding conversacional"
-      className={`rounded-xl p-4 ${className}`}
+      className={`relative items-center rounded-xl p-3 ${className}`}
       icon={
         <Brain className="h-5 w-5 text-wedo-cyan" aria-hidden="true" />
       }
       title={
-        <span className="flex items-start justify-between gap-2">
-          <span>Configure sua empresa em 15 minutos via chat</span>
-          <button
-            type="button"
-            onClick={handleDismiss}
-            data-testid="banner-dismiss"
-            aria-label="Dispensar banner"
-            className="shrink-0 text-lia-text-secondary hover:text-lia-text-primary"
-          >
-            <X className="h-4 w-4" aria-hidden="true" />
-          </button>
-        </span>
+        <span className="block pr-8">Configure sua empresa em 15 minutos via chat</span>
       }
     >
-      <div className="space-y-2">
+      {/* Botão dispensar — ancorado no canto superior direito do card */}
+      <button
+        type="button"
+        onClick={handleDismiss}
+        data-testid="banner-dismiss"
+        aria-label="Dispensar banner"
+        className="absolute right-3 top-3 shrink-0 text-lia-text-secondary hover:text-lia-text-primary"
+      >
+        <X className="h-4 w-4" aria-hidden="true" />
+      </button>
+      {/* Frase + CTAs na mesma linha (frase à esquerda, botões à direita) */}
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
         <p className="text-xs leading-snug text-lia-text-secondary">
-          A LIA conversa com você e configura tudo automaticamente. Mais rápido que preencher 80+ campos sozinho.
+          Mais rápido que preencher 80+ campos sozinho.
           <span className="ml-2 font-medium text-wedo-cyan">
             {progress}% completo
           </span>
         </p>
-        <div className="flex flex-wrap gap-2 pt-1">
+        <div className="flex flex-wrap gap-2">
           <Button
             type="button"
             variant="primary"
