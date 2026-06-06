@@ -609,6 +609,7 @@ company_id: str = Depends(require_company_id)):
                     conversation_memory as _cmem,
                 )
                 _hist: list = []
+                _ehint = ""
                 _cid = req.conversation_id or session_id
                 try:
                     async with AsyncSessionLocal() as _mdb:
@@ -628,10 +629,25 @@ company_id: str = Depends(require_company_id)):
                             _mdb, _cid, max_messages=20
                         )
                         _hist = _hctx.get("messages", []) or []
+                        try:
+                            from app.shared.entity_resolver import resolve_named_entities
+                            _ent = await resolve_named_entities(content, company_id, _mdb)
+                            _ehint = _ent.get("hint") or ""
+                        except Exception as _ee:
+                            logger.warning("[SSEChat] entity resolve (fail-open): %s", _ee)
                 except Exception as _he:
                     logger.warning("[SSEChat] memoria load (fail-open): %s", _he)
+                _eff_content = content
+                if _ehint:
+                    # bloqueador-2: injeta a entidade resolvida no proprio content
+                    # (o LLM sempre ve a mensagem) — bypassa a alucinacao de match.
+                    _eff_content = (
+                        content
+                        + "\n\n[Contexto resolvido pelo sistema — use EXATAMENTE isto, "
+                        + "NAO invente outro nome/titulo:\n" + _ehint + "]"
+                    )
                 agent_input = _build_agent_input(
-                    content=content,
+                    content=_eff_content,
                     context=context,
                     session_id=session_id,
                     company_id=company_id,
