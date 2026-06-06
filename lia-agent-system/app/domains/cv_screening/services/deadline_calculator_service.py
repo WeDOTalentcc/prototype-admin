@@ -282,3 +282,33 @@ class DeadlineCalculatorService:
 
 
 deadline_calculator_service = DeadlineCalculatorService()
+
+
+
+def derive_deadlines_from_stages(stages):
+    """Onda 2D (audit 2026-06-06): normaliza interview_stages (sla_hours|sla_days) e
+    devolve os 4 prazos da vaga (deadline_screening/shortlist/closing/deadline) como
+    soma cumulativa dos SLAs das etapas. Fonte = SLA do pipeline (não edição manual).
+
+    Robust: ignora entradas não-dict; converte sla_hours->dias; default 3 dias por etapa.
+    """
+    norm = []
+    for i, st in enumerate(stages or []):
+        if not isinstance(st, dict):
+            continue
+        sla_days = st.get("sla_days")
+        if sla_days is None and st.get("sla_hours") is not None:
+            try:
+                sla_days = max(1, round(float(st["sla_hours"]) / 24))
+            except (TypeError, ValueError):
+                sla_days = None
+        norm.append({
+            "name": st.get("name") or st.get("display_name") or st.get("displayName") or "",
+            "order": st.get("order", i),
+            "sla_days": sla_days if sla_days is not None else 3,
+        })
+    result = deadline_calculator_service.calculate_deadlines_from_sla(norm)
+    return {
+        k: result[k]
+        for k in ("deadline_screening", "deadline_shortlist", "deadline_closing", "deadline")
+    }

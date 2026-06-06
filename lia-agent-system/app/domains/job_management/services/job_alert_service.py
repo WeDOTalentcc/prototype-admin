@@ -62,6 +62,8 @@ class JobAlertService:
         alerts.extend(await self.check_stale_jobs(db))
         alerts.extend(await self.check_low_volume_jobs(db))
         alerts.extend(await self.check_pending_feedback(db))
+        # Onda 2D (audit 2026-06-06): alerta de prazo da vaga (estava morto — sem caller).
+        alerts.extend(await self.check_job_expiration_alerts(db))
         
         logger.info(f"Alert check completed: {len(alerts)} new alerts created")
         

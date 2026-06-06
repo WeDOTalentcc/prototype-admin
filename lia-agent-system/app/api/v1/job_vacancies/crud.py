@@ -887,6 +887,15 @@ company_id: str = Depends(require_company_id)):
                     changes[field] = {"old": old_value, "new": value}
                 setattr(job_vacancy, field, value)
 
+        # Onda 2D (audit 2026-06-06): prazos derivados do SLA do pipeline ao salvar as etapas.
+        if "interview_stages" in update_data:
+            from app.domains.cv_screening.services.deadline_calculator_service import (
+                derive_deadlines_from_stages,
+            )
+            for _df, _dv in derive_deadlines_from_stages(update_data["interview_stages"]).items():
+                if hasattr(job_vacancy, _df):
+                    setattr(job_vacancy, _df, _dv)
+
         if changes:
             from app.domains.job_management.services.job_audit_service import job_audit_service
             changed_by = str(current_user.email) if hasattr(current_user, "email") else str(current_user.id)
