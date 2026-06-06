@@ -652,7 +652,7 @@ company_id: str = Depends(require_company_id)):
                     session_id=session_id,
                     company_id=company_id,
                     user_id=user_id,
-                    conversation_history=_hist,
+                    conversation_history=[],  # revert 2026-06-06: injecao causava 'multiple non-consecutive system messages'; memoria sera via checkpointer/thread_id (canonico)
                 )
                 output = await asyncio.wait_for(
                     agent.process(agent_input),
