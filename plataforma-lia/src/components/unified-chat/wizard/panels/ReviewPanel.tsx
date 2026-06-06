@@ -3,6 +3,7 @@
 import React from "react"
 import { CheckCircle, XCircle, ClipboardCheck, Settings, Globe, Building2, Layers } from "lucide-react"
 import type { ReviewData } from "../wizard-types"
+import { usePersonaName } from "@/hooks/company/usePersonaName"
 
 interface Props {
   data: Record<string, unknown>
@@ -52,6 +53,7 @@ function classes(...names: Array<string | false | undefined | null>) {
 }
 
 export function ReviewPanel({ data, onUpdate }: Props) {
+  const personaName = usePersonaName()
   const d = data as unknown as ReviewData
   const readiness = d.readiness || { ready: false, checks: {}, missing: [] }
   const defaultsApplied = d.defaults_applied || []
@@ -108,7 +110,7 @@ export function ReviewPanel({ data, onUpdate }: Props) {
       {/* PR-8 ONDA 3 / F-3.5: sourcing_mode explicit selector */}
       <div data-testid="sourcing-mode-selector" className="space-y-1.5">
         <div className="text-xs font-semibold text-lia-text-secondary">
-          Onde a LIA deve buscar candidatos?
+          Onde a {personaName} deve buscar candidatos?
         </div>
         {sourcingMode === null && (
           <div className="text-[10px] text-status-warning">
