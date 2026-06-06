@@ -6,6 +6,7 @@ from tenacity import retry, retry_if_result, stop_after_attempt, wait_exponentia
 
 from app.shared.providers.llm_provider import LLMProviderABC, LLMResponse, LLMToolCall, LLMToolResponse
 from app.shared.resilience.circuit_breaker import GEMINI_CIRCUIT, circuit_breaker_decorator
+from app.shared.providers.llm_retry import llm_transient_retry
 
 logger = logging.getLogger(__name__)
 
@@ -55,6 +56,7 @@ class GeminiLLMProvider(LLMProviderABC):
         return self._client
     
     @circuit_breaker_decorator(GEMINI_CIRCUIT)
+    @llm_transient_retry
     @retry(stop=stop_after_attempt(2), wait=wait_exponential(multiplier=1, max=3), retry=retry_if_result(_is_empty_response))
     async def generate(self, prompt, model=None, temperature=0.7, max_tokens=4096, **kwargs):
         client = self._get_client()
@@ -65,6 +67,7 @@ class GeminiLLMProvider(LLMProviderABC):
         return LLMResponse(text=text, provider=self._provider_name, model=model or self._default_model, raw_response=response)
     
     @circuit_breaker_decorator(GEMINI_CIRCUIT)
+    @llm_transient_retry
     @retry(stop=stop_after_attempt(2), wait=wait_exponential(multiplier=1, max=3), retry=retry_if_result(_is_empty_response))
     async def generate_with_system(self, system_prompt, user_message, model=None, temperature=0.7, max_tokens=4096, **kwargs):
         from google.genai import types
@@ -78,6 +81,7 @@ class GeminiLLMProvider(LLMProviderABC):
         return LLMResponse(text=text, provider=self._provider_name, model=model or self._default_model, raw_response=response)
     
     @circuit_breaker_decorator(GEMINI_CIRCUIT)
+    @llm_transient_retry
     async def generate_with_tools(self, messages, tools, system_prompt=None, max_tokens=4096, **kwargs):
         from google.genai import types
         client = self._get_client()
@@ -119,6 +123,7 @@ class GeminiLLMProvider(LLMProviderABC):
                               provider=self._provider_name, model=self._default_model, raw_response=response)
     
     @circuit_breaker_decorator(GEMINI_CIRCUIT)
+    @llm_transient_retry
     async def generate_structured(self, messages, output_schema, system_prompt=None, max_tokens=4096, **kwargs):
         import json
 
