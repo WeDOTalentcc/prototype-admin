@@ -245,6 +245,34 @@ def _is_non_wizard_action(message: str | None) -> bool:
     return any(head.startswith(tag) for tag in _NON_WIZARD_ACTION_TAGS)
 
 
+# Release do pin por intenção de QUERY/navegação (fix 2026-06-06): um wizard
+# abandonado (checkpoint não-completed dentro do TTL) sequestrava pedidos de
+# LEITURA de dados existentes -- "liste os candidatos da vaga", "abrir a vaga X",
+# "rankeie os melhores", "me leve pro funil", "ver kanban" (transcript Paulo).
+# O usuário não escapava. Espelha a intenção do CR-3 (navigation_intent); local
+# aqui porque o pin vive na camada shared (importar orchestrator = layering
+# violation). Conservador: exige verbo de consulta + alvo de dado, OU
+# pipeline/funil/kanban standalone (palavras que não aparecem em criação de
+# vaga) -- então continuações do wizard (descrições, "sim", "muda a pergunta 3",
+# "liste as perguntas de triagem") NÃO casam.
+_NON_WIZARD_QUERY_RE = re.compile(
+    r"\b(?:pipeline|funil|kanban)\b"
+    r"|\b(?:list\w*|ranke\w*|ranque\w*|busc\w*|compar\w*|abr\w*|mostr\w*|"
+    r"ve(?:ja|r)\b|resum\w*|quais|quant\w*|leve|leva)\b"
+    r"[^.?!\n]{0,40}?\b"
+    r"(?:candidat\w*|vagas?|pipeline|funil|kanban|ranking|talento\w*|perfil)\b",
+    re.IGNORECASE,
+)
+
+
+def _is_non_wizard_query(message: str | None) -> bool:
+    """True se a msg pede LEITURA/navegação de dados existentes (não é
+    continuação do wizard de criação). Libera o pin pro agente de domínio."""
+    if not message:
+        return False
+    return bool(_NON_WIZARD_QUERY_RE.search(message))
+
+
 async def should_pin_to_wizard(
     company_id: str | None,
     session_id: str,
@@ -272,6 +300,8 @@ async def should_pin_to_wizard(
     if domain_hint and domain_hint != "wizard":
         return False
     if _is_non_wizard_action(message):
+        return False
+    if _is_non_wizard_query(message):
         return False
     return await is_wizard_session_active(company_id, session_id)
 

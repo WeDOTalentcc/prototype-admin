@@ -69,3 +69,48 @@ async def test_should_pin_false_when_inactive(monkeypatch):
         return False
     monkeypatch.setattr(tid, "is_wizard_session_active", _inactive)
     assert await should_pin_to_wizard("comp-1", "sess-1", "criar vaga") is False
+
+
+
+# ── Fix 2026-06-06: release do pin por data-query/navegação (transcript Paulo) ─
+from app.shared.sessions.thread_id import (  # noqa: E402
+    _is_non_wizard_query,
+)
+import app.shared.sessions.thread_id as _tid  # noqa: E402
+
+
+@pytest.mark.parametrize("msg", [
+    "liste os candidatos dessa vaga e rankeie os melhores",
+    "voce consegue abrir a vaga de diretor juridico que tem 24 candidatos",
+    "me leve para funil de talentos",
+    "quer ver kanban com os candidatos",
+    "rankeie os melhores candidatos",
+    "como está o pipeline",
+    "quais candidatos temos",
+    "mostre o perfil do candidato",
+])
+def test_data_query_libera_pin(msg):
+    assert _is_non_wizard_query(msg) is True, f"deveria liberar: {msg!r}"
+
+
+@pytest.mark.parametrize("msg", [
+    "sim",
+    "a vaga é remota e o salário é 15 mil",
+    "muda a pergunta 3",
+    "pode publicar",
+    "quero um desenvolvedor sênior com Python e AWS",
+    "liste as perguntas de triagem",
+])
+def test_continuacao_wizard_nao_libera(msg):
+    assert _is_non_wizard_query(msg) is False, f"NÃO deveria liberar (é wizard): {msg!r}"
+
+
+@pytest.mark.asyncio
+async def test_should_pin_libera_data_query_mesmo_com_wizard_ativo(monkeypatch):
+    async def _always_active(*a, **k):
+        return True
+    monkeypatch.setattr(_tid, "is_wizard_session_active", _always_active)
+    # data-query -> NÃO pina (libera pro domínio) apesar do wizard ativo
+    assert await _tid.should_pin_to_wizard("c", "s", "liste os candidatos da vaga") is False
+    # continuação genuína -> pina (fica no wizard)
+    assert await _tid.should_pin_to_wizard("c", "s", "a vaga é remota") is True
