@@ -302,3 +302,49 @@ def get_suggested_scope_for_intent(intent: str) -> PromptScope:
         Suggested PromptScope.
     """
     return SCOPE_INTENT_MAPPING.get(intent, PromptScope.GLOBAL)
+
+
+# ── Fase 1 (2026-06-06): page/domain -> PromptScope p/ o agente federado unico ──
+# O federado carrega o toolset ESCOPADO (bounded) via get_tools_for_scope DESTE
+# modulo (NAO o de app/shared/tool_catalog.py, que retorna ~166 por causa do
+# scope_inferred=GLOBAL default + case mismatch). Determinismo computacional.
+_PAGE_SCOPE: dict[str, "PromptScope"] = {
+    "vagas": PromptScope.JOB_TABLE,
+    "jobs": PromptScope.JOB_TABLE,
+    "job_table": PromptScope.JOB_TABLE,
+    "vaga_detalhe": PromptScope.IN_JOB,
+    "job_detail": PromptScope.IN_JOB,
+    "kanban": PromptScope.IN_JOB,
+    "pipeline_kanban": PromptScope.IN_JOB,
+    "funil": PromptScope.TALENT_FUNNEL,
+    "candidatos": PromptScope.TALENT_FUNNEL,
+    "talent": PromptScope.TALENT_FUNNEL,
+    "candidato_detalhe": PromptScope.TALENT_FUNNEL,
+}
+_DOMAIN_SCOPE: dict[str, "PromptScope"] = {
+    "jobs_management": PromptScope.JOB_TABLE,
+    "job_management": PromptScope.JOB_TABLE,
+    "jobs_mgmt": PromptScope.JOB_TABLE,
+    "talent": PromptScope.TALENT_FUNNEL,
+    "talent_funnel": PromptScope.TALENT_FUNNEL,
+    "talent_pool": PromptScope.TALENT_FUNNEL,
+    "kanban": PromptScope.IN_JOB,
+    "pipeline_transition": PromptScope.IN_JOB,
+}
+
+
+def scope_for_context(
+    page_type: str | None = None, resolved_domain: str | None = None
+) -> PromptScope:
+    """Infere o PromptScope do turno: page_type (sinal do FE, prioridade) -> senao
+    resolved_domain (fallback do router) -> senao GLOBAL. Deterministico (computacional
+    > inferencial). Funcao PURA. Fase 1 do plano de consolidacao (agente federado unico)."""
+    if page_type:
+        sc = _PAGE_SCOPE.get(str(page_type).strip().lower())
+        if sc is not None:
+            return sc
+    if resolved_domain:
+        sc = _DOMAIN_SCOPE.get(str(resolved_domain).strip().lower())
+        if sc is not None:
+            return sc
+    return PromptScope.GLOBAL
