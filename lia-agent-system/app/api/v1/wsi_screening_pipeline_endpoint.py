@@ -52,6 +52,26 @@ company_id: str = Depends(require_company_id)):
     try:
         company_id = get_user_company_id(current_user)
 
+        # Onda 2C.1 (audit 2026-06-06): a VAGA é a fonte da verdade da ação afirmativa.
+        # Resolve is_affirmative/critério do banco server-side (não confia na flag do FE),
+        # garantindo que marcar a vaga como afirmativa auto-habilita a pergunta de autodeclaração.
+        if request.job_id:
+            from app.models.job_vacancy import JobVacancy
+            from app.domains.cv_screening.services.wsi_screening_pipeline import (
+                criterion_to_affirmative_type,
+            )
+            job_row = (await db.execute(
+                select(JobVacancy).where(  # ADR-001-EXEMPT: endpoint layer, leitura pontual p/ resolver ação afirmativa server-side
+                    JobVacancy.id == request.job_id,
+                    JobVacancy.company_id == company_id,
+                )
+            )).scalar_one_or_none()
+            if job_row is not None and getattr(job_row, "is_affirmative", False):
+                request.is_affirmative = True
+                request.affirmative_type = criterion_to_affirmative_type(
+                    getattr(job_row, "affirmative_criteria_primary", None)
+                )
+
         company_questions_raw = []
         if request.include_company_questions:
             try:
