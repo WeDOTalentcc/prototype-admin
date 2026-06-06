@@ -116,6 +116,13 @@ jobs:
           python -m pytest tests/contract/test_no_collection_errors.py \
             --no-header --no-cov -q --tb=short
 
+      # ADR-029 §2 (audit C2/#4 2026-06-05): tool schemas nao podem expor
+      # chave de tenant (company_id/tenant_id/...) — LLM jamais fornece tenant;
+      # vem do RuntimeContext/ContextVar via @tool_handler. Ja --block no pre-commit;
+      # aqui fecha o gate de CI (defesa contra commit que pulou o hook).
+      - name: ADR-029 — tenant key leak in tool schemas
+        run: python3 scripts/check_no_tenant_in_tool_schemas.py --block
+
       - name: Security scan (bandit)
         continue-on-error: true
         run: |

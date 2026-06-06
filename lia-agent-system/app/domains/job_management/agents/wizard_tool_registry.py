@@ -1616,10 +1616,6 @@ TOOL_DEFINITIONS.append(
         parameters={
             "type": "object",
             "properties": {
-                "company_id": {
-                    "type": "string",
-                    "description": "ID da empresa (obrigatorio, vem do contexto JWT)",
-                },
                 "vacancy_id": {
                     "type": "string",
                     "description": "ID da vaga (UUID). Obrigatorio para persistir.",
@@ -1645,7 +1641,7 @@ TOOL_DEFINITIONS.append(
                     "description": "Lista de competencias comportamentais a remover (match por nome, case-insensitive)",
                 },
             },
-            "required": ["company_id"],
+            "required": ["vacancy_id"],
         },
         output_schema=ToolOutput,
         function=_wrap_update_competencies,
