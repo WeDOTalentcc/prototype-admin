@@ -255,6 +255,7 @@ class CompanyProfileBase(CnpjMixin, BaseModel):
     headquarters_state: str | None = None
     headquarters_country: str | None = "Brasil"
     employment_types: list[str] | None = None
+    primary_employment_type: str | None = None
     address: str | None = None
     main_phone: str | None = None
     hr_phone: str | None = None
@@ -295,6 +296,7 @@ class CompanyProfileUpdate(CnpjMixin, WeDoBaseModel):
     employee_count: int | None = None
     revenue_range: str | None = None
     employment_types: list[str] | None = None
+    primary_employment_type: str | None = None
     is_active: bool | None = None
     additional_data: dict[str, Any] | None = None
 

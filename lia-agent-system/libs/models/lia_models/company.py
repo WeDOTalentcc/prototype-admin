@@ -97,6 +97,9 @@ class CompanyProfile(Base):
     # Freelancer). Fonte company-wide para heranca na criacao de vaga (FASE 1,
     # audit 2026-06-06). A vaga (JobVacancy.employment_type) escolhe UM desta lista.
     employment_types = Column(ARRAY(String), nullable=False, server_default="{}", default=list)
+    # Contratacao primaria (default herdado pela vaga quando o recrutador nao
+    # especifica). E3 (audit 2026-06-06).
+    primary_employment_type = Column(String(50), nullable=True)
     
     is_active = Column(Boolean, default=True)
     # PR-B (Task #1016) — `is_default` precisa ser NOT NULL com default

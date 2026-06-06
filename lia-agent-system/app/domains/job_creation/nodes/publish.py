@@ -125,6 +125,25 @@ def publish_node(state: JobCreationState) -> JobCreationState:
         # Step 1: Create job if not yet created
         if not job_id:
             jd = state.get("jd_enriched", {})
+            # E3 (audit 2026-06-06): heranca do employment_type pela cadeia
+            # departamento > empresa quando o recrutador nao especificou.
+            # Fail-open: qualquer erro mantem o comportamento atual.
+            _emp_type = state.get("parsed_employment_type")
+            if not _emp_type:
+                try:
+                    from app.domains.job_creation.helpers.employment_type_resolver import (
+                        resolve_employment_type_for_state,
+                    )
+                    from app.domains.job_creation.helpers.async_audit import (
+                        run_coro_in_threadpool,
+                    )
+                    _emp_type = run_coro_in_threadpool(
+                        resolve_employment_type_for_state(state)
+                    ) or _emp_type
+                except Exception:  # noqa: BLE001 — fail-open, nunca quebra o publish
+                    logger.warning(
+                        "[publish] employment_type inheritance fail-open", exc_info=True
+                    )
             job_data = {
                 "title": jd.get("titulo_padronizado", state.get("parsed_title", "")),
                 "description": jd.get("about_role", ""),
@@ -139,7 +158,7 @@ def publish_node(state: JobCreationState) -> JobCreationState:
                 "location": state.get("parsed_location", ""),
                 "work_model": to_canonical_work_model(state.get("parsed_model", "")),
                 # P0-A: regime de contratação (coluna employment_type já existe).
-                "employment_type": to_canonical_employment_type(state.get("parsed_employment_type")),
+                "employment_type": to_canonical_employment_type(_emp_type),
                 # FASE 5: gestor responsável + email (colunas manager/manager_email já existem).
                 "manager": state.get("parsed_manager_name") or "",
                 "manager_email": state.get("parsed_manager_email") or "",
