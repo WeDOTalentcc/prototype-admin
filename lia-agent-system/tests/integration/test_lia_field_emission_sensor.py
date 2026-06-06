@@ -92,6 +92,8 @@ EXPECTED_EMISSION = {
     "locations": "SENTINELLOC",
     "tech_stack": "SENTINELTECH",
     "default_languages": "SENTINELLANG",
+    # CompanyProfile column (FASE 1 — fonte company-wide de contratacao)
+    "employment_types": "SENTINELEMPTYPE",
     # relationships
     "departments": "SENTINELDEPT",
     "benefits": "SENTINELBENEFIT",
@@ -103,7 +105,7 @@ EXPECTED_EMISSION = {
 # fallback (job_history/market) or genuinely source-less today. Listing them
 # here keeps the omission explicit (harness: no silent caps).
 NO_DIRECT_SOURCE = {
-    "seniority_levels", "employment_types", "salary_ranges",  # fallback/bands
+    "seniority_levels", "salary_ranges",  # fallback/bands
     "pipeline", "eligibility_questions", "headcount_planning",  # no source yet
     "hybrid_days_onsite",  # no source column yet (FASE 1, with work_model)
     "industry", "website", "linkedin_url", "company_size",  # CompanyProfile cols
@@ -116,8 +118,8 @@ async def fully_seeded_company(db):
     company_id = str(uuid.uuid4())
     await db.execute(
         text(
-            "INSERT INTO company_profiles (id, name, is_active, is_default, trading_name) "
-            "VALUES (:id, :name, TRUE, FALSE, :tn)"
+            "INSERT INTO company_profiles (id, name, is_active, is_default, trading_name, employment_types) "
+            "VALUES (:id, :name, TRUE, FALSE, :tn, ARRAY['SENTINELEMPTYPE'])"
         ),
         {"id": company_id, "name": f"EmitTest {company_id[:8]}", "tn": "SENTINELTRADE Ltda"},
     )

@@ -92,6 +92,11 @@ class CompanyProfile(Base):
     
     employee_count = Column(Integer, nullable=True)
     revenue_range = Column(String(100), nullable=True)
+
+    # Modelos de contratacao que a empresa usa (CLT, PJ, Estagio, Temporario,
+    # Freelancer). Fonte company-wide para heranca na criacao de vaga (FASE 1,
+    # audit 2026-06-06). A vaga (JobVacancy.employment_type) escolhe UM desta lista.
+    employment_types = Column(ARRAY(String), nullable=False, server_default="{}", default=list)
     
     is_active = Column(Boolean, default=True)
     # PR-B (Task #1016) — `is_default` precisa ser NOT NULL com default
