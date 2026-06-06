@@ -625,3 +625,91 @@ jobs:
           name: playwright-report-persistence
           path: plataforma-lia/playwright-report/
           retention-days: 14
+
+  smoke:
+    # Audit C7/#6 (2026-06-05): o smoke (tests/contract/test_endpoint_smoke.py,
+    # ~1798 endpoints) so dava pytest.skip silencioso quando backend offline e
+    # nunca rodava de verdade no CI — sensor inerte (stack-leak / NameError /
+    # schema mismatch passavam). Este job sobe uvicorn:8001 e roda o smoke com
+    # LIA_SMOKE_REQUIRED=1 (backend morto => FALHA dura, nao skip). WARN-ONLY
+    # (continue-on-error no step) ate baseline verde observado; promover a
+    # blocking depois (triar endpoints quebrados via SKIP_ENDPOINTS + ticket).
+    # So em PR / dispatch — sem burn de LLM por push (espelha eval-nightly).
+    name: API Smoke (no 500s)
+    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: lia-agent-system
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: lia
+          POSTGRES_PASSWORD: lia
+          POSTGRES_DB: lia_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql+asyncpg://lia:lia@localhost:5432/lia_test
+      REDIS_URL: redis://localhost:6379
+      ENVIRONMENT: test
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      SECRET_KEY: ${{ secrets.EVAL_BACKEND_SECRET_KEY || 'eval-nightly-secret-key-do-not-use-in-prod' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -e ".[dev]" || pip install -e . || pip install -r requirements.txt
+          pip install httpx pyjwt pyyaml pytest --quiet
+
+      - name: Boot uvicorn in the background
+        run: |
+          nohup python -m uvicorn app.main:app --host 0.0.0.0 --port 8001 > /tmp/lia-backend.log 2>&1 &
+          echo $! > /tmp/lia-backend.pid
+          for i in $(seq 1 60); do
+            if curl -fsS http://localhost:8001/health >/dev/null 2>&1; then
+              echo "backend ready after ${i}s"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "::error::backend did not become healthy in 120s"
+          tail -200 /tmp/lia-backend.log
+          exit 1
+
+      - name: API smoke — no endpoint 500s (warn-only ratchet)
+        continue-on-error: true
+        env:
+          LIA_SMOKE_REQUIRED: "1"
+        run: |
+          python -m pytest tests/contract/test_endpoint_smoke.py \
+            --no-header --no-cov -q --tb=short

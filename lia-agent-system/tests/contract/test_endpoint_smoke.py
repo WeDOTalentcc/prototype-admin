@@ -118,6 +118,20 @@ def _build_payload(path: str, method: str) -> dict[str, Any]:
 # ─────────────────────────────────────────────────────────────────────────────
 # Tests
 # ─────────────────────────────────────────────────────────────────────────────
+def _backend_unavailable(exc: Exception):
+    """Backend/OpenAPI inacessivel. Com LIA_SMOKE_REQUIRED=1 (CI com uvicorn
+    booted) vira FALHA — o smoke e inutil se passa silenciosamente com o
+    servidor morto (REGRA 4). Em dev local / job sem backend, skip educado.
+    Audit C7/#6 2026-06-05."""
+    msg = f"Backend offline ou OpenAPI inacessivel: {exc}"
+    if os.environ.get("LIA_SMOKE_REQUIRED"):
+        pytest.fail(
+            msg + " — LIA_SMOKE_REQUIRED=1 exige backend vivo em :8001. "
+            "Suba uvicorn antes do smoke; skip silencioso e proibido."
+        )
+    pytest.skip(msg)
+
+
 def pytest_generate_tests(metafunc):
     """Parametrize dynamicamente a partir do openapi.json."""
     if "route" in metafunc.fixturenames:
@@ -138,7 +152,7 @@ def pytest_generate_tests(metafunc):
                 ids=[f"{m} {p}" for p, m in routes],
             )
         except Exception as e:
-            pytest.skip(f"Backend offline ou OpenAPI inacessível: {e}")
+            _backend_unavailable(e)
 
 
 def test_endpoint_does_not_500(route: tuple[str, str], access_token: str):
@@ -203,3 +217,20 @@ def test_endpoint_does_not_500(route: tuple[str, str], access_token: str):
             f"❌ Endpoint {method} {path} vazou file path absoluto (info disclosure).\n"
             f"   Response: {response.text[:600]}"
         )
+
+
+# Gate sensor (audit C7/#6 2026-06-05) — o smoke NAO pode passar silenciosamente.
+def test_smoke_gate_fails_hard_when_required(monkeypatch):
+    """LIA_SMOKE_REQUIRED=1 -> backend offline vira FALHA, nao skip silencioso."""
+    from _pytest.outcomes import Failed
+    monkeypatch.setenv("LIA_SMOKE_REQUIRED", "1")
+    with pytest.raises(Failed):
+        _backend_unavailable(RuntimeError("openapi unreachable"))
+
+
+def test_smoke_gate_skips_without_env(monkeypatch):
+    """Sem LIA_SMOKE_REQUIRED (dev local / job test sem backend) -> skip educado."""
+    from _pytest.outcomes import Skipped
+    monkeypatch.delenv("LIA_SMOKE_REQUIRED", raising=False)
+    with pytest.raises(Skipped):
+        _backend_unavailable(RuntimeError("openapi unreachable"))
