@@ -10,6 +10,11 @@ __all__ = [
     "SATURATION_EXCLUDED_STATUSES",
     "ADHERENCE_THRESHOLD",
     "VALID_SCREENING_STATUSES",
+    "VALID_PRIORITIES",
+    "URGENCY_LEVELS",
+    "WORK_MODEL_OPTIONS",
+    "EMPLOYMENT_TYPE_OPTIONS",
+    "SENIORITY_OPTIONS",
     # helpers
     "_calculate_days_between",
     "_is_job_at_risk",
@@ -78,6 +83,29 @@ SATURATION_EXCLUDED_STATUSES = ('rejected', 'declined', 'withdrawn')
 ADHERENCE_THRESHOLD = 55.0
 
 VALID_SCREENING_STATUSES = {"not_configured", "not_started", "active", "paused", "completed"}
+
+# --- Dropdown option vocabularies (FastAPI canonical — Rails fora do fluxo) ---
+# Onda 1 (audit 2026-06-06): fonte única para GET /job-vacancies/options.
+# Valores são as strings canônicas PT que o formulário FE persiste
+# (ver plataforma-lia/src/components/jobs/job-edit-tab + helpers/vacancy_vocab.py).
+VALID_PRIORITIES = ["alta", "média", "baixa"]
+
+URGENCY_LEVELS = [
+    {"id": 1, "name": "1 — Muito baixa"},
+    {"id": 2, "name": "2 — Baixa"},
+    {"id": 3, "name": "3 — Média"},
+    {"id": 4, "name": "4 — Alta"},
+    {"id": 5, "name": "5 — Crítica"},
+]
+
+WORK_MODEL_OPTIONS = ["remoto", "híbrido", "presencial"]
+
+EMPLOYMENT_TYPE_OPTIONS = ["CLT", "PJ", "Estágio", "Freelancer", "Temporário"]
+
+SENIORITY_OPTIONS = [
+    "Estágio", "Júnior", "Pleno", "Sênior",
+    "Especialista", "Coordenador", "Gerente", "Diretor",
+]
 
 # =============================================
 # HELPER FUNCTIONS
@@ -279,6 +307,15 @@ class JobVacancyUpdate(WeDoBaseModel):
     affirmative_document_required: bool | None = None
     affirmative_document_types: list[str] | None = None
     enriched_jd: dict | None = None
+    # Onda 1 (audit 2026-06-06): prazos da vaga + urgência são features REAIS
+    # (prazos alimentam job_alert_service/notifications; urgência é exibida/filtrável).
+    # As colunas já existem no model; o setattr-loop genérico do update persiste.
+    urgency_level: int | None = None
+    open_date: datetime | None = None
+    deadline: datetime | None = None
+    deadline_screening: datetime | None = None
+    deadline_shortlist: datetime | None = None
+    deadline_closing: datetime | None = None
 
 
 class JobVacancyResponse(BaseModel):
