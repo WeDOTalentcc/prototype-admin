@@ -61,7 +61,7 @@ export function JobEditTab({
     addStage,
     removeStage,
     updateStage,
-    moveStage,
+    reorderStages,
     LIA_ASSISTED_STAGES,
     LIA_ASSISTED_STAGE_NAMES,
     vacancyId,
@@ -286,7 +286,7 @@ export function JobEditTab({
                   addStage={addStage}
                   removeStage={removeStage}
                   updateStage={updateStage}
-                  moveStage={moveStage}
+                  reorderStages={reorderStages}
                   vacancyId={vacancyId}
                   templates={templates}
                   isLoadingTemplates={isLoadingTemplates}

@@ -232,22 +232,18 @@ export function useJobEditTab({
     updateField("interviewStages", updated)
   }
 
-  const moveStage = (index: number, direction: "up" | "down") => {
-    if (direction === "up" && index === 0) return
-    if (direction === "down" && index === stages.length - 1) return
-    const stage = stages[index]
-    if (stage.stageCategory === "system" || stage.isReorderable === false) return
-    const newIndex = direction === "up" ? index - 1 : index + 1
-    const targetStage = stages[newIndex]
-    if (
-      targetStage.stageCategory === "system" ||
-      targetStage.isReorderable === false
-    )
-      return
+  // Reordenação por arrastar (dnd-kit). Substitui moveStage(up/down).
+  // Mantém os guards: não move etapa de sistema nem dropa numa posição de sistema.
+  const reorderStages = (fromIndex: number, toIndex: number) => {
+    if (fromIndex === toIndex) return
+    const from = stages[fromIndex]
+    const to = stages[toIndex]
+    if (!from || !to) return
+    if (from.stageCategory === "system" || from.isReorderable === false) return
+    if (to.stageCategory === "system" || to.isReorderable === false) return
     const updated = [...stages]
-    const temp = updated[index]
-    updated[index] = updated[newIndex]
-    updated[newIndex] = temp
+    const [moved] = updated.splice(fromIndex, 1)
+    updated.splice(toIndex, 0, moved)
     updateField(
       "interviewStages",
       updated.map((s, i) => ({ ...s, order: i + 1 }))
@@ -339,7 +335,7 @@ export function useJobEditTab({
     addStage,
     removeStage,
     updateStage,
-    moveStage,
+    reorderStages,
     toggleStageActive,
     LIA_ASSISTED_STAGES,
     LIA_ASSISTED_STAGE_NAMES,

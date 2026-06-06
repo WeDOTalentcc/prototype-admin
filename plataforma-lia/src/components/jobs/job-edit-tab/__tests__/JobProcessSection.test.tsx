@@ -37,7 +37,7 @@ function makeProps(overrides: Record<string, unknown> = {}) {
     addStage: vi.fn(),
     removeStage: vi.fn(),
     updateStage: vi.fn(),
-    moveStage: vi.fn(),
+    reorderStages: vi.fn(),
     vacancyId: "vac-1",
     templates,
     isLoadingTemplates: false,
@@ -81,5 +81,24 @@ describe("JobProcessSection — aplicar template exige confirmação (#2)", () =
     render(<JobProcessSection {...makeProps({ isEditing: true })} />)
     expect(onApplyTemplate).not.toHaveBeenCalled()
     expect(screen.queryByText("Aplicar template de pipeline?")).not.toBeInTheDocument()
+  })
+})
+
+describe("JobProcessSection — reordenar por arrastar (#4)", () => {
+  const stages = [
+    { stageName: "Triagem", name: "screening", stageCategory: "system", isReorderable: false },
+    { stageName: "Long List", name: "custom_1", stageCategory: "custom", isReorderable: true },
+    { stageName: "Short List", name: "custom_2", stageCategory: "custom", isReorderable: true },
+  ]
+
+  it("mostra handles de arrastar para etapas reordenáveis em modo de edição (sem setas up/down)", () => {
+    render(<JobProcessSection {...makeProps({ isEditing: true, stages })} />)
+    // 2 etapas custom reordenáveis → 2 handles de arrastar
+    expect(screen.getAllByLabelText("Arrastar para reordenar")).toHaveLength(2)
+  })
+
+  it("não mostra handles de arrastar fora do modo de edição", () => {
+    render(<JobProcessSection {...makeProps({ isEditing: false, stages })} />)
+    expect(screen.queryAllByLabelText("Arrastar para reordenar")).toHaveLength(0)
   })
 })
