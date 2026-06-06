@@ -1,5 +1,6 @@
 """Candidate search route: POST /candidates"""
 import asyncio
+import os
 import time as _time
 from typing import Any
 from uuid import UUID
@@ -8,10 +9,16 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.domains.cv_screening.services.lia_score_service import lia_score_service
+
+# P1-3: pontos de boost por feedback no Match score do funil (escala 0-100, env-tunavel).
+_FEEDBACK_BOOST_POINTS = float(os.getenv("SEARCH_FEEDBACK_BOOST_POINTS", "10"))
+
 from ._shared import (
     CVParserService,
     CandidateProfile,
     CandidateSearchResultDTO,
+    apply_feedback_boost,
     EducationDTO,
     EvaluateForJobRequest,
     EvaluateForJobResponse,
@@ -352,6 +359,13 @@ company_id: str = Depends(require_company_id)):
             _apify_fallback_warning = get_degraded_response("pearch")
         
         candidates = await enrich_and_filter_candidates(db, candidates, company_id=company_id)
+
+        # P1-3: aprendizado por feedback — ajusta o Match score dos resultados
+        # com base no like/dislike persistido (escopado por company_id, stateless).
+        if candidates:
+            _fb_ids = [c.id for c in candidates if getattr(c, "id", None)]
+            _fb_map = await lia_score_service.load_search_feedback(_fb_ids, company_id=company_id)
+            apply_feedback_boost(candidates, _fb_map, _FEEDBACK_BOOST_POINTS)
 
         # Task #1219 — garantia final "só candidatos com email" no modo
         # "Híbrida com email". Rede de segurança que cobre TODOS os caminhos
