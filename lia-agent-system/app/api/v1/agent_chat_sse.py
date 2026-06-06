@@ -795,6 +795,27 @@ company_id: str = Depends(require_company_id)):
                         except Exception:
                             pass
 
+                        # FIX-C3B-SSE (Fase 0): paridade c/ WS — post_compliance
+                        # (FactChecker + audit log LGPD da decisao) faltava no SSE.
+                        # Fecha o gap de governanca/auditoria na saida. Fail-open.
+                        try:
+                            from app.shared.compliance.c3b_layer import (
+                                ComplianceContext,
+                                post_compliance,
+                            )
+                            _c3b_ctx = ComplianceContext(
+                                company_id=company_id or "",
+                                user_id=user_id,
+                                session_id=session_id,
+                                domain=resolved_domain,
+                                agent_id=resolved_domain,
+                                original_message=_raw_content,
+                                fairness_flags=[],
+                            )
+                            clean_message = await post_compliance(clean_message, _c3b_ctx)
+                        except Exception as _c3b_exc:
+                            logger.warning("[SSEChat] post_compliance skipped (fail-open): %s", _c3b_exc)
+
                         panel_meta = (output.metadata or {}).get("panel_update")
                         if panel_meta and isinstance(panel_meta, dict):
                             yield format_sse_event(
