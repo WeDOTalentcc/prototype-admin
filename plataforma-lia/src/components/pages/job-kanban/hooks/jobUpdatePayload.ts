@@ -16,6 +16,7 @@ const FIELD_MAP: Record<string, string> = {
   title: "title",
   department: "department",
   location: "location",
+  city: "city",
   workModel: "work_model",
   type: "employment_type",
   seniority: "seniority_level",
@@ -54,9 +55,9 @@ const FIELD_MAP: Record<string, string> = {
 // is dropped before the request so the save is never rejected for a phantom key.
 // NOTE: target_sector/segment/audience (Mercado-Alvo) and published_* are intentionally
 // absent — Mercado-Alvo will be removed (Onda 2); publication channels are not yet a
-// real persistable contract. `city` is absent until the global cities dataset (Onda 2).
+// real persistable contract. (city persiste desde Onda 2B via dataset global IBGE.)
 const ALLOWED_KEYS = new Set<string>([
-  "title", "department", "location", "work_model", "employment_type",
+  "title", "department", "location", "city", "work_model", "employment_type",
   "seniority_level", "description", "responsibilities", "requirements",
   "technical_requirements", "languages", "behavioral_competencies", "salary",
   "salary_range", "bonus_range", "benefits", "variable_compensation", "manager",
@@ -72,7 +73,7 @@ const ALLOWED_KEYS = new Set<string>([
 
 // Keys whose form value may be a RemoteCombobox object {id,name} and the schema wants a string.
 const SCALAR_NAME_KEYS = new Set<string>([
-  "department", "priority", "employment_type", "work_model", "seniority_level", "status",
+  "department", "priority", "employment_type", "work_model", "seniority_level", "status", "city",
 ])
 
 function isOption(v: unknown): v is { id?: unknown; name?: unknown } {

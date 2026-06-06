@@ -59,14 +59,18 @@ describe("buildJobUpdatePayload", () => {
     expect(p.location).toBe("São Paulo, SP")
   })
 
-  it("drops keys the backend schema forbids (Mercado-Alvo, publicação, city)", () => {
+  it("drops keys the backend schema forbids (Mercado-Alvo, publicação)", () => {
     const p = buildJobUpdatePayload(fields, form)
     expect("target_sector" in p).toBe(false)
     expect("target_segment" in p).toBe(false)
     expect("target_audience" in p).toBe(false)
     expect("published_linkedin" in p).toBe(false)
     expect("published_website" in p).toBe(false)
-    expect("city" in p).toBe(false)
+  })
+
+  it("keeps city (persiste desde Onda 2B)", () => {
+    const p = buildJobUpdatePayload(fields, form)
+    expect(p.city).toBe("São Paulo")
   })
 
   it("builds salary_range from salaryMin/salaryMax", () => {

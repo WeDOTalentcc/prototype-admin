@@ -307,6 +307,7 @@ class JobVacancyUpdate(WeDoBaseModel):
     affirmative_document_required: bool | None = None
     affirmative_document_types: list[str] | None = None
     enriched_jd: dict | None = None
+    city: str | None = None
     # Onda 1 (audit 2026-06-06): prazos da vaga + urgência são features REAIS
     # (prazos alimentam job_alert_service/notifications; urgência é exibida/filtrável).
     # As colunas já existem no model; o setattr-loop genérico do update persiste.
@@ -324,6 +325,7 @@ class JobVacancyResponse(BaseModel):
     title: str
     department: str | None = None
     location: str | None = None
+    city: str | None = None
     work_model: str | None = None
     employment_type: str | None = None
     seniority_level: str | None = None

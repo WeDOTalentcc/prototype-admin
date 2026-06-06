@@ -33,6 +33,7 @@ class JobVacancy(Base):
     # NULL = legacy (no scope filter). Plan canonical: ~/.claude/plans/jolly-roaming-moler.md
     department_id = Column(UUID(as_uuid=True), ForeignKey("departments.id", ondelete="SET NULL"), nullable=True, index=True)
     location = Column(String(255), nullable=True)
+    city = Column(String(255), nullable=True)  # Onda 2B: cidade canonica (dataset global IBGE), separada de location/Endereco
     work_model = Column(String(50), nullable=True)  # presencial, híbrido, remoto
     employment_type = Column(String(50), nullable=True)  # CLT, PJ, Temporary
     seniority_level = Column(String(50), nullable=True)  # Júnior, Pleno, Sênior, Especialista
