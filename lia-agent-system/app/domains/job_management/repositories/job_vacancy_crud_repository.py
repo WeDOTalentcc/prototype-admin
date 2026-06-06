@@ -499,6 +499,10 @@ class JobVacancyCRUDRepository:
                   AND (:dept = 'all' OR department ILIKE :dept_val)
                   AND company_id = :company_id
                 ORDER BY
+                    CASE status
+                        WHEN 'Ativa' THEN 1 WHEN 'Aprovada' THEN 2
+                        WHEN 'Rascunho' THEN 3 WHEN 'Concluída' THEN 4
+                        WHEN 'Arquivada' THEN 5 ELSE 6 END,
                     CASE priority WHEN 'alta' THEN 1 WHEN 'média' THEN 2 ELSE 3 END,
                     created_at DESC
                 LIMIT :lim
