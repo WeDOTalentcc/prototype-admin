@@ -545,3 +545,63 @@ def run_fairness_guard_on_jd(
 # Backward-compat alias: job-vacancy handlers historically imported
 # JOB_ID_PATH_PATTERN from here. It IS the canonical dual-ID pattern.
 JOB_ID_PATH_PATTERN = DUAL_ID_PATH_PATTERN
+
+
+# ─── Faixa salarial herdada da empresa (read-time enrichment, audit 2026-06-06) ─
+# Paulo: a faixa salarial da vaga deve ser HERDADA da empresa (Configuracoes ->
+# Faixas Salariais por Nivel) em TODO lugar (lista, detalhe), nao so quando o
+# recrutador edita+salva. Resolve a banda por nivel + departamento + contrato e
+# preenche salary_range das vagas SEM faixa explicita. Enriquecimento em tempo
+# de LEITURA — nunca commitado (GET nao da commit). Faixa explicita sempre vence.
+def _salary_range_is_empty(sr) -> bool:
+    if not sr or not isinstance(sr, dict):
+        return True
+    return not sr.get("min") and not sr.get("max")
+
+
+def _band_to_salary_range(band) -> dict:
+    return {
+        "min": band.min,
+        "max": band.max,
+        "currency": band.currency or "BRL",
+        "source": "company_salary_band",
+        "inherited": True,
+    }
+
+
+async def resolve_inherited_salary_ranges(db, company_id, vacancies) -> None:
+    """Preenche salary_range das vagas SEM faixa explicita com a banda cadastrada
+    da empresa, casada por nivel + departamento + contrato. UMA leitura das
+    bandas (sem N+1). Mutacao in-memory read-time (sem commit). Audit 2026-06-06."""
+    if not company_id or company_id in ("default", "unknown"):
+        return
+    needing = [
+        v for v in vacancies
+        if _salary_range_is_empty(getattr(v, "salary_range", None))
+        and getattr(v, "seniority_level", None)
+    ]
+    if not needing:
+        return
+    from app.domains.company.repositories.salary_band_repository import (
+        SalaryBandRepository,
+    )
+
+    repo = SalaryBandRepository(db)
+    try:
+        bands = await repo.list_for_company(company_id, active_only=True)
+    except Exception:  # fail-open — sem banda, faixa fica como esta
+        return
+    if not bands:
+        return
+    for v in needing:
+        band = repo.match_from_bands(
+            bands,
+            seniority_level=v.seniority_level,
+            department=getattr(v, "department", None),
+            contract_type=getattr(v, "employment_type", None),
+        )
+        if band and band.min is not None:
+            v.salary_range = _band_to_salary_range(band)
+
+
+__all__.append("resolve_inherited_salary_ranges")
