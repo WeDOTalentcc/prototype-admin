@@ -167,20 +167,68 @@ def get_tools_for_scope(scope: str) -> list[str]:
     return sorted(set(_bounded(_sc)) | set(_bounded("global")))
 
 
+# Fase 2 consolidacao: escopo DERIVADO do registry de origem (anti-drift).
+# A ToolDefinition real NAO carrega scope (so owner_team='backend'); e os YAMLs
+# de scope (scope_config / tool_registry_metadata) divergiram dos 179 nomes
+# reais -> filtrar por eles dava 1-6 tools/escopo (bug live 2026-06-06: federado
+# primario SEM busca, nao achava Felipe Almeida que existe). Fonte unica =
+# registry de origem (_load_sources ja agrupa por key). Cada key alimenta 1+
+# escopos; GLOBAL = essenciais transversais (reads).
+_REGISTRY_SCOPE: dict[str, set[str]] = {
+    "talent": {"talent_funnel"},
+    "sourcing": {"talent_funnel"},
+    "talent_pool": {"talent_funnel"},
+    "communication": {"talent_funnel", "in_job"},
+    "kanban": {"in_job"},
+    "jobs_mgmt": {"job_table"},
+    "analytics": {"job_table"},
+    "workforce": {"job_table", "global"},
+    # wizard: roda como state machine SEPARADA (pre-router) -- federado nao usa.
+    # company_settings / policy / automation / ats_integration / autonomous:
+    # fora do escopo inicial (decisao #3 -- expandir PromptScope quando preciso).
+}
+
+# Reads transversais SEMPRE disponiveis (inclusive no fallback GLOBAL): o
+# federado primario precisa achar/listar/ver candidato e vaga em QUALQUER turno,
+# mesmo sem contexto de pagina. So READS (sem mutacao) -> seguro no fallback.
+# Nomes confirmados reais nos registries (talent / jobs_mgmt / kanban).
+_GLOBAL_ESSENTIALS: set[str] = {
+    "search_candidates",
+    "list_candidates",
+    "view_candidate_profile",
+    "compare_candidates",
+    "rank_candidates",
+    "list_jobs",
+    "view_job_details",
+    "get_portfolio_metrics",
+    "get_pipeline_summary",
+    "list_stage_candidates",
+}
+
+
 def get_scoped_tool_definitions(scope: str) -> list:
-    """ToolDefinitions (de TODOS os 14 registries via _load_sources) filtradas pelo
-    escopo BOUNDED (get_tools_for_scope, que delega scope_config) + GLOBAL. Para o
-    agente federado carregar ~30 tools/turno em vez das 179. Dedup por nome (1o
-    registry vence). Fase 2 do plano de consolidacao (agente federado unico).
+    """ToolDefinitions para o agente federado carregar ~20-50 tools/turno (em vez
+    das 179). DERIVA o escopo do registry de ORIGEM (_REGISTRY_SCOPE, anti-drift)
+    + _GLOBAL_ESSENTIALS (reads transversais sempre presentes). Dedup por nome
+    (1o registry vence -- dominio canonico antes do autonomous). Fase 2 do plano
+    de consolidacao (agente federado unico).
+
+    NAO usa mais o scope-set YAML (scope_config) -- ele divergiu dos nomes reais
+    e dava 1-6 tools/escopo (bug live 2026-06-06). Sensor end-to-end:
+    tests/contract/test_scoped_tool_definitions_coverage.py.
 
     Retorna objetos ToolDefinition (o caller converte via
     tool_definition_to_langchain_tool). Defensivo: usa o que _load_sources carregou.
     """
-    allowed_lower = {n.lower() for n in get_tools_for_scope(scope)}
+    scope_str = (scope.value if hasattr(scope, "value") else str(scope)).strip().lower()
+    wanted_keys = {k for k, scopes in _REGISTRY_SCOPE.items() if scope_str in scopes}
     by_name: dict[str, object] = {}
-    for _key, defs in _load_sources().items():
+    for key, defs in _load_sources().items():
+        registry_in_scope = key in wanted_keys
         for td in defs:
             nm = getattr(td, "name", None)
-            if nm and nm.lower() in allowed_lower and nm not in by_name:
+            if not nm or nm in by_name:
+                continue
+            if registry_in_scope or nm in _GLOBAL_ESSENTIALS:
                 by_name[nm] = td
     return list(by_name.values())
