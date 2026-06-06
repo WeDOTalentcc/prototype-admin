@@ -14,6 +14,25 @@ import re
 import unicodedata
 from difflib import SequenceMatcher
 from typing import Any
+from contextvars import ContextVar
+
+# Vaga ativa do turno (resolvida por nome OU referente cross-turn). Tools
+# inerentemente vacancy-scoped (rank/list_candidates) usam como FALLBACK
+# computacional quando o LLM não passa vacancy_id -- "computacional > inferencial"
+# (CLAUDE.md). Reset a cada turno (set pelo SSE com a resolução atual): query
+# global ('liste todos') -> '' -> sem filtro; 'dessa vaga' -> id -> filtra.
+_active_vacancy_id: ContextVar[str] = ContextVar("lia_active_vacancy_id", default="")
+
+
+def set_active_vacancy(vacancy_id: str | None) -> None:
+    """Marca a vaga ativa do turno (ou limpa com '' / None)."""
+    _active_vacancy_id.set(str(vacancy_id) if vacancy_id else "")
+
+
+def get_active_vacancy() -> str:
+    """Vaga ativa do turno ('' se nenhuma). Fallback p/ tools vacancy-scoped."""
+    return _active_vacancy_id.get("") or ""
+
 
 _STOPWORDS = {
     "de", "da", "do", "das", "dos", "a", "o", "e", "para", "por", "com", "em",
@@ -117,7 +136,28 @@ def match_titles_in_message(message: str, items: list[tuple[str, str]]) -> list[
     return [(i, t) for _, i, t in scored]
 
 
-async def resolve_named_entities(message: str, company_id: str, db: Any) -> dict:
+# Referente a vaga SEM nome ("dessa/essa vaga", "a vaga", "dela") -- fix
+# cross-turn 2026-06-06: permite resolver a vaga da HISTÓRIA quando o usuário não
+# repete o nome ("temos a vaga X?" -> "liste os candidatos dessa vaga"). Sem
+# isto o LLM perdia o id e chamava rank/list_candidates com vacancy="" (funil
+# global / vazio) -- os 24 candidatos da vaga não eram vistos (transcript Paulo).
+_VACANCY_REFERENT_RE = re.compile(
+    r"\b(?:d?ess[ae]s?|d?est[ae]s?|ness[ae]s?|naquel[ae]s?|aquel[ae]s?|a|da|na|"
+    r"para\s+a|pra)\s+(?:vagas?|posi[çc][ãa]o|requisi[çc][ãa]o)\b"
+    r"|\bdela\b|\bnela\b",
+    re.IGNORECASE,
+)
+
+
+def _has_vacancy_referent(message: str) -> bool:
+    """True se a msg refere uma vaga por artigo/pronome SEM nome ('dessa vaga',
+    'a vaga', 'dela'). Usado p/ resolver a vaga da história recente."""
+    return bool(_VACANCY_REFERENT_RE.search(message or ""))
+
+
+async def resolve_named_entities(
+    message: str, company_id: str, db: Any, history_text: str = ""
+) -> dict:
     """Resolve vaga(s)/candidato(s) nomeados na mensagem. Retorna {jobs, candidates, hint}."""
     from sqlalchemy import text as _t
 
@@ -138,11 +178,21 @@ async def resolve_named_entities(message: str, company_id: str, db: Any) -> dict
         )
         jobs = [(str(m["id"]), m["title"] or "") for m in r.mappings()]
         matched = match_titles_in_message(message, jobs)[:3]
+        _from_history = False
+        # Cross-turn: "liste os candidatos DESSA vaga" não tem nome -> resolve a
+        # vaga mais relevante da HISTÓRIA recente quando há referente sem nome.
+        if not matched and history_text and _has_vacancy_referent(message):
+            matched = match_titles_in_message(history_text, jobs)[:1]
+            _from_history = bool(matched)
         result["jobs"] = matched
         if matched:
+            _ctx = (
+                " (vaga em contexto -- o usuário disse 'essa/dessa vaga')"
+                if _from_history else ""
+            )
             hints.append(
-                "VAGA(S) que o recrutador referiu (use EXATAMENTE este id; NAO "
-                "invente outro titulo): "
+                "VAGA(S) que o recrutador referiu" + _ctx + " (use EXATAMENTE "
+                "este id; NAO invente outro titulo): "
                 + "; ".join(f"'{t}' (id={i})" for i, t in matched)
             )
     except Exception:

@@ -88,3 +88,73 @@ def test_fuzzy_nome_completo_exato():
 def test_fuzzy_ruido_nao_casa():
     pool = [("c1", "Yasmin Reis"), ("c2", "Bruno Costa")]
     assert _best_fuzzy_match("aberta", pool) == []
+
+
+# ── Fix #2 cross-turn 2026-06-06: vaga da história via referente ("dessa vaga") ─
+import pytest as _pytest_x  # noqa: E402
+from app.shared.entity_resolver import (  # noqa: E402
+    _has_vacancy_referent,
+    resolve_named_entities,
+)
+
+
+def test_referente_vaga_dessa_essa_da():
+    assert _has_vacancy_referent("liste os candidatos dessa vaga")
+    assert _has_vacancy_referent("rankeie os melhores dessa vaga")
+    assert _has_vacancy_referent("os candidatos da vaga")
+    assert _has_vacancy_referent("mostre os perfis dela")
+
+
+def test_nao_referente_criacao_ou_global():
+    assert not _has_vacancy_referent("criar uma vaga de gerente")
+    assert not _has_vacancy_referent("liste todos os candidatos")
+    assert not _has_vacancy_referent("quais vagas temos abertas")
+
+
+class _FakeResult:
+    def __init__(self, rows):
+        self._rows = rows
+
+    def mappings(self):
+        return self._rows
+
+
+class _FakeDB:
+    def __init__(self, jobs):
+        self._jobs = jobs
+
+    async def execute(self, stmt, params=None):
+        if "job_vacancies" in str(stmt):
+            return _FakeResult([{"id": i, "title": t} for i, t in self._jobs])
+        return _FakeResult([])
+
+
+@_pytest_x.mark.asyncio
+async def test_resolve_usa_vaga_da_historia_quando_referente_sem_nome():
+    db = _FakeDB([("610705ab", "Diretor(a) Jurídico(a) (Chief Legal Officer)")])
+    history = "LIA: Sim! Temos a vaga Diretor(a) Jurídico(a) (Chief Legal Officer)"
+    out = await resolve_named_entities(
+        "liste os candidatos dessa vaga", "co1", db, history_text=history
+    )
+    assert out["jobs"] and out["jobs"][0][0] == "610705ab"
+    assert "610705ab" in out["hint"]
+
+
+@_pytest_x.mark.asyncio
+async def test_resolve_nao_pega_historia_em_query_global():
+    db = _FakeDB([("610705ab", "Diretor(a) Jurídico(a) (Chief Legal Officer)")])
+    history = "LIA: Sim! Temos a vaga Diretor(a) Jurídico(a) (Chief Legal Officer)"
+    out = await resolve_named_entities(
+        "liste todos os candidatos", "co1", db, history_text=history
+    )
+    assert not out["jobs"]
+
+
+def test_active_vacancy_contextvar_set_get_reset():
+    from app.shared.entity_resolver import set_active_vacancy, get_active_vacancy
+    set_active_vacancy("610705ab")
+    assert get_active_vacancy() == "610705ab"
+    set_active_vacancy("")
+    assert get_active_vacancy() == ""
+    set_active_vacancy(None)
+    assert get_active_vacancy() == ""

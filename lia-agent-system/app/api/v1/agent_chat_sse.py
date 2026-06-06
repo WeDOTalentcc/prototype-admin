@@ -669,8 +669,21 @@ company_id: str = Depends(require_company_id)):
                         _hist = _hctx.get("messages", []) or []
                         try:
                             from app.shared.entity_resolver import resolve_named_entities
-                            _ent = await resolve_named_entities(content, company_id, _mdb)
+                            _hist_text = "\n".join(
+                                str(_m.get("content") or "")[:300]
+                                for _m in (_hist[-6:] if _hist else [])
+                                if _m.get("content")
+                            )
+                            _ent = await resolve_named_entities(
+                                content, company_id, _mdb, history_text=_hist_text
+                            )
                             _ehint = _ent.get("hint") or ""
+                            try:
+                                from app.shared.entity_resolver import set_active_vacancy
+                                _jb = _ent.get("jobs") or []
+                                set_active_vacancy(_jb[0][0] if _jb else "")
+                            except Exception:
+                                pass
                         except Exception as _ee:
                             logger.warning("[SSEChat] entity resolve (fail-open): %s", _ee)
                 except Exception as _he:

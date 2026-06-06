@@ -23,6 +23,7 @@ from app.domains.job_management.repositories.job_vacancy_crud_repository import 
 from app.shared.compliance.fairness_guard import FairnessGuard
 
 from app.shared.tool_handler import tool_handler
+from app.shared.entity_resolver import get_active_vacancy
 
 logger = logging.getLogger(__name__)
 
@@ -92,7 +93,9 @@ async def _wrap_search_candidates(**kwargs: Any) -> dict[str, Any]:
 async def _wrap_list_candidates(**kwargs: Any) -> dict[str, Any]:
     """List candidates in the funnel with optional filters."""
     status = kwargs.get("status", "all")
-    vacancy_id = kwargs.get("vacancy_id", "")
+    # Fallback computacional: "liste os candidatos dessa vaga" -> o LLM às vezes
+    # não passa vacancy_id; usa a vaga ativa do turno (resolvida por nome/história).
+    vacancy_id = kwargs.get("vacancy_id", "") or get_active_vacancy()
     company_id = kwargs.get("company_id", "")
     limit = int(kwargs.get("limit", 20))
     logger.info(f"[talent_tools] list_candidates called: status={status} vacancy={vacancy_id} limit={limit}")
@@ -268,7 +271,9 @@ async def _wrap_compare_candidates(**kwargs: Any) -> dict[str, Any]:
 @tool_handler("talent")
 async def _wrap_rank_candidates(**kwargs: Any) -> dict[str, Any]:
     """Rank candidates by fit score for a job."""
-    vacancy_id = kwargs.get("vacancy_id", "")
+    # Fallback computacional (rank é SEMPRE vacancy-scoped): se o LLM não passa
+    # vacancy_id, usa a vaga ativa do turno -- corrige "rankeie dessa vaga" = vazio.
+    vacancy_id = kwargs.get("vacancy_id", "") or get_active_vacancy()
     criteria = kwargs.get("criteria", "fit_score")
     company_id = kwargs.get("company_id", "")
     logger.info(f"[talent_tools] rank_candidates called: vacancy={vacancy_id} criteria={criteria}")
