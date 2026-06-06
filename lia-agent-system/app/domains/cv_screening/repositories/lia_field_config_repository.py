@@ -46,6 +46,20 @@ class LiaFieldConfigRepository:
         )
         return result.scalar_one_or_none()
 
+    async def get_culture_profile(self, company_uuid: UUID):
+        """Load the CompanyCultureProfile for a company (separate query — there
+        is NO ORM relationship from CompanyProfile to it). Home of the narrative
+        fields (mission/vision/values/tech_stack/...). Without this load those
+        toggles are inert: the recruiter flips them ON but the value never
+        reaches any agent prompt (FASE 0 ghost fix, audit 2026-06-06)."""
+        from lia_models.company_culture import CompanyCultureProfile  # type: ignore
+        result = await self.db.execute(
+            select(CompanyCultureProfile).where(
+                CompanyCultureProfile.company_id == company_uuid
+            )
+        )
+        return result.scalars().first()
+
     async def list_recent_jobs_for_company(
         self,
         *,

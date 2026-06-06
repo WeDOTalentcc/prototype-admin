@@ -199,6 +199,7 @@ class LiaFieldConfigService:
         
         toggles = await self._load_toggles(company_uuid)
         company_profile = await self._load_company_profile(company_uuid)
+        culture_profile = await self._load_culture_profile(company_uuid)
         job_history = await self._load_job_history(company_id)
         
         all_fields: dict[str, FieldConfig] = {}
@@ -217,7 +218,7 @@ class LiaFieldConfigService:
             
             fallback_strategies = FIELD_FALLBACK_CONFIG.get(field_key, ["skip"])
             
-            company_value = self._get_company_value(field_key, company_profile)
+            company_value = self._get_company_value(field_key, company_profile, culture_profile)
             
             fallback_value = None
             data_source = DataSource.NOT_AVAILABLE
@@ -287,6 +288,10 @@ class LiaFieldConfigService:
     async def _load_company_profile(self, company_uuid: UUID) -> CompanyProfile | None:
         """Load company profile data."""
         return await LiaFieldConfigRepository(self.db).get_company_profile(company_uuid)
+
+    async def _load_culture_profile(self, company_uuid: UUID):
+        """Load CompanyCultureProfile — home of the narrative fields. FASE 0."""
+        return await LiaFieldConfigRepository(self.db).get_culture_profile(company_uuid)
     
     async def _load_job_history(self, company_id: str, limit: int = 20) -> list[dict[str, Any]]:
         """Load recent job history for pattern analysis."""
@@ -311,9 +316,17 @@ class LiaFieldConfigService:
             for j in jobs
         ]
     
-    def _get_company_value(self, field_key: str, profile: CompanyProfile | None) -> Any:
-        """Extract company value for a field from profile."""
-        if not profile:
+    def _get_company_value(self, field_key: str, profile: CompanyProfile | None, culture: Any = None) -> Any:
+        """Extract company value for a field from profile (+ culture profile).
+
+        Narrative fields (mission/vision/values/tech_stack/leadership_style/...)
+        live on CompanyCultureProfile, which has NO relationship from
+        CompanyProfile; they are read from ``culture`` here so the
+        recruiter-configured values actually reach the prompt (FASE 0 ghost fix,
+        audit 2026-06-06). CompanyProfile remains the primary source; culture is
+        the secondary source for fields CompanyProfile lacks or leaves empty.
+        """
+        if profile is None and culture is None:
             return None
         
         if hasattr(profile, field_key):
@@ -339,11 +352,11 @@ class LiaFieldConfigService:
                 return None
             return getattr(profile, field_key)
         
-        if profile.additional_data and field_key in profile.additional_data:
+        if profile is not None and profile.additional_data and field_key in profile.additional_data:
             return profile.additional_data[field_key]
         
         field_mapping = {
-            "trade_name": "trade_name",
+            "trade_name": "trading_name",
             "industry": "industry",
             "website": "website",
             "linkedin_url": "linkedin_url",
@@ -354,13 +367,66 @@ class LiaFieldConfigService:
             "values": "values",
         }
         
-        if field_key in field_mapping:
+        if profile is not None and field_key in field_mapping:
             attr = field_mapping[field_key]
             if hasattr(profile, attr):
-                return getattr(profile, attr)
+                val = getattr(profile, attr)
+                if val:
+                    return val
+
+        # FASE 0 (audit 2026-06-06): narrative fields live on
+        # CompanyCultureProfile (no relationship from CompanyProfile). Resolve
+        # them here so the recruiter-configured values reach the prompt.
+        culture_val = self._get_culture_value(field_key, culture)
+        if culture_val is not None:
+            return culture_val
         
         return None
     
+    def _get_culture_value(self, field_key: str, culture: Any) -> Any:
+        """Read a narrative field from CompanyCultureProfile. Returns None for
+        absent/empty values so empty fields are never emitted. FASE 0."""
+        if culture is None:
+            return None
+        culture_map = {
+            "mission": "mission",
+            "vision": "vision",
+            "values": "values",
+            "evp_bullets": "evp_bullets",
+            "core_competencies": "core_competencies",
+            "locations": "locations",
+            "work_model": "work_model",
+            "growth_opportunities": "growth_opportunities",
+            "team_dynamics": "team_dynamics",
+            "leadership_style": "leadership_style",
+            "dei_initiatives": "dei_initiatives",
+            "sustainability": "sustainability",
+            "social_impact": "social_impact",
+            "tech_stack": "tech_stack",
+            "engineering_culture": "engineering_culture",
+            "default_languages": "default_languages",
+        }
+        if field_key in culture_map:
+            val = getattr(culture, culture_map[field_key], None)
+            return val if val else None
+        if field_key == "company_big_five":
+            # Only emit when the culture profile was actually approved — avoid
+            # broadcasting the 50/50 placeholder default as if it were real.
+            if not getattr(culture, "is_approved", False):
+                return None
+            o = getattr(culture, "openness_score", None)
+            c = getattr(culture, "conscientiousness_score", None)
+            e = getattr(culture, "extraversion_score", None)
+            a = getattr(culture, "agreeableness_score", None)
+            s = getattr(culture, "stability_score", None)
+            if all(v is None for v in (o, c, e, a, s)):
+                return None
+            return (
+                f"Abertura {o}, Conscienciosidade {c}, Extroversao {e}, "
+                f"Amabilidade {a}, Estabilidade {s} (escala 0-100)"
+            )
+        return None
+
     def _resolve_fallback(
         self,
         field_key: str,
