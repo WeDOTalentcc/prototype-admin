@@ -23,7 +23,7 @@ from app.domains.job_management.repositories.job_vacancy_crud_repository import 
 from app.shared.compliance.fairness_guard import FairnessGuard
 
 from app.shared.tool_handler import tool_handler
-from app.shared.entity_resolver import get_active_vacancy
+from app.shared.entity_resolver import get_active_vacancy, get_active_candidate
 
 logger = logging.getLogger(__name__)
 
@@ -131,9 +131,17 @@ async def _wrap_list_candidates(**kwargs: Any) -> dict[str, Any]:
 @tool_handler("talent")
 async def _wrap_view_candidate_profile(**kwargs: Any) -> dict[str, Any]:
     """View complete candidate profile including education and work history."""
-    candidate_id = kwargs.get("candidate_id", "")
+    candidate_id = kwargs.get("candidate_id", "") or get_active_candidate()
     company_id = kwargs.get("company_id", "")
     logger.info(f"[talent_tools] view_candidate_profile called for candidate={candidate_id}")
+    if not candidate_id:
+        # Guard: id vazio crashava o asyncpg (invalid UUID '') -> 'instabilidade
+        # tecnica'. Falha graciosa (REGRA 4: explicito, nao crash silencioso).
+        return {
+            "success": False,
+            "needs_clarification": True,
+            "message": "Preciso do nome ou id do candidato para mostrar o perfil. Qual candidato?",
+        }
 
     profile: dict[str, Any] = {"candidate_id": candidate_id, "profile_loaded": False}
     profile_error: str | None = None
@@ -221,9 +229,17 @@ async def _wrap_view_candidate_profile(**kwargs: Any) -> dict[str, Any]:
 @tool_handler("talent")
 async def _wrap_compare_candidates(**kwargs: Any) -> dict[str, Any]:
     """Compare 2+ candidates side by side (perfil) + emite comparison_table (RRP)."""
-    candidate_ids = kwargs.get("candidate_ids", [])
+    candidate_ids = [c for c in (kwargs.get("candidate_ids") or []) if c]
     company_id = kwargs.get("company_id", "")
     logger.info(f"[talent_tools] compare_candidates called: candidates={len(candidate_ids)}")
+    if len(candidate_ids) < 2:
+        # Guard: <2 ids devolvia comparacao vazia -> a IA improvisava candidatos
+        # errados. Falha graciosa pedindo os ids (via ranking da vaga).
+        return {
+            "success": False,
+            "needs_clarification": True,
+            "message": "Preciso dos ids de pelo menos 2 candidatos para comparar. Rankeie a vaga primeiro para obter os ids.",
+        }
     _compared: list = []
     _rrp_blocks: list = []
     if len(candidate_ids) >= 2:

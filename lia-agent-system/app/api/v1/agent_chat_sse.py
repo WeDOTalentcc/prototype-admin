@@ -679,9 +679,11 @@ company_id: str = Depends(require_company_id)):
                             )
                             _ehint = _ent.get("hint") or ""
                             try:
-                                from app.shared.entity_resolver import set_active_vacancy
+                                from app.shared.entity_resolver import set_active_vacancy, set_active_candidate
                                 _jb = _ent.get("jobs") or []
                                 set_active_vacancy(_jb[0][0] if _jb else "")
+                                _cd = _ent.get("candidates") or []
+                                set_active_candidate(_cd[0][0] if len(_cd) == 1 else "")
                             except Exception:
                                 pass
                         except Exception as _ee:

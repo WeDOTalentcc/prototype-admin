@@ -34,6 +34,21 @@ def get_active_vacancy() -> str:
     return _active_vacancy_id.get("") or ""
 
 
+_active_candidate_id: ContextVar[str] = ContextVar("lia_active_candidate_id", default="")
+
+
+def set_active_candidate(candidate_id: str | None) -> None:
+    """Candidato ativo do turno (resolvido por nome, UNAMBIGUO). Tools de
+    candidato (view_candidate_profile) usam como fallback quando o LLM nao passa
+    candidate_id -- evita crash asyncpg (UUID '') + 'instabilidade tecnica'."""
+    _active_candidate_id.set(str(candidate_id) if candidate_id else "")
+
+
+def get_active_candidate() -> str:
+    """Candidato ativo do turno ('' se nenhum/ambiguo)."""
+    return _active_candidate_id.get("") or ""
+
+
 _STOPWORDS = {
     "de", "da", "do", "das", "dos", "a", "o", "e", "para", "por", "com", "em",
     "na", "no", "vaga", "vagas", "candidato", "candidata", "candidatos", "perfil",
