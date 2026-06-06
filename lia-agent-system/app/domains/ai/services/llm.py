@@ -261,7 +261,10 @@ class LLMService:
         client = self.gemini_native
         model_id = model or settings.LLM_GEMINI_MODEL
 
-        response = client.models.generate_content(
+        # P1 fix (2026-06-06): metodo async DEVE usar o seam async do SDK.
+        # client.models.generate_content (sync) dentro do event loop cai no
+        # _enforce_credit_gate_sync -> RuntimeError. Espelha generate_native_gemini.
+        response = await client.aio.models.generate_content(
             model=model_id,
             contents=prompt
         )
