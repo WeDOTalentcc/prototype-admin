@@ -47,3 +47,13 @@ def test_flag_on_com_escopo_retorna_scoped():
     names = {getattr(d, "name", None) for d in scoped}
     assert "a" not in names and "b" not in names, "deve ser scoped, nao o default"
     assert len(scoped) >= 1 and all(getattr(d, "name", None) for d in scoped)
+
+
+def test_scope_guidance_injetavel_nao_vazia():
+    """Fase 3: a guidance de escopo (capabilities+restrictions) que o federado injeta
+    no prompt quando escopado existe e e nao-vazia p/ os escopos de dominio."""
+    from app.tools.scope_config import PromptScope, get_scope_system_prompt_addition
+    for sc in (PromptScope.TALENT_FUNNEL, PromptScope.JOB_TABLE, PromptScope.IN_JOB):
+        add = get_scope_system_prompt_addition(sc)
+        assert add and len(add) > 100, f"{sc.value} guidance vazia/curta"
+        assert "PODE" in add, f"{sc.value} sem secao de capabilities/restrictions"

@@ -161,7 +161,7 @@ class RecruiterCopilotReActAgent(
             _stage = ctx.get("stage_context", "") or ""
             if _view_block:
                 _stage = (_view_block + "\n\n" + _stage).strip()
-            return self._compose_runtime_prompt(
+            _txt = self._compose_runtime_prompt(
                 input,
                 agent_type="recruiter_assistant",
                 domain_specific=COPILOT_DOMAIN_SPECIFIC,
@@ -170,6 +170,23 @@ class RecruiterCopilotReActAgent(
                 memory_summary=ctx.get("memory_summary", ""),
                 stage_context=_stage,
             ).text
+            # Fase 3 (2026-06-06): quando escopado (flag on + escopo ativo), anexa a
+            # guidance do escopo (capabilities + restrictions) p/ o federado se
+            # comportar como o agente de dominio faria. Reusa get_scope_system_prompt_addition.
+            try:
+                if _scoped_tools_enabled():
+                    from app.tools.scope_config import (
+                        get_active_scope,
+                        get_scope_system_prompt_addition,
+                    )
+                    _scope = get_active_scope()
+                    if _scope is not None:
+                        _add = get_scope_system_prompt_addition(_scope)
+                        if _add:
+                            _txt = _txt + "\n\n" + _add
+            except Exception:
+                pass
+            return _txt
         except Exception as exc:
             logger.warning(
                 "[recruiter_copilot] runtime prompt composition failed: %s — "
