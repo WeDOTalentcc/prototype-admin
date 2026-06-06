@@ -537,10 +537,10 @@ export function useChatSocket({
     transportMode,
     connect,
     disconnect,
-    sendMessage: wsSend,
+    sendMessage: _wsSendRaw,
     sendRaw,
     clearTokens,
-    sendMessageViaSSE,
+    sendMessageViaSSE: _sendViaSSERaw,
   } = useAgentStreaming(sessionId, { authToken: wsAuthToken }, handleEvent);
 
   useEffect(() => {
@@ -550,6 +550,33 @@ export function useChatSocket({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [wsAuthToken]);
+
+  // Fix reasoning bleed (2026-06-06): reseta thinkingSteps + turnClosedRef ao
+  // ENVIAR nova mensagem (sinal inequivoco de novo turno). Sem isto, os passos
+  // de turnos anteriores vazavam no expander "X passos" do turno atual (o reset
+  // via turnClosedRef no fim do turno SSE nao era confiavel). Produtor unico.
+  const wsSend = useCallback(
+    (content: string, context: Record<string, unknown>, domain: string) => {
+      setThinkingSteps([]);
+      turnClosedRef.current = true;
+      return _wsSendRaw(content, context, domain);
+    },
+    [_wsSendRaw],
+  );
+  const sendMessageViaSSE = useCallback(
+    (
+      sid: string,
+      message: string,
+      domain?: string,
+      context?: Record<string, unknown>,
+      conversationId?: string | null,
+    ) => {
+      setThinkingSteps([]);
+      turnClosedRef.current = true;
+      _sendViaSSERaw(sid, message, domain, context, conversationId);
+    },
+    [_sendViaSSERaw],
+  );
 
   return {
     tokens,
