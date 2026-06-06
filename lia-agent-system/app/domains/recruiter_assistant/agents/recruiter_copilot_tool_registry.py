@@ -51,6 +51,8 @@ _FEDERATION_SPEC: list[tuple[str, str]] = [
     # recruiter_copilot conduz a identificacao da fonte e dispara a semente.
     ("wizard", "list_job_creation_sources"),
     ("wizard", "start_creation_from_source"),
+    # --- Abrir modal/painel (Fase B) — mecanismo determinístico open_ui ---
+    ("ui", "open_ui"),
 ]
 
 
@@ -70,12 +72,16 @@ def _source_maps() -> dict[str, dict[str, ToolDefinition]]:
     from app.domains.workforce.agents.workforce_tool_registry import (
         get_workforce_tools,
     )
+    from app.domains.recruiter_assistant.agents.ui_tool_registry import (
+        get_ui_tools,
+    )
     return {
         "jobs": {t.name: t for t in get_jobs_mgmt_tools()},
         "talent": {t.name: t for t in get_talent_tools()},
         "kanban": {t.name: t for t in get_kanban_tools()},
         "wizard": {t.name: t for t in get_wizard_tools()},
         "workforce": {t.name: t for t in get_workforce_tools()},
+        "ui": {t.name: t for t in get_ui_tools()},
     }
 
 

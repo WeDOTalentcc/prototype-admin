@@ -105,7 +105,9 @@ def _is_transient_provider_error(exc: BaseException) -> bool:
 # UI actions a agentic tool result may carry that the orchestrator must ACT on
 # (vs. merely feed back to the LLM as text). Additive surfacing: only these
 # directives are promoted to ``run()``'s ``tool_directive`` return field.
-_ACTIONABLE_TOOL_UI_ACTIONS: frozenset[str] = frozenset({"start_wizard_seeded"})
+_ACTIONABLE_TOOL_UI_ACTIONS: frozenset[str] = frozenset(
+    {"start_wizard_seeded", "open_modal"}
+)
 
 
 def _extract_response_blocks(result: object) -> list:
@@ -160,6 +162,8 @@ def _extract_tool_directive(result: object) -> "dict | None":
     return {
         "ui_action": ui_action,
         "seed_source": data.get("seed_source"),
+        # Fase B: open_ui (open_modal) carrega o payload do modal aqui.
+        "ui_action_params": data.get("ui_action_params"),
     }
 
 

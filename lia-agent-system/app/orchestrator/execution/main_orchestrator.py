@@ -1413,12 +1413,23 @@ class MainOrchestrator:
                                     conv_id, exc, exc_info=True,
                                 )
 
+                        # Fase B (2026-06-06): propaga a diretiva open_modal
+                        # surfaçada por open_ui → ui_action/ui_action_params
+                        # na resposta (FE LIAGlobalModals escuta lia:open_modal).
+                        # Aditivo: None em turno normal.
+                        _modal_ui_action = None
+                        _modal_ui_params = None
+                        if _directive and _directive.get("ui_action") == "open_modal":
+                            _modal_ui_action = "open_modal"
+                            _modal_ui_params = _directive.get("ui_action_params")
                         _resp = ChatResponse(
                             success=True,
                             content=_agentic_result["response"],
                             intent_detected="agentic_tool_call",
                             conversation_id=conv_id,
                             action_executed=bool(_agentic_result.get("tool_calls_made")),
+                            ui_action=_modal_ui_action,
+                            ui_action_params=_modal_ui_params,
                             structured_data={
                                 "tool_calls": _agentic_result.get("tool_calls_made", []),
                                 "iterations": _agentic_result.get("iterations", 0),
