@@ -79,7 +79,9 @@ async def test_mission_off_omitted_values_on_present():
 
     culture = _make_culture()
     repo = AsyncMock()
-    repo.get_for_company = AsyncMock(return_value=culture)
+    # _wrap_get_company_culture uses the Fase 5.1 gate get_for_agent_context
+    # (unapproved auto culture withheld), not get_for_company.
+    repo.get_for_agent_context = AsyncMock(return_value=culture)
 
     # mission OFF, everything else ON so we isolate the mission case.
     active = {
