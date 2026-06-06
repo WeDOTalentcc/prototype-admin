@@ -17,6 +17,19 @@ const devopsKeywords = ['aws', 'azure', 'gcp', 'docker', 'kubernetes', 'k8s', 't
 const designKeywords = ['figma', 'sketch', 'adobe', 'photoshop', 'illustrator', 'xd', 'ui', 'ux', 'design', 'prototyping', 'wireframe', 'invision', 'zeplin']
 const mobileKeywords = ['ios', 'android', 'swift', 'kotlin', 'react native', 'flutter', 'xamarin', 'mobile', 'objective-c']
 
+export function dedupeSkills(...arrays: (string[] | undefined)[]): string[] {
+  // P1-9: produtores espelham o mesmo array em skills + technical_skills.
+  // Dedup case-insensitive preservando a primeira grafia; ignora vazios.
+  const seen = new Map<string, string>()
+  for (const arr of arrays) {
+    for (const raw of arr || []) {
+      const v = String(raw).trim()
+      if (v && !seen.has(v.toLowerCase())) seen.set(v.toLowerCase(), v)
+    }
+  }
+  return Array.from(seen.values())
+}
+
 function categorizeSkills(allSkills: string[]) {
   const skillCategories: Record<string, { label: string, bgColor: string, skills: string[] }> = {
     backend: { label: 'Backend', bgColor: 'bg-lia-bg-tertiary', skills: [] },
@@ -66,7 +79,7 @@ function parseExpertise(candidate: Record<string, unknown>): string[] {
 }
 
 export function ProfileSkillsMapCard({ candidate }: ProfileSkillsMapCardProps) {
-  const allSkills = [...(candidate.skills as string[] || []), ...((candidate.technical_skills as string[]) || [])]
+  const allSkills = dedupeSkills(candidate.skills as string[], candidate.technical_skills as string[])
   const softSkillsList = (candidate.soft_skills as string[]) || []
   const expertiseList = parseExpertise(candidate)
   const interests = Array.isArray(candidate.interests) ? (candidate.interests as string[]) : []
