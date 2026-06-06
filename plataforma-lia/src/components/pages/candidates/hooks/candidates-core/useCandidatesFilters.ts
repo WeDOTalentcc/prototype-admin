@@ -35,6 +35,11 @@ export function getActiveTableFiltersCount(tableFilters: TableFilters): number {
   count += tableFilters.contractTypes.length
   count += tableFilters.locations.length
   count += tableFilters.sources.length
+  // P2-1: filtros eliminatorios que faltavam no contador (aplicados em useCandidatesFilterSort)
+  count += tableFilters.skills.length
+  count += tableFilters.jobTitles.length
+  count += tableFilters.companies.length
+  count += tableFilters.industries.length
   if (tableFilters.minExperience !== undefined) count++
   if (tableFilters.maxExperience !== undefined) count++
   if (tableFilters.minScore !== undefined) count++
