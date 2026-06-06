@@ -586,7 +586,7 @@ export function JobInfoGeralSection({
         <h3 className={groupHeaderClass}>Link de Candidatura</h3>
         <Card className="border border-lia-border-subtle">
           <CardContent className="p-4">
-            {(jobEditForm.status === "Ativa" || jobEditForm.status === "Paralisada" || jobEditForm.status === "Concluída") && (publicLink || jobEditForm.public_url) ? (
+            {(jobEditForm.status === "Ativa" || jobEditForm.status === "Pausada" || jobEditForm.status === "Paralisada" || jobEditForm.status === "Concluída") && (publicLink || jobEditForm.public_url) ? (
               <div className="space-y-2">
                 <p className="text-xs text-lia-text-secondary">Link público para candidatos se candidatarem:</p>
                 <div className="flex items-center gap-2">

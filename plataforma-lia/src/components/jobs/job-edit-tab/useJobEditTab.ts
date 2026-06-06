@@ -151,7 +151,7 @@ export function useJobEditTab({
   ): "pause" | "complete" | "ask_reactivate" | "none" => {
     const currentScreening =
       job?.screeningStatus || jobEditForm.screeningStatus || "not_configured"
-    if (newStatus === "Paralisada" && currentScreening === "active") return "pause"
+    if (newStatus === "Pausada" && currentScreening === "active") return "pause"
     if (newStatus === "Concluída" || newStatus === "Cancelada") {
       if (
         currentScreening === "active" ||
@@ -162,7 +162,7 @@ export function useJobEditTab({
     }
     if (
       newStatus === "Ativa" &&
-      jobEditForm.status === "Paralisada" &&
+      (jobEditForm.status === "Pausada" || jobEditForm.status === "Paralisada") &&
       currentScreening === "paused"
     )
       return "ask_reactivate"
