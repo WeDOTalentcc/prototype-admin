@@ -524,11 +524,16 @@ export function useChatTransport(
         handleParsedEvent(event)
       }
 
+      // AUD-4 1b-c: levanta approve_pending_id do context pro top-level do
+      // body (o backend le req.approve_pending_id). Mantem o context limpo.
+      const { approve_pending_id: _approvePendingId, ...ctxRest } =
+        (context as Record<string, unknown>) || {}
       const body = JSON.stringify({
         message,
         domain,
-        context,
+        context: ctxRest,
         conversation_id: conversationId,
+        approve_pending_id: (_approvePendingId as string | null) ?? null,
       })
 
       const headers: Record<string, string> = {

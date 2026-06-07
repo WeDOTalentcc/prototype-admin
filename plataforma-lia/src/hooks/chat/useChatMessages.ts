@@ -96,6 +96,10 @@ export function useChatMessages({
   const [isCreating, setIsCreating] = useState(false);
   const [isFetchingHistory, setIsFetchingHistory] = useState(false);
 
+  // AUD-4 1b-c: ultima mensagem do usuario, p/ o replay de aprovacao HITL
+  // (sendApproval re-envia ela com approve_pending_id no transporte SSE).
+  const lastUserMessageRef = useRef<string>("");
+
   const onCompleteRef = { current: onMessageComplete };
 
   // Sync conversationId from WS events
@@ -363,6 +367,7 @@ export function useChatMessages({
       // feito pelo evento "thinking", mas em REST/SSE (e até a primeira resposta
       // do WS chegar) o indicador ficava invisível, dando sensação de chat morto.
       setIsThinking?.(true);
+      lastUserMessageRef.current = content;
       const context: Record<string, unknown> = scope ? { scope } : {};
       if (conversationId) {
         context.conversation_id = conversationId;
@@ -467,17 +472,56 @@ export function useChatMessages({
       const pending = hitlRef.current;
       if (!pending) return;
       hitlRef.current = null;
+      setHitlPending(null);
+
+      // AUD-4 1b-c: no transporte SSE, aprovar = re-enviar a mensagem original
+      // COM approve_pending_id -> o backend valida o pending desta sessao,
+      // libera o gate (set_hitl_approved) e a tool re-chamada executa. Rejeitar
+      // = registrar no /chat/action (audit), sem replay. WS mantem o sendRaw.
+      if (process.env.NEXT_PUBLIC_CHAT_TRANSPORT === "sse") {
+        if (approved) {
+          const original =
+            lastUserMessageRef.current || pending.description || "Confirmo.";
+          sendMessageViaSSE(
+            sessionId,
+            original,
+            "recruiter_assistant",
+            { ...getPageContext(), approve_pending_id: pending.pendingId },
+            conversationId,
+          );
+        } else {
+          void fetch(`/api/backend-proxy/chat/${sessionId}/action`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              type: "approval_response",
+              approved: false,
+              pending_id: pending.pendingId,
+              thread_id: pending.threadId,
+              session_id: sessionId,
+            }),
+          }).catch(() => {});
+        }
+        return;
+      }
+
+      // WS (transporte legado): protocolo approval_response via sendRaw.
       sendRaw({
         type: "approval_response",
         approved,
         thread_id: pending.threadId,
         pending_id: pending.pendingId,
       });
-      if (!approved) {
-        setHitlPending(null);
-      }
     },
-    [sendRaw, hitlRef, setHitlPending],
+    [
+      sendRaw,
+      hitlRef,
+      setHitlPending,
+      sessionId,
+      conversationId,
+      getPageContext,
+      sendMessageViaSSE,
+    ],
   );
 
   const initConversation = useCallback(
