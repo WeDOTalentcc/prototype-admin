@@ -205,8 +205,9 @@ export function useCandidatesActions(ctx: CandidatesActionsContext) {
     const selectedNames = selectedCandidates.map(c => c.name)
 
     // Separar candidatos locais e Pearch
-    const localCandidates = selectedCandidates.filter(c => c.source !== 'pearch')
-    const pearchCandidates = selectedCandidates.filter(c => c.source === 'pearch')
+    // P2-11: usa o detector canonico (cobre global/aisearch/sourcing/apify), nao so pearch literal
+    const localCandidates = selectedCandidates.filter(c => !isGlobalSource(c.source, !!c.pearch_profile_id))
+    const pearchCandidates = selectedCandidates.filter(c => isGlobalSource(c.source, !!c.pearch_profile_id))
 
     // Se não há candidatos Pearch, abrir modal diretamente
     if (pearchCandidates.length === 0) {
