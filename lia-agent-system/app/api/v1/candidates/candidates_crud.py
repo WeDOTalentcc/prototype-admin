@@ -289,7 +289,12 @@ async def _load_role_pii_defaults(company_id: str) -> dict:
         return {}
 
 
-async def _audit_pii_access(current_user, candidate_id: str, company_id: str) -> None:
+async def _audit_pii_access(
+    current_user,
+    candidate_id: str,
+    company_id: str,
+    role_defaults: dict | None = None,
+) -> None:
     """Log SOXAuditLog when privileged user accesses unmasked PII (LGPD Art. 37 V).
 
     Sprint 5 (salary) + Sprint 8 (sensitive PII). Fires for each grant that user holds.
@@ -302,12 +307,10 @@ async def _audit_pii_access(current_user, candidate_id: str, company_id: str) ->
     if bool(getattr(current_user, "can_view_sensitive_pii", True)):
         grants_to_audit.append("sensitive_identity")
 
-    if not grants_to_audit:
-        return
-
     try:
         from app.shared.compliance.audit_service import AuditService
         svc = AuditService()
+        # Existing legacy-bucket audit (preserved, Sprint 5/8)
         for pii_class in grants_to_audit:
             await svc.log_data_access(
                 company_id=company_id,
@@ -318,6 +321,19 @@ async def _audit_pii_access(current_user, candidate_id: str, company_id: str) ->
                 action="view_pii",
                 details={"pii_class": pii_class},
             )
+        # Task E -- per-field detail audit (LGPD Art. 37 V granular)
+        effective = resolve_pii_field_visibility(current_user, role_defaults or {})
+        viewed = sorted([f for f, v in effective.items() if v])
+        masked = sorted([f for f, v in effective.items() if not v])
+        await svc.log_data_access(
+            company_id=company_id,
+            user_id=str(current_user.id) if getattr(current_user, "id", None) else None,
+            user_email=getattr(current_user, "email", None),
+            resource_type="candidate",
+            resource_id=candidate_id,
+            action="view_pii_fields",
+            details={"pii_fields_viewed": viewed, "pii_fields_masked": masked},
+        )
     except Exception as exc:  # noqa: BLE001
         logger.debug("[Sprint5/8] _audit_pii_access failed (non-blocking): %s", exc)
 
@@ -568,7 +584,7 @@ async def get_candidate(
         serialized = apply_pii_field_visibility(
             _serialize_candidate(candidate, full=True), current_user, role_defaults
         )
-        await _audit_pii_access(current_user, candidate_id, company_id)
+        await _audit_pii_access(current_user, candidate_id, company_id, role_defaults)
         return ok_envelope(serialized, meta={"source": "local"})
     except HTTPException:
         raise
