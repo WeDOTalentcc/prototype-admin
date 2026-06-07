@@ -130,6 +130,9 @@ class SSEChatRequest(WeDoBaseModel):
     domain: str = "recruiter_assistant"
     context: dict[str, Any] = {}
     conversation_id: str | None = None
+    # HITL (AUD-4 1b-c): quando o usuario aprova uma acao sensivel pendente, o FE
+    # re-envia a mensagem original COM este id. Server valida + libera o gate.
+    approve_pending_id: str | None = None
 
     class Config:
         from_attributes = True
@@ -196,6 +199,45 @@ def _build_approval_frame(pending_id: str, hitl_pending: dict) -> dict:
     }
 
 
+async def _detect_hitl_approval(
+    *, approve_pending_id, session_id: str, company_id: str, user_id: str
+) -> bool:
+    """Server-authoritative: True se o usuario aprovou um pending VALIDO desta
+    sessao. Valida que existe pending com esse id pra este thread (session_id)
+    ANTES de receive_approval (audit LGPD). NUNCA confia na LLM. Fail-CLOSED:
+    sem id / sem match / erro -> False (acao NAO e liberada)."""
+    if not approve_pending_id:
+        return False
+    try:
+        from app.services.hitl_service import hitl_service as _hsvc
+        pending = await _hsvc.get_pending(session_id)
+        if not pending or pending.get("pending_id") != approve_pending_id:
+            logger.warning(
+                "[SSEChat] HITL approve_pending_id sem match nesta sessao "
+                "(ignorado): %s", approve_pending_id,
+            )
+            return False
+        await _hsvc.receive_approval(
+            thread_id=session_id,
+            pending_id=approve_pending_id,
+            approved=True,
+            resolved_by=user_id,
+            company_id=company_id or "",
+            domain=pending.get("domain", ""),
+            action=pending.get("action", ""),
+        )
+        logger.info(
+            "[SSEChat] HITL aprovado pending=%s session=%s",
+            approve_pending_id, session_id,
+        )
+        return True
+    except Exception as exc:
+        logger.warning(
+            "[SSEChat] HITL approval detection falhou (fail-closed): %s", exc
+        )
+        return False
+
+
 class SSEActionRequest(WeDoBaseModel):
     type: str
     pending_id: str = ""
@@ -230,12 +272,17 @@ company_id: str = Depends(require_company_id)):
 
     if req.type == "approval_response" and req.pending_id:
         try:
-            from app.domains.cv_screening.services.hitl_service import HITLService
-            hitl_service = HITLService()
-            if req.approved:
-                await hitl_service.approve(req.pending_id, user_id)
-            else:
-                await hitl_service.reject(req.pending_id, user_id)
+            # AUD-4 fix: HITLService nao tem approve/reject -> era AttributeError
+            # (500). O metodo canonico e receive_approval (mesmo do WS). Usa o
+            # singleton compartilhado p/ casar com o pending mintado no /stream.
+            from app.services.hitl_service import hitl_service
+            _thread = req.thread_id or req.session_id
+            await hitl_service.receive_approval(
+                thread_id=_thread,
+                pending_id=req.pending_id,
+                approved=bool(req.approved),
+                resolved_by=user_id,
+            )
             return {"status": "ok", "approved": req.approved}
         except HTTPException:
             raise
@@ -329,6 +376,16 @@ company_id: str = Depends(require_company_id)):
     context["_raw_user_message"] = _raw_content
     if req.conversation_id:
         context["conversation_id"] = req.conversation_id
+
+    # HITL approval detection (AUD-4 1b-b/c): turno que carrega approve_pending_id
+    # = usuario aprovou a acao sensivel pendente. _approved_turn liga o ContextVar
+    # DENTRO da task de dispatch (abaixo) -> a tool re-chamada passa o gate.
+    _approved_turn = await _detect_hitl_approval(
+        approve_pending_id=req.approve_pending_id,
+        session_id=session_id,
+        company_id=company_id,
+        user_id=user_id,
+    )
 
     async def event_generator():
         event_seq = 0
@@ -609,6 +666,11 @@ company_id: str = Depends(require_company_id)):
             # Fase 2 item 6: bolha roteada pro MainOrchestrator (LIA_BUBBLE_VIA_SUPERVISOR).
             # Reusa _streaming_callback (tokens/tools) + o loop drain+keepalive abaixo.
             try:
+                if _approved_turn:
+                    from app.shared.hitl.hitl_approval_context import (
+                        set_hitl_approved,
+                    )
+                    set_hitl_approved(True)
                 from app.api.v1.chat import _build_supervisor_context
                 from app.core.database import AsyncSessionLocal
                 from app.orchestrator.execution.main_orchestrator import (
@@ -638,6 +700,11 @@ company_id: str = Depends(require_company_id)):
 
         async def _run_agent():
             try:
+                if _approved_turn:
+                    from app.shared.hitl.hitl_approval_context import (
+                        set_hitl_approved,
+                    )
+                    set_hitl_approved(True)
                 # Fase 2/4: seta o escopo do turno na contextvar p/ o federado carregar
                 # tools escopadas (~30 vs 179). Ativo se SCOPED_TOOLS ou PRIMARY. Fail-open.
                 try:
