@@ -3,7 +3,7 @@
 import React from "react"
 import { Brain } from "lucide-react"
 import { useTranslations, useLocale } from "next-intl"
-import { phaseLabel } from "./activity-labels"
+import { phaseLabel, phaseIcon } from "./activity-labels"
 
 interface ThinkingStepsCardProps {
   steps: string[]
@@ -61,9 +61,12 @@ export function ThinkingStepsCard({ steps }: ThinkingStepsCardProps) {
     >
       {steps.map((step, i) => {
         const spotlight = i === lastIndex
+        // Enriquecimento 2026-06-07: icone semantico por passo (phaseIcon) em vez
+        // de Brain fixo -> consistente com timeline/summary (mesmo vocabulario).
+        const StepIcon = phaseIcon(step)
         return (
           <div key={i} className="flex items-start gap-2">
-            <Brain
+            <StepIcon
               className={
                 spotlight
                   ? "w-3.5 h-3.5 mt-0.5 flex-shrink-0 animate-pulse text-wedo-cyan motion-reduce:animate-none"

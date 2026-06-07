@@ -25,6 +25,15 @@ import {
   Users,
   Briefcase,
   Save,
+  Microscope,
+  Eye,
+  ListChecks,
+  PanelRight,
+  ArrowRightLeft,
+  PauseCircle,
+  PlayCircle,
+  Workflow,
+  User,
 } from "lucide-react"
 
 type LangMap = Record<string, Record<string, string>>
@@ -100,9 +109,51 @@ const PHASE_ICONS: Record<string, LucideIcon> = {
   composing: PenLine,
 }
 
-/** Componente de ícone lucide para a FASE de raciocínio (fallback: Brain). */
+/** Heuristica p/ VARIAR o icone do raciocinio conforme o texto/fase
+ *  (planejar/analisar/revisar/buscar/redigir) em vez de Brain p/ tudo.
+ *  Enriquecimento 2026-06-07 (estilo Replit) — vale federado E supervisor. */
+function phaseIconByHeuristic(name: string): LucideIcon | undefined {
+  const n = (name || "").toLowerCase()
+  if (n.includes("planej") || n.includes("plan")) return ListChecks
+  if (n.includes("analis") || n.includes("analy") || n.includes("avalia"))
+    return Microscope
+  if (
+    n.includes("revis") ||
+    n.includes("review") ||
+    n.includes("verif") ||
+    n.includes("confer")
+  )
+    return Eye
+  if (
+    n.includes("busc") ||
+    n.includes("search") ||
+    n.includes("procur") ||
+    n.includes("consult")
+  )
+    return Search
+  if (
+    n.includes("rankea") ||
+    n.includes("rank") ||
+    n.includes("ordena") ||
+    n.includes("compar")
+  )
+    return ListOrdered
+  if (
+    n.includes("redig") ||
+    n.includes("escrev") ||
+    n.includes("prepar") ||
+    n.includes("compos") ||
+    n.includes("respond") ||
+    n.includes("respost")
+  )
+    return PenLine
+  return undefined
+}
+
+/** Componente de ícone lucide para a FASE de raciocínio (heuristica de texto;
+ *  fallback: Brain). */
 export function phaseIcon(key: string): LucideIcon {
-  return PHASE_ICONS[key] ?? Brain
+  return PHASE_ICONS[key] ?? phaseIconByHeuristic(key) ?? Brain
 }
 
 /**
@@ -167,6 +218,26 @@ function toolIconByHeuristic(name: string): LucideIcon | undefined {
     n.includes("script")
   )
     return Terminal
+  if (n.includes("open_ui") || n.includes("navigate") || n.includes("ui_action"))
+    return PanelRight
+  if (n.includes("pause") || n.includes("hold")) return PauseCircle
+  if (n.includes("reopen") || n.includes("reactiv")) return PlayCircle
+  if (n.includes("profile") || n.includes("perfil")) return User
+  if (
+    n.includes("move") ||
+    n.includes("transition") ||
+    n.includes("advance") ||
+    n.includes("batch")
+  )
+    return ArrowRightLeft
+  if (
+    n.includes("pipeline") ||
+    n.includes("funnel") ||
+    n.includes("funil") ||
+    n.includes("workforce") ||
+    n.includes("headcount")
+  )
+    return Workflow
   if (
     n.includes("job") ||
     n.includes("vaga") ||
