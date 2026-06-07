@@ -1321,7 +1321,7 @@ def _build_teams_manifest() -> dict:
     manifest: dict[str, Any] = {
         "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.17/MicrosoftTeams.schema.json",
         "manifestVersion": "1.17",
-        "version": "1.0.2",
+        "version": "1.0.3",
         "id": app_id,
         "packageName": "com.wedotalent.wedo",
         "developer": {
