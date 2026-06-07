@@ -660,6 +660,24 @@ company_id: str = Depends(require_company_id)):
                 "[AgentChatWS] hitl_resync skipped: %s", _hitl_resync_exc,
             )
 
+        # B2 (2026-06): per-turn identity masking (CPF/RG/CNPJ) for users not allowed to see cpf.
+        # ContextVar covers all mask_pii_outbound calls in the while-loop below (same coroutine).
+        try:
+            import uuid as _uuid_b2_ws
+            from app.shared.pii_masking import set_chat_pii_mask_identity, chat_should_mask_identity
+            from app.core.database import AsyncSessionLocal as _SessB2WS
+            from app.domains.company.repositories.user_repository import UserRepository as _UserRepoB2WS
+            from app.domains.hiring_policy.repositories.hiring_policy_repository import HiringPolicyRepository as _HPRepoB2WS
+            if user_id and user_id != "anonymous" and company_id:
+                async with _SessB2WS() as _db_b2_ws:
+                    _u_b2_ws = await _UserRepoB2WS(_db_b2_ws).get_by_id(_uuid_b2_ws.UUID(str(user_id)), company_id=company_id)
+                    _pol_b2_ws = await _HPRepoB2WS(_db_b2_ws).get_by_company(company_id)
+                _rd_b2_ws = (getattr(_pol_b2_ws, "pii_visibility_defaults", None) or {}) if _pol_b2_ws else {}
+                if _u_b2_ws is not None:
+                    set_chat_pii_mask_identity(chat_should_mask_identity(_u_b2_ws, _rd_b2_ws))
+        except Exception:
+            logger.debug("[B2] ws chat identity-masking setup skipped (non-blocking)", exc_info=True)
+
         while True:
             try:
                 raw = await asyncio.wait_for(websocket.receive_text(), timeout=300.0)

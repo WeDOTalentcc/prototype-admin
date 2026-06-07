@@ -395,6 +395,24 @@ company_id: str = Depends(require_company_id)):
             event_seq += 1
             return f"{session_id[:8]}-{event_seq}"
 
+        # B2 (2026-06): per-turn identity masking (CPF/RG/CNPJ) for users not allowed to see cpf.
+        # ContextVar is request-context-scoped -> covers all mask_pii_outbound calls below; no leak.
+        try:
+            import uuid as _uuid_b2
+            from app.shared.pii_masking import set_chat_pii_mask_identity, chat_should_mask_identity
+            from app.core.database import AsyncSessionLocal as _SessB2
+            from app.domains.company.repositories.user_repository import UserRepository as _UserRepoB2
+            from app.domains.hiring_policy.repositories.hiring_policy_repository import HiringPolicyRepository as _HPRepoB2
+            if user_id and user_id != "anonymous" and company_id:
+                async with _SessB2() as _db_b2:
+                    _u_b2 = await _UserRepoB2(_db_b2).get_by_id(_uuid_b2.UUID(str(user_id)), company_id=company_id)
+                    _pol_b2 = await _HPRepoB2(_db_b2).get_by_company(company_id)
+                _rd_b2 = (getattr(_pol_b2, "pii_visibility_defaults", None) or {}) if _pol_b2 else {}
+                if _u_b2 is not None:
+                    set_chat_pii_mask_identity(chat_should_mask_identity(_u_b2, _rd_b2))
+        except Exception:
+            logger.debug("[B2] chat identity-masking setup skipped (non-blocking)", exc_info=True)
+
         yield format_sse_event(serialize_thinking(), next_id())
 
 
