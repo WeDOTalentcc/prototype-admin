@@ -1362,10 +1362,10 @@ def _build_teams_manifest() -> dict:
 
     if azure_client_id:
         manifest["staticTabs"] = [
-            {"entityId": "tab-vagas", "name": "Vagas", "contentUrl": f"{platform_url}/teams-tab/vagas", "websiteUrl": f"{platform_url}/vagas", "scopes": ["personal"]},
-            {"entityId": "tab-candidatos", "name": "Candidatos", "contentUrl": f"{platform_url}/teams-tab/candidatos", "websiteUrl": f"{platform_url}/candidatos", "scopes": ["personal"]},
-            {"entityId": "tab-pipeline", "name": "Pipeline", "contentUrl": f"{platform_url}/teams-tab/pipeline", "websiteUrl": f"{platform_url}/pipeline", "scopes": ["personal"]},
-            {"entityId": "tab-dashboard", "name": "Dashboard", "contentUrl": f"{platform_url}/teams-tab/dashboard", "websiteUrl": f"{platform_url}/dashboard", "scopes": ["personal"]},
+            {"entityId": "tab-decidir", "name": "Decidir", "contentUrl": f"{platform_url}/teams-tab/decidir", "websiteUrl": f"{platform_url}/tasks", "scopes": ["personal"]},
+            {"entityId": "tab-vagas", "name": "Vagas", "contentUrl": f"{platform_url}/teams-tab/vagas", "websiteUrl": f"{platform_url}/jobs", "scopes": ["personal"]},
+            {"entityId": "tab-funil", "name": "Funil de Talentos", "contentUrl": f"{platform_url}/teams-tab/funil-de-talentos", "websiteUrl": f"{platform_url}/funil-de-talentos", "scopes": ["personal"]},
+            {"entityId": "tab-recrutar", "name": "Recrutar", "contentUrl": f"{platform_url}/teams-tab/recrutar", "websiteUrl": f"{platform_url}/recrutar", "scopes": ["personal"]},
         ]
         manifest["webApplicationInfo"] = {
             "id": azure_client_id,
