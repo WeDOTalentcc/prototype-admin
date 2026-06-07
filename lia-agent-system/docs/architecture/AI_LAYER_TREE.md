@@ -30,6 +30,12 @@ HTTP / WebSocket / SSE
    app/shared/  (llm · compliance · tenant · audit · messaging) wraps every step
 ```
 
+> **Review markers (this revision).** Items flagged for follow-up per the
+> architecture diagnosis (§14) carry an inline marker: 🔴 FIX (a divergence or
+> risk to correct), 🟡 REVIEW (consistency / architecture debt to decide on),
+> 🔵 NOTE (minor cleanup or special case to watch). Every marked item is
+> consolidated, with the file(s) to touch, in §16 (Action Register).
+
 ---
 
 ## 1. Entry point & cross-cutting bootstrap
@@ -491,18 +497,18 @@ subset that should arguably be wider), `GAP` (a known hole, by design or debt).
 | Tenant isolation | `shared/agents/tenant_aware_agent.py` + `_current_company_id` ContextVar | ALL 16 ReActAgents + every non-ReAct callsite | `TenantAwareAgentMixin`; `resolve_tenant_snippet_for_non_react` is the only non-ReAct seam; `LIA_AGENT_TENANT_STRICT` fail-closed in prod | OK |
 | Compliance domain prompt | `domains/compliance_base.py` (`ComplianceDomainPrompt`) | ALL `@register_domain` domains | enforced at registration; escape `LIA_ALLOW_NON_COMPLIANT_DOMAINS` (emergency) | OK |
 | FairnessGuard (L1 regex / L2 implicit-bias / L3 HR-sensitive) | `shared/compliance/fairness_guard.py` + `fairness_recursive.py` (nested payloads) + `fairness_guard_middleware.py` (FastAPI dep) | scoring / hiring-policy / screening writes + recruiter `save_*` tools | C3b pre-step (L3) + `scoring_safeguards.py` C1-C5 gate (LGPD Art.20 / EU AI Act) + recursive guard on agent payloads | OK (selective by design; depends on the protected-attributes registry loading) |
-| Protected-attributes registry | `shared/compliance/protected_attributes.py` + `config/protected_attributes.yaml` | foundation for FairnessGuard + BiasAudit (`PROTECTED_ATTRIBUTE_IDS` / `PROTECTED_DB_FIELDS` / `BIAS_AUDIT_DIMENSIONS`) | loaded at startup; `is_registry_loaded()` sanity check | OK, but FAIL-OPEN if the YAML is missing/empty (ADR-031 path bug made FairnessGuard run fail-open Mar-May 2026) |
+| Protected-attributes registry | `shared/compliance/protected_attributes.py` + `config/protected_attributes.yaml` | foundation for FairnessGuard + BiasAudit (`PROTECTED_ATTRIBUTE_IDS` / `PROTECTED_DB_FIELDS` / `BIAS_AUDIT_DIMENSIONS`) | loaded at startup; `is_registry_loaded()` sanity check | 🔴 **FIX** — OK, but FAIL-OPEN if the YAML is missing/empty (ADR-031 path bug made FairnessGuard run fail-open Mar-May 2026) |
 | FactChecker (+ domain validators, LIA-C06) | `shared/compliance/fact_checker.py` + `compliance/domain_validators.py` + `shared/rag/realtime_fact_checker.py` | LLM output before it reaches the user | C3b post-step + RAG path | OK |
 | BiasAuditService (FAR-5 disparate-impact / four-fifths) | `shared/services/bias_audit_service.py` (canonical, cross-domain) + `domains/interview_intelligence/services/bias_detector_service.py` (interview-specific) | periodic / annual bias audits over decisions across domains | `bias_audit_service` singleton; reads `BIAS_AUDIT_DIMENSIONS` from the registry | OK |
 | Prompt-injection guard | `shared/compliance/prompt_injection_guard.py` (+ `shared/prompt_injection.py`) | recruiter/candidate text + LLM output | pre-tool screen | OK |
 | Hate-speech guard | `shared/compliance/hate_speech_guard.py` | generated output | C3b step | OK |
-| PII strip to LLM | `shared/pii_masking.py::strip_pii_for_llm_prompt` + `shared/llm_bootstrap.py` monkey-patch | ALL SDK calls (single chokepoint) | bootstrap wraps `.create`/`.stream`; ON by default | PARTIAL: recruiter chat + some recruiter-facing tools run `mask_names=False`, so candidate NAMES still reach the LLM (see §8.2) |
+| PII strip to LLM | `shared/pii_masking.py::strip_pii_for_llm_prompt` + `shared/llm_bootstrap.py` monkey-patch | ALL SDK calls (single chokepoint) | bootstrap wraps `.create`/`.stream`; ON by default | 🔴 **FIX** — PARTIAL: recruiter chat + some recruiter-facing tools run `mask_names=False`, so candidate NAMES still reach the LLM (see §8.2) |
 | PII masking in logs | `shared/pii_masking.py::install_global_pii_masking` (`PIIMaskingFilter`) | root logger + all handlers + stack traces | installed at boot | OK |
 | HITL gates + tool safety governance | `shared/hitl/agent_gate.py` + `hitl_decorator.@require_hitl` + `compliance/safety_category.py` (`SafetyCategory` enum) | wizard 4 gates + tools tagged in each registry's `GUARDRAIL_TOOLS` (destructive_write / bulk_action / pii_export / outreach / pipeline_move / offer) | LangGraph `interrupt()` + decorator | OK (selective by design) |
 | Audit logging | `shared/compliance/audit_service.py` (+ writer/storage/decorators) | mutative public service methods | mandatory + ratchet sentinel in `interview_scheduling`/`interview_intelligence`/`offer` + `company`; SOX 7-year on offer | PARTIAL: strictly enforced only on those domains; others are best-effort |
 | Credit gating | `shared/llm_bootstrap.py::check_credit_budget` | ALL SDK message-creation primitives | bootstrap + orchestrator + agentic-loop (defense-in-depth) | OK |
 | BYOK (chat / completion) | `shared/tenant_llm_context.py::get_gemini_client_for_tenant` / `get_claude_model_for_tenant` | Gemini / Claude / OpenAI chat | per-tenant `tenant_llm_configs.providers`; platform key only as fallback | OK |
-| BYOK (embeddings) | `shared/providers/embedding_factory.py::_get_tenant_provider` | embedding generation | tenant-key branch exists only for `gemini` | GAP: OpenAI embeddings and the semantic-routing cache always use the platform key (see §8.3) |
+| BYOK (embeddings) | `shared/providers/embedding_factory.py::_get_tenant_provider` | embedding generation | tenant-key branch exists only for `gemini` | 🔴 **FIX** — GAP: OpenAI embeddings and the semantic-routing cache always use the platform key (see §8.3) |
 | Per-tenant custom guardrails | `shared/compliance/guardrail_repository.py` + `models/guardrail.py` | DB-backed per-domain / per-company agent guardrails | repository read at agent build; scoped by `is_active` / `domain` / `company_id` | OK |
 | C3b layer (kill-switch) | `shared/compliance/c3b_layer.py` | realtime chat (WS/SSE) | wraps pre/post compliance; `LIA_DISABLE_C3B` kill-switch | OK |
 
@@ -643,7 +649,7 @@ any log / exception ------> install_global_pii_masking (PIIMaskingFilter) ------
 ATS outbound fields ------> ats_pii_filter.filter_outbound (consent gate: ats_sharing) -> external ATS
 ```
 
-**Residual name-leak gap (the one to flag):** `c3b_layer.pre_compliance` calls
+🔴 **FIX — Residual name-leak gap (the one to flag):** `c3b_layer.pre_compliance` calls
 `strip_pii_for_llm_prompt(message, mask_names=False)` for recruiter chat (both
 the chat-page and `agent_chat_ws` callers), on the rationale that recruiters are
 authorized to see candidate names and NER was producing false positives on job
@@ -677,7 +683,7 @@ embeddings
             (semantic router / routing_cache_vectors)                          OpenAI text-embedding-3-small (1536 dims)
 ```
 
-**Where embeddings are NOT covered by BYOK (and why it is mandatory):**
+🔴 **FIX — Where embeddings are NOT covered by BYOK (and why it is mandatory):**
 
 1. **OpenAI embeddings.** `EmbeddingProviderFactory._get_tenant_provider` only
    has a tenant-key branch for `provider_name == "gemini"`. Any OpenAI embedding
@@ -770,11 +776,11 @@ personalization), `talent_intelligence` (skills ontology, internal mobility,
 workforce planning), `offer` (offer mgmt with SOX audit), `candidate_self_service`,
 `company_settings`.
 
-**Repository-stub (30):** pure CRUD (`__init__.py` + `dependencies.py` +
+🟡 **Repository-stub (30):** pure CRUD (`__init__.py` + `dependencies.py` +
 `repositories/` only). Consumed by agentic domains and routes; not agents. Full
 list in `DOMAIN_CATALOG.md`.
 
-**Canonical-active legacy (2):** `autonomous` (ReAct fallback) and `policy` (the
+🟡 **Canonical-active legacy (2):** `autonomous` (ReAct fallback) and `policy` (the
 real `PolicyEngineService` + `PolicySetupAgent` + sector FairnessGuard rules).
 Production code in the pre-refactor location; `hiring_policy` does NOT replace
 `policy`.
@@ -872,7 +878,7 @@ Two distinct "supervisor" implementations exist:
   the job-creation wizard (`LIA_WIZARD_SUPERVISOR_CLASSIFIER`). **ON in dev/test,
   OFF in prod.**
 
-> Open inconsistency to reconcile: the router header marks Tier 6 (the autonomous
+> 🔴 **FIX** — Open inconsistency to reconcile: the router header marks Tier 6 (the autonomous
 > cross-domain fallback) as REMOVED in Sprint 12.3-B "env never set in prod", while
 > `DOMAIN_CATALOG.md` still documents `autonomous` as the live Tier 6 fallback. The
 > two disagree; the catalog entry is likely stale and should be updated to match
@@ -919,7 +925,7 @@ present.
   talent pool.
 
 Verdict: well-structured and safe to represent as a first-class part of the AI
-layer. The main remaining work is shifting some advanced filter logic from the
+layer. 🔵 **NOTE** — the main remaining work is shifting some advanced filter logic from the
 service layer down into `CustomAgentRepository`; the core lifecycle, runtime, and
 guardrails are solid.
 
@@ -962,25 +968,25 @@ layer is separated from the agent layer; no two packages do the same job; and th
 docs match the code. The items below are where that is not yet true. The gap is
 consistency (form), not capability (function): everything works.
 
-- **Two architectures coexist.** Modern domains register via `@register_domain` +
+- 🟡 **Two architectures coexist.** Modern domains register via `@register_domain` +
   `ComplianceDomainPrompt`; legacy `autonomous` and `policy` (about 2.3k LOC each)
   still use the pre-refactor `agents/` + `@register_agent` shape.
-- **Namespace bloat.** 30 of 59 `app/domains/` entries are pure repository stubs
+- 🟡 **Namespace bloat.** 30 of 59 `app/domains/` entries are pure repository stubs
   (CRUD only). Putting data-access packages in the same namespace as autonomous
   agent domains makes the system look larger and less consistent than it is.
-- **Duplication / overlap.** `hiring_policy` (a ~40-LOC registered stub) overlaps
+- 🟡 **Duplication / overlap.** `hiring_policy` (a ~40-LOC registered stub) overlaps
   conceptually with `policy` (the real engine, ~2,343 LOC, legacy: `PolicyEngineService`
   + `PolicySetupAgent` + sector FairnessGuard rules) - a reader cannot tell from
   the namespace where hiring rules are actually enforced. `hiring_policy` does NOT
   replace `policy`.
-- **Migration debt.** `interview_intelligence` and `voice` carry agentic-grade
+- 🟡 **Migration debt.** `interview_intelligence` and `voice` carry agentic-grade
   logic (2026 / 1725 LOC) but are still classified as service domains (promotion
   candidates). `talent_intelligence` similarly has tools/services without a
   `domain.py`.
-- **Two overlapping "16"s.** The 16 routable ReActAgents and the 16
+- 🟡 **Two overlapping "16"s.** The 16 routable ReActAgents and the 16
   `@register_domain` domains are different sets (§10.1), which is a recurring source
   of confusion.
-- **Doc drift.** At least one authoritative doc (`DOMAIN_CATALOG.md`) is stale vs
+- 🔴 **Doc drift.** At least one authoritative doc (`DOMAIN_CATALOG.md`) is stale vs
   the code (the Tier 6 / autonomous status in §12).
 
 ### 14.3 Recommendation
@@ -1044,7 +1050,7 @@ left behind). The only non-static catch point is the `workforce` string referenc
 
 - Fits in a single focused change, but is best done in batches (trivial ->
   moderate -> careful) with the test + sensor suite run between batches.
-- Treat `workforce` separately: it has `agents/` plus the dynamic string path, so it
+- 🔵 Treat `workforce` separately: it has `agents/` plus the dynamic string path, so it
   is not a pure stub. It belongs with the "promote to agentic" group
   (`voice`, `interview_intelligence`, `talent_intelligence`), not the
   "relocate data-access" group.
@@ -1055,3 +1061,26 @@ left behind). The only non-static catch point is the `workforce` string referenc
 
 > *`opinions` is listed under "Other domains" in §4 but classified as a repository
 > stub in `DOMAIN_CATALOG.md`; treat it as a stub for this refactor.
+
+---
+
+## 16. Action Register (follow-up backlog)
+
+Single index of every item flagged inline above, with the file(s) to touch.
+Markers: 🔴 FIX (a divergence or risk to correct), 🟡 REVIEW (consistency /
+architecture debt to decide on), 🔵 NOTE (minor cleanup or special case). The
+section column points back to the rationale. None of these are production
+blockers; they are the cleanup backlog behind the §14 diagnosis.
+
+| # | Mark | Item | Section | Target file(s) |
+|---|:--:|---|---|---|
+| 1 | 🔴 | `DOMAIN_CATALOG.md` still lists Tier 6 / `autonomous` as the live fallback; the router marks it REMOVED (Sprint 12.3-B) | §12.2, §14.2 | `app/domains/DOMAIN_CATALOG.md` |
+| 2 | 🔴 | Candidate NAMES reach the LLM on recruiter-facing chat (`mask_names=False`) | §8.1, §8.2 | `app/shared/compliance/c3b_layer.py`, `app/shared/pii_masking.py` (opt-in flag `LIA_RECRUITER_CHAT_MASK_PII`) |
+| 3 | 🔴 | Protected-attributes registry runs FAIL-OPEN if the YAML fails to load (ADR-031) | §8.1 [a], §8.1.1 | `config/protected_attributes.yaml`, `app/shared/compliance/protected_attributes.py` (+ registry-load monitoring) |
+| 4 | 🔴 | BYOK gap: OpenAI embeddings and the semantic-routing cache always use the platform key | §8.1, §8.3 | `app/shared/providers/embedding_factory.py`, `app/orchestrator/memory/vector_semantic_cache.py` |
+| 5 | 🟡 | 30 repository stubs pollute `app/domains/`; relocate to a data-access namespace | §4, §14.2, §15 | the 30 stub dirs + sensors `scripts/check_stub_invariants.py`, `validate_stubs.py`, `check_canonical_domain_structure.py`, `check_no_imports_from_deprecated.py` + `app/shared/tool_catalog.py` |
+| 6 | 🟡 | `hiring_policy` vs `policy` ownership overlap (where are hiring rules actually enforced?) | §4, §10.2, §14.2 | `app/domains/hiring_policy/`, `app/domains/policy/` |
+| 7 | 🟡 | Promote `interview_intelligence` / `voice` / `talent_intelligence` to the canonical agentic shape | §4, §10.2, §14.2 | those domain dirs (add `domain.py` + `@register_domain`) |
+| 8 | 🟡 | Two different "16"s (routable agents vs `@register_domain` domains) confuse readers | §10.1, §14.2 | doc-level + `app/domains/DOMAIN_CATALOG.md` |
+| 9 | 🔵 | Agent Studio: move advanced filter logic from the service layer into `CustomAgentRepository` | §13 | `app/domains/agent_studio/` |
+| 10 | 🔵 | `workforce` is a stub with `agents/` + a dynamic string path; handle separately from the pure stubs | §15.4 | `app/domains/workforce/`, `app/shared/tool_catalog.py` |
