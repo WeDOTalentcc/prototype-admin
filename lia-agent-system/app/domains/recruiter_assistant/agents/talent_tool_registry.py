@@ -43,6 +43,38 @@ _RRP_NARRATE_HINT = (
 )
 
 
+def _rrp_rank_narrative(ranking: list) -> str:
+    """Resumo prosa-pronto do ranking p/ a LLM narrar SEM re-tabular (o card RRP
+    e a fonte visual). 1-2 frases de destaque."""
+    top = list(ranking or [])[:3]
+    if not top:
+        return "Nenhum candidato no ranking."
+    segs = []
+    for r in top:
+        nm = r.get("name") or "candidato"
+        sc = r.get("lia_score")
+        st = r.get("stage") or ""
+        seg = nm
+        if sc is not None:
+            seg += f" (score {sc}{', ' + st if st else ''})"
+        elif st:
+            seg += f" ({st})"
+        segs.append(seg)
+    return (
+        f"Lideres: {'; '.join(segs)}. Total {len(ranking)} no ranking "
+        "(exibido no card visual)."
+    )
+
+
+def _rrp_compare_narrative(compared: list, ids: list) -> str:
+    n = len(compared or []) or len(ids or [])
+    nomes = [c.get("name") for c in (compared or [])[:3] if c.get("name")]
+    base = f"Comparacao de {n} candidatos exibida no card visual."
+    if nomes:
+        base += " Candidatos: " + ", ".join(nomes) + "."
+    return base
+
+
 @tool_handler("talent")
 async def _wrap_search_candidates(**kwargs: Any) -> dict[str, Any]:
     """Search candidates by skills, experience, location."""
@@ -284,17 +316,29 @@ async def _wrap_compare_candidates(**kwargs: Any) -> dict[str, Any]:
             _rrp_blocks = build_candidate_comparison_blocks(_compared)
         except Exception as _e:
             logger.warning(f"[talent_tools] compare_candidates RRP skipped: {_e}")
-    return {
-        "success": True,
-        "data": {
+    if _rrp_blocks:
+        _data = {
+            "candidate_ids": candidate_ids,
+            "comparison_count": len(candidate_ids),
+            "comparison_complete": True,
+            "rendered_as_card": True,
+            "narrative": _rrp_compare_narrative(_compared, candidate_ids),
+            "response_blocks": _rrp_blocks,
+            "render_hint": _RRP_NARRATE_HINT,
+        }
+    else:
+        _data = {
             "candidate_ids": candidate_ids,
             "comparison_count": len(candidate_ids),
             "comparison_complete": True,
             "dimensions": ["skills", "experience", "score", "fit"],
             "candidates": _compared,
-            "response_blocks": _rrp_blocks or None,
-            "render_hint": _RRP_NARRATE_HINT if _rrp_blocks else None,
-        },
+            "response_blocks": None,
+            "render_hint": None,
+        }
+    return {
+        "success": True,
+        "data": _data,
         "message": f"Comparacao de {len(_compared) or len(candidate_ids)} candidatos concluida.",
     }
 
@@ -349,17 +393,31 @@ async def _wrap_rank_candidates(**kwargs: Any) -> dict[str, Any]:
     except Exception as e:
         logger.warning(f"[talent_tools] rank_candidates DB error: {e}")
 
-    return {
-        "success": True,
-        "data": {
+    if _rrp_blocks:
+        # Card RRP e a fonte visual: expoe so narrativa compacta p/ a LLM (sem
+        # a lista -> sem re-tabular). Os blocks vao pro sink (tee) -> card.
+        _data = {
+            "vacancy_id": vacancy_id,
+            "criteria": criteria,
+            "ranked_count": len(ranking),
+            "rendered_as_card": True,
+            "narrative": _rrp_rank_narrative(ranking),
+            "response_blocks": _rrp_blocks,
+            "render_hint": _RRP_NARRATE_HINT,
+        }
+    else:
+        _data = {
             "vacancy_id": vacancy_id,
             "criteria": criteria,
             "ranking_generated": True,
             "ranked_count": len(ranking),
             "ranking": ranking,
-            "response_blocks": _rrp_blocks or None,
-            "render_hint": _RRP_NARRATE_HINT if _rrp_blocks else None,
-        },
+            "response_blocks": None,
+            "render_hint": None,
+        }
+    return {
+        "success": True,
+        "data": _data,
         "message": f"Ranking gerado: {len(ranking)} candidatos para a vaga {vacancy_id} (criterio: {criteria}).",
     }
 

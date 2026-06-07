@@ -53,6 +53,21 @@ def drain_sink() -> list[dict]:
     return list(cur)
 
 
+def _strip_blocks_for_llm(result):
+    """Apos teear os blocks pro sink, remove-os da copia que vai pra LLM
+    (ToolMessage). O card RRP e a fonte visual unica -> sem os blocks no texto a
+    LLM nao re-tabula (2-table P2). Nunca levanta; nao muta o original."""
+    try:
+        if not isinstance(result, dict):
+            return result
+        data = result.get("data")
+        if isinstance(data, dict) and data.get("response_blocks"):
+            return {**result, "data": {**data, "response_blocks": None}}
+    except Exception:
+        return result
+    return result
+
+
 def tee_tool_function(fn):
     """Envolve a função de uma tool p/ tee `response_blocks` no sink (passthrough).
 
@@ -67,7 +82,7 @@ def tee_tool_function(fn):
         async def _aw(*args, **kwargs):
             r = await fn(*args, **kwargs)
             append_from_result(r)
-            return r
+            return _strip_blocks_for_llm(r)
 
         return _aw
 
@@ -75,6 +90,6 @@ def tee_tool_function(fn):
     def _sw(*args, **kwargs):
         r = fn(*args, **kwargs)
         append_from_result(r)
-        return r
+        return _strip_blocks_for_llm(r)
 
     return _sw
