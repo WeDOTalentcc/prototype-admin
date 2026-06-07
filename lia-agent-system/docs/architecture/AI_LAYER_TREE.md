@@ -96,9 +96,15 @@ app/orchestrator/
 │   ├── intents_config.py             # intent→action config
 │   └── utils.py
 ├── action_handlers/                  # per-domain action handler implementations
-│   ├── candidate_actions.py   job_actions.py        pipeline_actions.py
-│   ├── communication_actions.py  interview_actions.py  sourcing_actions.py
-│   ├── analytics_actions.py   handler_deps.py       _handler_hooks.py
+│   ├── candidate_actions.py
+│   ├── job_actions.py
+│   ├── pipeline_actions.py
+│   ├── communication_actions.py
+│   ├── interview_actions.py
+│   ├── sourcing_actions.py
+│   ├── analytics_actions.py
+│   ├── handler_deps.py
+│   └── _handler_hooks.py
 ├── guards/
 │   ├── precondition_checker.py       # preconditions before state change
 │   ├── rail_a_capability_check.py    # capability gating
@@ -106,8 +112,12 @@ app/orchestrator/
 │   └── wizard_state.py               # wizard-state guard
 ├── context/
 │   ├── navigation_intent.py          # useNavigationIntent backend counterpart (T-1165)
-│   ├── chat_adapter.py  context_adapter.py  view_context.py
-│   ├── intent_types.py  temporal_resolver.py  empty_result_guidance.py
+│   ├── chat_adapter.py
+│   ├── context_adapter.py
+│   ├── view_context.py
+│   ├── intent_types.py
+│   ├── temporal_resolver.py
+│   └── empty_result_guidance.py
 ├── heuristics/
 │   ├── cv_matching_detector.py
 │   └── technical_response_detector.py
@@ -121,7 +131,8 @@ app/orchestrator/
 │   ├── plan_orchestration_service.py # PlanExecutor wiring (real DomainRegistry+DomainWorkflow)
 │   ├── policy_gate_service.py        # policy gate before execution
 │   ├── fallback_react_service.py     # ReAct fallback service
-│   ├── rail_a_hint_override.py  context_type_override.py
+│   ├── rail_a_hint_override.py
+│   └── context_type_override.py
 ├── legacy/
 │   ├── orchestrator.py               # pre-refactor orchestrator (still referenced)
 │   └── tasting_engine.py
@@ -196,18 +207,30 @@ app/domains/
 │   ├── services/                  #   cv_parser, cv_scoring_service, rubric_evaluation_service,
 │   │                              #   lia_score_service, hitl_service, calibration_profiles,
 │   │                              #   personalized_feedback_service, … (30+ services)
-│   ├── prompts/  config/  constants/  models/  schemas/  repositories/
+│   ├── prompts/
+│   ├── config/
+│   ├── constants/
+│   ├── models/
+│   ├── schemas/
+│   └── repositories/
 ├── sourcing/ ⭐                   # Candidate sourcing across channels
 │   ├── agents/                    #   sourcing_react_agent (parent) + search/enrich/diversity/
 │   │                              #   github/stackoverflow/nurture/passive/referral/planner/
 │   │                              #   engagement sub-agents, each w/ *_tool_registry
 │   ├── tools/                     #   query_tools, enrichment_tools
-│   ├── ports/  services/  config/  repositories/
+│   ├── ports/
+│   ├── services/
+│   ├── config/
+│   └── repositories/
 ├── job_management/ ⭐             # Job lifecycle + the canonical WizardReActAgent
 │   ├── agents/                    #   wizard_react_agent, wizard_{system_prompt,tool_registry},
 │   │                              #   stage_context
 │   ├── tools/                     #   job_tools, job_wizard_tools, query_tools, job_tools_compat
-│   ├── prompts/  schemas/  services/  config/  repositories/
+│   ├── prompts/
+│   ├── schemas/
+│   ├── services/
+│   ├── config/
+│   └── repositories/
 ├── job_creation/ ⭐               # Wizard graph (15 nodes: 11 functional + 4 HITL gates)
 │   ├── nodes/                     #   intake, jd_enrichment, competency, wsi_questions,
 │   │                              #   salary, bigfive, eligibility, pipeline_template, publish,
@@ -215,72 +238,163 @@ app/domains/
 │   │                              #   wsi_questions_gate, review_gate, calibration, handoff
 │   ├── orchestrator/              #   wizard_orchestrator, wizard_tools, wizard_service_tools,
 │   │                              #   wsi_canonical_adapter
-│   ├── graph.py  domain.py  state.py  policy_gate.py  compliance.py  feature_flag.py
-│   ├── actions/  helpers/  internal/  services/  repositories/
+│   ├── graph.py
+│   ├── domain.py
+│   ├── state.py
+│   ├── policy_gate.py
+│   ├── compliance.py
+│   ├── feature_flag.py
+│   ├── actions/
+│   ├── helpers/
+│   ├── internal/
+│   ├── services/
+│   └── repositories/
 ├── recruiter_assistant/ ⭐        # General recruiter copilot (fallback domain)
 │   ├── agents/                    #   recruiter_copilot, jobs_mgmt, kanban (+action/insight/
 │   │                              #   search sub-agents), talent / talent_funnel react agents
-│   ├── tools/  prompts/  services/  config/  repositories/
+│   ├── tools/
+│   ├── prompts/
+│   ├── services/
+│   ├── config/
+│   └── repositories/
 ├── pipeline/ ⭐                   # Pipeline visualization + candidate movement
 │   ├── agents/                    #   pipeline_transition_agent + action/context/decision agents
-│   ├── tools/  models/  services/  config/  repositories/
+│   ├── tools/
+│   ├── models/
+│   ├── services/
+│   ├── config/
+│   └── repositories/
 ├── communication/ ⭐             # Email / WhatsApp / Teams messaging
 │   ├── agents/                    #   communication_react_agent + tool_registry/system_prompt
-│   ├── tools/  schemas/  models/  services/  config/  repositories/
+│   ├── tools/
+│   ├── schemas/
+│   ├── models/
+│   ├── services/
+│   ├── config/
+│   └── repositories/
 ├── analytics/                     # Recruitment analytics, reports, dashboards
-│   ├── agents/  tools/  schemas/  models/  services/  config/  repositories/
+│   ├── agents/
+│   ├── tools/
+│   ├── schemas/
+│   ├── models/
+│   ├── services/
+│   ├── config/
+│   └── repositories/
 ├── ats_integration/               # ATS sync (Gupy, Pandapé, Merge)
-│   ├── agents/  tools/  models/  services/  config/  repositories/
+│   ├── agents/
+│   ├── tools/
+│   ├── models/
+│   ├── services/
+│   ├── config/
+│   └── repositories/
 ├── automation/                    # Tasks, reminders, notes, workflow automation
-│   ├── agents/  tools/  models/  services/  config/  repositories/
+│   ├── agents/
+│   ├── tools/
+│   ├── models/
+│   ├── services/
+│   ├── config/
+│   └── repositories/
 ├── hiring_policy/                 # Hiring policy advisory w/ FairnessGuard (PolicyReActAgent)
-│   ├── agents/  actions/  tools/  services/  config/  repositories/
+│   ├── agents/
+│   ├── actions/
+│   ├── tools/
+│   ├── services/
+│   ├── config/
+│   └── repositories/
 ├── interview_scheduling/ ⭐       # Scheduling + calendar (LangGraph interview_graph)
 │   ├── agents/                    #   interview_graph, interview_scheduling_nodes, system_prompt
 │   ├── tools/                     #   scheduling_tools
-│   ├── schemas/  models/  services/  config/  repositories/
+│   ├── schemas/
+│   ├── models/
+│   ├── services/
+│   ├── config/
+│   └── repositories/
 └── agent_studio/ ⭐               # Custom agent creation/marketplace (tenant-scoped templates)
-    └── config/  repositories/     #   resolved via registry.get_domain_for_company()
+    ├── config/                    #   resolved via registry.get_domain_for_company()
+    └── repositories/
 ```
 
 ### Micro-action domains (`@register_domain`, lightweight)
 
 ```
-├── digital_twin/ ⭐   config/                 # Digital twin creation/evaluation
-├── recruitment_campaign/  config/            # Multi-stage recruitment campaigns
-└── talent_pool/       agents/ config/ repositories/   # TalentPoolReActAgent
+├── digital_twin/ ⭐                           # Digital twin creation/evaluation
+│   └── config/
+├── recruitment_campaign/                      # Multi-stage recruitment campaigns
+│   └── config/
+└── talent_pool/                               # TalentPoolReActAgent
+    ├── agents/
+    ├── config/
+    └── repositories/
 ```
 
 ### Service domains (business logic, not orchestrator-routable)
 
 ```
-├── ai/                 repositories/ services/   # LLMService, response cache, prompt mgmt
-├── interview_intelligence/ ⭐  services/         # bias_detector, comparative_analysis,
-│                                                 #   strategic_opinion, interview_wsi,
-│                                                 #   feedback_generator, transcription
-├── voice/ ⭐           services/ plugins/ protocols/ schemas/ repositories/
-│                                                 #   gemini_live_audio, voice_screening_orchestrator,
-│                                                 #   voice_core_orchestrator, realtime_credit_session
-├── persona/ ⭐         services/                 # ai_persona_service + validators
-├── talent_intelligence/ ⭐  tools/ services/     # skills ontology, internal mobility, workforce
-│                                                 #   planning, market intel, candidate nurture,
-│                                                 #   interview_intelligence_tools (cross-call)
-├── company/   candidates/   recruitment/   compliance/   consent/
-├── credits/   billing/   integrations_hub/   lgpd/   modules/
+├── ai/                            # LLMService, response cache, prompt mgmt
+│   ├── repositories/
+│   └── services/
+├── interview_intelligence/ ⭐     # bias_detector, comparative_analysis,
+│   │                              #   strategic_opinion, interview_wsi,
+│   │                              #   feedback_generator, transcription
+│   └── services/
+├── voice/ ⭐                      # gemini_live_audio, voice_screening_orchestrator,
+│   │                              #   voice_core_orchestrator, realtime_credit_session
+│   ├── services/
+│   ├── plugins/
+│   ├── protocols/
+│   ├── schemas/
+│   └── repositories/
+├── persona/ ⭐                    # ai_persona_service + validators
+│   └── services/
+├── talent_intelligence/ ⭐        # skills ontology, internal mobility, workforce
+│   │                              #   planning, market intel, candidate nurture,
+│   │                              #   interview_intelligence_tools (cross-call)
+│   ├── tools/
+│   └── services/
+├── company/
+├── candidates/
+├── recruitment/
+├── compliance/
+├── consent/
+├── credits/
+├── billing/
+├── integrations_hub/
+├── lgpd/
+└── modules/
 ```
 
 ### Other domains
 
 ```
 # Canonical-Active (legacy path, NOT deprecated):
-├── autonomous/  agents/        # Tier 6 ReAct fallback for CascadedRouter
-├── policy/      agents/ services/ repositories/   # PolicyEngineService, PolicySetupAgent,
-│                                                  #   ALPHA1_SECTOR_RULES (sector FairnessGuard)
+├── autonomous/                    # Tier 6 ReAct fallback for CascadedRouter
+│   └── agents/
+├── policy/                        # PolicyEngineService, PolicySetupAgent,
+│   │                              #   ALPHA1_SECTOR_RULES (sector FairnessGuard)
+│   ├── agents/
+│   ├── services/
+│   └── repositories/
 # AI-relevant service domains worth noting:
-├── company_settings/ ⭐  agents/ tools/ config/ repositories/   # CompanySettingsReActAgent
-├── candidate_self_service/ ⭐  agents/ actions/ tools/ services/ config/ repositories/
-├── offer/  agents/ tools/ models/ services/ config/ repositories/   # offer mgmt (SOX audit)
-├── opinions/    digital_twin/ (above)
+├── company_settings/ ⭐           # CompanySettingsReActAgent
+│   ├── agents/
+│   ├── tools/
+│   ├── config/
+│   └── repositories/
+├── candidate_self_service/ ⭐
+│   ├── agents/
+│   ├── actions/
+│   ├── tools/
+│   ├── services/
+│   ├── config/
+│   └── repositories/
+├── offer/                         # offer mgmt (SOX audit)
+│   ├── agents/
+│   ├── tools/
+│   ├── models/
+│   ├── services/
+│   ├── config/
+│   └── repositories/
+└── opinions/                      # (+ digital_twin/, shown above)
 # Repository-stub domains (pure CRUD: __init__.py + dependencies.py + repositories/):
 #   admin, admin_settings, agent_memory, approvals, auth, bulk_actions, candidate_lists,
 #   chat, clients, client_users, company_culture, data_subject, email_templates, goals,
@@ -314,49 +428,94 @@ app/shared/
 ├── tool_handler.py             # ToolHandler — executes tool calls w/ tenant context
 ├── pii_masking.py              # install_global_pii_masking + strip_pii_for_llm_prompt
 ├── prompt_injection.py         # prompt-injection detection helpers
-├── tenant_guard.py  tenant_session.py  runtime_context.py
+├── tenant_guard.py
+├── tenant_session.py
+├── runtime_context.py
 ├── llm/
 │   ├── callbacks.py            # LangChain callbacks (tracing/metrics)
 │   └── safe_response.py        # safe LLM response wrapping
 ├── prompts/
 │   ├── system_prompt_builder.py    # SystemPromptBuilder — central prompt assembly
-│   ├── prompt_composer.py  loader.py  templates.py
-│   ├── agent_prompts.py  job_wizard.py  voice_system_prompt.py
-│   ├── persona_aware_prompt.py  training_persona.py  anti_sycophancy_block.py
-│   ├── cot.py  few_shot_examples.py  intent_few_shot_examples.py
-│   ├── interaction_patterns.py  glossary_loader.py
+│   ├── prompt_composer.py
+│   ├── loader.py
+│   ├── templates.py
+│   ├── agent_prompts.py
+│   ├── job_wizard.py
+│   ├── voice_system_prompt.py
+│   ├── persona_aware_prompt.py
+│   ├── training_persona.py
+│   ├── anti_sycophancy_block.py
+│   ├── cot.py
+│   ├── few_shot_examples.py
+│   ├── intent_few_shot_examples.py
+│   ├── interaction_patterns.py
+│   ├── glossary_loader.py
 │   └── examples/
 ├── compliance/                 # 3-pillar compliance (LGPD + SOX + EU AI Act)
-│   ├── fairness_guard.py  fairness_guard_middleware.py  fairness_recursive.py
-│   ├── fact_checker.py  prompt_injection_guard.py  hate_speech_guard.py
-│   ├── protected_attributes.py  scoring_safeguards.py  safety_category.py
+│   ├── fairness_guard.py
+│   ├── fairness_guard_middleware.py
+│   ├── fairness_recursive.py
+│   ├── fact_checker.py
+│   ├── prompt_injection_guard.py
+│   ├── hate_speech_guard.py
+│   ├── protected_attributes.py
+│   ├── scoring_safeguards.py
+│   ├── safety_category.py
 │   ├── c3b_layer.py            # C3b layer (PII strip + Fairness L3 + FactCheck + Audit)
-│   ├── audit_service.py  audit_writer.py  audit_storage.py  audit_callback.py
-│   ├── audit_decorators.py  audit_models.py  domain_validators.py
+│   ├── audit_service.py
+│   ├── audit_writer.py
+│   ├── audit_storage.py
+│   ├── audit_callback.py
+│   ├── audit_decorators.py
+│   ├── audit_models.py
+│   ├── domain_validators.py
 │   └── guardrail_repository.py
 ├── agents/
 │   ├── agent_registry.py       # AgentRegistry (legacy intent map, coexists w/ DomainRegistry)
 │   ├── agent_bus.py            # AgentBus — inter-agent message bus
 │   ├── tenant_aware_agent.py   # TenantAwareAgentMixin + is_tenant_strict_mode +
 │   │                           #   resolve_tenant_snippet_for_non_react (canonical non-ReAct seam)
-│   ├── crew_executor.py  crew_context.py  crew_audit.py  crew_models.py  crew_examples.py
+│   ├── crew_executor.py
+│   ├── crew_context.py
+│   ├── crew_audit.py
+│   ├── crew_models.py
+│   ├── crew_examples.py
 │   └── agent_types.py
 ├── tools/
-│   ├── export_tools.py  insight_tools.py  predictive_tools.py  proactive_tools.py
+│   ├── export_tools.py
+│   ├── insight_tools.py
+│   ├── predictive_tools.py
+│   └── proactive_tools.py
 ├── messaging/                  # BrokerInterface abstraction (Redis / RabbitMQ / Pub-Sub)
-│   ├── broker_interface.py  rabbitmq_producer.py  rabbitmq_consumer.py
-│   ├── rails_crud_consumer.py  rails_event_publisher.py  rails_event_schemas.py
-│   ├── unified_event_publisher.py  platform_events.py  dispatchers.py  celery_config.py
+│   ├── broker_interface.py
+│   ├── rabbitmq_producer.py
+│   ├── rabbitmq_consumer.py
+│   ├── rails_crud_consumer.py
+│   ├── rails_event_publisher.py
+│   ├── rails_event_schemas.py
+│   ├── unified_event_publisher.py
+│   ├── platform_events.py
+│   ├── dispatchers.py
+│   └── celery_config.py
 ├── memory/
-│   ├── conversation_state.py  reference_resolver.py  candidate_list_store.py
+│   ├── conversation_state.py
+│   ├── reference_resolver.py
+│   └── candidate_list_store.py
 ├── rag/
-│   ├── hybrid_search.py  reranker.py  realtime_fact_checker.py  response_watermarker.py
+│   ├── hybrid_search.py
+│   ├── reranker.py
+│   ├── realtime_fact_checker.py
+│   └── response_watermarker.py
 ├── hitl/
-│   ├── agent_gate.py  hitl_approval_context.py    (+ shared/hitl_decorator.py at root)
+│   ├── agent_gate.py
+│   └── hitl_approval_context.py    # (+ shared/hitl_decorator.py at root)
 ├── governance/
-│   ├── agent_monitoring_service.py  feature_flag_service.py
+│   ├── agent_monitoring_service.py
+│   └── feature_flag_service.py
 ├── intelligence/
-│   ├── embedding_service.py  semantic_search_service.py  smart_extractor.py
+│   ├── embedding_service.py
+│   ├── semantic_search_service.py
+│   ├── smart_extractor.py
 │   ├── param_patterns.py
 │   ├── chunking/              # RecursiveTextSplitter + section_aware/semantic/sliding_window
 │   ├── ab_testing/           # thompson_sampler, bandit_posterior_repository
@@ -375,11 +534,25 @@ app/shared/
 app/prompts/                    # YAML + Python prompt catalog (registered at startup by
 │                               #   app/core/prompt_version_loader.py)
 ├── domains/                    # per-domain system prompts (YAML):
-│   ├── cv_screening.yaml  sourcing.yaml  job_management.yaml  job_creation.yaml
-│   ├── company_settings.yaml  communication.yaml  pipeline.yaml  analytics.yaml
-│   ├── autonomous.yaml  hiring_policy.yaml  interview_scheduling.yaml  offer.yaml
-│   ├── wsi_evaluation.yaml  wsi_interview.yaml  wsi_layer2_extraction.yaml
-│   ├── intent_classification.yaml  orchestrator.yaml  agent_studio.yaml  … (31 files)
+│   ├── cv_screening.yaml
+│   ├── sourcing.yaml
+│   ├── job_management.yaml
+│   ├── job_creation.yaml
+│   ├── company_settings.yaml
+│   ├── communication.yaml
+│   ├── pipeline.yaml
+│   ├── analytics.yaml
+│   ├── autonomous.yaml
+│   ├── hiring_policy.yaml
+│   ├── interview_scheduling.yaml
+│   ├── offer.yaml
+│   ├── wsi_evaluation.yaml
+│   ├── wsi_interview.yaml
+│   ├── wsi_layer2_extraction.yaml
+│   ├── intent_classification.yaml
+│   ├── orchestrator.yaml
+│   ├── agent_studio.yaml
+│   └── …                       # (31 files total)
 ├── job_creation/              # wizard gate prompts: gate_classifier, gate_competency,
 │   │                          #   gate_review, gate_wsi_questions, wizard_supervisor,
 │   │                          #   intake_gate_classifier, wsi_question_distribution, messages
@@ -387,15 +560,22 @@ app/prompts/                    # YAML + Python prompt catalog (registered at st
 │   │                          #   defensive, few_shot_template, agent_prompts, policy_setup
 ├── experiments/              # A/B prompt variants (cascade_router, job_wizard_field_extraction)
 ├── tenants/                  # per-tenant prompt overrides (__test_tenant__)
-├── cot.py  examples.py  templates.py  job_wizard.py
+├── cot.py
+├── examples.py
+├── templates.py
+├── job_wizard.py
 └── *_prompts.py              # jobs_management / kanban_assistant / talent_assistant
 
 app/tools/                      # function-calling tool registry (initialize_tools() in lifespan)
 ├── registry.py                # central tool registry
 ├── executor.py                # tool executor
-├── categories.py  scope_config.py  context_helpers.py
-├── tool_registry_loader.py  tool_registry_metadata.yaml
-└── tool_permissions_loader.py  tool_permissions.yaml
+├── categories.py
+├── scope_config.py
+├── context_helpers.py
+├── tool_registry_loader.py
+├── tool_registry_metadata.yaml
+├── tool_permissions_loader.py
+└── tool_permissions.yaml
 ```
 
 ---
@@ -413,13 +593,26 @@ libs/agents-core/lia_agents_core/
 ├── langgraph_base.py          # LangGraphBase (sync checkpointer seam)
 ├── react_loop.py              # the ReAct reason→act loop
 ├── checkpointer.py            # AsyncPostgresSaver canonical (fail-closed in prod, §main.py)
-├── tool_adapter.py  timed_tool_node.py  nodes.py
-├── agent_interface.py  agent_scaffold.py  contracts.py  confidence.py
-├── enhanced_agent_mixin.py  autonomy_engine.py
-├── state_machine.py  base_state_machine.py
-├── long_term_memory.py  working_memory.py  memory_integration.py
-├── streaming_callback.py  observability.py  execution_log_store.py
-├── learning_extractor.py  proactive_worker.py  sourcing_engagement_nodes.py
+├── tool_adapter.py
+├── timed_tool_node.py
+├── nodes.py
+├── agent_interface.py
+├── agent_scaffold.py
+├── contracts.py
+├── confidence.py
+├── enhanced_agent_mixin.py
+├── autonomy_engine.py
+├── state_machine.py
+├── base_state_machine.py
+├── long_term_memory.py
+├── working_memory.py
+├── memory_integration.py
+├── streaming_callback.py
+├── observability.py
+├── execution_log_store.py
+├── learning_extractor.py
+├── proactive_worker.py
+└── sourcing_engagement_nodes.py
 ```
 
 > Sibling `libs/` packages (`audit`, `config`, `messaging`, `models`, `schemas`,
