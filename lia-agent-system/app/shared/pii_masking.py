@@ -35,6 +35,7 @@ Usage:
 import logging
 import os
 import re
+from contextvars import ContextVar
 from re import Pattern
 
 CPF_PATTERN = re.compile(r'\b\d{3}[.\-]?\d{3}[.\-]?\d{3}[.\-/]?\d{2}\b')
@@ -113,12 +114,69 @@ _RECRUITER_CHAT_MASK_PII = os.environ.get(
     "LIA_RECRUITER_CHAT_MASK_PII", "false"
 ).strip().lower() in ("1", "true", "yes", "on")
 
+# Per-chat-turn flag: when True, mask identity docs (CPF/RG/CNPJ) in chat output
+# for a user not allowed to see `cpf`. Set by the chat handler (B2), read by
+# mask_pii_outbound. Leaves email/phone untouched (primary contacts stay visible
+# per product decision Paulo 2026-06-07).
+_chat_pii_mask_identity: ContextVar[bool] = ContextVar("_chat_pii_mask_identity", default=False)
+
+
+def set_chat_pii_mask_identity(value: bool):
+    """Set the per-turn identity-masking flag. Returns a token for reset()."""
+    return _chat_pii_mask_identity.set(bool(value))
+
+
+def reset_chat_pii_mask_identity(token) -> None:
+    """Reset the ContextVar to its previous value using the token from set()."""
+    try:
+        _chat_pii_mask_identity.reset(token)
+    except Exception:
+        pass
+
+
+def chat_should_mask_identity(user, role_defaults: dict | None = None) -> bool:
+    """True when the user is NOT allowed to see `cpf` (-> mask identity docs in chat).
+
+    Resolves cpf visibility via pii_field_resolver precedence:
+    user override > role default > legacy bucket (can_view_sensitive_pii) > True.
+    """
+    from app.shared.rbac.pii_field_resolver import resolve_pii_field_visibility
+    try:
+        effective = resolve_pii_field_visibility(user, role_defaults or {})
+        return not effective.get("cpf", True)
+    except Exception:
+        return False
+
+
+# Strict RG pattern for chat output: requires explicit separators (dots/dash)
+# to avoid false-positives on BR phone numbers (which share the loose digit count).
+# _RG_PATTERN (used for logs) is broader — intentional for full coverage in logs.
+_RG_PATTERN_STRICT = re.compile(r'\b\d{1,2}[\.\-]\d{3}[\.\-]\d{3}[\-][0-9Xx]\b')
+
+
+def _mask_identity_docs(text: str) -> str:
+    """Mask ONLY identity documents (CPF/RG/CNPJ). Leaves email/phone untouched.
+
+    Uses _RG_PATTERN_STRICT (separators required) to avoid false-positive matches
+    on BR phone numbers which share digit counts with the broader _RG_PATTERN.
+    """
+    out = CPF_PATTERN.sub("***CPF***", text)
+    out = _RG_PATTERN_STRICT.sub("***RG***", out)
+    out = _CNPJ_PATTERN.sub("***CNPJ***", out)
+    return out
+
 
 def mask_pii_outbound(text):
     """Masking de PII na SAIDA do chat do recrutador. Default: passthrough
     (preserva -- recrutador autorizado ve). Mascara so se opt-in
-    (LIA_RECRUITER_CHAT_MASK_PII). Para LOGS, use mask_pii direto."""
-    if not text or not isinstance(text, str) or not _RECRUITER_CHAT_MASK_PII:
+    (LIA_RECRUITER_CHAT_MASK_PII). Para LOGS, use mask_pii direto.
+    Per-turn identity masking: when _chat_pii_mask_identity ContextVar is True,
+    masks CPF/RG/CNPJ only (email/phone preserved -- primary contacts stay visible)."""
+    if not text or not isinstance(text, str):
+        return text
+    if _chat_pii_mask_identity.get():
+        return _mask_identity_docs(text)
+    if not _RECRUITER_CHAT_MASK_PII:
         return text
     return mask_pii(text)
 
