@@ -23,6 +23,20 @@ def _legacy_bucket_value(user, field: str) -> bool:
     return True
 
 
+def resolve_field_visibility(user, role_defaults: dict, field: str, default: bool = True) -> bool:
+    """Resolve a single field's visibility. Precedence: user override > role default > default.
+
+    Generic single-field helper reused by both candidate PII and vacancy fields.
+    """
+    user_override = getattr(user, "pii_field_visibility", None) or {}
+    if field in user_override:
+        return bool(user_override[field])
+    role_map = (role_defaults or {}).get(_role_str(user), {}) or {}
+    if field in role_map:
+        return bool(role_map[field])
+    return default
+
+
 def resolve_pii_field_visibility(user, role_defaults: dict[str, dict[str, bool]]) -> dict[str, bool]:
     """Return {field: can_view_bool} for every gateable PII field."""
     user_override = getattr(user, "pii_field_visibility", None) or {}

@@ -38,7 +38,18 @@ ALWAYS_VISIBLE_FIELDS = ("email", "phone", "mobile_phone", "name", "salary_curre
 _GROUP_BY_FIELD = {**{f: "salary" for f in SALARY_FIELDS},
                    **{f: "sensitive" for f in SENSITIVE_FIELDS}}
 
+# Vacancy-level configurable fields — separate from candidate PII to avoid
+# polluting candidate redaction logic. Same storage maps (pii_field_visibility,
+# pii_visibility_defaults) — just an extra key.
+VACANCY_FIELDS = ("vacancy_salary",)
+
+# All fields accepted by the PII visibility matrix (candidate-PII + vacancy data).
+# Validators for pii-visibility-defaults endpoints use this (not GATEABLE_PII_FIELDS).
+ALL_CONFIGURABLE_FIELDS = GATEABLE_PII_FIELDS + VACANCY_FIELDS
+
+_GROUP_BY_FIELD = {**_GROUP_BY_FIELD, **{f: "vacancy" for f in VACANCY_FIELDS}}
+
 
 def field_group(field: str) -> str | None:
-    """Return the legacy bucket (salary|sensitive) for a field, or None if always-visible."""
+    """Return the group (salary|sensitive|vacancy) for a field, or None if always-visible."""
     return _GROUP_BY_FIELD.get(field)

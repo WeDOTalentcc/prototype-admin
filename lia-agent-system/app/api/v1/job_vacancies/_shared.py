@@ -698,3 +698,36 @@ async def resolve_inherited_benefits(db, company_id, vacancies) -> None:
 
 
 __all__.append("resolve_inherited_benefits")
+
+# ─── Vacancy salary PII gate (audit 2026-06-06) ──────────────────────────────
+
+async def load_role_pii_defaults(db, company_id: str) -> dict:
+    from app.domains.hiring_policy.repositories.hiring_policy_repository import HiringPolicyRepository
+    try:
+        policy = await HiringPolicyRepository(db).get_by_company(company_id)
+        return (getattr(policy, "pii_visibility_defaults", None) or {}) if policy else {}
+    except Exception:  # fail-open — visibility check should never block reads
+        return {}
+
+
+def apply_vacancy_salary_visibility(vacancy_dict: dict, current_user, role_defaults=None) -> dict:
+    """Mask vacancy salary fields when vacancy_salary visibility is hidden.
+
+    Mutates and returns the dict. Adds vacancy_salary_masked flag.
+    Default: visible (True). Fail-open to avoid breaking reads.
+    """
+    from app.shared.rbac.pii_field_resolver import resolve_field_visibility
+    visible = resolve_field_visibility(current_user, role_defaults or {}, "vacancy_salary", default=True)
+    if visible:
+        vacancy_dict["vacancy_salary_masked"] = False
+        return vacancy_dict
+    for key in ("salary", "salary_range", "salary_min", "salary_max"):
+        if key in vacancy_dict:
+            vacancy_dict[key] = None
+    vacancy_dict["vacancy_salary_masked"] = True
+    return vacancy_dict
+
+
+__all__.append("load_role_pii_defaults")
+__all__.append("apply_vacancy_salary_visibility")
+

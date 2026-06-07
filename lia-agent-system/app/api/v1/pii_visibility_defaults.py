@@ -18,14 +18,14 @@ from app.auth.dependencies import require_role
 from app.auth.models import UserRole, User
 from app.core.database import AsyncSessionLocal
 from app.domains.hiring_policy.repositories.hiring_policy_repository import HiringPolicyRepository
-from app.shared.rbac.pii_field_catalog import GATEABLE_PII_FIELDS
+from app.shared.rbac.pii_field_catalog import GATEABLE_PII_FIELDS, ALL_CONFIGURABLE_FIELDS
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
 _VALID_ROLES = {r.value for r in UserRole}
-_VALID_FIELDS = set(GATEABLE_PII_FIELDS)
+_VALID_FIELDS = set(ALL_CONFIGURABLE_FIELDS)
 
 router = APIRouter(prefix="/pii-visibility-defaults", tags=["pii-visibility"])
 

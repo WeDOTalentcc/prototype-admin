@@ -455,7 +455,8 @@ company_id: str = Depends(require_company_id)):
 
         await resolve_inherited_salary_ranges(repo.db, user_company, [job_vacancy])
         await resolve_inherited_benefits(repo.db, user_company, [job_vacancy])
-        return {
+        _role_defaults = await load_role_pii_defaults(repo.db, user_company)
+        _vacancy_detail = {
             "id": str(job_vacancy.id),
             "title": job_vacancy.title,
             "department": job_vacancy.department,
@@ -484,6 +485,7 @@ company_id: str = Depends(require_company_id)):
             "created_at": job_vacancy.created_at.isoformat() if hasattr(job_vacancy.created_at, "isoformat") else None,
             "updated_at": job_vacancy.updated_at.isoformat() if hasattr(job_vacancy.updated_at, "isoformat") else None,
         }
+        return apply_vacancy_salary_visibility(_vacancy_detail, current_user, _role_defaults)
 
     except HTTPException:
         raise
@@ -660,12 +662,13 @@ company_id: str = Depends(require_company_id)):
         }
 
         await resolve_inherited_salary_ranges(repo.db, company_id, job_vacancies)
+        _list_role_defaults = await load_role_pii_defaults(repo.db, company_id)
         return {
             "total": len(job_vacancies),
             "skip": skip,
             "limit": limit,
             "items": [
-                {
+                apply_vacancy_salary_visibility({
                     "id": str(jv.id),
                     "title": jv.title,
                     "department": jv.department,
@@ -728,7 +731,7 @@ company_id: str = Depends(require_company_id)):
                     "affirmative_description": jv.affirmative_description,
                     "affirmative_document_required": jv.affirmative_document_required or False,
                     "affirmative_document_types": jv.affirmative_document_types or [],
-                }
+                }, current_user, _list_role_defaults)
                 for jv in job_vacancies
             ]
         }
