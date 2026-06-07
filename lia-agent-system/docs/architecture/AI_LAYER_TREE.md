@@ -490,26 +490,42 @@ subset that should arguably be wider), `GAP` (a known hole, by design or debt).
 |---|---|---|---|---|
 | Tenant isolation | `shared/agents/tenant_aware_agent.py` + `_current_company_id` ContextVar | ALL 16 ReActAgents + every non-ReAct callsite | `TenantAwareAgentMixin`; `resolve_tenant_snippet_for_non_react` is the only non-ReAct seam; `LIA_AGENT_TENANT_STRICT` fail-closed in prod | OK |
 | Compliance domain prompt | `domains/compliance_base.py` (`ComplianceDomainPrompt`) | ALL `@register_domain` domains | enforced at registration; escape `LIA_ALLOW_NON_COMPLIANT_DOMAINS` (emergency) | OK |
-| FairnessGuard | `shared/compliance/fairness_guard.py` (+ recursive + middleware) | scoring / hiring-policy / screening writes | invoked in scoring + `save_*` tools | OK (selective by design: only fairness-relevant decisions) |
-| FactChecker | `shared/compliance/fact_checker.py` + `shared/rag/realtime_fact_checker.py` | LLM output before it reaches the user | C3b post-step + RAG path | OK |
-| BiasAuditService | `domains/interview_intelligence/services/bias_detector_service.py` | interview / offer decisions | service-level call | OK (domain-scoped) |
+| FairnessGuard (L1 regex / L2 implicit-bias / L3 HR-sensitive) | `shared/compliance/fairness_guard.py` + `fairness_recursive.py` (nested payloads) + `fairness_guard_middleware.py` (FastAPI dep) | scoring / hiring-policy / screening writes + recruiter `save_*` tools | C3b pre-step (L3) + `scoring_safeguards.py` C1-C5 gate (LGPD Art.20 / EU AI Act) + recursive guard on agent payloads | OK (selective by design; depends on the protected-attributes registry loading) |
+| Protected-attributes registry | `shared/compliance/protected_attributes.py` + `config/protected_attributes.yaml` | foundation for FairnessGuard + BiasAudit (`PROTECTED_ATTRIBUTE_IDS` / `PROTECTED_DB_FIELDS` / `BIAS_AUDIT_DIMENSIONS`) | loaded at startup; `is_registry_loaded()` sanity check | OK, but FAIL-OPEN if the YAML is missing/empty (ADR-031 path bug made FairnessGuard run fail-open Mar-May 2026) |
+| FactChecker (+ domain validators, LIA-C06) | `shared/compliance/fact_checker.py` + `compliance/domain_validators.py` + `shared/rag/realtime_fact_checker.py` | LLM output before it reaches the user | C3b post-step + RAG path | OK |
+| BiasAuditService (FAR-5 disparate-impact / four-fifths) | `shared/services/bias_audit_service.py` (canonical, cross-domain) + `domains/interview_intelligence/services/bias_detector_service.py` (interview-specific) | periodic / annual bias audits over decisions across domains | `bias_audit_service` singleton; reads `BIAS_AUDIT_DIMENSIONS` from the registry | OK |
 | Prompt-injection guard | `shared/compliance/prompt_injection_guard.py` (+ `shared/prompt_injection.py`) | recruiter/candidate text + LLM output | pre-tool screen | OK |
 | Hate-speech guard | `shared/compliance/hate_speech_guard.py` | generated output | C3b step | OK |
 | PII strip to LLM | `shared/pii_masking.py::strip_pii_for_llm_prompt` + `shared/llm_bootstrap.py` monkey-patch | ALL SDK calls (single chokepoint) | bootstrap wraps `.create`/`.stream`; ON by default | PARTIAL: recruiter chat + some recruiter-facing tools run `mask_names=False`, so candidate NAMES still reach the LLM (see §8.2) |
 | PII masking in logs | `shared/pii_masking.py::install_global_pii_masking` (`PIIMaskingFilter`) | root logger + all handlers + stack traces | installed at boot | OK |
-| HITL gates | `shared/hitl/agent_gate.py` + wizard `interrupt()` | wizard 4 gates + explicitly gated tools | LangGraph interrupt | OK (selective by design) |
+| HITL gates + tool safety governance | `shared/hitl/agent_gate.py` + `hitl_decorator.@require_hitl` + `compliance/safety_category.py` (`SafetyCategory` enum) | wizard 4 gates + tools tagged in each registry's `GUARDRAIL_TOOLS` (destructive_write / bulk_action / pii_export / outreach / pipeline_move / offer) | LangGraph `interrupt()` + decorator | OK (selective by design) |
 | Audit logging | `shared/compliance/audit_service.py` (+ writer/storage/decorators) | mutative public service methods | mandatory + ratchet sentinel in `interview_scheduling`/`interview_intelligence`/`offer` + `company`; SOX 7-year on offer | PARTIAL: strictly enforced only on those domains; others are best-effort |
 | Credit gating | `shared/llm_bootstrap.py::check_credit_budget` | ALL SDK message-creation primitives | bootstrap + orchestrator + agentic-loop (defense-in-depth) | OK |
 | BYOK (chat / completion) | `shared/tenant_llm_context.py::get_gemini_client_for_tenant` / `get_claude_model_for_tenant` | Gemini / Claude / OpenAI chat | per-tenant `tenant_llm_configs.providers`; platform key only as fallback | OK |
 | BYOK (embeddings) | `shared/providers/embedding_factory.py::_get_tenant_provider` | embedding generation | tenant-key branch exists only for `gemini` | GAP: OpenAI embeddings and the semantic-routing cache always use the platform key (see §8.3) |
+| Per-tenant custom guardrails | `shared/compliance/guardrail_repository.py` + `models/guardrail.py` | DB-backed per-domain / per-company agent guardrails | repository read at agent build; scoped by `is_active` / `domain` / `company_id` | OK |
 | C3b layer (kill-switch) | `shared/compliance/c3b_layer.py` | realtime chat (WS/SSE) | wraps pre/post compliance; `LIA_DISABLE_C3B` kill-switch | OK |
 
 Reading the matrix: tenant isolation, compliance-domain-prompt, prompt-injection,
 PII-in-logs, and credit gating are the truly *universal* controls (they fire for
 every agent/domain). FairnessGuard, BiasAudit, HITL, and strict Audit are
-*selective by design* (only the decisions that need them). The two real holes to
-watch are the PII name-leak on recruiter-facing paths (§8.2) and the embedding
-BYOK gap (§8.3).
+*selective by design* (only the decisions that need them). The
+protected-attributes registry is *foundational*: FairnessGuard and BiasAudit both
+read it, so if `config/protected_attributes.yaml` fails to load they silently run
+fail-open (this already happened, ADR-031), which makes registry-load monitoring
+part of the compliance surface rather than an afterthought.
+
+The realtime chat pipeline (`c3b_layer.py`) runs these guards in a fixed order:
+HateSpeechGuard, then PII strip, then PromptInjectionGuard, then FairnessGuard L3
+(pre-step); FactChecker plus AuditService (post-step). Each guard is wrapped in
+its own try/except and logs a skip warning if it cannot validate, so a single
+guard failure degrades gracefully instead of taking the turn down.
+
+Known holes to watch: (1) the PII name-leak on recruiter-facing paths (§8.2),
+(2) the embedding BYOK gap (§8.3), and (3) the fail-open behavior of the
+protected-attributes registry above. Everything else marked `OK` covers its
+intended surface; the `PARTIAL` rows (PII-to-LLM, strict Audit) are correct but
+narrower than a maximalist reading would want.
 
 ---
 
