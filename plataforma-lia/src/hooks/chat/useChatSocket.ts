@@ -485,14 +485,32 @@ export function useChatSocket({
         }
         break;
 
-      case "error":
+      case "error": {
         // BUG-AUDIT #277 / H7: garantir que "LIA digitando" sai quando
         // qualquer caminho (WS, SSE) reporta erro — sem isso o indicador
         // ficava preso ligado quando o stream quebrava antes do primeiro
         // evento "message".
         setIsThinking(false);
         turnClosedRef.current = true;
+        // Harness fix (2026-06-06): NUNCA engolir o erro. O produtor
+        // (agent_chat_sse.py / chat.py) ja manda uma mensagem clara
+        // (ex: budget_exhausted → "Limite diario de uso de IA atingido...").
+        // Surfacar como mensagem visivel ao usuario — sem isso um limite de
+        // cota ou falha de LLM se disfarca de "chat morto". Mesmo caminho do
+        // branch "clarification".
+        const errEvent = event as unknown as {
+          message?: string;
+          error_code?: string;
+        };
+        const errMessage =
+          errEvent.message?.trim() ||
+          "Nao consegui responder agora. Tente novamente em instantes.";
+        onCompleteRef.current?.(errMessage, undefined, {
+          isError: true,
+          errorCode: errEvent.error_code,
+        });
         break;
+      }
 
       case "clarification": {
         // Tier 8 fallback from cascaded_router — backend sends:

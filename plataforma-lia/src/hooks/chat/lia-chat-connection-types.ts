@@ -84,6 +84,10 @@ export interface BackgroundTaskEvent {
 export interface MessageCompleteExtras {
   options?: LiaChatClarificationOption[];
   isClarification?: boolean;
+  /** Harness 2026-06-06: evento `error` do backend surfacado como mensagem. */
+  isError?: boolean;
+  /** error_code do produtor (ex: "budget_exhausted"). */
+  errorCode?: string;
   ui_action?: string;
   ui_action_params?: Record<string, unknown>;
 }
