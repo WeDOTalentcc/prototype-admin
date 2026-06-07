@@ -707,3 +707,277 @@ signed JWTs and Rails JWTs from `ats_api` (the legacy Ruby-on-Rails
 system-of-record); the cross-service trust contract is documented in
 `docs/architecture/RAILS_BOUNDARY.md`. The Rails service is out of scope for this
 AI-layer tree.
+
+---
+
+## 10. Domain & agent glossary
+
+§3 lists *where* each agent lives and §4 lists the domain tree. This section adds
+the *what it does / when it fires* dimension. Source of truth for the domain
+classification is `app/domains/DOMAIN_CATALOG.md`; the inventory of the 16
+canonical ReActAgents is `tests/integration/agents/test_tenant_aware_rollout_t_d.py`.
+
+### 10.1 The 16 canonical ReActAgents (what each does)
+
+| Agent | Domain | What it does / when it fires |
+|---|---|---|
+| `AnalyticsReActAgent` | analytics | Recruitment analytics, reports, dashboards, KPIs. Narrates metrics and trends in chat. |
+| `ATSIntegrationReActAgent` | ats_integration | Connects and syncs jobs/candidates with external ATS (Gupy, Pandape, Merge). |
+| `AutomationReActAgent` | automation | Tasks, reminders, notes, lightweight workflow automation. |
+| `AutonomousReActAgent` | autonomous (legacy) | Cross-domain ReAct fallback. Historically the router "Tier 6" fallback; see §12 for its disputed current status. |
+| `CommunicationReActAgent` | communication | Composes and sends email / WhatsApp / Teams, progress reports, daily briefings. |
+| `CompanySettingsReActAgent` | company_settings | Conversational company configuration (profile, benefits, workforce plan, culture) with prefill tags and FairnessGuard on every save. |
+| `PipelineReActAgent` | cv_screening | CV analysis, WSI scoring, candidate screening and ranking. |
+| `PolicyReActAgent` | hiring_policy | Hiring-policy advisory with FairnessGuard and diversity rules. |
+| `JobsManagementReActAgent` | recruiter_assistant | Job CRUD, pipeline configuration, job queries. |
+| `KanbanReActAgent` | recruiter_assistant | Kanban / pipeline board operations and candidate-movement insights. |
+| `TalentFunnelReActAgent` | recruiter_assistant | The canonical Talent Funnel: multi-mode candidate search across 3 sources. |
+| `SourcingReActAgent` | sourcing | Candidate sourcing across channels; parent of the search / enrich / diversity / github / nurture / passive / referral sub-agents. |
+| `TalentPoolReActAgent` | talent_pool | Talent-pool management (list, add candidate, move pool to job). |
+| `WizardReActAgent` | job_management | Drives the HITL job-creation wizard (15 nodes, 4 `interrupt()` gates). |
+| `CandidateSelfServiceAgent` | candidate_self_service | Candidate-facing self-service (public screening chat, application status). |
+| `PipelineTransitionAgent` | pipeline | Validates and executes candidate stage transitions. |
+
+Note: the 16 ReActAgents are NOT the same set as the 16 `@register_domain`
+domains. Some agents live in domains that are classified as service or legacy
+(e.g. `company_settings`, `candidate_self_service`, `autonomous`), and some
+`@register_domain` domains (e.g. `digital_twin`, `recruitment_campaign`) have no
+routable ReActAgent. See §14 for why this matters.
+
+### 10.2 Domains by class (one-line purpose)
+
+**Agentic (13, `@register_domain`, router-routable):** `analytics` (reports,
+dashboards) · `ats_integration` (external ATS sync) · `automation` (tasks /
+reminders / notes) · `communication` (email / WhatsApp / Teams) · `cv_screening`
+(CV analysis + WSI scoring) · `hiring_policy` (policy advisory + FairnessGuard) ·
+`interview_scheduling` (scheduling + calendar) · `job_creation` (the wizard graph)
+· `job_management` (job lifecycle + WizardReActAgent) · `pipeline` (stage
+transitions) · `recruiter_assistant` (general copilot + fallback) · `sourcing`
+(candidate sourcing) · `agent_studio` (custom-agent creation, see §13).
+
+**Micro-action (3, lightweight `@register_domain`):** `digital_twin` (candidate
+digital-twin creation/eval) · `recruitment_campaign` (multi-stage campaigns) ·
+`talent_pool` (pool management).
+
+**Service (11, business logic, not router-routable):** `ai` (LLM services,
+response cache, prompt mgmt) · `billing` · `candidates` (candidate CRUD) ·
+`company` (company config) · `credits` (token consumption) · `integrations_hub`
+(third-party integration mgmt) · `interview_intelligence` (bias detection,
+comparative analysis; promotion candidate) · `lgpd` (data-protection compliance) ·
+`modules` (feature gating) · `recruitment` (process data) · `voice` (voice
+screening; promotion candidate). Also AI-relevant: `persona` (AI persona
+personalization), `talent_intelligence` (skills ontology, internal mobility,
+workforce planning), `offer` (offer mgmt with SOX audit), `candidate_self_service`,
+`company_settings`.
+
+**Repository-stub (30):** pure CRUD (`__init__.py` + `dependencies.py` +
+`repositories/` only). Consumed by agentic domains and routes; not agents. Full
+list in `DOMAIN_CATALOG.md`.
+
+**Canonical-active legacy (2):** `autonomous` (ReAct fallback) and `policy` (the
+real `PolicyEngineService` + `PolicySetupAgent` + sector FairnessGuard rules).
+Production code in the pre-refactor location; `hiring_policy` does NOT replace
+`policy`.
+
+---
+
+## 11. Capability catalog
+
+What the platform can actually *do*, grounded in the implementing code. Business
+actions are reached either through the deterministic `action_handlers` (Phase 1 of
+the orchestrator) or through a domain agent's tools (Phase 2); state-changing ones
+pass an HITL confirmation.
+
+### 11.1 Business / recruiting actions
+
+| Capability | Implemented in | HITL |
+|---|---|---|
+| Generate report / daily briefing | `orchestrator/action_handlers/analytics_actions.py`, `communication_actions.py` (`_send_progress_report`, `_generate_daily_briefing`) + analytics domain tools | no |
+| Compare candidates | `orchestrator/action_handlers/sourcing_actions.py` (`_compare_candidates`) | no |
+| Move candidate across stages | `orchestrator/action_handlers/candidate_actions.py` (`_move_candidate`, `_batch_move_candidates`) + `PipelineTransitionAgent` | yes |
+| Schedule / reschedule interview | `orchestrator/action_handlers/interview_actions.py`, `communication_actions.py` | yes |
+| Send communication (email / WhatsApp) | `orchestrator/action_handlers/communication_actions.py` (`_send_email`, `_send_whatsapp`) | yes |
+| Source / search candidates | `orchestrator/action_handlers/sourcing_actions.py` (`_search_candidates`), `domains/sourcing/tools/query_tools.py` | no |
+| Screen CV / WSI score | `orchestrator/action_handlers/candidate_actions.py` (`_start_screening`), `domains/cv_screening/services/wsi_service/` | no |
+| Create job (wizard) | `domains/job_management/tools/job_wizard_tools.py`, `domains/job_creation/graph.py` | yes (4 gates) |
+| Publish job / sync to ATS | `domains/ats_integration/services/`, `domains/job_creation/nodes/publish.py` | yes |
+| Manage offers | `domains/offer/tools/`, `domains/offer/services/` (SOX audit) | yes |
+| Talent-pool operations | `domains/talent_pool/agents/talent_pool_tool_registry.py` (list / add / move pool to job) | move = yes |
+
+> Creation of a job is ALWAYS and ONLY the canonical wizard; Plan & Execute never
+> creates a job (see `replit.md` Plan & Execute section).
+
+### 11.2 AI / platform capabilities
+
+| Capability | Lives in | Status |
+|---|---|---|
+| Learning Loop / feedback | `app/shared/learning/` (`learning_loop_service`, `feedback_writer`, `implicit_feedback_service`, `correction_capture`, `ab_testing_service`, `learning_golden_curation_service`, `learning_snapshot_service`, `template_learning_service`, `finetuning_export`) | active |
+| Personalization / persona | `app/domains/persona/services/` (AI persona) | active |
+| Plan & Execute | `app/shared/execution/` (`plan_detector`, `plan_executor`), `app/orchestrator/execution/task_planner.py`, `app/orchestrator/services/plan_orchestration_service.py` | built, OFF in prod (`LIA_V2_USE_PLAN_SERVICE`, canary) |
+| ML / predictive | `app/services/ml/` (`outcome_predictor`, `model_registry`, `feature_engineering`) | active |
+| RAG / retrieval | `app/shared/rag/` (`hybrid_search`, `reranker`, `realtime_fact_checker`, `response_watermarker`), `app/shared/intelligence/semantic_search_service.py` + `chunking/recursive` (RecursiveTextSplitter), `app/domains/ai/services/hybrid_search_service.py` | active |
+| Semantic routing cache | `app/orchestrator/routing/` (`cascaded_router` tiers 0-5: LRU, Redis, pgvector, FastRouter, LLM cascade) | active |
+| Voice analysis | `app/domains/voice/services/voice_screening_orchestrator.py` (Gemini Live + Twilio PSTN fallback) | active, per-agent flag |
+| Anti-sycophancy | `app/shared/prompts/` anti-sycophancy block (`ANTI_SYCOPHANCY_ORCHESTRATOR` / `ANTI_SYCOPHANCY_OPERATIONAL`) injected into prompts | active |
+| Calibration | `domains/cv_screening/services/calibration_profiles`, `domains/job_creation` calibration node | active |
+
+---
+
+## 12. Federated vs Supervisor orchestration (what is ON / OFF)
+
+The `MainOrchestrator` (`app/orchestrator/execution/main_orchestrator.py`) runs a
+multi-phase pipeline. Two macro-strategies coexist: the **federated** path (live)
+and the **supervisor / plan** path (built but mostly OFF in production). This is
+the "agente federado ligado, supervisor desligado" state.
+
+```
+request
+  │
+  ├─ Phase 0  PendingAction        (resume a previous action / collect params)
+  ├─ Phase 1  ActionExecutor       (deterministic intent -> action_handlers; LLM narrates result)
+  ├─ Phase 1.3 Plan & Execute      (multi-step plan)         [SUPERVISOR — OFF in prod]
+  └─ Phase 2  Federated routing    (CascadedRouter -> domain specialist ReAct agent)  [LIVE]
+```
+
+### 12.1 Federated path (ENABLED, primary)
+
+A request is mapped to ONE domain specialist by the `CascadedRouter`
+(`app/orchestrator/routing/cascaded_router.py`), an 8-tier funnel from cheap to
+expensive:
+
+```
+Tier 0  MemoryResolver        pronoun / context-reference resolution
+Tier 1  LRU in-process        MD5 hash, O(1), per company_id
+Tier 2  Redis hash cache      distributed exact match across workers
+Tier 3  VectorSemanticCache   pgvector cosine >= 0.85   (ROUTER_VECTOR_CACHE_ENABLED)
+Tier 4  FastRouter            regex / keyword patterns
+Tier 5  LLM Cascade           Haiku -> Sonnet -> Opus   (expensive, last resort)
+Tier 6  REMOVED (Sprint 12.3-B)  was the AutonomousReActAgent cross-domain fallback
+```
+
+The matched domain loads its specialist agent (one of the 16 ReActAgents) and runs
+the ReAct loop. This is the default conversational path for single-domain
+requests and it is what is live today.
+
+### 12.2 Supervisor / Plan path (mostly OFF)
+
+Two distinct "supervisor" implementations exist:
+
+- **Plan & Execute (Phase 1.3)** decomposes multi-step requests (e.g. "publish the
+  job and find 5 candidates") into a plan executed across domains. Components:
+  `plan_detector` + `plan_executor` (`app/shared/execution/`), `task_planner`,
+  `plan_orchestration_service`. **Default OFF in prod** (`LIA_V2_USE_PLAN_SERVICE`,
+  canary rollout, ON only where explicitly enabled). It NEVER creates a job.
+- **Wizard supervisor classifier** is a pre-graph 6-intent classifier specific to
+  the job-creation wizard (`LIA_WIZARD_SUPERVISOR_CLASSIFIER`). **ON in dev/test,
+  OFF in prod.**
+
+> Open inconsistency to reconcile: the router header marks Tier 6 (the autonomous
+> cross-domain fallback) as REMOVED in Sprint 12.3-B "env never set in prod", while
+> `DOMAIN_CATALOG.md` still documents `autonomous` as the live Tier 6 fallback. The
+> two disagree; the catalog entry is likely stale and should be updated to match
+> the router.
+
+---
+
+## 13. Agent Studio (custom agents)
+
+`agent_studio` lets a tenant create its own agents without code. It is one of the
+more mature domains: model, runtime, API, marketplace, and safety controls are all
+present.
+
+- **Model** (`libs/models/lia_models/custom_agent.py`): `CustomAgent` with
+  `name`, `role`, `description`, `system_prompt`, `allowed_tools[]`,
+  `excluded_tools[]`, `domain` / `category`, `status` (draft / active / paused /
+  archived), `version`, `max_steps` (default 8), `temperature`, `model_override`,
+  `enable_memory`, `context_level`, channel flags (`voice_enabled`, `voip_enabled`,
+  `whatsapp_enabled`, `triagem_invite_enabled`), sourcing-only payloads
+  (`search_strategy` / `preferences` / `outreach_config`), and runtime metrics
+  (`total_executions`, `avg_confidence`). Tenant-scoped (`company_id`, FK ON DELETE
+  CASCADE for LGPD erasure).
+- **Creatable categories** (`category`, source of truth): `screening`, `sourcing`,
+  `communication`, `analytics`, `automation`, `job_management` (plus `general`
+  default). Sourcing agents have their own quota bucket.
+- **Runtime** (`app/domains/agent_studio/custom_agent_runtime.py`):
+  `CustomAgentRuntime` extends `LangGraphReActBase`, so a custom agent inherits the
+  same compliance / tenant band as a built-in agent (§8.1). `context_level` chooses
+  how much context is composed into the prompt: `full` (persona + domain + tenant +
+  user + history + few-shot + intelligence_floor + custom), `standard` (no history,
+  no few-shot), `minimal` (intelligence_floor + custom instructions only).
+- **Safety controls**: a `_RESTRICTED_TOOLS` denylist removes dangerous tools;
+  write tools require `confirm=True` and pass the canonical HITL gate (AUD-4 audit);
+  a `dry_run` sandbox runs the real reasoning but intercepts side effects and
+  returns "would do" actions; `FairnessGuard` validates the prompt on create /
+  update; `intelligence_floor.yaml` is injected into every custom prompt as a
+  quality / safety floor; `_CURRENT_COMPANY_ID` ContextVar enforces tenant
+  isolation on every tool call; `studio_audit` logs creation / update / test /
+  execution.
+- **Marketplace** (`app/services/agent_marketplace_service.py`,
+  `app/api/v1/custom_agents.py`): `AgentMarketplaceListing` (pending_review ->
+  approved / rejected / unpublished) with a review workflow, `AgentInstallation`
+  tracks cross-tenant installs, and `PoolAgentAssignment` binds an agent to a
+  talent pool.
+
+Verdict: well-structured and safe to represent as a first-class part of the AI
+layer. The main remaining work is shifting some advanced filter logic from the
+service layer down into `CustomAgentRepository`; the core lifecycle, runtime, and
+guardrails are solid.
+
+---
+
+## 14. Enterprise-architecture diagnosis
+
+Honest assessment against an enterprise checklist, grounded in the code audited
+above. Verdict: the *agent layer* is enterprise-grade; the *domain layer* is
+enterprise-grade at its core but still in transition at the edges.
+
+### 14.1 Where it is enterprise-grade
+
+- **Multi-tenancy**: `TenantAwareAgentMixin` on all 16 ReActAgents (sentinel-
+  enforced), `CompanyId` value object, PostgreSQL RLS, tenant-scoped repositories.
+- **Compliance**: 3-pillar (LGPD + SOX + EU AI Act), FairnessGuard (3 forms +
+  L1/L2/L3), FactChecker, BiasAudit, protected-attributes registry, mandatory
+  audit ratchet on interview / offer with SOX 7-year retention (§8.1).
+- **Safety by inheritance**: 13 of 17 cross-cutting controls fire on every agent
+  purely through the shared base classes and the `llm_bootstrap` chokepoint
+  (§8.1.1) - including custom Studio agents.
+- **Cost / observability**: per-tenant credit gating on every SDK call, external
+  cost ledger, structured logging with PII masking, Sentry, health endpoints,
+  canary monitoring of bypass flags.
+- **Routing efficiency**: 6-tier cache-first router (memory / LRU / Redis / pgvector
+  / regex / LLM cascade) keeps the expensive LLM tier as a last resort.
+- **Testing discipline**: offline sentinels, AST validators, eval gates, and
+  baselines guard the critical contracts (the `replit.md` contracts section is
+  itself evidence of a mature regression-prevention culture).
+
+### 14.2 Where the domain layer is NOT yet uniform
+
+- **Two architectures coexist.** Modern domains register via `@register_domain` +
+  `ComplianceDomainPrompt`; legacy `autonomous` and `policy` (about 2k LOC each)
+  still use the pre-refactor `agents/` + `@register_agent` shape.
+- **Namespace bloat.** 30 of 59 `app/domains/` entries are pure repository stubs
+  (CRUD only). Putting data-access packages in the same namespace as autonomous
+  agent domains makes the system look larger and less consistent than it is.
+- **Duplication / overlap.** `hiring_policy` (small, registered) overlaps
+  conceptually with `policy` (the real engine, legacy) - a reader cannot tell from
+  the namespace where hiring rules are actually enforced.
+- **Migration debt.** `interview_intelligence` and `voice` carry agentic-grade
+  logic (2026 / 1725 LOC) but are still classified as service domains (promotion
+  candidates). `talent_intelligence` similarly has tools/services without a
+  `domain.py`.
+- **Two overlapping "16"s.** The 16 routable ReActAgents and the 16
+  `@register_domain` domains are different sets (§10.1), which is a recurring source
+  of confusion.
+- **Doc drift.** At least one authoritative doc (`DOMAIN_CATALOG.md`) is stale vs
+  the code (the Tier 6 / autonomous status in §12).
+
+### 14.3 Recommendation
+
+The platform clears the enterprise bar on the dimensions that are hardest to
+retrofit: tenant isolation, compliance, auditability, and cost control. The gap is
+consistency, not capability. The highest-leverage cleanups are: (1) move the 30
+repository stubs out of `app/domains/` (or mark them clearly as data-access), (2)
+finish promoting `interview_intelligence` / `voice` / `talent_intelligence` to the
+canonical agentic shape, (3) resolve the `policy` vs `hiring_policy` ownership, and
+(4) reconcile `DOMAIN_CATALOG.md` with the router. None of these are blockers; they
+are the difference between "enterprise-grade core" and "uniformly enterprise".
