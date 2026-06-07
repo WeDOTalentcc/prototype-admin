@@ -1071,8 +1071,11 @@ async def teams_sso_page(
     conversation_id: str,
     client_id: str = "",
     tenant_id: str = "",
-company_id: str = Depends(require_company_id)):
-    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
+):
+    # Public OAuth pre-auth endpoint: when the Teams sign-in card opens this URL
+    # the user has NO app session yet, so it CANNOT require a JWT. The tenant is
+    # resolved later from the conversation mapping during the callback (same
+    # pattern as the calendar OAuth callbacks in auth_enforcement.PUBLIC_PATHS).
     """
     OAuth start page — user is redirected here when clicking "Conectar conta".
     Redirects to Azure AD consent page.
@@ -1111,8 +1114,10 @@ async def teams_sso_callback(
     state: str = "",  # conversation_id
     error: str = "",
     db: AsyncSession = Depends(get_db),
-company_id: str = Depends(require_company_id)):
-    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
+):
+    # Public OAuth callback: Azure AD redirects the user's browser here after
+    # sign-in, carrying NO app JWT. The tenant is derived from the conversation
+    # mapping during code exchange (same pattern as calendar OAuth callbacks).
     """
     OAuth callback — Azure AD redirects here after user signs in.
     Exchanges code for profile, maps identity, sends confirmation to Teams.
@@ -1125,7 +1130,14 @@ company_id: str = Depends(require_company_id)):
     redirect_uri = f"{platform_url}/api/v1/teams/auth/callback"
 
     if error:
-        return HTMLResponse(f"<h2>❌ Erro de autenticação: {error}</h2>", status_code=400)
+        # Do NOT reflect the raw OAuth `error` query param into HTML (this is a
+        # public no-JWT endpoint — reflecting attacker-controlled input would be
+        # a reflected-XSS sink). Log the detail server-side, return generic copy.
+        logger.warning("[TeamsSSO] Azure AD returned OAuth error: %s", error)
+        return HTMLResponse(
+            "<h2>❌ Erro de autenticação. Tente conectar a conta novamente pelo Teams.</h2>",
+            status_code=400,
+        )
 
     if not code:
         return HTMLResponse("<h2>❌ Código de autorização ausente.</h2>", status_code=400)
@@ -1183,8 +1195,12 @@ company_id: str = Depends(require_company_id)):
         )
 
     except Exception as e:
+        # Public endpoint: log the detail but never leak str(e) to the browser.
         logger.error(f"[TeamsSSO] Callback error: {e}", exc_info=True)
-        return HTMLResponse(f"<h2>❌ Erro interno: {str(e)}</h2>", status_code=500)
+        return HTMLResponse(
+            "<h2>❌ Erro interno ao conectar a conta. Tente novamente.</h2>",
+            status_code=500,
+        )
 
 
 # ============================================================================
