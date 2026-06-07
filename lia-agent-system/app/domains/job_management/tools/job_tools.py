@@ -560,6 +560,15 @@ async def publish_job(
     """
     company_id = require_company_id_from_context(kwargs, "publish_job")
 
+    from app.shared.hitl.hitl_approval_context import hitl_preflight
+    _hitl_block = hitl_preflight(
+        tool="publish_job",
+        domain="job_management",
+        data={"job_id": job_id, "channels": channels},
+    )
+    if _hitl_block is not None:
+        return _hitl_block
+
     logger.info(f"🚀 Publishing job vacancy: {job_id} (company: {company_id})")
 
     default_channels = ["portal_interno"]

@@ -40,6 +40,10 @@ async def send_email(
     Returns:
         Result with success status and message
     """
+    from app.shared.hitl.hitl_approval_context import hitl_preflight
+    _hitl_block = hitl_preflight(tool="send_email", domain="communication", data={"candidate_id": candidate_id, "job_id": job_id, "subject": subject})
+    if _hitl_block is not None:
+        return _hitl_block
     logger.info(f"📧 Sending email to candidate {candidate_id}")
     
     try:
@@ -138,6 +142,10 @@ async def send_whatsapp(
     Returns:
         Result with success status and message
     """
+    from app.shared.hitl.hitl_approval_context import hitl_preflight
+    _hitl_block = hitl_preflight(tool="send_whatsapp", domain="communication", data={"candidate_id": candidate_id, "job_id": job_id})
+    if _hitl_block is not None:
+        return _hitl_block
     logger.info(f"📱 Sending WhatsApp to candidate {candidate_id}")
     
     try:
@@ -365,6 +373,10 @@ async def send_bulk_email(
     Returns:
         Result with success count and details
     """
+    from app.shared.hitl.hitl_approval_context import hitl_preflight
+    _hitl_block = hitl_preflight(tool="send_bulk_email", domain="communication", data={"candidate_count": len(candidate_ids), "template_id": template_id, "job_id": job_id})
+    if _hitl_block is not None:
+        return _hitl_block
     logger.info(f"📧 Sending bulk email to {len(candidate_ids)} candidates")
     
     success_count = 0

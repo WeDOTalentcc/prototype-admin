@@ -499,6 +499,10 @@ async def reject_candidate(
     Returns:
         Result with success status, requires confirmation for dangerous action
     """
+    from app.shared.hitl.hitl_approval_context import hitl_preflight
+    _hitl_block = hitl_preflight(tool="reject_candidate", domain="cv_screening", data={"candidate_id": candidate_id, "job_id": job_id, "reason": reason})
+    if _hitl_block is not None:
+        return _hitl_block
     logger.info(f"❌ Rejecting candidate {candidate_id} from job {job_id}")
     
     fg_implicit = []
@@ -743,6 +747,10 @@ async def bulk_update_candidates_stage(
         Result with success counts and details
     """
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
+    from app.shared.hitl.hitl_approval_context import hitl_preflight
+    _hitl_block = hitl_preflight(tool="bulk_update_candidates_stage", domain="cv_screening", data={"candidate_count": len(candidate_ids), "target_stage": target_stage, "job_id": job_id})
+    if _hitl_block is not None:
+        return _hitl_block
     logger.info(f"🔄 Bulk moving {len(candidate_ids)} candidates to stage: {target_stage}")
     
     success_count = 0
