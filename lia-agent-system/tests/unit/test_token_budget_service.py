@@ -321,3 +321,44 @@ class TestRedisKey:
     def test_key_prefix(self):
         key = _redis_key("any")
         assert key.startswith("token_budget:")
+
+
+# ---------------------------------------------------------------------------
+# Dev/demo tenant unlimited gate (2026-06-06)
+# Contexto: o tenant compartilhado de desenvolvimento (CANONICAL_DEMO_UUID)
+# estourava o DEFAULT_DAILY_LIMIT=10k por causa de sessoes paralelas + testes,
+# bloqueando o chat unificado (agent_chat_sse/ws gateiam via check_budget).
+# Gate SO vale em APP_ENV=development — producao nunca e afetada.
+# ---------------------------------------------------------------------------
+
+from app.domains.credits.services.token_budget_service import (
+    _is_unlimited_dev_tenant,
+    _UNLIMITED_DEV_TENANTS,
+)
+
+_DEMO_UUID = "00000000-0000-4000-a000-000000000001"
+
+
+class TestUnlimitedDevTenant:
+    def test_demo_tenant_unlimited_in_development(self, monkeypatch):
+        monkeypatch.setenv("APP_ENV", "development")
+        assert _is_unlimited_dev_tenant(_DEMO_UUID) is True
+
+    def test_demo_tenant_NOT_unlimited_in_production(self, monkeypatch):
+        monkeypatch.setenv("APP_ENV", "production")
+        assert _is_unlimited_dev_tenant(_DEMO_UUID) is False
+
+    def test_demo_tenant_NOT_unlimited_when_env_unset(self, monkeypatch):
+        monkeypatch.delenv("APP_ENV", raising=False)
+        assert _is_unlimited_dev_tenant(_DEMO_UUID) is False
+
+    def test_other_tenant_never_unlimited_even_in_dev(self, monkeypatch):
+        monkeypatch.setenv("APP_ENV", "development")
+        assert _is_unlimited_dev_tenant("31f50aa5-e870-47d7-8e20-249578d03894") is False
+
+    def test_demo_uuid_registered_in_allowlist(self):
+        assert _DEMO_UUID in _UNLIMITED_DEV_TENANTS
+
+    def test_env_value_is_case_insensitive(self, monkeypatch):
+        monkeypatch.setenv("APP_ENV", "Development")
+        assert _is_unlimited_dev_tenant(_DEMO_UUID) is True

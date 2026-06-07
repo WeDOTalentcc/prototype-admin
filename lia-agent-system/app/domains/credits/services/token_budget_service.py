@@ -25,6 +25,7 @@ Fluxo:
 """
 
 import logging
+import os
 from datetime import UTC, datetime
 
 logger = logging.getLogger(__name__)
@@ -188,6 +189,23 @@ def _redis_key(company_id: str) -> str:
     """Chave Redis diária por tenant. Formato: token_budget:{company_id}:YYYY-MM-DD"""
     today = datetime.now(UTC).strftime("%Y-%m-%d")
     return f"token_budget:{company_id}:{today}"
+
+
+# Tenants isentos de budget em desenvolvimento (2026-06-06).
+# O tenant demo canonico e compartilhado entre sessoes paralelas + suites de
+# teste; sem isencao o contador diario estoura o DEFAULT_DAILY_LIMIT e bloqueia
+# o chat unificado (agent_chat_sse/ws gateiam via check_budget). Gate vale SO em
+# APP_ENV=development -- producao nunca e afetada.
+_UNLIMITED_DEV_TENANTS: frozenset = frozenset(
+    {"00000000-0000-4000-a000-000000000001"}
+)
+
+
+def _is_unlimited_dev_tenant(company_id: str) -> bool:
+    """True se company_id e isento de budget no ambiente de desenvolvimento."""
+    if os.environ.get("APP_ENV", "").lower() != "development":
+        return False
+    return company_id in _UNLIMITED_DEV_TENANTS
 
 
 def get_plan_limit(plan_code: str | None) -> int:
@@ -542,6 +560,10 @@ async def get_plan_for_company(company_id: str) -> str | None:
 
     Nunca lança exception — falha silenciosamente retornando None.
     """
+    # Dev/demo tenant: nunca throttle em desenvolvimento.
+    if _is_unlimited_dev_tenant(company_id):
+        return "enterprise"
+
     # 1. Tentar Redis cache
     redis = await _get_redis()
     if redis is not None:
