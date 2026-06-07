@@ -1270,139 +1270,58 @@ company_id: str = Depends(require_company_id)):
 # Teams App Manifest — generate manifest.json for Teams App Studio
 # ============================================================================
 
-@router.get("/manifest", response_model=None)
-async def get_teams_manifest(company_id: str = Depends(require_company_id)):
-    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
-    """
-    Generate and return the Teams app manifest.json.
-    Download this file and upload to Teams Admin Center / App Studio.
+# Stable per-process fallback so /manifest and /manifest-zip never drift the app
+# "id" across requests when TEAMS_APP_ID is unset (dev/misconfig only).
+_FALLBACK_TEAMS_APP_ID = str(uuid.uuid4())
 
-    Requires env vars:
-      TEAMS_APP_ID        — generate a UUID for your app
-      TEAMS_BOT_APP_ID    — Microsoft App ID of the bot
-      AZURE_CLIENT_ID     — for SSO
-      WEDOTALENT_PLATFORM_URL — e.g. https://app.wedotalent.com
-    """
+
+def _resolve_platform_url() -> tuple[str, str]:
+    """Return (platform_url, platform_domain) from env with a single canonical default."""
     import os
-    import uuid
-
-    from fastapi.responses import JSONResponse
-
-    platform_url = os.environ.get("WEDOTALENT_PLATFORM_URL", "https://wedotalent.cc").rstrip("/")
-    try:
-        from urllib.parse import urlparse
-        platform_domain = urlparse(platform_url).netloc
-    except Exception:
-        platform_domain = "wedotalent.cc"
-
-    manifest = {
-        "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.17/MicrosoftTeams.schema.json",
-        "manifestVersion": "1.17",
-        "version": "1.0.0",
-        "id": os.environ.get("TEAMS_APP_ID", str(uuid.uuid4())),
-        "packageName": "com.wedotalent.wedo",
-        "developer": {
-            "name": "WeDOTalent",
-            "websiteUrl": platform_url,
-            "privacyUrl": f"{platform_url}/privacy",
-            "termsOfUseUrl": f"{platform_url}/terms",
-        },
-        "icons": {"color": "wedo-color.png", "outline": "wedo-outline.png"},
-        "name": {"short": "WeDO", "full": "WeDOTalent — Recrutamento Inteligente"},
-        "description": {
-            "short": "Plataforma de recrutamento com IA",
-            "full": "WeDOTalent conecta recrutadores à LIA, a assistente de IA para busca de candidatos, triagem, agendamento e relatórios — direto no Teams.",
-        },
-        "accentColor": "#000000",
-        "bots": [{
-            "botId": os.environ.get("TEAMS_BOT_APP_ID", os.environ.get("TEAMS_APP_ID", os.environ.get("MICROSOFT_APP_ID", ""))),
-            "scopes": ["personal", "team", "groupChat"],
-            "supportsFiles": True,
-            "isNotificationOnly": False,
-            "commandLists": [{
-                "scopes": ["personal", "team", "groupChat"],
-                "commands": [
-                    {"title": "ajuda",      "description": "Ver todas as funcionalidades da LIA"},
-                    {"title": "buscar",     "description": "Buscar candidatos para uma vaga"},
-                    {"title": "triagem",    "description": "Ver candidatos aguardando triagem WSI"},
-                    {"title": "relatorio",  "description": "Gerar relatório semanal de recrutamento"},
-                    {"title": "pipeline",   "description": "Ver saúde do pipeline de recrutamento"},
-                    {"title": "vagas",      "description": "Ver vagas ativas e seus status"},
-                    {"title": "candidatos", "description": "Ver candidatos aguardando retorno"},
-                    {"title": "resumo",     "description": "Resumo das atividades do dia"},
-                ],
-            }],
-        }],
-        "staticTabs": [
-            {"entityId": "tab-vagas",      "name": "Vagas",       "contentUrl": f"{platform_url}/teams-tab/vagas",      "websiteUrl": f"{platform_url}/vagas",      "scopes": ["personal"]},
-            {"entityId": "tab-candidatos", "name": "Candidatos",  "contentUrl": f"{platform_url}/teams-tab/candidatos", "websiteUrl": f"{platform_url}/candidatos", "scopes": ["personal"]},
-            {"entityId": "tab-pipeline",   "name": "Pipeline",    "contentUrl": f"{platform_url}/teams-tab/pipeline",   "websiteUrl": f"{platform_url}/pipeline",   "scopes": ["personal"]},
-            {"entityId": "tab-dashboard",  "name": "Dashboard",   "contentUrl": f"{platform_url}/teams-tab/dashboard",  "websiteUrl": f"{platform_url}/dashboard",  "scopes": ["personal"]},
-        ],
-        "configurableTabs": [{
-            "configurationUrl": f"{platform_url}/teams-tab/configure",
-            "canUpdateConfiguration": True,
-            "scopes": ["team", "groupChat"],
-        }],
-        "permissions": ["identity", "messageTeamMembers"],
-        "validDomains": [platform_domain, "token.botframework.com", "login.microsoftonline.com"],
-        "webApplicationInfo": {
-            "id": os.environ.get("AZURE_CLIENT_ID", ""),
-            "resource": f"api://{platform_domain}/{os.environ.get('AZURE_CLIENT_ID', '')}",
-        },
-        "authorization": {
-            "permissions": {
-                "resourceSpecific": [
-                    {"name": "ChannelMessage.Read.Group",  "type": "Application"},
-                    {"name": "ChatMessage.Read.Chat",      "type": "Application"},
-                    {"name": "TeamSettings.Read.Group",    "type": "Delegated"},
-                ]
-            }
-        },
-    }
-
-    return JSONResponse(
-        content=manifest,
-        headers={"Content-Disposition": "attachment; filename=manifest.json"},
-    )
-
-
-@router.get("/manifest-zip", response_model=None)
-async def download_teams_manifest_zip(company_id: str = Depends(require_company_id)):
-    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
-    """
-    Download a ready-to-upload Teams app ZIP package.
-
-    Contains:
-    - manifest.json  (generated dynamically from env vars)
-    - wedo-color.png  (192x192 color icon)
-    - wedo-outline.png (32x32 outline icon)
-
-    Upload the downloaded ZIP to:
-    Teams Admin Center → Teams apps → Manage apps → Upload an app
-    """
-    import io
-    import os
-    import uuid
-    import zipfile
-
-    from fastapi.responses import StreamingResponse
+    from urllib.parse import urlparse
 
     platform_url = os.environ.get("WEDOTALENT_PLATFORM_URL", "https://ai.wedotalent.cc").rstrip("/")
     try:
-        from urllib.parse import urlparse
-        platform_domain = urlparse(platform_url).netloc
+        platform_domain = urlparse(platform_url).netloc or "ai.wedotalent.cc"
     except Exception:
         platform_domain = "ai.wedotalent.cc"
+    return platform_url, platform_domain
 
-    bot_id = os.environ.get("TEAMS_BOT_APP_ID", os.environ.get("TEAMS_APP_ID", os.environ.get("MICROSOFT_APP_ID", "")))
-    app_id = os.environ.get("TEAMS_APP_ID", str(uuid.uuid4()))
+
+def _build_teams_manifest() -> dict:
+    """Canonical Teams app manifest — single source of truth for /manifest and /manifest-zip.
+
+    Bot-complete by default (commands, file support, personal/team/groupChat scopes).
+    Embedded tabs + SSO (staticTabs + webApplicationInfo + authorization) are emitted
+    ONLY when AZURE_CLIENT_ID is configured, so the package degrades gracefully when
+    Teams SSO is not yet set up in Azure AD.
+    """
+    import os
+    import uuid
+
+    platform_url, platform_domain = _resolve_platform_url()
+    app_id = os.environ.get("TEAMS_APP_ID") or _FALLBACK_TEAMS_APP_ID
+    if not os.environ.get("TEAMS_APP_ID"):
+        logger.warning(
+            "[Teams Manifest] TEAMS_APP_ID not set; using per-process fallback id "
+            "%s. Set TEAMS_APP_ID in production to keep the Teams app stable.",
+            app_id,
+        )
+    bot_id = os.environ.get(
+        "TEAMS_BOT_APP_ID",
+        os.environ.get("MICROSOFT_APP_ID", os.environ.get("TEAMS_APP_ID", "")),
+    )
+    if not bot_id:
+        logger.warning(
+            "[Teams Manifest] No botId resolved (set TEAMS_BOT_APP_ID or "
+            "MICROSOFT_APP_ID); generated manifest will have an empty botId."
+        )
     azure_client_id = os.environ.get("AZURE_CLIENT_ID", "")
 
-    manifest = {
+    manifest: dict[str, Any] = {
         "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.17/MicrosoftTeams.schema.json",
         "manifestVersion": "1.17",
-        "version": "1.0.0",
+        "version": "1.0.2",
         "id": app_id,
         "packageName": "com.wedotalent.wedo",
         "developer": {
@@ -1426,14 +1345,14 @@ async def download_teams_manifest_zip(company_id: str = Depends(require_company_
             "commandLists": [{
                 "scopes": ["personal", "team", "groupChat"],
                 "commands": [
-                    {"title": "ajuda",      "description": "Ver todas as funcionalidades da LIA"},
-                    {"title": "buscar",     "description": "Buscar candidatos para uma vaga"},
-                    {"title": "triagem",    "description": "Ver candidatos aguardando triagem WSI"},
-                    {"title": "relatorio",  "description": "Gerar relatório semanal de recrutamento"},
-                    {"title": "pipeline",   "description": "Ver saúde do pipeline de recrutamento"},
-                    {"title": "vagas",      "description": "Ver vagas ativas e seus status"},
+                    {"title": "ajuda", "description": "Ver todas as funcionalidades da LIA"},
+                    {"title": "buscar", "description": "Buscar candidatos para uma vaga"},
+                    {"title": "triagem", "description": "Ver candidatos aguardando triagem WSI"},
+                    {"title": "relatorio", "description": "Gerar relatório semanal de recrutamento"},
+                    {"title": "pipeline", "description": "Ver saúde do pipeline de recrutamento"},
+                    {"title": "vagas", "description": "Ver vagas ativas e seus status"},
                     {"title": "candidatos", "description": "Ver candidatos aguardando retorno"},
-                    {"title": "resumo",     "description": "Resumo das atividades do dia"},
+                    {"title": "resumo", "description": "Resumo das atividades do dia"},
                 ],
             }],
         }],
@@ -1442,10 +1361,72 @@ async def download_teams_manifest_zip(company_id: str = Depends(require_company_
     }
 
     if azure_client_id:
+        manifest["staticTabs"] = [
+            {"entityId": "tab-vagas", "name": "Vagas", "contentUrl": f"{platform_url}/teams-tab/vagas", "websiteUrl": f"{platform_url}/vagas", "scopes": ["personal"]},
+            {"entityId": "tab-candidatos", "name": "Candidatos", "contentUrl": f"{platform_url}/teams-tab/candidatos", "websiteUrl": f"{platform_url}/candidatos", "scopes": ["personal"]},
+            {"entityId": "tab-pipeline", "name": "Pipeline", "contentUrl": f"{platform_url}/teams-tab/pipeline", "websiteUrl": f"{platform_url}/pipeline", "scopes": ["personal"]},
+            {"entityId": "tab-dashboard", "name": "Dashboard", "contentUrl": f"{platform_url}/teams-tab/dashboard", "websiteUrl": f"{platform_url}/dashboard", "scopes": ["personal"]},
+        ]
         manifest["webApplicationInfo"] = {
             "id": azure_client_id,
             "resource": f"api://{platform_domain}/{azure_client_id}",
         }
+        manifest["authorization"] = {
+            "permissions": {
+                "resourceSpecific": [
+                    {"name": "ChannelMessage.Read.Group", "type": "Application"},
+                    {"name": "ChatMessage.Read.Chat", "type": "Application"},
+                    {"name": "TeamSettings.Read.Group", "type": "Delegated"},
+                ]
+            }
+        }
+
+    return manifest
+
+
+@router.get("/manifest", response_model=None)
+async def get_teams_manifest(company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
+    """
+    Generate and return the Teams app manifest.json (canonical builder).
+    Download this file and upload to Teams Admin Center / App Studio.
+
+    Requires env vars:
+      TEAMS_APP_ID        — Teams app id (UUID, keep stable to update the same app)
+      TEAMS_BOT_APP_ID    — Microsoft App ID of the bot (alias: MICROSOFT_APP_ID)
+      AZURE_CLIENT_ID     — only needed to enable embedded tabs + SSO
+      WEDOTALENT_PLATFORM_URL — e.g. https://ai.wedotalent.cc
+    """
+    from fastapi.responses import JSONResponse
+
+    manifest = _build_teams_manifest()
+    return JSONResponse(
+        content=manifest,
+        headers={"Content-Disposition": "attachment; filename=manifest.json"},
+    )
+
+
+@router.get("/manifest-zip", response_model=None)
+async def download_teams_manifest_zip(company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
+    """
+    Download a ready-to-upload Teams app ZIP package.
+
+    Contains:
+    - manifest.json  (generated dynamically from env vars, canonical builder)
+    - wedo-color.png  (192x192 color icon)
+    - wedo-outline.png (32x32 outline icon)
+
+    Upload the downloaded ZIP to:
+    Teams Admin Center -> Teams apps -> Manage apps -> Upload an app
+    """
+    import io
+    import os
+    import zipfile
+
+    from fastapi.responses import StreamingResponse
+
+    manifest = _build_teams_manifest()
 
     import json as _json
 
