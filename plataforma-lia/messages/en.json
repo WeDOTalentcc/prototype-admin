@@ -4672,7 +4672,10 @@
           "business_emails": "Business emails",
           "best_personal_email": "Best personal email",
           "best_business_email": "Best business email"
-        }
+        },
+        "saving": "Saving...",
+        "saveSuccess": "Defaults saved!",
+        "saveError": "Error saving defaults."
       }
     },
     "departments": {

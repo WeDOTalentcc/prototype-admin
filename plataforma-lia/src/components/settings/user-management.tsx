@@ -5,20 +5,24 @@ import { Card, CardContent } from "@/components/ui/card"
 import {
   X, Search, UserPlus, Info, ExternalLink, CheckCircle
 } from "lucide-react"
-import { textStyles } from '@/lib/design-tokens'
-import { cn } from '@/lib/utils'
-import { useUserManagement } from './use-user-management'
-import { UserForm } from './user-form'
+import { textStyles } from "@/lib/design-tokens"
+import { cn } from "@/lib/utils"
+import { useUserManagement } from "./use-user-management"
+import { UserForm } from "./user-form"
 // Bug 2 fix (2026-05-25): departments LIFTED to UsuariosDepartamentosHub parent
 // (single source of truth). UserManagement consumes via props now.
 import type { DepartmentItem } from "@/hooks/settings/useDepartmentsList"
-import { UserList } from './user-list'
-import type { UserManagementProps } from './user-management-types'
+import { UserList } from "./user-list"
+import type { UserManagementProps } from "./user-management-types"
 import { useTranslations } from "next-intl"
 import { HubHeader } from "./_shared"
+import { useAuth } from "@/contexts/auth-context"
+import { PiiVisibilityRoleDefaults } from "./PiiVisibilityRoleDefaults"
 
 export function UserManagement({ departments: hubDepartments = [], onDepartmentChanged }: UserManagementProps = {}) {
-  const t = useTranslations('settings.users')
+  const t = useTranslations("settings.users")
+  const { user } = useAuth()
+  const isAdmin = user?.role === "admin" || user?.role === "wedotalent_admin"
   const {
     filteredUsers,
     isCreating,
@@ -58,7 +62,7 @@ export function UserManagement({ departments: hubDepartments = [], onDepartmentC
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-6">
-        <div className="text-xs text-lia-text-secondary">{t('loading')}</div>
+        <div className="text-xs text-lia-text-secondary">{t("loading")}</div>
       </div>
     )
   }
@@ -67,7 +71,7 @@ export function UserManagement({ departments: hubDepartments = [], onDepartmentC
     return (
       <div className="flex flex-col items-center justify-center p-6 gap-3">
         <div className="text-xs text-status-error">{error}</div>
-        <Button onClick={fetchUsers} size="sm">{t('retryButton')}</Button>
+        <Button onClick={fetchUsers} size="sm">{t("retryButton")}</Button>
       </div>
     )
   }
@@ -94,10 +98,10 @@ export function UserManagement({ departments: hubDepartments = [], onDepartmentC
             <Info className="w-4 h-4 text-wedo-cyan-dark dark:text-wedo-cyan-dark flex-shrink-0 mt-0.5" />
             <div className="flex-1">
               <p className={textStyles.subtitle}>
-                {t('scimActiveTitle', { provider: scimConfig?.directoryName || 'SSO Enterprise' })}
+                {t("scimActiveTitle", { provider: scimConfig?.directoryName || "SSO Enterprise" })}
               </p>
               <p className={textStyles.description + " mt-1"}>
-                {t('scimActiveDescription')}
+                {t("scimActiveDescription")}
               </p>
             </div>
             <a
@@ -107,7 +111,7 @@ export function UserManagement({ departments: hubDepartments = [], onDepartmentC
               className="text-wedo-cyan-dark dark:text-wedo-cyan-dark hover:text-wedo-cyan-dark dark:hover:text-wedo-cyan-dark flex items-center gap-1 text-xs flex-shrink-0"
             >
               <ExternalLink className="w-3 h-3" />
-              {t('scimLearnMore')}
+              {t("scimLearnMore")}
             </a>
           </CardContent>
         </Card>
@@ -123,7 +127,7 @@ export function UserManagement({ departments: hubDepartments = [], onDepartmentC
             <button
               type="button"
               onClick={() => setSuccessMessage(null)}
-              aria-label={t('dismissSuccess')}
+              aria-label={t("dismissSuccess")}
               className="text-status-success dark:text-status-success hover:text-status-success dark:hover:text-status-success"
             >
               <X className="w-3.5 h-3.5" />
@@ -133,13 +137,13 @@ export function UserManagement({ departments: hubDepartments = [], onDepartmentC
       )}
 
       <HubHeader
-        title={t('title')}
-        description={isSCIMEnabled ? t('descriptionScim') : t('description')}
+        title={t("title")}
+        description={isSCIMEnabled ? t("descriptionScim") : t("description")}
       >
         {!isSCIMEnabled && (
           <Button data-testid="users-create-button" onClick={handleCreateUser} size="sm" className="gap-1.5">
             <UserPlus className="w-3.5 h-3.5" />
-            {t('newUser')}
+            {t("newUser")}
           </Button>
         )}
       </HubHeader>
@@ -148,19 +152,19 @@ export function UserManagement({ departments: hubDepartments = [], onDepartmentC
         <Card className="rounded-md">
           <CardContent className="p-3 text-center">
             <div className={textStyles.metricLarge}>{stats.total}</div>
-            <div className={textStyles.description}>{t('totalUsers')}</div>
+            <div className={textStyles.description}>{t("totalUsers")}</div>
           </CardContent>
         </Card>
         <Card className="rounded-md">
           <CardContent className="p-3 text-center">
             <div className={cn(textStyles.metricLarge, "text-status-success dark:text-status-success")}>{stats.active}</div>
-            <div className={textStyles.description}>{t('activeUsers')}</div>
+            <div className={textStyles.description}>{t("activeUsers")}</div>
           </CardContent>
         </Card>
         <Card className="rounded-md">
           <CardContent className="p-3 text-center">
             <div className={cn(textStyles.metricLarge, "text-wedo-purple dark:text-wedo-purple")}>{stats.managers}</div>
-            <div className={textStyles.description}>{t('managers')}</div>
+            <div className={textStyles.description}>{t("managers")}</div>
           </CardContent>
         </Card>
       </div>
@@ -171,7 +175,7 @@ export function UserManagement({ departments: hubDepartments = [], onDepartmentC
           <input
             type="text"
             data-testid="users-search-input"
-            placeholder={t('searchPlaceholder')}
+            placeholder={t("searchPlaceholder")}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-8 pr-3 py-1.5 text-xs border border-lia-border-default rounded-md focus:ring-1 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg dark:bg-lia-bg-elevated dark:border-lia-border-default"
@@ -184,8 +188,8 @@ export function UserManagement({ departments: hubDepartments = [], onDepartmentC
           onChange={(e) => setDepartmentFilter(e.target.value)}
           className="px-2 py-1.5 text-xs border border-lia-border-default rounded-md focus:ring-1 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg dark:bg-lia-bg-elevated dark:border-lia-border-default"
         >
-          <option value="all">{t('allDepartments')}</option>
-          {departments.map(dept => (
+          <option value="all">{t("allDepartments")}</option>
+          {departments.map((dept) => (
             <option key={dept} value={dept}>{dept}</option>
           ))}
         </select>
@@ -196,32 +200,24 @@ export function UserManagement({ departments: hubDepartments = [], onDepartmentC
           onChange={(e) => setStatusFilter(e.target.value)}
           className="px-2 py-1.5 text-xs border border-lia-border-default rounded-md focus:ring-1 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg dark:bg-lia-bg-elevated dark:border-lia-border-default"
         >
-          <option value="all">{t('allStatuses')}</option>
-          <option value="active">{t('statusActive')}</option>
-          <option value="inactive">{t('statusInactive')}</option>
-          <option value="pending">{t('statusPending')}</option>
+          <option value="all">{t("allStatuses")}</option>
+          <option value="active">{t("statusActive")}</option>
+          <option value="inactive">{t("statusInactive")}</option>
+          <option value="pending">{t("statusPending")}</option>
         </select>
 
         <div className="flex bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-xl p-0.5">
           <button
-            onClick={() => setViewMode('cards')}
-            className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors motion-reduce:transition-none ${
-              viewMode === 'cards'
-                ? 'bg-lia-bg-primary text-lia-text-primary'
-                : 'text-lia-text-secondary hover:text-lia-text-primary'
-            }`}
+            onClick={() => setViewMode("cards")}
+            className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors motion-reduce:transition-none ${viewMode === "cards" ? "bg-lia-bg-primary text-lia-text-primary" : "text-lia-text-secondary hover:text-lia-text-primary"}`}
           >
-            {t('viewCards')}
+            {t("viewCards")}
           </button>
           <button
-            onClick={() => setViewMode('table')}
-            className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors motion-reduce:transition-none ${
-              viewMode === 'table'
-                ? 'bg-lia-bg-primary text-lia-text-primary'
-                : 'text-lia-text-secondary hover:text-lia-text-primary'
-            }`}
+            onClick={() => setViewMode("table")}
+            className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors motion-reduce:transition-none ${viewMode === "table" ? "bg-lia-bg-primary text-lia-text-primary" : "text-lia-text-secondary hover:text-lia-text-primary"}`}
           >
-            {t('viewTable')}
+            {t("viewTable")}
           </button>
         </div>
       </div>
@@ -236,6 +232,14 @@ export function UserManagement({ departments: hubDepartments = [], onDepartmentC
         onDeleteUser={handleDeleteUser}
         onResendInvitation={handleResendInvitation}
       />
+
+      {isAdmin && (
+        <Card className="rounded-md" data-testid="pii-role-defaults-section">
+          <CardContent className="p-4">
+            <PiiVisibilityRoleDefaults />
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }
