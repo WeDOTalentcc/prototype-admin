@@ -923,6 +923,44 @@ company_id: str = Depends(require_company_id)):
                             _orch, req.conversation_id
                         ):
                             yield format_sse_event(_frame, next_id())
+
+                        # HITL surfacing supervisor (AUD-4 §4.2 bird, 2026-06-07):
+                        # se um sub-agente ReAct do supervisor bloqueou uma tool, o
+                        # hitl_pending viajou no metadata -> ChatResponse -> aqui
+                        # minta o pending (thread_id=session_id, p/ _detect_hitl_approval
+                        # achar no replay) + emite approval_required. Simetrico ao
+                        # ramo agente. Fail-open: uuid se o mint falhar.
+                        _hp_sup = (
+                            _orch.get("hitl_pending")
+                            if isinstance(_orch, dict)
+                            else getattr(_orch, "hitl_pending", None)
+                        )
+                        if _hp_sup:
+                            try:
+                                from app.services.hitl_service import (
+                                    hitl_service as _hsvc_sup,
+                                )
+                                _pid_sup = await _hsvc_sup.request_approval(
+                                    thread_id=session_id,
+                                    action=_hp_sup.get("tool") or "sensitive_action",
+                                    description=_hp_sup.get("message")
+                                    or "Confirme para prosseguir.",
+                                    data=_hp_sup.get("data") or {},
+                                    ws_session_id=session_id,
+                                    domain=_hp_sup.get("domain") or resolved_domain,
+                                    company_id=company_id or "",
+                                    user_id=user_id,
+                                )
+                            except Exception as _hpsx:
+                                import uuid as _uuid
+                                logger.warning(
+                                    "[SSEChat] HITL(sup) request_approval falhou "
+                                    "(fail-open): %s", _hpsx,
+                                )
+                                _pid_sup = str(_uuid.uuid4())
+                            yield format_sse_event(
+                                _build_approval_frame(_pid_sup, _hp_sup), next_id()
+                            )
                     else:
                         output = item["_output"]
                         tokens_used = output.metadata.get("tokens_used", 0) if output.metadata else 0

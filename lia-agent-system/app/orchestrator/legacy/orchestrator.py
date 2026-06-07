@@ -313,6 +313,7 @@ class Orchestrator:
                           # _orchestrator_result_to_frames emite no frame message. Fecha o
                           # moat RRP na trilha supervisor (paridade com o federado).
                           "response_blocks": (dr.metadata or {}).get("response_blocks"),
+                          "hitl_pending": (dr.metadata or {}).get("hitl_pending"),
                           "policy_constraints": policy.get("constraints", {})}
             else:
                 fb = await self._handle_directly(intent, sanitized, {}, context=ctx)
