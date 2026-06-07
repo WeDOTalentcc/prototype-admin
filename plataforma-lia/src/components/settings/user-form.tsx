@@ -9,8 +9,8 @@ import type { UserData } from './user-management-types'
 import { useTranslations } from "next-intl"
 import { mapRoleToApi } from "./use-user-management"
 import { useAuth } from "@/contexts/auth-context"
-import { SalaryGrantConfirmDialog } from "./SalaryGrantConfirmDialog"
-import { SensitivePiiGrantConfirmDialog } from "./SensitivePiiGrantConfirmDialog"
+import { PiiFieldVisibilityMatrix } from "./PiiFieldVisibilityMatrix"
+import type { PiiFieldVisibility } from "./user-management-types"
 import { InlineDepartmentCreateModal, type CreatedDepartment, type InlineDepartmentSaveFn } from "./InlineDepartmentCreateModal"
 import { useCompanyId } from "@/hooks/company/useCompanyId"
 import { apiFetch } from "@/lib/api/api-fetch"
@@ -32,15 +32,6 @@ export function UserForm({ isCreating, formData, setFormData, onSave, onCancel, 
   const { user: authUser } = useAuth()
   const isAdmin = authUser?.role === 'admin' || authUser?.role === 'wedotalent_admin'
   // B2 (2026-05-25): confirm dialog antes do grant via checkbox
-  const [salaryConfirm, setSalaryConfirm] = useState<{ open: boolean; next: boolean }>({
-    open: false,
-    next: false,
-  })
-  const [sensitivePiiConfirm, setSensitivePiiConfirm] = useState<{ open: boolean; next: boolean }>({
-    open: false,
-    next: false,
-  })
-
   const t = useTranslations('settings.users')
   const inputClass = "w-full py-1.5 px-2 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-elevated text-lia-text-primary focus:ring-1 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg"
 
@@ -303,37 +294,17 @@ export function UserForm({ isCreating, formData, setFormData, onSave, onCancel, 
                 </label>
               </div>
 
-              {/* Sprint 5.5 RBAC (2026-05-25): can_view_salary grant — tenant admin only.
-                  LGPD Art. 6 III minimização. Plan canonical: jolly-roaming-moler.md */}
+              {/* A6-FE-2 (2026-06-06): PII field visibility matrix — replaces coarse grant checkboxes.
+                  Per-field tri-state: Herdado (role default) | Ver | Ocultar.
+                  Admin-gated; persisted via PUT /company/users/{id}.pii_field_visibility */}
               {isAdmin && (
-                <div>
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      data-toggle="canViewSalary"
-                      data-testid="user-toggle-can-view-salary"
-                      checked={(formData as Record<string, unknown>).can_view_salary as boolean || false}
-                      onChange={(e) => setSalaryConfirm({ open: true, next: e.target.checked })}
-                      className="w-3.5 h-3.5 rounded-xl border-lia-border-default"
-                    />
-                    <span className={textStyles.label}>{t('canViewSalaryCheckboxLabel')}</span>
-                  </label>
-                </div>
-              )}
-
-              {isAdmin && (
-                <div>
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      data-toggle="canViewSensitivePii"
-                      data-testid="user-toggle-can-view-sensitive-pii"
-                      checked={((formData as Record<string, unknown>).can_view_sensitive_pii as boolean | undefined) ?? true}
-                      onChange={(e) => setSensitivePiiConfirm({ open: true, next: e.target.checked })}
-                      className="w-3.5 h-3.5 rounded-xl border-lia-border-default"
-                    />
-                    <span className={textStyles.label}>Pode ver dados pessoais sensíveis (CPF, endereço)</span>
-                  </label>
+                <div className="mt-4">
+                  <h4 className={`${textStyles.title} mb-1`}>{t('piiVisibility.title')}</h4>
+                  <p className="text-xs text-lia-text-secondary mb-3">{t('piiVisibility.subtitle')}</p>
+                  <PiiFieldVisibilityMatrix
+                    value={(formData.pii_field_visibility as PiiFieldVisibility) || {}}
+                    onChange={(next) => setFormData(prev => ({ ...prev, pii_field_visibility: next }))}
+                  />
                 </div>
               )}
             </div>
@@ -415,28 +386,7 @@ export function UserForm({ isCreating, formData, setFormData, onSave, onCancel, 
           onDepartmentCreated?.()
         }}
       />
-    <SalaryGrantConfirmDialog
-        open={salaryConfirm.open}
-        onOpenChange={(open) => setSalaryConfirm((s) => ({ ...s, open }))}
-        granting={salaryConfirm.next}
-        target={formData.name || ""}
-        targetDetail={formData.email}
-        onConfirm={() => {
-          setFormData(prev => ({ ...prev, can_view_salary: salaryConfirm.next } as typeof prev))
-          setSalaryConfirm({ open: false, next: false })
-        }}
-      />
-      <SensitivePiiGrantConfirmDialog
-        open={sensitivePiiConfirm.open}
-        onOpenChange={(open) => setSensitivePiiConfirm((s) => ({ ...s, open }))}
-        granting={sensitivePiiConfirm.next}
-        target={formData.name || ""}
-        targetDetail={formData.email}
-        onConfirm={() => {
-          setFormData(prev => ({ ...prev, can_view_sensitive_pii: sensitivePiiConfirm.next } as typeof prev))
-          setSensitivePiiConfirm({ open: false, next: false })
-        }}
-      />
+
     </>
   )
 }

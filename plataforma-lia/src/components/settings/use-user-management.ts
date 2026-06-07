@@ -86,7 +86,9 @@ export function useUserManagement() {
         isManager: u.role === 'admin',
         createdAt: u.created_at,
         updatedAt: u.updated_at,
-        isScimManaged: u.is_scim_managed || false
+        isScimManaged: u.is_scim_managed || false,
+        // A6-FE-1/A6-FE-2 (2026-06-06): per-user PII field visibility override
+        pii_field_visibility: u.pii_field_visibility || undefined,
       }))
       setUsers(mappedUsers as UserData[])
     } catch {
@@ -183,7 +185,9 @@ export function useUserManagement() {
             role: mapRoleToApi(formData.role),
             status: formData.status === 'active' ? 'active' : 'inactive',
             department_id: formData.department_id || null,
-            permissions: formData.permissions || []
+            permissions: formData.permissions || [],
+            // A6-FE-2 (2026-06-06): per-user PII field visibility override
+            pii_field_visibility: formData.pii_field_visibility ?? null,
           })
         })
         if (!response.ok) throw new Error('Failed to update user')
