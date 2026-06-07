@@ -200,6 +200,13 @@ def tool_definition_to_langchain_tool(td: ToolContract) -> Any:
         fn = tee_tool_function(fn)
     except Exception:
         pass
+    # HITL surfacing (AUD-4 1b, 2026-06-07): tee needs_confirmation pro
+    # hitl_pending_sink (irmao do rrp). Mesmo ponto, defensivo, passthrough.
+    try:
+        from app.shared.hitl_pending_sink import tee_tool_function as _hitl_tee
+        fn = _hitl_tee(fn)
+    except Exception:
+        pass
     name = td.name
     description = td.description or f"Executa {name}"
 

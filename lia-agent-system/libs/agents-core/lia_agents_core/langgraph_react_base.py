@@ -186,6 +186,11 @@ class LangGraphReActBase(LangGraphBase):
             reset_sink()
         except Exception:
             pass
+        try:
+            from app.shared.hitl_pending_sink import reset_sink as _hitl_reset
+            _hitl_reset()
+        except Exception:
+            pass
 
         audit_callback = AuditCallback(
             user_id=str(input.user_id or "system"),
@@ -336,6 +341,20 @@ class LangGraphReActBase(LangGraphBase):
                 }
         except Exception as _drain_exc:
             logger.debug("[%s] rrp drain falhou (fail-open): %s", self.__class__.__name__, _drain_exc)
+
+        # HITL surfacing (AUD-4 1b, 2026-06-07): drena needs_confirmation tee'd
+        # pela tool gateada -> metadata['hitl_pending'] -> o transporte SSE emite
+        # o frame approval_required. Espelha o drain de response_blocks acima.
+        try:
+            from app.shared.hitl_pending_sink import drain_sink as _hitl_drain
+            _hitl_pending = _hitl_drain()
+            if _hitl_pending:
+                output.metadata = {
+                    **(output.metadata or {}),
+                    "hitl_pending": _hitl_pending,
+                }
+        except Exception as _hdrain_exc:
+            logger.debug("[%s] hitl drain falhou (fail-open): %s", self.__class__.__name__, _hdrain_exc)
 
         # --- Post-loop learning (EnhancedAgentMixin) ---
         if hasattr(self, "_post_loop_learning"):
