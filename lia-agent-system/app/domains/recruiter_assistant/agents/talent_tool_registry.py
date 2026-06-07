@@ -161,14 +161,56 @@ async def _wrap_list_candidates(**kwargs: Any) -> dict[str, Any]:
     except Exception as e:
         logger.warning(f"[talent_tools] list_candidates DB error: {e}")
 
-    return {
-        "success": True,
-        "data": {
+    _blocks, _hint = [], ""
+    if candidates:
+        try:
+            from app.shared.rrp_ranking_builder import build_table_block, RRP_TABLE_HINT
+            _hint = RRP_TABLE_HINT
+            _blocks = build_table_block(
+                title="Candidatos no funil",
+                entity_type="candidate",
+                source_tool="list_candidates",
+                total_count=total,
+                columns=[
+                    ("name", "Nome", "text"),
+                    ("current_title", "Cargo Atual", "text"),
+                    ("location", "Cidade", "text"),
+                    ("lia_score", "Score LIA", "score"),
+                    ("match_percentage", "Match", "number"),
+                    ("status", "Status", "badge"),
+                ],
+                rows=[
+                    {
+                        "entity_id": str(c.get("id")),
+                        "cells": {
+                            "name": c.get("name"),
+                            "current_title": c.get("current_title"),
+                            "location": c.get("location"),
+                            "lia_score": c.get("lia_score"),
+                            "match_percentage": c.get("match_percentage"),
+                            "status": c.get("status") or c.get("stage"),
+                        },
+                    }
+                    for c in candidates
+                ],
+            )
+        except Exception as _e:
+            logger.warning(f"[talent_tools] list_candidates RRP table skipped: {_e}")
+    if _blocks:
+        _data = {
             "status": status,
             "limit": limit,
             "total": total,
-            "candidates": candidates,
-        },
+            "rendered_as_card": True,
+            "narrative": f"{total} candidatos no funil (status '{status}'); {len(candidates)} no card.",
+            "response_blocks": _blocks,
+            "render_hint": _hint,
+        }
+    else:
+        _data = {"status": status, "limit": limit, "total": total, "candidates": candidates}
+    return {
+        "success": True,
+        "data": _data,
         "message": f"Lista carregada. {total} candidatos no funil com status '{status}'.",
     }
 

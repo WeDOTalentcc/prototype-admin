@@ -26,6 +26,58 @@ def _num(v: Any) -> float:
         return 0.0
 
 
+RRP_TABLE_HINT = (
+    "FORMATO: esta tabela JA esta sendo exibida ao usuario como um card visual "
+    "rico. NAO repita os dados como tabela markdown -- escreva apenas 1-2 frases "
+    "de destaque/resumo."
+)
+
+
+def build_table_block(
+    *,
+    title: str,
+    entity_type: str,
+    columns: list,
+    rows: list[dict],
+    source_tool: str,
+    total_count: int = 0,
+) -> list[dict]:
+    """Tabela RRP generica (ComparisonTableBlock) p/ list tools -> unifica o
+    visual com o ranking (card) em vez de markdown da LLM. FE ja renderiza
+    comparison_table com colunas/cells arbitrarias + entity_type job/candidate.
+
+    columns: list de (key, label, type). type in {text, score, badge, number}.
+    rows: list de dict {entity_id, cells: {key: value}, highlight?}.
+    """
+    from app.shared.rrp_blocks import (
+        ComparisonColumn,
+        ComparisonRow,
+        ComparisonTableBlock,
+    )
+
+    if not rows:
+        return []
+    cols = [ComparisonColumn(key=k, label=l, type=t) for (k, l, t) in columns]
+    block_rows = [
+        ComparisonRow(
+            entity_id=str(r.get("entity_id") or i),
+            cells=r.get("cells") or {},
+            highlight=r.get("highlight"),
+        )
+        for i, r in enumerate(rows)
+    ]
+    table = ComparisonTableBlock(
+        block_id=f"comparison_table:{source_tool}",
+        title=title,
+        entity_type=entity_type,
+        columns=cols,
+        rows=block_rows,
+        total_count=total_count or len(rows),
+        shown_count=len(rows),
+    )
+    return [table.model_dump(mode="json")]
+
+
 def build_candidate_ranking_blocks(job_id: str, rows: list[dict]) -> list[dict]:
     from app.shared.rrp_blocks import (
         ComparisonColumn,

@@ -132,20 +132,65 @@ async def _wrap_list_jobs(**kwargs: Any) -> dict[str, Any]:
     _bd = ", ".join(
         f"{k}: {v}" for k, v in sorted(status_breakdown.items(), key=lambda x: -x[1])
     )
-    return {
-        "success": True,
-        "data": {
+    _blocks, _hint = [], ""
+    if jobs:
+        try:
+            from app.shared.rrp_ranking_builder import build_table_block, RRP_TABLE_HINT
+            _hint = RRP_TABLE_HINT
+            _blocks = build_table_block(
+                title="Vagas",
+                entity_type="job",
+                source_tool="list_jobs",
+                total_count=total,
+                columns=[
+                    ("title", "Vaga", "text"),
+                    ("department", "Departamento", "text"),
+                    ("location", "Local", "text"),
+                    ("candidate_count", "Candidatos", "number"),
+                    ("days_open", "Dias aberta", "number"),
+                    ("priority", "Prioridade", "badge"),
+                ],
+                rows=[
+                    {
+                        "entity_id": str(j.get("id")),
+                        "cells": {
+                            "title": j.get("title"),
+                            "department": j.get("department"),
+                            "location": j.get("location"),
+                            "candidate_count": j.get("candidate_count"),
+                            "days_open": j.get("days_open"),
+                            "priority": j.get("priority"),
+                        },
+                    }
+                    for j in jobs
+                ],
+            )
+        except Exception as _e:
+            logger.warning(f"[jobs_mgmt_tools] list_jobs RRP table skipped: {_e}")
+    _msg = (
+        f"{total} vagas no total -- por status: {_bd}." if _bd
+        else f"{total} vagas encontradas (status={status}, departamento={department})."
+    )
+    if _blocks:
+        _data = {
+            "status_filter": status,
+            "department_filter": department,
+            "total_jobs": total,
+            "status_breakdown": status_breakdown,
+            "rendered_as_card": True,
+            "narrative": f"{total} vagas (filtro status={status}).",
+            "response_blocks": _blocks,
+            "render_hint": _hint,
+        }
+    else:
+        _data = {
             "status_filter": status,
             "department_filter": department,
             "total_jobs": total,
             "status_breakdown": status_breakdown,
             "jobs": jobs,
-        },
-        "message": (
-            f"{total} vagas no total -- por status: {_bd}." if _bd
-            else f"{total} vagas encontradas (status={status}, departamento={department})."
-        ),
-    }
+        }
+    return {"success": True, "data": _data, "message": _msg}
 
 
 @tool_handler("jobs_mgmt")
