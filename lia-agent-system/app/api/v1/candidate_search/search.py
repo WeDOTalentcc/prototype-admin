@@ -364,7 +364,9 @@ company_id: str = Depends(require_company_id)):
         # com base no like/dislike persistido (escopado por company_id, stateless).
         if candidates:
             _fb_ids = [c.id for c in candidates if getattr(c, "id", None)]
-            _fb_map = await lia_score_service.load_search_feedback(_fb_ids, company_id=company_id)
+            # C1: escopo EMPRESA + USUARIO (cada recrutador ve so o proprio feedback)
+            _fb_user_id = str(getattr(current_user, "id", None) or getattr(current_user, "user_id", None) or "") or None
+            _fb_map = await lia_score_service.load_search_feedback(_fb_ids, company_id=company_id, user_id=_fb_user_id)
             apply_feedback_boost(candidates, _fb_map, _FEEDBACK_BOOST_POINTS)
 
         # Task #1219 — garantia final "só candidatos com email" no modo

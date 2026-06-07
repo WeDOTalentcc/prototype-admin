@@ -61,6 +61,7 @@ async def submit_search_feedback(
     conditions = [
         SearchFeedback.company_id == str(company_id),
         SearchFeedback.candidate_id == request.candidate_id,
+        SearchFeedback.user_id == user_id,  # C1: per-recrutador — nao sobrescrever feedback de outro usuario
     ]
     if request.search_fingerprint:
         conditions.append(SearchFeedback.search_fingerprint == request.search_fingerprint)
