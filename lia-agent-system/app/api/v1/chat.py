@@ -907,12 +907,30 @@ def _orchestrator_result_to_frames(result, conversation_id):
     content = _get("content", "") or _get("message", "") or ""
     actions = _get("actions") or []
     fairness = _get("fairness_warnings") or []
-    ui_action = _get("ui_action")
+    # FIX-NAVIGATE-SUP (§4.1, 2026-06-07): a LLM do supervisor emite
+    # [NAVIGATE:<page>] como TEXTO; sem strip o marker vazava e nao navegava.
+    # Espelha o ramo agente (agent_chat_sse FIX-NAVIGATE-LEAK): strip do texto +
+    # injeta ui_action/ui_action_params (contrato FE, nao so navigation aninhado).
+    _nav_ui_action = _get("ui_action")
+    _nav_ui_params = _get("ui_action_params") or {}
+    if not _nav_ui_action:
+        try:
+            from app.orchestrator.context.chat_adapter import (
+                _extract_navigate_marker,
+            )
+            _nav = _extract_navigate_marker(content)
+            if _nav is not None:
+                content, _np, _npar = _nav
+                if _np != "general":
+                    _nav_ui_action = "navigate_to"
+                    _nav_ui_params = {"page": _np, **_npar}
+        except Exception:
+            pass
     navigation = None
-    if ui_action:
+    if _nav_ui_action:
         navigation = {
-            "ui_action": ui_action,
-            "ui_action_params": _get("ui_action_params") or {},
+            "ui_action": _nav_ui_action,
+            "ui_action_params": _nav_ui_params or {},
         }
 
     # Task #1090 — extrai ws_stage_payload de structured_data (espelha o REST,
@@ -931,6 +949,8 @@ def _orchestrator_result_to_frames(result, conversation_id):
             response_blocks=_get("response_blocks"),
             actions=actions or None,
             navigation=navigation,
+            ui_action=_nav_ui_action,
+            ui_action_params=(_nav_ui_params or None),
             fairness_warnings=fairness or None,
             conversation_id=conversation_id,
             ws_stage_payload=ws_stage_payload,
