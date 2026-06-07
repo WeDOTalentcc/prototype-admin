@@ -646,3 +646,55 @@ async def resolve_inherited_salary_ranges(db, company_id, vacancies) -> None:
 
 
 __all__.append("resolve_inherited_salary_ranges")
+
+
+def _benefit_to_inherited_dict(b) -> dict:
+    return {
+        "id": str(b.id),
+        "name": b.name,
+        "category": b.category,
+        "description": getattr(b, "description", None),
+        "icon": getattr(b, "icon", None),
+        "value": getattr(b, "value", None),
+        "value_type": getattr(b, "value_type", None),
+        "is_mandatory": bool(getattr(b, "is_mandatory", False)),
+        "inherited": True,
+        "source": "company_benefit",
+    }
+
+
+async def resolve_inherited_benefits(db, company_id, vacancies) -> None:
+    """Preenche benefits das vagas SEM beneficios explicitos com os beneficios
+    da empresa casados por nivel + departamento + contrato (+ os is_mandatory).
+    Mutacao in-memory read-time (sem commit). Fail-open. Audit 2026-06-06 (FASE 1).
+    Espelha resolve_inherited_salary_ranges; wirado so no detalhe (sem N+1)."""
+    if not company_id or company_id in ("default", "unknown"):
+        return
+    needing = [v for v in vacancies if not (getattr(v, "benefits", None) or [])]
+    if not needing:
+        return
+    from app.domains.company.repositories.company_benefit_repository import (
+        CompanyBenefitRepository,
+    )
+
+    repo = CompanyBenefitRepository(db)
+    for v in needing:
+        try:
+            pairs = await repo.list_matching(
+                str(company_id),
+                seniority_level=getattr(v, "seniority_level", None),
+                department=getattr(v, "department", None),
+                contract_type=getattr(v, "employment_type", None),
+            )
+        except Exception:  # noqa: BLE001 — fail-open por vaga
+            continue
+        inherited = [
+            _benefit_to_inherited_dict(b)
+            for (b, matches) in pairs
+            if matches or getattr(b, "is_mandatory", False)
+        ]
+        if inherited:
+            v.benefits = inherited
+
+
+__all__.append("resolve_inherited_benefits")

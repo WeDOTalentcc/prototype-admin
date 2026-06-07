@@ -454,6 +454,7 @@ company_id: str = Depends(require_company_id)):
             raise HTTPException(status_code=403, detail="Você não tem acesso a esta vaga")
 
         await resolve_inherited_salary_ranges(repo.db, user_company, [job_vacancy])
+        await resolve_inherited_benefits(repo.db, user_company, [job_vacancy])
         return {
             "id": str(job_vacancy.id),
             "title": job_vacancy.title,
