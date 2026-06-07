@@ -14,6 +14,7 @@ import pytest
 
 from app.domains.job_creation.helpers.vaga_field_inheritance import (
     resolve_field_default_for_state,
+    resolve_manager_from_department,
 )
 
 pytestmark = pytest.mark.asyncio
@@ -92,3 +93,35 @@ async def test_fail_open_bad_company_id():
 
 async def test_fail_open_no_company_id():
     assert await resolve_field_default_for_state({}, "work_model") is None
+
+
+def _patch_dept(monkeypatch, dept):
+    import app.domains.cv_screening.repositories.lia_field_config_repository as repo_mod
+    monkeypatch.setattr("app.core.database.AsyncSessionLocal", _fake_session)
+
+    async def _get(self, cid, name):
+        return dept
+
+    monkeypatch.setattr(repo_mod.LiaFieldConfigRepository, "get_department_by_name", _get)
+
+
+async def test_manager_inherited_from_department(monkeypatch):
+    from types import SimpleNamespace
+    _patch_dept(monkeypatch, SimpleNamespace(manager_name="Maria Silva", manager_email="maria@x.com"))
+    out = await resolve_manager_from_department({"company_id": _CID, "parsed_department": "Tech"})
+    assert out == {"name": "Maria Silva", "email": "maria@x.com"}
+
+
+async def test_manager_none_when_dept_has_no_manager(monkeypatch):
+    from types import SimpleNamespace
+    _patch_dept(monkeypatch, SimpleNamespace(manager_name=None, manager_email=None))
+    assert await resolve_manager_from_department({"company_id": _CID, "parsed_department": "Tech"}) is None
+
+
+async def test_manager_none_when_dept_missing(monkeypatch):
+    _patch_dept(monkeypatch, None)
+    assert await resolve_manager_from_department({"company_id": _CID, "parsed_department": "X"}) is None
+
+
+async def test_manager_none_without_department():
+    assert await resolve_manager_from_department({"company_id": _CID}) is None

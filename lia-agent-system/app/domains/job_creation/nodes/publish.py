@@ -162,6 +162,27 @@ def publish_node(state: JobCreationState) -> JobCreationState:
                     logger.warning(
                         "[publish] work_model inheritance fail-open", exc_info=True
                     )
+            # gestor: heranca do gestor do departamento quando o recrutador nao
+            # especificou. Fail-open (reusa run_coro ja importado nos blocos acima).
+            _mgr_name = state.get("parsed_manager_name")
+            _mgr_email = state.get("parsed_manager_email")
+            if not _mgr_name and not _mgr_email:
+                try:
+                    from app.domains.job_creation.helpers.vaga_field_inheritance import (
+                        resolve_manager_from_department,
+                    )
+                    from app.domains.job_creation.helpers.async_audit import (
+                        run_coro_in_threadpool,
+                    )
+                    _mgr = run_coro_in_threadpool(
+                        resolve_manager_from_department(state)
+                    ) or {}
+                    _mgr_name = _mgr_name or _mgr.get("name")
+                    _mgr_email = _mgr_email or _mgr.get("email")
+                except Exception:  # noqa: BLE001 — fail-open, nunca quebra o publish
+                    logger.warning(
+                        "[publish] manager inheritance fail-open", exc_info=True
+                    )
             job_data = {
                 "title": jd.get("titulo_padronizado", state.get("parsed_title", "")),
                 "description": jd.get("about_role", ""),
@@ -178,8 +199,8 @@ def publish_node(state: JobCreationState) -> JobCreationState:
                 # P0-A: regime de contratação (coluna employment_type já existe).
                 "employment_type": to_canonical_employment_type(_emp_type),
                 # FASE 5: gestor responsável + email (colunas manager/manager_email já existem).
-                "manager": state.get("parsed_manager_name") or "",
-                "manager_email": state.get("parsed_manager_email") or "",
+                "manager": _mgr_name or "",
+                "manager_email": _mgr_email or "",
                 "salary_min": state.get("salary_min"),
                 "salary_max": state.get("salary_max"),
                 "salary_currency": state.get("salary_currency", "BRL"),
