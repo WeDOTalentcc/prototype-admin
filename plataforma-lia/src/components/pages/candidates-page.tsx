@@ -32,6 +32,7 @@
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
+import { useState, useEffect } from "react"
 import { FavoritesTab } from "@/components/talent-funnel-tabs/favorites-tab"
 import { HistoryTab } from "@/components/talent-funnel-tabs/history-tab"
 import { SavedSearchesTab } from "@/components/talent-funnel-tabs/saved-searches-tab"
@@ -54,7 +55,7 @@ import { SearchFingerprintProvider } from "@/components/search/SearchFingerprint
 import { LoadingModal as CandidatesLoadingModal } from "@/components/ui/loading"
 const CandidatePreview = dynamic(() => import("@/components/candidate-preview").then(m => ({ default: m.CandidatePreview })), { ssr: false, loading: () => <CandidatesLoadingModal /> })
 
-export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandidateOpened }: { onAddRecentItem?: (item: { id: string; type: 'vaga' | 'chat' | 'candidato'; title: string; subtitle?: string; meta?: Record<string, string | undefined> }) => void; pendingCandidateOpen?: { candidateId: string; candidateName: string } | null; onCandidateOpened?: () => void } = {}) {
+export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandidateOpened, pendingPoolOpen, onPoolOpened }: { onAddRecentItem?: (item: { id: string; type: 'vaga' | 'chat' | 'candidato' | 'banco'; title: string; subtitle?: string; meta?: Record<string, string | undefined> }) => void; pendingCandidateOpen?: { candidateId: string; candidateName: string } | null; onCandidateOpened?: () => void; pendingPoolOpen?: { poolId: string; poolName: string } | null; onPoolOpened?: () => void } = {}) {
   const {
     searchFingerprint,
     handleReSearchWithFilters,
@@ -111,6 +112,29 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
     candidatesError, refreshCandidatesList,
     tabs,
   } = useCandidatesPageCore({ onAddRecentItem, pendingCandidateOpen, onCandidateOpened })
+
+  const [selectedPoolId, setSelectedPoolId] = useState<string | null>(null)
+
+  const handleSelectPool = (poolId: string, poolName: string) => {
+    onAddRecentItem?.({
+      id: poolId,
+      type: 'banco',
+      title: poolName,
+      meta: { poolId, poolName },
+    })
+    setSelectedPoolId(poolId)
+  }
+
+  // "Pending open" pattern (espelha vagas/candidatos): ao clicar no banco em
+  // "Recentes", abrimos o Funil na aba de bancos com o banco selecionado.
+  useEffect(() => {
+    if (pendingPoolOpen) {
+      ;(setActiveTab as (v: string) => void)('talent-pools')
+      setSelectedPoolId(pendingPoolOpen.poolId)
+      onPoolOpened?.()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingPoolOpen])
 
   return (
     <SearchFingerprintProvider value={searchFingerprint}>
@@ -566,7 +590,11 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
         )}
 
         {(activeTab as string) === 'talent-pools' && (
-          <TalentPoolsTab onSelectPool={(id) => {}} />
+          <TalentPoolsTab
+            onSelectPool={handleSelectPool}
+            openPoolId={selectedPoolId}
+            onClosePool={() => setSelectedPoolId(null)}
+          />
         )}
 
         {/* Aba Buscas Salvas */}

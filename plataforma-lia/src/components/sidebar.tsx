@@ -132,9 +132,6 @@ const BASE_MENU_SECTIONS: MenuSection[] = [
             label: "Funil de Talentos",
             isCore: true,
             navigateOnClick: true,
-            maxVisibleSubItems: 3,
-            seeAllLabel: "Ver todos os bancos",
-            seeAllTarget: "Funil de Talentos",
           },
         ],
       },
@@ -165,27 +162,10 @@ interface DynamicSubItem {
 }
 
 function useSidebarDynamicItems() {
-  const [talentPools, setTalentPools] = useState<DynamicSubItem[]>([])
   const [agents, setAgents] = useState<DynamicSubItem[]>([])
 
   useEffect(() => {
     let cancelled = false
-
-    async function loadPools() {
-      try {
-        const res = await fetch("/api/backend-proxy/talent-pools")
-        if (!res.ok) return
-        const data = await res.json()
-        const mapped = (data?.data || [])
-          .map((d: { id: string; attributes: { name: string; status: string } }) => ({
-            id: d.id,
-            name: d.attributes.name,
-            status: d.attributes.status,
-          }))
-          .filter((p: DynamicSubItem) => p.status === "active")
-        if (!cancelled) setTalentPools(mapped)
-      } catch { /* silent */ }
-    }
 
     async function loadAgents() {
       try {
@@ -203,12 +183,11 @@ function useSidebarDynamicItems() {
       } catch { /* silent */ }
     }
 
-    loadPools()
     loadAgents()
     return () => { cancelled = true }
   }, [])
 
-  return { talentPools, agents }
+  return { agents }
 }
 
 
@@ -482,6 +461,7 @@ const RECENT_TYPE_CONFIG = {
   vaga: { icon: Briefcase, color: 'text-lia-text-secondary' },
   chat: { icon: Brain, color: 'text-wedo-cyan' },
   candidato: { icon: User, color: 'text-lia-text-secondary' },
+  banco: { icon: Database, color: 'text-lia-text-secondary' },
 } as const
 
 const RecentItemRow = React.memo(({
@@ -525,7 +505,7 @@ RecentItemRow.displayName = 'RecentItemRow'
 
 export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClick, onRecentItemRemove, onRecentItemsClear, onShowSearch }: SidebarProps) {
   const t = useTranslations('sidebar')
-  const { talentPools, agents } = useSidebarDynamicItems()
+  const { agents } = useSidebarDynamicItems()
   const { user: authUser, refreshUser } = useAuth()
   const { userId: authenticatedUserId, isReady: isAuthReady } = useAuthenticatedUserId()
 
@@ -625,17 +605,6 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
 
   const menuSections = useMemo(() => {
     const injectDynamic = (item: MenuItemType): MenuItemType => {
-      if (item.label === "Funil de Talentos" && talentPools.length > 0) {
-        return {
-          ...item,
-          subItems: talentPools.map(p => ({
-            icon: Database,
-            label: p.name,
-            isCore: true,
-            navKey: `pool:${p.id}`,
-          })),
-        }
-      }
       if (item.label === "Estúdio de Agentes" && agents.length > 0) {
         return {
           ...item,
@@ -659,13 +628,9 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
       ...section,
       items: section.items.map(item => injectDynamic(item)),
     }))
-  }, [talentPools, agents])
+  }, [agents])
 
   const handleDynamicNavigate = useCallback((page: string) => {
-    if (page.startsWith("pool:")) {
-      onNavigate("Funil de Talentos")
-      return
-    }
     if (page.startsWith("agent:")) {
       onNavigate("Estúdio de Agentes")
       return

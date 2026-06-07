@@ -117,6 +117,7 @@ export function DashboardApp({ initialPage = "Conversar", children }: DashboardA
   const [pendingChatConversationId, setPendingChatConversationId] = useState<string | null>(null)
   const [pendingJobOpen, setPendingJobOpen] = useState<{ jobId: string; jobTitle: string } | null>(null)
   const [pendingCandidateOpen, setPendingCandidateOpen] = useState<{ candidateId: string; candidateName: string } | null>(null)
+  const [pendingPoolOpen, setPendingPoolOpen] = useState<{ poolId: string; poolName: string } | null>(null)
   const [calibratingAgentId, setCalibratingAgentId] = useState<string | null>(null)
   const [agentStudioRefreshKey, setAgentStudioRefreshKey] = useState(0)
   const { isAuthenticated, user, logout } = useAuth()
@@ -391,6 +392,12 @@ export function DashboardApp({ initialPage = "Conversar", children }: DashboardA
         setPendingCandidateOpen({ candidateId: item.meta!.candidateId!, candidateName: item.title })
         setCurrentPage("Funil de Talentos")
       }, 0)
+    } else if (item.type === 'banco' && item.meta?.poolId) {
+      setPendingPoolOpen(null)
+      setTimeout(() => {
+        setPendingPoolOpen({ poolId: item.meta!.poolId!, poolName: item.title })
+        setCurrentPage("Funil de Talentos")
+      }, 0)
     } else if (item.type === 'chat') {
       const convId = item.meta?.conversationId as string | undefined
       openFloat(convId)
@@ -430,7 +437,7 @@ export function DashboardApp({ initialPage = "Conversar", children }: DashboardA
       case "Conversar":
         return <ChatPage initialConversationId={pendingChatConversationId} />
       case "Funil de Talentos":
-        return <CandidatesPage onAddRecentItem={addRecentItem} pendingCandidateOpen={pendingCandidateOpen} onCandidateOpened={() => setPendingCandidateOpen(null)} />
+        return <CandidatesPage onAddRecentItem={addRecentItem} pendingCandidateOpen={pendingCandidateOpen} onCandidateOpened={() => setPendingCandidateOpen(null)} pendingPoolOpen={pendingPoolOpen} onPoolOpened={() => setPendingPoolOpen(null)} />
       case "Vagas":
         return <JobsPage onNavigate={handleNavigate} onAddRecentItem={addRecentItem} pendingChatOpen={pendingChatOpen as any} onChatOpened={() => setPendingChatOpen(null)} pendingJobOpen={pendingJobOpen} onJobOpened={() => setPendingJobOpen(null)} />
       case "Indicadores":

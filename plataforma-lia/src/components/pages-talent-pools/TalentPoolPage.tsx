@@ -588,7 +588,7 @@ interface MoveToJobModalProps {
 
 interface CreatePoolModalProps {
   onClose: () => void
-  onCreated: (poolId: string) => void
+  onCreated: (poolId: string, poolName: string) => void
 }
 
 export function CreatePoolModal({ onClose, onCreated }: CreatePoolModalProps) {
@@ -639,7 +639,7 @@ export function CreatePoolModal({ onClose, onCreated }: CreatePoolModalProps) {
         return
       }
       const newId = data?.data?.id || data?.id
-      if (newId) onCreated(newId)
+      if (newId) onCreated(newId, name.trim())
       else setCreateError("Banco criado mas não foi possível abrir. Recarregue a página.")
     } catch (err) {
       console.error("Failed to create pool:", err)

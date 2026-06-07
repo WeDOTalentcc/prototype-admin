@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState } from"react"
-import { Database, Plus, Users, Bot, ArrowRight } from"lucide-react"
+import { Database, Plus, Users, Bot, ArrowRight, ArrowLeft } from"lucide-react"
 import { Card, CardContent } from"@/components/ui/card"
 import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
@@ -10,7 +10,7 @@ import {
   actionButtonStyles
 } from"@/lib/design-tokens"
 import { useTalentPools, TalentPoolSummary } from"@/components/pages-talent-pools/useTalentPools"
-import { CreatePoolModal } from"@/components/pages-talent-pools/TalentPoolPage"
+import TalentPoolPage, { CreatePoolModal } from"@/components/pages-talent-pools/TalentPoolPage"
 
 /**
  * TalentPoolsTab — tab content for"Bancos Vivos" in the Funil de Talentos page.
@@ -20,12 +20,32 @@ import { CreatePoolModal } from"@/components/pages-talent-pools/TalentPoolPage"
  */
 
 interface TalentPoolsTabProps {
-  onSelectPool: (poolId: string) => void
+  onSelectPool: (poolId: string, poolName: string) => void
+  /** When set, renders the pool detail inline instead of the grid. */
+  openPoolId?: string | null
+  /** Called from the inline detail back button to return to the grid. */
+  onClosePool?: () => void
 }
 
-export default function TalentPoolsTab({ onSelectPool }: TalentPoolsTabProps) {
+export default function TalentPoolsTab({ onSelectPool, openPoolId, onClosePool }: TalentPoolsTabProps) {
   const { pools, activePools, isLoading, createPool } = useTalentPools()
   const [showCreateModal, setShowCreateModal] = useState(false)
+
+  if (openPoolId) {
+    return (
+      <div className="space-y-4">
+        <Button
+          variant="ghost"
+          className={`${buttonStyles.ghost} -ml-2`}
+          onClick={() => onClosePool?.()}
+        >
+          <ArrowLeft className="w-4 h-4 mr-1" />
+          Voltar aos bancos
+        </Button>
+        <TalentPoolPage poolId={openPoolId} />
+      </div>
+    )
+  }
 
   if (isLoading) {
     return (
@@ -72,7 +92,7 @@ export default function TalentPoolsTab({ onSelectPool }: TalentPoolsTabProps) {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {pools.map(pool => (
-            <PoolCard key={pool.id} pool={pool} onClick={() => onSelectPool(pool.id)} />
+            <PoolCard key={pool.id} pool={pool} onClick={() => onSelectPool(pool.id, pool.name)} />
           ))}
         </div>
       )}
@@ -80,9 +100,9 @@ export default function TalentPoolsTab({ onSelectPool }: TalentPoolsTabProps) {
       {showCreateModal && (
         <CreatePoolModal
           onClose={() => setShowCreateModal(false)}
-          onCreated={(id) => {
+          onCreated={(id, name) => {
             setShowCreateModal(false)
-            onSelectPool(id)
+            onSelectPool(id, name)
           }}
         />
       )}
