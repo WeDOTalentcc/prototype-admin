@@ -35,8 +35,7 @@ const PUBLIC_PATHS = [
 
 const PUBLIC_API_PATHS = [
   '/api/auth',
-  '/api/backend-proxy/auth/login',
-  '/api/backend-proxy/auth/register',
+  '/api/backend-proxy/auth',
   '/api/public-proxy',
   '/api/portal',
 ]

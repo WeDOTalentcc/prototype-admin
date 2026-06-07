@@ -51,7 +51,11 @@ logger = get_masked_logger(__name__)
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
 
-FRONTEND_URL = os.getenv("FRONTEND_URL", "https://plataforma-lia.replit.app")
+FRONTEND_URL = (
+    os.getenv("FRONTEND_URL")
+    or os.getenv("WEDOTALENT_PLATFORM_URL")
+    or "https://plataforma-lia.replit.app"
+)
 
 
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
