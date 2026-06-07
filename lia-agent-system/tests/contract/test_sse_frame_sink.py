@@ -20,14 +20,17 @@ from lia_agents_core.streaming_callback import (
 
 
 def test_send_forwards_activity_frames_to_sse_sink() -> None:
-    cb = StreamingCallback(session_id="sess-1", company_id="co-1")
     captured: list[dict] = []
 
     async def _sink(frame: dict) -> None:
         captured.append(frame)
 
     async def _run() -> None:
+        # o sink e registrado ANTES da construcao (espelha o fluxo real:
+        # agent_chat_sse registra o sink antes da task -> _process_langgraph
+        # constroi o StreamingCallback, que captura no __init__).
         tok = set_sse_frame_sink(_sink)
+        cb = StreamingCallback(session_id="sess-1", company_id="co-1")
         try:
             await cb._send({"type": "tool_started", "name": "rank_candidates"})
             await cb._send({"type": "tool_finished", "name": "rank_candidates", "status": "ok"})
@@ -57,7 +60,6 @@ def test_callback_to_sink_end_to_end_via_on_tool_start() -> None:
     # Aqui chamamos _send direto com o frame serializado p/ determinismo.
     from app.shared.chat_event_serializer import serialize_tool_started
 
-    cb = StreamingCallback(session_id="sess-3")
     captured: list[dict] = []
 
     async def _sink(frame: dict) -> None:
@@ -65,6 +67,7 @@ def test_callback_to_sink_end_to_end_via_on_tool_start() -> None:
 
     async def _run() -> None:
         tok = set_sse_frame_sink(_sink)
+        cb = StreamingCallback(session_id="sess-3")
         try:
             await cb._send(serialize_tool_started(name="view_candidate", args="id=1", tool_id="r1"))
         finally:

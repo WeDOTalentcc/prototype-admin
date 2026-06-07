@@ -99,6 +99,11 @@ class StreamingCallback(BaseCallbackHandler):
         self._start_time = time.time()
         # run_id -> (tool_name, start_epoch) for tool duration tracking (Fase 1)
         self._tool_starts: Dict[Any, tuple] = {}
+        # wire-B (2026-06-06): captura o sink SSE AGORA (no contexto da task,
+        # que tem o contextvar setado). Usa instance-attr em _send — NAO
+        # contextvar — porque o langchain pode despachar on_tool_start/end de
+        # uma THREAD (run_coroutine_threadsafe), onde contextvar nao propaga.
+        self._sse_sink = _sse_frame_sink.get(None)
 
     def on_llm_new_token(
         self,
@@ -300,13 +305,17 @@ class StreamingCallback(BaseCallbackHandler):
             logger.debug(
                 "[StreamingCallback] send error session=%s: %s", self.session_id, exc
             )
-        # wire-B (2026-06-06): repassa frames de ATIVIDADE pro transporte SSE.
-        # Transport-agnostic num unico ponto-produtor. Tokens NAO sao repassados
-        # (o SSE serializa a mensagem final pelo seu proprio caminho).
+        # wire-B (2026-06-06): repassa frames de ATIVIDADE pro transporte SSE via
+        # instance-attr (capturado no __init__, no contexto da task).
         try:
-            if isinstance(data, dict) and data.get("type") in _SSE_FORWARD_TYPES:
-                _sink = _sse_frame_sink.get(None)
-                if _sink is not None:
-                    await _sink(data)
+            _is_activity = isinstance(data, dict) and data.get("type") in _SSE_FORWARD_TYPES
+            if _is_activity:
+                import threading as _thr
+                logger.info(
+                    "[SSE-SINK-DBG] _send type=%s sink_present=%s thread=%s",
+                    data.get("type"), self._sse_sink is not None, _thr.current_thread().name,
+                )
+            if _is_activity and self._sse_sink is not None:
+                await self._sse_sink(data)
         except Exception as exc:
             logger.debug("[StreamingCallback] sse sink forward falhou: %s", exc)
