@@ -16,8 +16,7 @@ import {
   Send, Bell, Palette, Lightbulb, TrendingDown, Activity, RotateCcw,
   ChevronLeft, FastForward, SkipForward, RefreshCw, Zap as Lightning,
   MousePointer, Compass, HelpCircle, Rocket,
-  ChevronDown, ChevronUp, Lock, Unlock, Circle, Plug, Shield,
-  PanelLeftClose, PanelLeftOpen
+  ChevronDown, ChevronUp, Circle, Plug, Shield,
 } from"lucide-react"
 
 const SECTION_ICON_COLORS: Record<string, string> = {
@@ -48,7 +47,6 @@ const LiaPersonalizacaoHub = dynamic(() => import("@/components/settings/LiaPers
 
 import { textStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip"
-import { useHoverDebounce } from '@/lib/sidebar/useHoverDebounce'
 import { ErrorBoundarySection } from"@/components/ui/error-boundary-section"
 import { useCompanyId } from"@/hooks/company/useCompanyId"
 import { SETTINGS_SECTION_ALIASES } from "@/lib/settings/resolve-settings-target"
@@ -357,49 +355,33 @@ export default function SettingsPageEnhanced() {
   const [overallProgress, setOverallProgress] = useState<number>(0)
   const [progressLoading, setProgressLoading] = useState<boolean>(true)
   
-  // `isCollapsed` é a PREFERÊNCIA EXPLÍCITA de repouso da barra (rail só de
-  // ícones vs. expandida). É a única coisa que persiste — o hover passou a ser
-  // apenas uma prévia temporária (`isPeeking`) que NUNCA grava em localStorage.
+  // `isCollapsed` é a PREFERÊNCIA EXPLÍCITA de repouso da barra: expandida
+  // (fixa) vs. trilho congelado só de ícones. É a única coisa que persiste e o
+  // ÚNICO controle — espelha o modelo de um-controle-só do sidebar principal.
+  // Diferente do principal, o trilho recolhido é "congelado" (sem prévia ao
+  // passar o mouse), preservando a preferência histórica de Configurações.
   // Init determinístico (igual no SSR e no primeiro render do cliente) para
   // evitar hydration mismatch: a preferência salva é aplicada após a montagem,
   // no useEffect abaixo — nunca no primeiro render.
   const [isCollapsed, setIsCollapsed] = useState(true)
-  const [isLocked, setIsLocked] = useState(false)
-  // Prévia temporária por hover — não persiste. Só tem efeito quando a barra
-  // está em repouso recolhida e o hover está habilitado (não fixada).
-  const [isPeeking, setIsPeeking] = useState(false)
 
   useEffect(() => {
     try {
-      const saved = localStorage.getItem('settings-sidebar-locked')
       const savedCollapsed = localStorage.getItem('settings-sidebar-collapsed')
-      if (saved === null && savedCollapsed === null) {
-        // Primeira visita: abre a barra expandida e fixada para reduzir custo
-        // de descoberta.
-        setIsLocked(true)
+      if (savedCollapsed === null) {
+        // Primeira visita: abre a barra expandida para reduzir custo de
+        // descoberta.
         setIsCollapsed(false)
       } else {
-        if (saved !== null) setIsLocked(saved === 'true')
-        // Restaura a escolha explícita de recolhido vs. expandido feita pelo
-        // usuário (toggle dedicado), independente do lock.
-        if (savedCollapsed !== null) setIsCollapsed(savedCollapsed === 'true')
+        // Restaura a escolha explícita de recolhido vs. expandido.
+        setIsCollapsed(savedCollapsed === 'true')
       }
     } catch {}
   }, [])
 
-  const toggleLocked = useCallback(() => {
-    setIsPeeking(false)
-    setIsLocked(prev => {
-      const next = !prev
-      try { localStorage.setItem('settings-sidebar-locked', String(next)) } catch {}
-      return next
-    })
-  }, [])
-
-  // Toggle EXPLÍCITO de recolher/expandir — define a preferência de repouso e
-  // persiste. Diferente do hover (prévia), esta escolha é estável entre sessões.
+  // Toggle ÚNICO de recolher/expandir — define a preferência de repouso e
+  // persiste. É o único controle da barra (espelha o sidebar principal).
   const toggleCollapsed = useCallback(() => {
-    setIsPeeking(false)
     setIsCollapsed(prev => {
       const next = !prev
       try { localStorage.setItem('settings-sidebar-collapsed', String(next)) } catch {}
@@ -407,15 +389,6 @@ export default function SettingsPageEnhanced() {
     })
   }, [])
 
-  const {
-    handleMouseEnter: handleSettingsMouseEnter,
-    handleMouseLeave: handleSettingsMouseLeave,
-  } = useHoverDebounce({
-    onExpand: () => setIsPeeking(true),
-    onCollapse: () => setIsPeeking(false),
-    // Hover só faz prévia quando a barra está em repouso recolhida e não fixada.
-    isEnabled: !isLocked && isCollapsed,
-  })
 
 
   const fetchProgress = useCallback(async () => {
@@ -617,9 +590,9 @@ export default function SettingsPageEnhanced() {
     }
   }
 
-  // Largura real da barra: expande quando o repouso é expandido OU quando há
-  // prévia de hover (peek). `isPeeking` só é true quando recolhida + não fixada.
-  const isRailExpanded = !isCollapsed || isPeeking
+  // Largura real da barra: expande quando o repouso é expandido. Sem prévia de
+  // hover — recolhida = trilho congelado (controle único, igual ao principal).
+  const isRailExpanded = !isCollapsed
   const shouldShowContent = isRailExpanded
 
   return (
@@ -631,8 +604,6 @@ export default function SettingsPageEnhanced() {
           transition-[width,colors] duration-300 ease-in-out motion-reduce:transition-none
           flex-shrink-0
         `}
-        onMouseEnter={handleSettingsMouseEnter}
-        onMouseLeave={handleSettingsMouseLeave}
       >
         <Card className="h-full m-3 border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary backdrop-blur-sm rounded-xl overflow-hidden flex flex-col">
           <div className={`p-4 dark:border-lia-border-subtle ${!isRailExpanded ? 'px-2' : ''}`}>
@@ -648,30 +619,17 @@ export default function SettingsPageEnhanced() {
                 </div>
               )}
               {shouldShowContent ? (
-                <div className="flex items-center gap-1 flex-shrink-0">
+                <div className="flex items-center flex-shrink-0">
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={toggleCollapsed}
                     className="h-6 w-6 p-0"
                     data-testid="settings-sidebar-collapse-toggle"
-                    aria-label={isCollapsed ? "Expandir menu" : "Recolher menu para ícones"}
-                    title={isCollapsed ? "Expandir menu" : "Recolher menu para ícones"}
+                    aria-label="Recolher menu para ícones"
+                    title="Recolher menu para ícones"
                   >
-                    {isCollapsed
-                      ? <PanelLeftOpen className="w-3 h-3" />
-                      : <PanelLeftClose className="w-3 h-3" />}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={toggleLocked}
-                    className="h-6 w-6 p-0"
-                    data-testid="settings-sidebar-lock-toggle"
-                    aria-label={isLocked ? "Desbloquear menu (permitir prévia ao passar o mouse)" : "Fixar menu (sem prévia ao passar o mouse)"}
-                    title={isLocked ? "Desbloquear menu (permitir prévia ao passar o mouse)" : "Fixar menu (sem prévia ao passar o mouse)"}
-                  >
-                    {isLocked ? <Lock className="w-3 h-3" /> : <Unlock className="w-3 h-3" />}
+                    <ChevronLeft className="w-3.5 h-3.5" />
                   </Button>
                 </div>
               ) : (
@@ -684,7 +642,7 @@ export default function SettingsPageEnhanced() {
                   aria-label="Expandir menu"
                   title="Expandir menu"
                 >
-                  <PanelLeftOpen className="w-3 h-3" />
+                  <ChevronRight className="w-3.5 h-3.5" />
                 </Button>
               )}
             </div>

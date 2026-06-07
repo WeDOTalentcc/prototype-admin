@@ -98,13 +98,6 @@ vi.mock("@/hooks/company/useCompanyId", () => ({
   }),
 }))
 
-vi.mock("@/lib/sidebar/useHoverDebounce", () => ({
-  useHoverDebounce: () => ({
-    handleMouseEnter: vi.fn(),
-    handleMouseLeave: vi.fn(),
-  }),
-}))
-
 // Stubs leves para cada hub — assertam apenas que o switch trocou para o
 // componente certo. Nenhum hub é instanciado de verdade.
 vi.mock("@/components/settings/MinhaEmpresaHub", () => ({
@@ -517,14 +510,16 @@ describe("SettingsPageEnhanced — grupos visuais da sidebar", () => {
   })
 })
 
-// ── 6. Toggle explícito de recolher/expandir (Task #1279) ─────────────────
+// ── 6. Controle único de recolher/expandir ────────────────────────────────
 //
-// A barra agora tem um controle dedicado de "recolher para ícones" separado do
-// lock. A ESCOLHA EXPLÍCITA (toggle) é o que persiste em localStorage; o hover
-// é só uma prévia temporária. Estes testes blindam:
-//   - existência do toggle dedicado (separado do lock);
+// A barra tem UM ÚNICO controle de recolher/expandir (espelha o sidebar
+// principal). O cadeado redundante foi removido. Recolhida = trilho congelado
+// (sem prévia ao passar o mouse). A escolha explícita persiste em
+// `settings-sidebar-collapsed`. Estes testes blindam:
+//   - existência do controle único, SEM botão de cadeado;
 //   - clicar recolhe e persiste em `settings-sidebar-collapsed`;
-//   - a escolha de recolhido salva é respeitada em sessões seguintes.
+//   - a escolha de recolhido salva é respeitada em sessões seguintes;
+//   - recolhida não expande ao passar o mouse (trilho congelado).
 
 describe("SettingsPageEnhanced — toggle explícito de recolher/expandir", () => {
   beforeEach(() => {
@@ -538,12 +533,13 @@ describe("SettingsPageEnhanced — toggle explícito de recolher/expandir", () =
     } catch {}
   })
 
-  it("expõe um toggle dedicado de recolher, separado do lock", async () => {
+  it("expõe um único controle de recolher/expandir, sem botão de cadeado", async () => {
     render(<SettingsPageEnhanced />)
     await screen.findByTestId("hub-minha-empresa")
 
     expect(screen.getByTestId("settings-sidebar-collapse-toggle")).toBeInTheDocument()
-    expect(screen.getByTestId("settings-sidebar-lock-toggle")).toBeInTheDocument()
+    // O cadeado redundante foi removido — um controle só, igual ao principal.
+    expect(screen.queryByTestId("settings-sidebar-lock-toggle")).toBeNull()
   })
 
   it("clicar no toggle recolhe a barra e persiste a escolha explícita", async () => {
@@ -568,17 +564,34 @@ describe("SettingsPageEnhanced — toggle explícito de recolher/expandir", () =
   })
 
   it("respeita a escolha de recolhido salva em sessões anteriores", async () => {
-    localStorage.setItem("settings-sidebar-locked", "true")
     localStorage.setItem("settings-sidebar-collapsed", "true")
 
     render(<SettingsPageEnhanced />)
     await screen.findByTestId("hub-minha-empresa")
 
-    // Em repouso recolhida, o toggle dedicado oferece "Expandir menu".
+    // Em repouso recolhida, o controle único oferece "Expandir menu".
     await waitFor(() => {
       expect(
         screen.getByTestId("settings-sidebar-collapse-toggle").getAttribute("aria-label"),
       ).toBe("Expandir menu")
     })
+  })
+
+  it("recolhida não expande ao passar o mouse (trilho congelado)", async () => {
+    const user = userEvent.setup()
+    const { container } = render(<SettingsPageEnhanced />)
+    await screen.findByTestId("hub-minha-empresa")
+
+    await user.click(screen.getByTestId("settings-sidebar-collapse-toggle"))
+    await waitFor(() => {
+      expect(screen.queryByText("Progresso do Setup")).toBeNull()
+    })
+
+    const aside = container.querySelector("aside")
+    expect(aside).not.toBeNull()
+    await user.hover(aside!)
+
+    // Trilho congelado: hover NÃO revela o conteúdo expandido (sem peek).
+    expect(screen.queryByText("Progresso do Setup")).toBeNull()
   })
 })
