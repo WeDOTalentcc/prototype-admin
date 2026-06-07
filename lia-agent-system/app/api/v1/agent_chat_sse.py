@@ -183,6 +183,19 @@ def _strip_react_json(text: str) -> str:
     return text
 
 
+def _build_approval_frame(pending_id: str, hitl_pending: dict) -> dict:
+    """Monta o frame SSE approval_required a partir do hitl_pending drenado do
+    metadata do agente (sink hitl_pending_sink). Mesmo shape do ramo supervisor
+    (_orchestrator_result_to_frames em chat.py:947). Puro/testavel."""
+    _hp = hitl_pending or {}
+    return {
+        "type": "approval_required",
+        "pending_id": pending_id or "",
+        "description": _hp.get("message") or "",
+        "action": _hp.get("tool") or "",
+    }
+
+
 class SSEActionRequest(WeDoBaseModel):
     type: str
     pending_id: str = ""
@@ -930,6 +943,40 @@ company_id: str = Depends(require_company_id)):
                             ),
                             next_id(),
                         )
+
+                        # HITL surfacing (AUD-4 1b, 2026-06-07): se a tool
+                        # sensivel foi bloqueada pelo gate, o sink propagou
+                        # hitl_pending pro metadata -> emite frame
+                        # approval_required (mesmo shape do ramo supervisor).
+                        # Mint via HITLService (produtor canonico: durable +
+                        # audit LGPD). Fail-open: uuid se o mint falhar.
+                        _hp = (output.metadata or {}).get("hitl_pending")
+                        if _hp:
+                            try:
+                                from app.services.hitl_service import (
+                                    hitl_service as _hsvc,
+                                )
+                                _pid = await _hsvc.request_approval(
+                                    thread_id=session_id,
+                                    action=_hp.get("tool") or "sensitive_action",
+                                    description=_hp.get("message")
+                                    or "Confirme para prosseguir.",
+                                    data=_hp.get("data") or {},
+                                    ws_session_id=session_id,
+                                    domain=_hp.get("domain") or resolved_domain,
+                                    company_id=company_id or "",
+                                    user_id=user_id,
+                                )
+                            except Exception as _hpx:
+                                import uuid as _uuid
+                                logger.warning(
+                                    "[SSEChat] HITL request_approval falhou "
+                                    "(fail-open): %s", _hpx,
+                                )
+                                _pid = str(_uuid.uuid4())
+                            yield format_sse_event(
+                                _build_approval_frame(_pid, _hp), next_id()
+                            )
                     break
                 else:
                     if _sse_timing:
