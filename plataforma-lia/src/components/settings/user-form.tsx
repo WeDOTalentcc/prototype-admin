@@ -27,7 +27,6 @@ interface UserFormProps {
 }
 
 export function UserForm({ isCreating, formData, setFormData, onSave, onCancel, departments, onDepartmentCreated }: UserFormProps) {
-  // Sprint 5.5 RBAC (2026-05-25): can_view_salary checkbox gated by tenant admin role.
   // LGPD Art. 6 III minimização — only admin can grant PII access.
   const { user: authUser } = useAuth()
   const isAdmin = authUser?.role === 'admin' || authUser?.role === 'wedotalent_admin'

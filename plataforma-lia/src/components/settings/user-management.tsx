@@ -235,7 +235,6 @@ export function UserManagement({ departments: hubDepartments = [], onDepartmentC
         onEditUser={handleEditUser}
         onDeleteUser={handleDeleteUser}
         onResendInvitation={handleResendInvitation}
-        onSalaryGrantChange={fetchUsers}
       />
     </div>
   )
