@@ -10,9 +10,13 @@ Regra aplicada por par:
 - pares ÚNICOS  -> mantém o índice único / a unique constraint, dropa o gêmeo;
 - pares comuns  -> mantém o índice recriado no boot (``ensure_*``), dropa o outro.
 
-Nenhum nome abaixo é uma constraint (todos são índices puros), portanto
-``DROP INDEX IF EXISTS`` é seguro e idempotente. A unicidade de cada coluna
-permanece garantida pelo índice/constraint mantido.
+A maioria dos nomes abaixo são índices puros, mas alguns (ex.: o índice único
+que uma foreign key referencia) NÃO podem ser dropados sem quebrar a constraint
+dependente. Por isso o ``upgrade`` é resiliente: cada ``DROP INDEX`` roda em um
+subtransaction e, se o Postgres recusar por dependência
+(``dependent_objects_still_exist``), o índice é PRESERVADO e a migração segue.
+Assim os duplicados reais somem e a unicidade/integridade referencial dos que
+sustentam constraints permanece garantida. Tudo idempotente.
 
 Revision ID: 251_drop_duplicate_indexes
 Revises: 250
@@ -138,8 +142,32 @@ DUPLICATE_INDEXES = [
 
 
 def upgrade() -> None:
-    for name in DUPLICATE_INDEXES:
-        op.execute(f'DROP INDEX IF EXISTS "{name}"')
+    # Resiliente: cada DROP roda em um subtransaction (savepoint implícito do
+    # bloco plpgsql). Índices puramente duplicados são removidos; índices que
+    # uma constraint depende (ex.: o índice único referenciado por uma FK como
+    # ``fk_company_modules_credit_accounts`` -> ``ix_credit_accounts_company``)
+    # disparam ``dependent_objects_still_exist`` e são PRESERVADOS sem abortar a
+    # migração inteira.
+    names_sql = "', '".join(DUPLICATE_INDEXES)
+    op.execute(
+        f"""
+        DO $$
+        DECLARE
+            idx text;
+            names text[] := ARRAY['{names_sql}'];
+        BEGIN
+            FOREACH idx IN ARRAY names LOOP
+                BEGIN
+                    EXECUTE format('DROP INDEX IF EXISTS %I', idx);
+                EXCEPTION
+                    -- SQLSTATE 2BP01 (dependent_objects_still_exist)
+                    WHEN dependent_objects_still_exist THEN
+                        RAISE NOTICE 'Mantendo índice % (uma constraint depende dele).', idx;
+                END;
+            END LOOP;
+        END $$;
+        """
+    )
 
 
 def downgrade() -> None:
