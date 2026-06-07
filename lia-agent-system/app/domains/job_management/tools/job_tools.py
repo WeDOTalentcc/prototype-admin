@@ -408,20 +408,21 @@ async def close_job(
     # = confirmacao-teatro pos-commit (a vaga ja fechou). Dormante por flag OFF.
     from app.shared.hitl.hitl_approval_context import (
         hitl_gate_enabled,
-        is_hitl_approved,
+        hitl_preflight,
     )
     _hitl_gate = hitl_gate_enabled()
-    if _hitl_gate and not is_hitl_approved():
-        return {
-            "success": False,
-            "needs_confirmation": True,
-            "requires_user_input": True,
-            "message": "Encerrar uma vaga e uma acao sensivel. Confirme para prosseguir.",
+    _block = hitl_preflight(
+        tool="close_job",
+        domain="job_management",
+        message="Encerrar uma vaga e uma acao sensivel. Confirme para prosseguir.",
+        data={"job_id": job_id, "reason": reason},
+        extra={
             "confirmation_message": "Tem certeza que deseja encerrar esta vaga?",
             "action_taken": "close_job",
-            "hitl": {"tool": "close_job", "domain": "job_management"},
-            "data": {"job_id": job_id, "reason": reason},
-        }
+        },
+    )
+    if _block is not None:
+        return _block
 
     logger.info(f"🔒 Closing job vacancy: {job_id}, reason: {reason} (company: {company_id})")
 

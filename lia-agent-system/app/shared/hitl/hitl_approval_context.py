@@ -46,3 +46,39 @@ def reset_hitl_approved(token: Token) -> None:
         _hitl_approved.reset(token)
     except (ValueError, LookupError):
         pass
+
+
+def hitl_preflight(
+    *,
+    tool: str,
+    domain: str = "",
+    message: str = "",
+    data: dict | None = None,
+    extra: dict | None = None,
+) -> dict | None:
+    """Pre-flight HITL para o PRODUTOR (tools sensiveis que NAO passam pelo
+    chokepoint @tool_handler — ex. close_job/send_email/reject_candidate).
+
+    Retorna o dict needs_confirmation se a acao deve ser BLOQUEADA (gate ON E
+    nao aprovado), senao None (a tool segue normal). Usar no TOPO da tool, ANTES
+    de qualquer side-effect (padrao OfferService.check_can_send). Dormante com
+    LIA_HITL_GATE off -> zero regressao. O frame approval_required e o replay
+    sao tratados pelo transporte (sink + _detect_hitl_approval no SSE).
+    """
+    if not hitl_gate_enabled() or is_hitl_approved():
+        return None
+    out: dict = {
+        "success": False,
+        "needs_confirmation": True,
+        "requires_user_input": True,
+        "message": message
+        or (
+            "Esta acao precisa da sua confirmacao antes de ser executada. "
+            "Confirme para prosseguir."
+        ),
+        "hitl": {"tool": tool, "domain": domain},
+        "data": data or {},
+    }
+    if extra:
+        out.update(extra)
+    return out
