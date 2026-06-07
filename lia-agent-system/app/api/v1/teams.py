@@ -1331,7 +1331,7 @@ def _build_teams_manifest() -> dict:
             "termsOfUseUrl": f"{platform_url}/terms",
         },
         "icons": {"color": "wedo-color.png", "outline": "wedo-outline.png"},
-        "name": {"short": "WeDO", "full": "WeDOTalent — Recrutamento Inteligente"},
+        "name": {"short": "WeDOTalent", "full": "WeDOTalent - Recrutamento Inteligente"},
         "description": {
             "short": "Plataforma de recrutamento com IA",
             "full": "WeDOTalent conecta recrutadores à LIA, a assistente de IA para busca de candidatos, triagem, agendamento e relatórios — direto no Teams.",
