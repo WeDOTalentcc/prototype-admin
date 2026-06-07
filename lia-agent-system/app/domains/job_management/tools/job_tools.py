@@ -401,6 +401,28 @@ async def close_job(
     """
     company_id = require_company_id_from_context(kwargs, "close_job")
 
+    # HITL pre-flight (AUD-4, 2026-06-06): close_job NAO usa @tool_handler, entao
+    # o gate compartilhado nao o cobre - o bloqueio vem AQUI, no produtor, ANTES
+    # de qualquer mutacao/commit (padrao OfferService.check_can_send). Sem isto o
+    # codigo commitava (status=fechada) e SO DEPOIS devolvia requires_confirmation
+    # = confirmacao-teatro pos-commit (a vaga ja fechou). Dormante por flag OFF.
+    from app.shared.hitl.hitl_approval_context import (
+        hitl_gate_enabled,
+        is_hitl_approved,
+    )
+    _hitl_gate = hitl_gate_enabled()
+    if _hitl_gate and not is_hitl_approved():
+        return {
+            "success": False,
+            "needs_confirmation": True,
+            "requires_user_input": True,
+            "message": "Encerrar uma vaga e uma acao sensivel. Confirme para prosseguir.",
+            "confirmation_message": "Tem certeza que deseja encerrar esta vaga?",
+            "action_taken": "close_job",
+            "hitl": {"tool": "close_job", "domain": "job_management"},
+            "data": {"job_id": job_id, "reason": reason},
+        }
+
     logger.info(f"🔒 Closing job vacancy: {job_id}, reason: {reason} (company: {company_id})")
 
     reason_messages = {
@@ -469,7 +491,7 @@ async def close_job(
                 
                 return {
                     "success": True,
-                    "requires_confirmation": True,
+                    "requires_confirmation": not _hitl_gate,
                     "confirmation_message": f"⚠️ Tem certeza que deseja encerrar a vaga '{job_title}'? {'Os candidatos em processo serão notificados.' if notify_candidates else ''}",
                     "message": f"🔒 Vaga '{job_title}' foi {reason_display}.",
                     "action_taken": "close_job",
@@ -494,7 +516,7 @@ async def close_job(
                 
                 return {
                     "success": True,
-                    "requires_confirmation": True,
+                    "requires_confirmation": not _hitl_gate,
                     "confirmation_message": "⚠️ Tem certeza que deseja encerrar esta vaga?",
                     "message": f"🔒 Vaga foi {reason_display}.",
                     "action_taken": "close_job",

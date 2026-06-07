@@ -109,8 +109,11 @@ def tool_handler(domain: str, *, require_company: bool = True, module: Optional[
             # Chokepoint compartilhado -> cobre federado E supervisor. Sem
             # aprovacao -> retorna needs_confirmation, a mutacao NAO roda.
             if requires_confirmation:
-                from app.shared.hitl.hitl_approval_context import is_hitl_approved
-                if not is_hitl_approved():
+                from app.shared.hitl.hitl_approval_context import (
+                    hitl_gate_enabled,
+                    is_hitl_approved,
+                )
+                if hitl_gate_enabled() and not is_hitl_approved():
                     logger.info(
                         "[%s] HITL gate: %s requer confirmacao do usuario (bloqueado, sem aprovacao)",
                         domain, func.__name__,

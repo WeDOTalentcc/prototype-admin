@@ -2,15 +2,33 @@
 
 Sinal de aprovacao SERVER-SIDE para o gate de @tool_handler. Setado pelo
 transporte (SSE/WS) APENAS quando o USUARIO humano confirma uma acao pendente
-— NUNCA pela LLM (que nao tem acesso a esta ContextVar). Per-turno, herdado
+- NUNCA pela LLM (que nao tem acesso a esta ContextVar). Per-turno, herdado
 pelas tasks via copy_context (asyncio.create_task), entao cobre as duas trilhas
 (federado e supervisor).
+
+Flag de ativacao (LIA_HITL_GATE): o gate so ENFORCA quando a flag esta ligada.
+Default OFF (dormante) - permite marcar tools sensiveis (1c) e fazer o pre-flight
+do close_job SEM regressao enquanto o loop de aprovacao nao esta wired ponta-a-
+ponta (incl. botao de aprovar no FE). Paulo liga via Secret apos a validacao.
 """
 from __future__ import annotations
 
+import os
 from contextvars import ContextVar, Token
 
 _hitl_approved: ContextVar[bool] = ContextVar("_hitl_approved", default=False)
+
+_GATE_TRUTHY = frozenset({"1", "true", "on", "yes"})
+
+
+def hitl_gate_enabled() -> bool:
+    """True se o gate HITL deve ENFORCAR (Secret LIA_HITL_GATE ligado).
+
+    Default OFF: marcar tools requires_confirmation e o pre-flight do close_job
+    ficam dormentes -> zero regressao ate o loop de aprovacao estar completo.
+    Lido por-chamada (Secrets exigem restart de qualquer forma) p/ testabilidade.
+    """
+    return os.environ.get("LIA_HITL_GATE", "").strip().lower() in _GATE_TRUTHY
 
 
 def set_hitl_approved(value: bool = True) -> Token:
