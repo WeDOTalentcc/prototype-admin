@@ -30,6 +30,8 @@ class ToolDefinition:
     # Auto-populated by ToolRegistry.register() via TOOL_TO_CATEGORY map.
     # Default OTHER → sensor J flags any new tool that hasn't been mapped.
     category: str = "OTHER"
+    # HITL (AUD-4, 2026-06-06): tool sensivel exige aprovacao humana pre-flight.
+    requires_confirmation: bool = False
     
     def to_claude_schema(self) -> dict[str, Any]:
         """Convert to Claude's tool format."""
