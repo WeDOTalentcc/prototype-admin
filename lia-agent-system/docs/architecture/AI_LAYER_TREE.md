@@ -853,49 +853,84 @@ opt-in `LIA_RECRUITER_CHAT_MASK_PII` re-enables name masking for the recruiter U
 
 ---
 
-## 8.3 BYOK coverage map (and where embeddings are NOT covered)
+## 8.3 Embeddings: which feature embeds what, with which provider, and is it BYOK?
 
 Per-tenant LLM config (BYOK) lives in the `tenant_llm_configs` table, resolved by
 `app/shared/tenant_llm_context.py` (`get_tenant_llm_config`, in-memory
-`_tenant_configs` cache, keyed off the `_current_company_id` ContextVar). The
-config carries `primary_provider`, `fallback_order`, and per-provider
-`{api_key, model, region}` for gemini / claude / openai.
+`_tenant_configs` cache, keyed off the `_current_company_id` ContextVar). That
+config drives **chat / completion** calls (Gemini / Claude / OpenAI), which DO
+honor BYOK. **Embeddings are a separate path** and are the subject of this
+section, because in practice they behave very differently from chat.
 
-```
-SURFACE                       RESOLVER                                  BYOK?   KEY USED
--------                       --------                                  -----   --------
-chat / completion
-  Gemini    get_gemini_client_for_tenant (tenant_llm_context.py)       YES     tenant key, else AI_INTEGRATIONS_GEMINI_API_KEY
-  Claude    get_claude_model_for_tenant (tenant_llm_context.py)        YES     tenant key, else platform
-  OpenAI    tenant_llm_configs.providers.openai                        YES     tenant key, else platform
+### How an embedding call resolves its provider and key
 
-embeddings
-  Gemini    embedding_factory._get_tenant_provider                     YES     tenant key (ONLY provider with a tenant branch)
-  OpenAI    embedding_factory (no tenant branch)                       NO      platform OPENAI key (mandatory)
-  routing   vector_semantic_cache.embed_with_fallback(text)            NO      called WITHOUT company_id; primary = platform
-            (semantic router / routing_cache_vectors)                          OpenAI text-embedding-3-small (1536 dims)
-```
+Three independent things decide what any embedding call does:
 
-🔴 **FIX — Where embeddings are NOT covered by BYOK (and why it is mandatory):**
+1. **Default provider + fallback.** `EMBEDDING_DEFAULT_PROVIDER` (code default
+   `gemini`) picks the first provider; `EMBEDDING_FALLBACK_ORDER = ["gemini",
+   "openai"]` is tried if the first fails. The design note in
+   `app/shared/providers/embedding_openai.py` intends OpenAI
+   `text-embedding-3-small` as the primary for the routing cache and RAG, so a
+   deployment can set `EMBEDDING_DEFAULT_PROVIDER=openai`.
+2. **Which entry function the caller uses** (this is what controls BYOK
+   eligibility, in `app/shared/providers/embedding_factory.py` and
+   `app/shared/intelligence/embedding_service.py`):
+   * `EmbeddingProviderFactory.embed_with_fallback(text, preferred_provider, company_id)`:
+     accepts `company_id` and has fallback. BYOK-eligible ONLY if the caller
+     actually passes `company_id`.
+   * `EmbeddingProviderFactory.get_default()`: no `company_id`, no fallback.
+     Never BYOK.
+   * `EmbeddingService.generate_embedding(text, provider=None, *, mask_names=False)`:
+     has fallback and optional PII name masking, but **no `company_id` parameter
+     at all**. Never BYOK.
+3. **The tenant-key branch.** `EmbeddingProviderFactory._get_tenant_provider`
+   swaps in a tenant key ONLY when the provider is `gemini` AND `company_id` is
+   passed AND the tenant has a Gemini key configured. The OpenAI provider always
+   uses the platform key (`AI_INTEGRATIONS_OPENAI_API_KEY` or `OPENAI_API_KEY`).
 
-1. **OpenAI embeddings.** `EmbeddingProviderFactory._get_tenant_provider` only
-   has a tenant-key branch for `provider_name == "gemini"`. Any OpenAI embedding
-   (primary for RAG/routing) falls through to the platform `OPENAI_API_KEY`.
-2. **Semantic routing cache.** `app/orchestrator/memory/vector_semantic_cache.py`
-   calls `EmbeddingProviderFactory.embed_with_fallback(text)` with no
-   `company_id`, so even the Gemini path cannot resolve a tenant key there. Its
-   primary model is the platform OpenAI `text-embedding-3-small`.
-3. **RAG / semantic-search default fallback.** `EMBEDDING_DEFAULT_PROVIDER`
-   defaults to `gemini` with `EMBEDDING_FALLBACK_ORDER = ["gemini", "openai"]`;
-   when it falls back to OpenAI it uses the platform key.
+### Feature map (every call site that actually generates embeddings)
 
-**Why mandatory:** the routing/semantic vectors are stored in a *shared* table
-with fixed dimensions (1536 for OpenAI `text-embedding-3-small`, 768 for Gemini
-`text-embedding-004`). Letting each tenant swap embedding provider/model would
-mix vector dimensions in the same cache and corrupt similarity lookups, so a
-single platform embedding key is enforced for the routing layer regardless of
-BYOK. Chat/completion calls (Gemini/Claude/OpenAI) strictly honor BYOK; only the
-embedding/routing layer is platform-pinned.
+| Product feature | File :: entry function | Provider (resolved) | Dims | company_id passed? | BYOK |
+|---|---|---|---|---|---|
+| **Chat router semantic cache** (CascadedRouter Tier 3; caches intent routing in table `routing_cache_vectors`) | `orchestrator/memory/vector_semantic_cache.py` :: `_generate_embedding` -> `embed_with_fallback(text)` | default + fallback (design: OpenAI primary) | 768 (see note) | No | **No** |
+| **RAG hybrid search** (BM25 + pgvector; the SQL queries are tenant-scoped, the embedding call is not) | `domains/ai/services/rag_pipeline_service.py` :: `generate_embedding` -> `embed_with_fallback(text)` | default + fallback | 768 | No | **No** |
+| **In-memory RAG ranking** (RRF over a loaded doc set) | `shared/rag/hybrid_search.py` :: `_semantic_search` -> `get_default()` | default only | 768 | No | **No** |
+| **JD similarity** ("similar past jobs" suggested in the job-creation wizard) | `domains/job_creation/services/jd_similar_service.py` :: `find_similar` / `record_jd` -> `EmbeddingService.generate_embedding(text)` | default + fallback | 1536 required (see note) | No | **No** |
+| **Rejected-candidate re-discovery** (CV screening Gate 2) | `domains/cv_screening/tools/candidate_tools.py` :: `_generate_rediscovery_embedding` -> `JobEmbeddingService.create_or_update_job_embedding` -> `generate_job_embedding` -> `embedding_service.generate_embedding(text)` | default + fallback | 768 | No (`company_id` only scopes the stored row, not the embedding key) | **No** |
+| **Recruiter assistant memory + company knowledge base** | `domains/recruiter_assistant/services/memory_service.py` :: `store_message` / `add_to_knowledge_base` / `search` -> `embedding_service.generate_embedding(text, mask_names=True)` | default + fallback (PII names masked) | 768 | No | **No** |
+| **Skills ontology proximity** (Talent Intelligence skills matching) | `domains/talent_intelligence/services/skills_ontology_engine.py` :: `_load_embeddings` -> `get_default()` | default only | 768 | No | **No** |
+| **Voice screening + interview transcription** | (none) | n/a | n/a | n/a | **No embeddings**: STT/TTS only, via Gemini Live Audio and Deepgram (Whisper/TTS as PSTN fallback) |
+
+Provider / model reference: Gemini `text-embedding-004` (768 dims); OpenAI
+`text-embedding-3-small` (768 dims by default to match the shared `Vector(768)`
+columns, 1536 dims only when a caller explicitly instantiates the provider with
+`output_dimensions=1536`). **Note on the routing cache:** its module comments
+mention 1536 as OpenAI's native size, but it resolves the OpenAI provider through
+the factory default and never overrides `output_dimensions`, so it actually
+stores 768-dim vectors for both providers.
+
+**Note on JD similarity:** its table `jd_similar_history` is `Vector(1536)` and
+the service rejects any vector whose length is not 1536 (Gemini 768 is explicitly
+unsupported), failing open. Because the shared `EmbeddingService` defaults to 768
+via the same factory, this feature only returns matches when the embedding
+actually comes back at 1536 (OpenAI `text-embedding-3-small` native size); on any
+other length it fails open and returns no suggestions.
+
+🔴 **The real state today: embeddings run on the platform key, never the tenant
+key.** None of the production call sites above pass `company_id`, and
+`EmbeddingService.generate_embedding` (the path most features use) cannot accept
+one. The Gemini tenant-key branch in `_get_tenant_provider` is therefore never
+reached from these features, so **every embedding uses a platform key regardless
+of provider**. Tenant isolation on these surfaces comes from the SQL / pgvector
+queries being scoped by `company_id`, not from the embedding key. Chat /
+completion still honors BYOK; only the embedding layer is platform-pinned.
+
+**Why the routing cache must stay platform-pinned anyway:** its vectors live in a
+*shared* table at one fixed dimension (768 via the factory default, for either
+provider). Letting tenants swap embedding provider or model would risk mixing
+vector dimensions in one cache and corrupt similarity lookups, so a single
+platform embedding key is required there even if BYOK threading were added to the
+other features.
 
 ---
 
@@ -1277,3 +1312,216 @@ blockers; they are the cleanup backlog behind the §14 diagnosis.
 | 8 | 🟡 | Two different "16"s (routable agents vs `@register_domain` domains) confuse readers | §10.1, §14.2 | doc-level + `app/domains/DOMAIN_CATALOG.md` |
 | 9 | 🔵 | Agent Studio: move advanced filter logic from the service layer into `CustomAgentRepository` | §13 | `app/domains/agent_studio/` |
 | 10 | 🔵 | `workforce` is a stub with `agents/` + a dynamic string path; handle separately from the pure stubs | §15.4 | `app/domains/workforce/`, `app/shared/tool_catalog.py` |
+
+---
+
+## 17. Microsoft Teams + Microsoft Graph integration
+
+LIA ships as a **Microsoft Teams app** (conversational bot + Adaptive Card actions
++ proactive notifications) backed by a **Microsoft Graph** integration for
+calendar, Teams online meetings, and meeting transcripts. There are two distinct
+trust boundaries: **inbound** (Bot Framework, Teams calling us) and **outbound**
+(Graph API, us calling Microsoft 365). Most Teams files live in
+`app/domains/communication/services/`; the Graph layer lives in
+`app/domains/integrations_hub/services/`.
+
+> The bot reuses the *same* orchestrator and the same 16 ReActAgents as web chat.
+> Teams is a channel, not a separate brain. Text typed in Teams flows through the
+> normal chat pipeline (so the embedding / BYOK story is exactly §8.3; nothing
+> Teams-specific embeds).
+
+### 17.1 Capabilities (what the Teams app can actually do)
+
+| Capability | How |
+|---|---|
+| Conversational recruiting | Recruiter chats with LIA inside Teams; routed through the orchestrator. Slash commands `/buscar`, `/triagem`, `/relatorio` are rewritten to natural-language prompts. |
+| Multimodal input | CV attachments parsed, images via Gemini Vision, voice notes via STT (`teams_orchestrator_bridge.py`). |
+| Adaptive Card actions | **Approve / Reject / Schedule** a candidate straight from a card; the action runs server-side (Approve can kick off WhatsApp WSI screening via `_start_whatsapp_screening`). |
+| Proactive nudges | New top candidate, screening complete, daily digest, SLA alerts (`teams_proactivity_engine.py` + `/proactive/*` endpoints). Feeds from the alert system in §18. |
+| Interview scheduling | Create a Teams online meeting + Outlook calendar event, cancel/reschedule (`/calendar/schedule`, `/calendar/cancel`). |
+| Meeting intelligence | Fetch transcripts (VTT) and recordings from Graph for interview analysis (`teams_recording_service.py`). |
+| Smart routing to web | Intents that need the web UI (e.g. "criar vaga") return a deep link to the platform (`WEDOTALENT_PLATFORM_URL`). |
+| SSO linking | `/auth/sso-page` + `/auth/callback` link the Teams user to a company/tenant. |
+
+### 17.2 File map
+
+| Layer | File | Role |
+|---|---|---|
+| Bot (NL) | `communication/services/teams_simple.py` | Core LIA bot: slash-command parsing, message handling. |
+| Bot (SDK) | `communication/services/teams_bot.py` | `botbuilder` adapter; proactive messaging, conversation updates. |
+| Bot bridge | `communication/services/teams_orchestrator_bridge.py` | Connects Teams activities to the orchestrator; CV / Gemini Vision / STT. |
+| Cards | `communication/services/teams_card_renderer.py` | Agent responses -> Adaptive Cards (screening results, candidate lists, plans). |
+| Channel webhooks | `communication/services/teams_service.py` | Incoming-webhook posts to specific channels (alerts/notifications). |
+| Proactivity | `communication/services/teams_proactivity_engine.py` | Periodic digest / stalled-pipeline checks. |
+| Calendar (high-level) | `communication/services/teams_calendar_service.py` | Scheduling UX, `render_schedule_card` (date/time pickers). |
+| Recordings | `communication/services/teams_recording_service.py` | Transcripts (VTT) + recordings from Graph. |
+| Graph service | `integrations_hub/services/microsoft_graph_service.py` | `create_teams_meeting_with_calendar_event`, `create_standalone_teams_meeting`, `get/update/cancel_calendar_event`, `get_delegated_access_token_for_company`, `check_calendar_permission`. |
+| Graph client | `integrations_hub/services/graph_client.py` | Low-level MSAL + `httpx` client. |
+| Dual-provider scheduling | `interview_scheduling/services/calendar_service.py` | Picks Google vs Microsoft; interviewer availability. |
+| Bot auth | `communication/services/teams_auth.py` | Validates Bot Framework JWTs via Microsoft OpenID / JWKS. |
+| API | `app/api/v1/teams.py` | All `/api/v1/teams/*` routes (see §17.3). |
+| Models | `libs/models/lia_models/teams.py` | See §17.6. |
+
+### 17.3 Endpoints (`app/api/v1/teams.py`, prefix `/api/v1/teams`)
+
+- `POST /webhook` - Adaptive Card actions (Approve / Reject / Schedule), HMAC-verified.
+- `GET  /webhook/audit-logs` - read the action audit trail.
+- `POST /messages` - inbound bot activities (messages / events / invokes).
+- `POST /send-notification`, `POST /proactive/check`, `POST /proactive/new-candidate`, `POST /proactive/screening-complete`, `POST /proactive/daily-digest` - proactive pushes.
+- `POST /feedback` - card feedback capture.
+- `GET  /auth/sso-page`, `GET /auth/callback` - SSO tenant linking.
+- `POST /calendar/schedule`, `POST /calendar/cancel` - interview meetings.
+- `GET  /health` - per-company Teams health.
+
+### 17.4 Microsoft Graph layer (outbound)
+
+`graph_client.py` authenticates with **MSAL** and issues `httpx` calls.
+`microsoft_graph_service.py` exposes the business operations: it creates Teams
+online meetings together with the Outlook calendar event, reads/updates/cancels
+events, and checks calendar permission. Transcripts and recordings are pulled
+from `/communications/onlineMeetings/{id}/transcripts` by
+`teams_recording_service.py` (Teams transcription is included, no extra STT cost).
+
+### 17.5 Auth & trust boundaries
+
+- **Inbound (Teams -> LIA).** Bot messages: Bot Framework JWT validated against
+  Microsoft's OpenID config + JWKS in `teams_auth.py`. Adaptive-card webhook
+  (`POST /webhook`): after JSON parse, `verify_webhook_owner` cross-checks the
+  `X-Company-ID` header / `payload.company_id` against the JWT-resolved tenant
+  AND the candidate/vacancy ownership, then validates the `X-Teams-Signature`
+  HMAC-SHA256 against the per-tenant secret (global `TEAMS_WEBHOOK_SECRET` as
+  fallback). If `TEAMS_WEBHOOK_SECRET` is unset, the endpoint allows all requests
+  (development mode). The legacy global-secret `_verify_teams_webhook_signature`
+  was removed from this path.
+- **Outbound (LIA -> Graph).** MSAL tokens. **Application** permissions for
+  tenant-wide reads (recordings/transcripts). **Delegated** permissions via
+  `get_delegated_access_token_for_company`, which uses a stored per-company
+  refresh token to act on behalf of the recruiter (e.g. `Calendars.ReadWrite`).
+
+### 17.6 Data models (`libs/models/lia_models/teams.py`)
+
+| Model | Table | Purpose |
+|---|---|---|
+| `TeamsConversation` | `teams_conversations` | Maps a Teams user/conversation to a company/tenant; holds the conversation reference used for proactive messaging. |
+| `TeamsMessage` | `teams_messages` | Log of every incoming/outgoing activity. |
+| `TeamsNotification` | `teams_notifications` | Scheduled/sent notifications with the Adaptive Card payload, status, retries, and related job/candidate. |
+| `TeamsActionAuditLog` | `teams_action_audit_logs` | Strict audit trail for card actions (approve/reject/schedule), with actor, result, candidate/vacancy/company. |
+
+> `TeamsConversation` and `TeamsActionAuditLog` are explicitly `TENANT-EXEMPT`
+> (RLS-enforced / cross-tenant admin audit). `company_id` is `String`, nullable
+> for legacy rows pre-migration 097.
+
+### 17.7 Config (env vars)
+
+`AZURE_CLIENT_ID`, `AZURE_CLIENT_SECRET`, `AZURE_TENANT_ID` (Graph credentials);
+`MICROSOFT_APP_ID`, `MICROSOFT_APP_PASSWORD` (Bot Framework);
+`TEAMS_WEBHOOK_SECRET` (card-webhook HMAC, global fallback), `TEAMS_WEBHOOK_URL`
+(default alert channel); `WEDOTALENT_PLATFORM_URL` (deep links back to the web
+UI).
+
+---
+
+## 18. Proactive alerts & monitoring
+
+A cross-tenant background system that nudges recruiters when the pipeline needs
+attention. **The detectors are deterministic SQL heuristics, not LLM output;**
+the LLM only composes the human-readable nudge text when an alert surfaces in
+chat. Config has a single source of truth (the `alert_preferences` table); see
+the canonical contract `Alertas proativos - fonte-unica-da-verdade (T-1295)` in
+`replit.md` and `docs/runbooks/alert-config-single-source.md`.
+
+- **Generation.** `MonitoringLoop` (`recruiter_assistant/services/monitoring_loop.py`)
+  runs periodically and piggybacks on `ProactiveDetectorService`
+  (`shared/services/proactive_detector_service.py`, 15+ detectors).
+  `ProactiveAlertService` (`automation/services/proactive_alert_service.py`) is a
+  separate pipeline (notifications / automation), not driven by `MonitoringLoop`.
+  Alert types: `STALE_CANDIDATE`, `SLA_BREACH`, `SLA_APPROACHING`,
+  `FUNNEL_BOTTLENECK`, `NO_CANDIDATES` (the `_check_stale_candidates` /
+  `_check_sla_risks` / `_check_funnel_bottlenecks` checks).
+- **Config resolver.** `resolve_alert_config`
+  (`shared/services/alert_config_resolver.py`) reads `AlertPreference`
+  (`libs/models/lia_models/alert.py`: enable / threshold / cooldown / per-channel
+  toggles), fail-loud with a `source` of tenant / default / error. The detector
+  honors enable/threshold/channels per rule (no hardcoded constants).
+- **Channels.** `bell`, `chat`, `email`, `teams`, `whatsapp`, carried on
+  `ProactiveAlert.channels` (Teams digests route through §17).
+- **Surfacing in the UI.** Chat cards (proactive hints via the shared
+  `useProactiveHints` SWR), the bell, and the daily briefing.
+- **Frontend.** `components/settings/AlertPreferencesPanel.tsx`,
+  `hooks/settings/use-alert-preferences.ts`, `hooks/ai/use-proactive-alerts.ts`.
+
+---
+
+## 19. Learning loops & adaptive intelligence
+
+LIA has three tiers of "learning". Only the second and third are genuine
+feedback loops; the first is similarity retrieval. All three are gated per tenant
+by `load_learning_loops_toggles`
+(`shared/services/learning_loops_toggles.py`), which reads
+`CompanyHiringPolicy.automation_rules.learning_loops` (master `enabled` plus
+`jd_similar_suggestion`, `bigfive_department_history`,
+`wsi_question_effectiveness`). The feedback-driven loop (tier 2) runs
+`FairnessGuard` batch validation before patterns are persisted; Big Five learning
+emits a non-blocking fairness warning rather than a hard gate.
+
+1. **Similarity retrieval (not learning).** `JdSimilarService`
+   (`job_creation/services/jd_similar_service.py`): `find_similar` /
+   `record_jd` / `mark_filled` suggest "similar past jobs" in the wizard and
+   record outcomes (time-to-fill, candidate count). It stores 1536-dim vectors
+   (`jd_similar_history` is `Vector(1536)`) and rejects any other length, failing
+   open (Gemini 768 is explicitly unsupported); see §8.3 for the provider nuance.
+   No BYOK. Brazilian PII is redacted before embedding.
+2. **Feedback-driven learning.** `LearningLoopService`
+   (`shared/learning/learning_loop_service.py`): `capture_feedback` records
+   whether an AI suggestion was accepted / modified / rejected,
+   `process_unprocessed_feedback` aggregates those into `LearnedPattern`s, and
+   `get_patterns_for_context` biases future LLM suggestions toward what the
+   recruiter previously preferred. (Files indexed in §11.1.)
+3. **Outcome-driven profile learning.** Big Five department history (§19.1),
+   plus `confidence_policy_service` (auto-approve thresholds that tighten/loosen
+   with history) and `model_drift_service` (flags AI degradation when negative
+   feedback rises).
+
+### 19.1 Big Five / personality (job creation AND screening)
+
+Personality is used on both sides of the funnel, and the department-history
+portion is a real learning loop.
+
+- **Target profile (job creation).** `BigFiveDepartmentService.get_blend_weights`
+  (`job_creation/services/bigfive_service.py`) computes a hybrid OCEAN target
+  from four layers: LLM extraction `0.40` + O*NET prior `0.20` + Company Culture
+  `0.15` (only approved / human-authored culture feeds the blend) + Department
+  History `0.25` (the learning loop). It falls back to a 3-layer blend when there
+  is no department history. The result weights WSI `rank_traits` for the vacancy.
+- **Scoring (screening).** In WSI (`cv_screening/services/wsi_service/`),
+  behavioral questions map to OCEAN traits (`big_five_mapping`) and
+  `WSIScoreCalculator` aggregates the candidate's OCEAN profile.
+- **Loop closure.** On hire, `record_hire` feeds the candidate's Big Five
+  snapshot back into the department aggregate (marked stale for recompute), so
+  future vacancies in that department lean toward the profile of successful
+  hires. Recruiters see a notice when `bigfive_department_history` is active.
+
+---
+
+## 20. Chat-first navigation
+
+Navigation is mostly a frontend concern, so it is light here. The whole path is
+deterministic, with no LLM: intent detection (`navigation_intent.py` uses
+keyword/pattern matching) and PT-BR confirmation classification
+(`confirmation_classifier.py` regex) are both rule-based, and routing itself is
+deterministic. The pattern: LIA suggests a page, the recruiter confirms in
+natural Portuguese, and only then does the route change. See the
+canonical contract `Roteamento context-aware (T-1165)` in `replit.md` and
+`ARCHITECTURE.md` §6.6.
+
+- **Backend.** Intent endpoint `app/api/v1/navigation_intent.py` +
+  `app/orchestrator/context/navigation_intent.py`;
+  `confirmation_classifier.classify_confirmation`
+  (`app/orchestrator/routing/confirmation_classifier.py`) decides whether a PT-BR
+  reply (e.g. "pode ser", "bora", "agora não") is a yes or no.
+- **Frontend.** `useNavigationIntent`
+  (`hooks/shared/use-navigation-intent.ts`, confidence `> 0.65` -> `mode: "ask"`,
+  `CHAT_FIRST_TARGET_PAGES`); the `lia:navigation-hint` CustomEvent;
+  `DashboardApp` renders a `NavigationHintCard` instead of force-redirecting;
+  `useWizardFlow.ts` dispatches the hint on `SPLIT_STAGE`; `lib/navigation/routes.ts`
+  (`PAGE_ROUTES`) and `sidebar.tsx` (`navigateOnClick`).
