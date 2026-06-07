@@ -9,6 +9,10 @@ import { createProxyHandlers } from "@/lib/api/proxy-handler"
 const list = createProxyHandlers({ backendPath: "/api/v1/talent_pools/:id/candidates", methods: ["GET"] })
 const add = createProxyHandlers({ backendPath: "/api/v1/talent_pools/:id/add_candidates", methods: ["POST"] })
 
-export const dynamic = list.dynamic
+// Next.js exige string literal estática neste export (não pode ser
+// member-expression como `list.dynamic`, que quebra o build com
+// "Unsupported node type MemberExpression at dynamic"). O valor é o mesmo
+// que createProxyHandlers usa internamente.
+export const dynamic = "force-dynamic"
 export const GET = list.GET
 export const POST = add.POST
