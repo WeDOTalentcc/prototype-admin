@@ -20,7 +20,7 @@ Revises: 251
 Create Date: 2026-06-07
 """
 revision = "252"
-down_revision = "251"
+down_revision = "251_drop_duplicate_indexes"
 branch_labels = None
 depends_on = None
 
