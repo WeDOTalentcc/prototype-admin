@@ -448,8 +448,12 @@ These wrap **every** agent execution regardless of domain:
   output before tool execution.
 
 - **PII protection** — `install_global_pii_masking()` masks CPF/email/phone/name
-  in all logs; `llm_bootstrap` strips PII from prompts before SDK calls
-  (regex-based by default; Presidio name-masking is opt-in).
+  in all logs; `llm_bootstrap` strips PII from prompts before SDK calls. Both the
+  regex layers (CPF/email/phone/RG/CNPJ + quasi-identifiers) and the Presidio NER
+  layer for names (PERSON/NRP) are ON by default
+  (`LLM_PROMPT_PII_STRIPPING_ENABLED=true`, `LLM_PROMPT_PRESIDIO_ENABLED=true`).
+  The full data-flow map and the residual name-leak gap (recruiter chat runs
+  `mask_names=False`) are in §8.2.
 
 - **HITL gates** — `app/shared/hitl/agent_gate.py` +
   `app/shared/hitl_decorator.py`; the job-creation wizard uses LangGraph
@@ -471,6 +475,139 @@ These wrap **every** agent execution regardless of domain:
   primitive with `check_credit_budget`, reading `company_id` from the same
   ContextVar; defense-in-depth gates also live in the orchestrator and agentic
   loop.
+
+---
+
+## 8.1 Cross-cutting control coverage matrix
+
+The §8 bullets describe each control in prose. This matrix answers the practical
+question: *which controls touch ALL domains/agents vs. only some, how are they
+enforced, and where are the gaps?* "Scope" = how broadly the control fires.
+Status uses `OK` (covers its intended surface), `PARTIAL` (covered only on a
+subset that should arguably be wider), `GAP` (a known hole, by design or debt).
+
+| Control | Seam (file) | Scope | Enforcement | Status / gap |
+|---|---|---|---|---|
+| Tenant isolation | `shared/agents/tenant_aware_agent.py` + `_current_company_id` ContextVar | ALL 16 ReActAgents + every non-ReAct callsite | `TenantAwareAgentMixin`; `resolve_tenant_snippet_for_non_react` is the only non-ReAct seam; `LIA_AGENT_TENANT_STRICT` fail-closed in prod | OK |
+| Compliance domain prompt | `domains/compliance_base.py` (`ComplianceDomainPrompt`) | ALL `@register_domain` domains | enforced at registration; escape `LIA_ALLOW_NON_COMPLIANT_DOMAINS` (emergency) | OK |
+| FairnessGuard | `shared/compliance/fairness_guard.py` (+ recursive + middleware) | scoring / hiring-policy / screening writes | invoked in scoring + `save_*` tools | OK (selective by design: only fairness-relevant decisions) |
+| FactChecker | `shared/compliance/fact_checker.py` + `shared/rag/realtime_fact_checker.py` | LLM output before it reaches the user | C3b post-step + RAG path | OK |
+| BiasAuditService | `domains/interview_intelligence/services/bias_detector_service.py` | interview / offer decisions | service-level call | OK (domain-scoped) |
+| Prompt-injection guard | `shared/compliance/prompt_injection_guard.py` (+ `shared/prompt_injection.py`) | recruiter/candidate text + LLM output | pre-tool screen | OK |
+| Hate-speech guard | `shared/compliance/hate_speech_guard.py` | generated output | C3b step | OK |
+| PII strip to LLM | `shared/pii_masking.py::strip_pii_for_llm_prompt` + `shared/llm_bootstrap.py` monkey-patch | ALL SDK calls (single chokepoint) | bootstrap wraps `.create`/`.stream`; ON by default | PARTIAL: recruiter chat + some recruiter-facing tools run `mask_names=False`, so candidate NAMES still reach the LLM (see §8.2) |
+| PII masking in logs | `shared/pii_masking.py::install_global_pii_masking` (`PIIMaskingFilter`) | root logger + all handlers + stack traces | installed at boot | OK |
+| HITL gates | `shared/hitl/agent_gate.py` + wizard `interrupt()` | wizard 4 gates + explicitly gated tools | LangGraph interrupt | OK (selective by design) |
+| Audit logging | `shared/compliance/audit_service.py` (+ writer/storage/decorators) | mutative public service methods | mandatory + ratchet sentinel in `interview_scheduling`/`interview_intelligence`/`offer` + `company`; SOX 7-year on offer | PARTIAL: strictly enforced only on those domains; others are best-effort |
+| Credit gating | `shared/llm_bootstrap.py::check_credit_budget` | ALL SDK message-creation primitives | bootstrap + orchestrator + agentic-loop (defense-in-depth) | OK |
+| BYOK (chat / completion) | `shared/tenant_llm_context.py::get_gemini_client_for_tenant` / `get_claude_model_for_tenant` | Gemini / Claude / OpenAI chat | per-tenant `tenant_llm_configs.providers`; platform key only as fallback | OK |
+| BYOK (embeddings) | `shared/providers/embedding_factory.py::_get_tenant_provider` | embedding generation | tenant-key branch exists only for `gemini` | GAP: OpenAI embeddings and the semantic-routing cache always use the platform key (see §8.3) |
+| C3b layer (kill-switch) | `shared/compliance/c3b_layer.py` | realtime chat (WS/SSE) | wraps pre/post compliance; `LIA_DISABLE_C3B` kill-switch | OK |
+
+Reading the matrix: tenant isolation, compliance-domain-prompt, prompt-injection,
+PII-in-logs, and credit gating are the truly *universal* controls (they fire for
+every agent/domain). FairnessGuard, BiasAudit, HITL, and strict Audit are
+*selective by design* (only the decisions that need them). The two real holes to
+watch are the PII name-leak on recruiter-facing paths (§8.2) and the embedding
+BYOK gap (§8.3).
+
+---
+
+## 8.2 PII data-flow map
+
+PII enters from candidate and recruiter input, is minimized at well-defined seams
+before any external boundary, and exits only as masked text. The canonical engine
+is `app/shared/pii_masking.py`:
+
+- `mask_pii(text)` -> log redaction (`***CPF***`, `***EMAIL***`, ...), with a
+  UUID-v4 guard so tenant/job IDs are not eaten by the phone regex.
+- `strip_pii_for_llm_prompt(text, mask_names=True)` -> data-minimization before
+  LLM/embedding calls (LGPD Art. 12). Layers: (0) UUID guard, (1) direct
+  identifiers CPF/email/phone/RG/CNPJ via regex, (3) quasi-identifiers
+  (graduation year, explicit age, address) via regex, (4) Presidio NER for
+  names (PERSON) and NRP (nationality/religion/politics).
+
+Defaults (all verified in code): `LLM_PROMPT_PII_STRIPPING_ENABLED=true`,
+`LLM_PROMPT_PRESIDIO_ENABLED=true`, `LLM_PROMPT_PRESIDIO_LANG=pt`
+(spaCy `pt_core_news_sm`), `LLM_PROMPT_PRESIDIO_ENTITIES=PERSON,EMAIL_ADDRESS,PHONE_NUMBER,NRP`.
+If Presidio fails to load, `strip_pii_for_llm_prompt` logs a CRITICAL because
+names would then leak unmasked.
+
+```
+PII ENTRY                       MINIMIZATION SEAM                              PII SINK / BOUNDARY
+---------                       -----------------                              -------------------
+CV / resume (pdf, docx) --+
+voice transcript ---------+
+candidate chat -----------+--> c3b_layer.pre_compliance --> strip_pii_for_llm_prompt --+
+recruiter chat / notes ---+        (recruiter: mask_names=False  <-- NAME LEAK)         |
+ATS inbound notes --------+                                                             v
+                                                       defense-in-depth (independent):  LLM SDK
+                                            llm_bootstrap monkey-patch on every  -------> (Anthropic /
+                                            .create / .stream call (chokepoint)          OpenAI / genai)
+
+embedding text -----------> embedding_service.generate_* --> strip_pii_for_llm_prompt --> vector DB +
+                                            (mask_names forwarded)                        embedding cache
+
+any log / exception ------> install_global_pii_masking (PIIMaskingFilter) --------------> logs / Sentry /
+                                                                                          stack traces
+
+ATS outbound fields ------> ats_pii_filter.filter_outbound (consent gate: ats_sharing) -> external ATS
+```
+
+**Residual name-leak gap (the one to flag):** `c3b_layer.pre_compliance` calls
+`strip_pii_for_llm_prompt(message, mask_names=False)` for recruiter chat (both
+the chat-page and `agent_chat_ws` callers), on the rationale that recruiters are
+authorized to see candidate names and NER was producing false positives on job
+titles. Net effect: structured identifiers (CPF/email/phone) are still stripped,
+but candidate NAMES on recruiter-facing prompts reach the LLM. `mask_names=True`
+remains the default everywhere else (embeddings, candidate-facing paths). The
+opt-in `LIA_RECRUITER_CHAT_MASK_PII` re-enables name masking for the recruiter UI.
+
+---
+
+## 8.3 BYOK coverage map (and where embeddings are NOT covered)
+
+Per-tenant LLM config (BYOK) lives in the `tenant_llm_configs` table, resolved by
+`app/shared/tenant_llm_context.py` (`get_tenant_llm_config`, in-memory
+`_tenant_configs` cache, keyed off the `_current_company_id` ContextVar). The
+config carries `primary_provider`, `fallback_order`, and per-provider
+`{api_key, model, region}` for gemini / claude / openai.
+
+```
+SURFACE                       RESOLVER                                  BYOK?   KEY USED
+-------                       --------                                  -----   --------
+chat / completion
+  Gemini    get_gemini_client_for_tenant (tenant_llm_context.py)       YES     tenant key, else AI_INTEGRATIONS_GEMINI_API_KEY
+  Claude    get_claude_model_for_tenant (tenant_llm_context.py)        YES     tenant key, else platform
+  OpenAI    tenant_llm_configs.providers.openai                        YES     tenant key, else platform
+
+embeddings
+  Gemini    embedding_factory._get_tenant_provider                     YES     tenant key (ONLY provider with a tenant branch)
+  OpenAI    embedding_factory (no tenant branch)                       NO      platform OPENAI key (mandatory)
+  routing   vector_semantic_cache.embed_with_fallback(text)            NO      called WITHOUT company_id; primary = platform
+            (semantic router / routing_cache_vectors)                          OpenAI text-embedding-3-small (1536 dims)
+```
+
+**Where embeddings are NOT covered by BYOK (and why it is mandatory):**
+
+1. **OpenAI embeddings.** `EmbeddingProviderFactory._get_tenant_provider` only
+   has a tenant-key branch for `provider_name == "gemini"`. Any OpenAI embedding
+   (primary for RAG/routing) falls through to the platform `OPENAI_API_KEY`.
+2. **Semantic routing cache.** `app/orchestrator/memory/vector_semantic_cache.py`
+   calls `EmbeddingProviderFactory.embed_with_fallback(text)` with no
+   `company_id`, so even the Gemini path cannot resolve a tenant key there. Its
+   primary model is the platform OpenAI `text-embedding-3-small`.
+3. **RAG / semantic-search default fallback.** `EMBEDDING_DEFAULT_PROVIDER`
+   defaults to `gemini` with `EMBEDDING_FALLBACK_ORDER = ["gemini", "openai"]`;
+   when it falls back to OpenAI it uses the platform key.
+
+**Why mandatory:** the routing/semantic vectors are stored in a *shared* table
+with fixed dimensions (1536 for OpenAI `text-embedding-3-small`, 768 for Gemini
+`text-embedding-004`). Letting each tenant swap embedding provider/model would
+mix vector dimensions in the same cache and corrupt similarity lookups, so a
+single platform embedding key is enforced for the routing layer regardless of
+BYOK. Chat/completion calls (Gemini/Claude/OpenAI) strictly honor BYOK; only the
+embedding/routing layer is platform-pinned.
 
 ---
 
