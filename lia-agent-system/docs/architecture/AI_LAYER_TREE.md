@@ -981,3 +981,65 @@ finish promoting `interview_intelligence` / `voice` / `talent_intelligence` to t
 canonical agentic shape, (3) resolve the `policy` vs `hiring_policy` ownership, and
 (4) reconcile `DOMAIN_CATALOG.md` with the router. None of these are blockers; they
 are the difference between "enterprise-grade core" and "uniformly enterprise".
+
+---
+
+## 15. Effort estimate: relocating the 30 repository stubs
+
+Recurring question: can the 30 repository-stub "domains" be removed, and what does
+it take to clean them up? They CANNOT be deleted (each is imported by live routes
+and services), but they CAN be relocated out of `app/domains/` (e.g. to
+`app/data/` or `app/repositories/`) so the namespace stops conflating data-access
+packages with autonomous agent domains. This section sizes that refactor. Numbers
+below were measured by grep at the time of writing; re-measure before executing.
+
+### 15.1 The de-risking fact: no models, no migrations
+
+None of the 30 stubs contain a SQLAlchemy model (`__tablename__` / `Base`
+subclass) - all models live under `libs/models/`. Therefore relocating these
+directories carries **zero Alembic / migration risk**. It is a pure import-path
+refactor, not a schema change. This is the single biggest reason the work is
+low-risk.
+
+### 15.2 Coupling surface (what actually has to change)
+
+| Coupling point | Count | Notes |
+|---|---|---|
+| External import sites (`from app.domains.<stub> ...`) | ~96 files | Caught at import time / by the test suite if any are missed. |
+| Structural sensors that hardcode the layout | 4 scripts | `scripts/check_stub_invariants.py`, `scripts/validate_stubs.py`, `scripts/check_canonical_domain_structure.py`, `scripts/check_no_imports_from_deprecated.py`. Must be updated in lockstep or CI fails. |
+| Dynamic / string-based module paths | 1 known | `app/shared/tool_catalog.py` references `app.domains.workforce.agents.workforce_tool_registry` as a string via `importlib`. A blind import find-replace will NOT catch this; it would fail only at runtime. |
+
+Import-site distribution (uneven - a few stubs carry most of the churn):
+
+- Trivial (1-3 import sites): ~22 stubs (e.g. `triagem`, `auth`, `chat`, `consent`,
+  `goals`, `health_check`, `saas_metrics`). Bulk find-replace.
+- Moderate (4-7): `admin` (5), `notifications` (7), `tasks` (6), `workforce` (7),
+  `compliance` (4), `data_subject` (4), `opinions`* .
+- Careful (10-14): `approvals` (14), `opinions` (10). Review case by case.
+
+### 15.3 What does NOT break
+
+- Data / tables (no models in the stubs, so no migrations).
+- The 16 core ReActAgents (they do not depend on these CRUD stubs).
+- API routes - as long as each stub's `dependencies.py` is moved together with its
+  `repositories/`.
+
+### 15.4 Verdict and recommended execution
+
+Effort: **low to medium, mostly mechanical.** Risk: **low**, because there are no
+migrations and the imports are static (so the test suite + sensors catch anything
+left behind). The only non-static catch point is the `workforce` string reference.
+
+- Fits in a single focused change, but is best done in batches (trivial ->
+  moderate -> careful) with the test + sensor suite run between batches.
+- Treat `workforce` separately: it has `agents/` plus the dynamic string path, so it
+  is not a pure stub. It belongs with the "promote to agentic" group
+  (`voice`, `interview_intelligence`, `talent_intelligence`), not the
+  "relocate data-access" group.
+- Minimum-risk variant: move the directories and leave a thin re-export
+  `__init__.py` at the old path. This recreates the kind of shim `DOMAIN_CATALOG.md`
+  records as being deleted, so use it only as an intermediate migration step, not as
+  the destination.
+
+> *`opinions` is listed under "Other domains" in §4 but classified as a repository
+> stub in `DOMAIN_CATALOG.md`; treat it as a stub for this refactor.
