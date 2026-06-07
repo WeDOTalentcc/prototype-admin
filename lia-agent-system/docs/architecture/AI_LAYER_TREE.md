@@ -952,15 +952,27 @@ enterprise-grade at its core but still in transition at the edges.
 
 ### 14.2 Where the domain layer is NOT yet uniform
 
+What "consistency" means here: every domain of the same class should share the same
+anatomy, the same registration, the same naming, and the same layering, so a
+newcomer can tell at a glance what is an agent, what is data access, and where each
+rule lives. Concretely that means: every agentic domain registers the same way
+(`domain.py` + `@register_domain` + inherits `ComplianceDomainPrompt`); all agentic
+logic lives in an agentic domain (not in a "service domain"); the data-access (CRUD)
+layer is separated from the agent layer; no two packages do the same job; and the
+docs match the code. The items below are where that is not yet true. The gap is
+consistency (form), not capability (function): everything works.
+
 - **Two architectures coexist.** Modern domains register via `@register_domain` +
-  `ComplianceDomainPrompt`; legacy `autonomous` and `policy` (about 2k LOC each)
+  `ComplianceDomainPrompt`; legacy `autonomous` and `policy` (about 2.3k LOC each)
   still use the pre-refactor `agents/` + `@register_agent` shape.
 - **Namespace bloat.** 30 of 59 `app/domains/` entries are pure repository stubs
   (CRUD only). Putting data-access packages in the same namespace as autonomous
   agent domains makes the system look larger and less consistent than it is.
-- **Duplication / overlap.** `hiring_policy` (small, registered) overlaps
-  conceptually with `policy` (the real engine, legacy) - a reader cannot tell from
-  the namespace where hiring rules are actually enforced.
+- **Duplication / overlap.** `hiring_policy` (a ~40-LOC registered stub) overlaps
+  conceptually with `policy` (the real engine, ~2,343 LOC, legacy: `PolicyEngineService`
+  + `PolicySetupAgent` + sector FairnessGuard rules) - a reader cannot tell from
+  the namespace where hiring rules are actually enforced. `hiring_policy` does NOT
+  replace `policy`.
 - **Migration debt.** `interview_intelligence` and `voice` carry agentic-grade
   logic (2026 / 1725 LOC) but are still classified as service domains (promotion
   candidates). `talent_intelligence` similarly has tools/services without a
