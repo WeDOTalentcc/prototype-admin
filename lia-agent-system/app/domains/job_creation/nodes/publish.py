@@ -144,6 +144,24 @@ def publish_node(state: JobCreationState) -> JobCreationState:
                     logger.warning(
                         "[publish] employment_type inheritance fail-open", exc_info=True
                     )
+            # work_model: heranca departamento > empresa quando o recrutador nao
+            # especificou (reusa a cadeia canonica). Fail-open.
+            _work_model = state.get("parsed_model")
+            if not _work_model:
+                try:
+                    from app.domains.job_creation.helpers.vaga_field_inheritance import (
+                        resolve_field_default_for_state,
+                    )
+                    from app.domains.job_creation.helpers.async_audit import (
+                        run_coro_in_threadpool,
+                    )
+                    _work_model = run_coro_in_threadpool(
+                        resolve_field_default_for_state(state, "work_model")
+                    ) or _work_model
+                except Exception:  # noqa: BLE001 — fail-open, nunca quebra o publish
+                    logger.warning(
+                        "[publish] work_model inheritance fail-open", exc_info=True
+                    )
             job_data = {
                 "title": jd.get("titulo_padronizado", state.get("parsed_title", "")),
                 "description": jd.get("about_role", ""),
@@ -156,7 +174,7 @@ def publish_node(state: JobCreationState) -> JobCreationState:
                 ),
                 "department": state.get("parsed_department", ""),
                 "location": state.get("parsed_location", ""),
-                "work_model": to_canonical_work_model(state.get("parsed_model", "")),
+                "work_model": to_canonical_work_model(_work_model or ""),
                 # P0-A: regime de contratação (coluna employment_type já existe).
                 "employment_type": to_canonical_employment_type(_emp_type),
                 # FASE 5: gestor responsável + email (colunas manager/manager_email já existem).
