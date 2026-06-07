@@ -307,6 +307,12 @@ class Orchestrator:
                           "message": resp_msg, "requires_user_input": dr.needs_clarification or dr.needs_confirmation,
                           "suggested_prompts": dr.suggestions or [], "next_actions": [],
                           "result": {"message": resp_msg, "data": dr.data, "suggestions": dr.suggestions},
+                          # FIX-RRP-SUP (AUD-4 §4.2, 2026-06-07): carrega response_blocks
+                          # do sub-agente (vivem em dr.metadata, via rrp_block_sink) que o
+                          # legacy dropava -> from_orchestrator_result le ->
+                          # _orchestrator_result_to_frames emite no frame message. Fecha o
+                          # moat RRP na trilha supervisor (paridade com o federado).
+                          "response_blocks": (dr.metadata or {}).get("response_blocks"),
                           "policy_constraints": policy.get("constraints", {})}
             else:
                 fb = await self._handle_directly(intent, sanitized, {}, context=ctx)
