@@ -70,6 +70,28 @@ def _tokens(s: str) -> set[str]:
     return {t for t in _norm(s).split() if len(t) > 2 and t not in _STOPWORDS}
 
 
+# ── Escopo de vaga STICKY por conversa (fix 2026-06-07, live audit #1) ──
+# O entity resolver so resolve vaga do historico quando a msg diz "essa vaga".
+# Num follow-up sobre candidatos ("detalhes dos 3") nao ha referente -> a vaga
+# zerava e list_candidates/rank perdiam o escopo (traziam candidatos de OUTRAS
+# vagas). Aqui guardamos a ultima vaga resolvida POR CONVERSA e reaproveitamos
+# como fallback. Modulo-level (per-process; conversa termina no restart).
+_ACTIVE_VACANCY_BY_CONV: dict[str, str] = {}
+
+
+def sticky_vacancy(conversation_id: str, resolved_vacancy: str) -> str:
+    """Retorna a vaga a usar no turno: a resolvida (e persiste), ou a ultima
+    desta conversa quando o turno nao resolveu nenhuma (em vez de zerar)."""
+    cid = str(conversation_id or "")
+    if resolved_vacancy:
+        if len(_ACTIVE_VACANCY_BY_CONV) > 2000:
+            _ACTIVE_VACANCY_BY_CONV.clear()  # cap simples anti-leak
+        if cid:
+            _ACTIVE_VACANCY_BY_CONV[cid] = resolved_vacancy
+        return resolved_vacancy
+    return _ACTIVE_VACANCY_BY_CONV.get(cid, "") if cid else ""
+
+
 # ── Resolução de candidato por NOME (fuzzy, sem pg_trgm) ──
 # Fix P1 2026-06-06: o extractor antigo exigia gatilho + Capitalizado + de/do,
 # falhando em "tem felipe almeida na base" (sem gatilho/lowercase) e "perfil da

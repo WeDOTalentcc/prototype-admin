@@ -843,9 +843,15 @@ company_id: str = Depends(require_company_id)):
                     )
                     _ehint = _ent.get("hint") or ""
                     try:
-                        from app.shared.entity_resolver import set_active_vacancy, set_active_candidate
+                        from app.shared.entity_resolver import (
+                            set_active_vacancy,
+                            set_active_candidate,
+                            sticky_vacancy,
+                        )
                         _jb = _ent.get("jobs") or []
-                        set_active_vacancy(_jb[0][0] if _jb else "")
+                        # fix #1: escopo de vaga STICKY -> nao zera num follow-up
+                        # sem vaga (mantem a ultima desta conversa).
+                        set_active_vacancy(sticky_vacancy(_cid, _jb[0][0] if _jb else ""))
                         _cd = _ent.get("candidates") or []
                         set_active_candidate(_cd[0][0] if len(_cd) == 1 else "")
                     except Exception:
