@@ -612,9 +612,8 @@ async def add_workos_columns():
                 logger.warning(f"Could not add users column {column_name}: {e}")
         
         try:
-            await conn.execute(text(
-                "CREATE INDEX IF NOT EXISTS idx_users_workos_id ON users(workos_id)"
-            ))
+            # idx_users_workos_id removido: duplicata de users_workos_id_key (unique constraint).
+            # Limpeza em alembic 251_drop_duplicate_indexes.
             await conn.execute(text(
                 "CREATE INDEX IF NOT EXISTS idx_users_workos_directory ON users(workos_directory_id)"
             ))
@@ -696,9 +695,8 @@ async def create_workos_groups_tables():
             logger.warning(f"Could not create workos_group_role_mappings table: {e}")
         
         try:
-            await conn.execute(text(
-                "CREATE INDEX IF NOT EXISTS idx_workos_groups_workos_id ON workos_groups(workos_id)"
-            ))
+            # idx_workos_groups_workos_id removido: duplicata de workos_groups_workos_id_key (unique constraint).
+            # Limpeza em alembic 251_drop_duplicate_indexes.
             await conn.execute(text(
                 "CREATE INDEX IF NOT EXISTS idx_workos_groups_directory ON workos_groups(directory_id)"
             ))
@@ -749,9 +747,8 @@ async def create_company_workos_config_table():
             logger.warning(f"Could not create company_workos_config table: {e}")
         
         try:
-            await conn.execute(text(
-                "CREATE INDEX IF NOT EXISTS idx_company_workos_config_company ON company_workos_config(company_id)"
-            ))
+            # idx_company_workos_config_company removido: duplicata de ix_company_workos_config_company_id (unique).
+            # Limpeza em alembic 251_drop_duplicate_indexes.
             await conn.execute(text(
                 "CREATE INDEX IF NOT EXISTS idx_company_workos_config_directory ON company_workos_config(workos_directory_id)"
             ))
@@ -944,9 +941,8 @@ async def create_feedback_learning_tables():
             await conn.execute(text(
                 "CREATE INDEX IF NOT EXISTS idx_job_outcomes_company ON job_outcomes(company_id)"
             ))
-            await conn.execute(text(
-                "CREATE INDEX IF NOT EXISTS idx_job_outcomes_job ON job_outcomes(job_id)"
-            ))
+            # idx_job_outcomes_job removido: duplicata de idx_job_outcomes_job_unique (unique em job_id).
+            # Limpeza em alembic 251_drop_duplicate_indexes.
             await conn.execute(text(
                 "CREATE INDEX IF NOT EXISTS idx_job_outcomes_outcome ON job_outcomes(outcome)"
             ))
@@ -1506,9 +1502,8 @@ async def create_company_hiring_policies_table():
             logger.warning(f"Could not create company_hiring_policies table: {e}")
 
         try:
-            await conn.execute(text(
-                "CREATE UNIQUE INDEX IF NOT EXISTS idx_chp_company_id ON company_hiring_policies(company_id)"
-            ))
+            # idx_chp_company_id removido: duplicata de ix_company_hiring_policies_company_id (unique do modelo).
+            # Limpeza em alembic 251_drop_duplicate_indexes.
             logger.debug("Ensured company_hiring_policies indexes exist")
         except Exception as e:
             logger.warning(f"Could not create company_hiring_policies indexes: {e}")
