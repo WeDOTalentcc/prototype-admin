@@ -527,6 +527,79 @@ protected-attributes registry above. Everything else marked `OK` covers its
 intended surface; the `PARTIAL` rows (PII-to-LLM, strict Audit) are correct but
 narrower than a maximalist reading would want.
 
+### 8.1.1 Coverage grid - controls x the 16 canonical agents
+
+The table above is the per-control reference (seam / enforcement / status). This
+grid is the per-cell view (which control actually fires on which agent), in the
+"transversal bands" style. Columns are the 16 canonical ReActAgents from §3, in
+the same order; the legend maps the short codes. The point this grid makes: most
+controls are `OK` on every agent not because each domain re-implements them, but
+because every ReActAgent inherits them from `LangGraphReActBase` +
+`TenantAwareAgentMixin` + `ComplianceDomainPrompt` + the `llm_bootstrap`
+chokepoint. Individual modules implement few of these on their own; the agent
+layer unifies the whole band.
+
+Legend: `✓` enforced · `⚠` enforced but with a documented gap · `○` not
+applicable / does not fire by design.
+Columns: `Anlt`=Analytics, `ATS`=ATSIntegration, `Auto`=Automation,
+`Anon`=Autonomous, `Comm`=Communication, `Cfg`=CompanySettings,
+`CVSc`=Pipeline/cv_screening, `Pol`=Policy/hiring_policy, `JobM`=JobsManagement,
+`Kanb`=Kanban, `Funl`=TalentFunnel, `Src`=Sourcing, `Pool`=TalentPool,
+`Wiz`=Wizard, `CSS`=CandidateSelfService, `PTr`=PipelineTransition.
+
+| Control | Anlt | ATS | Auto | Anon | Comm | Cfg | CVSc | Pol | JobM | Kanb | Funl | Src | Pool | Wiz | CSS | PTr |
+|---|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
+| Tenant isolation | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Compliance domain prompt | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| FairnessGuard (L1/L2; L3 high-impact) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Protected-attrs registry [a] | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| FactChecker | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Prompt-injection guard | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Hate-speech guard [b] | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| PII strip to LLM [c] | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| PII masking in logs | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| HITL + tool safety [d] | ✓ | ✓ | ✓ | ✓ | ○ | ✓ | ✓ | ○ | ✓ | ✓ | ✓ | ✓ | ○ | ✓ | ○ | ✓ |
+| Audit logging [e] | ✓ | ✓ | ✓ | ✓ | ✓ | ○ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ○ | ✓ |
+| BiasAudit [f] (periodic) | ○ | ○ | ○ | ○ | ○ | ○ | ✓ | ✓ | ○ | ○ | ✓ | ✓ | ✓ | ✓ | ○ | ○ |
+| Credit gating | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BYOK (chat / completion) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BYOK (embeddings) [g] | ○ | ○ | ○ | ○ | ⚠ | ○ | ⚠ | ○ | ⚠ | ⚠ | ⚠ | ⚠ | ○ | ⚠ | ○ | ○ |
+| Per-tenant custom guardrails | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| C3b layer [b] | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+
+Footnotes:
+
+- **[a]** Foundational config (`config/protected_attributes.yaml`). Shown `✓`
+  everywhere because every agent inherits FairnessGuard, which reads it. If the
+  YAML fails to load, FairnessGuard and BiasAudit run FAIL-OPEN (ADR-031), so the
+  whole column is only as strong as registry-load monitoring.
+- **[b]** Hate-speech and the C3b wrapper fire on realtime chat turns
+  (`c3b_layer.py`). Background / proactive invocations that skip the chat pipeline
+  (e.g. Automation or Autonomous running headless) are covered only by the
+  bootstrap-level controls, not by C3b.
+- **[c]** Enforced for every agent at the `llm_bootstrap` chokepoint, BUT recruiter
+  chat strips with `mask_names=False`, so candidate NAMES still reach the LLM on
+  recruiter-facing turns (§8.2). The cell stays `✓` because identifiers
+  (CPF/email/phone) are always stripped; the name gap is the row-level caveat.
+- **[d]** `✓` where the agent's tool registry declares `GUARDRAIL_TOOLS` /
+  `@require_hitl`, plus the Wizard's 4 `interrupt()` gates. `○` = the agent has no
+  state-changing tool that needs a human gate.
+- **[e]** Best-effort `log_decision` across these agents. The mandatory,
+  sentinel-enforced ratchet (SOX 7-year) lives in the `interview_scheduling` /
+  `interview_intelligence` / `offer` services, which are not routable ReActAgents,
+  so they do not appear as columns. `Cfg` is `○` because `company_settings`
+  persists through `save_company_*` without a direct `log_decision` call.
+- **[f]** BiasAudit runs periodically / annually over stored decisions (FAR-5
+  disparate impact / four-fifths). `✓` marks the agents whose scoring or ranking
+  decisions feed those audits, not a per-turn check.
+- **[g]** `⚠` = the agent generates embeddings, which use the platform key, not
+  the tenant key (§8.3). `○` = the agent does not embed.
+
+Coverage read: 13 of the 17 rows are universal (`✓` on all 16 agents, purely by
+inheritance). The 4 scoped rows are HITL/tool-safety and Audit (fire where an
+action warrants), BiasAudit (periodic, over decision-producing agents), and BYOK
+embeddings (the one true gap: platform key on every agent that embeds).
+
 ---
 
 ## 8.2 PII data-flow map
