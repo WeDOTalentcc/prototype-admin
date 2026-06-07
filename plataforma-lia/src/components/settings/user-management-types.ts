@@ -53,7 +53,13 @@ export const PII_SENSITIVE_FIELDS = [
 ] as const
 
 export const PII_GATEABLE_FIELDS = [...PII_SALARY_FIELDS, ...PII_SENSITIVE_FIELDS] as const
-export type PiiField = (typeof PII_GATEABLE_FIELDS)[number]
+
+// D-FE (2026-06-06): vacancy-level PII fields (separate group from candidate PII).
+export const PII_VACANCY_FIELDS = ["vacancy_salary"] as const
+
+export type PiiField =
+  | (typeof PII_GATEABLE_FIELDS)[number]
+  | (typeof PII_VACANCY_FIELDS)[number]
 // Per-user override: partial map. Omitted field = inherit (role default -> legacy -> show).
 export type PiiFieldVisibility = Partial<Record<PiiField, boolean>>
 // Per-role defaults: {role: {field: bool}}

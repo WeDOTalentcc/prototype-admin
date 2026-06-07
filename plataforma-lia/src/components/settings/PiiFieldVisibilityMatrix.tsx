@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl"
 import {
   PII_SALARY_FIELDS,
   PII_SENSITIVE_FIELDS,
+  PII_VACANCY_FIELDS,
   type PiiField,
   type PiiFieldVisibility,
 } from "./user-management-types"
@@ -257,6 +258,18 @@ export function PiiFieldVisibilityMatrix({
       <GroupSection
         title={t("groupSensitive")}
         fields={PII_SENSITIVE_FIELDS}
+        value={value}
+        stateInherited={stateInherited}
+        stateShow={stateShow}
+        stateHide={stateHide}
+        disabled={disabled}
+        getLabel={getLabel}
+        onFieldChange={handleFieldChange}
+        onBulkChange={handleBulkChange}
+      />
+      <GroupSection
+        title={t("groupVacancy")}
+        fields={PII_VACANCY_FIELDS}
         value={value}
         stateInherited={stateInherited}
         stateShow={stateShow}

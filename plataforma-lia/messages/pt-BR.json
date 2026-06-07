@@ -4671,11 +4671,13 @@
           "personal_emails": "E-mails pessoais",
           "business_emails": "E-mails comerciais",
           "best_personal_email": "Melhor e-mail pessoal",
-          "best_business_email": "Melhor e-mail comercial"
+          "best_business_email": "Melhor e-mail comercial",
+          "vacancy_salary": "Salário da vaga"
         },
         "saving": "Salvando...",
         "saveSuccess": "Padrões salvos!",
-        "saveError": "Erro ao salvar padrões."
+        "saveError": "Erro ao salvar padrões.",
+        "groupVacancy": "Vaga"
       }
     },
     "departments": {

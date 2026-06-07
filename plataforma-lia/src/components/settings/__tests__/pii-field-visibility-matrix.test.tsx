@@ -7,6 +7,8 @@
  *   T3. Clicking Ocultar on cpf (from {cpf:true}) calls onChange with {cpf: false}
  *   T4. Clicking Herdado on cpf (from {cpf:false}) calls onChange with {} (key deleted)
  *   T5. disabled -> controls are disabled
+ *   T6. D-FE: vacancy group renders the vacancy_salary field label
+ *   T7. D-FE: clicking Ver on vacancy_salary calls onChange with {vacancy_salary: true}
  */
 import { describe, expect, it, vi } from "vitest"
 import { render, screen, fireEvent } from "@testing-library/react"
@@ -75,5 +77,25 @@ describe("PiiFieldVisibilityMatrix — A6-FE-2 canonical contract", () => {
     expect(hideBtn).toBeDisabled()
     const inheritBtn = screen.getByTestId("pii-field-cpf-inherited")
     expect(inheritBtn).toBeDisabled()
+  })
+
+  it("T6: D-FE — vacancy group renders vacancy_salary label and Herdado is selected by default", () => {
+    renderMatrix({})
+    // The i18n label for vacancy_salary should be visible
+    expect(screen.getByText("Salário da vaga")).toBeDefined()
+    // Inherited button should be aria-pressed=true (no value set)
+    const inheritedBtn = screen.getByTestId("pii-field-vacancy_salary-inherited")
+    expect(inheritedBtn).toHaveAttribute("aria-pressed", "true")
+    expect(screen.getByTestId("pii-field-vacancy_salary-show")).toHaveAttribute("aria-pressed", "false")
+    expect(screen.getByTestId("pii-field-vacancy_salary-hide")).toHaveAttribute("aria-pressed", "false")
+  })
+
+  it("T7: D-FE — clicking Ver on vacancy_salary calls onChange with {vacancy_salary: true}", () => {
+    const onChange = vi.fn()
+    renderMatrix({}, onChange)
+    const showBtn = screen.getByTestId("pii-field-vacancy_salary-show")
+    fireEvent.click(showBtn)
+    expect(onChange).toHaveBeenCalledTimes(1)
+    expect(onChange).toHaveBeenCalledWith({ vacancy_salary: true })
   })
 })

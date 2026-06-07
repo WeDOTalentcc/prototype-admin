@@ -4671,11 +4671,13 @@
           "personal_emails": "Personal emails",
           "business_emails": "Business emails",
           "best_personal_email": "Best personal email",
-          "best_business_email": "Best business email"
+          "best_business_email": "Best business email",
+          "vacancy_salary": "Vacancy salary"
         },
         "saving": "Saving...",
         "saveSuccess": "Defaults saved!",
-        "saveError": "Error saving defaults."
+        "saveError": "Error saving defaults.",
+        "groupVacancy": "Vacancy"
       }
     },
     "departments": {
