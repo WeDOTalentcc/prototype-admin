@@ -89,6 +89,7 @@ export interface CandidatesPageModalsProps {
   // Unified Communication Modal
   unifiedModalOpen: boolean
   unifiedModalCandidate: Candidate | null
+  unifiedModalSelectedCandidates: Array<{ id: string; name: string; email?: string; phone?: string; avatar?: string }>
   unifiedModalType: CommunicationType
   lastSearchQuery: string
   handleUnifiedModalClose: () => void

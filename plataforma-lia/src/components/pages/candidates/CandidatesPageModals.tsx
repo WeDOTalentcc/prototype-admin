@@ -23,6 +23,7 @@ export function CandidatesPageModals(props: CandidatesPageModalsProps) {
         handleScheduleComplete={props.handleScheduleComplete}
         unifiedModalOpen={props.unifiedModalOpen}
         unifiedModalCandidate={props.unifiedModalCandidate}
+        unifiedModalSelectedCandidates={props.unifiedModalSelectedCandidates}
         unifiedModalType={props.unifiedModalType}
         lastSearchQuery={props.lastSearchQuery}
         handleUnifiedModalClose={props.handleUnifiedModalClose}

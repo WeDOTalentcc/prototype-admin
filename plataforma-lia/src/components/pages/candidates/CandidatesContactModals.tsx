@@ -25,6 +25,7 @@ type CandidatesContactModalsProps = Pick<CandidatesPageModalsProps,
   | 'handleScheduleComplete'
   | 'unifiedModalOpen'
   | 'unifiedModalCandidate'
+  | 'unifiedModalSelectedCandidates'
   | 'unifiedModalType'
   | 'lastSearchQuery'
   | 'handleUnifiedModalClose'
@@ -51,6 +52,7 @@ export function CandidatesContactModals(props: CandidatesContactModalsProps) {
     handleScheduleComplete,
     unifiedModalOpen,
     unifiedModalCandidate,
+    unifiedModalSelectedCandidates,
     unifiedModalType,
     lastSearchQuery,
     handleUnifiedModalClose,
@@ -162,6 +164,7 @@ export function CandidatesContactModals(props: CandidatesContactModalsProps) {
           }
         })() : null}
         type={unifiedModalType}
+        selectedCandidates={unifiedModalSelectedCandidates}
         jobTitle={lastSearchQuery || undefined}
         onSend={handleUnifiedModalSend}
         companyId="demo"

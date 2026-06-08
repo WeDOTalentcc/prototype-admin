@@ -12,7 +12,6 @@ import { type QuickAction } from "@/components/ui/quick-action-chips"
 import { type ParsedCVResponse } from "@/components/cv"
 import type { Candidate } from "@/components/pages/candidates/types"
 import { PREVIEW_WIDTH_MIN, PREVIEW_WIDTH_MAX } from "./candidates-core"
-import { toast } from "sonner"
 
 interface UseCandidatesInteractionsParams {
   // Candidate data

@@ -93,7 +93,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
     showContactFilterModal, showContactModal, showCreditConfirmation, showRevealModal, showRubricModal, showScheduleModal,
     showSendEmailModal, showShareSearchModal, showSourceChangeModal, showTableFiltersPanel, showUnsavedWarningModal, showWSIInviteModal,
     showWSITextModal, showWSIVoiceModal, sortedCandidates, tableColumns, tableContainerRef, tableFilters,
-    talentFunnel, toggleTableFilter, unifiedModalCandidate, unifiedModalOpen, unifiedModalType,
+    talentFunnel, toggleTableFilter, unifiedModalCandidate, unifiedModalSelectedCandidates, unifiedModalOpen, unifiedModalType,
     unsavedPearchCandidates, user, visibleCandidates, visibleTableColumns, wsiCandidateForScreening, wsiInviteCandidate,
     tabs: tabsRaw,
     archetypeCreationStep, archetypeToDelete, buildFiltersFromTags, crossTabFilter, currentPage, currentSearchSource,
@@ -657,6 +657,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
         handleScheduleComplete={handleScheduleComplete as unknown as CandidatesPageModalsProps["handleScheduleComplete"]}
         unifiedModalOpen={unifiedModalOpen}
         unifiedModalCandidate={unifiedModalCandidate}
+        unifiedModalSelectedCandidates={unifiedModalSelectedCandidates}
         unifiedModalType={unifiedModalType}
         lastSearchQuery={lastSearchQuery}
         handleUnifiedModalClose={handleUnifiedModalClose}
