@@ -648,9 +648,10 @@ company_id: str = Depends(require_company_id)):
 async def receive_teams_message(
     request: Request,
     authorization: str = Header(None),
-    db: AsyncSession = Depends(get_db), 
-company_id: str = Depends(require_company_id)):
-    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
+    db: AsyncSession = Depends(get_db)):
+    # PUBLIC endpoint: called by Microsoft Bot Framework (no platform JWT).
+    # Auth is enforced inside the handler via bot_auth.validate_token (Bot Framework JWT).
+    # Tenant context is resolved from the Teams user's email/AAD object ID via teams_orchestrator_bridge.
     """
     Webhook endpoint for Teams messages.
 
