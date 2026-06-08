@@ -21,10 +21,15 @@
       ],
       "context": {
         "interviewsAndFeedback": "{greeting}, {name}. Você tem {interviews, plural, one {# entrevista} other {# entrevistas}} hoje e {feedback, plural, one {# candidato aguardando} other {# candidatos aguardando}} retorno.",
+        "interviewsAndFeedbackAnon": "{greeting}. Você tem {interviews, plural, one {# entrevista} other {# entrevistas}} hoje e {feedback, plural, one {# candidato aguardando} other {# candidatos aguardando}} retorno.",
         "interviewsToday": "{greeting}, {name}. Você tem {count, plural, one {# entrevista} other {# entrevistas}} hoje.",
+        "interviewsTodayAnon": "{greeting}. Você tem {count, plural, one {# entrevista} other {# entrevistas}} hoje.",
         "candidatesToContact": "{greeting}, {name}. {count, plural, one {# candidato precisa} other {# candidatos precisam}} de contato hoje.",
+        "candidatesToContactAnon": "{greeting}. {count, plural, one {# candidato precisa} other {# candidatos precisam}} de contato hoje.",
         "offersPending": "{greeting}, {name}. {count, plural, one {# proposta aguarda} other {# propostas aguardam}} sua decisão.",
-        "allClear": "{greeting}, {name}. Tudo em dia. Vamos adiantar algo?"
+        "offersPendingAnon": "{greeting}. {count, plural, one {# proposta aguarda} other {# propostas aguardam}} sua decisão.",
+        "allClear": "{greeting}, {name}. Tudo em dia. Vamos adiantar algo?",
+        "allClearAnon": "{greeting}. Tudo em dia. Vamos adiantar algo?"
       }
     },
     "funnel": {

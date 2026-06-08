@@ -68,30 +68,31 @@ export function selectGreeting(args: SelectGreetingArgs): GreetingPlan {
 
   if (briefing) {
     if (surface === "chat") {
-      // Templates contextuais do chat usam {greeting}+{name}: só quando há nome.
-      if (trimmedName) {
-        const { interviewsToday, awaitingFeedback, candidatesToContact, offersPending } = briefing
-        if (interviewsToday > 0 && awaitingFeedback > 0) {
-          return {
-            kind: "context",
-            key: "interviewsAndFeedback",
-            timeKey,
-            name: trimmedName,
-            counts: { interviews: interviewsToday, feedback: awaitingFeedback },
-          }
+      // Templates contextuais do chat: usa {name} quando disponível; quando ausente,
+      // usa a variante "*Anon" (mesmo key sem {name}) — contexto prevalece sobre curado.
+      const { interviewsToday, awaitingFeedback, candidatesToContact, offersPending } = briefing
+      const anon = trimmedName ? "" : "Anon"
+      const name = trimmedName ?? ""
+      if (interviewsToday > 0 && awaitingFeedback > 0) {
+        return {
+          kind: "context",
+          key: `interviewsAndFeedback${anon}`,
+          timeKey,
+          name,
+          counts: { interviews: interviewsToday, feedback: awaitingFeedback },
         }
-        if (interviewsToday > 0) {
-          return { kind: "context", key: "interviewsToday", timeKey, name: trimmedName, counts: { count: interviewsToday } }
-        }
-        if (candidatesToContact > 0) {
-          return { kind: "context", key: "candidatesToContact", timeKey, name: trimmedName, counts: { count: candidatesToContact } }
-        }
-        if (offersPending > 0) {
-          return { kind: "context", key: "offersPending", timeKey, name: trimmedName, counts: { count: offersPending } }
-        }
-        // Briefing com sinal em outras áreas (sem nome no template) → all clear.
-        return { kind: "context", key: "allClear", timeKey, name: trimmedName, counts: {} }
       }
+      if (interviewsToday > 0) {
+        return { kind: "context", key: `interviewsToday${anon}`, timeKey, name, counts: { count: interviewsToday } }
+      }
+      if (candidatesToContact > 0) {
+        return { kind: "context", key: `candidatesToContact${anon}`, timeKey, name, counts: { count: candidatesToContact } }
+      }
+      if (offersPending > 0) {
+        return { kind: "context", key: `offersPending${anon}`, timeKey, name, counts: { count: offersPending } }
+      }
+      // Briefing presente mas sem sinal relevante → allClear.
+      return { kind: "context", key: `allClear${anon}`, timeKey, name, counts: {} }
     } else {
       // funnel — templates não usam nome.
       const { activeJobs, candidatesToContact } = briefing

@@ -21,10 +21,15 @@
       ],
       "context": {
         "interviewsAndFeedback": "{greeting}, {name}. You have {interviews, plural, one {# interview} other {# interviews}} today and {feedback, plural, one {# candidate awaiting} other {# candidates awaiting}} feedback.",
+        "interviewsAndFeedbackAnon": "{greeting}. You have {interviews, plural, one {# interview} other {# interviews}} today and {feedback, plural, one {# candidate awaiting} other {# candidates awaiting}} feedback.",
         "interviewsToday": "{greeting}, {name}. You have {count, plural, one {# interview} other {# interviews}} today.",
+        "interviewsTodayAnon": "{greeting}. You have {count, plural, one {# interview} other {# interviews}} today.",
         "candidatesToContact": "{greeting}, {name}. {count, plural, one {# candidate needs} other {# candidates need}} contact today.",
+        "candidatesToContactAnon": "{greeting}. {count, plural, one {# candidate needs} other {# candidates need}} contact today.",
         "offersPending": "{greeting}, {name}. {count, plural, one {# offer is} other {# offers are}} awaiting your decision.",
-        "allClear": "{greeting}, {name}. All caught up. Want to get ahead on something?"
+        "offersPendingAnon": "{greeting}. {count, plural, one {# offer is} other {# offers are}} awaiting your decision.",
+        "allClear": "{greeting}, {name}. All caught up. Want to get ahead on something?",
+        "allClearAnon": "{greeting}. All caught up. Want to get ahead on something?"
       }
     },
     "funnel": {

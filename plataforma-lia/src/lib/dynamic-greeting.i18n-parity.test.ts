@@ -140,10 +140,15 @@ describe("dynamicGreetings — toda chave usada por selectGreeting existe", () =
     // mudar e parar de emitir algum destes, este teste sinaliza antes da paridade.
     for (const expected of [
       "chat.context.interviewsAndFeedback",
+      "chat.context.interviewsAndFeedbackAnon",
       "chat.context.interviewsToday",
+      "chat.context.interviewsTodayAnon",
       "chat.context.candidatesToContact",
+      "chat.context.candidatesToContactAnon",
       "chat.context.offersPending",
+      "chat.context.offersPendingAnon",
       "chat.context.allClear",
+      "chat.context.allClearAnon",
       "chat.curated",
       "chat.curatedNamed",
       "funnel.context.openJobsAndContacts",

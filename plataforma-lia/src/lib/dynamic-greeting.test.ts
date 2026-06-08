@@ -114,9 +114,34 @@ describe("selectGreeting — contextual chat (prioridade)", () => {
     if (plan.kind === "context") expect(plan.key).toBe("offersPending")
   })
 
-  it("chat com briefing+sinal mas SEM nome → cai para curada", () => {
+  it("chat com briefing+sinal mas SEM nome → contextual anon (não curada)", () => {
     const plan = selectGreeting({ surface: "chat", now: at(9), briefing: { ...emptyBriefing, interviewsToday: 2 }, name: null, seed: 7 })
-    expect(plan.kind).toBe("curated")
+    expect(plan.kind).toBe("context")
+    if (plan.kind === "context") {
+      expect(plan.key).toBe("interviewsTodayAnon")
+      expect(plan.name).toBe("")
+    }
+  })
+
+  it("chat briefing+sinal SEM nome: todas as variantes retornam contextual anon", () => {
+    const cases: Array<[Partial<GreetingBriefingInput>, string]> = [
+      [{ interviewsToday: 1, awaitingFeedback: 2 }, "interviewsAndFeedbackAnon"],
+      [{ interviewsToday: 1 }, "interviewsTodayAnon"],
+      [{ candidatesToContact: 3 }, "candidatesToContactAnon"],
+      [{ offersPending: 1 }, "offersPendingAnon"],
+      [{}, "allClearAnon"],
+    ]
+    for (const [partial, expectedKey] of cases) {
+      const plan = selectGreeting({
+        surface: "chat",
+        now: at(9),
+        briefing: { ...emptyBriefing, ...partial },
+        name: null,
+        seed: 0,
+      })
+      expect(plan.kind).toBe("context")
+      if (plan.kind === "context") expect(plan.key).toBe(expectedKey)
+    }
   })
 })
 
