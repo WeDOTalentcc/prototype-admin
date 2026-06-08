@@ -38,6 +38,126 @@ HTTP / SSE (canonical) / WebSocket (legacy)
 
 ---
 
+## 0. O que é a WeDOTalent — contexto para novos leitores
+
+### 0.1 O produto
+
+A **WeDOTalent** é uma plataforma SaaS de recrutamento e seleção voltada para
+equipes de RH corporativas. Ela cobre o ciclo completo de contratação: da
+abertura de uma vaga à oferta de emprego, passando por sourcing, triagem de
+currículos, entrevistas, avaliação comportamental e analytics de pipeline.
+
+O diferencial central é que **a IA não é um add-on** — ela está embutida em
+cada etapa. O recrutador interage com a plataforma via chat conversacional;
+a IA interpreta a intenção, executa as ações (buscar candidatos, mover no
+pipeline, enviar comunicações, gerar relatórios) e retorna resultados
+estruturados com evidências. O modelo mental correto não é "chat + sistema"
+— é um sistema que tem chat como interface primária.
+
+### 0.2 A persona de IA (LIA é o padrão; o tenant pode trocar)
+
+A persona conversacional tem um nome, um tom de voz e um conjunto de
+instruções. Por padrão o nome é **LIA** e o tom é "profissional e objetivo".
+Mas isso é configurável por empresa: em **Configurações → Inteligência →
+Personalidade da IA**, cada tenant pode definir:
+
+- **Nome** da IA (ex: "Maya", "Recru", ou qualquer nome da marca)
+- **Tom** (6 opções canônicas: profissional, empático, direto, consultivo,
+  energético, formal)
+
+A mudança é puramente de persona — o mesmo agente, as mesmas ferramentas, as
+mesmas regras de compliance continuam operando. O que muda é como a IA se
+apresenta e escreve. Portanto, ao longo deste documento "LIA" refere-se à
+**camada de IA**, não ao nome que um tenant específico configurou.
+
+> Implementação: `app/domains/persona/services/ai_persona_validator.py`
+> (validação) + `app/shared/prompts/system_prompt_builder.py`
+> (`_append_ai_persona_override` — a persona base é imutável; o override
+> apenas appenda seções). Detalhes em `CLAUDE.md §Per-tenant AI persona`.
+
+### 0.3 Quem deve ler este documento e como
+
+| Perfil | O que buscar primeiro |
+|---|---|
+| Dev entrando no projeto | §0 (contexto) → Glossário → §1–2 (fluxo de request) → §4 (domínio relevante) |
+| Dev de IA / LLM | §7 (primitivas) → §2 (orquestração) → §12 (federated path) → §8 (compliance) |
+| Tech lead / arquiteto | §14 (diagnóstico) → §8 (controles) → §15–16 (dívida técnica) |
+| Líder de produto | §0 → Glossário → §10 (glossário de agentes) → §11 (capabilities) → §27 (IA por página) |
+| Dev de compliance | §8 → §8.1 (matriz) → §8.2 (PII) → §8.3 (embeddings) → §24 (WSI scoring) |
+
+### 0.4 Como uma mensagem no chat vira uma ação no pipeline
+
+Para tornar a arquitetura concreta, aqui está o que acontece quando um
+recrutador digita "mova a Ana Silva para a etapa de entrevista técnica":
+
+```
+1. HTTP POST /api/v1/chat/{session_id}/stream  (SSE, §21)
+   └─ AuthEnforcementMiddleware seta _current_company_id ContextVar
+   └─ PromptInjectionGuard filtra a mensagem de entrada
+   └─ EntityResolver faz lookup fuzzy "Ana Silva" → candidate_id no DB
+      (company-scoped; resultado injetado como hint no prompt)
+
+2. CascadedRouter (§12) escolhe o agente:
+   Tier 1 LRU → miss → Tier 4 FastRouter → regex "mova" + "etapa" → domain: pipeline
+
+3. PipelineReActAgent recebe a mensagem + o hint da Ana
+   └─ Prompt: lia_persona + compliance_block + tenant_snippet + mensagem
+   └─ ReAct loop: LLM raciocina → chama tool move_candidate_stage
+   └─ tool_handler garante company_id do ContextVar (não do LLM)
+
+4. @require_hitl na tool move_candidate_stage:
+   └─ LIA_HITL_GATE=OFF → prossegue; ON → emite `approval_required` SSE
+
+5. move_candidate_stage executa:
+   └─ PipelineTransitionService valida a transição (regras de negócio)
+   └─ FairnessGuard C1-C5 (LGPD Art.20) passa no write
+   └─ AuditService.log_decision (obrigatório neste domínio)
+   └─ Evento disparado via RabbitMQ → Rails atualiza o ATS-of-record
+
+6. SSE emite:
+   └─ `reasoning_step` (raciocínio progressivo, se ativado)
+   └─ `tool_started` / `tool_finished`
+   └─ `message` { content: "Ana Silva movida para Entrevista Técnica ✓",
+                   response_blocks: [CandidateCardBlock, FunnelBlock] }
+```
+
+Esse fluxo — middleware → entity resolver → router → agent → tool → audit →
+SSE — é invariante para todas as ações do chat. O que muda é qual agente é
+escolhido e quais ferramentas ele chama.
+
+---
+
+## Glossário
+
+Termos usados neste documento com significado específico ao projeto.
+
+| Termo | Definição |
+|---|---|
+| **Agent / Agente** | Unidade de IA que raciocina em loop (ReAct: Razão → Ação → Observação) e usa ferramentas para completar tarefas. Diferente de uma função simples porque decide sozinho quais passos executar. |
+| **ReActAgent** | Implementação de agente que usa o padrão ReAct (LangGraph). Herda `LangGraphReActBase` + `TenantAwareAgentMixin`. 16 agentes canônicos. |
+| **Tool / Ferramenta** | Função Python que um agente pode chamar. Recebe parâmetros, executa lógica de negócio, retorna resultado estruturado. Decorada com `@tool_handler`. |
+| **Domain / Domínio** | Agrupamento funcional do código (ex: `cv_screening`, `sourcing`). Domínios agenticos têm agente + tools + services + repositories. |
+| **CascadedRouter** | O roteador em cascata que decide qual agente atende uma mensagem. 6–8 tiers de custo crescente: LRU → Redis → pgvector → regex → LLM. |
+| **WSI** | Workplace Science Index. A metodologia proprietária de triagem estruturada da WeDOTalent. Um conjunto de perguntas geradas por IA (comportamentais + técnicas) com scoring OCEAN. Veja §24. |
+| **HITL** | Human-In-The-Loop. Gates que pausam a execução aguardando confirmação humana antes de ações irreversíveis (enviar email, mover candidato, publicar vaga). |
+| **Tenant** | Uma empresa cliente da WeDOTalent. Todo dado é isolado por `company_id`; nenhum agente pode ver dados de outro tenant. |
+| **BYOK** | Bring Your Own Key. Capacidade de um tenant usar sua própria chave de API LLM (Claude/Gemini/OpenAI) em vez da chave da plataforma. |
+| **C3b layer** | Camada de compliance realtime no chat: HateSpeechGuard + PII strip + PromptInjectionGuard + FairnessGuard L3 + FactChecker + AuditService. Envolve cada turno do chat. |
+| **FairnessGuard** | Sistema de 3 camadas (L1 regex, L2 implicit-bias, L3 HR-sensitive) que bloqueia outputs discriminatórios baseados em atributos protegidos (gênero, raça, idade, etc). |
+| **LangGraph** | Framework para orquestração de agentes como grafos de nós. Cada nó é uma função; o grafo define as transições. Usado no wizard de criação de vagas (15 nós). |
+| **interrupt()** | Primitiva do LangGraph que pausa o grafo e aguarda input humano antes de continuar. Usado nos 4 HITL gates do wizard. |
+| **RRP** | Rich Response Protocol. Sistema de blocos tipados (prose, evidence_stack, score_explainer, comparison_table, funnel, candidate_card) que a IA retorna no lugar de markdown bruto. |
+| **OCEAN / Big Five** | Modelo psicológico dos 5 grandes traços de personalidade: Openness, Conscientiousness, Extraversion, Agreeableness, Neuroticism. Usado no WSI para mapear comportamentos a traços. |
+| **Triagem session** | A sessão de triagem de um candidato para uma vaga. Inclui consent → eligibility → WSI → scoring → resultado. Canônica em `TriagemSessionService`. |
+| **SSE** | Server-Sent Events. O protocolo de transporte canônico do chat (HTTP streaming unidirecional). O cliente abre um POST e o servidor retorna eventos em tempo real. |
+| **PII** | Personally Identifiable Information. CPF, RG, email, telefone, nome — dados mascarados em logs e, parcialmente, em prompts enviados ao LLM. |
+| **ContextVar** | `contextvars.ContextVar` do Python. Variável isolada por contexto de request (equivalente a thread-local em async). Usado para `_current_company_id`, `_active_vacancy_id`, etc. |
+| **Persona** | Nome + tom configuráveis por tenant para a IA. "LIA" é o padrão; cada empresa pode renomear. Veja §0.2. |
+| **Action Register** | Registro de ações pendentes de implementação ou correção. Veja §16. |
+| **ADR** | Architecture Decision Record. Documento que registra uma decisão arquitetural com contexto, alternativas e consequências. Em `docs/specs/ai/ADR-*.md`. |
+
+---
+
 ## 1. Entry point & cross-cutting bootstrap
 
 ```
@@ -1772,3 +1892,424 @@ method; none read the JSONB directly.
 
 **Sentinels:** `tests/contract/test_eligibility_producer_contract.py` (13 tests) +
 `tests/unit/test_eligibility_phase.py` (7 tests).
+
+
+---
+
+## 24. WSI — Workplace Science Index
+
+O WSI é a **metodologia proprietária de triagem estruturada** da WeDOTalent.
+É o principal diferencial técnico da plataforma: em vez de triagem ad-hoc por
+chat livre (onde o candidato pode se preparar para respostas esperadas), o WSI
+gera perguntas calibradas à vaga e avalia as respostas usando frameworks
+psicométricos estabelecidos, produzindo um score OCEAN + recomendação
+auditável.
+
+### 24.1 O que é e por que existe
+
+**O problema:** Triagem de CVs por keywords é rápida mas superficial. Chat
+livre revela personalidade mas não é comparável entre candidatos. Entrevistas
+presenciais são caras e tardias no funil.
+
+**A solução WSI:** Um conjunto de 12 perguntas geradas por IA — calibradas
+especificamente para a combinação vaga + senioridade + departamento — que o
+candidato responde de forma assíncrona (WhatsApp, web, ou voz). As respostas
+são avaliadas por LLM usando rubricas estruturadas (Bloom + Dreyfus), mapeadas
+a traços OCEAN, e combinadas em um score final ponderado.
+
+**O resultado:** Um `lia_score` de 0–100 com breakdown por dimensão, evidências
+citadas das respostas, e recomendação de ação — auditável e comparável entre
+candidatos da mesma vaga.
+
+### 24.2 Composição das perguntas
+
+A distribuição canônica é **70% técnico + 30% comportamental**, mas o split
+é ajustável por senioridade via `wsi_distribution.py`:
+
+| Senioridade | Técnicas | Comportamentais | Total |
+|---|---|---|---|
+| Júnior (0–2 anos) | 8 | 4 | 12 |
+| Pleno (2–5 anos) | 7 | 5 | 12 |
+| Sênior (5+ anos) | 5 | 7 | 12 |
+| Liderança (10+ anos) | 5 | 7 | 12 |
+
+Cada pergunta tem nível mínimo de exigência:
+- **Técnicas:** Dreyfus nível 3 (Competente) como mínimo para pleno/sênior
+- **Comportamentais:** Bloom nível 4 (Analisar) como mínimo
+
+Fonte única das distribuições: `app/domains/job_creation/services/wsi_distribution.py`
+(YAML per-senioridade). Substituiu o split 12-vs-13 anterior que era
+split-brain entre dois arquivos de configuração.
+
+### 24.3 Geração das perguntas (job creation)
+
+No wizard de criação de vagas (§4, `job_creation/`), o nó `wsi_questions`
+gera as perguntas para a vaga usando:
+
+1. **Job description + competências** já geradas nos nós anteriores
+2. **Big Five blend** do departamento (se disponível — o learning loop §19.1)
+3. **WSI skill taxonomy** (`app/shared/wsi_skill_taxonomy.py`) — ontologia de
+   habilidades mapeadas a dimensões OCEAN + frameworks de avaliação
+4. LLM gera o banco de perguntas; o gate `wsi_questions_gate` apresenta ao
+   recrutador para aprovação (`interrupt()`)
+
+As perguntas aprovadas ficam em `JobVacancy.wsi_questions` (JSONB).
+
+### 24.4 Execução da triagem (triagem session)
+
+Durante a triagem de um candidato (§25), as perguntas são entregues
+sequencialmente via WhatsApp, web ou voz. Cada resposta é armazenada em
+`wsi_responses` com o `wsi_block` (número sequencial da pergunta).
+
+Respostas de elegibilidade (§23) usam `wsi_block=999` como sentinela para
+serem excluídas do scoring WSI.
+
+### 24.5 Scoring
+
+O scoring acontece em `app/domains/cv_screening/services/wsi_service/`:
+
+```
+wsi_score_calculator.py:
+  1. Para cada resposta (exceto block=999):
+     a. LLM avalia a resposta usando rubrica 4 níveis (Bloom/Dreyfus)
+     b. Mapeia à dimensão OCEAN via big_five_mapping
+     c. Aplica peso da pergunta (técnica vs comportamental)
+
+  2. WSIScoreCalculator.calculate():
+     - Agrega scores por dimensão OCEAN
+     - Aplica os pesos de competência da vaga (rank_traits)
+     - Produz: {ocean_profile, lia_score, score_breakdown, recommendation}
+
+  3. lia_score_service.py:
+     - Combina CV score + WSI score
+     - Gera o parecer final (opinion) em lia_opinions
+     - Campos: recommendation (Altamente Recomendado / Recomendado /
+       Avaliar com Ressalvas / Não Recomendado), summary, strengths[], concerns[]
+```
+
+O `lia_score` final é o que aparece no Kanban como badge no card do candidato.
+O parecer completo abre no modal de análise.
+
+### 24.6 Big Five learning loop (§19.1 complementado)
+
+Quando um candidato é contratado (`status=hired`), `record_hire()` alimenta
+o perfil de departamento: o snapshot OCEAN do candidato contratado entra no
+agregado running com decay temporal. Futuras vagas do mesmo departamento
+recebem `blend_weights` que já carregam o perfil histórico de quem deu certo.
+
+Gate LGPD (ADR-LGPD-001): mínimo `MIN_DEPT_SAMPLES = 10` contratações antes
+de ativar o blend histórico. Com N < 10 o departamento usa só LLM + O*NET.
+
+### 24.7 Fluxo ponta-a-ponta
+
+```
+Vaga criada (WSI questions aprovadas pelo recrutador via wizard HITL)
+   │
+   ▼
+Candidato adicionado ao pipeline
+   │
+   ▼
+[Eligibility phase]  perguntas eliminatórias (§23), ANTES do WSI
+   │                 wsi_block=999 (excluído do scoring)
+   ▼
+[WSI phase]  12 perguntas entregues via canal escolhido
+   │         WhatsApp: data_request_whatsapp_service
+   │         Web:      triagem_session_service
+   │         Voz:      voice_screening_orchestrator (§25.3)
+   ▼
+Todas as respostas coletadas
+   │
+   ▼
+[Scoring]  wsi_score_calculator → lia_score_service → opinion salva
+   │
+   ▼
+Candidato recebe status + lia_score no Kanban
+   │
+   ▼
+[Recrutador]  vê score + evidências no RRP (score_explainer + evidence_stack)
+              aprova/rejeita/avança para próxima etapa
+```
+
+**Arquivos canônicos:**
+- Geração: `job_creation/services/wsi_question_generator.py`
+- Distribuição: `job_creation/services/wsi_distribution.py`
+- Taxonomy: `shared/wsi_skill_taxonomy.py`
+- Scoring: `cv_screening/services/wsi_service/wsi_score_calculator.py`
+- Score final: `cv_screening/services/lia_score_service.py`
+- Opinião: tabela `lia_opinions` (is_current=true para o parecer vigente)
+
+---
+
+## 25. Triagem session — lifecycle completo
+
+A "triagem" é a jornada que um candidato percorre desde o momento em que é
+adicionado a uma vaga até a obtenção do score final. O `TriagemSessionService`
+(`app/domains/cv_screening/services/triagem_session_service.py`) é o
+orquestrador canônico desse ciclo.
+
+### 25.1 Estados da sessão
+
+```
+CREATED → CONSENT_PENDING → CONSENT_GIVEN → ELIGIBILITY → WSI_IN_PROGRESS
+       → WSI_COMPLETE → SCORING → SCORED → (REJECTED | APPROVED_FOR_NEXT_STAGE)
+```
+
+Cada transição de estado é auditada via `AuditService.log_decision_in_session`.
+Estados terminais: `REJECTED` (reprovou na eligibility ou no score mínimo),
+`SCORED` (score calculado, aguarda decisão do recrutador).
+
+### 25.2 Etapas em detalhe
+
+**1. CONSENT (LGPD gate)**
+
+`ConsentCheckerService.check_candidate_consent(purpose="ai_screening")` é
+chamado antes de qualquer pergunta. O candidato deve ter consentido
+explicitamente. O gate é no backend — o checkbox do frontend é
+defense-in-depth.
+
+Se o candidato não consentiu: a sessão fica em `CONSENT_PENDING`; uma
+comunicação de solicitação de consentimento é disparada via canal configurado
+(WhatsApp/email).
+
+**2. ELIGIBILITY (antes do WSI)**
+
+`eligibility_phase.py` entrega as perguntas eliminatórias (§23). Se o
+candidato falha numa pergunta eliminatória:
+- 2× reconsideração (por categoria)
+- Após 2 falhas: sessão → `REJECTED`; candidato → talent pool
+
+As respostas de elegibilidade usam `wsi_block=999` para não contaminar o
+scoring WSI.
+
+**3. WSI IN PROGRESS**
+
+As 12 perguntas são entregues pelo canal configurado para a vaga:
+
+| Canal | Orquestrador |
+|---|---|
+| Web (portal do candidato) | `triagem_session_service.deliver_next_question()` |
+| WhatsApp | `data_request_whatsapp_service.start_collection()` |
+| Voz (Gemini Live) | `voice_screening_orchestrator.start_voice_session()` |
+
+O candidato pode responder de forma assíncrona (sem um humano na outra ponta).
+O sistema aguarda as respostas e avança a sessão conforme chegam.
+
+**4. SCORING**
+
+Quando todas as respostas chegam (ou o timeout expira com respostas parciais):
+`wsi_score_calculator` → `lia_score_service` → salva `opinion` em
+`lia_opinions` → atualiza `VacancyCandidate.lia_score` → dispara evento
+"triagem concluída" para o recrutador.
+
+### 25.3 Canal de voz
+
+`app/domains/voice/services/voice_screening_orchestrator.py` orquestra a
+triagem por voz via **Gemini Live Audio** (para candidatos web/app) com
+fallback Twilio PSTN (para candidatos sem internet). O realtime credit session
+(`realtime_credit_session.py`) contabiliza tokens de áudio por tenant. A
+transcrição entra no mesmo pipeline de scoring que o texto.
+
+### 25.4 Candidato auto-serviço
+
+`CandidateSelfServiceAgent` (`app/domains/candidate_self_service/`) é o
+agente público (sem autenticação de recrutador) que o candidato encontra:
+- No portal de triagem (`/triagem/preview/chat`)
+- Via link compartilhado pela vaga
+- No WhatsApp via `data_request_whatsapp_service`
+
+Este agente tem tools limitadas (apenas candidato-facing), aplica FairnessGuard
+extra (candidato é parte mais vulnerável) e NÃO tem acesso a dados de outros
+candidatos.
+
+### 25.5 Integração com o pipeline
+
+Após a triagem, o recrutador vê o candidato no Kanban com:
+- Badge `lia_score` (0–100)
+- Cor do badge (verde/amarelo/vermelho por threshold configurável)
+- Ao abrir o perfil: RRP blocks `score_explainer` + `evidence_stack` +
+  `comparison_table` com os demais candidatos da vaga
+
+A decisão final (mover para próxima etapa, aprovar para entrevista, reprovar)
+é sempre do recrutador. A IA recomenda; o humano decide.
+
+---
+
+## 26. Mapa da API surface
+
+O serviço tem 293 arquivos de endpoint em `app/api/v1/`. Esta seção fornece
+a taxonomia para que um dev saiba onde encaixar endpoints novos e onde procurar
+o que já existe.
+
+### 26.1 Taxonomia por categoria
+
+**Chat e orquestração (os endpoints mais críticos):**
+- `agent_chat_sse.py` — chat SSE canônico (§21)
+- `agent_chat_ws.py` — chat WebSocket legacy
+- `ws_manager.py` / `_ws_stream_helpers.py` — helpers de WS
+- `orchestrator_routes.py` — bootstrap do orquestrador (não em v1/)
+- `wizard_smart_orchestrator.py` — endpoints do wizard de criação de vagas
+
+**Candidatos e pipeline:**
+- `applications.py`, `candidates.py` — CRUD de candidatos
+- `screening.py`, `screening_questions.py` — triagem e perguntas WSI
+- `triagem.py` — sessões de triagem (lifecycle §25)
+- `stage_transition_automation.py` — transições automatizadas
+- `talent_funnel.py`, `talent_pools.py` — funil e bancos de talentos
+- `short_lists.py` — shortlists manuais
+
+**Vagas:**
+- `jobs.py` — CRUD de vagas
+- `skills_catalog.py`, `wizard_suggestions.py`, `wizard_analytics.py` — wizard
+- `search_archetypes.py` — arquétipos de busca
+
+**Triagem WSI:**
+- `wsi/` (pasta) + `wsi_questions.py`, `wsi_async.py`, `wsi_observability.py`
+- `wsi_question_adjust.py` — ajuste fino de perguntas geradas
+- `wsi_screening_pipeline_endpoint.py` — pipeline de scoring
+
+**Comunicação:**
+- `whatsapp.py`, `whatsapp_webhook.py` — integração WhatsApp
+- `teams.py` — Microsoft Teams (§17)
+- `twilio_voice.py`, `voice.py`, `voice_screening.py`, `voice_stream.py` — voz
+
+**Sourcing:**
+- `sourcing.py`, `sourcing_agents.py`, `sourcing_pipeline.py`
+- `sourcing_orchestrator.py` — orquestrador de sourcing
+- `search_assistant.py` — busca assistida por IA
+
+**Agentes e Studio:**
+- `agent_studio_channels.py`, `agent_studio_quality.py`
+- `agent_studio_triagem_invite.py`, `agent_studio_voice.py`
+- `agent_studio_whatsapp.py`
+- `agent_templates.py`, `agent_template_catalog.py`
+
+**Analytics e observabilidade:**
+- `analysis.py`, `ai_performance.py`, `ai_consumption.py`
+- `agent_quality.py`, `agent_quality_dashboard.py`
+- `wsi_observability.py`, `traces.py`
+- `wizard_analytics.py`
+
+**Admin (acesso restrito `wedotalent_admin`):**
+- `admin.py`, `admin_agents.py`, `admin_audit_decisions.py`
+- `admin_bias_audit.py`, `admin_circuit_breakers.py`
+- `admin_compliance_fairness.py`, `admin_consent.py`
+- `admin_lgpd.py`, `admin_persona.py`, `admin_platform.py`
+- `admin_prompts.py` — editor de YAMLs de prompt por tenant
+
+**Integrações externas:**
+- `ats.py` — sincronização com ATS externos (Gupy, Pandapé, Merge)
+- `webhooks.py`, `webhook_event_types.py`
+- `workos.py` — SSO via WorkOS
+- `ai_transparency.py` — EU AI Act transparency endpoints
+
+**LGPD / compliance:**
+- `auth.py`, `affirmative.py` — autenticação + ação afirmativa
+- `trust_center.py`, `ai_transparency.py`
+- `admin_lgpd.py`, `admin_consent.py`
+
+**Utilitários:**
+- `system_health.py` — health checks
+- `stubs.py` — endpoints placeholder (não usar em produção)
+- `settings_progress.py` — progresso de configuração da empresa
+
+### 26.2 Onde colocar endpoints novos
+
+| Tipo de endpoint | Localização |
+|---|---|
+| Novo recurso de domínio (ex: nova feature de sourcing) | `app/api/v1/sourcing_<feature>.py` |
+| Extensão de domínio existente | Adicionar rota ao arquivo existente (ex: `sourcing.py`) |
+| Novo endpoint admin (staff WeDOTalent only) | `app/api/v1/admin_<feature>.py` + role gate `wedotalent_admin` |
+| Endpoint de IA / agente | `app/api/v1/agent_<feature>.py` |
+| Webhook entry point | `app/api/v1/webhooks.py` ou arquivo dedicado se tiver HMAC/auth próprio |
+| Endpoint público (sem auth de recrutador) | `app/api/v1/<feature>_public.py` |
+
+**Convenção de registro:** todo arquivo de rotas é importado em
+`app/main.py` (`include_router`). Ao criar um arquivo novo, lembrar de
+adicioná-lo lá.
+
+---
+
+## 27. Mapa de funcionalidades de IA por página
+
+Esta seção é para líderes de produto e devs que querem entender "o que a IA
+faz em cada parte da plataforma" sem precisar ler o código. As funcionalidades
+estão listadas por superfície do produto.
+
+### 27.1 Painel de Controle (`/dashboard`)
+
+| Funcionalidade de IA | Agente / Serviço | Descrição |
+|---|---|---|
+| Tarefas priorizadas do dia | `AnalyticsReActAgent` | Lista de ações pendentes (candidatos aguardando triagem, vagas SLA em risco) ordenada por urgência |
+| Alertas proativos | `ProactiveDetectorService` (§18) | Detectores determinísticos (SQL) que identificam candidatos parados, SLA breaches, funil com gargalo — não são LLM |
+| Briefing diário | `CommunicationReActAgent` | Narrativa condensada do pipeline do dia, gerada por LLM com base em métricas reais |
+| Resumo de pipeline | `AnalyticsReActAgent` | Contagens por etapa, taxa de conversão, comparativo semana anterior |
+
+### 27.2 Vagas (`/jobs`)
+
+| Funcionalidade de IA | Agente / Serviço | Descrição |
+|---|---|---|
+| **Wizard de criação de vaga** | `WizardReActAgent` + grafo LangGraph (15 nós) | Fluxo guiado para criar uma vaga completa: intake → JD enrichment → competências → WSI questions → salário → Big Five → eligibility → pipeline template → publicação. 4 HITL gates. |
+| Enriquecimento de JD | `job_creation/nodes/jd_enrichment.py` | LLM enriquece a descrição da vaga com base no setor, senioridade e cultura da empresa |
+| Sugestão de competências | `job_creation/nodes/competency.py` | Extração de competências + O*NET + cultura da empresa |
+| Geração de perguntas WSI | `job_creation/nodes/wsi_questions.py` | 12 perguntas calibradas para a vaga (§24) |
+| Estimativa de salário | `job_creation/nodes/salary.py` + `MarketBenchmarkService` | Benchmarking de mercado (com flag de proveniência: pesquisado vs estimado, §CLAUDE.md proveniência) |
+| JD similar | `JdSimilarService` (§19) | Sugere vagas passadas similares como referência para o recrutador |
+| Faixa salarial herdada | `_shared.resolve_inherited_salary_ranges` | Herda a faixa salarial configurada em Configurações para o nível + departamento |
+| Score de aderência do JD | `cv_screening/services/cv_scoring_service.py` | Score automático do JD gerado vs requisitos da vaga |
+
+### 27.3 Funil de Talentos / Kanban (`/talent-funnel`)
+
+| Funcionalidade de IA | Agente / Serviço | Descrição |
+|---|---|---|
+| Busca de candidatos | `TalentFunnelReActAgent` | Busca multi-modal: banco interno + LinkedIn + GitHub + StackOverflow |
+| Score LIA no card | `lia_score_service` | Badge de 0–100 em cada candidato, calculado pelo WSI scoring (§24) |
+| Parecer expandido | RRP `score_explainer` + `evidence_stack` | Ao abrir perfil: breakdown do score por dimensão + evidências citadas das respostas |
+| Ranking de candidatos | `rrp_ranking_builder.build_candidate_ranking_blocks` | Tabela comparativa dos candidatos da vaga com scores, evidências e recomendação |
+| Mover candidato (HITL) | `PipelineTransitionAgent` + `@require_hitl` | Move candidato entre etapas; gate de confirmação se `LIA_HITL_GATE=ON` |
+| Análise de CV | `cv_screening/services/cv_scoring_service.py` | Score de aderência CV vs requisitos + rubrica por dimensão |
+| Comparar candidatos | `sourcing_actions._compare_candidates` | Comparação lado-a-lado de N candidatos pelo chat |
+| Digital twin | `digital_twin/` | Criação de perfil sintético do candidato ideal para a vaga |
+| Triagem WSI (iniciar) | `TriagemSessionService` (§25) | Inicia sessão de triagem; entrega perguntas via canal escolhido |
+| Triagem por voz | `voice_screening_orchestrator` | Versão voice-first do WSI via Gemini Live ou Twilio PSTN |
+| Alertas de SLA | `MonitoringLoop` + `ProactiveDetectorService` | Alerta quando candidato está parado há N dias sem movimentação |
+
+### 27.4 Configurações (`/configuracoes`)
+
+| Seção | Funcionalidade de IA | Descrição |
+|---|---|---|
+| **Dados da Empresa** | Auto-preenchimento via website | LLM faz scraping do site da empresa e preenche missão, visão, valores, stack |
+| **Cultura** | Revisão FairnessGuard | Qualquer campo de cultura salvo passa pelo FairnessGuard (evita critérios discriminatórios escondidos em "valores") |
+| **Personalidade da IA** | Persona customizável | Nome + tom da IA por empresa (§0.2). Muda como a IA se comunica, não o que ela faz. |
+| **Instruções LIA por Campo** | `LiaFieldConfigService` | 34 toggles + instruções por campo. Quando ativo, o agente injeta a instrução do recrutador no prompt. Toggle OFF = campo ignorado. |
+| **Política de Recrutamento** | `PolicyReActAgent` | Conversa guiada para configurar regras de hiring (diversidade, aprovações, etc). FairnessGuard em cada save. |
+| **Processo Seletivo** | Pipeline stages | Etapas do processo configuráveis por empresa; herança + override por vaga |
+| **Faixas Salariais** | `salary_bands/` | Faixas por nível + departamento; herdadas automaticamente no wizard de vaga |
+| **Inteligência / Alertas** | `alert_preferences` | Configuração de alertas proativos (§18): limiares, canais, cooldowns |
+| **BYOK** | `tenant_llm_context.py` | Chave de LLM própria do tenant (Claude/Gemini/OpenAI) para uso em chat + completion |
+
+### 27.5 Indicadores (`/indicadores`)
+
+| Funcionalidade de IA | Agente / Serviço | Descrição |
+|---|---|---|
+| Narrativa de métricas | `AnalyticsReActAgent` | LLM interpreta os dados e gera análise em linguagem natural ("Seu tempo médio de contratação aumentou 12% — o funil de Engenharia está represado na etapa técnica") |
+| Relatório de diversidade | `BiasAuditService` (FAR-5) | Análise de disparate impact por dimensão protegida; four-fifths rule |
+| Predição de time-to-fill | `ml/ttf_predictor.py` | Modelo ML que estima quantos dias para fechar a vaga baseado em histórico + pipeline atual |
+| Exportação de relatório | `orchestrator/action_handlers/analytics_actions.py` | Geração de relatório em PDF/Excel via LLM + dados estruturados |
+| Aprendizado de padrões | `LearningLoopService` (§19) | Mostra quais sugestões de IA foram aceitas/rejeitadas (feedback loop visível) |
+
+### 27.6 Chat lateral (disponível em todas as páginas)
+
+O chat lateral está disponível em toda a plataforma (widget fixo). Dependendo
+do contexto da página aberta, o `CascadedRouter` usa o **view_context** para
+enriquecer o roteamento:
+
+| Página atual | Contexto injetado | Efeito no chat |
+|---|---|---|
+| Kanban de vaga X | `view_context: { vacancy_id: X }` | EntityResolver já sabe qual vaga; perguntas sobre "os candidatos dessa vaga" funcionam sem precisar nomear |
+| Perfil do candidato Y | `view_context: { candidate_id: Y }` | Chat já tem o candidato em contexto; "analise ele" funciona diretamente |
+| Indicadores | domínio: analytics | Router preferencia `AnalyticsReActAgent` |
+| Configurações | domínio: company_settings | Router preferencia `CompanySettingsReActAgent` |
+
+O chat pode navegar o usuário para outras páginas via `ui_action: navigate_to`
+(validado pelo whitelist `navigation_routes.py`, §8.1) e abrir modais via
+`open_ui` tool. O histórico de contexto é mantido por sessão.
