@@ -7,6 +7,7 @@ from typing import Any, Literal, Optional
 from lia_agents_core.agent_interface import AgentInput, AgentOutput, AgentAction
 from lia_agents_core.enhanced_agent_mixin import EnhancedAgentMixin
 from lia_agents_core.langgraph_react_base import LangGraphReActBase
+from app.shared.agents.tenant_aware_agent import TenantAwareAgentMixin
 
 logger = logging.getLogger(__name__)
 
@@ -86,7 +87,14 @@ def _summarize_tool_args(kwargs: dict[str, Any]) -> dict[str, Any]:
     return out
 
 
-class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
+class CustomAgentRuntime(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgentMixin):
+    # Gap G (2026-06-08): TenantAwareAgentMixin PRIMEIRO no MRO. execute()
+    # chama self._process_langgraph (linha ~829) → o override do mixin
+    # pré-resolve o snippet de tenant + aplica strict-mode gate
+    # (MissingTenantContextError) e o filtro de snippet degradado
+    # ("sua empresa"). Antes, agentes do Studio escapavam desses controles.
+    # _get_system_prompt próprio do runtime (sync) ainda vence no MRO e lê
+    # ctx['tenant_context_snippet'] que o mixin injeta.
 
     def __init__(
         self,

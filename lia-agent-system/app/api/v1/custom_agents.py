@@ -516,6 +516,36 @@ company_id: str = Depends(require_company_id)):
     if agent.status not in ("active", "draft"):
         raise HTTPException(status_code=400, detail="Agent is not active")
 
+    # ── Gap G (2026-06-08): token budget gate ────────────────────────────
+    # O endpoint /execute era um caminho de invocação paralelo que nunca
+    # passava pelo fence diário de tokens do chat SSE (agent_chat_sse.py:424).
+    # Sem isto, agentes do Agent Studio permitiam gasto ilimitado de LLM em
+    # qualquer plano. Espelha o padrão do SSE: HTTP 429 quando exhausted.
+    try:
+        from app.domains.credits.services.token_budget_service import (
+            check_budget,
+            get_plan_for_company,
+        )
+        _plan = await get_plan_for_company(current_user.company_id)
+        _allowed, _used, _limit = await check_budget(current_user.company_id, _plan)
+        if not _allowed:
+            raise HTTPException(
+                status_code=429,
+                detail={
+                    "error": "budget_exhausted",
+                    "message": "Limite diário de tokens atingido. Tente novamente amanhã.",
+                    "used_today": _used,
+                    "daily_limit": _limit,
+                },
+            )
+    except HTTPException:
+        raise
+    except Exception as _budget_exc:
+        logger.warning(
+            "[CustomAgent] Budget check falhou — continuando (fail-open): %s",
+            _budget_exc,
+        )
+
     try:
         from app.domains.agent_studio.custom_agent_runtime import get_or_create_runtime
 
@@ -542,8 +572,15 @@ company_id: str = Depends(require_company_id)):
             _tcs = TenantContextService()
             _tenant_ctx = await _tcs.get_context(company_id=current_user.company_id, db=db)
             enriched_context["tenant_context_snippet"] = _tenant_ctx.to_prompt_snippet()
-        except Exception:
-            pass
+        except Exception as _tc_exc:
+            # Gap G: nao silenciar. O TenantAwareAgentMixin re-resolve o snippet
+            # no _process_langgraph (com strict-mode gate); este pré-fetch é
+            # otimização/defense-in-depth, mas a falha precisa ser observável.
+            logger.warning(
+                "[CustomAgent] TenantContextService falhou ao pré-injetar "
+                "snippet (mixin re-resolve no _process_langgraph): %s",
+                _tc_exc,
+            )
         enriched_context["user_name"] = getattr(current_user, "name", "") or getattr(current_user, "full_name", "") or ""
         enriched_context["user_role"] = getattr(current_user, "role", "") or ""
 
