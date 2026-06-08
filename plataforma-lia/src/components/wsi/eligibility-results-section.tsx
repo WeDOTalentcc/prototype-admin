@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Link from "next/link"
 import { CheckCircle2, XCircle, ChevronDown, ShieldCheck, ShieldX } from "lucide-react"
 import { Callout } from "@/components/ui/callout"
 
@@ -29,7 +30,15 @@ export function EligibilityResultsSection({ results }: EligibilityResultsSection
       {!allPassed && (
         <Callout variant="warning">
           <span>
-            <strong>LGPD / EU AI Act:</strong> Triagem encerrada na fase de pré-elegibilidade. O candidato pode solicitar revisão da decisão via Central de Privacidade.
+            <strong>LGPD / EU AI Act:</strong> Triagem encerrada na fase de pré-elegibilidade. O candidato pode solicitar revisão da decisão via{" "}
+            <Link
+              href="/privacidade"
+              className="underline underline-offset-2 font-medium hover:opacity-80 transition-opacity"
+              style={{ color: "var(--status-warning)" }}
+            >
+              Central de Privacidade
+            </Link>
+            .
           </span>
         </Callout>
       )}
