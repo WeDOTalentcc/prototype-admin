@@ -190,7 +190,7 @@ async def save_teams_outbound_config(
     the persisted URL instead of the global TEAMS_WEBHOOK_URL env var.
     """
     try:
-        validated_url = safe_outbound_url(request.webhook_url, label="teams_webhook")
+        validated_url = safe_outbound_url(request.webhook_url)
     except UnsafeOutboundURLError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
 
