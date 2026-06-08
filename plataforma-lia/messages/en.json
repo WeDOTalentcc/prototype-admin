@@ -7989,5 +7989,11 @@
         }
       }
     }
+  },
+  "bulkReport": {
+    "title": "{succeeded} of {total} sent",
+    "closeButton": "Close",
+    "copyFailed": "Copy failed list",
+    "deliveryFailed": "Last delivery failed: {reason}"
   }
 }

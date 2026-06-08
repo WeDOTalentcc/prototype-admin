@@ -7989,5 +7989,11 @@
         }
       }
     }
+  },
+  "bulkReport": {
+    "title": "{succeeded} de {total} enviados",
+    "closeButton": "Fechar",
+    "copyFailed": "Copiar lista de falhas",
+    "deliveryFailed": "Último envio falhou: {reason}"
   }
 }

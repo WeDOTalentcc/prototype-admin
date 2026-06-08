@@ -1,6 +1,7 @@
 "use client"
 
 import React from "react"
+import { useTranslations } from "next-intl"
 import { CheckCircle2, AlertTriangle, Copy } from "lucide-react"
 import {
   Dialog,
@@ -29,6 +30,8 @@ export function BulkResultReport({
   results,
   actionLabel,
 }: BulkResultReportProps) {
+  const t = useTranslations("bulkReport")
+
   if (!isOpen) return null
 
   const succeeded = results.filter((r) => r.ok)
@@ -36,7 +39,7 @@ export function BulkResultReport({
   const pct = results.length > 0 ? Math.round((succeeded.length / results.length) * 100) : 0
 
   const handleCopyFailed = () => {
-    const text = failed.map((r) => `${r.name}: ${r.reason ?? "falha"}`).join("\n")
+    const text = failed.map((r) => ).join("\n")
     navigator.clipboard.writeText(text).catch(() => undefined)
   }
 
@@ -45,7 +48,7 @@ export function BulkResultReport({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-lia-text-primary">
-            {actionLabel} — {succeeded.length} de {results.length} enviados
+            {actionLabel} — {t("title", { succeeded: succeeded.length, total: results.length })}
           </DialogTitle>
         </DialogHeader>
 
@@ -58,7 +61,7 @@ export function BulkResultReport({
         >
           <div
             className="h-full rounded-full bg-[#60BED1] transition-all"
-            style={{ width: `${pct}%` }}
+            style={{ width:  }}
           />
         </div>
 
@@ -71,9 +74,7 @@ export function BulkResultReport({
                 <AlertTriangle className="w-4 h-4 shrink-0 text-status-warning" aria-hidden />
               )}
               <span
-                className={`flex-1 font-medium ${
-                  r.ok ? "text-lia-text-primary" : "text-lia-text-secondary"
-                }`}
+                className={}
               >
                 {r.name}
               </span>
@@ -88,11 +89,11 @@ export function BulkResultReport({
           {failed.length > 0 && (
             <Button variant="outline" size="sm" onClick={handleCopyFailed} className="gap-1">
               <Copy className="w-3.5 h-3.5" />
-              Copiar lista de falhas
+              {t("copyFailed")}
             </Button>
           )}
           <Button variant="primary" size="sm" onClick={onClose}>
-            Fechar
+            {t("closeButton")}
           </Button>
         </DialogFooter>
       </DialogContent>
