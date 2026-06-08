@@ -419,7 +419,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
         )}
 
         {/* ML Predictions Section */}
-        {predictions && predictions.vacancies.length > 0 && (
+        {predictions && (predictions.vacancies?.length ?? 0) > 0 && (
           <div className="mb-6">
             <h3 className="text-sm font-medium text-lia-text-secondary flex items-center gap-2 mb-3">
               <Clock className="w-4 h-4" />

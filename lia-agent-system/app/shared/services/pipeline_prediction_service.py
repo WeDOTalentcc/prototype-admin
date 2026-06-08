@@ -547,9 +547,9 @@ class PipelinePredictionService:
                     WHERE company_id = :cid
                       AND status = 'active'
                       AND (
-                          created_by = :uid
+                          created_by = :uid::uuid
                           OR recruiter_email = (
-                              SELECT email FROM users WHERE id = :uid LIMIT 1
+                              SELECT email FROM users WHERE id = :uid::uuid LIMIT 1
                           )
                       )
                     LIMIT 20
