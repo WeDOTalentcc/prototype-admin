@@ -105,14 +105,34 @@ export function IntegrationDetailModal({
   }, [open, integration?.id])
 
   const handleTeamsSave = useCallback(async () => {
-    if (!teamsWebhookInput.trim()) return
+    const url = teamsWebhookInput.trim()
+    if (!url) return
+
+    if (url.includes("teams.microsoft.com/l/channel") || url.includes("teams.microsoft.com/l/team")) {
+      setTeamsSaveMsg({
+        ok: false,
+        text: "Isso é um link do canal, não um webhook. No canal desejado, clique em '...' → Conectores → Incoming Webhook → Configurar → copie a URL gerada.",
+      })
+      return
+    }
+
+    const validHosts = ["outlook.office.com", "webhook.office.com", "logic.azure.com", "prod-"]
+    const looksLikeWebhook = validHosts.some((h) => url.includes(h))
+    if (!looksLikeWebhook) {
+      setTeamsSaveMsg({
+        ok: false,
+        text: "URL não reconhecida como webhook do Teams. A URL deve vir de: Conectores → Incoming Webhook no canal (começa com outlook.office.com, webhook.office.com ou logic.azure.com).",
+      })
+      return
+    }
+
     setTeamsSaveLoading(true)
     setTeamsSaveMsg(null)
     try {
       const res = await apiFetch("/api/backend-proxy/integrations/teams/outbound-config", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ webhook_url: teamsWebhookInput.trim() }),
+        body: JSON.stringify({ webhook_url: url }),
       })
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
@@ -127,7 +147,7 @@ export function IntegrationDetailModal({
       notifyChatOfSettingsUpdate({ actionId: "configure_integration", section: "integrations" })
       onConfigSaved?.()
     } catch {
-      setTeamsSaveMsg({ ok: false, text: "Erro de conexão" })
+      setTeamsSaveMsg({ ok: false, text: "Erro de conexão com o servidor" })
     } finally {
       setTeamsSaveLoading(false)
     }
@@ -466,12 +486,19 @@ export function IntegrationDetailModal({
 
                   <div className="space-y-2">
                     <p className={textStyles.description}>
-                      Cole a URL do Incoming Webhook do canal Teams que deve receber as notificações da LIA.
+                      Cole a URL gerada pelo conector <strong>Incoming Webhook</strong> do canal Teams.
+                      Para obter: no canal desejado, clique em <strong>… → Conectores → Incoming Webhook → Configurar</strong>.
                     </p>
+                    {teamsWebhookInput.includes("teams.microsoft.com/l/") && (
+                      <div className="flex items-start gap-1.5 px-3 py-2 rounded-md text-[11px] bg-status-warning/10 border border-status-warning/30 text-status-warning">
+                        <AlertCircle className="w-3 h-3 flex-shrink-0 mt-0.5" />
+                        <span>Isso é um link do canal, não um webhook. Você precisa gerar a URL pelo conector Incoming Webhook.</span>
+                      </div>
+                    )}
                     <div className="flex gap-2">
                       <Input
                         type="url"
-                        placeholder="https://outlook.office.com/webhook/..."
+                        placeholder="https://prod-XX.westus.logic.azure.com/workflows/..."
                         value={teamsWebhookInput}
                         onChange={(e) => setTeamsWebhookInput(e.target.value)}
                         className="rounded-md text-xs h-8 flex-1 font-mono"
