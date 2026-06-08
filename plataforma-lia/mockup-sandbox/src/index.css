@@ -44,6 +44,50 @@
 
 /* LIGHT MODE - Default theme with placeholder values */
 :root {
+  /* ── LIA Design Tokens (mirrored from plataforma-lia/src/styles/design-tokens.css) ── */
+  --lia-bg-primary: #FFFFFF;
+  --lia-bg-secondary: #F9FAFB;
+  --lia-bg-tertiary: #F3F4F6;
+  --lia-bg-elevated: #FFFFFF;
+  --lia-border-subtle: #D4D4D4;
+  --lia-border-default: #BEBEBE;
+  --lia-border-medium: #BEBEBE;
+  --lia-border-strong: #999999;
+  --lia-text-primary: #111111;
+  --lia-text-secondary: #2D2D2D;
+  --lia-text-tertiary: #5C5C5C;
+  --lia-text-disabled: #999999;
+  --lia-text-inverse: #FFFFFF;
+  --lia-interactive-hover: #F3F4F6;
+  --lia-interactive-active: #E5E7EB;
+  --lia-btn-primary-bg: #111827;
+  --lia-btn-primary-hover: #000000;
+  --lia-btn-primary-text: #FFFFFF;
+  --lia-btn-secondary-bg: transparent;
+  --lia-btn-secondary-hover: #F3F4F6;
+  --lia-btn-secondary-text: #6B7280;
+  --lia-btn-secondary-border: #E5E7EB;
+  --lia-input-bg: #FFFFFF;
+  --lia-input-border: #E5E7EB;
+  --lia-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.05);
+  --lia-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.05);
+  --wedo-cyan: #60BED1;
+  --wedo-cyan-dark: #4DA8BB;
+  --wedo-cyan-light: #B8E0EA;
+  --wedo-green: #5DA47A;
+  --wedo-green-light: #A8D5B7;
+  --status-success: #16A34A;
+  --status-error: #DC2626;
+  --status-warning: #D97706;
+  --status-success-bg: rgba(22, 163, 74, 0.10);
+  --status-success-bg-15: rgba(22, 163, 74, 0.15);
+  --status-success-border: rgba(22, 163, 74, 0.30);
+  --status-error-bg: rgba(220, 38, 38, 0.10);
+  --status-error-bg-15: rgba(220, 38, 38, 0.15);
+  --status-error-border: rgba(220, 38, 38, 0.30);
+  --status-warning-bg: rgba(217, 119, 6, 0.10);
+  --status-warning-border: rgba(217, 119, 6, 0.30);
+
   --button-outline: rgba(0,0,0, .10);
   --badge-outline: rgba(0,0,0, .05);
   --opaque-button-border-intensity: -8;
