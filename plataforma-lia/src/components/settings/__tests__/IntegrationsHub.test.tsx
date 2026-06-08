@@ -44,6 +44,7 @@ vi.mock("@/hooks/integrations/use-integrations-data", () => ({
     googleStatus: "idle",
     microsoftStatus: "not_configured",
     teamsStatus: "not_configured",
+    refetchTeamsStatus: vi.fn(),
     llmConfig: null,
     refetchLlmConfig: vi.fn(),
   }),

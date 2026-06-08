@@ -33,8 +33,9 @@ interface CalendarHealthData {
   google_configured?: boolean
 }
 
-interface IntegrationStatusData {
-  teams?: { configured?: boolean; source?: string }
+interface TeamsStatusData {
+  configured?: boolean
+  source?: string
 }
 
 const ATS_PROVIDER_MAP: Record<string, string> = { gupy: "gupy", pandape: "pandape", merge: "merge" }  // P1-13 audit: merge e provider ATS valido (backend SUPPORTED_PROVIDERS)
@@ -48,11 +49,11 @@ export function useIntegrationsData() {
     retry: 1,
   })
 
-  const { data: integrationStatus } = useQuery<IntegrationStatusData>({
-    queryKey: ["integrations-status"],
+  const { data: teamsStatusData, refetch: refetchTeamsStatus } = useQuery<TeamsStatusData>({
+    queryKey: ["integrations-teams-status"],
     queryFn: () =>
-      apiFetch("/api/backend-proxy/integrations/status").then((r) => {
-        if (!r.ok) throw new Error("Failed to fetch status")
+      apiFetch("/api/backend-proxy/integrations/teams/status").then((r) => {
+        if (!r.ok) throw new Error("Failed to fetch Teams status")
         return r.json()
       }),
     staleTime: 60_000,
@@ -90,7 +91,7 @@ export function useIntegrationsData() {
 
   const googleStatus = calendarHealth?.google_configured ? "connected" : ("idle" as const)
   const microsoftStatus = calendarHealth?.graph_configured ? "connected" : ("not_configured" as const)
-  const teamsConfigured = integrationStatus?.teams?.configured ?? false
+  const teamsConfigured = teamsStatusData?.configured ?? false
   const teamsStatus = teamsConfigured ? "configured" : ("not_configured" as const)
   const activeProvider = llmConfig?.primary_provider ?? "gemini"
 
@@ -103,7 +104,7 @@ export function useIntegrationsData() {
         return { ...integration, status: microsoftStatus === "connected" ? ("connected" as const) : integration.status }
       }
       if (integration.id === "teams") {
-        return { ...integration, status: teamsStatus === "configured" ? ("connected" as const) : integration.status }
+        return { ...integration, status: teamsStatus === "configured" ? ("connected" as const) : ("not_configured" as const) }
       }
       if (integration.category === "ai_models") {
         const provKey = AI_PROVIDER_MAP[integration.id]
@@ -131,7 +132,7 @@ export function useIntegrationsData() {
     googleStatus,
     microsoftStatus,
     teamsStatus,
-    refetchIntegrationStatus: () => void 0,
+    refetchTeamsStatus,
     llmConfig: llmConfig ?? null,
     refetchLlmConfig,
   }

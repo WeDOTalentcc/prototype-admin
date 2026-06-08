@@ -52,7 +52,7 @@ export function IntegrationsHub({ activeSubsection }: IntegrationsHubProps) {
     setActiveTab(activeSubsection || "all")
   }, [activeSubsection])
 
-  const { enrichedIntegrations, catalogLoading, googleStatus, microsoftStatus, teamsStatus, llmConfig, refetchLlmConfig } =
+  const { enrichedIntegrations, catalogLoading, googleStatus, microsoftStatus, teamsStatus, refetchTeamsStatus, llmConfig, refetchLlmConfig } =
     useIntegrationsData()
 
   const activeCategory = tabToCategoryMap[activeTab] ?? "all"
@@ -186,7 +186,7 @@ export function IntegrationsHub({ activeSubsection }: IntegrationsHubProps) {
         onConnectGoogle={handleConnectGoogle}
         errorMsg={errorMsg}
         llmConfig={llmConfig}
-        onConfigSaved={() => { void refetchLlmConfig() }}
+        onConfigSaved={() => { void refetchLlmConfig(); void refetchTeamsStatus() }}
       />
     </div>
   )
