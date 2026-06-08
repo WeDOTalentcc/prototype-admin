@@ -1959,7 +1959,7 @@ class ProactiveDetectorService:
             return 0
 
         try:
-            from sqlalchemy import and_, select
+            from sqlalchemy import and_, select, text as sa_text
 
             from lia_models.background_jobs import (
                 ActionStatus,
@@ -1970,12 +1970,26 @@ class ProactiveDetectorService:
             self.logger.error("ProactiveAction model import failed: %s", exc)
             return 0
 
+        # Scheduler runs without an HTTP request context, so app.company_id is
+        # not set → app_current_company_id() returns NULL → RLS policy
+        # (company_id::text = app_current_company_id(), migration 124) denies
+        # both SELECTs (dedup) and INSERTs.  Set it per-company via
+        # set_config(is_local=true) — transaction-scoped, clears on commit.
+        _rls_company_set: str | None = None
+
         persisted = 0
         for hint in hints:
             try:
                 company_uuid = UUID(hint["company_id"])
             except (KeyError, ValueError):
                 continue
+
+            if str(company_uuid) != _rls_company_set:
+                await db.execute(
+                    sa_text("SELECT set_config('app.company_id', :cid, true)"),
+                    {"cid": str(company_uuid)},
+                )
+                _rls_company_set = str(company_uuid)
 
             detector_name = hint.get("detector", "")
             # Deduplicate: existe ja um hint pendente do mesmo detector?
