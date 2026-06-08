@@ -28,6 +28,8 @@
         "candidatesToContactAnon": "{greeting}. {count, plural, one {# candidate needs} other {# candidates need}} contact today.",
         "offersPending": "{greeting}, {name}. {count, plural, one {# offer is} other {# offers are}} awaiting your decision.",
         "offersPendingAnon": "{greeting}. {count, plural, one {# offer is} other {# offers are}} awaiting your decision.",
+        "awaitingFeedback": "{greeting}, {name}. {count, plural, one {# candidate is} other {# candidates are}} awaiting your feedback.",
+        "awaitingFeedbackAnon": "{greeting}. {count, plural, one {# candidate is} other {# candidates are}} awaiting your feedback.",
         "allClear": "{greeting}, {name}. All caught up. Want to get ahead on something?",
         "allClearAnon": "{greeting}. All caught up. Want to get ahead on something?"
       }

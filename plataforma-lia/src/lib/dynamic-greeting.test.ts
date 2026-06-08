@@ -114,6 +114,37 @@ describe("selectGreeting — contextual chat (prioridade)", () => {
     if (plan.kind === "context") expect(plan.key).toBe("offersPending")
   })
 
+  it("awaitingFeedback sem interviewsToday — sinal independente com nome", () => {
+    const plan = selectGreeting({
+      surface: "chat",
+      now: at(9),
+      briefing: { ...emptyBriefing, awaitingFeedback: 3 },
+      name: "Ana",
+      seed: 0,
+    })
+    expect(plan.kind).toBe("context")
+    if (plan.kind === "context") {
+      expect(plan.key).toBe("awaitingFeedback")
+      expect(plan.counts).toEqual({ count: 3 })
+    }
+  })
+
+  it("awaitingFeedback sem interviewsToday — NÃO cai em allClear", () => {
+    const plan = selectGreeting({
+      surface: "chat",
+      now: at(9),
+      briefing: { ...emptyBriefing, awaitingFeedback: 1 },
+      name: null,
+      seed: 0,
+    })
+    expect(plan.kind).toBe("context")
+    if (plan.kind === "context") {
+      expect(plan.key).not.toBe("allClear")
+      expect(plan.key).not.toBe("allClearAnon")
+      expect(plan.key).toBe("awaitingFeedbackAnon")
+    }
+  })
+
   it("chat com briefing+sinal mas SEM nome → contextual anon (não curada)", () => {
     const plan = selectGreeting({ surface: "chat", now: at(9), briefing: { ...emptyBriefing, interviewsToday: 2 }, name: null, seed: 7 })
     expect(plan.kind).toBe("context")
@@ -129,6 +160,7 @@ describe("selectGreeting — contextual chat (prioridade)", () => {
       [{ interviewsToday: 1 }, "interviewsTodayAnon"],
       [{ candidatesToContact: 3 }, "candidatesToContactAnon"],
       [{ offersPending: 1 }, "offersPendingAnon"],
+      [{ awaitingFeedback: 4 }, "awaitingFeedbackAnon"],
       [{}, "allClearAnon"],
     ]
     for (const [partial, expectedKey] of cases) {

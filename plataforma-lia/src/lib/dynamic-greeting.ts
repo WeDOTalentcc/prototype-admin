@@ -91,6 +91,9 @@ export function selectGreeting(args: SelectGreetingArgs): GreetingPlan {
       if (offersPending > 0) {
         return { kind: "context", key: `offersPending${anon}`, timeKey, name, counts: { count: offersPending } }
       }
+      if (awaitingFeedback > 0) {
+        return { kind: "context", key: `awaitingFeedback${anon}`, timeKey, name, counts: { count: awaitingFeedback } }
+      }
       // Briefing presente mas sem sinal relevante → allClear.
       return { kind: "context", key: `allClear${anon}`, timeKey, name, counts: {} }
     } else {

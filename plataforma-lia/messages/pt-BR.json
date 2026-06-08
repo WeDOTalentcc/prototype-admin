@@ -28,6 +28,8 @@
         "candidatesToContactAnon": "{greeting}. {count, plural, one {# candidato precisa} other {# candidatos precisam}} de contato hoje.",
         "offersPending": "{greeting}, {name}. {count, plural, one {# proposta aguarda} other {# propostas aguardam}} sua decisão.",
         "offersPendingAnon": "{greeting}. {count, plural, one {# proposta aguarda} other {# propostas aguardam}} sua decisão.",
+        "awaitingFeedback": "{greeting}, {name}. {count, plural, one {# candidato aguarda} other {# candidatos aguardam}} retorno de avaliação.",
+        "awaitingFeedbackAnon": "{greeting}. {count, plural, one {# candidato aguarda} other {# candidatos aguardam}} retorno de avaliação.",
         "allClear": "{greeting}, {name}. Tudo em dia. Vamos adiantar algo?",
         "allClearAnon": "{greeting}. Tudo em dia. Vamos adiantar algo?"
       }
