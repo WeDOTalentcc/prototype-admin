@@ -147,7 +147,7 @@ export function KanbanBoardSection({ state }: KanbanBoardSectionProps) {
       <div className="flex-1 overflow-x-auto overflow-y-hidden" suppressHydrationWarning>
         <div className="p-4 h-full" suppressHydrationWarning>
           {(currentJob as { id?: string })?.id ? (
-            <JobFairnessBlockBanner jobId={(currentJob as { id: string }).id} />
+            <JobFairnessBlockBanner jobId={((currentJob as { backendId?: string; id?: string })?.backendId || (currentJob as { id?: string })?.id) as string} />
           ) : null}
           {(!hasMounted || isLoadingCandidates) ? (
             <div className="flex gap-3 h-full min-w-max" suppressHydrationWarning>
@@ -265,7 +265,7 @@ export function KanbanBoardSection({ state }: KanbanBoardSectionProps) {
             onSendTriagem={(candidate) => handleSendTriagem(candidate)}
             onSendAgendamento={(candidate) => handleSendAgendamento(candidate)}
             onSendFeedback={(candidate) => handleSendFeedback(candidate)}
-            jobId={jobData.id?.toString()}
+            jobId={((jobData.backendId || jobData.id) as string | number | undefined)?.toString()}
           />
           </div>
         </div>

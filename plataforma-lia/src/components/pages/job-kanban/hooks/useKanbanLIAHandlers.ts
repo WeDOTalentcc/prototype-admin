@@ -414,7 +414,7 @@ export function useKanbanLIAHandlers(ctx: KanbanLIAHandlersContext) {
 
     try {
       const jobContext = {
-        id: currentJob.id,
+        id: (currentJob as { backendId?: unknown }).backendId || currentJob.id,
         title: currentJob.title,
         department: currentJob.department,
         level: currentJob.level,
@@ -634,7 +634,7 @@ export function useKanbanLIAHandlers(ctx: KanbanLIAHandlersContext) {
     switchChatContext("kanban_chat");
 
     const jobContext = {
-      id: currentJob.id,
+      id: (currentJob as { backendId?: unknown }).backendId || currentJob.id,
       title: currentJob.title,
       department: currentJob.department,
       level: currentJob.level,

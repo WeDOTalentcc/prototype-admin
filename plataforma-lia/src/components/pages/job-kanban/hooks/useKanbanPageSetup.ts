@@ -36,12 +36,12 @@ export function useKanbanPageSetup({ job }: { job?: Record<string, unknown> }) {
     suggestions: aiSuggestions,
     approveSuggestion,
     rejectSuggestion,
-  } = useCandidateSuggestions(job?.id?.toString() || "")
+  } = useCandidateSuggestions(((job?.backendId || job?.id) as string | number | undefined)?.toString() || "")
 
-  const pipelineInheritance = usePipelineInheritance(job?.id?.toString())
+  const pipelineInheritance = usePipelineInheritance(((job?.backendId || job?.id) as string | number | undefined)?.toString())
 
   const { events: returnEvents, getAlertForCandidate, computeAlerts, hasAlerts } = useReturnEvents({
-    jobId: job?.id?.toString(),
+    jobId: ((job?.backendId || job?.id) as string | number | undefined)?.toString(),
     enabled: true,
     pollingIntervalMs: 30000,
   })

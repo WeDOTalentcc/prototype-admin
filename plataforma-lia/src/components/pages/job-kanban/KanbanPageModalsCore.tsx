@@ -249,7 +249,7 @@ export function KanbanPageModalsCore(state: KanbanPageCoreState) {
             setWsiCandidate(null)
           }}
           candidate={wsiCandidate as any}
-          jobVacancyId={jobData.id?.toString()}
+          jobVacancyId={((jobData.backendId || jobData.id) as string | number | undefined)?.toString()}
           jobTitle={jobData.title as any}
           eligibilityResults={extractEligibilityResults(wsiCandidate as Record<string, unknown>, jobData)}
         />
@@ -263,7 +263,7 @@ export function KanbanPageModalsCore(state: KanbanPageCoreState) {
         }}
         candidate={wsiInviteCandidate as any}
         jobTitle={currentJob.title as string | undefined}
-        jobId={(currentJob.id as string | number | undefined)?.toString()}
+        jobId={((currentJob.backendId || currentJob.id) as string | number | undefined)?.toString()}
         companyId={
           (currentJob?.company_id as string | undefined) ??
           (currentJob?.companyId as string | undefined)
