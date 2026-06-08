@@ -424,10 +424,14 @@ class TeamsOrchestratorBridge:
         teams_user_id: str,
         tenant_id: str,
         db: AsyncSession | None = None,
-    ) -> str:
+    ) -> str | None:
         """
         Resolve company_id from Teams user/tenant.
-        Checks stored conversation reference first, then falls back.
+
+        Priority:
+        1. Stored conversation reference (fastest, cached after first message)
+        2. TEAMS_DEFAULT_COMPANY_ID env var (set by admin for single-tenant deployments)
+        3. First active company in DB (single-company fallback)
         """
         if db:
             try:
@@ -438,6 +442,28 @@ class TeamsOrchestratorBridge:
             except Exception:
                 pass
 
+        # Fallback: admin-configured default company for Teams bot
+        import os
+        default_company_id = os.environ.get("TEAMS_DEFAULT_COMPANY_ID")
+        if default_company_id:
+            logger.info(f"[Teams] Using TEAMS_DEFAULT_COMPANY_ID={default_company_id} for user {teams_user_id}")
+            return default_company_id
+
+        # Last resort: first active company in DB (single-company deployment)
+        if db:
+            try:
+                from sqlalchemy import text as _text
+                result = await db.execute(
+                    _text("SELECT id FROM companies WHERE is_active = true ORDER BY created_at ASC LIMIT 1")
+                )
+                row = result.fetchone()
+                if row:
+                    logger.info(f"[Teams] Resolved company_id={row[0]} from DB fallback for user {teams_user_id}")
+                    return str(row[0])
+            except Exception as e:
+                logger.warning(f"[Teams] DB company fallback failed: {e}")
+
+        logger.warning(f"[Teams] Could not resolve company_id for user {teams_user_id} tenant {tenant_id}. Set TEAMS_DEFAULT_COMPANY_ID.")
         return None
 
 

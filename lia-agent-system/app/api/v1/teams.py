@@ -724,8 +724,8 @@ async def receive_teams_message(
                 await _log_teams_message(activity, db)
                 return {"status": "ok"}
 
-        # Process text message via orchestrator-backed bot
-        response = await simple_teams_bot.process_activity(activity)
+        # Process text message via orchestrator-backed bot (db passed for tenant resolution)
+        response = await simple_teams_bot.process_activity(activity, db=db)
 
         if isinstance(response, dict) and response.get("type") == "card":
             await simple_teams_bot.send_adaptive_card(

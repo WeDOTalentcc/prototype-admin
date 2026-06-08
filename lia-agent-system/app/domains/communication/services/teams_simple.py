@@ -40,13 +40,10 @@ class SimpleTeamsBot:
             if datetime.utcnow() < self._token_expires:
                 return self._access_token
         
-        # Get new token — Single Tenant bot must use the App Registration's home tenant endpoint.
-        # Use dedicated TEAMS_APP_TENANT_ID setting; AZURE_TENANT_ID is for Graph API and may differ.
-        tenant_id = (
-            getattr(settings, "TEAMS_APP_TENANT_ID", None)
-            or getattr(settings, "AZURE_TENANT_ID", None)
-            or "botframework.com"
-        )
+        # Bot Framework Connector tokens MUST use botframework.com as the tenant endpoint.
+        # AZURE_TENANT_ID is for Microsoft Graph API calls (different service).
+        # TEAMS_APP_TENANT_ID can override if needed for special deployments.
+        tenant_id = getattr(settings, "TEAMS_APP_TENANT_ID", None) or "botframework.com"
         token_url = f"https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token"
         logger.info(f"[Teams] Acquiring token via {token_url}")
 
@@ -93,12 +90,13 @@ class SimpleTeamsBot:
 
             return self._access_token
     
-    async def process_activity(self, activity: dict[str, Any]) -> Any | None:
+    async def process_activity(self, activity: dict[str, Any], db=None) -> Any | None:
         """
         Process incoming activity from Teams.
         
         Args:
             activity: Activity payload from Teams
+            db: Optional DB session for tenant resolution
             
         Returns:
             Response dict ({"type": "card", "card": ...} or {"type": "text", "text": ...})
@@ -107,7 +105,7 @@ class SimpleTeamsBot:
         activity_type = activity.get("type", "")
         
         if activity_type == "message":
-            return await self._handle_message(activity)
+            return await self._handle_message(activity, db=db)
         
         elif activity_type == "conversationUpdate":
             return await self._handle_conversation_update(activity)
@@ -152,7 +150,7 @@ class SimpleTeamsBot:
 
     # ─────────────────────────────────────────────────────────────────────────
 
-    async def _handle_message(self, activity: dict[str, Any]) -> dict[str, Any]:
+    async def _handle_message(self, activity: dict[str, Any], db=None) -> dict[str, Any]:
         """Handle incoming message — routes through full LIA orchestrator."""
         try:
             from app.domains.communication.services.teams_card_renderer import teams_card_renderer
@@ -170,7 +168,7 @@ class SimpleTeamsBot:
             # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.info(f"[Teams] Message from {from_user.get('name')}: {text[:80]}")
 
-            result = await teams_orchestrator_bridge.process_message(activity)
+            result = await teams_orchestrator_bridge.process_message(activity, db=db)
             deep_link = result.pop("_deep_link_path", "")
             card = teams_card_renderer.render(result, source_text=text, deep_link_path=deep_link)
 
