@@ -180,14 +180,18 @@ global:
 # Any tool matching dangerous keywords (delete/remove/purge/bulk/export/config/
 # permission/close/cancel/reject/hide) MUST be listed here.
 # The ActionExecutor and orchestrator check this list to enforce HITL guardrails.
+
+# ── RESTRICTED TOOLS ─────────────────────────────────────────────────────────
+# Tools that require explicit user confirmation before execution (OWASP LLM06).
+# Any tool matching dangerous keywords (delete/remove/purge/bulk/export/config/
+# permission/close/cancel/reject/hide) MUST be listed here.
+# The ActionExecutor and orchestrator check this list to enforce HITL guardrails.
 restricted_tools:
   # Destructive / removal actions
   - reject_candidate          # permanently reject from pipeline
   - hide_candidate            # soft-delete from view
-  - cancel_vacancy            # cancel entire job opening
-  - close_job                 # close job permanently
-  - pause_job                 # pause job (reversible but impactful)
-  - pause_vacancy             # pause vacancy with reason
+  - close_job                 # close/cancel job permanently (cobre cancel_vacancy)
+  - pause_job                 # pause job (reversible but impactful; cobre pause_vacancy)
   # Bulk / batch operations
   - bulk_update_candidates_stage  # move many candidates at once
   - send_bulk_email           # mass email to candidates
@@ -203,15 +207,10 @@ restricted_tools:
   # Pipeline stage changes
   - update_candidate_stage    # move candidate between stages
   # Job publishing (external visibility)
-  - publish_job               # make job publicly visible
-  - publish_to_job_board      # publish to external boards
-  # Autonomous actions
-  - confirm_autonomous_action # confirm AI-initiated action
-  # Hiring decisions
-  - confirm_placement         # confirm hire decision
-  - create_offer_letter       # generate offer letter
-  - record_hiring_outcome     # record hiring result
-
+  - publish_job               # make job publicly visible (cobre publish_to_job_board)
+  # Hiring decisions (offer + placement = alta consequência → agora gated)
+  - generate_offer            # gerar carta-proposta (renomeado de create_offer_letter)
+  - finalize_hiring           # registrar contratação (renomeado de record_hiring_outcome)
   # Job creation/modification (structural changes)
   - create_job                # create new job vacancy
   - update_job                # modify existing job
@@ -219,12 +218,10 @@ restricted_tools:
   - schedule_report           # schedule automated report delivery
   # Pool operations
   - move_pool_to_job          # move talent pool candidates to job
-  # Agent management
-  - create_sourcing_agent     # create AI sourcing agent
-  - calibrate_sourcing_agent  # recalibrate agent parameters
+  # Agent management (DomainActions — gated no Studio runtime, não tool de LLM)
+  - create_sourcing_agent     # create AI sourcing agent (DomainAction)
+  - calibrate_sourcing_agent  # recalibrate agent parameters (DomainAction)
   # Campaign operations
-  - advance_campaign_stage    # advance recruitment campaign stage
-  # Autonomous action rejection
-  - reject_autonomous_action  # reject AI-initiated autonomous action
+  - advance_campaign_stage    # advance recruitment campaign stage (DomainAction)
 
 tenants: {}
