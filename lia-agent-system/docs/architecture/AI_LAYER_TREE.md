@@ -13,7 +13,7 @@ input into routed, tenant-scoped, compliance-wrapped agent executions. A request
 flows:
 
 ```
-HTTP / WebSocket / SSE
+HTTP / SSE (canonical) / WebSocket (legacy)
         │
    app/main.py  ──(lifespan: install_llm_guards → bootstrap → init_db → DomainRegistry → orchestrator → tools)
         │
@@ -654,9 +654,18 @@ These wrap **every** agent execution regardless of domain:
   The full data-flow map and the residual name-leak gap (recruiter chat runs
   `mask_names=False`) are in §8.2.
 
-- **HITL gates** — `app/shared/hitl/agent_gate.py` +
-  `app/shared/hitl_decorator.py`; the job-creation wizard uses LangGraph
-  `interrupt()` at 4 gate nodes for human approval.
+- **HITL gates** — Two layers:
+  1. **Wizard gates** (4): `app/shared/hitl/agent_gate.py` + `app/shared/hitl_decorator.py`;
+     LangGraph `interrupt()` at the 4 gate nodes in the job-creation graph for human
+     approval of generated content (JD, competencies, WSI questions, final review).
+  2. **Tool-level gates** (7): `send_email`, `send_whatsapp`, `bulk_communicate`,
+     `reject_candidate`, `bulk_update_stage`, `publish_job`, `close_job` — each decorated
+     with `@require_hitl` via the `hitl_preflight()` helper
+     (`app/shared/hitl/agent_gate.py`). Guarded by the `LIA_HITL_GATE` feature flag
+     (default OFF = zero regression in production). When the flag is ON, the gate emits
+     an `approval_required` SSE event; the recruiter clicks Confirm; the frontend
+     re-POSTs with `approve_pending_id=<uuid>`; the backend replays the tool call with
+     the gate bypassed. Sentinel: `tests/contract/test_hitl_tool_gate.py`.
 
 - **Audit logging** — `app/shared/compliance/audit_service.py` (+ writer/storage/
   decorators). `AuditService.log_decision[_in_session]` is mandatory on mutative
@@ -698,6 +707,8 @@ subset that should arguably be wider), `GAP` (a known hole, by design or debt).
 | PII strip to LLM | `shared/pii_masking.py::strip_pii_for_llm_prompt` + `shared/llm_bootstrap.py` monkey-patch | ALL SDK calls (single chokepoint) | bootstrap wraps `.create`/`.stream`; ON by default | 🔴 **FIX** — PARTIAL: recruiter chat + some recruiter-facing tools run `mask_names=False`, so candidate NAMES still reach the LLM (see §8.2) |
 | PII masking in logs | `shared/pii_masking.py::install_global_pii_masking` (`PIIMaskingFilter`) | root logger + all handlers + stack traces | installed at boot | OK |
 | HITL gates + tool safety governance | `shared/hitl/agent_gate.py` + `hitl_decorator.@require_hitl` + `compliance/safety_category.py` (`SafetyCategory` enum) | wizard 4 gates + tools tagged in each registry's `GUARDRAIL_TOOLS` (destructive_write / bulk_action / pii_export / outreach / pipeline_move / offer) | LangGraph `interrupt()` + decorator | OK (selective by design) |
+| Entity resolver (deterministic entity lookup) | `shared/entity_resolver.py` | ALL SSE turns (set per-turn before CascadedRouter fires) | fuzzy difflib + ≥2 significant-token overlap, scoped by `company_id`; hint injected into prompt | OK — fail-open: unresolved → hint empty, turn proceeds |
+| Navigation route whitelist | `shared/navigation_routes.py` (`VALID_ROUTES` + `_DYNAMIC_PATTERNS` + `validate_navigate_route`) | every `ui_action: navigate_to` emitted by any agent | validated before emission; invalid path → None (caller falls back to dashboard) | OK — CI sensor |
 | Audit logging | `shared/compliance/audit_service.py` (+ writer/storage/decorators) | mutative public service methods | mandatory + ratchet sentinel in `interview_scheduling`/`interview_intelligence`/`offer` + `company`; SOX 7-year on offer | PARTIAL: strictly enforced only on those domains; others are best-effort |
 | Credit gating | `shared/llm_bootstrap.py::check_credit_budget` | ALL SDK message-creation primitives | bootstrap + orchestrator + agentic-loop (defense-in-depth) | OK |
 | BYOK (chat / completion) | `shared/tenant_llm_context.py::get_gemini_client_for_tenant` / `get_claude_model_for_tenant` | Gemini / Claude / OpenAI chat | per-tenant `tenant_llm_configs.providers`; platform key only as fallback | OK |
@@ -1052,6 +1063,7 @@ pass an HITL confirmation.
 | RAG / retrieval | `app/shared/rag/` (`hybrid_search`, `reranker`, `realtime_fact_checker`, `response_watermarker`), `app/shared/intelligence/semantic_search_service.py` + `chunking/recursive` (RecursiveTextSplitter), `app/domains/ai/services/hybrid_search_service.py` | active |
 | Semantic routing cache | `app/orchestrator/routing/` (`cascaded_router` tiers 0-5: LRU, Redis, pgvector, FastRouter, LLM cascade) | active |
 | Voice analysis | `app/domains/voice/services/voice_screening_orchestrator.py` (Gemini Live + Twilio PSTN fallback) | active, per-agent flag |
+| Rich Response Protocol (RRP) | `app/shared/rrp_blocks.py` (6 typed block kinds) + `app/shared/rrp_ranking_builder.py` (canonical producer) + `app/shared/rrp_block_sink.py` (ContextVar tee for agentic path) | active |
 | Anti-sycophancy | `app/shared/prompts/` anti-sycophancy block (`ANTI_SYCOPHANCY_ORCHESTRATOR` / `ANTI_SYCOPHANCY_OPERATIONAL`) injected into prompts | active |
 | Calibration | `domains/cv_screening/services/calibration_profiles`, `domains/job_creation` calibration node | active |
 
@@ -1080,7 +1092,11 @@ A request is mapped to ONE domain specialist by the `CascadedRouter`
 expensive:
 
 ```
-Tier 0  MemoryResolver        pronoun / context-reference resolution
+Tier 0  MemoryResolver + EntityResolver   pronoun / context-reference resolution
+                                              + deterministic DB entity lookup (vacancy/candidate
+                                              name → UUID; fuzzy difflib + token overlap ≥2;
+                                              result injected as hint via ContextVar
+                                              _active_vacancy_id / _active_candidate_id; fail-open)
 Tier 1  LRU in-process        MD5 hash, O(1), per company_id
 Tier 2  Redis hash cache      distributed exact match across workers
 Tier 3  VectorSemanticCache   pgvector cosine >= 0.85   (ROUTER_VECTOR_CACHE_ENABLED)
@@ -1092,6 +1108,15 @@ Tier 6  REMOVED (Sprint 12.3-B)  was the AutonomousReActAgent cross-domain fallb
 The matched domain loads its specialist agent (one of the 16 ReActAgents) and runs
 the ReAct loop. This is the default conversational path for single-domain
 requests and it is what is live today.
+
+> **Multi-turn correctness (P0 fix, 2026-06-06).** LangGraphBase uses a stable
+> `thread_id = f"{session_id}::{domain}"` + PostgreSQL checkpointer so state persists
+> across turns. `_messages_for_continuation` in
+> `libs/agents-core/lia_agents_core/langgraph_base.py` strips the System message from
+> the *input* of continuation turns (turn 2+), because `add_messages` appends to the
+> checkpointed state and Anthropic rejects `[System, Human, AI, System, Human]` sequences.
+> This is the canonical LangGraph multi-turn pattern.
+> Sentinel: `tests/unit/test_langgraph_base_system_dedup.py`.
 
 ### 12.2 Supervisor / Plan path (mostly OFF)
 
@@ -1525,3 +1550,225 @@ canonical contract `Roteamento context-aware (T-1165)` in `replit.md` and
   `DashboardApp` renders a `NavigationHintCard` instead of force-redirecting;
   `useWizardFlow.ts` dispatches the hint on `SPLIT_STAGE`; `lib/navigation/routes.ts`
   (`PAGE_ROUTES`) and `sidebar.tsx` (`navigateOnClick`).
+
+
+---
+
+## 21. Chat transport architecture
+
+The recruiter chat uses two transports. **SSE is the canonical path** (default
+since mid-2026); WebSocket remains available as a legacy option.
+
+### 21.1 SSE (Server-Sent Events) — canonical
+
+File: `app/api/v1/agent_chat_sse.py`
+
+```
+POST /api/v1/chat/{session_id}/stream
+    Authorization: Bearer <jwt>
+    Body: {
+      "message": "...",
+      "domain": "...",
+      "context": {...},
+      "approve_pending_id": "<uuid | null>"   # HITL approval replay
+    }
+Server: text/event-stream
+    id: <event_id>
+    data: { "type": "<event_type>", ... }
+```
+
+**Event types** (`app/shared/chat_event_serializer.py`):
+
+| Type | When | Key payload fields |
+|---|---|---|
+| `thinking` | Progressive reasoning disclosure | `text` |
+| `token` | Partial LLM output (streaming) | `token` |
+| `token_done` | Full response assembled | `full_text` |
+| `message` | Complete AI turn | `content`, `role`, `response_blocks?` |
+| `tool_started` | Tool execution began | `name`, `id` |
+| `tool_finished` | Tool execution complete | `name`, `id`, `result_summary` |
+| `reasoning_step` | Internal ReAct step (verbose mode) | `step`, `detail` |
+| `panel_update` | Wizard side-panel content | `panel_type`, `stage`, `data`, `thread_id`, `completeness` |
+| `error` | Non-fatal error | `message`, `code` |
+| `approval_required` | HITL gate fired | `pending_id`, `action`, `approve_url` |
+| `budget_exhausted` | Daily token budget reached | `plan`, `limit` |
+
+**Budget gating.** Every SSE request runs through
+`app/domains/credits/services/token_budget_service.check_budget`. Dev tenants
+with `APP_ENV=development` receive an unlimited "enterprise(-1)" budget via
+`_is_unlimited_dev_tenant` (avoids exhausting credits during local iteration).
+Redis key `token_budget:<company_id>:<date>` tracks daily consumption. The gate
+emits `budget_exhausted` and returns early; it does not raise.
+
+**HITL approval flow.** When a tool-level HITL gate fires:
+1. The SSE stream emits `approval_required` with `pending_id`.
+2. The frontend shows a confirmation card; recruiter clicks Confirm.
+3. The client re-POSTs the same message with `approve_pending_id=<pending_id>`.
+4. The backend `_detect_hitl_approval` resolves the pending action and re-runs
+   the tool with the gate bypassed.
+
+### 21.2 WebSocket — legacy
+
+File: `app/api/v1/agent_chat_ws.py`
+
+Bidirectional WS connection with equivalent functionality to SSE. Maintained for
+backwards-compatibility. The frontend selects the transport via the env var
+`NEXT_PUBLIC_CHAT_TRANSPORT` (`sse` | `ws`; default: `sse`).
+
+### 21.3 Session and domain scoping
+
+- `session_id` maps to a recruiter session in `company_sessions`.
+- LangGraph checkpointer uses `thread_id = f"{session_id}::{domain}"` — isolated
+  state per domain within a session. Context bleed between domains is structurally
+  impossible.
+- The active company is resolved from the JWT and set into `_current_company_id`
+  ContextVar before the agentic loop runs.
+- The entity resolver sets `_active_vacancy_id` / `_active_candidate_id` ContextVars
+  per turn (deterministic DB lookup); these are consumed by tools as fallback
+  `vacancy_id` / `candidate_id` when the LLM does not pass the ID explicitly.
+
+---
+
+## 22. Rich Response Protocol (RRP)
+
+RRP is the typed block system for structured visual responses. Instead of raw
+markdown that the frontend parses heuristically, agents emit typed blocks that
+render as native UI components (score cards, tables, funnel charts, etc.).
+
+**Design principle:** the LLM narrates in prose; the data lives in blocks. When
+a block already displays information, the LLM is instructed not to re-render it
+as markdown (`RRP_TABLE_HINT` in `rrp_ranking_builder.py`).
+
+### 22.1 Block catalog (`app/shared/rrp_blocks.py`)
+
+All blocks are Pydantic models with `extra='forbid'`. Base envelope: `_BlockBase`
+(fields: `block_id`, `role`, `layout`, `state`, `error`).
+
+| `kind` | Class | Purpose |
+|---|---|---|
+| `prose` | `ProseBlock` | Rich markdown narrative (role: answer). The default text block. |
+| `evidence_stack` | `EvidenceStackBlock` | Evidence items per candidate: `source_type` (linkedin / resume / assessment / interview / internal_record), `headline`, `detail`, `confidence`. |
+| `score_explainer` | `ScoreExplainerBlock` | Score breakdown: overall score + list of `ScoreFactor` (name, weight, value, justification). **Provenance rule:** only populated from real `lia_opinions` data (requires `opinion_id`). |
+| `comparison_table` | `ComparisonTableBlock` | Multi-column table for N entities (candidates or jobs). Typed `columns: list[ComparisonColumn]` + `rows: list[ComparisonRow]` with arbitrary cells. |
+| `funnel` | `FunnelBlock` | Pipeline funnel: list of stages with candidate counts and conversion rates. |
+| `candidate_card` | `CandidateCardBlock` | Compact card: name, stage, LIA score, recommendation label. |
+
+**Provenance invariant.** `verify_block_provenance()` and
+`tests/contract/test_rrp_provenance_gate.py` enforce that every block with a
+score or evidence attribution has a verifiable source. Without real retrieval:
+`unverified=True` + `confidence='low'` + explicit label. Never cite a data
+source for a number generated purely from LLM parametric knowledge.
+
+### 22.2 Data flow (two paths → one SSE event)
+
+```
+Path A — ActionExecutor (deterministic action_handlers):
+  action_handler builds blocks → returns { data: { response_blocks: [...] } }
+  MainOrchestrator extracts blocks from structured result
+  SSE serializer includes in `message` event as `response_blocks`
+
+Path B — Agentic loop (LangGraph ReAct tools):
+  tool builds blocks → calls rrp_block_sink.append_from_result(result)
+  ContextVar _rrp_blocks_sink accumulates blocks during the turn
+  LangGraphReActBase._run_graph drains the sink at end of turn
+  AgentOutput.metadata['response_blocks'] → SSE serializer
+```
+
+`app/shared/rrp_block_sink.py` is the Path B tee: a per-request ContextVar
+that never raises (defensive tee — a block-sink bug must not crash the tool).
+
+### 22.3 Canonical producer (`app/shared/rrp_ranking_builder.py`)
+
+`build_candidate_ranking_blocks(job_id, rows)` is the **single source of truth**
+for candidate ranking blocks. It produces `ScoreExplainerBlock` +
+`EvidenceStackBlock` + `ComparisonTableBlock` + `CandidateCardBlock` from a
+normalized list of candidate dicts. Rows with `opinion_id` get the full moat
+(score explainer + evidence); rows without get only the comparison table.
+
+Two consumers (same producer — canonical-fix principle):
+- `sourcing_actions._rank_candidates` (ActionExecutor path)
+- `talent_tool_registry.rank_candidates` (agentic-loop path)
+
+`build_table_block(title, entity_type, columns, rows, source_tool)` is the generic
+table producer used for job lists, analytics tables, etc.
+
+### 22.4 Frontend integration
+
+`ResponseBlockRenderer` in `plataforma-lia/src/components/chat/` renders each
+`kind` to its visual component. The renderer uses TypeScript `assertNever`
+exhaustiveness (compiler catches a missing `kind` at build time). CI guard: the
+6-kind schema-sync sensor `scripts/check_rrp_block_schema_sync.py` runs as
+BLOCKING (baseline 0).
+
+---
+
+## 23. Eligibility questions — canonical shape and producer
+
+Eligibility questions are go/no-go screening gates asked **before WSI**:
+"Tem CNH?", "Aceita trabalho presencial?", "Disponível para viagens?". They are
+configured per-vacancy, can be *eliminatory* (wrong answer = disqualify) or
+non-eliminatory, and map to a category that drives the reconsideration UX.
+
+### 23.1 Background: the ghost-feature problem
+
+Before 2026-06-03, four divergent shapes coexisted (wizard, vacancy editor,
+settings catalog, backend extractor) that did not match. Even when a recruiter
+configured eligibility questions, they never reached the candidate. The feature
+was live in the UI and inert in the code. Fixed by canonicalizing to a single
+shape, a single producer, and two consumers.
+
+### 23.2 Canonical shape — `EligibilityQuestionItem`
+
+Single source of truth: `app/schemas/eligibility_question_item.py`.
+
+```python
+class EligibilityQuestionItem(BaseModel):
+    id: str
+    question: str
+    question_type: str               # "yes_no" | "multiple_choice" | "text"
+    options: list[str]               # choices for multiple_choice
+    is_eliminatory: bool
+    expected_answer: str | None      # the answer that passes the gate
+    category: str                    # work_model | location | availability | legal | default
+    order: int
+```
+
+`category` selects the reconsideration template shown to a candidate who fails
+an eliminatory question (allowing 2× reconsideration attempts before rejection).
+
+A `model_validator(mode="before")` normalizes the 4 legacy shapes into this
+canonical form on parse — old JSONB data in `JobVacancy.eligibility_questions`
+is upgraded transparently on read without a migration.
+
+### 23.3 Single producer
+
+`EligibilityVerificationService.get_eligibility_questions_from_job()`
+(`app/domains/cv_screening/services/eligibility_verification_service.py`) is
+the **only** parser of `job.eligibility_questions`. All consumers call this
+method; none read the JSONB directly.
+
+### 23.4 Two consumers, one producer
+
+| Consumer | Path | Notes |
+|---|---|---|
+| Web screening | `triagem_session_service/eligibility_phase.py` | Called at `start_session`; eligibility runs BEFORE WSI. WSI messages use `wsi_block=999` sentinel so eligibility answers are excluded from WSI scoring. |
+| WhatsApp screening | `conversation_manager` | Same producer; questions sent as WhatsApp messages with structured reply options. |
+
+### 23.5 Compliance wiring
+
+- **Consent gate.** `start_session` calls
+  `ConsentCheckerService.check_candidate_consent(purpose="ai_screening")` before
+  the first eligibility question. The frontend checkbox is defense-in-depth; the
+  backend gate is authoritative.
+- **Fairness.** Questions configured by the recruiter pass `FairnessGuard` at
+  save time. Protected attributes (CLT Art. 373-A, LGPD) cannot appear as
+  eliminatory criteria. Guard reads `config/protected_attributes.yaml`.
+- **Reconsideration.** 2× reconsideration offers are made before final rejection
+  on eliminatory questions. After 2 failed answers the candidate is logged to the
+  talent pool for future non-eliminatory matches.
+- **Talent pool routing.** Rejected-by-eligibility candidates are NOT deleted —
+  they enter the talent pool so they can be re-invited to future vacancies that
+  don't have the same requirement.
+
+**Sentinels:** `tests/contract/test_eligibility_producer_contract.py` (13 tests) +
+`tests/unit/test_eligibility_phase.py` (7 tests).
