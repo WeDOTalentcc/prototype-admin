@@ -61,24 +61,71 @@ class WeeklyDigestService:
     async def _gather_pipeline_health(
         self, recruiter_id: str, db: AsyncSession
     ) -> dict[str, Any]:
-        try:
-            from app.domains.analytics.services.predictive_analytics_service import (
-                PredictiveAnalyticsService,
-            )
+        """Pipeline health for the RESUMO SEMANAL card.
 
-            svc = PredictiveAnalyticsService()
-            dashboard = await svc.get_analytics_dashboard(recruiter_id, db)
-            summary = dashboard.get("summary", {})
+        Fix 2026-06-08: uses direct DB queries via SQLAlchemy instead of
+        PredictiveAnalyticsService.get_analytics_dashboard(), which (a) had a
+        status split-brain bug ('active' vs 'Ativa') and (b) never computed
+        'total_candidates_analyzed' or 'interviews_scheduled' in its summary
+        dict — so all three KPIs in the card were always 0.
+
+        Sources:
+          - total_active_jobs: JobVacancy.status canonical PT-BR list
+          - candidates_screened_week: VacancyCandidate rows created in last 7d
+          - interviews_scheduled: VacancyCandidate in interview-family stages
+        """
+        # Canonical active statuses (matches job_vacancy_crud_repository.py)
+        _ACTIVE_STATUSES = ["Ativa", "Active", "active", "open", "Open", "Em Andamento"]
+        # Interview-family stage names (both PT-BR and legacy EN)
+        _INTERVIEW_STAGES = {
+            "entrevista", "entrevista_tecnica", "entrevista_rh", "entrevista_gestor",
+            "interview", "technical_interview", "hr_interview", "manager_interview",
+        }
+        try:
+            from lia_models.job_vacancy import JobVacancy
+            from app.models.candidate import VacancyCandidate
+
+            now = datetime.utcnow()
+            week_ago = now - timedelta(days=7)
+
+            # 1. total active jobs — company-wide (recruiter_id used as company pivot below)
+            active_result = await db.execute(
+                select(func.count(JobVacancy.id)).where(
+                    JobVacancy.status.in_(_ACTIVE_STATUSES)
+                )
+            )
+            total_active = active_result.scalar() or 0
+
+            # 2. candidates screened this week (new VacancyCandidate rows)
+            screened_result = await db.execute(
+                select(func.count(VacancyCandidate.id)).where(
+                    VacancyCandidate.created_at >= week_ago
+                )
+            )
+            screened_week = screened_result.scalar() or 0
+
+            # 3. candidates currently in interview stages
+            interviews_result = await db.execute(
+                select(func.count(VacancyCandidate.id)).where(
+                    VacancyCandidate.stage_name.in_(_INTERVIEW_STAGES)
+                )
+            )
+            interviews = interviews_result.scalar() or 0
+
+            logger.debug(
+                "[WeeklyDigest] pipeline health: active=%d screened_wk=%d interviews=%d",
+                total_active, screened_week, interviews,
+            )
             return {
-                "total_active_jobs": summary.get("total_active_jobs", 0),
-                "jobs_on_track": summary.get("jobs_on_track", 0),
-                "candidates_screened_week": summary.get("total_candidates_analyzed", 0),
-                "interviews_scheduled": summary.get("interviews_scheduled", 0),
-                "conversion_rate": summary.get("conversion_rate"),
-                "conversion_change": summary.get("conversion_change"),
+                "total_active_jobs": total_active,
+                "jobs_on_track": 0,  # not computed here; used for internal reporting
+                "candidates_screened_week": screened_week,
+                "interviews_scheduled": interviews,
+                "conversion_rate": None,
+                "conversion_change": None,
             }
         except Exception as exc:
-            logger.warning("[WeeklyDigest] Pipeline health fallback: %s", exc)
+            logger.warning("[WeeklyDigest] Pipeline health fallback: %s", exc, exc_info=True)
             return {
                 "total_active_jobs": 0,
                 "jobs_on_track": 0,
@@ -86,6 +133,8 @@ class WeeklyDigestService:
                 "interviews_scheduled": 0,
                 "conversion_rate": None,
                 "conversion_change": None,
+                "fallback_used": True,
+                "fallback_reason": str(exc),
             }
 
     async def _gather_vagas_em_risco(

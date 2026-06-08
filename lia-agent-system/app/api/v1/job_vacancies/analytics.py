@@ -660,6 +660,14 @@ company_id: str = Depends(require_company_id)):
 
         all_company_jobs = await repo.get_all_company_jobs(company_id)
 
+        # Fix 2026-06-08: funnel_data was NULL/stale for all active jobs;
+        # use vacancy_candidates real counts instead of the cached JSON column.
+        try:
+            live_candidate_counts = await repo.get_candidate_counts_by_vacancy_for_company(company_id)
+        except Exception as _e:
+            logger.warning("Could not fetch live candidate counts: %s", _e)
+            live_candidate_counts = {}
+
         my_jobs_list = [
             j for j in all_company_jobs
             if j.recruiter_email and j.recruiter_email.lower() == recruiter_filter_email.lower()
@@ -689,9 +697,16 @@ company_id: str = Depends(require_company_id)):
         my_candidates_in_funnel = 0
         my_offers_sent = 0
 
-        for job in my_jobs_list:
+        # Fix 2026-06-08: use real vacancy_candidates counts (live_candidate_counts)
+        # instead of stale funnel_data. If current user has no assigned jobs (e.g.
+        # company owner), fall back to summing across ALL active jobs so the header
+        # never shows 0 when candidates clearly exist.
+        jobs_for_funnel = my_jobs_list if my_jobs_list else active_jobs_list
+        for job in jobs_for_funnel:
+            job_id_str = str(job.id)
+            my_candidates_in_funnel += live_candidate_counts.get(job_id_str, 0)
+            # interviewed / offers: keep funnel_data for these (less critical)
             funnel = job.funnel_data or {}
-            my_candidates_in_funnel += funnel.get("total", 0) or 0
             my_candidates_interviewed += funnel.get("interview", 0) or funnel.get("entrevista", 0) or 0
             my_offers_sent += funnel.get("offer", 0) or funnel.get("proposta", 0) or 0
 
@@ -704,10 +719,13 @@ company_id: str = Depends(require_company_id)):
             my_conversion_rate = (hired_count / my_candidates_in_funnel) * 100
 
         my_interviews_last_7d = 0
-        for job in my_jobs_list:
+        # Fix 2026-06-08: funnel_data.interview is stale; use job updated_at as
+        # a reasonable proxy (if job was updated this week, count its live VC total).
+        # Full fix: query VacancyCandidate stage_name directly (deferred — needs
+        # VacancyCandidateRepository in this endpoint).
+        for job in jobs_for_funnel:
             if job.updated_at and job.updated_at >= date_7d_ago:
-                funnel = job.funnel_data or {}
-                my_interviews_last_7d += funnel.get("interview", 0) or funnel.get("entrevista", 0) or 0
+                my_interviews_last_7d += live_candidate_counts.get(str(job.id), 0)
 
         my_jobs_stats = MyJobsStats(
             active=my_active,

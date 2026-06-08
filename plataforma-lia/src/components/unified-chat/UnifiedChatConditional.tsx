@@ -10,9 +10,11 @@ import type { ChatMode } from "./unified-chat-types"
 
 import { isAuthRoute } from "@/lib/auth-routes"
 import { getPersisted } from "@/lib/lia-persistence"
+import { useAuthStore } from "@/stores/auth-store"
 
 export function UnifiedChatConditional() {
   const pathname = usePathname()
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
   const { isOpen, open, close, splitView, hasInlineChat } = useLiaFloat()
   const [chatMode, setChatMode] = useState<ChatMode>(() => {
     if (typeof window === "undefined") return "sidebar"
@@ -57,6 +59,7 @@ export function UnifiedChatConditional() {
   }, [isOpen, open, close])
 
   if (isAuthRoute(pathname ?? "")) return null
+  if (!isAuthenticated) return null
 
   const showFloating = isOpen && chatMode === "floating" && !hasInlineChat
   const showSidebarOverlay = isOpen && chatMode === "sidebar" && !hasInlineChat && !hasDashboardShell

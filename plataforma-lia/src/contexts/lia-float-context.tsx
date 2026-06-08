@@ -24,6 +24,7 @@ import React, {
   useRef,
   type ReactNode,
 } from "react";
+import { useAuthStore } from "@/stores/auth-store";
 
 export interface SplitViewState {
   active: boolean;
@@ -292,6 +293,7 @@ function loadOrCreateSessionId(): string {
 }
 
 export function LiaFloatProvider({ children }: { children: ReactNode }) {
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const [state, setState] = useState<LiaFloatState>({
     isOpen: false,
     isExpanded: false,
@@ -452,6 +454,7 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
   // double-fires across React 18 StrictMode mounts.
   const didRestoreConversationRef = useRef(false);
   useEffect(() => {
+    if (!isAuthenticated) return; // do not restore history for unauthenticated users
     if (didRestoreConversationRef.current) return;
     if (chatConversationId) return; // WS already supplied one — nothing to restore
     const stored = loadStoredConversationId();

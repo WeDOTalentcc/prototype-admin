@@ -902,32 +902,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
             <Search className="w-3 h-3" />
           </Button>
 
-          {/* 4. Configurações */}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onNavigate("Configurações")}
-            className="h-6 w-6 p-0 text-lia-text-primary hover:bg-lia-interactive-hover"
-            title={t("labels.settings")}
-          >
-            <Settings className="w-3 h-3" />
-          </Button>
-
-          {/* 5. Idioma */}
-          <LanguageSwitcher collapsed={isCollapsed && !isTemporaryExpanded} />
-
-          {/* 6. Ajuda */}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleShowTipsModal}
-            className="h-6 w-6 p-0 text-lia-text-primary hover:bg-lia-interactive-hover"
-            title={t("labels.helpTips")}
-          >
-            <HelpCircle className="w-3 h-3" />
-          </Button>
-
-          {/* 7. Overflow › — HITL e futuros ícones */}
+          {/* 4. Overflow › — Config, Idioma, Ajuda, HITL e futuros ícones */}
           <Popover open={overflowOpen} onOpenChange={setOverflowOpen}>
             <PopoverTrigger asChild>
               <Button
@@ -948,6 +923,28 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
               onMouseLeave={() => setOverflowOpen(false)}
             >
               <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => { onNavigate("Configurações"); setOverflowOpen(false) }}
+                  className="h-6 w-6 p-0 text-lia-text-primary hover:bg-lia-interactive-hover"
+                  title={t("labels.settings")}
+                >
+                  <Settings className="w-3 h-3" />
+                </Button>
+
+                <LanguageSwitcher collapsed={false} />
+
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => { handleShowTipsModal(); setOverflowOpen(false) }}
+                  className="h-6 w-6 p-0 text-lia-text-primary hover:bg-lia-interactive-hover"
+                  title={t("labels.helpTips")}
+                >
+                  <HelpCircle className="w-3 h-3" />
+                </Button>
+
                 <HitlPendingBadge />
               </div>
             </PopoverContent>

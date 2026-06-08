@@ -31,7 +31,12 @@ export async function runBulkSequential<T = unknown>(
       results.push(r)
       onTick?.(i + 1, items.length, r)
     } catch (err) {
-      const reason = err instanceof Error ? err.message : String(err)
+      const reason =
+        err instanceof Error
+          ? err.message
+          : typeof err === 'object' && err !== null
+            ? JSON.stringify(err)
+            : String(err)
       const r: BulkItemResult<T> = { id: item.id, name: item.name, ok: false, reason }
       results.push(r)
       onTick?.(i + 1, items.length, r)
