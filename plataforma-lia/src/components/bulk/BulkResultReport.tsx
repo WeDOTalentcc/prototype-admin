@@ -39,7 +39,7 @@ export function BulkResultReport({
   const pct = results.length > 0 ? Math.round((succeeded.length / results.length) * 100) : 0
 
   const handleCopyFailed = () => {
-    const text = failed.map((r) => ).join("\n")
+    const text = failed.map((r) => `${r.name}: ${r.reason ?? "falha"}`).join("\n")
     navigator.clipboard.writeText(text).catch(() => undefined)
   }
 
@@ -61,7 +61,7 @@ export function BulkResultReport({
         >
           <div
             className="h-full rounded-full bg-[#60BED1] transition-all"
-            style={{ width:  }}
+            style={{ width: `${pct}%` }}
           />
         </div>
 
