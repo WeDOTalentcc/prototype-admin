@@ -68,3 +68,20 @@ def test_format_report_mentions_fix():
     assert "cancel_vacancy" in report
     assert "restricted_tools" in report
     assert "Fix" in report
+
+
+from check_capability_catalog_sync import scan_declared_in_tree, EXEMPT_NAMES  # noqa: E402
+
+
+def test_scan_declared_in_tree(tmp_path):
+    d = tmp_path / "app" / "domains" / "x" / "agents"
+    d.mkdir(parents=True)
+    (d / "x_tool_registry.py").write_text('ToolDefinition(name="rank_candidates")\n')
+    (d / "other.py").write_text('make_tool(name="view_job_details")\n')
+    found = scan_declared_in_tree(tmp_path / "app")
+    assert "rank_candidates" in found
+    assert "view_job_details" in found
+
+
+def test_exempt_names_is_set():
+    assert isinstance(EXEMPT_NAMES, set)
