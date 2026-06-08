@@ -197,32 +197,37 @@ const nextConfig = {
     ]
   },
   async rewrites() {
-    return [
-      {
-        source: '/api/v1/:path*',
-        destination: `${BACKEND_URL}/api/v1/:path*`,
-      },
-      {
-        source: '/api/backend-proxy/wizard/:path*',
-        destination: `${BACKEND_URL}/api/v1/wizard/:path*`,
-      },
-      {
-        source: '/api/lia/chat/stream',
-        destination: `${BACKEND_URL}/api/v1/chat/stream`,
-      },
-      {
-        source: '/api/backend-proxy/chat',
-        destination: `${BACKEND_URL}/api/v1/chat`,
-      },
-      {
-        source: '/api/backend-proxy/chat/:path*',
-        destination: `${BACKEND_URL}/api/v1/chat/:path*`,
-      },
-      {
-        source: '/ws/:path*',
-        destination: `${BACKEND_URL}/ws/:path*`,
-      },
-    ];
+    return {
+      beforeFiles: [],
+      afterFiles: [
+        {
+          source: '/api/v1/:path*',
+          destination: `${BACKEND_URL}/api/v1/:path*`,
+        },
+        {
+          source: '/api/backend-proxy/wizard/:path*',
+          destination: `${BACKEND_URL}/api/v1/wizard/:path*`,
+        },
+        {
+          source: '/api/lia/chat/stream',
+          destination: `${BACKEND_URL}/api/v1/chat/stream`,
+        },
+        {
+          source: '/ws/:path*',
+          destination: `${BACKEND_URL}/ws/:path*`,
+        },
+      ],
+      fallback: [
+        {
+          source: '/api/backend-proxy/chat',
+          destination: `${BACKEND_URL}/api/v1/chat`,
+        },
+        {
+          source: '/api/backend-proxy/chat/:path*',
+          destination: `${BACKEND_URL}/api/v1/chat/:path*`,
+        },
+      ],
+    };
   },
 };
 
