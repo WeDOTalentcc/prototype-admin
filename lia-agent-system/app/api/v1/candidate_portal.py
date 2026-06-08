@@ -86,9 +86,28 @@ async def candidate_chat(request_data: CandidateChatRequest, request: Request, c
         )
 
         agent = CandidateSelfServiceAgent()
+
+        # ── Gap F (ADR LGPD, 2026-06-08): mascarar PII antes do LLM ──────────
+        # Surface candidate-facing: o candidato digita CPF/RG/email/telefone
+        # (próprios ou de terceiros). mask_names=True (default) é correto aqui
+        # — diferente do chat do recrutador (agent_chat_sse.py, mask_names=False
+        # para preservar nomes em busca de entidade). C3b comment fechado.
+        try:
+            from app.shared.pii_masking import strip_pii_for_llm_prompt
+            safe_message = strip_pii_for_llm_prompt(request_data.message)
+        except Exception as _pii_exc:
+            logger.warning(
+                "[CandidatePortal] PII strip falhou (fail-open): %s", _pii_exc
+            )
+            safe_message = request_data.message
+
         agent_input = AgentInput(
-            message=request_data.message,
+            message=safe_message,
             company_id=company_id,
+            # AgentInput.user_id é obrigatório (Field(...)). O portal do
+            # candidato não tem usuário recrutador — usar o candidate_id como
+            # identidade. Sem isto o endpoint falhava com validation error/500.
+            user_id=f"candidate_{candidate_id}",
             session_id=f"css_{candidate_id}_{vacancy_id}",
             context={
                 "candidate_id": candidate_id,
