@@ -277,3 +277,20 @@ capabilities:
     entity_required: []
     navigate_page: chat             # CanonicalPage.CHAT = "chat" -> /pt/chat
     navigate_fallback: /chat
+
+  # Navegacao para paginas principais (Bug 2026-06-08).
+  ir_para_configuracoes:
+    label: Ir para Configuracoes
+    description: Navegar para a pagina de Configuracoes
+    navigate_fallback: /configuracoes
+
+  ir_para_funil_talentos:
+    label: Ir para Funil de Talentos
+    description: Navegar para o Funil de Talentos
+    navigate_page: funil_talentos
+    navigate_fallback: /funil-de-talentos
+
+  ir_para_agent_studio:
+    label: Ir para Estudio de Agentes
+    description: Navegar para o Estudio de Agentes de IA
+    navigate_fallback: /agent-studio

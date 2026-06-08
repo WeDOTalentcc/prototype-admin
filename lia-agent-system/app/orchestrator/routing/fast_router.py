@@ -66,7 +66,8 @@ _HARDCODED_DOMAIN_PATTERNS: dict[str, list[str]] = {
         # Frente 1 (unificacao wizard 2026-05-29) — intencao de CRIACAO de vaga.
         # Espelhado em app/orchestrator/config/domain_routing.yaml (YAML primario).
         r"criar.*\bvaga\b",
-        r"abrir.*\bvaga\b",
+        # Neg lookahead exclui quando ha codigo de vaga (v0003, v0014 etc)
+        r"abrir.*\bvaga\b(?!.*\b[vV]\d{3})",
         r"cadastr\w*.*\bvaga\b",
         r"registrar.*\bvaga\b",
         r"\bnova\s+vaga\b",
