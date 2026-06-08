@@ -1,9 +1,13 @@
 "use client"
 
+import { useState } from "react"
 import { LoadingModal } from "@/components/ui/loading"
+import type { CommunicationResult } from "@/components/modals/unified-communication-types"
 import type { CommunicationType } from "@/components/modals/unified-communication-modal"
 import dynamic from "next/dynamic"
 import type { CandidatesPageModalsProps } from "./CandidatesPageModals.types"
+import { BulkResultReport } from "@/components/bulk"
+import type { BulkItemResult } from "@/lib/bulk"
 
 const ContactModal = dynamic(() => import("@/components/quick-actions-modals").then(m => ({ default: m.ContactModal })), { ssr: false, loading: () => <LoadingModal /> })
 const ScheduleModal = dynamic(() => import("@/components/quick-actions-modals").then(m => ({ default: m.ScheduleModal })), { ssr: false, loading: () => <LoadingModal /> })
@@ -36,6 +40,14 @@ type CandidatesContactModalsProps = Pick<CandidatesPageModalsProps,
   | 'setEmailCandidateSelected'
 >
 
+const TYPE_LABELS: Record<string, string> = {
+  email: 'Email',
+  whatsapp: 'WhatsApp',
+  triagem: 'Triagem',
+  agendamento: 'Agendamento',
+  feedback: 'Feedback',
+}
+
 export function CandidatesContactModals(props: CandidatesContactModalsProps) {
   const {
     selectedCandidateForAction,
@@ -62,6 +74,26 @@ export function CandidatesContactModals(props: CandidatesContactModalsProps) {
     emailCandidateSelected,
     setEmailCandidateSelected,
   } = props
+
+  const [bulkReport, setBulkReport] = useState<{
+    isOpen: boolean
+    results: BulkItemResult[]
+    actionLabel: string
+  }>({ isOpen: false, results: [], actionLabel: '' })
+
+  // Intercepts onSend: forwards to the original handler, then opens BulkResultReport
+  // if the payload carries bulkResults (bulk mode injected by useUnifiedCommunication T5).
+  const handleSend = (data: CommunicationResult) => {
+    handleUnifiedModalSend?.(data)
+    const withBulk = data as CommunicationResult & { bulkResults?: BulkItemResult[] }
+    if (Array.isArray(withBulk.bulkResults) && withBulk.bulkResults.length > 0) {
+      setBulkReport({
+        isOpen: true,
+        results: withBulk.bulkResults,
+        actionLabel: TYPE_LABELS[data.type] ?? 'Envio',
+      })
+    }
+  }
 
   return (
     <>
@@ -166,7 +198,7 @@ export function CandidatesContactModals(props: CandidatesContactModalsProps) {
         type={unifiedModalType}
         selectedCandidates={unifiedModalSelectedCandidates}
         jobTitle={lastSearchQuery || undefined}
-        onSend={handleUnifiedModalSend}
+        onSend={handleSend}
         companyId="demo"
       />
 
@@ -198,6 +230,13 @@ export function CandidatesContactModals(props: CandidatesContactModalsProps) {
           setShowSendEmailModal(false)
           setEmailCandidateSelected(null)
         }}
+      />
+
+      <BulkResultReport
+        isOpen={bulkReport.isOpen}
+        onClose={() => setBulkReport(s => ({ ...s, isOpen: false }))}
+        results={bulkReport.results}
+        actionLabel={bulkReport.actionLabel}
       />
     </>
   )
