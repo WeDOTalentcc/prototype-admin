@@ -27,8 +27,8 @@ from app.domains.job_creation.repositories.jd_similar_history_repository import 
 logger = logging.getLogger(__name__)
 
 
-# Embedding dim válida (consistente com OpenAI text-embedding-3-small)
-JD_EMBEDDING_DIM = 1536
+# Embedding dim válida (alinhada com Vector(768) cols e saída OpenAI text-embedding-3-small 768-dim)
+JD_EMBEDDING_DIM = 768
 
 
 # ── PII Redactor (Sprint B Phase 1, gap C4) ────────────────────────────────
