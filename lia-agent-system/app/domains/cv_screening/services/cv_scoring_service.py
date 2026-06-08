@@ -576,13 +576,10 @@ class CVScoringService:
     ) -> None:
         """Update candidate with screening score."""
         try:
-            # ADR-001-EXEMPT: VacancyCandidate.job_vacancy_id is used here (legacy column name)
-            # while screening_repository.get_vacancy_candidate uses VacancyCandidate.vacancy_id.
-            # Keeping inline preserves existing semantics; Sprint 6 follow-up to consolidate.
             result = await db.execute(
                 select(VacancyCandidate).where(
                     VacancyCandidate.candidate_id == UUID(candidate_id),
-                    VacancyCandidate.job_vacancy_id == UUID(vacancy_id)
+                    VacancyCandidate.vacancy_id == UUID(vacancy_id)
                 )
             )
             vc = result.scalar_one_or_none()
