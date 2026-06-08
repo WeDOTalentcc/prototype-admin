@@ -8,6 +8,8 @@ import { liaApi } from "@/services/lia-api"
 import { CommunicationTemplate, TemplateSituation } from '@/hooks/chat/use-communication-templates'
 import { toast } from "sonner"
 import { useModalA11y } from "@/hooks/ui/use-modal-a11y"
+import { runBulkSequential } from '@/lib/bulk'
+import { useFailedDeliveryStore } from '@/stores/failedDeliveryStore'
 import type {
   CommunicationType,
   CommunicationChannel,
@@ -166,7 +168,6 @@ export function useUnifiedCommunication({
       return
     }
 
-    const safeCandidate = candidate!
     setIsSending(true)
 
     try {
@@ -176,7 +177,7 @@ export function useUnifiedCommunication({
         try {
           const candidateIds = isBulkMode
             ? selectedCandidates.map(c => c.id)
-            : [safeCandidate.id]
+            : [candidate!.id]
 
           const response = await fetch(`/api/backend-proxy/search/vacancy/${selectedVacancyId}/add-candidates`, {
             method: 'POST',
@@ -198,7 +199,9 @@ export function useUnifiedCommunication({
 
       const selectedVacancy = vacancies.find(v => v.id === selectedVacancyId)
 
-      const sendEmail = async () => {
+      type CandidateRef = { id: string; name: string; email?: string; phone?: string }
+
+      const sendEmailFor = async (c: CandidateRef) => {
         const response = await fetch('/api/backend-proxy/communication/send-email', {
           method: 'POST',
           headers: {
@@ -206,13 +209,13 @@ export function useUnifiedCommunication({
             'X-Company-ID': companyId
           },
           body: JSON.stringify({
-            to_email: safeCandidate.email,
-            to_name: safeCandidate.name,
+            to_email: c.email,
+            to_name: c.name,
             subject: subject,
             body_html: `<div style="font-family: Arial, sans-serif;">${message.replace(/\n/g, '<br>')}</div>`,
             body_text: message,
-            candidate_id: safeCandidate.id,
-            candidate_name: safeCandidate.name,
+            candidate_id: c.id,
+            candidate_name: c.name,
             vacancy_id: selectedVacancyId || undefined,
             vacancy_title: selectedVacancy?.title,
             communication_type: type,
@@ -227,10 +230,10 @@ export function useUnifiedCommunication({
         if (!response.ok || !result.success) {
           throw new Error(result.error || 'Falha ao enviar email')
         }
-        return result
+        return result as { mock?: boolean; success: boolean }
       }
 
-      const sendWhatsApp = async () => {
+      const sendWhatsAppFor = async (c: CandidateRef) => {
         const response = await fetch('/api/backend-proxy/communication/send-whatsapp', {
           method: 'POST',
           headers: {
@@ -238,10 +241,10 @@ export function useUnifiedCommunication({
             'X-Company-ID': companyId
           },
           body: JSON.stringify({
-            to_phone: (safeCandidate.phone || '').replace(/\D/g, ''),
+            to_phone: (c.phone || '').replace(/\D/g, ''),
             message: message,
-            candidate_id: safeCandidate.id,
-            candidate_name: safeCandidate.name,
+            candidate_id: c.id,
+            candidate_name: c.name,
             vacancy_id: selectedVacancyId || undefined,
             vacancy_title: selectedVacancy?.title,
             communication_type: type,
@@ -256,84 +259,136 @@ export function useUnifiedCommunication({
         if (!response.ok || !result.success) {
           throw new Error(result.error || 'Falha ao enviar WhatsApp')
         }
-        return result
+        return result as { mock?: boolean; success: boolean }
       }
 
-      if (channel === 'email') {
-        const result = await sendEmail()
-        toast.success(result.mock ? "Email simulado!" : "Email enviado!", { description: result.mock
-            ? `Modo desenvolvimento: email para ${safeCandidate.email}`
-            : `Email enviado para ${safeCandidate.email}` })
-      } else if (channel === 'whatsapp') {
-        const result = await sendWhatsApp()
-        toast.success(result.mock ? "WhatsApp simulado!" : "WhatsApp enviado!", { description: result.mock
-            ? `Modo desenvolvimento: mensagem para ${safeCandidate.name}`
-            : `WhatsApp enviado para ${safeCandidate.name}` })
-      } else if (channel === 'both') {
-        const emailResult = await sendEmail()
-        const waResult = await sendWhatsApp()
-        const isMock = emailResult.mock || waResult.mock
-        toast.success(isMock ? "Mensagens simuladas!" : "Mensagens enviadas!", { description: isMock
-            ? `Modo desenvolvimento: email e WhatsApp para ${safeCandidate.name}`
-            : `Mensagens enviadas para ${safeCandidate.name}` })
-      }
+      // ── BULK MODE ─────────────────────────────────────────────────────────
+      if (isBulkMode) {
+        const failureStore = useFailedDeliveryStore.getState()
 
-      try {
-        await liaApi.logCommunication({
-          company_id: companyId,
-          candidate_id: safeCandidate.id,
-          candidate_name: safeCandidate.name,
-          candidate_email: safeCandidate.email,
-          candidate_phone: safeCandidate.phone,
-          communication_type: type,
-          channel: channel === 'both' ? 'email' : channel,
-          direction: 'outbound',
-          subject: (channel === 'email' || channel === 'both') ? subject : undefined,
-          message_content: message,
-          sent_by: 'recruiter',
-          metadata: type === 'agendamento' ? interviewSettings as unknown as Record<string, unknown> : undefined
-        })
+        const allResults = await runBulkSequential(
+          selectedCandidates,
+          async (c) => {
+            if (channel === 'email') return sendEmailFor(c)
+            if (channel === 'whatsapp') return sendWhatsAppFor(c)
+            if (channel === 'both') {
+              await sendEmailFor(c)
+              return sendWhatsAppFor(c)
+            }
+            throw new Error('Canal desconhecido')
+          }
+        )
 
-        const activityDescriptions: Record<CommunicationType, string> = {
-          email: `Enviou email para ${safeCandidate.name}`,
-          whatsapp: `Enviou WhatsApp para ${safeCandidate.name}`,
-          triagem: `Convidou ${safeCandidate.name} para triagem`,
-          agendamento: `Enviou convite de entrevista para ${safeCandidate.name}`,
-          feedback: `Enviou feedback para ${safeCandidate.name}`
-        }
-
-        await liaApi.createActivity({
-          company_id: companyId,
-          activity_type: `communication_${type}`,
-          description: activityDescriptions[type],
-          candidate_id: safeCandidate.id,
-          performed_by: 'recruiter',
-          metadata: {
-            channel,
-            type,
-            subject: (channel === 'email' || channel === 'both') ? subject : undefined
+        // Persist failures in Zustand store for ContactCells badge
+        allResults.forEach(r => {
+          if (!r.ok) {
+            failureStore.addFailure({ candidateId: r.id, reason: r.reason ?? 'falha', channel, at: Date.now() })
+          } else {
+            failureStore.clearFailure(r.id)
           }
         })
-      } catch (logError) {
-        toast.warning("Aviso", { description: "Mensagem enviada, mas o registro do histórico falhou." })
-      }
 
-      onSend?.({
-        type,
-        channel,
-        message,
-        subject: (channel === 'email' || channel === 'both') ? subject : undefined,
-        recipient: (channel === 'email' || channel === 'both') ? safeCandidate.email : safeCandidate.phone,
-        metadata: {
-          ...(type === 'agendamento' ? interviewSettings : {}),
-          ...(linkToVacancy && selectedVacancyId ? {
-            vacancyId: selectedVacancyId,
-            stage: selectedStage,
-            linkOnCompletionOnly: type === 'triagem' && linkOnCompletionOnly,
-            pendingVacancyLink: type === 'triagem' && linkOnCompletionOnly
-          } : {})
+        // Log communications for successful sends (fire-and-forget)
+        for (const r of allResults.filter(x => x.ok)) {
+          const c = selectedCandidates.find(sc => sc.id === r.id)
+          if (!c) continue
+          liaApi.logCommunication({
+            company_id: companyId,
+            candidate_id: c.id,
+            candidate_name: c.name,
+            candidate_email: c.email,
+            candidate_phone: c.phone,
+            communication_type: type,
+            channel: channel === 'both' ? 'email' : channel,
+            direction: 'outbound',
+            subject: (channel === 'email' || channel === 'both') ? subject : undefined,
+            message_content: message,
+            sent_by: 'recruiter',
+          }).catch(() => undefined)
         }
-      })
+
+        onSend?.({ type, channel, message, bulkResults: allResults } as unknown as CommunicationResult)
+
+      } else {
+        // ── SINGLE MODE (comportamento existente, inalterado) ────────────────
+        const safeCandidate = candidate!
+
+        if (channel === 'email') {
+          const result = await sendEmailFor(safeCandidate)
+          toast.success(result.mock ? "Email simulado!" : "Email enviado!", { description: result.mock
+              ? `Modo desenvolvimento: email para ${safeCandidate.email}`
+              : `Email enviado para ${safeCandidate.email}` })
+        } else if (channel === 'whatsapp') {
+          const result = await sendWhatsAppFor(safeCandidate)
+          toast.success(result.mock ? "WhatsApp simulado!" : "WhatsApp enviado!", { description: result.mock
+              ? `Modo desenvolvimento: mensagem para ${safeCandidate.name}`
+              : `WhatsApp enviado para ${safeCandidate.name}` })
+        } else if (channel === 'both') {
+          const emailResult = await sendEmailFor(safeCandidate)
+          const waResult = await sendWhatsAppFor(safeCandidate)
+          const isMock = emailResult.mock || waResult.mock
+          toast.success(isMock ? "Mensagens simuladas!" : "Mensagens enviadas!", { description: isMock
+              ? `Modo desenvolvimento: email e WhatsApp para ${safeCandidate.name}`
+              : `Mensagens enviadas para ${safeCandidate.name}` })
+        }
+
+        try {
+          await liaApi.logCommunication({
+            company_id: companyId,
+            candidate_id: safeCandidate.id,
+            candidate_name: safeCandidate.name,
+            candidate_email: safeCandidate.email,
+            candidate_phone: safeCandidate.phone,
+            communication_type: type,
+            channel: channel === 'both' ? 'email' : channel,
+            direction: 'outbound',
+            subject: (channel === 'email' || channel === 'both') ? subject : undefined,
+            message_content: message,
+            sent_by: 'recruiter',
+            metadata: type === 'agendamento' ? interviewSettings as unknown as Record<string, unknown> : undefined
+          })
+
+          const activityDescriptions: Record<CommunicationType, string> = {
+            email: `Enviou email para ${safeCandidate.name}`,
+            whatsapp: `Enviou WhatsApp para ${safeCandidate.name}`,
+            triagem: `Convidou ${safeCandidate.name} para triagem`,
+            agendamento: `Enviou convite de entrevista para ${safeCandidate.name}`,
+            feedback: `Enviou feedback para ${safeCandidate.name}`
+          }
+
+          await liaApi.createActivity({
+            company_id: companyId,
+            activity_type: `communication_${type}`,
+            description: activityDescriptions[type],
+            candidate_id: safeCandidate.id,
+            performed_by: 'recruiter',
+            metadata: {
+              channel,
+              type,
+              subject: (channel === 'email' || channel === 'both') ? subject : undefined
+            }
+          })
+        } catch (logError) {
+          toast.warning("Aviso", { description: "Mensagem enviada, mas o registro do histórico falhou." })
+        }
+
+        onSend?.({
+          type,
+          channel,
+          message,
+          subject: (channel === 'email' || channel === 'both') ? subject : undefined,
+          recipient: (channel === 'email' || channel === 'both') ? safeCandidate.email : safeCandidate.phone,
+          metadata: {
+            ...(type === 'agendamento' ? interviewSettings : {}),
+            ...(linkToVacancy && selectedVacancyId ? {
+              vacancyId: selectedVacancyId,
+              stage: selectedStage,
+              linkOnCompletionOnly: type === 'triagem' && linkOnCompletionOnly,
+              pendingVacancyLink: type === 'triagem' && linkOnCompletionOnly
+            } : {})
+          }
+        } as CommunicationResult)
+      }
 
       onClose()
     } catch (error) {
