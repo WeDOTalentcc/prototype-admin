@@ -243,6 +243,7 @@ class AutonomousReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAg
         session_id: str,
         audit_callback: Any | None = None,
         streaming_callback: Any | None = None,
+        conversation_id: str | None = None,
     ) -> dict:
         """Override: aplica recursion_limit (budget máximo) no run config do LangGraph."""
         compiled = self._get_compiled_graph()

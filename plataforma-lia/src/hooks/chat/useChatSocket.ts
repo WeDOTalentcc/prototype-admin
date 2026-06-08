@@ -576,6 +576,7 @@ export function useChatSocket({
   const wsSend = useCallback(
     (content: string, context: Record<string, unknown>, domain: string) => {
       setThinkingSteps([]);
+      agentActivityBufferRef.current = [];
       turnClosedRef.current = true;
       return _wsSendRaw(content, context, domain);
     },
@@ -590,6 +591,7 @@ export function useChatSocket({
       conversationId?: string | null,
     ) => {
       setThinkingSteps([]);
+      agentActivityBufferRef.current = [];
       turnClosedRef.current = true;
       _sendViaSSERaw(sid, message, domain, context, conversationId);
     },

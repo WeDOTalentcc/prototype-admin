@@ -105,6 +105,7 @@ class LangGraphBase(BaseAgent, ABC):
         session_id: str,
         audit_callback: Optional[Any] = None,
         streaming_callback: Optional[Any] = None,
+        conversation_id: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         Executa o grafo compilado com AuditCallback e StreamingCallback injetados.
@@ -136,8 +137,14 @@ class LangGraphBase(BaseAgent, ABC):
         _agent_domain = (
             getattr(self, "domain_name", None) or self.__class__.__name__
         )
+        # Isola estado por conversa (padrao enterprise: ChatGPT/Claude/Copilot).
+        # conversation_id None -> fallback legado session::domain (backward compat).
         _thread_key = (
-            f"{session_id}::{_agent_domain}" if _agent_domain else session_id
+            f"{session_id}::{_agent_domain}::{conversation_id}"
+            if _agent_domain and conversation_id
+            else f"{session_id}::{_agent_domain}"
+            if _agent_domain
+            else session_id
         )
         config: Dict[str, Any] = {
             "configurable": {"thread_id": _thread_key},

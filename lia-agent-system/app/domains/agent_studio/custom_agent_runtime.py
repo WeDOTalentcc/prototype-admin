@@ -323,6 +323,7 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
         session_id: str,
         audit_callback: Any = None,
         streaming_callback: Any = None,
+        conversation_id: Any = None,
     ) -> dict:
         compiled = self._get_compiled_graph()
         if compiled is None:

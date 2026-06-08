@@ -316,6 +316,7 @@ class LangGraphReActBase(LangGraphBase):
                     session_id=input.session_id,
                     audit_callback=audit_callback,
                     streaming_callback=streaming_cb,
+                    conversation_id=(input.context or {}).get("conversation_id"),
                 )
         except Exception as _graph_exc:
             raise
