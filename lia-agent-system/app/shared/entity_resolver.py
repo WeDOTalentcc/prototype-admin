@@ -207,9 +207,14 @@ async def resolve_named_entities(
     try:
         r = await db.execute(
             _t(
+                # Fix 2026-06-08: exclude 'Concluída'/'Rascunho' from default
+                # disambiguation pool. A user asking "candidates of android"
+                # means the ACTIVE job, not a concluded one with the same title.
+                # When user mentions 'concluída'/'fechada', the concluded status
+                # pool is checked in a second pass (see below).
                 "SELECT id, title FROM job_vacancies "
                 "WHERE company_id = CAST(:co AS varchar) "
-                "AND status IN ('Ativa','Aprovada','Rascunho','Concluída') LIMIT 400"
+                "AND status IN ('Ativa','Aprovada','Reaberta','Paralisada') LIMIT 400"
             ),
             {"co": str(company_id)},
         )
@@ -221,6 +226,25 @@ async def resolve_named_entities(
         if not matched and history_text and _has_vacancy_referent(message):
             matched = match_titles_in_message(history_text, jobs)[:1]
             _from_history = bool(matched)
+        # Second pass: if no active match found and user mentions concluded/closed,
+        # extend search to Concluída/Rascunho status.
+        if not matched:
+            _concluded_keywords = {"concluída", "concluido", "fechada", "fechado", "arquivada", "encerrada"}
+            _msg_lower = (message or "").lower()
+            if any(k in _msg_lower for k in _concluded_keywords):
+                try:
+                    r2 = await db.execute(
+                        _t(
+                            "SELECT id, title FROM job_vacancies "
+                            "WHERE company_id = CAST(:co AS varchar) "
+                            "AND status IN ('Concluída','Rascunho','Arquivada') LIMIT 200"
+                        ),
+                        {"co": str(company_id)},
+                    )
+                    concluded_jobs = [(str(m["id"]), m["title"] or "") for m in r2.mappings()]
+                    matched = match_titles_in_message(message, concluded_jobs)[:3]
+                except Exception:
+                    pass
         result["jobs"] = matched
         if matched:
             _ctx = (
