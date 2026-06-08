@@ -106,6 +106,7 @@ export interface UseCandidatesViewCompositionParams {
   setShowSidePreview: (v: boolean) => void
   setSidePreviewCandidate: (v: Candidate | null) => void
   setUnifiedModalCandidate: (v: Candidate | null) => void
+  setUnifiedModalSelectedCandidates: (v: Array<{ id: string; name: string; email?: string; phone?: string; avatar?: string }>) => void
   setUnifiedModalType: (v: CommunicationType) => void
   setUnifiedModalOpen: (v: boolean) => void
   setShowScheduleModal: (v: boolean) => void
@@ -275,6 +276,7 @@ export function useCandidatesViewComposition(params: UseCandidatesViewCompositio
     previewWidth: params.previewWidth,
     setPreviewWidth: params.setPreviewWidth,
     setUnifiedModalCandidate: params.setUnifiedModalCandidate,
+    setUnifiedModalSelectedCandidates: params.setUnifiedModalSelectedCandidates,
     setUnifiedModalType: params.setUnifiedModalType,
     setUnifiedModalOpen: params.setUnifiedModalOpen,
     setShowScheduleModal: params.setShowScheduleModal,

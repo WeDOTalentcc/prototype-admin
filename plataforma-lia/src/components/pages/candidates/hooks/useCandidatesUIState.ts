@@ -113,6 +113,7 @@ export function useCandidatesUIState() {
   const [unifiedModalOpen, setUnifiedModalOpen] = useState(false)
   const [unifiedModalType, setUnifiedModalType] = useState<CommunicationType>('email')
   const [unifiedModalCandidate, setUnifiedModalCandidate] = useState<Candidate | null>(null)
+  const [unifiedModalSelectedCandidates, setUnifiedModalSelectedCandidates] = useState<Array<{ id: string; name: string; email?: string; phone?: string; avatar?: string }>>([])
   const [showQuickViewModal, setShowQuickViewModal] = useState(false)
   const [showComparisonModal, setShowComparisonModal] = useState(false)
   const [selectedCandidateForAction, setSelectedCandidateForAction] = useState<Candidate | null>(null)
@@ -182,6 +183,7 @@ export function useCandidatesUIState() {
     unifiedModalOpen, setUnifiedModalOpen,
     unifiedModalType, setUnifiedModalType,
     unifiedModalCandidate, setUnifiedModalCandidate,
+    unifiedModalSelectedCandidates, setUnifiedModalSelectedCandidates,
     showQuickViewModal, setShowQuickViewModal,
     showComparisonModal, setShowComparisonModal,
     selectedCandidateForAction, setSelectedCandidateForAction,
