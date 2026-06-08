@@ -38,6 +38,58 @@ HTTP / SSE (canonical) / WebSocket (legacy)
 
 ---
 
+---
+
+## Sumário
+
+> **Dica de leitura:** §0 + Glossário são para orientação inicial; §1–9 são
+> infraestrutura (boot, orquestração, domínios, primitivas, compliance); §10–20
+> são referência de capabilities; §21–27 são apêndices técnicos e mapas.
+> Use Ctrl+F / Cmd+F com o número da seção para navegar.
+
+| Seção | Título | Para quem |
+|---|---|---|
+| [§0](#0-o-que-é-a-wedotalent--contexto-para-novos-leitores) | O que é a WeDOTalent | Todos |
+| [Glossário](#glossário) | Termos canônicos do projeto | Todos |
+| **Infraestrutura** | | |
+| [§1](#1-entry-point--cross-cutting-bootstrap) | Entry point & bootstrap | Dev backend |
+| [§2](#2-orchestration-layer--apporchestratorion) | Orchestration layer | Dev backend / IA |
+| [§3](#3-core-agents--appagents) | Core agents (inventory) | Dev IA |
+| [§4](#4-domains--appdomains) | Domains (mapa completo) | Dev backend / IA |
+| [§5](#5-cross-cutting-ai-infrastructure--appshared) | Cross-cutting AI infrastructure | Dev IA |
+| [§6](#6-top-level-ai-plumbing--appprompts-apptools) | AI plumbing (prompts, tools) | Dev IA |
+| [§7](#7-low-level-primitives--libsagents-core) | Low-level primitives (libs) | Dev IA |
+| [§8](#8-cross-cutting-concerns) | Compliance, controles, PII | Dev compliance / IA |
+| [§8.1](#81-cross-cutting-control-coverage-matrix) | ↳ Coverage matrix (controles × agentes) | Dev compliance |
+| [§8.2](#82-pii-data-flow-map) | ↳ PII data-flow map | Dev compliance |
+| [§8.3](#83-embeddings-which-feature-embeds-what-with-which-provider-and-is-it-byok) | ↳ Embeddings & BYOK | Dev IA |
+| [§9](#9-fastapi--rails-boundary-one-line-note) | FastAPI ↔ Rails boundary | Dev backend |
+| **Referência** | | |
+| [§10](#10-domain--agent-glossary) | Domain & agent glossary | Dev IA / produto |
+| [§10.1](#101-the-16-canonical-reactagents-what-each-does) | ↳ Os 16 agentes canônicos (capabilities) | Dev IA |
+| [§10.2](#102-domains-by-class-one-line-purpose) | ↳ Domínios por classe | Dev backend |
+| [§11](#11-capability-catalog) | Capability catalog | Produto / dev |
+| [§12](#12-federated-vs-supervisor-orchestration-what-is-on--off) | Federated vs Supervisor (ON/OFF) | Dev IA |
+| [§13](#13-agent-studio-custom-agents) | Agent Studio | Dev produto |
+| [§14](#14-enterprise-architecture-diagnosis) | Diagnóstico de arquitetura | Tech lead |
+| [§15](#15-effort-estimate-relocating-the-30-repository-stubs) | Estimativa de esforço (repository stubs) | Tech lead |
+| [§16](#16-action-register-follow-up-backlog) | Action Register (backlog técnico) | Tech lead |
+| **Integrações & features avançadas** | | |
+| [§17](#17-microsoft-teams--microsoft-graph-integration) | Microsoft Teams integration | Dev integração |
+| [§18](#18-proactive-alerts--monitoring) | Alertas proativos & monitoring | Dev produto |
+| [§19](#19-learning-loops--adaptive-intelligence) | Learning loops & Big Five | Dev IA |
+| [§20](#20-chat-first-navigation) | Chat-first navigation | Dev produto |
+| **Apêndices técnicos** | | |
+| [§21](#21-chat-transport-architecture) | Chat transport (SSE vs WS) | Dev backend |
+| [§22](#22-rich-response-protocol-rrp) | Rich Response Protocol (RRP) | Dev IA / frontend |
+| [§23](#23-eligibility-questions--canonical-shape-and-producer) | Eligibility questions (canonical) | Dev IA |
+| [§24](#24-wsi--workplace-science-index) | WSI — Workplace Science Index | Dev IA / produto |
+| [§25](#25-triagem-session--lifecycle-completo) | Triagem session lifecycle | Dev IA |
+| [§26](#26-mapa-da-api-surface) | Mapa da API surface (293 endpoints) | Dev backend |
+| [§27](#27-mapa-de-funcionalidades-de-ia-por-página) | Mapa de funcionalidades de IA por página | Produto |
+
+---
+
 ## 0. O que é a WeDOTalent — contexto para novos leitores
 
 ### 0.1 O produto
@@ -275,6 +327,8 @@ app/agents/
 
 ### The 16 canonical ReActAgents
 
+> Esta tabela mostra o **inventário** (classe + path). Para ver o que cada agente **faz / quando dispara**, veja [§10.1](#101-the-16-canonical-reactagents-what-each-does).
+
 The inventory is sentinel-locked by
 `tests/integration/agents/test_tenant_aware_rollout_t_d.py` — adding a 17th
 without following the T-D pattern (TenantAwareAgentMixin) breaks the build.
@@ -303,11 +357,18 @@ without following the T-D pattern (TenantAwareAgentMixin) breaks the build.
 > are the canonical *routable* ReActAgents; sub-agents (e.g. sourcing's
 > search/enrich/diversity/github/nurture agents) are reachable via tool registries.
 
+> **Nota — 17º agente em desenvolvimento:** `RecruiterCopilotReActAgent`
+> (`app/domains/recruiter_assistant/agents/recruiter_copilot_react_agent.py`, 344 linhas)
+> existe com herança T-D completa mas **não consta nos 16 canônicos** porque ainda não é
+> roteável pelo `CascadedRouter` — está em desenvolvimento como agente federado único
+> para consolidar o chat (ver [§12](#12-federated-vs-supervisor-orchestration-what-is-on--off)).
+> Quando for promovido, atualizar o sentinel-lock em `test_tenant_aware_rollout_t_d.py` para 17.
+
 ---
 
 ## 4. Domains — `app/domains/`
 
-59 directories (per `DOMAIN_CATALOG.md`), classified as: **13 Agentic** + **3
+**65 directories** no filesystem atual (o `DOMAIN_CATALOG.md` registra 59 — desatualizado desde Sprint 11; os 6 domínios adicionais são stubs pós-Sprint criados sem catalogar), classified as: **13 Agentic** + **3
 Micro-Action** (= 16 `@register_domain`), **11 Service**, **30 Repository-stub**,
 **2 Canonical-Active-legacy**. Registration is via `@register_domain` in
 `app/domains/registry.py`; base contracts in `app/domains/base.py` and
@@ -2136,7 +2197,7 @@ A decisão final (mover para próxima etapa, aprovar para entrevista, reprovar)
 
 ## 26. Mapa da API surface
 
-O serviço tem 293 arquivos de endpoint em `app/api/v1/`. Esta seção fornece
+O serviço tem aproximadamente **350 arquivos** de endpoint em `app/api/v1/` (contagem verificada em 2026-06-08; o número cresce a cada sprint). Esta seção fornece
 a taxonomia para que um dev saiba onde encaixar endpoints novos e onde procurar
 o que já existe.
 
@@ -2209,7 +2270,7 @@ o que já existe.
 
 **Utilitários:**
 - `system_health.py` — health checks
-- `stubs.py` — endpoints placeholder (não usar em produção)
+- `stubs.py` — endpoints placeholder (**router não registrado em `app/api/routes.py`** — os endpoints nunca sobem em runtime; código morto; deletar ou manter como documentação de intenção)
 - `settings_progress.py` — progresso de configuração da empresa
 
 ### 26.2 Onde colocar endpoints novos
