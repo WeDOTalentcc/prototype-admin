@@ -36,6 +36,7 @@ interface UseCandidatesInteractionsParams {
   setPreviewWidth: (v: number) => void
   // Modals
   setUnifiedModalCandidate: (c: Candidate | null) => void
+  setUnifiedModalSelectedCandidates: (v: Array<{ id: string; name: string; email?: string; phone?: string; avatar?: string }>) => void
   setUnifiedModalType: (t: CommunicationType) => void
   setUnifiedModalOpen: (v: boolean) => void
   setShowScheduleModal: (v: boolean) => void
@@ -77,6 +78,7 @@ export function useCandidatesInteractions({
   previewWidth,
   setPreviewWidth,
   setUnifiedModalCandidate,
+  setUnifiedModalSelectedCandidates,
   setUnifiedModalType,
   setUnifiedModalOpen,
   setShowScheduleModal,
@@ -189,36 +191,30 @@ export function useCandidatesInteractions({
   const handleSendAgendamento = (candidate: Candidate) => openUnifiedModal(candidate, 'agendamento')
   const handleSendFeedback = (candidate: Candidate) => openUnifiedModal(candidate, 'feedback')
 
-  // ── Bulk communication ────────────────────────────────────────────────────
-  const handleBulkEmail = () => {
-    const c = sortedCandidates.find(c => selectedCandidatesForBatch.has(c.id))
-    if (c) openUnifiedModal(c, 'email')
+  // ── Bulk communication ────────────────────────────────────────
+  const openBulkUnifiedModal = (type: CommunicationType) => {
+    const selected = sortedCandidates
+      .filter(c => selectedCandidatesForBatch.has(c.id))
+      .map(c => ({ id: c.id, name: c.name, email: c.email, phone: c.phone, avatar: c.avatar }))
+    if (selected.length === 0) return
+    setUnifiedModalCandidate(null)
+    setUnifiedModalSelectedCandidates(selected)
+    setUnifiedModalType(type)
+    setUnifiedModalOpen(true)
   }
-  const handleBulkWSIScreening = () => {
-    const c = sortedCandidates.find(c => selectedCandidatesForBatch.has(c.id))
-    if (c) openUnifiedModal(c, 'triagem')
-  }
-  const handleBulkScheduleInterview = () => {
-    const c = sortedCandidates.find(c => selectedCandidatesForBatch.has(c.id))
-    if (c) openUnifiedModal(c, 'agendamento')
-  }
-  const handleBulkFeedback = () => {
-    const c = sortedCandidates.find(c => selectedCandidatesForBatch.has(c.id))
-    if (c) openUnifiedModal(c, 'feedback')
-  }
+
+  const handleBulkEmail = () => openBulkUnifiedModal('email')
+  const handleBulkWSIScreening = () => openBulkUnifiedModal('triagem')
+  const handleBulkScheduleInterview = () => openBulkUnifiedModal('agendamento')
+  const handleBulkFeedback = () => openBulkUnifiedModal('feedback')
 
   // ── Unified modal close/send ──────────────────────────────────────────────
   const handleUnifiedModalClose = () => {
     setUnifiedModalOpen(false)
     setUnifiedModalCandidate(null)
+    setUnifiedModalSelectedCandidates([])
   }
-  const handleUnifiedModalSend = (data: Record<string, unknown>) => {
-    const label =
-      data.type === 'email' ? 'Email' :
-      data.type === 'whatsapp' ? 'WhatsApp' :
-      data.type === 'triagem' ? 'Convite de triagem' :
-      data.type === 'agendamento' ? 'Convite de entrevista' : 'Feedback'
-    toast.success('Mensagem enviada!', { description: `${label} enviado com sucesso.` })
+  const handleUnifiedModalSend = (_data: Record<string, unknown>) => {
     handleUnifiedModalClose()
   }
 
