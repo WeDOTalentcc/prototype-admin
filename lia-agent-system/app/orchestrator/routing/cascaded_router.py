@@ -429,7 +429,10 @@ class CascadedRouter:
             }) as _t3_span:
                 try:
                     _t0 = time.perf_counter()
-                    vector_hit = await self._vector_cache.get(message)
+                    vector_hit = await self._vector_cache.get(
+                        message,
+                        company_id=(_company_id_for_cache if _company_id_for_cache != "__unknown__" else None),
+                    )
                     if vector_hit:
                         _elapsed_ms = (time.perf_counter() - _t0) * 1000
                         self._stats["vector_hits"] += 1
@@ -513,6 +516,7 @@ class CascadedRouter:
                         await self._vector_cache.set(
                             message,
                             {"domain_id": result.domain_id, "confidence": result.confidence, "source": result.source},
+                            company_id=(_company_id_for_cache if _company_id_for_cache != "__unknown__" else None),
                         )
                     except Exception:
                         pass
@@ -585,7 +589,8 @@ class CascadedRouter:
                             try:
                                 await self._vector_cache.set(
                                     message,
-                                    {
+                                    company_id=(_company_id_for_cache if _company_id_for_cache != "__unknown__" else None),
+                                    result={
                                         "domain_id": cascade_result.domain_id,
                                         "confidence": cascade_result.confidence,
                                         "source": cascade_result.source,

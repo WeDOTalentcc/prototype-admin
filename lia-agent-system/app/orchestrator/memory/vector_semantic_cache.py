@@ -61,7 +61,7 @@ class VectorSemanticCache:
     # Operações públicas
     # ------------------------------------------------------------------
 
-    async def get(self, message: str) -> dict[str, Any] | None:
+    async def get(self, message: str, company_id: str | None = None) -> dict[str, Any] | None:
         """
         Busca por entrada semanticamente similar no pgvector.
 
@@ -71,7 +71,7 @@ class VectorSemanticCache:
         - qualquer falha de infra (DB, embedding service)
         """
         try:
-            embedding = await self._get_embedding(message)
+            embedding = await self._get_embedding(message, company_id=company_id)
             if embedding is None:
                 return None
 
@@ -81,14 +81,14 @@ class VectorSemanticCache:
             logger.debug("[VectorSemanticCache] get falhou (gracioso): %s", exc)
             return None
 
-    async def set(self, message: str, result: dict[str, Any]) -> None:
+    async def set(self, message: str, result: dict[str, Any], company_id: str | None = None) -> None:
         """
         Armazena resultado de roteamento com embedding da mensagem.
 
         Falha graciosamente — nunca propaga exceção para o caller.
         """
         try:
-            embedding = await self._get_embedding(message)
+            embedding = await self._get_embedding(message, company_id=company_id)
             if embedding is None:
                 return
 
@@ -100,7 +100,7 @@ class VectorSemanticCache:
     # Embedding
     # ------------------------------------------------------------------
 
-    async def _get_embedding(self, text: str) -> list[float] | None:
+    async def _get_embedding(self, text: str, company_id: str | None = None) -> list[float] | None:
         """
         Gera embedding com cache Redis via EmbeddingCacheService.
 
@@ -117,7 +117,7 @@ class VectorSemanticCache:
                 return cached
 
             # Gerar novo embedding
-            vector = await self._generate_embedding(text)
+            vector = await self._generate_embedding(text, company_id=company_id)
             if vector is not None:
                 await embedding_cache.cache_embedding(text, vector, self.embedding_model)
             return vector
@@ -125,13 +125,15 @@ class VectorSemanticCache:
             logger.debug("[VectorSemanticCache] _get_embedding falhou: %s", exc)
             return None
 
-    async def _generate_embedding(self, text: str) -> list[float] | None:
+    async def _generate_embedding(self, text: str, company_id: str | None = None) -> list[float] | None:
         """Gera embedding via OpenAI (primário) ou Gemini (fallback)."""
         # Tentativa 1: EmbeddingProviderFactory (OpenAI / fallback)
         try:
             from app.shared.providers.embedding_factory import EmbeddingProviderFactory
 
-            vector, provider_name, _ = await EmbeddingProviderFactory.embed_with_fallback(text[:8000])
+            vector, provider_name, _ = await EmbeddingProviderFactory.embed_with_fallback(
+                text[:8000], company_id=company_id
+            )  # Gap E.1 BYOK: roteia para a chave do tenant quando configurada
             self.embedding_model = _EMBED_MODEL_OPENAI if "openai" in provider_name.lower() else _EMBED_MODEL_GEMINI
             return vector
         except Exception as exc:
