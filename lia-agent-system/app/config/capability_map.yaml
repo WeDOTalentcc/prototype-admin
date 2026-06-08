@@ -269,3 +269,11 @@ capabilities:
     entity_required: []
     navigate_page: funil_talentos # solicitar dados exige seleção (no funil)
     navigate_fallback: /trust
+
+  open_fullscreen_chat:
+    label: "Abrir chat em tela cheia"
+    chat_executable: true          # navegação executada diretamente pelo chat
+    requires_confirmation: false
+    entity_required: []
+    navigate_page: chat             # CanonicalPage.CHAT = "chat" -> /pt/chat
+    navigate_fallback: /chat
