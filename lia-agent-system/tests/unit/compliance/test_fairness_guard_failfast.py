@@ -101,3 +101,41 @@ def test_fairness_guard_handles_is_registry_loaded_exception(caplog):
             guard = FairnessGuard(strict=False)
         assert guard is not None
         assert any("is_registry_loaded() raised" in rec.message for rec in caplog.records)
+
+
+def test_fairness_guard_strict_default_honors_app_env_when_lia_env_unset(monkeypatch):
+    """ADR-031 v2: APP_ENV=production + LIA_ENV unset -> strict=True (fail-fast).
+
+    Fecha o env-var split-brain: todo o resto do stack (main.py lifespan,
+    ADR-AUTH-001, REDIS_ENCRYPTION_KEY guard, LLM key guard) usa APP_ENV.
+    O FairnessGuard lia SOMENTE LIA_ENV. Um deployment canonico seguindo
+    .env.production.example seta APP_ENV=production SEM LIA_ENV -> strict
+    caia para False silenciosamente e o matching de atributos protegidos
+    LGPD (raca/etnia/religiao) passava em modo fail-OPEN. Este teste pina
+    que APP_ENV agora e honrado como fallback.
+    """
+    from app.shared.compliance.fairness_guard import FairnessGuard
+
+    monkeypatch.delenv("LIA_ENV", raising=False)
+    monkeypatch.setenv("APP_ENV", "production")
+    with patch(
+        "app.shared.compliance.protected_attributes.is_registry_loaded",
+        return_value=False,
+    ):
+        with pytest.raises(RuntimeError, match="protected_attributes registry"):
+            FairnessGuard()  # env-driven; fallback APP_ENV deve ativar strict
+
+
+def test_fairness_guard_lia_env_takes_precedence_over_app_env(monkeypatch):
+    """LIA_ENV explicito vence APP_ENV (sem regressao para deployments que ja setam LIA_ENV)."""
+    from app.shared.compliance.fairness_guard import FairnessGuard
+
+    monkeypatch.setenv("LIA_ENV", "development")
+    monkeypatch.setenv("APP_ENV", "production")
+    with patch(
+        "app.shared.compliance.protected_attributes.is_registry_loaded",
+        return_value=False,
+    ):
+        # LIA_ENV=development => strict=False => warns, nao raise
+        guard = FairnessGuard()
+        assert guard is not None

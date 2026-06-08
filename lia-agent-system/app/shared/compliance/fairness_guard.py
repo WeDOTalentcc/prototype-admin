@@ -628,7 +628,15 @@ class FairnessGuard:
 
         if strict is None:
             import os
-            strict = os.environ.get("LIA_ENV", "").lower() in ("production", "staging")
+            # ADR-031 v2 (2026-06-08): honrar APP_ENV como fallback de LIA_ENV.
+            # Todo o resto do stack (main.py lifespan, ADR-AUTH-001,
+            # REDIS_ENCRYPTION_KEY guard, LLM key guard) decide produção via
+            # APP_ENV. O FairnessGuard era o único que lia SOMENTE LIA_ENV →
+            # deployment canônico com APP_ENV=production sem LIA_ENV caía para
+            # strict=False e o matching de atributos protegidos LGPD passava
+            # em fail-OPEN. LIA_ENV explícito ainda vence (sem regressão).
+            _env = os.environ.get("LIA_ENV", os.environ.get("APP_ENV", ""))
+            strict = _env.lower() in ("production", "staging")
 
         if not registry_ok:
             msg = (

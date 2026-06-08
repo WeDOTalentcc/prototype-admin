@@ -152,6 +152,38 @@ async def lifespan(app: FastAPI):
     except Exception as _env_check_exc:
         logger.warning("ADR-AUTH-001 env check skipped (import failed): %s", _env_check_exc)
 
+    # ─── ADR-031 v2 (2026-06-08): protected_attributes registry fail-fast ──
+    # O FairnessGuard só protege atributos LGPD (raça/etnia/religião) se o
+    # registry YAML carregou. Sem este check, um YAML ausente/quebrado em
+    # produção degradaria silenciosamente para fail-OPEN — detectado apenas
+    # no primeiro request, não no boot. Mesma disciplina do guard de
+    # REDIS_ENCRYPTION_KEY: fail-fast em prod, warn-only em dev.
+    try:
+        from app.shared.compliance.protected_attributes import is_registry_loaded
+        if not is_registry_loaded():
+            _pa_prod = os.getenv("APP_ENV", "development").lower() in (
+                "production", "prod", "staging"
+            )
+            _pa_msg = (
+                "[ADR-031] protected_attributes registry EMPTY at startup — "
+                "FairnessGuard rodaria fail-OPEN (LGPD gap). Verifique "
+                "app/config/protected_attributes.yaml e o loader em "
+                "app/shared/compliance/protected_attributes.py."
+            )
+            if _pa_prod:
+                logger.critical(_pa_msg)
+                raise RuntimeError(_pa_msg)
+            logger.warning(_pa_msg)
+        else:
+            logger.info("✅ ADR-031: protected_attributes registry loaded.")
+    except RuntimeError:
+        raise  # re-raise the LGPD fail-fast in prod
+    except Exception as _pa_check_exc:
+        logger.warning(
+            "ADR-031 protected_attributes check skipped (import failed): %s",
+            _pa_check_exc,
+        )
+
 
     # ─── Audit-loop-leak fix (2026-05-20) ────────────────────────────────
     # Capture the running event loop so AuditService can redispatch
