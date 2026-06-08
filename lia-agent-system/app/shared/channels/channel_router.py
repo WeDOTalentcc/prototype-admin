@@ -1,4 +1,5 @@
 import logging
+from typing import Any
 
 from app.shared.channels.channel_adapter import (
     ChannelAdapter,
@@ -20,6 +21,7 @@ class ChannelRouter:
         message: ChannelMessage,
         preferred_channels: list[ChannelType],
         fallback: bool = True,
+        db: Any | None = None,
     ) -> DeliveryResult:
         channels_to_try = list(preferred_channels)
 
@@ -33,6 +35,14 @@ class ChannelRouter:
             f"Canais: {[c.value for c in channels_to_try]}"
         )
 
+        if db is not None:
+            if message.metadata is None:
+                message.metadata = {"_db": db}
+            else:
+                message.metadata["_db"] = db
+
+        company_id: str | None = message.company_id or None
+
         for channel_type in channels_to_try:
             adapter = self._adapters.get(channel_type)
             if not adapter:
@@ -42,7 +52,7 @@ class ChannelRouter:
                 continue
 
             try:
-                available = await adapter.is_available()
+                available = await adapter.is_available(company_id=company_id, db=db)
                 if not available:
                     logger.info(
                         f"[CHANNEL_ROUTER] Canal indisponível: {channel_type.value}"

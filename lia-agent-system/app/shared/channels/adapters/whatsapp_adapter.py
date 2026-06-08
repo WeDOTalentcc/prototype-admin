@@ -22,7 +22,7 @@ class WhatsAppChannelAdapter(ChannelAdapter):
         cleaned = re.sub(r"[\s\-\(\)]", "", contact)
         return bool(self._PHONE_REGEX.match(cleaned))
 
-    async def is_available(self) -> bool:
+    async def is_available(self, company_id: str | None = None, db: "Any | None" = None) -> bool:
         try:
             from app.domains.communication.services.whatsapp_factory import WhatsAppProviderFactory
             meta = WhatsAppProviderFactory.get_meta_provider()

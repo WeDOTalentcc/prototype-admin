@@ -22,7 +22,7 @@ class SMSChannelAdapter(ChannelAdapter):
         cleaned = re.sub(r"[\s\-\(\)]", "", contact)
         return bool(self._PHONE_REGEX.match(cleaned))
 
-    async def is_available(self) -> bool:
+    async def is_available(self, company_id: str | None = None, db: "Any | None" = None) -> bool:
         return False
 
     async def send(self, message: ChannelMessage) -> DeliveryResult:

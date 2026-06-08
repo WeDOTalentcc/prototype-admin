@@ -1,17 +1,17 @@
 import logging
-from typing import Any
+from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Path
 from pydantic import BaseModel
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
+from app.core.database import get_db
 from app.shared.channels.channel_adapter import ChannelMessage, ChannelType
 from app.shared.channels.multi_channel_service import multi_channel_service
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
-from typing import Annotated
-from fastapi import Path
 from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
@@ -81,7 +81,7 @@ class DeliveryStatusResponse(BaseModel):
 
 
 @router.post("/send", response_model=SendMessageResponse)
-async def send_message(request: SendMessageRequest, current_user: User = Depends(get_current_user_or_demo), company_id: str = Depends(require_company_id)):
+async def send_message(request: SendMessageRequest, current_user: User = Depends(get_current_user_or_demo), company_id: str = Depends(require_company_id), db: AsyncSession = Depends(get_db)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
         channel_types = []
@@ -112,6 +112,7 @@ async def send_message(request: SendMessageRequest, current_user: User = Depends
             message=message,
             channels=channel_types,
             fallback=request.fallback,
+            db=db,
         )
 
         return SendMessageResponse(
@@ -157,10 +158,10 @@ async def get_delivery_status(message_id: Annotated[str, Path(pattern=DUAL_ID_PA
 
 
 @router.get("/channels", response_model=ChannelStatusResponse)
-async def list_available_channels(current_user: User = Depends(get_current_user_or_demo), company_id: str = Depends(require_company_id)):
+async def list_available_channels(current_user: User = Depends(get_current_user_or_demo), company_id: str = Depends(require_company_id), db: AsyncSession = Depends(get_db)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
-        channels = await multi_channel_service.get_available_channels()
+        channels = await multi_channel_service.get_available_channels(company_id=company_id, db=db)
         return ChannelStatusResponse(channels=channels)
     except HTTPException:
         raise
@@ -172,7 +173,7 @@ async def list_available_channels(current_user: User = Depends(get_current_user_
 
 
 @router.post("/bulk", response_model=BulkSendResponse)
-async def send_bulk_messages(request: BulkSendRequest, current_user: User = Depends(get_current_user_or_demo), company_id: str = Depends(require_company_id)):
+async def send_bulk_messages(request: BulkSendRequest, current_user: User = Depends(get_current_user_or_demo), company_id: str = Depends(require_company_id), db: AsyncSession = Depends(get_db)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
         try:
@@ -194,13 +195,13 @@ async def send_bulk_messages(request: BulkSendRequest, current_user: User = Depe
                 template_id=item.template_id,
                 template_vars=item.template_vars,
                 metadata=item.metadata,
-                company_id=item.company_id,
+                company_id=item.company_id or company_id,
                 vacancy_id=item.vacancy_id,
             )
             for item in request.messages
         ]
 
-        results = await multi_channel_service.send_bulk(messages, channel_type)
+        results = await multi_channel_service.send_bulk(messages, channel_type, db=db)
 
         response_results = [
             SendMessageResponse(

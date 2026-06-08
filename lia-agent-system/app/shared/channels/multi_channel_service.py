@@ -1,5 +1,5 @@
 import logging
-from typing import Optional
+from typing import Any, Optional
 
 
 from app.shared.channels.adapters.email_adapter import EmailChannelAdapter
@@ -58,6 +58,7 @@ class MultiChannelService:
         message: ChannelMessage,
         channels: list[ChannelType] | None = None,
         fallback: bool = True,
+        db: Optional[Any] = None,
     ) -> DeliveryResult:
         if channels is None:
             channels = [ChannelType.EMAIL]
@@ -67,12 +68,13 @@ class MultiChannelService:
             f"via {[c.value for c in channels]}"
         )
 
-        return await self._router.route(message, channels, fallback=fallback)
+        return await self._router.route(message, channels, fallback=fallback, db=db)
 
     async def send_bulk(
         self,
         messages: list[ChannelMessage],
         channel: ChannelType,
+        db: Optional[Any] = None,
     ) -> list[DeliveryResult]:
         logger.info(
             f"[MULTI_CHANNEL] Envio em massa: {len(messages)} mensagens via {channel.value}"
@@ -81,7 +83,7 @@ class MultiChannelService:
         results = []
         for msg in messages:
             try:
-                result = await self.send_message(msg, channels=[channel], fallback=False)
+                result = await self.send_message(msg, channels=[channel], fallback=False, db=db)
                 results.append(result)
             except Exception as e:
                 logger.error(
@@ -114,11 +116,15 @@ class MultiChannelService:
                 continue
         return None
 
-    async def get_available_channels(self) -> list[dict]:
+    async def get_available_channels(
+        self,
+        company_id: Optional[str] = None,
+        db: Optional[Any] = None,
+    ) -> list[dict]:
         channels = []
         for channel_type, adapter in self._adapters.items():
             try:
-                available = await adapter.is_available()
+                available = await adapter.is_available(company_id=company_id, db=db)
             except Exception:
                 available = False
             channels.append({

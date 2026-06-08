@@ -93,7 +93,7 @@ class EmailChannelAdapter(ChannelAdapter):
     def validate_contact(self, contact: str) -> bool:
         return bool(self._EMAIL_REGEX.match(contact))
 
-    async def is_available(self) -> bool:
+    async def is_available(self, company_id: str | None = None, db: "Any | None" = None) -> bool:
         return True
 
     async def send(self, message: ChannelMessage) -> DeliveryResult:
