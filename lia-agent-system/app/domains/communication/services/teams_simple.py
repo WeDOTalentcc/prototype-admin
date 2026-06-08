@@ -83,7 +83,8 @@ class SimpleTeamsBot:
                 logger.info(
                     f"[Teams] Token claims: appid={claims.get('appid')} "
                     f"tid={claims.get('tid')} aud={claims.get('aud')} "
-                    f"iss={claims.get('iss', '')[:60]}"
+                    f"ver={claims.get('ver', 'unknown')} "
+                    f"iss={claims.get('iss', '')[:70]}"
                 )
             except Exception:
                 pass
@@ -230,6 +231,11 @@ class SimpleTeamsBot:
         
         return "Ação recebida! Processando..."
     
+    def _invalidate_token(self) -> None:
+        """Invalidate the cached access token, forcing re-acquisition on next call."""
+        self._access_token = None
+        self._token_expires = None
+
     async def send_message(
         self,
         service_url: str,
@@ -285,6 +291,25 @@ class SimpleTeamsBot:
                     timeout=30.0
                 )
                 
+                if response.status_code == 401:
+                    # Token rejected — invalidate cache and retry once with fresh token
+                    logger.warning(
+                        f"[Teams] send_message 401 — invalidating token cache and retrying. "
+                        f"WWW-Authenticate: {response.headers.get('WWW-Authenticate', 'none')} | "
+                        f"Body: {response.text[:200]}"
+                    )
+                    self._invalidate_token()
+                    token = await self.get_access_token()
+                    response = await client.post(
+                        url,
+                        json=message,
+                        headers={
+                            "Authorization": f"Bearer {token}",
+                            "Content-Type": "application/json"
+                        },
+                        timeout=30.0
+                    )
+
                 if response.status_code not in [200, 201]:
                     logger.error(
                         f"Failed to send message: HTTP {response.status_code} | URL: {url} "
@@ -351,11 +376,31 @@ class SimpleTeamsBot:
                     },
                     timeout=30.0
                 )
-                
+
+                if response.status_code == 401:
+                    # Token rejected — invalidate cache and retry once with fresh token
+                    logger.warning(
+                        f"[Teams] send_adaptive_card 401 — invalidating token cache and retrying. "
+                        f"WWW-Authenticate: {response.headers.get('WWW-Authenticate', 'none')} | "
+                        f"Body: {response.text[:200]}"
+                    )
+                    self._invalidate_token()
+                    token = await self.get_access_token()
+                    response = await client.post(
+                        url,
+                        json=message,
+                        headers={
+                            "Authorization": f"Bearer {token}",
+                            "Content-Type": "application/json"
+                        },
+                        timeout=30.0
+                    )
+
                 if response.status_code not in [200, 201]:
                     logger.error(
                         f"Failed to send card: HTTP {response.status_code} | URL: {url} "
-                        f"| Headers: {dict(response.headers)} | Body: {response.text[:500]}"
+                        f"| WWW-Authenticate: {response.headers.get('WWW-Authenticate', 'none')} "
+                        f"| Body: {response.text[:500]}"
                     )
                     return False
                 
