@@ -3,6 +3,7 @@ import { Mail, Phone, Linkedin, Github, Globe, CheckCircle2, AlertTriangle } fro
 import { isGlobalSource } from "@/lib/utils/source-detection"
 import type { Candidate } from "@/components/pages/candidates/types"
 import type { RevealedContacts } from "@/stores/candidates-store"
+import { useFailedDeliveryStore } from "@/stores/failedDeliveryStore"
 
 type OnRevealContact = (candidate: Candidate, type: "email" | "phone") => void
 type TranslateFn = (key: string, values?: Record<string, unknown>) => string
@@ -34,6 +35,20 @@ function renderValidityBadge(
   return null
 }
 
+function DeliveryFailureBadge({ candidateId }: { candidateId: string }): React.ReactNode {
+  const deliveryFailure = useFailedDeliveryStore(s => s.getFailure(candidateId))
+  if (!deliveryFailure) return null
+  return (
+    <span
+      aria-label={`Último envio falhou: ${deliveryFailure.reason}`}
+      title={`Último envio falhou: ${deliveryFailure.reason}`}
+      className="inline-flex items-center"
+    >
+      <AlertTriangle className="w-3.5 h-3.5 text-status-warning shrink-0" aria-hidden />
+    </span>
+  )
+}
+
 export function renderEmailCell(
   candidate: Candidate,
   revealedContacts: RevealedContacts,
@@ -56,24 +71,28 @@ export function renderEmailCell(
           t ? t('emailVerified') : "E-mail verificado",
           t ? t('emailUnverified') : "E-mail nao verificado"
         )}
+        <DeliveryFailureBadge candidateId={candidate.id} />
       </span>
     )
   }
 
   if (canRevealEmail) {
     return (
-      <button
-        data-testid={`reveal-email-btn-${candidate.id}`}
-        onClick={(e) => {
-          e.stopPropagation()
-          onRevealContact(candidate, "email")
-        }}
-        className="inline-flex items-center gap-1.5 px-2 py-0.5 text-micro font-medium rounded-full bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-interactive-active dark:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse transition-colors motion-reduce:transition-none"
-        title={t ? t('revealEmailTitle') : "Clique para revelar email"}
-      >
-        <Mail className="w-3 h-3" />
-        <span>{t ? t('reveal') : "Revelar"}</span>
-      </button>
+      <span className="inline-flex items-center gap-1 min-w-0">
+        <button
+          data-testid={`reveal-email-btn-${candidate.id}`}
+          onClick={(e) => {
+            e.stopPropagation()
+            onRevealContact(candidate, "email")
+          }}
+          className="inline-flex items-center gap-1.5 px-2 py-0.5 text-micro font-medium rounded-full bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-interactive-active dark:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none"
+          title={t ? t('revealEmailTitle') : "Clique para revelar email"}
+        >
+          <Mail className="w-3 h-3" />
+          <span>{t ? t('reveal') : "Revelar"}</span>
+        </button>
+        <DeliveryFailureBadge candidateId={candidate.id} />
+      </span>
     )
   }
 
