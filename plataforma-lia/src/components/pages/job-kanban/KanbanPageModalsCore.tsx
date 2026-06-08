@@ -1,10 +1,13 @@
 "use client"
 
-import React from "react"
+import React, { useState } from "react"
 import dynamic from "next/dynamic"
 import { LoadingModal } from "@/components/ui/loading"
 import { useTranslations } from "next-intl"
 import type { KanbanPageCoreState } from "./hooks/useKanbanPageCore"
+import { BulkResultReport } from "@/components/bulk"
+import type { BulkItemResult } from "@/lib/bulk"
+import type { CommunicationResult } from "@/components/modals/unified-communication-types"
 
 const CandidatePage = dynamic(() => import("@/components/candidate-page").then(m => ({ default: m.CandidatePage })), { ssr: false, loading: () => <LoadingModal /> })
 const TriagemDetailsModal = dynamic(() => import("@/components/triagem-details-modal").then(m => ({ default: m.TriagemDetailsModal })), { ssr: false, loading: () => <LoadingModal /> })
@@ -49,6 +52,17 @@ export function KanbanPageModalsCore(state: KanbanPageCoreState) {
     decisionFlowType, handleDecisionFlowConfirm,
     setUnifiedModalCandidate, setUnifiedModalType, setUnifiedModalSituation, setUnifiedModalOpen,
   } = state
+  const [bulkReport, setBulkReport] = useState<{ isOpen: boolean; results: BulkItemResult[]; actionLabel: string }>({ isOpen: false, results: [], actionLabel: "" })
+
+  const COMM_TYPE_LABELS: Record<string, string> = { email: "Email", whatsapp: "WhatsApp", triagem: "Triagem", agendamento: "Agendamento", feedback: "Feedback" }
+
+  const handleSend = (data: CommunicationResult) => {
+    const withBulk = data as CommunicationResult & { bulkResults?: BulkItemResult[] }
+    if (Array.isArray(withBulk.bulkResults) && withBulk.bulkResults.length > 0) {
+      setBulkReport({ isOpen: true, results: withBulk.bulkResults, actionLabel: COMM_TYPE_LABELS[data.type] ?? "Envio" })
+    }
+  }
+
   return (
     <>
       {showCandidatePage && previewCandidate && (
@@ -169,6 +183,7 @@ export function KanbanPageModalsCore(state: KanbanPageCoreState) {
               })
             : []
         }
+        onSend={handleSend}
       />
 
       <AddToListModal
@@ -321,6 +336,13 @@ export function KanbanPageModalsCore(state: KanbanPageCoreState) {
           }}
         />
       )}
+
+      <BulkResultReport
+        isOpen={bulkReport.isOpen}
+        onClose={() => setBulkReport(prev => ({ ...prev, isOpen: false }))}
+        results={bulkReport.results}
+        actionLabel={bulkReport.actionLabel}
+      />
     </>
   )
 }
