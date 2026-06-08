@@ -9,6 +9,9 @@ sqlalchemy==2.0.36
 alembic==1.14.0
 psycopg2-binary==2.9.10
 asyncpg==0.30.0
+# psycopg3 (async) — obrigatório para AsyncPostgresSaver (LangGraph checkpointer)
+psycopg[binary,pool]>=3.1.0
+psycopg-pool>=3.3.0
 
 # YAML configuration
 PyYAML>=6.0
@@ -20,7 +23,7 @@ langchain-openai>=1.0.3,<2.0.0
 langchain-google-vertexai>=3.0.3,<4.0.0
 google-cloud-aiplatform>=1.131.0
 langgraph>=0.4.1
-langgraph-checkpoint-postgres>=2.0.8
+langgraph-checkpoint-postgres>=3.0.0
 langsmith>=0.7.25,<1.0.0
 
 # Async & Queue
