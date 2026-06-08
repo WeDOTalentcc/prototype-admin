@@ -442,6 +442,7 @@ export function UnifiedChat({
     open,
     close,
     enterFullscreen,
+    navigateToChat,
     contextPage,
     dynamicPanel,
     openDynamicPanel,
@@ -1092,14 +1093,19 @@ export function UnifiedChat({
       !!_autoFsStage &&
       SPLIT_STAGES.includes(_autoFsStage as WizardStage) &&
       mode !== "fullscreen" &&
-      renderMode !== "inline" &&
       !alreadyEscalated
     ) {
       autoFullscreenDone.current = true;
       _autoFullscreenConversations.add(guardKey);
-      handleModeChange("fullscreen");
+      if (renderMode === "inline") {
+        // Sidebar inline: migra para a pagina de chat dedicada (Bug 2026-06-08).
+        // Wizard em sidebar e UX ruim; /conversar da a experiencia completa.
+        navigateToChat(chatConversationId ?? undefined);
+      } else {
+        handleModeChange("fullscreen");
+      }
     }
-  }, [_autoFsStage, mode, renderMode, chatConversationId, handleModeChange]);
+  }, [_autoFsStage, mode, renderMode, chatConversationId, handleModeChange, navigateToChat]);
 
   const handleFileButtonClick = useCallback(() => {
     fileInputRef.current?.click();
