@@ -198,7 +198,12 @@ const nextConfig = {
   },
   async rewrites() {
     return {
-      beforeFiles: [],
+      beforeFiles: [
+        {
+          source: '/__mockup/:path*',
+          destination: 'http://localhost:23636/__mockup/:path*',
+        },
+      ],
       afterFiles: [
         {
           source: '/api/v1/:path*',

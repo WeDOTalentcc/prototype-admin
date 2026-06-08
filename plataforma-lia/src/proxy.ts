@@ -49,6 +49,7 @@ const STATIC_PATHS = [
   '/logos',
   '/images',
   '/favicon',
+  '/__mockup',
 ]
 
 function stripLocalePrefix(pathname: string): string {
