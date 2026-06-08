@@ -901,3 +901,20 @@ class CascadedRouter:
 
     def __repr__(self) -> str:
         return f"<CascadedRouter cache_size={len(self._memory_cache)} stats={self._stats}>"
+
+
+_ROUTER_SINGLETON: "CascadedRouter | None" = None
+
+
+def get_router() -> "CascadedRouter":
+    """Returns the process-level singleton CascadedRouter.
+
+    Keeps the in-process LRU cache alive across SSE turns so Tier-1 hits
+    work in practice (previously a new CascadedRouter() per request made
+    the LRU useless). Thread-safety: CPython GIL covers dict reads/writes;
+    async workers share one event loop per process so no concurrent mutation.
+    """
+    global _ROUTER_SINGLETON
+    if _ROUTER_SINGLETON is None:
+        _ROUTER_SINGLETON = CascadedRouter()
+    return _ROUTER_SINGLETON

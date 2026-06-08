@@ -395,26 +395,31 @@ company_id: str = Depends(require_company_id)):
             event_seq += 1
             return f"{session_id[:8]}-{event_seq}"
 
-        # B2 (2026-06): per-turn identity masking (CPF/RG/CNPJ) for users not allowed to see cpf.
-        # ContextVar is request-context-scoped -> covers all mask_pii_outbound calls below; no leak.
-        try:
-            import uuid as _uuid_b2
-            from app.shared.pii_masking import set_chat_pii_mask_identity, chat_should_mask_identity
-            from app.core.database import AsyncSessionLocal as _SessB2
-            from app.domains.company.repositories.user_repository import UserRepository as _UserRepoB2
-            from app.domains.hiring_policy.repositories.hiring_policy_repository import HiringPolicyRepository as _HPRepoB2
-            if user_id and user_id != "anonymous" and company_id:
-                async with _SessB2() as _db_b2:
-                    _u_b2 = await _UserRepoB2(_db_b2).get_by_id(_uuid_b2.UUID(str(user_id)), company_id=company_id)
-                    _pol_b2 = await _HPRepoB2(_db_b2).get_by_company(company_id)
-                _rd_b2 = (getattr(_pol_b2, "pii_visibility_defaults", None) or {}) if _pol_b2 else {}
-                if _u_b2 is not None:
-                    set_chat_pii_mask_identity(chat_should_mask_identity(_u_b2, _rd_b2))
-        except Exception:
-            logger.debug("[B2] chat identity-masking setup skipped (non-blocking)", exc_info=True)
-
+        # Fix 1: emit thinking IMMEDIATELY — before any DB queries so the user
+        # sees "Pensando..." without a blank-screen delay.
         yield format_sse_event(serialize_thinking(), next_id())
 
+        # Fix 1 (continued) — B2 (2026-06): per-turn identity masking
+        # (CPF/RG/CNPJ). Now runs in parallel with budget + router + tenant
+        # context so it no longer blocks the thinking event.
+        # ContextVar is request-context-scoped — no leak across turns.
+        # Guaranteed to finish before first token (agent takes >>200 ms).
+        async def _b2_setup_async():
+            try:
+                import uuid as _uuid_b2
+                from app.shared.pii_masking import set_chat_pii_mask_identity, chat_should_mask_identity
+                from app.core.database import AsyncSessionLocal as _SessB2
+                from app.domains.company.repositories.user_repository import UserRepository as _UserRepoB2
+                from app.domains.hiring_policy.repositories.hiring_policy_repository import HiringPolicyRepository as _HPRepoB2
+                if user_id and user_id != "anonymous" and company_id:
+                    async with _SessB2() as _db_b2:
+                        _u_b2 = await _UserRepoB2(_db_b2).get_by_id(_uuid_b2.UUID(str(user_id)), company_id=company_id)
+                        _pol_b2 = await _HPRepoB2(_db_b2).get_by_company(company_id)
+                    _rd_b2 = (getattr(_pol_b2, "pii_visibility_defaults", None) or {}) if _pol_b2 else {}
+                    if _u_b2 is not None:
+                        set_chat_pii_mask_identity(chat_should_mask_identity(_u_b2, _rd_b2))
+            except Exception:
+                logger.debug("[B2] chat identity-masking setup skipped (non-blocking)", exc_info=True)
 
         async def _check_budget_async():
             try:
@@ -424,9 +429,36 @@ company_id: str = Depends(require_company_id)):
                 logger.warning("[SSEChat] Budget check failed — continuing: %s", exc)
                 return True, 0, 0
 
+        # Fix 2: tenant context now runs in parallel with the router so its
+        # ~200 ms DB query is hidden behind routing latency.
+        async def _inject_tenant_context_async():
+            try:
+                from app.core.database import AsyncSessionLocal
+                from app.shared.services.tenant_context_service import TenantContextService
+                async with AsyncSessionLocal() as _tc_db:
+                    _tenant_ctx = await TenantContextService().get_context(
+                        company_id=company_id, db=_tc_db,
+                    )
+                    _snippet = _tenant_ctx.to_prompt_snippet()
+                    if company_id:
+                        _snippet += "\n" + TenantContextService.build_authenticated_snippet(company_id)
+                    context["tenant_context_snippet"] = _snippet
+                    logger.info(
+                        "[SSEChat] tenant_context injected company=%s name=%s",
+                        company_id, _tenant_ctx.company_name,
+                    )
+            except Exception as _tc_exc:
+                if company_id:
+                    from app.shared.services.tenant_context_service import TenantContextService
+                    context["tenant_context_snippet"] = TenantContextService.build_authenticated_snippet(company_id)
+                    logger.info("[SSEChat] tenant_context fallback: authenticated snippet for %s", company_id)
+                else:
+                    logger.warning("[SSEChat] TenantContext injection skipped: %s", _tc_exc)
+
         async def _route_domain_async():
             if active_domain not in ("auto", "recruiter_assistant", ""):
                 return active_domain
+
             # Task #1080: wizard session pin BEFORE router (canonical layer
             # for "this conversation is the wizard"). Mirrors agent_chat_ws.
             try:
@@ -440,9 +472,46 @@ company_id: str = Depends(require_company_id)):
                     return "wizard"
             except Exception as _pin_exc:
                 logger.debug("[SSEChat] wizard_session_pin skipped: %s", _pin_exc)
+
+            # Bonus fix: when LIA_FEDERATED_PRIMARY is active the full
+            # CascadedRouter result is discarded for non-special domains anyway
+            # (recruiter_copilot is always chosen). Skip the expensive Tier-5
+            # Gemini Flash call and use only the lightweight FastRouter (regex,
+            # no LLM) to detect the domains that actually matter here:
+            # wizard / kanban / pipeline_transition / sourcing.
+            # Everything else returns active_domain — federated agent handles it.
             try:
-                from app.orchestrator.routing.cascaded_router import CascadedRouter
-                _router = CascadedRouter()
+                from app.tools.scope_config import federated_primary_enabled as _fed_check
+                _is_federated = _fed_check()
+            except Exception:
+                _is_federated = False
+
+            if _is_federated:
+                try:
+                    from app.orchestrator.routing.fast_router import FastRouter
+                    from lia_config.config import settings as _cfg
+                    _fast_result = FastRouter().match(content)
+                    _ROUTABLE = {"wizard", "kanban", "pipeline_transition", "sourcing"}
+                    if (
+                        _fast_result
+                        and _fast_result.confidence >= _cfg.ROUTER_FAST_CONFIDENCE_THRESHOLD
+                        and _fast_result.domain_id in _ROUTABLE
+                    ):
+                        logger.debug(
+                            "[SSEChat] federated fast-path → %s (conf=%.2f)",
+                            _fast_result.domain_id, _fast_result.confidence,
+                        )
+                        return _fast_result.domain_id
+                except Exception as _fp_exc:
+                    logger.debug("[SSEChat] federated fast-path skipped: %s", _fp_exc)
+                return active_domain
+
+            # Fix 4: use process-level singleton so the in-process LRU cache
+            # survives across turns (previously CascadedRouter() was instantiated
+            # per request, making the 1000-entry LRU permanently empty).
+            try:
+                from app.orchestrator.routing.cascaded_router import get_router
+                _router = get_router()
                 route = await _router.route(
                     message=content, context=context, session_id=session_id,
                 )
@@ -452,8 +521,13 @@ company_id: str = Depends(require_company_id)):
                 pass
             return active_domain
 
-        budget_result, resolved_domain = await asyncio.gather(
-            _check_budget_async(), _route_domain_async()
+        # All 4 setup tasks run in parallel — budget, routing, B2 identity
+        # masking, and tenant context are fully independent I/O operations.
+        budget_result, resolved_domain, _, _ = await asyncio.gather(
+            _check_budget_async(),
+            _route_domain_async(),
+            _b2_setup_async(),
+            _inject_tenant_context_async(),
         )
         budget_ok, used, limit = budget_result
         if not budget_ok:
@@ -476,30 +550,6 @@ company_id: str = Depends(require_company_id)):
         elif resolved_domain == "sourcing":
             from app.api.v1.agent_chat_ws import _subagent_for_sourcing
             resolved_domain = _subagent_for_sourcing(content)
-
-        # Inject tenant context so agents know the authenticated company
-        try:
-            from app.core.database import AsyncSessionLocal
-            from app.shared.services.tenant_context_service import TenantContextService
-            async with AsyncSessionLocal() as _tc_db:
-                _tenant_ctx = await TenantContextService().get_context(
-                    company_id=company_id, db=_tc_db,
-                )
-                _snippet = _tenant_ctx.to_prompt_snippet()
-                if company_id:
-                    _snippet += "\n" + TenantContextService.build_authenticated_snippet(company_id)
-                context["tenant_context_snippet"] = _snippet
-                logger.info(
-                    "[SSEChat] tenant_context injected company=%s name=%s",
-                    company_id, _tenant_ctx.company_name,
-                )
-        except Exception as _tc_exc:
-            if company_id:
-                from app.shared.services.tenant_context_service import TenantContextService
-                context["tenant_context_snippet"] = TenantContextService.build_authenticated_snippet(company_id)
-                logger.info("[SSEChat] tenant_context fallback: authenticated snippet for %s", company_id)
-            else:
-                logger.warning("[SSEChat] TenantContext injection skipped: %s", _tc_exc)
 
         # Wizard canonical path (mirrors agent_chat_ws.py)
         if resolved_domain == "wizard":
