@@ -787,11 +787,56 @@ router.add_api_route(
 async def teams_health(company_id: str = Depends(require_company_id)):
     # multi-tenancy: public endpoint (health) — no tenant data
     """Health check for Teams integration."""
+    from app.domains.communication.services.teams_service import teams_service as _ts
     return {
         "status": "healthy",
         "service": "teams-bot",
-        "bot_configured": simple_teams_bot.app_id is not None
+        "bot_configured": simple_teams_bot.app_id is not None,
+        "outbound_webhook_configured": bool(_ts.webhook_url),
+        "outbound_mode": "production" if not _ts.is_development else "development",
     }
+
+
+class TestWebhookRequest(BaseModel):
+    """Request body for POST /teams/test-webhook."""
+    webhook_url: str = Field(..., description="Incoming Webhook URL to test")
+    message: str | None = Field(
+        None,
+        description="Custom test message (optional — defaults to generic test card)",
+    )
+
+
+@router.post("/test-webhook", response_model=None)
+async def test_teams_webhook(
+    body: TestWebhookRequest,
+    company_id: str = Depends(require_company_id),
+):
+    """
+    Validate a Teams Incoming Webhook URL before saving it.
+
+    Sends a simple Adaptive Card to the provided URL and returns success/failure.
+    This endpoint is authenticated (requires valid JWT + company_id) and does NOT
+    persist the URL — it only tests reachability.
+
+    Security: The target URL is validated by ``safe_outbound_url`` (SSRF guard)
+    before any HTTP request is made.
+
+    Returns:
+        200 with ``{"success": true}`` on delivery.
+        200 with ``{"success": false, "error": "..."}`` on failure (4xx/5xx from Teams).
+        400 if the URL fails SSRF validation.
+    """
+    from app.domains.communication.services.teams_service import TeamsService
+    from app.shared.security.url_validator import UnsafeOutboundURLError, safe_outbound_url
+
+    try:
+        safe_outbound_url(body.webhook_url, require_https=True)
+    except UnsafeOutboundURLError as exc:
+        raise HTTPException(status_code=400, detail=f"URL inválida ou não segura: {exc}") from exc
+
+    svc = TeamsService(webhook_url=body.webhook_url)
+    result = await svc.test_connection(webhook_url=body.webhook_url)
+    return result
 
 
 def _parse_teams_timestamp(ts: str | None) -> datetime | None:

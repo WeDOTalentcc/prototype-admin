@@ -225,6 +225,11 @@ class AuthSettings(BaseSettings):
     # Microsoft Teams
     MICROSOFT_APP_ID: str | None = None
     MICROSOFT_APP_PASSWORD: str | None = None
+    # TEAMS_WEBHOOK_URL — Incoming Webhook URL for proactive outbound delivery.
+    # Without this, TeamsService runs in dev mode (messages logged only, not sent).
+    # How to obtain: Teams channel → click channel name → Manage channel →
+    #   Connectors → search "Incoming Webhook" → Configure → copy generated URL.
+    # See also: Configurações → Integrações → Microsoft Teams in the LIA UI.
     TEAMS_WEBHOOK_URL: str | None = None
     TEAMS_WEBHOOK_SECRET: str | None = None
     # Home tenant of the Bot App Registration (used for outbound token acquisition)

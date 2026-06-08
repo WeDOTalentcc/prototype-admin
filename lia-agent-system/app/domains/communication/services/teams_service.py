@@ -63,15 +63,25 @@ class TeamsService:
     def __init__(self, webhook_url: str | None = None):
         """
         Initialize TeamsService.
-        
+
         Args:
             webhook_url: Teams Incoming Webhook URL. If not provided, uses TEAMS_WEBHOOK_URL env var.
+
+        How to obtain TEAMS_WEBHOOK_URL:
+          1. Open the target Teams channel.
+          2. Click the channel name → Manage channel → Connectors (or "..." → Connectors).
+          3. Search for "Incoming Webhook" → Configure.
+          4. Give it a name (e.g. "LIA Agent System") and click Create.
+          5. Copy the generated URL and set it as the TEAMS_WEBHOOK_URL secret.
         """
         self.webhook_url = webhook_url or os.environ.get("TEAMS_WEBHOOK_URL")
-        self.is_development = not self.webhook_url or settings.APP_ENV == "development"
-        
+        self.is_development = not self.webhook_url
+
         if self.is_development:
-            logger.info("TeamsService running in development mode - messages will be logged only")
+            logger.info(
+                "TeamsService running in development mode — messages will be logged only. "
+                "Set TEAMS_WEBHOOK_URL to enable outbound delivery to Teams channels."
+            )
     
     async def send_message(
         self,

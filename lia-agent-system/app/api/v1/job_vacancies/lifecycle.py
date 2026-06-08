@@ -262,7 +262,8 @@ async def _send_candidates_added_notification(
     job_title: str,
     candidates_added: int,
     recruiter_email: str,
-    is_global: bool = False
+    is_global: bool = False,
+    company_id: str | None = None,
 ) -> None:
     """Send notification when candidates are added to pipeline."""
     try:
@@ -297,9 +298,19 @@ async def _send_candidates_added_notification(
             f"Aprove para iniciar triagem."
         )
 
+        # Resolve per-tenant webhook URL so DB-configured URL drives delivery when env var is absent
+        resolved_webhook_url: str | None = None
+        if company_id:
+            try:
+                from app.api.v1.integrations import _get_tenant_teams_webhook_url
+                resolved_webhook_url, _ = await _get_tenant_teams_webhook_url(company_id, db)
+            except Exception as _url_err:
+                logger.debug("Could not resolve per-tenant Teams URL: %s", _url_err)
+
         await teams_service.send_message(
             text=teams_message,
-            title=f"Pipeline Atualizado - {job_title}"
+            title=f"Pipeline Atualizado - {job_title}",
+            webhook_url=resolved_webhook_url,
         )
 
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
@@ -406,7 +417,8 @@ company_id: str = Depends(require_company_id)):
                 job_id=str(job_id),
                 job_title=job_vacancy.title,
                 candidates_added=total_added,
-                recruiter_email=job_vacancy.recruiter_email or current_user.email
+                recruiter_email=job_vacancy.recruiter_email or current_user.email,
+                company_id=user_company,
             )
 
         message = f"Vaga '{job_vacancy.title}' publicada com sucesso!"
@@ -468,7 +480,8 @@ company_id: str = Depends(require_company_id)):
                 job_title=job_vacancy.title,
                 candidates_added=search_result["candidates_added"],
                 recruiter_email=job_vacancy.recruiter_email or current_user.email,
-                is_global=True
+                is_global=True,
+                company_id=user_company,
             )
 
         message = ""

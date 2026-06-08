@@ -1,8 +1,9 @@
 "use client"
 
-import { useCallback } from "react"
+import { useCallback, useState, useEffect } from "react"
 import { Chip } from "@/components/ui/chip"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import {
   Dialog,
   DialogContent,
@@ -26,6 +27,8 @@ import {
   Key,
   Mic,
   Info,
+  Save,
+  Send,
 } from "lucide-react"
 import type { Integration } from "./integration-data"
 import { ApiKeyConfigForm } from "./ApiKeyConfigForm"
@@ -76,6 +79,88 @@ export function IntegrationDetailModal({
   llmConfig,
   onConfigSaved,
 }: IntegrationDetailModalProps) {
+  const [teamsWebhookInput, setTeamsWebhookInput] = useState("")
+  const [teamsWebhookMasked, setTeamsWebhookMasked] = useState<string | null>(null)
+  const [teamsWebhookSource, setTeamsWebhookSource] = useState<"db" | "env" | "none">("none")
+  const [teamsSaveLoading, setTeamsSaveLoading] = useState(false)
+  const [teamsSaveMsg, setTeamsSaveMsg] = useState<{ ok: boolean; text: string } | null>(null)
+  const [teamsTestLoading, setTeamsTestLoading] = useState(false)
+  const [teamsTestMsg, setTeamsTestMsg] = useState<{ ok: boolean; text: string } | null>(null)
+  const [teamsConfigLoading, setTeamsConfigLoading] = useState(false)
+
+  useEffect(() => {
+    if (!open || integration?.id !== "teams") return
+    setTeamsWebhookInput("")
+    setTeamsSaveMsg(null)
+    setTeamsTestMsg(null)
+    setTeamsConfigLoading(true)
+    apiFetch("/api/backend-proxy/integrations/teams/outbound-config")
+      .then((r) => r.json())
+      .then((data) => {
+        setTeamsWebhookMasked(data.webhook_url_masked ?? null)
+        setTeamsWebhookSource(data.source ?? "none")
+      })
+      .catch(() => {})
+      .finally(() => setTeamsConfigLoading(false))
+  }, [open, integration?.id])
+
+  const handleTeamsSave = useCallback(async () => {
+    if (!teamsWebhookInput.trim()) return
+    setTeamsSaveLoading(true)
+    setTeamsSaveMsg(null)
+    try {
+      const res = await apiFetch("/api/backend-proxy/integrations/teams/outbound-config", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ webhook_url: teamsWebhookInput.trim() }),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        setTeamsSaveMsg({ ok: false, text: err.detail || "Erro ao salvar webhook URL" })
+        return
+      }
+      const data = await res.json()
+      setTeamsWebhookMasked(data.webhook_url_masked ?? null)
+      setTeamsWebhookSource("db")
+      setTeamsWebhookInput("")
+      setTeamsSaveMsg({ ok: true, text: "URL salva com sucesso" })
+      notifyChatOfSettingsUpdate({ actionId: "configure_integration", section: "integrations" })
+      onConfigSaved?.()
+    } catch {
+      setTeamsSaveMsg({ ok: false, text: "Erro de conexão" })
+    } finally {
+      setTeamsSaveLoading(false)
+    }
+  }, [teamsWebhookInput, onConfigSaved])
+
+  const handleTeamsTest = useCallback(async () => {
+    setTeamsTestLoading(true)
+    setTeamsTestMsg(null)
+    try {
+      // Pass the typed URL (if any) so the test validates the input before saving.
+      // If the input is empty, the backend resolves the already-saved per-tenant URL.
+      const testBody = teamsWebhookInput.trim()
+        ? { webhook_url: teamsWebhookInput.trim() }
+        : {}
+      const res = await apiFetch("/api/backend-proxy/integrations/teams/test", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(testBody),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok || data.success === false) {
+        setTeamsTestMsg({ ok: false, text: data.error || data.detail || "Falha no teste" })
+      } else if (data.mode === "development") {
+        setTeamsTestMsg({ ok: false, text: "Modo desenvolvimento: nenhuma URL configurada" })
+      } else {
+        setTeamsTestMsg({ ok: true, text: "Mensagem de teste enviada com sucesso" })
+      }
+    } catch {
+      setTeamsTestMsg({ ok: false, text: "Erro de conexão" })
+    } finally {
+      setTeamsTestLoading(false)
+    }
+  }, [teamsWebhookInput])
   // W2-012-B (2026-05-23): salva region per-tenant. LGPD Art 33.
   const handleSaveRegion = useCallback(async (newRegion: string | null) => {
     if (!integration) return { success: false, message: "Integração não selecionada" }
@@ -352,6 +437,118 @@ export function IntegrationDetailModal({
             </div>
           )}
 
+          {integration.id === "teams" && !isComingSoon && (
+            <div>
+              <h4 className={cn(textStyles.label, "mb-3")}>
+                Webhook de Notificações (Outbound)
+              </h4>
+
+              {teamsConfigLoading ? (
+                <div className="flex items-center gap-2 py-2">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none text-lia-text-tertiary" />
+                  <span className={cn(textStyles.description, "text-lia-text-tertiary")}>Carregando configuração...</span>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {teamsWebhookMasked && (
+                    <div className={cn(cardStyles.flat, "flex items-center gap-2 px-3 py-2")}>
+                      <CheckCircle2 className="w-3.5 h-3.5 text-status-success flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className={cn(textStyles.description, "font-mono text-[10px] truncate")}>
+                          {teamsWebhookMasked}
+                        </p>
+                        <p className="text-[10px] text-lia-text-tertiary mt-0.5">
+                          {teamsWebhookSource === "db" ? "Configurado por esta tela" : "Via variável de ambiente"}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="space-y-2">
+                    <p className={textStyles.description}>
+                      Cole a URL do Incoming Webhook do canal Teams que deve receber as notificações da LIA.
+                    </p>
+                    <div className="flex gap-2">
+                      <Input
+                        type="url"
+                        placeholder="https://outlook.office.com/webhook/..."
+                        value={teamsWebhookInput}
+                        onChange={(e) => setTeamsWebhookInput(e.target.value)}
+                        className="rounded-md text-xs h-8 flex-1 font-mono"
+                        data-testid="teams-webhook-url-input"
+                      />
+                      <Button
+                        size="sm"
+                        className="rounded-md text-xs gap-1.5 h-8 flex-shrink-0"
+                        onClick={handleTeamsSave}
+                        disabled={teamsSaveLoading || !teamsWebhookInput.trim()}
+                        data-testid="teams-webhook-save-button"
+                      >
+                        {teamsSaveLoading ? (
+                          <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none" />
+                        ) : (
+                          <Save className="w-3 h-3" />
+                        )}
+                        Salvar
+                      </Button>
+                    </div>
+
+                    {teamsSaveMsg && (
+                      <div className={cn(
+                        "flex items-center gap-1.5 px-3 py-2 rounded-md text-[11px]",
+                        teamsSaveMsg.ok
+                          ? "bg-status-success-bg border border-status-success/30 text-status-success"
+                          : "bg-status-error/10 border border-status-error/30 text-status-error"
+                      )}>
+                        {teamsSaveMsg.ok
+                          ? <CheckCircle2 className="w-3 h-3 flex-shrink-0" />
+                          : <AlertCircle className="w-3 h-3 flex-shrink-0" />
+                        }
+                        {teamsSaveMsg.text}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex items-center justify-between pt-1">
+                    <p className={cn(textStyles.description, "text-lia-text-tertiary text-[11px]")}>
+                      Teste se o webhook está ativo antes de salvar.
+                    </p>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="rounded-md text-xs gap-1.5 h-7"
+                      onClick={handleTeamsTest}
+                      disabled={teamsTestLoading || (!teamsWebhookMasked && !teamsWebhookInput.trim())}
+                      data-testid="teams-webhook-test-button"
+                    >
+                      {teamsTestLoading ? (
+                        <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none" />
+                      ) : (
+                        <Send className="w-3 h-3" />
+                      )}
+                      Testar Conexão
+                    </Button>
+                  </div>
+
+                  {teamsTestMsg && (
+                    <div className={cn(
+                      "flex items-center gap-1.5 px-3 py-2 rounded-md text-[11px]",
+                      teamsTestMsg.ok
+                        ? "bg-status-success-bg border border-status-success/30 text-status-success"
+                        : "bg-status-error/10 border border-status-error/30 text-status-error"
+                    )}>
+                      {teamsTestMsg.ok
+                        ? <CheckCircle2 className="w-3 h-3 flex-shrink-0" />
+                        : <AlertCircle className="w-3 h-3 flex-shrink-0" />
+                      }
+                      {teamsTestMsg.text}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
           {integration.id === "google-calendar" && errorMsg && (
             <div className="flex items-center gap-2 p-2 rounded-xl bg-status-error/10 border border-status-error/30 dark:border-status-error/30">
               <AlertCircle className="w-3.5 h-3.5 text-status-error flex-shrink-0" />
@@ -408,7 +605,7 @@ export function IntegrationDetailModal({
             </Button>
           )}
 
-          {!isComingSoon && !isAiProvider && integration.id !== "google-calendar" && resolvedStatus !== "connected" && (
+          {!isComingSoon && !isAiProvider && integration.id !== "google-calendar" && integration.id !== "teams" && resolvedStatus !== "connected" && (
             integration.category === "ats" ? (
               <Button
                 size="sm"

@@ -13,6 +13,7 @@ import logging
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domains.notifications.dependencies import get_notifications_repo
 from app.domains.notifications.repositories.notifications_repository import NotificationsRepository
@@ -27,6 +28,7 @@ from app.shared.types import WeDoBaseModel
 from typing import Annotated
 from fastapi import Path
 from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
+from app.core.database import get_db
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/notifications", tags=["notifications"])
@@ -763,6 +765,7 @@ async def get_alert_thresholds(company_id: str = Depends(require_company_id)):
 async def send_job_created_notification(
     request: JobCreatedNotificationRequest,
     email_svc: EmailService = Depends(get_email_service),
+    db: AsyncSession = Depends(get_db),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
@@ -962,12 +965,21 @@ Recrutador: {request.recruiter_name or request.recruiter_email}
 
             if "teams" in request.channels:
                 try:
+                    # Resolve per-tenant webhook URL so DB-configured URL drives delivery
+                    # when TEAMS_WEBHOOK_URL env var is absent (T-1337).
+                    _resolved_teams_url: str | None = None
+                    try:
+                        from app.api.v1.integrations import _get_tenant_teams_webhook_url
+                        _resolved_teams_url, _ = await _get_tenant_teams_webhook_url(company_id, db)
+                    except Exception as _url_err:
+                        logger.debug("Could not resolve per-tenant Teams URL: %s", _url_err)
                     await teams_service.send_message(
                         user_email=recipient["email"],
                         title=teams_title,
                         message=workplan_content,
                         action_url=f"https://lia.wedotalent.com/jobs/{request.job_id}",
-                        action_label="Ver Vaga"
+                        action_label="Ver Vaga",
+                        webhook_url=_resolved_teams_url,
                     )
                     notifications_sent[role]["teams"] = True
                     # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)

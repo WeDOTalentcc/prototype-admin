@@ -34,7 +34,7 @@ interface CalendarHealthData {
 }
 
 interface IntegrationStatusData {
-  teams?: { configured?: boolean }
+  teams?: { configured?: boolean; source?: string }
 }
 
 const ATS_PROVIDER_MAP: Record<string, string> = { gupy: "gupy", pandape: "pandape", merge: "merge" }  // P1-13 audit: merge e provider ATS valido (backend SUPPORTED_PROVIDERS)
@@ -90,7 +90,8 @@ export function useIntegrationsData() {
 
   const googleStatus = calendarHealth?.google_configured ? "connected" : ("idle" as const)
   const microsoftStatus = calendarHealth?.graph_configured ? "connected" : ("not_configured" as const)
-  const teamsStatus = integrationStatus?.teams?.configured ? "configured" : ("not_configured" as const)
+  const teamsConfigured = integrationStatus?.teams?.configured ?? false
+  const teamsStatus = teamsConfigured ? "configured" : ("not_configured" as const)
   const activeProvider = llmConfig?.primary_provider ?? "gemini"
 
   const enrichedIntegrations = useMemo<Integration[]>(() => {
@@ -130,6 +131,7 @@ export function useIntegrationsData() {
     googleStatus,
     microsoftStatus,
     teamsStatus,
+    refetchIntegrationStatus: () => void 0,
     llmConfig: llmConfig ?? null,
     refetchLlmConfig,
   }

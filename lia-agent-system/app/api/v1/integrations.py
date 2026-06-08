@@ -6,19 +6,118 @@ Provides endpoints for:
 - Other external integrations
 """
 import logging
+import uuid
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user
+from app.core.database import get_db
 from app.domains.communication.services.teams_service import AlertSeverity, teams_service
+from app.models.integration_hub import IntegrationConnection, IntegrationProvider, IntegrationStatus
 from app.shared.security.require_company_id import require_company_id
+from app.shared.security.url_validator import UnsafeOutboundURLError, safe_outbound_url
+from app.shared.services.credentials_crypto import (
+    CredentialsEncryptionError,
+    decrypt_credentials,
+    encrypt_credentials,
+)
 from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/integrations", tags=["integrations"])
+
+_TEAMS_PROVIDER_SLUG = "microsoft_teams"
+
+
+async def _get_or_create_teams_provider(db: AsyncSession) -> IntegrationProvider:
+    """Return the microsoft_teams IntegrationProvider row, creating it on first call."""
+    result = await db.execute(
+        select(IntegrationProvider).where(IntegrationProvider.slug == _TEAMS_PROVIDER_SLUG)
+    )
+    provider = result.scalar_one_or_none()
+    if provider is None:
+        provider = IntegrationProvider(
+            id=uuid.uuid4(),
+            name="Microsoft Teams",
+            category="communication",
+            slug=_TEAMS_PROVIDER_SLUG,
+            description="Microsoft Teams integration for notifications and collaboration",
+            logo_url="/logos/teams.png",
+            supports_oauth=True,
+            supports_api_key=False,
+            supports_webhook=True,
+            features=["notifications", "alerts", "candidate_updates", "scheduling"],
+            is_active=True,
+            is_premium=False,
+        )
+        db.add(provider)
+        await db.flush()
+    return provider
+
+
+async def _get_tenant_teams_webhook_url(company_id: str, db: AsyncSession) -> tuple[str | None, str]:
+    """Resolve Teams webhook URL for a tenant.
+
+    Returns (url, source) where source is "db", "env", or "none".
+    Priority: per-tenant DB record → global TEAMS_WEBHOOK_URL env var.
+    """
+    try:
+        provider = await _get_or_create_teams_provider(db)
+        result = await db.execute(
+            select(IntegrationConnection).where(
+                IntegrationConnection.company_id == company_id,
+                IntegrationConnection.provider_id == provider.id,
+            )
+        )
+        conn = result.scalar_one_or_none()
+        if conn and conn.credentials_encrypted:
+            creds = decrypt_credentials(conn.credentials_encrypted)
+            url = creds.get("webhook_url")
+            if url:
+                return url, "db"
+    except Exception as exc:
+        logger.warning("teams outbound-config DB read failed for %s: %s", company_id, exc)
+
+    if teams_service.webhook_url:
+        return teams_service.webhook_url, "env"
+    return None, "none"
+
+
+async def _upsert_teams_connection(company_id: str, webhook_url: str, db: AsyncSession) -> None:
+    """Persist (upsert) the outbound Teams webhook URL for a tenant."""
+    provider = await _get_or_create_teams_provider(db)
+    result = await db.execute(
+        select(IntegrationConnection).where(
+            IntegrationConnection.company_id == company_id,
+            IntegrationConnection.provider_id == provider.id,
+        )
+    )
+    conn = result.scalar_one_or_none()
+    encrypted = encrypt_credentials({"webhook_url": webhook_url})
+    if conn is None:
+        conn = IntegrationConnection(
+            id=uuid.uuid4(),
+            company_id=company_id,
+            provider_id=provider.id,
+            status=IntegrationStatus.CONNECTED,
+            auth_type="webhook",
+            credentials_encrypted=encrypted,
+        )
+        db.add(conn)
+    else:
+        conn.credentials_encrypted = encrypted
+        conn.status = IntegrationStatus.CONNECTED
+    await db.flush()
+
+
+class TeamsOutboundConfigRequest(WeDoBaseModel):
+    """Request model for saving the per-tenant Teams outbound webhook URL."""
+    webhook_url: str
 
 
 class TeamsSendMessageRequest(WeDoBaseModel):
@@ -59,6 +158,75 @@ class TeamsCandidateNotificationRequest(WeDoBaseModel):
 class TeamsTestRequest(WeDoBaseModel):
     """Request model for testing Teams connection."""
     webhook_url: str | None = None
+
+
+@router.get("/teams/outbound-config", response_model=None)
+async def get_teams_outbound_config(
+    current_user: dict[str, Any] = Depends(get_current_user),
+    company_id: str = Depends(require_company_id),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Get the per-tenant Teams outbound webhook URL configuration.
+
+    Returns the configured URL (masked for display) and its source:
+    - "db"  — saved by an admin via this settings page
+    - "env" — falls back to the global TEAMS_WEBHOOK_URL environment variable
+    - "none" — not configured; Teams messages will be logged only
+    """
+    url, source = await _get_tenant_teams_webhook_url(company_id, db)
+    masked: str | None = None
+    if url:
+        masked = url[:45] + "..." if len(url) > 48 else url
+    return {
+        "configured": url is not None,
+        "webhook_url_masked": masked,
+        "source": source,
+        "mode": "production" if url else "development",
+    }
+
+
+@router.put("/teams/outbound-config", response_model=None)
+async def save_teams_outbound_config(
+    request: TeamsOutboundConfigRequest,
+    current_user: dict[str, Any] = Depends(get_current_user),
+    company_id: str = Depends(require_company_id),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Save the per-tenant Teams outbound webhook URL.
+
+    The URL is validated (SSRF guard) and stored encrypted in the
+    integration_connections table under the microsoft_teams provider.
+    After saving, outbound Teams notifications for this tenant will use
+    the persisted URL instead of the global TEAMS_WEBHOOK_URL env var.
+    """
+    try:
+        validated_url = safe_outbound_url(request.webhook_url, label="teams_webhook")
+    except UnsafeOutboundURLError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+    try:
+        await _upsert_teams_connection(company_id, validated_url, db)
+        await db.commit()
+    except CredentialsEncryptionError as exc:
+        await db.rollback()
+        logger.error("teams outbound-config encrypt failed for %s: %s", company_id, exc)
+        raise HTTPException(status_code=500, detail="Erro ao criptografar configuração") from exc
+    except Exception as exc:
+        await db.rollback()
+        logger.error("teams outbound-config save failed for %s: %s", company_id, exc)
+        raise HTTPException(status_code=500, detail="Erro ao salvar configuração") from exc
+
+    masked = validated_url[:45] + "..." if len(validated_url) > 48 else validated_url
+    logger.info("teams outbound webhook URL updated for company %s (source=db)", company_id)
+    return {
+        "success": True,
+        "configured": True,
+        "webhook_url_masked": masked,
+        "source": "db",
+        "mode": "production",
+    }
 
 
 @router.post("/teams/send", response_model=None)
@@ -182,73 +350,85 @@ company_id: str = Depends(require_company_id)):
 @router.post("/teams/test", response_model=None)
 async def test_teams_connection(
     request: TeamsTestRequest,
-    current_user: dict[str, Any] = Depends(get_current_user), 
-company_id: str = Depends(require_company_id)):
+    current_user: dict[str, Any] = Depends(get_current_user),
+    company_id: str = Depends(require_company_id),
+    db: AsyncSession = Depends(get_db),
+):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Test Microsoft Teams webhook connection.
-    
+
     Sends a test message to verify the webhook is configured correctly.
-    If no webhook_url is provided, uses the default TEAMS_WEBHOOK_URL environment variable.
+    If no webhook_url is provided, resolves the per-tenant DB config then
+    falls back to the global TEAMS_WEBHOOK_URL environment variable.
     """
-    result = await teams_service.test_connection(
-        webhook_url=request.webhook_url
-    )
-    
+    url = request.webhook_url
+    if not url:
+        url, _ = await _get_tenant_teams_webhook_url(company_id, db)
+    result = await teams_service.test_connection(webhook_url=url)
     return result
 
 
 @router.get("/teams/status", response_model=None)
 async def get_teams_status(
-    current_user: dict[str, Any] = Depends(get_current_user), 
-company_id: str = Depends(require_company_id)):
-    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
+    current_user: dict[str, Any] = Depends(get_current_user),
+    company_id: str = Depends(require_company_id),
+    db: AsyncSession = Depends(get_db),
+):
+    # multi-tenancy: resolves per-tenant DB config
     """
     Get Microsoft Teams integration status.
-    
+
     Returns whether Teams is configured and in what mode (production/development).
+    Checks per-tenant DB configuration first, then falls back to the global env var.
     """
+    url, source = await _get_tenant_teams_webhook_url(company_id, db)
     return {
-        "configured": teams_service.webhook_url is not None,
-        "mode": "development" if teams_service.is_development else "production",
-        "webhook_url_set": bool(teams_service.webhook_url),
-        "available_severity_levels": [s.value for s in AlertSeverity]
+        "configured": url is not None,
+        "mode": "production" if url else "development",
+        "webhook_url_set": url is not None,
+        "source": source,
+        "available_severity_levels": [s.value for s in AlertSeverity],
     }
 
 
 @router.get("/status", response_model=None)
 async def get_integrations_status(
-    current_user: dict[str, Any] = Depends(get_current_user), 
-company_id: str = Depends(require_company_id)):
-    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
+    current_user: dict[str, Any] = Depends(get_current_user),
+    company_id: str = Depends(require_company_id),
+    db: AsyncSession = Depends(get_db),
+):
+    # multi-tenancy: resolves per-tenant Teams config from DB
     """
     Get status of all external integrations.
-    
+
     Returns configuration status for Teams, Webhooks, and other integrations.
     """
+    teams_url, teams_source = await _get_tenant_teams_webhook_url(company_id, db)
     return {
         "teams": {
-            "configured": teams_service.webhook_url is not None,
-            "mode": "development" if teams_service.is_development else "production"
+            "configured": teams_url is not None,
+            "mode": "production" if teams_url else "development",
+            "source": teams_source,
         },
         "webhooks": {
             "available": True,
-            "description": "External webhook notifications for recruitment events"
+            "description": "External webhook notifications for recruitment events",
         },
         "available_integrations": [
             {
                 "id": "teams",
                 "name": "Microsoft Teams",
                 "description": "Send notifications to Teams channels via Incoming Webhooks",
-                "configured": teams_service.webhook_url is not None
+                "configured": teams_url is not None,
             },
             {
                 "id": "webhooks",
                 "name": "External Webhooks",
                 "description": "Notify external systems when recruitment events occur",
-                "configured": True
-            }
-        ]
+                "configured": True,
+            },
+        ],
     }
 
 

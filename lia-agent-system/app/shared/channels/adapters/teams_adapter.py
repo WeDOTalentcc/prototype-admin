@@ -23,7 +23,10 @@ class MSTeamsChannelAdapter(ChannelAdapter):
         """
         Return True only when a viable delivery path exists.
 
-        TEAMS_WEBHOOK_URL is required for actual delivery.
+        Priority: 1) TEAMS_WEBHOOK_URL env var, 2) teams_service singleton webhook_url
+        (which is set from env or an explicit TeamsService(webhook_url=...) instance),
+        3) DB-configured per-tenant URL (checked lazily via teams_service reference).
+
         Both TeamsBot._deliver_card() and TeamsService.send_message() fall back
         to the incoming webhook; without it neither path can deliver messages.
         Bot Framework credentials (MICROSOFT_APP_ID/PASSWORD) are used for proactive
@@ -32,8 +35,18 @@ class MSTeamsChannelAdapter(ChannelAdapter):
         webhook_url = os.environ.get("TEAMS_WEBHOOK_URL")
         if webhook_url:
             return True
+        # Also consider per-tenant URL configured at the service level (e.g. via DB-backed
+        # TeamsService instantiation). The global singleton reflects env-only config; callers
+        # that resolved a per-tenant URL pass it via webhook_url= override on send_message().
+        try:
+            from app.domains.communication.services.teams_service import teams_service as _svc
+            if _svc.webhook_url:
+                return True
+        except Exception:
+            pass
         logger.debug(
-            "[TEAMS_ADAPTER] TEAMS_WEBHOOK_URL não configurada — canal Teams indisponível"
+            "[TEAMS_ADAPTER] TEAMS_WEBHOOK_URL não configurada e teams_service sem URL "
+            "— canal Teams indisponível para entregas via webhook global"
         )
         return False
 

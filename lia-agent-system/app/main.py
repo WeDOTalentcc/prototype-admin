@@ -188,6 +188,17 @@ async def lifespan(app: FastAPI):
     else:
         logger.warning("⚠️  Microsoft Teams Bot NOT configured (MICROSOFT_APP_ID/PASSWORD missing)")
         logger.warning("   Teams integration will not work until credentials are added")
+
+    # Validate Teams outbound webhook (Incoming Webhook for proactive notifications/cards)
+    if settings.TEAMS_WEBHOOK_URL:
+        logger.info("✅ Teams outbound webhook configured (TEAMS_WEBHOOK_URL present — proactive delivery enabled)")
+    else:
+        logger.warning(
+            "⚠️  Teams outbound NOT configured (TEAMS_WEBHOOK_URL missing) — "
+            "all proactive notifications and Adaptive Cards will be logged only, not delivered. "
+            "Get URL: Teams channel → Manage channel → Connectors → Incoming Webhook → Configure. "
+            "Health check: GET /api/v1/health → components.integrations.teams_outbound"
+        )
     
     # Validate Microsoft Graph configuration
     if settings.AZURE_CLIENT_ID and settings.AZURE_CLIENT_SECRET and settings.AZURE_TENANT_ID:
