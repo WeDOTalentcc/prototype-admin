@@ -21,6 +21,7 @@ from __future__ import annotations
 import argparse
 import ast
 import sys
+import yaml
 from pathlib import Path
 
 
@@ -37,3 +38,25 @@ def extract_declared_names(source: str) -> set[str]:
                 if kw.arg == "name" and isinstance(kw.value, ast.Constant) and isinstance(kw.value.value, str):
                     names.add(kw.value.value)
     return names
+
+
+def extract_governance_refs(permissions_yaml_text: str) -> dict[str, list[str]]:
+    """Mapeia cada nome de tool referenciado → lista de origens (para o relatório).
+
+    Cobre tool_permissions.yaml: global.scopes.<scope>.{query,action} + restricted_tools.
+    """
+    refs: dict[str, list[str]] = {}
+
+    def add(name: str, origin: str) -> None:
+        if isinstance(name, str) and name:
+            refs.setdefault(name, []).append(origin)
+
+    data = yaml.safe_load(permissions_yaml_text) or {}
+    scopes = (data.get("global") or {}).get("scopes") or {}
+    for scope_name, scope in scopes.items():
+        for bucket in ("query", "action"):
+            for tool in (scope or {}).get(bucket) or []:
+                add(tool, f"scope:{scope_name}.{bucket}")
+    for tool in data.get("restricted_tools") or []:
+        add(tool, "restricted_tools")
+    return refs
