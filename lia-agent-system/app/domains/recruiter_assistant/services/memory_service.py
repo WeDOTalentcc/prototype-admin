@@ -56,7 +56,7 @@ class MemoryService:
             db = AsyncSessionLocal()
         
         try:
-            embedding = await self.embedding_service.generate_embedding(content, mask_names=True)
+            embedding = await self.embedding_service.generate_embedding(content, mask_names=True, company_id=str(company_id))
             
             memory = ConversationMemory(
                 id=uuid4(),
@@ -115,7 +115,7 @@ class MemoryService:
             db = AsyncSessionLocal()
         
         try:
-            query_embedding = await self.embedding_service.generate_embedding(query, mask_names=True)
+            query_embedding = await self.embedding_service.generate_embedding(query, mask_names=True, company_id=str(company_id))
             repo = ConversationMemoryRepository(db)
             results = await repo.search_similar_messages(
                 company_id=company_id,
@@ -284,7 +284,7 @@ class MemoryService:
             db = AsyncSessionLocal()
         
         try:
-            query_embedding = await self.embedding_service.generate_embedding(query, mask_names=True)
+            query_embedding = await self.embedding_service.generate_embedding(query, mask_names=True, company_id=str(company_id))
             repo = ConversationMemoryRepository(db)
             results = await repo.search_knowledge_base(
                 company_id=company_id,

@@ -51,7 +51,8 @@ class JobEmbeddingService:
         location: str = None,
         skills: list[str] = None,
         behavioral: list[str] = None,
-        description: str = None
+        description: str = None,
+        company_id: str | None = None,
     ) -> list[float]:
         """
         Generate embedding vector for a job.
@@ -70,7 +71,7 @@ class JobEmbeddingService:
         )
 
         try:
-            embedding = await self.embedding_service.generate_embedding(embedding_text)
+            embedding = await self.embedding_service.generate_embedding(embedding_text, company_id=company_id)
             return embedding
         except Exception as e:
             logger.error(f"Error generating job embedding: {e}")
@@ -84,7 +85,8 @@ class JobEmbeddingService:
         location: str = None,
         skills: list[str] = None,
         behavioral: list[str] = None,
-        description: str = None
+        description: str = None,
+        company_id: str | None = None,
     ) -> tuple:
         """
         Generate embedding vector for a job and return (vector, provider, model).
@@ -103,7 +105,7 @@ class JobEmbeddingService:
         )
 
         try:
-            return await self.embedding_service.generate_embedding_with_metadata(embedding_text)
+            return await self.embedding_service.generate_embedding_with_metadata(embedding_text, company_id=company_id)
         except Exception as e:
             logger.error(f"Error generating job embedding with metadata: {e}")
             return [0.0] * EMBEDDING_DIMENSION, "unknown", "unknown"
@@ -149,7 +151,8 @@ class JobEmbeddingService:
                 location=location,
                 skills=skills,
                 behavioral=behavioral,
-                description=description
+                description=description,
+                company_id=company_id,
             )
 
             async with AsyncSessionLocal() as session:

@@ -216,6 +216,7 @@ class JdSimilarService:
         try:
             embedding = await self.embedding_service.generate_embedding(
                 embedding_text,
+                company_id=company_id,
             )
         except Exception as exc:
             logger.warning(
@@ -369,7 +370,7 @@ class JdSimilarService:
         embedding_text = _build_embedding_text(title, jd_enriched)
         embedding: list[float] | None = None
         try:
-            embedding = await self.embedding_service.generate_embedding(embedding_text)
+            embedding = await self.embedding_service.generate_embedding(embedding_text, company_id=company_id)
             if embedding and len(embedding) != JD_EMBEDDING_DIM:
                 logger.warning(
                     "[JdSimilar.record_jd] invalid embedding dim (job_id=%s)",
