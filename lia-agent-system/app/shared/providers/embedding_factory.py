@@ -118,7 +118,15 @@ class EmbeddingProviderFactory:
         Raises:
             Exception: If all providers fail.
         """
-        order = cls._build_fallback_order(preferred_provider)
+        tenant_config: dict | None = None
+        if company_id:
+            try:
+                from app.shared.tenant_llm_context import _tenant_configs
+                tenant_config = _tenant_configs.get(company_id)
+            except Exception:
+                pass
+
+        order = cls._build_fallback_order(preferred_provider, tenant_config=tenant_config)
 
         errors: list[str] = []
         for provider_name in order:
@@ -176,7 +184,15 @@ class EmbeddingProviderFactory:
         Raises:
             Exception: If all providers fail.
         """
-        order = cls._build_fallback_order(preferred_provider)
+        tenant_config: dict | None = None
+        if company_id:
+            try:
+                from app.shared.tenant_llm_context import _tenant_configs
+                tenant_config = _tenant_configs.get(company_id)
+            except Exception:
+                pass
+
+        order = cls._build_fallback_order(preferred_provider, tenant_config=tenant_config)
 
         errors: list[str] = []
         for provider_name in order:
@@ -216,26 +232,48 @@ class EmbeddingProviderFactory:
     def _get_tenant_provider(
         cls, provider_name: str, company_id: str | None = None
     ) -> "EmbeddingProviderABC":
-        """Get provider with tenant-specific config if available (LGPD)."""
-        if company_id and provider_name == "gemini":
+        """Get provider with tenant-specific config if available (BYOK/LGPD).
+
+        Supports tenant-specific API keys for both gemini and openai providers.
+        Falls back to global provider when tenant config is unavailable.
+        """
+        if company_id:
             try:
                 from app.shared.tenant_llm_context import _tenant_configs
 
                 config = _tenant_configs.get(company_id)
                 if config:
                     providers = config.get("providers", {})
-                    gemini_cfg = providers.get("gemini", {})
-                    tenant_key = gemini_cfg.get("api_key")
-                    if tenant_key:
-                        from app.shared.providers.embedding_gemini import (
-                            GeminiEmbeddingProvider,
-                        )
 
-                        logger.info(
-                            "[EmbeddingFactory] Using tenant key for %s",
-                            company_id,
-                        )
-                        return GeminiEmbeddingProvider(api_key=tenant_key)
+                    if provider_name == "gemini":
+                        gemini_cfg = providers.get("gemini", {})
+                        tenant_key = gemini_cfg.get("api_key")
+                        if tenant_key:
+                            from app.shared.providers.embedding_gemini import (
+                                GeminiEmbeddingProvider,
+                            )
+
+                            logger.info(
+                                "[EmbeddingFactory] Using tenant gemini key for %s",
+                                company_id,
+                            )
+                            return GeminiEmbeddingProvider(api_key=tenant_key)
+
+                    elif provider_name == "openai":
+                        # BYOK: tenant can supply their own OpenAI key
+                        openai_cfg = providers.get("openai", {})
+                        tenant_key = openai_cfg.get("api_key")
+                        if tenant_key:
+                            from app.shared.providers.embedding_openai import (
+                                OpenAIEmbeddingProvider,
+                            )
+
+                            logger.info(
+                                "[EmbeddingFactory] Using tenant openai key for %s",
+                                company_id,
+                            )
+                            return OpenAIEmbeddingProvider(api_key=tenant_key)
+
             except Exception as exc:
                 logger.warning(
                     "[EmbeddingFactory] Tenant key lookup failed for %s: %s",
@@ -245,14 +283,36 @@ class EmbeddingProviderFactory:
         return cls.get(provider_name)
 
     @classmethod
-    def _build_fallback_order(cls, preferred_provider: str | None) -> list[str]:
-        """Build the ordered list of providers to attempt."""
+    def _build_fallback_order(
+        cls,
+        preferred_provider: str | None,
+        tenant_config: dict | None = None,
+    ) -> list[str]:
+        """Build the ordered list of providers to attempt.
+
+        Priority:
+        1. preferred_provider (explicit caller override)
+        2. tenant routing["embedding"] (BYOK routing config)
+        3. EMBEDDING_DEFAULT_PROVIDER env var
+        4. EMBEDDING_FALLBACK_ORDER constant
+        """
         default = os.environ.get("EMBEDDING_DEFAULT_PROVIDER", "gemini")
+
+        # Respect per-tenant routing config for embedding
+        tenant_embedding_provider: str | None = None
+        if tenant_config:
+            tenant_embedding_provider = tenant_config.get("routing", {}).get("embedding")
 
         seen = set()
         order: list[str] = []
 
-        for candidate in [preferred_provider, default] + list(EMBEDDING_FALLBACK_ORDER):
+        candidates = [
+            preferred_provider,
+            tenant_embedding_provider,
+            default,
+        ] + list(EMBEDDING_FALLBACK_ORDER)
+
+        for candidate in candidates:
             if candidate and candidate not in seen and candidate in cls._providers:
                 seen.add(candidate)
                 order.append(candidate)

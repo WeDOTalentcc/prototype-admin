@@ -64,6 +64,7 @@ class EmbeddingService:
         provider: str | None = None,
         *,
         mask_names: bool = False,
+        company_id: str | None = None,
     ) -> list[float]:
         """Generate embedding for text.
 
@@ -120,6 +121,7 @@ class EmbeddingService:
                 vector, _provider_name, _model = await EmbeddingProviderFactory.embed_with_fallback(
                     text=text,
                     preferred_provider=provider,
+                    company_id=company_id,
                 )
                 _elapsed = (time.perf_counter() - _t0) * 1000
                 api_span.set_attribute("latency_ms", f"{_elapsed:.2f}")
@@ -139,6 +141,7 @@ class EmbeddingService:
         provider: str | None = None,
         *,
         mask_names: bool = False,
+        company_id: str | None = None,
     ) -> tuple[list[float], str, str]:
         """Generate embedding and return (vector, provider_name, model_name).
 
@@ -171,6 +174,7 @@ class EmbeddingService:
             result = await EmbeddingProviderFactory.embed_with_fallback(
                 text=text,
                 preferred_provider=provider,
+                company_id=company_id,
             )
             _elapsed = (time.perf_counter() - _t0) * 1000
             api_span.set_attribute("latency_ms", f"{_elapsed:.2f}")
@@ -185,6 +189,7 @@ class EmbeddingService:
         provider: str | None = None,
         *,
         mask_names: bool = False,
+        company_id: str | None = None,
     ) -> list[list[float]]:
         """Generate embeddings for multiple texts.
 
@@ -219,6 +224,7 @@ class EmbeddingService:
                     await EmbeddingProviderFactory.embed_batch_with_fallback(
                         texts=texts,
                         preferred_provider=provider,
+                        company_id=company_id,
                     )
                 )
                 _elapsed = (time.perf_counter() - _t0) * 1000
@@ -238,6 +244,7 @@ class EmbeddingService:
         provider: str | None = None,
         *,
         mask_names: bool = False,
+        company_id: str | None = None,
     ) -> tuple[list[list[float]], str, str]:
         """Generate batch embeddings and return (vectors, provider_name, model_name)."""
         from app.shared.providers.embedding_factory import EmbeddingProviderFactory
@@ -263,6 +270,7 @@ class EmbeddingService:
             result = await EmbeddingProviderFactory.embed_batch_with_fallback(
                 texts=texts,
                 preferred_provider=provider,
+                company_id=company_id,
             )
             _elapsed = (time.perf_counter() - _t0) * 1000
             api_span.set_attribute("latency_ms", f"{_elapsed:.2f}")
