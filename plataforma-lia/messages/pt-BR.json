@@ -6083,7 +6083,49 @@
       "googleConnectError": "Erro ao conectar com Google",
       "companyNotIdentified": "Empresa não identificada",
       "emptyCategory": "Nenhuma integração nesta categoria",
-      "emptyCategoryHint": "Novas integrações são adicionadas continuamente"
+      "emptyCategoryHint": "Novas integrações são adicionadas continuamente",
+      "embedding": {
+        "title": "Busca Semântica com IA",
+        "description": "Vetorização de texto usada em busca de candidatos, vagas similares, memória do chat e JD similar.",
+        "providerLabel": "Provedor",
+        "providerDefault": "OpenAI (padrão)",
+        "byokConfigured": "Chave própria configurada",
+        "byokManaged": "Chave gerenciada WeDO",
+        "showSurfaces": "Ver superfícies",
+        "hideSurfaces": "Ocultar",
+        "surfacesTableLabel": "Superfícies de embedding e políticas de PII",
+        "colSurface": "Superfície",
+        "colContent": "O que embeda",
+        "colPiiPolicy": "Política PII",
+        "presidioNote": "PII estruturada = nomes de entidades reconhecidos pelo Microsoft Presidio são mascarados antes de envio ao provedor de embedding.",
+        "surface": {
+          "chatMemory": {
+            "name": "Memória do chat",
+            "content": "Conversa (pergunta + resposta)",
+            "piiPolicy": "Estruturada + nomes (Presidio)"
+          },
+          "candidateSearch": {
+            "name": "Busca de candidatos",
+            "content": "Texto da busca do recrutador",
+            "piiPolicy": "Estruturada"
+          },
+          "similarJobs": {
+            "name": "Vagas similares",
+            "content": "Texto da vaga",
+            "piiPolicy": "Estruturada"
+          },
+          "jdSimilar": {
+            "name": "JD similar",
+            "content": "Descrição de cargo (JD)",
+            "piiPolicy": "Estruturada"
+          },
+          "domainContent": {
+            "name": "Conteúdo de domínio",
+            "content": "Conteúdo interno",
+            "piiPolicy": "Estruturada"
+          }
+        }
+      }
     },
     "page": {
       "title": "Configurações",

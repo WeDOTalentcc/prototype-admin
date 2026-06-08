@@ -9,6 +9,7 @@ import { useTranslations } from "next-intl"
 import { categories, type Integration, type IntegrationCategory } from "./integrations/integration-data"
 import { IntegrationDetailModal } from "./integrations/IntegrationDetailModal"
 import { IntegrationGrid } from "./integrations/IntegrationGrid"
+import { EmbeddingTransparencyCard } from "./integrations/EmbeddingTransparencyCard"
 import { useIntegrationsData } from "@/hooks/integrations/use-integrations-data"
 import { useCurrentCompany } from "@/hooks/company/use-current-company"
 import { apiFetch } from "@/lib/api/api-fetch"
@@ -122,6 +123,9 @@ export function IntegrationsHub({ activeSubsection }: IntegrationsHubProps) {
 
   const emptyState = isSearching ? searchEmptyState : categoryEmptyState
 
+  // Show the embedding transparency card in the ai-models tab and the all tab
+  const showEmbeddingCard = activeTab === "ai-models" || activeTab === "all"
+
   return (
     <div className="space-y-3" data-testid="integrations-hub">
       <div className={tabStyles.pillContainer} data-testid="integrations-category-tabs">
@@ -153,6 +157,10 @@ export function IntegrationsHub({ activeSubsection }: IntegrationsHubProps) {
           {t("integrations.connectedCount", { connected: connectedCount, total: enrichedIntegrations.length })}
         </p>
       </div>
+
+      {showEmbeddingCard && !isSearching && (
+        <EmbeddingTransparencyCard llmConfig={llmConfig} isLoading={catalogLoading} />
+      )}
 
       {filteredIntegrations.length === 0 ? (
         emptyState

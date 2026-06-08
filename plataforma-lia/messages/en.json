@@ -6083,7 +6083,49 @@
       "googleConnectError": "Error connecting with Google",
       "companyNotIdentified": "Company not identified",
       "emptyCategory": "No integrations in this category",
-      "emptyCategoryHint": "New integrations are added regularly"
+      "emptyCategoryHint": "New integrations are added regularly",
+      "embedding": {
+        "title": "AI Semantic Search",
+        "description": "Text vectorization used in candidate search, similar jobs, chat memory, and similar JDs.",
+        "providerLabel": "Provider",
+        "providerDefault": "OpenAI (default)",
+        "byokConfigured": "Own key configured — active",
+        "byokManaged": "Using WeDO managed key",
+        "showSurfaces": "View surfaces",
+        "hideSurfaces": "Hide",
+        "surfacesTableLabel": "Embedding surfaces and PII policies",
+        "colSurface": "Surface",
+        "colContent": "What is embedded",
+        "colPiiPolicy": "PII Policy",
+        "presidioNote": "Structured PII = entity names recognized by Microsoft Presidio are masked before sending to the embedding provider.",
+        "surface": {
+          "chatMemory": {
+            "name": "Chat memory",
+            "content": "Conversation (question + answer)",
+            "piiPolicy": "Structured + names (Presidio)"
+          },
+          "candidateSearch": {
+            "name": "Candidate search",
+            "content": "Recruiter search text",
+            "piiPolicy": "Structured"
+          },
+          "similarJobs": {
+            "name": "Similar jobs",
+            "content": "Job description text",
+            "piiPolicy": "Structured"
+          },
+          "jdSimilar": {
+            "name": "Similar JD",
+            "content": "Job description (JD)",
+            "piiPolicy": "Structured"
+          },
+          "domainContent": {
+            "name": "Domain content",
+            "content": "Internal content",
+            "piiPolicy": "Structured"
+          }
+        }
+      }
     },
     "page": {
       "title": "Settings",
