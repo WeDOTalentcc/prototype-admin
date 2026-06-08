@@ -38,6 +38,9 @@ const PUBLIC_API_PATHS = [
   '/api/backend-proxy/auth',
   '/api/public-proxy',
   '/api/portal',
+  '/api/v1/teams/messages',
+  '/api/v1/teams/webhook',
+  '/api/v1/teams/health',
 ]
 
 const STATIC_PATHS = [
