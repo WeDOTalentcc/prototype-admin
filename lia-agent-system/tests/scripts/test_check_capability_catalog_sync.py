@@ -4,6 +4,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts"))
 from check_capability_catalog_sync import extract_declared_names  # noqa: E402
 from check_capability_catalog_sync import extract_governance_refs  # noqa: E402
+from check_capability_catalog_sync import compute_ghosts, format_report  # noqa: E402
 
 
 def test_extract_declared_names_string_literal():
@@ -45,3 +46,25 @@ tenants: {}
     assert "close_job" in refs
     assert "restricted_tools" in refs["cancel_vacancy"]
     assert any("scope:talent_funnel" in o for o in refs["search_candidates"])
+
+
+def test_compute_ghosts():
+    refs = {"search_candidates": ["scope:talent.query"], "cancel_vacancy": ["restricted_tools"]}
+    declared = {"search_candidates", "move_candidate"}
+    exempt = set()
+    ghosts = compute_ghosts(refs, declared, exempt)
+    assert [g["name"] for g in ghosts] == ["cancel_vacancy"]
+    assert ghosts[0]["origins"] == ["restricted_tools"]
+
+
+def test_compute_ghosts_respects_exempt():
+    refs = {"export_candidates": ["restricted_tools"]}
+    ghosts = compute_ghosts(refs, set(), exempt={"export_candidates"})
+    assert ghosts == []
+
+
+def test_format_report_mentions_fix():
+    report = format_report([{"name": "cancel_vacancy", "origins": ["restricted_tools"]}])
+    assert "cancel_vacancy" in report
+    assert "restricted_tools" in report
+    assert "Fix" in report

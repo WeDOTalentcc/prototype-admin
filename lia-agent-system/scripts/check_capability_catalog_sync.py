@@ -41,7 +41,7 @@ def extract_declared_names(source: str) -> set[str]:
 
 
 def extract_governance_refs(permissions_yaml_text: str) -> dict[str, list[str]]:
-    """Mapeia cada nome de tool referenciado → lista de origens (para o relatório).
+    """Mapeia cada nome de tool referenciado -> lista de origens (para o relatório).
 
     Cobre tool_permissions.yaml: global.scopes.<scope>.{query,action} + restricted_tools.
     """
@@ -60,3 +60,32 @@ def extract_governance_refs(permissions_yaml_text: str) -> dict[str, list[str]]:
     for tool in data.get("restricted_tools") or []:
         add(tool, "restricted_tools")
     return refs
+
+
+def compute_ghosts(
+    refs: dict[str, list[str]],
+    declared: set[str],
+    exempt: set[str],
+) -> list[dict]:
+    """Ghost = referenciado na governança, não declarado em app/, não isento."""
+    ghosts: list[dict] = []
+    for name in sorted(refs):
+        if name in declared or name in exempt:
+            continue
+        ghosts.append({"name": name, "origins": refs[name]})
+    return ghosts
+
+
+def format_report(ghosts: list[dict]) -> str:
+    if not ghosts:
+        return "OK - 0 ghosts. Toda tool referenciada na governança existe em app/."
+    lines = [f"ERRO: {len(ghosts)} ghost(s) - nome referenciado na governança sem tool real:\n"]
+    for g in ghosts:
+        origins = ", ".join(g["origins"])
+        lines.append(f"  - {g['name']}  (origem: {origins})")
+        lines.append(
+            f"    -> Fix: renomeie para o nome real da tool correspondente em app/, "
+            f"OU remova de tool_permissions.yaml se a tool foi descontinuada, "
+            f"OU adicione a EXEMPT_NAMES com motivo se for conceito so-DomainAction."
+        )
+    return "\n".join(lines)
