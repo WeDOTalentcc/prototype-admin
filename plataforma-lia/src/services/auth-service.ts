@@ -4,6 +4,7 @@ const WORKOS_SSO_URL = '/api/auth/workos/sso'
 const WORKOS_SESSION_URL = '/api/auth/workos/session'
 
 const ME_REQUEST_TIMEOUT_MS = 12000
+const SSO_CHECK_TIMEOUT_MS = 8000
 
 export type AuthMethod = 'jwt' | 'sso' | 'dev-auto-login'
 
@@ -144,6 +145,7 @@ class AuthService {
       const response = await fetch(WORKOS_SESSION_URL, {
         method: 'GET',
         credentials: 'include',
+        signal: AbortSignal.timeout(SSO_CHECK_TIMEOUT_MS),
       })
 
       if (!response.ok) {
@@ -156,6 +158,7 @@ class AuthService {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
+          signal: AbortSignal.timeout(SSO_CHECK_TIMEOUT_MS),
           body: JSON.stringify({ access_token: '_sso_session_', auth_method: 'sso', is_sso: true }),
         })
       }

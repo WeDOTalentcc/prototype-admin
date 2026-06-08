@@ -127,6 +127,7 @@ class Interview(EncryptedFieldMixin, Base):
     
     # Feedback & Results
     feedback = Column(JSON, default={})
+    scorecard = Column(JSONB, nullable=True)
     interviewer_notes = Column(Text, nullable=True)
     recording_url = Column(String(1000), nullable=True)
     
