@@ -918,22 +918,32 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
   );
 
   const navigateToChat = useCallback((conversationId?: string) => {
-    setState((prev) => ({
-      ...prev,
-      isOpen: false,
-      isExpanded: false,
-      splitView: INITIAL_SPLIT_VIEW,
-    }));
     const convParam = conversationId
       ? `&conversation_id=${encodeURIComponent(conversationId)}`
       : "";
     if (document.querySelector("[data-dashboard-shell]")) {
+      // Navega PRIMEIRO, fecha o float com delay (Bug 2026-06-08).
+      // Evita race onde float fechava antes da pagina de chat montar.
       window.dispatchEvent(
         new CustomEvent("lia:navigate-chat-page", {
           detail: { conversationId },
         }),
       );
+      setTimeout(() => {
+        setState((prev) => ({
+          ...prev,
+          isOpen: false,
+          isExpanded: false,
+          splitView: INITIAL_SPLIT_VIEW,
+        }));
+      }, 80);
     } else {
+      setState((prev) => ({
+        ...prev,
+        isOpen: false,
+        isExpanded: false,
+        splitView: INITIAL_SPLIT_VIEW,
+      }));
       window.location.href = `/?page=chat-lia${convParam}`;
     }
   }, []);

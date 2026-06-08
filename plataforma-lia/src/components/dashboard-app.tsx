@@ -126,7 +126,7 @@ export function DashboardApp({ initialPage = "Conversar", children }: DashboardA
   const searchParams = useSearchParams()
   const { recentItems, addRecentItem, removeRecentItem, clearAll: clearRecentItems } = useRecentItems()
   const { open: openFloat, splitView, setContextPage } = useLiaFloat()
-  const { chatMessages, setChatMessages } = useLiaChatContext()
+  const { chatMessages, setChatMessages, switchChatContext } = useLiaChatContext()
 
   // WT-2022 — sugestões proativas scheduler-driven entram como mensagem
   // conversacional + cards no chat unificado (aposenta o dropdown da lâmpada).
@@ -170,6 +170,16 @@ export function DashboardApp({ initialPage = "Conversar", children }: DashboardA
 
   useEffect(() => {
     setContextPage(currentPage)
+    // Atualiza domain_hint do CascadedRouter baseado na pagina atual (Bug 2026-06-08).
+    const _PAGE_CONTEXT: Record<string, string> = {
+      "Funil de Talentos": "talent_chat",
+      "Gestao de Vagas": "job_chat",
+      "Pipeline": "kanban_chat",
+      "Configuracoes": "settings_config",
+      "Conversar": "general",
+    }
+    const _newCtxType = _PAGE_CONTEXT[currentPage]
+    if (_newCtxType) switchChatContext(_newCtxType as Parameters<typeof switchChatContext>[0], { resetConversation: false })
     if (currentPage !== "Conversar") {
       setPendingChatConversationId(null)
       const stored = getPersisted<string>("lia-chat-mode", "sidebar")
@@ -177,7 +187,7 @@ export function DashboardApp({ initialPage = "Conversar", children }: DashboardA
       window.dispatchEvent(new CustomEvent("lia:chat-mode-changed", { detail: { mode: currentMode } }))
       openFloat()
     }
-  }, [currentPage, setContextPage, openFloat])
+  }, [currentPage, setContextPage, openFloat, switchChatContext])
 
   useEffect(() => {
     if (splitView.active && splitView.page) {
