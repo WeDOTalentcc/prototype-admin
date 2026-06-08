@@ -610,3 +610,10 @@ repos:
         entry: python3 scripts/check_company_status_column.py --blocking
         files: ^app/.*\.py$
         pass_filenames: false
+
+      - id: capability-catalog-sync-warn
+        name: capability catalog sync (anti-ghost, warn-only)
+        entry: python3 scripts/check_capability_catalog_sync.py
+        language: system
+        pass_filenames: false
+        always_run: true
