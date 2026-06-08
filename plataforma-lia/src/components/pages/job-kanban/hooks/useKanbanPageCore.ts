@@ -227,7 +227,7 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
 
   const { getDataRequestForCandidate, mutate: mutateDataRequests } = useBulkCandidateDataRequests({
     candidateIds: allCandidateIds,
-    vacancyId: job?.id?.toString(),
+    vacancyId: ((job?.backendId || job?.id) as string | number | undefined)?.toString(),
     enabled: allCandidateIds.length > 0,
   })
 

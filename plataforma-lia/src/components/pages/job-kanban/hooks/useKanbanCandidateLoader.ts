@@ -48,12 +48,16 @@ export function useKanbanCandidateLoader({
   // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: only re-run when interviewStages changes
   }, [job?.interviewStages])
 
+  // P0-2 (fix 2026-06-08): job.id é índice legado inteiro; usar backendId (UUID)
+  // quando disponível. Computado fora do useEffect para ser dep estável (tamanho fixo).
+  const vacancyUuid = ((job as Record<string, unknown>)?.backendId || (job as Record<string, unknown>)?.id) as string | undefined
+
   // Carregar candidatos reais do backend
   useEffect(() => {
     setIsLoadingCandidates(true)
     // P0-1 (audit 2026-06-05): escopa o board aos candidatos DA VAGA
     // (vacancy_candidates) em vez da lista global de 200.
-    liaApi.listCandidates(undefined, undefined, 0, 200, (job as Record<string, unknown>)?.id as string | undefined)
+    liaApi.listCandidates(undefined, undefined, 0, 200, vacancyUuid)
       .then(response => {
         try {
           if (!response.items || response.items.length === 0) { setIsLoadingCandidates(false); return }
@@ -179,8 +183,8 @@ export function useKanbanCandidateLoader({
         }
       })
       .catch(() => { setIsLoadingCandidates(false) })
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- re-roda quando a vaga (id) muda para reescopar o board
-  }, [(job as Record<string, unknown>)?.id])
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- re-roda quando a vaga muda (vacancyUuid = backendId ?? id)
+  }, [vacancyUuid])
 
   return {
     state: { isLoadingCandidates, hasMounted, isClient },
