@@ -18,6 +18,8 @@ import {
   getScoreColor,
   getClassificationLabel,
 } from "./triagem-details/useTriagemDetailsState"
+import { EligibilityResultsSection } from "@/components/wsi/eligibility-results-section"
+import type { EligibilityResultItem } from "@/components/wsi/eligibility-results-section"
 
 interface TriagemDetailsModalProps {
   candidate: Candidate
@@ -30,6 +32,7 @@ interface TriagemDetailsModalProps {
   companyId?: string
   onApprove?: (candidate: Candidate) => void
   onReject?: (candidate: Candidate) => void
+  eligibilityResults?: EligibilityResultItem[]
 }
 
 export function TriagemDetailsModal({
@@ -41,7 +44,8 @@ export function TriagemDetailsModal({
   jobTitle,
   companyId,
   onApprove,
-  onReject
+  onReject,
+  eligibilityResults,
 }: TriagemDetailsModalProps) {
   const state = useTriagemDetailsState(candidate, isOpen, jobVacancyId)
 
@@ -132,6 +136,9 @@ export function TriagemDetailsModal({
         <div className="flex-1 overflow-y-auto p-4 bg-lia-bg-secondary">
           {state.activeTab === 'triagem' && (
             <div className="space-y-4">
+              {eligibilityResults && eligibilityResults.length > 0 && (
+                <EligibilityResultsSection results={eligibilityResults} />
+              )}
               <TriagemScoresPanel
                 scores={scores}
                 sessionInfo={sessionInfo}

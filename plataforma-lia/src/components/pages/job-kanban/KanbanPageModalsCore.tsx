@@ -127,6 +127,10 @@ export function KanbanPageModalsCore(state: KanbanPageCoreState) {
             (currentJob?.company_id as string | undefined) ??
             (currentJob?.companyId as string | undefined)
           }
+          eligibilityResults={extractEligibilityResults(
+            triagemCandidate as Record<string, unknown>,
+            currentJob as Record<string, unknown>,
+          )}
         />
       )}
 
