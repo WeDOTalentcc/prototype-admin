@@ -214,12 +214,29 @@ async def _wrap_schedule_message(**kwargs: Any) -> dict[str, Any]:
         return {"success": False, "message": f"scheduled_at inválido: {e}"}
 
     if channel_normalized == "teams":
-        # Teams is webhook-based; record intent and notify via TeamsService
-        from app.domains.communication.services.teams_service import TeamsService
+        # Teams is webhook-based; record intent and notify via TeamsService.
+        # Resolve per-tenant webhook URL so DB-configured URL drives delivery.
+        from app.domains.communication.services.teams_service import (
+            TeamsService,
+            resolve_tenant_teams_webhook_url,
+        )
 
-        svc_teams = TeamsService()
+        _teams_url: str | None = None
+        if company_id:
+            try:
+                from app.core.database import AsyncSessionLocal as _ASL
+                async with _ASL() as _db:
+                    _teams_url, _ = await resolve_tenant_teams_webhook_url(str(company_id), _db)
+            except Exception as _url_err:
+                import logging as _log
+                _log.getLogger(__name__).debug(
+                    "schedule_message: could not resolve per-tenant Teams URL: %s", _url_err
+                )
+
+        svc_teams = TeamsService(webhook_url=_teams_url)
         await svc_teams.send_message(
-            text=(f"[Agendado para {scheduled_at_str}] " f"Mensagem para candidato {candidate_id}: {message}")
+            text=(f"[Agendado para {scheduled_at_str}] " f"Mensagem para candidato {candidate_id}: {message}"),
+            webhook_url=_teams_url,
         )
         return {
             "success": True,

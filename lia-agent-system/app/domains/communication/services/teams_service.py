@@ -500,3 +500,61 @@ teams_service = TeamsService()
 
 def get_teams_service() -> "TeamsService":
     return teams_service
+
+
+async def resolve_tenant_teams_webhook_url(
+    company_id: str,
+    db: "Any",
+) -> "tuple[str | None, str]":
+    """Resolve the outbound Teams webhook URL for a tenant.
+
+    Lookup priority:
+      1. Per-tenant ``IntegrationConnection`` row (encrypted in DB).
+      2. Global ``TEAMS_WEBHOOK_URL`` environment variable.
+      3. ``("none", "none")`` — caller should treat as development/log-only mode.
+
+    Returns:
+        ``(url, source)`` where *source* is ``"db"``, ``"env"``, or ``"none"``.
+
+    This function is the canonical resolver used by every outbound send path
+    (API endpoints, background jobs, tool registry).  Callers that hold a DB
+    session and a resolved ``company_id`` MUST use this instead of reading
+    ``os.environ["TEAMS_WEBHOOK_URL"]`` directly so that per-tenant
+    configuration is honoured.
+    """
+    try:
+        from sqlalchemy import select as _sa_select
+
+        from app.models.integration_hub import IntegrationConnection as _IC
+        from app.models.integration_hub import IntegrationProvider as _IP
+        from app.shared.services.credentials_crypto import decrypt_credentials as _decrypt
+
+        _SLUG = "microsoft_teams"
+        prov_res = await db.execute(
+            _sa_select(_IP).where(_IP.slug == _SLUG)
+        )
+        provider = prov_res.scalar_one_or_none()
+        if provider is not None:
+            conn_res = await db.execute(
+                _sa_select(_IC).where(
+                    _IC.company_id == company_id,
+                    _IC.provider_id == provider.id,
+                )
+            )
+            conn = conn_res.scalar_one_or_none()
+            if conn is not None and conn.credentials_encrypted:
+                creds = _decrypt(conn.credentials_encrypted)
+                url = creds.get("webhook_url")
+                if url:
+                    return url, "db"
+    except Exception as _exc:
+        logger.warning(
+            "resolve_tenant_teams_webhook_url: DB lookup failed for company=%s: %s",
+            company_id,
+            _exc,
+        )
+
+    env_url = os.environ.get("TEAMS_WEBHOOK_URL")
+    if env_url:
+        return env_url, "env"
+    return None, "none"

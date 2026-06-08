@@ -362,10 +362,24 @@ class WeeklyDigestService:
         try:
             teams_fmt = TeamsDigestFormatter()
             teams_card = teams_fmt.format(digest)
-            from app.domains.communication.services.teams_service import TeamsService
+            from app.domains.communication.services.teams_service import (
+                TeamsService,
+                resolve_tenant_teams_webhook_url,
+            )
 
-            ts = TeamsService()
-            teams_result = await ts.send_adaptive_card(teams_card)
+            _wh_url: str | None = None
+            try:
+                from sqlalchemy import select as _sel
+                from app.auth.models import User as _User
+                _ur = await db.execute(_sel(_User.company_id).where(_User.id == recruiter_id))
+                _company_id = _ur.scalar_one_or_none()
+                if _company_id:
+                    _wh_url, _ = await resolve_tenant_teams_webhook_url(str(_company_id), db)
+            except Exception as _url_exc:
+                logger.debug("[WeeklyDigest] Could not resolve per-tenant Teams URL: %s", _url_exc)
+
+            ts = TeamsService(webhook_url=_wh_url)
+            teams_result = await ts.send_adaptive_card(teams_card, webhook_url=_wh_url)
             results["teams"] = {"success": True, "details": teams_result}
         except Exception as exc:
             logger.warning("[WeeklyDigest] Teams delivery failed: %s", exc)

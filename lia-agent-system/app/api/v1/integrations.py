@@ -16,7 +16,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user
 from app.core.database import get_db
-from app.domains.communication.services.teams_service import AlertSeverity, teams_service
+from app.domains.communication.services.teams_service import (
+    AlertSeverity,
+    resolve_tenant_teams_webhook_url,
+    teams_service,
+)
 from app.models.integration_hub import IntegrationConnection, IntegrationProvider, IntegrationStatus
 from app.shared.security.require_company_id import require_company_id
 from app.shared.security.url_validator import UnsafeOutboundURLError, safe_outbound_url
@@ -65,27 +69,11 @@ async def _get_tenant_teams_webhook_url(company_id: str, db: AsyncSession) -> tu
 
     Returns (url, source) where source is "db", "env", or "none".
     Priority: per-tenant DB record → global TEAMS_WEBHOOK_URL env var.
-    """
-    try:
-        provider = await _get_or_create_teams_provider(db)
-        result = await db.execute(
-            select(IntegrationConnection).where(
-                IntegrationConnection.company_id == company_id,
-                IntegrationConnection.provider_id == provider.id,
-            )
-        )
-        conn = result.scalar_one_or_none()
-        if conn and conn.credentials_encrypted:
-            creds = decrypt_credentials(conn.credentials_encrypted)
-            url = creds.get("webhook_url")
-            if url:
-                return url, "db"
-    except Exception as exc:
-        logger.warning("teams outbound-config DB read failed for %s: %s", company_id, exc)
 
-    if teams_service.webhook_url:
-        return teams_service.webhook_url, "env"
-    return None, "none"
+    Delegates to the canonical ``resolve_tenant_teams_webhook_url`` helper in
+    ``teams_service`` so that the lookup logic lives in one place.
+    """
+    return await resolve_tenant_teams_webhook_url(company_id, db)
 
 
 async def _upsert_teams_connection(company_id: str, webhook_url: str, db: AsyncSession) -> None:
@@ -232,118 +220,148 @@ async def save_teams_outbound_config(
 @router.post("/teams/send", response_model=None)
 async def send_teams_message(
     request: TeamsSendMessageRequest,
-    current_user: dict[str, Any] = Depends(get_current_user), 
-company_id: str = Depends(require_company_id)):
-    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
+    current_user: dict[str, Any] = Depends(get_current_user),
+    company_id: str = Depends(require_company_id),
+    db: AsyncSession = Depends(get_db),
+):
+    # multi-tenancy: resolves per-tenant Teams webhook URL
     """
     Send a message to Microsoft Teams via Incoming Webhook.
-    
-    This endpoint sends a simple text message to a Teams channel.
-    If no webhook_url is provided, uses the default TEAMS_WEBHOOK_URL environment variable.
-    
-    In development mode (no webhook configured), messages are logged instead of sent.
+
+    Resolves the webhook URL in priority order:
+    1. ``webhook_url`` from request body (explicit override)
+    2. Per-tenant DB configuration (saved via Configurações → Integrações)
+    3. Global ``TEAMS_WEBHOOK_URL`` environment variable
+    4. Development mode (logged only, no HTTP delivery)
     """
+    resolved_url = request.webhook_url
+    if not resolved_url:
+        resolved_url, _ = await _get_tenant_teams_webhook_url(company_id, db)
+
     result = await teams_service.send_message(
         text=request.text,
         title=request.title,
         subtitle=request.subtitle,
-        webhook_url=request.webhook_url
+        webhook_url=resolved_url,
     )
-    
+
     if not result.get("success"):
         raise HTTPException(status_code=500, detail=result.get("error"))
-    
+
     return result
 
 
 @router.post("/teams/send-alert", response_model=None)
 async def send_teams_alert(
     request: TeamsSendAlertRequest,
-    current_user: dict[str, Any] = Depends(get_current_user), 
-company_id: str = Depends(require_company_id)):
-    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
+    current_user: dict[str, Any] = Depends(get_current_user),
+    company_id: str = Depends(require_company_id),
+    db: AsyncSession = Depends(get_db),
+):
+    # multi-tenancy: resolves per-tenant Teams webhook URL
     """
     Send an alert with severity level to Microsoft Teams.
-    
+
     Severity levels:
     - info: Informational message (blue)
     - success: Success message (green)
     - warning: Warning message (yellow)
     - error: Error message (orange)
     - critical: Critical alert (red)
-    
+
     Optional facts can be provided as key-value pairs to display additional information.
+
+    Resolves the webhook URL per-tenant when no explicit ``webhook_url`` is provided.
     """
     try:
         severity = AlertSeverity(request.severity)
     except ValueError:
         raise HTTPException(
-            status_code=400, 
-            detail=f"Invalid severity. Must be one of: {[s.value for s in AlertSeverity]}"
+            status_code=400,
+            detail=f"Invalid severity. Must be one of: {[s.value for s in AlertSeverity]}",
         )
-    
+
+    resolved_url = request.webhook_url
+    if not resolved_url:
+        resolved_url, _ = await _get_tenant_teams_webhook_url(company_id, db)
+
     result = await teams_service.send_alert(
         title=request.title,
         message=request.message,
         severity=severity,
-        webhook_url=request.webhook_url,
+        webhook_url=resolved_url,
         facts=request.facts,
         actions=request.actions,
-        source=request.source
+        source=request.source,
     )
-    
+
     if not result.get("success"):
         raise HTTPException(status_code=500, detail=result.get("error"))
-    
+
     return result
 
 
 @router.post("/teams/send-card", response_model=None)
 async def send_teams_card(
     request: TeamsSendCardRequest,
-    current_user: dict[str, Any] = Depends(get_current_user), 
-company_id: str = Depends(require_company_id)):
-    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
+    current_user: dict[str, Any] = Depends(get_current_user),
+    company_id: str = Depends(require_company_id),
+    db: AsyncSession = Depends(get_db),
+):
+    # multi-tenancy: resolves per-tenant Teams webhook URL
     """
     Send a custom Adaptive Card to Microsoft Teams.
-    
+
     The card should follow Microsoft Adaptive Card schema.
     See: https://adaptivecards.io/
+
+    Resolves the webhook URL per-tenant when no explicit ``webhook_url`` is provided.
     """
+    resolved_url = request.webhook_url
+    if not resolved_url:
+        resolved_url, _ = await _get_tenant_teams_webhook_url(company_id, db)
+
     result = await teams_service.send_card(
         card=request.card,
-        webhook_url=request.webhook_url
+        webhook_url=resolved_url,
     )
-    
+
     if not result.get("success"):
         raise HTTPException(status_code=500, detail=result.get("error"))
-    
+
     return result
 
 
 @router.post("/teams/send-candidate-notification", response_model=None)
 async def send_teams_candidate_notification(
     request: TeamsCandidateNotificationRequest,
-    current_user: dict[str, Any] = Depends(get_current_user), 
-company_id: str = Depends(require_company_id)):
-    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
+    current_user: dict[str, Any] = Depends(get_current_user),
+    company_id: str = Depends(require_company_id),
+    db: AsyncSession = Depends(get_db),
+):
+    # multi-tenancy: resolves per-tenant Teams webhook URL
     """
     Send a candidate-related notification to Microsoft Teams.
-    
+
     This is a convenience endpoint for sending formatted candidate updates.
+    Resolves the webhook URL per-tenant when no explicit ``webhook_url`` is provided.
     """
+    resolved_url = request.webhook_url
+    if not resolved_url:
+        resolved_url, _ = await _get_tenant_teams_webhook_url(company_id, db)
+
     result = await teams_service.send_candidate_notification(
         candidate_name=request.candidate_name,
         event=request.event,
         job_title=request.job_title,
         details=request.details,
         action_url=request.action_url,
-        webhook_url=request.webhook_url
+        webhook_url=resolved_url,
     )
-    
+
     if not result.get("success"):
         raise HTTPException(status_code=500, detail=result.get("error"))
-    
+
     return result
 
 
@@ -434,9 +452,11 @@ async def get_integrations_status(
 
 @router.get("/health", response_model=None)
 async def get_integrations_health(
-    current_user: dict[str, Any] = Depends(get_current_user), 
-company_id: str = Depends(require_company_id)):
-    # multi-tenancy: public endpoint (health) — no tenant data
+    current_user: dict[str, Any] = Depends(get_current_user),
+    company_id: str = Depends(require_company_id),
+    db: AsyncSession = Depends(get_db),
+):
+    # multi-tenancy: Teams check resolves per-tenant config
     """
     Unified health check for all external business integrations.
 
@@ -561,11 +581,13 @@ company_id: str = Depends(require_company_id)):
         "message": None if slack_ok else "Configure SLACK_BOT_TOKEN ou SLACK_WEBHOOK_URL para habilitar notificações Slack.",
     }
 
-    # --- Teams ---
+    # --- Teams outbound (per-tenant: resolves DB config → global env fallback) ---
+    _teams_url, _teams_source = await _get_tenant_teams_webhook_url(company_id, db)
     integrations["teams"] = {
-        "status": "connected" if teams_service.webhook_url else "not_configured",
-        "configured": bool(teams_service.webhook_url),
-        "mode": "development" if teams_service.is_development else "production",
+        "status": "connected" if _teams_url else "not_configured",
+        "configured": bool(_teams_url),
+        "mode": "production" if _teams_url else "development",
+        "source": _teams_source,
     }
 
     configured_count = sum(1 for v in integrations.values() if v.get("configured"))

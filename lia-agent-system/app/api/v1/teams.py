@@ -799,7 +799,15 @@ async def teams_health(company_id: str = Depends(require_company_id)):
 
 class TestWebhookRequest(BaseModel):
     """Request body for POST /teams/test-webhook."""
-    webhook_url: str = Field(..., description="Incoming Webhook URL to test")
+    webhook_url: str | None = Field(
+        None,
+        description=(
+            "Incoming Webhook URL to test. "
+            "When omitted the endpoint resolves the per-tenant URL saved via "
+            "Configurações → Integrações → Microsoft Teams, falling back to "
+            "the global TEAMS_WEBHOOK_URL environment variable."
+        ),
+    )
     message: str | None = Field(
         None,
         description="Custom test message (optional — defaults to generic test card)",
@@ -810,6 +818,7 @@ class TestWebhookRequest(BaseModel):
 async def test_teams_webhook(
     body: TestWebhookRequest,
     company_id: str = Depends(require_company_id),
+    db: AsyncSession = Depends(get_db),
 ):
     """
     Validate a Teams Incoming Webhook URL before saving it.
@@ -818,6 +827,12 @@ async def test_teams_webhook(
     This endpoint is authenticated (requires valid JWT + company_id) and does NOT
     persist the URL — it only tests reachability.
 
+    When ``webhook_url`` is omitted the endpoint resolves the per-tenant URL
+    stored in the database (set via Configurações → Integrações → Microsoft
+    Teams), falling back to the global ``TEAMS_WEBHOOK_URL`` environment
+    variable.  This lets callers verify an already-configured webhook without
+    having to echo the (masked) URL back from the settings page.
+
     Security: The target URL is validated by ``safe_outbound_url`` (SSRF guard)
     before any HTTP request is made.
 
@@ -825,17 +840,29 @@ async def test_teams_webhook(
         200 with ``{"success": true}`` on delivery.
         200 with ``{"success": false, "error": "..."}`` on failure (4xx/5xx from Teams).
         400 if the URL fails SSRF validation.
+        200 with ``{"success": false, "mode": "development"}`` when no URL is configured.
     """
-    from app.domains.communication.services.teams_service import TeamsService
+    from app.domains.communication.services.teams_service import (
+        TeamsService,
+        resolve_tenant_teams_webhook_url,
+    )
     from app.shared.security.url_validator import UnsafeOutboundURLError, safe_outbound_url
 
-    try:
-        safe_outbound_url(body.webhook_url, require_https=True)
-    except UnsafeOutboundURLError as exc:
-        raise HTTPException(status_code=400, detail=f"URL inválida ou não segura: {exc}") from exc
+    url = body.webhook_url
+    source = "request"
 
-    svc = TeamsService(webhook_url=body.webhook_url)
-    result = await svc.test_connection(webhook_url=body.webhook_url)
+    if not url:
+        url, source = await resolve_tenant_teams_webhook_url(str(company_id), db)
+
+    if url:
+        try:
+            safe_outbound_url(url, require_https=True)
+        except UnsafeOutboundURLError as exc:
+            raise HTTPException(status_code=400, detail=f"URL inválida ou não segura: {exc}") from exc
+
+    svc = TeamsService(webhook_url=url)
+    result = await svc.test_connection(webhook_url=url)
+    result["url_source"] = source
     return result
 
 
