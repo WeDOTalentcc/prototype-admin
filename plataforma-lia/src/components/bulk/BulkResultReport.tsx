@@ -1,7 +1,6 @@
 "use client"
 
 import React from "react"
-import { useTranslations } from "next-intl"
 import { CheckCircle2, AlertTriangle, Copy } from "lucide-react"
 import {
   Dialog,
@@ -30,8 +29,6 @@ export function BulkResultReport({
   results,
   actionLabel,
 }: BulkResultReportProps) {
-  const t = useTranslations("bulkReport")
-
   if (!isOpen) return null
 
   const succeeded = results.filter((r) => r.ok)
@@ -48,7 +45,7 @@ export function BulkResultReport({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-lia-text-primary">
-            {actionLabel} — {t("title", { succeeded: succeeded.length, total: results.length })}
+            {actionLabel} — {succeeded.length} de {results.length} enviados
           </DialogTitle>
         </DialogHeader>
 
@@ -89,11 +86,11 @@ export function BulkResultReport({
           {failed.length > 0 && (
             <Button variant="outline" size="sm" onClick={handleCopyFailed} className="gap-1">
               <Copy className="w-3.5 h-3.5" />
-              {t("copyFailed")}
+              Copiar lista de falhas
             </Button>
           )}
           <Button variant="primary" size="sm" onClick={onClose}>
-            {t("closeButton")}
+            Fechar
           </Button>
         </DialogFooter>
       </DialogContent>
