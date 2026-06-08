@@ -1,3 +1,4 @@
+import React from 'react'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 
@@ -25,6 +26,14 @@ vi.mock('@/components/triagem-details/triagem-parecer-tab', () => ({
 }))
 vi.mock('@/components/triagem-details/triagem-details-footer', () => ({
   TriagemDetailsFooter: () => <div data-testid="stub-footer" />,
+}))
+
+vi.mock('@/components/wsi/eligibility-results-section', () => ({
+  EligibilityResultsSection: ({ results }: { results: unknown[] }) => (
+    <div data-testid="stub-eligibility-section">
+      {results.length} resultados de elegibilidade
+    </div>
+  ),
 }))
 
 vi.mock('@/components/triagem-details/useTriagemDetailsState', async () => {
@@ -142,13 +151,14 @@ function setHookReturn(details: WSIResultDetails | null) {
   })
 }
 
-function renderModal() {
+function renderModal(extraProps: Partial<React.ComponentProps<typeof TriagemDetailsModal>> = {}) {
   return render(
     <TriagemDetailsModal
       candidate={baseCandidate}
       isOpen
       onClose={() => {}}
       jobVacancyId="vac-1"
+      {...extraProps}
     />,
   )
 }
@@ -229,5 +239,44 @@ describe('TriagemDetailsModal — transparência WSI', () => {
     ).not.toBeInTheDocument()
     expect(screen.queryByText('Sem Camada 2')).not.toBeInTheDocument()
     expect(screen.queryByText('Como cheguei nesta nota')).not.toBeInTheDocument()
+  })
+
+  it('eligibilityResults com itens: seção de elegibilidade é renderizada', () => {
+    setHookReturn(makeDetails())
+    renderModal({
+      eligibilityResults: [
+        {
+          id: 'q1',
+          question: 'Você possui CNH categoria B válida?',
+          answer: 'Sim, possuo CNH B.',
+          passed: true,
+          is_eliminatory: true,
+        },
+        {
+          id: 'q2',
+          question: 'Você tem disponibilidade para início imediato?',
+          answer: 'Sim, posso iniciar em até 10 dias.',
+          passed: true,
+          is_eliminatory: false,
+        },
+      ],
+    })
+
+    expect(screen.getByTestId('stub-eligibility-section')).toBeInTheDocument()
+    expect(screen.getByText(/2 resultados de elegibilidade/i)).toBeInTheDocument()
+  })
+
+  it('eligibilityResults omitido: seção de elegibilidade não aparece', () => {
+    setHookReturn(makeDetails())
+    renderModal()
+
+    expect(screen.queryByTestId('stub-eligibility-section')).not.toBeInTheDocument()
+  })
+
+  it('eligibilityResults vazio: seção de elegibilidade não aparece', () => {
+    setHookReturn(makeDetails())
+    renderModal({ eligibilityResults: [] })
+
+    expect(screen.queryByTestId('stub-eligibility-section')).not.toBeInTheDocument()
   })
 })
