@@ -107,9 +107,9 @@ async def get_eligibility_results_for_candidate_job(
     Tenant guard: queries diretas com company_id no WHERE (triagem_sessions não tem RLS
     clássico — defesa app-layer, igual ao /wsi/sessions endpoint, Onda 4.2c-P0).
     """
-    from sqlalchemy import select, desc
+    from sqlalchemy import select, desc, and_
     from app.core.database import AsyncSessionLocal
-    from lia_models.triagem import TriagemSession
+    from lia_models.triagem import TriagemSession, TriagemMessage
 
     try:
         async with AsyncSessionLocal() as _db:
@@ -125,11 +125,32 @@ async def get_eligibility_results_for_candidate_job(
             )
             session = result.scalar_one_or_none()
 
-        if not session:
-            return {"eligibility_results": [], "session_status": None}
+            if not session:
+                return {"eligibility_results": [], "session_status": None}
 
-        elig = (session.metadata_json or {}).get("eligibility") or {}
-        items = _extract_eligibility_items(elig)
+            elig = (session.metadata_json or {}).get("eligibility") or {}
+            items = _extract_eligibility_items(elig)
+
+            # Busca as respostas verbatim do candidato na fase de elegibilidade.
+            # A elegibilidade é SEMPRE a primeira fase da triagem, portanto as
+            # primeiras N mensagens do candidato (ordered by created_at) correspondem
+            # às N perguntas de elegibilidade na mesma ordem.
+            if items:
+                msgs_result = await _db.execute(
+                    select(TriagemMessage)
+                    .where(
+                        and_(
+                            TriagemMessage.session_id == session.id,
+                            TriagemMessage.sender == "candidate",
+                        )
+                    )
+                    .order_by(TriagemMessage.created_at)
+                    .limit(len(items))
+                )
+                candidate_msgs = list(msgs_result.scalars().all())
+                for i, item in enumerate(items):
+                    if i < len(candidate_msgs):
+                        item["answer"] = candidate_msgs[i].content
 
         return {
             "eligibility_results": items,
