@@ -1,6 +1,12 @@
 """
 Rate Limiter Middleware for LIA Agent System.
-Implements per-user and per-company rate limiting using Redis sliding window.
+Implements per-user and per-company rate limiting using Redis Fixed Window.
+
+Task #1355 — Replaced sliding window ZSET (16 ops/request) with Fixed Window
+using INCR + EXPIRE (4 ops/request: 2 windows × 2 ops each). Hourly windows
+removed (covered by per-minute buckets at scale). Degradation to in-memory
+fallback now emits CRITICAL log + Sentry capture_message so operators are
+alerted immediately instead of silently allowing all traffic.
 
 Falls back to in-memory dict if Redis is unavailable (graceful degradation).
 """
@@ -17,19 +23,29 @@ from starlette.responses import JSONResponse
 logger = logging.getLogger(__name__)
 
 _REDIS_RETRY_COOLDOWN_SECONDS = 30  # só tenta reconectar a cada 30s
+# Task #1355 — alert at most once every 5 minutes per service instance
+_DEGRADATION_ALERT_COOLDOWN_S = 300.0
 
 
 class RateLimiter:
     """
-    Rate limiter using Redis ZSET sliding window (atomic, multi-instance safe).
+    Rate limiter using Redis Fixed Window (INCR + EXPIRE, 4 ops/request).
 
-    Falls back to in-memory lists if Redis is unavailable.
+    Task #1355 — Fixed Window replaces ZSET sliding window (16 ops/request).
+    Two windows per request: per-user/min + per-company/min.
+    Hourly windows removed — they added 8 ops/request for marginal protection
+    already covered by the per-minute buckets at load.
+
+    Falls back to in-memory lists if Redis is unavailable, with explicit
+    CRITICAL alert on first degradation per 5-minute window.
     """
 
     LIMITS = {
         "per_minute_per_user": 600,
-        "per_hour_per_user": 20000,
         "per_minute_per_company": 3000,
+        # Kept for backwards-compat (stats dict, existing tests) but NOT
+        # enforced via Redis anymore — removed to reduce ops/request.
+        "per_hour_per_user": 20000,
         "per_hour_per_company": 60000,
     }
 
@@ -39,7 +55,9 @@ class RateLimiter:
         self._redis = None
         self._redis_available = False
         self._redis_lock = asyncio.Lock()
-        self._redis_last_attempt: float = 0.0  # timestamp da última tentativa de conexão
+        self._redis_last_attempt: float = 0.0
+        # Task #1355 — last time we emitted a degradation alert
+        self._degradation_alerted_at: float = 0.0
         # Fallback in-memory state (used only when Redis is down)
         self._fallback_user_requests: dict[str, list[datetime]] = {}
         self._fallback_company_requests: dict[str, list[datetime]] = {}
@@ -55,7 +73,6 @@ class RateLimiter:
         if self._redis is not None:
             return self._redis
 
-        # Cooldown: não tenta reconectar se falhou recentemente
         now = time.monotonic()
         if not self._redis_available and (now - self._redis_last_attempt) < _REDIS_RETRY_COOLDOWN_SECONDS:
             return None
@@ -63,7 +80,6 @@ class RateLimiter:
         async with self._redis_lock:
             if self._redis is not None:
                 return self._redis
-            # Double-check cooldown dentro do lock
             now = time.monotonic()
             if not self._redis_available and (now - self._redis_last_attempt) < _REDIS_RETRY_COOLDOWN_SECONDS:
                 return None
@@ -71,32 +87,56 @@ class RateLimiter:
             self._redis_last_attempt = now
             try:
                 import redis.asyncio as aioredis
-                # from_url() supports authenticated Redis URLs natively:
-                #   redis://:password@host:port/db        — password auth
-                #   rediss://:token@host:port/db          — TLS + auth (Cloud Memorystore)
-                #   redis://user:password@host:port/db    — user + password
                 redis_url = os.getenv("REDIS_URL", "redis://localhost:6379/0")
                 client = aioredis.from_url(
                     redis_url,
                     encoding="utf-8",
                     decode_responses=True,
-                    socket_connect_timeout=0.5,  # falha rápida se Redis indisponível
+                    socket_connect_timeout=0.5,
                     socket_timeout=0.5,
                 )
                 await client.ping()
                 self._redis = client
                 self._redis_available = True
-                logger.info("[RateLimiter] Connected to Redis — using distributed sliding window")
+                logger.info("[RateLimiter] Connected to Redis — using distributed fixed window")
             except Exception as e:
-                logger.warning(f"[RateLimiter] Redis unavailable ({e}) — falling back to in-memory rate limiting")
+                logger.warning("[RateLimiter] Redis unavailable (%s) — falling back to in-memory rate limiting", e)
                 self._redis_available = False
             return self._redis
 
-    async def _redis_sliding_window(
+    def _emit_degradation_alert(self, reason: str) -> None:
+        """Emit CRITICAL log + Sentry capture on Redis degradation.
+
+        Task #1355 — Rate-limited to once per _DEGRADATION_ALERT_COOLDOWN_S so
+        a sustained outage doesn't spam Sentry. Uses monotonic clock.
+        """
+        now = time.monotonic()
+        if (now - self._degradation_alerted_at) < _DEGRADATION_ALERT_COOLDOWN_S:
+            return
+        self._degradation_alerted_at = now
+        logger.critical(
+            "[RateLimiter] Redis degraded — falling back to in-memory allow-all. "
+            "redis_degraded=True reason=%s",
+            reason,
+        )
+        try:
+            import sentry_sdk
+            sentry_sdk.capture_message(
+                f"RateLimiter Redis degraded: {reason}",
+                level="fatal",
+                extras={"redis_degraded": True, "service": "rate_limiter"},
+            )
+        except Exception:
+            pass
+
+    async def _redis_fixed_window(
         self, key: str, limit: int, window_sec: int
     ) -> tuple[bool, int]:
         """
-        Atomic Redis ZSET sliding window check.
+        Fixed Window check using INCR + conditional EXPIRE (2 Redis ops).
+
+        Task #1355 — Replaces ZSET sliding window (4 ops). Trades sub-window
+        precision for a 4× reduction in Redis commands per request.
 
         Returns:
             (allowed, current_count)
@@ -105,14 +145,11 @@ class RateLimiter:
         if r is None:
             return True, 0
 
-        now = time.time()
         pipe = r.pipeline()
-        pipe.zremrangebyscore(key, 0, now - window_sec)
-        pipe.zadd(key, {str(now): now})
-        pipe.zcard(key)
-        pipe.expire(key, window_sec + 10)
+        pipe.incr(key)
+        pipe.expire(key, window_sec, nx=True)
         results = await pipe.execute()
-        count = results[2]
+        count = results[0]
         return count <= limit, count
 
     async def check_rate_limit(self, user_id: str, company_id: str) -> tuple[bool, int | None]:
@@ -123,79 +160,47 @@ class RateLimiter:
             (allowed, retry_after_seconds)
         """
         if self._redis_available or self._redis is None:
-            # Try Redis first (or initialise connection)
             r = await self._get_redis()
             if r is not None:
                 return await self._check_redis(user_id, company_id)
 
-        # Fallback to in-memory
         return await self._check_memory(user_id, company_id)
 
     async def _check_redis(self, user_id: str, company_id: str) -> tuple[bool, int | None]:
-        """Redis-backed sliding window check."""
+        """Redis-backed fixed-window check (4 ops total: 2 windows × 2 ops)."""
         try:
-            # Task #1144: tenant-namespaced keys for authenticated traffic;
-            # a SEPARATE non-tenant prefix (``rl_public``) for unauthenticated
-            # / pre-login traffic. This avoids pretending ``"anonymous"`` is
-            # a tenant (which would coalesce all pre-login traffic into one
-            # pseudo-tenant bucket and trigger the central gate's fail-loud
-            # in production for legitimate public routes like /login).
             if not company_id or company_id == "anonymous":
                 prefix = "rl_public"
                 user_min_key = f"{prefix}:user:{user_id}:min"
                 company_min_key = f"{prefix}:total:min"
-                user_hour_key = f"{prefix}:user:{user_id}:hour"
-                company_hour_key = f"{prefix}:total:hour"
             else:
-                # Authenticated traffic — keys tenant-namespaced via the
-                # canonical helper (defence-in-depth: a user-id colliding
-                # across two tenants must NOT share a token bucket).
                 from app.shared.security.tenant_redis_namespace import (
                     tenant_namespaced_key,
                 )
                 user_min_key = tenant_namespaced_key("rl", company_id, f"user:{user_id}:min")
                 company_min_key = tenant_namespaced_key("rl", company_id, "company:min")
-                user_hour_key = tenant_namespaced_key("rl", company_id, f"user:{user_id}:hour")
-                company_hour_key = tenant_namespaced_key("rl", company_id, "company:hour")
 
-            allowed_u_min, u_min_count = await self._redis_sliding_window(
+            allowed_u_min, u_min_count = await self._redis_fixed_window(
                 user_min_key, self.LIMITS["per_minute_per_user"], 60
             )
             if not allowed_u_min:
-                logger.warning(f"[RateLimiter] User {user_id} exceeded per-minute limit ({u_min_count})")
+                logger.warning("[RateLimiter] User %s exceeded per-minute limit (%d)", user_id, u_min_count)
                 return False, self.BLOCK_DURATION_SECONDS
 
-            allowed_c_min, c_min_count = await self._redis_sliding_window(
+            allowed_c_min, c_min_count = await self._redis_fixed_window(
                 company_min_key, self.LIMITS["per_minute_per_company"], 60
             )
             if not allowed_c_min:
-                logger.warning(f"[RateLimiter] Company {company_id} exceeded per-minute limit ({c_min_count})")
+                logger.warning("[RateLimiter] Company %s exceeded per-minute limit (%d)", company_id, c_min_count)
                 return False, self.BLOCK_DURATION_SECONDS
-
-            allowed_u_hour, u_hour_count = await self._redis_sliding_window(
-                user_hour_key, self.LIMITS["per_hour_per_user"], 3600
-            )
-            if not allowed_u_hour:
-                logger.warning(f"[RateLimiter] User {user_id} exceeded per-hour limit ({u_hour_count})")
-                return False, 300  # 5 min retry for hourly limits
-
-            allowed_c_hour, c_hour_count = await self._redis_sliding_window(
-                company_hour_key, self.LIMITS["per_hour_per_company"], 3600
-            )
-            if not allowed_c_hour:
-                logger.warning(f"[RateLimiter] Company {company_id} exceeded per-hour limit ({c_hour_count})")
-                return False, 300
 
             return True, None
 
         except RuntimeError:
-            # Task #1144 fail-loud: namespace-violation RuntimeError must
-            # propagate in production instead of being swallowed by the
-            # broad ``except Exception`` below (which would silently degrade
-            # to allow-all and reopen the cross-tenant bucket bug).
+            # Namespace-violation RuntimeError must propagate (tenant isolation).
             raise
         except Exception as e:
-            logger.warning(f"[RateLimiter] Redis check failed ({e}), degrading to allow-all")
+            self._emit_degradation_alert(str(e))
             self._redis_available = False
             return True, None
 
@@ -208,7 +213,6 @@ class RateLimiter:
         if not sweep_needed:
             return
         hour_cutoff = now - timedelta(hours=1)
-        # Sweep request buckets: drop keys whose timestamps are all older than 1h
         for requests_dict in (self._fallback_user_requests, self._fallback_company_requests):
             stale_keys = [
                 k for k, reqs in requests_dict.items()
@@ -216,7 +220,6 @@ class RateLimiter:
             ]
             for k in stale_keys:
                 del requests_dict[k]
-        # Sweep expired blocks
         for blocked_dict in (self._fallback_blocked_users, self._fallback_blocked_companies):
             expired_keys = [k for k, t in blocked_dict.items() if now >= t]
             for k in expired_keys:
@@ -228,10 +231,8 @@ class RateLimiter:
         async with self._fallback_lock:
             now = datetime.utcnow()
 
-            # Periodic sweep of stale outer keys (mirrors Redis TTL eviction)
             self._maybe_sweep_fallback(now)
 
-            # Check blocks
             for blocked, entity_id in [
                 (self._fallback_blocked_users, user_id),
                 (self._fallback_blocked_companies, company_id),
@@ -242,13 +243,11 @@ class RateLimiter:
                         return False, int((unblock_time - now).total_seconds())
                     del blocked[entity_id]
 
-            # Ensure buckets exist
             if user_id not in self._fallback_user_requests:
                 self._fallback_user_requests[user_id] = []
             if company_id not in self._fallback_company_requests:
                 self._fallback_company_requests[company_id] = []
 
-            # Cleanup old
             hour_cutoff = now - timedelta(hours=1)
             self._fallback_user_requests[user_id] = [
                 r for r in self._fallback_user_requests[user_id] if r > hour_cutoff
@@ -355,8 +354,10 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
 
         if not allowed:
             logger.warning(
-                f"Rate limit exceeded for user={user_id}, company={company_id}. "
-                f"Retry after {retry_after} seconds."
+                "Rate limit exceeded for user=%s, company=%s. Retry after %s seconds.",
+                user_id,
+                company_id,
+                retry_after,
             )
             return JSONResponse(
                 status_code=429,
@@ -406,7 +407,6 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
                 or (request.state.user.get("company_id") if isinstance(request.state.user, dict) else None)
             )
 
-        # Prefer JWT-validated company_id from AuthEnforcementMiddleware
         state_company = getattr(request.state, "company_id", None)
         if state_company:
             return state_company

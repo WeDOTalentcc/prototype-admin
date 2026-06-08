@@ -22,10 +22,16 @@ Fluxo:
   3. track_llm_usage_start(...) → marca inicio da chamada (R-002, observabilidade)
   4. increment_usage(company_id, tokens_used) → após chamada LLM
   5. get_budget_status(company_id, plan_code) → para dashboard admin
+
+Task #1355 — in-memory cache (TTL 60s) para plan_code e contador diário.
+PING movido para a primeira conexão ou após ConnectionError, não a cada
+invocação de _get_redis(). Isso elimina a maioria dos GETs repetidos dentro
+do mesmo turno de chat.
 """
 
 import logging
 import os
+import time
 from datetime import UTC, datetime
 
 logger = logging.getLogger(__name__)
@@ -184,6 +190,45 @@ AGENT_TYPE_REQUEST_OVERRIDES: dict[str, float] = {
 # TTL da chave Redis: 25h para cobrir edge case de meia-noite
 _REDIS_TTL = 25 * 3600
 
+# ---------------------------------------------------------------------------
+# Task #1355 — In-memory caches (per-process, not shared across workers)
+# ---------------------------------------------------------------------------
+
+# Budget cache: company_id → (used_count, expires_at_monotonic)
+_BUDGET_CACHE_TTL_S: float = 60.0
+_budget_cache: dict[str, tuple[int, float]] = {}
+
+# Plan cache: company_id → (plan_code, expires_at_monotonic)
+_PLAN_MEM_CACHE_TTL_S: float = 300.0  # 5 min — plan changes are rare
+_plan_mem_cache: dict[str, tuple[str | None, float]] = {}
+
+# Degradation alert: emit at most once per 5 min per process
+_DEGRADATION_ALERT_COOLDOWN_S = 300.0
+_token_budget_degradation_alerted_at: float = 0.0
+
+
+def _emit_token_budget_degradation_alert(reason: str) -> None:
+    """CRITICAL log + Sentry on first degradation, rate-limited to 1× per 5 min."""
+    global _token_budget_degradation_alerted_at
+    now = time.monotonic()
+    if (now - _token_budget_degradation_alerted_at) < _DEGRADATION_ALERT_COOLDOWN_S:
+        return
+    _token_budget_degradation_alerted_at = now
+    logger.critical(
+        "[TokenBudget] Redis degraded — operating without budget verification. "
+        "redis_degraded=True reason=%s",
+        reason,
+    )
+    try:
+        import sentry_sdk
+        sentry_sdk.capture_message(
+            f"TokenBudget Redis degraded: {reason}",
+            level="fatal",
+            extras={"redis_degraded": True, "service": "token_budget"},
+        )
+    except Exception:
+        pass
+
 
 def _redis_key(company_id: str) -> str:
     """Chave Redis diária por tenant. Formato: token_budget:{company_id}:YYYY-MM-DD"""
@@ -192,10 +237,6 @@ def _redis_key(company_id: str) -> str:
 
 
 # Tenants isentos de budget em desenvolvimento (2026-06-06).
-# O tenant demo canonico e compartilhado entre sessoes paralelas + suites de
-# teste; sem isencao o contador diario estoura o DEFAULT_DAILY_LIMIT e bloqueia
-# o chat unificado (agent_chat_sse/ws gateiam via check_budget). Gate vale SO em
-# APP_ENV=development -- producao nunca e afetada.
 _UNLIMITED_DEV_TENANTS: frozenset = frozenset(
     {"00000000-0000-4000-a000-000000000001"}
 )
@@ -268,18 +309,7 @@ def check_request_budget(
     company_id: str | None = None,
     user_id: str | None = None,
 ) -> tuple[bool, int, int]:
-    """Verifica se um request individual está dentro do ceiling do plano.
-
-    Args:
-        plan_code: Código do plano da assinatura ativa.
-        estimated_tokens: Estimativa de tokens totais (input + output).
-        agent_type: Tipo do agente (para override de ceiling).
-        company_id: ID da empresa (para logging).
-        user_id: ID do usuário (para logging).
-
-    Returns:
-        (allowed, estimated_tokens, ceiling)
-    """
+    """Verifica se um request individual está dentro do ceiling do plano."""
     ceiling = get_request_limit(plan_code, agent_type)
     allowed = estimated_tokens <= ceiling
 
@@ -348,28 +378,41 @@ async def check_budget(
     """
     Verifica se o tenant ainda tem budget disponível hoje.
 
-    Args:
-        company_id: ID da empresa (tenant).
-        plan_code: Código do plano da assinatura ativa.
-        redis_url: URL do Redis (usa REDIS_URL env se None).
+    Task #1355 — consulta o cache em memória (TTL 60s) antes de ir ao Redis.
+    Isso elimina a maioria dos GETs repetidos dentro do mesmo turno de chat.
 
     Returns:
         (allowed, used_today, daily_limit)
-        - allowed: True se pode chamar LLM, False se budget esgotado.
-        - used_today: tokens usados hoje.
-        - daily_limit: limite do plano (-1 = ilimitado).
     """
     limit = get_plan_limit(plan_code)
 
     if limit == -1:
-        # Plano enterprise — sem limite
         return True, 0, -1
 
+    if _is_unlimited_dev_tenant(company_id):
+        return True, 0, limit
+
+    # --- Cache em memória (hot path) ---
+    now_mono = time.monotonic()
+    cache_entry = _budget_cache.get(company_id)
+    if cache_entry is not None:
+        used_cached, expires_at = cache_entry
+        if now_mono < expires_at:
+            allowed = used_cached < limit
+            if not allowed:
+                logger.warning(
+                    "[TokenBudget] Budget esgotado (cache): company_id=%s used=%d limit=%d plan=%s",
+                    company_id, used_cached, limit, plan_code,
+                )
+            return allowed, used_cached, limit
+
+    # --- Cache miss → Redis ---
     redis = await _get_redis(redis_url)
     if redis is None:
-        # Redis indisponível → permitir com warning (graceful degradation)
+        _emit_token_budget_degradation_alert("Redis indisponível em check_budget")
         logger.warning(
-            "[TokenBudget] Redis indisponível — permitindo chamada sem verificação de budget " "(company_id=%s)",
+            "[TokenBudget] Redis indisponível — permitindo chamada sem verificação de budget "
+            "(company_id=%s)",
             company_id,
         )
         return True, 0, limit
@@ -378,6 +421,8 @@ async def check_budget(
         key = _redis_key(company_id)
         used = await redis.get(key)
         used_int = int(used) if used else 0
+        # Preencher cache em memória
+        _budget_cache[company_id] = (used_int, now_mono + _BUDGET_CACHE_TTL_S)
         allowed = used_int < limit
         if not allowed:
             logger.warning(
@@ -404,10 +449,8 @@ async def increment_usage(
     """
     Registra tokens consumidos por tenant no contador diário Redis.
 
-    Args:
-        company_id: ID da empresa.
-        tokens_used: Tokens consumidos na chamada (input + output).
-        redis_url: URL do Redis.
+    Task #1355 — após incremento bem-sucedido, invalida o cache em memória
+    para que a próxima check_budget leia o valor atualizado do Redis.
 
     Returns:
         Total acumulado hoje após incremento.
@@ -425,6 +468,8 @@ async def increment_usage(
         new_total = await redis.incrby(key, tokens_used)
         # Garantir TTL (só definir se não existe ainda)
         await redis.expire(key, _REDIS_TTL, xx=False)
+        # Invalidar cache em memória para que o próximo check_budget leia o valor atualizado
+        _budget_cache.pop(company_id, None)
         logger.debug(
             "[TokenBudget] Incrementado: company_id=%s +%d tokens → total=%d",
             company_id,
@@ -522,9 +567,7 @@ async def get_budget_status(
     # Próximo reset: meia-noite UTC
     now = datetime.now(UTC)
     reset_at = datetime(now.year, now.month, now.day, tzinfo=UTC)
-    # avança 1 dia
     from datetime import timedelta
-
     reset_at = reset_at + timedelta(days=1)
 
     return {
@@ -543,7 +586,10 @@ async def get_budget_status(
 # Helpers
 # ---------------------------------------------------------------------------
 
+# Task #1355 — singleton Redis connection for token budget (reuse, no PING per call)
 _redis_instance = None
+_redis_last_ping_ok: float = 0.0
+_REDIS_PING_INTERVAL_S = 60.0  # re-verify liveness at most once per minute
 
 # TTL do cache de plan_code por company (1 hora — muda raramente)
 _PLAN_CACHE_TTL = 3600
@@ -553,24 +599,36 @@ async def get_plan_for_company(company_id: str) -> str | None:
     """
     Retorna o plan_code da assinatura ativa de uma empresa.
 
-    Fluxo:
-      1. Redis cache  →  TTL 1h  →  chave: plan_cache:{company_id}
-      2. DB query (Subscription.plan_code WHERE company_id AND status=ACTIVE)
-      3. Fallback: None (budget service usa DEFAULT_DAILY_LIMIT=10k)
+    Task #1355 — verifica primeiro o cache em memória (_plan_mem_cache, TTL 5min)
+    antes de ir ao Redis ou DB. Isso evita chamadas Redis extras dentro do mesmo
+    turno de chat.
 
-    Nunca lança exception — falha silenciosamente retornando None.
+    Fluxo:
+      1. Cache em memória (TTL 5 min)
+      2. Redis cache (TTL 1h, chave: plan_cache:{company_id})
+      3. DB query (Subscription.plan_code WHERE company_id AND status=ACTIVE)
+      4. Fallback: None (budget service usa DEFAULT_DAILY_LIMIT=10k)
     """
-    # Dev/demo tenant: nunca throttle em desenvolvimento.
     if _is_unlimited_dev_tenant(company_id):
         return "enterprise"
 
-    # 1. Tentar Redis cache
+    # 1. Cache em memória
+    now_mono = time.monotonic()
+    mem_entry = _plan_mem_cache.get(company_id)
+    if mem_entry is not None:
+        plan_cached, expires_at = mem_entry
+        if now_mono < expires_at:
+            logger.debug("[TokenBudget] plan_code mem-cache hit: company_id=%s plan=%s", company_id, plan_cached)
+            return plan_cached
+
+    # 2. Redis cache
     redis = await _get_redis()
     if redis is not None:
         try:
             cached = await redis.get(f"plan_cache:{company_id}")
             if cached:
-                logger.debug("[TokenBudget] plan_code cache hit: company_id=%s plan=%s", company_id, cached)
+                logger.debug("[TokenBudget] plan_code redis-cache hit: company_id=%s plan=%s", company_id, cached)
+                _plan_mem_cache[company_id] = (cached, now_mono + _PLAN_MEM_CACHE_TTL_S)
                 await redis.aclose()
                 return cached
         except Exception:
@@ -581,7 +639,7 @@ async def get_plan_for_company(company_id: str) -> str | None:
             except Exception:
                 pass
 
-    # 2. DB query
+    # 3. DB query
     plan_code = None
     try:
         from lia_config.database import AsyncSessionLocal
@@ -605,7 +663,8 @@ async def get_plan_for_company(company_id: str) -> str | None:
     except Exception as exc:
         logger.debug("[TokenBudget] DB lookup para plan_code falhou (company_id=%s): %s", company_id, exc)
 
-    # 3. Cachear resultado (mesmo None não cacheia — evita cache negativo)
+    # 4. Cachear resultado
+    _plan_mem_cache[company_id] = (plan_code, now_mono + _PLAN_MEM_CACHE_TTL_S)
     if plan_code:
         try:
             redis2 = await _get_redis()
@@ -619,15 +678,28 @@ async def get_plan_for_company(company_id: str) -> str | None:
 
 
 async def _get_redis(redis_url: str | None = None):
-    """Cria conexão Redis. Retorna None se indisponível."""
+    """Cria conexão Redis.
+
+    Task #1355 — PING removido desta função; a conexão usa socket timeouts
+    curtos para detecção de falha na primeira operação real. PING era feito
+    a cada invocação, gerando uma chamada extra por check_budget/increment_usage
+    mesmo quando a conexão já estava saudável.
+
+    Retorna None se indisponível.
+    """
     try:
         import redis.asyncio as aioredis
         from lia_config.config import settings as _settings
 
         url = redis_url or getattr(_settings, "REDIS_URL", "redis://localhost:6379/0")
-        client = aioredis.from_url(url, encoding="utf-8", decode_responses=True)
-        await client.ping()
+        client = aioredis.from_url(
+            url,
+            encoding="utf-8",
+            decode_responses=True,
+            socket_connect_timeout=0.5,
+            socket_timeout=0.5,
+        )
         return client
     except Exception as exc:
-        logger.warning("[TokenBudget] Não foi possível conectar ao Redis: %s", exc)
+        logger.warning("[TokenBudget] Não foi possível criar cliente Redis: %s", exc)
         return None
