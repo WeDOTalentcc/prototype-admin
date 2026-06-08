@@ -8,6 +8,7 @@ import type { KanbanPageCoreState } from "./hooks/useKanbanPageCore"
 import { BulkResultReport } from "@/components/bulk"
 import type { BulkItemResult } from "@/lib/bulk"
 import type { CommunicationResult } from "@/components/modals/unified-communication-types"
+import type { EligibilityResultItem } from "@/components/wsi/eligibility-results-section"
 
 const CandidatePage = dynamic(() => import("@/components/candidate-page").then(m => ({ default: m.CandidatePage })), { ssr: false, loading: () => <LoadingModal /> })
 const TriagemDetailsModal = dynamic(() => import("@/components/triagem-details-modal").then(m => ({ default: m.TriagemDetailsModal })), { ssr: false, loading: () => <LoadingModal /> })
@@ -26,6 +27,45 @@ const AddCandidatesToVacancyModal = dynamic(() => import("@/components/modals/ad
 const RubricEvaluationModal = dynamic(() => import("@/components/rubric-evaluation-modal").then(m => ({ default: m.RubricEvaluationModal })), { ssr: false, loading: () => <LoadingModal /> })
 const BigFiveModal = dynamic(() => import("@/components/big-five-modal").then(m => ({ default: m.BigFiveModal })), { ssr: false, loading: () => <LoadingModal /> })
 const CandidateDecisionFlowModal = dynamic(() => import("@/components/candidate-decision-flow-modal").then(m => ({ default: m.CandidateDecisionFlowModal })), { ssr: false, loading: () => <LoadingModal /> })
+
+function extractEligibilityResults(
+  candidate: Record<string, unknown>,
+  job: Record<string, unknown>,
+): EligibilityResultItem[] | undefined {
+  const raw = candidate?.eligibility_results
+  if (Array.isArray(raw) && raw.length > 0) {
+    return (raw as Record<string, unknown>[]).map((r, i) => ({
+      id: String(r.id ?? r.question_id ?? i),
+      question: String(r.question ?? r.question_text ?? ""),
+      answer: r.answer != null ? String(r.answer) : undefined,
+      passed: Boolean(r.passed ?? r.met ?? true),
+      is_eliminatory: r.is_eliminatory !== false,
+      reconsideration: r.reconsideration != null ? String(r.reconsideration) : undefined,
+    }))
+  }
+
+  const jobQuestions = job?.eligibility_questions
+  if (Array.isArray(jobQuestions) && jobQuestions.length > 0) {
+    const candidateAnswers = (candidate?.eligibility_answers ?? candidate?.answers) as
+      | Record<string, unknown>
+      | undefined
+    return (jobQuestions as Record<string, unknown>[]).map((q, i) => {
+      const qId = String(q.id ?? i)
+      const answer = candidateAnswers?.[qId] != null ? String(candidateAnswers[qId]) : undefined
+      return {
+        id: qId,
+        question: String(q.question ?? q.question_text ?? ""),
+        answer,
+        passed: answer !== undefined
+          ? Boolean(candidateAnswers?.[`${qId}_passed`] ?? true)
+          : true,
+        is_eliminatory: q.is_eliminatory !== false,
+      }
+    })
+  }
+
+  return undefined
+}
 
 export function KanbanPageModalsCore(state: KanbanPageCoreState) {
   const t = useTranslations('kanban')
@@ -207,6 +247,7 @@ export function KanbanPageModalsCore(state: KanbanPageCoreState) {
           candidate={wsiCandidate as any}
           jobVacancyId={jobData.id?.toString()}
           jobTitle={jobData.title as any}
+          eligibilityResults={extractEligibilityResults(wsiCandidate as Record<string, unknown>, jobData)}
         />
       )}
 

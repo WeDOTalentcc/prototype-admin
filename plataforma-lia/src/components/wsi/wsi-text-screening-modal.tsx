@@ -20,6 +20,10 @@ import {
   BarChart3, FileText, User, TrendingUp, Award
 } from"lucide-react"
 import { useTranslations } from "next-intl"
+import { EligibilityResultsSection } from "./eligibility-results-section"
+import type { EligibilityResultItem } from "./eligibility-results-section"
+
+export type { EligibilityResultItem }
 
 interface WSITextScreeningModalProps {
   isOpen: boolean
@@ -38,6 +42,7 @@ interface WSITextScreeningModalProps {
   }
   jobVacancyId?: string
   jobTitle?: string
+  eligibilityResults?: EligibilityResultItem[]
   onComplete?: (result: Record<string, unknown>) => void
 }
 
@@ -105,6 +110,7 @@ export function WSITextScreeningModal({
   jobVacancy,
   jobVacancyId,
   jobTitle,
+  eligibilityResults,
   onComplete
 }: WSITextScreeningModalProps) {
   const t = useTranslations('screening.wsi')
@@ -413,6 +419,17 @@ export function WSITextScreeningModal({
                 {t('textScreening.ofQuestions', { current: currentQuestionIndex + 1, total: questions.length })}
               </Chip>
             )}
+            {step === 'completed' && eligibilityResults && eligibilityResults.length > 0 && (
+              eligibilityResults.every(r => r.passed) ? (
+                <Chip variant="success" muted className="text-micro font-medium">
+                  ✅ Elegível
+                </Chip>
+              ) : (
+                <Chip variant="danger" muted className="text-micro font-medium">
+                  ❌ Não elegível
+                </Chip>
+              )
+            )}
           </div>
         </DialogHeader>
 
@@ -516,6 +533,10 @@ export function WSITextScreeningModal({
 
           {step === 'completed' && result && (
             <div className="space-y-4">
+              {eligibilityResults && eligibilityResults.length > 0 && (
+                <EligibilityResultsSection results={eligibilityResults} />
+              )}
+
               <div className="text-center py-4">
                 <CheckCircle className="w-12 h-12 text-status-success mx-auto mb-3" />
                 <h3 className="text-sm font-semibold text-lia-text-primary">{t('textScreening.screeningCompleted')}</h3>
