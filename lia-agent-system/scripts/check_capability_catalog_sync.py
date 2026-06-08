@@ -9,6 +9,12 @@ Ghost = nome referenciado na governança mas NÃO declarado em lugar nenhum.
 Um restricted_tool ghost = gate HITL inerte (não dispara). Um scope ghost =
 o gate de escopo filtra por um nome que não existe.
 
+NOTA (ground-truth 2026-06-08): "declarado/real" = tem HANDLER Python (`name="..."`).
+NÃO contamos `tool_registry_metadata.yaml` como fonte de declaração: esse arquivo
+contém entradas SEM handler (os próprios ghosts estão lá), então tratá-lo como
+"declarado" MASCARARIA os ghosts. Entradas no metadata yaml sem handler são um
+problema SEPARADO (sensor futuro: metadata→handler).
+
 Modelo: scripts/check_canonical_pages_sync.py + scripts/check_deprecated_rail_a_tools.py.
 Default warn-only (exit 0); --blocking exit 1 quando ghosts > max-violations.
 
@@ -86,14 +92,20 @@ def format_report(ghosts: list[dict]) -> str:
         lines.append(
             f"    -> Fix: renomeie para o nome real da tool correspondente em app/, "
             f"OU remova de tool_permissions.yaml se a tool foi descontinuada, "
-            f"OU adicione a EXEMPT_NAMES com motivo se for conceito so-DomainAction."
+            f"OU adicione a EXEMPT_NAMES com motivo se for conceito só-DomainAction."
         )
     return "\n".join(lines)
 
 
-EXEMPT_NAMES: set[str] = set()
+EXEMPT_NAMES: set[str] = {
+    # DomainActions legítimos (não são tools de LLM; o gate de escopo não os alcança
+    # por design — são gated no Studio runtime). Decisão Paulo 2026-06-08.
+    "create_sourcing_agent",     # DomainAction agent_studio/actions.py
+    "calibrate_sourcing_agent",  # DomainAction agent_studio (calibrate_agent/recalibrate_agent)
+    "advance_campaign_stage",    # DomainAction recruitment_campaign/actions.py
+}
 """Nomes isentos (conceitos que vivem só como DomainAction, não como tool de LLM).
-Preenchido na Task 5 com motivo inline por entrada. Formato: 'nome',  # motivo + ticket."""
+Preenchido na Task 6a com motivo inline por entrada. Formato: 'nome',  # motivo + ticket."""
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 PERMISSIONS_YAML = REPO_ROOT / "app" / "tools" / "tool_permissions.yaml"
@@ -114,6 +126,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--blocking", action="store_true", help="exit 1 se ghosts > max-violations")
     parser.add_argument("--max-violations", type=int, default=0)
     args = parser.parse_args(argv)
+
+    if not PERMISSIONS_YAML.exists():
+        print(f"ERRO: {PERMISSIONS_YAML} não encontrado — sensor não pode rodar", file=sys.stderr)
+        return 2
 
     declared = scan_declared_in_tree(REPO_ROOT / "app")
     refs = extract_governance_refs(PERMISSIONS_YAML.read_text(encoding="utf-8"))

@@ -2,9 +2,14 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts"))
-from check_capability_catalog_sync import extract_declared_names  # noqa: E402
-from check_capability_catalog_sync import extract_governance_refs  # noqa: E402
-from check_capability_catalog_sync import compute_ghosts, format_report  # noqa: E402
+from check_capability_catalog_sync import (  # noqa: E402
+    extract_declared_names,
+    extract_governance_refs,
+    compute_ghosts,
+    format_report,
+    scan_declared_in_tree,
+    EXEMPT_NAMES,
+)
 
 
 def test_extract_declared_names_string_literal():
@@ -22,6 +27,10 @@ def test_extract_declared_names_ignores_dynamic():
 
 def test_extract_declared_names_empty_on_garbage():
     assert extract_declared_names("def f(): pass") == set()
+
+
+def test_extract_declared_names_syntax_error_returns_empty():
+    assert extract_declared_names("def :::invalid:::") == set()
 
 
 def test_extract_governance_refs_scopes_and_restricted():
@@ -68,9 +77,6 @@ def test_format_report_mentions_fix():
     assert "cancel_vacancy" in report
     assert "restricted_tools" in report
     assert "Fix" in report
-
-
-from check_capability_catalog_sync import scan_declared_in_tree, EXEMPT_NAMES  # noqa: E402
 
 
 def test_scan_declared_in_tree(tmp_path):
