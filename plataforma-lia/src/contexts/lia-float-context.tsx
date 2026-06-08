@@ -639,7 +639,13 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
       // Troca de contexto pura: preserva a conversa ativa intacta.
       return currentConvId;
     },
-    [connection],
+    // Bug 2026-06-08 fix: depende SO do setter estavel (useState setter),
+    // nao do objeto connection (nao-memoizado em useLiaChatConnection ->
+    // nova ref a cada render -> tornava switchChatContext instavel ->
+    // loop infinito no useEffect de currentPage em dashboard-app.tsx ->
+    // 'Maximum update depth exceeded').
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- setter de useState e estavel; depender do objeto connection reintroduz o loop
+    [connection.setConversationId],
   );
 
   const sendChatMessage = useCallback(
@@ -840,7 +846,12 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const setContextPage = useCallback((page: string | null) => {
-    setState((prev) => ({ ...prev, contextPage: page }));
+    // Defesa em profundidade (Bug 2026-06-08): bail quando inalterado
+    // para o React abortar o re-render — evita storm de setState se um
+    // consumidor chamar este setter dentro de um effect.
+    setState((prev) =>
+      prev.contextPage === page ? prev : { ...prev, contextPage: page },
+    );
   }, []);
 
   const setEntityContext = useCallback((ctx: EntityContext | null) => {
