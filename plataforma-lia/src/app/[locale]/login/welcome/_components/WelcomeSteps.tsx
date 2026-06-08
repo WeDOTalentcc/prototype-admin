@@ -69,9 +69,9 @@ export function WelcomeSteps() {
   const [visibleSteps, setVisibleSteps] = useState(0)
   const [dontShowAgain, setDontShowAgain] = useState(false)
 
-  const text1 = "Prazer! Seu assistente de recrutamento está pronto."
-  const text2 = "Sua agente de IA de recrutamento."
-  const text3 = "A partir de agora, vamos trabalhar juntos."
+  const text1 = "Tudo pronto por aqui."
+  const text2 = "A partir de agora, vamos trabalhar juntos."
+  const text3 = ""
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
