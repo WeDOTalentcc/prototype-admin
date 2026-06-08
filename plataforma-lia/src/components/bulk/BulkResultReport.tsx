@@ -74,7 +74,7 @@ export function BulkResultReport({
                 <AlertTriangle className="w-4 h-4 shrink-0 text-status-warning" aria-hidden />
               )}
               <span
-                className={}
+                className={`flex-1 font-medium ${r.ok ? "text-lia-text-primary" : "text-lia-text-secondary"}`}
               >
                 {r.name}
               </span>
