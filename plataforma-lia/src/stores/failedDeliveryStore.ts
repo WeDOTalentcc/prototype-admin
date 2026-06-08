@@ -30,7 +30,6 @@ export const useFailedDeliveryStore = create<FailedDeliveryState>()(
       clearFailure: (candidateId) =>
         set(
           (s) => {
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { [candidateId]: _removed, ...rest } = s.failures
             return { failures: rest }
           },

@@ -60,7 +60,7 @@ export function BulkResultReport({
           aria-valuemax={100}
         >
           <div
-            className="h-full rounded-full bg-[#60BED1] transition-all"
+            className="h-full rounded-full bg-[#60BED1] transition-[width]"
             style={{ width: `${pct}%` }}
           />
         </div>
