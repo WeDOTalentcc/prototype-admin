@@ -330,7 +330,8 @@ class StakeholderNotificationService:
                     from lia_messaging.teams import send_teams_message
                     await send_teams_message(
                         title=title,
-                        message=message,
+                        text=message,
+                        company_id=decision.company_id,
                         facts=[
                             {"name": "Candidato", "value": decision.candidate_name or "N/A"},
                             {"name": "Vaga", "value": decision.job_title or "N/A"},
