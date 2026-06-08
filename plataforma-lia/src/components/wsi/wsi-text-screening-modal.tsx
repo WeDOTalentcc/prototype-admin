@@ -16,7 +16,7 @@ import {
 } from"@/components/ui/dialog"
 import {
   Brain, Send, Loader2, CheckCircle, AlertCircle,
-  ChevronRight, MessageSquare, Target, X, 
+  ChevronRight, MessageSquare, Target, X,
   BarChart3, FileText, User, TrendingUp, Award
 } from"lucide-react"
 import { useTranslations } from "next-intl"
@@ -156,13 +156,15 @@ export function WSITextScreeningModal({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<WSIResult | null>(null)
-  
+  const [fetchedEligibilityResults, setFetchedEligibilityResults] = useState<EligibilityResultItem[] | null>(null)
+  const [eligibilityFetchLoading, setEligibilityFetchLoading] = useState(false)
+
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
-   
   useEffect(() => {
     if (isOpen && step === 'loading') {
       initializeScreening()
+      fetchEligibilityFromBackend()
     }
   }, // eslint-disable-next-line react-hooks/exhaustive-deps
   [isOpen])
@@ -170,6 +172,40 @@ export function WSITextScreeningModal({
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [currentQuestionIndex])
+
+  const fetchEligibilityFromBackend = async () => {
+    const candidateId = candidate.id
+    const jobId = effectiveJobVacancy.id
+    if (!candidateId || !jobId) return
+
+    setEligibilityFetchLoading(true)
+    try {
+      const params = new URLSearchParams({ candidate_id: candidateId, job_id: jobId })
+      const response = await fetch(`/api/backend-proxy/api/v1/triagem/sessions?${params.toString()}`, {
+        signal: AbortSignal.timeout(10000),
+      })
+      if (!response.ok) return
+
+      const data = await response.json()
+      const items: EligibilityResultItem[] = (data?.eligibility_results ?? [])
+        .filter((r: Record<string, unknown>) => r && typeof r.question === 'string' && r.question)
+        .map((r: Record<string, unknown>, i: number) => ({
+          id: String(r.id ?? i),
+          question: String(r.question),
+          answer: r.answer != null ? String(r.answer) : undefined,
+          passed: Boolean(r.passed),
+          is_eliminatory: r.is_eliminatory !== false,
+          reconsideration: r.reconsideration != null ? String(r.reconsideration) : undefined,
+        }))
+
+      if (items.length > 0) {
+        setFetchedEligibilityResults(items)
+      }
+    } catch {
+    } finally {
+      setEligibilityFetchLoading(false)
+    }
+  }
 
   const initializeScreening = async () => {
     try {
@@ -258,6 +294,8 @@ export function WSITextScreeningModal({
     }
   }
 
+  const resolvedEligibilityResults = fetchedEligibilityResults ?? eligibilityResults
+
   const handleClose = () => {
     setStep('loading')
     setSessionId('')
@@ -267,6 +305,8 @@ export function WSITextScreeningModal({
     setAnswers({})
     setError(null)
     setResult(null)
+    setFetchedEligibilityResults(null)
+    setEligibilityFetchLoading(false)
     onClose()
   }
 
@@ -419,8 +459,11 @@ export function WSITextScreeningModal({
                 {t('textScreening.ofQuestions', { current: currentQuestionIndex + 1, total: questions.length })}
               </Chip>
             )}
-            {step === 'completed' && eligibilityResults && eligibilityResults.length > 0 && (
-              eligibilityResults.every(r => r.passed) ? (
+            {step === 'completed' && eligibilityFetchLoading && (
+              <div className="h-6 w-20 rounded-full bg-lia-bg-tertiary animate-pulse motion-reduce:animate-none" aria-hidden="true" />
+            )}
+            {step === 'completed' && !eligibilityFetchLoading && resolvedEligibilityResults && resolvedEligibilityResults.length > 0 && (
+              resolvedEligibilityResults.every(r => r.passed) ? (
                 <Chip variant="success" muted className="text-micro font-medium">
                   ✅ Elegível
                 </Chip>
@@ -533,8 +576,20 @@ export function WSITextScreeningModal({
 
           {step === 'completed' && result && (
             <div className="space-y-4">
-              {eligibilityResults && eligibilityResults.length > 0 && (
-                <EligibilityResultsSection results={eligibilityResults} />
+              {eligibilityFetchLoading && (
+                <div
+                  className="rounded-xl border border-lia-border-subtle bg-lia-bg-secondary p-4 flex items-center gap-3"
+                  aria-busy="true"
+                >
+                  <div className="w-7 h-7 rounded-md bg-lia-bg-tertiary animate-pulse motion-reduce:animate-none flex-shrink-0" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-3 w-40 rounded-full bg-lia-bg-tertiary animate-pulse motion-reduce:animate-none" />
+                    <div className="h-2.5 w-56 rounded-full bg-lia-bg-tertiary animate-pulse motion-reduce:animate-none" />
+                  </div>
+                </div>
+              )}
+              {!eligibilityFetchLoading && resolvedEligibilityResults && resolvedEligibilityResults.length > 0 && (
+                <EligibilityResultsSection results={resolvedEligibilityResults} />
               )}
 
               <div className="text-center py-4">

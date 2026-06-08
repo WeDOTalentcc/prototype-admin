@@ -43,7 +43,7 @@ import logging
 import re
 from typing import Any
 
-from fastapi import APIRouter, Depends, File, Form, Header, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, Form, Header, HTTPException, Query, UploadFile
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
@@ -87,6 +87,89 @@ class InviteRequest(WeDoBaseModel):
     invite_channel: str = "email"
     expires_days: int = 7
     voice_mode: bool = False
+
+
+@router.get("/sessions", response_model=None)
+async def get_eligibility_results_for_candidate_job(
+    candidate_id: str = Query(..., description="Internal candidate ID"),
+    job_id: str = Query(..., description="Job vacancy ID"),
+    company_id: str = Depends(require_company_id),
+):
+    """Busca os resultados de elegibilidade da triagem mais recente de um candidato numa vaga.
+
+    Usado pelo WSITextScreeningModal ao abrir para exibir a seção de elegibilidade
+    mesmo quando o payload do kanban não inclui esse campo.
+
+    Retorna lista vazia quando não há sessão ou quando a fase de elegibilidade não foi
+    iniciada (vaga sem perguntas eliminatórias). Nunca lança 4xx/5xx por ausência de dados
+    — o cliente faz fallback silencioso.
+
+    Tenant guard: queries diretas com company_id no WHERE (triagem_sessions não tem RLS
+    clássico — defesa app-layer, igual ao /wsi/sessions endpoint, Onda 4.2c-P0).
+    """
+    from sqlalchemy import select, desc
+    from app.core.database import AsyncSessionLocal
+    from lia_models.triagem import TriagemSession
+
+    try:
+        async with AsyncSessionLocal() as _db:
+            result = await _db.execute(
+                select(TriagemSession)
+                .where(
+                    TriagemSession.candidate_id == candidate_id,
+                    TriagemSession.job_id == job_id,
+                    TriagemSession.company_id == company_id,
+                )
+                .order_by(desc(TriagemSession.created_at))
+                .limit(1)
+            )
+            session = result.scalar_one_or_none()
+
+        if not session:
+            return {"eligibility_results": [], "session_status": None}
+
+        elig = (session.metadata_json or {}).get("eligibility") or {}
+        items = _extract_eligibility_items(elig)
+
+        return {
+            "eligibility_results": items,
+            "session_status": session.status,
+            "session_id": str(session.id),
+        }
+    except Exception as exc:
+        logger.warning("[triagem/sessions] Failed to fetch eligibility results: %s", exc)
+        return {"eligibility_results": [], "session_status": None}
+
+
+def _extract_eligibility_items(elig: dict) -> list[dict]:
+    """Reconstrói resultados por-pergunta a partir do snapshot de elegibilidade na session.
+
+    Regra de pass/fail baseada em eligibility_phase.py:
+    - phase == 'complete': todas passaram (index >= len(questions))
+    - phase == 'talent_pool': questions[0..index-1] passaram; questions[index] falhou
+    - outros (asking/reconsidering/confirming): mostra o que já foi processado
+    """
+    questions = elig.get("questions") or []
+    phase = elig.get("phase", "asking")
+    idx = int(elig.get("index") or 0)
+
+    results = []
+    for i, q in enumerate(questions):
+        if phase == "complete":
+            passed = True
+        elif phase == "talent_pool":
+            passed = i < idx
+        else:
+            passed = i < idx
+
+        results.append({
+            "id": str(q.get("id") or i),
+            "question": q.get("question") or q.get("question_text") or "",
+            "passed": passed,
+            "is_eliminatory": bool(q.get("is_eliminatory", True)),
+        })
+
+    return results
 
 
 @router.get("/{token}", response_model=None)
