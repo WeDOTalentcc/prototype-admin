@@ -188,7 +188,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
 @router.get("/outcomes/{company_id}/patterns", response_model=list[OutcomePatternResponse])
 async def get_outcome_patterns(
     company_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
-    group_by: str = Query(default="role", regex="^(role|seniority|department)$"),
+    group_by: str = Query(default="role", pattern="^(role|seniority|department)$"),
     repo: LearningOutcomeRepository = Depends(get_learning_outcome_repo),
 _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)

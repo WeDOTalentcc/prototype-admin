@@ -210,7 +210,7 @@ async def get_fairness_audit_logs(
 @router.get("/reports/export", response_model=None)
 async def export_fairness_report(
     days: int = Query(30, ge=1, le=365),
-    format: str = Query("csv", regex="^(csv|json)$"),
+    format: str = Query("csv", pattern="^(csv|json)$"),
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user),
     company_id: str = Depends(require_company_id)):

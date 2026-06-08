@@ -24,7 +24,7 @@ async def get_early_warning(
     min_risk_level: str = Query(
         "medium",
         description="Nível mínimo de risco: medium | high | critical",
-        regex="^(medium|high|critical)$",
+        pattern="^(medium|high|critical)$",
     ),
     current_user=Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),

@@ -75,7 +75,7 @@ async def _get_drift_status(company_id: str, db: AsyncSession) -> dict[str, Any]
 
 @router.get("/agent-quality-dashboard")
 async def get_agent_quality_dashboard(
-    period: str = Query("7d", regex="^(7d|30d|90d)$"),
+    period: str = Query("7d", pattern="^(7d|30d|90d)$"),
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 company_id: str = Depends(require_company_id)) -> dict[str, Any]:

@@ -418,7 +418,7 @@ company_id: str = Depends(require_company_id)):
 @router.post("/stages/infer-behavior", response_model=None)
 async def infer_stage_behavior(
     request: InferBehaviorRequest,
-    method: str = Query(default="auto", regex="^(keyword|llm|auto)$"),
+    method: str = Query(default="auto", pattern="^(keyword|llm|auto)$"),
     current_user: User = Depends(get_current_active_user),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
