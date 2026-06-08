@@ -61,6 +61,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { NotificationSystem } from "@/components/notification-system"
@@ -511,6 +516,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
 
   const [showPasswordModal, setShowPasswordModal] = useState(false)
   const [showProfileModal, setShowProfileModal] = useState(false)
+  const [overflowOpen, setOverflowOpen] = useState(false)
   const [currentPassword, setCurrentPassword] = useState("")
   const [newPassword, setNewPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
@@ -774,68 +780,14 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
 
       </div>
 
-      {/* Tools & User Section - Fixed at Bottom */}
-      <div className="px-3 py-2 border-t border-lia-border-subtle bg-lia-bg-primary space-y-2">
+      {/* Tools & User Section - Fixed at Bottom — linha única unificada */}
+      <div className="px-3 py-2 border-t border-lia-border-subtle bg-lia-bg-primary">
         <div className={cn(
           "flex items-center gap-1",
           isCollapsed && !isTemporaryExpanded ? "flex-col gap-0.5" : "justify-center"
         )}>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onShowSearch?.()}
-            className="h-6 w-6 p-0 text-lia-text-primary hover:bg-lia-interactive-hover"
-            title={t("labels.globalSearch")}
-          >
-            <Search className="w-3 h-3" />
-          </Button>
 
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onNavigate("Configurações")}
-            className="h-6 w-6 p-0 text-lia-text-primary hover:bg-lia-interactive-hover"
-            title={t("labels.settings")}
-          >
-            <Settings className="w-3 h-3" />
-          </Button>
-
-          {/* Dark mode toggle ocultado — produto está padronizado em light mode (DS v4.2.2).
-              Para reativar: descomentar o bloco abaixo e remover `forcedTheme="light"` do ThemeProvider em src/app/[locale]/layout.tsx. */}
-          {/* <div className="flex items-center">
-            <ThemeToggle />
-          </div> */}
-
-          <LanguageSwitcher collapsed={isCollapsed && !isTemporaryExpanded} />
-
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleShowTipsModal}
-            className="h-6 w-6 p-0 text-lia-text-primary hover:bg-lia-interactive-hover"
-            title={t("labels.helpTips")}
-          >
-            <HelpCircle className="w-3 h-3" />
-          </Button>
-        </div>
-
-        <div className={cn(
-          "flex items-center gap-1 pt-1 border-t border-lia-border-subtle",
-          isCollapsed && !isTemporaryExpanded ? "flex-col gap-0.5" : "justify-center"
-        )}>
-          <HitlPendingBadge />
-
-          {/* BUG-08: só renderiza após auth hidratar — evita request com
-              userId="default_user" seguido por re-request com email real
-              (dobrava tráfego e contaminava contadores). */}
-          {isAuthReady && authenticatedUserId && (
-            <NotificationSystem
-              userId={authenticatedUserId}
-              onNotificationClick={handleNotificationClick}
-              panelPosition="sidebar"
-            />
-          )}
-
+          {/* 1. Avatar — acesso mais frequente */}
           {isMounted ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -928,6 +880,79 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
               </Avatar>
             </span>
           )}
+
+          {/* 2. Sino — ação reativa imediata */}
+          {/* BUG-08: só renderiza após auth hidratar */}
+          {isAuthReady && authenticatedUserId && (
+            <NotificationSystem
+              userId={authenticatedUserId}
+              onNotificationClick={handleNotificationClick}
+              panelPosition="sidebar"
+            />
+          )}
+
+          {/* 3. Busca */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onShowSearch?.()}
+            className="h-6 w-6 p-0 text-lia-text-primary hover:bg-lia-interactive-hover"
+            title={t("labels.globalSearch")}
+          >
+            <Search className="w-3 h-3" />
+          </Button>
+
+          {/* 4. Configurações */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onNavigate("Configurações")}
+            className="h-6 w-6 p-0 text-lia-text-primary hover:bg-lia-interactive-hover"
+            title={t("labels.settings")}
+          >
+            <Settings className="w-3 h-3" />
+          </Button>
+
+          {/* 5. Idioma */}
+          <LanguageSwitcher collapsed={isCollapsed && !isTemporaryExpanded} />
+
+          {/* 6. Ajuda */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleShowTipsModal}
+            className="h-6 w-6 p-0 text-lia-text-primary hover:bg-lia-interactive-hover"
+            title={t("labels.helpTips")}
+          >
+            <HelpCircle className="w-3 h-3" />
+          </Button>
+
+          {/* 7. Overflow › — HITL e futuros ícones */}
+          <Popover open={overflowOpen} onOpenChange={setOverflowOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0 text-lia-text-disabled hover:text-lia-text-secondary hover:bg-lia-interactive-hover"
+                title="Mais opções"
+                onMouseEnter={() => setOverflowOpen(true)}
+              >
+                <ChevronRight className="w-3 h-3" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent
+              side="top"
+              align="end"
+              sideOffset={8}
+              className="w-auto p-2"
+              onMouseLeave={() => setOverflowOpen(false)}
+            >
+              <div className="flex items-center gap-1">
+                <HitlPendingBadge />
+              </div>
+            </PopoverContent>
+          </Popover>
+
         </div>
       </div>
 
