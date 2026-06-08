@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { CheckCircle2, XCircle, ChevronDown, ShieldCheck, ShieldX } from "lucide-react"
+import { Callout } from "@/components/ui/callout"
 
 export interface EligibilityResultItem {
   id: string
@@ -24,6 +25,14 @@ export function EligibilityResultsSection({ results }: EligibilityResultsSection
   const [expanded, setExpanded] = useState(!allPassed)
 
   return (
+    <div className="space-y-2">
+      {!allPassed && (
+        <Callout variant="warning">
+          <span>
+            <strong>LGPD / EU AI Act:</strong> Triagem encerrada na fase de pré-elegibilidade. O candidato pode solicitar revisão da decisão via Central de Privacidade.
+          </span>
+        </Callout>
+      )}
     <div
       className="rounded-xl overflow-hidden"
       style={{
@@ -150,6 +159,7 @@ export function EligibilityResultsSection({ results }: EligibilityResultsSection
           ))}
         </div>
       )}
+    </div>
     </div>
   )
 }
