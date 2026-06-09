@@ -746,11 +746,11 @@ company_id: str = Depends(require_company_id)):
                 )
 
                 _sup_ctx = _build_supervisor_context(
-                    content=content,
+                    content=_eff_content,  # F5 memory (2026-06-09): enriched com historico+entity hint
                     context=context,
                     company_id=company_id,
                     user_id=user_id,
-                    conversation_id=req.conversation_id or session_id,
+                    conversation_id=_cid,  # F5 memory (2026-06-09): ID canônico resolvido do DB, não session_id fresco
                 )
                 async with AsyncSessionLocal() as _orch_db:
                     _result = await asyncio.wait_for(
@@ -786,35 +786,8 @@ company_id: str = Depends(require_company_id)):
                         set_active_scope(scope_for_context(_pg, resolved_domain))
                 except Exception:
                     pass
-                # memoria-load + entity-resolve ICADOS p/ ANTES do branch
-                # (shared agente+supervisor); _hist/_ehint/_cid/_cmem vem do escopo externo
-                # bloqueador-1 MEMORIA (v2): embute historico recente como TEXTO no
-                # content — SEM injetar mensagens separadas (que causava 'multiple
-                # non-consecutive system messages'). bloqueador-2: + hint de entidade.
-                _ctx_prefix = ""
-                if _hist:
-                    _lines = []
-                    for _m in _hist[-6:]:
-                        _r = "Recrutador" if _m.get("role") == "user" else "LIA"
-                        _c = (_m.get("content") or "")[:300]
-                        if _c:
-                            _lines.append(f"{_r}: {_c}")
-                    if _lines:
-                        _ctx_prefix = (
-                            "Historico recente desta conversa (use p/ resolver "
-                            "referencias como 'ja disse'/'esse'/'ele'):\n"
-                            + "\n".join(_lines) + "\n\n"
-                        )
-                _eff_content = (
-                    (_ctx_prefix + "Mensagem atual do recrutador: " + content)
-                    if _ctx_prefix else content
-                )
-                if _ehint:
-                    _eff_content = (
-                        _eff_content
-                        + "\n\n[Contexto resolvido pelo sistema — use EXATAMENTE isto, "
-                        + "NAO invente outro nome/titulo:\n" + _ehint + "]"
-                    )
+                # F5 memory (2026-06-09): _ctx_prefix/_eff_content hoisted p/ escopo
+                # compartilhado (supervisor+federado); variável já disponível aqui.
                 agent_input = _build_agent_input(
                     content=_eff_content,
                     context=context,
@@ -998,6 +971,35 @@ company_id: str = Depends(require_company_id)):
                     logger.warning("[SSEChat] entity resolve (fail-open): %s", _ee)
         except Exception as _he:
             logger.warning("[SSEChat] memoria load (fail-open): %s", _he)
+
+
+        # F5 memory (2026-06-09): _eff_content hoisted p/ escopo compartilhado
+        # supervisor+federado. Ambos recebem: historico recente (text prefix) +
+        # entity hint resolvido. Antes só o federado recebia; supervisor usava
+        # content cru → "quem é o Felipe?" sem UUID.
+        _eff_content = content
+        _ctx_prefix = ""
+        if _hist:
+            _lines = []
+            for _m in _hist[-6:]:
+                _r = "Recrutador" if _m.get("role") == "user" else "LIA"
+                _c = (_m.get("content") or "")[:300]
+                if _c:
+                    _lines.append(f"{_r}: {_c}")
+            if _lines:
+                _ctx_prefix = (
+                    "Historico recente desta conversa (use p/ resolver "
+                    "referencias como 'ja disse'/'esse'/'ele'):\n"
+                    + "\n".join(_lines) + "\n\n"
+                )
+        if _ctx_prefix:
+            _eff_content = _ctx_prefix + "Mensagem atual do recrutador: " + content
+        if _ehint:
+            _eff_content = (
+                _eff_content
+                + "\n\n[Contexto resolvido pelo sistema — use EXATAMENTE isto, "
+                + "NAO invente outro nome/titulo:\n" + _ehint + "]"
+            )
 
         agent_task = asyncio.create_task(
             _run_via_supervisor() if _bubble_via_supervisor else _run_agent()
