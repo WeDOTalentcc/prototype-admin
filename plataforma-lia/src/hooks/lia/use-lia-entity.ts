@@ -12,8 +12,11 @@
  *
  * Multi-tenancy: o proxy encaminha o JWT server-side; o backend escopa por
  * company. O cliente nunca manda company_id.
+ *
+ * Fase B3b (2026-06-09): adiciona `useLiaJobs(ids[])` para modais multi-vaga
+ * (job_compare). Usa useQueries para fetch paralelo; never mutates order.
  */
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useQueries } from "@tanstack/react-query"
 
 async function fetchEntity<T>(url: string): Promise<T> {
   const res = await fetch(url)
@@ -53,5 +56,21 @@ export function useLiaJob<T = Record<string, unknown>>(id?: string | null) {
     queryFn: () => fetchEntity<T>(`/api/backend-proxy/job-vacancies/${id}`),
     enabled: !!id,
     staleTime: 30_000,
+  })
+}
+
+/**
+ * Múltiplas vagas em paralelo — para o modal job_compare.
+ * Garante a mesma ordem de ids na saída.
+ * Com ids=[] todos os queries ficam disabled; sem fetch.
+ */
+export function useLiaJobs<T = Record<string, unknown>>(ids: string[]) {
+  return useQueries({
+    queries: ids.map((id) => ({
+      queryKey: ["lia-entity", "job", id] as const,
+      queryFn: () => fetchEntity<T>(`/api/backend-proxy/job-vacancies/${id}`),
+      enabled: ids.length > 0,
+      staleTime: 30_000,
+    })),
   })
 }

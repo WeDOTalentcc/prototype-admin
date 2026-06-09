@@ -13,21 +13,23 @@
  * conflito no arquivo HOT. Adicionar um modal entidade-acoplável = 1 entrada no
  * ENTITY_MODAL_REGISTRY + 1 case no switch.
  *
- * Modais id/objeto-leve continuam no LIAGlobalModals. job_insights/job_compare
- * (exigem shape específico de métricas, não o objeto cru) ficam p/ B3b.
+ * Fase B3b (2026-06-09): suporte a kind "jobs" (plural) para job_compare.
+ * data.job_ids: string[] → useLiaJobs (parallel fetch) → JobCompareModal.
  */
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
-import { useLiaCandidate, useLiaJob } from "@/hooks/lia/use-lia-entity"
+import { useLiaCandidate, useLiaJob, useLiaJobs } from "@/hooks/lia/use-lia-entity"
 import { ENTITY_MODAL_REGISTRY } from "@/components/lia-global-modals/lia-entity-modal-registry"
 import { GeneralScoreModal } from "@/components/modals/general-score-modal"
 import { BigFiveModal } from "@/components/big-five-modal"
 import { JobReportModal } from "@/components/job-report-modal"
+import { JobCompareModal } from "@/components/modals/job-compare-modal"
 
 interface ActiveModal {
   modalId: string
   candidateId?: string
   jobId?: string
+  jobIds?: string[]  // B3b: multi-vaga (job_compare)
 }
 
 export function LiaEntityModalHost() {
@@ -37,13 +39,18 @@ export function LiaEntityModalHost() {
     function handle(e: Event) {
       const detail = (e as CustomEvent<{
         modal_id: string
-        data?: { candidate_id?: string; job_id?: string }
+        data?: {
+          candidate_id?: string
+          job_id?: string
+          job_ids?: string[]  // B3b
+        }
       }>).detail
       if (!detail || !(detail.modal_id in ENTITY_MODAL_REGISTRY)) return
       setActive({
         modalId: detail.modal_id,
         candidateId: detail.data?.candidate_id,
         jobId: detail.data?.job_id,
+        jobIds: detail.data?.job_ids,  // B3b
       })
     }
     window.addEventListener("lia:open_modal", handle)
@@ -55,6 +62,8 @@ export function LiaEntityModalHost() {
     kind === "candidate" ? active?.candidateId : undefined,
   )
   const jobQuery = useLiaJob(kind === "job" ? active?.jobId : undefined)
+  // B3b: hook sempre chamado (rules of hooks); ids=[] → enabled:false → sem fetch
+  const jobsQueries = useLiaJobs(kind === "jobs" ? (active?.jobIds ?? []) : [])
 
   const close = () => setActive(null)
 
@@ -68,17 +77,28 @@ export function LiaEntityModalHost() {
       toast.error("Não consegui carregar a vaga.")
       setActive(null)
     }
-  }, [active, kind, candidateQuery.isError, jobQuery.isError])
+    // B3b: qualquer query com erro fecha o modal
+    if (kind === "jobs" && jobsQueries.some((q) => q.isError)) {
+      toast.error("Não consegui carregar uma ou mais vagas.")
+      setActive(null)
+    }
+  }, [active, kind, candidateQuery.isError, jobQuery.isError, jobsQueries])
 
   if (!active) return null
 
   // Não abre o modal até os dados chegarem (evita modal vazio/flicker).
-  const loading =
-    kind === "candidate" ? candidateQuery.isLoading : jobQuery.isLoading
+  let loading = false
+  if (kind === "candidate") loading = candidateQuery.isLoading
+  else if (kind === "job") loading = jobQuery.isLoading
+  else if (kind === "jobs") loading = jobsQueries.some((q) => q.isLoading)
   if (loading) return null
 
   const candidate = candidateQuery.data as Record<string, unknown> | undefined
   const job = jobQuery.data as Record<string, unknown> | undefined
+  // B3b: filtra só os dados que carregaram com sucesso (defensivo)
+  const jobs = jobsQueries
+    .map((q) => q.data as Record<string, unknown> | undefined)
+    .filter(Boolean) as Record<string, unknown>[]
 
   switch (active.modalId) {
     case "general_score":
@@ -94,6 +114,15 @@ export function LiaEntityModalHost() {
           isOpen
           onClose={close}
           job={{ jobId: active.jobId ?? "", title: (job.title as string) ?? "" }}
+        />
+      )
+    case "job_compare":
+      if (jobs.length < 2) return null  // exige ao menos 2 vagas carregadas
+      return (
+        <JobCompareModal
+          isOpen
+          onClose={close}
+          jobs={jobs as Parameters<typeof JobCompareModal>[0]["jobs"]}
         />
       )
     default:
