@@ -766,6 +766,22 @@ class NotificationService:
         """Send notification to Teams channel with adaptive card support."""
         try:
             from app.domains.communication.services.teams_service import teams_service
+
+            # E2 (2026-06-09): resolve webhook PER-TENANT. Antes send_adaptive_card/
+            # send_message eram chamados sem webhook_url -> caíam no global
+            # TEAMS_WEBHOOK_URL -> alerta de uma empresa ia pro canal Teams de
+            # outra (gap multi-tenant). company_id vem em data (propagado no E1).
+            webhook_url = None
+            _company_id = data.get("company_id") if data else None
+            if _company_id:
+                from app.core.database import AsyncSessionLocal
+                from app.domains.communication.services.teams_service import (
+                    resolve_tenant_teams_webhook_url,
+                )
+                async with AsyncSessionLocal() as _wh_db:
+                    webhook_url, _wh_src = await resolve_tenant_teams_webhook_url(
+                        _company_id, _wh_db
+                    )
             
             actions = data.get("actions", []) if data else []
             
@@ -814,12 +830,13 @@ class NotificationService:
                         ]
                     })
                 
-                await teams_service.send_adaptive_card(adaptive_card)
+                await teams_service.send_adaptive_card(adaptive_card, webhook_url=webhook_url)
                 logger.info(f"Teams adaptive card sent for user {user_id}: {title}")
             else:
                 await teams_service.send_message(
                     text=message,
-                    title=title
+                    title=title,
+                    webhook_url=webhook_url
                 )
                 logger.info(f"Teams simple message sent for user {user_id}: {title}")
             

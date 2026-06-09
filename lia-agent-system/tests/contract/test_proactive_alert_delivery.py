@@ -118,6 +118,60 @@ async def test_send_alert_delivers_via_real_multichannel_api():
     assert NotificationChannel.EMAIL in channels, "Email deve estar nos canais"
 
 
+@pytest.mark.asyncio
+async def test_send_to_teams_uses_per_tenant_webhook(monkeypatch):
+    """E2: _send_to_teams deve resolver o webhook PER-TENANT, nao o global.
+
+    Antes (gap multi-tenant): send_adaptive_card era chamado sem webhook_url ->
+    caía no global TEAMS_WEBHOOK_URL -> alerta da empresa A ia pro canal Teams
+    errado. Fix: resolve via resolve_tenant_teams_webhook_url(company_id) usando
+    o company_id propagado em data (E1).
+    """
+    import app.core.database as db_mod
+    import app.domains.communication.services.teams_service as teams_mod
+    from app.services.notification_service import (
+        NotificationService,
+        NotificationType,
+    )
+
+    sent = {}
+
+    async def fake_resolve(company_id, db):
+        assert company_id == COMPANY_ID, "deve resolver pro company_id do alerta"
+        return ("https://tenant-A-webhook.example/abc", "db")
+
+    async def fake_send_card(card_payload, webhook_url=None):
+        sent["webhook_url"] = webhook_url
+        return {"success": True}
+
+    class _FakeSession:
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, *a):
+            return False
+
+        async def close(self):
+            return None
+
+    monkeypatch.setattr(teams_mod, "resolve_tenant_teams_webhook_url", fake_resolve)
+    monkeypatch.setattr(teams_mod.teams_service, "send_adaptive_card", fake_send_card)
+    monkeypatch.setattr(db_mod, "AsyncSessionLocal", lambda: _FakeSession())
+
+    svc = NotificationService()
+    await svc._send_to_teams(
+        user_id=USER_ID,
+        title="Falha sync ATS",
+        message="Sync falhou",
+        notification_type=NotificationType.URGENT,
+        data={"company_id": COMPANY_ID, "actions": [{"label": "Ver", "url": "/x"}]},
+    )
+
+    assert sent.get("webhook_url") == "https://tenant-A-webhook.example/abc", (
+        "Teams deve usar o webhook per-tenant resolvido, nao o global"
+    )
+
+
 def test_notification_service_has_real_delivery_method_not_ghost():
     """Sensor anti-regressao: o metodo de entrega usado por _send_alert existe.
 
