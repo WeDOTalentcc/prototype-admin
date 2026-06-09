@@ -2734,7 +2734,14 @@
       "tryAnotherSearch": "Try another search term",
       "noAgentsPublished": "The marketplace has no published agents yet",
       "confirmUninstallTitle": "Uninstall agent?",
-      "viewSwitcher": "Marketplace view"
+      "viewSwitcher": "Marketplace view",
+      "sectionAgents": "WeDo Agents",
+      "sectionTemplates": "Templates",
+      "templateBadge": "Template",
+      "useTemplate": "Use template",
+      "templateCloneSuccess": "Agent created from template",
+      "templateComingSoon": "Coming soon",
+      "active": "Active"
     },
     "calibration": {
       "completed": "Calibration completed",

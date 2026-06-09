@@ -9,7 +9,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import {
   Store, Download, Search, Star, Loader2,
   Package, CreditCard, Trash2, Check, X,
-  ExternalLink, Filter, TrendingUp
+  ExternalLink, Filter, TrendingUp, FileTemplate, CheckCircle2
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -25,6 +25,7 @@ import { useAiPersona } from "@/hooks/company/use-ai-persona"
 interface MarketplaceListing {
   id: string
   agent_id: string
+  template_id?: string
   title: string
   short_description: string | null
   category: string
@@ -39,6 +40,9 @@ interface MarketplaceListing {
   agent_role: string | null
   agent_domain: string | null
   published_at: string | null
+  listing_type?: "agent" | "template"
+  agent_type?: "first_party" | "custom"
+  is_installed?: boolean
 }
 
 interface Installation {
@@ -107,6 +111,7 @@ function BrowseMarketplace({ onInstallSuccess, initialCategory }: { onInstallSuc
   useEffect(() => { if (initialCategory !== undefined) setCategory(initialCategory) }, [initialCategory])
   const [search, setSearch] = useState("")
   const [installing, setInstalling] = useState<string | null>(null)
+  const [cloningTemplate, setCloningTemplate] = useState<string | null>(null)
 
   // F4 Wave F: debounce search 300ms — evita query a cada keystroke
   const [debouncedSearch, setDebouncedSearch] = useState("")
@@ -136,8 +141,6 @@ function BrowseMarketplace({ onInstallSuccess, initialCategory }: { onInstallSuc
     }
   }, [category, debouncedSearch])
 
-  // Removed: useEffect handled above with [category, search]
-
   const handleInstall = async (listingId: string) => {
     setInstalling(listingId)
     try {
@@ -161,6 +164,164 @@ function BrowseMarketplace({ onInstallSuccess, initialCategory }: { onInstallSuc
       setInstalling(null)
     }
   }
+
+  const handleUseTemplate = async (item: MarketplaceListing) => {
+    const templateId = item.template_id || item.id
+    setCloningTemplate(item.id)
+    try {
+      const res = await fetch("/api/backend-proxy/agent-marketplace/use-template", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ template_id: templateId }),
+      })
+      if (res.ok) {
+        toast.success(t('templateCloneSuccess'))
+      } else if (res.status === 404) {
+        toast.info(t('templateComingSoon'))
+      } else {
+        const err = await res.json().catch(() => ({ detail: t('errorGeneric') }))
+        toast.error(err.detail || t('errorGeneric'))
+      }
+    } catch {
+      toast.error(t('connectionError'))
+    } finally {
+      setCloningTemplate(null)
+    }
+  }
+
+  // Split listings into agents and templates
+  const agentListings = listings.filter(l => !l.listing_type || l.listing_type === "agent")
+  const templateListings = listings.filter(l => l.listing_type === "template")
+  const allEmpty = agentListings.length === 0 && templateListings.length === 0
+
+  const renderAgentCard = (listing: MarketplaceListing) => (
+    <div
+      key={listing.id}
+      className="rounded-md border border-lia-border-subtle bg-lia-bg-secondary hover:border-violet-300 dark:hover:border-violet-700 hover:shadow-md transition-colors duration-200"
+    >
+      <div className="p-4">
+        <div className="flex items-start justify-between mb-3">
+          <div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <p className="text-sm font-semibold text-lia-text-primary" role="heading" aria-level={3}>{listing.title}</p>
+              {listing.agent_type === "first_party" && (
+                <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">
+                  Oficial WeDo
+                </span>
+              )}
+            </div>
+            {listing.agent_role && (
+              <p className="text-[10px] text-lia-text-secondary mt-0.5">{listing.agent_role}</p>
+            )}
+          </div>
+          <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-violet-50 dark:bg-violet-950/20 text-violet-600 dark:text-violet-400">
+            {listing.category}
+          </span>
+        </div>
+
+        {listing.short_description && (
+          <p className="text-xs text-lia-text-secondary mb-3 line-clamp-2">{listing.short_description}</p>
+        )}
+
+        {listing.tags.length > 0 && (
+          <div className="flex flex-wrap gap-1 mb-3">
+            {listing.tags.slice(0, 4).map((tag, i) => (
+              <span key={i} className="px-2 py-0.5 rounded text-[10px] bg-lia-bg-tertiary text-lia-text-disabled">
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+
+        <div className="flex items-center gap-4 mb-3 text-[10px] text-lia-text-secondary">
+          <span className="flex items-center gap-1">
+            <Download className="w-3 h-3" />
+            {t('installations', { count: listing.install_count })}
+          </span>
+          {listing.avg_rating > 0 && (
+            <span className="flex items-center gap-1">
+              <Star className="w-3 h-3 text-amber-400" />
+              {listing.avg_rating.toFixed(1)}
+            </span>
+          )}
+          <span className="flex items-center gap-1">
+            <CreditCard className="w-3 h-3" />
+            {listing.is_free ? t('free') : t('creditsPerExec', { credits: listing.credits_per_execution })}
+          </span>
+        </div>
+
+        {listing.is_installed ? (
+          <div className="flex items-center justify-center gap-1.5 w-full px-3 py-2 rounded-md bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 text-xs font-medium">
+            <CheckCircle2 className="w-3.5 h-3.5" aria-hidden="true" />
+            {t('active')}
+          </div>
+        ) : (
+          <Button
+            size="sm"
+            onClick={() => handleInstall(listing.id)}
+            disabled={installing === listing.id}
+            className="w-full gap-2 bg-violet-600 text-white hover:bg-violet-700"
+          >
+            {installing === listing.id ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" />
+            ) : (
+              <Download className="w-3.5 h-3.5" />
+            )}
+            {t('install')}
+          </Button>
+        )}
+      </div>
+    </div>
+  )
+
+  const renderTemplateCard = (listing: MarketplaceListing) => (
+    <div
+      key={listing.id}
+      className="rounded-md border border-lia-border-subtle bg-lia-bg-secondary hover:border-violet-300 dark:hover:border-violet-700 hover:shadow-md transition-colors duration-200"
+    >
+      <div className="p-4">
+        <div className="flex items-start justify-between mb-3">
+          <div>
+            <p className="text-sm font-semibold text-lia-text-primary" role="heading" aria-level={3}>{listing.title}</p>
+            {listing.agent_role && (
+              <p className="text-[10px] text-lia-text-secondary mt-0.5">{listing.agent_role}</p>
+            )}
+          </div>
+          <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-400">
+            {t('templateBadge')}
+          </span>
+        </div>
+
+        {listing.short_description && (
+          <p className="text-xs text-lia-text-secondary mb-3 line-clamp-2">{listing.short_description}</p>
+        )}
+
+        {listing.tags.length > 0 && (
+          <div className="flex flex-wrap gap-1 mb-3">
+            {listing.tags.slice(0, 4).map((tag, i) => (
+              <span key={i} className="px-2 py-0.5 rounded text-[10px] bg-lia-bg-tertiary text-lia-text-disabled">
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+
+        <Button
+          size="sm"
+          onClick={() => handleUseTemplate(listing)}
+          disabled={cloningTemplate === listing.id}
+          className="w-full gap-2 bg-amber-500 text-white hover:bg-amber-600"
+        >
+          {cloningTemplate === listing.id ? (
+            <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" />
+          ) : (
+            <Package className="w-3.5 h-3.5" />
+          )}
+          {t('useTemplate')}
+        </Button>
+      </div>
+    </div>
+  )
 
   return (
     <div className="space-y-4">
@@ -195,7 +356,7 @@ function BrowseMarketplace({ onInstallSuccess, initialCategory }: { onInstallSuc
         <div className="flex items-center justify-center py-16">
           <Loader2 className="w-6 h-6 animate-spin text-lia-text-disabled" aria-hidden="true" />
         </div>
-      ) : listings.length === 0 ? (
+      ) : allEmpty ? (
         <div className="flex flex-col items-center justify-center py-12 rounded-md border border-dashed border-lia-border-subtle bg-lia-bg-secondary/50">
           <Store className="w-10 h-10 text-lia-text-disabled mb-3" />
           <p className="text-sm font-medium text-lia-text-secondary">{t('noAgentsAvailable')}</p>
@@ -204,72 +365,32 @@ function BrowseMarketplace({ onInstallSuccess, initialCategory }: { onInstallSuc
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {listings.map(listing => (
-            <div
-              key={listing.id}
-              className="rounded-md border border-lia-border-subtle bg-lia-bg-secondary hover:border-violet-300 dark:hover:border-violet-700 hover:shadow-md transition-colors duration-200"
-            >
-              <div className="p-4">
-                <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <p className="text-sm font-semibold text-lia-text-primary" role="heading" aria-level={3}>{listing.title}</p>
-                    {listing.agent_role && (
-                      <p className="text-[10px] text-lia-text-secondary mt-0.5">{listing.agent_role}</p>
-                    )}
-                  </div>
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-violet-50 dark:bg-violet-950/20 text-violet-600 dark:text-violet-400">
-                    {listing.category}
-                  </span>
-                </div>
-
-                {listing.short_description && (
-                  <p className="text-xs text-lia-text-secondary mb-3 line-clamp-2">{listing.short_description}</p>
-                )}
-
-                {listing.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mb-3">
-                    {listing.tags.slice(0, 4).map((tag, i) => (
-                      <span key={i} className="px-2 py-0.5 rounded text-[10px] bg-lia-bg-tertiary text-lia-text-disabled">
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                )}
-
-                <div className="flex items-center gap-4 mb-3 text-[10px] text-lia-text-secondary">
-                  <span className="flex items-center gap-1">
-                    <Download className="w-3 h-3" />
-                    {t('installations', { count: listing.install_count })}
-                  </span>
-                  {listing.avg_rating > 0 && (
-                    <span className="flex items-center gap-1">
-                      <Star className="w-3 h-3 text-amber-400" />
-                      {listing.avg_rating.toFixed(1)}
-                    </span>
-                  )}
-                  <span className="flex items-center gap-1">
-                    <CreditCard className="w-3 h-3" />
-                    {listing.is_free ? t('free') : t('creditsPerExec', { credits: listing.credits_per_execution })}
-                  </span>
-                </div>
-
-                <Button
-                  size="sm"
-                  onClick={() => handleInstall(listing.id)}
-                  disabled={installing === listing.id}
-                  className="w-full gap-2 bg-violet-600 text-white hover:bg-violet-700"
-                >
-                  {installing === listing.id ? (
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" />
-                  ) : (
-                    <Download className="w-3.5 h-3.5" />
-                  )}
-                  {t('install')}
-                </Button>
+        <div className="space-y-8">
+          {/* Section: Agentes WeDo */}
+          {agentListings.length > 0 && (
+            <section>
+              <h2 className="text-sm font-semibold text-lia-text-primary mb-3 flex items-center gap-2">
+                <Store className="w-4 h-4 text-violet-500" aria-hidden="true" />
+                {t('sectionAgents')}
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {agentListings.map(renderAgentCard)}
               </div>
-            </div>
-          ))}
+            </section>
+          )}
+
+          {/* Section: Templates */}
+          {templateListings.length > 0 && (
+            <section>
+              <h2 className="text-sm font-semibold text-lia-text-primary mb-3 flex items-center gap-2">
+                <Package className="w-4 h-4 text-amber-500" aria-hidden="true" />
+                {t('sectionTemplates')}
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {templateListings.map(renderTemplateCard)}
+              </div>
+            </section>
+          )}
         </div>
       )}
     </div>
