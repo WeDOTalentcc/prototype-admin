@@ -144,13 +144,14 @@ class AgentMarketplaceListingRepository:
 
         stmt = (
             select(AgentMarketplaceListing, CustomAgent)
-            .join(CustomAgent, AgentMarketplaceListing.agent_id == CustomAgent.id)
+            .outerjoin(CustomAgent, AgentMarketplaceListing.agent_id == CustomAgent.id)
             .where(and_(*conditions))
             .order_by(AgentMarketplaceListing.install_count.desc())
             .limit(limit)
             .offset(offset)
         )
         result = await self._db.execute(stmt)
+        # row[1] (CustomAgent) is None for template listings (agent_id=NULL)
         rows = [(row[0], row[1]) for row in result.all()]
         return rows, int(total)
 
