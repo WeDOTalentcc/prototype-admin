@@ -42,7 +42,7 @@ class TestApplyTableStateTool:
             search="João",
             sort_by="score",
             sort_order="desc",
-            quick_filters=["approved"],
+            quick_filters=["senior"],
         )
         assert r["success"] is True
         assert r["data"]["ui_action"] == "apply_table_state"
@@ -52,9 +52,51 @@ class TestApplyTableStateTool:
                 "search": "João",
                 "sortBy": "score",
                 "sortOrder": "desc",
-                "quickFilters": ["approved"],
+                "quickFilters": ["senior"],
             },
         }
+
+    @pytest.mark.asyncio
+    async def test_invalid_sort_by_rejected(self, _tenant):
+        # Falha alto: sort que o funil ignora em silencio nao pode emitir success.
+        r = await _wrap_apply_table_state(surface="candidates", sort_by="salario")
+        assert r["success"] is False
+        assert "salario" in r["message"]
+
+    @pytest.mark.asyncio
+    async def test_unknown_quick_filter_dropped_partial(self, _tenant):
+        # invalido descartado, valido mantido (patch parcial honesto).
+        r = await _wrap_apply_table_state(
+            surface="candidates", quick_filters=["senior", "aprovados"]
+        )
+        assert r["success"] is True
+        assert r["data"]["ui_action_params"]["patch"]["quickFilters"] == ["senior"]
+
+    @pytest.mark.asyncio
+    async def test_all_invalid_quick_filters_rejected(self, _tenant):
+        # todos invalidos -> nao fingir sucesso com filtro que nao filtra.
+        r = await _wrap_apply_table_state(
+            surface="candidates", quick_filters=["aprovados", "reprovados"]
+        )
+        assert r["success"] is False
+        assert "aprovados" in r["message"]
+
+    @pytest.mark.asyncio
+    async def test_valid_vocab_passes(self, _tenant):
+        from app.domains.recruiter_assistant.agents.ui_tool_registry import (
+            _VALID_SORT_BY,
+            _VALID_QUICK_FILTERS,
+        )
+        for sb in _VALID_SORT_BY:
+            r = await _wrap_apply_table_state(surface="candidates", sort_by=sb)
+            assert r["success"] is True, f"sort_by {sb} deveria passar"
+        r = await _wrap_apply_table_state(
+            surface="candidates", quick_filters=list(_VALID_QUICK_FILTERS)
+        )
+        assert r["success"] is True
+        assert r["data"]["ui_action_params"]["patch"]["quickFilters"] == list(
+            _VALID_QUICK_FILTERS
+        )
 
     @pytest.mark.asyncio
     async def test_omitted_args_absent_from_patch(self, _tenant):

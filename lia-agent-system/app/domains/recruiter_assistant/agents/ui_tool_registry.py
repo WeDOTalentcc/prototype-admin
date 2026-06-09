@@ -235,6 +235,21 @@ def _build_open_ui_definition() -> ToolDefinition:
 
 _APPLY_TABLE_STATE_SURFACES = ("candidates",)
 
+# Vocabulario VALIDO do funil (surface candidates) — espelha o consumidor
+# useCandidatesFilterSort.ts. Emitir fora disso = patch dormente: o funil
+# ignora silenciosamente (default return true / acesso a campo undefined).
+# Falhar alto (msg ao usuario), nunca emitir um no-op com "success".
+_VALID_SORT_BY = (
+    "score",
+    "name",
+    "location",
+    "current_company",
+    "current_title",
+    "years_of_experience",
+    "activity",
+)
+_VALID_QUICK_FILTERS = ("frontend", "backend", "design", "senior", "remoto")
+
 
 @tool_handler("ui")
 async def _wrap_apply_table_state(**kwargs: Any) -> dict[str, Any]:
@@ -270,13 +285,34 @@ async def _wrap_apply_table_state(**kwargs: Any) -> dict[str, Any]:
         patch["search"] = search
     sort_by = kwargs.get("sort_by")
     if sort_by:
+        if sort_by not in _VALID_SORT_BY:
+            # Falha alto: nao emitir um sort que o funil ignora em silencio.
+            return {
+                "success": False,
+                "message": (
+                    f"Não sei ordenar candidatos por '{sort_by}'. "
+                    f"Opções: {', '.join(_VALID_SORT_BY)}."
+                ),
+            }
         patch["sortBy"] = sort_by
     sort_order = kwargs.get("sort_order")
     if sort_order:
         patch["sortOrder"] = sort_order
     quick_filters = kwargs.get("quick_filters")
     if quick_filters:
-        patch["quickFilters"] = quick_filters
+        valid = [q for q in quick_filters if q in _VALID_QUICK_FILTERS]
+        invalid = [q for q in quick_filters if q not in _VALID_QUICK_FILTERS]
+        if invalid and not valid:
+            # Todos invalidos: nao fingir sucesso com filtro que nao filtra.
+            return {
+                "success": False,
+                "message": (
+                    f"Filtro(s) rápido(s) desconhecido(s): {', '.join(invalid)}. "
+                    f"Disponíveis: {', '.join(_VALID_QUICK_FILTERS)}."
+                ),
+            }
+        if valid:
+            patch["quickFilters"] = valid
 
     if not patch:
         return {
@@ -305,7 +341,7 @@ def _build_apply_table_state_definition() -> ToolDefinition:
             "(não navega, não abre modal, não muta dados). Use quando o "
             "usuário, estando na tela do funil/candidatos, pedir para buscar, "
             "ordenar ou filtrar a lista visível (ex: 'ordene por score', "
-            "'mostre só os aprovados', 'busca por João'). NÃO use para abrir "
+            "'mostre só os seniores', 'busca por João'). NÃO use para abrir "
             "perfil/modal (use open_ui) nem para navegar."
         ),
         parameters={
@@ -322,7 +358,11 @@ def _build_apply_table_state_definition() -> ToolDefinition:
                 },
                 "sort_by": {
                     "type": "string",
-                    "description": "Campo de ordenação, ex: 'score', 'name' (opcional).",
+                    "enum": list(_VALID_SORT_BY),
+                    "description": (
+                        "Campo de ordenação (opcional). Apenas estes valores "
+                        "são reconhecidos pelo funil."
+                    ),
                 },
                 "sort_order": {
                     "type": "string",
@@ -331,8 +371,11 @@ def _build_apply_table_state_definition() -> ToolDefinition:
                 },
                 "quick_filters": {
                     "type": "array",
-                    "items": {"type": "string"},
-                    "description": "Filtros rápidos a aplicar, ex: ['approved'] (opcional).",
+                    "items": {"type": "string", "enum": list(_VALID_QUICK_FILTERS)},
+                    "description": (
+                        "Filtros rápidos a aplicar (opcional). Valores válidos: "
+                        "frontend, backend, design, senior, remoto."
+                    ),
                 },
             },
             "required": ["surface"],
