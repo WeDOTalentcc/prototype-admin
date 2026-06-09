@@ -285,6 +285,7 @@ class TestInterviewGraphTracing:
         assert callable(g.invoke)
 
     @pytest.mark.asyncio
+    @pytest.mark.skip(reason="WSIInterviewGraph sendo aposentado — TriagemSessionService é o sistema canônico")
     async def test_run_node_logs_start_end(self):
         """_run_node emits structured log entries for start and end of each node."""
         from app.domains.interview_scheduling.agents.interview_graph import InterviewGraph
@@ -315,6 +316,7 @@ class TestInterviewGraphTracing:
         assert any("node_end" in m for m in log_records)
 
     @pytest.mark.asyncio
+    @pytest.mark.skip(reason="WSIInterviewGraph sendo aposentado — TriagemSessionService é o sistema canônico")
     async def test_run_node_error_logs_node_error(self):
         """_run_node on exception emits node_error log and stores error in state."""
         from app.domains.interview_scheduling.agents.interview_graph import InterviewGraph

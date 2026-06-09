@@ -35,8 +35,8 @@ EXPECTED_GRAPHS = {
 # Mapeamento esperado: nome → (módulo_relativo, atributo)
 EXPECTED_GRAPH_MODULES = {
     "wizard_graph": (
-        "app/domains/job_management/agents/job_wizard_graph.py",
-        "job_wizard_graph",
+        "app/domains/job_management/agents/wizard_react_agent.py",
+        "WizardReActAgent",
     ),
     "wsi_interview_graph": (
         "app/domains/cv_screening/agents/wsi_interview_graph.py",

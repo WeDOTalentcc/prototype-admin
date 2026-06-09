@@ -1,7 +1,9 @@
 {
-  "dependencies": ["."],
+  "dependencies": [
+    "."
+  ],
   "graphs": {
-    "wizard_graph": "app/domains/job_management/agents/job_wizard_graph.py:job_wizard_graph",
+    "wizard_graph": "app/domains/job_management/agents/wizard_react_agent.py:WizardReActAgent",
     "wsi_interview_graph": "app/domains/cv_screening/agents/wsi_interview_graph.py:wsi_interview_graph",
     "interview_graph": "app/domains/interview_scheduling/agents/interview_graph.py:interview_graph"
   },

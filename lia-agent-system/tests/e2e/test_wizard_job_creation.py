@@ -8,6 +8,15 @@ import httpx
 from uuid import uuid4
 import asyncio
 
+import os
+
+# Skip toda a suite se servidor não estiver acessível
+pytestmark = pytest.mark.skipif(
+    os.getenv("LIA_INTEGRATION_TESTS") != "1",
+    reason="Requer servidor rodando (LIA_INTEGRATION_TESTS=1)"
+)
+
+
 BASE_URL = "http://localhost:8000"
 
 
