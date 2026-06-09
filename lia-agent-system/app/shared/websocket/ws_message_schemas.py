@@ -184,6 +184,15 @@ class UISettingsOpenTabParams(BaseModel):
     subsection: str | None = Field(default=None, max_length=64)
 
 
+class UIApplyTableStateParams(BaseModel):
+    """`apply_table_state`: filtra/busca/ordena a tabela in-page (Fase 2 slice 1).
+    Espelha a variante TS GlobalUIAction.apply_table_state. patch é camelCase
+    (search, sortBy, sortOrder, quickFilters). Read-only UI — não muta dados."""
+
+    surface: Literal["candidates"]
+    patch: dict[str, Any] = Field(default_factory=dict)
+
+
 GLOBAL_UI_ACTION_TYPES: tuple[str, ...] = (
     "navigate_to",
     "open_modal",
@@ -192,6 +201,7 @@ GLOBAL_UI_ACTION_TYPES: tuple[str, ...] = (
     "open_panel",
     "scroll_to",
     "settings_open_tab",  # WT-2022 Fase 4: bridge chat → SettingsPageEnhanced
+    "apply_table_state",  # Fase 2 slice 1: ponte in-page (filtra/ordena tabela)
 )
 """Espelho runtime do `GLOBAL_UI_ACTION_TYPES` em `src/types/ui-action.ts`."""
 
@@ -204,6 +214,7 @@ _UI_ACTION_PARAMS_BY_TYPE: dict[str, type[BaseModel]] = {
     "open_panel": UIOpenPanelParams,
     "scroll_to": UIScrollToParams,
     "settings_open_tab": UISettingsOpenTabParams,  # WT-2022 Fase 4
+    "apply_table_state": UIApplyTableStateParams,  # Fase 2 slice 1
 }
 
 

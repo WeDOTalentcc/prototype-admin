@@ -53,6 +53,8 @@ _FEDERATION_SPEC: list[tuple[str, str]] = [
     ("wizard", "start_creation_from_source"),
     # --- Abrir modal/painel (Fase B) — mecanismo determinístico open_ui ---
     ("ui", "open_ui"),
+    # --- Ponte in-page (Fase 2 slice 1) — filtra/ordena tabela aberta ---
+    ("ui", "apply_table_state"),
 ]
 
 

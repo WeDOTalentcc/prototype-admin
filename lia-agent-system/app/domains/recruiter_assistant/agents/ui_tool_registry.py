@@ -213,6 +213,135 @@ def _build_open_ui_definition() -> ToolDefinition:
     )
 
 
+
+
+# ---------------------------------------------------------------------------
+# Fase 2 slice 1 — ponte in-page `apply_table_state`
+# ---------------------------------------------------------------------------
+# Tool DETERMINISTICA (irmã do open_ui) que NAO abre modal nem navega: filtra/
+# busca/ordena a tabela de candidatos JA ABERTA na tela. Emite a diretiva
+# canonica ui_action="apply_table_state" consumida por
+# agentic_loop._extract_tool_directive; o FE escuta `lia:apply_table_state` e
+# aplica o patch no useCandidatesStore.
+#
+# NAO passa pelo capability_map.yaml (apply_table_state nao e modal nem
+# navigate). Read-only UI: nenhuma mutacao, nenhum HITL, nenhum DB read
+# company-scoped. company_id vem do ContextVar (consistencia) mas NAO e usado
+# e NUNCA contamina o patch.
+#
+# Slice 1 = surface "candidates" apenas. patch keys sao camelCase (FE contract):
+# search, sortBy, sortOrder, quickFilters. Args sao snake_case (sort_by,
+# sort_order, quick_filters) — mapeamos snake->camel e dropamos None/vazio.
+
+_APPLY_TABLE_STATE_SURFACES = ("candidates",)
+
+
+@tool_handler("ui")
+async def _wrap_apply_table_state(**kwargs: Any) -> dict[str, Any]:
+    """Filtra/busca/ordena a tabela in-page (Fase 2 slice 1).
+
+    Args (kwargs):
+        surface: "candidates" (unico suportado no slice 1).
+        search: termo de busca livre (opcional).
+        sort_by: campo de ordenacao (opcional).
+        sort_order: "asc" | "desc" (opcional).
+        quick_filters: list[str] de filtros rapidos (opcional).
+        company_id: injetado pelo @tool_handler (ContextVar JWT) — NAO usado.
+
+    Returns dict no contrato de diretiva consumido por
+    agentic_loop._extract_tool_directive:
+        {"success", "data": {"ui_action": "apply_table_state",
+         "ui_action_params": {"surface", "patch"}}, "message"}
+    """
+    surface = (kwargs.get("surface") or "candidates").strip()
+    if surface not in _APPLY_TABLE_STATE_SURFACES:
+        return {
+            "success": False,
+            "message": (
+                "Por enquanto só sei filtrar/ordenar a tabela de candidatos "
+                f"(surface 'candidates') — '{surface}' ainda não é suportado."
+            ),
+        }
+
+    # snake_case (arg) -> camelCase (patch FE). Dropa None/vazio.
+    patch: dict[str, Any] = {}
+    search = kwargs.get("search")
+    if search:
+        patch["search"] = search
+    sort_by = kwargs.get("sort_by")
+    if sort_by:
+        patch["sortBy"] = sort_by
+    sort_order = kwargs.get("sort_order")
+    if sort_order:
+        patch["sortOrder"] = sort_order
+    quick_filters = kwargs.get("quick_filters")
+    if quick_filters:
+        patch["quickFilters"] = quick_filters
+
+    if not patch:
+        return {
+            "success": False,
+            "message": (
+                "Me diga o que aplicar na tabela: um termo de busca, uma "
+                "ordenação (ex: por score) ou um filtro rápido."
+            ),
+        }
+
+    return {
+        "success": True,
+        "data": {
+            "ui_action": "apply_table_state",
+            "ui_action_params": {"surface": surface, "patch": patch},
+        },
+        "message": "Aplicando na tabela de candidatos.",
+    }
+
+
+def _build_apply_table_state_definition() -> ToolDefinition:
+    return ToolDefinition(
+        name="apply_table_state",
+        description=(
+            "Filtra/busca/ordena a tabela de candidatos JÁ ABERTA na tela "
+            "(não navega, não abre modal, não muta dados). Use quando o "
+            "usuário, estando na tela do funil/candidatos, pedir para buscar, "
+            "ordenar ou filtrar a lista visível (ex: 'ordene por score', "
+            "'mostre só os aprovados', 'busca por João'). NÃO use para abrir "
+            "perfil/modal (use open_ui) nem para navegar."
+        ),
+        parameters={
+            "type": "object",
+            "properties": {
+                "surface": {
+                    "type": "string",
+                    "enum": list(_APPLY_TABLE_STATE_SURFACES),
+                    "description": "Superfície da tabela. Slice 1: 'candidates'.",
+                },
+                "search": {
+                    "type": "string",
+                    "description": "Termo de busca livre (opcional).",
+                },
+                "sort_by": {
+                    "type": "string",
+                    "description": "Campo de ordenação, ex: 'score', 'name' (opcional).",
+                },
+                "sort_order": {
+                    "type": "string",
+                    "enum": ["asc", "desc"],
+                    "description": "Direção da ordenação (opcional).",
+                },
+                "quick_filters": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "description": "Filtros rápidos a aplicar, ex: ['approved'] (opcional).",
+                },
+            },
+            "required": ["surface"],
+        },
+        output_schema=ToolOutput,
+        function=_wrap_apply_table_state,
+    )
+
+
 def get_ui_tools() -> list[ToolDefinition]:
-    """ToolDefinitions de UI (open_ui). Federadas no recruiter_copilot."""
-    return [_build_open_ui_definition()]
+    """ToolDefinitions de UI (open_ui + apply_table_state). Federadas no recruiter_copilot."""
+    return [_build_open_ui_definition(), _build_apply_table_state_definition()]
