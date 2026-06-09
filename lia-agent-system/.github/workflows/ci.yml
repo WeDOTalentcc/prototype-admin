@@ -466,6 +466,12 @@ jobs:
       - name: "G-MRO: agent tenant-mixin compliance (BLOCKING)"
         run: python scripts/check_agent_mro_compliance.py
 
+      # G-TENANT-EXC — Sprint 3 (enterprise-readiness 2026-06-08): toda exceção ao
+      # fail-closed de tenant (@tool_handler require_company=False) DEVE ter
+      # justificativa inline auditável (governança LGPD/SOX). Baseline 0 (7 usos).
+      - name: "G-TENANT-EXC: require_company=False justificado (BLOCKING)"
+        run: python scripts/check_require_company_justified.py
+
       # Task #1143 — Multi-tenant Ownership Foundation.
       # G-RLS: every table with `company_id` must have a corresponding
       # ENABLE ROW LEVEL SECURITY migration (or `# RLS-EXEMPT:` marker /
