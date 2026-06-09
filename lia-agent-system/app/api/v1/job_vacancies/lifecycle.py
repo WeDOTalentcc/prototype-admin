@@ -572,11 +572,12 @@ company_id: str = Depends(require_company_id)) -> dict[str, Any]:
         data = await request.json()
 
         hired_candidate_id = data.get("hired_candidate_id")
+        close_reason = data.get("close_reason", "filled")
         hired_notification = data.get("hired_notification", {})
         other_notifications = data.get("other_notifications", {})
 
-        if not hired_candidate_id:
-            raise HTTPException(status_code=400, detail="hired_candidate_id is required")
+        if not hired_candidate_id and close_reason != "not_filled":
+            raise HTTPException(status_code=400, detail="hired_candidate_id is required when close_reason is 'filled'")
 
         vacancy = await repo.get_vacancy_by_uuid_str(vacancy_id)
 
@@ -670,7 +671,7 @@ company_id: str = Depends(require_company_id)) -> dict[str, Any]:
             await activity_svc.create_activity(
                 activity_type="vacancy_closed",
                 title=f"Vaga Fechada: {vacancy.title}",
-                description=f"Candidato contratado. {len(other_candidate_ids)} candidatos notificados.",
+                description=f"Candidato contratado. {len(other_candidate_ids)} candidatos notificados." if hired_candidate_id else f"Vaga encerrada sem contratação. {len(other_candidate_ids)} candidatos notificados.",
                 actor_id="system",
                 actor_name="LIA",
                 actor_type="system",
