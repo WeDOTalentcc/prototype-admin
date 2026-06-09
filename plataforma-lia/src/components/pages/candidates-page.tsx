@@ -136,6 +136,37 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingPoolOpen])
 
+  // Critérios para o QualificationMatrixCard no painel de preview:
+  // prefere filtros de tabela ativos; senão usa os critérios parseados da busca natural.
+  const previewSearchCriteria: Record<string, unknown> | null = (() => {
+    if (tableFilters.skills.length || tableFilters.seniorityLevels.length || tableFilters.locations.length) {
+      return {
+        required_skills: tableFilters.skills,
+        seniority_levels: tableFilters.seniorityLevels,
+        locations: tableFilters.locations,
+      }
+    }
+    if (
+      lastSearchEntities &&
+      (lastSearchEntities.skills?.length ||
+        lastSearchEntities.location ||
+        lastSearchEntities.seniority ||
+        lastSearchEntities.job_title ||
+        lastSearchEntities.years_experience)
+    ) {
+      const rawYears = lastSearchEntities.years_experience
+      const minYears = rawYears ? parseInt(rawYears, 10) : undefined
+      return {
+        required_skills: lastSearchEntities.skills ?? [],
+        seniority_levels: lastSearchEntities.seniority ? [lastSearchEntities.seniority] : [],
+        locations: lastSearchEntities.location ? [lastSearchEntities.location] : [],
+        ...(lastSearchEntities.job_title ? { titles: [lastSearchEntities.job_title] } : {}),
+        ...(minYears && !isNaN(minYears) ? { min_years_experience: minYears } : {}),
+      }
+    }
+    return null
+  })()
+
   return (
     <SearchFingerprintProvider value={searchFingerprint}>
     <ErrorBoundarySection>
@@ -407,15 +438,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                 <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle h-[calc(100vh-6rem)] overflow-hidden">
                   <CandidatePreview
                     candidate={previewCandidate as unknown as Record<string, unknown>}
-                    searchCriteria={
-                      (tableFilters.skills.length || tableFilters.seniorityLevels.length || tableFilters.locations.length)
-                        ? {
-                            required_skills: tableFilters.skills,
-                            seniority_levels: tableFilters.seniorityLevels,
-                            locations: tableFilters.locations,
-                          }
-                        : null
-                    }
+                    searchCriteria={previewSearchCriteria}
                     isOpen={showCandidatePreview}
                     onClose={handleCloseCandidatePreview}
                     isMaximized={isPreviewMaximized}
