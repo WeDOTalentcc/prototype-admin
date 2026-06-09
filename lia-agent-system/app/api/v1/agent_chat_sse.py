@@ -823,23 +823,107 @@ company_id: str = Depends(require_company_id)):
                     user_id=user_id,
                     conversation_history=[],  # revert 2026-06-06: injecao causava 'multiple non-consecutive system messages'; memoria sera via checkpointer/thread_id (canonico)
                 )
-                output = await asyncio.wait_for(
-                    agent.process(agent_input),
-                    timeout=_AGENT_TIMEOUT,
-                )
+                # F4 workflows encadeados (2026-06-09): detecta plano multi-step
+                # antes de agent.process. Se detectado executa via PlanExecutor +
+                # emite background_task_update SSE. Fail-open: falha cai no
+                # caminho normal agent.process. Guard >=2 tasks evita deteccao
+                # falso-positivo em frases simples.
+                _plan_executed = False
                 try:
-                    async with AsyncSessionLocal() as _pdb:
-                        await _cmem.add_message(
-                            _pdb, conversation_id=_cid, role="user", content=content
+                    from app.shared.execution import PlanDetector, PlanExecutor
+                    from app.shared.execution.plan_progress_mapper import (
+                        map_plan_event,
+                        new_plan_progress_state,
+                    )
+                    from app.shared.chat_event_serializer import serialize_background_task_update as _ser_bg
+                    _plan_det = PlanDetector()
+                    _detected = _plan_det.detect(_eff_content)
+                    if _detected and len(_detected.tasks) >= 2:
+                        logger.info(
+                            "[SSEChat] Multi-step plan detected: %s (%d tasks)",
+                            _detected.detected_pattern, len(_detected.tasks),
                         )
-                        await _cmem.add_message(
-                            _pdb, conversation_id=_cid, role="assistant",
-                            content=output.message or "",
+                        _plan_task_id = f"plan-{session_id[:8]}"
+                        _plan_state = new_plan_progress_state()
+
+                        async def _sse_plan_cb(event_type: str, data: dict) -> None:
+                            try:
+                                _fr = map_plan_event(event_type, data, _plan_state)
+                                _lbl = data.get("label") or _detected.detected_pattern or "Plano multi-step"
+                                await sse_queue.put(_ser_bg(
+                                    task_id=_plan_task_id,
+                                    task_type="analysis",
+                                    label=_lbl,
+                                    status=_fr["status"],
+                                    progress=_fr["progress"],
+                                    message=data.get("message", ""),
+                                ))
+                            except Exception:
+                                pass
+
+                        await sse_queue.put(_ser_bg(
+                            task_id=_plan_task_id,
+                            task_type="analysis",
+                            label=_detected.detected_pattern or "Plano multi-step",
+                            status="running",
+                            progress=0,
+                            message=f"Executando plano com {len(_detected.tasks)} tarefas",
+                        ))
+                        _plan_exec = PlanExecutor()
+                        _exec_result = await asyncio.wait_for(
+                            _plan_exec.execute(
+                                plan=_detected,
+                                user_id=user_id,
+                                session_id=session_id,
+                                tenant_id=company_id,
+                                base_context={"company_id": company_id, "user_id": user_id},
+                                progress_callback=_sse_plan_cb,
+                            ),
+                            timeout=_AGENT_TIMEOUT,
                         )
-                        await _pdb.commit()
-                except Exception as _pe:
-                    logger.warning("[SSEChat] memoria persist (fail-open): %s", _pe)
-                await sse_queue.put({"_done": True, "_output": output})
+                        _consolidated = _plan_exec.build_consolidated_response(_exec_result)
+                        try:
+                            async with AsyncSessionLocal() as _pdb:
+                                await _cmem.add_message(
+                                    _pdb, conversation_id=_cid, role="user", content=content
+                                )
+                                await _cmem.add_message(
+                                    _pdb, conversation_id=_cid, role="assistant",
+                                    content=_consolidated.message or "",
+                                )
+                                await _pdb.commit()
+                        except Exception as _pme:
+                            logger.warning("[SSEChat] plan memoria persist (fail-open): %s", _pme)
+                        from types import SimpleNamespace as _NS
+                        await sse_queue.put({"_done": True, "_output": _NS(
+                            message=_consolidated.message or "Plano executado.",
+                            confidence=getattr(_consolidated, "confidence", 0.9),
+                            actions=[],
+                            navigation=None,
+                            state_updates=None,
+                            metadata=getattr(_consolidated, "metadata", {}) or {},
+                        )})
+                        _plan_executed = True
+                except Exception as _plan_exc:
+                    logger.warning("[SSEChat] plan detection (fail-open): %s", _plan_exc)
+                if not _plan_executed:
+                    output = await asyncio.wait_for(
+                        agent.process(agent_input),
+                        timeout=_AGENT_TIMEOUT,
+                    )
+                    try:
+                        async with AsyncSessionLocal() as _pdb:
+                            await _cmem.add_message(
+                                _pdb, conversation_id=_cid, role="user", content=content
+                            )
+                            await _cmem.add_message(
+                                _pdb, conversation_id=_cid, role="assistant",
+                                content=output.message or "",
+                            )
+                            await _pdb.commit()
+                    except Exception as _pe:
+                        logger.warning("[SSEChat] memoria persist (fail-open): %s", _pe)
+                    await sse_queue.put({"_done": True, "_output": output})
             except TimeoutError:
                 await sse_queue.put({"_done": True, "_error": "timeout"})
             except Exception as exc:

@@ -1,6 +1,10 @@
 "use client";
 
 import { HITLConfirmCard } from "@/components/lia-float/HITLConfirmCard";
+import {
+  BackgroundAgentsStatus,
+  type BackgroundTask,
+} from "@/components/lia-float/BackgroundAgentsStatus";
 import { SwitchTaskModal } from "@/components/lia-float/SwitchTaskModal";
 import {
   AlertDialog,
@@ -1377,6 +1381,25 @@ export function UnifiedChat({
           <UnifiedChatEmptyState
             mode={effectiveMode}
             onSuggestionClick={handleSuggestionClick}
+          />
+        )}
+
+        {/* F4 Background Agents Status — shows multi-step plan progress */}
+        {chatBackgroundTasks.length > 0 && (
+          <BackgroundAgentsStatus
+            tasks={chatBackgroundTasks.map((t) => ({
+              id: t.task_id,
+              type: t.task_type,
+              label: t.label,
+              status: t.status,
+              progress: t.progress,
+              message: t.message,
+              result: t.result,
+            } as BackgroundTask))}
+            onViewResult={(task) => {
+              // TODO F5: open result detail panel
+              void task;
+            }}
           />
         )}
 

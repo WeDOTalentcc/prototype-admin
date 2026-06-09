@@ -106,7 +106,7 @@ def _is_transient_provider_error(exc: BaseException) -> bool:
 # (vs. merely feed back to the LLM as text). Additive surfacing: only these
 # directives are promoted to ``run()``'s ``tool_directive`` return field.
 _ACTIONABLE_TOOL_UI_ACTIONS: frozenset[str] = frozenset(
-    {"start_wizard_seeded", "open_modal", "navigate_to", "apply_table_state", "select_rows"}
+    {"start_wizard_seeded", "open_modal", "navigate_to", "apply_table_state", "select_rows", "bulk_execute"}
 )
 
 

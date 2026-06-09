@@ -16,7 +16,7 @@ def test_helpers_return_expected_tools():
         get_table_state_tools,
     )
     assert [t.name for t in get_open_ui_tools()] == ["open_ui"]
-    assert [t.name for t in get_table_state_tools()] == ["apply_table_state"]
+    assert [t.name for t in get_table_state_tools()] == ["apply_table_state", "select_rows"]
 
 
 def test_both_ui_tools_category_interface():
