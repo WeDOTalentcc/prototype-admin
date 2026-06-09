@@ -140,6 +140,23 @@ export function useRevealContact({
                 setCreditsRemaining(() => data.credits_remaining)
               }
               revealed++
+              if (cand.source === 'pearch') {
+                const pearchId = cand.pearch_profile_id || cand.id
+                fetch('/api/backend-proxy/search/candidates/persist-revealed', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    pearch_id: pearchId,
+                    candidate_name: cand.name,
+                    email: type === 'email' ? value : null,
+                    phone: type === 'phone' ? value : null,
+                    linkedin_url: cand.linkedin_url || null,
+                    current_title: cand.current_title || null,
+                    current_company: cand.current_company || null,
+                    avatar_url: cand.avatar_url || null,
+                  }),
+                }).catch(() => {/* fire-and-forget */})
+              }
             } else {
               unavailable++
             }
