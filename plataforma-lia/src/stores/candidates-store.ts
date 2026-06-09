@@ -103,6 +103,7 @@ interface CandidatesSearchState {
   revealedContacts: RevealedContacts
   displayedResultsCount: number
   isLoadingMore: boolean
+  canLoadMore: boolean
   showOnlyNew: boolean
   isDroppingCV: boolean
   cvUploadLoading: boolean
@@ -168,6 +169,7 @@ interface CandidatesActions {
   setRevealedContacts: (v: RevealedContacts | ((prev: RevealedContacts) => RevealedContacts)) => void
   setDisplayedResultsCount: (v: number | ((prev: number) => number)) => void
   setIsLoadingMore: (v: boolean) => void
+  setCanLoadMore: (v: boolean) => void
   setShowOnlyNew: (v: boolean) => void
   setIsDroppingCV: (v: boolean) => void
   setCvUploadLoading: (v: boolean) => void
@@ -236,6 +238,7 @@ const initialState: CandidatesFullState = {
   revealedContacts: {},
   displayedResultsCount: getInitialDisplayedResultsCount(),
   isLoadingMore: false,
+  canLoadMore: false,
   showOnlyNew: false,
   isDroppingCV: false,
   cvUploadLoading: false,
@@ -322,6 +325,7 @@ export const useCandidatesStore = create<CandidatesStore>()(
       setRevealedContacts: setOrUpdate<RevealedContacts>(set, 'revealedContacts', 'search/setRevealedContacts'),
       setDisplayedResultsCount: setOrUpdate<number>(set, 'displayedResultsCount', 'search/setDisplayedResultsCount'),
       setIsLoadingMore: (v) => set({ isLoadingMore: v }, false, 'search/setIsLoadingMore'),
+      setCanLoadMore: (v) => set({ canLoadMore: v }, false, 'search/setCanLoadMore'),
       setShowOnlyNew: (v) => set({ showOnlyNew: v }, false, 'search/setShowOnlyNew'),
       setIsDroppingCV: (v) => set({ isDroppingCV: v }, false, 'search/setIsDroppingCV'),
       setCvUploadLoading: (v) => set({ cvUploadLoading: v }, false, 'search/setCvUploadLoading'),

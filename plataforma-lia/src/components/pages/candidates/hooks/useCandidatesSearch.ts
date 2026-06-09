@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
 import {
   searchCandidates as searchCandidatesHybrid,
   refineSearch,
@@ -82,6 +81,8 @@ export interface CandidatesSearchContext {
   setDisplayedResultsCount: (v: number | ((prev: number) => number)) => void
   isLoadingMore: boolean
   setIsLoadingMore: (v: boolean) => void
+  canLoadMore: boolean
+  setCanLoadMore: (v: boolean) => void
   searchFeedbacks: Record<string, 'like' | 'dislike'>
   setSearchFeedbacks: (v: Record<string, 'like' | 'dislike'> | ((prev: Record<string, 'like' | 'dislike'>) => Record<string, 'like' | 'dislike'>)) => void
   hasSearched: boolean
@@ -142,8 +143,12 @@ export function useCandidatesSearch(ctx: CandidatesSearchContext) {
     setHasSearchResults,
     setShowGlobalExpansionConfirm,
     setIsExpandingToGlobal,
+    displayedResultsCount,
     setDisplayedResultsCount,
+    isLoadingMore,
     setIsLoadingMore,
+    canLoadMore,
+    setCanLoadMore,
     setSearchFeedbacks,
     hasSearched,
     lastSuccessfulQuery,
@@ -279,8 +284,6 @@ export function useCandidatesSearch(ctx: CandidatesSearchContext) {
       return updated
     })
   }
-
-  const [canLoadMore, setCanLoadMore] = useState(false)
 
   const handleLoadMore = async () => {
     // Case 1: still have buffered candidates to reveal locally

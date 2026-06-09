@@ -63,6 +63,7 @@ interface ExecuteSearchDeps {
   searchThreadId: string | undefined
   setSearchThreadId: (id: string | undefined) => void
   setSearchFingerprint: (fp: string | undefined) => void
+  setCanLoadMore: (v: boolean) => void
   setSearchFeedbacks: (v: Record<string, 'like' | 'dislike'>) => void
   hideViewedCandidatesFilter: (candidates: Candidate[]) => Candidate[]
   talentFunnel: { addToHistory: (entry: Record<string, unknown>) => void }
@@ -163,7 +164,7 @@ export function mapCandidateToInternal(c: Record<string, unknown>): Candidate {
 export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
   const {
     searchSource, pearchSearchOptions, searchThreadId, setSearchThreadId,
-    setSearchFingerprint, setSearchFeedbacks,
+    setSearchFingerprint, setSearchFeedbacks, setCanLoadMore,
     hideViewedCandidatesFilter, talentFunnel,
     setCandidates, setSearchResults, setHasSearchResults, setSearchResultsCount,
     setLocalResultsCount, setPearchResultsCount, setCreditsUsedInSearch, setCreditsRemaining,
@@ -300,6 +301,7 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
           require_emails: pearchSearchOptions.requireEmails, require_phone_numbers: pearchSearchOptions.requirePhoneNumbers
         })
         if (searchResponse.thread_id) setSearchThreadId(searchResponse.thread_id)
+        setCanLoadMore(searchResponse.can_load_more ?? false)
         // Fase 2: ancora (provider) + re-hidrata feedback pelos criterios desta busca
         if (searchResponse.search_fingerprint) {
           _responseFp = searchResponse.search_fingerprint

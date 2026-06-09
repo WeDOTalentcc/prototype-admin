@@ -42,6 +42,7 @@ interface SearchState {
   searchFeedbacks: Record<string, "like" | "dislike">
   displayedResultsCount: number
   isLoadingMore: boolean
+  canLoadMore: boolean
   showOnlyNew: boolean
   isDroppingCV: boolean
   cvUploadLoading: boolean
@@ -77,6 +78,7 @@ interface SearchActions {
   setSearchFeedbacks: (v: Record<string, "like" | "dislike"> | ((prev: Record<string, "like" | "dislike">) => Record<string, "like" | "dislike">)) => void
   setDisplayedResultsCount: (v: number) => void
   setIsLoadingMore: (v: boolean) => void
+  setCanLoadMore: (v: boolean) => void
   setShowOnlyNew: (v: boolean) => void
   setIsDroppingCV: (v: boolean) => void
   setCvUploadLoading: (v: boolean) => void
@@ -121,6 +123,7 @@ export function useCandidatesSearchState(): UseCandidatesSearchStateReturn {
       searchFeedbacks: store.searchFeedbacks,
       displayedResultsCount: store.displayedResultsCount,
       isLoadingMore: store.isLoadingMore,
+      canLoadMore: store.canLoadMore,
       showOnlyNew: store.showOnlyNew,
       isDroppingCV: store.isDroppingCV,
       cvUploadLoading: store.cvUploadLoading,
@@ -155,6 +158,7 @@ export function useCandidatesSearchState(): UseCandidatesSearchStateReturn {
       setSearchFeedbacks: store.setSearchFeedbacks,
       setDisplayedResultsCount: store.setDisplayedResultsCount,
       setIsLoadingMore: store.setIsLoadingMore,
+      setCanLoadMore: store.setCanLoadMore,
       setShowOnlyNew: store.setShowOnlyNew,
       setIsDroppingCV: store.setIsDroppingCV,
       setCvUploadLoading: store.setCvUploadLoading,

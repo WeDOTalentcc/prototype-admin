@@ -62,6 +62,7 @@ export interface UseCandidatesSearchCompositionParams {
   creditsRemaining: number | null
   setCreditsRemaining: (v: number | null) => void
   searchThreadId: string | undefined
+  searchFingerprint: string | undefined
   setSearchThreadId: (id: string | undefined) => void
   setSearchFingerprint: (fp: string | undefined) => void
   hideViewedCandidatesFilter: ReturnType<typeof useHideViewedCandidates>['filterCandidates']
@@ -106,6 +107,8 @@ export interface UseCandidatesSearchCompositionParams {
   displayedResultsCount: number
   isLoadingMore: boolean
   setIsLoadingMore: (v: boolean) => void
+  canLoadMore: boolean
+  setCanLoadMore: (v: boolean) => void
   searchFeedbacks: Record<string, 'like' | 'dislike'>
   setSearchFeedbacks: Dispatch<SetStateAction<Record<string, 'like' | 'dislike'>>>
   hasSearched: boolean
@@ -184,6 +187,7 @@ export function useCandidatesSearchComposition(params: UseCandidatesSearchCompos
     setChatMessages: params.setChatMessages,
     setIsLoading: params.setIsLoading,
     setIsSearchActive: params.setIsSearchActive,
+    setCanLoadMore: params.setCanLoadMore,
   })
 
   const cvHandlers = useCandidatesCVHandlers({
@@ -238,6 +242,8 @@ export function useCandidatesSearchComposition(params: UseCandidatesSearchCompos
     setDisplayedResultsCount: params.setDisplayedResultsCount as unknown as (v: number | ((prev: number) => number)) => void,
     isLoadingMore: params.isLoadingMore,
     setIsLoadingMore: params.setIsLoadingMore,
+    canLoadMore: params.canLoadMore,
+    setCanLoadMore: params.setCanLoadMore,
     searchFeedbacks: params.searchFeedbacks,
     setSearchFeedbacks: params.setSearchFeedbacks,
     hasSearched: params.hasSearched,
@@ -245,6 +251,7 @@ export function useCandidatesSearchComposition(params: UseCandidatesSearchCompos
     setSearchThreadId: params.setSearchThreadId,
     setSearchFingerprint: params.setSearchFingerprint,
     searchThreadId: params.searchThreadId,
+    searchFingerprint: params.searchFingerprint,
     showExpandGlobalOption: params.showExpandGlobalOption,
     setShowExpandGlobalOption: params.setShowExpandGlobalOption,
     setChatMessages: params.setChatMessages as unknown as (v: unknown[] | ((prev: unknown[]) => unknown[])) => void,
