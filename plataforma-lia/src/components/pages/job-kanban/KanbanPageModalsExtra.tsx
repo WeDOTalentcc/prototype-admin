@@ -16,6 +16,7 @@ const CandidateCompareModal = dynamic(() => import("@/components/modals/candidat
 const UniversalTransitionModal = dynamic(() => import("@/components/kanban").then(m => ({ default: m.UniversalTransitionModal })), { ssr: false, loading: () => <LoadingModal /> })
 const DataRequestModal = dynamic(() => import("@/components/modals/data-request-modal").then(m => ({ default: m.DataRequestModal })), { ssr: false, loading: () => <LoadingModal /> })
 const CloseVacancyModal = dynamic(() => import("@/components/modals/close-vacancy-modal").then(m => ({ default: m.CloseVacancyModal })), { ssr: false, loading: () => <LoadingModal /> })
+import type { CloseVacancyPayload } from "@/components/modals/close-vacancy-modal"
 const JobStatusModal = dynamic(() => import("@/components/modals/job-status-modal").then(m => ({ default: m.JobStatusModal })), { ssr: false, loading: () => <LoadingModal /> })
 const ShareSearchModal = dynamic(() => import("@/components/modals/share-search-modal").then(m => ({ default: m.ShareSearchModal })), { ssr: false, loading: () => <LoadingModal /> })
 const BulkActionModal = dynamic(() => import("@/components/modals/bulk-action-modal").then(m => ({ default: m.BulkActionModal })), { ssr: false, loading: () => <LoadingModal /> })
@@ -225,10 +226,34 @@ export function KanbanPageModalsExtra(state: KanbanPageCoreState) {
             }}
             hiredCandidate={hiredCandidate}
             otherCandidates={otherCandidates}
-            onConfirm={async () => {
-              setJobEditForm((prev: Record<string, unknown>) => ({ ...prev, status: 'Encerrada' }))
-              toast.success(t('jobClosedSuccess'))
-              setShowCloseVacancyModal(false)
+            onConfirm={async (data: CloseVacancyPayload) => {
+              const vacancyId = String(currentJob.backendId || currentJob.jobId || currentJob.id)
+              try {
+                const response = await fetch(`/api/backend-proxy/job-vacancies/${vacancyId}/close`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    hired_candidate_id: data.hired_candidate_id || data.hired_candidate_ids?.[0] || null,
+                    close_reason: data.close_reason || 'filled',
+                    hired_notification: data.hired_notification,
+                    other_notifications: data.other_notifications,
+                  })
+                })
+
+                if (!response.ok) {
+                  const errorData = await response.json().catch(() => ({}))
+                  toast.error('Erro ao fechar vaga', {
+                    description: (errorData as Record<string, string>).detail || (errorData as Record<string, string>).error || 'Não foi possível fechar a vaga. Tente novamente.'
+                  })
+                  return
+                }
+
+                setJobEditForm((prev: Record<string, unknown>) => ({ ...prev, status: 'Encerrada' }))
+                toast.success(t('jobClosedSuccess'))
+                setShowCloseVacancyModal(false)
+              } catch {
+                toast.error('Erro de conexão', { description: 'Não foi possível conectar ao servidor.' })
+              }
             }}
           />
         )
