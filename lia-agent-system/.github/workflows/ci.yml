@@ -472,6 +472,14 @@ jobs:
       - name: "G-TENANT-EXC: require_company=False justificado (BLOCKING)"
         run: python scripts/check_require_company_justified.py
 
+      # G-FED-HITL — Consolidação do chat (2026-06-09): preparando o federado para
+      # cobrir TODOS os domínios, toda tool de ESCRITA exposta pelo recruiter_copilot
+      # (_FEDERATION_SPEC) DEVE estar no gate HITL (_HITL_ACTION_TYPES). Impede que
+      # uma ação sensível (ex: update_hiring_policy) entre no federado sem confirmação
+      # humana. Baseline 0. Allowlist documentada para ações que não persistem.
+      - name: "G-FED-HITL: ações de escrita federadas gated (BLOCKING)"
+        run: python scripts/check_federated_hitl_coverage.py
+
       # Task #1143 — Multi-tenant Ownership Foundation.
       # G-RLS: every table with `company_id` must have a corresponding
       # ENABLE ROW LEVEL SECURITY migration (or `# RLS-EXEMPT:` marker /
