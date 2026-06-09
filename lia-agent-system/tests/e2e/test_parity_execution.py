@@ -261,7 +261,7 @@ class TestAgentDispatchExecution:
             ctx_mock = MagicMock()
             db_mock = MagicMock()
 
-            result = asyncio.get_event_loop().run_until_complete(
+            result = asyncio.run(
                 orch.process(ctx_mock, db_mock, streaming_callback=None)
             )
 
