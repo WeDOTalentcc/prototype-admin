@@ -23,6 +23,7 @@ from app.shared.compliance.c3b_layer import (  # W3-014 (2026-05-23)
 )
 
 from app.shared.observability.tracing import trace_span
+import app.shared.hitl_pending_sink as _hitl_pending_sink  # F5 supervisor HITL drain (2026-06-09)
 
 logger = logging.getLogger(__name__)
 
@@ -321,6 +322,7 @@ class AgenticLoop:
         tool_directive: "dict | None" = None
         # AD3: acumula response_blocks (RRP) emitidos por tools-as-renderers.
         response_blocks_acc: list = []
+        _hitl_pending_sink.reset_sink()  # F5: zera no início do turno (leak-safe)
 
         # Card de fase: entendendo a solicitação (localizado).
         await _emit_phase("understanding")
@@ -425,6 +427,7 @@ class AgenticLoop:
                     "iterations": iteration + 1,
                     "tool_directive": tool_directive,
                     "response_blocks": response_blocks_acc or None,
+                    "hitl_pending": _hitl_pending_sink.drain_sink(),  # F5 supervisor HITL
                 }
 
             # --- Execute each requested tool call ---
@@ -543,6 +546,7 @@ class AgenticLoop:
             "tool_calls_made": tool_calls_made,
             "iterations": max_iter,
             "tool_directive": tool_directive,
+            "hitl_pending": _hitl_pending_sink.drain_sink(),  # F5 supervisor HITL
         }
 
 

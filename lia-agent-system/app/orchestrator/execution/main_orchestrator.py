@@ -1449,6 +1449,7 @@ class MainOrchestrator:
                                 "iterations": _agentic_result.get("iterations", 0),
                             },
                             response_blocks=_agentic_result.get("response_blocks"),
+                            hitl_pending=_agentic_result.get("hitl_pending"),  # F5 supervisor HITL drain (2026-06-09)
                         )
                         if _soft_warnings:
                             _resp.fairness_warnings = _soft_warnings
