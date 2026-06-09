@@ -161,7 +161,13 @@ function BrowseMarketplace({ onInstallSuccess, initialCategory: _initialCategory
         const res = await fetch("/api/backend-proxy/custom-agents?agent_type=first_party&status=active")
         if (res.ok) {
           const data = await res.json()
-          setFirstPartyAgents(data.agents || [])
+          // VoiceScreeningChannel is an inert per-tenant config manifest (max_steps:1, no tools/prompt) —
+          // voice is a per-agent channel toggle, not a standalone agent. Don't show it as an installable card.
+          setFirstPartyAgents(
+            (data.agents || []).filter(
+              (a: FirstPartyAgent) => a.name !== "VoiceScreeningChannel",
+            ),
+          )
         }
       } catch (err) {
         console.error("Failed to load first-party agents:", err)
