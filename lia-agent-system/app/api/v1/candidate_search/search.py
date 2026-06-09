@@ -438,7 +438,10 @@ company_id: str = Depends(require_company_id)):
 
         _effective_pearch_count = result.pearch_count + _fb_pearch_count
         _effective_search_time = (result.local_search_time or 0) + (result.pearch_search_time or 0) + _fb_search_time
-        _effective_can_load_more = (result.pearch_count >= request.pearch_limit) or _fb_can_load_more
+        _pearch_was_requested = request.search_pearch and (request.pearch_limit > 0)
+        _effective_can_load_more = _pearch_was_requested and (
+            (result.pearch_count >= request.pearch_limit) or _fb_can_load_more
+        )
         # Task #1219 — diagnósticos honestos do modo "Híbrida com email".
         _filtered_no_contact = (getattr(result, "filtered_no_contact", 0) or 0) + _extra_no_contact
         _sources_exhausted = getattr(result, "sources_exhausted", False) or False
