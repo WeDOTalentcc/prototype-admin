@@ -584,6 +584,9 @@ jobs:
       - name: "G-HITL-GHOST: Capability catalog anti-ghost sensor (BLOCKING, baseline=0 2026-06-08)"
         run: python3 scripts/check_capability_catalog_sync.py --blocking
 
+      - name: "G5-METADATA-HANDLER: YAML metadata -> handler sync (BLOCKING, baseline=0 2026-06-08)"
+        run: python3 scripts/check_metadata_handler_sync.py --blocking
+
   # ──────────────────────────────────────────────────────────────────────
   # E2E persistence smoke (Configurações > Minha Empresa / Learning Loops /
   # Schedule). Gap original Paulo 2026-05-21 — round-trip browser-level
