@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import type { Candidate } from "@/components/pages/candidates/types"
 import { useCandidatesStore } from "@/stores/candidates-store"
 import { toast } from "sonner"
@@ -101,6 +101,8 @@ export function useRevealContact({
   const [showBulkRevealModal, setShowBulkRevealModal] = useState(false)
   const [bulkRevealCandidates, setBulkRevealCandidates] = useState<Candidate[]>([])
   const [isBulkRevealing, setIsBulkRevealing] = useState(false)
+  // Ref to the active AbortController so abortBulkReveal can cancel mid-flight
+  const bulkAbortControllerRef = useRef<AbortController | null>(null)
 
   const openBulkRevealModal = (candidatesToReveal: Candidate[]) => {
     setBulkRevealCandidates(candidatesToReveal)
@@ -114,6 +116,7 @@ export function useRevealContact({
     setIsBulkRevealing(true)
 
     const controller = new AbortController()
+    bulkAbortControllerRef.current = controller
     const timeoutId = setTimeout(() => controller.abort(), 120_000)
 
     try {
@@ -225,13 +228,14 @@ export function useRevealContact({
       }
     } finally {
       clearTimeout(timeoutId)
+      bulkAbortControllerRef.current = null
       setIsBulkRevealing(false)
     }
   }
 
   return {
     state: { showRevealModal, revealCandidate, revealType, revealedContacts, isRevealing, showBulkRevealModal, bulkRevealCandidates, isBulkRevealing },
-    actions: { setShowRevealModal, setRevealCandidate, setRevealType, setRevealedContacts, openRevealModal, handleRevealContact, openBulkRevealModal, handleBulkReveal, setShowBulkRevealModal },
+    actions: { setShowRevealModal, setRevealCandidate, setRevealType, setRevealedContacts, openRevealModal, handleRevealContact, openBulkRevealModal, handleBulkReveal, setShowBulkRevealModal, abortBulkReveal: () => { bulkAbortControllerRef.current?.abort() } },
   }
 }
 
