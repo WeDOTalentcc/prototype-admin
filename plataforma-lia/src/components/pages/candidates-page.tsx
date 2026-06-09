@@ -46,6 +46,7 @@ import { liaApi } from "@/services/lia-api"
 import dynamic from "next/dynamic"
 import { CandidateSearchBar } from "@/components/pages/candidates/CandidateSearchBar"
 import { useCandidatesPageCore } from "./candidates/hooks/useCandidatesPageCore"
+import { useNavGuardStore } from "@/stores/nav-guard-store"
 import { CandidatesPageHeader } from "@/components/pages/candidates/CandidatesPageHeader"
 const CandidatesPageModals = dynamic(() => import("@/components/pages/candidates/CandidatesPageModals").then(m => ({ default: m.CandidatesPageModals })), { ssr: false, loading: () => null })
 import { toast } from "sonner"
@@ -99,7 +100,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
     archetypeCreationStep, archetypeToDelete, buildFiltersFromTags, crossTabFilter, currentPage, currentSearchSource,
     cvUploadLoading, displayedResultsCount, editQueryValue, isCreatingArchetype, isDroppingCV, isExpandingToGlobal,
     isLoadingMore, isPreviewMaximized, itemsPerPage, lastSearchEntities, lastSearchQuery, lastSuccessfulQuery,
-    liaPromptValue, localResultsCount, newArchetypeData, previewCandidate, previewingUserArchetype, previewSuggestion,
+    liaPromptValue, localResultsCount, pearchResultsCount, newArchetypeData, previewCandidate, previewingUserArchetype, previewSuggestion,
     quickFilters, searchSortBy, searchSource, searchTerm, selectedCandidate,
     setArchetypeCreationStep, setArchetypeToDelete, setCurrentPage, setDisplayedResultsCount, setEditQueryValue,
     setHasSearchResults, setIsCreatingArchetype, setLastSearchEntities, setLastSearchMetadata, setLastSearchMode, setLastSearchQuery,
@@ -182,10 +183,17 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
         onTabChange={handleTabChangeWithWarning}
         onAddCandidate={() => setShowAddCandidateModal(true)}
         onNewSearch={() => {
-          setShowSearchResults(false)
-          setSearchTerm('')
-          setLastSearchQuery('')
-          setActiveTab('search')
+          const clearSearch = () => {
+            setShowSearchResults(false)
+            setSearchTerm('')
+            setLastSearchQuery('')
+            setActiveTab('search')
+          }
+          if ((unsavedPearchCandidates.length > 0 || pearchResultsCount > 0) && showSearchResults) {
+            useNavGuardStore.getState().requestLeave(clearSearch)
+          } else {
+            clearSearch()
+          }
         }}
         onSaveCurrentSearch={saveCurrentSearch}
       />
@@ -660,6 +668,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
         isOpen={bulkReveal.showModal}
         onClose={bulkReveal.close}
         onConfirm={bulkReveal.confirm}
+        onCancel={bulkReveal.cancel}
         candidateCount={bulkReveal.candidates.length}
         isRevealing={bulkReveal.isRevealing}
       />

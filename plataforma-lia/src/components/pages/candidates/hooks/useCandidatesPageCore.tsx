@@ -255,7 +255,7 @@ export function useCandidatesPageCore({
   } = ui
 
   const unsavedPearchCandidates = candidates.filter(c => c.source === 'pearch')
-  const hasUnsavedPearchCandidates = unsavedPearchCandidates.length > 0 && showSearchResults
+  const hasUnsavedPearchCandidates = (unsavedPearchCandidates.length > 0 || pearchResultsCount > 0) && showSearchResults
 
   // #6 guard de saida (candidatos globais nao salvos). Registra no nav-guard-store;
   // o handleNavigate central (dashboard-app) consulta antes de sair da rota.
@@ -374,7 +374,7 @@ export function useCandidatesPageCore({
     },
   } = archetypesHook
   const { showRevealModal, revealCandidate, revealType, revealedContacts, isRevealing, showBulkRevealModal, bulkRevealCandidates, isBulkRevealing } = revealContactHook.state
-  const { setShowRevealModal, setRevealCandidate, setRevealType, setRevealedContacts, openRevealModal, handleRevealContact, openBulkRevealModal, handleBulkReveal, setShowBulkRevealModal } = revealContactHook.actions
+  const { setShowRevealModal, setRevealCandidate, setRevealType, setRevealedContacts, openRevealModal, handleRevealContact, openBulkRevealModal, handleBulkReveal, setShowBulkRevealModal, abortBulkReveal } = revealContactHook.actions
   const bulkReveal = {
     showModal: showBulkRevealModal,
     candidates: bulkRevealCandidates,
@@ -382,6 +382,7 @@ export function useCandidatesPageCore({
     open: openBulkRevealModal,
     confirm: handleBulkReveal,
     close: () => setShowBulkRevealModal(false),
+    cancel: abortBulkReveal,
   }
   const handleCVDrop = cvHandlers.handleCVDrop
   const handleCVDragOver = cvHandlers.handleCVDragOver
