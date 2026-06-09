@@ -192,7 +192,7 @@ class UIApplyTableStateParams(BaseModel):
     history/saved-searches/agents). patch é dict aberto — sem mudança de
     schema. Read-only UI — não muta dados."""
 
-    surface: Literal["candidates"]
+    surface: Literal["candidates", "jobs", "kanban", "talent_pool", "recrutar"]
     patch: dict[str, Any] = Field(default_factory=dict)
 
 
