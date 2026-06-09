@@ -76,6 +76,7 @@ class DataCollectionVoicePlugin(VoiceCorePlugin):
         *,
         completed_names: list[str] | None = None,
         data_request_id: Any | None = None,
+        require_verbal_consent: bool = False,
         orchestrator: "VoiceCoreOrchestrator | None" = None,
     ) -> None:
         """
@@ -97,6 +98,10 @@ class DataCollectionVoicePlugin(VoiceCorePlugin):
         self._completed_names: list[str] = list(completed_names or [])
         self._data_request_id = data_request_id
         self._orchestrator = orchestrator
+        # Consent-first mode: when True, the call begins by asking for verbal
+        # LGPD authorization; field collection is gated on a verbal "yes" and a
+        # "yes" is recorded as valid consent (provenance=voice) at finalize.
+        self._require_verbal_consent: bool = bool(require_verbal_consent)
 
         # Per-field collection state, populated in on_session_initiated.
         # Ordered list of voice-collectable VoiceFieldPrompt objects.
@@ -109,6 +114,17 @@ class DataCollectionVoicePlugin(VoiceCorePlugin):
         # data-collection notice (LGPD Art. 9 — informação ao titular). Flipped
         # to True once the notice has been emitted by get_next_question.
         self._recording_notice_emitted: bool = False
+        # Consent-first state machine (only meaningful when
+        # _require_verbal_consent is True):
+        #   _consent_question_emitted → the verbal-consent question was spoken.
+        #   _candidate_turns_at_consent_ask → number of candidate utterances on
+        #       the transcript at the moment the consent question was asked; the
+        #       consent ANSWER is the next candidate utterance beyond this count.
+        #   _verbal_consent_granted → tri-state: None (not yet captured),
+        #       True (affirmed), False (denied). Drives finalize's register_consent.
+        self._consent_question_emitted: bool = False
+        self._candidate_turns_at_consent_ask: int | None = None
+        self._verbal_consent_granted: bool | None = None
 
     @property
     def plugin_name(self) -> str:
@@ -122,6 +138,39 @@ class DataCollectionVoicePlugin(VoiceCorePlugin):
         "exclusivamente para esse fim, conforme a Lei Geral de Proteção de "
         "Dados. Se você não concordar, pode encerrar a ligação a qualquer "
         "momento. Vamos começar."
+    )
+
+    # Consent-first (LGPD Art. 7): explicit verbal authorization question asked
+    # right AFTER the recording notice, BEFORE any field. A verbal "yes" is
+    # recorded as valid consent (provenance=voice); a "no" ends the call.
+    CONSENT_QUESTION: str = (
+        "Você autoriza a WeDOTalent a coletar e tratar seus dados pessoais para "
+        "o seu processo seletivo, conforme a LGPD? Por favor responda sim ou não."
+    )
+
+    # Affirmative / negative detection tokens for the verbal consent answer.
+    # Negatives checked FIRST (so "não autorizo" is a denial, not "autorizo").
+    _CONSENT_NEGATIVE_TOKENS: tuple[str, ...] = (
+        "nao autorizo",
+        "não autorizo",
+        "nao concordo",
+        "não concordo",
+        "nao aceito",
+        "não aceito",
+        "recuso",
+        "negativo",
+        "nao",
+        "não",
+    )
+    _CONSENT_AFFIRMATIVE_TOKENS: tuple[str, ...] = (
+        "sim",
+        "autorizo",
+        "concordo",
+        "aceito",
+        "pode",
+        "claro",
+        "com certeza",
+        "positivo",
     )
 
     # ── VoiceCorePlugin protocol implementations ───────────────────────────
@@ -201,6 +250,33 @@ class DataCollectionVoicePlugin(VoiceCorePlugin):
             if not self._recording_notice_emitted:
                 self._recording_notice_emitted = True
                 return self.RECORDING_NOTICE
+
+            # ── Consent-first mode: gate ALL field prompts on verbal consent ──
+            if self._require_verbal_consent:
+                # Step 2: ask for verbal authorization (once), right after notice.
+                if not self._consent_question_emitted:
+                    self._consent_question_emitted = True
+                    self._candidate_turns_at_consent_ask = len(
+                        self._candidate_answers(
+                            getattr(session, "transcript_segments", None)
+                        )
+                    )
+                    return self.CONSENT_QUESTION
+
+                # Step 3: parse the candidate's answer to the consent question
+                # from the live transcript. Until we have a definitive answer we
+                # do NOT advance to field prompts (never leak fields pre-consent).
+                decision = self._read_consent_decision(session)
+                if decision is None:
+                    # Answer not yet available → do not advance. Returning None
+                    # lets the core wrap up / re-poll; fields are NOT leaked.
+                    return None
+                self._verbal_consent_granted = decision
+                if decision is False:
+                    # Verbal "no" → end the call immediately, zero fields asked.
+                    return None
+                # decision is True → fall through to field prompts below.
+
             if self._cursor >= len(self._voice_prompts):
                 return None
             prompt = self._voice_prompts[self._cursor]
@@ -245,8 +321,58 @@ class DataCollectionVoicePlugin(VoiceCorePlugin):
             # Candidate utterances in order (role in {candidate, user, human}).
             answers = self._candidate_answers(transcript)
 
+            # ── Consent-first: record LGPD consent (provenance=voice) FIRST ──
+            # When this call started in consent-first mode, the candidate's
+            # answer to the verbal-consent question is the utterance at index
+            # _candidate_turns_at_consent_ask (the field answers follow it).
+            # Record consent via the canonical register_consent BEFORE any field
+            # is persisted; if consent was NOT affirmed, persist ZERO fields.
+            field_answer_offset = 0
+            if self._require_verbal_consent:
+                consent_baseline = self._candidate_turns_at_consent_ask or 0
+                consent_utterance = (
+                    answers[consent_baseline]
+                    if consent_baseline < len(answers)
+                    else None
+                )
+                # Prefer the live-captured decision; otherwise re-derive from the
+                # finalize transcript (definitive). None → never captured.
+                decision = self._verbal_consent_granted
+                if decision is None:
+                    decision = self._detect_consent(consent_utterance)
+                self._verbal_consent_granted = decision
+                # Field answers start AFTER the consent answer.
+                field_answer_offset = consent_baseline + 1
+
+                affirmed = decision is True
+                await self._register_voice_consent(
+                    session=session,
+                    db=db,
+                    granted=affirmed,
+                    consent_utterance=consent_utterance,
+                )
+                if not affirmed:
+                    # Verbal "no" / never captured → FAIL-CLOSED: persist NOTHING.
+                    logger.info(
+                        "[DataCollectionVoicePlugin] session=%s consent-first "
+                        "DENIED/uncaptured (decision=%s) — zero fields persisted.",
+                        getattr(session, "session_id", "<unknown>"),
+                        decision,
+                    )
+                    return {
+                        "strategy": "data_collection",
+                        "consent_first": True,
+                        "verbal_consent_granted": False,
+                        "collected": {},
+                        "needs_followup": [],
+                        "portal_fallback_fields": list(self._portal_only_names),
+                        "persisted_fields": [],
+                        "status": "voice_collection_consent_denied",
+                    }
+
             for idx, prompt in enumerate(self._voice_prompts):
-                raw = answers[idx] if idx < len(answers) else None
+                ans_idx = idx + field_answer_offset
+                raw = answers[ans_idx] if ans_idx < len(answers) else None
                 if not raw or not str(raw).strip():
                     # No answer captured → explicit follow-up, NOT a faked value.
                     needs_followup.append(prompt.name)
@@ -291,6 +417,12 @@ class DataCollectionVoicePlugin(VoiceCorePlugin):
 
             return {
                 "strategy": "data_collection",
+                "consent_first": self._require_verbal_consent,
+                "verbal_consent_granted": (
+                    self._verbal_consent_granted
+                    if self._require_verbal_consent
+                    else None
+                ),
                 "collected": collected,
                 "needs_followup": needs_followup,
                 "portal_fallback_fields": list(self._portal_only_names),
@@ -342,6 +474,117 @@ class DataCollectionVoicePlugin(VoiceCorePlugin):
                 text = turn.get("text") or turn.get("content") or ""
                 out.append(str(text))
         return out
+
+    @classmethod
+    def _detect_consent(cls, utterance: str | None) -> bool | None:
+        """
+        Classify a spoken consent answer as affirmative / negative / unclear.
+
+        Returns True (affirmed), False (denied), or None (no clear signal —
+        never guessed; CLAUDE.md REGRA 4 anti-silent-fallback). Negatives are
+        checked FIRST so "não autorizo" is a denial, not a false affirmative on
+        the "autorizo" substring.
+        """
+        if not utterance or not str(utterance).strip():
+            return None
+        text = str(utterance).strip().lower()
+        for tok in cls._CONSENT_NEGATIVE_TOKENS:
+            if tok in text:
+                return False
+        for tok in cls._CONSENT_AFFIRMATIVE_TOKENS:
+            if tok in text:
+                return True
+        return None
+
+    def _read_consent_decision(
+        self, session: "VoiceScreeningSession"
+    ) -> bool | None:
+        """
+        Read the candidate's consent answer from the live transcript.
+
+        The consent ANSWER is the first candidate utterance recorded AFTER the
+        consent question was asked (tracked via
+        ``_candidate_turns_at_consent_ask``). Returns True/False once a clear
+        answer is present, or None while the answer is still pending (so the
+        caller does NOT advance to field prompts — no field leak pre-consent).
+        """
+        answers = self._candidate_answers(
+            getattr(session, "transcript_segments", None)
+        )
+        baseline = self._candidate_turns_at_consent_ask or 0
+        if len(answers) <= baseline:
+            return None  # candidate has not answered the consent question yet
+        return self._detect_consent(answers[baseline])
+
+    async def _register_voice_consent(
+        self,
+        session: "VoiceScreeningSession",
+        db: Any,
+        granted: bool,
+        consent_utterance: str | None,
+    ) -> None:
+        """
+        Record LGPD consent captured BY VOICE via the CANONICAL writer.
+
+        Uses ``ConsentCheckerService.register_consent`` ONLY (no new consent
+        write path) with provenance fields:
+          consent_type="VOICE_SCREENING", consent_source="voice",
+          consent_text=<the candidate's verbal utterance>.
+
+        ``granted`` mirrors the verbal decision: True (affirmed) records valid
+        consent; False (denied / never captured) records an explicit refusal
+        (consent_given=False) — an honest, auditable LGPD trail, never a fake
+        success. company_id is the authoritative tenant id from the session
+        (never a payload). Best-effort: a failure here MUST NOT break finalize,
+        but it is logged loudly (the call already happened).
+
+        LAZY import: ConsentCheckerService lives in the lgpd domain; import it
+        inside the method to keep this module cheap and let tests patch it.
+        """
+        candidate_id = getattr(session, "candidate_id", None)
+        company_id = getattr(session, "company_id", None)
+        if not candidate_id or not company_id or db is None:
+            logger.warning(
+                "[DataCollectionVoicePlugin] cannot record voice consent "
+                "(missing candidate_id/company_id/db) session=%s",
+                getattr(session, "session_id", "<unknown>"),
+            )
+            return
+        snippet = (
+            str(consent_utterance).strip()[:500]
+            if consent_utterance and str(consent_utterance).strip()
+            else "no_response"
+        )
+        try:
+            from app.domains.lgpd.services.consent_checker_service import (
+                ConsentCheckerService,
+            )
+
+            checker = ConsentCheckerService(db)
+            await checker.register_consent(
+                candidate_id=str(candidate_id),
+                company_id=str(company_id),
+                consent_type="VOICE_SCREENING",
+                consent_given=bool(granted),
+                consent_source="voice",
+                consent_text=snippet,
+            )
+            await db.commit()
+            logger.info(
+                "[DataCollectionVoicePlugin] session=%s recorded VOICE consent "
+                "(granted=%s) via canonical register_consent.",
+                getattr(session, "session_id", "<unknown>"),
+                granted,
+            )
+        except Exception as e:
+            logger.error(
+                "[DataCollectionVoicePlugin] _register_voice_consent failed "
+                "(non-blocking) session=%s granted=%s: %s",
+                getattr(session, "session_id", "<unknown>"),
+                granted,
+                e,
+                exc_info=True,
+            )
 
     async def _persist_collected_fields(
         self,

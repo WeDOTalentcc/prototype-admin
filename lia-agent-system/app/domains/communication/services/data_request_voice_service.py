@@ -179,22 +179,30 @@ class DataRequestVoiceService:
                 "error": str(e),
             }
 
-        # ── Fase 3 — LGPD consent gate (FAIL-CLOSED) ──────────────────────────
-        # An outbound voice call that collects personal data REQUIRES prior
-        # explicit consent (LGPD Art. 7). Mirror the canonical gate used by
-        # VoiceScreeningOrchestrator: purpose="voice_screening" (the closest
-        # correct LGPD purpose — voice channel processing candidate data;
-        # PURPOSE_TO_CONSENT_TYPE → VOICE_SCREENING). NO consent → do NOT place
-        # the call. Return an explicit, honest status — never a fake success.
-        consent_ok = await self._check_consent(
+        # ── LGPD consent gate — TRI-STATE (consent-first capture) ─────────────
+        # An outbound voice call that collects personal data REQUIRES consent
+        # (LGPD Art. 7). Three outcomes, each fail-closed in its own way:
+        #   - "granted"  → prior explicit consent → proceed as today
+        #                  (require_verbal_consent=False).
+        #   - "absent"   → no prior consent (and NOT revoked) → DO NOT hard-block;
+        #                  instead place a CONSENT-FIRST call: the plugin asks for
+        #                  verbal authorization first, and a verbal "yes" is
+        #                  recorded as valid LGPD consent (provenance=voice) before
+        #                  any field is collected.
+        #   - "revoked"  → consent explicitly revoked → STILL hard-block. A revoked
+        #                  consent must NEVER be re-solicited by an outbound call.
+        #                  Fail-closed on revocation.
+        # check_error / service unavailable also fail-closed (treated as block).
+        consent_state = await self._classify_consent(
             db=db,
             candidate_id=str(data_request.candidate_id),
             company_id=company_id,
         )
-        if not consent_ok:
+
+        if consent_state == "revoked":
             logger.warning(
-                "Voice collection: BLOCKED by LGPD consent gate for data request "
-                "%s (candidate=%s, company=%s) — call NOT placed.",
+                "Voice collection: BLOCKED — consent REVOKED for data request "
+                "%s (candidate=%s, company=%s) — call NOT placed (no re-solicit).",
                 data_request_id,
                 data_request.candidate_id,
                 company_id,
@@ -204,19 +212,23 @@ class DataRequestVoiceService:
                 "channel": "voice",
                 "fields": voice_fields,
                 "portal_fallback_fields": portal_redirect_fields,
-                "note": "lgpd_consent_required_call_not_placed",
+                "note": "lgpd_consent_revoked_call_not_placed",
             }
+
+        # "absent" → consent-first call; "granted" → today's behavior.
+        require_verbal_consent = consent_state == "absent"
 
         # Construct the data-collection orchestrator. Mirrors how
         # VoiceScreeningOrchestrator installs WSIVoicePlugin (plugins=[plugin]),
         # but with the collection plugin fed the SAME pending fields the script
-        # was built from. Fase 4 wires persistence of the plugin's extracted
-        # answers back into the DataRequest (the plugin receives data_request_id
-        # so its on_session_finalized persists via the canonical producer).
+        # was built from. When require_verbal_consent=True the plugin asks for
+        # verbal authorization first and gates field collection on a verbal
+        # "yes" (recorded as LGPD consent at finalize via register_consent).
         collection_plugin = DataCollectionVoicePlugin(
             fields=data_request.fields_requested or [],
             completed_names=completed_names,
             data_request_id=data_request_id,
+            require_verbal_consent=require_verbal_consent,
         )
         collection_orchestrator = VoiceCoreOrchestrator(plugins=[collection_plugin])
 
@@ -249,8 +261,14 @@ class DataRequestVoiceService:
         session_id = getattr(session, "session_id", None)
 
         if orch_status == "initiated":
-            # Call placed WITH the DataCollectionVoicePlugin installed.
-            status = "voice_collection_initiated"
+            # Call placed WITH the DataCollectionVoicePlugin installed. When the
+            # call started in consent-first mode (no prior consent), report a
+            # distinct, honest status so callers know verbal consent is pending.
+            status = (
+                "voice_collection_initiated_consent_first"
+                if require_verbal_consent
+                else "voice_collection_initiated"
+            )
             data_request.collection_method = "voice"
             await db.commit()
         else:
@@ -273,23 +291,29 @@ class DataRequestVoiceService:
             "orchestrator_status": orch_status,
         }
 
-    async def _check_consent(
+    async def _classify_consent(
         self,
         db: AsyncSession,
         candidate_id: str,
         company_id: str,
-    ) -> bool:
+    ) -> str:
         """
-        Fase 3 — verify LGPD consent before placing an outbound collection call.
+        Classify LGPD consent state before placing an outbound collection call.
 
-        FAIL-CLOSED: returns True ONLY when the candidate has explicitly granted
-        consent. Absent consent (soft_warning), revoked consent, an unavailable
-        ConsentCheckerService, or any unexpected error all return False — the
-        call is NOT placed. This mirrors the canonical voice gate in
-        ``VoiceScreeningOrchestrator`` (purpose="voice_screening").
+        Returns one of:
+          - "granted" → candidate has explicit, valid prior consent → proceed.
+          - "absent"  → no prior consent recorded AND not revoked → eligible for
+                        a CONSENT-FIRST call (verbal authorization captured live).
+          - "revoked" → consent explicitly revoked → HARD-BLOCK, never
+                        re-solicited by an outbound call (fail-closed).
+
+        FAIL-CLOSED on uncertainty: an unavailable ConsentCheckerService or any
+        unexpected error returns "revoked" (the safest non-soliciting outcome —
+        no call is placed). A revoked consent is NEVER downgraded to "absent".
 
         company_id is the authoritative tenant id from the persisted DataRequest
-        row (never a payload).
+        row (never a payload). Mirrors the canonical voice purpose
+        (purpose="voice_screening" → consent_type VOICE_SCREENING).
 
         LAZY import: ConsentCheckerService lives in the lgpd domain; import it
         inside the method to keep this module cheap and let tests patch it.
@@ -306,7 +330,7 @@ class DataRequestVoiceService:
                 company_id,
                 e,
             )
-            return False
+            return "revoked"
 
         try:
             checker = ConsentCheckerService(db)
@@ -325,22 +349,34 @@ class DataRequestVoiceService:
                 company_id,
                 e,
             )
-            return False
+            return "revoked"
 
-        # FAIL-CLOSED: explicit consent required. Absent consent surfaces as
-        # allowed=True + soft_warning=True from the checker — for an OUTBOUND
-        # call that is NOT sufficient (same rule as VoiceScreeningOrchestrator).
-        if not result.allowed:
-            return False
-        if getattr(result, "soft_warning", False):
-            logger.warning(
-                "Voice collection: consent ABSENT (soft_warning) — failing "
-                "closed for outbound call. candidate=%s company=%s",
+        # Map the canonical ConsentCheckResult into the tri-state.
+        #   reason == "revoked"                → "revoked" (hard-block, no re-solicit)
+        #   allowed + not soft_warning         → "granted"
+        #   absent (allowed=True soft_warning, OR allowed=False reason="absent",
+        #           OR a fail-open check_error) → "absent" (eligible consent-first)
+        reason = getattr(result, "reason", None)
+        if reason == "revoked":
+            logger.info(
+                "Voice collection: consent REVOKED — hard-block, no re-solicit. "
+                "candidate=%s company=%s",
                 candidate_id,
                 company_id,
             )
-            return False
-        return True
+            return "revoked"
+        if getattr(result, "allowed", False) and not getattr(
+            result, "soft_warning", False
+        ):
+            return "granted"
+        logger.info(
+            "Voice collection: consent ABSENT — eligible for consent-first call. "
+            "candidate=%s company=%s (reason=%s)",
+            candidate_id,
+            company_id,
+            reason,
+        )
+        return "absent"
 
 
 data_request_voice_service = DataRequestVoiceService()

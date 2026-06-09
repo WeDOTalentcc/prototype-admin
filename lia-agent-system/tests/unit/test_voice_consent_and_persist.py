@@ -69,31 +69,39 @@ def _fake_db(data_request, candidate):
     return db
 
 
-def _consent_result(allowed=True, soft_warning=False):
+def _consent_result(allowed=True, soft_warning=False, reason=None):
     r = MagicMock()
     r.allowed = allowed
     r.soft_warning = soft_warning
+    r.reason = reason
     return r
 
 
-def _patch_consent(allowed=True, soft_warning=False):
-    """Patch the lazily-imported ConsentCheckerService class."""
+def _patch_consent(allowed=True, soft_warning=False, reason=None):
+    """Patch the lazily-imported ConsentCheckerService class.
+
+    Returns (patch_ctx, checker_instance) so tests can assert register_consent.
+    """
     checker_instance = MagicMock()
     checker_instance.check_candidate_consent = AsyncMock(
-        return_value=_consent_result(allowed=allowed, soft_warning=soft_warning)
+        return_value=_consent_result(
+            allowed=allowed, soft_warning=soft_warning, reason=reason
+        )
     )
+    checker_instance.register_consent = AsyncMock()
     checker_cls = MagicMock(return_value=checker_instance)
-    return patch(
+    ctx = patch(
         "app.domains.lgpd.services.consent_checker_service.ConsentCheckerService",
         checker_cls,
     )
+    return ctx, checker_instance
 
 
 # ---------------------------------------------------------------------------
 # TEST 1 — consent BLOCK: no consent → no call, explicit status
 # ---------------------------------------------------------------------------
 @pytest.mark.asyncio
-async def test_start_collection_blocks_when_no_consent():
+async def test_start_collection_consent_first_when_absent():
     from app.domains.communication.services.data_request_voice_service import (
         DataRequestVoiceService,
     )
@@ -102,22 +110,35 @@ async def test_start_collection_blocks_when_no_consent():
     cand = _FakeCandidate()
     db = _fake_db(dr, cand)
 
-    fake_orch_cls = MagicMock()  # must NOT be called
+    # NEW BEHAVIOR: soft_warning (consent ABSENT, not revoked) -> consent-first
+    # call. The call IS placed; the plugin is built with require_verbal_consent.
+    fake_session = MagicMock()
+    fake_session.status = "initiated"
+    fake_session.session_id = "vs-cf"
+    fake_orch = MagicMock()
+    fake_orch.initiate_call = AsyncMock(return_value=fake_session)
+    fake_orch_cls = MagicMock(return_value=fake_orch)
+    fake_plugin_cls = MagicMock()
 
-    with _patch_consent(allowed=True, soft_warning=True), patch(
+    ctx, _checker = _patch_consent(allowed=True, soft_warning=True, reason="absent")
+    with ctx, patch(
         "app.domains.voice.services.voice_screening_orchestrator.VoiceCoreOrchestrator",
         fake_orch_cls,
     ), patch(
         "app.domains.voice.plugins.data_collection_voice_plugin.DataCollectionVoicePlugin",
-        MagicMock(),
+        fake_plugin_cls,
     ):
         svc = DataRequestVoiceService()
         result = await svc.start_collection(
             db=db, data_request_id=dr.id, candidate_phone="+5511999999999"
         )
 
-    assert result["status"] == "voice_collection_no_consent", result
-    fake_orch_cls.assert_not_called()  # call NOT placed (fail-closed)
+    # Consent ABSENT -> consent-first call placed (NOT a hard block).
+    assert result["status"] == "voice_collection_initiated_consent_first", result
+    fake_orch_cls.assert_called_once()
+    fake_orch.initiate_call.assert_awaited_once()
+    _, kwargs = fake_plugin_cls.call_args
+    assert kwargs.get("require_verbal_consent") is True
 
 
 @pytest.mark.asyncio
@@ -131,7 +152,8 @@ async def test_start_collection_blocks_when_consent_revoked():
     db = _fake_db(dr, cand)
     fake_orch_cls = MagicMock()
 
-    with _patch_consent(allowed=False, soft_warning=False), patch(
+    ctx, _checker = _patch_consent(allowed=False, soft_warning=False, reason="revoked")
+    with ctx, patch(
         "app.domains.voice.services.voice_screening_orchestrator.VoiceCoreOrchestrator",
         fake_orch_cls,
     ), patch(
@@ -143,7 +165,9 @@ async def test_start_collection_blocks_when_consent_revoked():
             db=db, data_request_id=dr.id, candidate_phone="+5511999999999"
         )
 
+    # REVOKED -> STILL hard-block; an outbound call must not re-solicit consent.
     assert result["status"] == "voice_collection_no_consent", result
+    assert result.get("note") == "lgpd_consent_revoked_call_not_placed", result
     fake_orch_cls.assert_not_called()
 
 
@@ -168,7 +192,8 @@ async def test_start_collection_proceeds_with_consent():
     fake_orch_cls = MagicMock(return_value=fake_orch)
     fake_plugin_cls = MagicMock()
 
-    with _patch_consent(allowed=True, soft_warning=False), patch(
+    ctx, _checker = _patch_consent(allowed=True, soft_warning=False)
+    with ctx, patch(
         "app.domains.voice.services.voice_screening_orchestrator.VoiceCoreOrchestrator",
         fake_orch_cls,
     ), patch(
@@ -190,6 +215,7 @@ async def test_start_collection_proceeds_with_consent():
     # Plugin constructed WITH the data_request_id (Fase 4 wiring).
     _, kwargs = fake_plugin_cls.call_args
     assert kwargs.get("data_request_id") == dr.id
+    assert kwargs.get("require_verbal_consent") is False
 
 
 # ---------------------------------------------------------------------------
@@ -310,3 +336,179 @@ async def test_finalize_no_persist_without_data_request_id():
     result = await plugin.on_session_finalized(session, db=db, transcript=transcript)
     assert result.get("persisted_fields", []) == []
     db.add.assert_not_called()
+
+
+# ---------------------------------------------------------------------------
+# TEST 5 — consent-first: get_next_question asks NOTICE then CONSENT question,
+#          and does NOT leak field prompts before consent is affirmed.
+# ---------------------------------------------------------------------------
+@pytest.mark.asyncio
+async def test_consent_first_order_notice_then_consent_no_field_leak():
+    from app.domains.voice.plugins.data_collection_voice_plugin import (
+        DataCollectionVoicePlugin,
+    )
+
+    plugin = DataCollectionVoicePlugin(
+        fields=[{"name": "cpf", "label": "CPF", "field_type": "cpf"}],
+        require_verbal_consent=True,
+    )
+    session = MagicMock()
+    session.session_id = "vs-cf"
+    session.metadata = {}
+    session.transcript_segments = []
+    await plugin.on_session_initiated(session, db=None)
+
+    first = await plugin.get_next_question(session, db=None)
+    assert first == DataCollectionVoicePlugin.RECORDING_NOTICE
+
+    second = await plugin.get_next_question(session, db=None)
+    assert second == DataCollectionVoicePlugin.CONSENT_QUESTION
+
+    # No consent answer yet on the transcript -> must NOT advance to fields.
+    third = await plugin.get_next_question(session, db=None)
+    assert third is None  # field prompt NOT leaked pre-consent
+
+    # Candidate now answers "sim" -> next call advances to the field prompt.
+    session.transcript_segments = [
+        {"role": "assistant", "text": DataCollectionVoicePlugin.RECORDING_NOTICE},
+        {"role": "assistant", "text": DataCollectionVoicePlugin.CONSENT_QUESTION},
+        {"role": "candidate", "text": "Sim, autorizo"},
+    ]
+    after_yes = await plugin.get_next_question(session, db=None)
+    assert after_yes is not None
+    assert "cpf" in after_yes.lower()
+
+
+# ---------------------------------------------------------------------------
+# TEST 6 — consent-first + verbal "sim": register_consent(given=True,
+#          source="voice", text set) THEN fields persisted.
+# ---------------------------------------------------------------------------
+@pytest.mark.asyncio
+async def test_consent_first_yes_records_consent_then_persists():
+    from app.domains.voice.plugins.data_collection_voice_plugin import (
+        DataCollectionVoicePlugin,
+    )
+
+    dr = _FakeDataRequest(
+        fields_requested=[
+            {"name": "cpf", "label": "CPF", "field_type": "cpf", "is_required": True},
+        ]
+    )
+    db = MagicMock()
+    db.get = AsyncMock(return_value=dr)
+    db.add = MagicMock()
+    db.commit = AsyncMock()
+
+    plugin = DataCollectionVoicePlugin(
+        fields=dr.fields_requested,
+        data_request_id=dr.id,
+        require_verbal_consent=True,
+    )
+    session = MagicMock()
+    session.session_id = "vs-cf"
+    session.candidate_id = str(dr.candidate_id)
+    session.company_id = str(dr.company_id)
+    session.metadata = {}
+    session.transcript_segments = []
+    await plugin.on_session_initiated(session, db=db)
+
+    # Notice -> consent "sim" -> cpf valid (11 digits).
+    transcript = [
+        {"role": "assistant", "text": DataCollectionVoicePlugin.RECORDING_NOTICE},
+        {"role": "assistant", "text": DataCollectionVoicePlugin.CONSENT_QUESTION},
+        {"role": "candidate", "text": "Sim, autorizo o tratamento"},  # consent answer
+        {"role": "candidate", "text": "123 456 789 09"},               # cpf field answer
+    ]
+
+    ctx, checker = _patch_consent()  # provides register_consent AsyncMock
+    with ctx:
+        result = await plugin.on_session_finalized(session, db=db, transcript=transcript)
+
+    # register_consent recorded BEFORE persistence, with voice provenance.
+    checker.register_consent.assert_awaited_once()
+    _, kwargs = checker.register_consent.call_args
+    assert kwargs.get("consent_given") is True
+    assert kwargs.get("consent_source") == "voice"
+    assert kwargs.get("consent_type") == "VOICE_SCREENING"
+    assert kwargs.get("consent_text")  # non-empty verbal evidence
+    assert "autorizo" in kwargs["consent_text"].lower()
+
+    # Fields collected AFTER consent (offset past the consent answer).
+    assert result.get("verbal_consent_granted") is True
+    assert set(result.get("persisted_fields", [])) == {"cpf"}, result
+
+
+# ---------------------------------------------------------------------------
+# TEST 7 — consent-first + verbal "não": register_consent(given=False) and
+#          ZERO fields persisted; explicit denied status.
+# ---------------------------------------------------------------------------
+@pytest.mark.asyncio
+async def test_consent_first_no_records_refusal_and_persists_nothing():
+    from app.domains.voice.plugins.data_collection_voice_plugin import (
+        DataCollectionVoicePlugin,
+    )
+
+    dr = _FakeDataRequest(
+        fields_requested=[
+            {"name": "cpf", "label": "CPF", "field_type": "cpf", "is_required": True},
+        ]
+    )
+    db = MagicMock()
+    db.get = AsyncMock(return_value=dr)
+    db.add = MagicMock()
+    db.commit = AsyncMock()
+
+    plugin = DataCollectionVoicePlugin(
+        fields=dr.fields_requested,
+        data_request_id=dr.id,
+        require_verbal_consent=True,
+    )
+    session = MagicMock()
+    session.session_id = "vs-cf"
+    session.candidate_id = str(dr.candidate_id)
+    session.company_id = str(dr.company_id)
+    session.metadata = {}
+    session.transcript_segments = []
+    await plugin.on_session_initiated(session, db=db)
+
+    transcript = [
+        {"role": "assistant", "text": DataCollectionVoicePlugin.RECORDING_NOTICE},
+        {"role": "assistant", "text": DataCollectionVoicePlugin.CONSENT_QUESTION},
+        {"role": "candidate", "text": "Nao autorizo"},  # consent DENIED
+    ]
+
+    ctx, checker = _patch_consent()
+    with ctx:
+        result = await plugin.on_session_finalized(session, db=db, transcript=transcript)
+
+    checker.register_consent.assert_awaited_once()
+    _, kwargs = checker.register_consent.call_args
+    assert kwargs.get("consent_given") is False
+    assert kwargs.get("consent_source") == "voice"
+
+    # FAIL-CLOSED: zero fields persisted; explicit denied status.
+    assert result.get("verbal_consent_granted") is False, result
+    assert result.get("persisted_fields", []) == [], result
+    assert result.get("status") == "voice_collection_consent_denied", result
+    db.add.assert_not_called()  # no DataRequestResponse row written
+
+
+# ---------------------------------------------------------------------------
+# TEST 8 — affirmative/negative detection: "nao autorizo" is a DENIAL
+#          (negatives checked before the "autorizo" affirmative substring).
+# ---------------------------------------------------------------------------
+def test_detect_consent_affirmative_and_negative():
+    from app.domains.voice.plugins.data_collection_voice_plugin import (
+        DataCollectionVoicePlugin,
+    )
+
+    d = DataCollectionVoicePlugin._detect_consent
+    assert d("Sim") is True
+    assert d("sim, autorizo") is True
+    assert d("Pode coletar") is True
+    assert d("Nao") is False
+    assert d("não autorizo") is False  # NOT a false-positive on "autorizo"
+    assert d("recuso") is False
+    assert d("") is None
+    assert d(None) is None
+    assert d("talvez depois") is None  # unclear -> never guessed (REGRA 4)
