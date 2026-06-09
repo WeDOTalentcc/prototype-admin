@@ -132,6 +132,8 @@ FIRST_PARTY_AGENTS = [
         "id": VOICE_SCREENING_CHANNEL_ID,
         "name": "VoiceScreeningChannel",
         "company_id": None,
+        "created_by": "wedo_system",
+        "role": "Canal de Triagem por Voz",
         "agent_type": AgentType.first_party.value,
         "category": "voice_channel",
         "voice_enabled": True,
