@@ -76,7 +76,23 @@ async def get_studio_tools_for_scope(
                 if _STUDIO_SCOPE_CACHE is None:
                     _STUDIO_SCOPE_CACHE = await _build_scope_cache(db)
         scope_str = (scope.value if hasattr(scope, "value") else str(scope)).strip().lower()
-        return list(_STUDIO_SCOPE_CACHE.get(scope_str, []))
+        _tools = list(_STUDIO_SCOPE_CACHE.get(scope_str, []))
+        if _tools:
+            logger.debug(
+                "[studio_scope_extension] scope=%s contributed %d Studio tools: %s",
+                scope_str, len(_tools), _tools,
+            )
+        try:
+            from prometheus_client import Counter
+            _scope_hint_counter = Counter(
+                "scope_hint_activated_total",
+                "Studio scope hints activated",
+                ["domain"],
+            )
+            _scope_hint_counter.labels(domain=scope_str).inc()
+        except Exception:
+            pass  # prometheus_client optional
+        return _tools
     except Exception as exc:
         logger.warning("[studio_scope_extension] get_studio_tools_for_scope(%s) failed: %s", scope, exc)
         return []

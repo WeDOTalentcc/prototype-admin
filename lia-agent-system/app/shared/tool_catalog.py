@@ -239,4 +239,41 @@ def get_scoped_tool_definitions(scope: str) -> list:
                 continue
             if registry_in_scope or nm in _GLOBAL_ESSENTIALS:
                 by_name[nm] = td
+    # Fase C.2 (2026-06-09): Studio scope extension — first-party agents contribute
+    # tools for covered scopes.  Sync check (get_studio_covered_scopes) is fast (set
+    # lookup from static config, no DB); async cache build only when scope matches.
+    # Fail-open: any error from the extension leaves base scoped tools intact.
+    # NOTE: this is SYNC — get_scoped_tool_definitions is called from a sync context
+    # (_resolve_scoped_tool_defs in recruiter_copilot_react_agent.py).  We use the
+    # already-built cache snapshot (None = not yet populated = skip silently).
+    try:
+        from app.orchestrator.studio_scope_extension import (
+            get_studio_covered_scopes,
+            get_studio_scope_cache_snapshot,
+        )
+        if scope_str in get_studio_covered_scopes():
+            _snapshot = get_studio_scope_cache_snapshot()
+            if _snapshot is not None:
+                _studio_tool_names = _snapshot.get(scope_str, [])
+                _all_tool_defs = None  # built lazily below if needed
+                for _tool_name in _studio_tool_names:
+                    if _tool_name in by_name:
+                        continue  # existing registry wins (canonical first)
+                    # Look up full ToolDefinition from loaded sources by name.
+                    # Scan once and build a name→def reverse map if we have any miss.
+                    if _all_tool_defs is None:
+                        _all_tool_defs = {
+                            getattr(td, "name", None): td
+                            for defs in _load_sources().values()
+                            for td in defs
+                        }
+                    _td = _all_tool_defs.get(_tool_name)
+                    if _td is not None:
+                        by_name[_tool_name] = _td
+    except Exception:
+        import logging as _log
+        _log.getLogger(__name__).debug(
+            "[tool_catalog] Studio scope extension skipped for scope=%s", scope_str,
+            exc_info=True,
+        )
     return list(by_name.values())

@@ -142,3 +142,51 @@ class CustomAgentRepository:
         await self._db.commit()
         # Invalidate the shared scope cache so the next request rebuilds it.
         invalidate_studio_scope_cache()
+
+    async def list_active_for_context(
+        self,
+        *,
+        company_id: str | None,
+        domain: str,
+        include_first_party: bool = True,
+    ) -> list:
+        """Return active Studio agents covering domain for a tenant context.
+
+        Priority:
+          1. Tenant-scoped custom agents (company_id match + domain).
+          2. First-party global agents (company_id=None) when include_first_party=True.
+
+        TENANT-AWARE: first_party agents have company_id=None by design (global).
+        Returns empty list (not an error) when no agents match.
+        """
+        from lia_models.custom_agent import AgentType
+        from sqlalchemy import and_
+
+        # Tenant-scoped custom agents with matching domain (JSONB contains check).
+        tenant_agents: list = []
+        if company_id:
+            tenant_stmt = select(CustomAgent).where(
+                and_(
+                    CustomAgent.status == "active",
+                    CustomAgent.agent_type == AgentType.custom,
+                    CustomAgent.company_id == company_id,
+                    CustomAgent.domains.contains([domain]),
+                )
+            ).order_by(CustomAgent.name)
+            result = await self._db.execute(tenant_stmt)
+            tenant_agents = list(result.scalars().all())
+
+        if tenant_agents:
+            return tenant_agents  # tenant deployment wins over global
+
+        if not include_first_party:
+            return []
+
+        # Global first-party agents as fallback (TENANT-FREE: company_id=None).
+        fp_stmt = select(CustomAgent).where(
+            CustomAgent.agent_type == AgentType.first_party,
+            CustomAgent.status == "active",
+            CustomAgent.domains.contains([domain]),
+        ).order_by(CustomAgent.name)
+        fp_result = await self._db.execute(fp_stmt)
+        return list(fp_result.scalars().all())

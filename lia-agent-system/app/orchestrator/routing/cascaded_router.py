@@ -645,6 +645,11 @@ class CascadedRouter:
         _ctx_pool_id = _ctx.get("talent_pool_id")
         _ctx_company_id = _ctx.get("company_id")
 
+        # Tier 7 dual-mode (Fase C.2 2026-06-09):
+        #   Federated mode (LIA_FEDERATED_PRIMARY=true): emit ScopeHint for first-party
+        #     agents and tenant deployments alike. The scope resolver already augmented
+        #     the federated agent tool set via studio_scope_extension; no runtime fork.
+        #   Legacy mode: instantiate CustomAgentRuntime directly (unchanged behavior).
         if (_ctx_job_id or _ctx_pool_id) and _ctx_company_id:
             async with _tracer.start_span("router.tier7_studio_agent", attributes={
                 "tier_name": "tier7_studio_agent", "service": "cascaded_router",
@@ -652,6 +657,57 @@ class CascadedRouter:
             }) as _t7_span:
                 try:
                     _t0 = time.perf_counter()
+                    from app.tools.scope_config import federated_primary_enabled as _fed_enabled
+                    _is_federated_mode = _fed_enabled()
+
+                    # --- Federated fast path: domain-based first-party/deployment check ---
+                    if _is_federated_mode:
+                        _classified_domain = (context or {}).get("classified_domain") or ""
+                        if _classified_domain:
+                            from app.orchestrator.studio_scope_extension import get_studio_covered_domains
+                            if _classified_domain in get_studio_covered_domains():
+                                from app.orchestrator.routing.scope_hint import ScopeHint
+                                from app.domains.agent_studio.repositories.custom_agent_repository import (
+                                    CustomAgentRepository,
+                                )
+                                from lia_config.database import AsyncSessionLocal
+                                async with AsyncSessionLocal() as _hint_db:
+                                    _agent_repo = CustomAgentRepository(_hint_db)
+                                    _fp_agents = await _agent_repo.list_active_for_context(
+                                        company_id=_ctx_company_id,
+                                        domain=_classified_domain,
+                                        include_first_party=True,
+                                    )
+                                if _fp_agents:
+                                    _matched = _fp_agents[0]
+                                    _is_fp = (
+                                        getattr(getattr(_matched, "agent_type", None), "value", "")
+                                        == "first_party"
+                                    )
+                                    _scope_hint = ScopeHint(
+                                        domain=_classified_domain,
+                                        source="studio_first_party" if _is_fp else "studio_deployment",
+                                        tools=list(_matched.allowed_tools or []),
+                                    )
+                                    _elapsed_ms = (time.perf_counter() - _t0) * 1000
+                                    self._stats["studio_agent_hits"] += 1
+                                    _t7_span.set_attribute("hit", "true")
+                                    _t7_span.set_attribute("mode", "federated_scope_hint")
+                                    _t7_span.set_attribute("domain", _classified_domain)
+                                    _t7_span.set_attribute("agent_id", str(getattr(_matched, "id", "")))
+                                    _t7_span.set_attribute("latency_ms", f"{_elapsed_ms:.2f}")
+                                    logger.info(
+                                        "CascadedRouter: Tier 7 (federated) ScopeHint domain=%s"
+                                        " agent=%s in %.0fms",
+                                        _classified_domain,
+                                        getattr(_matched, "name", ""),
+                                        _elapsed_ms,
+                                    )
+                                    # ScopeHint is NOT a RouteResult; callers check isinstance.
+                                    # The federated agent continues with augmented scope.
+                                    return _scope_hint
+
+                    # --- Legacy / deployment-based path (also handles federated fallback) ---
                     from app.services.agent_deployment_service import agent_deployment_service
                     from lia_config.database import AsyncSessionLocal
 
@@ -684,6 +740,35 @@ class CascadedRouter:
                             _studio_agent = _agent_result.scalar_one_or_none()
 
                             if _studio_agent and _studio_agent.status == "active":
+                                if _is_federated_mode:
+                                    # Federated + deployment: emit ScopeHint, skip runtime fork.
+                                    from app.orchestrator.routing.scope_hint import ScopeHint
+                                    _dep_domains = list(_studio_agent.domains or [])
+                                    _dep_domain = _dep_domains[0] if _dep_domains else "general"
+                                    _dep_hint = ScopeHint(
+                                        domain=_dep_domain,
+                                        source="studio_deployment",
+                                        tools=list(_studio_agent.allowed_tools or []),
+                                    )
+                                    _elapsed_ms = (time.perf_counter() - _t0) * 1000
+                                    self._stats["studio_agent_hits"] += 1
+                                    await agent_deployment_service.record_execution(
+                                        _studio_db, str(_dep.id)
+                                    )
+                                    await _studio_db.commit()
+                                    _t7_span.set_attribute("hit", "true")
+                                    _t7_span.set_attribute("mode", "federated_scope_hint_deployment")
+                                    _t7_span.set_attribute("agent_id", str(_studio_agent.id))
+                                    _t7_span.set_attribute("latency_ms", f"{_elapsed_ms:.2f}")
+                                    logger.info(
+                                        "CascadedRouter: Tier 7 (federated dep) ScopeHint agent=%s"
+                                        " in %.0fms",
+                                        _studio_agent.name,
+                                        _elapsed_ms,
+                                    )
+                                    return _dep_hint
+
+                                # Legacy mode: instantiate CustomAgentRuntime directly.
                                 from app.domains.agent_studio.custom_agent_runtime import get_or_create_runtime
 
                                 _runtime = get_or_create_runtime(
@@ -725,8 +810,11 @@ class CascadedRouter:
                                 _t7_span.set_attribute("latency_ms", f"{_elapsed_ms:.2f}")
 
                                 logger.info(
-                                    "CascadedRouter: Tier 7 (studio) resolved '%s...' via agent=%s in %.0fms",
-                                    message[:40], _studio_agent.name, _elapsed_ms,
+                                    "CascadedRouter: Tier 7 (legacy) resolved '%s...' via agent=%s"
+                                    " in %.0fms",
+                                    message[:40],
+                                    _studio_agent.name,
+                                    _elapsed_ms,
                                 )
 
                                 _studio_result = RouteResult(
@@ -754,7 +842,6 @@ class CascadedRouter:
                     _t7_span.set_attribute("hit", "false")
                     _t7_span.set_attribute("error_detail", str(_studio_exc))
                     logger.warning("CascadedRouter: Tier 7 (studio) failed: %s", _studio_exc)
-
         # Fallback final — clarification_needed (Gap #2)
         async with _tracer.start_span("router.fallback_clarification", attributes={
             "tier_name": "fallback_clarification", "service": "cascaded_router", "match_type": "clarification",
