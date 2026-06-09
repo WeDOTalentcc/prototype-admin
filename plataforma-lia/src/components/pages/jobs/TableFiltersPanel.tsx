@@ -16,6 +16,7 @@ import { Card } from"@/components/ui/card"
 import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import { textStyles } from"@/lib/design-tokens"
+import { useDepartmentsList } from '@/hooks/settings/useDepartmentsList'
 
 interface SavedSearch {
   id: string
@@ -68,6 +69,7 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
 }: TableFiltersPanelProps) {
   const tf = useTranslations('jobs.tableFilters')
   const locale = useLocale()
+  const { departments } = useDepartmentsList()
   const statusLabels: Record<string, string> = {
     'Ativa': tf('statusValues.Ativa'),
     'Rascunho': tf('statusValues.Rascunho'),
@@ -385,18 +387,18 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
               {tf('department')}
             </h4>
             <div className="flex flex-wrap gap-1.5">
-              {['Tecnologia', 'Design', 'Produto', 'Marketing', 'Vendas', 'RH', 'Financeiro', 'Operações'].map(dept => (
+              {departments.map(dept => (
                 <Chip
-                  key={dept}
+                  key={dept.id}
                   variant="neutral"
                   className={`text-xs cursor-pointer hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none ${
-                    jobFilters.team?.departments?.includes(dept)
+                    jobFilters.team?.departments?.includes(dept.name)
                       ? 'bg-lia-bg-tertiary border-lia-text-primary text-lia-text-primary font-medium dark:bg-lia-bg-secondary'
                       : 'bg-lia-bg-primary text-lia-text-primary'
                   }`}
-                  onClick={() => onToggleFilter('team', 'departments', dept)}
+                  onClick={() => onToggleFilter('team', 'departments', dept.name)}
                 >
-                  {deptLabels[dept] || dept}
+                  {dept.name}
                 </Chip>
               ))}
             </div>
