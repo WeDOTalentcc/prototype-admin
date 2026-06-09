@@ -31,6 +31,7 @@ import {
 import {
   type CanonicalPageValue,
   canonicalPageToUrl,
+  canonicalPageToUrlWithFallback,
 } from "@/lib/canonical-pages";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback } from "react";
@@ -80,11 +81,32 @@ export function useUIAction(): UseUIActionReturn {
           // Antes empurrava o nome cru ("vagas") -> /pt/vagas = 404 (a lista
           // real é /jobs; /vagas só tem [slug]). Cobre TODOS os slugs
           // divergentes (funil_talentos -> /funil-de-talentos, etc.).
-          let url = canonicalPageToUrl(page as CanonicalPageValue, locale, id);
-          // Sem URL canônica (kanban/dashboard/general, detalhe sem id, ou
-          // page desconhecida): falha-soft como não-global (re-emitida pra
-          // handler page-specific) em vez de empurrar nome cru e dar 404.
-          if (!url) return false;
+          //
+          // Graceful degradation (2026-06-09): detalhe sem id usa
+          // canonicalPageToUrlWithFallback que devolve a lista pai ao
+          // invés de null (sem feedback). Quando fallback é usado, emite
+          // `lia:navigation_fallback` para que surfaces possam mostrar
+          // toast/banner opcional.
+          const navResult = canonicalPageToUrlWithFallback(
+            page as CanonicalPageValue,
+            locale,
+            id,
+          );
+          // Sem URL canônica (GENERAL, page desconhecida): falha-soft como
+          // não-global (re-emitida pra handler page-specific).
+          if (!navResult) return false;
+
+          let url = navResult.url;
+
+          // Sinaliza fallback para surfaces interessadas (toast/banner).
+          if (navResult.isFallback && typeof window !== "undefined") {
+            window.dispatchEvent(
+              new CustomEvent("lia:navigation_fallback", {
+                detail: { requested: page, requestedId: id, fallbackTo: url },
+              }),
+            );
+          }
+
           const query = params.query as Record<string, string> | undefined;
           if (query && typeof query === "object") {
             const search = new URLSearchParams(query).toString();

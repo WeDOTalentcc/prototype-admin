@@ -183,3 +183,58 @@ export function canonicalPageLabel(page: CanonicalPageValue): string {
     default:                                  return "Geral"
   }
 }
+
+/**
+ * Resultado de navegação com indicador de fallback.
+ *
+ * `isFallback=true` quando a page era um detalhe sem id e foi feito
+ * graceful degradation para a lista pai (VAGAS ou FUNIL_TALENTOS).
+ */
+export interface CanonicalPageNavResult {
+  url: string
+  isFallback: boolean
+}
+
+/**
+ * Como `canonicalPageToUrl`, mas com graceful degradation para páginas de
+ * detalhe sem id. Em vez de retornar null, navega para a lista pai:
+ *   - vaga_detalhe sem id       -> VAGAS  (/jobs)
+ *   - candidato_detalhe sem id  -> FUNIL_TALENTOS (/funil-de-talentos)
+ *
+ * Retorna `{ url, isFallback }` para que o caller possa sinalizar o
+ * usuário quando a navegação não foi exatamente a pedida.
+ *
+ * Callers que precisam do comportamento ORIGINAL (null para detalhe sem id)
+ * devem continuar usando `canonicalPageToUrl`.
+ */
+export function canonicalPageToUrlWithFallback(
+  page: CanonicalPageValue,
+  locale: string = "pt",
+  id?: string,
+): CanonicalPageNavResult | null {
+  // Caso normal: id fornecido ou page nao e detalhe — delega ao canonico.
+  if (page !== CANONICAL_PAGES.VAGA_DETALHE && page !== CANONICAL_PAGES.CANDIDATO_DETALHE) {
+    const url = canonicalPageToUrl(page, locale, id)
+    if (!url) return null
+    return { url, isFallback: false }
+  }
+
+  // Pagina de detalhe com id — resolve normalmente.
+  if (id) {
+    const url = canonicalPageToUrl(page, locale, id)
+    if (!url) return null
+    return { url, isFallback: false }
+  }
+
+  // Detalhe sem id — graceful degradation para a lista pai.
+  if (page === CANONICAL_PAGES.VAGA_DETALHE) {
+    const fallbackUrl = canonicalPageToUrl(CANONICAL_PAGES.VAGAS, locale)
+    if (!fallbackUrl) return null
+    return { url: fallbackUrl, isFallback: true }
+  }
+
+  // CANDIDATO_DETALHE sem id -> funil de talentos
+  const fallbackUrl = canonicalPageToUrl(CANONICAL_PAGES.FUNIL_TALENTOS, locale)
+  if (!fallbackUrl) return null
+  return { url: fallbackUrl, isFallback: true }
+}

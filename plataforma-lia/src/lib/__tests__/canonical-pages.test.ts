@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   CANONICAL_PAGES,
   canonicalPageToUrl,
+  canonicalPageToUrlWithFallback,
   routeToCanonicalPage,
 } from "@/lib/canonical-pages";
 
@@ -143,3 +144,63 @@ describe("Fase A — cobertura completa de páginas (navegação universal LIA)"
     }
   });
 });
+
+
+/**
+ * canonicalPageToUrlWithFallback — graceful degradation para detalhe sem id.
+ * Fix 2026-06-09: em vez de retornar null (falha silenciosa), navega para a
+ * lista pai e sinaliza isFallback=true para o caller mostrar feedback.
+ */
+describe("canonicalPageToUrlWithFallback — graceful degradation", () => {
+  it("vaga_detalhe SEM id -> fallback para VAGAS (/jobs), isFallback=true", () => {
+    const result = canonicalPageToUrlWithFallback(CANONICAL_PAGES.VAGA_DETALHE, "pt")
+    expect(result).not.toBeNull()
+    expect(result?.url).toBe("/pt/jobs")
+    expect(result?.isFallback).toBe(true)
+  })
+
+  it("candidato_detalhe SEM id -> fallback para FUNIL_TALENTOS, isFallback=true", () => {
+    const result = canonicalPageToUrlWithFallback(CANONICAL_PAGES.CANDIDATO_DETALHE, "pt")
+    expect(result).not.toBeNull()
+    expect(result?.url).toBe("/pt/funil-de-talentos")
+    expect(result?.isFallback).toBe(true)
+  })
+
+  it("vaga_detalhe COM id -> URL exata, isFallback=false", () => {
+    const result = canonicalPageToUrlWithFallback(CANONICAL_PAGES.VAGA_DETALHE, "pt", "V0003")
+    expect(result).not.toBeNull()
+    expect(result?.url).toBe("/pt/jobs/V0003")
+    expect(result?.isFallback).toBe(false)
+  })
+
+  it("candidato_detalhe COM id -> URL exata, isFallback=false", () => {
+    const result = canonicalPageToUrlWithFallback(CANONICAL_PAGES.CANDIDATO_DETALHE, "pt", "abc123")
+    expect(result).not.toBeNull()
+    expect(result?.url).toBe("/pt/funil-de-talentos/candidato/abc123")
+    expect(result?.isFallback).toBe(false)
+  })
+
+  it("pagina normal (nao detalhe) retorna URL exata, isFallback=false", () => {
+    const result = canonicalPageToUrlWithFallback(CANONICAL_PAGES.VAGAS, "pt")
+    expect(result).not.toBeNull()
+    expect(result?.url).toBe("/pt/jobs")
+    expect(result?.isFallback).toBe(false)
+  })
+
+  it("GENERAL continua retornando null (sem fallback possivel)", () => {
+    const result = canonicalPageToUrlWithFallback(CANONICAL_PAGES.GENERAL, "pt")
+    expect(result).toBeNull()
+  })
+
+  it("resposta fallback respeita locale", () => {
+    const result = canonicalPageToUrlWithFallback(CANONICAL_PAGES.VAGA_DETALHE, "en")
+    expect(result?.url).toBe("/en/jobs")
+    expect(result?.isFallback).toBe(true)
+  })
+
+  it("canonicalPageToUrl original continua retornando null para detalhe sem id (sem regressao)", () => {
+    // Garante que a funcao original NAO foi alterada — backward compat.
+    expect(canonicalPageToUrl(CANONICAL_PAGES.VAGA_DETALHE, "pt")).toBeNull()
+    expect(canonicalPageToUrl(CANONICAL_PAGES.CANDIDATO_DETALHE, "pt")).toBeNull()
+  })
+})
