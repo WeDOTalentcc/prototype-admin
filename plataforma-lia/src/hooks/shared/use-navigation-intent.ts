@@ -78,9 +78,19 @@ function getCurrentPathname(): string {
  * unitários cobrirem os 3 ramos (já-em-/chat → suprime; outra rota →
  * ask; sem sugestão → passthrough).
  */
+
+/**
+ * Frases imperativas de navegação — o recrutador está MANDANDO ir para uma
+ * página, não perguntando. Neste caso, navegamos direto sem pedir confirmação.
+ * Exemplos: "me leve para vagas", "vai para pipeline", "abre o kanban".
+ */
+const NAV_IMPERATIVE_RE =
+  /(me\s+lev[ae]\w*|lev[ae]-?me|v[aá]\s+par[ao]|vamos\s+par[ao]|ir?\s+par[ao]|abr[ae]\s|acess[ae]\w*|entr[ae]\s+em|naveg[ae]\s+par[ao]|mostrar?\s+[ao]?s?\s*p[áa]gin)/i
+
 export function resolveNavigationIntentMode(
   raw: NavigationIntentResult,
   pathname: string,
+  originalMessage?: string,
 ): NavigationIntentResult {
   if (raw.confidence < CONFIDENCE_THRESHOLD || !raw.page) {
     return { ...raw, page: null, hint: null }
@@ -90,6 +100,10 @@ export function resolveNavigationIntentMode(
     // Already on the chat fullscreen — wizard roda aqui mesmo. Não
     // emitir hint para não disparar router.push e arrancar o usuário.
     return { ...raw, page: null, hint: null, mode: undefined }
+  }
+  // Imperativo explícito → navegação direta sem confirmação.
+  if (originalMessage && NAV_IMPERATIVE_RE.test(originalMessage)) {
+    return { ...raw, mode: "navigate" }
   }
   return { ...raw, mode: "ask" }
 }
@@ -109,7 +123,7 @@ export function useNavigationIntent() {
       })
       if (!res.ok) return null
       const data = await res.json() as NavigationIntentResult
-      const r = resolveNavigationIntentMode(data, getCurrentPathname())
+      const r = resolveNavigationIntentMode(data, getCurrentPathname(), message)
       setResult(r)
       return r
     } catch {
