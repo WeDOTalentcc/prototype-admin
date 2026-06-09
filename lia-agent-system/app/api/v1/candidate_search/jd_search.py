@@ -17,6 +17,7 @@ from ._shared import (
     get_pearch_service,
 )
 from app.shared.security.require_company_id import require_company_id
+from app.domains.recruitment.repositories.search_feedback_repository import SearchFeedbackRepository
 
 router = APIRouter()
 
@@ -163,6 +164,7 @@ async def refine_search(
     require_emails: bool = Query(False, description="Task #1219 — load-more do modo 'Híbrida com email': completa o incremento só com candidatos COM email"),
     require_phone_numbers: bool = Query(False, description="Apenas perfis com telefone"),
     docid_blacklist: str | None = Query(None, description="docids já exibidos (CSV) — não repetir no incremento"),
+    search_fingerprint: str | None = Query(None, description="Fingerprint da busca original — auto-exclui candidatos com dislike"),
     db: AsyncSession = Depends(get_db)
 ,
     pearch_svc: PearchService = Depends(get_pearch_service),
@@ -174,17 +176,27 @@ company_id: str = Depends(require_company_id)):
     Use para adicionar critérios ou pedir mais resultados sem custo completo.
     """
     try:
-        _blacklist = (
-            [d.strip() for d in docid_blacklist.split(",") if d.strip()]
-            if docid_blacklist else None
+        # Build effective docid blacklist: explicit + auto-disliked via search_fingerprint
+        _explicit_blacklist: set[str] = (
+            {d.strip() for d in docid_blacklist.split(",") if d.strip()}
+            if docid_blacklist else set()
         )
+        if search_fingerprint:
+            _feedback_repo = SearchFeedbackRepository(db=db)
+            _disliked_ids = await _feedback_repo.get_disliked_candidate_ids(
+                company_id=company_id,
+                search_fingerprint=search_fingerprint,
+            )
+            _explicit_blacklist.update(_disliked_ids)
+        _effective_blacklist: list[str] | None = list(_explicit_blacklist) if _explicit_blacklist else None
+
         result = await pearch_svc.refine_search(
             thread_id=thread_id,
             additional_query=additional_query,
             limit=limit,
             require_emails=require_emails,
             require_phone_numbers=require_phone_numbers,
-            docid_blacklist=_blacklist,
+            docid_blacklist=_effective_blacklist,
         )
         
         candidates = [
