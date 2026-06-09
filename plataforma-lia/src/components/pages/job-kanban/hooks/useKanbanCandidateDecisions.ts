@@ -257,6 +257,55 @@ export function useKanbanCandidateDecisions(ctx: KanbanCandidateDecisionsContext
       if (action === 'reject_with_feedback' && feedbackMessage) {
         toast.success('Feedback enviado', { description: `Mensagem de feedback enviada para ${candidate.name} via ${channel === 'whatsapp' ? 'WhatsApp' : 'Email'}.` })
       }
+    } else if (action === 'confirm_hire') {
+      try {
+        const transitionResp = await fetch('/api/backend-proxy/transition/execute', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            vacancy_candidate_id: candidate.id,
+            to_stage: 'hired',
+            action: 'lia_auto',
+            action_behavior: 'conclusion_hired',
+            vacancy_id: job?.id?.toString() ?? null,
+            channel: 'email',
+          })
+        })
+
+        if (transitionResp.ok) {
+          setCandidatesData(prev => {
+            const currentStage = Object.keys(prev).find(stage =>
+              prev[stage]?.some((c: KanbanCandidate) => c.id === candidate.id)
+            )
+            if (!currentStage) return prev
+
+            const newData = { ...prev }
+            newData[currentStage] = newData[currentStage].filter((c: KanbanCandidate) => c.id !== candidate.id)
+            const updatedCandidate: KanbanCandidate = { ...candidate, stage: 'hired', status: 'hired' }
+            newData['hired'] = [...(newData['hired'] || []), updatedCandidate]
+            return newData
+          })
+
+          // fire-and-forget: welcome email ao contratado
+          fetch('/api/backend-proxy/automation/handle-trigger/candidate-hired', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              candidate_id: candidate.id,
+              vacancy_id: job?.id?.toString() ?? null,
+              candidate_name: candidate.name,
+              candidate_email: candidate.email ?? null,
+            })
+          }).catch(() => { /* fire-and-forget */ })
+
+          toast.success('Candidato contratado!', { description: `${candidate.name} foi movido para Contratados.` })
+        } else {
+          const errorData = await transitionResp.json().catch(() => ({}))
+          toast.error('Erro ao contratar', { description: errorData.detail?.message || errorData.error || 'Não foi possível registrar a contratação.' })
+        }
+      } catch {
+        toast.error('Erro de conexão', { description: 'Não foi possível conectar ao servidor.' })
+      }
     }
 
     setShowDecisionFlowModal(false)
