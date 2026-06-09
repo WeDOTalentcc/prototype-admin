@@ -41,7 +41,7 @@ logger = get_masked_logger(__name__)
 # ws_manager (_send). O chat lateral ao vivo roda em SSE e nao escutava nada
 # disso -> "Pensando" estatico. O handler SSE registra um sink (contextvar,
 # espelha _llm_streaming_callback) e _send repassa os frames de atividade.
-_SSE_FORWARD_TYPES = {"tool_started", "tool_finished", "reasoning_step"}
+_SSE_FORWARD_TYPES = {"tool_started", "tool_finished", "reasoning_step", "token", "token_done"}
 _sse_frame_sink: contextvars.ContextVar[Optional[Callable[[Dict[str, Any]], Awaitable[None]]]] = (
     contextvars.ContextVar("_sse_frame_sink", default=None)
 )
