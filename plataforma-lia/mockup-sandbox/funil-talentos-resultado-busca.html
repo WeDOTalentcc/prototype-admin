@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Funil de Talentos — Resultado de Busca</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── Design Tokens (design-tokens.css — light mode) ─────────────────────
+       FONTE-DA-VERDADE = código (plataforma-lia/src/styles/design-tokens.css)
+       ──────────────────────────────────────────────────────────────────────── */
+    :root {
+      --lia-bg-primary:         #FFFFFF;
+      --lia-bg-secondary:       #F9FAFB;
+      --lia-bg-tertiary:        #F3F4F6;
+      --lia-text-primary:       #111111;
+      --lia-text-secondary:     #2D2D2D;
+      --lia-text-tertiary:      #5C5C5C;
+      --lia-text-disabled:      #999999;
+      --lia-border-subtle:      #D4D4D4;
+      --lia-border-default:     #BEBEBE;
+      --lia-interactive-hover:  #F3F4F6;
+      --lia-interactive-active: #E5E7EB;
+      --lia-btn-primary-bg:     #111827;
+      --lia-btn-primary-hover:  #000000;
+      --lia-btn-primary-text:   #FFFFFF;
+      --lia-shadow-sm:          0 1px 2px 0 rgb(0 0 0 / .05);
+      --lia-shadow-md:          0 4px 6px -1px rgb(0 0 0 / .08);
+
+      /* Status */
+      --status-success:         #16A34A;
+      --status-success-bg-10:   rgba(22,163,74,.10);
+      --status-success-bg-15:   rgba(22,163,74,.15);
+      --status-warning:         #D97706;
+      --status-warning-bg-10:   rgba(217,119,6,.10);
+      --status-warning-border:  rgba(217,119,6,.30);
+
+      /* Fonts */
+      --font-sans:  'Open Sans', system-ui, sans-serif;
+      --font-data:  'Inter', system-ui, sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-sans);
+      background: var(--lia-bg-secondary);
+      color: var(--lia-text-primary);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    button { font-family: var(--font-sans); cursor: pointer; }
+    table  { border-collapse: collapse; width: 100%; }
+
+    /* ─── Animations ─── */
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    @keyframes fadeIn { from { opacity: 0; transform: scale(.97); } to { opacity: 1; transform: scale(1); } }
+
+    /* ─── Page header ─── */
+    .page-header {
+      background: var(--lia-bg-primary);
+      border-bottom: 1px solid var(--lia-border-subtle);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .page-header h1 {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--lia-text-primary);
+    }
+    .header-actions { display: flex; gap: 8px; }
+
+    /* ─── Buttons ─── */
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 7px 14px; font-size: 13px; font-weight: 500; border-radius: 6px;
+      background: var(--lia-btn-primary-bg); color: var(--lia-btn-primary-text);
+      border: none;
+    }
+    .btn-primary:hover { background: var(--lia-btn-primary-hover); }
+
+    .btn-secondary {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 7px 14px; font-size: 13px; font-weight: 500; border-radius: 6px;
+      background: var(--lia-bg-primary); color: var(--lia-text-primary);
+      border: 1px solid var(--lia-border-default);
+    }
+    .btn-secondary:hover { background: var(--lia-interactive-hover); }
+
+    .btn-sm {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 12px; font-size: 13px; font-weight: 500; border-radius: 6px;
+      background: var(--lia-bg-primary); color: var(--lia-text-primary);
+      border: 1px solid var(--lia-border-default);
+    }
+    .btn-sm:hover { background: var(--lia-interactive-hover); }
+
+    .btn-sm-primary {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 12px; font-size: 12px; font-weight: 500; border-radius: 6px;
+      background: var(--lia-btn-primary-bg); color: var(--lia-btn-primary-text);
+      border: none;
+    }
+
+    /* ─── Tab navigation (pill-style, mirrors PageTabNavigation) ─── */
+    .tab-wrapper {
+      background: var(--lia-bg-primary);
+      border-bottom: 1px solid var(--lia-border-subtle);
+      padding: 10px 24px;
+    }
+    .tab-nav {
+      display: inline-flex; gap: 4px; padding: 4px;
+      background: var(--lia-bg-secondary); border-radius: 8px;
+    }
+    .tab-btn {
+      display: inline-flex; align-items: center;
+      padding: 6px 12px; border-radius: 6px;
+      font-size: 12px; font-weight: 500; border: none;
+      background: transparent; color: var(--lia-text-secondary);
+      transition: background .15s, color .15s;
+    }
+    .tab-btn:hover { background: var(--lia-bg-tertiary); }
+    .tab-btn.active {
+      background: var(--lia-bg-primary);
+      color: var(--lia-text-primary);
+      box-shadow: var(--lia-shadow-sm);
+    }
+
+    /* ─── Content area ─── */
+    .content { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+
+    /* ─── Search + controls row ─── */
+    .controls-row {
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    }
+    .search-left  { display: flex; align-items: center; gap: 8px; }
+    .search-right { display: flex; gap: 8px; }
+
+    .search-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--lia-bg-primary); border: 1px solid var(--lia-border-subtle);
+      border-radius: 6px; padding: 5px 10px;
+    }
+    .search-pill span { font-size: 13px; font-weight: 500; color: var(--lia-text-primary); }
+
+    .edit-filters-btn {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 13px; font-weight: 500; color: var(--lia-btn-primary-bg);
+      background: transparent; border: none;
+    }
+
+    .col-badge {
+      font-size: 11px; font-weight: 600; font-family: var(--font-data);
+      background: var(--lia-bg-tertiary); color: var(--lia-text-secondary);
+      padding: 1px 6px; border-radius: 9999px;
+    }
+
+    /* ─── Bulk bar ─── */
+    .bulk-bar {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 16px;
+      background: rgba(17,24,39,.04);
+      border: 1px solid rgba(17,24,39,.12);
+      border-radius: 8px;
+      font-size: 13px; font-weight: 500;
+    }
+    .bulk-bar-spacer { flex: 1; }
+
+    /* ─── Table card ─── */
+    .table-card {
+      background: var(--lia-bg-primary);
+      border-radius: 12px;
+      border: 1px solid var(--lia-border-subtle);
+      overflow: hidden;
+      box-shadow: var(--lia-shadow-sm);
+    }
+    .table-scroll { overflow-x: auto; }
+
+    thead tr {
+      background: var(--lia-bg-secondary);
+      border-bottom: 1px solid var(--lia-border-subtle);
+    }
+    th { padding: 10px 12px; text-align: left; }
+    .col-header {
+      display: inline-flex; align-items: center; gap: 4px; cursor: pointer;
+    }
+    .col-header span {
+      font-size: 11px; font-weight: 600; color: var(--lia-text-tertiary);
+      text-transform: uppercase; letter-spacing: .5px; font-family: var(--font-sans);
+    }
+
+    tbody tr { border-bottom: 1px solid var(--lia-border-subtle); background: var(--lia-bg-primary); transition: background .1s; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: var(--lia-bg-secondary); }
+    tbody tr.selected { background: rgba(17,24,39,.03); }
+    td { padding: 10px 12px; vertical-align: middle; }
+
+    /* ─── Avatar ─── */
+    .avatar {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: var(--lia-bg-tertiary); color: var(--lia-text-tertiary);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 600; flex-shrink: 0;
+      border: 1px solid var(--lia-border-subtle);
+    }
+    .candidate-cell { display: flex; align-items: center; gap: 8px; }
+    .candidate-title { font-size: 13px; font-weight: 500; color: var(--lia-text-primary); white-space: nowrap; }
+    .candidate-name  { font-size: 11px; color: var(--lia-text-tertiary); }
+
+    /* ─── Contact cells ─── */
+    .contact-revealed { display: inline-flex; align-items: center; gap: 4px; }
+    .contact-revealed span { font-size: 12px; color: var(--lia-text-primary); }
+    .contact-revealed.phone span { font-family: var(--font-data); }
+
+    /* Email Revelar — mirrors bg-lia-bg-tertiary text-lia-text-secondary */
+    .btn-reveal-email {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 2px 8px; font-size: 11px; font-weight: 500;
+      border-radius: 9999px; border: none;
+      background: var(--lia-bg-tertiary); color: var(--lia-text-secondary);
+      transition: background .12s;
+    }
+    .btn-reveal-email:hover { background: var(--lia-interactive-active); }
+
+    /* Phone Revelar — mirrors bg-status-success/10 text-status-success */
+    .btn-reveal-phone {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 2px 8px; font-size: 11px; font-weight: 500;
+      border-radius: 9999px; border: none;
+      background: var(--status-success-bg-10); color: var(--status-success);
+      transition: background .12s;
+    }
+    .btn-reveal-phone:hover { background: var(--status-success-bg-15); }
+
+    /* Validity icons */
+    .icon-success { color: var(--status-success); }
+    .icon-warning { color: var(--status-warning); }
+
+    /* ─── Checkbox ─── */
+    .checkbox-btn { background: none; border: none; padding: 0; display: flex; }
+    .checkbox-checked   { color: var(--lia-btn-primary-bg); }
+    .checkbox-unchecked { color: var(--lia-text-disabled); }
+    .checkbox-indeterminate {
+      width: 16px; height: 16px; border-radius: 3px;
+      border: 2px solid var(--lia-btn-primary-bg);
+      background: rgba(17,24,39,.1);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .checkbox-dash {
+      width: 8px; height: 2px;
+      background: var(--lia-btn-primary-bg); border-radius: 1px;
+    }
+
+    /* ─── Table footer ─── */
+    .table-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 16px;
+      border-top: 1px solid var(--lia-border-subtle);
+      background: var(--lia-bg-secondary);
+    }
+    .table-footer span { font-size: 12px; color: var(--lia-text-tertiary); }
+
+    /* ─── Legend ─── */
+    .legend {
+      display: flex; align-items: center; gap: 20px;
+      font-size: 11px; color: var(--lia-text-tertiary);
+      padding-left: 4px; flex-wrap: wrap;
+    }
+    .legend-item { display: inline-flex; align-items: center; gap: 6px; }
+
+    /* ─── Modal backdrop ─── */
+    .modal-backdrop {
+      display: none; position: fixed; inset: 0; z-index: 50;
+      align-items: center; justify-content: center;
+      background: rgba(0,0,0,.6); padding: 16px;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal-box {
+      width: 100%; max-width: 420px;
+      background: var(--lia-bg-primary);
+      border-radius: 12px; border: 1px solid var(--lia-border-subtle);
+      box-shadow: var(--lia-shadow-md);
+      padding: 24px; display: flex; flex-direction: column; gap: 20px;
+      animation: fadeIn .15s ease;
+    }
+    .modal-header { display: flex; align-items: center; gap: 12px; }
+    .modal-icon {
+      padding: 10px; border-radius: 12px;
+      background: var(--lia-bg-tertiary); color: var(--lia-text-secondary);
+    }
+    .modal-title { font-size: 14px; font-weight: 600; color: var(--lia-text-primary); }
+    .modal-body  { font-size: 14px; color: var(--lia-text-secondary); }
+    .modal-warning {
+      padding: 16px; border-radius: 12px;
+      background: var(--status-warning-bg-10);
+      border: 1px solid var(--status-warning-border);
+    }
+    .modal-warning-inner { display: flex; gap: 12px; align-items: flex-start; }
+    .modal-warning p { margin: 0; }
+    .modal-warning .cost-title { font-weight: 600; color: var(--status-warning); font-size: 14px; margin-bottom: 4px; }
+    .modal-warning .cost-body  { font-size: 13px; color: var(--status-warning); opacity: .85; }
+    .modal-disclaimer { display: flex; gap: 6px; align-items: flex-start; font-size: 12px; color: var(--lia-text-tertiary); }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 8px; }
+    .modal-cancel {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 8px 14px; font-size: 13px; font-weight: 500; border-radius: 6px;
+      background: var(--lia-bg-primary); color: var(--lia-text-primary);
+      border: 1px solid var(--lia-border-default);
+    }
+    .modal-confirm {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 8px 14px; font-size: 13px; font-weight: 500; border-radius: 6px;
+      background: var(--lia-btn-primary-bg); color: var(--lia-btn-primary-text); border: none;
+    }
+    .modal-confirm:hover { background: var(--lia-btn-primary-hover); }
+    .modal-confirm.loading { opacity: .7; }
+
+    /* ─── Bulk modal extras ─── */
+    .option-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 14px; border-radius: 12px;
+      border: 1px solid var(--lia-border-subtle);
+      cursor: pointer;
+    }
+    .option-row input { width: 16px; height: 16px; accent-color: var(--lia-btn-primary-bg); }
+    .option-row .opt-label { flex: 1; font-size: 13px; color: var(--lia-text-primary); }
+    .option-row .opt-credits { font-size: 12px; color: var(--lia-text-tertiary); }
+
+    /* ─── SVG icons (inline lucide paths) ─── */
+    svg { display: inline-block; vertical-align: middle; flex-shrink: 0; }
+  </style>
+</head>
+<body>
+
+  <!-- ── Page header ──────────────────────────────────────────── -->
+  <div class="page-header">
+    <h1>Funil de Talentos</h1>
+    <div class="header-actions">
+      <button class="btn-primary" onclick="void(0)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Novo Candidato
+      </button>
+      <button class="btn-secondary" onclick="void(0)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        Nova Busca
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Tab Navigation (pill-style, mirrors PageTabNavigation) ── -->
+  <div class="tab-wrapper">
+    <nav class="tab-nav" role="tablist">
+      <button class="tab-btn active" onclick="setTab(this)">Busca</button>
+      <button class="tab-btn" onclick="setTab(this)">Favoritos</button>
+      <button class="tab-btn" onclick="setTab(this)">Listas</button>
+      <button class="tab-btn" onclick="setTab(this)">Bancos de Talentos</button>
+      <button class="tab-btn" onclick="setTab(this)">Buscas Salvas</button>
+      <button class="tab-btn" onclick="setTab(this)">Histórico</button>
+    </nav>
+  </div>
+
+  <!-- ── Content ──────────────────────────────────────────────── -->
+  <div class="content">
+
+    <!-- Controls row -->
+    <div class="controls-row">
+      <div class="search-left">
+        <button class="checkbox-btn" style="padding:4px;border-radius:6px;color:var(--lia-text-tertiary);" onclick="void(0)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <div class="search-pill">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--lia-text-disabled)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <span>Busca realizada</span>
+          <button style="padding:2px;border:none;background:transparent;cursor:pointer;color:var(--lia-text-disabled);display:flex;border-radius:4px;" onclick="void(0)">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+        </div>
+        <button class="edit-filters-btn" onclick="void(0)">
+          Editar Filtros
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+
+      <div class="search-right">
+        <button class="btn-sm" id="btn-select-all" onclick="toggleSelectAll()">
+          <svg id="icon-select-all" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/></svg>
+          Selecionar Todos
+        </button>
+        <button class="btn-sm" onclick="void(0)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+          Filtros
+        </button>
+        <button class="btn-sm" onclick="void(0)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
+          Colunas <span class="col-badge">11</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Bulk actions bar (hidden by default) -->
+    <div class="bulk-bar" id="bulk-bar" style="display:none;">
+      <span id="bulk-count">0 candidatos selecionados</span>
+      <div class="bulk-bar-spacer"></div>
+      <button class="btn-sm-primary" onclick="openBulkModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="22,7 12,13 2,7"/></svg>
+        Revelar Contatos
+      </button>
+      <button class="btn-sm" onclick="deselectAll()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        Deselecionar
+      </button>
+    </div>
+
+    <!-- Table -->
+    <div class="table-card">
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:40px;">
+                <button class="checkbox-btn checkbox-unchecked" id="check-all" onclick="toggleSelectAll()">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/></svg>
+                </button>
+              </th>
+              <th style="width:32px;"></th>
+              <th style="width:32px;"></th>
+              <th><div class="col-header"><span>Cargo atual</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--lia-text-disabled)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></div></th>
+              <th><div class="col-header"><span>Empresa atual</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--lia-text-disabled)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></div></th>
+              <th><div class="col-header"><span>Salário atual</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--lia-text-disabled)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></div></th>
+              <th><div class="col-header"><span>Expectativa salarial</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--lia-text-disabled)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></div></th>
+              <th style="min-width:220px;"><div class="col-header"><span>E-mail</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--lia-text-disabled)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></div></th>
+              <th style="min-width:200px;"><div class="col-header"><span>Celular</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--lia-text-disabled)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></div></th>
+              <th style="width:60px;"><span style="font-size:11px;font-weight:600;color:var(--lia-text-tertiary);text-transform:uppercase;letter-spacing:.5px;">LinkedIn</span></th>
+            </tr>
+          </thead>
+          <tbody id="candidates-tbody">
+            <!-- rows injected by JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-footer">
+        <span>Exibindo 10 de 127 resultados</span>
+        <button class="btn-sm" style="font-size:12px;padding:5px 12px;" onclick="void(0)">Carregar mais</button>
+      </div>
+    </div>
+
+    <!-- Legend -->
+    <div class="legend">
+      <div class="legend-item">
+        <span style="display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:9999px;background:var(--lia-bg-tertiary);color:var(--lia-text-secondary);font-size:11px;">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="22,7 12,13 2,7"/></svg> Revelar
+        </span>
+        = e-mail disponível (2 créditos)
+      </div>
+      <div class="legend-item">
+        <span style="display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:9999px;background:var(--status-success-bg-10);color:var(--status-success);font-size:11px;">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 9.93 19.79 19.79 0 0 1 1.05 5.43 2 2 0 0 1 3.08 3h2.91a2 2 0 0 1 2 1.72 13.39 13.39 0 0 0 .73 2.89 2 2 0 0 1-.45 2.11L7.09 10.91a16 16 0 0 0 6 6l1.19-1.19a2 2 0 0 1 2.11-.45 13.39 13.39 0 0 0 2.89.73A2 2 0 0 1 21 17.31v.61z"/></svg> Revelar
+        </span>
+        = celular disponível (14 créditos)
+      </div>
+      <div class="legend-item">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--status-success)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        = contato verificado
+      </div>
+      <div class="legend-item">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--status-warning)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        = dado com ressalva
+      </div>
+    </div>
+  </div><!-- /content -->
+
+  <!-- ─── RevealCredits Modal ──────────────────────────────────── -->
+  <div class="modal-backdrop" id="reveal-modal" onclick="closeRevealModal()">
+    <div class="modal-box" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-icon" id="reveal-modal-icon">
+          <!-- icon injected by JS -->
+        </div>
+        <span class="modal-title" id="reveal-modal-title">Revelar email</span>
+      </div>
+      <p class="modal-body" id="reveal-modal-body"></p>
+      <div class="modal-warning">
+        <div class="modal-warning-inner">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--status-warning)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px;"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+          <div>
+            <p class="cost-title" id="reveal-cost-title">Custo: 2 créditos</p>
+            <p class="cost-body"  id="reveal-cost-body"></p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-disclaimer">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <span>Esta ação consumirá créditos da sua conta.</span>
+      </div>
+      <div class="modal-actions">
+        <button class="modal-cancel" onclick="closeRevealModal()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          Cancelar
+        </button>
+        <button class="modal-confirm" id="reveal-confirm-btn" onclick="confirmReveal()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          <span id="reveal-confirm-label">Confirmar (2 créditos)</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── Bulk Reveal Modal ────────────────────────────────────── -->
+  <div class="modal-backdrop" id="bulk-modal" onclick="closeBulkModal()">
+    <div class="modal-box" onclick="event.stopPropagation()">
+      <span class="modal-title" id="bulk-modal-title">Revelar contatos de N candidatos</span>
+      <p class="modal-body">Escolha o que revelar. A cobrança ocorre apenas pelos contatos efetivamente disponíveis.</p>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <label class="option-row">
+          <input type="checkbox" id="bulk-email" checked onchange="updateBulkCost()" />
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--lia-text-secondary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="22,7 12,13 2,7"/></svg>
+          <span class="opt-label">Email</span>
+          <span class="opt-credits">2 créd./candidato</span>
+        </label>
+        <label class="option-row">
+          <input type="checkbox" id="bulk-phone" onchange="updateBulkCost()" />
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--lia-text-secondary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 9.93 19.79 19.79 0 0 1 1.05 5.43 2 2 0 0 1 3.08 3h2.91a2 2 0 0 1 2 1.72 13.39 13.39 0 0 0 .73 2.89 2 2 0 0 1-.45 2.11L7.09 10.91a16 16 0 0 0 6 6l1.19-1.19a2 2 0 0 1 2.11-.45 13.39 13.39 0 0 0 2.89.73A2 2 0 0 1 21 17.31v.61z"/></svg>
+          <span class="opt-label">Telefone</span>
+          <span class="opt-credits">14 créd./candidato</span>
+        </label>
+      </div>
+      <div class="modal-warning">
+        <div class="modal-warning-inner">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--status-warning)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px;"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+          <div>
+            <p class="cost-title" id="bulk-cost-title">Custo máximo: 0 créditos</p>
+            <p class="cost-body">Candidatos sem o contato escolhido não consomem créditos.</p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="modal-cancel" onclick="closeBulkModal()">Cancelar</button>
+        <button class="modal-confirm" id="bulk-confirm-btn" onclick="confirmBulk()">
+          <span id="bulk-confirm-label">Revelar</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── JavaScript ───────────────────────────────────────────── -->
+  <script>
+    /* ── Data ── */
+    const CANDIDATES = [
+      { id:"c1",  name:"Maria Santos",     initials:"MS", title:"UX Designer Pleno",    company:"DesignStudio",     email:"maria.santos.eval@email.com", phone:"+55 11 95678-9012", has_email:true, has_phone:true, email_valid:true,  phone_valid:true  },
+      { id:"c2",  name:"Ana Almeida",      initials:"AA", title:"UX Designer",           company:"CI&T",             email:"ana.almeida24@email.com",     phone:"+55 11 92441-2559", has_email:true, has_phone:true, email_valid:true,  phone_valid:true  },
+      { id:"c3",  name:"Fernanda Ribeiro", initials:"FR", title:"UX Designer",           company:"Creditas",         has_email:true, has_phone:true },
+      { id:"c4",  name:"Rafael Costa",     initials:"RC", title:"Tech Lead Backend",     company:"InfrasTech",       has_email:true, has_phone:true },
+      { id:"c5",  name:"Bruna Moura",      initials:"BM", title:"Tech Lead",             company:"Hotmart",          email:"bruna.moura45@email.com",     phone:"+55 11 94147-9660", has_email:true, has_phone:true, email_valid:true,  phone_valid:true  },
+      { id:"c6",  name:"Beatriz Silva",    initials:"BS", title:"Tech Lead",             company:"Boticário",        email:"beatriz.silva7@email.com",    phone:"+55 11 91810-8585", has_email:true, has_phone:true, email_valid:false, phone_valid:true  },
+      { id:"c7",  name:"Ana Araújo",       initials:"AA", title:"Tech Lead",             company:"B3",               has_email:true, has_phone:true },
+      { id:"c8",  name:"Isabela Moura",    initials:"IM", title:"Tech Lead",             company:"IBM Brasil",       email:"isabela.moura55@email.com",   has_email:true, has_phone:true, phone_valid:true  },
+      { id:"c9",  name:"Fabiana Moura",    initials:"FM", title:"Software Engineer",     company:"B3",               email:"fabiana.moura9@email.com",    phone:"+55 11 93252-3127", has_email:true, has_phone:true, email_valid:true,  phone_valid:true  },
+      { id:"c10", name:"Tatiana Rocha",    initials:"TR", title:"Software Engineer",     company:"Accenture Brasil", email:"tatiana.rocha8@email.com",   phone:"+55 11 92660-4125", has_email:true, has_phone:true, email_valid:true,  phone_valid:false },
+    ];
+
+    /* ── State ── */
+    let selected  = new Set();
+    let revealed  = { c1:{email:CANDIDATES[0].email,phone:CANDIDATES[0].phone}, c2:{email:CANDIDATES[1].email,phone:CANDIDATES[1].phone}, c5:{email:CANDIDATES[4].email,phone:CANDIDATES[4].phone}, c6:{email:CANDIDATES[5].email,phone:CANDIDATES[5].phone}, c9:{email:CANDIDATES[8].email,phone:CANDIDATES[8].phone}, c10:{email:CANDIDATES[9].email,phone:CANDIDATES[9].phone} };
+    let pendingReveal = null; // {candidateId, type}
+
+    /* ── Icons (inline SVG strings) ── */
+    const ICON_CHECK  = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`;
+    const ICON_WARN   = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`;
+    const ICON_MAIL   = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="22,7 12,13 2,7"/></svg>`;
+    const ICON_PHONE  = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 9.93 19.79 19.79 0 0 1 1.05 5.43 2 2 0 0 1 3.08 3h2.91a2 2 0 0 1 2 1.72 13.39 13.39 0 0 0 .73 2.89 2 2 0 0 1-.45 2.11L7.09 10.91a16 16 0 0 0 6 6l1.19-1.19a2 2 0 0 1 2.11-.45 13.39 13.39 0 0 0 2.89.73A2 2 0 0 1 21 17.31v.61z"/></svg>`;
+    const ICON_STAR   = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
+    const ICON_PIN    = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`;
+    const ICON_LI     = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>`;
+    const ICON_SQ     = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/></svg>`;
+    const ICON_CHKSQ  = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>`;
+
+    function emailCell(c) {
+      const email = (revealed[c.id] && revealed[c.id].email) || c.email;
+      if (email) {
+        const badge = c.email_valid === true
+          ? `<span class="icon-success">${ICON_CHECK}</span>`
+          : c.email_valid === false
+            ? `<span class="icon-warning">${ICON_WARN}</span>`
+            : '';
+        return `<span class="contact-revealed"><span style="font-size:12px;color:var(--lia-text-primary);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${email}</span>${badge}</span>`;
+      }
+      if (c.has_email) {
+        return `<button class="btn-reveal-email" onclick="openRevealModal('${c.id}','email')">${ICON_MAIL} Revelar</button>`;
+      }
+      return `<span style="font-size:12px;color:var(--lia-text-primary);">-</span>`;
+    }
+
+    function phoneCell(c) {
+      const phone = (revealed[c.id] && revealed[c.id].phone) || c.phone;
+      if (phone) {
+        const badge = c.phone_valid === true
+          ? `<span class="icon-success">${ICON_CHECK}</span>`
+          : c.phone_valid === false
+            ? `<span class="icon-warning">${ICON_WARN}</span>`
+            : '';
+        return `<span class="contact-revealed phone"><span style="font-family:var(--font-data);font-size:12px;color:var(--lia-text-primary);">${phone}</span>${badge}</span>`;
+      }
+      if (c.has_phone) {
+        return `<button class="btn-reveal-phone" onclick="openRevealModal('${c.id}','phone')">${ICON_PHONE} Revelar</button>`;
+      }
+      return `<span style="font-size:12px;color:var(--lia-text-primary);">-</span>`;
+    }
+
+    function checkboxCell(id) {
+      const sel = selected.has(id);
+      return sel
+        ? `<button class="checkbox-btn" style="color:var(--lia-btn-primary-bg);" onclick="toggleRow('${id}')">${ICON_CHKSQ}</button>`
+        : `<button class="checkbox-btn checkbox-unchecked" onclick="toggleRow('${id}')">${ICON_SQ}</button>`;
+    }
+
+    function renderRows() {
+      const tbody = document.getElementById('candidates-tbody');
+      tbody.innerHTML = CANDIDATES.map(c => {
+        const sel = selected.has(c.id);
+        return `
+          <tr class="${sel ? 'selected' : ''}" data-id="${c.id}">
+            <td>${checkboxCell(c.id)}</td>
+            <td><button style="background:none;border:none;padding:2px;cursor:pointer;color:var(--lia-border-default);display:flex;">${ICON_STAR}</button></td>
+            <td><button style="background:none;border:none;padding:2px;cursor:pointer;color:var(--lia-border-default);display:flex;">${ICON_PIN}</button></td>
+            <td>
+              <div class="candidate-cell">
+                <div class="avatar">${c.initials}</div>
+                <div>
+                  <div class="candidate-title">${c.title}</div>
+                  <div class="candidate-name">${c.name}</div>
+                </div>
+              </div>
+            </td>
+            <td><span style="font-size:13px;color:var(--lia-text-secondary);">${c.company}</span></td>
+            <td><span style="font-size:13px;color:var(--lia-text-disabled);font-family:var(--font-data);">N/A</span></td>
+            <td><span style="font-size:13px;color:var(--lia-text-disabled);font-family:var(--font-data);">N/A</span></td>
+            <td>${emailCell(c)}</td>
+            <td>${phoneCell(c)}</td>
+            <td><button style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:6px;border:none;background:transparent;cursor:pointer;color:var(--lia-text-disabled);">${ICON_LI}</button></td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    /* ── Select / Deselect ── */
+    function toggleRow(id) {
+      selected.has(id) ? selected.delete(id) : selected.add(id);
+      updateSelection();
+    }
+
+    function toggleSelectAll() {
+      if (selected.size === CANDIDATES.length) {
+        selected.clear();
+      } else {
+        CANDIDATES.forEach(c => selected.add(c.id));
+      }
+      updateSelection();
+    }
+
+    function deselectAll() { selected.clear(); updateSelection(); }
+
+    function updateSelection() {
+      renderRows();
+      const n   = selected.size;
+      const all = n === CANDIDATES.length;
+      const hdr = document.getElementById('check-all');
+      hdr.style.color = all ? 'var(--lia-btn-primary-bg)' : 'var(--lia-text-disabled)';
+      hdr.innerHTML   = all ? ICON_CHKSQ : ICON_SQ;
+
+      const bar = document.getElementById('bulk-bar');
+      bar.style.display = n > 0 ? 'flex' : 'none';
+      document.getElementById('bulk-count').textContent = `${n} candidato${n !== 1 ? 's' : ''} selecionado${n !== 1 ? 's' : ''}`;
+    }
+
+    /* ── Tabs ── */
+    function setTab(btn) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+
+    /* ── Reveal modal ── */
+    function openRevealModal(candidateId, type) {
+      pendingReveal = { candidateId, type };
+      const c       = CANDIDATES.find(x => x.id === candidateId);
+      const credits = type === 'email' ? 2 : 14;
+      const label   = type === 'email' ? 'email' : 'celular';
+      const icon    = type === 'email' ? ICON_MAIL : ICON_PHONE;
+
+      document.getElementById('reveal-modal-icon').innerHTML = icon;
+      document.getElementById('reveal-modal-title').textContent = `Revelar ${label}`;
+      document.getElementById('reveal-modal-body').innerHTML = `Deseja revelar o ${label} de <strong style="color:var(--lia-text-primary);">${c.name}</strong>?`;
+      document.getElementById('reveal-cost-title').textContent = `Custo: ${credits} créditos`;
+      document.getElementById('reveal-cost-body').textContent  = `O custo será cobrado apenas se o candidato tiver ${label} disponível.`;
+      document.getElementById('reveal-confirm-label').textContent = `Confirmar (${credits} créditos)`;
+      document.getElementById('reveal-modal').classList.add('open');
+    }
+
+    function closeRevealModal() {
+      document.getElementById('reveal-modal').classList.remove('open');
+      pendingReveal = null;
+    }
+
+    function confirmReveal() {
+      if (!pendingReveal) return;
+      const btn = document.getElementById('reveal-confirm-btn');
+      btn.classList.add('loading');
+      btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="animation:spin 1s linear infinite;"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg> Revelando...`;
+      setTimeout(() => {
+        const { candidateId, type } = pendingReveal;
+        const c = CANDIDATES.find(x => x.id === candidateId);
+        if (!revealed[candidateId]) revealed[candidateId] = {};
+        if (type === 'email') {
+          revealed[candidateId].email = c.email || (c.name.toLowerCase().replace(/\s+/g,'.') + '@email.com');
+        } else {
+          revealed[candidateId].phone = c.phone || ('+55 11 9' + (Math.floor(Math.random()*8000+1000)) + '-' + (Math.floor(Math.random()*9000+1000)));
+        }
+        btn.classList.remove('loading');
+        btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> <span id="reveal-confirm-label">Confirmar</span>`;
+        closeRevealModal();
+        renderRows();
+      }, 900);
+    }
+
+    /* ── Bulk modal ── */
+    function openBulkModal() {
+      const n = selected.size;
+      document.getElementById('bulk-modal-title').textContent = `Revelar contatos de ${n} candidato${n !== 1 ? 's' : ''}`;
+      document.getElementById('bulk-email').checked = true;
+      document.getElementById('bulk-phone').checked = false;
+      updateBulkCost();
+      document.getElementById('bulk-modal').classList.add('open');
+    }
+
+    function closeBulkModal() {
+      document.getElementById('bulk-modal').classList.remove('open');
+    }
+
+    function updateBulkCost() {
+      const n    = selected.size;
+      const em   = document.getElementById('bulk-email').checked ? 2  : 0;
+      const ph   = document.getElementById('bulk-phone').checked ? 14 : 0;
+      const cost = n * (em + ph);
+      document.getElementById('bulk-cost-title').textContent = `Custo máximo: ${cost} créditos`;
+    }
+
+    function confirmBulk() {
+      const btn = document.getElementById('bulk-confirm-btn');
+      btn.disabled = true;
+      btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation:spin 1s linear infinite;"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/></svg> Revelando…`;
+      setTimeout(() => {
+        const doEmail = document.getElementById('bulk-email').checked;
+        const doPhone = document.getElementById('bulk-phone').checked;
+        selected.forEach(id => {
+          const c = CANDIDATES.find(x => x.id === id);
+          if (!c) return;
+          if (!revealed[id]) revealed[id] = {};
+          if (doEmail && c.has_email) revealed[id].email = c.email || (c.name.toLowerCase().replace(/\s+/g,'.') + '@email.com');
+          if (doPhone && c.has_phone) revealed[id].phone = c.phone || ('+55 11 9' + (Math.floor(Math.random()*8000+1000)) + '-' + (Math.floor(Math.random()*9000+1000)));
+        });
+        btn.disabled = false;
+        btn.innerHTML = `<span id="bulk-confirm-label">Revelar (${selected.size})</span>`;
+        closeBulkModal();
+        renderRows();
+      }, 1200);
+    }
+
+    /* ── Init ── */
+    renderRows();
+  </script>
+</body>
+</html>

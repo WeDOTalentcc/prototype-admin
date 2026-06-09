@@ -1468,10 +1468,12 @@ class PearchService:
                     if _loop_diag.get("error_message"):
                         warning_message = _loop_diag["error_message"]
                 else:
+                    logger.info("[DIAG] ABOUT TO CALL PEARCH limit=%s api_key=%s", pearch_request.limit, bool(self.api_key))
                     pearch_response = await asyncio.wait_for(
                         self.search_candidates(pearch_request),
                         timeout=_PEARCH_CALL_DEADLINE_SECONDS,
                     )
+                    logger.info("[DIAG] PEARCH RETURNED candidates=%s", len(pearch_response.get_candidates()) if pearch_response else "None")
                     pearch_candidates = pearch_response.get_candidates()
                     pearch_candidates = self._dedup_pearch_against_local(local_candidates, pearch_candidates)
                     pearch_credits_remaining = pearch_response.credits_remaining

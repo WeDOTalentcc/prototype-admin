@@ -1,153 +1,185 @@
+/**
+ * FunilBusca — Funil de Talentos: Resultado de Busca
+ * Mockup 100% fiel ao sistema real.
+ *
+ * Tokens usados literalmente (do design-tokens.css + tailwind.config.ts):
+ *   lia-bg-primary       #FFFFFF     lia-bg-secondary   #F9FAFB
+ *   lia-bg-tertiary      #F3F4F6     lia-text-primary   #111111
+ *   lia-text-secondary   #2D2D2D     lia-text-tertiary  #5C5C5C
+ *   lia-text-disabled    #999999     lia-border-subtle  #D4D4D4
+ *   lia-border-default   #BEBEBE     lia-interactive-hover #F3F4F6
+ *   lia-interactive-active #E5E7EB   lia-btn-primary-bg #111827
+ *   lia-btn-primary-text #FFFFFF     lia-btn-primary-hover #000000
+ *   status-success       #16A34A     status-success/10  rgba(22,163,74,.10)
+ *   status-success/15    rgba(22,163,74,.15)
+ *   status-warning       #D97706     status-warning/10  rgba(217,119,6,.10)
+ *   status-warning/30    rgba(217,119,6,.30)
+ *   Fonte: Open Sans (font-sans, 85%) + Inter (font-data, números)
+ *   Tabs: pill-style — active bg #FFFFFF shadow, container bg #F9FAFB
+ */
+
 import React, { useState } from "react"
 import {
   Search, Plus, ArrowLeft, SlidersHorizontal, Columns3,
   Star, Pin, CheckSquare, Square, Linkedin, Mail, Phone,
   CheckCircle2, AlertTriangle, CreditCard, Loader2, Check,
-  X, ChevronUp, ChevronDown, ChevronRight, Edit2
+  X, ChevronUp, ChevronRight, Edit2
 } from "lucide-react"
 
-// ---------------------------------------------------------------------------
-// Token map (mirrors JDScoresComparison pattern):
-//   lia-bg-primary       → white      lia-bg-secondary  → slate-50
-//   lia-bg-tertiary      → slate-100  lia-text-primary  → slate-900
-//   lia-text-secondary   → slate-600  lia-text-tertiary → slate-500
-//   lia-border-subtle    → slate-200  status-success    → emerald-600
-//   status-warning       → amber-600  lia-btn-primary   → indigo-600
-//   text-micro           → text-[11px] text-base-ui     → text-sm
-// ---------------------------------------------------------------------------
-
-function cn(...inputs: Array<string | false | null | undefined>): string {
-  return inputs.filter(Boolean).join(" ")
+// ─── Inline style tokens (exact values from design-tokens.css) ────────────
+const T = {
+  bgPrimary:          "#FFFFFF",
+  bgSecondary:        "#F9FAFB",
+  bgTertiary:         "#F3F4F6",
+  textPrimary:        "#111111",
+  textSecondary:      "#2D2D2D",
+  textTertiary:       "#5C5C5C",
+  textDisabled:       "#999999",
+  borderSubtle:       "#D4D4D4",
+  borderDefault:      "#BEBEBE",
+  interactiveHover:   "#F3F4F6",
+  interactiveActive:  "#E5E7EB",
+  btnPrimaryBg:       "#111827",
+  btnPrimaryHover:    "#000000",
+  btnPrimaryText:     "#FFFFFF",
+  success:            "#16A34A",
+  successBg10:        "rgba(22,163,74,.10)",
+  successBg15:        "rgba(22,163,74,.15)",
+  warning:            "#D97706",
+  warningBg10:        "rgba(217,119,6,.10)",
+  warningBorder30:    "rgba(217,119,6,.30)",
+  shadowSm:           "0 1px 2px 0 rgb(0 0 0 / .05)",
+  shadowMd:           "0 4px 6px -1px rgb(0 0 0 / .08)",
 }
 
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
+const FONTS = {
+  sans:   "'Open Sans', system-ui, sans-serif",
+  data:   "'Inter', system-ui, sans-serif",
+}
+
+// ─── Types ───────────────────────────────────────────────────────────────
 interface Candidate {
   id: string
   name: string
-  avatar?: string
   initials: string
   current_title: string
   current_company: string
-  salary: string
-  salary_expectation: string
   email?: string
   phone?: string
   has_email: boolean
   has_phone: boolean
-  email_valid?: boolean
-  phone_valid?: boolean
+  email_valid?: boolean | null
+  phone_valid?: boolean | null
   source: "global" | "local"
 }
 
 type RevealedContacts = Record<string, { email?: string; phone?: string }>
 
-// ---------------------------------------------------------------------------
-// Dataset — mirrors screenshot exactly
-// ---------------------------------------------------------------------------
+// ─── Dataset ─────────────────────────────────────────────────────────────
 const CANDIDATES: Candidate[] = [
-  { id: "c1", name: "Maria Santos", initials: "MS", current_title: "UX Designer Pleno", current_company: "DesignStudio", salary: "N/A", salary_expectation: "N/A", email: "maria.santos.eval@email.com", phone: "+55 11 95678-9012", has_email: true, has_phone: true, email_valid: true, phone_valid: true, source: "global" },
-  { id: "c2", name: "Ana Almeida", initials: "AA", current_title: "UX Designer", current_company: "CI&T", salary: "N/A", salary_expectation: "N/A", email: "ana.almeida24@email.com", phone: "+55 11 92441-2559", has_email: true, has_phone: true, email_valid: true, phone_valid: true, source: "global" },
-  { id: "c3", name: "Fernanda Ribeiro", initials: "FR", current_title: "UX Designer", current_company: "Creditas", salary: "N/A", salary_expectation: "N/A", has_email: true, has_phone: true, source: "global" },
-  { id: "c4", name: "Rafael Costa", initials: "RC", current_title: "Tech Lead Backend", current_company: "InfrasTech", salary: "N/A", salary_expectation: "N/A", has_email: true, has_phone: true, source: "global" },
-  { id: "c5", name: "Bruna Moura", initials: "BM", current_title: "Tech Lead", current_company: "Hotmart", salary: "N/A", salary_expectation: "N/A", email: "bruna.moura45@email.com", phone: "+55 11 94147-9660", has_email: true, has_phone: true, email_valid: true, phone_valid: true, source: "global" },
-  { id: "c6", name: "Beatriz Silva", initials: "BS", current_title: "Tech Lead", current_company: "Boticário", salary: "N/A", salary_expectation: "N/A", email: "beatriz.silva7@email.com", phone: "+55 11 91810-8585", has_email: true, has_phone: true, email_valid: false, phone_valid: true, source: "global" },
-  { id: "c7", name: "Ana Araújo", initials: "AA", current_title: "Tech Lead", current_company: "B3", salary: "N/A", salary_expectation: "N/A", has_email: true, has_phone: true, source: "global" },
-  { id: "c8", name: "Isabela Moura", initials: "IM", current_title: "Tech Lead", current_company: "IBM Brasil", salary: "N/A", salary_expectation: "N/A", email: "isabela.moura55@email.com", has_email: true, has_phone: true, phone_valid: true, source: "global" },
-  { id: "c9", name: "Fabiana Moura", initials: "FM", current_title: "Software Engineer", current_company: "B3", salary: "N/A", salary_expectation: "N/A", email: "fabiana.moura9@email.com", phone: "+55 11 93252-3127", has_email: true, has_phone: true, email_valid: true, phone_valid: true, source: "global" },
-  { id: "c10", name: "Tatiana Rocha", initials: "TR", current_title: "Software Engineer", current_company: "Accenture Brasil", salary: "N/A", salary_expectation: "N/A", email: "tatiana.rocha8@email.com", phone: "+55 11 92660-4125", has_email: true, has_phone: true, email_valid: true, phone_valid: false, source: "global" },
+  { id:"c1",  name:"Maria Santos",    initials:"MS", current_title:"UX Designer Pleno",    current_company:"DesignStudio",    email:"maria.santos.eval@email.com", phone:"+55 11 95678-9012", has_email:true, has_phone:true, email_valid:true,  phone_valid:true,  source:"global" },
+  { id:"c2",  name:"Ana Almeida",     initials:"AA", current_title:"UX Designer",           current_company:"CI&T",            email:"ana.almeida24@email.com",     phone:"+55 11 92441-2559", has_email:true, has_phone:true, email_valid:true,  phone_valid:true,  source:"global" },
+  { id:"c3",  name:"Fernanda Ribeiro",initials:"FR", current_title:"UX Designer",           current_company:"Creditas",        has_email:true, has_phone:true, source:"global" },
+  { id:"c4",  name:"Rafael Costa",    initials:"RC", current_title:"Tech Lead Backend",     current_company:"InfrasTech",      has_email:true, has_phone:true, source:"global" },
+  { id:"c5",  name:"Bruna Moura",     initials:"BM", current_title:"Tech Lead",             current_company:"Hotmart",         email:"bruna.moura45@email.com",     phone:"+55 11 94147-9660", has_email:true, has_phone:true, email_valid:true,  phone_valid:true,  source:"global" },
+  { id:"c6",  name:"Beatriz Silva",   initials:"BS", current_title:"Tech Lead",             current_company:"Boticário",       email:"beatriz.silva7@email.com",    phone:"+55 11 91810-8585", has_email:true, has_phone:true, email_valid:false, phone_valid:true,  source:"global" },
+  { id:"c7",  name:"Ana Araújo",      initials:"AA", current_title:"Tech Lead",             current_company:"B3",              has_email:true, has_phone:true, source:"global" },
+  { id:"c8",  name:"Isabela Moura",   initials:"IM", current_title:"Tech Lead",             current_company:"IBM Brasil",      email:"isabela.moura55@email.com",   has_email:true, has_phone:true, phone_valid:true,  source:"global" },
+  { id:"c9",  name:"Fabiana Moura",   initials:"FM", current_title:"Software Engineer",     current_company:"B3",              email:"fabiana.moura9@email.com",    phone:"+55 11 93252-3127", has_email:true, has_phone:true, email_valid:true,  phone_valid:true,  source:"global" },
+  { id:"c10", name:"Tatiana Rocha",   initials:"TR", current_title:"Software Engineer",     current_company:"Accenture Brasil",email:"tatiana.rocha8@email.com",   phone:"+55 11 92660-4125", has_email:true, has_phone:true, email_valid:true,  phone_valid:false, source:"global" },
 ]
 
-// ---------------------------------------------------------------------------
-// ValidityBadge
-// ---------------------------------------------------------------------------
-function ValidityBadge({ valid, label, badLabel }: { valid?: boolean; label: string; badLabel: string }) {
-  if (valid === true) return <CheckCircle2 className="w-3 h-3 shrink-0 text-emerald-600" title={label} />
-  if (valid === false) return <AlertTriangle className="w-3 h-3 shrink-0 text-amber-500" title={badLabel} />
+// ─── ValidityBadge ───────────────────────────────────────────────────────
+function ValidityBadge({ valid }: { valid?: boolean | null }) {
+  if (valid === true)  return <CheckCircle2  style={{ width:12, height:12, flexShrink:0, color:T.success }}  />
+  if (valid === false) return <AlertTriangle style={{ width:12, height:12, flexShrink:0, color:T.warning }}  />
   return null
 }
 
-// ---------------------------------------------------------------------------
-// EmailCell
-// ---------------------------------------------------------------------------
+// ─── EmailCell — mirrors renderEmailCell exactly ──────────────────────────
 function EmailCell({ candidate, revealed, onReveal }: {
   candidate: Candidate
   revealed: RevealedContacts
-  onReveal: (c: Candidate, t: "email" | "phone") => void
+  onReveal: (c: Candidate, t: "email"|"phone") => void
 }) {
   const email = revealed[candidate.id]?.email || candidate.email
   if (email) {
     return (
-      <span className="inline-flex items-center gap-1 min-w-0">
-        <span className="text-xs text-slate-900 truncate max-w-[160px]">{email}</span>
-        <ValidityBadge valid={candidate.email_valid} label="E-mail verificado" badLabel="E-mail não verificado" />
+      <span style={{ display:"inline-flex", alignItems:"center", gap:4, minWidth:0 }}>
+        <span style={{ fontFamily:FONTS.sans, fontSize:12, color:T.textPrimary, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{email}</span>
+        <ValidityBadge valid={candidate.email_valid} />
       </span>
     )
   }
   if (candidate.has_email && candidate.source === "global") {
     return (
       <button
-        onClick={(e) => { e.stopPropagation(); onReveal(candidate, "email") }}
-        className="inline-flex items-center gap-1.5 px-2 py-0.5 text-[11px] font-medium rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors"
-        title="Clique para revelar email"
+        onClick={e => { e.stopPropagation(); onReveal(candidate, "email") }}
+        style={{
+          display:"inline-flex", alignItems:"center", gap:6,
+          padding:"2px 8px", fontSize:11, fontWeight:500,
+          fontFamily:FONTS.sans,
+          borderRadius:9999, border:"none", cursor:"pointer",
+          background:T.bgTertiary, color:T.textSecondary,
+        }}
+        onMouseEnter={e => (e.currentTarget.style.background = T.interactiveActive)}
+        onMouseLeave={e => (e.currentTarget.style.background = T.bgTertiary)}
       >
-        <Mail className="w-3 h-3" />
+        <Mail style={{ width:12, height:12 }} />
         <span>Revelar</span>
       </button>
     )
   }
-  return <span className="text-xs text-slate-900">-</span>
+  return <span style={{ fontSize:12, color:T.textPrimary }}>-</span>
 }
 
-// ---------------------------------------------------------------------------
-// PhoneCell
-// ---------------------------------------------------------------------------
+// ─── PhoneCell — mirrors renderPhoneCell exactly ──────────────────────────
 function PhoneCell({ candidate, revealed, onReveal }: {
   candidate: Candidate
   revealed: RevealedContacts
-  onReveal: (c: Candidate, t: "email" | "phone") => void
+  onReveal: (c: Candidate, t: "email"|"phone") => void
 }) {
   const phone = revealed[candidate.id]?.phone || candidate.phone
   if (phone) {
     return (
-      <span className="inline-flex items-center gap-1 min-w-0">
-        <span className="text-xs text-slate-900">{phone}</span>
-        <ValidityBadge valid={candidate.phone_valid} label="Telefone válido" badLabel="Telefone inválido" />
+      <span style={{ display:"inline-flex", alignItems:"center", gap:4 }}>
+        <span style={{ fontFamily:FONTS.data, fontSize:12, color:T.textPrimary }}>{phone}</span>
+        <ValidityBadge valid={candidate.phone_valid} />
       </span>
     )
   }
   if (candidate.has_phone && candidate.source === "global") {
     return (
       <button
-        onClick={(e) => { e.stopPropagation(); onReveal(candidate, "phone") }}
-        className="inline-flex items-center gap-1.5 px-2 py-0.5 text-[11px] font-medium rounded-full bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors"
-        title="Clique para revelar celular"
+        onClick={e => { e.stopPropagation(); onReveal(candidate, "phone") }}
+        style={{
+          display:"inline-flex", alignItems:"center", gap:6,
+          padding:"2px 8px", fontSize:11, fontWeight:500,
+          fontFamily:FONTS.sans,
+          borderRadius:9999, border:"none", cursor:"pointer",
+          background:T.successBg10, color:T.success,
+        }}
+        onMouseEnter={e => (e.currentTarget.style.background = T.successBg15)}
+        onMouseLeave={e => (e.currentTarget.style.background = T.successBg10)}
       >
-        <Phone className="w-3 h-3" />
+        <Phone style={{ width:12, height:12 }} />
         <span>Revelar</span>
       </button>
     )
   }
-  return <span className="text-xs text-slate-900">-</span>
+  return <span style={{ fontSize:12, color:T.textPrimary }}>-</span>
 }
 
-// ---------------------------------------------------------------------------
-// RevealCreditsModal — replica fiel de reveal-credits-modal.tsx
-// ---------------------------------------------------------------------------
+// ─── RevealCreditsModal — mirrors reveal-credits-modal.tsx exactly ────────
 function RevealCreditsModal({ isOpen, onClose, onConfirm, revealType, candidateName }: {
-  isOpen: boolean
-  onClose: () => void
-  onConfirm: () => void
-  revealType: "email" | "phone"
-  candidateName: string
+  isOpen: boolean; onClose: () => void; onConfirm: () => void
+  revealType: "email"|"phone"; candidateName: string
 }) {
   const [loading, setLoading] = useState(false)
   if (!isOpen) return null
-
   const credits = revealType === "email" ? 2 : 14
-  const Icon = revealType === "email" ? Mail : Phone
-  const label = revealType === "email" ? "email" : "telefone"
+  const Icon    = revealType === "email" ? Mail : Phone
+  const label   = revealType === "email" ? "email" : "celular"
 
   const handleConfirm = () => {
     setLoading(true)
@@ -155,32 +187,45 @@ function RevealCreditsModal({ isOpen, onClose, onConfirm, revealType, candidateN
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
+    <div
+      onClick={onClose}
+      style={{
+        position:"fixed", inset:0, zIndex:50,
+        display:"flex", alignItems:"center", justifyContent:"center",
+        background:"rgba(0,0,0,.6)", padding:16,
+        fontFamily:FONTS.sans,
+      }}
+    >
       <div
-        className="w-full max-w-md bg-white rounded-xl border border-slate-200 shadow-xl p-6 space-y-5"
-        onClick={(e) => e.stopPropagation()}
+        onClick={e => e.stopPropagation()}
+        style={{
+          width:"100%", maxWidth:420,
+          background:T.bgPrimary,
+          borderRadius:12, border:`1px solid ${T.borderSubtle}`,
+          boxShadow:T.shadowMd,
+          padding:24, display:"flex", flexDirection:"column", gap:20,
+        }}
       >
         {/* Header */}
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-slate-100 text-slate-600">
-            <Icon className="w-5 h-5" />
+        <div style={{ display:"flex", alignItems:"center", gap:12 }}>
+          <div style={{ padding:10, borderRadius:12, background:T.bgTertiary, color:T.textSecondary }}>
+            <Icon style={{ width:20, height:20 }} />
           </div>
-          <h2 className="text-sm font-semibold text-slate-900">Revelar {label}</h2>
+          <span style={{ fontSize:14, fontWeight:600, color:T.textPrimary }}>Revelar {label}</span>
         </div>
 
         {/* Body */}
-        <p className="text-sm text-slate-600">
-          Deseja revelar o {label} de{" "}
-          <strong className="text-slate-900">{candidateName}</strong>?
+        <p style={{ fontSize:14, color:T.textSecondary, margin:0 }}>
+          Deseja revelar o {label} de <strong style={{ color:T.textPrimary }}>{candidateName}</strong>?
         </p>
 
-        {/* Cost warning */}
-        <div className="p-4 rounded-xl bg-amber-50 border border-amber-200">
-          <div className="flex items-start gap-3">
-            <CreditCard className="w-5 h-5 text-amber-600 mt-0.5 shrink-0" />
+        {/* Cost box — mirrors status-warning/10 bg + status-warning/30 border */}
+        <div style={{ padding:16, borderRadius:12, background:T.warningBg10, border:`1px solid ${T.warningBorder30}` }}>
+          <div style={{ display:"flex", gap:12, alignItems:"flex-start" }}>
+            <CreditCard style={{ width:20, height:20, color:T.warning, flexShrink:0, marginTop:1 }} />
             <div>
-              <p className="font-semibold text-amber-700">Custo: {credits} créditos</p>
-              <p className="text-sm text-amber-600 mt-1">
+              <p style={{ fontWeight:600, color:T.warning, fontSize:14, margin:"0 0 4px" }}>Custo: {credits} créditos</p>
+              <p style={{ fontSize:13, color:T.warning, margin:0, opacity:.85 }}>
                 {revealType === "email"
                   ? "O custo será cobrado apenas se o candidato tiver email disponível."
                   : "O custo será cobrado apenas se o candidato tiver telefone disponível."}
@@ -190,40 +235,50 @@ function RevealCreditsModal({ isOpen, onClose, onConfirm, revealType, candidateN
         </div>
 
         {/* Disclaimer */}
-        <div className="flex items-start gap-2 text-xs text-slate-500">
-          <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
-          <span>Esta ação consumirá créditos da sua conta.</span>
+        <div style={{ display:"flex", gap:6, alignItems:"flex-start" }}>
+          <AlertTriangle style={{ width:14, height:14, color:T.textTertiary, flexShrink:0, marginTop:1 }} />
+          <span style={{ fontSize:12, color:T.textTertiary }}>Esta ação consumirá créditos da sua conta.</span>
         </div>
 
-        {/* Buttons */}
-        <div className="flex justify-end gap-2 pt-1">
+        {/* Actions */}
+        <div style={{ display:"flex", justifyContent:"flex-end", gap:8 }}>
           <button
-            onClick={onClose}
-            disabled={loading}
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm rounded-md border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+            onClick={onClose} disabled={loading}
+            style={{
+              display:"inline-flex", alignItems:"center", gap:8,
+              padding:"8px 14px", fontSize:13, fontWeight:500, borderRadius:6, cursor:"pointer",
+              background:T.bgPrimary, color:T.textPrimary,
+              border:`1px solid ${T.borderDefault}`, opacity: loading ? .5 : 1,
+              fontFamily:FONTS.sans,
+            }}
           >
-            <X className="w-4 h-4" /> Cancelar
+            <X style={{ width:14, height:14 }} /> Cancelar
           </button>
           <button
-            onClick={handleConfirm}
-            disabled={loading}
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm rounded-md bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-70"
+            onClick={handleConfirm} disabled={loading}
+            style={{
+              display:"inline-flex", alignItems:"center", gap:8,
+              padding:"8px 14px", fontSize:13, fontWeight:500, borderRadius:6, cursor:"pointer",
+              background:T.btnPrimaryBg, color:T.btnPrimaryText,
+              border:"none", opacity: loading ? .7 : 1,
+              fontFamily:FONTS.sans,
+            }}
           >
             {loading
-              ? <><Loader2 className="w-4 h-4 animate-spin" /> Revelando...</>
-              : <><Check className="w-4 h-4" /> Confirmar ({credits} créditos)</>
+              ? <><Loader2 style={{ width:14, height:14, animation:"spin 1s linear infinite" }} /> Revelando...</>
+              : <><Check style={{ width:14, height:14 }} /> Confirmar ({credits} créditos)</>
             }
           </button>
         </div>
       </div>
+
+      <style>{`@keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }`}</style>
     </div>
   )
 }
 
-// ---------------------------------------------------------------------------
-// BulkRevealModal — replica fiel de BulkRevealModal.tsx
-// ---------------------------------------------------------------------------
-function BulkRevealModal({ isOpen, onClose, count }: { isOpen: boolean; onClose: () => void; count: number }) {
+// ─── BulkRevealModal — mirrors BulkRevealModal.tsx ────────────────────────
+function BulkRevealModal({ isOpen, onClose, count }: { isOpen:boolean; onClose:()=>void; count:number }) {
   const [revealEmail, setRevealEmail] = useState(true)
   const [revealPhone, setRevealPhone] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -237,47 +292,70 @@ function BulkRevealModal({ isOpen, onClose, count }: { isOpen: boolean; onClose:
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
+    <div
+      onClick={onClose}
+      style={{
+        position:"fixed", inset:0, zIndex:50,
+        display:"flex", alignItems:"center", justifyContent:"center",
+        background:"rgba(0,0,0,.6)", padding:16, fontFamily:FONTS.sans,
+      }}
+    >
       <div
-        className="w-full max-w-md bg-white rounded-xl border border-slate-200 shadow-xl p-6 space-y-5"
-        onClick={(e) => e.stopPropagation()}
+        onClick={e => e.stopPropagation()}
+        style={{
+          width:"100%", maxWidth:420, background:T.bgPrimary,
+          borderRadius:12, border:`1px solid ${T.borderSubtle}`,
+          boxShadow:T.shadowMd, padding:24,
+          display:"flex", flexDirection:"column", gap:20,
+        }}
       >
-        <h2 className="text-sm font-semibold text-slate-900">
+        <h2 style={{ fontSize:14, fontWeight:600, color:T.textPrimary, margin:0 }}>
           Revelar contatos de {count} candidato{count !== 1 ? "s" : ""}
         </h2>
-        <p className="text-sm text-slate-600">
+        <p style={{ fontSize:13, color:T.textSecondary, margin:0 }}>
           Escolha o que revelar. A cobrança ocorre apenas pelos contatos efetivamente disponíveis.
         </p>
 
-        <div className="space-y-2">
-          <label className="flex items-center gap-3 p-3 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50">
-            <input type="checkbox" checked={revealEmail} onChange={e => setRevealEmail(e.target.checked)} className="w-4 h-4 accent-indigo-600" />
-            <Mail className="w-4 h-4 text-slate-600" />
-            <span className="flex-1 text-sm text-slate-900">Email</span>
-            <span className="text-xs text-slate-500">2 créd./candidato</span>
-          </label>
-          <label className="flex items-center gap-3 p-3 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50">
-            <input type="checkbox" checked={revealPhone} onChange={e => setRevealPhone(e.target.checked)} className="w-4 h-4 accent-indigo-600" />
-            <Phone className="w-4 h-4 text-slate-600" />
-            <span className="flex-1 text-sm text-slate-900">Telefone</span>
-            <span className="text-xs text-slate-500">14 créd./candidato</span>
-          </label>
+        <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+          {[
+            { label:"Email", Icon:Mail, credits:2, checked:revealEmail, onChange:setRevealEmail },
+            { label:"Telefone", Icon:Phone, credits:14, checked:revealPhone, onChange:setRevealPhone },
+          ].map(({ label, Icon, credits, checked, onChange }) => (
+            <label
+              key={label}
+              style={{
+                display:"flex", alignItems:"center", gap:12,
+                padding:"12px 14px", borderRadius:12,
+                border:`1px solid ${T.borderSubtle}`,
+                cursor:"pointer", background:T.bgPrimary,
+              }}
+            >
+              <input type="checkbox" checked={checked} onChange={e => onChange(e.target.checked)} style={{ width:16, height:16, accentColor:T.btnPrimaryBg }} />
+              <Icon style={{ width:16, height:16, color:T.textSecondary }} />
+              <span style={{ flex:1, fontSize:13, color:T.textPrimary }}>{label}</span>
+              <span style={{ fontSize:12, color:T.textTertiary }}>{credits} créd./candidato</span>
+            </label>
+          ))}
         </div>
 
-        <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 flex items-start gap-3">
-          <CreditCard className="w-5 h-5 text-amber-600 mt-0.5 shrink-0" />
-          <div>
-            <p className="font-semibold text-amber-700">Custo máximo: {maxCredits} créditos</p>
-            <p className="text-sm text-amber-600 mt-1">Candidatos sem o contato escolhido não consomem créditos.</p>
+        <div style={{ padding:16, borderRadius:12, background:T.warningBg10, border:`1px solid ${T.warningBorder30}` }}>
+          <div style={{ display:"flex", gap:12, alignItems:"flex-start" }}>
+            <CreditCard style={{ width:20, height:20, color:T.warning, flexShrink:0, marginTop:1 }} />
+            <div>
+              <p style={{ fontWeight:600, color:T.warning, fontSize:14, margin:"0 0 4px" }}>Custo máximo: {maxCredits} créditos</p>
+              <p style={{ fontSize:13, color:T.warning, margin:0, opacity:.85 }}>Candidatos sem o contato escolhido não consomem créditos.</p>
+            </div>
           </div>
         </div>
 
-        <div className="flex justify-end gap-2 pt-1">
-          <button onClick={onClose} disabled={loading} className="inline-flex items-center gap-2 px-4 py-2 text-sm rounded-md border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-50">
+        <div style={{ display:"flex", justifyContent:"flex-end", gap:8 }}>
+          <button onClick={onClose} disabled={loading}
+            style={{ display:"inline-flex", alignItems:"center", gap:8, padding:"8px 14px", fontSize:13, fontWeight:500, borderRadius:6, cursor:"pointer", background:T.bgPrimary, color:T.textPrimary, border:`1px solid ${T.borderDefault}`, fontFamily:FONTS.sans, opacity: loading ? .5 : 1 }}>
             Cancelar
           </button>
-          <button onClick={handleConfirm} disabled={loading || (!revealEmail && !revealPhone)} className="inline-flex items-center gap-2 px-4 py-2 text-sm rounded-md bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-70">
-            {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Revelando…</> : `Revelar (${count})`}
+          <button onClick={handleConfirm} disabled={loading || (!revealEmail && !revealPhone)}
+            style={{ display:"inline-flex", alignItems:"center", gap:8, padding:"8px 14px", fontSize:13, fontWeight:500, borderRadius:6, cursor:"pointer", background:T.btnPrimaryBg, color:T.btnPrimaryText, border:"none", fontFamily:FONTS.sans, opacity: (loading || (!revealEmail && !revealPhone)) ? .5 : 1 }}>
+            {loading ? <><Loader2 style={{ width:14, height:14, animation:"spin 1s linear infinite" }} /> Revelando…</> : `Revelar (${count})`}
           </button>
         </div>
       </div>
@@ -285,209 +363,289 @@ function BulkRevealModal({ isOpen, onClose, count }: { isOpen: boolean; onClose:
   )
 }
 
-// ---------------------------------------------------------------------------
-// Main component
-// ---------------------------------------------------------------------------
-export default function FunilBusca() {
-  const [activeTab, setActiveTab] = useState<string>("busca")
-  const [selected, setSelected] = useState<Set<string>>(new Set())
-  const [revealedContacts, setRevealedContacts] = useState<RevealedContacts>({
-    c1: { email: "maria.santos.eval@email.com", phone: "+55 11 95678-9012" },
-    c2: { email: "ana.almeida24@email.com", phone: "+55 11 92441-2559" },
-    c5: { email: "bruna.moura45@email.com", phone: "+55 11 94147-9660" },
-    c6: { email: "beatriz.silva7@email.com", phone: "+55 11 91810-8585" },
-    c9: { email: "fabiana.moura9@email.com", phone: "+55 11 93252-3127" },
-    c10: { email: "tatiana.rocha8@email.com", phone: "+55 11 92660-4125" },
-  })
+// ─── Checkbox helper ──────────────────────────────────────────────────────
+function CheckboxCell({ checked, indeterminate, onChange }: { checked: boolean; indeterminate?: boolean; onChange: () => void }) {
+  if (checked) {
+    return (
+      <button onClick={e => { e.stopPropagation(); onChange() }} style={{ background:"none", border:"none", padding:0, cursor:"pointer", color:T.btnPrimaryBg, display:"flex" }}>
+        <CheckSquare style={{ width:16, height:16 }} />
+      </button>
+    )
+  }
+  if (indeterminate) {
+    return (
+      <button onClick={e => { e.stopPropagation(); onChange() }} style={{ background:"none", border:"none", padding:0, cursor:"pointer", display:"flex" }}>
+        <div style={{ width:16, height:16, borderRadius:3, border:`2px solid ${T.btnPrimaryBg}`, background:`rgba(17,24,39,.1)`, display:"flex", alignItems:"center", justifyContent:"center" }}>
+          <div style={{ width:8, height:2, background:T.btnPrimaryBg, borderRadius:1 }} />
+        </div>
+      </button>
+    )
+  }
+  return (
+    <button onClick={e => { e.stopPropagation(); onChange() }} style={{ background:"none", border:"none", padding:0, cursor:"pointer", color:T.textDisabled, display:"flex" }}>
+      <Square style={{ width:16, height:16 }} />
+    </button>
+  )
+}
 
-  // Single reveal modal
-  const [revealModal, setRevealModal] = useState<{ open: boolean; candidate: Candidate | null; type: "email" | "phone" }>({ open: false, candidate: null, type: "email" })
-  // Bulk reveal modal
+// ─── Avatar ───────────────────────────────────────────────────────────────
+function Avatar({ initials }: { initials: string }) {
+  return (
+    <div style={{
+      width:28, height:28, borderRadius:"50%",
+      background:T.bgTertiary, color:T.textTertiary,
+      display:"flex", alignItems:"center", justifyContent:"center",
+      fontSize:10, fontWeight:600, flexShrink:0,
+      fontFamily:FONTS.sans,
+      border:`1px solid ${T.borderSubtle}`,
+    }}>
+      {initials}
+    </div>
+  )
+}
+
+// ─── SortIcon ─────────────────────────────────────────────────────────────
+function ColHeader({ label }: { label: string }) {
+  return (
+    <div style={{ display:"inline-flex", alignItems:"center", gap:4, cursor:"pointer" }}>
+      <span style={{ fontSize:11, fontWeight:600, color:T.textTertiary, textTransform:"uppercase", letterSpacing:.5, fontFamily:FONTS.sans }}>{label}</span>
+      <ChevronUp style={{ width:12, height:12, color:T.textDisabled }} />
+    </div>
+  )
+}
+
+// ─── Main ─────────────────────────────────────────────────────────────────
+export default function FunilBusca() {
+  const [activeTab, setActiveTab] = useState("busca")
+  const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [revealed, setRevealed] = useState<RevealedContacts>({
+    c1: { email:"maria.santos.eval@email.com",  phone:"+55 11 95678-9012" },
+    c2: { email:"ana.almeida24@email.com",       phone:"+55 11 92441-2559" },
+    c5: { email:"bruna.moura45@email.com",       phone:"+55 11 94147-9660" },
+    c6: { email:"beatriz.silva7@email.com",      phone:"+55 11 91810-8585" },
+    c9: { email:"fabiana.moura9@email.com",      phone:"+55 11 93252-3127" },
+    c10:{ email:"tatiana.rocha8@email.com",      phone:"+55 11 92660-4125" },
+  })
+  const [revealModal, setRevealModal] = useState<{ open:boolean; candidate:Candidate|null; type:"email"|"phone" }>({ open:false, candidate:null, type:"email" })
   const [bulkModal, setBulkModal] = useState(false)
 
-  const openReveal = (candidate: Candidate, type: "email" | "phone") => {
-    setRevealModal({ open: true, candidate, type })
-  }
+  const allSelected  = selected.size === CANDIDATES.length
+  const someSelected = selected.size > 0 && selected.size < CANDIDATES.length
+  const toggleAll    = () => setSelected(allSelected ? new Set() : new Set(CANDIDATES.map(c => c.id)))
+  const toggleOne    = (id: string) => setSelected(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n })
 
+  const openReveal = (candidate: Candidate, type: "email"|"phone") => setRevealModal({ open:true, candidate, type })
   const confirmReveal = () => {
     if (!revealModal.candidate) return
-    const fakeEmail = `${revealModal.candidate.name.toLowerCase().replace(/\s+/g, ".")}@email.com`
-    const fakePhone = `+55 11 9${Math.floor(Math.random() * 9000 + 1000)}-${Math.floor(Math.random() * 9000 + 1000)}`
-    setRevealedContacts(prev => ({
-      ...prev,
-      [revealModal.candidate!.id]: {
-        ...prev[revealModal.candidate!.id],
-        [revealModal.type]: revealModal.type === "email" ? fakeEmail : fakePhone,
-      }
-    }))
-    setRevealModal({ open: false, candidate: null, type: "email" })
+    const c = revealModal.candidate
+    const fakeEmail = `${c.name.toLowerCase().replace(/\s+/g,".")}@email.com`
+    const fakePhone = `+55 11 9${Math.floor(Math.random()*8000+1000)}-${Math.floor(Math.random()*9000+1000)}`
+    setRevealed(prev => ({ ...prev, [c.id]: { ...prev[c.id], [revealModal.type]: revealModal.type === "email" ? fakeEmail : fakePhone } }))
+    setRevealModal({ open:false, candidate:null, type:"email" })
   }
 
-  const toggleAll = () => {
-    if (selected.size === CANDIDATES.length) {
-      setSelected(new Set())
-    } else {
-      setSelected(new Set(CANDIDATES.map(c => c.id)))
-    }
-  }
-
-  const toggleOne = (id: string) => {
-    setSelected(prev => {
-      const next = new Set(prev)
-      next.has(id) ? next.delete(id) : next.add(id)
-      return next
-    })
-  }
-
-  const allSelected = selected.size === CANDIDATES.length
-  const someSelected = selected.size > 0 && selected.size < CANDIDATES.length
-
-  const tabs = ["Busca", "Favoritos", "Listas", "Bancos de Talentos", "Buscas Salvas", "Histórico"]
+  const TABS = [
+    { id:"busca", label:"Busca" },
+    { id:"favoritos", label:"Favoritos" },
+    { id:"listas", label:"Listas" },
+    { id:"bancos", label:"Bancos de Talentos" },
+    { id:"salvas", label:"Buscas Salvas" },
+    { id:"historico", label:"Histórico" },
+  ]
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
-      {/* ── Page header ── */}
-      <div className="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-slate-900">Funil de Talentos</h1>
-        <div className="flex items-center gap-2">
-          <button className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-md bg-indigo-600 text-white hover:bg-indigo-700">
-            <Plus className="w-4 h-4" /> Novo Candidato
+    <div style={{ minHeight:"100vh", background:T.bgSecondary, fontFamily:FONTS.sans }}>
+
+      {/* Import Google Fonts */}
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Open Sans', system-ui, sans-serif; }
+        @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+      `}</style>
+
+      {/* ── Page header ─────────────────────────────────────────────────── */}
+      <div style={{
+        background:T.bgPrimary, borderBottom:`1px solid ${T.borderSubtle}`,
+        padding:"14px 24px", display:"flex", alignItems:"center", justifyContent:"space-between",
+      }}>
+        <h1 style={{ fontSize:18, fontWeight:600, color:T.textPrimary, fontFamily:FONTS.sans }}>Funil de Talentos</h1>
+        <div style={{ display:"flex", gap:8 }}>
+          <button style={{
+            display:"inline-flex", alignItems:"center", gap:6,
+            padding:"7px 14px", fontSize:13, fontWeight:500, borderRadius:6,
+            background:T.btnPrimaryBg, color:T.btnPrimaryText, border:"none", cursor:"pointer",
+            fontFamily:FONTS.sans,
+          }}>
+            <Plus style={{ width:15, height:15 }} /> Novo Candidato
           </button>
-          <button className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-md border border-slate-300 bg-white text-slate-700 hover:bg-slate-50">
-            <Search className="w-4 h-4" /> Nova Busca
+          <button style={{
+            display:"inline-flex", alignItems:"center", gap:6,
+            padding:"7px 14px", fontSize:13, fontWeight:500, borderRadius:6,
+            background:T.bgPrimary, color:T.textPrimary,
+            border:`1px solid ${T.borderDefault}`, cursor:"pointer",
+            fontFamily:FONTS.sans,
+          }}>
+            <Search style={{ width:15, height:15 }} /> Nova Busca
           </button>
         </div>
       </div>
 
-      {/* ── Tabs ── */}
-      <div className="bg-white border-b border-slate-200 px-6">
-        <div className="flex gap-0">
-          {tabs.map(tab => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab.toLowerCase())}
-              className={cn(
-                "px-4 py-3 text-sm font-medium border-b-2 transition-colors",
-                activeTab === tab.toLowerCase()
-                  ? "border-indigo-600 text-indigo-700"
-                  : "border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300"
-              )}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
+      {/* ── Tab Navigation — PageTabNavigation (pill style) ─────────────── */}
+      <div style={{
+        background:T.bgPrimary, borderBottom:`1px solid ${T.borderSubtle}`,
+        padding:"10px 24px",
+      }}>
+        <nav style={{
+          display:"inline-flex", gap:4, padding:4,
+          background:T.bgSecondary, borderRadius:8,
+        }}>
+          {TABS.map(tab => {
+            const isActive = activeTab === tab.id
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                style={{
+                  display:"inline-flex", alignItems:"center",
+                  padding:"6px 12px", borderRadius:6,
+                  fontSize:12, fontWeight:500, cursor:"pointer", border:"none",
+                  background: isActive ? T.bgPrimary : "transparent",
+                  color: isActive ? T.textPrimary : T.textSecondary,
+                  boxShadow: isActive ? T.shadowSm : "none",
+                  transition:"all .15s",
+                  fontFamily:FONTS.sans,
+                }}
+              >
+                {tab.label}
+              </button>
+            )
+          })}
+        </nav>
       </div>
 
-      {/* ── Content ── */}
-      <div className="p-4 flex flex-col gap-3">
+      {/* ── Content ─────────────────────────────────────────────────────── */}
+      <div style={{ padding:16, display:"flex", flexDirection:"column", gap:12 }}>
 
-        {/* Search bar row */}
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-2 text-sm text-slate-600">
-            <button className="p-1 rounded hover:bg-slate-100">
-              <ArrowLeft className="w-4 h-4" />
+        {/* Search bar + controls row */}
+        <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:16 }}>
+          {/* Left: search info */}
+          <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+            <button style={{ padding:4, borderRadius:6, border:"none", background:"transparent", cursor:"pointer", color:T.textTertiary, display:"flex" }}>
+              <ArrowLeft style={{ width:16, height:16 }} />
             </button>
-            <div className="flex items-center gap-1.5 bg-white border border-slate-200 rounded-md px-3 py-1.5">
-              <Search className="w-3.5 h-3.5 text-slate-400" />
-              <span className="text-slate-700 font-medium">Busca realizada</span>
-              <button className="p-0.5 rounded hover:bg-slate-100 ml-0.5">
-                <Edit2 className="w-3 h-3 text-slate-400" />
+            <div style={{
+              display:"inline-flex", alignItems:"center", gap:6,
+              background:T.bgPrimary, border:`1px solid ${T.borderSubtle}`,
+              borderRadius:6, padding:"5px 10px",
+            }}>
+              <Search style={{ width:14, height:14, color:T.textDisabled }} />
+              <span style={{ fontSize:13, fontWeight:500, color:T.textPrimary, fontFamily:FONTS.sans }}>Busca realizada</span>
+              <button style={{ padding:2, border:"none", background:"transparent", cursor:"pointer", color:T.textDisabled, display:"flex", borderRadius:4 }}>
+                <Edit2 style={{ width:12, height:12 }} />
               </button>
             </div>
-            <button className="flex items-center gap-1 text-indigo-600 hover:text-indigo-700 text-sm font-medium">
-              Editar Filtros <ChevronRight className="w-3.5 h-3.5" />
+            <button style={{ display:"inline-flex", alignItems:"center", gap:4, fontSize:13, fontWeight:500, color:T.btnPrimaryBg, background:"transparent", border:"none", cursor:"pointer", fontFamily:FONTS.sans }}>
+              Editar Filtros <ChevronRight style={{ width:14, height:14 }} />
             </button>
           </div>
 
-          {/* Controls */}
-          <div className="flex items-center gap-2">
-            <button
-              onClick={toggleAll}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-md border border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
-            >
-              {allSelected
-                ? <CheckSquare className="w-4 h-4 text-indigo-600" />
-                : <Square className="w-4 h-4" />
-              }
-              Selecionar Todos
-            </button>
-            <button className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-md border border-slate-300 bg-white text-slate-700 hover:bg-slate-50">
-              <SlidersHorizontal className="w-4 h-4" /> Filtros
-            </button>
-            <button className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-md border border-slate-300 bg-white text-slate-700 hover:bg-slate-50">
-              <Columns3 className="w-4 h-4" /> Colunas <span className="ml-1 text-xs bg-slate-100 px-1.5 py-0.5 rounded-full font-medium">11</span>
+          {/* Right: controls */}
+          <div style={{ display:"flex", gap:8 }}>
+            {[
+              { label:"Selecionar Todos", icon: allSelected ? <CheckSquare style={{ width:15, height:15, color:T.btnPrimaryBg }} /> : <Square style={{ width:15, height:15 }} />, onClick: toggleAll },
+              { label:"Filtros", icon: <SlidersHorizontal style={{ width:15, height:15 }} /> },
+            ].map(({ label, icon, onClick }) => (
+              <button
+                key={label}
+                onClick={onClick}
+                style={{
+                  display:"inline-flex", alignItems:"center", gap:6,
+                  padding:"6px 12px", fontSize:13, fontWeight:500, borderRadius:6,
+                  background:T.bgPrimary, color:T.textPrimary,
+                  border:`1px solid ${T.borderDefault}`, cursor:"pointer",
+                  fontFamily:FONTS.sans,
+                }}
+              >
+                {icon} {label}
+              </button>
+            ))}
+            <button style={{
+              display:"inline-flex", alignItems:"center", gap:6,
+              padding:"6px 12px", fontSize:13, fontWeight:500, borderRadius:6,
+              background:T.bgPrimary, color:T.textPrimary,
+              border:`1px solid ${T.borderDefault}`, cursor:"pointer",
+              fontFamily:FONTS.sans,
+            }}>
+              <Columns3 style={{ width:15, height:15 }} /> Colunas
+              <span style={{ fontSize:11, fontWeight:600, background:T.bgTertiary, color:T.textSecondary, padding:"1px 6px", borderRadius:9999, fontFamily:FONTS.data }}>11</span>
             </button>
           </div>
         </div>
 
-        {/* Bulk actions bar (visible when candidates selected) */}
+        {/* Bulk actions bar */}
         {selected.size > 0 && (
-          <div className="flex items-center gap-2 px-4 py-2.5 bg-indigo-50 border border-indigo-200 rounded-lg text-sm text-indigo-700 font-medium">
+          <div style={{
+            display:"flex", alignItems:"center", gap:8,
+            padding:"10px 16px",
+            background:"rgba(17,24,39,.04)",
+            border:`1px solid rgba(17,24,39,.12)`,
+            borderRadius:8,
+            fontSize:13, fontWeight:500, color:T.textPrimary,
+            fontFamily:FONTS.sans,
+          }}>
             <span>{selected.size} candidato{selected.size !== 1 ? "s" : ""} selecionado{selected.size !== 1 ? "s" : ""}</span>
-            <div className="flex-1" />
+            <div style={{ flex:1 }} />
             <button
               onClick={() => setBulkModal(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] rounded-md bg-indigo-600 text-white hover:bg-indigo-700"
+              style={{
+                display:"inline-flex", alignItems:"center", gap:6,
+                padding:"5px 12px", fontSize:12, fontWeight:500, borderRadius:6,
+                background:T.btnPrimaryBg, color:T.btnPrimaryText, border:"none", cursor:"pointer",
+                fontFamily:FONTS.sans,
+              }}
             >
-              <Mail className="w-3.5 h-3.5" /> Revelar Contatos
+              <Mail style={{ width:14, height:14 }} /> Revelar Contatos
             </button>
-            <button className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] rounded-md border border-indigo-300 bg-white text-indigo-700 hover:bg-indigo-50">
-              <X className="w-3.5 h-3.5" /> Deselecionar
+            <button
+              onClick={() => setSelected(new Set())}
+              style={{
+                display:"inline-flex", alignItems:"center", gap:6,
+                padding:"5px 12px", fontSize:12, fontWeight:500, borderRadius:6,
+                background:T.bgPrimary, color:T.textPrimary,
+                border:`1px solid ${T.borderDefault}`, cursor:"pointer",
+                fontFamily:FONTS.sans,
+              }}
+            >
+              <X style={{ width:13, height:13 }} /> Deselecionar
             </button>
           </div>
         )}
 
         {/* Table */}
-        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+        <div style={{
+          background:T.bgPrimary, borderRadius:12,
+          border:`1px solid ${T.borderSubtle}`,
+          overflow:"hidden",
+          boxShadow:T.shadowSm,
+        }}>
+          <div style={{ overflowX:"auto" }}>
+            <table style={{ width:"100%", borderCollapse:"collapse", fontSize:13 }}>
               <thead>
-                <tr className="border-b border-slate-200 bg-slate-50">
-                  <th className="w-10 px-3 py-3">
-                    <button onClick={toggleAll} className="flex items-center">
-                      {allSelected
-                        ? <CheckSquare className="w-4 h-4 text-indigo-600" />
-                        : someSelected
-                          ? <div className="w-4 h-4 rounded border-2 border-indigo-500 bg-indigo-100 flex items-center justify-center"><div className="w-1.5 h-0.5 bg-indigo-600" /></div>
-                          : <Square className="w-4 h-4 text-slate-400" />
-                      }
-                    </button>
+                <tr style={{ borderBottom:`1px solid ${T.borderSubtle}`, background:T.bgSecondary }}>
+                  <th style={{ width:40, padding:"10px 12px" }}>
+                    <CheckboxCell checked={allSelected} indeterminate={someSelected} onChange={toggleAll} />
                   </th>
-                  <th className="w-8 px-1 py-3"></th>
-                  <th className="w-8 px-1 py-3"></th>
-                  <th className="px-3 py-3 text-left">
-                    <div className="flex items-center gap-1 text-xs font-semibold text-slate-500 uppercase tracking-wide cursor-pointer hover:text-slate-700">
-                      Cargo atual <ChevronUp className="w-3 h-3 opacity-50" />
-                    </div>
-                  </th>
-                  <th className="px-3 py-3 text-left">
-                    <div className="flex items-center gap-1 text-xs font-semibold text-slate-500 uppercase tracking-wide cursor-pointer hover:text-slate-700">
-                      Empresa atual <ChevronUp className="w-3 h-3 opacity-50" />
-                    </div>
-                  </th>
-                  <th className="px-3 py-3 text-left">
-                    <div className="flex items-center gap-1 text-xs font-semibold text-slate-500 uppercase tracking-wide cursor-pointer hover:text-slate-700">
-                      Salário atual <ChevronUp className="w-3 h-3 opacity-50" />
-                    </div>
-                  </th>
-                  <th className="px-3 py-3 text-left">
-                    <div className="flex items-center gap-1 text-xs font-semibold text-slate-500 uppercase tracking-wide cursor-pointer hover:text-slate-700">
-                      Expectativa salarial <ChevronUp className="w-3 h-3 opacity-50" />
-                    </div>
-                  </th>
-                  <th className="px-3 py-3 text-left min-w-[200px]">
-                    <div className="flex items-center gap-1 text-xs font-semibold text-slate-500 uppercase tracking-wide cursor-pointer hover:text-slate-700">
-                      E-mail <ChevronUp className="w-3 h-3 opacity-50" />
-                    </div>
-                  </th>
-                  <th className="px-3 py-3 text-left min-w-[180px]">
-                    <div className="flex items-center gap-1 text-xs font-semibold text-slate-500 uppercase tracking-wide cursor-pointer hover:text-slate-700">
-                      Celular <ChevronUp className="w-3 h-3 opacity-50" />
-                    </div>
-                  </th>
-                  <th className="px-3 py-3 text-left w-16">
-                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">LinkedIn</span>
+                  <th style={{ width:32, padding:"10px 4px" }} />
+                  <th style={{ width:32, padding:"10px 4px" }} />
+                  <th style={{ padding:"10px 12px", textAlign:"left" }}><ColHeader label="Cargo atual" /></th>
+                  <th style={{ padding:"10px 12px", textAlign:"left" }}><ColHeader label="Empresa atual" /></th>
+                  <th style={{ padding:"10px 12px", textAlign:"left" }}><ColHeader label="Salário atual" /></th>
+                  <th style={{ padding:"10px 12px", textAlign:"left" }}><ColHeader label="Expectativa salarial" /></th>
+                  <th style={{ padding:"10px 12px", textAlign:"left", minWidth:220 }}><ColHeader label="E-mail" /></th>
+                  <th style={{ padding:"10px 12px", textAlign:"left", minWidth:200 }}><ColHeader label="Celular" /></th>
+                  <th style={{ padding:"10px 12px", textAlign:"left", width:60 }}>
+                    <span style={{ fontSize:11, fontWeight:600, color:T.textTertiary, textTransform:"uppercase", letterSpacing:.5, fontFamily:FONTS.sans }}>LinkedIn</span>
                   </th>
                 </tr>
               </thead>
@@ -497,76 +655,54 @@ export default function FunilBusca() {
                   return (
                     <tr
                       key={c.id}
-                      className={cn(
-                        "border-b border-slate-100 hover:bg-slate-50 transition-colors cursor-pointer",
-                        isSelected && "bg-indigo-50/50",
-                        idx === CANDIDATES.length - 1 && "border-b-0"
-                      )}
+                      style={{
+                        borderBottom: idx < CANDIDATES.length - 1 ? `1px solid ${T.borderSubtle}` : "none",
+                        background: isSelected ? "rgba(17,24,39,.03)" : T.bgPrimary,
+                        cursor:"pointer",
+                      }}
+                      onMouseEnter={e => !isSelected && ((e.currentTarget as HTMLElement).style.background = T.bgSecondary)}
+                      onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = isSelected ? "rgba(17,24,39,.03)" : T.bgPrimary}
                     >
-                      {/* Checkbox */}
-                      <td className="px-3 py-3" onClick={(e) => { e.stopPropagation(); toggleOne(c.id) }}>
-                        {isSelected
-                          ? <CheckSquare className="w-4 h-4 text-indigo-600" />
-                          : <Square className="w-4 h-4 text-slate-300 hover:text-slate-500" />
-                        }
+                      <td style={{ padding:"10px 12px" }}>
+                        <CheckboxCell checked={isSelected} onChange={() => toggleOne(c.id)} />
                       </td>
-
-                      {/* Star */}
-                      <td className="px-1 py-3">
-                        <button className="text-slate-300 hover:text-amber-400 transition-colors">
-                          <Star className="w-4 h-4" />
+                      <td style={{ padding:"10px 4px" }}>
+                        <button style={{ background:"none", border:"none", padding:2, cursor:"pointer", color:T.borderDefault, display:"flex" }}>
+                          <Star style={{ width:15, height:15 }} />
                         </button>
                       </td>
-
-                      {/* Pin */}
-                      <td className="px-1 py-3">
-                        <button className="text-slate-300 hover:text-slate-600 transition-colors">
-                          <Pin className="w-4 h-4" />
+                      <td style={{ padding:"10px 4px" }}>
+                        <button style={{ background:"none", border:"none", padding:2, cursor:"pointer", color:T.borderDefault, display:"flex" }}>
+                          <Pin style={{ width:15, height:15 }} />
                         </button>
                       </td>
-
-                      {/* Candidate name (not shown in screenshot but table structure has it — we skip to cargo) */}
-                      <td className="px-3 py-3">
-                        <div className="flex items-center gap-2">
-                          <div className="w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-[10px] font-semibold shrink-0">
-                            {c.initials}
-                          </div>
-                          <div className="min-w-0">
-                            <div className="text-xs font-medium text-slate-900 truncate">{c.current_title}</div>
-                            <div className="text-[10px] text-slate-500 truncate">{c.name}</div>
+                      <td style={{ padding:"10px 12px" }}>
+                        <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                          <Avatar initials={c.initials} />
+                          <div style={{ minWidth:0 }}>
+                            <div style={{ fontSize:13, fontWeight:500, color:T.textPrimary, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", fontFamily:FONTS.sans }}>{c.current_title}</div>
+                            <div style={{ fontSize:11, color:T.textTertiary, fontFamily:FONTS.sans }}>{c.name}</div>
                           </div>
                         </div>
                       </td>
-
-                      {/* Company */}
-                      <td className="px-3 py-3">
-                        <span className="text-xs text-slate-700">{c.current_company}</span>
+                      <td style={{ padding:"10px 12px" }}>
+                        <span style={{ fontSize:13, color:T.textSecondary, fontFamily:FONTS.sans }}>{c.current_company}</span>
                       </td>
-
-                      {/* Salary */}
-                      <td className="px-3 py-3">
-                        <span className="text-xs text-slate-500">{c.salary}</span>
+                      <td style={{ padding:"10px 12px" }}>
+                        <span style={{ fontSize:13, color:T.textDisabled, fontFamily:FONTS.data }}>N/A</span>
                       </td>
-
-                      {/* Salary expectation */}
-                      <td className="px-3 py-3">
-                        <span className="text-xs text-slate-500">{c.salary_expectation}</span>
+                      <td style={{ padding:"10px 12px" }}>
+                        <span style={{ fontSize:13, color:T.textDisabled, fontFamily:FONTS.data }}>N/A</span>
                       </td>
-
-                      {/* Email */}
-                      <td className="px-3 py-3">
-                        <EmailCell candidate={c} revealed={revealedContacts} onReveal={openReveal} />
+                      <td style={{ padding:"10px 12px" }}>
+                        <EmailCell candidate={c} revealed={revealed} onReveal={openReveal} />
                       </td>
-
-                      {/* Phone */}
-                      <td className="px-3 py-3">
-                        <PhoneCell candidate={c} revealed={revealedContacts} onReveal={openReveal} />
+                      <td style={{ padding:"10px 12px" }}>
+                        <PhoneCell candidate={c} revealed={revealed} onReveal={openReveal} />
                       </td>
-
-                      {/* LinkedIn */}
-                      <td className="px-3 py-3">
-                        <button className="inline-flex items-center justify-center w-7 h-7 rounded-md hover:bg-slate-100 transition-colors text-slate-400 hover:text-indigo-600">
-                          <Linkedin className="w-4 h-4" />
+                      <td style={{ padding:"10px 12px" }}>
+                        <button style={{ display:"inline-flex", alignItems:"center", justifyContent:"center", width:28, height:28, borderRadius:6, border:"none", background:"transparent", cursor:"pointer", color:T.textDisabled }}>
+                          <Linkedin style={{ width:16, height:16 }} />
                         </button>
                       </td>
                     </tr>
@@ -577,36 +713,44 @@ export default function FunilBusca() {
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-between px-4 py-3 border-t border-slate-100 bg-slate-50/60 text-xs text-slate-500">
-            <span>Exibindo {CANDIDATES.length} de 127 resultados</span>
-            <button className="px-3 py-1.5 rounded-md border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 text-xs font-medium">
+          <div style={{
+            display:"flex", alignItems:"center", justifyContent:"space-between",
+            padding:"10px 16px",
+            borderTop:`1px solid ${T.borderSubtle}`,
+            background:T.bgSecondary,
+          }}>
+            <span style={{ fontSize:12, color:T.textTertiary, fontFamily:FONTS.sans }}>Exibindo {CANDIDATES.length} de 127 resultados</span>
+            <button style={{
+              padding:"5px 12px", fontSize:12, fontWeight:500, borderRadius:6, cursor:"pointer",
+              background:T.bgPrimary, color:T.textSecondary,
+              border:`1px solid ${T.borderSubtle}`,
+              fontFamily:FONTS.sans,
+            }}>
               Carregar mais
             </button>
           </div>
         </div>
 
         {/* Legend */}
-        <div className="flex items-center gap-6 text-[11px] text-slate-500 px-1">
-          <div className="flex items-center gap-1.5">
-            <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
-              <Mail className="w-3 h-3" />
-              <span>Revelar</span>
-            </div>
-            <span>= contato disponível, clique para consumir créditos e revelar</span>
+        <div style={{ display:"flex", alignItems:"center", gap:20, fontSize:11, color:T.textTertiary, paddingLeft:4, fontFamily:FONTS.sans, flexWrap:"wrap" }}>
+          <div style={{ display:"inline-flex", alignItems:"center", gap:6 }}>
+            <span style={{ display:"inline-flex", alignItems:"center", gap:4, padding:"2px 8px", borderRadius:9999, background:T.bgTertiary, color:T.textSecondary }}>
+              <Mail style={{ width:11, height:11 }} /> <span style={{ fontSize:11 }}>Revelar</span>
+            </span>
+            <span>= e-mail disponível (2 créditos)</span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700">
-              <Phone className="w-3 h-3" />
-              <span>Revelar</span>
-            </div>
+          <div style={{ display:"inline-flex", alignItems:"center", gap:6 }}>
+            <span style={{ display:"inline-flex", alignItems:"center", gap:4, padding:"2px 8px", borderRadius:9999, background:T.successBg10, color:T.success }}>
+              <Phone style={{ width:11, height:11 }} /> <span style={{ fontSize:11 }}>Revelar</span>
+            </span>
             <span>= celular disponível (14 créditos)</span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+          <div style={{ display:"inline-flex", alignItems:"center", gap:4 }}>
+            <CheckCircle2 style={{ width:12, height:12, color:T.success }} />
             <span>= contato verificado</span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />
+          <div style={{ display:"inline-flex", alignItems:"center", gap:4 }}>
+            <AlertTriangle style={{ width:12, height:12, color:T.warning }} />
             <span>= dado com ressalva</span>
           </div>
         </div>
@@ -615,16 +759,12 @@ export default function FunilBusca() {
       {/* Modals */}
       <RevealCreditsModal
         isOpen={revealModal.open}
-        onClose={() => setRevealModal(prev => ({ ...prev, open: false }))}
+        onClose={() => setRevealModal(prev => ({ ...prev, open:false }))}
         onConfirm={confirmReveal}
         revealType={revealModal.type}
         candidateName={revealModal.candidate?.name ?? ""}
       />
-      <BulkRevealModal
-        isOpen={bulkModal}
-        onClose={() => setBulkModal(false)}
-        count={selected.size}
-      />
+      <BulkRevealModal isOpen={bulkModal} onClose={() => setBulkModal(false)} count={selected.size} />
     </div>
   )
 }
