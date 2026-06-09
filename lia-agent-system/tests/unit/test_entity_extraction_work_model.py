@@ -40,10 +40,24 @@ class TestEntityExtractionWorkModel:
         assert result.get("location") != "Presencial"
 
     def test_location_sao_paulo_is_still_extracted(self):
-        """Cidades reais devem continuar funcionando."""
+        """Cidades reais devem continuar funcionando (acento presente)."""
         result = _extract_entities("desenvolvedor São Paulo")
         assert result.get("location") is not None
         assert "paulo" in result.get("location", "").lower()
+
+    def test_location_sao_paulo_sem_acento(self):
+        """BUG D: 'sao paulo' sem acento nao era reconhecido.
+        re.IGNORECASE nao normaliza unicode — precisa normalizar query antes."""
+        result = _extract_entities("desenvolvedor python senior baseado em sao paulo")
+        assert result.get("location") is not None, "sao paulo sem acento deve ser extraido como location"
+        assert "paulo" in result.get("location", "").lower(), f"esperado 'paulo' em location, got: {result.get('location')}"
+
+    def test_location_sao_paulo_sem_acento_nao_vira_location_errada(self):
+        """BUG D: quando nao matchava, o em_pattern capturava 'sao paulo Python' como location."""
+        result = _extract_entities("desenvolvedor python senior baseado em sao paulo Python com FastAPI")
+        loc = result.get("location", "") or ""
+        assert "python" not in loc.lower(), f"'Python' nao deve estar na location: '{loc}'"
+        assert "Paulo" in loc or "paulo" in loc.lower(), f"location deve ser sao paulo, got: '{loc}'"
 
     def test_work_model_and_location_both_present(self):
         """Query com modelo DE TRABALHO e CIDADE separados."""

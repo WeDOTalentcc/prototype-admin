@@ -331,14 +331,24 @@ def _extract_search_entities(query: str) -> dict:
         result["work_model"] = _work_model_accented.get(_raw) or _work_model_map.get(_raw, _raw)
 
     # Simplified location check (cities only, not full list)
-    cities = ["são paulo", "sp", "rio de janeiro", "rj", "belo horizonte", "bh",
-              "brasília", "df", "curitiba", "porto alegre", "poa", "salvador",
-              "fortaleza", "recife", "manaus", "florianópolis", "campinas",
+    # BUG-LOCATION-DIACRITICS (2026-06-09): normalizar query e cidades para cobrir
+    # inputs sem acento ("sao paulo" vs "sao paulo").
+    cities = ["sao paulo", "sp", "rio de janeiro", "rj", "belo horizonte", "bh",
+              "brasilia", "df", "curitiba", "porto alegre", "poa", "salvador",
+              "fortaleza", "recife", "manaus", "florianopolis", "campinas",
               "brasil", "brazil", "portugal", "argentina"]
+    _city_display = {"sao paulo": "Sao Paulo", "rio de janeiro": "Rio de Janeiro",
+                     "belo horizonte": "Belo Horizonte", "brasilia": "Brasilia",
+                     "florianopolis": "Florianopolis", "porto alegre": "Porto Alegre"}
+    def _ascii_norm(t):
+        import unicodedata as _ud
+        return _ud.normalize("NFD", t).encode("ascii", "ignore").decode("ascii").lower()
+    q_norm = _ascii_norm(q)
     city_pat = r"\b(" + "|".join(_re.escape(c) for c in sorted(cities, key=len, reverse=True)) + r")\b"
-    loc_m = _re.search(city_pat, q, _re.IGNORECASE)
+    loc_m = _re.search(city_pat, q_norm, _re.IGNORECASE)
     if loc_m:
-        result["location"] = loc_m.group(0).strip().title()
+        matched = loc_m.group(0).lower()
+        result["location"] = _city_display.get(matched, matched).title()
 
     job_titles_sample = [
         "product manager", "desenvolvedor", "developer", "engenheiro de software",
@@ -413,12 +423,23 @@ async def parse_search_query(request: ParseQueryRequest, company_id: str = Depen
         confidence += 0.2
 
     # 1b. Location — apenas cidades/estados/países (sem work_model)
+    # BUG-LOCATION-DIACRITICS (2026-06-09): normalizar query para cobrir inputs
+    # sem acento ("sao paulo" vs "sao paulo"). Busca em q_ascii mas preserva
+    # nome original para display.
+    import unicodedata as _ud_loc
+    def _loc_norm(t):
+        return _ud_loc.normalize("NFD", t).encode("ascii", "ignore").decode("ascii").lower()
+    q_ascii = _loc_norm(query)
     all_locations = brazilian_cities + brazilian_states + countries_regions
-    location_pattern = r'\b(' + '|'.join(re.escape(loc) for loc in all_locations) + r')\b'
+    all_locations_ascii = [_loc_norm(loc) for loc in all_locations]
+    location_pattern = r'\b(' + '|'.join(re.escape(loc) for loc in all_locations_ascii) + r')\b'
 
-    match = re.search(location_pattern, query, re.IGNORECASE)
+    match = re.search(location_pattern, q_ascii, re.IGNORECASE)
     if match:
-        entities.location = match.group(0).strip().title()
+        # recuperar nome original com acento para exibicao
+        matched_ascii = match.group(0).lower()
+        orig_name = next((o for o, a in zip(all_locations, all_locations_ascii) if a == matched_ascii), match.group(0))
+        entities.location = orig_name.strip().title()
         confidence += 0.2
     else:
         em_pattern = r'\bem\s+([a-záàâãéèêíïóôõöúçñ\s]{3,25})(?:\s+com|\s+que|\s+de|\s+e\s|,|$)'
