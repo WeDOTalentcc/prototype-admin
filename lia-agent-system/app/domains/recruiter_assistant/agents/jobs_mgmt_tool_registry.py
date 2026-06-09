@@ -103,9 +103,10 @@ async def _wrap_list_jobs(**kwargs: Any) -> dict[str, Any]:
     status = kwargs.get("status", "all")
     department = kwargs.get("department", "all")
     company_id = kwargs.get("company_id", "")
-    limit = int(kwargs.get("limit", 30))
+    limit = int(kwargs.get("limit", 50))
+    query: str | None = kwargs.get("query") or kwargs.get("title_query") or None
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
-    logger.info(f"[jobs_mgmt_tools] list_jobs called: status={status} department={department}")
+    logger.info(f"[jobs_mgmt_tools] list_jobs called: status={status} department={department} query={query!r}")
 
     jobs: list[dict] = []
     total = 0
@@ -118,6 +119,7 @@ async def _wrap_list_jobs(**kwargs: Any) -> dict[str, Any]:
                 status=status,
                 department=department,
                 limit=limit,
+                title_query=query,
             )
             jobs = result["jobs"]
             total = result["total"]
@@ -706,12 +708,21 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
     ),
     ToolDefinition(
         name="list_jobs",
-        description="Lista todas as vagas ativas com status, metricas e informacoes resumidas do portfolio.",
+        description=(
+            "Lista vagas com status, metricas e informacoes resumidas do portfolio. "
+            "Use o parametro 'query' para buscar por nome/titulo (substring case-insensitive). "
+            "Exemplo: query='Diretor Juridico' retorna vagas cujo titulo contem essa expressao. "
+            "Sem query retorna as 50 vagas mais recentes/prioritarias."
+        ),
         parameters={
             "type": "object",
             "properties": {
-                "status": {"type": "string", "description": "Filtro de status: active, paused, closed, all"},
-                "department": {"type": "string", "description": "Filtro por departamento"},
+                "status": {"type": "string", "description": "Filtro de status: active, paused, closed, all (padrao: all)"},
+                "department": {"type": "string", "description": "Filtro por departamento (padrao: all)"},
+                "query": {
+                    "type": "string",
+                    "description": "Busca por titulo da vaga (substring, case-insensitive). Use quando o usuario mencionar o nome de uma vaga especifica.",
+                },
             },
             "required": [],
         },

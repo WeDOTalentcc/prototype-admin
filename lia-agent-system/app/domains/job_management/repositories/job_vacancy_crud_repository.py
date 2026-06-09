@@ -478,9 +478,13 @@ class JobVacancyCRUDRepository:
         company_id: str,
         status: str = "all",
         department: str = "all",
-        limit: int = 30,
+        limit: int = 50,
+        title_query: str | None = None,
     ) -> dict:
         """Vacancy list with candidate counts per stage.
+
+        Args:
+            title_query: Optional substring filter on job title (case-insensitive).
 
         Returns dict with keys: jobs (list), total.
         """
@@ -497,6 +501,7 @@ class JobVacancyCRUDRepository:
                 FROM job_vacancies jv
                 WHERE (:status = 'all' OR status ILIKE :status_val)
                   AND (:dept = 'all' OR department ILIKE :dept_val)
+                  AND (:title_q IS NULL OR title ILIKE :title_q_val)
                   AND company_id = :company_id
                 ORDER BY
                     CASE status
@@ -512,8 +517,10 @@ class JobVacancyCRUDRepository:
                 "status_val": f"%{status}%",
                 "dept": department,
                 "dept_val": f"%{department}%",
+                "title_q": title_query,
+                "title_q_val": f"%{title_query}%" if title_query else None,
                 "company_id": cid,
-                "lim": limit,
+                "lim": 100 if title_query else limit,
             },
         )
         jobs = []
@@ -534,6 +541,7 @@ class JobVacancyCRUDRepository:
                 SELECT COUNT(*) AS total FROM job_vacancies
                 WHERE (:status = 'all' OR status ILIKE :status_val)
                   AND (:dept = 'all' OR department ILIKE :dept_val)
+                  AND (:title_q IS NULL OR title ILIKE :title_q_val)
                   AND company_id = :company_id
             """),
             {
@@ -541,6 +549,8 @@ class JobVacancyCRUDRepository:
                 "status_val": f"%{status}%",
                 "dept": department,
                 "dept_val": f"%{department}%",
+                "title_q": title_query,
+                "title_q_val": f"%{title_query}%" if title_query else None,
                 "company_id": cid,
             },
         )
