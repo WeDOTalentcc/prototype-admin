@@ -392,3 +392,16 @@ def federated_scoping_enabled() -> bool:
     """Escopo dinamico de tools ativo se LIA_FEDERATED_SCOPED_TOOLS OU
     LIA_FEDERATED_PRIMARY (primario IMPLICA escopo — senao seriam 179 tools)."""
     return _flag("LIA_FEDERATED_SCOPED_TOOLS") or _flag("LIA_FEDERATED_PRIMARY")
+
+
+# ---------------------------------------------------------------------------
+# Fase C.1 (2026-06-09): Studio scope extension — first-party agent manifests
+# feed the federated scope resolver.  The async integration (db-aware) lives in
+# studio_scope_extension.py.  This import makes scope_config the bridge point.
+# HOT FILE RULE: this is the ONLY line added to this file in Fase C.1.
+# ---------------------------------------------------------------------------
+from app.orchestrator.studio_scope_extension import (  # noqa: E402, F401
+    get_studio_tools_for_scope,
+    get_studio_covered_scopes,
+    invalidate_studio_scope_cache,
+)

@@ -99,3 +99,46 @@ class CustomAgentRepository:
         )
         await self._db.execute(stmt)
         await self._db.commit()
+
+    async def list_first_party_agents(self) -> list[CustomAgent]:
+        """Returns all active first-party (WeDo global) Studio agents.
+
+        # TENANT-FREE: first_party agents have company_id=None — intentional.
+        # No _require_company_id guard: these agents are explicitly global
+        # (Fase A decision). Scoped agents use get_by_id().
+        """
+        from lia_models.custom_agent import AgentType  # local to avoid circular at module level
+
+        stmt = select(CustomAgent).where(
+            CustomAgent.agent_type == AgentType.first_party,
+            CustomAgent.status == "active",
+        )
+        result = await self._db.execute(stmt)
+        return list(result.scalars().all())
+
+    async def update_first_party_manifest(
+        self,
+        *,
+        agent_id: str,
+        domains: list[str],
+        allowed_tools: list[str],
+    ) -> None:
+        """Update domains + allowed_tools on a first-party agent and invalidate cache.
+
+        # TENANT-FREE: no company_id guard — first_party agents are global.
+        """
+        from lia_models.custom_agent import AgentType
+        from app.orchestrator.studio_scope_extension import invalidate_studio_scope_cache
+
+        stmt = (
+            update(CustomAgent)
+            .where(
+                CustomAgent.id == agent_id,
+                CustomAgent.agent_type == AgentType.first_party,
+            )
+            .values(domains=domains, allowed_tools=allowed_tools)
+        )
+        await self._db.execute(stmt)
+        await self._db.commit()
+        # Invalidate the shared scope cache so the next request rebuilds it.
+        invalidate_studio_scope_cache()
