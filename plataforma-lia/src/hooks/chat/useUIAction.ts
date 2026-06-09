@@ -220,6 +220,24 @@ export function useUIAction(): UseUIActionReturn {
           return true;
         }
 
+        case "apply_table_state": {
+          // Fase 2 slice 1 (ponte in-page): aplica busca/ordenação/filtros à
+          // tabela JÁ ABERTA, sem navegar nem mutar. Despacha
+          // `lia:apply_table_state`; LiaTableStateBridge escuta e dirige o
+          // store da superfície (slice 1: candidates → useCandidatesStore).
+          const surface = params.surface;
+          if (surface !== "candidates") return false; // slice 1: candidates only
+          const patch = params.patch;
+          if (!patch || typeof patch !== "object") return false;
+          if (typeof window === "undefined") return false;
+          window.dispatchEvent(
+            new CustomEvent("lia:apply_table_state", {
+              detail: { surface, patch },
+            }),
+          );
+          return true;
+        }
+
         default:
           // exhaustiveness: caso TS deixe escapar um tipo, runtime falha-soft.
           return false;
