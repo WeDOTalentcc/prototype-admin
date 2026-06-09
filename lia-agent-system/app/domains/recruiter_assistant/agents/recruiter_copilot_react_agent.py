@@ -135,6 +135,7 @@ class RecruiterCopilotReActAgent(
     _HITL_ACTION_TYPES = frozenset({
         "batch_move_candidates",
         "bulk_candidate_move",
+        "send_batch_communication",
         "pause_job",
         "reopen_job",
         "publish_vacancy",

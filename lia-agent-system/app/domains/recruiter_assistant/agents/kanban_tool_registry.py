@@ -774,6 +774,16 @@ async def _wrap_send_batch_communication(**kwargs: Any) -> dict[str, Any]:
     candidate_ids = kwargs.get("candidate_ids", [])
     channel = kwargs.get("channel", "email")
     template = kwargs.get("template", "")
+    # F3: HITL gate -- comunicacao em lote e acao sensivel (outreach); dormante com LIA_HITL_GATE off.
+    from app.shared.hitl.hitl_approval_context import hitl_preflight as _hitl_preflight
+    _hitl_block = _hitl_preflight(
+        tool="send_batch_communication",
+        domain="kanban",
+        message="Enviar comunicacao em lote requer confirmacao.",
+        data={"candidate_count": len(candidate_ids), "channel": channel},
+    )
+    if _hitl_block is not None:
+        return _hitl_block
     logger.info(
         f"[kanban_tools] send_batch_communication called: candidates={len(candidate_ids)} "
         f"channel={channel}"

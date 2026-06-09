@@ -48,6 +48,7 @@ _FEDERATION_SPEC: list[tuple[str, str]] = [
     ("cv_screening", "update_candidate_stage"),
     ("cv_screening", "reject_candidate"),
     ("kanban", "batch_move_candidates"),
+    ("kanban", "send_batch_communication"),
     ("jobs", "close_job"),   # F4: encerrar vaga (já gateado com HITL)
     ("jobs", "pause_job"),
     ("jobs", "reopen_job"),
