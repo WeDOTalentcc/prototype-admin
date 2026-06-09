@@ -3,20 +3,172 @@
 Onda 4.2a-P0.3 (2026-05-23): get_hiring_plan/get_hiring_plan_with_details/
 get_headcount aceitam company_id opcional pra cross-tenant guard
 (audit Hub Minha Empresa LGPD).
+
+ADR-001 T9 (2026-06-09): added 3 analytical query methods extracted from
+workforce_planning_tools.py (talent_intelligence domain). Raw SQL for
+aggregations (COUNT/SUM/AVG/EXTRACT epoch) lives here in the repository layer
+— the canonical place per ADR-001 — using sqlalchemy.text() which is
+permitted in repositories. The tools/ file previously carried ADR-001-EXEMPT
+markers; those are now replaced by proper repo delegation.
 """
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Any
 
-from sqlalchemy import select
+from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.models.workforce import HiringPlan, ImportJob, PlannedHeadcount, WorkforceEntry
 
+# Default lookback for historical hire metrics (6 months)
+_DEFAULT_LOOKBACK_DAYS = 180
+
+# Default benchmark for avg time-to-fill when no data available
+_DEFAULT_AVG_TIME_TO_FILL_DAYS = 45.0
+
+# Source tags that identify internal employees / colaboradores
+_INTERNAL_CANDIDATE_SOURCES = ("internal", "employee", "colaborador")
+
 
 class WorkforceRepository:
     def __init__(self, db: AsyncSession):
         self.db = db
+
+    # ------------------------------------------------------------------
+    # Multi-tenancy guard (ADR-001 canonical)
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _require_company_id(company_id: str | None) -> None:
+        """Fail-closed multi-tenancy invariant.
+
+        Must be called as the first line of every public method that touches
+        tenant data (ADR-001 + CLAUDE.md REGRA 1).
+        """
+        if not company_id:
+            raise ValueError(
+                "company_id is required for WorkforceRepository operations "
+                "(multi-tenancy invariant, ADR-001 T9)"
+            )
+
+    # ------------------------------------------------------------------
+    # Workforce forecasting analytics (ADR-001 T9 — extracted from tools/)
+    # ------------------------------------------------------------------
+
+    async def get_open_jobs_summary(
+        self,
+        company_id: str,
+        department: str | None = None,
+    ) -> dict[str, int]:
+        """Return aggregate counts of open job vacancies for the tenant.
+
+        Returns a dict:
+            open_positions  — total non-cancelled/non-closed vacancies
+            active_count    — vacancies with status = 'Ativa'
+            pipeline_count  — vacancies with status in ('Pausada', 'Em Aprovação')
+
+        Multi-tenancy: company_id is REQUIRED (fail-closed).
+        """
+        self._require_company_id(company_id)
+
+        dept_filter = "AND department = :dept" if department else ""
+        params: dict[str, Any] = {"cid": company_id}
+        if department:
+            params["dept"] = department
+
+        sql = text(f"""
+            SELECT
+                COUNT(*) AS open_positions,
+                COALESCE(SUM(CASE WHEN status = 'Ativa' THEN 1 ELSE 0 END), 0) AS active_count,
+                COALESCE(SUM(CASE WHEN status IN ('Pausada', 'Em Aprovação') THEN 1 ELSE 0 END), 0) AS pipeline_count
+            FROM job_vacancies
+            WHERE company_id = :cid
+              AND status NOT IN ('Cancelada', 'Fechada')
+              {dept_filter}
+        """)
+        result = await self.db.execute(sql, params)
+        row = result.mappings().first() or {}
+        return {
+            "open_positions": int(row.get("open_positions") or 0),
+            "active_count": int(row.get("active_count") or 0),
+            "pipeline_count": int(row.get("pipeline_count") or 0),
+        }
+
+    async def get_historical_hire_metrics(
+        self,
+        company_id: str,
+        lookback_days: int = _DEFAULT_LOOKBACK_DAYS,
+        department: str | None = None,
+    ) -> dict[str, float]:
+        """Return historical hiring metrics (closed vacancies) for the tenant.
+
+        Returns a dict:
+            total_hires       — count of vacancies closed within lookback window
+            avg_time_to_fill  — average days from created_at to updated_at (closed);
+                                defaults to 45.0 (industry benchmark) when no data.
+
+        Multi-tenancy: company_id is REQUIRED (fail-closed).
+        """
+        self._require_company_id(company_id)
+
+        dept_filter = "AND department = :dept" if department else ""
+        lookback_dt = datetime.utcnow() - timedelta(days=lookback_days)
+        params: dict[str, Any] = {"cid": company_id, "lookback": lookback_dt}
+        if department:
+            params["dept"] = department
+
+        sql = text(f"""
+            SELECT
+                COUNT(*) AS total_hires,
+                COALESCE(
+                    AVG(EXTRACT(EPOCH FROM (updated_at - created_at)) / 86400),
+                    :default_ttf
+                ) AS avg_time_to_fill
+            FROM job_vacancies
+            WHERE company_id = :cid
+              AND status = 'Fechada'
+              AND updated_at >= :lookback
+              {dept_filter}
+        """)
+        params["default_ttf"] = _DEFAULT_AVG_TIME_TO_FILL_DAYS
+        result = await self.db.execute(sql, params)
+        row = result.mappings().first() or {}
+        return {
+            "total_hires": int(row.get("total_hires") or 0),
+            "avg_time_to_fill": float(row.get("avg_time_to_fill") or _DEFAULT_AVG_TIME_TO_FILL_DAYS),
+        }
+
+    async def get_internal_employee_count(
+        self,
+        company_id: str,
+        department: str | None = None,
+    ) -> int:
+        """Return count of active internal employees / colaboradores for the tenant.
+
+        Counts rows in the candidates table where source is one of the canonical
+        internal tags: 'internal', 'employee', 'colaborador'.
+
+        Multi-tenancy: company_id is REQUIRED (fail-closed).
+        """
+        self._require_company_id(company_id)
+
+        dept_filter = "AND department = :dept" if department else ""
+        sources_placeholder = ", ".join(f"'{s}'" for s in _INTERNAL_CANDIDATE_SOURCES)
+        params: dict[str, Any] = {"cid": company_id}
+        if department:
+            params["dept"] = department
+
+        sql = text(f"""
+            SELECT COUNT(*) AS total_employees
+            FROM candidates
+            WHERE company_id = :cid
+              AND is_active = true
+              AND source IN ({sources_placeholder})
+              {dept_filter}
+        """)
+        result = await self.db.execute(sql, params)
+        row = result.mappings().first() or {}
+        return int(row.get("total_employees") or 0)
 
     # ------------------------------------------------------------------
     # Hiring Plans
