@@ -1,17 +1,28 @@
 """
-Data Request Voice Collection Service (Fase 1 — skeleton).
+Data Request Voice Collection Service (Fase 2 — plugin wired).
 
 Service for managing data collection via an outbound LIA voice call.
 Mirrors the structure of DataRequestWhatsAppService:
 - parameterless constructor (db session passed per-method);
 - ``start_collection`` resolves the pending fields, builds the canonical voice
   collection script (``voice_collection_script.build_collection_script``), and
-  hands off to the voice orchestrator to place the call.
+  hands off to a voice orchestrator (constructed WITH the
+  ``DataCollectionVoicePlugin``) to place the call.
 
-⚠️ FASE 1 (this file): start_collection PREPARES the voice session — it builds
-the script and invokes the orchestrator entry point. The full conversational
-wiring (the ``DataCollectionVoicePlugin`` that feeds the script to the live
-call, persistence of per-field answers, LGPD consent in-call) is FASE 2.
+FASE 2 (this file): start_collection builds the script AND constructs a
+``VoiceCoreOrchestrator(plugins=[DataCollectionVoicePlugin(fields=...)])`` so the
+live call collects THESE DataRequest fields (instead of WSI screening
+questions). The plugin owns the conversational flow: it asks each
+voice-collectable field in order and, at finalize, extracts + normalizes the
+spoken answers. Because the plugin reports ``plugin_name == 'data_collection'``
+(NOT ``'wsi_screening'``), the orchestrator's Fase 0.5 gate correctly does NOT
+run the WSI scoring path on these calls.
+
+⚠️ FASE 4 (still deferred): persistence of the plugin's per-field extracted
+answers back into the DataRequest, plus in-call LGPD consent, is wired in
+Fase 4. Fase 2 places the call with the collection plugin; the plugin returns a
+structured ``collected``/``needs_followup`` dict at finalize but does NOT yet
+persist it.
 
 Anti-silent-fallback (CLAUDE.md REGRA 4): start_collection NEVER reports a fake
 "completed" collection. It returns an explicit status:
@@ -21,11 +32,11 @@ Anti-silent-fallback (CLAUDE.md REGRA 4): start_collection NEVER reports a fake
 - ``voice_collection_prepared``   → script built, but no live call placed (e.g.
                                     orchestrator wiring deferred to Fase 2)
 
-IMPORTANT — lazy import: the voice orchestrator is imported INSIDE
-``start_collection``, never at module top. Importing
+IMPORTANT — lazy import: the voice orchestrator AND the DataCollectionVoicePlugin
+are imported INSIDE ``start_collection``, never at module top. Importing
 ``voice_screening_orchestrator`` at module load is heavy (drops the Replit SSH
 session in test/CI). Lazy import keeps this module cheap to import and lets
-tests mock the orchestrator without triggering the real import.
+tests mock the orchestrator/plugin without triggering the real import.
 
 Multi-tenancy: ``company_id`` is read from the persisted DataRequest row
 (authoritative, never from a request payload), mirroring the WhatsApp service.
@@ -132,14 +143,21 @@ class DataRequestVoiceService:
         candidate_name = getattr(candidate, "name", None) or "Candidato"
 
         # LAZY import — never at module top (heavy import; see module docstring).
+        # Fase 2: build a VoiceCoreOrchestrator WITH the DataCollectionVoicePlugin
+        # so the live call collects THESE DataRequest fields. The plugin reports
+        # plugin_name == 'data_collection' (NOT 'wsi_screening'), so the
+        # orchestrator's Fase 0.5 gate does NOT run the WSI scoring path.
         try:
+            from app.domains.voice.plugins.data_collection_voice_plugin import (
+                DataCollectionVoicePlugin,
+            )
             from app.domains.voice.services.voice_screening_orchestrator import (
-                voice_screening_orchestrator,
+                VoiceCoreOrchestrator,
             )
         except Exception as e:  # pragma: no cover - import failure is explicit
             # Fail loud: do NOT fake success. Script is built; live call deferred.
             logger.error(
-                "Voice collection: orchestrator import failed for data request %s: %s",
+                "Voice collection: orchestrator/plugin import failed for data request %s: %s",
                 data_request_id,
                 e,
                 exc_info=True,
@@ -149,17 +167,23 @@ class DataRequestVoiceService:
                 "channel": "voice",
                 "fields": voice_fields,
                 "portal_fallback_fields": portal_redirect_fields,
-                "note": "orchestrator_unavailable_call_deferred_fase2",
+                "note": "orchestrator_unavailable_call_deferred",
                 "error": str(e),
             }
 
-        # Invoke the canonical orchestrator entry point to place the call.
-        # NOTE (Fase 2): the orchestrator currently runs the WSI screening flow;
-        # wiring the DataCollectionVoicePlugin so the call collects THESE fields
-        # (instead of screening questions) is Fase 2. For Fase 1 we initiate the
-        # call + return the prepared script so the channel is honestly testable.
+        # Construct the data-collection orchestrator. Mirrors how
+        # VoiceScreeningOrchestrator installs WSIVoicePlugin (plugins=[plugin]),
+        # but with the collection plugin fed the SAME pending fields the script
+        # was built from. Fase 4 wires persistence of the plugin's extracted
+        # answers back into the DataRequest.
+        collection_plugin = DataCollectionVoicePlugin(
+            fields=data_request.fields_requested or [],
+            completed_names=completed_names,
+        )
+        collection_orchestrator = VoiceCoreOrchestrator(plugins=[collection_plugin])
+
         try:
-            session = await voice_screening_orchestrator.initiate_call(
+            session = await collection_orchestrator.initiate_call(
                 candidate_id=str(data_request.candidate_id),
                 candidate_name=candidate_name,
                 phone_number=candidate_phone,
@@ -187,6 +211,7 @@ class DataRequestVoiceService:
         session_id = getattr(session, "session_id", None)
 
         if orch_status == "initiated":
+            # Call placed WITH the DataCollectionVoicePlugin installed.
             status = "voice_collection_initiated"
             data_request.collection_method = "voice"
             await db.commit()
