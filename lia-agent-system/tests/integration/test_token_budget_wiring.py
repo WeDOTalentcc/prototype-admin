@@ -125,7 +125,7 @@ class TestBudgetExhaustedBlocking:
         """Resultado de check_budget deve ser (bool, int, int)."""
         from app.domains.credits.services.token_budget_service import check_budget, PLAN_DAILY_LIMITS
 
-        with patch("app.services.token_budget_service._get_redis", new_callable=AsyncMock) as mock_redis:
+        with patch("app.domains.credits.services.token_budget_service._get_redis", new_callable=AsyncMock) as mock_redis:
             mock_redis.return_value = None  # Redis indisponível → graceful
             allowed, used, limit = await check_budget("any-company", "pro")
 
@@ -195,7 +195,7 @@ class TestIncrementUsageWiring:
         from app.domains.credits.services.token_budget_service import increment_usage
 
         # Redis indisponível → retorna 0 sem lançar
-        with patch("app.services.token_budget_service._get_redis", new_callable=AsyncMock, return_value=None):
+        with patch("app.domains.credits.services.token_budget_service._get_redis", new_callable=AsyncMock, return_value=None):
             result = await increment_usage("company-1", 100)
         assert result == 0  # falha silenciosa
 
@@ -212,7 +212,7 @@ class TestGetPlanForCompany:
         """Sem Redis e sem DB → retorna None sem lançar."""
         from app.domains.credits.services.token_budget_service import get_plan_for_company
 
-        with patch("app.services.token_budget_service._get_redis", new_callable=AsyncMock, return_value=None):
+        with patch("app.domains.credits.services.token_budget_service._get_redis", new_callable=AsyncMock, return_value=None):
             result = await get_plan_for_company("company-no-infra")
         assert result is None
 
@@ -225,7 +225,7 @@ class TestGetPlanForCompany:
         redis_mock.get = AsyncMock(return_value="pro")
         redis_mock.aclose = AsyncMock()
 
-        with patch("app.services.token_budget_service._get_redis", new_callable=AsyncMock, return_value=redis_mock):
+        with patch("app.domains.credits.services.token_budget_service._get_redis", new_callable=AsyncMock, return_value=redis_mock):
             result = await get_plan_for_company("company-cached")
 
         assert result == "pro"
@@ -239,8 +239,8 @@ class TestGetPlanForCompany:
         redis_mock.get = AsyncMock(return_value=None)  # cache miss
         redis_mock.aclose = AsyncMock()
 
-        with patch("app.services.token_budget_service._get_redis", new_callable=AsyncMock, return_value=redis_mock), \
-             patch("app.services.token_budget_service.get_plan_for_company", new_callable=AsyncMock, return_value=None) as mock_gp:
+        with patch("app.domains.credits.services.token_budget_service._get_redis", new_callable=AsyncMock, return_value=redis_mock), \
+             patch("app.domains.credits.services.token_budget_service.get_plan_for_company", new_callable=AsyncMock, return_value=None) as mock_gp:
             result = await mock_gp("company-db-error")
 
         assert result is None
@@ -254,7 +254,7 @@ class TestGetPlanForCompany:
         redis_mock.get = AsyncMock(return_value="business")
         redis_mock.aclose = AsyncMock()
 
-        with patch("app.services.token_budget_service._get_redis", new_callable=AsyncMock, return_value=redis_mock):
+        with patch("app.domains.credits.services.token_budget_service._get_redis", new_callable=AsyncMock, return_value=redis_mock):
             await get_plan_for_company("acme-corp")
 
         # Verifica que a chave usada no get contém o company_id
