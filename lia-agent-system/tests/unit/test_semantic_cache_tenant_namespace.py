@@ -252,7 +252,7 @@ def test_proxy_blocks_legacy_2segment_key_in_prod(monkeypatch) -> None:
 
     import asyncio
     with pytest.raises(RuntimeError):
-        asyncio.get_event_loop().run_until_complete(
+        asyncio.run(
             proxy.set("route_cache:deadbeef", "v")
         )
 
@@ -267,7 +267,7 @@ def test_proxy_allows_canonical_tenant_key(monkeypatch) -> None:
     key = tenant_namespaced_key("route_cache", _TENANT_A, "deadbeef")
 
     import asyncio
-    asyncio.get_event_loop().run_until_complete(proxy.set(key, "v"))
+    asyncio.run(proxy.set(key, "v"))
     assert fake.calls == [("set", (key, "v"), {})]
 
 
@@ -282,7 +282,7 @@ def test_proxy_blocks_well_known_non_tenant_label_at_cid_position(
 
     import asyncio
     with pytest.raises(RuntimeError):
-        asyncio.get_event_loop().run_until_complete(
+        asyncio.run(
             proxy.set("route_cache:default:deadbeef", "v")
         )
 
@@ -296,7 +296,7 @@ def test_proxy_allows_slug_tenant_cid(monkeypatch) -> None:
     proxy = wrap_redis_client(fake, module="sentinel_test")
 
     import asyncio
-    asyncio.get_event_loop().run_until_complete(
+    asyncio.run(
         proxy.set("route_cache:acme-corp:deadbeef", "v")
     )
     # Slug must pass through to the underlying client without raising.
@@ -312,7 +312,7 @@ def test_proxy_allows_slug_tenant_at_2segment_prefix(monkeypatch) -> None:
     proxy = wrap_redis_client(fake, module="sentinel_test")
 
     import asyncio
-    asyncio.get_event_loop().run_until_complete(
+    asyncio.run(
         proxy.set("lia:session:acme-corp:sess-1", "v")
     )
     assert fake.calls == [
