@@ -2015,7 +2015,7 @@
       "myAgentsCustom": "Meus Agentes",
       "noCustomAgentsYet": "Nenhum agente criado ainda",
       "noCustomAgentsHint": "Escolha um template abaixo ou descreva para a IA o que você precisa",
-      "advancedForm": "Formulário avançado (modo técnico)",
+      "advancedForm": "Formulário técnico avançado",
       "status": {
         "active": "Ativo",
         "paused": "Pausado",

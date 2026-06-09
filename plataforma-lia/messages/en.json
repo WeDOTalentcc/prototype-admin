@@ -2015,7 +2015,7 @@
       "myAgentsCustom": "My Agents",
       "noCustomAgentsYet": "No agents created yet",
       "noCustomAgentsHint": "Choose a template below or describe to IA what you need",
-      "advancedForm": "Advanced form (technical mode)",
+      "advancedForm": "Advanced technical form",
       "status": {
         "active": "Active",
         "paused": "Paused",

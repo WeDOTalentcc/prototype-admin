@@ -749,14 +749,14 @@ export default function AgentStudioPage({
               <ConversationalCreator onAgentCreated={() => mutateCustomAgents()} />
             </div>
 
-            <details className="mt-4">
-              <summary className="text-xs text-lia-text-tertiary cursor-pointer hover:text-lia-text-secondary">
+            <div className="mt-4">
+              <p className="text-sm font-medium text-lia-text-secondary">
                 {t("studio.advancedForm")}
-              </summary>
+              </p>
               <div className="mt-3">
                 <CustomAgentsTab />
               </div>
-            </details>
+            </div>
           </div>
         )}
 
