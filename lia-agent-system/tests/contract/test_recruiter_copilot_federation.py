@@ -31,7 +31,7 @@ def test_federation_includes_write_actions():
 
 
 def test_copilot_agent_registered():
-    from app.api.v1.agent_chat_ws import _ensure_agents_loaded
+    from app.api.v1.chat_shared import _ensure_agents_loaded
     from app.shared.agents.agent_registry import AgentRegistry
     _ensure_agents_loaded()
     assert AgentRegistry().is_registered("recruiter_copilot"), (
@@ -43,7 +43,7 @@ def test_copilot_agent_registered():
 def test_recruiter_assistant_domain_resolves_to_copilot():
     """O bug: recruiter_assistant resolvia pra talent/kanban (sem list_jobs).
     Agora deve resolver pro agente federado recruiter_copilot."""
-    from app.api.v1.agent_chat_ws import _ensure_agents_loaded
+    from app.api.v1.chat_shared import _ensure_agents_loaded
     from app.shared.agents.agent_registry import AgentRegistry
     from app.domains.workflow import DomainWorkflow
     _ensure_agents_loaded()
@@ -61,7 +61,7 @@ def test_copilot_registered_class_is_federation_agent():
     (limite de TODOS os agentes em teste unitario), entao validamos a CLASSE
     registrada. Combinado com test_federation_* (set tem list_jobs) e
     test_recruiter_assistant_domain_resolves_to_copilot, prova o fix end-to-end."""
-    from app.api.v1.agent_chat_ws import _ensure_agents_loaded
+    from app.api.v1.chat_shared import _ensure_agents_loaded
     from app.shared.agents.agent_registry import _AGENT_REGISTRY
     from app.domains.recruiter_assistant.agents.recruiter_copilot_react_agent import (
         RecruiterCopilotReActAgent,

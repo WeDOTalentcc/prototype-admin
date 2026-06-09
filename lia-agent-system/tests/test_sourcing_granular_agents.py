@@ -853,7 +853,7 @@ class TestNurtureSequenceToolRegistry:
         """W1-001-B (2026-05-23): Migrado para canonical AgentRegistry.
         Todos os 6 novos sub-agentes devem estar registrados via @register_agent.
         """
-        from app.api.v1.agent_chat_ws import _ensure_agents_loaded
+        from app.api.v1.chat_shared import _ensure_agents_loaded
         from app.shared.agents.agent_registry import AgentRegistry
 
         _ensure_agents_loaded()

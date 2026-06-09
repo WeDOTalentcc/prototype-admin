@@ -291,7 +291,7 @@ class TestCrossAgentContracts:
 
     def test_all_phase5_agents_registered_in_registry(self):
         """W1-001-B (2026-05-23): Migrado para canonical AgentRegistry."""
-        from app.api.v1.agent_chat_ws import _ensure_agents_loaded
+        from app.api.v1.chat_shared import _ensure_agents_loaded
         from app.shared.agents.agent_registry import AgentRegistry
 
         _ensure_agents_loaded()

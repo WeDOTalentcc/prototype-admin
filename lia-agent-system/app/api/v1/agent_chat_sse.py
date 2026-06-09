@@ -1280,4 +1280,22 @@ company_id: str = Depends(require_company_id)):
         },
     )
 
+
+# ---------------------------------------------------------------------------
+# GET /sessions/active — migrado de agent_chat_ws.py (2026-06-09)
+# O transporte ativo é SSE; sessões WS não existem mais.
+# Retorna lista vazia para compatibilidade com SwitchTaskModal.tsx.
+# ---------------------------------------------------------------------------
+@router.get("/sessions/active", response_model=None)
+async def list_active_sessions(
+    company_id: str = Depends(require_company_id),
+):
+    """List active sessions for the authenticated user.
+
+    SSE transport does not maintain persistent server-side session state
+    the way WebSocket does. Returns empty list for UI backward compatibility.
+    """
+    return {"sessions": [], "count": 0}
+
+
 reorder_collection_before_item(router)

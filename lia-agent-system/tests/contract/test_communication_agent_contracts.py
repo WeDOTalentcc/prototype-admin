@@ -153,20 +153,20 @@ class TestCommunicationSystemPrompt:
 
 class TestCommunicationWSDispatcher:
     def test_get_agent_communication_returns_communication_agent(self):
-        from app.api.v1.agent_chat_ws import _get_agent
+        from app.api.v1.chat_shared import _get_agent
         agent = _get_agent("communication")
         assert agent is not None
         assert "communication" in type(agent).__name__.lower() or "Communication" in type(agent).__name__
 
     def test_get_agent_comms_alias_returns_communication_agent(self):
         """'comms' deve funcionar como alias."""
-        from app.api.v1.agent_chat_ws import _get_agent
+        from app.api.v1.chat_shared import _get_agent
         agent = _get_agent("comms")
         assert agent is not None
         assert "communication" in type(agent).__name__.lower() or "Communication" in type(agent).__name__
 
     def test_communication_agent_not_falls_back_to_talent(self):
-        from app.api.v1.agent_chat_ws import _get_agent
+        from app.api.v1.chat_shared import _get_agent
         from app.domains.recruiter_assistant.agents.talent_react_agent import TalentReActAgent
         agent = _get_agent("communication")
         assert not isinstance(agent, TalentReActAgent), \

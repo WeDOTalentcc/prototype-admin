@@ -366,7 +366,7 @@ class TestAPIRouteImports:
 
     def test_agent_chat_ws_routes(self):
         try:
-            from app.api.v1 import agent_chat_ws
+            from app.api.v1 import chat_shared as agent_chat_ws  # migrado de agent_chat_ws
             assert agent_chat_ws is not None
         except ImportError:
             pytest.skip("Module not importable")

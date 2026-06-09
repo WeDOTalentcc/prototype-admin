@@ -33,7 +33,7 @@ def _yaml_agent_names() -> set[str]:
 def _load_agent_registry_module():
     """Force imports + return canonical _AGENT_REGISTRY dict."""
     # Trigger imports via _ensure_agents_loaded equivalent
-    from app.api.v1 import agent_chat_ws  # noqa
+    from app.api.v1 import chat_shared as agent_chat_ws  # noqa
 
     if hasattr(agent_chat_ws, "_ensure_agents_loaded"):
         agent_chat_ws._ensure_agents_loaded()

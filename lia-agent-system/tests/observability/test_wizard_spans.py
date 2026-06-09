@@ -145,7 +145,7 @@ def test_node_error_marks_span_status(monkeypatch):
 # ---------------------------------------------------------------------------
 
 def test_get_agent_emits_span_with_tenant_context(monkeypatch):
-    from app.api.v1 import agent_chat_ws
+    from app.api.v1 import chat_shared as agent_chat_ws
 
     # Bypass the registry — we only care about the span instrumentation.
     monkeypatch.setattr(agent_chat_ws, "_ensure_agents_loaded", lambda: None)
@@ -174,7 +174,7 @@ def test_get_agent_emits_span_with_tenant_context(monkeypatch):
 def test_get_agent_without_context_fails_validation(monkeypatch):
     """Sanity check: a caller forgetting to pass tenant context produces a
     span the CI gate flags. This is the safety net the audit asked for."""
-    from app.api.v1 import agent_chat_ws
+    from app.api.v1 import chat_shared as agent_chat_ws
 
     monkeypatch.setattr(agent_chat_ws, "_ensure_agents_loaded", lambda: None)
 

@@ -13,7 +13,7 @@ import pytest
 
 def test_no_dead_handoffs():
     from app.orchestrator.supervisor.handoff_tools import DOMAINS
-    from app.api.v1.agent_chat_ws import _ensure_agents_loaded
+    from app.api.v1.chat_shared import _ensure_agents_loaded
     from app.shared.agents.agent_registry import AgentRegistry
 
     _ensure_agents_loaded()

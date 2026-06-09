@@ -27,7 +27,7 @@ import pytest
 
 pytestmark = pytest.mark.easy
 
-from app.api.v1.agent_chat_ws import _resume_wizard_canonical_streaming
+from app.api.v1.chat_shared import _resume_wizard_canonical_streaming
 from app.domains.job_creation.graph import JobCreationGraph
 
 

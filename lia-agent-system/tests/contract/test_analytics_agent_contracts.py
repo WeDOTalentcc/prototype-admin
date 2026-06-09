@@ -151,13 +151,13 @@ class TestAnalyticsWSDispatcher:
     """Verifica que o domain 'analytics' está registrado no WS dispatcher."""
 
     def test_get_agent_analytics_returns_analytics_agent(self):
-        from app.api.v1.agent_chat_ws import _get_agent
+        from app.api.v1.chat_shared import _get_agent
         agent = _get_agent("analytics")
         assert agent is not None
         assert "analytics" in type(agent).__name__.lower() or "Analytics" in type(agent).__name__
 
     def test_analytics_agent_not_falls_back_to_talent(self):
-        from app.api.v1.agent_chat_ws import _get_agent
+        from app.api.v1.chat_shared import _get_agent
         from app.domains.recruiter_assistant.agents.talent_react_agent import TalentReActAgent
         agent = _get_agent("analytics")
         assert not isinstance(agent, TalentReActAgent), \
