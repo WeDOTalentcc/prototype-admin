@@ -107,77 +107,124 @@ export function useRevealContact({
     setShowBulkRevealModal(true)
   }
 
-  // Reuses the single-candidate reveal endpoint per candidate/type. The backend
-  // only charges for contacts that actually exist, so unavailable ones are free.
+  // Uses the bulk reveal endpoint (asyncio.gather + Semaphore(3) + timeout 35s per candidate).
+  // AbortController: 120s covers 3 batches of 3 candidates × 35s ≈ 105s max real latency.
   const handleBulkReveal = async (types: Array<"email" | "phone">) => {
     if (!bulkRevealCandidates.length || !types.length) return
     setIsBulkRevealing(true)
-    let revealed = 0
-    let unavailable = 0
+
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 120_000)
+
     try {
-      for (const cand of bulkRevealCandidates) {
-        for (const type of types) {
-          if (revealedContacts[cand.id]?.[type]) continue
-          try {
-            const response = await fetch('/api/backend-proxy/search/reveal/', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                candidate_id: cand.id,
-                candidate_name: cand.name,
-                reveal_type: type,
-                linkedin_slug: cand.linkedin_url?.split('/in/')?.[1]?.replace('/', '') || null,
-              }),
-            })
-            const data = await response.json()
-            if (data.success) {
-              const value = type === 'email' ? data.email : data.phone
-              setRevealedContacts(prev => ({
-                ...prev,
-                [cand.id]: { ...prev[cand.id], [type]: value },
-              }))
-              if (data.credits_remaining !== undefined && data.credits_remaining !== null) {
-                setCreditsRemaining(() => data.credits_remaining)
-              }
-              revealed++
-              if (cand.source === 'pearch') {
-                const pearchId = cand.pearch_profile_id || cand.id
-                fetch('/api/backend-proxy/search/candidates/persist-revealed', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({
-                    pearch_id: pearchId,
-                    candidate_name: cand.name,
-                    email: type === 'email' ? value : null,
-                    phone: type === 'phone' ? value : null,
-                    linkedin_url: cand.linkedin_url || null,
-                    current_title: cand.current_title || null,
-                    current_company: cand.current_company || null,
-                    avatar_url: cand.avatar_url || null,
-                  }),
-                }).catch(() => {/* fire-and-forget */})
-              }
-            } else {
-              unavailable++
+      // Build items: skip already-revealed, one entry per candidate×type
+      const items = bulkRevealCandidates.flatMap((cand) =>
+        types
+          .filter((type) => !revealedContacts[cand.id]?.[type])
+          .map((type) => ({
+            candidate_id: cand.id,
+            candidate_name: cand.name,
+            reveal_type: type,
+            linkedin_slug:
+              cand.linkedin_url?.split('/in/')?.[1]?.replace('/', '') || null,
+          }))
+      )
+
+      if (!items.length) {
+        setShowBulkRevealModal(false)
+        toast.info('Contatos já revelados', { description: 'Todos os contatos selecionados já foram revelados.', duration: 3000 })
+        return
+      }
+
+      const response = await fetch('/api/backend-proxy/search/reveal/bulk/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items }),
+        signal: controller.signal,
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`)
+      }
+
+      const data = await response.json()
+      const results: Array<{
+        success: boolean
+        candidate_id: string
+        reveal_type: string
+        email?: string
+        phone?: string
+        credits_remaining?: number
+      }> = data.results || []
+
+      // Update store with revealed contacts
+      if (results.some((r) => r.success)) {
+        setRevealedContacts((prev) => {
+          const next = { ...prev }
+          for (const r of results) {
+            if (r.success) {
+              const value = r.reveal_type === 'email' ? r.email : r.phone
+              next[r.candidate_id] = { ...next[r.candidate_id], [r.reveal_type]: value }
             }
-          } catch {
-            unavailable++
           }
+          return next
+        })
+      }
+
+      // Update credits from last successful result
+      const lastWithCredits = [...results].reverse().find((r) => r.credits_remaining != null)
+      if (lastWithCredits?.credits_remaining != null) {
+        setCreditsRemaining(() => lastWithCredits.credits_remaining!)
+      }
+
+      // Fire-and-forget persist for pearch candidates
+      for (const r of results) {
+        if (!r.success) continue
+        const cand = bulkRevealCandidates.find((c) => c.id === r.candidate_id)
+        if (cand?.source === 'pearch') {
+          const value = r.reveal_type === 'email' ? r.email : r.phone
+          fetch('/api/backend-proxy/search/candidates/persist-revealed', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              pearch_id: cand.pearch_profile_id || cand.id,
+              candidate_name: cand.name,
+              email: r.reveal_type === 'email' ? value : null,
+              phone: r.reveal_type === 'phone' ? value : null,
+              linkedin_url: cand.linkedin_url || null,
+              current_title: cand.current_title || null,
+              current_company: cand.current_company || null,
+              avatar_url: cand.avatar_url || null,
+            }),
+          }).catch(() => {/* fire-and-forget */})
         }
       }
+
       setShowBulkRevealModal(false)
-      if (revealed > 0) {
-        toast.success(`${revealed} contato(s) revelado(s)`, {
-          description: unavailable ? `${unavailable} indisponível(is) - sem cobrança.` : undefined,
+
+      const { revealed_count = 0, unavailable_count = 0, timeout_count = 0 } = data
+      if (revealed_count > 0) {
+        const parts: string[] = []
+        if (unavailable_count) parts.push(`${unavailable_count} indisponível(is)`)
+        if (timeout_count) parts.push(`${timeout_count} com timeout`)
+        toast.success(`${revealed_count} contato(s) revelado(s)`, {
+          description: parts.length ? parts.join(', ') + ' — sem cobrança.' : undefined,
           duration: 5000,
         })
       } else {
-        toast.error("Nenhum contato disponível", {
-          description: "Os candidatos selecionados não tinham os contatos escolhidos.",
+        toast.error('Nenhum contato disponível', {
+          description: 'Os candidatos selecionados não tinham os contatos escolhidos.',
           duration: 5000,
         })
       }
+    } catch (err: unknown) {
+      if (err instanceof Error && err.name === 'AbortError') {
+        toast.error('Tempo esgotado', { description: 'A revelação demorou muito. Tente com menos candidatos.', duration: 5000 })
+      } else {
+        toast.error('Erro ao revelar contatos', { description: 'Ocorreu um erro. Tente novamente.', duration: 5000 })
+      }
     } finally {
+      clearTimeout(timeoutId)
       setIsBulkRevealing(false)
     }
   }
