@@ -2568,7 +2568,10 @@
         "step3Title": "Tudo pronto!",
         "step3Desc": "Acompanhe o funil de serviços e ative mais agentes quando quiser.",
         "done": "Concluir"
-      }
+      },
+      "templatesInMarketplace": "Templates disponíveis no Marketplace",
+      "templatesInMarketplaceHint": "Explore templates prontos para personalizar e criar novos agentes",
+      "viewTemplates": "Ver templates"
     },
     "status": {
       "active": "Ativo",
@@ -2743,7 +2746,10 @@
       "useTemplate": "Usar template",
       "templateCloneSuccess": "Agente criado a partir do template",
       "templateComingSoon": "Em breve disponível",
-      "active": "Ativo"
+      "active": "Ativo",
+      "wedoAgentsSubtitle": "Agentes oficiais da plataforma WeDOTalent",
+      "templatesSubtitle": "Personalize um template para criar seu agente",
+      "activate": "Ativar"
     },
     "calibration": {
       "completed": "Calibração concluída",

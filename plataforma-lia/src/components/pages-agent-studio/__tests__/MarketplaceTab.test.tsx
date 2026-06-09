@@ -1,10 +1,13 @@
 /**
- * Tests for MarketplaceTab two-section split + first_party badge
- * and CustomAgentsTab first_party filter.
+ * MarketplaceTab — redesign 2026-06-09
+ * BrowseMarketplace now uses:
+ *   Section 1: first-party agents from custom-agents?agent_type=first_party
+ *   Section 2: templates from useLegacyAgentTemplates hook
+ *
  * vitest + react-testing-library
  */
 import React from "react"
-import { render, screen, waitFor } from "@testing-library/react"
+import { render, screen, waitFor, fireEvent } from "@testing-library/react"
 import { describe, it, expect, vi, beforeEach } from "vitest"
 
 // ---- minimal next-intl mock ----
@@ -12,9 +15,10 @@ vi.mock("next-intl", () => ({
   useTranslations: () => (key: string, _params?: Record<string, unknown>) => key,
 }))
 
-// ---- minimal next/navigation mock ----
+// ---- next/navigation mock ----
+const mockRouterPush = vi.fn()
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push: vi.fn() }),
+  useRouter: () => ({ push: mockRouterPush }),
   useSearchParams: () => ({ get: () => null }),
   usePathname: () => "/",
 }))
@@ -27,6 +31,60 @@ vi.mock("@/lib/toast", () => ({
 // ---- useAiPersona mock ----
 vi.mock("@/hooks/company/use-ai-persona", () => ({
   useAiPersona: () => ({ persona: { name: "LIA" } }),
+}))
+
+// ---- useLegacyAgentTemplates mock ----
+const mockTemplates = [
+  {
+    id: "tpl-triagem",
+    name: "Triagem Técnica",
+    description: "Template para triagem de candidatos técnicos",
+    category: "screening",
+    domain: "talent",
+    icon: "Bot",
+    system_prompt: "...",
+    allowed_tools: ["list_candidates"],
+    context_level: "standard" as const,
+    max_steps: 8,
+    temperature: 0.7,
+    enable_memory: true,
+    excluded_tools: [],
+    tags: ["triagem"],
+  },
+  {
+    id: "tpl-sourcing",
+    name: "Captação Proativa",
+    description: "Template para captação ativa de talentos",
+    category: "sourcing",
+    domain: "talent",
+    icon: "Search",
+    system_prompt: "...",
+    allowed_tools: ["search_candidates"],
+    context_level: "standard" as const,
+    max_steps: 10,
+    temperature: 0.5,
+    enable_memory: false,
+    excluded_tools: [],
+    tags: ["sourcing"],
+  },
+]
+
+vi.mock("@/hooks/agents/use-legacy-agent-templates", () => ({
+  useLegacyAgentTemplates: () => ({
+    templates: mockTemplates,
+    isLoading: false,
+    error: null,
+  }),
+}))
+
+// ---- TemplateCard mock — renders template name + "Usar agora" button ----
+vi.mock("@/components/pages-agent-studio/custom-agents/TemplateCard", () => ({
+  TemplateCard: ({ template, onSelect }: { template: { id: string; name: string }; onSelect: (t: unknown) => void }) => (
+    <div data-testid={`template-card-${template.id}`}>
+      <span>{template.name}</span>
+      <button onClick={() => onSelect(template)}>Usar agora</button>
+    </div>
+  ),
 }))
 
 // ---- StudioEmptyState mock ----
@@ -56,14 +114,6 @@ vi.mock("@/components/ui/button", () => ({
     <button onClick={onClick} disabled={disabled} {...rest}>{children}</button>
   ),
 }))
-vi.mock("@/components/ui/dialog", () => ({
-  Dialog: () => null,
-  DialogContent: () => null,
-  DialogHeader: () => null,
-  DialogTitle: () => null,
-  DialogDescription: () => null,
-  DialogFooter: () => null,
-}))
 vi.mock("@/lib/utils", () => ({
   cn: (...args: unknown[]) => args.filter(Boolean).join(" "),
 }))
@@ -76,28 +126,6 @@ vi.mock("@/lib/agent-studio/status-config", () => ({
 }))
 
 // ---- helpers ----
-function makeListing(overrides: Record<string, unknown>) {
-  return {
-    id: overrides.id || "list-1",
-    agent_id: overrides.agent_id || "agent-1",
-    title: overrides.title || "Test Agent",
-    short_description: "desc",
-    category: "general",
-    tags: [],
-    status: "active",
-    credits_per_execution: 0,
-    is_free: true,
-    install_count: 5,
-    avg_rating: 0,
-    total_ratings: 0,
-    agent_name: null,
-    agent_role: null,
-    agent_domain: null,
-    published_at: null,
-    ...overrides,
-  }
-}
-
 function makeCustomAgent(overrides: Record<string, unknown>) {
   return {
     id: "agent-1",
@@ -119,26 +147,51 @@ function makeCustomAgent(overrides: Record<string, unknown>) {
   }
 }
 
-// ---- BrowseMarketplace tests (via MarketplaceTab) ----
-// We import BrowseMarketplace indirectly by testing the "browse" tab content.
-// Since tabs mock renders all tab contents, we can assert on rendered content.
+// ====================================================================
+// Tests for new BrowseMarketplace (Section 1: first-party, Section 2: templates)
+// ====================================================================
 
-describe("BrowseMarketplace splits listings into agent and template sections", () => {
+describe("BrowseMarketplace — Section 1: Agentes WeDo (first-party agents)", () => {
   beforeEach(() => {
     vi.resetAllMocks()
   })
 
-  it("renders separate sections for agents and templates", async () => {
-    const mockListings = [
-      makeListing({ id: "a1", title: "Sourcing Agent", listing_type: "agent", agent_type: "custom" }),
-      makeListing({ id: "t1", title: "Onboarding Template", listing_type: "template" }),
+  it("fetches from custom-agents?agent_type=first_party and renders agents in section", async () => {
+    const firstPartyAgents = [
+      { id: "fp-1", name: "TalentIntelAgent", description: "Agente de inteligência de talentos", icon: "🧠", domain: "talent", role: "Talent Intel", status: "active", agent_type: "first_party" },
+      { id: "fp-2", name: "InterviewAnalysisAgent", description: "Análise de entrevistas", icon: "🎙️", domain: "talent", role: "Interview", status: "active", agent_type: "first_party" },
     ]
 
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
-      json: async () => ({ listings: mockListings, total: 2 }),
+      json: async () => ({ agents: firstPartyAgents }),
     } as Response)
 
+    const { default: MarketplaceTab } = await import(
+      "@/components/pages-agent-studio/MarketplaceTab"
+    )
+    render(<MarketplaceTab />)
+
+    await waitFor(() => {
+      expect(screen.getByText("TalentIntelAgent")).toBeInTheDocument()
+      expect(screen.getByText("InterviewAnalysisAgent")).toBeInTheDocument()
+    })
+
+    // Verify the fetch URL included the correct query params
+    const fetchCalls = (global.fetch as ReturnType<typeof vi.fn>).mock.calls
+    const agentsFetch = fetchCalls.find(([url]: [string]) =>
+      url.includes("custom-agents") && url.includes("agent_type=first_party")
+    )
+    expect(agentsFetch).toBeDefined()
+  })
+
+  it("renders sectionAgents title for first-party section", async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ agents: [] }),
+    } as Response)
+
+    vi.resetModules()
     const { default: MarketplaceTab } = await import(
       "@/components/pages-agent-studio/MarketplaceTab"
     )
@@ -146,28 +199,17 @@ describe("BrowseMarketplace splits listings into agent and template sections", (
 
     await waitFor(() => {
       expect(screen.getByText("sectionAgents")).toBeInTheDocument()
-      expect(screen.getByText("sectionTemplates")).toBeInTheDocument()
     })
-
-    expect(screen.getByText("Sourcing Agent")).toBeInTheDocument()
-    expect(screen.getByText("Onboarding Template")).toBeInTheDocument()
   })
-})
 
-describe("First-party agent shows Oficial WeDo badge", () => {
-  it("renders Oficial WeDo badge for first_party agent_type", async () => {
-    const mockListings = [
-      makeListing({
-        id: "fp-1",
-        title: "WeDo Sourcer",
-        listing_type: "agent",
-        agent_type: "first_party",
-      }),
+  it("renders Oficial WeDo badge for each first-party agent", async () => {
+    const firstPartyAgents = [
+      { id: "fp-1", name: "WeDo Agent", description: "desc", icon: "🤖", domain: "talent", role: "R", status: "active", agent_type: "first_party" },
     ]
 
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
-      json: async () => ({ listings: mockListings, total: 1 }),
+      json: async () => ({ agents: firstPartyAgents }),
     } as Response)
 
     vi.resetModules()
@@ -177,24 +219,28 @@ describe("First-party agent shows Oficial WeDo badge", () => {
     render(<MarketplaceTab />)
 
     await waitFor(() => {
+      expect(screen.getByTestId("official-wedo-badge")).toBeInTheDocument()
       expect(screen.getByText("Oficial WeDo")).toBeInTheDocument()
     })
   })
 
-  it("does NOT render Oficial WeDo badge for custom agent_type", async () => {
-    const mockListings = [
-      makeListing({
-        id: "c-1",
-        title: "Custom Agent",
-        listing_type: "agent",
-        agent_type: "custom",
-      }),
+  it("shows activate button and switches to active chip after successful activation", async () => {
+    const firstPartyAgents = [
+      { id: "fp-1", name: "WeDo Agent", description: "desc", icon: "🤖", domain: "talent", role: "R", status: "active", agent_type: "first_party" },
     ]
 
-    global.fetch = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({ listings: mockListings, total: 1 }),
-    } as Response)
+    // Mock fetch to handle all calls: custom-agents, agent-marketplace/install,
+    // agent-marketplace/installations, agent-marketplace/billing, etc.
+    global.fetch = vi.fn().mockImplementation((url: string) => {
+      if (url.includes("custom-agents")) {
+        return Promise.resolve({ ok: true, json: async () => ({ agents: firstPartyAgents }) } as Response)
+      }
+      if (url.includes("agent-marketplace/install")) {
+        return Promise.resolve({ ok: true, json: async () => ({ success: true }) } as Response)
+      }
+      // All other fetches (billing, installations, etc.)
+      return Promise.resolve({ ok: true, json: async () => ({}) } as Response)
+    })
 
     vi.resetModules()
     const { default: MarketplaceTab } = await import(
@@ -203,21 +249,22 @@ describe("First-party agent shows Oficial WeDo badge", () => {
     render(<MarketplaceTab />)
 
     await waitFor(() => {
-      expect(screen.queryByText("Oficial WeDo")).not.toBeInTheDocument()
+      expect(screen.getByTestId("activate-btn-fp-1")).toBeInTheDocument()
+    })
+
+    fireEvent.click(screen.getByTestId("activate-btn-fp-1"))
+
+    await waitFor(() => {
+      expect(screen.getByTestId("agent-active-chip")).toBeInTheDocument()
     })
   })
 })
 
-describe("Template shows useTemplate button, not install button", () => {
-  it("template listing shows useTemplate key, not install key", async () => {
-    const mockListings = [
-      makeListing({ id: "t-1", title: "Pipeline Template", listing_type: "template" }),
-      makeListing({ id: "a-1", title: "Agent One", listing_type: "agent" }),
-    ]
-
+describe("BrowseMarketplace — Section 2: Templates (useLegacyAgentTemplates)", () => {
+  it("renders sectionTemplates title for templates section", async () => {
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
-      json: async () => ({ listings: mockListings, total: 2 }),
+      json: async () => ({ agents: [] }),
     } as Response)
 
     vi.resetModules()
@@ -227,12 +274,28 @@ describe("Template shows useTemplate button, not install button", () => {
     render(<MarketplaceTab />)
 
     await waitFor(() => {
-      expect(screen.getByText("useTemplate")).toBeInTheDocument()
+      expect(screen.getByText("sectionTemplates")).toBeInTheDocument()
     })
+  })
 
-    // install button exists for agent, not template — install key appears once (for agent)
-    const installButtons = screen.getAllByText("install")
-    expect(installButtons).toHaveLength(1)
+  it("renders templates from useLegacyAgentTemplates hook via TemplateCard", async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ agents: [] }),
+    } as Response)
+
+    vi.resetModules()
+    const { default: MarketplaceTab } = await import(
+      "@/components/pages-agent-studio/MarketplaceTab"
+    )
+    render(<MarketplaceTab />)
+
+    await waitFor(() => {
+      expect(screen.getByTestId("template-card-tpl-triagem")).toBeInTheDocument()
+      expect(screen.getByTestId("template-card-tpl-sourcing")).toBeInTheDocument()
+      expect(screen.getByText("Triagem Técnica")).toBeInTheDocument()
+      expect(screen.getByText("Captação Proativa")).toBeInTheDocument()
+    })
   })
 })
 

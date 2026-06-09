@@ -7,20 +7,18 @@ import { useTranslations } from "next-intl"
 // Sprint B QW#17 audit 2026-05-22: shadcn Tabs canonical (era <button> custom sem ARIA)
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import {
-  Store, Download, Search, Star, Loader2,
-  Package, CreditCard, Trash2, Check, X,
-  ExternalLink, Filter, TrendingUp, FileTemplate, CheckCircle2
+  Store, Download, Search, Loader2,
+  Package, CreditCard, Trash2, TrendingUp, CheckCircle2
 } from "lucide-react"
-import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { TabSectionHeader } from "@/components/pages-agent-studio/TabSectionHeader"
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle,
-  DialogDescription, DialogFooter,
-} from "@/components/ui/dialog"
 // White-label canonical 2026-05-29: persona do cliente como fallback de nome
 // de agente quando o billing row não traz agent_name (agente deletado etc.).
 import { useAiPersona } from "@/hooks/company/use-ai-persona"
+// Marketplace redesign 2026-06-09: use first-party agents API + legacy templates hook
+import { useLegacyAgentTemplates } from "@/hooks/agents/use-legacy-agent-templates"
+import { TemplateCard } from "@/components/pages-agent-studio/custom-agents/TemplateCard"
+import type { AgentTemplate } from "@/components/pages-agent-studio/custom-agents/types"
 
 interface MarketplaceListing {
   id: string
@@ -55,8 +53,6 @@ interface Installation {
   installed_at: string | null
   agent_name: string | null
 }
-
-const CATEGORY_KEYS = ["", "sourcing", "pipeline", "analytics", "communication", "screening", "general"] as const
 
 export default function MarketplaceTab({ initialCategory }: { initialCategory?: string } = {}) {
   const t = useTranslations('agents.marketplace')
@@ -102,297 +98,241 @@ export default function MarketplaceTab({ initialCategory }: { initialCategory?: 
   )
 }
 
-function BrowseMarketplace({ onInstallSuccess, initialCategory }: { onInstallSuccess?: () => void; initialCategory?: string }) {
-  const t = useTranslations('agents.marketplace')
-  const [listings, setListings] = useState<MarketplaceListing[]>([])
-  const [total, setTotal] = useState(0)
-  const [isLoading, setIsLoading] = useState(true)
-  const [category, setCategory] = useState(initialCategory ?? "")
-  useEffect(() => { if (initialCategory !== undefined) setCategory(initialCategory) }, [initialCategory])
-  const [search, setSearch] = useState("")
-  const [installing, setInstalling] = useState<string | null>(null)
-  const [cloningTemplate, setCloningTemplate] = useState<string | null>(null)
 
-  // F4 Wave F: debounce search 300ms — evita query a cada keystroke
-  const [debouncedSearch, setDebouncedSearch] = useState("")
-  useEffect(() => {
-    const timer = setTimeout(() => setDebouncedSearch(search), 300)
-    return () => clearTimeout(timer)
-  }, [search])
+interface FirstPartyAgent {
+  id: string
+  name: string
+  description: string | null
+  icon: string
+  domain: string
+  role: string
+  status: string
+  agent_type: string
+}
 
-  useEffect(() => { loadListings() }, [category, debouncedSearch])
+function BrowseMarketplace({ onInstallSuccess, initialCategory: _initialCategory }: { onInstallSuccess?: () => void; initialCategory?: string }) {
+  const t = useTranslations("agents.marketplace")
+  const [search, setSearch] = React.useState("")
 
-  const loadListings = useCallback(async () => {
-    setIsLoading(true)
-    try {
-      const params = new URLSearchParams()
-      if (category) params.set("category", category)
-      if (debouncedSearch) params.set("search", debouncedSearch)
-      const res = await fetch(`/api/backend-proxy/agent-marketplace?${params}`)
-      if (res.ok) {
-        const data = await res.json()
-        setListings(data.listings || [])
-        setTotal(data.total || 0)
+  // Section 1 — First-party WeDo agents
+  const [firstPartyAgents, setFirstPartyAgents] = React.useState<FirstPartyAgent[]>([])
+  const [loadingAgents, setLoadingAgents] = React.useState(true)
+  const [activating, setActivating] = React.useState<string | null>(null)
+  const [activatedIds, setActivatedIds] = React.useState<Set<string>>(new Set())
+
+  // Section 2 — Templates via canonical hook
+  const { templates, isLoading: loadingTemplates } = useLegacyAgentTemplates()
+
+  React.useEffect(() => {
+    async function load() {
+      setLoadingAgents(true)
+      try {
+        const res = await fetch("/api/backend-proxy/custom-agents?agent_type=first_party&status=active")
+        if (res.ok) {
+          const data = await res.json()
+          setFirstPartyAgents(data.agents || [])
+        }
+      } catch (err) {
+        console.error("Failed to load first-party agents:", err)
+      } finally {
+        setLoadingAgents(false)
       }
-    } catch (err) {
-      console.error("Failed to load marketplace:", err)
-    } finally {
-      setIsLoading(false)
     }
-  }, [category, debouncedSearch])
+    load()
+  }, [])
 
-  const handleInstall = async (listingId: string) => {
-    setInstalling(listingId)
+  const handleActivate = async (agent: FirstPartyAgent) => {
+    setActivating(agent.id)
     try {
       const res = await fetch("/api/backend-proxy/agent-marketplace/install", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ listing_id: listingId }),
+        body: JSON.stringify({ agent_id: agent.id }),
       })
       if (res.ok) {
-        toast.success(t('installSuccess'))
-        loadListings()
-        // F3 Wave F: auto-switch para tab Instalados após install com sucesso
+        toast.success(t("installSuccess"))
+        setActivatedIds(prev => { const s = new Set(prev); s.add(agent.id); return s })
         onInstallSuccess?.()
       } else {
-        const err = await res.json().catch(() => ({ detail: t('errorGeneric') }))
-        toast.error(err.detail || t('errorInstalling'))
+        const err = await res.json().catch(() => ({ detail: t("errorGeneric") }))
+        toast.error(err.detail || t("errorInstalling"))
       }
     } catch {
-      toast.error(t('connectionError'))
+      toast.error(t("connectionError"))
     } finally {
-      setInstalling(null)
+      setActivating(null)
     }
   }
 
-  const handleUseTemplate = async (item: MarketplaceListing) => {
-    const templateId = item.template_id || item.id
-    setCloningTemplate(item.id)
+  const handleUseTemplate = async (template: AgentTemplate) => {
     try {
-      const res = await fetch("/api/backend-proxy/agent-marketplace/use-template", {
+      const res = await fetch("/api/backend-proxy/custom-agents", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ template_id: templateId }),
+        body: JSON.stringify({
+          name: template.name,
+          role: template.description,
+          description: template.description,
+          system_prompt: template.system_prompt,
+          allowed_tools: template.allowed_tools,
+          domain: template.domain,
+          icon: template.icon,
+          max_steps: template.max_steps,
+          temperature: template.temperature,
+          enable_memory: template.enable_memory,
+          context_level: template.context_level,
+          excluded_tools: template.excluded_tools,
+        }),
       })
       if (res.ok) {
-        toast.success(t('templateCloneSuccess'))
+        toast.success(t("templateCloneSuccess"))
       } else if (res.status === 404) {
-        toast.info(t('templateComingSoon'))
+        toast.info(t("templateComingSoon"))
       } else {
-        const err = await res.json().catch(() => ({ detail: t('errorGeneric') }))
-        toast.error(err.detail || t('errorGeneric'))
+        const err = await res.json().catch(() => ({ detail: t("errorGeneric") }))
+        toast.error(err.detail || t("errorGeneric"))
       }
     } catch {
-      toast.error(t('connectionError'))
-    } finally {
-      setCloningTemplate(null)
+      toast.error(t("connectionError"))
     }
   }
 
-  // Split listings into agents and templates
-  const agentListings = listings.filter(l => !l.listing_type || l.listing_type === "agent")
-  const templateListings = listings.filter(l => l.listing_type === "template")
-  const allEmpty = agentListings.length === 0 && templateListings.length === 0
-
-  const renderAgentCard = (listing: MarketplaceListing) => (
-    <div
-      key={listing.id}
-      className="rounded-md border border-lia-border-subtle bg-lia-bg-secondary hover:border-violet-300 dark:hover:border-violet-700 hover:shadow-md transition-colors duration-200"
-    >
-      <div className="p-4">
-        <div className="flex items-start justify-between mb-3">
-          <div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <p className="text-sm font-semibold text-lia-text-primary" role="heading" aria-level={3}>{listing.title}</p>
-              {listing.agent_type === "first_party" && (
-                <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">
-                  Oficial WeDo
-                </span>
-              )}
-            </div>
-            {listing.agent_role && (
-              <p className="text-[10px] text-lia-text-secondary mt-0.5">{listing.agent_role}</p>
-            )}
-          </div>
-          <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-violet-50 dark:bg-violet-950/20 text-violet-600 dark:text-violet-400">
-            {listing.category}
-          </span>
-        </div>
-
-        {listing.short_description && (
-          <p className="text-xs text-lia-text-secondary mb-3 line-clamp-2">{listing.short_description}</p>
-        )}
-
-        {listing.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1 mb-3">
-            {listing.tags.slice(0, 4).map((tag, i) => (
-              <span key={i} className="px-2 py-0.5 rounded text-[10px] bg-lia-bg-tertiary text-lia-text-disabled">
-                {tag}
-              </span>
-            ))}
-          </div>
-        )}
-
-        <div className="flex items-center gap-4 mb-3 text-[10px] text-lia-text-secondary">
-          <span className="flex items-center gap-1">
-            <Download className="w-3 h-3" />
-            {t('installations', { count: listing.install_count })}
-          </span>
-          {listing.avg_rating > 0 && (
-            <span className="flex items-center gap-1">
-              <Star className="w-3 h-3 text-amber-400" />
-              {listing.avg_rating.toFixed(1)}
-            </span>
-          )}
-          <span className="flex items-center gap-1">
-            <CreditCard className="w-3 h-3" />
-            {listing.is_free ? t('free') : t('creditsPerExec', { credits: listing.credits_per_execution })}
-          </span>
-        </div>
-
-        {listing.is_installed ? (
-          <div className="flex items-center justify-center gap-1.5 w-full px-3 py-2 rounded-md bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 text-xs font-medium">
-            <CheckCircle2 className="w-3.5 h-3.5" aria-hidden="true" />
-            {t('active')}
-          </div>
-        ) : (
-          <Button
-            size="sm"
-            onClick={() => handleInstall(listing.id)}
-            disabled={installing === listing.id}
-            className="w-full gap-2 bg-violet-600 text-white hover:bg-violet-700"
-          >
-            {installing === listing.id ? (
-              <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" />
-            ) : (
-              <Download className="w-3.5 h-3.5" />
-            )}
-            {t('install')}
-          </Button>
-        )}
-      </div>
-    </div>
+  const q = search.trim().toLowerCase()
+  const filteredAgents = firstPartyAgents.filter(a =>
+    !q || a.name.toLowerCase().includes(q) || (a.description || "").toLowerCase().includes(q)
   )
-
-  const renderTemplateCard = (listing: MarketplaceListing) => (
-    <div
-      key={listing.id}
-      className="rounded-md border border-lia-border-subtle bg-lia-bg-secondary hover:border-violet-300 dark:hover:border-violet-700 hover:shadow-md transition-colors duration-200"
-    >
-      <div className="p-4">
-        <div className="flex items-start justify-between mb-3">
-          <div>
-            <p className="text-sm font-semibold text-lia-text-primary" role="heading" aria-level={3}>{listing.title}</p>
-            {listing.agent_role && (
-              <p className="text-[10px] text-lia-text-secondary mt-0.5">{listing.agent_role}</p>
-            )}
-          </div>
-          <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-400">
-            {t('templateBadge')}
-          </span>
-        </div>
-
-        {listing.short_description && (
-          <p className="text-xs text-lia-text-secondary mb-3 line-clamp-2">{listing.short_description}</p>
-        )}
-
-        {listing.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1 mb-3">
-            {listing.tags.slice(0, 4).map((tag, i) => (
-              <span key={i} className="px-2 py-0.5 rounded text-[10px] bg-lia-bg-tertiary text-lia-text-disabled">
-                {tag}
-              </span>
-            ))}
-          </div>
-        )}
-
-        <Button
-          size="sm"
-          onClick={() => handleUseTemplate(listing)}
-          disabled={cloningTemplate === listing.id}
-          className="w-full gap-2 bg-amber-500 text-white hover:bg-amber-600"
-        >
-          {cloningTemplate === listing.id ? (
-            <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" />
-          ) : (
-            <Package className="w-3.5 h-3.5" />
-          )}
-          {t('useTemplate')}
-        </Button>
-      </div>
-    </div>
+  const filteredTemplates = templates.filter(tpl =>
+    !q || tpl.name.toLowerCase().includes(q) || (tpl.description || "").toLowerCase().includes(q)
   )
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-3">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-disabled" />
-          <input
-            type="text" value={search} onChange={e => setSearch(e.target.value)}
-            placeholder={t('searchPlaceholder') as string}
-            className="w-full pl-10 pr-3 py-2 border border-lia-border-subtle rounded-lg text-sm bg-lia-bg-secondary text-lia-text-primary placeholder:text-lia-text-disabled focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/30"
-          />
-        </div>
-        <div className="flex gap-1">
-          {CATEGORY_KEYS.map(key => (
-            <button
-              key={key}
-              onClick={() => setCategory(key)}
-              className={cn(
-                "px-3 py-2 rounded-lg text-xs font-medium transition-colors",
-                category === key
-                  ? "bg-violet-100 dark:bg-violet-950/30 text-violet-700 dark:text-violet-400"
-                  : "text-lia-text-secondary hover:bg-lia-bg-tertiary"
-              )}
-            >
-              {t(key || 'all')}
-            </button>
-          ))}
-        </div>
+    <div className="space-y-6">
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-disabled pointer-events-none" aria-hidden="true" />
+        <input
+          type="search"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          placeholder={t("searchPlaceholder") as string}
+          className="w-full pl-10 pr-3 py-2 border border-lia-border-subtle rounded-lg text-sm bg-lia-bg-secondary text-lia-text-primary placeholder:text-lia-text-disabled focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/30"
+        />
       </div>
 
-      {isLoading ? (
-        <div className="flex items-center justify-center py-16">
-          <Loader2 className="w-6 h-6 animate-spin text-lia-text-disabled" aria-hidden="true" />
+      <section data-testid="section-wedo-agents">
+        <div className="mb-3">
+          <h2 className="text-sm font-semibold text-lia-text-primary flex items-center gap-2">
+            <Store className="w-4 h-4 text-violet-500" aria-hidden="true" />
+            {t("sectionAgents")}
+          </h2>
+          <p className="text-xs text-lia-text-secondary mt-0.5">{t("wedoAgentsSubtitle")}</p>
         </div>
-      ) : allEmpty ? (
-        <div className="flex flex-col items-center justify-center py-12 rounded-md border border-dashed border-lia-border-subtle bg-lia-bg-secondary/50">
-          <Store className="w-10 h-10 text-lia-text-disabled mb-3" />
-          <p className="text-sm font-medium text-lia-text-secondary">{t('noAgentsAvailable')}</p>
-          <p className="text-xs text-lia-text-disabled mt-1">
-            {search ? t('tryAnotherSearch') : t('noAgentsPublished')}
-          </p>
-        </div>
-      ) : (
-        <div className="space-y-8">
-          {/* Section: Agentes WeDo */}
-          {agentListings.length > 0 && (
-            <section>
-              <h2 className="text-sm font-semibold text-lia-text-primary mb-3 flex items-center gap-2">
-                <Store className="w-4 h-4 text-violet-500" aria-hidden="true" />
-                {t('sectionAgents')}
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {agentListings.map(renderAgentCard)}
-              </div>
-            </section>
-          )}
 
-          {/* Section: Templates */}
-          {templateListings.length > 0 && (
-            <section>
-              <h2 className="text-sm font-semibold text-lia-text-primary mb-3 flex items-center gap-2">
-                <Package className="w-4 h-4 text-amber-500" aria-hidden="true" />
-                {t('sectionTemplates')}
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {templateListings.map(renderTemplateCard)}
-              </div>
-            </section>
-          )}
+        {loadingAgents ? (
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="w-5 h-5 animate-spin text-lia-text-disabled" aria-hidden="true" />
+          </div>
+        ) : filteredAgents.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-6 rounded-md border border-dashed border-lia-border-subtle bg-lia-bg-secondary/50">
+            <Store className="w-8 h-8 text-lia-text-disabled mb-2" />
+            <p className="text-xs text-lia-text-disabled">{t("noAgentsAvailable")}</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {filteredAgents.map(agent => {
+              const isActive = activatedIds.has(agent.id)
+              return (
+                <div
+                  key={agent.id}
+                  className="rounded-md border border-lia-border-subtle bg-lia-bg-secondary hover:border-violet-300 dark:hover:border-violet-700 hover:shadow-md transition-colors duration-200"
+                  data-testid={"wedo-agent-card-" + agent.id}
+                >
+                  <div className="p-4">
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-powder border border-mist flex items-center justify-center text-lg flex-shrink-0">
+                          {agent.icon || "\u{1F916}"}
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-lia-text-primary">{agent.name}</p>
+                          {agent.role && <p className="text-[10px] text-lia-text-secondary mt-0.5">{agent.role}</p>}
+                        </div>
+                      </div>
+                      <span
+                        className="inline-flex items-center gap-1 text-xs bg-blue-50 dark:bg-blue-950/20 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800 px-2 py-0.5 rounded-full font-medium flex-shrink-0"
+                        data-testid="official-wedo-badge"
+                      >
+                        Oficial WeDo
+                      </span>
+                    </div>
+
+                    {agent.description && (
+                      <p className="text-xs text-lia-text-secondary mb-3 line-clamp-2">{agent.description}</p>
+                    )}
+
+                    {isActive ? (
+                      <div
+                        className="flex items-center justify-center gap-1.5 w-full px-3 py-2 rounded-md bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 text-xs font-medium"
+                        data-testid="agent-active-chip"
+                      >
+                        <CheckCircle2 className="w-3.5 h-3.5" aria-hidden="true" />
+                        {t("active")}
+                      </div>
+                    ) : (
+                      <Button
+                        size="sm"
+                        onClick={() => handleActivate(agent)}
+                        disabled={activating === agent.id}
+                        className="w-full gap-2 bg-violet-600 text-white hover:bg-violet-700"
+                        data-testid={"activate-btn-" + agent.id}
+                      >
+                        {activating === agent.id ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" />
+                        ) : (
+                          <Download className="w-3.5 h-3.5" aria-hidden="true" />
+                        )}
+                        {t("activate")}
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </section>
+
+      <section data-testid="section-templates">
+        <div className="mb-3">
+          <h2 className="text-sm font-semibold text-lia-text-primary flex items-center gap-2">
+            <Package className="w-4 h-4 text-amber-500" aria-hidden="true" />
+            {t("sectionTemplates")}
+          </h2>
+          <p className="text-xs text-lia-text-secondary mt-0.5">{t("templatesSubtitle")}</p>
         </div>
-      )}
+
+        {loadingTemplates ? (
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="w-5 h-5 animate-spin text-lia-text-disabled" aria-hidden="true" />
+          </div>
+        ) : filteredTemplates.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-6 rounded-md border border-dashed border-lia-border-subtle bg-lia-bg-secondary/50">
+            <Package className="w-8 h-8 text-lia-text-disabled mb-2" />
+            <p className="text-xs text-lia-text-disabled">{t("noAgentsAvailable")}</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {filteredTemplates.map(template => (
+              <TemplateCard
+                key={template.id}
+                template={template}
+                onSelect={handleUseTemplate}
+                onCustomize={handleUseTemplate}
+                onPreview={handleUseTemplate}
+              />
+            ))}
+          </div>
+        )}
+      </section>
     </div>
   )
 }
