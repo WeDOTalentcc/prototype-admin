@@ -51,10 +51,6 @@ DOMAINS: dict[str, str] = {
         "Politicas de recrutamento e contratacao da empresa (aprovacoes, regras). "
         "Use para consultar/ajustar politicas."
     ),
-    "autonomous": (
-        "Acoes autonomas da LIA: listar, confirmar ou rejeitar acoes pendentes que a "
-        "LIA executou ou propos automaticamente."
-    ),
     "ats_integration": (
         "Integracao com ATS externo: importar/sincronizar candidaturas e dados de "
         "sistemas externos."

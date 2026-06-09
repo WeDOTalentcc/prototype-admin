@@ -39,7 +39,7 @@ CATEGORY_TAGLINES: dict[str, str] = {
     ToolCategory.CANDIDATOS: "buscar, comparar, analisar CV vs vaga; mover entre etapas (incluindo bulk); aprovar / reprovar / favoritar / ocultar; criar e triar",
     ToolCategory.COMUNICACAO: "enviar email individual ou em massa, WhatsApp, feedback; criar sequências de nurture",
     ToolCategory.AGENDAMENTO: "agendar entrevistas",
-    ToolCategory.DELEGACAO: ("quando o pedido for de um DOMINIO ESPECIALIZADO, DELEGUE ao agente do dominio (NUNCA recuse dizendo que nao tem acesso): politicas de contratacao->delegate_to_policy; configurar empresa/beneficios/cultura->delegate_to_company_settings; acoes autonomas da LIA->delegate_to_autonomous; integracao ATS->delegate_to_ats_integration; sourcing/canais externos->delegate_to_sourcing; analytics/predicoes->delegate_to_analytics; pipeline/kanban->delegate_to_pipeline; banco de talentos->delegate_to_talent_pool; comunicacao->delegate_to_communication; gestao de vagas->delegate_to_job_management"),
+    ToolCategory.DELEGACAO: ("quando o pedido for de um DOMINIO ESPECIALIZADO, DELEGUE ao agente do dominio (NUNCA recuse dizendo que nao tem acesso): politicas de contratacao->delegate_to_policy; configurar empresa/beneficios/cultura->delegate_to_company_settings; integracao ATS->delegate_to_ats_integration; sourcing/canais externos->delegate_to_sourcing; analytics/predicoes->delegate_to_analytics; pipeline/kanban->delegate_to_pipeline; banco de talentos->delegate_to_talent_pool; comunicacao->delegate_to_communication; gestao de vagas->delegate_to_job_management"),
     ToolCategory.EMPRESA_CONFIG: "verificar completude do perfil, sugerir política de recrutamento, importar benefícios, salvar política de contratação",
     ToolCategory.ANALYTICS: "gerar relatório, exportar candidatos / vagas; métricas de pipeline, recrutador, qualidade, velocidade, custo; predições ML, forecast de contratação; alertas inteligentes; diversidade",
     ToolCategory.TALENT_INTEL: "bancos de talentos, skills adjacency, skill gaps, reengajamento",
@@ -192,7 +192,6 @@ TOOL_TO_CATEGORY: dict[str, str] = {
     "delegate_to_analytics": ToolCategory.DELEGACAO,
     "delegate_to_company_settings": ToolCategory.DELEGACAO,
     "delegate_to_policy": ToolCategory.DELEGACAO,
-    "delegate_to_autonomous": ToolCategory.DELEGACAO,
     "delegate_to_ats_integration": ToolCategory.DELEGACAO,
     "delegate_to_job_management": ToolCategory.DELEGACAO,
 }
