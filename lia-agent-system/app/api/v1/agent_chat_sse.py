@@ -773,6 +773,42 @@ company_id: str = Depends(require_company_id)):
                         set_hitl_approved,
                     )
                     set_hitl_approved(True)
+
+                # ── Rail A capability gate (federated path) ──────────────────
+                # Espelho do MainOrchestrator Phase 0.5. Quando LIA_FEDERATED_PRIMARY=true
+                # o path supervisor (que ja tem o gate) e bypass-ado — wired aqui antes
+                # de despachar pro recruiter_copilot. Fail-open: erro = fallthrough.
+                # Guard source=="rail_a": zero overhead em turnos normais.
+                _meta_ctx = (context.get("metadata") or {})
+                if _meta_ctx.get("source") == "rail_a" and _meta_ctx.get("intent_hint"):
+                    try:
+                        from app.orchestrator.guards.rail_a_capability_check import (
+                            check_rail_a_capability,
+                        )
+                        from app.core.database import AsyncSessionLocal as _RASL
+                        async with _RASL() as _cap_db:
+                            _cap_result = await check_rail_a_capability(
+                                context=context,
+                                message=_raw_content,
+                                company_id=company_id,
+                                db=_cap_db,
+                            )
+                        if _cap_result is not None:
+                            logger.info(
+                                "[SSEChat] federated Rail A gate short-circuit: "
+                                "intent=%r ui_action=%r session=%s",
+                                _meta_ctx.get("intent_hint"),
+                                _cap_result.get("ui_action"),
+                                session_id,
+                            )
+                            await sse_queue.put({"_done": True, "_orch_result": _cap_result})
+                            return
+                    except Exception as _cap_exc:
+                        logger.debug(
+                            "[SSEChat] federated Rail A gate skipped (fail-open): %s",
+                            _cap_exc,
+                        )
+
                 # Fase 2/4: seta o escopo do turno na contextvar p/ o federado carregar
                 # tools escopadas (~30 vs 179). Ativo se SCOPED_TOOLS ou PRIMARY. Fail-open.
                 try:
