@@ -23,6 +23,8 @@ export interface BulkRevealModalProps {
   onConfirm: (types: Array<"email" | "phone">) => void | Promise<void>
   candidateCount: number
   isRevealing: boolean
+  /** Called when user cancels during an active reveal. If provided, Cancel button stays enabled while isRevealing. */
+  onCancel?: () => void
 }
 
 export function BulkRevealModal({
@@ -31,6 +33,7 @@ export function BulkRevealModal({
   onConfirm,
   candidateCount,
   isRevealing,
+  onCancel,
 }: BulkRevealModalProps) {
   const [revealEmail, setRevealEmail] = useState(true)
   const [revealPhone, setRevealPhone] = useState(false)
@@ -44,7 +47,15 @@ export function BulkRevealModal({
     ((revealEmail ? CREDITS_PER_EMAIL : 0) + (revealPhone ? CREDITS_PER_PHONE : 0))
 
   return (
-    <AlertDialog open={isOpen} onOpenChange={(open: boolean) => !open && !isRevealing && onClose()}>
+    <AlertDialog open={isOpen} onOpenChange={(open: boolean) => {
+      if (!open) {
+        if (isRevealing) {
+          onCancel?.()
+        } else {
+          onClose()
+        }
+      }
+    }}>
       <AlertDialogContent
         data-testid="bulk-reveal-modal"
         className="max-w-md bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle"
@@ -99,7 +110,11 @@ export function BulkRevealModal({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <Button variant="outline" onClick={onClose} disabled={isRevealing}>
+          <Button
+            variant="outline"
+            onClick={isRevealing ? onCancel : onClose}
+            disabled={isRevealing && !onCancel}
+          >
             Cancelar
           </Button>
           <Button onClick={() => onConfirm(types)} disabled={isRevealing || types.length === 0}>
