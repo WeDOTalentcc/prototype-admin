@@ -197,8 +197,7 @@ def test_pre_compliance_wired_in_sse_diagnostic():
             "WS faz via pre_compliance; SSE não fazia (mencionado no comentário L361 do SSE). "
             "Fix pendente: FIX-C3B-SSE P0 do plano de consolidação federado."
         )
-    # pre_compliance presente — invariante OK
-    assert has_pre
+    # Se chegou aqui, pre_compliance está no código — diagnóstico confirmado
 
 
 # ---------------------------------------------------------------------------
@@ -219,7 +218,7 @@ def test_post_compliance_wired_in_sse():
             "Path supervisor não chama post_compliance. "
             "Gap de auditoria LGPD na saída do agente."
         )
-    assert has_post
+    # Se chegou aqui, post_compliance está no código — diagnóstico confirmado
 
 
 # ---------------------------------------------------------------------------

@@ -13,6 +13,39 @@ from app.core.config import settings
 logger = logging.getLogger(__name__)
 
 
+TEAMS_SLASH_COMMANDS: dict[str, str] = {
+    "/ajuda":     "Quais são todas as funcionalidades que você pode me ajudar?",
+    "/help":      "Quais são todas as funcionalidades que você pode me ajudar?",
+    "/buscar":    "Busca os melhores candidatos para a vaga mais recente",
+    "/triagem":   "Quais candidatos ainda precisam de triagem WSI?",
+    "/relatorio": "Gera o relatório semanal de recrutamento",
+    "/pipeline":  "Como está a saúde geral do pipeline de recrutamento?",
+    "/vagas":     "Quais são as vagas ativas e seus status?",
+    "/candidatos":"Quais candidatos estão aguardando triagem ou retorno?",
+    "/resumo":    "Me dê um resumo das atividades e alertas de hoje",
+}
+
+
+async def _post_with_retry(
+    client: "httpx.AsyncClient",
+    url: str,
+    json: dict,
+    headers: dict,
+    timeout: float = 30.0,
+    max_attempts: int = 3,
+) -> "httpx.Response":
+    """Simple retry with exponential backoff for Bot Framework calls."""
+    import asyncio
+    last: "httpx.Response | None" = None
+    for attempt in range(max_attempts):
+        last = await client.post(url, json=json, headers=headers, timeout=timeout)
+        if last.status_code in (200, 201):
+            return last
+        if attempt < max_attempts - 1:
+            await asyncio.sleep(2 ** attempt)
+    return last  # type: ignore[return-value]
+
+
 class SimpleTeamsBot:
     """
     Simplified Teams bot that handles webhooks directly.

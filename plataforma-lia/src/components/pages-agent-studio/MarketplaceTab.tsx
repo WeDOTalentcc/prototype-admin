@@ -18,6 +18,7 @@ import { useAiPersona } from "@/hooks/company/use-ai-persona"
 // Marketplace redesign 2026-06-09: use first-party agents API + legacy templates hook
 import { useLegacyAgentTemplates } from "@/hooks/agents/use-legacy-agent-templates"
 import { TemplateCard } from "@/components/pages-agent-studio/custom-agents/TemplateCard"
+import { TemplatePreviewModal } from "@/components/pages-agent-studio/custom-agents/template-preview-modal"
 import type { AgentTemplate } from "@/components/pages-agent-studio/custom-agents/types"
 
 interface MarketplaceListing {
@@ -139,6 +140,10 @@ interface FirstPartyAgent {
   role: string
   status: string
   agent_type: string
+  system_prompt?: string
+  allowed_tools?: string[]
+  max_steps?: number
+  temperature?: number
 }
 
 function BrowseMarketplace({ onInstallSuccess, initialCategory: _initialCategory }: { onInstallSuccess?: () => void; initialCategory?: string }) {
@@ -153,6 +158,9 @@ function BrowseMarketplace({ onInstallSuccess, initialCategory: _initialCategory
 
   // Section 2 — Templates via canonical hook
   const { templates, isLoading: loadingTemplates } = useLegacyAgentTemplates()
+
+  // Template preview modal state — "Ajustar antes" e "Ver detalhes"
+  const [previewTemplate, setPreviewTemplate] = React.useState<AgentTemplate | null>(null)
 
   React.useEffect(() => {
     async function load() {
@@ -181,10 +189,20 @@ function BrowseMarketplace({ onInstallSuccess, initialCategory: _initialCategory
   const handleActivate = async (agent: FirstPartyAgent) => {
     setActivating(agent.id)
     try {
-      const res = await fetch("/api/backend-proxy/agent-marketplace/install", {
+      const res = await fetch("/api/backend-proxy/custom-agents", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ agent_id: agent.id }),
+        body: JSON.stringify({
+          name: agent.name,
+          role: agent.role,
+          description: agent.description || "",
+          icon: agent.icon,
+          domain: agent.domain,
+          system_prompt: agent.system_prompt || "",
+          allowed_tools: agent.allowed_tools || [],
+          max_steps: agent.max_steps ?? 10,
+          temperature: agent.temperature ?? 0.3,
+        }),
       })
       if (res.ok) {
         toast.success(t("installSuccess"))
@@ -363,13 +381,21 @@ function BrowseMarketplace({ onInstallSuccess, initialCategory: _initialCategory
                 key={template.id}
                 template={template}
                 onSelect={handleUseTemplate}
-                onCustomize={handleUseTemplate}
-                onPreview={handleUseTemplate}
+                onCustomize={(tpl) => setPreviewTemplate(tpl)}
+                onPreview={(tpl) => setPreviewTemplate(tpl)}
               />
             ))}
           </div>
         )}
       </section>
+
+      {/* Modal "Ajustar antes" / "Ver detalhes" — restaurado após commit 742793c13 */}
+      <TemplatePreviewModal
+        template={previewTemplate}
+        open={previewTemplate !== null}
+        onOpenChange={(o) => { if (!o) setPreviewTemplate(null) }}
+        onConfirm={async (tpl) => { await handleUseTemplate(tpl); setPreviewTemplate(null) }}
+      />
 
       <section data-testid="section-roadmap">
         <div className="mb-3">

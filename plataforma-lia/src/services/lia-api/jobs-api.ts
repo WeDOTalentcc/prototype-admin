@@ -43,7 +43,7 @@ export async function listJobVacancies(status?: string, skip: number = 0, limit:
   const response = await fetchWithRetry(
     url,
     { headers: getAuthHeaders() },
-    { timeoutMs: 15000 },
+    { timeoutMs: 30000, attempts: 2 },
   )
 
   if (!response.ok) {
