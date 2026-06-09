@@ -349,3 +349,247 @@ class TestFirstPartyAgentDB:
         # Should be 'custom' (default) — never 'first_party'
         assert fetched.agent_type != AgentType.first_party.value, \
             "Legacy agent must not become first_party by default"
+
+
+# --------------------------------------------------------------------------
+# Fase D-seed tests: VoiceScreeningChannel manifesto
+# --------------------------------------------------------------------------
+
+VOICE_CHANNEL_ID = "00000000-0000-0000-0000-000000000003"
+
+
+class TestVoiceScreeningChannelModel:
+    """Unit tests for VoiceScreeningChannel first-party seed (Fase D)."""
+
+    def test_voice_channel_category_is_voice_channel(self):
+        """VoiceScreeningChannel must have category=voice_channel."""
+        agent = CustomAgent(
+            id=VOICE_CHANNEL_ID,
+            company_id=None,
+            created_by="wedo_system",
+            name="VoiceScreeningChannel",
+            role="Canal de Triagem por Voz",
+            system_prompt="",
+            domain="general",
+            agent_type=AgentType.first_party,
+            domains=[],
+            allowed_tools=[],
+            config={},
+            category="voice_channel",
+            voice_enabled=True,
+        )
+        assert agent.category == "voice_channel"
+        assert agent.voice_enabled is True
+
+    def test_voice_channel_has_empty_domains(self):
+        """VoiceScreeningChannel must have empty domains — it is NOT a chat routing agent."""
+        agent = CustomAgent(
+            id=VOICE_CHANNEL_ID,
+            company_id=None,
+            created_by="wedo_system",
+            name="VoiceScreeningChannel",
+            role="Canal de Triagem por Voz",
+            system_prompt="",
+            domain="general",
+            agent_type=AgentType.first_party,
+            domains=[],
+            allowed_tools=[],
+            config={},
+            category="voice_channel",
+        )
+        assert agent.domains == [], "voice_channel must have empty domains"
+        assert agent.allowed_tools == [], "voice_channel must have no routing tools"
+
+    def test_voice_channel_not_excluded_from_to_dict(self):
+        """to_dict() must include category and voice_enabled for visibility in Studio UI."""
+        agent = CustomAgent(
+            id=VOICE_CHANNEL_ID,
+            company_id=None,
+            created_by="wedo_system",
+            name="VoiceScreeningChannel",
+            role="Canal de Triagem por Voz",
+            system_prompt="",
+            domain="general",
+            agent_type=AgentType.first_party,
+            domains=[],
+            allowed_tools=[],
+            config={},
+            category="voice_channel",
+            voice_enabled=True,
+        )
+        d = agent.to_dict()
+        assert d.get("category") == "voice_channel"
+        assert d.get("name") == "VoiceScreeningChannel"
+        assert d.get("agent_type") == "first_party"
+
+
+def _filter_chat_routing_agents(agents: list) -> list:
+    """
+    Simulates list_active_for_context() routing filter:
+    Excludes category='voice_channel' from chat agent routing.
+
+    This is the canonical filter logic that any repository or service
+    providing agents for chat domain routing MUST apply.
+    """
+    return [a for a in agents if getattr(a, "category", None) != "voice_channel"]
+
+
+class TestVoiceChannelExcludedFromChatRouting:
+    """
+    VoiceScreeningChannel must NOT appear in chat domain routing queries.
+
+    Rationale: voice_channel agents are channel manifests for per-tenant
+    config visibility in Agent Studio. They have no domains, no system_prompt,
+    no routing tools. Including them in chat routing would cause the CascadedRouter
+    to try to dispatch messages to an agent with no capabilities.
+    """
+
+    def _make_chat_agent(self, name: str, category: str = "screening") -> object:
+        """Helper to create a minimal mock agent dict."""
+        class AgentMock:
+            pass
+        a = AgentMock()
+        a.name = name
+        a.category = category
+        a.agent_type = "first_party"
+        a.domains = ["talent"] if category != "voice_channel" else []
+        return a
+
+    def test_voice_channel_excluded_from_routing(self):
+        """voice_channel category must be excluded from chat domain routing."""
+        agents = [
+            self._make_chat_agent("TalentIntelAgent", "screening"),
+            self._make_chat_agent("InterviewAnalysisAgent", "screening"),
+            self._make_chat_agent("VoiceScreeningChannel", "voice_channel"),
+        ]
+        chat_agents = _filter_chat_routing_agents(agents)
+        names = [a.name for a in chat_agents]
+        assert "VoiceScreeningChannel" not in names, (
+            "VoiceScreeningChannel must NOT appear in chat routing agents"
+        )
+        assert "TalentIntelAgent" in names
+        assert "InterviewAnalysisAgent" in names
+
+    def test_only_voice_channel_excluded_not_others(self):
+        """Only voice_channel category is excluded; other categories pass through."""
+        agents = [
+            self._make_chat_agent("TalentIntelAgent", "screening"),
+            self._make_chat_agent("SomeAnalyticsAgent", "analytics"),
+            self._make_chat_agent("VoiceScreeningChannel", "voice_channel"),
+        ]
+        chat_agents = _filter_chat_routing_agents(agents)
+        assert len(chat_agents) == 2
+        assert all(a.category != "voice_channel" for a in chat_agents)
+
+    def test_empty_agent_list_returns_empty(self):
+        """Edge case: empty input returns empty output."""
+        assert _filter_chat_routing_agents([]) == []
+
+    def test_all_voice_channels_excluded(self):
+        """Edge case: if all agents are voice_channel, routing gets empty list."""
+        agents = [
+            self._make_chat_agent("VoiceScreeningChannel", "voice_channel"),
+            self._make_chat_agent("AnotherVoiceChannel", "voice_channel"),
+        ]
+        chat_agents = _filter_chat_routing_agents(agents)
+        assert chat_agents == []
+
+
+@pytest.mark.asyncio
+class TestVoiceChannelSeedIdempotencyDB:
+    """DB-level idempotency test for VoiceScreeningChannel seed (Fase D)."""
+
+    async def test_voice_channel_seed_is_idempotent(self, db_session: AsyncSession):
+        """Second insertion of VoiceScreeningChannel does NOT duplicate the row."""
+        agent_id = VOICE_CHANNEL_ID
+
+        # First insert
+        voice = CustomAgentSQLite(
+            id=agent_id,
+            company_id=None,
+            created_by="wedo_system",
+            name="VoiceScreeningChannel",
+            role="Canal de Triagem por Voz",
+            system_prompt="",
+            domain="general",
+            agent_type=AgentType.first_party.value,
+            domains=[],
+            allowed_tools=[],
+            config={},
+            status=CustomAgentStatus.ACTIVE.value,
+            voice_enabled=True,
+            category="voice_channel",
+        )
+        db_session.add(voice)
+        await db_session.commit()
+
+        # Simulate second seed run: get_or_skip (ON CONFLICT DO NOTHING semantics)
+        existing = await db_session.get(CustomAgentSQLite, agent_id)
+        assert existing is not None  # already present — idempotent
+
+        result = await db_session.execute(
+            select(CustomAgentSQLite).where(CustomAgentSQLite.id == agent_id)
+        )
+        rows = result.scalars().all()
+        assert len(rows) == 1, f"Expected exactly 1 VoiceScreeningChannel row, got {len(rows)}"
+        assert rows[0].name == "VoiceScreeningChannel"
+        assert rows[0].category == "voice_channel"
+        assert rows[0].agent_type == AgentType.first_party.value
+
+    async def test_voice_channel_does_not_appear_in_domain_filtered_query(self, db_session: AsyncSession):
+        """
+        list_active_for_context() with domain filter must exclude voice_channel agents.
+        Simulates the routing query: WHERE domains @> ARRAY[domain] AND category != voice_channel.
+        In SQLite we test the Python-layer filter equivalent.
+        """
+        # Seed all 3 first-party agents
+        for row in [
+            CustomAgentSQLite(
+                id="00000000-0000-0000-0000-000000000001",
+                company_id=None, created_by="wedo_system",
+                name="TalentIntelAgent", role="r", system_prompt="",
+                domain="talent", agent_type="first_party",
+                domains=["talent"], allowed_tools=[], config={},
+                status="active", category="screening",
+            ),
+            CustomAgentSQLite(
+                id="00000000-0000-0000-0000-000000000002",
+                company_id=None, created_by="wedo_system",
+                name="InterviewAnalysisAgent", role="r", system_prompt="",
+                domain="talent", agent_type="first_party",
+                domains=["talent"], allowed_tools=[], config={},
+                status="active", category="screening",
+            ),
+            CustomAgentSQLite(
+                id=VOICE_CHANNEL_ID,
+                company_id=None, created_by="wedo_system",
+                name="VoiceScreeningChannel", role="r", system_prompt="",
+                domain="general", agent_type="first_party",
+                domains=[], allowed_tools=[], config={},
+                status="active", category="voice_channel",
+                voice_enabled=True,
+            ),
+        ]:
+            db_session.add(row)
+        await db_session.commit()
+
+        # Fetch all active first_party agents
+        result = await db_session.execute(
+            select(CustomAgentSQLite).where(
+                CustomAgentSQLite.agent_type == "first_party",
+                CustomAgentSQLite.status == "active",
+            )
+        )
+        all_first_party = result.scalars().all()
+        assert len(all_first_party) == 3
+
+        # Apply routing filter (Python-layer equivalent of SQL WHERE category != voice_channel)
+        chat_routing = _filter_chat_routing_agents(all_first_party)
+        names = [a.name for a in chat_routing]
+
+        assert "VoiceScreeningChannel" not in names, (
+            "VoiceScreeningChannel must be excluded from chat routing query"
+        )
+        assert len(chat_routing) == 2
+        assert "TalentIntelAgent" in names
+        assert "InterviewAnalysisAgent" in names

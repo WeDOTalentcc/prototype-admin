@@ -19,6 +19,7 @@ from lia_models.custom_agent import AgentType, CustomAgent, CustomAgentStatus
 # Fixed UUIDs for first-party agents — deterministic, idempotent across envs
 TALENT_INTEL_AGENT_ID = uuid.UUID("00000000-0000-0000-0000-000000000001")
 INTERVIEW_ANALYSIS_AGENT_ID = uuid.UUID("00000000-0000-0000-0000-000000000002")
+VOICE_SCREENING_CHANNEL_ID = uuid.UUID("00000000-0000-0000-0000-000000000003")
 
 FIRST_PARTY_AGENTS = [
     {
@@ -74,6 +75,29 @@ FIRST_PARTY_AGENTS = [
         "max_steps": 8,
         "temperature": 0.2,
         "category": "screening",
+    },
+    {
+        "id": VOICE_SCREENING_CHANNEL_ID,
+        "company_id": None,
+        "created_by": "wedo_system",
+        "name": "VoiceScreeningChannel",
+        "role": "Canal de Triagem por Voz",
+        "description": (
+            "Canal global WeDo para triagem de candidatos via voz. "
+            "Manifesto de configuracao por tenant. Nao eh um chat agent."
+        ),
+        "system_prompt": "",
+        "allowed_tools": [],
+        "domain": "general",
+        "icon": "x",
+        "status": "active",
+        "agent_type": "first_party",
+        "domains": [],
+        "config": {},
+        "max_steps": 0,
+        "temperature": 0.0,
+        "voice_enabled": True,
+        "category": "voice_channel",
     },
 ]
 
