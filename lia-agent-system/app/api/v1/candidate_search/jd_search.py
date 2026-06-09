@@ -189,7 +189,7 @@ company_id: str = Depends(require_company_id)):
             )
             # NOTE: candidate_id (local UUID) may differ from Pearch docid namespace.
             # If they differ, Pearch silently ignores unknown docids — UX degradation only, no data risk.
-                        _explicit_blacklist.update(_disliked_ids)
+            _explicit_blacklist.update(_disliked_ids)
         _effective_blacklist: list[str] | None = list(_explicit_blacklist) if _explicit_blacklist else None
 
         result = await pearch_svc.refine_search(
