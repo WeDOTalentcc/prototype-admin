@@ -28,11 +28,11 @@ import { getCustomAgentStatusConfig } from "@/lib/agent-studio/status-config"
 import { BetaBadge } from "@/components/ui/beta-badge"
 // Onda 4 F6.4 — badge "agente novo aprendendo" quando < 5 execuções.
 import { LearningBadge } from "@/components/pages-agent-studio/LearningBadge"
-import { Switch } from "@/components/ui/switch"
 import { useToggleAgentVoice } from "@/hooks/agent-studio/use-agent-voice"
 import { useToggleAgentWhatsApp } from "@/hooks/agent-studio/use-agent-whatsapp"
 import { useToggleAgentChannel } from "@/hooks/agent-studio/use-agent-channel"
 import { StudioCardShell } from "@/components/pages-agent-studio/StudioCardShell"
+import { ChannelToggleRow } from "./ChannelToggleRow"
 // White-label canonical (CLAUDE.md project_white_label_ai_assistant 2026-05-25):
 // agent.name é o nome custom do agente; aiPersona.name é o nome do assistente IA
 // configurado pelo cliente (nome por tenant). Fallback: agent.name → persona → genérico.
@@ -49,55 +49,6 @@ interface AgentCardProps {
   onToggleStatus: (agent: CustomAgent) => void
   /** Sprint B QW#15 audit 2026-05-22: Clone handler — opcional (caller decide se expoe) */
   onClone?: (agent: CustomAgent) => void
-}
-
-/**
- * W-Channels-A (2026-05-23) — channel row renderer.
- *
- * Cada um dos 4 canais (whatsapp / voice / voip / triagem_invite) e renderizado
- * por este sub-componente para garantir consistencia visual + ARIA. Os toggles
- * sao INDEPENDENTES — nao ha regra de exclusao mutua, cliente combina como
- * preferir (mental model Paulo, decisao Opcao B 2026-05-23).
- */
-function ChannelToggleRow({
-  icon: Icon,
-  label,
-  enabled,
-  disabled,
-  onToggle,
-  ariaOn,
-  ariaOff,
-  testId,
-  trailing,
-}: {
-  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>
-  label: string
-  enabled: boolean
-  disabled: boolean
-  onToggle: (next: boolean) => void
-  ariaOn: string
-  ariaOff: string
-  testId: string
-  trailing?: React.ReactNode
-}) {
-  return (
-    <div className="flex items-center justify-between gap-2 pt-2 border-t border-lia-border-subtle">
-      <div className="flex items-center gap-2 text-xs">
-        <Icon className="w-3.5 h-3.5 text-lia-text-disabled" aria-hidden="true" />
-        <span className="text-lia-text-secondary">{label}</span>
-      </div>
-      <div className="flex items-center gap-2">
-        {trailing}
-        <Switch
-          checked={enabled}
-          disabled={disabled}
-          onCheckedChange={(next) => onToggle(next)}
-          aria-label={enabled ? ariaOff : ariaOn}
-          data-testid={testId}
-        />
-      </div>
-    </div>
-  )
 }
 
 /**
@@ -153,10 +104,31 @@ export function AgentCard({ agent, onTest, onDeploy, onToggleStatus, onClone }: 
   const avatarAccent = categoryAvatarClasses(category)
 
   // Shell slots — adapter pattern (mirrors AgentPanel).
+  // CHANGE 4 (2026-06-09): read-only channel pills — visual mirror of the
+  // toggles below. Only shown when the channel is enabled. The toggles remain
+  // the control; these are purely informative for at-a-glance scanning.
+  const channelBadges: { key: string; label: string }[] = [
+    voiceEnabled ? { key: "voice", label: t("channelBadgeVoice") || "Voz" } : null,
+    voipEnabled ? { key: "voip", label: t("channelBadgeVoip") || "Voz Web" } : null,
+    whatsappEnabled ? { key: "whatsapp", label: t("channelBadgeWhatsapp") || "WhatsApp" } : null,
+    triagemInviteEnabled
+      ? { key: "triagem_invite", label: t("channelBadgeTriagem") || "Triagem" }
+      : null,
+  ].filter((b): b is { key: string; label: string } => b !== null)
+
   const statusBadge = (
     <>
       <span className={cn(badgeStyles.default, "text-[10px]")}>{categoryLabel}</span>
       <span className={cn(statusStyle.badge, "text-[10px]")}>{statusStyle.label}</span>
+      {channelBadges.map((b) => (
+        <span
+          key={b.key}
+          className="text-[10px] bg-lia-bg-tertiary text-lia-text-secondary px-2 py-0.5 rounded-full"
+          data-testid={`agent-card-channel-badge-${b.key}`}
+        >
+          {b.label}
+        </span>
+      ))}
     </>
   )
 
