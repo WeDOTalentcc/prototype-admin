@@ -228,8 +228,6 @@ async def get_result_details(
                 "behavioral_strengths": feedback_row[4],
                 "next_steps": feedback_row[5],
                 "personalized_tip": feedback_row[6],
-                "development_plan": feedback_row[7],
-                "recommended_resources": feedback_row[8],
             } if feedback_row else None,
             "created_at": row[9].isoformat() if row[9] else None,
         }

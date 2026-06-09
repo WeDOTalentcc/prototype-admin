@@ -113,8 +113,6 @@ class WsiFeedbackRow(TypedDict):
     behavioral_strengths: str | None
     next_steps: str | None
     personalized_tip: str | None
-    development_plan: str | None
-    recommended_resources: str | None
 
 
 # ---------------------------------------------------------------------------

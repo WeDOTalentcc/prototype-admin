@@ -367,8 +367,7 @@ class WsiRepository:
         """Fetch the candidate feedback row for a WSI result."""
         result = await self.db.execute(text("""
             SELECT decision, main_message, technical_strengths, development_opportunities,
-                   behavioral_strengths, next_steps, personalized_tip, development_plan,
-                   recommended_resources
+                   behavioral_strengths, next_steps, personalized_tip
             FROM wsi_feedbacks WHERE wsi_result_id = :result_id
         """), {"result_id": result_id})
         return result.fetchone()
