@@ -297,6 +297,11 @@ class AgentMarketplaceService:
 
         await listing_repo.increment_install_count(listing=listing)
 
+        await listing_repo.activate_module_if_required(
+            installation=installation,
+            listing=listing,
+        )
+
         logger.info(
             "[AgentMarketplace] Installed agent=%s from listing=%s company=%s",
             source_agent.id,
