@@ -3,7 +3,7 @@
 import { useMemo } from "react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { useCurrentCompany } from "@/hooks/company/use-current-company"
-import { Brain, RefreshCw, AlertCircle, Sparkles } from "lucide-react"
+import { Brain, RefreshCw, AlertCircle } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -181,9 +181,8 @@ export function ExperienceHighlightCard({ candidate, companyId: companyIdProp }:
             size="sm"
             disabled={!hasCompany}
             onClick={() => generateMutation.mutate({ force: false })}
-            className="h-6 gap-1 text-xs text-wedo-cyan hover:text-wedo-cyan"
+            className="h-6 text-xs text-wedo-cyan hover:text-wedo-cyan"
           >
-            <Sparkles className="h-3 w-3" />
             Gerar resumo
           </Button>
         </div>
