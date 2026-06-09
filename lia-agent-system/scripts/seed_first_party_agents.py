@@ -19,6 +19,7 @@ from lia_models.custom_agent import AgentType, CustomAgent, CustomAgentStatus
 # Fixed UUIDs for first-party agents — deterministic, idempotent across envs
 TALENT_INTEL_AGENT_ID = uuid.UUID("00000000-0000-0000-0000-000000000001")
 INTERVIEW_ANALYSIS_AGENT_ID = uuid.UUID("00000000-0000-0000-0000-000000000002")
+VOICE_SCREENING_CHANNEL_ID = uuid.UUID("00000000-0000-0000-0000-000000000003")
 
 # ── Fase B: Canonical tool lists ────────────────────────────────────────────
 # TalentIntelAgent exposes all 15 tools from app/domains/talent_intelligence/
@@ -121,6 +122,21 @@ FIRST_PARTY_AGENTS = [
         "max_steps": 8,
         "temperature": 0.2,
         "category": "screening",
+    },
+    {
+        "id": VOICE_SCREENING_CHANNEL_ID,
+        "name": "VoiceScreeningChannel",
+        "company_id": None,
+        "agent_type": AgentType.first_party.value,
+        "category": "voice_channel",
+        "voice_enabled": True,
+        "status": "active",
+        "domains": [],
+        "allowed_tools": [],
+        "description": "Canal de triagem por voz (Twilio -> Gemini STT -> LLM -> TTS). Manifesto de configuracao por tenant - sem routing de chat.",
+        "system_prompt": "",
+        "max_steps": 1,  # minimum to avoid recursion crash if ever instantiated
+        "temperature": 0.0,
     },
 ]
 
