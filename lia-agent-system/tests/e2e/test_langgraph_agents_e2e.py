@@ -13,6 +13,7 @@ Cobertura:
   - Session ID preservado na entrada (AgentInput)
   - Company ID preservado na entrada (AgentInput)
 """
+import os
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 from typing import Any
@@ -71,6 +72,39 @@ def _make_output(session_id: str = "sess-e2e-001", company_id: str = "company-e2
 
 
 # ---------------------------------------------------------------------------
+# Fixture: mock do checkpointer para evitar RuntimeError em APP_ENV=production.
+#
+# O Replit define APP_ENV=production como Secret. Os testes e2e não sobem o
+# lifespan da FastAPI (que chama initialize_checkpointer_async()), então
+# get_checkpointer() lança RuntimeError imediatamente.
+#
+# Dois locais precisam de patch:
+#   1. lia_agents_core.langgraph_base.get_checkpointer
+#      → importado no nível de módulo por langgraph_base.py, usado em __init__
+#        de todos os agentes ReAct que herdam de LangGraphBase.
+#   2. lia_agents_core.checkpointer.get_checkpointer
+#      → alvo canônico; necessário para chamadas feitas via import interno de
+#        função (ex: WSIInterviewGraph._build_langgraph importa localmente
+#        `from lia_agents_core.checkpointer import get_checkpointer`).
+# ---------------------------------------------------------------------------
+
+@pytest.fixture()
+def mock_checkpointer():
+    """
+    Mocka get_checkpointer() nos dois locais de lookup para evitar
+    RuntimeError quando APP_ENV=production e o lifespan não foi executado.
+
+    Retorna None — suficiente para instanciação e para testes que não
+    exercitam o compile/run real do grafo.
+    """
+    with (
+        patch("lia_agents_core.langgraph_base.get_checkpointer", return_value=None),
+        patch("lia_agents_core.checkpointer.get_checkpointer", return_value=None),
+    ):
+        yield
+
+
+# ---------------------------------------------------------------------------
 # Seção 1: ReAct Agents — process() via LangGraph nativo
 # ---------------------------------------------------------------------------
 
@@ -82,7 +116,7 @@ class TestReActAgentsLangGraphNativeE2E:
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize("module_path,class_name", REACT_AGENTS)
-    async def test_process_returns_agent_output(self, module_path, class_name):
+    async def test_process_returns_agent_output(self, module_path, class_name, mock_checkpointer):
         """process() com USE_LANGGRAPH_NATIVE=True retorna AgentOutput válido."""
         from lia_agents_core.agent_interface import AgentOutput
         import importlib
@@ -100,7 +134,7 @@ class TestReActAgentsLangGraphNativeE2E:
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize("module_path,class_name", REACT_AGENTS)
-    async def test_process_always_calls_langgraph(self, module_path, class_name):
+    async def test_process_always_calls_langgraph(self, module_path, class_name, mock_checkpointer):
         """process() sempre delega para _process_langgraph."""
         import importlib
         mod = importlib.import_module(module_path)
@@ -115,7 +149,7 @@ class TestReActAgentsLangGraphNativeE2E:
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize("module_path,class_name", REACT_AGENTS)
-    async def test_agent_output_has_required_fields(self, module_path, class_name):
+    async def test_agent_output_has_required_fields(self, module_path, class_name, mock_checkpointer):
         """AgentOutput retornado tem message, confidence e metadata."""
         from lia_agents_core.agent_interface import AgentOutput
         import importlib
@@ -163,7 +197,7 @@ class TestWSIInterviewGraphE2E:
         assert has_lg
 
     @pytest.mark.asyncio
-    async def test_wsi_start_with_mocked_nodes(self):
+    async def test_wsi_start_with_mocked_nodes(self, mock_checkpointer):
         """start() com nodes mockados não lança exceção."""
         from app.domains.cv_screening.agents.wsi_interview_graph import (
             WSIInterviewGraph, WSIInterviewStage
@@ -226,30 +260,59 @@ class TestCheckpointerDevMode:
 
     def test_get_checkpointer_returns_memory_saver_when_pg_unavailable(self):
         """Em dev, quando PostgresSaver não está disponível, retorna MemorySaver."""
+        import lia_agents_core.checkpointer as cp_module
         from lia_agents_core.checkpointer import get_checkpointer
-        with patch("lia_agents_core.checkpointer.settings") as mock_settings:
-            mock_settings.APP_ENV = "development"
-            mock_settings.DATABASE_URL = "postgresql+asyncpg://localhost:5432/test"
-            with patch("lia_agents_core.checkpointer._postgres_saver",
-                       side_effect=ImportError("not installed")):
+        # Resetar singleton para forçar o caminho de inicialização
+        original_singleton = cp_module._SAVER_SINGLETON
+        original_kind = cp_module._SAVER_KIND
+        try:
+            cp_module._SAVER_SINGLETON = None
+            cp_module._SAVER_KIND = "uninitialized"
+            with patch("lia_agents_core.checkpointer.settings") as mock_settings:
+                mock_settings.APP_ENV = "development"
+                mock_settings.DATABASE_URL = "postgresql+asyncpg://localhost:5432/test"
                 result = get_checkpointer()
-        # Dev com postgres indisponível → MemorySaver
-        assert result is None or type(result).__name__ in ("MemorySaver", "InMemorySaver")  # não deve lançar exceção
+        finally:
+            # Restaurar singleton original para não afetar outros testes
+            cp_module._SAVER_SINGLETON = original_singleton
+            cp_module._SAVER_KIND = original_kind
+        # Dev com postgres indisponível → MemorySaver (não deve lançar exceção)
+        assert result is None or type(result).__name__ in ("MemorySaver", "InMemorySaver")
 
     def test_get_checkpointer_returns_checkpointer_by_default(self):
         """Por padrão, get_checkpointer() retorna um checkpointer válido ou None."""
+        import lia_agents_core.checkpointer as cp_module
         from lia_agents_core.checkpointer import get_checkpointer
-        result = get_checkpointer()
+        # Se o singleton já foi inicializado (por outro teste ou lifespan), reutiliza.
+        # Se não foi, mocka APP_ENV=development para retornar MemorySaver sem erro.
+        if cp_module._SAVER_SINGLETON is not None:
+            result = get_checkpointer()
+        else:
+            with patch("lia_agents_core.checkpointer.settings") as mock_settings:
+                mock_settings.APP_ENV = "development"
+                mock_settings.DATABASE_URL = ""
+                result = get_checkpointer()
         # Deve retornar None ou um objeto com interface de checkpointer
-        assert result is None or hasattr(result, "put") or type(result).__name__ in ("MemorySaver", "InMemorySaver", "PostgresSaver")
+        assert result is None or hasattr(result, "put") or type(result).__name__ in (
+            "MemorySaver", "InMemorySaver", "PostgresSaver", "AsyncPostgresSaver"
+        )
 
     def test_checkpointer_production_requires_postgres(self):
-        """Em produção com PostgresSaver falhando, deve lançar RuntimeError."""
+        """Em produção sem initialize_checkpointer_async(), get_checkpointer() lança RuntimeError."""
+        import lia_agents_core.checkpointer as cp_module
         from lia_agents_core.checkpointer import get_checkpointer
-        with patch("lia_agents_core.checkpointer.settings") as mock_settings:
-            mock_settings.APP_ENV = "production"
-            mock_settings.DATABASE_URL = "postgresql+asyncpg://invalid:5432/db"
-            with patch("lia_agents_core.checkpointer._postgres_saver",
-                       side_effect=RuntimeError("Connection refused")):
-                with pytest.raises(RuntimeError, match="PostgresSaver FALHOU em produção"):
+        # Resetar singleton para garantir que o caminho de produção seja exercitado
+        original_singleton = cp_module._SAVER_SINGLETON
+        original_kind = cp_module._SAVER_KIND
+        try:
+            cp_module._SAVER_SINGLETON = None
+            cp_module._SAVER_KIND = "uninitialized"
+            with patch("lia_agents_core.checkpointer.settings") as mock_settings:
+                mock_settings.APP_ENV = "production"
+                mock_settings.DATABASE_URL = "postgresql+asyncpg://invalid:5432/db"
+                with pytest.raises(RuntimeError):
                     get_checkpointer()
+        finally:
+            # Restaurar singleton original
+            cp_module._SAVER_SINGLETON = original_singleton
+            cp_module._SAVER_KIND = original_kind
