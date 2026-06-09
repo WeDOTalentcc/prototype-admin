@@ -14,7 +14,7 @@ markers; those are now replaced by proper repo delegation.
 from datetime import datetime, timedelta
 from typing import Any
 
-from sqlalchemy import select, text
+from sqlalchemy import bindparam, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -153,8 +153,7 @@ class WorkforceRepository:
         self._require_company_id(company_id)
 
         dept_filter = "AND department = :dept" if department else ""
-        sources_placeholder = ", ".join(f"'{s}'" for s in _INTERNAL_CANDIDATE_SOURCES)
-        params: dict[str, Any] = {"cid": company_id}
+        params: dict[str, Any] = {"cid": company_id, "sources": list(_INTERNAL_CANDIDATE_SOURCES)}
         if department:
             params["dept"] = department
 
@@ -163,10 +162,12 @@ class WorkforceRepository:
             FROM candidates
             WHERE company_id = :cid
               AND is_active = true
-              AND source IN ({sources_placeholder})
+              AND source IN :sources
               {dept_filter}
         """)
-        result = await self.db.execute(sql, params)
+        result = await self.db.execute(
+            sql.bindparams(bindparam("sources", expanding=True)), params
+        )
         row = result.mappings().first() or {}
         return int(row.get("total_employees") or 0)
 
@@ -435,9 +436,7 @@ class WorkforceRepository:
         year: int,
         company_id: str,
     ) -> list[WorkforceEntry]:
-        # WT-2022 P0.WORK fix: required tenant scoping (cross-tenant prevention)
-        if not company_id:
-            raise ValueError("company_id required (WT-2022 P0.WORK)")
+        self._require_company_id(company_id)
         result = await self.db.execute(
             select(WorkforceEntry)
             .where(
@@ -454,9 +453,7 @@ class WorkforceRepository:
         year: int,
         company_id: str,
     ) -> list[WorkforceEntry]:
-        # WT-2022 P0.WORK fix: required tenant scoping
-        if not company_id:
-            raise ValueError("company_id required (WT-2022 P0.WORK)")
+        self._require_company_id(company_id)
         result = await self.db.execute(
             select(WorkforceEntry).where(
                 WorkforceEntry.year == year,
@@ -471,9 +468,7 @@ class WorkforceRepository:
         entries_data: list[dict],
         company_id: str,
     ) -> list[WorkforceEntry]:
-        # WT-2022 P0.WORK fix: required tenant scoping (cross-tenant prevention)
-        if not company_id:
-            raise ValueError("company_id required (WT-2022 P0.WORK)")
+        self._require_company_id(company_id)
         existing_result = await self.db.execute(
             select(WorkforceEntry).where(
                 WorkforceEntry.year == year,
@@ -513,9 +508,7 @@ class WorkforceRepository:
         department: str,
         company_id: str,
     ) -> WorkforceEntry | None:
-        # WT-2022 P0.WORK fix: required tenant scoping
-        if not company_id:
-            raise ValueError("company_id required (WT-2022 P0.WORK)")
+        self._require_company_id(company_id)
         result = await self.db.execute(
             select(WorkforceEntry).where(
                 WorkforceEntry.year == year,
@@ -527,9 +520,7 @@ class WorkforceRepository:
         return result.scalar_one_or_none()
 
     async def create_workforce_entry(self, data: dict) -> WorkforceEntry:
-        # WT-2022 P0.WORK fix: caller MUST include company_id in data dict
-        if not data.get("company_id"):
-            raise ValueError("company_id required in data (WT-2022 P0.WORK)")
+        self._require_company_id(data.get("company_id"))
         entry = WorkforceEntry(**data)
         self.db.add(entry)
         await self.db.flush()
