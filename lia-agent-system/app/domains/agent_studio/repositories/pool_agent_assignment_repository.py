@@ -11,7 +11,7 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from lia_models.custom_agent import CustomAgent
+from lia_models.custom_agent import AgentType, CustomAgent
 from lia_models.pool_agent_assignment import PoolAgentAssignment
 from lia_models.talent_pool import TalentPool
 
@@ -84,7 +84,9 @@ class PoolAgentAssignmentRepository:
             raise CrossTenantError(
                 f"Pool company={pool.company_id} != jwt company={company_id}"
             )
-        if agent.company_id != company_id:
+        # first_party agents have company_id=None by design (globally available).
+        # Assigning them to any tenant pool is always valid — skip cross-tenant check.
+        if agent.agent_type != AgentType.first_party and agent.company_id != company_id:
             raise CrossTenantError(
                 f"Agent company={agent.company_id} != jwt company={company_id}"
             )
