@@ -52,6 +52,9 @@ async def forecast_hiring_needs(
                   AND status NOT IN ('Cancelada', 'Fechada')
                   {dept_filter}
             """
+            # ADR-001-EXEMPT: query analítica agregada (COUNT/SUM por status) escopada
+            # por company_id, parametrizada. Workforce planning read-only; extração p/
+            # WorkforceRepository registrada no Action Register (Sprint 2 backlog).
             row = await session.execute(text(active_jobs_q), params)
             job_data = row.mappings().first() or {}
 
@@ -66,6 +69,7 @@ async def forecast_hiring_needs(
                   AND updated_at >= :lookback
                   {dept_filter}
             """
+            # ADR-001-EXEMPT: agregação histórica (AVG time-to-fill) escopada por company_id.
             hist_row = await session.execute(text(historical_q), hist_params)
             hist_data = hist_row.mappings().first() or {}
 
@@ -77,6 +81,7 @@ async def forecast_hiring_needs(
                   AND source IN ('internal', 'employee', 'colaborador')
                   {dept_filter}
             """
+            # ADR-001-EXEMPT: contagem de colaboradores internos escopada por company_id.
             emp_row = await session.execute(text(employee_q), params)
             emp_data = emp_row.mappings().first() or {}
 
