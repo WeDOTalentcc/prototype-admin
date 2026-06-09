@@ -181,7 +181,7 @@ export function WSITextScreeningModal({
     setEligibilityFetchLoading(true)
     try {
       const params = new URLSearchParams({ candidate_id: candidateId, job_id: jobId })
-      const response = await fetch(`/api/backend-proxy/api/v1/triagem/sessions?${params.toString()}`, {
+      const response = await fetch(`/api/backend-proxy/triagem/sessions?${params.toString()}`, {
         signal: AbortSignal.timeout(10000),
       })
       if (!response.ok) return
