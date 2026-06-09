@@ -1189,17 +1189,10 @@ company_id: str = Depends(require_company_id)):
                             _tool_ui_params if _tool_ui_action else _nav_ui_params
                         )
 
-                        panel_meta = (output.metadata or {}).get("panel_update")
-                        if panel_meta and isinstance(panel_meta, dict):
-                            yield format_sse_event(
-                                serialize_panel_update(
-                                    panel_type=panel_meta.get("panel_type", ""),
-                                    panel_data=panel_meta.get("panel_data", {}),
-                                    panel_title=panel_meta.get("panel_title", ""),
-                                    action=panel_meta.get("action", "open"),
-                                ),
-                                next_id(),
-                            )
+                        # panel_update removed (F5 cleanup 2026-06-09): recruiter_copilot
+                        # never sets metadata["panel_update"] — wizard panels are handled by
+                        # the wizard path (resolved_domain=="wizard") before reaching this
+                        # drain. Dead code removed to avoid confusion.
 
                         fairness_warnings = (output.metadata or {}).get("fairness_warnings", [])
 
