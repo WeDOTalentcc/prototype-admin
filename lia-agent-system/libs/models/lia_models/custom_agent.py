@@ -6,6 +6,7 @@ from sqlalchemy import (
     Boolean,
     Column,
     DateTime,
+    Enum as SAEnum,
     Float,
     ForeignKey,
     Index,
@@ -33,6 +34,16 @@ class MarketplaceListingStatus(str, enum.Enum):
     UNPUBLISHED = "unpublished"
 
 
+class AgentType(str, enum.Enum):
+    """Discriminates first-party WeDo agents (global) from client-created agents.
+
+    first_party: company_id=None is valid — agent is globally available to all tenants.
+    custom: legacy/default — scoped to a single company_id (NOT NULL enforced in app logic).
+    """
+    custom = "custom"           # third-party (clientes) — company_id required
+    first_party = "first_party" # WeDo global — company_id=None is valid
+
+
 class CustomAgent(Base):
     __tablename__ = "custom_agents"
 
@@ -44,7 +55,7 @@ class CustomAgent(Base):
     # C2.1b (2026-05-29): FK company_id -> companies.id ON DELETE CASCADE added in
     # mig 224 (deferred from 219 until the fixture orphans were cleaned). Tenant
     # offboarding now cascades to its custom agents (LGPD erasure).
-    company_id = Column(String(64), nullable=False)
+    company_id = Column(String(64), nullable=True)
     created_by = Column(String(64), nullable=False)
 
     name = Column(String(256), nullable=False)
@@ -67,6 +78,19 @@ class CustomAgent(Base):
     enable_memory = Column(Boolean, nullable=False, default=True, server_default="true")
     context_level = Column(String(20), nullable=False, default="full", server_default="full")
     excluded_tools = Column(ARRAY(String), nullable=False, default=list, server_default="{}")
+
+    # Fase A Agent Studio (2026-06-09): first-party agent support.
+    # agent_type discriminates WeDo global agents (first_party, company_id=None)
+    # from client-created agents (custom, company_id required).
+    agent_type = Column(
+        SAEnum(AgentType, name="agenttypeenum", create_type=False),
+        nullable=False,
+        default=AgentType.custom,
+        server_default="custom",
+    )
+    # domains: list of scope domains this agent covers (filled in Fase B).
+    # e.g. ["talent", "jobs"] for TalentIntelAgent.
+    domains = Column(JSONB, nullable=False, default=list, server_default="[]")
 
     # Sprint 3.7 W4-1: per-agent voice flag — semântica PSTN only desde W-Channels-A (2026-05-23).
     # Voice (PSTN) = ligação telefônica Twilio outbound. Default OFF; cliente controla via UI.
@@ -168,6 +192,8 @@ class CustomAgent(Base):
             "search_strategy": self.search_strategy,
             "preferences": self.preferences,
             "outreach_config": self.outreach_config,
+            "agent_type": self.agent_type.value if self.agent_type else AgentType.custom.value,
+            "domains": self.domains or [],
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }
