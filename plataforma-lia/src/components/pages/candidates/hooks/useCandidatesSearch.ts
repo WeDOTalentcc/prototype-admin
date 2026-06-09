@@ -1,8 +1,10 @@
 "use client"
 
 import type React from "react"
+import { useState } from "react"
 import {
   searchCandidates as searchCandidatesHybrid,
+  refineSearch,
 } from "@/lib/api/candidate-search"
 import { isGlobalSource } from "@/lib/utils/source-detection"
 import type { Candidate } from "../types"
@@ -87,6 +89,7 @@ export interface CandidatesSearchContext {
   setSearchThreadId: (id: string | undefined) => void
   setSearchFingerprint: (fp: string | undefined) => void
   searchThreadId: string | undefined
+  searchFingerprint: string | undefined
   showExpandGlobalOption: boolean
   setShowExpandGlobalOption: (v: boolean) => void
   setChatMessages: (v: unknown[] | ((prev: unknown[]) => unknown[])) => void
@@ -147,6 +150,7 @@ export function useCandidatesSearch(ctx: CandidatesSearchContext) {
     setSearchThreadId,
     setSearchFingerprint,
     searchThreadId,
+    searchFingerprint,
     setShowExpandGlobalOption,
     setChatMessages,
     setShowSourceChangeModal,
@@ -276,11 +280,48 @@ export function useCandidatesSearch(ctx: CandidatesSearchContext) {
     })
   }
 
+  const [canLoadMore, setCanLoadMore] = useState(false)
+
   const handleLoadMore = async () => {
+    // Case 1: still have buffered candidates to reveal locally
+    if (displayedResultsCount < candidates.length) {
+      setIsLoadingMore(true)
+      await new Promise(resolve => setTimeout(resolve, 300))
+      setDisplayedResultsCount(prev => prev + LOAD_MORE_STEP)
+      setIsLoadingMore(false)
+      return
+    }
+
+    // Case 2: local buffer exhausted — fetch more from backend (Pearch)
+    if (!canLoadMore || !searchThreadId || !lastSearchQuery) return
+
     setIsLoadingMore(true)
-    await new Promise(resolve => setTimeout(resolve, 300))
-    setDisplayedResultsCount(prev => prev + LOAD_MORE_STEP)
-    setIsLoadingMore(false)
+    try {
+      const dislikedDocids = Object.entries(ctx.searchFeedbacks)
+        .filter(([, type]) => type === 'dislike')
+        .map(([id]) => id)
+
+      const result = await refineSearch(
+        searchThreadId,
+        lastSearchQuery,
+        LOAD_MORE_STEP,
+        {
+          docidBlacklist: dislikedDocids.length > 0 ? dislikedDocids : undefined,
+          searchFingerprint: searchFingerprint ?? undefined,
+        }
+      )
+
+      if (result.candidates && result.candidates.length > 0) {
+        setCandidates(prev => [...prev, ...(result.candidates as unknown as typeof prev)])
+        setDisplayedResultsCount(prev => prev + result.candidates.length)
+      }
+      setCanLoadMore(result.can_load_more ?? false)
+    } catch (err) {
+      // Fail loud — CLAUDE.md REGRA 4: no silent fallback
+      console.error('[handleLoadMore] refineSearch failed:', err)
+    } finally {
+      setIsLoadingMore(false)
+    }
   }
 
   // Handler para expandir busca para global (Pearch AI)

@@ -31,7 +31,6 @@ import { DashboardChatPanel } from "@/components/unified-chat"
 import { GlobalSearchModal } from "@/components/global-search-modal"
 import { useProactiveHintsInChat } from "@/hooks/proactive/use-proactive-hints-in-chat"  // WT-2022 (chat-first)
 import { PipelineOverviewPage } from "@/components/pages/pipeline-overview-page"
-import { ModulesPage } from "@/components/pages/modules-page"
 import {
   pathFromLabel,
   isDashboardPageLabel,
@@ -500,8 +499,6 @@ export function DashboardApp({ initialPage = "Conversar", children }: DashboardA
         return <PipelineOverviewPage />
       case "Configurações":
         return <SettingsPageEnhanced />
-      case "Módulos":
-        return <ModulesPage />
       default:
         return <CandidatesPage />
     }

@@ -38,7 +38,6 @@ import {
   EyeOff,
   Check,
   Loader2,
-  Layers,
 } from "lucide-react"
 import type { RecentItem } from "@/hooks/shared/use-recent-items"
 import { hasModuleAccess } from "@/utils/license-manager"
@@ -92,7 +91,6 @@ const itemLabelKeys: Record<string, string> = {
   "Vagas": "items.jobs",
   "Funil de Talentos": "items.talentPipeline",
   "Estúdio de Agentes": "items.agentStudio",
-  "Módulos": "items.modules",
 }
 
 const filterLabelKeys: Record<string, string> = {
@@ -155,7 +153,6 @@ const BASE_MENU_SECTIONS: MenuSection[] = [
         seeAllTarget: "Estúdio de Agentes",
         isBeta: true,
       },
-      { icon: Layers, label: "Módulos", isCore: true, isBeta: true },
     ],
   },
 ]

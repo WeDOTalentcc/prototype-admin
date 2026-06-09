@@ -371,6 +371,7 @@ export async function refineSearch(
     requireEmails?: boolean
     requirePhoneNumbers?: boolean
     docidBlacklist?: string[]
+    searchFingerprint?: string
   }
 ): Promise<SearchResponse> {
   const params = new URLSearchParams({
@@ -392,6 +393,9 @@ export async function refineSearch(
   }
   if (options?.docidBlacklist && options.docidBlacklist.length > 0) {
     params.set("docid_blacklist", options.docidBlacklist.join(","))
+  }
+  if (options?.searchFingerprint) {
+    params.set("search_fingerprint", options.searchFingerprint)
   }
 
   const response = await fetch(

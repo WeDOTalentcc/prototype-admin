@@ -371,6 +371,97 @@ company_id: str = Depends(require_company_id)):
 
 
 # ============================================================================
+# BULK REVEAL ENDPOINT - Reveal de múltiplos candidatos em paralelo
+# ============================================================================
+
+class BulkRevealRequest(WeDoBaseModel):
+    """Request para revelar contatos de múltiplos candidatos em paralelo."""
+    items: list[RevealContactRequest] = Field(
+        ...,
+        min_length=1,
+        max_length=50,
+        description="Lista de candidatos para revelar (máx 50)",
+    )
+
+
+class BulkRevealResponse(BaseModel):
+    """Response com resultados do reveal em bulk."""
+    results: list[RevealContactResponse]
+    revealed_count: int
+    unavailable_count: int
+    timeout_count: int = 0
+
+
+@router.post("/reveal/bulk", response_model=BulkRevealResponse)
+async def reveal_contact_bulk(
+    request: BulkRevealRequest,
+    db: AsyncSession = Depends(get_db),
+    pearch_svc: PearchService = Depends(get_pearch_service),
+    company_id: str = Depends(require_company_id),
+):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime
+    """
+    Revela contatos de múltiplos candidatos em paralelo.
+
+    Usa asyncio.gather com semaphore(3) para limitar concorrência.
+    Timeout de 35s por candidato para evitar travamento do frontend.
+    """
+    import asyncio
+
+    semaphore = asyncio.Semaphore(3)
+
+    async def _reveal_one(item: RevealContactRequest) -> RevealContactResponse:
+        async with semaphore:
+            try:
+                return await asyncio.wait_for(
+                    reveal_contact(
+                        request=item,
+                        db=db,
+                        pearch_svc=pearch_svc,
+                        company_id=company_id,
+                    ),
+                    timeout=35.0,
+                )
+            except asyncio.TimeoutError:
+                _contact_logger.warning(
+                    "[RevealBulk] Timeout for candidate %s after 35s", item.candidate_id
+                )
+                return RevealContactResponse(
+                    success=False,
+                    candidate_id=item.candidate_id,
+                    reveal_type=item.reveal_type,
+                    message="Timeout: contato não disponível no momento. Tente individualmente.",
+                )
+            except Exception as exc:
+                _contact_logger.error(
+                    "[RevealBulk] Error for candidate %s: %s", item.candidate_id, exc
+                )
+                return RevealContactResponse(
+                    success=False,
+                    candidate_id=item.candidate_id,
+                    reveal_type=item.reveal_type,
+                    message=f"Erro ao revelar: {type(exc).__name__}",
+                )
+
+    results = await asyncio.gather(*[_reveal_one(item) for item in request.items])
+
+    revealed_count = sum(1 for r in results if r.success)
+    unavailable_count = sum(
+        1 for r in results if not r.success and "timeout" not in r.message.lower()
+    )
+    timeout_count = sum(
+        1 for r in results if not r.success and "timeout" in r.message.lower()
+    )
+
+    return BulkRevealResponse(
+        results=list(results),
+        revealed_count=revealed_count,
+        unavailable_count=unavailable_count,
+        timeout_count=timeout_count,
+    )
+
+
+# ============================================================================
 # FILTER SUGGESTIONS ENDPOINT - Autocomplete com contagens
 # ============================================================================
 
