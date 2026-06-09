@@ -20,22 +20,43 @@ from app.middleware.auth_enforcement import _current_company_id as _CURRENT_COMP
 from app.shared.observability.tracing import trace_span
 
 PLATFORM_TOOLS_REGISTRY: dict[str, str] = {
+    # ── Core platform tools (16) ───────────────────────────────────────────────
     "search_candidates": "read",
     "list_jobs": "read",
     "get_job_details": "read",
     "get_candidate_details": "read",
     "summarize_context": "read",
     "clarify_request": "read",
-    "get_evaluation_criteria": "read",  # Wave 3 #24 audit 2026-05-22: tool REAL implementada
-    "get_pipeline_summary": "read",     # Wave 3 #25 audit 2026-05-22: tool REAL implementada
-    "search_talent_pool": "read",       # Wave 3+ audit 2026-05-22: tool REAL implementada
-    "get_company_culture": "read",      # Wave 3+ audit 2026-05-22: tool REAL implementada
-    "get_analytics_summary": "read",    # Wave 3+ audit 2026-05-22: tool REAL implementada
+    "get_evaluation_criteria": "read",  # Wave 3 #24 audit 2026-05-22
+    "get_pipeline_summary": "read",     # Wave 3 #25 audit 2026-05-22
+    "search_talent_pool": "read",       # Wave 3+ audit 2026-05-22
+    "get_company_culture": "read",      # Wave 3+ audit 2026-05-22
+    "get_analytics_summary": "read",    # Wave 3+ audit 2026-05-22
     "move_candidate": "write",
-    "create_note": "write",             # Wave 3+ audit 2026-05-22: tool REAL implementada
+    "create_note": "write",             # Wave 3+ audit 2026-05-22
     "send_email": "write",
     "update_candidate_field": "write",
     "schedule_interview": "write",
+    # ── TalentIntelligence tools (15) — Fase B 2026-06-09 ─────────────────────
+    # Skill analysis (read-only analytics)
+    "infer_related_skills": "read",
+    "get_skill_adjacencies": "read",
+    "analyze_skill_gaps": "read",
+    "map_candidate_skills_to_ontology": "read",
+    # Workforce & market intelligence
+    "get_market_intelligence": "read",
+    "forecast_hiring_needs": "read",
+    "match_internal_candidates": "read",
+    # Candidate nurture & engagement
+    "create_nurture_sequence": "write",
+    "get_engagement_metrics": "read",
+    "suggest_reengagement": "read",
+    # Interview intelligence
+    "analyze_interview_recording": "read",
+    "detect_interview_bias": "read",
+    "compare_interview_performance": "read",
+    "generate_candidate_feedback": "write",
+    "generate_interview_opinion": "write",
 }
 
 

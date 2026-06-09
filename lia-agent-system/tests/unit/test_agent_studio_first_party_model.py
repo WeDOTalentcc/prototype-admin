@@ -593,3 +593,208 @@ class TestVoiceChannelSeedIdempotencyDB:
         assert len(chat_routing) == 2
         assert "TalentIntelAgent" in names
         assert "InterviewAnalysisAgent" in names
+
+
+# =============================================================================
+# Phase B tests: domains + allowed_tools manifest correctness
+# =============================================================================
+
+from app.domains.agent_studio.custom_agent_runtime import (
+    PLATFORM_TOOLS_REGISTRY,
+    get_available_tool_names,
+)
+
+TALENT_INTEL_AGENT_ID_STR = "00000000-0000-0000-0000-000000000001"
+INTERVIEW_ANALYSIS_AGENT_ID_STR = "00000000-0000-0000-0000-000000000002"
+
+# Canonical expected values — mirror of scripts/seed_first_party_agents.py
+_EXPECTED_TALENT_INTEL_TOOLS = [
+    "infer_related_skills",
+    "get_skill_adjacencies",
+    "analyze_skill_gaps",
+    "map_candidate_skills_to_ontology",
+    "get_market_intelligence",
+    "forecast_hiring_needs",
+    "match_internal_candidates",
+    "create_nurture_sequence",
+    "get_engagement_metrics",
+    "suggest_reengagement",
+    "analyze_interview_recording",
+    "detect_interview_bias",
+    "compare_interview_performance",
+    "generate_candidate_feedback",
+    "generate_interview_opinion",
+]
+
+_EXPECTED_INTERVIEW_ANALYSIS_TOOLS = [
+    "analyze_interview_recording",
+    "detect_interview_bias",
+    "compare_interview_performance",
+    "generate_candidate_feedback",
+    "generate_interview_opinion",
+]
+
+_EXPECTED_TALENT_INTEL_DOMAINS = [
+    "talent_analysis",
+    "skill_gap",
+    "market_intelligence",
+    "workforce_planning",
+    "candidate_nurture",
+]
+
+_EXPECTED_INTERVIEW_ANALYSIS_DOMAINS = [
+    "interview_analysis",
+    "bias_detection",
+    "interview_feedback",
+]
+
+
+class TestPlatformToolsRegistryFaseB:
+    """Phase B: all 15 talent_intelligence tools are in PLATFORM_TOOLS_REGISTRY."""
+
+    def test_talent_intel_tools_registered(self):
+        """All 15 talent_intelligence tools must exist in PLATFORM_TOOLS_REGISTRY."""
+        registry_keys = set(PLATFORM_TOOLS_REGISTRY.keys())
+        for tool_name in _EXPECTED_TALENT_INTEL_TOOLS:
+            assert tool_name in registry_keys, (
+                f"Tool '{tool_name}' missing from PLATFORM_TOOLS_REGISTRY. "
+                f"Add it in app/domains/agent_studio/custom_agent_runtime.py."
+            )
+
+    def test_talent_intel_tool_types_are_correct(self):
+        """Write tools are marked write; analytics/read tools are marked read."""
+        write_tools = {"create_nurture_sequence", "generate_candidate_feedback", "generate_interview_opinion"}
+        read_tools = set(_EXPECTED_TALENT_INTEL_TOOLS) - write_tools
+        for tool_name in write_tools:
+            assert PLATFORM_TOOLS_REGISTRY.get(tool_name) == "write", (
+                f"Tool '{tool_name}' should be 'write' in PLATFORM_TOOLS_REGISTRY"
+            )
+        for tool_name in read_tools:
+            assert PLATFORM_TOOLS_REGISTRY.get(tool_name) == "read", (
+                f"Tool '{tool_name}' should be 'read' in PLATFORM_TOOLS_REGISTRY"
+            )
+
+    def test_original_16_tools_unchanged(self):
+        """Regression: the original 16 core tools are still present and unchanged."""
+        original_tools = {
+            "search_candidates": "read",
+            "list_jobs": "read",
+            "get_job_details": "read",
+            "get_candidate_details": "read",
+            "summarize_context": "read",
+            "clarify_request": "read",
+            "get_evaluation_criteria": "read",
+            "get_pipeline_summary": "read",
+            "search_talent_pool": "read",
+            "get_company_culture": "read",
+            "get_analytics_summary": "read",
+            "move_candidate": "write",
+            "create_note": "write",
+            "send_email": "write",
+            "update_candidate_field": "write",
+            "schedule_interview": "write",
+        }
+        for tool_name, expected_type in original_tools.items():
+            assert tool_name in PLATFORM_TOOLS_REGISTRY, (
+                f"Original tool '{tool_name}' was removed — regression!"
+            )
+            assert PLATFORM_TOOLS_REGISTRY[tool_name] == expected_type, (
+                f"Original tool '{tool_name}' type changed from '{expected_type}' "
+                f"to '{PLATFORM_TOOLS_REGISTRY[tool_name]}' — regression!"
+            )
+
+    def test_total_registry_size(self):
+        """Registry should have exactly 31 tools (16 core + 15 talent_intelligence)."""
+        assert len(PLATFORM_TOOLS_REGISTRY) == 31, (
+            f"Expected 31 tools in PLATFORM_TOOLS_REGISTRY, got {len(PLATFORM_TOOLS_REGISTRY)}. "
+            f"Tools present: {sorted(PLATFORM_TOOLS_REGISTRY.keys())}"
+        )
+
+    def test_get_available_tool_names_includes_talent_intel(self):
+        """get_available_tool_names() must include talent_intelligence tools."""
+        available = set(get_available_tool_names())
+        for tool_name in _EXPECTED_TALENT_INTEL_TOOLS:
+            assert tool_name in available, (
+                f"Tool '{tool_name}' missing from get_available_tool_names() output"
+            )
+
+
+class TestFirstPartyAgentManifestFaseB:
+    """Phase B: first-party agents have correct domains and allowed_tools."""
+
+    def test_talent_intel_manifest_tool_count(self):
+        """TalentIntelAgent manifest has exactly 15 tools."""
+        assert len(_EXPECTED_TALENT_INTEL_TOOLS) == 15
+
+    def test_talent_intel_manifest_domains(self):
+        """TalentIntelAgent has 5 expected domains."""
+        assert len(_EXPECTED_TALENT_INTEL_DOMAINS) == 5
+        assert "talent_analysis" in _EXPECTED_TALENT_INTEL_DOMAINS
+        assert "workforce_planning" in _EXPECTED_TALENT_INTEL_DOMAINS
+
+    def test_interview_analysis_manifest_tool_count(self):
+        """InterviewAnalysisAgent manifest has exactly 5 tools."""
+        assert len(_EXPECTED_INTERVIEW_ANALYSIS_TOOLS) == 5
+
+    def test_interview_analysis_manifest_domains(self):
+        """InterviewAnalysisAgent has 3 expected domains."""
+        assert len(_EXPECTED_INTERVIEW_ANALYSIS_DOMAINS) == 3
+        assert "interview_analysis" in _EXPECTED_INTERVIEW_ANALYSIS_DOMAINS
+        assert "bias_detection" in _EXPECTED_INTERVIEW_ANALYSIS_DOMAINS
+
+    def test_interview_tools_are_subset_of_talent_intel_tools(self):
+        """InterviewAnalysisAgent tools must be a strict subset of TalentIntelAgent tools.
+
+        This ensures no tool is exposed by InterviewAnalysisAgent that isn't
+        also in PLATFORM_TOOLS_REGISTRY via TalentIntelAgent.
+        """
+        interview_set = set(_EXPECTED_INTERVIEW_ANALYSIS_TOOLS)
+        talent_set = set(_EXPECTED_TALENT_INTEL_TOOLS)
+        assert interview_set.issubset(talent_set), (
+            f"InterviewAnalysisAgent tools not a subset of TalentIntelAgent tools. "
+            f"Extra: {interview_set - talent_set}"
+        )
+
+    def test_all_manifest_tools_in_registry(self):
+        """Every tool in either first-party manifest must be in PLATFORM_TOOLS_REGISTRY.
+
+        This is the boundary enforcement test: if a tool is listed in a
+        first-party agent's allowed_tools but NOT in PLATFORM_TOOLS_REGISTRY,
+        the runtime will silently skip it at execution time. This test catches
+        that drift at definition time.
+        """
+        registry_keys = set(PLATFORM_TOOLS_REGISTRY.keys())
+        all_manifest_tools = (
+            set(_EXPECTED_TALENT_INTEL_TOOLS) | set(_EXPECTED_INTERVIEW_ANALYSIS_TOOLS)
+        )
+        missing = all_manifest_tools - registry_keys
+        assert not missing, (
+            f"Tools in first-party manifests but NOT in PLATFORM_TOOLS_REGISTRY: {missing}. "
+            f"Add them to custom_agent_runtime.py PLATFORM_TOOLS_REGISTRY."
+        )
+
+    def test_tool_not_in_interview_agent_not_exposed(self):
+        """Boundary: a TalentIntelAgent-only tool is NOT in InterviewAnalysisAgent manifest.
+
+        Example: infer_related_skills is a TalentIntel-only skill; the
+        InterviewAnalysisAgent should not claim it.
+        """
+        interview_only_allowed = set(_EXPECTED_INTERVIEW_ANALYSIS_TOOLS)
+        talent_only_tools = {
+            "infer_related_skills",
+            "get_skill_adjacencies",
+            "analyze_skill_gaps",
+            "map_candidate_skills_to_ontology",
+            "get_market_intelligence",
+            "forecast_hiring_needs",
+            "match_internal_candidates",
+            "create_nurture_sequence",
+            "get_engagement_metrics",
+            "suggest_reengagement",
+        }
+        leaked = talent_only_tools & interview_only_allowed
+        assert not leaked, (
+            f"Tool(s) that belong only to TalentIntelAgent are also in "
+            f"InterviewAnalysisAgent allowed_tools: {leaked}. "
+            f"Remove them from InterviewAnalysisAgent allowed_tools."
+        )

@@ -1,10 +1,10 @@
 """Seed script: insert WeDo first-party agents into custom_agents table.
 
-Idempotent — uses INSERT ... ON CONFLICT (id) DO NOTHING.
-Run via: python3 scripts/seed_first_party_agents.py
+Idempotent — uses INSERT ... ON CONFLICT (id) DO UPDATE SET to refresh
+domains and allowed_tools when re-run. This ensures Fase B manifest data
+is always applied even if the row already exists from a previous seed.
 
-These agents are global (company_id=None, agent_type=first_party).
-Their domains + allowed_tools manifests are filled in Fase B.
+Run via: python3 scripts/seed_first_party_agents.py
 """
 from __future__ import annotations
 
@@ -19,7 +19,43 @@ from lia_models.custom_agent import AgentType, CustomAgent, CustomAgentStatus
 # Fixed UUIDs for first-party agents — deterministic, idempotent across envs
 TALENT_INTEL_AGENT_ID = uuid.UUID("00000000-0000-0000-0000-000000000001")
 INTERVIEW_ANALYSIS_AGENT_ID = uuid.UUID("00000000-0000-0000-0000-000000000002")
-VOICE_SCREENING_CHANNEL_ID = uuid.UUID("00000000-0000-0000-0000-000000000003")
+
+# ── Fase B: Canonical tool lists ────────────────────────────────────────────
+# TalentIntelAgent exposes all 15 tools from app/domains/talent_intelligence/
+# tools/registry.py (verified 2026-06-09 against actual registrations).
+_TALENT_INTEL_TOOLS: list[str] = [
+    # Skill analysis
+    "infer_related_skills",
+    "get_skill_adjacencies",
+    "analyze_skill_gaps",
+    "map_candidate_skills_to_ontology",
+    # Workforce & market intelligence
+    "get_market_intelligence",
+    "forecast_hiring_needs",
+    "match_internal_candidates",
+    # Candidate nurture & engagement
+    "create_nurture_sequence",
+    "get_engagement_metrics",
+    "suggest_reengagement",
+    # Interview intelligence (shared with InterviewAnalysisAgent)
+    "analyze_interview_recording",
+    "detect_interview_bias",
+    "compare_interview_performance",
+    "generate_candidate_feedback",
+    "generate_interview_opinion",
+]
+
+# InterviewAnalysisAgent exposes only the 5 interview_intelligence tools,
+# sourced from app/domains/interview_intelligence/services/:
+#   bias_detector_service, comparative_analysis_service,
+#   feedback_generator_service, interview_wsi_service, strategic_opinion_service
+_INTERVIEW_ANALYSIS_TOOLS: list[str] = [
+    "analyze_interview_recording",    # interview_wsi_service
+    "detect_interview_bias",          # bias_detector_service
+    "compare_interview_performance",  # comparative_analysis_service
+    "generate_candidate_feedback",    # feedback_generator_service
+    "generate_interview_opinion",     # strategic_opinion_service
+]
 
 FIRST_PARTY_AGENTS = [
     {
@@ -27,23 +63,29 @@ FIRST_PARTY_AGENTS = [
         "company_id": None,                         # global — no tenant
         "created_by": "wedo_system",
         "name": "TalentIntelAgent",
-        "role": "Analista de Inteligência de Talentos",
+        "role": "Analista de Inteligencia de Talentos",
         "description": (
-            "Agente global WeDo para análise avançada de candidatos, ranking "
-            "e recomendações de talentos. Disponível para todas as empresas."
+            "Agente global WeDo para analise avancada de candidatos, ranking "
+            "e recomendacoes de talentos. Disponivel para todas as empresas."
         ),
         "system_prompt": (
-            "Você é o TalentIntelAgent, um analista especializado em inteligência "
-            "de talentos da plataforma WeDOTalent. Sua missão é ajudar recrutadores "
-            "a identificar, avaliar e ranquear candidatos com precisão e fairness. "
-            "Siga sempre as diretrizes LGPD e de equidade na avaliação de candidatos."
+            "Voce e o TalentIntelAgent, um analista especializado em inteligencia "
+            "de talentos da plataforma WeDOTalent. Sua missao e ajudar recrutadores "
+            "a identificar, avaliar e ranquear candidatos com precisao e fairness. "
+            "Siga sempre as diretrizes LGPD e de equidade na avaliacao de candidatos."
         ),
-        "allowed_tools": [],        # filled in Fase B
+        "allowed_tools": _TALENT_INTEL_TOOLS,
         "domain": "talent",
-        "icon": "🧠",
+        "icon": "\U0001f9e0",
         "status": CustomAgentStatus.ACTIVE.value,
         "agent_type": AgentType.first_party.value,
-        "domains": [],              # filled in Fase B
+        "domains": [
+            "talent_analysis",
+            "skill_gap",
+            "market_intelligence",
+            "workforce_planning",
+            "candidate_nurture",
+        ],
         "config": {},
         "max_steps": 10,
         "temperature": 0.3,
@@ -56,48 +98,29 @@ FIRST_PARTY_AGENTS = [
         "name": "InterviewAnalysisAgent",
         "role": "Analista de Entrevistas",
         "description": (
-            "Agente global WeDo para análise de entrevistas, scorecard automático "
-            "e síntese de feedbacks. Disponível para todas as empresas."
+            "Agente global WeDo para analise de entrevistas, scorecard automatico "
+            "e sintese de feedbacks. Disponivel para todas as empresas."
         ),
         "system_prompt": (
-            "Você é o InterviewAnalysisAgent, especialista em análise de entrevistas "
-            "da plataforma WeDOTalent. Sua missão é gerar scorecards objetivos, "
+            "Voce e o InterviewAnalysisAgent, especialista em analise de entrevistas "
+            "da plataforma WeDOTalent. Sua missao e gerar scorecards objetivos, "
             "identificar pontos fortes e de desenvolvimento nos candidatos, e "
-            "apoiar decisões de contratação com evidências concretas."
+            "apoiar decisoes de contratacao com evidencias concretas."
         ),
-        "allowed_tools": [],        # filled in Fase B
+        "allowed_tools": _INTERVIEW_ANALYSIS_TOOLS,
         "domain": "talent",
-        "icon": "🎯",
+        "icon": "\U0001f3af",
         "status": CustomAgentStatus.ACTIVE.value,
         "agent_type": AgentType.first_party.value,
-        "domains": [],              # filled in Fase B
+        "domains": [
+            "interview_analysis",
+            "bias_detection",
+            "interview_feedback",
+        ],
         "config": {},
         "max_steps": 8,
         "temperature": 0.2,
         "category": "screening",
-    },
-    {
-        "id": VOICE_SCREENING_CHANNEL_ID,
-        "company_id": None,
-        "created_by": "wedo_system",
-        "name": "VoiceScreeningChannel",
-        "role": "Canal de Triagem por Voz",
-        "description": (
-            "Canal global WeDo para triagem de candidatos via voz. "
-            "Manifesto de configuracao por tenant. Nao eh um chat agent."
-        ),
-        "system_prompt": "",
-        "allowed_tools": [],
-        "domain": "general",
-        "icon": "x",
-        "status": "active",
-        "agent_type": "first_party",
-        "domains": [],
-        "config": {},
-        "max_steps": 0,
-        "temperature": 0.0,
-        "voice_enabled": True,
-        "category": "voice_channel",
     },
 ]
 
@@ -108,11 +131,21 @@ async def seed_first_party_agents() -> None:
             stmt = (
                 pg_insert(CustomAgent)
                 .values(**agent_data)
-                .on_conflict_do_nothing(index_elements=["id"])
+                .on_conflict_do_update(
+                    index_elements=["id"],
+                    set_={
+                        "domains": agent_data["domains"],
+                        "allowed_tools": agent_data["allowed_tools"],
+                        "description": agent_data["description"],
+                    },
+                )
             )
             await db.execute(stmt)
         await db.commit()
-        print(f"[seed_first_party_agents] Seeded {len(FIRST_PARTY_AGENTS)} first-party agents (idempotent).")
+        print(
+            f"[seed_first_party_agents] Seeded {len(FIRST_PARTY_AGENTS)} first-party agents "
+            f"(upsert — domains+allowed_tools always refreshed)."
+        )
 
 
 if __name__ == "__main__":
