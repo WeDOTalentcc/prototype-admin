@@ -48,6 +48,14 @@ async def _track_pearch_reveal(
         )
     except Exception as e:
         _contact_logger.error("[Reveal] Failed to track pearch reveal: %s", e)
+        # Defence-in-depth: if tracking poisoned the session (e.g. RLS rejection),
+        # rollback so the caller's session is not stuck in PendingRollbackError.
+        # Without this, get_db() teardown raises PendingRollbackError → HTTP 500
+        # overrides the actual success/failure response.
+        try:
+            await db.rollback()
+        except Exception:
+            pass
 
 class RevealType(str):
     EMAIL = "email"
@@ -172,11 +180,19 @@ company_id: str = Depends(require_company_id)):
             except Exception as lookup_err:
                 _logger.warning("[Reveal] LinkedIn lookup failed: %s", lookup_err)
 
-        # ADR-001: company_id recovery from CreditsUsage via CandidateRepository
-        _company_id = None
+        # ADR-001: company_id recovery — JWT company_id is canonical default.
+        # Pearch docid candidates never have a UUID (cand_uuid=None), so the old
+        # pattern of initializing _company_id=None left tracking with
+        # company_id='unattributed', violating RLS on external_api_consumption
+        # and poisoning the SQLAlchemy session for the whole request.
+        # Fix: seed _company_id from the JWT claim; only override with DB lookup
+        # when a better (per-candidate) value is available.
+        _company_id = company_id  # JWT company_id — fail-closed multi-tenancy
         if cand_uuid:
             try:
-                _company_id = await candidate_repo.get_company_id_from_credits_usage(cand_uuid)
+                _db_company_id = await candidate_repo.get_company_id_from_credits_usage(cand_uuid)
+                if _db_company_id:
+                    _company_id = _db_company_id
             except Exception:
                 pass
 
