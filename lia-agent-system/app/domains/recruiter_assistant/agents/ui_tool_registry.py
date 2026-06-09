@@ -233,7 +233,7 @@ def _build_open_ui_definition() -> ToolDefinition:
 # search, sortBy, sortOrder, quickFilters. Args sao snake_case (sort_by,
 # sort_order, quick_filters) — mapeamos snake->camel e dropamos None/vazio.
 
-_APPLY_TABLE_STATE_SURFACES = ("candidates", "jobs")
+_APPLY_TABLE_STATE_SURFACES = ("candidates", "jobs", "kanban")
 # Vocabulario VALIDO da lista de Vagas (surface jobs) — espelha o consumidor
 # useJobsFilters.ts (activeFilter no filteredJobs). Emitir fora = no-op silencioso.
 _VALID_JOB_FILTERS = (
@@ -245,6 +245,17 @@ _VALID_JOB_FILTERS = (
     "concluidas",
     "canceladas",
 )
+# Vocabulario VALIDO do board Kanban (surface kanban) — espelha
+# KanbanColumnRenderer.filteredCandidates (status/origin/workModel/score).
+_VALID_KANBAN_STATUS = (
+    "novo",
+    "em_analise",
+    "aguardando_aprovacao",
+    "triado_aprovado",
+    "negociacao",
+)
+_VALID_KANBAN_ORIGIN = ("web", "whatsapp", "sourcing", "ats")
+_VALID_KANBAN_WORK_MODEL = ("remoto", "hibrido", "presencial")
 
 # Vocabulario VALIDO do funil (surface candidates) — espelha o consumidor
 # useCandidatesFilterSort.ts. Emitir fora disso = patch dormente: o funil
@@ -260,6 +271,16 @@ _VALID_SORT_BY = (
     "activity",
 )
 _VALID_QUICK_FILTERS = ("frontend", "backend", "design", "senior", "remoto")
+# Abas do Funil (surface candidates) — espelha o tipo ActiveTab do consumidor
+# candidates-store.ts. Emitir fora disso = patch dormente (setActiveTab ignora).
+_VALID_TABS = (
+    "search",
+    "favorites",
+    "lists",
+    "history",
+    "saved-searches",
+    "agents",
+)
 
 
 def _candidates_patch(kwargs: dict[str, Any]) -> tuple[dict[str, Any], str | None]:
@@ -290,6 +311,14 @@ def _candidates_patch(kwargs: dict[str, Any]) -> tuple[dict[str, Any], str | Non
             )
         if valid:
             patch["quickFilters"] = valid
+    tab = kwargs.get("tab")
+    if tab:
+        if tab not in _VALID_TABS:
+            return {}, (
+                f"Não conheço a aba '{tab}' do Funil. "
+                f"Opções: {', '.join(_VALID_TABS)}."
+            )
+        patch["tab"] = tab
     return patch, None
 
 
@@ -311,6 +340,56 @@ def _jobs_patch(kwargs: dict[str, Any]) -> tuple[dict[str, Any], str | None]:
     return patch, None
 
 
+def _validate_multi(values: Any, vocab: tuple[str, ...], label: str) -> tuple[list[str] | None, str | None]:
+    """Valida lista multi-select contra vocab. (validos, erro). Todos invalidos -> erro."""
+    if not values:
+        return None, None
+    if not isinstance(values, list):
+        values = [values]
+    valid = [v for v in values if v in vocab]
+    invalid = [v for v in values if v not in vocab]
+    if invalid and not valid:
+        return None, (
+            f"{label} desconhecido(s): {', '.join(map(str, invalid))}. "
+            f"Disponiveis: {', '.join(vocab)}."
+        )
+    return (valid or None), None
+
+
+def _kanban_patch(kwargs: dict[str, Any]) -> tuple[dict[str, Any], str | None]:
+    """Patch da surface 'kanban' (board da vaga aberta). Retorna (patch, erro).
+    patch keys camelCase: search/scoreMin/statusFilter/originFilter/workModelFilter."""
+    patch: dict[str, Any] = {}
+    search = kwargs.get("search")
+    if search:
+        patch["search"] = search
+    score_min = kwargs.get("score_min")
+    if score_min is not None:
+        try:
+            sm = int(score_min)
+        except (TypeError, ValueError):
+            return {}, "score_min deve ser um numero de 0 a 100."
+        if not 0 <= sm <= 100:
+            return {}, "score_min deve estar entre 0 e 100."
+        patch["scoreMin"] = sm
+    status, err = _validate_multi(kwargs.get("status"), _VALID_KANBAN_STATUS, "Status")
+    if err:
+        return {}, err
+    if status:
+        patch["statusFilter"] = status
+    origin, err = _validate_multi(kwargs.get("origin"), _VALID_KANBAN_ORIGIN, "Origem")
+    if err:
+        return {}, err
+    if origin:
+        patch["originFilter"] = origin
+    wm, err = _validate_multi(kwargs.get("work_model"), _VALID_KANBAN_WORK_MODEL, "Modelo de trabalho")
+    if err:
+        return {}, err
+    if wm:
+        patch["workModelFilter"] = wm
+    return patch, None
+
+
 @tool_handler("ui")
 async def _wrap_apply_table_state(**kwargs: Any) -> dict[str, Any]:
     """Filtra/busca/ordena a tabela in-page (Fase 2 slice 1).
@@ -321,6 +400,8 @@ async def _wrap_apply_table_state(**kwargs: Any) -> dict[str, Any]:
         sort_by: campo de ordenacao (opcional).
         sort_order: "asc" | "desc" (opcional).
         quick_filters: list[str] de filtros rapidos (opcional).
+        tab: aba do Funil (opcional, SO candidates): search/favorites/
+            lists/history/saved-searches/agents.
         company_id: injetado pelo @tool_handler (ContextVar JWT) — NAO usado.
 
     Returns dict no contrato de diretiva consumido por
@@ -341,6 +422,9 @@ async def _wrap_apply_table_state(**kwargs: Any) -> dict[str, Any]:
     if surface == "jobs":
         patch, err = _jobs_patch(kwargs)
         label = "vagas"
+    elif surface == "kanban":
+        patch, err = _kanban_patch(kwargs)
+        label = "candidatos no board"
     else:
         patch, err = _candidates_patch(kwargs)
         label = "candidatos"
@@ -373,9 +457,9 @@ def _build_apply_table_state_definition() -> ToolDefinition:
             "(não navega, não abre modal, não muta dados). Use quando o "
             "usuário, estando na tela do funil/candidatos, pedir para buscar, "
             "ordenar ou filtrar a lista visível. Funciona em DUAS telas "
-            "(surface): 'candidates' (Funil — busca/ordena/filtros rápidos) e "
-            "'jobs' (lista de Vagas — busca + filtro de status). Ex: 'ordene "
-            "por score', 'mostre só os seniores', 'busca por João' (candidates); "
+            "(surface): 'candidates' (Funil — busca/ordena/filtros rápidos e troca de aba) e "
+            "'jobs' (lista de Vagas — busca + status) e 'kanban' (board da vaga — busca/score/status/origem/modelo). Ex: 'ordene "
+            "por score', 'mostre só os seniores', 'busca por João', 'abre os Favoritos', 'vai pra Buscas Salvas' (candidates); "
             "'mostre as vagas ativas', 'busca vaga de backend' (jobs). NÃO use "
             "para abrir perfil/modal (use open_ui) nem para navegar."
         ),
@@ -412,6 +496,15 @@ def _build_apply_table_state_definition() -> ToolDefinition:
                         "Valores: frontend, backend, design, senior, remoto."
                     ),
                 },
+                "tab": {
+                    "type": "string",
+                    "enum": list(_VALID_TABS),
+                    "description": (
+                        "Aba do Funil: search=Buscar, favorites=Favoritos, "
+                        "lists=Listas, history=Histórico, saved-searches=Buscas "
+                        "Salvas, agents=Agentes (opcional, SÓ candidates)."
+                    ),
+                },
                 "status_filter": {
                     "type": "string",
                     "enum": list(_VALID_JOB_FILTERS),
@@ -419,6 +512,28 @@ def _build_apply_table_state_definition() -> ToolDefinition:
                         "Filtro de status da lista de Vagas (opcional, SÓ jobs): "
                         "todas/ativas/urgentes/ats/paralisadas/concluidas/canceladas."
                     ),
+                },
+                "score_min": {
+                    "type": "integer",
+                    "description": "Score LIA minimo 0-100 (opcional, SÓ kanban).",
+                },
+                "status": {
+                    "type": "array",
+                    "items": {"type": "string", "enum": list(_VALID_KANBAN_STATUS)},
+                    "description": (
+                        "Status do candidato no board (opcional, SÓ kanban): "
+                        "novo/em_analise/aguardando_aprovacao/triado_aprovado/negociacao."
+                    ),
+                },
+                "origin": {
+                    "type": "array",
+                    "items": {"type": "string", "enum": list(_VALID_KANBAN_ORIGIN)},
+                    "description": "Origem do candidato (opcional, SÓ kanban): web/whatsapp/sourcing/ats.",
+                },
+                "work_model": {
+                    "type": "array",
+                    "items": {"type": "string", "enum": list(_VALID_KANBAN_WORK_MODEL)},
+                    "description": "Modelo de trabalho (opcional, SÓ kanban): remoto/hibrido/presencial.",
                 },
             },
             "required": ["surface"],

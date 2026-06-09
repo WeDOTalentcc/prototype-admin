@@ -51,13 +51,13 @@ def test_apply_table_state_only_agents_with_fe_bridge():
     for mod_path in (
         "app.domains.recruiter_assistant.agents.talent_funnel_react_agent",
         "app.domains.recruiter_assistant.agents.jobs_mgmt_react_agent",
+        "app.domains.recruiter_assistant.agents.kanban_react_agent",
     ):
         mod = importlib.import_module(mod_path)
         assert "get_table_state_tools()" in inspect.getsource(mod), (
             f"{mod_path} deveria ter apply_table_state (surface com ponte)"
         )
     for mod_path in (
-        "app.domains.recruiter_assistant.agents.kanban_react_agent",
         "app.domains.cv_screening.agents.pipeline_react_agent",
         "app.domains.talent_pool.agents.talent_pool_agent",
     ):
@@ -82,5 +82,7 @@ def test_federated_scoping_open_ui_universal_apply_table_scoped():
     jt = {getattr(t, "name", None) for t in get_scoped_tool_definitions("job_table")}
     assert "open_ui" in jt and "apply_table_state" in jt, "job_table tem ponte (Vagas)"
     ij = {getattr(t, "name", None) for t in get_scoped_tool_definitions("in_job")}
-    assert "open_ui" in ij, "open_ui universal"
-    assert "apply_table_state" not in ij, "in_job (kanban) sem ponte ainda"
+    assert "open_ui" in ij and "apply_table_state" in ij, "in_job tem ponte (Kanban)"
+    gl = {getattr(t, "name", None) for t in get_scoped_tool_definitions("global")}
+    assert "open_ui" in gl, "open_ui universal"
+    assert "apply_table_state" not in gl, "global sem surface de tabela = sem ponte"

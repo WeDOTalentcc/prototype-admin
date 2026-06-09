@@ -59,10 +59,19 @@ describe("useUIAction — apply_table_state (Fase 2 slice 1)", () => {
     });
   });
 
-  it("rejeita surface desconhecida", () => {
+  it("despacha surface kanban (board) e retorna true", () => {
     const { result } = renderHook(() => useUIAction());
     const handled = result.current.dispatch("apply_table_state", {
       surface: "kanban",
+      patch: { search: "x", scoreMin: 80 },
+    });
+    expect(handled).toBe(true);
+  });
+
+  it("rejeita surface desconhecida", () => {
+    const { result } = renderHook(() => useUIAction());
+    const handled = result.current.dispatch("apply_table_state", {
+      surface: "settings",
       patch: { search: "x" },
     });
     expect(handled).toBe(false);

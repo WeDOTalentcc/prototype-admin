@@ -101,7 +101,7 @@ export type GlobalUIAction =
       // (slice 1: candidates → useCandidatesStore). Sem navegação/mutação.
       type: "apply_table_state";
       params: {
-        surface: "candidates" | "jobs";
+        surface: "candidates" | "jobs" | "kanban";
         patch: {
           search?: string; // ambos
           sortBy?: string; // candidates
@@ -116,6 +116,10 @@ export type GlobalUIAction =
             | "saved-searches"
             | "agents";
           filter?: string; // jobs (activeFilter: todas/ativas/urgentes/ats/...)
+          scoreMin?: number; // kanban (0-100)
+          statusFilter?: string[]; // kanban (novo/em_analise/...)
+          originFilter?: string[]; // kanban (web/whatsapp/sourcing/ats)
+          workModelFilter?: string[]; // kanban (remoto/hibrido/presencial)
         };
       };
     };

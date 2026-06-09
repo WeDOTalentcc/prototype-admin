@@ -227,7 +227,8 @@ export function useUIAction(): UseUIActionReturn {
           // store da superfície (slice 1: candidates → useCandidatesStore).
           const surface = params.surface;
           // ponte in-page: candidates (Funil) + jobs (lista de Vagas).
-          if (surface !== "candidates" && surface !== "jobs") return false;
+          if (surface !== "candidates" && surface !== "jobs" && surface !== "kanban")
+            return false;
           const patch = params.patch;
           if (!patch || typeof patch !== "object") return false;
           if (typeof window === "undefined") return false;

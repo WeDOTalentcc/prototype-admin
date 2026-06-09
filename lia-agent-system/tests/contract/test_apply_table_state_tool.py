@@ -57,6 +57,53 @@ class TestApplyTableStateTool:
         }
 
     @pytest.mark.asyncio
+    async def test_tab_switch_emits_patch(self, _tenant):
+        # Fase 2 funil tabs: tab valida -> patch.tab (sem outras chaves).
+        r = await _wrap_apply_table_state(surface="candidates", tab="favorites")
+        assert r["success"] is True
+        assert r["data"]["ui_action_params"] == {
+            "surface": "candidates",
+            "patch": {"tab": "favorites"},
+        }
+
+    @pytest.mark.asyncio
+    async def test_invalid_tab_rejected(self, _tenant):
+        # Falha alto: aba que o funil ignora em silencio nao pode emitir success.
+        r = await _wrap_apply_table_state(surface="candidates", tab="bogus")
+        assert r["success"] is False
+        assert "bogus" in r["message"]
+
+    @pytest.mark.asyncio
+    async def test_valid_tabs_are_the_six_active_tab_values(self, _tenant):
+        from app.domains.recruiter_assistant.agents.ui_tool_registry import (
+            _VALID_TABS,
+        )
+
+        assert set(_VALID_TABS) == {
+            "search",
+            "favorites",
+            "lists",
+            "history",
+            "saved-searches",
+            "agents",
+        }
+        for tab in _VALID_TABS:
+            r = await _wrap_apply_table_state(surface="candidates", tab=tab)
+            assert r["success"] is True, f"tab {tab} deveria passar"
+            assert r["data"]["ui_action_params"]["patch"]["tab"] == tab
+
+    @pytest.mark.asyncio
+    async def test_tab_combined_with_search(self, _tenant):
+        r = await _wrap_apply_table_state(
+            surface="candidates", tab="saved-searches", search="João"
+        )
+        assert r["success"] is True
+        assert r["data"]["ui_action_params"]["patch"] == {
+            "tab": "saved-searches",
+            "search": "João",
+        }
+
+    @pytest.mark.asyncio
     async def test_invalid_sort_by_rejected(self, _tenant):
         # Falha alto: sort que o funil ignora em silencio nao pode emitir success.
         r = await _wrap_apply_table_state(surface="candidates", sort_by="salario")
@@ -138,10 +185,40 @@ class TestApplyTableStateTool:
         assert "abertas" in r["message"]
 
     @pytest.mark.asyncio
-    async def test_unknown_surface_rejected(self, _tenant):
-        r = await _wrap_apply_table_state(surface="kanban", search="x")
+    async def test_kanban_surface_filters(self, _tenant):
+        r = await _wrap_apply_table_state(
+            surface="kanban", search="João", score_min=75,
+            status=["novo", "em_analise"], origin=["web"], work_model=["remoto"],
+        )
+        assert r["success"] is True
+        assert r["data"]["ui_action_params"] == {
+            "surface": "kanban",
+            "patch": {
+                "search": "João",
+                "scoreMin": 75,
+                "statusFilter": ["novo", "em_analise"],
+                "originFilter": ["web"],
+                "workModelFilter": ["remoto"],
+            },
+        }
+
+    @pytest.mark.asyncio
+    async def test_kanban_invalid_status_rejected(self, _tenant):
+        r = await _wrap_apply_table_state(surface="kanban", status=["inexistente"])
         assert r["success"] is False
-        assert "kanban" in r["message"]
+        assert "inexistente" in r["message"]
+
+    @pytest.mark.asyncio
+    async def test_kanban_score_min_out_of_range(self, _tenant):
+        r = await _wrap_apply_table_state(surface="kanban", score_min=150)
+        assert r["success"] is False
+        assert "entre 0 e 100" in r["message"]
+
+    @pytest.mark.asyncio
+    async def test_unknown_surface_rejected(self, _tenant):
+        r = await _wrap_apply_table_state(surface="settings", search="x")
+        assert r["success"] is False
+        assert "settings" in r["message"]
 
     @pytest.mark.asyncio
     async def test_company_id_not_required_in_patch(self, _tenant):
