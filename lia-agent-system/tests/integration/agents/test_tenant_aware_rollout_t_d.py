@@ -29,7 +29,6 @@ from app.domains.ats_integration.agents.ats_integration_react_agent import (
     ATSIntegrationReActAgent,
 )
 from app.domains.automation.agents.automation_react_agent import AutomationReActAgent
-from app.domains.autonomous.agents.autonomous_react_agent import AutonomousReActAgent
 from app.domains.communication.agents.communication_react_agent import (
     CommunicationReActAgent,
 )
@@ -66,7 +65,6 @@ ALL_REACT_AGENTS_RUNTIME_PATH = [
     AnalyticsReActAgent,
     ATSIntegrationReActAgent,
     AutomationReActAgent,
-    AutonomousReActAgent,
     CommunicationReActAgent,
     CompanySettingsReActAgent,
     PipelineReActAgent,  # cv_screening
@@ -212,7 +210,7 @@ def test_canonical_inventory_count_16_agents():
     TenantAwareAgentMixin, usar self._compose_runtime_prompt(...) ou
     prepender snippet em _get_system_prompt."""
     total = len(ALL_REACT_AGENTS_RUNTIME_PATH) + len(CSS_AGENTS_SYSTEM_PROMPT_PATH)
-    assert total == 16, (
-        f"Inventário canônico de ReActAgents mudou: esperado 16, encontrado {total}. "
+    assert total == 15, (
+        f"Inventário canônico de ReActAgents mudou: esperado 15, encontrado {total}. "
         "Atualize a lista e confirme que o novo agente segue o padrão T-D."
     )

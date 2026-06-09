@@ -38,7 +38,6 @@ def test_autonomous_is_not_a_supervisor_handoff_target():
     """Gap autonomous (2026-06-08): a entrada 'autonomous' foi removida do mapa de
     handoff do supervisor. Era um bug de governanca: a descricao dizia "acoes
     pendentes" (semantica do AutonomousAgentService / proactive actions) mas o
-    delegate_to_autonomous resolvia o AutonomousReActAgent (ReAct cross-domain,
     legado redundante, Tier 6 removido). Ver AI_LAYER_TREE.md 12.3.
     """
     from app.orchestrator.supervisor.handoff_tools import DOMAINS

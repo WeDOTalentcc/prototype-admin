@@ -97,9 +97,6 @@ class TestApiImports:
     def test_api_v1_jobs_ws(self):
         _try_import("app.api.v1.jobs_ws")
 
-    def test_api_v1_lia_autonomous(self):
-        _try_import("app.api.v1.lia_autonomous")
-
     def test_api_v1_lia_feedback(self):
         _try_import("app.api.v1.lia_feedback")
 

@@ -361,78 +361,16 @@ GOLDEN_DATASET = [
 ]
 
 
-CROSS_DOMAIN_GOLDEN_DATASET = [
-    {
-        "id": "XD001",
-        "category": "cross_domain",
-        "tier": 6,
-        "input": "Qual candidato do sourcing se encaixa melhor na vaga de Engenheiro Python que criei?",
-        "expected_domain": "autonomous",
-        "expected_source_prefix": "autonomous_react",
-        "expected_tools_used": ["list_jobs", "search_candidates", "match_candidates_to_job"],
-        "description": "Matching cross-domain: sourcing + job_management",
-        "requires_confirmation": False,
-    },
-    {
-        "id": "XD002",
-        "category": "cross_domain",
-        "tier": 6,
-        "input": "Quais candidatos estão na etapa de triagem da vaga de Gerente de Produto e qual o score WSI deles?",
-        "expected_domain": "autonomous",
-        "expected_source_prefix": "autonomous_react",
-        "expected_tools_used": ["get_pipeline_status", "get_candidates_in_stage", "score_candidate_for_job"],
-        "description": "Pipeline + sourcing + WSI scoring cross-domain",
-        "requires_confirmation": False,
-    },
-    {
-        "id": "XD003",
-        "category": "cross_domain",
-        "tier": 6,
-        "input": "Gera um relatório completo da vaga de Designer UX: candidatos no pipeline, entrevistas agendadas e métricas de sourcing",
-        "expected_domain": "autonomous",
-        "expected_source_prefix": "autonomous_react",
-        "expected_tools_used": ["get_job_details", "get_pipeline_status", "get_scheduled_interviews", "generate_report"],
-        "description": "Report cross-domain: job_management + pipeline + scheduling + analytics",
-        "requires_confirmation": False,
-    },
-    {
-        "id": "XD004",
-        "category": "cross_domain",
-        "tier": 6,
-        "input": "Compare os 3 candidatos finalistas da vaga de Desenvolvedor React e mostre quais têm entrevistas agendadas",
-        "expected_domain": "autonomous",
-        "expected_source_prefix": "autonomous_react",
-        "expected_tools_used": ["compare_candidates", "get_scheduled_interviews"],
-        "description": "Candidate comparison + scheduling cross-domain",
-        "requires_confirmation": False,
-    },
-    {
-        "id": "XD005",
-        "category": "cross_domain",
-        "tier": 6,
-        "input": "Qual a previsão de contratação para a vaga de Data Engineer e quais candidatos do sourcing têm melhor chance?",
-        "expected_domain": "autonomous",
-        "expected_source_prefix": "autonomous_react",
-        "expected_tools_used": ["get_job_details", "predict_hiring_metrics", "match_candidates_to_job"],
-        "description": "Analytics prediction + sourcing match cross-domain",
-        "requires_confirmation": False,
-    },
-]
-
-
-def get_cross_domain_scenarios() -> list[dict]:
-    """Return all cross-domain golden dataset scenarios (Tier 6)."""
-    return list(CROSS_DOMAIN_GOLDEN_DATASET)
 
 
 def get_scenarios_by_category(category: str) -> list[dict]:
-    all_scenarios = GOLDEN_DATASET + CROSS_DOMAIN_GOLDEN_DATASET
+    all_scenarios = GOLDEN_DATASET
     return [s for s in all_scenarios if s["category"] == category]
 
 
 def get_all_scenarios() -> list[dict]:
     """Return all scenarios across all datasets (including cross-domain Tier 6)."""
-    return GOLDEN_DATASET + CROSS_DOMAIN_GOLDEN_DATASET
+    return GOLDEN_DATASET
 
 
 def get_all_categories() -> list[str]:

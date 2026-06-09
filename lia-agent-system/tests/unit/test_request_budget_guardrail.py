@@ -40,7 +40,7 @@ class TestGetRequestLimit:
 
     def test_agent_type_override_multiplier(self):
         base = PLAN_REQUEST_LIMITS["pro"]
-        result = get_request_limit("pro", agent_type="AutonomousReActAgent")
+        result = get_request_limit("pro", agent_type="DeepAnalysisAgent")
         assert result == int(base * 2.0)
 
     def test_agent_type_no_override(self):
@@ -108,7 +108,7 @@ class TestCheckRequestBudget:
 
     def test_agent_type_override_allows_larger(self):
         allowed, _, ceiling = check_request_budget(
-            "pro", 15_000, agent_type="AutonomousReActAgent"
+            "pro", 15_000, agent_type="DeepAnalysisAgent"
         )
         assert allowed is True
         assert ceiling == 20_000
@@ -180,7 +180,7 @@ class TestCheckRequestBudgetBeforeLLM:
         check_request_budget_before_llm(
             medium_prompt,
             plan_code="pro",
-            agent_type="AutonomousReActAgent",
+            agent_type="DeepAnalysisAgent",
             company_id="c1",
         )
 

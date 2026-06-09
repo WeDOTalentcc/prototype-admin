@@ -78,7 +78,7 @@ def test_canonical_sensor_passes_blocking():
     assert result.returncode == 0, (
         f"Sensor blocking failed: stdout={result.stdout}\nstderr={result.stderr}"
     )
-    assert "9/9 W4-032 agents wired (100%)" in result.stdout
+    assert "8/8 W4-032 agents wired (100%)" in result.stdout
 
 
 def test_helper_module_canonical_export():
@@ -94,7 +94,6 @@ def test_helper_module_canonical_export():
 def test_all_9_agents_have_unique_action_sets():
     """W4-032 · cada agent tem actions distintas (smell check: no copy-paste)."""
     from app.domains.ats_integration.agents.ats_integration_react_agent import ATSIntegrationReActAgent
-    from app.domains.autonomous.agents.autonomous_react_agent import AutonomousReActAgent
     from app.domains.recruiter_assistant.agents.kanban_react_agent import KanbanReActAgent
     from app.domains.recruiter_assistant.agents.jobs_mgmt_react_agent import JobsManagementReActAgent
     from app.domains.cv_screening.agents.pipeline_react_agent import PipelineReActAgent
@@ -105,7 +104,6 @@ def test_all_9_agents_have_unique_action_sets():
 
     agents = {
         "ats_integration": ATSIntegrationReActAgent,
-        "autonomous": AutonomousReActAgent,
         "kanban": KanbanReActAgent,
         "jobs_mgmt": JobsManagementReActAgent,
         "pipeline": PipelineReActAgent,
