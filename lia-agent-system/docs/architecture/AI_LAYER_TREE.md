@@ -1318,6 +1318,77 @@ Two distinct "supervisor" implementations exist:
 > two disagree; the catalog entry is likely stale and should be updated to match
 > the router.
 
+### 12.3 The 3-way orchestration switch (and where `autonomous` fits)
+
+The three orchestration strategies above are **not** layered on top of each other
+at runtime — they are a **mutually-exclusive 3-way switch**, selected per request
+by feature flags in the SSE handler (`app/api/v1/agent_chat_sse.py`, ~L650-666):
+
+```
+if LIA_BUBBLE_VIA_SUPERVISOR:          # Supervisor / MainOrchestrator (handoff)
+    agent = None                        #   → orchestrator routes everything
+elif LIA_FEDERATED_PRIMARY:            # Federated single agent (recruiter_copilot)
+    agent = _get_agent("recruiter_copilot")
+else:                                   # CascadedRouter → domain specialist  [LIVE TODAY]
+    agent = _get_agent(resolved_domain)
+```
+
+| Strategy | Flag | Status (2026-06-08) | Cross-domain mechanism |
+|---|---|---|---|
+| **CascadedRouter → domain** | (default) | ✅ **LIVE** in dev + prod | one specialist per turn; no cross-domain in a single turn |
+| **Federated** (`RecruiterCopilotReActAgent`) | `LIA_FEDERATED_PRIMARY` (+ `LIA_FEDERATED_SCOPED_TOOLS`) | 🟡 dormant — parity measurement | ONE agent, federated toolset, **dynamic tool scoping** per turn |
+| **Supervisor** (`MainOrchestrator`) | `LIA_BUBBLE_VIA_SUPERVISOR` | 🟡 dormant — parity measurement | explicit **handoff** to N domain sub-agents, composed into one voice |
+
+> **Não confundir os dois "autonomous".** Há dois símbolos com esse nome:
+> 1. **`AutonomousAgentService`** (`app/domains/automation/services/`) — serviço de
+>    **background jobs + proactive actions** (`create_job`, `create_proactive_action`,
+>    `check_and_execute_scheduled_jobs`), consumido por `proactive_actions.py`. **Vivo,
+>    não-redundante, fora deste debate.** É o motor dos alertas proativos (§18).
+> 2. **`AutonomousReActAgent`** (`app/domains/autonomous/agents/`, 515 LOC + 1705 LOC de
+>    tool registry / 41 tools) — agente ReAct **cross-domain**. Era o **Tier 6** do
+>    CascadedRouter. É *este* que está em discussão abaixo.
+
+**O papel do `AutonomousReActAgent` nesta arquitetura: legado redundante.**
+
+- Era o **Tier 6** (fallback cross-domain do CascadedRouter), **removido do hot path
+  no Sprint 12.3-B**. A env que o ligava (`AUTONOMOUS_REACT_ENABLED`) **nunca foi
+  setada em prod** — invocações em canary = 0. Ou seja, **nunca teve tráfego real**.
+- Seu papel cross-domain (um único ReAct com todas as tools) é **funcionalmente
+  substituído pelo Federado**, que é a versão moderna do mesmo conceito — porém com
+  **escopo dinâmico de tools** (resolve o problema das "41 tools sempre carregadas"
+  do autonomous) e governança herdada via `TenantAwareAgentMixin` / `GovernanceToolNode`.
+- O **Supervisor** resolve cross-domain por uma filosofia diferente (handoff explícito
+  a especialistas), também cobrindo o caso de uso.
+- Hoje o `AutonomousReActAgent` só é alcançável por: (a) `orchestrator/legacy/orchestrator.py`
+  (orquestrador legado, fora do caminho SSE/WS atual) e (b) `delegate_to_autonomous`
+  do supervisor — que está com a **descrição desalinhada** (ver 🔴 abaixo). O import em
+  `agent_chat_ws.py:419` é apenas *registration trigger* (`# noqa: F401`), não invocação.
+
+> 🔴 **FIX — descrição de handoff desalinhada.** Em
+> `app/orchestrator/supervisor/handoff_tools.py:54`, o domínio `"autonomous"` é descrito
+> como *"listar, confirmar ou rejeitar ações pendentes"* (semântica de
+> `AutonomousAgentService` / proactive actions), mas `delegate_to_autonomous` resolve via
+> `AgentRegistry().get_instance("autonomous")` → o **`AutonomousReActAgent`** (ReAct
+> cross-domain). Se o supervisor for ativado, ele pode delegar "ações pendentes" a um
+> agente que faz outra coisa. Remover essa entrada do mapa de handoff fecha o gap.
+
+**Recomendação (2 etapas, alinhada ao cleanup Sprint 12.6 já planejado):**
+1. **Imediato, baixo risco:** remover a entrada `"autonomous"` de `handoff_tools.py`
+   (corrige a descrição desalinhada) e a delegação em `app/tools/categories.py`.
+2. **Sprint de cleanup:** antes de deletar os ~2.2k LOC, **portar 3 tools agregadoras
+   cross-domain** que têm lógica de consolidação não-trivial — `candidate_360_view`,
+   `cross_domain_funnel_analysis`, `get_tenant_hiring_overview` — para o
+   `recruiter_copilot_tool_registry` (federado), para o federado ganhar essas views
+   consolidadas em uma chamada. As outras ~38 tools são wrappers que delegam aos
+   registries canônicos (já existem na origem) — zero perda. Depois deletar o agente,
+   o import-trigger em `agent_chat_ws.py:419`, os contadores zerados
+   (`autonomous_hits`/`autonomous_hit_rate`) e o branch dead em `legacy/orchestrator.py`.
+
+> **Não há "planejamento multi-step autônomo" exclusivo a preservar:** o loop ReAct
+> multi-step vem da base class compartilhada (`LangGraphReActBase` / `create_react_agent`),
+> que o Federado herda igual. A única coisa com valor próprio são as 3 tools agregadoras
+> acima.
+
 ---
 
 ## 13. Agent Studio (custom agents)
@@ -1508,16 +1579,18 @@ blockers; they are the cleanup backlog behind the §14 diagnosis.
 
 | # | Mark | Item | Section | Target file(s) |
 |---|:--:|---|---|---|
-| 1 | 🔴 | `DOMAIN_CATALOG.md` still lists Tier 6 / `autonomous` as the live fallback; the router marks it REMOVED (Sprint 12.3-B) | §12.2, §14.2 | `app/domains/DOMAIN_CATALOG.md` |
-| 2 | 🔴 | Candidate NAMES reach the LLM on recruiter-facing chat (`mask_names=False`) | §8.1, §8.2 | `app/shared/compliance/c3b_layer.py`, `app/shared/pii_masking.py` (opt-in flag `LIA_RECRUITER_CHAT_MASK_PII`) |
-| 3 | 🔴 | Protected-attributes registry runs FAIL-OPEN if the YAML fails to load (ADR-031) | §8.1 [a], §8.1.1 | `config/protected_attributes.yaml`, `app/shared/compliance/protected_attributes.py` (+ registry-load monitoring) |
-| 4 | 🔴 | BYOK gap: OpenAI embeddings and the semantic-routing cache always use the platform key | §8.1, §8.3 | `app/shared/providers/embedding_factory.py`, `app/orchestrator/memory/vector_semantic_cache.py` |
+| 1 | 🟡 | **`AutonomousReActAgent` legado redundante** (investigado 2026-06-08, §12.3): Tier 6 removido, sem tráfego de prod, substituído pelo Federado. Deprecar em 2 etapas — (a) remover entrada `autonomous` do handoff (descrição desalinhada: diz "ações pendentes" mas invoca ReAct cross-domain), (b) portar 3 tools agregadoras p/ registry federado + deletar ~2.2k LOC no Sprint 12.6. Reconciliar `DOMAIN_CATALOG.md` (ainda lista como live). | §12.3, §14.2 | `app/orchestrator/supervisor/handoff_tools.py`, `app/domains/autonomous/`, `app/tools/categories.py`, `app/domains/DOMAIN_CATALOG.md` |
+| 2 | 🔵 | Candidate NAMES reach the LLM on recruiter-facing chat (`mask_names=False`) — **decisão de produto intencional** (busca por entidade). ✅ O gap real (candidate-facing PII) foi fechado — Gap F, commit `9284313a3`. | §8.1, §8.2 | `app/shared/compliance/c3b_layer.py`, `app/shared/pii_masking.py` (opt-in flag `LIA_RECRUITER_CHAT_MASK_PII`) |
+| 3 | ✅ | ~~Protected-attributes registry FAIL-OPEN if YAML fails (ADR-031)~~ **RESOLVIDO (Gap A, commit `991a24981`)**: FairnessGuard honra `APP_ENV` + healthcheck `is_registry_loaded()` no startup (fail-fast em prod). | §8.1 [a], §8.1.1 | `app/shared/compliance/fairness_guard.py`, `app/main.py` |
+| 4 | ✅ | ~~BYOK gap: embeddings e o cache de roteamento sempre usam a chave da plataforma~~ **RESOLVIDO (Gap E, commit `b833358ad`)**: `company_id` propagado em 3 call sites (VectorSemanticCache, rag generate_embedding, memory_service). Gap 4 (alias dead-code) não tocado. | §8.1, §8.3 | `app/orchestrator/memory/vector_semantic_cache.py`, `app/domains/ai/services/rag_pipeline_service.py` |
 | 5 | 🟡 | 30 repository stubs pollute `app/domains/`; relocate to a data-access namespace | §4, §14.2, §15 | the 30 stub dirs + sensors `scripts/check_stub_invariants.py`, `validate_stubs.py`, `check_canonical_domain_structure.py`, `check_no_imports_from_deprecated.py` + `app/shared/tool_catalog.py` |
 | 6 | 🟡 | `hiring_policy` vs `policy` ownership overlap (where are hiring rules actually enforced?) | §4, §10.2, §14.2 | `app/domains/hiring_policy/`, `app/domains/policy/` |
 | 7 | 🟡 | Promote `interview_intelligence` / `voice` / `talent_intelligence` to the canonical agentic shape | §4, §10.2, §14.2 | those domain dirs (add `domain.py` + `@register_domain`) |
 | 8 | 🟡 | Two different "16"s (routable agents vs `@register_domain` domains) confuse readers | §10.1, §14.2 | doc-level + `app/domains/DOMAIN_CATALOG.md` |
 | 9 | 🔵 | Agent Studio: move advanced filter logic from the service layer into `CustomAgentRepository` | §13 | `app/domains/agent_studio/` |
 | 10 | 🔵 | `workforce` is a stub with `agents/` + a dynamic string path; handle separately from the pure stubs | §15.4 | `app/domains/workforce/`, `app/shared/tool_catalog.py` |
+| 11 | ✅ | ~~`CustomAgentRuntime` (Agent Studio) escapava do `TenantAwareAgentMixin` e do token-budget fence~~ **RESOLVIDO (Gap G, commit `2b6d5ff4d`)**: mixin no MRO (strict-mode gate herdado) + budget gate HTTP 429 no `/execute` + `except: pass`→log. | §13 | `app/domains/agent_studio/custom_agent_runtime.py`, `app/api/v1/custom_agents.py` |
+| 12 | 🟡 | **Sprint 2 (do relatório enterprise-readiness 2026-06-08):** desbloquear `talent_intelligence` (module provisioning, ~0.5d); promover mutation-testing de compliance a blocking + criar `scripts/check_agent_mro_compliance.py` (sensor AST: detecta `LangGraphReActBase` sem `TenantAwareAgentMixin` — pegaria regressões do tipo Gap G). | §14.2 | `.github/workflows/ci.yml`, `scripts/`, DB `modules` |
 
 ---
 
