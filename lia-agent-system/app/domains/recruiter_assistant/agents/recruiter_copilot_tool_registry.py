@@ -55,6 +55,7 @@ _FEDERATION_SPEC: list[tuple[str, str]] = [
     ("ui", "open_ui"),
     # --- Ponte in-page (Fase 2 slice 1) — filtra/ordena tabela aberta ---
     ("ui", "apply_table_state"),
+    ("ui", "select_rows"),  # Fase 2 surface close
 ]
 
 

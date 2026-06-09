@@ -53,8 +53,32 @@ export function LiaTableStateBridge() {
       if (typeof patch.tab === "string" && VALID_TABS.has(patch.tab))
         s.setActiveTab(patch.tab as ActiveTab)
     }
+    function handleSelectRows(e: Event) {
+      const { surface, mode, ids } = (
+        e as CustomEvent<{
+          surface: string
+          mode: string
+          ids?: string[]
+        }>
+      ).detail ?? {}
+      if (surface !== "candidates") return
+      const s = useCandidatesStore.getState()
+      if (mode === "clear") {
+        s.clearSelection()
+      } else if (mode === "set" && Array.isArray(ids)) {
+        s.setSelectedCandidates(new Set(ids as string[]))
+      } else if (mode === "add" && Array.isArray(ids)) {
+        const current = s.selectedCandidates
+        s.setSelectedCandidates(new Set([...current, ...(ids as string[])]))
+      }
+    }
+
     window.addEventListener("lia:apply_table_state", handle)
-    return () => window.removeEventListener("lia:apply_table_state", handle)
+    window.addEventListener("lia:select_rows", handleSelectRows)
+    return () => {
+      window.removeEventListener("lia:apply_table_state", handle)
+      window.removeEventListener("lia:select_rows", handleSelectRows)
+    }
   }, [])
   return null
 }

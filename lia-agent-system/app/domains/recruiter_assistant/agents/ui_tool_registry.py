@@ -601,6 +601,103 @@ def _build_apply_table_state_definition() -> ToolDefinition:
     )
 
 
+# ---------------------------------------------------------------------------
+# Fase 2 surface close --- select_rows
+# ---------------------------------------------------------------------------
+_VALID_SELECT_MODES = ("set", "add", "clear")
+_MAX_SELECTION_IDS = 200
+
+
+@tool_handler("ui")
+async def _wrap_select_rows(**kwargs):
+    """Seleciona candidatos na tabela (pre-marca para bulk action).
+    mode=set: substitui selecao pelos IDs fornecidos.
+    mode=add: adiciona IDs a selecao existente.
+    mode=clear: limpa toda a selecao.
+    Nao muta dados - apenas estado UI in-page. Sem HITL gate.
+    """
+    surface = kwargs.get("surface")
+    if surface != "candidates":
+        msg = f"surface={surface!r} nao suportada. Use candidates."
+        return {"success": False, "error": msg, "message": msg}
+
+    mode = kwargs.get("mode")
+    if mode not in _VALID_SELECT_MODES:
+        modes_str = ", ".join(_VALID_SELECT_MODES)
+        msg = f"mode={mode!r} invalido. Valores: {modes_str}."
+        return {"success": False, "error": msg, "message": msg}
+
+    ids = kwargs.get("candidate_ids")
+    if mode in ("set", "add"):
+        if not ids or not isinstance(ids, list):
+            msg = f"candidate_ids obrigatorio e nao-vazio para mode={mode!r}."
+            return {"success": False, "error": msg, "message": msg}
+        if len(ids) > _MAX_SELECTION_IDS:
+            msg = (
+                f"Maximo de {_MAX_SELECTION_IDS} IDs por vez "
+                f"(recebido: {len(ids)})."
+            )
+            return {"success": False, "error": msg, "message": msg}
+
+    params = {"surface": surface, "mode": mode}
+    if mode != "clear":
+        params["ids"] = ids
+
+    count = len(ids) if ids else 0
+    message = (
+        f"{count} candidato(s) selecionado(s)." if mode == "set"
+        else f"{count} candidato(s) adicionado(s) a selecao." if mode == "add"
+        else "Selecao limpa."
+    )
+
+    return {
+        "success": True,
+        "data": {
+            "ui_action": "select_rows",
+            "ui_action_params": params,
+        },
+        "message": message,
+    }
+
+
+def _build_select_rows_definition():
+    return ToolDefinition(
+        name="select_rows",
+        description=(
+            "Seleciona candidatos especificos na tabela do Funil (in-page, sem mutacao de dados). "
+            "Use para pre-marcar candidatos antes de propor uma acao em lote (bulk). "
+            "mode=set: define selecao exata. mode=add: acrescenta a selecao existente. "
+            "mode=clear: limpa toda a selecao."
+        ),
+        parameters={
+            "type": "object",
+            "properties": {
+                "surface": {
+                    "type": "string",
+                    "enum": ["candidates"],
+                    "description": "Superficie a selecionar (somente candidates nesta versao).",
+                },
+                "mode": {
+                    "type": "string",
+                    "enum": list(_VALID_SELECT_MODES),
+                    "description": "Modo de selecao: set=substitui, add=acrescenta, clear=limpa.",
+                },
+                "candidate_ids": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "description": (
+                        "Lista de UUIDs dos candidatos a selecionar. "
+                        "Obrigatorio para mode=set e mode=add. Max: 200 IDs."
+                    ),
+                },
+            },
+            "required": ["surface", "mode"],
+        },
+        output_schema=ToolOutput,
+        function=_wrap_select_rows,
+    )
+
+
 def get_ui_tools() -> list[ToolDefinition]:
     """ToolDefinitions de UI (open_ui + apply_table_state). Federadas no recruiter_copilot."""
     return [_build_open_ui_definition(), _build_apply_table_state_definition()]
@@ -617,7 +714,7 @@ def get_table_state_tools() -> list[ToolDefinition]:
     """So apply_table_state (filtra/ordena/busca tabela in-page). Conceder APENAS
     a agentes cuja surface TEM ponte FE (anti-ghost): hoje a surface 'candidates'
     (Funil). jobs/kanban/pools entram quando a ponte da surface deles existir."""
-    return [_build_apply_table_state_definition()]
+    return [_build_apply_table_state_definition(), _build_select_rows_definition()]
 
 
 def register_ui_tools_global() -> int:

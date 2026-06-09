@@ -84,3 +84,59 @@ describe("useUIAction — apply_table_state (Fase 2 slice 1)", () => {
     ).toBe(false);
   });
 });
+
+
+describe("useUIAction — select_rows (Fase 2 surface close)", () => {
+  let dispatchSpy: ReturnType<typeof vi.spyOn>;
+
+  beforeEach(() => {
+    dispatchSpy = vi.spyOn(window, "dispatchEvent");
+  });
+
+  afterEach(() => {
+    dispatchSpy.mockRestore();
+  });
+
+  it("select_rows mode=set dispatches lia:select_rows event", () => {
+    const { result } = renderHook(() => useUIAction());
+
+    const handled = result.current.dispatch("select_rows", {
+      surface: "candidates",
+      mode: "set",
+      ids: ["id-1", "id-2"],
+    });
+
+    expect(handled).toBe(true);
+    const ev = dispatchSpy.mock.calls
+      .map((c) => c[0])
+      .find(
+        (e): e is CustomEvent =>
+          e instanceof CustomEvent && e.type === "lia:select_rows",
+      );
+    expect(ev).toBeDefined();
+    expect(ev!.detail).toEqual({
+      surface: "candidates",
+      mode: "set",
+      ids: ["id-1", "id-2"],
+    });
+  });
+
+  it("select_rows mode=clear dispatches lia:select_rows event", () => {
+    const { result } = renderHook(() => useUIAction());
+
+    const handled = result.current.dispatch("select_rows", {
+      surface: "candidates",
+      mode: "clear",
+    });
+
+    expect(handled).toBe(true);
+    const ev = dispatchSpy.mock.calls
+      .map((c) => c[0])
+      .find(
+        (e): e is CustomEvent =>
+          e instanceof CustomEvent && e.type === "lia:select_rows",
+      );
+    expect(ev).toBeDefined();
+    expect(ev!.detail.mode).toBe("clear");
+  });
+});

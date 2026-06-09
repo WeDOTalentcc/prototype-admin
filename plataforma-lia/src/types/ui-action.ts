@@ -124,6 +124,17 @@ export type GlobalUIAction =
           poolTab?: string; // talent_pool: aba (candidates/sourcing/agents/config)
         };
       };
+    }
+  | {
+      // Fase 2 surface close: LIA seleciona candidatos in-page para pre-marcar
+      // bulk actions. useUIAction despacha `lia:select_rows`; LiaTableStateBridge
+      // escuta e dirige useCandidatesStore (set/add/clear).
+      type: "select_rows";
+      params: {
+        surface: "candidates";
+        mode: "set" | "add" | "clear";
+        ids?: string[]; // obrigatorio para mode="set"/"add", omitido para "clear"
+      };
     };
 
 /**
@@ -144,6 +155,7 @@ export const GLOBAL_UI_ACTION_TYPES: readonly GlobalUIActionType[] = [
   "open_schedule_modal",
   "open_screening_modal",
   "apply_table_state",
+  "select_rows",
 ] as const;
 
 export function isGlobalUIActionType(type: string): type is GlobalUIActionType {

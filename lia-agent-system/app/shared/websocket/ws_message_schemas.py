@@ -196,6 +196,15 @@ class UIApplyTableStateParams(BaseModel):
     patch: dict[str, Any] = Field(default_factory=dict)
 
 
+class UISelectRowsParams(BaseModel):
+    """`select_rows`: seleciona candidatos in-page (Fase 2 surface close).
+    Espelha TS GlobalUIAction.select_rows. Sem mutacao de dados - so estado UI."""
+
+    surface: Literal["candidates"]
+    mode: Literal["set", "add", "clear"]
+    ids: list[str] | None = None
+
+
 GLOBAL_UI_ACTION_TYPES: tuple[str, ...] = (
     "navigate_to",
     "open_modal",
@@ -205,6 +214,7 @@ GLOBAL_UI_ACTION_TYPES: tuple[str, ...] = (
     "scroll_to",
     "settings_open_tab",  # WT-2022 Fase 4: bridge chat → SettingsPageEnhanced
     "apply_table_state",  # Fase 2 slice 1: ponte in-page (filtra/ordena tabela)
+    "select_rows",  # Fase 2 surface close: seleciona candidatos in-page
 )
 """Espelho runtime do `GLOBAL_UI_ACTION_TYPES` em `src/types/ui-action.ts`."""
 
@@ -218,6 +228,7 @@ _UI_ACTION_PARAMS_BY_TYPE: dict[str, type[BaseModel]] = {
     "scroll_to": UIScrollToParams,
     "settings_open_tab": UISettingsOpenTabParams,  # WT-2022 Fase 4
     "apply_table_state": UIApplyTableStateParams,  # Fase 2 slice 1
+    "select_rows": UISelectRowsParams,  # Fase 2 surface close
 }
 
 

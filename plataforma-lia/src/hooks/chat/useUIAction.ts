@@ -241,6 +241,24 @@ export function useUIAction(): UseUIActionReturn {
           return true;
         }
 
+        case "select_rows": {
+          // Fase 2 surface close: seleciona candidatos in-page via useCandidatesStore.
+          // LiaTableStateBridge escuta lia:select_rows e aplica mode/ids.
+          const surface = params.surface;
+          if (surface !== "candidates") return false;
+          if (typeof window === "undefined") return false;
+          window.dispatchEvent(
+            new CustomEvent("lia:select_rows", {
+              detail: {
+                surface,
+                mode: params.mode,
+                ids: params.ids,
+              },
+            }),
+          );
+          return true;
+        }
+
         default:
           // exhaustiveness: caso TS deixe escapar um tipo, runtime falha-soft.
           return false;
