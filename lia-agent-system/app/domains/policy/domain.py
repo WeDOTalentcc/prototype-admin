@@ -72,14 +72,11 @@ class PolicyDomain(ComplianceDomainPrompt):
             canonical = HiringPolicyDomain()
             return await canonical.process_intent(query, context)
         except Exception as exc:  # pragma: no cover
-            logger.error("[policy shim] process_intent delegation failed: %s", exc, exc_info=True)
-            return IntentResult(
-                intent_id="policy.configure_policy",
-                action_id="configure_policy",
-                confidence=0.3,
-                extracted_params={"raw_query": query},
-                reasoning="Fallback after delegation failure",
+            logger.error(
+                "[policy shim] process_intent delegation failed — re-raising (REGRA 4 fail-loud)",
+                exc_info=True,
             )
+            raise
 
     async def execute_action(
         self, action_id: str, params: dict[str, Any], context: DomainContext
@@ -91,12 +88,18 @@ class PolicyDomain(ComplianceDomainPrompt):
             return await canonical.execute_action(action_id, params, context)
         except Exception as exc:  # pragma: no cover
             logger.error(
-                "[policy shim] execute_action '%s' delegation failed: %s",
-                action_id, exc, exc_info=True,
+                "[policy shim] execute_action '%s' delegation failed — returning explicit fallback (REGRA 4)",
+                action_id,
+                exc_info=True,
             )
             return DomainResponse.error_response(
                 error=str(exc),
                 message=f"Erro ao executar '{action_id}' via shim policy: {exc}",
                 domain_id=self.domain_id,
                 action_id=action_id,
+                metadata={
+                    "fallback_used": True,
+                    "reason": str(exc),
+                    "needs_manual_review": True,
+                },
             )
