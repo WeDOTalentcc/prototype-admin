@@ -136,6 +136,13 @@ def initialize_tools() -> None:
     # Sentinela: tests/integration/agents/test_company_settings_no_regression.py
     register_company_settings_tools()
 
+    # Fase 2 (2026-06-09): apply_table_state no global -> supervisor (agentic_loop
+    # Phase 1.5) alcanca a ponte in-page. Federado usa via federacao.
+    from app.domains.recruiter_assistant.agents.ui_tool_registry import (
+        register_ui_tools_global,
+    )
+    register_ui_tools_global()
+
     # Fase A (supervisor A2, 2026-06-04): handoff tools delegate_to_<dominio>,
     # GATED por flag. Default OFF -> zero mudanca no chat live. Quando
     # LIA_SUPERVISOR_HANDOFF=true, expoe os 10 handoffs ao supervisor (LIA-A04)

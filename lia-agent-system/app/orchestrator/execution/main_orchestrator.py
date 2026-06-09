@@ -270,6 +270,16 @@ class ChatResponse(BaseModel):
 PREFER_AGENTIC_ON_MISSING_PARAMS: frozenset = frozenset({"search_candidates"})
 
 
+# Fase 2 (2026-06-09): ui_actions emitidas por tool que o FE consome direto
+# (useUIAction). Constante nomeada = sensor testavel. apply_table_state = ponte
+# in-page (filtra/ordena a tabela aberta). open_modal/navigate_to = open_ui.
+_FE_TOOL_UI_ACTIONS: tuple[str, ...] = (
+    "open_modal",
+    "navigate_to",
+    "apply_table_state",
+)
+
+
 def _defer_needs_params_to_agentic(action_response) -> bool:
     """True quando o Phase 1 retornou needs_params para uma acao 'prefer-agentic'
     -> deve cair pro agentic loop em vez de perguntar o param. Canonical-fix:
@@ -1423,10 +1433,7 @@ class MainOrchestrator:
                         # Aditivo: None em turno normal.
                         _modal_ui_action = None
                         _modal_ui_params = None
-                        if _directive and _directive.get("ui_action") in (
-                            "open_modal",
-                            "navigate_to",
-                        ):
+                        if _directive and _directive.get("ui_action") in _FE_TOOL_UI_ACTIONS:
                             _modal_ui_action = _directive.get("ui_action")
                             _modal_ui_params = _directive.get("ui_action_params")
                         _resp = ChatResponse(

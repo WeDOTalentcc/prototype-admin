@@ -388,3 +388,38 @@ def _build_apply_table_state_definition() -> ToolDefinition:
 def get_ui_tools() -> list[ToolDefinition]:
     """ToolDefinitions de UI (open_ui + apply_table_state). Federadas no recruiter_copilot."""
     return [_build_open_ui_definition(), _build_apply_table_state_definition()]
+
+
+def register_ui_tools_global() -> int:
+    """Registra ui tools no tool_registry GLOBAL (consumido pelo agentic_loop —
+    caminho supervisor Phase 1.5). O caminho federado usa get_ui_tools() via
+    federacao e NAO depende disto.
+
+    Slice atual: apenas ``apply_table_state`` (read-only, in-page). ``open_ui`` no
+    supervisor e gap pre-existente separado (o federado ja o cobre via
+    ui_action_sink). Adapter: lia_agents_core.ToolDefinition -> a ToolDefinition
+    do app.tools.registry (campos distintos: parameters->parameters_schema,
+    function->handler). Idempotente (o registry sobrescreve por nome)."""
+    from app.tools.registry import ToolDefinition as _GlobalToolDef
+    from app.tools.registry import tool_registry as _global_registry
+
+    n = 0
+    for td in get_ui_tools():
+        if td.name != "apply_table_state":
+            continue
+        _global_registry.register(
+            _GlobalToolDef(
+                name=td.name,
+                description=td.description,
+                parameters_schema=td.parameters,
+                handler=td.function,
+                allowed_agents=[
+                    "recruiter_assistant",
+                    "recruiter_copilot",
+                    "orchestrator",
+                ],
+                requires_confirmation=False,
+            )
+        )
+        n += 1
+    return n

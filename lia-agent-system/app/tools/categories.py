@@ -53,6 +53,11 @@ CATEGORY_TAGLINES: dict[str, str] = {
 # Used by ToolRegistry.apply_category_mapping() to populate
 # ToolDefinition.category at registration time.
 TOOL_TO_CATEGORY: dict[str, str] = {
+    # ---- CANDIDATOS (UI in-page) ----
+    # apply_table_state: filtra/ordena/busca a tabela de candidatos JA ABERTA
+    # (ponte in-page Fase 2). Registrada no global p/ o supervisor (agentic_loop
+    # Phase 1.5) alcancar; o federado usa via federacao.
+    "apply_table_state": ToolCategory.CANDIDATOS,
     # ---- VAGAS ----
     "create_job": ToolCategory.VAGAS,
     "publish_job": ToolCategory.VAGAS,
@@ -103,6 +108,10 @@ TOOL_TO_CATEGORY: dict[str, str] = {
     "suggest_recruiting_policy": ToolCategory.EMPRESA_CONFIG,
     "import_benefits_from_data": ToolCategory.EMPRESA_CONFIG,
     "save_hiring_policy": ToolCategory.EMPRESA_CONFIG,
+    # Boy Scout (2026-06-09): debito pre-existente — estavam em OTHER (sensor J).
+    "save_company_field": ToolCategory.EMPRESA_CONFIG,
+    "save_company_section": ToolCategory.EMPRESA_CONFIG,
+    "analyze_company_website": ToolCategory.EMPRESA_CONFIG,
 
     # ---- ANALYTICS / RELATÓRIOS ----
     "generate_report": ToolCategory.ANALYTICS,
