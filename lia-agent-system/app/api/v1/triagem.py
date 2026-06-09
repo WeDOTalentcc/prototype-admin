@@ -106,6 +106,24 @@ async def get_eligibility_results_for_candidate_job(
 
     Tenant guard: queries diretas com company_id no WHERE (triagem_sessions não tem RLS
     clássico — defesa app-layer, igual ao /wsi/sessions endpoint, Onda 4.2c-P0).
+
+    Response shape (v2 — enriquecido):
+        {
+            "eligibility_results": [
+                {
+                    "id": str,
+                    "question": str,
+                    "answer": str | None,
+                    "passed": bool,
+                    "is_eliminatory": bool,
+                    "reconsideration": str | None,
+                }
+            ],
+            "eliminated": bool,
+            "elimination_reason_text": str | None,
+            "session_status": str | None,
+            "session_id": str | None,
+        }
     """
     from sqlalchemy import select, desc, and_
     from app.core.database import AsyncSessionLocal
@@ -126,15 +144,22 @@ async def get_eligibility_results_for_candidate_job(
             session = result.scalar_one_or_none()
 
             if not session:
-                return {"eligibility_results": [], "session_status": None}
+                return {
+                    "eligibility_results": [],
+                    "eliminated": False,
+                    "elimination_reason_text": None,
+                    "session_status": None,
+                    "session_id": None,
+                }
 
             elig = (session.metadata_json or {}).get("eligibility") or {}
             items = _extract_eligibility_items(elig)
 
-            # Busca as respostas verbatim do candidato na fase de elegibilidade.
-            # A elegibilidade é SEMPRE a primeira fase da triagem, portanto as
-            # primeiras N mensagens do candidato (ordered by created_at) correspondem
-            # às N perguntas de elegibilidade na mesma ordem.
+            # Busca TODAS as mensagens do candidato na sessão (sem LIMIT) para
+            # detectar tentativas extras de reconsideração além das N respostas finais.
+            # A elegibilidade é SEMPRE a primeira fase; wsi_block=999 é o sentinela
+            # canônico de eligibility_phase.py mas não filtramos por ele aqui porque
+            # a ordenação temporal já garante a sequência correta.
             if items:
                 msgs_result = await _db.execute(
                     select(TriagemMessage)
@@ -145,21 +170,87 @@ async def get_eligibility_results_for_candidate_job(
                         )
                     )
                     .order_by(TriagemMessage.created_at)
-                    .limit(len(items))
                 )
                 candidate_msgs = list(msgs_result.scalars().all())
-                for i, item in enumerate(items):
-                    if i < len(candidate_msgs):
-                        item["answer"] = candidate_msgs[i].content
+
+                n_questions = len(items)
+                n_answers = len(candidate_msgs)
+                phase = elig.get("phase", "asking")
+                # fail_idx: índice da pergunta que falhou (só relevante em talent_pool)
+                fail_idx = int(elig.get("index") or 0)
+
+                # Msgs extras (além de n_questions) são tentativas de reconsideração.
+                # Layout cronológico quando há reconsideração na pergunta K:
+                #   msgs[0..K-1]           → respostas finais das perguntas 0..K-1
+                #   msgs[K..K+extra-1]     → tentativa(s) antes de reconsiderar
+                #   msgs[K+extra..K+extra+(N-K)-1] → respostas finais das perguntas K..N-1
+                # Para phase=talent_pool com fail em K e extra=1:
+                #   msgs[0..K-1]   → respostas finais 0..K-1 (passaram)
+                #   msgs[K]        → 1ª tentativa (falhou + reconsiderou)
+                #   msgs[K+1]      → resposta final da pergunta K (ainda falhou → eliminada)
+                extra_count = max(0, n_answers - n_questions)
+
+                if extra_count > 0 and phase == "talent_pool" and fail_idx < n_questions:
+                    # Respostas finais das perguntas anteriores ao fail_idx
+                    for i in range(fail_idx):
+                        if i < n_answers:
+                            items[i]["answer"] = candidate_msgs[i].content
+
+                    # Tentativas (extras) ficam em posições fail_idx .. fail_idx+extra_count-1
+                    first_attempt_content = candidate_msgs[fail_idx].content if fail_idx < n_answers else None
+
+                    # Resposta final da pergunta que falhou
+                    final_answer_pos = fail_idx + extra_count
+                    if final_answer_pos < n_answers:
+                        items[fail_idx]["answer"] = candidate_msgs[final_answer_pos].content
+                    elif fail_idx < n_answers:
+                        items[fail_idx]["answer"] = candidate_msgs[fail_idx].content
+
+                    # Nota de reconsideração
+                    final_ans = items[fail_idx].get("answer")
+                    if first_attempt_content and first_attempt_content != final_ans:
+                        items[fail_idx]["reconsideration"] = (
+                            f"1ª tentativa: '{first_attempt_content}' "
+                            f"→ Candidata reconsiderou antes da resposta final"
+                        )
+
+                    # Respostas das perguntas após fail_idx (se houver)
+                    for i in range(fail_idx + 1, n_questions):
+                        src_pos = i + extra_count
+                        if src_pos < n_answers:
+                            items[i]["answer"] = candidate_msgs[src_pos].content
+                else:
+                    # Sem reconsideração: atribuição posicional direta
+                    for i, item in enumerate(items):
+                        if i < n_answers:
+                            item["answer"] = candidate_msgs[i].content
+
+            # Campos de eliminação
+            phase = elig.get("phase", "asking")
+            eliminated = phase == "talent_pool"
+            elimination_reason_text: str | None = None
+            if eliminated:
+                questions_list = elig.get("questions") or []
+                fail_idx_val = int(elig.get("index") or 0)
+                fail_q = questions_list[fail_idx_val] if fail_idx_val < len(questions_list) else {}
+                elimination_reason_text = _build_elimination_reason(fail_q)
 
         return {
             "eligibility_results": items,
+            "eliminated": eliminated,
+            "elimination_reason_text": elimination_reason_text,
             "session_status": session.status,
             "session_id": str(session.id),
         }
     except Exception as exc:
         logger.warning("[triagem/sessions] Failed to fetch eligibility results: %s", exc)
-        return {"eligibility_results": [], "session_status": None}
+        return {
+            "eligibility_results": [],
+            "eliminated": False,
+            "elimination_reason_text": None,
+            "session_status": None,
+            "session_id": None,
+        }
 
 
 def _extract_eligibility_items(elig: dict) -> list[dict]:
@@ -169,6 +260,11 @@ def _extract_eligibility_items(elig: dict) -> list[dict]:
     - phase == 'complete': todas passaram (index >= len(questions))
     - phase == 'talent_pool': questions[0..index-1] passaram; questions[index] falhou
     - outros (asking/reconsidering/confirming): mostra o que já foi processado
+
+    Campos retornados por item:
+        id, question, passed, is_eliminatory
+        answer: str | None          — preenchido pelo endpoint após busca no DB
+        reconsideration: str | None — preenchido pelo endpoint se houver tentativas extras
     """
     questions = elig.get("questions") or []
     phase = elig.get("phase", "asking")
@@ -186,11 +282,33 @@ def _extract_eligibility_items(elig: dict) -> list[dict]:
         results.append({
             "id": str(q.get("id") or i),
             "question": q.get("question") or q.get("question_text") or "",
+            "answer": None,           # preenchido pelo endpoint
             "passed": passed,
             "is_eliminatory": bool(q.get("is_eliminatory", True)),
+            "reconsideration": None,  # preenchido pelo endpoint se houver reconsideração
         })
 
     return results
+
+
+def _build_elimination_reason(fail_question: dict) -> str:
+    """Constrói texto descritivo da razão de eliminação baseado na categoria da pergunta.
+
+    Usado pelo endpoint GET /triagem/sessions para popular elimination_reason_text.
+    """
+    category = (fail_question.get("category") or "default").lower()
+    question_text = (fail_question.get("question") or fail_question.get("question_text") or "").lower()
+
+    if category == "legal" or "inglês" in question_text or "ingles" in question_text:
+        return "O candidato não atendeu ao critério de inglês fluente"
+    if category == "work_model" or "presencial" in question_text or "modalidade" in question_text:
+        return "O candidato não atendeu ao critério de modalidade de trabalho"
+    if category == "location" or "localiza" in question_text or "cidade" in question_text:
+        return "O candidato não atendeu ao critério de localização"
+    if (category == "availability" or "disponibilidade" in question_text
+            or "início" in question_text or "inicio" in question_text):
+        return "O candidato não atendeu ao critério de disponibilidade para início"
+    return "O candidato não atendeu a um critério eliminatório"
 
 
 @router.get("/{token}", response_model=None)

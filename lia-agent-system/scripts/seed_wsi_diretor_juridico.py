@@ -291,6 +291,7 @@ async def seed_triagem_debora(db):
             "questions": ELIGIBILITY_QUESTIONS,
             "phase": "talent_pool",
             "index": 2,
+            "reconsideration_count": 1,
             "eliminated_reason": "Candidata nao atendeu ao criterio de ingles fluente.",
         }
     }
@@ -328,12 +329,15 @@ async def seed_triagem_debora(db):
             "meta": json.dumps(meta),
         },
     )
-    answers = [
+    # Mensagens de elegibilidade: perguntas 1 e 2 respondidas diretamente.
+    # Pergunta 3 (inglês): candidata responde com inglês básico (1ª tentativa),
+    # agente oferece reconsideração, candidata tenta novamente com inglês intermediário
+    # (ainda não atende ao critério → eliminada).
+    final_answers = [
         "Sim, possuo OAB ativa ha 8 anos.",
         "Sim, tenho disponibilidade para trabalho presencial em Sao Paulo.",
-        "Tenho ingles intermediario, consigo me comunicar mas nao me considero fluente.",
     ]
-    for i, answer in enumerate(answers):
+    for i, answer in enumerate(final_answers):
         await db.execute(
             text("""
                 INSERT INTO triagem_messages (id, session_id, sender, content, message_type, wsi_block, created_at)
@@ -346,8 +350,54 @@ async def seed_triagem_debora(db):
                 "ts": base_time + timedelta(minutes=(i + 1)),
             },
         )
+
+    # 1ª tentativa da candidata na pergunta de inglês (antes de reconsiderar)
+    await db.execute(
+        text("""
+            INSERT INTO triagem_messages (id, session_id, sender, content, message_type, wsi_block, created_at)
+            VALUES (:id, :sid, 'candidate', :content, 'text', 999, :ts)
+        """),
+        {
+            "id": str(uuid.uuid4()),
+            "sid": DEBORA_TRIAGEM_ID,
+            "content": "Tenho ingles basico, me comunico por escrito mas nao consigo conduzir reunioes.",
+            "ts": base_time + timedelta(minutes=3),
+        },
+    )
+
+    # Mensagem do agente oferecendo reconsideração
+    await db.execute(
+        text("""
+            INSERT INTO triagem_messages (id, session_id, sender, content, message_type, wsi_block, created_at)
+            VALUES (:id, :sid, 'agent', :content, 'text', 999, :ts)
+        """),
+        {
+            "id": str(uuid.uuid4()),
+            "sid": DEBORA_TRIAGEM_ID,
+            "content": (
+                "Entendemos sua situação. Esta vaga exige inglês fluente para reuniões diárias "
+                "com o time internacional. Você gostaria de reconsiderar sua resposta?"
+            ),
+            "ts": base_time + timedelta(minutes=3, seconds=30),
+        },
+    )
+
+    # Resposta final da candidata (ainda não atende ao critério → eliminada)
+    await db.execute(
+        text("""
+            INSERT INTO triagem_messages (id, session_id, sender, content, message_type, wsi_block, created_at)
+            VALUES (:id, :sid, 'candidate', :content, 'text', 999, :ts)
+        """),
+        {
+            "id": str(uuid.uuid4()),
+            "sid": DEBORA_TRIAGEM_ID,
+            "content": "Tenho ingles intermediario, consigo me comunicar mas nao me considero fluente.",
+            "ts": base_time + timedelta(minutes=4),
+        },
+    )
+
     await db.commit()
-    print("  Debora triagem: OK (status=talent_pool, eliminated at eligibility q3)")
+    print("  Debora triagem: OK (status=talent_pool, eliminated at eligibility q3, reconsideration_count=1)")
 
 
 async def seed_triagem_felipe(db):
