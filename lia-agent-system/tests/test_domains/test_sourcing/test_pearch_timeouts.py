@@ -86,3 +86,20 @@ def test_route_deadline_exceeds_pearch_call_deadline():
         f"nao eh maior que PEARCH_CALL_DEADLINE_SECONDS ({s.PEARCH_CALL_DEADLINE_SECONDS}). "
         "O deadline da rota deve ser maior para preservar candidatos locais."
     )
+
+
+
+def test_pearch_called_even_when_local_exceeds_pearch_limit():
+    import inspect
+    from app.domains.sourcing.services import pearch_service as ps_module
+    hs_src = inspect.getsource(ps_module.PearchService.hybrid_search)
+    assert '_target = request.pearch_limit' in hs_src, (
+        'BUG-PEARCH-TARGET regressao: hybrid_search deve usar '
+        '_target = request.pearch_limit sem subtrair local_candidates. '
+        'Quando local >= pearch_limit, _target ficava 0 e Pearch nao era chamado.'
+    )
+    old_formula = '_target = max(0, request.pearch_limit - len(local_candidates))'
+    assert old_formula not in hs_src, (
+        'BUG-PEARCH-TARGET: formula antiga reintroduzida. '
+        'Ela zerava _target quando local >= pearch_limit -- Pearch nunca chamado.'
+    )

@@ -1454,11 +1454,13 @@ class PearchService:
             try:
                 if request.require_emails:
                     # Task #1219 — modo "Híbrida com email": loop de completude.
-                    # Alvo combinado = pearch_limit. O pool local (já filtrado a
-                    # quem tem email) conta para o alvo; a Pearch completa o
-                    # restante percorrendo páginas adicionais até atingir o alvo
-                    # ou esgotar fontes (guardrails: deadline interno + max_pages).
-                    _target = max(0, request.pearch_limit - len(local_candidates))
+                    # BUG-PEARCH-TARGET (2026-06-09): _target subtraía os candidatos
+                    # locais do limite Pearch. Em buscas híbridas onde local já retorna
+                    # >= pearch_limit candidatos com email, _target ficava 0 → Pearch
+                    # nunca era chamado → zero candidatos globais. Correto: Pearch busca
+                    # sua própria cota (additive, não cota combinada). O dedup trata
+                    # sobreposições. Mantemos pearch_limit como teto do loop de email.
+                    _target = request.pearch_limit
                     pearch_candidates, _loop_diag = await self._accumulate_pearch_with_emails(
                         base_request=pearch_request,
                         target=_target,
