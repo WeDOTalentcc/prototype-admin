@@ -14,8 +14,28 @@ import { useCandidatesStore } from "@/stores/candidates-store"
  * Slice 1: só a superfície "candidates" (funil) via `useCandidatesStore`.
  * Superfícies futuras (jobs, etc.) entram aqui em slices seguintes.
  *
+ * Fase 2 funil tabs: `patch.tab` troca a aba do Funil via `setActiveTab`
+ * (search/favorites/lists/history/saved-searches/agents).
+ *
  * Montado globalmente em LIAGlobalModals — funciona de qualquer página.
  */
+type ActiveTab =
+  | "search"
+  | "favorites"
+  | "lists"
+  | "history"
+  | "saved-searches"
+  | "agents"
+
+const VALID_TABS: ReadonlySet<string> = new Set<ActiveTab>([
+  "search",
+  "favorites",
+  "lists",
+  "history",
+  "saved-searches",
+  "agents",
+])
+
 export function LiaTableStateBridge() {
   useEffect(() => {
     function handle(e: Event) {
@@ -30,6 +50,8 @@ export function LiaTableStateBridge() {
         s.setSortOrder(patch.sortOrder)
       if (Array.isArray(patch.quickFilters))
         s.setQuickFilters(new Set(patch.quickFilters as string[]))
+      if (typeof patch.tab === "string" && VALID_TABS.has(patch.tab))
+        s.setActiveTab(patch.tab as ActiveTab)
     }
     window.addEventListener("lia:apply_table_state", handle)
     return () => window.removeEventListener("lia:apply_table_state", handle)

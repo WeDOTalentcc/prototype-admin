@@ -6,6 +6,7 @@ const setSearchTerm = vi.fn();
 const setSortBy = vi.fn();
 const setSortOrder = vi.fn();
 const setQuickFilters = vi.fn();
+const setActiveTab = vi.fn();
 
 vi.mock("@/stores/candidates-store", () => ({
   useCandidatesStore: {
@@ -14,6 +15,7 @@ vi.mock("@/stores/candidates-store", () => ({
       setSortBy,
       setSortOrder,
       setQuickFilters,
+      setActiveTab,
     }),
   },
 }));
@@ -28,6 +30,7 @@ describe("LiaTableStateBridge — Fase 2 slice 1", () => {
     setSortBy.mockClear();
     setSortOrder.mockClear();
     setQuickFilters.mockClear();
+    setActiveTab.mockClear();
   });
 
   afterEach(() => {
@@ -71,6 +74,29 @@ describe("LiaTableStateBridge — Fase 2 slice 1", () => {
     render(<LiaTableStateBridge />);
     fire({ surface: "candidates", patch: { sortOrder: "sideways" } });
     expect(setSortOrder).not.toHaveBeenCalled();
+  });
+
+  it("troca a aba do funil (Fase 2 funil tabs): patch.tab → setActiveTab", () => {
+    render(<LiaTableStateBridge />);
+    fire({ surface: "candidates", patch: { tab: "favorites" } });
+    expect(setActiveTab).toHaveBeenCalledWith("favorites");
+    expect(setSearchTerm).not.toHaveBeenCalled();
+  });
+
+  it("aceita tab combinada com busca no mesmo patch", () => {
+    render(<LiaTableStateBridge />);
+    fire({
+      surface: "candidates",
+      patch: { tab: "saved-searches", search: "João" },
+    });
+    expect(setActiveTab).toHaveBeenCalledWith("saved-searches");
+    expect(setSearchTerm).toHaveBeenCalledWith("João");
+  });
+
+  it("ignora tab não-string", () => {
+    render(<LiaTableStateBridge />);
+    fire({ surface: "candidates", patch: { tab: 123 } });
+    expect(setActiveTab).not.toHaveBeenCalled();
   });
 
   it("remove o listener no unmount", () => {

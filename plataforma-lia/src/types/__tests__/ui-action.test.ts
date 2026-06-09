@@ -32,6 +32,21 @@ describe("ui-action — apply_table_state (Fase 2 slice 1)", () => {
     }
   });
 
+  it("aceita patch.tab para trocar a aba do funil (Fase 2 funil tabs)", () => {
+    // Fixture type-level: compila => o patch cobre o campo opcional tab.
+    const action: GlobalUIAction = {
+      type: "apply_table_state",
+      params: {
+        surface: "candidates",
+        patch: { tab: "saved-searches" },
+      },
+    };
+    expect(action.type).toBe("apply_table_state");
+    if (action.type === "apply_table_state") {
+      expect(action.params.patch.tab).toBe("saved-searches");
+    }
+  });
+
   it("mantém os tipos globais pré-existentes", () => {
     expect(isGlobalUIActionType("open_modal")).toBe(true);
     expect(isGlobalUIActionType("navigate_to")).toBe(true);

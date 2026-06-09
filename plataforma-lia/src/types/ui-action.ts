@@ -107,6 +107,14 @@ export type GlobalUIAction =
           sortBy?: string; // candidates
           sortOrder?: "asc" | "desc"; // candidates
           quickFilters?: string[]; // candidates (bridge converte para Set)
+          // candidates: troca a aba do Funil (Fase 2 funil tabs) -> setActiveTab
+          tab?:
+            | "search"
+            | "favorites"
+            | "lists"
+            | "history"
+            | "saved-searches"
+            | "agents";
           filter?: string; // jobs (activeFilter: todas/ativas/urgentes/ats/...)
         };
       };
