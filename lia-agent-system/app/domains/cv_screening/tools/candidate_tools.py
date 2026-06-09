@@ -1514,3 +1514,36 @@ def register_candidate_tools() -> None:
     ))
     
     logger.info("✅ Registered 8 candidate tools")
+
+
+def get_candidate_mutation_tools() -> list[ToolDefinition]:
+    """Getter de mutações de candidato para o agente federado (recruiter_copilot).
+
+    Retorna ToolDefinitions para update_candidate_stage e reject_candidate,
+    ambas gateadas via hitl_preflight (F3, 2026-06-09). Usadas como source
+    "cv_screening" no _FEDERATION_SPEC do recruiter_copilot.
+
+    Fonte única: usa as mesmas funções handler e schemas do registro global
+    para não criar divergência.
+    """
+    return [
+        ToolDefinition(
+            name="update_candidate_stage",
+            description=(
+                "Move um candidato para uma etapa diferente no pipeline de recrutamento. "
+                "Use para mover entre etapas como Triagem, Entrevistas, Oferta, Contratado. "
+                "Requer confirmação (HITL) quando LIA_HITL_GATE está ativado."
+            ),
+            parameters_schema=UPDATE_CANDIDATE_STAGE_SCHEMA,
+            handler=_wrap_update_candidate_stage,
+        ),
+        ToolDefinition(
+            name="reject_candidate",
+            description=(
+                "Rejeita um candidato de uma vaga. Ação sensível com confirmação obrigatória. "
+                "Use com cuidado — envia feedback de rejeição ao candidato."
+            ),
+            parameters_schema=REJECT_CANDIDATE_SCHEMA,
+            handler=reject_candidate,
+        ),
+    ]

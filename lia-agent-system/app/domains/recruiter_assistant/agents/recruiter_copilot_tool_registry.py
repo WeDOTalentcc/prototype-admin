@@ -44,7 +44,11 @@ _FEDERATION_SPEC: list[tuple[str, str]] = [
     # --- Leitura de headcount (Track B) — torna o plano consumivel pelo chat ---
     ("workforce", "get_workforce_plan_summary"),
     # --- Acoes de escrita (P1) — HITL/audit herdados do registry de origem ---
+    # F3 (2026-06-09): update_candidate_stage e reject_candidate gateados via hitl_preflight
+    ("cv_screening", "update_candidate_stage"),
+    ("cv_screening", "reject_candidate"),
     ("kanban", "batch_move_candidates"),
+    ("jobs", "close_job"),   # F4: encerrar vaga (já gateado com HITL)
     ("jobs", "pause_job"),
     ("jobs", "reopen_job"),
     # --- Criar vaga a partir de fonte (P1) — glue agentic (Opcao A / A2) ---
@@ -78,6 +82,9 @@ def _source_maps() -> dict[str, dict[str, ToolDefinition]]:
     from app.domains.recruiter_assistant.agents.ui_tool_registry import (
         get_ui_tools,
     )
+    from app.domains.cv_screening.tools.candidate_tools import (
+        get_candidate_mutation_tools,
+    )
     return {
         "jobs": {t.name: t for t in get_jobs_mgmt_tools()},
         "talent": {t.name: t for t in get_talent_tools()},
@@ -85,6 +92,7 @@ def _source_maps() -> dict[str, dict[str, ToolDefinition]]:
         "wizard": {t.name: t for t in get_wizard_tools()},
         "workforce": {t.name: t for t in get_workforce_tools()},
         "ui": {t.name: t for t in get_ui_tools()},
+        "cv_screening": {t.name: t for t in get_candidate_mutation_tools()},
     }
 
 
