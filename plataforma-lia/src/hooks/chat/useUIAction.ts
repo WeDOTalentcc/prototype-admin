@@ -226,7 +226,8 @@ export function useUIAction(): UseUIActionReturn {
           // `lia:apply_table_state`; LiaTableStateBridge escuta e dirige o
           // store da superfície (slice 1: candidates → useCandidatesStore).
           const surface = params.surface;
-          if (surface !== "candidates") return false; // slice 1: candidates only
+          // ponte in-page: candidates (Funil) + jobs (lista de Vagas).
+          if (surface !== "candidates" && surface !== "jobs") return false;
           const patch = params.patch;
           if (!patch || typeof patch !== "object") return false;
           if (typeof window === "undefined") return false;

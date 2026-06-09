@@ -154,6 +154,23 @@ export function useJobsFilters({ backendJobs }: UseJobsFiltersOptions): UseJobsF
 
   const hasRestoredFilters = useRef(false)
 
+  // Fase 2 (ponte in-page): a LIA filtra/busca a lista de Vagas via chat.
+  // useUIAction despacha lia:apply_table_state {surface:'jobs', patch}; aqui
+  // (onde o estado vive) aplicamos aos setters locais. Sem navegar/mutar dados.
+  useEffect(() => {
+    function handleApplyTableState(e: Event) {
+      const { surface, patch } =
+        (e as CustomEvent<{ surface: string; patch: Record<string, unknown> }>)
+          .detail ?? {}
+      if (surface !== "jobs" || !patch) return
+      if (typeof patch.search === "string") setSearchTerm(patch.search)
+      if (typeof patch.filter === "string") setActiveFilter(patch.filter)
+    }
+    window.addEventListener("lia:apply_table_state", handleApplyTableState)
+    return () =>
+      window.removeEventListener("lia:apply_table_state", handleApplyTableState)
+  }, [])
+
   // Restore persisted filters once loaded
   useEffect(() => {
     if (filtersLoaded && !hasRestoredFilters.current) {

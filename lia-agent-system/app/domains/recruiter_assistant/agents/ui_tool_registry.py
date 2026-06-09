@@ -233,7 +233,18 @@ def _build_open_ui_definition() -> ToolDefinition:
 # search, sortBy, sortOrder, quickFilters. Args sao snake_case (sort_by,
 # sort_order, quick_filters) — mapeamos snake->camel e dropamos None/vazio.
 
-_APPLY_TABLE_STATE_SURFACES = ("candidates",)
+_APPLY_TABLE_STATE_SURFACES = ("candidates", "jobs")
+# Vocabulario VALIDO da lista de Vagas (surface jobs) — espelha o consumidor
+# useJobsFilters.ts (activeFilter no filteredJobs). Emitir fora = no-op silencioso.
+_VALID_JOB_FILTERS = (
+    "todas",
+    "ativas",
+    "urgentes",
+    "ats",
+    "paralisadas",
+    "concluidas",
+    "canceladas",
+)
 
 # Vocabulario VALIDO do funil (surface candidates) — espelha o consumidor
 # useCandidatesFilterSort.ts. Emitir fora disso = patch dormente: o funil
@@ -249,6 +260,55 @@ _VALID_SORT_BY = (
     "activity",
 )
 _VALID_QUICK_FILTERS = ("frontend", "backend", "design", "senior", "remoto")
+
+
+def _candidates_patch(kwargs: dict[str, Any]) -> tuple[dict[str, Any], str | None]:
+    """Patch da surface 'candidates' (Funil). Retorna (patch, erro)."""
+    patch: dict[str, Any] = {}
+    search = kwargs.get("search")
+    if search:
+        patch["search"] = search
+    sort_by = kwargs.get("sort_by")
+    if sort_by:
+        if sort_by not in _VALID_SORT_BY:
+            return {}, (
+                f"Não sei ordenar candidatos por '{sort_by}'. "
+                f"Opções: {', '.join(_VALID_SORT_BY)}."
+            )
+        patch["sortBy"] = sort_by
+    sort_order = kwargs.get("sort_order")
+    if sort_order:
+        patch["sortOrder"] = sort_order
+    quick_filters = kwargs.get("quick_filters")
+    if quick_filters:
+        valid = [q for q in quick_filters if q in _VALID_QUICK_FILTERS]
+        invalid = [q for q in quick_filters if q not in _VALID_QUICK_FILTERS]
+        if invalid and not valid:
+            return {}, (
+                f"Filtro(s) rápido(s) desconhecido(s): {', '.join(invalid)}. "
+                f"Disponíveis: {', '.join(_VALID_QUICK_FILTERS)}."
+            )
+        if valid:
+            patch["quickFilters"] = valid
+    return patch, None
+
+
+def _jobs_patch(kwargs: dict[str, Any]) -> tuple[dict[str, Any], str | None]:
+    """Patch da surface 'jobs' (lista de Vagas). Retorna (patch, erro).
+    patch.search -> setSearchTerm; patch.filter -> setActiveFilter."""
+    patch: dict[str, Any] = {}
+    search = kwargs.get("search")
+    if search:
+        patch["search"] = search
+    status_filter = kwargs.get("status_filter")
+    if status_filter:
+        if status_filter not in _VALID_JOB_FILTERS:
+            return {}, (
+                f"Não sei filtrar vagas por '{status_filter}'. "
+                f"Opções: {', '.join(_VALID_JOB_FILTERS)}."
+            )
+        patch["filter"] = status_filter
+    return patch, None
 
 
 @tool_handler("ui")
@@ -273,53 +333,25 @@ async def _wrap_apply_table_state(**kwargs: Any) -> dict[str, Any]:
         return {
             "success": False,
             "message": (
-                "Por enquanto só sei filtrar/ordenar a tabela de candidatos "
-                f"(surface 'candidates') — '{surface}' ainda não é suportado."
+                f"Surface '{surface}' não suportada. Disponíveis: "
+                f"{', '.join(_APPLY_TABLE_STATE_SURFACES)}."
             ),
         }
 
-    # snake_case (arg) -> camelCase (patch FE). Dropa None/vazio.
-    patch: dict[str, Any] = {}
-    search = kwargs.get("search")
-    if search:
-        patch["search"] = search
-    sort_by = kwargs.get("sort_by")
-    if sort_by:
-        if sort_by not in _VALID_SORT_BY:
-            # Falha alto: nao emitir um sort que o funil ignora em silencio.
-            return {
-                "success": False,
-                "message": (
-                    f"Não sei ordenar candidatos por '{sort_by}'. "
-                    f"Opções: {', '.join(_VALID_SORT_BY)}."
-                ),
-            }
-        patch["sortBy"] = sort_by
-    sort_order = kwargs.get("sort_order")
-    if sort_order:
-        patch["sortOrder"] = sort_order
-    quick_filters = kwargs.get("quick_filters")
-    if quick_filters:
-        valid = [q for q in quick_filters if q in _VALID_QUICK_FILTERS]
-        invalid = [q for q in quick_filters if q not in _VALID_QUICK_FILTERS]
-        if invalid and not valid:
-            # Todos invalidos: nao fingir sucesso com filtro que nao filtra.
-            return {
-                "success": False,
-                "message": (
-                    f"Filtro(s) rápido(s) desconhecido(s): {', '.join(invalid)}. "
-                    f"Disponíveis: {', '.join(_VALID_QUICK_FILTERS)}."
-                ),
-            }
-        if valid:
-            patch["quickFilters"] = valid
-
+    if surface == "jobs":
+        patch, err = _jobs_patch(kwargs)
+        label = "vagas"
+    else:
+        patch, err = _candidates_patch(kwargs)
+        label = "candidatos"
+    if err:
+        return {"success": False, "message": err}
     if not patch:
         return {
             "success": False,
             "message": (
-                "Me diga o que aplicar na tabela: um termo de busca, uma "
-                "ordenação (ex: por score) ou um filtro rápido."
+                "Me diga o que aplicar na tabela: um termo de busca, um "
+                "filtro ou uma ordenação."
             ),
         }
 
@@ -329,7 +361,7 @@ async def _wrap_apply_table_state(**kwargs: Any) -> dict[str, Any]:
             "ui_action": "apply_table_state",
             "ui_action_params": {"surface": surface, "patch": patch},
         },
-        "message": "Aplicando na tabela de candidatos.",
+        "message": f"Aplicando na tabela de {label}.",
     }
 
 
@@ -340,9 +372,12 @@ def _build_apply_table_state_definition() -> ToolDefinition:
             "Filtra/busca/ordena a tabela de candidatos JÁ ABERTA na tela "
             "(não navega, não abre modal, não muta dados). Use quando o "
             "usuário, estando na tela do funil/candidatos, pedir para buscar, "
-            "ordenar ou filtrar a lista visível (ex: 'ordene por score', "
-            "'mostre só os seniores', 'busca por João'). NÃO use para abrir "
-            "perfil/modal (use open_ui) nem para navegar."
+            "ordenar ou filtrar a lista visível. Funciona em DUAS telas "
+            "(surface): 'candidates' (Funil — busca/ordena/filtros rápidos) e "
+            "'jobs' (lista de Vagas — busca + filtro de status). Ex: 'ordene "
+            "por score', 'mostre só os seniores', 'busca por João' (candidates); "
+            "'mostre as vagas ativas', 'busca vaga de backend' (jobs). NÃO use "
+            "para abrir perfil/modal (use open_ui) nem para navegar."
         ),
         parameters={
             "type": "object",
@@ -350,7 +385,7 @@ def _build_apply_table_state_definition() -> ToolDefinition:
                 "surface": {
                     "type": "string",
                     "enum": list(_APPLY_TABLE_STATE_SURFACES),
-                    "description": "Superfície da tabela. Slice 1: 'candidates'.",
+                    "description": "Tela alvo: 'candidates' (Funil) ou 'jobs' (lista de Vagas).",
                 },
                 "search": {
                     "type": "string",
@@ -373,8 +408,16 @@ def _build_apply_table_state_definition() -> ToolDefinition:
                     "type": "array",
                     "items": {"type": "string", "enum": list(_VALID_QUICK_FILTERS)},
                     "description": (
-                        "Filtros rápidos a aplicar (opcional). Valores válidos: "
-                        "frontend, backend, design, senior, remoto."
+                        "Filtros rápidos a aplicar (opcional, SÓ candidates). "
+                        "Valores: frontend, backend, design, senior, remoto."
+                    ),
+                },
+                "status_filter": {
+                    "type": "string",
+                    "enum": list(_VALID_JOB_FILTERS),
+                    "description": (
+                        "Filtro de status da lista de Vagas (opcional, SÓ jobs): "
+                        "todas/ativas/urgentes/ats/paralisadas/concluidas/canceladas."
                     ),
                 },
             },

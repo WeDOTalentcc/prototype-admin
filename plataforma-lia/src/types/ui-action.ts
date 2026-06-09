@@ -101,12 +101,13 @@ export type GlobalUIAction =
       // (slice 1: candidates → useCandidatesStore). Sem navegação/mutação.
       type: "apply_table_state";
       params: {
-        surface: "candidates"; // slice 1: candidates only
+        surface: "candidates" | "jobs";
         patch: {
-          search?: string;
-          sortBy?: string;
-          sortOrder?: "asc" | "desc";
-          quickFilters?: string[]; // bridge converte para Set<string>
+          search?: string; // ambos
+          sortBy?: string; // candidates
+          sortOrder?: "asc" | "desc"; // candidates
+          quickFilters?: string[]; // candidates (bridge converte para Set)
+          filter?: string; // jobs (activeFilter: todas/ativas/urgentes/ats/...)
         };
       };
     };

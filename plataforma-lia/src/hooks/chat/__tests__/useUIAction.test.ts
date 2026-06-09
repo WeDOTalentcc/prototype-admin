@@ -40,10 +40,29 @@ describe("useUIAction — apply_table_state (Fase 2 slice 1)", () => {
     });
   });
 
-  it("rejeita surface != candidates (slice 1)", () => {
+  it("despacha surface jobs (lista de Vagas) e retorna true", () => {
     const { result } = renderHook(() => useUIAction());
     const handled = result.current.dispatch("apply_table_state", {
       surface: "jobs",
+      patch: { search: "backend", filter: "ativas" },
+    });
+    expect(handled).toBe(true);
+    const ev = dispatchSpy.mock.calls
+      .map((c) => c[0])
+      .find(
+        (e): e is CustomEvent =>
+          e instanceof CustomEvent && e.type === "lia:apply_table_state",
+      );
+    expect(ev!.detail).toEqual({
+      surface: "jobs",
+      patch: { search: "backend", filter: "ativas" },
+    });
+  });
+
+  it("rejeita surface desconhecida", () => {
+    const { result } = renderHook(() => useUIAction());
+    const handled = result.current.dispatch("apply_table_state", {
+      surface: "kanban",
       patch: { search: "x" },
     });
     expect(handled).toBe(false);

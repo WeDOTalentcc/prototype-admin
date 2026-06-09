@@ -121,10 +121,27 @@ class TestApplyTableStateTool:
         assert "quickFilters" not in patch
 
     @pytest.mark.asyncio
-    async def test_non_candidates_surface_rejected(self, _tenant):
-        r = await _wrap_apply_table_state(surface="jobs", search="x")
+    async def test_jobs_surface_search_and_filter(self, _tenant):
+        r = await _wrap_apply_table_state(
+            surface="jobs", search="backend", status_filter="ativas"
+        )
+        assert r["success"] is True
+        assert r["data"]["ui_action_params"] == {
+            "surface": "jobs",
+            "patch": {"search": "backend", "filter": "ativas"},
+        }
+
+    @pytest.mark.asyncio
+    async def test_jobs_invalid_status_filter_rejected(self, _tenant):
+        r = await _wrap_apply_table_state(surface="jobs", status_filter="abertas")
         assert r["success"] is False
-        assert "candidat" in r["message"].lower()
+        assert "abertas" in r["message"]
+
+    @pytest.mark.asyncio
+    async def test_unknown_surface_rejected(self, _tenant):
+        r = await _wrap_apply_table_state(surface="kanban", search="x")
+        assert r["success"] is False
+        assert "kanban" in r["message"]
 
     @pytest.mark.asyncio
     async def test_company_id_not_required_in_patch(self, _tenant):

@@ -181,7 +181,7 @@ _REGISTRY_SCOPE: dict[str, set[str]] = {
     "talent_pool": {"talent_funnel"},
     # ui: apply_table_state so faz sentido onde ha ponte FE (Funil/candidates).
     # open_ui esta em _GLOBAL_ESSENTIALS (sempre disponivel, todos os escopos).
-    "ui": {"talent_funnel"},
+    "ui": {"talent_funnel", "job_table"},
     "communication": {"talent_funnel", "in_job"},
     "kanban": {"in_job"},
     "jobs_mgmt": {"job_table"},
