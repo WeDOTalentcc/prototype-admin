@@ -93,6 +93,22 @@ export type GlobalUIAction =
   | {
       type: "open_screening_modal";
       params?: { candidate_id?: string };
+    }
+  | {
+      // Fase 2 slice 1 (ponte in-page): aplica busca/ordenação/filtros à
+      // tabela JÁ ABERTA. useUIAction despacha `lia:apply_table_state`;
+      // LiaTableStateBridge escuta e dirige o store da superfície
+      // (slice 1: candidates → useCandidatesStore). Sem navegação/mutação.
+      type: "apply_table_state";
+      params: {
+        surface: "candidates"; // slice 1: candidates only
+        patch: {
+          search?: string;
+          sortBy?: string;
+          sortOrder?: "asc" | "desc";
+          quickFilters?: string[]; // bridge converte para Set<string>
+        };
+      };
     };
 
 /**
@@ -112,6 +128,7 @@ export const GLOBAL_UI_ACTION_TYPES: readonly GlobalUIActionType[] = [
   "open_communication_modal",
   "open_schedule_modal",
   "open_screening_modal",
+  "apply_table_state",
 ] as const;
 
 export function isGlobalUIActionType(type: string): type is GlobalUIActionType {
