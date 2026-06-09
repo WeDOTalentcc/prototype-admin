@@ -69,7 +69,7 @@ async def record_suggestion_click(
         )
 
     # Lazy import pra evitar circular
-    from app.domains.lia_assistant.repositories.suggestion_click_repository import (
+    from app.repositories.suggestion_click_repository import (
         SuggestionClickRepository,
     )
 
