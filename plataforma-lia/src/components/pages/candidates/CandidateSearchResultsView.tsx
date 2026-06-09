@@ -272,6 +272,37 @@ export function CandidateSearchResultsView({
 }: CandidateSearchResultsViewProps) {
   const t = useTranslations('candidates')
 
+  // Critérios para QualificationMatrixCard: prefere filtros de tabela ativos;
+  // senão usa os critérios parseados da última busca natural.
+  const previewSearchCriteria: Record<string, unknown> | null = (() => {
+    if (tableFilters.skills.length || tableFilters.seniorityLevels.length || tableFilters.locations.length) {
+      return {
+        required_skills: tableFilters.skills,
+        seniority_levels: tableFilters.seniorityLevels,
+        locations: tableFilters.locations,
+      }
+    }
+    if (
+      lastSearchEntities &&
+      (lastSearchEntities.skills?.length ||
+        lastSearchEntities.location ||
+        lastSearchEntities.seniority ||
+        lastSearchEntities.job_title ||
+        lastSearchEntities.years_experience)
+    ) {
+      const rawYears = lastSearchEntities.years_experience
+      const minYears = rawYears ? parseInt(rawYears, 10) : undefined
+      return {
+        required_skills: lastSearchEntities.skills ?? [],
+        seniority_levels: lastSearchEntities.seniority ? [lastSearchEntities.seniority] : [],
+        locations: lastSearchEntities.location ? [lastSearchEntities.location] : [],
+        ...(lastSearchEntities.job_title ? { titles: [lastSearchEntities.job_title] } : {}),
+        ...(minYears && !isNaN(minYears) ? { min_years_experience: minYears } : {}),
+      }
+    }
+    return null
+  })()
+
   return (
     <div data-testid="candidate-search-results-view" className="flex flex-col h-[calc(100vh-9rem)] gap-2">
       <div className="flex items-center justify-between gap-3">
@@ -512,6 +543,7 @@ export function CandidateSearchResultsView({
           onSendAgendamento={onSendAgendamento}
           onSendFeedback={onSendFeedback}
           setPreviewCandidate={setPreviewCandidate}
+          searchCriteria={previewSearchCriteria}
         />
       </div>
     </div>
