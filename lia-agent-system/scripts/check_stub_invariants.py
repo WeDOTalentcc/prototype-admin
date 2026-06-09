@@ -32,7 +32,7 @@ STUB_DOMAINS = {
     "bulk_actions", "candidate_lists", "chat", "clients", "client_users",
     "company_culture", "compliance", "consent", "data_subject",
     "email_templates", "goals", "health_check", "job_vacancies_analytics",
-    "journey_mapping", "notifications", "observability", "opinions",
+    "journey_mapping", "lia_assistant", "notifications", "observability", "opinions",
     "recruitment_journey", "saas_metrics", "shared_searches", "tasks",
     "technical_tests", "triagem", "trust_center", "workforce",
 }

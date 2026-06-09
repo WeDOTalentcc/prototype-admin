@@ -122,6 +122,7 @@ agentic domains and API routes.
 | `health_check` | System health check records |
 | `job_vacancies_analytics` | Job vacancy analytics records |
 | `journey_mapping` | Candidate journey records |
+| `lia_assistant` | LIA assistant suggestion click records |
 | `notifications` | Notification records |
 | `observability` | Observability/metrics records |
 | `opinions` | User opinion/feedback records |
