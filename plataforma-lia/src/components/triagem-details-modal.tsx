@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import Link from "next/link"
 import { Loader2, AlertCircle, AlertTriangle } from "lucide-react"
 import type { Candidate } from "@/components/pages/candidates/types"
 import {
@@ -51,9 +52,16 @@ export function TriagemDetailsModal({
   const state = useTriagemDetailsState(candidate, isOpen, jobVacancyId)
 
   const [fetchedEligibility, setFetchedEligibility] = useState<EligibilityResultItem[] | null>(null)
+  const [isEliminated, setIsEliminated] = useState(false)
+  const [eliminationReasonText, setEliminationReasonText] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!isOpen) { setFetchedEligibility(null); return }
+    if (!isOpen) {
+      setFetchedEligibility(null)
+      setIsEliminated(false)
+      setEliminationReasonText(null)
+      return
+    }
     const candidateId = candidate?.id
     const resolvedJobId = jobId ?? jobVacancyId
     if (!candidateId || !resolvedJobId) return
@@ -62,8 +70,16 @@ export function TriagemDetailsModal({
     fetch(`/api/backend-proxy/triagem/sessions?${params.toString()}`, { signal: controller.signal })
       .then(r => r.ok ? r.json() : null)
       .then(data => {
+        if (!data) return
+
+        // Campos de eliminação por elegibilidade
+        if (data.eliminated === true) {
+          setIsEliminated(true)
+          setEliminationReasonText(data.elimination_reason_text ?? null)
+        }
+
         const items: EligibilityResultItem[] = (data?.eligibility_results ?? [])
-          .filter((r: Record<string, unknown>) => r && typeof r.question === 'string' && r.question)
+          .filter((r: Record<string, unknown>) => r && typeof r.question === "string" && r.question)
           .map((r: Record<string, unknown>, i: number) => ({
             id: String(r.id ?? i),
             question: String(r.question),
@@ -99,12 +115,12 @@ export function TriagemDetailsModal({
         <div className="w-full max-w-3xl max-h-[85vh] overflow-y-auto flex flex-col gap-4 rounded-xl border border-lia-border-subtle bg-lia-bg-secondary">
           <div className="flex flex-col items-center gap-3 pt-8 px-8">
             <AlertCircle className="w-8 h-8 text-lia-text-secondary" />
-            <p className="text-sm text-lia-text-secondary">{state.error || 'Dados não disponíveis.'}</p>
+            <p className="text-sm text-lia-text-secondary">{state.error || "Dados não disponíveis."}</p>
             <button onClick={onClose} className="mt-2 px-4 py-2 text-sm rounded-md bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover">Fechar</button>
           </div>
           {resolvedEligibilityResults && resolvedEligibilityResults.length > 0 && (
             <div className="px-4 pb-6">
-              <EligibilityResultsSection results={resolvedEligibilityResults} />
+              <EligibilityResultsSection results={resolvedEligibilityResults} initialExpanded={isEliminated} />
             </div>
           )}
         </div>
@@ -119,11 +135,35 @@ export function TriagemDetailsModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-lia-overlay">
       <div className="w-full max-w-3xl max-h-[85vh] overflow-hidden flex flex-col rounded-xl border border-lia-border-subtle bg-lia-bg-secondary">
-        {/* Audit task #529 (G23-02 frontend) — Banner LGPD/EU AI Act:
-            renderizado ACIMA do header (conforme spec) para máxima visibilidade
-            quando a Camada 2 (análise semântica) não está disponível. */}
+
+        {/* Banner LGPD / EU AI Act — aparece ACIMA do header quando eliminado por elegibilidade */}
+        {isEliminated && (
+          <div
+            role="alert"
+            className="flex items-start gap-2 px-4 py-2.5 text-xs"
+            style={{
+              background: "var(--status-warning-bg)",
+              borderBottom: "1px solid var(--status-warning-border)",
+              color: "var(--status-warning)",
+            }}
+          >
+            <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+            <p>
+              <span className="font-semibold">LGPD / EU AI Act:</span> Triagem encerrada na fase de pré-elegibilidade. O candidato pode solicitar revisão da decisão via{" "}
+              <Link
+                href="/privacidade"
+                className="underline underline-offset-2 font-medium hover:opacity-80 transition-opacity"
+                style={{ color: "var(--status-warning)" }}
+              >
+                Central de Privacidade
+              </Link>
+              .
+            </p>
+          </div>
+        )}
+
+        {/* Audit task #529 (G23-02 frontend) — Banner análise semântica degradada */}
         {state.details.degraded_quality && (() => {
-          // Fallback: se backend não populou degraded_count, derivamos das respostas.
           const degradedCount = state.details.degraded_count
             ?? state.details.responses.filter(r => r.degraded_quality).length
           return (
@@ -135,7 +175,7 @@ export function TriagemDetailsModal({
             <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-status-warning" />
             <div className="flex-1 text-xs leading-relaxed">
               <p className="font-semibold text-status-warning">
-                Análise semântica não disponível para {degradedCount} resposta{degradedCount === 1 ? '' : 's'}
+                Análise semântica não disponível para {degradedCount} resposta{degradedCount === 1 ? "" : "s"}
               </p>
               <p className="mt-0.5 text-lia-text-secondary">
                 Resultado calculado por regras determinísticas (Camada 1). Pontuação válida, com transparência reduzida na análise contextual.
@@ -169,19 +209,48 @@ export function TriagemDetailsModal({
           onTabChange={state.setActiveTab}
           getClassificationLabel={getClassificationLabel}
           getScoreColor={getScoreColor}
+          isEligibilityEliminated={isEliminated}
         />
 
         <div className="flex-1 overflow-y-auto p-4 bg-lia-bg-secondary">
-          {state.activeTab === 'triagem' && (
+          {state.activeTab === "triagem" && (
             <div className="space-y-4">
+              {/* Callout vermelho de eliminação — aparece antes da seção de elegibilidade */}
+              {isEliminated && eliminationReasonText && (
+                <div
+                  className="rounded-lg p-3 flex gap-2 items-start"
+                  style={{
+                    background: "var(--status-error-bg)",
+                    border: "1px solid var(--status-error-border)",
+                  }}
+                >
+                  <AlertTriangle
+                    className="w-4 h-4 flex-shrink-0 mt-0.5"
+                    style={{ color: "var(--status-error)" }}
+                  />
+                  <div>
+                    <p className="text-sm font-semibold" style={{ color: "var(--status-error)" }}>
+                      Triagem encerrada na fase de elegibilidade
+                    </p>
+                    <p className="text-xs mt-0.5" style={{ color: "var(--lia-text-secondary)" }}>
+                      {eliminationReasonText} As seções de Score WSI e Respostas não foram aplicadas.
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {resolvedEligibilityResults && resolvedEligibilityResults.length > 0 && (
-                <EligibilityResultsSection results={resolvedEligibilityResults} />
+                <EligibilityResultsSection
+                  results={resolvedEligibilityResults}
+                  initialExpanded={isEliminated}
+                />
               )}
               <TriagemScoresPanel
                 scores={scores}
                 sessionInfo={sessionInfo}
                 f11Report={state.f11Report}
                 details={state.details}
+                isEligibilityEliminated={isEliminated}
               />
               <TriagemResponsesSection
                 responses={responses}
@@ -192,7 +261,7 @@ export function TriagemDetailsModal({
             </div>
           )}
 
-          {state.activeTab === 'parecer' && (
+          {state.activeTab === "parecer" && (
             <TriagemParecerTab
               scores={scores}
               sessionInfo={sessionInfo}
@@ -215,7 +284,7 @@ export function TriagemDetailsModal({
             />
           )}
 
-          {state.activeTab === 'comparativo' && (
+          {state.activeTab === "comparativo" && (
             <TriagemComparativoTab
               vacancyRanking={state.vacancyRanking}
               ranking={state.ranking}

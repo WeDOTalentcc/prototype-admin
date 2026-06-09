@@ -3,7 +3,6 @@
 import { useState } from "react"
 import Link from "next/link"
 import { CheckCircle2, XCircle, ChevronDown, ShieldCheck, ShieldX } from "lucide-react"
-import { Callout } from "@/components/ui/callout"
 
 export interface EligibilityResultItem {
   id: string
@@ -16,32 +15,18 @@ export interface EligibilityResultItem {
 
 interface EligibilityResultsSectionProps {
   results: EligibilityResultItem[]
+  /** Controla estado inicial do collapsible. Default: expandido quando há falhas. */
+  initialExpanded?: boolean
 }
 
-export function EligibilityResultsSection({ results }: EligibilityResultsSectionProps) {
+export function EligibilityResultsSection({ results, initialExpanded }: EligibilityResultsSectionProps) {
+  const allPassed = !results || results.length === 0 ? true : results.every((r) => r.passed)
+  const eliminatingQuestion = results?.find((r) => !r.passed && r.is_eliminatory !== false)
+  const [expanded, setExpanded] = useState(initialExpanded ?? !allPassed)
+
   if (!results || results.length === 0) return null
 
-  const allPassed = results.every((r) => r.passed)
-  const eliminatingQuestion = results.find((r) => !r.passed && r.is_eliminatory !== false)
-  const [expanded, setExpanded] = useState(!allPassed)
-
   return (
-    <div className="space-y-2">
-      {!allPassed && (
-        <Callout variant="warning">
-          <span>
-            <strong>LGPD / EU AI Act:</strong> Triagem encerrada na fase de pré-elegibilidade. O candidato pode solicitar revisão da decisão via{" "}
-            <Link
-              href="/privacidade"
-              className="underline underline-offset-2 font-medium hover:opacity-80 transition-opacity"
-              style={{ color: "var(--status-warning)" }}
-            >
-              Central de Privacidade
-            </Link>
-            .
-          </span>
-        </Callout>
-      )}
     <div
       className="rounded-xl overflow-hidden"
       style={{
@@ -60,7 +45,9 @@ export function EligibilityResultsSection({ results }: EligibilityResultsSection
           <div
             className="w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0"
             style={{
-              background: allPassed ? "var(--status-success-bg-15, rgba(22,163,74,0.12))" : "var(--status-error-bg-15, rgba(220,38,38,0.12))",
+              background: allPassed
+                ? "var(--status-success-bg-15, rgba(22,163,74,0.12))"
+                : "var(--status-error-bg-15, rgba(220,38,38,0.12))",
             }}
           >
             {allPassed ? (
@@ -168,7 +155,6 @@ export function EligibilityResultsSection({ results }: EligibilityResultsSection
           ))}
         </div>
       )}
-    </div>
     </div>
   )
 }

@@ -307,5 +307,28 @@ export interface InterviewAnalysisResult {
 }
 
 // =============================================
+// TRIAGEM SESSION RESPONSE (eligibility + WSI)
+// =============================================
+
+/** Shape do response de GET /triagem/sessions?candidate_id=X&job_id=Y */
+export interface TriagemSessionEligibilityResponse {
+  /** True quando o candidato foi eliminado na fase de elegibilidade */
+  eliminated?: boolean
+  /** Texto legível descrevendo a razão da eliminação, ex: "O candidato não atendeu ao critério de disponibilidade presencial." */
+  elimination_reason_text?: string | null
+  eligibility_results?: EligibilityResultItemRaw[]
+}
+
+/** Shape bruto do item de elegibilidade conforme retornado pelo backend */
+export interface EligibilityResultItemRaw {
+  id?: string | number
+  question: string
+  answer?: string | null
+  passed: boolean
+  is_eliminatory?: boolean
+  reconsideration?: string | null
+}
+
+// =============================================
 // AI SUGGESTIONS / AUTOMATION TYPES
 // =============================================
