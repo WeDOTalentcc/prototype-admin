@@ -86,7 +86,9 @@ export function ExperienceHighlightCard({ candidate, companyId: companyIdProp }:
       )
       if (res.status === 404) return null
       if (!res.ok) throw new Error('Falha ao carregar resumo')
-      return res.json()
+      const json = await res.json()
+      // Unwrap FastAPI ResponseEnvelopeMiddleware: {ok, data, meta} -> data
+      return (json && typeof json === 'object' && 'ok' in json && 'data' in json) ? json.data : json
     },
     enabled: Boolean(candidateId) && hasCompany,
     retry: false,
@@ -115,7 +117,9 @@ export function ExperienceHighlightCard({ candidate, companyId: companyIdProp }:
         }
       )
       if (!res.ok) throw new Error('Não foi possível gerar o resumo')
-      return res.json()
+      const json = await res.json()
+      // Unwrap FastAPI ResponseEnvelopeMiddleware: {ok, data, meta} -> data
+      return (json && typeof json === 'object' && 'ok' in json && 'data' in json) ? json.data : json
     },
     onSuccess: (data) => {
       queryClient.setQueryData(
