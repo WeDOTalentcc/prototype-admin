@@ -48,7 +48,10 @@ SEARCH_CACHE_TTL = int(os.environ.get("PEARCH_SEARCH_CACHE_TTL", "900"))
 # vire um TimeoutError CAPTURADO aqui (preservando os candidatos LOCAIS ja
 # encontrados) em vez de estourar o deadline da rota e cancelar a coroutine
 # inteira (que zerava ate os locais).
-_PEARCH_CALL_DEADLINE_SECONDS = float(os.getenv("PEARCH_CALL_DEADLINE_SECONDS", "12.0"))
+# BUG-PEARCH-TIMEOUT (2026-06-09): API Pearch v2 /v2/search leva ~26s em prod
+# (retrieval 14s + scoring 5s + insights 4s). Deadline anterior (12s) cancelava
+# TODAS as buscas globais silenciosamente. Elevado para 35s.
+_PEARCH_CALL_DEADLINE_SECONDS = float(os.getenv("PEARCH_CALL_DEADLINE_SECONDS", "35.0"))
 
 
 def _profile_has_email(profile: Any) -> bool:
@@ -1468,12 +1471,10 @@ class PearchService:
                     if _loop_diag.get("error_message"):
                         warning_message = _loop_diag["error_message"]
                 else:
-                    logger.info("[DIAG] ABOUT TO CALL PEARCH limit=%s api_key=%s", pearch_request.limit, bool(self.api_key))
                     pearch_response = await asyncio.wait_for(
                         self.search_candidates(pearch_request),
                         timeout=_PEARCH_CALL_DEADLINE_SECONDS,
                     )
-                    logger.info("[DIAG] PEARCH RETURNED candidates=%s", len(pearch_response.get_candidates()) if pearch_response else "None")
                     pearch_candidates = pearch_response.get_candidates()
                     pearch_candidates = self._dedup_pearch_against_local(local_candidates, pearch_candidates)
                     pearch_credits_remaining = pearch_response.credits_remaining

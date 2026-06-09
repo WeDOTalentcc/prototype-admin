@@ -352,10 +352,14 @@ class IntegrationSettings(BaseSettings):
     # Hard deadline na chamada externa Pearch (envolve search_candidates):
     # supera read_timeout para acomodar 1 retry de tenacity (stop_after_attempt=2)
     # mas mantém-se abaixo do deadline da rota.
-    PEARCH_CALL_DEADLINE_SECONDS: float = 12.0
+    # BUG-PEARCH-TIMEOUT (2026-06-09): API v2 /v2/search demora ~26s (retrieval
+    # 14s + scoring 5s + insights 4s). Elevado de 12s para 35s.
+    PEARCH_CALL_DEADLINE_SECONDS: float = 35.0
     # Hard deadline da rota POST /api/v1/search/candidates: cobre busca local
     # + chamada Pearch. Acima disso devolvemos resposta degradada (warning).
-    SEARCH_CANDIDATES_DEADLINE_SECONDS: float = 18.0
+    # BUG-PEARCH-TIMEOUT (2026-06-09): elevado de 18s para 45s para acomodar
+    # os 35s de PEARCH_CALL_DEADLINE_SECONDS + margem local + dedup.
+    SEARCH_CANDIDATES_DEADLINE_SECONDS: float = 45.0
     # Reveal-sob-demanda (Paulo): por padrao NAO enriquece contato via Apify
     # durante a busca (era lento -> 504 + gasto Apify automatico) nem descarta
     # candidatos sem contato revelado. Contato vem sob demanda (botao/auto-reveal).
@@ -366,7 +370,7 @@ class IntegrationSettings(BaseSettings):
     # o alvo (pearch_limit) de candidatos COM email, ou até esgotar fontes.
     # Guardrails: deadline interno (< deadline da rota) + teto de páginas.
     # O loop só dispara quando require_emails=True; demais modos seguem 1 lote.
-    SEARCH_HYBRID_EMAIL_LOOP_DEADLINE_SECONDS: float = 14.0
+    SEARCH_HYBRID_EMAIL_LOOP_DEADLINE_SECONDS: float = 38.0
     SEARCH_HYBRID_EMAIL_MAX_PAGES: int = 4
 
     # Twilio / WhatsApp
