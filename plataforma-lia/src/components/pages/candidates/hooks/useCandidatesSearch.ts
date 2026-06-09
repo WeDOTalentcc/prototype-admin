@@ -318,7 +318,7 @@ export function useCandidatesSearch(ctx: CandidatesSearchContext) {
         setCandidates(prev => [...prev, ...(result.candidates as unknown as typeof prev)])
         setDisplayedResultsCount(prev => prev + result.candidates.length)
       }
-      setCanLoadMore(result.can_load_more ?? false)
+      setCanLoadMore(result.candidates.length > 0 ? (result.can_load_more ?? false) : false)
     } catch (err) {
       // Fail loud — CLAUDE.md REGRA 4: no silent fallback
       console.error('[handleLoadMore] refineSearch failed:', err)

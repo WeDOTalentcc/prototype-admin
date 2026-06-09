@@ -183,6 +183,7 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
     searchSpecOverride?: Record<string, unknown>
   ) => {
     setIsLoading(true)
+    setCanLoadMore(false) // reset on new search — prevents stale canLoadMore=true from prev search
     setIsSearchActive(true)
     setSearchResults(prev => ({ ...prev, isLoading: true, query }))
 
