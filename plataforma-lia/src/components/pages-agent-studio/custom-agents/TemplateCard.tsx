@@ -80,9 +80,8 @@ export function TemplateCard({
       data-testid={`template-card-${testIdSuffix}`}
       className={cn(
         "group relative flex flex-col rounded-xl p-5",
-        "bg-lia-bg-primary border border-lia-border-subtle",
-        "transition-shadow duration-200 hover:shadow-lia-md",
-        "dark:bg-lia-bg-secondary dark:border-lia-border-subtle",
+        "bg-lia-bg-secondary border border-lia-border-subtle",
+        "shadow-lia-sm transition-shadow duration-200 hover:shadow-lia-md",
       )}
     >
       {/* Header: avatar tonal + categoria + badge Popular */}
@@ -118,7 +117,7 @@ export function TemplateCard({
 
       {/* O que faz — capacidades de alto nível em PT */}
       {capabilities.length > 0 && (
-        <div className="mt-4">
+        <div className="mt-4 bg-lia-bg-primary rounded-md p-3">
           <p className="text-[10px] uppercase tracking-wide font-semibold text-lia-text-disabled">
             {tRich("capabilitiesEyebrow")}
           </p>

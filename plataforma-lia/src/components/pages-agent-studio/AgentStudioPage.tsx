@@ -839,7 +839,7 @@ function AgentCard({
         <span className="text-micro text-lia-text-disabled uppercase tracking-wider">{t("studio.stats.analyzed")}</span>
       </div>
       <div className="flex flex-col items-center p-2 rounded-md bg-lia-bg-primary">
-        <span className="text-xs font-bold text-emerald-600">{agent.profiles_approved}</span>
+        <span className="text-xs font-bold text-status-success">{agent.profiles_approved}</span>
         <span className="text-micro text-lia-text-disabled uppercase tracking-wider">{t("studio.stats.approved")}</span>
       </div>
       <div className="flex flex-col items-center p-2 rounded-md bg-lia-bg-primary">
