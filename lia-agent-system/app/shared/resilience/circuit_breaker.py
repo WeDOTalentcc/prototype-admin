@@ -164,7 +164,12 @@ class CircuitBreaker:
                 # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.info(f"Circuit breaker '{self.name}' transitioning to HALF_OPEN")
         return self._state
-    
+
+    @property
+    def is_open(self) -> bool:
+        """True quando o circuit esta OPEN (rejeita chamadas)."""
+        return self.state == CircuitState.OPEN
+
     @property
     def failure_count(self) -> int:
         return self._failure_count

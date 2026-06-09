@@ -123,7 +123,7 @@ class ContactEnrichmentService:
             )
             elapsed = time.monotonic() - start
 
-            APIFY_CIRCUIT.record_success()
+            await APIFY_CIRCUIT.record_success()
 
             await db.refresh(candidate)
 
@@ -165,7 +165,7 @@ class ContactEnrichmentService:
             }
 
         except Exception as e:
-            APIFY_CIRCUIT.record_failure()
+            await APIFY_CIRCUIT.record_failure()
             logger.error("[ContactEnrichment] Apify enrichment failed for %s: %s", candidate_id, e)
 
             await self._track_apify_consumption(
