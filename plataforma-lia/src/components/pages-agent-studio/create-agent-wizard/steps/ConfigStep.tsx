@@ -1,8 +1,10 @@
 "use client"
 
-import { Loader2, Zap } from "lucide-react"
+import { Loader2, Zap, Phone, Mic, MessageCircle, Send } from "lucide-react"
 import * as Icons from "lucide-react"
 import { useTranslations } from "next-intl"
+
+import { Switch } from "@/components/ui/switch"
 
 import { useAiPersona } from "@/hooks/company/use-ai-persona"
 
@@ -39,6 +41,52 @@ export function ConfigStep({
   const { persona: aiPersona } = useAiPersona()
   const aiAssistantName = aiPersona?.name ?? "assistente"
   const { templates: AGENT_TEMPLATES } = useLegacyAgentTemplates()
+
+  // Channel selection at creation (2026-06-09). Independent toggles — no mutual
+  // exclusion. Set config.channels.*; the wizard fires the dedicated channel
+  // PATCH endpoints AFTER the agent is created (needs its id). Same section is
+  // shown for every approach (ai / template / manual).
+  const channelOptions: {
+    key: "voice" | "voip" | "whatsapp" | "triagem_invite"
+    icon: React.ComponentType<{ className?: string }>
+    label: string
+  }[] = [
+    { key: "voice", icon: Phone, label: t("channelVoice") || "Ligacao telefonica" },
+    { key: "voip", icon: Mic, label: t("channelVoip") || "Voz no navegador" },
+    { key: "whatsapp", icon: MessageCircle, label: t("channelWhatsapp") || "WhatsApp" },
+    { key: "triagem_invite", icon: Send, label: t("channelTriagemInvite") || "Convite de triagem" },
+  ]
+  const channelsSection = (
+    <div className="space-y-2 pt-2" data-testid="config-step-channels">
+      <span className="text-xs font-semibold text-lia-text-primary block">
+        {t("channelsTitle") || "Canais de atendimento"}
+      </span>
+      <div className="rounded-lg border border-lia-border-subtle bg-lia-bg-secondary divide-y divide-lia-border-subtle">
+        {channelOptions.map(({ key, icon: Icon, label }) => {
+          const checked = Boolean(config.channels?.[key])
+          return (
+            <div key={key} className="flex items-center justify-between gap-2 px-3 py-2">
+              <div className="flex items-center gap-2 text-xs">
+                <Icon className="w-3.5 h-3.5 text-lia-text-disabled" aria-hidden="true" />
+                <span className="text-lia-text-secondary">{label}</span>
+              </div>
+              <Switch
+                checked={checked}
+                onCheckedChange={(next) =>
+                  setConfig({ ...config, channels: { ...config.channels, [key]: next } })
+                }
+                aria-label={label}
+                data-testid={`wizard-channel-${key}-toggle`}
+              />
+            </div>
+          )
+        })}
+      </div>
+      <p className="text-[11px] text-lia-text-disabled">
+        {t("channelsHelper") || "Voce pode ajustar os canais depois no card do agente."}
+      </p>
+    </div>
+  )
   if (approach === "ai") {
     return (
       <div className="space-y-4" data-testid="config-step-ai">
@@ -150,6 +198,7 @@ export function ConfigStep({
             </Button>
           </div>
         )}
+        {channelsSection}
       </div>
     )
   }
@@ -204,6 +253,7 @@ export function ConfigStep({
             </span>
           ))}
         </div>
+        {channelsSection}
       </div>
     )
   }
@@ -246,6 +296,8 @@ export function ConfigStep({
           data-testid="wizard-manual-desc-input"
         />
       </div>
+
+      {channelsSection}
     </div>
   )
 }

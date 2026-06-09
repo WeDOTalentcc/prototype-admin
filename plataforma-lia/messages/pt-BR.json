@@ -2435,7 +2435,13 @@
         "templateSectionHint": "Escolha e ajuste depois.",
         "createManualDescription": "Configure cada detalhe você mesmo: nome, instruções, ferramentas e persona. Indicado para quem já conhece os conceitos de agente.",
         "approachGroupAriaLabel": "Como criar o agente",
-        "capabilitiesLabel": "O que ela vai fazer"
+        "capabilitiesLabel": "O que ela vai fazer",
+        "channelsTitle": "Canais de atendimento",
+        "channelsHelper": "Voce pode ajustar os canais depois no card do agente.",
+        "channelVoice": "Ligacao telefonica",
+        "channelVoip": "Voz no navegador",
+        "channelWhatsapp": "WhatsApp",
+        "channelTriagemInvite": "Convite de triagem"
       },
       "sandbox": {
         "title": "Simular: {agent}",
@@ -2609,7 +2615,11 @@
       "disableVoip": "Desabilitar voz no navegador (VoIP) no agente {name}",
       "triagemInvite": "Convite de triagem",
       "enableTriagemInvite": "Habilitar criação de convites de triagem no agente {name}",
-      "disableTriagemInvite": "Desabilitar criação de convites de triagem no agente {name}"
+      "disableTriagemInvite": "Desabilitar criação de convites de triagem no agente {name}",
+      "channelBadgeVoice": "Voz",
+      "channelBadgeVoip": "Voz Web",
+      "channelBadgeWhatsapp": "WhatsApp",
+      "channelBadgeTriagem": "Triagem"
     },
     "createModal": {
       "titleWithTemplate": "Criar Agente — {template}",

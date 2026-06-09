@@ -31,6 +31,18 @@ export interface WizardConfig {
   description: string
   templateId: string | null
   aiDescription: string
+  /**
+   * Channel selection at creation (2026-06-09). All default false/undefined.
+   * Channels do NOT flow through the Create schema — after the agent is created,
+   * the wizard fires the dedicated PATCH /agents/{id}/{channel}/enabled endpoints
+   * for each channel set true here. Adjustable later via the agent card toggles.
+   */
+  channels?: {
+    voice?: boolean
+    voip?: boolean
+    whatsapp?: boolean
+    triagem_invite?: boolean
+  }
 }
 
 export interface GeneratedConfigPreview {

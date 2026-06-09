@@ -2435,7 +2435,13 @@
         "templateSectionHint": "Pick one and adjust later.",
         "createManualDescription": "Configure every detail yourself: name, instructions, tools and persona. Best for those already familiar with agent concepts.",
         "approachGroupAriaLabel": "How to create the agent",
-        "capabilitiesLabel": "What it will do"
+        "capabilitiesLabel": "What it will do",
+        "channelsTitle": "Service channels",
+        "channelsHelper": "You can adjust the channels later on the agent card.",
+        "channelVoice": "Phone call",
+        "channelVoip": "In-browser voice",
+        "channelWhatsapp": "WhatsApp",
+        "channelTriagemInvite": "Screening invite"
       },
       "sandbox": {
         "title": "Simulate: {agent}",
@@ -2609,7 +2615,11 @@
       "disableVoip": "Disable browser voice (VoIP) on agent {name}",
       "triagemInvite": "Screening invite",
       "enableTriagemInvite": "Enable screening invite creation on agent {name}",
-      "disableTriagemInvite": "Disable screening invite creation on agent {name}"
+      "disableTriagemInvite": "Disable screening invite creation on agent {name}",
+      "channelBadgeVoice": "Voice",
+      "channelBadgeVoip": "Web Voice",
+      "channelBadgeWhatsapp": "WhatsApp",
+      "channelBadgeTriagem": "Screening"
     },
     "createModal": {
       "titleWithTemplate": "Create Agent — {template}",

@@ -95,6 +95,53 @@ function buildAuthHeaders(): Record<string, string> {
   }
 }
 
+/**
+ * Channel selection at creation (2026-06-09).
+ *
+ * Channels do NOT flow through the Create schema — the backend only accepts
+ * them via the dedicated PATCH /agents/{id}/{channel}/enabled endpoints (same
+ * shape the agent-card toggle hooks use: body `{ "<channel>_enabled": true }`,
+ * `triagem_invite` -> URL segment `triagem-invite`). We fire one PATCH per
+ * enabled channel AFTER the agent exists, in parallel. Failures are NON-blocking
+ * (the agent is already created) but NOT silently swallowed: returns the list of
+ * channels that failed so the caller can surface a toast.
+ */
+async function enableSelectedChannels(
+  agentId: string,
+  channels: WizardConfig["channels"],
+): Promise<string[]> {
+  if (!agentId || !channels) return []
+  const enabled = (Object.keys(channels) as Array<keyof NonNullable<WizardConfig["channels"]>>).filter(
+    (k) => channels[k],
+  )
+  if (enabled.length === 0) return []
+  const results = await Promise.allSettled(
+    enabled.map((channel) => {
+      const urlSegment = channel === "triagem_invite" ? "triagem-invite" : channel
+      const bodyKey = `${channel}_enabled`
+      return fetch(
+        `/api/backend-proxy/agent-studio/agents/${encodeURIComponent(agentId)}/${urlSegment}/enabled`,
+        {
+          method: "PATCH",
+          headers: buildAuthHeaders(),
+          body: JSON.stringify({ [bodyKey]: true }),
+        },
+      ).then((res) => {
+        if (!res.ok) throw new Error(`channel ${channel} HTTP ${res.status}`)
+        return channel
+      })
+    }),
+  )
+  const failed: string[] = []
+  results.forEach((r, i) => {
+    if (r.status === "rejected") {
+      failed.push(enabled[i])
+      console.warn(`[CreateAgentWizard] failed to enable channel "${enabled[i]}":`, r.reason)
+    }
+  })
+  return failed
+}
+
 function canProceed(
   step: number,
   goal: AgentGoal | null,
@@ -257,7 +304,15 @@ export function CreateAgentWizard({
         }
         const data = await res.json()
         toast.success(`Agente "${config.name || "Novo Agente"}" criado`, "Pronto para uso")
-        onCreated?.(data?.id ?? "")
+        const newAgentId = data?.id ?? ""
+        const failedChannels = await enableSelectedChannels(newAgentId, config.channels)
+        if (failedChannels.length > 0) {
+          toast.warning(
+            "Agente criado; alguns canais nao puderam ser ativados",
+            "Voce pode tenta-los novamente no card do agente.",
+          )
+        }
+        onCreated?.(newAgentId)
         onClose()
       } else if (approach === "template") {
         const tmpl = AGENT_TEMPLATES.find((t) => t.id === config.templateId)
@@ -278,7 +333,15 @@ export function CreateAgentWizard({
         }
         const data = await res.json()
         toast.success(`Agente "${config.name || tmpl.name}" criado`, "A partir de template")
-        onCreated?.(data?.id ?? "")
+        const newAgentId = data?.id ?? ""
+        const failedChannels = await enableSelectedChannels(newAgentId, config.channels)
+        if (failedChannels.length > 0) {
+          toast.warning(
+            "Agente criado; alguns canais nao puderam ser ativados",
+            "Voce pode tenta-los novamente no card do agente.",
+          )
+        }
+        onCreated?.(newAgentId)
         onClose()
       } else {
         // approach === "manual" — create minimal custom agent, user finishes in editor
@@ -303,7 +366,15 @@ export function CreateAgentWizard({
         }
         const data = await res.json()
         toast.success(`Agente "${config.name}" criado`, "Configure os detalhes no editor avancado")
-        onCreated?.(data?.id ?? "")
+        const newAgentId = data?.id ?? ""
+        const failedChannels = await enableSelectedChannels(newAgentId, config.channels)
+        if (failedChannels.length > 0) {
+          toast.warning(
+            "Agente criado; alguns canais nao puderam ser ativados",
+            "Voce pode tenta-los novamente no card do agente.",
+          )
+        }
+        onCreated?.(newAgentId)
         onClose()
       }
     } catch (e) {
