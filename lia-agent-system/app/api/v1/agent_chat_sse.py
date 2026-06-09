@@ -1175,10 +1175,12 @@ company_id: str = Depends(require_company_id)):
                                 pass
 
                         clean_message = mask_pii_outbound(_strip_react_json(output.message or ""))
-                        # FIX-NAVIGATE-LEAK (Fase 0): [NAVIGATE:...] vazava como
-                        # texto no SSE (so o orquestrador passava pelo helper
-                        # canonico). Reusa _extract_navigate_marker -> strip +
-                        # ui_action navigate_to (mesmo contrato do FE).
+                        # FIX-NAVIGATE-LEAK (Fase 0 + hardening 2026-06-09):
+                        # [NAVIGATE:...] vazava como texto no SSE. Fix em 2 camadas:
+                        # Camada 1: extrai o PRIMEIRO marker -> strip + ui_action.
+                        # Camada 2 (defesa em profundidade): strip regex de QUALQUER
+                        #   marker residual (multiplos markers, ou falha do import).
+                        #   Garante que NUNCA vaza para o FE mesmo com excecao.
                         _nav_ui_action = None
                         _nav_ui_params = None
                         try:
@@ -1193,6 +1195,12 @@ company_id: str = Depends(require_company_id)):
                                     _nav_ui_params = {"page": _np, **_npar}
                         except Exception:
                             pass
+                        # Camada 2: strip residual — quaisquer [NAVIGATE:...] que
+                        # sobraram (multiplos markers ou excecao silenciada acima).
+                        import re as _re_nav
+                        clean_message = _re_nav.sub(
+                            r"\[NAVIGATE:[^\]]*\]", "", clean_message
+                        ).strip()
 
                         # FIX-C3B-SSE (Fase 0): paridade c/ WS — post_compliance
                         # (FactChecker + audit log LGPD da decisao) faltava no SSE.
