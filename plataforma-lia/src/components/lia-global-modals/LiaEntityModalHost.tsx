@@ -13,8 +13,9 @@
  * conflito no arquivo HOT. Adicionar um modal entidade-acoplável = 1 entrada no
  * ENTITY_MODAL_REGISTRY + 1 case no switch.
  *
- * Fase B3b (2026-06-09): suporte a kind "jobs" (plural) para job_compare.
- * data.job_ids: string[] → useLiaJobs (parallel fetch) → JobCompareModal.
+ * Fase B3b (2026-06-09): 
+ * - kind "jobs" (plural): job_compare — data.job_ids[] → useLiaJobs → JobCompareModal
+ * - job_insights: kind "job" — mapeia job object → JobInsightData → JobInsightsModal
  */
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
@@ -24,6 +25,7 @@ import { GeneralScoreModal } from "@/components/modals/general-score-modal"
 import { BigFiveModal } from "@/components/big-five-modal"
 import { JobReportModal } from "@/components/job-report-modal"
 import { JobCompareModal } from "@/components/modals/job-compare-modal"
+import { JobInsightsModal, type JobInsightData } from "@/components/modals/job-insights-modal"
 
 interface ActiveModal {
   modalId: string
@@ -125,6 +127,42 @@ export function LiaEntityModalHost() {
           jobs={jobs as Parameters<typeof JobCompareModal>[0]["jobs"]}
         />
       )
+    case "job_insights": {
+      if (!job) return null
+      // Mapeamento job object → JobInsightData. Campos analíticos (lia_metrics,
+      // candidate_demographics) são opcionais — modal renderiza sem eles.
+      const salaryRange = job.salary_range as { min?: number; max?: number } | undefined
+      const insightData: JobInsightData = {
+        id: (job.id as string) ?? active.jobId ?? "",
+        code: job.code as string | undefined,
+        title: (job.title as string) ?? "",
+        status: (job.status as string) ?? "",
+        priority: job.priority as string | undefined,
+        deadline: job.deadline as string | undefined,
+        candidates_count: job.candidates_count as number | undefined,
+        approved_count: job.approved_count as number | undefined,
+        screening_count: job.screening_count as number | undefined,
+        rejected_count: job.rejected_count as number | undefined,
+        performance_score: job.performance_score as number | undefined,
+        avg_time_per_stage: job.avg_time_per_stage as number | undefined,
+        salary_min: salaryRange?.min,
+        salary_max: salaryRange?.max,
+        work_model: job.work_model as string | undefined,
+        location: job.location as string | undefined,
+        behavioral_competencies: job.behavioral_competencies as JobInsightData["behavioral_competencies"],
+        benefits: job.benefits as string[] | undefined,
+        days_open: job.days_open as number | undefined,
+        lia_metrics: job.lia_metrics as JobInsightData["lia_metrics"],
+        candidate_demographics: job.candidate_demographics as JobInsightData["candidate_demographics"],
+      }
+      return (
+        <JobInsightsModal
+          isOpen
+          onClose={close}
+          jobs={[insightData]}
+        />
+      )
+    }
     default:
       return null
   }

@@ -201,6 +201,7 @@ capabilities:
     entity_required:
       - type: job
         param: job_id
+    modal_id: job_insights          # B3b (2026-06-09): modal de insights inline
     navigate_page: vaga_detalhe   # insights vivem na vaga (métricas pré-computadas)
     navigate_fallback: /jobs
 

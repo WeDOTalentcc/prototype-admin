@@ -10,6 +10,7 @@ import { useModalOpenListener } from "@/hooks/chat/useModalOpenListener"
 import { useOfferReviewFlow } from "@/hooks/offers/useOfferReviewFlow"
 import { LiaEntityModalHost } from "@/components/lia-global-modals/LiaEntityModalHost"
 import { LiaTableStateBridge } from "@/components/lia-global-modals/LiaTableStateBridge"
+import { HiringPolicyConfigModal } from "@/components/modals/hiring-policy-config-modal"
 
 /**
  * LIAGlobalModals — listens for `lia:open_modal` events (dispatched by useUIAction)
@@ -22,6 +23,9 @@ import { LiaTableStateBridge } from "@/components/lia-global-modals/LiaTableStat
  * from any surface) and delegates to useOfferReviewFlow.
  *
  * Add new modal_id cases here as new capabilities are added to capability_map.yaml.
+ *
+ * Fase B3b (2026-06-09): adiciona hiring_policy_config (LiaPersonalizacaoHub em Dialog).
+ * job_insights + job_compare tratados no LiaEntityModalHost (precisam de entidade).
  */
 export function LIAGlobalModals() {
   const router = useRouter()
@@ -46,6 +50,9 @@ export function LIAGlobalModals() {
 
   // W1-3: Cards 1.1 (create-job) + 1.2 (job-template) open CreateJobModal.
   const createJob = useModalOpenListener("create_job")
+
+  // B3b: Configurações LIA em modal (hiring_policy_config / configurar_policy capability)
+  const hiringPolicyConfig = useModalOpenListener("hiring_policy_config")
 
   // PR-B Trigger A: Rail A Card 5.1 sends ui_action="open_offer_review".
   // useUIAction dispatches `lia:open_offer_review` CustomEvent — handled here
@@ -118,6 +125,12 @@ export function LIAGlobalModals() {
             }),
           )
         }}
+      />
+
+      {/* B3b: Configurações LIA (hiring_policy_config / configurar_policy) */}
+      <HiringPolicyConfigModal
+        isOpen={hiringPolicyConfig.isOpen}
+        onClose={hiringPolicyConfig.close}
       />
 
       {/* Fase B3: modais que precisam do objeto completo (candidato/vaga)
