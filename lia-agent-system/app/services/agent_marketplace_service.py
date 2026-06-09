@@ -228,9 +228,9 @@ class AgentMarketplaceService:
         listings = []
         for listing, agent in rows:
             data = listing.to_dict()
-            data["agent_name"] = agent.name
-            data["agent_role"] = agent.role
-            data["agent_domain"] = agent.domain
+            data["agent_name"] = agent.name if agent else None
+            data["agent_role"] = agent.role if agent else None
+            data["agent_domain"] = agent.domain if agent else None
             listings.append(data)
 
         return listings, total
@@ -463,10 +463,10 @@ class AgentMarketplaceService:
         listings = []
         for listing, agent in rows:
             data = listing.to_dict()
-            data["agent_name"] = agent.name
-            data["agent_role"] = agent.role
-            data["agent_domain"] = agent.domain
-            data["system_prompt_preview"] = (agent.system_prompt or "")[:200]
+            data["agent_name"] = agent.name if agent else None
+            data["agent_role"] = agent.role if agent else None
+            data["agent_domain"] = agent.domain if agent else None
+            data["system_prompt_preview"] = (agent.system_prompt or "")[:200] if agent else None
             listings.append(data)
 
         return listings, total
