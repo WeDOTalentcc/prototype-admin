@@ -42,6 +42,7 @@ interface CustomAgent {
   config?: Record<string, unknown>
   category?: string
   preferences?: Record<string, unknown>
+  agent_type?: string
 }
 
 // UX-Sprint-A QW#18 Batch 3 (audit 2026-05-21): STATUS_CONFIG extraído para
@@ -71,8 +72,10 @@ export default function CustomAgentsTab() {
       const res = await fetch("/api/backend-proxy/custom-agents")
       if (res.ok) {
         const data = await res.json()
-        setAgents(data.agents || [])
-        setTotal(data.total || 0)
+        const allAgents = data.agents || []
+        const customOnly = allAgents.filter((a: { agent_type?: string }) => a.agent_type !== "first_party")
+        setAgents(customOnly)
+        setTotal(customOnly.length)
       }
     } catch (err) {
       console.error("Failed to load custom agents:", err)
