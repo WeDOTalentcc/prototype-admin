@@ -20,6 +20,7 @@ import { enrichStagesWithSubStatuses, buildSubStatusMap, applyVacancyStageOverri
 import { useReturnEvents } from '@/hooks/recruitment/use-return-events'
 import { useBulkCandidateDataRequests } from "@/hooks/candidates/use-candidate-data-requests"
 import { type DataRequestSubmitData } from "@/components/modals/data-request-modal"
+import { DEFAULT_DATA_FIELDS } from "@/hooks/company/use-data-request-config"
 import {
   mapInterviewStagesToKanban,
   createInitialCandidatesData,
@@ -271,12 +272,83 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
     setShowDecisionFlowModal: uiModals.actions.setShowDecisionFlowModal,
   })
 
-  const handleDataRequestSubmit = useCallback(async (_data: DataRequestSubmitData) => {
-    toast.success("Solicitação Enviada", { description: `Solicitação de dados enviada para ${(uiModals.state.dataRequestModalCandidate as Record<string,unknown>|null)?.name as string || 'candidato'}` })
+  const handleDataRequestSubmit = useCallback(async (data: DataRequestSubmitData) => {
+    const candidateIds = (data.candidateIds || []).filter(Boolean)
+    if (candidateIds.length === 0) {
+      toast.error("Solicitação de Dados", { description: "Nenhum candidato selecionado." })
+      return
+    }
+
+    // channel -> backend notification_channels (BE allow-list: email | whatsapp | voice)
+    const notificationChannels =
+      data.channel === "both"
+        ? ["email", "whatsapp"]
+        : data.channel === "voice"
+          ? ["voice"]
+          : data.channel === "whatsapp"
+            ? ["whatsapp"]
+            : ["email"]
+
+    // map selected field names -> backend FieldSchema objects (label/type from catalog)
+    const fields = (data.fields || []).map((fieldName) => {
+      const def = DEFAULT_DATA_FIELDS.find((f) => f.name === fieldName || f.id === fieldName)
+      return {
+        name: fieldName,
+        label: def?.displayName || fieldName,
+        field_type: def?.type || "text",
+        is_required: def?.required ?? true,
+      }
+    })
+
+    const vacancyId = ((job?.backendId || job?.id) as string | number | undefined)?.toString()
+
+    const results = await Promise.allSettled(
+      candidateIds.map(async (candidateId) => {
+        const res = await fetch("/api/backend-proxy/data-requests", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            candidate_id: candidateId,
+            vacancy_id: vacancyId,
+            fields,
+            expiration_days: data.expirationDays,
+            send_notification: true,
+            notification_channels: notificationChannels,
+          }),
+        })
+        if (!res.ok) {
+          const detail = await res.text().catch(() => "")
+          throw new Error(detail || `HTTP ${res.status}`)
+        }
+        return res.json()
+      })
+    )
+
+    const failed = results.filter((r) => r.status === "rejected").length
+    const succeeded = results.length - failed
+
+    if (failed === 0) {
+      toast.success("Solicitação Enviada", {
+        description:
+          succeeded === 1
+            ? "Solicitação de dados enviada para 1 candidato."
+            : `Solicitação de dados enviada para ${succeeded} candidatos.`,
+      })
+    } else if (succeeded === 0) {
+      toast.error("Falha na Solicitação", {
+        description: `Não foi possível enviar a solicitação (${failed} ${failed === 1 ? "falha" : "falhas"}).`,
+      })
+    } else {
+      toast.warning("Solicitação Parcial", {
+        description: `${succeeded} enviada(s), ${failed} com falha.`,
+      })
+    }
+
+    mutateDataRequests()
     uiModals.actions.setShowDataRequestModal(false)
     uiModals.actions.setDataRequestModalCandidate(null)
   // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: uiModals.actions is a stable object from zustand
-  }, [uiModals.state.dataRequestModalCandidate])
+  }, [job?.backendId, job?.id, mutateDataRequests])
 
   const { handleBulkAction, handleBulkActionExecute } = useKanbanBulkActions({
     selectedCandidates: kanbanFilters.selectedCandidates,
