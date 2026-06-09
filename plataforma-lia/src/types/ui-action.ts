@@ -135,6 +135,22 @@ export type GlobalUIAction =
         mode: "set" | "add" | "clear";
         ids?: string[]; // obrigatorio para mode="set"/"add", omitido para "clear"
       };
+    }
+  | {
+      // F3 Gap 1: feedback visual apos acao em lote executada via chat.
+      // useUIAction despacha `lia:bulk_execute`; LiaTableStateBridge escuta
+      // e abre BulkResultReport com o resumo de sucesso/falha por item.
+      type: "bulk_execute";
+      params: {
+        action: string; // ex: "reject_candidates" | "move_stage" | "send_communication"
+        title: string; // ex: "3 candidatos rejeitados"
+        results: {
+          id: string;
+          name: string;
+          ok: boolean;
+          reason?: string;
+        }[];
+      };
     };
 
 /**
@@ -156,6 +172,7 @@ export const GLOBAL_UI_ACTION_TYPES: readonly GlobalUIActionType[] = [
   "open_screening_modal",
   "apply_table_state",
   "select_rows",
+  "bulk_execute", // F3 Gap 1: feedback visual de ação em lote via chat
 ] as const;
 
 export function isGlobalUIActionType(type: string): type is GlobalUIActionType {

@@ -259,6 +259,23 @@ export function useUIAction(): UseUIActionReturn {
           return true;
         }
 
+
+        case "bulk_execute": {
+          // F3 Gap 1: feedback visual apos acao em lote via chat.
+          // LiaTableStateBridge escuta lia:bulk_execute e abre BulkResultReport.
+          if (typeof window === "undefined") return false;
+          window.dispatchEvent(
+            new CustomEvent("lia:bulk_execute", {
+              detail: {
+                action: params.action,
+                title: params.title,
+                results: params.results ?? [],
+              },
+            }),
+          );
+          return true;
+        }
+
         default:
           // exhaustiveness: caso TS deixe escapar um tipo, runtime falha-soft.
           return false;

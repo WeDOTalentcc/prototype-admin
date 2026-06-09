@@ -1,10 +1,12 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useCandidatesStore } from "@/stores/candidates-store"
+import { BulkResultReport } from "@/components/bulk/BulkResultReport"
+import type { BulkItemResult } from "@/lib/bulk"
 
 /**
- * LiaTableStateBridge — ponte in-page (Fase 2 slice 1).
+ * LiaTableStateBridge — ponte in-page (Fase 2 slice 1) + feedback de bulk (F3 Gap 1).
  *
  * Aplica filtro/busca/ordenação vindos do chat à tabela JÁ ABERTA, sem
  * navegar nem mutar dados. Escuta `lia:apply_table_state` (despachado pelo
@@ -16,6 +18,9 @@ import { useCandidatesStore } from "@/stores/candidates-store"
  *
  * Fase 2 funil tabs: `patch.tab` troca a aba do Funil via `setActiveTab`
  * (search/favorites/lists/history/saved-searches/agents).
+ *
+ * F3 Gap 1: escuta `lia:bulk_execute` e abre `BulkResultReport` com o
+ * resumo de sucesso/falha por item da ação em lote executada via chat.
  *
  * Montado globalmente em LIAGlobalModals — funciona de qualquer página.
  */
@@ -36,7 +41,14 @@ const VALID_TABS: ReadonlySet<string> = new Set<ActiveTab>([
   "agents",
 ])
 
+interface BulkReportState {
+  title: string
+  results: BulkItemResult[]
+}
+
 export function LiaTableStateBridge() {
+  const [bulkReport, setBulkReport] = useState<BulkReportState | null>(null)
+
   useEffect(() => {
     function handle(e: Event) {
       const { surface, patch } =
@@ -72,13 +84,42 @@ export function LiaTableStateBridge() {
         s.setSelectedCandidates(new Set([...current, ...(ids as string[])]))
       }
     }
+    function handleBulkExecute(e: Event) {
+      // F3 Gap 1: recebe resultado de acao em lote disparada via chat.
+      const { action, title, results } = (
+        e as CustomEvent<{
+          action: string
+          title: string
+          results: { id: string; name: string; ok: boolean; reason?: string }[]
+        }>
+      ).detail ?? {}
+      if (!Array.isArray(results)) return
+      setBulkReport({
+        title: title ?? action ?? "Resultado da ação em lote",
+        results: results as BulkItemResult[],
+      })
+    }
 
     window.addEventListener("lia:apply_table_state", handle)
     window.addEventListener("lia:select_rows", handleSelectRows)
+    window.addEventListener("lia:bulk_execute", handleBulkExecute)
     return () => {
       window.removeEventListener("lia:apply_table_state", handle)
       window.removeEventListener("lia:select_rows", handleSelectRows)
+      window.removeEventListener("lia:bulk_execute", handleBulkExecute)
     }
   }, [])
-  return null
+
+  return (
+    <>
+      {bulkReport && (
+        <BulkResultReport
+          isOpen={true}
+          onClose={() => setBulkReport(null)}
+          results={bulkReport.results}
+          actionLabel={bulkReport.title}
+        />
+      )}
+    </>
+  )
 }

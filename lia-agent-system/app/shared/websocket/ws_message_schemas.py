@@ -205,6 +205,15 @@ class UISelectRowsParams(BaseModel):
     ids: list[str] | None = None
 
 
+class UIBulkExecuteParams(BaseModel):
+    '''`bulk_execute`: feedback visual de acao em lote (F3 Gap 1).
+    Espelha TS GlobalUIAction.bulk_execute. Emitido apos bulk mutation concluida.'''
+
+    action: str = Field(..., min_length=1, max_length=64)
+    title: str = Field(..., min_length=1, max_length=256)
+    results: list[dict[str, Any]] = Field(default_factory=list)
+
+
 GLOBAL_UI_ACTION_TYPES: tuple[str, ...] = (
     "navigate_to",
     "open_modal",
@@ -215,6 +224,7 @@ GLOBAL_UI_ACTION_TYPES: tuple[str, ...] = (
     "settings_open_tab",  # WT-2022 Fase 4: bridge chat → SettingsPageEnhanced
     "apply_table_state",  # Fase 2 slice 1: ponte in-page (filtra/ordena tabela)
     "select_rows",  # Fase 2 surface close: seleciona candidatos in-page
+    "bulk_execute",  # F3 Gap 1: feedback visual de acao em lote via chat
 )
 """Espelho runtime do `GLOBAL_UI_ACTION_TYPES` em `src/types/ui-action.ts`."""
 
@@ -229,6 +239,7 @@ _UI_ACTION_PARAMS_BY_TYPE: dict[str, type[BaseModel]] = {
     "settings_open_tab": UISettingsOpenTabParams,  # WT-2022 Fase 4
     "apply_table_state": UIApplyTableStateParams,  # Fase 2 slice 1
     "select_rows": UISelectRowsParams,  # Fase 2 surface close
+    "bulk_execute": UIBulkExecuteParams,  # F3 Gap 1
 }
 
 
