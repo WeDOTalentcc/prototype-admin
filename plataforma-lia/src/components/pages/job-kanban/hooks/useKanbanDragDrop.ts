@@ -166,7 +166,7 @@ export function useKanbanDragDrop(ctx: KanbanDragDropContext) {
       })
       window.dispatchEvent(
         new CustomEvent("lia:open_offer_review", {
-          detail: { candidate_id: kanbanCandidate.id, job_id: job?.id ?? "" },
+          detail: { candidate_id: kanbanCandidate.id, job_id: (job as { backendId?: string })?.backendId ?? job?.id ?? "" },
         }),
       )
       setDragOverColumn(null)
