@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Send, Mail, MessageSquare, FileText, User, Clock, Loader2, ChevronDown, ChevronUp } from 'lucide-react'
+import { Send, Mail, MessageSquare, Phone, FileText, User, Clock, Loader2, ChevronDown, ChevronUp } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { DEFAULT_DATA_FIELDS, DataField } from '@/hooks/company/use-data-request-config'
 
@@ -30,7 +30,7 @@ interface DataRequestModalProps {
 export interface DataRequestSubmitData {
   candidateIds: string[]
   fields: string[]
-  channel: 'email' | 'whatsapp' | 'both'
+  channel: 'email' | 'whatsapp' | 'both' | 'voice'
   expirationDays: number
   templateId?: string
 }
@@ -85,7 +85,7 @@ export function DataRequestModal({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [selectedTemplate, setSelectedTemplate] = useState<string>('basic')
   const [selectedFields, setSelectedFields] = useState<Set<string>>(new Set(['full_name', 'email', 'phone']))
-  const [channel, setChannel] = useState<'email' | 'whatsapp' | 'both'>('email')
+  const [channel, setChannel] = useState<'email' | 'whatsapp' | 'both' | 'voice'>('email')
   const [expirationDays, setExpirationDays] = useState(7)
   const [showAllFields, setShowAllFields] = useState(false)
 
@@ -234,7 +234,7 @@ export function DataRequestModal({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label className="text-xs font-medium text-lia-text-primary">Canal de Envio</Label>
-              <Select value={channel} onValueChange={(v: 'email' | 'whatsapp' | 'both') => setChannel(v)}>
+              <Select value={channel} onValueChange={(v: 'email' | 'whatsapp' | 'both' | 'voice') => setChannel(v)}>
                 <SelectTrigger className="h-9">
                   <SelectValue />
                 </SelectTrigger>
@@ -256,6 +256,12 @@ export function DataRequestModal({
                       <Mail className="w-3.5 h-3.5" />
                       <MessageSquare className="w-3.5 h-3.5" />
                       <span className="text-xs">Ambos (Email + WhatsApp)</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="voice">
+                    <div className="flex items-center gap-2">
+                      <Phone className="w-3.5 h-3.5" />
+                      <span className="text-xs">Voz (ligação)</span>
                     </div>
                   </SelectItem>
                 </SelectContent>
