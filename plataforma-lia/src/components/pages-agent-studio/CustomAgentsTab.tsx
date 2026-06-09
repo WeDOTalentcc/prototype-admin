@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from "react"
 import { useTranslations } from "next-intl"
-import { Bot, Brain, Briefcase, ChevronRight, Copy, Database, Edit3, ExternalLink, Loader2, MoreVertical, Pause, Play, Plus, Settings, Sliders, Store, TestTube2, Trash2 } from "lucide-react"
+import { Bot, Brain, Briefcase, ChevronRight, Copy, Database, Edit3, ExternalLink, Loader2, MoreVertical, Pause, Play, Settings, Sliders, Store, TestTube2, Trash2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 // Sprint 4 Fase 3 (Studio Experience) — config humana `/edit`. Ferramentas como
 // checkboxes agrupados em PT (TOOL_GROUP/CAPABILITY_GROUP_ORDER), nunca slug cru.
@@ -10,7 +10,6 @@ import { TOOL_GROUP, CAPABILITY_GROUP_ORDER, type CapabilityGroup } from "@/lib/
 import { ConfirmAlertDialog } from "@/components/agent-studio/confirm-alert-dialog"
 import { getCustomAgentStatusConfig } from "@/lib/agent-studio/status-config"
 import { Button } from "@/components/ui/button"
-import { TabSectionHeader } from "@/components/pages-agent-studio/TabSectionHeader"
 // Onda 4 F6.1 — empty state persona-aware canonical
 import { StudioEmptyState } from "@/components/pages-agent-studio/StudioEmptyState"
 import {
@@ -60,7 +59,6 @@ export default function CustomAgentsTab() {
   // White-label canonical: fallback do nome do agente no card list.
   const { persona: aiPersona } = useAiPersona()
   const [agents, setAgents] = useState<CustomAgent[]>([])
-  const [total, setTotal] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [editingAgent, setEditingAgent] = useState<CustomAgent | null>(null)
@@ -75,7 +73,6 @@ export default function CustomAgentsTab() {
         const allAgents = data.agents || []
         const customOnly = allAgents.filter((a: { agent_type?: string }) => a.agent_type !== "first_party")
         setAgents(customOnly)
-        setTotal(customOnly.length)
       }
     } catch (err) {
       console.error("Failed to load custom agents:", err)
@@ -131,22 +128,6 @@ export default function CustomAgentsTab() {
 
   return (
     <div className="space-y-6">
-      <TabSectionHeader
-        title={t('customAgentsTitle')}
-        subtitle={t('customAgentsSubtitle')}
-        count={total}
-        actions={
-          <Button
-            size="sm"
-            onClick={() => { setEditingAgent(null); setShowCreateModal(true) }}
-            className="gap-2 bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover"
-          >
-            <Plus className="w-4 h-4" />
-            {t('newCustomAgent')}
-          </Button>
-        }
-      />
-
       {agents.length === 0 ? (
         // Onda 4 F6.1 — empty state persona-aware com 2 CTAs (marketplace + chat).
         // Original "createFirstAgent" inline state substituído pelo canonical.

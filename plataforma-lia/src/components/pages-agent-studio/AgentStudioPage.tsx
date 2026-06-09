@@ -705,45 +705,9 @@ export default function AgentStudioPage({
         {/* ── Personalizados ────────────────────────────────────────────────── */}
         {activeTab === "personalizados" && (
           <div className="space-y-6">
-            <section>
-              <TabSectionHeader title={t("studio.myAgents")} count={customAgents.length} className="mb-3" />
-              {customAgents.length === 0 ? (
-                <div className="text-center py-8">
-                  <Bot className="w-8 h-8 text-lia-border-default mx-auto mb-2" />
-                  <p className="text-sm text-lia-text-tertiary">{t("studio.noAgentsYet")}</p>
-                  <p className="text-xs text-lia-text-tertiary mt-1">{t("studio.chooseTemplateOrDescribe")}</p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {customAgents.map((agent) => (
-                    <div key={agent.id} onClick={() => setDetailsAgent(agent)} className="cursor-pointer">
-                      <CustomAgentCard
-                        agent={agent}
-                        onTest={() => setTestAgent(agent)}
-                        onDeploy={() => setDeployAgent(agent)}
-                        onToggleStatus={(a) => handleCustomAgentToggle(a)}
-                      />
-                    </div>
-                  ))}
-                </div>
-              )}
-            </section>
-
-            {/* Studio Restructure 2026-06-09: templates movidos para /agents/marketplace
-                Agentes Personalizados mostra apenas agentes customizados + link para marketplace. */}
-            <div className="flex items-center justify-between p-4 rounded-md border border-lia-border-subtle bg-lia-bg-secondary/50">
-              <div>
-                <p className="text-sm font-medium text-lia-text-primary">{t("studio.templatesInMarketplace")}</p>
-                <p className="text-xs text-lia-text-secondary mt-0.5">{t("studio.templatesInMarketplaceHint")}</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => router.push("/agents/marketplace")}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-violet-600 text-white hover:bg-violet-700 transition-colors flex-shrink-0"
-              >
-                {t("studio.viewTemplates")}
-              </button>
-            </div>
+            <p className="text-sm text-lia-text-secondary mb-6">
+              {t("customAgents.customAgentsSubtitle")}
+            </p>
 
             <div id="agent-studio-conversational-creator" className="scroll-mt-4">
               <ConversationalCreator onAgentCreated={() => mutateCustomAgents()} />
