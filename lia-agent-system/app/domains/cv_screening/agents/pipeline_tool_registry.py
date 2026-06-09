@@ -75,6 +75,16 @@ async def _wrap_move_candidate(**kwargs: Any) -> dict[str, Any]:
     target_stage = kwargs.get("target_stage", "unknown")
     reason = kwargs.get("reason", "")
     company_id = kwargs.get("company_id", "")  # P0.A canonical: tenant gate
+    # F3: HITL gate — mover candidato é mutação; dormante com LIA_HITL_GATE off.
+    from app.shared.hitl.hitl_approval_context import hitl_preflight as _hitl_preflight
+    _hitl_block = _hitl_preflight(
+        tool="move_candidate",
+        domain="cv_screening",
+        message="Mover candidato de etapa é uma ação que requer confirmação.",
+        data={"candidate_id": candidate_id, "target_stage": target_stage},
+    )
+    if _hitl_block is not None:
+        return _hitl_block
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.warning(f"[pipeline_tools] move_candidate called: candidate={candidate_id} target={target_stage} reason={reason}")
     async with AsyncSessionLocal() as session:

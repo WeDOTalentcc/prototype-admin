@@ -66,6 +66,19 @@ async def update_candidate_stage(
     Returns:
         Result with success status and message
     """
+    # F3: HITL gate — mover candidato é mutação; requer confirmação ANTES de qualquer side-effect.
+    # Padrão canonical: hitl_preflight ANTES de context_or_raise para que o bloqueio
+    # funcione mesmo sem _context (ex: testes sem tenant) — dormante com LIA_HITL_GATE off.
+    from app.shared.hitl.hitl_approval_context import hitl_preflight
+    _hitl_block = hitl_preflight(
+        tool="update_candidate_stage",
+        domain="cv_screening",
+        message="Mover candidato de etapa é uma ação que requer confirmação. Confirme para prosseguir.",
+        data={"candidate_id": candidate_id, "target_stage": target_stage, "job_id": job_id},
+    )
+    if _hitl_block is not None:
+        return _hitl_block
+
     context = context_or_raise(kwargs, "update_candidate_stage")
 
     company_id = require_company_id_from_obj(context, "update_candidate_stage")

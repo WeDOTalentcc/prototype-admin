@@ -733,6 +733,16 @@ async def _wrap_batch_move_candidates(**kwargs: Any) -> dict[str, Any]:
     vacancy_id = kwargs.get("vacancy_id", "")
     company_id = kwargs.get("company_id", "")
     reason = kwargs.get("reason", "")
+    # F3: HITL gate — batch move é mutação sensível; dormante com LIA_HITL_GATE off.
+    from app.shared.hitl.hitl_approval_context import hitl_preflight as _hitl_preflight
+    _hitl_block = _hitl_preflight(
+        tool="batch_move_candidates",
+        domain="kanban",
+        message="Mover candidatos em lote é uma ação que requer confirmação.",
+        data={"candidate_count": len(candidate_ids), "target_stage": target_stage},
+    )
+    if _hitl_block is not None:
+        return _hitl_block
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[kanban_tools] batch_move_candidates called: candidates={len(candidate_ids)} target={target_stage}")
     if not candidate_ids or not target_stage:
