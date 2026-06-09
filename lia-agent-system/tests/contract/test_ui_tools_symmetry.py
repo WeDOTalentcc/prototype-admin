@@ -45,21 +45,24 @@ def test_open_ui_granted_to_conversational_agents():
 
 def test_apply_table_state_only_agents_with_fe_bridge():
     # anti-ghost: apply_table_state so onde a surface tem ponte FE.
-    # Funil (talent_funnel) + Vagas (jobs_mgmt) TEM ponte. kanban/pipeline/
-    # sourcing/talent_pool ainda NAO (entram quando a ponte da surface existir).
+    # Pontes ativas: candidates (talent_funnel), jobs (jobs_mgmt), kanban
+    # (kanban_react_agent), recrutar (pipeline_react_agent via pipeline-overview-
+    # page.tsx), talent_pool (talent_pool_agent via TalentPoolPage.tsx).
+    # Sem ponte: sourcing (ainda sem tabela FE).
     import importlib
     for mod_path in (
         "app.domains.recruiter_assistant.agents.talent_funnel_react_agent",
         "app.domains.recruiter_assistant.agents.jobs_mgmt_react_agent",
         "app.domains.recruiter_assistant.agents.kanban_react_agent",
+        "app.domains.cv_screening.agents.pipeline_react_agent",
+        "app.domains.talent_pool.agents.talent_pool_agent",
     ):
         mod = importlib.import_module(mod_path)
         assert "get_table_state_tools()" in inspect.getsource(mod), (
-            f"{mod_path} deveria ter apply_table_state (surface com ponte)"
+            f"{mod_path} deveria ter apply_table_state (surface com ponte FE ativa)"
         )
     for mod_path in (
-        "app.domains.cv_screening.agents.pipeline_react_agent",
-        "app.domains.talent_pool.agents.talent_pool_agent",
+        "app.domains.sourcing.agents.sourcing_react_agent",
     ):
         mod = importlib.import_module(mod_path)
         assert "get_table_state_tools()" not in inspect.getsource(mod), (

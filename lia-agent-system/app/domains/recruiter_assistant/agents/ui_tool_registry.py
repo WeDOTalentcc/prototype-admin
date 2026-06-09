@@ -233,7 +233,7 @@ def _build_open_ui_definition() -> ToolDefinition:
 # search, sortBy, sortOrder, quickFilters. Args sao snake_case (sort_by,
 # sort_order, quick_filters) — mapeamos snake->camel e dropamos None/vazio.
 
-_APPLY_TABLE_STATE_SURFACES = ("candidates", "jobs", "kanban")
+_APPLY_TABLE_STATE_SURFACES = ("candidates", "jobs", "kanban", "talent_pool", "recrutar")
 # Vocabulario VALIDO da lista de Vagas (surface jobs) — espelha o consumidor
 # useJobsFilters.ts (activeFilter no filteredJobs). Emitir fora = no-op silencioso.
 _VALID_JOB_FILTERS = (
@@ -256,6 +256,14 @@ _VALID_KANBAN_STATUS = (
 )
 _VALID_KANBAN_ORIGIN = ("web", "whatsapp", "sourcing", "ats")
 _VALID_KANBAN_WORK_MODEL = ("remoto", "hibrido", "presencial")
+_VALID_POOL_STAGES = (
+    "discovered",
+    "contacted",
+    "screening",
+    "screened",
+    "ready",
+)
+_VALID_POOL_TABS = ("candidates", "sourcing", "agents", "config")
 
 # Vocabulario VALIDO do funil (surface candidates) — espelha o consumidor
 # useCandidatesFilterSort.ts. Emitir fora disso = patch dormente: o funil
@@ -390,6 +398,37 @@ def _kanban_patch(kwargs: dict[str, Any]) -> tuple[dict[str, Any], str | None]:
     return patch, None
 
 
+
+
+def _pool_patch(kwargs):
+    patch = {}
+    stage = kwargs.get("stage")
+    if stage is not None:
+        if stage not in _VALID_POOL_STAGES and stage not in ("all", ""):
+            stages_str = ", ".join(_VALID_POOL_STAGES)
+            return {}, (
+                "Etapa " + repr(stage) + " invalida. Valores: " + stages_str +
+                " ou null/all para mostrar todos."
+            )
+        patch["stage"] = None if stage in ("all", "") else stage
+    tab = kwargs.get("pool_tab")
+    if tab is not None:
+        if tab not in _VALID_POOL_TABS:
+            return {}, "Aba " + repr(tab) + " invalida. Valores: " + ", ".join(_VALID_POOL_TABS) + "."
+        patch["tab"] = tab
+    return patch, None
+
+
+def _recrutar_patch(kwargs):
+    patch = {}
+    if "stage" in kwargs:
+        stage = kwargs["stage"]
+        if stage is not None and (not isinstance(stage, str) or len(stage) > 120):
+            return {}, "O nome da etapa deve ser uma string curta."
+        patch["stage"] = stage.strip() if isinstance(stage, str) else None
+    return patch, None
+
+
 @tool_handler("ui")
 async def _wrap_apply_table_state(**kwargs: Any) -> dict[str, Any]:
     """Filtra/busca/ordena a tabela in-page (Fase 2 slice 1).
@@ -425,6 +464,12 @@ async def _wrap_apply_table_state(**kwargs: Any) -> dict[str, Any]:
     elif surface == "kanban":
         patch, err = _kanban_patch(kwargs)
         label = "candidatos no board"
+    elif surface == "talent_pool":
+        patch, err = _pool_patch(kwargs)
+        label = "candidatos no banco"
+    elif surface == "recrutar":
+        patch, err = _recrutar_patch(kwargs)
+        label = "pipeline de recrutamento"
     else:
         patch, err = _candidates_patch(kwargs)
         label = "candidatos"
@@ -534,6 +579,19 @@ def _build_apply_table_state_definition() -> ToolDefinition:
                     "type": "array",
                     "items": {"type": "string", "enum": list(_VALID_KANBAN_WORK_MODEL)},
                     "description": "Modelo de trabalho (opcional, SÓ kanban): remoto/hibrido/presencial.",
+                },
+                "stage": {
+                    "type": ["string", "null"],
+                    "description": (
+                        "Etapa a selecionar/filtrar (opcional). "
+                        "talent_pool: discovered/contacted/screening/screened/ready ou null=todos. "
+                        "recrutar: nome exato da etapa do pipeline (ex: 'triagem_whatsapp') ou null=deseleciona."
+                    ),
+                },
+                "pool_tab": {
+                    "type": "string",
+                    "enum": list(_VALID_POOL_TABS),
+                    "description": "Aba do banco de talentos (opcional, SÓ talent_pool): candidates/sourcing/agents/config.",
                 },
             },
             "required": ["surface"],

@@ -112,9 +112,12 @@ class PipelineReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgen
     def _get_tools(self) -> list:
         """Todos os tools do domínio Pipeline (LangGraph usa set completo)."""
         from lia_agents_core.tool_adapter import tool_definition_to_langchain_tool
-        from app.domains.recruiter_assistant.agents.ui_tool_registry import get_open_ui_tools
-        # Grant UI: open_ui (modais/nav). apply_table_state NAO (surface sem ponte FE ainda).
-        tool_defs = get_pipeline_tools() + get_open_ui_tools() + self._get_all_enhanced_tools()
+        from app.domains.recruiter_assistant.agents.ui_tool_registry import (
+            get_open_ui_tools,
+            get_table_state_tools,
+        )
+        # Grant UI: open_ui + apply_table_state surface=recrutar (ponte FE ativa).
+        tool_defs = get_pipeline_tools() + get_open_ui_tools() + get_table_state_tools() + self._get_all_enhanced_tools()
         return [tool_definition_to_langchain_tool(td) for td in tool_defs]
 
     def _state_to_output(self, state: dict, input: AgentInput) -> AgentOutput:

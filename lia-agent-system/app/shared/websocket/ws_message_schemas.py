@@ -187,7 +187,10 @@ class UISettingsOpenTabParams(BaseModel):
 class UIApplyTableStateParams(BaseModel):
     """`apply_table_state`: filtra/busca/ordena a tabela in-page (Fase 2 slice 1).
     Espelha a variante TS GlobalUIAction.apply_table_state. patch é camelCase
-    (search, sortBy, sortOrder, quickFilters). Read-only UI — não muta dados."""
+    (search, sortBy, sortOrder, quickFilters, tab). `tab` (Fase 2 funil tabs)
+    troca a aba do Funil no FE via setActiveTab (search/favorites/lists/
+    history/saved-searches/agents). patch é dict aberto — sem mudança de
+    schema. Read-only UI — não muta dados."""
 
     surface: Literal["candidates"]
     patch: dict[str, Any] = Field(default_factory=dict)

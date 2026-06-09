@@ -226,9 +226,10 @@ export function useUIAction(): UseUIActionReturn {
           // `lia:apply_table_state`; LiaTableStateBridge escuta e dirige o
           // store da superfície (slice 1: candidates → useCandidatesStore).
           const surface = params.surface;
-          // ponte in-page: candidates (Funil) + jobs (lista de Vagas).
-          if (surface !== "candidates" && surface !== "jobs" && surface !== "kanban")
-            return false;
+          if (typeof surface !== "string") return false;
+          // ponte in-page: candidates/jobs/kanban/talent_pool/recrutar.
+          const allowedSurfaces = ["candidates", "jobs", "kanban", "talent_pool", "recrutar"];
+          if (!allowedSurfaces.includes(surface)) return false;
           const patch = params.patch;
           if (!patch || typeof patch !== "object") return false;
           if (typeof window === "undefined") return false;

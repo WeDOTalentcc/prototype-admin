@@ -142,6 +142,20 @@ export default function TalentPoolPage({
   const [showMoveModal, setShowMoveModal] = useState(false)
   const [isCreatingJob, setIsCreatingJob] = useState(false)
 
+  // Fase 2 F2 — ponte in-page para LIA via apply_table_state surface=talent_pool.
+  useEffect(() => {
+    function handleApplyTableState(e: Event) {
+      const { surface, patch } = (
+        e as CustomEvent<{ surface: string; patch: { stage?: string | null; poolTab?: string } }>
+      ).detail ?? {}
+      if (surface !== "talent_pool" || !patch) return
+      if ("stage" in patch) setStageFilter(patch.stage ?? null)
+      if (typeof patch.poolTab === "string") setActiveTab(patch.poolTab)
+    }
+    window.addEventListener("lia:apply_table_state", handleApplyTableState)
+    return () => window.removeEventListener("lia:apply_table_state", handleApplyTableState)
+  }, [])
+
   // Load pool data
   const loadPool = useCallback(async () => {
     try {

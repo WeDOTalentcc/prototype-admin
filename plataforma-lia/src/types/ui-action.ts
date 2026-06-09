@@ -101,9 +101,9 @@ export type GlobalUIAction =
       // (slice 1: candidates → useCandidatesStore). Sem navegação/mutação.
       type: "apply_table_state";
       params: {
-        surface: "candidates" | "jobs" | "kanban";
+        surface: "candidates" | "jobs" | "kanban" | "talent_pool" | "recrutar";
         patch: {
-          search?: string; // ambos
+          search?: string; // candidates/jobs/kanban
           sortBy?: string; // candidates
           sortOrder?: "asc" | "desc"; // candidates
           quickFilters?: string[]; // candidates (bridge converte para Set)
@@ -120,6 +120,8 @@ export type GlobalUIAction =
           statusFilter?: string[]; // kanban (novo/em_analise/...)
           originFilter?: string[]; // kanban (web/whatsapp/sourcing/ats)
           workModelFilter?: string[]; // kanban (remoto/hibrido/presencial)
+          stage?: string | null; // talent_pool: etapa (discovered/contacted/...) | recrutar: nome da etapa do pipeline
+          poolTab?: string; // talent_pool: aba (candidates/sourcing/agents/config)
         };
       };
     };

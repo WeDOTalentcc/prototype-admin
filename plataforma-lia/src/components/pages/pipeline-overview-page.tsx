@@ -374,6 +374,21 @@ export function PipelineOverviewPage() {
 
   const [stages, setStages] = useState<PipelineStageWithCount[]>([])
   const [selectedStage, setSelectedStage] = useState<string | null>(null)
+
+  // Fase 2 F2 — ponte in-page para LIA via apply_table_state surface=recrutar.
+  // Permite que a LIA selecione/expanda uma etapa do pipeline diretamente.
+  useEffect(() => {
+    function handleApplyTableState(e: Event) {
+      const { surface, patch } = (
+        e as CustomEvent<{ surface: string; patch: { stage?: string | null } }>
+      ).detail ?? {}
+      if (surface !== "recrutar" || !patch) return
+      if ("stage" in patch) setSelectedStage(patch.stage ?? null)
+    }
+    window.addEventListener("lia:apply_table_state", handleApplyTableState)
+    return () => window.removeEventListener("lia:apply_table_state", handleApplyTableState)
+  }, [])
+
   // Onda 3 F6 — modal trigger agente por evento de stage (apenas candidatos mode).
   const [stageAgentModalStageId, setStageAgentModalStageId] = useState<string | null>(null)
   const [totalCandidates, setTotalCandidates] = useState(0)
