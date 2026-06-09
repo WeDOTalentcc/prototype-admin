@@ -3,7 +3,7 @@ Data Request Service
 
 Service for managing data request operations including:
 - Creating data requests with unique tokens
-- Sending notifications (email/WhatsApp)
+- Sending notifications (email/WhatsApp/voice)
 - Checking completion status
 - Managing templates and fields
 """
@@ -119,12 +119,16 @@ class DataRequestService:
         Args:
             db: Database session
             data_request_id: Data request ID
-            channels: List of channels to use (email, whatsapp)
+            channels: List of channels to use (email, whatsapp, voice).
+                Unknown channels are rejected with error="unsupported_channel".
             
         Returns:
             Dictionary with notification status for each channel
         """
         channels = channels or ["email"]
+        # Canonical channel allow-list. Unknown channels are surfaced as an
+        # explicit error (not silently dropped) — keeps the dispatch honest.
+        _SUPPORTED_CHANNELS = {"email", "whatsapp", "voice"}
         data_request = await db.get(DataRequest, data_request_id)
         
         if not data_request:
@@ -213,6 +217,51 @@ class DataRequestService:
                 if ok:
                     data_request.sent_via_whatsapp = True
                     data_request.whatsapp_sent_at = now
+
+        if "voice" in channels:
+            candidate_phone = getattr(candidate, "phone", None)
+            if not candidate_phone:
+                results["voice"] = {"success": False, "error": "candidate_no_phone"}
+                logger.warning(
+                    "Data request %s: candidato sem telefone, coleta por voz pulada",
+                    data_request_id,
+                )
+            else:
+                # Delega ao fluxo canônico de coleta por voz. Import lazy p/ evitar
+                # ciclo de import + custo de import pesado do orquestrador de voz.
+                from app.domains.communication.services.data_request_voice_service import (
+                    DataRequestVoiceService,
+                )
+                try:
+                    voice_result = await DataRequestVoiceService().start_collection(
+                        db, data_request_id, candidate_phone
+                    )
+                except Exception as e:
+                    logger.error(
+                        "Failed to start voice collection for data request %s: %s",
+                        data_request_id, e, exc_info=True,
+                    )
+                    voice_result = {"status": "error", "error": str(e)}
+                # success = call placed; fallback/prepared são explícitos, não fake.
+                status = voice_result.get("status")
+                ok = status == "voice_collection_initiated"
+                results["voice"] = {
+                    "success": ok,
+                    "status": status,
+                    "sent_at": now.isoformat() if ok else None,
+                    "fields": voice_result.get("fields"),
+                    "error": voice_result.get("error"),
+                }
+
+        # Reject any channel outside the canonical allow-list — surfaced as an
+        # explicit error so a typo'd/unknown channel is never silently ignored.
+        for _ch in channels:
+            if _ch not in _SUPPORTED_CHANNELS:
+                results[_ch] = {"success": False, "error": "unsupported_channel"}
+                logger.warning(
+                    "Data request %s: canal não suportado %r ignorado",
+                    data_request_id, _ch,
+                )
 
         await db.commit()
 
