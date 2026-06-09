@@ -2,6 +2,8 @@
 Contact reveal (reveal/cost, reveal) and filter suggestions routes.
 """
 
+import asyncio
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -406,22 +408,22 @@ async def reveal_contact_bulk(
     Usa asyncio.gather com semaphore(3) para limitar concorrência.
     Timeout de 35s por candidato para evitar travamento do frontend.
     """
-    import asyncio
-
     semaphore = asyncio.Semaphore(3)
 
     async def _reveal_one(item: RevealContactRequest) -> RevealContactResponse:
         async with semaphore:
             try:
-                return await asyncio.wait_for(
-                    reveal_contact(
-                        request=item,
-                        db=db,
-                        pearch_svc=pearch_svc,
-                        company_id=company_id,
-                    ),
-                    timeout=35.0,
-                )
+                from app.core.database import async_session_factory
+                async with async_session_factory() as db_local:
+                    return await asyncio.wait_for(
+                        reveal_contact(
+                            request=item,
+                            db=db_local,
+                            pearch_svc=pearch_svc,
+                            company_id=company_id,
+                        ),
+                        timeout=35.0,
+                    )
             except asyncio.TimeoutError:
                 _contact_logger.warning(
                     "[RevealBulk] Timeout for candidate %s after 35s", item.candidate_id
@@ -434,13 +436,13 @@ async def reveal_contact_bulk(
                 )
             except Exception as exc:
                 _contact_logger.error(
-                    "[RevealBulk] Error for candidate %s: %s", item.candidate_id, exc
+                    "[RevealBulk] Error for candidate %s: %s", item.candidate_id, exc, exc_info=True
                 )
                 return RevealContactResponse(
                     success=False,
                     candidate_id=item.candidate_id,
                     reveal_type=item.reveal_type,
-                    message=f"Erro ao revelar: {type(exc).__name__}",
+                    message="Não foi possível revelar o contato. Tente individualmente.",
                 )
 
     results = await asyncio.gather(*[_reveal_one(item) for item in request.items])
