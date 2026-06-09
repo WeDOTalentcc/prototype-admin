@@ -674,6 +674,21 @@ async def lifespan(app: FastAPI):
             exc_info=True,
         )
 
+    # --- Studio scope cache warmup (cold-cache fix) ---
+    # The Studio scope cache (_STUDIO_SCOPE_CACHE) is built lazily.
+    # Without warmup, the first federated request may silently omit Studio tools.
+    # Fail-open: warmup failure logs a warning but never blocks startup.
+    try:
+        from app.orchestrator.studio_scope_extension import get_studio_tools_for_scope
+        async with AsyncSessionLocal() as _studio_db:
+            await get_studio_tools_for_scope("talent_analysis", _studio_db)
+        logger.info("Studio scope cache warmed at startup")
+    except Exception as _studio_warmup_exc:
+        logger.warning(
+            "Studio scope cache warmup failed (will retry on first request): %s",
+            _studio_warmup_exc,
+        )
+
     logger.info("🎯 LIA Agent System ready!")
 
     yield
