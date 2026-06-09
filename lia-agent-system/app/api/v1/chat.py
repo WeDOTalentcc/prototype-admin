@@ -10,7 +10,7 @@ from collections.abc import AsyncGenerator
 from pathlib import Path
 from typing import Any
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel
 
@@ -678,133 +678,6 @@ company_id: str = Depends(require_company_id)):
         page_size=page_size,
     )
 
-
-# =============================================
-# WEBSOCKET ENDPOINT
-# =============================================
-
-class ConnectionManager:
-    """Manage WebSocket connections."""
-
-    def __init__(self):
-        self.active_connections: dict[str, WebSocket] = {}
-
-    async def connect(self, user_id: str, websocket: WebSocket):
-        await websocket.accept()
-        self.active_connections[user_id] = websocket
-
-    def disconnect(self, user_id: str):
-        if user_id in self.active_connections:
-            del self.active_connections[user_id]
-
-    async def send_message(self, user_id: str, message: dict):
-        if user_id in self.active_connections:
-            await self.active_connections[user_id].send_json(message)
-
-
-manager = ConnectionManager()
-
-
-@router.websocket("/ws/{user_id}")
-async def websocket_endpoint(
-    websocket: WebSocket,
-    user_id: str,
-    repo: ChatRepository = Depends(get_chat_repo),
-company_id: str = Depends(require_company_id)):
-    """
-    WebSocket endpoint for real-time chat with LIA.
-
-    Message format:
-    {
-        "type": "message",
-        "content": "text",
-        "conversation_id": "uuid" (optional)
-    }
-
-    Response format:
-    {
-        "type": "message",
-        "content": "text",
-        "conversation_id": "uuid",
-        "metadata": {...}
-    }
-    """
-    await manager.connect(user_id, websocket)
-
-    try:
-        while True:
-            data = await websocket.receive_json()
-
-            if data["type"] == "message":
-                conversation_id = data.get("conversation_id")
-                user_content = data["content"]
-                page_context = data.get("context") or {}
-
-                # LIA-P02: Compliance enforcement for legacy WebSocket
-                try:
-                    from app.shared.compliance.fairness_guard import FairnessGuard
-                    from app.shared.robustness.security_patterns import check_input_security
-
-                    _security_result = check_input_security(user_content)
-                    if _security_result and _security_result.get("blocked"):
-                        await websocket.send_json({"type": "error", "message": "Mensagem bloqueada por seguranca."})
-                        continue
-
-                    _fg = FairnessGuard()
-                    _fr = _fg.check(user_content)
-                    if _fr and _fr.is_blocked:
-                        await websocket.send_json({"type": "error", "message": _fr.educational_message or "Solicitacao com possivel vies."})
-                        continue
-                except Exception as e:
-                    logger.debug("[LIA-P02] WS compliance check skipped: %s", e)
-
-                # Create or get conversation
-                if not conversation_id:
-                    conversation = await repo.create_conversation(user_id, company_id)
-                    conversation_id = str(conversation.id)
-                else:
-                    conversation = await repo.get_conversation_by_id(conversation_id)
-
-                # Save user message
-                await repo.add_user_message(conversation.id, user_content)
-
-                # Run LIA via Orchestrator + ReAct agents
-                ws_orch = await _invoke_orchestrator_legacy(
-                    user_message=user_content,
-                    user_id=user_id,
-                    conversation_id=conversation_id,
-                    company_id=company_id,
-                    page_context=page_context,
-                )
-                lia_response = ws_orch["response"]
-
-                if lia_response:
-                    # Item 2: handle_action_flow deleted — Phase 0+1 handles actions
-                    ws_final_response = lia_response
-
-                    ws_msg_metadata: dict[str, Any] = {
-                        "intent": ws_orch["intent"],
-                        "entities": ws_orch["entities"],
-                    }
-
-                    await repo.add_ai_message(
-                        conversation.id,
-                        ws_final_response,
-                        ws_msg_metadata,
-                    )
-                    conversation.intent = ws_orch["intent"]
-
-                    await repo.commit()
-
-                    await manager.send_message(user_id, {
-                        "type": "message",
-                        "content": ws_final_response,
-                        "conversation_id": conversation_id,
-                        "metadata": ws_msg_metadata,
-                    })
-
-    except WebSocketDisconnect:
-        manager.disconnect(user_id)
 
 
 # =============================================
