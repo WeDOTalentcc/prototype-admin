@@ -11,7 +11,7 @@ import {
   X, Bookmark, Trash2, Layers3, Briefcase, Filter, User
 } from"lucide-react"
 import { textStyles } from '@/lib/design-tokens'
-import type { JobFilters as JobFiltersType } from './jobsPageTypes'
+import type { JobFilters as JobFiltersType, Job } from './jobsPageTypes'
 import type { SavedSearch } from '@/stores/job-filters-store'
 import { useDepartmentsList } from '@/hooks/settings/useDepartmentsList'
 import { useCompanyRecruiters } from '@/hooks/company/use-company-recruiters'
@@ -29,6 +29,9 @@ export interface JobFiltersProps {
   handleRenameSavedSearch: (id: string, name: string) => void
   handleDeleteSavedSearch: (id: string) => void
   saveSearchAsTemplate: (name: string) => void
+  /** Lista de vagas reais para derivar opções de Localização. Opcional —
+   *  fallback = [] (seção Localização fica vazia mas não quebra). */
+  allJobs?: Job[]
 }
 
 export function JobFiltersPanel({
@@ -42,12 +45,19 @@ export function JobFiltersPanel({
   handleApplySavedSearch,
   handleRenameSavedSearch,
   handleDeleteSavedSearch,
-  saveSearchAsTemplate
+  saveSearchAsTemplate,
+  allJobs,
 }: JobFiltersProps) {
   // ── Hooks SEMPRE no topo (Rules of Hooks) ──────────────────────────────────
   const { departments } = useDepartmentsList()
   const { recruiters } = useCompanyRecruiters()
   const { managers } = useCompanyManagers()
+
+  // Derivar localizações distintas das vagas reais (RV-019)
+  const locationOptions: string[] = React.useMemo(
+    () => [...new Set((allJobs ?? []).map(j => j.location).filter(Boolean))].sort(),
+    [allJobs],
+  )
 
   // Early return APÓS todos os hooks
   if (!isOpen) return null
@@ -248,32 +258,32 @@ export function JobFiltersPanel({
             </div>
           </div>
 
-          {/* Sub-tarefa C: Localização — DONE_WITH_CONCERNS
-              JobFiltersPanel não recebe jobs como prop. Para derivar localizações reais
-              seria necessário: (1) adicionar prop `jobs: Job[]` aqui + em JobFiltersProps,
-              (2) derivar [...new Set(jobs.map(j => j.location).filter(Boolean))].sort().
-              Mantido hardcoded enquanto Paulo decide a abordagem de wiring. */}
+          {/* Localização — derivado das vagas reais (RV-019) */}
           <div className="space-y-2">
             <h4 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5">
               <MapPin className="w-3.5 h-3.5" />
               Localização
             </h4>
-            <div className="flex flex-wrap gap-1.5">
-              {['São Paulo, SP', 'Rio de Janeiro, RJ', 'Belo Horizonte, MG', 'Curitiba, PR', 'Porto Alegre, RS', 'Brasília, DF', 'Remoto'].map(loc => (
-                <Chip
-                  key={loc}
-                  variant="neutral"
-                  className={`text-xs cursor-pointer hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none ${
-                    jobFilters.position?.locations?.includes(loc)
-                      ? 'bg-lia-bg-tertiary border-lia-btn-primary-bg dark:border-lia-border-subtle text-lia-text-primary font-medium'
-                      : 'bg-lia-bg-primary text-lia-text-primary'
-                  }`}
-                  onClick={() => toggleJobFilter('position', 'locations', loc)}
-                >
-                  {loc}
-                </Chip>
-              ))}
-            </div>
+            {locationOptions.length > 0 ? (
+              <div className="flex flex-wrap gap-1.5">
+                {locationOptions.map(loc => (
+                  <Chip
+                    key={loc}
+                    variant="neutral"
+                    className={`text-xs cursor-pointer hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none ${
+                      jobFilters.position?.locations?.includes(loc)
+                        ? 'bg-lia-bg-tertiary border-lia-btn-primary-bg dark:border-lia-border-subtle text-lia-text-primary font-medium'
+                        : 'bg-lia-bg-primary text-lia-text-primary'
+                    }`}
+                    onClick={() => toggleJobFilter('position', 'locations', loc)}
+                  >
+                    {loc}
+                  </Chip>
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-lia-text-tertiary">Nenhuma localização disponível</p>
+            )}
           </div>
 
           {/* Sub-tarefa A: Departamento — fonte real via useDepartmentsList */}

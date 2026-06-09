@@ -97,6 +97,8 @@ interface JobsListContentProps {
   // Phase 4H — ATS rail filter
   activeFilter?: string
   setShowBulkImportModal?: (open: boolean) => void
+  /** Lista completa de vagas (sem filtro) para derivar opções de Localização no painel de filtros (RV-019). */
+  allJobs?: Job[]
 }
 
 export function JobsListContent(props: JobsListContentProps) {
@@ -126,6 +128,7 @@ export function JobsListContent(props: JobsListContentProps) {
     toggleUrgentJob, togglePinJob, toggleFavoriteJob, setShowColumnConfig,
     jobsError, loadBackendJobs,
     activeFilter, setShowBulkImportModal,
+    allJobs,
   } = props
 
   const t = useTranslations('jobs')
@@ -226,6 +229,7 @@ export function JobsListContent(props: JobsListContentProps) {
           hasActiveFilters={hasActiveFilters} savedSearches={savedSearches}
           onSaveSearch={saveSearchAsTemplate} onApplySavedSearch={handleApplySavedSearch}
           onRenameSavedSearch={handleRenameSavedSearch} onDeleteSavedSearch={handleDeleteSavedSearch}
+          allJobs={allJobs}
         />
 
         <div className={`h-full bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl transition-[width,height] duration-300 min-w-0 overflow-hidden ${

@@ -6,6 +6,7 @@
  * - Sub-tarefa B: Recrutador usa useCompanyRecruiters (não array hardcoded)
  * - Sub-tarefa B: Gestor usa useCompanyManagers (não array hardcoded)
  * - Verifica que "Demo Recrutador" hardcoded NÃO aparece
+ * - Sub-tarefa C: Localização derivada das vagas reais via prop allJobs (RV-019)
  */
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen, cleanup } from "@testing-library/react"
@@ -137,5 +138,64 @@ describe("JobFiltersPanel — estado de loading (sem crash)", () => {
     }))
     // Renderizar com mocks iniciais (arrays vazios) não deve lançar
     render(<JobFiltersPanel {...defaultProps} />)
+  })
+})
+
+// ── Sub-tarefa C: Localização derivada das vagas reais (RV-019) ──────────────
+
+describe("JobFiltersPanel — Localização derivada das vagas reais (RV-019)", () => {
+  beforeEach(() => cleanup())
+
+  it("exibe localizações distintas e ordenadas derivadas de allJobs", () => {
+    const allJobs = [
+      { location: "São Paulo" },
+      { location: "Rio de Janeiro" },
+      { location: "São Paulo" }, // duplicata — deve ser deduplicada
+      { location: undefined },   // valor vazio — deve ser filtrado
+    ] as Parameters<typeof JobFiltersPanel>[0]["allJobs"]
+
+    render(<JobFiltersPanel {...defaultProps} allJobs={allJobs} />)
+
+    // Ambas as localizações reais devem aparecer
+    expect(screen.getByText("Rio de Janeiro")).toBeInTheDocument()
+    expect(screen.getByText("São Paulo")).toBeInTheDocument()
+
+    // A duplicata não deve gerar chip extra (apenas 1 ocorrência cada)
+    expect(screen.getAllByText("São Paulo")).toHaveLength(1)
+  })
+
+  it("NÃO exibe localização hardcoded 'São Paulo, SP' quando allJobs não tem essa string", () => {
+    // allJobs com localização diferente do hardcoded antigo
+    const allJobs = [
+      { location: "Campinas" },
+    ] as Parameters<typeof JobFiltersPanel>[0]["allJobs"]
+
+    render(<JobFiltersPanel {...defaultProps} allJobs={allJobs} />)
+
+    expect(screen.queryByText("São Paulo, SP")).not.toBeInTheDocument()
+    expect(screen.queryByText("Rio de Janeiro, RJ")).not.toBeInTheDocument()
+    expect(screen.getByText("Campinas")).toBeInTheDocument()
+  })
+
+  it("exibe mensagem vazia (sem chips) quando allJobs não tem locations", () => {
+    const allJobs = [
+      { location: "" },
+      { location: undefined },
+    ] as Parameters<typeof JobFiltersPanel>[0]["allJobs"]
+
+    render(<JobFiltersPanel {...defaultProps} allJobs={allJobs} />)
+
+    // Nenhuma das localizações hardcoded antigas deve aparecer
+    expect(screen.queryByText("São Paulo, SP")).not.toBeInTheDocument()
+    expect(screen.queryByText("Remoto")).not.toBeInTheDocument()
+  })
+
+  it("exibe mensagem vazia quando allJobs não é passado (undefined)", () => {
+    render(<JobFiltersPanel {...defaultProps} />)
+
+    // Sem allJobs, nenhuma localização hardcoded deve aparecer
+    expect(screen.queryByText("São Paulo, SP")).not.toBeInTheDocument()
+    expect(screen.queryByText("Rio de Janeiro, RJ")).not.toBeInTheDocument()
+    expect(screen.queryByText("Remoto")).not.toBeInTheDocument()
   })
 })
