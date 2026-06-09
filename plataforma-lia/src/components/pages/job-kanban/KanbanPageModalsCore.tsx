@@ -121,7 +121,7 @@ export function KanbanPageModalsCore(state: KanbanPageCoreState) {
           onClose={handleCloseTriagem}
           onApprove={handleTriagemApprove as unknown as never}
           onReject={handleTriagemReject as unknown as never}
-          jobId={(currentJob?.id as string | number | undefined)?.toString()}
+          jobId={((currentJob?.backendId || currentJob?.id) as string | number | undefined)?.toString()}
           jobTitle={currentJob?.title as string | undefined}
           companyId={
             (currentJob?.company_id as string | undefined) ??

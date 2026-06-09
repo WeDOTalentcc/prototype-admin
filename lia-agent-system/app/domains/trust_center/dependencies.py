@@ -5,7 +5,7 @@ from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_tenant_db
-from app.domains.trust_center.repositories.trust_center_repository import (
+from app.repositories.trust_center_repository import (
     TrustCenterRepository,
 )
 

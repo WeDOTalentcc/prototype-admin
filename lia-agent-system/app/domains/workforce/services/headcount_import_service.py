@@ -24,7 +24,7 @@ from typing import Any
 from app.domains.company.repositories.department_repository import (
     DepartmentRepository,
 )
-from app.domains.workforce.repositories.workforce_repository import (
+from app.repositories.workforce_repository import (
     WorkforceRepository,
 )
 

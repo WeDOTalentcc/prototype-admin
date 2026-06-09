@@ -145,7 +145,7 @@ class TestUpdateLLMConfig:
         return [
             patch("app.api.v1.llm_config.LlmConfigRepository", return_value=repo),
             patch("app.api.v1.llm_config.AuditLogRepository", return_value=audit),
-            patch("app.domains.admin.repositories.audit_log_repository.AuditLogRepository", return_value=audit),
+            patch("app.repositories.audit_log_repository.AuditLogRepository", return_value=audit),
             patch("app.api.v1.llm_config.clear_tenant_config_cache"),
         ]
 

@@ -5,7 +5,7 @@ from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_tenant_db
-from app.domains.technical_tests.repositories.technical_tests_repository import (
+from app.repositories.technical_tests_repository import (
     TechnicalTestsRepository,
 )
 

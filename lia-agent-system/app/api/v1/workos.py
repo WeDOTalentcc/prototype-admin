@@ -32,9 +32,9 @@ from app.auth.workos_schemas import (
     WorkOSSyncUserResponse,
 )
 from app.auth.workos_schemas import SCIMGroupMembership as SCIMGroupMembershipSchema
-from app.domains.auth.dependencies import get_user_repo, get_workos_repo
-from app.domains.auth.repositories.user_repository import UserRepository
-from app.domains.auth.repositories.workos_repository import WorkOSRepository
+from app.repositories.dependencies import get_user_repo, get_workos_repo
+from app.repositories.auth_user_repository import UserRepository
+from app.repositories.workos_repository import WorkOSRepository
 from app.shared.resilience.circuit_breaker import WORKOS_CIRCUIT, circuit_breaker_decorator
 from app.shared.compliance.audit_service import AuditService
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match

@@ -14,7 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.dependencies import require_admin
 from app.auth.models import User
 from app.core.database import get_db, get_tenant_db
-from app.domains.admin.repositories.admin_template_repository import (
+from app.repositories.admin_template_repository import (
     AdminTemplateRepository,
 )
 from app.models.email_template import EmailTemplate

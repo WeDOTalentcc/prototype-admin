@@ -5,7 +5,7 @@ from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_tenant_db
-from app.domains.job_vacancies_analytics.repositories.job_vacancies_analytics_repository import (
+from app.repositories.job_vacancies_analytics_repository import (
     JobVacanciesAnalyticsRepository,
 )
 

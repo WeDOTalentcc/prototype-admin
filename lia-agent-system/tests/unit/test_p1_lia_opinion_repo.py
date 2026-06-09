@@ -31,7 +31,7 @@ import pytest
 def test_opinions_repo_has_get_latest_for_candidate_company():
     """OpinionsRepository must expose get_latest_for_candidate_company so
     _record_bigfive_hire can read ocean_traits without inline SQL."""
-    from app.domains.opinions.repositories.opinions_repository import (
+    from app.repositories.opinions_repository import (
         OpinionsRepository,
     )
     assert hasattr(OpinionsRepository, "get_latest_for_candidate_company"), (
@@ -43,7 +43,7 @@ def test_opinions_repo_has_get_latest_for_candidate_company():
 def test_opinions_repo_has_get_latest_for_candidate_vacancy():
     """OpinionsRepository must expose get_latest_for_candidate_vacancy for
     _persist_lia_opinion_with_ocean to look up the existing row."""
-    from app.domains.opinions.repositories.opinions_repository import (
+    from app.repositories.opinions_repository import (
         OpinionsRepository,
     )
     assert hasattr(OpinionsRepository, "get_latest_for_candidate_vacancy"), (
@@ -56,7 +56,7 @@ def test_opinions_repo_has_get_latest_for_candidate_vacancy():
 def test_opinions_repo_has_upsert_ocean_opinion():
     """OpinionsRepository must expose upsert_ocean_opinion so the field-
     clobber guard lives in one place (not scattered across callers)."""
-    from app.domains.opinions.repositories.opinions_repository import (
+    from app.repositories.opinions_repository import (
         OpinionsRepository,
     )
     assert hasattr(OpinionsRepository, "upsert_ocean_opinion"), (
@@ -129,7 +129,7 @@ def test_upsert_ocean_opinion_does_not_clobber_full_interview_source():
     """When the existing LiaOpinion has source='full_interview', the
     upsert MUST NOT change source, wsi_score, or recommendation to
     text_screening values. full_interview > text_screening in priority."""
-    from app.domains.opinions.repositories.opinions_repository import (
+    from app.repositories.opinions_repository import (
         OpinionsRepository,
     )
 
@@ -178,7 +178,7 @@ def test_upsert_ocean_opinion_updates_behavioral_always():
     """behavioral_analysis['ocean_traits'] MUST be updated even when the
     existing source is full_interview. Ocean traits are new measurement
     data — they should always be persisted regardless of source priority."""
-    from app.domains.opinions.repositories.opinions_repository import (
+    from app.repositories.opinions_repository import (
         OpinionsRepository,
     )
 
@@ -219,7 +219,7 @@ def test_upsert_ocean_opinion_updates_behavioral_always():
 def test_upsert_ocean_opinion_does_overwrite_for_text_screening_source():
     """When existing source is text_screening (same level), the upsert
     MUST update wsi_score + recommendation + source (refresh in place)."""
-    from app.domains.opinions.repositories.opinions_repository import (
+    from app.repositories.opinions_repository import (
         OpinionsRepository,
     )
 
@@ -251,7 +251,7 @@ def test_upsert_ocean_opinion_does_overwrite_for_text_screening_source():
 def test_upsert_ocean_opinion_creates_new_when_no_existing():
     """When no existing LiaOpinion, upsert_ocean_opinion must create a
     new LiaOpinion with opinion_type='wsi' and source='text_screening'."""
-    from app.domains.opinions.repositories.opinions_repository import (
+    from app.repositories.opinions_repository import (
         OpinionsRepository,
     )
 

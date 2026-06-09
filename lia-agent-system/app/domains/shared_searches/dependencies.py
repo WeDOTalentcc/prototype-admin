@@ -5,7 +5,7 @@ from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_tenant_db
-from app.domains.shared_searches.repositories.shared_search_repository import (
+from app.repositories.shared_search_repository import (
     SharedSearchRepository,
 )
 

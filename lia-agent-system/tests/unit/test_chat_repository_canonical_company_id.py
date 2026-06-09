@@ -22,7 +22,7 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from app.domains.chat.repositories.chat_repository import ChatRepository
+from app.repositories.chat_repository import ChatRepository
 
 
 TENANT_A = "11111111-1111-4111-a111-111111111111"

@@ -16,7 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db, get_tenant_db
 from app.domains.voice.repositories.wsi_repository import WsiRepository
-from app.domains.opinions.repositories.opinions_repository import OpinionsRepository
+from app.repositories.opinions_repository import OpinionsRepository
 
 from ._shared import (
     _BIAS_TERMS,

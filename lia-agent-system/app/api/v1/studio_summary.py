@@ -173,7 +173,7 @@ async def _aggregate(company_id: str, job_id: str | None, db: AsyncSession) -> d
 
     # offer — count draft+sent offers for this job
     try:
-        from app.domains.approvals.repositories.job_offer_repository import JobOfferRepository
+        from app.repositories.job_offer_repository import JobOfferRepository
         offer_repo = JobOfferRepository(db)
         counts = await offer_repo.count_by_status(company_id, job_vacancy_id=job_id)
         total_offers = sum(counts.get(s, 0) for s in ("draft", "sent", "accepted", "rejected"))
@@ -190,7 +190,7 @@ async def _aggregate(company_id: str, job_id: str | None, db: AsyncSession) -> d
 
     # nps — avg score + response rate for this job
     try:
-        from app.domains.approvals.repositories.hiring_nps_repository import HiringNpsRepository
+        from app.repositories.hiring_nps_repository import HiringNpsRepository
         nps_repo = HiringNpsRepository(db)
         nps_counts = await nps_repo.count_by_status(company_id, job_vacancy_id=job_id)
         total_nps = sum(nps_counts.values())

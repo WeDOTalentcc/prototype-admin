@@ -998,7 +998,7 @@ class TransitionDispatchService:
         if not candidate_id:
             return
         try:
-            from app.domains.opinions.repositories.opinions_repository import (
+            from app.repositories.opinions_repository import (
                 OpinionsRepository,
             )
             from app.domains.job_creation.services.bigfive_service import (

@@ -18,8 +18,8 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.responses import StreamingResponse
 
-from app.domains.health_check.dependencies import get_health_check_repo
-from app.domains.health_check.repositories.health_check_repository import HealthCheckRepository
+from app.repositories.dependencies import get_health_check_repo
+from app.repositories.health_check_repository import HealthCheckRepository
 from app.schemas.health_check import (
     FrameworkSummary,
     HealthCheckHistoryListResponse,

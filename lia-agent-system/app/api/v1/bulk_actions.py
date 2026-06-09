@@ -15,8 +15,8 @@ from pydantic import BaseModel, Field, field_validator
 
 from app.auth.dependencies import get_current_user, require_admin_or_recruiter
 from app.auth.models import User
-from app.domains.bulk_actions.dependencies import get_bulk_actions_repo
-from app.domains.bulk_actions.repositories.bulk_actions_repository import BulkActionsRepository
+from app.repositories.dependencies import get_bulk_actions_repo
+from app.repositories.bulk_actions_repository import BulkActionsRepository
 from app.domains.communication.services.email_service import get_email_service
 from app.shared.compliance.audit_service import audit_service  # module-level for test patchability
 from app.shared.compliance.fairness_guard import FairnessGuard as _FairnessGuard

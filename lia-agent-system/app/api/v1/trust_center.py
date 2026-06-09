@@ -10,8 +10,8 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
-from app.domains.trust_center.dependencies import get_trust_center_repo
-from app.domains.trust_center.repositories.trust_center_repository import (
+from app.repositories.dependencies import get_trust_center_repo
+from app.repositories.trust_center_repository import (
     TrustCenterRepository,
 )
 from app.schemas.trust_center import (

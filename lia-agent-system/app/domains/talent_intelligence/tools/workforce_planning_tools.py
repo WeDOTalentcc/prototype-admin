@@ -35,7 +35,7 @@ async def forecast_hiring_needs(
         include_backfills: Include estimated backfills from turnover
     """
     from app.core.database import AsyncSessionLocal
-    from app.domains.workforce.repositories.workforce_repository import WorkforceRepository
+    from app.repositories.workforce_repository import WorkforceRepository
 
     company_id = kwargs.get("company_id", "")
 

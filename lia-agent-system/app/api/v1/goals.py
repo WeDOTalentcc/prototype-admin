@@ -12,8 +12,8 @@ from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
-from app.domains.goals.dependencies import get_goals_repo
-from app.domains.goals.repositories.goals_repository import GoalsRepository
+from app.repositories.dependencies import get_goals_repo
+from app.repositories.goals_repository import GoalsRepository
 from app.models.goal import Goal
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 from app.shared.types import WeDoBaseModel

@@ -6,8 +6,8 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 
-from app.domains.tasks.dependencies import get_tasks_repo
-from app.domains.tasks.repositories.tasks_repository import TasksRepository
+from app.repositories.dependencies import get_tasks_repo
+from app.repositories.tasks_repository import TasksRepository
 from app.domains.automation.services.task_service import task_service
 from app.models.task import TaskPriority, TaskStatus, TaskType
 from app.auth.dependencies import get_current_user_or_demo

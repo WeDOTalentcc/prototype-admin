@@ -30,7 +30,7 @@ async def _create_automation_task(
     Task 2.A (2026-05-25): preenche tasks table para Decidir page.
     """
     try:
-        from app.domains.tasks.repositories.tasks_repository import TasksRepository
+        from app.repositories.tasks_repository import TasksRepository
         from app.models.task import TaskPriority as _TP, TaskType as _TT
         repo = TasksRepository(db)
         task = await repo.create_task(

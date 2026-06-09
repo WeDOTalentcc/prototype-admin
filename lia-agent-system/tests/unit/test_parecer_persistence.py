@@ -11,7 +11,7 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from app.domains.opinions.repositories.opinions_repository import OpinionsRepository
+from app.repositories.opinions_repository import OpinionsRepository
 
 
 def _repo() -> OpinionsRepository:

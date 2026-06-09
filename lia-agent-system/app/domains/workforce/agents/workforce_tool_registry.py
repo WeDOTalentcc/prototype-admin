@@ -33,7 +33,7 @@ from app.domains.company.repositories.department_repository import (
 from app.domains.job_management.repositories.job_vacancy_crud_repository import (
     JobVacancyCrudRepository,
 )
-from app.domains.workforce.repositories.workforce_repository import (
+from app.repositories.workforce_repository import (
     WorkforceRepository,
 )
 from app.shared.tool_handler import tool_handler

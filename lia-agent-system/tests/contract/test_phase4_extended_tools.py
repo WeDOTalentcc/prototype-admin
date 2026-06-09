@@ -86,7 +86,7 @@ class TestToggleCommunicationAlert:
         repo_mock.get_active_config_for_company = AsyncMock(return_value=None)
         repo_mock.create_config = AsyncMock(return_value=MagicMock())
         with patch(
-            "app.domains.notifications.repositories.alert_repository.AlertRepository",
+            "app.repositories.alert_repository.AlertRepository",
             return_value=repo_mock,
         ):
             result = await ext._wrap_toggle_communication_alert(

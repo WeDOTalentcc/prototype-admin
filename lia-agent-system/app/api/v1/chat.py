@@ -19,7 +19,7 @@ from app.orchestrator.routing.domain_mappings import resolve_domain
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
 from app.shared.compliance.c3b_layer import pre_compliance, post_compliance, ComplianceContext
-from app.domains.chat.dependencies import get_chat_repo
+from app.repositories.dependencies import get_chat_repo
 from app.orchestrator.context.chat_adapter import ChatAdapter
 from app.api.orchestrator_routes import get_main_orchestrator
 
@@ -45,7 +45,7 @@ def _get_chat_adapter():
 # chega ao usuario antes do 502).
 _CHAT_ORCH_TIMEOUT_S = float(os.getenv("LIA_CHAT_ORCH_TIMEOUT_SECONDS", "90"))
 
-from app.domains.chat.repositories.chat_repository import ChatRepository
+from app.repositories.chat_repository import ChatRepository
 from app.orchestrator.action_executor import (
     ACTIONABLE_INTENTS,
     ActionResult,
@@ -155,7 +155,7 @@ async def resolve_candidate_by_name(
     """Module-level wrapper around ChatRepository.resolve_candidate_by_name for testability."""
     if db is None:
         return None
-    from app.domains.chat.repositories.chat_repository import ChatRepository
+    from app.repositories.chat_repository import ChatRepository
     repo = ChatRepository(db)
     return await repo.resolve_candidate_by_name(candidate_name, company_id=company_id, job_id=job_id)
 

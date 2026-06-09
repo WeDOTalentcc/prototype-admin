@@ -40,8 +40,8 @@ from app.auth.security import (
     get_password_hash,
     verify_password,
 )
-from app.domains.auth.dependencies import get_user_repo
-from app.domains.auth.repositories.user_repository import UserRepository
+from app.repositories.dependencies import get_user_repo
+from app.repositories.auth_user_repository import UserRepository
 from app.domains.communication.services.email_service import EmailService, get_email_service
 from app.shared.compliance.audit_service import AuditService, get_audit_service
 from app.shared.pii_masking import get_masked_logger

@@ -414,7 +414,7 @@ class BriefingService:
 
         if company_id:
             try:
-                from app.domains.tasks.repositories.tasks_repository import TasksRepository
+                from app.repositories.tasks_repository import TasksRepository
                 repo = TasksRepository(db)
                 repo_tasks = await repo.get_pending_tasks(
                     company_id=company_id,

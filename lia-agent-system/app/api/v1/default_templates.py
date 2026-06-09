@@ -12,7 +12,7 @@ from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db, get_tenant_db
-from app.domains.email_templates.repositories.default_template_repository import (
+from app.repositories.default_template_repository import (
     DefaultTemplateRepository,
 )
 from app.models.default_templates import (

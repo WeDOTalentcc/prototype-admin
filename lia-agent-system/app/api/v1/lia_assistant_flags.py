@@ -389,7 +389,7 @@ class FeatureFlagToggleRejectRequest(WeDoBaseModel):
 def _build_approvals_repo(db: AsyncSession):
     """Lazy import + builder so the module-level imports don't pull
     approvals into every consumer of feature-flag endpoints."""
-    from app.domains.approvals.repositories.approvals_repository import (
+    from app.repositories.approvals_repository import (
         ApprovalsRepository,
     )
     return ApprovalsRepository(db)

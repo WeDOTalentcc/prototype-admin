@@ -49,7 +49,7 @@ def _user(user_id: str, company_id: str = "company-A", role: str = "user") -> Ma
 def tasks_app():
     """FastAPI app with only the tasks router (and a stub repo)."""
     from app.api.v1.tasks import router
-    from app.domains.tasks.dependencies import get_tasks_repo
+    from app.repositories.dependencies import get_tasks_repo
 
     app = FastAPI()
     app.include_router(router, prefix="/api/v1")

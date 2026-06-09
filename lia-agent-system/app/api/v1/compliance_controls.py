@@ -14,8 +14,8 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 
-from app.domains.compliance.dependencies import get_compliance_repo
-from app.domains.compliance.repositories.compliance_controls_repository import (
+from app.repositories.dependencies import get_compliance_repo
+from app.repositories.compliance_controls_repository import (
     ComplianceControlsRepository,
 )
 from app.models.observability import ComplianceControlLibrary

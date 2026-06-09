@@ -6,8 +6,8 @@ import logging
 from fastapi import APIRouter, Depends, HTTPException
 
 from app.auth.dependencies import require_admin
-from app.domains.admin.dependencies import get_admin_repo
-from app.domains.admin.repositories.admin_repository import AdminRepository
+from app.repositories.dependencies import get_admin_repo
+from app.repositories.admin_repository import AdminRepository
 from app.models.alert import AlertSeverity, AlertType
 from app.models.task import TaskPriority, TaskType
 from app.shared.security.require_company_id import require_company_id

@@ -11,8 +11,8 @@ from app.auth.dependencies import get_current_user
 from app.auth.models import User
 from app.core.template_channels import ALL_CHANNELS, CHANNEL_DESCRIPTIONS, CHANNEL_LABELS
 from app.domains.communication.services.email_service import EmailService, get_email_service
-from app.domains.email_templates.dependencies import get_email_templates_repo
-from app.domains.email_templates.repositories.email_templates_repository import (
+from app.repositories.dependencies import get_email_templates_repo
+from app.repositories.email_templates_repository import (
     EmailTemplatesRepository,
 )
 from app.domains.job_management.services.template_seeder import clone_templates_for_client as clone_for_client_service

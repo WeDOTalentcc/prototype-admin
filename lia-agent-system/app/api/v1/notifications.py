@@ -15,8 +15,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.domains.notifications.dependencies import get_notifications_repo
-from app.domains.notifications.repositories.notifications_repository import NotificationsRepository
+from app.repositories.dependencies import get_notifications_repo
+from app.repositories.notifications_repository import NotificationsRepository
 from app.services.notification_service import (
     NotificationChannel,
     NotificationType,

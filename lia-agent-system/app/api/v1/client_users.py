@@ -20,8 +20,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from app.auth.dependencies import get_current_active_user
 from app.auth.models import User, UserRole
 from app.core.database import get_db
-from app.domains.client_users.dependencies import get_client_user_repo
-from app.domains.client_users.repositories.client_user_repository import ClientUserRepository
+from app.repositories.dependencies import get_client_user_repo
+from app.repositories.client_user_repository import ClientUserRepository
 from app.domains.communication.services.email_service import get_email_service
 from app.domains.communication.services.email_service import EmailService
 from app.models.client_user import (

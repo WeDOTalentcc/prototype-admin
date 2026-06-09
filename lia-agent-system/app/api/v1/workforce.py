@@ -13,8 +13,8 @@ from typing import Any
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 from fastapi.responses import StreamingResponse
 
-from app.domains.workforce.dependencies import get_workforce_repo
-from app.domains.workforce.repositories.workforce_repository import WorkforceRepository
+from app.repositories.dependencies import get_workforce_repo
+from app.repositories.workforce_repository import WorkforceRepository
 from app.domains.workforce.services.headcount_import_service import import_planned_headcounts
 from app.models.workforce import WorkforceEntry
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match

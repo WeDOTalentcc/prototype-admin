@@ -55,7 +55,7 @@ def _where_clause(stmt) -> str:
 @pytest.mark.asyncio
 async def test_chat_get_conversation_with_company_filters() -> None:
     """ChatRepository.get_conversation_by_id MUST add company_id filter."""
-    from app.domains.chat.repositories.chat_repository import ChatRepository
+    from app.repositories.chat_repository import ChatRepository
 
     session = _make_async_session_returning([])
     repo = ChatRepository(session)
@@ -74,7 +74,7 @@ async def test_chat_get_conversation_with_company_filters() -> None:
 @pytest.mark.asyncio
 async def test_chat_get_conversation_without_company_omits_filter() -> None:
     """Backwards-compat path — Postgres RLS guards via get_tenant_db."""
-    from app.domains.chat.repositories.chat_repository import ChatRepository
+    from app.repositories.chat_repository import ChatRepository
 
     session = _make_async_session_returning([])
     repo = ChatRepository(session)

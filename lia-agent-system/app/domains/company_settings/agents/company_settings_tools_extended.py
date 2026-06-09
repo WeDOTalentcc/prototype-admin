@@ -220,7 +220,7 @@ async def _wrap_record_dsr_action(**kwargs: Any) -> dict[str, Any]:
 
     try:
         from uuid import UUID
-        from app.domains.data_subject.repositories.data_subject_repository import (
+        from app.repositories.data_subject_repository import (
             DataSubjectRepository,
             DsrExecutorFailedError,
         )
@@ -435,7 +435,7 @@ async def _wrap_toggle_communication_alert(**kwargs: Any) -> dict[str, Any]:
 
     try:
         from datetime import datetime
-        from app.domains.notifications.repositories.alert_repository import (
+        from app.repositories.alert_repository import (
             AlertRepository,
         )
 

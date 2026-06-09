@@ -5,7 +5,7 @@ from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_tenant_db
-from app.domains.company_culture.repositories.company_culture_repository import (
+from app.repositories.company_culture_repository import (
     CompanyCultureRepository,
 )
 

@@ -68,7 +68,7 @@ from lia_config.database import AsyncSessionLocal
 
 from app.auth.models import User, UserRole
 from app.auth.security import get_password_hash
-from app.domains.auth.repositories.user_repository import UserRepository
+from app.repositories.auth_user_repository import UserRepository
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger("bootstrap_admin_user")

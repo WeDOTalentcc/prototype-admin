@@ -14,7 +14,7 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from app.domains.workforce.repositories.workforce_repository import WorkforceRepository
+from app.repositories.workforce_repository import WorkforceRepository
 
 
 @pytest.fixture

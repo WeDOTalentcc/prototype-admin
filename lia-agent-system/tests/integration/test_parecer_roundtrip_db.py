@@ -123,7 +123,7 @@ async def _make(repo, company_id, cand_id, summary):
 async def test_parecer_roundtrip_versioning_and_matrix(pg_ctx):
     from uuid import UUID
 
-    from app.domains.opinions.repositories.opinions_repository import OpinionsRepository
+    from app.repositories.opinions_repository import OpinionsRepository
 
     session, company_id, cand_id = pg_ctx
     repo = OpinionsRepository(session)
@@ -163,7 +163,7 @@ async def test_parecer_roundtrip_versioning_and_matrix(pg_ctx):
 async def test_parecer_tenant_read_isolation(pg_ctx):
     from uuid import UUID
 
-    from app.domains.opinions.repositories.opinions_repository import OpinionsRepository
+    from app.repositories.opinions_repository import OpinionsRepository
 
     session, company_id, cand_id = pg_ctx
     repo = OpinionsRepository(session)

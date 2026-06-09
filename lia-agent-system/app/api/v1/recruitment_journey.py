@@ -8,8 +8,8 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 
-from app.domains.recruitment_journey.dependencies import get_recruitment_journey_repo
-from app.domains.recruitment_journey.repositories.recruitment_journey_repository import (
+from app.repositories.dependencies import get_recruitment_journey_repo
+from app.repositories.recruitment_journey_repository import (
     RecruitmentJourneyRepository,
 )
 from app.models.recruitment_journey import (

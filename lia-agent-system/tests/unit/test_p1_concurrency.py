@@ -57,7 +57,7 @@ def test_upsert_ocean_opinion_marks_prior_non_current_before_new_row():
     """When upsert_ocean_opinion creates a NEW opinion (no existing row),
     it must call mark_vacancy_opinions_non_current first to ensure only
     one is_current=True row per (candidate, vacancy, opinion_type='wsi')."""
-    from app.domains.opinions.repositories.opinions_repository import (
+    from app.repositories.opinions_repository import (
         OpinionsRepository,
     )
 
@@ -102,7 +102,7 @@ def test_upsert_ocean_opinion_marks_prior_non_current_before_new_row():
 def test_upsert_ocean_opinion_does_not_mark_prior_when_updating_existing():
     """When updating an existing opinion in-place, mark_prior is NOT needed
     (we're modifying the same row, not adding a second one)."""
-    from app.domains.opinions.repositories.opinions_repository import (
+    from app.repositories.opinions_repository import (
         OpinionsRepository,
     )
 
@@ -144,7 +144,7 @@ def test_list_pending_by_company_behavioral_executes_without_error():
     """Behavioral companion for the source-inspect test. Verifies that
     list_pending_by_company actually executes (not NameError) and
     constructs the query correctly."""
-    from app.domains.approvals.repositories.approvals_repository import (
+    from app.repositories.approvals_repository import (
         ApprovalsRepository,
     )
 
@@ -180,7 +180,7 @@ def test_list_pending_by_company_behavioral_executes_without_error():
 def test_list_pending_by_company_behavioral_filters_by_request_type():
     """The request_type filter must be applied when passed. Verify via
     SQLAlchemy compiled.params that request_type is a bound parameter."""
-    from app.domains.approvals.repositories.approvals_repository import (
+    from app.repositories.approvals_repository import (
         ApprovalsRepository,
     )
 
@@ -251,7 +251,7 @@ def test_hook_conclusion_hired_calls_record_bigfive_hire_with_ocean_traits():
 
     async def _run():
         with patch(
-            "app.domains.opinions.repositories.opinions_repository.OpinionsRepository.get_latest_for_candidate_company",
+            "app.repositories.opinions_repository.OpinionsRepository.get_latest_for_candidate_company",
             new=AsyncMock(return_value=mock_opinion),
         ), patch(
             "app.domains.job_creation.services.bigfive_service.BigFiveDepartmentService.record_hire",

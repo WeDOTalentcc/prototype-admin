@@ -1,5 +1,6 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { Loader2, AlertCircle, AlertTriangle } from "lucide-react"
 import type { Candidate } from "@/components/pages/candidates/types"
 import {
@@ -49,6 +50,36 @@ export function TriagemDetailsModal({
 }: TriagemDetailsModalProps) {
   const state = useTriagemDetailsState(candidate, isOpen, jobVacancyId)
 
+  const [fetchedEligibility, setFetchedEligibility] = useState<EligibilityResultItem[] | null>(null)
+
+  useEffect(() => {
+    if (!isOpen) { setFetchedEligibility(null); return }
+    const candidateId = candidate?.id
+    const resolvedJobId = jobId ?? jobVacancyId
+    if (!candidateId || !resolvedJobId) return
+    const controller = new AbortController()
+    const params = new URLSearchParams({ candidate_id: String(candidateId), job_id: String(resolvedJobId) })
+    fetch(`/api/backend-proxy/triagem/sessions?${params.toString()}`, { signal: controller.signal })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        const items: EligibilityResultItem[] = (data?.eligibility_results ?? [])
+          .filter((r: Record<string, unknown>) => r && typeof r.question === 'string' && r.question)
+          .map((r: Record<string, unknown>, i: number) => ({
+            id: String(r.id ?? i),
+            question: String(r.question),
+            answer: r.answer != null ? String(r.answer) : undefined,
+            passed: Boolean(r.passed),
+            is_eliminatory: r.is_eliminatory !== false,
+            reconsideration: r.reconsideration != null ? String(r.reconsideration) : undefined,
+          }))
+        if (items.length > 0) setFetchedEligibility(items)
+      })
+      .catch(() => {})
+    return () => controller.abort()
+  }, [isOpen, candidate?.id, jobId, jobVacancyId])
+
+  const resolvedEligibilityResults = fetchedEligibility ?? eligibilityResults
+
   if (!isOpen) return null
 
   if (state.loading) {
@@ -65,10 +96,17 @@ export function TriagemDetailsModal({
   if (state.error || !state.details) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-lia-overlay">
-        <div className="w-full max-w-3xl p-8 flex flex-col items-center gap-3 rounded-xl bg-lia-bg-primary">
-          <AlertCircle className="w-8 h-8 text-lia-text-secondary" />
-          <p className="text-sm text-lia-text-secondary">{state.error || 'Dados não disponíveis.'}</p>
-          <button onClick={onClose} className="mt-2 px-4 py-2 text-sm rounded-xl bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover">Fechar</button>
+        <div className="w-full max-w-3xl max-h-[85vh] overflow-y-auto flex flex-col gap-4 rounded-xl border border-lia-border-subtle bg-lia-bg-secondary">
+          <div className="flex flex-col items-center gap-3 pt-8 px-8">
+            <AlertCircle className="w-8 h-8 text-lia-text-secondary" />
+            <p className="text-sm text-lia-text-secondary">{state.error || 'Dados não disponíveis.'}</p>
+            <button onClick={onClose} className="mt-2 px-4 py-2 text-sm rounded-md bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover">Fechar</button>
+          </div>
+          {resolvedEligibilityResults && resolvedEligibilityResults.length > 0 && (
+            <div className="px-4 pb-6">
+              <EligibilityResultsSection results={resolvedEligibilityResults} />
+            </div>
+          )}
         </div>
       </div>
     )
@@ -136,8 +174,8 @@ export function TriagemDetailsModal({
         <div className="flex-1 overflow-y-auto p-4 bg-lia-bg-secondary">
           {state.activeTab === 'triagem' && (
             <div className="space-y-4">
-              {eligibilityResults && eligibilityResults.length > 0 && (
-                <EligibilityResultsSection results={eligibilityResults} />
+              {resolvedEligibilityResults && resolvedEligibilityResults.length > 0 && (
+                <EligibilityResultsSection results={resolvedEligibilityResults} />
               )}
               <TriagemScoresPanel
                 scores={scores}

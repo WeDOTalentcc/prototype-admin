@@ -14,8 +14,8 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
-from app.domains.consent.dependencies import get_consent_repo
-from app.domains.consent.repositories.consent_repository import ConsentRepository
+from app.repositories.dependencies import get_consent_repo
+from app.repositories.consent_repository import ConsentRepository
 from app.schemas.consent_management import (
     ConsentEventCreate,
     ConsentEventListResponse,

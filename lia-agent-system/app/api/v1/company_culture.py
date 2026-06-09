@@ -31,8 +31,8 @@ from app.domains.company.repositories.culture_profile_repository import (
     CultureProfileRepository,
 )
 from app.domains.company.services.company_scraper_service import company_scraper_service
-from app.domains.company_culture.dependencies import get_company_culture_repo
-from app.domains.company_culture.repositories.company_culture_repository import (
+from app.repositories.dependencies import get_company_culture_repo
+from app.repositories.company_culture_repository import (
     CompanyCultureRepository,
 )
 from app.domains.ai.services.llm import llm_service

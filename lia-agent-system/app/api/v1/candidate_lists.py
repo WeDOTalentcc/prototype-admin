@@ -9,8 +9,8 @@ from pydantic import BaseModel
 
 from app.auth.dependencies import get_current_user_or_demo, get_user_company_id
 from app.auth.models import User
-from app.domains.candidate_lists.dependencies import get_candidate_list_repo
-from app.domains.candidate_lists.repositories.candidate_list_repository import (
+from app.repositories.dependencies import get_candidate_list_repo
+from app.repositories.candidate_list_repository import (
     CandidateListRepository,
 )
 from app.shared.security.require_company_id import require_company_id

@@ -22,8 +22,8 @@ from ._shared import (  # noqa: F401
     BaseModel,
     logger,
 )
-from app.domains.job_vacancies_analytics.dependencies import get_job_vacancies_analytics_repo
-from app.domains.job_vacancies_analytics.repositories.job_vacancies_analytics_repository import (
+from app.repositories.dependencies import get_job_vacancies_analytics_repo
+from app.repositories.job_vacancies_analytics_repository import (
     JobVacanciesAnalyticsRepository,
 )
 from app.shared.security.require_company_id import require_company_id
@@ -894,7 +894,7 @@ async def get_job_report(
 company_id: str = Depends(require_company_id)):
     # Support db kwarg for backwards compatibility (tests inject db directly)
     if db is not None and not hasattr(repo, 'get_job_by_id_and_company'):
-        from app.domains.job_vacancies_analytics.repositories.job_vacancies_analytics_repository import JobVacanciesAnalyticsRepository as _JVAR
+        from app.repositories.job_vacancies_analytics_repository import JobVacanciesAnalyticsRepository as _JVAR
         repo = _JVAR(db)
     """Returns JSON data for the JobReportModal."""
     company_id = get_user_company_id(current_user)

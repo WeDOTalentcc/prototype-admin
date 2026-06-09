@@ -19,11 +19,11 @@ from uuid import UUID
 
 from fastapi import Request, APIRouter, Depends, HTTPException, Query, status
 
-from app.domains.data_subject.dependencies import get_data_subject_repo
-from app.domains.data_subject.repositories.data_subject_repository import (
+from app.repositories.dependencies import get_data_subject_repo
+from app.repositories.data_subject_repository import (
     DsrExecutorFailedError,
 )
-from app.domains.data_subject.repositories.data_subject_repository import DataSubjectRepository
+from app.repositories.data_subject_repository import DataSubjectRepository
 from app.schemas.data_subject_requests import (
     DataSubjectRequestAssign,
     DataSubjectRequestComplete,

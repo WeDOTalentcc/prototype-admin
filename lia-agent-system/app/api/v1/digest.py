@@ -18,7 +18,7 @@ from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User, UserRole
 from app.core.database import get_db
 from app.domains.analytics.services.weekly_digest_service import WeeklyDigestService, get_weekly_digest_service
-from app.domains.auth.repositories.user_repository import UserRepository
+from app.repositories.auth_user_repository import UserRepository
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
 

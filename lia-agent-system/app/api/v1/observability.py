@@ -16,8 +16,8 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
-from app.domains.observability.dependencies import get_observability_repo
-from app.domains.observability.repositories.observability_repository import ObservabilityRepository
+from app.repositories.dependencies import get_observability_repo
+from app.repositories.observability_repository import ObservabilityRepository
 from app.schemas.observability import (
     AIInferenceLogListResponse,
     AIInferenceLogResponse,

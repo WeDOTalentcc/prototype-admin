@@ -709,7 +709,7 @@ async def get_f11_report(session_id: str, db: AsyncSession = Depends(get_db), co
         # para o card exibir o relatório completo. Sem SQL inline: via OpinionsRepository.
         try:
             from uuid import UUID as _UUID
-            from app.domains.opinions.repositories.opinions_repository import (
+            from app.repositories.opinions_repository import (
                 OpinionsRepository,
             )
             _repo = OpinionsRepository(db)

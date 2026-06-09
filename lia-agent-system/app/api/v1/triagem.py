@@ -47,7 +47,7 @@ from fastapi import APIRouter, Depends, File, Form, Header, HTTPException, Query
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
-from app.domains.triagem.dependencies import get_triagem_repo
+from app.repositories.dependencies import get_triagem_repo
 # P2 D (2026-05-23): canonical TriagemSessionRepository em domain recruitment.
 # Re-export via domains.triagem.repositories.__init__ mantém backward compat.
 from app.domains.recruitment.repositories.triagem_session_repository import (

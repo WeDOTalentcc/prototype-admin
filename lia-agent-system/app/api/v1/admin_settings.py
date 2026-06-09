@@ -14,8 +14,8 @@ from app.models.admin_settings import (
     NOTIFICATION_EVENT_TYPES,
     PermissionLevel,
 )
-from app.domains.admin_settings.dependencies import get_admin_settings_repo
-from app.domains.admin_settings.repositories.admin_settings_repository import (
+from app.repositories.dependencies import get_admin_settings_repo
+from app.repositories.admin_settings_repository import (
     AdminSettingsRepository,
 )
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match

@@ -26,7 +26,7 @@ from lia_models.candidate import VacancyCandidate
 
 @pytest.mark.asyncio
 async def test_candidate_list_repo_creates_vacancy_candidate():
-    from app.domains.candidate_lists.repositories.candidate_list_repository import (
+    from app.repositories.candidate_list_repository import (
         CandidateListRepository,
     )
 
@@ -60,7 +60,7 @@ async def test_candidate_list_repo_creates_vacancy_candidate():
 async def test_candidate_list_repo_find_uses_vacancy_id_column():
     """find_vacancy_candidate must reference VacancyCandidate.vacancy_id, not the
     non-existent job_vacancy_id (which raised AttributeError at query build)."""
-    from app.domains.candidate_lists.repositories.candidate_list_repository import (
+    from app.repositories.candidate_list_repository import (
         CandidateListRepository,
     )
 
@@ -128,7 +128,7 @@ async def test_shared_search_add_to_job_creates_vacancy_candidate():
 async def test_shared_search_repo_get_uses_vacancy_id_column():
     """get_vacancy_candidate must reference VacancyCandidate.vacancy_id, not the
     non-existent job_vacancy_id (which raised AttributeError at query build)."""
-    from app.domains.shared_searches.repositories.shared_search_repository import (
+    from app.repositories.shared_search_repository import (
         SharedSearchRepository,
     )
 

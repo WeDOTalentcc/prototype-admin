@@ -10,8 +10,8 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field, ConfigDict
 
-from app.domains.journey_mapping.dependencies import get_journey_mapping_repo
-from app.domains.journey_mapping.repositories.journey_mapping_repository import JourneyMappingRepository
+from app.repositories.dependencies import get_journey_mapping_repo
+from app.repositories.journey_mapping_repository import JourneyMappingRepository
 from app.domains.ai.services.llm import llm_service
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 from app.shared.types import WeDoBaseModel

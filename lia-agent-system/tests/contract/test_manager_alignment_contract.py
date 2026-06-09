@@ -22,29 +22,29 @@ import pytest
 class TestManagerAlignmentRepositoryContract:
 
     def test_has_create_method(self):
-        from app.domains.approvals.repositories.manager_alignment_repository import ManagerAlignmentRepository
+        from app.repositories.manager_alignment_repository import ManagerAlignmentRepository
         assert hasattr(ManagerAlignmentRepository, "create")
         assert callable(ManagerAlignmentRepository.create)
 
     def test_has_get_by_token_method(self):
-        from app.domains.approvals.repositories.manager_alignment_repository import ManagerAlignmentRepository
+        from app.repositories.manager_alignment_repository import ManagerAlignmentRepository
         assert hasattr(ManagerAlignmentRepository, "get_by_token")
 
     def test_has_get_pending_for_job_method(self):
-        from app.domains.approvals.repositories.manager_alignment_repository import ManagerAlignmentRepository
+        from app.repositories.manager_alignment_repository import ManagerAlignmentRepository
         assert hasattr(ManagerAlignmentRepository, "get_pending_for_job")
 
     def test_has_respond_method(self):
-        from app.domains.approvals.repositories.manager_alignment_repository import ManagerAlignmentRepository
+        from app.repositories.manager_alignment_repository import ManagerAlignmentRepository
         assert hasattr(ManagerAlignmentRepository, "respond")
 
     def test_require_company_id_raises_on_empty(self):
-        from app.domains.approvals.repositories.manager_alignment_repository import ManagerAlignmentRepository
+        from app.repositories.manager_alignment_repository import ManagerAlignmentRepository
         with pytest.raises((ValueError, Exception)):
             ManagerAlignmentRepository._require_company_id(None)
 
     def test_require_company_id_passes_valid(self):
-        from app.domains.approvals.repositories.manager_alignment_repository import ManagerAlignmentRepository
+        from app.repositories.manager_alignment_repository import ManagerAlignmentRepository
         result = ManagerAlignmentRepository._require_company_id("company-uuid-123")
         assert result == "company-uuid-123"
 

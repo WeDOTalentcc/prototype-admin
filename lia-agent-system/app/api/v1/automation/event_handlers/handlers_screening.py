@@ -433,7 +433,7 @@ async def _persist_lia_opinion_with_ocean(
     must never break over a learning-loop write.
     """
     try:
-        from app.domains.opinions.repositories.opinions_repository import (
+        from app.repositories.opinions_repository import (
             OpinionsRepository,
         )
 

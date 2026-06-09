@@ -21,8 +21,8 @@ from pydantic import BaseModel
 
 from app.auth.dependencies import get_current_active_user
 from app.auth.models import User
-from app.domains.approvals.dependencies import get_approvals_repo
-from app.domains.approvals.repositories.approvals_repository import ApprovalsRepository
+from app.repositories.dependencies import get_approvals_repo
+from app.repositories.approvals_repository import ApprovalsRepository
 from app.domains.communication.services.email_service import EmailService, get_email_service
 from app.models.approval import ApprovalRequest
 from app.shared.compliance.audit_service import AuditService, get_audit_service

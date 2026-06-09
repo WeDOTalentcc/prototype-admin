@@ -3,7 +3,7 @@ from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_tenant_db
-from app.domains.saas_metrics.repositories.saas_metrics_repository import (
+from app.repositories.saas_metrics_repository import (
     SaasMetricsRepository,
 )
 
