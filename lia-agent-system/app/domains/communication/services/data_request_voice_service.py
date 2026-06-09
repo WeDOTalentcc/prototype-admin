@@ -18,19 +18,27 @@ spoken answers. Because the plugin reports ``plugin_name == 'data_collection'``
 (NOT ``'wsi_screening'``), the orchestrator's Fase 0.5 gate correctly does NOT
 run the WSI scoring path on these calls.
 
-⚠️ FASE 4 (still deferred): persistence of the plugin's per-field extracted
-answers back into the DataRequest, plus in-call LGPD consent, is wired in
-Fase 4. Fase 2 places the call with the collection plugin; the plugin returns a
-structured ``collected``/``needs_followup`` dict at finalize but does NOT yet
-persist it.
+FASE 3 (LGPD consent gate — FAIL-CLOSED): before placing the call,
+``start_collection`` verifies candidate consent via ``ConsentCheckerService``
+(purpose="voice_screening"). NO consent → the call is NOT placed and an explicit
+``voice_collection_no_consent`` status is returned (never a fake success). The
+in-call LGPD recording notice is spoken as the FIRST utterance by the
+``DataCollectionVoicePlugin`` (its ``RECORDING_NOTICE``).
+
+FASE 4 (canonical persistence): the ``DataCollectionVoicePlugin`` is constructed
+WITH ``data_request_id`` so its ``on_session_finalized`` persists the VALID
+collected answers back into the DataRequest via the SAME canonical producer
+WhatsApp uses (``DataRequestResponse`` row + append to
+``DataRequest.fields_completed`` with ``source="voice_collection"``).
+``needs_followup`` fields are NEVER persisted as answered (CLAUDE.md REGRA 4).
 
 Anti-silent-fallback (CLAUDE.md REGRA 4): start_collection NEVER reports a fake
 "completed" collection. It returns an explicit status:
 - ``voice_collection_initiated``  → orchestrator placed the call (status=initiated)
 - ``voice_collection_fallback``   → Twilio unavailable / circuit open → route to
                                     chat/WhatsApp (orchestrator status=fallback/failed)
-- ``voice_collection_prepared``   → script built, but no live call placed (e.g.
-                                    orchestrator wiring deferred to Fase 2)
+- ``voice_collection_prepared``   → script built, but no live call placed
+- ``voice_collection_no_consent`` → LGPD consent gate failed-closed; call NOT placed
 
 IMPORTANT — lazy import: the voice orchestrator AND the DataCollectionVoicePlugin
 are imported INSIDE ``start_collection``, never at module top. Importing
@@ -171,14 +179,44 @@ class DataRequestVoiceService:
                 "error": str(e),
             }
 
+        # ── Fase 3 — LGPD consent gate (FAIL-CLOSED) ──────────────────────────
+        # An outbound voice call that collects personal data REQUIRES prior
+        # explicit consent (LGPD Art. 7). Mirror the canonical gate used by
+        # VoiceScreeningOrchestrator: purpose="voice_screening" (the closest
+        # correct LGPD purpose — voice channel processing candidate data;
+        # PURPOSE_TO_CONSENT_TYPE → VOICE_SCREENING). NO consent → do NOT place
+        # the call. Return an explicit, honest status — never a fake success.
+        consent_ok = await self._check_consent(
+            db=db,
+            candidate_id=str(data_request.candidate_id),
+            company_id=company_id,
+        )
+        if not consent_ok:
+            logger.warning(
+                "Voice collection: BLOCKED by LGPD consent gate for data request "
+                "%s (candidate=%s, company=%s) — call NOT placed.",
+                data_request_id,
+                data_request.candidate_id,
+                company_id,
+            )
+            return {
+                "status": "voice_collection_no_consent",
+                "channel": "voice",
+                "fields": voice_fields,
+                "portal_fallback_fields": portal_redirect_fields,
+                "note": "lgpd_consent_required_call_not_placed",
+            }
+
         # Construct the data-collection orchestrator. Mirrors how
         # VoiceScreeningOrchestrator installs WSIVoicePlugin (plugins=[plugin]),
         # but with the collection plugin fed the SAME pending fields the script
         # was built from. Fase 4 wires persistence of the plugin's extracted
-        # answers back into the DataRequest.
+        # answers back into the DataRequest (the plugin receives data_request_id
+        # so its on_session_finalized persists via the canonical producer).
         collection_plugin = DataCollectionVoicePlugin(
             fields=data_request.fields_requested or [],
             completed_names=completed_names,
+            data_request_id=data_request_id,
         )
         collection_orchestrator = VoiceCoreOrchestrator(plugins=[collection_plugin])
 
@@ -234,6 +272,75 @@ class DataRequestVoiceService:
             "session_id": session_id,
             "orchestrator_status": orch_status,
         }
+
+    async def _check_consent(
+        self,
+        db: AsyncSession,
+        candidate_id: str,
+        company_id: str,
+    ) -> bool:
+        """
+        Fase 3 — verify LGPD consent before placing an outbound collection call.
+
+        FAIL-CLOSED: returns True ONLY when the candidate has explicitly granted
+        consent. Absent consent (soft_warning), revoked consent, an unavailable
+        ConsentCheckerService, or any unexpected error all return False — the
+        call is NOT placed. This mirrors the canonical voice gate in
+        ``VoiceScreeningOrchestrator`` (purpose="voice_screening").
+
+        company_id is the authoritative tenant id from the persisted DataRequest
+        row (never a payload).
+
+        LAZY import: ConsentCheckerService lives in the lgpd domain; import it
+        inside the method to keep this module cheap and let tests patch it.
+        """
+        try:
+            from app.domains.lgpd.services.consent_checker_service import (
+                ConsentCheckerService,
+            )
+        except Exception as e:  # pragma: no cover - import failure → fail closed
+            logger.error(
+                "Voice collection: ConsentCheckerService unavailable — failing "
+                "closed (no call). candidate=%s company=%s: %s",
+                candidate_id,
+                company_id,
+                e,
+            )
+            return False
+
+        try:
+            checker = ConsentCheckerService(db)
+            result = await checker.check_candidate_consent(
+                candidate_id=candidate_id,
+                company_id=company_id,
+                # Closest correct LGPD purpose: voice channel processing
+                # candidate data (PURPOSE_TO_CONSENT_TYPE → VOICE_SCREENING).
+                purpose="voice_screening",
+            )
+        except Exception as e:
+            logger.error(
+                "Voice collection: consent check error — failing closed (no "
+                "call). candidate=%s company=%s: %s",
+                candidate_id,
+                company_id,
+                e,
+            )
+            return False
+
+        # FAIL-CLOSED: explicit consent required. Absent consent surfaces as
+        # allowed=True + soft_warning=True from the checker — for an OUTBOUND
+        # call that is NOT sufficient (same rule as VoiceScreeningOrchestrator).
+        if not result.allowed:
+            return False
+        if getattr(result, "soft_warning", False):
+            logger.warning(
+                "Voice collection: consent ABSENT (soft_warning) — failing "
+                "closed for outbound call. candidate=%s company=%s",
+                candidate_id,
+                company_id,
+            )
+            return False
+        return True
 
 
 data_request_voice_service = DataRequestVoiceService()

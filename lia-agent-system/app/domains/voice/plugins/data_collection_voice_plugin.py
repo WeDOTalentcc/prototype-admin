@@ -75,6 +75,7 @@ class DataCollectionVoicePlugin(VoiceCorePlugin):
         fields: list[dict[str, Any]] | None = None,
         *,
         completed_names: list[str] | None = None,
+        data_request_id: Any | None = None,
         orchestrator: "VoiceCoreOrchestrator | None" = None,
     ) -> None:
         """
@@ -84,12 +85,17 @@ class DataCollectionVoicePlugin(VoiceCorePlugin):
                 ``DataRequest.fields_requested`` persists.
             completed_names: field names already collected (skipped by the
                 script builder).
+            data_request_id: the DataRequest UUID this call collects for. Fase 4
+                uses it to persist collected answers back into the canonical
+                DataRequest at finalize. When absent, finalize returns the
+                extracted dict WITHOUT persisting (no row to write to).
             orchestrator: optional bound VoiceCoreOrchestrator reference (mirrors
                 WSIVoicePlugin). Unused by Fase 2 but kept for parity/future
                 shared-helper reuse.
         """
         self._fields: list[dict[str, Any]] = list(fields or [])
         self._completed_names: list[str] = list(completed_names or [])
+        self._data_request_id = data_request_id
         self._orchestrator = orchestrator
 
         # Per-field collection state, populated in on_session_initiated.
@@ -99,10 +105,24 @@ class DataCollectionVoicePlugin(VoiceCorePlugin):
         self._portal_only_names: list[str] = []
         # Sequential cursor for get_next_question.
         self._cursor: int = 0
+        # Fase 3 (LGPD): the FIRST thing said on the call MUST be a recording /
+        # data-collection notice (LGPD Art. 9 — informação ao titular). Flipped
+        # to True once the notice has been emitted by get_next_question.
+        self._recording_notice_emitted: bool = False
 
     @property
     def plugin_name(self) -> str:
         return "data_collection"
+
+    # Fase 3 (LGPD Art. 9): mandatory recording / data-collection notice spoken
+    # as the FIRST utterance of the call, before any field is requested.
+    RECORDING_NOTICE: str = (
+        "Olá! Esta ligação será gravada para fins de coleta de dados do seu "
+        "processo seletivo. As informações que você fornecer serão usadas "
+        "exclusivamente para esse fim, conforme a Lei Geral de Proteção de "
+        "Dados. Se você não concordar, pode encerrar a ligação a qualquer "
+        "momento. Vamos começar."
+    )
 
     # ── VoiceCorePlugin protocol implementations ───────────────────────────
 
@@ -171,8 +191,16 @@ class DataCollectionVoicePlugin(VoiceCorePlugin):
         Sequential cursor over the collectable prompts built in
         ``on_session_initiated``. Returns ``None`` once every collectable field
         has been asked, letting the core wrap up the call. Best-effort.
+
+        Fase 3 (LGPD): the FIRST call returns the mandatory recording /
+        data-collection notice, BEFORE the first field is asked — independent
+        of whether any field is collectable.
         """
         try:
+            # LGPD recording notice is the very first thing said on the call.
+            if not self._recording_notice_emitted:
+                self._recording_notice_emitted = True
+                return self.RECORDING_NOTICE
             if self._cursor >= len(self._voice_prompts):
                 return None
             prompt = self._voice_prompts[self._cursor]
@@ -254,11 +282,19 @@ class DataCollectionVoicePlugin(VoiceCorePlugin):
                 len(self._portal_only_names),
             )
 
+            # Fase 4 — persist via the CANONICAL DataRequest producer pattern
+            # (mirrors DataRequestWhatsAppService.process_document_response):
+            # one DataRequestResponse row per VALID field + append to the
+            # DataRequest.fields_completed list. needs_followup fields are NEVER
+            # persisted as answered (CLAUDE.md REGRA 4). No new write path.
+            persisted = await self._persist_collected_fields(session, db, collected)
+
             return {
                 "strategy": "data_collection",
                 "collected": collected,
                 "needs_followup": needs_followup,
                 "portal_fallback_fields": list(self._portal_only_names),
+                "persisted_fields": persisted,
             }
         except Exception as e:
             logger.warning(
@@ -306,3 +342,107 @@ class DataCollectionVoicePlugin(VoiceCorePlugin):
                 text = turn.get("text") or turn.get("content") or ""
                 out.append(str(text))
         return out
+
+    async def _persist_collected_fields(
+        self,
+        session: "VoiceScreeningSession",
+        db: Any,
+        collected: dict[str, dict[str, Any]],
+    ) -> list[str]:
+        """
+        Persist VALID collected answers via the CANONICAL DataRequest producer.
+
+        Mirrors ``DataRequestWhatsAppService.process_document_response`` exactly:
+        one ``DataRequestResponse`` row per valid field + append to the
+        ``DataRequest.fields_completed`` list. NO new write path is created —
+        this is the same model + same shape WhatsApp uses.
+
+        Provenance (CLAUDE.md honest-provenance): the ``DataRequestResponse``
+        model has no dedicated ``source`` column, so provenance is recorded on
+        the ``fields_completed`` entry as ``"source": "voice_collection"`` and
+        on ``DataRequest.collection_method = "voice"``.
+
+        Best-effort + anti-silent-fallback: only fields with ``valid=True`` are
+        persisted; invalid / missing fields were already routed to
+        ``needs_followup`` by the caller and are NEVER written as answered.
+        Returns the list of field names actually persisted.
+        """
+        persisted: list[str] = []
+        if db is None or not self._data_request_id:
+            return persisted
+        try:
+            from datetime import datetime as _dt
+
+            from lia_models.data_request import DataFieldType, DataRequest
+            from lia_models.data_request import (
+                DataRequestResponse as _DataRequestResponseModel,
+            )
+
+            data_request = await db.get(DataRequest, self._data_request_id)
+            if data_request is None:
+                logger.warning(
+                    "[DataCollectionVoicePlugin] persist skipped: data request %s "
+                    "not found (session=%s)",
+                    self._data_request_id,
+                    getattr(session, "session_id", "<unknown>"),
+                )
+                return persisted
+
+            completed_fields = list(data_request.fields_completed or [])
+            completed_names = {f.get("name") for f in completed_fields if f.get("name")}
+
+            for field_name, info in collected.items():
+                if not info.get("valid"):
+                    continue  # needs_followup — never persist a guess (REGRA 4)
+                if field_name in completed_names:
+                    continue  # already recorded — idempotent
+                ft_raw = info.get("field_type") or "text"
+                try:
+                    field_type = (
+                        DataFieldType(str(ft_raw).lower())
+                        if not isinstance(ft_raw, DataFieldType)
+                        else ft_raw
+                    )
+                except Exception:
+                    field_type = DataFieldType.TEXT
+
+                response_record = _DataRequestResponseModel(
+                    data_request_id=self._data_request_id,
+                    field_name=field_name,
+                    field_type=field_type,
+                    value=info.get("value"),
+                    is_valid=True,
+                    submitted_at=_dt.utcnow(),
+                )
+                db.add(response_record)
+
+                completed_fields.append(
+                    {
+                        "name": field_name,
+                        "completed_at": _dt.utcnow().isoformat(),
+                        "source": "voice_collection",
+                    }
+                )
+                completed_names.add(field_name)
+                persisted.append(field_name)
+
+            if persisted:
+                data_request.fields_completed = completed_fields
+                data_request.collection_method = "voice"
+                await db.commit()
+
+            logger.info(
+                "[DataCollectionVoicePlugin] session=%s persisted %d field(s) via "
+                "canonical DataRequest producer: %s",
+                getattr(session, "session_id", "<unknown>"),
+                len(persisted),
+                persisted,
+            )
+        except Exception as e:
+            logger.warning(
+                "[DataCollectionVoicePlugin] _persist_collected_fields failed "
+                "(non-blocking) session=%s: %s",
+                getattr(session, "session_id", "<unknown>"),
+                e,
+            )
+        return persisted

@@ -14,9 +14,29 @@ ALL voice-orchestrator imports are mocked so the heavy real import never loads
 (importing voice_screening_orchestrator at module load drops the SSH session).
 """
 import uuid
+from contextlib import contextmanager
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+
+
+@contextmanager
+def _consent_granted():
+    """
+    Patch the lazily-imported ConsentCheckerService so the Fase 3 consent gate
+    in start_collection passes (explicit consent). Without this, the gate
+    correctly fails closed and returns 'voice_collection_no_consent'.
+    """
+    result = MagicMock()
+    result.allowed = True
+    result.soft_warning = False
+    checker = MagicMock()
+    checker.check_candidate_consent = AsyncMock(return_value=result)
+    with patch(
+        "app.domains.lgpd.services.consent_checker_service.ConsentCheckerService",
+        MagicMock(return_value=checker),
+    ):
+        yield
 
 
 # ---------------------------------------------------------------------------
@@ -150,7 +170,7 @@ async def test_voice_start_collection_builds_script():
     fake_orch = MagicMock()
     fake_orch.initiate_call = AsyncMock(return_value=fake_session)
 
-    with patch(
+    with _consent_granted(), patch(
         "app.domains.voice.services.voice_screening_orchestrator.voice_screening_orchestrator",
         fake_orch,
     ):
@@ -184,7 +204,7 @@ async def test_voice_start_collection_does_not_fake_completed():
     fake_orch = MagicMock()
     fake_orch.initiate_call = AsyncMock(return_value=fake_session)
 
-    with patch(
+    with _consent_granted(), patch(
         "app.domains.voice.services.voice_screening_orchestrator.voice_screening_orchestrator",
         fake_orch,
     ):
@@ -202,4 +222,5 @@ async def test_voice_start_collection_does_not_fake_completed():
         "voice_collection_prepared",
         "voice_collection_initiated",
         "voice_collection_fallback",
+        "voice_collection_no_consent",
     }, f"unexpected status: {status}"
