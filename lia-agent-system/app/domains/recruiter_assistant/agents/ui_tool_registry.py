@@ -699,8 +699,8 @@ def _build_select_rows_definition():
 
 
 def get_ui_tools() -> list[ToolDefinition]:
-    """ToolDefinitions de UI (open_ui + apply_table_state). Federadas no recruiter_copilot."""
-    return [_build_open_ui_definition(), _build_apply_table_state_definition()]
+    """ToolDefinitions de UI (open_ui + apply_table_state + select_rows). Federadas no recruiter_copilot."""
+    return [_build_open_ui_definition(), _build_apply_table_state_definition(), _build_select_rows_definition()]
 
 
 def get_open_ui_tools() -> list[ToolDefinition]:
