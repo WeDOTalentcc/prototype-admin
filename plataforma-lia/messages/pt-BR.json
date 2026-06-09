@@ -5797,7 +5797,12 @@
         "filterWhatsapp": "WhatsApp",
         "templatesFoundCount": "{count} template(s) encontrado(s)",
         "tryAdjustFilters": "Tente ajustar os filtros.",
-        "viewing": "Visualizando"
+        "viewing": "Visualizando",
+        "newTemplate": "+ Novo Modelo",
+        "subjectPlaceholder": "Ex: {{company_name}} — Convite para Entrevista: {{job_title}}",
+        "bodyPlaceholder": "Escreva o conteúdo do email ou mensagem...",
+        "ccEmailsLabel": "Receptores adicionais (CC)",
+        "ccEmailsPlaceholder": "gestor@empresa.com, rh@empresa.com"
       },
       "signature": {
         "title": "Assinatura de Email Padrão",

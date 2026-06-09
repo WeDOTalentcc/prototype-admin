@@ -67,6 +67,7 @@ export function CommunicationHub({ activeSubsection, visibleTabs, stacked }: Com
             handleConfirmAIAdjustment={hub.handleConfirmAIAdjustment}
             handleCancelAIAdjustment={hub.handleCancelAIAdjustment}
             handleSaveTemplate={hub.handleSaveTemplate}
+            onTemplateCreated={hub.fetchData}
           />
         )
       case 'signature':

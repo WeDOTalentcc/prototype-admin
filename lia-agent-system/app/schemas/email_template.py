@@ -22,6 +22,7 @@ class EmailTemplateBase(BaseModel):
     used_in: list[str] = Field(default_factory=list, description="Component names where template is used: close_vacancy_modal, communication_modal, automation")
     priority: str | None = Field(default="medium", max_length=10, description="Priority level: high, medium, or low")
     variables: list[str] = Field(default_factory=list, description="List of variable names used in template")
+    cc_emails: list[str] | None = Field(default=None, description="Additional CC recipients")
 
 
 class EmailTemplateCreate(EmailTemplateBase):
@@ -42,6 +43,7 @@ class EmailTemplateUpdate(WeDoBaseModel):
     used_in: list[str] | None = None
     priority: str | None = Field(None, max_length=10)
     variables: list[str] | None = None
+    cc_emails: list[str] | None = None
     is_active: bool | None = None
 
 
@@ -59,6 +61,7 @@ class EmailTemplateResponse(BaseModel):
     used_in: list[str] = Field(default_factory=list)
     priority: str | None = "medium"
     variables: list[str] = Field(default_factory=list)
+    cc_emails: list[str] | None = None
     is_active: bool
     created_by: str | None = None
     created_at: datetime

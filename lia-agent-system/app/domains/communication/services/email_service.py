@@ -163,7 +163,8 @@ class EmailService:
         send_immediately: bool = True,
         created_by: str | None = None,
         subject_override: str | None = None,
-        body_override: str | None = None
+        body_override: str | None = None,
+        cc: list[str] | None = None,
     ) -> EmailLog:
         """
         Send an email using a template.
@@ -193,6 +194,10 @@ class EmailService:
             template_subject = str(subj) if subj else ""
             template_body_html = str(html) if html else ""
             template_body_text = str(text) if text else ""
+            if cc is None:
+                raw_cc = getattr(template, 'cc_emails', None)
+                if raw_cc:
+                    cc = [str(e) for e in raw_cc if e]
         else:
             logger.warning(
                 f"Template {template_id} not found — using overrides or default fallback"
@@ -262,7 +267,8 @@ class EmailService:
                     to_email=recipient_email,
                     subject=rendered_subject,
                     body_html=rendered_html,
-                    body_text=rendered_text
+                    body_text=rendered_text,
+                    cc=cc or None,
                 )
                 
                 if success:
@@ -293,7 +299,8 @@ class EmailService:
         body_text: str | None = None,
         from_email: str | None = None,
         client_id: str | None = None,
-        client_config: dict[str, Any] | None = None
+        client_config: dict[str, Any] | None = None,
+        cc: list[str] | None = None,
     ) -> bool:
         """
         Send email using Mailgun as primary provider with automatic Resend fallback.
@@ -334,7 +341,8 @@ class EmailService:
                 subject=subject,
                 html_content=body_html,
                 text_content=body_text,
-                from_email=from_email
+                from_email=from_email,
+                cc=cc,
             )
 
             if result.success:

@@ -7,6 +7,7 @@ export interface EmailTemplate {
   category?: 'interview' | 'rejection' | 'offer' | 'followup' | 'screening'
   variables: string[]
   is_active: boolean
+  cc_emails?: string[]
   created_by?: string
   created_at: string
   updated_at: string
@@ -19,6 +20,7 @@ export interface EmailTemplateCreateRequest {
   body_text?: string
   category?: 'interview' | 'rejection' | 'offer' | 'followup' | 'screening'
   variables?: string[]
+  cc_emails?: string[]
   created_by?: string
 }
 
@@ -29,6 +31,7 @@ export interface EmailTemplateUpdateRequest {
   body_text?: string
   category?: 'interview' | 'rejection' | 'offer' | 'followup' | 'screening'
   variables?: string[]
+  cc_emails?: string[]
   is_active?: boolean
 }
 

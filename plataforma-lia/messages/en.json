@@ -5797,7 +5797,12 @@
         "filterWhatsapp": "WhatsApp",
         "templatesFoundCount": "{count} template(s) found",
         "tryAdjustFilters": "Try adjusting the filters.",
-        "viewing": "Viewing"
+        "viewing": "Viewing",
+        "newTemplate": "+ New Template",
+        "subjectPlaceholder": "E.g.: {{company_name}} — Interview Invitation: {{job_title}}",
+        "bodyPlaceholder": "Write the content of your email or message...",
+        "ccEmailsLabel": "Additional recipients (CC)",
+        "ccEmailsPlaceholder": "manager@company.com, hr@company.com"
       },
       "signature": {
         "title": "Default Email Signature",

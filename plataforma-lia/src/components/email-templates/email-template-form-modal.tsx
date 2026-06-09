@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useMemo, useRef } from"react"
+import { useTranslations } from"next-intl"
 import { DEMO_VALUES } from"@/lib/pricing"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from"@/components/ui/dialog"
 import { Button } from"@/components/ui/button"
@@ -70,6 +71,8 @@ const CATEGORY_OPTIONS = [
   { value:"followup", label:"Follow-up" },
 ]
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
 const DEFAULT_TEMPLATE = `<h2>Olá, {{candidate_name}}!</h2><p>Escreva aqui o conteúdo do seu email...</p><p>Atenciosamente,<br><strong>{{recruiter_name}}</strong><br>{{company_name}}</p>`
 
 const TEMPLATE_VARIABLE_EXTENSIONS = [TemplateVariable]
@@ -80,6 +83,7 @@ export function EmailTemplateFormModal({
   onSuccess,
   template,
 }: EmailTemplateFormModalProps) {
+  const t = useTranslations("settings.communication.templates")
   const [activeTab, setActiveTab] = useState("editor")
   const [saving, setSaving] = useState(false)
   const [formData, setFormData] = useState({
@@ -88,7 +92,10 @@ export function EmailTemplateFormModal({
     body_html:"",
     body_text:"",
     category:"" as string,
+    cc_emails: [] as string[],
   })
+  const [ccInput, setCcInput] = useState("")
+  const [ccInputError, setCcInputError] = useState("")
 
   const isEditing = !!template
   const [editorKey, setEditorKey] = useState(0)
@@ -103,6 +110,7 @@ export function EmailTemplateFormModal({
           body_html: template.body_html,
           body_text: template.body_text ||"",
           category: template.category ||"",
+          cc_emails: template.cc_emails || [],
         })
       } else {
         setFormData({
@@ -111,8 +119,11 @@ export function EmailTemplateFormModal({
           body_html: DEFAULT_TEMPLATE,
           body_text:"",
           category:"",
+          cc_emails: [],
         })
       }
+      setCcInput("")
+      setCcInputError("")
       setActiveTab("editor")
       setEditorKey((k) => k + 1)
     }
@@ -146,6 +157,33 @@ export function EmailTemplateFormModal({
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
+  const handleAddCcEmail = () => {
+    const raw = ccInput.trim()
+    if (!raw) return
+    const emails = raw.split(/[,;\s]+/).map(e => e.trim()).filter(Boolean)
+    const invalid = emails.find(e => !EMAIL_REGEX.test(e))
+    if (invalid) {
+      setCcInputError(`Email inválido: ${invalid}`)
+      return
+    }
+    const existing = new Set(formData.cc_emails)
+    const newEmails = emails.filter(e => !existing.has(e))
+    setFormData((prev) => ({ ...prev, cc_emails: [...prev.cc_emails, ...newEmails] }))
+    setCcInput("")
+    setCcInputError("")
+  }
+
+  const handleCcKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault()
+      handleAddCcEmail()
+    }
+  }
+
+  const handleRemoveCcEmail = (email: string) => {
+    setFormData((prev) => ({ ...prev, cc_emails: prev.cc_emails.filter(e => e !== email) }))
+  }
+
   const insertVariable = (variableName: string) => {
     const editor = editorRef.current
     if (editor && !editor.isDestroyed) {
@@ -157,6 +195,10 @@ export function EmailTemplateFormModal({
   const handleSubmit = async () => {
     try {
       setSaving(true)
+
+      if (ccInput.trim()) {
+        handleAddCcEmail()
+      }
 
       const outputHtml = tiptapContentToHtml(formData.body_html)
       const variables = extractVariables(
@@ -171,6 +213,7 @@ export function EmailTemplateFormModal({
           body_text: formData.body_text || undefined,
           category: (formData.category || undefined) as EmailTemplateUpdateRequest["category"],
           variables,
+          cc_emails: formData.cc_emails.length > 0 ? formData.cc_emails : undefined,
         }
         await liaApi.updateEmailTemplate(template.id, updateData)
       } else {
@@ -181,6 +224,7 @@ export function EmailTemplateFormModal({
           body_text: formData.body_text || undefined,
           category: (formData.category || undefined) as EmailTemplateCreateRequest["category"],
           variables,
+          cc_emails: formData.cc_emails.length > 0 ? formData.cc_emails : undefined,
         }
         await liaApi.createEmailTemplate(createData)
       }
@@ -256,6 +300,59 @@ export function EmailTemplateFormModal({
             />
           </div>
 
+          <div className="space-y-2 mb-4">
+            <Label htmlFor="cc-input">{t("ccEmailsLabel")}</Label>
+            <div className="space-y-2">
+              {formData.cc_emails.length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  {formData.cc_emails.map((email) => (
+                    <Chip
+                      key={email}
+                      variant="neutral"
+                      className="flex items-center gap-1 text-xs"
+                    >
+                      {email}
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveCcEmail(email)}
+                        className="ml-1 rounded-full hover:text-status-error transition-colors motion-reduce:transition-none"
+                        aria-label={`Remover ${email}`}
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </Chip>
+                  ))}
+                </div>
+              )}
+              <div className="flex gap-2">
+                <Input
+                  id="cc-input"
+                  value={ccInput}
+                  onChange={(e) => { setCcInput(e.target.value); setCcInputError("") }}
+                  onKeyDown={handleCcKeyDown}
+                  onBlur={handleAddCcEmail}
+                  placeholder={t("ccEmailsPlaceholder")}
+                  className="flex-1 text-sm"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleAddCcEmail}
+                  className="shrink-0"
+                >
+                  Adicionar
+                </Button>
+              </div>
+              {ccInputError && (
+                <p className="text-xs text-status-error">{ccInputError}</p>
+              )}
+              <p className="text-xs text-lia-text-tertiary">
+                Opcional. Separe múltiplos emails por vírgula ou pressione Enter após cada um.
+              </p>
+            </div>
+          </div>
+
           <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 overflow-hidden flex flex-col">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="editor" className="gap-2">
@@ -303,6 +400,12 @@ export function EmailTemplateFormModal({
                         <span className="text-sm font-medium text-lia-text-secondary">Assunto:</span>
                         <p className="text-lia-text-primary">{renderPreview(formData.subject)}</p>
                       </div>
+                      {formData.cc_emails.length > 0 && (
+                        <div className="p-3 bg-lia-bg-secondary rounded-xl">
+                          <span className="text-sm font-medium text-lia-text-secondary">CC:</span>
+                          <p className="text-lia-text-primary text-sm">{formData.cc_emails.join(", ")}</p>
+                        </div>
+                      )}
                       <div className="border rounded-xl overflow-hidden">
                         <div className="bg-lia-bg-tertiary px-4 py-2 text-sm font-medium text-lia-text-secondary border-b flex items-center gap-2">
                           <Eye className="w-4 h-4" />

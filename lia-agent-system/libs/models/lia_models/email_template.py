@@ -33,6 +33,7 @@ class EmailTemplate(Base):
     used_in = Column(JSONB, default=list)
     priority = Column(String(10), nullable=True, default="medium")
     variables = Column(JSONB, default=list)
+    cc_emails = Column(JSONB, nullable=True, default=None)
     is_active = Column(Boolean, default=True, index=True)
     # WT-2022 P0.TENANT: TENANT-EXEMPT - templates podem ser global default (company_id NULL = template padrao WeDOTalent compartilhado entre tenants)
     company_id = Column(String(255), nullable=True, index=True)

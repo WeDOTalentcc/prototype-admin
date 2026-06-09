@@ -1,4 +1,4 @@
-import React from"react"
+import React, { useState } from "react"
 import { useTranslations } from "next-intl"
 import { Button } from"@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
@@ -8,13 +8,15 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from"@/c
 import { VariableSelector } from"@/components/ui/variable-selector"
 import {
   Mail, Edit, Save, X, Brain, Check, AlertCircle, MessageSquare,
-  Wand2, Loader2, CheckCircle, Search, Filter, Bell
+  Wand2, Loader2, CheckCircle, Search, Filter, Bell, Plus
 } from"lucide-react"
 import { textStyles } from '@/lib/design-tokens'
 import type { EmailTemplate, AiResultModal } from './CommunicationHub.types'
 import { TEMPLATE_GROUPS, TRIGGER_TYPE_LABELS, PRIORITY_COLORS, CATEGORY_LABELS } from './CommunicationHub.constants'
 import { stripHtmlTags } from './CommunicationHub.utils'
 import { ThinkingDots } from"@/components/ui/thinking-dots"
+import { EmailTemplateFormModal } from "@/components/email-templates/email-template-form-modal"
+import type { EmailTemplate as ApiEmailTemplate } from "@/services/lia-api"
 
 interface TemplatesTabProps {
   successMessage: string | null
@@ -44,6 +46,7 @@ interface TemplatesTabProps {
   handleConfirmAIAdjustment: () => void
   handleCancelAIAdjustment: () => void
   handleSaveTemplate: () => Promise<void>
+  onTemplateCreated?: () => void
 }
 
 export function TemplatesTab({
@@ -59,9 +62,21 @@ export function TemplatesTab({
   handleChannelFilterChange, insertVariableAtCursor,
   handleAdjustWithAI, handleConfirmAIAdjustment, handleCancelAIAdjustment,
   handleSaveTemplate,
+  onTemplateCreated,
 }: TemplatesTabProps) {
   const t = useTranslations("settings.communication.templates")
   const categoryLabels = CATEGORY_LABELS
+
+  const [isNewTemplateModalOpen, setIsNewTemplateModalOpen] = useState(false)
+
+  const activeTemplate = editingTemplate || selectedTemplate
+  const isEmailChannel = activeTemplate?.channel === 'email'
+  const isWhatsAppChannel = activeTemplate?.channel === 'whatsapp'
+
+  const handleNewTemplateSuccess = () => {
+    setIsNewTemplateModalOpen(false)
+    onTemplateCreated?.()
+  }
 
   return (
     <div className="space-y-4">
@@ -81,6 +96,14 @@ export function TemplatesTab({
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <h3 className={textStyles.h2}>{t("title")}</h3>
+          <Button
+            size="sm"
+            onClick={() => setIsNewTemplateModalOpen(true)}
+            className="gap-1.5 text-xs py-1.5 px-3"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            {t("newTemplate")}
+          </Button>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3">
@@ -277,7 +300,7 @@ export function TemplatesTab({
 
                 <Card className="border border-lia-border-subtle/50 dark:border-lia-border-subtle/50 bg-lia-bg-primary/80 dark:bg-lia-bg-secondary/80 backdrop-blur-sm rounded-xl">
                   <CardContent className="p-3 space-y-3">
-                    {channelFilter === 'email' && (
+                    {isEmailChannel && (
                       <div>
                         <label className={`block ${textStyles.labelSmall} mb-1`}>{t("subjectLabel")}</label>
                         {editingTemplate ? (
@@ -285,6 +308,7 @@ export function TemplatesTab({
                             type="text"
                             value={editingTemplate.subject}
                             onChange={(e) => setEditingTemplate(prev => prev ? { ...prev, subject: e.target.value } : null)}
+                            placeholder={t("subjectPlaceholder")}
                             className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary focus:ring-2 focus:outline-none"
                           />
                         ) : (
@@ -295,7 +319,7 @@ export function TemplatesTab({
                     <div>
                       <div className="flex items-center justify-between mb-1">
                         <label className={`block ${textStyles.labelSmall}`}>
-                          {channelFilter === 'email' ? t("emailBodyLabel") : t("whatsappMessageLabel")}
+                          {isEmailChannel ? t("emailBodyLabel") : t("whatsappMessageLabel")}
                         </label>
                         {editingTemplate && (
                           <VariableSelector onSelect={insertVariableAtCursor} disabled={!editingTemplate} />
@@ -307,9 +331,10 @@ export function TemplatesTab({
                           value={editingTemplate.body}
                           onChange={(e) => setEditingTemplate(prev => prev ? { ...prev, body: e.target.value } : null)}
                           rows={10}
+                          placeholder={t("bodyPlaceholder")}
                           className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary focus:ring-2 focus:outline-none font-mono"
                         />
-                      ) : channelFilter === 'whatsapp' ? (
+                      ) : isWhatsAppChannel ? (
                         <div className="rounded-md p-3 bg-whatsapp-bg">
                           <div className="flex justify-end">
                             <div className="bg-whatsapp-bubble rounded-md p-3 max-w-[85%]">
@@ -463,6 +488,13 @@ export function TemplatesTab({
           </div>
         </div>
       )}
+
+      <EmailTemplateFormModal
+        isOpen={isNewTemplateModalOpen}
+        onClose={() => setIsNewTemplateModalOpen(false)}
+        onSuccess={handleNewTemplateSuccess}
+        template={null}
+      />
     </div>
   )
 }
