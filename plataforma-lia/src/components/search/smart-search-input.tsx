@@ -45,6 +45,7 @@ export interface ParsedEntities {
   skills?: string[]
   seniority?: string
   company?: string
+  work_model?: string
 }
 
 export type SearchSource ="local" |"global" |"hybrid"

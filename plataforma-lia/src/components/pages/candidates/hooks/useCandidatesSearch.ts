@@ -305,7 +305,8 @@ export function useCandidatesSearch(ctx: CandidatesSearchContext) {
         years_experience: lastSearchEntities.years_experience,
         skills: lastSearchEntities.skills || [],
         industry: lastSearchEntities.industry,
-        company: lastSearchEntities.company
+        company: lastSearchEntities.company,
+        work_model: lastSearchEntities.work_model,
       } : undefined
 
       // Executar busca global (Pearch AI)
