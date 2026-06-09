@@ -19,8 +19,9 @@ def test_register_ui_tools_global_registers_apply_table_state():
     from app.tools.registry import tool_registry
 
     n = register_ui_tools_global()
-    assert n == 2, "registra open_ui + apply_table_state"
-    for name in ("apply_table_state", "open_ui"):
+    # Registra open_ui + apply_table_state + select_rows (Fase 2 surface close acrescida)
+    assert n == 3, "registra open_ui + apply_table_state + select_rows"
+    for name in ("apply_table_state", "open_ui", "select_rows"):
         td = tool_registry._tools.get(name)
         assert td is not None, f"{name} deveria estar no registry global"
         from app.tools.categories import ToolCategory as _TC
