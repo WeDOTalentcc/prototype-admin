@@ -1949,7 +1949,9 @@
       "title": "Agent Studio | WeDoTalent",
       "description": "Create sourcing agents from sector templates. Configure calibration and automation.",
       "layoutDescription": "Create and manage intelligent sourcing agents",
-      "layoutTitle": "Agent Studio"
+      "layoutTitle": "Agent Studio",
+      "marketplaceTitle": "Agent Marketplace",
+      "marketplaceDescription": "Explore ready-to-use agents from WeDOTalent marketplace"
     },
     "studio": {
       "title": "Agent Studio",

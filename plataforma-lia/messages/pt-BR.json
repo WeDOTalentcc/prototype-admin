@@ -1949,7 +1949,9 @@
       "title": "Estúdio de Agentes | WeDoTalent",
       "description": "Crie agentes de sourcing a partir de templates por setor. Configure calibração e automação.",
       "layoutDescription": "Crie e gerencie agentes de sourcing inteligentes",
-      "layoutTitle": "Estúdio de Agentes"
+      "layoutTitle": "Estúdio de Agentes",
+      "marketplaceTitle": "Marketplace de Agentes",
+      "marketplaceDescription": "Explore agentes prontos do marketplace WeDOTalent"
     },
     "studio": {
       "title": "Estúdio de Agentes",
